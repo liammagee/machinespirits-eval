@@ -58,7 +58,10 @@ if (useLLM) {
   try {
     const spec = YAML.parse(readFileSync('config/poetics-calibration/phase2-classic-drama-adaptation-v1.yaml', 'utf8'));
     const list = (spec && (spec.dramas || spec.target)) || [];
-    for (const d of Array.isArray(list) ? list : Object.values(list)) if (d && d.id) hamartiae[d.id] = d.hamartia || '';
+    // The phase-2 dramas carry the misconception in learner_start_state, NOT a `hamartia`
+    // field. Derive it (fall back to learner_start_state); fail closed below if still empty.
+    for (const d of Array.isArray(list) ? list : Object.values(list))
+      if (d && d.id) hamartiae[d.id] = String(d.hamartia || d.learner_start_state || '').trim();
   } catch {
     hamartiae = {};
   }
@@ -83,6 +86,15 @@ for (const it of status.iterations || [])
 if (!cells.length) {
   console.error(`No gate.items found in ${statusPath}`);
   process.exit(1);
+}
+
+// Fail closed: never run the paid --llm judge against an empty misconception (Codex finding).
+if (useLLM) {
+  const missing = [...new Set(cells.map((c) => c.dramaId))].filter((id) => !(hamartiae[id] && hamartiae[id].length));
+  if (missing.length) {
+    console.error(`--llm: no misconception (hamartia/learner_start_state) for: ${missing.join(', ')}. Aborting.`);
+    process.exit(1);
+  }
 }
 
 const rows = [];

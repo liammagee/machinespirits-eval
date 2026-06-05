@@ -167,11 +167,16 @@ const SPEC_PRIORS = {
   maxTurns: [6, 7, 8],
 };
 
-// Stage 3: sample a FULL drama spec (drama / cast / audience / turn_plan). Slots are filled
-// from priors; the turn_plan is sampled per role CONDITIONED on the sampled cast architectures
-// (the alter-egos) and persona — so the spec is internally coherent (an ego_only tutor's
-// turn_plan has no route_change). Valid by construction: the turn_plan round-trips through
-// validateTurnPlan. Pass a brief via opts (topic/hamartia/targets/seed/...) to steer.
+// Stage 3: sample a form-valid drama spec (drama / cast / audience / turn_plan). Slots are
+// filled from priors; the turn_plan is sampled per role CONDITIONED on the sampled cast
+// architectures (the alter-egos) and persona — so the spec is internally coherent (an ego_only
+// tutor's turn_plan has no route_change) and round-trips through validateTurnPlan.
+//
+// SCOPE (honest): this is FORM-VALID, partly DECLARATIVE. Only the TUTOR turn_plan entry
+// currently executes at runtime (the engine's resolveTutorTurnPlan reads tutor entries); the
+// learner/director entries are valid declarative spec that is NOT yet lowered to the engine's
+// interventions[] (SPEC.md, roadmap). Do not read the sampled learner/director moves as
+// executed behavior. Pass a brief via opts (topic/hamartia/targets/seed/...) to steer.
 export async function sampleDramaSpec(opts = {}) {
   const targets = opts.targets && opts.targets.length ? opts.targets : ['peripeteia'];
   const seed = opts.seed ?? `spec:${targets.join(',')}`;
