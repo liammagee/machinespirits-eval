@@ -65,6 +65,15 @@ ms:BreakdownSignal a owl:Class ; rdfs:subClassOf ms:LearnerSignal .
 ms:LearnerUptake a owl:Class ; rdfs:subClassOf ms:LearnerSignal .
 ms:LearnerContest a owl:Class ; rdfs:subClassOf ms:LearnerUptake .
 ms:LearnerExtension a owl:Class ; rdfs:subClassOf ms:LearnerUptake .
+ms:LearnerActionalApplication a owl:Class ;
+  rdfs:subClassOf ms:LearnerUptake ;
+  rdfs:comment "A learner move that performs or contests the new public test without necessarily redescribing the warrant that makes it count." .
+ms:LearnerSelfReframe a owl:Class ;
+  rdfs:subClassOf ms:LearnerUptake ;
+  rdfs:comment "A learner-owned public reframe that contrasts the old warrant/check, its limit, the new warrant/check, and applies the new warrant in domain language." .
+ms:CompleteLearnerSelfReframe a owl:Class ;
+  rdfs:subClassOf ms:LearnerSelfReframe ;
+  rdfs:comment "A self-reframe with old warrant, warrant limit, new warrant, and application all publicly present." .
 
 ms:EvidenceBoundHypothesis a owl:Class ;
   rdfs:comment "A tutor hypothesis licensed by quoted or otherwise inspectable evidence from the public transcript or allowed held-out state." .
@@ -101,6 +110,8 @@ ms:hasLearnerSignal a owl:ObjectProperty ; rdfs:range ms:LearnerSignal .
 ms:hasTutorHypothesis a owl:ObjectProperty ; rdfs:range ms:EvidenceBoundHypothesis .
 ms:hasTutorAction a owl:ObjectProperty ; rdfs:range ms:TutorPublicMove .
 ms:hasLearnerMove a owl:ObjectProperty ; rdfs:range ms:LearnerPublicMove .
+ms:hasLearnerActionalApplication a owl:ObjectProperty ; rdfs:range ms:LearnerActionalApplication .
+ms:hasLearnerSelfReframe a owl:ObjectProperty ; rdfs:range ms:LearnerSelfReframe .
 ms:hasTutorRevision a owl:ObjectProperty ; rdfs:range ms:TutorRevision .
 
 ms:respondsTo a owl:ObjectProperty ; rdfs:domain ms:PublicMove ; rdfs:range ms:LearnerSignal .
@@ -111,6 +122,18 @@ ms:selectedBecauseOf a owl:ObjectProperty .
 ms:elicitsUptake a owl:ObjectProperty ; rdfs:domain ms:TutorPublicMove ; rdfs:range ms:LearnerUptake .
 ms:observesUptake a owl:ObjectProperty ; rdfs:range ms:LearnerUptake .
 ms:accountableTo a owl:ObjectProperty ; rdfs:domain ms:TutorRevision ; rdfs:range ms:LearnerUptake .
+ms:namesOldWarrant a owl:DatatypeProperty ;
+  rdfs:domain ms:LearnerSelfReframe ;
+  rdfs:range xsd:string .
+ms:namesWarrantLimit a owl:DatatypeProperty ;
+  rdfs:domain ms:LearnerSelfReframe ;
+  rdfs:range xsd:string .
+ms:namesNewWarrant a owl:DatatypeProperty ;
+  rdfs:domain ms:LearnerSelfReframe ;
+  rdfs:range xsd:string .
+ms:appliesNewWarrant a owl:DatatypeProperty ;
+  rdfs:domain ms:LearnerSelfReframe ;
+  rdfs:range xsd:string .
 
 ms:asksForReason a owl:ObjectProperty ; rdfs:domain ms:PublicMove ; rdfs:range ms:Commitment .
 ms:offersReasonFor a owl:ObjectProperty ; rdfs:domain ms:PublicMove ; rdfs:range ms:Commitment .

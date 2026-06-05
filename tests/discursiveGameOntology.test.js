@@ -37,6 +37,15 @@ ms:tutorMove1 rdf:type ms:TutorPublicMove, ms:RepairMove ;
 ms:uptake1 rdf:type ms:LearnerContest ;
   ms:offersReasonFor ms:commitment1 .
 
+ms:application1 rdf:type ms:LearnerActionalApplication ;
+  ms:offersReasonFor ms:commitment1 .
+
+ms:selfReframe1 rdf:type ms:LearnerSelfReframe ;
+  ms:namesOldWarrant "I was using the spacing as the check." ;
+  ms:namesWarrantLimit "The spacing does not explain why the decimal counts as mass." ;
+  ms:namesNewWarrant "The number-only gate checks number type rather than word label." ;
+  ms:appliesNewWarrant "6 goes under atomic number and 12.01 goes under atomic mass." .
+
 ms:revision1 rdf:type ms:TutorRevision ;
   ms:accountableTo ms:uptake1 ;
   ms:changesRoleView ms:ThinkingPartner ;
@@ -46,6 +55,8 @@ ms:episode1 ms:hasLearnerSignal ms:signal1 ;
   ms:hasTutorHypothesis ms:hypothesis1 ;
   ms:hasTutorAction ms:tutorMove1 ;
   ms:observesUptake ms:uptake1 ;
+  ms:hasLearnerActionalApplication ms:application1 ;
+  ms:hasLearnerSelfReframe ms:selfReframe1 ;
   ms:hasTutorRevision ms:revision1 .`;
 
   const result = await checkAboxConsistency(abox, {
@@ -56,10 +67,49 @@ ms:episode1 ms:hasLearnerSignal ms:signal1 ;
   assert.equal(result.consistent, true);
   assertClosureTriple(result.closureText, 'episode1', 'a', 'AccountableScorekeepingEpisode');
   assertClosureTriple(result.closureText, 'episode1', 'a', 'DyadicRevision');
+  assertClosureTriple(result.closureText, 'selfReframe1', 'a', 'CompleteLearnerSelfReframe');
   assertClosureTriple(result.closureText, 'tutorMove1', 'a', 'ResponsiveMove');
   assertClosureTriple(result.closureText, 'tutorMove1', 'a', 'AccountableRepair');
   assertClosureTriple(result.closureText, 'tutorMove1', 'ms:participatesInGame', 'ObjectCheckGame');
   assertClosureTriple(result.closureText, 'revision1', 'a', 'AccountableTutorRevision');
+});
+
+test('discursive-game ontology with actional uptake but no self-reframe does not derive dyadic revision', async () => {
+  const abox = `${ABOX_PREFIXES}
+ms:signal3 rdf:type ms:BreakdownSignal ;
+  ms:hasEvidenceText "The arrowheads are not enough for the check." .
+
+ms:hypothesis3 rdf:type ms:EvidenceBoundHypothesis ;
+  ms:licensedByEvidence ms:signal3 ;
+  ms:supportedByQuote "The arrowheads are not enough for the check." .
+
+ms:tutorMove3 rdf:type ms:TutorPublicMove ;
+  ms:respondsTo ms:signal3 ;
+  ms:licensedByEvidence ms:signal3 ;
+  ms:elicitsUptake ms:application3 .
+
+ms:application3 rdf:type ms:LearnerActionalApplication ;
+  ms:offersReasonFor ms:commitment3 .
+
+ms:revision3 rdf:type ms:TutorRevision ;
+  ms:accountableTo ms:application3 ;
+  ms:changesRoleView ms:ThinkingPartner .
+
+ms:episode3 ms:hasLearnerSignal ms:signal3 ;
+  ms:hasTutorHypothesis ms:hypothesis3 ;
+  ms:hasTutorAction ms:tutorMove3 ;
+  ms:observesUptake ms:application3 ;
+  ms:hasLearnerActionalApplication ms:application3 ;
+  ms:hasTutorRevision ms:revision3 .`;
+
+  const result = await checkAboxConsistency(abox, {
+    modules: ['reasoning', 'poetics', 'discursive', 'consistency'],
+    includeClosure: true,
+  });
+
+  assert.equal(result.consistent, true);
+  assertClosureTriple(result.closureText, 'episode3', 'a', 'AccountableScorekeepingEpisode');
+  assert.doesNotMatch(result.closureText, /ms:episode3 a ms:DyadicRevision\./);
 });
 
 test('discursive repair without uptake stays marked as no-credit repair', async () => {

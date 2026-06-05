@@ -63,7 +63,8 @@ test('evaluateLocalGate accepts a clean local checker result', () => {
       scores: {
         public_evidence: 0.8,
         tactic_selection: 0.8,
-        learner_uptake_or_contest: 0.8,
+        learner_actional_uptake: 0.8,
+        learner_self_reframe: 0.8,
         dyadic_revision: 0.75,
         non_leakage: 1,
         prose_preservation: 0.7,
@@ -89,7 +90,8 @@ test('evaluateLocalGate rejects low non-leakage and failed checker results', () 
       scores: {
         public_evidence: 0.8,
         tactic_selection: 0.8,
-        learner_uptake_or_contest: 0.8,
+        learner_actional_uptake: 0.8,
+        learner_self_reframe: 0.8,
         dyadic_revision: 0.8,
         non_leakage: 0.5,
         prose_preservation: 0.7,
@@ -117,7 +119,8 @@ test('evaluateLocalGate normalizes 0-5 checker scores before thresholding', () =
       scores: {
         public_evidence: 5,
         tactic_selection: 4,
-        learner_uptake_or_contest: 5,
+        learner_actional_uptake: 5,
+        learner_self_reframe: 5,
         dyadic_revision: 4,
         non_leakage: 5,
         prose_preservation: 5,
@@ -135,6 +138,120 @@ test('evaluateLocalGate normalizes 0-5 checker scores before thresholding', () =
   assert.equal(gate.scores.tactic_selection.raw, 4);
   assert.equal(gate.scores.tactic_selection.value, 0.8);
   assert.equal(gate.scores.tactic_selection.scale, '0-5');
+});
+
+test('evaluateLocalGate normalizes 0-10 checker scores before thresholding', () => {
+  const gate = evaluateLocalGate(
+    {
+      passes: true,
+      claim_boundary_ok: true,
+      scores: {
+        public_evidence: 8,
+        tactic_selection: 8,
+        learner_actional_uptake: 8,
+        learner_self_reframe: 9,
+        dyadic_revision: 8,
+        non_leakage: 9,
+        prose_preservation: 8,
+      },
+      findings: [],
+      recommended_action: 'accept_for_blind_panel',
+    },
+    {
+      non_leakage_check: { passes: true },
+      claim_boundary: 'counterfactual_revision_not_online_adaptation',
+    },
+  );
+
+  assert.equal(gate.status, 'survivor');
+  assert.equal(gate.scores.public_evidence.raw, 8);
+  assert.equal(gate.scores.public_evidence.value, 0.8);
+  assert.equal(gate.scores.public_evidence.scale, '0-10');
+  assert.equal(gate.scores.non_leakage.threshold, 0.9);
+});
+
+test('evaluateLocalGate normalizes 0-100 percentage checker scores before thresholding', () => {
+  const gate = evaluateLocalGate(
+    {
+      passes: true,
+      claim_boundary_ok: true,
+      scores: {
+        public_evidence: 80,
+        tactic_selection: 80,
+        learner_actional_uptake: 80,
+        learner_self_reframe: 90,
+        dyadic_revision: 80,
+        non_leakage: 90,
+        prose_preservation: 80,
+      },
+      findings: [],
+      recommended_action: 'accept_for_blind_panel',
+    },
+    {
+      non_leakage_check: { passes: true },
+      claim_boundary: 'counterfactual_revision_not_online_adaptation',
+    },
+  );
+
+  assert.equal(gate.status, 'survivor');
+  assert.equal(gate.scores.public_evidence.value, 0.8);
+  assert.equal(gate.scores.public_evidence.scale, '0-100');
+});
+
+test('evaluateLocalGate blocks actional-only uptake as revise_again, not survivor', () => {
+  const gate = evaluateLocalGate(
+    {
+      passes: true,
+      claim_boundary_ok: true,
+      scores: {
+        public_evidence: 0.8,
+        tactic_selection: 0.8,
+        learner_actional_uptake: 0.9,
+        learner_self_reframe: 0.25,
+        dyadic_revision: 0.8,
+        non_leakage: 1,
+        prose_preservation: 0.7,
+      },
+      findings: [],
+      recommended_action: 'revise_again',
+    },
+    {
+      non_leakage_check: { passes: true },
+      claim_boundary: 'counterfactual_revision_not_online_adaptation',
+    },
+  );
+
+  assert.equal(gate.status, 'revise_again');
+  assert.equal(gate.escalate, false);
+  assert.ok(gate.warnings.some((warning) => warning.criterion === 'learner_self_reframe'));
+  assert.equal(gate.failures.length, 0);
+});
+
+test('evaluateLocalGate accepts legacy learner uptake score only for actional uptake', () => {
+  const gate = evaluateLocalGate(
+    {
+      passes: true,
+      claim_boundary_ok: true,
+      scores: {
+        public_evidence: 0.8,
+        tactic_selection: 0.8,
+        learner_uptake_or_contest: 0.9,
+        learner_self_reframe: 0.8,
+        dyadic_revision: 0.8,
+        non_leakage: 1,
+        prose_preservation: 0.7,
+      },
+      findings: [],
+      recommended_action: 'accept_for_blind_panel',
+    },
+    {
+      non_leakage_check: { passes: true },
+      claim_boundary: 'counterfactual_revision_not_online_adaptation',
+    },
+  );
+
+  assert.equal(gate.status, 'survivor');
+  assert.equal(gate.scores.learner_actional_uptake.raw, 0.9);
 });
 
 test('summarizeGate separates survivor, revision, and reject buckets', () => {

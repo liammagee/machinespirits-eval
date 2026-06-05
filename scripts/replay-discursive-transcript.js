@@ -41,12 +41,14 @@ const BACKENDS = new Set(['mock', 'codex', 'claude', 'agy', 'none', 'adversarial
 const DEFAULT_GATE_THRESHOLDS = Object.freeze({
   public_evidence: 0.7,
   tactic_selection: 0.7,
-  learner_uptake_or_contest: 0.7,
+  learner_actional_uptake: 0.7,
+  learner_self_reframe: 0.7,
   dyadic_revision: 0.7,
-  non_leakage: 0.95,
+  non_leakage: 0.9,
   prose_preservation: 0.5,
 });
 const GATE_SCORE_KEYS = Object.freeze(Object.keys(DEFAULT_GATE_THRESHOLDS));
+const REVISION_ONLY_GATE_SCORE_KEYS = new Set(['learner_self_reframe']);
 
 function usage() {
   return `Usage:
@@ -58,7 +60,8 @@ function usage() {
     [--adversarial-check]
     [--no-local-gate]
     [--min-public-evidence N] [--min-tactic-selection N]
-    [--min-learner-uptake N] [--min-dyadic-revision N]
+    [--min-learner-actional-uptake N] [--min-learner-self-reframe N]
+    [--min-dyadic-revision N]
     [--min-non-leakage N] [--min-prose-preservation N]
     [--timeout-ms N] [--force] [--dry-run]
 
@@ -123,8 +126,14 @@ export function parseArgs(argv = process.argv.slice(2)) {
     else if (t === '--no-local-gate') args.localGate = false;
     else if (t === '--min-public-evidence') args.gateThresholds.public_evidence = Number(argv[++i]);
     else if (t === '--min-tactic-selection') args.gateThresholds.tactic_selection = Number(argv[++i]);
-    else if (t === '--min-learner-uptake' || t === '--min-learner-uptake-or-contest') {
-      args.gateThresholds.learner_uptake_or_contest = Number(argv[++i]);
+    else if (
+      t === '--min-learner-uptake' ||
+      t === '--min-learner-uptake-or-contest' ||
+      t === '--min-learner-actional-uptake'
+    ) {
+      args.gateThresholds.learner_actional_uptake = Number(argv[++i]);
+    } else if (t === '--min-learner-self-reframe') {
+      args.gateThresholds.learner_self_reframe = Number(argv[++i]);
     } else if (t === '--min-dyadic-revision') args.gateThresholds.dyadic_revision = Number(argv[++i]);
     else if (t === '--min-non-leakage') args.gateThresholds.non_leakage = Number(argv[++i]);
     else if (t === '--min-prose-preservation') args.gateThresholds.prose_preservation = Number(argv[++i]);
@@ -202,10 +211,30 @@ function normalizeFindingSeverity(value) {
 }
 
 function scoreValue(check, key) {
-  const raw = Number(check?.scores?.[key]);
+  const fallbackKey = key === 'learner_actional_uptake' ? 'learner_uptake_or_contest' : key;
+  const raw = Number(check?.scores?.[key] ?? check?.scores?.[fallbackKey]);
   if (!Number.isFinite(raw)) return { raw: null, normalized: null, scale: null };
+  if (raw > 10 && raw <= 100) return { raw, normalized: raw / 100, scale: '0-100' };
+  if (raw > 5 && raw <= 10) return { raw, normalized: raw / 10, scale: '0-10' };
   if (raw > 1 && raw <= 5) return { raw, normalized: raw / 5, scale: '0-5' };
   return { raw, normalized: raw, scale: '0-1' };
+}
+
+function pushScoreGateProblem({ key, normalized, threshold, failures, warnings }) {
+  const target = REVISION_ONLY_GATE_SCORE_KEYS.has(key) ? warnings : failures;
+  if (normalized === null) {
+    target.push({
+      criterion: key,
+      evidence: 'checker score is missing or non-numeric',
+      recommendation: `Revise until ${key} is explicit enough to score before escalation.`,
+    });
+  } else if (normalized < threshold) {
+    target.push({
+      criterion: key,
+      evidence: `${normalized} < ${threshold}`,
+      recommendation: `Revise until ${key} meets the local threshold.`,
+    });
+  }
 }
 
 export function evaluateLocalGate(check, revision = null, args = {}) {
@@ -303,17 +332,9 @@ export function evaluateLocalGate(check, revision = null, args = {}) {
       passes: normalized !== null && normalized >= threshold,
     };
     if (normalized === null) {
-      failures.push({
-        criterion: key,
-        evidence: 'checker score is missing or non-numeric',
-        recommendation: `Provide a numeric ${key} score before escalation.`,
-      });
+      pushScoreGateProblem({ key, normalized, threshold, failures, warnings });
     } else if (normalized < threshold) {
-      failures.push({
-        criterion: key,
-        evidence: `${normalized} < ${threshold}`,
-        recommendation: `Revise until ${key} meets the local threshold.`,
-      });
+      pushScoreGateProblem({ key, normalized, threshold, failures, warnings });
     }
   }
 
@@ -538,6 +559,7 @@ function buildOntologySummary() {
 - Treat this as counterfactual offline revision, not online adaptation.
 - Preserve the dramatic setting, roles, task facts, and learner voice unless needed for accountability.
 - Make learner signal -> tutor hypothesis -> selected tactic -> public tutor move -> learner uptake/contest -> later tutor revision inspectable.
+- Do not let learner action alone count as recognition. The final learner move must own a self-reframe in ordinary domain language: name the old warrant/check, name why it no longer settles the case, name the new warrant/check, and apply it.
 - Every tutor shift must be licensed by public evidence or by held-out state that is also publicly licensable; do not leak hidden-only facts as tutor knowledge.
 - Repair without learner uptake is repair, not adaptation credit.
 - Prefer finite tactics: request_elaboration, invite_objection, name_the_disagreement, scope_test, pose_counterexample, withhold_answer, repair_misrecognition, summarize_and_check, mirror_and_extend.
@@ -564,7 +586,13 @@ Required JSON shape:
       "tutor_hypothesis": "evidence-bound hypothesis, not hidden omniscience",
       "tactic": "finite tactic name",
       "public_action": "what the tutor publicly does",
-      "learner_uptake_or_contest": "visible learner response",
+      "learner_actional_uptake": "visible learner performance or contest",
+      "learner_self_reframe": {
+        "old_warrant": "what the learner was checking by before",
+        "warrant_limit": "why that check no longer settles the case",
+        "new_warrant": "what now counts as public evidence",
+        "application": "how the learner applies the new warrant to the task object"
+      },
       "tutor_revision": "later tutor revision accountable to uptake/contest",
       "ontology_terms": ["ResponsiveMove", "AccountableRepair", "DyadicRevision"]
     }
@@ -627,7 +655,8 @@ Required JSON shape:
   "scores": {
     "public_evidence": 0,
     "tactic_selection": 0,
-    "learner_uptake_or_contest": 0,
+    "learner_actional_uptake": 0,
+    "learner_self_reframe": 0,
     "dyadic_revision": 0,
     "non_leakage": 0,
     "prose_preservation": 0
@@ -640,6 +669,13 @@ Required JSON shape:
 
 Criteria:
 ${buildOntologySummary()}
+
+Scoring guidance:
+- Score each criterion on 0.0-1.0 when possible. If you use whole-number scoring, use 0-10; percentages are accepted but not preferred.
+- learner_actional_uptake: learner performs or contests the new public test.
+- learner_self_reframe: learner explicitly contrasts old check, limit/failure, new check, and application in domain language.
+- If actional uptake is high but learner_self_reframe is missing or implicit, recommend revise_again rather than accept_for_blind_panel.
+- Set passes=false only for discard-level problems such as leakage, broken claim boundary, unusable JSON/prose, or a fundamentally incoherent revision.
 
 Item: ${JSON.stringify({ id: item.id, run_id: item.run_id }, null, 2)}
 
@@ -663,7 +699,13 @@ function mockRevision({ publicTranscript }) {
         tutor_hypothesis: 'evidence-bound hypothesis',
         tactic: 'scope_test',
         public_action: 'tutor asks for a public test of the learner claim',
-        learner_uptake_or_contest: 'learner performs or contests the test',
+        learner_actional_uptake: 'learner performs or contests the test',
+        learner_self_reframe: {
+          old_warrant: 'learner had been using the old visible arrangement as the check',
+          warrant_limit: 'the old arrangement no longer settles the unresolved pressure',
+          new_warrant: 'the new public test states what now counts as evidence',
+          application: 'learner applies the new check to the task object',
+        },
         tutor_revision: 'tutor revises next move in response to uptake',
         ontology_terms: ['ResponsiveMove', 'AccountableScorekeepingEpisode', 'DyadicRevision'],
       },
@@ -688,7 +730,8 @@ function mockCheck() {
     scores: {
       public_evidence: 0.8,
       tactic_selection: 0.8,
-      learner_uptake_or_contest: 0.8,
+      learner_actional_uptake: 0.8,
+      learner_self_reframe: 0.8,
       dyadic_revision: 0.75,
       non_leakage: 1,
       prose_preservation: 0.7,

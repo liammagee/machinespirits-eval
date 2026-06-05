@@ -21,6 +21,15 @@
 { ?m a ms:RepairMove ; ms:addressesBreakdown ?b ; ms:elicitsUptake ?u. ?u a ms:LearnerUptake }
   => { ?m a ms:AccountableRepair } .
 
+# A learner self-reframe is complete only when it publicly names the prior check,
+# why that check failed, the replacement check, and applies the replacement.
+{ ?sr a ms:LearnerSelfReframe ;
+      ms:namesOldWarrant ?old ;
+      ms:namesWarrantLimit ?limit ;
+      ms:namesNewWarrant ?new ;
+      ms:appliesNewWarrant ?application }
+  => { ?sr a ms:CompleteLearnerSelfReframe } .
+
 # Positive no-credit marker: a repair that lacks uptake is repair, not adaptation.
 { ?m a ms:RepairMove ; ms:lacksUptake true }
   => { ?m a ms:RepairWithoutUptake } .
@@ -35,9 +44,14 @@
   => { ?e a ms:AccountableScorekeepingEpisode } .
 
 # Dyadic revision requires the accountable episode plus a later tutor revision
-# accountable to learner uptake/contest and a public role-view delta.
+# accountable to learner uptake/contest, learner actional application, learner
+# self-reframe, and a public role-view delta. Actional uptake alone is not enough.
 { ?e a ms:AccountableScorekeepingEpisode ;
      ms:observesUptake ?u ;
+     ms:hasLearnerActionalApplication ?app ;
+     ms:hasLearnerSelfReframe ?sr ;
      ms:hasTutorRevision ?r .
+  ?app a ms:LearnerActionalApplication .
+  ?sr a ms:CompleteLearnerSelfReframe .
   ?r a ms:TutorRevision ; ms:accountableTo ?u ; ms:changesRoleView ?rv }
   => { ?e a ms:DyadicRevision . ?r a ms:AccountableTutorRevision } .
