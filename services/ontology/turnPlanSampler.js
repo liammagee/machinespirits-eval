@@ -153,4 +153,77 @@ export async function sampleTurnPlan(targets = [], role = 'tutor', opts = {}) {
   return entry;
 }
 
-export default { moveCatalog, validMovesFor, sampleTurnPlan, agenciesForArchitecture };
+// Illustrative slot priors for the full-spec sampler. Lists may repeat a value to weight it.
+// (Not load-bearing — the validity guarantee is the turn_plan round-trip; these just fill slots.)
+const SPEC_PRIORS = {
+  tutorArch: ['ego_superego', 'ego_superego', 'ego_only', 'id_director'],
+  tutorPromptType: ['recognition', 'recognition', 'base', 'dialectical_suspicious'],
+  tutorSuperego: ['suspicious', 'standard', 'advocate'],
+  learnerArch: ['ego_superego_recognition_authentic', 'ego_superego', 'unified'],
+  persona: ['struggling_anxious', 'confused_novice', 'eager_explorer', 'focused_achiever', 'adversarial_tester'],
+  pedagogical: ['socratic_elenchus', 'worked_example', 'analogical_bridge'],
+  dialogue: ['aristotelian_reversal', 'dialectical'],
+  openingSpeaker: ['learner', 'tutor'],
+  maxTurns: [6, 7, 8],
+};
+
+// Stage 3: sample a FULL drama spec (drama / cast / audience / turn_plan). Slots are filled
+// from priors; the turn_plan is sampled per role CONDITIONED on the sampled cast architectures
+// (the alter-egos) and persona — so the spec is internally coherent (an ego_only tutor's
+// turn_plan has no route_change). Valid by construction: the turn_plan round-trips through
+// validateTurnPlan. Pass a brief via opts (topic/hamartia/targets/seed/...) to steer.
+export async function sampleDramaSpec(opts = {}) {
+  const targets = opts.targets && opts.targets.length ? opts.targets : ['peripeteia'];
+  const seed = opts.seed ?? `spec:${targets.join(',')}`;
+  const rng = mulberry32(seedFrom(seed));
+  const pick = (arr) => arr[Math.floor(rng() * arr.length)];
+  const tutorArch = opts.tutorArchitecture || pick(SPEC_PRIORS.tutorArch);
+  const learnerArch = opts.learnerArchitecture || pick(SPEC_PRIORS.learnerArch);
+  const persona = opts.persona || pick(SPEC_PRIORS.persona);
+  const maxTurns = opts.maxTurns || pick(SPEC_PRIORS.maxTurns);
+  const pivot = Math.max(2, Math.ceil(maxTurns / 2));
+
+  const drama = {
+    id: opts.id || `D_SAMPLED_${seedFrom(seed) % 100000}`,
+    targets,
+    topic: opts.topic || '<topic — fill in>',
+    hamartia: opts.hamartia || '<the misconception — fill in>',
+    tutor: {
+      prompt_type: pick(SPEC_PRIORS.tutorPromptType),
+      architecture: tutorArch,
+      superego_disposition: pick(SPEC_PRIORS.tutorSuperego),
+      recognition_mode: true,
+    },
+    learner: { persona, architecture: learnerArch },
+    pedagogical_approach: pick(SPEC_PRIORS.pedagogical),
+    dialogue_approach: pick(SPEC_PRIORS.dialogue),
+    scene: { opening_speaker: pick(SPEC_PRIORS.openingSpeaker), ending_speaker: 'learner' },
+    max_turns: maxTurns,
+  };
+  const cast = {
+    director: 'llm:api:sonnet',
+    tutor: 'llm:api:sonnet',
+    learner: 'llm:api:sonnet',
+    critic: 'llm:api:gpt',
+    default_backend: 'api',
+  };
+  const audience = { panel: ['gpt', 'deepseek-v4-pro', 'qwen3.7-max'], consensus: '2-of-3', grading: 'graded' };
+
+  const tutorTurn = await sampleTurnPlan(targets, 'tutor', {
+    agencies: agenciesForArchitecture(tutorArch),
+    persona,
+    seed: `${seed}:tutor`,
+    turn: pivot,
+  });
+  const learnerTurn = await sampleTurnPlan(targets, 'learner', {
+    agencies: agenciesForArchitecture(learnerArch),
+    persona,
+    seed: `${seed}:learner`,
+    turn: pivot,
+  });
+  const turn_plan = [tutorTurn, learnerTurn].filter((t) => t.moves.length); // drop empty (agency-gated) turns
+
+  return { drama, cast, audience, turn_plan };
+}
+
+export default { moveCatalog, validMovesFor, sampleTurnPlan, agenciesForArchitecture, sampleDramaSpec };

@@ -16,6 +16,7 @@ import { openPoeticsStore, upsertPoeticsLabel, upsertPoeticsReviewFlag } from '.
 import { classifyPoeticsConsensus, parseCriticFormString } from './lib/poeticsConsensus.js';
 import { ORIGIN_CLASSES, originCounts, recognitionOriginForScoreRow } from './lib/recognitionOrigin.js';
 import { validateTurnPlan } from '../services/ontology/reasoningOntology.js';
+import { sampleTurnPlan, agenciesForArchitecture } from '../services/ontology/turnPlanSampler.js';
 import { buildOntologyView, ALL_MODULES, DEFAULT_MODULES } from '../services/ontology/ontologyView.js';
 import {
   listReplayBundles,
@@ -924,6 +925,27 @@ function createPoeticsBrowserApp({ dbPath = null } = {}) {
       return res.status(400).json({ error: error.message || String(error) });
     }
   });
+  // The sampler walks the SAME ontology the validator checks: suggest a valid, varied turn
+  // for the given targets + role, conditioned on the tutor architecture (the alter-egos).
+  app.post('/api/compose/suggest', async (req, res) => {
+    try {
+      const body = req.body || {};
+      const targets = Array.isArray(body.targets) && body.targets.length ? body.targets : ['peripeteia'];
+      const role = ['tutor', 'learner', 'director'].includes(body.role) ? body.role : 'tutor';
+      const agencies = body.architecture ? agenciesForArchitecture(body.architecture) : undefined;
+      const entry = await sampleTurnPlan(targets, role, {
+        agencies,
+        persona: body.persona,
+        seed: String(body.seed || ''),
+      });
+      return res.json({
+        ok: true,
+        turn: { turn: entry.at?.turn ?? 3, role: entry.role, target: entry.target || '', moves: entry.moves },
+      });
+    } catch (error) {
+      return res.status(400).json({ error: error.message || String(error) });
+    }
+  });
   app.get('/ontology', (_req, res) => res.type('html').send(renderOntologyHtml()));
   app.get('/rubric', (_req, res) => res.type('html').send(renderRubricHtml()));
   app.get('/api/ontology', (req, res) => {
@@ -1661,7 +1683,7 @@ ${railHtml({ active: 'compose', brand: 'drama composer', sub: 'assemble a drama-
     </div></section>
     <section class="sec"><h3>Turn plan · per-turn adaptation moves</h3><div class="body one">
       <div id="turnPlan"></div>
-      <div class="addbar"><button type="button" class="btn" id="addTurn">+ add turn</button><span class="muted">⚠ anti-pattern moves are checked against the turn's target form by the ontology, live.</span></div>
+      <div class="addbar"><button type="button" class="btn" id="addTurn">+ add turn</button><button type="button" class="btn" id="suggestTurn" title="Sample a valid turn from the ontology, conditioned on the tutor architecture (alter-egos)">✨ suggest a turn</button><span class="muted">⚠ anti-pattern moves are checked against the turn's target form by the ontology, live.</span></div>
     </div></section>
   </form>
   <aside class="cside">
@@ -1816,6 +1838,14 @@ $('turnPlan').addEventListener('click', function(e){
   readTurnsFromDom(); turns.splice(rowIndex(e.target.closest('.turn-row')), 1); renderTurns(); scheduleValidate();
 });
 $('addTurn').addEventListener('click', function(){ readTurnsFromDom(); turns.push({ turn: turns.length ? turns[turns.length-1].turn : 1, role:'tutor', target:'', moves:[] }); renderTurns(); scheduleValidate(); });
+$('suggestTurn').addEventListener('click', async function(){
+  readTurnsFromDom();
+  var targets = Array.prototype.slice.call(document.querySelectorAll('.f-target:checked')).map(function(c){ return c.value; });
+  try {
+    var r = await postJson('/api/compose/suggest', { targets: targets, role: 'tutor', architecture: val('t-arch'), seed: 'suggest-' + turns.length + '-' + Date.now() });
+    if (r && r.turn) { turns.push(r.turn); renderTurns(); scheduleValidate(); }
+  } catch (e) { /* sampler unavailable; leave the plan unchanged */ }
+});
 $('writeBtn').addEventListener('click', function(){ write(false); });
 document.addEventListener('change', function(e){ if (e.target.closest('#cform') && !e.target.closest('#turnPlan')) scheduleValidate(); });
 document.addEventListener('input', function(e){ if (e.target.closest('#cform') && !e.target.closest('#turnPlan')) scheduleValidate(); });

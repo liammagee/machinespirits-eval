@@ -1,6 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { validMovesFor, sampleTurnPlan, agenciesForArchitecture } from '../services/ontology/turnPlanSampler.js';
+import {
+  validMovesFor,
+  sampleTurnPlan,
+  agenciesForArchitecture,
+  sampleDramaSpec,
+} from '../services/ontology/turnPlanSampler.js';
 import { validateTurnPlan } from '../services/ontology/reasoningOntology.js';
 
 // Stage 1 of the generative arc: the sampler walks the SAME ontology the critic scores.
@@ -96,4 +101,26 @@ test('conditioned plans still round-trip, and the persona prior caps the move co
     assert.ok(entry.moves.length >= 1 && entry.moves.length <= 2, `anxious persona caps count: ${entry.moves.length}`);
     assert.equal((await validateTurnPlan([entry], ['peripeteia'])).ok, true);
   }
+});
+
+// ── Stage 3: full drama spec ────────────────────────────────────────────────────────────────
+
+test('sampleDramaSpec emits a well-formed drama/cast/audience/turn_plan whose turn_plan round-trips', async () => {
+  const spec = await sampleDramaSpec({ targets: ['peripeteia'], seed: 'spec1', topic: 'logarithms' });
+  assert.ok(spec.drama && spec.cast && spec.audience && Array.isArray(spec.turn_plan));
+  assert.equal(spec.drama.topic, 'logarithms');
+  assert.ok(spec.drama.tutor.architecture && spec.drama.learner.persona);
+  assert.equal((await validateTurnPlan(spec.turn_plan, spec.drama.targets)).ok, true);
+});
+
+test('the spec is internally coherent: an ego_only tutor cannot get route_change in its turn_plan', async () => {
+  const spec = await sampleDramaSpec({ targets: ['peripeteia'], tutorArchitecture: 'ego_only', seed: 'coh' });
+  const tutorMoves = (spec.turn_plan.find((t) => t.role === 'tutor') || {}).moves || [];
+  assert.ok(!tutorMoves.includes('route_change'));
+});
+
+test('sampleDramaSpec is deterministic from the seed', async () => {
+  const a = await sampleDramaSpec({ targets: ['peripeteia'], seed: 'fixed' });
+  const b = await sampleDramaSpec({ targets: ['peripeteia'], seed: 'fixed' });
+  assert.deepEqual(a, b);
 });

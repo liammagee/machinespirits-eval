@@ -42,6 +42,17 @@ Fill remaining slots from priors. Vary draws by `--seed` (default: derive from t
 
 State the priors you used and which slots they filled.
 
+**Ontology-grounded sampling (preferred for the `turn_plan`).** The hand-priors above are the
+lightweight path; the principled one is the turn-plan sampler, which walks the SAME poetics
+TBox `validateTurnPlan` checks — `services/ontology/turnPlanSampler.js`
+(`sampleTurnPlan(targets, role, {agencies, persona, seed})` / `sampleDramaSpec({...})`),
+runnable as `npm run poetics:sample-turn-plan <role> <targets> <count> <architecture> <persona>`
+or via the composer's "✨ suggest a turn" button (`POST /api/compose/suggest`). It is **valid by
+construction** (round-trips through `validateTurnPlan`) and **conditioned on the cast's
+alter-egos**: an `ego_only` tutor cannot draw `route_change` (no superego mechanism-critic);
+a persona caps the move count. Prefer it for the `turn_plan`; use the hand-priors only for the
+slots it does not cover.
+
 ## 3. Validate
 
 1. **Slot values** against the TAXONOMY enums — reject any value not in the value space (or mark it free-text where the slot allows).
