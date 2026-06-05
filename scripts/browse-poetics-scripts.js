@@ -1237,6 +1237,8 @@ const NAV = [
 // identical .rail*/.rail__btn CSS, so this stays markup-only; the active link
 // gets aria-current + an inline accent (theme vars exist on every page) so no
 // page needs a bespoke active-state rule. Replaces five hand-maintained rails.
+// `extra` (e.g. /browse's live DB beacon) sits to the LEFT of the nav links so
+// the menu + theme-toggle cluster stays identical on every page, beacon or not.
 function railHtml({ active = '', brand = 'machine spirits', sub = '', extra = '' } = {}) {
   const links = NAV.map(([key, href, label, title]) => {
     const on = key === active;
@@ -1249,8 +1251,8 @@ function railHtml({ active = '', brand = 'machine spirits', sub = '', extra = ''
   <div class="rail__inner">
     <span class="rail__brand">${brand}</span>
     <span class="rail__sub">${sub}</span>
-    ${links}
-    ${extra}<button class="rail__btn" id="themeToggle" type="button">theme</button>
+    ${extra}${links}
+    <button class="rail__btn" id="themeToggle" type="button">theme</button>
   </div>
 </header>`;
 }
