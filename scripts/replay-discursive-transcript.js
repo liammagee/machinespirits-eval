@@ -36,6 +36,7 @@ const DEFAULT_TIMEOUT_MS = 360_000;
 const DEFAULT_AGY_TIMEOUT_MS = 600_000;
 const DEFAULT_CODEX_EFFORT = process.env.CODEX_REASONING_EFFORT || 'xhigh';
 const DEFAULT_AGY_BIN = process.env.AGY_BIN || path.join(os.homedir(), '.local/bin/agy');
+const DEFAULT_ITEM_CONCURRENCY = 2;
 
 const BACKENDS = new Set(['mock', 'codex', 'claude', 'agy', 'none', 'adversarial']);
 const DEFAULT_GATE_THRESHOLDS = Object.freeze({
@@ -63,38 +64,15 @@ function usage() {
     [--min-learner-actional-uptake N] [--min-learner-self-reframe N]
     [--min-dyadic-revision N]
     [--min-non-leakage N] [--min-prose-preservation N]
-    [--timeout-ms N] [--force] [--dry-run]
+    [--item-concurrency N] [--feedback-file path] [--timeout-ms N]
+    [--force] [--dry-run]
 
 Defaults are cost-safe: --generator mock --checker none.
 Use --checker adversarial to default to claude for codex rewrites, and codex for claude rewrites.`;
 }
 
 export function parseArgs(argv = process.argv.slice(2)) {
-  const args = {
-    db: DEFAULT_DB_PATH,
-    itemIds: [],
-    runId: null,
-    transcript: null,
-    key: null,
-    limit: 1,
-    outDir: null,
-    generator: 'mock',
-    checker: 'none',
-    checkerPolicy: null,
-    timeoutMs: DEFAULT_TIMEOUT_MS,
-    codexEffort: DEFAULT_CODEX_EFFORT,
-    codexModel: process.env.CODEX_MODEL || null,
-    claudeModel: process.env.CLAUDE_CODE_MODEL || null,
-    claudeEffort: process.env.CLAUDE_CODE_EFFORT || null,
-    agyBin: DEFAULT_AGY_BIN,
-    agyModelLabel: process.env.GEMINI_MODEL || 'gemini-3.5-flash',
-    localGate: true,
-    gateThresholds: { ...DEFAULT_GATE_THRESHOLDS },
-    publicMaxChars: 30_000,
-    innerMaxChars: 18_000,
-    force: false,
-    dryRun: false,
-  };
+  const args = defaultArgs();
 
   for (let i = 0; i < argv.length; i++) {
     const t = argv[i];
@@ -139,11 +117,59 @@ export function parseArgs(argv = process.argv.slice(2)) {
     else if (t === '--min-prose-preservation') args.gateThresholds.prose_preservation = Number(argv[++i]);
     else if (t === '--public-max-chars') args.publicMaxChars = Number(argv[++i]);
     else if (t === '--inner-max-chars') args.innerMaxChars = Number(argv[++i]);
+    else if (t === '--item-concurrency') args.itemConcurrency = Number(argv[++i]);
+    else if (t === '--feedback-file') args.feedbackFile = path.resolve(argv[++i]);
     else if (t === '--force') args.force = true;
     else if (t === '--dry-run') args.dryRun = true;
     else throw new Error(`unknown arg: ${t}\n\n${usage()}`);
   }
 
+  return finalizeArgs(args);
+}
+
+function defaultArgs() {
+  return {
+    db: DEFAULT_DB_PATH,
+    itemIds: [],
+    runId: null,
+    transcript: null,
+    key: null,
+    limit: 1,
+    outDir: null,
+    generator: 'mock',
+    checker: 'none',
+    checkerPolicy: null,
+    timeoutMs: DEFAULT_TIMEOUT_MS,
+    codexEffort: DEFAULT_CODEX_EFFORT,
+    codexModel: process.env.CODEX_MODEL || null,
+    claudeModel: process.env.CLAUDE_CODE_MODEL || null,
+    claudeEffort: process.env.CLAUDE_CODE_EFFORT || null,
+    agyBin: DEFAULT_AGY_BIN,
+    agyModelLabel: process.env.GEMINI_MODEL || 'gemini-3.5-flash',
+    localGate: true,
+    gateThresholds: { ...DEFAULT_GATE_THRESHOLDS },
+    publicMaxChars: 30_000,
+    innerMaxChars: 18_000,
+    itemConcurrency: DEFAULT_ITEM_CONCURRENCY,
+    feedbackFile: null,
+    feedbackByItem: {},
+    force: false,
+    dryRun: false,
+  };
+}
+
+function finalizeArgs(rawArgs) {
+  const args = {
+    ...defaultArgs(),
+    ...rawArgs,
+    itemIds: [...(rawArgs.itemIds || [])],
+    gateThresholds: {
+      ...DEFAULT_GATE_THRESHOLDS,
+      ...(rawArgs.gateThresholds || {}),
+    },
+    feedbackByItem: rawArgs.feedbackByItem || {},
+  };
+  if (args.help) return args;
   args.generator = normalizeBackend(args.generator);
   args.checker = normalizeBackend(args.checker);
   if (args.generator === 'none' || args.generator === 'adversarial') {
@@ -157,6 +183,9 @@ export function parseArgs(argv = process.argv.slice(2)) {
   if (!Number.isFinite(args.timeoutMs) || args.timeoutMs < 1) throw new Error('--timeout-ms must be positive');
   if (!Number.isFinite(args.publicMaxChars) || args.publicMaxChars < 500) throw new Error('--public-max-chars too small');
   if (!Number.isFinite(args.innerMaxChars) || args.innerMaxChars < 0) throw new Error('--inner-max-chars must be >= 0');
+  if (!Number.isInteger(args.itemConcurrency) || args.itemConcurrency < 1) {
+    throw new Error('--item-concurrency must be a positive integer');
+  }
   validateGateThresholds(args.gateThresholds);
   return args;
 }
@@ -569,7 +598,7 @@ function buildOntologySummary() {
 - Output JSON only.`;
 }
 
-export function buildRewritePrompt({ item, publicTranscript, heldOutContext, keyText, keyData }) {
+export function buildRewritePrompt({ item, publicTranscript, heldOutContext, keyText, keyData, feedbackText = '' }) {
   const systemPrompt = `You are a counterfactual transcript reviser for a research harness.
 
 You revise one existing public transcript copy to make accountable discursive adaptation more inspectable. You may use held-out inner state for diagnosis, but the revised public transcript must not reveal hidden-only facts unless the public transcript licenses them.
@@ -633,6 +662,9 @@ ${keyText ? keyText : '[none]'}
 Parsed key excerpt:
 ${keyData ? JSON.stringify(keyData, null, 2).slice(0, 6000) : '[none]'}
 
+Previous local/panel feedback for this item:
+${feedbackText ? feedbackText : '[none]'}
+
 Original public transcript:
 ${publicTranscript}
 
@@ -640,6 +672,16 @@ Held-out inner state / full transcript context:
 ${heldOutContext || '[none]'}`;
 
   return { systemPrompt, userPrompt };
+}
+
+function feedbackForItem(args, item) {
+  const direct = args.feedbackFile ? readText(args.feedbackFile) : '';
+  const byItem = args.feedbackByItem || {};
+  const candidates = [item.id, safeSlug(item.id), item.full_transcript_path, path.basename(item.full_transcript_path || '')]
+    .filter(Boolean)
+    .map((value) => String(value));
+  const mapped = candidates.map((key) => byItem[key]).find((value) => value != null);
+  return truncateMiddle(mapped || direct || '', args.innerMaxChars || 18_000);
 }
 
 export function buildCheckPrompt({ item, publicTranscript, revision }) {
@@ -1000,7 +1042,8 @@ async function replayOne(item, args, outDir) {
   }
   fs.mkdirSync(itemDir, { recursive: true });
 
-  const rewritePrompt = buildRewritePrompt({ item, publicTranscript, heldOutContext, keyText, keyData });
+  const feedbackText = feedbackForItem(args, item);
+  const rewritePrompt = buildRewritePrompt({ item, publicTranscript, heldOutContext, keyText, keyData, feedbackText });
   fs.writeFileSync(path.join(itemDir, 'original-public.txt'), rawPublic);
   fs.writeFileSync(path.join(itemDir, 'rewrite.prompt.txt'), `${rewritePrompt.systemPrompt}\n\n---\n\n${rewritePrompt.userPrompt}`);
 
@@ -1015,6 +1058,10 @@ async function replayOne(item, args, outDir) {
       localGate: args.localGate !== false,
       originalTranscriptPath: fullTranscriptPath,
       keyPath,
+      feedback: {
+        provided: Boolean(feedbackText),
+        sha256: feedbackText ? sha256Short(feedbackText) : null,
+      },
     };
   }
 
@@ -1062,6 +1109,10 @@ async function replayOne(item, args, outDir) {
     checkerPolicy: args.checkerPolicy || null,
     check: checker?.parsed || null,
     gate,
+    feedback: {
+      provided: Boolean(feedbackText),
+      sha256: feedbackText ? sha256Short(feedbackText) : null,
+    },
   };
   fs.writeFileSync(itemManifestPath, JSON.stringify(record, null, 2));
   return record;
@@ -1084,16 +1135,32 @@ function writeGateSummaryFiles(outDir, summary) {
   fs.writeFileSync(path.join(outDir, 'survivors.txt'), survivorPaths ? `${survivorPaths}\n` : '');
 }
 
+async function mapWithConcurrency(items, concurrency, fn) {
+  const results = new Array(items.length);
+  let next = 0;
+  const workerCount = Math.min(Math.max(1, concurrency), items.length || 1);
+  const workers = Array.from({ length: workerCount }, async () => {
+    while (next < items.length) {
+      const index = next++;
+      results[index] = await fn(items[index], index);
+    }
+  });
+  await Promise.all(workers);
+  return results;
+}
+
 export async function runReplay(rawArgs) {
-  const args = typeof rawArgs?.generator === 'string' ? rawArgs : parseArgs(rawArgs);
+  const args =
+    typeof rawArgs?.generator === 'string'
+      ? finalizeArgs({ itemConcurrency: DEFAULT_ITEM_CONCURRENCY, ...rawArgs })
+      : parseArgs(rawArgs);
   if (args.help) return { help: usage() };
   const outDir = args.outDir || defaultOutDir();
   fs.mkdirSync(outDir, { recursive: true });
   const items = loadItems(args);
-  const records = [];
-  for (const item of items) {
-    records.push(await replayOne(item, args, outDir));
-  }
+  const records = await mapWithConcurrency(items, args.itemConcurrency || DEFAULT_ITEM_CONCURRENCY, (item) =>
+    replayOne(item, args, outDir),
+  );
   const gateSummary = summarizeGate(records);
   writeGateSummaryFiles(outDir, gateSummary);
   const manifest = {
@@ -1103,6 +1170,7 @@ export async function runReplay(rawArgs) {
     generator: args.generator,
     checker: args.checker,
     checker_policy: args.checkerPolicy || null,
+    item_concurrency: args.itemConcurrency || DEFAULT_ITEM_CONCURRENCY,
     local_gate: {
       enabled: args.localGate !== false,
       thresholds: resolvedGateThresholds(args),

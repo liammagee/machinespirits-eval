@@ -51,8 +51,22 @@ test('parseArgs resolves adversarial checker policy from generator', () => {
   const codexArgs = parseArgs(['--transcript', '/tmp/T01.txt', '--generator', 'codex', '--checker', 'adversarial']);
   assert.equal(codexArgs.checker, 'claude');
   assert.equal(codexArgs.checkerPolicy, 'adversarial');
+  assert.equal(codexArgs.itemConcurrency, 2);
   assert.equal(adversarialCheckerFor('claude'), 'codex');
   assert.equal(adversarialCheckerFor('gemini'), 'codex');
+});
+
+test('parseArgs accepts explicit replay item concurrency and feedback file', () => {
+  const args = parseArgs([
+    '--transcript',
+    '/tmp/T01.txt',
+    '--item-concurrency',
+    '3',
+    '--feedback-file',
+    '/tmp/replay-feedback.txt',
+  ]);
+  assert.equal(args.itemConcurrency, 3);
+  assert.equal(args.feedbackFile, '/tmp/replay-feedback.txt');
 });
 
 test('evaluateLocalGate accepts a clean local checker result', () => {
@@ -312,10 +326,15 @@ The tutor privately notices a repair opportunity.`,
     itemIds: [],
     runId: null,
     db: path.join(tmp, 'missing.db'),
+    feedbackByItem: {
+      'T01.full': 'Blind panel failed: only 2/5 recognition votes; make the self-reframe public.',
+    },
   });
 
   assert.equal(result.manifest.count, 1);
+  assert.equal(result.manifest.item_concurrency, 2);
   const record = result.manifest.records[0];
+  assert.equal(record.feedback.provided, true);
   assert.ok(fs.existsSync(record.paths.revisedPublic));
   assert.ok(fs.existsSync(record.paths.revisionJson));
   assert.ok(fs.existsSync(record.paths.checkJson));
@@ -327,4 +346,8 @@ The tutor privately notices a repair opportunity.`,
   assert.ok(fs.existsSync(path.join(outDir, 'survivors.txt')));
   const revision = JSON.parse(fs.readFileSync(record.paths.revisionJson, 'utf8'));
   assert.equal(revision.claim_boundary, 'counterfactual_revision_not_online_adaptation');
+  assert.match(
+    fs.readFileSync(path.join(outDir, 'T01.full', 'rewrite.prompt.txt'), 'utf8'),
+    /Blind panel failed: only 2\/5 recognition votes/,
+  );
 });
