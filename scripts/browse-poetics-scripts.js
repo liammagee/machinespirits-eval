@@ -1240,6 +1240,47 @@ function railHtml({ active = '', brand = 'machine spirits', sub = '', extra = ''
 </header>`;
 }
 
+// ── Shared page chrome ────────────────────────────────────────────────────────
+// One source of truth for the theme tokens, resets, and the rail (nav) styling
+// that every dashboard page shares. Before this, each render*Html() inlined its
+// own copy of these ~13 lines and they had quietly drifted (e.g. body
+// line-height 1.6 vs 1.5). Centralising them here means the rail/menu looks
+// identical across home · compose · ontology · rubric · replays · runs, and any
+// future chrome change is a one-line edit. Page-specific CSS is passed in via
+// `css`. (The richer /browse page predates this and keeps its own bespoke
+// chrome — levelling the others up to it is the polish pass, not this refactor.)
+const BASE_CSS = `:root{ color-scheme: light dark; --paper:#F4EEDD; --paper-2:#ECE3CB; --paper-3:#F8F2E2; --paper-4:#FBF6E8; --ink:#14100C; --ink-2:#2C241B; --ink-3:#5C5040; --ink-4:#8C7E6A; --linen:#D8C7A9; --moss:#56683A; --moss-deep:#3A4824; --moss-soft:#E3E6CE; --brick:#A53E2E; --brick-d:#7C2C1F; --brick-soft:#F3DDD6; --ochre:#C08A3E; --ochre-d:#8C5F1F; --ochre-soft:#F5E6C2; --indigo:#5A6797; --indigo-soft:#E2E5F0; --rule:rgba(28,22,16,.18); --rule-soft:rgba(28,22,16,.10); }
+[data-theme="dark"]{ --paper:#14100C; --paper-2:#1B1612; --paper-3:#1F1A14; --paper-4:#221C16; --ink:#F4EEDD; --ink-2:#E0D8C3; --ink-3:#B9AD96; --ink-4:#8C7E6A; --linen:#3A322A; --moss:#8DA868; --moss-deep:#B5CD92; --moss-soft:#2C3520; --brick:#E36953; --brick-d:#F08A75; --brick-soft:#3A1C16; --ochre:#E6B265; --ochre-d:#F3CB88; --ochre-soft:#3A2C12; --indigo:#98A6D4; --indigo-soft:#1F2434; --rule:rgba(244,238,221,.18); --rule-soft:rgba(244,238,221,.08); }
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{ background:var(--paper); color:var(--ink); font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; }
+em{ font-style:italic; }
+code,pre{ font-family: ui-monospace,'SF Mono',Menlo,monospace; }
+.rail{ position:sticky; top:0; z-index:10; background:var(--paper-3); border-bottom:1px solid var(--rule); }
+.rail__inner{ display:flex; align-items:center; gap:14px; padding:10px 18px; }
+.rail__brand{ font-family:Georgia,serif; font-style:italic; font-size:18px; color:var(--moss-deep); }
+.rail__sub{ color:var(--ink-3); font-size:12px; flex:1; }
+.rail__arc,.rail__btn{ display:inline-flex; align-items:center; gap:6px; font:12px ui-monospace,monospace; text-decoration:none; color:var(--ink-2); border:1px solid var(--rule); padding:5px 10px; background:var(--paper-4); cursor:pointer; }
+.rail__arc{ color:#fff; background:var(--brick); border-color:var(--brick-d); }
+[data-theme="dark"] .rail__arc{ color:var(--paper); }`;
+
+// Emit the <!doctype>…</head> shell with the shared chrome + this page's own CSS.
+// Each render*Html() then continues with its <body>. Keeps every page's <head>
+// byte-identical (charset, viewport, theme tokens) without copy-paste.
+function pageHead({ title, css = '' } = {}) {
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${title}</title>
+<style>
+${BASE_CSS}
+${css}
+</style>
+</head>`;
+}
+
 // ── Dashboard front door (GET /) ──────────────────────────────────────────────
 // The app's introduction + onboarding. Renders live corpus stats server-side
 // (no fetch flash, works JS-off), a first-visit recognition banner, a five-rung
@@ -1407,26 +1448,9 @@ function renderDashboardHtml(stats = {}) {
       </section>`,
   ).join('');
 
-  return `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>machine spirits · poetics workbench</title>
-<style>
-:root{ color-scheme: light dark; --paper:#F4EEDD; --paper-2:#ECE3CB; --paper-3:#F8F2E2; --paper-4:#FBF6E8; --ink:#14100C; --ink-2:#2C241B; --ink-3:#5C5040; --ink-4:#8C7E6A; --linen:#D8C7A9; --moss:#56683A; --moss-deep:#3A4824; --moss-soft:#E3E6CE; --brick:#A53E2E; --brick-d:#7C2C1F; --brick-soft:#F3DDD6; --ochre:#C08A3E; --ochre-d:#8C5F1F; --ochre-soft:#F5E6C2; --indigo:#5A6797; --indigo-soft:#E2E5F0; --rule:rgba(28,22,16,.18); --rule-soft:rgba(28,22,16,.10); }
-[data-theme="dark"]{ --paper:#14100C; --paper-2:#1B1612; --paper-3:#1F1A14; --paper-4:#221C16; --ink:#F4EEDD; --ink-2:#E0D8C3; --ink-3:#B9AD96; --ink-4:#8C7E6A; --linen:#3A322A; --moss:#8DA868; --moss-deep:#B5CD92; --moss-soft:#2C3520; --brick:#E36953; --brick-d:#F08A75; --brick-soft:#3A1C16; --ochre:#E6B265; --ochre-d:#F3CB88; --ochre-soft:#3A2C12; --indigo:#98A6D4; --indigo-soft:#1F2434; --rule:rgba(244,238,221,.18); --rule-soft:rgba(244,238,221,.08); }
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{ background:var(--paper); color:var(--ink); font:14px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; }
-em{ font-style:italic; }
-.rail{ position:sticky; top:0; z-index:10; background:var(--paper-3); border-bottom:1px solid var(--rule); }
-.rail__inner{ display:flex; align-items:center; gap:14px; padding:10px 18px; }
-.rail__brand{ font-family:Georgia,serif; font-style:italic; font-size:18px; color:var(--moss-deep); }
-.rail__sub{ color:var(--ink-3); font-size:12px; flex:1; }
-.rail__arc,.rail__btn{ display:inline-flex; align-items:center; gap:6px; font:12px ui-monospace,monospace; text-decoration:none; color:var(--ink-2); border:1px solid var(--rule); padding:5px 10px; background:var(--paper-4); cursor:pointer; }
-.rail__arc{ color:#fff; background:var(--brick); border-color:var(--brick-d); }
-[data-theme="dark"] .rail__arc{ color:var(--paper); }
+  return `${pageHead({
+    title: 'machine spirits · poetics workbench',
+    css: `
 .wrap{ max-width:1080px; margin:0 auto; padding:0 22px 64px; }
 .welcome{ margin:18px 0 0; border:1px solid var(--moss); background:var(--moss-soft); padding:16px 18px; }
 .welcome__k{ font:600 11px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.08em; color:var(--moss-deep); }
@@ -1499,8 +1523,8 @@ h2.section{ font:600 13px/1 ui-monospace,monospace; text-transform:uppercase; le
 .reflect li b{ color:var(--moss-deep); }
 .muted{ color:var(--ink-4); font-style:italic; }
 .foot{ margin-top:32px; color:var(--ink-4); font:11px ui-monospace,monospace; }
-</style>
-</head>
+`,
+  })}
 <body>
 ${railHtml({ active: 'home', brand: 'machine spirits', sub: 'a drama-machine for tutoring — generate · score · recognize' })}
 <div class="wrap">
@@ -1613,26 +1637,9 @@ ${railHtml({ active: 'home', brand: 'machine spirits', sub: 'a drama-machine for
 
 function renderComposeHtml() {
   const V = COMPOSER_VOCAB;
-  return `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Drama Composer · poetics</title>
-<style>
-:root{ color-scheme: light dark; --paper:#F4EEDD; --paper-2:#ECE3CB; --paper-3:#F8F2E2; --paper-4:#FBF6E8; --ink:#14100C; --ink-2:#2C241B; --ink-3:#5C5040; --ink-4:#8C7E6A; --linen:#D8C7A9; --moss:#56683A; --moss-deep:#3A4824; --moss-soft:#E3E6CE; --brick:#A53E2E; --brick-d:#7C2C1F; --brick-soft:#F3DDD6; --ochre:#C08A3E; --ochre-d:#8C5F1F; --ochre-soft:#F5E6C2; --indigo:#5A6797; --indigo-soft:#E2E5F0; --rule:rgba(28,22,16,.18); --rule-soft:rgba(28,22,16,.10); }
-[data-theme="dark"]{ --paper:#14100C; --paper-2:#1B1612; --paper-3:#1F1A14; --paper-4:#221C16; --ink:#F4EEDD; --ink-2:#E0D8C3; --ink-3:#B9AD96; --ink-4:#8C7E6A; --linen:#3A322A; --moss:#8DA868; --moss-deep:#B5CD92; --moss-soft:#2C3520; --brick:#E36953; --brick-d:#F08A75; --brick-soft:#3A1C16; --ochre:#E6B265; --ochre-d:#F3CB88; --ochre-soft:#3A2C12; --indigo:#98A6D4; --indigo-soft:#1F2434; --rule:rgba(244,238,221,.18); --rule-soft:rgba(244,238,221,.08); }
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{ background:var(--paper); color:var(--ink); font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; }
-code,pre{ font-family: ui-monospace,'SF Mono',Menlo,monospace; }
-.rail{ position:sticky; top:0; z-index:10; background:var(--paper-3); border-bottom:1px solid var(--rule); }
-.rail__inner{ display:flex; align-items:center; gap:14px; padding:10px 18px; }
-.rail__brand{ font-family:Georgia,serif; font-style:italic; font-size:18px; color:var(--moss-deep); }
-.rail__sub{ color:var(--ink-3); font-size:12px; flex:1; }
-.rail__arc,.rail__btn{ display:inline-flex; align-items:center; gap:6px; font:12px ui-monospace,monospace; text-decoration:none; color:var(--ink-2); border:1px solid var(--rule); padding:5px 10px; background:var(--paper-4); cursor:pointer; }
-.rail__arc{ color:#fff; background:var(--brick); border-color:var(--brick-d); }
-[data-theme="dark"] .rail__arc{ color:var(--paper); }
+  return `${pageHead({
+    title: 'Drama Composer · poetics',
+    css: `
 .compose{ display:grid; grid-template-columns: minmax(0,1.3fr) minmax(330px,.9fr); align-items:start; }
 @media (max-width:900px){ .compose{ grid-template-columns:1fr; } }
 .cform{ padding:18px 20px; display:flex; flex-direction:column; gap:16px; max-height:calc(100vh - 52px); overflow:auto; }
@@ -1675,8 +1682,8 @@ label.mini .t-turn{ width:56px; }
 .run-hint{ font:11px/1.5 ui-monospace,monospace; color:var(--ink-4); border-top:1px dashed var(--rule); padding-top:8px; }
 .muted{ color:var(--ink-4); font-style:italic; font-size:11px; }
 ${MODETABS_CSS}
-</style>
-</head>
+`,
+  })}
 <body>
 ${railHtml({ active: 'compose', brand: 'drama composer', sub: 'assemble a drama-machine spec · validated live against the poetics ontology' })}
 ${modeTabsHtml('spec')}
@@ -1939,27 +1946,11 @@ const MODETABS_CSS = `.modetabs{ display:flex; gap:3px; padding:9px 18px 0; back
 // "free preview" (mock deps) is on. Server engine: services/poetics/liveCompose.js.
 function renderComposeLiveHtml() {
   const V = COMPOSER_VOCAB;
-  return `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Live Compose · poetics</title>
-<style>
-:root{ color-scheme: light dark; --paper:#F4EEDD; --paper-2:#ECE3CB; --paper-3:#F8F2E2; --paper-4:#FBF6E8; --ink:#14100C; --ink-2:#2C241B; --ink-3:#5C5040; --ink-4:#8C7E6A; --linen:#D8C7A9; --moss:#56683A; --moss-deep:#3A4824; --moss-soft:#E3E6CE; --brick:#A53E2E; --brick-d:#7C2C1F; --brick-soft:#F3DDD6; --ochre:#C08A3E; --ochre-d:#8C5F1F; --ochre-soft:#F5E6C2; --indigo:#5A6797; --indigo-soft:#E2E5F0; --rule:rgba(28,22,16,.18); --rule-soft:rgba(28,22,16,.10); }
-[data-theme="dark"]{ --paper:#14100C; --paper-2:#1B1612; --paper-3:#1F1A14; --paper-4:#221C16; --ink:#F4EEDD; --ink-2:#E0D8C3; --ink-3:#B9AD96; --ink-4:#8C7E6A; --linen:#3A322A; --moss:#8DA868; --moss-deep:#B5CD92; --moss-soft:#2C3520; --brick:#E36953; --brick-d:#F08A75; --brick-soft:#3A1C16; --ochre:#E6B265; --ochre-d:#F3CB88; --ochre-soft:#3A2C12; --indigo:#98A6D4; --indigo-soft:#1F2434; --rule:rgba(244,238,221,.18); --rule-soft:rgba(244,238,221,.08); }
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{ background:var(--paper); color:var(--ink); font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; }
+  return `${pageHead({
+    title: 'Live Compose · poetics',
+    css: `
 code{ font-family: ui-monospace,'SF Mono',Menlo,monospace; background:rgba(127,127,127,.15); padding:0 3px; border-radius:3px; }
 kbd{ font:11px ui-monospace,monospace; background:var(--paper-2); border:1px solid var(--rule); border-bottom-width:2px; border-radius:4px; padding:1px 5px; color:var(--ink-2); }
-.rail{ position:sticky; top:0; z-index:10; background:var(--paper-3); border-bottom:1px solid var(--rule); }
-.rail__inner{ display:flex; align-items:center; gap:14px; padding:10px 18px; }
-.rail__brand{ font-family:Georgia,serif; font-style:italic; font-size:18px; color:var(--moss-deep); }
-.rail__sub{ color:var(--ink-3); font-size:12px; flex:1; }
-.rail__arc,.rail__btn{ display:inline-flex; align-items:center; gap:6px; font:12px ui-monospace,monospace; text-decoration:none; color:var(--ink-2); border:1px solid var(--rule); padding:5px 10px; background:var(--paper-4); cursor:pointer; }
-.rail__arc{ color:#fff; background:var(--brick); border-color:var(--brick-d); }
-[data-theme="dark"] .rail__arc{ color:var(--paper); }
 ${MODETABS_CSS}
 .live{ display:grid; grid-template-columns: minmax(0,1fr) 270px; align-items:start; max-width:1180px; margin:0 auto; }
 @media (max-width:900px){ .live{ grid-template-columns:1fr; } }
@@ -2023,8 +2014,8 @@ input[type=text],input[type=number],select{ width:100%; font:13px ui-monospace,m
 .spend__sub{ font:11px ui-monospace,monospace; color:var(--ink-4); }
 .saveres{ font:11px ui-monospace,monospace; color:var(--ink-3); min-height:14px; }
 .muted{ color:var(--ink-4); font-style:italic; }
-</style>
-</head>
+`,
+  })}
 <body>
 ${railHtml({
   active: 'compose',
@@ -2224,26 +2215,9 @@ function isSafeBundleName(name) {
 }
 
 function renderOntologyHtml() {
-  return `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ontology Atlas · poetics</title>
-<style>
-:root{ color-scheme: light dark; --paper:#F4EEDD; --paper-2:#ECE3CB; --paper-3:#F8F2E2; --paper-4:#FBF6E8; --ink:#14100C; --ink-2:#2C241B; --ink-3:#5C5040; --ink-4:#8C7E6A; --linen:#D8C7A9; --moss:#56683A; --moss-deep:#3A4824; --moss-soft:#E3E6CE; --brick:#A53E2E; --brick-d:#7C2C1F; --brick-soft:#F3DDD6; --ochre:#C08A3E; --ochre-d:#8C5F1F; --ochre-soft:#F5E6C2; --indigo:#5A6797; --indigo-soft:#E2E5F0; --rule:rgba(28,22,16,.18); --rule-soft:rgba(28,22,16,.10); }
-[data-theme="dark"]{ --paper:#14100C; --paper-2:#1B1612; --paper-3:#1F1A14; --paper-4:#221C16; --ink:#F4EEDD; --ink-2:#E0D8C3; --ink-3:#B9AD96; --ink-4:#8C7E6A; --linen:#3A322A; --moss:#8DA868; --moss-deep:#B5CD92; --moss-soft:#2C3520; --brick:#E36953; --brick-d:#F08A75; --brick-soft:#3A1C16; --ochre:#E6B265; --ochre-d:#F3CB88; --ochre-soft:#3A2C12; --indigo:#98A6D4; --indigo-soft:#1F2434; --rule:rgba(244,238,221,.18); --rule-soft:rgba(244,238,221,.08); }
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{ background:var(--paper); color:var(--ink); font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; }
-code,pre{ font-family: ui-monospace,'SF Mono',Menlo,monospace; }
-.rail{ position:sticky; top:0; z-index:10; background:var(--paper-3); border-bottom:1px solid var(--rule); }
-.rail__inner{ display:flex; align-items:center; gap:14px; padding:10px 18px; }
-.rail__brand{ font-family:Georgia,serif; font-style:italic; font-size:18px; color:var(--moss-deep); }
-.rail__sub{ color:var(--ink-3); font-size:12px; flex:1; }
-.rail__arc,.rail__btn{ display:inline-flex; align-items:center; gap:6px; font:12px ui-monospace,monospace; text-decoration:none; color:var(--ink-2); border:1px solid var(--rule); padding:5px 10px; background:var(--paper-4); cursor:pointer; }
-.rail__arc{ color:#fff; background:var(--brick); border-color:var(--brick-d); }
-[data-theme="dark"] .rail__arc{ color:var(--paper); }
+  return `${pageHead({
+    title: 'Ontology Atlas · poetics',
+    css: `
 .controls{ position:sticky; top:51px; z-index:9; display:flex; flex-wrap:wrap; align-items:center; gap:10px 18px; padding:10px 18px; background:var(--paper-2); border-bottom:1px solid var(--rule); }
 .lenses{ display:inline-flex; border:1px solid var(--rule); }
 .lens{ font:12px ui-monospace,monospace; padding:6px 14px; background:var(--paper-4); color:var(--ink-2); border:0; border-right:1px solid var(--rule); cursor:pointer; }
@@ -2291,8 +2265,8 @@ button.chip{ font:12px ui-monospace,monospace; cursor:default; }
 .src h4{ margin:0 0 4px; font:600 12px ui-monospace,monospace; color:var(--ink-2); }
 .src pre{ margin:0 0 8px; padding:10px; background:var(--paper-3); border:1px solid var(--rule); font:11px/1.5 ui-monospace,monospace; color:var(--ink-2); white-space:pre-wrap; max-height:340px; overflow:auto; }
 .loading{ color:var(--ink-4); font-style:italic; padding:24px; }
-</style>
-</head>
+`,
+  })}
 <body>
 ${railHtml({ active: 'ontology', brand: 'ontology atlas', sub: 'the shared TBox · system-wide, and the tutor &amp; learner role projections' })}
 <div class="controls">
@@ -2543,24 +2517,9 @@ function renderRubricHtml() {
     ? `<div class="blurb" style="border-left-color:var(--brick);background:var(--brick-soft)">could not load the rubric: ${e(rubric.__error)}</div>`
     : '';
 
-  return `<!doctype html>
-<html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>poetics rubric · machine spirits</title>
-<style>
-:root{ color-scheme: light dark; --paper:#F4EEDD; --paper-2:#ECE3CB; --paper-3:#F8F2E2; --paper-4:#FBF6E8; --ink:#14100C; --ink-2:#2C241B; --ink-3:#5C5040; --ink-4:#8C7E6A; --linen:#D8C7A9; --moss:#56683A; --moss-deep:#3A4824; --moss-soft:#E3E6CE; --brick:#A53E2E; --brick-d:#7C2C1F; --brick-soft:#F3DDD6; --ochre:#C08A3E; --ochre-d:#8C5F1F; --ochre-soft:#F5E6C2; --indigo:#5A6797; --indigo-soft:#E2E5F0; --rule:rgba(28,22,16,.18); --rule-soft:rgba(28,22,16,.10); }
-[data-theme="dark"]{ --paper:#14100C; --paper-2:#1B1612; --paper-3:#1F1A14; --paper-4:#221C16; --ink:#F4EEDD; --ink-2:#E0D8C3; --ink-3:#B9AD96; --ink-4:#8C7E6A; --linen:#3A322A; --moss:#8DA868; --moss-deep:#B5CD92; --moss-soft:#2C3520; --brick:#E36953; --brick-d:#F08A75; --brick-soft:#3A1C16; --ochre:#E6B265; --ochre-d:#F3CB88; --ochre-soft:#3A2C12; --indigo:#98A6D4; --indigo-soft:#1F2434; --rule:rgba(244,238,221,.18); --rule-soft:rgba(244,238,221,.08); }
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{ background:var(--paper); color:var(--ink); font:14px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; }
-em{ font-style:italic; }
-.rail{ position:sticky; top:0; z-index:10; background:var(--paper-3); border-bottom:1px solid var(--rule); }
-.rail__inner{ display:flex; align-items:center; gap:14px; padding:10px 18px; }
-.rail__brand{ font-family:Georgia,serif; font-style:italic; font-size:18px; color:var(--moss-deep); }
-.rail__sub{ color:var(--ink-3); font-size:12px; flex:1; }
-.rail__arc,.rail__btn{ display:inline-flex; align-items:center; gap:6px; font:12px ui-monospace,monospace; text-decoration:none; color:var(--ink-2); border:1px solid var(--rule); padding:5px 10px; background:var(--paper-4); cursor:pointer; }
-.rail__arc{ color:#fff; background:var(--brick); border-color:var(--brick-d); }
-[data-theme="dark"] .rail__arc{ color:var(--paper); }
+  return `${pageHead({
+    title: 'poetics rubric · machine spirits',
+    css: `
 main{ max-width:900px; margin:0 auto; padding:22px 22px 64px; }
 .blurb{ font-size:13px; color:var(--ink-3); border-left:3px solid var(--moss); background:var(--moss-soft); padding:10px 14px; margin:0 0 18px; }
 .blurb a{ color:var(--moss-deep); }
@@ -2577,7 +2536,8 @@ h2.sec-h{ font:600 12px/1 ui-monospace,monospace; text-transform:uppercase; lett
 .dim__h .wt{ font:600 11px ui-monospace,monospace; color:var(--moss-deep); background:var(--moss-soft); border:1px solid var(--moss); padding:1px 7px; border-radius:9px; }
 .dim__desc{ margin:0; padding:11px 14px; color:var(--ink-2); }
 .crit{ border:0; border-top:1px solid var(--rule-soft); }
-</style></head>
+`,
+  })}
 <body>
 ${railHtml({ active: 'rubric', brand: 'poetics rubric', sub: 'the 6 dramatic-form dimensions critics score against' })}
 <main>
@@ -2616,26 +2576,9 @@ ${railHtml({ active: 'rubric', brand: 'poetics rubric', sub: 'the 6 dramatic-for
 // checker's findings, and — the conceptual payload — the hidden-state-use ledger that
 // licenses the claim boundary "counterfactual_revision_not_online_adaptation".
 function renderReplaysHtml() {
-  return `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Discursive Replays · poetics</title>
-<style>
-:root{ color-scheme: light dark; --paper:#F4EEDD; --paper-2:#ECE3CB; --paper-3:#F8F2E2; --paper-4:#FBF6E8; --ink:#14100C; --ink-2:#2C241B; --ink-3:#5C5040; --ink-4:#8C7E6A; --linen:#D8C7A9; --moss:#56683A; --moss-deep:#3A4824; --moss-soft:#E3E6CE; --brick:#A53E2E; --brick-d:#7C2C1F; --brick-soft:#F3DDD6; --ochre:#C08A3E; --ochre-d:#8C5F1F; --ochre-soft:#F5E6C2; --indigo:#5A6797; --indigo-soft:#E2E5F0; --rule:rgba(28,22,16,.18); --rule-soft:rgba(28,22,16,.10); }
-[data-theme="dark"]{ --paper:#14100C; --paper-2:#1B1612; --paper-3:#1F1A14; --paper-4:#221C16; --ink:#F4EEDD; --ink-2:#E0D8C3; --ink-3:#B9AD96; --ink-4:#8C7E6A; --linen:#3A322A; --moss:#8DA868; --moss-deep:#B5CD92; --moss-soft:#2C3520; --brick:#E36953; --brick-d:#F08A75; --brick-soft:#3A1C16; --ochre:#E6B265; --ochre-d:#F3CB88; --ochre-soft:#3A2C12; --indigo:#98A6D4; --indigo-soft:#1F2434; --rule:rgba(244,238,221,.18); --rule-soft:rgba(244,238,221,.08); }
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{ background:var(--paper); color:var(--ink); font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; }
-code,pre{ font-family: ui-monospace,'SF Mono',Menlo,monospace; }
-.rail{ position:sticky; top:0; z-index:10; background:var(--paper-3); border-bottom:1px solid var(--rule); }
-.rail__inner{ display:flex; align-items:center; gap:14px; padding:10px 18px; }
-.rail__brand{ font-family:Georgia,serif; font-style:italic; font-size:18px; color:var(--moss-deep); }
-.rail__sub{ color:var(--ink-3); font-size:12px; flex:1; }
-.rail__arc,.rail__btn{ display:inline-flex; align-items:center; gap:6px; font:12px ui-monospace,monospace; text-decoration:none; color:var(--ink-2); border:1px solid var(--rule); padding:5px 10px; background:var(--paper-4); cursor:pointer; }
-.rail__arc{ color:#fff; background:var(--brick); border-color:var(--brick-d); }
-[data-theme="dark"] .rail__arc{ color:var(--paper); }
+  return `${pageHead({
+    title: 'Discursive Replays · poetics',
+    css: `
 .controls{ position:sticky; top:51px; z-index:9; display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px; padding:9px 18px; background:var(--paper-2); border-bottom:1px solid var(--rule); }
 .controls label{ font:12px ui-monospace,monospace; color:var(--ink-3); display:inline-flex; align-items:center; gap:6px; }
 .controls select{ font:12px ui-monospace,monospace; background:var(--paper-4); color:var(--ink); border:1px solid var(--rule); padding:4px 8px; }
@@ -2706,8 +2649,8 @@ section.sec{ border:1px solid var(--rule); background:var(--paper-4); margin-bot
 .risk.high{ color:var(--brick-d); border-color:var(--brick); background:var(--brick-soft); }
 .muted{ color:var(--ink-4); font-style:italic; }
 .loading{ color:var(--ink-4); font-style:italic; padding:24px; }
-</style>
-</head>
+`,
+  })}
 <body>
 ${railHtml({ active: 'replays', brand: 'discursive replays', sub: 'counterfactual revisions of public transcripts · diffed against the originals &amp; locally gated' })}
 <div class="controls">
@@ -2940,26 +2883,9 @@ loadBundles();
 }
 
 function renderRunsHtml() {
-  return `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Run launcher · poetics</title>
-<style>
-:root{ color-scheme: light dark; --paper:#F4EEDD; --paper-2:#ECE3CB; --paper-3:#F8F2E2; --paper-4:#FBF6E8; --ink:#14100C; --ink-2:#2C241B; --ink-3:#5C5040; --ink-4:#8C7E6A; --linen:#D8C7A9; --moss:#56683A; --moss-deep:#3A4824; --moss-soft:#E3E6CE; --brick:#A53E2E; --brick-d:#7C2C1F; --brick-soft:#F3DDD6; --ochre:#C08A3E; --ochre-d:#8C5F1F; --ochre-soft:#F5E6C2; --indigo:#5A6797; --indigo-soft:#E2E5F0; --rule:rgba(28,22,16,.18); --rule-soft:rgba(28,22,16,.10); }
-[data-theme="dark"]{ --paper:#14100C; --paper-2:#1B1612; --paper-3:#1F1A14; --paper-4:#221C16; --ink:#F4EEDD; --ink-2:#E0D8C3; --ink-3:#B9AD96; --ink-4:#8C7E6A; --linen:#3A322A; --moss:#8DA868; --moss-deep:#B5CD92; --moss-soft:#2C3520; --brick:#E36953; --brick-d:#F08A75; --brick-soft:#3A1C16; --ochre:#E6B265; --ochre-d:#F3CB88; --ochre-soft:#3A2C12; --indigo:#98A6D4; --indigo-soft:#1F2434; --rule:rgba(244,238,221,.18); --rule-soft:rgba(244,238,221,.08); }
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{ background:var(--paper); color:var(--ink); font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; }
-code,pre{ font-family: ui-monospace,'SF Mono',Menlo,monospace; }
-.rail{ position:sticky; top:0; z-index:10; background:var(--paper-3); border-bottom:1px solid var(--rule); }
-.rail__inner{ display:flex; align-items:center; gap:14px; padding:10px 18px; }
-.rail__brand{ font-family:Georgia,serif; font-style:italic; font-size:18px; color:var(--moss-deep); }
-.rail__sub{ color:var(--ink-3); font-size:12px; flex:1; }
-.rail__arc,.rail__btn{ display:inline-flex; align-items:center; gap:6px; font:12px ui-monospace,monospace; text-decoration:none; color:var(--ink-2); border:1px solid var(--rule); padding:5px 10px; background:var(--paper-4); cursor:pointer; }
-.rail__arc{ color:#fff; background:var(--brick); border-color:var(--brick-d); }
-[data-theme="dark"] .rail__arc{ color:var(--paper); }
+  return `${pageHead({
+    title: 'Run launcher · poetics',
+    css: `
 .controls{ position:sticky; top:51px; z-index:9; display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; padding:9px 18px; background:var(--paper-2); border-bottom:1px solid var(--rule); }
 .tabs{ display:flex; gap:0; }
 .tab{ font:12px ui-monospace,monospace; color:var(--ink-3); border:1px solid var(--rule); border-right:0; padding:5px 12px; background:var(--paper-4); cursor:pointer; }
@@ -3022,8 +2948,8 @@ code,pre{ font-family: ui-monospace,'SF Mono',Menlo,monospace; }
 .muted{ color:var(--ink-4); font-style:italic; }
 .loading{ color:var(--ink-4); font-style:italic; padding:18px 0; }
 .tiny{ font:10px ui-monospace,monospace; color:var(--ink-4); }
-</style>
-</head>
+`,
+  })}
 <body>
 ${railHtml({ active: 'runs', brand: 'run launcher', sub: 'spawn generative · replay · adversarial-CLI · online-score runs — localhost only, no auth (deferred)' })}
 <div class="controls">
