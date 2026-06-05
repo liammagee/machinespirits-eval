@@ -35,6 +35,14 @@ const outPath =
   positional[1] ||
   `exports/timing-pair-bases-heldout-20260605${decoupling === 'postemption' ? '-postemption' : ''}.json`;
 
+// Authored matched neutrals (the C/D arms). Fall back to a flagged placeholder where absent.
+let authoredNeutrals = {};
+try {
+  authoredNeutrals = JSON.parse(fs.readFileSync('config/timing-pair-neutrals.json', 'utf8')).neutrals || {};
+} catch {
+  authoredNeutrals = {};
+}
+
 // Parse "ROLE: [action] \"speech\"" blocks (separated by blank lines) into role-tagged turns.
 function parseTranscript(txt) {
   const blocks = String(txt)
@@ -126,7 +134,8 @@ for (const id of candidates) {
     skipped.push({ id, reason: `no clean bridge (turns=${turns.length})` });
     continue;
   }
-  const neutralMove = neutralPlaceholder();
+  const authored = authoredNeutrals[id];
+  const neutralMove = authored || neutralPlaceholder();
   let built;
   try {
     built = generateTimingArms({ turns, tags, neutralMove, decoupling }); // self-validates (throws on bad tags)
@@ -147,7 +156,7 @@ for (const id of candidates) {
     pivotalMoveText: turns[tags.pivotalMove].text,
     pivotalMoveChars: turns[tags.pivotalMove].text.length,
     neutralMove,
-    neutralProvenance: 'templated-placeholder-REVIEW-BEFORE-PAID',
+    neutralProvenance: authored ? 'authored-matched' : 'templated-placeholder-REVIEW-BEFORE-PAID',
     arms: built.arms,
     invariants: built.invariants,
   });
