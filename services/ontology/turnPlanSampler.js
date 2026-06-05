@@ -27,6 +27,29 @@ const FORM_LOCAL = {
   hamartia_integration: 'HamartiaIntegration',
 };
 
+const AGENCY_LOCAL = { ego: 'Ego', superego: 'Superego', id: 'Id' };
+// Cast architecture -> the interior agencies the character HAS (the alter-egos present).
+const ARCH_AGENCIES = {
+  ego_only: ['ego'],
+  unified: ['ego'],
+  ego_superego: ['ego', 'superego'],
+  ego_superego_recognition: ['ego', 'superego'],
+  ego_superego_recognition_authentic: ['ego', 'superego'],
+  id_director: ['ego', 'superego', 'id'],
+};
+export function agenciesForArchitecture(arch) {
+  return ARCH_AGENCIES[String(arch || '').toLowerCase()] || ['ego', 'superego', 'id']; // unknown -> all present
+}
+// Generic persona prior on move COUNT (a context weight, not a per-move mapping): anxious/
+// novice personas take fewer moves; eager/adversarial take more. Validity is unchanged.
+const PERSONA_MAX = {
+  struggling_anxious: 2,
+  confused_novice: 2,
+  focused_achiever: 2,
+  eager_explorer: 3,
+  adversarial_tester: 3,
+};
+
 const pascalToSnake = (s) =>
   String(s)
     .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
@@ -72,7 +95,12 @@ export async function moveCatalog() {
   const moves = {};
   for (const q of quads) {
     if (q.predicate.value === TYPE && q.object.value === NS + 'AdaptationMove') {
-      moves[q.subject.value.replace(NS, '')] = { aims: new Set(), contra: new Set(), roles: new Set() };
+      moves[q.subject.value.replace(NS, '')] = {
+        aims: new Set(),
+        contra: new Set(),
+        roles: new Set(),
+        requires: new Set(),
+      };
     }
   }
   for (const q of quads) {
@@ -82,33 +110,42 @@ export async function moveCatalog() {
     if (q.predicate.value === NS + 'aimsAtForm') moves[s].aims.add(o);
     else if (q.predicate.value === NS + 'contraindicatesForm') moves[s].contra.add(o);
     else if (q.predicate.value === NS + 'performedByRole') moves[s].roles.add(o);
+    else if (q.predicate.value === NS + 'requiresAgency') moves[s].requires.add(o);
   }
   _catalog = moves;
   return moves;
 }
 
 // The valid move pool for a role + targets: performed by the role, serves >= 1 target,
-// contraindicates NONE (so a sampled plan can never trip R6). Returns snake_case names.
-export async function validMovesFor(role, targets = []) {
+// contraindicates NONE (so a sampled plan can never trip R6). When opts.agencies is given
+// (the alter-egos present, e.g. ['ego','superego']), a move requiring an ABSENT agency is
+// excluded — the alter-ego conditioning: an ego_only tutor cannot route_change (no superego
+// mechanism-critic to drive it). Returns snake_case names.
+export async function validMovesFor(role, targets = [], opts = {}) {
   const catalog = await moveCatalog();
   const roleClass = ROLE_CLASS[role] || null;
   const targetLocals = new Set((targets || []).map(formLocal));
+  const present = opts.agencies ? new Set(opts.agencies.map((a) => AGENCY_LOCAL[a] || a)) : null;
   const pool = [];
   for (const [m, info] of Object.entries(catalog)) {
     if (roleClass && !info.roles.has(roleClass)) continue;
     const serves = [...info.aims].some((f) => targetLocals.has(f));
     const conflicts = [...info.contra].some((f) => targetLocals.has(f));
-    if (serves && !conflicts) pool.push(pascalToSnake(m));
+    const agencyMissing = present && [...info.requires].some((a) => !present.has(a));
+    if (serves && !conflicts && !agencyMissing) pool.push(pascalToSnake(m));
   }
   return pool.sort();
 }
 
 // Sample ONE turn_plan entry: a varied, valid move-set for (role, targets), deterministic
-// from opts.seed. Valid by construction — round-trips through validateTurnPlan with ok=true.
+// from opts.seed. Conditioned on opts.agencies (alter-egos present — gates the pool) and
+// opts.persona (a generic context prior on move COUNT). Valid by construction — round-trips
+// through validateTurnPlan with ok=true.
 export async function sampleTurnPlan(targets = [], role = 'tutor', opts = {}) {
-  const pool = await validMovesFor(role, targets);
+  const pool = await validMovesFor(role, targets, opts);
   const rng = mulberry32(seedFrom(opts.seed ?? `${role}:${(targets || []).join(',')}`));
-  const max = Math.min(pool.length, opts.maxMoves ?? 3);
+  const cap = opts.persona && PERSONA_MAX[opts.persona] ? PERSONA_MAX[opts.persona] : (opts.maxMoves ?? 3);
+  const max = Math.min(pool.length, cap);
   const n = pool.length ? 1 + Math.floor(rng() * max) : 0;
   const moves = shuffle(pool, rng).slice(0, n).sort();
   const entry = { at: { turn: opts.turn ?? 3 }, role, moves };
@@ -116,4 +153,4 @@ export async function sampleTurnPlan(targets = [], role = 'tutor', opts = {}) {
   return entry;
 }
 
-export default { moveCatalog, validMovesFor, sampleTurnPlan };
+export default { moveCatalog, validMovesFor, sampleTurnPlan, agenciesForArchitecture };

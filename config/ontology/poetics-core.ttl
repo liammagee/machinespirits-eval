@@ -86,6 +86,8 @@ ms:performedByRole a owl:ObjectProperty ; rdfs:domain ms:AdaptationMove ; rdfs:r
 ms:hasRegister a owl:ObjectProperty ; rdfs:domain ms:AdaptationMove ; rdfs:range ms:MoveRegister .
 ms:respondsToTrigger a owl:ObjectProperty ; rdfs:range ms:ReversalTrigger .
 ms:hasInteriorAgency a owl:ObjectProperty ; rdfs:domain ms:Character ; rdfs:range ms:InteriorAgency .
+ms:requiresAgency a owl:ObjectProperty ; rdfs:domain ms:AdaptationMove ; rdfs:range ms:InteriorAgency ;
+  rdfs:comment "the interior agency that DRIVES this move (the adaptation-core correctsAgency channels: the tutor superego = mechanism critic drives route_change/action_gate; the learner superego = costume guard drives reframe/perform_device). A role lacking the agency cannot perform the move — this is the sampler's alter-ego conditioning." .
 ms:playedBy a owl:ObjectProperty ; rdfs:domain ms:DramaticRole ; rdfs:range ms:Caster .
 ms:scoredBy a owl:ObjectProperty ; rdfs:range ms:CriticPanel .
 
@@ -115,8 +117,8 @@ ms:Misfit a ms:ReversalTrigger .
 
 # Tutor moves
 ms:StockTake a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:hasRegister ms:Dramaturgical ; ms:hasRegister ms:Rhetorical ; ms:aimsAtForm ms:Peripeteia .
-ms:RouteChange a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:hasRegister ms:Dramaturgical ; ms:hasRegister ms:Rhetorical ; ms:aimsAtForm ms:Peripeteia .
-ms:ActionGate a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:hasRegister ms:Dramaturgical ; ms:aimsAtForm ms:Anagnorisis .
+ms:RouteChange a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:hasRegister ms:Dramaturgical ; ms:hasRegister ms:Rhetorical ; ms:aimsAtForm ms:Peripeteia ; ms:requiresAgency ms:Superego .
+ms:ActionGate a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:hasRegister ms:Dramaturgical ; ms:aimsAtForm ms:Anagnorisis ; ms:requiresAgency ms:Superego .
 ms:UptakeMove a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:hasRegister ms:Rhetorical ; ms:aimsAtForm ms:Peripeteia .
 ms:Meter a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:hasRegister ms:Rhetorical ; ms:aimsAtForm ms:Anagnorisis .
 ms:RecognitionPress a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:hasRegister ms:Dramaturgical ; ms:hasRegister ms:Rhetorical ; ms:aimsAtForm ms:Anagnorisis .
@@ -130,8 +132,8 @@ ms:Foreshadow a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:hasRegi
 # Learner moves
 ms:Revoice a ms:AdaptationMove ; ms:performedByRole ms:LearnerRole ; ms:hasRegister ms:Rhetorical .
 ms:Reconsider a ms:AdaptationMove ; ms:performedByRole ms:LearnerRole ; ms:hasRegister ms:Rhetorical .
-ms:Reframe a ms:AdaptationMove ; ms:performedByRole ms:LearnerRole ; ms:hasRegister ms:Dramaturgical ; ms:hasRegister ms:Rhetorical ; ms:aimsAtForm ms:Peripeteia .
-ms:PerformDevice a ms:AdaptationMove ; ms:performedByRole ms:LearnerRole ; ms:hasRegister ms:Dramaturgical ; ms:aimsAtForm ms:Anagnorisis .
+ms:Reframe a ms:AdaptationMove ; ms:performedByRole ms:LearnerRole ; ms:hasRegister ms:Dramaturgical ; ms:hasRegister ms:Rhetorical ; ms:aimsAtForm ms:Peripeteia ; ms:requiresAgency ms:Superego .
+ms:PerformDevice a ms:AdaptationMove ; ms:performedByRole ms:LearnerRole ; ms:hasRegister ms:Dramaturgical ; ms:aimsAtForm ms:Anagnorisis ; ms:requiresAgency ms:Superego .
 ms:VoiceMisfit a ms:AdaptationMove ; ms:performedByRole ms:LearnerRole ; ms:hasRegister ms:Dramaturgical ; ms:aimsAtForm ms:HamartiaIntegration .
 ms:GenuineAnagnorisis a ms:AdaptationMove ; ms:performedByRole ms:LearnerRole ; ms:hasRegister ms:Dramaturgical ; ms:hasRegister ms:Rhetorical ; ms:aimsAtForm ms:Anagnorisis .
 ms:Aporia a ms:AdaptationMove ; ms:performedByRole ms:LearnerRole ; ms:hasRegister ms:Rhetorical ; ms:aimsAtForm ms:HamartiaIntegration .

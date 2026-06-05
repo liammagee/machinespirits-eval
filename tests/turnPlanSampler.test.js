@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { validMovesFor, sampleTurnPlan } from '../services/ontology/turnPlanSampler.js';
+import { validMovesFor, sampleTurnPlan, agenciesForArchitecture } from '../services/ontology/turnPlanSampler.js';
 import { validateTurnPlan } from '../services/ontology/reasoningOntology.js';
 
 // Stage 1 of the generative arc: the sampler walks the SAME ontology the critic scores.
@@ -57,4 +57,43 @@ test('director moves are now form-typed: cue/pressure -> Peripeteia, interruptio
   const entry = await sampleTurnPlan(['peripeteia'], 'director', { seed: 'D' });
   assert.ok(entry.moves.length >= 1);
   assert.equal((await validateTurnPlan([entry], ['peripeteia'])).ok, true);
+});
+
+// ── Stage 2: alter-ego + context conditioning ──────────────────────────────────────────────
+
+test('agenciesForArchitecture maps the cast architecture to the interior agencies present', () => {
+  assert.deepEqual(agenciesForArchitecture('ego_only'), ['ego']);
+  assert.deepEqual(agenciesForArchitecture('ego_superego'), ['ego', 'superego']);
+  assert.deepEqual(agenciesForArchitecture('id_director'), ['ego', 'superego', 'id']);
+  assert.deepEqual(agenciesForArchitecture('???'), ['ego', 'superego', 'id']); // unknown -> all present
+});
+
+test('alter-ego conditioning: an ego_only tutor cannot route_change (no superego mechanism-critic), an ego_superego tutor can', async () => {
+  const egoOnly = await validMovesFor('tutor', ['peripeteia'], { agencies: agenciesForArchitecture('ego_only') });
+  const egoSuper = await validMovesFor('tutor', ['peripeteia'], { agencies: agenciesForArchitecture('ego_superego') });
+  assert.ok(!egoOnly.includes('route_change')); // requiresAgency Superego, absent
+  assert.ok(egoSuper.includes('route_change')); // superego present
+  assert.ok(egoOnly.includes('stock_take')); // ego-default move stays available
+});
+
+test('alter-ego conditioning applies to the learner too (reframe/perform_device need the superego costume-guard)', async () => {
+  const egoOnly = await validMovesFor('learner', ['anagnorisis'], { agencies: agenciesForArchitecture('ego_only') });
+  const egoSuper = await validMovesFor('learner', ['anagnorisis'], {
+    agencies: agenciesForArchitecture('ego_superego'),
+  });
+  assert.ok(!egoOnly.includes('perform_device')); // requiresAgency Superego
+  assert.ok(egoSuper.includes('perform_device'));
+  assert.ok(egoOnly.includes('genuine_anagnorisis')); // ego-default stays
+});
+
+test('conditioned plans still round-trip, and the persona prior caps the move count', async () => {
+  for (const arch of ['ego_only', 'ego_superego', 'id_director']) {
+    const entry = await sampleTurnPlan(['peripeteia'], 'tutor', {
+      agencies: agenciesForArchitecture(arch),
+      persona: 'struggling_anxious', // count prior: <= 2
+      seed: arch,
+    });
+    assert.ok(entry.moves.length >= 1 && entry.moves.length <= 2, `anxious persona caps count: ${entry.moves.length}`);
+    assert.equal((await validateTurnPlan([entry], ['peripeteia'])).ok, true);
+  }
 });
