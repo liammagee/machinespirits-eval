@@ -17,16 +17,52 @@
  */
 import { readFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
+import YAML from 'yaml';
 import { n3reasoner } from 'eyereasoner';
 import { Parser } from 'n3';
 import { loadSharedTBox } from '../services/ontology/reasoningOntology.js';
 import { summaryToAbox, extractTriggerConsumption } from '../services/ontology/adaptationAboxBridge.js';
-import { extractLearnerRepairText, latentManifestDivergence } from '../services/ontology/hamartiaRepairDetector.js';
+import {
+  extractLearnerRepairText,
+  latentManifestDivergence,
+  detectRepair,
+} from '../services/ontology/hamartiaRepairDetector.js';
+import { generateText, getAvailableProvider } from '../tutor-core/services/unifiedAIProviderService.js';
 
 const NS = 'https://machinespirits.dev/ontology/reasoning#';
+const args = process.argv.slice(2);
+const useLLM = args.includes('--llm');
 const statusPath =
-  process.argv[2] || 'exports/phase2-adaptation-recognition-loop-reverse-20260529T040243Z-loop-status.json';
+  args.find((a) => !a.startsWith('--')) ||
+  'exports/phase2-adaptation-recognition-loop-reverse-20260529T040243Z-loop-status.json';
 const cuts = { actionVoteCut: 3, recognitionVoteCut: 3, controlMaxRecognitionVotes: 1 };
+
+// --llm: the ROBUST per-text repair judge (a paid provider call). Otherwise the zero-API proxy.
+let callLLM = null;
+let hamartiae = {};
+if (useLLM) {
+  let provider = null;
+  try {
+    provider = getAvailableProvider();
+  } catch {
+    provider = null;
+  }
+  if (!provider) {
+    console.error('--llm: no provider available. Set OPENROUTER_API_KEY (e.g. `set -a; . ./.env; set +a`).');
+    process.exit(1);
+  }
+  callLLM = async (prompt) => {
+    const r = await generateText({ prompt });
+    return (r && (r.content || r.text || r.message)) || '';
+  };
+  try {
+    const spec = YAML.parse(readFileSync('config/poetics-calibration/phase2-classic-drama-adaptation-v1.yaml', 'utf8'));
+    const list = (spec && (spec.dramas || spec.target)) || [];
+    for (const d of Array.isArray(list) ? list : Object.values(list)) if (d && d.id) hamartiae[d.id] = d.hamartia || '';
+  } catch {
+    hamartiae = {};
+  }
+}
 const status = JSON.parse(readFileSync(statusPath, 'utf8'));
 
 function readDeliberation(cell) {
@@ -58,13 +94,22 @@ for (const cell of cells) {
   const txt = delib ? extractLearnerRepairText(delib) : null;
   const div = txt ? latentManifestDivergence(txt.publicText, txt.latentInitial) : null;
 
-  // Zero-API proxy: the learner reoriented PUBLICLY (recognition produced) and the hidden
-  // first-thought matches the public turn (latent not diverged) => durable; mismatch => costume.
+  // Repair detection. --llm: the robust per-text judge (does the text show the hamartia
+  // corrected?) on the public turn vs the hidden first-thought. Else the zero-API proxy
+  // (publicRepair = recognition produced; latentRepair = the hidden first-thought matches the public).
   const c = cell.consensus || {};
   const recognitionProduced =
     (c.claimStatus && c.claimStatus !== 'negative') || (c.recognitionVotes || 0) >= cuts.recognitionVoteCut;
-  const publicRepair = Boolean(recognitionProduced);
-  const latentRepair = div ? !div.diverged : false;
+  let publicRepair;
+  let latentRepair;
+  if (useLLM && txt) {
+    const h = hamartiae[cell.dramaId] || '';
+    publicRepair = await detectRepair(h, txt.publicText, { mode: 'llm', callLLM });
+    latentRepair = await detectRepair(h, txt.latentInitial || txt.latentFull, { mode: 'llm', callLLM });
+  } else {
+    publicRepair = Boolean(recognitionProduced);
+    latentRepair = div ? !div.diverged : false;
+  }
 
   aboxParts.push(lifted.ttl);
   if (publicRepair || latentRepair) {
@@ -148,14 +193,19 @@ console.log('\n' + '='.repeat(60));
 console.log(
   `Latent vs manifest (zero-API divergence): ${diverged}/${withText} cells — the learner's hidden first-thought diverges from the public turn (overlap < 0.5).`,
 );
-console.log(`Correction axis (PROXY detector — recognition=public, !diverged=latent; NOT an LLM content judgment):`);
+console.log(
+  useLLM
+    ? `Correction axis (LLM per-text repair judge on the public turn vs the hidden first-thought):`
+    : `Correction axis (PROXY — recognition=public, !diverged=latent; NOT a content judgment; pass --llm for the real judge):`,
+);
 console.log(
   `  costume repair (public-repair, latent-mismatch): ${costume} cell(s); repairWithoutRecognitionCredit: ${rwrc} cell(s).`,
 );
 console.log('\nHonest scope:');
-console.log('  • The proxy substitutes recognition+divergence for a content judgment of repair.');
-console.log('  • Robust upgrade: the detector llm mode (a per-text repair judge) is built + unit-tested');
-console.log('    via an injected callLLM; wiring THIS probe to the live provider (generateText) is the');
-console.log('    remaining step and needs an API key (none set here).');
+console.log(
+  useLLM
+    ? "  • --llm judges hamartia-repair in the public turn vs the learner's hidden first-thought (the concealment probe)."
+    : '  • The proxy substitutes recognition+divergence for a content judgment of repair; pass --llm for the real judge.',
+);
 console.log('  • Pre-registered P1 verdict (latent separable from surface?) needs the larger ego_superego');
 console.log('    corpus + bootstrap CIs (ADAPTATION-PLAN-2.0.md §6.10), not these 9 descriptive cells.');
