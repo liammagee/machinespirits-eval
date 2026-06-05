@@ -16,6 +16,22 @@ import { openPoeticsStore, upsertPoeticsLabel, upsertPoeticsReviewFlag } from '.
 import { classifyPoeticsConsensus, parseCriticFormString } from './lib/poeticsConsensus.js';
 import { ORIGIN_CLASSES, originCounts, recognitionOriginForScoreRow } from './lib/recognitionOrigin.js';
 import { validateTurnPlan } from '../services/ontology/reasoningOntology.js';
+import { buildOntologyView, ALL_MODULES, DEFAULT_MODULES } from '../services/ontology/ontologyView.js';
+import {
+  listReplayBundles,
+  readReplayBundle,
+  readReplayItem,
+  GATE_BUCKETS,
+} from '../services/poetics/replayBundles.js';
+import {
+  planJob,
+  launchJob,
+  listJobs,
+  getJob,
+  stopJob,
+  describeKinds,
+  COST_CLASSES,
+} from '../services/poetics/jobRunner.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
@@ -860,6 +876,70 @@ function createPoeticsBrowserApp({ dbPath = null } = {}) {
       return res.status(400).json({ error: error.message || String(error) });
     }
   });
+  app.get('/ontology', (_req, res) => res.type('html').send(renderOntologyHtml()));
+  app.get('/api/ontology', (req, res) => {
+    try {
+      const view = ['system', 'tutor', 'learner'].includes(req.query.view) ? req.query.view : 'system';
+      const modules = parseModulesParam(req.query.modules);
+      return res.json(buildOntologyView({ view, modules }));
+    } catch (error) {
+      return res.status(400).json({ error: error.message || String(error) });
+    }
+  });
+  app.get('/replays', (_req, res) => res.type('html').send(renderReplaysHtml()));
+  app.get('/api/replays', (_req, res) => res.json({ bundles: listReplayBundles() }));
+  app.get('/api/replays/:bundle', (req, res) => {
+    const name = req.params.bundle;
+    if (!isSafeBundleName(name)) return res.status(400).json({ error: 'invalid bundle name' });
+    const bundle = readReplayBundle(name);
+    if (!bundle) return res.status(404).json({ error: 'bundle not found' });
+    return res.json(bundle);
+  });
+  app.get('/api/replays/:bundle/item', (req, res) => {
+    const name = req.params.bundle;
+    const itemId = req.query.id;
+    if (!isSafeBundleName(name)) return res.status(400).json({ error: 'invalid bundle name' });
+    if (!itemId) return res.status(400).json({ error: 'missing item id' });
+    const item = readReplayItem(name, String(itemId));
+    if (!item) return res.status(404).json({ error: 'item not found' });
+    return res.json(item);
+  });
+
+  // ── Job launcher (POST surfaces spawn whitelisted CLI scripts) ──────────────
+  // Localhost-only, no auth (deferred per 2026-06-04 decision). The UI defaults
+  // every form to free/mock/dry-run; planJob previews the exact argv before any
+  // spawn, and metered/quota jobs are serialised by jobRunner's lock.
+  app.get('/runs', (_req, res) => res.type('html').send(renderRunsHtml()));
+  app.get('/api/jobs/kinds', (_req, res) => res.json({ kinds: describeKinds(), costClasses: COST_CLASSES }));
+  app.post('/api/jobs/plan', (req, res) => {
+    const { kind, params } = req.body || {};
+    try {
+      return res.json({ plan: planJob({ kind, params }) });
+    } catch (error) {
+      return res.status(400).json({ error: error.message || String(error) });
+    }
+  });
+  app.post('/api/jobs', (req, res) => {
+    const { kind, params } = req.body || {};
+    try {
+      const job = launchJob({ kind, params });
+      return res.status(201).json({ job });
+    } catch (error) {
+      if (error.code === 'SERIAL_BUSY') return res.status(409).json({ error: error.message });
+      return res.status(400).json({ error: error.message || String(error) });
+    }
+  });
+  app.get('/api/jobs', (_req, res) => res.json({ jobs: listJobs() }));
+  app.get('/api/jobs/:id', (req, res) => {
+    const job = getJob(req.params.id);
+    if (!job) return res.status(404).json({ error: 'job not found' });
+    return res.json({ job });
+  });
+  app.post('/api/jobs/:id/stop', (req, res) => {
+    const job = stopJob(req.params.id);
+    if (!job) return res.status(404).json({ error: 'job not found' });
+    return res.json({ job });
+  });
   app.get('/arc', (_req, res) => {
     const arcPath = path.resolve(ROOT, 'notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.html');
     if (!fs.existsSync(arcPath)) return res.status(404).type('text').send('arc note not found');
@@ -1067,6 +1147,9 @@ label.mini .t-turn{ width:56px; }
     <span class="rail__brand">drama composer</span>
     <span class="rail__sub">assemble a drama-machine spec · validated live against the poetics ontology</span>
     <a class="rail__arc" href="/" title="Back to the poetics script browser"><span>browser</span><span aria-hidden="true">→</span></a>
+    <a class="rail__btn" href="/ontology" title="View the shared ontology — system, tutor &amp; learner lenses">ontology</a>
+    <a class="rail__btn" href="/replays" title="Discursive replays — counterfactual revisions diffed against the originals">replays</a>
+    <a class="rail__btn" href="/runs" title="Launch runs — generative · replay · adversarial-CLI · online scoring">runs</a>
     <a class="rail__btn" href="/arc">arc</a>
     <button class="rail__btn" id="themeToggle" type="button">theme</button>
   </div>
@@ -1292,6 +1375,1005 @@ $('themeToggle').addEventListener('click', function(){
 try { if (localStorage.getItem('poetics-theme')==='dark') document.documentElement.setAttribute('data-theme','dark'); } catch (_e) {}
 renderTurns();
 validate();
+</script>
+</body>
+</html>`;
+}
+
+// ── Ontology atlas (GET /ontology) ────────────────────────────────────────────
+// A read-only viewer over the shared TBox (config/ontology/*.ttl), projected into
+// three lenses by services/ontology/ontologyView.js: `system` (the whole loaded
+// vocabulary), `tutor` and `learner` (the per-role projections — moves, role-scoped
+// classes, interior agencies, and the decision/state layers). Module toggles let a
+// reader scope the view; a source panel shows the raw TTL + N3 rules per module.
+
+// CSV `modules` query param -> validated module list (unknown names dropped; empty
+// falls back to the default set). Mirrors loadModuleSources' validation contract.
+function parseModulesParam(value) {
+  if (value == null || value === '') return DEFAULT_MODULES;
+  const requested = String(value)
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .filter((name) => ALL_MODULES.includes(name));
+  return requested.length ? requested : DEFAULT_MODULES;
+}
+
+// Replay bundle names are timestamped slugs (e.g. codex-rewrite-claude-check-T15-…);
+// since the model does path.join(REPLAYS_DIR, name), reject anything that isn't a
+// flat slug so a request can't traverse out with `..` or an absolute path.
+function isSafeBundleName(name) {
+  return typeof name === 'string' && /^[A-Za-z0-9._-]+$/u.test(name) && name !== '.' && name !== '..';
+}
+
+function renderOntologyHtml() {
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ontology Atlas · poetics</title>
+<style>
+:root{ color-scheme: light dark; --paper:#F4EEDD; --paper-2:#ECE3CB; --paper-3:#F8F2E2; --paper-4:#FBF6E8; --ink:#14100C; --ink-2:#2C241B; --ink-3:#5C5040; --ink-4:#8C7E6A; --linen:#D8C7A9; --moss:#56683A; --moss-deep:#3A4824; --moss-soft:#E3E6CE; --brick:#A53E2E; --brick-d:#7C2C1F; --brick-soft:#F3DDD6; --ochre:#C08A3E; --ochre-d:#8C5F1F; --ochre-soft:#F5E6C2; --indigo:#5A6797; --indigo-soft:#E2E5F0; --rule:rgba(28,22,16,.18); --rule-soft:rgba(28,22,16,.10); }
+[data-theme="dark"]{ --paper:#14100C; --paper-2:#1B1612; --paper-3:#1F1A14; --paper-4:#221C16; --ink:#F4EEDD; --ink-2:#E0D8C3; --ink-3:#B9AD96; --ink-4:#8C7E6A; --linen:#3A322A; --moss:#8DA868; --moss-deep:#B5CD92; --moss-soft:#2C3520; --brick:#E36953; --brick-d:#F08A75; --brick-soft:#3A1C16; --ochre:#E6B265; --ochre-d:#F3CB88; --ochre-soft:#3A2C12; --indigo:#98A6D4; --indigo-soft:#1F2434; --rule:rgba(244,238,221,.18); --rule-soft:rgba(244,238,221,.08); }
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{ background:var(--paper); color:var(--ink); font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; }
+code,pre{ font-family: ui-monospace,'SF Mono',Menlo,monospace; }
+.rail{ position:sticky; top:0; z-index:10; background:var(--paper-3); border-bottom:1px solid var(--rule); }
+.rail__inner{ display:flex; align-items:center; gap:14px; padding:10px 18px; }
+.rail__brand{ font-family:Georgia,serif; font-style:italic; font-size:18px; color:var(--moss-deep); }
+.rail__sub{ color:var(--ink-3); font-size:12px; flex:1; }
+.rail__arc,.rail__btn{ display:inline-flex; align-items:center; gap:6px; font:12px ui-monospace,monospace; text-decoration:none; color:var(--ink-2); border:1px solid var(--rule); padding:5px 10px; background:var(--paper-4); cursor:pointer; }
+.rail__arc{ color:#fff; background:var(--brick); border-color:var(--brick-d); }
+[data-theme="dark"] .rail__arc{ color:var(--paper); }
+.controls{ position:sticky; top:51px; z-index:9; display:flex; flex-wrap:wrap; align-items:center; gap:10px 18px; padding:10px 18px; background:var(--paper-2); border-bottom:1px solid var(--rule); }
+.lenses{ display:inline-flex; border:1px solid var(--rule); }
+.lens{ font:12px ui-monospace,monospace; padding:6px 14px; background:var(--paper-4); color:var(--ink-2); border:0; border-right:1px solid var(--rule); cursor:pointer; }
+.lens:last-child{ border-right:0; }
+.lens.active{ background:var(--moss-deep); color:var(--paper); }
+.modbar{ display:inline-flex; flex-wrap:wrap; gap:4px 12px; align-items:center; }
+.modbar .lbl{ font:11px ui-monospace,monospace; color:var(--ink-4); text-transform:uppercase; letter-spacing:.05em; }
+label.mod{ display:inline-flex; align-items:center; gap:5px; font:12px ui-monospace,monospace; color:var(--ink-2); }
+.spacer{ flex:1; }
+.counts{ font:11px ui-monospace,monospace; color:var(--ink-4); }
+main{ padding:18px 22px; max-width:1100px; }
+.blurb{ font-size:13px; color:var(--ink-3); border-left:3px solid var(--moss); background:var(--moss-soft); padding:8px 12px; margin-bottom:16px; }
+section.sec{ border:1px solid var(--rule); background:var(--paper-4); margin-bottom:16px; }
+.sec > h3{ margin:0; padding:9px 12px; font:600 12px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-2); background:var(--paper-2); border-bottom:1px solid var(--rule); display:flex; gap:8px; align-items:baseline; }
+.sec > h3 .h-note{ font-weight:400; text-transform:none; letter-spacing:0; color:var(--ink-4); }
+.sec > .body{ padding:12px; }
+.chips{ display:flex; flex-wrap:wrap; gap:6px; }
+.chip{ font:12px ui-monospace,monospace; padding:2px 8px; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-2); }
+.chip.form{ color:var(--moss-deep); border-color:var(--moss); background:var(--moss-soft); }
+.chip.anti{ color:var(--brick-d); border-color:var(--brick); background:var(--brick-soft); }
+.chip.reg{ color:var(--indigo); background:var(--indigo-soft); border-color:var(--indigo); }
+.chip.agency{ color:var(--ochre-d); background:var(--ochre-soft); border-color:var(--ochre); }
+.tbl{ width:100%; border-collapse:collapse; font:12px ui-monospace,monospace; }
+.tbl th,.tbl td{ text-align:left; padding:6px 8px; border-bottom:1px solid var(--rule-soft); vertical-align:top; }
+.tbl th{ color:var(--ink-4); text-transform:uppercase; font-size:10px; letter-spacing:.05em; }
+.tbl td code{ color:var(--ink); }
+.tree, .tree ul{ list-style:none; margin:0; padding-left:16px; }
+.tree{ padding-left:0; font:12px/1.6 ui-monospace,monospace; }
+.tree li{ position:relative; padding-left:2px; }
+.tree .cid{ color:var(--ink); }
+.tree .lbl{ color:var(--moss-deep); font-style:italic; }
+.tree .cmt{ color:var(--ink-4); font-style:italic; white-space:normal; max-width:760px; }
+.grp{ margin-bottom:12px; }
+.grp__h{ font:600 12px ui-monospace,monospace; color:var(--moss-deep); margin-bottom:5px; }
+.cmt-inline{ color:var(--ink-4); font-style:italic; }
+.muted{ color:var(--ink-4); font-style:italic; }
+.src{ margin-bottom:14px; }
+.src h4{ margin:0 0 4px; font:600 12px ui-monospace,monospace; color:var(--ink-2); }
+.src pre{ margin:0 0 8px; padding:10px; background:var(--paper-3); border:1px solid var(--rule); font:11px/1.5 ui-monospace,monospace; color:var(--ink-2); white-space:pre-wrap; max-height:340px; overflow:auto; }
+.loading{ color:var(--ink-4); font-style:italic; padding:24px; }
+</style>
+</head>
+<body>
+<header class="rail">
+  <div class="rail__inner">
+    <span class="rail__brand">ontology atlas</span>
+    <span class="rail__sub">the shared TBox · system-wide, and the tutor &amp; learner role projections</span>
+    <a class="rail__btn" href="/" title="Back to the poetics script browser">browser</a>
+    <a class="rail__btn" href="/compose" title="Drama composer">compose</a>
+    <a class="rail__btn" href="/replays" title="Discursive replays — counterfactual revisions diffed against the originals">replays</a>
+    <a class="rail__btn" href="/runs" title="Launch runs — generative · replay · adversarial-CLI · online scoring">runs</a>
+    <a class="rail__arc" href="/arc"><span>arc</span><span aria-hidden="true">→</span></a>
+    <button class="rail__btn" id="themeToggle" type="button">theme</button>
+  </div>
+</header>
+<div class="controls">
+  <div class="lenses" id="lenses">
+    <button class="lens active" data-view="system">system-wide</button>
+    <button class="lens" data-view="tutor">tutor</button>
+    <button class="lens" data-view="learner">learner</button>
+  </div>
+  <div class="modbar" id="modbar"><span class="lbl">modules</span></div>
+  <div class="spacer"></div>
+  <label class="mod"><input type="checkbox" id="srcToggle"> source</label>
+  <span class="counts" id="counts"></span>
+</div>
+<main id="content"><div class="loading">loading…</div></main>
+<script>
+const ALL_MODULES = ${JSON.stringify(ALL_MODULES)};
+const DEFAULT_MODULES = ${JSON.stringify(DEFAULT_MODULES)};
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const state = { view:'system', modules:new Set(DEFAULT_MODULES), source:false };
+
+function chips(list, cls){ return '<div class="chips">'+(list&&list.length?list.map(function(x){ return '<span class="chip '+(cls||'')+'">'+esc(x)+'</span>'; }).join(''):'<span class="muted">none</span>')+'</div>'; }
+function formChips(aims, contra){
+  var out = (aims||[]).map(function(f){ return '<span class="chip form">'+esc(f)+'</span>'; });
+  out = out.concat((contra||[]).map(function(f){ return '<span class="chip anti">⊣ '+esc(f)+'</span>'; }));
+  return out.length ? '<div class="chips">'+out.join('')+'</div>' : '<span class="muted">—</span>';
+}
+function section(title, note, body){
+  return '<section class="sec"><h3>'+esc(title)+(note?' <span class="h-note">'+esc(note)+'</span>':'')+'</h3><div class="body">'+body+'</div></section>';
+}
+
+function renderModbar(){
+  var html = '<span class="lbl">modules</span>';
+  ALL_MODULES.forEach(function(m){
+    html += '<label class="mod"><input type="checkbox" data-mod="'+esc(m)+'"'+(state.modules.has(m)?' checked':'')+'> '+esc(m)+'</label>';
+  });
+  $('modbar').innerHTML = html;
+}
+
+function tree(nodes){
+  if (!nodes || !nodes.length) return '';
+  return '<ul class="tree">'+nodes.map(function(n){
+    return '<li><span class="cid">'+esc(n.id)+'</span>'+(n.label?' <span class="lbl">'+esc(n.label)+'</span>':'')+
+      (n.comment?'<div class="cmt">'+esc(n.comment)+'</div>':'')+tree(n.children)+'</li>';
+  }).join('')+'</ul>';
+}
+
+function movesTable(moves){
+  if (!moves.length) return '<div class="muted">no moves in the loaded modules</div>';
+  return '<table class="tbl"><thead><tr><th>move</th><th>register</th><th>forms</th></tr></thead><tbody>'+
+    moves.map(function(m){
+      return '<tr><td><code>'+esc(m.id)+'</code>'+(m.comment?'<div class="cmt-inline">'+esc(m.comment)+'</div>':'')+'</td>'+
+        '<td>'+(m.register&&m.register.length?m.register.map(function(r){return '<span class="chip reg">'+esc(r)+'</span>';}).join(' '):'<span class="muted">—</span>')+'</td>'+
+        '<td>'+formChips(m.aimsAtForm, m.contraindicatesForm)+'</td></tr>';
+    }).join('')+'</tbody></table>';
+}
+
+function renderSystem(d){
+  var html = '';
+  html += section('Loaded ontologies', d.modules.map(function(m){return m.name;}).join(' ⊕ '),
+    d.ontologies.map(function(o){ return '<div class="grp"><div class="grp__h">'+esc(o.label||o.id)+' <span class="muted">('+esc(o.module)+')</span></div>'+(o.comment?'<div class="cmt-inline">'+esc(o.comment)+'</div>':'')+'</div>'; }).join(''));
+  html += section('Class taxonomy', d.counts.classes+' classes', tree(d.classTree));
+  html += section('Object properties', d.objectProperties.length+' properties',
+    '<table class="tbl"><thead><tr><th>property</th><th>domain → range</th><th>comment</th></tr></thead><tbody>'+
+    d.objectProperties.map(function(p){
+      var dr = (p.domain.join(', ')||'·')+' → '+(p.range.join(', ')||'·');
+      return '<tr><td><code>'+esc(p.id)+'</code></td><td>'+esc(dr)+'</td><td class="cmt-inline">'+esc(p.comment||'')+'</td></tr>';
+    }).join('')+'</tbody></table>');
+  html += section('Named individuals', d.counts.individuals+' individuals, grouped by type',
+    d.individualGroups.map(function(g){
+      return '<div class="grp"><div class="grp__h">'+esc(g.type)+' <span class="muted">('+g.items.length+')</span></div>'+
+        '<div class="chips">'+g.items.map(function(it){ return '<span class="chip">'+esc(it.id)+'</span>'; }).join('')+'</div></div>';
+    }).join(''));
+  html += section('Role views', 'the four ego/superego deliberation seats', chips(d.roleViews));
+  return html;
+}
+
+function renderRole(d){
+  var html = '<div class="blurb">'+esc(d.blurb)+'</div>';
+  var ag = '<div class="grp"><div class="grp__h">interior agencies</div>'+chips(d.interiorAgencies, 'agency')+'</div>';
+  ag += '<div class="grp"><div class="grp__h">role views</div>'+chips(d.roleViews)+'</div>';
+  ag += '<div class="grp"><div class="grp__h">advances forms <span class="muted">(performsMove ⨝ aimsAtForm)</span></div>'+chips(d.advancesForms, 'form')+'</div>';
+  html += section('Role at a glance', (d.character&&d.character.comment)?d.character.comment:'', ag);
+  html += section('Moves performed', d.moves.length+' moves · performedByRole '+d.role, movesTable(d.moves));
+  if (d.role === 'tutor'){
+    html += section('Evidence → policy guards', d.guards.length+' learner-state guards the tutor reasons over',
+      d.guards.length ? '<table class="tbl"><thead><tr><th>learner state</th><th>supports</th><th>contraindicates</th><th>missing KC</th><th>recognition</th></tr></thead><tbody>'+
+      d.guards.map(function(g){
+        return '<tr><td><code>'+esc(g.state)+'</code></td><td>'+codeList(g.supportsPolicy)+'</td><td>'+codeList(g.contraindicatesPolicy)+'</td><td>'+codeList(g.indicatesMissingKC)+'</td><td>'+codeList(g.supportsRecognitionMove)+'</td></tr>';
+      }).join('')+'</tbody></table>' : '<div class="muted">load the reasoning module to see the guard table</div>');
+    html += section('Policy actions & tactics', d.policyActions.length+' actions · '+d.tactics.length+' tactic class(es)',
+      '<div class="grp"><div class="grp__h">PolicyAction space</div><div class="chips">'+
+      d.policyActions.map(function(a){ return '<span class="chip">'+esc(a.id)+(a.requiresKC.length?' <span class="muted">·'+esc(a.requiresKC.join(','))+'</span>':'')+'</span>'; }).join('')+'</div></div>'+
+      '<div class="grp"><div class="grp__h">tactic classes (⊑ PolicyAction)</div>'+chips(d.tactics.map(function(t){return t.id;}))+'</div>');
+    if (d.plotDevices.length) html += section('Plot devices deployed', 'mythos — continuation, adaptation, reversal',
+      d.plotDevices.map(function(grp){
+        return '<div class="grp"><div class="grp__h">'+esc(grp.type)+'</div>'+grp.items.map(function(it){
+          return '<div><code>'+esc(it.id)+'</code> '+formChips(it.aimsAtForm, it.contraindicatesForm)+'</div>';
+        }).join('')+'</div>';
+      }).join(''));
+  } else {
+    html += section('State-space the learner can occupy', 'subclass families it moves between',
+      d.stateFamilies.map(function(f){
+        return '<div class="grp"><div class="grp__h">'+esc(f.family)+(f.label?' <span class="muted">'+esc(f.label)+'</span>':'')+' ('+f.members.length+')</div>'+
+          '<div class="chips">'+f.members.map(function(mb){ return '<span class="chip" title="'+esc(mb.comment||'')+'">'+esc(mb.id)+'</span>'; }).join('')+'</div></div>';
+      }).join(''));
+  }
+  html += section('Role-scoped classes', 'classes named '+(d.role==='tutor'?'Tutor*':'Learner*')+' + their subclasses',
+    '<table class="tbl"><thead><tr><th>class</th><th>⊑ parent</th><th>comment</th></tr></thead><tbody>'+
+    d.roleClasses.map(function(c){
+      return '<tr><td><code>'+esc(c.id)+'</code></td><td class="muted">'+esc((c.subClassOf||[]).join(', '))+'</td><td class="cmt-inline">'+esc(c.comment||'')+'</td></tr>';
+    }).join('')+'</tbody></table>');
+  return html;
+}
+
+function codeList(list){ return (list&&list.length)?list.map(function(x){return '<code>'+esc(x)+'</code>';}).join(' '):'<span class="muted">—</span>'; }
+
+function renderSource(modules){
+  return section('Source · raw TTL + N3 rules', 'as loaded from config/ontology/',
+    modules.map(function(m){
+      var out = '<div class="src"><h4>'+esc(m.tboxFile)+' <span class="muted">('+m.classes+' classes, '+m.individuals+' individuals)</span></h4><pre>'+esc(m.tboxText)+'</pre>';
+      if (m.rulesText) out += '<h4>'+esc(m.rulesFile)+'</h4><pre>'+esc(m.rulesText)+'</pre>';
+      return out + '</div>';
+    }).join(''));
+}
+
+async function load(){
+  $('content').innerHTML = '<div class="loading">loading…</div>';
+  var qs = 'view='+encodeURIComponent(state.view)+'&modules='+encodeURIComponent([...state.modules].join(','));
+  try {
+    var res = await fetch('/api/ontology?'+qs);
+    var d = await res.json();
+    if (!res.ok) throw new Error(d.error || res.statusText);
+    var body = state.view === 'system' ? renderSystem(d) : renderRole(d);
+    if (state.source) body += renderSource(d.modules);
+    $('content').innerHTML = body;
+    var c = d.counts ? (d.counts.classes+' classes · '+d.counts.individuals+' individuals') : (d.moves.length+' moves · '+d.roleClasses.length+' role classes');
+    $('counts').textContent = c;
+  } catch (e){
+    $('content').innerHTML = '<div class="loading">error: '+esc(e.message)+'</div>';
+  }
+}
+
+$('lenses').addEventListener('click', function(e){
+  var b = e.target.closest('.lens'); if(!b) return;
+  state.view = b.getAttribute('data-view');
+  [].forEach.call($('lenses').children, function(x){ x.classList.toggle('active', x===b); });
+  load();
+});
+$('modbar').addEventListener('change', function(e){
+  var m = e.target.getAttribute('data-mod'); if(!m) return;
+  if (e.target.checked) state.modules.add(m); else state.modules.delete(m);
+  load();
+});
+$('srcToggle').addEventListener('change', function(e){ state.source = e.target.checked; load(); });
+$('themeToggle').addEventListener('click', function(){
+  var dd = document.documentElement; var nx = dd.getAttribute('data-theme')==='dark' ? '' : 'dark';
+  if (nx) dd.setAttribute('data-theme','dark'); else dd.removeAttribute('data-theme');
+  try { localStorage.setItem('poetics-theme', nx); } catch (_e) {}
+});
+try { if (localStorage.getItem('poetics-theme')==='dark') document.documentElement.setAttribute('data-theme','dark'); } catch (_e) {}
+renderModbar();
+load();
+</script>
+</body>
+</html>`;
+}
+
+// ── Discursive replays (GET /replays) ─────────────────────────────────────────
+// A read-only diff viewer over exports/discursive-replays/<bundle>/. Each bundle is
+// a counterfactual-revision run: original public transcripts rewritten once, then
+// locally gated into survivor/needs_revision/rejected buckets. Left rail picks a
+// bundle and lists its items colour-coded by gate verdict; the detail pane shows the
+// unified original↔revised diff, the per-criterion gate scores, the adversarial
+// checker's findings, and — the conceptual payload — the hidden-state-use ledger that
+// licenses the claim boundary "counterfactual_revision_not_online_adaptation".
+function renderReplaysHtml() {
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Discursive Replays · poetics</title>
+<style>
+:root{ color-scheme: light dark; --paper:#F4EEDD; --paper-2:#ECE3CB; --paper-3:#F8F2E2; --paper-4:#FBF6E8; --ink:#14100C; --ink-2:#2C241B; --ink-3:#5C5040; --ink-4:#8C7E6A; --linen:#D8C7A9; --moss:#56683A; --moss-deep:#3A4824; --moss-soft:#E3E6CE; --brick:#A53E2E; --brick-d:#7C2C1F; --brick-soft:#F3DDD6; --ochre:#C08A3E; --ochre-d:#8C5F1F; --ochre-soft:#F5E6C2; --indigo:#5A6797; --indigo-soft:#E2E5F0; --rule:rgba(28,22,16,.18); --rule-soft:rgba(28,22,16,.10); }
+[data-theme="dark"]{ --paper:#14100C; --paper-2:#1B1612; --paper-3:#1F1A14; --paper-4:#221C16; --ink:#F4EEDD; --ink-2:#E0D8C3; --ink-3:#B9AD96; --ink-4:#8C7E6A; --linen:#3A322A; --moss:#8DA868; --moss-deep:#B5CD92; --moss-soft:#2C3520; --brick:#E36953; --brick-d:#F08A75; --brick-soft:#3A1C16; --ochre:#E6B265; --ochre-d:#F3CB88; --ochre-soft:#3A2C12; --indigo:#98A6D4; --indigo-soft:#1F2434; --rule:rgba(244,238,221,.18); --rule-soft:rgba(244,238,221,.08); }
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{ background:var(--paper); color:var(--ink); font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; }
+code,pre{ font-family: ui-monospace,'SF Mono',Menlo,monospace; }
+.rail{ position:sticky; top:0; z-index:10; background:var(--paper-3); border-bottom:1px solid var(--rule); }
+.rail__inner{ display:flex; align-items:center; gap:14px; padding:10px 18px; }
+.rail__brand{ font-family:Georgia,serif; font-style:italic; font-size:18px; color:var(--moss-deep); }
+.rail__sub{ color:var(--ink-3); font-size:12px; flex:1; }
+.rail__arc,.rail__btn{ display:inline-flex; align-items:center; gap:6px; font:12px ui-monospace,monospace; text-decoration:none; color:var(--ink-2); border:1px solid var(--rule); padding:5px 10px; background:var(--paper-4); cursor:pointer; }
+.rail__arc{ color:#fff; background:var(--brick); border-color:var(--brick-d); }
+[data-theme="dark"] .rail__arc{ color:var(--paper); }
+.controls{ position:sticky; top:51px; z-index:9; display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px; padding:9px 18px; background:var(--paper-2); border-bottom:1px solid var(--rule); }
+.controls label{ font:12px ui-monospace,monospace; color:var(--ink-3); display:inline-flex; align-items:center; gap:6px; }
+.controls select{ font:12px ui-monospace,monospace; background:var(--paper-4); color:var(--ink); border:1px solid var(--rule); padding:4px 8px; }
+.meta{ font:11px ui-monospace,monospace; color:var(--ink-4); display:inline-flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.boundary{ font:11px ui-monospace,monospace; color:var(--moss-deep); border:1px dashed var(--moss); background:var(--moss-soft); padding:2px 8px; }
+.spacer{ flex:1; }
+.counts{ font:11px ui-monospace,monospace; color:var(--ink-4); }
+.bk{ font:11px ui-monospace,monospace; padding:1px 7px; border:1px solid var(--rule); }
+.bk.b-survivors{ color:var(--moss-deep); border-color:var(--moss); background:var(--moss-soft); }
+.bk.b-needs_revision{ color:var(--ochre-d); border-color:var(--ochre); background:var(--ochre-soft); }
+.bk.b-rejected{ color:var(--brick-d); border-color:var(--brick); background:var(--brick-soft); }
+.bk.b-dry_run{ color:var(--indigo); border-color:var(--indigo); background:var(--indigo-soft); }
+.bk.b-unchecked,.bk.b-disabled,.bk.b-unknown{ color:var(--ink-4); }
+.layout{ display:grid; grid-template-columns: 340px 1fr; height: calc(100vh - 93px); }
+.list{ border-right:1px solid var(--rule); overflow:auto; background:var(--paper-3); }
+.detail{ overflow:auto; padding:16px 22px; max-width:1000px; }
+.item{ display:block; width:100%; text-align:left; border:0; border-bottom:1px solid var(--rule-soft); border-left:3px solid var(--ink-4); background:transparent; color:var(--ink); cursor:pointer; padding:9px 12px; font:inherit; }
+.item:hover{ background:var(--paper-4); }
+.item.sel{ background:var(--paper-4); border-left-width:5px; }
+.item.b-survivors{ border-left-color:var(--moss); }
+.item.b-needs_revision{ border-left-color:var(--ochre); }
+.item.b-rejected{ border-left-color:var(--brick); }
+.item.b-dry_run{ border-left-color:var(--indigo); }
+.item__id{ font:12px ui-monospace,monospace; color:var(--ink-2); word-break:break-all; }
+.item__row{ display:flex; gap:8px; align-items:center; margin-top:4px; }
+.pill{ font:10px ui-monospace,monospace; padding:1px 6px; border:1px solid var(--rule); color:var(--ink-3); }
+.pill.ok{ color:var(--moss-deep); border-color:var(--moss); }
+.pill.no{ color:var(--brick-d); border-color:var(--brick); }
+.pill.mut{ color:var(--ink-4); }
+.dh{ margin:0 0 4px; font-family:Georgia,serif; font-size:17px; font-style:italic; color:var(--moss-deep); word-break:break-all; }
+.dsub{ font:11px ui-monospace,monospace; color:var(--ink-4); margin-bottom:14px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+section.sec{ border:1px solid var(--rule); background:var(--paper-4); margin-bottom:16px; }
+.sec > h3{ margin:0; padding:8px 12px; font:600 12px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-2); background:var(--paper-2); border-bottom:1px solid var(--rule); display:flex; gap:8px; align-items:baseline; }
+.sec > h3 .h-note{ font-weight:400; text-transform:none; letter-spacing:0; color:var(--ink-4); }
+.sec > .body{ padding:12px; }
+.diff{ font:12px/1.55 ui-monospace,monospace; border:1px solid var(--rule); overflow:auto; }
+.drow{ display:flex; white-space:pre-wrap; }
+.drow .g{ flex:0 0 86px; text-align:right; padding:0 8px; color:var(--ink-4); background:var(--paper-3); border-right:1px solid var(--rule-soft); user-select:none; }
+.drow .t{ flex:1; padding:0 10px; }
+.drow.del{ background:var(--brick-soft); }
+.drow.del .t{ color:var(--brick-d); }
+.drow.add{ background:var(--moss-soft); }
+.drow.add .t{ color:var(--moss-deep); }
+.drow .mk{ display:inline-block; width:10px; color:var(--ink-4); }
+.tbl{ width:100%; border-collapse:collapse; font:12px ui-monospace,monospace; }
+.tbl th,.tbl td{ text-align:left; padding:5px 8px; border-bottom:1px solid var(--rule-soft); vertical-align:top; }
+.tbl th{ color:var(--ink-4); text-transform:uppercase; font-size:10px; letter-spacing:.05em; }
+.yes{ color:var(--moss-deep); } .nay{ color:var(--brick-d); }
+.find{ border-left:3px solid var(--ochre); background:var(--ochre-soft); padding:6px 10px; margin-bottom:6px; font-size:12px; }
+.find .sev{ font:10px ui-monospace,monospace; text-transform:uppercase; color:var(--ochre-d); margin-right:6px; }
+.find code{ color:var(--ink); background:var(--paper-3); padding:0 3px; border:1px solid var(--rule-soft); }
+.find .rec{ margin-top:4px; color:var(--ink-3); font-style:italic; }
+.find.major,.find.error{ border-left-color:var(--brick); background:var(--brick-soft); } .find.major .sev,.find.error .sev{ color:var(--brick-d); }
+.find.warning{ border-left-color:var(--ochre); }
+.find.info,.find.note{ border-left-color:var(--moss); background:var(--moss-soft); } .find.info .sev,.find.note .sev{ color:var(--moss-deep); }
+.ledger{ border:1px solid var(--rule); margin-bottom:8px; }
+.ledger__h{ font:600 12px ui-monospace,monospace; color:var(--ink-2); padding:6px 10px; background:var(--paper-2); border-bottom:1px solid var(--rule-soft); }
+.ledger__b{ padding:8px 10px; font-size:12px; }
+.kv{ display:grid; grid-template-columns: 130px 1fr; gap:2px 10px; }
+.kv .k{ color:var(--ink-4); font:11px ui-monospace,monospace; }
+.kv .v{ color:var(--ink-2); }
+.quote{ border-left:2px solid var(--rule); padding-left:8px; color:var(--ink-3); font-style:italic; }
+.chips{ display:flex; flex-wrap:wrap; gap:5px; }
+.chip{ font:11px ui-monospace,monospace; padding:1px 7px; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-2); }
+.risk{ font:10px ui-monospace,monospace; padding:1px 6px; border:1px solid var(--rule); }
+.risk.low{ color:var(--moss-deep); border-color:var(--moss); background:var(--moss-soft); }
+.risk.medium{ color:var(--ochre-d); border-color:var(--ochre); background:var(--ochre-soft); }
+.risk.high{ color:var(--brick-d); border-color:var(--brick); background:var(--brick-soft); }
+.muted{ color:var(--ink-4); font-style:italic; }
+.loading{ color:var(--ink-4); font-style:italic; padding:24px; }
+</style>
+</head>
+<body>
+<header class="rail">
+  <div class="rail__inner">
+    <span class="rail__brand">discursive replays</span>
+    <span class="rail__sub">counterfactual revisions of public transcripts · diffed against the originals &amp; locally gated</span>
+    <a class="rail__btn" href="/" title="Back to the poetics script browser">browser</a>
+    <a class="rail__btn" href="/compose" title="Drama composer">compose</a>
+    <a class="rail__btn" href="/ontology" title="Ontology atlas">ontology</a>
+    <a class="rail__btn" href="/runs" title="Launch runs — generative · replay · adversarial-CLI · online scoring">runs</a>
+    <a class="rail__arc" href="/arc"><span>arc</span><span aria-hidden="true">→</span></a>
+    <button class="rail__btn" id="themeToggle" type="button">theme</button>
+  </div>
+</header>
+<div class="controls">
+  <label>bundle <select id="bundleSel"></select></label>
+  <span class="meta" id="bundleMeta"></span>
+  <div class="spacer"></div>
+  <span class="counts" id="counts"></span>
+</div>
+<div class="layout">
+  <div class="list" id="list"><div class="loading">loading…</div></div>
+  <div class="detail" id="detail"><div class="loading">pick an item on the left.</div></div>
+</div>
+<script>
+const GATE_BUCKETS = ${JSON.stringify(GATE_BUCKETS)};
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const state = { bundle:null, item:null, items:[] };
+
+function fmtBuckets(buckets){
+  return GATE_BUCKETS.filter(function(b){ return (buckets[b]||0) > 0; })
+    .map(function(b){ return '<span class="bk b-'+b+'">'+b.replace(/_/g,' ')+' '+buckets[b]+'</span>'; }).join('') || '<span class="muted">no items</span>';
+}
+function passPill(p){
+  if (p === true) return '<span class="pill ok">✓ pass</span>';
+  if (p === false) return '<span class="pill no">✗ fail</span>';
+  return '<span class="pill mut">unchecked</span>';
+}
+
+async function loadBundles(){
+  try {
+    const res = await fetch('/api/replays');
+    const d = await res.json();
+    if (!res.ok) throw new Error(d.error || res.statusText);
+    const sel = $('bundleSel');
+    if (!d.bundles.length){ sel.innerHTML='<option>(none)</option>'; $('list').innerHTML='<div class="loading">no replay bundles under exports/discursive-replays/</div>'; return; }
+    sel.innerHTML = d.bundles.map(function(b){
+      const n = b.count!=null?b.count:'?';
+      return '<option value="'+esc(b.name)+'">'+esc(b.name)+'  ('+esc(b.generator||'?')+'→'+esc(b.checker||'none')+', '+n+')</option>';
+    }).join('');
+    state.bundle = d.bundles[0].name;
+    sel.value = state.bundle;
+    loadBundle(state.bundle);
+  } catch (e){ $('list').innerHTML='<div class="loading">error: '+esc(e.message)+'</div>'; }
+}
+
+async function loadBundle(name){
+  state.bundle = name; state.item = null;
+  $('list').innerHTML = '<div class="loading">loading…</div>';
+  $('detail').innerHTML = '<div class="loading">pick an item on the left.</div>';
+  try {
+    const res = await fetch('/api/replays/'+encodeURIComponent(name));
+    const d = await res.json();
+    if (!res.ok) throw new Error(d.error || res.statusText);
+    state.items = d.items || [];
+    $('bundleMeta').innerHTML =
+      fmtBuckets(d.buckets||{}) +
+      (d.claimBoundary?' <span class="boundary" title="every item in this bundle is a one-shot rewrite, not an online tutor run">'+esc(d.claimBoundary)+'</span>':'') +
+      (d.nextStageRule?' <span title="local gate next-stage rule">→ '+esc(d.nextStageRule)+'</span>':'');
+    $('counts').textContent = state.items.length + ' item(s)';
+    renderList();
+    if (state.items.length) selectItem(state.items[0].itemId);
+  } catch (e){ $('list').innerHTML='<div class="loading">error: '+esc(e.message)+'</div>'; }
+}
+
+function renderList(){
+  if (!state.items.length){ $('list').innerHTML='<div class="loading">this bundle has no records.</div>'; return; }
+  $('list').innerHTML = state.items.map(function(it){
+    const ds = it.scores && it.scores.length ? it.scores.filter(function(s){return s.passes===true;}).length+'/'+it.scores.length+' gates' : '';
+    return '<button class="item b-'+esc(it.bucket)+(it.itemId===state.item?' sel':'')+'" data-id="'+esc(it.itemId)+'">'+
+      '<div class="item__id">'+esc(shortId(it.itemId))+'</div>'+
+      '<div class="item__row">'+
+        '<span class="bk b-'+esc(it.bucket)+'">'+esc(it.bucket.replace(/_/g,' '))+'</span>'+
+        passPill(it.passes)+
+        (it.findingsCount?'<span class="pill mut">'+it.findingsCount+' finding'+(it.findingsCount===1?'':'s')+'</span>':'')+
+        (ds?'<span class="pill mut">'+ds+'</span>':'')+
+      '</div></button>';
+  }).join('');
+}
+function shortId(id){ const p = String(id).split(':'); return p.length>1 ? p.slice(1).join(':') : id; }
+
+async function selectItem(itemId){
+  state.item = itemId; renderList();
+  $('detail').innerHTML = '<div class="loading">loading…</div>';
+  try {
+    const res = await fetch('/api/replays/'+encodeURIComponent(state.bundle)+'/item?id='+encodeURIComponent(itemId));
+    const d = await res.json();
+    if (!res.ok) throw new Error(d.error || res.statusText);
+    renderDetail(d);
+  } catch (e){ $('detail').innerHTML='<div class="loading">error: '+esc(e.message)+'</div>'; }
+}
+
+function section(title, note, body){
+  return '<section class="sec"><h3>'+esc(title)+(note?' <span class="h-note">'+esc(note)+'</span>':'')+'</h3><div class="body">'+body+'</div></section>';
+}
+
+function diffHtml(diff, stats){
+  if (!diff || !diff.length) return '<div class="muted">no diff — transcripts not materialised (dry-run or pending).</div>';
+  const rows = diff.map(function(r){
+    const cls = r.type==='add'?'add':(r.type==='del'?'del':'');
+    const mk = r.type==='add'?'+':(r.type==='del'?'−':' ');
+    const g = (r.aLine==null?'':r.aLine) + '·' + (r.bLine==null?'':r.bLine);
+    return '<div class="drow '+cls+'"><span class="g">'+esc(g)+'</span><span class="t"><span class="mk">'+mk+'</span>'+esc(r.text)+'</span></div>';
+  }).join('');
+  return '<div class="diff">'+rows+'</div>';
+}
+
+function scoresTable(scores){
+  if (!scores || !scores.length) return '<div class="muted">no gate scores.</div>';
+  const anyThr = scores.some(function(s){ return s.threshold!=null; });
+  return '<table class="tbl"><thead><tr><th>criterion</th><th>raw</th>'+(anyThr?'<th>value</th><th>threshold</th><th>pass</th>':'')+'</tr></thead><tbody>'+
+    scores.map(function(s){
+      const pass = s.passes===true?'<span class="yes">✓</span>':(s.passes===false?'<span class="nay">✗</span>':'—');
+      return '<tr><td><code>'+esc(s.criterion)+'</code></td><td>'+esc(s.raw==null?'—':s.raw)+'</td>'+
+        (anyThr?'<td>'+esc(s.value==null?'—':s.value)+'</td><td>'+esc(s.threshold==null?'—':s.threshold)+'</td><td>'+pass+'</td>':'')+'</tr>';
+    }).join('')+'</tbody></table>';
+}
+
+function findingsHtml(findings){
+  if (!findings || !findings.length) return '<div class="muted">no findings.</div>';
+  return findings.map(function(f){
+    if (typeof f === 'string') return '<div class="find note"><span class="sev">note</span>'+esc(f)+'</div>';
+    const sev = (f.severity||'note').toLowerCase();
+    const body = f.evidence || f.note || f.message || f.detail || JSON.stringify(f);
+    const crit = f.criterion ? '<code>'+esc(f.criterion)+'</code> ' : '';
+    const rec = f.recommendation && !/^none\\b/i.test(String(f.recommendation))
+      ? '<div class="rec">→ '+esc(f.recommendation)+'</div>' : '';
+    return '<div class="find '+esc(sev)+'"><span class="sev">'+esc(sev)+'</span>'+crit+esc(body)+rec+'</div>';
+  }).join('');
+}
+
+// Gate failures/warnings are either plain criterion strings (smoke fixtures) or
+// {criterion,evidence,recommendation} objects (real runs). Render a compact chip per
+// reason, evidence in the tooltip — the full prose already shows under findings.
+function gateChips(list){
+  return (list||[]).map(function(x){
+    if (x && typeof x === 'object'){
+      const label = x.criterion || x.id || x.name || 'reason';
+      const tip = x.evidence || x.recommendation || x.message || '';
+      return '<span class="chip" title="'+esc(tip)+'">'+esc(label)+'</span>';
+    }
+    return '<span class="chip">'+esc(x)+'</span>';
+  }).join(' ');
+}
+
+function moveLedgerHtml(ledger){
+  if (!ledger || !ledger.length) return '<div class="muted">no move ledger.</div>';
+  return ledger.map(function(m){
+    let kv = '';
+    const add = function(k,v){ if (v) kv += '<div class="k">'+esc(k)+'</div><div class="v">'+esc(v)+'</div>'; };
+    add('learner signal', m.learnerSignal);
+    if (m.evidenceQuote) kv += '<div class="k">evidence</div><div class="v quote">'+esc(m.evidenceQuote)+'</div>';
+    add('tutor hypothesis', m.tutorHypothesis);
+    add('tactic', m.tactic);
+    add('public action', m.publicAction);
+    add('learner uptake', m.learnerUptakeOrContest);
+    add('tutor revision', m.tutorRevision);
+    const terms = (m.ontologyTerms||[]).length ? '<div class="k">ontology</div><div class="v"><div class="chips">'+m.ontologyTerms.map(function(t){return '<span class="chip">'+esc(t)+'</span>';}).join('')+'</div></div>' : '';
+    return '<div class="ledger"><div class="ledger__h">'+esc(m.turn||'turn')+'</div><div class="ledger__b"><div class="kv">'+kv+terms+'</div></div></div>';
+  }).join('');
+}
+
+function hiddenStateHtml(ledger){
+  if (!ledger || !ledger.length) return '<div class="muted">no hidden-state-use ledger.</div>';
+  return ledger.map(function(h){
+    const risk = (h.leakageRisk||'').toLowerCase();
+    const riskBadge = risk ? '<span class="risk '+esc(risk)+'">leakage: '+esc(risk)+'</span>' : '';
+    return '<div class="ledger"><div class="ledger__h">'+esc(h.usedFor||'use')+' '+riskBadge+'</div><div class="ledger__b">'+
+      '<div class="kv"><div class="k">private fact</div><div class="v">'+esc(h.privateFact||'—')+'</div>'+
+      (h.publicLicenseQuote?'<div class="k">public licence</div><div class="v quote">'+esc(h.publicLicenseQuote)+'</div>':'')+
+      '</div></div></div>';
+  }).join('');
+}
+
+function renderDetail(d){
+  let html = '<div class="dh">'+esc(shortId(d.itemId))+'</div>';
+  html += '<div class="dsub">'+
+    '<span class="bk b-'+esc(d.bucket)+'">'+esc(d.bucket.replace(/_/g,' '))+'</span>'+
+    '<span>status '+esc(d.status)+'</span>'+
+    (d.escalate?'<span class="nay">escalate</span>':'')+
+    '<span>'+esc((d.generator&&d.generator.backend)||'?')+'→'+esc((d.checker&&d.checker.backend)||'none')+'</span>'+
+    (d.runId?'<span>run '+esc(d.runId)+'</span>':'')+
+    (d.source?'<span>'+esc(d.source)+'</span>':'')+
+  '</div>';
+
+  // Diff
+  const st = d.diffStats||{};
+  html += section('Original ↔ revised', '+'+(st.added||0)+' −'+(st.deleted||0)+' · '+(st.unchanged||0)+' unchanged', diffHtml(d.diff, st));
+
+  // Gate verdict
+  const passLine = (d.passes===true?'checker passed':(d.passes===false?'checker failed':'unchecked')) + (d.claimBoundaryOk===true?' · claim boundary ok':(d.claimBoundaryOk===false?' · claim boundary VIOLATED':''));
+  html += section('Local gate scores', passLine, scoresTable(d.scores));
+
+  // Findings
+  if (d.findings && d.findings.length) html += section('Checker findings', d.findings.length+' flagged', findingsHtml(d.findings));
+  if ((d.failures&&d.failures.length)||(d.warnings&&d.warnings.length)){
+    let fw = '';
+    if (d.failures&&d.failures.length) fw += '<div class="grp"><strong class="nay">gate failures:</strong> '+gateChips(d.failures)+'</div>';
+    if (d.warnings&&d.warnings.length) fw += '<div class="grp" style="margin-top:6px"><strong>warnings:</strong> '+gateChips(d.warnings)+'</div>';
+    html += section('Gate verdict detail','the local-threshold reasons it landed in this bucket (full text under findings)',fw);
+  }
+
+  // Revision rationale
+  if (d.revision){
+    const r = d.revision;
+    if (r.moveLedger && r.moveLedger.length) html += section('Move ledger', 'why each turn was rewritten', moveLedgerHtml(r.moveLedger));
+    if (r.hiddenStateLedger && r.hiddenStateLedger.length) html += section('Hidden-state-use ledger', 'the claim-boundary audit · private fact → public licence', hiddenStateHtml(r.hiddenStateLedger));
+    if (r.nonLeakageCheck){
+      const nlc = r.nonLeakageCheck;
+      const notes = (nlc.notes||[]).map(function(n){return '<div class="find"><span class="sev">note</span>'+esc(n)+'</div>';}).join('');
+      html += section('Non-leakage check', nlc.passes===true?'passes':(nlc.passes===false?'FAILS':''), notes || '<div class="muted">no notes.</div>');
+    }
+    if (r.summary) html += section('Revision summary','',esc(r.summary));
+  }
+
+  $('detail').innerHTML = html;
+}
+
+$('bundleSel').addEventListener('change', function(e){ loadBundle(e.target.value); });
+$('list').addEventListener('click', function(e){ const b=e.target.closest('.item'); if(b) selectItem(b.getAttribute('data-id')); });
+$('themeToggle').addEventListener('click', function(){
+  const dd = document.documentElement; const nx = dd.getAttribute('data-theme')==='dark' ? '' : 'dark';
+  if (nx) dd.setAttribute('data-theme','dark'); else dd.removeAttribute('data-theme');
+  try { localStorage.setItem('poetics-theme', nx); } catch (_e) {}
+});
+try { if (localStorage.getItem('poetics-theme')==='dark') document.documentElement.setAttribute('data-theme','dark'); } catch (_e) {}
+loadBundles();
+</script>
+</body>
+</html>`;
+}
+
+function renderRunsHtml() {
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Run launcher · poetics</title>
+<style>
+:root{ color-scheme: light dark; --paper:#F4EEDD; --paper-2:#ECE3CB; --paper-3:#F8F2E2; --paper-4:#FBF6E8; --ink:#14100C; --ink-2:#2C241B; --ink-3:#5C5040; --ink-4:#8C7E6A; --linen:#D8C7A9; --moss:#56683A; --moss-deep:#3A4824; --moss-soft:#E3E6CE; --brick:#A53E2E; --brick-d:#7C2C1F; --brick-soft:#F3DDD6; --ochre:#C08A3E; --ochre-d:#8C5F1F; --ochre-soft:#F5E6C2; --indigo:#5A6797; --indigo-soft:#E2E5F0; --rule:rgba(28,22,16,.18); --rule-soft:rgba(28,22,16,.10); }
+[data-theme="dark"]{ --paper:#14100C; --paper-2:#1B1612; --paper-3:#1F1A14; --paper-4:#221C16; --ink:#F4EEDD; --ink-2:#E0D8C3; --ink-3:#B9AD96; --ink-4:#8C7E6A; --linen:#3A322A; --moss:#8DA868; --moss-deep:#B5CD92; --moss-soft:#2C3520; --brick:#E36953; --brick-d:#F08A75; --brick-soft:#3A1C16; --ochre:#E6B265; --ochre-d:#F3CB88; --ochre-soft:#3A2C12; --indigo:#98A6D4; --indigo-soft:#1F2434; --rule:rgba(244,238,221,.18); --rule-soft:rgba(244,238,221,.08); }
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{ background:var(--paper); color:var(--ink); font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; }
+code,pre{ font-family: ui-monospace,'SF Mono',Menlo,monospace; }
+.rail{ position:sticky; top:0; z-index:10; background:var(--paper-3); border-bottom:1px solid var(--rule); }
+.rail__inner{ display:flex; align-items:center; gap:14px; padding:10px 18px; }
+.rail__brand{ font-family:Georgia,serif; font-style:italic; font-size:18px; color:var(--moss-deep); }
+.rail__sub{ color:var(--ink-3); font-size:12px; flex:1; }
+.rail__arc,.rail__btn{ display:inline-flex; align-items:center; gap:6px; font:12px ui-monospace,monospace; text-decoration:none; color:var(--ink-2); border:1px solid var(--rule); padding:5px 10px; background:var(--paper-4); cursor:pointer; }
+.rail__arc{ color:#fff; background:var(--brick); border-color:var(--brick-d); }
+[data-theme="dark"] .rail__arc{ color:var(--paper); }
+.controls{ position:sticky; top:51px; z-index:9; display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; padding:9px 18px; background:var(--paper-2); border-bottom:1px solid var(--rule); }
+.tabs{ display:flex; gap:0; }
+.tab{ font:12px ui-monospace,monospace; color:var(--ink-3); border:1px solid var(--rule); border-right:0; padding:5px 12px; background:var(--paper-4); cursor:pointer; }
+.tab:last-child{ border-right:1px solid var(--rule); }
+.tab.sel{ color:var(--ink); background:var(--paper); border-bottom-color:var(--paper); font-weight:600; }
+.safety{ font:11px ui-monospace,monospace; color:var(--ochre-d); border:1px dashed var(--ochre); background:var(--ochre-soft); padding:2px 8px; }
+.spacer{ flex:1; }
+.layout{ display:grid; grid-template-columns: minmax(380px, 460px) 1fr; height: calc(100vh - 93px); }
+.formcol{ border-right:1px solid var(--rule); overflow:auto; background:var(--paper-3); padding:16px 18px; }
+.jobscol{ overflow:auto; padding:16px 20px; max-width:1100px; }
+.kind-title{ font-family:Georgia,serif; font-style:italic; font-size:17px; color:var(--moss-deep); margin:0 0 2px; }
+.kind-blurb{ font:11px ui-monospace,monospace; color:var(--ink-4); margin-bottom:14px; }
+.field{ margin-bottom:11px; }
+.field.hidden{ display:none; }
+.field > label{ display:block; font:11px ui-monospace,monospace; color:var(--ink-3); margin-bottom:3px; }
+.field input[type=text],.field input[type=number],.field select{ width:100%; font:12px ui-monospace,monospace; background:var(--paper-4); color:var(--ink); border:1px solid var(--rule); padding:5px 8px; }
+.field.check{ display:flex; align-items:center; gap:7px; }
+.field.check > label{ margin:0; color:var(--ink-2); font-size:12px; }
+.field .help{ display:block; font:10px ui-monospace,monospace; color:var(--ink-4); margin-top:2px; }
+.checks{ display:flex; flex-wrap:wrap; gap:8px 16px; margin:6px 0 12px; }
+.checks .field.check{ margin:0; }
+.review{ border:1px solid var(--rule); background:var(--paper-4); margin-top:6px; }
+.review__h{ font:600 11px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-2); background:var(--paper-2); border-bottom:1px solid var(--rule); padding:7px 10px; display:flex; align-items:center; gap:8px; }
+.review__b{ padding:10px; }
+.cost{ font:10px ui-monospace,monospace; padding:1px 8px; border:1px solid var(--rule); text-transform:uppercase; letter-spacing:.04em; }
+.cost.free{ color:var(--moss-deep); border-color:var(--moss); background:var(--moss-soft); }
+.cost.quota{ color:var(--ochre-d); border-color:var(--ochre); background:var(--ochre-soft); }
+.cost.metered{ color:var(--brick-d); border-color:var(--brick); background:var(--brick-soft); }
+.cost.bad{ color:var(--brick-d); border-color:var(--brick); }
+.costnote{ font:11px/1.45 ui-monospace,monospace; color:var(--ink-3); margin:8px 0; }
+.costnote.metered{ color:var(--brick-d); font-weight:600; }
+.cmd{ font:11px/1.5 ui-monospace,monospace; background:var(--paper-2); border:1px solid var(--rule-soft); padding:7px 9px; white-space:pre-wrap; word-break:break-all; color:var(--ink-2); margin:0 0 10px; }
+.confirm{ margin:8px 0; }
+.confirm input{ width:100%; font:12px ui-monospace,monospace; background:var(--paper); color:var(--brick-d); border:1px solid var(--brick); padding:5px 8px; }
+.btn{ font:12px ui-monospace,monospace; color:var(--ink); border:1px solid var(--ink-3); padding:7px 14px; background:var(--paper-4); cursor:pointer; }
+.btn:hover{ border-color:var(--ink); }
+.btn.go{ color:#fff; background:var(--moss); border-color:var(--moss-deep); }
+.btn.warn{ color:#fff; background:var(--ochre-d); border-color:var(--ochre-d); }
+.btn.danger{ color:#fff; background:var(--brick); border-color:var(--brick-d); }
+[data-theme="dark"] .btn.go,[data-theme="dark"] .btn.warn,[data-theme="dark"] .btn.danger{ color:var(--paper); }
+.btn[disabled]{ opacity:.45; cursor:not-allowed; }
+.err{ color:var(--brick-d); font:11px ui-monospace,monospace; margin-top:8px; }
+.sec-h{ font:600 12px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-2); margin:0 0 8px; display:flex; align-items:center; gap:8px; }
+.tbl{ width:100%; border-collapse:collapse; font:12px ui-monospace,monospace; }
+.tbl th,.tbl td{ text-align:left; padding:6px 8px; border-bottom:1px solid var(--rule-soft); vertical-align:middle; }
+.tbl th{ color:var(--ink-4); text-transform:uppercase; font-size:10px; letter-spacing:.05em; }
+.jobrow{ cursor:pointer; }
+.jobrow:hover{ background:var(--paper-4); }
+.jobrow.sel{ background:var(--paper-4); }
+.st{ display:inline-flex; align-items:center; gap:6px; }
+.st::before{ content:''; width:8px; height:8px; border-radius:50%; background:var(--ink-4); }
+.st.running::before{ background:var(--ochre); animation: pulse 1.1s ease-in-out infinite; }
+.st.done::before{ background:var(--moss); }
+.st.failed::before,.st.error::before{ background:var(--brick); }
+.st.stopped::before{ background:var(--ink-4); }
+@keyframes pulse{ 0%,100%{ opacity:1 } 50%{ opacity:.3 } }
+.joblog{ margin-top:18px; }
+.joblog pre{ font:11px/1.5 ui-monospace,monospace; background:#0c0a08; color:#d8d2c4; border:1px solid var(--rule); padding:10px 12px; max-height:42vh; overflow:auto; white-space:pre-wrap; word-break:break-word; }
+[data-theme="dark"] .joblog pre{ background:#080604; }
+.muted{ color:var(--ink-4); font-style:italic; }
+.loading{ color:var(--ink-4); font-style:italic; padding:18px 0; }
+.tiny{ font:10px ui-monospace,monospace; color:var(--ink-4); }
+</style>
+</head>
+<body>
+<header class="rail">
+  <div class="rail__inner">
+    <span class="rail__brand">run launcher</span>
+    <span class="rail__sub">spawn generative · replay · adversarial-CLI · online-score runs — localhost only, no auth (deferred)</span>
+    <a class="rail__btn" href="/" title="Back to the poetics script browser">browser</a>
+    <a class="rail__btn" href="/replays" title="Discursive replays">replays</a>
+    <a class="rail__btn" href="/ontology" title="Ontology atlas">ontology</a>
+    <a class="rail__arc" href="/arc"><span>arc</span><span aria-hidden="true">→</span></a>
+    <button class="rail__btn" id="themeToggle" type="button">theme</button>
+  </div>
+</header>
+<div class="controls">
+  <div class="tabs" id="tabs"></div>
+  <div class="spacer"></div>
+  <span class="safety">forms default to free · mock · dry-run — metered $ needs type-to-confirm</span>
+</div>
+<div class="layout">
+  <div class="formcol">
+    <h2 class="kind-title" id="kindTitle"></h2>
+    <div class="kind-blurb" id="kindBlurb"></div>
+    <form id="form" autocomplete="off"></form>
+    <div class="checks" id="checks"></div>
+    <div class="review">
+      <div class="review__h">review &amp; launch <span class="cost bad" id="costBadge">—</span></div>
+      <div class="review__b">
+        <div class="costnote" id="costNote"></div>
+        <pre class="cmd" id="cmd">—</pre>
+        <div class="confirm" id="confirmRow" style="display:none">
+          <input type="text" id="confirmInput" placeholder="type RUN to authorise metered spend">
+        </div>
+        <button class="btn" id="launchBtn" type="button" disabled>launch</button>
+        <div class="err" id="formErr"></div>
+      </div>
+    </div>
+  </div>
+  <div class="jobscol">
+    <div class="sec-h">jobs <span class="tiny" id="jobsCount"></span></div>
+    <div id="jobs"><div class="loading">no jobs yet — launch one on the left.</div></div>
+    <div class="joblog" id="joblog"></div>
+  </div>
+</div>
+<script>
+const KINDS = ${JSON.stringify(describeKinds())};
+const COST = ${JSON.stringify(COST_CLASSES)};
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const state = { kind:'replay', fields:[], plan:null, jobs:[], selJob:null };
+
+// ── Per-kind form specs. showIf is evaluated against the live param object so the
+// input set narrows to what the selected script actually consumes. ───────────────
+const FORMS = {
+  replay: {
+    blurb: 'One bounded counterfactual rewrite of an existing public transcript → optional adversarial check → local gate.',
+    fields: [
+      { name:'mode', type:'select', label:'input', options:['item','run','transcript'], def:'item' },
+      { name:'itemId', type:'text', label:'item id(s)', placeholder:'run:dialogueId:turn  (comma-separated for many)', showIf:(p)=>p.mode==='item' },
+      { name:'runId', type:'text', label:'run id', placeholder:'evaluation run id', showIf:(p)=>p.mode==='run' },
+      { name:'limit', type:'number', label:'limit', placeholder:'max items from the run', showIf:(p)=>p.mode==='run' },
+      { name:'transcript', type:'text', label:'transcript path', placeholder:'/path/to/public.txt', showIf:(p)=>p.mode==='transcript' },
+      { name:'generator', type:'select', label:'generator', options:['mock','codex','claude','agy','gemini'], def:'mock', help:'mock = free; others route through the CLI/Max plan (quota)' },
+      { name:'checker', type:'select', label:'checker', options:['none','mock','codex','claude','agy','gemini','adversarial'], def:'none' },
+      { name:'db', type:'text', label:'db (optional)', placeholder:'override evaluations.db' },
+      { name:'outDir', type:'text', label:'out dir (optional)', placeholder:'exports/discursive-replays/…' },
+    ],
+    checks: [
+      { name:'mock', label:'mock (force free)' },
+      { name:'dryRun', label:'dry-run' },
+      { name:'force', label:'force' },
+    ],
+  },
+  generate: {
+    blurb: 'Generate a new pedagogical drama transcript headlessly (--non-interactive is always added).',
+    fields: [
+      { name:'id', type:'text', label:'id (optional)', placeholder:'auto-id if blank' },
+      { name:'generator', type:'text', label:'generator (optional)', placeholder:'codex | claude | openrouter | …' },
+      { name:'model', type:'text', label:'model (optional)', placeholder:'org/model ⇒ METERED · bare name ⇒ quota' },
+      { name:'effort', type:'text', label:'effort (optional)', placeholder:'low | medium | high' },
+      { name:'maxTurns', type:'number', label:'max turns (optional)' },
+      { name:'title', type:'text', label:'title (optional)' },
+      { name:'outRoot', type:'text', label:'out root (optional)', placeholder:'exports/drama-generator' },
+      { name:'roleMap', type:'text', label:'role map (optional)' },
+    ],
+    checks: [
+      { name:'mock', label:'mock', def:true },
+      { name:'dryRun', label:'dry-run' },
+      { name:'specOnly', label:'spec-only' },
+      { name:'force', label:'force' },
+    ],
+  },
+  'adversarial-score': {
+    blurb: 'Run the structure critic (CLI) over a sample dir. "rules" = pure local computation, no model calls.',
+    fields: [
+      { name:'critic', type:'select', label:'critic', options:['rules','codex','claude','claude-code'], def:'rules', help:'rules = free; codex/claude route through the CLI/Max plan (quota)' },
+      { name:'sampleDir', type:'text', label:'sample dir (required)', placeholder:'exports/…/samples' },
+      { name:'key', type:'text', label:'key yaml (required)', placeholder:'…/key.yaml' },
+      { name:'out', type:'text', label:'out file (optional)' },
+      { name:'concurrency', type:'number', label:'concurrency (optional)' },
+      { name:'batchSize', type:'number', label:'batch size (optional)' },
+    ],
+    checks: [
+      { name:'mock', label:'mock' },
+      { name:'failOnViolation', label:'fail on violation' },
+    ],
+  },
+  'online-score': {
+    blurb: 'Backfill OpenRouter scoring for a batch root. REAL metered spend on your API key unless mock/dry-run.',
+    fields: [
+      { name:'mode', type:'select', label:'target', options:['run','root'], def:'run' },
+      { name:'runId', type:'text', label:'run id', placeholder:'calibration run id', showIf:(p)=>p.mode==='run' },
+      { name:'rootDir', type:'text', label:'root dir', placeholder:'config/poetics-calibration/<run>', showIf:(p)=>p.mode==='root' },
+      { name:'model', type:'text', label:'model', placeholder:'anthropic/claude-sonnet-4.6' },
+      { name:'scoreConcurrency', type:'number', label:'score concurrency (optional)', placeholder:'3' },
+    ],
+    checks: [
+      { name:'dryRun', label:'dry-run', def:true },
+      { name:'mock', label:'mock' },
+      { name:'force', label:'force' },
+      { name:'allowQualityWarnings', label:'allow quality warnings' },
+    ],
+  },
+};
+
+function renderTabs(){
+  $('tabs').innerHTML = KINDS.map(function(k){
+    return '<button class="tab'+(k.kind===state.kind?' sel':'')+'" data-kind="'+esc(k.kind)+'" title="'+esc(k.script)+'">'+esc(k.title.split(' — ')[0])+'</button>';
+  }).join('');
+}
+
+function fieldHtml(f){
+  const id = 'f_'+f.name;
+  let input;
+  if (f.type==='select'){
+    input = '<select id="'+id+'" name="'+esc(f.name)+'">'+f.options.map(function(o){
+      return '<option'+(o===f.def?' selected':'')+'>'+esc(o)+'</option>'; }).join('')+'</select>';
+  } else if (f.type==='number'){
+    input = '<input type="number" id="'+id+'" name="'+esc(f.name)+'" min="1" placeholder="'+esc(f.placeholder||'')+'">';
+  } else {
+    input = '<input type="text" id="'+id+'" name="'+esc(f.name)+'" placeholder="'+esc(f.placeholder||'')+'" value="'+esc(f.def||'')+'">';
+  }
+  return '<div class="field" data-field="'+esc(f.name)+'"><label for="'+id+'">'+esc(f.label)+'</label>'+input+
+    (f.help?'<span class="help">'+esc(f.help)+'</span>':'')+'</div>';
+}
+
+function checkHtml(c){
+  const id = 'f_'+c.name;
+  return '<div class="field check"><input type="checkbox" id="'+id+'" name="'+esc(c.name)+'"'+(c.def?' checked':'')+'><label for="'+id+'">'+esc(c.label)+'</label></div>';
+}
+
+function renderForm(){
+  const spec = FORMS[state.kind];
+  state.fields = spec.fields;
+  const meta = KINDS.find(function(k){ return k.kind===state.kind; }) || {};
+  $('kindTitle').textContent = meta.title || state.kind;
+  $('kindBlurb').textContent = spec.blurb;
+  $('form').innerHTML = spec.fields.map(fieldHtml).join('');
+  $('checks').innerHTML = spec.checks.map(checkHtml).join('');
+  updateVisibility();
+  schedulePlan();
+}
+
+function collectParams(){
+  const spec = FORMS[state.kind];
+  const p = {};
+  spec.fields.forEach(function(f){
+    const el = $('f_'+f.name); if (!el) return;
+    const v = el.value; if (v!=='' && v!=null) p[f.name]=v;
+  });
+  spec.checks.forEach(function(c){
+    const el = $('f_'+c.name); if (el && el.checked) p[c.name]=true;
+  });
+  return p;
+}
+
+function updateVisibility(){
+  const p = collectParams();
+  FORMS[state.kind].fields.forEach(function(f){
+    if (!f.showIf) return;
+    const wrap = document.querySelector('.field[data-field="'+f.name+'"]');
+    if (wrap) wrap.classList.toggle('hidden', !f.showIf(p));
+  });
+}
+
+let planTimer = null;
+function schedulePlan(){ clearTimeout(planTimer); planTimer = setTimeout(refreshPlan, 220); }
+
+async function refreshPlan(){
+  const body = { kind: state.kind, params: collectParams() };
+  try {
+    const res = await fetch('/api/jobs/plan', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    const d = await res.json();
+    if (!res.ok){ showPlanError(d.error || res.statusText); return; }
+    state.plan = d.plan; renderReview(d.plan);
+  } catch (e){ showPlanError(e.message); }
+}
+
+function showPlanError(msg){
+  state.plan = null;
+  $('costBadge').className = 'cost bad'; $('costBadge').textContent = 'invalid';
+  $('costNote').textContent = ''; $('cmd').textContent = '—';
+  $('confirmRow').style.display='none';
+  $('formErr').textContent = msg;
+  const btn = $('launchBtn'); btn.disabled = true; btn.className='btn'; btn.textContent='launch';
+}
+
+function renderReview(plan){
+  $('formErr').textContent='';
+  const cc = plan.costClass;
+  $('costBadge').className = 'cost '+cc;
+  $('costBadge').textContent = cc==='metered' ? 'metered $' : cc;
+  $('costNote').className = 'costnote'+(cc==='metered'?' metered':'');
+  $('costNote').textContent = plan.costNote || '';
+  $('cmd').textContent = plan.command;
+  const btn = $('launchBtn');
+  if (cc==='metered'){
+    $('confirmRow').style.display='block';
+    btn.className='btn danger'; btn.textContent='launch — METERED $';
+    btn.disabled = ($('confirmInput').value.trim().toUpperCase() !== 'RUN');
+  } else {
+    $('confirmRow').style.display='none';
+    btn.disabled = false;
+    if (cc==='quota'){ btn.className='btn warn'; btn.textContent='launch — quota drain'; }
+    else { btn.className='btn go'; btn.textContent='launch — free'; }
+  }
+}
+
+async function launch(){
+  if (!state.plan) return;
+  const btn = $('launchBtn'); btn.disabled = true;
+  $('formErr').textContent='';
+  const body = { kind: state.kind, params: collectParams() };
+  try {
+    const res = await fetch('/api/jobs', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    const d = await res.json();
+    if (!res.ok){ $('formErr').textContent = (res.status===409?'serial lock: ':'')+(d.error||res.statusText); refreshPlan(); return; }
+    state.selJob = d.job.id;
+    $('confirmInput').value=''; refreshPlan();
+    await refreshJobs();
+  } catch (e){ $('formErr').textContent = e.message; refreshPlan(); }
+}
+
+function ago(ts){ if(!ts) return ''; const s = Math.round((Date.now()-ts)/1000); return s<60? s+'s' : (s<3600? Math.round(s/60)+'m' : Math.round(s/3600)+'h'); }
+
+async function refreshJobs(){
+  try {
+    const res = await fetch('/api/jobs'); const d = await res.json();
+    state.jobs = d.jobs || []; renderJobs();
+  } catch (_e) { /* keep last */ }
+}
+
+function renderJobs(){
+  $('jobsCount').textContent = state.jobs.length ? state.jobs.length+' total' : '';
+  if (!state.jobs.length){ $('jobs').innerHTML='<div class="loading">no jobs yet — launch one on the left.</div>'; $('joblog').innerHTML=''; return; }
+  $('jobs').innerHTML = '<table class="tbl"><thead><tr><th>status</th><th>cost</th><th>label</th><th>started</th><th>pid</th><th></th></tr></thead><tbody>'+
+    state.jobs.map(function(j){
+      const stop = j.status==='running' ? '<button class="btn danger" data-stop="'+esc(j.id)+'" style="padding:3px 9px">stop</button>' : '';
+      const exit = (j.status==='failed'||j.status==='error') ? ' <span class="tiny">('+(j.error?esc(j.error):'exit '+j.exitCode)+')</span>' : '';
+      return '<tr class="jobrow'+(j.id===state.selJob?' sel':'')+'" data-job="'+esc(j.id)+'">'+
+        '<td><span class="st '+esc(j.status)+'">'+esc(j.status)+'</span>'+exit+'</td>'+
+        '<td><span class="cost '+esc(j.costClass)+'">'+esc(j.costClass==='metered'?'metered $':j.costClass)+'</span></td>'+
+        '<td>'+esc(j.label)+'</td>'+
+        '<td class="tiny">'+esc(ago(j.startedAt))+' ago</td>'+
+        '<td class="tiny">'+esc(j.pid||'—')+'</td>'+
+        '<td>'+stop+'</td></tr>';
+    }).join('')+'</tbody></table>';
+  renderJobLog();
+}
+
+function renderJobLog(){
+  const j = state.jobs.find(function(x){ return x.id===state.selJob; });
+  if (!j){ $('joblog').innerHTML=''; return; }
+  $('joblog').innerHTML = '<div class="sec-h">log · '+esc(j.label)+'</div>'+
+    '<pre class="cmd" style="white-space:pre-wrap">'+esc(j.command)+'</pre>'+
+    '<pre>'+esc(j.logTail || '(no output yet)')+'</pre>';
+}
+
+// ── Wiring ──────────────────────────────────────────────────────────────────────
+renderTabs();
+renderForm();
+$('tabs').addEventListener('click', function(e){ const b=e.target.closest('.tab'); if(!b) return; state.kind=b.getAttribute('data-kind'); renderTabs(); renderForm(); });
+$('form').addEventListener('input', function(){ updateVisibility(); schedulePlan(); });
+$('form').addEventListener('change', function(){ updateVisibility(); schedulePlan(); });
+$('checks').addEventListener('change', schedulePlan);
+$('confirmInput').addEventListener('input', function(){ if (state.plan) renderReview(state.plan); });
+$('launchBtn').addEventListener('click', launch);
+$('jobs').addEventListener('click', function(e){
+  const stop = e.target.closest('[data-stop]');
+  if (stop){ e.stopPropagation(); fetch('/api/jobs/'+encodeURIComponent(stop.getAttribute('data-stop'))+'/stop',{method:'POST'}).then(refreshJobs); return; }
+  const row = e.target.closest('[data-job]'); if (row){ state.selJob = row.getAttribute('data-job'); renderJobs(); }
+});
+$('themeToggle').addEventListener('click', function(){
+  const dd = document.documentElement; const nx = dd.getAttribute('data-theme')==='dark' ? '' : 'dark';
+  if (nx) dd.setAttribute('data-theme','dark'); else dd.removeAttribute('data-theme');
+  try { localStorage.setItem('poetics-theme', nx); } catch (_e) {}
+});
+try { if (localStorage.getItem('poetics-theme')==='dark') document.documentElement.setAttribute('data-theme','dark'); } catch (_e) {}
+refreshJobs();
+setInterval(refreshJobs, 1500);
 </script>
 </body>
 </html>`;
@@ -2186,6 +3268,9 @@ tbody th {
     <span class="rail__brand">poetics</span>
     <span class="rail__sub" id="railSub">sidecar browser · public scripts, full traces, critic scores, labels as perspective</span>
     <a class="rail__btn" href="/compose" title="Assemble a drama spec — the drama composer">compose</a>
+    <a class="rail__btn" href="/ontology" title="View the shared ontology — system, tutor &amp; learner lenses">ontology</a>
+    <a class="rail__btn" href="/replays" title="Discursive replays — counterfactual revisions diffed against the originals">replays</a>
+    <a class="rail__btn" href="/runs" title="Launch runs — generative · replay · adversarial-CLI · online scoring">runs</a>
     <a class="rail__arc" href="/arc" title="Open the dramatic-recognition arc synthesis note">
       <span>recognition arc</span>
       <span class="rail__arc__arrow" aria-hidden="true">→</span>
