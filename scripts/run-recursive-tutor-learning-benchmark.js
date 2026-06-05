@@ -192,7 +192,7 @@ ${JSON.stringify(
 `;
 }
 
-function replayCommandFor(transcriptPath, policyMemoryPath = null) {
+function replayCommandFor(transcriptPath, { outDir = null, policyMemoryPath = null } = {}) {
   const cmd = [
     'node',
     'scripts/replay-discursive-transcript.js',
@@ -204,6 +204,7 @@ function replayCommandFor(transcriptPath, policyMemoryPath = null) {
     'mock',
     '--recursive-tutor-learning-gate',
   ];
+  if (outDir) cmd.push('--out-dir', repoRel(outDir));
   if (policyMemoryPath) cmd.push('--policy-memory', repoRel(policyMemoryPath));
   return cmd;
 }
@@ -233,13 +234,22 @@ export function buildAttemptChainPlan(config, { outDir = DEFAULT_OUT_DIR } = {})
     const familyDir = path.join(outDir, safeSlug(family.family_id));
     const trainingTranscript = path.join(familyDir, 'training-seed.full.md');
     const policyRevision = path.join(familyDir, 'policy-revision-template.json');
+    const attempt1ReplayDir = path.join(familyDir, 'attempt1-replay');
     const heldout = asArray(family.heldout_siblings).map((sibling) => {
       const transcript = path.join(familyDir, `${safeSlug(sibling.sibling_id)}.heldout.full.md`);
+      const heldoutBaselineReplayDir = path.join(familyDir, `${safeSlug(sibling.sibling_id)}.heldout-baseline-replay`);
+      const heldoutRevisedReplayDir = path.join(familyDir, `${safeSlug(sibling.sibling_id)}.heldout-revised-replay`);
       return {
         sibling_id: sibling.sibling_id,
         transcript,
-        replay_command: replayCommandFor(transcript, policyRevision),
-        replay_command_text: commandString(replayCommandFor(transcript, policyRevision)),
+        baseline_replay_dir: heldoutBaselineReplayDir,
+        revised_replay_dir: heldoutRevisedReplayDir,
+        baseline_replay_command: replayCommandFor(transcript, { outDir: heldoutBaselineReplayDir }),
+        baseline_replay_command_text: commandString(replayCommandFor(transcript, { outDir: heldoutBaselineReplayDir })),
+        revised_replay_command: replayCommandFor(transcript, { outDir: heldoutRevisedReplayDir, policyMemoryPath: policyRevision }),
+        revised_replay_command_text: commandString(
+          replayCommandFor(transcript, { outDir: heldoutRevisedReplayDir, policyMemoryPath: policyRevision }),
+        ),
       };
     });
     return {
@@ -249,8 +259,9 @@ export function buildAttemptChainPlan(config, { outDir = DEFAULT_OUT_DIR } = {})
       family_dir: familyDir,
       training_transcript: trainingTranscript,
       policy_revision_template: policyRevision,
-      attempt1_replay_command: replayCommandFor(trainingTranscript),
-      attempt1_replay_command_text: commandString(replayCommandFor(trainingTranscript)),
+      attempt1_replay_dir: attempt1ReplayDir,
+      attempt1_replay_command: replayCommandFor(trainingTranscript, { outDir: attempt1ReplayDir }),
+      attempt1_replay_command_text: commandString(replayCommandFor(trainingTranscript, { outDir: attempt1ReplayDir })),
       heldout,
       local_gate_status: validation.valid ? 'ready_for_attempt1' : 'blocked_by_static_validation',
     };
@@ -320,8 +331,10 @@ export function materializeAttemptChain(config, { configPath = DEFAULT_CONFIG, o
   for (const family of plan.families) {
     commands.push(`# ${family.family_id} attempt 1`);
     commands.push(family.attempt1_replay_command_text);
-    commands.push(`# ${family.family_id} held-out after filling ${repoRel(family.policy_revision_template)}`);
-    for (const sibling of family.heldout) commands.push(sibling.replay_command_text);
+    commands.push(`# ${family.family_id} held-out baseline before filling ${repoRel(family.policy_revision_template)}`);
+    for (const sibling of family.heldout) commands.push(sibling.baseline_replay_command_text);
+    commands.push(`# ${family.family_id} held-out revised after filling ${repoRel(family.policy_revision_template)}`);
+    for (const sibling of family.heldout) commands.push(sibling.revised_replay_command_text);
   }
   fs.writeFileSync(path.join(outDir, 'next-commands.sh'), `${commands.join('\n')}\n`, 'utf8');
   return plan;
@@ -368,4 +381,3 @@ function main() {
 }
 
 if (process.argv[1] === __filename) main();
-

@@ -44,8 +44,10 @@ test('attempt-chain plan includes training and held-out replay commands', () => 
   for (const family of plan.families) {
     assert.equal(family.local_gate_status, 'ready_for_attempt1');
     assert.match(family.attempt1_replay_command_text, /--recursive-tutor-learning-gate/);
+    assert.match(family.attempt1_replay_command_text, /--out-dir/);
     assert.ok(family.heldout.length >= 1);
-    assert.match(family.heldout[0].replay_command_text, /--policy-memory/);
+    assert.match(family.heldout[0].baseline_replay_command_text, /heldout-baseline-replay/);
+    assert.match(family.heldout[0].revised_replay_command_text, /--policy-memory/);
   }
 });
 
@@ -65,4 +67,3 @@ test('materializeAttemptChain writes transcripts, templates, and commands', () =
     for (const sibling of family.heldout) assert.ok(fs.existsSync(sibling.transcript));
   }
 });
-

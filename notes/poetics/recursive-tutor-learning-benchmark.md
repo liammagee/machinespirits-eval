@@ -142,3 +142,14 @@ The harness writes per-family training and held-out transcript stubs, a static
 validation report, and replay commands that can later call the existing
 discursive replay checker with the recursive tutor-learning gate enabled.
 
+Run the local gate over existing chain artifacts:
+
+```bash
+npm run poetics:recursive-tutor-gate -- \
+  --chain-dir exports/recursive-tutor-learning/a18-pilot-local
+```
+
+The local gate is intentionally conservative. A fresh materialized chain reports
+`revise_again` until attempt-1 replay, a filled policy revision, and held-out
+baseline/revised replay outputs exist. `clean_survivor` requires the held-out
+revised path to pass while the held-out baseline path does not.
