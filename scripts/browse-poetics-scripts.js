@@ -1061,10 +1061,16 @@ function createPoeticsBrowserApp({ dbPath = null } = {}) {
     if (!job) return res.status(404).json({ error: 'job not found' });
     return res.json({ job });
   });
+  // GET /summary wraps the raw synthesis note (served at /arc) in a same-origin
+  // iframe beneath the standard workbench rail, so it carries the common nav
+  // links without fighting the doc's own viewport-anchored chrome. /arc still
+  // serves the bare techne doc — it's both the iframe src and a legacy alias for
+  // any external/published references to the old path.
+  app.get('/summary', (_req, res) => res.type('html').send(summaryWrapperHtml()));
   app.get('/arc', (_req, res) => {
-    const arcPath = path.resolve(ROOT, 'notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.html');
-    if (!fs.existsSync(arcPath)) return res.status(404).type('text').send('arc note not found');
-    res.type('html').sendFile(arcPath);
+    const notePath = path.resolve(ROOT, 'notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.html');
+    if (!fs.existsSync(notePath)) return res.status(404).type('text').send('summary note not found');
+    res.type('html').sendFile(notePath);
   });
   app.get('/browse', (_req, res) => res.type('html').send(renderBrowserHtml()));
   app.get('/', (req, res) => {
@@ -1208,20 +1214,30 @@ function escapeHtml(value) {
   );
 }
 
-// Single source of truth for the top nav. Every page already ships identical
-// .rail*/.rail__btn CSS, so this stays markup-only; the active link gets
-// aria-current + an inline accent (theme vars exist on every page) so no page
-// needs a bespoke active-state rule. Replaces five hand-maintained, divergent rails.
+// Single source of truth for the top-nav items, consumed by railHtml() — which
+// every workbench page renders, including the /summary iframe wrapper. Adding an
+// entry here adds the tab everywhere at once. Each entry is [key, href, label, title].
+const NAV = [
+  ['home', '/', 'home', 'Dashboard — overview, live stats &amp; guided first steps'],
+  ['browse', '/browse', 'browse', 'Browse generated scripts, full traces, critic scores &amp; labels'],
+  ['compose', '/compose', 'compose', 'Assemble a drama-machine spec, validated live against the ontology'],
+  ['ontology', '/ontology', 'ontology', 'The shared ontology — system, tutor &amp; learner lenses'],
+  ['rubric', '/rubric', 'rubric', 'The poetics rubric — the 6 dramatic-form dimensions critics score against'],
+  ['replays', '/replays', 'replays', 'Counterfactual replays diffed against their originals'],
+  ['runs', '/runs', 'runs', 'Launch runs — generative · replay · adversarial-CLI · online scoring'],
+  [
+    'summary',
+    '/summary',
+    'summary',
+    'The synthesis note — the whole dramatic-recognition arc, from the paper to this workbench',
+  ],
+];
+
+// Single source of truth for the top-nav markup. Every page already ships
+// identical .rail*/.rail__btn CSS, so this stays markup-only; the active link
+// gets aria-current + an inline accent (theme vars exist on every page) so no
+// page needs a bespoke active-state rule. Replaces five hand-maintained rails.
 function railHtml({ active = '', brand = 'machine spirits', sub = '', extra = '' } = {}) {
-  const NAV = [
-    ['home', '/', 'home', 'Dashboard — overview, live stats &amp; guided first steps'],
-    ['browse', '/browse', 'browse', 'Browse generated scripts, full traces, critic scores &amp; labels'],
-    ['compose', '/compose', 'compose', 'Assemble a drama-machine spec, validated live against the ontology'],
-    ['ontology', '/ontology', 'ontology', 'The shared ontology — system, tutor &amp; learner lenses'],
-    ['rubric', '/rubric', 'rubric', 'The poetics rubric — the 6 dramatic-form dimensions critics score against'],
-    ['replays', '/replays', 'replays', 'Counterfactual replays diffed against their originals'],
-    ['runs', '/runs', 'runs', 'Launch runs — generative · replay · adversarial-CLI · online scoring'],
-  ];
   const links = NAV.map(([key, href, label, title]) => {
     const on = key === active;
     const attrs = on
@@ -1234,10 +1250,45 @@ function railHtml({ active = '', brand = 'machine spirits', sub = '', extra = ''
     <span class="rail__brand">${brand}</span>
     <span class="rail__sub">${sub}</span>
     ${links}
-    <a class="rail__arc" href="/arc" title="The dramatic-recognition arc synthesis note"><span>arc</span><span aria-hidden="true">→</span></a>
     ${extra}<button class="rail__btn" id="themeToggle" type="button">theme</button>
   </div>
 </header>`;
+}
+
+// The summary note is an external techne-framework HTML doc that owns its own
+// viewport-anchored chrome (a fixed TOC sidebar + a sticky section rail).
+// Splicing a workbench strip above it loses the left of the strip under that
+// fixed chrome, so GET /summary instead wraps the raw doc — served at /arc — in
+// a same-origin iframe beneath the standard rail. The doc's fixed sidebar then
+// anchors to the iframe, the rail owns the real top with the common links
+// (summary active), and a small script mirrors the rail's light/dark into the
+// framed doc so the two layers stay in step.
+function summaryWrapperHtml() {
+  const css = `html,body{height:100%}
+body{display:flex;flex-direction:column;overflow:hidden}
+.rail{flex:0 0 auto}
+.summaryframe{flex:1 1 auto;width:100%;border:0;display:block;background:var(--paper)}`;
+  return `${pageHead({ title: 'Summary · the dramatic-recognition arc', css })}
+<body>
+${railHtml({ active: 'summary', brand: 'machine spirits', sub: 'the synthesis note — the whole dramatic-recognition arc, from the paper to this workbench' })}
+<iframe id="summaryFrame" class="summaryframe" src="/arc" title="From Paper 2.0 to dramatic recognition — the synthesis note"></iframe>
+<script>
+(function () {
+  try { if (localStorage.getItem('poetics-theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); } catch (_e) {}
+  var f = document.getElementById('summaryFrame');
+  function syncFrame() { try { f.contentDocument.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme') || ''); } catch (_e) {} }
+  f.addEventListener('load', syncFrame);
+  var t = document.getElementById('themeToggle');
+  if (t) t.addEventListener('click', function () {
+    var d = document.documentElement, nx = d.getAttribute('data-theme') === 'dark' ? '' : 'dark';
+    if (nx) d.setAttribute('data-theme', 'dark'); else d.removeAttribute('data-theme');
+    try { localStorage.setItem('poetics-theme', nx); } catch (_e) {}
+    syncFrame();
+  });
+})();
+</script>
+</body>
+</html>`;
 }
 
 // ── Shared page chrome ────────────────────────────────────────────────────────
@@ -1271,9 +1322,7 @@ code,pre{ font-family:"JetBrains Mono",ui-monospace,'SF Mono',Menlo,monospace; }
 .rail__brand::before{ content:"▸ "; color:var(--brick); font-style:normal; }
 .rail__sub{ flex:1 1 auto; color:var(--ink-3); text-transform:none; letter-spacing:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .rail__btn{ display:inline-flex; align-items:center; gap:.45em; border:1px solid var(--rule); background:transparent; color:var(--ink-3); font:inherit; padding:.32em .8em; cursor:pointer; text-decoration:none; flex:0 0 auto; transition:color .15s var(--ease), border-color .15s var(--ease); }
-.rail__btn:hover{ color:var(--ink); border-color:var(--ink-3); }
-.rail__arc{ display:inline-flex; align-items:center; gap:.45em; padding:.4em .95em; background:var(--brick); color:var(--paper); border:1px solid var(--brick); text-decoration:none; font-weight:600; letter-spacing:.14em; flex:0 0 auto; white-space:nowrap; transition:background .15s var(--ease), border-color .15s var(--ease), transform .15s var(--ease); }
-.rail__arc:hover{ background:var(--brick-d); border-color:var(--brick-d); transform:translateY(-1px); }`;
+.rail__btn:hover{ color:var(--ink); border-color:var(--ink-3); }`;
 
 // Emit the <!doctype>…</head> shell with the shared chrome + this page's own CSS.
 // Each render*Html() then continues with its <body>. Keeps every page's <head>
@@ -1436,10 +1485,10 @@ function renderDashboardHtml(stats = {}) {
           'open replays',
         ],
         [
-          'The arc',
+          'Summary',
           'The synthesis note tracing the whole dramatic-recognition arc, from the paper through to this workbench.',
-          '/arc',
-          'read the arc',
+          '/summary',
+          'read the summary',
         ],
       ],
     ],
@@ -3470,27 +3519,6 @@ button, input, select, textarea {
   flex: 0 0 auto;
 }
 .rail__btn:hover { color: var(--ink); border-color: var(--ink-3); }
-.rail__arc {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45em;
-  padding: 0.4em 0.95em;
-  background: var(--brick);
-  color: var(--paper);
-  border: 1px solid var(--brick);
-  text-decoration: none;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  flex: 0 0 auto;
-  white-space: nowrap;
-  transition: background .15s var(--ease), border-color .15s var(--ease), transform .15s var(--ease);
-}
-.rail__arc:hover {
-  background: var(--brick-d);
-  border-color: var(--brick-d);
-  transform: translateY(-1px);
-}
-.rail__arc__arrow { font-weight: 400; font-size: 1.15em; line-height: 1; }
 
 /* ═══════ application grid ═══════ */
 .app {
