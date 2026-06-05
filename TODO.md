@@ -575,9 +575,9 @@ Decisive contrast = **S1 vs S0** (byte-identical edit-rights channel; sole diffe
 
 **Implementation plan**:
 
-- [ ] **A18.0 - Design note** (zero API). Create `notes/poetics/recursive-tutor-learning-benchmark.md` with the above claim boundary, scenario-family schema, stop rules, and success criteria.
-- [ ] **A18.1 - Scenario-family fixture** (zero API). Add a small config under `config/poetics-calibration/` or `config/recursive-tutor-learning/` with 3 pilot families and held-out siblings.
-- [ ] **A18.2 - Replay harness extension** (zero/low API). Extend existing replay scripts to support `attempt1 -> failure_record -> policy_revision -> attempt2_heldout`, preserving separate public transcript and held-out deliberation artifacts.
+- [x] **A18.0 - Design note** (zero API). Create `notes/poetics/recursive-tutor-learning-benchmark.md` with the above claim boundary, scenario-family schema, stop rules, and success criteria. DONE 2026-06-05.
+- [x] **A18.1 - Scenario-family fixture** (zero API). Add a small config under `config/poetics-calibration/` or `config/recursive-tutor-learning/` with 3 pilot families and held-out siblings. DONE 2026-06-05: `config/recursive-tutor-learning/pilot-families.yaml`.
+- [x] **A18.2 - Replay harness extension** (zero/low API). Extend existing replay scripts to support `attempt1 -> failure_record -> policy_revision -> attempt2_heldout`, preserving separate public transcript and held-out deliberation artifacts. DONE 2026-06-05: `scripts/run-recursive-tutor-learning-benchmark.js` materializes attempt-chain fixtures and replay commands against the existing recursive tutor-learning gate.
 - [ ] **A18.3 - Local gate** (cheap local critics first). Add a local scoring/report script that emits per-family status: `clean_survivor`, `revise_again`, `coherence_confound`, `leakage`, `organic_drift`, `no_headroom`.
 - [ ] **A18.4 - Minimal run** (attended). Run 3 families x 1 attempt chain with local critics only. Stop if all three fail for the same structural reason.
 - [ ] **A18.5 - Panel only on survivors** (paid, explicit go-ahead). If at least one family is a clean survivor, run a small adversarial panel on only those families.
