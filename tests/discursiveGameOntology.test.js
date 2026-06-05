@@ -132,6 +132,7 @@ test('adaptation claim layer separates recognitive form from peripeteia-induced 
 ms:episode4 rdf:type ms:DyadicRevision ;
   ms:hasPanelRecognitionEvidence ms:recognitionPanel4 ;
   ms:hasOriginAttributionEvidence ms:originPanel4 ;
+  ms:hasPublicCausalBridgeEvidence ms:bridge4 ;
   ms:hasCounterfactualContrast ms:contrast4 ;
   ms:hasNonLeakageEvidence ms:nonLeakage4 .
 
@@ -143,6 +144,15 @@ ms:originPanel4 rdf:type ms:BlindPanelOriginAttribution ;
   ms:hasRecognitionOrigin ms:PeripeteiaInducedOrigin ;
   ms:peripeteiaOriginVoteCount 3 ;
   ms:requiredOriginVotes 3 .
+
+ms:bridge4 rdf:type ms:PublicCausalBridgeEvidence ;
+  ms:hasPublicObstruction "The covered tile makes the old slot-reading check fail." ;
+  ms:hasOldCheckBlockedBy "The old check cannot decide while the middle field is hidden." ;
+  ms:hasTutorMechanismChange "The tutor introduces a release test tied to visible fields." ;
+  ms:hasLearnerUseOfChangedTest "The learner uses the release test before naming the label." ;
+  ms:hasObstructionSpecificConstraint "The hidden middle field makes the old slot-reading warrant unavailable." ;
+  ms:hasNonGenericMechanismJustification "The release test exists only because the cover blocks the middle field; it is not a generic reminder to read the tile." ;
+  ms:hasCriticVisibleNecessityLink "The public cover stop is introduced before the release test and the learner uses release only after all fields are visible." .
 
 ms:contrast4 rdf:type ms:CounterfactualContrastEvidence ;
   ms:routineControlRecognitionVoteCount 0 ;
@@ -159,6 +169,75 @@ ms:nonLeakage4 rdf:type ms:NonLeakageEvidence .`;
   assertClosureTriple(result.closureText, 'episode4', 'a', 'RecognitiveFormSurvivor');
   assertClosureTriple(result.closureText, 'episode4', 'a', 'PeripeteiaOriginSurvivor');
   assertClosureTriple(result.closureText, 'episode4', 'a', 'PeripeteiaInducedAdaptationCandidate');
+});
+
+test('peripeteia-origin vote without public causal bridge does not derive origin survivor', async () => {
+  const abox = `${ABOX_PREFIXES}
+ms:episode6 rdf:type ms:DyadicRevision ;
+  ms:hasPanelRecognitionEvidence ms:recognitionPanel6 ;
+  ms:hasOriginAttributionEvidence ms:originPanel6 ;
+  ms:hasCounterfactualContrast ms:contrast6 ;
+  ms:hasNonLeakageEvidence ms:nonLeakage6 .
+
+ms:recognitionPanel6 rdf:type ms:BlindPanelRecognitionEvidence ;
+  ms:recognitionVoteCount 4 ;
+  ms:requiredRecognitionVotes 3 .
+
+ms:originPanel6 rdf:type ms:BlindPanelOriginAttribution ;
+  ms:hasRecognitionOrigin ms:PeripeteiaInducedOrigin ;
+  ms:peripeteiaOriginVoteCount 3 ;
+  ms:requiredOriginVotes 3 .
+
+ms:contrast6 rdf:type ms:CounterfactualContrastEvidence .
+ms:nonLeakage6 rdf:type ms:NonLeakageEvidence .`;
+
+  const result = await checkAboxConsistency(abox, {
+    modules: ['reasoning', 'poetics', 'discursive', 'consistency'],
+    includeClosure: true,
+  });
+
+  assert.equal(result.consistent, true);
+  assertClosureTriple(result.closureText, 'episode6', 'a', 'RecognitiveFormSurvivor');
+  assert.doesNotMatch(result.closureText, /ms:episode6 a ms:PeripeteiaOriginSurvivor\./);
+  assert.doesNotMatch(result.closureText, /ms:episode6 a ms:PeripeteiaInducedAdaptationCandidate\./);
+});
+
+test('generic bridge-shaped scaffold without device specificity does not derive origin survivor', async () => {
+  const abox = `${ABOX_PREFIXES}
+ms:episode7 rdf:type ms:DyadicRevision ;
+  ms:hasPanelRecognitionEvidence ms:recognitionPanel7 ;
+  ms:hasOriginAttributionEvidence ms:originPanel7 ;
+  ms:hasPublicCausalBridgeEvidence ms:bridge7 ;
+  ms:hasCounterfactualContrast ms:contrast7 ;
+  ms:hasNonLeakageEvidence ms:nonLeakage7 .
+
+ms:recognitionPanel7 rdf:type ms:BlindPanelRecognitionEvidence ;
+  ms:recognitionVoteCount 4 ;
+  ms:requiredRecognitionVotes 3 .
+
+ms:originPanel7 rdf:type ms:BlindPanelOriginAttribution ;
+  ms:hasRecognitionOrigin ms:PeripeteiaInducedOrigin ;
+  ms:peripeteiaOriginVoteCount 3 ;
+  ms:requiredOriginVotes 3 .
+
+ms:bridge7 rdf:type ms:PublicCausalBridgeEvidence ;
+  ms:hasPublicObstruction "The cue moved and the learner hesitated." ;
+  ms:hasOldCheckBlockedBy "The old direction check no longer settles the label." ;
+  ms:hasTutorMechanismChange "The tutor introduces a source strip." ;
+  ms:hasLearnerUseOfChangedTest "The learner uses the source strip." .
+
+ms:contrast7 rdf:type ms:CounterfactualContrastEvidence .
+ms:nonLeakage7 rdf:type ms:NonLeakageEvidence .`;
+
+  const result = await checkAboxConsistency(abox, {
+    modules: ['reasoning', 'poetics', 'discursive', 'consistency'],
+    includeClosure: true,
+  });
+
+  assert.equal(result.consistent, true);
+  assertClosureTriple(result.closureText, 'episode7', 'a', 'RecognitiveFormSurvivor');
+  assert.doesNotMatch(result.closureText, /ms:episode7 a ms:PeripeteiaOriginSurvivor\./);
+  assert.doesNotMatch(result.closureText, /ms:episode7 a ms:PeripeteiaInducedAdaptationCandidate\./);
 });
 
 test('organic-origin recognition does not derive peripeteia-induced adaptation candidate', async () => {

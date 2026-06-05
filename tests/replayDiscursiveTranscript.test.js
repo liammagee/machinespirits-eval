@@ -69,10 +69,16 @@ test('parseArgs accepts explicit replay item concurrency and feedback file', () 
     '/tmp/replay-feedback.txt',
     '--policy-memory',
     policyMemory,
+    '--min-public-causal-bridge',
+    '0.85',
+    '--min-device-specificity',
+    '0.8',
   ]);
   assert.equal(args.itemConcurrency, 3);
   assert.equal(args.feedbackFile, '/tmp/replay-feedback.txt');
   assert.deepEqual(args.policyMemoryFiles, [policyMemory]);
+  assert.equal(args.gateThresholds.public_causal_bridge, 0.85);
+  assert.equal(args.gateThresholds.device_specificity, 0.8);
 });
 
 test('evaluateLocalGate accepts a clean local checker result', () => {
@@ -82,6 +88,8 @@ test('evaluateLocalGate accepts a clean local checker result', () => {
       claim_boundary_ok: true,
       scores: {
         public_evidence: 0.8,
+        public_causal_bridge: 0.8,
+        device_specificity: 0.8,
         tactic_selection: 0.8,
         learner_actional_uptake: 0.8,
         learner_self_reframe: 0.8,
@@ -109,6 +117,8 @@ test('evaluateLocalGate rejects low non-leakage and failed checker results', () 
       claim_boundary_ok: true,
       scores: {
         public_evidence: 0.8,
+        public_causal_bridge: 0.8,
+        device_specificity: 0.8,
         tactic_selection: 0.8,
         learner_actional_uptake: 0.8,
         learner_self_reframe: 0.8,
@@ -138,6 +148,8 @@ test('evaluateLocalGate normalizes 0-5 checker scores before thresholding', () =
       claim_boundary_ok: true,
       scores: {
         public_evidence: 5,
+        public_causal_bridge: 5,
+        device_specificity: 5,
         tactic_selection: 4,
         learner_actional_uptake: 5,
         learner_self_reframe: 5,
@@ -167,6 +179,8 @@ test('evaluateLocalGate normalizes 0-10 checker scores before thresholding', () 
       claim_boundary_ok: true,
       scores: {
         public_evidence: 8,
+        public_causal_bridge: 8,
+        device_specificity: 8,
         tactic_selection: 8,
         learner_actional_uptake: 8,
         learner_self_reframe: 9,
@@ -197,6 +211,8 @@ test('evaluateLocalGate normalizes 0-100 percentage checker scores before thresh
       claim_boundary_ok: true,
       scores: {
         public_evidence: 80,
+        public_causal_bridge: 80,
+        device_specificity: 80,
         tactic_selection: 80,
         learner_actional_uptake: 80,
         learner_self_reframe: 90,
@@ -225,6 +241,8 @@ test('evaluateLocalGate blocks actional-only uptake as revise_again, not survivo
       claim_boundary_ok: true,
       scores: {
         public_evidence: 0.8,
+        public_causal_bridge: 0.8,
+        device_specificity: 0.8,
         tactic_selection: 0.8,
         learner_actional_uptake: 0.9,
         learner_self_reframe: 0.25,
@@ -248,6 +266,70 @@ test('evaluateLocalGate blocks actional-only uptake as revise_again, not survivo
   assert.equal(gate.failures.length, 0);
 });
 
+test('evaluateLocalGate blocks weak public causal bridge as revise_again, not reject', () => {
+  const gate = evaluateLocalGate(
+    {
+      passes: true,
+      claim_boundary_ok: true,
+      scores: {
+        public_evidence: 0.9,
+        public_causal_bridge: 0.3,
+        device_specificity: 0.8,
+        tactic_selection: 0.9,
+        learner_actional_uptake: 0.9,
+        learner_self_reframe: 0.85,
+        dyadic_revision: 0.85,
+        non_leakage: 0.95,
+        prose_preservation: 0.9,
+      },
+      findings: [],
+      recommended_action: 'accept_for_blind_panel',
+    },
+    {
+      non_leakage_check: { passes: true },
+      claim_boundary: 'counterfactual_revision_not_online_adaptation',
+    },
+  );
+
+  assert.equal(gate.status, 'revise_again');
+  assert.equal(gate.escalate, false);
+  assert.ok(gate.warnings.some((warning) => warning.criterion === 'public_causal_bridge'));
+  assert.ok(gate.blockingWarnings.some((warning) => warning.criterion === 'public_causal_bridge'));
+  assert.equal(gate.failures.length, 0);
+});
+
+test('evaluateLocalGate blocks generic devices as revise_again, not reject', () => {
+  const gate = evaluateLocalGate(
+    {
+      passes: true,
+      claim_boundary_ok: true,
+      scores: {
+        public_evidence: 0.9,
+        public_causal_bridge: 0.85,
+        device_specificity: 0.35,
+        tactic_selection: 0.9,
+        learner_actional_uptake: 0.9,
+        learner_self_reframe: 0.85,
+        dyadic_revision: 0.85,
+        non_leakage: 0.95,
+        prose_preservation: 0.9,
+      },
+      findings: [],
+      recommended_action: 'accept_for_blind_panel',
+    },
+    {
+      non_leakage_check: { passes: true },
+      claim_boundary: 'counterfactual_revision_not_online_adaptation',
+    },
+  );
+
+  assert.equal(gate.status, 'revise_again');
+  assert.equal(gate.escalate, false);
+  assert.ok(gate.warnings.some((warning) => warning.criterion === 'device_specificity'));
+  assert.ok(gate.blockingWarnings.some((warning) => warning.criterion === 'device_specificity'));
+  assert.equal(gate.failures.length, 0);
+});
+
 test('evaluateLocalGate records advisory warnings without blocking panel escalation', () => {
   const gate = evaluateLocalGate(
     {
@@ -255,6 +337,8 @@ test('evaluateLocalGate records advisory warnings without blocking panel escalat
       claim_boundary_ok: true,
       scores: {
         public_evidence: 0.9,
+        public_causal_bridge: 0.9,
+        device_specificity: 0.9,
         tactic_selection: 0.9,
         learner_actional_uptake: 0.9,
         learner_self_reframe: 0.85,
@@ -293,6 +377,8 @@ test('evaluateLocalGate keeps explicitly blocking warnings in revise_again', () 
       claim_boundary_ok: true,
       scores: {
         public_evidence: 0.9,
+        public_causal_bridge: 0.9,
+        device_specificity: 0.9,
         tactic_selection: 0.9,
         learner_actional_uptake: 0.9,
         learner_self_reframe: 0.85,
@@ -330,6 +416,8 @@ test('evaluateLocalGate accepts legacy learner uptake score only for actional up
       claim_boundary_ok: true,
       scores: {
         public_evidence: 0.8,
+        public_causal_bridge: 0.8,
+        device_specificity: 0.8,
         tactic_selection: 0.8,
         learner_uptake_or_contest: 0.9,
         learner_self_reframe: 0.8,

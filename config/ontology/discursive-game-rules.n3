@@ -57,17 +57,27 @@
   => { ?e a ms:DyadicRevision . ?r a ms:AccountableTutorRevision } .
 
 # Adaptation-claim gates. Recognition is necessary but insufficient: a transcript
-# first survives form, then origin attribution, then counterfactual/non-leakage
-# evidence before it becomes a candidate peripeteia-induced adaptation claim.
+# first survives form, then origin attribution plus public causal bridge, then
+# counterfactual/non-leakage evidence before it becomes a candidate
+# peripeteia-induced adaptation claim.
 { ?e a ms:DyadicRevision ;
      ms:hasPanelRecognitionEvidence ?rec .
   ?rec a ms:BlindPanelRecognitionEvidence }
   => { ?e a ms:RecognitiveFormSurvivor } .
 
 { ?e a ms:RecognitiveFormSurvivor ;
-     ms:hasOriginAttributionEvidence ?origin .
+     ms:hasOriginAttributionEvidence ?origin ;
+     ms:hasPublicCausalBridgeEvidence ?bridge .
   ?origin a ms:BlindPanelOriginAttribution ;
-     ms:hasRecognitionOrigin ms:PeripeteiaInducedOrigin }
+     ms:hasRecognitionOrigin ms:PeripeteiaInducedOrigin .
+  ?bridge a ms:PublicCausalBridgeEvidence ;
+     ms:hasPublicObstruction ?obstruction ;
+     ms:hasOldCheckBlockedBy ?block ;
+     ms:hasTutorMechanismChange ?change ;
+     ms:hasLearnerUseOfChangedTest ?use ;
+     ms:hasObstructionSpecificConstraint ?constraint ;
+     ms:hasNonGenericMechanismJustification ?specificity ;
+     ms:hasCriticVisibleNecessityLink ?visibleLink }
   => { ?e a ms:PeripeteiaOriginSurvivor } .
 
 { ?e a ms:PeripeteiaOriginSurvivor ;

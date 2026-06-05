@@ -41,6 +41,8 @@ const DEFAULT_ITEM_CONCURRENCY = 2;
 const BACKENDS = new Set(['mock', 'codex', 'claude', 'agy', 'none', 'adversarial']);
 const DEFAULT_GATE_THRESHOLDS = Object.freeze({
   public_evidence: 0.7,
+  public_causal_bridge: 0.7,
+  device_specificity: 0.7,
   tactic_selection: 0.7,
   learner_actional_uptake: 0.7,
   learner_self_reframe: 0.7,
@@ -49,11 +51,17 @@ const DEFAULT_GATE_THRESHOLDS = Object.freeze({
   prose_preservation: 0.5,
 });
 const GATE_SCORE_KEYS = Object.freeze(Object.keys(DEFAULT_GATE_THRESHOLDS));
-const REVISION_ONLY_GATE_SCORE_KEYS = new Set(['learner_self_reframe']);
+const REVISION_ONLY_GATE_SCORE_KEYS = new Set([
+  'public_causal_bridge',
+  'device_specificity',
+  'learner_self_reframe',
+]);
 const CRITICAL_WARNING_CRITERIA = new Set([
   'claim_boundary',
   'checker_passes',
+  'device_specificity',
   'non_leakage',
+  'public_causal_bridge',
   'public_evidence',
   'revision_claim_boundary',
   'revision_non_leakage',
@@ -70,7 +78,8 @@ function usage() {
     [--checker none|mock|codex|claude|agy|gemini|adversarial]
     [--adversarial-check]
     [--no-local-gate]
-    [--min-public-evidence N] [--min-tactic-selection N]
+    [--min-public-evidence N] [--min-public-causal-bridge N]
+    [--min-device-specificity N] [--min-tactic-selection N]
     [--min-learner-actional-uptake N] [--min-learner-self-reframe N]
     [--min-dyadic-revision N]
     [--min-non-leakage N] [--min-prose-preservation N]
@@ -114,6 +123,8 @@ export function parseArgs(argv = process.argv.slice(2)) {
     else if (t === '--agy-model-label') args.agyModelLabel = argv[++i];
     else if (t === '--no-local-gate') args.localGate = false;
     else if (t === '--min-public-evidence') args.gateThresholds.public_evidence = Number(argv[++i]);
+    else if (t === '--min-public-causal-bridge') args.gateThresholds.public_causal_bridge = Number(argv[++i]);
+    else if (t === '--min-device-specificity') args.gateThresholds.device_specificity = Number(argv[++i]);
     else if (t === '--min-tactic-selection') args.gateThresholds.tactic_selection = Number(argv[++i]);
     else if (
       t === '--min-learner-uptake' ||
@@ -629,6 +640,9 @@ function buildOntologySummary({ policyMemoryText = '' } = {}) {
 - Treat this as counterfactual offline revision, not online adaptation.
 - Preserve the dramatic setting, roles, task facts, and learner voice unless needed for accountability.
 - Make learner signal -> tutor hypothesis -> selected tactic -> public tutor move -> learner uptake/contest -> later tutor revision inspectable.
+- Public causal bridge criterion: a peripeteia-origin claim needs an inspectable public chain. A public obstruction or pressure must make the old check/warrant unusable or insufficient; the tutor must respond by changing the public task, device, test, or representation; the learner must then use that changed public test while naming why the old check no longer settles the case.
+- Device specificity criterion: the changed public test must be necessitated by the particular obstruction, not merely be a useful generic scaffold the tutor could have introduced at any time. Name what the obstruction makes unavailable and why this device/test answers that exact unavailability.
+- Mere reminder, restatement, smoother prompting, or continuation of the same check is not enough for origin attribution. If the learner reframe could be read as organic transcript drift, revise before panel escalation.
 - Do not let learner action alone count as recognition. The final learner move must own a self-reframe in ordinary domain language: name the old warrant/check, name why it no longer settles the case, name the new warrant/check, and apply it.
 - Keep the four-part self-reframe natural in the public transcript. Do not use checklist phrases such as "my old check was", "the new check is", "old warrant", or "new warrant" in the learner's public speech; reserve that structure for the JSON ledger.
 - Keep learner-owned reframes compact. Prefer one short domain utterance that does the contrast and application over a polished explanatory paragraph.
@@ -668,6 +682,18 @@ Required JSON shape:
       "tutor_hypothesis": "evidence-bound hypothesis, not hidden omniscience",
       "tactic": "finite tactic name",
       "public_action": "what the tutor publicly does",
+      "public_causal_bridge": {
+        "public_obstruction": "public event/quote that makes the old check fail or become insufficient",
+        "old_check_blocked_by": "what public constraint blocks the old warrant",
+        "tutor_mechanism_change": "new public task/device/test/representation the tutor introduces or changes",
+        "learner_uses_changed_test": "public learner action or utterance using the changed test",
+        "device_specificity": {
+          "obstruction_specific_constraint": "what this obstruction makes unavailable that a generic scaffold would not address",
+          "why_this_device_not_generic": "why this changed test/device is forced by this obstruction rather than merely helpful",
+          "critic_visible_link": "public text that lets a blind critic see the necessity link"
+        },
+        "bridge_failure_risk": "none|low|medium|high"
+      },
       "learner_actional_uptake": "visible learner performance or contest",
       "learner_self_reframe": {
         "old_warrant": "what the learner was checking by before",
@@ -757,6 +783,8 @@ Required JSON shape:
   "claim_boundary_ok": true,
   "scores": {
     "public_evidence": 0,
+    "public_causal_bridge": 0,
+    "device_specificity": 0,
     "tactic_selection": 0,
     "learner_actional_uptake": 0,
     "learner_self_reframe": 0,
@@ -775,11 +803,15 @@ ${buildOntologySummary({ policyMemoryText })}
 
 Scoring guidance:
 - Score each criterion on 0.0-1.0 when possible. If you use whole-number scoring, use 0-10; percentages are accepted but not preferred.
+- public_causal_bridge: score high only when obstruction -> tutor mechanism change -> learner use of changed public test is explicit and public. Score <=0.5 when the tutor merely reminds, repeats, rephrases, or continues the same check while the learner self-reframes organically.
+- device_specificity: score high only when the changed public test/device is visibly necessitated by this obstruction. Score <=0.5 when the device is a plausible generic scaffold, ordinary helpful representation, or test the tutor could have introduced before the obstruction.
 - learner_actional_uptake: learner performs or contests the new public test.
 - learner_self_reframe: learner explicitly contrasts old check, limit/failure, new check, and application in domain language.
+- If public_causal_bridge is low or missing but the transcript is otherwise coherent, recommend revise_again rather than accept_for_blind_panel.
+- If device_specificity is low or missing but the transcript is otherwise coherent, recommend revise_again rather than accept_for_blind_panel.
 - If actional uptake is high but learner_self_reframe is missing or implicit, recommend revise_again rather than accept_for_blind_panel.
 - Use severity="warning" for advisory issues that should be recorded but should not block panel escalation.
-- Use severity="fail" or blocking=true only for issues that should prevent panel escalation: leakage, broken claim boundary, absent self-reframe, absent actional uptake, genuinely false temporal ownership, or incoherent public evidence.
+- Use severity="fail" or blocking=true only for issues that should prevent panel escalation: leakage, broken claim boundary, absent public causal bridge, absent device specificity, absent self-reframe, absent actional uptake, genuinely false temporal ownership, or incoherent public evidence.
 - Set passes=false only for discard-level problems such as leakage, broken claim boundary, unusable JSON/prose, or a fundamentally incoherent revision.
 
 Item: ${JSON.stringify({ id: item.id, run_id: item.run_id }, null, 2)}
@@ -804,6 +836,18 @@ function mockRevision({ publicTranscript }) {
         tutor_hypothesis: 'evidence-bound hypothesis',
         tactic: 'scope_test',
         public_action: 'tutor asks for a public test of the learner claim',
+        public_causal_bridge: {
+          public_obstruction: 'the old visible arrangement leaves the pressure unresolved',
+          old_check_blocked_by: 'the original check does not settle the new public pressure',
+          tutor_mechanism_change: 'the tutor changes the task into an explicit public scope test',
+          learner_uses_changed_test: 'the learner applies the changed test to the task object',
+          device_specificity: {
+            obstruction_specific_constraint: 'the unresolved pressure makes the old visible arrangement unavailable',
+            why_this_device_not_generic: 'the scope test directly checks the blocked relation rather than adding generic structure',
+            critic_visible_link: 'the public transcript names the old pressure immediately before the changed test',
+          },
+          bridge_failure_risk: 'none',
+        },
         learner_actional_uptake: 'learner performs or contests the test',
         learner_self_reframe: {
           old_warrant: 'learner had been using the old visible arrangement as the check',
@@ -834,6 +878,8 @@ function mockCheck() {
     claim_boundary_ok: true,
     scores: {
       public_evidence: 0.8,
+      public_causal_bridge: 0.8,
+      device_specificity: 0.8,
       tactic_selection: 0.8,
       learner_actional_uptake: 0.8,
       learner_self_reframe: 0.8,
