@@ -46,6 +46,15 @@ test('underdetermined transfer validation requires selected repair to be plausib
   assert.ok(validation.issues.some((issue) => issue.code === 'policy_selected_repair_not_in_plausible_repairs'));
 });
 
+test('underdetermined transfer validation requires held-out policy correctness metadata', () => {
+  const config = loadUnderdeterminedFixture();
+  delete config.families[0].heldout_siblings[0].policy_correctness;
+  const validation = validateBenchmarkConfig(config);
+  assert.equal(validation.valid, false);
+  assert.ok(validation.issues.some((issue) => issue.code === 'policy_correctness_missing_target_aliases'));
+  assert.ok(validation.issues.some((issue) => issue.code === 'policy_correctness_missing_selected_repair_markers'));
+});
+
 test('static validation catches public shortcut leakage', () => {
   const config = loadFixture();
   config.families[0].training_seed.baseline_tutor_attempt += ' The tail ring decides.';

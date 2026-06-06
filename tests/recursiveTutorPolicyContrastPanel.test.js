@@ -20,6 +20,7 @@ function writePairFixture({
   s0Status = 'reject',
   siblingId = 'selector_holdout_blue_lower',
   reportName = 'a18.9-underdetermined-transfer-family-report.json',
+  reportPatch = {},
 } = {}) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'a18-contrast-panel-'));
   const chainDir = path.join(tmp, 'chain');
@@ -73,10 +74,11 @@ function writePairFixture({
     material_constraint: 'The tab must be visible in the public transcript.',
     uptake_test: 'The learner uses the tab-marked rail instead of the color match.',
   });
-  writeJson(path.join(runDir, reportName), {
+  const report = {
     family_id: 'selector_rail_priority',
     sibling_id: siblingId,
     local_verdict: 'policy_memory_local_advantage',
+    effective_local_verdict: 'policy_memory_local_advantage',
     policy_contrast_gate: {
       verdict: 'policy_distinct',
       distinctiveness: 0.22,
@@ -92,8 +94,10 @@ function writePairFixture({
         revised_public_path: s1Public,
       },
     },
-  });
-  return { tmp, chainDir };
+  };
+  const reportPath = path.join(runDir, reportName);
+  writeJson(reportPath, { ...report, ...reportPatch });
+  return { tmp, chainDir, reportPath };
 }
 
 test('parseArgs defaults to A18.10 contrastive panel settings', () => {
@@ -144,6 +148,70 @@ test('buildContrastPanelPackage discovers A18.12 underdetermined repair reports'
 
   assert.equal(result.manifest.pairs.length, 1);
   assert.ok(fs.existsSync(path.join(outDir, 'pairs', 'P01.txt')));
+});
+
+test('buildContrastPanelPackage accepts correctness-gated reports where S0 raw survivor is wrong policy', () => {
+  const { tmp, chainDir } = writePairFixture({
+    s0Status: 'survivor',
+    reportName: 'a18.13-underdetermined-transfer-family-report.json',
+    reportPatch: {
+      local_verdict: 'no_local_headroom',
+      effective_local_verdict: 'policy_memory_local_advantage',
+      policy_correctness_gate: {
+        enabled: true,
+        verdict: 'policy_memory_correctness_advantage',
+        S0_no_policy: { correct: false },
+        S1_policy_memory: { correct: true },
+      },
+    },
+  });
+  const outDir = path.join(tmp, 'panel-a18-13');
+  const result = buildContrastPanelPackage({
+    chainDir,
+    outDir,
+    runId: 'a18-13-panel-test',
+    critics: ['codex'],
+    force: false,
+  });
+
+  assert.equal(result.manifest.pairs.length, 1);
+});
+
+test('buildContrastPanelPackage applies A18.13 correctness overlay to older reports', () => {
+  const { tmp, chainDir, reportPath } = writePairFixture({
+    s0Status: 'survivor',
+    reportName: 'a18.12-underdetermined-transfer-family-report.json',
+    reportPatch: {
+      local_verdict: 'no_local_headroom',
+      effective_local_verdict: null,
+    },
+  });
+  writeJson(path.join(chainDir, 'a18.13-policy-correctness-report.json'), {
+    rows: [
+      {
+        source_report: path.relative(path.resolve('.'), reportPath),
+        effective_local_verdict: 'policy_memory_local_advantage',
+        policy_correctness_verdict: 'policy_memory_correctness_advantage',
+        panel_candidate: true,
+        policy_correctness_gate: {
+          enabled: true,
+          verdict: 'policy_memory_correctness_advantage',
+          S0_no_policy: { correct: false },
+          S1_policy_memory: { correct: true },
+        },
+      },
+    ],
+  });
+  const outDir = path.join(tmp, 'panel-overlay');
+  const result = buildContrastPanelPackage({
+    chainDir,
+    outDir,
+    runId: 'a18-13-overlay-test',
+    critics: ['codex'],
+    force: false,
+  });
+
+  assert.equal(result.manifest.pairs.length, 1);
 });
 
 test('deriveContrastVote requires S1 side, policy-transfer origin, and differential use', () => {

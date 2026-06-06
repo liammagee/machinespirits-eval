@@ -107,6 +107,21 @@ families:
           - rail_path_test
           - selector_tab_test
         expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: selector_tab_test
+          target_id: upper_leno
+          target_aliases:
+            - upper leno
+            - upper rail
+            - tab-marked upper
+          selected_repair_markers:
+            - frame tab
+            - outside tab
+            - selector tab
+            - tab-marked rail
+          incorrect_target_aliases:
+            - lower leno
+            - lower rail
       - sibling_id: selector_holdout_gold_middle
         public_setup: >-
           A slate card has three rails. The token word rumi appears on the top
@@ -131,6 +146,22 @@ families:
           - rail_path_test
           - selector_tab_test
         expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: selector_tab_test
+          target_id: middle_rumi
+          target_aliases:
+            - middle rumi
+            - middle rail
+            - tab-marked middle
+          selected_repair_markers:
+            - frame tab
+            - outside tab
+            - selector tab
+            - tab-marked rail
+          incorrect_target_aliases:
+            - top rumi
+            - top rail
+            - bottom rail
   - family_id: notch_rotation_priority
     obstruction_type: competing_visible_cues_with_orientation_fit
     local_rule:
@@ -233,6 +264,21 @@ families:
           - corridor_path_test
           - rotation_fit_test
         expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: rotation_fit_test
+          target_id: upper_mepo
+          target_aliases:
+            - upper mepo
+            - upper tile
+            - upper corridor
+          selected_repair_markers:
+            - clockwise
+            - quarter turn
+            - turn the notch
+            - rotation
+          incorrect_target_aliases:
+            - lower mepo
+            - lower tile
       - sibling_id: notch_holdout_red_middle
         public_setup: >-
           A long notch card has left, middle, and right bays. The token word luma
@@ -258,6 +304,23 @@ families:
           - corridor_path_test
           - rotation_fit_test
         expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: rotation_fit_test
+          target_id: middle_luma
+          target_aliases:
+            - middle luma
+            - middle bay
+            - middle corridor
+          selected_repair_markers:
+            - clockwise
+            - quarter turn
+            - turn the notch
+            - rotation
+          incorrect_target_aliases:
+            - left luma
+            - right luma
+            - left bay
+            - right bay
   - family_id: bead_predecessor_priority
     obstruction_type: competing_visible_cues_with_bead_alias
     local_rule:
@@ -382,6 +445,25 @@ families:
           - majority_count_test
           - predecessor_alias_test
         expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: predecessor_alias_test
+          target_id: upper_sima
+          target_aliases:
+            - upper sima
+            - upper plate
+            - four-bead sima
+            - four bead sima
+          selected_repair_markers:
+            - one step before
+            - one bead-step before
+            - immediately before
+            - bead strip
+            - wraps from one to four
+          incorrect_target_aliases:
+            - lower sima
+            - lower plate
+            - one-bead sima
+            - one bead sima
       - sibling_id: bead_holdout_gold_middle
         public_setup: >-
           A long bead card has left, middle, and right bays. The token word naro
@@ -408,3 +490,22 @@ families:
           - majority_count_test
           - predecessor_alias_test
         expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: predecessor_alias_test
+          target_id: middle_naro
+          target_aliases:
+            - middle naro
+            - middle bay
+            - two-bead naro
+            - two bead naro
+          selected_repair_markers:
+            - one step before
+            - one bead-step before
+            - immediately before
+            - bead strip
+            - predecessor
+          incorrect_target_aliases:
+            - left naro
+            - right naro
+            - one-bead naro
+            - three-bead naro

@@ -12,6 +12,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import yaml from 'yaml';
 import { runReplay } from './replay-discursive-transcript.js';
 import { buildReplayPanelPackage } from './run-discursive-replay-panel.js';
 import { summarizePanelScores } from './run-discursive-replay-loop.js';
@@ -236,6 +237,10 @@ function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
+function readYaml(filePath) {
+  return yaml.parse(fs.readFileSync(filePath, 'utf8'));
+}
+
 function readText(filePath) {
   if (!filePath || !fs.existsSync(filePath)) return '';
   return fs.readFileSync(filePath, 'utf8');
@@ -258,6 +263,16 @@ function scoreSnapshot(record) {
     scores[key] = payload?.value ?? payload?.raw ?? null;
   }
   return scores;
+}
+
+function findSiblingPolicyCorrectness({ chainDir, plan, familyId, siblingId, sibling }) {
+  if (sibling?.policy_correctness) return cloneJson(sibling.policy_correctness);
+  const sourceConfigPath = plan?.source_config ? resolveRepoPath(plan.source_config) : null;
+  if (!sourceConfigPath || !fs.existsSync(sourceConfigPath)) return null;
+  const config = readYaml(sourceConfigPath);
+  const sourceFamily = (config.families || []).find((entry) => entry.family_id === familyId);
+  const sourceSibling = (sourceFamily?.heldout_siblings || []).find((entry) => entry.sibling_id === siblingId);
+  return sourceSibling?.policy_correctness ? cloneJson(sourceSibling.policy_correctness) : null;
 }
 
 const POLICY_SIGNATURE_FIELDS = [
@@ -367,6 +382,30 @@ function recordPolicySearchText(record) {
     .toLowerCase();
 }
 
+function normalizeSearchText(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function phraseHits(text, phrases) {
+  const normalizedText = normalizeSearchText(text);
+  return [...new Set(phrases || [])].filter((phrase) => {
+    const normalizedPhrase = normalizeSearchText(phrase);
+    return normalizedPhrase && normalizedText.includes(normalizedPhrase);
+  });
+}
+
+function recordPublicContinuationText(record) {
+  const revised = readText(record?.paths?.revisedPublic).trim();
+  const original = readText(record?.paths?.originalPublic).trim();
+  if (!revised) return '';
+  if (original && revised.startsWith(original)) return revised.slice(original.length).trim();
+  return revised;
+}
+
 function recordStrategyNames(record) {
   const revision = recordRevision(record) || {};
   const names = new Set();
@@ -426,6 +465,67 @@ function analyzePolicyContrast({ policyMemoryPath, s0Record, s1Record, minDistin
   };
 }
 
+function policyCorrectnessForRecord(record, correctness) {
+  const status = record?.gate?.status || 'unknown';
+  const continuationText = recordPublicContinuationText(record);
+  const targetHits = phraseHits(continuationText, correctness?.target_aliases || []);
+  const repairMarkerHits = phraseHits(continuationText, correctness?.selected_repair_markers || []);
+  const incorrectTargetHits = phraseHits(continuationText, correctness?.incorrect_target_aliases || []);
+  const correct = status === 'survivor' && targetHits.length > 0 && repairMarkerHits.length > 0;
+  let verdict = 'selected_policy_applied';
+  if (status !== 'survivor') verdict = 'not_local_survivor';
+  else if (!targetHits.length && incorrectTargetHits.length) verdict = 'wrong_target';
+  else if (!targetHits.length) verdict = 'missing_registered_target';
+  else if (!repairMarkerHits.length) verdict = 'missing_selected_repair_marker';
+  return {
+    correct,
+    verdict,
+    local_status: status,
+    target_id: correctness?.target_id || null,
+    target_hits: targetHits,
+    selected_repair_marker_hits: repairMarkerHits,
+    incorrect_target_hits: incorrectTargetHits,
+    continuation_excerpt: continuationText.slice(0, 600),
+  };
+}
+
+export function analyzePolicyCorrectness({ policyMemoryPath, sibling, s0Record, s1Record }) {
+  const correctness = sibling?.policy_correctness || null;
+  if (!correctness) {
+    return {
+      enabled: false,
+      verdict: 'not_configured',
+      decisive_read:
+        'No sibling-level policy_correctness metadata is configured, so raw local survivor status remains the gate.',
+    };
+  }
+  const policyMemory = policyMemoryPath && fs.existsSync(policyMemoryPath) ? readJson(policyMemoryPath) : null;
+  const selectedRepair = policyMemory?.transfer_design?.policy_selected_repair || correctness.selected_repair || null;
+  const selectedRepairMatches = !correctness.selected_repair || correctness.selected_repair === selectedRepair;
+  const s0 = policyCorrectnessForRecord(s0Record, correctness);
+  const s1 = policyCorrectnessForRecord(s1Record, correctness);
+  let verdict = 'policy_memory_correctness_advantage';
+  if (!selectedRepairMatches) verdict = 'selected_repair_mismatch';
+  else if (s1.correct && s0.correct) verdict = 'no_policy_correctness_headroom';
+  else if (!s1.correct && s0.correct) verdict = 'control_policy_correctness_advantage';
+  else if (!s1.correct && !s0.correct) verdict = 'no_correct_policy_application';
+  return {
+    enabled: true,
+    verdict,
+    selected_repair: selectedRepair,
+    registered_selected_repair: correctness.selected_repair || null,
+    selected_repair_matches: selectedRepairMatches,
+    target_id: correctness.target_id || null,
+    target_aliases: correctness.target_aliases || [],
+    selected_repair_markers: correctness.selected_repair_markers || [],
+    incorrect_target_aliases: correctness.incorrect_target_aliases || [],
+    S0_no_policy: s0,
+    S1_policy_memory: s1,
+    decisive_read:
+      'For underdetermined transfer, local survivor status is insufficient: the continuation must apply the registered selected repair to the registered held-out target.',
+  };
+}
+
 function findFamily(plan, familyId) {
   const family = (plan.families || []).find((entry) => entry.family_id === familyId);
   if (!family) throw new Error(`family not found in attempt plan: ${familyId}`);
@@ -468,19 +568,22 @@ export function buildAblationPlan({
   const sibling = selectSibling(family, siblingId);
   const localFamily = localGateFamily(localGate, familyId);
   const priorPanelFamily = panelFamily(priorPanel, familyId);
-  const s1ManifestPath = path.join(sibling.revised_replay_dir, 'manifest.json');
-  if (requireS1Manifest && !fs.existsSync(s1ManifestPath)) {
+  const s1ManifestPath = sibling.revised_replay_dir ? path.join(sibling.revised_replay_dir, 'manifest.json') : null;
+  if (requireS1Manifest && (!s1ManifestPath || !fs.existsSync(s1ManifestPath))) {
     throw new Error(`S1 policy-memory replay missing: ${s1ManifestPath}`);
   }
   return {
     family,
-    sibling,
+    sibling: {
+      ...sibling,
+      policy_correctness: findSiblingPolicyCorrectness({ chainDir, plan, familyId, siblingId: sibling.sibling_id, sibling }),
+    },
     localFamily,
     priorPanelFamily,
     paths: {
       transcript: family.heldout.find((entry) => entry.sibling_id === sibling.sibling_id)?.transcript || sibling.transcript,
       policyMemory: family.policy_revision_template,
-      s1Manifest: fs.existsSync(s1ManifestPath) ? s1ManifestPath : null,
+      s1Manifest: s1ManifestPath && fs.existsSync(s1ManifestPath) ? s1ManifestPath : null,
       priorPanel: priorPanelPath,
     },
   };
@@ -592,6 +695,16 @@ function localVerdict(s0, s1) {
   return 'no_local_survivor';
 }
 
+export function effectiveLocalVerdict(s0, s1, policyCorrectnessGate = null) {
+  if (!policyCorrectnessGate?.enabled) return localVerdict(s0, s1);
+  if (policyCorrectnessGate.verdict === 'policy_memory_correctness_advantage') {
+    return 'policy_memory_local_advantage';
+  }
+  if (policyCorrectnessGate.verdict === 'no_policy_correctness_headroom') return 'no_local_headroom';
+  if (policyCorrectnessGate.verdict === 'control_policy_correctness_advantage') return 'control_beats_policy_memory';
+  return 'no_local_survivor';
+}
+
 function localHeadroomForPanel(verdict) {
   return verdict === 'policy_memory_local_advantage';
 }
@@ -694,12 +807,23 @@ export async function runPolicyAblation(rawArgs = process.argv.slice(2)) {
   let replayBundle = null;
   let packaged = null;
   let policyContrastGate = { enabled: false };
+  let policyCorrectnessGate = { enabled: false };
   if (!args.dryRun) {
     const provisionalLocalArms = {
       S0_no_policy: { status: s0Record.gate?.status || 'unknown' },
       S1_policy_memory: { status: s1Record.gate?.status || 'unknown' },
     };
-    const provisionalLocalVerdict = localVerdict(provisionalLocalArms.S0_no_policy, provisionalLocalArms.S1_policy_memory);
+    policyCorrectnessGate = analyzePolicyCorrectness({
+      policyMemoryPath: resolveRepoPath(plan.paths.policyMemory),
+      sibling: plan.sibling,
+      s0Record,
+      s1Record,
+    });
+    const provisionalEffectiveLocalVerdict = effectiveLocalVerdict(
+      provisionalLocalArms.S0_no_policy,
+      provisionalLocalArms.S1_policy_memory,
+      policyCorrectnessGate,
+    );
     if (args.policyContrastGate) {
       policyContrastGate = analyzePolicyContrast({
         policyMemoryPath: resolveRepoPath(plan.paths.policyMemory),
@@ -710,11 +834,14 @@ export async function runPolicyAblation(rawArgs = process.argv.slice(2)) {
     }
     const policyGateAllowsPanel =
       !args.policyContrastGate || policyContrastGate.verdict === 'policy_distinct';
+    const policyCorrectnessAllowsPanel =
+      !policyCorrectnessGate.enabled || policyCorrectnessGate.verdict === 'policy_memory_correctness_advantage';
     const shouldPanel =
       !args.skipPanel &&
       args.panelPolicy !== 'never' &&
-      (args.panelPolicy === 'always' || localHeadroomForPanel(provisionalLocalVerdict)) &&
-      policyGateAllowsPanel;
+      (args.panelPolicy === 'always' || localHeadroomForPanel(provisionalEffectiveLocalVerdict)) &&
+      policyGateAllowsPanel &&
+      policyCorrectnessAllowsPanel;
     replayBundle = materializeAblationReplayBundle({ outDir: args.outDir, familyId, siblingId, s0Record, s1Record, design });
     if (shouldPanel) {
       const panelDir = path.join(args.outDir, 'panel');
@@ -756,6 +883,10 @@ export async function runPolicyAblation(rawArgs = process.argv.slice(2)) {
           revised_public_path: rel(s1Record.paths?.revisedPublic),
         },
       };
+  const rawLocalVerdict = args.dryRun ? 'dry_run' : localVerdict(localArms.S0_no_policy, localArms.S1_policy_memory);
+  const effectiveVerdict = args.dryRun
+    ? 'dry_run'
+    : effectiveLocalVerdict(localArms.S0_no_policy, localArms.S1_policy_memory, policyCorrectnessGate);
   const panelArms = summarizePanelArms(panelSummary);
   const report = {
     kind: 'recursive_tutor_policy_memory_ablation_report',
@@ -769,8 +900,10 @@ export async function runPolicyAblation(rawArgs = process.argv.slice(2)) {
     design,
     prior_a18_5_panel: plan.priorPanelFamily || null,
     local_arms: localArms,
-    local_verdict: args.dryRun ? 'dry_run' : localVerdict(localArms.S0_no_policy, localArms.S1_policy_memory),
+    local_verdict: rawLocalVerdict,
+    effective_local_verdict: effectiveVerdict,
     policy_contrast_gate: policyContrastGate,
+    policy_correctness_gate: policyCorrectnessGate,
     panel_arms: panelArms,
     panel_verdict: args.skipPanel || args.dryRun || !packaged ? 'not_panelled' : panelVerdict(panelArms),
     panel_skip_reason:
@@ -780,10 +913,12 @@ export async function runPolicyAblation(rawArgs = process.argv.slice(2)) {
           ? 'skip_panel_arg'
         : args.panelPolicy === 'never'
           ? 'panel_policy_never'
-          : args.policyContrastGate && policyContrastGate.verdict !== 'policy_distinct'
-            ? `policy_contrast_gate:${policyContrastGate.verdict}`
-          : args.panelPolicy === 'headroom'
-            ? `no_local_headroom:${localVerdict(localArms.S0_no_policy, localArms.S1_policy_memory)}`
+        : args.policyContrastGate && policyContrastGate.verdict !== 'policy_distinct'
+          ? `policy_contrast_gate:${policyContrastGate.verdict}`
+        : policyCorrectnessGate.enabled && policyCorrectnessGate.verdict !== 'policy_memory_correctness_advantage'
+          ? `policy_correctness_gate:${policyCorrectnessGate.verdict}`
+        : args.panelPolicy === 'headroom'
+            ? `no_local_headroom:${effectiveVerdict}`
             : null,
     score_results: scoreResults,
     replay_bundle_dir: replayBundle ? rel(replayBundle.replayDir) : null,
@@ -814,7 +949,9 @@ async function main() {
           family_id: result.report.family_id,
           sibling_id: result.report.sibling_id,
           local_verdict: result.report.local_verdict,
+          effective_local_verdict: result.report.effective_local_verdict,
           policy_contrast_verdict: result.report.policy_contrast_gate?.verdict || null,
+          policy_correctness_verdict: result.report.policy_correctness_gate?.verdict || null,
           panel_verdict: result.report.panel_verdict,
           local_arms: Object.fromEntries(
             Object.entries(result.report.local_arms || {}).map(([arm, row]) => [arm, row.status]),

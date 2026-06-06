@@ -177,18 +177,51 @@ function reportPaths(chainDir) {
   return paths.sort();
 }
 
+function policyCorrectnessOverlay(chainDir) {
+  const overlayPath = path.join(chainDir, 'a18.13-policy-correctness-report.json');
+  if (!fs.existsSync(overlayPath)) return new Map();
+  const report = readJson(overlayPath);
+  const rows = new Map();
+  for (const row of report.rows || []) rows.set(row.source_report, row);
+  return rows;
+}
+
+function applyPolicyCorrectnessOverlay(report, reportPath, overlay) {
+  const row = overlay.get(rel(reportPath));
+  if (!row) return report;
+  return {
+    ...report,
+    effective_local_verdict: row.effective_local_verdict,
+    policy_correctness_gate: row.policy_correctness_gate,
+    policy_correctness_overlay: {
+      source_report: row.source_report,
+      policy_correctness_verdict: row.policy_correctness_verdict,
+      panel_candidate: row.panel_candidate,
+    },
+  };
+}
+
 function isCleanPair(report, familyId) {
+  if (report.family_id !== familyId) return false;
+  if (report.policy_contrast_gate?.verdict !== 'policy_distinct') return false;
+  const correctnessGate = report.policy_correctness_gate;
+  if (correctnessGate?.enabled) {
+    return (
+      report.effective_local_verdict === 'policy_memory_local_advantage' &&
+      report.local_arms?.S1_policy_memory?.status === 'survivor' &&
+      correctnessGate.S1_policy_memory?.correct === true &&
+      correctnessGate.S0_no_policy?.correct !== true
+    );
+  }
   return (
-    report.family_id === familyId &&
     report.local_verdict === 'policy_memory_local_advantage' &&
-    report.policy_contrast_gate?.verdict === 'policy_distinct' &&
     report.local_arms?.S1_policy_memory?.status === 'survivor' &&
     report.local_arms?.S0_no_policy?.status !== 'survivor'
   );
 }
 
-function pairFromReport(reportPath, familyId, index) {
-  const report = readJson(reportPath);
+function pairFromReport(reportPath, familyId, index, overlay = new Map()) {
+  const report = applyPolicyCorrectnessOverlay(readJson(reportPath), reportPath, overlay);
   if (!isCleanPair(report, familyId)) return null;
   const policyMemoryPath = resolveRepoPath(report.policy_contrast_gate?.policy_memory_path);
   const policyMemory = policyMemoryPath && fs.existsSync(policyMemoryPath) ? readJson(policyMemoryPath) : null;
@@ -230,8 +263,10 @@ function pairFromReport(reportPath, familyId, index) {
 }
 
 export function cleanPairsFromChain({ chainDir = DEFAULT_CHAIN_DIR, familyId = 'selector_rail_priority' } = {}) {
-  const pairs = reportPaths(path.resolve(chainDir))
-    .map((reportPath, index) => pairFromReport(reportPath, familyId, index))
+  const resolvedChainDir = path.resolve(chainDir);
+  const overlay = policyCorrectnessOverlay(resolvedChainDir);
+  const pairs = reportPaths(resolvedChainDir)
+    .map((reportPath, index) => pairFromReport(reportPath, familyId, index, overlay))
     .filter(Boolean);
   if (!pairs.length) throw new Error(`no clean A18.9 contrast pairs found for family ${familyId} in ${chainDir}`);
   return pairs;

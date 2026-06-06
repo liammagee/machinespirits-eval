@@ -125,6 +125,39 @@ function validateUnderdeterminedTransfer(family, prefix, issues) {
         sibling_id: sibling.sibling_id,
       });
     }
+    const correctness = sibling.policy_correctness || {};
+    const correctnessPrefix = `${prefix}.heldout_siblings[${siblingIndex}].policy_correctness`;
+    validateRequired(correctness.selected_repair, `${correctnessPrefix}.selected_repair`, issues);
+    validateRequired(correctness.target_id, `${correctnessPrefix}.target_id`, issues);
+    if (correctness.selected_repair && correctness.selected_repair !== design.policy_selected_repair) {
+      issues.push({
+        severity: 'error',
+        code: 'policy_correctness_selected_repair_mismatch',
+        path: `${correctnessPrefix}.selected_repair`,
+        family_id: family.family_id,
+        sibling_id: sibling.sibling_id,
+        expected: design.policy_selected_repair,
+        actual: correctness.selected_repair,
+      });
+    }
+    if (!asArray(correctness.target_aliases).length) {
+      issues.push({
+        severity: 'error',
+        code: 'policy_correctness_missing_target_aliases',
+        path: `${correctnessPrefix}.target_aliases`,
+        family_id: family.family_id,
+        sibling_id: sibling.sibling_id,
+      });
+    }
+    if (!asArray(correctness.selected_repair_markers).length) {
+      issues.push({
+        severity: 'error',
+        code: 'policy_correctness_missing_selected_repair_markers',
+        path: `${correctnessPrefix}.selected_repair_markers`,
+        family_id: family.family_id,
+        sibling_id: sibling.sibling_id,
+      });
+    }
   }
 }
 
@@ -306,6 +339,7 @@ export function buildAttemptChainPlan(config, { outDir = DEFAULT_OUT_DIR } = {})
         transcript,
         baseline_replay_dir: heldoutBaselineReplayDir,
         revised_replay_dir: heldoutRevisedReplayDir,
+        policy_correctness: sibling.policy_correctness || null,
         baseline_replay_command: replayCommandFor(transcript, { outDir: heldoutBaselineReplayDir, generator: 'none' }),
         baseline_replay_command_text: commandString(
           replayCommandFor(transcript, { outDir: heldoutBaselineReplayDir, generator: 'none' }),

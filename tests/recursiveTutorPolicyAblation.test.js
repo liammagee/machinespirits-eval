@@ -4,7 +4,9 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import {
+  analyzePolicyCorrectness,
   buildAblationPlan,
+  effectiveLocalVerdict,
   parseArgs,
   runPolicyAblation,
 } from '../scripts/run-recursive-tutor-policy-ablation.js';
@@ -101,6 +103,20 @@ TUTOR: "Compare the labels."
     families: [{ family_id: familyId, panel_status: 'panel_pass', recognition_votes: 4, peripeteia_origin_votes: 4 }],
   });
   return { tmp, chainDir, familyId, siblingId };
+}
+
+function writePolicyCorrectnessRecord(tmp, { name, original, revised, status = 'survivor' }) {
+  const itemDir = path.join(tmp, name);
+  fs.mkdirSync(itemDir, { recursive: true });
+  const originalPublic = path.join(itemDir, 'original-public.txt');
+  const revisedPublic = path.join(itemDir, 'revised-public.txt');
+  const manifest = path.join(itemDir, 'manifest.json');
+  fs.writeFileSync(originalPublic, original, 'utf8');
+  fs.writeFileSync(revisedPublic, revised, 'utf8');
+  return {
+    gate: { status },
+    paths: { originalPublic, revisedPublic, manifest },
+  };
 }
 
 test('parseArgs defaults to window policy ablation', () => {
@@ -325,6 +341,50 @@ test('A18.12 bounded-transfer run ids get repair-family report labels', async ()
   });
   assert.equal(result.report.design.label, 'a18.12_second_underdetermined_transfer_family_repair');
   assert.ok(fs.existsSync(path.join(outDir, 'a18.12-second-underdetermined-transfer-family-repair-report.json')));
+});
+
+test('policy correctness gate rejects a raw survivor that applies a different public repair', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'a18-policy-correctness-'));
+  const policyMemoryPath = path.join(tmp, 'policy.json');
+  writeJson(policyMemoryPath, {
+    transfer_design: { policy_selected_repair: 'predecessor_alias_test' },
+  });
+  const original = [
+    'STAGE: Left, middle, and right naro are visible.',
+    'LEARNER: "Gold, closeness, corridor, and bead marks all point in different directions."',
+  ].join('\n');
+  const s0Record = writePolicyCorrectnessRecord(tmp, {
+    name: 's0',
+    original,
+    revised: `${original}\n\nTUTOR: "Use the exact repeated badge mark."\nLEARNER: "The right naro has three beads, matching the badge."`,
+  });
+  const s1Record = writePolicyCorrectnessRecord(tmp, {
+    name: 's1',
+    original,
+    revised: `${original}\n\nTUTOR: "Use the bead strip: choose the one bead-step before the badge."\nLEARNER: "The middle naro is the two-bead token just before three."`,
+  });
+  const gate = analyzePolicyCorrectness({
+    policyMemoryPath,
+    sibling: {
+      policy_correctness: {
+        selected_repair: 'predecessor_alias_test',
+        target_id: 'middle_naro',
+        target_aliases: ['middle naro'],
+        selected_repair_markers: ['one bead-step before', 'bead strip'],
+        incorrect_target_aliases: ['right naro'],
+      },
+    },
+    s0Record,
+    s1Record,
+  });
+  assert.equal(gate.verdict, 'policy_memory_correctness_advantage');
+  assert.equal(gate.S0_no_policy.correct, false);
+  assert.equal(gate.S0_no_policy.verdict, 'wrong_target');
+  assert.equal(gate.S1_policy_memory.correct, true);
+  assert.equal(
+    effectiveLocalVerdict({ status: 'survivor' }, { status: 'survivor' }, gate),
+    'policy_memory_local_advantage',
+  );
 });
 
 test('explicit experiment label controls report filename', async () => {
