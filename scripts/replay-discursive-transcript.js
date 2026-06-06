@@ -77,8 +77,10 @@ const CRITICAL_WARNING_CRITERIA = new Set([
   'revision_claim_boundary',
   'revision_non_leakage',
 ]);
-const ADVISORY_WARNING_RE = /\b(?:acceptable as is|within natural-speech tolerance|minor|borderline acceptable|does not affect|does not block|does not rise to revise_again|no change needed|none;|consider marking|would strengthen|could strengthen)\b/i;
-const BLOCKING_WARNING_RE = /\b(?:do not panel|do not send|prevent(?:s)? panel|block(?:s|ing)?|revise before|revise locally|must revise|missing|absent|not present|not yet owned|not yet public|hidden-only|leak(?:ed|age)?|broken claim boundary|fundamentally incoherent)\b/i;
+const ADVISORY_WARNING_RE =
+  /\b(?:acceptable as is|within natural-speech tolerance|minor|borderline acceptable|does not affect|does not block|does not rise to revise_again|no change needed|none;|consider marking|would strengthen|could strengthen)\b/i;
+const BLOCKING_WARNING_RE =
+  /\b(?:do not panel|do not send|prevent(?:s)? panel|block(?:s|ing)?|revise before|revise locally|must revise|missing|absent|not present|not yet owned|not yet public|hidden-only|leak(?:ed|age)?|broken claim boundary|fundamentally incoherent)\b/i;
 
 function usage() {
   return `Usage:
@@ -136,8 +138,7 @@ export function parseArgs(argv = process.argv.slice(2)) {
     else if (t === '--adversarial-check') {
       args.checker = 'adversarial';
       args.checkerPolicy = 'adversarial';
-    }
-    else if (t === '--timeout-ms') args.timeoutMs = Number(argv[++i]);
+    } else if (t === '--timeout-ms') args.timeoutMs = Number(argv[++i]);
     else if (t === '--codex-effort') args.codexEffort = argv[++i];
     else if (t === '--codex-model') args.codexModel = argv[++i];
     else if (t === '--claude-model') args.claudeModel = argv[++i];
@@ -150,8 +151,7 @@ export function parseArgs(argv = process.argv.slice(2)) {
     else if (t === '--min-device-specificity') args.gateThresholds.device_specificity = Number(argv[++i]);
     else if (t === '--min-old-warrant-misclassification') {
       args.gateThresholds.old_warrant_misclassification = Number(argv[++i]);
-    }
-    else if (t === '--min-tactic-selection') args.gateThresholds.tactic_selection = Number(argv[++i]);
+    } else if (t === '--min-tactic-selection') args.gateThresholds.tactic_selection = Number(argv[++i]);
     else if (
       t === '--min-learner-uptake' ||
       t === '--min-learner-uptake-or-contest' ||
@@ -174,8 +174,7 @@ export function parseArgs(argv = process.argv.slice(2)) {
       args.recursiveTutorThresholds.strategic_timing = Number(argv[++i]);
     } else if (t === '--min-recursive-dyadic-update') {
       args.recursiveTutorThresholds.recursive_dyadic_update = Number(argv[++i]);
-    }
-    else if (t === '--public-max-chars') args.publicMaxChars = Number(argv[++i]);
+    } else if (t === '--public-max-chars') args.publicMaxChars = Number(argv[++i]);
     else if (t === '--inner-max-chars') args.innerMaxChars = Number(argv[++i]);
     else if (t === '--item-concurrency') args.itemConcurrency = Number(argv[++i]);
     else if (t === '--feedback-file') args.feedbackFile = path.resolve(argv[++i]);
@@ -260,7 +259,8 @@ function finalizeArgs(rawArgs) {
   }
   if (!Number.isInteger(args.limit) || args.limit < 1) throw new Error('--limit must be a positive integer');
   if (!Number.isFinite(args.timeoutMs) || args.timeoutMs < 1) throw new Error('--timeout-ms must be positive');
-  if (!Number.isFinite(args.publicMaxChars) || args.publicMaxChars < 500) throw new Error('--public-max-chars too small');
+  if (!Number.isFinite(args.publicMaxChars) || args.publicMaxChars < 500)
+    throw new Error('--public-max-chars too small');
   if (!Number.isFinite(args.innerMaxChars) || args.innerMaxChars < 0) throw new Error('--inner-max-chars must be >= 0');
   if (!Number.isFinite(args.policyMemoryMaxChars) || args.policyMemoryMaxChars < 0) {
     throw new Error('--policy-memory-max-chars must be >= 0');
@@ -284,7 +284,9 @@ function splitList(value) {
 }
 
 export function normalizeBackend(value) {
-  const normalized = String(value || '').trim().toLowerCase();
+  const normalized = String(value || '')
+    .trim()
+    .toLowerCase();
   const backend = normalized === 'gemini' ? 'agy' : normalized;
   if (!BACKENDS.has(backend)) {
     throw new Error(`backend must be one of ${[...BACKENDS].join('|')} (got ${value})`);
@@ -334,11 +336,15 @@ function resolvedRecursiveTutorThresholds(args = {}) {
 }
 
 function normalizeAction(value) {
-  return String(value || '').trim().toLowerCase();
+  return String(value || '')
+    .trim()
+    .toLowerCase();
 }
 
 function normalizeFindingSeverity(value) {
-  return String(value || '').trim().toLowerCase();
+  return String(value || '')
+    .trim()
+    .toLowerCase();
 }
 
 function warningText(problem = {}) {
@@ -426,7 +432,8 @@ export function evaluateLocalGate(check, revision = null, args = {}) {
         {
           criterion: 'checker',
           evidence: 'No local checker result is present.',
-          recommendation: 'Run with --checker claude, --checker agy, --checker codex, or --checker mock before escalating.',
+          recommendation:
+            'Run with --checker claude, --checker agy, --checker codex, or --checker mock before escalating.',
         },
       ],
       warnings: [],
@@ -618,11 +625,17 @@ export function summarizeGate(records = []) {
 }
 
 function timestampId() {
-  return new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+  return new Date()
+    .toISOString()
+    .replace(/[-:]/g, '')
+    .replace(/\.\d{3}Z$/, 'Z');
 }
 
 function sha256Short(text) {
-  return createHash('sha256').update(String(text ?? '')).digest('hex').slice(0, 16);
+  return createHash('sha256')
+    .update(String(text ?? ''))
+    .digest('hex')
+    .slice(0, 16);
 }
 
 function safeSlug(value) {
@@ -656,7 +669,7 @@ export function extractPublicTranscript(fullText) {
   const text = String(fullText || '');
   const publicSection = text.match(/## Public Performance\s*\n+```(?:text)?\s*\n([\s\S]*?)\n```/i);
   if (publicSection) return publicSection[1].trim();
-  const publicLoose = text.match(/## Public Performance\s*\n+([\s\S]*?)(?:\n## |\n# |\z)/i);
+  const publicLoose = text.match(/## Public Performance\s*\n+([\s\S]*?)(?:\n## |\n# |$)/i);
   if (publicLoose) return publicLoose[1].trim();
   return text.trim();
 }
@@ -674,6 +687,54 @@ function parseKeyYaml(keyText) {
   } catch {
     return { parse_status: 'error', raw: keyText.slice(0, 2000) };
   }
+}
+
+// Repair the single most common generator malformation: unescaped double-quote
+// characters inside JSON string VALUES. The recursive-tutor rewrite prompt shows
+// the source transcript with double-quoted speech (LEARNER: "..."), so the model
+// faithfully reproduces that speech inside the `revised_public_transcript` string
+// value without escaping the interior quotes. jsonrepair cannot fix this because
+// `LEARNER: "I keep` is genuinely ambiguous. The disambiguator is structural: in
+// well-formed JSON a *closing* quote is always followed (after whitespace) by one
+// of `:`, `,`, `}`, `]`, or end-of-input. Any other in-string `"` is literal and
+// must be escaped. This is blind to content/gate outcome — it only recovers the
+// transcript the model already wrote — and is applied LAST (after JSON.parse +
+// jsonrepair), so already-valid JSON is never touched.
+export function escapeInteriorQuotes(input) {
+  const s = String(input);
+  let out = '';
+  let inString = false;
+  for (let i = 0; i < s.length; i += 1) {
+    const ch = s[i];
+    if (!inString) {
+      out += ch;
+      if (ch === '"') inString = true;
+      continue;
+    }
+    if (ch === '\\') {
+      // Copy an existing escape sequence verbatim.
+      out += ch;
+      if (i + 1 < s.length) {
+        out += s[i + 1];
+        i += 1;
+      }
+      continue;
+    }
+    if (ch === '"') {
+      let j = i + 1;
+      while (j < s.length && /\s/.test(s[j])) j += 1;
+      const next = s[j];
+      if (next === undefined || next === ':' || next === ',' || next === '}' || next === ']') {
+        out += ch; // structural closing quote
+        inString = false;
+      } else {
+        out += '\\"'; // interior quote -> escape
+      }
+      continue;
+    }
+    out += ch;
+  }
+  return out;
 }
 
 export function parseJsonResponse(content) {
@@ -698,6 +759,17 @@ export function parseJsonResponse(content) {
       return JSON.parse(jsonrepair(candidate));
     } catch (error) {
       errors.push(`repair: ${error.message}`);
+    }
+    // Last resort: recover unescaped interior double-quotes, then re-try both parsers.
+    try {
+      return JSON.parse(escapeInteriorQuotes(candidate));
+    } catch (error) {
+      errors.push(`escape-interior: ${error.message}`);
+    }
+    try {
+      return JSON.parse(jsonrepair(escapeInteriorQuotes(candidate)));
+    } catch (error) {
+      errors.push(`escape-interior+repair: ${error.message}`);
     }
   }
   throw new Error(`failed to parse JSON response: ${errors.join(' | ')}\n${raw.slice(0, 500)}`);
@@ -912,7 +984,12 @@ ${heldOutContext || '[none]'}`;
 function feedbackForItem(args, item) {
   const direct = args.feedbackFile ? readText(args.feedbackFile) : '';
   const byItem = args.feedbackByItem || {};
-  const candidates = [item.id, safeSlug(item.id), item.full_transcript_path, path.basename(item.full_transcript_path || '')]
+  const candidates = [
+    item.id,
+    safeSlug(item.id),
+    item.full_transcript_path,
+    path.basename(item.full_transcript_path || ''),
+  ]
     .filter(Boolean)
     .map((value) => String(value));
   const mapped = candidates.map((key) => byItem[key]).find((value) => value != null);
@@ -1023,13 +1100,15 @@ function mockRevision({ publicTranscript }) {
           learner_uses_changed_test: 'the learner applies the changed test to the task object',
           device_specificity: {
             obstruction_specific_constraint: 'the unresolved pressure makes the old visible arrangement unavailable',
-            why_this_device_not_generic: 'the scope test directly checks the blocked relation rather than adding generic structure',
+            why_this_device_not_generic:
+              'the scope test directly checks the blocked relation rather than adding generic structure',
             critic_visible_link: 'the public transcript names the old pressure immediately before the changed test',
           },
           old_warrant_misclassification: {
             old_public_rule: 'learner had been using the old visible arrangement as the check',
             counterexample: 'the public scope test produces a case the old arrangement cannot classify',
-            wrong_prediction_or_contradiction: 'the old rule predicts the same answer for cases the new relation separates',
+            wrong_prediction_or_contradiction:
+              'the old rule predicts the same answer for cases the new relation separates',
             new_relation_required: 'the changed public test names the relation that separates those cases',
             learner_acknowledges_rule_failure: 'learner says the old visible arrangement does not settle this case',
           },
@@ -1095,7 +1174,9 @@ function checkerOnlyRevision({ publicTranscript }) {
 }
 
 function normalizePublicForPrefix(value) {
-  return String(value || '').replace(/\r\n/g, '\n').trim();
+  return String(value || '')
+    .replace(/\r\n/g, '\n')
+    .trim();
 }
 
 function validateRewriteModeRevision(revision, publicTranscript, args) {
@@ -1163,7 +1244,11 @@ function mockCheck() {
 export async function callBackend(backend, prompts, options, role) {
   if (backend === 'mock') {
     return {
-      content: JSON.stringify(role === 'checker' ? mockCheck() : mockRevision({ publicTranscript: options.publicTranscript }), null, 2),
+      content: JSON.stringify(
+        role === 'checker' ? mockCheck() : mockRevision({ publicTranscript: options.publicTranscript }),
+        null,
+        2,
+      ),
       provenance: {
         backend: 'mock',
         role,
@@ -1337,7 +1422,11 @@ function callAgy({ systemPrompt, userPrompt }, options, role) {
     const cleanup = () => fs.rmSync(tmpDir, { recursive: true, force: true });
     const timeoutMs = Math.max(options.timeoutMs, DEFAULT_AGY_TIMEOUT_MS);
     const args = ['--print', '--print-timeout', '10m', '--dangerously-skip-permissions'];
-    const child = spawn(options.agyBin, args, { stdio: ['pipe', 'pipe', 'pipe'], cwd: tmpDir, env: { ...process.env } });
+    const child = spawn(options.agyBin, args, {
+      stdio: ['pipe', 'pipe', 'pipe'],
+      cwd: tmpDir,
+      env: { ...process.env },
+    });
     let out = '';
     let err = '';
     const timer = setTimeout(() => {
@@ -1394,7 +1483,8 @@ function validateRevisionPayload(payload) {
   }
   if (!Array.isArray(payload.move_ledger)) throw new Error('revision.move_ledger must be an array');
   if (!Array.isArray(payload.tutor_learning_ledger)) throw new Error('revision.tutor_learning_ledger must be an array');
-  if (!Array.isArray(payload.hidden_state_use_ledger)) throw new Error('revision.hidden_state_use_ledger must be an array');
+  if (!Array.isArray(payload.hidden_state_use_ledger))
+    throw new Error('revision.hidden_state_use_ledger must be an array');
   return payload;
 }
 
@@ -1435,7 +1525,10 @@ async function replayOne(item, args, outDir) {
     boundedMaxAddedLines: args.boundedMaxAddedLines,
   });
   fs.writeFileSync(path.join(itemDir, 'original-public.txt'), rawPublic);
-  fs.writeFileSync(path.join(itemDir, 'rewrite.prompt.txt'), `${rewritePrompt.systemPrompt}\n\n---\n\n${rewritePrompt.userPrompt}`);
+  fs.writeFileSync(
+    path.join(itemDir, 'rewrite.prompt.txt'),
+    `${rewritePrompt.systemPrompt}\n\n---\n\n${rewritePrompt.userPrompt}`,
+  );
 
   if (args.dryRun) {
     return {
@@ -1486,7 +1579,10 @@ async function replayOne(item, args, outDir) {
   let checker = null;
   if (args.checker !== 'none') {
     const checkPrompt = buildCheckPrompt({ item, publicTranscript, revision, policyMemoryText });
-    fs.writeFileSync(path.join(itemDir, 'check.prompt.txt'), `${checkPrompt.systemPrompt}\n\n---\n\n${checkPrompt.userPrompt}`);
+    fs.writeFileSync(
+      path.join(itemDir, 'check.prompt.txt'),
+      `${checkPrompt.systemPrompt}\n\n---\n\n${checkPrompt.userPrompt}`,
+    );
     const checkerCall = await callBackend(args.checker, checkPrompt, { ...args, publicTranscript }, 'checker');
     fs.writeFileSync(path.join(itemDir, 'check.raw.txt'), checkerCall.content);
     checker = {

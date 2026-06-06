@@ -6,6 +6,7 @@ import test from 'node:test';
 import {
   adversarialCheckerFor,
   buildRewritePrompt,
+  escapeInteriorQuotes,
   evaluateLocalGate,
   extractPublicTranscript,
   normalizeBackend,
@@ -41,6 +42,32 @@ test('parseJsonResponse handles fenced repaired JSON', () => {
   const parsed = parseJsonResponse('```json\n{"passes": true, "scores": {"a": 1,}}\n```');
   assert.equal(parsed.passes, true);
   assert.equal(parsed.scores.a, 1);
+});
+
+test('escapeInteriorQuotes escapes embedded speech quotes but not structural quotes', () => {
+  const malformed = '{"t": "STAGE intro\\n\\nLEARNER: "I keep choosing it." done.", "ok": true}';
+  const fixed = escapeInteriorQuotes(malformed);
+  const parsed = JSON.parse(fixed);
+  assert.equal(parsed.ok, true);
+  assert.equal(parsed.t, 'STAGE intro\n\nLEARNER: "I keep choosing it." done.');
+});
+
+test('parseJsonResponse recovers a transcript with unescaped interior speech quotes', () => {
+  // Mirrors the A18.37 distal_correspondence generator artifact: dialogue speech
+  // emitted with raw double-quotes inside a JSON string value, wrapped in a fence.
+  const raw =
+    '```json\n{\n  "revised_public_transcript": "STAGE: pick a lane.\\n\\nLEARNER: "I pick upper because it is coral." \\n\\nTUTOR: "Check the corner square." done.",\n  "move_ledger": [{"turn": "L1", "tactic": "summarize_and_check"}],\n  "claim_boundary": "counterfactual_revision_not_online_adaptation"\n}\n```';
+  const parsed = parseJsonResponse(raw);
+  assert.match(parsed.revised_public_transcript, /LEARNER: "I pick upper because it is coral\."/);
+  assert.match(parsed.revised_public_transcript, /TUTOR: "Check the corner square\."/);
+  assert.equal(parsed.move_ledger[0].tactic, 'summarize_and_check');
+  assert.equal(parsed.claim_boundary, 'counterfactual_revision_not_online_adaptation');
+});
+
+test('escapeInteriorQuotes leaves already-valid JSON byte-identical', () => {
+  const valid = '{"a": "no interior quotes", "b": [1, 2], "c": {"d": true}}';
+  assert.equal(escapeInteriorQuotes(valid), valid);
+  assert.deepEqual(JSON.parse(escapeInteriorQuotes(valid)), JSON.parse(valid));
 });
 
 test('normalizeBackend aliases gemini to agy', () => {
@@ -127,14 +154,7 @@ test('parseArgs accepts recursive tutor-learning gate thresholds', () => {
 });
 
 test('parseArgs accepts checker-only generator mode for baseline scoring', () => {
-  const args = parseArgs([
-    '--transcript',
-    '/tmp/T01.txt',
-    '--generator',
-    'none',
-    '--checker',
-    'mock',
-  ]);
+  const args = parseArgs(['--transcript', '/tmp/T01.txt', '--generator', 'none', '--checker', 'mock']);
 
   assert.equal(args.generator, 'none');
   assert.equal(args.checker, 'mock');
@@ -495,7 +515,8 @@ test('evaluateLocalGate records advisory warnings without blocking panel escalat
           severity: 'warning',
           criterion: 'learner_self_reframe',
           evidence: 'The connection is inferentially present but not syntactically joined.',
-          recommendation: 'Acceptable as is; tightening the link would strengthen it, but current phrasing is within natural-speech tolerance.',
+          recommendation:
+            'Acceptable as is; tightening the link would strengthen it, but current phrasing is within natural-speech tolerance.',
         },
       ],
       recommended_action: 'accept_for_blind_panel',
