@@ -223,9 +223,41 @@ fly deploy -a my-website-dtq0ia --build-arg POETICS_CACHE_BUST=$(date +%s)
 
 Live at `https://machinespirits.org/poetics` once the deploy completes. No
 separate app, no extra DNS, no new TLS cert — it shares the website's machine,
-volume, and certificate. To move the public corpus forward later, re-run steps
-2–3 (re-upload the snapshot) and restart; to ship newer workbench code, re-run
-steps 1 and 5 (push + deploy with a fresh `POETICS_CACHE_BUST`).
+volume, and certificate.
+
+### Refreshing the public corpus (data-only — no rebuild)
+
+The public corpus is the **frozen volume snapshot**, not the live eval DB. Because
+`poeticsMount.js` copies that snapshot to `/tmp` *at boot*, a running process keeps
+serving whatever it copied last — so moving the corpus forward is a data-plane-only
+loop of **re-run steps 2–3 (re-stage + re-upload) and restart**, with **no image
+rebuild and no `fly deploy`**:
+
+```bash
+# 1. (re-)snapshot the current eval DB → deploy/evaluations.db, from the eval repo
+npm run poetics:stage-deploy-db
+
+# 2. re-upload the snapshot over the old one on the website's fly volume
+cd ../machinespirits-website
+fly ssh sftp shell -a my-website-dtq0ia   # then: put ../machinespirits-eval-dramatic/deploy/evaluations.db /data/poetics/evaluations.db
+# …or non-interactively:
+fly ssh sftp put ../machinespirits-eval-dramatic/deploy/evaluations.db /data/poetics/evaluations.db -a my-website-dtq0ia
+
+# 3. restart so the boot-copy re-runs and picks up the new snapshot
+fly apps restart my-website-dtq0ia
+# (single machine instead of the whole app: fly machine restart 28675d9b394768 -a my-website-dtq0ia)
+```
+
+These are the same **steps 2–3** of the deploy sequence above, plus a restart.
+The restart is the load-bearing part: skip it and the machine keeps serving the
+previous `/tmp` copy until its next reboot. Step 1 (push) and step 5 (`fly deploy`)
+are *not* needed here because no code changed.
+
+To ship **newer workbench code** (not data), do the opposite — re-run steps 1 and 5
+(push the branch + `fly deploy` with a fresh `POETICS_CACHE_BUST`). A code deploy
+reboots the machine anyway, so it also re-copies whatever snapshot is currently on
+the volume; you only need the standalone restart above when the *data* changed but
+the *code* did not.
 
 ### Step 3 — the `/pilot` surface is a separate decision
 
