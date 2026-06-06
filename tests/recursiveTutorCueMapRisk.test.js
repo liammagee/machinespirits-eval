@@ -32,17 +32,17 @@ test('cue-map reporter passes prior bead-family positive control', () => {
   assert.deepEqual(report.rows[0].issues, []);
 });
 
-test('cue-map reporter passes fresh fold-anchor candidate', () => {
+test('cue-map reporter flags fold-anchor selector-like self-solving', () => {
   const report = reportCueMapRisk({
     configPath: path.join(ROOT, 'config', 'recursive-tutor-learning', 'a18.32-fresh-family-cue-pass.yaml'),
     cueMapPath: CUE_MAP,
     familyId: 'fold_anchor_priority',
   });
 
-  assert.equal(report.status, 'pass');
+  assert.equal(report.status, 'fail');
   assert.equal(report.rows.length, 1);
-  assert.equal(report.rows[0].status, 'pass');
-  assert.deepEqual(report.rows[0].issues, []);
+  assert.equal(report.rows[0].status, 'fail');
+  assert.ok(report.rows[0].issues.some((issue) => issue.code === 'selector_like_public_governance_self_solving'));
 });
 
 test('cue-map reporter flags diagonal-socket inverse instability', () => {

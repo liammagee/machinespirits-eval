@@ -7,9 +7,12 @@ meta:
 
 cue_maps:
   - family_id: fold_anchor_priority
+    empirical_status: local_negative
+    requires_constructed_device: false
     selected_relation_type: selector_authority
     selected_cue:
       public_visibility: medium
+      geometry: adjacent_marker
       description: >-
         The folded border nub is public, but anchor/authority vocabulary and
         its governance role are not named in public fields.
@@ -36,9 +39,12 @@ cue_maps:
       - anchor-marked tray
 
   - family_id: selector_rail_priority
+    empirical_status: prior_panel_pass
+    requires_constructed_device: false
     selected_relation_type: selector_authority
     selected_cue:
       public_visibility: medium
+      geometry: adjacent_marker
       description: >-
         The frame tab is public, but its authority over color, nearness, and
         rail continuity is not named in public fields.
@@ -63,9 +69,12 @@ cue_maps:
       - tab-marked rail
 
   - family_id: bead_predecessor_priority
+    empirical_status: prior_panel_pass
+    requires_constructed_device: true
     selected_relation_type: local_order_predecessor
     selected_cue:
       public_visibility: medium
+      geometry: constructed_relation
       description: >-
         Bead counts are public, but their predecessor relation in a temporary
         four-step strip is not visible until the tutor constructs the test.
@@ -91,9 +100,12 @@ cue_maps:
       - predecessor
 
   - family_id: diagonal_socket_priority
+    empirical_status: local_negative
+    requires_constructed_device: false
     selected_relation_type: inverse_completion
     selected_cue:
       public_visibility: medium
+      geometry: paired_position
       description: >-
         Tiny tick positions are public, but the intended opposite/completion
         relation is not named in public fields.
@@ -119,9 +131,12 @@ cue_maps:
       - position pairing
 
   - family_id: thread_source_priority
+    empirical_status: local_negative
+    requires_constructed_device: false
     selected_relation_type: direct_visible_source
     selected_cue:
       public_visibility: high
+      geometry: adjacent_marker
       description: >-
         The little round nub visibly touches the correct token in both held-out
         siblings, making the selected cue easy for S0 to discover.

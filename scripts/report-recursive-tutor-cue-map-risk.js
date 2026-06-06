@@ -116,6 +116,9 @@ export function classifyCueMapRisk({ family, cueMap }) {
   const relationType = clean(cueMap.selected_relation_type);
   const counterexamplePresent = cueMap.counterexample?.present === true;
   const selectedVisibility = clean(cueMap.selected_cue?.public_visibility);
+  const selectedGeometry = clean(cueMap.selected_cue?.geometry);
+  const empiricalStatus = clean(cueMap.empirical_status);
+  const requiresConstructedDevice = cueMap.requires_constructed_device === true;
   const salience = cueMap.target_salience || {};
   const competingAgainst = Number(salience.max_competing_cues_against_selected || 0);
   const supportingSelected = Number(salience.selected_target_supporting_cues || 0);
@@ -142,6 +145,27 @@ export function classifyCueMapRisk({ family, cueMap }) {
         'public_self_solving_risk',
         'Highly visible selected cues are likely to be discovered by S0 unless a counterexample blocks the obvious reading.',
         { public_visibility: cueMap.selected_cue?.public_visibility, counterexample_present: counterexamplePresent },
+      ),
+    );
+  }
+
+  if (
+    ['selector_authority', 'visible_marker_authority', 'direct_visible_governance'].includes(relationType) &&
+    selectedGeometry === 'adjacent_marker' &&
+    !requiresConstructedDevice &&
+    empiricalStatus !== 'prior_panel_pass'
+  ) {
+    issues.push(
+      issue(
+        'error',
+        'selector_like_public_governance_self_solving',
+        'A visible marker adjacent to the selected target can be read by S0 as a public pointer unless a constructed device or prior empirical positive status blocks that risk.',
+        {
+          selected_relation_type: cueMap.selected_relation_type,
+          selected_geometry: cueMap.selected_cue?.geometry,
+          requires_constructed_device: requiresConstructedDevice,
+          empirical_status: cueMap.empirical_status || null,
+        },
       ),
     );
   }
@@ -196,6 +220,9 @@ export function classifyCueMapRisk({ family, cueMap }) {
     status: errors ? 'fail' : issues.length ? 'warn' : 'pass',
     selected_relation_type: cueMap.selected_relation_type || null,
     public_visibility: cueMap.selected_cue?.public_visibility || null,
+    selected_geometry: cueMap.selected_cue?.geometry || null,
+    empirical_status: cueMap.empirical_status || null,
+    requires_constructed_device: requiresConstructedDevice,
     counterexample_present: counterexamplePresent,
     selected_repair_markers: [...markers].sort(),
     issues,
