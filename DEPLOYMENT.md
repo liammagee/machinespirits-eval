@@ -105,12 +105,16 @@ the hazard.
 
 ---
 
-## Path B — the live server, public (auth gate landed; deploy is the remaining step) 🟡
+## Path B — the live workbench, public at machinespirits.org/poetics 🟡
 
-Making the live workbench itself reachable at machinespirits.org (so others can
-drive compose / browse traces interactively) is a real option. **Step 1 (the
-auth prerequisite) shipped 2026-06-06**; what remains is the deploy itself
-(Step 2). Until that is run, no public live URL exists.
+Making the live workbench reachable at machinespirits.org (so others can drive
+compose / browse traces interactively) is a real option, and the chosen shape is
+an **in-process mount into the existing website** — one fly app
+(`my-website-dtq0ia`), one process, the URL `machinespirits.org/poetics` — *not*
+a separate fly app. **Step 1 (the auth prerequisite) shipped 2026-06-06** and
+**Step 2 (the in-process integration) is built**; what remains are the
+account-owner commands (upload the DB, deploy). Until those run, no public live
+URL exists.
 
 ### Step 1 — gate the metered + mutating surfaces ✅ (DONE)
 
@@ -136,55 +140,92 @@ identity via the website's `AUTH_DB` (`/data/lms.sqlite`). Basic-auth is the
 smallest sufficient gate; revisit (b)/(c) only if the audience or product
 requirements change.
 
-### Step 2 — deploy the poetics workbench as its own fly app ✅ (artifacts ready)
+### Step 2 — mount the workbench in-process at `/poetics` ✅ (built)
 
-The deploy files exist (added 2026-06-06): `Dockerfile.poetics`, `fly.poetics.toml`,
-`.dockerignore`, and `scripts/stage-poetics-deploy-db.mjs`. The app is its own
-fly app `machinespirits-poetics` — never folded into the website container, so
-its larger reach (paid runs, the eval DB) never shares the website's volume or
-identity.
+The workbench is folded into the website as a `/poetics` sub-app — one fly app
+(`my-website-dtq0ia`), one Node process, the URL `machinespirits.org/poetics`.
+Three website-side files (`../machinespirits-website`) do it:
 
-**The database is baked into the image as a read-only snapshot.** The live DB at
-`data/evaluations.db` is a symlink pointing outside the repo, and Docker can't
-follow a link out of the build context, so `poetics:stage-deploy-db` copies a
-consistent snapshot into `deploy/evaluations.db` (via SQLite's online backup)
-first. The image reads it through `EVAL_DB_PATH=/app/deploy/evaluations.db`.
-Writes made through the deployed site (labels, saved compositions) land in the
-container's copy and are discarded on the next deploy — which is what you want
-for a public showcase. (A fly volume is the upgrade path if the deployed copy
-should accumulate real edits.)
+- **`services/poeticsMount.js`** — the mount. Dynamically imports the eval repo's
+  `createPoeticsBrowserApp` factory and registers it under `/poetics` with
+  `app.use`. It mounts *only* when basic-auth creds are present, copies the DB to
+  an ephemeral path first (below), and rewrites the workbench's absolute
+  same-origin URLs (`/api…`, `<a href="/browse">`, `url(/…)`) to sit under
+  `/poetics`. The whole thing is wrapped in try/catch: a missing DB, a broken
+  checkout, or a failed import degrades to "/poetics absent" and never takes the
+  main site down.
+- **`server.js`** — one line, `await mountPoetics(app)`, placed before the SPA
+  catch-all so `/poetics/*` resolves to the sub-app rather than `index.html`.
+- **`Dockerfile`** — a clone block (after the website's own build/prune) that
+  `git clone`s the eval repo at `POETICS_REF` (default
+  `feat/pilot-learner-source-seam`) into `/app/poetics-src`, runs
+  `npm install --omit=dev`, and sets `POETICS_SRC`. Non-fatal `|| echo` guard: a
+  failed checkout/install still produces a buildable image with `/poetics` absent.
 
-**What is deliberately left out of the image** (see `.dockerignore`), so these
-views are degraded in the deploy:
+**Code arrives by git clone at build time** — the workbench source is *not*
+vendored into the website repo. Bump `POETICS_CACHE_BUST` to force a fresh clone;
+point `POETICS_REF` at another branch or tag to move the pinned snapshot. The
+clone carries whatever the branch git-tracks (so push your poetics work before
+deploying).
 
-- `logs/` + `exports/` — the disk-backed full-transcript drill-downs and replay
-  bundles read artifact files that aren't bundled, so those panels are empty.
-  The browse/atlas/rubric/ontology views and in-DB previews work normally.
-- `docs/` — `/docs/research` links 404; the paper lives on the public arc page.
-- `config/poetics-calibration/` (68 MB) — only an example path for a calibration view.
+**The DB is a frozen volume snapshot, copied to ephemeral at boot.** The live DB
+at `data/evaluations.db` is a symlink outside the repo (it points at
+`~/.machinespirits-data/`), so it can't ride along in the clone. Instead
+`poetics:stage-deploy-db` writes a consistent snapshot to `deploy/evaluations.db`
+(SQLite online backup, ~270 MB), you upload it once to the website's fly volume
+at `/data/poetics/evaluations.db`, and at boot `poeticsMount.js` copies it to
+`/tmp/poetics/evaluations.db` and opens *that*. The store opens read-write (WAL
+pragma + migrations), so opening the volume copy directly would mutate it —
+hence the ephemeral copy. Writes through the deployed site (labels, saved
+compositions) land in `/tmp` and vanish on restart; the volume snapshot stays
+pristine. Re-upload to refresh the public corpus.
 
-**The money-spending buttons are inert unless you opt in.** `POST /api/jobs` and
-`/api/compose/live/turn` need `OPENROUTER_API_KEY` to actually call the provider.
-The deploy sets only `POETICS_AUTH_USER`/`PASS`, not the API key — so those
-buttons error instead of spending. Set the key as a secret later only if you
-want live composition to work, knowing anyone with the password could then run
-up the bill.
+**⚠ The money-spending buttons are ARMED here — the password is the only gate.**
+This is the load-bearing difference from a standalone deploy. The website already
+holds live `OPENROUTER_API_KEY` / `ANTHROPIC_API_KEY` secrets (its own features
+use them), and an in-process sub-app inherits the same `process.env`. So once
+`/poetics` mounts, `POST /api/jobs` (spawns paid runs) and
+`POST /api/compose/live/turn` (a paid call per turn) are live — there is no
+"omit the API key to keep them inert" option the way a separate app had. The
+basic-auth password is the *entire* barrier between the public internet and your
+LLM bill. That is exactly why `poeticsMount.js` refuses to mount without creds.
 
-**Deploy commands** (run from the repo root):
+**Degraded views** — the clone carries only what the branch tracks, so:
+
+- `logs/` is gitignored → not cloned → the disk-backed full-transcript
+  drill-downs and replay bundles read missing files and come up empty. The
+  DB-backed views (browse / atlas / rubric / ontology and in-DB previews) work
+  normally from the uploaded snapshot.
+- `docs/` and most of `exports/` and `config/poetics-calibration/` *are* tracked,
+  so those views are largely intact (unlike the earlier separate-app plan, which
+  excluded them via `.dockerignore`).
+
+**Deploy sequence** (the account-owner runs these — not Claude):
 
 ```bash
-fly apps create machinespirits-poetics           # one-time; pick another name if taken
-fly secrets set POETICS_AUTH_USER=<you-pick> POETICS_AUTH_PASS=<you-pick> \
-  -a machinespirits-poetics                       # the password — you run this, not Claude
-npm run poetics:stage-deploy-db                   # snapshot the DB into deploy/
-fly deploy -c fly.poetics.toml                    # build + ship (public, billable)
+# 1. push the branch so the build clones your latest poetics code
+git push origin feat/pilot-learner-source-seam
+
+# 2. snapshot the DB → deploy/evaluations.db (~270 MB), from the eval repo
+npm run poetics:stage-deploy-db
+
+# 3. upload the snapshot to the website's fly volume (machine must be up)
+cd ../machinespirits-website
+fly ssh console -a my-website-dtq0ia -C "mkdir -p /data/poetics"
+fly ssh sftp shell -a my-website-dtq0ia      # then: put ../machinespirits-eval-dramatic/deploy/evaluations.db /data/poetics/evaluations.db
+
+# 4. the password (you set this; shown for completeness — already done per your note)
+fly secrets set POETICS_AUTH_USER=<you-pick> POETICS_AUTH_PASS=<you-pick> -a my-website-dtq0ia
+
+# 5. deploy the website, forcing a fresh poetics clone
+fly deploy -a my-website-dtq0ia --build-arg POETICS_CACHE_BUST=$(date +%s)
 ```
 
-The app starts at `https://machinespirits-poetics.fly.dev`. A tidy
-`poetics.machinespirits.org` is a later step — `fly certs add
-poetics.machinespirits.org` plus a DNS CNAME. `fly.poetics.toml` scales the
-machine to zero when idle, so an unused showcase costs almost nothing and
-cold-starts on the first request.
+Live at `https://machinespirits.org/poetics` once the deploy completes. No
+separate app, no extra DNS, no new TLS cert — it shares the website's machine,
+volume, and certificate. To move the public corpus forward later, re-run steps
+2–3 (re-upload the snapshot) and restart; to ship newer workbench code, re-run
+steps 1 and 5 (push + deploy with a fresh `POETICS_CACHE_BUST`).
 
 ### Step 3 — the `/pilot` surface is a separate decision
 
@@ -199,12 +240,17 @@ the pilot surface public as a side effect.
 - **Local:** `npm run poetics:serve` → `http://127.0.0.1:3466` (canonical, idempotent).
 - **Public static content:** Path A, already live for the arc; safe to extend to
   other read-only snapshots.
-- **Public live workbench:** Path B. Step 1 (basic-auth tied to the bind)
-  **landed 2026-06-06**; a public bind without credentials refuses to start.
-  Step 2 for the **poetics workbench** is also built — `Dockerfile.poetics`,
-  `fly.poetics.toml`, `.dockerignore`, `poetics:stage-deploy-db`. All that's
-  left are the two commands only the account owner runs: `fly secrets set …`
-  (the password) and `fly deploy -c fly.poetics.toml` (the public, billable
-  step). The eval dashboard (`server.js`) is intentionally *not* packaged yet —
-  it drags the `/pilot` surface (Step 3). No live URL exists until the deploy
-  runs.
+- **Public live workbench:** Path B, an **in-process `/poetics` mount into the
+  website** (one fly app `my-website-dtq0ia`, URL `machinespirits.org/poetics`) —
+  *not* a separate fly app. Step 1 (basic-auth tied to the bind) **landed
+  2026-06-06**; a public bind without credentials refuses to start. Step 2 (the
+  three website-side files — `services/poeticsMount.js`, one `server.js` line, a
+  `Dockerfile` clone block) is **built**. What remains are the account-owner
+  commands: push the branch, `poetics:stage-deploy-db` + sftp the snapshot to the
+  volume, and `fly deploy -a my-website-dtq0ia` (public, billable). **The
+  password is the only gate** — the website already holds the LLM keys, so the
+  metered buttons are armed the moment `/poetics` mounts. The earlier separate-app
+  artifacts (`Dockerfile.poetics`, `fly.poetics.toml`, `.dockerignore`) were
+  removed in favour of this shape. The eval dashboard (`server.js`) is *not*
+  exposed — it drags the `/pilot` surface (Step 3). No live URL exists until the
+  deploy runs.

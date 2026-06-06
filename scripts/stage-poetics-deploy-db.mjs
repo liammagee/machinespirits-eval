@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 /**
- * Stage a read-only snapshot of the eval database into the Docker build context
- * (deploy/evaluations.db) for the poetics workbench image (Dockerfile.poetics).
+ * Stage a read-only snapshot of the eval database to deploy/evaluations.db — the
+ * file you upload to the website's fly volume (/data/poetics/evaluations.db) for
+ * the in-process /poetics mount (machinespirits.org/poetics; see
+ * ../machinespirits-website/services/poeticsMount.js, which copies it to an
+ * ephemeral path at boot and opens that, leaving the volume snapshot frozen).
  *
  * Why this exists: data/evaluations.db is a symlink pointing outside the repo,
  * and Docker won't follow a link out of the build context. So we materialise a
@@ -44,4 +47,6 @@ db.close();
 
 const outMB = (statSync(outPath).size / 1e6).toFixed(1);
 console.log(`[stage-db] wrote ${outPath} (${outMB} MB)`);
-console.log('[stage-db] done. Next: fly deploy -c fly.poetics.toml');
+console.log(
+  '[stage-db] done. Next: upload to the fly volume — fly ssh sftp put deploy/evaluations.db /data/poetics/evaluations.db -a my-website-dtq0ia',
+);
