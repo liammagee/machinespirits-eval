@@ -106,6 +106,7 @@ test('parseArgs defaults to A18.10 contrastive panel settings', () => {
   assert.equal(args.familyId, 'selector_rail_priority');
   assert.match(args.outDir, /a18\.10-contrastive-panel$/);
   assert.equal(args.criticConcurrency, args.critics.length);
+  assert.equal(args.voteRule, 'strict_v1');
 });
 
 test('buildContrastPanelPackage blinds S0/S1 arm identity in pair samples', () => {
@@ -244,6 +245,30 @@ test('deriveContrastVote requires S1 side, policy-transfer origin, and different
   assert.equal(organic.ordinary_public_inference, true);
 });
 
+test('deriveContrastVote keeps learner resistance vote-blocking only under strict_v1', () => {
+  const pairKey = { s1_side: 'B', s0_side: 'A' };
+  const row = {
+    selected_policy_side: 'B',
+    learner_resistance_addressed_side: 'neither',
+    winner: 'B',
+    differential_policy_use: 4,
+    origin_class: 'policy_transfer_like',
+    ordinary_public_inference_risk: 'low',
+  };
+
+  const strict = deriveContrastVote(row, pairKey, { voteRule: 'strict_v1' });
+  assert.equal(strict.supports_policy_memory_transfer, false);
+  assert.equal(strict.strict_v1_supports_policy_memory_transfer, false);
+  assert.equal(strict.policy_core_v2_supports_policy_memory_transfer, true);
+  assert.equal(strict.learner_resistance_diagnostic_warning, true);
+
+  const core = deriveContrastVote(row, pairKey, { voteRule: 'policy_core_v2' });
+  assert.equal(core.supports_policy_memory_transfer, true);
+  assert.equal(core.strict_v1_supports_policy_memory_transfer, false);
+  assert.equal(core.policy_core_v2_supports_policy_memory_transfer, true);
+  assert.equal(core.learner_resistance_diagnostic_warning, true);
+});
+
 test('summarizeContrastScores reports pair-level majority transfer pass', () => {
   const { tmp, chainDir } = writePairFixture();
   const outDir = path.join(tmp, 'panel-summary');
@@ -290,9 +315,59 @@ test('summarizeContrastScores reports pair-level majority transfer pass', () => 
     panelThreshold: 'majority',
   });
   assert.equal(report.status, 'contrast_panel_pass');
+  assert.equal(report.vote_rule, 'strict_v1');
   assert.equal(report.pairs[0].transfer_votes, 2);
   assert.equal(report.pairs[0].required_transfer_votes, 2);
   assert.equal(report.pairs[0].passes, true);
+});
+
+test('summarizeContrastScores can apply policy_core_v2 to saved critic rows', () => {
+  const { tmp, chainDir } = writePairFixture();
+  const outDir = path.join(tmp, 'panel-summary-v2');
+  buildContrastPanelPackage({
+    chainDir,
+    outDir,
+    runId: 'a18-22-summary-test',
+    critics: ['critic-a', 'critic-b', 'critic-c'],
+    voteRule: 'policy_core_v2',
+    force: false,
+  });
+  const key = JSON.parse(fs.readFileSync(path.join(outDir, 'key.json'), 'utf8'));
+  const s1 = key.pairs.P01.s1_side;
+  const mkRow = (critic, resistanceSide) => ({
+    pair_id: 'P01',
+    critic,
+    raw: {
+      selected_policy_side: s1,
+      learner_resistance_addressed_side: resistanceSide,
+      winner: s1,
+      origin_class: 'policy_transfer_like',
+      ordinary_public_inference_risk: 'low',
+      differential_policy_use: 4,
+    },
+  });
+  writeJson(path.join(outDir, 'scores', 'critic-a.json'), { critic: 'critic-a', scored: [mkRow('critic-a', s1)] });
+  writeJson(path.join(outDir, 'scores', 'critic-b.json'), { critic: 'critic-b', scored: [mkRow('critic-b', 'neither')] });
+  writeJson(path.join(outDir, 'scores', 'critic-c.json'), { critic: 'critic-c', scored: [mkRow('critic-c', 'unclear')] });
+
+  const strict = summarizeContrastScores(outDir, {
+    expectedCritics: 3,
+    panelThreshold: 'majority',
+    voteRule: 'strict_v1',
+  });
+  assert.equal(strict.status, 'contrast_panel_not_yet_reliable');
+  assert.equal(strict.pairs[0].status, 'contrast_panel_fail');
+  assert.equal(strict.pairs[0].transfer_votes, 1);
+
+  const core = summarizeContrastScores(outDir, {
+    expectedCritics: 3,
+    panelThreshold: 'majority',
+    voteRule: 'policy_core_v2',
+  });
+  assert.equal(core.status, 'contrast_panel_pass');
+  assert.equal(core.vote_rule, 'policy_core_v2');
+  assert.equal(core.pairs[0].transfer_votes, 3);
+  assert.equal(core.pairs[0].learner_resistance_diagnostic_warning_votes, 2);
 });
 
 test('runContrastPanel mock writes a report without paid scoring', async () => {

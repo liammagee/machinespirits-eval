@@ -15,6 +15,7 @@ const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
 const DEFAULT_PROTOCOL = path.join(ROOT, 'config', 'recursive-tutor-learning', 'a18-correctness-gated-protocol.yaml');
 const DEFAULT_CONFIG = path.join(ROOT, 'config', 'recursive-tutor-learning', 'underdetermined-transfer-families.yaml');
+const ACCEPTED_PROTOCOL_IDS = new Set(['A18.16', 'A18.22']);
 
 function usage() {
   return `Usage:
@@ -68,8 +69,9 @@ function pushIssue(issues, severity, pathName, message) {
 }
 
 function validateProtocol(protocol, issues) {
-  if (protocol?.meta?.protocol_id !== 'A18.16') {
-    pushIssue(issues, 'error', 'protocol.meta.protocol_id', 'must be A18.16');
+  const protocolId = protocol?.meta?.protocol_id;
+  if (!ACCEPTED_PROTOCOL_IDS.has(protocolId)) {
+    pushIssue(issues, 'error', 'protocol.meta.protocol_id', 'must be A18.16 or A18.22');
   }
   if (!hasText(protocol?.meta?.protocol_version)) {
     pushIssue(issues, 'error', 'protocol.meta.protocol_version', 'is required');
@@ -96,6 +98,32 @@ function validateProtocol(protocol, issues) {
   }
   if (protocol?.contrast_panel?.min_critics !== 5) {
     pushIssue(issues, 'warning', 'protocol.contrast_panel.min_critics', 'expected 5 for the frozen panel');
+  }
+  if (protocolId === 'A18.22') {
+    if (protocol?.contrast_panel?.vote_rule_name !== 'policy_core_v2') {
+      pushIssue(
+        issues,
+        'error',
+        'protocol.contrast_panel.vote_rule_name',
+        'must be policy_core_v2 for A18.22',
+      );
+    }
+    if (protocol?.contrast_panel?.vote_rule?.learner_resistance_addressed_side != null) {
+      pushIssue(
+        issues,
+        'error',
+        'protocol.contrast_panel.vote_rule.learner_resistance_addressed_side',
+        'must not be vote-blocking under A18.22',
+      );
+    }
+    if (protocol?.contrast_panel?.diagnostic_fields?.learner_resistance_addressed_side?.role !== 'diagnostic_caveat') {
+      pushIssue(
+        issues,
+        'error',
+        'protocol.contrast_panel.diagnostic_fields.learner_resistance_addressed_side.role',
+        'must be diagnostic_caveat under A18.22',
+      );
+    }
   }
 }
 

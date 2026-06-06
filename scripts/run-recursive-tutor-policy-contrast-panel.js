@@ -29,6 +29,7 @@ const DEFAULT_CRITICS = [
   'anthropic/claude-sonnet-4.6',
   'codex',
 ];
+const VOTE_RULES = new Set(['strict_v1', 'policy_core_v2']);
 
 function usage() {
   return `Usage:
@@ -39,6 +40,7 @@ function usage() {
     [--family selector_rail_priority]
     [--critics qwen/qwen3.7-max,google/gemini-3.5-flash,...]
     [--critic-concurrency N|all] [--score-concurrency N]
+    [--vote-rule strict_v1|policy_core_v2]
     [--panel-threshold majority] [--min-critics N]
     [--mock] [--skip-score] [--dry-run] [--force]
 
@@ -55,6 +57,7 @@ function defaultArgs() {
     critics: DEFAULT_CRITICS,
     criticConcurrency: 'all',
     scoreConcurrency: 1,
+    voteRule: 'strict_v1',
     panelThreshold: 'majority',
     minCritics: null,
     mock: false,
@@ -75,6 +78,7 @@ export function parseArgs(argv = process.argv.slice(2)) {
     else if (token === '--run-id') args.runId = argv[++i];
     else if (token === '--family') args.familyId = argv[++i];
     else if (token === '--critics') args.critics = splitCsv(argv[++i]);
+    else if (token === '--vote-rule') args.voteRule = validateVoteRule(argv[++i]);
     else if (token === '--critic-concurrency') {
       const value = argv[++i];
       args.criticConcurrency = value === 'all' ? 'all' : Number(value);
@@ -113,7 +117,14 @@ function finalizeArgs(rawArgs) {
     args.criticConcurrency === 'all' ? criticCount : Math.min(args.criticConcurrency, criticCount);
   args.runId = args.runId || 'a18-10-selector-contrast-panel';
   args.outDir = path.resolve(args.outDir || path.join(args.chainDir, 'a18.10-contrastive-panel'));
+  args.voteRule = validateVoteRule(args.voteRule);
   return args;
+}
+
+function validateVoteRule(value) {
+  const rule = String(value || 'strict_v1').trim();
+  if (!VOTE_RULES.has(rule)) throw new Error(`unknown --vote-rule: ${rule}`);
+  return rule;
 }
 
 function splitCsv(value) {
@@ -420,6 +431,7 @@ export function buildContrastPanelPackage(rawArgs) {
     score_concurrency: args.scoreConcurrency,
     panel_threshold: args.panelThreshold,
     min_critics: args.minCritics,
+    vote_rule: args.voteRule,
     blind_policy:
       'Critics see anonymous A/B continuations and the candidate learned policy, but not which side had policy memory.',
     pairs: publicPairs,
@@ -512,7 +524,8 @@ function mockCriticResponse(pair) {
   };
 }
 
-export function deriveContrastVote(parsed, pairKey) {
+export function deriveContrastVote(parsed, pairKey, options = {}) {
+  const voteRule = validateVoteRule(options.voteRule);
   const selectedPolicySide = normalizeSide(parsed.selected_policy_side ?? parsed.selector_policy_side);
   const learnerResistanceAddressedSide = normalizeSide(parsed.learner_resistance_addressed_side);
   const winner = normalizeSide(parsed.winner);
@@ -530,17 +543,28 @@ export function deriveContrastVote(parsed, pairKey) {
     ordinaryRisk === 'high';
   const resistanceAddressedByPolicySide =
     learnerResistanceAddressedSide === s1Side || learnerResistanceAddressedSide === 'both';
-  const supportsPolicyMemoryTransfer =
+  const strictV1Support =
     selectedPolicySide === s1Side &&
     resistanceAddressedByPolicySide &&
     winner === s1Side &&
     originClass === 'policy_transfer_like' &&
     differentialPolicyUse >= 4 &&
     !ordinaryPublicInference;
+  const policyCoreV2Support =
+    selectedPolicySide === s1Side &&
+    winner === s1Side &&
+    originClass === 'policy_transfer_like' &&
+    differentialPolicyUse >= 4 &&
+    !ordinaryPublicInference;
+  const supportsPolicyMemoryTransfer =
+    voteRule === 'policy_core_v2' ? policyCoreV2Support : strictV1Support;
   return {
+    vote_rule: voteRule,
     selected_policy_side: selectedPolicySide,
     selector_policy_side: selectedPolicySide,
     learner_resistance_addressed_side: learnerResistanceAddressedSide,
+    learner_resistance_addressed_by_policy_side: resistanceAddressedByPolicySide,
+    learner_resistance_diagnostic_warning: policyCoreV2Support && !resistanceAddressedByPolicySide,
     winner,
     origin_class: originClass,
     ordinary_public_inference_risk: ordinaryRisk || 'unclear',
@@ -548,13 +572,15 @@ export function deriveContrastVote(parsed, pairKey) {
     s1_side: s1Side,
     s0_side: s0Side,
     supports_policy_memory_transfer: supportsPolicyMemoryTransfer,
+    strict_v1_supports_policy_memory_transfer: strictV1Support,
+    policy_core_v2_supports_policy_memory_transfer: policyCoreV2Support,
     treats_as_equivalent: treatsAsEquivalent,
     ordinary_public_inference: ordinaryPublicInference,
     s0_preferred: winner === s0Side || selectedPolicySide === s0Side,
   };
 }
 
-async function scorePairWithCritic(pair, critic, mock = false) {
+async function scorePairWithCritic(pair, critic, mock = false, voteRule = 'strict_v1') {
   let parsed;
   let retryCount = 0;
   try {
@@ -576,7 +602,7 @@ async function scorePairWithCritic(pair, critic, mock = false) {
       critic,
       retry_count: retryCount,
       raw: parsed,
-      ...deriveContrastVote(parsed, key),
+      ...deriveContrastVote(parsed, key, { voteRule }),
     };
   } catch (error) {
     return {
@@ -590,9 +616,9 @@ async function scorePairWithCritic(pair, critic, mock = false) {
   }
 }
 
-async function scoreCritic({ pairs, critic, scoreConcurrency, scoreDir, mock }) {
+async function scoreCritic({ pairs, critic, scoreConcurrency, scoreDir, mock, voteRule }) {
   const scored = await runWithConcurrency(
-    pairs.map((pair) => () => scorePairWithCritic(pair, critic, mock)),
+    pairs.map((pair) => () => scorePairWithCritic(pair, critic, mock, voteRule)),
     scoreConcurrency,
   );
   const artifact = {
@@ -622,6 +648,7 @@ function scoreFiles(scoreDir) {
 export function summarizeContrastScores(outDir, options = {}) {
   const manifest = readJson(path.join(outDir, 'manifest.json'));
   const key = readJson(path.join(outDir, 'key.json'));
+  const voteRule = validateVoteRule(options.voteRule || manifest.vote_rule || 'strict_v1');
   const byPair = new Map();
   for (const pair of manifest.pairs || []) {
     const hidden = key.pairs[pair.pair_id];
@@ -636,6 +663,7 @@ export function summarizeContrastScores(outDir, options = {}) {
       equivalent_votes: 0,
       ordinary_public_inference_votes: 0,
       s0_preferred_votes: 0,
+      learner_resistance_diagnostic_warning_votes: 0,
       errors: [],
       critics: {},
     });
@@ -651,21 +679,27 @@ export function summarizeContrastScores(outDir, options = {}) {
         continue;
       }
       const hidden = key.pairs[row.pair_id];
-      const derived = deriveContrastVote(row.raw || row, hidden);
+      const derived = deriveContrastVote(row.raw || row, hidden, { voteRule });
       pair.total_critics += 1;
       if (derived.supports_policy_memory_transfer) pair.transfer_votes += 1;
       if (derived.treats_as_equivalent) pair.equivalent_votes += 1;
       if (derived.ordinary_public_inference) pair.ordinary_public_inference_votes += 1;
       if (derived.s0_preferred) pair.s0_preferred_votes += 1;
+      if (derived.learner_resistance_diagnostic_warning) pair.learner_resistance_diagnostic_warning_votes += 1;
       pair.critics[critic] = {
+        vote_rule: derived.vote_rule,
         selected_policy_side: derived.selected_policy_side,
         selector_policy_side: derived.selector_policy_side,
         learner_resistance_addressed_side: derived.learner_resistance_addressed_side,
+        learner_resistance_addressed_by_policy_side: derived.learner_resistance_addressed_by_policy_side,
+        learner_resistance_diagnostic_warning: derived.learner_resistance_diagnostic_warning,
         winner: derived.winner,
         origin_class: derived.origin_class,
         ordinary_public_inference_risk: derived.ordinary_public_inference_risk,
         differential_policy_use: derived.differential_policy_use,
         supports_policy_memory_transfer: derived.supports_policy_memory_transfer,
+        strict_v1_supports_policy_memory_transfer: derived.strict_v1_supports_policy_memory_transfer,
+        policy_core_v2_supports_policy_memory_transfer: derived.policy_core_v2_supports_policy_memory_transfer,
         treats_as_equivalent: derived.treats_as_equivalent,
         ordinary_public_inference: derived.ordinary_public_inference,
         s0_preferred: derived.s0_preferred,
@@ -707,6 +741,7 @@ export function summarizeContrastScores(outDir, options = {}) {
     key_path: rel(path.join(outDir, 'key.json')),
     critics: manifest.critics || [],
     expected_critics: expectedCritics,
+    vote_rule: voteRule,
     panel_threshold: options.panelThreshold || manifest.panel_threshold || 'majority',
     min_critics: options.minCritics ?? manifest.min_critics ?? null,
     status: allPass ? 'contrast_panel_pass' : 'contrast_panel_not_yet_reliable',
@@ -735,6 +770,7 @@ export async function runContrastPanel(rawArgs = process.argv.slice(2)) {
           scoreConcurrency: args.scoreConcurrency,
           scoreDir: packaged.scoreDir,
           mock: args.mock,
+          voteRule: args.voteRule,
         }),
       ),
       args.criticConcurrency,
@@ -745,6 +781,7 @@ export async function runContrastPanel(rawArgs = process.argv.slice(2)) {
       panelThreshold: args.panelThreshold,
       minCritics: args.minCritics,
       expectedCritics: args.mock ? 1 : args.critics.length,
+      voteRule: args.voteRule,
     });
     report.score_results = scoreResults;
     report.skipped_score = args.skipScore;

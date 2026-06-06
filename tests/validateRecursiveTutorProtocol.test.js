@@ -8,6 +8,7 @@ import { validateRecursiveTutorProtocol } from '../scripts/validate-recursive-tu
 
 const ROOT = path.resolve('.');
 const PROTOCOL = path.join(ROOT, 'config', 'recursive-tutor-learning', 'a18-correctness-gated-protocol.yaml');
+const PROTOCOL_V2 = path.join(ROOT, 'config', 'recursive-tutor-learning', 'a18-panel-vote-rule-v2.yaml');
 const DEFAULT_CONFIG = path.join(ROOT, 'config', 'recursive-tutor-learning', 'underdetermined-transfer-families.yaml');
 
 test('A18.16 validator accepts the frozen underdetermined-transfer fixture', () => {
@@ -68,4 +69,14 @@ test('A18.16 validator rejects held-out siblings without policy correctness meta
   });
   assert.equal(report.status, 'fail');
   assert.match(JSON.stringify(report), /policy_correctness is required/);
+});
+
+test('validator accepts the A18.22 policy-core panel v2 protocol', () => {
+  const report = validateRecursiveTutorProtocol({
+    protocolPath: PROTOCOL_V2,
+    configPath: DEFAULT_CONFIG,
+  });
+  assert.equal(report.status, 'pass');
+  assert.equal(report.summary.errors, 0);
+  assert.equal(report.protocol_version, 'a18-correctness-gated-panel-v2');
 });
