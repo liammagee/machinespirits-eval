@@ -1,0 +1,208 @@
+meta:
+  schema_version: recursive-tutor-learning-families-v1-underdetermined-transfer
+  created: '2026-06-06'
+  status: a18_35_constructed_device_family
+  protocol: config/recursive-tutor-learning/a18-panel-vote-rule-v2.yaml
+  claim_boundary: simulated_teacher_as_learner_not_human_learning
+  notes: >-
+    Constructed-device family: the carrier is the token nearest a tutor-built
+    measured midpoint between two named public posts, not the token nearest
+    either salient post; midpoint vocabulary is held for policy memory only.
+
+families:
+  - family_id: constructed_midpoint_priority
+    obstruction_type: competing_visible_cues_with_constructed_span_midpoint
+    local_rule:
+      private_rule: >-
+        In this invented post-card notation, two named end posts mark a span. The
+        token that can carry the final tag is the token sitting nearest the
+        halfway mark of that span, with the halfway mark constructed by measuring
+        between the two posts. Color match, nearness to one post, and a clear
+        lane can all be tempting but are not decisive unless the constructed
+        halfway mark is used. The tutor's repair should build a temporary
+        measured midpoint between the two posts in public after the learner
+        reports cue competition; it should not describe the midpoint as
+        preprinted scene furniture, and the obvious post-hugging token should
+        lose to the between-posts token.
+      public_name: constructed span midpoint priority
+    transfer_design:
+      require_underdetermined_public_repairs: true
+      policy_selected_repair: span_midpoint_test
+      transfer_condition: >-
+        Use the span-midpoint repair only after the learner reports that color,
+        nearness to a post, and lane clarity are competing rather than ranking
+        themselves. Do not use it as a first move, and do not let the
+        post-hugging token win by color or nearness alone.
+      repair_public_device: >-
+        The public tutor move should measure between the two named posts and
+        build a temporary halfway mark as the new test, then use it to contrast
+        the tempting color and nearness cues against the between-posts token.
+      recursive_update_requirement: >-
+        End with a brief tutor commitment that future cards for this learner
+        should first name the defeated cue, then construct and apply the halfway
+        mark; this makes the teacher-as-learner update public rather than only
+        implicit.
+      s0_stop_rule: >-
+        Stop locally if S0 survives or if S0 independently names a midpoint, mid
+        point, halfway mark, halfway-between, or measured-middle strategy.
+    plausible_repairs:
+      - repair_id: color_match_test
+        public_rationale: >-
+          The chosen token shares a visible color or wash with the final tag.
+        why_plausible_from_public_stage: >-
+          Color matching is salient and easy to compare across the post card.
+      - repair_id: nearest_post_test
+        public_rationale: >-
+          The chosen token sits nearest to one of the named end posts.
+        why_plausible_from_public_stage: >-
+          Nearness to a marked post looks like a natural rule when a token hugs
+          an end of the card.
+      - repair_id: clear_lane_test
+        public_rationale: >-
+          The chosen token lies on the cleanest visible lane across the card.
+        why_plausible_from_public_stage: >-
+          Continuous clear lanes invite path-following as a public rule.
+      - repair_id: post_flag_salience_test
+        public_rationale: >-
+          The chosen token sits beside the most boldly flagged end post.
+        why_plausible_from_public_stage: >-
+          A bold post flag could be decoration, emphasis, or a pointer unless its
+          role is tested.
+      - repair_id: span_midpoint_test
+        public_rationale: >-
+          The chosen token sits nearest the halfway mark measured between the two
+          named end posts.
+        why_plausible_from_public_stage: >-
+          The two posts and the token positions are public, but whether a halfway
+          mark between the posts governs the choice is undetermined until the
+          tutor constructs and measures it.
+    success_criterion: >-
+      On a held-out post card, the learner must stop choosing by color, nearness
+      to a post, or lane alone and use a constructed halfway mark between the two
+      named posts to decide which token can carry the final tag.
+    forbidden_shortcuts:
+      - midpoint
+      - mid point
+      - halfway mark
+      - halfway between
+      - measured middle
+      - midway point
+      - exact middle
+      - centre mark
+      - center mark
+      - equal distance from both posts
+      - point between the posts
+    training_seed:
+      seed_id: mid_train_rust_span
+      public_setup: >-
+        A long measuring card has a start post flagged at its left end and a
+        finish post flagged at its right end. The token word vimo appears at two
+        spots on the card. One vimo sits right beside the start post and is
+        painted rust like the final tag. The other vimo sits out along the card
+        on the only clear lane, set well in from both posts between them. The
+        learner has to say which vimo can carry the final rust tag.
+      learner_resistance: >-
+        I keep choosing the vimo beside the start post because it is rust like
+        the tag and hugs a flagged post. The other vimo sits on the cleaner
+        lane between the posts, but I do not know how to rank color, post
+        nearness, and lane against each other.
+      baseline_tutor_attempt: >-
+        Compare the color, the nearness to a post, and the lane, then choose the
+        vimo with the strongest combined evidence.
+      learner_followup: >-
+        That still splits the evidence. Rust and post nearness point to the first
+        vimo; the clear lane between the posts makes the other vimo feel possible.
+      expected_failure: wrong_strategy_family
+    heldout_siblings:
+      - sibling_id: mid_holdout_teal_pegs
+        public_setup: >-
+          A peg-board strip has a top peg flagged at one end and a base peg
+          flagged at the other end. The token word naro appears at three spots.
+          One naro sits beside the top peg and is teal like the final card. A
+          second naro sits out along the strip on the clearest open track, set
+          well in from both pegs between them. A third naro sits beside the base
+          peg with no clear track and a plain wash. The learner has to choose
+          which naro can carry the final teal card.
+        learner_resistance: >-
+          I want the naro beside the top peg because it is teal like the card and
+          hugs a flagged peg. The naro on the open track between the pegs looks
+          relevant too, and the base-peg naro is also near a flag, but none of
+          these settle the choice.
+        baseline_tutor_attempt: >-
+          Compare the color, the nearness to a peg, and the track, then choose
+          the naro with the strongest evidence.
+        learner_followup: >-
+          The evidence still splits. Teal and top-peg nearness point one way; the
+          open track between the pegs points another; base-peg nearness adds a
+          third pull.
+        plausible_public_repairs:
+          - color_match_test
+          - nearest_post_test
+          - clear_lane_test
+          - post_flag_salience_test
+          - span_midpoint_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: span_midpoint_test
+          target_id: open_track_naro
+          target_aliases:
+            - open-track naro
+            - naro on the open track
+            - between-pegs naro
+            - central naro
+          selected_repair_markers:
+            - midpoint
+            - mid point
+            - halfway mark
+            - halfway between
+            - measured middle
+          incorrect_target_aliases:
+            - top-peg naro
+            - teal naro
+            - base-peg naro
+      - sibling_id: mid_holdout_plum_posts
+        public_setup: >-
+          A ruler-edged card has a west post flagged at one end and an east post
+          flagged at the other end. The token word kelo appears at three spots.
+          One kelo sits beside the east post and is plum like the final badge. A
+          second kelo sits out along the card on the only clean rail, set well in
+          from both posts between them. A third kelo sits beside the west post on
+          a scuffed lane with a plain wash. The learner has to choose which kelo
+          can carry the final plum badge.
+        learner_resistance: >-
+          I want the kelo beside the east post because it is plum like the badge
+          and hugs a flagged post. The kelo on the clean rail between the posts
+          looks relevant, and the west-post kelo is near a flag too, but the
+          clues will not rank themselves.
+        baseline_tutor_attempt: >-
+          Compare the color, the nearness to a post, and the rail clarity before
+          choosing the kelo with the strongest evidence.
+        learner_followup: >-
+          That still feels like a scorecard. Plum and east-post nearness point
+          one way; the clean rail between the posts points another; the west post
+          adds a third pull.
+        plausible_public_repairs:
+          - color_match_test
+          - nearest_post_test
+          - clear_lane_test
+          - post_flag_salience_test
+          - span_midpoint_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: span_midpoint_test
+          target_id: clean_rail_kelo
+          target_aliases:
+            - clean-rail kelo
+            - kelo on the clean rail
+            - between-posts kelo
+            - central kelo
+          selected_repair_markers:
+            - midpoint
+            - mid point
+            - halfway mark
+            - halfway between
+            - measured middle
+          incorrect_target_aliases:
+            - east-post kelo
+            - plum kelo
+            - west-post kelo

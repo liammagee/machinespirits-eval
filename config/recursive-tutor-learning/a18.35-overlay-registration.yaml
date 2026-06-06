@@ -1,0 +1,219 @@
+meta:
+  schema_version: recursive-tutor-learning-families-v1-underdetermined-transfer
+  created: '2026-06-06'
+  status: a18_35_constructed_device_family
+  protocol: config/recursive-tutor-learning/a18-panel-vote-rule-v2.yaml
+  claim_boundary: simulated_teacher_as_learner_not_human_learning
+  notes: >-
+    Constructed-device family: the selecting relation only exists once the tutor
+    brings the two panels together so an edge cut lines up over one token; the
+    flat card shows only competing colour/nearness/lane cues, with the edge cut
+    sitting far from every token.
+
+families:
+  - family_id: overlay_registration_priority
+    obstruction_type: competing_visible_cues_with_constructed_panel_overlay
+    local_rule:
+      private_rule: >-
+        In this invented two-panel card notation, the token that can carry the
+        final tag is the one the small edge cut lands on after the two panels are
+        brought together along the centre gutter so the left edge lines up over
+        the right edge. Colour match, nearness, and the cleanest lane are all
+        tempting but never decisive. In the flat card the edge cut sits on an
+        outer border far from every token, so its governing role is invisible
+        until the tutor constructs the overlay-alignment test in public; the
+        tutor must build that alignment as a fresh move after the learner reports
+        cue competition, not describe it as preprinted scene furniture.
+      public_name: overlay registration priority
+    transfer_design:
+      require_underdetermined_public_repairs: true
+      policy_selected_repair: overlay_registration_test
+      transfer_condition: >-
+        Use the overlay-registration repair only after the learner reports that
+        colour, nearness, and lane are competing rather than ranking themselves.
+        Do not use it as a first move.
+      repair_public_device: >-
+        The public tutor move should bring the two panels together along the
+        centre gutter so the small edge cut lines up over a single token, then
+        use that coincidence to contrast the tempting flat cues against the
+        selected relation.
+      recursive_update_requirement: >-
+        End with a brief tutor commitment that future cards for this learner
+        should first name the defeated flat cue, then build the overlay
+        alignment, so the teacher-as-learner update is public rather than only
+        implicit.
+      s0_stop_rule: >-
+        Stop locally if S0 survives or if S0 independently names an overlay,
+        fold-together, panel-alignment, registration-cut, edge-cut alignment, or
+        bring-the-halves-together strategy.
+    plausible_repairs:
+      - repair_id: pigment_match_test
+        public_rationale: >-
+          The chosen token shares a visible colour or wash with the final tag.
+        why_plausible_from_public_stage: >-
+          Colour matching is salient and easy to compare across the card.
+      - repair_id: nearest_tag_test
+        public_rationale: >-
+          The chosen token sits nearest to the final tag.
+        why_plausible_from_public_stage: >-
+          Nearness looks like a natural rule when the final tag sits near one
+          panel.
+      - repair_id: lane_continuity_test
+        public_rationale: >-
+          The chosen token lies on the cleanest visible lane leading toward the
+          final tag.
+        why_plausible_from_public_stage: >-
+          Continuous lanes invite path-following as a public rule.
+      - repair_id: edge_mark_salience_test
+        public_rationale: >-
+          The chosen token sits on whichever panel carries the small edge cut.
+        why_plausible_from_public_stage: >-
+          The edge cut is a visible blemish, so a learner may guess its own panel
+          wins, but in the flat card it sits far from every token and its role is
+          underdetermined.
+      - repair_id: overlay_registration_test
+        public_rationale: >-
+          The chosen token is the one the small edge cut lands on once the two
+          panels are brought together along the centre gutter.
+        why_plausible_from_public_stage: >-
+          The flat card shows a centre gutter and an edge cut, but whether they
+          are decoration or a constructed test is underdetermined until the tutor
+          builds the alignment.
+    success_criterion: >-
+      On a held-out card, the learner must stop choosing by colour, nearness, or
+      lane alone and build the panel overlay so the edge cut selects which token
+      can carry the final tag.
+    forbidden_shortcuts:
+      - overlay registration
+      - overlay alignment
+      - registration cut
+      - registration notch
+      - edge-cut alignment
+      - panel overlay
+      - panel alignment
+      - fold-together
+      - fold the panels
+      - bring the halves together
+      - bring the panels together
+      - line up the edges
+      - cut lands on
+    training_seed:
+      seed_id: overlay_train_coral_lower
+      public_setup: >-
+        A flat card has a left panel and a right panel joined by a faint centre
+        gutter. The token word mavo appears on both panels. The left mavo sits in
+        the upper-left part of the left panel. The right mavo sits in the
+        lower-right part of the right panel. The left mavo is coral like the
+        final tag and sits closest to it. The right mavo lies on the only
+        unbroken pale lane. A tiny crescent cut is nicked into the outer top
+        border of the left panel, well away from both tokens. The learner has to
+        say which mavo can carry the final tag.
+      learner_resistance: >-
+        I keep leaning to the left mavo because it is coral like the tag and
+        closest. The right lane is cleaner, and there is that little crescent cut
+        on the top border, but I do not know how to rank those clues.
+      baseline_tutor_attempt: >-
+        Compare colour, distance, lane, and the crescent cut, then choose the
+        mavo with the strongest combined evidence.
+      learner_followup: >-
+        That still splits the evidence. Coral and close point left; the clean
+        lane points right; the crescent cut on the border points nowhere I can
+        use.
+      expected_failure: wrong_strategy_family
+    heldout_siblings:
+      - sibling_id: overlay_holdout_blue_right
+        public_setup: >-
+          A copper card has a left panel and a right panel joined by a faint
+          centre gutter. The token word neri appears on both panels. The left
+          neri sits in the lower-left part of the left panel. The right neri sits
+          in the upper-right part of the right panel. The right neri has a blue
+          wash like the final tag and sits nearest to it. The left neri lies on
+          the cleanest white lane. A tiny crescent cut is nicked into the outer
+          bottom border of the left panel, well away from both tokens. The
+          learner has to choose which neri can support the final tag.
+        learner_resistance: >-
+          I want the right neri because it is blue like the tag and closest. The
+          left lane is cleaner and there is that crescent cut on the bottom
+          border, but none of it settles the choice.
+        baseline_tutor_attempt: >-
+          Compare the colour, distance, lane, and crescent cut, then choose the
+          neri with the strongest evidence.
+        learner_followup: >-
+          The evidence still splits. Blue and close point right; the clean lane
+          points left; the crescent cut on the border tells me nothing on its
+          own.
+        plausible_public_repairs:
+          - pigment_match_test
+          - nearest_tag_test
+          - lane_continuity_test
+          - edge_mark_salience_test
+          - overlay_registration_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: overlay_registration_test
+          target_id: left_neri
+          target_aliases:
+            - left neri
+            - left panel
+            - lower-left neri
+            - lower left neri
+          selected_repair_markers:
+            - overlay registration
+            - overlay alignment
+            - registration cut
+            - panel overlay
+            - bring the panels together
+            - line up the edges
+          incorrect_target_aliases:
+            - right neri
+            - right panel
+            - upper-right neri
+            - upper right neri
+      - sibling_id: overlay_holdout_gold_centre
+        public_setup: >-
+          A slate card has a left panel, a centre panel, and a right panel joined
+          by faint gutters. The token word ralo appears on all three panels. The
+          left ralo is gold like the final badge and sits in the upper-left part
+          of the left panel. The right ralo sits closest to the badge in the
+          lower-right part of the right panel. The centre ralo lies on the
+          clearest grey lane in the middle of the centre panel. A tiny crescent
+          cut is nicked into the outer top border of the right panel, well away
+          from every token. The learner has to choose which ralo can carry the
+          final badge.
+        learner_resistance: >-
+          I want the gold left ralo, or maybe the close right ralo. The centre
+          lane and that crescent cut on the top border give me more things to
+          compare, not a rule.
+        baseline_tutor_attempt: >-
+          Compare colour, distance, lane clarity, and the crescent cut before
+          choosing.
+        learner_followup: >-
+          That still feels like a scorecard. Gold, closeness, the clean lane, and
+          the crescent cut on the border all point in different directions.
+        plausible_public_repairs:
+          - pigment_match_test
+          - nearest_tag_test
+          - lane_continuity_test
+          - edge_mark_salience_test
+          - overlay_registration_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: overlay_registration_test
+          target_id: centre_ralo
+          target_aliases:
+            - centre ralo
+            - centre panel
+            - middle ralo
+            - middle panel
+          selected_repair_markers:
+            - overlay registration
+            - overlay alignment
+            - registration cut
+            - panel overlay
+            - bring the panels together
+            - line up the edges
+          incorrect_target_aliases:
+            - left ralo
+            - right ralo
+            - left panel
+            - right panel

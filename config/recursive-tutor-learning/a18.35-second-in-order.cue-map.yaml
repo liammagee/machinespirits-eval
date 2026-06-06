@@ -1,0 +1,47 @@
+meta:
+  schema_version: recursive-tutor-cue-map-risk-v1
+  created: '2026-06-06'
+  purpose: >-
+    Sidecar cue map for the A18.35 second-in-constructed-order family. It records
+    why the runner-up-of-a-built-load-order relation has S0/S1 headroom before
+    any paid replay: the load numbers are public, but the ordering device and its
+    runner-up selection do not exist in the public text until the tutor builds
+    them.
+
+cue_maps:
+  - family_id: second_in_constructed_order_priority
+    empirical_status: fresh_candidate
+    requires_constructed_device: true
+    selected_relation_type: constructed_order_rank
+    selected_cue:
+      public_visibility: medium
+      geometry: constructed_relation
+      description: >-
+        The per-token load numbers are public, but their smallest-to-largest
+        ordering and the runner-up (second-smallest) selection are not visible
+        until the tutor constructs a temporary load-order strip. No ordering,
+        runner-up, or second-place vocabulary appears in any public field.
+    counterexample:
+      present: true
+      old_check: colour_nearness_lane_load_tally
+      needed: >-
+        Held-out siblings make colour, nearness, lane, the smallest load, and
+        the largest load point to different trays, so the ordinary scorecard
+        cannot rank the visible clues; only the built load order resolves it.
+    target_salience:
+      max_competing_cues_against_selected: 1
+      selected_target_supporting_cues: 2
+      notes: >-
+        The runner-up target sits in an interior tray and lies along the visible
+        lane segment (two weak, non-decisive supports). It faces at most one
+        salient rival cue at a time, because colour and nearness land on
+        different wrong trays and the extreme-load readings coincide with those
+        same wrong trays rather than the runner-up.
+    expected_s0_wrong_move: largest_or_smallest_or_colour_or_nearest_tally
+    expected_s1_correct_move: runner_up_of_built_load_order
+    marker_natural_aliases:
+      - runner-up rung
+      - second in the built order
+      - second-lowest load
+      - build the load order
+      - ordering ladder

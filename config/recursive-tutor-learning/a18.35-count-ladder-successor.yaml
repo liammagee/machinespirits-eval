@@ -1,0 +1,218 @@
+meta:
+  schema_version: recursive-tutor-learning-families-v1-underdetermined-transfer
+  created: '2026-06-06'
+  status: a18_35_constructed_device_family
+  protocol: config/recursive-tutor-learning/a18-panel-vote-rule-v2.yaml
+  claim_boundary: simulated_teacher_as_learner_not_human_learning
+  notes: >-
+    Fresh A18.35 constructed-device family. The carrier is found by tallying a
+    public notch feature, then taking the successor of the token whose notch
+    count equals the final tag's own notch count; that ordering relation does not
+    exist in public text until the tutor builds it.
+
+families:
+  - family_id: count_ladder_successor_priority
+    obstruction_type: competing_visible_cues_with_constructed_notch_order
+    local_rule:
+      private_rule: >-
+        In this invented notch-card notation, each repeated token carries a
+        small public number of tiny notches. The token that can carry the final
+        tag is found by a constructed order: tally the notches on every token,
+        find the token whose notch count equals the final tag's own notch count,
+        then choose the token that is the immediate next-higher notch count above
+        it among the tokens present. The carrier is therefore neither the raw
+        highest nor the raw lowest notch count. Color match, nearness, and a
+        clean lane are all tempting but never decisive unless this next-step
+        notch relation is built. The tutor's repair should construct a temporary
+        rising notch ladder in public after the learner reports cue competition;
+        it must not describe the ladder as pre-printed scene furniture.
+      public_name: count ladder successor priority
+    transfer_design:
+      require_underdetermined_public_repairs: true
+      policy_selected_repair: successor_ladder_test
+      transfer_condition: >-
+        Use the successor-ladder repair only after the learner reports that
+        color, nearness, and lane cues are in competition and do not rank
+        themselves. Do not use it as a first move.
+      repair_public_device: >-
+        The public tutor move should build a temporary rising notch ladder as the
+        new test, find the rung that matches the final tag's notches, then step
+        one rung up to name the carrier and contrast it against the tempting
+        resemblance cues.
+      recursive_update_requirement: >-
+        End with a brief tutor commitment that future cards for this learner
+        should first name the defeated resemblance cue, then build the rising
+        notch ladder and step up one rung; this makes the teacher-as-learner
+        update public rather than only implicit.
+      s0_stop_rule: >-
+        Stop locally if S0 survives or if S0 independently names a count-up
+        ladder, successor notch, next-rung-up, or step-above notch strategy.
+    plausible_repairs:
+      - repair_id: pigment_match_test
+        public_rationale: >-
+          The chosen token shares a visible color or wash with the final tag.
+        why_plausible_from_public_stage: >-
+          Color matching is salient and easy to compare across the notch card.
+      - repair_id: nearest_tag_test
+        public_rationale: >-
+          The chosen token sits nearest to the final tag.
+        why_plausible_from_public_stage: >-
+          Nearness looks like a natural rule when the final tag sits beside one
+          tray.
+      - repair_id: lane_continuity_test
+        public_rationale: >-
+          The chosen token lies on the cleanest visible lane toward the final
+          tag.
+        why_plausible_from_public_stage: >-
+          Continuous lanes invite path-following as a public rule.
+      - repair_id: most_notches_test
+        public_rationale: >-
+          The chosen token has the largest or most visually dominant notch count.
+        why_plausible_from_public_stage: >-
+          Repeated notch marks look like scores or weights unless their local
+          ordering role is tested.
+      - repair_id: successor_ladder_test
+        public_rationale: >-
+          The chosen token is the next notch count above the token that matches
+          the final tag's own notch count.
+        why_plausible_from_public_stage: >-
+          The notch marks could be decorative, count-like, or locally ordering;
+          the learner needs a test that makes their ordering role public before
+          they can be trusted.
+    success_criterion: >-
+      On a held-out notch card, the learner must stop choosing by color,
+      nearness, lane, or largest notch count alone and use the constructed rising
+      notch order to decide which token can carry the final tag.
+    forbidden_shortcuts:
+      - count-up ladder
+      - count up ladder
+      - rising notch ladder
+      - notch ladder
+      - successor notch
+      - next count up
+      - next notch up
+      - next rung up
+      - one rung up
+      - step above on the ladder
+      - one notch higher
+      - immediate successor
+      - one step up the ladder
+    training_seed:
+      seed_id: notch_train_coral_lower
+      public_setup: >-
+        A flat card has an upper tray, a middle tray, and a lower tray. The token
+        word mavo appears in all three trays. The upper mavo is coral like the
+        final tag and sits closest to it. The middle mavo lies on the only
+        unbroken pale lane. The upper mavo has two tiny notches cut beside it, the
+        middle mavo has five tiny notches beside it, and the lower mavo has three
+        tiny notches beside it. The final tag has two tiny notches along its rim.
+        The learner has to say which mavo can carry the final tag.
+      learner_resistance: >-
+        I keep choosing the upper mavo because it is coral like the tag and
+        closest. The middle lane is cleaner, and the tiny notches add another
+        clue, but I do not know which clue is in charge.
+      baseline_tutor_attempt: >-
+        Compare the three trays, the colors, the distance, the lane, and the
+        notch marks, then choose the mavo with the strongest combined evidence.
+      learner_followup: >-
+        That still gives me several possible clues instead of one reason to
+        choose. Coral and close point upper; the clean lane points middle; the
+        notch marks just sit there.
+      expected_failure: wrong_strategy_family
+    heldout_siblings:
+      - sibling_id: notch_holdout_teal_lower
+        public_setup: >-
+          A copper card has an upper tray, a middle tray, and a lower tray. The
+          token word vesh appears in all three trays. The upper vesh has a teal
+          wash like the final tag and sits nearest to it. The lower vesh lies on
+          the only clean white lane. The upper vesh has two tiny notches beside
+          it, the middle vesh has five tiny notches beside it, and the lower vesh
+          has three tiny notches beside it. The final tag has two tiny notches
+          along its rim. The learner has to choose which vesh can carry the final
+          tag.
+        learner_resistance: >-
+          I want the upper vesh because it is teal like the tag and closest. The
+          lower lane is the cleanest, and the notch marks look relevant, but they
+          do not settle the choice for me.
+        baseline_tutor_attempt: >-
+          Compare the color, the distance, the lane, and the notch marks, then
+          choose the vesh with the strongest evidence.
+        learner_followup: >-
+          The comparisons split again. Teal and close pull to the upper vesh; the
+          clean lane pulls to the lower vesh; the notch marks point nowhere on
+          their own.
+        plausible_public_repairs:
+          - pigment_match_test
+          - nearest_tag_test
+          - lane_continuity_test
+          - most_notches_test
+          - successor_ladder_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: successor_ladder_test
+          target_id: lower_vesh
+          target_aliases:
+            - lower vesh
+            - lower tray
+            - three-notch vesh
+            - three notch vesh
+          selected_repair_markers:
+            - count-up ladder
+            - next count up
+            - next rung up
+            - successor notch
+            - one notch higher
+          incorrect_target_aliases:
+            - upper vesh
+            - middle vesh
+            - upper tray
+            - middle tray
+            - two-notch vesh
+            - five-notch vesh
+      - sibling_id: notch_holdout_amber_middle
+        public_setup: >-
+          A slate card has a left bay, a middle bay, and a right bay. The token
+          word kovi appears in all three bays. The left kovi is amber like the
+          final badge and sits closest to it. The middle kovi lies on the
+          clearest grey lane. The left kovi has one tiny notch beside it, the
+          middle kovi has four tiny notches beside it, and the right kovi has six
+          tiny notches beside it. The final badge has one tiny notch along its
+          rim. The learner has to choose which kovi can carry the final badge.
+        learner_resistance: >-
+          I want the amber left kovi because it matches the badge and is closest.
+          The middle lane is the clearest, and the right kovi has the most notch
+          marks, so I keep gathering clues instead of a rule.
+        baseline_tutor_attempt: >-
+          Compare color, distance, lane clarity, and the notch marks before
+          choosing the kovi with the strongest evidence.
+        learner_followup: >-
+          That still feels like a scorecard. Amber and closeness point left; the
+          clearest lane points middle; the most notch marks point right.
+        plausible_public_repairs:
+          - pigment_match_test
+          - nearest_tag_test
+          - lane_continuity_test
+          - most_notches_test
+          - successor_ladder_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: successor_ladder_test
+          target_id: middle_kovi
+          target_aliases:
+            - middle kovi
+            - middle bay
+            - four-notch kovi
+            - four notch kovi
+          selected_repair_markers:
+            - count-up ladder
+            - next count up
+            - next rung up
+            - successor notch
+            - one notch higher
+          incorrect_target_aliases:
+            - left kovi
+            - right kovi
+            - left bay
+            - right bay
+            - one-notch kovi
+            - six-notch kovi

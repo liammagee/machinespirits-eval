@@ -1,0 +1,45 @@
+meta:
+  schema_version: recursive-tutor-cue-map-risk-v1
+  created: '2026-06-06'
+  purpose: >-
+    Sidecar cue map for the A18.35 two-hop pointer-chain constructed-device
+    family. It records why S0 lacks the selecting relation in public text while
+    S1 can apply it after transfer, before any replay spending.
+
+cue_maps:
+  - family_id: pointer_chain_two_hop_priority
+    empirical_status: fresh_candidate
+    requires_constructed_device: true
+    selected_relation_type: constructed_pointer_chain
+    selected_cue:
+      public_visibility: medium
+      geometry: constructed_relation
+      description: >-
+        The faint etched slants are public, but reading each slant as a direction
+        and tracing two moves from the tagged start is not visible until the tutor
+        constructs the two-move pointer reading. A lone slant looks decorative;
+        the two-hop chain exists only once constructed.
+    counterexample:
+      present: true
+      old_check: color_nearness_lane_slant_tally
+      needed: >-
+        Held-out siblings make color and nearness point to one rival token while
+        the clean lane and a second incidental cue point to the device target, so
+        ordinary comparison stays a scorecard and the lone slant cannot be ranked
+        without the constructed two-move reading.
+    target_salience:
+      max_competing_cues_against_selected: 1
+      selected_target_supporting_cues: 2
+      notes: >-
+        The selected target has the clean lane plus one incidental cue (older ink
+        or cleanest rim) and the constructed pointer chain, while the single rival
+        token carries both the color match and the nearness cue.
+    expected_s0_wrong_move: color_or_nearness_tally
+    expected_s1_correct_move: two_move_pointer_reading
+    marker_natural_aliases:
+      - pointer chain
+      - two-hop chain
+      - two hops
+      - follow the pointer
+      - second pointer
+      - trace two hops

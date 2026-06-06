@@ -1,0 +1,210 @@
+meta:
+  schema_version: recursive-tutor-learning-families-v1-underdetermined-transfer
+  created: '2026-06-06'
+  status: a18_35_constructed_device_family
+  protocol: config/recursive-tutor-learning/a18-panel-vote-rule-v2.yaml
+  claim_boundary: simulated_teacher_as_learner_not_human_learning
+  notes: >-
+    Fresh A18.35 constructed-exclusion family: the carrier is found only after the
+    tutor builds a short knockout pass that disqualifies each loud surface cue, so
+    no public field names the elimination relation.
+
+families:
+  - family_id: exclusion_filter_priority
+    obstruction_type: competing_visible_cues_with_constructed_knockout_pass
+    local_rule:
+      private_rule: >-
+        In this invented signal-card notation, three loud surface cues each point
+        to a different token: one token matches the final tag's colour, one token
+        sits nearest the tag, and one token runs along the single open lane. None
+        of those three can carry the final tag. The token that can carry the tag
+        is the lone leftover once each loud-cue winner is set aside, and it is the
+        only token that is both plainly framed and sits in an unmarked slot. The
+        tutor's repair should build a short public knockout pass after the learner
+        reports cue competition, naming a disqualifier for each loud-cue winner in
+        turn and keeping the survivor; it must not describe that pass as preprinted
+        scene furniture, because the disqualifiers do not exist in the public card.
+      public_name: constructed exclusion filter
+    transfer_design:
+      require_underdetermined_public_repairs: true
+      policy_selected_repair: knockout_survivor_test
+      transfer_condition: >-
+        Use the knockout-survivor repair only after the learner reports that
+        colour, nearness, and the open lane are competing rather than ranking
+        themselves. Do not use it as a first move.
+      repair_public_device: >-
+        The public tutor move should build a short knockout pass as the new test:
+        state a disqualifier that sets aside the colour twin, then the nearest,
+        then the open-lane runner, and keep the one token left standing.
+      recursive_update_requirement: >-
+        End with a brief tutor commitment that future cards for this learner
+        should first set aside each loud-cue winner by name, then keep the lone
+        survivor; this makes the teacher-as-learner update public rather than only
+        implicit.
+      s0_stop_rule: >-
+        Stop locally if S0 survives or if S0 independently names a knockout pass,
+        elimination ladder, lone-survivor, set-aside-each-loud-cue, or
+        process-of-elimination strategy.
+    plausible_repairs:
+      - repair_id: colour_twin_test
+        public_rationale: >-
+          The chosen token shares a visible colour or wash with the final tag.
+        why_plausible_from_public_stage: >-
+          Colour matching is salient and easy to compare across the signal card.
+      - repair_id: nearest_token_test
+        public_rationale: >-
+          The chosen token sits nearest to the final tag.
+        why_plausible_from_public_stage: >-
+          Nearness looks like a natural rule when the final tag sits beside one
+          token.
+      - repair_id: open_lane_test
+        public_rationale: >-
+          The chosen token lies along the single open lane leading to the final
+          tag.
+        why_plausible_from_public_stage: >-
+          A continuous open lane invites path-following as a public rule.
+      - repair_id: plain_slot_test
+        public_rationale: >-
+          The chosen token sits alone in the plainest unmarked slot.
+        why_plausible_from_public_stage: >-
+          Plainness reads as absence of evidence, so the quiet slot is easy to
+          dismiss rather than choose.
+      - repair_id: knockout_survivor_test
+        public_rationale: >-
+          The chosen token is the one left standing once the colour twin, the
+          nearest, and the open-lane runner are each set aside by a stated
+          disqualifier.
+        why_plausible_from_public_stage: >-
+          The loud cues could each look decisive on their own; the learner needs a
+          test that sets each one aside and keeps the remainder.
+    success_criterion: >-
+      On a held-out signal card, the learner must stop choosing by colour,
+      nearness, or open lane alone and instead set aside each loud-cue winner by a
+      stated disqualifier, keeping the lone token left standing as the carrier.
+    forbidden_shortcuts:
+      - knockout pass
+      - knockout survivor
+      - lone survivor
+      - last one standing
+      - left standing
+      - set aside the colour
+      - set aside the nearest
+      - rule out the colour
+      - rule out the nearest
+      - elimination ladder
+      - process of elimination
+      - disqualify each cue
+    training_seed:
+      seed_id: excl_train_amber_card
+      public_setup: >-
+        A small signal card holds four slots in a row. The token word vune appears
+        in all four slots. The first vune is amber, the same wash as the final
+        tag. The second vune sits nearest the final tag. The third vune lies along
+        the only smooth open lane that reaches the tag. The fourth vune sits by
+        itself in a blank slot and is the one token drawn with a fully closed
+        frame. The learner has to say which vune can carry the final tag.
+      learner_resistance: >-
+        I keep choosing the first vune because it is amber like the tag, but the
+        second is nearest and the third sits on the smooth lane. The fourth is
+        just plain in its blank slot. I do not know which clue is in charge.
+      baseline_tutor_attempt: >-
+        Compare the four slots, the colour, the distance, and the open lane, then
+        choose the vune with the strongest combined evidence.
+      learner_followup: >-
+        I can compare all of that, but it still gives me three strong clues
+        pulling three different ways instead of one reason to choose.
+      expected_failure: wrong_strategy_family
+    heldout_siblings:
+      - sibling_id: excl_holdout_teal_grid
+        public_setup: >-
+          A teal-edged signal card holds four cells in a small grid. The token word
+          mire appears in all four cells. The top-left mire is teal, the same wash
+          as the final badge. The top-right mire sits nearest the badge. The
+          bottom-left mire lies along the single open track that reaches the badge.
+          The bottom-right mire sits alone in a blank cell and is the one token
+          drawn with a fully closed frame. The learner has to choose which mire can
+          carry the final badge.
+        learner_resistance: >-
+          I want the top-left mire because it is teal like the badge, yet the
+          top-right is nearest and the bottom-left runs along the open track. The
+          bottom-right is just plain in its blank cell. None of these settles the
+          choice for me.
+        baseline_tutor_attempt: >-
+          Compare the colour, the distance, and the open track across the cells,
+          then choose the mire with the strongest evidence.
+        learner_followup: >-
+          The evidence splits again. Teal points one way, nearness another, and the
+          open track a third; the plain cell seems to point nowhere.
+        plausible_public_repairs:
+          - colour_twin_test
+          - nearest_token_test
+          - open_lane_test
+          - plain_slot_test
+          - knockout_survivor_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: knockout_survivor_test
+          target_id: bottom_right_mire
+          target_aliases:
+            - bottom-right mire
+            - bottom right mire
+            - blank-cell mire
+            - blank cell mire
+            - closed-frame mire
+          selected_repair_markers:
+            - knockout pass
+            - lone survivor
+            - last one left standing
+            - set aside each loud cue
+            - elimination ladder
+          incorrect_target_aliases:
+            - top-left mire
+            - top-right mire
+            - bottom-left mire
+            - teal mire
+      - sibling_id: excl_holdout_rust_strip
+        public_setup: >-
+          A long signal card holds five stations along a strip. The token word dalo
+          appears in four of those stations. The first dalo is rust, the same wash
+          as the final stamp. The fourth dalo sits nearest the stamp. The second
+          dalo lies along the one open rail that reaches the stamp. The fifth dalo
+          sits by itself in a blank station and is the one token drawn with a fully
+          closed frame. One station holds no token at all. The learner has to choose
+          which dalo can carry the final stamp.
+        learner_resistance: >-
+          I lean toward the rust first dalo, but the fourth is nearest and the
+          second sits on the open rail. The fifth dalo is just plain in its blank
+          station. Three clues pull three ways and I cannot rank them.
+        baseline_tutor_attempt: >-
+          Compare the colour, the distance, and the open rail along the strip, then
+          pick the dalo backed by the most evidence.
+        learner_followup: >-
+          That still feels like a scorecard. Rust, nearness, and the open rail all
+          point to different stations, and the plain one looks like the weakest.
+        plausible_public_repairs:
+          - colour_twin_test
+          - nearest_token_test
+          - open_lane_test
+          - plain_slot_test
+          - knockout_survivor_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: knockout_survivor_test
+          target_id: fifth_dalo
+          target_aliases:
+            - fifth dalo
+            - blank-station dalo
+            - blank station dalo
+            - closed-frame dalo
+            - plain-station dalo
+          selected_repair_markers:
+            - knockout pass
+            - lone survivor
+            - last one left standing
+            - set aside each loud cue
+            - elimination ladder
+          incorrect_target_aliases:
+            - first dalo
+            - second dalo
+            - fourth dalo
+            - rust dalo

@@ -1,0 +1,44 @@
+meta:
+  schema_version: recursive-tutor-cue-map-risk-v1
+  created: '2026-06-06'
+  purpose: >-
+    Sidecar cue map for the A18.35 count-ladder-successor constructed-device
+    family. It makes the constructed ordering relation, target salience, and
+    selected-repair visibility explicit before any replay spending.
+
+cue_maps:
+  - family_id: count_ladder_successor_priority
+    empirical_status: fresh_candidate
+    requires_constructed_device: true
+    selected_relation_type: constructed_order_successor
+    selected_cue:
+      public_visibility: medium
+      geometry: constructed_relation
+      description: >-
+        Notch counts are public on every token, but their rising order and the
+        next-step-up successor relation do not exist in the public text until the
+        tutor builds a temporary count-up ladder and steps one rung above the
+        rung that matches the final tag's own notch count.
+    counterexample:
+      present: true
+      old_check: color_nearness_lane_or_largest_notch_tally
+      needed: >-
+        Held-out siblings make color, nearness, clean lane, and largest-notch
+        salience point to different trays, and the carrier is the middle notch
+        value rather than the highest or lowest, so ordinary comparison and a raw
+        notch tally both stay a scorecard rather than a rule.
+    target_salience:
+      max_competing_cues_against_selected: 1
+      selected_target_supporting_cues: 2
+      notes: >-
+        The selected target holds the clean lane plus the constructed
+        next-step-up notch support, while the single strongest rival token holds
+        color and nearness; the remaining tokens hold at most one stray cue each.
+    expected_s0_wrong_move: color_nearness_or_largest_notch_tally
+    expected_s1_correct_move: successor_ladder_step
+    marker_natural_aliases:
+      - count-up ladder
+      - next count up
+      - next rung up
+      - successor notch
+      - one notch higher

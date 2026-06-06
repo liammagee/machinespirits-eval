@@ -1,0 +1,45 @@
+meta:
+  schema_version: recursive-tutor-cue-map-risk-v1
+  created: '2026-06-06'
+  purpose: >-
+    Sidecar cue map for the A18.35 overlay-registration constructed-device
+    family. It makes target salience and selected-repair visibility explicit
+    before any paid replay.
+
+cue_maps:
+  - family_id: overlay_registration_priority
+    empirical_status: fresh_candidate
+    requires_constructed_device: true
+    selected_relation_type: constructed_overlay_alignment
+    selected_cue:
+      public_visibility: medium
+      geometry: constructed_relation
+      description: >-
+        A centre gutter and a small crescent cut are public, but the cut sits on
+        an outer border far from every token; the relation that the cut selects a
+        token only exists once the tutor brings the two panels together so the
+        edges line up. That overlay alignment is not visible in the flat card.
+    counterexample:
+      present: true
+      old_check: colour_nearness_lane_tally
+      needed: >-
+        Held-out siblings make colour, nearness, and lane point to different
+        panels, while the crescent cut sits far from every token, so ordinary
+        comparison stays a scorecard rather than a rule.
+    target_salience:
+      max_competing_cues_against_selected: 1
+      selected_target_supporting_cues: 2
+      notes: >-
+        The selected target gains support from the overlay coincidence plus one
+        ordinary cue (the clean lane), while the rejected target keeps colour and
+        nearness; no more than one strong flat cue ever opposes the selected
+        target.
+    expected_s0_wrong_move: colour_or_nearness_tally
+    expected_s1_correct_move: overlay_registration_alignment
+    marker_natural_aliases:
+      - overlay registration
+      - overlay alignment
+      - registration cut
+      - panel overlay
+      - bring the panels together
+      - line up the edges

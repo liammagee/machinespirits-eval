@@ -1,0 +1,44 @@
+meta:
+  schema_version: recursive-tutor-cue-map-risk-v1
+  created: '2026-06-06'
+  purpose: >-
+    Sidecar cue map for the A18.35 constructed-exclusion family. It makes target
+    salience and selected-repair visibility explicit before any paid replay.
+
+cue_maps:
+  - family_id: exclusion_filter_priority
+    empirical_status: fresh_candidate
+    requires_constructed_device: true
+    selected_relation_type: constructed_exclusion
+    selected_cue:
+      public_visibility: medium
+      geometry: constructed_relation
+      description: >-
+        Colour, nearness, and the open lane are all public, but the relation that
+        each loud-cue winner is disqualified and the lone leftover carries the tag
+        does not exist in the flat card. It appears only once the tutor builds a
+        short knockout pass that sets aside the colour twin, the nearest, and the
+        open-lane runner in turn and keeps the survivor.
+    counterexample:
+      present: true
+      old_check: colour_nearness_lane_tally
+      needed: >-
+        Held-out siblings make colour, nearness, and the open lane each point to a
+        different token, while the survivor wins none of those loud cues, so
+        ordinary comparison stays a three-way scorecard rather than a rule.
+    target_salience:
+      max_competing_cues_against_selected: 1
+      selected_target_supporting_cues: 2
+      notes: >-
+        The selected target is supported by two quiet structural features only - it
+        sits alone in the blank slot and is the one token with a fully closed frame
+        - while the three loud cues each back a different rival, so at most one loud
+        cue ever pulls against the selected target at a time.
+    expected_s0_wrong_move: colour_or_nearness_tally
+    expected_s1_correct_move: knockout_survivor_elimination
+    marker_natural_aliases:
+      - knockout pass
+      - lone survivor
+      - last one left standing
+      - set aside each loud cue
+      - elimination ladder

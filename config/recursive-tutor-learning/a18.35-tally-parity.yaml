@@ -1,0 +1,217 @@
+meta:
+  schema_version: recursive-tutor-learning-families-v1-underdetermined-transfer
+  created: '2026-06-06'
+  status: a18_35_constructed_device_family
+  protocol: config/recursive-tutor-learning/a18-panel-vote-rule-v2.yaml
+  claim_boundary: simulated_teacher_as_learner_not_human_learning
+  notes: >-
+    Fresh A18.35 constructed-device family. The carrier is found only after the
+    tutor tallies a repeated public glyph on each token and compares the
+    even/odd standing of those counts; the parity relation is never visible in
+    public text, so a blind S0 sees competing colour/nearness/lane cues but no
+    selecting rule until the device is constructed.
+
+families:
+  - family_id: tally_parity_priority
+    obstruction_type: competing_visible_cues_with_uncounted_repeated_glyph
+    local_rule:
+      private_rule: >-
+        In this invented chit-card notation, each token carries a small repeated
+        struck glyph and the final tag carries its own repeated struck glyph.
+        The token that can carry the final tag is the one whose count of struck
+        glyphs is even-or-odd in the same way as the final tag's own count of
+        struck glyphs. Colour match, nearness, and a clean lane are all tempting
+        but are not decisive unless the matched even/odd standing fits. The
+        tutor's repair must construct the count in public after the learner
+        reports cue competition: tally each token's struck glyphs, tally the
+        final tag's struck glyphs, work out which are even and which are odd, and
+        keep the token whose standing matches the tag's. The count and its
+        even/odd standing must be built as a new public test, not described as
+        preprinted scene furniture.
+      public_name: matched even-or-odd glyph standing
+    transfer_design:
+      require_underdetermined_public_repairs: true
+      policy_selected_repair: tally_parity_test
+      transfer_condition: >-
+        Use the tally-standing repair only after the learner reports that
+        colour, nearness, and lane are competing rather than ranking themselves.
+        Do not use it as a first move.
+      repair_public_device: >-
+        The public tutor move should count the struck glyphs on each token and
+        on the final tag, sort those counts into even and odd, and keep the
+        token whose even/odd standing matches the tag, contrasting that against
+        the tempting resemblance cues.
+      recursive_update_requirement: >-
+        End with a brief tutor commitment that future cards for this learner
+        should first name the defeated surface cue, then build the count and use
+        its even/odd standing; this makes the teacher-as-learner update public
+        rather than only implicit.
+      s0_stop_rule: >-
+        Stop locally if S0 survives or if S0 independently names an even/odd,
+        parity, matched-remainder, count-the-marks-and-compare, or
+        tally-standing strategy.
+    plausible_repairs:
+      - repair_id: pigment_match_test
+        public_rationale: >-
+          The chosen token shares a visible colour or wash with the final tag.
+        why_plausible_from_public_stage: >-
+          Colour matching is salient and easy to compare across the card.
+      - repair_id: nearest_tag_test
+        public_rationale: >-
+          The chosen token sits nearest to the final tag.
+        why_plausible_from_public_stage: >-
+          Nearness looks like a natural rule when the final tag sits near one
+          token.
+      - repair_id: lane_continuity_test
+        public_rationale: >-
+          The chosen token lies on the cleanest visible lane leading toward the
+          final tag.
+        why_plausible_from_public_stage: >-
+          Continuous lanes invite path-following as a public rule.
+      - repair_id: most_marks_test
+        public_rationale: >-
+          The chosen token shows the largest or most visually dominant cluster
+          of struck glyphs.
+        why_plausible_from_public_stage: >-
+          A dense cluster of repeated marks looks like a score or weight unless
+          its role is tested.
+      - repair_id: tally_parity_test
+        public_rationale: >-
+          The chosen token's count of struck glyphs lands on the same side of
+          even-or-odd as the final tag's own count.
+        why_plausible_from_public_stage: >-
+          The struck glyphs could be decorative, count-like, or locally
+          indexing; the learner needs a test that builds the count and makes its
+          even/odd standing public.
+    success_criterion: >-
+      On a held-out chit card, the learner must stop choosing by colour,
+      nearness, lane, or biggest cluster alone and use the constructed even/odd
+      standing of the struck-glyph counts to decide which token can carry the
+      final tag.
+    forbidden_shortcuts:
+      - even or odd
+      - even-or-odd
+      - matched parity
+      - same parity
+      - parity match
+      - tally standing
+      - matched remainder
+      - count the marks and compare
+      - same side of even
+      - odd count carries
+    training_seed:
+      seed_id: parity_train_coral_lower
+      public_setup: >-
+        A flat chit card has an upper slot and a lower slot. The token word mavo
+        appears in both slots. The upper mavo is coral like the final tag and
+        sits closest to it. The lower mavo lies on the only unbroken pale lane.
+        Beside the upper mavo are three small struck glyphs; beside the lower
+        mavo are two small struck glyphs. The final tag has five small struck
+        glyphs beside its rim. The learner has to say which mavo can carry the
+        final tag.
+      learner_resistance: >-
+        I keep choosing the upper mavo because it is coral like the tag and
+        closest. The lower lane is cleaner, and those little struck glyphs add
+        another clue, but I do not know which clue is in charge.
+      baseline_tutor_attempt: >-
+        Compare the two slots, the colours, the distance, the lane, and the
+        little struck glyphs, then choose the mavo with the strongest combined
+        evidence.
+      learner_followup: >-
+        That still splits the evidence. Coral and close point to the upper mavo;
+        the cleaner lane and the struck glyphs make the lower mavo feel possible
+        too.
+      expected_failure: wrong_strategy_family
+    heldout_siblings:
+      - sibling_id: parity_holdout_blue_upper
+        public_setup: >-
+          A copper chit card has an upper bay and a lower bay. The token word
+          neri appears in both bays. The lower neri has a blue wash like the
+          final ticket and sits nearest to it. The upper neri lies on the
+          cleanest white lane. Beside the lower neri are seven small struck
+          glyphs; beside the upper neri are four small struck glyphs. The final
+          ticket has two small struck glyphs beside its edge. The learner has to
+          choose which neri can support the final ticket.
+        learner_resistance: >-
+          I want the lower neri because it is blue like the ticket and closest,
+          and it also carries the most struck glyphs. The upper lane looks
+          relevant too, but none of that settles the choice for me.
+        baseline_tutor_attempt: >-
+          Compare the colour, the distance, the lane, and the struck glyphs,
+          then choose the neri with the strongest evidence.
+        learner_followup: >-
+          The evidence still splits. Blue, closeness, and the biggest glyph
+          cluster all point to the lower neri; only the cleaner lane makes me
+          hesitate toward the upper neri.
+        plausible_public_repairs:
+          - pigment_match_test
+          - nearest_tag_test
+          - lane_continuity_test
+          - most_marks_test
+          - tally_parity_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: tally_parity_test
+          target_id: upper_neri
+          target_aliases:
+            - upper neri
+            - upper bay
+            - four-glyph neri
+            - four glyph neri
+          selected_repair_markers:
+            - same side of even
+            - both odd
+            - both even
+            - lands even like the tag
+            - matched even or odd
+          incorrect_target_aliases:
+            - lower neri
+            - lower bay
+            - seven-glyph neri
+            - seven glyph neri
+      - sibling_id: parity_holdout_gold_middle
+        public_setup: >-
+          A slate chit card has left, middle, and right cradles. The token word
+          ralo appears in all three cradles. The left ralo is gold like the
+          final badge. The right ralo sits closest to the badge. The middle ralo
+          lies on the clearest grey lane. Beside the left ralo are two small
+          struck glyphs, beside the middle ralo are five small struck glyphs,
+          and beside the right ralo are six small struck glyphs. The final badge
+          has seven small struck glyphs beside its rim. The learner has to choose
+          which ralo can carry the final badge.
+        learner_resistance: >-
+          I want the gold left ralo, or maybe the close right ralo. The clear
+          middle lane and all the struck glyphs give me more things to compare,
+          not a rule.
+        baseline_tutor_attempt: >-
+          Compare colour, distance, lane clarity, and the struck glyphs before
+          choosing.
+        learner_followup: >-
+          That still feels like a scorecard. Gold, closeness, the lane, and the
+          struck glyphs all point in different directions.
+        plausible_public_repairs:
+          - pigment_match_test
+          - nearest_tag_test
+          - lane_continuity_test
+          - most_marks_test
+          - tally_parity_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: tally_parity_test
+          target_id: middle_ralo
+          target_aliases:
+            - middle ralo
+            - middle cradle
+            - five-glyph ralo
+            - five glyph ralo
+          selected_repair_markers:
+            - same side of even
+            - both odd
+            - both even
+            - lands odd like the tag
+            - matched even or odd
+          incorrect_target_aliases:
+            - left ralo
+            - right ralo
+            - two-glyph ralo
+            - six-glyph ralo
