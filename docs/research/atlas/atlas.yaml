@@ -70,8 +70,8 @@ modules:
       The clean prompt-level mechanism: recognition acts as calibration, a floor-lifting
       and variance-narrowing transformation of tutor output. Includes the A10/A10b
       matched-pedagogy controls that locate the effect at the orientation-family level.
-    sections: ["3.2", "6.1", "7.9"]
-    cross_refs: ["superego-error-correction", "adaptive-null"]
+    sections: ["3.2", "6.1", "7.9", "7.10"]
+    cross_refs: ["superego-error-correction", "adaptive-null", "model-dependence"]
 
   - id: superego-error-correction
     n: 2
@@ -87,7 +87,7 @@ modules:
       resolves across deliberation rounds, the factorial interaction, and the
       ~15–17% additivity deficit consistent across three models.
     sections: ["6.2", "6.4", "7.3"]
-    cross_refs: ["recognition-calibration"]
+    cross_refs: ["recognition-calibration", "model-dependence"]
 
   - id: adaptive-null
     n: 3
@@ -205,3 +205,24 @@ modules:
       limits. The translation programme and its pilot infrastructure.
     sections: ["6.5", "8.1", "8.2"]
     cross_refs: ["recognition-calibration"]
+
+  - id: model-dependence
+    n: 10
+    title: "Model Dependence and Mechanism Boundary Conditions"
+    family: recognition
+    status: settled
+    claim: >-
+      The supported mechanisms are model-independent among capable models, but their
+      magnitudes are bounded by generation quality: the superego's residual benefit,
+      the tutor-learner asymmetry, and architecture effects all scale with model
+      capability, and a six-model test (N=947) refutes the Paper 1.0 capability-threshold
+      reading of the bidirectional-profiling prosthesis.
+    abstract: >-
+      The cross-cutting boundary-condition result that qualifies both calibration and
+      error correction. Base-tutor capability gaps across the three-model triad, the
+      model-dependent superego residual, the Writing-Pad ablation showing recognition
+      operates at the prompt level rather than through a Freudian memory pad, and the
+      six-model capability-threshold test that does not find the helpful-then-harmful
+      pattern the prosthesis hypothesis predicted.
+    sections: ["5.7", "5.8", "6.6", "8.3"]
+    cross_refs: ["recognition-calibration", "superego-error-correction"]
