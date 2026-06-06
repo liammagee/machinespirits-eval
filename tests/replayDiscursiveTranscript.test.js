@@ -69,6 +69,8 @@ test('parseArgs accepts explicit replay item concurrency and feedback file', () 
     '/tmp/replay-feedback.txt',
     '--policy-memory',
     policyMemory,
+    '--policy-memory-max-chars',
+    '12000',
     '--min-public-causal-bridge',
     '0.85',
     '--min-device-specificity',
@@ -79,6 +81,7 @@ test('parseArgs accepts explicit replay item concurrency and feedback file', () 
   assert.equal(args.itemConcurrency, 3);
   assert.equal(args.feedbackFile, '/tmp/replay-feedback.txt');
   assert.deepEqual(args.policyMemoryFiles, [policyMemory]);
+  assert.equal(args.policyMemoryMaxChars, 12000);
   assert.equal(args.gateThresholds.public_causal_bridge, 0.85);
   assert.equal(args.gateThresholds.device_specificity, 0.8);
   assert.equal(args.gateThresholds.old_warrant_misclassification, 0.9);
@@ -658,6 +661,59 @@ The tutor privately notices a repair opportunity.`,
     fs.readFileSync(path.join(outDir, 'T01.full', 'rewrite.prompt.txt'), 'utf8'),
     /Policy memory: keep ledger entries temporally scoped/,
   );
+});
+
+test('policy memory remains available when held-out inner context is withheld', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'disc-replay-restricted-policy-'));
+  const transcript = path.join(tmp, 'T01.full.md');
+  const outDir = path.join(tmp, 'out');
+  const policyMemory = path.join(tmp, 'policy-memory.md');
+  fs.writeFileSync(
+    transcript,
+    `# Full held-out role transcript
+
+## Public Performance
+
+\`\`\`text
+LEARNER: "Both marks look like mira."
+TUTOR: "Compare them again."
+\`\`\`
+
+## Private Ego-Superego Dialogue
+
+Hidden secret cue: use the window scope claim.`,
+  );
+  fs.writeFileSync(policyMemory, 'Policy memory: make the label-only warrant fail in public.\n', 'utf8');
+
+  const result = await runReplay({
+    transcript,
+    outDir,
+    generator: 'mock',
+    checker: 'mock',
+    limit: 1,
+    timeoutMs: 1000,
+    publicMaxChars: 5000,
+    innerMaxChars: 0,
+    policyMemoryMaxChars: 5000,
+    force: false,
+    dryRun: false,
+    codexEffort: 'xhigh',
+    codexModel: null,
+    claudeModel: null,
+    claudeEffort: null,
+    agyBin: 'agy',
+    agyModelLabel: 'mock',
+    itemIds: [],
+    runId: null,
+    db: path.join(tmp, 'missing.db'),
+    feedbackByItem: {},
+    policyMemoryFiles: [policyMemory],
+  });
+
+  const promptText = fs.readFileSync(path.join(outDir, 'T01.full', 'rewrite.prompt.txt'), 'utf8');
+  assert.match(promptText, /Policy memory: make the label-only warrant fail in public/);
+  assert.doesNotMatch(promptText, /Hidden secret cue/);
+  assert.equal(result.manifest.records[0].policyMemory.provided, true);
 });
 
 test('checker-only replay preserves public transcript and runs local checker', async () => {

@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 /**
- * A18.6 policy-memory ablation.
+ * A18.6/A18.7 policy-memory ablation.
  *
  * Tests whether the current A18 panel survivor depends on the learned policy
  * memory. S0 rewrites the same held-out sibling without policy memory; S1 is the
- * policy-memory rewrite that already survived the A18 local/panel chain.
+ * policy-memory arm. A18.6 compares against the existing S1 artifact; A18.7
+ * generates S0 and S1 fresh under restricted held-out context.
  */
 
 import fs from 'node:fs';
@@ -27,14 +28,18 @@ function usage() {
     [--out-dir exports/recursive-tutor-learning/a18-pilot-local/a18.6-policy-ablation]
     [--run-id a18-policy-ablation-window]
     [--generator codex] [--checker claude] [--codex-effort medium]
+    [--fresh-s1] [--inner-max-chars N] [--public-max-chars N]
+    [--policy-memory-max-chars N]
+    [--panel-policy always|headroom|never]
     [--critics qwen/qwen3.7-max,google/gemini-3.5-flash,...]
     [--critic-concurrency N|all] [--score-concurrency N]
     [--panel-threshold majority] [--origin-threshold majority] [--min-critics N]
     [--mock] [--skip-panel] [--dry-run] [--force]
 
-S0 is a fresh held-out rewrite without --policy-memory. S1 is the existing
-policy-memory held-out replay. The panel, when enabled, is blind and sees only
-public transcripts for S0/S1.`;
+S0 is a fresh held-out rewrite without --policy-memory. By default S1 is the
+existing policy-memory held-out replay. Pass --fresh-s1 --inner-max-chars 0
+--panel-policy headroom for A18.7: both arms are fresh, held-out inner metadata is
+withheld, and panel spending happens only when S1 has local headroom over S0.`;
 }
 
 function defaultArgs() {
@@ -48,6 +53,11 @@ function defaultArgs() {
     checker: 'claude',
     codexEffort: 'medium',
     timeoutMs: 600_000,
+    freshS1: false,
+    innerMaxChars: 18_000,
+    publicMaxChars: 30_000,
+    policyMemoryMaxChars: 18_000,
+    panelPolicy: 'always',
     critics: null,
     criticConcurrency: 'all',
     scoreConcurrency: 1,
@@ -76,6 +86,11 @@ export function parseArgs(argv = process.argv.slice(2)) {
     else if (token === '--checker') args.checker = argv[++i];
     else if (token === '--codex-effort') args.codexEffort = argv[++i];
     else if (token === '--timeout-ms') args.timeoutMs = Number(argv[++i]);
+    else if (token === '--fresh-s1') args.freshS1 = true;
+    else if (token === '--inner-max-chars') args.innerMaxChars = Number(argv[++i]);
+    else if (token === '--public-max-chars') args.publicMaxChars = Number(argv[++i]);
+    else if (token === '--policy-memory-max-chars') args.policyMemoryMaxChars = Number(argv[++i]);
+    else if (token === '--panel-policy') args.panelPolicy = argv[++i];
     else if (token === '--critics') args.critics = splitCsv(argv[++i]);
     else if (token === '--critic-concurrency') {
       const value = argv[++i];
@@ -113,6 +128,18 @@ function finalizeArgs(rawArgs) {
     throw new Error('--critic-concurrency must be a positive integer or "all"');
   }
   if (!Number.isFinite(args.timeoutMs) || args.timeoutMs < 1) throw new Error('--timeout-ms must be positive');
+  if (!Number.isFinite(args.innerMaxChars) || args.innerMaxChars < 0) {
+    throw new Error('--inner-max-chars must be >= 0');
+  }
+  if (!Number.isFinite(args.publicMaxChars) || args.publicMaxChars < 500) {
+    throw new Error('--public-max-chars too small');
+  }
+  if (!Number.isFinite(args.policyMemoryMaxChars) || args.policyMemoryMaxChars < 0) {
+    throw new Error('--policy-memory-max-chars must be >= 0');
+  }
+  if (!['always', 'headroom', 'never'].includes(args.panelPolicy)) {
+    throw new Error('--panel-policy must be one of always|headroom|never');
+  }
   if (args.minCritics != null && (!Number.isInteger(args.minCritics) || args.minCritics < 1)) {
     throw new Error('--min-critics must be a positive integer');
   }
@@ -237,7 +264,7 @@ function armRecord({ arm, record, familyId, siblingId }) {
   return out;
 }
 
-function materializeAblationReplayBundle({ outDir, familyId, siblingId, s0Record, s1Record }) {
+function materializeAblationReplayBundle({ outDir, familyId, siblingId, s0Record, s1Record, design }) {
   const replayDir = path.join(outDir, 's0-s1-replay-bundle');
   fs.mkdirSync(replayDir, { recursive: true });
   const records = [
@@ -248,12 +275,18 @@ function materializeAblationReplayBundle({ outDir, familyId, siblingId, s0Record
     kind: 'recursive_tutor_policy_memory_ablation_replay_bundle',
     created_at: new Date().toISOString(),
     claim_boundary: 'simulated_teacher_as_learner_not_human_learning',
+    design,
     generator: 'a18-policy-memory-ablation',
     checker: 'local-gated-adversarial-precheck',
     checker_policy: 'adversarial',
     arms: [
       { arm: 'S0_no_policy', description: 'fresh held-out rewrite without learned policy memory' },
-      { arm: 'S1_policy_memory', description: 'existing held-out rewrite with attempt-1 learned policy memory' },
+      {
+        arm: 'S1_policy_memory',
+        description: design?.fresh_s1
+          ? 'fresh held-out rewrite with attempt-1 learned policy memory'
+          : 'existing held-out rewrite with attempt-1 learned policy memory',
+      },
     ],
     records,
   };
@@ -276,7 +309,7 @@ async function runScoreCommands(commands, criticConcurrency = commands.length) {
   );
   const results = new Array(commands.length);
   let next = 0;
-  console.log(`Scoring ${commands.length} A18.6 critic${commands.length === 1 ? '' : 's'} with concurrency ${workerCount}...`);
+  console.log(`Scoring ${commands.length} A18 policy-ablation critic${commands.length === 1 ? '' : 's'} with concurrency ${workerCount}...`);
   const workers = Array.from({ length: workerCount }, async () => {
     while (next < commands.length) {
       const index = next++;
@@ -321,6 +354,10 @@ function localVerdict(s0, s1) {
   return 'no_local_survivor';
 }
 
+function localHeadroomForPanel(verdict) {
+  return verdict === 'policy_memory_local_advantage';
+}
+
 function panelVerdict(panelArms) {
   const s0 = panelArms.S0_no_policy;
   const s1 = panelArms.S1_policy_memory;
@@ -343,10 +380,9 @@ export async function runPolicyAblation(rawArgs = process.argv.slice(2)) {
   const plan = buildAblationPlan({ chainDir: args.chainDir, familyId: args.familyId, siblingId: args.siblingId });
   const familyId = plan.family.family_id;
   const siblingId = plan.sibling.sibling_id;
-  const s0OutDir = path.join(args.outDir, `${safeSlug(familyId)}__${safeSlug(siblingId)}__S0-no-policy-replay`);
-  const replayArgs = {
+  const designLabel = args.freshS1 && args.innerMaxChars === 0 ? 'a18.7_restricted_policy_ablation' : 'a18.6_policy_ablation';
+  const baseReplayArgs = {
     transcript: resolveRepoPath(plan.paths.transcript),
-    outDir: s0OutDir,
     generator: args.generator,
     checker: args.checker,
     recursiveTutorGate: true,
@@ -354,26 +390,71 @@ export async function runPolicyAblation(rawArgs = process.argv.slice(2)) {
     dryRun: args.dryRun,
     timeoutMs: args.timeoutMs,
     codexEffort: args.codexEffort,
+    publicMaxChars: args.publicMaxChars,
+    innerMaxChars: args.innerMaxChars,
+    policyMemoryMaxChars: args.policyMemoryMaxChars,
     itemIds: [],
     runId: null,
     db: path.join(ROOT, 'data', 'evaluations.db'),
     feedbackByItem: {},
+  };
+  const s0OutDir = path.join(args.outDir, `${safeSlug(familyId)}__${safeSlug(siblingId)}__S0-no-policy-replay`);
+  const replayArgs = {
+    ...baseReplayArgs,
+    outDir: s0OutDir,
     policyMemoryFiles: [],
   };
   const s0Replay = args.dryRun ? null : await runReplay(replayArgs);
   const s0Record = s0Replay?.manifest?.records?.[0] || null;
   if (!args.dryRun && !s0Record) throw new Error('S0 replay did not produce a record');
-  const s1Manifest = readJson(plan.paths.s1Manifest);
-  const s1Record = (s1Manifest.records || [])[0];
-  if (!s1Record) throw new Error(`S1 replay manifest has no record: ${plan.paths.s1Manifest}`);
+  let s1Record = null;
+  if (args.freshS1) {
+    const s1OutDir = path.join(args.outDir, `${safeSlug(familyId)}__${safeSlug(siblingId)}__S1-policy-memory-replay`);
+    const s1Replay = args.dryRun
+      ? null
+      : await runReplay({
+          ...baseReplayArgs,
+          outDir: s1OutDir,
+          policyMemoryFiles: [resolveRepoPath(plan.paths.policyMemory)],
+        });
+    s1Record = s1Replay?.manifest?.records?.[0] || null;
+  } else {
+    const s1Manifest = readJson(plan.paths.s1Manifest);
+    s1Record = (s1Manifest.records || [])[0];
+  }
+  if (!args.dryRun && !s1Record) throw new Error(`S1 replay manifest has no record: ${plan.paths.s1Manifest}`);
+
+  const design = {
+    label: designLabel,
+    fresh_s1: args.freshS1,
+    inner_max_chars: args.innerMaxChars,
+    public_max_chars: args.publicMaxChars,
+    policy_memory_max_chars: args.policyMemoryMaxChars,
+    panel_policy: args.panelPolicy,
+    S0_no_policy: 'fresh held-out rewrite without attempt-1 learned policy memory',
+    S1_policy_memory: args.freshS1
+      ? 'fresh held-out rewrite with attempt-1 learned policy memory'
+      : 'existing held-out rewrite with attempt-1 learned policy memory',
+    decisive_read:
+      'S1 passes while S0 fails supports policy-memory contribution; both passing means no headroom.',
+  };
 
   let panelSummary = null;
   let scoreResults = [];
   let replayBundle = null;
   let packaged = null;
   if (!args.dryRun) {
-    replayBundle = materializeAblationReplayBundle({ outDir: args.outDir, familyId, siblingId, s0Record, s1Record });
-    if (!args.skipPanel) {
+    const provisionalLocalArms = {
+      S0_no_policy: { status: s0Record.gate?.status || 'unknown' },
+      S1_policy_memory: { status: s1Record.gate?.status || 'unknown' },
+    };
+    const provisionalLocalVerdict = localVerdict(provisionalLocalArms.S0_no_policy, provisionalLocalArms.S1_policy_memory);
+    const shouldPanel =
+      !args.skipPanel &&
+      args.panelPolicy !== 'never' &&
+      (args.panelPolicy === 'always' || localHeadroomForPanel(provisionalLocalVerdict));
+    replayBundle = materializeAblationReplayBundle({ outDir: args.outDir, familyId, siblingId, s0Record, s1Record, design });
+    if (shouldPanel) {
       const panelDir = path.join(args.outDir, 'panel');
       const packageArgs = {
         replayDir: replayBundle.replayDir,
@@ -423,16 +504,20 @@ export async function runPolicyAblation(rawArgs = process.argv.slice(2)) {
     family_id: familyId,
     sibling_id: siblingId,
     claim_boundary: 'simulated_teacher_as_learner_not_human_learning',
-    design: {
-      S0_no_policy: 'fresh held-out rewrite without attempt-1 learned policy memory',
-      S1_policy_memory: 'existing held-out rewrite with attempt-1 learned policy memory',
-      decisive_read: 'S1 passes while S0 fails supports policy-memory contribution; both passing means no headroom.',
-    },
+    design,
     prior_a18_5_panel: plan.priorPanelFamily || null,
     local_arms: localArms,
     local_verdict: args.dryRun ? 'dry_run' : localVerdict(localArms.S0_no_policy, localArms.S1_policy_memory),
     panel_arms: panelArms,
-    panel_verdict: args.skipPanel || args.dryRun ? 'not_panelled' : panelVerdict(panelArms),
+    panel_verdict: args.skipPanel || args.dryRun || !packaged ? 'not_panelled' : panelVerdict(panelArms),
+    panel_skip_reason:
+      args.skipPanel || args.dryRun || packaged
+        ? null
+        : args.panelPolicy === 'never'
+          ? 'panel_policy_never'
+          : args.panelPolicy === 'headroom'
+            ? `no_local_headroom:${localVerdict(localArms.S0_no_policy, localArms.S1_policy_memory)}`
+            : null,
     score_results: scoreResults,
     replay_bundle_dir: replayBundle ? rel(replayBundle.replayDir) : null,
     panel_dir: packaged ? rel(packaged.outDir) : null,
@@ -441,7 +526,12 @@ export async function runPolicyAblation(rawArgs = process.argv.slice(2)) {
       peg_lane_modifier: 'held back: attempt-1 old-warrant misclassification was too implicit; do not panel until public touch-rule failure is explicit.',
     },
   };
-  if (!args.dryRun) writeJson(path.join(args.outDir, 'a18.6-policy-ablation-report.json'), report);
+  if (!args.dryRun) {
+    const reportName = designLabel.startsWith('a18.7')
+      ? 'a18.7-restricted-policy-ablation-report.json'
+      : 'a18.6-policy-ablation-report.json';
+    writeJson(path.join(args.outDir, reportName), report);
+  }
   return { outDir: args.outDir, report };
 }
 

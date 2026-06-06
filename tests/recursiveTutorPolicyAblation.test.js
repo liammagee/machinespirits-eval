@@ -65,6 +65,14 @@ TUTOR: "Compare the labels."
     'utf8',
   );
   const s1ReplayDir = writeS1Replay(chainDir, familyId, siblingId, transcript);
+  writeJson(path.join(familyDir, 'policy-revision-template.json'), {
+    family_id: familyId,
+    source: 'attempt_1_failure',
+    diagnostic_trigger: 'learner treats both visible labels as equivalent',
+    avoid_move: 'keep asking for visual comparison without a public decision test',
+    preferred_move: 'make the old label-only warrant fail before introducing the scope check',
+    uptake_test: 'learner uses the scope check to sort the held-out case',
+  });
   writeJson(path.join(chainDir, 'attempt-chain-plan.json'), {
     families: [
       {
@@ -104,6 +112,25 @@ test('parseArgs defaults to window policy ablation', () => {
   assert.equal(args.checker, 'claude');
 });
 
+test('parseArgs accepts restricted A18.7 fresh-S1 controls', () => {
+  const { chainDir } = writeFixture();
+  const args = parseArgs([
+    '--chain-dir',
+    chainDir,
+    '--fresh-s1',
+    '--inner-max-chars',
+    '0',
+    '--policy-memory-max-chars',
+    '12000',
+    '--panel-policy',
+    'headroom',
+  ]);
+  assert.equal(args.freshS1, true);
+  assert.equal(args.innerMaxChars, 0);
+  assert.equal(args.policyMemoryMaxChars, 12000);
+  assert.equal(args.panelPolicy, 'headroom');
+});
+
 test('buildAblationPlan finds existing S1 policy-memory replay and prior panel row', () => {
   const { chainDir, familyId, siblingId } = writeFixture();
   const plan = buildAblationPlan({ chainDir, familyId, siblingId });
@@ -111,6 +138,34 @@ test('buildAblationPlan finds existing S1 policy-memory replay and prior panel r
   assert.equal(plan.sibling.sibling_id, siblingId);
   assert.equal(plan.priorPanelFamily.panel_status, 'panel_pass');
   assert.ok(fs.existsSync(plan.paths.s1Manifest));
+});
+
+test('restricted fresh-S1 ablation packages A18.7 arms without panel when no local headroom', async () => {
+  const { tmp, chainDir, familyId, siblingId } = writeFixture();
+  const outDir = path.join(tmp, 'out-a18-7');
+  const result = await runPolicyAblation({
+    chainDir,
+    familyId,
+    siblingId,
+    outDir,
+    runId: 'a18-restricted-policy-ablation-test',
+    mock: true,
+    freshS1: true,
+    innerMaxChars: 0,
+    publicMaxChars: 5000,
+    panelPolicy: 'headroom',
+    force: false,
+  });
+  assert.equal(result.report.design.label, 'a18.7_restricted_policy_ablation');
+  assert.equal(result.report.design.fresh_s1, true);
+  assert.equal(result.report.design.inner_max_chars, 0);
+  assert.equal(result.report.design.policy_memory_max_chars, 18_000);
+  assert.equal(result.report.local_arms.S0_no_policy.status, 'survivor');
+  assert.equal(result.report.local_arms.S1_policy_memory.status, 'survivor');
+  assert.equal(result.report.local_verdict, 'no_local_headroom');
+  assert.equal(result.report.panel_verdict, 'not_panelled');
+  assert.equal(result.report.panel_skip_reason, 'no_local_headroom:no_local_headroom');
+  assert.ok(fs.existsSync(path.join(outDir, 'a18.7-restricted-policy-ablation-report.json')));
 });
 
 test('policy ablation can run mock S0 and package both arms without panel', async () => {

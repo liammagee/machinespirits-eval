@@ -100,6 +100,7 @@ function usage() {
     [--min-strategy-revision-accountability N]
     [--min-strategic-timing N] [--min-recursive-dyadic-update N]
     [--item-concurrency N] [--feedback-file path] [--policy-memory path]
+    [--policy-memory-max-chars N]
     [--timeout-ms N]
     [--force] [--dry-run]
 
@@ -174,6 +175,7 @@ export function parseArgs(argv = process.argv.slice(2)) {
     else if (t === '--item-concurrency') args.itemConcurrency = Number(argv[++i]);
     else if (t === '--feedback-file') args.feedbackFile = path.resolve(argv[++i]);
     else if (t === '--policy-memory') args.policyMemoryFiles.push(path.resolve(argv[++i]));
+    else if (t === '--policy-memory-max-chars') args.policyMemoryMaxChars = Number(argv[++i]);
     else if (t === '--force') args.force = true;
     else if (t === '--dry-run') args.dryRun = true;
     else throw new Error(`unknown arg: ${t}\n\n${usage()}`);
@@ -211,6 +213,7 @@ function defaultArgs() {
     feedbackFile: null,
     feedbackByItem: {},
     policyMemoryFiles: [],
+    policyMemoryMaxChars: 18_000,
     force: false,
     dryRun: false,
   };
@@ -246,6 +249,9 @@ function finalizeArgs(rawArgs) {
   if (!Number.isFinite(args.timeoutMs) || args.timeoutMs < 1) throw new Error('--timeout-ms must be positive');
   if (!Number.isFinite(args.publicMaxChars) || args.publicMaxChars < 500) throw new Error('--public-max-chars too small');
   if (!Number.isFinite(args.innerMaxChars) || args.innerMaxChars < 0) throw new Error('--inner-max-chars must be >= 0');
+  if (!Number.isFinite(args.policyMemoryMaxChars) || args.policyMemoryMaxChars < 0) {
+    throw new Error('--policy-memory-max-chars must be >= 0');
+  }
   if (!Number.isInteger(args.itemConcurrency) || args.itemConcurrency < 1) {
     throw new Error('--item-concurrency must be a positive integer');
   }
@@ -899,7 +905,7 @@ function policyMemoryForArgs(args) {
     .map((filePath) => readText(filePath).trim())
     .filter(Boolean)
     .join('\n\n---\n\n');
-  return truncateMiddle(text, args.innerMaxChars || 18_000);
+  return truncateMiddle(text, args.policyMemoryMaxChars);
 }
 
 export function buildCheckPrompt({ item, publicTranscript, revision, policyMemoryText = '' }) {
