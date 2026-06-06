@@ -107,6 +107,7 @@
     "poetics:recursive-tutor-ablation": "node scripts/run-recursive-tutor-policy-ablation.js",
     "poetics:recursive-tutor-protocol": "node scripts/validate-recursive-tutor-protocol.js",
     "poetics:recursive-tutor-policy-correctness": "node scripts/report-recursive-tutor-policy-correctness.js",
+    "poetics:recursive-tutor-cue-risk": "node scripts/report-recursive-tutor-cue-map-risk.js",
     "poetics:recursive-tutor-contrast-panel": "node scripts/run-recursive-tutor-policy-contrast-panel.js",
     "poetics:arc-images": "node scripts/generate-poetics-arc-images.js",
     "poetics:package-arc": "node notes/poetics/package-standalone.js notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.html",

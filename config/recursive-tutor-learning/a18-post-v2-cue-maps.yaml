@@ -1,0 +1,63 @@
+meta:
+  schema_version: recursive-tutor-cue-map-risk-v1
+  created: 2026-06-06
+  purpose: >-
+    Sidecar cue maps for A18 post-v2 family preflight. These records make
+    target salience and selected-repair visibility explicit before replay.
+
+cue_maps:
+  - family_id: diagonal_socket_priority
+    selected_relation_type: inverse_completion
+    selected_cue:
+      public_visibility: medium
+      description: >-
+        Tiny tick positions are public, but the intended opposite/completion
+        relation is not named in public fields.
+    counterexample:
+      present: false
+      old_check: same_position_match
+      needed: >-
+        A public case where matching the final tick position visibly duplicates
+        or misclassifies, forcing the opposite/completion relation.
+    target_salience:
+      max_competing_cues_against_selected: 3
+      selected_target_supporting_cues: 1
+      notes: >-
+        On the failing red sibling, color, nearness, and same-position reading
+        all favored the wrong target.
+    expected_s0_wrong_move: same_position_match
+    expected_s1_correct_move: opposite_position_completion
+    marker_natural_aliases:
+      - diagonal opposite
+      - opposite completes
+      - same spot duplicates
+      - paired offset
+      - position pairing
+
+  - family_id: thread_source_priority
+    selected_relation_type: direct_visible_source
+    selected_cue:
+      public_visibility: high
+      description: >-
+        The little round nub visibly touches the correct token in both held-out
+        siblings, making the selected cue easy for S0 to discover.
+    counterexample:
+      present: false
+      old_check: taper_destination
+      needed: >-
+        A public case where following the taper gives a contradiction before
+        the round/source end becomes the governing test.
+    target_salience:
+      max_competing_cues_against_selected: 2
+      selected_target_supporting_cues: 2
+      notes: >-
+        The selected target receives both lane and visible nub/contact support,
+        enough for S0 to solve without policy memory.
+    expected_s0_wrong_move: taper_or_salience_tally
+    expected_s1_correct_move: source_end_carrier
+    marker_natural_aliases:
+      - source
+      - origin
+      - round nub
+      - round end
+      - nub touches
