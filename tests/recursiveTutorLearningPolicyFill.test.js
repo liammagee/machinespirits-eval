@@ -10,6 +10,9 @@ import { fillRecursiveTutorPolicies } from '../scripts/fill-recursive-tutor-poli
 const loadFixture = () =>
   yaml.parse(fs.readFileSync('config/recursive-tutor-learning/pilot-families.yaml', 'utf8'));
 
+const loadUnderdeterminedFixture = () =>
+  yaml.parse(fs.readFileSync('config/recursive-tutor-learning/underdetermined-transfer-families.yaml', 'utf8'));
+
 function writeJson(filePath, value) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
@@ -104,4 +107,19 @@ test('policy fill skips revise_again attempt-1 artifacts by default', () => {
   assert.equal(report.status_counts.skipped_attempt1_revise_again, 1);
   const policy = JSON.parse(fs.readFileSync(family.policy_revision_template, 'utf8'));
   assert.equal(policy.status, 'template_unfilled');
+});
+
+test('policy fill preserves underdetermined transfer metadata', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'a18-policy-fill-under-'));
+  const outDir = path.join(tmp, 'chain');
+  const plan = materializeAttemptChain(loadUnderdeterminedFixture(), { outDir, force: false });
+  const family = plan.families[0];
+  writeAttempt1Survivor(family);
+
+  const report = fillRecursiveTutorPolicies({ chainDir: outDir });
+  assert.equal(report.status_counts.filled, 1);
+
+  const policy = JSON.parse(fs.readFileSync(family.policy_revision_template, 'utf8'));
+  assert.equal(policy.transfer_design.policy_selected_repair, 'selector_tab_test');
+  assert.equal(policy.plausible_repairs.length, 4);
 });

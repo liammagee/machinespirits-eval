@@ -62,6 +62,7 @@ function textFieldsForLeakage(family, seedLike) {
   return [
     ['public_setup', seedLike.public_setup],
     ['learner_resistance', seedLike.learner_resistance],
+    ['learner_followup', seedLike.learner_followup],
     ['baseline_tutor_attempt', seedLike.baseline_tutor_attempt],
   ].map(([field, value]) => ({
     family_id: family.family_id,
@@ -81,6 +82,52 @@ function validateRequired(value, pathLabel, issues) {
   }
 }
 
+function validateUnderdeterminedTransfer(family, prefix, issues) {
+  const design = family.transfer_design || {};
+  if (!design.require_underdetermined_public_repairs) return;
+  const repairs = asArray(family.plausible_repairs);
+  if (repairs.length < 2) {
+    issues.push({
+      severity: 'error',
+      code: 'missing_multiple_plausible_repairs',
+      path: `${prefix}.plausible_repairs`,
+      family_id: family.family_id,
+    });
+  }
+  const repairIds = new Set();
+  for (const [repairIndex, repair] of repairs.entries()) {
+    const repairPrefix = `${prefix}.plausible_repairs[${repairIndex}]`;
+    for (const field of ['repair_id', 'public_rationale', 'why_plausible_from_public_stage']) {
+      validateRequired(repair[field], `${repairPrefix}.${field}`, issues);
+    }
+    if (repair.repair_id) repairIds.add(repair.repair_id);
+  }
+  validateRequired(design.policy_selected_repair, `${prefix}.transfer_design.policy_selected_repair`, issues);
+  validateRequired(design.transfer_condition, `${prefix}.transfer_design.transfer_condition`, issues);
+  validateRequired(design.s0_stop_rule, `${prefix}.transfer_design.s0_stop_rule`, issues);
+  if (design.policy_selected_repair && !repairIds.has(design.policy_selected_repair)) {
+    issues.push({
+      severity: 'error',
+      code: 'policy_selected_repair_not_in_plausible_repairs',
+      path: `${prefix}.transfer_design.policy_selected_repair`,
+      family_id: family.family_id,
+      repair_id: design.policy_selected_repair,
+    });
+  }
+  for (const [siblingIndex, sibling] of asArray(family.heldout_siblings).entries()) {
+    const repairsVisible = asArray(sibling.plausible_public_repairs);
+    if (repairsVisible.length < 2) {
+      issues.push({
+        severity: 'error',
+        code: 'heldout_not_underdetermined',
+        path: `${prefix}.heldout_siblings[${siblingIndex}].plausible_public_repairs`,
+        family_id: family.family_id,
+        sibling_id: sibling.sibling_id,
+      });
+    }
+  }
+}
+
 export function validateBenchmarkConfig(config) {
   const issues = [];
   validateRequired(config?.meta?.schema_version, 'meta.schema_version', issues);
@@ -95,6 +142,7 @@ export function validateBenchmarkConfig(config) {
     validateRequired(family.success_criterion, `${prefix}.success_criterion`, issues);
     const shortcuts = asArray(family.forbidden_shortcuts);
     if (!shortcuts.length) issues.push({ severity: 'error', code: 'missing_forbidden_shortcuts', path: prefix });
+    validateUnderdeterminedTransfer(family, prefix, issues);
 
     const seed = family.training_seed || {};
     for (const field of ['seed_id', 'public_setup', 'learner_resistance', 'baseline_tutor_attempt', 'expected_failure']) {
@@ -157,6 +205,13 @@ function repoRel(filePath) {
 }
 
 function renderTranscript({ family, caseId, phase, publicSetup, learnerResistance, tutorAttempt }) {
+  const seedLike =
+    family.training_seed?.seed_id === caseId
+      ? family.training_seed
+      : asArray(family.heldout_siblings).find((sibling) => sibling.sibling_id === caseId) || {};
+  const learnerFollowup =
+    seedLike.learner_followup ||
+    'I can compare those parts, but I am still using the part that looks most active unless there is a clearer public test.';
   return `# A18 Recursive Tutor-Learning Fixture
 
 ## Public Performance
@@ -168,7 +223,7 @@ LEARNER: "${learnerResistance}"
 
 TUTOR: "${tutorAttempt}"
 
-LEARNER: "I can compare those parts, but I am still using the part that looks most active unless there is a clearer public test."
+LEARNER: "${learnerFollowup}"
 \`\`\`
 
 ## Held-Out A18 Metadata
@@ -184,6 +239,8 @@ ${JSON.stringify(
     private_local_rule: family.local_rule?.private_rule || null,
     success_criterion: family.success_criterion,
     forbidden_shortcuts: family.forbidden_shortcuts || [],
+    transfer_design: family.transfer_design || null,
+    plausible_repairs: family.plausible_repairs || [],
   },
   null,
   2,
@@ -220,6 +277,8 @@ function strategyRevisionTemplate(family) {
   return {
     family_id: family.family_id,
     status: 'template_unfilled',
+    transfer_design: family.transfer_design || null,
+    plausible_repairs: family.plausible_repairs || [],
     diagnostic_trigger: null,
     avoid_move: null,
     preferred_move: null,
@@ -261,6 +320,8 @@ export function buildAttemptChainPlan(config, { outDir = DEFAULT_OUT_DIR } = {})
       family_id: family.family_id,
       obstruction_type: family.obstruction_type,
       training_seed_id: family.training_seed?.seed_id || null,
+      transfer_design: family.transfer_design || null,
+      plausible_repairs: family.plausible_repairs || [],
       family_dir: familyDir,
       training_transcript: trainingTranscript,
       policy_revision_template: policyRevision,

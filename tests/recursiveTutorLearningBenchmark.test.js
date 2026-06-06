@@ -14,6 +14,9 @@ import {
 const loadFixture = () =>
   yaml.parse(fs.readFileSync('config/recursive-tutor-learning/pilot-families.yaml', 'utf8'));
 
+const loadUnderdeterminedFixture = () =>
+  yaml.parse(fs.readFileSync('config/recursive-tutor-learning/underdetermined-transfer-families.yaml', 'utf8'));
+
 test('parseArgs defaults to the pilot fixture and output directory', () => {
   const args = parseArgs([]);
   assert.match(args.config, /config\/recursive-tutor-learning\/pilot-families\.yaml$/);
@@ -26,6 +29,21 @@ test('pilot family fixture passes static validation', () => {
   const validation = validateBenchmarkConfig(config);
   assert.equal(validation.valid, true);
   assert.deepEqual(validation.issues, []);
+});
+
+test('underdetermined transfer fixture passes static validation', () => {
+  const config = loadUnderdeterminedFixture();
+  const validation = validateBenchmarkConfig(config);
+  assert.equal(validation.valid, true);
+  assert.deepEqual(validation.issues, []);
+});
+
+test('underdetermined transfer validation requires selected repair to be plausible', () => {
+  const config = loadUnderdeterminedFixture();
+  config.families[0].transfer_design.policy_selected_repair = 'not_in_public_options';
+  const validation = validateBenchmarkConfig(config);
+  assert.equal(validation.valid, false);
+  assert.ok(validation.issues.some((issue) => issue.code === 'policy_selected_repair_not_in_plausible_repairs'));
 });
 
 test('static validation catches public shortcut leakage', () => {
@@ -67,4 +85,19 @@ test('materializeAttemptChain writes transcripts, templates, and commands', () =
     assert.ok(fs.readFileSync(family.training_transcript, 'utf8').includes('## Held-Out A18 Metadata'));
     for (const sibling of family.heldout) assert.ok(fs.existsSync(sibling.transcript));
   }
+});
+
+test('materializeAttemptChain preserves family-specific learner followup and transfer design', () => {
+  const config = loadUnderdeterminedFixture();
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'a18-under-transfer-'));
+  const outDir = path.join(tmp, 'out');
+  const plan = materializeAttemptChain(config, { outDir, force: false });
+  const family = plan.families[0];
+  const transcript = fs.readFileSync(family.training_transcript, 'utf8');
+  const policyTemplate = JSON.parse(fs.readFileSync(family.policy_revision_template, 'utf8'));
+
+  assert.match(transcript, /now I have three possible clues/);
+  assert.match(transcript, /"policy_selected_repair": "selector_tab_test"/);
+  assert.equal(policyTemplate.transfer_design.policy_selected_repair, 'selector_tab_test');
+  assert.equal(policyTemplate.plausible_repairs.length, 4);
 });

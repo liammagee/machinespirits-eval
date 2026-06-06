@@ -146,6 +146,8 @@ test('parseArgs accepts A18.8 bounded-transfer controls', () => {
     '--policy-contrast-gate',
     '--min-policy-distinctiveness',
     '0.2',
+    '--experiment-label',
+    'a18.9_underdetermined_transfer_family',
     '--panel-policy',
     'headroom',
   ]);
@@ -155,6 +157,7 @@ test('parseArgs accepts A18.8 bounded-transfer controls', () => {
   assert.equal(args.boundedMaxAddedLines, 4);
   assert.equal(args.policyContrastGate, true);
   assert.equal(args.minPolicyDistinctiveness, 0.2);
+  assert.equal(args.experimentLabel, 'a18.9_underdetermined_transfer_family');
 });
 
 test('buildAblationPlan finds existing S1 policy-memory replay and prior panel row', () => {
@@ -164,6 +167,39 @@ test('buildAblationPlan finds existing S1 policy-memory replay and prior panel r
   assert.equal(plan.sibling.sibling_id, siblingId);
   assert.equal(plan.priorPanelFamily.panel_status, 'panel_pass');
   assert.ok(fs.existsSync(plan.paths.s1Manifest));
+});
+
+test('fresh-S1 ablation can run without prior local gate or existing S1 replay', async () => {
+  const { tmp, chainDir, familyId, siblingId } = writeFixture();
+  fs.rmSync(path.join(chainDir, 'local-gate-report.json'), { force: true });
+  fs.rmSync(path.join(chainDir, familyId, `${siblingId}.heldout-revised-replay`), { recursive: true, force: true });
+  const outDir = path.join(tmp, 'out-fresh-no-prior');
+  const plan = buildAblationPlan({
+    chainDir,
+    familyId,
+    siblingId,
+    requireLocalGate: false,
+    requireS1Manifest: false,
+  });
+  assert.equal(plan.localFamily, null);
+  assert.equal(plan.paths.s1Manifest, null);
+
+  const result = await runPolicyAblation({
+    chainDir,
+    familyId,
+    siblingId,
+    outDir,
+    runId: 'a18-fresh-no-prior-test',
+    mock: true,
+    freshS1: true,
+    innerMaxChars: 0,
+    rewriteMode: 'bounded_continuation',
+    policyContrastGate: true,
+    skipPanel: true,
+    force: false,
+  });
+  assert.equal(result.report.local_arms.S0_no_policy.status, 'survivor');
+  assert.equal(result.report.local_arms.S1_policy_memory.status, 'survivor');
 });
 
 test('restricted fresh-S1 ablation packages A18.7 arms without panel when no local headroom', async () => {
@@ -220,6 +256,52 @@ test('A18.8 bounded-transfer mode records policy contrast failure before panel',
   assert.equal(result.report.panel_verdict, 'not_panelled');
   assert.equal(result.report.panel_skip_reason, 'policy_contrast_gate:s0_recreates_policy_strategy');
   assert.ok(fs.existsSync(path.join(outDir, 'a18.8-s0-hard-bounded-transfer-report.json')));
+});
+
+test('A18.9 bounded-transfer run ids get distinct report labels', async () => {
+  const { tmp, chainDir, familyId, siblingId } = writeFixture();
+  const outDir = path.join(tmp, 'out-a18-9');
+  const result = await runPolicyAblation({
+    chainDir,
+    familyId,
+    siblingId,
+    outDir,
+    runId: 'a18-9-underdetermined-transfer-test',
+    mock: true,
+    freshS1: true,
+    innerMaxChars: 0,
+    publicMaxChars: 5000,
+    rewriteMode: 'bounded_continuation',
+    boundedMaxAddedLines: 4,
+    policyContrastGate: true,
+    panelPolicy: 'headroom',
+    force: false,
+  });
+  assert.equal(result.report.design.label, 'a18.9_underdetermined_transfer_family');
+  assert.ok(fs.existsSync(path.join(outDir, 'a18.9-underdetermined-transfer-family-report.json')));
+});
+
+test('explicit experiment label controls report filename', async () => {
+  const { tmp, chainDir, familyId, siblingId } = writeFixture();
+  const outDir = path.join(tmp, 'out-custom-label');
+  const result = await runPolicyAblation({
+    chainDir,
+    familyId,
+    siblingId,
+    outDir,
+    runId: 'custom-label-test',
+    mock: true,
+    freshS1: true,
+    innerMaxChars: 0,
+    publicMaxChars: 5000,
+    rewriteMode: 'bounded_continuation',
+    policyContrastGate: true,
+    experimentLabel: 'a18.9_custom_under_determined',
+    skipPanel: true,
+    force: false,
+  });
+  assert.equal(result.report.design.label, 'a18.9_custom_under_determined');
+  assert.ok(fs.existsSync(path.join(outDir, 'a18.9-custom-under-determined-report.json')));
 });
 
 test('policy ablation can run mock S0 and package both arms without panel', async () => {

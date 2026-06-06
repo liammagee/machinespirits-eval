@@ -32,6 +32,7 @@ function usage() {
     [--rewrite-mode full|bounded_continuation] [--bounded-max-added-lines N]
     [--policy-memory-max-chars N]
     [--policy-contrast-gate] [--min-policy-distinctiveness N]
+    [--experiment-label a18.9_underdetermined_transfer_family]
     [--panel-policy always|headroom|never]
     [--critics qwen/qwen3.7-max,google/gemini-3.5-flash,...]
     [--critic-concurrency N|all] [--score-concurrency N]
@@ -65,6 +66,7 @@ function defaultArgs() {
     policyMemoryMaxChars: 18_000,
     policyContrastGate: false,
     minPolicyDistinctiveness: 0.12,
+    experimentLabel: null,
     panelPolicy: 'always',
     critics: null,
     criticConcurrency: 'all',
@@ -103,6 +105,7 @@ export function parseArgs(argv = process.argv.slice(2)) {
     else if (token === '--policy-memory-max-chars') args.policyMemoryMaxChars = Number(argv[++i]);
     else if (token === '--policy-contrast-gate') args.policyContrastGate = true;
     else if (token === '--min-policy-distinctiveness') args.minPolicyDistinctiveness = Number(argv[++i]);
+    else if (token === '--experiment-label') args.experimentLabel = argv[++i];
     else if (token === '--panel-policy') args.panelPolicy = argv[++i];
     else if (token === '--critics') args.critics = splitCsv(argv[++i]);
     else if (token === '--critic-concurrency') {
@@ -128,7 +131,7 @@ function finalizeArgs(rawArgs) {
   if (!fs.existsSync(path.join(args.chainDir, 'attempt-chain-plan.json'))) {
     throw new Error(`attempt-chain plan not found: ${path.join(args.chainDir, 'attempt-chain-plan.json')}`);
   }
-  if (!fs.existsSync(path.join(args.chainDir, 'local-gate-report.json'))) {
+  if (!args.freshS1 && !fs.existsSync(path.join(args.chainDir, 'local-gate-report.json'))) {
     throw new Error(`local gate report not found: ${path.join(args.chainDir, 'local-gate-report.json')}`);
   }
   if (!Number.isInteger(args.scoreConcurrency) || args.scoreConcurrency < 1) {
@@ -159,6 +162,9 @@ function finalizeArgs(rawArgs) {
   if (!Number.isFinite(args.minPolicyDistinctiveness) || args.minPolicyDistinctiveness < 0) {
     throw new Error('--min-policy-distinctiveness must be >= 0');
   }
+  if (args.experimentLabel != null && !safeSlug(args.experimentLabel)) {
+    throw new Error('--experiment-label must contain at least one filename-safe character');
+  }
   if (!['always', 'headroom', 'never'].includes(args.panelPolicy)) {
     throw new Error('--panel-policy must be one of always|headroom|never');
   }
@@ -186,6 +192,25 @@ function safeSlug(value) {
     .replace(/[^a-zA-Z0-9._-]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 140);
+}
+
+function labelLooksLikeA189(args) {
+  return [args.runId, path.basename(args.chainDir), path.basename(args.outDir || '')].some((value) =>
+    /\ba18[.-]?9\b/i.test(String(value || '')),
+  );
+}
+
+function inferDesignLabel(args) {
+  if (args.experimentLabel) return safeSlug(args.experimentLabel);
+  if (args.freshS1 && args.innerMaxChars === 0 && args.rewriteMode === 'bounded_continuation' && args.policyContrastGate) {
+    return labelLooksLikeA189(args) ? 'a18.9_underdetermined_transfer_family' : 'a18.8_s0_hard_bounded_transfer';
+  }
+  if (args.freshS1 && args.innerMaxChars === 0) return 'a18.7_restricted_policy_ablation';
+  return 'a18.6_policy_ablation';
+}
+
+function reportNameForDesignLabel(designLabel) {
+  return `${safeSlug(designLabel).replace(/_/g, '-')}-report.json`;
 }
 
 function rel(filePath) {
@@ -284,6 +309,8 @@ function tokenizeSignature(text) {
 }
 
 function policyStrategyName(policyMemory) {
+  const selectedRepair = policyMemory?.transfer_design?.policy_selected_repair;
+  if (selectedRepair) return String(selectedRepair).toLowerCase();
   const preferred = String(policyMemory?.preferred_move || '').toLowerCase();
   const named = preferred.match(/\b([a-z][a-z0-9]+_[a-z0-9_]+)\b/);
   if (named) return named[1];
@@ -292,7 +319,20 @@ function policyStrategyName(policyMemory) {
 }
 
 function policySignature(policyMemory) {
-  const fieldText = POLICY_SIGNATURE_FIELDS.map((field) => flattenPolicyText(policyMemory?.[field])).join(' ');
+  const selectedRepair = policyMemory?.transfer_design?.policy_selected_repair || null;
+  const selectedRepairText = selectedRepair
+    ? flattenPolicyText(
+        (policyMemory?.plausible_repairs || []).find((repair) => repair?.repair_id === selectedRepair) || {},
+      )
+    : '';
+  const fieldText = selectedRepair
+    ? [
+        selectedRepair,
+        selectedRepairText,
+        flattenPolicyText(policyMemory?.material_constraint),
+        flattenPolicyText(policyMemory?.transfer_design?.transfer_condition),
+      ].join(' ')
+    : POLICY_SIGNATURE_FIELDS.map((field) => flattenPolicyText(policyMemory?.[field])).join(' ');
   const tokens = tokenizeSignature(fieldText);
   return {
     strategy_name: policyStrategyName(policyMemory),
@@ -401,9 +441,17 @@ function panelFamily(panelReport, familyId) {
   return (panelReport?.families || []).find((entry) => entry.family_id === familyId) || null;
 }
 
-export function buildAblationPlan({ chainDir = DEFAULT_CHAIN_DIR, familyId = 'window_scope_claim', siblingId = null } = {}) {
+export function buildAblationPlan({
+  chainDir = DEFAULT_CHAIN_DIR,
+  familyId = 'window_scope_claim',
+  siblingId = null,
+  requireLocalGate = true,
+  requireS1Manifest = true,
+} = {}) {
   const plan = readJson(path.join(chainDir, 'attempt-chain-plan.json'));
-  const localGate = readJson(path.join(chainDir, 'local-gate-report.json'));
+  const localGatePath = path.join(chainDir, 'local-gate-report.json');
+  if (requireLocalGate && !fs.existsSync(localGatePath)) throw new Error(`local gate report not found: ${localGatePath}`);
+  const localGate = fs.existsSync(localGatePath) ? readJson(localGatePath) : { families: [] };
   const priorPanelPath = path.join(chainDir, 'a18.5-panel', 'a18.5-panel-report.json');
   const priorPanel = fs.existsSync(priorPanelPath) ? readJson(priorPanelPath) : null;
   const family = findFamily(plan, familyId);
@@ -411,7 +459,9 @@ export function buildAblationPlan({ chainDir = DEFAULT_CHAIN_DIR, familyId = 'wi
   const localFamily = localGateFamily(localGate, familyId);
   const priorPanelFamily = panelFamily(priorPanel, familyId);
   const s1ManifestPath = path.join(sibling.revised_replay_dir, 'manifest.json');
-  if (!fs.existsSync(s1ManifestPath)) throw new Error(`S1 policy-memory replay missing: ${s1ManifestPath}`);
+  if (requireS1Manifest && !fs.existsSync(s1ManifestPath)) {
+    throw new Error(`S1 policy-memory replay missing: ${s1ManifestPath}`);
+  }
   return {
     family,
     sibling,
@@ -420,7 +470,7 @@ export function buildAblationPlan({ chainDir = DEFAULT_CHAIN_DIR, familyId = 'wi
     paths: {
       transcript: family.heldout.find((entry) => entry.sibling_id === sibling.sibling_id)?.transcript || sibling.transcript,
       policyMemory: family.policy_revision_template,
-      s1Manifest: s1ManifestPath,
+      s1Manifest: fs.existsSync(s1ManifestPath) ? s1ManifestPath : null,
       priorPanel: priorPanelPath,
     },
   };
@@ -555,15 +605,16 @@ export async function runPolicyAblation(rawArgs = process.argv.slice(2)) {
   }
   fs.mkdirSync(args.outDir, { recursive: true });
 
-  const plan = buildAblationPlan({ chainDir: args.chainDir, familyId: args.familyId, siblingId: args.siblingId });
+  const plan = buildAblationPlan({
+    chainDir: args.chainDir,
+    familyId: args.familyId,
+    siblingId: args.siblingId,
+    requireLocalGate: !args.freshS1,
+    requireS1Manifest: !args.freshS1,
+  });
   const familyId = plan.family.family_id;
   const siblingId = plan.sibling.sibling_id;
-  const designLabel =
-    args.freshS1 && args.innerMaxChars === 0 && args.rewriteMode === 'bounded_continuation' && args.policyContrastGate
-      ? 'a18.8_s0_hard_bounded_transfer'
-      : args.freshS1 && args.innerMaxChars === 0
-        ? 'a18.7_restricted_policy_ablation'
-        : 'a18.6_policy_ablation';
+  const designLabel = inferDesignLabel(args);
   const baseReplayArgs = {
     transcript: resolveRepoPath(plan.paths.transcript),
     generator: args.generator,
@@ -733,11 +784,7 @@ export async function runPolicyAblation(rawArgs = process.argv.slice(2)) {
     },
   };
   if (!args.dryRun) {
-    const reportName = designLabel.startsWith('a18.8')
-      ? 'a18.8-s0-hard-bounded-transfer-report.json'
-      : designLabel.startsWith('a18.7')
-      ? 'a18.7-restricted-policy-ablation-report.json'
-      : 'a18.6-policy-ablation-report.json';
+    const reportName = reportNameForDesignLabel(designLabel);
     writeJson(path.join(args.outDir, reportName), report);
   }
   return { outDir: args.outDir, report };

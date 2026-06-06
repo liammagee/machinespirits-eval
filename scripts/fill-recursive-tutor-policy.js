@@ -174,6 +174,8 @@ export function buildPolicyFromLedger({ family, revision, replay }) {
     status: 'filled_from_attempt1',
     filled_at: new Date().toISOString(),
     claim_boundary: 'simulated_teacher_as_learner_not_human_learning',
+    transfer_design: family.transfer_design || null,
+    plausible_repairs: family.plausible_repairs || [],
     source_attempt1_replay: repoRel(family.attempt1_replay_dir),
     source_revision_json: replay.revisionJson ? repoRel(replay.revisionJson) : null,
     diagnostic_trigger: `${stringifyPolicyPart(resistance.public_signal)} Evidence: ${stringifyPolicyPart(resistance.evidence_quote)} Challenge: ${stringifyPolicyPart(resistance.why_it_challenges_prior_strategy)}`,

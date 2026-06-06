@@ -1,0 +1,133 @@
+meta:
+  schema_version: recursive-tutor-learning-families-v1-underdetermined-transfer
+  created: 2026-06-06
+  status: a18_9_zero_low_api_fixture
+  target: A18.9 under-determined transfer-family redesign
+  claim_boundary: simulated_teacher_as_learner_not_human_learning
+  notes: >-
+    Pilot families for the S0-hard transfer design. Each public setup presents
+    multiple plausible repair paths. The filled attempt-1 policy must select the
+    repair under a transfer condition; if S0 independently finds the same
+    strategy, the family stops locally.
+
+families:
+  - family_id: selector_rail_priority
+    obstruction_type: competing_visible_cues_with_frame_selector
+    local_rule:
+      private_rule: >-
+        In this invented rail-card notation, the small outside tab marks which
+        rail is authorized to feed the final mark. Color match, nearness, and
+        uninterrupted rail path can all be tempting but are not decisive unless
+        they occur on the tab-marked rail.
+      public_name: rail-selector priority
+    transfer_design:
+      require_underdetermined_public_repairs: true
+      policy_selected_repair: selector_tab_test
+      transfer_condition: >-
+        Use the selector-tab repair only after the learner reports that ordinary
+        comparison leaves several visible cues in competition. Do not use it as
+        a first move.
+      s0_stop_rule: >-
+        Stop locally if S0 survives or if S0 independently names a selector-tab,
+        side-tab, rail-authority, or frame-selector strategy.
+    plausible_repairs:
+      - repair_id: color_match_test
+        public_rationale: >-
+          The chosen token shares a visible color or stain with the final mark.
+        why_plausible_from_public_stage: >-
+          Color matching is salient and easy to compare across the rail card.
+      - repair_id: nearest_stamp_test
+        public_rationale: >-
+          The chosen token sits closest to the final mark or endpoint.
+        why_plausible_from_public_stage: >-
+          Nearness looks like a natural route when a final mark sits at one side
+          of the card.
+      - repair_id: rail_path_test
+        public_rationale: >-
+          The chosen token lies on the cleanest visible rail path.
+        why_plausible_from_public_stage: >-
+          Continuous rails invite path-following as a public rule.
+      - repair_id: selector_tab_test
+        public_rationale: >-
+          The chosen token lies on the rail indicated by a small outside tab.
+        why_plausible_from_public_stage: >-
+          A frame mark could be decorative, positional, or controlling; the
+          learner needs a test that makes its role public.
+    success_criterion: >-
+      On a held-out rail card, the learner must stop choosing by color,
+      nearness, or clean path alone and use the outside tab to decide which rail
+      is authorized.
+    forbidden_shortcuts:
+      - selector tab chooses
+      - tab chooses the rail
+      - outside selector decides
+      - color and nearness are decoys
+      - rail supplies the valid mark
+      - tab-marked rail
+    training_seed:
+      seed_id: selector_train_red_upper
+      public_setup: >-
+        A narrow card has an upper rail and a lower rail. The same token word
+        vaso appears once on each rail. The upper vaso is red like the final
+        seal and sits nearer to it. The lower vaso sits on a cleaner rail path.
+        A small brass tab is clipped to the left frame beside the lower rail.
+        The learner has to say which vaso can support the final seal.
+      learner_resistance: >-
+        I keep choosing the red upper vaso because it matches the seal and it is
+        closer. The lower path is cleaner, but that feels like a different kind
+        of clue.
+      baseline_tutor_attempt: >-
+        Compare the two rails, the colors, and the positions before choosing.
+      learner_followup: >-
+        I can compare all three, but now I have three possible clues. I do not
+        know which visible feature has authority.
+      expected_failure: wrong_strategy_family
+    heldout_siblings:
+      - sibling_id: selector_holdout_blue_lower
+        public_setup: >-
+          A copper rail card has two horizontal rails and a final square at the
+          right edge. The token word leno appears on the upper rail and again on
+          the lower rail. The lower leno has a blue wash matching the final
+          square and is nearest to it. The upper rail is the only unbroken line.
+          A tiny ivory tab is clipped to the left frame beside the upper rail.
+          The learner has to choose which leno can support the final square.
+        learner_resistance: >-
+          I want the lower leno because it is blue like the square and closer to
+          the end. The upper rail being unbroken gives me a second clue, not a
+          decision.
+        baseline_tutor_attempt: >-
+          Compare color, distance, and the two rail paths, then choose the leno
+          with the strongest evidence.
+        learner_followup: >-
+          Comparing just piles the clues up. Blue and close still pull one way;
+          the clean line pulls another way.
+        plausible_public_repairs:
+          - color_match_test
+          - nearest_stamp_test
+          - rail_path_test
+          - selector_tab_test
+        expected_baseline_failure: wrong_strategy_family
+      - sibling_id: selector_holdout_gold_middle
+        public_setup: >-
+          A slate card has three rails. The token word rumi appears on the top
+          rail and on the middle rail. The top rumi has a gold fleck matching
+          the final badge. The middle rumi is closest to the badge. The bottom
+          rail has the cleanest uninterrupted groove but no rumi. A small green
+          tab is clipped to the left frame beside the middle rail. The learner
+          has to choose which rumi can support the final badge.
+        learner_resistance: >-
+          I want the top rumi for the gold match, but the middle one is closer.
+          The groove clue does not even sit on a rumi, so I am not sure what to
+          trust.
+        baseline_tutor_attempt: >-
+          Compare the matching color, the distance, and the groove before
+          choosing.
+        learner_followup: >-
+          The comparisons conflict instead of resolving it. Gold, distance, and
+          groove each point somewhere different.
+        plausible_public_repairs:
+          - color_match_test
+          - nearest_stamp_test
+          - rail_path_test
+          - selector_tab_test
+        expected_baseline_failure: wrong_strategy_family
