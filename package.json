@@ -96,6 +96,7 @@
     "poetics:package-run": "node scripts/package-poetics-run.js",
     "poetics:publish-run": "node scripts/publish-poetics-run-archive.js",
     "poetics:browse": "node scripts/browse-poetics-scripts.js",
+    "poetics:serve": "node scripts/serve-poetics-browser.mjs",
     "poetics:discursive-replay": "node scripts/replay-discursive-transcript.js",
     "poetics:replay-panel": "node scripts/run-discursive-replay-panel.js",
     "poetics:replay-loop": "node scripts/run-discursive-replay-loop.js",
