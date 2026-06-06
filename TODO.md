@@ -445,7 +445,9 @@ Net: the MVP would likely produce a publishable §6.X with two real findings (re
 
 **Paper integration** — single-paper discipline (`CLAUDE.md` §Paper Authoring Discipline): all empirical claims land in `paper-full-2.0.md` first. No spin-off paper. The report's framing as "the next paper" is rejected; this is a §6.X extension and a §7.X taxonomy table.
 
-### A15. Cross-Dialogue Retrieval-Augmented Adaptation (DESIGN SKETCH — recorded 2026-05-13, gated on A14)
+### A15. Cross-Dialogue Retrieval-Augmented Adaptation (DESIGN SKETCH → HIGH / NEXT BRANCH TARGET 2026-06-06 — A14 gate satisfied; recorded 2026-05-13)
+
+**Priority (2026-06-06): NEXT BRANCH TARGET — HIGH.** A14 (the only gate) closed 2026-05-17 (§6.9.7), so nothing upstream blocks this. Two threads converge on it as the next move: it is the only open item that attacks the multi-turn slope gap, and it is the weight-free rung A18.38 endorses after the §7.9 teacher-as-learner transfer result (5 of 8 held-out scenarios) — retrieval reuses the prior policy text in context rather than compressing a substance-only signal into weights. Target branch `experiment/retrieval-adaptation` (named below). Staged plan and exit gates below are unchanged.
 
 **Origin**: 2026-05-13 conversation on "lightweight training on learner responses, no weight updates." Sits adjacent to A14 but attacks a different time-scale: cross-dialogue memory rather than per-turn evidence binding. The architectural motivation: A14 explicitly does **not** address the multi-turn slope gap (§A14 adaptation-problem assessment) — within-dialogue evidence has no causal path to "response at turn 5 better than at turn 1." A persistent cache of (learner_state_pattern → policy_action → outcome) tuples across dialogues *does* have that causal path: a tutor entering its 5th turn with a new learner can retrieve 4-turn priors from prior learners with similar profiles. Complement to A14, not substitute.
 
