@@ -1,0 +1,169 @@
+meta:
+  schema_version: recursive-tutor-learning-families-v1-underdetermined-transfer
+  created: 2026-06-06
+  status: a18_17_post_freeze_fresh_family
+  protocol: config/recursive-tutor-learning/a18-correctness-gated-protocol.yaml
+  claim_boundary: simulated_teacher_as_learner_not_human_learning
+  notes: >-
+    Fresh third-family candidate authored after the A18.16 correctness-gated
+    protocol freeze. This fixture should be validated before any generation or
+    panel scoring.
+
+families:
+  - family_id: hinge_shadow_priority
+    obstruction_type: competing_visible_cues_with_hinge_shadow
+    local_rule:
+      private_rule: >-
+        In this invented hinge-card notation, a repeated token can carry the
+        final mark only when the small hinge-edge smudge lines up with that
+        token after the card is imagined closing. Pigment match, nearness, and
+        a clean lane can all be tempting, but they are not decisive unless the
+        hinge-edge smudge selects the pocket.
+      public_name: hinge-smudge priority
+    transfer_design:
+      require_underdetermined_public_repairs: true
+      policy_selected_repair: hinge_shadow_test
+      transfer_condition: >-
+        Use the hinge-smudge repair only after the learner reports that pigment,
+        distance, and lane evidence are pulling in different directions. Do not
+        use it as a first move.
+      s0_stop_rule: >-
+        Stop locally if S0 survives or if S0 independently names a hinge-smudge,
+        hinge-edge, folded-card, or smudge-alignment strategy.
+    plausible_repairs:
+      - repair_id: pigment_match_test
+        public_rationale: >-
+          The chosen token shares a visible pigment or stain with the final
+          mark.
+        why_plausible_from_public_stage: >-
+          Pigment matching is salient and easy to compare across the hinge
+          card.
+      - repair_id: nearest_gate_test
+        public_rationale: >-
+          The chosen token sits nearest to the final gate or badge.
+        why_plausible_from_public_stage: >-
+          Nearness looks like a natural route when the final mark sits at one
+          side of the card.
+      - repair_id: lane_continuity_test
+        public_rationale: >-
+          The chosen token lies on the cleanest visible lane to the final mark.
+        why_plausible_from_public_stage: >-
+          Continuous lanes invite path-following as a public rule.
+      - repair_id: hinge_shadow_test
+        public_rationale: >-
+          The chosen token is the pocket selected by the small hinge-edge smudge
+          when the card is treated as a folding object.
+        why_plausible_from_public_stage: >-
+          The smudge could be damage, decoration, or a governing pointer; the
+          learner needs a public test that makes its role explicit.
+    success_criterion: >-
+      On a held-out hinge card, the learner must stop choosing by pigment,
+      nearness, or lane alone and use the hinge-edge smudge to decide which
+      repeated token can carry the final mark.
+    forbidden_shortcuts:
+      - hinge-shadow test
+      - shadow hinge decides
+      - opposite shadow chooses
+      - hinge side is authority
+      - color and lane are decoys
+      - smudge selects the pocket
+    training_seed:
+      seed_id: hinge_train_amber_lower
+      public_setup: >-
+        A folding card has an upper pocket and a lower pocket. The token word
+        navo appears in both pockets. The upper navo is amber like the final
+        stamp and is nearest to it. The lower navo sits on the cleaner silver
+        lane. A tiny grey smudge sits on the hinge edge across from the lower
+        pocket. The final stamp has a black nick on the outer edge. The learner
+        has to say which navo can carry the final stamp.
+      learner_resistance: >-
+        I keep choosing the upper navo because it matches the stamp and is
+        closer. The lower lane is cleaner, and the grey smudge looks like it
+        might matter, but I cannot tell which visible clue is in charge.
+      baseline_tutor_attempt: >-
+        Compare the pigment, the distance, the lane, and the grey mark before
+        choosing the navo with the strongest evidence.
+      learner_followup: >-
+        That still gives me four clues. Amber and close point up; lane and the
+        grey mark pull down.
+      expected_failure: wrong_strategy_family
+    heldout_siblings:
+      - sibling_id: hinge_holdout_teal_inner
+        public_setup: >-
+          A narrow folding card has an outer pocket and an inner pocket. The
+          token word sima appears once in each pocket. The outer sima has a teal
+          stain matching the final badge and sits closest to it. The inner sima
+          lies on the only unbroken white lane. A small grey smudge sits on the
+          hinge edge across from the inner pocket. The final badge has a dark
+          nick on the outer edge. The learner has to choose which sima can
+          support the final badge.
+        learner_resistance: >-
+          I want the outer sima because it is teal like the badge and closest.
+          The clean lane and grey mark make the inner one feel possible, but
+          they do not settle the choice.
+        baseline_tutor_attempt: >-
+          Compare the pigment, distance, lane, and grey mark, then choose the
+          sima with the strongest combined evidence.
+        learner_followup: >-
+          The evidence still splits. Pigment and distance point to the outer
+          sima; lane and the grey mark point to the inner sima.
+        plausible_public_repairs:
+          - pigment_match_test
+          - nearest_gate_test
+          - lane_continuity_test
+          - hinge_shadow_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: hinge_shadow_test
+          target_id: inner_sima
+          target_aliases:
+            - inner sima
+            - inner pocket
+            - grey-marked inner
+          selected_repair_markers:
+            - hinge edge
+            - grey smudge
+            - grey mark
+            - folding card
+          incorrect_target_aliases:
+            - outer sima
+            - outer pocket
+      - sibling_id: hinge_holdout_red_upper
+        public_setup: >-
+          A brass folding card has an upper pocket and a lower pocket. The token
+          word moru appears in both pockets. The lower moru has a red fleck like
+          the final seal and is nearest to it. The upper moru lies on the
+          cleanest black lane. A tiny grey mark sits on the hinge edge across
+          from the upper pocket. The final seal has a dark nick on the outer
+          edge. The learner has to choose which moru can carry the final seal.
+        learner_resistance: >-
+          I want the lower moru because it is red like the seal and closer. The
+          upper lane is cleaner, and the grey mark is there too, but I do not
+          know how to rank those clues.
+        baseline_tutor_attempt: >-
+          Compare the pigment, the distance, the lane, and the grey mark before
+          choosing.
+        learner_followup: >-
+          Red and close pull toward the lower moru; lane and grey mark pull
+          toward the upper one. Comparing does not tell me which clue governs.
+        plausible_public_repairs:
+          - pigment_match_test
+          - nearest_gate_test
+          - lane_continuity_test
+          - hinge_shadow_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: hinge_shadow_test
+          target_id: upper_moru
+          target_aliases:
+            - upper moru
+            - upper pocket
+            - grey-marked upper
+          selected_repair_markers:
+            - hinge edge
+            - grey smudge
+            - grey mark
+            - folding card
+          incorrect_target_aliases:
+            - lower moru
+            - lower pocket
