@@ -171,10 +171,17 @@ function reportPaths(chainDir) {
       .readdirSync(runDir, { withFileTypes: true })
       .filter((reportEntry) => reportEntry.isFile())
       .map((reportEntry) => reportEntry.name)
-      .filter((name) => /^a18\.[0-9]+.*underdetermined-transfer-family.*-report\.json$/.test(name));
+      .filter((name) => isPolicyAblationReportName(name));
     for (const reportName of reports) paths.push(path.join(runDir, reportName));
   }
   return paths.sort();
+}
+
+function isPolicyAblationReportName(name) {
+  return (
+    /^a18\.[0-9]+.*underdetermined-transfer-family.*-report\.json$/.test(name) ||
+    /^a18\.[0-9]+.*fresh-family-frozen-protocol.*-report\.json$/.test(name)
+  );
 }
 
 function policyCorrectnessOverlay(chainDir) {
@@ -709,7 +716,7 @@ export function summarizeContrastScores(outDir, options = {}) {
       return acc;
     }, {}),
     next_stage_rule:
-      'If both A18.9 siblings pass the contrast panel, require a second under-determined transfer family before claiming reliable peripeteia-induced adaptation.',
+      'If all packaged siblings pass the contrast panel, require a pre-registered cross-family replication before claiming reliable peripeteia-induced adaptation.',
   };
 }
 
