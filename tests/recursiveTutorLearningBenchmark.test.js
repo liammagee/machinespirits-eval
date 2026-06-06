@@ -110,3 +110,16 @@ test('underdetermined fixture includes a second non-selector transfer family', (
   assert.equal(family.heldout_siblings.length, 2);
   assert.ok(family.plausible_repairs.some((repair) => repair.repair_id === 'rotation_fit_test'));
 });
+
+test('underdetermined fixture includes the A18.12 less self-solving repair family', () => {
+  const config = loadUnderdeterminedFixture();
+  const family = config.families.find((entry) => entry.family_id === 'bead_predecessor_priority');
+  assert.ok(family);
+  assert.equal(family.transfer_design.policy_selected_repair, 'predecessor_alias_test');
+  assert.equal(family.heldout_siblings.length, 2);
+  assert.ok(family.plausible_repairs.some((repair) => repair.repair_id === 'predecessor_alias_test'));
+  for (const sibling of family.heldout_siblings) {
+    assert.ok(sibling.plausible_public_repairs.includes('color_match_test'));
+    assert.ok(sibling.plausible_public_repairs.includes('predecessor_alias_test'));
+  }
+});

@@ -166,8 +166,13 @@ function reportPaths(chainDir) {
   const paths = [];
   for (const entry of fs.readdirSync(chainDir, { withFileTypes: true })) {
     if (!entry.isDirectory()) continue;
-    const reportPath = path.join(chainDir, entry.name, 'a18.9-underdetermined-transfer-family-report.json');
-    if (fs.existsSync(reportPath)) paths.push(reportPath);
+    const runDir = path.join(chainDir, entry.name);
+    const reports = fs
+      .readdirSync(runDir, { withFileTypes: true })
+      .filter((reportEntry) => reportEntry.isFile())
+      .map((reportEntry) => reportEntry.name)
+      .filter((name) => /^a18\.[0-9]+.*underdetermined-transfer-family.*-report\.json$/.test(name));
+    for (const reportName of reports) paths.push(path.join(runDir, reportName));
   }
   return paths.sort();
 }

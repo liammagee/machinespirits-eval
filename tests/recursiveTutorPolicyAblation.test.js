@@ -304,6 +304,29 @@ test('A18.11 bounded-transfer run ids get distinct report labels', async () => {
   assert.ok(fs.existsSync(path.join(outDir, 'a18.11-second-underdetermined-transfer-family-report.json')));
 });
 
+test('A18.12 bounded-transfer run ids get repair-family report labels', async () => {
+  const { tmp, chainDir, familyId, siblingId } = writeFixture();
+  const outDir = path.join(tmp, 'out-a18-12');
+  const result = await runPolicyAblation({
+    chainDir,
+    familyId,
+    siblingId,
+    outDir,
+    runId: 'a18-12-second-family-repair-test',
+    mock: true,
+    freshS1: true,
+    innerMaxChars: 0,
+    publicMaxChars: 5000,
+    rewriteMode: 'bounded_continuation',
+    boundedMaxAddedLines: 4,
+    policyContrastGate: true,
+    panelPolicy: 'headroom',
+    force: false,
+  });
+  assert.equal(result.report.design.label, 'a18.12_second_underdetermined_transfer_family_repair');
+  assert.ok(fs.existsSync(path.join(outDir, 'a18.12-second-underdetermined-transfer-family-repair-report.json')));
+});
+
 test('explicit experiment label controls report filename', async () => {
   const { tmp, chainDir, familyId, siblingId } = writeFixture();
   const outDir = path.join(tmp, 'out-custom-label');

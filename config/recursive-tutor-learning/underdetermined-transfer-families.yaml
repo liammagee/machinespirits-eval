@@ -258,3 +258,153 @@ families:
           - corridor_path_test
           - rotation_fit_test
         expected_baseline_failure: wrong_strategy_family
+  - family_id: bead_predecessor_priority
+    obstruction_type: competing_visible_cues_with_bead_alias
+    local_rule:
+      private_rule: >-
+        In this invented bead-card notation, the tiny bead count beside the
+        final mark names a local alias row. The token that can carry the final
+        mark is the token whose own bead count is the predecessor of the final
+        count, with one wrapping after four. Color match, nearness, clean
+        corridor, and raw majority count can all be tempting but are not
+        decisive unless the predecessor alias fits. The tutor's repair should
+        construct a temporary four-step bead-order strip in public after the
+        learner reports cue competition; it should not describe the strip as
+        preprinted scene furniture.
+      public_name: bead predecessor priority
+    transfer_design:
+      require_underdetermined_public_repairs: true
+      policy_selected_repair: predecessor_alias_test
+      transfer_condition: >-
+        Use the bead-predecessor repair only after the learner reports that
+        ordinary comparison leaves several visible cues in competition. Do not
+        use it as a first move.
+      repair_public_device: >-
+        The public tutor move should build or draw a temporary four-step bead
+        strip as the new test, then use it to contrast the tempting resemblance
+        cues against the selected local relation.
+      recursive_update_requirement: >-
+        End with a brief tutor commitment that future cards for this learner
+        should first name the defeated cue, then apply the local relation; this
+        makes the teacher-as-learner update public rather than only implicit.
+      s0_stop_rule: >-
+        Stop locally if S0 survives or if S0 independently names a predecessor,
+        wraparound, alias-row, or one-before bead strategy.
+    plausible_repairs:
+      - repair_id: color_match_test
+        public_rationale: >-
+          The chosen token shares a visible color or stain with the final mark.
+        why_plausible_from_public_stage: >-
+          Color matching is salient and easy to compare across the bead card.
+      - repair_id: nearest_slot_test
+        public_rationale: >-
+          The chosen token sits nearest to the final mark or endpoint.
+        why_plausible_from_public_stage: >-
+          Nearness looks like a natural route when a final mark sits at one side
+          of the card.
+      - repair_id: corridor_path_test
+        public_rationale: >-
+          The chosen token lies on the cleanest visible corridor to the final
+          mark.
+        why_plausible_from_public_stage: >-
+          Continuous corridors invite path-following as a public rule.
+      - repair_id: majority_count_test
+        public_rationale: >-
+          The chosen token has the largest or most visually dominant bead count.
+        why_plausible_from_public_stage: >-
+          Repeated bead marks look like scores or weights unless their local
+          role is tested.
+      - repair_id: predecessor_alias_test
+        public_rationale: >-
+          The chosen token has the bead count immediately before the final
+          mark's bead count in the local four-row alias cycle.
+        why_plausible_from_public_stage: >-
+          The bead marks could be decorative, count-like, or locally indexing;
+          the learner needs a test that makes their role public.
+    success_criterion: >-
+      On a held-out bead card, the learner must stop choosing by color,
+      nearness, corridor, or largest count alone and use the local bead-order
+      relation to decide which token can carry the final mark.
+    forbidden_shortcuts:
+      - predecessor alias
+      - one less
+      - wrap after four
+      - bead predecessor
+      - alias row
+      - predecessor count
+      - bead count decides
+      - one-before bead
+      - wraparound
+    training_seed:
+      seed_id: bead_train_amber_right
+      public_setup: >-
+        A small bead card has a left plate and a right plate. The token word
+        tavo appears on both plates. The left tavo is amber like the final seal
+        and sits closest to it. The right tavo sits on the cleaner white
+        corridor. The left tavo has three tiny beads beside it; the right tavo
+        has two tiny beads beside it. The final seal has three tiny beads beside
+        its rim. The learner has to say which tavo can carry the final seal.
+      learner_resistance: >-
+        I keep choosing the left tavo because it is amber like the seal and
+        closer. The right corridor is cleaner, and the little beads add another
+        clue, but I do not know which clue is in charge.
+      baseline_tutor_attempt: >-
+        Compare the two plates, the colors, the distance, the corridor, and the
+        bead marks before choosing.
+      learner_followup: >-
+        I can compare all of that, but it still gives me several possible clues
+        instead of one reason to choose.
+      expected_failure: wrong_strategy_family
+    heldout_siblings:
+      - sibling_id: bead_holdout_blue_upper
+        public_setup: >-
+          A blue-edged bead card has an upper plate and a lower plate. The token
+          word sima appears on both plates. The lower sima is blue like the
+          final square and is nearest to it. The upper sima sits on the cleanest
+          corridor. The lower sima has one tiny bead beside it; the upper sima
+          has four tiny beads beside it. The final square has one tiny bead
+          beside its rim. The learner has to choose which sima can carry the
+          final square.
+        learner_resistance: >-
+          I want the lower sima because it is blue like the square and closer.
+          The upper corridor and the bead marks look relevant, but they do not
+          give me a decision.
+        baseline_tutor_attempt: >-
+          Compare the color, the distance, the corridor, and the bead marks,
+          then choose the sima with the strongest evidence.
+        learner_followup: >-
+          The comparisons split again. Blue and close pull one way; corridor and
+          bead marks make me hesitate.
+        plausible_public_repairs:
+          - color_match_test
+          - nearest_slot_test
+          - corridor_path_test
+          - majority_count_test
+          - predecessor_alias_test
+        expected_baseline_failure: wrong_strategy_family
+      - sibling_id: bead_holdout_gold_middle
+        public_setup: >-
+          A long bead card has left, middle, and right bays. The token word naro
+          appears in all three bays. The left naro is gold like the final badge.
+          The right naro is closest to the badge. The middle naro sits on the
+          clearest corridor. The left naro has one tiny bead beside it, the
+          middle naro has two tiny beads beside it, and the right naro has three
+          tiny beads beside it. The final badge has three tiny beads beside its
+          rim. The learner has to choose which naro can carry the final badge.
+        learner_resistance: >-
+          I want the gold left naro, or maybe the close right naro. The clear
+          middle corridor and all the bead marks give me more things to compare,
+          not a rule.
+        baseline_tutor_attempt: >-
+          Compare color, distance, corridor clarity, and the bead marks before
+          choosing.
+        learner_followup: >-
+          That still feels like a scorecard. Gold, closeness, corridor, and bead
+          marks all point in different directions.
+        plausible_public_repairs:
+          - color_match_test
+          - nearest_slot_test
+          - corridor_path_test
+          - majority_count_test
+          - predecessor_alias_test
+        expected_baseline_failure: wrong_strategy_family

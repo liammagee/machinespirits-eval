@@ -198,6 +198,9 @@ function inferredA18BoundedTransferLabel(args) {
   const labels = [args.runId, path.basename(args.chainDir), path.basename(args.outDir || '')].map((value) =>
     String(value || ''),
   );
+  if (labels.some((value) => /\ba18[.-]?12\b/i.test(value))) {
+    return 'a18.12_second_underdetermined_transfer_family_repair';
+  }
   if (labels.some((value) => /\ba18[.-]?11\b/i.test(value))) {
     return 'a18.11_second_underdetermined_transfer_family';
   }

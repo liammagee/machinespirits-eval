@@ -16,7 +16,11 @@ function writeJson(filePath, value) {
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
 }
 
-function writePairFixture({ s0Status = 'reject', siblingId = 'selector_holdout_blue_lower' } = {}) {
+function writePairFixture({
+  s0Status = 'reject',
+  siblingId = 'selector_holdout_blue_lower',
+  reportName = 'a18.9-underdetermined-transfer-family-report.json',
+} = {}) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'a18-contrast-panel-'));
   const chainDir = path.join(tmp, 'chain');
   const runDir = path.join(chainDir, `a18.9-${siblingId}`);
@@ -69,7 +73,7 @@ function writePairFixture({ s0Status = 'reject', siblingId = 'selector_holdout_b
     material_constraint: 'The tab must be visible in the public transcript.',
     uptake_test: 'The learner uses the tab-marked rail instead of the color match.',
   });
-  writeJson(path.join(runDir, 'a18.9-underdetermined-transfer-family-report.json'), {
+  writeJson(path.join(runDir, reportName), {
     family_id: 'selector_rail_priority',
     sibling_id: siblingId,
     local_verdict: 'policy_memory_local_advantage',
@@ -123,6 +127,23 @@ test('buildContrastPanelPackage blinds S0/S1 arm identity in pair samples', () =
   const key = JSON.parse(fs.readFileSync(path.join(outDir, 'key.json'), 'utf8'));
   assert.ok(['A', 'B'].includes(key.pairs.P01.s1_side));
   assert.notEqual(key.pairs.P01.s1_side, key.pairs.P01.s0_side);
+});
+
+test('buildContrastPanelPackage discovers A18.12 underdetermined repair reports', () => {
+  const { tmp, chainDir } = writePairFixture({
+    reportName: 'a18.12-second-underdetermined-transfer-family-repair-report.json',
+  });
+  const outDir = path.join(tmp, 'panel-a18-12');
+  const result = buildContrastPanelPackage({
+    chainDir,
+    outDir,
+    runId: 'a18-12-panel-test',
+    critics: ['codex'],
+    force: false,
+  });
+
+  assert.equal(result.manifest.pairs.length, 1);
+  assert.ok(fs.existsSync(path.join(outDir, 'pairs', 'P01.txt')));
 });
 
 test('deriveContrastVote requires S1 side, policy-transfer origin, and differential use', () => {
