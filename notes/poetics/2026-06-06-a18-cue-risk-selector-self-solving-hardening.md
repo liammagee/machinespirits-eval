@@ -34,6 +34,13 @@ It flags `selector_like_public_governance_self_solving` when:
 This catches fresh marker-adjacent authority cues that are likely to become S0
 self-solves.
 
+Touched artifacts:
+
+- `scripts/report-recursive-tutor-cue-map-risk.js`
+- `config/recursive-tutor-learning/a18-post-v2-cue-maps.yaml`
+- `tests/recursiveTutorCueMapRisk.test.js`
+- `TODO.md`
+
 ## Calibration
 
 The cue-map sidecar now marks:
@@ -71,6 +78,13 @@ This is the first post-v2 step that demonstrates actual higher-order learning
 in the apparatus: a family that passed the old preflight, then failed locally,
 is now rejected by the updated preflight while prior empirical positives remain
 accepted.
+
+Claim boundary:
+
+- This does not rescue A18.33 as an adaptation result.
+- This does not claim the next constructed-device family will work.
+- It only converts one observed local false negative into a reusable zero-API
+  preflight constraint.
 
 Next families should either require a constructed public device, use a
 non-adjacent selected relation, or be explicitly treated as a replication of a

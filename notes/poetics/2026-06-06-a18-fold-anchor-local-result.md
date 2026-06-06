@@ -18,6 +18,14 @@ Chain:
 
 `exports/recursive-tutor-learning/a18.32-fresh-family-local`
 
+Primary local report artifacts:
+
+- `exports/recursive-tutor-learning/a18.32-fresh-family-local/fold_anchor_priority/a18.33-fold-holdout-blue-local/a18.33-cue-pass-family-local-report.json`
+- `exports/recursive-tutor-learning/a18.32-fresh-family-local/fold_anchor_priority/a18.33-fold-holdout-gold-local/a18.33-cue-pass-family-local-report.json`
+
+Both report artifacts are export outputs and may be gitignored; this note is the
+durable repo-local result summary.
+
 ## Attempt 1
 
 Attempt-1 replay used Claude as generator and `agy` as checker.
@@ -77,6 +85,14 @@ false negative. The gate can distinguish prior positives from the inverse and
 direct-visible-source failures, but it still lets through a selector-like cue
 whose public "marker beside tray" geometry is too easy for S0 to construe as a
 pointer.
+
+Claim boundary:
+
+- This is not evidence of reliable adaptation.
+- This is not a marker-only evaluator miss.
+- It is evidence that the apparatus learned a new local failure class: visible
+  adjacent selector/governance markers can be self-solving before policy memory
+  has any chance to contribute.
 
 ## Next Move
 
