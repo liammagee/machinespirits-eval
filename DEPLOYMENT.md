@@ -8,8 +8,8 @@ anything on a non-localhost interface.
 
 | Thing | What it is | Where it runs | Auth |
 |-------|-----------|---------------|------|
-| **Eval dashboard** — `server.js` (`npm start` → `STANDALONE=true node server.js`) | pilot participant surface, eval DB browser, run launchers | localhost | **none** |
-| **Poetics workbench** — `scripts/browse-poetics-scripts.js` (`npm run poetics:serve`, :3466) | generated-script browser, compose, live sit-in, run launcher | localhost (`127.0.0.1`) | **none** |
+| **Eval dashboard** — `server.js` (`npm start` → `STANDALONE=true node server.js`) | pilot participant surface, eval DB browser, run launchers | localhost (default `127.0.0.1`) | **basic-auth, bind-tied** — open on localhost, required on any public bind |
+| **Poetics workbench** — `scripts/browse-poetics-scripts.js` (`npm run poetics:serve`, :3466) | generated-script browser, compose, live sit-in, run launcher | localhost (`127.0.0.1`) | **basic-auth, bind-tied** — open on localhost, required on any public bind |
 | **The website** — `../machinespirits-website` | Vite + Node app, the actual machinespirits.org | fly.io app `my-website-dtq0ia` (region `lax`, `internal_port 8080`), CI deploy via `.github/workflows/deploy.yml` | **yes** — `AUTH_DB_PATH=/data/lms.sqlite` |
 
 The eval dashboard and the poetics workbench are **internal tools built on a
@@ -46,8 +46,21 @@ has its own isolation requirement before any non-localhost exposure.
 Binding any of this to a public interface puts paid-LLM spend and a job runner
 in front of the entire internet. **Auth (or a network gate) is required before
 any non-localhost deployment.** This is a standing decision (2026-06-04), and
-the tooling is built to honor it (next section). `serve-poetics-browser.mjs`
-pins the host to `127.0.0.1` so the footgun isn't one keystroke away.
+the tooling is built to honor it — `serve-poetics-browser.mjs` pins the host to
+`127.0.0.1` so the footgun isn't one keystroke away.
+
+As of 2026-06-06 that requirement is **enforced in code**, not just by
+convention. Both servers mount the shared guard in `services/httpBasicAuth.js`:
+
+- credentials present → basic-auth is enforced on every request;
+- no credentials + localhost bind → open (frictionless local dev, unchanged);
+- no credentials + **non-local bind → the process refuses to start** (the guard
+  resolver throws before `app.listen`).
+
+So there is no runtime path that exposes a public interface with an open door.
+Credentials come from `POETICS_AUTH_USER`/`POETICS_AUTH_PASS` and
+`EVAL_AUTH_USER`/`EVAL_AUTH_PASS`, each falling back to shared
+`MS_AUTH_USER`/`MS_AUTH_PASS`. Tests: `services/__tests__/httpBasicAuth.test.js`.
 
 ---
 
@@ -92,25 +105,36 @@ the hazard.
 
 ---
 
-## Path B — the live server, public (BLOCKED on auth) ⛔
+## Path B — the live server, public (auth gate landed; deploy is the remaining step) 🟡
 
 Making the live workbench itself reachable at machinespirits.org (so others can
-drive compose / browse traces interactively) is a real option, but it is gated.
-**Do not deploy the live servers publicly until the auth work below lands.**
+drive compose / browse traces interactively) is a real option. **Step 1 (the
+auth prerequisite) shipped 2026-06-06**; what remains is the deploy itself
+(Step 2). Until that is run, no public live URL exists.
 
-### Step 1 — gate the metered + mutating surfaces (prerequisite)
+### Step 1 — gate the metered + mutating surfaces ✅ (DONE)
 
-Pick one (cheapest → most integrated):
+Shipped **option (a), whole-server basic-auth**, bind-tied so it can't be
+forgotten on a public deploy (see "Why these servers are localhost-only" above
+and `services/httpBasicAuth.js`). The guard sits in front of *every* route —
+simpler and safer than gating individual endpoints, since a read-only GET on
+this surface still leaks the eval DB. To run a server authenticated:
 
-- **(a) HTTP basic-auth via env.** Gate `POST /api/jobs`, `/api/compose/live/*`,
-  `/api/jobs/:id/stop` (and `/runs`, `/compose/live` UIs) behind
-  `POETICS_AUTH_USER` / `POETICS_AUTH_PASS`. Read-only GETs can stay open if a
-  public read-only view is wanted. Smallest change; ship first.
-- **(b) Network gate, no in-app auth.** Put the server on a private fly network +
-  Cloudflare Access / Tailscale, so it never faces the open internet. Keeps the
-  code auth-free; moves the gate to infra. Best if the audience is "just us."
-- **(c) Shared identity.** Reuse the website's `AUTH_DB` (`/data/lms.sqlite`) so
-  workbench login == site login. Most work; only worth it for a shared product.
+```bash
+# poetics workbench, public bind, behind basic-auth
+POETICS_AUTH_USER=… POETICS_AUTH_PASS=… \
+  node scripts/browse-poetics-scripts.js --host 0.0.0.0 --port 8080
+
+# eval dashboard, same shape
+EVAL_AUTH_USER=… EVAL_AUTH_PASS=… HOST=0.0.0.0 PORT=8080 STANDALONE=true node server.js
+```
+
+On fly, the credentials are set as app secrets (`fly secrets set …`), never
+baked into the image. Two alternatives were considered and deferred — **(b)** a
+network gate (Cloudflare Access / Tailscale, no in-app auth) and **(c)** shared
+identity via the website's `AUTH_DB` (`/data/lms.sqlite`). Basic-auth is the
+smallest sufficient gate; revisit (b)/(c) only if the audience or product
+requirements change.
 
 ### Step 2 — deploy as its own fly app (do NOT fold into the website container)
 
@@ -136,5 +160,7 @@ the pilot surface public as a side effect.
 - **Local:** `npm run poetics:serve` → `http://127.0.0.1:3466` (canonical, idempotent).
 - **Public static content:** Path A, already live for the arc; safe to extend to
   other read-only snapshots.
-- **Public live workbench:** Path B, blocked until Step-1 auth/network gate lands.
-  No live URL exists or should exist before then.
+- **Public live workbench:** Path B. Step 1 (bind-tied basic-auth) **landed
+  2026-06-06**; a public bind without credentials now refuses to start. The
+  remaining work is Step 2 — packaging each server as its own fly app and
+  running the deploy. No live URL exists until that is done.

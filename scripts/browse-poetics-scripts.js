@@ -13,6 +13,7 @@ import { exec } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import YAML from 'yaml';
 import { openPoeticsStore, upsertPoeticsLabel, upsertPoeticsReviewFlag } from '../services/poeticsStore.js';
+import { resolveBasicAuthGuard } from '../services/httpBasicAuth.js';
 import { classifyPoeticsConsensus, parseCriticFormString } from './lib/poeticsConsensus.js';
 import { ORIGIN_CLASSES, originCounts, recognitionOriginForScoreRow } from './lib/recognitionOrigin.js';
 import { validateTurnPlan } from '../services/ontology/reasoningOntology.js';
@@ -832,9 +833,16 @@ function saveBrowserReviewFlag(db, input) {
   return getItem(db, itemId);
 }
 
-function createPoeticsBrowserApp({ dbPath = null } = {}) {
+function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   const db = openPoeticsStore(dbPath || undefined);
   const app = express();
+  // Basic-auth guard FIRST, before any route. Open on localhost with no creds;
+  // throws (refuses to start) on a public bind without creds — see httpBasicAuth.js.
+  const authGuard = resolveBasicAuthGuard({ prefix: 'POETICS', host, realm: 'machine spirits poetics' });
+  if (authGuard) {
+    app.use(authGuard);
+    console.log('[poetics] basic-auth ENABLED (credentials required)');
+  }
   app.use(express.json({ limit: '64kb' }));
   app.use('/images', express.static(path.resolve(ROOT, 'notes/poetics/images'), { index: false }));
   app.use('/assets', express.static(path.resolve(ROOT, 'notes/poetics/assets'), { index: false }));
@@ -4901,7 +4909,7 @@ function launchUrl(args) {
 
 function main() {
   const args = parseArgs(process.argv.slice(2));
-  const app = createPoeticsBrowserApp({ dbPath: args.dbPath });
+  const app = createPoeticsBrowserApp({ dbPath: args.dbPath, host: args.host });
   const server = app.listen(args.port, args.host, () => {
     const url = launchUrl(args);
     console.log(`poetics script browser: ${url}`);
