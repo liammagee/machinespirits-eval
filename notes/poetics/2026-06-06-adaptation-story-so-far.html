@@ -1,0 +1,502 @@
+<!doctype html>
+<!--
+  Adaptation — A Story So Far. A techne editorial note (the .html IS the source;
+  no build step). Design: assets/techne.css. Behaviour: assets/techne.js.
+  Genre: dated lab-notebook narrative. PROVISIONAL by design — the durable,
+  claim-bearing account lives in docs/research/paper-full-2.0.md and in the
+  /summary synthesis note. This piece narrates and links; it does not originate
+  empirical claims. Live (unpublished) results are flagged as such.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<title>Adaptation — A Story So Far · machine spirits</title>
+<meta name="description" content="A dated lab-notebook narrative of every path tried toward making the tutor adapt — what works, what is a null, and what is still live — anchored on the recursive teacher-as-learner sidecar." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Source+Serif+4:opsz,wght@8..60,200..900&family=JetBrains+Mono:wght@300..700&display=swap" />
+<link rel="stylesheet" href="assets/techne.css" />
+</head>
+
+<body>
+
+<header class="rail" id="rail">
+  <div class="rail__inner">
+    <span class="rail__title">Adaptation · story so far</span>
+    <span class="rail__dot" aria-hidden="true"></span>
+    <nav class="rail__nav" aria-label="Section navigation">
+      <a href="#question">Question</a>
+      <a href="#known">What we knew</a>
+      <a href="#mechanism">Mechanism</a>
+      <a href="#apparatus">Apparatus</a>
+      <a href="#window">The window</a>
+      <a href="#sidecar">The sidecar</a>
+      <a href="#saturation">Saturation</a>
+      <a href="#obstruction">The wall</a>
+      <a href="#scorecard">Scorecard</a>
+      <a href="#threads">Open threads</a>
+    </nav>
+    <div class="rail__actions">
+      <button class="rail__btn" id="themeToggle" type="button">Dark</button>
+    </div>
+  </div>
+  <div class="rail__progress" id="railProgress"></div>
+</header>
+
+<main>
+
+  <section class="hero">
+    <div class="hero__rune"><span>§</span> Story so far · lab notebook · updated 2026-06-06</div>
+    <h1 class="hero__h1">Can a tutor <span class="em">learn</span>? The adaptation arc, so far</h1>
+    <p class="hero__subtitle">Every path we have tried toward making the tutor adapt — what works, what is a null, and what is still live tonight.</p>
+    <div class="hero__lede">
+      <div>
+        <p>This is a travelogue, not a verdict. The <a href="/summary">durable summary</a> and <code>paper-full-2.0.md</code> hold the claims that have earned the right to be stable; this note holds the <em>route</em> — the dead ends, the corrections, the one stubborn question we are still inside of. It is dated and provisional on purpose. Where a result is settled, it is cited to the paper. Where it is still warm from the workbench, it is flagged <span class="chip chip--ochre"><span class="chip__dot"></span> live</span> and you should treat it as a reading, not a finding.</p>
+        <p>The spine of the recent work is a small apparatus we keep calling the <dfn class="gl-term" data-target="glossary">sidecar</dfn>: a zero-cost preflight that decides whether a tutoring scenario could possibly show adaptation <em>before</em> we pay to find out. The story is mostly about what that preflight has taught us by repeatedly being wrong.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="shell">
+
+    <!-- 01 — The question & the genre -->
+    <section class="s" id="question">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">01<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">What "adaptation" even means here</p>
+          <h2 class="s__h">The question, and what would count as <em>yes</em>.</h2>
+          <p>"Adaptation" is an over-loaded word, so the first job is to say what we are <em>not</em> claiming. We are not measuring human learning, not model-weight learning, not a deployed tutor, and not broad curricular transfer. The whole arc lives inside one narrow, honest boundary: <strong>can a simulated tutor, replayed offline, change its teaching move in response to a learner who is genuinely stuck — and can we tell that the change came from something it picked up, rather than from re-stating what the scene already made obvious?</strong></p>
+          <p>The cleanest test we have is a contrast between two runs of the same held-out scene that differ by exactly one thing. <dfn class="gl-term" data-target="glossary">S0</dfn> replays the scene with no memory of any policy. <dfn class="gl-term" data-target="glossary">S1</dfn> replays the same scene with a saved policy injected. If S0 already solves the scene, there was nothing to learn — no <dfn class="gl-term" data-target="glossary">headroom</dfn>. Adaptation only "counts" when S0 fails the held-out sibling and S1 succeeds <em>by way of the registered policy</em> — not by accident, not by re-describing the obvious.</p>
+          <div class="callout">
+            <strong>Claim boundary</strong><br>
+            <code>simulated_teacher_as_learner_not_human_learning</code>. Everything below is about an offline counterfactual instrument. The interesting result is not "the tutor learned" — it is what the instrument keeps revealing about how thin the gap between "could learn" and "already knew" really is.
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--ink"><span class="note__lbl">Genre</span> A story-so-far is allowed to be wrong out loud. The durable account is the paper; this is the notebook that fed it.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 — What we already knew (the durable backdrop) -->
+    <section class="s" id="known">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">02<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The durable backdrop · paper §6.8–6.10</p>
+          <h2 class="s__h">One thing worked. A long row of elaborations <em>didn't</em>.</h2>
+          <p>Before the sidecar, the paper had already run the adaptation question hard and landed somewhere uncomfortable but clear. The honest one-line summary: <strong>the apparatus is the contribution; the elaborations mostly are not.</strong></p>
+
+          <div class="claim">
+            <span class="claim__no">i.</span>
+            <h3 class="claim__h">The adaptive runner moves on trap scenarios <span class="chip chip--moss">works · bounded</span></h3>
+            <div class="claim__body">
+              <p>Replace ordinary 3–5-turn dialogues with <em>trap scenarios</em> — scenes engineered so the obvious move fails — and the LangGraph state-policy tutor (cell_110) produces measurable strategy shifts where the broad slope test saw nothing.</p>
+            </div>
+            <div class="claim__counter">
+              <p>The effect is real but <strong>modest and convention-fragile</strong>. An early "twice as often" reading was a turn-indexing artifact; corrected, it sits at roughly <strong>1.4× cross-suite and null on the original v1 suite</strong>. Do not quote the headline number without the caveat.</p>
+            </div>
+          </div>
+
+          <div class="claim">
+            <span class="claim__no">ii.</span>
+            <h3 class="claim__h">Almost every richer model of the learner <span class="chip chip--brick">null</span></h3>
+            <div class="claim__body">
+              <p>We bolted on increasingly sophisticated machinery and watched each one fail to pay:</p>
+              <ul>
+                <li><strong>Bilateral theory-of-mind</strong> elaboration — no measurable within-family discrimination <span class="cite">§6.8.5</span></li>
+                <li><strong>A richer learner state-schema</strong> — not only no help, an actual <em>reversal</em> (the "state-richness reversal") <span class="cite">§6.8.6</span></li>
+                <li><strong>An evidence-bound hypothesis ledger</strong> (A14) — the validator's binary gain does not survive the graded channel <span class="cite">§6.9.7</span></li>
+                <li><strong>A learned <code>state→action</code> policy lever</strong> — does not pay under the offline kill gate <span class="cite">§6.9.8</span></li>
+                <li><strong>Modelling the concealed interior</strong> (the <em>signal</em> axis) — also does not pay <span class="cite">§6.10</span></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="pq">
+            <p>The lesson was not "adaptation is impossible." It was "adaptation that pays comes from giving the model <em>new signal</em>, not from re-encoding what it already infers."<cite>paper-full-2.0.md · §6.8.8</cite></p>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">Reads as</span> A cascade of nulls is not a sad result — it is a map. It told us exactly which kind of move to stop making.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 — Mechanism findings -->
+    <section class="s" id="mechanism">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">03<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">What actually moves the needle</p>
+          <h2 class="s__h">In-context signal beats a critic beats a state machine.</h2>
+          <p>Three ways of trying to make the tutor adaptive, ranked by what the runs actually showed:</p>
+          <div class="timeline">
+            <div class="timeline-row">
+              <p><span class="when">Best</span></p>
+              <h3>New in-context signal</h3>
+              <p>Hand the model information it did not already have in the scene. Gains here are real because they are not redundant with the model's own inference.</p>
+            </div>
+            <div class="timeline-row">
+              <p><span class="when">Middle</span></p>
+              <h3>An adversarial superego</h3>
+              <p>A critic that genuinely tries to undermine the ego's draft beats an advisory one decisively — and the load-bearing channel is the <strong>prompt-rewrite</strong>, not message-mutation. Advisory critique barely registers; adversarial critique reshapes the move. <span class="chip chip--ochre"><span class="chip__dot"></span> provisional</span></p>
+            </div>
+            <div class="timeline-row">
+              <p><span class="when">Weakest</span></p>
+              <h3>A hand-coded state machine</h3>
+              <p>Programmatic <code>state→action</code> rules were the least effective of the three — they mostly re-encode what the model would infer anyway, which is why the learned-policy lever later failed the offline kill gate too.</p>
+            </div>
+          </div>
+          <p class="note note--ink" style="margin-top:14px"><span class="note__lbl">Throughline</span> Every win is a signal win. Every null is a re-encoding null. The sidecar story below is the same lesson at one more turn of the screw.</p>
+        </div>
+        <div class="mr">
+          <p class="note note--ochre"><span class="note__lbl">Cite</span> Adversarial-superego decisive result is a working finding (notes/poetics); the policy-lever null is durable <span class="cite">§6.9.8</span>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 — The apparatus (A18) -->
+    <section class="s" id="apparatus">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">04<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The recursive teacher-as-learner · A18</p>
+          <h2 class="s__h">An instrument for "did the tutor pick something up?"</h2>
+          <p>The sidecar lives inside a workstream we label <strong>A18</strong>: treat the <em>tutor</em> as the learner. The tutor meets a stuck learner on a training scene, improvises a repair, and we distil that repair into a one-paragraph <dfn class="gl-term" data-target="glossary">policy memory</dfn>. Then we test it on <em>held-out siblings</em> — new scenes from the same hidden rule — under the S0-vs-S1 contrast from §01.</p>
+          <p>The crucial property is that the tutor doing the held-out scene is <strong>blind to the hidden rule</strong>. The replay engine feeds the generator only the public performance of the scene; the rule and the policy live in metadata only the checker sees. So if S1 lands the registered target and S0 does not, the policy actually carried information.</p>
+          <div class="claim">
+            <span class="claim__no">✓</span>
+            <h3 class="claim__h">It has produced genuine positives <span class="chip chip--moss">works · narrow</span></h3>
+            <div class="claim__body">
+              <p>Two hand-built families — a "selector" family and a "bead-predecessor" family — passed a <em>blind contrastive panel</em>. On both bead pairs, five independent critics voted <strong>5/5 that S1's success was policy-transfer</strong>, with <strong>0/5</strong> calling it ordinary public inference and <strong>0/5</strong> preferring S0.</p>
+            </div>
+            <div class="claim__counter">
+              <p>With a material caveat: the second family only cleared once a <strong>policy-correctness gate</strong> was added (A18.13), so that a coherent-but-wrong S0 repair stops counting as headroom. Two families, panel-supported, gate-dependent. That is the high-water mark.</p>
+            </div>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">Cite</span> A18.14 correctness-gated bead panel: <code>notes/poetics/2026-06-06-a18-correctness-gated-bead-panel-result.md</code>.</p>
+          <p class="note note--ink"><span class="note__lbl">Why "sidecar"</span> A18 rides alongside the paper, not inside it — its positives are bounded and not yet folded into §6.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 05 — The window narrows -->
+    <section class="s" id="window">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">05<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Post-v2 fresh families · the failures that taught us</p>
+          <h2 class="s__h">Two ways a fresh scene dies.</h2>
+          <p>Once we tried to <em>replicate</em> the positives with brand-new families, they kept dying — and they died in instructive, repeatable ways.</p>
+          <div class="ev-grid">
+            <article class="ev-card" data-status="risk" data-tags="failure">
+              <span class="chip chip--brick"><span class="chip__dot"></span> Failure class 1</span>
+              <h3>Inverse-rule instability · <code>diagonal_socket</code></h3>
+              <p>The hidden rule was an <em>opposite/completion</em> relation ("same position duplicates; opposite position completes"). The scene made a simpler same-position reading too natural, so on the hard sibling S1 drifted back to the easy reading and chose wrong. The rule was too unstable to survive transfer. <span class="cite">A18.26</span></p>
+            </article>
+            <article class="ev-card" data-status="risk" data-tags="failure">
+              <span class="chip chip--brick"><span class="chip__dot"></span> Failure class 2</span>
+              <h3>Public self-solving · <code>thread_source</code></h3>
+              <p>The hidden rule was stable and usable — but the cue (a visible nub touching the carrier) was so obvious that S0 found it <em>without</em> the policy. Both arms succeeded, so there was no headroom to measure. The scene was too public. <span class="cite">A18.29</span></p>
+            </article>
+          </div>
+          <div class="pq">
+            <p>A useful family must thread a needle: the selected repair must be visible enough for S1 to apply after transfer, yet not so visible that S0 discovers it — stable enough not to collapse into a simpler reading, with a counterexample that makes the old move actually <em>fail</em>.<cite>A18.30 stop-rule synthesis</cite></p>
+          </div>
+          <p>That paragraph is the whole problem in miniature, and it is why the next move was not another scene. It was to stop authoring on intuition and build something that could <em>predict</em> these deaths for free.</p>
+        </div>
+        <div class="mr">
+          <p class="note note--ochre"><span class="note__lbl">Turn</span> The bottleneck was never the scoring rule. It was <em>fixture construction</em> — the human intuition about what makes a good trap.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 06 — The sidecar -->
+    <section class="s" id="sidecar">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">06<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The cue-map preflight · A18.31 → A18.34</p>
+          <h2 class="s__h">A gate that learns from each scene it lets through.</h2>
+          <p>The sidecar is a <strong>zero-API risk reporter</strong>. Each candidate family carries a <em>cue map</em> — an explicit declaration of every public cue, which target each one favours, which relation the policy selects, and what counterexample blocks the obvious reading. The reporter reads that story and refuses to spend on a paid replay unless the design is clean. It started by encoding the two failures above:</p>
+          <ul>
+            <li><code>inverse_rule_instability_risk</code> — inverse relations without a blocking counterexample</li>
+            <li><code>public_self_solving_risk</code> — highly visible selected cues</li>
+            <li><code>target_salience_overload</code>, <code>marker_too_broad</code>, <code>marker_too_narrow</code>, <code>counterexample_missing</code></li>
+          </ul>
+          <p>Then the gate got its real test. A new family, <code>fold_anchor</code>, passed the preflight cleanly — and <em>still</em> failed locally. A blind S0 read a visible marker beside the correct tray as a pointer and solved both held-out scenes without the policy. A third, previously unnamed failure class.</p>
+          <div class="claim">
+            <span class="claim__no">↻</span>
+            <h3 class="claim__h">Higher-order learning, in the instrument itself <span class="chip chip--moss">works</span></h3>
+            <div class="claim__body">
+              <p>We added the class — <code>selector_like_public_governance_self_solving</code> — and hardened the gate so a fresh marker-adjacent authority cue is rejected unless it requires a <em>constructed device</em> or a <em>non-adjacent</em> relation. A family that had passed the old preflight, then failed for real, is now caught by the new one — while the prior empirical positives still pass.</p>
+            </div>
+            <div class="claim__counter">
+              <p>This is the genuinely satisfying part of the arc: the apparatus exhibits the exact thing we are trying to measure in the tutor. It met a failure, named it, and updated its own rule so the failure cannot recur. The gate is learning even when the families are not.</p>
+            </div>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">Cite</span> <code>scripts/report-recursive-tutor-cue-map-risk.js</code>; hardening note <code>2026-06-06-a18-cue-risk-selector-self-solving-hardening.md</code>; fold-anchor result <code>…-a18-fold-anchor-local-result.md</code>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 07 — Saturation (resolved → §7.9) -->
+    <section class="s" id="saturation">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">07<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">A18.35–.37 · saturating the design space <span class="chip chip--moss">resolved → §7.9</span></p>
+          <h2 class="s__h">Twelve fresh families. The static gate can't tell them apart anymore.</h2>
+          <p>The move that opened this stretch was to stop hand-crafting one family at a time and instead <em>saturate</em>: author a battery of twelve fresh constructed-device or non-adjacent families at once, all engineered to clear the hardened gate, then screen them cheaply before spending. That screen only <em>chose where to spend</em>; the paid per-card ablation in §08–§10 turned the spend into the finding — and corrected the screen along the way.</p>
+          <div class="claim">
+            <span class="claim__no">!</span>
+            <h3 class="claim__h">The static gate ran out of discrimination — so the screen moved to a blind proxy <span class="chip chip--moss">confirmed</span></h3>
+            <div class="claim__body">
+              <p>All twelve families passed all three zero-API gates cleanly (protocol validator, benchmark dry-run, cue-risk reporter — 12/12). The static preflight, now well-trained, could no longer separate good designs from bad. The discriminating signal had to come from somewhere cheaper than a paid replay but sharper than the gate: a <strong>blind-S0 proxy</strong> — feed a critic only the public scene and see whether it lands on the registered target with no policy at all. That proxy is a spend-allocation heuristic, not a verdict — and it leans <em>conservative</em>.</p>
+            </div>
+          </div>
+          <p>The blind-S0 screen split the twelve three ways — but the paid ablation that followed showed the screen <strong>over-counts no-headroom by both routes</strong>:</p>
+          <div class="ev-grid">
+            <article class="ev-card" data-status="boundary" data-tags="boundary">
+              <span class="chip chip--ochre"><span class="chip__dot"></span> screen: 6 of 12 · self-solved</span>
+              <h3>Self-solved — on the card the screen saw</h3>
+              <p>Six families were solved by a blind critic with no policy — often by ordinary elimination ("the three cues conflict, pick the leftover"). But the screen reads <em>one representative card per family</em>, and headroom turned out to be <strong>per-card</strong>: when §7.9 went card-by-card, two families the screen had written off — <code>distal_correspondence</code> and <code>constructed_midpoint</code> — each had a fresh sibling with genuine headroom. The screen wasn't wrong about its card; family-level extrapolation was.</p>
+            </article>
+            <article class="ev-card" data-status="boundary" data-tags="boundary">
+              <span class="chip chip--ochre"><span class="chip__dot"></span> screen: 5 of 6 survivors · latent leak</span>
+              <h3>Leak is real — but not for every survivor</h3>
+              <p>The screen warned that survivors share a quiet flaw: the "clean lane" cue parked on the target to make it findable for S1 is also a second self-solve path for S0. The paid replay bore this out for <em>two</em> of the four survivors actually run (<code>blue_lower</code>, <code>teal_pegs</code> leaked — S0 lands on the target with no policy). The other two (<code>gold_lower</code>, <code>plum_posts</code>) held genuine headroom. Leak is one of §7.9's two no-headroom routes — not a property of every survivor.</p>
+            </article>
+            <article class="ev-card" data-status="strong" data-tags="strong">
+              <span class="chip chip--moss"><span class="chip__dot"></span> 2 of 2 · confirmed headroom</span>
+              <h3><code>relational_betweenness</code></h3>
+              <p>The one family with <em>no</em> ordinary cue on the target — a pure-distractor slot, findable only via the relation. The screen's strongest candidate, and the paid ablation confirmed it: both fresh held-out siblings showed headroom (2/2). The relation is what the policy carries.</p>
+            </article>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">Resolved</span> The paid per-card S0/S1 ablation is the verdict — §7.9 reports 5 of 8 fresh held-out cards with headroom across four families, splitting sibling-by-sibling. The blind-S0 screen over-predicts no-headroom by both routes (self-solve and leak); it allocates spend, it does not adjudicate.</p>
+          <p class="note note--ink"><span class="note__lbl">Cite</span> §7.9 of <code>paper-full-2.0.md</code>; artifacts under <code>exports/recursive-tutor-learning/a18.37-survivor-headroom/</code>; mechanism note <code>notes/poetics/2026-06-06-a18-37-per-card-headroom-mechanism.md</code>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 08 — The obstruction -->
+    <section class="s" id="obstruction">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">08<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The shape under all the results</p>
+          <h2 class="s__h">The Meno wall, resolved: the gap is structural, not a thin margin.</h2>
+          <p>Step back from the individual cards and a single structure shows through all of them. For a policy to demonstrate adaptation it must satisfy two conditions at once:</p>
+          <div class="claim">
+            <span class="claim__no">⚖</span>
+            <h3 class="claim__h">The two conditions pull apart per-card — and which side a card lands on is structural <span class="chip chip--moss">resolved</span></h3>
+            <div class="claim__body">
+              <p><strong>Applicable-from-public</strong> — the relation must be computable from the visible scene, or S1 can't apply it after transfer.<br>
+              <strong>Not-discoverable-by-S0</strong> — the same relation must <em>not</em> be findable from that visible scene, or there is no headroom.</p>
+            </div>
+            <div class="claim__counter">
+              <p>The working hypothesis was that with the <em>same</em> strong model on both sides the band between "applicable" and "discoverable" is razor-thin and merely <em>probabilistic</em>. The paid ablation overturns that: the band is <strong>structural card-geometry</strong>. On 5 of 8 held-out cards both conditions hold and the policy wins on a blind, architecture-independent panel; the 3 that fail do so for two nameable reasons — S0 <em>rediscovers</em> the relation, or a surface cue happens to <em>coincide</em> with the target on a leaky card. A k=3 rerun pins the two distal siblings to opposite deterministic extremes (self-solve 3/3 vs 0/3, zero variance) — not a coin-flip.</p>
+            </div>
+          </div>
+          <p><code>relational_betweenness</code> is no longer a thin-margin special case: the blind arbiter finds clean headroom on <em>both</em> its siblings. The earlier worry that "a secret the scene's own logic can derive is not really a secret" — the <dfn class="gl-term" data-target="glossary">Oedipus screen</dfn> — turns out to bite only the <em>self-solve</em> cards; on the <em>leaky</em> cards the relation is derivable yet still no-headroom for the other reason (the shortcut coincides with the answer). The good-target question becomes structural, not probabilistic: a card yields headroom iff a fresh tutor takes a shortcut <em>and</em> that shortcut lands on a decoy rather than the target.</p>
+          <div class="callout">
+            <strong>Failure-to-converge, or convergence with a boundary?</strong><br>
+            Convergence — bounded and mapped. The paid ablation shows real, rerun-stable S0-fails / S1-succeeds headroom on 5 of 8 fresh cards across four families, every elicited family converging on at least one sibling, and the per-card verdict pre-registered and confirmed 4/4 on the survivor wave. It is <em>not</em> an unconditional "fresh families converge": headroom is a per-card structural property, and upstream a second gate decides which relations even reach the test (a relation must <em>misclassify</em> under the old rule, not merely tie — the arithmetic/elimination devices deadlock and never elicit). The honest read: meaningful convergence, with the exact two-stage boundary named — not a thin probabilistic field, and not exhaustive failure.
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--ochre"><span class="note__lbl">Echo</span> Same wall, earlier instrument: the <code>oedipus_screen</code> probe found tutoring "correct-diagnosis" secrets are Meno-derivable — the learner can reason to them.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 09 — Scorecard -->
+    <section class="s" id="scorecard">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">09<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">What works · what doesn't · what's live</p>
+          <h2 class="s__h">The scorecard.</h2>
+          <p>The whole arc, filterable. <span class="muted">Strong = it pays. Boundary = bounded/caveated. Null = it doesn't pay.</span></p>
+          <div class="filters">
+            <button class="filter-btn" data-filter="all" aria-pressed="true" type="button">All</button>
+            <button class="filter-btn" data-filter="strong" aria-pressed="false" type="button">Strong</button>
+            <button class="filter-btn" data-filter="boundary" aria-pressed="false" type="button">Boundary</button>
+            <button class="filter-btn" data-filter="null" aria-pressed="false" type="button">Null</button>
+          </div>
+          <div class="ev-grid" id="evidenceGrid">
+
+            <article class="ev-card" data-status="strong" data-tags="strong">
+              <span class="chip chip--moss"><span class="chip__dot"></span> Works · bounded</span>
+              <h3>Adaptive runner on trap scenarios</h3>
+              <p>Engineered traps surface strategy shifts the broad slope test missed. Real but modest — ~1.4× cross-suite, null on v1, and convention-fragile. <span class="cite">§6.8.3 · §6.8.7</span></p>
+            </article>
+
+            <article class="ev-card" data-status="strong" data-tags="strong">
+              <span class="chip chip--moss"><span class="chip__dot"></span> Works</span>
+              <h3>New in-context signal</h3>
+              <p>The one lever that reliably pays. Gains come from information the model didn't already have, not from re-encoding inference.</p>
+            </article>
+
+            <article class="ev-card" data-status="boundary" data-tags="boundary">
+              <span class="chip chip--ochre"><span class="chip__dot"></span> Works · provisional</span>
+              <h3>Adversarial superego (prompt-rewrite)</h3>
+              <p>Adversarial critique ≫ advisory; the prompt-rewrite channel is load-bearing, message-mutation is not. Working finding, not yet a durable §.</p>
+            </article>
+
+            <article class="ev-card" data-status="strong" data-tags="strong">
+              <span class="chip chip--moss"><span class="chip__dot"></span> Works · narrow</span>
+              <h3>A18 selector + bead families</h3>
+              <p>Two hand-built families pass a blind contrastive panel, 5/5 transfer votes — gate-dependent. The sidecar's positive proof-of-concept. <span class="cite">A18.14</span></p>
+            </article>
+
+            <article class="ev-card" data-status="strong" data-tags="strong">
+              <span class="chip chip--moss"><span class="chip__dot"></span> Works</span>
+              <h3>The cue-map preflight that self-hardens</h3>
+              <p>A zero-cost gate that named three failure classes and updated itself after each — catching designs that used to cost a paid replay to disprove. <span class="cite">A18.31–.34</span></p>
+            </article>
+
+            <article class="ev-card" data-status="risk" data-tags="null">
+              <span class="chip chip--brick"><span class="chip__dot"></span> Null</span>
+              <h3>Broad trajectory adaptation</h3>
+              <p>Adaptation as average turn-by-turn slope across ordinary dialogues did not reliably show. The clean, broad null that started the whole hunt. <span class="cite">§6.3.9</span></p>
+            </article>
+
+            <article class="ev-card" data-status="risk" data-tags="null">
+              <span class="chip chip--brick"><span class="chip__dot"></span> Null</span>
+              <h3>Bilateral theory-of-mind elaboration</h3>
+              <p>No measurable within-family discrimination. A richer mind-model of the learner added nothing. <span class="cite">§6.8.5</span></p>
+            </article>
+
+            <article class="ev-card" data-status="risk" data-tags="null">
+              <span class="chip chip--brick"><span class="chip__dot"></span> Null · reversal</span>
+              <h3>Richer learner state-schema</h3>
+              <p>The "state-richness reversal" — more learner state made it worse, not better. <span class="cite">§6.8.6</span></p>
+            </article>
+
+            <article class="ev-card" data-status="risk" data-tags="null">
+              <span class="chip chip--brick"><span class="chip__dot"></span> Null</span>
+              <h3>Hypothesis ledger &amp; learned-policy lever</h3>
+              <p>The validator's binary gain doesn't survive the graded channel; the <code>state→action</code> lever doesn't pay the offline kill gate. <span class="cite">§6.9.7 · §6.9.8</span></p>
+            </article>
+
+            <article class="ev-card" data-status="risk" data-tags="null">
+              <span class="chip chip--brick"><span class="chip__dot"></span> Null</span>
+              <h3>Modelling the concealed interior</h3>
+              <p>The signal axis — giving the tutor the learner's hidden state — also did not pay under the kill gate. <span class="cite">§6.10</span></p>
+            </article>
+
+            <article class="ev-card" data-status="risk" data-tags="null">
+              <span class="chip chip--brick"><span class="chip__dot"></span> Null</span>
+              <h3>Ontology theory-of-mind feedback layer</h3>
+              <p>Full shared-TBox + per-role ABoxes + DL consistency, built and verified — but adds no lift over plain ontology. Redundant signal. <span class="cite">notes/poetics</span></p>
+            </article>
+
+            <article class="ev-card" data-status="boundary" data-tags="boundary">
+              <span class="chip chip--ochre"><span class="chip__dot"></span> Works · bounded</span>
+              <h3>A18.35–.37 fresh-family replication</h3>
+              <p>Paid ablation done on a blind, architecture-independent panel: 5 of 8 held-out cards show real S0-fails / S1-succeeds headroom across four families; per-card not per-family; rerun-stable at deterministic extremes; survivor verdicts pre-registered and confirmed 4/4. <span class="cite">§7.9 · A18.37</span></p>
+            </article>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10 — Open threads -->
+    <section class="s" id="threads">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">10<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">What's unfinished</p>
+          <h2 class="s__h">Open threads, honestly labelled.</h2>
+          <div class="claim">
+            <span class="claim__no">a.</span>
+            <h3 class="claim__h">The A18.35 convergence verdict <span class="chip chip--moss">settled → §7.9</span></h3>
+            <div class="claim__body"><p>Settled by the paid blind ablation: a fresh positive, bounded. 5 of 8 held-out cards show real S0-fails / S1-succeeds headroom across four families — per-card not per-family, rerun-stable at deterministic extremes, survivor verdicts pre-registered and confirmed 4/4 — gated upstream by an elicitation screen (a relation must misclassify under the old rule, not merely tie). Not exhaustive failure, and not unconditional convergence. Graduated into <code>paper-full-2.0.md</code> §7.9 (v3.0.123).</p></div>
+          </div>
+          <div class="claim">
+            <span class="claim__no">b.</span>
+            <h3 class="claim__h">The adaptation-core ontology <span class="chip chip--ink">built · unwired</span></h3>
+            <div class="claim__body"><p>An opt-in <code>adaptation-core.ttl</code> module — verified 9/9 — formalising adaptation / recognition / correction (correction in three distinct senses). The population bridge from runs into the ontology is not built, so it is scaffolding waiting for a use.</p></div>
+          </div>
+          <div class="claim">
+            <span class="claim__no">c.</span>
+            <h3 class="claim__h">Adaptation Plan 2.0 — model the concealed interior, properly <span class="chip chip--ink">standing ask</span></h3>
+            <div class="claim__body"><p>§6.10 killed the naïve version of "give the tutor the hidden state." Plan 2.0 reframes it around the one signal we genuinely own as ground truth: the learner's <em>hidden deliberation</em> (manifest ≠ latent). It is the standing post-§6.9.8 ask, slated to land as §6.10's successor — and the most principled "new signal" left to try.</p></div>
+          </div>
+          <div class="pq">
+            <p>The arc keeps returning the same answer in new costumes: adaptation pays when it carries new signal, and the hard part is manufacturing signal a strong model doesn't already have.<cite>story so far · 2026-06-06</cite></p>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">Durable home</span> When any live thread settles, it graduates into <code>paper-full-2.0.md</code> and the <a href="/summary">summary</a> — not here.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Glossary -->
+    <section class="s" id="glossary-section">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">·<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Terms</p>
+          <h2 class="s__h">Glossary.</h2>
+          <dl class="glossary" id="glossaryList">
+            <div class="gl-row" data-term="sidecar">
+              <dt>Sidecar <span class="gloss">the cue-map preflight</span></dt>
+              <dd>A zero-API risk reporter that classifies a candidate family's design before any paid replay, refusing to spend unless the scene could plausibly show adaptation. Named because it rides alongside the A18 apparatus.</dd>
+            </div>
+            <div class="gl-row" data-term="s0">
+              <dt>S0 <span class="gloss">no-policy replay</span></dt>
+              <dd>A held-out scene replayed with no policy memory. The control. If S0 already solves the scene, there is no headroom.</dd>
+            </div>
+            <div class="gl-row" data-term="s1">
+              <dt>S1 <span class="gloss">policy replay</span></dt>
+              <dd>The same held-out scene replayed with the saved policy injected. Differs from S0 by exactly one thing — the policy text.</dd>
+            </div>
+            <div class="gl-row" data-term="headroom">
+              <dt>Headroom <span class="gloss">room to learn</span></dt>
+              <dd>The gap that exists only when S0 fails a held-out sibling and S1 succeeds via the registered policy. No gap, no adaptation to measure.</dd>
+            </div>
+            <div class="gl-row" data-term="policy-memory">
+              <dt>Policy memory <span class="gloss">the distilled repair</span></dt>
+              <dd>A one-paragraph distillation of the repair the tutor improvised on the training scene, injected into S1 to test whether it transfers.</dd>
+            </div>
+            <div class="gl-row" data-term="peripeteia">
+              <dt>Peripeteia <span class="gloss">turn / reversal</span></dt>
+              <dd>A reversal in the scene: the old way of proceeding no longer works and a new device or test must come in. The dramatic engine of adaptation.</dd>
+            </div>
+            <div class="gl-row" data-term="oedipus-screen">
+              <dt>Oedipus screen <span class="gloss">derivability test</span></dt>
+              <dd>The check that a hidden answer is not reconstructable from the scene's own public logic. A secret the learner can reason to is not really hidden — so it cannot demonstrate transfer.</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /shell -->
+
+  <footer class="colophon">
+    <p><span class="label">Colophon</span> &nbsp; A story-so-far note — provisional and dated. Durable claims live in <code>docs/research/paper-full-2.0.md</code> and the <a href="/summary">summary</a>. Typeset in Fraunces, Source Serif 4, JetBrains Mono. Design: <code>assets/techne.css</code>. Behaviour: <code>assets/techne.js</code>.</p>
+  </footer>
+
+</main>
+
+<script type="application/json" id="techne-gloss-aliases">
+{ "stuck point": "headroom", "no-policy replay": "s0", "policy replay": "s1", "policy": "policy-memory" }
+</script>
+<script src="assets/techne.js"></script>
+</body>
+</html>
