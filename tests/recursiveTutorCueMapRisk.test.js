@@ -6,6 +6,45 @@ import { reportCueMapRisk } from '../scripts/report-recursive-tutor-cue-map-risk
 const ROOT = path.resolve('.');
 const CUE_MAP = path.join(ROOT, 'config', 'recursive-tutor-learning', 'a18-post-v2-cue-maps.yaml');
 
+test('cue-map reporter passes prior selector-family positive control', () => {
+  const report = reportCueMapRisk({
+    configPath: path.join(ROOT, 'config', 'recursive-tutor-learning', 'underdetermined-transfer-families.yaml'),
+    cueMapPath: CUE_MAP,
+    familyId: 'selector_rail_priority',
+  });
+
+  assert.equal(report.status, 'pass');
+  assert.equal(report.rows.length, 1);
+  assert.equal(report.rows[0].status, 'pass');
+  assert.deepEqual(report.rows[0].issues, []);
+});
+
+test('cue-map reporter passes prior bead-family positive control', () => {
+  const report = reportCueMapRisk({
+    configPath: path.join(ROOT, 'config', 'recursive-tutor-learning', 'underdetermined-transfer-families.yaml'),
+    cueMapPath: CUE_MAP,
+    familyId: 'bead_predecessor_priority',
+  });
+
+  assert.equal(report.status, 'pass');
+  assert.equal(report.rows.length, 1);
+  assert.equal(report.rows[0].status, 'pass');
+  assert.deepEqual(report.rows[0].issues, []);
+});
+
+test('cue-map reporter passes fresh fold-anchor candidate', () => {
+  const report = reportCueMapRisk({
+    configPath: path.join(ROOT, 'config', 'recursive-tutor-learning', 'a18.32-fresh-family-cue-pass.yaml'),
+    cueMapPath: CUE_MAP,
+    familyId: 'fold_anchor_priority',
+  });
+
+  assert.equal(report.status, 'pass');
+  assert.equal(report.rows.length, 1);
+  assert.equal(report.rows[0].status, 'pass');
+  assert.deepEqual(report.rows[0].issues, []);
+});
+
 test('cue-map reporter flags diagonal-socket inverse instability', () => {
   const report = reportCueMapRisk({
     configPath: path.join(ROOT, 'config', 'recursive-tutor-learning', 'a18.25-fresh-family-v2.yaml'),

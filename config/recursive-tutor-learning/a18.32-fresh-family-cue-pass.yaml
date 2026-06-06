@@ -1,0 +1,183 @@
+meta:
+  schema_version: recursive-tutor-learning-families-v1-underdetermined-transfer
+  created: 2026-06-06
+  status: a18_32_post_v2_cue_preflight_family
+  protocol: config/recursive-tutor-learning/a18-panel-vote-rule-v2.yaml
+  claim_boundary: simulated_teacher_as_learner_not_human_learning
+  notes: >-
+    Fresh post-v2 family authored after the A18.31 cue-map risk gate. The
+    selected cue is visible but medium-salience: a folded border nub is present
+    in public text, while anchor/authority vocabulary is held for policy memory.
+    This deliberately follows the successful selector/bead cue-map shape rather
+    than the inverse or self-solving patterns.
+
+families:
+  - family_id: fold_anchor_priority
+    obstruction_type: competing_visible_cues_with_folded_border_nub
+    local_rule:
+      private_rule: >-
+        In this invented fold-card notation, the repeated token that can carry
+        the final tag is the token in the tray governed by the folded border
+        nub. Color match, nearness, clean lane, and the folded nub as mere
+        decoration are all plausible but not decisive unless the fold is used
+        as the tray authority cue.
+      public_name: folded border authority
+    transfer_design:
+      require_underdetermined_public_repairs: true
+      policy_selected_repair: anchor_fold_test
+      transfer_condition: >-
+        Use the anchor-fold repair only after the learner reports that color,
+        nearness, lane, and the folded border nub are competing rather than
+        ranking themselves. Do not use it as a first move.
+      s0_stop_rule: >-
+        Stop locally if S0 survives or if S0 independently names an anchor
+        fold, fold-anchor, frame anchor, authority fold, or anchor-marked tray
+        strategy.
+    plausible_repairs:
+      - repair_id: pigment_match_test
+        public_rationale: >-
+          The chosen token shares a visible color or wash with the final tag.
+        why_plausible_from_public_stage: >-
+          Color matching is salient and easy to compare across the card.
+      - repair_id: nearest_tag_test
+        public_rationale: >-
+          The chosen token sits nearest to the final tag.
+        why_plausible_from_public_stage: >-
+          Nearness looks like a natural rule when the final tag sits near one
+          tray.
+      - repair_id: lane_continuity_test
+        public_rationale: >-
+          The chosen token lies on the cleanest visible lane leading toward the
+          final tag.
+        why_plausible_from_public_stage: >-
+          Continuous lanes invite path-following as a public rule.
+      - repair_id: fold_salience_test
+        public_rationale: >-
+          The chosen token sits near the visible folded nub.
+        why_plausible_from_public_stage: >-
+          The folded nub could be decorative, positional, or a mere emphasis
+          mark unless its authority role is named.
+      - repair_id: anchor_fold_test
+        public_rationale: >-
+          The chosen token sits in the tray governed by the folded border nub.
+        why_plausible_from_public_stage: >-
+          The public card shows a folded border nub, but whether it is
+          decoration, emphasis, or an authority cue is underdetermined until the
+          tutor names the test.
+    success_criterion: >-
+      On a held-out card, the learner must stop choosing by color, nearness, or
+      lane alone and use the folded border cue as the tray authority test.
+    forbidden_shortcuts:
+      - anchor fold
+      - fold anchor
+      - fold-anchor
+      - frame anchor
+      - authority fold
+      - anchor-marked tray
+      - tray authority cue
+    training_seed:
+      seed_id: fold_train_coral_lower
+      public_setup: >-
+        A flat card has an upper tray and a lower tray. The token word mavo
+        appears in both trays. The upper mavo is coral like the final tag and
+        sits closest to it. The lower mavo lies on the only unbroken pale lane.
+        A small folded ivory nub is clipped to the left border beside the lower
+        tray. The learner has to say which mavo can carry the final tag.
+      learner_resistance: >-
+        I keep choosing the upper mavo because it is coral like the tag and
+        closest. The lower lane is cleaner, and that folded nub beside the lower
+        tray looks important, but I do not know how to rank those clues.
+      baseline_tutor_attempt: >-
+        Compare color, distance, lane, and the folded nub, then choose the mavo
+        with the strongest combined evidence.
+      learner_followup: >-
+        That still splits the evidence. Coral and close point upper; lane and
+        the folded nub make the lower mavo feel possible.
+      expected_failure: wrong_strategy_family
+    heldout_siblings:
+      - sibling_id: fold_holdout_blue_upper
+        public_setup: >-
+          A copper card has an upper tray and a lower tray. The token word neri
+          appears in both trays. The lower neri has a blue wash like the final
+          tag and sits nearest to it. The upper neri lies on the cleanest white
+          lane. A small folded brass nub is clipped to the left border beside
+          the upper tray. The learner has to choose which neri can support the
+          final tag.
+        learner_resistance: >-
+          I want the lower neri because it is blue like the tag and closest.
+          The upper lane and the folded nub beside the upper tray make the
+          upper one possible, but they do not settle the choice.
+        baseline_tutor_attempt: >-
+          Compare the color, distance, lane, and folded nub, then choose the
+          neri with the strongest evidence.
+        learner_followup: >-
+          The evidence still splits. Color and distance point lower; lane and
+          the folded nub point upper.
+        plausible_public_repairs:
+          - pigment_match_test
+          - nearest_tag_test
+          - lane_continuity_test
+          - fold_salience_test
+          - anchor_fold_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: anchor_fold_test
+          target_id: upper_neri
+          target_aliases:
+            - upper neri
+            - upper tray
+            - folded-nub upper
+            - folded nub upper
+          selected_repair_markers:
+            - anchor fold
+            - fold anchor
+            - frame anchor
+            - authority fold
+            - anchor-marked tray
+          incorrect_target_aliases:
+            - lower neri
+            - lower tray
+      - sibling_id: fold_holdout_gold_middle
+        public_setup: >-
+          A slate card has left, middle, and right trays. The token word ralo
+          appears in all three trays. The left ralo is gold like the final
+          badge. The right ralo sits closest to the badge. The middle ralo lies
+          on the clearest grey lane. A small folded green nub is clipped to the
+          left border beside the middle tray. The learner has to choose which
+          ralo can carry the final badge.
+        learner_resistance: >-
+          I want the gold left ralo, or maybe the close right ralo. The middle
+          lane and the folded nub beside it give me more things to compare, not
+          a rule.
+        baseline_tutor_attempt: >-
+          Compare color, distance, lane clarity, and the folded nub before
+          choosing.
+        learner_followup: >-
+          That still feels like a scorecard. Gold, closeness, lane, and the
+          folded nub all point in different directions.
+        plausible_public_repairs:
+          - pigment_match_test
+          - nearest_tag_test
+          - lane_continuity_test
+          - fold_salience_test
+          - anchor_fold_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: anchor_fold_test
+          target_id: middle_ralo
+          target_aliases:
+            - middle ralo
+            - middle tray
+            - folded-nub middle
+            - folded nub middle
+          selected_repair_markers:
+            - anchor fold
+            - fold anchor
+            - frame anchor
+            - authority fold
+            - anchor-marked tray
+          incorrect_target_aliases:
+            - left ralo
+            - right ralo
+            - left tray
+            - right tray

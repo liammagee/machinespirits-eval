@@ -6,6 +6,90 @@ meta:
     target salience and selected-repair visibility explicit before replay.
 
 cue_maps:
+  - family_id: fold_anchor_priority
+    selected_relation_type: selector_authority
+    selected_cue:
+      public_visibility: medium
+      description: >-
+        The folded border nub is public, but anchor/authority vocabulary and
+        its governance role are not named in public fields.
+    counterexample:
+      present: true
+      old_check: color_nearness_lane_tally
+      needed: >-
+        Held-out siblings make color, nearness, lane, and folded-nub salience
+        point to different trays, so ordinary comparison remains a scorecard
+        rather than a rule.
+    target_salience:
+      max_competing_cues_against_selected: 2
+      selected_target_supporting_cues: 2
+      notes: >-
+        The selected target has the folded nub plus lane/position support, while
+        rejected targets retain color or nearness support.
+    expected_s0_wrong_move: color_or_nearness_tally
+    expected_s1_correct_move: anchor_fold_authority
+    marker_natural_aliases:
+      - anchor fold
+      - fold anchor
+      - frame anchor
+      - authority fold
+      - anchor-marked tray
+
+  - family_id: selector_rail_priority
+    selected_relation_type: selector_authority
+    selected_cue:
+      public_visibility: medium
+      description: >-
+        The frame tab is public, but its authority over color, nearness, and
+        rail continuity is not named in public fields.
+    counterexample:
+      present: true
+      old_check: color_nearness_path_tally
+      needed: >-
+        Held-out siblings make color, nearness, and path cues point to
+        different rails, so ordinary comparison cannot rank the visible clues.
+    target_salience:
+      max_competing_cues_against_selected: 1
+      selected_target_supporting_cues: 2
+      notes: >-
+        The selected target has the tab cue plus at least one ordinary cue, but
+        the rejected target still has salient color or nearness evidence.
+    expected_s0_wrong_move: color_or_nearness_tally
+    expected_s1_correct_move: selector_tab_authority
+    marker_natural_aliases:
+      - frame tab
+      - outside tab
+      - selector tab
+      - tab-marked rail
+
+  - family_id: bead_predecessor_priority
+    selected_relation_type: local_order_predecessor
+    selected_cue:
+      public_visibility: medium
+      description: >-
+        Bead counts are public, but their predecessor relation in a temporary
+        four-step strip is not visible until the tutor constructs the test.
+    counterexample:
+      present: true
+      old_check: resemblance_or_majority_count
+      needed: >-
+        Held-out siblings make color, nearness, corridor, and raw bead count
+        pull apart, so resemblance/majority counting becomes a scorecard rather
+        than a rule.
+    target_salience:
+      max_competing_cues_against_selected: 1
+      selected_target_supporting_cues: 2
+      notes: >-
+        The selected target has corridor or bead-order support, while tempting
+        rejected targets hold color, nearness, or raw count cues.
+    expected_s0_wrong_move: color_nearness_or_majority_count
+    expected_s1_correct_move: predecessor_alias_relation
+    marker_natural_aliases:
+      - one step before
+      - immediately before
+      - bead strip
+      - predecessor
+
   - family_id: diagonal_socket_priority
     selected_relation_type: inverse_completion
     selected_cue:
