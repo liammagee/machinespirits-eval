@@ -105,6 +105,7 @@
     "poetics:recursive-tutor-gate": "node scripts/report-recursive-tutor-learning-local-gate.js",
     "poetics:recursive-tutor-panel": "node scripts/run-recursive-tutor-learning-panel.js",
     "poetics:recursive-tutor-ablation": "node scripts/run-recursive-tutor-policy-ablation.js",
+    "poetics:recursive-tutor-protocol": "node scripts/validate-recursive-tutor-protocol.js",
     "poetics:recursive-tutor-policy-correctness": "node scripts/report-recursive-tutor-policy-correctness.js",
     "poetics:recursive-tutor-contrast-panel": "node scripts/run-recursive-tutor-policy-contrast-panel.js",
     "poetics:arc-images": "node scripts/generate-poetics-arc-images.js",
