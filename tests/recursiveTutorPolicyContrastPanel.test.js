@@ -26,6 +26,7 @@ function writePairFixture({ s0Status = 'reject', siblingId = 'selector_holdout_b
   fs.mkdirSync(s1Dir, { recursive: true });
   const s0Public = path.join(s0Dir, 'revised-public.txt');
   const s1Public = path.join(s1Dir, 'revised-public.txt');
+  const policyMemory = path.join(runDir, 'policy-revision-template.json');
   fs.writeFileSync(
     s0Public,
     [
@@ -52,6 +53,22 @@ function writePairFixture({ s0Status = 'reject', siblingId = 'selector_holdout_b
     ].join('\n'),
     'utf8',
   );
+  writeJson(policyMemory, {
+    transfer_design: {
+      policy_selected_repair: 'selector_tab_test',
+      transfer_condition: 'Use the selector-tab repair only after comparison leaves several cues in competition.',
+    },
+    plausible_repairs: [
+      {
+        repair_id: 'selector_tab_test',
+        public_rationale: 'The chosen token lies on the rail indicated by a small outside tab.',
+        why_plausible_from_public_stage: 'A frame mark could be decorative, positional, or controlling.',
+      },
+    ],
+    preferred_move: 'Ask which rail the frame tab marks before using color or distance.',
+    material_constraint: 'The tab must be visible in the public transcript.',
+    uptake_test: 'The learner uses the tab-marked rail instead of the color match.',
+  });
   writeJson(path.join(runDir, 'a18.9-underdetermined-transfer-family-report.json'), {
     family_id: 'selector_rail_priority',
     sibling_id: siblingId,
@@ -59,6 +76,7 @@ function writePairFixture({ s0Status = 'reject', siblingId = 'selector_holdout_b
     policy_contrast_gate: {
       verdict: 'policy_distinct',
       distinctiveness: 0.22,
+      policy_memory_path: policyMemory,
     },
     local_arms: {
       S0_no_policy: {
@@ -98,6 +116,8 @@ test('buildContrastPanelPackage blinds S0/S1 arm identity in pair samples', () =
   assert.match(sample, /Transcript A:/);
   assert.match(sample, /Transcript B:/);
   assert.match(sample, /Candidate learned policy under test/);
+  assert.match(sample, /Selected repair: selector_tab_test/);
+  assert.match(sample, /Preferred tutor move:/);
   assert.doesNotMatch(sample, /S0_no_policy|S1_policy_memory|codex|claude/);
 
   const key = JSON.parse(fs.readFileSync(path.join(outDir, 'key.json'), 'utf8'));
@@ -109,7 +129,7 @@ test('deriveContrastVote requires S1 side, policy-transfer origin, and different
   const pairKey = { s1_side: 'B', s0_side: 'A' };
   const positive = deriveContrastVote(
     {
-      selector_policy_side: 'B',
+      selected_policy_side: 'B',
       learner_resistance_addressed_side: 'both',
       winner: 'B',
       differential_policy_use: 4,
@@ -122,7 +142,7 @@ test('deriveContrastVote requires S1 side, policy-transfer origin, and different
 
   const organic = deriveContrastVote(
     {
-      selector_policy_side: 'B',
+      selected_policy_side: 'B',
       learner_resistance_addressed_side: 'B',
       winner: 'B',
       differential_policy_use: 4,
@@ -151,7 +171,7 @@ test('summarizeContrastScores reports pair-level majority transfer pass', () => 
   const mkRow = (critic, supports) => ({
     pair_id: 'P01',
     critic,
-    selector_policy_side: supports ? s1 : s0,
+    selected_policy_side: supports ? s1 : s0,
     learner_resistance_addressed_side: supports ? s1 : s0,
     winner: supports ? s1 : s0,
     origin_class: supports ? 'policy_transfer_like' : 'ordinary_public_inference',
@@ -161,7 +181,7 @@ test('summarizeContrastScores reports pair-level majority transfer pass', () => 
     s0_side: s0,
     supports_policy_memory_transfer: supports,
     raw: {
-      selector_policy_side: supports ? s1 : s0,
+      selected_policy_side: supports ? s1 : s0,
       learner_resistance_addressed_side: supports ? 'both' : s0,
       winner: supports ? s1 : s0,
       origin_class: supports ? 'policy_transfer_like' : 'ordinary_public_inference',

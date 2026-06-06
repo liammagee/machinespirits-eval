@@ -3,7 +3,7 @@
  * A18.10 contrastive blind panel over A18.9 policy-transfer pairs.
  *
  * Critics see anonymous A/B continuations for the same held-out sibling plus the
- * candidate selector policy. They do not see which arm had policy memory.
+ * candidate learned policy. They do not see which arm had policy memory.
  */
 
 import 'dotenv/config';
@@ -185,6 +185,8 @@ function isCleanPair(report, familyId) {
 function pairFromReport(reportPath, familyId, index) {
   const report = readJson(reportPath);
   if (!isCleanPair(report, familyId)) return null;
+  const policyMemoryPath = resolveRepoPath(report.policy_contrast_gate?.policy_memory_path);
+  const policyMemory = policyMemoryPath && fs.existsSync(policyMemoryPath) ? readJson(policyMemoryPath) : null;
   const s1Side = sideForPolicyMemory(report.sibling_id);
   const s0Side = otherSide(s1Side);
   const s0Path = resolveRepoPath(report.local_arms.S0_no_policy.revised_public_path);
@@ -214,6 +216,8 @@ function pairFromReport(reportPath, familyId, index) {
     local_verdict: report.local_verdict,
     policy_contrast_verdict: report.policy_contrast_gate?.verdict || null,
     policy_distinctiveness: report.policy_contrast_gate?.distinctiveness ?? null,
+    policy_memory_path: policyMemoryPath ? rel(policyMemoryPath) : null,
+    policy_brief: candidatePolicyBrief(policyMemory, report),
     s1_side: s1Side,
     s0_side: s0Side,
     sides,
@@ -228,20 +232,53 @@ export function cleanPairsFromChain({ chainDir = DEFAULT_CHAIN_DIR, familyId = '
   return pairs;
 }
 
-function candidatePolicyBrief() {
-  return [
-    'Candidate learned policy under test:',
-    'When ordinary comparison leaves visible rail-card cues in competition, the tutor should stop adding more feature comparisons and use the outside frame tab as the authority selector. The load-bearing move is not simply choosing the right token; it is making the selector-tab criterion public in response to the learner saying comparison is not deciding the case.',
+function cleanLine(value) {
+  return String(value || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function candidatePolicyBrief(policyMemory = null, report = null) {
+  const selectedRepair =
+    policyMemory?.transfer_design?.policy_selected_repair ||
+    report?.policy_contrast_gate?.policy_signature?.strategy_name ||
+    'selected_policy';
+  const selectedRepairRecord = (policyMemory?.plausible_repairs || []).find(
+    (repair) => repair?.repair_id === selectedRepair,
+  );
+  const lines = ['Candidate learned policy under test:', `Selected repair: ${selectedRepair}.`];
+  if (selectedRepairRecord?.public_rationale) {
+    lines.push(`Public rationale: ${cleanLine(selectedRepairRecord.public_rationale)}`);
+  }
+  if (selectedRepairRecord?.why_plausible_from_public_stage) {
+    lines.push(
+      `Why it is not trivial from the public stage: ${cleanLine(selectedRepairRecord.why_plausible_from_public_stage)}`,
+    );
+  }
+  if (policyMemory?.transfer_design?.transfer_condition) {
+    lines.push(`Transfer condition: ${cleanLine(policyMemory.transfer_design.transfer_condition)}`);
+  }
+  if (policyMemory?.preferred_move) {
+    lines.push(`Preferred tutor move: ${cleanLine(policyMemory.preferred_move)}`);
+  }
+  if (policyMemory?.material_constraint) {
+    lines.push(`Material constraint: ${cleanLine(policyMemory.material_constraint)}`);
+  }
+  if (policyMemory?.uptake_test) {
+    lines.push(`Learner uptake test: ${cleanLine(policyMemory.uptake_test)}`);
+  }
+  lines.push(
     '',
-    'A policy-transfer-like continuation should show the tutor taking stock of the failed comparison route, introducing the frame-tab selector as the governing test, and making the learner use that selector rather than color, nearness, or clean path alone.',
-  ].join('\n');
+    'A policy-transfer-like continuation should show the tutor taking stock of the failed comparison route, introducing this selected repair as the governing public test, and making the learner use that repair rather than a different plausible public repair.',
+  );
+  return lines.join('\n');
 }
 
 function renderPairSample(pair) {
   return [
     `# A18.10 Anonymous Contrast Pair ${pair.pair_id}`,
     '',
-    candidatePolicyBrief(),
+    pair.policy_brief,
     '',
     'Transcript A:',
     '```text',
@@ -287,6 +324,7 @@ export function buildContrastPanelPackage(rawArgs) {
       local_verdict: pair.local_verdict,
       policy_contrast_verdict: pair.policy_contrast_verdict,
       policy_distinctiveness: pair.policy_distinctiveness,
+      policy_memory_path: pair.policy_memory_path,
       sides: {
         A: {
           local_status: pair.sides.A.local_status,
@@ -302,6 +340,7 @@ export function buildContrastPanelPackage(rawArgs) {
       family_id: pair.family_id,
       sibling_id: pair.sibling_id,
       source_report_path: pair.source_report_path,
+      policy_memory_path: pair.policy_memory_path,
       s1_side: pair.s1_side,
       s0_side: pair.s0_side,
       sides: {
@@ -335,7 +374,7 @@ export function buildContrastPanelPackage(rawArgs) {
     panel_threshold: args.panelThreshold,
     min_critics: args.minCritics,
     blind_policy:
-      'Critics see anonymous A/B continuations and the candidate selector policy, but not which side had policy memory.',
+      'Critics see anonymous A/B continuations and the candidate learned policy, but not which side had policy memory.',
     pairs: publicPairs,
     key_path: rel(path.join(args.outDir, 'key.json')),
   };
@@ -382,13 +421,13 @@ function clampScore(value) {
 function buildContrastPrompt(pair) {
   return `You are a blind contrastive critic. You see two anonymous public tutor-learner continuations, A and B, for the same kind of held-out task. You do NOT know which side, if either, had access to a prior learned tutor policy. Do not infer model identity or provenance. Score only the public text.
 
-${candidatePolicyBrief()}
+${pair.policy_brief}
 
-Your task is stricter than asking which final answer is right. Decide whether one side textually shows policy-transfer-like selector use: the tutor publicly responds to the learner's comparison failure by changing route to the frame-tab selector policy. Penalize ordinary public-stage inference: if the side could just be following an obvious visible clue without showing a learned-policy-like strategic switch, call that out.
+Your task is stricter than asking which final answer is right. Decide whether one side textually shows policy-transfer-like use of the selected repair: the tutor publicly responds to the learner's comparison failure by changing route to the learned policy's repair rather than another plausible public repair. Penalize ordinary public-stage inference: if the side could just be following an obvious visible clue without showing a learned-policy-like strategic switch, call that out.
 
 Return ONLY JSON:
 {
-  "selector_policy_side": "A|B|both|neither|unclear",
+  "selected_policy_side": "A|B|both|neither|unclear",
   "learner_resistance_addressed_side": "A|B|both|neither|unclear",
   "winner": "A|B|no_difference|both_fail|unclear",
   "differential_policy_use": <integer 1-5>,
@@ -414,7 +453,7 @@ ${pair.sides.B.public_text}
 
 function mockCriticResponse(pair) {
   return {
-    selector_policy_side: pair.s1_side,
+    selected_policy_side: pair.s1_side,
     learner_resistance_addressed_side: pair.s1_side,
     winner: pair.s1_side,
     differential_policy_use: 4,
@@ -427,7 +466,7 @@ function mockCriticResponse(pair) {
 }
 
 export function deriveContrastVote(parsed, pairKey) {
-  const selectorPolicySide = normalizeSide(parsed.selector_policy_side);
+  const selectedPolicySide = normalizeSide(parsed.selected_policy_side ?? parsed.selector_policy_side);
   const learnerResistanceAddressedSide = normalizeSide(parsed.learner_resistance_addressed_side);
   const winner = normalizeSide(parsed.winner);
   const originClass = normalizeOrigin(parsed.origin_class);
@@ -437,7 +476,7 @@ export function deriveContrastVote(parsed, pairKey) {
   const s0Side = pairKey.s0_side;
   const treatsAsEquivalent =
     ['both', 'neither', 'unclear', 'no_difference'].includes(winner) ||
-    ['both', 'neither', 'unclear'].includes(selectorPolicySide) ||
+    ['both', 'neither', 'unclear'].includes(selectedPolicySide) ||
     originClass === 'equivalent';
   const ordinaryPublicInference =
     originClass === 'ordinary_public_inference' ||
@@ -445,14 +484,15 @@ export function deriveContrastVote(parsed, pairKey) {
   const resistanceAddressedByPolicySide =
     learnerResistanceAddressedSide === s1Side || learnerResistanceAddressedSide === 'both';
   const supportsPolicyMemoryTransfer =
-    selectorPolicySide === s1Side &&
+    selectedPolicySide === s1Side &&
     resistanceAddressedByPolicySide &&
     winner === s1Side &&
     originClass === 'policy_transfer_like' &&
     differentialPolicyUse >= 4 &&
     !ordinaryPublicInference;
   return {
-    selector_policy_side: selectorPolicySide,
+    selected_policy_side: selectedPolicySide,
+    selector_policy_side: selectedPolicySide,
     learner_resistance_addressed_side: learnerResistanceAddressedSide,
     winner,
     origin_class: originClass,
@@ -463,7 +503,7 @@ export function deriveContrastVote(parsed, pairKey) {
     supports_policy_memory_transfer: supportsPolicyMemoryTransfer,
     treats_as_equivalent: treatsAsEquivalent,
     ordinary_public_inference: ordinaryPublicInference,
-    s0_preferred: winner === s0Side || selectorPolicySide === s0Side,
+    s0_preferred: winner === s0Side || selectedPolicySide === s0Side,
   };
 }
 
@@ -571,6 +611,7 @@ export function summarizeContrastScores(outDir, options = {}) {
       if (derived.ordinary_public_inference) pair.ordinary_public_inference_votes += 1;
       if (derived.s0_preferred) pair.s0_preferred_votes += 1;
       pair.critics[critic] = {
+        selected_policy_side: derived.selected_policy_side,
         selector_policy_side: derived.selector_policy_side,
         learner_resistance_addressed_side: derived.learner_resistance_addressed_side,
         winner: derived.winner,

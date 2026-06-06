@@ -194,16 +194,23 @@ function safeSlug(value) {
     .slice(0, 140);
 }
 
-function labelLooksLikeA189(args) {
-  return [args.runId, path.basename(args.chainDir), path.basename(args.outDir || '')].some((value) =>
-    /\ba18[.-]?9\b/i.test(String(value || '')),
+function inferredA18BoundedTransferLabel(args) {
+  const labels = [args.runId, path.basename(args.chainDir), path.basename(args.outDir || '')].map((value) =>
+    String(value || ''),
   );
+  if (labels.some((value) => /\ba18[.-]?11\b/i.test(value))) {
+    return 'a18.11_second_underdetermined_transfer_family';
+  }
+  if (labels.some((value) => /\ba18[.-]?9\b/i.test(value))) {
+    return 'a18.9_underdetermined_transfer_family';
+  }
+  return 'a18.8_s0_hard_bounded_transfer';
 }
 
 function inferDesignLabel(args) {
   if (args.experimentLabel) return safeSlug(args.experimentLabel);
   if (args.freshS1 && args.innerMaxChars === 0 && args.rewriteMode === 'bounded_continuation' && args.policyContrastGate) {
-    return labelLooksLikeA189(args) ? 'a18.9_underdetermined_transfer_family' : 'a18.8_s0_hard_bounded_transfer';
+    return inferredA18BoundedTransferLabel(args);
   }
   if (args.freshS1 && args.innerMaxChars === 0) return 'a18.7_restricted_policy_ablation';
   return 'a18.6_policy_ablation';

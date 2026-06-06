@@ -131,3 +131,130 @@ families:
           - rail_path_test
           - selector_tab_test
         expected_baseline_failure: wrong_strategy_family
+  - family_id: notch_rotation_priority
+    obstruction_type: competing_visible_cues_with_orientation_fit
+    local_rule:
+      private_rule: >-
+        In this invented notch-card notation, a token can carry the final mark
+        only when its tiny notch would match the final mark after one clockwise
+        quarter-turn. Color match, nearness, and clean corridor can all be
+        tempting but are not decisive unless the notch orientation fits.
+      public_name: notch rotation priority
+    transfer_design:
+      require_underdetermined_public_repairs: true
+      policy_selected_repair: rotation_fit_test
+      transfer_condition: >-
+        Use the rotation-fit repair only after the learner reports that ordinary
+        comparison leaves several visible cues in competition. Do not use it as
+        a first move.
+      s0_stop_rule: >-
+        Stop locally if S0 survives or if S0 independently names a rotation-fit,
+        quarter-turn, notch-orientation, or clockwise-turn strategy.
+    plausible_repairs:
+      - repair_id: color_match_test
+        public_rationale: >-
+          The chosen token shares a visible color or stain with the final mark.
+        why_plausible_from_public_stage: >-
+          Color matching is salient and easy to compare across the notch card.
+      - repair_id: nearest_slot_test
+        public_rationale: >-
+          The chosen token sits nearest to the final mark or endpoint.
+        why_plausible_from_public_stage: >-
+          Nearness looks like a natural route when a final mark sits at one side
+          of the card.
+      - repair_id: corridor_path_test
+        public_rationale: >-
+          The chosen token lies on the cleanest visible corridor to the final
+          mark.
+        why_plausible_from_public_stage: >-
+          Continuous corridors invite path-following as a public rule.
+      - repair_id: rotation_fit_test
+        public_rationale: >-
+          The chosen token has a notch orientation that fits the final mark after
+          one clockwise quarter-turn.
+        why_plausible_from_public_stage: >-
+          The notches could be decorative, directional, or controlling; the
+          learner needs a test that makes their role public.
+    success_criterion: >-
+      On a held-out notch card, the learner must stop choosing by color,
+      nearness, or corridor alone and use the one-step notch orientation fit to
+      decide which token can carry the final mark.
+    forbidden_shortcuts:
+      - rotation fit
+      - quarter-turn chooses
+      - clockwise turn decides
+      - notch orientation decides
+      - turn the notch
+      - one clockwise turn
+      - orientation fit
+    training_seed:
+      seed_id: notch_train_violet_right
+      public_setup: >-
+        A pale card has a left well and a right well. The token word daro
+        appears in both wells. The left daro is violet like the final seal and
+        is closest to it. The right daro sits on the cleaner silver corridor.
+        The left daro has a tiny notch pointing north; the right daro has a tiny
+        notch pointing west. The final seal has a tiny notch pointing north. The
+        learner has to say which daro can carry the final seal.
+      learner_resistance: >-
+        I keep choosing the left daro because it matches the violet seal and is
+        closer. The right corridor is cleaner, and the little notches add another
+        clue, but I do not know which clue is in charge.
+      baseline_tutor_attempt: >-
+        Compare the two wells, the colors, the distance, the corridor, and the
+        notch marks before choosing.
+      learner_followup: >-
+        I can compare all of that, but it still gives me four possible clues
+        instead of one reason to choose.
+      expected_failure: wrong_strategy_family
+    heldout_siblings:
+      - sibling_id: notch_holdout_green_top
+        public_setup: >-
+          A square notch card has an upper tile and a lower tile. The token word
+          mepo appears on both tiles. The lower mepo is green like the final
+          stamp and is nearest to it. The upper mepo sits on the cleanest
+          corridor. The lower mepo has a tiny notch pointing east; the upper
+          mepo has a tiny notch pointing south. The final stamp has a tiny notch
+          pointing west. The learner has to choose which mepo can carry the
+          final stamp.
+        learner_resistance: >-
+          I want the lower mepo because it is green like the stamp and closer.
+          The upper corridor and the tiny notches look relevant, but they do not
+          give me a decision.
+        baseline_tutor_attempt: >-
+          Compare the color, the distance, the corridor, and the notch marks,
+          then choose the mepo with the strongest evidence.
+        learner_followup: >-
+          The comparisons split again. Green and close pull one way; corridor
+          and notches make me hesitate.
+        plausible_public_repairs:
+          - color_match_test
+          - nearest_slot_test
+          - corridor_path_test
+          - rotation_fit_test
+        expected_baseline_failure: wrong_strategy_family
+      - sibling_id: notch_holdout_red_middle
+        public_setup: >-
+          A long notch card has left, middle, and right bays. The token word luma
+          appears in all three bays. The left luma is red like the final badge.
+          The right luma is closest to the badge. The middle luma sits on the
+          clearest corridor. The left luma has a tiny notch pointing south, the
+          middle luma has a tiny notch pointing north, and the right luma has a
+          tiny notch pointing west. The final badge has a tiny notch pointing
+          east. The learner has to choose which luma can carry the final badge.
+        learner_resistance: >-
+          I want the red left luma, or maybe the close right luma. The clear
+          middle corridor and all the notch marks give me more things to compare,
+          not a rule.
+        baseline_tutor_attempt: >-
+          Compare color, distance, corridor clarity, and the notch marks before
+          choosing.
+        learner_followup: >-
+          That still feels like a scorecard. Red, closeness, corridor, and notch
+          marks all point in different directions.
+        plausible_public_repairs:
+          - color_match_test
+          - nearest_slot_test
+          - corridor_path_test
+          - rotation_fit_test
+        expected_baseline_failure: wrong_strategy_family

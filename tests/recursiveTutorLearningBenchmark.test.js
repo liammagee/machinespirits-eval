@@ -101,3 +101,12 @@ test('materializeAttemptChain preserves family-specific learner followup and tra
   assert.equal(policyTemplate.transfer_design.policy_selected_repair, 'selector_tab_test');
   assert.equal(policyTemplate.plausible_repairs.length, 4);
 });
+
+test('underdetermined fixture includes a second non-selector transfer family', () => {
+  const config = loadUnderdeterminedFixture();
+  const family = config.families.find((entry) => entry.family_id === 'notch_rotation_priority');
+  assert.ok(family);
+  assert.equal(family.transfer_design.policy_selected_repair, 'rotation_fit_test');
+  assert.equal(family.heldout_siblings.length, 2);
+  assert.ok(family.plausible_repairs.some((repair) => repair.repair_id === 'rotation_fit_test'));
+});
