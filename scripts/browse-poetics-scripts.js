@@ -1074,7 +1074,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
     return res.json({ job });
   });
   // GET /summary wraps the raw synthesis note (served at /arc) in a same-origin
-  // iframe beneath the standard workbench rail, so it carries the common nav
+  // iframe beneath the standard scriptorium rail, so it carries the common nav
   // links without fighting the doc's own viewport-anchored chrome. /arc still
   // serves the bare techne doc — it's both the iframe src and a legacy alias for
   // any external/published references to the old path.
@@ -1082,6 +1082,39 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   app.get('/arc', (_req, res) => {
     const notePath = path.resolve(ROOT, 'notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.html');
     if (!fs.existsSync(notePath)) return res.status(404).type('text').send('summary note not found');
+    res.type('html').sendFile(notePath);
+  });
+  // GET /story serves the bare "story so far" techne note (relative assets/*
+  // resolve against /assets, served by the static route above). Unlike the
+  // durable /summary synthesis, this is a dated, provisional lab-notebook
+  // narrative of the adaptation arc — it links to /summary + the paper for the
+  // claims that have earned the right to be stable.
+  app.get('/story', (_req, res) => {
+    const notePath = path.resolve(ROOT, 'notes/poetics/2026-06-06-adaptation-story-so-far.html');
+    if (!fs.existsSync(notePath)) return res.status(404).type('text').send('story-so-far note not found');
+    res.type('html').sendFile(notePath);
+  });
+  // GET /repertoire serves the bare "three instruments, one repertoire" techne
+  // note (relative assets/* resolve against /assets, served by the static route
+  // above). It analyses the three measurement instruments (ontology memory ·
+  // small rhetorical phrasing · large dramatic turns) by grain, then proposes a
+  // repertoire of controlled adaptive mechanisms to exploit the few real wins,
+  // with a filterable gallery of failed & minimally-succeeded adaptation. Like
+  // /story it narrates and links; durable claims live in /summary + the paper.
+  app.get('/repertoire', (_req, res) => {
+    const notePath = path.resolve(ROOT, 'notes/poetics/2026-06-06-controlled-adaptation-repertoire.html');
+    if (!fs.existsSync(notePath)) return res.status(404).type('text').send('repertoire note not found');
+    res.type('html').sendFile(notePath);
+  });
+  // GET /board serves the bare "development board" techne note (relative assets/*
+  // resolve against /assets, served by the static route above). It is a read-only
+  // rendering of TODO.md: the 48 tracked items as a two-axis filterable board
+  // (status × theme), with the 8 open items given detailed treatment and the 40
+  // closed/ruled-out items archived as one-line cards. It originates no claims —
+  // durable results live in /summary + the paper; TODO.md remains the source.
+  app.get('/board', (_req, res) => {
+    const notePath = path.resolve(ROOT, 'notes/poetics/2026-06-06-development-board.html');
+    if (!fs.existsSync(notePath)) return res.status(404).type('text').send('development-board note not found');
     res.type('html').sendFile(notePath);
   });
   app.get('/browse', (_req, res) => res.type('html').send(renderBrowserHtml()));
@@ -1227,7 +1260,7 @@ function escapeHtml(value) {
 }
 
 // Single source of truth for the top-nav items, consumed by railHtml() — which
-// every workbench page renders, including the /summary iframe wrapper. Adding an
+// every scriptorium page renders, including the /summary iframe wrapper. Adding an
 // entry here adds the tab everywhere at once. Each entry is [key, href, label, title].
 const NAV = [
   ['home', '/', 'home', 'Dashboard — overview, live stats &amp; guided first steps'],
@@ -1241,7 +1274,19 @@ const NAV = [
     'summary',
     '/summary',
     'summary',
-    'The synthesis note — the whole dramatic-recognition arc, from the paper to this workbench',
+    'The synthesis note — the whole dramatic-recognition arc, from the paper to this scriptorium',
+  ],
+  [
+    'repertoire',
+    '/repertoire',
+    'repertoire',
+    'Three measurement instruments analysed by grain &amp; a repertoire of controlled adaptive mechanisms — with a gallery of failed &amp; minimally-succeeded adaptation',
+  ],
+  [
+    'board',
+    '/board',
+    'board',
+    'The development board — every tracked item as a filterable status × theme grid: what is open, what is closed, what is ruled out',
   ],
 ];
 
@@ -1271,7 +1316,7 @@ function railHtml({ active = '', brand = 'machine spirits', sub = '', extra = ''
 
 // The summary note is an external techne-framework HTML doc that owns its own
 // viewport-anchored chrome (a fixed TOC sidebar + a sticky section rail).
-// Splicing a workbench strip above it loses the left of the strip under that
+// Splicing a scriptorium strip above it loses the left of the strip under that
 // fixed chrome, so GET /summary instead wraps the raw doc — served at /arc — in
 // a same-origin iframe beneath the standard rail. The doc's fixed sidebar then
 // anchors to the iframe, the rail owns the real top with the common links
@@ -1284,7 +1329,7 @@ body{display:flex;flex-direction:column;overflow:hidden}
 .summaryframe{flex:1 1 auto;width:100%;border:0;display:block;background:var(--paper)}`;
   return `${pageHead({ title: 'Summary · the dramatic-recognition arc', css })}
 <body>
-${railHtml({ active: 'summary', brand: 'machine spirits', sub: 'the synthesis note — the whole dramatic-recognition arc, from the paper to this workbench' })}
+${railHtml({ active: 'summary', brand: 'machine spirits', sub: 'the synthesis note — the whole dramatic-recognition arc, from the paper to this scriptorium' })}
 <iframe id="summaryFrame" class="summaryframe" src="/arc" title="From Paper 2.0 to dramatic recognition — the synthesis note"></iframe>
 <script>
 (function () {
@@ -1500,9 +1545,27 @@ function renderDashboardHtml(stats = {}) {
         ],
         [
           'Summary',
-          'The synthesis note tracing the whole dramatic-recognition arc, from the paper through to this workbench.',
+          'The synthesis note tracing the whole dramatic-recognition arc, from the paper through to this scriptorium.',
           '/summary',
           'read the summary',
+        ],
+        [
+          'Adaptation — story so far',
+          'A dated lab-notebook narrative of every path tried toward making the tutor adapt — what works, what is a null, and what is still live. Provisional by design.',
+          '/story',
+          'read the story so far',
+        ],
+        [
+          'Three instruments — one repertoire',
+          'The ontology memory model, the small-rhetoric scorers &amp; the dramatic-form rubric — what each measured by grain, and how to exploit the few wins into controlled adaptive mechanisms. With a gallery of failed &amp; minimally-succeeded adaptation.',
+          '/repertoire',
+          'read the analysis',
+        ],
+        [
+          'The development board',
+          'A read-only rendering of TODO.md: every tracked item as a filterable status × theme grid. The 8 open items in detail, the 40 closed &amp; ruled-out items archived. Originates no claims — the source stays in TODO.md.',
+          '/board',
+          'open the board',
         ],
       ],
     ],
@@ -1523,7 +1586,7 @@ function renderDashboardHtml(stats = {}) {
   ).join('');
 
   return `${pageHead({
-    title: 'machine spirits · poetics workbench',
+    title: 'machine spirits · poetics scriptorium',
     css: `
 .wrap{ max-width:1080px; margin:0 auto; padding:0 22px 64px; }
 .welcome{ margin:18px 0 0; border:1px solid var(--moss); background:var(--moss-soft); padding:16px 18px; }
@@ -1605,7 +1668,7 @@ ${railHtml({ active: 'home', brand: 'machine spirits', sub: 'a drama-machine for
 
   <div class="welcome" id="welcome" hidden>
     <div class="welcome__k">new here · welcome</div>
-    <h2>First time at the workbench?</h2>
+    <h2>First time at the scriptorium?</h2>
     <p>This is a research instrument that stages tutoring dialogues as <em>drama</em> and reads them the way a literary critic would — for dramatic form, not for what is in anyone's head. You don't need to know the codebase. The five-step tour below walks the whole surface; take it at your own pace.</p>
     <div class="welcome__btns">
       <button class="btn primary" id="welcomeBegin" type="button">begin the tour ↓</button>
@@ -1614,7 +1677,7 @@ ${railHtml({ active: 'home', brand: 'machine spirits', sub: 'a drama-machine for
   </div>
 
   <header class="hero">
-    <div class="hero__k">machine spirits · poetics workbench</div>
+    <div class="hero__k">machine spirits · poetics scriptorium</div>
     <h1>Tutoring, staged as drama.</h1>
     <p>Generate tutoring dialogues that turn on a <em>peripeteia</em> — a reversal of understanding — score them as a literary critic would on dramatic form, and study where recognition does and doesn't cohere. Browse what's been made, compose something new, or replay a single changed move.</p>
     <div class="hero__cta">
@@ -1641,12 +1704,12 @@ ${railHtml({ active: 'home', brand: 'machine spirits', sub: 'a drama-machine for
   </div>
 
   <h2 class="section">Everything, in three acts</h2>
-  <p class="section__sub">The workbench falls into the shape it studies: understand the material, create something new, recognize what changed.</p>
+  <p class="section__sub">The scriptorium falls into the shape it studies: understand the material, create something new, recognize what changed.</p>
   <div class="acts">${actsHtml}</div>
 
   <div class="reflect">
     <div class="reflect__k">applying our own lessons</div>
-    <h3>This workbench is built from the pedagogy it studies.</h3>
+    <h3>This scriptorium is built from the pedagogy it studies.</h3>
     <ul>
       <li><b>Recognition.</b> It greets a first-time visitor and names where they are before instructing — the mutual recognition the tutor is asked to extend the learner.</li>
       <li><b>Scaffolding.</b> The tour is a zone-of-proximal-development ladder: one rung at a time, you set the pace, and you can mark what you already command.</li>
@@ -1654,7 +1717,7 @@ ${railHtml({ active: 'home', brand: 'machine spirits', sub: 'a drama-machine for
     </ul>
   </div>
 
-  <p class="foot">machine spirits · poetics — localhost workbench · read-only dashboard</p>
+  <p class="foot">machine spirits · poetics — localhost scriptorium · read-only dashboard</p>
 </div>
 <script>
 (function(){
@@ -4525,7 +4588,7 @@ function renderEmptyState() {
     : 'No scripts in the corpus yet.';
   const help = hasFilters
     ? 'Loosen a filter, or generate a transcript for this slice.'
-    : 'Generate the first drama transcript to populate the workbench.';
+    : 'Generate the first drama transcript to populate the scriptorium.';
   return '<div class="empty empty--scaffold">' +
     '<p class="empty__lead">' + lead + '</p>' +
     '<p class="empty__help">' + help + '</p>' +

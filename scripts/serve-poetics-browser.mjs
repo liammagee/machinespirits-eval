@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* serve-poetics-browser.mjs — the One True Way to run the poetics workbench.
+/* serve-poetics-browser.mjs — the One True Way to run the poetics scriptorium.
  *
  * Problem this solves: ad-hoc `node scripts/browse-poetics-scripts.js --port NNNN`
  * invocations left several instances on different ports, so "which one has the
@@ -12,7 +12,7 @@
  *   npm run poetics:serve -- --port 3500   # override the canonical port
  *   POETICS_PORT=3500 npm run poetics:serve
  *
- * Host is pinned to 127.0.0.1 on purpose. The workbench exposes UNAUTHENTICATED
+ * Host is pinned to 127.0.0.1 on purpose. The scriptorium exposes UNAUTHENTICATED
  * metered surfaces (POST /api/jobs spawns paid runs; POST /api/compose/live/turn
  * is a paid LLM call per turn) — binding it to a public interface would expose
  * those to anyone. Public exposure goes through the deploy path in DEPLOYMENT.md
