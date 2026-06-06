@@ -138,10 +138,7 @@ function finalizeArgs(rawArgs) {
   if (!Number.isInteger(args.scoreConcurrency) || args.scoreConcurrency < 1) {
     throw new Error('--score-concurrency must be a positive integer');
   }
-  if (
-    args.criticConcurrency !== 'all' &&
-    (!Number.isInteger(args.criticConcurrency) || args.criticConcurrency < 1)
-  ) {
+  if (args.criticConcurrency !== 'all' && (!Number.isInteger(args.criticConcurrency) || args.criticConcurrency < 1)) {
     throw new Error('--critic-concurrency must be a positive integer or "all"');
   }
   if (!Number.isFinite(args.timeoutMs) || args.timeoutMs < 1) throw new Error('--timeout-ms must be positive');
@@ -213,7 +210,12 @@ function inferredA18BoundedTransferLabel(args) {
 
 function inferDesignLabel(args) {
   if (args.experimentLabel) return safeSlug(args.experimentLabel);
-  if (args.freshS1 && args.innerMaxChars === 0 && args.rewriteMode === 'bounded_continuation' && args.policyContrastGate) {
+  if (
+    args.freshS1 &&
+    args.innerMaxChars === 0 &&
+    args.rewriteMode === 'bounded_continuation' &&
+    args.policyContrastGate
+  ) {
     return inferredA18BoundedTransferLabel(args);
   }
   if (args.freshS1 && args.innerMaxChars === 0) return 'a18.7_restricted_policy_ablation';
@@ -265,7 +267,7 @@ function scoreSnapshot(record) {
   return scores;
 }
 
-function findSiblingPolicyCorrectness({ chainDir, plan, familyId, siblingId, sibling }) {
+function findSiblingPolicyCorrectness({ plan, familyId, siblingId, sibling }) {
   if (sibling?.policy_correctness) return cloneJson(sibling.policy_correctness);
   const sourceConfigPath = plan?.source_config ? resolveRepoPath(plan.source_config) : null;
   if (!sourceConfigPath || !fs.existsSync(sourceConfigPath)) return null;
@@ -374,12 +376,7 @@ function recordRevision(record) {
 
 function recordPolicySearchText(record) {
   const revision = recordRevision(record);
-  return [
-    revision ? JSON.stringify(revision) : '',
-    readText(record?.paths?.revisedPublic),
-  ]
-    .join('\n')
-    .toLowerCase();
+  return [revision ? JSON.stringify(revision) : '', readText(record?.paths?.revisedPublic)].join('\n').toLowerCase();
 }
 
 function normalizeSearchText(value) {
@@ -396,6 +393,222 @@ function phraseHits(text, phrases) {
     const normalizedPhrase = normalizeSearchText(phrase);
     return normalizedPhrase && normalizedText.includes(normalizedPhrase);
   });
+}
+
+// --- A18.36 order-insensitive relaxed matching ----------------------------
+// The strict `phraseHits` matcher above requires the registered alias/marker to
+// appear as a contiguous substring. Natural model phrasing inserts function
+// words or reorders ("slot six HAS A neri", "ralo AT slot seven" vs registered
+// "neri in slot six" / "ralo in slot seven"), producing the
+// `lexical_correctness_false_negative` instrument-failure class (A18.35
+// relational_betweenness). The relaxed matchers below are order-insensitive and
+// proximity-bounded so they certify the SAME semantic content in different word
+// order WITHOUT loosening discriminating power: a wrong-slot continuation still
+// fails because the discriminating ordinal is absent. Reported as additive
+// `relaxed_*` fields; the strict verdict is left unchanged for backward compat.
+
+const A18_ORDINAL_NORM = {
+  one: '1',
+  first: '1',
+  two: '2',
+  second: '2',
+  three: '3',
+  third: '3',
+  four: '4',
+  fourth: '4',
+  five: '5',
+  fifth: '5',
+  six: '6',
+  sixth: '6',
+  seven: '7',
+  seventh: '7',
+  eight: '8',
+  eighth: '8',
+  nine: '9',
+  ninth: '9',
+  ten: '10',
+  tenth: '10',
+  eleven: '11',
+  eleventh: '11',
+  twelve: '12',
+  twelfth: '12',
+};
+
+const A18_RELAXED_STOPWORDS = new Set([
+  'a',
+  'an',
+  'the',
+  'of',
+  'in',
+  'on',
+  'at',
+  'to',
+  'by',
+  'for',
+  'with',
+  'and',
+  'or',
+  'that',
+  'this',
+  'is',
+  'are',
+  'was',
+  'were',
+  'be',
+  'been',
+  'it',
+  'its',
+  'as',
+  'so',
+  'then',
+  'there',
+  'here',
+  'has',
+  'have',
+  'had',
+  'sits',
+  'sit',
+  'lies',
+  'lie',
+  'rests',
+  'rest',
+  'into',
+  'where',
+]);
+
+// "bounded region between two named landmarks" lexicon for span/betweenness
+// repairs. Stems are matched against light-stemmed text tokens (below), so
+// "bracketing"/"bracketed"/"brackets" all reduce to "bracket". This set is the
+// single judgement call in the relaxed matcher; it is unit-tested to REJECT the
+// colour/lane S0 arms, which contain none of these words.
+const A18_SPAN_RELATION_STEMS = new Set([
+  'span',
+  'bracket',
+  'section',
+  'flank',
+  'between',
+  'enclos',
+  'enclose',
+  'interval',
+  'midpoint',
+  'inside',
+  'within',
+  'anchor',
+]);
+
+function a18LightStem(token) {
+  if (token.length <= 4) return token; // keep short tokens (tag, stud, six) intact
+  return token.replace(/(ings|ing|ed|es|s)$/u, '');
+}
+
+function a18RelaxedTokens(value) {
+  return normalizeSearchText(value)
+    .split(' ')
+    .filter(Boolean)
+    .map((token) => A18_ORDINAL_NORM[token] || token);
+}
+
+function a18ContentTokens(value) {
+  return a18RelaxedTokens(value).filter((token) => !A18_RELAXED_STOPWORDS.has(token));
+}
+
+function a18IndicesOf(tokens, target) {
+  const out = [];
+  for (let i = 0; i < tokens.length; i += 1) if (tokens[i] === target) out.push(i);
+  return out;
+}
+
+// One relaxed target/alias match. Two shapes:
+//  - slot-anchored ("slot six neri", "ralo in slot seven", "sixth-slot neri"):
+//    require the ordinal ADJACENT to "slot" (the referring bigram, either order)
+//    and every remaining type token within +-3 raw tokens of that anchor. This
+//    rejects cross-clause mentions ("slot six is empty ... the neri at slot two")
+//    while accepting any function-word insertion/reordering of the real referent.
+//  - non-slot ("middle naro"): require all content tokens inside a window of
+//    (content length + 2) raw tokens.
+function a18RelaxedAliasMatch(textTokens, alias) {
+  const content = a18ContentTokens(alias);
+  if (!content.length) return false;
+  const numbers = content.filter((t) => /^[0-9]+$/u.test(t));
+  if (content.includes('slot') && numbers.length === 1) {
+    const num = numbers[0];
+    const typeToks = content.filter((t) => t !== 'slot' && t !== num);
+    // Type token must sit within a same-clause window of the "slot <num>" anchor.
+    // 4 tokens accepts natural referring expressions ("slot six HAS A neri",
+    // "the buff ralo AT slot seven") while rejecting cross-clause mentions where
+    // the type word belongs to a different, more distant noun phrase.
+    const ANCHOR_WINDOW = 4;
+    for (const si of a18IndicesOf(textTokens, 'slot')) {
+      const adjacent = textTokens[si - 1] === num || textTokens[si + 1] === num;
+      if (!adjacent) continue;
+      const ok = typeToks.every((tt) => a18IndicesOf(textTokens, tt).some((j) => Math.abs(j - si) <= ANCHOR_WINDOW));
+      if (ok) return true;
+    }
+    return false;
+  }
+  const win = content.length + 2;
+  for (let start = 0; start <= Math.max(0, textTokens.length - 1); start += 1) {
+    const slice = new Set(textTokens.slice(start, start + win));
+    if (content.every((t) => slice.has(t))) return true;
+  }
+  return false;
+}
+
+export function relaxedAliasHits(text, aliases) {
+  const textTokens = a18RelaxedTokens(text);
+  return [...new Set(aliases || [])].filter((alias) => a18RelaxedAliasMatch(textTokens, alias));
+}
+
+// Relaxed marker matching. A marker is "hit" if EITHER (a) all its stemmed
+// content tokens appear within a raw window of (length + 4) tokens, OR (b) the
+// registered marker set encodes a span/betweenness relation (contains a span
+// lexicon word) and the continuation expresses that relation compositionally:
+// a span word plus every recurring endpoint (e.g. tag, stud) within a 10-token
+// window. (b) is what certifies "the tag-and-stud span settles it" against the
+// registered "span flanked by the tag and the stud".
+export function relaxedMarkerHits(text, markers) {
+  const list = [...new Set(markers || [])];
+  if (!list.length) return [];
+  const textTokens = a18RelaxedTokens(text);
+  const textStems = textTokens.map(a18LightStem);
+  const hits = new Set();
+
+  for (const marker of list) {
+    const content = a18ContentTokens(marker).map(a18LightStem);
+    if (!content.length) continue;
+    const win = content.length + 4;
+    for (let start = 0; start <= Math.max(0, textStems.length - 1); start += 1) {
+      const slice = new Set(textStems.slice(start, start + win));
+      if (content.every((t) => slice.has(t))) {
+        hits.add(marker);
+        break;
+      }
+    }
+  }
+
+  // Span-concept fallback, derived from the registered marker set (not the data).
+  const allMarkerStems = list.flatMap((m) => a18ContentTokens(m).map(a18LightStem));
+  const isSpanRepair = allMarkerStems.some((t) => A18_SPAN_RELATION_STEMS.has(t));
+  if (isSpanRepair) {
+    const endpointCounts = {};
+    for (const stem of allMarkerStems) {
+      if (A18_SPAN_RELATION_STEMS.has(stem)) continue;
+      endpointCounts[stem] = (endpointCounts[stem] || 0) + 1;
+    }
+    const endpoints = Object.keys(endpointCounts).filter((s) => endpointCounts[s] >= 2);
+    if (endpoints.length) {
+      const W = 10;
+      for (let start = 0; start <= Math.max(0, textStems.length - 1); start += 1) {
+        const slice = new Set(textStems.slice(start, start + W));
+        const hasSpanWord = [...slice].some((t) => A18_SPAN_RELATION_STEMS.has(t));
+        if (hasSpanWord && endpoints.every((e) => slice.has(e))) {
+          hits.add('span_concept(tag+stud+span-word)');
+          break;
+        }
+      }
+    }
+  }
+  return [...hits];
 }
 
 function recordPublicContinuationText(record) {
@@ -465,18 +678,40 @@ function analyzePolicyContrast({ policyMemoryPath, s0Record, s1Record, minDistin
   };
 }
 
+function correctnessVerdict(status, targetHits, repairMarkerHits, incorrectTargetHits) {
+  if (status !== 'survivor') return 'not_local_survivor';
+  if (!targetHits.length && incorrectTargetHits.length) return 'wrong_target';
+  if (!targetHits.length) return 'missing_registered_target';
+  if (!repairMarkerHits.length) return 'missing_selected_repair_marker';
+  return 'selected_policy_applied';
+}
+
 function policyCorrectnessForRecord(record, correctness) {
   const status = record?.gate?.status || 'unknown';
   const continuationText = recordPublicContinuationText(record);
+
+  // Strict (contiguous-substring) matching — unchanged, drives `correct`/`verdict`
+  // for backward compatibility with prior runs and existing tests.
   const targetHits = phraseHits(continuationText, correctness?.target_aliases || []);
   const repairMarkerHits = phraseHits(continuationText, correctness?.selected_repair_markers || []);
   const incorrectTargetHits = phraseHits(continuationText, correctness?.incorrect_target_aliases || []);
   const correct = status === 'survivor' && targetHits.length > 0 && repairMarkerHits.length > 0;
-  let verdict = 'selected_policy_applied';
-  if (status !== 'survivor') verdict = 'not_local_survivor';
-  else if (!targetHits.length && incorrectTargetHits.length) verdict = 'wrong_target';
-  else if (!targetHits.length) verdict = 'missing_registered_target';
-  else if (!repairMarkerHits.length) verdict = 'missing_selected_repair_marker';
+  const verdict = correctnessVerdict(status, targetHits, repairMarkerHits, incorrectTargetHits);
+
+  // A18.36 relaxed (order-insensitive, proximity-bounded) matching — additive.
+  // Fixes the `lexical_correctness_false_negative` class without loosening
+  // discriminating power (a wrong-slot continuation still lacks the ordinal).
+  const relaxedTargetHits = relaxedAliasHits(continuationText, correctness?.target_aliases || []);
+  const relaxedRepairMarkerHits = relaxedMarkerHits(continuationText, correctness?.selected_repair_markers || []);
+  const relaxedIncorrectTargetHits = relaxedAliasHits(continuationText, correctness?.incorrect_target_aliases || []);
+  const relaxedCorrect = status === 'survivor' && relaxedTargetHits.length > 0 && relaxedRepairMarkerHits.length > 0;
+  const relaxedVerdict = correctnessVerdict(
+    status,
+    relaxedTargetHits,
+    relaxedRepairMarkerHits,
+    relaxedIncorrectTargetHits,
+  );
+
   return {
     correct,
     verdict,
@@ -485,6 +720,12 @@ function policyCorrectnessForRecord(record, correctness) {
     target_hits: targetHits,
     selected_repair_marker_hits: repairMarkerHits,
     incorrect_target_hits: incorrectTargetHits,
+    relaxed_correct: relaxedCorrect,
+    relaxed_verdict: relaxedVerdict,
+    relaxed_target_hits: relaxedTargetHits,
+    relaxed_selected_repair_marker_hits: relaxedRepairMarkerHits,
+    relaxed_incorrect_target_hits: relaxedIncorrectTargetHits,
+    lexical_false_negative: status === 'survivor' && !correct && relaxedCorrect,
     continuation_excerpt: continuationText.slice(0, 600),
   };
 }
@@ -504,14 +745,21 @@ export function analyzePolicyCorrectness({ policyMemoryPath, sibling, s0Record, 
   const selectedRepairMatches = !correctness.selected_repair || correctness.selected_repair === selectedRepair;
   const s0 = policyCorrectnessForRecord(s0Record, correctness);
   const s1 = policyCorrectnessForRecord(s1Record, correctness);
-  let verdict = 'policy_memory_correctness_advantage';
-  if (!selectedRepairMatches) verdict = 'selected_repair_mismatch';
-  else if (s1.correct && s0.correct) verdict = 'no_policy_correctness_headroom';
-  else if (!s1.correct && s0.correct) verdict = 'control_policy_correctness_advantage';
-  else if (!s1.correct && !s0.correct) verdict = 'no_correct_policy_application';
+  const gateVerdict = (s0Correct, s1Correct) => {
+    if (!selectedRepairMatches) return 'selected_repair_mismatch';
+    if (s1Correct && s0Correct) return 'no_policy_correctness_headroom';
+    if (!s1Correct && s0Correct) return 'control_policy_correctness_advantage';
+    if (!s1Correct && !s0Correct) return 'no_correct_policy_application';
+    return 'policy_memory_correctness_advantage';
+  };
+  const verdict = gateVerdict(s0.correct, s1.correct);
+  const relaxedVerdict = gateVerdict(s0.relaxed_correct, s1.relaxed_correct);
   return {
     enabled: true,
     verdict,
+    relaxed_verdict: relaxedVerdict,
+    lexical_false_negative_corrected:
+      verdict === 'no_correct_policy_application' && relaxedVerdict === 'policy_memory_correctness_advantage',
     selected_repair: selectedRepair,
     registered_selected_repair: correctness.selected_repair || null,
     selected_repair_matches: selectedRepairMatches,
@@ -560,7 +808,8 @@ export function buildAblationPlan({
 } = {}) {
   const plan = readJson(path.join(chainDir, 'attempt-chain-plan.json'));
   const localGatePath = path.join(chainDir, 'local-gate-report.json');
-  if (requireLocalGate && !fs.existsSync(localGatePath)) throw new Error(`local gate report not found: ${localGatePath}`);
+  if (requireLocalGate && !fs.existsSync(localGatePath))
+    throw new Error(`local gate report not found: ${localGatePath}`);
   const localGate = fs.existsSync(localGatePath) ? readJson(localGatePath) : { families: [] };
   const priorPanelPath = path.join(chainDir, 'a18.5-panel', 'a18.5-panel-report.json');
   const priorPanel = fs.existsSync(priorPanelPath) ? readJson(priorPanelPath) : null;
@@ -576,12 +825,19 @@ export function buildAblationPlan({
     family,
     sibling: {
       ...sibling,
-      policy_correctness: findSiblingPolicyCorrectness({ chainDir, plan, familyId, siblingId: sibling.sibling_id, sibling }),
+      policy_correctness: findSiblingPolicyCorrectness({
+        chainDir,
+        plan,
+        familyId,
+        siblingId: sibling.sibling_id,
+        sibling,
+      }),
     },
     localFamily,
     priorPanelFamily,
     paths: {
-      transcript: family.heldout.find((entry) => entry.sibling_id === sibling.sibling_id)?.transcript || sibling.transcript,
+      transcript:
+        family.heldout.find((entry) => entry.sibling_id === sibling.sibling_id)?.transcript || sibling.transcript,
       policyMemory: family.policy_revision_template,
       s1Manifest: s1ManifestPath && fs.existsSync(s1ManifestPath) ? s1ManifestPath : null,
       priorPanel: priorPanelPath,
@@ -638,8 +894,12 @@ function materializeAblationReplayBundle({ outDir, familyId, siblingId, s0Record
 function runScoreJob(job) {
   return new Promise((resolve) => {
     const child = spawn(job.cmd[0], job.cmd.slice(1), { cwd: ROOT, stdio: 'inherit' });
-    child.on('error', (error) => resolve({ critic: job.critic, outPath: job.outPath, status: 'failed', error: error.message }));
-    child.on('close', (code) => resolve({ critic: job.critic, outPath: job.outPath, status: code === 0 ? 'ok' : 'failed', exitCode: code }));
+    child.on('error', (error) =>
+      resolve({ critic: job.critic, outPath: job.outPath, status: 'failed', error: error.message }),
+    );
+    child.on('close', (code) =>
+      resolve({ critic: job.critic, outPath: job.outPath, status: code === 0 ? 'ok' : 'failed', exitCode: code }),
+    );
   });
 }
 
@@ -650,7 +910,9 @@ async function runScoreCommands(commands, criticConcurrency = commands.length) {
   );
   const results = new Array(commands.length);
   let next = 0;
-  console.log(`Scoring ${commands.length} A18 policy-ablation critic${commands.length === 1 ? '' : 's'} with concurrency ${workerCount}...`);
+  console.log(
+    `Scoring ${commands.length} A18 policy-ablation critic${commands.length === 1 ? '' : 's'} with concurrency ${workerCount}...`,
+  );
   const workers = Array.from({ length: workerCount }, async () => {
     while (next < commands.length) {
       const index = next++;
@@ -660,7 +922,9 @@ async function runScoreCommands(commands, criticConcurrency = commands.length) {
   await Promise.all(workers);
   const failures = results.filter((result) => result?.status === 'failed');
   if (failures.length) {
-    throw new Error(`score job failures: ${failures.map((failure) => `${failure.critic}:${failure.exitCode ?? failure.error}`).join(', ')}`);
+    throw new Error(
+      `score job failures: ${failures.map((failure) => `${failure.critic}:${failure.exitCode ?? failure.error}`).join(', ')}`,
+    );
   }
   return results;
 }
@@ -669,7 +933,9 @@ function summarizePanelArms(panelSummary) {
   if (!panelSummary) return {};
   const arms = {};
   for (const item of panelSummary.items || []) {
-    const arm = String(item.sourceItemId || '').split('::').pop();
+    const arm = String(item.sourceItemId || '')
+      .split('::')
+      .pop();
     arms[arm] = {
       panel_status: item.status,
       passes: item.passes,
@@ -798,8 +1064,7 @@ export async function runPolicyAblation(rawArgs = process.argv.slice(2)) {
     S1_policy_memory: args.freshS1
       ? 'fresh held-out rewrite with attempt-1 learned policy memory'
       : 'existing held-out rewrite with attempt-1 learned policy memory',
-    decisive_read:
-      'S1 passes while S0 fails supports policy-memory contribution; both passing means no headroom.',
+    decisive_read: 'S1 passes while S0 fails supports policy-memory contribution; both passing means no headroom.',
   };
 
   let panelSummary = null;
@@ -832,8 +1097,7 @@ export async function runPolicyAblation(rawArgs = process.argv.slice(2)) {
         minDistinctiveness: args.minPolicyDistinctiveness,
       });
     }
-    const policyGateAllowsPanel =
-      !args.policyContrastGate || policyContrastGate.verdict === 'policy_distinct';
+    const policyGateAllowsPanel = !args.policyContrastGate || policyContrastGate.verdict === 'policy_distinct';
     const policyCorrectnessAllowsPanel =
       !policyCorrectnessGate.enabled || policyCorrectnessGate.verdict === 'policy_memory_correctness_advantage';
     const shouldPanel =
@@ -842,7 +1106,14 @@ export async function runPolicyAblation(rawArgs = process.argv.slice(2)) {
       (args.panelPolicy === 'always' || localHeadroomForPanel(provisionalEffectiveLocalVerdict)) &&
       policyGateAllowsPanel &&
       policyCorrectnessAllowsPanel;
-    replayBundle = materializeAblationReplayBundle({ outDir: args.outDir, familyId, siblingId, s0Record, s1Record, design });
+    replayBundle = materializeAblationReplayBundle({
+      outDir: args.outDir,
+      familyId,
+      siblingId,
+      s0Record,
+      s1Record,
+      design,
+    });
     if (shouldPanel) {
       const panelDir = path.join(args.outDir, 'panel');
       const packageArgs = {
@@ -858,7 +1129,10 @@ export async function runPolicyAblation(rawArgs = process.argv.slice(2)) {
       };
       if (args.critics) packageArgs.critics = args.critics;
       packaged = buildReplayPanelPackage(packageArgs);
-      scoreResults = await runScoreCommands(packaged.scoreCommands, packaged.manifest.criticConcurrency || args.criticConcurrency);
+      scoreResults = await runScoreCommands(
+        packaged.scoreCommands,
+        packaged.manifest.criticConcurrency || args.criticConcurrency,
+      );
       panelSummary = summarizePanelScores(panelDir, {
         panelThreshold: args.panelThreshold,
         originThreshold: args.originThreshold,
@@ -911,21 +1185,23 @@ export async function runPolicyAblation(rawArgs = process.argv.slice(2)) {
         ? null
         : args.skipPanel
           ? 'skip_panel_arg'
-        : args.panelPolicy === 'never'
-          ? 'panel_policy_never'
-        : args.policyContrastGate && policyContrastGate.verdict !== 'policy_distinct'
-          ? `policy_contrast_gate:${policyContrastGate.verdict}`
-        : policyCorrectnessGate.enabled && policyCorrectnessGate.verdict !== 'policy_memory_correctness_advantage'
-          ? `policy_correctness_gate:${policyCorrectnessGate.verdict}`
-        : args.panelPolicy === 'headroom'
-            ? `no_local_headroom:${effectiveVerdict}`
-            : null,
+          : args.panelPolicy === 'never'
+            ? 'panel_policy_never'
+            : args.policyContrastGate && policyContrastGate.verdict !== 'policy_distinct'
+              ? `policy_contrast_gate:${policyContrastGate.verdict}`
+              : policyCorrectnessGate.enabled && policyCorrectnessGate.verdict !== 'policy_memory_correctness_advantage'
+                ? `policy_correctness_gate:${policyCorrectnessGate.verdict}`
+                : args.panelPolicy === 'headroom'
+                  ? `no_local_headroom:${effectiveVerdict}`
+                  : null,
     score_results: scoreResults,
     replay_bundle_dir: replayBundle ? rel(replayBundle.replayDir) : null,
     panel_dir: packaged ? rel(packaged.outDir) : null,
     held_back: {
-      glyph_tail_owner: 'near-miss diagnostic: recognition survived but origin attribution failed in A18.5; repair target is public tutor stock-taking contrast.',
-      peg_lane_modifier: 'held back: attempt-1 old-warrant misclassification was too implicit; do not panel until public touch-rule failure is explicit.',
+      glyph_tail_owner:
+        'near-miss diagnostic: recognition survived but origin attribution failed in A18.5; repair target is public tutor stock-taking contrast.',
+      peg_lane_modifier:
+        'held back: attempt-1 old-warrant misclassification was too implicit; do not panel until public touch-rule failure is explicit.',
     },
   };
   if (!args.dryRun) {
