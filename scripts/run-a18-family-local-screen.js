@@ -157,6 +157,14 @@ function ablateSibling(chainDir, familyId, siblingId, args) {
       '--bounded-continuation',
       '--bounded-max-added-lines',
       '6',
+      // inner-max-chars 0 is load-bearing: it strips ALL inner/deliberation
+      // content from both S0 and S1 arms (the "hard bounded transfer" config),
+      // and is the flag that selects the a18.8_s0_hard_bounded_transfer design
+      // label -> the a18.8-…-report.json name this orchestrator reads. Omitting
+      // it both ran a weaker, non-comparable config and mis-named the report.
+      // Matches the relational_betweenness convergence run exactly (A18.36).
+      '--inner-max-chars',
+      '0',
       '--public-max-chars',
       '30000',
       '--policy-memory-max-chars',
