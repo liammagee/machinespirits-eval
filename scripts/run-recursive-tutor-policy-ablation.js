@@ -29,7 +29,9 @@ function usage() {
     [--run-id a18-policy-ablation-window]
     [--generator codex] [--checker claude] [--codex-effort medium]
     [--fresh-s1] [--inner-max-chars N] [--public-max-chars N]
+    [--rewrite-mode full|bounded_continuation] [--bounded-max-added-lines N]
     [--policy-memory-max-chars N]
+    [--policy-contrast-gate] [--min-policy-distinctiveness N]
     [--panel-policy always|headroom|never]
     [--critics qwen/qwen3.7-max,google/gemini-3.5-flash,...]
     [--critic-concurrency N|all] [--score-concurrency N]
@@ -39,7 +41,9 @@ function usage() {
 S0 is a fresh held-out rewrite without --policy-memory. By default S1 is the
 existing policy-memory held-out replay. Pass --fresh-s1 --inner-max-chars 0
 --panel-policy headroom for A18.7: both arms are fresh, held-out inner metadata is
-withheld, and panel spending happens only when S1 has local headroom over S0.`;
+withheld, and panel spending happens only when S1 has local headroom over S0.
+For A18.8, add --rewrite-mode bounded_continuation --policy-contrast-gate
+--skip-panel for a local-only S0-hard bounded-transfer screen.`;
 }
 
 function defaultArgs() {
@@ -54,9 +58,13 @@ function defaultArgs() {
     codexEffort: 'medium',
     timeoutMs: 600_000,
     freshS1: false,
+    rewriteMode: 'full',
+    boundedMaxAddedLines: 6,
     innerMaxChars: 18_000,
     publicMaxChars: 30_000,
     policyMemoryMaxChars: 18_000,
+    policyContrastGate: false,
+    minPolicyDistinctiveness: 0.12,
     panelPolicy: 'always',
     critics: null,
     criticConcurrency: 'all',
@@ -87,9 +95,14 @@ export function parseArgs(argv = process.argv.slice(2)) {
     else if (token === '--codex-effort') args.codexEffort = argv[++i];
     else if (token === '--timeout-ms') args.timeoutMs = Number(argv[++i]);
     else if (token === '--fresh-s1') args.freshS1 = true;
+    else if (token === '--rewrite-mode') args.rewriteMode = argv[++i];
+    else if (token === '--bounded-continuation') args.rewriteMode = 'bounded_continuation';
+    else if (token === '--bounded-max-added-lines') args.boundedMaxAddedLines = Number(argv[++i]);
     else if (token === '--inner-max-chars') args.innerMaxChars = Number(argv[++i]);
     else if (token === '--public-max-chars') args.publicMaxChars = Number(argv[++i]);
     else if (token === '--policy-memory-max-chars') args.policyMemoryMaxChars = Number(argv[++i]);
+    else if (token === '--policy-contrast-gate') args.policyContrastGate = true;
+    else if (token === '--min-policy-distinctiveness') args.minPolicyDistinctiveness = Number(argv[++i]);
     else if (token === '--panel-policy') args.panelPolicy = argv[++i];
     else if (token === '--critics') args.critics = splitCsv(argv[++i]);
     else if (token === '--critic-concurrency') {
@@ -128,6 +141,12 @@ function finalizeArgs(rawArgs) {
     throw new Error('--critic-concurrency must be a positive integer or "all"');
   }
   if (!Number.isFinite(args.timeoutMs) || args.timeoutMs < 1) throw new Error('--timeout-ms must be positive');
+  if (!['full', 'bounded_continuation'].includes(args.rewriteMode)) {
+    throw new Error('--rewrite-mode must be full|bounded_continuation');
+  }
+  if (!Number.isInteger(args.boundedMaxAddedLines) || args.boundedMaxAddedLines < 1) {
+    throw new Error('--bounded-max-added-lines must be a positive integer');
+  }
   if (!Number.isFinite(args.innerMaxChars) || args.innerMaxChars < 0) {
     throw new Error('--inner-max-chars must be >= 0');
   }
@@ -136,6 +155,9 @@ function finalizeArgs(rawArgs) {
   }
   if (!Number.isFinite(args.policyMemoryMaxChars) || args.policyMemoryMaxChars < 0) {
     throw new Error('--policy-memory-max-chars must be >= 0');
+  }
+  if (!Number.isFinite(args.minPolicyDistinctiveness) || args.minPolicyDistinctiveness < 0) {
+    throw new Error('--min-policy-distinctiveness must be >= 0');
   }
   if (!['always', 'headroom', 'never'].includes(args.panelPolicy)) {
     throw new Error('--panel-policy must be one of always|headroom|never');
@@ -179,6 +201,11 @@ function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
+function readText(filePath) {
+  if (!filePath || !fs.existsSync(filePath)) return '';
+  return fs.readFileSync(filePath, 'utf8');
+}
+
 function writeJson(filePath, value) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
@@ -196,6 +223,157 @@ function scoreSnapshot(record) {
     scores[key] = payload?.value ?? payload?.raw ?? null;
   }
   return scores;
+}
+
+const POLICY_SIGNATURE_FIELDS = [
+  'diagnostic_trigger',
+  'avoid_move',
+  'preferred_move',
+  'material_constraint',
+  'uptake_test',
+  'transfer_warning',
+];
+
+const POLICY_TOKEN_STOPWORDS = new Set([
+  'about',
+  'after',
+  'again',
+  'because',
+  'before',
+  'being',
+  'between',
+  'choosing',
+  'comparison',
+  'could',
+  'evidence',
+  'learner',
+  'leaves',
+  'public',
+  'reason',
+  'says',
+  'still',
+  'strategy',
+  'teaching',
+  'their',
+  'there',
+  'these',
+  'thing',
+  'those',
+  'tutor',
+  'using',
+  'would',
+]);
+
+function flattenPolicyText(value) {
+  if (value == null) return '';
+  if (typeof value === 'string') return value;
+  if (Array.isArray(value)) return value.map(flattenPolicyText).join(' ');
+  if (typeof value === 'object') return Object.values(value).map(flattenPolicyText).join(' ');
+  return String(value);
+}
+
+function tokenizeSignature(text) {
+  return [
+    ...new Set(
+      String(text || '')
+        .toLowerCase()
+        .replace(/_/g, ' ')
+        .match(/[a-z][a-z0-9-]{3,}/g) || [],
+    ),
+  ].filter((token) => token.length >= 5 && !POLICY_TOKEN_STOPWORDS.has(token));
+}
+
+function policyStrategyName(policyMemory) {
+  const preferred = String(policyMemory?.preferred_move || '').toLowerCase();
+  const named = preferred.match(/\b([a-z][a-z0-9]+_[a-z0-9_]+)\b/);
+  if (named) return named[1];
+  const beforeColon = preferred.split(':')[0]?.trim();
+  return beforeColon && beforeColon.length <= 40 ? beforeColon.replace(/\s+/g, '_') : null;
+}
+
+function policySignature(policyMemory) {
+  const fieldText = POLICY_SIGNATURE_FIELDS.map((field) => flattenPolicyText(policyMemory?.[field])).join(' ');
+  const tokens = tokenizeSignature(fieldText);
+  return {
+    strategy_name: policyStrategyName(policyMemory),
+    token_count: tokens.length,
+    tokens,
+  };
+}
+
+function recordRevision(record) {
+  const revisionPath = record?.paths?.revisionJson;
+  if (revisionPath && fs.existsSync(revisionPath)) return readJson(revisionPath);
+  return null;
+}
+
+function recordPolicySearchText(record) {
+  const revision = recordRevision(record);
+  return [
+    revision ? JSON.stringify(revision) : '',
+    readText(record?.paths?.revisedPublic),
+  ]
+    .join('\n')
+    .toLowerCase();
+}
+
+function recordStrategyNames(record) {
+  const revision = recordRevision(record) || {};
+  const names = new Set();
+  for (const entry of revision.move_ledger || []) {
+    if (entry?.tactic) names.add(String(entry.tactic).toLowerCase());
+  }
+  for (const entry of revision.tutor_learning_ledger || []) {
+    const strategyName = entry?.revised_strategy?.strategy_name;
+    if (strategyName) names.add(String(strategyName).toLowerCase());
+  }
+  return [...names];
+}
+
+function policyOverlapForRecord(record, signature) {
+  const text = recordPolicySearchText(record);
+  const matches = (signature.tokens || []).filter((token) => text.includes(token));
+  const strategyNames = recordStrategyNames(record);
+  const strategyHit = Boolean(
+    signature.strategy_name && strategyNames.includes(String(signature.strategy_name).toLowerCase()),
+  );
+  const overlap = signature.tokens?.length ? matches.length / signature.tokens.length : 0;
+  return {
+    overlap: Number(overlap.toFixed(3)),
+    matched_token_count: matches.length,
+    matched_tokens: matches.slice(0, 40),
+    strategy_names: strategyNames,
+    strategy_hit: strategyHit,
+  };
+}
+
+function analyzePolicyContrast({ policyMemoryPath, s0Record, s1Record, minDistinctiveness }) {
+  const policyMemory = readJson(policyMemoryPath);
+  const signature = policySignature(policyMemory);
+  const s0 = policyOverlapForRecord(s0Record, signature);
+  const s1 = policyOverlapForRecord(s1Record, signature);
+  const distinctiveness = Number((s1.overlap - s0.overlap).toFixed(3));
+  let verdict = 'policy_distinct';
+  if (!signature.tokens.length && !signature.strategy_name) verdict = 'no_policy_signature';
+  else if (s0.strategy_hit) verdict = 's0_recreates_policy_strategy';
+  else if (!s1.strategy_hit && s1.overlap < 0.12) verdict = 's1_no_policy_use';
+  else if (distinctiveness < minDistinctiveness) verdict = 'not_policy_distinct';
+  return {
+    enabled: true,
+    verdict,
+    policy_memory_path: rel(policyMemoryPath),
+    policy_signature: {
+      strategy_name: signature.strategy_name,
+      token_count: signature.token_count,
+      tokens: signature.tokens.slice(0, 40),
+    },
+    min_distinctiveness: minDistinctiveness,
+    distinctiveness,
+    S0_no_policy: s0,
+    S1_policy_memory: s1,
+    decisive_read:
+      'Policy-memory transfer requires S1 to instantiate the filled policy while S0 does not independently recreate the same signature.',
+  };
 }
 
 function findFamily(plan, familyId) {
@@ -380,12 +558,19 @@ export async function runPolicyAblation(rawArgs = process.argv.slice(2)) {
   const plan = buildAblationPlan({ chainDir: args.chainDir, familyId: args.familyId, siblingId: args.siblingId });
   const familyId = plan.family.family_id;
   const siblingId = plan.sibling.sibling_id;
-  const designLabel = args.freshS1 && args.innerMaxChars === 0 ? 'a18.7_restricted_policy_ablation' : 'a18.6_policy_ablation';
+  const designLabel =
+    args.freshS1 && args.innerMaxChars === 0 && args.rewriteMode === 'bounded_continuation' && args.policyContrastGate
+      ? 'a18.8_s0_hard_bounded_transfer'
+      : args.freshS1 && args.innerMaxChars === 0
+        ? 'a18.7_restricted_policy_ablation'
+        : 'a18.6_policy_ablation';
   const baseReplayArgs = {
     transcript: resolveRepoPath(plan.paths.transcript),
     generator: args.generator,
     checker: args.checker,
     recursiveTutorGate: true,
+    rewriteMode: args.rewriteMode,
+    boundedMaxAddedLines: args.boundedMaxAddedLines,
     force: true,
     dryRun: args.dryRun,
     timeoutMs: args.timeoutMs,
@@ -427,9 +612,13 @@ export async function runPolicyAblation(rawArgs = process.argv.slice(2)) {
   const design = {
     label: designLabel,
     fresh_s1: args.freshS1,
+    rewrite_mode: args.rewriteMode,
+    bounded_max_added_lines: args.boundedMaxAddedLines,
     inner_max_chars: args.innerMaxChars,
     public_max_chars: args.publicMaxChars,
     policy_memory_max_chars: args.policyMemoryMaxChars,
+    policy_contrast_gate: args.policyContrastGate,
+    min_policy_distinctiveness: args.minPolicyDistinctiveness,
     panel_policy: args.panelPolicy,
     S0_no_policy: 'fresh held-out rewrite without attempt-1 learned policy memory',
     S1_policy_memory: args.freshS1
@@ -443,16 +632,28 @@ export async function runPolicyAblation(rawArgs = process.argv.slice(2)) {
   let scoreResults = [];
   let replayBundle = null;
   let packaged = null;
+  let policyContrastGate = { enabled: false };
   if (!args.dryRun) {
     const provisionalLocalArms = {
       S0_no_policy: { status: s0Record.gate?.status || 'unknown' },
       S1_policy_memory: { status: s1Record.gate?.status || 'unknown' },
     };
     const provisionalLocalVerdict = localVerdict(provisionalLocalArms.S0_no_policy, provisionalLocalArms.S1_policy_memory);
+    if (args.policyContrastGate) {
+      policyContrastGate = analyzePolicyContrast({
+        policyMemoryPath: resolveRepoPath(plan.paths.policyMemory),
+        s0Record,
+        s1Record,
+        minDistinctiveness: args.minPolicyDistinctiveness,
+      });
+    }
+    const policyGateAllowsPanel =
+      !args.policyContrastGate || policyContrastGate.verdict === 'policy_distinct';
     const shouldPanel =
       !args.skipPanel &&
       args.panelPolicy !== 'never' &&
-      (args.panelPolicy === 'always' || localHeadroomForPanel(provisionalLocalVerdict));
+      (args.panelPolicy === 'always' || localHeadroomForPanel(provisionalLocalVerdict)) &&
+      policyGateAllowsPanel;
     replayBundle = materializeAblationReplayBundle({ outDir: args.outDir, familyId, siblingId, s0Record, s1Record, design });
     if (shouldPanel) {
       const panelDir = path.join(args.outDir, 'panel');
@@ -508,13 +709,18 @@ export async function runPolicyAblation(rawArgs = process.argv.slice(2)) {
     prior_a18_5_panel: plan.priorPanelFamily || null,
     local_arms: localArms,
     local_verdict: args.dryRun ? 'dry_run' : localVerdict(localArms.S0_no_policy, localArms.S1_policy_memory),
+    policy_contrast_gate: policyContrastGate,
     panel_arms: panelArms,
     panel_verdict: args.skipPanel || args.dryRun || !packaged ? 'not_panelled' : panelVerdict(panelArms),
     panel_skip_reason:
-      args.skipPanel || args.dryRun || packaged
+      args.dryRun || packaged
         ? null
+        : args.skipPanel
+          ? 'skip_panel_arg'
         : args.panelPolicy === 'never'
           ? 'panel_policy_never'
+          : args.policyContrastGate && policyContrastGate.verdict !== 'policy_distinct'
+            ? `policy_contrast_gate:${policyContrastGate.verdict}`
           : args.panelPolicy === 'headroom'
             ? `no_local_headroom:${localVerdict(localArms.S0_no_policy, localArms.S1_policy_memory)}`
             : null,
@@ -527,7 +733,9 @@ export async function runPolicyAblation(rawArgs = process.argv.slice(2)) {
     },
   };
   if (!args.dryRun) {
-    const reportName = designLabel.startsWith('a18.7')
+    const reportName = designLabel.startsWith('a18.8')
+      ? 'a18.8-s0-hard-bounded-transfer-report.json'
+      : designLabel.startsWith('a18.7')
       ? 'a18.7-restricted-policy-ablation-report.json'
       : 'a18.6-policy-ablation-report.json';
     writeJson(path.join(args.outDir, reportName), report);
@@ -549,6 +757,7 @@ async function main() {
           family_id: result.report.family_id,
           sibling_id: result.report.sibling_id,
           local_verdict: result.report.local_verdict,
+          policy_contrast_verdict: result.report.policy_contrast_gate?.verdict || null,
           panel_verdict: result.report.panel_verdict,
           local_arms: Object.fromEntries(
             Object.entries(result.report.local_arms || {}).map(([arm, row]) => [arm, row.status]),

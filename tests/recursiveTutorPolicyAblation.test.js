@@ -70,7 +70,7 @@ TUTOR: "Compare the labels."
     source: 'attempt_1_failure',
     diagnostic_trigger: 'learner treats both visible labels as equivalent',
     avoid_move: 'keep asking for visual comparison without a public decision test',
-    preferred_move: 'make the old label-only warrant fail before introducing the scope check',
+    preferred_move: 'scope_test: make the old label-only warrant fail before introducing the scope check',
     uptake_test: 'learner uses the scope check to sort the held-out case',
   });
   writeJson(path.join(chainDir, 'attempt-chain-plan.json'), {
@@ -131,6 +131,32 @@ test('parseArgs accepts restricted A18.7 fresh-S1 controls', () => {
   assert.equal(args.panelPolicy, 'headroom');
 });
 
+test('parseArgs accepts A18.8 bounded-transfer controls', () => {
+  const { chainDir } = writeFixture();
+  const args = parseArgs([
+    '--chain-dir',
+    chainDir,
+    '--fresh-s1',
+    '--inner-max-chars',
+    '0',
+    '--rewrite-mode',
+    'bounded_continuation',
+    '--bounded-max-added-lines',
+    '4',
+    '--policy-contrast-gate',
+    '--min-policy-distinctiveness',
+    '0.2',
+    '--panel-policy',
+    'headroom',
+  ]);
+  assert.equal(args.freshS1, true);
+  assert.equal(args.innerMaxChars, 0);
+  assert.equal(args.rewriteMode, 'bounded_continuation');
+  assert.equal(args.boundedMaxAddedLines, 4);
+  assert.equal(args.policyContrastGate, true);
+  assert.equal(args.minPolicyDistinctiveness, 0.2);
+});
+
 test('buildAblationPlan finds existing S1 policy-memory replay and prior panel row', () => {
   const { chainDir, familyId, siblingId } = writeFixture();
   const plan = buildAblationPlan({ chainDir, familyId, siblingId });
@@ -166,6 +192,34 @@ test('restricted fresh-S1 ablation packages A18.7 arms without panel when no loc
   assert.equal(result.report.panel_verdict, 'not_panelled');
   assert.equal(result.report.panel_skip_reason, 'no_local_headroom:no_local_headroom');
   assert.ok(fs.existsSync(path.join(outDir, 'a18.7-restricted-policy-ablation-report.json')));
+});
+
+test('A18.8 bounded-transfer mode records policy contrast failure before panel', async () => {
+  const { tmp, chainDir, familyId, siblingId } = writeFixture();
+  const outDir = path.join(tmp, 'out-a18-8');
+  const result = await runPolicyAblation({
+    chainDir,
+    familyId,
+    siblingId,
+    outDir,
+    runId: 'a18-bounded-transfer-test',
+    mock: true,
+    freshS1: true,
+    innerMaxChars: 0,
+    publicMaxChars: 5000,
+    rewriteMode: 'bounded_continuation',
+    boundedMaxAddedLines: 4,
+    policyContrastGate: true,
+    panelPolicy: 'headroom',
+    force: false,
+  });
+  assert.equal(result.report.design.label, 'a18.8_s0_hard_bounded_transfer');
+  assert.equal(result.report.design.rewrite_mode, 'bounded_continuation');
+  assert.equal(result.report.policy_contrast_gate.enabled, true);
+  assert.equal(result.report.policy_contrast_gate.verdict, 's0_recreates_policy_strategy');
+  assert.equal(result.report.panel_verdict, 'not_panelled');
+  assert.equal(result.report.panel_skip_reason, 'policy_contrast_gate:s0_recreates_policy_strategy');
+  assert.ok(fs.existsSync(path.join(outDir, 'a18.8-s0-hard-bounded-transfer-report.json')));
 });
 
 test('policy ablation can run mock S0 and package both arms without panel', async () => {

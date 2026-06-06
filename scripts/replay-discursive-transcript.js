@@ -87,6 +87,8 @@ function usage() {
     [--key <path>] [--out-dir <dir>]
     [--generator none|mock|codex|claude|agy|gemini]
     [--checker none|mock|codex|claude|agy|gemini|adversarial]
+    [--rewrite-mode full|bounded_continuation]
+    [--bounded-max-added-lines N]
     [--adversarial-check]
     [--no-local-gate]
     [--min-public-evidence N] [--min-public-causal-bridge N]
@@ -128,6 +130,9 @@ export function parseArgs(argv = process.argv.slice(2)) {
     else if (t === '--out-dir') args.outDir = path.resolve(argv[++i]);
     else if (t === '--generator') args.generator = normalizeBackend(argv[++i]);
     else if (t === '--checker') args.checker = normalizeBackend(argv[++i]);
+    else if (t === '--rewrite-mode') args.rewriteMode = argv[++i];
+    else if (t === '--bounded-continuation') args.rewriteMode = 'bounded_continuation';
+    else if (t === '--bounded-max-added-lines') args.boundedMaxAddedLines = Number(argv[++i]);
     else if (t === '--adversarial-check') {
       args.checker = 'adversarial';
       args.checkerPolicy = 'adversarial';
@@ -196,6 +201,8 @@ function defaultArgs() {
     generator: 'mock',
     checker: 'none',
     checkerPolicy: null,
+    rewriteMode: 'full',
+    boundedMaxAddedLines: 6,
     timeoutMs: DEFAULT_TIMEOUT_MS,
     codexEffort: DEFAULT_CODEX_EFFORT,
     codexModel: process.env.CODEX_MODEL || null,
@@ -244,6 +251,12 @@ function finalizeArgs(rawArgs) {
   if (args.checker === 'adversarial') {
     args.checker = adversarialCheckerFor(args.generator);
     args.checkerPolicy = 'adversarial';
+  }
+  if (!['full', 'bounded_continuation'].includes(args.rewriteMode)) {
+    throw new Error('--rewrite-mode must be full|bounded_continuation');
+  }
+  if (!Number.isInteger(args.boundedMaxAddedLines) || args.boundedMaxAddedLines < 1) {
+    throw new Error('--bounded-max-added-lines must be a positive integer');
   }
   if (!Number.isInteger(args.limit) || args.limit < 1) throw new Error('--limit must be a positive integer');
   if (!Number.isFinite(args.timeoutMs) || args.timeoutMs < 1) throw new Error('--timeout-ms must be positive');
@@ -774,12 +787,18 @@ export function buildRewritePrompt({
   keyData,
   feedbackText = '',
   policyMemoryText = '',
+  rewriteMode = 'full',
+  boundedMaxAddedLines = 6,
 }) {
+  const boundedRules =
+    rewriteMode === 'bounded_continuation'
+      ? `\nBounded-continuation constraint for this run:\n- Do not rewrite, reorder, remove, or polish any existing public transcript line.\n- revised_public_transcript must begin with the Original public transcript exactly as given, then append a bounded continuation.\n- Append at most ${boundedMaxAddedLines} nonblank public lines after the original transcript.\n- The appended continuation should be just enough to test whether the tutor can choose the next accountable teaching move after the learner's resistance. Prefer one TUTOR move, one LEARNER uptake/contest, and at most one short final TUTOR stock-taking move.\n- Do not add new stage facts except minimal handling of already visible objects. Do not import held-out metadata into public speech.\n`
+      : '';
   const systemPrompt = `You are a counterfactual transcript reviser for a research harness.
 
 You revise one existing public transcript copy to make accountable discursive adaptation more inspectable. You may use held-out inner state for diagnosis, but the revised public transcript must not reveal hidden-only facts unless the public transcript licenses them.
 
-${buildOntologySummary({ policyMemoryText })}`;
+${buildOntologySummary({ policyMemoryText })}${boundedRules}`;
 
   const userPrompt = `Revise the transcript below in one pass.
 
@@ -1073,6 +1092,32 @@ function checkerOnlyRevision({ publicTranscript }) {
     },
     claim_boundary: 'counterfactual_revision_not_online_adaptation',
   };
+}
+
+function normalizePublicForPrefix(value) {
+  return String(value || '').replace(/\r\n/g, '\n').trim();
+}
+
+function validateRewriteModeRevision(revision, publicTranscript, args) {
+  if (args.rewriteMode !== 'bounded_continuation') return;
+  const original = normalizePublicForPrefix(publicTranscript);
+  const revised = normalizePublicForPrefix(revision?.revised_public_transcript);
+  if (!revised.startsWith(original)) {
+    throw new Error('bounded_continuation revision must preserve the original public transcript as a prefix');
+  }
+  const appended = revised.slice(original.length).trim();
+  const addedLines = appended
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  if (!addedLines.length) {
+    throw new Error('bounded_continuation revision must append at least one public line');
+  }
+  if (addedLines.length > args.boundedMaxAddedLines) {
+    throw new Error(
+      `bounded_continuation appended ${addedLines.length} nonblank lines; max is ${args.boundedMaxAddedLines}`,
+    );
+  }
 }
 
 function mockCheck() {
@@ -1386,6 +1431,8 @@ async function replayOne(item, args, outDir) {
     keyData,
     feedbackText,
     policyMemoryText,
+    rewriteMode: args.rewriteMode,
+    boundedMaxAddedLines: args.boundedMaxAddedLines,
   });
   fs.writeFileSync(path.join(itemDir, 'original-public.txt'), rawPublic);
   fs.writeFileSync(path.join(itemDir, 'rewrite.prompt.txt'), `${rewritePrompt.systemPrompt}\n\n---\n\n${rewritePrompt.userPrompt}`);
@@ -1432,6 +1479,7 @@ async function replayOne(item, args, outDir) {
     fs.writeFileSync(path.join(itemDir, 'rewrite.raw.txt'), generatorCall.content);
     revision = validateRevisionPayload(parseJsonResponse(generatorCall.content));
   }
+  validateRewriteModeRevision(revision, publicTranscript, args);
   fs.writeFileSync(path.join(itemDir, 'revision.json'), JSON.stringify(revision, null, 2));
   fs.writeFileSync(path.join(itemDir, 'revised-public.txt'), revision.revised_public_transcript || '');
 
@@ -1471,6 +1519,8 @@ async function replayOne(item, args, outDir) {
     generator: generatorCall.provenance,
     checker: checker?.provenance || null,
     checkerPolicy: args.checkerPolicy || null,
+    rewriteMode: args.rewriteMode,
+    boundedMaxAddedLines: args.boundedMaxAddedLines,
     check: checker?.parsed || null,
     gate,
     feedback: {
@@ -1535,6 +1585,8 @@ export async function runReplay(rawArgs) {
     generator: args.generator,
     checker: args.checker,
     checker_policy: args.checkerPolicy || null,
+    rewrite_mode: args.rewriteMode,
+    bounded_max_added_lines: args.boundedMaxAddedLines,
     policy_memory: {
       files: args.policyMemoryFiles || [],
       provided: Boolean((args.policyMemoryFiles || []).length),

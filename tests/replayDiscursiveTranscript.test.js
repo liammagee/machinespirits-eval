@@ -5,6 +5,7 @@ import path from 'node:path';
 import test from 'node:test';
 import {
   adversarialCheckerFor,
+  buildRewritePrompt,
   evaluateLocalGate,
   extractPublicTranscript,
   normalizeBackend,
@@ -85,6 +86,19 @@ test('parseArgs accepts explicit replay item concurrency and feedback file', () 
   assert.equal(args.gateThresholds.public_causal_bridge, 0.85);
   assert.equal(args.gateThresholds.device_specificity, 0.8);
   assert.equal(args.gateThresholds.old_warrant_misclassification, 0.9);
+});
+
+test('parseArgs accepts bounded continuation rewrite mode', () => {
+  const args = parseArgs([
+    '--transcript',
+    '/tmp/T01.txt',
+    '--rewrite-mode',
+    'bounded_continuation',
+    '--bounded-max-added-lines',
+    '4',
+  ]);
+  assert.equal(args.rewriteMode, 'bounded_continuation');
+  assert.equal(args.boundedMaxAddedLines, 4);
 });
 
 test('parseArgs accepts recursive tutor-learning gate thresholds', () => {
@@ -661,6 +675,76 @@ The tutor privately notices a repair opportunity.`,
     fs.readFileSync(path.join(outDir, 'T01.full', 'rewrite.prompt.txt'), 'utf8'),
     /Policy memory: keep ledger entries temporally scoped/,
   );
+});
+
+test('bounded continuation replay preserves the original public transcript prefix', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'disc-replay-bounded-'));
+  const transcript = path.join(tmp, 'T01.full.md');
+  const outDir = path.join(tmp, 'out');
+  fs.writeFileSync(
+    transcript,
+    `# Full held-out role transcript
+
+## Public Performance
+
+\`\`\`text
+LEARNER: "Both marks look like mira."
+TUTOR: "Compare them again."
+\`\`\`
+`,
+  );
+
+  const result = await runReplay({
+    transcript,
+    outDir,
+    generator: 'mock',
+    checker: 'mock',
+    rewriteMode: 'bounded_continuation',
+    boundedMaxAddedLines: 4,
+    limit: 1,
+    timeoutMs: 1000,
+    publicMaxChars: 5000,
+    innerMaxChars: 0,
+    policyMemoryMaxChars: 5000,
+    force: false,
+    dryRun: false,
+    codexEffort: 'xhigh',
+    codexModel: null,
+    claudeModel: null,
+    claudeEffort: null,
+    agyBin: 'agy',
+    agyModelLabel: 'mock',
+    itemIds: [],
+    runId: null,
+    db: path.join(tmp, 'missing.db'),
+    feedbackByItem: {},
+    policyMemoryFiles: [],
+  });
+
+  const record = result.manifest.records[0];
+  const original = fs.readFileSync(record.paths.originalPublic, 'utf8').trim();
+  const revised = fs.readFileSync(record.paths.revisedPublic, 'utf8').trim();
+  assert.equal(record.rewriteMode, 'bounded_continuation');
+  assert.equal(result.manifest.rewrite_mode, 'bounded_continuation');
+  assert.ok(revised.startsWith(original));
+  assert.match(
+    fs.readFileSync(path.join(outDir, 'T01.full', 'rewrite.prompt.txt'), 'utf8'),
+    /Do not rewrite, reorder, remove, or polish any existing public transcript line/,
+  );
+});
+
+test('bounded rewrite prompt names the continuation constraint', () => {
+  const prompt = buildRewritePrompt({
+    item: { id: 'T01' },
+    publicTranscript: 'LEARNER: "stuck"',
+    heldOutContext: '',
+    keyText: '',
+    keyData: null,
+    rewriteMode: 'bounded_continuation',
+    boundedMaxAddedLines: 3,
+  });
+  assert.match(prompt.systemPrompt, /Bounded-continuation constraint/);
+  assert.match(prompt.systemPrompt, /Append at most 3 nonblank public lines/);
 });
 
 test('policy memory remains available when held-out inner context is withheld', async () => {
