@@ -836,7 +836,11 @@ function saveBrowserReviewFlag(db, input) {
 function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   const db = openPoeticsStore(dbPath || undefined);
   const app = express();
-  // Basic-auth guard FIRST, before any route. Open on localhost with no creds;
+  // Liveness probe with no auth — registered before the guard so a load
+  // balancer's health check (e.g. fly) gets a 200, not a 401. It returns only
+  // "ok", so it leaks nothing.
+  app.get('/healthz', (_req, res) => res.type('text/plain').send('ok\n'));
+  // Basic-auth guard before every data route. Open on localhost with no creds;
   // throws (refuses to start) on a public bind without creds — see httpBasicAuth.js.
   const authGuard = resolveBasicAuthGuard({ prefix: 'POETICS', host, realm: 'machine spirits poetics' });
   if (authGuard) {

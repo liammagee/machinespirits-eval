@@ -1,0 +1,34 @@
+# Poetics workbench — public deploy image (see DEPLOYMENT.md, Path B).
+#
+# This is a read-only showcase. A snapshot of the eval database is baked in at
+# build time (staged into deploy/evaluations.db by
+# scripts/stage-poetics-deploy-db.mjs) and read via EVAL_DB_PATH. The CMD binds
+# 0.0.0.0, which the basic-auth guard refuses unless POETICS_AUTH_USER and
+# POETICS_AUTH_PASS are set (as fly secrets) — so a public bind is always
+# authenticated.
+FROM node:20-alpine
+
+# better-sqlite3 compiles from source on alpine (musl) when no prebuilt matches.
+RUN apk add --no-cache python3 make g++
+
+WORKDIR /app
+
+# Install dependencies first so this layer caches across code-only changes.
+# Match the website image and don't copy package-lock — npm mishandles optional
+# deps on alpine. There is no build step here, so production deps are enough.
+COPY package.json ./
+RUN npm install --omit=dev
+
+# Application code + served static assets (notes/poetics/{images,assets}, the
+# config the browser reads, the baked DB under deploy/). node_modules and the
+# heavy trees are excluded via .dockerignore.
+COPY . .
+
+# Read the baked snapshot, not the data/evaluations.db symlink (which points
+# outside the build context and can't be followed by Docker).
+ENV EVAL_DB_PATH=/app/deploy/evaluations.db
+ENV NODE_ENV=production
+
+EXPOSE 8080
+
+CMD ["node", "scripts/browse-poetics-scripts.js", "--host", "0.0.0.0", "--port", "8080"]
