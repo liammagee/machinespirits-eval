@@ -161,9 +161,11 @@ modules:
       Richer externalised learner state, hand-authored elaborations beyond the lean
       `state_policy` base (bilateral-ToM, state enrichment, evidence-bound nodes),
       counterfactual replay, fitted policies, and a logged hidden interior are null
-      relative to the strong implicit base — the base `state_policy` architecture
-      itself produces only a bounded binary-channel positive (47.8% strict_shift) —
-      the apparatus is the durable contribution.
+      relative to the strong implicit base — and the base `state_policy` architecture's
+      own advantage over the dialogue-engine floor is convention-fragile (a ~1.4×
+      cross-suite binary edge that does not survive event-anchored family scoring on
+      the v1 suite, once a turn-convention artifact is corrected) — the apparatus is
+      the durable contribution.
     abstract: >-
       The deepest theoretical arc, mostly negative: the adaptive runner and trap
       methodology, bilateral-ToM and state-schema ablations, hypothesis tracking, and
