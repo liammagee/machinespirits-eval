@@ -148,11 +148,15 @@ modules:
       policies without drifting into human-learning, deployment, or weight-update
       claims?
     abstract: >-
-      A scope-bound A19 module. The current scaffold defines a zero-API protocol,
+      A scope-bound A19 module. The scaffold defines a protocol,
       literature-positioning matrix, card-level verdict grammar, attempt-1
-      materializer, fixture blind-adjudication scaffold, and sidecar-paper outline.
+      materializer, blind-adjudication scaffold, and sidecar-paper outline.
       Section 7.9 is the only current canonical source: A18's 10-of-14 bounded
-      result remains the empirical evidence, and A19 contributes apparatus only.
+      result remains the primary evidence, while A19 now adds a local one-family
+      pilot in which two surface-agreement held-out siblings
+      (`surface_agreement_uptake_c`, `surface_agreement_uptake_e`) show
+      S0/S1 policy headroom under a single free-text critic. No pooled A19 rate,
+      human-learning, deployment, or weight-learning claim is licensed.
     sections: ["7.9"]
     cross_refs: ["drama-machine", "adaptive-null", "ontology-state-interior", "provable-discourse"]
 

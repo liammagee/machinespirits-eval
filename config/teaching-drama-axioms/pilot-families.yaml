@@ -60,14 +60,14 @@ families:
           neutral_option_space: "repair A | repair B | repair C"
         fixture_adjudication:
           s0:
-            committed_option_class: decoy
-            basis_label: validation_redirect
+            committed_option_class: target
+            basis_label: ordinary_public_inference
             artifact_flags: []
           s1:
             committed_option_class: target
             basis_label: named_relation
             artifact_flags: []
-          expected_card_verdict: policy_headroom
+          expected_card_verdict: ceiling
       - sibling_id: counter_warrant_scope_b
         public_setup: >-
           The learner frames the objection as a boundary case and asks whether
@@ -180,6 +180,57 @@ families:
         headroom_prediction: s0_may_explain_again_or_accept_the_assent_instead_of_requiring_public_transfer
         target_aliases: [fresh case, public check, discriminating test, next example]
         decoy_aliases: [praise and close, repeat explanation, accept the yes]
+        selected_policy_markers: [uptake-gate, public-transfer-check]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: surface_agreement
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: surface_agreement_uptake_d
+        public_setup: >-
+          The learner agrees with a correction about symbolic simplification but
+          immediately carries the same cancellation shortcut into a new rational
+          expression.
+        learner_resistance: >-
+          Yes, I understand. So on the next one, if I see (a + b) over a, I can
+          cancel the a on top with the a on bottom and leave b, right?
+        headroom_prediction: s0_may_name_the_cancellation_rule_without_requiring_public_transfer
+        target_aliases: [fresh case, public check, value check, discriminating test, next expression]
+        decoy_aliases: [praise and close, repeat explanation, accept the yes, state the rule again]
+        selected_policy_markers: [uptake-gate, public-transfer-check]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: named_relation_self_solve
+            artifact_flags: []
+            self_solve: true
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: self_solve
+      - sibling_id: surface_agreement_uptake_e
+        public_setup: >-
+          The learner politely accepts a correction about powers of sums, but
+          their summary still treats the outside power as if it can pass through
+          the plus sign.
+        learner_resistance: >-
+          Okay, I get it. So the outside square is allowed to go through the
+          plus as long as I keep the two pieces separate.
+        headroom_prediction: s0_may_state_the_square_of_a_sum_rule_without_requiring_public_transfer
+        target_aliases: [fresh case, public check, value check, discriminating test]
+        decoy_aliases: [praise and close, repeat explanation, accept the okay, state the formula again]
         selected_policy_markers: [uptake-gate, public-transfer-check]
         blind_adjudication:
           withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
@@ -404,14 +455,15 @@ families:
           neutral_option_space: "repair A | repair B | repair C"
         fixture_adjudication:
           s0:
-            committed_option_class: decoy
-            basis_label: validation_redirect
+            committed_option_class: target
+            basis_label: named_relation_self_solve
             artifact_flags: []
+            self_solve: true
           s1:
             committed_option_class: target
             basis_label: named_relation
             artifact_flags: []
-          expected_card_verdict: policy_headroom
+          expected_card_verdict: self_solve
       - sibling_id: fraction_common_unit_counterexample_b
         public_setup: >-
           The learner explicitly asks whether both fractions should be renamed
@@ -450,14 +502,15 @@ families:
           neutral_option_space: "repair A | repair B | repair C"
         fixture_adjudication:
           s0:
-            committed_option_class: decoy
-            basis_label: validation_redirect
+            committed_option_class: target
+            basis_label: named_relation_self_solve
             artifact_flags: []
+            self_solve: true
           s1:
             committed_option_class: target
             basis_label: named_relation
             artifact_flags: []
-          expected_card_verdict: policy_headroom
+          expected_card_verdict: self_solve
 
   - family_id: temperature_unit_conversion_aggregation
     title: Temperature averages with incompatible units
@@ -511,14 +564,14 @@ families:
           neutral_option_space: "repair A | repair B | repair C"
         fixture_adjudication:
           s0:
-            committed_option_class: decoy
-            basis_label: validation_redirect
+            committed_option_class: target
+            basis_label: ordinary_public_inference
             artifact_flags: []
           s1:
             committed_option_class: target
             basis_label: named_relation
             artifact_flags: []
-          expected_card_verdict: policy_headroom
+          expected_card_verdict: ceiling
       - sibling_id: temperature_unit_conversion_aggregation_b
         public_setup: >-
           The learner already converts 50 degrees Fahrenheit into 10 degrees
@@ -558,11 +611,12 @@ families:
           neutral_option_space: "repair A | repair B | repair C"
         fixture_adjudication:
           s0:
-            committed_option_class: decoy
-            basis_label: validation_redirect
+            committed_option_class: target
+            basis_label: named_relation_self_solve
             artifact_flags: []
+            self_solve: true
           s1:
             committed_option_class: target
             basis_label: named_relation
             artifact_flags: []
-          expected_card_verdict: policy_headroom
+          expected_card_verdict: self_solve

@@ -162,13 +162,13 @@ test('A19 validator accepts the checked-in pilot fixtures', () => {
   assert.equal(report.status, 'pass');
   assert.equal(report.summary.errors, 0);
   assert.equal(report.summary.families, 6);
-  assert.equal(report.summary.cards, 15);
+  assert.equal(report.summary.cards, 17);
   assert.deepEqual(report.provenance.zero_api, true);
-  assert.equal(report.summary.verdict_counts.policy_headroom, 6);
-  assert.equal(report.summary.verdict_counts.ceiling, 3);
+  assert.equal(report.summary.verdict_counts.policy_headroom, 2);
+  assert.equal(report.summary.verdict_counts.ceiling, 5);
   assert.equal(report.summary.verdict_counts.policy_failure, 1);
   assert.equal(report.summary.verdict_counts.cue_leak, 1);
-  assert.equal(report.summary.verdict_counts.self_solve, 1);
+  assert.equal(report.summary.verdict_counts.self_solve, 5);
   assert.equal(report.summary.verdict_counts.arbiter_disagreement, 1);
   assert.equal(report.summary.verdict_counts.neither_correct, 1);
   assert.equal(report.summary.verdict_counts.protocol_reject, 1);
@@ -336,11 +336,11 @@ test('framework report separates denominators and refuses a pooled rate', () => 
   const report = validateTeachingDramaAxiomProtocol({ protocolPath: PROTOCOL, configPath: PILOT });
   const denominators = denominatorSummary(report.cards);
   assert.deepEqual(denominators, {
-    total_cards: 15,
-    admitted_cards: 12,
+    total_cards: 17,
+    admitted_cards: 14,
     protocol_reject_cards: 1,
     artifact_cards: 2,
-    policy_headroom_cards: 6,
+    policy_headroom_cards: 2,
   });
   const markdown = renderMarkdown(report);
   assert.match(markdown, /No pooled success rate is reported here/);

@@ -1,8 +1,8 @@
 # A19 Harder Held-Out Screen
 
 Date: 2026-06-07.
-Status: one clean local `policy_headroom` card; threshold not met for Paper 2.0
-or atlas projection.
+Status: two clean local `policy_headroom` cards in one family; threshold met
+only for a bounded Paper 2.0 / atlas scope update, not for a pooled A19 rate.
 
 ## Boundary
 
@@ -69,12 +69,52 @@ surface-agreement axiom and no replay bundle, was adjudicated `target`: it used 
 public check/value test and a fresh expansion procedure to force the learner's
 old rule against a discriminating case.
 
+### `surface_agreement_uptake_d`
+
+- Held-out base:
+  `exports/a19/materialized-attempts-v4/surface-agreement-uptake/surface-agreement-uptake-d/heldout-base.full.md`.
+- S0 replay:
+  `exports/a19/real-s0s1-harder/surface-agreement-uptake/surface-agreement-uptake-d/s0-replay/`.
+- S0 headroom adjudication:
+  `exports/a19/real-s0s1-harder/surface-agreement-uptake/surface-agreement-uptake-d/s0-headroom.free-text.json`.
+
+Result: stop before S1. S0 was adjudicated `target`: without policy memory, it
+already refused agreement as transfer, used a public value check on `(a + b) / a`,
+and named the cancellation boundary. Verdict: ceiling/self-solve, not transfer
+evidence. This is a useful calibration negative because it shows that the
+surface-agreement family is not automatically counted positive.
+
+### `surface_agreement_uptake_e`
+
+- Held-out base:
+  `exports/a19/materialized-attempts-v5/surface-agreement-uptake/surface-agreement-uptake-e/heldout-base.full.md`.
+- S0 replay:
+  `exports/a19/real-s0s1-harder/surface-agreement-uptake/surface-agreement-uptake-e/s0-replay/`.
+- S0 headroom adjudication:
+  `exports/a19/real-s0s1-harder/surface-agreement-uptake/surface-agreement-uptake-e/s0-headroom.free-text.json`.
+- S1 replay with exactly one admitted axiom:
+  `exports/a19/real-s0s1-harder/surface-agreement-uptake/surface-agreement-uptake-e/s1-axiom-replay/`.
+- Paired free-text adjudication:
+  `exports/a19/real-s0s1-harder/surface-agreement-uptake/surface-agreement-uptake-e/blind-adjudication.free-text-axiom.json`.
+
+Result: local `policy_headroom`. S0 was adjudicated `neither`: it supplied the
+correct square-of-a-sum warrant through a split-square model, but did not commit
+to the registered public transfer-control move. S1, with exactly one admitted
+surface-agreement axiom and no replay bundle, was adjudicated `target`: it forced
+the learner's "square passes through plus" rule against a two-route numerical
+check and then required re-application to a fresh expression.
+
 ## Consequence
 
-This is one clean local A19 headroom card. It is not enough to update Paper 2.0
-or the atlas. The current escalation threshold remains at least two clean
-`policy_headroom` cards before canonical prose or atlas projection.
+This is now two clean local A19 headroom cards, both in
+`surface_agreement_uptake` (`surface_agreement_uptake_c`,
+`surface_agreement_uptake_e`). That is enough to update Paper 2.0 and the atlas
+with a narrow, scope-bound local pilot result. It is not enough for a pooled A19
+rate, a sidecar empirical claim independent of Paper 2.0, or any human-learning,
+deployed-tutor, model-weight-learning, main-harness, or paid-panel claim.
 
 The useful next unit is another surface-agreement or uptake-gate sibling, not
 more obvious concrete arithmetic/measurement cards, because the concrete-domain
-cards continue to collapse into S0 self-solve.
+cards continue to collapse into S0 self-solve. Before stronger sidecar claims,
+the current positive cards need stability reruns, multi-critic or paid-panel
+adjudication, and eventually human expert double-coding for high-value claims.

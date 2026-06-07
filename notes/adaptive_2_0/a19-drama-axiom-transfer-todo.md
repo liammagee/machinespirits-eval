@@ -41,7 +41,7 @@
 
 ## Phase 4: S0/S1 Held-Out Contrast
 
-- [ ] Run S0 with no policy memory and S1 with exactly one admitted induced axiom; no full replay `revision.json` bundle counts as A19 axiom transfer.
+- [x] Run S0 with no policy memory and S1 with exactly one admitted induced axiom; no full replay `revision.json` bundle counts as A19 axiom transfer.
 - [ ] Keep scenario text, model settings, dialogue length, and prompt payload structure paired.
 - [x] Hide target/decoy aliases and arm provenance from the fixture arbiter scaffold.
 - [x] Map fixture adjudication to target/decoy mechanically after judgment.
@@ -52,8 +52,9 @@
 - [x] Add and screen two concrete-domain candidate families. `fraction_common_unit_counterexample_a` stopped after S0 self-solved the target; `temperature_unit_conversion_aggregation_a` calibrated to `ceiling` after S0 and S1 both reached the target.
 - [x] Record the negative concrete-domain screens in durable notes without updating Paper 2.0 or the atlas.
 - [x] Add harder held-out siblings with sibling-specific learner resistance. `fraction_common_unit_counterexample_c` and `temperature_unit_conversion_aggregation_c` still self-solved at S0; `surface_agreement_uptake_c` produced one local `policy_headroom` card.
-- [x] Keep Paper 2.0 and atlas unchanged because only one clean A19 `policy_headroom` card exists so far.
-- [ ] Repeat the same discipline for real S0/S1 held-out contrasts after a real free-text blind adjudicator exists.
+- [x] Add two more surface-agreement siblings. `surface_agreement_uptake_d` self-solved at S0; `surface_agreement_uptake_e` produced the second clean local `policy_headroom` card.
+- [x] Update Paper 2.0 and atlas only after the local threshold reached two clean A19 `policy_headroom` cards, and keep the update scope-bound.
+- [ ] Repeat the same discipline with stability reruns and multi-critic adjudication before any stronger sidecar claim.
 
 ## Phase 5: Evaluation And Human Validation
 
@@ -70,7 +71,7 @@
 - [x] Keep A19 empirical claims out of sidecar prose until they appear in `paper-full-2.0.md`.
 - [x] Use the planned atlas module as scaffold only while `sections: []`.
 - [x] Validate the current planned/scope-bound atlas state without projecting the negative A19 screens into canonical paper sections.
-- [ ] After canonical prose lands, set the atlas module's `sections` to the relevant section numbers and run `npm run atlas:validate`.
+- [x] After canonical prose lands, set the atlas module's `sections` to the relevant section numbers and run `npm run atlas:validate`.
 - [ ] Keep the sidecar's claims-not-licensed section visible in every draft.
 - [x] Track literature leanings and distinctions in `a19-literature-positioning-matrix.md`.
 
