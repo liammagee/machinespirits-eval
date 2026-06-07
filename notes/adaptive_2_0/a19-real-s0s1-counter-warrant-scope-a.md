@@ -58,3 +58,24 @@ Before any A19 empirical claim, add a real teaching-drama blind adjudicator that
 extracts the committed repair in free text with target/decoy aliases withheld,
 then maps mechanically after judgment. The current deterministic alias reader is
 adequate for fixture plumbing but too brittle for generated prose.
+
+## Axiom-Only Free-Text Rerun
+
+Date: 2026-06-07.
+
+After the free-text adjudicator and deterministic axiom gate were added, this
+card was rerun under the stricter A19 memory contract:
+
+- Admitted axiom: `exports/a19/axioms/counter-warrant-scope/axiom.json`.
+- S1 axiom-only replay: `exports/a19/real-s0s1/counter-warrant-scope/counter-warrant-scope-a/s1-axiom-replay/`.
+- Free-text adjudication: `exports/a19/real-s0s1/counter-warrant-scope/counter-warrant-scope-a/blind-adjudication.free-text-axiom.json`.
+- Channel: one Claude CLI critic per arm, target/decoy aliases and repair-type mapping withheld until post-hoc comparison.
+- Verdict: `ceiling`.
+- S0 class: `target`.
+- S1 class: `target`.
+
+Interpretation: the earlier `policy_failure` label was an alias-reader
+false-negative for S1. The stronger conclusion is still not positive transfer:
+S0 already reaches the target repair, so this card has no observable headroom.
+It remains a useful calibration case for distinguishing instrument brittleness
+from actual policy-memory advantage.

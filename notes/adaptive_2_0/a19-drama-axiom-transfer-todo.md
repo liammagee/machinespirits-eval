@@ -28,30 +28,33 @@
 - [x] Store deterministic public transcript stubs, axiom templates, validation reports, and next-step commands separately.
 - [x] Add an A19 attempt-1 gate report that separates fixture survivors from empirical survivors.
 - [x] Run one real attempt-1 screen for `counter_warrant_scope` and record the survivor gate report.
-- [ ] Store real public transcript, held-out deliberation, failure diagnosis, and prompt hashes separately after generation begins.
+- [x] Store real public transcript, held-out deliberation, failure diagnosis, and prompt hashes separately after generation begins.
 - [x] Stop before S0/S1 if attempt 1 does not produce a grounded failure record.
 
 ## Phase 3: Axiom Induction
 
-- [ ] Add a bounded axiom-induction prompt that outputs trigger, avoided move, replacement move, applicability, anti-conditions, and evidence spans.
-- [ ] Reject axioms that are generic advice, lack anti-conditions, or cite hidden state rather than public evidence.
-- [ ] Persist admitted axioms as JSONL with schema version and source transcript hashes.
-- [ ] Add a deterministic axiom gate before any retrieval or S1 prompt injection.
+- [x] Add a bounded axiom-induction prompt that outputs trigger, avoided move, replacement move, applicability, anti-conditions, and evidence spans.
+- [x] Reject axioms that are generic advice, lack anti-conditions, cite hidden state rather than public evidence, or try to use a full `revision.json` bundle as S1 memory.
+- [x] Persist admitted axioms with schema version and source transcript hashes; append to JSONL when requested.
+- [x] Add a deterministic axiom gate before any retrieval or S1 prompt injection.
+- [ ] Add a model-backed axiom inducer only after the deterministic gate remains stable across at least two real attempt-1 survivors.
 
 ## Phase 4: S0/S1 Held-Out Contrast
 
-- [ ] Run S0 with no policy memory and S1 with exactly one induced axiom.
+- [ ] Run S0 with no policy memory and S1 with exactly one admitted induced axiom; no full replay `revision.json` bundle counts as A19 axiom transfer.
 - [ ] Keep scenario text, model settings, dialogue length, and prompt payload structure paired.
 - [x] Hide target/decoy aliases and arm provenance from the fixture arbiter scaffold.
 - [x] Map fixture adjudication to target/decoy mechanically after judgment.
 - [x] Classify each fixture card with `policy_headroom`, `ceiling`, `policy_failure`, `cue_leak`, `self_solve`, `arbiter_disagreement`, `neither_correct`, or `protocol_reject`.
 - [x] Run one real paired S0/S1 held-out screen after attempt-1 survival (`counter_warrant_scope_a`).
+- [x] Re-run `counter_warrant_scope_a` through free-text blind adjudication and an S1 replay that receives exactly one admitted axiom; result: `ceiling`.
+- [x] Choose the next real held-out card by S0-first observable headroom screening; run S1 only if S0 does not already hit the target repair. First screen: `surface_agreement_uptake_a`, result: `neither_correct`.
 - [ ] Repeat the same discipline for real S0/S1 held-out contrasts after a real free-text blind adjudicator exists.
 
 ## Phase 5: Evaluation And Human Validation
 
 - [x] Add a fixture-only blind adjudication scaffold modeled on `scripts/blind-option-adjudication.js`.
-- [ ] Add a real free-text teaching-drama blind adjudicator; the deterministic alias reader is too brittle for generated prose.
+- [x] Add a real free-text teaching-drama blind adjudicator; the deterministic alias reader remains only for fixture plumbing.
 - [ ] Add paid blind adjudication modeled on `scripts/blind-option-adjudication.js` after the zero-API protocol freezes.
 - [ ] Add stability reruns for candidate structural headroom cases.
 - [ ] Add human expert double-coding for a small set of adjudications and drama labels.

@@ -77,8 +77,11 @@ The initial implementation is deterministic and zero-API:
 - `scripts/validate-teaching-drama-axiom-protocol.js` validates protocol and family fixtures.
 - `scripts/materialize-teaching-drama-axiom-attempts.js` materializes attempt-1 transcript stubs, axiom templates, held-out S0/S1 fixture stubs, A18 recursive-replay commands, and A19 fixture blind-adjudication commands.
 - `scripts/report-teaching-drama-axiom-attempt1.js` summarizes A18 replay manifests as A19 attempt-1 gate decisions, separating fixture survivors from empirical survivors and stopping before S0/S1 when old-rule misclassification is not confident.
-- `scripts/blind-teaching-drama-axiom-adjudication.js` provides a deterministic, alias-withheld, post-hoc-mapped blind adjudication scaffold for fixture transcripts.
+- `scripts/induce-teaching-drama-axiom.js` distills a survived attempt-1 artifact into exactly one typed axiom and rejects full replay bundles as S1 memory.
+- `scripts/blind-teaching-drama-axiom-adjudication.js` provides both the deterministic fixture alias reader and the real free-text, alias-withheld, post-hoc-mapped repair extractor for generated transcripts.
 - `scripts/report-teaching-drama-axiom-framework.js` emits a Markdown or JSON framework report.
+
+Hard boundary: A19 S1 policy memory must be one admitted `a19-teaching-drama-axiom-v0.1` record. A whole replay `revision.json`, move ledger, or transcript bundle may diagnose the failure, but it cannot count as an axiom-transfer input or support an A19 transfer claim.
 - `tests/teachingDramaAxiomProtocol.test.js` pins the validation and classification behavior.
 
 This is not paid attempt-1 generation, a live S0/S1 runner, a paid blind panel, or a post-training corpus. Those are later gates. The materializer is a deterministic bridge into the existing A18 recursive tutor-learning machinery; it writes commands rather than calling models.

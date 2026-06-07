@@ -117,6 +117,7 @@
     "a19:validate": "node scripts/validate-teaching-drama-axiom-protocol.js",
     "a19:materialize": "node scripts/materialize-teaching-drama-axiom-attempts.js",
     "a19:attempt1": "node scripts/report-teaching-drama-axiom-attempt1.js",
+    "a19:induce-axiom": "node scripts/induce-teaching-drama-axiom.js",
     "a19:blind-adjudicate": "node scripts/blind-teaching-drama-axiom-adjudication.js",
     "a19:report": "node scripts/report-teaching-drama-axiom-framework.js",
     "test:a19": "node --test tests/teachingDramaAxiomProtocol.test.js",

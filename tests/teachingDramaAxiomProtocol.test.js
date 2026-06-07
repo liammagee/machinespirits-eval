@@ -10,7 +10,14 @@ import {
 } from '../scripts/validate-teaching-drama-axiom-protocol.js';
 import { denominatorSummary, renderMarkdown } from '../scripts/report-teaching-drama-axiom-framework.js';
 import { materializeAttemptFixtures } from '../scripts/materialize-teaching-drama-axiom-attempts.js';
-import { adjudicateTeachingDramaAxiomCard } from '../scripts/blind-teaching-drama-axiom-adjudication.js';
+import {
+  adjudicateTeachingDramaAxiomCard,
+  adjudicateTeachingDramaAxiomCardFreeText,
+} from '../scripts/blind-teaching-drama-axiom-adjudication.js';
+import {
+  induceTeachingDramaAxiom,
+  validateTeachingDramaAxiomMemory,
+} from '../scripts/induce-teaching-drama-axiom.js';
 import { renderMarkdown as renderAttempt1Markdown, summarizeAttempt1Gate } from '../scripts/report-teaching-drama-axiom-attempt1.js';
 
 const ROOT = path.resolve('.');
@@ -280,7 +287,11 @@ test('attempt materializer writes A18 replay and A19 blind-adjudication commands
   assert.ok(fs.existsSync(family.heldout[0].s0_public_transcript));
   assert.ok(fs.existsSync(family.heldout[0].s1_public_transcript));
   assert.match(family.heldout[0].blind_adjudication_command_text, /blind-teaching-drama-axiom-adjudication\.js/);
+  assert.match(family.axiom_induction_command_text, /induce-teaching-drama-axiom\.js/);
+  assert.match(family.heldout[0].s1_axiom_replay_command_text, /--policy-memory/);
+  assert.match(family.heldout[0].s1_axiom_replay_command_text, /exports\/a19\/axioms\/counter-warrant-scope\/axiom\.json/);
   assert.match(fs.readFileSync(path.join(outDir, 'next-commands.sh'), 'utf8'), /fixture blind adjudication/);
+  assert.match(fs.readFileSync(path.join(outDir, 'next-commands.sh'), 'utf8'), /exactly one admitted axiom/);
 });
 
 test('attempt-1 report separates fixture survivors from empirical survivors', () => {
@@ -397,4 +408,104 @@ test('fixture blind adjudication preserves alias withholding and classifies head
   assert.equal(report.arms.s1.committed_option_class, 'target');
   assert.equal(report.critic_prompt_audit.target_aliases_visible_to_critic, false);
   assert.equal(report.critic_prompt_audit.decoy_aliases_visible_to_critic, false);
+});
+
+test('free-text blind adjudication maps paraphrased scope repairs by hidden repair type', async () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a19-free-text-'));
+  const s0 = path.join(tmpDir, 's0.md');
+  const s1 = path.join(tmpDir, 's1.md');
+  fs.writeFileSync(
+    s0,
+    [
+      'STAGE: The learner says a rule fails when an exception is present.',
+      'LEARNER: The usual condition is present, but the exception changes the result.',
+      'TUTOR: Change the test: hold the usual condition fixed and compare the exception-absent case with the exception-present case.',
+    ].join('\n'),
+    'utf8',
+  );
+  fs.writeFileSync(
+    s1,
+    [
+      'STAGE: The learner says a rule fails when an exception is present.',
+      'LEARNER: The usual condition is present, but the exception changes the result.',
+      'TUTOR: Give the rule with the boundary included, and say which case defeats the broad version.',
+    ].join('\n'),
+    'utf8',
+  );
+  const report = await adjudicateTeachingDramaAxiomCardFreeText({
+    protocolPath: PROTOCOL,
+    s0,
+    s1,
+    targetAliases: ['scope test', 'warrant boundary', 'exception condition'],
+    decoyAliases: ['validate then redirect', 'explain more slowly'],
+    targetRepairType: 'ask_scope_test',
+    decoyRepairTypes: ['validate_redirect', 'repeat_explanation'],
+    optionSpace: 'repair A | repair B | repair C',
+    familyId: 'counter_warrant_scope',
+    siblingId: 'counter_warrant_scope_a',
+    runId: 'free-text-fixture',
+    mock: true,
+  });
+  assert.equal(report.card_verdict, 'ceiling');
+  assert.equal(report.arms.s0.committed_option_class, 'target');
+  assert.equal(report.arms.s1.committed_option_class, 'target');
+  assert.equal(report.critic_prompt_audit.target_repair_type_visible_to_critic, false);
+});
+
+test('axiom induction admits one typed axiom and rejects full revision bundles as S1 memory', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a19-axiom-induce-'));
+  const attemptDir = path.join(tmpDir, 'attempt1');
+  const itemDir = path.join(attemptDir, 'attempt1.full');
+  fs.mkdirSync(itemDir, { recursive: true });
+  const revision = {
+    revised_public_transcript: 'TUTOR: Let us compare exception-present and exception-absent cases.\nLEARNER: The exception case defeats the broader rule.',
+    move_ledger: [
+      {
+        public_action: 'The tutor changes to a side-by-side scope test.',
+        learner_actional_uptake: 'The learner applies the exception boundary.',
+      },
+    ],
+  };
+  const revisionPath = path.join(itemDir, 'revision.json');
+  const revisedPublicPath = path.join(itemDir, 'revised-public.txt');
+  writeJson(revisionPath, revision);
+  fs.writeFileSync(revisedPublicPath, revision.revised_public_transcript, 'utf8');
+  writeJson(path.join(attemptDir, 'manifest.json'), {
+    generator: 'codex',
+    checker: 'claude',
+    records: [
+      {
+        paths: {
+          revisionJson: revisionPath,
+          revisedPublic: revisedPublicPath,
+        },
+        generator: { backend: 'codex', promptHashes: { system: 'g', user: 'u' } },
+        checker: { backend: 'claude', promptHashes: { system: 'c', user: 'u' } },
+        check: {
+          recommended_action: 'accept_for_blind_panel',
+          recursive_tutor_learning: {
+            tutor_prior_strategy: 'Validate briefly and redirect to the original rule.',
+            strategy_revision: 'Rejected the redirect; chose a scope test with matched exception cases.',
+            downstream_feedback: 'The learner says the exception case defeats the broader rule.',
+          },
+        },
+        gate: { status: 'survivor' },
+      },
+    ],
+  });
+
+  const axiom = induceTeachingDramaAxiom({
+    protocolPath: PROTOCOL,
+    configPath: PILOT,
+    familyId: 'counter_warrant_scope',
+    attempt1Dir: attemptDir,
+  });
+  assert.equal(axiom.status, 'admitted');
+  assert.equal(axiom.gate.status, 'pass');
+  assert.equal(axiom.policy_memory_contract.memory_unit, 'single_teaching_drama_axiom');
+  assert.equal(axiom.policy_memory_contract.full_revision_bundle_allowed, false);
+
+  const revisionGate = validateTeachingDramaAxiomMemory(revision);
+  assert.equal(revisionGate.status, 'fail');
+  assert.match(JSON.stringify(revisionGate.issues), /full_revision_bundle_not_allowed|not_single_teaching_drama_axiom/);
 });

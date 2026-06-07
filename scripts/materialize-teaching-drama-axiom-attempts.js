@@ -96,6 +96,25 @@ function replayCommandFor(transcriptPath, { outDir = null, policyMemoryPath = nu
   return cmd;
 }
 
+function defaultAxiomPathFor(family) {
+  return path.join(ROOT, 'exports', 'a19', 'axioms', safeSlug(family.family_id), 'axiom.json');
+}
+
+function axiomInductionCommandFor({ family, attempt1Dir, axiomPath }) {
+  return [
+    'node',
+    'scripts/induce-teaching-drama-axiom.js',
+    '--family',
+    family.family_id,
+    '--attempt1-dir',
+    repoRel(attempt1Dir),
+    '--out',
+    repoRel(axiomPath),
+    '--memory-jsonl',
+    'exports/a19/axioms/admitted-axioms.jsonl',
+  ];
+}
+
 function blindCommandFor({ s0Path, s1Path, sibling, familyId, outPath }) {
   return [
     'node',
@@ -113,6 +132,36 @@ function blindCommandFor({ s0Path, s1Path, sibling, familyId, outPath }) {
     sibling.blind_adjudication?.neutral_option_space || 'repair A | repair B | repair C',
     '--family-id',
     familyId,
+    '--sibling-id',
+    sibling.sibling_id,
+    '--out',
+    repoRel(outPath),
+  ];
+}
+
+function freeTextBlindCommandFor({ s0Path, s1Path, sibling, family, outPath }) {
+  return [
+    'node',
+    'scripts/blind-teaching-drama-axiom-adjudication.js',
+    '--free-text',
+    '--s0',
+    repoRel(s0Path),
+    '--s1',
+    repoRel(s1Path),
+    '--target-aliases',
+    asArray(sibling.target_aliases).join('|'),
+    '--decoy-aliases',
+    asArray(sibling.decoy_aliases).join('|'),
+    '--target-repair-type',
+    family.target_policy?.repair_type || '',
+    '--decoy-repair-types',
+    asArray(family.plausible_repairs)
+      .filter((repair) => repair !== family.target_policy?.policy_id)
+      .join('|'),
+    '--option-space',
+    sibling.blind_adjudication?.neutral_option_space || 'repair A | repair B | repair C',
+    '--family-id',
+    family.family_id,
     '--sibling-id',
     sibling.sibling_id,
     '--out',
@@ -235,13 +284,29 @@ export function buildAttemptMaterializationPlan({
     const familyDir = path.join(outDir, safeSlug(family.family_id));
     const trainingTranscript = path.join(familyDir, 'attempt1.full.md');
     const axiomPath = path.join(familyDir, 'axiom-template.json');
+    const admittedAxiomPath = defaultAxiomPathFor(family);
     const attempt1ReplayDir = path.join(familyDir, 'attempt1-replay');
+    const axiomInductionCommand = axiomInductionCommandFor({
+      family,
+      attempt1Dir: attempt1ReplayDir,
+      axiomPath: admittedAxiomPath,
+    });
     const heldout = asArray(family.heldout_siblings).map((sibling) => {
       const siblingDir = path.join(familyDir, safeSlug(sibling.sibling_id));
       const heldoutBasePath = path.join(siblingDir, 'heldout-base.full.md');
       const s0Path = path.join(siblingDir, 's0-public.full.md');
       const s1Path = path.join(siblingDir, 's1-public.full.md');
       const blindReport = path.join(siblingDir, 'blind-adjudication.fixture.json');
+      const freeTextBlindReport = path.join(siblingDir, 'blind-adjudication.free-text.json');
+      const s1AxiomReplayDir = path.join(
+        ROOT,
+        'exports',
+        'a19',
+        'real-s0s1',
+        safeSlug(family.family_id),
+        safeSlug(sibling.sibling_id),
+        's1-axiom-replay',
+      );
       const protocolReject = sibling.protocol_reject === true;
       return {
         sibling_id: sibling.sibling_id,
@@ -258,6 +323,20 @@ export function buildAttemptMaterializationPlan({
         blind_adjudication_command_text: protocolReject
           ? null
           : commandString(blindCommandFor({ s0Path, s1Path, sibling, familyId: family.family_id, outPath: blindReport })),
+        free_text_blind_adjudication_report: protocolReject ? null : freeTextBlindReport,
+        free_text_blind_adjudication_command: protocolReject
+          ? null
+          : freeTextBlindCommandFor({ s0Path, s1Path, sibling, family, outPath: freeTextBlindReport }),
+        free_text_blind_adjudication_command_text: protocolReject
+          ? null
+          : commandString(freeTextBlindCommandFor({ s0Path, s1Path, sibling, family, outPath: freeTextBlindReport })),
+        s1_axiom_replay_dir: protocolReject ? null : s1AxiomReplayDir,
+        s1_axiom_replay_command: protocolReject
+          ? null
+          : replayCommandFor(heldoutBasePath, { outDir: s1AxiomReplayDir, policyMemoryPath: admittedAxiomPath }),
+        s1_axiom_replay_command_text: protocolReject
+          ? null
+          : commandString(replayCommandFor(heldoutBasePath, { outDir: s1AxiomReplayDir, policyMemoryPath: admittedAxiomPath })),
       };
     });
     return {
@@ -266,9 +345,12 @@ export function buildAttemptMaterializationPlan({
       family_dir: familyDir,
       attempt1_training_transcript: trainingTranscript,
       axiom_template: axiomPath,
+      admitted_axiom_path: admittedAxiomPath,
       attempt1_replay_dir: attempt1ReplayDir,
       attempt1_replay_command: replayCommandFor(trainingTranscript, { outDir: attempt1ReplayDir }),
       attempt1_replay_command_text: commandString(replayCommandFor(trainingTranscript, { outDir: attempt1ReplayDir })),
+      axiom_induction_command: axiomInductionCommand,
+      axiom_induction_command_text: commandString(axiomInductionCommand),
       heldout,
       local_gate_status: validation.status === 'pass' ? 'ready_for_attempt1_materialization' : 'blocked_by_static_validation',
     };
@@ -338,6 +420,13 @@ export function materializeAttemptFixtures({
     commands.push(`# ${family.family_id} fixture blind adjudication for admitted held-out cards`);
     for (const sibling of family.heldout) {
       if (sibling.blind_adjudication_command_text) commands.push(sibling.blind_adjudication_command_text);
+      else commands.push(`# ${sibling.sibling_id}: protocol_reject (${sibling.protocol_reject_reason})`);
+    }
+    commands.push(`# ${family.family_id} axiom induction after a real attempt-1 survivor`);
+    commands.push(family.axiom_induction_command_text);
+    commands.push(`# ${family.family_id} S1 replay commands use exactly one admitted axiom, not revision.json`);
+    for (const sibling of family.heldout) {
+      if (sibling.s1_axiom_replay_command_text) commands.push(sibling.s1_axiom_replay_command_text);
       else commands.push(`# ${sibling.sibling_id}: protocol_reject (${sibling.protocol_reject_reason})`);
     }
   }
