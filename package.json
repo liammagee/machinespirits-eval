@@ -115,6 +115,8 @@
     "poetics:package-arc": "node notes/poetics/package-standalone.js notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.html",
     "poetics:publish-arc": "node notes/poetics/publish-arc-to-site.js",
     "a19:validate": "node scripts/validate-teaching-drama-axiom-protocol.js",
+    "a19:materialize": "node scripts/materialize-teaching-drama-axiom-attempts.js",
+    "a19:blind-adjudicate": "node scripts/blind-teaching-drama-axiom-adjudication.js",
     "a19:report": "node scripts/report-teaching-drama-axiom-framework.js",
     "test:a19": "node --test tests/teachingDramaAxiomProtocol.test.js",
     "atlas:validate": "node scripts/build-atlas.js validate",

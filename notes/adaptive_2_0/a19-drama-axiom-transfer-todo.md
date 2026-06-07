@@ -9,22 +9,24 @@
 - [x] Add deterministic protocol validator.
 - [x] Add deterministic framework reporter.
 - [x] Add `node --test` coverage for validation, alias withholding, leakage checks, anti-conditions, headroom classification, and denominator separation.
-- [x] Add package scripts: `a19:validate`, `a19:report`, `test:a19`.
+- [x] Add package scripts: `a19:validate`, `a19:materialize`, `a19:blind-adjudicate`, `a19:report`, `test:a19`.
 
 ## Phase 1: Protocol Hardening
 
-- [ ] Add more fixture families that cover all verdict classes with no model calls.
+- [x] Add more fixture families that cover all verdict classes with no model calls.
 - [ ] Add cue-map fields for model tier and domain scope.
-- [ ] Add fixture examples where anti-conditions block an otherwise tempting axiom.
+- [x] Add fixture examples where anti-conditions block an otherwise tempting axiom.
 - [ ] Add a report mode that emits JSON into `exports/a19/reports/` once the first non-fixture run exists.
-- [ ] Add a stable protocol changelog that starts a new version whenever any gate changes.
+- [x] Register protocol-reject reasons and require explicit reject reasons.
+- [ ] Add a stable protocol changelog that starts a new version whenever any substantive gate changes.
 
 ## Phase 2: Attempt-1 Failure Elicitation
 
-- [ ] Reuse A18 recursive tutor-learning machinery where possible rather than building a parallel runner.
-- [ ] Add an A19 family materializer that can turn a teaching-drama family into an attempt-1 elicitation prompt.
+- [x] Reuse A18 recursive tutor-learning machinery where possible rather than building a parallel runner.
+- [x] Add an A19 family materializer that can turn a teaching-drama family into an attempt-1 elicitation prompt.
 - [ ] Require an explicit old-rule decoy and confident misclassification, not an indeterminate tie.
-- [ ] Store public transcript, held-out deliberation, failure diagnosis, and prompt hashes separately.
+- [x] Store deterministic public transcript stubs, axiom templates, validation reports, and next-step commands separately.
+- [ ] Store real public transcript, held-out deliberation, failure diagnosis, and prompt hashes separately after generation begins.
 - [ ] Stop before S0/S1 if attempt 1 does not produce a grounded failure record.
 
 ## Phase 3: Axiom Induction
@@ -38,13 +40,15 @@
 
 - [ ] Run S0 with no policy memory and S1 with exactly one induced axiom.
 - [ ] Keep scenario text, model settings, dialogue length, and prompt payload structure paired.
-- [ ] Hide target/decoy aliases and arm provenance from the arbiter.
-- [ ] Map free-text adjudication to target/decoy mechanically after judgment.
-- [ ] Classify each card with `policy_headroom`, `ceiling`, `policy_failure`, `cue_leak`, `self_solve`, `arbiter_disagreement`, `neither_correct`, or `protocol_reject`.
+- [x] Hide target/decoy aliases and arm provenance from the fixture arbiter scaffold.
+- [x] Map fixture adjudication to target/decoy mechanically after judgment.
+- [x] Classify each fixture card with `policy_headroom`, `ceiling`, `policy_failure`, `cue_leak`, `self_solve`, `arbiter_disagreement`, `neither_correct`, or `protocol_reject`.
+- [ ] Repeat the same discipline for real S0/S1 held-out contrasts after attempt-1 survival.
 
 ## Phase 5: Evaluation And Human Validation
 
-- [ ] Add blind adjudication modeled on `scripts/blind-option-adjudication.js`.
+- [x] Add a fixture-only blind adjudication scaffold modeled on `scripts/blind-option-adjudication.js`.
+- [ ] Add paid blind adjudication modeled on `scripts/blind-option-adjudication.js` after the zero-API protocol freezes.
 - [ ] Add stability reruns for candidate structural headroom cases.
 - [ ] Add human expert double-coding for a small set of adjudications and drama labels.
 - [ ] Report inter-rater agreement on the same artifacts, not similar artifacts.
@@ -52,9 +56,9 @@
 
 ## Phase 6: Sidecar Paper And Atlas Integration
 
-- [ ] Keep A19 empirical claims out of sidecar prose until they appear in `paper-full-2.0.md`.
-- [ ] Use the planned atlas module as scaffold only while `sections: []`.
-- [ ] After canonical prose lands, set the atlas module's `sections` to the relevant section numbers and run `npm run atlas:validate`.
+- [x] Keep A19 empirical claims out of sidecar prose until they appear in `paper-full-2.0.md`.
+- [x] Use the planned atlas module as scaffold only while `sections: []`.
+- [x] After canonical prose lands, set the atlas module's `sections` to the relevant section numbers and run `npm run atlas:validate`.
 - [ ] Keep the sidecar's claims-not-licensed section visible in every draft.
 - [ ] Track literature leanings and distinctions in `a19-literature-positioning-matrix.md`.
 

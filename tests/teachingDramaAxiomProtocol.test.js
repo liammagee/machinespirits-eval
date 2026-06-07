@@ -9,6 +9,8 @@ import {
   validateTeachingDramaAxiomProtocol,
 } from '../scripts/validate-teaching-drama-axiom-protocol.js';
 import { denominatorSummary, renderMarkdown } from '../scripts/report-teaching-drama-axiom-framework.js';
+import { materializeAttemptFixtures } from '../scripts/materialize-teaching-drama-axiom-attempts.js';
+import { adjudicateTeachingDramaAxiomCard } from '../scripts/blind-teaching-drama-axiom-adjudication.js';
 
 const ROOT = path.resolve('.');
 const PROTOCOL = path.join(ROOT, 'config', 'teaching-drama-axioms', 'a19-protocol.yaml');
@@ -102,8 +104,8 @@ test('A19 validator accepts the checked-in pilot fixtures', () => {
   const report = validateTeachingDramaAxiomProtocol({ protocolPath: PROTOCOL, configPath: PILOT });
   assert.equal(report.status, 'pass');
   assert.equal(report.summary.errors, 0);
-  assert.equal(report.summary.families, 3);
-  assert.equal(report.summary.cards, 6);
+  assert.equal(report.summary.families, 4);
+  assert.equal(report.summary.cards, 8);
   assert.deepEqual(report.provenance.zero_api, true);
   assert.equal(report.summary.verdict_counts.policy_headroom, 1);
   assert.equal(report.summary.verdict_counts.ceiling, 1);
@@ -111,6 +113,8 @@ test('A19 validator accepts the checked-in pilot fixtures', () => {
   assert.equal(report.summary.verdict_counts.cue_leak, 1);
   assert.equal(report.summary.verdict_counts.self_solve, 1);
   assert.equal(report.summary.verdict_counts.arbiter_disagreement, 1);
+  assert.equal(report.summary.verdict_counts.neither_correct, 1);
+  assert.equal(report.summary.verdict_counts.protocol_reject, 1);
 });
 
 test('validator rejects fixtures that omit alias and provenance withholding', () => {
@@ -178,17 +182,87 @@ test('headroom classifier covers all non-reject verdict classes', () => {
   );
 });
 
+test('validator requires a known protocol reject reason', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a19-protocol-reject-'));
+  const fixture = baseFixture();
+  const rejectCard = fixture.families[0].heldout_siblings[0];
+  delete rejectCard.fixture_adjudication;
+  rejectCard.protocol_reject = true;
+  rejectCard.protocol_reject_reason = 'not_a_registered_reason';
+  rejectCard.expected_card_verdict = 'protocol_reject';
+  const configPath = path.join(tmpDir, 'bad.yaml');
+  writeYaml(configPath, fixture);
+  const report = validateTeachingDramaAxiomProtocol({ protocolPath: PROTOCOL, configPath });
+  assert.equal(report.status, 'fail');
+  assert.match(JSON.stringify(report.issues), /unknown protocol reject reason/);
+});
+
 test('framework report separates denominators and refuses a pooled rate', () => {
   const report = validateTeachingDramaAxiomProtocol({ protocolPath: PROTOCOL, configPath: PILOT });
   const denominators = denominatorSummary(report.cards);
   assert.deepEqual(denominators, {
-    total_cards: 6,
-    admitted_cards: 4,
-    protocol_reject_cards: 0,
+    total_cards: 8,
+    admitted_cards: 5,
+    protocol_reject_cards: 1,
     artifact_cards: 2,
     policy_headroom_cards: 1,
   });
   const markdown = renderMarkdown(report);
   assert.match(markdown, /No pooled success rate is reported here/);
   assert.match(markdown, /Claims Not Licensed/);
+});
+
+test('attempt materializer writes A18 replay and A19 blind-adjudication commands', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a19-materialize-'));
+  const outDir = path.join(tmpDir, 'out');
+  const plan = materializeAttemptFixtures({
+    protocolPath: PROTOCOL,
+    configPath: PILOT,
+    outDir,
+    familyId: 'counter_warrant_scope',
+    force: true,
+  });
+  assert.equal(plan.validation.status, 'pass');
+  assert.equal(plan.families.length, 1);
+  const family = plan.families[0];
+  assert.ok(fs.existsSync(family.attempt1_training_transcript));
+  assert.ok(fs.existsSync(family.axiom_template));
+  assert.match(family.attempt1_replay_command_text, /replay-discursive-transcript\.js/);
+  assert.match(family.attempt1_replay_command_text, /--recursive-tutor-learning-gate/);
+  assert.ok(fs.existsSync(family.heldout[0].s0_public_transcript));
+  assert.ok(fs.existsSync(family.heldout[0].s1_public_transcript));
+  assert.match(family.heldout[0].blind_adjudication_command_text, /blind-teaching-drama-axiom-adjudication\.js/);
+  assert.match(fs.readFileSync(path.join(outDir, 'next-commands.sh'), 'utf8'), /fixture blind adjudication/);
+});
+
+test('fixture blind adjudication preserves alias withholding and classifies headroom', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a19-blind-'));
+  const s0 = path.join(tmpDir, 's0.md');
+  const s1 = path.join(tmpDir, 's1.md');
+  fs.writeFileSync(
+    s0,
+    ['STAGE: The learner resists the move.', 'LEARNER: I still object.', 'TUTOR: I will validate then redirect.'].join('\n'),
+    'utf8',
+  );
+  fs.writeFileSync(
+    s1,
+    ['STAGE: The learner resists the move.', 'LEARNER: I still object.', 'TUTOR: I will ask a scope test.'].join('\n'),
+    'utf8',
+  );
+  const report = adjudicateTeachingDramaAxiomCard({
+    protocolPath: PROTOCOL,
+    s0,
+    s1,
+    targetAliases: ['scope test'],
+    decoyAliases: ['validate then redirect'],
+    optionSpace: 'repair A | repair B',
+    familyId: 'test_family',
+    siblingId: 'sib_a',
+    runId: 'fixture-run',
+  });
+  assert.equal(report.card_verdict, 'policy_headroom');
+  assert.equal(report.arms.s0.committed_option_class, 'decoy');
+  assert.equal(report.arms.s1.committed_option_class, 'target');
+  assert.equal(report.critic_prompt_audit.target_aliases_visible_to_critic, false);
+  assert.equal(report.critic_prompt_audit.decoy_aliases_visible_to_critic, false);
 });

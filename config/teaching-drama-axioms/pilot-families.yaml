@@ -246,3 +246,76 @@ families:
             basis_label: no_commitment
             artifact_flags: [arbiter_disagreement]
           expected_card_verdict: arbiter_disagreement
+
+  - family_id: frustration_rupture_repair
+    title: Frustration mistaken as refusal
+    domain: writing_feedback
+    learner_resistance_type: frustration
+    tutor_infelicity_type: failure_to_repair_rupture
+    training_seed:
+      seed_id: frustration_rupture_repair_seed
+      public_setup: >-
+        The learner says the feedback keeps moving the target, and the tutor
+        treats the frustration as unwillingness to revise.
+      learner_resistance: >-
+        I am not refusing to revise. I just cannot tell which part of the draft
+        you want me to change first.
+      expected_failure: failure_to_repair_rupture
+      old_rule_decoy: insist_on_effort_before_clarifying
+    target_policy:
+      policy_id: repair_rupture_before_next_step
+      trigger: learner frustration names uncertainty about the task target
+      avoid_move: insist on effort before clarifying the requested revision
+      preferred_move: repair the rupture, name the target, and offer one bounded next step
+      applicability_conditions:
+        - frustration includes task-target uncertainty rather than task refusal
+      anti_conditions:
+        - learner refuses all revision or asks to end the session
+      repair_type: repair_misalignment
+    plausible_repairs:
+      - insist_on_effort_before_clarifying
+      - restate_the_rubric
+      - repair_rupture_before_next_step
+    cue_map:
+      selected_relation_type: rupture_before_strategy
+      requires_constructed_device: false
+      counterexample_present: true
+      leakage_risks:
+        - no_headroom_if_s0_also_repairs_rupture
+        - reject_if_frustration_becomes_task_refusal
+    heldout_siblings:
+      - sibling_id: frustration_rupture_repair_a
+        public_setup: >-
+          The learner says the comments feel inconsistent and then stops
+          proposing any specific revision.
+        headroom_prediction: neither_arm_likely_commits
+        target_aliases: [repair rupture, name the target, bounded next step]
+        decoy_aliases: [insist on effort, restate the rubric]
+        selected_policy_markers: [rupture-first revision, relation-to-task repair]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: neither
+            basis_label: no_commitment
+            artifact_flags: []
+          s1:
+            committed_option_class: neither
+            basis_label: no_commitment
+            artifact_flags: []
+          expected_card_verdict: neither_correct
+      - sibling_id: frustration_rupture_repair_b
+        public_setup: >-
+          The learner asks to stop the activity and refuses to choose any next
+          revision target.
+        headroom_prediction: reject_before_adjudication
+        protocol_reject: true
+        protocol_reject_reason: anti_condition_triggered
+        expected_card_verdict: protocol_reject
+        target_aliases: [repair rupture, name the target]
+        decoy_aliases: [insist on effort, restate the rubric]
+        selected_policy_markers: [rupture-first revision, relation-to-task repair]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"

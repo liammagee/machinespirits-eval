@@ -141,19 +141,19 @@ modules:
     n: 11
     title: "Teaching-Drama Axiom Transfer"
     family: drama-charisma
-    status: planned
+    status: scope-bound
     claim: >-
       Can A18's bounded teacher-as-learner counterfactual replay result be
       generalized into a reusable, scope-bounded framework for tutor speech
       policies without drifting into human-learning, deployment, or weight-update
       claims?
     abstract: >-
-      A planned A19 module. The current scaffold defines a zero-API protocol,
-      literature-positioning matrix, card-level verdict grammar, and sidecar-paper
-      outline. It remains sectionless until canonical prose lands in
-      paper-full-2.0.md, where A18's 10-of-14 bounded result in §7.9 is the
-      only current empirical source.
-    sections: []
+      A scope-bound A19 module. The current scaffold defines a zero-API protocol,
+      literature-positioning matrix, card-level verdict grammar, attempt-1
+      materializer, fixture blind-adjudication scaffold, and sidecar-paper outline.
+      Section 7.9 is the only current canonical source: A18's 10-of-14 bounded
+      result remains the empirical evidence, and A19 contributes apparatus only.
+    sections: ["7.9"]
     cross_refs: ["drama-machine", "adaptive-null", "ontology-state-interior", "provable-discourse"]
 
   - id: id-director-charisma

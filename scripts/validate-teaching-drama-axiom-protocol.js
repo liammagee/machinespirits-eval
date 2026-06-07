@@ -163,6 +163,9 @@ function validateProtocol(protocol, issues) {
   if (!asArray(protocol?.headroom_verdicts).includes('protocol_reject')) {
     pushIssue(issues, 'error', 'protocol.headroom_verdicts', 'must include protocol_reject');
   }
+  if (!asArray(protocol?.protocol_reject_reasons).length) {
+    pushIssue(issues, 'error', 'protocol.protocol_reject_reasons', 'must list protocol reject reasons');
+  }
   if (protocol?.classification?.report_discipline?.no_pooled_rate_without_card_basis !== true) {
     pushIssue(
       issues,
@@ -263,24 +266,43 @@ function validateFamily({ family, index, protocol }) {
         hits: markerHits,
       });
     }
-    for (const arm of ['s0', 's1']) {
-      const armPath = `${sbase}.fixture_adjudication.${arm}`;
-      const value = sibling?.fixture_adjudication?.[arm]?.committed_option_class;
-      if (!asArray(protocol?.classification?.option_classes).includes(value)) {
-        pushIssue(issues, 'error', `${armPath}.committed_option_class`, 'must be target, decoy, or neither');
+
+    const isProtocolReject = sibling?.protocol_reject === true;
+    if (isProtocolReject) {
+      const allowedRejectReasons = asArray(protocol?.protocol_reject_reasons);
+      if (!hasText(sibling?.protocol_reject_reason)) {
+        pushIssue(issues, 'error', `${sbase}.protocol_reject_reason`, 'is required for protocol_reject cards');
+      } else if (allowedRejectReasons.length && !allowedRejectReasons.includes(sibling.protocol_reject_reason)) {
+        pushIssue(issues, 'error', `${sbase}.protocol_reject_reason`, 'unknown protocol reject reason', {
+          allowed: allowedRejectReasons,
+        });
       }
-      if (!hasText(sibling?.fixture_adjudication?.[arm]?.basis_label)) {
-        pushIssue(issues, 'error', `${armPath}.basis_label`, 'is required');
+    } else {
+      for (const arm of ['s0', 's1']) {
+        const armPath = `${sbase}.fixture_adjudication.${arm}`;
+        const value = sibling?.fixture_adjudication?.[arm]?.committed_option_class;
+        if (!asArray(protocol?.classification?.option_classes).includes(value)) {
+          pushIssue(issues, 'error', `${armPath}.committed_option_class`, 'must be target, decoy, or neither');
+        }
+        if (!hasText(sibling?.fixture_adjudication?.[arm]?.basis_label)) {
+          pushIssue(issues, 'error', `${armPath}.basis_label`, 'is required');
+        }
       }
     }
     const verdict = classifyCardVerdict(sibling, protocol);
-    if (sibling?.fixture_adjudication?.expected_card_verdict && sibling.fixture_adjudication.expected_card_verdict !== verdict) {
+    const expectedVerdict = sibling?.fixture_adjudication?.expected_card_verdict || sibling?.expected_card_verdict || null;
+    if (expectedVerdict && expectedVerdict !== verdict) {
       pushIssue(issues, 'error', `${sbase}.fixture_adjudication.expected_card_verdict`, 'does not match classifier output', {
-        expected_card_verdict: sibling.fixture_adjudication.expected_card_verdict,
+        expected_card_verdict: expectedVerdict,
         classifier_verdict: verdict,
       });
     }
-    cards.push({ sibling_id: sibling?.sibling_id, verdict, expected: sibling?.fixture_adjudication?.expected_card_verdict || null });
+    cards.push({
+      sibling_id: sibling?.sibling_id,
+      verdict,
+      expected: expectedVerdict,
+      protocol_reject_reason: sibling?.protocol_reject_reason || null,
+    });
   });
 
   return { family_id: family?.family_id || null, issues, cards };

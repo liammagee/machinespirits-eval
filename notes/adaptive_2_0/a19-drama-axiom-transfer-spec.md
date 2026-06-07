@@ -75,10 +75,12 @@ The initial implementation is deterministic and zero-API:
 - `config/teaching-drama-axioms/a19-protocol.yaml` freezes the protocol shape, non-claims, verdict vocabulary, and reporting discipline.
 - `config/teaching-drama-axioms/pilot-families.yaml` provides fixture-level families and card adjudications for offline validation.
 - `scripts/validate-teaching-drama-axiom-protocol.js` validates protocol and family fixtures.
+- `scripts/materialize-teaching-drama-axiom-attempts.js` materializes attempt-1 transcript stubs, axiom templates, held-out S0/S1 fixture stubs, A18 recursive-replay commands, and A19 fixture blind-adjudication commands.
+- `scripts/blind-teaching-drama-axiom-adjudication.js` provides a deterministic, alias-withheld, post-hoc-mapped blind adjudication scaffold for fixture transcripts.
 - `scripts/report-teaching-drama-axiom-framework.js` emits a Markdown or JSON framework report.
 - `tests/teachingDramaAxiomProtocol.test.js` pins the validation and classification behavior.
 
-This is not an attempt-1 generator, S0/S1 runner, blind panel, or post-training corpus. Those are later gates.
+This is not paid attempt-1 generation, a live S0/S1 runner, a paid blind panel, or a post-training corpus. Those are later gates. The materializer is a deterministic bridge into the existing A18 recursive tutor-learning machinery; it writes commands rather than calling models.
 
 ## 6. Evaluation Instruments
 
@@ -97,9 +99,9 @@ The report may count verdicts, but it must not present a pooled success rate wit
 
 Later instruments, after the protocol is frozen, are:
 
-1. attempt-1 failure elicitation;
-2. S0/S1 held-out contrast;
-3. blind adjudication modeled on `scripts/blind-option-adjudication.js`;
+1. paid attempt-1 failure elicitation using the materialized prompts;
+2. real S0/S1 held-out contrast paired by model, scenario, length, and policy payload;
+3. paid blind adjudication modeled on `scripts/blind-option-adjudication.js`;
 4. stability reruns for cards where headroom appears structural;
 5. human expert double-coding for the highest-value claims.
 
@@ -116,7 +118,7 @@ The sidecar paper is a derived atlas-compatible artifact, not an independent sou
 7. Claims not licensed.
 8. Future post-training ladder.
 
-Before any empirical claim appears in this sidecar, it must first land in `docs/research/paper-full-2.0.md`. The atlas module remains `planned` with `sections: []` until canonical prose exists to project.
+Before any empirical claim appears in this sidecar, it must first land in `docs/research/paper-full-2.0.md`. Once canonical prose exists, the atlas module may project that section; it still must not introduce sidecar-only results.
 
 ## 8. Claims Not Licensed
 
