@@ -1,0 +1,161 @@
+@prefix ms: <https://machinespirits.dev/ontology/reasoning#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Roman rhetoric ontology (the figures of persuasion).
+#
+# A SEPARATE FILE in the SAME namespace as reasoning-core.ttl / poetics-core.ttl,
+# designed to be concatenated and reasoned over by the same EYE/n3reasoner
+# pipeline in services/ontology/reasoningOntology.js. It is the Roman companion
+# to poetics-core.ttl: where the Greek file holds poiesis and the drama, this
+# holds the rhetorical inheritance — the five canons, the parts of an oration,
+# the three styles, and (from lectures 6–8) the figures: tropes, schemes, and
+# figures of thought.
+#
+# Curriculum companion: course 1001 (content-poetics-rhetoric), lectures 5–8.
+# The course is authored in lockstep with this TBox — every figure taught in a
+# lecture is declared here as a class.
+#
+# OPT-IN module (registered in TBOX_MODULES but NOT in DEFAULT_MODULES): load via
+# loadSharedTBox(['reasoning','poetics','rhetoric']). It is a curriculum/design
+# vocabulary, not part of the active turn-plan validation default.
+#
+# Seam to the Greek file: ms:Elocutio rdfs:seeAlso ms:Lexis — Roman "style" is
+# Aristotle's lexis (the fourth part of tragedy). That identity is the hinge the
+# whole course turns on (lecture 5).
+# ══════════════════════════════════════════════════════════════════════════════
+
+ms:RomanRhetoricOntology
+  a owl:Ontology ;
+  rdfs:label "Machine Spirits Roman-rhetoric ontology (canons, oration parts, and figures)" ;
+  rdfs:comment "The five canons, the parts of an oration, the three styles and virtues of style, and the figures (tropes, schemes, figures of thought). Extends reasoning-core.ttl / poetics-core.ttl in the same namespace; consumed by the same EYE pipeline." .
+
+# ── Shared ordering + containment properties ──────────────────────────────────
+# rhetoricalOrder: an ordinal position within an enclosing sequence (the canons
+# 1–5; the parts of an oration in their standard order). Parallels ms:poeticRank.
+ms:rhetoricalOrder a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+  rdfs:comment "ordinal position of an item within its own sequence (the five canons; the parts of an oration)." .
+# withinCanon: the canon under which a device, part, style, or virtue falls. The
+# figures of lectures 6–8 all hang off ms:Elocutio by this property.
+ms:withinCanon a owl:ObjectProperty ; rdfs:range ms:RhetoricalCanon ;
+  rdfs:comment "the canon (officium oratoris) under which a part, style, virtue, or figure falls." .
+
+# ── The five canons (officia oratoris) — slice 5 (lecture 5) ───────────────────
+# Cicero, De Inventione I.7; Rhetorica ad Herennium I.2. A workflow, not a mere
+# list: each stage depends on the one before.
+ms:RhetoricalCanon a owl:Class ; rdfs:label "one of the five canons (officia oratoris) — the orator's tasks from finding to delivering a speech." .
+ms:Inventio a owl:Class ; rdfs:subClassOf ms:RhetoricalCanon ; rdfs:label "inventio: finding the available arguments and material (the topics/loci; status theory)." ; ms:rhetoricalOrder 1 .
+ms:Dispositio a owl:Class ; rdfs:subClassOf ms:RhetoricalCanon ; rdfs:label "dispositio: arranging the material — it governs the parts of an oration." ; ms:rhetoricalOrder 2 .
+ms:Elocutio a owl:Class ; rdfs:subClassOf ms:RhetoricalCanon ; rdfs:label "elocutio: style — putting the matter into words. The Roman name for Aristotle's lexis; the canon under which all the figures live." ; ms:rhetoricalOrder 3 ; rdfs:seeAlso ms:Lexis .
+ms:Memoria a owl:Class ; rdfs:subClassOf ms:RhetoricalCanon ; rdfs:label "memoria: fixing the speech in the mind (the art of memory — loci + imagines)." ; ms:rhetoricalOrder 4 .
+ms:Pronuntiatio a owl:Class ; rdfs:subClassOf ms:RhetoricalCanon ; rdfs:label "pronuntiatio / actio: delivery — the management of voice and gesture before the audience." ; ms:rhetoricalOrder 5 .
+
+# ── The parts of an oration (within dispositio) — slice 5 (lecture 5) ──────────
+# De Inventione I.19; Rhetorica ad Herennium I.3. The durable skeleton of a speech.
+ms:OrationPart a owl:Class ; rdfs:label "one of the standard parts of an oration (the structure governed by dispositio)." .
+ms:Exordium a owl:Class ; rdfs:subClassOf ms:OrationPart ; rdfs:label "exordium: the introduction — make the audience benevolum, attentum, docilem (well-disposed, attentive, teachable)." ; ms:rhetoricalOrder 1 ; ms:withinCanon ms:Dispositio .
+ms:Narratio a owl:Class ; rdfs:subClassOf ms:OrationPart ; rdfs:label "narratio: the statement of facts — the story of the case." ; ms:rhetoricalOrder 2 ; ms:withinCanon ms:Dispositio .
+ms:Divisio a owl:Class ; rdfs:subClassOf ms:OrationPart ; rdfs:label "divisio / partitio: division — what is agreed, what is in dispute, and a forecast of the argument." ; ms:rhetoricalOrder 3 ; ms:withinCanon ms:Dispositio .
+ms:Confirmatio a owl:Class ; rdfs:subClassOf ms:OrationPart ; rdfs:label "confirmatio: the proof — the positive arguments." ; ms:rhetoricalOrder 4 ; ms:withinCanon ms:Dispositio .
+ms:Confutatio a owl:Class ; rdfs:subClassOf ms:OrationPart ; rdfs:label "confutatio / refutatio: refutation — the demolition of the opponent's case." ; ms:rhetoricalOrder 5 ; ms:withinCanon ms:Dispositio .
+ms:Peroratio a owl:Class ; rdfs:subClassOf ms:OrationPart ; rdfs:label "peroratio: the conclusion — recapitulation and a final appeal to the emotions." ; ms:rhetoricalOrder 6 ; ms:withinCanon ms:Dispositio .
+
+# ── The three styles (genera dicendi, within elocutio) — slice 5 (lecture 5) ───
+# Rhetorica ad Herennium IV; Cicero, Orator. Each style has an office (to teach,
+# to please, to move) — echoing the appeals (logos / — / pathos).
+ms:StyleLevel a owl:Class ; rdfs:label "one of the three levels of style (genera dicendi)." ; ms:withinCanon ms:Elocutio .
+ms:PlainStyle a owl:Class ; rdfs:subClassOf ms:StyleLevel ; rdfs:label "plain (low) style: clear and unadorned — its office is to teach and prove (docere)." .
+ms:MiddleStyle a owl:Class ; rdfs:subClassOf ms:StyleLevel ; rdfs:label "middle style: smooth and pleasant — its office is to please (delectare)." .
+ms:GrandStyle a owl:Class ; rdfs:subClassOf ms:StyleLevel ; rdfs:label "grand (high) style: weighty and ornate — its office is to move (movere)." .
+
+# ── The virtues of style (virtutes elocutionis, within elocutio) — slice 5 ─────
+# Theophrastus's four. The figures (lectures 6–8) live under the third, ornatus.
+ms:StyleVirtue a owl:Class ; rdfs:label "one of the virtues of style (virtutes elocutionis, after Theophrastus)." ; ms:withinCanon ms:Elocutio .
+ms:Latinitas a owl:Class ; rdfs:subClassOf ms:StyleVirtue ; rdfs:label "correctness (Latinitas / Hellenismos): good grammar and idiom." .
+ms:Perspicuitas a owl:Class ; rdfs:subClassOf ms:StyleVirtue ; rdfs:label "clarity (perspicuitas): being readily understood." .
+ms:Ornatus a owl:Class ; rdfs:subClassOf ms:StyleVirtue ; rdfs:label "ornament (ornatus): distinction and beauty of expression — the home of all the figures (tropes, schemes, figures of thought)." .
+ms:Decorum a owl:Class ; rdfs:subClassOf ms:StyleVirtue ; rdfs:label "propriety (decorum / aptum): fitting the words to the matter, the speaker, and the audience." .
+
+# ── The figures (genus) ───────────────────────────────────────────────────────
+# Every figure lives under the virtue ms:Ornatus, within the canon ms:Elocutio.
+# The three families are ms:Trope (turns of meaning, lecture 6), ms:Scheme (turns
+# of arrangement, lecture 7), and ms:FigureOfThought (turns at the level of the
+# idea, lecture 8).
+ms:Figure a owl:Class ; rdfs:label "a figure (figura): a device of ornatus — a turn of language for effect. Genus of tropes, schemes, and figures of thought." ; ms:withinCanon ms:Elocutio .
+
+# ── Tropes — turns of MEANING (Quintilian VIII.6) — slice 6 (lecture 6) ────────
+# A trope turns a word from its proper meaning to another. masterTrope marks the
+# four (Vico; Burke, "The Four Master Tropes") to which the family reduces:
+# resemblance (metaphor), association (metonymy), part-whole (synecdoche),
+# opposition (irony) — parallels ms:aristotelian / ms:poeticRank as a marked axis.
+ms:masterTrope a owl:DatatypeProperty ; rdfs:range xsd:boolean ;
+  rdfs:comment "true iff the trope is one of the four master tropes (Vico/Burke) to which the family reduces." .
+ms:Trope a owl:Class ; rdfs:subClassOf ms:Figure ; rdfs:label "a trope: the artistic alteration of a word from its proper meaning to another — a turn of sense (tropos = a turn)." .
+ms:Metaphor a owl:Class ; rdfs:subClassOf ms:Trope ; rdfs:label "metaphor: transference of a name by resemblance, incl. by analogy A:B::C:D (Poetics 1457b). 'The greatest thing by far' (Poetics ch. 22)." ; ms:masterTrope true .
+ms:Metonymy a owl:Class ; rdfs:subClassOf ms:Trope ; rdfs:label "metonymy: substitution by real association/contiguity, not resemblance ('the crown', 'the White House')." ; ms:masterTrope true .
+ms:Synecdoche a owl:Class ; rdfs:subClassOf ms:Trope ; rdfs:label "synecdoche: part for whole or whole for part ('all hands on deck', 'England won') — often a species of metonymy." ; ms:masterTrope true .
+ms:Irony a owl:Class ; rdfs:subClassOf ms:Trope ; rdfs:label "irony (eironeia): saying one thing and meaning its opposite; scales from a barbed word to Socratic and dramatic irony." ; ms:masterTrope true .
+ms:Catachresis a owl:Class ; rdfs:subClassOf ms:Trope ; rdfs:label "catachresis (abusio): a forced metaphor filling a lexical gap ('the leg of a table', 'the mouth of a river')." .
+ms:Hyperbole a owl:Class ; rdfs:subClassOf ms:Trope ; rdfs:label "hyperbole: overstatement for effect ('a thousand times')." .
+ms:Litotes a owl:Class ; rdfs:subClassOf ms:Trope ; rdfs:label "litotes: understatement by negation of the contrary ('not bad', 'no small feat')." .
+ms:Allegory a owl:Class ; rdfs:subClassOf ms:Trope ; rdfs:label "allegory: sustained metaphor — a continued figure whose whole means another (Quintilian: a continued metaphor)." .
+ms:Antonomasia a owl:Class ; rdfs:subClassOf ms:Trope ; rdfs:label "antonomasia: an epithet for a proper name ('the Bard', 'the Philosopher')." .
+
+# ── Schemes — turns of ARRANGEMENT (Quintilian IX) — slice 7 (lecture 7) ───────
+# A scheme (schēma, "shape") leaves every word in its proper meaning and instead
+# patterns the ORDER or SOUND of words. The course takes them in FOUR groups
+# (lecture 7), declared here as intermediate genera under ms:Scheme so the TBox
+# mirrors the lecture's taxonomy exactly: repetition, balance, omission/excess,
+# and sound/climax.
+ms:Scheme a owl:Class ; rdfs:subClassOf ms:Figure ; rdfs:label "a scheme (schēma, 'shape'): a figure of ARRANGEMENT — a patterned departure from ordinary word order or sound, with each word's literal meaning intact (contrast ms:Trope, a turn of sense)." .
+
+# Group 1 — repetition: words repeated in patterned positions.
+ms:SchemeOfRepetition a owl:Class ; rdfs:subClassOf ms:Scheme ; rdfs:label "schemes of repetition: figures that repeat words in disciplined positions (head, tail, joint, or root)." .
+ms:Anaphora a owl:Class ; rdfs:subClassOf ms:SchemeOfRepetition ; rdfs:label "anaphora: repetition at the START of successive clauses ('we shall fight … we shall fight …')." .
+ms:Epistrophe a owl:Class ; rdfs:subClassOf ms:SchemeOfRepetition ; rdfs:label "epistrophe (epiphora): repetition at the END of successive clauses ('… for the people')." .
+ms:Symploce a owl:Class ; rdfs:subClassOf ms:SchemeOfRepetition ; rdfs:label "symploce: anaphora and epistrophe together — repetition at both head and tail." .
+ms:Anadiplosis a owl:Class ; rdfs:subClassOf ms:SchemeOfRepetition ; rdfs:label "anadiplosis: the LAST word of one clause opens the next ('fear leads to anger; anger leads to hate')." .
+ms:Polyptoton a owl:Class ; rdfs:subClassOf ms:SchemeOfRepetition ; rdfs:label "polyptoton: repetition of one ROOT in different grammatical forms ('strong / strength', 'judge not that ye be not judged')." .
+
+# Group 2 — balance: clauses set in symmetry; the mirror (chiasmus) lives here.
+ms:SchemeOfBalance a owl:Class ; rdfs:subClassOf ms:Scheme ; rdfs:label "schemes of balance: figures of symmetry — matching, equal, opposed, or mirrored structure." .
+ms:Parallelism a owl:Class ; rdfs:subClassOf ms:SchemeOfBalance ; rdfs:label "parallelism: successive clauses of matching grammatical structure (the base of the family)." .
+ms:Isocolon a owl:Class ; rdfs:subClassOf ms:SchemeOfBalance ; rdfs:label "isocolon: parallel members of roughly EQUAL length and rhythm ('veni, vidi, vici')." .
+ms:Antithesis a owl:Class ; rdfs:subClassOf ms:SchemeOfBalance ; rdfs:label "antithesis: parallel structure carrying OPPOSED ideas ('many are called, but few are chosen') — the scheme of distinction and definition." .
+ms:Chiasmus a owl:Class ; rdfs:subClassOf ms:SchemeOfBalance ; rdfs:label "chiasmus: mirror reversal — the second half inverts the order of the first (ABBA), named for the X of Greek chi. Structurally a TURN, the syntactic kin of peripeteia." ; rdfs:seeAlso ms:Peripeteia .
+ms:Antimetabole a owl:Class ; rdfs:subClassOf ms:Chiasmus ; rdfs:label "antimetabole: chiasmus in which the IDENTICAL words return reversed ('ask not what your country can do for you …') — a species of chiasmus." .
+
+# Group 3 — omission and excess: departing from the expected NUMBER of words.
+ms:SchemeOfOmission a owl:Class ; rdfs:subClassOf ms:Scheme ; rdfs:label "schemes of omission and excess: figures that drop or multiply words (especially connectives), changing the pace of thought." .
+ms:Asyndeton a owl:Class ; rdfs:subClassOf ms:SchemeOfOmission ; rdfs:label "asyndeton: OMITTING expected conjunctions ('veni, vidi, vici') — speeds and compresses." .
+ms:Polysyndeton a owl:Class ; rdfs:subClassOf ms:SchemeOfOmission ; rdfs:label "polysyndeton: PILING UP conjunctions ('and the earth, and the sea, and the sky') — slows and accumulates." .
+ms:Ellipsis a owl:Class ; rdfs:subClassOf ms:SchemeOfOmission ; rdfs:label "ellipsis: omitting a word the listener readily supplies ('the spirit is willing, but the flesh [is] weak')." .
+ms:Zeugma a owl:Class ; rdfs:subClassOf ms:SchemeOfOmission ; rdfs:label "zeugma: one word governing two others, often with a literal/figurative swerve ('he lost his coat and his temper') — sits on the trope/scheme border." .
+
+# Group 4 — sound and climax: arrangement by degree/number, and the schemes of sound.
+ms:SchemeOfSound a owl:Class ; rdfs:subClassOf ms:Scheme ; rdfs:label "schemes of sound and climax: figures of mounting arrangement (climax, tricolon) and of patterned sound (alliteration, assonance, etc.) — the family that makes a phrase RING and lodge in memory." .
+ms:Climax a owl:Class ; rdfs:subClassOf ms:SchemeOfSound ; rdfs:label "climax (gradatio, 'a staircase'): arrangement in MOUNTING degrees, each member stronger than the last, often built by anadiplosis ('… patience; and patience, experience; and experience, hope')." .
+ms:Tricolon a owl:Class ; rdfs:subClassOf ms:SchemeOfSound ; rdfs:label "tricolon: a series of THREE parallel members (the 'rule of three'), often with the third longest (tricolon crescens): 'of the people, by the people, for the people'." .
+ms:Alliteration a owl:Class ; rdfs:subClassOf ms:SchemeOfSound ; rdfs:label "alliteration: repeated initial consonants ('blow, bugle, blow')." .
+ms:Assonance a owl:Class ; rdfs:subClassOf ms:SchemeOfSound ; rdfs:label "assonance: repeated vowel sounds across nearby words." .
+ms:Homoioteleuton a owl:Class ; rdfs:subClassOf ms:SchemeOfSound ; rdfs:label "homoioteleuton: successive words or clauses with similar endings — the prose cousin of rhyme." .
+ms:Paronomasia a owl:Class ; rdfs:subClassOf ms:SchemeOfSound ; rdfs:label "paronomasia: the pun — wordplay on similar sound but different sense; like zeugma, it leans toward the tropes." .
+
+# ── Figures of thought — turns of the IDEA (Quintilian IX.1) — slice 8 (lecture 8)
+# The third and last family of figures, completing the ms:Figure trichotomy
+# (ms:Trope / ms:Scheme / ms:FigureOfThought). A figure of thought lives in the
+# CONCEPTION, not the diction: it SURVIVES PARAPHRASE (Quintilian's test) — reword
+# it and the figure remains, because it is a posture of the mind, not a pattern of
+# words. Closing seam: ms:FigureOfThought rdfs:seeAlso ms:Dianoia — these are the
+# rhetorical heirs of dianoia (thought), the third part of tragedy, which Aristotle
+# himself hands from the Poetics (ch. 19) to the Rhetoric. The last classes of the
+# course point back at the first lecture.
+ms:FigureOfThought a owl:Class ; rdfs:subClassOf ms:Figure ; rdfs:label "a figure of thought (figura sententiae): a figure pitched at the level of the IDEA or the speaker–audience relation, not the word or its order. Test: it survives paraphrase (Quintilian IX.1)." ; rdfs:seeAlso ms:Dianoia .
+ms:RhetoricalQuestion a owl:Class ; rdfs:subClassOf ms:FigureOfThought ; rdfs:label "rhetorical question (erotema / interrogatio): a question asked not for information but to assert or press — the audience supplies the answer ('How long, Catiline, will you abuse our patience?')." .
+ms:Hypophora a owl:Class ; rdfs:subClassOf ms:FigureOfThought ; rdfs:label "hypophora (anthypophora): the speaker RAISES a question and immediately ANSWERS it — a dialogue staged inside a monologue ('You ask what I propose? I propose this.')." .
+ms:Apostrophe a owl:Class ; rdfs:subClassOf ms:FigureOfThought ; rdfs:label "apostrophe (apostrophē, 'a turning away'): breaking off to ADDRESS the absent, the dead, or an abstraction ('O Death, where is thy sting?') — a turn of address, kin to peripeteia and tropos." .
+ms:Prosopopoeia a owl:Class ; rdfs:subClassOf ms:FigureOfThought ; rdfs:label "prosopopoeia / personification (prosopon, 'mask'): giving VOICE or person to the absent, dead, or abstract, letting it speak (the Laws of Athens in Plato's Crito) — a seed of mimesis inside rhetoric." .
+ms:Praeteritio a owl:Class ; rdfs:subClassOf ms:FigureOfThought ; rdfs:label "praeteritio (paralipsis / occupatio): emphasising something by professing to PASS OVER it ('I will not mention his debts …') — a species of irony of stance." .

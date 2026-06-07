@@ -38,6 +38,109 @@ ms:SurpriseInevitability a owl:Class ; rdfs:subClassOf ms:DramaticForm ; rdfs:la
 ms:UnityOfAction a owl:Class ; rdfs:subClassOf ms:DramaticForm ; rdfs:label "one complete action by necessity" .
 ms:HamartiaIntegration a owl:Class ; rdfs:subClassOf ms:DramaticForm ; rdfs:label "the misconception as the mainspring of the plot" .
 
+# ── The constitutive parts of tragedy (Aristotle, Poetics ch. 6 — the six merē) ─
+# DISTINCT from the DramaticForm targets above. A DramaticForm is an EFFECT a
+# well-made plot produces (a reversal, a recognition); a TragicPart is one of the
+# six MATERIALS a tragedy is made OF. Curriculum companion: course 1001
+# (content-poetics-rhetoric), lecture 1 "Mimesis and Poiesis" — every term below
+# is taught there. poeticRank encodes Aristotle's explicit ranking (ch. 6): plot
+# first ("the soul of a tragedy"), spectacle last ("least connected with the art").
+ms:Poiesis a owl:Class ; rdfs:label "poiesis: making/production governed by techne (contrast praxis = action, theoria = contemplation)" .
+ms:Mimesis a owl:Class ; rdfs:label "mimesis: representation/imitation — the genus under which the poetic arts fall (Poetics ch. 1)" .
+
+ms:TragicPart a owl:Class ; rdfs:label "one of the six constitutive parts (merē) of tragedy, Poetics ch. 6" .
+ms:Mythos a owl:Class ; rdfs:subClassOf ms:TragicPart ; rdfs:label "plot: the arrangement of the incidents — the soul of tragedy" ; ms:poeticRank 1 .
+ms:Ethos a owl:Class ; rdfs:subClassOf ms:TragicPart ; rdfs:label "character: moral quality revealed in choice (borne by ms:Character + its interior agencies)" ; ms:poeticRank 2 .
+ms:Dianoia a owl:Class ; rdfs:subClassOf ms:TragicPart ; rdfs:label "thought: reasoning, proof and refutation, saying what is pertinent" ; ms:poeticRank 3 .
+ms:Lexis a owl:Class ; rdfs:subClassOf ms:TragicPart ; rdfs:label "diction: expression of meaning in words (the Roman elocutio; where the figures live)" ; ms:poeticRank 4 .
+ms:Melos a owl:Class ; rdfs:subClassOf ms:TragicPart ; rdfs:label "song/melody: the greatest of the embellishments" ; ms:poeticRank 5 .
+ms:Opsis a owl:Class ; rdfs:subClassOf ms:TragicPart ; rdfs:label "spectacle: the staged/visual dimension — least connected with the art of poetry" ; ms:poeticRank 6 .
+
+# poeticRank: Aristotle's ch. 6 ordering, read off as an integer (1 = highest).
+ms:poeticRank a owl:DatatypeProperty ; rdfs:domain ms:TragicPart ; rdfs:range xsd:integer ;
+  rdfs:comment "Aristotle's explicit ranking of the six parts in Poetics ch. 6; lower = more essential to the art." .
+# inheresInPart: which constitutive part an effect/device belongs to. The two
+# strongest dramatic forms are, in Aristotle's words, parts of the plot (ch. 11):
+# "Reversal of the Situation and Recognition ... are parts of the Plot."
+ms:inheresInPart a owl:ObjectProperty ; rdfs:range ms:TragicPart ;
+  rdfs:comment "the constitutive part (merē) in which a dramatic form or plot device inheres." .
+ms:Peripeteia ms:inheresInPart ms:Mythos .
+ms:Anagnorisis ms:inheresInPart ms:Mythos .
+
+# ── The architecture of the plot (Poetics chs. 7–11, 18) — slice 2 ────────────
+# Curriculum companion: course 1001 (content-poetics-rhetoric), lecture 2 "The
+# Architecture of Plot". Pathos completes the three parts of the plot (ch. 11,
+# alongside peripeteia + anagnorisis above); simple vs complex (ch. 10) and the
+# desis/lysis phases (ch. 18) describe how a mythos is built and how it turns.
+ms:Pathos a owl:Class ; rdfs:subClassOf ms:DramaticForm ; rdfs:label "scene of suffering: a destructive or painful action — the third part of the plot (Poetics ch. 11). NB distinct from the rhetorical pathos-appeal (ms:PathosAppeal, lecture 4)." ; ms:inheresInPart ms:Mythos .
+ms:WholeAction a owl:Class ; rdfs:label "a complete action: a beginning, a middle, and an end joined by probability or necessity (Poetics chs. 7–8)." .
+ms:SimplePlot a owl:Class ; rdfs:subClassOf ms:Mythos ; rdfs:label "simple plot: a change of fortune without reversal or recognition (Poetics ch. 10)." .
+ms:ComplexPlot a owl:Class ; rdfs:subClassOf ms:Mythos ; rdfs:label "complex plot: a change of fortune carried by reversal and/or recognition (Poetics ch. 10)." .
+ms:PlotPhase a owl:Class ; rdfs:label "a structural phase of the plot in time (Poetics ch. 18)." .
+ms:Desis a owl:Class ; rdfs:subClassOf ms:PlotPhase ; rdfs:label "complication / desis: from the start to the turning-point — the tying of the knot (Poetics ch. 18)." ; ms:inheresInPart ms:Mythos .
+ms:Lysis a owl:Class ; rdfs:subClassOf ms:PlotPhase ; rdfs:label "unravelling / lysis: from the turning-point to the end — the untying of the knot (Poetics ch. 18)." ; ms:inheresInPart ms:Mythos .
+
+# The three "unities". Only unity of action is genuinely Aristotle's (ch. 8 —
+# and already a ms:DramaticForm above); time is a passing remark (ch. 5) and
+# place a later neoclassical addition (Castelvetro, 1570). ms:aristotelian
+# records that provenance, so the later rules stay bare classes — neither an
+# effect (DramaticForm) nor a material (TragicPart) in Aristotle's own scheme.
+ms:aristotelian a owl:DatatypeProperty ; rdfs:range xsd:boolean ;
+  rdfs:comment "true iff the dramatic principle is genuinely Aristotle's, as opposed to a later (neoclassical) attribution." .
+ms:UnityOfAction ms:aristotelian true .
+ms:UnityOfTime a owl:Class ; rdfs:label "unity of time: the action confined to a single revolution of the sun (a neoclassical rule; Aristotle ch. 5 only observes a tendency)." ; ms:aristotelian false .
+ms:UnityOfPlace a owl:Class ; rdfs:label "unity of place: the action confined to a single location (a neoclassical rule, not in Aristotle)." ; ms:aristotelian false .
+
+# ── What the plot is FOR: flaw, emotions, end, wonder (Poetics chs. 6, 9, 13–14, 24) — slice 3 ─
+# Curriculum companion: course 1001 lecture 3 "Hamartia, Catharsis, Wonder".
+# ms:Hamartia is the FLAW (a material cause, ch. 13), kept distinct from the
+# pre-existing ms:HamartiaIntegration (a DramaticForm — the flaw made the
+# mainspring of the plot); ms:integrates links them. Tragedy AROUSES pity and
+# fear (ms:arouses) and CLARIFIES them (ms:clarifies) — two relations, encoding
+# the "clarification" reading of catharsis. Wonder (ms:Thaumaston) is the affect
+# of the surprising-yet-inevitable (the existing ms:SurpriseInevitability form).
+ms:Hamartia a owl:Class ; rdfs:label "hamartia: the error or frailty that drives the change of fortune — a missing of the mark, not necessarily a moral vice (Poetics ch. 13)." .
+ms:integrates a owl:ObjectProperty ; rdfs:domain ms:DramaticForm ; rdfs:range ms:Hamartia ;
+  rdfs:comment "the flaw a dramatic form puts at the mainspring of the plot." .
+ms:HamartiaIntegration ms:integrates ms:Hamartia .
+
+ms:Affect a owl:Class ; rdfs:label "an emotion a drama arouses in, or works upon, its audience." .
+ms:TragicEmotion a owl:Class ; rdfs:subClassOf ms:Affect ; rdfs:label "the emotions proper to tragedy (Poetics ch. 6, 13)." .
+ms:Pity a owl:Class ; rdfs:subClassOf ms:TragicEmotion ; rdfs:label "pity (eleos): aroused by undeserved misfortune (Poetics ch. 13)." .
+ms:Fear a owl:Class ; rdfs:subClassOf ms:TragicEmotion ; rdfs:label "fear (phobos): aroused by the misfortune of one like ourselves (Poetics ch. 13)." .
+ms:Thaumaston a owl:Class ; rdfs:subClassOf ms:Affect ; rdfs:label "wonder / the marvellous (to thaumaston): the affect of the surprising-yet-inevitable (Poetics chs. 9, 24)." .
+
+ms:arouses a owl:ObjectProperty ; rdfs:domain ms:DramaticForm ; rdfs:range ms:Affect ;
+  rdfs:comment "the affect a dramatic form raises in the audience." .
+ms:clarifies a owl:ObjectProperty ; rdfs:domain ms:DramaticForm ; rdfs:range ms:Affect ;
+  rdfs:comment "the affect that catharsis purges / refines / clarifies — the four-century crux read here as clarification." .
+ms:Catharsis ms:clarifies ms:Pity, ms:Fear .
+ms:SurpriseInevitability ms:arouses ms:Thaumaston .
+
+# ── The bridge to rhetoric: the three appeals & three genres (Aristotle, Rhetoric I.2–3) — slice 4 ─
+# Curriculum companion: course 1001 lecture 4 "From Poetics to Rhetoric". These
+# are still Aristotle (Greek), so they live here; the Roman systematisation
+# (canons, tropes, schemes) gets its own rhetoric-core.ttl from lecture 5 on.
+# The -Appeal suffix is LOAD-BEARING: it holds ms:EthosAppeal / ms:PathosAppeal
+# apart from the tragic ms:Ethos (a TragicPart, slice 1) and ms:Pathos (a part
+# of the plot, slice 2). Same Greek word, different class — no homonym collapse.
+ms:RhetoricalAppeal a owl:Class ; rdfs:label "one of the three means of persuasion (pisteis), Rhetoric I.2." .
+ms:EthosAppeal a owl:Class ; rdfs:subClassOf ms:RhetoricalAppeal ; rdfs:label "ethos appeal: persuasion through the speaker's character — good sense (phronesis), virtue (aretē), goodwill (eunoia); built in the speech itself. NB distinct from the tragic ms:Ethos." .
+ms:PathosAppeal a owl:Class ; rdfs:subClassOf ms:RhetoricalAppeal ; rdfs:label "pathos appeal: persuasion by putting the audience into an emotional state (Rhetoric Bk II). NB distinct from the tragic ms:Pathos (scene of suffering)." .
+ms:LogosAppeal a owl:Class ; rdfs:subClassOf ms:RhetoricalAppeal ; rdfs:label "logos appeal: persuasion by the argument itself — 'the body of proof'." .
+ms:Eunoia a owl:Class ; rdfs:label "eunoia: goodwill toward the audience — the component of ethos that opens onto the ethics of recognition (wanting the other's good)." .
+ms:Enthymeme a owl:Class ; rdfs:label "enthymeme: the rhetorical syllogism — argues from probabilities/signs, often leaving a premise for the hearer to supply (Rhetoric I.2)." .
+ms:Paradeigma a owl:Class ; rdfs:label "paradeigma: the rhetorical example — persuasion by precedent / parallel case (rhetorical induction)." .
+ms:servesAppeal a owl:ObjectProperty ; rdfs:range ms:RhetoricalAppeal ;
+  rdfs:comment "the appeal an instrument of proof serves." .
+ms:Enthymeme ms:servesAppeal ms:LogosAppeal .
+ms:Paradeigma ms:servesAppeal ms:LogosAppeal .
+
+ms:RhetoricalGenre a owl:Class ; rdfs:label "a kind of oratory, sorted by audience and time (Rhetoric I.3)." .
+ms:Deliberative a owl:Class ; rdfs:subClassOf ms:RhetoricalGenre ; rdfs:label "deliberative (political): addressed to a decision; about the future; the expedient vs the harmful." .
+ms:Forensic a owl:Class ; rdfs:subClassOf ms:RhetoricalGenre ; rdfs:label "forensic (judicial): addressed to a court; about the past; the just vs the unjust." .
+ms:Epideictic a owl:Class ; rdfs:subClassOf ms:RhetoricalGenre ; rdfs:label "epideictic (ceremonial): addressed to spectators; about the present; the honourable vs the base (praise/blame)." .
+
 # ── Dramatic roles (reuse the existing RoleView) ──────────────────────────────
 ms:DramaticRole a owl:Class ; rdfs:subClassOf ms:RoleView .
 ms:TutorRole a owl:Class ; rdfs:subClassOf ms:DramaticRole .

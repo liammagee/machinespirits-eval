@@ -91,3 +91,15 @@ test('casting consistency is scoped out of the default ToM check (decision 2B)',
   assert.equal(specCheck.consistent, false);
   assert.ok(specCheck.violations.role1);
 });
+
+test('the Roman rhetoric vocabulary is an opt-in module that co-loads and parses', async () => {
+  // rhetoric-core.ttl (course 1001 lectures 5–8) is registered but NOT in
+  // DEFAULT_MODULES. Loading it with poetics must resolve the module name, parse
+  // the TTL through EYE, and stay consistent — and ms:Elocutio's seeAlso link to
+  // the poetics ms:Lexis must not introduce any contradiction.
+  const abox = `${ABOX_PREFIXES}\nms:speech1 rdf:type ms:Inventio . ms:fig1 rdf:type ms:Elocutio .`;
+  const result = await checkAboxConsistency(abox, {
+    modules: ['reasoning', 'poetics', 'rhetoric'],
+  });
+  assert.equal(result.consistent, true);
+});
