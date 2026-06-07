@@ -1,0 +1,1202 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Teaching Dramas, Speech Axioms, and Post-Trained LLM Learning: A Research and Implementation Map</title>
+  <style>
+    :root {
+      --bg: #f7f5ef;
+      --panel: #ffffff;
+      --ink: #1d1b18;
+      --muted: #5d5850;
+      --line: #ddd5c8;
+      --accent: #6b3f1d;
+      --accent-2: #1f5f5b;
+      --accent-soft: #efe2d4;
+      --green-soft: #ddebe8;
+      --red-soft: #f2dfdc;
+      --yellow-soft: #f2ead0;
+      --code: #27221d;
+      --code-bg: #f3eee6;
+      --shadow: 0 8px 30px rgba(48, 36, 23, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.62;
+    }
+    a { color: var(--accent-2); text-decoration-thickness: 0.08em; text-underline-offset: 0.16em; }
+    a:hover { color: var(--accent); }
+    .page {
+      display: grid;
+      grid-template-columns: minmax(230px, 300px) minmax(0, 1fr);
+      gap: 28px;
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 28px;
+    }
+    aside {
+      position: sticky;
+      top: 20px;
+      align-self: start;
+      background: rgba(255,255,255,0.74);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+      max-height: calc(100vh - 40px);
+      overflow: auto;
+    }
+    aside h2 { font-size: 0.95rem; margin: 0 0 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+    aside ol { padding-left: 1.15rem; margin: 0; }
+    aside li { margin: 0.34rem 0; font-size: 0.93rem; }
+    main { min-width: 0; }
+    header.hero {
+      background: linear-gradient(135deg, #fff 0%, #f4eadf 58%, #e2efec 100%);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      padding: clamp(28px, 5vw, 58px);
+      box-shadow: var(--shadow);
+      margin-bottom: 24px;
+    }
+    .eyebrow { color: var(--accent); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.82rem; }
+    h1 {
+      margin: 0.35rem 0 0.85rem;
+      font-size: clamp(2.2rem, 5vw, 4.35rem);
+      line-height: 1.02;
+      letter-spacing: -0.045em;
+      max-width: 1100px;
+    }
+    .subtitle { font-size: clamp(1.05rem, 2vw, 1.34rem); color: var(--muted); max-width: 980px; margin: 0 0 1.4rem; }
+    .meta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 7px 12px;
+      background: rgba(255,255,255,0.72);
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    section.card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: clamp(22px, 3vw, 38px);
+      margin: 22px 0;
+      box-shadow: var(--shadow);
+    }
+    h2 {
+      font-size: clamp(1.55rem, 3vw, 2.45rem);
+      line-height: 1.13;
+      margin: 0 0 1rem;
+      letter-spacing: -0.025em;
+    }
+    h3 { font-size: 1.22rem; margin-top: 1.8rem; margin-bottom: 0.55rem; color: var(--accent); }
+    h4 { font-size: 1.03rem; margin-bottom: 0.4rem; }
+    p { margin: 0.8rem 0; }
+    .lead { font-size: 1.12rem; color: #312a22; }
+    .callout {
+      border-left: 5px solid var(--accent);
+      background: var(--accent-soft);
+      padding: 16px 18px;
+      border-radius: 14px;
+      margin: 18px 0;
+    }
+    .callout.green { border-left-color: var(--accent-2); background: var(--green-soft); }
+    .callout.yellow { border-left-color: #b4831c; background: var(--yellow-soft); }
+    .callout.red { border-left-color: #a84d40; background: var(--red-soft); }
+    .grid { display: grid; gap: 18px; }
+    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .mini-card {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px;
+      background: #fffdf9;
+    }
+    .mini-card h3, .mini-card h4 { margin-top: 0; }
+    .status {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 3px 9px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    .supported { background: var(--green-soft); color: #164744; }
+    .partial { background: var(--yellow-soft); color: #6c4a00; }
+    .null { background: var(--red-soft); color: #73342d; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 18px 0;
+      font-size: 0.94rem;
+      overflow-wrap: anywhere;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 10px 11px;
+      vertical-align: top;
+      text-align: left;
+    }
+    th { background: #f3ecdf; font-weight: 800; }
+    tr:nth-child(even) td { background: #fdfaf5; }
+    code, pre {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      color: var(--code);
+      background: var(--code-bg);
+      border: 1px solid #e0d5c6;
+      border-radius: 8px;
+    }
+    code { padding: 0.1rem 0.28rem; font-size: 0.92em; }
+    pre {
+      padding: 16px;
+      overflow: auto;
+      line-height: 1.45;
+      font-size: 0.9rem;
+    }
+    .refs li { margin-bottom: 0.78rem; }
+    .small { font-size: 0.91rem; color: var(--muted); }
+    .kbd {
+      display: inline-block;
+      padding: 2px 6px;
+      border: 1px solid #b9afa3;
+      border-bottom-width: 2px;
+      border-radius: 6px;
+      background: #fff;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.84em;
+    }
+    .task-list { counter-reset: task; padding: 0; list-style: none; }
+    .task-list > li {
+      counter-increment: task;
+      margin: 18px 0;
+      padding: 16px 18px 16px 58px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fffdf9;
+      position: relative;
+    }
+    .task-list > li::before {
+      content: counter(task);
+      position: absolute;
+      left: 16px;
+      top: 17px;
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--accent);
+      color: white;
+      font-weight: 800;
+      font-size: 0.86rem;
+    }
+    .task-list strong { display: block; margin-bottom: 0.25rem; }
+    .checklist li { margin: 0.4rem 0; }
+    .footnote { font-size: 0.86rem; color: var(--muted); }
+    @media (max-width: 980px) {
+      .page { display: block; padding: 16px; }
+      aside { position: relative; top: auto; max-height: none; margin-bottom: 18px; }
+      .grid.two, .grid.three { grid-template-columns: 1fr; }
+      header.hero, section.card { border-radius: 20px; }
+    }
+
+    .diagram-wrap {
+      background: #fffdf9;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+      overflow-x: auto;
+      margin: 18px 0;
+    }
+    .diagram-wrap svg {
+      width: 100%;
+      height: auto;
+      min-width: 980px;
+      display: block;
+    }
+    .legend-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 12px 0 18px;
+    }
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: #fffdf9;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+    .swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      display: inline-block;
+      border: 1px solid rgba(0,0,0,0.2);
+    }
+    .swatch.covered { background: var(--green-soft); }
+    .swatch.partial { background: var(--yellow-soft); }
+    .swatch.todo { background: #fff; border: 1px dashed var(--accent); }
+
+    @media print {
+      body { background: white; }
+      .page { display: block; max-width: none; padding: 0; }
+      aside { display: none; }
+      header.hero, section.card { box-shadow: none; border-radius: 0; page-break-inside: avoid; }
+      a { color: black; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <aside aria-label="Table of contents">
+      <h2>Contents</h2>
+      <ol>
+        <li><a href="#thesis">Thesis</a></li>
+        <li><a href="#atlas-read">Read of the atlas</a></li>
+        <li><a href="#literature-map">Systematic literature map</a></li>
+        <li><a href="#literature-diagram">Literature coverage diagram</a></li>
+        <li><a href="#overlooked">What we overlooked</a></li>
+        <li><a href="#problem-space">Problem-space map</a></li>
+        <li><a href="#mechanisms">Mechanisms needed</a></li>
+        <li><a href="#research-plan">Research plan</a></li>
+        <li><a href="#codex">Codex implementation tickets</a></li>
+        <li><a href="#schemas">Schemas and examples</a></li>
+        <li><a href="#references">References</a></li>
+      </ol>
+    </aside>
+
+    <main>
+      <header class="hero">
+        <div class="eyebrow">Research atlas synthesis · A19 planning draft</div>
+        <h1>Teaching Dramas, Speech Axioms, and Post-Trained LLM Learning</h1>
+        <p class="subtitle">A standalone research map for learning to modify tutor speech from felicities and infelicities in teaching dramas: drama/rhetoric ontology, tutor-as-learner, learner resistance as teacher, A18-style counterfactual policy transfer, and a Codex-ready implementation plan.</p>
+        <div class="meta">
+          <span class="pill">Source atlas: <em>Geist in the Machine</em>, v3.0.129</span>
+          <span class="pill">Prepared: June 7, 2026</span>
+          <span class="pill">Proposed next arc: A19 Drama-Axiom Transfer</span>
+          <span class="pill">Status: design draft, not a deployment spec</span>
+        </div>
+      </header>
+
+      <section id="thesis" class="card">
+        <h2>1. Thesis</h2>
+        <p class="lead">Adaptive tutoring should not be modeled primarily as generic turn-by-turn slope improvement, hidden learner-state inference, or global prompt improvement. The stronger unit is a <strong>counterfactual teaching-drama axiom</strong>: a typed, scope-bounded lesson about how the tutor should modify speech after a particular kind of learner resistance exposes an infelicity.</p>
+        <div class="callout">
+          <p><strong>Working thesis:</strong> the tutor learns when a teaching drama yields a contrastive record: an infelicitous speech move, a diagnosis of why it failed, a repaired move, applicability conditions, and a held-out S0/S1 test showing that the policy-memory tutor avoids a decoy that the no-policy tutor would likely take.</p>
+        </div>
+        <p>The central research question can be made operational as follows:</p>
+        <pre><code>How can a tutor learn reproducible, scope-bounded speech modifications
+from public teaching dramas, where learner resistance functions as the
+teacher's evidence signal?</code></pre>
+      </section>
+
+      <section id="atlas-read" class="card">
+        <h2>2. Read of the atlas</h2>
+        <div class="grid three">
+          <div class="mini-card">
+            <h3>Calibration</h3>
+            <p><span class="status supported">supported</span></p>
+            <p>Recognition/intersubjective framing lifts the floor and narrows the response distribution. It operates from the first turn and does not require the superego to be active.</p>
+          </div>
+          <div class="mini-card">
+            <h3>Error correction</h3>
+            <p><span class="status supported">supported, substitutive</span></p>
+            <p>The superego helps when base output leaves error headroom. Under strong recognition calibration, its residual value collapses on stronger models and persists on weaker models.</p>
+          </div>
+          <div class="mini-card">
+            <h3>Adaptive slope</h3>
+            <p><span class="status null">not supported</span></p>
+            <p>The primary within-dialogue trajectory test is null. Tutors adapt across turns, but recognition and architecture do not selectively modulate the slope.</p>
+          </div>
+        </div>
+
+        <h3>2.1 What the mechanism result now means</h3>
+        <p>The atlas has moved beyond the earlier three-mechanism story. Its strongest general mechanism is <strong>recognition as calibration</strong>: the tutor becomes less generic and more consistently adequate. The second mechanism is <strong>error correction</strong>: critique catches uncalibrated failures, but its value is partly substituted away by recognition. The third candidate mechanism, condition-specific adaptive responsiveness, is a clean null in the well-powered primary analysis and in the pre-registered replication of its earlier exploratory boundary case.</p>
+
+        <table>
+          <thead>
+            <tr><th>Mechanism</th><th>Architectural level</th><th>Atlas result</th><th>Implication for A19</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Calibration</td>
+              <td>Prompt / orientation</td>
+              <td>Supported across models and judges; within-response variance drops and recognition is unanimous across judge × run cells.</td>
+              <td>Use recognition as a floor-setting baseline, not as evidence of learning.</td>
+            </tr>
+            <tr>
+              <td>Error correction</td>
+              <td>Architecture / critique</td>
+              <td>Supported under base conditions; substitutive with calibration; residual value tracks post-calibration error headroom.</td>
+              <td>Replace one generic superego with specialized critics that diagnose concrete speech infelicities.</td>
+            </tr>
+            <tr>
+              <td>Adaptive responsiveness</td>
+              <td>Interaction / slope</td>
+              <td>Not supported as a distinct condition-modulated mechanism.</td>
+              <td>Stop measuring generic slopes as the main adaptation object; test policy transfer instead.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>2.2 The A18 residue is the bridge</h3>
+        <p>The A18 arc gives the strongest positive model of “tutor-as-learner.” A failed first attempt can be converted into a policy memory that transfers to held-out sibling cards, but only under headroom: the no-policy tutor must be likely to take a decoy shortcut, and the policy-memory tutor must select the registered target under a blind protocol.</p>
+        <div class="callout green">
+          <p><strong>A18 principle:</strong> “Does the policy help?” is a per-card property, not a per-family property. Axioms need applicability conditions, anti-conditions, and headroom evidence. Ceiling cases where S0 also succeeds are not policy failures; they are no-headroom cases.</p>
+        </div>
+
+        <h3>2.3 The id-director/charisma branch is a substrate, not yet uptake</h3>
+        <p>The id-director cells show that rhetoric and persona can be actively re-authored. Cell 104 is strongest on v2.2 recognition-grounded pedagogy, cell 105 wins charisma, and cell 107 is the best generalist. But the persona-shift lift is scenario-conditional: the architecture matters especially when the disclosure resists easy sympathy. This is valuable for rhetorical design, but it is not yet evidence that the learner has learned or that the tutor has acquired reusable axioms.</p>
+
+        <h3>2.4 The hidden-interior arc should redirect ontology</h3>
+        <p>The symbolic and hidden-trace nulls are not a reason to abandon ontology. They are a reason to formalize the <strong>public drama</strong> rather than an inferred learner interior. The ontology should track commitments, warrants, acts, ruptures, repairs, decoys, and uptake signals that are publicly enacted in dialogue.</p>
+      </section>
+
+      <section id="literature-map" class="card">
+        <h2>3. Systematic literature map: post-trained LLM learning strategies</h2>
+        <p>The relevant literature divides into eight families. The main lesson is that durable post-training is useful only after the project has defined the right learning unit. For this project, the unit should be the teaching-drama axiom, not a holistic quality score.</p>
+
+        <table>
+          <thead>
+            <tr><th>Family</th><th>Representative work</th><th>What it learns</th><th>Use for this project</th><th>Risk / gap</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Post-training taxonomy</td>
+              <td>Post-training surveys frame the field around fine-tuning, alignment, reasoning, efficiency, and integration/adaptation.<sup><a href="#ref-tie2025">[1]</a></sup></td>
+              <td>Task behavior, alignment, reasoning style, deployment efficiency.</td>
+              <td>Use as the overall map, but do not select a weight-update method before the reward object is stable.</td>
+              <td>Surveys are broad; they do not define drama-level pedagogical felicity.</td>
+            </tr>
+            <tr>
+              <td>Preference optimization</td>
+              <td>DPO, KTO, ORPO, SimPO.<sup><a href="#ref-rafailov2023">[2]</a> <a href="#ref-ethayarajh2024">[3]</a> <a href="#ref-hong2024">[4]</a> <a href="#ref-meng2024">[5]</a></sup></td>
+              <td>Preference-aligned utterance distributions.</td>
+              <td>Later: train on felicitous vs infelicitous speech pairs under the same drama state.</td>
+              <td>Pairwise preference alone can reward politeness, verbosity, or sycophancy rather than pedagogical uptake.</td>
+            </tr>
+            <tr>
+              <td>Reasoning/process supervision</td>
+              <td>Process reward modeling, o1-style reasoning RL, DeepSeek-R1.<sup><a href="#ref-lightman2023">[6]</a> <a href="#ref-openai2024">[7]</a> <a href="#ref-deepseek2025">[8]</a></sup></td>
+              <td>Intermediate reasoning steps, verification behavior, self-reflection.</td>
+              <td>Translate “step” into pedagogical-rhetorical acts: diagnose resistance, name warrant, avoid decoy, test uptake.</td>
+              <td>More thinking is not the same as better teaching; process labels must be drama-specific.</td>
+            </tr>
+            <tr>
+              <td>Verbal RL and self-correction</td>
+              <td>Reflexion, Self-Refine, self-correction surveys.<sup><a href="#ref-shinn2023">[9]</a> <a href="#ref-madaan2023">[10]</a> <a href="#ref-kamoi2024">[11]</a></sup></td>
+              <td>Natural-language reflections or refinements at test time.</td>
+              <td>Closest analogue to A18: convert failure feedback into a reusable verbal policy memory.</td>
+              <td>Intrinsic self-correction often fails without reliable external feedback; learner resistance must be structured into an evidence signal.</td>
+            </tr>
+            <tr>
+              <td>Agent memory and experience</td>
+              <td>Voyager, ExpeL, MemoryAgentBench, ERL.<sup><a href="#ref-wang2023voyager">[12]</a> <a href="#ref-zhao2023expel">[13]</a> <a href="#ref-hu2025memory">[14]</a> <a href="#ref-allard2026erl">[15]</a></sup></td>
+              <td>Skills, insights, heuristics, retrieval competence, selective forgetting.</td>
+              <td>Design axiom memory, retrieval, applicability gates, and forgetting/retirement criteria.</td>
+              <td>Experience replay is fragile if retrieval ignores scope, anti-conditions, and no-headroom cases.</td>
+            </tr>
+            <tr>
+              <td>Prompt and pipeline optimization</td>
+              <td>OPRO, DSPy, TextGrad, automatic prompt optimization surveys.<sup><a href="#ref-yang2023opro">[16]</a> <a href="#ref-khattab2023dspy">[17]</a> <a href="#ref-yuksekgonul2024textgrad">[18]</a> <a href="#ref-ramnath2025apo">[19]</a></sup></td>
+              <td>Prompts, demonstrations, modules, compound-system variables.</td>
+              <td>Optimize speech-edit operators after drama-state labels and axiom metrics exist.</td>
+              <td>Universal prompt edits can harm cross-model transfer; the atlas already shows model-stratified behavior.</td>
+            </tr>
+            <tr>
+              <td>Self-adapting weights</td>
+              <td>SEAL self-edits.<sup><a href="#ref-zweiger2025seal">[20]</a></sup></td>
+              <td>Model-generated fine-tuning data and update directives, trained by downstream reward.</td>
+              <td>Advanced route: let the tutor propose self-edits once A19 produces many validated axiom episodes.</td>
+              <td>Too early until the reward object is stable; expensive and harder to audit.</td>
+            </tr>
+            <tr>
+              <td>Education-specific LLM learning</td>
+              <td>Tutor DPO, dialogue knowledge tracing, LLM agents for education surveys.<sup><a href="#ref-scarlatos2025tutor">[21]</a> <a href="#ref-scarlatos2024llmkt">[22]</a> <a href="#ref-chu2025educationagents">[23]</a></sup></td>
+              <td>Student correctness likelihood, knowledge-component labels, tutoring-agent orchestration.</td>
+              <td>Borrow candidate utterance generation, student-model scoring, and knowledge tracing, but replace correctness-only reward with dramatic felicity and uptake.</td>
+              <td>Often optimizes for correctness or engagement, not resistance, rupture, repair, or speech modification.</td>
+            </tr>
+            <tr>
+              <td>Formal dialogue and rhetoric</td>
+              <td>ISO dialogue acts, RST, commitment dialogue, abstract argumentation.<sup><a href="#ref-iso24617">[24]</a> <a href="#ref-mann1988rst">[25]</a> <a href="#ref-walton1995commitment">[26]</a> <a href="#ref-dung1995argumentation">[27]</a></sup></td>
+              <td>Public acts, discourse relations, commitments, warrants, attack/support structure.</td>
+              <td>Make drama/rhetoric ontology reproducible and inspectable.</td>
+              <td>Can become brittle if used to infer hidden mental states rather than public commitments.</td>
+            </tr>
+            <tr>
+              <td>Evaluation and safety</td>
+              <td>LLM-as-judge, judge-bias surveys, sycophancy and reward tampering work.<sup><a href="#ref-zheng2023judge">[28]</a> <a href="#ref-gu2024judgesurvey">[29]</a> <a href="#ref-sharma2023sycophancy">[30]</a> <a href="#ref-denison2024tampering">[31]</a></sup></td>
+              <td>Scalable judgement, known judge biases, preference-induced agreeableness risks.</td>
+              <td>Use blind arbiters, basis labels, judge-bias critics, and human validation for the highest-value claims.</td>
+              <td>Preference systems can reward pleasing the learner rather than teaching the learner.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="callout yellow">
+          <p><strong>Review conclusion:</strong> the project should not primarily add a new fine-tuning algorithm. It should add a reproducible evidence unit. Once validated teaching-drama axioms exist at scale, DPO/SimPO, process rewards, DSPy/TextGrad, and SEAL become plausible downstream experiments.</p>
+        </div>
+      </section>
+
+
+      <section id="literature-diagram" class="card">
+        <h2>3A. Literature coverage diagram</h2>
+        <p class="lead">This map separates the current evidence base into three work zones: what is stable enough to build on, what is partially mapped but still needs deeper review, and what A19 should implement or validate next.</p>
+        <div class="legend-row" aria-label="Diagram legend">
+          <span class="legend-item"><span class="swatch covered"></span>Covered / stable enough to build on</span>
+          <span class="legend-item"><span class="swatch partial"></span>Partial / mapped, needs deeper review</span>
+          <span class="legend-item"><span class="swatch todo"></span>Todo / research and implementation</span>
+        </div>
+        <div class="diagram-wrap" aria-label="Literature coverage and remaining work map">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.42.4 (0)
+ -->
+<!-- Title: G Pages: 1 -->
+<svg width="2050pt" height="764pt"
+ viewBox="0.00 0.00 2050.00 763.89" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(18 745.89)">
+<title>G</title>
+<g id="clust1" class="cluster">
+<title>cluster_c</title>
+<path fill="#fffdf9" stroke="#c9bfae" d="M20,-8C20,-8 346,-8 346,-8 352,-8 358,-14 358,-20 358,-20 358,-393 358,-393 358,-399 352,-405 346,-405 346,-405 20,-405 20,-405 14,-405 8,-399 8,-393 8,-393 8,-20 8,-20 8,-14 14,-8 20,-8"/>
+<text text-anchor="middle" x="183" y="-389" font-family="Arial Bold" font-size="15.00">COVERED / stable enough to build on</text>
+</g>
+<g id="clust2" class="cluster">
+<title>cluster_p</title>
+<path fill="#fffdf9" stroke="#c9bfae" d="M401,-103C401,-103 712,-103 712,-103 718,-103 724,-109 724,-115 724,-115 724,-412 724,-412 724,-418 718,-424 712,-424 712,-424 401,-424 401,-424 395,-424 389,-418 389,-412 389,-412 389,-115 389,-115 389,-109 395,-103 401,-103"/>
+<text text-anchor="middle" x="556.5" y="-408" font-family="Arial Bold" font-size="15.00">PARTIAL / mapped, but needs deeper review</text>
+</g>
+<g id="clust3" class="cluster">
+<title>cluster_t</title>
+<path fill="#fffdf9" stroke="#c9bfae" d="M463,-432C463,-432 1994,-432 1994,-432 2000,-432 2006,-438 2006,-444 2006,-444 2006,-665 2006,-665 2006,-671 2000,-677 1994,-677 1994,-677 463,-677 463,-677 457,-677 451,-671 451,-665 451,-665 451,-444 451,-444 451,-438 457,-432 463,-432"/>
+<text text-anchor="middle" x="1228.5" y="-661" font-family="Arial Bold" font-size="15.00">TODO / next research and implementation</text>
+</g>
+<!-- C0 -->
+<g id="node1" class="node">
+<title>C0</title>
+<path fill="#ddebe8" stroke="#1f5f5b" stroke-width="1.4" d="M309,-219.5C309,-219.5 57,-219.5 57,-219.5 51,-219.5 45,-213.5 45,-207.5 45,-207.5 45,-180.5 45,-180.5 45,-174.5 51,-168.5 57,-168.5 57,-168.5 309,-168.5 309,-168.5 315,-168.5 321,-174.5 321,-180.5 321,-180.5 321,-207.5 321,-207.5 321,-213.5 315,-219.5 309,-219.5"/>
+<text text-anchor="middle" x="183" y="-203.9" font-family="Arial" font-size="12.00">Atlas mechanism result</text>
+<text text-anchor="middle" x="183" y="-190.9" font-family="Arial" font-size="12.00">calibration supported; error correction supported;</text>
+<text text-anchor="middle" x="183" y="-177.9" font-family="Arial" font-size="12.00">generic adaptive slope null</text>
+</g>
+<!-- P4 -->
+<g id="node9" class="node">
+<title>P4</title>
+<path fill="#f2ead0" stroke="#b4831c" stroke-width="1.4" d="M655.5,-162.5C655.5,-162.5 457.5,-162.5 457.5,-162.5 451.5,-162.5 445.5,-156.5 445.5,-150.5 445.5,-150.5 445.5,-123.5 445.5,-123.5 445.5,-117.5 451.5,-111.5 457.5,-111.5 457.5,-111.5 655.5,-111.5 655.5,-111.5 661.5,-111.5 667.5,-117.5 667.5,-123.5 667.5,-123.5 667.5,-150.5 667.5,-150.5 667.5,-156.5 661.5,-162.5 655.5,-162.5"/>
+<text text-anchor="middle" x="556.5" y="-146.9" font-family="Arial" font-size="12.00">Model&#45;stratified policies</text>
+<text text-anchor="middle" x="556.5" y="-133.9" font-family="Arial" font-size="12.00">weak&#45;model scaffolds vs strong&#45;model</text>
+<text text-anchor="middle" x="556.5" y="-120.9" font-family="Arial" font-size="12.00">light heuristics</text>
+</g>
+<!-- C0&#45;&gt;P4 -->
+<g id="edge1" class="edge">
+<title>C0&#45;&gt;P4</title>
+<path fill="none" stroke="#8a7d6f" d="M321.01,-172.98C359.72,-167.04 401.46,-160.63 438.85,-154.9"/>
+<polygon fill="#8a7d6f" stroke="#8a7d6f" points="439.21,-157.14 445.29,-153.91 438.52,-152.65 439.21,-157.14"/>
+</g>
+<!-- C1 -->
+<g id="node2" class="node">
+<title>C1</title>
+<path fill="#ddebe8" stroke="#1f5f5b" stroke-width="1.4" d="M297.5,-371.5C297.5,-371.5 68.5,-371.5 68.5,-371.5 62.5,-371.5 56.5,-365.5 56.5,-359.5 56.5,-359.5 56.5,-332.5 56.5,-332.5 56.5,-326.5 62.5,-320.5 68.5,-320.5 68.5,-320.5 297.5,-320.5 297.5,-320.5 303.5,-320.5 309.5,-326.5 309.5,-332.5 309.5,-332.5 309.5,-359.5 309.5,-359.5 309.5,-365.5 303.5,-371.5 297.5,-371.5"/>
+<text text-anchor="middle" x="183" y="-355.9" font-family="Arial" font-size="12.00">A18 policy transfer</text>
+<text text-anchor="middle" x="183" y="-342.9" font-family="Arial" font-size="12.00">attempt&#45;1 failure &#45;&gt; scoped policy memory &#45;&gt;</text>
+<text text-anchor="middle" x="183" y="-329.9" font-family="Arial" font-size="12.00">held&#45;out S0/S1 headroom test</text>
+</g>
+<!-- T3 -->
+<g id="node12" class="node">
+<title>T3</title>
+<path fill="#ffffff" stroke="#6b3f1d" stroke-width="1.4" stroke-dasharray="5,2" d="M1208,-643.5C1208,-643.5 1026,-643.5 1026,-643.5 1020,-643.5 1014,-637.5 1014,-631.5 1014,-631.5 1014,-604.5 1014,-604.5 1014,-598.5 1020,-592.5 1026,-592.5 1026,-592.5 1208,-592.5 1208,-592.5 1214,-592.5 1220,-598.5 1220,-604.5 1220,-604.5 1220,-631.5 1220,-631.5 1220,-637.5 1214,-643.5 1208,-643.5"/>
+<text text-anchor="middle" x="1117" y="-627.9" font-family="Arial" font-size="12.00">Teaching&#45;drama axiom schema</text>
+<text text-anchor="middle" x="1117" y="-614.9" font-family="Arial" font-size="12.00">trigger, anti&#45;trigger, speech edit,</text>
+<text text-anchor="middle" x="1117" y="-601.9" font-family="Arial" font-size="12.00">evidence, confidence, model scope</text>
+</g>
+<!-- C1&#45;&gt;T3 -->
+<g id="edge2" class="edge">
+<title>C1&#45;&gt;T3</title>
+<path fill="none" stroke="#8a7d6f" d="M208.43,-371.66C244.32,-407.64 315.11,-472.23 389,-504 595.08,-592.61 860.48,-613.3 1006.87,-617.55"/>
+<polygon fill="#8a7d6f" stroke="#8a7d6f" points="1007.19,-619.84 1013.75,-617.74 1007.32,-615.29 1007.19,-619.84"/>
+</g>
+<!-- T4 -->
+<g id="node13" class="node">
+<title>T4</title>
+<path fill="#ffffff" stroke="#6b3f1d" stroke-width="1.4" stroke-dasharray="5,2" d="M1461,-567.5C1461,-567.5 1284,-567.5 1284,-567.5 1278,-567.5 1272,-561.5 1272,-555.5 1272,-555.5 1272,-528.5 1272,-528.5 1272,-522.5 1278,-516.5 1284,-516.5 1284,-516.5 1461,-516.5 1461,-516.5 1467,-516.5 1473,-522.5 1473,-528.5 1473,-528.5 1473,-555.5 1473,-555.5 1473,-561.5 1467,-567.5 1461,-567.5"/>
+<text text-anchor="middle" x="1372.5" y="-551.9" font-family="Arial" font-size="12.00">A19 headroom protocol</text>
+<text text-anchor="middle" x="1372.5" y="-538.9" font-family="Arial" font-size="12.00">attempt&#45;1 elicitation, S0/S1 runner,</text>
+<text text-anchor="middle" x="1372.5" y="-525.9" font-family="Arial" font-size="12.00">blind arbiter, basis labels</text>
+</g>
+<!-- C1&#45;&gt;T4 -->
+<g id="edge3" class="edge">
+<title>C1&#45;&gt;T4</title>
+<path fill="none" stroke="#8a7d6f" d="M199.41,-371.67C229.35,-419.06 300.33,-519.74 389,-567 718.74,-742.75 871.58,-777.31 1225,-656 1272.98,-639.53 1317.34,-600.22 1344.39,-572.38"/>
+<polygon fill="#8a7d6f" stroke="#8a7d6f" points="1346.05,-573.94 1348.91,-567.67 1342.77,-570.79 1346.05,-573.94"/>
+</g>
+<!-- C2 -->
+<g id="node3" class="node">
+<title>C2</title>
+<path fill="#ddebe8" stroke="#1f5f5b" stroke-width="1.4" d="M308,-295.5C308,-295.5 58,-295.5 58,-295.5 52,-295.5 46,-289.5 46,-283.5 46,-283.5 46,-256.5 46,-256.5 46,-250.5 52,-244.5 58,-244.5 58,-244.5 308,-244.5 308,-244.5 314,-244.5 320,-250.5 320,-256.5 320,-256.5 320,-283.5 320,-283.5 320,-289.5 314,-295.5 308,-295.5"/>
+<text text-anchor="middle" x="183" y="-279.9" font-family="Arial" font-size="12.00">Rhetorical architecture substrate</text>
+<text text-anchor="middle" x="183" y="-266.9" font-family="Arial" font-size="12.00">id&#45;director, register classifier, witness exemplars;</text>
+<text text-anchor="middle" x="183" y="-253.9" font-family="Arial" font-size="12.00">useful but scenario&#45;conditional</text>
+</g>
+<!-- P2 -->
+<g id="node7" class="node">
+<title>P2</title>
+<path fill="#f2ead0" stroke="#b4831c" stroke-width="1.4" d="M672,-314.5C672,-314.5 441,-314.5 441,-314.5 435,-314.5 429,-308.5 429,-302.5 429,-302.5 429,-275.5 429,-275.5 429,-269.5 435,-263.5 441,-263.5 441,-263.5 672,-263.5 672,-263.5 678,-263.5 684,-269.5 684,-275.5 684,-275.5 684,-302.5 684,-302.5 684,-308.5 678,-314.5 672,-314.5"/>
+<text text-anchor="middle" x="556.5" y="-298.9" font-family="Arial" font-size="12.00">Drama/rhetoric formalism</text>
+<text text-anchor="middle" x="556.5" y="-285.9" font-family="Arial" font-size="12.00">dialogue acts, RST, commitment in dialogue,</text>
+<text text-anchor="middle" x="556.5" y="-272.9" font-family="Arial" font-size="12.00">argumentation frameworks</text>
+</g>
+<!-- C2&#45;&gt;P2 -->
+<g id="edge4" class="edge">
+<title>C2&#45;&gt;P2</title>
+<path fill="none" stroke="#8a7d6f" d="M320.22,-276.97C353.52,-278.67 389.1,-280.49 422.26,-282.19"/>
+<polygon fill="#8a7d6f" stroke="#8a7d6f" points="422.25,-284.46 428.85,-282.52 422.48,-279.92 422.25,-284.46"/>
+</g>
+<!-- C3 -->
+<g id="node4" class="node">
+<title>C3</title>
+<path fill="#ddebe8" stroke="#1f5f5b" stroke-width="1.4" d="M338,-67.5C338,-67.5 28,-67.5 28,-67.5 22,-67.5 16,-61.5 16,-55.5 16,-55.5 16,-28.5 16,-28.5 16,-22.5 22,-16.5 28,-16.5 28,-16.5 338,-16.5 338,-16.5 344,-16.5 350,-22.5 350,-28.5 350,-28.5 350,-55.5 350,-55.5 350,-61.5 344,-67.5 338,-67.5"/>
+<text text-anchor="middle" x="183" y="-51.9" font-family="Arial" font-size="12.00">Post&#45;training families</text>
+<text text-anchor="middle" x="183" y="-38.9" font-family="Arial" font-size="12.00">preference optimization, process rewards,</text>
+<text text-anchor="middle" x="183" y="-25.9" font-family="Arial" font-size="12.00">self&#45;reflection, memory agents, prompt/pipeline optimization</text>
+</g>
+<!-- T8 -->
+<g id="node17" class="node">
+<title>T8</title>
+<path fill="#ffffff" stroke="#6b3f1d" stroke-width="1.4" stroke-dasharray="5,2" d="M1986,-503.5C1986,-503.5 1796,-503.5 1796,-503.5 1790,-503.5 1784,-497.5 1784,-491.5 1784,-491.5 1784,-464.5 1784,-464.5 1784,-458.5 1790,-452.5 1796,-452.5 1796,-452.5 1986,-452.5 1986,-452.5 1992,-452.5 1998,-458.5 1998,-464.5 1998,-464.5 1998,-491.5 1998,-491.5 1998,-497.5 1992,-503.5 1986,-503.5"/>
+<text text-anchor="middle" x="1891" y="-487.9" font-family="Arial" font-size="12.00">Post&#45;training after corpus</text>
+<text text-anchor="middle" x="1891" y="-474.9" font-family="Arial" font-size="12.00">DPO/SimPO, process reward model,</text>
+<text text-anchor="middle" x="1891" y="-461.9" font-family="Arial" font-size="12.00">DSPy/TextGrad/self&#45;edit experiments</text>
+</g>
+<!-- C3&#45;&gt;T8 -->
+<g id="edge5" class="edge">
+<title>C3&#45;&gt;T8</title>
+<path fill="none" stroke="#8a7d6f" d="M350.32,-34.35C487.44,-28.71 687.05,-22 861.5,-22 861.5,-22 861.5,-22 1373.5,-22 1630.34,-22 1819.69,-342.8 1874.08,-446.26"/>
+<polygon fill="#8a7d6f" stroke="#8a7d6f" points="1872.14,-447.47 1877.17,-452.18 1876.18,-445.36 1872.14,-447.47"/>
+</g>
+<!-- C4 -->
+<g id="node5" class="node">
+<title>C4</title>
+<path fill="#ddebe8" stroke="#1f5f5b" stroke-width="1.4" d="M266,-143.5C266,-143.5 100,-143.5 100,-143.5 94,-143.5 88,-137.5 88,-131.5 88,-131.5 88,-104.5 88,-104.5 88,-98.5 94,-92.5 100,-92.5 100,-92.5 266,-92.5 266,-92.5 272,-92.5 278,-98.5 278,-104.5 278,-104.5 278,-131.5 278,-131.5 278,-137.5 272,-143.5 266,-143.5"/>
+<text text-anchor="middle" x="183" y="-127.9" font-family="Arial" font-size="12.00">Evaluation risk map</text>
+<text text-anchor="middle" x="183" y="-114.9" font-family="Arial" font-size="12.00">LLM&#45;as&#45;judge bias, sycophancy,</text>
+<text text-anchor="middle" x="183" y="-101.9" font-family="Arial" font-size="12.00">cue leakage, ceiling/self&#45;solve</text>
+</g>
+<!-- T5 -->
+<g id="node14" class="node">
+<title>T5</title>
+<path fill="#ffffff" stroke="#6b3f1d" stroke-width="1.4" stroke-dasharray="5,2" d="M1213,-491.5C1213,-491.5 1021,-491.5 1021,-491.5 1015,-491.5 1009,-485.5 1009,-479.5 1009,-479.5 1009,-452.5 1009,-452.5 1009,-446.5 1015,-440.5 1021,-440.5 1021,-440.5 1213,-440.5 1213,-440.5 1219,-440.5 1225,-446.5 1225,-452.5 1225,-452.5 1225,-479.5 1225,-479.5 1225,-485.5 1219,-491.5 1213,-491.5"/>
+<text text-anchor="middle" x="1117" y="-475.9" font-family="Arial" font-size="12.00">Critic ecology</text>
+<text text-anchor="middle" x="1117" y="-462.9" font-family="Arial" font-size="12.00">drama, argument, pedagogy, rhetoric,</text>
+<text text-anchor="middle" x="1117" y="-449.9" font-family="Arial" font-size="12.00">headroom, judge&#45;bias critics</text>
+</g>
+<!-- C4&#45;&gt;T5 -->
+<g id="edge6" class="edge">
+<title>C4&#45;&gt;T5</title>
+<path fill="none" stroke="#8a7d6f" d="M278.25,-95.51C388.06,-73.55 573.63,-49.74 724,-97 906.49,-154.36 1047.74,-355.86 1097.05,-434.36"/>
+<polygon fill="#8a7d6f" stroke="#8a7d6f" points="1095.35,-435.93 1100.72,-440.24 1099.21,-433.52 1095.35,-435.93"/>
+</g>
+<!-- P1 -->
+<g id="node6" class="node">
+<title>P1</title>
+<path fill="#f2ead0" stroke="#b4831c" stroke-width="1.4" d="M648.5,-238.5C648.5,-238.5 464.5,-238.5 464.5,-238.5 458.5,-238.5 452.5,-232.5 452.5,-226.5 452.5,-226.5 452.5,-199.5 452.5,-199.5 452.5,-193.5 458.5,-187.5 464.5,-187.5 464.5,-187.5 648.5,-187.5 648.5,-187.5 654.5,-187.5 660.5,-193.5 660.5,-199.5 660.5,-199.5 660.5,-226.5 660.5,-226.5 660.5,-232.5 654.5,-238.5 648.5,-238.5"/>
+<text text-anchor="middle" x="556.5" y="-222.9" font-family="Arial" font-size="12.00">Education&#45;specific tutor learning</text>
+<text text-anchor="middle" x="556.5" y="-209.9" font-family="Arial" font-size="12.00">Tutor DPO, LLM knowledge tracing,</text>
+<text text-anchor="middle" x="556.5" y="-196.9" font-family="Arial" font-size="12.00">LLM agents in education</text>
+</g>
+<!-- T7 -->
+<g id="node16" class="node">
+<title>T7</title>
+<path fill="#ffffff" stroke="#6b3f1d" stroke-width="1.4" stroke-dasharray="5,2" d="M1208,-567.5C1208,-567.5 1026,-567.5 1026,-567.5 1020,-567.5 1014,-561.5 1014,-555.5 1014,-555.5 1014,-528.5 1014,-528.5 1014,-522.5 1020,-516.5 1026,-516.5 1026,-516.5 1208,-516.5 1208,-516.5 1214,-516.5 1220,-522.5 1220,-528.5 1220,-528.5 1220,-555.5 1220,-555.5 1220,-561.5 1214,-567.5 1208,-567.5"/>
+<text text-anchor="middle" x="1117" y="-551.9" font-family="Arial" font-size="12.00">Human validation</text>
+<text text-anchor="middle" x="1117" y="-538.9" font-family="Arial" font-size="12.00">expert double&#45;coding, learner trials,</text>
+<text text-anchor="middle" x="1117" y="-525.9" font-family="Arial" font-size="12.00">inter&#45;rater reliability</text>
+</g>
+<!-- P1&#45;&gt;T7 -->
+<g id="edge7" class="edge">
+<title>P1&#45;&gt;T7</title>
+<path fill="none" stroke="#8a7d6f" d="M660.53,-229.49C682.06,-234.86 704.21,-241.88 724,-251 843.72,-306.18 872.86,-330.88 962,-428 988.86,-457.26 978.1,-479.06 1009,-504 1013.1,-507.31 1017.51,-510.34 1022.12,-513.12"/>
+<polygon fill="#8a7d6f" stroke="#8a7d6f" points="1021.28,-515.26 1028.05,-516.5 1023.53,-511.3 1021.28,-515.26"/>
+</g>
+<!-- T2 -->
+<g id="node11" class="node">
+<title>T2</title>
+<path fill="#ffffff" stroke="#6b3f1d" stroke-width="1.4" stroke-dasharray="5,2" d="M950,-491.5C950,-491.5 775,-491.5 775,-491.5 769,-491.5 763,-485.5 763,-479.5 763,-479.5 763,-452.5 763,-452.5 763,-446.5 769,-440.5 775,-440.5 775,-440.5 950,-440.5 950,-440.5 956,-440.5 962,-446.5 962,-452.5 962,-452.5 962,-479.5 962,-479.5 962,-485.5 956,-491.5 950,-491.5"/>
+<text text-anchor="middle" x="862.5" y="-475.9" font-family="Arial" font-size="12.00">Drama ontology v0</text>
+<text text-anchor="middle" x="862.5" y="-462.9" font-family="Arial" font-size="12.00">public learner acts, tutor acts,</text>
+<text text-anchor="middle" x="862.5" y="-449.9" font-family="Arial" font-size="12.00">warrants, ruptures, repairs, uptake</text>
+</g>
+<!-- P2&#45;&gt;T2 -->
+<g id="edge8" class="edge">
+<title>P2&#45;&gt;T2</title>
+<path fill="none" stroke="#8a7d6f" d="M684,-309.79C697.94,-314.42 711.56,-320.08 724,-327 772.37,-353.91 814.91,-402.93 839.42,-434.98"/>
+<polygon fill="#8a7d6f" stroke="#8a7d6f" points="837.75,-436.55 843.49,-440.37 841.38,-433.81 837.75,-436.55"/>
+</g>
+<!-- P3 -->
+<g id="node8" class="node">
+<title>P3</title>
+<path fill="#f2ead0" stroke="#b4831c" stroke-width="1.4" d="M634.5,-390.5C634.5,-390.5 478.5,-390.5 478.5,-390.5 472.5,-390.5 466.5,-384.5 466.5,-378.5 466.5,-378.5 466.5,-351.5 466.5,-351.5 466.5,-345.5 472.5,-339.5 478.5,-339.5 478.5,-339.5 634.5,-339.5 634.5,-339.5 640.5,-339.5 646.5,-345.5 646.5,-351.5 646.5,-351.5 646.5,-378.5 646.5,-378.5 646.5,-384.5 640.5,-390.5 634.5,-390.5"/>
+<text text-anchor="middle" x="556.5" y="-374.9" font-family="Arial" font-size="12.00">Student model as evidence</text>
+<text text-anchor="middle" x="556.5" y="-361.9" font-family="Arial" font-size="12.00">public trajectory, not privileged</text>
+<text text-anchor="middle" x="556.5" y="-348.9" font-family="Arial" font-size="12.00">hidden interior</text>
+</g>
+<!-- P3&#45;&gt;T2 -->
+<g id="edge9" class="edge">
+<title>P3&#45;&gt;T2</title>
+<path fill="none" stroke="#8a7d6f" d="M634.61,-390.62C678.54,-405.21 733.6,-423.51 778.48,-438.42"/>
+<polygon fill="#8a7d6f" stroke="#8a7d6f" points="777.86,-440.61 784.74,-440.5 779.29,-436.29 777.86,-440.61"/>
+</g>
+<!-- T6 -->
+<g id="node15" class="node">
+<title>T6</title>
+<path fill="#ffffff" stroke="#6b3f1d" stroke-width="1.4" stroke-dasharray="5,2" d="M1725,-555.5C1725,-555.5 1532,-555.5 1532,-555.5 1526,-555.5 1520,-549.5 1520,-543.5 1520,-543.5 1520,-516.5 1520,-516.5 1520,-510.5 1526,-504.5 1532,-504.5 1532,-504.5 1725,-504.5 1725,-504.5 1731,-504.5 1737,-510.5 1737,-516.5 1737,-516.5 1737,-543.5 1737,-543.5 1737,-549.5 1731,-555.5 1725,-555.5"/>
+<text text-anchor="middle" x="1628.5" y="-539.9" font-family="Arial" font-size="12.00">Retrieval and forgetting</text>
+<text text-anchor="middle" x="1628.5" y="-526.9" font-family="Arial" font-size="12.00">select 1&#45;3 axioms; demote overbroad,</text>
+<text text-anchor="middle" x="1628.5" y="-513.9" font-family="Arial" font-size="12.00">artifact, or no&#45;headroom firings</text>
+</g>
+<!-- P4&#45;&gt;T6 -->
+<g id="edge10" class="edge">
+<title>P4&#45;&gt;T6</title>
+<path fill="none" stroke="#8a7d6f" d="M667.74,-160.04C686.62,-164.59 705.95,-169.63 724,-175 1049.29,-271.81 1421.9,-435.99 1566.09,-501.64"/>
+<polygon fill="#8a7d6f" stroke="#8a7d6f" points="1565.51,-503.87 1572.37,-504.5 1567.4,-499.73 1565.51,-503.87"/>
+</g>
+<!-- T1 -->
+<g id="node10" class="node">
+<title>T1</title>
+<path fill="#ffffff" stroke="#6b3f1d" stroke-width="1.4" stroke-dasharray="5,2" d="M642,-491.5C642,-491.5 471,-491.5 471,-491.5 465,-491.5 459,-485.5 459,-479.5 459,-479.5 459,-452.5 459,-452.5 459,-446.5 465,-440.5 471,-440.5 471,-440.5 642,-440.5 642,-440.5 648,-440.5 654,-446.5 654,-452.5 654,-452.5 654,-479.5 654,-479.5 654,-485.5 648,-491.5 642,-491.5"/>
+<text text-anchor="middle" x="556.5" y="-475.9" font-family="Arial" font-size="12.00">PRISMA&#45;lite SLR</text>
+<text text-anchor="middle" x="556.5" y="-462.9" font-family="Arial" font-size="12.00">database list, query strings,</text>
+<text text-anchor="middle" x="556.5" y="-449.9" font-family="Arial" font-size="12.00">inclusion/exclusion, coding sheet</text>
+</g>
+<!-- T1&#45;&gt;T2 -->
+<g id="edge11" class="edge">
+<title>T1&#45;&gt;T2</title>
+<path fill="none" stroke="#8a7d6f" d="M654.11,-466C686.62,-466 723.06,-466 756.21,-466"/>
+<polygon fill="#8a7d6f" stroke="#8a7d6f" points="756.29,-468.28 762.79,-466 756.29,-463.73 756.29,-468.28"/>
+</g>
+<!-- T2&#45;&gt;T3 -->
+<g id="edge12" class="edge">
+<title>T2&#45;&gt;T3</title>
+<path fill="none" stroke="#8a7d6f" d="M890.56,-491.63C918.42,-516.91 964.01,-555.25 1009,-580 1015.28,-583.46 1021.94,-586.7 1028.74,-589.71"/>
+<polygon fill="#8a7d6f" stroke="#8a7d6f" points="1028.14,-591.93 1035.01,-592.42 1029.94,-587.76 1028.14,-591.93"/>
+</g>
+<!-- T3&#45;&gt;T4 -->
+<g id="edge13" class="edge">
+<title>T3&#45;&gt;T4</title>
+<path fill="none" stroke="#8a7d6f" d="M1203.12,-592.48C1227.78,-585.09 1254.81,-576.98 1279.85,-569.48"/>
+<polygon fill="#8a7d6f" stroke="#8a7d6f" points="1280.6,-571.63 1286.18,-567.58 1279.3,-567.27 1280.6,-571.63"/>
+</g>
+<!-- T4&#45;&gt;T6 -->
+<g id="edge14" class="edge">
+<title>T4&#45;&gt;T6</title>
+<path fill="none" stroke="#8a7d6f" d="M1473.16,-537.29C1486.3,-536.67 1499.84,-536.03 1513.2,-535.4"/>
+<polygon fill="#8a7d6f" stroke="#8a7d6f" points="1513.36,-537.67 1519.74,-535.09 1513.14,-533.13 1513.36,-537.67"/>
+</g>
+<!-- T5&#45;&gt;T4 -->
+<g id="edge16" class="edge">
+<title>T5&#45;&gt;T4</title>
+<path fill="none" stroke="#8a7d6f" d="M1203.12,-491.52C1227.78,-498.91 1254.81,-507.02 1279.85,-514.52"/>
+<polygon fill="#8a7d6f" stroke="#8a7d6f" points="1279.3,-516.73 1286.18,-516.42 1280.6,-512.37 1279.3,-516.73"/>
+</g>
+<!-- T6&#45;&gt;T8 -->
+<g id="edge15" class="edge">
+<title>T6&#45;&gt;T8</title>
+<path fill="none" stroke="#8a7d6f" d="M1737.34,-508.47C1750.57,-505.83 1764.12,-503.13 1777.42,-500.47"/>
+<polygon fill="#8a7d6f" stroke="#8a7d6f" points="1777.99,-502.68 1783.92,-499.17 1777.1,-498.22 1777.99,-502.68"/>
+</g>
+<!-- T7&#45;&gt;T4 -->
+<g id="edge17" class="edge">
+<title>T7&#45;&gt;T4</title>
+<path fill="none" stroke="#8a7d6f" d="M1220.01,-542C1234.81,-542 1250.07,-542 1264.95,-542"/>
+<polygon fill="#8a7d6f" stroke="#8a7d6f" points="1265.26,-544.28 1271.76,-542 1265.26,-539.73 1265.26,-544.28"/>
+</g>
+<!-- T7&#45;&gt;T8 -->
+<g id="edge18" class="edge">
+<title>T7&#45;&gt;T8</title>
+<path fill="none" stroke="#8a7d6f" d="M1209.03,-516.45C1229.59,-511.55 1251.43,-507.01 1272,-504 1447.11,-478.4 1652.88,-474.99 1777.26,-475.8"/>
+<polygon fill="#8a7d6f" stroke="#8a7d6f" points="1777.34,-478.08 1783.86,-475.85 1777.37,-473.53 1777.34,-478.08"/>
+</g>
+</g>
+</svg>
+
+        </div>
+        <h3>Editable Mermaid source</h3>
+        <p>The same map is included below as Mermaid source for direct use in GitHub, Obsidian, Mermaid Live, or documentation comments.</p>
+        <pre><code>flowchart LR
+  subgraph C[&quot;COVERED / stable enough to build on&quot;]
+    C0[&quot;Atlas mechanism result:&lt;br/&gt;calibration supported; error correction supported;&lt;br/&gt;generic adaptive slope null&quot;]:::covered
+    C1[&quot;A18 counterfactual policy transfer:&lt;br/&gt;attempt-1 failure -&gt; scoped policy memory -&gt;&lt;br/&gt;held-out S0/S1 headroom test&quot;]:::covered
+    C2[&quot;Rhetorical architecture substrate:&lt;br/&gt;id-director, register classifier, witness exemplars;&lt;br/&gt;useful but scenario-conditional&quot;]:::covered
+    C3[&quot;Post-training families:&lt;br/&gt;preference optimization, process rewards,&lt;br/&gt;self-reflection, memory agents, prompt/pipeline optimization&quot;]:::covered
+    C4[&quot;Evaluation risk map:&lt;br/&gt;LLM-as-judge bias, sycophancy,&lt;br/&gt;cue leakage, ceiling/self-solve&quot;]:::covered
+  end
+
+  subgraph P[&quot;PARTIAL / mapped, but needs deeper review&quot;]
+    P1[&quot;Education-specific tutor learning:&lt;br/&gt;Tutor DPO, LLM knowledge tracing,&lt;br/&gt;LLM agents in education&quot;]:::partial
+    P2[&quot;Drama/rhetoric formalism:&lt;br/&gt;dialogue acts, RST, commitment in dialogue,&lt;br/&gt;argumentation frameworks&quot;]:::partial
+    P3[&quot;Student model as evidence:&lt;br/&gt;public trajectory, not privileged hidden interior&quot;]:::partial
+    P4[&quot;Model-stratified policies:&lt;br/&gt;weak-model scaffolds vs strong-model light heuristics&quot;]:::partial
+  end
+
+  subgraph T[&quot;TODO / next research and implementation&quot;]
+    T1[&quot;PRISMA-lite SLR:&lt;br/&gt;database list, query strings,&lt;br/&gt;inclusion/exclusion, coding sheet&quot;]:::todo
+    T2[&quot;Drama ontology v0:&lt;br/&gt;public learner acts, tutor acts,&lt;br/&gt;warrants, ruptures, repairs, uptake&quot;]:::todo
+    T3[&quot;Teaching-drama axiom schema:&lt;br/&gt;trigger, anti-trigger, speech edit,&lt;br/&gt;evidence, confidence, model scope&quot;]:::todo
+    T4[&quot;A19 headroom protocol:&lt;br/&gt;attempt-1 elicitation, S0/S1 runner,&lt;br/&gt;blind arbiter, basis labels&quot;]:::todo
+    T5[&quot;Critic ecology:&lt;br/&gt;drama, argument, pedagogy, rhetoric,&lt;br/&gt;headroom, judge-bias critics&quot;]:::todo
+    T6[&quot;Retrieval and forgetting:&lt;br/&gt;select 1-3 axioms; demote overbroad,&lt;br/&gt;artifact, or no-headroom firings&quot;]:::todo
+    T7[&quot;Human validation:&lt;br/&gt;expert double-coding, learner trials,&lt;br/&gt;inter-rater reliability&quot;]:::todo
+    T8[&quot;Post-training after corpus:&lt;br/&gt;DPO/SimPO, process reward model,&lt;br/&gt;DSPy/TextGrad/self-edit experiments&quot;]:::todo
+  end
+
+  C0 --&gt; P4
+  C1 --&gt; T3
+  C1 --&gt; T4
+  C2 --&gt; P2
+  C3 --&gt; T8
+  C4 --&gt; T5
+  P1 --&gt; T7
+  P2 --&gt; T2
+  P3 --&gt; T2
+  P4 --&gt; T6
+  T1 --&gt; T2 --&gt; T3 --&gt; T4 --&gt; T6 --&gt; T8
+  T5 --&gt; T4
+  T7 --&gt; T4
+  T7 --&gt; T8
+
+  classDef covered fill:#ddebe8,stroke:#1f5f5b,stroke-width:1.5px,color:#122927;
+  classDef partial fill:#f2ead0,stroke:#b4831c,stroke-width:1.5px,color:#3b2b00;
+  classDef todo fill:#ffffff,stroke:#6b3f1d,stroke-width:1.5px,stroke-dasharray: 5 4,color:#1d1b18;
+</code></pre>
+      </section>
+
+      <section id="overlooked" class="card">
+        <h2>4. What we have overlooked</h2>
+        <div class="grid two">
+          <div class="mini-card">
+            <h3>Applicability, not adaptation</h3>
+            <p>The hard problem is not whether a tutor can change. It is when a stored lesson should apply. Every axiom needs preconditions, anti-preconditions, model scope, and headroom evidence.</p>
+          </div>
+          <div class="mini-card">
+            <h3>Negative uptake as supervision</h3>
+            <p>Learner resistance can be a label source: “the tutor treated X as Y, causing Z infelicity.” This is richer than a scalar score or a generic preference pair.</p>
+          </div>
+          <div class="mini-card">
+            <h3>Critic specialization</h3>
+            <p>A single superego is too coarse. The next architecture needs critics for drama type, warrant structure, pedagogy, rhetoric, headroom, and judge/artifact bias.</p>
+          </div>
+          <div class="mini-card">
+            <h3>Public-state student modeling</h3>
+            <p>The no-privileged-interior result suggests that learner modeling should track public evidence: claims, warrants, contradictions, repair attempts, and uptake signals.</p>
+          </div>
+          <div class="mini-card">
+            <h3>Model-stratified policies</h3>
+            <p>The same speech policy can help one model and overconstrain another. Axioms need different renderings for weak, mid, and strong generators.</p>
+          </div>
+          <div class="mini-card">
+            <h3>Human uptake validation</h3>
+            <p>Synthetic learners can self-solve, collapse, or be cue-leaked. The strongest future claims need human expert coding and eventually human learner trials.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="problem-space" class="card">
+        <h2>5. Problem-space map</h2>
+        <p>The overall problem has four nested learning loops. The current atlas has strong evidence at the production level and bounded evidence at the cross-dialogue policy-memory level. A19 should connect them.</p>
+        <table>
+          <thead>
+            <tr><th>Loop</th><th>What learns</th><th>Update object</th><th>Evidence signal</th><th>Current status</th><th>Next move</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Utterance loop</td>
+              <td>Tutor at the next turn</td>
+              <td>Speech act / rhetorical move</td>
+              <td>Resistance, confusion, uptake, rupture</td>
+              <td>Generic slopes null</td>
+              <td>Add drama ontology and process labels</td>
+            </tr>
+            <tr>
+              <td>Dialogue loop</td>
+              <td>Tutor across one teaching drama</td>
+              <td>Local strategy</td>
+              <td>Rupture → repair → uptake</td>
+              <td>Prompt-lab can create modulation</td>
+              <td>Make modulation policy-explicit</td>
+            </tr>
+            <tr>
+              <td>Cross-dialogue loop</td>
+              <td>Tutor-as-learner</td>
+              <td>Typed axiom / policy memory</td>
+              <td>A18-style S0/S1 held-out contrast</td>
+              <td>Bounded positive</td>
+              <td>Scale A18 protocol to teaching dramas</td>
+            </tr>
+            <tr>
+              <td>Post-training loop</td>
+              <td>Model or compound pipeline</td>
+              <td>Prompt, retriever, reward model, weights</td>
+              <td>Validated preference/process/axiom corpus</td>
+              <td>Not yet central</td>
+              <td>Start only after A19 stabilizes the unit</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="mechanisms" class="card">
+        <h2>6. Meaningful mechanisms needed</h2>
+        <h3>6.1 Drama/rhetoric ontology as public state</h3>
+        <p>Formalize what can be observed: learner acts, tutor acts, commitments, warrants, repairs, decoys, and uptake. Do not formalize an inaccessible learner interior as the primary object.</p>
+        <pre><code>public_state = {
+  learner_move,
+  learner_commitments,
+  learner_warrants,
+  tutor_speech_act,
+  tutor_failure_risk,
+  rupture_or_uptake,
+  decoy_shortcut,
+  repair_candidate
+}</code></pre>
+
+        <h3>6.2 Axiom induction from contrastive dramas</h3>
+        <p>Induce axioms only from contrast. A successful transcript alone is not evidence. A usable axiom requires an attempt-1 failure, a diagnosis, a repaired policy, and a held-out S0/S1 test.</p>
+        <pre><code>policy_headroom = S1_target &amp;&amp; S0_decoy
+ceiling         = S1_target &amp;&amp; S0_target
+policy_failure  = !S1_target
+artifact        = cue_leak || arbiter_disagreement</code></pre>
+
+        <h3>6.3 Critic ecology</h3>
+        <ul>
+          <li><strong>Drama classifier:</strong> identifies the scene type and resistance type.</li>
+          <li><strong>Argument critic:</strong> extracts claims, warrants, attacks, concessions, and missing distinctions.</li>
+          <li><strong>Pedagogy critic:</strong> evaluates productive struggle, scaffolding, answer leakage, and ownership transfer.</li>
+          <li><strong>Rhetoric critic:</strong> proposes speech-act alternatives and register changes.</li>
+          <li><strong>Headroom critic:</strong> predicts whether S0 would fail without policy memory.</li>
+          <li><strong>Judge-bias critic:</strong> flags verbosity, sycophancy, position bias, cue leakage, and rubric artifacts.</li>
+        </ul>
+
+        <h3>6.4 Retrieval and forgetting</h3>
+        <p>The tutor should retrieve one to three axioms, not the whole memory. Retrieval keys should include drama type, resistance type, tutor-risk type, domain, model tier, and prior headroom success. Axioms should be retired or demoted when they repeatedly fire on no-headroom or artifact cases.</p>
+
+        <h3>6.5 Formal reasoning as constraint, not mind reading</h3>
+        <p>The formal layer should check public consistency: whether the tutor answered the learner’s actual claim, contradicted prior commitments, repaired before pivoting, overgeneralized the axiom, or mistook compliance for uptake.</p>
+      </section>
+
+      <section id="research-plan" class="card">
+        <h2>7. Research plan: A19 Drama-Axiom Transfer</h2>
+        <ol class="task-list">
+          <li>
+            <strong>Build the first drama ontology.</strong>
+            Define 30–50 public event labels with examples and counterexamples. Keep it small enough for human/LLM coding agreement. The first label set should cover learner resistance, tutor infelicity, tutor felicity, public uptake, decoy shortcuts, and repair types.
+          </li>
+          <li>
+            <strong>Create six drama families with two held-out siblings each.</strong>
+            Initial families: counter-warrant mistaken as confusion; surface agreement mistaken as uptake; frustration mistaken as refusal; skeptical pushback mistaken as hostility; over-compliance mistaken as mastery; morally ambiguous disclosure mistaken as a simple sympathy request.
+          </li>
+          <li>
+            <strong>Run an attempt-1 failure elicitation.</strong>
+            For each family, require a fresh tutor to fail by taking a named old-rule decoy. Reject families where the old-rule violation is only an indeterminate tie rather than a confident misclassification.
+          </li>
+          <li>
+            <strong>Induce one teaching-drama axiom from the failure.</strong>
+            The axiom must state the trigger, avoided move, replacement speech move, applicability conditions, anti-conditions, model scope, and evidence record.
+          </li>
+          <li>
+            <strong>Test S0/S1 on held-out siblings.</strong>
+            S0 sees no policy memory. S1 receives the induced axiom through a controlled retrieval channel. The continuation is judged by a blind arbiter that does not see target/decoy aliases.</li>
+          <li>
+            <strong>Classify each card by headroom basis.</strong>
+            Report policy headroom, ceiling, policy failure, cue leak, self-solve, arbiter disagreement, and neither-correct outcomes. Do not aggregate families without the per-card basis labels.
+          </li>
+          <li>
+            <strong>Scale only admitted cases.</strong>
+            After the pilot, expand to fresh families only if the blind protocol, correctness gate, leakage preflight, and analysis script are frozen before generation.
+          </li>
+          <li>
+            <strong>Add human validation.</strong>
+            Double-code a subset of drama labels and S0/S1 adjudications with human experts. Use this to calibrate the LLM critics rather than to rubber-stamp them.
+          </li>
+          <li>
+            <strong>Only then attempt post-training.</strong>
+            When a stable corpus exists, create three datasets: preference pairs, process labels, and axiom records. Evaluate DPO/SimPO, process reward modeling, DSPy/TextGrad optimization, and eventually SEAL-style self-edits.
+          </li>
+        </ol>
+      </section>
+
+      <section id="codex" class="card">
+        <h2>8. Codex implementation tickets</h2>
+        <p class="lead">The following is written as an implementation backlog. It assumes a TypeScript/Node-style research harness similar to the atlas scripts, but the file paths can be adapted to the actual repository.</p>
+
+        <h3>Milestone 0 — repository inventory</h3>
+        <ol class="checklist">
+          <li>Find current equivalents for <code>config/tutor-agents.yaml</code>, <code>config/evaluation-rubric-*.yaml</code>, <code>scripts/blind-option-adjudication.js</code>, <code>runInteraction</code>, dialogue trace export, and scoring export code.</li>
+          <li>Create <code>docs/a19-implementation-notes.md</code> listing existing reusable modules and gaps.</li>
+          <li>Do not modify production prompts during inventory. Only add read-only notes.</li>
+        </ol>
+
+        <h3>Milestone 1 — ontology and schemas</h3>
+        <ol class="checklist">
+          <li>Add <code>config/drama-ontology.yaml</code> with enumerated labels for <code>learner_move_type</code>, <code>resistance_type</code>, <code>tutor_act_type</code>, <code>infelicity_type</code>, <code>felicity_type</code>, <code>uptake_signal</code>, <code>decoy_type</code>, and <code>repair_type</code>.</li>
+          <li>Add <code>schemas/teaching-drama-card.schema.json</code> for family cards and sibling cards.</li>
+          <li>Add <code>schemas/teaching-drama-axiom.schema.json</code> for axiom memory records.</li>
+          <li>Add <code>src/drama/types.ts</code> exporting TypeScript types generated from the schemas.</li>
+          <li>Add <code>scripts/validate-a19-schemas.ts</code> to validate all YAML/JSON under <code>data/a19/</code>.</li>
+          <li><strong>Acceptance:</strong> <code>pnpm a19:validate</code> fails on unknown labels, missing target/decoy aliases, missing anti-conditions, or unversioned prompts.</li>
+        </ol>
+
+        <h3>Milestone 2 — drama annotation</h3>
+        <ol class="checklist">
+          <li>Add <code>src/drama/annotateDramaState.ts</code> with an LLM-call wrapper that returns strict JSON matching <code>DramaState</code>.</li>
+          <li>Add <code>prompts/a19/drama-annotator.md</code> with ontology labels, examples, counterexamples, and “unknown/insufficient evidence” guidance.</li>
+          <li>Add <code>src/drama/validateDramaState.ts</code> to reject hallucinated labels and require span evidence from the dialogue.</li>
+          <li>Add <code>scripts/a19-annotate-trace.ts</code> to annotate existing traces and write <code>exports/a19/annotations/*.jsonl</code>.</li>
+          <li><strong>Acceptance:</strong> on a 20-trace smoke set, every annotation has cited transcript spans; no hidden-state claim is accepted without public evidence.</li>
+        </ol>
+
+        <h3>Milestone 3 — teaching-drama family cards</h3>
+        <ol class="checklist">
+          <li>Create <code>data/a19/families/</code> with six YAML family files, each containing one attempt-1 elicitation card and two held-out sibling cards.</li>
+          <li>Each family must define <code>old_rule_decoy</code>, <code>target_policy</code>, <code>expected_resistance</code>, <code>leakage_risks</code>, <code>headroom_prediction</code>, and <code>blind_alias_map</code>.</li>
+          <li>Add <code>scripts/a19-leakage-preflight.ts</code> that checks lexical overlap between target labels, sibling wording, and policy-memory text.</li>
+          <li><strong>Acceptance:</strong> no sibling card may contain the literal target/decoy alias; leakage preflight emits a signed JSON report before any run.</li>
+        </ol>
+
+        <h3>Milestone 4 — axiom induction</h3>
+        <ol class="checklist">
+          <li>Add <code>src/a19/induceAxiom.ts</code> to convert attempt-1 failure + critic diagnosis into a <code>TeachingDramaAxiom</code>.</li>
+          <li>Add <code>prompts/a19/axiom-inducer.md</code> with the required pattern: “I failed because I treated X as Y; next time, when X has features a/b/c, do Z; do not apply when d/e.”</li>
+          <li>Add <code>src/a19/axiomGate.ts</code> to reject axioms without trigger, avoided move, replacement move, applicability, anti-applicability, and evidence spans.</li>
+          <li>Persist admitted axioms as <code>exports/a19/axioms/{run_id}.json</code> and append to <code>memory/a19-axioms.jsonl</code>.</li>
+          <li><strong>Acceptance:</strong> a generated axiom cannot enter memory if it lacks an anti-condition or if the failure diagnosis is not grounded in transcript spans.</li>
+        </ol>
+
+        <h3>Milestone 5 — S0/S1 contrastive runner</h3>
+        <ol class="checklist">
+          <li>Add <code>scripts/run-a19-drama-transfer.ts</code> with CLI flags: <code>--family</code>, <code>--sibling</code>, <code>--condition s0|s1|both</code>, <code>--model</code>, <code>--judge</code>, <code>--k</code>, <code>--seed</code>, <code>--dry-run</code>.</li>
+          <li>S0 receives the normal tutor prompt and no A19 policy memory.</li>
+          <li>S1 receives exactly one induced axiom through a clearly logged <code>policy_memory</code> field.</li>
+          <li>Both arms must share scenario text, model settings, temperature, and dialogue length.</li>
+          <li>Persist raw traces under content hashes and run IDs; include prompt hashes and schema versions.</li>
+          <li><strong>Acceptance:</strong> rerunning with the same seed reproduces the same prompt payloads, card IDs, aliases, and analysis metadata.</li>
+        </ol>
+
+        <h3>Milestone 6 — blind adjudication</h3>
+        <ol class="checklist">
+          <li>Add <code>scripts/blind-drama-adjudication.ts</code> modeled on the A18 blind option adjudicator.</li>
+          <li>The arbiter sees only the learner-visible continuation and neutral option descriptions, not target/decoy names.</li>
+          <li>The arbiter must return <code>committed_option</code>, <code>basis_label</code>, <code>confidence</code>, <code>span_evidence</code>, and <code>artifact_flags</code>.</li>
+          <li>Map committed option to target/decoy mechanically after the blind judgement is saved.</li>
+          <li><strong>Acceptance:</strong> no target/decoy string appears in the arbiter prompt; a unit test asserts alias withholding.</li>
+        </ol>
+
+        <h3>Milestone 7 — headroom classifier and metrics</h3>
+        <ol class="checklist">
+          <li>Add <code>src/a19/classifyHeadroom.ts</code> implementing: <code>policy_headroom</code>, <code>ceiling</code>, <code>policy_failure</code>, <code>cue_leak</code>, <code>self_solve</code>, <code>arbiter_disagreement</code>, <code>neither_correct</code>.</li>
+          <li>Add <code>scripts/analyze-a19-transfer.ts</code> to generate per-card, per-family, and pooled summaries.</li>
+          <li>Never report “family success” without showing sibling-level outcomes and basis labels.</li>
+          <li><strong>Acceptance:</strong> the report separates headroom denominator, total denominator, and rejected/artifact denominator.</li>
+        </ol>
+
+        <h3>Milestone 8 — critic ecology</h3>
+        <ol class="checklist">
+          <li>Add prompt modules under <code>prompts/a19/critics/</code>: <code>drama-classifier.md</code>, <code>argument-critic.md</code>, <code>pedagogy-critic.md</code>, <code>rhetoric-critic.md</code>, <code>headroom-critic.md</code>, <code>judge-bias-critic.md</code>.</li>
+          <li>Add <code>src/a19/runCriticPanel.ts</code> that executes critics independently and writes a merged but non-destructive diagnosis object.</li>
+          <li>Critics must be able to say <code>insufficient_evidence</code>.</li>
+          <li><strong>Acceptance:</strong> an axiom cannot be induced if all critics return only generic advice and no typed infelicity.</li>
+        </ol>
+
+        <h3>Milestone 9 — retrieval policy</h3>
+        <ol class="checklist">
+          <li>Add <code>src/memory/a19AxiomStore.ts</code> with JSONL persistence first; add vector retrieval only after the deterministic baseline passes.</li>
+          <li>Add <code>src/memory/retrieveA19Axioms.ts</code> ranking by ontology signature, domain, model tier, prior transfer rate, and anti-condition mismatch.</li>
+          <li>Cap retrieval at three axioms, with a default of one for contrastive tests.</li>
+          <li><strong>Acceptance:</strong> retrieval logs why each axiom was selected and which anti-conditions were checked.</li>
+        </ol>
+
+        <h3>Milestone 10 — test suite and CI</h3>
+        <ol class="checklist">
+          <li>Add unit tests for schema validation, alias withholding, leakage preflight, headroom classification, and retrieval anti-conditions.</li>
+          <li>Add integration smoke: one toy family, one induced axiom, one S0/S1 sibling run with mocked model calls.</li>
+          <li>Add regression tests for no-policy self-solve and cue-leak classification.</li>
+          <li>Add CI command <code>pnpm test:a19</code> running all deterministic tests without API calls.</li>
+          <li><strong>Acceptance:</strong> the full deterministic test suite passes offline; API tests are explicitly marked and skipped unless keys are present.</li>
+        </ol>
+
+        <h3>Milestone 11 — reporting</h3>
+        <ol class="checklist">
+          <li>Add <code>scripts/report-a19.ts</code> to emit Markdown and JSON reports into <code>exports/a19/reports/</code>.</li>
+          <li>The report must include: admitted families, rejected families, per-card S0/S1 verdicts, basis labels, leakage flags, policy text, model settings, prompt hashes, and confidence intervals where appropriate.</li>
+          <li>Add <code>docs/a19-drama-axiom-transfer.md</code> with the protocol, gates, failure taxonomy, and interpretation boundaries.</li>
+          <li><strong>Acceptance:</strong> the report has a “Claims not licensed” section: not human learning, not deployed tutoring, not model-weight learning, not a general adaptive-slope effect.</li>
+        </ol>
+
+        <h3>Suggested package scripts</h3>
+        <pre><code>{
+  "scripts": {
+    "a19:validate": "tsx scripts/validate-a19-schemas.ts",
+    "a19:preflight": "tsx scripts/a19-leakage-preflight.ts data/a19/families",
+    "a19:run": "tsx scripts/run-a19-drama-transfer.ts --condition both",
+    "a19:adjudicate": "tsx scripts/blind-drama-adjudication.ts",
+    "a19:analyze": "tsx scripts/analyze-a19-transfer.ts",
+    "a19:report": "tsx scripts/report-a19.ts",
+    "test:a19": "vitest run tests/a19"
+  }
+}</code></pre>
+      </section>
+
+      <section id="schemas" class="card">
+        <h2>9. Schemas and examples</h2>
+        <h3>9.1 Teaching-drama axiom schema</h3>
+        <pre><code>{
+  "axiom_id": "a19_counter_warrant_scope_001",
+  "version": "0.1.0",
+  "source_family": "counter_warrant_scope",
+  "dramatic_trigger": {
+    "learner_move_type": "skeptical_pushback",
+    "resistance_type": "counter_warrant",
+    "tutor_failure_type": "validation_without_engagement",
+    "old_rule_or_decoy": "validate_then_redirect"
+  },
+  "applicability_conditions": {
+    "must_be_true": [
+      "learner offers a substantive warrant or counterexample",
+      "learner's claim is intelligible enough to restate"
+    ],
+    "must_not_be_true": [
+      "learner asks only for procedural clarification",
+      "learner lacks prerequisite vocabulary entirely"
+    ],
+    "headroom_test": "fresh tutor likely treats resistance as confusion or attitude"
+  },
+  "speech_modification": {
+    "avoid": "generic validation followed by returning to the planned explanation",
+    "do_instead": "revoice the warrant, ask a scope test, then introduce a complication",
+    "rhetorical_form": "concession + warrant test + learner-owned experiment",
+    "example_move": "I think your objection is that X still holds when Y. Let's test exactly where that warrant stops working."
+  },
+  "evidence": {
+    "attempt_1_failure_trace": "trace_id",
+    "repaired_attempt_trace": "trace_id",
+    "held_out_sibling_tests": ["card_a", "card_b"],
+    "blind_arbiter_basis": ["S0_decoy/S1_target", "ceiling"],
+    "human_scope": "not_yet_validated"
+  },
+  "confidence": {
+    "transfer_rate_admitted": 0.5,
+    "known_failure_modes": ["ceiling", "cue_leak"],
+    "model_scope": ["mid_model_explicit", "strong_model_light"]
+  }
+}</code></pre>
+
+        <h3>9.2 First ontology seed</h3>
+        <pre><code>learner_resistance:
+  - confusion
+  - skeptical_pushback
+  - counter_warrant
+  - refusal
+  - frustration
+  - over_compliance
+  - surface_agreement
+  - self_correction
+  - meta_challenge
+
+tutor_infelicity:
+  - premature_resolution
+  - validation_without_engagement
+  - redirect_after_resistance
+  - generic_elicitation
+  - answer_leakage
+  - moral_flattery
+  - over_scaffolding
+  - under_scaffolding
+  - failure_to_repair_rupture
+
+tutor_felicity:
+  - revoice_claim
+  - name_warrant
+  - preserve_struggle
+  - offer_diagnostic_options
+  - introduce_complication
+  - ask_scope_test
+  - repair_misalignment
+  - transfer_control</code></pre>
+
+        <h3>9.3 Minimal analysis output</h3>
+        <pre><code>family_id, sibling_id, s0_option, s1_option, verdict, basis_label, artifact_flag
+counter_warrant_scope, sibling_a, decoy, target, policy_headroom, named_counter_warrant, false
+counter_warrant_scope, sibling_b, target, target, ceiling, s0_self_solve, false</code></pre>
+      </section>
+
+      <section id="references" class="card">
+        <h2>10. References</h2>
+        <p class="small">This bibliography covers the works explicitly used in this review and implementation plan. The uploaded atlas manuscript’s own bibliography remains the authoritative source for the full paper’s internal citation set.</p>
+        <ol class="refs">
+          <li id="ref-tie2025">Tie, G., Zhao, Z., Song, D., Wei, F., Zhou, R., Dai, Y., Yin, W., Yang, Z., Yan, J., Su, Y., Dai, Z., Xie, Y., Cao, Y., Sun, L., He, L., Chen, H., Zhang, Y., Wen, Q., Liu, T., Gong, N. Z., Tang, J., Xiong, C., Ji, H., Yu, P. S., &amp; Gao, J. (2025). <em>A Survey on Post-training of Large Language Models</em>. arXiv:2503.06072. <a href="https://arxiv.org/abs/2503.06072">https://arxiv.org/abs/2503.06072</a></li>
+          <li id="ref-rafailov2023">Rafailov, R., Sharma, A., Mitchell, E., Ermon, S., Manning, C. D., &amp; Finn, C. (2023). <em>Direct Preference Optimization: Your Language Model is Secretly a Reward Model</em>. arXiv:2305.18290. <a href="https://arxiv.org/abs/2305.18290">https://arxiv.org/abs/2305.18290</a></li>
+          <li id="ref-ethayarajh2024">Ethayarajh, K., Xu, W., Muennighoff, N., Jurafsky, D., &amp; Kiela, D. (2024). <em>KTO: Model Alignment as Prospect Theoretic Optimization</em>. arXiv:2402.01306. <a href="https://arxiv.org/abs/2402.01306">https://arxiv.org/abs/2402.01306</a></li>
+          <li id="ref-hong2024">Hong, J., Lee, N., &amp; Thorne, J. (2024). <em>ORPO: Monolithic Preference Optimization without Reference Model</em>. arXiv:2403.07691. <a href="https://arxiv.org/abs/2403.07691">https://arxiv.org/abs/2403.07691</a></li>
+          <li id="ref-meng2024">Meng, Y., Xia, M., &amp; Chen, D. (2024). <em>SimPO: Simple Preference Optimization with a Reference-Free Reward</em>. arXiv:2405.14734. <a href="https://arxiv.org/abs/2405.14734">https://arxiv.org/abs/2405.14734</a></li>
+          <li id="ref-lightman2023">Lightman, H., Kosaraju, V., Burda, Y., Edwards, H., Baker, B., Lee, T., Leike, J., Schulman, J., Sutskever, I., &amp; Cobbe, K. (2023). <em>Let’s Verify Step by Step</em>. arXiv:2305.20050. <a href="https://arxiv.org/abs/2305.20050">https://arxiv.org/abs/2305.20050</a></li>
+          <li id="ref-openai2024">OpenAI. (2024). <em>Learning to reason with LLMs</em>. <a href="https://openai.com/index/learning-to-reason-with-llms/">https://openai.com/index/learning-to-reason-with-llms/</a></li>
+          <li id="ref-deepseek2025">DeepSeek-AI, Guo, D., Yang, D., Zhang, H., Song, J., Zhang, R., Xu, R., Zhu, Q., Ma, S., Wang, P., Bi, X., Zhang, X., Yu, X., Wu, Y., Wu, Z. F., Gou, Z., Shao, Z., Li, Z., Gao, Z., Liu, A., et al. (2025). <em>DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning</em>. arXiv:2501.12948. <a href="https://arxiv.org/abs/2501.12948">https://arxiv.org/abs/2501.12948</a></li>
+          <li id="ref-shinn2023">Shinn, N., Cassano, F., Berman, E., Gopinath, A., Narasimhan, K., &amp; Yao, S. (2023). <em>Reflexion: Language Agents with Verbal Reinforcement Learning</em>. arXiv:2303.11366. <a href="https://arxiv.org/abs/2303.11366">https://arxiv.org/abs/2303.11366</a></li>
+          <li id="ref-madaan2023">Madaan, A., Tandon, N., Gupta, P., Hallinan, S., Gao, L., Wiegreffe, S., Alon, U., Dziri, N., Prabhumoye, S., Yang, Y., Gupta, S., Majumder, B. P., Hermann, K., Welleck, S., Yazdanbakhsh, A., &amp; Clark, P. (2023). <em>Self-Refine: Iterative Refinement with Self-Feedback</em>. arXiv:2303.17651. <a href="https://arxiv.org/abs/2303.17651">https://arxiv.org/abs/2303.17651</a></li>
+          <li id="ref-kamoi2024">Kamoi, R., Zhang, Y., Zhang, N., Han, J., &amp; Zhang, R. (2024). <em>When Can LLMs Actually Correct Their Own Mistakes? A Critical Survey of Self-Correction of LLMs</em>. arXiv:2406.01297; <em>Transactions of the Association for Computational Linguistics</em>. <a href="https://arxiv.org/abs/2406.01297">https://arxiv.org/abs/2406.01297</a></li>
+          <li id="ref-wang2023voyager">Wang, G., Xie, Y., Jiang, Y., Mandlekar, A., Xiao, C., Zhu, Y., Fan, L., &amp; Anandkumar, A. (2023). <em>Voyager: An Open-Ended Embodied Agent with Large Language Models</em>. arXiv:2305.16291. <a href="https://arxiv.org/abs/2305.16291">https://arxiv.org/abs/2305.16291</a></li>
+          <li id="ref-zhao2023expel">Zhao, A., Huang, D., Xu, Q., Lin, M., Liu, Y.-J., &amp; Huang, G. (2023). <em>ExpeL: LLM Agents Are Experiential Learners</em>. arXiv:2308.10144. <a href="https://arxiv.org/abs/2308.10144">https://arxiv.org/abs/2308.10144</a></li>
+          <li id="ref-hu2025memory">Hu, Y., Wang, Y., &amp; McAuley, J. (2025). <em>Evaluating Memory in LLM Agents via Incremental Multi-Turn Interactions</em>. arXiv:2507.05257. <a href="https://arxiv.org/abs/2507.05257">https://arxiv.org/abs/2507.05257</a></li>
+          <li id="ref-allard2026erl">Allard, M.-A., Teinturier, A., Xing, V., &amp; Viaud, G. (2026). <em>Experiential Reflective Learning for Self-Improving LLM Agents</em>. arXiv:2603.24639. <a href="https://arxiv.org/abs/2603.24639">https://arxiv.org/abs/2603.24639</a></li>
+          <li id="ref-yang2023opro">Yang, C., Wang, X., Lu, Y., Liu, H., Le, Q. V., Zhou, D., &amp; Chen, X. (2023). <em>Large Language Models as Optimizers</em>. arXiv:2309.03409. <a href="https://arxiv.org/abs/2309.03409">https://arxiv.org/abs/2309.03409</a></li>
+          <li id="ref-khattab2023dspy">Khattab, O., Singhvi, A., Maheshwari, P., Zhang, Z., Santhanam, K., Vardhamanan, S., Haq, S., Sharma, A., Joshi, T. T., Moazam, H., Miller, H., Zaharia, M., &amp; Potts, C. (2023). <em>DSPy: Compiling Declarative Language Model Calls into Self-Improving Pipelines</em>. arXiv:2310.03714. <a href="https://arxiv.org/abs/2310.03714">https://arxiv.org/abs/2310.03714</a></li>
+          <li id="ref-yuksekgonul2024textgrad">Yuksekgonul, M., Bianchi, F., Boen, J., Liu, S., Huang, Z., Guestrin, C., &amp; Zou, J. (2024). <em>TextGrad: Automatic “Differentiation” via Text</em>. arXiv:2406.07496. <a href="https://arxiv.org/abs/2406.07496">https://arxiv.org/abs/2406.07496</a></li>
+          <li id="ref-ramnath2025apo">Ramnath, K., Zhou, K., Guan, S., Mishra, S. S., Qi, X., Shen, Z., Wang, S., Woo, S., Jeoung, S., Wang, Y., Wang, H., Ding, H., Lu, Y., Xu, Z., Zhou, Y., Srinivasan, B., Yan, Q., Chen, Y., &amp; Ding, H. (2025). <em>A Systematic Survey of Automatic Prompt Optimization Techniques</em>. arXiv:2502.16923. <a href="https://arxiv.org/abs/2502.16923">https://arxiv.org/abs/2502.16923</a></li>
+          <li id="ref-zweiger2025seal">Zweiger, A., Pari, J., Guo, H., Akyürek, E., Kim, Y., &amp; Agrawal, P. (2025). <em>Self-Adapting Language Models</em>. arXiv:2506.10943. <a href="https://arxiv.org/abs/2506.10943">https://arxiv.org/abs/2506.10943</a></li>
+          <li id="ref-scarlatos2025tutor">Scarlatos, A., Liu, N., Lee, J., Baraniuk, R., &amp; Lan, A. (2025). <em>Training LLM-based Tutors to Improve Student Learning Outcomes in Dialogues</em>. arXiv:2503.06424. <a href="https://arxiv.org/abs/2503.06424">https://arxiv.org/abs/2503.06424</a></li>
+          <li id="ref-scarlatos2024llmkt">Scarlatos, A., Baker, R. S., &amp; Lan, A. (2024). <em>Exploring Knowledge Tracing in Tutor-Student Dialogues using LLMs</em>. arXiv:2409.16490. <a href="https://arxiv.org/abs/2409.16490">https://arxiv.org/abs/2409.16490</a></li>
+          <li id="ref-chu2025educationagents">Chu, Z., et al. (2025). <em>LLM Agents for Education: Advances and Applications</em>. arXiv:2503.11733; Findings of EMNLP 2025. <a href="https://arxiv.org/abs/2503.11733">https://arxiv.org/abs/2503.11733</a></li>
+          <li id="ref-iso24617">International Organization for Standardization. (2020). <em>ISO 24617-2:2020, Language resource management — Semantic annotation framework — Part 2: Dialogue acts</em>. <a href="https://www.iso.org/standard/76443.html">https://www.iso.org/standard/76443.html</a></li>
+          <li id="ref-mann1988rst">Mann, W. C., &amp; Thompson, S. A. (1988). <em>Rhetorical Structure Theory: Toward a functional theory of text organization</em>. <a href="https://archive.org/download/rhetorical-structure-theory/Rhetorical%20Structure%20Theory_text.pdf">https://archive.org/download/rhetorical-structure-theory/Rhetorical%20Structure%20Theory_text.pdf</a></li>
+          <li id="ref-walton1995commitment">Walton, D. N., &amp; Krabbe, E. C. W. (1995). <em>Commitment in Dialogue: Basic Concepts of Interpersonal Reasoning</em>. State University of New York Press. <a href="https://books.google.com/books/about/Commitment_in_Dialogue.html?id=QMVmjcW64dQC">https://books.google.com/books/about/Commitment_in_Dialogue.html?id=QMVmjcW64dQC</a></li>
+          <li id="ref-dung1995argumentation">Dung, P. M. (1995). On the acceptability of arguments and its fundamental role in nonmonotonic reasoning, logic programming and n-person games. <em>Artificial Intelligence, 77</em>(2), 321–357. <a href="https://jmvidal.cse.sc.edu/lib/dung95a.html">https://jmvidal.cse.sc.edu/lib/dung95a.html</a></li>
+          <li id="ref-zheng2023judge">Zheng, L., Chiang, W.-L., Sheng, Y., Zhuang, S., Wu, Z., Zhuang, Y., Lin, Z., Li, Z., Li, D., Xing, E. P., Zhang, H., Gonzalez, J. E., &amp; Stoica, I. (2023). <em>Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena</em>. arXiv:2306.05685. <a href="https://arxiv.org/abs/2306.05685">https://arxiv.org/abs/2306.05685</a></li>
+          <li id="ref-gu2024judgesurvey">Gu, J., et al. (2024). <em>A Survey on LLM-as-a-Judge</em>. arXiv:2411.15594. <a href="https://arxiv.org/abs/2411.15594">https://arxiv.org/abs/2411.15594</a></li>
+          <li id="ref-sharma2023sycophancy">Sharma, M., Tong, M., Korbak, T., Duvenaud, D., Askell, A., Bowman, S. R., Cheng, N., Durmus, E., Hatfield-Dodds, Z., Johnston, S. R., Kravec, S., Maxwell, T., McCandlish, S., Ndousse, K., Rausch, O., Schiefer, N., Yan, D., Zhang, M., &amp; Perez, E. (2023). <em>Towards Understanding Sycophancy in Language Models</em>. arXiv:2310.13548. <a href="https://arxiv.org/abs/2310.13548">https://arxiv.org/abs/2310.13548</a></li>
+          <li id="ref-denison2024tampering">Denison, C., et al. (2024). <em>Sycophancy to Subterfuge: Investigating Reward-Tampering in Large Language Models</em>. arXiv:2406.10162. <a href="https://arxiv.org/abs/2406.10162">https://arxiv.org/abs/2406.10162</a></li>
+          <li id="ref-bennett2015process">Bennett, A., &amp; Checkel, J. T. (Eds.). (2015). <em>Process Tracing: From Metaphor to Analytic Tool</em>. Cambridge University Press. <a href="https://www.cambridge.org/core/books/process-tracing/5BBC24CBF2E89114817741D0476C07A9">https://www.cambridge.org/core/books/process-tracing/5BBC24CBF2E89114817741D0476C07A9</a></li>
+          <li id="ref-beach2019process">Beach, D., &amp; Pedersen, R. B. (2019). <em>Process-Tracing Methods: Foundations and Guidelines</em> (2nd ed.). University of Michigan Press. <a href="https://books.google.com/books/about/Process_Tracing_Methods.html?id=d3RmuwEACAAJ">https://books.google.com/books/about/Process_Tracing_Methods.html?id=d3RmuwEACAAJ</a></li>
+          <li id="ref-hegel1977">Hegel, G. W. F. (1977). <em>Phenomenology of Spirit</em> (A. V. Miller, Trans.). Oxford University Press. <a href="https://global.oup.com/academic/product/phenomenology-of-spirit-9780198245971">https://global.oup.com/academic/product/phenomenology-of-spirit-9780198245971</a></li>
+          <li id="ref-honneth1995">Honneth, A. (1995). <em>The Struggle for Recognition: The Moral Grammar of Social Conflicts</em>. MIT Press. <a href="https://mitpress.mit.edu/9780262581479/the-struggle-for-recognition/">https://mitpress.mit.edu/9780262581479/the-struggle-for-recognition/</a></li>
+          <li id="ref-vygotsky1978">Vygotsky, L. S. (1978). <em>Mind in Society: The Development of Higher Psychological Processes</em>. Harvard University Press.</li>
+          <li id="ref-piaget1954">Piaget, J. (1954). <em>The Construction of Reality in the Child</em>. Basic Books.</li>
+          <li id="ref-kapur2008">Kapur, M. (2008). Productive failure. <em>Cognition and Instruction, 26</em>(3), 379–424.</li>
+          <li id="ref-chi2014icap">Chi, M. T. H., &amp; Wylie, R. (2014). The ICAP framework: Linking cognitive engagement to active learning outcomes. <em>Educational Psychologist, 49</em>(4), 219–243.</li>
+          <li id="ref-vanlehn2011">VanLehn, K. (2011). The relative effectiveness of human tutoring, intelligent tutoring systems, and other tutoring systems. <em>Educational Psychologist, 46</em>(4), 197–221.</li>
+          <li id="ref-graesser2008">Graesser, A. C., D’Mello, S. K., &amp; Person, N. K. (2008). Meta-knowledge in tutoring. In D. J. Hacker, J. Dunlosky, &amp; A. C. Graesser (Eds.), <em>Handbook of Metacognition in Education</em>. Routledge.</li>
+          <li id="ref-weber1978">Weber, M. (1978). <em>Economy and Society: An Outline of Interpretive Sociology</em>. University of California Press.</li>
+        </ol>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
