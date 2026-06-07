@@ -149,7 +149,8 @@ function recordStatus(record) {
 function checkerForRecord(args, record) {
   if (args.checker !== 'adversarial') return args.checker;
   const generator = record?.generator?.backend;
-  if (!generator) throw new Error(`record ${record?.item?.id || 'unknown'} has no generator backend for adversarial check`);
+  if (!generator)
+    throw new Error(`record ${record?.item?.id || 'unknown'} has no generator backend for adversarial check`);
   return adversarialCheckerFor(generator);
 }
 

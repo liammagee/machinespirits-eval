@@ -101,12 +101,7 @@ function validateProtocol(protocol, issues) {
   }
   if (protocolId === 'A18.22') {
     if (protocol?.contrast_panel?.vote_rule_name !== 'policy_core_v2') {
-      pushIssue(
-        issues,
-        'error',
-        'protocol.contrast_panel.vote_rule_name',
-        'must be policy_core_v2 for A18.22',
-      );
+      pushIssue(issues, 'error', 'protocol.contrast_panel.vote_rule_name', 'must be policy_core_v2 for A18.22');
     }
     if (protocol?.contrast_panel?.vote_rule?.learner_resistance_addressed_side != null) {
       pushIssue(
@@ -128,7 +123,11 @@ function validateProtocol(protocol, issues) {
 }
 
 function repairIds(family) {
-  return new Set(asArray(family.plausible_repairs).map((repair) => repair?.repair_id).filter(Boolean));
+  return new Set(
+    asArray(family.plausible_repairs)
+      .map((repair) => repair?.repair_id)
+      .filter(Boolean),
+  );
 }
 
 function validateListMin({ issues, list, min, pathName, noun }) {
@@ -187,12 +186,7 @@ function validateFamily({ family, index, protocol }) {
   if (!hasText(family.family_id)) pushIssue(issues, 'error', `${basePath}.family_id`, 'is required');
   if (!hasText(family.obstruction_type)) pushIssue(issues, 'warning', `${basePath}.obstruction_type`, 'is recommended');
   if (family.transfer_design?.require_underdetermined_public_repairs !== true) {
-    pushIssue(
-      issues,
-      'error',
-      `${basePath}.transfer_design.require_underdetermined_public_repairs`,
-      'must be true',
-    );
+    pushIssue(issues, 'error', `${basePath}.transfer_design.require_underdetermined_public_repairs`, 'must be true');
   }
   if (!hasText(selectedRepair)) {
     pushIssue(issues, 'error', `${basePath}.transfer_design.policy_selected_repair`, 'is required');
@@ -211,12 +205,7 @@ function validateFamily({ family, index, protocol }) {
     noun: 'plausible repair',
   });
   if (selectedRepair && !repairs.has(selectedRepair)) {
-    pushIssue(
-      issues,
-      'error',
-      `${basePath}.plausible_repairs`,
-      `must include selected repair ${selectedRepair}`,
-    );
+    pushIssue(issues, 'error', `${basePath}.plausible_repairs`, `must include selected repair ${selectedRepair}`);
   }
   validateListMin({
     issues,
@@ -243,7 +232,10 @@ function validateFamily({ family, index, protocol }) {
     if (!hasText(sibling.expected_baseline_failure)) {
       pushIssue(issues, 'error', `${siblingPath}.expected_baseline_failure`, 'is required');
     }
-    if (requirements.heldout_selected_repair_must_be_plausible && !asArray(sibling.plausible_public_repairs).includes(selectedRepair)) {
+    if (
+      requirements.heldout_selected_repair_must_be_plausible &&
+      !asArray(sibling.plausible_public_repairs).includes(selectedRepair)
+    ) {
       pushIssue(
         issues,
         'error',
@@ -269,7 +261,11 @@ function validateFamily({ family, index, protocol }) {
   };
 }
 
-export function validateRecursiveTutorProtocol({ protocolPath = DEFAULT_PROTOCOL, configPath = DEFAULT_CONFIG, familyId = null } = {}) {
+export function validateRecursiveTutorProtocol({
+  protocolPath = DEFAULT_PROTOCOL,
+  configPath = DEFAULT_CONFIG,
+  familyId = null,
+} = {}) {
   const protocol = readYaml(protocolPath);
   const config = readYaml(configPath);
   const protocolIssues = [];

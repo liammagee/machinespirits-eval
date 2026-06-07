@@ -79,7 +79,10 @@ function commandString(cmd) {
   return cmd.map((part) => (/\s/.test(String(part)) ? JSON.stringify(part) : String(part))).join(' ');
 }
 
-function replayCommandFor(transcriptPath, { outDir = null, policyMemoryPath = null, generator = 'mock', checker = 'mock' } = {}) {
+function replayCommandFor(
+  transcriptPath,
+  { outDir = null, policyMemoryPath = null, generator = 'mock', checker = 'mock' } = {},
+) {
   const cmd = [
     'node',
     'scripts/replay-discursive-transcript.js',
@@ -205,6 +208,7 @@ function tutorLineForArm(sibling, armName) {
 
 function renderHeldoutTranscript({ family, sibling, armName }) {
   const arm = sibling.fixture_adjudication?.[armName] || {};
+  const learnerResistance = sibling.learner_resistance || family.training_seed?.learner_resistance || '';
   return [
     `# A19 Held-Out Fixture: ${sibling.sibling_id} ${armName.toUpperCase()}`,
     '',
@@ -213,7 +217,7 @@ function renderHeldoutTranscript({ family, sibling, armName }) {
     `ARM: ${armName === 's0' ? 'S0_no_policy' : 'S1_policy_memory'}`,
     '',
     `STAGE: ${sibling.public_setup || ''}`,
-    `LEARNER: ${family.training_seed?.learner_resistance || ''}`,
+    `LEARNER: ${learnerResistance}`,
     `TUTOR: ${tutorLineForArm(sibling, armName)}`,
     '',
     `FIXTURE_BASIS_LABEL: ${arm.basis_label || 'not_adjudicated'}`,
@@ -223,6 +227,7 @@ function renderHeldoutTranscript({ family, sibling, armName }) {
 }
 
 function renderHeldoutBaseTranscript({ family, sibling }) {
+  const learnerResistance = sibling.learner_resistance || family.training_seed?.learner_resistance || '';
   return [
     `# A19 Held-Out Base: ${sibling.sibling_id}`,
     '',
@@ -231,7 +236,7 @@ function renderHeldoutBaseTranscript({ family, sibling }) {
     'PHASE: heldout_sibling_base',
     '',
     `STAGE: ${sibling.public_setup || ''}`,
-    `LEARNER: ${family.training_seed?.learner_resistance || ''}`,
+    `LEARNER: ${learnerResistance}`,
     `TUTOR: I will apply the old repair "${family.training_seed?.old_rule_decoy || 'unknown_old_rule'}" unless the learner makes the failure undeniable.`,
     '',
     `HEADROOM_PREDICTION: ${sibling.headroom_prediction || ''}`,
@@ -312,7 +317,8 @@ export function buildAttemptMaterializationPlan({
         sibling_id: sibling.sibling_id,
         protocol_reject: protocolReject,
         protocol_reject_reason: sibling.protocol_reject_reason || null,
-        expected_card_verdict: sibling.fixture_adjudication?.expected_card_verdict || sibling.expected_card_verdict || null,
+        expected_card_verdict:
+          sibling.fixture_adjudication?.expected_card_verdict || sibling.expected_card_verdict || null,
         heldout_base_transcript: protocolReject ? null : heldoutBasePath,
         s0_public_transcript: protocolReject ? null : s0Path,
         s1_public_transcript: protocolReject ? null : s1Path,
@@ -322,7 +328,9 @@ export function buildAttemptMaterializationPlan({
           : blindCommandFor({ s0Path, s1Path, sibling, familyId: family.family_id, outPath: blindReport }),
         blind_adjudication_command_text: protocolReject
           ? null
-          : commandString(blindCommandFor({ s0Path, s1Path, sibling, familyId: family.family_id, outPath: blindReport })),
+          : commandString(
+              blindCommandFor({ s0Path, s1Path, sibling, familyId: family.family_id, outPath: blindReport }),
+            ),
         free_text_blind_adjudication_report: protocolReject ? null : freeTextBlindReport,
         free_text_blind_adjudication_command: protocolReject
           ? null
@@ -336,7 +344,9 @@ export function buildAttemptMaterializationPlan({
           : replayCommandFor(heldoutBasePath, { outDir: s1AxiomReplayDir, policyMemoryPath: admittedAxiomPath }),
         s1_axiom_replay_command_text: protocolReject
           ? null
-          : commandString(replayCommandFor(heldoutBasePath, { outDir: s1AxiomReplayDir, policyMemoryPath: admittedAxiomPath })),
+          : commandString(
+              replayCommandFor(heldoutBasePath, { outDir: s1AxiomReplayDir, policyMemoryPath: admittedAxiomPath }),
+            ),
       };
     });
     return {
@@ -352,7 +362,8 @@ export function buildAttemptMaterializationPlan({
       axiom_induction_command: axiomInductionCommand,
       axiom_induction_command_text: commandString(axiomInductionCommand),
       heldout,
-      local_gate_status: validation.status === 'pass' ? 'ready_for_attempt1_materialization' : 'blocked_by_static_validation',
+      local_gate_status:
+        validation.status === 'pass' ? 'ready_for_attempt1_materialization' : 'blocked_by_static_validation',
     };
   });
   return {
@@ -406,8 +417,16 @@ export function materializeAttemptFixtures({
       }
       fs.mkdirSync(path.dirname(heldoutPlan.s0_public_transcript), { recursive: true });
       fs.writeFileSync(heldoutPlan.heldout_base_transcript, renderHeldoutBaseTranscript({ family, sibling }), 'utf8');
-      fs.writeFileSync(heldoutPlan.s0_public_transcript, renderHeldoutTranscript({ family, sibling, armName: 's0' }), 'utf8');
-      fs.writeFileSync(heldoutPlan.s1_public_transcript, renderHeldoutTranscript({ family, sibling, armName: 's1' }), 'utf8');
+      fs.writeFileSync(
+        heldoutPlan.s0_public_transcript,
+        renderHeldoutTranscript({ family, sibling, armName: 's0' }),
+        'utf8',
+      );
+      fs.writeFileSync(
+        heldoutPlan.s1_public_transcript,
+        renderHeldoutTranscript({ family, sibling, armName: 's1' }),
+        'utf8',
+      );
     }
   }
 

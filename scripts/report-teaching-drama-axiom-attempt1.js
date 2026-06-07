@@ -66,8 +66,7 @@ export function parseArgs(argv = process.argv.slice(2)) {
       const dir = value.slice(eq + 1).trim();
       if (!familyId || !dir) throw new Error('--attempt1-dir must use family_id=path');
       args.attempt1Dirs[familyId] = path.resolve(dir);
-    }
-    else if (token === '--family') args.familyId = argv[++i];
+    } else if (token === '--family') args.familyId = argv[++i];
     else if (token === '--out') args.out = path.resolve(argv[++i]);
     else if (token === '--json') args.json = true;
     else throw new Error(`unknown arg: ${token}\n\n${usage()}`);
@@ -270,7 +269,9 @@ export function renderMarkdown(report) {
   for (const [field, threshold] of Object.entries(report.thresholds)) lines.push(`| ${field} | ${threshold} |`);
   lines.push('');
   lines.push('## Families', '');
-  lines.push('| family | old-rule decoy | expected failure | status | next gate | old warrant | diagnosis | accountability | recursive update | non-leakage |');
+  lines.push(
+    '| family | old-rule decoy | expected failure | status | next gate | old warrant | diagnosis | accountability | recursive update | non-leakage |',
+  );
   lines.push('| --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: |');
   for (const family of report.families) {
     lines.push(

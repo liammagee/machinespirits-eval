@@ -130,7 +130,9 @@ function main() {
     protocolPath: args.protocol,
     configPath: args.config,
   });
-  const output = args.json ? `${JSON.stringify({ ...report, denominators: denominatorSummary(report.cards) }, null, 2)}\n` : renderMarkdown(report);
+  const output = args.json
+    ? `${JSON.stringify({ ...report, denominators: denominatorSummary(report.cards) }, null, 2)}\n`
+    : renderMarkdown(report);
   if (args.out) {
     fs.mkdirSync(path.dirname(args.out), { recursive: true });
     fs.writeFileSync(args.out, output, 'utf8');

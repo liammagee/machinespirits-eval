@@ -145,7 +145,10 @@ function repoRel(filePath) {
 }
 
 function sha256Short(text) {
-  return createHash('sha256').update(String(text || '')).digest('hex').slice(0, 16);
+  return createHash('sha256')
+    .update(String(text || ''))
+    .digest('hex')
+    .slice(0, 16);
 }
 
 function normalizeRepairType(value) {
@@ -353,7 +356,11 @@ function mockRepairExtraction(transcript) {
   const text = String(transcript || '').toLowerCase();
   const finalTutor = finalTutorSegment(transcript).toLowerCase();
   const finalRegion = `${text.slice(-1600)}\n${finalTutor}`;
-  if (/scope|boundary|exception|hold .*fixed|usual condition.*exception|compare .*case|blocks? it|blocks? the result/.test(finalRegion)) {
+  if (
+    /scope|boundary|exception|hold .*fixed|usual condition.*exception|compare .*case|blocks? it|blocks? the result/.test(
+      finalRegion,
+    )
+  ) {
     return {
       committed_repair: 'change the task into a scope test over the exception boundary',
       committing_quote: finalTutorSegment(transcript),
@@ -362,7 +369,11 @@ function mockRepairExtraction(transcript) {
       public_evidence_summary: 'mock extraction found exception-boundary comparison language',
     };
   }
-  if (/action gate|apply the new rule|concrete test|try it on|next example|show me/.test(finalRegion)) {
+  if (
+    /action gate|apply the new rule|concrete test|try it on|next example|show me|fresh case|new case|discriminating test|public check/.test(
+      finalRegion,
+    )
+  ) {
     return {
       committed_repair: 'require a concrete action gate before closure',
       committing_quote: finalTutorSegment(transcript),
@@ -419,7 +430,95 @@ function normalizeExtraction(parsed) {
   };
 }
 
-function classForExtraction(extraction, args) {
+const TRANSFER_CONTROL_PUBLIC_TEST_RE =
+  /\b(?:(?:fresh|new|next|transfer|discriminating|public|concrete)\s+(?:case|example|test|check)|apply(?:ing)?\b[\s\S]{0,80}\b(?:fresh|new|next|case|example|test|check)|use\b[\s\S]{0,80}\b(?:check|test)\b[\s\S]{0,80}\bon)\b/i;
+const NEGATED_DECOY_MARKERS = [
+  'rather than',
+  'instead of',
+  'not',
+  'do not',
+  "don't",
+  'avoid',
+  'avoids',
+  'avoided',
+  'reject',
+  'rejected',
+  'replace',
+  'replaces',
+  'replaced',
+  'abandon',
+  'abandons',
+  'abandoned',
+  'cannot',
+  "can't",
+];
+const FAILED_DECOY_MARKERS = [
+  'fail',
+  'fails',
+  'failed',
+  'failure',
+  'break',
+  'breaks',
+  'broke',
+  'broken',
+  'changes',
+  'changed',
+  'changing',
+  'cannot tell',
+  "can't tell",
+];
+
+function calibratedTargetHit(repairText, repairType, args) {
+  const targetRepairType = normalizeRepairType(args.targetRepairType);
+  if (!targetRepairType) return false;
+  if (repairType === targetRepairType) return true;
+  if (targetRepairType === 'transfer_control' && TRANSFER_CONTROL_PUBLIC_TEST_RE.test(repairText)) return true;
+  return false;
+}
+
+function stemToken(token) {
+  return String(token || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '')
+    .replace(/(?:ing|ed|s)$/u, '');
+}
+
+function significantTokens(text) {
+  return String(text || '')
+    .toLowerCase()
+    .split(/[^a-z0-9]+/u)
+    .map(stemToken)
+    .filter((token) => token && !['the', 'a', 'an', 'and', 'or', 'to', 'of', 'again'].includes(token));
+}
+
+function allAliasTokensInWindow(alias, windowText) {
+  const aliasTokens = significantTokens(alias);
+  const windowTokens = new Set(significantTokens(windowText));
+  return aliasTokens.length > 0 && aliasTokens.every((token) => windowTokens.has(token));
+}
+
+function isNegatedDecoyMention(repairText, alias) {
+  const text = String(repairText || '').toLowerCase();
+  for (const marker of NEGATED_DECOY_MARKERS) {
+    let index = text.indexOf(marker);
+    while (index >= 0) {
+      const window = text.slice(index, index + 180);
+      if (allAliasTokensInWindow(alias, window)) return true;
+      index = text.indexOf(marker, index + marker.length);
+    }
+  }
+  for (const marker of FAILED_DECOY_MARKERS) {
+    let index = text.indexOf(marker);
+    while (index >= 0) {
+      const window = text.slice(Math.max(0, index - 120), index + 180);
+      if (allAliasTokensInWindow(alias, window)) return true;
+      index = text.indexOf(marker, index + marker.length);
+    }
+  }
+  return false;
+}
+
+export function classForExtraction(extraction, args) {
   const repairText = [
     extraction.committed_repair,
     extraction.committing_quote,
@@ -429,12 +528,11 @@ function classForExtraction(extraction, args) {
     .filter(Boolean)
     .join(' ');
   const repairType = normalizeRepairType(extraction.repair_type);
-  const targetHit =
-    matchesAny(repairText, args.targetAliases) ||
-    (args.targetRepairType && repairType === normalizeRepairType(args.targetRepairType));
+  const targetHit = matchesAny(repairText, args.targetAliases) || calibratedTargetHit(repairText, repairType, args);
   const decoyHit =
-    matchesAny(repairText, args.decoyAliases) ||
-    (args.decoyRepairTypes || []).map(normalizeRepairType).includes(repairType);
+    (args.decoyAliases || []).some(
+      (alias) => matchesAny(repairText, [alias]) && !isNegatedDecoyMention(repairText, alias),
+    ) || (args.decoyRepairTypes || []).map(normalizeRepairType).includes(repairType);
   if (targetHit && !decoyHit) return 'target';
   if (decoyHit && !targetHit) return 'decoy';
   return 'neither';
@@ -476,7 +574,8 @@ async function classifyFreeTextArm({ label, transcriptPath, args }) {
   const classCounts = matchedClass.distribution || {};
   const nonZeroClasses = Object.entries(classCounts).filter(([, count]) => count > 0).length;
   if (nonZeroClasses > 1 && matchedClass.votes < matchedClass.total) artifactFlags.push('critic_split');
-  const committedOptionClass = matchedClass.value === 'target' || matchedClass.value === 'decoy' ? matchedClass.value : 'neither';
+  const committedOptionClass =
+    matchedClass.value === 'target' || matchedClass.value === 'decoy' ? matchedClass.value : 'neither';
   return {
     label,
     transcript_path: repoRel(transcriptPath),

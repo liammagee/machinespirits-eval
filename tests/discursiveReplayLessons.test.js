@@ -58,8 +58,16 @@ function seedLoop() {
   });
   writeJson(path.join(i02Replay, 'manifest.json'), {
     records: [
-      { item: { id: 'item-a' }, gate: { status: 'survivor', warnings: [], failures: [] }, feedback: { provided: true } },
-      { item: { id: 'item-b' }, gate: { status: 'survivor', warnings: [], failures: [] }, feedback: { provided: true } },
+      {
+        item: { id: 'item-a' },
+        gate: { status: 'survivor', warnings: [], failures: [] },
+        feedback: { provided: true },
+      },
+      {
+        item: { id: 'item-b' },
+        gate: { status: 'survivor', warnings: [], failures: [] },
+        feedback: { provided: true },
+      },
     ],
   });
   writeJson(path.join(root, 'manifest.json'), {

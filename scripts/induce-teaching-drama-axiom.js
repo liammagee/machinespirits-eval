@@ -22,12 +22,7 @@ const DEFAULT_CONFIG = path.join(ROOT, 'config', 'teaching-drama-axioms', 'pilot
 const DEFAULT_OUT_DIR = path.join(ROOT, 'exports', 'a19', 'axioms');
 const PROMPT_PATH = path.join(ROOT, 'prompts', 'a19', 'axiom-inducer.md');
 
-const REQUIRED_EVIDENCE_KINDS = [
-  'attempt1_failure',
-  'old_rule_decoy',
-  'replacement_move',
-  'learner_feedback',
-];
+const REQUIRED_EVIDENCE_KINDS = ['attempt1_failure', 'old_rule_decoy', 'replacement_move', 'learner_feedback'];
 
 function usage() {
   return `Usage:
@@ -116,7 +111,11 @@ function sha256File(filePath) {
 }
 
 function sha256Short(text) {
-  return crypto.createHash('sha256').update(String(text || '')).digest('hex').slice(0, 16);
+  return crypto
+    .createHash('sha256')
+    .update(String(text || ''))
+    .digest('hex')
+    .slice(0, 16);
 }
 
 function selectedFamily(configPath, familyId) {
@@ -154,15 +153,13 @@ function loadAttempt1Record(attempt1Dir) {
     revisionPath,
     revisedPublicPath,
     revision: revisionPath && fs.existsSync(revisionPath) ? readJson(revisionPath) : null,
-    revisedPublic: revisedPublicPath && fs.existsSync(revisedPublicPath) ? fs.readFileSync(revisedPublicPath, 'utf8') : '',
+    revisedPublic:
+      revisedPublicPath && fs.existsSync(revisedPublicPath) ? fs.readFileSync(revisedPublicPath, 'utf8') : '',
   };
 }
 
 function firstLedgerQuote(revision, keys) {
-  const ledgers = [
-    ...asArray(revision?.move_ledger),
-    ...asArray(revision?.tutor_learning_ledger),
-  ];
+  const ledgers = [...asArray(revision?.move_ledger), ...asArray(revision?.tutor_learning_ledger)];
   for (const entry of ledgers) {
     for (const key of keys) {
       const value = entry?.[key];
@@ -260,13 +257,19 @@ export function validateTeachingDramaAxiomMemory(record) {
   if (HIDDEN_STATE_RE.test(publicOnlyText)) {
     gateIssue(issues, 'hidden_state_basis', 'axiom', 'axiom must be grounded in public evidence, not hidden state');
   }
-  const evidenceKinds = new Set(asArray(record?.evidence_spans).map((entry) => entry?.kind).filter(Boolean));
+  const evidenceKinds = new Set(
+    asArray(record?.evidence_spans)
+      .map((entry) => entry?.kind)
+      .filter(Boolean),
+  );
   for (const kind of REQUIRED_EVIDENCE_KINDS) {
     if (!evidenceKinds.has(kind)) gateIssue(issues, 'missing_evidence_kind', 'evidence_spans', `missing ${kind}`);
   }
   for (const [index, span] of asArray(record?.evidence_spans).entries()) {
-    if (!hasText(span?.quote)) gateIssue(issues, 'missing_evidence_quote', `evidence_spans[${index}].quote`, 'is required');
-    if (!hasText(span?.source)) gateIssue(issues, 'missing_evidence_source', `evidence_spans[${index}].source`, 'is required');
+    if (!hasText(span?.quote))
+      gateIssue(issues, 'missing_evidence_quote', `evidence_spans[${index}].quote`, 'is required');
+    if (!hasText(span?.source))
+      gateIssue(issues, 'missing_evidence_source', `evidence_spans[${index}].source`, 'is required');
     if (HIDDEN_STATE_RE.test(span?.quote || '')) {
       gateIssue(issues, 'hidden_state_evidence', `evidence_spans[${index}].quote`, 'must not cite hidden state');
     }
@@ -275,7 +278,12 @@ export function validateTeachingDramaAxiomMemory(record) {
     gateIssue(issues, 'attempt1_not_survivor', 'source_attempt1.gate_status', 'must be survivor');
   }
   if (record?.source_attempt1?.generator_backend === 'mock' || record?.source_attempt1?.checker_backend === 'mock') {
-    gateIssue(issues, 'mock_source_not_empirical', 'source_attempt1', 'mock-backed source cannot admit empirical S1 axiom');
+    gateIssue(
+      issues,
+      'mock_source_not_empirical',
+      'source_attempt1',
+      'mock-backed source cannot admit empirical S1 axiom',
+    );
   }
   if (record?.policy_memory_contract?.memory_unit !== 'single_teaching_drama_axiom') {
     gateIssue(issues, 'wrong_memory_unit', 'policy_memory_contract.memory_unit', 'must be single_teaching_drama_axiom');
@@ -332,7 +340,10 @@ export function induceTeachingDramaAxiom({
       revision_json_path: rel(recordBundle.revisionPath),
       revised_public_path: rel(recordBundle.revisedPublicPath),
       manifest_sha256: recordBundle.manifestPath ? sha256File(recordBundle.manifestPath) : null,
-      revision_json_sha256: recordBundle.revisionPath && fs.existsSync(recordBundle.revisionPath) ? sha256File(recordBundle.revisionPath) : null,
+      revision_json_sha256:
+        recordBundle.revisionPath && fs.existsSync(recordBundle.revisionPath)
+          ? sha256File(recordBundle.revisionPath)
+          : null,
       prompt_hashes: {
         generator: record?.generator?.promptHashes || null,
         checker: record?.checker?.promptHashes || null,

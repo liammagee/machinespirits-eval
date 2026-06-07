@@ -7,8 +7,7 @@ import yaml from 'yaml';
 import { materializeAttemptChain } from '../scripts/run-recursive-tutor-learning-benchmark.js';
 import { buildLocalGateReport } from '../scripts/report-recursive-tutor-learning-local-gate.js';
 
-const loadFixture = () =>
-  yaml.parse(fs.readFileSync('config/recursive-tutor-learning/pilot-families.yaml', 'utf8'));
+const loadFixture = () => yaml.parse(fs.readFileSync('config/recursive-tutor-learning/pilot-families.yaml', 'utf8'));
 
 function writeJson(filePath, value) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
@@ -80,7 +79,9 @@ test('local gate reports revise_again for a fresh materialized chain', () => {
   materializeAttemptChain(loadFixture(), { outDir, force: false });
   const report = buildLocalGateReport({ chainDir: outDir });
   assert.equal(report.status_counts.revise_again, 3);
-  assert.ok(report.families.every((family) => family.reasons.some((reason) => reason.code === 'missing_attempt1_replay')));
+  assert.ok(
+    report.families.every((family) => family.reasons.some((reason) => reason.code === 'missing_attempt1_replay')),
+  );
 });
 
 test('local gate reports clean_survivor when revised heldout passes and baseline fails', () => {
@@ -90,8 +91,14 @@ test('local gate reports clean_survivor when revised heldout passes and baseline
   const family = plan.families[0];
   completePolicy(family.policy_revision_template);
   writeJson(path.join(family.attempt1_replay_dir, 'manifest.json'), replayManifest('survivor', passingScores));
-  writeJson(path.join(family.heldout[0].baseline_replay_dir, 'manifest.json'), replayManifest('revise_again', failingScores));
-  writeJson(path.join(family.heldout[0].revised_replay_dir, 'manifest.json'), replayManifest('survivor', passingScores));
+  writeJson(
+    path.join(family.heldout[0].baseline_replay_dir, 'manifest.json'),
+    replayManifest('revise_again', failingScores),
+  );
+  writeJson(
+    path.join(family.heldout[0].revised_replay_dir, 'manifest.json'),
+    replayManifest('survivor', passingScores),
+  );
   const report = buildLocalGateReport({ chainDir: outDir });
   const row = report.families.find((entry) => entry.family_id === family.family_id);
   assert.equal(row.status, 'clean_survivor');
@@ -104,8 +111,14 @@ test('local gate reports no_headroom when baseline and revised both pass', () =>
   const family = plan.families[0];
   completePolicy(family.policy_revision_template);
   writeJson(path.join(family.attempt1_replay_dir, 'manifest.json'), replayManifest('survivor', passingScores));
-  writeJson(path.join(family.heldout[0].baseline_replay_dir, 'manifest.json'), replayManifest('survivor', passingScores));
-  writeJson(path.join(family.heldout[0].revised_replay_dir, 'manifest.json'), replayManifest('survivor', passingScores));
+  writeJson(
+    path.join(family.heldout[0].baseline_replay_dir, 'manifest.json'),
+    replayManifest('survivor', passingScores),
+  );
+  writeJson(
+    path.join(family.heldout[0].revised_replay_dir, 'manifest.json'),
+    replayManifest('survivor', passingScores),
+  );
   const report = buildLocalGateReport({ chainDir: outDir });
   const row = report.families.find((entry) => entry.family_id === family.family_id);
   assert.equal(row.status, 'no_headroom');

@@ -4,11 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import yaml from 'yaml';
-import {
-  buildReplayPanelPackage,
-  isAdversarialPrecheck,
-  parseArgs,
-} from '../scripts/run-discursive-replay-panel.js';
+import { buildReplayPanelPackage, isAdversarialPrecheck, parseArgs } from '../scripts/run-discursive-replay-panel.js';
 
 function writeJson(filePath, value) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });

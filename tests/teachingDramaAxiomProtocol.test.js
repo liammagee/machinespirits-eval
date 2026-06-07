@@ -13,12 +13,13 @@ import { materializeAttemptFixtures } from '../scripts/materialize-teaching-dram
 import {
   adjudicateTeachingDramaAxiomCard,
   adjudicateTeachingDramaAxiomCardFreeText,
+  classForExtraction,
 } from '../scripts/blind-teaching-drama-axiom-adjudication.js';
+import { induceTeachingDramaAxiom, validateTeachingDramaAxiomMemory } from '../scripts/induce-teaching-drama-axiom.js';
 import {
-  induceTeachingDramaAxiom,
-  validateTeachingDramaAxiomMemory,
-} from '../scripts/induce-teaching-drama-axiom.js';
-import { renderMarkdown as renderAttempt1Markdown, summarizeAttempt1Gate } from '../scripts/report-teaching-drama-axiom-attempt1.js';
+  renderMarkdown as renderAttempt1Markdown,
+  summarizeAttempt1Gate,
+} from '../scripts/report-teaching-drama-axiom-attempt1.js';
 
 const ROOT = path.resolve('.');
 const PROTOCOL = path.join(ROOT, 'config', 'teaching-drama-axioms', 'a19-protocol.yaml');
@@ -110,6 +111,8 @@ function baseFixture(overrides = {}) {
           selected_relation_type: 'warrant_scope',
           requires_constructed_device: true,
           counterexample_present: true,
+          model_tier_scope: 'fixture_model',
+          domain_scope: 'test_domain',
           leakage_risks: [],
         },
         heldout_siblings: [
@@ -158,11 +161,11 @@ test('A19 validator accepts the checked-in pilot fixtures', () => {
   const report = validateTeachingDramaAxiomProtocol({ protocolPath: PROTOCOL, configPath: PILOT });
   assert.equal(report.status, 'pass');
   assert.equal(report.summary.errors, 0);
-  assert.equal(report.summary.families, 4);
-  assert.equal(report.summary.cards, 8);
+  assert.equal(report.summary.families, 6);
+  assert.equal(report.summary.cards, 14);
   assert.deepEqual(report.provenance.zero_api, true);
-  assert.equal(report.summary.verdict_counts.policy_headroom, 1);
-  assert.equal(report.summary.verdict_counts.ceiling, 1);
+  assert.equal(report.summary.verdict_counts.policy_headroom, 5);
+  assert.equal(report.summary.verdict_counts.ceiling, 3);
   assert.equal(report.summary.verdict_counts.policy_failure, 1);
   assert.equal(report.summary.verdict_counts.cue_leak, 1);
   assert.equal(report.summary.verdict_counts.self_solve, 1);
@@ -193,6 +196,42 @@ test('validator rejects selected policy markers leaked into public fields', () =
   assert.match(JSON.stringify(report.issues), /selected policy markers appear in public/);
 });
 
+test('validator rejects selected policy markers leaked into held-out learner resistance', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a19-marker-leak-learner-'));
+  const fixture = baseFixture();
+  fixture.families[0].heldout_siblings[0].learner_resistance =
+    'I think the answer needs a warrant boundary before we continue.';
+  const configPath = path.join(tmpDir, 'bad.yaml');
+  writeYaml(configPath, fixture);
+  const report = validateTeachingDramaAxiomProtocol({ protocolPath: PROTOCOL, configPath });
+  assert.equal(report.status, 'fail');
+  assert.match(JSON.stringify(report.issues), /selected policy markers appear in public/);
+});
+
+test('validator requires cue-map model tier and domain scope', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a19-cue-scope-'));
+  const fixture = baseFixture();
+  delete fixture.families[0].cue_map.model_tier_scope;
+  delete fixture.families[0].cue_map.domain_scope;
+  const configPath = path.join(tmpDir, 'bad.yaml');
+  writeYaml(configPath, fixture);
+  const report = validateTeachingDramaAxiomProtocol({ protocolPath: PROTOCOL, configPath });
+  assert.equal(report.status, 'fail');
+  assert.match(JSON.stringify(report.issues), /cue_map\.model_tier_scope/);
+  assert.match(JSON.stringify(report.issues), /cue_map\.domain_scope/);
+});
+
+test('validator requires the protocol changelog', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a19-changelog-'));
+  const protocol = yaml.parse(fs.readFileSync(PROTOCOL, 'utf8'));
+  delete protocol.meta.changelog_path;
+  const protocolPath = path.join(tmpDir, 'bad-protocol.yaml');
+  writeYaml(protocolPath, protocol);
+  const report = validateTeachingDramaAxiomProtocol({ protocolPath, configPath: PILOT });
+  assert.equal(report.status, 'fail');
+  assert.match(JSON.stringify(report.issues), /protocol\.meta\.changelog_path/);
+});
+
 test('validator rejects target policies without anti-conditions', () => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a19-anti-condition-'));
   const fixture = baseFixture({ target_policy: { ...baseFixture().families[0].target_policy, anti_conditions: [] } });
@@ -207,31 +246,73 @@ test('headroom classifier covers all non-reject verdict classes', () => {
   const protocol = yaml.parse(fs.readFileSync(PROTOCOL, 'utf8'));
   const mk = (s0, s1) => ({ fixture_adjudication: { s0, s1 } });
   assert.equal(
-    classifyCardVerdict(mk({ committed_option_class: 'decoy', artifact_flags: [] }, { committed_option_class: 'target', artifact_flags: [] }), protocol),
+    classifyCardVerdict(
+      mk(
+        { committed_option_class: 'decoy', artifact_flags: [] },
+        { committed_option_class: 'target', artifact_flags: [] },
+      ),
+      protocol,
+    ),
     'policy_headroom',
   );
   assert.equal(
-    classifyCardVerdict(mk({ committed_option_class: 'target', basis_label: 'ordinary_public_inference', artifact_flags: [] }, { committed_option_class: 'target', artifact_flags: [] }), protocol),
+    classifyCardVerdict(
+      mk(
+        { committed_option_class: 'target', basis_label: 'ordinary_public_inference', artifact_flags: [] },
+        { committed_option_class: 'target', artifact_flags: [] },
+      ),
+      protocol,
+    ),
     'ceiling',
   );
   assert.equal(
-    classifyCardVerdict(mk({ committed_option_class: 'target', basis_label: 'registered_relation_without_policy', artifact_flags: [] }, { committed_option_class: 'target', artifact_flags: [] }), protocol),
+    classifyCardVerdict(
+      mk(
+        { committed_option_class: 'target', basis_label: 'registered_relation_without_policy', artifact_flags: [] },
+        { committed_option_class: 'target', artifact_flags: [] },
+      ),
+      protocol,
+    ),
     'self_solve',
   );
   assert.equal(
-    classifyCardVerdict(mk({ committed_option_class: 'decoy', artifact_flags: [] }, { committed_option_class: 'decoy', artifact_flags: [] }), protocol),
+    classifyCardVerdict(
+      mk(
+        { committed_option_class: 'decoy', artifact_flags: [] },
+        { committed_option_class: 'decoy', artifact_flags: [] },
+      ),
+      protocol,
+    ),
     'policy_failure',
   );
   assert.equal(
-    classifyCardVerdict(mk({ committed_option_class: 'target', artifact_flags: ['cue_leak'] }, { committed_option_class: 'target', artifact_flags: [] }), protocol),
+    classifyCardVerdict(
+      mk(
+        { committed_option_class: 'target', artifact_flags: ['cue_leak'] },
+        { committed_option_class: 'target', artifact_flags: [] },
+      ),
+      protocol,
+    ),
     'cue_leak',
   );
   assert.equal(
-    classifyCardVerdict(mk({ committed_option_class: 'neither', artifact_flags: ['arbiter_disagreement'] }, { committed_option_class: 'neither', artifact_flags: [] }), protocol),
+    classifyCardVerdict(
+      mk(
+        { committed_option_class: 'neither', artifact_flags: ['arbiter_disagreement'] },
+        { committed_option_class: 'neither', artifact_flags: [] },
+      ),
+      protocol,
+    ),
     'arbiter_disagreement',
   );
   assert.equal(
-    classifyCardVerdict(mk({ committed_option_class: 'neither', artifact_flags: [] }, { committed_option_class: 'neither', artifact_flags: [] }), protocol),
+    classifyCardVerdict(
+      mk(
+        { committed_option_class: 'neither', artifact_flags: [] },
+        { committed_option_class: 'neither', artifact_flags: [] },
+      ),
+      protocol,
+    ),
     'neither_correct',
   );
 });
@@ -255,11 +336,11 @@ test('framework report separates denominators and refuses a pooled rate', () => 
   const report = validateTeachingDramaAxiomProtocol({ protocolPath: PROTOCOL, configPath: PILOT });
   const denominators = denominatorSummary(report.cards);
   assert.deepEqual(denominators, {
-    total_cards: 8,
-    admitted_cards: 5,
+    total_cards: 14,
+    admitted_cards: 11,
     protocol_reject_cards: 1,
     artifact_cards: 2,
-    policy_headroom_cards: 1,
+    policy_headroom_cards: 5,
   });
   const markdown = renderMarkdown(report);
   assert.match(markdown, /No pooled success rate is reported here/);
@@ -289,9 +370,31 @@ test('attempt materializer writes A18 replay and A19 blind-adjudication commands
   assert.match(family.heldout[0].blind_adjudication_command_text, /blind-teaching-drama-axiom-adjudication\.js/);
   assert.match(family.axiom_induction_command_text, /induce-teaching-drama-axiom\.js/);
   assert.match(family.heldout[0].s1_axiom_replay_command_text, /--policy-memory/);
-  assert.match(family.heldout[0].s1_axiom_replay_command_text, /exports\/a19\/axioms\/counter-warrant-scope\/axiom\.json/);
+  assert.match(
+    family.heldout[0].s1_axiom_replay_command_text,
+    /exports\/a19\/axioms\/counter-warrant-scope\/axiom\.json/,
+  );
   assert.match(fs.readFileSync(path.join(outDir, 'next-commands.sh'), 'utf8'), /fixture blind adjudication/);
   assert.match(fs.readFileSync(path.join(outDir, 'next-commands.sh'), 'utf8'), /exactly one admitted axiom/);
+});
+
+test('attempt materializer uses held-out sibling learner resistance when present', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a19-materialize-heldout-learner-'));
+  const configPath = path.join(tmpDir, 'fixture.yaml');
+  const fixture = baseFixture();
+  fixture.families[0].heldout_siblings[0].learner_resistance = 'This is the held-out learner line.';
+  writeYaml(configPath, fixture);
+  const outDir = path.join(tmpDir, 'out');
+  const plan = materializeAttemptFixtures({
+    protocolPath: PROTOCOL,
+    configPath,
+    outDir,
+    familyId: 'test_family',
+    force: true,
+  });
+  const heldoutText = fs.readFileSync(plan.families[0].heldout[0].heldout_base_transcript, 'utf8');
+  assert.match(heldoutText, /LEARNER: This is the held-out learner line\./);
+  assert.doesNotMatch(heldoutText, /LEARNER: That rule fails under this condition\./);
 });
 
 test('attempt-1 report separates fixture survivors from empirical survivors', () => {
@@ -384,7 +487,9 @@ test('fixture blind adjudication preserves alias withholding and classifies head
   const s1 = path.join(tmpDir, 's1.md');
   fs.writeFileSync(
     s0,
-    ['STAGE: The learner resists the move.', 'LEARNER: I still object.', 'TUTOR: I will validate then redirect.'].join('\n'),
+    ['STAGE: The learner resists the move.', 'LEARNER: I still object.', 'TUTOR: I will validate then redirect.'].join(
+      '\n',
+    ),
     'utf8',
   );
   fs.writeFileSync(
@@ -452,13 +557,94 @@ test('free-text blind adjudication maps paraphrased scope repairs by hidden repa
   assert.equal(report.critic_prompt_audit.target_repair_type_visible_to_critic, false);
 });
 
+test('free-text blind adjudication calibrates transfer-control repairs from fresh public tests', async () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a19-transfer-control-'));
+  const s0 = path.join(tmpDir, 's0.md');
+  const s1 = path.join(tmpDir, 's1.md');
+  fs.writeFileSync(
+    s0,
+    [
+      'STAGE: The learner says yes but repeats an old procedure.',
+      'LEARNER: Yes, I get it, so I still use the old shortcut.',
+      'TUTOR: Try the public check on a fresh case before we close.',
+    ].join('\n'),
+    'utf8',
+  );
+  fs.writeFileSync(
+    s1,
+    [
+      'STAGE: The learner says yes but repeats an old procedure.',
+      'LEARNER: Yes, I get it, so I still use the old shortcut.',
+      'TUTOR: Use the discriminating test on the next example and show which rule survives.',
+    ].join('\n'),
+    'utf8',
+  );
+  const report = await adjudicateTeachingDramaAxiomCardFreeText({
+    protocolPath: PROTOCOL,
+    s0,
+    s1,
+    targetAliases: ['action gate', 'apply the new rule', 'concrete test'],
+    decoyAliases: ['praise and close', 'repeat explanation'],
+    targetRepairType: 'transfer_control',
+    decoyRepairTypes: ['praise_close', 'repeat_explanation'],
+    optionSpace: 'repair A | repair B | repair C',
+    familyId: 'surface_agreement_uptake',
+    siblingId: 'calibration',
+    runId: 'transfer-control-calibration',
+    mock: true,
+  });
+  assert.equal(report.card_verdict, 'ceiling');
+  assert.equal(report.arms.s0.committed_option_class, 'target');
+  assert.equal(report.arms.s1.committed_option_class, 'target');
+});
+
+test('free-text mapper ignores decoy aliases when the repair explicitly rejects them', () => {
+  const matched = classForExtraction(
+    {
+      committed_repair:
+        'Convert both readings onto a single common scale before averaging rather than averaging the raw printed numbers.',
+      committing_quote: 'Convert one reading so both are on the same scale, then average.',
+      repair_type: 'name_warrant',
+      public_evidence_summary: 'The tutor rejects averaging the numbers and commits to unit conversion first.',
+    },
+    {
+      targetAliases: ['convert units', 'same scale', 'unit conversion'],
+      decoyAliases: ['average the numbers', 'explain the formula again'],
+      targetRepairType: 'name_warrant',
+      decoyRepairTypes: ['average_displayed_numbers', 'explain_the_formula_again'],
+    },
+  );
+  assert.equal(matched, 'target');
+});
+
+test('free-text mapper ignores old-rule aliases when named as the failed shortcut', () => {
+  const matched = classForExtraction(
+    {
+      committed_repair:
+        'Convert both fractions to a common-size unit before adding, because the add-tops/add-bottoms shortcut changes the unit instead of joining same-size pieces.',
+      committing_quote: 'The shortcut changes the unit instead of joining same-size pieces.',
+      repair_type: 'name_warrant',
+      public_evidence_summary:
+        'The tutor names why the shortcut fails and directs the learner to make same-size pieces before adding.',
+    },
+    {
+      targetAliases: ['common-size unit', 'same-size pieces'],
+      decoyAliases: ['add tops and bottoms'],
+      targetRepairType: 'ask_scope_test',
+      decoyRepairTypes: ['add_numerators_and_denominators'],
+    },
+  );
+  assert.equal(matched, 'target');
+});
+
 test('axiom induction admits one typed axiom and rejects full revision bundles as S1 memory', () => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a19-axiom-induce-'));
   const attemptDir = path.join(tmpDir, 'attempt1');
   const itemDir = path.join(attemptDir, 'attempt1.full');
   fs.mkdirSync(itemDir, { recursive: true });
   const revision = {
-    revised_public_transcript: 'TUTOR: Let us compare exception-present and exception-absent cases.\nLEARNER: The exception case defeats the broader rule.',
+    revised_public_transcript:
+      'TUTOR: Let us compare exception-present and exception-absent cases.\nLEARNER: The exception case defeats the broader rule.',
     move_ledger: [
       {
         public_action: 'The tutor changes to a side-by-side scope test.',
