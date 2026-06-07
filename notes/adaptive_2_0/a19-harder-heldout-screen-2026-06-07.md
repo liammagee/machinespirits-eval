@@ -4,7 +4,9 @@ Date: 2026-06-07.
 Status: two n=1 local `policy_headroom` candidates in one family, followed by a
 two-seed stability smoke that failed to reproduce either candidate. Later
 surface-agreement and counter-warrant siblings collapsed to `ceiling` under
-S0-first screening after transfer-control adjudication was calibrated. No
+S0-first screening after transfer-control adjudication was calibrated. A new
+frustration-rupture attempt-1 survivor admitted a new axiom, but its held-out
+pair was `neither_correct` under the registered repair-misalignment target. No
 stability-confirmed A19 transfer claim is licensed.
 
 ## Boundary
@@ -251,3 +253,43 @@ should change the evidence unit rather than merely adding more near-neighbor
 cards: either induce a new axiom from a new attempt-1 survivor, weaken/stratify
 the S0 baseline explicitly, or pre-register a genuinely different repair family
 before spending on S1, stability, or paid panels.
+
+## New Evidence-Unit Branch
+
+### `frustration_rupture_repair`
+
+- Attempt-1 survivor:
+  `exports/a19/real-attempt1/frustration-rupture-repair/manifest.json`.
+- Admitted axiom:
+  `exports/a19/axioms/frustration-rupture-repair/axiom.json`.
+- Held-out base:
+  `exports/a19/materialized-attempts-v10/frustration-rupture-repair/frustration-rupture-repair-a/heldout-base.full.md`.
+- S0 replay:
+  `exports/a19/real-s0s1-harder/frustration-rupture-repair/frustration-rupture-repair-a/s0-replay/`.
+- S0 headroom adjudication:
+  `exports/a19/real-s0s1-harder/frustration-rupture-repair/frustration-rupture-repair-a/s0-headroom.free-text.json`.
+- S1 replay with exactly one admitted axiom:
+  `exports/a19/real-s0s1-harder/frustration-rupture-repair/frustration-rupture-repair-a/s1-axiom-replay/`.
+- Paired free-text adjudication:
+  `exports/a19/real-s0s1-harder/frustration-rupture-repair/frustration-rupture-repair-a/blind-adjudication.free-text-axiom.json`.
+
+Attempt-1 result: survivor. The replay produced a dependency-pass repair for
+conflicting writing comments, and the deterministic inducer admitted one
+`repair_misalignment` axiom: when frustration names task-target uncertainty
+rather than refusal, avoid effort-first pressure and repair the rupture by naming
+the target and one bounded next step.
+
+Held-out result: `neither_correct`. S0 left nominal headroom under the registered
+`repair_misalignment` target, but S1 also failed to hit that target under alias
+withholding. Both arms were instead extracted as `transfer_control` over a
+dependency-pass/action-gate repair. Retargeting post hoc to the dependency-pass
+language would not create headroom, because S0 also used the same kind of move;
+it would collapse toward ceiling. Therefore this branch changes the evidence
+unit but still does not license A19 transfer.
+
+Consequence: the current A19 path is exhausted at two levels: near-neighbor
+held-out cards for admitted axioms, and one new attempt-1/axiom/held-out branch.
+The next legitimate step is not another opportunistic card. It is a protocol
+revision: pre-register a sharper taxonomy for `repair_misalignment`, stratify
+the S0 baseline, or open a genuinely new repair family before any S1, stability,
+paid-panel, or sidecar escalation.

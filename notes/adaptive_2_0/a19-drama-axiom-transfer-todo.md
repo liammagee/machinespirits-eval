@@ -37,6 +37,7 @@
 - [x] Reject axioms that are generic advice, lack anti-conditions, cite hidden state rather than public evidence, or try to use a full `revision.json` bundle as S1 memory.
 - [x] Persist admitted axioms with schema version and source transcript hashes; append to JSONL when requested.
 - [x] Add a deterministic axiom gate before any retrieval or S1 prompt injection.
+- [x] Change the evidence unit once admitted-axiom near-neighbors were exhausted: run a real attempt-1 survivor for `frustration_rupture_repair` and admit exactly one bounded `repair_misalignment` axiom.
 - [ ] Add a model-backed axiom inducer only after the deterministic gate remains stable across at least two real attempt-1 survivors.
 
 ## Phase 4: S0/S1 Held-Out Contrast
@@ -59,7 +60,8 @@
 - [x] Screen `surface_agreement_uptake_g` as a proof-by-examples candidate. S0 stress-tested the example-check rule with `n^2 + n + 41` at `n = 41` and then required an arbitrary-`n` gate, so the card was `ceiling`; stopped before S1, stability, and multi-critic escalation.
 - [x] Screen `surface_agreement_uptake_h` as a non-algebraic statistics candidate. S0 required the learner to apply a selection-plan check to the survey sentence, so the card was `ceiling`; stopped before S1, stability, and multi-critic escalation.
 - [x] Screen `counter_warrant_scope_c` as a different admitted-axiom repair family. S0 constructed and applied a refusal-availability test for consent under pressure, so the card was `ceiling`; stopped before S1, stability, and multi-critic escalation.
-- [ ] Change the evidence unit before spending further: induce a new axiom from a new attempt-1 survivor, explicitly stratify or weaken the S0 baseline, or pre-register a genuinely different repair family. The current admitted-axiom near-neighbor cards are operationally exhausted under S0-first screening.
+- [x] Change the evidence unit before spending further: induce a new axiom from a new attempt-1 survivor. `frustration_rupture_repair` admitted an axiom, but its held-out S0/S1 contrast was `neither_correct` under the registered `repair_misalignment` target.
+- [ ] Stop opportunistic A19 looping until the protocol changes. Next work must pre-register a sharper `repair_misalignment` taxonomy, explicitly stratify or weaken the S0 baseline, or define a genuinely new repair family before any more S1, stability, multi-critic, paid-panel, or sidecar escalation.
 
 ## Phase 5: Evaluation And Human Validation
 

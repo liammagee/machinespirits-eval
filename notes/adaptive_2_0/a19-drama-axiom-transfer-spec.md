@@ -147,8 +147,13 @@ standard counterexample and arbitrary-case gate. A random-sampling candidate
 candidate (`counter_warrant_scope_c`) also collapsed to `ceiling` under S0-first
 screening. Therefore A19 currently licenses a framework and a
 negative/stability-boundary result, not a stability-confirmed transfer claim.
-The current admitted-axiom near-neighbor cards are operationally exhausted until
-the evidence unit changes.
+The admitted-axiom near-neighbor cards were operationally exhausted, so the next
+branch changed the evidence unit: a `frustration_rupture_repair` attempt-1
+survivor admitted one bounded `repair_misalignment` axiom. Its held-out S0/S1
+contrast was still `neither_correct` under alias withholding because both arms
+were extracted as dependency-pass `transfer_control` repairs rather than the
+registered rupture-repair target. A19 is therefore exhausted under the current
+protocol until the taxonomy or S0 baseline is pre-registered differently.
 
 ## 7. Sidecar Paper Scaffold
 
