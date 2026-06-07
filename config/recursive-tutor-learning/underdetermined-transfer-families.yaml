@@ -1,0 +1,511 @@
+meta:
+  schema_version: recursive-tutor-learning-families-v1-underdetermined-transfer
+  created: 2026-06-06
+  status: a18_9_zero_low_api_fixture
+  target: A18.9 under-determined transfer-family redesign
+  claim_boundary: simulated_teacher_as_learner_not_human_learning
+  notes: >-
+    Pilot families for the S0-hard transfer design. Each public setup presents
+    multiple plausible repair paths. The filled attempt-1 policy must select the
+    repair under a transfer condition; if S0 independently finds the same
+    strategy, the family stops locally.
+
+families:
+  - family_id: selector_rail_priority
+    obstruction_type: competing_visible_cues_with_frame_selector
+    local_rule:
+      private_rule: >-
+        In this invented rail-card notation, the small outside tab marks which
+        rail is authorized to feed the final mark. Color match, nearness, and
+        uninterrupted rail path can all be tempting but are not decisive unless
+        they occur on the tab-marked rail.
+      public_name: rail-selector priority
+    transfer_design:
+      require_underdetermined_public_repairs: true
+      policy_selected_repair: selector_tab_test
+      transfer_condition: >-
+        Use the selector-tab repair only after the learner reports that ordinary
+        comparison leaves several visible cues in competition. Do not use it as
+        a first move.
+      s0_stop_rule: >-
+        Stop locally if S0 survives or if S0 independently names a selector-tab,
+        side-tab, rail-authority, or frame-selector strategy.
+    plausible_repairs:
+      - repair_id: color_match_test
+        public_rationale: >-
+          The chosen token shares a visible color or stain with the final mark.
+        why_plausible_from_public_stage: >-
+          Color matching is salient and easy to compare across the rail card.
+      - repair_id: nearest_stamp_test
+        public_rationale: >-
+          The chosen token sits closest to the final mark or endpoint.
+        why_plausible_from_public_stage: >-
+          Nearness looks like a natural route when a final mark sits at one side
+          of the card.
+      - repair_id: rail_path_test
+        public_rationale: >-
+          The chosen token lies on the cleanest visible rail path.
+        why_plausible_from_public_stage: >-
+          Continuous rails invite path-following as a public rule.
+      - repair_id: selector_tab_test
+        public_rationale: >-
+          The chosen token lies on the rail indicated by a small outside tab.
+        why_plausible_from_public_stage: >-
+          A frame mark could be decorative, positional, or controlling; the
+          learner needs a test that makes its role public.
+    success_criterion: >-
+      On a held-out rail card, the learner must stop choosing by color,
+      nearness, or clean path alone and use the outside tab to decide which rail
+      is authorized.
+    forbidden_shortcuts:
+      - selector tab chooses
+      - tab chooses the rail
+      - outside selector decides
+      - color and nearness are decoys
+      - rail supplies the valid mark
+      - tab-marked rail
+    training_seed:
+      seed_id: selector_train_red_upper
+      public_setup: >-
+        A narrow card has an upper rail and a lower rail. The same token word
+        vaso appears once on each rail. The upper vaso is red like the final
+        seal and sits nearer to it. The lower vaso sits on a cleaner rail path.
+        A small brass tab is clipped to the left frame beside the lower rail.
+        The learner has to say which vaso can support the final seal.
+      learner_resistance: >-
+        I keep choosing the red upper vaso because it matches the seal and it is
+        closer. The lower path is cleaner, but that feels like a different kind
+        of clue.
+      baseline_tutor_attempt: >-
+        Compare the two rails, the colors, and the positions before choosing.
+      learner_followup: >-
+        I can compare all three, but now I have three possible clues. I do not
+        know which visible feature has authority.
+      expected_failure: wrong_strategy_family
+    heldout_siblings:
+      - sibling_id: selector_holdout_blue_lower
+        public_setup: >-
+          A copper rail card has two horizontal rails and a final square at the
+          right edge. The token word leno appears on the upper rail and again on
+          the lower rail. The lower leno has a blue wash matching the final
+          square and is nearest to it. The upper rail is the only unbroken line.
+          A tiny ivory tab is clipped to the left frame beside the upper rail.
+          The learner has to choose which leno can support the final square.
+        learner_resistance: >-
+          I want the lower leno because it is blue like the square and closer to
+          the end. The upper rail being unbroken gives me a second clue, not a
+          decision.
+        baseline_tutor_attempt: >-
+          Compare color, distance, and the two rail paths, then choose the leno
+          with the strongest evidence.
+        learner_followup: >-
+          Comparing just piles the clues up. Blue and close still pull one way;
+          the clean line pulls another way.
+        plausible_public_repairs:
+          - color_match_test
+          - nearest_stamp_test
+          - rail_path_test
+          - selector_tab_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: selector_tab_test
+          target_id: upper_leno
+          target_aliases:
+            - upper leno
+            - upper rail
+            - tab-marked upper
+          selected_repair_markers:
+            - frame tab
+            - outside tab
+            - selector tab
+            - tab-marked rail
+          incorrect_target_aliases:
+            - lower leno
+            - lower rail
+      - sibling_id: selector_holdout_gold_middle
+        public_setup: >-
+          A slate card has three rails. The token word rumi appears on the top
+          rail and on the middle rail. The top rumi has a gold fleck matching
+          the final badge. The middle rumi is closest to the badge. The bottom
+          rail has the cleanest uninterrupted groove but no rumi. A small green
+          tab is clipped to the left frame beside the middle rail. The learner
+          has to choose which rumi can support the final badge.
+        learner_resistance: >-
+          I want the top rumi for the gold match, but the middle one is closer.
+          The groove clue does not even sit on a rumi, so I am not sure what to
+          trust.
+        baseline_tutor_attempt: >-
+          Compare the matching color, the distance, and the groove before
+          choosing.
+        learner_followup: >-
+          The comparisons conflict instead of resolving it. Gold, distance, and
+          groove each point somewhere different.
+        plausible_public_repairs:
+          - color_match_test
+          - nearest_stamp_test
+          - rail_path_test
+          - selector_tab_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: selector_tab_test
+          target_id: middle_rumi
+          target_aliases:
+            - middle rumi
+            - middle rail
+            - tab-marked middle
+          selected_repair_markers:
+            - frame tab
+            - outside tab
+            - selector tab
+            - tab-marked rail
+          incorrect_target_aliases:
+            - top rumi
+            - top rail
+            - bottom rail
+  - family_id: notch_rotation_priority
+    obstruction_type: competing_visible_cues_with_orientation_fit
+    local_rule:
+      private_rule: >-
+        In this invented notch-card notation, a token can carry the final mark
+        only when its tiny notch would match the final mark after one clockwise
+        quarter-turn. Color match, nearness, and clean corridor can all be
+        tempting but are not decisive unless the notch orientation fits.
+      public_name: notch rotation priority
+    transfer_design:
+      require_underdetermined_public_repairs: true
+      policy_selected_repair: rotation_fit_test
+      transfer_condition: >-
+        Use the rotation-fit repair only after the learner reports that ordinary
+        comparison leaves several visible cues in competition. Do not use it as
+        a first move.
+      s0_stop_rule: >-
+        Stop locally if S0 survives or if S0 independently names a rotation-fit,
+        quarter-turn, notch-orientation, or clockwise-turn strategy.
+    plausible_repairs:
+      - repair_id: color_match_test
+        public_rationale: >-
+          The chosen token shares a visible color or stain with the final mark.
+        why_plausible_from_public_stage: >-
+          Color matching is salient and easy to compare across the notch card.
+      - repair_id: nearest_slot_test
+        public_rationale: >-
+          The chosen token sits nearest to the final mark or endpoint.
+        why_plausible_from_public_stage: >-
+          Nearness looks like a natural route when a final mark sits at one side
+          of the card.
+      - repair_id: corridor_path_test
+        public_rationale: >-
+          The chosen token lies on the cleanest visible corridor to the final
+          mark.
+        why_plausible_from_public_stage: >-
+          Continuous corridors invite path-following as a public rule.
+      - repair_id: rotation_fit_test
+        public_rationale: >-
+          The chosen token has a notch orientation that fits the final mark after
+          one clockwise quarter-turn.
+        why_plausible_from_public_stage: >-
+          The notches could be decorative, directional, or controlling; the
+          learner needs a test that makes their role public.
+    success_criterion: >-
+      On a held-out notch card, the learner must stop choosing by color,
+      nearness, or corridor alone and use the one-step notch orientation fit to
+      decide which token can carry the final mark.
+    forbidden_shortcuts:
+      - rotation fit
+      - quarter-turn chooses
+      - clockwise turn decides
+      - notch orientation decides
+      - turn the notch
+      - one clockwise turn
+      - orientation fit
+    training_seed:
+      seed_id: notch_train_violet_right
+      public_setup: >-
+        A pale card has a left well and a right well. The token word daro
+        appears in both wells. The left daro is violet like the final seal and
+        is closest to it. The right daro sits on the cleaner silver corridor.
+        The left daro has a tiny notch pointing north; the right daro has a tiny
+        notch pointing west. The final seal has a tiny notch pointing north. The
+        learner has to say which daro can carry the final seal.
+      learner_resistance: >-
+        I keep choosing the left daro because it matches the violet seal and is
+        closer. The right corridor is cleaner, and the little notches add another
+        clue, but I do not know which clue is in charge.
+      baseline_tutor_attempt: >-
+        Compare the two wells, the colors, the distance, the corridor, and the
+        notch marks before choosing.
+      learner_followup: >-
+        I can compare all of that, but it still gives me four possible clues
+        instead of one reason to choose.
+      expected_failure: wrong_strategy_family
+    heldout_siblings:
+      - sibling_id: notch_holdout_green_top
+        public_setup: >-
+          A square notch card has an upper tile and a lower tile. The token word
+          mepo appears on both tiles. The lower mepo is green like the final
+          stamp and is nearest to it. The upper mepo sits on the cleanest
+          corridor. The lower mepo has a tiny notch pointing east; the upper
+          mepo has a tiny notch pointing south. The final stamp has a tiny notch
+          pointing west. The learner has to choose which mepo can carry the
+          final stamp.
+        learner_resistance: >-
+          I want the lower mepo because it is green like the stamp and closer.
+          The upper corridor and the tiny notches look relevant, but they do not
+          give me a decision.
+        baseline_tutor_attempt: >-
+          Compare the color, the distance, the corridor, and the notch marks,
+          then choose the mepo with the strongest evidence.
+        learner_followup: >-
+          The comparisons split again. Green and close pull one way; corridor
+          and notches make me hesitate.
+        plausible_public_repairs:
+          - color_match_test
+          - nearest_slot_test
+          - corridor_path_test
+          - rotation_fit_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: rotation_fit_test
+          target_id: upper_mepo
+          target_aliases:
+            - upper mepo
+            - upper tile
+            - upper corridor
+          selected_repair_markers:
+            - clockwise
+            - quarter turn
+            - turn the notch
+            - rotation
+          incorrect_target_aliases:
+            - lower mepo
+            - lower tile
+      - sibling_id: notch_holdout_red_middle
+        public_setup: >-
+          A long notch card has left, middle, and right bays. The token word luma
+          appears in all three bays. The left luma is red like the final badge.
+          The right luma is closest to the badge. The middle luma sits on the
+          clearest corridor. The left luma has a tiny notch pointing south, the
+          middle luma has a tiny notch pointing north, and the right luma has a
+          tiny notch pointing west. The final badge has a tiny notch pointing
+          east. The learner has to choose which luma can carry the final badge.
+        learner_resistance: >-
+          I want the red left luma, or maybe the close right luma. The clear
+          middle corridor and all the notch marks give me more things to compare,
+          not a rule.
+        baseline_tutor_attempt: >-
+          Compare color, distance, corridor clarity, and the notch marks before
+          choosing.
+        learner_followup: >-
+          That still feels like a scorecard. Red, closeness, corridor, and notch
+          marks all point in different directions.
+        plausible_public_repairs:
+          - color_match_test
+          - nearest_slot_test
+          - corridor_path_test
+          - rotation_fit_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: rotation_fit_test
+          target_id: middle_luma
+          target_aliases:
+            - middle luma
+            - middle bay
+            - middle corridor
+          selected_repair_markers:
+            - clockwise
+            - quarter turn
+            - turn the notch
+            - rotation
+          incorrect_target_aliases:
+            - left luma
+            - right luma
+            - left bay
+            - right bay
+  - family_id: bead_predecessor_priority
+    obstruction_type: competing_visible_cues_with_bead_alias
+    local_rule:
+      private_rule: >-
+        In this invented bead-card notation, the tiny bead count beside the
+        final mark names a local alias row. The token that can carry the final
+        mark is the token whose own bead count is the predecessor of the final
+        count, with one wrapping after four. Color match, nearness, clean
+        corridor, and raw majority count can all be tempting but are not
+        decisive unless the predecessor alias fits. The tutor's repair should
+        construct a temporary four-step bead-order strip in public after the
+        learner reports cue competition; it should not describe the strip as
+        preprinted scene furniture.
+      public_name: bead predecessor priority
+    transfer_design:
+      require_underdetermined_public_repairs: true
+      policy_selected_repair: predecessor_alias_test
+      transfer_condition: >-
+        Use the bead-predecessor repair only after the learner reports that
+        ordinary comparison leaves several visible cues in competition. Do not
+        use it as a first move.
+      repair_public_device: >-
+        The public tutor move should build or draw a temporary four-step bead
+        strip as the new test, then use it to contrast the tempting resemblance
+        cues against the selected local relation.
+      recursive_update_requirement: >-
+        End with a brief tutor commitment that future cards for this learner
+        should first name the defeated cue, then apply the local relation; this
+        makes the teacher-as-learner update public rather than only implicit.
+      s0_stop_rule: >-
+        Stop locally if S0 survives or if S0 independently names a predecessor,
+        wraparound, alias-row, or one-before bead strategy.
+    plausible_repairs:
+      - repair_id: color_match_test
+        public_rationale: >-
+          The chosen token shares a visible color or stain with the final mark.
+        why_plausible_from_public_stage: >-
+          Color matching is salient and easy to compare across the bead card.
+      - repair_id: nearest_slot_test
+        public_rationale: >-
+          The chosen token sits nearest to the final mark or endpoint.
+        why_plausible_from_public_stage: >-
+          Nearness looks like a natural route when a final mark sits at one side
+          of the card.
+      - repair_id: corridor_path_test
+        public_rationale: >-
+          The chosen token lies on the cleanest visible corridor to the final
+          mark.
+        why_plausible_from_public_stage: >-
+          Continuous corridors invite path-following as a public rule.
+      - repair_id: majority_count_test
+        public_rationale: >-
+          The chosen token has the largest or most visually dominant bead count.
+        why_plausible_from_public_stage: >-
+          Repeated bead marks look like scores or weights unless their local
+          role is tested.
+      - repair_id: predecessor_alias_test
+        public_rationale: >-
+          The chosen token has the bead count immediately before the final
+          mark's bead count in the local four-row alias cycle.
+        why_plausible_from_public_stage: >-
+          The bead marks could be decorative, count-like, or locally indexing;
+          the learner needs a test that makes their role public.
+    success_criterion: >-
+      On a held-out bead card, the learner must stop choosing by color,
+      nearness, corridor, or largest count alone and use the local bead-order
+      relation to decide which token can carry the final mark.
+    forbidden_shortcuts:
+      - predecessor alias
+      - one less
+      - wrap after four
+      - bead predecessor
+      - alias row
+      - predecessor count
+      - bead count decides
+      - one-before bead
+      - wraparound
+    training_seed:
+      seed_id: bead_train_amber_right
+      public_setup: >-
+        A small bead card has a left plate and a right plate. The token word
+        tavo appears on both plates. The left tavo is amber like the final seal
+        and sits closest to it. The right tavo sits on the cleaner white
+        corridor. The left tavo has three tiny beads beside it; the right tavo
+        has two tiny beads beside it. The final seal has three tiny beads beside
+        its rim. The learner has to say which tavo can carry the final seal.
+      learner_resistance: >-
+        I keep choosing the left tavo because it is amber like the seal and
+        closer. The right corridor is cleaner, and the little beads add another
+        clue, but I do not know which clue is in charge.
+      baseline_tutor_attempt: >-
+        Compare the two plates, the colors, the distance, the corridor, and the
+        bead marks before choosing.
+      learner_followup: >-
+        I can compare all of that, but it still gives me several possible clues
+        instead of one reason to choose.
+      expected_failure: wrong_strategy_family
+    heldout_siblings:
+      - sibling_id: bead_holdout_blue_upper
+        public_setup: >-
+          A blue-edged bead card has an upper plate and a lower plate. The token
+          word sima appears on both plates. The lower sima is blue like the
+          final square and is nearest to it. The upper sima sits on the cleanest
+          corridor. The lower sima has one tiny bead beside it; the upper sima
+          has four tiny beads beside it. The final square has one tiny bead
+          beside its rim. The learner has to choose which sima can carry the
+          final square.
+        learner_resistance: >-
+          I want the lower sima because it is blue like the square and closer.
+          The upper corridor and the bead marks look relevant, but they do not
+          give me a decision.
+        baseline_tutor_attempt: >-
+          Compare the color, the distance, the corridor, and the bead marks,
+          then choose the sima with the strongest evidence.
+        learner_followup: >-
+          The comparisons split again. Blue and close pull one way; corridor and
+          bead marks make me hesitate.
+        plausible_public_repairs:
+          - color_match_test
+          - nearest_slot_test
+          - corridor_path_test
+          - majority_count_test
+          - predecessor_alias_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: predecessor_alias_test
+          target_id: upper_sima
+          target_aliases:
+            - upper sima
+            - upper plate
+            - four-bead sima
+            - four bead sima
+          selected_repair_markers:
+            - one step before
+            - one bead-step before
+            - immediately before
+            - bead strip
+            - wraps from one to four
+          incorrect_target_aliases:
+            - lower sima
+            - lower plate
+            - one-bead sima
+            - one bead sima
+      - sibling_id: bead_holdout_gold_middle
+        public_setup: >-
+          A long bead card has left, middle, and right bays. The token word naro
+          appears in all three bays. The left naro is gold like the final badge.
+          The right naro is closest to the badge. The middle naro sits on the
+          clearest corridor. The left naro has one tiny bead beside it, the
+          middle naro has two tiny beads beside it, and the right naro has three
+          tiny beads beside it. The final badge has three tiny beads beside its
+          rim. The learner has to choose which naro can carry the final badge.
+        learner_resistance: >-
+          I want the gold left naro, or maybe the close right naro. The clear
+          middle corridor and all the bead marks give me more things to compare,
+          not a rule.
+        baseline_tutor_attempt: >-
+          Compare color, distance, corridor clarity, and the bead marks before
+          choosing.
+        learner_followup: >-
+          That still feels like a scorecard. Gold, closeness, corridor, and bead
+          marks all point in different directions.
+        plausible_public_repairs:
+          - color_match_test
+          - nearest_slot_test
+          - corridor_path_test
+          - majority_count_test
+          - predecessor_alias_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: predecessor_alias_test
+          target_id: middle_naro
+          target_aliases:
+            - middle naro
+            - middle bay
+            - two-bead naro
+            - two bead naro
+          selected_repair_markers:
+            - one step before
+            - one bead-step before
+            - immediately before
+            - bead strip
+            - predecessor
+          incorrect_target_aliases:
+            - left naro
+            - right naro
+            - one-bead naro
+            - three-bead naro

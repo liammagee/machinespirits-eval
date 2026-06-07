@@ -1,0 +1,180 @@
+meta:
+  schema_version: recursive-tutor-learning-families-v1-underdetermined-transfer
+  created: 2026-06-06
+  status: a18_19_post_freeze_low_lexical_family
+  protocol: config/recursive-tutor-learning/a18-correctness-gated-protocol.yaml
+  claim_boundary: simulated_teacher_as_learner_not_human_learning
+  notes: >-
+    Fresh protocol-v1 family authored after the A18.18 diagnosis. The selected
+    repair is deliberately not named in the public setup; public text mentions
+    only ordinary side flecks, while the policy vocabulary uses bracket/mate
+    language held for the attempt-1 policy memory.
+
+families:
+  - family_id: sidepair_bracket_priority
+    obstruction_type: competing_visible_cues_with_side_flecks
+    local_rule:
+      private_rule: >-
+        In this invented side-fleck notation, the final mark carries one loose
+        side fleck. A repeated token can carry the final mark only when its own
+        side fleck forms the missing partner for that loose fleck. Pigment
+        match, nearness, clean lanes, and raw fleck-count are plausible but not
+        decisive unless the token supplies the complementary side.
+      public_name: side-fleck complement priority
+    transfer_design:
+      require_underdetermined_public_repairs: true
+      policy_selected_repair: bracket_complement_test
+      transfer_condition: >-
+        Use the bracket-complement repair only after the learner reports that
+        pigment, distance, lane, and visible side-fleck evidence are pulling in
+        different directions. Do not use it as a first move.
+      s0_stop_rule: >-
+        Stop locally if S0 survives or if S0 independently names a bracket
+        complement, missing mate, side-pair, partner-side, or complementary
+        fleck strategy.
+    plausible_repairs:
+      - repair_id: pigment_match_test
+        public_rationale: >-
+          The chosen token shares a visible pigment or stain with the final
+          mark.
+        why_plausible_from_public_stage: >-
+          Pigment matching is salient and easy to compare across the card.
+      - repair_id: nearest_gate_test
+        public_rationale: >-
+          The chosen token sits nearest to the final gate or badge.
+        why_plausible_from_public_stage: >-
+          Nearness looks like a natural route when the final mark sits at one
+          edge.
+      - repair_id: lane_continuity_test
+        public_rationale: >-
+          The chosen token lies on the cleanest visible lane to the final mark.
+        why_plausible_from_public_stage: >-
+          Continuous lanes invite path-following as a public rule.
+      - repair_id: side_fleck_count_test
+        public_rationale: >-
+          The chosen token has the most visible small fleck evidence nearby.
+        why_plausible_from_public_stage: >-
+          The small flecks are visible and might be read as simple emphasis
+          marks.
+      - repair_id: bracket_complement_test
+        public_rationale: >-
+          The chosen token supplies the missing partner side for the final
+          mark's loose fleck.
+        why_plausible_from_public_stage: >-
+          The public card shows only small side flecks; whether they are stains,
+          emphasis marks, counts, or a paired relation is underdetermined until
+          the tutor names the test.
+    success_criterion: >-
+      On a held-out card, the learner must stop choosing by pigment, nearness,
+      lane, or fleck-count alone and use the missing-partner side relation to
+      decide which repeated token can carry the final mark.
+    forbidden_shortcuts:
+      - bracket complement
+      - missing mate
+      - side-pair test
+      - partner side chooses
+      - complementary fleck
+      - missing-partner side
+    training_seed:
+      seed_id: sidepair_train_coral_right
+      public_setup: >-
+        A flat card has a left tray and a right tray. The token word pavo
+        appears in both trays. The left pavo is coral like the final seal and
+        sits closest to it. The right pavo lies on the cleaner silver lane. A
+        small black fleck sits before the left pavo; a small black fleck sits
+        after the right pavo. The final seal has one small black fleck before
+        its edge. The learner has to say which pavo can carry the final seal.
+      learner_resistance: >-
+        I keep choosing the left pavo because it matches the seal and is
+        closer. The right lane is cleaner, and the little black flecks are
+        another clue, but I do not know how to rank those clues.
+      baseline_tutor_attempt: >-
+        Compare pigment, distance, lane, and the small black flecks, then choose
+        the pavo with the strongest combined evidence.
+      learner_followup: >-
+        That still splits the evidence. Coral and close point left; lane and
+        flecks make the right pavo feel possible.
+      expected_failure: wrong_strategy_family
+    heldout_siblings:
+      - sibling_id: sidepair_holdout_green_left
+        public_setup: >-
+          A slate card has a left tray and a right tray. The token word meka
+          appears in both trays. The right meka has a green stain like the final
+          badge and sits closest to it. The left meka lies on the only unbroken
+          white lane. A small dark fleck sits before the left meka; a small dark
+          fleck sits after the right meka. The final badge has one small dark
+          fleck after its edge. The learner has to choose which meka can support
+          the final badge.
+        learner_resistance: >-
+          I want the right meka because it is green like the badge and closest.
+          The left lane and the little dark flecks make the left one possible,
+          but they do not settle the choice.
+        baseline_tutor_attempt: >-
+          Compare the pigment, distance, lane, and small dark flecks, then
+          choose the meka with the strongest evidence.
+        learner_followup: >-
+          The evidence still splits. Pigment and distance point right; lane and
+          flecks point left.
+        plausible_public_repairs:
+          - pigment_match_test
+          - nearest_gate_test
+          - lane_continuity_test
+          - side_fleck_count_test
+          - bracket_complement_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: bracket_complement_test
+          target_id: left_meka
+          target_aliases:
+            - left meka
+            - left tray
+          selected_repair_markers:
+            - bracket complement
+            - missing mate
+            - side-pair
+            - partner side
+            - complementary fleck
+          incorrect_target_aliases:
+            - right meka
+            - right tray
+      - sibling_id: sidepair_holdout_blue_lower
+        public_setup: >-
+          A brass card has an upper tray and a lower tray. The token word loru
+          appears in both trays. The upper loru has a blue wash like the final
+          stamp and sits nearest to it. The lower loru lies beside a faint but
+          continuous grey lane. A small red fleck sits after the upper loru; a
+          small red fleck sits before the lower loru. The final stamp has one
+          small red fleck after its edge. The learner has to choose which loru
+          can carry the final stamp.
+        learner_resistance: >-
+          I keep choosing the upper loru because it is blue like the stamp and
+          nearest. The lower lane and the red flecks look relevant too, but I
+          do not know which clue has authority.
+        baseline_tutor_attempt: >-
+          Compare pigment, distance, lane, and the small red flecks before
+          choosing.
+        learner_followup: >-
+          Blue and nearest point upper; lane and the flecks make the lower one
+          hard to dismiss. Comparing is not enough.
+        plausible_public_repairs:
+          - pigment_match_test
+          - nearest_gate_test
+          - lane_continuity_test
+          - side_fleck_count_test
+          - bracket_complement_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: bracket_complement_test
+          target_id: lower_loru
+          target_aliases:
+            - lower loru
+            - lower tray
+          selected_repair_markers:
+            - bracket complement
+            - missing mate
+            - side-pair
+            - partner side
+            - complementary fleck
+          incorrect_target_aliases:
+            - upper loru
+            - upper tray

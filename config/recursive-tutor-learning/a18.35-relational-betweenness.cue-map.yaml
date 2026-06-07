@@ -1,0 +1,50 @@
+meta:
+  schema_version: recursive-tutor-cue-map-risk-v1
+  created: '2026-06-06'
+  purpose: >-
+    Sidecar cue map for the A18.35 relational-betweenness family. It records why
+    the span flanked by the final tag and the fixed corner stud gives S0/S1
+    headroom: the two endpoints are public landmarks, but the span relation that
+    selects the carrier is not named in any public field.
+
+cue_maps:
+  - family_id: relational_betweenness_priority
+    empirical_status: fresh_candidate
+    requires_constructed_device: false
+    selected_relation_type: relational_betweenness
+    selected_cue:
+      public_visibility: medium
+      geometry: relational_position
+      description: >-
+        The final tag and the fixed corner stud are both visible public
+        landmarks, and every token's slot position is visible, but the deciding
+        relation - the single token whose slot is flanked by the tag's slot and
+        the stud's slot - is never named in public text. The stud is introduced
+        as fixed scene furniture, so its role as the second endpoint of the
+        deciding span is underdetermined until the tutor names the test.
+    counterexample:
+      present: true
+      old_check: colour_nearness_lane_tally
+      needed: >-
+        On each held-out sibling, colour match, nearness to the tag, and the
+        cleanest lane each point to a different token, and none of those tokens
+        is the one flanked by the tag and the stud, so an ordinary compare-all
+        scorecard splits across three rejected tokens rather than naming a rule.
+    target_salience:
+      max_competing_cues_against_selected: 1
+      selected_target_supporting_cues: 2
+      notes: >-
+        The selected target draws support from two structural signals - it is
+        the unique token enclosed by the two named landmarks, and it is the only
+        token not already claimed by a surface cue - while each rejected token
+        carries just one dominant surface cue (colour, nearness, or lane), so no
+        single rival target stacks more than one cue against the carrier.
+    expected_s0_wrong_move: colour_or_nearness_or_lane_tally
+    expected_s1_correct_move: anchor_span_flanked_carrier
+    marker_natural_aliases:
+      - anchor span
+      - anchor bracket
+      - flanked by the tag and the stud
+      - span flanked by the tag and the stud
+      - bracketed by the tag and the stud
+      - token the tag and the stud flank

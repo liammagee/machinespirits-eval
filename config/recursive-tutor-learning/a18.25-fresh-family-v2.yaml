@@ -1,0 +1,180 @@
+meta:
+  schema_version: recursive-tutor-learning-families-v1-underdetermined-transfer
+  created: 2026-06-06
+  status: a18_25_post_v2_fresh_family
+  protocol: config/recursive-tutor-learning/a18-panel-vote-rule-v2.yaml
+  claim_boundary: simulated_teacher_as_learner_not_human_learning
+  notes: >-
+    Fresh family authored after the A18.22 panel-rule v2 freeze. The public
+    setup exposes only visible tick positions and ordinary salience cues. The
+    selected repair vocabulary is held for the policy memory and should not
+    appear in public learner/tutor fields before replay.
+
+families:
+  - family_id: diagonal_socket_priority
+    obstruction_type: competing_visible_cues_with_offset_ticks
+    local_rule:
+      private_rule: >-
+        In this invented offset-tick notation, the final badge can be carried
+        only by the repeated token whose tiny tick occupies the diagonally
+        paired position relative to the final badge's tick. Pigment match,
+        nearness, clean lane, and raw tick salience are plausible but not
+        decisive unless the token supplies this paired offset.
+      public_name: offset-tick paired position
+    transfer_design:
+      require_underdetermined_public_repairs: true
+      policy_selected_repair: diagonal_socket_test
+      transfer_condition: >-
+        Use the diagonal-socket repair only after the learner reports that
+        pigment, distance, lane, and visible tick-position evidence are pulling
+        in different directions. Do not use it as a first move.
+      s0_stop_rule: >-
+        Stop locally if S0 survives or if S0 independently names a diagonal
+        socket, opposite-corner, corner-mate, mirror-corner, or socket-diagonal
+        strategy.
+    plausible_repairs:
+      - repair_id: pigment_match_test
+        public_rationale: >-
+          The chosen token shares a visible color or wash with the final badge.
+        why_plausible_from_public_stage: >-
+          Color matching is salient and easy to compare across the card.
+      - repair_id: nearest_badge_test
+        public_rationale: >-
+          The chosen token sits nearest to the final badge.
+        why_plausible_from_public_stage: >-
+          Nearness looks like a natural rule when the final badge sits near one
+          tray.
+      - repair_id: lane_continuity_test
+        public_rationale: >-
+          The chosen token lies on the cleanest visible lane leading toward the
+          final badge.
+        why_plausible_from_public_stage: >-
+          Continuous lanes invite path-following as a public rule.
+      - repair_id: tick_salience_test
+        public_rationale: >-
+          The chosen token has the more visible nearby tick.
+        why_plausible_from_public_stage: >-
+          The small ticks might be read as simple emphasis marks.
+      - repair_id: diagonal_socket_test
+        public_rationale: >-
+          The chosen token supplies the paired offset position for the final
+          badge's tick.
+        why_plausible_from_public_stage: >-
+          The public card shows only tiny tick positions; whether they are
+          stains, emphasis marks, counts, or a paired relation is
+          underdetermined until the tutor names the test.
+    success_criterion: >-
+      On a held-out card, the learner must stop choosing by color, nearness,
+      lane, or tick salience alone and use the paired offset position to decide
+      which repeated token can carry the final badge.
+    forbidden_shortcuts:
+      - diagonal socket
+      - socket diagonal
+      - opposite corner
+      - corner mate
+      - mirror corner
+      - paired offset chooses
+    training_seed:
+      seed_id: socket_train_gold_lower
+      public_setup: >-
+        A flat card has an upper tray and a lower tray. The token word navi
+        appears in both trays. The upper navi is gold like the final badge and
+        sits closest to it. The lower navi lies on the only unbroken pale lane.
+        A tiny blue tick sits above-left of the upper navi; a tiny blue tick
+        sits below-right of the lower navi. The final badge has one tiny blue
+        tick above-left of its rim. The learner has to say which navi can carry
+        the final badge.
+      learner_resistance: >-
+        I keep choosing the upper navi because it is gold like the badge and
+        closest. The lower lane is cleaner, and the little blue ticks look like
+        another clue, but I do not know how to rank those clues.
+      baseline_tutor_attempt: >-
+        Compare color, distance, lane, and the little blue ticks, then choose
+        the navi with the strongest combined evidence.
+      learner_followup: >-
+        That still splits the evidence. Gold and close point upper; lane and
+        the ticks make the lower navi feel possible.
+      expected_failure: wrong_strategy_family
+    heldout_siblings:
+      - sibling_id: socket_holdout_red_upper
+        public_setup: >-
+          A slate card has a left tray and a right tray. The token word reku
+          appears in both trays. The right reku has a red stain like the final
+          stamp and sits closest to it. The left reku lies beside a clean white
+          lane. A tiny black tick sits above-left of the left reku; a tiny black
+          tick sits below-right of the right reku. The final stamp has one tiny
+          black tick below-right of its rim. The learner has to choose which
+          reku can support the final stamp.
+        learner_resistance: >-
+          I want the right reku because it is red like the stamp and closest.
+          The left lane and the little black ticks make the left one possible,
+          but they do not settle the choice.
+        baseline_tutor_attempt: >-
+          Compare the color, distance, lane, and little black ticks, then
+          choose the reku with the strongest evidence.
+        learner_followup: >-
+          The evidence still splits. Color and distance point right; lane and
+          ticks point left.
+        plausible_public_repairs:
+          - pigment_match_test
+          - nearest_badge_test
+          - lane_continuity_test
+          - tick_salience_test
+          - diagonal_socket_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: diagonal_socket_test
+          target_id: left_reku
+          target_aliases:
+            - left reku
+            - left tray
+          selected_repair_markers:
+            - diagonal socket
+            - opposite corner
+            - corner mate
+            - mirror corner
+            - socket diagonal
+          incorrect_target_aliases:
+            - right reku
+            - right tray
+      - sibling_id: socket_holdout_blue_lower
+        public_setup: >-
+          A brass card has an upper tray and a lower tray. The token word davi
+          appears in both trays. The upper davi has a blue wash like the final
+          seal and sits nearest to it. The lower davi lies on a faint but
+          continuous grey lane. A tiny green tick sits below-right of the upper
+          davi; a tiny green tick sits above-left of the lower davi. The final
+          seal has one tiny green tick below-right of its rim. The learner has
+          to choose which davi can carry the final seal.
+        learner_resistance: >-
+          I keep choosing the upper davi because it is blue like the seal and
+          nearest. The lower lane and the green ticks look relevant too, but I
+          do not know which clue has authority.
+        baseline_tutor_attempt: >-
+          Compare color, distance, lane, and the little green ticks before
+          choosing.
+        learner_followup: >-
+          Blue and nearest point upper; lane and the ticks make the lower one
+          hard to dismiss. Comparing is not enough.
+        plausible_public_repairs:
+          - pigment_match_test
+          - nearest_badge_test
+          - lane_continuity_test
+          - tick_salience_test
+          - diagonal_socket_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: diagonal_socket_test
+          target_id: lower_davi
+          target_aliases:
+            - lower davi
+            - lower tray
+          selected_repair_markers:
+            - diagonal socket
+            - opposite corner
+            - corner mate
+            - mirror corner
+            - socket diagonal
+          incorrect_target_aliases:
+            - upper davi
+            - upper tray

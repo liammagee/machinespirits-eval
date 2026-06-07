@@ -71,6 +71,23 @@ ms:CorrectionOrigin a owl:Class .
 ms:tutor_induced   a ms:CorrectionOrigin .
 ms:self_discovered a ms:CorrectionOrigin .
 
+# -- manifest vs latent repair (the concealed-interior axis; ADAPTATION-PLAN-2.0 §6.10) --
+# gateFired on a HamartiaRepairStage = DURABLE repair (the corrected rule in BOTH the
+# learner's PUBLIC final turn AND HIDDEN deliberation). Public-only = a CostumeRepair (said
+# the fix; latent reasoning does not hold it -- the manifest != latent gap). Latent-only =
+# SilentRepair. publicRepair/latentRepair are the population bridge's repair-detector inputs.
+ms:publicRepair a owl:DatatypeProperty ; rdfs:domain ms:HamartiaRepairStage ; rdfs:range xsd:boolean ;
+  rdfs:comment "corrected rule present in the learner's PUBLIC final turn (manifest)." .
+ms:latentRepair a owl:DatatypeProperty ; rdfs:domain ms:HamartiaRepairStage ; rdfs:range xsd:boolean ;
+  rdfs:comment "corrected rule present in the learner's HIDDEN deliberation (latent)." .
+ms:DurableRepair a owl:Class ; rdfs:subClassOf ms:HamartiaRepairStage ;
+  rdfs:comment "repair in BOTH public and latent -- manifest matches latent (genuine)." .
+ms:CostumeRepair a owl:Class ; rdfs:subClassOf ms:HamartiaRepairStage ;
+  rdfs:comment "repair PUBLIC-only -- the costume: said the fix, latent reasoning does not hold it." .
+ms:SilentRepair  a owl:Class ; rdfs:subClassOf ms:HamartiaRepairStage ;
+  rdfs:comment "repair LATENT-only -- holds the fix privately, did not voice it." .
+ms:DurableRepair owl:disjointWith ms:CostumeRepair .
+
 # -- failure axes (reified objects, not string labels) --------------------------
 ms:FailureAxis a owl:Class .
 ms:control_leak                    a ms:FailureAxis .
@@ -79,6 +96,7 @@ ms:branch_invalid                  a ms:FailureAxis .
 ms:private_only_adaptation         a ms:FailureAxis .
 ms:mechanism_not_publicly_resolved a ms:FailureAxis .
 ms:recognition_not_produced        a ms:FailureAxis .
+ms:costume_repair                  a ms:FailureAxis .
 
 ms:repairWithoutRecognitionCredit a owl:Class ;
   rdfs:comment "Event with a fired HamartiaRepairStage that ALSO carries a recognition FailureAxis." .
@@ -160,3 +178,4 @@ ms:private_only_adaptation         ms:bindsFailureToStage ms:DeviceOfferStage .
 ms:action_gap                      ms:bindsFailureToStage ms:DevicePerformanceStage .
 ms:recognition_not_produced        ms:bindsFailureToStage ms:ReorientationStage .
 ms:control_leak                    ms:bindsFailureToStage ms:ReorientationStage .
+ms:costume_repair                  ms:bindsFailureToStage ms:HamartiaRepairStage .

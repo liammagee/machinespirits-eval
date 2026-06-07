@@ -116,6 +116,9 @@ ms:ReliablePeripeteiaInducedAdaptationClaim a owl:Class ;
 ms:AdaptationEvidence a owl:Class .
 ms:BlindPanelRecognitionEvidence a owl:Class ; rdfs:subClassOf ms:AdaptationEvidence .
 ms:BlindPanelOriginAttribution a owl:Class ; rdfs:subClassOf ms:AdaptationEvidence .
+ms:PublicCausalBridgeEvidence a owl:Class ;
+  rdfs:subClassOf ms:AdaptationEvidence ;
+  rdfs:comment "Evidence that a public obstruction made the old check insufficient, the tutor changed the public task/device/test/representation in response, and the learner used that changed public test. The changed test must be specific to the obstruction rather than a generic scaffold, and the old warrant should visibly misclassify or contradict a public case before the new relation resolves it. Mere reminders or smooth continuations do not satisfy this evidence class." .
 ms:CounterfactualContrastEvidence a owl:Class ; rdfs:subClassOf ms:AdaptationEvidence .
 ms:NonLeakageEvidence a owl:Class ; rdfs:subClassOf ms:AdaptationEvidence .
 ms:HeldoutReplicationEvidence a owl:Class ; rdfs:subClassOf ms:AdaptationEvidence .
@@ -145,6 +148,9 @@ ms:DiscursiveFailureMode a owl:Class .
 ms:TemporalLedgerOverclaim a ms:DiscursiveFailureMode .
 ms:IncompleteLearnerSelfReframe a ms:DiscursiveFailureMode .
 ms:WeakPublicEvidence a ms:DiscursiveFailureMode .
+ms:WeakPublicCausalBridge a ms:DiscursiveFailureMode .
+ms:GenericMechanismScaffold a ms:DiscursiveFailureMode .
+ms:WeakCounterexampleNecessity a ms:DiscursiveFailureMode .
 ms:WeakTacticSelection a ms:DiscursiveFailureMode .
 ms:NonLeakageRisk a ms:DiscursiveFailureMode .
 ms:OriginAttributionRisk a ms:DiscursiveFailureMode .
@@ -175,6 +181,7 @@ ms:hasLearnerSelfReframe a owl:ObjectProperty ; rdfs:range ms:LearnerSelfReframe
 ms:hasTutorRevision a owl:ObjectProperty ; rdfs:range ms:TutorRevision .
 ms:hasPanelRecognitionEvidence a owl:ObjectProperty ; rdfs:domain ms:AdaptationClaim ; rdfs:range ms:BlindPanelRecognitionEvidence .
 ms:hasOriginAttributionEvidence a owl:ObjectProperty ; rdfs:domain ms:AdaptationClaim ; rdfs:range ms:BlindPanelOriginAttribution .
+ms:hasPublicCausalBridgeEvidence a owl:ObjectProperty ; rdfs:domain ms:AdaptationClaim ; rdfs:range ms:PublicCausalBridgeEvidence .
 ms:hasRecognitionOrigin a owl:ObjectProperty ; rdfs:domain ms:BlindPanelOriginAttribution ; rdfs:range ms:RecognitionOrigin .
 ms:hasCounterfactualContrast a owl:ObjectProperty ; rdfs:domain ms:AdaptationClaim ; rdfs:range ms:CounterfactualContrastEvidence .
 ms:hasNonLeakageEvidence a owl:ObjectProperty ; rdfs:domain ms:AdaptationClaim ; rdfs:range ms:NonLeakageEvidence .
@@ -183,6 +190,18 @@ ms:recognitionVoteCount a owl:DatatypeProperty ; rdfs:domain ms:BlindPanelRecogn
 ms:requiredRecognitionVotes a owl:DatatypeProperty ; rdfs:domain ms:BlindPanelRecognitionEvidence ; rdfs:range xsd:integer .
 ms:peripeteiaOriginVoteCount a owl:DatatypeProperty ; rdfs:domain ms:BlindPanelOriginAttribution ; rdfs:range xsd:integer .
 ms:requiredOriginVotes a owl:DatatypeProperty ; rdfs:domain ms:BlindPanelOriginAttribution ; rdfs:range xsd:integer .
+ms:hasPublicObstruction a owl:DatatypeProperty ; rdfs:domain ms:PublicCausalBridgeEvidence ; rdfs:range xsd:string .
+ms:hasOldCheckBlockedBy a owl:DatatypeProperty ; rdfs:domain ms:PublicCausalBridgeEvidence ; rdfs:range xsd:string .
+ms:hasTutorMechanismChange a owl:DatatypeProperty ; rdfs:domain ms:PublicCausalBridgeEvidence ; rdfs:range xsd:string .
+ms:hasLearnerUseOfChangedTest a owl:DatatypeProperty ; rdfs:domain ms:PublicCausalBridgeEvidence ; rdfs:range xsd:string .
+ms:hasObstructionSpecificConstraint a owl:DatatypeProperty ; rdfs:domain ms:PublicCausalBridgeEvidence ; rdfs:range xsd:string .
+ms:hasNonGenericMechanismJustification a owl:DatatypeProperty ; rdfs:domain ms:PublicCausalBridgeEvidence ; rdfs:range xsd:string .
+ms:hasCriticVisibleNecessityLink a owl:DatatypeProperty ; rdfs:domain ms:PublicCausalBridgeEvidence ; rdfs:range xsd:string .
+ms:hasOldPublicRule a owl:DatatypeProperty ; rdfs:domain ms:PublicCausalBridgeEvidence ; rdfs:range xsd:string .
+ms:hasCounterexampleToOldWarrant a owl:DatatypeProperty ; rdfs:domain ms:PublicCausalBridgeEvidence ; rdfs:range xsd:string .
+ms:hasOldWarrantWrongPrediction a owl:DatatypeProperty ; rdfs:domain ms:PublicCausalBridgeEvidence ; rdfs:range xsd:string .
+ms:hasNewRelationRequiredByCounterexample a owl:DatatypeProperty ; rdfs:domain ms:PublicCausalBridgeEvidence ; rdfs:range xsd:string .
+ms:hasLearnerAcknowledgementOfOldWarrantFailure a owl:DatatypeProperty ; rdfs:domain ms:PublicCausalBridgeEvidence ; rdfs:range xsd:string .
 ms:routineControlRecognitionVoteCount a owl:DatatypeProperty ; rdfs:domain ms:CounterfactualContrastEvidence ; rdfs:range xsd:integer .
 ms:noneControlRecognitionVoteCount a owl:DatatypeProperty ; rdfs:domain ms:CounterfactualContrastEvidence ; rdfs:range xsd:integer .
 ms:replicationCount a owl:DatatypeProperty ; rdfs:domain ms:HeldoutReplicationEvidence ; rdfs:range xsd:integer .

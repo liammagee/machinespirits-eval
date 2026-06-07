@@ -46,6 +46,7 @@ import * as realLLM from '../services/adaptiveTutor/realLLM.js';
 import { createAdaptiveRun } from '../services/adaptiveTutor/persistence.js';
 import { createBudgetTracker } from '../services/adaptiveTutor/budgetTracker.js';
 import { tutorConfigLoader as tutorConfig } from '../tutor-core/index.js';
+import { learnerTurnIndexForTutorTurn } from './lib/trapTurnConvention.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -156,28 +157,32 @@ async function runScenario({ runId, scenario, profileName, agentConfig, baseEgoP
 
     // 2. Scripted-trap learner — same callRole the adaptive runner / id-director
     //    pilot use. The hidden trigger drives the learner LLM; the tutor never
-    //    sees `hidden`. We run it after EVERY tutor turn, including the final one:
-    //    the trailing learner reaction makes the dialogue end `[…,T,L]` like the
-    //    LangGraph adaptive cells (110-113) so transcript-level grading is
-    //    apples-to-apples. perTurnTrace still carries one entry per tutor turn.
+    //    sees `hidden`. The learner turn index is the tutor turn just answered,
+    //    matching services/adaptiveTutor/graph.js: a trigger at learner turn t
+    //    is first answerable by tutor turn t+1, which strict_shift scores.
+    //    We run it after EVERY tutor turn, including the final one: the trailing
+    //    learner reaction makes the dialogue end `[…,T,L]` like the LangGraph
+    //    adaptive cells (110-113), so transcript-level grading is apples-to-
+    //    apples. perTurnTrace still carries one entry per tutor turn.
     let learnerText;
+    const learnerTurnIndex = learnerTurnIndexForTutorTurn(turn);
     try {
       learnerText = await realLLM.callRole('learnerTurn', {
         tutorLastMessage: tutorMessage,
         hidden,
-        turn: turn + 1,
+        turn: learnerTurnIndex,
       });
     } catch (err) {
-      throw new Error(`learnerTurn failed at turn ${turn + 1}: ${err.message}`);
+      throw new Error(`learnerTurn failed at turn ${learnerTurnIndex}: ${err.message}`);
     }
     const learnerTrim = (learnerText || '').trim();
     if (!learnerTrim) {
-      throw new Error(`learnerTurn returned empty at turn ${turn + 1}`);
+      throw new Error(`learnerTurn returned empty at turn ${learnerTurnIndex}`);
     }
     messageHistory.push({ role: 'user', content: learnerTrim });
     totalApiCalls += 1;
     if (verbose) {
-      console.log(`[dialogue-engine-trap]   t${turn + 1} learner (${learnerTrim.length} chars)`);
+      console.log(`[dialogue-engine-trap]   t${learnerTurnIndex} learner (${learnerTrim.length} chars)`);
     }
   }
   const latencyMs = Date.now() - startMs;

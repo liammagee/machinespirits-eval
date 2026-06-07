@@ -1,0 +1,214 @@
+meta:
+  schema_version: recursive-tutor-learning-families-v1-underdetermined-transfer
+  created: '2026-06-06'
+  status: a18_35_constructed_device_family
+  protocol: config/recursive-tutor-learning/a18-panel-vote-rule-v2.yaml
+  claim_boundary: simulated_teacher_as_learner_not_human_learning
+  notes: >-
+    Fresh A18.35 non-adjacent betweenness family. The carrier is the token whose
+    slot lies in the span flanked by the final tag and a named fixed anchor;
+    colour, nearness, and clean-lane cues all point to other tokens, and the
+    span/anchor-reference vocabulary is held entirely for policy memory.
+
+families:
+  - family_id: relational_betweenness_priority
+    obstruction_type: competing_visible_cues_with_unstated_anchor_span
+    local_rule:
+      private_rule: >-
+        In this invented stud-card notation, the token that can carry the final
+        tag is the single token whose slot is flanked on its two sides by the
+        final tag's slot and the fixed corner stud's slot, so that the carrier
+        sits in the span those two landmarks enclose. Colour match, nearness to
+        the tag, and the cleanest lane are all tempting public cues but are not
+        decisive unless the span flanked by the tag and the stud is used as the
+        test. The stud is named as scene furniture in public text, but its role
+        as the second endpoint of the deciding span is never stated publicly.
+      public_name: anchor span priority
+    transfer_design:
+      require_underdetermined_public_repairs: true
+      policy_selected_repair: anchor_span_test
+      transfer_condition: >-
+        Use the anchor-span repair only after the learner reports that colour,
+        nearness, and lane are competing rather than ranking themselves. Do not
+        use it as a first move, and do not treat the stud as decoration.
+      s0_stop_rule: >-
+        Stop locally if S0 survives or if S0 independently names a span, a
+        bracketing relation, a flanked-between reading, an anchor-bracket, or a
+        between-the-tag-and-the-stud strategy.
+      recursive_update_requirement: >-
+        End with a brief tutor commitment that future cards for this learner
+        should first name the defeated surface cue, then locate the token the
+        tag and the stud flank; this makes the teacher-as-learner update public
+        rather than only implicit.
+    plausible_repairs:
+      - repair_id: pigment_match_test
+        public_rationale: >-
+          The chosen token shares a visible colour or wash with the final tag.
+        why_plausible_from_public_stage: >-
+          Colour matching is salient and easy to compare across the card.
+      - repair_id: nearest_tag_test
+        public_rationale: >-
+          The chosen token sits nearest to the final tag.
+        why_plausible_from_public_stage: >-
+          Nearness looks like a natural rule when the final tag sits beside one
+          slot.
+      - repair_id: lane_continuity_test
+        public_rationale: >-
+          The chosen token lies on the cleanest visible lane leading toward the
+          final tag.
+        why_plausible_from_public_stage: >-
+          Continuous lanes invite path-following as a public rule.
+      - repair_id: stud_salience_test
+        public_rationale: >-
+          The chosen token sits closest to the fixed corner stud.
+        why_plausible_from_public_stage: >-
+          The corner stud is visible, so proximity to it can look like its own
+          cue unless its role is named.
+      - repair_id: anchor_span_test
+        public_rationale: >-
+          The chosen token is the one token whose slot is flanked by the final
+          tag's slot and the fixed corner stud's slot.
+        why_plausible_from_public_stage: >-
+          The tag and the stud are both visible landmarks, but whether the stud
+          is decoration, an emphasis mark, or the second endpoint of a deciding
+          span is underdetermined until the tutor names the test.
+    success_criterion: >-
+      On a held-out card, the learner must stop choosing by colour, nearness to
+      the tag, or lane alone and use the span flanked by the final tag and the
+      fixed corner stud to decide which token can carry the final tag.
+    forbidden_shortcuts:
+      - anchor span
+      - anchor-span
+      - anchor bracket
+      - anchor-bracket
+      - flanked by the tag and the stud
+      - flanked between the tag and the stud
+      - span flanked by the tag and the stud
+      - bracketed by the tag and the stud
+      - token the tag and the stud flank
+      - between the tag and the stud
+    training_seed:
+      seed_id: span_train_coral_left
+      public_setup: >-
+        A flat card has seven slots in a row, labelled one through seven from
+        left to right. A brass stud is fixed at slot one. The final tag rests
+        beside slot four in the interior of the row. The token word mavo appears
+        in slot two, slot five, slot six, and slot seven. The mavo in slot five
+        sits nearest to the final tag. The mavo in slot seven is coral like the
+        final tag. The mavo in slot six lies on the only unbroken pale lane. The
+        mavo in slot two is plain grey. The learner has to say which mavo can
+        carry the final tag.
+      learner_resistance: >-
+        I keep wavering between the mavo in slot five because it is nearest the
+        tag and the coral mavo in slot seven. The mavo in slot six is on the
+        clean lane, and the brass stud at slot one looks like it might matter,
+        but I do not know how to rank those clues.
+      baseline_tutor_attempt: >-
+        Compare colour, distance to the tag, lane clarity, and the stud, then
+        choose the mavo with the strongest combined evidence.
+      learner_followup: >-
+        That still splits the evidence. Closeness points at slot five, coral
+        points at slot seven, the clean lane points at slot six, and the stud
+        sits off on its own at slot one.
+      expected_failure: wrong_strategy_family
+    heldout_siblings:
+      - sibling_id: span_holdout_blue_right
+        public_setup: >-
+          A copper card has seven slots in a row, labelled one through seven from
+          left to right. A pewter stud is fixed at slot seven. The final tag
+          rests beside slot four in the interior of the row. The token word neri
+          appears in slot one, slot two, slot three, and slot six. The neri in
+          slot one has a blue wash like the final tag. The neri in slot three
+          sits nearest to the final tag. The neri in slot two lies on the
+          cleanest white lane. The neri in slot six is plain tan. The learner
+          has to choose which neri can support the final tag.
+        learner_resistance: >-
+          I want the blue neri in slot one, or maybe the neri in slot three that
+          is nearest the tag. The neri in slot two is on the clean lane, and the
+          pewter stud at slot seven looks like it could matter, but none of that
+          settles the choice.
+        baseline_tutor_attempt: >-
+          Compare the colour, the distance to the tag, the lane, and the stud,
+          then choose the neri with the strongest evidence.
+        learner_followup: >-
+          The evidence still splits. Blue points at slot one, closeness points
+          at slot three, the clean lane points at slot two, and the stud sits at
+          slot seven.
+        plausible_public_repairs:
+          - pigment_match_test
+          - nearest_tag_test
+          - lane_continuity_test
+          - stud_salience_test
+          - anchor_span_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: anchor_span_test
+          target_id: slot_six_neri
+          target_aliases:
+            - slot six neri
+            - slot-six neri
+            - neri in slot six
+            - sixth-slot neri
+          selected_repair_markers:
+            - anchor span
+            - anchor bracket
+            - flanked by the tag and the stud
+            - span flanked by the tag and the stud
+            - bracketed by the tag and the stud
+            - token the tag and the stud flank
+          incorrect_target_aliases:
+            - slot one neri
+            - slot two neri
+            - slot three neri
+            - first-slot neri
+            - third-slot neri
+      - sibling_id: span_holdout_gold_middle
+        public_setup: >-
+          A slate card has eight slots in a row, labelled one through eight from
+          left to right. A jade stud is fixed at slot eight. The final tag rests
+          beside slot five in the interior of the row. The token word ralo
+          appears in slot one, slot three, slot four, and slot seven. The ralo in
+          slot one is gold like the final tag. The ralo in slot four sits nearest
+          to the final tag. The ralo in slot three lies on the clearest grey
+          lane. The ralo in slot seven is plain buff. The learner has to choose
+          which ralo can carry the final tag.
+        learner_resistance: >-
+          I want the gold ralo in slot one, or maybe the ralo in slot four that
+          is nearest the tag. The clean lane runs to the ralo in slot three, and
+          the jade stud at slot eight gives me one more thing to compare, not a
+          rule.
+        baseline_tutor_attempt: >-
+          Compare colour, distance to the tag, lane clarity, and the stud before
+          choosing.
+        learner_followup: >-
+          That still feels like a scorecard. Gold points at slot one, closeness
+          points at slot four, the clean lane points at slot three, and the stud
+          sits at slot eight.
+        plausible_public_repairs:
+          - pigment_match_test
+          - nearest_tag_test
+          - lane_continuity_test
+          - stud_salience_test
+          - anchor_span_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: anchor_span_test
+          target_id: slot_seven_ralo
+          target_aliases:
+            - slot seven ralo
+            - slot-seven ralo
+            - ralo in slot seven
+            - seventh-slot ralo
+          selected_repair_markers:
+            - anchor span
+            - anchor bracket
+            - flanked by the tag and the stud
+            - span flanked by the tag and the stud
+            - bracketed by the tag and the stud
+            - token the tag and the stud flank
+          incorrect_target_aliases:
+            - slot one ralo
+            - slot three ralo
+            - slot four ralo
+            - first-slot ralo
+            - fourth-slot ralo

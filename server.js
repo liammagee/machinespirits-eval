@@ -19,6 +19,7 @@
 
 import 'dotenv/config';
 import express from 'express';
+import { resolveBasicAuthGuard } from './services/httpBasicAuth.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { existsSync, mkdirSync, readFileSync } from 'fs';
@@ -29,7 +30,18 @@ const pkg = JSON.parse(readFileSync(path.join(__dirname, 'package.json'), 'utf-8
 
 const app = express();
 const PORT = Number(process.env.PORT) || 8081;
+// Default to loopback. A public bind is opt-in via HOST=0.0.0.0, and the auth
+// guard below refuses that bind without credentials.
+const HOST = process.env.HOST || '127.0.0.1';
 const isStandalone = process.env.STANDALONE === 'true';
+
+// Basic-auth guard FIRST, before any route. Open on localhost with no creds;
+// throws (refuses to start) on a public bind without creds — see services/httpBasicAuth.js.
+const authGuard = resolveBasicAuthGuard({ prefix: 'EVAL', host: HOST, realm: 'machine spirits eval' });
+if (authGuard) {
+  app.use(authGuard);
+  console.log('[EvalServer] basic-auth ENABLED (credentials required)');
+}
 
 // Middleware
 app.use(express.json());
@@ -181,11 +193,11 @@ app.use((err, req, res, _next) => {
 
 // Start server
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`[EvalServer] Machine Spirits Eval running at http://0.0.0.0:${PORT}`);
+  app.listen(PORT, HOST, () => {
+    console.log(`[EvalServer] Machine Spirits Eval running at http://${HOST}:${PORT}`);
     console.log(`[EvalServer] Mode: ${isStandalone ? 'standalone' : 'mounted'}`);
-    console.log(`[EvalServer] API: http://0.0.0.0:${PORT}/api/eval`);
-    console.log(`[EvalServer] Docs: http://0.0.0.0:${PORT}/docs`);
+    console.log(`[EvalServer] API: http://${HOST}:${PORT}/api/eval`);
+    console.log(`[EvalServer] Docs: http://${HOST}:${PORT}/docs`);
   });
 }
 

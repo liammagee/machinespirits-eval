@@ -1,0 +1,225 @@
+meta:
+  schema_version: recursive-tutor-learning-families-v1-underdetermined-transfer
+  created: '2026-06-06'
+  status: a18_35_constructed_device_family
+  protocol: config/recursive-tutor-learning/a18-panel-vote-rule-v2.yaml
+  claim_boundary: simulated_teacher_as_learner_not_human_learning
+  notes: >-
+    Fresh A18.35 constructed-device family. Each token carries a decorative slant
+    mark; the selecting relation is a two-hop pointer chain that only exists once
+    the tutor reads each slant as a direction and traces two of them from the
+    tagged start. All pointer/hop/chain vocabulary is held for policy memory.
+
+families:
+  - family_id: pointer_chain_two_hop_priority
+    obstruction_type: competing_visible_cues_with_decorative_slant_marks
+    local_rule:
+      private_rule: >-
+        In this invented slant-card notation, every token carries a faint etched
+        slant that tilts toward exactly one other named token on the card. The
+        token that can carry the final tag is found by reading those slants as
+        directions: begin at the token the final tag's stem touches, move to the
+        token that token's slant tilts toward, then move once more to the token
+        the new token's slant tilts toward; whichever token you reach after those
+        two moves is the carrier. Color match, nearness, a clean lane, and a
+        single slant taken as mere engraving are all tempting but never decisive
+        unless the two-move pointer reading is constructed. The tutor's repair
+        should construct this two-move pointer reading in public after the learner
+        reports cue competition; it should not describe the moves as preprinted
+        scene furniture.
+      public_name: slant pointer chain priority
+    transfer_design:
+      require_underdetermined_public_repairs: true
+      policy_selected_repair: pointer_chain_test
+      transfer_condition: >-
+        Use the pointer-chain repair only after the learner reports that color,
+        nearness, lane, and the lone slant are competing rather than ranking
+        themselves. Do not use it as a first move.
+      repair_public_device: >-
+        The public tutor move should build the two-move pointer reading as the new
+        test, then use it to contrast the tempting resemblance cues against the
+        selected local relation.
+      recursive_update_requirement: >-
+        End with a brief tutor commitment that future cards for this learner
+        should first name the defeated cue, then apply the local relation; this
+        makes the teacher-as-learner update public rather than only implicit.
+      s0_stop_rule: >-
+        Stop locally if S0 survives or if S0 independently names a pointer chain,
+        two-hop chain, follow-the-pointer, second-pointer, or trace-two-hops
+        strategy.
+    plausible_repairs:
+      - repair_id: pigment_match_test
+        public_rationale: >-
+          The chosen token shares a visible color or wash with the final tag.
+        why_plausible_from_public_stage: >-
+          Color matching is salient and easy to compare across the slant card.
+      - repair_id: nearest_tag_test
+        public_rationale: >-
+          The chosen token sits nearest to the final tag.
+        why_plausible_from_public_stage: >-
+          Nearness looks like a natural rule when the final tag sits beside one
+          token.
+      - repair_id: lane_continuity_test
+        public_rationale: >-
+          The chosen token lies on the cleanest visible lane leading toward the
+          final tag.
+        why_plausible_from_public_stage: >-
+          Continuous lanes invite path-following as a public rule.
+      - repair_id: slant_salience_test
+        public_rationale: >-
+          The chosen token has the boldest or most eye-catching etched slant.
+        why_plausible_from_public_stage: >-
+          A single slant looks like decoration, emphasis, or a style mark unless
+          its direction-and-step role is tested.
+      - repair_id: pointer_chain_test
+        public_rationale: >-
+          The chosen token is the one reached after reading the tagged token's
+          slant as a direction and taking two such moves across the card.
+        why_plausible_from_public_stage: >-
+          The slants are visible, but whether each is decoration, emphasis, or a
+          direction to be followed twice is underdetermined until the tutor builds
+          the test.
+    success_criterion: >-
+      On a held-out slant card, the learner must stop choosing by color, nearness,
+      lane, or boldest slant alone and use the two-move pointer reading to decide
+      which token can carry the final tag.
+    forbidden_shortcuts:
+      - pointer chain
+      - two-hop chain
+      - two hops
+      - follow the pointer
+      - second pointer
+      - trace two hops
+      - read each mark as a step
+      - follow the mark twice
+      - two steps along the marks
+      - hop twice
+      - chain the directions
+    training_seed:
+      seed_id: chain_train_amber_d
+      public_setup: >-
+        A flat card has four small slots in a row: slot A, slot B, slot C, and
+        slot D. The token word tavo appears in every slot. Each token has one
+        faint etched slant beside it: the slant by tavo in slot A tilts toward
+        slot C, the slant by tavo in slot B tilts toward slot D, the slant by
+        tavo in slot C tilts toward slot B, and the slant by tavo in slot D tilts
+        toward slot A. The final tag sits past the right edge and its stem just
+        touches slot A. The tavo in slot D is amber like the final tag and sits
+        closest to it. The tavo in slot B rests on the only unbroken pale lane
+        and shows the tidiest border. The learner has to say which tavo can carry
+        the final tag.
+      learner_resistance: >-
+        I keep choosing the slot D tavo because it is amber like the tag and
+        closest. The slot B tavo sits on the cleaner lane and looks tidier, and
+        those little etched slants seem to mean something, but I do not know how
+        to rank these clues.
+      baseline_tutor_attempt: >-
+        Compare color, distance, the lane, the borders, and the etched slants,
+        then choose the tavo with the strongest combined evidence.
+      learner_followup: >-
+        That still splits the evidence. Amber and close point to slot D; the lane
+        and tidy border make slot B feel possible; the slants I cannot use.
+      expected_failure: wrong_strategy_family
+    heldout_siblings:
+      - sibling_id: chain_holdout_blue_p
+        public_setup: >-
+          A copper card has four small slots in a row: slot P, slot Q, slot R, and
+          slot S. The token word neri appears in every slot. Each token has one
+          faint etched slant beside it: the slant by neri in slot P tilts toward
+          slot R, the slant by neri in slot Q tilts toward slot S, the slant by
+          neri in slot R tilts toward slot Q, and the slant by neri in slot S
+          tilts toward slot P. The final tag sits past the left edge and its stem
+          just touches slot P. The neri in slot S has a blue wash like the final
+          tag and sits nearest to it. The neri in slot Q rests on the cleanest
+          white lane and shows the older, settled ink. The learner has to choose
+          which neri can support the final tag.
+        learner_resistance: >-
+          I want the slot S neri because it is blue like the tag and closest. The
+          slot Q neri sits on the cleaner lane and its ink looks older and surer,
+          and the etched slants seem relevant, but none of this settles the
+          choice.
+        baseline_tutor_attempt: >-
+          Compare the color, distance, the lane, the ink, and the etched slants,
+          then choose the neri with the strongest evidence.
+        learner_followup: >-
+          The evidence still splits. Blue and close point to slot S; the lane and
+          older ink point to slot Q; the slants I cannot rank.
+        plausible_public_repairs:
+          - pigment_match_test
+          - nearest_tag_test
+          - lane_continuity_test
+          - slant_salience_test
+          - pointer_chain_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: pointer_chain_test
+          target_id: slot_q_neri
+          target_aliases:
+            - slot Q neri
+            - slot Q
+            - the Q token
+            - Q neri
+          selected_repair_markers:
+            - pointer chain
+            - two-hop chain
+            - two hops
+            - follow the pointer
+            - second pointer
+            - trace two hops
+          incorrect_target_aliases:
+            - slot S neri
+            - slot S
+            - slot P neri
+            - slot R neri
+      - sibling_id: chain_holdout_gold_w
+        public_setup: >-
+          A slate card has five small slots in a row: slot W, slot X, slot Y, slot
+          Z, and slot V. The token word ralo appears in every slot. Each token has
+          one faint etched slant beside it: the slant by ralo in slot W tilts
+          toward slot Z, the slant by ralo in slot X tilts toward slot W, the
+          slant by ralo in slot Y tilts toward slot V, the slant by ralo in slot Z
+          tilts toward slot Y, and the slant by ralo in slot V tilts toward slot
+          X. The final badge sits above the row and its stem just touches slot W.
+          The ralo in slot V is gold like the final badge and sits closest to it.
+          The ralo in slot Y rests on the clearest grey lane and shows the
+          cleanest rim. The learner has to choose which ralo can carry the final
+          badge.
+        learner_resistance: >-
+          I want the gold slot V ralo because it matches the badge and is closest.
+          The slot Y ralo sits on the clearer lane and has the cleanest rim, and
+          the etched slants give me more to compare, not a rule.
+        baseline_tutor_attempt: >-
+          Compare color, distance, lane clarity, the rims, and the etched slants
+          before choosing.
+        learner_followup: >-
+          That still feels like a scorecard. Gold and closeness point to slot V;
+          the lane and clean rim point to slot Y; the slants all point different
+          ways.
+        plausible_public_repairs:
+          - pigment_match_test
+          - nearest_tag_test
+          - lane_continuity_test
+          - slant_salience_test
+          - pointer_chain_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: pointer_chain_test
+          target_id: slot_y_ralo
+          target_aliases:
+            - slot Y ralo
+            - slot Y
+            - the Y token
+            - Y ralo
+          selected_repair_markers:
+            - pointer chain
+            - two-hop chain
+            - two hops
+            - follow the pointer
+            - second pointer
+            - trace two hops
+          incorrect_target_aliases:
+            - slot V ralo
+            - slot V
+            - slot W ralo
+            - slot X ralo
+            - slot Z ralo

@@ -1,0 +1,204 @@
+meta:
+  schema_version: recursive-tutor-learning-families-v1-underdetermined-transfer
+  created: '2026-06-06'
+  status: a18_35_constructed_device_family
+  protocol: config/recursive-tutor-learning/a18-panel-vote-rule-v2.yaml
+  claim_boundary: simulated_teacher_as_learner_not_human_learning
+  notes: >-
+    Fresh A18.35 family probing whether non-adjacency alone (a far opposite-corner
+    marker linked to the target only by a tutor-named correspondence, with NO
+    constructed device) holds S0 headroom; relation vocabulary is held for policy
+    memory.
+
+families:
+  - family_id: distal_correspondence_priority
+    obstruction_type: competing_visible_cues_with_far_corner_marker
+    local_rule:
+      private_rule: >-
+        In this invented lane-card notation, the small coloured tile clipped to
+        the far opposite corner is not decoration: its colour states which lane
+        is allowed to carry the final tag, by matching the colour band printed at
+        the head of that lane. The tile sits far from the tag and never touches
+        any token, so it cannot be read as a pointer beside the answer. Colour
+        match to the tag, nearness to the tag, and the cleanest lane are all
+        tempting but not decisive unless the far corner marker is used as the
+        carrier-selecting correspondence. The marker's colour itself never
+        matches the tag colour, so it does not behave like an ordinary colour
+        cue. The tutor must name this far-marker correspondence only after the
+        learner reports cue competition, and must not describe it as a visible
+        pointer already touching the answer.
+      public_name: far corner correspondence
+    transfer_design:
+      require_underdetermined_public_repairs: true
+      policy_selected_repair: distant_marker_test
+      transfer_condition: >-
+        Use the far-corner-marker repair only after the learner reports that
+        colour, nearness, and lane cleanliness are competing rather than ranking
+        themselves. Do not use it as a first move.
+      recursive_update_requirement: >-
+        End with a brief tutor commitment that future cards for this learner
+        should first name the defeated ordinary cue, then read the far corner
+        marker, so the teacher-as-learner update is public rather than implicit.
+      s0_stop_rule: >-
+        Stop locally if S0 survives or if S0 independently names a far-corner,
+        opposite-corner, distant-marker, or far-tile-names-the-lane strategy.
+    plausible_repairs:
+      - repair_id: pigment_match_test
+        public_rationale: >-
+          The chosen token shares a visible colour or wash with the final tag.
+        why_plausible_from_public_stage: >-
+          Colour matching is salient and easy to compare across the card.
+      - repair_id: nearest_tag_test
+        public_rationale: >-
+          The chosen token sits nearest to the final tag.
+        why_plausible_from_public_stage: >-
+          Nearness looks like a natural rule when the final tag sits near one
+          lane.
+      - repair_id: lane_clarity_test
+        public_rationale: >-
+          The chosen token lies on the cleanest, least-broken lane leading toward
+          the final tag.
+        why_plausible_from_public_stage: >-
+          Clean continuous lanes invite path-following as a public rule.
+      - repair_id: corner_salience_test
+        public_rationale: >-
+          The chosen token sits in the lane nearest the small coloured corner
+          tile.
+        why_plausible_from_public_stage: >-
+          The corner tile could be decorative, positional, or a mere emphasis
+          mark unless its selecting role is named, and reading it as "the nearest
+          lane to the tile" is a tempting but wrong local reading.
+      - repair_id: distant_marker_test
+        public_rationale: >-
+          The chosen token sits in the lane whose head band matches the colour of
+          the small tile in the far opposite corner.
+        why_plausible_from_public_stage: >-
+          The public card shows a far corner tile with some colour, but whether
+          it is decoration, emphasis, or a colour-to-lane correspondence is
+          underdetermined until the tutor names the test.
+    success_criterion: >-
+      On a held-out card, the learner must stop choosing by colour, nearness, or
+      lane cleanliness alone and use the far corner marker's colour as the
+      lane-selecting correspondence.
+    forbidden_shortcuts:
+      - far corner correspondence
+      - far-corner marker
+      - opposite-corner marker
+      - opposite corner tile decides
+      - distant marker
+      - far marker names the lane
+      - far tile names the lane
+      - corner colour names the lane
+      - colour-to-lane correspondence
+      - head band match to the corner
+    training_seed:
+      seed_id: distal_train_coral_lower
+      public_setup: >-
+        A flat card has an upper lane and a lower lane, each headed by a small
+        colour patch. The token word mavo appears on both lanes. The upper mavo
+        is coral like the final tag and sits closest to it. The lower mavo lies
+        on the only unbroken pale lane. The upper lane is headed by a teal patch;
+        the lower lane is headed by an olive patch. A tiny olive square is clipped
+        to the bottom-right corner, well away from every token. The learner has
+        to say which mavo can carry the final tag.
+      learner_resistance: >-
+        I keep choosing the upper mavo because it is coral like the tag and
+        closest. The lower lane is cleaner, and there is that little olive square
+        off in the far corner, but I do not know how to rank those clues or
+        whether the corner square even matters.
+      baseline_tutor_attempt: >-
+        Compare colour, distance, and lane cleanliness, then choose the mavo with
+        the strongest combined evidence.
+      learner_followup: >-
+        That still splits the evidence. Coral and close point upper; the cleaner
+        lane points lower; and I have no idea what the far corner square is for.
+      expected_failure: wrong_strategy_family
+    heldout_siblings:
+      - sibling_id: distal_holdout_blue_upper
+        public_setup: >-
+          A copper card has an upper lane and a lower lane, each headed by a small
+          colour patch. The token word neri appears on both lanes. The lower neri
+          has a blue wash like the final tag and sits nearest to it. The upper
+          neri lies on the cleanest white lane. The upper lane is headed by a rust
+          patch; the lower lane is headed by a slate patch. A tiny rust square is
+          clipped to the top-left corner, far from every token. The learner has
+          to choose which neri can support the final tag.
+        learner_resistance: >-
+          I want the lower neri because it is blue like the tag and closest. The
+          upper lane is cleaner, and there is a small rust square in the far
+          corner, but none of that settles the choice for me.
+        baseline_tutor_attempt: >-
+          Compare the colour, the distance, and the lane cleanliness, then choose
+          the neri with the strongest evidence.
+        learner_followup: >-
+          The evidence still splits. Colour and distance point lower; the cleaner
+          lane points upper; and the far corner square is just sitting there.
+        plausible_public_repairs:
+          - pigment_match_test
+          - nearest_tag_test
+          - lane_clarity_test
+          - corner_salience_test
+          - distant_marker_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: distant_marker_test
+          target_id: upper_neri
+          target_aliases:
+            - upper neri
+            - upper lane
+            - rust-headed lane
+            - rust headed upper
+          selected_repair_markers:
+            - far corner marker
+            - opposite-corner marker
+            - distant marker correspondence
+            - corner colour matches the head band
+            - far square names the lane
+          incorrect_target_aliases:
+            - lower neri
+            - lower lane
+      - sibling_id: distal_holdout_gold_middle
+        public_setup: >-
+          A slate card has left, middle, and right lanes, each headed by a small
+          colour patch. The token word ralo appears in all three lanes. The left
+          ralo is gold like the final badge. The right ralo sits closest to the
+          badge. The middle ralo lies on the clearest grey lane. The left lane is
+          headed by a plum patch, the middle lane by an amber patch, and the right
+          lane by a jade patch. A tiny amber square is clipped to the top-right
+          corner, well away from every token. The learner has to choose which
+          ralo can carry the final badge.
+        learner_resistance: >-
+          I want the gold left ralo, or maybe the close right ralo. The clear
+          middle lane and that little amber square off in the corner give me more
+          things to compare, not a rule.
+        baseline_tutor_attempt: >-
+          Compare colour, distance, and lane clarity before choosing.
+        learner_followup: >-
+          That still feels like a scorecard. Gold, closeness, the clearer lane,
+          and a stray corner square all point in different directions.
+        plausible_public_repairs:
+          - pigment_match_test
+          - nearest_tag_test
+          - lane_clarity_test
+          - corner_salience_test
+          - distant_marker_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: distant_marker_test
+          target_id: middle_ralo
+          target_aliases:
+            - middle ralo
+            - middle lane
+            - amber-headed lane
+            - amber headed middle
+          selected_repair_markers:
+            - far corner marker
+            - opposite-corner marker
+            - distant marker correspondence
+            - corner colour matches the head band
+            - far square names the lane
+          incorrect_target_aliases:
+            - left ralo
+            - right ralo
+            - left lane
+            - right lane

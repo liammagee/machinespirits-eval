@@ -13,9 +13,11 @@ import { exec } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import YAML from 'yaml';
 import { openPoeticsStore, upsertPoeticsLabel, upsertPoeticsReviewFlag } from '../services/poeticsStore.js';
+import { resolveBasicAuthGuard } from '../services/httpBasicAuth.js';
 import { classifyPoeticsConsensus, parseCriticFormString } from './lib/poeticsConsensus.js';
 import { ORIGIN_CLASSES, originCounts, recognitionOriginForScoreRow } from './lib/recognitionOrigin.js';
 import { validateTurnPlan } from '../services/ontology/reasoningOntology.js';
+import { sampleTurnPlan, agenciesForArchitecture } from '../services/ontology/turnPlanSampler.js';
 import { buildOntologyView, ALL_MODULES, DEFAULT_MODULES } from '../services/ontology/ontologyView.js';
 import {
   listReplayBundles,
@@ -32,6 +34,13 @@ import {
   describeKinds,
   COST_CLASSES,
 } from '../services/poetics/jobRunner.js';
+import {
+  startSession as liveStartSession,
+  humanTurn as liveHumanTurn,
+  viewSession as liveViewSession,
+  saveSession as liveSaveSession,
+  buildMockDeps as liveBuildMockDeps,
+} from '../services/poetics/liveCompose.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
@@ -824,9 +833,20 @@ function saveBrowserReviewFlag(db, input) {
   return getItem(db, itemId);
 }
 
-function createPoeticsBrowserApp({ dbPath = null } = {}) {
+function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   const db = openPoeticsStore(dbPath || undefined);
   const app = express();
+  // Liveness probe with no auth — registered before the guard so a load
+  // balancer's health check (e.g. fly) gets a 200, not a 401. It returns only
+  // "ok", so it leaks nothing.
+  app.get('/healthz', (_req, res) => res.type('text/plain').send('ok\n'));
+  // Basic-auth guard before every data route. Open on localhost with no creds;
+  // throws (refuses to start) on a public bind without creds — see httpBasicAuth.js.
+  const authGuard = resolveBasicAuthGuard({ prefix: 'POETICS', host, realm: 'machine spirits poetics' });
+  if (authGuard) {
+    app.use(authGuard);
+    console.log('[poetics] basic-auth ENABLED (credentials required)');
+  }
   app.use(express.json({ limit: '64kb' }));
   app.use('/images', express.static(path.resolve(ROOT, 'notes/poetics/images'), { index: false }));
   app.use('/assets', express.static(path.resolve(ROOT, 'notes/poetics/assets'), { index: false }));
@@ -924,6 +944,70 @@ function createPoeticsBrowserApp({ dbPath = null } = {}) {
       return res.status(400).json({ error: error.message || String(error) });
     }
   });
+  // The sampler walks the SAME ontology the validator checks: suggest a valid, varied turn
+  // for the given targets + role, conditioned on the tutor architecture (the alter-egos).
+  app.post('/api/compose/suggest', async (req, res) => {
+    try {
+      const body = req.body || {};
+      const targets = Array.isArray(body.targets) && body.targets.length ? body.targets : ['peripeteia'];
+      const role = ['tutor', 'learner', 'director'].includes(body.role) ? body.role : 'tutor';
+      const agencies = body.architecture ? agenciesForArchitecture(body.architecture) : undefined;
+      const entry = await sampleTurnPlan(targets, role, {
+        agencies,
+        persona: body.persona,
+        seed: String(body.seed || ''),
+      });
+      return res.json({
+        ok: true,
+        turn: { turn: entry.at?.turn ?? 3, role: entry.role, target: entry.target || '', moves: entry.moves },
+      });
+    } catch (error) {
+      return res.status(400).json({ error: error.message || String(error) });
+    }
+  });
+  // ── Live "sit-in" compose (human plays one seat, AI plays the other) ────────
+  // METERED + localhost-only, same posture as the /runs launcher below: every AI
+  // turn is a real LLM call UNLESS the request opts into mock deps (free, canned
+  // logarithm lines — for trialling the UI). Session state is in-memory in
+  // services/poetics/liveCompose.js; nothing touches the eval DB. The client is
+  // authoritative for the mock flag and re-sends it on every turn.
+  app.get('/compose/live', (_req, res) => res.type('html').send(renderComposeLiveHtml()));
+  app.post('/api/compose/live/start', async (req, res) => {
+    try {
+      const body = req.body || {};
+      const deps = body.mock ? liveBuildMockDeps() : {};
+      const out = await liveStartSession(body.spec || {}, deps);
+      return res.status(201).json(out);
+    } catch (error) {
+      return res.status(error.statusCode || 400).json({ error: error.message || String(error), code: error.code });
+    }
+  });
+  app.post('/api/compose/live/turn', async (req, res) => {
+    try {
+      const body = req.body || {};
+      const deps = body.mock ? liveBuildMockDeps() : {};
+      const out = await liveHumanTurn(body.id, body.text, deps);
+      return res.json(out);
+    } catch (error) {
+      return res.status(error.statusCode || 400).json({ error: error.message || String(error), code: error.code });
+    }
+  });
+  app.get('/api/compose/live/:id', (req, res) => {
+    try {
+      return res.json({ session: liveViewSession(req.params.id) });
+    } catch (error) {
+      return res.status(error.statusCode || 404).json({ error: error.message || String(error), code: error.code });
+    }
+  });
+  app.post('/api/compose/live/save', (req, res) => {
+    try {
+      const body = req.body || {};
+      const out = liveSaveSession(body.id, { filename: body.filename });
+      return res.json({ ok: true, ...out });
+    } catch (error) {
+      return res.status(error.statusCode || 400).json({ error: error.message || String(error), code: error.code });
+    }
+  });
   app.get('/ontology', (_req, res) => res.type('html').send(renderOntologyHtml()));
   app.get('/rubric', (_req, res) => res.type('html').send(renderRubricHtml()));
   app.get('/api/ontology', (req, res) => {
@@ -989,10 +1073,49 @@ function createPoeticsBrowserApp({ dbPath = null } = {}) {
     if (!job) return res.status(404).json({ error: 'job not found' });
     return res.json({ job });
   });
+  // GET /summary wraps the raw synthesis note (served at /arc) in a same-origin
+  // iframe beneath the standard scriptorium rail, so it carries the common nav
+  // links without fighting the doc's own viewport-anchored chrome. /arc still
+  // serves the bare techne doc — it's both the iframe src and a legacy alias for
+  // any external/published references to the old path.
+  app.get('/summary', (_req, res) => res.type('html').send(summaryWrapperHtml()));
   app.get('/arc', (_req, res) => {
-    const arcPath = path.resolve(ROOT, 'notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.html');
-    if (!fs.existsSync(arcPath)) return res.status(404).type('text').send('arc note not found');
-    res.type('html').sendFile(arcPath);
+    const notePath = path.resolve(ROOT, 'notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.html');
+    if (!fs.existsSync(notePath)) return res.status(404).type('text').send('summary note not found');
+    res.type('html').sendFile(notePath);
+  });
+  // GET /story serves the bare "story so far" techne note (relative assets/*
+  // resolve against /assets, served by the static route above). Unlike the
+  // durable /summary synthesis, this is a dated, provisional lab-notebook
+  // narrative of the adaptation arc — it links to /summary + the paper for the
+  // claims that have earned the right to be stable.
+  app.get('/story', (_req, res) => {
+    const notePath = path.resolve(ROOT, 'notes/poetics/2026-06-06-adaptation-story-so-far.html');
+    if (!fs.existsSync(notePath)) return res.status(404).type('text').send('story-so-far note not found');
+    res.type('html').sendFile(notePath);
+  });
+  // GET /repertoire serves the bare "three instruments, one repertoire" techne
+  // note (relative assets/* resolve against /assets, served by the static route
+  // above). It analyses the three measurement instruments (ontology memory ·
+  // small rhetorical phrasing · large dramatic turns) by grain, then proposes a
+  // repertoire of controlled adaptive mechanisms to exploit the few real wins,
+  // with a filterable gallery of failed & minimally-succeeded adaptation. Like
+  // /story it narrates and links; durable claims live in /summary + the paper.
+  app.get('/repertoire', (_req, res) => {
+    const notePath = path.resolve(ROOT, 'notes/poetics/2026-06-06-controlled-adaptation-repertoire.html');
+    if (!fs.existsSync(notePath)) return res.status(404).type('text').send('repertoire note not found');
+    res.type('html').sendFile(notePath);
+  });
+  // GET /board serves the bare "development board" techne note (relative assets/*
+  // resolve against /assets, served by the static route above). It is a read-only
+  // rendering of TODO.md: the 48 tracked items as a two-axis filterable board
+  // (status × theme), with the 8 open items given detailed treatment and the 40
+  // closed/ruled-out items archived as one-line cards. It originates no claims —
+  // durable results live in /summary + the paper; TODO.md remains the source.
+  app.get('/board', (_req, res) => {
+    const notePath = path.resolve(ROOT, 'notes/poetics/2026-06-06-development-board.html');
+    if (!fs.existsSync(notePath)) return res.status(404).type('text').send('development-board note not found');
+    res.type('html').sendFile(notePath);
   });
   app.get('/browse', (_req, res) => res.type('html').send(renderBrowserHtml()));
   app.get('/', (req, res) => {
@@ -1136,20 +1259,44 @@ function escapeHtml(value) {
   );
 }
 
-// Single source of truth for the top nav. Every page already ships identical
-// .rail*/.rail__btn CSS, so this stays markup-only; the active link gets
-// aria-current + an inline accent (theme vars exist on every page) so no page
-// needs a bespoke active-state rule. Replaces five hand-maintained, divergent rails.
+// Single source of truth for the top-nav items, consumed by railHtml() — which
+// every scriptorium page renders, including the /summary iframe wrapper. Adding an
+// entry here adds the tab everywhere at once. Each entry is [key, href, label, title].
+const NAV = [
+  ['home', '/', 'home', 'Dashboard — overview, live stats &amp; guided first steps'],
+  ['browse', '/browse', 'browse', 'Browse generated scripts, full traces, critic scores &amp; labels'],
+  ['compose', '/compose', 'compose', 'Assemble a drama-machine spec, validated live against the ontology'],
+  ['ontology', '/ontology', 'ontology', 'The shared ontology — system, tutor &amp; learner lenses'],
+  ['rubric', '/rubric', 'rubric', 'The poetics rubric — the 6 dramatic-form dimensions critics score against'],
+  ['replays', '/replays', 'replays', 'Counterfactual replays diffed against their originals'],
+  ['runs', '/runs', 'runs', 'Launch runs — generative · replay · adversarial-CLI · online scoring'],
+  [
+    'summary',
+    '/summary',
+    'summary',
+    'The synthesis note — the whole dramatic-recognition arc, from the paper to this scriptorium',
+  ],
+  [
+    'repertoire',
+    '/repertoire',
+    'repertoire',
+    'Three measurement instruments analysed by grain &amp; a repertoire of controlled adaptive mechanisms — with a gallery of failed &amp; minimally-succeeded adaptation',
+  ],
+  [
+    'board',
+    '/board',
+    'board',
+    'The development board — every tracked item as a filterable status × theme grid: what is open, what is closed, what is ruled out',
+  ],
+];
+
+// Single source of truth for the top-nav markup. Every page already ships
+// identical .rail*/.rail__btn CSS, so this stays markup-only; the active link
+// gets aria-current + an inline accent (theme vars exist on every page) so no
+// page needs a bespoke active-state rule. Replaces five hand-maintained rails.
+// `extra` (e.g. /browse's live DB beacon) sits to the LEFT of the nav links so
+// the menu + theme-toggle cluster stays identical on every page, beacon or not.
 function railHtml({ active = '', brand = 'machine spirits', sub = '', extra = '' } = {}) {
-  const NAV = [
-    ['home', '/', 'home', 'Dashboard — overview, live stats &amp; guided first steps'],
-    ['browse', '/browse', 'browse', 'Browse generated scripts, full traces, critic scores &amp; labels'],
-    ['compose', '/compose', 'compose', 'Assemble a drama-machine spec, validated live against the ontology'],
-    ['ontology', '/ontology', 'ontology', 'The shared ontology — system, tutor &amp; learner lenses'],
-    ['rubric', '/rubric', 'rubric', 'The poetics rubric — the 6 dramatic-form dimensions critics score against'],
-    ['replays', '/replays', 'replays', 'Counterfactual replays diffed against their originals'],
-    ['runs', '/runs', 'runs', 'Launch runs — generative · replay · adversarial-CLI · online scoring'],
-  ];
   const links = NAV.map(([key, href, label, title]) => {
     const on = key === active;
     const attrs = on
@@ -1161,11 +1308,96 @@ function railHtml({ active = '', brand = 'machine spirits', sub = '', extra = ''
   <div class="rail__inner">
     <span class="rail__brand">${brand}</span>
     <span class="rail__sub">${sub}</span>
-    ${links}
-    <a class="rail__arc" href="/arc" title="The dramatic-recognition arc synthesis note"><span>arc</span><span aria-hidden="true">→</span></a>
-    ${extra}<button class="rail__btn" id="themeToggle" type="button">theme</button>
+    ${extra}${links}
+    <button class="rail__btn" id="themeToggle" type="button">theme</button>
   </div>
 </header>`;
+}
+
+// The summary note is an external techne-framework HTML doc that owns its own
+// viewport-anchored chrome (a fixed TOC sidebar + a sticky section rail).
+// Splicing a scriptorium strip above it loses the left of the strip under that
+// fixed chrome, so GET /summary instead wraps the raw doc — served at /arc — in
+// a same-origin iframe beneath the standard rail. The doc's fixed sidebar then
+// anchors to the iframe, the rail owns the real top with the common links
+// (summary active), and a small script mirrors the rail's light/dark into the
+// framed doc so the two layers stay in step.
+function summaryWrapperHtml() {
+  const css = `html,body{height:100%}
+body{display:flex;flex-direction:column;overflow:hidden}
+.rail{flex:0 0 auto}
+.summaryframe{flex:1 1 auto;width:100%;border:0;display:block;background:var(--paper)}`;
+  return `${pageHead({ title: 'Summary · the dramatic-recognition arc', css })}
+<body>
+${railHtml({ active: 'summary', brand: 'machine spirits', sub: 'the synthesis note — the whole dramatic-recognition arc, from the paper to this scriptorium' })}
+<iframe id="summaryFrame" class="summaryframe" src="/arc" title="From Paper 2.0 to dramatic recognition — the synthesis note"></iframe>
+<script>
+(function () {
+  try { if (localStorage.getItem('poetics-theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); } catch (_e) {}
+  var f = document.getElementById('summaryFrame');
+  function syncFrame() { try { f.contentDocument.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme') || ''); } catch (_e) {} }
+  f.addEventListener('load', syncFrame);
+  var t = document.getElementById('themeToggle');
+  if (t) t.addEventListener('click', function () {
+    var d = document.documentElement, nx = d.getAttribute('data-theme') === 'dark' ? '' : 'dark';
+    if (nx) d.setAttribute('data-theme', 'dark'); else d.removeAttribute('data-theme');
+    try { localStorage.setItem('poetics-theme', nx); } catch (_e) {}
+    syncFrame();
+  });
+})();
+</script>
+</body>
+</html>`;
+}
+
+// ── Shared page chrome ────────────────────────────────────────────────────────
+// One source of truth for the theme tokens, type, resets, and the rail (nav)
+// styling that every dashboard page shares. Before this, each render*Html()
+// inlined its own copy and they had quietly drifted (e.g. body line-height
+// 1.6 vs 1.5). Centralising them here means home · compose · ontology · rubric ·
+// replays · runs are byte-identical in their chrome, and any future change is a
+// one-line edit. The design lineage is levelled up to match the richer /browse
+// page: Fraunces (display) / Source Serif 4 (body) / JetBrains Mono (rail +
+// code), a faint paper-grain wash, and a frosted rail with the ▸ brand mark.
+// The token set is a superset of /browse's (incl. --ease + legacy aliases), so
+// /browse could later drop its bespoke copy and adopt pageHead() too.
+// Page-specific CSS is passed in via `css` and appended after this.
+const BASE_CSS = `@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Source+Serif+4:opsz,wght@8..60,200..900&family=JetBrains+Mono:wght@300..700&display=swap");
+:root{ color-scheme: light dark; --paper:#F4EEDD; --paper-2:#ECE3CB; --paper-3:#F8F2E2; --paper-4:#FBF6E8; --ink:#14100C; --ink-2:#2C241B; --ink-3:#5C5040; --ink-4:#8C7E6A; --linen:#D8C7A9; --moss:#56683A; --moss-deep:#3A4824; --moss-soft:#E3E6CE; --brick:#A53E2E; --brick-d:#7C2C1F; --brick-soft:#F3DDD6; --ochre:#C08A3E; --ochre-d:#8C5F1F; --ochre-soft:#F5E6C2; --indigo:#5A6797; --indigo-soft:#E2E5F0; --rule:rgba(28,22,16,.18); --rule-soft:rgba(28,22,16,.10); --ease:cubic-bezier(.22,.61,.36,1); --bg:var(--paper); --panel:var(--paper-4); --muted:var(--ink-3); --line:var(--rule); --accent:var(--moss-deep); --accent-soft:var(--moss-soft); --warn:var(--ochre-d); --trap:var(--brick-d); --flat:var(--ink-3); }
+[data-theme="dark"]{ --paper:#14100C; --paper-2:#1B1612; --paper-3:#1F1A14; --paper-4:#221C16; --ink:#F4EEDD; --ink-2:#E0D8C3; --ink-3:#B9AD96; --ink-4:#8C7E6A; --linen:#3A322A; --moss:#8DA868; --moss-deep:#B5CD92; --moss-soft:#2C3520; --brick:#E36953; --brick-d:#F08A75; --brick-soft:#3A1C16; --ochre:#E6B265; --ochre-d:#F3CB88; --ochre-soft:#3A2C12; --indigo:#98A6D4; --indigo-soft:#1F2434; --rule:rgba(244,238,221,.18); --rule-soft:rgba(244,238,221,.08); }
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+html{ background:var(--paper); -webkit-text-size-adjust:100%; }
+body{ background:var(--paper); color:var(--ink-2); font-family:"Source Serif 4","Source Serif Pro",Cambria,Georgia,serif; font-feature-settings:"ss01","kern","liga"; font-optical-sizing:auto; font-size:14.5px; line-height:1.5; letter-spacing:.003em; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; position:relative; min-height:100vh; }
+body::after{ content:""; position:fixed; inset:0; z-index:-1; pointer-events:none; opacity:.14; background-image:radial-gradient(rgba(20,16,12,.55) .5px, transparent .5px); background-size:3px 3px; mix-blend-mode:multiply; }
+[data-theme="dark"] body::after{ opacity:.08; background-image:radial-gradient(rgba(244,238,221,.45) .5px, transparent .5px); mix-blend-mode:screen; }
+button,input,select,textarea{ font:inherit; color:inherit; }
+em{ font-style:italic; }
+code,pre{ font-family:"JetBrains Mono",ui-monospace,'SF Mono',Menlo,monospace; }
+::selection{ background:color-mix(in srgb, var(--ochre) 50%, transparent); color:var(--ink); }
+.rail{ position:sticky; top:0; z-index:30; background:color-mix(in srgb, var(--paper) 92%, transparent); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-bottom:1px solid var(--rule); font-family:"JetBrains Mono","SFMono-Regular",Consolas,monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); }
+.rail__inner{ display:flex; align-items:center; gap:.9em; padding:.55em clamp(.8rem,2vw,1.2rem); }
+.rail__brand{ font-family:"Fraunces","Source Serif 4",Georgia,serif; font-style:italic; font-variation-settings:"SOFT" 50,"WONK" 1,"opsz" 96; font-size:17px; letter-spacing:-.005em; text-transform:none; color:var(--ink); flex:0 0 auto; }
+.rail__brand::before{ content:"▸ "; color:var(--brick); font-style:normal; }
+.rail__sub{ flex:1 1 auto; color:var(--ink-3); text-transform:none; letter-spacing:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.rail__btn{ display:inline-flex; align-items:center; gap:.45em; border:1px solid var(--rule); background:transparent; color:var(--ink-3); font:inherit; padding:.32em .8em; cursor:pointer; text-decoration:none; flex:0 0 auto; transition:color .15s var(--ease), border-color .15s var(--ease); }
+.rail__btn:hover{ color:var(--ink); border-color:var(--ink-3); }`;
+
+// Emit the <!doctype>…</head> shell with the shared chrome + this page's own CSS.
+// Each render*Html() then continues with its <body>. Keeps every page's <head>
+// byte-identical (charset, viewport, theme tokens) without copy-paste.
+function pageHead({ title, css = '' } = {}) {
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${title}</title>
+<style>
+${BASE_CSS}
+${css}
+</style>
+</head>`;
 }
 
 // ── Dashboard front door (GET /) ──────────────────────────────────────────────
@@ -1312,10 +1544,28 @@ function renderDashboardHtml(stats = {}) {
           'open replays',
         ],
         [
-          'The arc',
-          'The synthesis note tracing the whole dramatic-recognition arc, from the paper through to this workbench.',
-          '/arc',
-          'read the arc',
+          'Summary',
+          'The synthesis note tracing the whole dramatic-recognition arc, from the paper through to this scriptorium.',
+          '/summary',
+          'read the summary',
+        ],
+        [
+          'Adaptation — story so far',
+          'A dated lab-notebook narrative of every path tried toward making the tutor adapt — what works, what is a null, and what is still live. Provisional by design.',
+          '/story',
+          'read the story so far',
+        ],
+        [
+          'Three instruments — one repertoire',
+          'The ontology memory model, the small-rhetoric scorers &amp; the dramatic-form rubric — what each measured by grain, and how to exploit the few wins into controlled adaptive mechanisms. With a gallery of failed &amp; minimally-succeeded adaptation.',
+          '/repertoire',
+          'read the analysis',
+        ],
+        [
+          'The development board',
+          'A read-only rendering of TODO.md: every tracked item as a filterable status × theme grid. The 8 open items in detail, the 40 closed &amp; ruled-out items archived. Originates no claims — the source stays in TODO.md.',
+          '/board',
+          'open the board',
         ],
       ],
     ],
@@ -1335,35 +1585,18 @@ function renderDashboardHtml(stats = {}) {
       </section>`,
   ).join('');
 
-  return `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>machine spirits · poetics workbench</title>
-<style>
-:root{ color-scheme: light dark; --paper:#F4EEDD; --paper-2:#ECE3CB; --paper-3:#F8F2E2; --paper-4:#FBF6E8; --ink:#14100C; --ink-2:#2C241B; --ink-3:#5C5040; --ink-4:#8C7E6A; --linen:#D8C7A9; --moss:#56683A; --moss-deep:#3A4824; --moss-soft:#E3E6CE; --brick:#A53E2E; --brick-d:#7C2C1F; --brick-soft:#F3DDD6; --ochre:#C08A3E; --ochre-d:#8C5F1F; --ochre-soft:#F5E6C2; --indigo:#5A6797; --indigo-soft:#E2E5F0; --rule:rgba(28,22,16,.18); --rule-soft:rgba(28,22,16,.10); }
-[data-theme="dark"]{ --paper:#14100C; --paper-2:#1B1612; --paper-3:#1F1A14; --paper-4:#221C16; --ink:#F4EEDD; --ink-2:#E0D8C3; --ink-3:#B9AD96; --ink-4:#8C7E6A; --linen:#3A322A; --moss:#8DA868; --moss-deep:#B5CD92; --moss-soft:#2C3520; --brick:#E36953; --brick-d:#F08A75; --brick-soft:#3A1C16; --ochre:#E6B265; --ochre-d:#F3CB88; --ochre-soft:#3A2C12; --indigo:#98A6D4; --indigo-soft:#1F2434; --rule:rgba(244,238,221,.18); --rule-soft:rgba(244,238,221,.08); }
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{ background:var(--paper); color:var(--ink); font:14px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; }
-em{ font-style:italic; }
-.rail{ position:sticky; top:0; z-index:10; background:var(--paper-3); border-bottom:1px solid var(--rule); }
-.rail__inner{ display:flex; align-items:center; gap:14px; padding:10px 18px; }
-.rail__brand{ font-family:Georgia,serif; font-style:italic; font-size:18px; color:var(--moss-deep); }
-.rail__sub{ color:var(--ink-3); font-size:12px; flex:1; }
-.rail__arc,.rail__btn{ display:inline-flex; align-items:center; gap:6px; font:12px ui-monospace,monospace; text-decoration:none; color:var(--ink-2); border:1px solid var(--rule); padding:5px 10px; background:var(--paper-4); cursor:pointer; }
-.rail__arc{ color:#fff; background:var(--brick); border-color:var(--brick-d); }
-[data-theme="dark"] .rail__arc{ color:var(--paper); }
+  return `${pageHead({
+    title: 'machine spirits · poetics scriptorium',
+    css: `
 .wrap{ max-width:1080px; margin:0 auto; padding:0 22px 64px; }
 .welcome{ margin:18px 0 0; border:1px solid var(--moss); background:var(--moss-soft); padding:16px 18px; }
 .welcome__k{ font:600 11px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.08em; color:var(--moss-deep); }
-.welcome h2{ margin:7px 0 6px; font:italic 22px/1.2 Georgia,serif; color:var(--ink); }
+.welcome h2{ margin:7px 0 6px; font:italic 22px/1.2 "Fraunces","Source Serif 4",Georgia,serif; font-variation-settings:"SOFT" 50,"WONK" 1,"opsz" 72; color:var(--ink); }
 .welcome p{ margin:0; color:var(--ink-2); max-width:66ch; }
 .welcome__btns{ display:flex; gap:10px; margin-top:13px; flex-wrap:wrap; }
 .hero{ padding:40px 0 10px; }
 .hero__k{ font:600 11px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.1em; color:var(--ink-4); }
-.hero h1{ margin:10px 0 12px; font:italic 40px/1.05 Georgia,serif; color:var(--ink); }
+.hero h1{ margin:10px 0 12px; font:italic 40px/1.05 "Fraunces","Source Serif 4",Georgia,serif; font-variation-settings:"SOFT" 50,"WONK" 1,"opsz" 96; letter-spacing:-.015em; color:var(--ink); }
 .hero p{ margin:0 0 20px; font-size:16px; color:var(--ink-2); max-width:70ch; }
 .hero__cta{ display:flex; gap:12px; flex-wrap:wrap; }
 .btn{ display:inline-flex; align-items:center; gap:7px; font:13px ui-monospace,monospace; text-decoration:none; cursor:pointer; border:1px solid var(--rule); background:var(--paper-4); color:var(--ink); padding:9px 15px; }
@@ -1412,7 +1645,7 @@ h2.section{ font:600 13px/1 ui-monospace,monospace; text-transform:uppercase; le
 .act--moss{ border-top-color:var(--moss); }
 .act--ochre{ border-top-color:var(--ochre); }
 .act--indigo{ border-top-color:var(--indigo); }
-.act__h{ margin:0; padding:12px 14px 4px; font:italic 18px Georgia,serif; color:var(--ink); }
+.act__h{ margin:0; padding:12px 14px 4px; font:italic 18px "Fraunces","Source Serif 4",Georgia,serif; font-variation-settings:"SOFT" 50,"opsz" 48; color:var(--ink); }
 .act__cards{ padding:6px 12px 13px; display:flex; flex-direction:column; gap:8px; }
 .card{ display:block; text-decoration:none; border:1px solid var(--rule); background:var(--paper-4); padding:11px 12px; }
 .card:hover{ border-color:var(--ink-3); }
@@ -1421,21 +1654,21 @@ h2.section{ font:600 13px/1 ui-monospace,monospace; text-transform:uppercase; le
 .card__cta{ font:11px ui-monospace,monospace; color:var(--moss-deep); }
 .reflect{ margin-top:46px; border:1px dashed var(--rule); background:var(--paper-3); padding:18px 20px; }
 .reflect__k{ font:600 11px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.08em; color:var(--ochre-d); }
-.reflect h3{ margin:9px 0 13px; font:italic 19px Georgia,serif; color:var(--ink); }
+.reflect h3{ margin:9px 0 13px; font:italic 19px "Fraunces","Source Serif 4",Georgia,serif; font-variation-settings:"SOFT" 50,"opsz" 48; color:var(--ink); }
 .reflect ul{ margin:0; padding:0; list-style:none; display:grid; gap:11px; }
 .reflect li{ color:var(--ink-2); font-size:13px; max-width:80ch; padding-left:14px; border-left:2px solid var(--rule); }
 .reflect li b{ color:var(--moss-deep); }
 .muted{ color:var(--ink-4); font-style:italic; }
 .foot{ margin-top:32px; color:var(--ink-4); font:11px ui-monospace,monospace; }
-</style>
-</head>
+`,
+  })}
 <body>
 ${railHtml({ active: 'home', brand: 'machine spirits', sub: 'a drama-machine for tutoring — generate · score · recognize' })}
 <div class="wrap">
 
   <div class="welcome" id="welcome" hidden>
     <div class="welcome__k">new here · welcome</div>
-    <h2>First time at the workbench?</h2>
+    <h2>First time at the scriptorium?</h2>
     <p>This is a research instrument that stages tutoring dialogues as <em>drama</em> and reads them the way a literary critic would — for dramatic form, not for what is in anyone's head. You don't need to know the codebase. The five-step tour below walks the whole surface; take it at your own pace.</p>
     <div class="welcome__btns">
       <button class="btn primary" id="welcomeBegin" type="button">begin the tour ↓</button>
@@ -1444,7 +1677,7 @@ ${railHtml({ active: 'home', brand: 'machine spirits', sub: 'a drama-machine for
   </div>
 
   <header class="hero">
-    <div class="hero__k">machine spirits · poetics workbench</div>
+    <div class="hero__k">machine spirits · poetics scriptorium</div>
     <h1>Tutoring, staged as drama.</h1>
     <p>Generate tutoring dialogues that turn on a <em>peripeteia</em> — a reversal of understanding — score them as a literary critic would on dramatic form, and study where recognition does and doesn't cohere. Browse what's been made, compose something new, or replay a single changed move.</p>
     <div class="hero__cta">
@@ -1471,12 +1704,12 @@ ${railHtml({ active: 'home', brand: 'machine spirits', sub: 'a drama-machine for
   </div>
 
   <h2 class="section">Everything, in three acts</h2>
-  <p class="section__sub">The workbench falls into the shape it studies: understand the material, create something new, recognize what changed.</p>
+  <p class="section__sub">The scriptorium falls into the shape it studies: understand the material, create something new, recognize what changed.</p>
   <div class="acts">${actsHtml}</div>
 
   <div class="reflect">
     <div class="reflect__k">applying our own lessons</div>
-    <h3>This workbench is built from the pedagogy it studies.</h3>
+    <h3>This scriptorium is built from the pedagogy it studies.</h3>
     <ul>
       <li><b>Recognition.</b> It greets a first-time visitor and names where they are before instructing — the mutual recognition the tutor is asked to extend the learner.</li>
       <li><b>Scaffolding.</b> The tour is a zone-of-proximal-development ladder: one rung at a time, you set the pace, and you can mark what you already command.</li>
@@ -1484,7 +1717,7 @@ ${railHtml({ active: 'home', brand: 'machine spirits', sub: 'a drama-machine for
     </ul>
   </div>
 
-  <p class="foot">machine spirits · poetics — localhost workbench · read-only dashboard</p>
+  <p class="foot">machine spirits · poetics — localhost scriptorium · read-only dashboard</p>
 </div>
 <script>
 (function(){
@@ -1541,32 +1774,24 @@ ${railHtml({ active: 'home', brand: 'machine spirits', sub: 'a drama-machine for
 
 function renderComposeHtml() {
   const V = COMPOSER_VOCAB;
-  return `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Drama Composer · poetics</title>
-<style>
-:root{ color-scheme: light dark; --paper:#F4EEDD; --paper-2:#ECE3CB; --paper-3:#F8F2E2; --paper-4:#FBF6E8; --ink:#14100C; --ink-2:#2C241B; --ink-3:#5C5040; --ink-4:#8C7E6A; --linen:#D8C7A9; --moss:#56683A; --moss-deep:#3A4824; --moss-soft:#E3E6CE; --brick:#A53E2E; --brick-d:#7C2C1F; --brick-soft:#F3DDD6; --ochre:#C08A3E; --ochre-d:#8C5F1F; --ochre-soft:#F5E6C2; --indigo:#5A6797; --indigo-soft:#E2E5F0; --rule:rgba(28,22,16,.18); --rule-soft:rgba(28,22,16,.10); }
-[data-theme="dark"]{ --paper:#14100C; --paper-2:#1B1612; --paper-3:#1F1A14; --paper-4:#221C16; --ink:#F4EEDD; --ink-2:#E0D8C3; --ink-3:#B9AD96; --ink-4:#8C7E6A; --linen:#3A322A; --moss:#8DA868; --moss-deep:#B5CD92; --moss-soft:#2C3520; --brick:#E36953; --brick-d:#F08A75; --brick-soft:#3A1C16; --ochre:#E6B265; --ochre-d:#F3CB88; --ochre-soft:#3A2C12; --indigo:#98A6D4; --indigo-soft:#1F2434; --rule:rgba(244,238,221,.18); --rule-soft:rgba(244,238,221,.08); }
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{ background:var(--paper); color:var(--ink); font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; }
-code,pre{ font-family: ui-monospace,'SF Mono',Menlo,monospace; }
-.rail{ position:sticky; top:0; z-index:10; background:var(--paper-3); border-bottom:1px solid var(--rule); }
-.rail__inner{ display:flex; align-items:center; gap:14px; padding:10px 18px; }
-.rail__brand{ font-family:Georgia,serif; font-style:italic; font-size:18px; color:var(--moss-deep); }
-.rail__sub{ color:var(--ink-3); font-size:12px; flex:1; }
-.rail__arc,.rail__btn{ display:inline-flex; align-items:center; gap:6px; font:12px ui-monospace,monospace; text-decoration:none; color:var(--ink-2); border:1px solid var(--rule); padding:5px 10px; background:var(--paper-4); cursor:pointer; }
-.rail__arc{ color:#fff; background:var(--brick); border-color:var(--brick-d); }
-[data-theme="dark"] .rail__arc{ color:var(--paper); }
+  return `${pageHead({
+    title: 'Drama Composer · poetics',
+    css: `
 .compose{ display:grid; grid-template-columns: minmax(0,1.3fr) minmax(330px,.9fr); align-items:start; }
 @media (max-width:900px){ .compose{ grid-template-columns:1fr; } }
 .cform{ padding:18px 20px; display:flex; flex-direction:column; gap:16px; max-height:calc(100vh - 52px); overflow:auto; }
 .cside{ position:sticky; top:52px; padding:16px 16px; display:flex; flex-direction:column; gap:14px; border-left:1px solid var(--rule); max-height:calc(100vh - 52px); overflow:auto; background:var(--paper-3); }
-section.sec{ border:1px solid var(--rule); background:var(--paper-4); }
+.sec{ border:1px solid var(--rule); background:var(--paper-4); }
 .sec > h3{ margin:0; padding:9px 12px; font:600 12px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-2); background:var(--paper-2); border-bottom:1px solid var(--rule); }
+details.sec > summary{ margin:0; padding:9px 12px; font:600 12px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-2); background:var(--paper-2); border-bottom:1px solid var(--rule); cursor:pointer; list-style:none; display:flex; align-items:center; gap:8px; user-select:none; }
+details.sec:not([open]) > summary{ border-bottom:none; }
+details.sec > summary::-webkit-details-marker{ display:none; }
+details.sec > summary::before{ content:'▸'; color:var(--ink-4); font-size:9px; transition:transform .12s ease; }
+details.sec[open] > summary::before{ transform:rotate(90deg); }
+details.sec > summary:hover{ color:var(--ink); }
+.sec .opt{ margin-left:auto; font-weight:400; text-transform:none; letter-spacing:0; color:var(--ink-4); font:11px ui-monospace,monospace; }
+.advnote{ font:10px ui-monospace,monospace; color:var(--ink-4); text-transform:uppercase; letter-spacing:.05em; display:flex; align-items:center; gap:12px; padding:2px 0; }
+.advnote::before,.advnote::after{ content:''; height:1px; background:var(--rule); flex:1; }
 .sec > .body{ padding:12px; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px 14px; }
 .sec > .body.one{ grid-template-columns:1fr; }
 label.fld,.fld{ display:flex; flex-direction:column; gap:4px; font-size:11px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.04em; }
@@ -1602,10 +1827,12 @@ label.mini .t-turn{ width:56px; }
 .write-result code,.run-hint code{ background:rgba(127,127,127,.15); padding:0 3px; color:var(--moss-deep); }
 .run-hint{ font:11px/1.5 ui-monospace,monospace; color:var(--ink-4); border-top:1px dashed var(--rule); padding-top:8px; }
 .muted{ color:var(--ink-4); font-style:italic; font-size:11px; }
-</style>
-</head>
+${MODETABS_CSS}
+`,
+  })}
 <body>
 ${railHtml({ active: 'compose', brand: 'drama composer', sub: 'assemble a drama-machine spec · validated live against the poetics ontology' })}
+${modeTabsHtml('spec')}
 <div class="compose">
   <form class="cform" id="cform" onsubmit="return false">
     <section class="sec"><h3>Drama · mythos / melos</h3><div class="body">
@@ -1629,12 +1856,13 @@ ${railHtml({ active: 'compose', brand: 'drama composer', sub: 'assemble a drama-
       <label class="fld">superego_disposition<input type="text" id="l-superego" value="recognition_authentic"></label>
       <label class="fld wide">start_state<textarea id="l-start">wants the rule memorised before the quiz; mistrusts 'inverse' as hand-waving</textarea></label>
     </div></section>
-    <section class="sec"><h3>Thought &amp; diction · dianoia / lexis</h3><div class="body">
+    <div class="advnote">advanced · sensible defaults already set — open only what you want to shape</div>
+    <details class="sec"><summary>Thought &amp; diction · dianoia / lexis<span class="opt">socratic · aristotelian reversal</span></summary><div class="body">
       <label class="fld">pedagogical_approach<input type="text" id="d-pedagogical" value="socratic_elenchus"></label>
       <label class="fld">dialogue_approach<input type="text" id="d-dialogue" value="aristotelian_reversal"></label>
       <label class="fld wide">voice.register<input type="text" id="v-register" value="plain; the learner a little defensive"></label>
-    </div></section>
-    <section class="sec"><h3>Spectacle · opsis</h3><div class="body">
+    </div></details>
+    <details class="sec"><summary>Spectacle · opsis<span class="opt">library booth · before the quiz</span></summary><div class="body">
       <label class="fld wide">scene.setting<input type="text" id="s-setting" value="a library tutoring booth, the evening before a quiz"></label>
       <label class="fld">relationship<input type="text" id="s-relationship" value="a paid tutor and a resentful teenager"></label>
       <label class="fld">stakes<input type="text" id="s-stakes" value="the quiz is tomorrow morning"></label>
@@ -1643,26 +1871,26 @@ ${railHtml({ active: 'compose', brand: 'drama composer', sub: 'assemble a drama-
       <label class="fld wide">object<input type="text" id="s-object" value="a half-finished worksheet with log(a+b) = log a + log b circled"></label>
       <label class="fld">stage_direction_policy<select id="s-stagepolicy">${composeOptions(V.stagePolicy, 'short')}</select></label>
       <label class="fld">stage_direction_style<select id="s-stagestyle">${composeOptions(V.stageStyle, 'object_business')}</select></label>
-    </div></section>
-    <section class="sec"><h3>Cast · who plays each role</h3><div class="body">
+    </div></details>
+    <details class="sec"><summary>Cast · who plays each role<span class="opt">sonnet cast · gpt critic</span></summary><div class="body">
       <label class="fld">director<input type="text" id="c-director" list="castList" value="llm:api:sonnet"></label>
       <label class="fld">tutor<input type="text" id="c-tutor" list="castList" value="llm:api:sonnet"></label>
       <label class="fld">learner<input type="text" id="c-learner" list="castList" value="llm:api:sonnet"></label>
       <label class="fld">critic<input type="text" id="c-critic" list="castList" value="llm:api:gpt"></label>
       <label class="fld">default_backend<input type="text" id="c-backend" value="api"></label>
       <div class="muted" style="grid-column:1/-1">grammar: <code>human</code> · <code>llm:&lt;backend&gt;:&lt;model&gt;</code> · <code>mock</code> — backends claude · codex · gemini · api</div>
-    </div></section>
-    <section class="sec"><h3>Audience · critic config</h3><div class="body">
+    </div></details>
+    <details class="sec"><summary>Audience · critic config<span class="opt">4-judge panel · 3-of-4</span></summary><div class="body">
       <label class="fld wide">panel — comma-separated judge models<input type="text" id="a-panel" list="panelList" value="gpt, deepseek-v4-pro, qwen3.7-max, gemini-3.5-flash"></label>
       <label class="fld">consensus<input type="text" id="a-consensus" value="3-of-4"></label>
       <label class="fld">grading<select id="a-grading">${composeOptions(V.grading, 'graded')}</select></label>
       <label class="fld">blinding<select id="a-blinding">${composeOptions(V.blinding, 'arm-blind')}</select></label>
       <label class="fld">rubric<input type="text" id="a-rubric" value="poetics-v1.0"></label>
-    </div></section>
-    <section class="sec"><h3>Turn plan · per-turn adaptation moves</h3><div class="body one">
+    </div></details>
+    <details class="sec"><summary>Turn plan · per-turn adaptation moves<span class="opt"><span id="turnPlanCount">4 turns</span> · live-validated</span></summary><div class="body one">
       <div id="turnPlan"></div>
-      <div class="addbar"><button type="button" class="btn" id="addTurn">+ add turn</button><span class="muted">⚠ anti-pattern moves are checked against the turn's target form by the ontology, live.</span></div>
-    </div></section>
+      <div class="addbar"><button type="button" class="btn" id="addTurn">+ add turn</button><button type="button" class="btn" id="suggestTurn" title="Sample a valid turn from the ontology, conditioned on the tutor architecture (alter-egos)">✨ suggest a turn</button><span class="muted">⚠ anti-pattern moves are checked against the turn's target form by the ontology, live.</span></div>
+    </div></details>
   </form>
   <aside class="cside">
     <div class="panel"><div class="panel-head">ontology validation · live</div><div id="validationPanel"></div></div>
@@ -1714,7 +1942,7 @@ function turnRowHtml(t){
     + '<div class="moves">'+moveChecks+'</div>'
     + '</div>';
 }
-function renderTurns(){ $('turnPlan').innerHTML = turns.length ? turns.map(turnRowHtml).join('') : '<div class="muted">No turns. Add one.</div>'; }
+function renderTurns(){ $('turnPlan').innerHTML = turns.length ? turns.map(turnRowHtml).join('') : '<div class="muted">No turns. Add one.</div>'; var c=$('turnPlanCount'); if(c) c.textContent = turns.length + ' turn' + (turns.length===1?'':'s'); }
 function readTurnsFromDom(){
   var next = [];
   document.querySelectorAll('#turnPlan .turn-row').forEach(function(row){
@@ -1816,6 +2044,14 @@ $('turnPlan').addEventListener('click', function(e){
   readTurnsFromDom(); turns.splice(rowIndex(e.target.closest('.turn-row')), 1); renderTurns(); scheduleValidate();
 });
 $('addTurn').addEventListener('click', function(){ readTurnsFromDom(); turns.push({ turn: turns.length ? turns[turns.length-1].turn : 1, role:'tutor', target:'', moves:[] }); renderTurns(); scheduleValidate(); });
+$('suggestTurn').addEventListener('click', async function(){
+  readTurnsFromDom();
+  var targets = Array.prototype.slice.call(document.querySelectorAll('.f-target:checked')).map(function(c){ return c.value; });
+  try {
+    var r = await postJson('/api/compose/suggest', { targets: targets, role: 'tutor', architecture: val('t-arch'), seed: 'suggest-' + turns.length + '-' + Date.now() });
+    if (r && r.turn) { turns.push(r.turn); renderTurns(); scheduleValidate(); }
+  } catch (e) { /* sampler unavailable; leave the plan unchanged */ }
+});
 $('writeBtn').addEventListener('click', function(){ write(false); });
 document.addEventListener('change', function(e){ if (e.target.closest('#cform') && !e.target.closest('#turnPlan')) scheduleValidate(); });
 document.addEventListener('input', function(e){ if (e.target.closest('#cform') && !e.target.closest('#turnPlan')) scheduleValidate(); });
@@ -1827,6 +2063,273 @@ $('themeToggle').addEventListener('click', function(){
 try { if (localStorage.getItem('poetics-theme')==='dark') document.documentElement.setAttribute('data-theme','dark'); } catch (_e) {}
 renderTurns();
 validate();
+</script>
+</body>
+</html>`;
+}
+
+// ── Compose mode tabs (shared between Spec + Live) ────────────────────────────
+// Two ways to compose: Spec (batch — write a full .drama.yaml) and Live (sit-in —
+// play one seat in real time). One markup+CSS source so the two pages can't drift.
+function modeTabsHtml(active) {
+  const tab = (key, href, label, hint) =>
+    `<a class="modetab${key === active ? ' on' : ''}" href="${href}"${
+      key === active ? ' aria-current="page"' : ''
+    } title="${hint}">${label}</a>`;
+  return `<nav class="modetabs" aria-label="compose mode">
+    ${tab('spec', '/compose', '◐ Spec · batch', 'Assemble a full drama spec and write it as YAML for batch generation')}
+    ${tab('live', '/compose/live', '● Live · sit-in', 'Sit in: you play one seat, the AI plays the other, turn by turn')}
+  </nav>`;
+}
+const MODETABS_CSS = `.modetabs{ display:flex; gap:3px; padding:9px 18px 0; background:var(--paper-3); border-bottom:1px solid var(--rule); }
+.modetab{ font:12px ui-monospace,monospace; text-decoration:none; color:var(--ink-3); padding:7px 14px; border:1px solid var(--rule); border-bottom:none; background:var(--paper-2); border-radius:7px 7px 0 0; }
+.modetab:hover{ color:var(--ink); }
+.modetab.on{ color:var(--moss-deep); background:var(--paper-4); font-weight:600; position:relative; top:1px; }`;
+
+// ── Live "sit-in" compose (GET /compose/live) ─────────────────────────────────
+// A real-time chat where the human takes one chair (tutor or learner) and the AI
+// takes the other, driven by the SAME turn engines the scored runs use (so the
+// sit-in can't drift from them). METERED: each AI turn is a real LLM call unless
+// "free preview" (mock deps) is on. Server engine: services/poetics/liveCompose.js.
+function renderComposeLiveHtml() {
+  const V = COMPOSER_VOCAB;
+  return `${pageHead({
+    title: 'Live Compose · poetics',
+    css: `
+code{ font-family: ui-monospace,'SF Mono',Menlo,monospace; background:rgba(127,127,127,.15); padding:0 3px; border-radius:3px; }
+kbd{ font:11px ui-monospace,monospace; background:var(--paper-2); border:1px solid var(--rule); border-bottom-width:2px; border-radius:4px; padding:1px 5px; color:var(--ink-2); }
+${MODETABS_CSS}
+.live{ display:grid; grid-template-columns: minmax(0,1fr) 270px; align-items:start; max-width:1180px; margin:0 auto; }
+@media (max-width:900px){ .live{ grid-template-columns:1fr; } }
+.stage{ display:flex; flex-direction:column; min-height:calc(100vh - 95px); padding:18px 20px; }
+/* setup card */
+.setup{ border:1px solid var(--rule); background:var(--paper-4); padding:18px; display:flex; flex-direction:column; gap:16px; }
+.setup--min{ display:none; }
+.setup__head h2{ margin:0 0 4px; font:600 19px/1.2 Georgia,serif; color:var(--moss-deep); }
+.setup__lede{ margin:0; color:var(--ink-3); font-size:13px; max-width:62ch; }
+.seatpick{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+@media (max-width:560px){ .seatpick{ grid-template-columns:1fr; } }
+.seat{ text-align:left; border:1px solid var(--rule); background:var(--paper-3); padding:13px 15px; cursor:pointer; display:flex; flex-direction:column; gap:2px; border-radius:8px; transition:border-color .12s,background .12s; }
+.seat:hover{ border-color:var(--moss); }
+.seat--on{ border-color:var(--moss-deep); background:var(--moss-soft); box-shadow:inset 3px 0 0 var(--moss-deep); }
+.seat__k{ font:10px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-4); }
+.seat__v{ font:600 17px/1.1 Georgia,serif; color:var(--ink); }
+.seat__d{ font-size:11.5px; color:var(--ink-3); margin-top:3px; }
+.setgrid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:11px 14px; }
+.grp{ display:contents; }
+label.fld{ display:flex; flex-direction:column; gap:4px; font:11px ui-monospace,monospace; color:var(--ink-3); text-transform:uppercase; letter-spacing:.04em; }
+label.fld.wide{ grid-column:1 / -1; }
+input[type=text],input[type=number],select{ width:100%; font:13px ui-monospace,monospace; color:var(--ink); background:var(--paper); border:1px solid var(--rule); padding:6px 8px; border-radius:5px; }
+.dry{ display:inline-flex; align-items:center; gap:7px; font:12px ui-monospace,monospace; color:var(--ink-2); cursor:pointer; }
+.setup__go{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+.btn{ font:12px ui-monospace,monospace; border:1px solid var(--rule); background:var(--paper-4); color:var(--ink); padding:8px 14px; cursor:pointer; border-radius:6px; }
+.btn:disabled{ opacity:.5; cursor:default; }
+.btn.primary{ background:var(--moss-deep); color:var(--paper); border-color:var(--moss-deep); font-weight:600; }
+.metered{ font:11px ui-monospace,monospace; color:var(--brick-d); }
+.metered--free{ color:var(--moss); }
+.err{ color:var(--brick-d); font:12px ui-monospace,monospace; min-height:15px; }
+/* transcript */
+.transcript{ flex:1; display:flex; flex-direction:column; gap:13px; padding:6px 2px 16px; overflow-y:auto; }
+.t-empty{ color:var(--ink-4); font-style:italic; text-align:center; padding:40px 0; }
+.line{ display:flex; flex-direction:column; gap:3px; max-width:78%; }
+.line--tutor{ align-self:flex-start; align-items:flex-start; }
+.line--learner{ align-self:flex-end; align-items:flex-end; }
+.who{ font:10px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.07em; color:var(--ink-4); padding:0 4px; }
+.bubble{ padding:9px 13px; border-radius:13px; font-size:13.5px; line-height:1.5; border:1px solid var(--rule); white-space:normal; }
+.line--tutor .bubble{ background:var(--moss-soft); border-color:var(--moss); border-bottom-left-radius:4px; }
+.line--learner .bubble{ background:var(--ochre-soft); border-color:var(--ochre); border-bottom-right-radius:4px; }
+.line--mine .bubble{ box-shadow:0 1px 0 rgba(0,0,0,.05); outline:2px solid var(--ink); outline-offset:-2px; }
+.line--ghost .bubble{ opacity:.7; }
+.dots{ display:inline-flex; gap:4px; align-items:center; height:18px; }
+.dots i{ width:6px; height:6px; border-radius:50%; background:var(--ink-3); animation:blink 1.2s infinite ease-in-out; }
+.dots i:nth-child(2){ animation-delay:.2s; } .dots i:nth-child(3){ animation-delay:.4s; }
+@keyframes blink{ 0%,80%,100%{ opacity:.25; } 40%{ opacity:1; } }
+/* composer */
+.composer{ position:sticky; bottom:0; background:var(--paper); border-top:1px solid var(--rule); padding:12px 2px 10px; }
+.composer__row{ display:flex; gap:9px; align-items:flex-end; }
+.composer textarea{ flex:1; font:14px/1.5 -apple-system,system-ui,sans-serif; color:var(--ink); background:var(--paper-4); border:1px solid var(--rule); border-radius:9px; padding:9px 12px; min-height:2.6rem; max-height:180px; resize:none; overflow-y:auto; }
+.composer textarea:disabled{ opacity:.55; }
+.composer__hint{ font:11px ui-monospace,monospace; color:var(--ink-4); padding:6px 4px 0; }
+/* side rail */
+.liveside{ position:sticky; top:95px; padding:18px 16px; display:flex; flex-direction:column; gap:13px; border-left:1px solid var(--rule); background:var(--paper-3); min-height:calc(100vh - 95px); }
+.lpanel{ border:1px solid var(--rule); background:var(--paper-4); border-radius:7px; overflow:hidden; }
+.lpanel__h{ padding:7px 11px; font:600 10px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.07em; color:var(--ink-2); background:var(--paper-2); border-bottom:1px solid var(--rule); }
+.lpanel__b{ padding:11px; font:12px/1.5 ui-monospace,monospace; color:var(--ink-2); }
+.lpanel__b--col{ display:flex; flex-direction:column; gap:8px; }
+.spend{ display:flex; flex-direction:column; gap:2px; }
+.spend__usd{ font:600 22px/1 Georgia,serif; color:var(--moss-deep); }
+.spend__sub{ font:11px ui-monospace,monospace; color:var(--ink-4); }
+.saveres{ font:11px ui-monospace,monospace; color:var(--ink-3); min-height:14px; }
+.muted{ color:var(--ink-4); font-style:italic; }
+`,
+  })}
+<body>
+${railHtml({
+  active: 'compose',
+  brand: 'live compose',
+  sub: 'sit in · you play one seat, the AI plays the other, turn by turn',
+})}
+${modeTabsHtml('live')}
+<div class="live">
+  <main class="stage">
+    <section class="setup" id="setup">
+      <div class="setup__head">
+        <h2>Sit in on a scene</h2>
+        <p class="setup__lede">Take one chair — Learner or Tutor — and the AI takes the other, driven by the same engines the scored runs use. Drive the tempo turn by turn, then save the transcript to run through the critics later.</p>
+      </div>
+      <div class="seatpick">
+        <button type="button" class="seat seat--on" id="seatLearner">
+          <span class="seat__k">I play the</span><span class="seat__v">Learner</span>
+          <span class="seat__d">the AI is the tutor — probe how it teaches under pressure</span>
+        </button>
+        <button type="button" class="seat" id="seatTutor">
+          <span class="seat__k">I play the</span><span class="seat__v">Tutor</span>
+          <span class="seat__d">the AI is the learner — stage a recognition, test a persona</span>
+        </button>
+      </div>
+      <div class="setgrid">
+        <label class="fld wide">topic<input id="f-topic" type="text" value="logarithms as the inverse of exponentiation"></label>
+        <label class="fld wide">hamartia — the misconception in play (optional)<input id="f-hamartia" type="text" value="treats log(a+b) as log a + log b"></label>
+        <div class="grp" id="grpTutor">
+          <label class="fld">AI tutor · prompt<select id="f-prompt">${composeOptions(['recognition', 'base'], 'recognition')}</select></label>
+          <label class="fld">AI tutor · architecture<select id="f-tarch">${composeOptions(['ego_superego', 'ego_only'], 'ego_superego')}</select></label>
+        </div>
+        <div class="grp" id="grpLearner" hidden>
+          <label class="fld">AI learner · persona<select id="f-persona">${composeOptions(V.personas, 'struggling_anxious')}</select></label>
+          <label class="fld">AI learner · architecture<select id="f-larch">${composeOptions(V.learnerArch, 'ego_superego_recognition_authentic')}</select></label>
+        </div>
+        <label class="fld">opening speaker<select id="f-open">${composeOptions(['tutor', 'learner'], 'tutor')}</select></label>
+        <label class="fld">max turns<input id="f-max" type="number" min="2" max="40" value="16"></label>
+      </div>
+      <label class="dry"><input type="checkbox" id="f-mock"> ✦ free preview — canned AI lines, no spend (logarithms demo)</label>
+      <div class="setup__go">
+        <button type="button" class="btn primary" id="beginBtn">Begin the scene →</button>
+        <span class="metered" id="meterNote">metered · real LLM calls per AI turn · localhost only</span>
+      </div>
+      <div class="err" id="setupErr"></div>
+    </section>
+
+    <div class="transcript" id="transcript" hidden></div>
+
+    <form class="composer" id="composerForm" hidden onsubmit="return false">
+      <div class="composer__row">
+        <textarea id="composerInput" rows="1" placeholder="your line…"></textarea>
+        <button type="button" class="btn primary" id="sendBtn">send</button>
+      </div>
+      <div class="composer__hint" id="composerHint"></div>
+    </form>
+  </main>
+
+  <aside class="liveside" id="liveside" hidden>
+    <div class="lpanel"><div class="lpanel__h">scene</div><div class="lpanel__b" id="sceneMeta"></div></div>
+    <div class="lpanel"><div class="lpanel__h">spend</div><div class="lpanel__b"><div class="spend"><span class="spend__usd" id="spendUsd">$0.0000</span><span class="spend__sub" id="spendTok">0 tokens</span></div></div></div>
+    <div class="lpanel"><div class="lpanel__h">save transcript</div><div class="lpanel__b lpanel__b--col">
+      <input id="saveName" type="text" placeholder="filename (optional)">
+      <button type="button" class="btn" id="saveBtn">Save to exports/</button>
+      <div class="saveres" id="saveRes"></div>
+    </div></div>
+    <div class="lpanel"><div class="lpanel__h">what is this</div><div class="lpanel__b"><span class="muted">Hand-probing the instrument. Human-as-learner tests how the tutor teaches; human-as-tutor lets you stage a recognition to test judge-gullibility (paper §D6).</span></div></div>
+  </aside>
+</div>
+<script>
+var $ = function(id){ return document.getElementById(id); };
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function nl2br(s){ return esc(s).replace(/\\n/g, '<br>'); }
+var S = { id:null, mock:false, humanRole:'learner', aiRole:'tutor', status:'idle', nextSpeaker:null };
+
+function pickSeat(role){
+  S.humanRole = role; S.aiRole = role==='learner' ? 'tutor' : 'learner';
+  $('seatLearner').classList.toggle('seat--on', role==='learner');
+  $('seatTutor').classList.toggle('seat--on', role==='tutor');
+  $('grpTutor').hidden = role!=='learner';
+  $('grpLearner').hidden = role!=='tutor';
+}
+function autoGrow(el){ if(!el) return; el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,180)+'px'; }
+
+async function postJson(url, body){
+  var res = await fetch(url, { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(body) });
+  var data = {}; try { data = await res.json(); } catch(_e){}
+  if(!res.ok){ var err = new Error(data.error || res.statusText); Object.assign(err, data); throw err; }
+  return data;
+}
+function whoLabel(role, by){ return role + ' · ' + (by==='human' ? 'you' : 'ai'); }
+
+function renderSession(sess){
+  S.id = sess.id; S.status = sess.status; S.nextSpeaker = sess.nextSpeaker;
+  S.humanRole = sess.humanRole; S.aiRole = sess.aiRole;
+  $('setup').classList.add('setup--min');
+  $('transcript').hidden = false; $('liveside').hidden = false; $('composerForm').hidden = false;
+  var html = '';
+  sess.transcript.forEach(function(t){
+    html += '<div class="line line--'+t.role+(t.by==='human'?' line--mine':'')+'">'
+      + '<div class="who">'+esc(whoLabel(t.role, t.by))+'</div>'
+      + '<div class="bubble">'+nl2br(t.text)+'</div></div>';
+  });
+  $('transcript').innerHTML = html || '<div class="t-empty">the stage is set — make the first move</div>';
+  $('transcript').scrollTop = $('transcript').scrollHeight;
+  var tok = (Number(sess.spend.inputTokens||0)+Number(sess.spend.outputTokens||0));
+  $('spendUsd').textContent = '$'+Number(sess.spend.estimatedCostUsd||0).toFixed(4);
+  $('spendTok').textContent = tok.toLocaleString()+' tokens · '+sess.turnCount+'/'+sess.maxTurns+' turns';
+  $('sceneMeta').innerHTML = 'you are the <b>'+esc(sess.humanRole)+'</b><br>AI is the <b>'+esc(sess.aiRole)+'</b><br>'
+    + (sess.aiRole==='tutor' ? ('cell <code>'+esc(sess.tutorCell)+'</code>') : ('persona <code>'+esc(sess.persona)+'</code>'))
+    + (S.mock ? '<br><span class="metered--free">free preview</span>' : '');
+  var done = sess.status!=='live';
+  var yours = sess.nextSpeaker===sess.humanRole && !done;
+  $('composerInput').disabled = !yours; $('sendBtn').disabled = !yours;
+  if(done){ $('composerHint').innerHTML = 'scene ended ('+esc(sess.stoppedReason||sess.status)+') — save it, or reload to start another'; }
+  else if(yours){ $('composerHint').innerHTML = '<kbd>Enter</kbd> send · <kbd>Shift</kbd>+<kbd>Enter</kbd> newline · you are the <b>'+esc(sess.humanRole)+'</b>'; setTimeout(function(){ $('composerInput').focus(); }, 0); }
+  else { $('composerHint').textContent = 'the '+sess.aiRole+' is thinking…'; }
+}
+function appendOptimistic(text){
+  var t = $('transcript');
+  t.insertAdjacentHTML('beforeend',
+    '<div class="line line--'+S.humanRole+' line--mine"><div class="who">'+esc(whoLabel(S.humanRole,'human'))+'</div><div class="bubble">'+nl2br(text)+'</div></div>'
+    + '<div class="line line--'+S.aiRole+' line--ghost"><div class="who">'+esc(whoLabel(S.aiRole,'ai'))+'</div><div class="bubble"><span class="dots"><i></i><i></i><i></i></span></div></div>');
+  t.scrollTop = t.scrollHeight;
+}
+async function refresh(){ try { var r = await fetch('/api/compose/live/'+S.id); var d = await r.json(); if(d.session) renderSession(d.session); } catch(_e){} }
+
+async function begin(){
+  $('setupErr').textContent=''; S.mock = $('f-mock').checked;
+  var spec = { humanRole:S.humanRole, topic:$('f-topic').value, hamartia:$('f-hamartia').value,
+    promptType:$('f-prompt').value, tutorArchitecture:$('f-tarch').value,
+    persona:$('f-persona').value, learnerArchitecture:$('f-larch').value,
+    openingSpeaker:$('f-open').value, maxTurns:Number($('f-max').value)||16 };
+  $('beginBtn').disabled=true; $('beginBtn').textContent='setting the scene…';
+  try { var r = await postJson('/api/compose/live/start', { spec:spec, mock:S.mock }); renderSession(r.session); }
+  catch(e){ $('setupErr').textContent='could not start: '+(e.message||e); $('beginBtn').disabled=false; $('beginBtn').textContent='Begin the scene →'; }
+}
+async function send(){
+  var text = $('composerInput').value.trim();
+  if(!text || S.status!=='live') return;
+  $('composerInput').disabled=true; $('sendBtn').disabled=true;
+  appendOptimistic(text); $('composerHint').textContent='the '+S.aiRole+' is thinking…';
+  try { var r = await postJson('/api/compose/live/turn', { id:S.id, text:text, mock:S.mock });
+    $('composerInput').value=''; autoGrow($('composerInput')); renderSession(r.session); }
+  catch(e){ $('composerHint').innerHTML='<span class="metered">turn failed: '+esc(e.message||String(e))+'</span>'; await refresh(); }
+}
+async function save(){
+  if(!S.id) return; $('saveRes').textContent='saving…';
+  try { var r = await postJson('/api/compose/live/save', { id:S.id, filename:$('saveName').value.trim() });
+    $('saveRes').innerHTML='saved <code>'+esc(r.path)+'</code> · '+r.bytes+' bytes'; }
+  catch(e){ $('saveRes').textContent='save failed: '+(e.message||e); }
+}
+
+$('seatLearner').addEventListener('click', function(){ pickSeat('learner'); });
+$('seatTutor').addEventListener('click', function(){ pickSeat('tutor'); });
+$('beginBtn').addEventListener('click', begin);
+$('sendBtn').addEventListener('click', send);
+$('saveBtn').addEventListener('click', save);
+$('composerInput').addEventListener('input', function(){ autoGrow($('composerInput')); });
+$('composerInput').addEventListener('keydown', function(e){ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); send(); } });
+$('f-mock').addEventListener('change', function(){
+  var on = $('f-mock').checked;
+  $('meterNote').textContent = on ? 'free preview · canned AI lines · no spend' : 'metered · real LLM calls per AI turn · localhost only';
+  $('meterNote').classList.toggle('metered--free', on);
+});
+$('themeToggle').addEventListener('click', function(){ var d=document.documentElement; var nx=d.getAttribute('data-theme')==='dark'?'':'dark'; if(nx)d.setAttribute('data-theme','dark'); else d.removeAttribute('data-theme'); try{ localStorage.setItem('poetics-theme',nx); }catch(_e){} });
+try { if(localStorage.getItem('poetics-theme')==='dark') document.documentElement.setAttribute('data-theme','dark'); } catch(_e){}
+pickSeat('learner');
 </script>
 </body>
 </html>`;
@@ -1859,26 +2362,9 @@ function isSafeBundleName(name) {
 }
 
 function renderOntologyHtml() {
-  return `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ontology Atlas · poetics</title>
-<style>
-:root{ color-scheme: light dark; --paper:#F4EEDD; --paper-2:#ECE3CB; --paper-3:#F8F2E2; --paper-4:#FBF6E8; --ink:#14100C; --ink-2:#2C241B; --ink-3:#5C5040; --ink-4:#8C7E6A; --linen:#D8C7A9; --moss:#56683A; --moss-deep:#3A4824; --moss-soft:#E3E6CE; --brick:#A53E2E; --brick-d:#7C2C1F; --brick-soft:#F3DDD6; --ochre:#C08A3E; --ochre-d:#8C5F1F; --ochre-soft:#F5E6C2; --indigo:#5A6797; --indigo-soft:#E2E5F0; --rule:rgba(28,22,16,.18); --rule-soft:rgba(28,22,16,.10); }
-[data-theme="dark"]{ --paper:#14100C; --paper-2:#1B1612; --paper-3:#1F1A14; --paper-4:#221C16; --ink:#F4EEDD; --ink-2:#E0D8C3; --ink-3:#B9AD96; --ink-4:#8C7E6A; --linen:#3A322A; --moss:#8DA868; --moss-deep:#B5CD92; --moss-soft:#2C3520; --brick:#E36953; --brick-d:#F08A75; --brick-soft:#3A1C16; --ochre:#E6B265; --ochre-d:#F3CB88; --ochre-soft:#3A2C12; --indigo:#98A6D4; --indigo-soft:#1F2434; --rule:rgba(244,238,221,.18); --rule-soft:rgba(244,238,221,.08); }
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{ background:var(--paper); color:var(--ink); font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; }
-code,pre{ font-family: ui-monospace,'SF Mono',Menlo,monospace; }
-.rail{ position:sticky; top:0; z-index:10; background:var(--paper-3); border-bottom:1px solid var(--rule); }
-.rail__inner{ display:flex; align-items:center; gap:14px; padding:10px 18px; }
-.rail__brand{ font-family:Georgia,serif; font-style:italic; font-size:18px; color:var(--moss-deep); }
-.rail__sub{ color:var(--ink-3); font-size:12px; flex:1; }
-.rail__arc,.rail__btn{ display:inline-flex; align-items:center; gap:6px; font:12px ui-monospace,monospace; text-decoration:none; color:var(--ink-2); border:1px solid var(--rule); padding:5px 10px; background:var(--paper-4); cursor:pointer; }
-.rail__arc{ color:#fff; background:var(--brick); border-color:var(--brick-d); }
-[data-theme="dark"] .rail__arc{ color:var(--paper); }
+  return `${pageHead({
+    title: 'Ontology Atlas · poetics',
+    css: `
 .controls{ position:sticky; top:51px; z-index:9; display:flex; flex-wrap:wrap; align-items:center; gap:10px 18px; padding:10px 18px; background:var(--paper-2); border-bottom:1px solid var(--rule); }
 .lenses{ display:inline-flex; border:1px solid var(--rule); }
 .lens{ font:12px ui-monospace,monospace; padding:6px 14px; background:var(--paper-4); color:var(--ink-2); border:0; border-right:1px solid var(--rule); cursor:pointer; }
@@ -1926,8 +2412,8 @@ button.chip{ font:12px ui-monospace,monospace; cursor:default; }
 .src h4{ margin:0 0 4px; font:600 12px ui-monospace,monospace; color:var(--ink-2); }
 .src pre{ margin:0 0 8px; padding:10px; background:var(--paper-3); border:1px solid var(--rule); font:11px/1.5 ui-monospace,monospace; color:var(--ink-2); white-space:pre-wrap; max-height:340px; overflow:auto; }
 .loading{ color:var(--ink-4); font-style:italic; padding:24px; }
-</style>
-</head>
+`,
+  })}
 <body>
 ${railHtml({ active: 'ontology', brand: 'ontology atlas', sub: 'the shared TBox · system-wide, and the tutor &amp; learner role projections' })}
 <div class="controls">
@@ -2178,24 +2664,9 @@ function renderRubricHtml() {
     ? `<div class="blurb" style="border-left-color:var(--brick);background:var(--brick-soft)">could not load the rubric: ${e(rubric.__error)}</div>`
     : '';
 
-  return `<!doctype html>
-<html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>poetics rubric · machine spirits</title>
-<style>
-:root{ color-scheme: light dark; --paper:#F4EEDD; --paper-2:#ECE3CB; --paper-3:#F8F2E2; --paper-4:#FBF6E8; --ink:#14100C; --ink-2:#2C241B; --ink-3:#5C5040; --ink-4:#8C7E6A; --linen:#D8C7A9; --moss:#56683A; --moss-deep:#3A4824; --moss-soft:#E3E6CE; --brick:#A53E2E; --brick-d:#7C2C1F; --brick-soft:#F3DDD6; --ochre:#C08A3E; --ochre-d:#8C5F1F; --ochre-soft:#F5E6C2; --indigo:#5A6797; --indigo-soft:#E2E5F0; --rule:rgba(28,22,16,.18); --rule-soft:rgba(28,22,16,.10); }
-[data-theme="dark"]{ --paper:#14100C; --paper-2:#1B1612; --paper-3:#1F1A14; --paper-4:#221C16; --ink:#F4EEDD; --ink-2:#E0D8C3; --ink-3:#B9AD96; --ink-4:#8C7E6A; --linen:#3A322A; --moss:#8DA868; --moss-deep:#B5CD92; --moss-soft:#2C3520; --brick:#E36953; --brick-d:#F08A75; --brick-soft:#3A1C16; --ochre:#E6B265; --ochre-d:#F3CB88; --ochre-soft:#3A2C12; --indigo:#98A6D4; --indigo-soft:#1F2434; --rule:rgba(244,238,221,.18); --rule-soft:rgba(244,238,221,.08); }
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{ background:var(--paper); color:var(--ink); font:14px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; }
-em{ font-style:italic; }
-.rail{ position:sticky; top:0; z-index:10; background:var(--paper-3); border-bottom:1px solid var(--rule); }
-.rail__inner{ display:flex; align-items:center; gap:14px; padding:10px 18px; }
-.rail__brand{ font-family:Georgia,serif; font-style:italic; font-size:18px; color:var(--moss-deep); }
-.rail__sub{ color:var(--ink-3); font-size:12px; flex:1; }
-.rail__arc,.rail__btn{ display:inline-flex; align-items:center; gap:6px; font:12px ui-monospace,monospace; text-decoration:none; color:var(--ink-2); border:1px solid var(--rule); padding:5px 10px; background:var(--paper-4); cursor:pointer; }
-.rail__arc{ color:#fff; background:var(--brick); border-color:var(--brick-d); }
-[data-theme="dark"] .rail__arc{ color:var(--paper); }
+  return `${pageHead({
+    title: 'poetics rubric · machine spirits',
+    css: `
 main{ max-width:900px; margin:0 auto; padding:22px 22px 64px; }
 .blurb{ font-size:13px; color:var(--ink-3); border-left:3px solid var(--moss); background:var(--moss-soft); padding:10px 14px; margin:0 0 18px; }
 .blurb a{ color:var(--moss-deep); }
@@ -2212,7 +2683,8 @@ h2.sec-h{ font:600 12px/1 ui-monospace,monospace; text-transform:uppercase; lett
 .dim__h .wt{ font:600 11px ui-monospace,monospace; color:var(--moss-deep); background:var(--moss-soft); border:1px solid var(--moss); padding:1px 7px; border-radius:9px; }
 .dim__desc{ margin:0; padding:11px 14px; color:var(--ink-2); }
 .crit{ border:0; border-top:1px solid var(--rule-soft); }
-</style></head>
+`,
+  })}
 <body>
 ${railHtml({ active: 'rubric', brand: 'poetics rubric', sub: 'the 6 dramatic-form dimensions critics score against' })}
 <main>
@@ -2251,26 +2723,9 @@ ${railHtml({ active: 'rubric', brand: 'poetics rubric', sub: 'the 6 dramatic-for
 // checker's findings, and — the conceptual payload — the hidden-state-use ledger that
 // licenses the claim boundary "counterfactual_revision_not_online_adaptation".
 function renderReplaysHtml() {
-  return `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Discursive Replays · poetics</title>
-<style>
-:root{ color-scheme: light dark; --paper:#F4EEDD; --paper-2:#ECE3CB; --paper-3:#F8F2E2; --paper-4:#FBF6E8; --ink:#14100C; --ink-2:#2C241B; --ink-3:#5C5040; --ink-4:#8C7E6A; --linen:#D8C7A9; --moss:#56683A; --moss-deep:#3A4824; --moss-soft:#E3E6CE; --brick:#A53E2E; --brick-d:#7C2C1F; --brick-soft:#F3DDD6; --ochre:#C08A3E; --ochre-d:#8C5F1F; --ochre-soft:#F5E6C2; --indigo:#5A6797; --indigo-soft:#E2E5F0; --rule:rgba(28,22,16,.18); --rule-soft:rgba(28,22,16,.10); }
-[data-theme="dark"]{ --paper:#14100C; --paper-2:#1B1612; --paper-3:#1F1A14; --paper-4:#221C16; --ink:#F4EEDD; --ink-2:#E0D8C3; --ink-3:#B9AD96; --ink-4:#8C7E6A; --linen:#3A322A; --moss:#8DA868; --moss-deep:#B5CD92; --moss-soft:#2C3520; --brick:#E36953; --brick-d:#F08A75; --brick-soft:#3A1C16; --ochre:#E6B265; --ochre-d:#F3CB88; --ochre-soft:#3A2C12; --indigo:#98A6D4; --indigo-soft:#1F2434; --rule:rgba(244,238,221,.18); --rule-soft:rgba(244,238,221,.08); }
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{ background:var(--paper); color:var(--ink); font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; }
-code,pre{ font-family: ui-monospace,'SF Mono',Menlo,monospace; }
-.rail{ position:sticky; top:0; z-index:10; background:var(--paper-3); border-bottom:1px solid var(--rule); }
-.rail__inner{ display:flex; align-items:center; gap:14px; padding:10px 18px; }
-.rail__brand{ font-family:Georgia,serif; font-style:italic; font-size:18px; color:var(--moss-deep); }
-.rail__sub{ color:var(--ink-3); font-size:12px; flex:1; }
-.rail__arc,.rail__btn{ display:inline-flex; align-items:center; gap:6px; font:12px ui-monospace,monospace; text-decoration:none; color:var(--ink-2); border:1px solid var(--rule); padding:5px 10px; background:var(--paper-4); cursor:pointer; }
-.rail__arc{ color:#fff; background:var(--brick); border-color:var(--brick-d); }
-[data-theme="dark"] .rail__arc{ color:var(--paper); }
+  return `${pageHead({
+    title: 'Discursive Replays · poetics',
+    css: `
 .controls{ position:sticky; top:51px; z-index:9; display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px; padding:9px 18px; background:var(--paper-2); border-bottom:1px solid var(--rule); }
 .controls label{ font:12px ui-monospace,monospace; color:var(--ink-3); display:inline-flex; align-items:center; gap:6px; }
 .controls select{ font:12px ui-monospace,monospace; background:var(--paper-4); color:var(--ink); border:1px solid var(--rule); padding:4px 8px; }
@@ -2341,8 +2796,8 @@ section.sec{ border:1px solid var(--rule); background:var(--paper-4); margin-bot
 .risk.high{ color:var(--brick-d); border-color:var(--brick); background:var(--brick-soft); }
 .muted{ color:var(--ink-4); font-style:italic; }
 .loading{ color:var(--ink-4); font-style:italic; padding:24px; }
-</style>
-</head>
+`,
+  })}
 <body>
 ${railHtml({ active: 'replays', brand: 'discursive replays', sub: 'counterfactual revisions of public transcripts · diffed against the originals &amp; locally gated' })}
 <div class="controls">
@@ -2575,26 +3030,9 @@ loadBundles();
 }
 
 function renderRunsHtml() {
-  return `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Run launcher · poetics</title>
-<style>
-:root{ color-scheme: light dark; --paper:#F4EEDD; --paper-2:#ECE3CB; --paper-3:#F8F2E2; --paper-4:#FBF6E8; --ink:#14100C; --ink-2:#2C241B; --ink-3:#5C5040; --ink-4:#8C7E6A; --linen:#D8C7A9; --moss:#56683A; --moss-deep:#3A4824; --moss-soft:#E3E6CE; --brick:#A53E2E; --brick-d:#7C2C1F; --brick-soft:#F3DDD6; --ochre:#C08A3E; --ochre-d:#8C5F1F; --ochre-soft:#F5E6C2; --indigo:#5A6797; --indigo-soft:#E2E5F0; --rule:rgba(28,22,16,.18); --rule-soft:rgba(28,22,16,.10); }
-[data-theme="dark"]{ --paper:#14100C; --paper-2:#1B1612; --paper-3:#1F1A14; --paper-4:#221C16; --ink:#F4EEDD; --ink-2:#E0D8C3; --ink-3:#B9AD96; --ink-4:#8C7E6A; --linen:#3A322A; --moss:#8DA868; --moss-deep:#B5CD92; --moss-soft:#2C3520; --brick:#E36953; --brick-d:#F08A75; --brick-soft:#3A1C16; --ochre:#E6B265; --ochre-d:#F3CB88; --ochre-soft:#3A2C12; --indigo:#98A6D4; --indigo-soft:#1F2434; --rule:rgba(244,238,221,.18); --rule-soft:rgba(244,238,221,.08); }
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{ background:var(--paper); color:var(--ink); font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; }
-code,pre{ font-family: ui-monospace,'SF Mono',Menlo,monospace; }
-.rail{ position:sticky; top:0; z-index:10; background:var(--paper-3); border-bottom:1px solid var(--rule); }
-.rail__inner{ display:flex; align-items:center; gap:14px; padding:10px 18px; }
-.rail__brand{ font-family:Georgia,serif; font-style:italic; font-size:18px; color:var(--moss-deep); }
-.rail__sub{ color:var(--ink-3); font-size:12px; flex:1; }
-.rail__arc,.rail__btn{ display:inline-flex; align-items:center; gap:6px; font:12px ui-monospace,monospace; text-decoration:none; color:var(--ink-2); border:1px solid var(--rule); padding:5px 10px; background:var(--paper-4); cursor:pointer; }
-.rail__arc{ color:#fff; background:var(--brick); border-color:var(--brick-d); }
-[data-theme="dark"] .rail__arc{ color:var(--paper); }
+  return `${pageHead({
+    title: 'Run launcher · poetics',
+    css: `
 .controls{ position:sticky; top:51px; z-index:9; display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; padding:9px 18px; background:var(--paper-2); border-bottom:1px solid var(--rule); }
 .tabs{ display:flex; gap:0; }
 .tab{ font:12px ui-monospace,monospace; color:var(--ink-3); border:1px solid var(--rule); border-right:0; padding:5px 12px; background:var(--paper-4); cursor:pointer; }
@@ -2657,8 +3095,8 @@ code,pre{ font-family: ui-monospace,'SF Mono',Menlo,monospace; }
 .muted{ color:var(--ink-4); font-style:italic; }
 .loading{ color:var(--ink-4); font-style:italic; padding:18px 0; }
 .tiny{ font:10px ui-monospace,monospace; color:var(--ink-4); }
-</style>
-</head>
+`,
+  })}
 <body>
 ${railHtml({ active: 'runs', brand: 'run launcher', sub: 'spawn generative · replay · adversarial-CLI · online-score runs — localhost only, no auth (deferred)' })}
 <div class="controls">
@@ -3158,27 +3596,6 @@ button, input, select, textarea {
   flex: 0 0 auto;
 }
 .rail__btn:hover { color: var(--ink); border-color: var(--ink-3); }
-.rail__arc {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45em;
-  padding: 0.4em 0.95em;
-  background: var(--brick);
-  color: var(--paper);
-  border: 1px solid var(--brick);
-  text-decoration: none;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  flex: 0 0 auto;
-  white-space: nowrap;
-  transition: background .15s var(--ease), border-color .15s var(--ease), transform .15s var(--ease);
-}
-.rail__arc:hover {
-  background: var(--brick-d);
-  border-color: var(--brick-d);
-  transform: translateY(-1px);
-}
-.rail__arc__arrow { font-weight: 400; font-size: 1.15em; line-height: 1; }
 
 /* ═══════ application grid ═══════ */
 .app {
@@ -4171,7 +4588,7 @@ function renderEmptyState() {
     : 'No scripts in the corpus yet.';
   const help = hasFilters
     ? 'Loosen a filter, or generate a transcript for this slice.'
-    : 'Generate the first drama transcript to populate the workbench.';
+    : 'Generate the first drama transcript to populate the scriptorium.';
   return '<div class="empty empty--scaffold">' +
     '<p class="empty__lead">' + lead + '</p>' +
     '<p class="empty__help">' + help + '</p>' +
@@ -4559,7 +4976,7 @@ function launchUrl(args) {
 
 function main() {
   const args = parseArgs(process.argv.slice(2));
-  const app = createPoeticsBrowserApp({ dbPath: args.dbPath });
+  const app = createPoeticsBrowserApp({ dbPath: args.dbPath, host: args.host });
   const server = app.listen(args.port, args.host, () => {
     const url = launchUrl(args);
     console.log(`poetics script browser: ${url}`);

@@ -1,0 +1,45 @@
+meta:
+  schema_version: recursive-tutor-cue-map-risk-v1
+  created: '2026-06-06'
+  purpose: >-
+    Sidecar cue map for the A18.35 constructed-midpoint family. It records why a
+    tutor-built halfway mark between two named posts gives S1 headroom that a
+    public scorecard reading cannot reach before replay spending.
+
+cue_maps:
+  - family_id: constructed_midpoint_priority
+    empirical_status: fresh_candidate
+    requires_constructed_device: true
+    selected_relation_type: constructed_midpoint
+    selected_cue:
+      public_visibility: medium
+      geometry: constructed_relation
+      description: >-
+        The two named end posts and the token positions are public, but the
+        halfway mark between the posts does not exist in the public text until
+        the tutor measures the span and constructs it; nearest-the-midpoint is
+        therefore not a readable public pointer.
+    counterexample:
+      present: true
+      old_check: color_post_nearness_lane_tally
+      needed: >-
+        Held-out siblings make color and post nearness bundle onto a post-hugging
+        token while a clear lane sits on a different between-posts token, so an
+        ordinary color/nearness/lane comparison stays a scorecard and cannot
+        justify the between-posts token until a halfway mark is constructed.
+    target_salience:
+      max_competing_cues_against_selected: 1
+      selected_target_supporting_cues: 2
+      notes: >-
+        After the halfway mark is constructed, the between-posts token carries
+        the midpoint cue plus a clear lane (two supporting), while only the
+        single post-hugging decoy token meaningfully competes by bundling color
+        and post nearness; the far-post token is a weak plain-wash herring.
+    expected_s0_wrong_move: color_or_post_nearness_tally
+    expected_s1_correct_move: constructed_span_midpoint
+    marker_natural_aliases:
+      - midpoint
+      - mid point
+      - halfway mark
+      - halfway between
+      - measured middle

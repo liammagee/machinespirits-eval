@@ -1,0 +1,49 @@
+meta:
+  schema_version: recursive-tutor-cue-map-risk-v1
+  created: '2026-06-06'
+  purpose: >-
+    Sidecar cue map for the A18.35 tally-parity constructed-device family. It
+    records why a blind S0 has no selecting rule in public text while S1 can
+    apply the constructed even/odd standing after transfer.
+
+cue_maps:
+  - family_id: tally_parity_priority
+    empirical_status: fresh_candidate
+    requires_constructed_device: true
+    selected_relation_type: constructed_parity
+    selected_cue:
+      public_visibility: medium
+      geometry: constructed_relation
+      description: >-
+        The struck glyphs are public and countable, but their even/odd standing
+        relative to the final tag's own count does not exist in the public text
+        until the tutor constructs the count and sorts the totals into even and
+        odd. No even/odd or matched-standing vocabulary appears in any public
+        field.
+    counterexample:
+      present: true
+      old_check: colour_nearness_lane_or_biggest_cluster_tally
+      needed: >-
+        Held-out siblings make colour, nearness, lane, and biggest-cluster
+        point to different tokens, and the strongest ordinary cues pile onto a
+        token whose constructed standing does not match the tag, so the ordinary
+        scorecard lands on the wrong token rather than ranking the visible clues
+        into the correct one.
+    target_salience:
+      max_competing_cues_against_selected: 1
+      selected_target_supporting_cues: 2
+      notes: >-
+        The selected target carries a clean lane plus the constructed even/odd
+        standing, while the single tempting rejected token marshals the
+        resemblance cues (colour, nearness, biggest cluster); counted as one
+        rival reading it contests the target once, and the constructed standing
+        breaks the tie.
+    expected_s0_wrong_move: colour_nearness_or_biggest_cluster_tally
+    expected_s1_correct_move: matched_even_or_odd_standing
+    marker_natural_aliases:
+      - same side of even
+      - both odd
+      - both even
+      - lands even like the tag
+      - lands odd like the tag
+      - matched even or odd

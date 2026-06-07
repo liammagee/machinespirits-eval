@@ -58,6 +58,15 @@ ms:Su_SC ms:correctsAgency ms:Ego ; ms:correctsRouteFamily ms:Route_SC .
 ms:Ev_SC ms:onArm ms:ArmPeripeteia .
 ms:S2_SC a ms:MechanismShiftStage ; ms:partOfEvent ms:Ev_SC ; ms:realizedBy ms:Route_SC .
 ms:Repair_SC a ms:HamartiaRepairStage ; ms:partOfEvent ms:Ev_SC ; ms:gateFired true .
+
+# manifest vs latent repair (the concealed-interior axis)
+ms:Ev_dur ms:onArm ms:ArmPeripeteia .
+ms:S2_dur a ms:MechanismShiftStage ; ms:partOfEvent ms:Ev_dur ; ms:gateFired true .
+ms:Rep_dur a ms:HamartiaRepairStage ; ms:partOfEvent ms:Ev_dur ; ms:publicRepair true ; ms:latentRepair true .
+ms:Ev_cos ms:onArm ms:ArmPeripeteia .
+ms:Rep_cos a ms:HamartiaRepairStage ; ms:partOfEvent ms:Ev_cos ; ms:publicRepair true ; ms:latentRepair false .
+ms:Ev_sil ms:onArm ms:ArmPeripeteia .
+ms:Rep_sil a ms:HamartiaRepairStage ; ms:partOfEvent ms:Ev_sil ; ms:publicRepair false ; ms:latentRepair true .
 `;
 
 let quads = [];
@@ -118,4 +127,21 @@ test('repair on a recognition-failed event is SelfRepair / self_discovered', () 
 
 test('correction is orthogonal to recognition: repairWithoutRecognitionCredit fires on D53', () => {
   assert.ok(typeOf('Ev_D53').includes('repairWithoutRecognitionCredit'));
+});
+
+test('repair in BOTH public and latent is DurableRepair (gate derived) and gets a correction-origin', () => {
+  assert.ok(typeOf('Rep_dur').includes('DurableRepair'));
+  assert.ok(typeOf('Rep_dur').includes('ScaffoldedRepair')); // gateFired derived -> origin fires
+  assert.ok(!typeOf('Rep_dur').includes('CostumeRepair'));
+});
+
+test('PUBLIC-only repair is CostumeRepair and raises the costume_repair failure axis (manifest != latent)', () => {
+  assert.ok(typeOf('Rep_cos').includes('CostumeRepair'));
+  assert.ok(axes('Ev_cos').includes('costume_repair'));
+  assert.ok(!typeOf('Rep_cos').includes('DurableRepair'));
+});
+
+test('LATENT-only repair is SilentRepair, with no costume_repair axis', () => {
+  assert.ok(typeOf('Rep_sil').includes('SilentRepair'));
+  assert.ok(!axes('Ev_sil').includes('costume_repair'));
 });

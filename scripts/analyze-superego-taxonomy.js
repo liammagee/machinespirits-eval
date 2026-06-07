@@ -21,6 +21,12 @@ const ROOT = join(__dirname, '..');
 const args = process.argv.slice(2);
 const jsonMode = args.includes('--json');
 const inputIdx = args.indexOf('--input');
+// WARNING: the default below is NOT the Paper 2.0 §6.2.3/§6.2.5 source corpus. In this
+// fork data/superego-critiques-classified.jsonl is a different classification run
+// (300 records / 195 dialogues). The paper figures come from the 500-record /
+// 56-dialogue corpus archived at
+// machinespirits-eval-private/data/superego-critiques-classified-paper-6.2-n500.jsonl
+// (sha256 f9ba2d92…) — pass it via --input. Guarded by tests/superegoTaxonomyProvenance.test.js.
 const inputPath = inputIdx !== -1 ? args[inputIdx + 1] : join(ROOT, 'data', 'superego-critiques-classified.jsonl');
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -348,6 +354,11 @@ function main() {
     const round2 = entries.filter((e) => e.round === 2);
     if (round1.length > 0 && round2.length > 0) {
       for (const r1 of round1) {
+        // turnIndex is null on every record in the paper corpus, so `null === null`
+        // makes .find() return round2[0] for every r1: each round-1 verdict is paired
+        // against the dialogue's FIRST round-2 verdict (one transition per round-1 entry
+        // — not same-turn, not cartesian). Intended on this corpus; would change silently
+        // if a future corpus populated turnIndex. Pinned by tests/superegoTaxonomyProvenance.test.js.
         const r2 = round2.find((r) => r.turnIndex === r1.turnIndex) || round2[0];
         transitions.push({
           dialogueId,

@@ -111,6 +111,18 @@
 # scaffolded vs self-discovered repair, parallel to recognition-origin.
 # ============================================================================
 
+# -- manifest vs latent repair (the concealed-interior axis; ADAPTATION-PLAN-2.0 §6.10) --
+# DURABLE repair = corrected rule in BOTH the public turn AND the hidden deliberation -> the
+# HamartiaRepairStage gate fires (and so feeds R-CORR/R-REPAIR below). PUBLIC-only =
+# CostumeRepair (the manifest!=latent gap) -> the gate does NOT fire + a costume_repair
+# failure. LATENT-only = SilentRepair. publicRepair/latentRepair are asserted by the bridge.
+{ ?h a ms:HamartiaRepairStage ; ms:publicRepair true ; ms:latentRepair true }
+  => { ?h a ms:DurableRepair ; ms:gateFired true } .
+{ ?h a ms:HamartiaRepairStage ; ms:publicRepair true ; ms:latentRepair false ; ms:partOfEvent ?e }
+  => { ?h a ms:CostumeRepair ; ms:gateFired false . ?e ms:hasFailureAxis ms:costume_repair } .
+{ ?h a ms:HamartiaRepairStage ; ms:publicRepair false ; ms:latentRepair true }
+  => { ?h a ms:SilentRepair } .
+
 # R-CORR-SCAFFOLDED: repair on an event whose MechanismShift gate fired = tutor-induced.
 { ?h a ms:HamartiaRepairStage ; ms:partOfEvent ?e ; ms:gateFired true .
   ?s a ms:MechanismShiftStage ; ms:partOfEvent ?e ; ms:gateFired true }

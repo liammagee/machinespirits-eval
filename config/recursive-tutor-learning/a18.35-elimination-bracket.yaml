@@ -1,0 +1,223 @@
+meta:
+  schema_version: recursive-tutor-learning-families-v1-underdetermined-transfer
+  created: '2026-06-06'
+  status: a18_35_constructed_device_family
+  protocol: config/recursive-tutor-learning/a18-panel-vote-rule-v2.yaml
+  claim_boundary: simulated_teacher_as_learner_not_human_learning
+  notes: >-
+    Fresh A18.35 constructed-device family. The carrier emerges only from a
+    pairwise playoff the tutor constructs over the etched shapes; the deciding
+    relation is absent from every public field, so S0 cannot land it while S1
+    can after the policy names the device.
+
+families:
+  - family_id: elimination_bracket_priority
+    obstruction_type: competing_visible_cues_with_constructed_playoff
+    local_rule:
+      private_rule: >-
+        In this invented shape-card notation, each token carries one of three
+        etched figures (a loop, a wedge, or a spot). These figures stand in a
+        fixed non-transitive dominance order in which a loop overcomes a wedge, a
+        wedge overcomes a spot, and a spot overcomes a loop. The token that can
+        carry the final tag is the one that survives a single-elimination
+        playoff: seed the tokens by their reading order, pair the first with the
+        second and the third with the fourth, advance the dominating figure in
+        each pairing, and keep playing the survivors off until one token is left.
+        Because the dominance order is a three-way cycle, the last token standing
+        is not the largest, nearest, best-matched, or most frequent figure; it
+        depends on running the constructed playoff. Colour match, nearness, a
+        clean lane, and the most common etched figure are all tempting but never
+        decisive unless the playoff is built and run. The tutor's repair should
+        construct this temporary playoff in public after the learner reports cue
+        competition; it must not describe the bracket as preprinted scene
+        furniture.
+      public_name: elimination playoff priority
+    transfer_design:
+      require_underdetermined_public_repairs: true
+      policy_selected_repair: elimination_bracket_test
+      transfer_condition: >-
+        Use the elimination-playoff repair only after the learner reports that
+        colour, nearness, lane, and the etched figures are competing rather than
+        ranking themselves. Do not use it as a first move.
+      repair_public_device: >-
+        The public tutor move should build or draw a temporary single-elimination
+        playoff over the etched figures as the new test, then use it to contrast
+        the tempting resemblance cues against the surviving token.
+      recursive_update_requirement: >-
+        End with a brief tutor commitment that future cards for this learner
+        should first name the defeated resemblance cue, then construct and run
+        the playoff; this makes the teacher-as-learner update public rather than
+        only implicit.
+      s0_stop_rule: >-
+        Stop locally if S0 survives or if S0 independently names an
+        elimination-bracket, knockout-bracket, last-token-standing, pairwise
+        playoff, or bracket-winner strategy.
+    plausible_repairs:
+      - repair_id: pigment_match_test
+        public_rationale: >-
+          The chosen token shares a visible colour or wash with the final tag.
+        why_plausible_from_public_stage: >-
+          Colour matching is salient and easy to compare across the shape card.
+      - repair_id: nearest_tag_test
+        public_rationale: >-
+          The chosen token sits nearest to the final tag.
+        why_plausible_from_public_stage: >-
+          Nearness looks like a natural rule when the final tag sits at one side
+          of the card.
+      - repair_id: lane_continuity_test
+        public_rationale: >-
+          The chosen token lies on the cleanest visible lane to the final tag.
+        why_plausible_from_public_stage: >-
+          Continuous lanes invite path-following as a public rule.
+      - repair_id: common_figure_test
+        public_rationale: >-
+          The chosen token bears the etched figure that appears most often on the
+          card.
+        why_plausible_from_public_stage: >-
+          A repeated etched figure looks like a majority signal unless its role
+          is tested.
+      - repair_id: elimination_bracket_test
+        public_rationale: >-
+          The chosen token is the one that survives a constructed single-pass
+          playoff over the etched figures, seeded by reading order.
+        why_plausible_from_public_stage: >-
+          The etched figures could be decorative, count-like, or locally ordered;
+          the learner needs a test that makes their interaction public.
+    success_criterion: >-
+      On a held-out shape card, the learner must stop choosing by colour,
+      nearness, lane, or commonest figure alone and construct the elimination
+      playoff over the etched figures to decide which token can carry the final
+      tag.
+    forbidden_shortcuts:
+      - elimination bracket
+      - knockout bracket
+      - last token standing
+      - last standing
+      - pairwise playoff
+      - bracket winner
+      - single elimination
+      - run the playoff
+      - loop beats wedge
+      - wedge beats spot
+      - spot beats loop
+      - three-way cycle
+    training_seed:
+      seed_id: bracket_train_amber_centre
+      public_setup: >-
+        A small shape card has a left slot, a centre slot, and a right slot. The
+        token word tavo appears in all three slots. The left tavo is amber like
+        the final seal. The right tavo sits closest to the seal. The centre tavo
+        lies on the only clean ivory lane. The left tavo has a small etched spot,
+        the centre tavo has a small etched loop, and the right tavo has a small
+        etched wedge. The final seal carries a small etched loop on its rim. The
+        learner has to say which tavo can carry the final seal.
+      learner_resistance: >-
+        I keep choosing the left tavo because it is amber like the seal, but the
+        right one is closer and the centre one is on the clean lane. The little
+        etched figures add another thing to look at, yet I do not know which clue
+        is in charge.
+      baseline_tutor_attempt: >-
+        Compare the colours, the distances, the lane, and the etched figures,
+        then choose the tavo with the strongest combined evidence.
+      learner_followup: >-
+        That still splits the evidence. Amber points left, closeness points
+        right, the clean lane points centre, and the figures just sit there.
+      expected_failure: wrong_strategy_family
+    heldout_siblings:
+      - sibling_id: bracket_holdout_blue_middle
+        public_setup: >-
+          A blue-edged shape card has an upper tray, a middle tray, and a lower
+          tray. The token word neli appears in all three trays. The upper neli
+          has a blue wash like the final square. The lower neli sits nearest to
+          the square. The middle neli lies on the open silver lane. The upper
+          neli has a small etched spot, the middle neli has a small etched wedge,
+          and the lower neli has a small etched spot. The final square carries a
+          small etched spot beside its rim. The learner has to choose which neli
+          can carry the final square.
+        learner_resistance: >-
+          I want the upper neli because it is blue like the square, but the lower
+          one is closer and the middle one is on the open lane. The etched
+          figures look relevant, yet they do not give me a decision.
+        baseline_tutor_attempt: >-
+          Compare the colour, the distance, the lane, and the etched figures,
+          then choose the neli with the strongest evidence.
+        learner_followup: >-
+          The comparisons split again. Blue points upper, closeness points lower,
+          the open lane points middle, and the figures make me hesitate.
+        plausible_public_repairs:
+          - pigment_match_test
+          - nearest_tag_test
+          - lane_continuity_test
+          - common_figure_test
+          - elimination_bracket_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: elimination_bracket_test
+          target_id: middle_neli
+          target_aliases:
+            - middle neli
+            - middle tray
+            - wedge-marked neli
+            - wedge neli
+          selected_repair_markers:
+            - elimination bracket
+            - knockout bracket
+            - last token standing
+            - pairwise playoff
+            - bracket winner
+          incorrect_target_aliases:
+            - upper neli
+            - lower neli
+            - upper tray
+            - lower tray
+      - sibling_id: bracket_holdout_gold_leftcentre
+        public_setup: >-
+          A gold-edged shape card has four posts in a row: a far-left post, a
+          left-centre post, a right-centre post, and a far-right post, with the
+          final badge at the right margin. The token word ruta appears at every
+          post. The far-left ruta has a gold fleck like the badge. The far-right
+          ruta sits closest to the badge. The left-centre ruta lies on the clear
+          grey lane and is the only post on the unbroken guide line. The far-left
+          ruta has a small etched wedge, the left-centre ruta has a small etched
+          loop, the right-centre ruta has a small etched wedge, and the far-right
+          ruta has a small etched spot. The final badge carries a small etched
+          loop beside its rim. The learner has to choose which ruta can carry the
+          final badge.
+        learner_resistance: >-
+          I want the far-left ruta for the gold fleck, but the far-right one is
+          closest and the left-centre one sits on the clear lane and guide line.
+          The etched figures give me more to compare, not a rule.
+        baseline_tutor_attempt: >-
+          Compare the colour, the distance, the lane, the guide line, and the
+          etched figures, then choose the ruta with the strongest evidence.
+        learner_followup: >-
+          That still feels like a scorecard. Gold points far-left, closeness
+          points far-right, the lane and guide line point left-centre, and the
+          figures point in different directions.
+        plausible_public_repairs:
+          - pigment_match_test
+          - nearest_tag_test
+          - lane_continuity_test
+          - common_figure_test
+          - elimination_bracket_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: elimination_bracket_test
+          target_id: leftcentre_ruta
+          target_aliases:
+            - left-centre ruta
+            - left-centre post
+            - loop-marked ruta
+            - loop ruta
+          selected_repair_markers:
+            - elimination bracket
+            - knockout bracket
+            - last token standing
+            - pairwise playoff
+            - bracket winner
+          incorrect_target_aliases:
+            - far-left ruta
+            - far-right ruta
+            - right-centre ruta
+            - far-left post
+            - far-right post

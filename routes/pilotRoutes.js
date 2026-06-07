@@ -16,6 +16,7 @@
 import { Router } from 'express';
 import * as pilotStore from '../services/pilotStore.js';
 import * as pilotItemBank from '../services/pilotItemBank.js';
+import * as pilotAutoplay from '../services/pilotAutoplay.js';
 
 const router = Router();
 
@@ -50,6 +51,11 @@ router.get('/config', (req, res) => {
 });
 
 // ─── Enrollment ──────────────────────────────────────────────────────────
+//
+// The public /enroll path is HUMAN-ONLY by construction: it never reads a
+// learner_source from the body, so a participant can't mint a session that
+// skips consent. Synthetic (llm) sessions are created through the admin-gated
+// /admin/enroll-llm below — an operator affordance, not a participant one.
 
 router.post('/enroll', (req, res) => {
   try {
@@ -243,7 +249,59 @@ router.post('/session/:id/abandon', (req, res) => {
 
 router.get('/admin/counts', requireAdmin, (req, res) => {
   try {
-    res.json({ counts: pilotStore.getConditionCounts() });
+    res.json({
+      counts: pilotStore.getConditionCounts(),
+      recruitmentEnabled: pilotStore.isRecruitmentEnabled(),
+    });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+// Create a synthetic llm-learner session. Enrollment itself spends nothing; the
+// paid tutor↔learner loop is driven separately by /admin/session/:id/autoplay.
+// Returns the FULL (unblinded) session — the operator may see the condition.
+router.post('/admin/enroll-llm', requireAdmin, (req, res) => {
+  try {
+    const { scenario_lecture_ref = null, condition = null } = req.body || {};
+    const session = pilotStore.enrollSession({
+      learnerSource: pilotStore.LEARNER_SOURCES.LLM,
+      scenarioLectureRef: scenario_lecture_ref,
+      forceCondition: condition,
+    });
+    res.json({ session });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+// Drive an llm-learner session through the tutor loop. METERED when mock=false.
+// Safe-by-default: mock=true (deterministic, zero network) unless the operator
+// explicitly opts into spend. The real path blocks until the run completes; it
+// is bounded by max_turn_pairs (clamped server-side) and a USD backstop. Spend
+// is returned so the operator sees exactly what it cost.
+router.post('/admin/session/:id/autoplay', requireAdmin, async (req, res) => {
+  try {
+    const {
+      max_turn_pairs = pilotAutoplay.DEFAULT_MAX_TURN_PAIRS,
+      cost_cap_usd = pilotAutoplay.DEFAULT_COST_CAP_USD,
+      topic = null,
+      persona_id = 'eager_novice',
+      mock = true,
+    } = req.body || {};
+
+    const deps = mock ? pilotAutoplay.buildMockDeps() : {};
+    const result = await pilotAutoplay.runAutoplay(
+      {
+        sessionId: req.params.id,
+        maxTurnPairs: max_turn_pairs,
+        costCapUsd: cost_cap_usd,
+        topic,
+        personaId: persona_id,
+      },
+      deps,
+    );
+    res.json({ autoplay: result });
   } catch (err) {
     sendError(res, err);
   }

@@ -1,0 +1,45 @@
+meta:
+  schema_version: recursive-tutor-cue-map-risk-v1
+  created: '2026-06-06'
+  purpose: >-
+    Sidecar cue map for the A18.35 legend-decode constructed-device family. It
+    makes target salience and the assembled-key visibility explicit before
+    replay spending.
+
+cue_maps:
+  - family_id: legend_decode_priority
+    empirical_status: fresh_candidate
+    requires_constructed_device: true
+    selected_relation_type: constructed_legend_decode
+    selected_cue:
+      public_visibility: medium
+      geometry: constructed_relation
+      description: >-
+        The edge fragments are public but scattered, never adjacent to a token,
+        and never named as a set; their combined role as one ordered key that
+        decodes the final tag's stamp to a slot does not exist in public text
+        until the tutor gathers and applies them.
+    counterexample:
+      present: true
+      old_check: color_nearness_lane_tally
+      needed: >-
+        Held-out siblings make color, nearness, and lane point to different
+        trays, and the token that wears the final tag's stamp is not the decoded
+        token, so an ordinary comparison stays a scorecard rather than a rule.
+    target_salience:
+      max_competing_cues_against_selected: 1
+      selected_target_supporting_cues: 2
+      notes: >-
+        The selected target carries the decoded-slot result plus one ordinary
+        cue (lane on the blue sibling, nearness on the gold sibling), while the
+        single most tempting rejected target keeps a salient color or
+        same-stamp resemblance cue.
+    expected_s0_wrong_move: color_nearness_or_same_stamp_tally
+    expected_s1_correct_move: assembled_key_decode_to_slot
+    marker_natural_aliases:
+      - assembled key
+      - gathered legend
+      - ordered key
+      - decode to slot
+      - stamp-to-slot key
+      - fragment key

@@ -1,0 +1,227 @@
+meta:
+  schema_version: recursive-tutor-learning-families-v1-underdetermined-transfer
+  created: '2026-06-06'
+  status: a18_35_constructed_device_family
+  protocol: config/recursive-tutor-learning/a18-panel-vote-rule-v2.yaml
+  claim_boundary: simulated_teacher_as_learner_not_human_learning
+  notes: >-
+    Fresh A18.35 constructed-device family. Each token shows a public load
+    number, but the carrier is the runner-up once the tutor builds an ascending
+    load order; smallest and largest loads, colour, and nearness are feints, so
+    no public scorecard can decide until the ordering device is constructed.
+
+families:
+  - family_id: second_in_constructed_order_priority
+    obstruction_type: competing_visible_cues_with_constructed_load_order
+    local_rule:
+      private_rule: >-
+        In this invented load-card notation, every candidate token shows a tiny
+        load number. The token that can carry the final tag is the runner-up
+        once the tutor arranges the candidate loads from smallest to largest:
+        the carrier is the token holding the second-smallest load, because the
+        smallest load is a feint and the largest load is overflow. Colour match,
+        nearness, the cleanest lane, the smallest load, and the largest load can
+        all be tempting but are not decisive unless the runner-up of the built
+        load order is named. The tutor's repair should construct a temporary
+        smallest-to-largest load strip in public after the learner reports cue
+        competition; it should not describe the strip as preprinted scene
+        furniture, and it should never claim the bare middle tray or the bare
+        largest number is the rule.
+      public_name: built load-order runner-up
+    transfer_design:
+      require_underdetermined_public_repairs: true
+      policy_selected_repair: order_runner_up_test
+      transfer_condition: >-
+        Use the built-order runner-up repair only after the learner reports that
+        colour, nearness, lane, and the bare load numbers are competing rather
+        than ranking themselves. Do not use it as a first move.
+      repair_public_device: >-
+        The public tutor move should build or draw a temporary smallest-to-largest
+        load strip as the new test, then use it to contrast the tempting
+        resemblance cues against the runner-up of that built strip.
+      recursive_update_requirement: >-
+        End with a brief tutor commitment that future cards for this learner
+        should first name the defeated colour or nearness cue, then build the
+        load strip and read off its runner-up; this makes the teacher-as-learner
+        update public rather than only implicit.
+      s0_stop_rule: >-
+        Stop locally if S0 survives or if S0 independently names a runner-up,
+        second-lowest, second-in-order, ordering-strip, or built-order
+        strategy.
+    plausible_repairs:
+      - repair_id: colour_match_test
+        public_rationale: >-
+          The chosen token shares a visible colour or wash with the final tag.
+        why_plausible_from_public_stage: >-
+          Colour matching is salient and easy to compare across the load card.
+      - repair_id: nearest_tag_test
+        public_rationale: >-
+          The chosen token sits nearest to the final tag.
+        why_plausible_from_public_stage: >-
+          Nearness looks like a natural rule when the final tag sits beside one
+          tray.
+      - repair_id: lane_continuity_test
+        public_rationale: >-
+          The chosen token lies on the cleanest visible lane leading toward the
+          final tag.
+        why_plausible_from_public_stage: >-
+          Continuous lanes invite path-following as a public rule.
+      - repair_id: largest_load_test
+        public_rationale: >-
+          The chosen token shows the largest or most dominant load number.
+        why_plausible_from_public_stage: >-
+          A big load number looks like a score or weight unless its local role
+          is tested.
+      - repair_id: smallest_load_test
+        public_rationale: >-
+          The chosen token shows the smallest load number.
+        why_plausible_from_public_stage: >-
+          A small load number can read as the lightest or cleanest pick unless
+          its local role is tested.
+      - repair_id: order_runner_up_test
+        public_rationale: >-
+          The chosen token is the runner-up once the candidate loads are
+          arranged from smallest to largest.
+        why_plausible_from_public_stage: >-
+          The load numbers could be decorative, score-like, or locally indexing;
+          the learner needs a test that makes the built-order role public.
+    success_criterion: >-
+      On a held-out load card, the learner must stop choosing by colour,
+      nearness, lane, smallest load, or largest load alone and use the runner-up
+      of the constructed smallest-to-largest load order to decide which token can
+      carry the final tag.
+    forbidden_shortcuts:
+      - runner-up rung
+      - take the runner-up
+      - second in the built order
+      - second-lowest load
+      - build the load order
+      - ordering ladder
+      - rank ladder
+      - constructed order rank
+      - second-place load
+    training_seed:
+      seed_id: order_train_coral_top
+      public_setup: >-
+        A flat load card has four stacked trays named top, upper, lower, and
+        base. The token word vesh appears in all four trays. The top vesh is
+        coral like the final tag and shows a tiny load mark reading 2. The upper
+        vesh shows a tiny load mark reading 5. The lower vesh shows a tiny load
+        mark reading 7. The base vesh shows a tiny load mark reading 9 and sits
+        nearest to the final coral tag. A single pale lane runs past the top and
+        upper trays. The learner has to say which vesh can carry the final tag.
+      learner_resistance: >-
+        I keep choosing the top vesh because it is coral like the tag, and the
+        base vesh because it is nearest and shows the biggest load mark. The pale
+        lane and the smaller load marks add more clues, but I do not know which
+        clue is in charge.
+      baseline_tutor_attempt: >-
+        Compare the colours, the distances, the lane, and the load marks, then
+        choose the vesh with the strongest combined evidence.
+      learner_followup: >-
+        That still feels like a scorecard. Coral points to the top tray, nearest
+        and biggest point to the base tray, and the lane points somewhere else
+        again.
+      expected_failure: wrong_strategy_family
+    heldout_siblings:
+      - sibling_id: order_holdout_blue_lower
+        public_setup: >-
+          A copper load card has four trays in a row named left, inner-left,
+          inner-right, and right, with the final tag at the left end. The token
+          word neri appears in all four trays. The left neri shows a tiny load
+          mark reading 8 and sits nearest to the final tag. The inner-left neri
+          shows a tiny load mark reading 4. The inner-right neri shows a tiny
+          load mark reading 3 and has a blue wash like the final tag. The right
+          neri shows a tiny load mark reading 6. A single white lane runs past
+          the inner-left and right trays. The learner has to choose which neri
+          can carry the final tag.
+        learner_resistance: >-
+          I want the inner-right neri because it is blue like the tag and shows
+          the smallest load mark, and the left neri because it is nearest and
+          shows the biggest load mark. The white lane gives me yet another clue,
+          and none of them settles the choice.
+        baseline_tutor_attempt: >-
+          Compare the colour, the distance, the lane, and the load marks, then
+          choose the neri with the strongest evidence.
+        learner_followup: >-
+          The evidence still splits. Blue and the smallest mark point to the
+          inner-right tray, nearest and the biggest mark point to the left tray,
+          and the lane points elsewhere.
+        plausible_public_repairs:
+          - colour_match_test
+          - nearest_tag_test
+          - lane_continuity_test
+          - largest_load_test
+          - smallest_load_test
+          - order_runner_up_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: order_runner_up_test
+          target_id: inner_left_neri
+          target_aliases:
+            - inner-left neri
+            - inner-left tray
+            - load-four neri
+            - load four neri
+          selected_repair_markers:
+            - runner-up rung
+            - second in the built order
+            - second-lowest load
+            - build the load order
+            - ordering ladder
+          incorrect_target_aliases:
+            - left neri
+            - inner-right neri
+            - right neri
+            - left tray
+            - inner-right tray
+      - sibling_id: order_holdout_gold_lower
+        public_setup: >-
+          A slate load card has four stacked trays named crown, upper, lower, and
+          foot, with the final tag at the foot end. The token word ralo appears
+          in all four trays. The crown ralo shows a tiny load mark reading 5. The
+          upper ralo shows a tiny load mark reading 9 and has a gold fleck like
+          the final tag. The lower ralo shows a tiny load mark reading 4. The
+          foot ralo shows a tiny load mark reading 2 and sits nearest to the
+          final tag. A single grey lane runs past the crown and lower trays. The
+          learner has to choose which ralo can carry the final tag.
+        learner_resistance: >-
+          I want the upper ralo because it is gold like the tag and shows the
+          biggest load mark, and the foot ralo because it is nearest and shows
+          the smallest load mark. The grey lane points somewhere else again, so
+          I have more clues than reasons.
+        baseline_tutor_attempt: >-
+          Compare the colour, the distance, the lane, and the load marks, then
+          choose the ralo with the strongest evidence.
+        learner_followup: >-
+          That still feels like a scorecard. Gold and the biggest mark point to
+          the upper tray, nearest and the smallest mark point to the foot tray,
+          and the lane points elsewhere.
+        plausible_public_repairs:
+          - colour_match_test
+          - nearest_tag_test
+          - lane_continuity_test
+          - largest_load_test
+          - smallest_load_test
+          - order_runner_up_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: order_runner_up_test
+          target_id: lower_ralo
+          target_aliases:
+            - lower ralo
+            - lower tray
+            - load-four ralo
+            - load four ralo
+          selected_repair_markers:
+            - runner-up rung
+            - second in the built order
+            - second-lowest load
+            - build the load order
+            - ordering ladder
+          incorrect_target_aliases:
+            - crown ralo
+            - upper ralo
+            - foot ralo
+            - upper tray
+            - foot tray

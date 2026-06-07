@@ -17,7 +17,7 @@
  * Accurate to ~15 decimal digits for positive real arguments.
  * Uses the reflection formula for z < 0.5.
  */
-function lnGamma(z) {
+export function lnGamma(z) {
   if (z <= 0) return Infinity;
 
   // Reflection formula: Gamma(z)*Gamma(1-z) = pi/sin(pi*z)
@@ -49,7 +49,7 @@ function lnGamma(z) {
  * where d_{2m+1} = -(a+m)(a+b+m)x / ((a+2m)(a+2m+1))
  *       d_{2m}   = m(b-m)x / ((a+2m-1)(a+2m))
  */
-function regularizedBeta(x, a, b) {
+export function regularizedBeta(x, a, b) {
   if (x <= 0) return 0;
   if (x >= 1) return 1;
 

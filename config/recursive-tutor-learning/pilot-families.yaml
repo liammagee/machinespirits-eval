@@ -1,0 +1,144 @@
+meta:
+  schema_version: recursive-tutor-learning-families-v1
+  created: 2026-06-05
+  status: pilot_zero_api_fixture
+  target: A18 recursive tutor-learning adaptation benchmark
+  claim_boundary: simulated_teacher_as_learner_not_human_learning
+  notes: >-
+    Three artificial/local obstruction families. Public setup and baseline tutor
+    attempts intentionally avoid the private local rule. The private rule is
+    available to the benchmark harness and later policy revision, not to the
+    learner-facing public setup.
+
+families:
+  - family_id: glyph_tail_owner
+    obstruction_type: arrowhead_salience_over_tail_ring
+    local_rule:
+      private_rule: >-
+        In this invented glyph notation, a link belongs to the tile touched by
+        the tail ring. The arrowhead only names the next tile to inspect.
+      public_name: tail-ring ownership
+    success_criterion: >-
+      On a held-out glyph board, the learner must stop crediting the arrowhead
+      tile as owner and use the tail-ring tile to name the relation owner.
+    forbidden_shortcuts:
+      - tail ring decides
+      - tail-ring decides
+      - tail ring owns
+      - tail-ring ownership
+      - arrowhead only names the next tile
+      - arrowhead is not the owner
+    training_seed:
+      seed_id: glyph_train_red_bridge
+      public_setup: >-
+        Three square tiles sit in a row: red, brass, and green. A black link
+        mark starts at the red tile, has a small ring at one end, and points
+        toward the brass tile. The learner has been asked to say which tile the
+        link belongs to.
+      learner_resistance: >-
+        I keep wanting to call it brass because the point faces brass. The
+        pointed end feels like the active part.
+      baseline_tutor_attempt: >-
+        Look carefully at both ends of the mark. Compare the red tile and the
+        brass tile before you answer.
+      expected_failure: underconstrained
+    heldout_siblings:
+      - sibling_id: glyph_holdout_blue_gate
+        public_setup: >-
+          Four round tiles sit on a mat: blue, copper, white, and gray. A bent
+          link mark touches the blue tile at its ring end and points toward the
+          white tile. The learner has to name which tile the link belongs to.
+        learner_resistance: >-
+          I want to name white because the point lands there. It feels like the
+          destination should be the owner.
+        baseline_tutor_attempt: >-
+          Slow down and compare where the mark starts with where it points.
+        expected_baseline_failure: underconstrained
+
+  - family_id: window_scope_claim
+    obstruction_type: label_bleeds_outside_marked_window
+    local_rule:
+      private_rule: >-
+        In this invented ledger notation, a label counts as a reason only inside
+        the bracketed window. Outside the bracket it is just a copied label.
+      public_name: bracket-window scope
+    success_criterion: >-
+      On a held-out ledger strip, the learner must distinguish a label inside
+      the marked window from the same label copied outside it.
+    forbidden_shortcuts:
+      - bracket decides
+      - window decides
+      - only inside the bracket
+      - only inside the window
+      - outside the bracket it is just a copied label
+      - outside the window it is just a copied label
+    training_seed:
+      seed_id: window_train_delta_label
+      public_setup: >-
+        A paper strip has five boxes. Boxes two through four sit under a thin
+        bracket line. The word delta appears once in box three and once in box
+        five. The learner has to say which delta can be used as the reason for
+        the mark at the end of the strip.
+      learner_resistance: >-
+        Both say delta. I do not see why the same word would count differently
+        just because it is printed in two places.
+      baseline_tutor_attempt: >-
+        Read the strip from left to right and compare the two appearances of the
+        word before choosing.
+      expected_failure: wrong_strategy_family
+    heldout_siblings:
+      - sibling_id: window_holdout_mira_label
+        public_setup: >-
+          A ledger card has six slots. Slots one through three sit under a
+          shallow brace. The word mira appears in slot two and again in slot
+          six. The learner has to choose which mira can justify the final check
+          mark.
+        learner_resistance: >-
+          I would choose both. If the label is identical, it feels like the same
+          evidence.
+        baseline_tutor_attempt: >-
+          Compare the two mira labels and look for any nearby marks that make
+          one more relevant.
+        expected_baseline_failure: underconstrained
+
+  - family_id: peg_lane_modifier
+    obstruction_type: touching_card_overrides_lane_position
+    local_rule:
+      private_rule: >-
+        In this invented peg-board notation, a modifier changes the lane where
+        its peg sits. It does not change the card it is touching.
+      public_name: peg-lane modifier
+    success_criterion: >-
+      On a held-out board, the learner must use the peg lane rather than card
+      contact to decide what the modifier changes.
+    forbidden_shortcuts:
+      - peg lane decides
+      - lane decides
+      - where its peg sits
+      - not the card it is touching
+      - card contact is not modification
+      - touching does not decide
+    training_seed:
+      seed_id: peg_train_silver_fast
+      public_setup: >-
+        A small board has three horizontal lanes. A silver fast token leans
+        against the top card, but its peg is planted in the middle lane. The
+        learner has to say which lane the token changes.
+      learner_resistance: >-
+        I am naming the top one because the token is visibly touching that card.
+      baseline_tutor_attempt: >-
+        Inspect both the leaning token and the peg before deciding what the
+        token changes.
+      expected_failure: missed_obstruction
+    heldout_siblings:
+      - sibling_id: peg_holdout_black_soft
+        public_setup: >-
+          A four-lane board has a black soft token resting against the bottom
+          card while its peg sits in the second lane. The learner has to say
+          which lane the token changes.
+        learner_resistance: >-
+          I name the bottom card because the token is touching it. Touch feels
+          like attachment.
+        baseline_tutor_attempt: >-
+          Inspect the whole token carefully before answering.
+        expected_baseline_failure: missed_obstruction

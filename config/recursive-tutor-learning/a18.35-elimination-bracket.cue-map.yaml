@@ -1,0 +1,45 @@
+meta:
+  schema_version: recursive-tutor-cue-map-risk-v1
+  created: '2026-06-06'
+  purpose: >-
+    Sidecar cue map for the A18.35 elimination-bracket constructed-device family.
+    It records why a blind S0 cannot land the carrier from public text while S1
+    can after the policy names the constructed playoff.
+
+cue_maps:
+  - family_id: elimination_bracket_priority
+    empirical_status: fresh_candidate
+    requires_constructed_device: true
+    selected_relation_type: constructed_elimination
+    selected_cue:
+      public_visibility: medium
+      geometry: constructed_relation
+      description: >-
+        The etched figures are public, but their non-transitive dominance and the
+        single-elimination playoff that picks the surviving token are not named in
+        any public field; the carrier exists only once the tutor constructs and
+        runs the playoff.
+    counterexample:
+      present: true
+      old_check: colour_nearness_lane_or_common_figure_tally
+      needed: >-
+        Held-out siblings make colour, nearness, lane, and the commonest etched
+        figure point to different tokens, so an ordinary scorecard cannot rank the
+        visible clues and the surviving token never coincides with any single cue.
+    target_salience:
+      max_competing_cues_against_selected: 1
+      selected_target_supporting_cues: 2
+      notes: >-
+        The selected token holds two mild supports (the clean lane plus a central
+        or guide-line position) but never the strongest colour match or the single
+        nearest position; each rival token carries at most one salient cue, so no
+        rival accumulates enough public evidence to overpower the selected token,
+        and the playoff is what actually decides.
+    expected_s0_wrong_move: colour_nearness_or_common_figure_tally
+    expected_s1_correct_move: constructed_elimination_survivor
+    marker_natural_aliases:
+      - elimination bracket
+      - knockout bracket
+      - last token standing
+      - pairwise playoff
+      - bracket winner

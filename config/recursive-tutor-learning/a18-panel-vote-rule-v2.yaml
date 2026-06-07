@@ -1,0 +1,153 @@
+meta:
+  protocol_id: A18.22
+  protocol_version: a18-correctness-gated-panel-v2
+  frozen_at: 2026-06-06
+  status: preregistered_before_future_panel_scoring
+  supersedes_for_future_panels_only: a18-correctness-gated-v1
+  does_not_relabel_prior_runs:
+    - A18.21
+  claim_boundary: simulated_teacher_as_learner_not_human_learning
+  purpose: >-
+    Freeze a future-facing contrast-panel vote rule after the A18.21 strict
+    near-miss. The rule keeps policy-side attribution, S1 superiority,
+    policy-transfer-like origin, differential policy use, and high ordinary
+    public inference as vote-blocking fields. It moves
+    learner_resistance_addressed_side to a diagnostic caveat because A18.21
+    showed critics could identify S1 as the policy side and winner while using
+    this separate field inconsistently.
+
+scope:
+  applies_to: >-
+    Fresh artificial local-relation families scored after this freeze in the
+    A18 teacher-as-learner counterfactual policy-transfer benchmark.
+  does_not_claim:
+    - human_learning
+    - deployed_adaptive_tutor
+    - model_weight_learning
+    - main_harness_rate_effect
+    - broad_curricular_transfer
+  historical_status: >-
+    A18.21 remains a strict_v1 contrast-panel failure. Any policy_core_v2
+    sensitivity read on A18.21 is diagnostic only.
+
+family_fixture_requirements:
+  schema_family: recursive-tutor-learning-families-v1-underdetermined-transfer
+  min_heldout_siblings: 2
+  min_plausible_repairs: 3
+  min_forbidden_shortcuts: 3
+  require_training_seed_expected_failure: true
+  require_underdetermined_public_repairs: true
+  selected_repair_must_be_in_plausible_repairs: true
+  heldout_selected_repair_must_be_plausible: true
+  heldout_policy_correctness_required: true
+  policy_correctness_required_fields:
+    - selected_repair
+    - target_id
+    - target_aliases
+    - selected_repair_markers
+    - incorrect_target_aliases
+  min_target_aliases: 1
+  min_selected_repair_markers: 1
+  min_incorrect_target_aliases: 1
+
+local_gate:
+  run_before_panel: true
+  generation_mode:
+    fresh_s1: true
+    inner_max_chars: 0
+    rewrite_mode: bounded_continuation
+    bounded_max_added_lines: 6
+    policy_contrast_gate: true
+    min_policy_distinctiveness: 0.12
+    panel_policy: headroom
+  candidate_rule:
+    effective_local_verdict: policy_memory_local_advantage
+    policy_contrast_verdict: policy_distinct
+    s1_status: survivor
+    s1_policy_correctness_verdict: selected_policy_applied
+    s0_policy_correctness_must_not_be: selected_policy_applied
+  blocking_verdicts:
+    - no_local_headroom
+    - no_policy_correctness_headroom
+    - s0_recreates_policy_strategy
+    - not_policy_distinct
+    - s1_no_policy_use
+    - control_beats_policy_memory
+    - control_policy_correctness_advantage
+    - no_correct_policy_application
+    - selected_repair_mismatch
+
+contrast_panel:
+  run_only_after_local_candidates: true
+  critics:
+    - qwen/qwen3.7-max
+    - google/gemini-3.5-flash
+    - deepseek/deepseek-v4-pro
+    - anthropic/claude-sonnet-4.6
+    - codex
+  critic_concurrency: all
+  score_concurrency: 1
+  panel_threshold: majority
+  min_critics: 5
+  required_transfer_votes: 3
+  vote_rule_name: policy_core_v2
+  vote_rule:
+    selected_policy_side: hidden_s1_side
+    winner: hidden_s1_side
+    origin_class: policy_transfer_like
+    min_differential_policy_use: 4
+    ordinary_public_inference_risk_must_not_be: high
+  diagnostic_fields:
+    learner_resistance_addressed_side:
+      role: diagnostic_caveat
+      favorable_values:
+        - hidden_s1_side
+        - both
+      report_as: learner_resistance_diagnostic_warning_votes
+      interpretation: >-
+        If the policy-core vote passes but this field is not S1/both, report a
+        learner-resistance uptake caveat. Do not count it as a transfer-vote
+        veto under v2.
+  failure_classes:
+    - contrast_panel_fail
+    - contrast_equivalence_fail
+    - contrast_ordinary_inference_fail
+    - contrast_s0_preferred_fail
+
+family_success_rule:
+  min_panel_pairs: 2
+  require_all_panel_pairs_pass: true
+  report_all_screened_families: true
+  do_not_pool_away_failed_families: true
+  reliability_language: >-
+    The phrase "reliable peripeteia-induced adaptation" remains unavailable
+    unless a fresh family generated after this freeze passes this protocol or a
+    stricter successor.
+
+stop_rules:
+  - Stop before panel if fewer than two held-out siblings are local candidates.
+  - Stop before panel if S0 is policy-correct on any required held-out sibling.
+  - Stop and record no-headroom if S0 independently recreates the selected policy.
+  - Stop and record a local negative if S1 is a raw survivor but fails selected-policy correctness.
+  - Treat high ordinary-public-inference risk as vote-blocking at the critic level.
+  - Report medium ordinary-public-inference risk as a caveat even when the pair passes.
+  - Report learner-resistance diagnostic warnings, but do not let them veto a v2 transfer vote.
+  - Do not edit this protocol after seeing future-family panel results; any change starts a new protocol version.
+
+recommended_commands:
+  validate_family_fixture: >-
+    npm run poetics:recursive-tutor-protocol -- --protocol
+    config/recursive-tutor-learning/a18-panel-vote-rule-v2.yaml --config
+    <candidate-family-yaml> --family <family_id>
+  local_screen: >-
+    npm run poetics:recursive-tutor-ablation -- --chain-dir <chain-dir>
+    --family <family_id> --fresh-s1 --inner-max-chars 0
+    --rewrite-mode bounded_continuation --policy-contrast-gate
+    --panel-policy headroom --skip-panel
+  correctness_overlay: >-
+    npm run poetics:recursive-tutor-policy-correctness -- --chain-dir <chain-dir>
+    --family <family_id>
+  contrast_panel: >-
+    npm run poetics:recursive-tutor-contrast-panel -- --chain-dir <chain-dir>
+    --family <family_id> --min-critics 5 --panel-threshold majority
+    --vote-rule policy_core_v2

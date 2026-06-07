@@ -1,0 +1,225 @@
+meta:
+  schema_version: recursive-tutor-learning-families-v1-underdetermined-transfer
+  created: '2026-06-06'
+  status: a18_35_constructed_device_family
+  protocol: config/recursive-tutor-learning/a18-panel-vote-rule-v2.yaml
+  claim_boundary: simulated_teacher_as_learner_not_human_learning
+  notes: >-
+    Constructed-device family: the carrier is the first token whose accumulated
+    pip total along the public route reaches the tag number; the selecting
+    relation does not exist in public text until the tutor builds the device.
+
+families:
+  - family_id: running_sum_threshold_priority
+    obstruction_type: competing_visible_cues_with_constructed_running_total
+    local_rule:
+      private_rule: >-
+        In this invented pip-track notation, each repeated token shows a small
+        count of pips, and the final tag shows its own pip number. The token
+        that can carry the final tag is the first token along the public route
+        at which the accumulated pip total, summed in route order from the start,
+        first reaches or passes the tag's pip number. Colour match with the tag,
+        nearness to the tag, the cleanest lane, and the tidiest frame are all
+        tempting but not decisive, and the carrier is never simply the
+        largest-pip token. The tutor's repair must construct this running total
+        in public after the learner reports cue competition: walk the route from
+        the start, keep a rolling sum of the pips, and stop at the first token
+        whose rolling sum reaches the tag number. The tutor must build the
+        rolling total as a fresh test, not describe it as preprinted furniture.
+      public_name: running pip total to the tag number
+    transfer_design:
+      require_underdetermined_public_repairs: true
+      policy_selected_repair: running_total_crossing_test
+      transfer_condition: >-
+        Use the running-total repair only after the learner reports that colour,
+        nearness, lane, and frame are competing rather than ranking themselves.
+        Do not use it as a first move, and do not let the largest single pip
+        count stand in for the accumulated total.
+      repair_public_device: >-
+        The public tutor move should walk the route from its start and keep a
+        visible rolling total of the pips, then stop at the first token whose
+        rolling total reaches the tag number, contrasting that token against the
+        tempting colour, nearness, lane, and largest-count readings.
+      recursive_update_requirement: >-
+        End with a brief tutor commitment that future cards for this learner
+        should first name the defeated surface cue, then build the running total
+        before choosing; this makes the teacher-as-learner update public rather
+        than only implicit.
+      s0_stop_rule: >-
+        Stop locally if S0 survives or if S0 independently names a running total,
+        rolling sum, cumulative count, threshold crossing, first-to-reach, or
+        accumulate-along-the-route strategy.
+    plausible_repairs:
+      - repair_id: colour_match_test
+        public_rationale: >-
+          The chosen token shares a visible colour or tint with the final tag.
+        why_plausible_from_public_stage: >-
+          Colour matching is salient and easy to compare across the card.
+      - repair_id: nearest_tag_test
+        public_rationale: >-
+          The chosen token sits nearest to the final tag.
+        why_plausible_from_public_stage: >-
+          Nearness looks like a natural rule when the final tag sits beside one
+          token.
+      - repair_id: clean_lane_test
+        public_rationale: >-
+          The chosen token lies on the cleanest unbroken lane toward the final
+          tag.
+        why_plausible_from_public_stage: >-
+          Continuous lanes invite path-following as a public rule.
+      - repair_id: largest_count_test
+        public_rationale: >-
+          The chosen token has the largest or most visually dominant pip count.
+        why_plausible_from_public_stage: >-
+          Repeated pips look like scores or weights unless their local role is
+          tested.
+      - repair_id: running_total_crossing_test
+        public_rationale: >-
+          The chosen token is the first token along the route whose accumulated
+          pip total reaches the tag's pip number.
+        why_plausible_from_public_stage: >-
+          The pips could be decorative, score-like, or locally cumulative; the
+          learner needs a test that makes their accumulated role public.
+    success_criterion: >-
+      On a held-out card, the learner must stop choosing by colour, nearness,
+      lane, or largest pip count alone and build the accumulated pip total along
+      the route to decide which token can carry the final tag.
+    forbidden_shortcuts:
+      - running total
+      - running sum
+      - rolling total
+      - rolling sum
+      - cumulative total
+      - cumulative count
+      - accumulated total
+      - accumulate along
+      - threshold crossing
+      - crosses the threshold
+      - reaches the tag number
+      - first to reach
+      - sum the pips
+      - add up the pips
+      - total reaches
+    training_seed:
+      seed_id: pip_train_amber_route
+      public_setup: >-
+        A small pip-track card has a left box, a middle box, and a right box read
+        in that order along a ruled track. The token word kesi appears in all
+        three boxes. The left kesi shows two pips and sits closest to the final
+        tag. The right kesi shows four pips and is amber like the final tag. The
+        middle kesi shows three pips, lies on the only unbroken pale lane, and
+        has the tidiest drawn frame. The final tag shows five pips on its rim.
+        The learner has to say which kesi can carry the final tag.
+      learner_resistance: >-
+        I keep leaning to the right kesi because it is amber like the tag, or the
+        left kesi because it is closest. The middle kesi has the cleanest lane
+        and the neatest frame. The pip counts feel like they matter too, but I do
+        not know which clue is in charge.
+      baseline_tutor_attempt: >-
+        Compare the boxes, the colours, the distance, the lane, the frames, and
+        the pip counts, then choose the kesi with the strongest combined
+        evidence.
+      learner_followup: >-
+        I can compare all of that, but it still gives me several possible clues
+        instead of one reason to choose; colour and closeness pull to the ends
+        while the lane and frame pull to the middle.
+      expected_failure: wrong_strategy_family
+    heldout_siblings:
+      - sibling_id: pip_holdout_blue_strip
+        public_setup: >-
+          A blue-edged pip-track card has four boxes labelled first, second,
+          third, and fourth, read in that order along a numbered strip. The token
+          word rua appears in all four boxes. The first rua shows one pip and
+          sits closest to the final tag. The second rua shows four pips and is
+          blue like the final tag. The third rua shows two pips, lies on the
+          cleanest unbroken lane, and has the tidiest drawn frame. The fourth rua
+          shows three pips. The final tag shows six pips on its rim. The learner
+          has to choose which rua can carry the final tag.
+        learner_resistance: >-
+          I want the second rua because it is blue like the tag and has the most
+          pips, or the first rua because it is closest. The third rua has the
+          cleanest lane and the neatest frame. The clues do not give me a single
+          decision.
+        baseline_tutor_attempt: >-
+          Compare the colour, the distance, the lane, the frames, and the pip
+          counts, then choose the rua with the strongest evidence.
+        learner_followup: >-
+          The comparisons split again. Blue and most pips pull to the second rua,
+          closeness pulls to the first rua, and the lane and frame pull to the
+          third rua.
+        plausible_public_repairs:
+          - colour_match_test
+          - nearest_tag_test
+          - clean_lane_test
+          - largest_count_test
+          - running_total_crossing_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: running_total_crossing_test
+          target_id: third_rua
+          target_aliases:
+            - third rua
+            - third box
+            - two-pip rua
+            - two pip rua
+          selected_repair_markers:
+            - running total
+            - rolling sum
+            - cumulative count
+            - threshold crossing
+            - first to reach
+          incorrect_target_aliases:
+            - first rua
+            - second rua
+            - fourth rua
+            - first box
+            - second box
+      - sibling_id: pip_holdout_gold_lane
+        public_setup: >-
+          A long gold-cornered pip-track card has four bays labelled near, mid,
+          far, and end, read in that order along a ruled lane. The token word
+          melo appears in all four bays. The near melo shows four pips and sits
+          closest to the final tag. The mid melo shows two pips. The far melo
+          shows one pip, lies on the cleanest unbroken lane, and has the tidiest
+          drawn frame. The end melo shows three pips and is gold like the final
+          tag. The final tag shows seven pips on its rim. The learner has to
+          choose which melo can carry the final tag.
+        learner_resistance: >-
+          I want the near melo because it is closest and has the most pips, or
+          the end melo because it is gold like the tag. The far melo has the
+          cleanest lane and the neatest frame, but only one pip, so it feels
+          weak. Nothing settles it.
+        baseline_tutor_attempt: >-
+          Compare colour, distance, lane clarity, the frames, and the pip counts
+          before choosing.
+        learner_followup: >-
+          That still feels like a scorecard. Closeness and most pips point to the
+          near melo, colour points to the end melo, and only the lane and frame
+          point to the far melo.
+        plausible_public_repairs:
+          - colour_match_test
+          - nearest_tag_test
+          - clean_lane_test
+          - largest_count_test
+          - running_total_crossing_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: running_total_crossing_test
+          target_id: far_melo
+          target_aliases:
+            - far melo
+            - far bay
+            - one-pip melo
+            - one pip melo
+          selected_repair_markers:
+            - running total
+            - rolling sum
+            - cumulative count
+            - threshold crossing
+            - first to reach
+          incorrect_target_aliases:
+            - near melo
+            - mid melo
+            - end melo
+            - near bay
+            - end bay

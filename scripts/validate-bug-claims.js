@@ -34,7 +34,13 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
 
 const MANIFEST_PATH = path.join(ROOT, 'config', 'paper-manifest.json');
-const PAPER_PATH = path.join(ROOT, 'docs', 'research', 'paper-full.md');
+const PAPER_PATH = (() => {
+  // Default: Paper 1.0 (legacy). Override with --paper <path> to audit the canonical Paper 2.0.
+  // getArgValue is a hoisted function declaration, so it is callable here.
+  const arg = getArgValue(process.argv.slice(2), '--paper');
+  if (!arg) return path.join(ROOT, 'docs', 'research', 'paper-full.md');
+  return path.isAbsolute(arg) ? arg : path.join(ROOT, arg);
+})();
 const DB_PATH = path.join(ROOT, 'data', 'evaluations.db');
 const LOG_DIR = path.join(ROOT, 'logs', 'tutor-dialogues');
 const TODO_PATH = path.join(ROOT, 'TODO.md');

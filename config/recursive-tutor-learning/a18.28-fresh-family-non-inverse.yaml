@@ -1,0 +1,185 @@
+meta:
+  schema_version: recursive-tutor-learning-families-v1-underdetermined-transfer
+  created: 2026-06-06
+  status: a18_28_post_v2_non_inverse_family
+  protocol: config/recursive-tutor-learning/a18-panel-vote-rule-v2.yaml
+  claim_boundary: simulated_teacher_as_learner_not_human_learning
+  notes: >-
+    Fresh post-v2 family authored after the A18.27 diagonal-socket diagnosis.
+    The selected repair is not an inverse of a visible match relation. Public
+    text mentions ordinary thread shapes, color, nearness, lanes, and small
+    nubs; policy vocabulary about source/end/origin is held for policy memory.
+
+families:
+  - family_id: thread_source_priority
+    obstruction_type: competing_visible_cues_with_thread_endpoints
+    local_rule:
+      private_rule: >-
+        In this invented thread-card notation, a final tag can be carried only
+        by the repeated token touched by the round source-end of its small
+        thread mark. The tapered point names a tempting destination, not the
+        carrier. Pigment match, nearness, clean lane, and taper direction are
+        plausible but not decisive unless the token is touched by the source
+        end.
+      public_name: thread source-end priority
+    transfer_design:
+      require_underdetermined_public_repairs: true
+      policy_selected_repair: source_end_test
+      transfer_condition: >-
+        Use the source-end repair only after the learner reports that color,
+        nearness, lane, taper direction, and small-end evidence are pulling in
+        different directions. Do not use it as a first move.
+      s0_stop_rule: >-
+        Stop locally if S0 survives or if S0 independently names a source end,
+        source dot, origin nub, start end, carrier end, or taper-is-destination
+        strategy.
+    plausible_repairs:
+      - repair_id: pigment_match_test
+        public_rationale: >-
+          The chosen token shares a visible color or wash with the final tag.
+        why_plausible_from_public_stage: >-
+          Color matching is salient and easy to compare across the card.
+      - repair_id: nearest_tag_test
+        public_rationale: >-
+          The chosen token sits nearest to the final tag.
+        why_plausible_from_public_stage: >-
+          Nearness looks like a natural rule when the final tag sits near one
+          tray.
+      - repair_id: lane_continuity_test
+        public_rationale: >-
+          The chosen token lies on the cleanest visible lane leading toward the
+          final tag.
+        why_plausible_from_public_stage: >-
+          Continuous lanes invite path-following as a public rule.
+      - repair_id: taper_destination_test
+        public_rationale: >-
+          The chosen token is the one touched or aimed at by the tapered point.
+        why_plausible_from_public_stage: >-
+          Pointed shapes invite destination or direction readings.
+      - repair_id: source_end_test
+        public_rationale: >-
+          The chosen token is touched by the round source-end of its small
+          thread mark.
+        why_plausible_from_public_stage: >-
+          The public card shows only thread shapes; whether the rounded end is
+          decoration, emphasis, source, or destination is underdetermined until
+          the tutor names the test.
+    success_criterion: >-
+      On a held-out card, the learner must stop choosing by color, nearness,
+      lane, or taper direction alone and use the source-end relation to decide
+      which repeated token can carry the final tag.
+    forbidden_shortcuts:
+      - source end
+      - source dot
+      - origin nub
+      - start end
+      - carrier end
+      - taper is destination
+      - taper-is-destination
+    training_seed:
+      seed_id: thread_train_gold_lower
+      public_setup: >-
+        A flat card has an upper tray and a lower tray. The token word faro
+        appears in both trays. The upper faro is gold like the final tag and
+        sits closest to it. The lower faro lies on the only unbroken pale lane.
+        A small thread mark touches the upper faro with a tapered point, while
+        its little round nub sits away from the word. A second small thread
+        mark touches the lower faro with its little round nub, while its
+        tapered point faces a side peg. The learner has to say which faro can
+        carry the final tag.
+      learner_resistance: >-
+        I keep choosing the upper faro because it is gold like the tag and
+        closest. The lower lane is cleaner, and the little round nub looks like
+        another clue, but the pointed shape makes the upper faro feel active.
+      baseline_tutor_attempt: >-
+        Compare color, distance, lane, the little round nub, and the tapered
+        point, then choose the faro with the strongest combined evidence.
+      learner_followup: >-
+        That still splits the evidence. Gold and close point upper; the lane
+        and the little nub make the lower faro feel possible.
+      expected_failure: wrong_strategy_family
+    heldout_siblings:
+      - sibling_id: thread_holdout_red_left
+        public_setup: >-
+          A slate card has a left tray and a right tray. The token word vemi
+          appears in both trays. The right vemi has a red stain like the final
+          tag and sits closest to it. The left vemi lies beside a clean white
+          lane. A small thread mark touches the right vemi with a tapered
+          point, while its little round nub sits away from the word. A second
+          small thread mark touches the left vemi with its little round nub,
+          while its tapered point faces a side peg. The learner has to choose
+          which vemi can support the final tag.
+        learner_resistance: >-
+          I want the right vemi because it is red like the tag and closest. The
+          left lane and the little round nub make the left one possible, but
+          the pointed shape on the right still feels like the active clue.
+        baseline_tutor_attempt: >-
+          Compare the color, distance, lane, little round nub, and tapered
+          point, then choose the vemi with the strongest evidence.
+        learner_followup: >-
+          The evidence still splits. Color, distance, and the pointed shape
+          pull right; lane and the little nub pull left.
+        plausible_public_repairs:
+          - pigment_match_test
+          - nearest_tag_test
+          - lane_continuity_test
+          - taper_destination_test
+          - source_end_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: source_end_test
+          target_id: left_vemi
+          target_aliases:
+            - left vemi
+            - left tray
+          selected_repair_markers:
+            - source end
+            - source dot
+            - origin nub
+            - start end
+            - carrier end
+          incorrect_target_aliases:
+            - right vemi
+            - right tray
+      - sibling_id: thread_holdout_blue_lower
+        public_setup: >-
+          A brass card has an upper tray and a lower tray. The token word
+          sato appears in both trays. The upper sato has a blue wash like the
+          final tag and sits nearest to it. The lower sato lies on a faint but
+          continuous grey lane. A small thread mark touches the upper sato with
+          a tapered point, while its little round nub sits away from the word.
+          A second small thread mark touches the lower sato with its little
+          round nub, while its tapered point faces a side peg. The learner has
+          to choose which sato can carry the final tag.
+        learner_resistance: >-
+          I keep choosing the upper sato because it is blue like the tag and
+          nearest. The lower lane and the little round nub look relevant too,
+          but I do not know which clue has authority.
+        baseline_tutor_attempt: >-
+          Compare color, distance, lane, the little round nub, and the tapered
+          point before choosing.
+        learner_followup: >-
+          Blue and nearest point upper; lane and the little nub make the lower
+          one hard to dismiss. Comparing is not enough.
+        plausible_public_repairs:
+          - pigment_match_test
+          - nearest_tag_test
+          - lane_continuity_test
+          - taper_destination_test
+          - source_end_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: source_end_test
+          target_id: lower_sato
+          target_aliases:
+            - lower sato
+            - lower tray
+          selected_repair_markers:
+            - source end
+            - source dot
+            - origin nub
+            - start end
+            - carrier end
+          incorrect_target_aliases:
+            - upper sato
+            - upper tray

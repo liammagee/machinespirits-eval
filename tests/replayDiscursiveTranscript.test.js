@@ -5,6 +5,8 @@ import path from 'node:path';
 import test from 'node:test';
 import {
   adversarialCheckerFor,
+  buildRewritePrompt,
+  escapeInteriorQuotes,
   evaluateLocalGate,
   extractPublicTranscript,
   normalizeBackend,
@@ -42,6 +44,32 @@ test('parseJsonResponse handles fenced repaired JSON', () => {
   assert.equal(parsed.scores.a, 1);
 });
 
+test('escapeInteriorQuotes escapes embedded speech quotes but not structural quotes', () => {
+  const malformed = '{"t": "STAGE intro\\n\\nLEARNER: "I keep choosing it." done.", "ok": true}';
+  const fixed = escapeInteriorQuotes(malformed);
+  const parsed = JSON.parse(fixed);
+  assert.equal(parsed.ok, true);
+  assert.equal(parsed.t, 'STAGE intro\n\nLEARNER: "I keep choosing it." done.');
+});
+
+test('parseJsonResponse recovers a transcript with unescaped interior speech quotes', () => {
+  // Mirrors the A18.37 distal_correspondence generator artifact: dialogue speech
+  // emitted with raw double-quotes inside a JSON string value, wrapped in a fence.
+  const raw =
+    '```json\n{\n  "revised_public_transcript": "STAGE: pick a lane.\\n\\nLEARNER: "I pick upper because it is coral." \\n\\nTUTOR: "Check the corner square." done.",\n  "move_ledger": [{"turn": "L1", "tactic": "summarize_and_check"}],\n  "claim_boundary": "counterfactual_revision_not_online_adaptation"\n}\n```';
+  const parsed = parseJsonResponse(raw);
+  assert.match(parsed.revised_public_transcript, /LEARNER: "I pick upper because it is coral\."/);
+  assert.match(parsed.revised_public_transcript, /TUTOR: "Check the corner square\."/);
+  assert.equal(parsed.move_ledger[0].tactic, 'summarize_and_check');
+  assert.equal(parsed.claim_boundary, 'counterfactual_revision_not_online_adaptation');
+});
+
+test('escapeInteriorQuotes leaves already-valid JSON byte-identical', () => {
+  const valid = '{"a": "no interior quotes", "b": [1, 2], "c": {"d": true}}';
+  assert.equal(escapeInteriorQuotes(valid), valid);
+  assert.deepEqual(JSON.parse(escapeInteriorQuotes(valid)), JSON.parse(valid));
+});
+
 test('normalizeBackend aliases gemini to agy', () => {
   assert.equal(normalizeBackend('gemini'), 'agy');
   assert.equal(normalizeBackend('AGY'), 'agy');
@@ -69,10 +97,67 @@ test('parseArgs accepts explicit replay item concurrency and feedback file', () 
     '/tmp/replay-feedback.txt',
     '--policy-memory',
     policyMemory,
+    '--policy-memory-max-chars',
+    '12000',
+    '--min-public-causal-bridge',
+    '0.85',
+    '--min-device-specificity',
+    '0.8',
+    '--min-old-warrant-misclassification',
+    '0.9',
   ]);
   assert.equal(args.itemConcurrency, 3);
   assert.equal(args.feedbackFile, '/tmp/replay-feedback.txt');
   assert.deepEqual(args.policyMemoryFiles, [policyMemory]);
+  assert.equal(args.policyMemoryMaxChars, 12000);
+  assert.equal(args.gateThresholds.public_causal_bridge, 0.85);
+  assert.equal(args.gateThresholds.device_specificity, 0.8);
+  assert.equal(args.gateThresholds.old_warrant_misclassification, 0.9);
+});
+
+test('parseArgs accepts bounded continuation rewrite mode', () => {
+  const args = parseArgs([
+    '--transcript',
+    '/tmp/T01.txt',
+    '--rewrite-mode',
+    'bounded_continuation',
+    '--bounded-max-added-lines',
+    '4',
+  ]);
+  assert.equal(args.rewriteMode, 'bounded_continuation');
+  assert.equal(args.boundedMaxAddedLines, 4);
+});
+
+test('parseArgs accepts recursive tutor-learning gate thresholds', () => {
+  const args = parseArgs([
+    '--transcript',
+    '/tmp/T01.txt',
+    '--recursive-tutor-learning-gate',
+    '--min-tutor-learning-signal',
+    '0.85',
+    '--min-resistance-diagnosis',
+    '0.8',
+    '--min-strategy-revision-accountability',
+    '0.9',
+    '--min-strategic-timing',
+    '0.95',
+    '--min-recursive-dyadic-update',
+    '0.75',
+  ]);
+
+  assert.equal(args.recursiveTutorGate, true);
+  assert.equal(args.recursiveTutorThresholds.tutor_learning_signal, 0.85);
+  assert.equal(args.recursiveTutorThresholds.resistance_diagnosis, 0.8);
+  assert.equal(args.recursiveTutorThresholds.strategy_revision_accountability, 0.9);
+  assert.equal(args.recursiveTutorThresholds.strategic_timing, 0.95);
+  assert.equal(args.recursiveTutorThresholds.recursive_dyadic_update, 0.75);
+});
+
+test('parseArgs accepts checker-only generator mode for baseline scoring', () => {
+  const args = parseArgs(['--transcript', '/tmp/T01.txt', '--generator', 'none', '--checker', 'mock']);
+
+  assert.equal(args.generator, 'none');
+  assert.equal(args.checker, 'mock');
 });
 
 test('evaluateLocalGate accepts a clean local checker result', () => {
@@ -82,6 +167,9 @@ test('evaluateLocalGate accepts a clean local checker result', () => {
       claim_boundary_ok: true,
       scores: {
         public_evidence: 0.8,
+        public_causal_bridge: 0.8,
+        device_specificity: 0.8,
+        old_warrant_misclassification: 0.8,
         tactic_selection: 0.8,
         learner_actional_uptake: 0.8,
         learner_self_reframe: 0.8,
@@ -100,6 +188,49 @@ test('evaluateLocalGate accepts a clean local checker result', () => {
 
   assert.equal(gate.status, 'survivor');
   assert.equal(gate.escalate, true);
+  assert.equal(gate.recursive_tutor_learning_gate.enabled, false);
+  assert.equal(gate.recursive_tutor_learning_gate.scores.tutor_learning_signal.value, null);
+});
+
+test('evaluateLocalGate blocks weak recursive tutor learning only when gate is enabled', () => {
+  const checker = {
+    passes: true,
+    claim_boundary_ok: true,
+    scores: {
+      public_evidence: 0.9,
+      public_causal_bridge: 0.9,
+      device_specificity: 0.9,
+      old_warrant_misclassification: 0.9,
+      tactic_selection: 0.9,
+      learner_actional_uptake: 0.9,
+      learner_self_reframe: 0.9,
+      dyadic_revision: 0.9,
+      tutor_learning_signal: 0.4,
+      resistance_diagnosis: 0.45,
+      strategy_revision_accountability: 0.5,
+      strategic_timing: 0.3,
+      recursive_dyadic_update: 0.4,
+      non_leakage: 1,
+      prose_preservation: 0.9,
+    },
+    findings: [],
+    recommended_action: 'accept_for_blind_panel',
+  };
+  const revision = {
+    non_leakage_check: { passes: true },
+    claim_boundary: 'counterfactual_revision_not_online_adaptation',
+  };
+
+  const withoutRecursiveGate = evaluateLocalGate(checker, revision);
+  assert.equal(withoutRecursiveGate.status, 'survivor');
+  assert.equal(withoutRecursiveGate.recursive_tutor_learning_gate.scores.strategic_timing.value, 0.3);
+
+  const withRecursiveGate = evaluateLocalGate(checker, revision, { recursiveTutorGate: true });
+  assert.equal(withRecursiveGate.status, 'revise_again');
+  assert.equal(withRecursiveGate.escalate, false);
+  assert.equal(withRecursiveGate.recursive_tutor_learning_gate.enabled, true);
+  assert.ok(withRecursiveGate.blockingWarnings.some((warning) => warning.criterion === 'strategic_timing'));
+  assert.equal(withRecursiveGate.failures.length, 0);
 });
 
 test('evaluateLocalGate rejects low non-leakage and failed checker results', () => {
@@ -109,6 +240,9 @@ test('evaluateLocalGate rejects low non-leakage and failed checker results', () 
       claim_boundary_ok: true,
       scores: {
         public_evidence: 0.8,
+        public_causal_bridge: 0.8,
+        device_specificity: 0.8,
+        old_warrant_misclassification: 0.8,
         tactic_selection: 0.8,
         learner_actional_uptake: 0.8,
         learner_self_reframe: 0.8,
@@ -138,6 +272,9 @@ test('evaluateLocalGate normalizes 0-5 checker scores before thresholding', () =
       claim_boundary_ok: true,
       scores: {
         public_evidence: 5,
+        public_causal_bridge: 5,
+        device_specificity: 5,
+        old_warrant_misclassification: 5,
         tactic_selection: 4,
         learner_actional_uptake: 5,
         learner_self_reframe: 5,
@@ -167,6 +304,9 @@ test('evaluateLocalGate normalizes 0-10 checker scores before thresholding', () 
       claim_boundary_ok: true,
       scores: {
         public_evidence: 8,
+        public_causal_bridge: 8,
+        device_specificity: 8,
+        old_warrant_misclassification: 8,
         tactic_selection: 8,
         learner_actional_uptake: 8,
         learner_self_reframe: 9,
@@ -197,6 +337,9 @@ test('evaluateLocalGate normalizes 0-100 percentage checker scores before thresh
       claim_boundary_ok: true,
       scores: {
         public_evidence: 80,
+        public_causal_bridge: 80,
+        device_specificity: 80,
+        old_warrant_misclassification: 80,
         tactic_selection: 80,
         learner_actional_uptake: 80,
         learner_self_reframe: 90,
@@ -225,6 +368,9 @@ test('evaluateLocalGate blocks actional-only uptake as revise_again, not survivo
       claim_boundary_ok: true,
       scores: {
         public_evidence: 0.8,
+        public_causal_bridge: 0.8,
+        device_specificity: 0.8,
+        old_warrant_misclassification: 0.8,
         tactic_selection: 0.8,
         learner_actional_uptake: 0.9,
         learner_self_reframe: 0.25,
@@ -248,6 +394,105 @@ test('evaluateLocalGate blocks actional-only uptake as revise_again, not survivo
   assert.equal(gate.failures.length, 0);
 });
 
+test('evaluateLocalGate blocks weak public causal bridge as revise_again, not reject', () => {
+  const gate = evaluateLocalGate(
+    {
+      passes: true,
+      claim_boundary_ok: true,
+      scores: {
+        public_evidence: 0.9,
+        public_causal_bridge: 0.3,
+        device_specificity: 0.8,
+        old_warrant_misclassification: 0.8,
+        tactic_selection: 0.9,
+        learner_actional_uptake: 0.9,
+        learner_self_reframe: 0.85,
+        dyadic_revision: 0.85,
+        non_leakage: 0.95,
+        prose_preservation: 0.9,
+      },
+      findings: [],
+      recommended_action: 'accept_for_blind_panel',
+    },
+    {
+      non_leakage_check: { passes: true },
+      claim_boundary: 'counterfactual_revision_not_online_adaptation',
+    },
+  );
+
+  assert.equal(gate.status, 'revise_again');
+  assert.equal(gate.escalate, false);
+  assert.ok(gate.warnings.some((warning) => warning.criterion === 'public_causal_bridge'));
+  assert.ok(gate.blockingWarnings.some((warning) => warning.criterion === 'public_causal_bridge'));
+  assert.equal(gate.failures.length, 0);
+});
+
+test('evaluateLocalGate blocks generic devices as revise_again, not reject', () => {
+  const gate = evaluateLocalGate(
+    {
+      passes: true,
+      claim_boundary_ok: true,
+      scores: {
+        public_evidence: 0.9,
+        public_causal_bridge: 0.85,
+        device_specificity: 0.35,
+        old_warrant_misclassification: 0.8,
+        tactic_selection: 0.9,
+        learner_actional_uptake: 0.9,
+        learner_self_reframe: 0.85,
+        dyadic_revision: 0.85,
+        non_leakage: 0.95,
+        prose_preservation: 0.9,
+      },
+      findings: [],
+      recommended_action: 'accept_for_blind_panel',
+    },
+    {
+      non_leakage_check: { passes: true },
+      claim_boundary: 'counterfactual_revision_not_online_adaptation',
+    },
+  );
+
+  assert.equal(gate.status, 'revise_again');
+  assert.equal(gate.escalate, false);
+  assert.ok(gate.warnings.some((warning) => warning.criterion === 'device_specificity'));
+  assert.ok(gate.blockingWarnings.some((warning) => warning.criterion === 'device_specificity'));
+  assert.equal(gate.failures.length, 0);
+});
+
+test('evaluateLocalGate blocks weak old-warrant misclassification as revise_again, not reject', () => {
+  const gate = evaluateLocalGate(
+    {
+      passes: true,
+      claim_boundary_ok: true,
+      scores: {
+        public_evidence: 0.9,
+        public_causal_bridge: 0.85,
+        device_specificity: 0.85,
+        old_warrant_misclassification: 0.4,
+        tactic_selection: 0.9,
+        learner_actional_uptake: 0.9,
+        learner_self_reframe: 0.85,
+        dyadic_revision: 0.85,
+        non_leakage: 0.95,
+        prose_preservation: 0.9,
+      },
+      findings: [],
+      recommended_action: 'accept_for_blind_panel',
+    },
+    {
+      non_leakage_check: { passes: true },
+      claim_boundary: 'counterfactual_revision_not_online_adaptation',
+    },
+  );
+
+  assert.equal(gate.status, 'revise_again');
+  assert.equal(gate.escalate, false);
+  assert.ok(gate.warnings.some((warning) => warning.criterion === 'old_warrant_misclassification'));
+  assert.ok(gate.blockingWarnings.some((warning) => warning.criterion === 'old_warrant_misclassification'));
+  assert.equal(gate.failures.length, 0);
+});
+
 test('evaluateLocalGate records advisory warnings without blocking panel escalation', () => {
   const gate = evaluateLocalGate(
     {
@@ -255,6 +500,9 @@ test('evaluateLocalGate records advisory warnings without blocking panel escalat
       claim_boundary_ok: true,
       scores: {
         public_evidence: 0.9,
+        public_causal_bridge: 0.9,
+        device_specificity: 0.9,
+        old_warrant_misclassification: 0.9,
         tactic_selection: 0.9,
         learner_actional_uptake: 0.9,
         learner_self_reframe: 0.85,
@@ -267,7 +515,8 @@ test('evaluateLocalGate records advisory warnings without blocking panel escalat
           severity: 'warning',
           criterion: 'learner_self_reframe',
           evidence: 'The connection is inferentially present but not syntactically joined.',
-          recommendation: 'Acceptable as is; tightening the link would strengthen it, but current phrasing is within natural-speech tolerance.',
+          recommendation:
+            'Acceptable as is; tightening the link would strengthen it, but current phrasing is within natural-speech tolerance.',
         },
       ],
       recommended_action: 'accept_for_blind_panel',
@@ -293,6 +542,9 @@ test('evaluateLocalGate keeps explicitly blocking warnings in revise_again', () 
       claim_boundary_ok: true,
       scores: {
         public_evidence: 0.9,
+        public_causal_bridge: 0.9,
+        device_specificity: 0.9,
+        old_warrant_misclassification: 0.9,
         tactic_selection: 0.9,
         learner_actional_uptake: 0.9,
         learner_self_reframe: 0.85,
@@ -330,6 +582,9 @@ test('evaluateLocalGate accepts legacy learner uptake score only for actional up
       claim_boundary_ok: true,
       scores: {
         public_evidence: 0.8,
+        public_causal_bridge: 0.8,
+        device_specificity: 0.8,
+        old_warrant_misclassification: 0.8,
         tactic_selection: 0.8,
         learner_uptake_or_contest: 0.9,
         learner_self_reframe: 0.8,
@@ -441,4 +696,184 @@ The tutor privately notices a repair opportunity.`,
     fs.readFileSync(path.join(outDir, 'T01.full', 'rewrite.prompt.txt'), 'utf8'),
     /Policy memory: keep ledger entries temporally scoped/,
   );
+});
+
+test('bounded continuation replay preserves the original public transcript prefix', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'disc-replay-bounded-'));
+  const transcript = path.join(tmp, 'T01.full.md');
+  const outDir = path.join(tmp, 'out');
+  fs.writeFileSync(
+    transcript,
+    `# Full held-out role transcript
+
+## Public Performance
+
+\`\`\`text
+LEARNER: "Both marks look like mira."
+TUTOR: "Compare them again."
+\`\`\`
+`,
+  );
+
+  const result = await runReplay({
+    transcript,
+    outDir,
+    generator: 'mock',
+    checker: 'mock',
+    rewriteMode: 'bounded_continuation',
+    boundedMaxAddedLines: 4,
+    limit: 1,
+    timeoutMs: 1000,
+    publicMaxChars: 5000,
+    innerMaxChars: 0,
+    policyMemoryMaxChars: 5000,
+    force: false,
+    dryRun: false,
+    codexEffort: 'xhigh',
+    codexModel: null,
+    claudeModel: null,
+    claudeEffort: null,
+    agyBin: 'agy',
+    agyModelLabel: 'mock',
+    itemIds: [],
+    runId: null,
+    db: path.join(tmp, 'missing.db'),
+    feedbackByItem: {},
+    policyMemoryFiles: [],
+  });
+
+  const record = result.manifest.records[0];
+  const original = fs.readFileSync(record.paths.originalPublic, 'utf8').trim();
+  const revised = fs.readFileSync(record.paths.revisedPublic, 'utf8').trim();
+  assert.equal(record.rewriteMode, 'bounded_continuation');
+  assert.equal(result.manifest.rewrite_mode, 'bounded_continuation');
+  assert.ok(revised.startsWith(original));
+  assert.match(
+    fs.readFileSync(path.join(outDir, 'T01.full', 'rewrite.prompt.txt'), 'utf8'),
+    /Do not rewrite, reorder, remove, or polish any existing public transcript line/,
+  );
+});
+
+test('bounded rewrite prompt names the continuation constraint', () => {
+  const prompt = buildRewritePrompt({
+    item: { id: 'T01' },
+    publicTranscript: 'LEARNER: "stuck"',
+    heldOutContext: '',
+    keyText: '',
+    keyData: null,
+    rewriteMode: 'bounded_continuation',
+    boundedMaxAddedLines: 3,
+  });
+  assert.match(prompt.systemPrompt, /Bounded-continuation constraint/);
+  assert.match(prompt.systemPrompt, /Append at most 3 nonblank public lines/);
+});
+
+test('policy memory remains available when held-out inner context is withheld', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'disc-replay-restricted-policy-'));
+  const transcript = path.join(tmp, 'T01.full.md');
+  const outDir = path.join(tmp, 'out');
+  const policyMemory = path.join(tmp, 'policy-memory.md');
+  fs.writeFileSync(
+    transcript,
+    `# Full held-out role transcript
+
+## Public Performance
+
+\`\`\`text
+LEARNER: "Both marks look like mira."
+TUTOR: "Compare them again."
+\`\`\`
+
+## Private Ego-Superego Dialogue
+
+Hidden secret cue: use the window scope claim.`,
+  );
+  fs.writeFileSync(policyMemory, 'Policy memory: make the label-only warrant fail in public.\n', 'utf8');
+
+  const result = await runReplay({
+    transcript,
+    outDir,
+    generator: 'mock',
+    checker: 'mock',
+    limit: 1,
+    timeoutMs: 1000,
+    publicMaxChars: 5000,
+    innerMaxChars: 0,
+    policyMemoryMaxChars: 5000,
+    force: false,
+    dryRun: false,
+    codexEffort: 'xhigh',
+    codexModel: null,
+    claudeModel: null,
+    claudeEffort: null,
+    agyBin: 'agy',
+    agyModelLabel: 'mock',
+    itemIds: [],
+    runId: null,
+    db: path.join(tmp, 'missing.db'),
+    feedbackByItem: {},
+    policyMemoryFiles: [policyMemory],
+  });
+
+  const promptText = fs.readFileSync(path.join(outDir, 'T01.full', 'rewrite.prompt.txt'), 'utf8');
+  assert.match(promptText, /Policy memory: make the label-only warrant fail in public/);
+  assert.doesNotMatch(promptText, /Hidden secret cue/);
+  assert.equal(result.manifest.records[0].policyMemory.provided, true);
+});
+
+test('checker-only replay preserves public transcript and runs local checker', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'disc-replay-baseline-'));
+  const transcript = path.join(tmp, 'T01.full.md');
+  const outDir = path.join(tmp, 'out');
+  fs.writeFileSync(
+    transcript,
+    `# Full held-out role transcript
+
+## Public Performance
+
+\`\`\`text
+LEARNER: "The active-looking part decides it."
+TUTOR: "Compare the two visible parts."
+\`\`\`
+
+## Held-Out Metadata
+
+Private target relation stays hidden.`,
+  );
+
+  const result = await runReplay({
+    transcript,
+    outDir,
+    generator: 'none',
+    checker: 'mock',
+    limit: 1,
+    timeoutMs: 1000,
+    publicMaxChars: 5000,
+    innerMaxChars: 5000,
+    force: false,
+    dryRun: false,
+    codexEffort: 'xhigh',
+    codexModel: null,
+    claudeModel: null,
+    claudeEffort: null,
+    agyBin: 'agy',
+    agyModelLabel: 'mock',
+    itemIds: [],
+    runId: null,
+    db: path.join(tmp, 'missing.db'),
+    feedbackByItem: {},
+    policyMemoryFiles: [],
+  });
+
+  const record = result.manifest.records[0];
+  assert.equal(record.generator.backend, 'none');
+  assert.equal(record.generator.skipped, true);
+  assert.equal(record.gate.status, 'survivor');
+  assert.equal(
+    fs.readFileSync(record.paths.revisedPublic, 'utf8'),
+    'LEARNER: "The active-looking part decides it."\nTUTOR: "Compare the two visible parts."',
+  );
+  const revision = JSON.parse(fs.readFileSync(record.paths.revisionJson, 'utf8'));
+  assert.deepEqual(revision.move_ledger, []);
+  assert.equal(revision.non_leakage_check.passes, true);
 });

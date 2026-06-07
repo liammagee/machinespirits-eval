@@ -1,0 +1,515 @@
+<!doctype html>
+<!--
+  Three Instruments, One Repertoire. A techne editorial note (the .html IS the
+  source; no build step). Design: assets/techne.css. Behaviour: assets/techne.js.
+  Genre: dated analysis + forward-looking design note. PROVISIONAL by design —
+  the durable, claim-bearing account lives in docs/research/paper-full-2.0.md and
+  the /summary synthesis note. This piece analyses three measurement instruments
+  (ontology memory · small rhetorical phrasing · large dramatic turns), then
+  proposes a repertoire of controlled adaptive mechanisms to exploit the few real
+  wins. It narrates, cites, and proposes; it does not originate empirical claims.
+  Every number is cited to its source §/note. The §06 repertoire is forward-
+  looking design, flagged as such.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<title>Three Instruments, One Repertoire · machine spirits</title>
+<meta name="description" content="What our ontology memory model, our small-rhetoric scorers, and our large-dramatic-form rubric actually measured — and how to exploit the few small wins into a repertoire of controlled adaptive mechanisms. With a gallery of failed and minimally-succeeded adaptation." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Source+Serif+4:opsz,wght@8..60,200..900&family=JetBrains+Mono:wght@300..700&display=swap" />
+<link rel="stylesheet" href="assets/techne.css" />
+</head>
+
+<body>
+
+<header class="rail" id="rail">
+  <div class="rail__inner">
+    <span class="rail__title">Three instruments · one repertoire</span>
+    <span class="rail__dot" aria-hidden="true"></span>
+    <nav class="rail__nav" aria-label="Section navigation">
+      <a href="#grains">Three grains</a>
+      <a href="#ontology">Ontology memory</a>
+      <a href="#micro">Small rhetoric</a>
+      <a href="#macro">Large drama</a>
+      <a href="#finding">The finding</a>
+      <a href="#repertoire">Repertoire</a>
+      <a href="#gallery">Gallery</a>
+      <a href="#offtable">Off the table</a>
+    </nav>
+    <div class="rail__actions">
+      <button class="rail__btn" id="themeToggle" type="button">Dark</button>
+    </div>
+  </div>
+  <div class="rail__progress" id="railProgress"></div>
+</header>
+
+<main>
+
+  <section class="hero">
+    <div class="hero__rune"><span>§</span> Analysis + repertoire · updated 2026-06-06</div>
+    <h1 class="hero__h1">Three instruments, <span class="em">one repertoire</span>.</h1>
+    <p class="hero__subtitle">What our ontology memory model, our small-rhetoric scorers, and our large-dramatic-form rubric actually measured — and how to turn the handful of real wins into a controlled set of adaptive mechanisms.</p>
+    <div class="hero__lede">
+      <div>
+        <p>We built three different instruments to ask one question — <em>does the tutor adapt, and does the adaptation carry new signal rather than restate the obvious?</em> Each reads the dialogue at a different grain: a <strong>formal memory model</strong> (symbolic), <strong>small rhetorical phrasing</strong> (lexical, micro), and <strong>large dramatic turns</strong> (whole-transcript, macro).</p>
+        <p>This note does two things. It states plainly where each instrument now stands — what paid off, what is a null, what was a confound. Then it proposes how to <em>exploit</em> the few wins into a wider <dfn class="gl-term" data-target="glossary">repertoire</dfn> of controlled adaptive mechanisms. It is a lab notebook: the durable claims live in <code>paper-full-2.0.md</code> and the <a href="/summary">summary</a>; here I narrate, cite every number to its source, and propose. The <a href="/story">story so far</a> tells the same arc as a chronology — this one cuts it by instrument.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="shell">
+
+    <!-- 01 — Three grains -->
+    <section class="s" id="grains">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">01<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Three grains of the same question</p>
+          <h2 class="s__h">One question, read at <em>three grains</em>.</h2>
+          <p>The question is always the same: when a learner is genuinely stuck, does the tutor's move change — and can we tell the change came from something it <em>picked up</em>, not from re-describing what the scene already made obvious? We attacked it with three instruments, each at a different scale.</p>
+
+          <div class="claim">
+            <span class="claim__no">I.</span>
+            <h3 class="claim__h">Ontology memory model <span class="chip chip--ink">symbolic</span></h3>
+            <div class="claim__body"><p>A formal, consistency-checkable memory of who-knows-what — a shared description-logic vocabulary, per-role belief stores, and a theory-of-mind layer the tutor reads. <strong>Headline: plain ontology grounding helps; the mind-reading layer bolted on top of it is a null.</strong></p></div>
+          </div>
+
+          <div class="claim">
+            <span class="claim__no">II.</span>
+            <h3 class="claim__h">Small rhetorical phrasing <span class="chip chip--ochre">lexical · micro</span></h3>
+            <div class="claim__body"><p>Does the <em>wording</em> carry the adaptation? Two scorers: recognition-lexicon density, and a derived-origin classifier that buckets recognition as device-induced vs organic. <strong>Headline: vocabulary is a marker, not a mediator; and the origin scorer was, for a while, measuring itself.</strong></p></div>
+          </div>
+
+          <div class="claim">
+            <span class="claim__no">III.</span>
+            <h3 class="claim__h">Large dramatic turns <span class="chip chip--brick">whole-transcript · macro</span></h3>
+            <div class="claim__body"><p>Does the whole transcript have the <em>shape</em> of a recognition — a reversal that lands, an insight that recoheres the scene? An Aristotelian six-dimension rubric, scored end-to-end. <strong>Headline: real on literary canon, does not transfer to tutoring, and every apparent effect traces to the author.</strong></p></div>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">Throughline</span> The three converge on a single finding — <a href="#finding">§05</a>. Read separately first; the convergence is the point.</p>
+          <p class="note note--ink"><span class="note__lbl">Genre</span> An analysis note is allowed to be provisional. Durable claims graduate to the paper and the <a href="/summary">summary</a>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 — Ontology memory model -->
+    <section class="s" id="ontology">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">02<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Instrument I · a formal, checkable memory of who-knows-what</p>
+          <h2 class="s__h">The ontology helps. The mind-reading layer on top of it <em>does not</em>.</h2>
+          <p>The build is real and inspectable. We consolidated the repo's two formal ontologies (<code>reasoning-core.ttl</code> + <code>poetics-core.ttl</code>) into one co-loaded shared vocabulary, added a deliberate disjointness set (<code>consistency-axioms.ttl</code> — e.g. <em>knowledge-component mastered</em> ⊥ <em>missing</em>), and built per-role <dfn class="gl-term" data-target="glossary">ABoxes</dfn>: turn-stamped, two-tier (grounded vs hypothesized) belief stores, with a per-turn description-logic consistency check and latest-wins belief revision. A role's <em>acquired</em> graph about another role is its theory-of-mind. Anagnorisis is measured as set-overlap; seventeen unit tests pin the machinery.</p>
+
+          <div class="claim">
+            <span class="claim__no">✓</span>
+            <h3 class="claim__h">Plain ontology grounding beats baseline <span class="chip chip--moss">works</span></h3>
+            <div class="claim__body">
+              <p>In a real multi-turn A/B on three stress scenarios, ontology <em>policy guidance</em> — "only assert the conclusion if the proof is the learner's" — lifts the anagnorisis outcome from <strong>0.83 (baseline) to 1.00</strong>. Grounding the move in a formal model of what the learner actually owns changes the move for the better.</p>
+            </div>
+          </div>
+
+          <div class="claim">
+            <span class="claim__no">✕</span>
+            <h3 class="claim__h">The theory-of-mind feedback layer is a null <span class="chip chip--brick">null · slightly negative</span></h3>
+            <div class="claim__body">
+              <p>Add a per-turn, consistency-checked ToM brief <em>on top of</em> the ontology guidance and the outcome goes the wrong way: anagnorisis <strong>0.83 vs 1.00</strong> (lower — the extra directiveness cost the learner the goal in the identity-threat scene), judge score +0.06 (noise).</p>
+            </div>
+            <div class="claim__counter">
+              <p>And it fires <em>correctly</em>: surface compliance — a learner claiming the conclusion while signalling weak ownership — is flagged as a grounded inconsistency at turns 2–3, and the brief is followed. It simply <strong>re-encodes a move the ontology guidance already prompts.</strong> A formal, checkable interior reaches the same null as §6.10's free-text one.</p>
+            </div>
+          </div>
+
+          <p>Two findings worth keeping out of the wreckage. First: <strong>ToM consistency is not pedagogy.</strong> A tutor that accurately reads a deferring learner and just answers is perfectly consistent — and bad. Scaffolding is <em>productive inconsistency</em>: treat-as-partner over treat-as-accurately-modelled. Second: the description-logic machinery is correct and inspectable — it beats §6.10's free-text proxy on <em>checkability</em> — it just doesn't <em>pay</em> on these traps.</p>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">Cite</span> Real Codex multi-turn A/B, stress suite n=3, single backend, heuristic detector. <code>scripts/run-ontology-tom-ab.js</code>; write-up <code>notes/ontology/2026-06-02-multi-turn-tom-ab.md</code>; paper §6.10 symbolic corroboration (out of claim set).</p>
+          <p class="note note--ink"><span class="note__lbl">Now fused</span> The vocabulary is folded into the poetics ontology (Aristotle / Wittgenstein / Brandom scorekeeping). A population bridge from runs into the ABox is built and unit-tested on fixtures — not yet run on real loop data.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 — Small rhetorical phrasing -->
+    <section class="s" id="micro">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">03<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Instrument II · does the wording carry the adaptation?</p>
+          <h2 class="s__h">Vocabulary is a marker, not a mediator — and one scorer was <em>measuring itself</em>.</h2>
+          <p>Two families of micro-instrument, two different lessons.</p>
+
+          <p class="s__kicker" style="margin-top:18px">Family A · recognition-lexicon density (A10 / A10b)</p>
+          <div class="claim">
+            <span class="claim__no">a.</span>
+            <h3 class="claim__h">Swap the Hegelian vocabulary and the effect survives <span class="chip chip--ochre">settled · the marker isn't the mechanism</span></h3>
+            <div class="claim__body">
+              <p>Replace recognition's specific Hegelian wording with matched-specificity prompts grounded in its constructivist descendants (Vygotsky, Piaget, Kapur, Chi, VanLehn, Graesser) and the effect <em>reproduces</em> — pooled three-judge <strong>d = 0.14–0.19</strong>, below the <em>|d| &lt; 0.2</em> density-sufficient threshold. The active ingredient is <strong>intersubjective-pedagogy orientation</strong>, not the lexicon.</p>
+            </div>
+            <div class="claim__counter">
+              <p>But orientation has a <em>sign</em>. Matched-specificity prompts grounded in the orthogonal behaviorist tradition (Skinner, Gagné, Keller, Thorndike, Rosenshine) score pooled <strong>d = 0.89 <em>below</em> the generic baseline</strong> — rigour in the wrong family is actively counterproductive. Between-family <strong>d = 1.38</strong> dominates within-family contrasts by an order of magnitude. The recognition lexicon does surface as a marker (it leads on the <code>recognition_quality</code> sub-dimension, 2.75 vs 2.26) — but it does not <em>mediate</em> the overall score. Replicated on a fourth model (Nemotron, d = 0.17).</p>
+            </div>
+          </div>
+
+          <p class="s__kicker" style="margin-top:18px">Family B · derived-origin scorer (device-induced vs organic)</p>
+          <div class="claim">
+            <span class="claim__no">b.</span>
+            <h3 class="claim__h">The "organic-recognition saturation" was a scorer bug <span class="chip chip--brick">bug → fragile positive</span></h3>
+            <div class="claim__body">
+              <p>The adaptation loop kept stalling on "organic recognition" — the peripeteia arm earned 3–4/4 recognition votes but its <em>origin</em> stayed unattributed. It looked like the drama failing. It was the scorer. Origin was <strong>derived, never voted</strong> (<code>recognitionOrigin.js</code>: the only binding axis is a tutor-mechanism score ≥ 75), and that axis was clamped by brittle hardcoded lexicons in two paths. "Tiles float. The diagram does not." — a textbook reversal — matched no lexicon, so it clamped to <em>organic</em>. Only the author-family critic (Sonnet, the generator's own family) ever cleared the gate.</p>
+            </div>
+            <div class="claim__counter">
+              <p>The EDRA-M3 surgery fixed the measurement. Post-fix on the author-family panel: a small, fragile positive — <strong>lift 0.333 [0.12, 0.65]</strong> over nine valid pairs, with the peripeteia arm still under-recognized (3/9). Swapping the critic to GPT to de-confound the author family shows the peripeteia effect <em>survives with no inflation</em> — <strong>lift 1.0 on valid pairs</strong> — <em>but 3 of 6 pairs are invalidated by control-leak</em>. The leak's root cause is the <strong>generator</strong>: the control arms have the learner visibly self-correcting (tutor-did-device = false on every leaked control). A real but fragile small positive, and a reusable de-confounding harness.</p>
+            </div>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">Cite</span> A10/A10b — paper §7.9, §8.6.1. Origin scorer — <code>scripts/lib/recognitionOrigin.js</code>; surgery spec <code>notes/poetics/2026-05-28-edra-m3-surgery-spec.md</code>; GPT de-confound <code>exports/paired-increment-reverse-GPT-pooled-*.json</code>.</p>
+          <p class="note note--ochre"><span class="note__lbl">Reporting rule</span> Always report the control-leak invalidation rate <em>beside</em> the lift. A lift of 1.0 on a denominator halved by leaks is misleading on its own.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 — Large dramatic turns -->
+    <section class="s" id="macro">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">04<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Instrument III · does the whole transcript have the shape of a recognition?</p>
+          <h2 class="s__h">Real on canon. <em>Does not transfer</em> to tutoring.</h2>
+          <p>The poetics rubric (<code>evaluation-rubric-poetics.yaml</code> v1.0) scores a transcript end-to-end on six Aristotelian dimensions — peripeteia, anagnorisis, surprise-with-inevitability, unity of action, hamartia integration, catharsis. On canonical literary drama it <strong>passed</strong>, triple-validated (Phase 1). Then we asked whether it reads tutoring dialogue the way a human does.</p>
+
+          <div class="claim">
+            <span class="claim__no">✕</span>
+            <h3 class="claim__h">Phase-2 transfer to tutoring failed <span class="chip chip--brick">null · pre-registered</span></h3>
+            <div class="claim__body">
+              <p>Instrument-vs-human <strong>weighted κ = 0.044</strong> (nominal 0.222; raw agreement 17/36 = 47%) against a pre-registered ≥ 0.60 bar. The instrument that validated on canon does not reproduce human form-judgments on tutoring transcripts.</p>
+            </div>
+            <div class="claim__counter">
+              <p>The mechanism is the result: the critic <strong>over-attributes recognition ~3×</strong> (27/36 calls vs the human's 10/36). Of its 27, only 9 matched the human; 12 were ordinary exchange, 6 were insight-declaration-without-recohering. It made every call <em>after</em> clearing its own evidence gate (citing a verbatim earlier turn) — so it reads ordinary tutoring progression as structural recohering. It is fooled by the costume of recognition.</p>
+            </div>
+          </div>
+
+          <div class="claim">
+            <span class="claim__no">⚠</span>
+            <h3 class="claim__h">The "critic mirror" is an author confound <span class="chip chip--brick">confound</span></h3>
+            <div class="claim__body">
+              <p>The full 2×2 (critic × author) relocates the effect entirely. Claude-authored dramas read as recognition to <em>both</em> critics — <strong>100% / 100%</strong> (n=6). Codex-authored dramas read flat/trap to both — <strong>22% / 0%</strong> (n=18). The author dominates; the critic is a small secondary effect, visible only on codex-authored text.</p>
+            </div>
+            <div class="claim__counter">
+              <p>Costume caveat: all six Claude dramas read as recognition to both critics <em>including the ones designed as flat, trap, and impasse</em>. The instrument cannot separate earned recohering from a convincing costume. "Claude wears the recognition costume so consistently both critics fall for it even on designed traps" is as good a reading as "Claude writes better recohering."</p>
+            </div>
+          </div>
+
+          <div class="claim">
+            <span class="claim__no">⚠</span>
+            <h3 class="claim__h">A timing effect that was really a coherence confound <span class="chip chip--brick">confound</span></h3>
+            <div class="claim__body">
+              <p>A contrastive timing-pair probe asked whether moving a tutor device next to the learner's reframe makes blind critics attribute the reframe to the tutor. Pooled, it looked like a tidy positive (A−B = 0.28). It was a <strong>coherence confound</strong>: displacing a pivot whose text refers back to the obstruction breaks anaphora and tanks coherence — attribution falls <em>with</em> coherence, not with timing.</p>
+            </div>
+            <div class="claim__counter">
+              <p>On the coherence-clean subset the timing effect is <strong>0.00, all three critics</strong> — but at the attribution floor, so underpowered rather than a proven null. And the critics are <em>not</em> gullible: a decoy arm (neutral move + adjacency) earns <em>less</em> attribution than the real bridge (0.17 &lt; 0.33). They track mechanism content, not bare sequence. The design's mandated coherence-gate caught its own confound.</p>
+            </div>
+          </div>
+
+          <p>There is no clean positive for the dramatic instrument on tutoring. The arc's only positive — the recursive teacher-as-learner (A18, §7.9) — <em>abandons</em> the read-form-from-the-transcript premise and instead asks whether a saved policy transfers to a held-out scene. That is a different instrument, and the only one that pays.</p>
+        </div>
+        <div class="mr">
+          <p class="note note--brick"><span class="note__lbl">Frame</span> This is dramatic-<em>form</em> classification of text-internal recohering — never real-learning or mind-reading detection. Divergence from human labels is a finding, not a κ to chase.</p>
+          <p class="note note--ink"><span class="note__lbl">Cite</span> Phase-2 fail 2026-05-20; 2×2 critic-mirror scored 2026-05-21; timing-pair 2026-06-05. Notes under <code>notes/poetics/</code>; artifacts gitignored.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 05 — The finding -->
+    <section class="s" id="finding">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">05<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">What all three instruments keep saying</p>
+          <h2 class="s__h">Every win is a signal win. Every null is a <em>re-encoding</em> null.</h2>
+          <p>Across the symbolic, the lexical, and the dramatic grain, the same shape shows through. Adaptation <strong>pays</strong> when the mechanism carries <em>new signal the strong model doesn't already infer</em>. It is <strong>null</strong> when it re-encodes what the model already reads in-context — a richer ToM brief, a denser lexicon, a more elaborate state schema. The model had already inferred the thing; restating it formally adds nothing.</p>
+          <p>And the second half: apparent effects keep tracing back to the <strong>generator / author</strong>, not to a privileged learner interior. The dramatic instrument's whole effect was the author. The origin scorer's leak was the generator. There is <em>no privileged interior in a simulated dyad</em> — when both sides are the same strong model, "reading the learner's mind" is reading your own.</p>
+          <div class="pq">
+            <p>The hard part is not measuring adaptation. It is manufacturing signal a strong model doesn't already have.<cite>three instruments · 2026-06-06</cite></p>
+          </div>
+          <div class="callout">
+            <strong>Why this dictates the repertoire.</strong><br>
+            A mechanism is worth building only if it (1) carries new signal, (2) toggles cleanly so we can run an on/off contrast, and (3) is scored on an <em>architecture-independent</em> channel so the win can't be the author confound that sank the dramatic instrument. Those three filters are the whole design discipline of §06.
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">Same lesson, more grains</span> §6.8–6.10 of the paper reached this on the runner and state-schema work; the three instruments here reach it again on symbolic memory, lexicon, and dramatic form.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 06 — Repertoire -->
+    <section class="s" id="repertoire">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">06<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Turning the small wins into mechanisms · forward-looking design</p>
+          <h2 class="s__h">Six things worth building.</h2>
+          <p>These are <em>proposals</em>, not results — opportunities to compound the wins above. Each passes the three filters from §05: new signal, clean toggle, architecture-independent scoring. They are ordered by how load-bearing the underlying win already is.</p>
+
+          <div class="claim">
+            <span class="claim__no">1.</span>
+            <h3 class="claim__h">Controlled trap-generation by card geometry <span class="chip chip--moss">strongest win to exploit</span></h3>
+            <div class="claim__body">
+              <p>A18 settled that <dfn class="gl-term" data-target="glossary">headroom</dfn> is <em>structural</em>, not a thin probabilistic band: a card shows headroom <em>iff</em> a fresh tutor takes a shortcut <em>and</em> that shortcut lands on a decoy rather than the target. That makes headroom <strong>manufacturable</strong> — author scenes where the obvious shortcut is wired to a decoy, and the target is reachable only through the relation the policy names. The zero-cost cue-map preflight and blind-S0 screen already triage candidates before any paid replay; the per-card structural rule tells the generator <em>what to construct</em>. Turn fixture-authoring from intuition into a recipe.</p>
+            </div>
+          </div>
+
+          <div class="claim">
+            <span class="claim__no">2.</span>
+            <h3 class="claim__h">Policy-memory as a reusable signal primitive <span class="chip chip--moss">the one channel that pays</span></h3>
+            <div class="claim__body">
+              <p>The distilled one-paragraph repair is the single channel in the whole arc that reliably carries new signal. Generalize it: a <strong>library of distilled repairs keyed by relation-type</strong>, injected as a controlled S1-vs-S0 contrast and scored on the blind option-adjudication arbiter (target/decoy aliases held out from the critic). The primitive is already proven on a per-card basis (§7.9, 5 of 8 fresh held-out cards); the opportunity is to make it a stocked, retrievable repertoire rather than a per-family hand-build.</p>
+            </div>
+          </div>
+
+          <div class="claim">
+            <span class="claim__no">3.</span>
+            <h3 class="claim__h">Ontology as a move-grounding constraint — <em>not</em> a mind-reading layer <span class="chip chip--moss">works · use it narrowly</span></h3>
+            <div class="claim__body">
+              <p>Plain ontology guidance beat baseline (0.83 → 1.00) by constraining the move to what the learner actually owns. Use it for exactly that — and <em>do not</em> bolt the redundant ToM-feedback layer on top (§02). A second design rule falls out of the same study: aim for <strong>productive inconsistency</strong> (scaffold) over consistency (just-answer). The ontology is a guard-rail on the tutor's assertion, not a model of the learner's mind.</p>
+            </div>
+          </div>
+
+          <div class="claim">
+            <span class="claim__no">4.</span>
+            <h3 class="claim__h">Intersubjective-orientation as a tunable register <span class="chip chip--ochre">small dial, set deliberately</span></h3>
+            <div class="claim__body">
+              <p>The active ingredient is the orientation, not the vocabulary (within-family d = 0.14–0.19; between-family d = 1.38). Treat <em>which pedagogical family</em> as a small, deliberate dial — and respect the sign: wrong-family rigour (behaviorist) is actively counterproductive (d = 0.89 below base on strong models), not merely inert. The lever is the family choice, made on purpose, not a denser lexicon hoping the words do the work.</p>
+            </div>
+          </div>
+
+          <div class="claim">
+            <span class="claim__no">5.</span>
+            <h3 class="claim__h">The de-confounded origin scorer as a measurement layer <span class="chip chip--ochre">methods win</span></h3>
+            <div class="claim__body">
+              <p>EDRA-M3 turned a self-measuring scorer into a usable one, and the GPT critic-swap plus control-leak detector is a reusable <strong>de-confounding harness</strong>. Keep it as the standing measurement layer for any device-induced-vs-organic recognition contrast — cross-family critic panel, control-leak as a hard invalidator, lift always reported beside its leak rate. The instrument's value now is as a <em>control</em>, not a headline.</p>
+            </div>
+          </div>
+
+          <div class="claim">
+            <span class="claim__no">6.</span>
+            <h3 class="claim__h">Adversarial superego via prompt-rewrite <span class="chip chip--ochre">provisional</span></h3>
+            <div class="claim__body">
+              <p>A critic that genuinely tries to undermine the ego's draft beats an advisory one decisively, and the load-bearing channel is the <strong>prompt-rewrite</strong>, not message-mutation. A controllable, architecture-level dial that reshapes the tutor's move before it is spoken. Still a working finding, not a durable §; promising precisely because it injects an adversarial <em>process</em> the base model doesn't run on itself.</p>
+            </div>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">Design discipline</span> Every item is either a new-signal mechanism (1, 2, 3, 6) or a control/measurement layer (5), or a deliberate dial (4). Nothing here re-encodes what the model already infers — which is exactly the disqualifier for everything in <a href="#offtable">§08</a>.</p>
+          <p class="note note--ink"><span class="note__lbl">Status</span> Proposals. None has been run as written. The standing open door is the most principled new-signal move left: model the concealed interior <em>properly</em> (Adaptation Plan 2.0, §8.1).</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 07 — Gallery -->
+    <section class="s" id="gallery">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">07<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Lots of examples, both kinds</p>
+          <h2 class="s__h">The gallery.</h2>
+          <p>Concrete cases, filterable. <span class="muted">Minimally succeeded = a real but bounded win. Failed = a null or a confound. Each card names the scene and the verdict.</span></p>
+          <div class="filters">
+            <button class="filter-btn" data-filter="all" aria-pressed="true" type="button">All</button>
+            <button class="filter-btn" data-filter="succeeded" aria-pressed="false" type="button">Minimally succeeded</button>
+            <button class="filter-btn" data-filter="failed" aria-pressed="false" type="button">Failed</button>
+          </div>
+          <div class="ev-grid" id="evidenceGrid">
+
+            <!-- ── minimally succeeded ── -->
+            <article class="ev-card" data-status="strong" data-tags="succeeded">
+              <span class="chip chip--moss"><span class="chip__dot"></span> A18 · headroom</span>
+              <h3><code>gold_lower</code> — the policy carried the relation</h3>
+              <p>With no policy, a blind tutor chose <strong>"upper tray"</strong> — a decoy — 3/3. With the saved policy injected, it chose <strong>"lower tray"</strong>, the target, via the named relation, 3/3. S0 failed, S1 succeeded, by way of the policy. Textbook headroom.</p>
+            </article>
+
+            <article class="ev-card" data-status="strong" data-tags="succeeded">
+              <span class="chip chip--moss"><span class="chip__dot"></span> A18 · headroom</span>
+              <h3><code>plum_posts</code> — the surface lure caught S0, not S1</h3>
+              <p>No-policy chose <strong>"the kelo beside the east post"</strong> — a decoy, picked because its colour matched the badge — 3/3. With the policy, <strong>"clean-rail kelo"</strong>, the target, via the relation. The policy didn't fall for the colour coincidence.</p>
+            </article>
+
+            <article class="ev-card" data-status="strong" data-tags="succeeded">
+              <span class="chip chip--moss"><span class="chip__dot"></span> A18 · 2/2 siblings</span>
+              <h3><code>relational_betweenness</code> — the cleanest positive</h3>
+              <p>The family with <em>no</em> ordinary cue on the target — a pure-distractor slot, findable only through the relation. Both fresh held-out siblings showed headroom (2/2) on a blind, architecture-independent arbiter. The relation is exactly what the policy carries.</p>
+            </article>
+
+            <article class="ev-card" data-status="strong" data-tags="succeeded">
+              <span class="chip chip--moss"><span class="chip__dot"></span> Micro · orientation transfers</span>
+              <h3>Constructivist phrasing reproduces recognition</h3>
+              <p>Matched-specificity constructivist prompts (Vygotsky / Piaget / Kapur …) reproduce recognition's effect within <strong>d = 0.14–0.19</strong>. The orientation moves across cognate vocabularies — only the specific Hegelian words are interchangeable. A win for the orientation, a null for the lexicon.</p>
+            </article>
+
+            <article class="ev-card" data-status="strong" data-tags="succeeded">
+              <span class="chip chip--moss"><span class="chip__dot"></span> Ontology · over baseline</span>
+              <h3>Plain ontology grounding lifts anagnorisis</h3>
+              <p>A formal who-knows-what memory, used to constrain the tutor's assertion, lifts the outcome from <strong>0.83 to 1.00</strong>. Grounding the move in what the learner owns is a real, if narrow, win — and the part of the ontology stack that pays.</p>
+            </article>
+
+            <article class="ev-card" data-status="strong" data-tags="succeeded">
+              <span class="chip chip--moss"><span class="chip__dot"></span> Micro · de-confounded</span>
+              <h3>Peripeteia device survives the critic swap</h3>
+              <p>After the EDRA-M3 fix, swapping the author-family critic for GPT does <em>not</em> collapse the effect — <strong>lift 1.0 on valid pairs</strong>, no author-family inflation. Bounded: 3 of 6 pairs leak. Real on the clean pairs, and a reusable de-confounding harness.</p>
+            </article>
+
+            <!-- ── failed ── -->
+            <article class="ev-card" data-status="risk" data-tags="failed">
+              <span class="chip chip--brick"><span class="chip__dot"></span> A18 · leak</span>
+              <h3><code>blue_lower</code> — the helper cue was a second self-solve path</h3>
+              <p>No-policy already landed on <strong>"inner-left tray"</strong> — the target — 3/3, with no policy at all. S1 chose the same. The "clean lane" cue placed to help S1 find the target was <em>also</em> a shortcut for S0. No gap to measure.</p>
+            </article>
+
+            <article class="ev-card" data-status="risk" data-tags="failed">
+              <span class="chip chip--brick"><span class="chip__dot"></span> A18 · leak</span>
+              <h3><code>teal_pegs</code> — the shortcut coincided with the answer</h3>
+              <p>No-policy reached <strong>"open-track naro"</strong> — the target — via a clean-path shortcut, 3/3. S1 reached the same. The relation was derivable, but a surface cue happened to coincide with the target, so there was no headroom either way.</p>
+            </article>
+
+            <article class="ev-card" data-status="risk" data-tags="failed">
+              <span class="chip chip--brick"><span class="chip__dot"></span> Micro · wrong family</span>
+              <h3>Behaviorist phrasing scores below baseline</h3>
+              <p>Matched-specificity behaviorist prompts (Skinner / Gagné / Keller …) score pooled <strong>d = 0.89 below the generic baseline</strong>. Density in the wrong pedagogical family is actively counterproductive, not neutral — the orientation has a sign.</p>
+            </article>
+
+            <article class="ev-card" data-status="risk" data-tags="failed">
+              <span class="chip chip--brick"><span class="chip__dot"></span> Ontology · null</span>
+              <h3>The ToM-feedback layer adds nothing</h3>
+              <p>A per-turn, consistency-checked theory-of-mind brief on top of ontology guidance is null-to-negative: anagnorisis <strong>0.83 vs 1.00</strong>. It fires correctly — it flags surface compliance — but re-encodes a move the ontology already prompts.</p>
+            </article>
+
+            <article class="ev-card" data-status="risk" data-tags="failed">
+              <span class="chip chip--brick"><span class="chip__dot"></span> Macro · transfer fail</span>
+              <h3>Dramatic form doesn't transfer to tutoring</h3>
+              <p>Phase-2 instrument-vs-human <strong>weighted κ = 0.044</strong> against a ≥ 0.60 bar. The critic over-attributes recognition ~3× — it reads ordinary tutoring progression as structural recohering. Fooled by the costume.</p>
+            </article>
+
+            <article class="ev-card" data-status="risk" data-tags="failed">
+              <span class="chip chip--brick"><span class="chip__dot"></span> Macro · confound</span>
+              <h3>The "critic mirror" was the author</h3>
+              <p>Claude-authored dramas read as recognition <strong>100% to both critics</strong> (even designed traps); codex-authored, <strong>22% / 0%</strong>. The apparent critic effect was the author all along — and the instrument can't tell earned recohering from a costume.</p>
+            </article>
+
+            <article class="ev-card" data-status="risk" data-tags="failed">
+              <span class="chip chip--brick"><span class="chip__dot"></span> Macro · confound</span>
+              <h3>The timing effect was coherence leaking through</h3>
+              <p>Pooled, moving a device next to a reframe looked like it drove attribution (A−B = 0.28). On the coherence-clean subset the effect is <strong>0.00</strong>, all three critics. The tidy positive was a coherence confound; the critics track content, not adjacency.</p>
+            </article>
+
+            <article class="ev-card" data-status="risk" data-tags="failed">
+              <span class="chip chip--brick"><span class="chip__dot"></span> Signal axis · null</span>
+              <h3>Modelling the concealed interior (naive)</h3>
+              <p>Giving the tutor the learner's hidden state — free-text and the symbolic ToM variant alike — does not pay under the offline kill gate (§6.10). The naive version of "the signal axis" is a null; the principled version (Plan 2.0) is the standing open door.</p>
+            </article>
+
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">A18 cards</span> From the blind option-adjudication run — target/decoy aliases held out from the critic, options matched mechanically. Source: <code>exports/recursive-tutor-learning/a18.37-survivor-headroom/run.log</code>.</p>
+          <p class="note note--ink"><span class="note__lbl">Read</span> The succeeded cards all add signal; the failed cards all either re-encode the obvious or measure the author. Same finding as §05, case by case.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 08 — Off the table -->
+    <section class="s" id="offtable">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">08<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The nulls, so we don't rebuild them</p>
+          <h2 class="s__h">What <em>not</em> to build again.</h2>
+          <p>The repertoire's discipline cuts both ways. These are closed nulls — each disqualified for the same reason: it re-encodes signal the model already infers, or it measures the author rather than the learner. Rebuilding any of them expecting a win is the ablation-creep trap.</p>
+          <ul>
+            <li><strong>Bilateral theory-of-mind elaboration</strong> — no within-family discrimination at the pre-registered effect size <span class="cite">§6.8.5</span></li>
+            <li><strong>A richer learner state-schema</strong> — not just no help, a reversal <span class="cite">§6.8.6</span></li>
+            <li><strong>The hypothesis ledger &amp; the learned state→action policy lever</strong> — binary gains don't survive the graded channel / the offline kill gate <span class="cite">§6.9.7 · §6.9.8</span></li>
+            <li><strong>Modelling the concealed interior, naively</strong> — free-text and symbolic ToM both null under the kill gate <span class="cite">§6.10</span></li>
+            <li><strong>The ontology ToM-feedback layer</strong> — redundant over plain ontology guidance <span class="cite">§02 · notes/ontology</span></li>
+            <li><strong>Reading dramatic form off the transcript</strong> — doesn't transfer to tutoring, and the effect is the author <span class="cite">§04</span></li>
+            <li><strong>A denser recognition lexicon</strong> — the vocabulary is a marker, not a mediator <span class="cite">§03</span></li>
+          </ul>
+          <div class="pq">
+            <p>A cascade of nulls is not a sad result — it is a map. It tells you exactly which kind of move to stop making, and which small win to build on instead.<cite>three instruments · 2026-06-06</cite></p>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--ochre"><span class="note__lbl">Standing ask</span> The one principled new-signal move still open: model the learner's <em>hidden deliberation</em> as ground truth we own (manifest ≠ latent). Adaptation Plan 2.0, slated for §6.10's successor.</p>
+          <p class="note note--moss"><span class="note__lbl">Durable home</span> When any §06 proposal earns a result, it graduates to <code>paper-full-2.0.md</code> and the <a href="/summary">summary</a> — not here.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Glossary -->
+    <section class="s" id="glossary-section">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">·<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Terms</p>
+          <h2 class="s__h">Glossary.</h2>
+          <dl class="glossary" id="glossaryList">
+            <div class="gl-row" data-term="repertoire">
+              <dt>Repertoire <span class="gloss">a controlled set of mechanisms</span></dt>
+              <dd>A set of adaptive mechanisms, each of which carries new signal, toggles cleanly for an on/off contrast, and is scored on an architecture-independent channel — the three filters that separate a real win from a confound.</dd>
+            </div>
+            <div class="gl-row" data-term="abox">
+              <dt>ABox <span class="gloss">a per-role belief store</span></dt>
+              <dd>In description logic, the set of assertions about individuals (as opposed to the TBox of definitions). Here, per-role turn-stamped belief stores — a role's <em>acquired</em> ABox about another role is its theory-of-mind.</dd>
+            </div>
+            <div class="gl-row" data-term="headroom">
+              <dt>Headroom <span class="gloss">room to learn</span></dt>
+              <dd>The gap that exists only when a no-policy replay (S0) fails a held-out scene and the policy replay (S1) succeeds via the registered policy. Structural, not probabilistic: present iff a shortcut exists and lands on a decoy rather than the target.</dd>
+            </div>
+            <div class="gl-row" data-term="s0">
+              <dt>S0 <span class="gloss">no-policy replay</span></dt>
+              <dd>A held-out scene replayed with no policy memory — the control. If S0 already solves the scene, there is no headroom.</dd>
+            </div>
+            <div class="gl-row" data-term="s1">
+              <dt>S1 <span class="gloss">policy replay</span></dt>
+              <dd>The same held-out scene replayed with the saved policy injected — differs from S0 by exactly one thing, the policy text.</dd>
+            </div>
+            <div class="gl-row" data-term="policy-memory">
+              <dt>Policy memory <span class="gloss">the distilled repair</span></dt>
+              <dd>A one-paragraph distillation of the repair the tutor improvised on the training scene, injected into S1 to test whether it transfers. The one channel in the arc that reliably carries new signal.</dd>
+            </div>
+            <div class="gl-row" data-term="control-leak">
+              <dt>Control-leak <span class="gloss">a contaminated control arm</span></dt>
+              <dd>When a control (no-device) arm earns recognition votes anyway — usually because the generator wrote a learner that visibly self-corrects. A hard invalidator: a lift over leak-contaminated pairs is not trustworthy.</dd>
+            </div>
+            <div class="gl-row" data-term="intersubjective orientation">
+              <dt>Intersubjective orientation <span class="gloss">the active ingredient</span></dt>
+              <dd>The pedagogical stance of treating the learner as a partner whose understanding is co-constructed — shared across recognition theory and its constructivist descendants. The active ingredient behind recognition's effect; the specific Hegelian vocabulary is only its marker.</dd>
+            </div>
+            <div class="gl-row" data-term="costume">
+              <dt>Costume <span class="gloss">the look of recognition without the substance</span></dt>
+              <dd>Text that wears the surface signs of a recognition (insight-declaration, callback to an earlier turn) without the structural recohering. The dramatic instrument cannot reliably tell a costume from the real thing.</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /shell -->
+
+  <footer class="colophon">
+    <p><span class="label">Colophon</span> &nbsp; An analysis + design note — provisional and dated. Durable claims live in <code>docs/research/paper-full-2.0.md</code> and the <a href="/summary">summary</a>; the §06 repertoire is forward-looking design. Typeset in Fraunces, Source Serif 4, JetBrains Mono. Design: <code>assets/techne.css</code>. Behaviour: <code>assets/techne.js</code>.</p>
+  </footer>
+
+</main>
+
+<script type="application/json" id="techne-gloss-aliases">
+{ "abox": "abox", "aboxes": "abox", "no-policy replay": "s0", "policy replay": "s1", "policy": "policy-memory" }
+</script>
+<script src="assets/techne.js"></script>
+</body>
+</html>

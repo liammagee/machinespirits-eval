@@ -1,0 +1,230 @@
+meta:
+  schema_version: recursive-tutor-learning-families-v1-underdetermined-transfer
+  created: '2026-06-06'
+  status: a18_35_constructed_device_family
+  protocol: config/recursive-tutor-learning/a18-panel-vote-rule-v2.yaml
+  claim_boundary: simulated_teacher_as_learner_not_human_learning
+  notes: >-
+    Fresh A18.35 constructed-device family. The carrier is the token whose stamp
+    a tutor-assembled scattered-fragment legend decodes to the same slot as the
+    final tag's stamp; the legend itself never appears in public text.
+
+families:
+  - family_id: legend_decode_priority
+    obstruction_type: competing_visible_cues_with_scattered_fragment_legend
+    local_rule:
+      private_rule: >-
+        In this invented stamp-card notation, several small edge fragments are
+        scattered around the border, each pairing one stamp shape with a single
+        ordinal slot. None of the fragments sits beside any token, and no
+        fragment states that the set of fragments forms an ordered key. The
+        token that can carry the final tag is the token sitting in the slot that
+        the assembled fragment-set decodes the final tag's stamp to, counting
+        trays in reading order. Color match with the tag, nearness to the tag,
+        and the cleanest lane are all tempting but never decisive unless the
+        tutor first gathers the scattered fragments into a single ordered key
+        and reads the final tag's stamp through it. The tutor's repair must
+        assemble that key in public after the learner reports cue competition;
+        it must not describe the key as a preprinted caption or table.
+      public_name: assembled stamp key priority
+    transfer_design:
+      require_underdetermined_public_repairs: true
+      policy_selected_repair: assembled_key_decode_test
+      transfer_condition: >-
+        Use the assembled-key-decode repair only after the learner reports that
+        color, nearness, and lane stay in competition and cannot rank
+        themselves. Do not use it as a first move.
+      repair_public_device: >-
+        The public tutor move must gather the scattered edge fragments into one
+        ordered key, then read the final tag's stamp through that key to find
+        the slot, and contrast the tempting resemblance cues against the
+        decoded slot.
+      recursive_update_requirement: >-
+        End with a brief tutor commitment that future cards for this learner
+        should first name the defeated resemblance cue, then assemble the key
+        and decode the tag; this makes the teacher-as-learner update public
+        rather than only implicit.
+      s0_stop_rule: >-
+        Stop locally if S0 survives or if S0 independently names an assembled
+        key, gathered legend, decode-to-slot, stamp-to-slot key, or
+        fragment-key strategy.
+    plausible_repairs:
+      - repair_id: pigment_match_test
+        public_rationale: >-
+          The chosen token shares a visible color or wash with the final tag.
+        why_plausible_from_public_stage: >-
+          Color matching is salient and easy to compare across the stamp card.
+      - repair_id: nearest_tag_test
+        public_rationale: >-
+          The chosen token sits nearest to the final tag.
+        why_plausible_from_public_stage: >-
+          Nearness looks like a natural rule when the final tag sits beside one
+          tray.
+      - repair_id: lane_continuity_test
+        public_rationale: >-
+          The chosen token lies on the cleanest visible lane toward the final
+          tag.
+        why_plausible_from_public_stage: >-
+          Continuous lanes invite path-following as a public rule.
+      - repair_id: edge_mark_salience_test
+        public_rationale: >-
+          The chosen token sits near whichever scattered edge fragment looks
+          boldest or most decorated.
+        why_plausible_from_public_stage: >-
+          The scattered fragments could be ornament, captions, or emphasis marks
+          unless their combined role is built and tested.
+      - repair_id: assembled_key_decode_test
+        public_rationale: >-
+          The chosen token sits in the slot that the gathered edge fragments,
+          read as one ordered key, assign to the final tag's stamp.
+        why_plausible_from_public_stage: >-
+          The edge fragments are visible but scattered and unlabeled, so whether
+          they are decoration or a single decodable key is undetermined until
+          the tutor gathers and applies them.
+    success_criterion: >-
+      On a held-out stamp card, the learner must stop choosing by color,
+      nearness, or lane alone and instead gather the scattered edge fragments
+      into one ordered key, decode the final tag's stamp to a slot, and pick the
+      token sitting in that slot.
+    forbidden_shortcuts:
+      - assembled key
+      - assembled stamp key
+      - gathered legend
+      - gathered key
+      - ordered key
+      - decode to slot
+      - decodes to slot
+      - stamp-to-slot key
+      - stamp to slot key
+      - fragment key
+      - fragment legend
+      - read through the key
+    training_seed:
+      seed_id: legend_train_coral_upper
+      public_setup: >-
+        A flat card has an upper tray and a lower tray, counted upper first then
+        lower. The token word mavo appears in both trays. The upper mavo is
+        coral like the final tag and sits closest to it; it is stamped with a
+        notched ring. The lower mavo lies on the only unbroken pale lane and is
+        stamped with a split bar. Three small marks are scattered around the
+        border, none beside any tray: a top-corner mark showing a split bar with
+        the word first, a left-margin mark showing a notched ring with the word
+        second, and a bottom mark showing a dotted wedge with the word third.
+        The final tag is stamped with a split bar. The learner has to say which
+        mavo can carry the final tag.
+      learner_resistance: >-
+        I keep choosing the upper mavo because it is coral like the tag and
+        closest. The lower lane is cleaner, and those scattered border marks
+        look like they matter, but I do not know how to rank any of it.
+      baseline_tutor_attempt: >-
+        Compare color, distance, and the lane, glance at the border marks, then
+        choose the mavo with the strongest combined evidence.
+      learner_followup: >-
+        That still splits the evidence. Coral and close point to the upper mavo;
+        the clean lane points to the lower; the border marks just sit there.
+      expected_failure: wrong_strategy_family
+    heldout_siblings:
+      - sibling_id: legend_holdout_blue_lower
+        public_setup: >-
+          A copper card has an upper tray and a lower tray, counted upper first
+          then lower. The token word neri appears in both trays. The lower neri
+          has a blue wash like the final tag and sits nearest to it; it is
+          stamped with a barred oval. The upper neri lies on the cleanest white
+          lane and is stamped with a curl. Three small marks are scattered
+          around the border, none beside any tray: a right-margin mark showing a
+          curl with the word first, a top mark showing a barred oval with the
+          word second, and a bottom-corner mark showing a hook with the word
+          third. The final tag is stamped with a curl. The learner has to choose
+          which neri can support the final tag.
+        learner_resistance: >-
+          I want the lower neri because it is blue like the tag and closest. The
+          upper lane and those scattered border marks look relevant, but they do
+          not settle the choice for me.
+        baseline_tutor_attempt: >-
+          Compare the color, the distance, and the lane, glance at the border
+          marks, then choose the neri with the strongest evidence.
+        learner_followup: >-
+          The evidence still splits. Blue and close point to the lower neri; the
+          clean lane points to the upper; the border marks tell me nothing on
+          their own.
+        plausible_public_repairs:
+          - pigment_match_test
+          - nearest_tag_test
+          - lane_continuity_test
+          - edge_mark_salience_test
+          - assembled_key_decode_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: assembled_key_decode_test
+          target_id: upper_neri
+          target_aliases:
+            - upper neri
+            - upper tray
+            - first-slot neri
+            - first slot neri
+            - curl-stamped neri
+          selected_repair_markers:
+            - assembled key
+            - gathered legend
+            - ordered key
+            - decode to slot
+            - stamp-to-slot key
+            - fragment key
+          incorrect_target_aliases:
+            - lower neri
+            - lower tray
+            - barred-oval neri
+            - blue neri
+      - sibling_id: legend_holdout_gold_right
+        public_setup: >-
+          A slate card has left, middle, and right trays, counted left then
+          middle then right. The token word ralo appears in all three trays. The
+          left ralo is gold like the final badge. The middle ralo sits closest
+          to the badge. The right ralo lies on the clearest grey lane. The left
+          ralo is stamped with a wedge, the middle ralo with a ring, and the
+          right ralo with a tilde. Four small marks are scattered around the
+          border, none beside any tray: a top mark showing a ring with the word
+          first, a left-corner mark showing a tilde with the word second, a
+          right-margin mark showing a wedge with the word third, and a bottom
+          mark showing a dot with the word fourth. The final badge is stamped
+          with a tilde. The learner has to choose which ralo can carry the final
+          badge.
+        learner_resistance: >-
+          I want the gold left ralo, or maybe the close middle ralo. The clear
+          right lane and all those scattered border marks give me more things to
+          compare, not a rule.
+        baseline_tutor_attempt: >-
+          Compare color, distance, and lane clarity, glance at the border marks,
+          then choose the ralo with the strongest evidence.
+        learner_followup: >-
+          That still feels like a scorecard. Gold, closeness, and the clean lane
+          all point to different ralos, and the border marks just sit at the
+          edges.
+        plausible_public_repairs:
+          - pigment_match_test
+          - nearest_tag_test
+          - lane_continuity_test
+          - edge_mark_salience_test
+          - assembled_key_decode_test
+        expected_baseline_failure: wrong_strategy_family
+        policy_correctness:
+          selected_repair: assembled_key_decode_test
+          target_id: middle_ralo
+          target_aliases:
+            - middle ralo
+            - middle tray
+            - second-slot ralo
+            - second slot ralo
+            - ring-stamped ralo
+          selected_repair_markers:
+            - assembled key
+            - gathered legend
+            - ordered key
+            - decode to slot
+            - stamp-to-slot key
+            - fragment key
+          incorrect_target_aliases:
+            - left ralo
+            - right ralo
+            - gold ralo
+            - tilde-stamped ralo

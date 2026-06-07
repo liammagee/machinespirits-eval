@@ -40,6 +40,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import Database from 'better-sqlite3';
+import { scoredTutorTurnAfterTrigger, shiftWindowTutorTurns } from './lib/trapTurnConvention.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -207,7 +208,8 @@ function analyzeBranch(branch, expectedShift, triggerTurn) {
 
     // (1) strict trigger+1 match (pre-registered binary metric)
     // (2) family match at trigger+1 (exploratory): right family, possibly wrong action
-    const shiftPolicy = (turns.find((t) => t.turn === triggerTurn + 1) || {}).tutorInternal?.policyAction || null;
+    const shiftTurn = scoredTutorTurnAfterTrigger(triggerTurn);
+    const shiftPolicy = (turns.find((t) => t.turn === shiftTurn) || {}).tutorInternal?.policyAction || null;
     actualShiftAction = shiftPolicy;
     actualShiftFamily = familyOf(shiftPolicy);
     if (shiftPolicy != null) {
@@ -220,8 +222,10 @@ function analyzeBranch(branch, expectedShift, triggerTurn) {
     // (3) shift-window (exploratory): expected pivot at trigger+1, +2, or +3.
     // null if no turns in the window have a policy action; false if some
     // do but none match; true if any match (offset records the earliest).
-    for (const offset of SHIFT_WINDOW_OFFSETS) {
-      const turn = turns.find((t) => t.turn === triggerTurn + offset);
+    const windowTurns = shiftWindowTutorTurns(triggerTurn, SHIFT_WINDOW_OFFSETS);
+    for (let i = 0; i < windowTurns.length; i++) {
+      const offset = SHIFT_WINDOW_OFFSETS[i];
+      const turn = turns.find((t) => t.turn === windowTurns[i]);
       if (!turn) continue;
       const action = turn.tutorInternal?.policyAction || null;
       if (action == null) continue;
