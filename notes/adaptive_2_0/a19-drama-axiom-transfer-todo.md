@@ -14,11 +14,11 @@
 ## Phase 1: Protocol Hardening
 
 - [x] Add more fixture families that cover all verdict classes with no model calls.
-- [ ] Add cue-map fields for model tier and domain scope.
+- [x] Add cue-map fields for model tier and domain scope.
 - [x] Add fixture examples where anti-conditions block an otherwise tempting axiom.
-- [ ] Add a report mode that emits JSON into `exports/a19/reports/` once the first non-fixture run exists.
+- [x] Add a report mode that emits JSON into `exports/a19/reports/` once the first non-fixture run exists.
 - [x] Register protocol-reject reasons and require explicit reject reasons.
-- [ ] Add a stable protocol changelog that starts a new version whenever any substantive gate changes.
+- [x] Add a stable protocol changelog that starts a new version whenever any substantive gate changes.
 
 ## Phase 2: Attempt-1 Failure Elicitation
 
@@ -49,6 +49,10 @@
 - [x] Run one real paired S0/S1 held-out screen after attempt-1 survival (`counter_warrant_scope_a`).
 - [x] Re-run `counter_warrant_scope_a` through free-text blind adjudication and an S1 replay that receives exactly one admitted axiom; result: `ceiling`.
 - [x] Choose the next real held-out card by S0-first observable headroom screening; run S1 only if S0 does not already hit the target repair. First screen: `surface_agreement_uptake_a`, result: `neither_correct`.
+- [x] Add and screen two concrete-domain candidate families. `fraction_common_unit_counterexample_a` stopped after S0 self-solved the target; `temperature_unit_conversion_aggregation_a` calibrated to `ceiling` after S0 and S1 both reached the target.
+- [x] Record the negative concrete-domain screens in durable notes without updating Paper 2.0 or the atlas.
+- [x] Add harder held-out siblings with sibling-specific learner resistance. `fraction_common_unit_counterexample_c` and `temperature_unit_conversion_aggregation_c` still self-solved at S0; `surface_agreement_uptake_c` produced one local `policy_headroom` card.
+- [x] Keep Paper 2.0 and atlas unchanged because only one clean A19 `policy_headroom` card exists so far.
 - [ ] Repeat the same discipline for real S0/S1 held-out contrasts after a real free-text blind adjudicator exists.
 
 ## Phase 5: Evaluation And Human Validation
@@ -65,14 +69,16 @@
 
 - [x] Keep A19 empirical claims out of sidecar prose until they appear in `paper-full-2.0.md`.
 - [x] Use the planned atlas module as scaffold only while `sections: []`.
-- [x] After canonical prose lands, set the atlas module's `sections` to the relevant section numbers and run `npm run atlas:validate`.
+- [x] Validate the current planned/scope-bound atlas state without projecting the negative A19 screens into canonical paper sections.
+- [ ] After canonical prose lands, set the atlas module's `sections` to the relevant section numbers and run `npm run atlas:validate`.
 - [ ] Keep the sidecar's claims-not-licensed section visible in every draft.
-- [ ] Track literature leanings and distinctions in `a19-literature-positioning-matrix.md`.
+- [x] Track literature leanings and distinctions in `a19-literature-positioning-matrix.md`.
 
 ## Stop Rules
 
 - Stop before paid generation if protocol validation fails.
 - Stop before panel if fewer than two held-out siblings survive local gates.
 - Stop and redesign if failures are dominated by cue leakage or S0 self-solve.
+- Do not update Paper 2.0 or atlas empirical sections unless at least two clean `policy_headroom` cards survive local gates.
 - Stop and record a negative if S1 cannot apply the registered policy under alias withholding.
 - Do not escalate to retrieval, DPO, process rewards, or weight updates until the axiom corpus has a stable trusted channel.

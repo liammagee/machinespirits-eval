@@ -74,6 +74,7 @@ The initial implementation is deterministic and zero-API:
 
 - `config/teaching-drama-axioms/a19-protocol.yaml` freezes the protocol shape, non-claims, verdict vocabulary, and reporting discipline.
 - `config/teaching-drama-axioms/pilot-families.yaml` provides fixture-level families and card adjudications for offline validation.
+- `config/teaching-drama-axioms/CHANGELOG.md` records substantive gate changes before additional real S0/S1 generation.
 - `scripts/validate-teaching-drama-axiom-protocol.js` validates protocol and family fixtures.
 - `scripts/materialize-teaching-drama-axiom-attempts.js` materializes attempt-1 transcript stubs, axiom templates, held-out S0/S1 fixture stubs, A18 recursive-replay commands, and A19 fixture blind-adjudication commands.
 - `scripts/report-teaching-drama-axiom-attempt1.js` summarizes A18 replay manifests as A19 attempt-1 gate decisions, separating fixture survivors from empirical survivors and stopping before S0/S1 when old-rule misclassification is not confident.
@@ -83,6 +84,15 @@ The initial implementation is deterministic and zero-API:
 
 Hard boundary: A19 S1 policy memory must be one admitted `a19-teaching-drama-axiom-v0.1` record. A whole replay `revision.json`, move ledger, or transcript bundle may diagnose the failure, but it cannot count as an axiom-transfer input or support an A19 transfer claim.
 - `tests/teachingDramaAxiomProtocol.test.js` pins the validation and classification behavior.
+
+Each family cue map must state model-tier scope and domain scope. This keeps
+self-solve, cue-leak, and headroom readings tied to the model/domain conditions
+under which they were observed instead of turning local screens into global
+claims.
+
+Held-out siblings may define their own learner-resistance line. When present,
+the materializer must use that held-out line rather than the training-seed
+resistance, so S0/S1 screens are not accidentally cued by the training episode.
 
 This is not paid attempt-1 generation, a live S0/S1 runner, a paid blind panel, or a post-training corpus. Those are later gates. The materializer is a deterministic bridge into the existing A18 recursive tutor-learning machinery; it writes commands rather than calling models.
 
@@ -100,6 +110,10 @@ The first report must classify every card into exactly one verdict:
 - `protocol_reject`.
 
 The report may count verdicts, but it must not present a pooled success rate without the card-level basis labels and denominator separation.
+
+The report can also emit JSON into `exports/a19/reports/` for downstream audit
+and atlas plumbing. JSON reports carry the same denominator discipline as the
+Markdown report.
 
 Later instruments, after the protocol is frozen, are:
 
