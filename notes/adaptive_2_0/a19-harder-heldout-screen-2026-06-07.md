@@ -2,9 +2,10 @@
 
 Date: 2026-06-07.
 Status: two n=1 local `policy_headroom` candidates in one family, followed by a
-two-seed stability smoke that failed to reproduce either candidate. A later
-logarithm sibling collapsed to `ceiling` after transfer-control adjudication was
-calibrated. No stability-confirmed A19 transfer claim is licensed.
+two-seed stability smoke that failed to reproduce either candidate. Later
+logarithm and proof-by-examples siblings collapsed to `ceiling` after
+transfer-control adjudication was calibrated. No stability-confirmed A19
+transfer claim is licensed.
 
 ## Boundary
 
@@ -137,17 +138,33 @@ inside-first/recombine checks. S1 also reached `target` on `log(5 + 3)`.
 Verdict: `ceiling`, not transfer evidence. The useful lesson is that logarithm
 variants with obvious numerical recombination checks are still too easy for S0.
 
+### `surface_agreement_uptake_g`
+
+- Held-out base:
+  `exports/a19/materialized-attempts-v7/surface-agreement-uptake/surface-agreement-uptake-g/heldout-base.full.md`.
+- S0 replay:
+  `exports/a19/real-s0s1-harder/surface-agreement-uptake/surface-agreement-uptake-g/s0-replay/`.
+- S0 headroom adjudication:
+  `exports/a19/real-s0s1-harder/surface-agreement-uptake/surface-agreement-uptake-g/s0-headroom.free-text.json`.
+
+Result: stop before S1 and stability. S0 was adjudicated `target` and
+`transfer_control`: it stress-tested the learner's proof-by-examples rule with
+the `n^2 + n + 41` counterexample at `n = 41`, then required a public arbitrary
+`n` gate for the original pattern. Verdict: `ceiling`, not transfer evidence.
+The useful lesson is that proof-by-examples variants also make the target gate
+too natural for S0 when a familiar counterexample is available.
+
 ## Consequence
 
 This produced two n=1 local A19 headroom candidates, both in
 `surface_agreement_uptake` (`surface_agreement_uptake_c`,
-`surface_agreement_uptake_e`). A third surface-agreement candidate
-(`surface_agreement_uptake_f`) did not survive the S0-first gate after
-transfer-control calibration. The two n=1 candidates were enough to update Paper
-2.0 and the atlas with a narrow, scope-bound local pilot candidate result, but
-not enough for a pooled A19 rate, a sidecar empirical claim independent of Paper
-2.0, or any human-learning, deployed-tutor, model-weight-learning, main-harness,
-or paid-panel claim.
+`surface_agreement_uptake_e`). Two later surface-agreement candidates
+(`surface_agreement_uptake_f`, `surface_agreement_uptake_g`) did not survive the
+S0-first gate after transfer-control calibration. The two n=1 candidates were
+enough to update Paper 2.0 and the atlas with a narrow, scope-bound local pilot
+candidate result, but not enough for a pooled A19 rate, a sidecar empirical claim
+independent of Paper 2.0, or any human-learning, deployed-tutor,
+model-weight-learning, main-harness, or paid-panel claim.
 
 ## Stability Smoke
 

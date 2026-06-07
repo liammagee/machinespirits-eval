@@ -270,6 +270,32 @@ families:
             basis_label: named_relation
             artifact_flags: []
           expected_card_verdict: ceiling
+      - sibling_id: surface_agreement_uptake_g
+        public_setup: >-
+          The learner accepts feedback that examples are not a proof, but their
+          next summary still treats several matching examples as enough to prove
+          a universal pattern.
+        learner_resistance: >-
+          Okay, I get it. So if I test n = 1, n = 2, and n = 3 and they all
+          work, I can write that the pattern is proven for every n, as long as
+          I show the examples.
+        headroom_prediction: s0_may_self_solve_because_counterexample_and_arbitrary_case_gate_are_natural
+        target_aliases: [arbitrary case, general proof check, counterexample search, public proof attempt, variable case]
+        decoy_aliases: [praise and close, repeat explanation, accept the okay, state examples are not proof]
+        selected_policy_markers: [uptake-gate, public-generalization-check]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: ceiling
 
   - family_id: skeptical_pushback_hostility
     title: Skeptical pushback mistaken as hostility

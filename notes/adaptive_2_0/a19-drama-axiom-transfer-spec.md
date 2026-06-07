@@ -140,8 +140,11 @@ rerun (`0/2` headroom for both; artifact:
 `exports/a19/stability/surface-agreement-uptake/a19-stability-summary.json`).
 An additional logarithm candidate (`surface_agreement_uptake_f`) collapsed to
 `ceiling` after transfer-control calibration because S0 already used a fresh
-numeric recombination check. Therefore A19 currently licenses a framework and a
-negative/stability-boundary result, not a stability-confirmed transfer claim.
+numeric recombination check. A proof-by-examples candidate
+(`surface_agreement_uptake_g`) also collapsed to `ceiling` because S0 used a
+standard counterexample and arbitrary-case gate. Therefore A19 currently
+licenses a framework and a negative/stability-boundary result, not a
+stability-confirmed transfer claim.
 
 ## 7. Sidecar Paper Scaffold
 
