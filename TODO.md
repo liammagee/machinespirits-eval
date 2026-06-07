@@ -775,9 +775,33 @@ reconciliation in a superseded paper; kept here as optional cleanup, prioritised
   "fifty-two evaluations" and "fifty-two key evaluations" phrasings used in the paper.
   `generate-paper-tables.js` now: 10 issues → 0. `paper:bug-audit` still 0 fails.
 
-None of C7.* affects Paper 2.0 or any active research workstream. Skipping the section entirely is
-a defensible choice: leave the bug-audit failing as the truthful record of Paper 1.0's disclosed
-limitations, and Paper 2.0 carries the field forward.
+- [ ] **C7.5 — Dramatic-fork dialogue-log co-location (NEW 2026-06-07).** This fork's
+  `paper:bug-audit` reports 3 fails (`manifest-logs`, `paper-claims-log-trace`,
+  `paper-claims-suite`) that are a *different* root cause from C7.1–4. C7.1–4 were Paper-1.0
+  prose/data drift; C7.5 is purely log non-co-location. The validator hardcodes
+  `LOG_DIR = logs/tutor-dialogues` and matches each multi-turn row's `dialogue_id` to a file there.
+  In the original `machinespirits-eval` repo these same checks reach 0 fails because `logs/` is a
+  symlink → `../machinespirits-eval-private/logs` (git-committed archive, 34,093
+  `dialogue-*.json`); in this fork `logs/tutor-dialogues/` is a real dir holding only ~458 files
+  (the poetics-era subset), so the historical multi-turn dialogues the audit samples are simply not
+  on this path. Verified recoverability: the validator's *exact* multi-turn checked set across the
+  10 sampled runs is **404 dialogue_ids** (filters: `judge_model LIKE 'claude-opus%' AND
+  tutor_first_turn_score IS NOT NULL AND json_array_length(suggestions) > 1`), and **all 404 are
+  present in the private archive — 0 absent.** So co-location fully greens the audit; no waiver or
+  prose change is needed. Fix options, both local-only since `logs/` is gitignored: (a) consolidate
+  — copy this fork's unique poetics logs into the private archive, then symlink `logs/` to it (= the
+  standing `consolidate_logs_db_to_private` infra task; correct direction, durable); or (b) additive
+  copy of just the missing historical `dialogue-*.json` into the real dir (stopgap, re-diverges as
+  new runs land). Prefer (a). Orthogonal to Paper 2.0 and all active research — `git diff main` is
+  empty for both committed audit inputs (`paper-full.md`, `paper-manifest.json`), so the 3 fails are
+  byte-identical on `main`. Surfaced by PR #4.
+
+None of C7.* affects Paper 2.0 or any active research workstream. C7.1–4 are closed; C7.5 is the one
+open item, and unlike the others it has a clean durable fix (log consolidation) rather than a
+prose-vs-frozen-paper reconciliation — so it is worth doing when the consolidation task is next
+picked up. Until then, leaving the bug-audit failing remains the truthful record: for Paper 1.0, of
+its disclosed limitations; for this fork, of the log path not yet pointing at the archive. Paper 2.0
+carries the field forward regardless.
 
 ---
 
