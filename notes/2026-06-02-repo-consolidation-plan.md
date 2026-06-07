@@ -6,20 +6,38 @@
 
 Status legend: ✅ done · ▶ pending (needs a go-ahead) · ⏸ deferred · ❓ judgment call
 
+> **Update 2026-06-07 (read first).** Two things changed since the 6-agent scan.
+> (1) The **log/DB consolidation axis** — which the original scan parked under "NOT
+> touching" — turned out to be the *highest-value* consolidation and is now partly
+> done (see new **§ Log/DB consolidation** below; fork logs + DB are symlinked to the
+> private archive; website's 6,652 logs remain). (2) A **per-file provenance audit**
+> of every Phase 3 candidate (the audit the Provenance rule demands, which Phase 3's
+> list pre-dated) falsified most of Phase 3: the legacy Paper 1.0 docs are *live
+> build/validation inputs*, and 6 of 7 cell-100 docs are *paper-cited*. The genuinely
+> safe doc-archival surface is **two orphan build scripts**, and even those are blocked
+> only on the archive-destination judgment call (#3). **Phase 4 is DONE** (PR #7).
+> Net lesson: this repo is far more tightly coupled than a names-and-dates scan can
+> see — the safe *doc* surface is tiny; the real consolidation win is *logs*.
+
 ---
 
 ## Headline finding (read before re-proposing anything)
 
 The nine top-level `content-*` directories are **NOT sprawl** — they are an intentional
 domain-generalization test framework. All nine are registered in the `CONTENT_PACKAGES`
-array in `routes/chatRoutes.js:436` and switched at runtime via `EVAL_CONTENT_PATH`
+array in `routes/chatRoutes.js` (~line 459) and switched at runtime via `EVAL_CONTENT_PATH`
 (`content-ai-literacy`, `content-ethics-ai`, `content-history-tech`, `content-stats-skeptics`,
 `content-test-{creative,elementary,programming,sel,support}`). **Do not consolidate them** —
 it would break the chat router for marginal tidiness. (See `docs/generalization-plan.md`.)
 
-The real consolidation surface is: (a) a handful of remnant files, (b) a tracked PID file +
-a gitignore leak, (c) genuinely-stale docs in `docs/` — but **NOT** the closed-experiment plan
-docs at root, which on verification turned out to be cited provenance (see Provenance rule + Phase 2).
+The real consolidation surface, after verification, is narrower than the scan guessed:
+(a) a handful of remnant files [done, Phase 0], (b) a tracked PID file + a gitignore leak
+[done, Phase 1], (c) ~10 executed one-shot scripts [done, Phase 4], and (d) **log/DB
+co-location into the private archive** — which the scan under-rated and is the actual win
+[partly done, see § Log/DB consolidation]. What is **NOT** a surface: the `docs/` archival
+batch the scan proposed (Phase 3) is almost entirely live build/validation inputs or
+paper-cited provenance — and **NOT** the closed-experiment plan docs at root, which are
+cited provenance too (see Provenance rule + Phase 2).
 
 ## ⚠ Provenance rule (learned the hard way in Phase 2)
 
@@ -71,23 +89,72 @@ chain. **All three KEEP-AT-ROOT**, alongside `DRAMATIC-RECOGNITION-PLAN.md` (act
 a version bump — out of scope for a cleanup; do not bundle. Net: root keeps its 6 plan docs;
 that is provenance, not clutter.
 
-## ▶ Phase 3 — `docs/` archival batch (PENDING — review pass, then `git mv`, preserves history)
+## ⛔ Phase 3 — `docs/` archival batch — MOSTLY CANCELLED (per-file audit 2026-06-07)
 
-Candidates (closed/superseded, results already in the paper):
-- Legacy Paper 1.0: `docs/research/{paper-full,paper-short,slides}.md` (+ update README/build.sh refs).
-- Closed eval reports: `docs/cell-100-*.md` (×7) — id-director charisma family, results in the paper.
-- Design dumps now implemented in `services/adaptiveTutor/`: `docs/explorations/{claude,gpt-pro}` dated summaries
-  (keep the still-live `consolidated-plan.md` / `comprehensive-strategy.md` / `next-steps-report.md`).
-- Orphan build scripts: `docs/research/build-appendix.sh`, `build-machinagogy-combined.sh` (verify unreferenced first).
+**The 2026-06-02 candidate list pre-dated the Provenance rule and never ran through it.**
+Running it now (grep each basename across `paper-full-2.0.md`, `scripts/`, `build.sh`,
+`README.md`, `notes/`, `CLAUDE.md`) collapses the "safe archival batch" to almost nothing:
 
-## ▶ Phase 4 — `scripts/` one-shot archival (PENDING — conservative)
+| Candidate | Verdict | Evidence |
+|-----------|---------|----------|
+| `docs/research/paper-full.md` (legacy 1.0) | **KEEP — live input** | feeds `validate-bug-claims.js` (= `paper:bug-audit`), `validate-paper-manifest.js`, `generate-paper-tables.js`, `paper-provable-discourse-chat.js`, `build.sh` (`full)` target), README, CLAUDE.md |
+| `docs/research/paper-short.md`, `slides.md` | **KEEP — live input** | `build.sh` targets (`slides)`; short built by `full`) |
+| `docs/research/methods-paper.md` | **KEEP — live input** | `build.sh` `methods)` target |
+| `docs/cell-100-{pilot-findings,methods-note,pilot-findings-addendum,cross-judge-sanity-check,replication-findings,charisma-full-n-update}.md` (6) | **KEEP — paper-cited** | `paper-full-2.0.md` §6.7 — the "Five internal documents" sentence (:2074) + `charisma-full-n-update` at :2044/:2052/:3834/:3837 |
+| `docs/explorations/claude/p22-p23-parking-note.md` | **KEEP — paper-cited** | `paper-full-2.0.md:2080` ("See … for the integration plan") |
+| `docs/research/build-appendix.sh`, `build-machinagogy-combined.sh` | **SAFE to archive** | orphan: not referenced by `build.sh`, `package.json`, or any script (`build.sh` has its own inline `paper2)`/`slides)`/`methods)` targets); blocked only on judgment call #3 (destination) |
+| `docs/cell-100-followups.md` | judgment call | 0 by-name refs anywhere — the lone non-cited cell-100 doc; **recommend keep-with-family** (archiving 1 of 7 audit-trail docs to a different dir fragments the family for ~0 gain) |
 
-- Move only the ~19 clearly-executed one-shots → `scripts/archive/oneoff/`:
-  `backfill-*`, `debug-cell-115-*`, `recover-sonnet-scores.js`, `consolidate-runs.js`,
-  `check-{dialogue-judgements,parse-failures,run}.js`, `remove-public-speech-quotes.js`, etc.
-- **Keep** all `analyze-a*/d*` experiment scripts — they are the reproducibility chain for paper findings.
-- Promote into `scripts/ANALYSIS-SCRIPTS.md`: `analyze-strategy-shift.js`, `grade-adaptive-dialogue.js`
-  (referenced in CLAUDE.md but missing from the registry).
+So Phase 3's only *clearly-safe* output is the two orphan build scripts, and those wait
+on the destination decision (#3). Everything else the scan flagged is either a live
+build/validation input or paper-cited provenance. **This is the second time the names-and-dates
+heuristic mistook a coupled file for cruft** (Phase 2 was the first). The general rule stands:
+*in this repo, assume coupling until a grep proves otherwise.* `docs/explorations/{claude,gpt-pro}`
+was never fully enumerated here — if it is ever revisited, audit **every** file in it, not the
+dir as a unit (p22-p23-parking-note.md proves a single cited file hides inside an otherwise-stale dir).
+
+## ✅ Phase 4 — `scripts/` one-shot archival (DONE 2026-06-07, PR #7)
+
+- `git mv`'d **10** verified-zero-reference one-shots → `scripts/archive/oneoff/` (+ a README
+  documenting each and a do-not-rewire warning): `backfill-{hashes,holistic.sh,judge-input-hashes}`,
+  `recover-sonnet-scores.js`, `check-{dialogue-judgements,parse-failures,run}.js`,
+  `debug-cell-115-{history,prod-path}.js`, `inspect-judge-prompt.js`.
+- **Held back** from the original ~19-script wish-list (conservatism paid off):
+  - `consolidate-runs.js` — two scripts list it as an active pipeline step in their doc-headers
+    (header comments, not `require()`s, but enough to keep it in `scripts/`).
+  - `remove-public-speech-quotes.js` and the rest — not re-verified to zero refs; left for a later pass.
+- **Kept** all `analyze-a*/d*` experiment scripts — reproducibility chain for paper findings.
+- ✅ Promoted into `scripts/ANALYSIS-SCRIPTS.md`: `analyze-strategy-shift.js`, `grade-adaptive-dialogue.js`.
+- Verified before merge: lint clean · `test:hermetic` 3264 pass / 0 fail · `paper:bug-audit` 0 fail.
+
+## ◐ Log/DB consolidation — the real win (DB done · fork logs done · website logs remain)
+
+The original 6-agent scan parked `data/` + `logs/` under "NOT touching" as gitignored
+private artifacts. That was right about *committing* them and wrong about *consolidating*
+them: co-locating every fork's DB + dialogue logs into the single private archive
+(`../machinespirits-eval-private` / `~/.machinespirits-data`) is the highest-value
+consolidation in this repo, because two validators silently fail without it
+(`paper:provable-discourse` provenance and `paper:bug-audit`'s log-trace checks). Tracked
+in memory as `consolidate-logs-db-to-private` and in `TODO.md` §C7.5.
+
+- ✅ **DB** — `data/evaluations.db` is a symlink to `~/.machinespirits-data/evaluations.db`
+  in all forks (canonical, 277 MB). Done before this arc.
+- ✅ **Dramatic-fork logs** (TODO C7.5, PR #6, 2026-06-07) — `rsync --ignore-existing`
+  copied the fork's 644 unique log items into the archive (zero overwrites), then `logs/`
+  became a gitignored symlink → `../machinespirits-eval-private/logs`, and the
+  `config/provable-discourse-mechanisms.yaml` `log_dir` override reverted to the repo-relative
+  default. `paper:bug-audit` log-trace fails went 3 → 0. A safety backup sits at
+  `logs.pre-symlink-backup-20260607/` (untracked) — **delete once the archive maintainer
+  commits the newly-copied logs** (they currently sit as untracked files in the archive's
+  normal accumulation pile; I did not run git there).
+- ▶ **Website logs** (`../machinespirits-website/logs`, a *real* dir, **6,652** dialogue
+  files) — the one remaining union gap. Same recipe: `rsync --ignore-existing` into the
+  archive, then symlink. **But this is deploy-adjacent** (the website is the live fly app
+  serving machinespirits.org/poetics), so it is plan-not-execute here — do it attended,
+  and verify the fly deploy still ships logs correctly afterward.
+- ~~tutor-core logs~~ — the memory's "~5.9k tutor-core logs" is **stale**: `../tutor-core/logs`
+  is now absent (the module was in-housed; the standalone repo's log dir is gone). Drop it
+  from the remaining-work list.
 
 ## ⏸ Phase 5 — `notes/` light archive (DEFERRED — arc is mid-iteration)
 
@@ -100,20 +167,28 @@ Revisit once the adaptation-recognition loop stabilizes.
 
 ---
 
-## ❓ Judgment calls (need a human decision)
+## ❓ Judgment calls (need a human decision) — statuses refreshed 2026-06-07
 
-1. `config/interaction-eval-scenarios.yaml` — 0 references anywhere. Dead, or a draft instrument to keep?
-2. `docs/research/methods-paper.md` and `machinagogy_appendix_rewrite_v0_1.md` — archive, or already folded into the paper?
-3. Phase 2/3 archive destination: `docs/research/archive/` (already gitignored) vs. a top-level `archive/`.
-   Note: `git mv`-ing an *already-tracked* file into the gitignored `docs/research/archive/` **keeps it
-   tracked** — gitignore only suppresses *untracked* files, so history is preserved either way. The
-   gitignore entry just stops stray new scratch files in `archive/` from being accidentally added.
-   So this is mostly a cosmetic/where-do-I-look choice, not a history-loss risk.
-4. `.antigravitycli/` — untracked agent-tool dir (like `.codex/` / `.agents/`). Gitignore it, or remove?
+1. `config/interaction-eval-scenarios.yaml` — **confirmed 0 code references** (only this plan names it).
+   Dead, or a draft instrument to keep? Conservative default: archive (don't delete) a config file.
+2. `docs/research/methods-paper.md` → **resolved: KEEP** (it's a live `build.sh` `methods)` target, not
+   foldable). `machinagogy_appendix_rewrite_v0_1.md` → 0 code refs (only this plan); the machinagogy
+   build script doesn't name it. Still a judgment call: archive, or already folded into the paper?
+3. **Archive destination — now the gating decision** for the only clearly-safe Phase 3 items (the two
+   orphan build scripts). `docs/research/archive/` (already gitignored) vs. a top-level `archive/`.
+   `git mv`-ing an *already-tracked* file into the gitignored dir **keeps it tracked** — gitignore only
+   suppresses *untracked* files, so history is preserved either way; the gitignore entry just stops
+   stray new scratch files from being auto-added. Cosmetic/where-do-I-look choice, not a history-loss
+   risk. Nothing in Phase 3 should move until this is picked, to avoid a later second relocation.
+4. `.antigravitycli/` → **resolved: already effectively ignored** (untracked yet absent from the
+   `git status` dirty set, like `.codex/`/`.agents/`). No action needed; drop from the list.
 
 ## Explicitly NOT touching (rails)
 
 `content-*` (intentional test framework) · `public/` & `vendor/` (served/loaded at runtime) ·
 `config/tutor-agents.yaml` + rubrics + `config/rubrics/v*/` + scenarios (cell registry & reproducibility) ·
 `paper-full-2.0.md` + `figures/` + `build.sh` · the active analysis-script suite ·
-the gitignored private artifacts (`data/`, `logs/`, `exports/`, `artifacts/poetics-runs/`).
+the gitignored private artifacts (`data/`, `logs/`, `exports/`, `artifacts/poetics-runs/`)
+— "not touching" here means *never commit them to this repo*; it does **not** forbid
+*consolidating* them into the private archive (see § Log/DB consolidation — that's the
+opposite of committing, and it's the right move).
