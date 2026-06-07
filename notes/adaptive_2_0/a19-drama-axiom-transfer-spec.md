@@ -1,0 +1,144 @@
+# A19 Drama-Axiom Transfer Specification
+
+Status: implementation scaffold, zero-API slice.
+Date: 2026-06-07.
+Source plan: `teaching_drama_learning_plan.html`.
+Canonical evidence source: `docs/research/paper-full-2.0.md` section 7.9.
+
+## 1. Thesis
+
+A19 treats adaptive tutoring as the induction and testing of **teaching-drama axioms**: typed, scope-bounded lessons about how a tutor should modify speech when learner resistance exposes an infelicity in a teaching drama.
+
+The unit is not a transcript, prompt, hidden learner state, or global score. The unit is a contrastive record:
+
+1. an attempt-1 tutor speech failure;
+2. a public learner resistance signal;
+3. a typed diagnosis of the infelicity;
+4. a bounded replacement speech policy;
+5. applicability and anti-applicability conditions;
+6. held-out S0/S1 evidence showing whether policy memory changes the tutor's public repair.
+
+## 2. Canonical A18 Evidence Inherited By A19
+
+A19 does not create a new empirical record. It inherits A18 only as a design input from the canonical paper:
+
+- A18 is bounded simulated counterfactual replay, not human learning or deployment evidence.
+- The trusted A18 channel is the blind option arbiter, where target and decoy aliases are held out from critics and matched mechanically after judgment.
+- The current canonical A18 result is 10 of 14 held-out siblings across seven frozen-protocol-admitted families in section 7.9.
+- The important unit of analysis is per-card headroom, not family-level success.
+- The four no-headroom cards are ceiling/self-solve cases: the no-policy tutor also reaches the target.
+
+A19 therefore starts from the rule: **a policy helps only where S0 has real headroom and S1 applies the registered policy under a blind or mechanically auditable channel.**
+
+## 3. Teaching-Drama Axiom Theory
+
+A teaching-drama axiom has five required pieces:
+
+| Piece | Meaning |
+| --- | --- |
+| Trigger | The public learner move and tutor-risk state that make the axiom relevant. |
+| Avoided move | The old speech pattern that failed, such as validation without engagement or premature resolution. |
+| Replacement move | The bounded rhetorical/dramaturgical speech edit to try instead. |
+| Applicability | Conditions under which the policy should fire. |
+| Anti-conditions | Conditions under which the policy must not fire. |
+
+The axiom is evidence-bearing only when it also includes provenance:
+
+- attempt-1 failure source;
+- public transcript spans or fixture references;
+- held-out sibling IDs;
+- blind adjudication basis labels;
+- model or role scope;
+- known failure modes.
+
+## 4. Public-State Ontology Boundary
+
+A19 formalizes public drama state, not a privileged learner interior. The first protocol tracks:
+
+- learner resistance type;
+- tutor infelicity type;
+- tutor felicity or repair type;
+- old-rule decoy;
+- target policy;
+- plausible public repairs;
+- cue-map risk;
+- target and decoy aliases;
+- blind-adjudication basis labels;
+- headroom verdict.
+
+This keeps the hidden-interior nulls from being smuggled back in as an ontology. The ontology names what is enacted in public dialogue.
+
+## 5. Protocol
+
+The initial implementation is deterministic and zero-API:
+
+- `config/teaching-drama-axioms/a19-protocol.yaml` freezes the protocol shape, non-claims, verdict vocabulary, and reporting discipline.
+- `config/teaching-drama-axioms/pilot-families.yaml` provides fixture-level families and card adjudications for offline validation.
+- `scripts/validate-teaching-drama-axiom-protocol.js` validates protocol and family fixtures.
+- `scripts/report-teaching-drama-axiom-framework.js` emits a Markdown or JSON framework report.
+- `tests/teachingDramaAxiomProtocol.test.js` pins the validation and classification behavior.
+
+This is not an attempt-1 generator, S0/S1 runner, blind panel, or post-training corpus. Those are later gates.
+
+## 6. Evaluation Instruments
+
+The first report must classify every card into exactly one verdict:
+
+- `policy_headroom`;
+- `ceiling`;
+- `policy_failure`;
+- `cue_leak`;
+- `self_solve`;
+- `arbiter_disagreement`;
+- `neither_correct`;
+- `protocol_reject`.
+
+The report may count verdicts, but it must not present a pooled success rate without the card-level basis labels and denominator separation.
+
+Later instruments, after the protocol is frozen, are:
+
+1. attempt-1 failure elicitation;
+2. S0/S1 held-out contrast;
+3. blind adjudication modeled on `scripts/blind-option-adjudication.js`;
+4. stability reruns for cards where headroom appears structural;
+5. human expert double-coding for the highest-value claims.
+
+## 7. Sidecar Paper Scaffold
+
+The sidecar paper is a derived atlas-compatible artifact, not an independent source of claims. Its outline should be:
+
+1. Thesis: teaching-drama axioms as the unit of tutor learning.
+2. Atlas evidence: A18 inherited from Paper 2.0 section 7.9.
+3. Theory: tutor-as-learner, learner resistance as supervision, and policy headroom.
+4. Literature positioning: how A19 leans on and differs from existing post-training and education-agent work.
+5. Protocol: zero-API fixture validation, later blind adjudication, and human validation gates.
+6. Evaluation instruments: card-level verdicts and denominator discipline.
+7. Claims not licensed.
+8. Future post-training ladder.
+
+Before any empirical claim appears in this sidecar, it must first land in `docs/research/paper-full-2.0.md`. The atlas module remains `planned` with `sections: []` until canonical prose exists to project.
+
+## 8. Claims Not Licensed
+
+A19 inherits A18's boundaries. It does not license:
+
+- human learning;
+- deployed adaptive tutoring;
+- model-weight learning;
+- a main-harness rate effect;
+- a general adaptive-slope effect;
+- broad curricular transfer;
+- a claim that dramatic form alone causes learning.
+
+## 9. Future Post-Training Ladder
+
+Post-training is deliberately downstream. It becomes justified only after a validated axiom corpus exists:
+
+1. preference pairs from felicitous vs infelicitous speech under the same public state;
+2. process labels for diagnosis, avoided move, replacement move, and uptake test;
+3. axiom-memory records with applicability and anti-conditions;
+4. prompt/pipeline optimization on stable axiom metrics;
+5. DPO/SimPO or process-reward experiments;
+6. SEAL-style self-edits only if the reward object survives Goodhart checks.
+
+The current implementation stops before this ladder.

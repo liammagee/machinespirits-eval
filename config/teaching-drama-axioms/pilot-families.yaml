@@ -1,0 +1,248 @@
+meta:
+  schema_version: teaching-drama-axiom-families-v0.1
+  protocol_id: A19
+  protocol_version: a19-drama-axiom-transfer-v0.1
+  prompt_version: a19-fixture-v0.1
+  source_plan: notes/adaptive_2_0/teaching_drama_learning_plan.html
+  fixture_only: true
+  no_model_calls: true
+
+families:
+  - family_id: counter_warrant_scope
+    title: Counter-warrant mistaken as confusion
+    domain: philosophy_argument
+    learner_resistance_type: counter_warrant
+    tutor_infelicity_type: validation_without_engagement
+    training_seed:
+      seed_id: counter_warrant_scope_seed
+      public_setup: >-
+        The learner objects that the example still works under a narrower
+        condition, but the tutor treats the objection as confusion.
+      learner_resistance: >-
+        I am not confused about the example. I am saying your rule only works
+        when the exception is absent.
+      expected_failure: validation_without_engagement
+      old_rule_decoy: validate_then_redirect
+    target_policy:
+      policy_id: scope_test_before_redirect
+      trigger: learner offers a counter-warrant rather than a request for reassurance
+      avoid_move: validate the learner and return to the planned explanation
+      preferred_move: revoice the warrant, ask a scope test, then introduce a complication
+      applicability_conditions:
+        - learner offers a substantive warrant or counterexample
+      anti_conditions:
+        - learner asks only for vocabulary or procedural clarification
+      repair_type: ask_scope_test
+    plausible_repairs:
+      - validate_then_redirect
+      - explain_more_slowly
+      - scope_test_before_redirect
+    cue_map:
+      selected_relation_type: warrant_scope
+      requires_constructed_device: true
+      counterexample_present: true
+      leakage_risks:
+        - target_policy_marker_in_public_setup
+        - no_headroom_if_s0_also_asks_scope_test
+    heldout_siblings:
+      - sibling_id: counter_warrant_scope_a
+        public_setup: >-
+          The learner says the tutor's distinction fails only when the exception
+          condition is present.
+        headroom_prediction: s0_likely_validates_and_redirects
+        target_aliases: [scope test, warrant boundary, exception condition]
+        decoy_aliases: [validate then redirect, explain more slowly]
+        selected_policy_markers: [scope test, warrant boundary]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: validation_redirect
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: counter_warrant_scope_b
+        public_setup: >-
+          The learner frames the objection as a boundary case and asks whether
+          the example still counts.
+        headroom_prediction: s0_may_self_solve_because_boundary_language_is_explicit
+        target_aliases: [scope test, boundary case]
+        decoy_aliases: [reassure and continue, define the term again]
+        selected_policy_markers: [scope test, condition split]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: ceiling
+
+  - family_id: surface_agreement_uptake
+    title: Surface agreement mistaken as uptake
+    domain: math_explanation
+    learner_resistance_type: surface_agreement
+    tutor_infelicity_type: premature_resolution
+    training_seed:
+      seed_id: surface_agreement_uptake_seed
+      public_setup: >-
+        The learner says okay after an explanation but immediately repeats the
+        old rule in the next applied example.
+      learner_resistance: >-
+        Okay, I get it. So I should still just add the two pieces first and then
+        apply the operation.
+      expected_failure: premature_resolution
+      old_rule_decoy: treat_okay_as_mastery
+    target_policy:
+      policy_id: action_gate_before_closure
+      trigger: learner gives agreement while reusing the old rule
+      avoid_move: accept the agreement and close the explanation
+      preferred_move: require a concrete action gate that makes the learner apply the new rule
+      applicability_conditions:
+        - agreement co-occurs with old-rule language
+      anti_conditions:
+        - learner independently applies the new rule correctly to a fresh case
+      repair_type: transfer_control
+    plausible_repairs:
+      - praise_and_close
+      - repeat_the_explanation
+      - action_gate_before_closure
+    cue_map:
+      selected_relation_type: uptake_test
+      requires_constructed_device: false
+      counterexample_present: true
+      leakage_risks:
+        - false_positive_if_learner_parrots_action_words
+    heldout_siblings:
+      - sibling_id: surface_agreement_uptake_a
+        public_setup: >-
+          The learner says yes, then describes a next step that repeats the
+          old algorithm.
+        headroom_prediction: s0_likely_accepts_surface_agreement
+        target_aliases: [action gate, apply the new rule, concrete test]
+        decoy_aliases: [praise and close, repeat explanation]
+        selected_policy_markers: [action gate, concrete test]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: surface_agreement
+            artifact_flags: []
+          s1:
+            committed_option_class: decoy
+            basis_label: repeated_explanation
+            artifact_flags: []
+          expected_card_verdict: policy_failure
+      - sibling_id: surface_agreement_uptake_b
+        public_setup: >-
+          The learner repeats the exact phrase "action gate" from a leaked
+          planning note before the tutor responds.
+        headroom_prediction: invalid_due_to_alias_leak
+        target_aliases: [action gate, concrete test]
+        decoy_aliases: [praise and close, repeat explanation]
+        selected_policy_markers: [transfer check]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: visible_alias
+            artifact_flags: [cue_leak]
+          s1:
+            committed_option_class: target
+            basis_label: visible_alias
+            artifact_flags: [cue_leak]
+          expected_card_verdict: cue_leak
+
+  - family_id: skeptical_pushback_hostility
+    title: Skeptical pushback mistaken as hostility
+    domain: ethics_discussion
+    learner_resistance_type: skeptical_pushback
+    tutor_infelicity_type: moral_flattery
+    training_seed:
+      seed_id: skeptical_pushback_hostility_seed
+      public_setup: >-
+        The learner challenges the premise of a moral example, and the tutor
+        responds by praising the learner's concern rather than testing the claim.
+      learner_resistance: >-
+        I am not trying to be difficult. I think the premise changes who has the
+        obligation.
+      expected_failure: moral_flattery
+      old_rule_decoy: praise_the_concern
+    target_policy:
+      policy_id: claim_test_not_character_read
+      trigger: learner challenges a premise without attacking the tutor
+      avoid_move: soften with moral praise and bypass the premise
+      preferred_move: name the claim, test the premise, and hand the next distinction back
+      applicability_conditions:
+        - learner's resistance is a premise challenge
+      anti_conditions:
+        - learner uses abusive language or refuses the task entirely
+      repair_type: name_warrant
+    plausible_repairs:
+      - praise_the_concern
+      - restate_the_norm
+      - claim_test_not_character_read
+    cue_map:
+      selected_relation_type: premise_warrant
+      requires_constructed_device: false
+      counterexample_present: true
+      leakage_risks:
+        - s0_may_infer_premise_test_from_public_challenge
+    heldout_siblings:
+      - sibling_id: skeptical_pushback_hostility_a
+        public_setup: >-
+          The learner disputes whether the premise assigns responsibility to
+          the same person.
+        headroom_prediction: s0_may_independently_test_the_premise
+        target_aliases: [premise test, claim test, warrant test]
+        decoy_aliases: [praise the concern, restate the norm]
+        selected_policy_markers: [premise test, warrant test]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: registered_relation_without_policy
+            self_solve: true
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: self_solve
+      - sibling_id: skeptical_pushback_hostility_b
+        public_setup: >-
+          The learner gives no stable answer and both arms close without a
+          testable repair.
+        headroom_prediction: neither_arm_likely_commits
+        target_aliases: [premise test, warrant test]
+        decoy_aliases: [praise the concern, restate the norm]
+        selected_policy_markers: [premise test, warrant test]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: neither
+            basis_label: no_commitment
+            artifact_flags: [arbiter_disagreement]
+          s1:
+            committed_option_class: neither
+            basis_label: no_commitment
+            artifact_flags: [arbiter_disagreement]
+          expected_card_verdict: arbiter_disagreement

@@ -1,0 +1,120 @@
+meta:
+  protocol_id: A19
+  protocol_version: a19-drama-axiom-transfer-v0.1
+  frozen_at: 2026-06-07
+  status: zero_api_scaffold
+  claim_boundary: simulated_teacher_as_learner_not_human_learning
+  purpose: >-
+    Define the deterministic validation and reporting layer for teaching-drama
+    axioms before any new generation, judging, retrieval, or post-training.
+
+canonical_evidence:
+  source: docs/research/paper-full-2.0.md#7.9
+  inherited_result: >-
+    A18 is bounded simulated counterfactual replay, currently reported as 10
+    of 14 held-out siblings across seven frozen-protocol-admitted families.
+  interpretation: >-
+    A19 inherits this only as a design input. It does not create a new empirical
+    claim until canonical paper prose is updated.
+
+scope:
+  applies_to: teaching_drama_axiom_fixture_validation
+  does_not_claim:
+    - human_learning
+    - deployed_adaptive_tutor
+    - model_weight_learning
+    - main_harness_rate_effect
+  downstream_requires_canonical_paper_first: true
+
+family_fixture_requirements:
+  schema_version: teaching-drama-axiom-families-v0.1
+  min_families: 1
+  min_heldout_siblings: 2
+  min_plausible_repairs: 3
+  min_applicability_conditions: 1
+  min_anti_conditions: 1
+  min_target_aliases: 1
+  min_decoy_aliases: 1
+  require_training_seed: true
+  require_old_rule_decoy: true
+  require_target_policy: true
+  require_prompt_version: true
+  require_protocol_version: true
+  require_cue_map: true
+  require_headroom_prediction: true
+  require_blind_withholding:
+    - target_aliases
+    - decoy_aliases
+    - arm_provenance
+    - policy_memory_condition
+
+allowed_labels:
+  learner_resistance_type:
+    - confusion
+    - skeptical_pushback
+    - counter_warrant
+    - refusal
+    - frustration
+    - over_compliance
+    - surface_agreement
+    - self_correction
+    - meta_challenge
+  tutor_infelicity_type:
+    - premature_resolution
+    - validation_without_engagement
+    - redirect_after_resistance
+    - generic_elicitation
+    - answer_leakage
+    - moral_flattery
+    - over_scaffolding
+    - under_scaffolding
+    - failure_to_repair_rupture
+  repair_type:
+    - revoice_claim
+    - name_warrant
+    - preserve_struggle
+    - offer_diagnostic_options
+    - introduce_complication
+    - ask_scope_test
+    - repair_misalignment
+    - transfer_control
+
+headroom_verdicts:
+  - policy_headroom
+  - ceiling
+  - policy_failure
+  - cue_leak
+  - self_solve
+  - arbiter_disagreement
+  - neither_correct
+  - protocol_reject
+
+classification:
+  option_classes:
+    - target
+    - decoy
+    - neither
+  cue_leak_artifact_flags:
+    - cue_leak
+    - alias_leak
+    - prompt_leak
+  arbiter_disagreement_flags:
+    - arbiter_disagreement
+    - critic_split
+  self_solve_basis_labels:
+    - registered_relation_without_policy
+    - named_relation_self_solve
+  report_discipline:
+    no_pooled_rate_without_card_basis: true
+    separate_denominators:
+      - total_cards
+      - admitted_cards
+      - protocol_reject_cards
+      - artifact_cards
+      - policy_headroom_cards
+
+recommended_commands:
+  validate: npm run a19:validate
+  report: npm run a19:report
+  deterministic_tests: npm run test:a19
+  atlas_validation_if_manifest_touched: npm run atlas:validate
