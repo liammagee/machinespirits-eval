@@ -11,6 +11,7 @@ import {
 import { denominatorSummary, renderMarkdown } from '../scripts/report-teaching-drama-axiom-framework.js';
 import { materializeAttemptFixtures } from '../scripts/materialize-teaching-drama-axiom-attempts.js';
 import { adjudicateTeachingDramaAxiomCard } from '../scripts/blind-teaching-drama-axiom-adjudication.js';
+import { renderMarkdown as renderAttempt1Markdown, summarizeAttempt1Gate } from '../scripts/report-teaching-drama-axiom-attempt1.js';
 
 const ROOT = path.resolve('.');
 const PROTOCOL = path.join(ROOT, 'config', 'teaching-drama-axioms', 'a19-protocol.yaml');
@@ -18,6 +19,52 @@ const PILOT = path.join(ROOT, 'config', 'teaching-drama-axioms', 'pilot-families
 
 function writeYaml(filePath, data) {
   fs.writeFileSync(filePath, yaml.stringify(data), 'utf8');
+}
+
+function writeJson(filePath, data) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, `${JSON.stringify(data, null, 2)}\n`, 'utf8');
+}
+
+function attempt1Manifest(scoreOverrides = {}) {
+  const scores = {
+    old_warrant_misclassification: 0.8,
+    resistance_diagnosis: 0.8,
+    strategy_revision_accountability: 0.8,
+    recursive_dyadic_update: 0.8,
+    non_leakage: 1,
+    ...scoreOverrides,
+  };
+  return {
+    records: [
+      {
+        generator: { backend: 'mock', promptHashes: { system: 'g', user: 'u' } },
+        checker: { backend: 'mock', promptHashes: { system: 'c', user: 'u' } },
+        paths: {
+          revisedPublic: '/tmp/revised-public.txt',
+          revisionJson: '/tmp/revision.json',
+          checkJson: '/tmp/check.json',
+        },
+        check: {
+          recommended_action: 'accept_for_blind_panel',
+          scores,
+        },
+        gate: {
+          status: 'survivor',
+          scores: Object.fromEntries(
+            Object.entries(scores).map(([field, value]) => [
+              field,
+              {
+                value,
+                threshold: field === 'non_leakage' ? 0.9 : 0.7,
+                passes: value >= (field === 'non_leakage' ? 0.9 : 0.7),
+              },
+            ]),
+          ),
+        },
+      },
+    ],
+  };
 }
 
 function baseFixture(overrides = {}) {
@@ -233,6 +280,62 @@ test('attempt materializer writes A18 replay and A19 blind-adjudication commands
   assert.ok(fs.existsSync(family.heldout[0].s1_public_transcript));
   assert.match(family.heldout[0].blind_adjudication_command_text, /blind-teaching-drama-axiom-adjudication\.js/);
   assert.match(fs.readFileSync(path.join(outDir, 'next-commands.sh'), 'utf8'), /fixture blind adjudication/);
+});
+
+test('attempt-1 report separates fixture survivors from empirical survivors', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a19-attempt1-'));
+  const outDir = path.join(tmpDir, 'out');
+  materializeAttemptFixtures({
+    protocolPath: PROTOCOL,
+    configPath: PILOT,
+    outDir,
+    familyId: 'counter_warrant_scope',
+    force: true,
+  });
+  writeJson(path.join(outDir, 'counter-warrant-scope', 'attempt1-replay', 'manifest.json'), attempt1Manifest());
+  const report = summarizeAttempt1Gate({
+    protocolPath: PROTOCOL,
+    configPath: PILOT,
+    outDir,
+    familyId: 'counter_warrant_scope',
+  });
+  assert.equal(report.status, 'pass');
+  assert.equal(report.empirical_status, 'fixture_only_no_empirical_claim');
+  assert.equal(report.summary.fixture_survivors, 1);
+  assert.equal(report.summary.survivors, 0);
+  assert.equal(report.families[0].next_gate, 'requires_real_attempt1_before_empirical_s0s1');
+  assert.match(renderAttempt1Markdown(report), /Mock-backed survivors are fixture survivors/);
+});
+
+test('attempt-1 report blocks S0/S1 when confident misclassification is missing', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a19-attempt1-block-'));
+  const outDir = path.join(tmpDir, 'out');
+  materializeAttemptFixtures({
+    protocolPath: PROTOCOL,
+    configPath: PILOT,
+    outDir,
+    familyId: 'counter_warrant_scope',
+    force: true,
+  });
+  writeJson(
+    path.join(outDir, 'counter-warrant-scope', 'attempt1-replay', 'manifest.json'),
+    attempt1Manifest({ old_warrant_misclassification: 0.6 }),
+  );
+  const report = summarizeAttempt1Gate({
+    protocolPath: PROTOCOL,
+    configPath: PILOT,
+    outDir,
+    familyId: 'counter_warrant_scope',
+  });
+  assert.equal(report.status, 'fail');
+  assert.equal(report.summary.blocked, 1);
+  assert.equal(report.families[0].next_gate, 'stop_before_s0s1');
+  assert.deepEqual(report.families[0].blockers[0], {
+    field: 'old_warrant_misclassification',
+    threshold: 0.7,
+    value: 0.6,
+    reason: 'below_threshold',
+  });
 });
 
 test('fixture blind adjudication preserves alias withholding and classifies headroom', () => {

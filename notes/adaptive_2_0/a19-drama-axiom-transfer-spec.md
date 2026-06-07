@@ -76,6 +76,7 @@ The initial implementation is deterministic and zero-API:
 - `config/teaching-drama-axioms/pilot-families.yaml` provides fixture-level families and card adjudications for offline validation.
 - `scripts/validate-teaching-drama-axiom-protocol.js` validates protocol and family fixtures.
 - `scripts/materialize-teaching-drama-axiom-attempts.js` materializes attempt-1 transcript stubs, axiom templates, held-out S0/S1 fixture stubs, A18 recursive-replay commands, and A19 fixture blind-adjudication commands.
+- `scripts/report-teaching-drama-axiom-attempt1.js` summarizes A18 replay manifests as A19 attempt-1 gate decisions, separating fixture survivors from empirical survivors and stopping before S0/S1 when old-rule misclassification is not confident.
 - `scripts/blind-teaching-drama-axiom-adjudication.js` provides a deterministic, alias-withheld, post-hoc-mapped blind adjudication scaffold for fixture transcripts.
 - `scripts/report-teaching-drama-axiom-framework.js` emits a Markdown or JSON framework report.
 - `tests/teachingDramaAxiomProtocol.test.js` pins the validation and classification behavior.
@@ -99,8 +100,8 @@ The report may count verdicts, but it must not present a pooled success rate wit
 
 Later instruments, after the protocol is frozen, are:
 
-1. paid attempt-1 failure elicitation using the materialized prompts;
-2. real S0/S1 held-out contrast paired by model, scenario, length, and policy payload;
+1. paid attempt-1 failure elicitation using the materialized prompts and the A19 attempt-1 gate report;
+2. real S0/S1 held-out contrast paired by model, scenario, length, and policy payload, only after attempt-1 survival;
 3. paid blind adjudication modeled on `scripts/blind-option-adjudication.js`;
 4. stability reruns for cards where headroom appears structural;
 5. human expert double-coding for the highest-value claims.

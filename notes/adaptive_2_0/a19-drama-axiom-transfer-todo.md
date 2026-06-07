@@ -9,7 +9,7 @@
 - [x] Add deterministic protocol validator.
 - [x] Add deterministic framework reporter.
 - [x] Add `node --test` coverage for validation, alias withholding, leakage checks, anti-conditions, headroom classification, and denominator separation.
-- [x] Add package scripts: `a19:validate`, `a19:materialize`, `a19:blind-adjudicate`, `a19:report`, `test:a19`.
+- [x] Add package scripts: `a19:validate`, `a19:materialize`, `a19:attempt1`, `a19:blind-adjudicate`, `a19:report`, `test:a19`.
 
 ## Phase 1: Protocol Hardening
 
@@ -24,10 +24,11 @@
 
 - [x] Reuse A18 recursive tutor-learning machinery where possible rather than building a parallel runner.
 - [x] Add an A19 family materializer that can turn a teaching-drama family into an attempt-1 elicitation prompt.
-- [ ] Require an explicit old-rule decoy and confident misclassification, not an indeterminate tie.
+- [x] Require an explicit old-rule decoy and confident misclassification, not an indeterminate tie.
 - [x] Store deterministic public transcript stubs, axiom templates, validation reports, and next-step commands separately.
+- [x] Add an A19 attempt-1 gate report that separates fixture survivors from empirical survivors.
 - [ ] Store real public transcript, held-out deliberation, failure diagnosis, and prompt hashes separately after generation begins.
-- [ ] Stop before S0/S1 if attempt 1 does not produce a grounded failure record.
+- [x] Stop before S0/S1 if attempt 1 does not produce a grounded failure record.
 
 ## Phase 3: Axiom Induction
 

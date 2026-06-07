@@ -124,6 +124,7 @@ classification:
 recommended_commands:
   validate: npm run a19:validate
   materialize_attempts: npm run a19:materialize
+  attempt1_gate_report: npm run a19:attempt1
   blind_adjudication_fixture: npm run a19:blind-adjudicate
   report: npm run a19:report
   deterministic_tests: npm run test:a19

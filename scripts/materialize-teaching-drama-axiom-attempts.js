@@ -320,6 +320,19 @@ export function materializeAttemptFixtures({
       else commands.push(`# ${sibling.sibling_id}: protocol_reject (${sibling.protocol_reject_reason})`);
     }
   }
+  commands.push('# A19 attempt-1 gate summary after replay artifacts exist');
+  commands.push(
+    commandString([
+      'npm',
+      'run',
+      'a19:attempt1',
+      '--',
+      '--out-dir',
+      repoRel(outDir),
+      '--out',
+      'notes/adaptive_2_0/a19-attempt1-fixture-gate-report.md',
+    ]),
+  );
   fs.writeFileSync(path.join(outDir, 'next-commands.sh'), `${commands.join('\n')}\n`, 'utf8');
   return plan;
 }
