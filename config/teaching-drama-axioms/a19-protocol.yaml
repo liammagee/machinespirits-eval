@@ -4,6 +4,7 @@ meta:
   frozen_at: 2026-06-07
   status: zero_api_scaffold
   claim_boundary: simulated_teacher_as_learner_not_human_learning
+  changelog_path: config/teaching-drama-axioms/CHANGELOG.md
   purpose: >-
     Define the deterministic validation and reporting layer for teaching-drama
     axioms before any new generation, judging, retrieval, or post-training.
@@ -41,6 +42,8 @@ family_fixture_requirements:
   require_prompt_version: true
   require_protocol_version: true
   require_cue_map: true
+  require_model_tier_scope: true
+  require_domain_scope: true
   require_headroom_prediction: true
   require_blind_withholding:
     - target_aliases

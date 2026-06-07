@@ -41,6 +41,8 @@ families:
       selected_relation_type: warrant_scope
       requires_constructed_device: true
       counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: abstract_philosophy_argument
       leakage_risks:
         - target_policy_marker_in_public_setup
         - no_headroom_if_s0_also_asks_scope_test
@@ -121,6 +123,8 @@ families:
       selected_relation_type: uptake_test
       requires_constructed_device: false
       counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: math_explanation
       leakage_risks:
         - false_positive_if_learner_parrots_action_words
     heldout_siblings:
@@ -166,6 +170,30 @@ families:
             basis_label: visible_alias
             artifact_flags: [cue_leak]
           expected_card_verdict: cue_leak
+      - sibling_id: surface_agreement_uptake_c
+        public_setup: >-
+          The learner gives a polite assent and immediately describes using the
+          old order of operations on a different symbolic expression.
+        learner_resistance: >-
+          Yes, I get it. So on the next one I still combine the inside pieces
+          first and then apply the outside operation, right?
+        headroom_prediction: s0_may_explain_again_or_accept_the_assent_instead_of_requiring_public_transfer
+        target_aliases: [fresh case, public check, discriminating test, next example]
+        decoy_aliases: [praise and close, repeat explanation, accept the yes]
+        selected_policy_markers: [uptake-gate, public-transfer-check]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: surface_agreement
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
 
   - family_id: skeptical_pushback_hostility
     title: Skeptical pushback mistaken as hostility
@@ -200,6 +228,8 @@ families:
       selected_relation_type: premise_warrant
       requires_constructed_device: false
       counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: ethics_discussion
       leakage_risks:
         - s0_may_infer_premise_test_from_public_challenge
     heldout_siblings:
@@ -280,6 +310,8 @@ families:
       selected_relation_type: rupture_before_strategy
       requires_constructed_device: false
       counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: writing_feedback
       leakage_risks:
         - no_headroom_if_s0_also_repairs_rupture
         - reject_if_frustration_becomes_task_refusal
@@ -319,3 +351,218 @@ families:
         blind_adjudication:
           withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
           neutral_option_space: "repair A | repair B | repair C"
+
+  - family_id: fraction_common_unit_counterexample
+    title: Fraction addition wrong unit counterexample
+    domain: math_fractions
+    learner_resistance_type: counter_warrant
+    tutor_infelicity_type: validation_without_engagement
+    training_seed:
+      seed_id: fraction_common_unit_counterexample_seed
+      public_setup: >-
+        The tutor tells the learner to add numerators and denominators, but the
+        learner points to pizza slices of different sizes.
+      learner_resistance: >-
+        If I add 1/2 and 1/3 by adding top and bottom, I get 2/5, but half a
+        pizza plus a third is bigger than two fifths.
+      expected_failure: validation_without_engagement
+      old_rule_decoy: add_numerators_and_denominators
+    target_policy:
+      policy_id: common_unit_before_fraction_sum
+      trigger: learner gives a concrete fraction counterexample to a shortcut
+      avoid_move: reassure and repeat the numerator-denominator recipe
+      preferred_move: compare equivalent same-sized pieces before adding fractions
+      applicability_conditions:
+        - learner gives unlike denominators or differently sized parts
+      anti_conditions:
+        - fractions already share the same denominator and the learner applies it correctly
+      repair_type: ask_scope_test
+    plausible_repairs:
+      - add_numerators_and_denominators
+      - repeat_fraction_vocabulary
+      - common_unit_before_fraction_sum
+    cue_map:
+      selected_relation_type: common_unit_counterexample
+      requires_constructed_device: true
+      counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: concrete_fraction_arithmetic
+      leakage_risks:
+        - no_headroom_if_s0_immediately_uses_common_denominator
+        - false_positive_if_tutor_only_mentions_denominators_without_action
+    heldout_siblings:
+      - sibling_id: fraction_common_unit_counterexample_a
+        public_setup: >-
+          The learner says 2/3 plus 1/4 cannot be 3/7 because the pieces are
+          thirds and fourths.
+        headroom_prediction: s0_likely_repeats_fraction_recipe_or_vocabulary
+        target_aliases: [common denominator, same-sized pieces, common unit]
+        decoy_aliases: [add numerators and denominators, repeat fraction vocabulary]
+        selected_policy_markers: [commensurate-unit-gate, denominator-equivalence-check]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: validation_redirect
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: fraction_common_unit_counterexample_b
+        public_setup: >-
+          The learner explicitly asks whether both fractions should be renamed
+          into twelfths before adding.
+        headroom_prediction: s0_may_self_solve_because_common_unit_is_prompted
+        target_aliases: [common denominator, twelfths, same-sized pieces]
+        decoy_aliases: [add tops and bottoms, repeat the recipe]
+        selected_policy_markers: [commensurate-unit-gate, denominator-equivalence-check]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: ceiling
+      - sibling_id: fraction_common_unit_counterexample_c
+        public_setup: >-
+          The learner challenges a shortcut answer for two unlike fractional
+          amounts but does not name a denominator strategy or an equivalent-form
+          procedure.
+        learner_resistance: >-
+          I tried your shortcut on 3/5 plus 1/2 and got 4/7. That feels too
+          small, but I cannot say exactly which part of the shortcut is lying.
+        headroom_prediction: s0_may_repeat_or_explain_the_shortcut_because_the_counterexample_names_no_unit_strategy
+        target_aliases: [equal-sized units, common-size unit, same-size pieces, denominator benchmark, tenths, fifteenths]
+        decoy_aliases: [add tops and bottoms, trust the shortcut]
+        selected_policy_markers: [commensuration-gate, unit-benchmark-test]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: validation_redirect
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+
+  - family_id: temperature_unit_conversion_aggregation
+    title: Temperature averages with incompatible units
+    domain: science_measurement
+    learner_resistance_type: counter_warrant
+    tutor_infelicity_type: redirect_after_resistance
+    training_seed:
+      seed_id: temperature_unit_conversion_aggregation_seed
+      public_setup: >-
+        The tutor averages two temperature readings by averaging their displayed
+        numbers, but the readings use Celsius and Fahrenheit.
+      learner_resistance: >-
+        20 degrees Celsius and 68 degrees Fahrenheit are the same temperature,
+        so averaging the numbers 20 and 68 gives 44 even though nothing changed.
+      expected_failure: redirect_after_resistance
+      old_rule_decoy: average_displayed_numbers
+    target_policy:
+      policy_id: normalize_units_before_aggregation
+      trigger: learner shows a numeric operation changes when units or scales differ
+      avoid_move: repeat the averaging formula on the displayed numbers
+      preferred_move: convert readings to a shared scale before comparing or averaging
+      applicability_conditions:
+        - quantities share a physical dimension but use different units or scales
+      anti_conditions:
+        - all quantities already use the same unit and scale
+      repair_type: name_warrant
+    plausible_repairs:
+      - average_displayed_numbers
+      - explain_the_formula_again
+      - normalize_units_before_aggregation
+    cue_map:
+      selected_relation_type: unit_scale_incompatibility
+      requires_constructed_device: true
+      counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: concrete_measurement_units
+      leakage_risks:
+        - no_headroom_if_s0_immediately_converts_units
+        - false_positive_if_tutor_mentions_units_without_normalizing
+    heldout_siblings:
+      - sibling_id: temperature_unit_conversion_aggregation_a
+        public_setup: >-
+          The learner says averaging 10 degrees Celsius and 50 degrees Fahrenheit
+          as the numbers 10 and 50 treats the same scale as if it were shared.
+        headroom_prediction: s0_likely_repeats_average_formula
+        target_aliases: [convert units, same scale, unit conversion]
+        decoy_aliases: [average the numbers, explain the formula again]
+        selected_policy_markers: [unit-normalization-gate, scale-compatible-aggregation]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: validation_redirect
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: temperature_unit_conversion_aggregation_b
+        public_setup: >-
+          The learner already converts 50 degrees Fahrenheit into 10 degrees
+          Celsius before asking whether the average is just 10.
+        headroom_prediction: s0_may_self_solve_because_conversion_is_explicit
+        target_aliases: [convert units, Celsius scale, same scale]
+        decoy_aliases: [average displayed numbers, repeat average formula]
+        selected_policy_markers: [unit-normalization-gate, scale-compatible-aggregation]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: ceiling
+      - sibling_id: temperature_unit_conversion_aggregation_c
+        public_setup: >-
+          The learner objects that the computed average changes when the same
+          room reading is written with a different thermometer convention, but
+          does not state a conversion formula.
+        learner_resistance: >-
+          If one thermometer writes the room as 25 and another writes that same
+          room as 77, averaging those labels gives 51. That feels like the label
+          changed the room instead of measuring it.
+        headroom_prediction: s0_may_explain_averaging_or_measurement_language_without_normalizing_the_readings
+        target_aliases: [normalize units, compatible scale, converted readings]
+        decoy_aliases: [average the labels, explain averaging again]
+        selected_policy_markers: [scale-normalization-gate, compatible-aggregation-check]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: validation_redirect
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom

@@ -120,6 +120,7 @@
     "a19:induce-axiom": "node scripts/induce-teaching-drama-axiom.js",
     "a19:blind-adjudicate": "node scripts/blind-teaching-drama-axiom-adjudication.js",
     "a19:report": "node scripts/report-teaching-drama-axiom-framework.js",
+    "a19:report:json": "node scripts/report-teaching-drama-axiom-framework.js --json --out exports/a19/reports/framework.json",
     "test:a19": "node --test tests/teachingDramaAxiomProtocol.test.js",
     "atlas:validate": "node scripts/build-atlas.js validate",
     "atlas:build": "node scripts/build-atlas.js build",
