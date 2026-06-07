@@ -153,10 +153,10 @@ modules:
       materializer, blind-adjudication scaffold, and sidecar-paper outline.
       Section 7.9 is the only current canonical source: A18's 10-of-14 bounded
       result remains the primary evidence, while A19 now adds a local one-family
-      pilot in which two surface-agreement held-out siblings
-      (`surface_agreement_uptake_c`, `surface_agreement_uptake_e`) show
-      S0/S1 policy headroom under a single free-text critic. No pooled A19 rate,
-      human-learning, deployment, or weight-learning claim is licensed.
+      screen with two n=1 surface-agreement headroom candidates followed by a
+      two-seed stability smoke that fails to replicate either candidate. No
+      pooled A19 rate, stability-confirmed A19 transfer effect, human-learning,
+      deployment, or weight-learning claim is licensed.
     sections: ["7.9"]
     cross_refs: ["drama-machine", "adaptive-null", "ontology-state-interior", "provable-discourse"]
 

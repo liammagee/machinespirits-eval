@@ -20,6 +20,11 @@ import {
   renderMarkdown as renderAttempt1Markdown,
   summarizeAttempt1Gate,
 } from '../scripts/report-teaching-drama-axiom-attempt1.js';
+import {
+  cardSpecsFromConfig,
+  dashId,
+  summarizeCardResults,
+} from '../scripts/run-a19-stability-screen.js';
 
 const ROOT = path.resolve('.');
 const PROTOCOL = path.join(ROOT, 'config', 'teaching-drama-axioms', 'a19-protocol.yaml');
@@ -164,8 +169,8 @@ test('A19 validator accepts the checked-in pilot fixtures', () => {
   assert.equal(report.summary.families, 6);
   assert.equal(report.summary.cards, 17);
   assert.deepEqual(report.provenance.zero_api, true);
-  assert.equal(report.summary.verdict_counts.policy_headroom, 2);
-  assert.equal(report.summary.verdict_counts.ceiling, 5);
+  assert.equal(report.summary.verdict_counts.policy_headroom, 3);
+  assert.equal(report.summary.verdict_counts.ceiling, 4);
   assert.equal(report.summary.verdict_counts.policy_failure, 1);
   assert.equal(report.summary.verdict_counts.cue_leak, 1);
   assert.equal(report.summary.verdict_counts.self_solve, 5);
@@ -340,11 +345,49 @@ test('framework report separates denominators and refuses a pooled rate', () => 
     admitted_cards: 14,
     protocol_reject_cards: 1,
     artifact_cards: 2,
-    policy_headroom_cards: 2,
+    policy_headroom_cards: 3,
   });
   const markdown = renderMarkdown(report);
   assert.match(markdown, /No pooled success rate is reported here/);
   assert.match(markdown, /Claims Not Licensed/);
+});
+
+test('A19 stability harness resolves card specs and summarizes rerun verdicts', () => {
+  const config = yaml.parse(fs.readFileSync(PILOT, 'utf8'));
+  const specs = cardSpecsFromConfig(config, {
+    familyId: 'surface_agreement_uptake',
+    siblingIds: ['surface_agreement_uptake_c', 'surface_agreement_uptake_e'],
+    materializedRoot: '/tmp/materialized',
+    axiom: '/tmp/axiom.json',
+  });
+  assert.equal(dashId('surface_agreement_uptake_c'), 'surface-agreement-uptake-c');
+  assert.equal(specs.length, 2);
+  assert.equal(specs[0].target_repair_type, 'transfer_control');
+  assert.match(specs[0].transcript, /surface-agreement-uptake-c\/heldout-base\.full\.md$/);
+  assert.match(specs[0].decoy_repair_types, /praise_and_close/);
+  assert.match(specs[0].decoy_repair_types, /repeat_the_explanation/);
+
+  const summary = summarizeCardResults(specs[0], [
+    {
+      seed: 1,
+      status: 'complete',
+      card_verdict: 'policy_headroom',
+      s0_class: 'neither',
+      s1_class: 'target',
+    },
+    {
+      seed: 2,
+      status: 'complete',
+      card_verdict: 'policy_headroom',
+      s0_class: 'decoy',
+      s1_class: 'target',
+    },
+  ]);
+  assert.equal(summary.k_completed, 2);
+  assert.equal(summary.policy_headroom_count, 2);
+  assert.equal(summary.s0_target_count, 0);
+  assert.equal(summary.s1_target_count, 2);
+  assert.equal(summary.interpretation, 'stable_policy_headroom');
 });
 
 test('attempt materializer writes A18 replay and A19 blind-adjudication commands', () => {

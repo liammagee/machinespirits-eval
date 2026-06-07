@@ -1,8 +1,9 @@
 # A19 Harder Held-Out Screen
 
 Date: 2026-06-07.
-Status: two clean local `policy_headroom` cards in one family; threshold met
-only for a bounded Paper 2.0 / atlas scope update, not for a pooled A19 rate.
+Status: two n=1 local `policy_headroom` candidates in one family, followed by a
+two-seed stability smoke that failed to reproduce either candidate. No
+stability-confirmed A19 transfer claim is licensed.
 
 ## Boundary
 
@@ -106,15 +107,55 @@ check and then required re-application to a fresh expression.
 
 ## Consequence
 
-This is now two clean local A19 headroom cards, both in
+This produced two n=1 local A19 headroom candidates, both in
 `surface_agreement_uptake` (`surface_agreement_uptake_c`,
-`surface_agreement_uptake_e`). That is enough to update Paper 2.0 and the atlas
-with a narrow, scope-bound local pilot result. It is not enough for a pooled A19
-rate, a sidecar empirical claim independent of Paper 2.0, or any human-learning,
-deployed-tutor, model-weight-learning, main-harness, or paid-panel claim.
+`surface_agreement_uptake_e`). That was enough to update Paper 2.0 and the atlas
+with a narrow, scope-bound local pilot candidate result, but not enough for a
+pooled A19 rate, a sidecar empirical claim independent of Paper 2.0, or any
+human-learning, deployed-tutor, model-weight-learning, main-harness, or paid-panel
+claim.
+
+## Stability Smoke
+
+Harness:
+`scripts/run-a19-stability-screen.js`.
+
+Artifact:
+`exports/a19/stability/surface-agreement-uptake/a19-stability-summary.json`.
+
+Command:
+
+```bash
+npm run a19:stability -- \
+  --family-id surface_agreement_uptake \
+  --sibling-id surface_agreement_uptake_c \
+  --sibling-id surface_agreement_uptake_e \
+  --materialized-root exports/a19/materialized-attempts-v5 \
+  --axiom exports/a19/axioms/surface-agreement-uptake/axiom.json \
+  --k 2 \
+  --critics 1 \
+  --generator codex \
+  --checker claude
+```
+
+Result:
+
+- `surface_agreement_uptake_c`: `0/2` stability headroom. S0 remained
+  non-target (`neither`) on both seeds, but S1 also remained `neither` on both
+  seeds. Interpretation: `no_stable_headroom`.
+- `surface_agreement_uptake_e`: `0/2` stability headroom. S0 self-solved to
+  `target` on both seeds, so the card collapses to ceiling/self-solve even though
+  S1 reached `target` on one seed. Interpretation:
+  `stable_s0_self_solve_or_ceiling`.
+
+Consequence: the v3.0.131 wording is too strong if read as a stability-confirmed
+pilot result. Paper 2.0 v3.0.132 and the atlas now contract A19 back to a
+reproducible framework plus n=1 candidate positives plus falsifying stability
+evidence. Stronger sidecar claims, paid panels, and human double-coding should
+wait for a new candidate that first survives this stability gate.
 
 The useful next unit is another surface-agreement or uptake-gate sibling, not
 more obvious concrete arithmetic/measurement cards, because the concrete-domain
 cards continue to collapse into S0 self-solve. Before stronger sidecar claims,
-the current positive cards need stability reruns, multi-critic or paid-panel
-adjudication, and eventually human expert double-coding for high-value claims.
+new candidates need stability reruns, multi-critic or paid-panel adjudication,
+and eventually human expert double-coding for high-value claims.

@@ -80,6 +80,7 @@ The initial implementation is deterministic and zero-API:
 - `scripts/report-teaching-drama-axiom-attempt1.js` summarizes A18 replay manifests as A19 attempt-1 gate decisions, separating fixture survivors from empirical survivors and stopping before S0/S1 when old-rule misclassification is not confident.
 - `scripts/induce-teaching-drama-axiom.js` distills a survived attempt-1 artifact into exactly one typed axiom and rejects full replay bundles as S1 memory.
 - `scripts/blind-teaching-drama-axiom-adjudication.js` provides both the deterministic fixture alias reader and the real free-text, alias-withheld, post-hoc-mapped repair extractor for generated transcripts.
+- `scripts/run-a19-stability-screen.js` reruns selected real S0/S1 cards across seeds and summarizes whether apparent headroom is stable before any multi-critic or sidecar escalation.
 - `scripts/report-teaching-drama-axiom-framework.js` emits a Markdown or JSON framework report.
 
 Hard boundary: A19 S1 policy memory must be one admitted `a19-teaching-drama-axiom-v0.1` record. A whole replay `revision.json`, move ledger, or transcript bundle may diagnose the failure, but it cannot count as an axiom-transfer input or support an A19 transfer claim.
@@ -122,6 +123,14 @@ Later instruments, after the protocol is frozen, are:
 3. paid blind adjudication modeled on `scripts/blind-option-adjudication.js`;
 4. stability reruns for cards where headroom appears structural;
 5. human expert double-coding for the highest-value claims.
+
+Current status after the first stability smoke: two n=1
+`surface_agreement_uptake` positives (`surface_agreement_uptake_c`,
+`surface_agreement_uptake_e`) failed to reproduce under a two-seed stability
+rerun (`0/2` headroom for both; artifact:
+`exports/a19/stability/surface-agreement-uptake/a19-stability-summary.json`).
+Therefore A19 currently licenses a framework and a negative/stability-boundary
+result, not a stability-confirmed transfer claim.
 
 ## 7. Sidecar Paper Scaffold
 

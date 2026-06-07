@@ -60,14 +60,14 @@ families:
           neutral_option_space: "repair A | repair B | repair C"
         fixture_adjudication:
           s0:
-            committed_option_class: target
-            basis_label: ordinary_public_inference
+            committed_option_class: decoy
+            basis_label: validation_redirect
             artifact_flags: []
           s1:
             committed_option_class: target
             basis_label: named_relation
             artifact_flags: []
-          expected_card_verdict: ceiling
+          expected_card_verdict: policy_headroom
       - sibling_id: counter_warrant_scope_b
         public_setup: >-
           The learner frames the objection as a boundary case and asks whether

@@ -54,17 +54,19 @@
 - [x] Add harder held-out siblings with sibling-specific learner resistance. `fraction_common_unit_counterexample_c` and `temperature_unit_conversion_aggregation_c` still self-solved at S0; `surface_agreement_uptake_c` produced one local `policy_headroom` card.
 - [x] Add two more surface-agreement siblings. `surface_agreement_uptake_d` self-solved at S0; `surface_agreement_uptake_e` produced the second clean local `policy_headroom` card.
 - [x] Update Paper 2.0 and atlas only after the local threshold reached two clean A19 `policy_headroom` cards, and keep the update scope-bound.
-- [ ] Repeat the same discipline with stability reruns and multi-critic adjudication before any stronger sidecar claim.
+- [x] Repeat the same discipline with stability reruns before any stronger sidecar claim. The first two-seed stability smoke failed to reproduce either n=1 candidate: `surface_agreement_uptake_c` was `0/2` because S1 stayed `neither`; `surface_agreement_uptake_e` was `0/2` because S0 self-solved.
+- [ ] Find or design a new held-out candidate that survives S0-first headroom and then passes the stability gate before spending on multi-critic adjudication.
 
 ## Phase 5: Evaluation And Human Validation
 
 - [x] Add a fixture-only blind adjudication scaffold modeled on `scripts/blind-option-adjudication.js`.
 - [x] Add a real free-text teaching-drama blind adjudicator; the deterministic alias reader remains only for fixture plumbing.
-- [ ] Add paid blind adjudication modeled on `scripts/blind-option-adjudication.js` after the zero-API protocol freezes.
-- [ ] Add stability reruns for candidate structural headroom cases.
+- [ ] Add paid blind adjudication modeled on `scripts/blind-option-adjudication.js` after the zero-API protocol freezes and a candidate survives stability.
+- [x] Add stability reruns for candidate structural headroom cases.
+- [x] Add a reusable A19 stability harness: `scripts/run-a19-stability-screen.js`.
 - [ ] Add human expert double-coding for a small set of adjudications and drama labels.
 - [ ] Report inter-rater agreement on the same artifacts, not similar artifacts.
-- [ ] Keep paid panels gated on local survival and protocol pass.
+- [x] Keep paid panels gated on local survival and protocol pass; the failed stability smoke stops escalation for the current two candidates.
 
 ## Phase 6: Sidecar Paper And Atlas Integration
 
