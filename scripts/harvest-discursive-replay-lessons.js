@@ -68,7 +68,10 @@ function positiveInt(value, name) {
 }
 
 function timestampId() {
-  return new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+  return new Date()
+    .toISOString()
+    .replace(/[-:]/g, '')
+    .replace(/\.\d{3}Z$/, 'Z');
 }
 
 function safeSlug(value) {
@@ -105,7 +108,9 @@ function issueText(issue) {
 }
 
 function normalizeCriterion(issue) {
-  return String(issue?.criterion || '').trim().toLowerCase();
+  return String(issue?.criterion || '')
+    .trim()
+    .toLowerCase();
 }
 
 function hasIssueMatching(item, pattern) {
@@ -183,8 +188,8 @@ function collectLoop(loopRoot) {
       const requiredRecognitionVotes = panelItem.requiredRecognitionVotes || 1;
       const requiredOriginVotes = panelItem.requiredOriginVotes || requiredRecognitionVotes;
       const recognitionPass =
-        panelItem.recognitionPass ?? ((panelItem.recognitionVotes || 0) >= requiredRecognitionVotes);
-      const originPass = panelItem.originPass ?? ((origins.peripeteia_induced || 0) >= requiredOriginVotes);
+        panelItem.recognitionPass ?? (panelItem.recognitionVotes || 0) >= requiredRecognitionVotes;
+      const originPass = panelItem.originPass ?? (origins.peripeteia_induced || 0) >= requiredOriginVotes;
       const outcome = {
         iteration: iteration.iteration,
         status: panelItem.status,
@@ -280,7 +285,9 @@ function deriveLessons(collectedLoops, args) {
   const hadReviseThenPass = (item) =>
     item.finalStatus === 'panel_pass' &&
     item.localStatuses.some((s) => s.status === 'revise_again') &&
-    item.feedbackIterations.some((iteration) => iteration > (item.localStatuses.find((s) => s.status === 'revise_again')?.iteration || 0));
+    item.feedbackIterations.some(
+      (iteration) => iteration > (item.localStatuses.find((s) => s.status === 'revise_again')?.iteration || 0),
+    );
 
   const feedbackSupport = supportEvidence(items, hadReviseThenPass);
   const ledgerSupport = supportEvidence(
@@ -291,15 +298,13 @@ function deriveLessons(collectedLoops, args) {
     items,
     (item) => item.finalStatus === 'panel_pass' && hasIssueMatching(item, /prose|natural|rehearsed|spontane/i),
   );
-  const originRiskSupport = supportEvidence(
-    items,
-    (item) =>
-      item.panelOutcomes.some(
-        (outcome) =>
-          outcome.recognitionPass !== false &&
-          outcome.recognitionVotes >= (outcome.requiredRecognitionVotes || 1) &&
-          outcome.peripeteiaInducedVotes < (outcome.requiredOriginVotes || outcome.requiredRecognitionVotes || 1),
-      ),
+  const originRiskSupport = supportEvidence(items, (item) =>
+    item.panelOutcomes.some(
+      (outcome) =>
+        outcome.recognitionPass !== false &&
+        outcome.recognitionVotes >= (outcome.requiredRecognitionVotes || 1) &&
+        outcome.peripeteiaInducedVotes < (outcome.requiredOriginVotes || outcome.requiredRecognitionVotes || 1),
+    ),
   );
 
   return [
@@ -323,8 +328,7 @@ function deriveLessons(collectedLoops, args) {
       requires:
         'Each move-ledger entry must record only what is publicly owned by that turn; do not copy a final learner self-reframe backward into earlier entries.',
       support: ledgerSupport,
-      recommendedUse:
-        'Inject into replay generator and local checker whenever move_ledger entries are requested.',
+      recommendedUse: 'Inject into replay generator and local checker whenever move_ledger entries are requested.',
       args,
     }),
     lesson({
@@ -335,8 +339,7 @@ function deriveLessons(collectedLoops, args) {
       requires:
         'The learner self-reframe must contrast old check, limit, new check, and application, but it should read as ordinary domain speech rather than a rehearsed rubric sentence.',
       support: proseSupport,
-      recommendedUse:
-        'Use as a style guard after self-reframe completeness is already satisfied.',
+      recommendedUse: 'Use as a style guard after self-reframe completeness is already satisfied.',
       args,
     }),
     lesson({
@@ -409,7 +412,7 @@ function ttlUri(id) {
 
 export function renderLessonsTtl(report) {
   const lines = [
-    '@prefix ms: <https://machinespirits.dev/ontology/reasoning#> .',
+    `@prefix ms: <${NS}> .`,
     '@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .',
     '@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .',
     '',
@@ -429,7 +432,8 @@ export function renderLessonsTtl(report) {
     for (const context of entry.activatesIn || []) lines.push(`  ms:activatesIn ms:${context} ;`);
     lines.push(`  ms:requiresConstraint ${ttlString(entry.requires)} ;`);
     for (const itemId of entry.supportingItems || []) lines.push(`  ms:supportingSourceItem ${ttlString(itemId)} ;`);
-    for (const evidence of entry.counterEvidence || []) lines.push(`  ms:counterEvidence ${ttlString(JSON.stringify(evidence))} ;`);
+    for (const evidence of entry.counterEvidence || [])
+      lines.push(`  ms:counterEvidence ${ttlString(JSON.stringify(evidence))} ;`);
     lines[lines.length - 1] = lines[lines.length - 1].replace(/ ;$/, ' .');
     lines.push('');
   }
@@ -437,9 +441,7 @@ export function renderLessonsTtl(report) {
 }
 
 export function renderPolicyBrief(report, { includeCandidates = true } = {}) {
-  const active = (report.lessons || []).filter(
-    (entry) => includeCandidates || entry.promotionStatus === 'promoted',
-  );
+  const active = (report.lessons || []).filter((entry) => includeCandidates || entry.promotionStatus === 'promoted');
   const lines = [
     '# Discursive Replay Learned Policy Memory',
     '',
@@ -459,7 +461,9 @@ export function renderPolicyBrief(report, { includeCandidates = true } = {}) {
     lines.push(`- constraint: ${entry.requires}`);
     if (entry.recommendedUse) lines.push(`- use: ${entry.recommendedUse}`);
     if (entry.counterEvidence?.length) {
-      lines.push(`- caution: ${entry.counterEvidence.length} supporting case(s) carry counter-evidence or claim-boundary limits.`);
+      lines.push(
+        `- caution: ${entry.counterEvidence.length} supporting case(s) carry counter-evidence or claim-boundary limits.`,
+      );
     }
     lines.push('');
   }
