@@ -118,3 +118,8 @@ docs/explorations/literature/pdfs/
 
 # Antigravity CLI — machine-local symlink to ~/.gemini config (not for the repo)
 .antigravitycli/
+
+# Python bytecode — the scripts/*.py analysis tools (e.g. the §6.9.8 OPE gates)
+# generate these when one imports another via importlib; never tracked.
+__pycache__/
+*.pyc
