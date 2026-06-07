@@ -467,6 +467,7 @@ const CONTENT_PACKAGES = [
   { id: 'elementary', dir: 'content-test-elementary', label: 'Elementary' },
   { id: 'sel', dir: 'content-test-sel', label: 'SEL' },
   { id: 'support', dir: 'content-test-support', label: 'Support' },
+  { id: 'poetics-rhetoric', dir: 'content-poetics-rhetoric', label: 'Poetics & Rhetoric' },
 ];
 
 function parseFrontmatter(raw) {

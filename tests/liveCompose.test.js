@@ -15,6 +15,7 @@ import {
   buildMockDeps,
   _resetSessionsForTest,
 } from '../services/poetics/liveCompose.js';
+import { loadCurriculumContext } from '../routes/chatRoutes.js';
 
 // Every case runs on mock deps so no LLM is ever called and spend stays zero —
 // the whole point of buildMockDeps(). The store is process-global, so reset it
@@ -163,5 +164,34 @@ describe('liveCompose · saveSession', () => {
     assert.match(body, /tutor_cell: cell_5_recog_single_unified/);
     // Deliberation is stripped from the wire view but retained in the artifact.
     assert.match(body, /deliberation:/);
+  });
+});
+
+describe('liveCompose · lecture binding (content-poetics-rhetoric)', () => {
+  it('stores a spec lectureRef on the session and surfaces it in the view', async () => {
+    // Human opens as learner → no opening AI turn, so this stays pure state (no LLM).
+    const { session } = await startSession(
+      { humanRole: ROLES.LEARNER, openingSpeaker: ROLES.LEARNER, lectureRef: '1001-lecture-1' },
+      mock,
+    );
+    assert.equal(session.lectureRef, '1001-lecture-1');
+    assert.equal(viewSession(session.id).lectureRef, '1001-lecture-1');
+  });
+
+  it('also accepts the scenario-style currentContent, and defaults to null', async () => {
+    const { session: a } = await startSession({ currentContent: '1001-lecture-2' }, mock);
+    assert.equal(a.lectureRef, '1001-lecture-2');
+    const { session: b } = await startSession({}, mock);
+    assert.equal(b.lectureRef, null);
+  });
+
+  it('resolves a poetics-rhetoric lecture now the package is registered', () => {
+    // Proves CONTENT_PACKAGES carries content-poetics-rhetoric (course 1001), so a
+    // sit-in tutor bound to "1001-lecture-1" teaches from the real lecture text.
+    const ctx = loadCurriculumContext('1001-lecture-1');
+    assert.ok(ctx, 'course 1001 must resolve via loadCurriculumContext');
+    assert.equal(ctx.courseId, '1001');
+    assert.equal(ctx.lectureRef, '1001-lecture-1');
+    assert.ok(ctx.text && ctx.text.length > 500, 'lecture text should be loaded');
   });
 });

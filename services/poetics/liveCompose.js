@@ -30,7 +30,7 @@ import YAML from 'yaml';
 
 import * as evalConfigLoader from '../evalConfigLoader.js';
 import interactionEngine from '../learnerTutorInteractionEngine.js';
-import { runTutorTurn } from '../../routes/chatRoutes.js';
+import { runTutorTurn, loadCurriculumContext } from '../../routes/chatRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '../..');
@@ -97,6 +97,7 @@ function sessionView(s) {
     id: s.id,
     topic: s.topic,
     hamartia: s.hamartia,
+    lectureRef: s.lectureRef,
     humanRole: s.humanRole,
     aiRole: s.aiRole,
     persona: s.persona,
@@ -180,13 +181,18 @@ async function defaultTutorTurn({ session, learnerMessage, history, apiKey }) {
   if (!profile) {
     throw liveError(`unknown tutor cell '${session.tutorCell}'`, 'LIVE_BAD_TUTOR_CELL', 500);
   }
+  // Bind the sit-in tutor to a lecture when the spec names one (e.g. a
+  // content-poetics-rhetoric course lecture like "1001-lecture-1"). This is the
+  // same curriculum block the scored live chat injects. loadCurriculumContext
+  // returns null for an unknown/blank ref, so free-text-topic sessions are a no-op.
+  const curriculum = session.lectureRef ? loadCurriculumContext(session.lectureRef) : null;
   const trace = await runTutorTurn({
     profile,
     apiKey,
     history,
     learnerMessage,
     topic: session.topic,
-    curriculum: null,
+    curriculum,
     useClaudeCli: false,
   });
   return {
@@ -290,6 +296,10 @@ export async function startSession(spec = {}, deps = {}) {
     id: `live_${crypto.randomBytes(6).toString('hex')}`,
     topic: String(spec.topic || 'logarithms as the inverse of exponentiation').slice(0, 500),
     hamartia: String(spec.hamartia || '').slice(0, 500),
+    // Optional lecture binding: accept either `lectureRef` or the scenario-style
+    // `currentContent` (both name a ref like "1001-lecture-1"). Resolved per
+    // tutor turn via loadCurriculumContext; null means teach from topic alone.
+    lectureRef: String(spec.lectureRef || spec.currentContent || '').slice(0, 40) || null,
     humanRole,
     aiRole,
     persona: spec.persona || 'struggling_anxious',
@@ -383,6 +393,7 @@ export function saveSession(sessionId, opts = {}) {
     spec: {
       topic: session.topic,
       hamartia: session.hamartia,
+      lecture_ref: session.lectureRef,
       human_role: session.humanRole,
       ai_role: session.aiRole,
       persona: session.persona,

@@ -1242,6 +1242,45 @@ const composeOptions = (list, selected) =>
 const composeDatalist = (id, list) =>
   `<datalist id="${id}">${list.map((v) => `<option value="${escapeHtml(v)}"></option>`).join('')}</datalist>`;
 
+// Lectures a sit-in tutor can be bound to (optional, for /compose/live). Currently
+// the content-poetics-rhetoric course (id 1001) — the package linked here. An empty
+// pick = teach from the free-text topic alone (the prior behaviour). The ref shape
+// "1001-lecture-N" is what loadCurriculumContext (routes/chatRoutes.js) resolves.
+function listComposeLectures() {
+  const courseDir = path.resolve(ROOT, 'content-poetics-rhetoric', 'courses', '1001');
+  let files = [];
+  try {
+    files = fs.readdirSync(courseDir).filter((f) => /^lecture-\d+\.md$/.test(f));
+  } catch {
+    return []; // package absent → offer no lectures
+  }
+  files.sort((a, b) => Number(a.match(/\d+/)[0]) - Number(b.match(/\d+/)[0]));
+  return files.map((f) => {
+    const num = Number(f.match(/\d+/)[0]);
+    let title = `Lecture ${num}`;
+    try {
+      const raw = fs.readFileSync(path.join(courseDir, f), 'utf8');
+      const m = raw.match(/^#{1,3}\s*(?:<a[^>]*><\/a>\s*)?Lecture\s+\d+\s*[—–-]\s*(.+?)\s*$/m);
+      if (m) title = m[1].trim();
+    } catch {
+      /* keep the default title */
+    }
+    return { ref: `1001-lecture-${num}`, num, title };
+  });
+}
+
+const composeLectureOptions = () =>
+  ['<option value="">— none · teach from topic —</option>']
+    .concat(
+      listComposeLectures().map(
+        (l) =>
+          `<option value="${escapeHtml(l.ref)}" data-topic="${escapeHtml(l.title)}">L${l.num} · ${escapeHtml(
+            l.title,
+          )}</option>`,
+      ),
+    )
+    .join('');
+
 const composeFormChecks = (selected) =>
   COMPOSER_VOCAB.forms
     .map(
@@ -2193,6 +2232,7 @@ ${modeTabsHtml('live')}
         <div class="grp" id="grpTutor">
           <label class="fld">AI tutor · prompt<select id="f-prompt">${composeOptions(['recognition', 'base'], 'recognition')}</select></label>
           <label class="fld">AI tutor · architecture<select id="f-tarch">${composeOptions(['ego_superego', 'ego_only'], 'ego_superego')}</select></label>
+          <label class="fld wide">AI tutor · lecture <span class="muted">(optional — teach from a course lecture)</span><select id="f-lecture">${composeLectureOptions()}</select></label>
         </div>
         <div class="grp" id="grpLearner" hidden>
           <label class="fld">AI learner · persona<select id="f-persona">${composeOptions(V.personas, 'struggling_anxious')}</select></label>
@@ -2272,6 +2312,7 @@ function renderSession(sess){
   $('spendTok').textContent = tok.toLocaleString()+' tokens · '+sess.turnCount+'/'+sess.maxTurns+' turns';
   $('sceneMeta').innerHTML = 'you are the <b>'+esc(sess.humanRole)+'</b><br>AI is the <b>'+esc(sess.aiRole)+'</b><br>'
     + (sess.aiRole==='tutor' ? ('cell <code>'+esc(sess.tutorCell)+'</code>') : ('persona <code>'+esc(sess.persona)+'</code>'))
+    + (sess.aiRole==='tutor' && sess.lectureRef ? ('<br>teaching <code>'+esc(sess.lectureRef)+'</code>') : '')
     + (S.mock ? '<br><span class="metered--free">free preview</span>' : '');
   var done = sess.status!=='live';
   var yours = sess.nextSpeaker===sess.humanRole && !done;
@@ -2293,6 +2334,7 @@ async function begin(){
   $('setupErr').textContent=''; S.mock = $('f-mock').checked;
   var spec = { humanRole:S.humanRole, topic:$('f-topic').value, hamartia:$('f-hamartia').value,
     promptType:$('f-prompt').value, tutorArchitecture:$('f-tarch').value,
+    lectureRef:($('f-lecture')||{}).value||'',
     persona:$('f-persona').value, learnerArchitecture:$('f-larch').value,
     openingSpeaker:$('f-open').value, maxTurns:Number($('f-max').value)||16 };
   $('beginBtn').disabled=true; $('beginBtn').textContent='setting the scene…';
@@ -2326,6 +2368,13 @@ $('f-mock').addEventListener('change', function(){
   var on = $('f-mock').checked;
   $('meterNote').textContent = on ? 'free preview · canned AI lines · no spend' : 'metered · real LLM calls per AI turn · localhost only';
   $('meterNote').classList.toggle('metered--free', on);
+});
+$('f-lecture').addEventListener('change', function(){
+  // Picking a lecture aligns the free-text topic with it, so the tutor prompt
+  // (which carries both topic and the injected lecture) stays coherent.
+  var o = $('f-lecture').selectedOptions && $('f-lecture').selectedOptions[0];
+  var t = o && o.getAttribute('data-topic');
+  if(t){ $('f-topic').value = t; }
 });
 $('themeToggle').addEventListener('click', function(){ var d=document.documentElement; var nx=d.getAttribute('data-theme')==='dark'?'':'dark'; if(nx)d.setAttribute('data-theme','dark'); else d.removeAttribute('data-theme'); try{ localStorage.setItem('poetics-theme',nx); }catch(_e){} });
 try { if(localStorage.getItem('poetics-theme')==='dark') document.documentElement.setAttribute('data-theme','dark'); } catch(_e){}
