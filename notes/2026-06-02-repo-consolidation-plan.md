@@ -12,12 +12,13 @@ Status legend: ✅ done · ▶ pending (needs a go-ahead) · ⏸ deferred · ❓
 > done (see new **§ Log/DB consolidation** below; fork logs + DB are symlinked to the
 > private archive; website's 6,652 logs remain). (2) A **per-file provenance audit**
 > of every Phase 3 candidate (the audit the Provenance rule demands, which Phase 3's
-> list pre-dated) falsified most of Phase 3: the legacy Paper 1.0 docs are *live
-> build/validation inputs*, and 6 of 7 cell-100 docs are *paper-cited*. The genuinely
-> safe doc-archival surface is **two orphan build scripts**, and even those are blocked
-> only on the archive-destination judgment call (#3). **Phase 4 is DONE** (PR #7).
+> list pre-dated) falsified *all* of Phase 3: the legacy Paper 1.0 docs are *live
+> build/validation inputs*, 6 of 7 cell-100 docs are *paper-cited*, and the two
+> "orphan" build scripts that looked safe turned out to be live, location-coupled
+> publishing tools (caught and reverted when the move was attempted — see Phase 3).
+> **Phase 4 is DONE** (PR #7); **Phase 3 is now fully cancelled** (zero safe items).
 > Net lesson: this repo is far more tightly coupled than a names-and-dates scan can
-> see — the safe *doc* surface is tiny; the real consolidation win is *logs*.
+> see — the safe *doc* surface is empty; the real consolidation win is *logs*.
 
 ---
 
@@ -35,9 +36,9 @@ The real consolidation surface, after verification, is narrower than the scan gu
 [done, Phase 1], (c) ~10 executed one-shot scripts [done, Phase 4], and (d) **log/DB
 co-location into the private archive** — which the scan under-rated and is the actual win
 [partly done, see § Log/DB consolidation]. What is **NOT** a surface: the `docs/` archival
-batch the scan proposed (Phase 3) is almost entirely live build/validation inputs or
-paper-cited provenance — and **NOT** the closed-experiment plan docs at root, which are
-cited provenance too (see Provenance rule + Phase 2).
+batch the scan proposed (Phase 3) is *entirely* live build/validation inputs, paper-cited
+provenance, or live-but-orphan-from-automation build tools — zero safe items — and **NOT**
+the closed-experiment plan docs at root, which are cited provenance too (see Provenance rule + Phase 2).
 
 ## ⚠ Provenance rule (learned the hard way in Phase 2)
 
@@ -102,16 +103,19 @@ Running it now (grep each basename across `paper-full-2.0.md`, `scripts/`, `buil
 | `docs/research/methods-paper.md` | **KEEP — live input** | `build.sh` `methods)` target |
 | `docs/cell-100-{pilot-findings,methods-note,pilot-findings-addendum,cross-judge-sanity-check,replication-findings,charisma-full-n-update}.md` (6) | **KEEP — paper-cited** | `paper-full-2.0.md` §6.7 — the "Five internal documents" sentence (:2074) + `charisma-full-n-update` at :2044/:2052/:3834/:3837 |
 | `docs/explorations/claude/p22-p23-parking-note.md` | **KEEP — paper-cited** | `paper-full-2.0.md:2080` ("See … for the integration plan") |
-| `docs/research/build-appendix.sh`, `build-machinagogy-combined.sh` | **SAFE to archive** | orphan: not referenced by `build.sh`, `package.json`, or any script (`build.sh` has its own inline `paper2)`/`slides)`/`methods)` targets); blocked only on judgment call #3 (destination) |
+| `docs/research/build-appendix.sh`, `build-machinagogy-combined.sh` | **KEEP — live tools** (was mis-tagged "SAFE") | orphan *from automation* but NOT dead. `build.sh` has **no** appendix/machinagogy target, so these are the *only* way to build the appendix PDF and the machinagogy-combined PDF; `build-machinagogy-combined.sh` writes the combined PDF straight into the paper-publishing staging dir (`…/machinespirits-content-philosophy/articles/ai-tutor`). Both do `cd "$(dirname "$0")"` and read `paper-full-2.0.md` relatively → **hard-coupled to `docs/research/`**; moving them to `archive/` silently breaks them (wrong `cd`, version resolves to "dev", inputs not found). Verified 2026-06-07 when judgment call #3 was resolved — the move was attempted, the pre-commit read of the scripts caught the coupling, reverted. |
 | `docs/cell-100-followups.md` | judgment call | 0 by-name refs anywhere — the lone non-cited cell-100 doc; **recommend keep-with-family** (archiving 1 of 7 audit-trail docs to a different dir fragments the family for ~0 gain) |
 
-So Phase 3's only *clearly-safe* output is the two orphan build scripts, and those wait
-on the destination decision (#3). Everything else the scan flagged is either a live
-build/validation input or paper-cited provenance. **This is the second time the names-and-dates
-heuristic mistook a coupled file for cruft** (Phase 2 was the first). The general rule stands:
-*in this repo, assume coupling until a grep proves otherwise.* `docs/explorations/{claude,gpt-pro}`
-was never fully enumerated here — if it is ever revisited, audit **every** file in it, not the
-dir as a unit (p22-p23-parking-note.md proves a single cited file hides inside an otherwise-stale dir).
+So Phase 3 now has **zero** clearly-safe output. Everything the scan flagged is either a live
+build/validation input, paper-cited provenance, or — the build scripts — an orphan-from-automation
+tool that is still live and hard-coupled to its location. **This is the third time the
+names-and-dates / "orphan" heuristic mistook a coupled file for cruft** (Phase 2 = root plan docs;
+Phase 3 docs = cell-100/legacy-paper; Phase 3 scripts = these build helpers). The sharper rule:
+*"nothing auto-calls it" ≠ "dead"* — a human-invoked build/publish tool has no caller in the repo
+yet is fully live. Always **read the file**, not just its reference count, before archiving.
+`docs/explorations/{claude,gpt-pro}` was never fully enumerated here — if it is ever revisited,
+audit **every** file in it, not the dir as a unit (p22-p23-parking-note.md proves a single cited
+file hides inside an otherwise-stale dir).
 
 ## ✅ Phase 4 — `scripts/` one-shot archival (DONE 2026-06-07, PR #7)
 
@@ -174,12 +178,15 @@ Revisit once the adaptation-recognition loop stabilizes.
 2. `docs/research/methods-paper.md` → **resolved: KEEP** (it's a live `build.sh` `methods)` target, not
    foldable). `machinagogy_appendix_rewrite_v0_1.md` → 0 code refs (only this plan); the machinagogy
    build script doesn't name it. Still a judgment call: archive, or already folded into the paper?
-3. **Archive destination — now the gating decision** for the only clearly-safe Phase 3 items (the two
-   orphan build scripts). `docs/research/archive/` (already gitignored) vs. a top-level `archive/`.
-   `git mv`-ing an *already-tracked* file into the gitignored dir **keeps it tracked** — gitignore only
-   suppresses *untracked* files, so history is preserved either way; the gitignore entry just stops
-   stray new scratch files from being auto-added. Cosmetic/where-do-I-look choice, not a history-loss
-   risk. Nothing in Phase 3 should move until this is picked, to avoid a later second relocation.
+3. **Archive destination → RESOLVED 2026-06-07: top-level `archive/`** (user's call). *But* when this
+   unblocked the only candidates (the two orphan build scripts) and the move was attempted, reading the
+   scripts first showed they are live, location-coupled publishing tools — so the move was reverted and
+   Phase 3's safe set is now empty (see Phase 3 table). **Net: the convention is decided (top-level
+   `archive/`, tracked — not gitignored, since a deliberate archive wants its `git mv` history kept),
+   but there is nothing safe to put in it yet.** The dir is therefore not created until a genuinely-dead
+   file appears. For reference: `git mv`-ing a tracked file into a gitignored dir would keep it tracked
+   (gitignore only suppresses *untracked* files), so the gitignore-or-not choice was only cosmetic; we
+   chose tracked top-level so future archived files are tracked by default.
 4. `.antigravitycli/` → **resolved: already effectively ignored** (untracked yet absent from the
    `git status` dirty set, like `.codex/`/`.agents/`). No action needed; drop from the list.
 
