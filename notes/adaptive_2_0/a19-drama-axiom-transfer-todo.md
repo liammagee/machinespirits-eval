@@ -61,7 +61,11 @@
 - [x] Screen `surface_agreement_uptake_h` as a non-algebraic statistics candidate. S0 required the learner to apply a selection-plan check to the survey sentence, so the card was `ceiling`; stopped before S1, stability, and multi-critic escalation.
 - [x] Screen `counter_warrant_scope_c` as a different admitted-axiom repair family. S0 constructed and applied a refusal-availability test for consent under pressure, so the card was `ceiling`; stopped before S1, stability, and multi-critic escalation.
 - [x] Change the evidence unit before spending further: induce a new axiom from a new attempt-1 survivor. `frustration_rupture_repair` admitted an axiom, but its held-out S0/S1 contrast was `neither_correct` under the registered `repair_misalignment` target.
-- [ ] Stop opportunistic A19 looping until the protocol changes. Next work must pre-register a sharper `repair_misalignment` taxonomy, explicitly stratify or weaken the S0 baseline, or define a genuinely new repair family before any more S1, stability, multi-critic, paid-panel, or sidecar escalation.
+- [x] Stop opportunistic A19 looping until the protocol changes. v0.2 is now the preregistered protocol change: sharper `repair_misalignment` taxonomy, explicit S0 baseline strata, and one genuinely new repair family before any further claim escalation.
+- [x] Register `repair_misalignment` subtypes (`target_uncertainty_repair`, `feedback_dependency_repair`, `relational_rupture_repair`) and require repair-misalignment families plus siblings to name the subtype.
+- [x] Register S0 baseline strata and require every family to declare its S0 design. `recursive_full_no_policy_memory` remains required for stability, paid-panel, and sidecar empirical claims; weak S0 is protocol-screen-only.
+- [x] Add `productive_impasse_answer_leakage` as a new diagnostic-options repair family under `weak_single_pass_no_policy_memory`.
+- [ ] If `productive_impasse_answer_leakage` produces apparent headroom in any real screen, rerun it against `recursive_full_no_policy_memory` before stability, paid adjudication, Paper 2.0, atlas, or sidecar use.
 
 ## Phase 5: Evaluation And Human Validation
 

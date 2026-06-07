@@ -188,6 +188,43 @@ function validateProtocol(protocol, issues) {
       'must remain true',
     );
   }
+  const repairSubtypeRequiredType = protocol?.repair_misalignment_taxonomy?.required_when_repair_type;
+  if (repairSubtypeRequiredType !== 'repair_misalignment') {
+    pushIssue(
+      issues,
+      'error',
+      'protocol.repair_misalignment_taxonomy.required_when_repair_type',
+      'must be repair_misalignment',
+    );
+  }
+  if (!allowedRepairMisalignmentSubtypes(protocol).length) {
+    pushIssue(
+      issues,
+      'error',
+      'protocol.repair_misalignment_taxonomy.allowed_subtypes',
+      'must register repair_misalignment subtypes',
+    );
+  }
+  const allowedStrata = allowedS0BaselineStrata(protocol);
+  if (!allowedStrata.length) {
+    pushIssue(issues, 'error', 'protocol.s0_baseline_strata.allowed', 'must register S0 baseline strata');
+  }
+  const defaultStratum = protocol?.s0_baseline_strata?.default;
+  if (!hasText(defaultStratum)) {
+    pushIssue(issues, 'error', 'protocol.s0_baseline_strata.default', 'is required');
+  } else if (allowedStrata.length && !allowedStrata.includes(defaultStratum)) {
+    pushIssue(issues, 'error', 'protocol.s0_baseline_strata.default', 'must be one of the allowed strata', {
+      allowed: allowedStrata,
+    });
+  }
+  if (protocol?.s0_baseline_strata?.escalation_rules?.sidecar_empirical_claim_requires !== defaultStratum) {
+    pushIssue(
+      issues,
+      'error',
+      'protocol.s0_baseline_strata.escalation_rules.sidecar_empirical_claim_requires',
+      'must require the default strongest S0 stratum',
+    );
+  }
 }
 
 function validateKnownLabel({ issues, protocol, group, value, pathName }) {
@@ -199,6 +236,14 @@ function validateKnownLabel({ issues, protocol, group, value, pathName }) {
   if (allowed.length && !allowed.includes(value)) {
     pushIssue(issues, 'error', pathName, `unknown ${group}: ${value}`, { allowed });
   }
+}
+
+function allowedRepairMisalignmentSubtypes(protocol) {
+  return Object.keys(protocol?.repair_misalignment_taxonomy?.allowed_subtypes || {});
+}
+
+function allowedS0BaselineStrata(protocol) {
+  return Object.keys(protocol?.s0_baseline_strata?.allowed || {});
 }
 
 function validateFamily({ family, index, protocol }) {
@@ -239,6 +284,17 @@ function validateFamily({ family, index, protocol }) {
     value: policy.repair_type,
     pathName: `${base}.target_policy.repair_type`,
   });
+  const repairSubtypeRequiredType = protocol?.repair_misalignment_taxonomy?.required_when_repair_type;
+  const repairSubtypeAllowed = allowedRepairMisalignmentSubtypes(protocol);
+  if (policy.repair_type === repairSubtypeRequiredType) {
+    if (!hasText(policy.repair_subtype)) {
+      pushIssue(issues, 'error', `${base}.target_policy.repair_subtype`, 'is required for repair_misalignment');
+    } else if (repairSubtypeAllowed.length && !repairSubtypeAllowed.includes(policy.repair_subtype)) {
+      pushIssue(issues, 'error', `${base}.target_policy.repair_subtype`, 'unknown repair_misalignment subtype', {
+        allowed: repairSubtypeAllowed,
+      });
+    }
+  }
 
   if (asArray(policy.applicability_conditions).length < (req.min_applicability_conditions || 1)) {
     pushIssue(
@@ -268,6 +324,23 @@ function validateFamily({ family, index, protocol }) {
   }
   if (req.require_domain_scope && !hasText(family?.cue_map?.domain_scope)) {
     pushIssue(issues, 'error', `${base}.cue_map.domain_scope`, 'is required');
+  }
+  if (req.require_s0_baseline_design) {
+    const s0Design = family?.evaluation_design || {};
+    const allowedStrata = allowedS0BaselineStrata(protocol);
+    if (!hasText(s0Design.s0_baseline_stratum)) {
+      pushIssue(issues, 'error', `${base}.evaluation_design.s0_baseline_stratum`, 'is required');
+    } else if (allowedStrata.length && !allowedStrata.includes(s0Design.s0_baseline_stratum)) {
+      pushIssue(issues, 'error', `${base}.evaluation_design.s0_baseline_stratum`, 'unknown S0 baseline stratum', {
+        allowed: allowedStrata,
+      });
+    }
+    if (!hasText(s0Design.s0_claim_boundary)) {
+      pushIssue(issues, 'error', `${base}.evaluation_design.s0_claim_boundary`, 'is required');
+    }
+    if (!hasText(s0Design.s0_escalation_rule)) {
+      pushIssue(issues, 'error', `${base}.evaluation_design.s0_escalation_rule`, 'is required');
+    }
   }
 
   const siblings = asArray(family?.heldout_siblings);
@@ -322,6 +395,22 @@ function validateFamily({ family, index, protocol }) {
         },
       );
     }
+    if (policy.repair_type === repairSubtypeRequiredType) {
+      if (!hasText(sibling?.target_repair_subtype)) {
+        pushIssue(issues, 'error', `${sbase}.target_repair_subtype`, 'is required for repair_misalignment cards');
+      } else if (sibling.target_repair_subtype !== policy.repair_subtype) {
+        pushIssue(
+          issues,
+          'error',
+          `${sbase}.target_repair_subtype`,
+          'must match target_policy.repair_subtype for this family',
+          {
+            expected: policy.repair_subtype,
+            actual: sibling.target_repair_subtype,
+          },
+        );
+      }
+    }
 
     const isProtocolReject = sibling?.protocol_reject === true;
     if (isProtocolReject) {
@@ -365,6 +454,9 @@ function validateFamily({ family, index, protocol }) {
       verdict,
       expected: expectedVerdict,
       protocol_reject_reason: sibling?.protocol_reject_reason || null,
+      repair_type: policy.repair_type || null,
+      repair_subtype: policy.repair_subtype || null,
+      s0_baseline_stratum: family?.evaluation_design?.s0_baseline_stratum || null,
     });
   });
 

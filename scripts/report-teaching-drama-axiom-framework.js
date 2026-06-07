@@ -62,8 +62,20 @@ function denominatorSummary(cards) {
   };
 }
 
+function baselineSummary(cards) {
+  const rows = {};
+  for (const card of cards) {
+    const stratum = card.s0_baseline_stratum || 'unspecified';
+    if (!rows[stratum]) rows[stratum] = { total_cards: 0, policy_headroom_cards: 0 };
+    rows[stratum].total_cards += 1;
+    if (card.verdict === 'policy_headroom') rows[stratum].policy_headroom_cards += 1;
+  }
+  return rows;
+}
+
 function renderMarkdown(report) {
   const denom = denominatorSummary(report.cards);
+  const baselines = baselineSummary(report.cards);
   const lines = [];
   lines.push('# A19 Teaching-Drama Axiom Framework Report', '');
   lines.push('Status: deterministic scaffold; zero API calls.', '');
@@ -93,10 +105,24 @@ function renderMarkdown(report) {
   lines.push('| --- | ---: |');
   for (const [verdict, count] of Object.entries(report.summary.verdict_counts)) lines.push(`| ${verdict} | ${count} |`);
   lines.push('');
+  lines.push('## S0 Baseline Strata', '');
+  lines.push('| stratum | cards | policy_headroom cards |');
+  lines.push('| --- | ---: | ---: |');
+  for (const [stratum, row] of Object.entries(baselines)) {
+    lines.push(`| ${stratum} | ${row.total_cards} | ${row.policy_headroom_cards} |`);
+  }
+  lines.push('');
+  lines.push(
+    '`weak_single_pass_no_policy_memory` and `decoy_continuation_no_revision` strata are protocol-screen-only and cannot support sidecar claims without a recursive-full S0 rerun.',
+  );
+  lines.push('');
   lines.push('## Card Verdicts', '');
-  lines.push('| family | sibling | verdict |');
-  lines.push('| --- | --- | --- |');
-  for (const card of report.cards) lines.push(`| ${card.family_id} | ${card.sibling_id} | ${card.verdict} |`);
+  lines.push('| family | sibling | S0 stratum | repair type | verdict |');
+  lines.push('| --- | --- | --- | --- | --- |');
+  for (const card of report.cards) {
+    const repair = [card.repair_type, card.repair_subtype].filter(Boolean).join(':');
+    lines.push(`| ${card.family_id} | ${card.sibling_id} | ${card.s0_baseline_stratum || 'unspecified'} | ${repair || 'n/a'} | ${card.verdict} |`);
+  }
   lines.push('');
   lines.push('## Issues', '');
   if (!report.issues.length) {
@@ -131,7 +157,7 @@ function main() {
     configPath: args.config,
   });
   const output = args.json
-    ? `${JSON.stringify({ ...report, denominators: denominatorSummary(report.cards) }, null, 2)}\n`
+    ? `${JSON.stringify({ ...report, denominators: denominatorSummary(report.cards), baselines: baselineSummary(report.cards) }, null, 2)}\n`
     : renderMarkdown(report);
   if (args.out) {
     fs.mkdirSync(path.dirname(args.out), { recursive: true });
@@ -146,4 +172,4 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   main();
 }
 
-export { denominatorSummary, renderMarkdown };
+export { baselineSummary, denominatorSummary, renderMarkdown };

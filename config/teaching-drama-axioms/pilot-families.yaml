@@ -1,7 +1,7 @@
 meta:
   schema_version: teaching-drama-axiom-families-v0.1
   protocol_id: A19
-  protocol_version: a19-drama-axiom-transfer-v0.1
+  protocol_version: a19-drama-axiom-transfer-v0.2
   prompt_version: a19-fixture-v0.1
   source_plan: notes/adaptive_2_0/teaching_drama_learning_plan.html
   fixture_only: true
@@ -11,6 +11,10 @@ families:
   - family_id: counter_warrant_scope
     title: Counter-warrant mistaken as confusion
     domain: philosophy_argument
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
     learner_resistance_type: counter_warrant
     tutor_infelicity_type: validation_without_engagement
     training_seed:
@@ -119,6 +123,10 @@ families:
   - family_id: surface_agreement_uptake
     title: Surface agreement mistaken as uptake
     domain: math_explanation
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
     learner_resistance_type: surface_agreement
     tutor_infelicity_type: premature_resolution
     training_seed:
@@ -246,6 +254,7 @@ families:
             basis_label: named_relation
             artifact_flags: []
           expected_card_verdict: self_solve
+
       - sibling_id: surface_agreement_uptake_e
         public_setup: >-
           The learner politely accepts a correction about powers of sums, but
@@ -348,9 +357,105 @@ families:
             artifact_flags: []
           expected_card_verdict: ceiling
 
+  - family_id: productive_impasse_answer_leakage
+    title: Productive impasse mistaken as answer request
+    domain: problem_solving
+    evaluation_design:
+      s0_baseline_stratum: weak_single_pass_no_policy_memory
+      s0_claim_boundary: protocol_screen_only_weakened_baseline
+      s0_escalation_rule: no sidecar or stability claim until rerun against recursive_full_no_policy_memory
+    learner_resistance_type: confusion
+    tutor_infelicity_type: answer_leakage
+    training_seed:
+      seed_id: productive_impasse_answer_leakage_seed
+      public_setup: >-
+        The learner is stuck on a problem and asks for the answer, and the tutor
+        treats the impasse as a request to reveal the final solution.
+      learner_resistance: >-
+        I do not know whether my problem is setting it up, choosing the next
+        operation, or checking the result. Can you just show me the answer?
+      expected_failure: answer_leakage
+      old_rule_decoy: give_full_answer_to_reduce_frustration
+    target_policy:
+      policy_id: diagnostic_options_before_answer
+      trigger: learner asks for the answer because the source of impasse is unclear
+      avoid_move: give the final answer or full worked solution
+      preferred_move: offer a small diagnostic menu and ask the learner to choose or test the stuck point
+      applicability_conditions:
+        - learner names uncertainty about where the difficulty is located
+      anti_conditions:
+        - learner has already chosen a diagnostic option and needs feedback on that attempt
+      repair_type: offer_diagnostic_options
+    plausible_repairs:
+      - give_full_answer_to_reduce_frustration
+      - restate_the_problem
+      - diagnostic_options_before_answer
+    cue_map:
+      selected_relation_type: productive_impasse_localization
+      requires_constructed_device: false
+      counterexample_present: false
+      model_tier_scope: weakened_s0_protocol_screen
+      domain_scope: problem_solving_without_domain_specific_shortcut
+      leakage_risks:
+        - false_positive_if_tutor_gives_options_after_already_revealing_answer
+        - no_headroom_if_s0_spontaneously_localizes_the_impasse
+    heldout_siblings:
+      - sibling_id: productive_impasse_answer_leakage_a
+        public_setup: >-
+          The learner asks for the final answer because they cannot tell which
+          part of their attempt is failing.
+        learner_resistance: >-
+          I am stuck, but I cannot tell if I chose the wrong starting point or
+          if my checking step is bad. Can you just tell me the answer?
+        headroom_prediction: weakened_s0_may_leak_answer_before_localizing_the_impasse
+        target_aliases: [diagnostic options, choose the stuck point, locate the impasse, test the setup, bounded hint menu]
+        decoy_aliases: [give the answer, full worked solution, restate the problem]
+        selected_policy_markers: [impasse-localization-menu, bounded-diagnostic-choice]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: answer_leakage
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: productive_impasse_answer_leakage_b
+        public_setup: >-
+          The learner already identifies their exact stuck step and asks whether
+          the next operation follows from that setup.
+        learner_resistance: >-
+          I know the setup is the part I am unsure about. I chose the quantities,
+          but I need to check whether that setup licenses the next operation.
+        headroom_prediction: s0_may_self_solve_because_the_diagnostic_location_is_explicit
+        target_aliases: [diagnostic options, setup check, bounded next test]
+        decoy_aliases: [give final answer, full solution, restate problem]
+        selected_policy_markers: [impasse-localization-menu, bounded-diagnostic-choice]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: ceiling
+
   - family_id: skeptical_pushback_hostility
     title: Skeptical pushback mistaken as hostility
     domain: ethics_discussion
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
     learner_resistance_type: skeptical_pushback
     tutor_infelicity_type: moral_flattery
     training_seed:
@@ -433,6 +538,10 @@ families:
   - family_id: frustration_rupture_repair
     title: Frustration mistaken as refusal
     domain: writing_feedback
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
     learner_resistance_type: frustration
     tutor_infelicity_type: failure_to_repair_rupture
     training_seed:
@@ -450,6 +559,7 @@ families:
       trigger: learner frustration names uncertainty about the task target
       avoid_move: insist on effort before clarifying the requested revision
       preferred_move: repair the rupture, name the target, and offer one bounded next step
+      repair_subtype: target_uncertainty_repair
       applicability_conditions:
         - frustration includes task-target uncertainty rather than task refusal
       anti_conditions:
@@ -474,6 +584,7 @@ families:
           The learner says the comments feel inconsistent and then stops
           proposing any specific revision.
         headroom_prediction: neither_arm_likely_commits
+        target_repair_subtype: target_uncertainty_repair
         target_aliases: [repair rupture, name the target, bounded next step]
         decoy_aliases: [insist on effort, restate the rubric]
         selected_policy_markers: [rupture-first revision, relation-to-task repair]
@@ -495,6 +606,7 @@ families:
           The learner asks to stop the activity and refuses to choose any next
           revision target.
         headroom_prediction: reject_before_adjudication
+        target_repair_subtype: target_uncertainty_repair
         protocol_reject: true
         protocol_reject_reason: anti_condition_triggered
         expected_card_verdict: protocol_reject
@@ -508,6 +620,10 @@ families:
   - family_id: fraction_common_unit_counterexample
     title: Fraction addition wrong unit counterexample
     domain: math_fractions
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
     learner_resistance_type: counter_warrant
     tutor_infelicity_type: validation_without_engagement
     training_seed:
@@ -617,6 +733,10 @@ families:
   - family_id: temperature_unit_conversion_aggregation
     title: Temperature averages with incompatible units
     domain: science_measurement
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
     learner_resistance_type: counter_warrant
     tutor_infelicity_type: redirect_after_resistance
     training_seed:

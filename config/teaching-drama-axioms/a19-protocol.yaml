@@ -1,6 +1,6 @@
 meta:
   protocol_id: A19
-  protocol_version: a19-drama-axiom-transfer-v0.1
+  protocol_version: a19-drama-axiom-transfer-v0.2
   frozen_at: 2026-06-07
   status: zero_api_scaffold
   claim_boundary: simulated_teacher_as_learner_not_human_learning
@@ -45,6 +45,7 @@ family_fixture_requirements:
   require_model_tier_scope: true
   require_domain_scope: true
   require_headroom_prediction: true
+  require_s0_baseline_design: true
   require_blind_withholding:
     - target_aliases
     - decoy_aliases
@@ -123,6 +124,73 @@ classification:
       - protocol_reject_cards
       - artifact_cards
       - policy_headroom_cards
+
+repair_misalignment_taxonomy:
+  required_when_repair_type: repair_misalignment
+  subtype_field: target_policy.repair_subtype
+  allowed_subtypes:
+    target_uncertainty_repair:
+      definition: >-
+        The learner says the task target or requested revision is unclear, and
+        the tutor repairs the misalignment by naming the immediate target and
+        one bounded next step before asking for effort.
+      required_public_obligations:
+        - acknowledge_task_target_misalignment
+        - name_immediate_revision_target
+        - offer_one_bounded_next_step
+      excludes:
+        - dependency_pass_without_rupture_acknowledgment
+        - generic_effort_prompt
+        - rubric_restatement_without_target
+    feedback_dependency_repair:
+      definition: >-
+        The learner identifies feedback items or tutor directions that interact,
+        and the tutor repairs the misalignment by making the control relation
+        among comments public before ordering revisions.
+      required_public_obligations:
+        - acknowledge_conflicting_or_interdependent_feedback
+        - identify_control_relation_among_comments
+        - bound_next_revision_action_to_that_relation
+      excludes:
+        - target_naming_without_dependency_test
+        - effort_prompt_without_comment_relation
+    relational_rupture_repair:
+      definition: >-
+        The learner contests the tutor-learner relation itself, and the tutor
+        repairs accountability before returning to the object-level task.
+      required_public_obligations:
+        - acknowledge_relation_level_rupture
+        - state_tutor_accountability_for_the_misalignment
+        - reconnect_to_one_task_next_step
+      excludes:
+        - apology_without_task_reconnection
+        - task_step_without_relation_repair
+
+s0_baseline_strata:
+  default: recursive_full_no_policy_memory
+  allowed:
+    recursive_full_no_policy_memory:
+      description: >-
+        The current strongest S0: no A19 policy memory, but the same recursive
+        tutor-learning replay gate, generator, checker, and thresholds as S1.
+      claim_status: eligible_for_local_headroom_screen
+    weak_single_pass_no_policy_memory:
+      description: >-
+        A weaker S0 for mechanism diagnosis only: no policy memory and no
+        recursive tutor-learning gate. This can test whether A19 memory helps a
+        less reflective tutor, but cannot support sidecar claims without a
+        recursive-full comparison.
+      claim_status: protocol_screen_only
+    decoy_continuation_no_revision:
+      description: >-
+        A deliberately weak continuation of the registered old-rule decoy, used
+        only to debug target/decoy aliases and task wording.
+      claim_status: fixture_or_debug_only
+  escalation_rules:
+    stability_claim_requires: recursive_full_no_policy_memory
+    paid_panel_requires: recursive_full_no_policy_memory
+    sidecar_empirical_claim_requires: recursive_full_no_policy_memory
+    weakened_s0_must_be_reported_as: protocol_screen_only
 
 recommended_commands:
   validate: npm run a19:validate

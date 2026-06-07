@@ -1,6 +1,6 @@
 # A19 Drama-Axiom Transfer Specification
 
-Status: implementation scaffold, zero-API slice.
+Status: implementation scaffold, zero-API slice; v0.2 protocol pre-registration.
 Date: 2026-06-07.
 Source plan: `teaching_drama_learning_plan.html`.
 Canonical evidence source: `docs/research/paper-full-2.0.md` section 7.9.
@@ -106,6 +106,21 @@ action gate.
 
 This is not paid attempt-1 generation, a live S0/S1 runner, a paid blind panel, or a post-training corpus. Those are later gates. The materializer is a deterministic bridge into the existing A18 recursive tutor-learning machinery; it writes commands rather than calling models.
 
+Protocol v0.2 is the preregistered response to the v0.1 exhaustion point. It
+does three things before any new paid generation or sidecar claim:
+
+1. sharpens `repair_misalignment` into typed subcases, currently
+   `target_uncertainty_repair`, `feedback_dependency_repair`, and
+   `relational_rupture_repair`;
+2. stratifies S0 baselines, keeping `recursive_full_no_policy_memory` as the
+   only stratum eligible for stability, paid-panel, or sidecar empirical claims;
+3. adds a new `productive_impasse_answer_leakage` family as a weak-baseline
+   protocol-screen candidate for diagnostic-options repair.
+
+The weak S0 stratum is explicitly not claim-bearing. Any apparent headroom from
+`weak_single_pass_no_policy_memory` must be rerun against
+`recursive_full_no_policy_memory` before it can be used outside protocol design.
+
 ## 6. Evaluation Instruments
 
 The first report must classify every card into exactly one verdict:
@@ -152,8 +167,10 @@ branch changed the evidence unit: a `frustration_rupture_repair` attempt-1
 survivor admitted one bounded `repair_misalignment` axiom. Its held-out S0/S1
 contrast was still `neither_correct` under alias withholding because both arms
 were extracted as dependency-pass `transfer_control` repairs rather than the
-registered rupture-repair target. A19 is therefore exhausted under the current
-protocol until the taxonomy or S0 baseline is pre-registered differently.
+registered rupture-repair target. A19 was therefore exhausted under v0.1. The
+v0.2 extension reopens only preregistered protocol work: taxonomy, S0-stratum
+discipline, and a new repair-family screen. It still does not license an A19
+transfer claim.
 
 ## 7. Sidecar Paper Scaffold
 

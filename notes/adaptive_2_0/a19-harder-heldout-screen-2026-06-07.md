@@ -293,3 +293,20 @@ The next legitimate step is not another opportunistic card. It is a protocol
 revision: pre-register a sharper taxonomy for `repair_misalignment`, stratify
 the S0 baseline, or open a genuinely new repair family before any S1, stability,
 paid-panel, or sidecar escalation.
+
+## Protocol v0.2 Response
+
+The follow-on protocol work does all three, still as zero-API preregistration:
+
+- `repair_misalignment` is sharpened into `target_uncertainty_repair`,
+  `feedback_dependency_repair`, and `relational_rupture_repair`, with validators
+  requiring repair-misalignment families and siblings to carry the subtype.
+- S0 is explicitly stratified. `recursive_full_no_policy_memory` remains the
+  only stratum eligible for stability, paid-panel, Paper 2.0, atlas, or sidecar
+  empirical claims. `weak_single_pass_no_policy_memory` is protocol-screen-only.
+- `productive_impasse_answer_leakage` is added as a genuinely new repair-family
+  candidate for diagnostic-options repair under the weak S0 stratum.
+
+This does not reverse the v0.1 exhaustion result. It records the next lawful
+search space. Any apparent headroom under the weak S0 family must be rerun under
+`recursive_full_no_policy_memory` before it can support stronger A19 claims.
