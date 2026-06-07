@@ -1,0 +1,45 @@
+flowchart LR
+  subgraph C["COVERED / stable enough to build on"]
+    C0["Atlas mechanism result:<br/>calibration supported; error correction supported;<br/>generic adaptive slope null"]:::covered
+    C1["A18 counterfactual policy transfer:<br/>attempt-1 failure -> scoped policy memory -><br/>held-out S0/S1 headroom test"]:::covered
+    C2["Rhetorical architecture substrate:<br/>id-director, register classifier, witness exemplars;<br/>useful but scenario-conditional"]:::covered
+    C3["Post-training families:<br/>preference optimization, process rewards,<br/>self-reflection, memory agents, prompt/pipeline optimization"]:::covered
+    C4["Evaluation risk map:<br/>LLM-as-judge bias, sycophancy,<br/>cue leakage, ceiling/self-solve"]:::covered
+  end
+
+  subgraph P["PARTIAL / mapped, but needs deeper review"]
+    P1["Education-specific tutor learning:<br/>Tutor DPO, LLM knowledge tracing,<br/>LLM agents in education"]:::partial
+    P2["Drama/rhetoric formalism:<br/>dialogue acts, RST, commitment in dialogue,<br/>argumentation frameworks"]:::partial
+    P3["Student model as evidence:<br/>public trajectory, not privileged hidden interior"]:::partial
+    P4["Model-stratified policies:<br/>weak-model scaffolds vs strong-model light heuristics"]:::partial
+  end
+
+  subgraph T["TODO / next research and implementation"]
+    T1["PRISMA-lite SLR:<br/>database list, query strings,<br/>inclusion/exclusion, coding sheet"]:::todo
+    T2["Drama ontology v0:<br/>public learner acts, tutor acts,<br/>warrants, ruptures, repairs, uptake"]:::todo
+    T3["Teaching-drama axiom schema:<br/>trigger, anti-trigger, speech edit,<br/>evidence, confidence, model scope"]:::todo
+    T4["A19 headroom protocol:<br/>attempt-1 elicitation, S0/S1 runner,<br/>blind arbiter, basis labels"]:::todo
+    T5["Critic ecology:<br/>drama, argument, pedagogy, rhetoric,<br/>headroom, judge-bias critics"]:::todo
+    T6["Retrieval and forgetting:<br/>select 1-3 axioms; demote overbroad,<br/>artifact, or no-headroom firings"]:::todo
+    T7["Human validation:<br/>expert double-coding, learner trials,<br/>inter-rater reliability"]:::todo
+    T8["Post-training after corpus:<br/>DPO/SimPO, process reward model,<br/>DSPy/TextGrad/self-edit experiments"]:::todo
+  end
+
+  C0 --> P4
+  C1 --> T3
+  C1 --> T4
+  C2 --> P2
+  C3 --> T8
+  C4 --> T5
+  P1 --> T7
+  P2 --> T2
+  P3 --> T2
+  P4 --> T6
+  T1 --> T2 --> T3 --> T4 --> T6 --> T8
+  T5 --> T4
+  T7 --> T4
+  T7 --> T8
+
+  classDef covered fill:#ddebe8,stroke:#1f5f5b,stroke-width:1.5px,color:#122927;
+  classDef partial fill:#f2ead0,stroke:#b4831c,stroke-width:1.5px,color:#3b2b00;
+  classDef todo fill:#ffffff,stroke:#6b3f1d,stroke-width:1.5px,stroke-dasharray: 5 4,color:#1d1b18;
