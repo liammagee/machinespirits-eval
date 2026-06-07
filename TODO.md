@@ -775,10 +775,20 @@ reconciliation in a superseded paper; kept here as optional cleanup, prioritised
   "fifty-two evaluations" and "fifty-two key evaluations" phrasings used in the paper.
   `generate-paper-tables.js` now: 10 issues → 0. `paper:bug-audit` still 0 fails.
 
-- [ ] **C7.5 — Dramatic-fork dialogue-log co-location (NEW 2026-06-07).** This fork's
-  `paper:bug-audit` reports 3 fails (`manifest-logs`, `paper-claims-log-trace`,
-  `paper-claims-suite`) that are a *different* root cause from C7.1–4. C7.1–4 were Paper-1.0
-  prose/data drift; C7.5 is purely log non-co-location. The validator hardcodes
+- [x] **C7.5 — Dramatic-fork dialogue-log co-location.** DONE 2026-06-07 via path (a)
+  (consolidation). Additively copied the fork's 458 unique `dialogue-*.json` (+ unique
+  `checkpoints`/`eval-progress`/`run-manifests`/`tutor-api` entries, 644 items, `rsync
+  --ignore-existing` so zero archive overwrites) into `../machinespirits-eval-private/logs`
+  (tutor-dialogues 34,093 → 34,551), backed up the fork's real `logs/` to
+  `logs.pre-symlink-backup-20260607/`, then replaced `logs/` with a gitignored symlink →
+  `../machinespirits-eval-private/logs` (mirroring the original repo). Reverted the
+  `config/provable-discourse-mechanisms.yaml` `log_dir` override back to the repo-relative default
+  (now resolves via the symlink). Result: `paper:bug-audit` 3 fails → **0** (`log_failure_count: 0`,
+  `missing_logs: 0`); `paper:provable-discourse:smoke` 93/0/0. The archive copies are on disk as
+  untracked files in the maintainer's normal logs pile (13.5k untracked already) — committed there on
+  the usual archive cadence, not by this change. Broader standing task (website + tutor-core unique
+  logs → archive) remains; see `consolidate_logs_db_to_private` memory note. Diagnosis as
+  originally recorded follows. — The validator hardcodes
   `LOG_DIR = logs/tutor-dialogues` and matches each multi-turn row's `dialogue_id` to a file there.
   In the original `machinespirits-eval` repo these same checks reach 0 fails because `logs/` is a
   symlink → `../machinespirits-eval-private/logs` (git-committed archive, 34,093
@@ -796,12 +806,11 @@ reconciliation in a superseded paper; kept here as optional cleanup, prioritised
   empty for both committed audit inputs (`paper-full.md`, `paper-manifest.json`), so the 3 fails are
   byte-identical on `main`. Surfaced by PR #4.
 
-None of C7.* affects Paper 2.0 or any active research workstream. C7.1–4 are closed; C7.5 is the one
-open item, and unlike the others it has a clean durable fix (log consolidation) rather than a
-prose-vs-frozen-paper reconciliation — so it is worth doing when the consolidation task is next
-picked up. Until then, leaving the bug-audit failing remains the truthful record: for Paper 1.0, of
-its disclosed limitations; for this fork, of the log path not yet pointing at the archive. Paper 2.0
-carries the field forward regardless.
+None of C7.* affected Paper 2.0 or any active research workstream. **All of C7.1–5 are now closed**
+(C7.1–4: Paper-1.0 prose/data reconciliation; C7.5: log co-location, 2026-06-07). `paper:bug-audit`
+is at 0 fails (11 warns remain by design — they are the truthful record of Paper 1.0's disclosed
+holistic-coverage and N-trace limitations, deliberately demoted from `fail` to `warn` in C7.2–4, not
+silenced). Paper 2.0 carries the field forward regardless.
 
 ---
 
