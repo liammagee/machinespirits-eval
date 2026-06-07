@@ -3,9 +3,9 @@
 Date: 2026-06-07.
 Status: two n=1 local `policy_headroom` candidates in one family, followed by a
 two-seed stability smoke that failed to reproduce either candidate. Later
-logarithm and proof-by-examples siblings collapsed to `ceiling` after
-transfer-control adjudication was calibrated. No stability-confirmed A19
-transfer claim is licensed.
+surface-agreement and counter-warrant siblings collapsed to `ceiling` under
+S0-first screening after transfer-control adjudication was calibrated. No
+stability-confirmed A19 transfer claim is licensed.
 
 ## Boundary
 
@@ -154,17 +154,51 @@ the `n^2 + n + 41` counterexample at `n = 41`, then required a public arbitrary
 The useful lesson is that proof-by-examples variants also make the target gate
 too natural for S0 when a familiar counterexample is available.
 
+### `surface_agreement_uptake_h`
+
+- Held-out base:
+  `exports/a19/materialized-attempts-v8/surface-agreement-uptake/surface-agreement-uptake-h/heldout-base.full.md`.
+- S0 replay:
+  `exports/a19/real-s0s1-harder/surface-agreement-uptake/surface-agreement-uptake-h/s0-replay/`.
+- S0 headroom adjudication:
+  `exports/a19/real-s0s1-harder/surface-agreement-uptake/surface-agreement-uptake-h/s0-headroom.free-text.json`.
+
+Result: stop before S1 and stability. S0 was adjudicated `target` and
+`transfer_control`: it required the learner to apply the selection-plan check to
+their own survey sentence, rather than accepting a varied-looking group as
+random. Verdict: `ceiling`, not transfer evidence. The useful lesson is that
+non-algebraic statistics variants still invite S0 to build an action gate once
+the learner says the definition alone does not tell them what to check.
+
+### `counter_warrant_scope_c`
+
+- Held-out base:
+  `exports/a19/materialized-attempts-v9/counter-warrant-scope/counter-warrant-scope-c/heldout-base.full.md`.
+- S0 replay:
+  `exports/a19/real-s0s1-harder/counter-warrant-scope/counter-warrant-scope-c/s0-replay/`.
+- S0 headroom adjudication:
+  `exports/a19/real-s0s1-harder/counter-warrant-scope/counter-warrant-scope-c/s0-headroom.free-text.json`.
+
+Result: stop before S1 and stability. S0 was adjudicated `target`: it moved from
+the learner's consent-under-pressure objection to a public refusal-availability
+test, had the learner apply it to a supervisor case, and then scoped the
+"they agreed" warrant to cases where refusal is available without serious
+retaliation or dependency pressure. Verdict: `ceiling`, not transfer evidence.
+The useful lesson is that the counter-warrant axiom also self-solves when the
+learner's objection supplies enough pressure-condition structure.
+
 ## Consequence
 
 This produced two n=1 local A19 headroom candidates, both in
 `surface_agreement_uptake` (`surface_agreement_uptake_c`,
-`surface_agreement_uptake_e`). Two later surface-agreement candidates
-(`surface_agreement_uptake_f`, `surface_agreement_uptake_g`) did not survive the
-S0-first gate after transfer-control calibration. The two n=1 candidates were
-enough to update Paper 2.0 and the atlas with a narrow, scope-bound local pilot
-candidate result, but not enough for a pooled A19 rate, a sidecar empirical claim
-independent of Paper 2.0, or any human-learning, deployed-tutor,
-model-weight-learning, main-harness, or paid-panel claim.
+`surface_agreement_uptake_e`). Later surface-agreement candidates
+(`surface_agreement_uptake_f`, `surface_agreement_uptake_g`,
+`surface_agreement_uptake_h`) and a counter-warrant candidate
+(`counter_warrant_scope_c`) did not survive the S0-first gate. The two n=1
+candidates were enough to update Paper 2.0 and the atlas with a narrow,
+scope-bound local pilot candidate result, but not enough for a pooled A19 rate, a
+sidecar empirical claim independent of Paper 2.0, or any human-learning,
+deployed-tutor, model-weight-learning, main-harness, or paid-panel claim.
 
 ## Stability Smoke
 
@@ -210,3 +244,10 @@ more obvious concrete arithmetic/measurement cards, because the concrete-domain
 cards continue to collapse into S0 self-solve. Before stronger sidecar claims,
 new candidates need stability reruns, multi-critic or paid-panel adjudication,
 and eventually human expert double-coding for high-value claims.
+
+After `_f`, `_g`, `_h`, and `counter_warrant_scope_c`, the current admitted A19
+paths are operationally exhausted under this S0-first local screen. Further work
+should change the evidence unit rather than merely adding more near-neighbor
+cards: either induce a new axiom from a new attempt-1 survivor, weaken/stratify
+the S0 baseline explicitly, or pre-register a genuinely different repair family
+before spending on S1, stability, or paid panels.

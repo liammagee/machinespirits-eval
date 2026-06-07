@@ -167,10 +167,10 @@ test('A19 validator accepts the checked-in pilot fixtures', () => {
   assert.equal(report.status, 'pass');
   assert.equal(report.summary.errors, 0);
   assert.equal(report.summary.families, 6);
-  assert.equal(report.summary.cards, 19);
+  assert.equal(report.summary.cards, 21);
   assert.deepEqual(report.provenance.zero_api, true);
   assert.equal(report.summary.verdict_counts.policy_headroom, 3);
-  assert.equal(report.summary.verdict_counts.ceiling, 6);
+  assert.equal(report.summary.verdict_counts.ceiling, 8);
   assert.equal(report.summary.verdict_counts.policy_failure, 1);
   assert.equal(report.summary.verdict_counts.cue_leak, 1);
   assert.equal(report.summary.verdict_counts.self_solve, 5);
@@ -341,8 +341,8 @@ test('framework report separates denominators and refuses a pooled rate', () => 
   const report = validateTeachingDramaAxiomProtocol({ protocolPath: PROTOCOL, configPath: PILOT });
   const denominators = denominatorSummary(report.cards);
   assert.deepEqual(denominators, {
-    total_cards: 19,
-    admitted_cards: 16,
+    total_cards: 21,
+    admitted_cards: 18,
     protocol_reject_cards: 1,
     artifact_cards: 2,
     policy_headroom_cards: 3,

@@ -142,9 +142,13 @@ An additional logarithm candidate (`surface_agreement_uptake_f`) collapsed to
 `ceiling` after transfer-control calibration because S0 already used a fresh
 numeric recombination check. A proof-by-examples candidate
 (`surface_agreement_uptake_g`) also collapsed to `ceiling` because S0 used a
-standard counterexample and arbitrary-case gate. Therefore A19 currently
-licenses a framework and a negative/stability-boundary result, not a
-stability-confirmed transfer claim.
+standard counterexample and arbitrary-case gate. A random-sampling candidate
+(`surface_agreement_uptake_h`) and a consent-under-pressure counter-warrant
+candidate (`counter_warrant_scope_c`) also collapsed to `ceiling` under S0-first
+screening. Therefore A19 currently licenses a framework and a
+negative/stability-boundary result, not a stability-confirmed transfer claim.
+The current admitted-axiom near-neighbor cards are operationally exhausted until
+the evidence unit changes.
 
 ## 7. Sidecar Paper Scaffold
 

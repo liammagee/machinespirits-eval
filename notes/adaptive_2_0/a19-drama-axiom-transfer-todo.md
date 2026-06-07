@@ -57,7 +57,9 @@
 - [x] Repeat the same discipline with stability reruns before any stronger sidecar claim. The first two-seed stability smoke failed to reproduce either n=1 candidate: `surface_agreement_uptake_c` was `0/2` because S1 stayed `neither`; `surface_agreement_uptake_e` was `0/2` because S0 self-solved.
 - [x] Screen `surface_agreement_uptake_f` as a new logarithm candidate. After transfer-control adjudication calibration, S0 already used a fresh numeric recombination check, so the card was `ceiling`; stopped before stability and multi-critic escalation.
 - [x] Screen `surface_agreement_uptake_g` as a proof-by-examples candidate. S0 stress-tested the example-check rule with `n^2 + n + 41` at `n = 41` and then required an arbitrary-`n` gate, so the card was `ceiling`; stopped before S1, stability, and multi-critic escalation.
-- [ ] Find or design a new held-out candidate that survives S0-first headroom and then passes the stability gate before spending on multi-critic adjudication. Prefer a surface-agreement case where the target action gate is not the obvious next explanation move and where no standard counterexample naturally supplies the gate.
+- [x] Screen `surface_agreement_uptake_h` as a non-algebraic statistics candidate. S0 required the learner to apply a selection-plan check to the survey sentence, so the card was `ceiling`; stopped before S1, stability, and multi-critic escalation.
+- [x] Screen `counter_warrant_scope_c` as a different admitted-axiom repair family. S0 constructed and applied a refusal-availability test for consent under pressure, so the card was `ceiling`; stopped before S1, stability, and multi-critic escalation.
+- [ ] Change the evidence unit before spending further: induce a new axiom from a new attempt-1 survivor, explicitly stratify or weaken the S0 baseline, or pre-register a genuinely different repair family. The current admitted-axiom near-neighbor cards are operationally exhausted under S0-first screening.
 
 ## Phase 5: Evaluation And Human Validation
 

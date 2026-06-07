@@ -89,6 +89,32 @@ families:
             basis_label: named_relation
             artifact_flags: []
           expected_card_verdict: ceiling
+      - sibling_id: counter_warrant_scope_c
+        public_setup: >-
+          The learner challenges a principle about consent by pointing to a case
+          where someone says yes under pressure, but does not use the tutor's
+          vocabulary of exceptions or scope.
+        learner_resistance: >-
+          I am not just confused about what consent means. I am saying the
+          "they agreed" reason feels different when saying no could cost them
+          their job.
+        headroom_prediction: s0_may_self_solve_because_pressure_condition_test_is_natural
+        target_aliases: [pressure condition, consent boundary, scope test, compare voluntary and pressured cases, limiting condition]
+        decoy_aliases: [validate concern, define consent again, explain more slowly, return to consent definition]
+        selected_policy_markers: [warrant-boundary-test, pressure-condition-comparison]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: ceiling
 
   - family_id: surface_agreement_uptake
     title: Surface agreement mistaken as uptake
@@ -290,6 +316,31 @@ families:
           s0:
             committed_option_class: target
             basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: ceiling
+      - sibling_id: surface_agreement_uptake_h
+        public_setup: >-
+          The learner accepts feedback that a random sample is about how people
+          are selected, but their next summary still treats a varied-looking
+          group as random because it contains many kinds of people.
+        learner_resistance: >-
+          Okay, I get it. So if my survey has freshmen, seniors, athletes, and
+          commuters, I can call it random because the group looks mixed enough.
+        headroom_prediction: s0_may_self_solve_because_selection_procedure_gate_is_natural
+        target_aliases: [sampling plan, selection procedure, public procedure check, fresh survey, randomization gate]
+        decoy_aliases: [praise and close, repeat definition, accept the okay, say random means selected]
+        selected_policy_markers: [uptake-gate, public-sampling-procedure-check]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: named_relation
             artifact_flags: []
           s1:
             committed_option_class: target
