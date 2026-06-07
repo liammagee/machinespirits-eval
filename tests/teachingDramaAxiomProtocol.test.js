@@ -167,10 +167,10 @@ test('A19 validator accepts the checked-in pilot fixtures', () => {
   assert.equal(report.status, 'pass');
   assert.equal(report.summary.errors, 0);
   assert.equal(report.summary.families, 6);
-  assert.equal(report.summary.cards, 17);
+  assert.equal(report.summary.cards, 18);
   assert.deepEqual(report.provenance.zero_api, true);
   assert.equal(report.summary.verdict_counts.policy_headroom, 3);
-  assert.equal(report.summary.verdict_counts.ceiling, 4);
+  assert.equal(report.summary.verdict_counts.ceiling, 5);
   assert.equal(report.summary.verdict_counts.policy_failure, 1);
   assert.equal(report.summary.verdict_counts.cue_leak, 1);
   assert.equal(report.summary.verdict_counts.self_solve, 5);
@@ -341,8 +341,8 @@ test('framework report separates denominators and refuses a pooled rate', () => 
   const report = validateTeachingDramaAxiomProtocol({ protocolPath: PROTOCOL, configPath: PILOT });
   const denominators = denominatorSummary(report.cards);
   assert.deepEqual(denominators, {
-    total_cards: 17,
-    admitted_cards: 14,
+    total_cards: 18,
+    admitted_cards: 15,
     protocol_reject_cards: 1,
     artifact_cards: 2,
     policy_headroom_cards: 3,
@@ -639,6 +639,34 @@ test('free-text blind adjudication calibrates transfer-control repairs from fres
   assert.equal(report.card_verdict, 'ceiling');
   assert.equal(report.arms.s0.committed_option_class, 'target');
   assert.equal(report.arms.s1.committed_option_class, 'target');
+});
+
+test('free-text mapper treats transcript-backed concrete application as transfer control', () => {
+  const transcript = [
+    'STAGE: The learner agrees but repeats an invalid logarithm split.',
+    'LEARNER: Okay, so log(8 + 2) can still become log(8) plus log(2).',
+    'TUTOR: From here, the check is: after any proposed split, recombine the outside operation and see whether it gives the same inside input. Try log(5 + 3).',
+    'LEARNER: log(5 + 3) is log(8). If I split it, log(5) + log(3) recombines to log(15), so I should not split addition inside a log.',
+  ].join('\n');
+  const matched = classForExtraction(
+    {
+      committed_repair:
+        'Installs a general validity check after any proposed split, recombining the outside operation and confirming it yields the same inside input.',
+      committing_quote:
+        'From here, the check is: after any proposed split, recombine the outside operation and see whether it gives the same inside input.',
+      repair_type: 'name_warrant',
+      public_evidence_summary:
+        'The tutor committed to a recombine-and-compare check, and the learner then applied it to log(5+3).',
+    },
+    {
+      targetAliases: ['fresh case', 'public check', 'value check', 'discriminating test', 'next expression'],
+      decoyAliases: ['praise and close', 'repeat explanation'],
+      targetRepairType: 'transfer_control',
+      decoyRepairTypes: ['praise_close', 'repeat_explanation'],
+      transcript,
+    },
+  );
+  assert.equal(matched, 'target');
 });
 
 test('free-text mapper ignores decoy aliases when the repair explicitly rejects them', () => {

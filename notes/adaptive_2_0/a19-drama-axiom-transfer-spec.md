@@ -95,6 +95,15 @@ Held-out siblings may define their own learner-resistance line. When present,
 the materializer must use that held-out line rather than the training-seed
 resistance, so S0/S1 screens are not accidentally cued by the training episode.
 
+For `transfer_control` cards, the blind adjudicator must distinguish a tutor
+who merely names the warrant from a tutor who makes the learner apply a repaired
+rule or check to a fresh/concrete public case before closure. The current
+free-text mapper includes a conservative transcript-backed calibration for this:
+the target type must already be `transfer_control`, the tutor must publicly
+prompt a try/apply/check action on a concrete case, and the learner must then
+apply it. This protects against false headroom when S0 already performs the
+action gate.
+
 This is not paid attempt-1 generation, a live S0/S1 runner, a paid blind panel, or a post-training corpus. Those are later gates. The materializer is a deterministic bridge into the existing A18 recursive tutor-learning machinery; it writes commands rather than calling models.
 
 ## 6. Evaluation Instruments
@@ -129,8 +138,10 @@ Current status after the first stability smoke: two n=1
 `surface_agreement_uptake_e`) failed to reproduce under a two-seed stability
 rerun (`0/2` headroom for both; artifact:
 `exports/a19/stability/surface-agreement-uptake/a19-stability-summary.json`).
-Therefore A19 currently licenses a framework and a negative/stability-boundary
-result, not a stability-confirmed transfer claim.
+An additional logarithm candidate (`surface_agreement_uptake_f`) collapsed to
+`ceiling` after transfer-control calibration because S0 already used a fresh
+numeric recombination check. Therefore A19 currently licenses a framework and a
+negative/stability-boundary result, not a stability-confirmed transfer claim.
 
 ## 7. Sidecar Paper Scaffold
 

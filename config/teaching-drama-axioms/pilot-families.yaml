@@ -245,6 +245,31 @@ families:
             basis_label: named_relation
             artifact_flags: []
           expected_card_verdict: policy_headroom
+      - sibling_id: surface_agreement_uptake_f
+        public_setup: >-
+          The learner agrees with a correction about logarithm rules, but their
+          next summary still treats addition inside the logarithm as if it can
+          be split across two separate logs.
+        learner_resistance: >-
+          Okay, I get it. So if I see log(8 + 2), I can still make it log(8)
+          plus log(2), as long as I keep the two inputs separate.
+        headroom_prediction: s0_may_self_solve_because_numeric_transfer_check_is_natural
+        target_aliases: [fresh case, public check, value check, discriminating test, next expression]
+        decoy_aliases: [praise and close, repeat explanation, accept the okay, state the formula again]
+        selected_policy_markers: [uptake-gate, public-transfer-check]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: ceiling
 
   - family_id: skeptical_pushback_hostility
     title: Skeptical pushback mistaken as hostility

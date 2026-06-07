@@ -278,6 +278,11 @@ function freeTextPromptFor(transcript, args) {
     );
   }
   lines.push(
+    'Repair-type guide for extraction:',
+    '- transfer_control: the tutor requires the learner to apply a repaired rule/check to a fresh or concrete case before accepting closure. Use this even if the tutor also names the underlying warrant.',
+    '- name_warrant: the tutor names the governing relation, rule, or warrant without requiring a fresh public application.',
+    '- validate_redirect/repeat_explanation/praise_close: the tutor mainly accepts, repeats, redirects, or closes without a new action gate.',
+    '',
     'Return exactly this JSON object, with no prose and no code fence:',
     '{',
     '  "committed_repair": "<short free-text description of the final tutor repair; null if none>",',
@@ -432,6 +437,10 @@ function normalizeExtraction(parsed) {
 
 const TRANSFER_CONTROL_PUBLIC_TEST_RE =
   /\b(?:(?:fresh|new|next|transfer|discriminating|public|concrete)\s+(?:case|example|test|check)|apply(?:ing)?\b[\s\S]{0,80}\b(?:fresh|new|next|case|example|test|check)|use\b[\s\S]{0,80}\b(?:check|test)\b[\s\S]{0,80}\bon)\b/i;
+const TRANSFER_CONTROL_TUTOR_PROMPT_RE =
+  /\b(?:try|apply|use|show|test|check)\b[\s\S]{0,140}\b(?:fresh|new|next|case|example|expression|problem|scenario|item|log\s*\(|\d+\s*(?:\+|\*|x|×|\/|-)\s*\d+)/i;
+const TRANSFER_CONTROL_LEARNER_APPLICATION_RE =
+  /\b(?:log\s*\(|\d+\s*(?:\+|\*|x|×|\/|-)\s*\d+|because|so|therefore|would|should|does not|doesn't|recombine|compare|same|different|survives|fails)\b/i;
 const NEGATED_DECOY_MARKERS = [
   'rather than',
   'instead of',
@@ -468,11 +477,32 @@ const FAILED_DECOY_MARKERS = [
   "can't tell",
 ];
 
+function roleTurns(transcript) {
+  const turns = [];
+  for (const line of String(transcript || '').split(/\r?\n/u)) {
+    const match = line.match(/^\s*(TUTOR|LEARNER)\s*:\s*(.+)$/iu);
+    if (match) turns.push({ role: match[1].toUpperCase(), text: match[2].trim() });
+  }
+  return turns;
+}
+
+function transcriptHasTransferControlPublicTest(transcript) {
+  const turns = roleTurns(transcript);
+  for (let index = 0; index < turns.length; index += 1) {
+    const turn = turns[index];
+    if (turn.role !== 'TUTOR' || !TRANSFER_CONTROL_TUTOR_PROMPT_RE.test(turn.text)) continue;
+    const nextLearner = turns.slice(index + 1).find((candidate) => candidate.role === 'LEARNER');
+    if (nextLearner && TRANSFER_CONTROL_LEARNER_APPLICATION_RE.test(nextLearner.text)) return true;
+  }
+  return false;
+}
+
 function calibratedTargetHit(repairText, repairType, args) {
   const targetRepairType = normalizeRepairType(args.targetRepairType);
   if (!targetRepairType) return false;
   if (repairType === targetRepairType) return true;
   if (targetRepairType === 'transfer_control' && TRANSFER_CONTROL_PUBLIC_TEST_RE.test(repairText)) return true;
+  if (targetRepairType === 'transfer_control' && transcriptHasTransferControlPublicTest(args.transcript)) return true;
   return false;
 }
 
@@ -541,6 +571,7 @@ export function classForExtraction(extraction, args) {
 async function classifyFreeTextArm({ label, transcriptPath, args }) {
   const transcript = fs.readFileSync(transcriptPath, 'utf8');
   const prompt = freeTextPromptFor(transcript, args);
+  const armArgs = { ...args, transcript };
   const extractions = [];
   for (let criticIndex = 0; criticIndex < args.critics; criticIndex += 1) {
     let raw;
@@ -553,7 +584,7 @@ async function classifyFreeTextArm({ label, transcriptPath, args }) {
       parsed = parseJsonLoose(raw);
     }
     const extraction = normalizeExtraction(parsed);
-    const matchedClass = classForExtraction(extraction, args);
+    const matchedClass = classForExtraction(extraction, armArgs);
     extractions.push({
       critic_index: criticIndex,
       ...extraction,

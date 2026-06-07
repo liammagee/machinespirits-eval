@@ -2,8 +2,9 @@
 
 Date: 2026-06-07.
 Status: two n=1 local `policy_headroom` candidates in one family, followed by a
-two-seed stability smoke that failed to reproduce either candidate. No
-stability-confirmed A19 transfer claim is licensed.
+two-seed stability smoke that failed to reproduce either candidate. A later
+logarithm sibling collapsed to `ceiling` after transfer-control adjudication was
+calibrated. No stability-confirmed A19 transfer claim is licensed.
 
 ## Boundary
 
@@ -18,6 +19,14 @@ That prevents held-out cards from silently inheriting the training-seed learner
 line, which made earlier concrete-domain cards too easy for S0 to self-solve.
 The validator also checks selected-policy marker leakage in held-out learner
 resistance, not only in held-out setup text.
+
+The free-text blind adjudicator now defines `transfer_control` explicitly as a
+fresh or concrete public application gate, distinct from merely naming a
+warrant. It also has a deterministic transcript-backed calibration that fires
+only when the target repair type is already `transfer_control` and the public
+dialogue shows a tutor prompt to try/apply/check a concrete case followed by a
+learner application. This makes false headroom less likely when S0 already uses
+a fresh-case action gate.
 
 ## Candidates Screened
 
@@ -105,15 +114,40 @@ surface-agreement axiom and no replay bundle, was adjudicated `target`: it force
 the learner's "square passes through plus" rule against a two-route numerical
 check and then required re-application to a fresh expression.
 
+### `surface_agreement_uptake_f`
+
+- Held-out base:
+  `exports/a19/materialized-attempts-v6/surface-agreement-uptake/surface-agreement-uptake-f/heldout-base.full.md`.
+- S0 replay:
+  `exports/a19/real-s0s1-harder/surface-agreement-uptake/surface-agreement-uptake-f/s0-replay/`.
+- Initial S0 headroom adjudication:
+  `exports/a19/real-s0s1-harder/surface-agreement-uptake/surface-agreement-uptake-f/s0-headroom.free-text.json`.
+- Calibrated S0 headroom adjudication:
+  `exports/a19/real-s0s1-harder/surface-agreement-uptake/surface-agreement-uptake-f/s0-headroom.free-text-v2.json`.
+- S1 replay with exactly one admitted axiom:
+  `exports/a19/real-s0s1-harder/surface-agreement-uptake/surface-agreement-uptake-f/s1-axiom-replay/`.
+- Calibrated paired free-text adjudication:
+  `exports/a19/real-s0s1-harder/surface-agreement-uptake/surface-agreement-uptake-f/blind-adjudication.free-text-axiom-v2.json`.
+
+Result: stop before stability. Before calibration, S0 looked like observable
+headroom because the extractor compressed the move as `name_warrant`. After the
+transfer-control prompt definition and transcript-backed action-gate audit, S0
+was adjudicated `target`: it required `log(6 * 5)` and `log(6 + 5)` as fresh
+inside-first/recombine checks. S1 also reached `target` on `log(5 + 3)`.
+Verdict: `ceiling`, not transfer evidence. The useful lesson is that logarithm
+variants with obvious numerical recombination checks are still too easy for S0.
+
 ## Consequence
 
 This produced two n=1 local A19 headroom candidates, both in
 `surface_agreement_uptake` (`surface_agreement_uptake_c`,
-`surface_agreement_uptake_e`). That was enough to update Paper 2.0 and the atlas
-with a narrow, scope-bound local pilot candidate result, but not enough for a
-pooled A19 rate, a sidecar empirical claim independent of Paper 2.0, or any
-human-learning, deployed-tutor, model-weight-learning, main-harness, or paid-panel
-claim.
+`surface_agreement_uptake_e`). A third surface-agreement candidate
+(`surface_agreement_uptake_f`) did not survive the S0-first gate after
+transfer-control calibration. The two n=1 candidates were enough to update Paper
+2.0 and the atlas with a narrow, scope-bound local pilot candidate result, but
+not enough for a pooled A19 rate, a sidecar empirical claim independent of Paper
+2.0, or any human-learning, deployed-tutor, model-weight-learning, main-harness,
+or paid-panel claim.
 
 ## Stability Smoke
 
