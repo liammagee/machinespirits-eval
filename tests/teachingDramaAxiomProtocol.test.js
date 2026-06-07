@@ -26,7 +26,7 @@ function writeJson(filePath, data) {
   fs.writeFileSync(filePath, `${JSON.stringify(data, null, 2)}\n`, 'utf8');
 }
 
-function attempt1Manifest(scoreOverrides = {}) {
+function attempt1Manifest(scoreOverrides = {}, backends = { generator: 'mock', checker: 'mock' }) {
   const scores = {
     old_warrant_misclassification: 0.8,
     resistance_diagnosis: 0.8,
@@ -38,8 +38,8 @@ function attempt1Manifest(scoreOverrides = {}) {
   return {
     records: [
       {
-        generator: { backend: 'mock', promptHashes: { system: 'g', user: 'u' } },
-        checker: { backend: 'mock', promptHashes: { system: 'c', user: 'u' } },
+        generator: { backend: backends.generator, promptHashes: { system: 'g', user: 'u' } },
+        checker: { backend: backends.checker, promptHashes: { system: 'c', user: 'u' } },
         paths: {
           revisedPublic: '/tmp/revised-public.txt',
           revisionJson: '/tmp/revision.json',
@@ -276,6 +276,7 @@ test('attempt materializer writes A18 replay and A19 blind-adjudication commands
   assert.ok(fs.existsSync(family.axiom_template));
   assert.match(family.attempt1_replay_command_text, /replay-discursive-transcript\.js/);
   assert.match(family.attempt1_replay_command_text, /--recursive-tutor-learning-gate/);
+  assert.ok(fs.existsSync(family.heldout[0].heldout_base_transcript));
   assert.ok(fs.existsSync(family.heldout[0].s0_public_transcript));
   assert.ok(fs.existsSync(family.heldout[0].s1_public_transcript));
   assert.match(family.heldout[0].blind_adjudication_command_text, /blind-teaching-drama-axiom-adjudication\.js/);
@@ -336,6 +337,34 @@ test('attempt-1 report blocks S0/S1 when confident misclassification is missing'
     value: 0.6,
     reason: 'below_threshold',
   });
+});
+
+test('attempt-1 report accepts a real per-family attempt directory as empirical survivor', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a19-attempt1-real-'));
+  const outDir = path.join(tmpDir, 'fixture-out');
+  const realDir = path.join(tmpDir, 'real-counter-warrant');
+  materializeAttemptFixtures({
+    protocolPath: PROTOCOL,
+    configPath: PILOT,
+    outDir,
+    familyId: 'counter_warrant_scope',
+    force: true,
+  });
+  writeJson(path.join(realDir, 'manifest.json'), attempt1Manifest({}, { generator: 'codex', checker: 'claude' }));
+  const report = summarizeAttempt1Gate({
+    protocolPath: PROTOCOL,
+    configPath: PILOT,
+    outDir,
+    attempt1Dirs: { counter_warrant_scope: realDir },
+    familyId: 'counter_warrant_scope',
+  });
+  assert.equal(report.status, 'pass');
+  assert.equal(report.empirical_status, 'real_attempt1_present');
+  assert.equal(report.summary.survivors, 1);
+  assert.equal(report.summary.fixture_survivors, 0);
+  assert.equal(report.families[0].status, 'survivor');
+  assert.equal(report.families[0].next_gate, 'eligible_for_s0s1_contrast');
+  assert.equal(report.families[0].manifest_path, path.relative(ROOT, path.join(realDir, 'manifest.json')));
 });
 
 test('fixture blind adjudication preserves alias withholding and classifies headroom', () => {

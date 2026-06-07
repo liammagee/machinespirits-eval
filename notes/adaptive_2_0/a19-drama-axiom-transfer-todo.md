@@ -27,6 +27,7 @@
 - [x] Require an explicit old-rule decoy and confident misclassification, not an indeterminate tie.
 - [x] Store deterministic public transcript stubs, axiom templates, validation reports, and next-step commands separately.
 - [x] Add an A19 attempt-1 gate report that separates fixture survivors from empirical survivors.
+- [x] Run one real attempt-1 screen for `counter_warrant_scope` and record the survivor gate report.
 - [ ] Store real public transcript, held-out deliberation, failure diagnosis, and prompt hashes separately after generation begins.
 - [x] Stop before S0/S1 if attempt 1 does not produce a grounded failure record.
 
@@ -44,11 +45,13 @@
 - [x] Hide target/decoy aliases and arm provenance from the fixture arbiter scaffold.
 - [x] Map fixture adjudication to target/decoy mechanically after judgment.
 - [x] Classify each fixture card with `policy_headroom`, `ceiling`, `policy_failure`, `cue_leak`, `self_solve`, `arbiter_disagreement`, `neither_correct`, or `protocol_reject`.
-- [ ] Repeat the same discipline for real S0/S1 held-out contrasts after attempt-1 survival.
+- [x] Run one real paired S0/S1 held-out screen after attempt-1 survival (`counter_warrant_scope_a`).
+- [ ] Repeat the same discipline for real S0/S1 held-out contrasts after a real free-text blind adjudicator exists.
 
 ## Phase 5: Evaluation And Human Validation
 
 - [x] Add a fixture-only blind adjudication scaffold modeled on `scripts/blind-option-adjudication.js`.
+- [ ] Add a real free-text teaching-drama blind adjudicator; the deterministic alias reader is too brittle for generated prose.
 - [ ] Add paid blind adjudication modeled on `scripts/blind-option-adjudication.js` after the zero-API protocol freezes.
 - [ ] Add stability reruns for candidate structural headroom cases.
 - [ ] Add human expert double-coding for a small set of adjudications and drama labels.

@@ -173,6 +173,24 @@ function renderHeldoutTranscript({ family, sibling, armName }) {
   ].join('\n');
 }
 
+function renderHeldoutBaseTranscript({ family, sibling }) {
+  return [
+    `# A19 Held-Out Base: ${sibling.sibling_id}`,
+    '',
+    `FAMILY: ${family.family_id}`,
+    `SIBLING: ${sibling.sibling_id}`,
+    'PHASE: heldout_sibling_base',
+    '',
+    `STAGE: ${sibling.public_setup || ''}`,
+    `LEARNER: ${family.training_seed?.learner_resistance || ''}`,
+    `TUTOR: I will apply the old repair "${family.training_seed?.old_rule_decoy || 'unknown_old_rule'}" unless the learner makes the failure undeniable.`,
+    '',
+    `HEADROOM_PREDICTION: ${sibling.headroom_prediction || ''}`,
+    'CLAIM_BOUNDARY: simulated_teacher_as_learner_not_human_learning',
+    '',
+  ].join('\n');
+}
+
 function axiomTemplate(family) {
   return {
     schema_version: 'a19-teaching-drama-axiom-template-v0.1',
@@ -220,6 +238,7 @@ export function buildAttemptMaterializationPlan({
     const attempt1ReplayDir = path.join(familyDir, 'attempt1-replay');
     const heldout = asArray(family.heldout_siblings).map((sibling) => {
       const siblingDir = path.join(familyDir, safeSlug(sibling.sibling_id));
+      const heldoutBasePath = path.join(siblingDir, 'heldout-base.full.md');
       const s0Path = path.join(siblingDir, 's0-public.full.md');
       const s1Path = path.join(siblingDir, 's1-public.full.md');
       const blindReport = path.join(siblingDir, 'blind-adjudication.fixture.json');
@@ -229,6 +248,7 @@ export function buildAttemptMaterializationPlan({
         protocol_reject: protocolReject,
         protocol_reject_reason: sibling.protocol_reject_reason || null,
         expected_card_verdict: sibling.fixture_adjudication?.expected_card_verdict || sibling.expected_card_verdict || null,
+        heldout_base_transcript: protocolReject ? null : heldoutBasePath,
         s0_public_transcript: protocolReject ? null : s0Path,
         s1_public_transcript: protocolReject ? null : s1Path,
         blind_adjudication_report: protocolReject ? null : blindReport,
@@ -303,6 +323,7 @@ export function materializeAttemptFixtures({
         continue;
       }
       fs.mkdirSync(path.dirname(heldoutPlan.s0_public_transcript), { recursive: true });
+      fs.writeFileSync(heldoutPlan.heldout_base_transcript, renderHeldoutBaseTranscript({ family, sibling }), 'utf8');
       fs.writeFileSync(heldoutPlan.s0_public_transcript, renderHeldoutTranscript({ family, sibling, armName: 's0' }), 'utf8');
       fs.writeFileSync(heldoutPlan.s1_public_transcript, renderHeldoutTranscript({ family, sibling, armName: 's1' }), 'utf8');
     }

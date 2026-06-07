@@ -33,6 +33,7 @@ function usage() {
     [--protocol config/teaching-drama-axioms/a19-protocol.yaml]
     [--config config/teaching-drama-axioms/pilot-families.yaml]
     [--out-dir exports/a19/materialized-attempts]
+    [--attempt1-dir family_id=exports/a19/real-attempt1/family]
     [--family family_id]
     [--out notes/adaptive_2_0/a19-attempt1-fixture-gate-report.md]
     [--json]
@@ -45,6 +46,7 @@ export function parseArgs(argv = process.argv.slice(2)) {
     protocol: DEFAULT_PROTOCOL,
     config: DEFAULT_CONFIG,
     outDir: DEFAULT_OUT_DIR,
+    attempt1Dirs: {},
     familyId: null,
     out: null,
     json: false,
@@ -56,6 +58,15 @@ export function parseArgs(argv = process.argv.slice(2)) {
     else if (token === '--protocol') args.protocol = path.resolve(argv[++i]);
     else if (token === '--config') args.config = path.resolve(argv[++i]);
     else if (token === '--out-dir') args.outDir = path.resolve(argv[++i]);
+    else if (token === '--attempt1-dir') {
+      const value = argv[++i];
+      const eq = value.indexOf('=');
+      if (eq < 0) throw new Error('--attempt1-dir must use family_id=path');
+      const familyId = value.slice(0, eq).trim();
+      const dir = value.slice(eq + 1).trim();
+      if (!familyId || !dir) throw new Error('--attempt1-dir must use family_id=path');
+      args.attempt1Dirs[familyId] = path.resolve(dir);
+    }
     else if (token === '--family') args.familyId = argv[++i];
     else if (token === '--out') args.out = path.resolve(argv[++i]);
     else if (token === '--json') args.json = true;
@@ -107,17 +118,36 @@ function checkThresholds(record, thresholds) {
   return { scores, failures };
 }
 
-function familyAttempt1Gate(family, { outDir, thresholds }) {
+function manifestCandidatesFor(family, { outDir, attempt1Dirs }) {
+  const slug = safeSlug(family.family_id);
+  const candidates = [];
+  if (attempt1Dirs?.[family.family_id]) {
+    const overrideDir = attempt1Dirs[family.family_id];
+    candidates.push(path.join(overrideDir, 'manifest.json'));
+    candidates.push(path.join(overrideDir, 'attempt1-replay', 'manifest.json'));
+    candidates.push(path.join(overrideDir, slug, 'attempt1-replay', 'manifest.json'));
+  }
+  candidates.push(path.join(outDir, slug, 'attempt1-replay', 'manifest.json'));
+  candidates.push(path.join(outDir, slug, 'manifest.json'));
+  return candidates;
+}
+
+function firstExistingPath(paths) {
+  return paths.find((candidate) => fs.existsSync(candidate)) || null;
+}
+
+function familyAttempt1Gate(family, { outDir, attempt1Dirs, thresholds }) {
   const familyDir = path.join(outDir, safeSlug(family.family_id));
-  const manifestPath = path.join(familyDir, 'attempt1-replay', 'manifest.json');
+  const manifestCandidates = manifestCandidatesFor(family, { outDir, attempt1Dirs });
+  const manifestPath = firstExistingPath(manifestCandidates);
   const blockers = [];
-  if (!fs.existsSync(manifestPath)) {
+  if (!manifestPath) {
     return {
       family_id: family.family_id,
       status: 'missing_attempt1_replay',
       next_gate: 'run_attempt1_replay',
-      blockers: [{ reason: 'missing_manifest', path: rel(manifestPath) }],
-      manifest_path: rel(manifestPath),
+      blockers: [{ reason: 'missing_manifest', candidates: manifestCandidates.map(rel) }],
+      manifest_path: rel(path.join(familyDir, 'attempt1-replay', 'manifest.json')),
     };
   }
 
@@ -174,13 +204,14 @@ export function summarizeAttempt1Gate({
   protocolPath = DEFAULT_PROTOCOL,
   configPath = DEFAULT_CONFIG,
   outDir = DEFAULT_OUT_DIR,
+  attempt1Dirs = {},
   familyId = null,
   thresholds = DEFAULT_THRESHOLDS,
 } = {}) {
   const validation = validateTeachingDramaAxiomProtocol({ protocolPath, configPath, familyId });
   const config = readYaml(configPath);
   const selectedFamilies = asArray(config?.families).filter((family) => !familyId || family.family_id === familyId);
-  const families = selectedFamilies.map((family) => familyAttempt1Gate(family, { outDir, thresholds }));
+  const families = selectedFamilies.map((family) => familyAttempt1Gate(family, { outDir, attempt1Dirs, thresholds }));
   const summary = {
     families: families.length,
     survivors: families.filter((family) => family.status === 'survivor').length,
@@ -197,6 +228,7 @@ export function summarizeAttempt1Gate({
     protocol_version: validation.protocol_version,
     source_config: rel(configPath),
     source_out_dir: rel(outDir),
+    source_attempt1_dirs: Object.fromEntries(Object.entries(attempt1Dirs).map(([family, dir]) => [family, rel(dir)])),
     thresholds,
     validation,
     summary,
@@ -219,6 +251,9 @@ export function renderMarkdown(report) {
   lines.push('- A18 replay artifacts are treated as attempt-1 gate evidence only.');
   lines.push('- Mock-backed survivors are fixture survivors, not empirical survivors.');
   lines.push('- S0/S1 escalation remains blocked for empirical claims until a real attempt-1 survivor exists.');
+  if (report.summary.survivors) {
+    lines.push('- A real attempt-1 survivor licenses only the next contrast gate, not a transfer claim by itself.');
+  }
   lines.push('');
   lines.push('## Summary', '');
   lines.push(`- Status: \`${report.status}\``);
@@ -252,7 +287,11 @@ export function renderMarkdown(report) {
   lines.push('');
   lines.push('## Claims Not Licensed', '');
   for (const claim of report.non_claims) lines.push(`- ${claim}`);
-  lines.push('- an empirical A19 attempt-1 survival rate while all survivors are mock-backed');
+  if (report.summary.survivors) {
+    lines.push('- a held-out A19 transfer claim before S0/S1 adjudication');
+  } else {
+    lines.push('- an empirical A19 attempt-1 survival rate while all survivors are mock-backed');
+  }
   lines.push('');
   return `${lines.join('\n')}\n`;
 }
@@ -264,6 +303,7 @@ export function runAttempt1Report(rawArgs = process.argv.slice(2)) {
     protocolPath: args.protocol,
     configPath: args.config,
     outDir: args.outDir,
+    attempt1Dirs: args.attempt1Dirs,
     familyId: args.familyId,
   });
   const output = args.json ? `${JSON.stringify(report, null, 2)}\n` : renderMarkdown(report);
