@@ -62,6 +62,90 @@ export function tutorCellFor(promptType, architecture) {
   return TUTOR_CELL[`${pt}|${arch}`];
 }
 
+// ── Course catalog (shared by the UI lecture picker + the AI setup guide) ─────
+// Every course a sit-in tutor can be bound to: each top-level content/ or
+// content-*/ package with courses/<id>/lecture-N.md — the SAME set
+// loadCurriculumContext (routes/chatRoutes.js) resolves from a "<courseId>-lecture-N"
+// ref. content-test-* packages are eval fixtures (flagged isFixture so callers can
+// sort/label them apart from real curricula). One home so the picker + guide + bridge
+// can never drift.
+
+// The lecture's first heading IS its title; strip a leading <a id=…></a> anchor.
+// Poetics-rhetoric writes "Lecture N — Title" (keep the Title half); every other
+// course leads with its content heading, taken whole.
+function lectureTitleFrom(raw, num) {
+  const h = raw.match(/^#{1,4}\s+(.+?)\s*$/m);
+  if (!h) return `Lecture ${num}`;
+  let t = h[1].replace(/<a[^>]*><\/a>\s*/g, '').trim();
+  const lm = t.match(/^Lecture\s+\d+\s*[—–-]\s*(.+)$/);
+  if (lm) t = lm[1].trim();
+  return t || `Lecture ${num}`;
+}
+
+export function listCourses() {
+  let pkgs = [];
+  try {
+    pkgs = fs
+      .readdirSync(ROOT, { withFileTypes: true })
+      .filter((e) => e.isDirectory() && (e.name === 'content' || e.name.startsWith('content-')))
+      .map((e) => e.name);
+  } catch {
+    return []; // no content tree → no courses
+  }
+  const courses = [];
+  for (const pkg of pkgs) {
+    const coursesRoot = path.join(ROOT, pkg, 'courses');
+    let courseIds = [];
+    try {
+      courseIds = fs.readdirSync(coursesRoot).filter((c) => /^\d+$/.test(c));
+    } catch {
+      continue; // package carries no courses/ dir
+    }
+    for (const courseId of courseIds) {
+      const courseDir = path.join(coursesRoot, courseId);
+      let files = [];
+      try {
+        files = fs.readdirSync(courseDir).filter((f) => /^lecture-\d+\.md$/.test(f));
+      } catch {
+        continue;
+      }
+      if (!files.length) continue;
+      files.sort((a, b) => Number(a.match(/\d+/)[0]) - Number(b.match(/\d+/)[0]));
+      let courseTitle = `Course ${courseId}`;
+      let courseSubtitle = '';
+      try {
+        const cm = fs.readFileSync(path.join(courseDir, 'course.md'), 'utf8');
+        const tm = cm.match(/^title:\s*["']?(.+?)["']?\s*$/m);
+        if (tm) courseTitle = tm[1].trim();
+        const sm = cm.match(/^subtitle:\s*["']?(.+?)["']?\s*$/m);
+        if (sm) courseSubtitle = sm[1].trim();
+      } catch {
+        /* keep the default course title + empty subtitle */
+      }
+      const lectures = files.map((f) => {
+        const num = Number(f.match(/\d+/)[0]);
+        let title = `Lecture ${num}`;
+        try {
+          title = lectureTitleFrom(fs.readFileSync(path.join(courseDir, f), 'utf8'), num);
+        } catch {
+          /* keep the default lecture title */
+        }
+        return { ref: `${courseId}-lecture-${num}`, num, title };
+      });
+      courses.push({
+        courseId,
+        courseTitle,
+        courseSubtitle,
+        lectures,
+        isFixture: pkg.startsWith('content-test-'),
+      });
+    }
+  }
+  // Subject courses first, eval fixtures last; ties broken by numeric course id.
+  courses.sort((a, b) => Number(a.isFixture) - Number(b.isFixture) || Number(a.courseId) - Number(b.courseId));
+  return courses;
+}
+
 // ── Session store (in-memory) ───────────────────────────────────────────────
 
 const SESSIONS = new Map();
@@ -125,10 +209,12 @@ function publicTurn(t) {
 
 // ── AI turn generation ──────────────────────────────────────────────────────
 
-// Minimal OpenRouter learner adapter — mirrors the one in services/pilotAutoplay.js
-// (same single-metered-provider posture); kept local so this engine doesn't
-// depend on the pilot's internals.
-async function openRouterLearnerCall(apiKey, modelRef, systemPrompt, messages, options = {}) {
+// Minimal OpenRouter chat-completion — mirrors the adapter in services/pilotAutoplay.js
+// (same single-metered-provider posture); kept local so this engine doesn't depend
+// on the pilot's internals. Used for AI learner turns AND the setup guide. A bare
+// dot-notation ref (e.g. "openrouter.sonnet") is resolved via providers.yaml; a
+// slug ("anthropic/claude-sonnet-4.6") is passed through.
+async function openRouterChat(apiKey, modelRef, systemPrompt, messages, options = {}) {
   let modelId = modelRef;
   if (!modelRef) {
     modelId = 'nvidia/nemotron-3-nano-30b-a3b';
@@ -142,7 +228,7 @@ async function openRouterLearnerCall(apiKey, modelRef, systemPrompt, messages, o
       'Content-Type': 'application/json',
       Authorization: `Bearer ${apiKey}`,
       'HTTP-Referer': 'http://localhost:3466/compose/live',
-      'X-Title': 'Machine Spirits Live Compose (AI learner)',
+      'X-Title': options.title || 'Machine Spirits Live Compose',
     },
     body: JSON.stringify({
       model: modelId,
@@ -172,6 +258,14 @@ async function openRouterLearnerCall(apiKey, modelRef, systemPrompt, messages, o
     model: modelId,
     latencyMs,
   };
+}
+
+// The AI-learner turn uses the generic chat with a learner-tagged title.
+function openRouterLearnerCall(apiKey, modelRef, systemPrompt, messages, options = {}) {
+  return openRouterChat(apiKey, modelRef, systemPrompt, messages, {
+    ...options,
+    title: 'Machine Spirits Live Compose (AI learner)',
+  });
 }
 
 // Default AI-tutor turn — the real ego(/superego) tutor. history must NOT
@@ -416,6 +510,162 @@ export function saveSession(sessionId, opts = {}) {
   return { path: path.relative(ROOT, dest), bytes: Buffer.byteLength(yamlText) };
 }
 
+// ── AI setup guide ("construct a language machine") ──────────────────────────
+// Translate a plain-language description into a valid compose spec. Localhost-only,
+// metered (one LLM call, default openrouter.sonnet — override COMPOSE_GUIDE_MODEL).
+// The returned spec is validated/clamped against the live catalog so the UI/CLI can
+// apply it verbatim; an unknown lecture ref or enum value falls back to a safe default
+// rather than erroring. deps.chatFn injects a mock for zero-cost tests + free preview.
+
+const PROMPT_TYPES = Object.freeze(['recognition', 'base']);
+const TUTOR_ARCHS = Object.freeze(['ego_only', 'ego_superego']);
+
+// The curated vocabulary the live sit-in offers a hand player: a readable subset
+// of the full learner-agents.yaml roster plus the tutor stance/deliberation dials.
+// One exported source so the web form, the CLI, and the LLM guide's catalog stay
+// in lockstep (clampSpecToCatalog enforces exactly this set as valid).
+export const LIVE_VOCAB = Object.freeze({
+  promptTypes: PROMPT_TYPES,
+  tutorArchs: TUTOR_ARCHS,
+  personas: Object.freeze([
+    'struggling_anxious',
+    'confused_novice',
+    'eager_explorer',
+    'focused_achiever',
+    'adversarial_tester',
+  ]),
+  learnerArch: Object.freeze([
+    'ego_superego_recognition_authentic',
+    'ego_superego_recognition',
+    'ego_superego',
+    'unified',
+  ]),
+});
+const DEFAULT_GUIDE_MODEL = 'openrouter.sonnet';
+
+function buildGuideSystemPrompt(catalog) {
+  const courseLines = (catalog.courses || [])
+    .map((c) => {
+      const tag = c.isFixture ? ' [test fixture]' : '';
+      const lectures = c.lectures.map((l) => `${l.ref} = ${l.title}`).join('; ');
+      return `  • ${c.courseTitle}${tag}: ${lectures}`;
+    })
+    .join('\n');
+  const personas = (catalog.personas || []).join(', ');
+  const learnerArch = (catalog.learnerArch || []).join(', ');
+  return [
+    'You are the setup guide for a "live compose" tutoring sandbox. A human sits in ONE chair (tutor or learner) and an AI plays the other, turn by turn. Turn the user\'s plain-language description of what they want to explore into a precise scene spec.',
+    '',
+    'Return ONLY a JSON object (no prose outside it), shaped exactly:',
+    '{',
+    '  "spec": {',
+    '    "humanRole": "learner" | "tutor",        // chair the HUMAN takes; the AI takes the other',
+    '    "topic": "<short phrase>",                // the subject of the lesson',
+    '    "hamartia": "<the misconception in play, or empty>",',
+    '    "lectureRef": "<a ref from the list below, or empty>",',
+    '    "promptType": "recognition" | "base",     // AI tutor stance (matters when AI is tutor)',
+    `    "persona": one of [${personas}],          // AI learner persona (matters when AI is learner)`,
+    `    "learnerArchitecture": one of [${learnerArch}],`,
+    '    "tutorArchitecture": "ego_only" | "ego_superego",',
+    '    "openingSpeaker": "tutor" | "learner",',
+    '    "maxTurns": <integer 2..40>',
+    '  },',
+    '  "rationale": "<1-2 plain sentences: what this scene will surface, in lay terms>",',
+    '  "notes": "<optional: anything to tweak, or empty>"',
+    '}',
+    '',
+    'Field meanings (you translate the jargon; the user should not have to know it):',
+    '- recognition = the tutor treats the learner as a subject to be understood (mutual recognition); base = a standard, competent helpful tutor with no such theory.',
+    '- ego_only = the AI deliberates in one pass; ego_superego = it drafts, self-critiques, then revises (slower, more reflective).',
+    '- hamartia = the specific wrong idea the learner holds — the flaw that drives the scene.',
+    '- lectureRef binds the AI tutor to real course content; set it ONLY when the topic matches a course below, else leave it empty.',
+    '',
+    'Available course lectures (use the EXACT ref on the left of each "="):',
+    courseLines || '  (none found)',
+    '',
+    'Decide humanRole from intent: wanting to "probe"/"test"/"stress" the tutor ⇒ the human is the learner; wanting to "play teacher" or "test a student/persona" ⇒ the human is the tutor. If the subject matches a course, set lectureRef and make topic match it. Keep topic concise. Default maxTurns to 12 unless they ask for more. Never invent a lectureRef.',
+  ].join('\n');
+}
+
+// Pull the first balanced {…} (optionally inside a ```json fence) and JSON.parse it.
+function extractJsonObject(text) {
+  if (!text) return null;
+  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  const candidate = fenced ? fenced[1] : text;
+  const start = candidate.indexOf('{');
+  if (start === -1) return null;
+  let depth = 0;
+  for (let i = start; i < candidate.length; i += 1) {
+    if (candidate[i] === '{') depth += 1;
+    else if (candidate[i] === '}') {
+      depth -= 1;
+      if (depth === 0) {
+        try {
+          return JSON.parse(candidate.slice(start, i + 1));
+        } catch {
+          return null;
+        }
+      }
+    }
+  }
+  return null;
+}
+
+// Coerce a model-proposed spec onto the known vocabulary so it is always applyable.
+function clampSpecToCatalog(raw, catalog) {
+  const lectureRefs = new Set((catalog.courses || []).flatMap((c) => c.lectures.map((l) => l.ref)));
+  const personas = catalog.personas || [];
+  const learnerArch = catalog.learnerArch || [];
+  const oneOf = (v, list, dflt) => (list.includes(v) ? v : dflt);
+  const s = raw && typeof raw === 'object' ? raw : {};
+  return {
+    humanRole: oneOf(s.humanRole, ['learner', 'tutor'], 'learner'),
+    topic: String(s.topic || '').slice(0, 500) || 'logarithms as the inverse of exponentiation',
+    hamartia: String(s.hamartia || '').slice(0, 500),
+    lectureRef: typeof s.lectureRef === 'string' && lectureRefs.has(s.lectureRef) ? s.lectureRef : '',
+    promptType: oneOf(s.promptType, PROMPT_TYPES, 'recognition'),
+    tutorArchitecture: oneOf(s.tutorArchitecture, TUTOR_ARCHS, 'ego_superego'),
+    persona: oneOf(s.persona, personas, personas[0] || 'struggling_anxious'),
+    learnerArchitecture: oneOf(
+      s.learnerArchitecture,
+      learnerArch,
+      learnerArch[0] || 'ego_superego_recognition_authentic',
+    ),
+    openingSpeaker: oneOf(s.openingSpeaker, ['tutor', 'learner'], 'tutor'),
+    maxTurns: Math.min(Math.max(Number(s.maxTurns) || DEFAULT_MAX_TURNS, 2), MAX_TURNS_CEILING),
+  };
+}
+
+/**
+ * Turn a plain-language description into a validated compose spec.
+ * Returns { spec, rationale, notes, model, usage }. Inject deps.chatFn for tests.
+ */
+export async function proposeSpec({ description, catalog = {} } = {}, deps = {}) {
+  const desc = String(description || '').trim();
+  if (!desc) throw liveError('describe the scene you want first', 'LIVE_GUIDE_EMPTY', 400);
+  const apiKey = deps.apiKey ?? process.env.OPENROUTER_API_KEY;
+  if (!deps.chatFn && !apiKey) {
+    throw liveError('OPENROUTER_API_KEY is not set (and no mock guide injected)', 'LIVE_NO_API_KEY', 503);
+  }
+  const chat =
+    deps.chatFn ||
+    ((modelRef, system, messages, options) => openRouterChat(apiKey, modelRef, system, messages, options));
+  const model = deps.model || process.env.COMPOSE_GUIDE_MODEL || DEFAULT_GUIDE_MODEL;
+  const res = await chat(model, buildGuideSystemPrompt(catalog), [{ role: 'user', content: desc.slice(0, 4000) }], {
+    temperature: 0.4,
+    title: 'Machine Spirits Live Compose (setup guide)',
+  });
+  const parsed = extractJsonObject(res.content);
+  if (!parsed) throw liveError('the guide did not return a usable spec — try rephrasing', 'LIVE_GUIDE_PARSE', 502);
+  return {
+    spec: clampSpecToCatalog(parsed.spec || parsed, catalog),
+    rationale: String(parsed.rationale || '').slice(0, 800),
+    notes: String(parsed.notes || '').slice(0, 800),
+    model: res.model,
+    usage: res.usage || { inputTokens: 0, outputTokens: 0 },
+  };
+}
+
 // ── Mock deps (deterministic, zero-network — for tests/smoke) ────────────────
 // Mirrors services/pilotAutoplay.js buildMockDeps so the live loop can be
 // exercised end-to-end without spend.
@@ -460,6 +710,35 @@ export function buildMockDeps() {
         usage: { inputTokens: 0, outputTokens: 0 },
       };
     },
+  };
+}
+
+// A zero-cost guide for the free-preview toggle + tests: returns a canned, valid
+// spec (the logarithms recognition scene) without any network call. Mirrors how
+// buildMockDeps stands in for the metered turn engines.
+export function buildMockGuideDeps() {
+  return {
+    chatFn: async () => ({
+      content: JSON.stringify({
+        spec: {
+          humanRole: 'learner',
+          topic: 'logarithms as the inverse of exponentiation',
+          hamartia: 'treats log(a+b) as log a + log b',
+          lectureRef: '',
+          promptType: 'recognition',
+          tutorArchitecture: 'ego_superego',
+          persona: 'struggling_anxious',
+          learnerArchitecture: 'ego_superego_recognition_authentic',
+          openingSpeaker: 'tutor',
+          maxTurns: 12,
+        },
+        rationale:
+          '(free preview) You play a learner who splits log(a+b); the recognition tutor has to surface and repair that misread.',
+        notes: 'Free preview — canned spec, no LLM call. Toggle off for a real, described scene.',
+      }),
+      usage: { inputTokens: 0, outputTokens: 0 },
+      model: 'mock',
+    }),
   };
 }
 

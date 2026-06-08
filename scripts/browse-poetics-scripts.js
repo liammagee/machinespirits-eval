@@ -6,6 +6,10 @@
  * scripts/ingest-poetics-artifacts.js first when a new artifact root is added.
  */
 
+// Load .env first: this server hosts metered surfaces (the live-compose turn engine
+// and setup guide both read OPENROUTER_API_KEY at call time), so the key must be in
+// process.env before any request lands. Matches the repo convention (eval-cli.js).
+import 'dotenv/config';
 import express from 'express';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -40,6 +44,10 @@ import {
   viewSession as liveViewSession,
   saveSession as liveSaveSession,
   buildMockDeps as liveBuildMockDeps,
+  proposeSpec as liveProposeSpec,
+  buildMockGuideDeps as liveBuildMockGuideDeps,
+  listCourses as liveListCourses,
+  LIVE_VOCAB,
 } from '../services/poetics/liveCompose.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -1008,6 +1016,25 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
       return res.status(error.statusCode || 400).json({ error: error.message || String(error), code: error.code });
     }
   });
+  // The "describe it in plain language" guide: an LLM reads a free-text wish and
+  // proposes a full compose spec, clamped to the live vocabulary + real course
+  // catalog. Metered (one OpenRouter call) unless body.mock is set, which swaps
+  // in a deterministic canned spec for a zero-cost preview.
+  app.post('/api/compose/live/guide', async (req, res) => {
+    try {
+      const body = req.body || {};
+      const catalog = {
+        courses: liveListCourses(),
+        personas: COMPOSER_VOCAB.personas,
+        learnerArch: COMPOSER_VOCAB.learnerArch,
+      };
+      const deps = body.mock ? liveBuildMockGuideDeps() : {};
+      const out = await liveProposeSpec({ description: body.description, catalog }, deps);
+      return res.json({ ok: true, ...out });
+    } catch (error) {
+      return res.status(error.statusCode || 400).json({ error: error.message || String(error), code: error.code });
+    }
+  });
   app.get('/ontology', (_req, res) => res.type('html').send(renderOntologyHtml()));
   app.get('/rubric', (_req, res) => res.type('html').send(renderRubricHtml()));
   app.get('/api/ontology', (req, res) => {
@@ -1150,8 +1177,10 @@ const COMPOSER_VOCAB = Object.freeze({
   promptTypes: ['recognition', 'base', 'placebo', 'naive', 'dialectical_suspicious', 'matched_recognition'],
   tutorArch: ['ego_superego', 'ego_only', 'id_director'],
   superego: ['suspicious', 'standard', 'adversary', 'advocate', 'strict', 'coupling'],
-  personas: ['struggling_anxious', 'confused_novice', 'eager_explorer', 'focused_achiever', 'adversarial_tester'],
-  learnerArch: ['ego_superego_recognition_authentic', 'ego_superego_recognition', 'ego_superego', 'unified'],
+  // Sourced from the live engine so the sit-in form, its CLI, and the LLM guide
+  // can't drift (see liveCompose.LIVE_VOCAB).
+  personas: LIVE_VOCAB.personas,
+  learnerArch: LIVE_VOCAB.learnerArch,
   continuationPolicy: ['none', 'anchor', 'revoice', 'reconsider', 'reframe'],
   adaptationPolicy: [
     'none',
@@ -1239,47 +1268,93 @@ const composeOptions = (list, selected) =>
     .map((v) => `<option value="${escapeHtml(v)}"${v === selected ? ' selected' : ''}>${escapeHtml(v)}</option>`)
     .join('');
 
+// Same as composeOptions but renders friendlier display labels (underscores →
+// spaces) while keeping the raw value — so the form still POSTs the exact vocab
+// term but the reader sees "ego superego" instead of "ego_superego".
+const composeOptionsPretty = (list, selected) =>
+  list
+    .map(
+      (v) =>
+        `<option value="${escapeHtml(v)}"${v === selected ? ' selected' : ''}>${escapeHtml(
+          String(v).replace(/_/g, ' '),
+        )}</option>`,
+    )
+    .join('');
+
 const composeDatalist = (id, list) =>
   `<datalist id="${id}">${list.map((v) => `<option value="${escapeHtml(v)}"></option>`).join('')}</datalist>`;
 
-// Lectures a sit-in tutor can be bound to (optional, for /compose/live). Currently
-// the content-poetics-rhetoric course (id 1001) — the package linked here. An empty
-// pick = teach from the free-text topic alone (the prior behaviour). The ref shape
-// "1001-lecture-N" is what loadCurriculumContext (routes/chatRoutes.js) resolves.
-function listComposeLectures() {
-  const courseDir = path.resolve(ROOT, 'content-poetics-rhetoric', 'courses', '1001');
-  let files = [];
-  try {
-    files = fs.readdirSync(courseDir).filter((f) => /^lecture-\d+\.md$/.test(f));
-  } catch {
-    return []; // package absent → offer no lectures
-  }
-  files.sort((a, b) => Number(a.match(/\d+/)[0]) - Number(b.match(/\d+/)[0]));
-  return files.map((f) => {
-    const num = Number(f.match(/\d+/)[0]);
-    let title = `Lecture ${num}`;
-    try {
-      const raw = fs.readFileSync(path.join(courseDir, f), 'utf8');
-      const m = raw.match(/^#{1,3}\s*(?:<a[^>]*><\/a>\s*)?Lecture\s+\d+\s*[—–-]\s*(.+?)\s*$/m);
-      if (m) title = m[1].trim();
-    } catch {
-      /* keep the default title */
-    }
-    return { ref: `1001-lecture-${num}`, num, title };
-  });
-}
+// The syllabus picker for both composers. The course catalog lives in the engine
+// (liveCompose.listCourses) so the picker, the AI guide, and the curriculum-injection
+// bridge all read one source. Rather than one flat <select> burying the curriculum,
+// it is a two-tier course → lesson picker (the syllabus, made explicit at both
+// levels) with a caption that names the chosen course + its one-line subtitle.
+// content-test-* courses come back flagged isFixture, so they sort last + are labelled.
 
-const composeLectureOptions = () =>
-  ['<option value="">— none · teach from topic —</option>']
+// The catalog as client JSON — the lesson <select> is repopulated in the browser
+// from this when a course is picked, so the two tiers stay in sync without a fetch.
+const composeCoursesJson = () => JSON.stringify(liveListCourses());
+
+// Course <select> options: a "free topic" sentinel + one option per course.
+const composeCourseOptions = () =>
+  ['<option value="">— free topic · no course —</option>']
     .concat(
-      listComposeLectures().map(
-        (l) =>
-          `<option value="${escapeHtml(l.ref)}" data-topic="${escapeHtml(l.title)}">L${l.num} · ${escapeHtml(
-            l.title,
+      liveListCourses().map(
+        (c) =>
+          `<option value="${escapeHtml(c.courseId)}">${escapeHtml(
+            c.isFixture ? `${c.courseTitle} · test fixture` : c.courseTitle,
           )}</option>`,
       ),
     )
     .join('');
+
+// The two-tier picker markup: a course <select>, a lesson <select> (filled
+// client-side), and a caption line. ids are caller-supplied so the live page can
+// keep lessonId='f-lecture' (what begin()/applySpecToForm already read) while the
+// spec page uses 'd-lecture'. lessonHint distinguishes "ground the tutor" (live,
+// where the engine injects the lecture) from "borrow a topic" (spec, batch).
+const composeSyllabusPicker = ({ courseId, lessonId, capId, lessonHint }) =>
+  `<label class="fld">syllabus · course<select id="${courseId}">${composeCourseOptions()}</select><span class="hint">a real course to teach from — or leave free to teach from the topic alone</span></label>` +
+  `<label class="fld">syllabus · lesson<select id="${lessonId}" disabled><option value="">— pick a course first —</option></select><span class="hint">${escapeHtml(
+    lessonHint,
+  )}</span></label>` +
+  `<div class="syl-cap" id="${capId}"></div>`;
+
+// Shared client wiring (injected into both composers' <script>, so the two pages
+// can't drift). Relies on esc() + $ being defined in the host scope (both are).
+// mkSyllabus repopulates the lesson <select> when the course changes, paints the
+// caption, and calls onPick(option) when a lesson is chosen. setByRef() lets the
+// AI guide drive it from a proposed lectureRef (derives the course from the ref).
+const SYLLABUS_CLIENT_JS = `
+function mkSyllabus(courses, courseSel, lessonSel, capEl, onPick){
+  function findCourse(id){ for(var i=0;i<courses.length;i++){ if(courses[i].courseId===id) return courses[i]; } return null; }
+  function fillLessons(cid, ref){
+    var c = findCourse(cid);
+    var html = '<option value="">'+(c ? '— whole course · pick a lesson —' : '— pick a course first —')+'</option>';
+    if(c){ for(var i=0;i<c.lectures.length;i++){ var l=c.lectures[i]; html += '<option value="'+esc(l.ref)+'" data-topic="'+esc(l.title)+'">L'+l.num+' · '+esc(l.title)+'</option>'; } }
+    lessonSel.innerHTML = html; lessonSel.disabled = !c;
+    if(ref){ lessonSel.value = ref; }
+  }
+  function caption(){
+    var c = findCourse(courseSel.value);
+    if(!c){ capEl.innerHTML = '<span class="muted">no course — the scene teaches from the free-text topic below</span>'; return; }
+    var l=null; for(var i=0;i<c.lectures.length;i++){ if(c.lectures[i].ref===lessonSel.value){ l=c.lectures[i]; break; } }
+    var html = '<b>'+esc(c.courseTitle)+'</b>'+(c.courseSubtitle ? (' — '+esc(c.courseSubtitle)) : '');
+    html += l ? ('<br><b>Lesson '+l.num+':</b> '+esc(l.title)) : ('<br><span class="muted">'+c.lectures.length+' lessons — pick one to ground the scene</span>');
+    capEl.innerHTML = html;
+  }
+  courseSel.addEventListener('change', function(){ fillLessons(courseSel.value); caption(); if(onPick){ onPick(null); } });
+  lessonSel.addEventListener('change', function(){ caption(); if(onPick){ onPick(lessonSel.options[lessonSel.selectedIndex]); } });
+  caption();
+  return {
+    setByRef: function(ref){
+      if(!ref){ courseSel.value=''; fillLessons(''); caption(); return; }
+      var cid = String(ref).split('-lecture-')[0];
+      courseSel.value = cid; fillLessons(cid, ref); caption();
+    }
+  };
+}
+`;
 
 const composeFormChecks = (selected) =>
   COMPOSER_VOCAB.forms
@@ -1866,6 +1941,9 @@ label.mini .t-turn{ width:56px; }
 .write-result code,.run-hint code{ background:rgba(127,127,127,.15); padding:0 3px; color:var(--moss-deep); }
 .run-hint{ font:11px/1.5 ui-monospace,monospace; color:var(--ink-4); border-top:1px dashed var(--rule); padding-top:8px; }
 .muted{ color:var(--ink-4); font-style:italic; font-size:11px; }
+.fld .hint{ font:10.5px/1.4 -apple-system,system-ui,sans-serif; color:var(--ink-4); text-transform:none; letter-spacing:0; font-weight:400; }
+.syl-cap{ grid-column:1 / -1; font:11.5px/1.5 -apple-system,system-ui,sans-serif; color:var(--ink-2); background:var(--paper-3); border-left:3px solid var(--moss); border-radius:0 6px 6px 0; padding:7px 11px; }
+.syl-cap b{ color:var(--moss-deep); }
 ${MODETABS_CSS}
 `,
   })}
@@ -1877,8 +1955,14 @@ ${modeTabsHtml('spec')}
     <section class="sec"><h3>Drama · mythos / melos</h3><div class="body">
       <label class="fld">id<input type="text" id="d-id" value="D_LOG_PERIPETEIA_1"></label>
       <label class="fld">max_turns<input type="number" id="d-maxturns" min="1" value="7"></label>
+      ${composeSyllabusPicker({
+        courseId: 'd-course',
+        lessonId: 'd-lecture',
+        capId: 'd-syl-cap',
+        lessonHint: 'fills the topic from this lesson · the batch spec teaches from the topic text',
+      })}
       <label class="fld wide">topic<input type="text" id="d-topic" value="logarithms as the inverse of exponentiation"></label>
-      <label class="fld wide">hamartia — the misconception that drives the plot<input type="text" id="d-hamartia" value="treats log(a+b) as log a + log b"></label>
+      <label class="fld wide">hamartia <span class="muted">— the misconception that drives the plot</span><input type="text" id="d-hamartia" placeholder="the specific wrong idea the learner keeps reaching for"></label>
       <label class="fld">continuation_policy<select id="d-cont">${composeOptions(V.continuationPolicy, 'reframe')}</select></label>
       <label class="fld">tutor_adaptation_policy<select id="d-adapt">${composeOptions(V.adaptationPolicy, 'peripeteia')}</select></label>
       <div class="fld wide"><span>targets — dramatic forms to bias toward</span><div class="checks">${composeFormChecks(['peripeteia', 'catharsis'])}</div></div>
@@ -1948,6 +2032,8 @@ ${composeDatalist('panelList', V.panelSuggest)}
 const VOCAB = ${JSON.stringify(V)};
 const $ = (id) => document.getElementById(id);
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+var COMPOSE_COURSES = ${composeCoursesJson()};
+${SYLLABUS_CLIENT_JS}
 function val(id){ var e=$(id); return e ? String(e.value).trim() : ''; }
 function checkedBox(id){ var e=$(id); return e ? !!e.checked : false; }
 function oNone(v){ return v==='none' ? '' : v; }
@@ -2100,6 +2186,30 @@ $('themeToggle').addEventListener('click', function(){
   try { localStorage.setItem('poetics-theme', nx); } catch (_e) {}
 });
 try { if (localStorage.getItem('poetics-theme')==='dark') document.documentElement.setAttribute('data-theme','dark'); } catch (_e) {}
+// The syllabus picker is a topic-seeding aid here: the batch pipeline teaches
+// from drama.topic (it has no lecture-binding), so picking a lesson fills the
+// topic + retargets the hamartia placeholder, then re-validates. d-lecture is
+// deliberately NOT read by readSpec — it would be a dead key in the .drama.yaml.
+// We also re-derive the scene id from the lesson so it never reads stale (the
+// shipped "D_LOG_PERIPETEIA_1" makes no sense once a non-logs lesson is chosen),
+// but only while the id is still the auto value — a user-typed id is left alone.
+var autoId = 'D_LOG_PERIPETEIA_1';
+function topicToId(t){
+  var s = String(t).toUpperCase().replace(/[^A-Z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,40).replace(/_+$/,'');
+  return 'D_' + (s || 'SCENE') + '_1';
+}
+var SYL = mkSyllabus(COMPOSE_COURSES, $('d-course'), $('d-lecture'), $('d-syl-cap'), function(opt){
+  var t = opt && opt.getAttribute && opt.getAttribute('data-topic');
+  if(t){
+    $('d-topic').value = t;
+    if($('d-id').value === autoId){ autoId = topicToId(t); $('d-id').value = autoId; }
+  }
+  $('d-hamartia').placeholder = t
+    ? ('the misreading a learner keeps bringing to “'+t+'”')
+    : 'the specific wrong idea the learner keeps reaching for';
+  scheduleValidate();
+});
+void SYL;
 renderTurns();
 validate();
 </script>
@@ -2156,6 +2266,12 @@ ${MODETABS_CSS}
 .seat__d{ font-size:11.5px; color:var(--ink-3); margin-top:3px; }
 .setgrid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:11px 14px; }
 .grp{ display:contents; }
+/* an author display:contents would otherwise beat the UA [hidden] rule, so the
+   seat toggle could never hide the opposite role's dials — pin it explicitly. */
+.grp[hidden]{ display:none; }
+/* syllabus caption — names the chosen course (+ subtitle) and lesson */
+.syl-cap{ grid-column:1 / -1; font:11.5px/1.5 -apple-system,system-ui,sans-serif; color:var(--ink-2); background:var(--paper-3); border-left:3px solid var(--moss); border-radius:0 6px 6px 0; padding:7px 11px; }
+.syl-cap b{ color:var(--moss-deep); }
 label.fld{ display:flex; flex-direction:column; gap:4px; font:11px ui-monospace,monospace; color:var(--ink-3); text-transform:uppercase; letter-spacing:.04em; }
 label.fld.wide{ grid-column:1 / -1; }
 input[type=text],input[type=number],select{ width:100%; font:13px ui-monospace,monospace; color:var(--ink); background:var(--paper); border:1px solid var(--rule); padding:6px 8px; border-radius:5px; }
@@ -2179,6 +2295,7 @@ input[type=text],input[type=number],select{ width:100%; font:13px ui-monospace,m
 .line--learner .bubble{ background:var(--ochre-soft); border-color:var(--ochre); border-bottom-right-radius:4px; }
 .line--mine .bubble{ box-shadow:0 1px 0 rgba(0,0,0,.05); outline:2px solid var(--ink); outline-offset:-2px; }
 .line--ghost .bubble{ opacity:.7; }
+.composing{ font-style:italic; color:var(--ink-3); }
 .dots{ display:inline-flex; gap:4px; align-items:center; height:18px; }
 .dots i{ width:6px; height:6px; border-radius:50%; background:var(--ink-3); animation:blink 1.2s infinite ease-in-out; }
 .dots i:nth-child(2){ animation-delay:.2s; } .dots i:nth-child(3){ animation-delay:.4s; }
@@ -2200,6 +2317,31 @@ input[type=text],input[type=number],select{ width:100%; font:13px ui-monospace,m
 .spend__sub{ font:11px ui-monospace,monospace; color:var(--ink-4); }
 .saveres{ font:11px ui-monospace,monospace; color:var(--ink-3); min-height:14px; }
 .muted{ color:var(--ink-4); font-style:italic; }
+/* guide hero — describe it in plain language, the LLM dials it in */
+.guide{ border:1px solid var(--moss); background:var(--moss-soft); border-radius:11px; padding:17px 19px; display:flex; flex-direction:column; gap:12px; }
+.guide__head h2{ margin:0 0 5px; font:600 21px/1.15 Georgia,serif; color:var(--moss-deep); }
+.guide__head h2 .spark{ font-style:normal; }
+.guide__lede{ margin:0; color:var(--ink-2); font-size:13.5px; line-height:1.5; max-width:66ch; }
+.guide__row textarea{ width:100%; font:14.5px/1.55 -apple-system,system-ui,sans-serif; color:var(--ink); background:var(--paper); border:1px solid var(--rule); border-radius:9px; padding:11px 13px; min-height:3.6rem; max-height:220px; resize:vertical; }
+.guide__row textarea:focus{ outline:2px solid var(--moss); outline-offset:-1px; }
+.guide__go{ display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+.guide__out{ font-size:13px; line-height:1.6; color:var(--ink-2); border-left:3px solid var(--moss-deep); background:var(--paper-4); padding:9px 13px; border-radius:0 7px 7px 0; }
+.guide__out b{ color:var(--moss-deep); }
+.guide__out.err{ border-left-color:var(--brick); color:var(--brick-d); }
+/* "or" divider between the guided path and the manual dials */
+.setup__or{ display:flex; align-items:center; gap:13px; color:var(--ink-4); font:10.5px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.09em; margin:2px 0; }
+.setup__or::before, .setup__or::after{ content:''; flex:1; height:1px; background:var(--rule); }
+/* progressive disclosure — the eight expert dials, collapsed by default */
+details.adv{ border:1px solid var(--rule); border-radius:8px; background:var(--paper-3); }
+details.adv > summary{ cursor:pointer; padding:11px 14px; font:12px ui-monospace,monospace; color:var(--ink-2); list-style:none; display:flex; align-items:center; gap:10px; user-select:none; }
+details.adv > summary::-webkit-details-marker{ display:none; }
+details.adv > summary::before{ content:'▸'; color:var(--ink-4); transition:transform .12s; }
+details.adv[open] > summary::before{ transform:rotate(90deg); }
+details.adv > summary:hover{ color:var(--ink); }
+.adv__hint{ color:var(--ink-4); font-size:11px; }
+details.adv > .setgrid{ padding:2px 14px 15px; }
+/* per-field plain-language hint under a dial */
+.fld .hint{ font:10.5px/1.4 -apple-system,system-ui,sans-serif; color:var(--ink-4); text-transform:none; letter-spacing:0; font-weight:400; }
 `,
   })}
 <body>
@@ -2212,10 +2354,25 @@ ${modeTabsHtml('live')}
 <div class="live">
   <main class="stage">
     <section class="setup" id="setup">
-      <div class="setup__head">
-        <h2>Sit in on a scene</h2>
-        <p class="setup__lede">Take one chair — Learner or Tutor — and the AI takes the other, driven by the same engines the scored runs use. Drive the tempo turn by turn, then save the transcript to run through the critics later.</p>
+      <!-- Guided path: describe it in plain language, the LLM dials the machine in -->
+      <div class="guide">
+        <div class="guide__head">
+          <h2><span class="spark">✦</span> Compose a scene</h2>
+          <p class="guide__lede">Say what you want to explore in plain language — who you'd like to play, what's being taught, what should go wrong — and the guide sets the machine up for you. Everything it picks lands in the dials below, ready to tweak. No vocabulary required.</p>
+        </div>
+        <div class="guide__row">
+          <textarea id="g-desc" rows="2" placeholder="e.g. I want to play a nervous student who keeps splitting log(a+b) into log a + log b, and have the AI tutor push me toward a real click of understanding."></textarea>
+        </div>
+        <div class="guide__go">
+          <button type="button" class="btn primary" id="guideBtn">Compose it for me →</button>
+          <label class="dry"><input type="checkbox" id="f-mock"> free preview — canned AI, no spend</label>
+        </div>
+        <div class="guide__out" id="guideOut" hidden></div>
       </div>
+
+      <div class="setup__or"><span>or set the dials yourself</span></div>
+
+      <!-- Seat: the one choice everyone makes -->
       <div class="seatpick">
         <button type="button" class="seat seat--on" id="seatLearner">
           <span class="seat__k">I play the</span><span class="seat__v">Learner</span>
@@ -2226,22 +2383,53 @@ ${modeTabsHtml('live')}
           <span class="seat__d">the AI is the learner — stage a recognition, test a persona</span>
         </button>
       </div>
+
+      <!-- Essentials: plain-language, always visible. The syllabus picker is
+           tutor-only (a lecture grounds the AI tutor; it has no meaning when the
+           AI plays the learner) — pickSeat() toggles #sylBox with the seat. -->
       <div class="setgrid">
-        <label class="fld wide">topic<input id="f-topic" type="text" value="logarithms as the inverse of exponentiation"></label>
-        <label class="fld wide">hamartia — the misconception in play (optional)<input id="f-hamartia" type="text" value="treats log(a+b) as log a + log b"></label>
-        <div class="grp" id="grpTutor">
-          <label class="fld">AI tutor · prompt<select id="f-prompt">${composeOptions(['recognition', 'base'], 'recognition')}</select></label>
-          <label class="fld">AI tutor · architecture<select id="f-tarch">${composeOptions(['ego_superego', 'ego_only'], 'ego_superego')}</select></label>
-          <label class="fld wide">AI tutor · lecture <span class="muted">(optional — teach from a course lecture)</span><select id="f-lecture">${composeLectureOptions()}</select></label>
-        </div>
-        <div class="grp" id="grpLearner" hidden>
-          <label class="fld">AI learner · persona<select id="f-persona">${composeOptions(V.personas, 'struggling_anxious')}</select></label>
-          <label class="fld">AI learner · architecture<select id="f-larch">${composeOptions(V.learnerArch, 'ego_superego_recognition_authentic')}</select></label>
-        </div>
-        <label class="fld">opening speaker<select id="f-open">${composeOptions(['tutor', 'learner'], 'tutor')}</select></label>
-        <label class="fld">max turns<input id="f-max" type="number" min="2" max="40" value="16"></label>
+        <div class="grp" id="sylBox">${composeSyllabusPicker({
+          courseId: 'f-course',
+          lessonId: 'f-lecture',
+          capId: 'f-syl-cap',
+          lessonHint: 'ground the AI tutor in a real lesson — sets the topic too',
+        })}</div>
+        <label class="fld wide">topic<input id="f-topic" type="text" value="logarithms as the inverse of exponentiation"><span class="hint">what the scene is about</span></label>
+        <label class="fld wide">hamartia <span class="muted">(optional)</span><input id="f-hamartia" type="text" placeholder="the specific wrong idea the learner keeps reaching for"><span class="hint">the tragic flaw the scene turns on — leave blank, type your own, or let the guide suggest one</span></label>
       </div>
-      <label class="dry"><input type="checkbox" id="f-mock"> ✦ free preview — canned AI lines, no spend (logarithms demo)</label>
+
+      <!-- Expert dials: collapsed by default so newcomers needn't read them -->
+      <details class="adv" id="advBox">
+        <summary>Fine-tune the machine <span class="adv__hint">stance · deliberation · persona · tempo</span></summary>
+        <div class="setgrid">
+          <div class="grp" id="grpTutor">
+            <label class="fld">AI tutor · stance<select id="f-prompt">${composeOptionsPretty(
+              ['recognition', 'base'],
+              'recognition',
+            )}</select><span class="hint">recognition aims for a genuine click of understanding · base is plain, competent teaching</span></label>
+            <label class="fld">AI tutor · deliberation<select id="f-tarch">${composeOptionsPretty(
+              ['ego_superego', 'ego_only'],
+              'ego_superego',
+            )}</select><span class="hint">ego only answers in one pass · ego superego drafts, self-critiques, then revises</span></label>
+          </div>
+          <div class="grp" id="grpLearner" hidden>
+            <label class="fld">AI learner · persona<select id="f-persona">${composeOptionsPretty(
+              V.personas,
+              'struggling_anxious',
+            )}</select><span class="hint">the kind of student the AI plays</span></label>
+            <label class="fld">AI learner · deliberation<select id="f-larch">${composeOptionsPretty(
+              V.learnerArch,
+              'ego_superego_recognition_authentic',
+            )}</select><span class="hint">how much inner back-and-forth the AI learner does before it speaks</span></label>
+          </div>
+          <label class="fld">opening speaker<select id="f-open">${composeOptionsPretty(
+            ['tutor', 'learner'],
+            'tutor',
+          )}</select><span class="hint">who moves first</span></label>
+          <label class="fld">max turns<input id="f-max" type="number" min="2" max="40" value="16"><span class="hint">scene length cap</span></label>
+        </div>
+      </details>
+
       <div class="setup__go">
         <button type="button" class="btn primary" id="beginBtn">Begin the scene →</button>
         <span class="metered" id="meterNote">metered · real LLM calls per AI turn · localhost only</span>
@@ -2276,6 +2464,9 @@ var $ = function(id){ return document.getElementById(id); };
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 function nl2br(s){ return esc(s).replace(/\\n/g, '<br>'); }
 var S = { id:null, mock:false, humanRole:'learner', aiRole:'tutor', status:'idle', nextSpeaker:null };
+var COMPOSE_COURSES = ${composeCoursesJson()};
+var SYL = null; // the syllabus picker controller (course→lesson); wired at load
+${SYLLABUS_CLIENT_JS}
 
 function pickSeat(role){
   S.humanRole = role; S.aiRole = role==='learner' ? 'tutor' : 'learner';
@@ -2283,6 +2474,8 @@ function pickSeat(role){
   $('seatTutor').classList.toggle('seat--on', role==='tutor');
   $('grpTutor').hidden = role!=='learner';
   $('grpLearner').hidden = role!=='tutor';
+  // The syllabus grounds the AI tutor; hide it when the human plays tutor (AI=learner).
+  var sb = $('sylBox'); if(sb) sb.hidden = role!=='learner';
 }
 function autoGrow(el){ if(!el) return; el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,180)+'px'; }
 
@@ -2330,16 +2523,89 @@ function appendOptimistic(text){
 }
 async function refresh(){ try { var r = await fetch('/api/compose/live/'+S.id); var d = await r.json(); if(d.session) renderSession(d.session); } catch(_e){} }
 
+// Set a <select> only if the proposed value is one of its options, so a value the
+// server clamped away can't blank the control.
+function setSelect(id, val){
+  var el = $(id); if(!el || val==null || val==='') return;
+  for(var i=0;i<el.options.length;i++){ if(el.options[i].value===val){ el.value=val; return; } }
+}
+// Pour an LLM-proposed spec into the form. The form stays the source of truth —
+// begin() reads it, not the guide — so every machine choice is visible + editable.
+function applySpecToForm(spec){
+  if(!spec) return;
+  if(spec.humanRole==='tutor' || spec.humanRole==='learner') pickSeat(spec.humanRole);
+  if(spec.topic) $('f-topic').value = spec.topic;
+  if('hamartia' in spec) $('f-hamartia').value = spec.hamartia || '';
+  setSelect('f-prompt', spec.promptType);
+  setSelect('f-tarch', spec.tutorArchitecture);
+  if(SYL) SYL.setByRef(spec.lectureRef);
+  setSelect('f-persona', spec.persona);
+  setSelect('f-larch', spec.learnerArchitecture);
+  setSelect('f-open', spec.openingSpeaker);
+  if(spec.maxTurns) $('f-max').value = spec.maxTurns;
+  $('advBox').open = true; // reveal what was dialled in
+}
+// Metered (one OpenRouter call) unless free preview is on — then a canned spec.
+async function guide(){
+  var desc = $('g-desc').value.trim();
+  var out = $('guideOut');
+  if(!desc){ out.hidden=false; out.className='guide__out err'; out.textContent='describe the scene you want first'; $('g-desc').focus(); return; }
+  S.mock = $('f-mock').checked;
+  $('guideBtn').disabled=true; var lab=$('guideBtn').textContent; $('guideBtn').textContent='composing…';
+  out.hidden=false; out.className='guide__out'; out.innerHTML='<span class="muted">the guide is setting the dials…</span>';
+  try {
+    var r = await postJson('/api/compose/live/guide', { description:desc, mock:S.mock });
+    applySpecToForm(r.spec);
+    var bits = [];
+    if(r.rationale) bits.push('<b>set-up:</b> '+esc(r.rationale));
+    if(r.notes) bits.push('<span class="muted">'+esc(r.notes)+'</span>');
+    bits.push('<span class="muted">— dialled in below; tweak anything, then begin the scene.</span>');
+    out.innerHTML = bits.join('<br>');
+  } catch(e){
+    out.className='guide__out err';
+    out.textContent = (e.code==='LIVE_NO_API_KEY')
+      ? 'no OpenRouter key on this server — tick “free preview” for a canned demo, or set the dials by hand.'
+      : 'guide failed: '+(e.message||String(e));
+  } finally {
+    $('guideBtn').disabled=false; $('guideBtn').textContent=lab;
+  }
+}
+
+function showStage(){
+  $('setup').classList.add('setup--min');
+  $('transcript').hidden=false; $('liveside').hidden=false; $('composerForm').hidden=false;
+}
+function restoreSetup(){
+  $('setup').classList.remove('setup--min');
+  $('transcript').hidden=true; $('liveside').hidden=true; $('composerForm').hidden=true;
+}
+// Show the stage the instant Begin is clicked, so the metered opening turn never
+// reads as dead air: an animated ghost stands in for the AI's opening line (when
+// the AI opens) until /start returns and renderSession swaps in the real turn.
+function renderSceneLoading(aiOpens){
+  showStage();
+  $('transcript').innerHTML = aiOpens
+    ? ('<div class="line line--'+S.aiRole+' line--ghost"><div class="who">'+esc(whoLabel(S.aiRole,'ai'))
+        +'</div><div class="bubble"><span class="composing">composing the opening line</span> <span class="dots"><i></i><i></i><i></i></span></div></div>')
+    : '<div class="t-empty">setting the scene… <span class="dots"><i></i><i></i><i></i></span></div>';
+  $('sceneMeta').innerHTML = 'you are the <b>'+esc(S.humanRole)+'</b><br>AI is the <b>'+esc(S.aiRole)+'</b><br><span class="muted">setting the scene…</span>';
+  $('spendUsd').textContent='$0.0000'; $('spendTok').textContent='0 tokens';
+  $('composerInput').disabled=true; $('sendBtn').disabled=true;
+  $('composerHint').textContent = aiOpens ? ('the '+S.aiRole+' is composing the opening line…') : 'setting the scene…';
+}
 async function begin(){
   $('setupErr').textContent=''; S.mock = $('f-mock').checked;
+  // A lecture only grounds the AI when it plays the tutor; never send one for an
+  // AI learner (the syllabus picker is hidden in that seat anyway).
   var spec = { humanRole:S.humanRole, topic:$('f-topic').value, hamartia:$('f-hamartia').value,
     promptType:$('f-prompt').value, tutorArchitecture:$('f-tarch').value,
-    lectureRef:($('f-lecture')||{}).value||'',
+    lectureRef:(S.aiRole==='tutor' ? ($('f-lecture')||{}).value : '')||'',
     persona:$('f-persona').value, learnerArchitecture:$('f-larch').value,
     openingSpeaker:$('f-open').value, maxTurns:Number($('f-max').value)||16 };
   $('beginBtn').disabled=true; $('beginBtn').textContent='setting the scene…';
+  renderSceneLoading(spec.openingSpeaker===S.aiRole);
   try { var r = await postJson('/api/compose/live/start', { spec:spec, mock:S.mock }); renderSession(r.session); }
-  catch(e){ $('setupErr').textContent='could not start: '+(e.message||e); $('beginBtn').disabled=false; $('beginBtn').textContent='Begin the scene →'; }
+  catch(e){ restoreSetup(); $('setupErr').textContent='could not start: '+(e.message||e); $('beginBtn').disabled=false; $('beginBtn').textContent='Begin the scene →'; }
 }
 async function send(){
   var text = $('composerInput').value.trim();
@@ -2359,6 +2625,8 @@ async function save(){
 
 $('seatLearner').addEventListener('click', function(){ pickSeat('learner'); });
 $('seatTutor').addEventListener('click', function(){ pickSeat('tutor'); });
+$('guideBtn').addEventListener('click', guide);
+$('g-desc').addEventListener('keydown', function(e){ if(e.key==='Enter' && (e.metaKey||e.ctrlKey)){ e.preventDefault(); guide(); } });
 $('beginBtn').addEventListener('click', begin);
 $('sendBtn').addEventListener('click', send);
 $('saveBtn').addEventListener('click', save);
@@ -2369,12 +2637,16 @@ $('f-mock').addEventListener('change', function(){
   $('meterNote').textContent = on ? 'free preview · canned AI lines · no spend' : 'metered · real LLM calls per AI turn · localhost only';
   $('meterNote').classList.toggle('metered--free', on);
 });
-$('f-lecture').addEventListener('change', function(){
-  // Picking a lecture aligns the free-text topic with it, so the tutor prompt
-  // (which carries both topic and the injected lecture) stays coherent.
-  var o = $('f-lecture').selectedOptions && $('f-lecture').selectedOptions[0];
-  var t = o && o.getAttribute('data-topic');
+// Wire the course→lesson syllabus picker. Choosing a lesson aligns the free-text
+// topic with it (so the injected lecture + topic stay coherent) and retargets the
+// hamartia *placeholder* at the chosen lesson — without ever overwriting a flaw the
+// human typed. The old hardcoded log(a+b) hamartia is gone, so nothing goes stale.
+SYL = mkSyllabus(COMPOSE_COURSES, $('f-course'), $('f-lecture'), $('f-syl-cap'), function(opt){
+  var t = opt && opt.getAttribute && opt.getAttribute('data-topic');
   if(t){ $('f-topic').value = t; }
+  $('f-hamartia').placeholder = t
+    ? ('the misreading a learner keeps bringing to “'+t+'”')
+    : 'the specific wrong idea the learner keeps reaching for';
 });
 $('themeToggle').addEventListener('click', function(){ var d=document.documentElement; var nx=d.getAttribute('data-theme')==='dark'?'':'dark'; if(nx)d.setAttribute('data-theme','dark'); else d.removeAttribute('data-theme'); try{ localStorage.setItem('poetics-theme',nx); }catch(_e){} });
 try { if(localStorage.getItem('poetics-theme')==='dark') document.documentElement.setAttribute('data-theme','dark'); } catch(_e){}

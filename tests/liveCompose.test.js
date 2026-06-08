@@ -7,12 +7,16 @@ import {
   ROLES,
   DEFAULT_MAX_TURNS,
   MAX_TURNS_CEILING,
+  LIVE_VOCAB,
   tutorCellFor,
   startSession,
   humanTurn,
   viewSession,
   saveSession,
+  listCourses,
+  proposeSpec,
   buildMockDeps,
+  buildMockGuideDeps,
   _resetSessionsForTest,
 } from '../services/poetics/liveCompose.js';
 import { loadCurriculumContext } from '../routes/chatRoutes.js';
@@ -193,5 +197,204 @@ describe('liveCompose · lecture binding (content-poetics-rhetoric)', () => {
     assert.equal(ctx.courseId, '1001');
     assert.equal(ctx.lectureRef, '1001-lecture-1');
     assert.ok(ctx.text && ctx.text.length > 500, 'lecture text should be loaded');
+  });
+});
+
+describe('liveCompose · listCourses + LIVE_VOCAB', () => {
+  it('returns the content catalog with course 1001 and a stable lecture shape', () => {
+    const courses = listCourses();
+    assert.ok(Array.isArray(courses) && courses.length > 0, 'a populated content tree should yield courses');
+
+    // Every course carries the exact shape the web form, the CLI, and the guide
+    // catalog all read — drift here breaks all three at once.
+    for (const c of courses) {
+      assert.equal(typeof c.courseId, 'string');
+      assert.equal(typeof c.courseTitle, 'string');
+      assert.equal(typeof c.courseSubtitle, 'string');
+      assert.equal(typeof c.isFixture, 'boolean');
+      assert.ok(Array.isArray(c.lectures) && c.lectures.length > 0, `${c.courseId} should carry lectures`);
+      for (const l of c.lectures) {
+        assert.equal(typeof l.ref, 'string');
+        assert.equal(typeof l.num, 'number');
+        assert.equal(typeof l.title, 'string');
+        assert.match(l.ref, /^\d+-lecture-\d+$/);
+      }
+    }
+
+    // Course 1001 is the poetics-rhetoric package the lecture-binding suite relies on.
+    const c1001 = courses.find((c) => c.courseId === '1001');
+    assert.ok(c1001, 'course 1001 (poetics-rhetoric) must be present');
+    assert.ok(
+      c1001.lectures.some((l) => l.ref === '1001-lecture-1'),
+      'course 1001 must expose 1001-lecture-1',
+    );
+
+    // Subject courses sort before eval fixtures (content-test-*), so a hand player
+    // sees real curricula first.
+    const firstFixture = courses.findIndex((c) => c.isFixture);
+    if (firstFixture !== -1) {
+      const lastSubject = courses.map((c) => c.isFixture).lastIndexOf(false);
+      assert.ok(firstFixture > lastSubject, 'fixtures must sort after all subject courses');
+    }
+  });
+
+  it('exposes a frozen, self-consistent vocabulary the clamp enforces', () => {
+    assert.deepEqual([...LIVE_VOCAB.promptTypes], ['recognition', 'base']);
+    assert.deepEqual([...LIVE_VOCAB.tutorArchs], ['ego_only', 'ego_superego']);
+    assert.ok(LIVE_VOCAB.personas.includes('struggling_anxious'));
+    assert.ok(LIVE_VOCAB.learnerArch.includes('ego_superego_recognition_authentic'));
+    // Frozen so the web form, the CLI, and the guide catalog can share one source
+    // of truth without any of them mutating it out from under the others.
+    assert.ok(Object.isFrozen(LIVE_VOCAB));
+    assert.ok(Object.isFrozen(LIVE_VOCAB.promptTypes));
+    assert.ok(Object.isFrozen(LIVE_VOCAB.tutorArchs));
+    assert.ok(Object.isFrozen(LIVE_VOCAB.personas));
+    assert.ok(Object.isFrozen(LIVE_VOCAB.learnerArch));
+  });
+});
+
+describe('liveCompose · proposeSpec (the setup guide)', () => {
+  // The guide is one metered LLM call; inject a chatFn so every case is zero-cost.
+  // The signature mirrors the real openRouterChat: (model, system, messages, opts)
+  // → { content, usage, model }.
+  const guideWith = (content, { usage, model } = {}) => ({
+    chatFn: async () => ({
+      content,
+      usage: usage || { inputTokens: 0, outputTokens: 0 },
+      model: model || 'stub-guide-model',
+    }),
+  });
+  // The same catalog the route/CLI assemble: live courses + the shared vocab.
+  const catalog = () => ({
+    courses: listCourses(),
+    personas: LIVE_VOCAB.personas,
+    learnerArch: LIVE_VOCAB.learnerArch,
+  });
+
+  it('clamps a well-formed proposal and passes rationale/notes/usage/model through', async () => {
+    const content = JSON.stringify({
+      spec: {
+        humanRole: 'tutor',
+        topic: 'the chain rule',
+        hamartia: 'differentiates the outer function only',
+        lectureRef: '',
+        promptType: 'base',
+        tutorArchitecture: 'ego_only',
+        persona: 'eager_explorer',
+        learnerArchitecture: 'ego_superego',
+        openingSpeaker: 'learner',
+        maxTurns: 8,
+      },
+      rationale: 'You teach; the AI plays a student who only differentiates the outer function.',
+      notes: 'bump maxTurns if you want a longer scene',
+    });
+    const out = await proposeSpec(
+      { description: 'I want to play teacher on the chain rule', catalog: catalog() },
+      guideWith(content, { usage: { inputTokens: 11, outputTokens: 22 }, model: 'stub-guide-model' }),
+    );
+    assert.equal(out.spec.humanRole, 'tutor');
+    assert.equal(out.spec.topic, 'the chain rule');
+    assert.equal(out.spec.promptType, 'base');
+    assert.equal(out.spec.tutorArchitecture, 'ego_only');
+    assert.equal(out.spec.persona, 'eager_explorer');
+    assert.equal(out.spec.learnerArchitecture, 'ego_superego');
+    assert.equal(out.spec.openingSpeaker, 'learner');
+    assert.equal(out.spec.maxTurns, 8);
+    assert.match(out.rationale, /plays a student/);
+    assert.match(out.notes, /bump maxTurns/);
+    assert.deepEqual(out.usage, { inputTokens: 11, outputTokens: 22 });
+    assert.equal(out.model, 'stub-guide-model');
+  });
+
+  it('coerces every out-of-vocabulary field to a safe default', async () => {
+    const content = JSON.stringify({
+      spec: {
+        humanRole: 'spectator',
+        topic: '',
+        hamartia: '',
+        lectureRef: '9999-lecture-7',
+        promptType: 'wild',
+        tutorArchitecture: 'triple',
+        persona: 'nonexistent_persona',
+        learnerArchitecture: 'nope',
+        openingSpeaker: 'nobody',
+        maxTurns: 9999,
+      },
+    });
+    const out = await proposeSpec({ description: 'garbage in', catalog: catalog() }, guideWith(content));
+    assert.equal(out.spec.humanRole, 'learner'); // unknown role → default learner
+    assert.ok(out.spec.topic.length > 0, 'empty topic falls back to a default'); // never empty
+    assert.equal(out.spec.lectureRef, ''); // unknown ref dropped entirely
+    assert.equal(out.spec.promptType, 'recognition');
+    assert.equal(out.spec.tutorArchitecture, 'ego_superego');
+    assert.equal(out.spec.persona, LIVE_VOCAB.personas[0]);
+    assert.equal(out.spec.learnerArchitecture, LIVE_VOCAB.learnerArch[0]);
+    assert.equal(out.spec.openingSpeaker, 'tutor');
+    assert.equal(out.spec.maxTurns, MAX_TURNS_CEILING); // 9999 clamped down to the ceiling
+  });
+
+  it('floors maxTurns and recovers from a non-numeric maxTurns', async () => {
+    const lo = await proposeSpec(
+      { description: 'x', catalog: catalog() },
+      guideWith(JSON.stringify({ spec: { maxTurns: 1 } })),
+    );
+    assert.equal(lo.spec.maxTurns, 2);
+    const nan = await proposeSpec(
+      { description: 'x', catalog: catalog() },
+      guideWith(JSON.stringify({ spec: { maxTurns: 'lots' } })),
+    );
+    assert.equal(nan.spec.maxTurns, DEFAULT_MAX_TURNS);
+  });
+
+  it('keeps a lectureRef that exists in the live catalog', async () => {
+    const content = JSON.stringify({ spec: { topic: 'figures of speech', lectureRef: '1001-lecture-1' } });
+    const out = await proposeSpec(
+      { description: 'teach me from the rhetoric lecture', catalog: catalog() },
+      guideWith(content),
+    );
+    assert.equal(out.spec.lectureRef, '1001-lecture-1');
+  });
+
+  it('extracts a JSON object from inside a ```json fence wrapped in prose', async () => {
+    const content = `Sure — here is a scene for you:\n\n\`\`\`json\n${JSON.stringify({
+      spec: { topic: 'osmosis', promptType: 'recognition' },
+    })}\n\`\`\`\n\nToggle the dials if you like.`;
+    const out = await proposeSpec({ description: 'osmosis please', catalog: catalog() }, guideWith(content));
+    assert.equal(out.spec.topic, 'osmosis');
+    assert.equal(out.spec.promptType, 'recognition');
+  });
+
+  it('rejects an empty description before any LLM call (LIVE_GUIDE_EMPTY)', async () => {
+    // The empty-description guard runs first, so even with a chatFn injected the
+    // guide never calls it — describe-then-build can't be skipped.
+    await assert.rejects(
+      proposeSpec({ description: '   ', catalog: catalog() }, guideWith('{}')),
+      (e) => e.code === 'LIVE_GUIDE_EMPTY' && e.statusCode === 400,
+    );
+  });
+
+  it('rejects an unparseable guide reply (LIVE_GUIDE_PARSE)', async () => {
+    await assert.rejects(
+      proposeSpec({ description: 'something', catalog: catalog() }, guideWith('I cannot help with that request.')),
+      (e) => e.code === 'LIVE_GUIDE_PARSE' && e.statusCode === 502,
+    );
+  });
+
+  it('buildMockGuideDeps yields a valid, applyable free-preview spec at zero usage', async () => {
+    const out = await proposeSpec({ description: 'anything at all', catalog: catalog() }, buildMockGuideDeps());
+    assert.equal(out.spec.humanRole, 'learner');
+    assert.match(out.spec.topic, /logarithms/);
+    assert.equal(out.spec.openingSpeaker, 'tutor');
+    assert.equal(out.usage.inputTokens, 0);
+    assert.equal(out.usage.outputTokens, 0);
+    assert.equal(out.model, 'mock');
+
+    // "Applyable" = startSession accepts the spec verbatim. openingSpeaker=tutor with
+    // the human as learner means the AI tutor opens — run it on mock turn deps so the
+    // round-trip stays zero-cost.
+    const { session, openingTurn } = await startSession(out.spec, mock);
+    assert.equal(session.humanRole, ROLES.LEARNER);
+    assert.equal(session.aiRole, ROLES.TUTOR);
+    assert.ok(openingTurn && openingTurn.role === ROLES.TUTOR, 'the mock AI tutor should open');
   });
 });
