@@ -27,6 +27,14 @@ const DEFAULT_THRESHOLDS = {
   non_leakage: 0.9,
 };
 
+const RECURSIVE_SCORE_FIELDS = new Set([
+  'tutor_learning_signal',
+  'resistance_diagnosis',
+  'strategy_revision_accountability',
+  'strategic_timing',
+  'recursive_dyadic_update',
+]);
+
 function usage() {
   return `Usage:
   node scripts/report-teaching-drama-axiom-attempt1.js
@@ -98,11 +106,33 @@ function rel(filePath) {
   return path.relative(ROOT, path.resolve(filePath));
 }
 
+function normalizeScoreValue(value) {
+  if (!Number.isFinite(value)) return null;
+  if (value > 1 && value <= 10) return value / 10;
+  return value;
+}
+
+function scoreNodeValue(scoreNode) {
+  if (scoreNode && typeof scoreNode === 'object') {
+    const value = normalizeScoreValue(scoreNode.value);
+    if (Number.isFinite(value)) return value;
+    return normalizeScoreValue(scoreNode.raw);
+  }
+  return normalizeScoreValue(scoreNode);
+}
+
 function scoreFrom(record, field) {
-  const gateScore = record?.gate?.scores?.[field];
-  if (gateScore && typeof gateScore === 'object' && Number.isFinite(gateScore.value)) return gateScore.value;
-  const raw = record?.check?.scores?.[field];
-  return Number.isFinite(raw) ? raw : null;
+  const candidates = [];
+  if (RECURSIVE_SCORE_FIELDS.has(field)) {
+    candidates.push(record?.gate?.recursive_tutor_learning_gate?.scores?.[field]);
+  }
+  candidates.push(record?.gate?.scores?.[field]);
+  candidates.push(record?.check?.scores?.[field]);
+  for (const candidate of candidates) {
+    const value = scoreNodeValue(candidate);
+    if (Number.isFinite(value)) return value;
+  }
+  return null;
 }
 
 function checkThresholds(record, thresholds) {

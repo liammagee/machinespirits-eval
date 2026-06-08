@@ -566,6 +566,52 @@ test('attempt-1 report accepts a real per-family attempt directory as empirical 
   assert.equal(report.families[0].manifest_path, path.relative(ROOT, path.join(realDir, 'manifest.json')));
 });
 
+test('attempt-1 report normalizes recursive tutor scores from real replay manifests', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a19-attempt1-real-shape-'));
+  const outDir = path.join(tmpDir, 'fixture-out');
+  const realDir = path.join(tmpDir, 'real-counter-warrant');
+  materializeAttemptFixtures({
+    protocolPath: PROTOCOL,
+    configPath: PILOT,
+    outDir,
+    familyId: 'counter_warrant_scope',
+    force: true,
+  });
+  const manifest = attempt1Manifest({}, { generator: 'codex', checker: 'claude' });
+  const record = manifest.records[0];
+  record.check.scores = {
+    old_warrant_misclassification: 9,
+    resistance_diagnosis: 8,
+    strategy_revision_accountability: 9,
+    recursive_dyadic_update: 8,
+    non_leakage: 10,
+  };
+  record.gate.scores = {
+    old_warrant_misclassification: { raw: 9, value: 0.9, scale: '0-10', threshold: 0.7, passes: true },
+    non_leakage: { raw: 10, value: 1, scale: '0-10', threshold: 0.9, passes: true },
+  };
+  record.gate.recursive_tutor_learning_gate = {
+    scores: {
+      resistance_diagnosis: { raw: 8, value: 0.8, scale: '0-10', threshold: 0.7, passes: true },
+      strategy_revision_accountability: { raw: 9, value: 0.9, scale: '0-10', threshold: 0.7, passes: true },
+      recursive_dyadic_update: { raw: 8, value: 0.8, scale: '0-10', threshold: 0.7, passes: true },
+    },
+  };
+  writeJson(path.join(realDir, 'manifest.json'), manifest);
+  const report = summarizeAttempt1Gate({
+    protocolPath: PROTOCOL,
+    configPath: PILOT,
+    outDir,
+    attempt1Dirs: { counter_warrant_scope: realDir },
+    familyId: 'counter_warrant_scope',
+  });
+  assert.equal(report.status, 'pass');
+  assert.equal(report.families[0].scores.resistance_diagnosis, 0.8);
+  assert.equal(report.families[0].scores.strategy_revision_accountability, 0.9);
+  assert.equal(report.families[0].scores.recursive_dyadic_update, 0.8);
+  assert.match(renderAttempt1Markdown(report), /counter_warrant_scope[\s\S]+0\.9 \| 0\.8 \| 0\.9 \| 0\.8 \| 1/);
+});
+
 test('fixture blind adjudication preserves alias withholding and classifies headroom', () => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a19-blind-'));
   const s0 = path.join(tmpDir, 's0.md');
@@ -681,6 +727,37 @@ test('free-text blind adjudication calibrates transfer-control repairs from fres
   assert.equal(report.card_verdict, 'ceiling');
   assert.equal(report.arms.s0.committed_option_class, 'target');
   assert.equal(report.arms.s1.committed_option_class, 'target');
+});
+
+test('free-text single-arm headroom recognizes S0 baseline labels', async () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a19-single-arm-'));
+  const s0 = path.join(tmpDir, 's0.md');
+  fs.writeFileSync(
+    s0,
+    [
+      'STAGE: The learner asks for the answer.',
+      'LEARNER: I cannot tell where I am stuck.',
+      'TUTOR: Try it on the next concrete case before we close.',
+    ].join('\n'),
+    'utf8',
+  );
+  const report = await adjudicateTeachingDramaAxiomCardFreeText({
+    protocolPath: PROTOCOL,
+    singleArm: s0,
+    armLabel: 'S0_weak_no_policy',
+    targetAliases: ['diagnostic menu'],
+    decoyAliases: ['give the answer'],
+    targetRepairType: 'offer_diagnostic_options',
+    decoyRepairTypes: ['give_full_answer_to_reduce_frustration'],
+    optionSpace: 'repair A | repair B',
+    familyId: 'test_family',
+    siblingId: 'sib_a',
+    runId: 'single-arm-fixture',
+    mock: true,
+  });
+  assert.equal(report.arm.label, 'S0_weak_no_policy');
+  assert.equal(report.arm.committed_option_class, 'neither');
+  assert.equal(report.headroom_screen.s0_has_observable_headroom, true);
 });
 
 test('free-text mapper treats transcript-backed concrete application as transfer control', () => {

@@ -65,7 +65,11 @@
 - [x] Register `repair_misalignment` subtypes (`target_uncertainty_repair`, `feedback_dependency_repair`, `relational_rupture_repair`) and require repair-misalignment families plus siblings to name the subtype.
 - [x] Register S0 baseline strata and require every family to declare its S0 design. `recursive_full_no_policy_memory` remains required for stability, paid-panel, and sidecar empirical claims; weak S0 is protocol-screen-only.
 - [x] Add `productive_impasse_answer_leakage` as a new diagnostic-options repair family under `weak_single_pass_no_policy_memory`.
-- [ ] If `productive_impasse_answer_leakage` produces apparent headroom in any real screen, rerun it against `recursive_full_no_policy_memory` before stability, paid adjudication, Paper 2.0, atlas, or sidecar use.
+- [x] Run a real attempt-1 screen for `productive_impasse_answer_leakage`; after two local retries, admit one bounded `offer_diagnostic_options` axiom.
+- [x] Run the weak-S0 held-out screen for `productive_impasse_answer_leakage_a`; S0 left nominal target headroom but extracted as `transfer_control`, not the registered diagnostic-options target.
+- [x] Run the paired weak S0/S1 contrast for `productive_impasse_answer_leakage_a`; result: `neither_correct` because both arms extracted as `transfer_control`.
+- [ ] If a future `productive_impasse_answer_leakage` screen produces actual `policy_headroom` under `offer_diagnostic_options`, rerun it against `recursive_full_no_policy_memory` before stability, paid adjudication, Paper 2.0, atlas, or sidecar use.
+- [ ] Decide prospectively whether `offer_diagnostic_options` remains distinct, becomes a `transfer_control` subtype, or needs a stricter adjudication instrument that separates diagnostic-lane choice from action gating.
 
 ## Phase 5: Evaluation And Human Validation
 

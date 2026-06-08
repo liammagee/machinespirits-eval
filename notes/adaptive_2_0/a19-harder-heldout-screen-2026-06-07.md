@@ -310,3 +310,29 @@ The follow-on protocol work does all three, still as zero-API preregistration:
 This does not reverse the v0.1 exhaustion result. It records the next lawful
 search space. Any apparent headroom under the weak S0 family must be rerun under
 `recursive_full_no_policy_memory` before it can support stronger A19 claims.
+
+## Productive-Impasse Weak-Baseline Screen
+
+The new-family branch was run as a protocol-screen-only weak baseline:
+
+- Attempt-1 note:
+  `notes/adaptive_2_0/a19-attempt1-real-gate-report-productive-impasse.md`.
+- Screen note:
+  `notes/adaptive_2_0/a19-real-s0s1-productive-impasse-answer-leakage-a.md`.
+- Surviving attempt-1 artifact:
+  `exports/a19/real-attempt1/productive-impasse-answer-leakage-retry2/`.
+- Admitted axiom:
+  `exports/a19/axioms/productive-impasse-answer-leakage/axiom.json`.
+- Paired weak S0/S1 adjudication:
+  `exports/a19/real-s0s1/productive-impasse-answer-leakage/productive-impasse-answer-leakage-a/blind-adjudication.free-text-axiom-weak.json`.
+
+Result: `neither_correct`. The attempt-1 branch survived after two local
+retries and admitted a bounded `offer_diagnostic_options` axiom, but the held-out
+weak S0/S1 contrast did not produce the registered target repair. Both arms were
+blind-extracted as `transfer_control`. Therefore no recursive-full rerun,
+stability run, paid panel, Paper 2.0 update, atlas projection, or sidecar claim
+is licensed.
+
+Consequence: v0.2's new-family branch exposes a target-granularity issue rather
+than positive transfer. `offer_diagnostic_options` must be prospectively
+distinguished from transfer-control/action-gating before further escalation.

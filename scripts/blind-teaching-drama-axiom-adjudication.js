@@ -435,6 +435,10 @@ function normalizeExtraction(parsed) {
   };
 }
 
+function isS0ArmLabel(label) {
+  return /^s0(?:$|[_-])/i.test(String(label || ''));
+}
+
 const TRANSFER_CONTROL_PUBLIC_TEST_RE =
   /\b(?:(?:fresh|new|next|transfer|discriminating|public|concrete)\s+(?:case|example|test|check)|apply(?:ing)?\b[\s\S]{0,80}\b(?:fresh|new|next|case|example|test|check)|use\b[\s\S]{0,80}\b(?:check|test)\b[\s\S]{0,80}\bon)\b/i;
 const TRANSFER_CONTROL_TUTOR_PROMPT_RE =
@@ -687,7 +691,7 @@ export async function adjudicateTeachingDramaAxiomCardFreeText({
       },
       arm,
       headroom_screen: {
-        s0_has_observable_headroom: arm.label === 'S0_no_policy' && arm.committed_option_class !== 'target',
+        s0_has_observable_headroom: isS0ArmLabel(arm.label) && arm.committed_option_class !== 'target',
         s0_class: arm.committed_option_class,
       },
       non_claims: [
