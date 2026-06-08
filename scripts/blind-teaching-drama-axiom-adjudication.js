@@ -30,6 +30,8 @@ const REPAIR_TYPES = [
   'offer_diagnostic_options',
   'introduce_complication',
   'ask_scope_test',
+  'claim_address_repair',
+  'commitment_ledger_repair',
   'instructional_contract_repair',
   'repair_misalignment',
   'transfer_control',
@@ -173,6 +175,15 @@ function normalizeRepairType(value) {
     restate_the_rubric: 'restate_rubric',
     insist_on_effort: 'insist_effort',
     insist_on_effort_before_clarifying: 'insist_effort',
+    addressed_claim_withdrawal: 'claim_address_repair',
+    withdraw_misaddressed_claim: 'claim_address_repair',
+    claim_address: 'claim_address_repair',
+    readdress_learner_claim: 'claim_address_repair',
+    public_commitment_contradiction: 'commitment_ledger_repair',
+    public_commitment_contradiction_repair: 'commitment_ledger_repair',
+    commitment_ledger: 'commitment_ledger_repair',
+    repair_public_commitment_ledger: 'commitment_ledger_repair',
+    rank_one_commitment: 'commitment_ledger_repair',
     repair_rupture_before_next_step: 'repair_misalignment',
     renegotiate_working_agreement_before_content: 'instructional_contract_repair',
     instructional_contract: 'instructional_contract_repair',
@@ -284,6 +295,8 @@ function freeTextPromptFor(transcript, args) {
   }
   lines.push(
     'Repair-type guide for extraction:',
+    '- claim_address_repair: the tutor withdraws a misaddressed framing and restates the learner claim or warrant it will now answer, before any learner application or revision test.',
+    '- commitment_ledger_repair: the tutor cites conflicting public tutor commitments, retracts or ranks one, and states the new commitment boundary before continuing.',
     '- transfer_control: the tutor requires the learner to apply a repaired rule/check to a fresh or concrete case before accepting closure. Use this even if the tutor also names the underlying warrant.',
     '- instructional_contract_repair: the tutor pauses the content task to repair the working agreement, names the tutor contribution to the drift, and offers a learner choice about how to proceed before any content test.',
     '- name_warrant: the tutor names the governing relation, rule, or warrant without requiring a fresh public application.',
@@ -368,6 +381,19 @@ function mockRepairExtraction(transcript) {
   const finalTutor = finalTutorSegment(transcript).toLowerCase();
   const finalRegion = `${text.slice(-1600)}\n${finalTutor}`;
   if (
+    /commitment|promise|you said .*now|earlier .*now|conflict(?:ing)? public|cannot both govern|which (?:commitment|rule) (?:governs|wins)|retract .*commitment|rank .*commitment|ledger/.test(
+      finalRegion,
+    )
+  ) {
+    return {
+      committed_repair: 'cite the conflicting public commitments and state which commitment now governs',
+      committing_quote: finalTutorSegment(transcript),
+      repair_type: 'commitment_ledger_repair',
+      basis_label: 'ordinary_public_inference',
+      public_evidence_summary: 'mock extraction found public commitment accounting language',
+    };
+  }
+  if (
     /scope|boundary|exception|hold .*fixed|usual condition.*exception|compare .*case|blocks? it|blocks? the result/.test(
       finalRegion,
     )
@@ -391,6 +417,19 @@ function mockRepairExtraction(transcript) {
       repair_type: 'transfer_control',
       basis_label: 'ordinary_public_inference',
       public_evidence_summary: 'mock extraction found action-gate language',
+    };
+  }
+  if (
+    /misaddressed|different concern|wrong concern|wrong question|withdraw .*framing|answered .*instead|actual (?:claim|concern|objection)|readdress/.test(
+      finalRegion,
+    )
+  ) {
+    return {
+      committed_repair: 'withdraw the misaddressed tutor framing and readdress the learner claim',
+      committing_quote: finalTutorSegment(transcript),
+      repair_type: 'claim_address_repair',
+      basis_label: 'ordinary_public_inference',
+      public_evidence_summary: 'mock extraction found tutor-side claim retraction and re-addressing language',
     };
   }
   if (/repair|rupture|target|bounded next step|which part|inconsistent|comments/.test(finalRegion)) {
@@ -470,6 +509,10 @@ const ANSWER_REVEAL_RE =
   /\b(?:the answer is|final answer|full worked solution|show you the answer|tell you the answer|solution is)\b/i;
 const INSTRUCTIONAL_CONTRACT_REPAIR_RE =
   /\b(?:working agreement|instructional contract|contract drift|contract reset|repair path|repair route|path\s+[ab]\b|what we are doing|what game|pause(?: the)? (?:content|task|draft|revision)|own(?:ing)? (?:my|the tutor|tutor).{0,60}(?:drift|shift|confusion)|choice of repair|choose (?:one path|how to proceed)|which path should govern)\b/i;
+const CLAIM_ADDRESS_REPAIR_RE =
+  /\b(?:misaddressed|wrong (?:concern|question|claim)|answered (?:a|the)?\s*(?:different|wrong) (?:concern|question|claim)|withdraw(?:ing)? (?:that|my|the|this)?\s*(?:framing|interpretation|response)|readdress(?:ing)? (?:the )?(?:learner|actual)?\s*(?:claim|concern|objection)|actual (?:claim|concern|objection)|not (?:the )?(?:claim|concern|question) (?:you|the learner) (?:raised|made))\b/i;
+const COMMITMENT_LEDGER_REPAIR_RE =
+  /\b(?:commitment ledger|conflicting (?:public )?(?:commitments|promises)|you said[\s\S]{0,120}\bnow\b|earlier[\s\S]{0,120}\bnow\b|cannot both govern|which (?:commitment|rule) (?:governs|wins)|retract(?:ing)? (?:that|one|the)?\s*(?:commitment|promise)|rank(?:ing)? (?:that|one|the)?\s*(?:commitment|promise)|new commitment boundary)\b/i;
 const NEGATED_DECOY_MARKERS = [
   'rather than',
   'instead of',
@@ -536,6 +579,8 @@ function targetObligationAudit(transcript, { targetRepairType, extractedRepairTy
   const target = normalizeRepairType(targetRepairType);
   const extracted = normalizeRepairType(extractedRepairType);
   const governed =
+    target === 'claim_address_repair' ||
+    target === 'commitment_ledger_repair' ||
     target === 'offer_diagnostic_options' ||
     target === 'instructional_contract_repair' ||
     target === 'transfer_control';
@@ -552,7 +597,33 @@ function targetObligationAudit(transcript, { targetRepairType, extractedRepairTy
   const diagnosticOptionsPresent = diagnosticIndex >= 0;
   const answerRevealBeforeDiagnosticChoice = answerIndex >= 0 && (diagnosticIndex < 0 || answerIndex < diagnosticIndex);
   const transferControlPublicTestPresent = transcriptHasTransferControlPublicTest(transcript);
+  const claimAddressRepairPresent = CLAIM_ADDRESS_REPAIR_RE.test(transcript);
+  const commitmentLedgerRepairPresent = COMMITMENT_LEDGER_REPAIR_RE.test(transcript);
   const instructionalContractRepairPresent = INSTRUCTIONAL_CONTRACT_REPAIR_RE.test(transcript);
+  if (target === 'claim_address_repair') {
+    return {
+      governed: true,
+      target_repair_type: target,
+      extracted_repair_type: extracted || null,
+      claim_address_repair_present: claimAddressRepairPresent,
+      competing_transfer_control_signal: transferControlPublicTestPresent,
+      extracted_repair_type_mismatch: extracted ? extracted !== target : true,
+      target_granularity_risk:
+        claimAddressRepairPresent && (extracted === 'transfer_control' || transferControlPublicTestPresent),
+    };
+  }
+  if (target === 'commitment_ledger_repair') {
+    return {
+      governed: true,
+      target_repair_type: target,
+      extracted_repair_type: extracted || null,
+      commitment_ledger_repair_present: commitmentLedgerRepairPresent,
+      competing_transfer_control_signal: transferControlPublicTestPresent,
+      extracted_repair_type_mismatch: extracted ? extracted !== target : true,
+      target_granularity_risk:
+        commitmentLedgerRepairPresent && (extracted === 'transfer_control' || transferControlPublicTestPresent),
+    };
+  }
   if (target === 'offer_diagnostic_options') {
     return {
       governed: true,

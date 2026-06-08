@@ -1,5 +1,30 @@
 # A19 Teaching-Drama Axiom Protocol Changelog
 
+## a19-drama-axiom-transfer-v0.7
+
+- Recorded the real v0.6 `addressed_claim_withdrawal` attempt-1 gate as
+  blocked before S0/S1 escalation: the replay returned `revise_again` with
+  `recursive_dyadic_update = 0.65 < 0.7`.
+- Added `commitment_ledger_repair` as the next non-collapsing repair type. Its
+  obligations require the tutor to cite two conflicting public tutor
+  commitments, retract or rank one, and state the new commitment boundary.
+- Added the recursive-full `public_commitment_contradiction` family as the next
+  repair-family loop candidate. This remains fixture/pre-registration evidence
+  until a real attempt-1 survivor and held-out S0/S1 screens exist.
+
+## a19-drama-axiom-transfer-v0.6
+
+- Added `claim_address_repair` as the first v0.6 non-collapsing repair
+  candidate. The distinctive public act is tutor-side withdrawal and
+  re-addressing of the learner's actual claim, not learner application of a
+  corrected rule or check.
+- Required public obligations: identify the claim or warrant the tutor
+  misaddressed, withdraw the prior tutor framing, and restate the learner's
+  claim as the next addressed object.
+- Added the recursive-full `addressed_claim_withdrawal` family as the selected
+  Track 1 candidate from the A19 generalization loop registry. This preregisters
+  the candidate only; it does not license a new empirical claim.
+
 ## a19-drama-axiom-transfer-v0.5
 
 - Added `instructional_contract_repair` as a non-transfer repair type for cases

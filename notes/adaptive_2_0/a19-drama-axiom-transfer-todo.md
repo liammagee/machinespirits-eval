@@ -83,6 +83,7 @@
 
 - [x] Add a fixture-only blind adjudication scaffold modeled on `scripts/blind-option-adjudication.js`.
 - [x] Add a real free-text teaching-drama blind adjudicator; the deterministic alias reader remains only for fixture plumbing.
+- [x] Add offline adjudication packet infrastructure for later multi-critic or human double-coding: blinded coder packet, private answer key, response schema, and visible-alias audit.
 - [ ] Add paid blind adjudication modeled on `scripts/blind-option-adjudication.js` after the zero-API protocol freezes and a candidate survives stability.
 - [x] Add stability reruns for candidate structural headroom cases.
 - [x] Add a reusable A19 stability harness: `scripts/run-a19-stability-screen.js`.
@@ -100,6 +101,22 @@
 - [x] After canonical prose lands, set the atlas module's `sections` to the relevant section numbers and run `npm run atlas:validate`.
 - [ ] Keep the sidecar's claims-not-licensed section visible in every draft.
 - [x] Track literature leanings and distinctions in `a19-literature-positioning-matrix.md`.
+
+## Phase 7: Generalization And Systemization Loop
+
+- [x] Split the post-v0.5 path into three explicit tracks: non-collapsing repair-family design, adjudication infrastructure, and alternate S0/tutor-learner condition design.
+- [x] Revisit `teaching_drama_learning_plan.html` and preserve its core guidance: public drama state, learner resistance as evidence, critic specialization, model-stratified policies, and human validation as later calibration rather than current evidence.
+- [x] Add `config/teaching-drama-axioms/a19-generalization-loops.yaml` as the offline loop registry with track-level success conditions, failure conditions, stop rules, and next actions.
+- [x] Add `scripts/run-a19-generalization-loop.js` to report the next lawful action for each track without generation, judging, retrieval, training, Paper 2.0 edits, or atlas projection.
+- [x] Add `notes/adaptive_2_0/a19-generalization-systemization-plan.md` with separate plans for candidate non-transfer repairs, adjudication packet infrastructure, and weaker/model-stratified S0 conditions.
+- [x] Pre-register v0.6 after selecting exactly one non-collapsing repair candidate from the loop registry: `addressed_claim_withdrawal` / `claim_address_repair`.
+- [x] Materialize and attempt-1 screen the v0.6 `addressed_claim_withdrawal` family; result: real attempt-1 `revise_again` with `recursive_dyadic_update = 0.65 < 0.7`, so S0/S1 escalation stopped.
+- [x] Pre-register v0.7 `public_commitment_contradiction` / `commitment_ledger_repair`, induce one admitted axiom from a real attempt-1 survivor, and run recursive-full held-out S0/S1 screens.
+- [x] Record the v0.7 result in `a19-v07-public-commitment-screen-2026-06-08.md`: one local policy-headroom card with target-granularity risk plus two recursive-full S0 ceilings; no A19 transfer claim.
+- [x] Build an adjudication packet for the ambiguous v0.7 A card; visible alias hits: 0.
+- [ ] Add a future coder-merge/report command only after real independent coder JSON files exist for the same packet.
+- [ ] Decide whether `learner_standing_repair` can be operationalized as public obligations without a human panel; preregister v0.8 only if it can.
+- [ ] Promote weak or debug S0 results to recursive-full only when they are non-artifact, non-ceiling candidates and all prompt/scenario payloads can be paired.
 
 ## Stop Rules
 

@@ -1,6 +1,6 @@
 meta:
   protocol_id: A19
-  protocol_version: a19-drama-axiom-transfer-v0.5
+  protocol_version: a19-drama-axiom-transfer-v0.7
   frozen_at: 2026-06-07
   status: zero_api_scaffold
   claim_boundary: simulated_teacher_as_learner_not_human_learning
@@ -47,6 +47,8 @@ family_fixture_requirements:
   require_headroom_prediction: true
   require_s0_baseline_design: true
   require_public_obligations_for_repair_types:
+    - claim_address_repair
+    - commitment_ledger_repair
     - offer_diagnostic_options
     - instructional_contract_repair
     - preserve_struggle
@@ -85,6 +87,8 @@ allowed_labels:
     - offer_diagnostic_options
     - introduce_complication
     - ask_scope_test
+    - claim_address_repair
+    - commitment_ledger_repair
     - instructional_contract_repair
     - repair_misalignment
     - transfer_control
@@ -134,6 +138,38 @@ classification:
 repair_type_obligation_taxonomy:
   required_policy_obligations_field: target_policy.public_obligations
   obligations_by_repair_type:
+    claim_address_repair:
+      definition: >-
+        The tutor repairs a misaddressed learner claim by withdrawing the
+        tutor's prior framing and making the learner's actual public claim the
+        next addressed object before any application or closure gate.
+      required_public_obligations:
+        - identify_the_claim_or_warrant_the_tutor_misaddressed
+        - withdraw_the_prior_tutor_framing_as_misaddressed
+        - restate_the_learner_claim_as_the_next_addressed_object
+      excludes:
+        - fresh_application_or_discriminating_case_as_committed_repair
+        - generic_validation_then_return_to_original_task
+        - diagnostic_menu_without_tutor_retraction
+      distinction_from_transfer_control: >-
+        The public repair is tutor-side retraction and re-addressing of the
+        learner's claim, not a learner application of a corrected rule or check.
+    commitment_ledger_repair:
+      definition: >-
+        The tutor repairs a contradiction among its own public commitments by
+        citing the conflicting commitments, retracting or ranking one, and
+        stating the new boundary before continuing.
+      required_public_obligations:
+        - cite_two_conflicting_public_tutor_commitments
+        - retract_or_rank_one_commitment_before_continuing
+        - state_the_new_commitment_boundary
+      excludes:
+        - asking_learner_to_apply_a_rule_to_prove_the_boundary
+        - apology_without_commitment_retraction
+        - rubric_restatement_without_public_commitment_accounting
+      distinction_from_transfer_control: >-
+        The public repair is the tutor's accountable revision of its own
+        commitment ledger, not a learner application gate or fresh content test.
     offer_diagnostic_options:
       definition: >-
         The tutor preserves productive impasse by making the possible source of

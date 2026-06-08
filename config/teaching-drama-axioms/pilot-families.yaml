@@ -1,7 +1,7 @@
 meta:
   schema_version: teaching-drama-axiom-families-v0.1
   protocol_id: A19
-  protocol_version: a19-drama-axiom-transfer-v0.5
+  protocol_version: a19-drama-axiom-transfer-v0.7
   prompt_version: a19-fixture-v0.1
   source_plan: notes/adaptive_2_0/teaching_drama_learning_plan.html
   fixture_only: true
@@ -719,6 +719,315 @@ families:
         blind_adjudication:
           withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
           neutral_option_space: "repair A | repair B | repair C"
+
+  - family_id: addressed_claim_withdrawal
+    title: Misaddressed learner claim mistaken as needing more explanation
+    domain: writing_feedback
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
+    learner_resistance_type: counter_warrant
+    tutor_infelicity_type: redirect_after_resistance
+    training_seed:
+      seed_id: addressed_claim_withdrawal_seed
+      public_setup: >-
+        The learner objects that the tutor is answering a different concern
+        than the one they raised about the draft.
+      learner_resistance: >-
+        I am not saying I do not understand the assignment. I am saying your
+        comment answers whether the paragraph is clear, but my concern is
+        whether it belongs in the argument at all.
+      baseline_tutor_attempt: >-
+        The assignment still asks for clear paragraphs. Let me explain the
+        paragraph-clarity criterion again before you revise.
+      expected_failure: redirect_after_resistance
+      old_rule_decoy: repeat_original_explanation
+    target_policy:
+      policy_id: withdraw_misaddressed_claim
+      trigger: learner says the tutor answered a different claim or concern than the one raised
+      avoid_move: validate briefly and continue explaining the original criterion
+      preferred_move: >-
+        publicly name the claim the tutor misaddressed, withdraw the prior
+        framing, and restate the learner's actual claim as the next object of
+        response before any application gate or revision request
+      applicability_conditions:
+        - learner contrasts the tutor's addressed issue with the learner's actual claim or warrant
+      anti_conditions:
+        - learner asks only for another example or fresh application test of the same criterion
+      repair_type: claim_address_repair
+      public_obligations:
+        - identify_the_claim_or_warrant_the_tutor_misaddressed
+        - withdraw_the_prior_tutor_framing_as_misaddressed
+        - restate_the_learner_claim_as_the_next_addressed_object
+    plausible_repairs:
+      - repeat_original_explanation
+      - validate_then_redirect
+      - withdraw_misaddressed_claim
+    cue_map:
+      selected_relation_type: misaddressed_public_claim
+      requires_constructed_device: false
+      counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: writing_feedback
+      leakage_risks:
+        - s0_may_self_solve_by_acknowledging_it_answered_the_wrong_question
+        - false_positive_if_tutor_adds_a_fresh_revision_test_without_publicly_withdrawing_the_prior_framing
+    heldout_siblings:
+      - sibling_id: addressed_claim_withdrawal_a
+        public_setup: >-
+          The learner says the tutor keeps treating a source-placement concern
+          as if it were only a citation-format concern.
+        learner_resistance: >-
+          My question is not whether the citation format is right. I am asking
+          whether this source is doing any work in the paragraph. You keep
+          answering the format question instead.
+        headroom_prediction: s0_may_explain_the_format_rule_again_instead_of_readdressing_the_source-function_claim
+        target_aliases:
+          - claim address repair
+          - withdraw misaddressed framing
+          - readdress the learner concern
+          - answered the wrong concern
+        decoy_aliases:
+          - repeat the citation rule
+          - explain the format again
+          - ask for another citation revision
+          - validate then redirect
+        selected_policy_markers: [tutor-retraction-before-next-object, public-claim-readdressing]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: restate_rubric
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: addressed_claim_withdrawal_b
+        public_setup: >-
+          The learner explicitly says the tutor answered the summary problem,
+          but the learner's concern was about whether the evidence supports the
+          causal claim.
+        learner_resistance: >-
+          You fixed the summary, but that was not my objection. My objection is
+          that the evidence shows timing, not causation.
+        headroom_prediction: s0_may_self_solve_because_the_learner_sharply_names_the_misaddressed_claim
+        target_aliases:
+          - claim address repair
+          - withdraw prior framing
+          - restate the actual objection
+          - answer the causation concern
+        decoy_aliases:
+          - improve the summary
+          - explain the evidence again
+          - ask for another example
+          - validate then redirect
+        selected_policy_markers: [tutor-retraction-before-next-object, public-claim-readdressing]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: ceiling
+      - sibling_id: addressed_claim_withdrawal_c
+        public_setup: >-
+          The learner says the tutor responded to word choice when the learner
+          was challenging the paragraph's role in the whole argument.
+        learner_resistance: >-
+          I can change the phrase, but that is not the issue I raised. I am
+          asking what job this paragraph has in the argument, and your comment
+          treats it like a wording problem.
+        headroom_prediction: s0_may_offer_a_word-choice_fix_or_revision_request_without_withdrawing_the_misaddressed_frame
+        target_aliases:
+          - claim address repair
+          - readdress the paragraph-role concern
+          - withdraw the wording frame
+          - actual claim as next object
+        decoy_aliases:
+          - suggest a better phrase
+          - ask for another wording revision
+          - explain the style criterion
+          - validate then redirect
+        selected_policy_markers: [tutor-retraction-before-next-object, public-claim-readdressing]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: neither
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+
+  - family_id: public_commitment_contradiction
+    title: Conflicting tutor commitments mistaken as learner indecision
+    domain: writing_feedback
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
+    learner_resistance_type: meta_challenge
+    tutor_infelicity_type: failure_to_repair_rupture
+    training_seed:
+      seed_id: public_commitment_contradiction_seed
+      public_setup: >-
+        The learner points out that the tutor has given two incompatible public
+        commitments about how the writing revision will proceed.
+      learner_resistance: >-
+        You said you would not hand me a thesis and that we would choose the
+        revision target together. Now you are telling me the thesis and also
+        telling me to restructure. I cannot tell which commitment governs this
+        turn.
+      baseline_tutor_attempt: >-
+        The stronger thesis is that the library should stay open later during
+        finals, and the next step is restructuring the body paragraphs around
+        that thesis. Let's do that now.
+      expected_failure: failure_to_repair_rupture
+      old_rule_decoy: continue_original_instruction
+    target_policy:
+      policy_id: repair_public_commitment_ledger
+      trigger: learner names a contradiction among the tutor's own public commitments
+      avoid_move: continue the chosen content instruction while treating the learner as indecisive
+      preferred_move: >-
+        cite the conflicting tutor commitments, retract or rank one commitment,
+        and state the new boundary before any content instruction continues
+      applicability_conditions:
+        - learner quotes or paraphrases two tutor commitments that cannot both govern the next turn
+      anti_conditions:
+        - learner asks only which content move is more important without naming a tutor-side contradiction
+      repair_type: commitment_ledger_repair
+      public_obligations:
+        - cite_two_conflicting_public_tutor_commitments
+        - retract_or_rank_one_commitment_before_continuing
+        - state_the_new_commitment_boundary
+    plausible_repairs:
+      - continue_original_instruction
+      - apologize_then_choose_for_learner
+      - repair_public_commitment_ledger
+    cue_map:
+      selected_relation_type: public_commitment_conflict
+      requires_constructed_device: false
+      counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: writing_feedback
+      leakage_risks:
+        - s0_may_self_solve_because_the_learner_explicitly_quotes_the_conflict
+        - false_positive_if_tutor_apologizes_without_retracting_or_ranking_a_commitment
+    heldout_siblings:
+      - sibling_id: public_commitment_contradiction_a
+        public_setup: >-
+          The learner says the tutor promised not to choose the paper's claim
+          but then selected the claim anyway.
+        learner_resistance: >-
+          You said you would not choose the claim for me, but now you are
+          telling me which claim to use. Are you retracting the no-choosing
+          promise or keeping it?
+        headroom_prediction: s0_may_continue_selecting_the_claim_after_a_brief_apology
+        target_aliases:
+          - commitment ledger repair
+          - cite conflicting commitments
+          - retract the no-choosing promise
+          - state the new commitment boundary
+        decoy_aliases:
+          - continue choosing the claim
+          - apologize and proceed
+          - restate the thesis
+          - ask for another draft
+        selected_policy_markers: [ledger-boundary, public commitment accounting]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: validation_redirect
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: public_commitment_contradiction_b
+        public_setup: >-
+          The learner explicitly asks which of two tutor-stated rules wins after
+          the tutor changes the revision priority.
+        learner_resistance: >-
+          Earlier you said we would only work on evidence today. Now you say I
+          should rewrite the claim first. Those cannot both govern this turn.
+          Which commitment are you retracting?
+        headroom_prediction: s0_may_self_solve_because_the_learner_directly_requests_a_commitment_retraction
+        target_aliases:
+          - commitment ledger repair
+          - rank one commitment
+          - retract the evidence-only promise
+          - which commitment governs
+        decoy_aliases:
+          - choose the stronger rule
+          - rewrite the claim first
+          - explain the evidence standard
+          - apologize and proceed
+        selected_policy_markers: [ledger-boundary, public commitment accounting]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: ceiling
+      - sibling_id: public_commitment_contradiction_c
+        public_setup: >-
+          The learner says the tutor first offered two revision paths and then
+          treated one of those paths as off-task.
+        learner_resistance: >-
+          You told me I could choose between revising the topic sentence or the
+          evidence. Now you picked topic sentence and called the evidence
+          question off-task. That changes the agreement.
+        headroom_prediction: s0_may_apologize_or_choose_a_path_without_publicly_accounting_for_the_changed_commitment
+        target_aliases:
+          - commitment ledger repair
+          - cite the two path promise
+          - retract one path
+          - state the choice boundary
+        decoy_aliases:
+          - pick the topic sentence
+          - call evidence off-task
+          - apologize and proceed
+          - restate the assignment focus
+        selected_policy_markers: [ledger-boundary, public commitment accounting]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: neither
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
 
   - family_id: instructional_contract_drift
     title: Instructional contract drift mistaken as task avoidance

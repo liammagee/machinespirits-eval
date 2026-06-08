@@ -1,0 +1,87 @@
+meta:
+  schema_version: a19-adjudication-panel-v0.1
+  protocol_id: A19
+  status: infrastructure_only
+  claim_boundary: simulated_teacher_as_learner_not_human_learning
+  no_panel_claim_until_coder_files_exist: true
+
+coder_visibility:
+  visible:
+    - neutral_arm_labels
+    - learner_visible_transcripts
+    - neutral_option_space
+    - response_schema
+  withheld:
+    - target_aliases
+    - decoy_aliases
+    - arm_provenance
+    - policy_memory_condition
+    - target_repair_type
+    - decoy_repair_types
+    - expected_verdict
+
+coding_dimensions:
+  committed_option_class:
+    allowed: [target, decoy, neither, unclear]
+    coder_instruction: >-
+      Use the neutral option descriptions and the transcript only. Do not infer
+      from which arm sounds better.
+  repair_type:
+    allowed:
+      - transfer_control
+      - instructional_contract_repair
+      - preserve_struggle
+      - offer_diagnostic_options
+      - repair_misalignment
+      - claim_address_repair
+      - commitment_ledger_repair
+      - learner_standing_repair
+      - commitment_ledger_repair
+      - other
+      - unclear
+    coder_instruction: >-
+      Name the public repair type the tutor actually commits to. If the repair
+      is a learner application/check before closure, prefer transfer_control
+      even when other language is present.
+  basis_label:
+    allowed:
+      - named_relation
+      - ordinary_public_inference
+      - restate_rubric
+      - transfer_gate
+      - tutor_retraction
+      - standing_repair
+      - commitment_accounting
+      - artifact_or_leak
+      - unclear
+  confidence:
+    allowed: [low, medium, high]
+  span_evidence:
+    required: true
+    instruction: cite the exact public sentence or short span that supports the coding
+  artifact_flags:
+    allowed:
+      - cue_leak
+      - alias_leak
+      - prompt_leak
+      - arm_provenance_visible
+      - policy_condition_visible
+      - coder_uncertain
+      - none
+
+agreement_plan:
+  minimum_coders_for_claim: 2
+  high_value_claim_target_coders: 3
+  agreement_unit: same_artifact_same_arm
+  report:
+    - per_arm_raw_codes
+    - majority_code
+    - disagreement_flags
+    - exact_span_overlap_or_difference
+    - target_mapping_applied_only_after_raw_codes_are_saved
+
+packet_acceptance:
+  - coder_packet_must_not_include_private_key
+  - private_key_must_not_be_needed_to_read_or_code_transcripts
+  - alias_hits_in_visible_transcripts_must_be_reported_not_suppressed
+  - packet_builder_must_be_offline_and_zero_api
