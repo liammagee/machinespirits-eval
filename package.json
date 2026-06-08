@@ -97,6 +97,7 @@
     "poetics:publish-run": "node scripts/publish-poetics-run-archive.js",
     "poetics:browse": "node scripts/browse-poetics-scripts.js",
     "poetics:serve": "node scripts/serve-poetics-browser.mjs",
+    "compose:cli": "node scripts/compose-live-cli.js",
     "poetics:stage-deploy-db": "node scripts/stage-poetics-deploy-db.mjs",
     "poetics:discursive-replay": "node scripts/replay-discursive-transcript.js",
     "poetics:replay-panel": "node scripts/run-discursive-replay-panel.js",
