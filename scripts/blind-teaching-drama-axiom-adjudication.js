@@ -526,8 +526,7 @@ function targetObligationAudit(transcript, { targetRepairType, extractedRepairTy
   const diagnosticIndex = regexIndex(text, DIAGNOSTIC_OPTIONS_RE);
   const answerIndex = regexIndex(text, ANSWER_REVEAL_RE);
   const diagnosticOptionsPresent = diagnosticIndex >= 0;
-  const answerRevealBeforeDiagnosticChoice =
-    answerIndex >= 0 && (diagnosticIndex < 0 || answerIndex < diagnosticIndex);
+  const answerRevealBeforeDiagnosticChoice = answerIndex >= 0 && (diagnosticIndex < 0 || answerIndex < diagnosticIndex);
   const transferControlPublicTestPresent = transcriptHasTransferControlPublicTest(transcript);
   if (target === 'offer_diagnostic_options') {
     return {

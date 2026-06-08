@@ -8,7 +8,11 @@ import {
   classifyCardVerdict,
   validateTeachingDramaAxiomProtocol,
 } from '../scripts/validate-teaching-drama-axiom-protocol.js';
-import { baselineSummary, denominatorSummary, renderMarkdown } from '../scripts/report-teaching-drama-axiom-framework.js';
+import {
+  baselineSummary,
+  denominatorSummary,
+  renderMarkdown,
+} from '../scripts/report-teaching-drama-axiom-framework.js';
 import { materializeAttemptFixtures } from '../scripts/materialize-teaching-drama-axiom-attempts.js';
 import {
   adjudicateTeachingDramaAxiomCard,
@@ -20,11 +24,7 @@ import {
   renderMarkdown as renderAttempt1Markdown,
   summarizeAttempt1Gate,
 } from '../scripts/report-teaching-drama-axiom-attempt1.js';
-import {
-  cardSpecsFromConfig,
-  dashId,
-  summarizeCardResults,
-} from '../scripts/run-a19-stability-screen.js';
+import { cardSpecsFromConfig, dashId, summarizeCardResults } from '../scripts/run-a19-stability-screen.js';
 
 const ROOT = path.resolve('.');
 const PROTOCOL = path.join(ROOT, 'config', 'teaching-drama-axioms', 'a19-protocol.yaml');

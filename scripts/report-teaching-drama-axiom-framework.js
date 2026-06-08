@@ -121,7 +121,9 @@ function renderMarkdown(report) {
   lines.push('| --- | --- | --- | --- | --- |');
   for (const card of report.cards) {
     const repair = [card.repair_type, card.repair_subtype].filter(Boolean).join(':');
-    lines.push(`| ${card.family_id} | ${card.sibling_id} | ${card.s0_baseline_stratum || 'unspecified'} | ${repair || 'n/a'} | ${card.verdict} |`);
+    lines.push(
+      `| ${card.family_id} | ${card.sibling_id} | ${card.s0_baseline_stratum || 'unspecified'} | ${repair || 'n/a'} | ${card.verdict} |`,
+    );
   }
   lines.push('');
   lines.push('## Issues', '');

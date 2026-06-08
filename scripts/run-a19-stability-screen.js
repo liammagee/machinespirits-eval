@@ -129,7 +129,12 @@ export function cardSpecsFromConfig(config, { familyId, siblingIds, materialized
   return selected.map((sibling) => ({
     family_id: family.family_id,
     sibling_id: sibling.sibling_id,
-    transcript: path.join(materializedRoot, dashId(family.family_id), dashId(sibling.sibling_id), 'heldout-base.full.md'),
+    transcript: path.join(
+      materializedRoot,
+      dashId(family.family_id),
+      dashId(sibling.sibling_id),
+      'heldout-base.full.md',
+    ),
     axiom,
     target_aliases: sibling.target_aliases || [],
     decoy_aliases: sibling.decoy_aliases || [],
@@ -336,19 +341,34 @@ export async function runStability(args) {
       process.stdout.write(`\n[a19-stability] ${card.sibling_id} seed ${seed}/${args.k}: S0 replay\n`);
       const s0 = maybeRunReplay(card, seedDir, args, 's0');
       if (!s0.ok || (!args.dryRun && !fs.existsSync(s0.path))) {
-        seeds.push({ seed, status: 's0_failed', error: s0.error || 'missing revised-public', out_dir: repoRel(seedDir) });
+        seeds.push({
+          seed,
+          status: 's0_failed',
+          error: s0.error || 'missing revised-public',
+          out_dir: repoRel(seedDir),
+        });
         break;
       }
       process.stdout.write(`[a19-stability] ${card.sibling_id} seed ${seed}/${args.k}: S1 replay\n`);
       const s1 = maybeRunReplay(card, seedDir, args, 's1');
       if (!s1.ok || (!args.dryRun && !fs.existsSync(s1.path))) {
-        seeds.push({ seed, status: 's1_failed', error: s1.error || 'missing revised-public', out_dir: repoRel(seedDir) });
+        seeds.push({
+          seed,
+          status: 's1_failed',
+          error: s1.error || 'missing revised-public',
+          out_dir: repoRel(seedDir),
+        });
         break;
       }
       process.stdout.write(`[a19-stability] ${card.sibling_id} seed ${seed}/${args.k}: blind adjudication\n`);
       const blind = maybeRunBlind(card, seedDir, args, seed);
       if (!blind.ok || (!args.dryRun && !fs.existsSync(blind.path))) {
-        seeds.push({ seed, status: 'blind_failed', error: blind.error || 'missing blind output', out_dir: repoRel(seedDir) });
+        seeds.push({
+          seed,
+          status: 'blind_failed',
+          error: blind.error || 'missing blind output',
+          out_dir: repoRel(seedDir),
+        });
         break;
       }
       if (args.dryRun) {
