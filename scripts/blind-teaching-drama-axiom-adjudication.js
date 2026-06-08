@@ -32,6 +32,7 @@ const REPAIR_TYPES = [
   'ask_scope_test',
   'claim_address_repair',
   'commitment_ledger_repair',
+  'learner_standing_repair',
   'instructional_contract_repair',
   'repair_misalignment',
   'transfer_control',
@@ -68,6 +69,7 @@ function usage() {
     [--decoy-repair-types "validate_redirect|repeat_explanation"] \\
     [--protocol config/teaching-drama-axioms/a19-protocol.yaml] \\
     [--family-id ID] [--sibling-id ID] [--out PATH.json] [--run-id ID] \\
+    [--single-arm PATH --arm-label S0_no_policy] \\
     [--mock | --free-text] [--critics N] [--model MODEL]
 
 A19 fixture mode is --mock. Real mode is free-text blind extraction through the
@@ -184,6 +186,11 @@ function normalizeRepairType(value) {
     commitment_ledger: 'commitment_ledger_repair',
     repair_public_commitment_ledger: 'commitment_ledger_repair',
     rank_one_commitment: 'commitment_ledger_repair',
+    moral_disclosure_standing_repair: 'learner_standing_repair',
+    restore_disclosure_boundary_and_accountability: 'learner_standing_repair',
+    learner_standing: 'learner_standing_repair',
+    standing_repair: 'learner_standing_repair',
+    disclosure_boundary: 'learner_standing_repair',
     repair_rupture_before_next_step: 'repair_misalignment',
     renegotiate_working_agreement_before_content: 'instructional_contract_repair',
     instructional_contract: 'instructional_contract_repair',
@@ -297,6 +304,7 @@ function freeTextPromptFor(transcript, args) {
     'Repair-type guide for extraction:',
     '- claim_address_repair: the tutor withdraws a misaddressed framing and restates the learner claim or warrant it will now answer, before any learner application or revision test.',
     '- commitment_ledger_repair: the tutor cites conflicting public tutor commitments, retracts or ranks one, and states the new commitment boundary before continuing.',
+    '- learner_standing_repair: the tutor names a flattened disclosure or misrecognition, restores the learner as author of the disclosure boundary, separates accountability from reassurance/advice, and offers a non-content stop or continuation option.',
     '- transfer_control: the tutor requires the learner to apply a repaired rule/check to a fresh or concrete case before accepting closure. Use this even if the tutor also names the underlying warrant.',
     '- instructional_contract_repair: the tutor pauses the content task to repair the working agreement, names the tutor contribution to the drift, and offers a learner choice about how to proceed before any content test.',
     '- name_warrant: the tutor names the governing relation, rule, or warrant without requiring a fresh public application.',
@@ -391,6 +399,20 @@ function mockRepairExtraction(transcript) {
       repair_type: 'commitment_ledger_repair',
       basis_label: 'ordinary_public_inference',
       public_evidence_summary: 'mock extraction found public commitment accounting language',
+    };
+  }
+  if (
+    /standing|disclosure boundary|how much (?:of this )?(?:i|you) disclose|not asking (?:you )?to tell me|not asking for (?:reassurance|advice)|accountability (?:question|not advice)|good person|meant well|stop or continue|permission to (?:stop|withhold)|choice itself was mine/.test(
+      finalRegion,
+    )
+  ) {
+    return {
+      committed_repair:
+        'restore the learner disclosure boundary and separate accountability from reassurance or advice',
+      committing_quote: finalTutorSegment(transcript),
+      repair_type: 'learner_standing_repair',
+      basis_label: 'ordinary_public_inference',
+      public_evidence_summary: 'mock extraction found public standing and disclosure-boundary repair language',
     };
   }
   if (
@@ -513,6 +535,10 @@ const CLAIM_ADDRESS_REPAIR_RE =
   /\b(?:misaddressed|wrong (?:concern|question|claim)|answered (?:a|the)?\s*(?:different|wrong) (?:concern|question|claim)|withdraw(?:ing)? (?:that|my|the|this)?\s*(?:framing|interpretation|response)|readdress(?:ing)? (?:the )?(?:learner|actual)?\s*(?:claim|concern|objection)|actual (?:claim|concern|objection)|not (?:the )?(?:claim|concern|question) (?:you|the learner) (?:raised|made))\b/i;
 const COMMITMENT_LEDGER_REPAIR_RE =
   /\b(?:commitment ledger|conflicting (?:public )?(?:commitments|promises)|you said[\s\S]{0,120}\bnow\b|earlier[\s\S]{0,120}\bnow\b|cannot both govern|which (?:commitment|rule) (?:governs|wins)|retract(?:ing)? (?:that|one|the)?\s*(?:commitment|promise)|rank(?:ing)? (?:that|one|the)?\s*(?:commitment|promise)|new commitment boundary)\b/i;
+const LEARNER_STANDING_REPAIR_RE =
+  /\b(?:learner standing|standing repair|disclosure boundary|author of (?:the )?disclosure|how much (?:of this )?(?:you|i) disclose|accountability (?:question|not advice|from reassurance)|not asking (?:for|you to give) (?:reassurance|advice)|restore(?:ing)? (?:your|the learner's) boundary|permission to (?:stop|withhold)|stop or continue|non-content continuation)\b/i;
+const STANDING_REPAIR_ADVICE_RE =
+  /\b(?:you should|here is what to say|conversation script|apologize to|talk to them|tell them|advice|reassur(?:e|ance)|good person|meant well|do not be too hard on yourself)\b/i;
 const NEGATED_DECOY_MARKERS = [
   'rather than',
   'instead of',
@@ -581,6 +607,7 @@ function targetObligationAudit(transcript, { targetRepairType, extractedRepairTy
   const governed =
     target === 'claim_address_repair' ||
     target === 'commitment_ledger_repair' ||
+    target === 'learner_standing_repair' ||
     target === 'offer_diagnostic_options' ||
     target === 'instructional_contract_repair' ||
     target === 'transfer_control';
@@ -599,6 +626,8 @@ function targetObligationAudit(transcript, { targetRepairType, extractedRepairTy
   const transferControlPublicTestPresent = transcriptHasTransferControlPublicTest(transcript);
   const claimAddressRepairPresent = CLAIM_ADDRESS_REPAIR_RE.test(transcript);
   const commitmentLedgerRepairPresent = COMMITMENT_LEDGER_REPAIR_RE.test(transcript);
+  const learnerStandingRepairPresent = LEARNER_STANDING_REPAIR_RE.test(transcript);
+  const standingAdviceSignalPresent = STANDING_REPAIR_ADVICE_RE.test(transcript);
   const instructionalContractRepairPresent = INSTRUCTIONAL_CONTRACT_REPAIR_RE.test(transcript);
   if (target === 'claim_address_repair') {
     return {
@@ -622,6 +651,22 @@ function targetObligationAudit(transcript, { targetRepairType, extractedRepairTy
       extracted_repair_type_mismatch: extracted ? extracted !== target : true,
       target_granularity_risk:
         commitmentLedgerRepairPresent && (extracted === 'transfer_control' || transferControlPublicTestPresent),
+    };
+  }
+  if (target === 'learner_standing_repair') {
+    return {
+      governed: true,
+      target_repair_type: target,
+      extracted_repair_type: extracted || null,
+      learner_standing_repair_present: learnerStandingRepairPresent,
+      competing_transfer_control_signal: transferControlPublicTestPresent,
+      competing_advice_or_reassurance_signal: standingAdviceSignalPresent,
+      extracted_repair_type_mismatch: extracted ? extracted !== target : true,
+      target_granularity_risk:
+        learnerStandingRepairPresent &&
+        (extracted === 'transfer_control' ||
+          transferControlPublicTestPresent ||
+          (standingAdviceSignalPresent && extracted !== target)),
     };
   }
   if (target === 'offer_diagnostic_options') {

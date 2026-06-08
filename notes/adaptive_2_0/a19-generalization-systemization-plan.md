@@ -57,6 +57,15 @@ recursive-full S0 ceiling cards. This is a useful diagnostic result but still
 below the bar for Paper 2.0, atlas, sidecar, stability, or paid/human-panel
 claims.
 
+v0.8 result: `moral_disclosure_standing_repair` /
+`learner_standing_repair` was feasible as a public-obligation repair type and
+survived attempt-1. Held-out screens produced one local `policy_headroom` card
+(`moral_disclosure_standing_repair_a`), but S1 carried target-granularity risk;
+`moral_disclosure_standing_repair_b` and `moral_disclosure_standing_repair_c`
+were recursive-full S0 ceilings. The A card has a blinded adjudication packet
+and a no-coder merge report for later independent coding, but v0.8 remains below
+the two-clean-card threshold and licenses no sidecar or atlas claim.
+
 Loop:
 
 1. Pre-register one candidate repair type with public obligations, excludes, and
@@ -91,8 +100,13 @@ Infrastructure now:
   visibility, dimensions, response schema, and agreement discipline.
 - `scripts/build-a19-adjudication-packet.js` creates a blinded coder packet with
   neutral arm labels and a private answer key.
+- `scripts/merge-a19-adjudication-codes.js` merges independent coder JSON files
+  against the same packet hash and preserves raw judgments before applying the
+  private key.
 - The packet builder reports alias hits in visible public transcripts instead of
   suppressing them. A hit is a cue-risk audit field, not an automatic edit.
+- Current no-coder merge reports are diagnostic infrastructure only; they are
+  not panel or agreement results.
 
 Loop:
 
@@ -141,6 +155,12 @@ Loop:
    claims.
 5. Track model tier and domain scope on every promoted family.
 
+Resolution: this track is exhausted for the current A19 loop as a protocol-screen
+design. Weak/debug S0 can triage future candidates, but it is not a claim path.
+Model-stratified recursive-full runs require a new preregistered tier plan, with
+separate reporting by generator tier, before any spending. Critic-ablation runs
+remain mechanism diagnostics only.
+
 Distinct results:
 
 - `weak_only_effect`: policy memory helps a weak S0 but fails recursive-full
@@ -164,6 +184,14 @@ Current observed-result artifacts:
   `notes/adaptive_2_0/a19-v07-public-commitment-screen-2026-06-08.md`
 - v0.7 ambiguous adjudication packet:
   `exports/a19/adjudication-packets/public-commitment-contradiction-a.packet.json`
+- v0.8 attempt-1 report:
+  `notes/adaptive_2_0/a19-attempt1-real-gate-report-learner-standing.md`
+- v0.8 held-out screen:
+  `notes/adaptive_2_0/a19-v08-learner-standing-screen-2026-06-08.md`
+- v0.8 ambiguous adjudication packet:
+  `exports/a19/adjudication-packets/moral-disclosure-standing-repair-a.packet.json`
+- v0.8 no-coder merge report:
+  `exports/a19/adjudication-reports/moral-disclosure-standing-repair-a.coders.json`
 
 Offline status command:
 

@@ -114,9 +114,12 @@
 - [x] Pre-register v0.7 `public_commitment_contradiction` / `commitment_ledger_repair`, induce one admitted axiom from a real attempt-1 survivor, and run recursive-full held-out S0/S1 screens.
 - [x] Record the v0.7 result in `a19-v07-public-commitment-screen-2026-06-08.md`: one local policy-headroom card with target-granularity risk plus two recursive-full S0 ceilings; no A19 transfer claim.
 - [x] Build an adjudication packet for the ambiguous v0.7 A card; visible alias hits: 0.
-- [ ] Add a future coder-merge/report command only after real independent coder JSON files exist for the same packet.
-- [ ] Decide whether `learner_standing_repair` can be operationalized as public obligations without a human panel; preregister v0.8 only if it can.
-- [ ] Promote weak or debug S0 results to recursive-full only when they are non-artifact, non-ceiling candidates and all prompt/scenario payloads can be paired.
+- [x] Add a coder-merge/report command for future independent coder JSON files against the same packet hash. Current no-coder reports remain infrastructure-only and do not count as agreement evidence.
+- [x] Decide whether `learner_standing_repair` can be operationalized as public obligations without a human panel. It can be preregistered only as public boundary-control/accountability repair, not as moral or therapeutic judgment.
+- [x] Pre-register v0.8 `moral_disclosure_standing_repair`, run real attempt-1, admit one bounded axiom, and screen held-out siblings under recursive-full S0-first discipline.
+- [x] Record the v0.8 result in `a19-v08-learner-standing-screen-2026-06-08.md`: one local policy-headroom card with target-granularity risk, one noisy S0 ceiling, and one clean S0 ceiling; no A19 transfer claim.
+- [x] Build an adjudication packet and no-coder merge report for the ambiguous v0.8 A card; visible public-transcript alias hits: 1.
+- [x] Resolve weak/debug/model-stratified S0 as protocol-screen diagnostics only. Promote future weak/debug results to recursive-full only when they are non-artifact, non-ceiling candidates and all prompt/scenario payloads can be paired.
 
 ## Stop Rules
 

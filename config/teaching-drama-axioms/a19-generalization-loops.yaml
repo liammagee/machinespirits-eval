@@ -4,7 +4,7 @@ meta:
   loop_version: a19-generalization-loop-v0.1
   created_at: 2026-06-08
   source_plan: notes/adaptive_2_0/teaching_drama_learning_plan.html
-  status: planning_and_offline_infrastructure
+  status: v0_8_loop_resolved_below_claim_threshold
   claim_boundary: simulated_teacher_as_learner_not_human_learning
   does_not_claim:
     - human_learning
@@ -26,7 +26,7 @@ tracks:
   - track_id: non_collapsing_repair_family
     title: Repair families whose public obligations cannot collapse into transfer-control
     track_type: repair_family_design
-    status: v0_7_partial_diagnostic_no_claim
+    status: v0_8_resolved_below_claim_threshold
     rationale: >-
       A19 v0.3-v0.5 repeatedly collapsed distinctive repairs into
       transfer-control because the public repair still asked the learner to
@@ -34,13 +34,17 @@ tracks:
       families where the distinctive act is primarily a tutor-side withdrawal,
       re-addressing, or status repair rather than a learner application gate.
     known_result:
-      distinct_result_known: false
+      distinct_result_known: true
       current_boundary: >-
         Existing A19 branches have one stable instructional-contract card. The
         v0.6 claim-address candidate failed the real attempt-1 recursive gate.
         The v0.7 public-commitment candidate yielded one noisy
         policy-headroom card with target-granularity risk and two recursive-full
-        S0 ceilings. No two-card stability-confirmed non-transfer family exists.
+        S0 ceilings. The v0.8 learner-standing candidate survived attempt-1 and
+        produced one local policy-headroom card with target-granularity risk,
+        one S0 ceiling with target-granularity risk, and one clean S0 ceiling.
+        No two-card stability-confirmed non-transfer family exists.
+      result_label: v0_8_below_claim_threshold_no_sidecar_claim
     success_condition:
       - at_least_two_heldout_siblings_stable_policy_headroom_under_recursive_full_s0
       - s1_extracted_as_registered_non_transfer_repair_type_on_all_stability_seeds
@@ -103,7 +107,21 @@ tracks:
           - fresh_reflection_prompt_as_transfer_check
           - moral_flattery_without_boundary_control
         likely_training_seed: learner objects that the tutor turned a morally mixed disclosure into easy reassurance
-        status: next_planned_repair_family_if_kept_in_public_obligation_frame
+        status: resolved_below_claim_threshold
+        observed_result:
+          attempt1_dir: exports/a19/real-attempt1-v08/moral-disclosure-standing-repair
+          attempt1_report: notes/adaptive_2_0/a19-attempt1-real-gate-report-learner-standing.md
+          screen_report: notes/adaptive_2_0/a19-v08-learner-standing-screen-2026-06-08.md
+          result_summary: >-
+            one_policy_headroom_with_target_granularity_risk_one_s0_ceiling_with_target_granularity_risk_one_clean_s0_ceiling
+          local_policy_headroom_card: moral_disclosure_standing_repair_a
+          s0_ceiling_cards:
+            - moral_disclosure_standing_repair_b
+            - moral_disclosure_standing_repair_c
+          adjudication_packet: exports/a19/adjudication-packets/moral-disclosure-standing-repair-a.packet.json
+          coder_merge_report: exports/a19/adjudication-reports/moral-disclosure-standing-repair-a.coders.json
+          visible_alias_hits_in_public_transcripts: 1
+          next_action: hold_for_independent_adjudication_or_new_preregistered_candidate
       - candidate_id: public_commitment_contradiction_repair
         proposed_repair_type: commitment_ledger_repair
         source_from_plan: public-state modeling over hidden learner interior
@@ -128,14 +146,12 @@ tracks:
           adjudication_packet: exports/a19/adjudication-packets/public-commitment-contradiction-a.packet.json
           next_action: hold_for_independent_adjudication_or_preregister_next_family
     next_actions:
-      - evaluate_whether_learner_standing_repair_can_be_publicly_operationalized_without_human_panel
-      - preregister_v0_8_only_if_public_obligations_are_auditable_offline
-      - otherwise_stop_repair_family_loop_pending_independent_adjudication
+      - hold_for_independent_adjudication_or_new_preregistered_candidate
 
   - track_id: adjudication_infrastructure
     title: Multi-critic and human adjudication infrastructure for ambiguous repair boundaries
     track_type: adjudication_infrastructure
-    status: infrastructure_ready_after_packet_builder
+    status: merge_report_ready_no_coder_claim
     rationale: >-
       We are not currently running a paid panel or human double-coding, but the
       infrastructure must exist before stronger claims. The same artifact must
@@ -145,8 +161,11 @@ tracks:
       distinct_result_known: true
       current_boundary: >-
         Infrastructure-only: packet builder can prepare blinded coder packets
-        and private answer keys; no panel result is created.
-      result_label: adjudication_infrastructure_scaffold
+        and private answer keys, and the merge command can combine later coder
+        files for the same packet while preserving raw judgments. Current
+        merge reports with zero coder files remain no-coder diagnostics, not
+        panel results.
+      result_label: adjudication_packet_and_merge_scaffold_no_coder_claim
     success_condition:
       - coder_packet_contains_neutral_arm_labels_only
       - private_key_contains_target_decoy_mapping
@@ -165,27 +184,32 @@ tracks:
       - report_agreement_on_the_same_artifact_not_similar_artifacts
     required_artifacts:
       - scripts/build-a19-adjudication-packet.js
+      - scripts/merge-a19-adjudication-codes.js
       - config/teaching-drama-axioms/a19-adjudication-panel.yaml
     next_actions:
-      - build_fixture_packet_in_tests
-      - later_add_merge_command_for_human_or_paid_coder_json
+      - await_independent_coder_json_for_same_packet_before_agreement_claim
 
   - track_id: alternate_s0_condition
     title: Different learner/tutor conditions where S0 is less recursively self-repairing
     track_type: baseline_condition_design
-    status: protocol_screen_only_ready
+    status: diagnostic_plan_exhausted_no_claim
     rationale: >-
       Recursive-full S0 is intentionally strong and often self-solves. This
       track separates mechanism diagnosis from strong empirical claims by
       exploring weaker or stratified S0 conditions while preserving the rule
       that sidecar claims require recursive-full confirmation.
     known_result:
-      distinct_result_known: false
+      distinct_result_known: true
       current_boundary: >-
         Existing recursive-full S0 tests are too strong for many near-neighbor
         cards. Weak S0 can reveal whether policy memory is useful for a less
         reflective tutor, but cannot license Paper 2.0, atlas, or sidecar
-        claims without recursive-full rerun.
+        claims without recursive-full rerun. The current plan is resolved as a
+        protocol-screen diagnostic only: weak and debug baselines do not become
+        claims, model-tier screens must be separately preregistered and reported
+        by tier, and no current candidate justifies spending on a weakened S0
+        claim path.
+      result_label: baseline_diagnostic_design_resolved_no_claim
     candidate_conditions:
       - condition_id: weak_single_pass_no_policy_memory
         status: already_registered_protocol_screen_only
@@ -198,12 +222,12 @@ tracks:
         claim_status: fixture_or_debug_only
         use: debug target/decoy alias separability and obvious cue leakage
       - condition_id: model_stratified_recursive_full
-        status: planned
+        status: preregister_before_any_run
         s0_shape: recursive-full S0 run separately by weak, mid, and strong generator tier
         claim_status: local_headroom_screen_if_each_tier_is_reported_separately
         use: test the teaching-plan hypothesis that policies may overconstrain strong models but help weaker ones
       - condition_id: critic_ablation_no_policy_memory
-        status: planned
+        status: mechanism_diagnosis_only_not_current_claim_path
         s0_shape: same generator, policy memory withheld, recursive checker disabled or lowered
         claim_status: mechanism_diagnosis_only
         use: isolate whether S0 self-solve comes from the recursive checker rather than the base tutor
@@ -220,5 +244,4 @@ tracks:
       - run_s1_and_stability_only_after_recursive_full_headroom
       - report_weak_s0_outcomes_as_mechanism_diagnostic_not_empirical_transfer
     next_actions:
-      - add_loop_driver_output_for_condition_specific_next_commands
-      - add_model_tier_scope_to_any_new_candidate_family
+      - hold_as_protocol_screen_only_until_recursive_full_candidate_exists

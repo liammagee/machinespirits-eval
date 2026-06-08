@@ -29,6 +29,7 @@ import {
   summarizeGeneralizationLoops,
   validateGeneralizationLoopConfig,
 } from '../scripts/run-a19-generalization-loop.js';
+import { mergeA19AdjudicationCodes } from '../scripts/merge-a19-adjudication-codes.js';
 import { cardSpecsFromConfig, dashId, summarizeCardResults } from '../scripts/run-a19-stability-screen.js';
 
 const ROOT = path.resolve('.');
@@ -92,7 +93,7 @@ function baseFixture(overrides = {}) {
     meta: {
       schema_version: 'teaching-drama-axiom-families-v0.1',
       protocol_id: 'A19',
-      protocol_version: 'a19-drama-axiom-transfer-v0.7',
+      protocol_version: 'a19-drama-axiom-transfer-v0.8',
       prompt_version: 'a19-fixture-test',
       fixture_only: true,
       no_model_calls: true,
@@ -178,11 +179,11 @@ test('A19 validator accepts the checked-in pilot fixtures', () => {
   const report = validateTeachingDramaAxiomProtocol({ protocolPath: PROTOCOL, configPath: PILOT });
   assert.equal(report.status, 'pass');
   assert.equal(report.summary.errors, 0);
-  assert.equal(report.summary.families, 11);
-  assert.equal(report.summary.cards, 35);
+  assert.equal(report.summary.families, 12);
+  assert.equal(report.summary.cards, 38);
   assert.deepEqual(report.provenance.zero_api, true);
-  assert.equal(report.summary.verdict_counts.policy_headroom, 12);
-  assert.equal(report.summary.verdict_counts.ceiling, 13);
+  assert.equal(report.summary.verdict_counts.policy_headroom, 14);
+  assert.equal(report.summary.verdict_counts.ceiling, 14);
   assert.equal(report.summary.verdict_counts.policy_failure, 1);
   assert.equal(report.summary.verdict_counts.cue_leak, 1);
   assert.equal(report.summary.verdict_counts.self_solve, 5);
@@ -362,6 +363,25 @@ test('validator requires public obligations for commitment-ledger repair types',
   assert.match(JSON.stringify(report.issues), /state_the_new_commitment_boundary/);
 });
 
+test('validator requires public obligations for learner-standing repair types', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a19-learner-standing-obligations-'));
+  const fixture = baseFixture({
+    learner_resistance_type: 'meta_challenge',
+    tutor_infelicity_type: 'moral_flattery',
+    target_policy: {
+      ...baseFixture().families[0].target_policy,
+      repair_type: 'learner_standing_repair',
+      public_obligations: ['name_the_misrecognition_or_moral_flattening'],
+    },
+  });
+  const configPath = path.join(tmpDir, 'bad.yaml');
+  writeYaml(configPath, fixture);
+  const report = validateTeachingDramaAxiomProtocol({ protocolPath: PROTOCOL, configPath });
+  assert.equal(report.status, 'fail');
+  assert.match(JSON.stringify(report.issues), /target_policy\.public_obligations/);
+  assert.match(JSON.stringify(report.issues), /offer_a_non_content_continuation_or_stop_option/);
+});
+
 test('validator requires the protocol changelog', () => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a19-changelog-'));
   const protocol = yaml.parse(fs.readFileSync(PROTOCOL, 'utf8'));
@@ -477,11 +497,11 @@ test('framework report separates denominators and refuses a pooled rate', () => 
   const report = validateTeachingDramaAxiomProtocol({ protocolPath: PROTOCOL, configPath: PILOT });
   const denominators = denominatorSummary(report.cards);
   assert.deepEqual(denominators, {
-    total_cards: 35,
-    admitted_cards: 32,
+    total_cards: 38,
+    admitted_cards: 35,
     protocol_reject_cards: 1,
     artifact_cards: 2,
-    policy_headroom_cards: 12,
+    policy_headroom_cards: 14,
   });
   const markdown = renderMarkdown(report);
   const baselines = baselineSummary(report.cards);
@@ -995,6 +1015,39 @@ test('free-text mapper recognizes commitment-ledger repair without transfer cont
   assert.equal(report.arm.target_obligation_audit.target_granularity_risk, false);
 });
 
+test('free-text mapper recognizes learner-standing repair without transfer control', async () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a19-learner-standing-repair-'));
+  const armPath = path.join(tmpDir, 'arm.md');
+  fs.writeFileSync(
+    armPath,
+    [
+      'STAGE: The learner says reassurance flattened a disclosure.',
+      'LEARNER: I am not asking you to tell me I am a good person. I am asking whether I had standing to make that choice.',
+      'TUTOR: I flattened your disclosure into reassurance. You control how much of this you disclose here. The question is accountability, not whether I can make you feel better or give advice. We can stop this thread, or continue only by naming what decision boundary you want me to address.',
+    ].join('\n'),
+    'utf8',
+  );
+  const report = await adjudicateTeachingDramaAxiomCardFreeText({
+    protocolPath: PROTOCOL,
+    singleArm: armPath,
+    armLabel: 'S1_policy_memory',
+    targetAliases: ['learner standing repair', 'disclosure boundary'],
+    decoyAliases: ['reassure good intentions', 'give partner advice'],
+    targetRepairType: 'learner_standing_repair',
+    decoyRepairTypes: ['reassure_and_redirect'],
+    optionSpace: 'repair A | repair B | repair C',
+    familyId: 'moral_disclosure_standing_repair',
+    siblingId: 'learner_standing_fixture',
+    runId: 'learner-standing-fixture',
+    mock: true,
+  });
+  assert.equal(report.arm.committed_option_class, 'target');
+  assert.equal(report.arm.repair_type, 'learner_standing_repair');
+  assert.equal(report.arm.target_obligation_audit.learner_standing_repair_present, true);
+  assert.equal(report.arm.target_obligation_audit.competing_transfer_control_signal, false);
+  assert.equal(report.arm.target_obligation_audit.target_granularity_risk, false);
+});
+
 test('free-text mapper treats transcript-backed concrete application as transfer control', () => {
   const transcript = [
     'STAGE: The learner agrees but repeats an invalid logarithm split.',
@@ -1140,11 +1193,11 @@ test('A19 generalization loop config separates repair, adjudication, and S0-cond
     true,
   );
   const repair = summary.tracks.find((track) => track.track_id === 'non_collapsing_repair_family');
-  assert.equal(repair.distinct_result_known, false);
-  assert.equal(
-    repair.next_action,
-    'evaluate_whether_learner_standing_repair_can_be_publicly_operationalized_without_human_panel',
-  );
+  assert.equal(repair.distinct_result_known, true);
+  assert.equal(repair.next_action, 'hold_boundary_until_next_preregistered_unit');
+  const alternateS0 = summary.tracks.find((track) => track.track_id === 'alternate_s0_condition');
+  assert.equal(alternateS0.distinct_result_known, true);
+  assert.equal(alternateS0.next_action, 'hold_boundary_until_next_preregistered_unit');
 });
 
 test('A19 adjudication packet withholds private target and arm-provenance metadata', () => {
@@ -1190,4 +1243,118 @@ test('A19 adjudication packet withholds private target and arm-provenance metada
   assert.equal(packet.audit.arm_provenance_visible_to_coder, false);
   assert.deepEqual(packet.audit.visible_alias_hits_in_public_transcripts, []);
   assert.equal(packet.coder_packet.response_schema.span_evidence.includes('exact public sentence'), true);
+});
+
+test('A19 adjudication merge preserves raw coder files and reports same-packet agreement', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a19-adjudication-merge-'));
+  const s0 = path.join(tmpDir, 's0.txt');
+  const s1 = path.join(tmpDir, 's1.txt');
+  fs.writeFileSync(s0, 'TUTOR: I will ask a fresh test before closure.\n', 'utf8');
+  fs.writeFileSync(s1, 'TUTOR: I cite both commitments, retract one, and state the new boundary.\n', 'utf8');
+  const packet = buildAdjudicationPacket({
+    panel: ADJUDICATION_PANEL,
+    s0,
+    s1,
+    familyId: 'public_commitment_contradiction',
+    siblingId: 'merge_fixture',
+    targetAliases: ['private target alias'],
+    decoyAliases: ['private decoy alias'],
+    targetRepairType: 'commitment_ledger_repair',
+    decoyRepairTypes: ['transfer_control'],
+    optionSpace: 'repair A | repair B | repair C',
+    runId: 'merge-packet-fixture',
+  });
+  const packetPath = path.join(tmpDir, 'packet.json');
+  writeJson(packetPath, packet);
+  const coder = (coderId) => ({
+    schema_version: 'a19-adjudication-coder-response-v0.1',
+    coder_id: coderId,
+    packet_run_id: packet.run_id,
+    coder_packet_sha256: packet.audit.coder_packet_sha256,
+    arms: [
+      {
+        arm_label: 'arm_A',
+        committed_option_class: 'neither',
+        committed_repair: 'fresh application test',
+        repair_type: 'transfer_control',
+        basis_label: 'transfer_gate',
+        confidence: 'high',
+        span_evidence: 'ask a fresh test before closure',
+        artifact_flags: ['none'],
+      },
+      {
+        arm_label: 'arm_B',
+        committed_option_class: 'target',
+        committed_repair: 'commitment ledger repair',
+        repair_type: 'commitment_ledger_repair',
+        basis_label: 'commitment_accounting',
+        confidence: 'high',
+        span_evidence: 'cite both commitments, retract one',
+        artifact_flags: ['none'],
+      },
+    ],
+  });
+  const coderA = path.join(tmpDir, 'coder-a.json');
+  const coderB = path.join(tmpDir, 'coder-b.json');
+  writeJson(coderA, coder('coder_a'));
+  writeJson(coderB, coder('coder_b'));
+
+  const report = mergeA19AdjudicationCodes({ packetPath, coderPaths: [coderA, coderB] });
+  assert.equal(report.status, 'agreement_ready');
+  assert.equal(report.coder_count, 2);
+  assert.equal(report.arms.arm_A.raw_codes.length, 2);
+  assert.equal(report.arms.arm_A.majority_code.repair_type.value, 'transfer_control');
+  assert.equal(report.arms.arm_B.majority_code.committed_option_class.value, 'target');
+  assert.equal(report.private_mapping_applied_after_raw_codes.arm_A.provenance, 'S0_no_policy');
+  assert.deepEqual(report.issues, []);
+});
+
+test('A19 adjudication merge rejects coder files from a different packet hash', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a19-adjudication-merge-bad-'));
+  const s0 = path.join(tmpDir, 's0.txt');
+  const s1 = path.join(tmpDir, 's1.txt');
+  fs.writeFileSync(s0, 'TUTOR: baseline.\n', 'utf8');
+  fs.writeFileSync(s1, 'TUTOR: treatment.\n', 'utf8');
+  const packet = buildAdjudicationPacket({
+    panel: ADJUDICATION_PANEL,
+    s0,
+    s1,
+    familyId: 'public_commitment_contradiction',
+    siblingId: 'bad_merge_fixture',
+    targetAliases: ['private target alias'],
+    decoyAliases: ['private decoy alias'],
+    targetRepairType: 'commitment_ledger_repair',
+    decoyRepairTypes: ['transfer_control'],
+    optionSpace: 'repair A | repair B | repair C',
+    runId: 'bad-merge-packet-fixture',
+  });
+  const packetPath = path.join(tmpDir, 'packet.json');
+  const coderPath = path.join(tmpDir, 'coder-bad.json');
+  writeJson(packetPath, packet);
+  writeJson(coderPath, {
+    coder_id: 'coder_bad',
+    packet_run_id: packet.run_id,
+    coder_packet_sha256: 'not-the-packet-hash',
+    arms: [
+      {
+        arm_label: 'arm_A',
+        committed_option_class: 'neither',
+        repair_type: 'transfer_control',
+        basis_label: 'transfer_gate',
+        confidence: 'low',
+        span_evidence: 'baseline',
+      },
+      {
+        arm_label: 'arm_B',
+        committed_option_class: 'target',
+        repair_type: 'commitment_ledger_repair',
+        basis_label: 'commitment_accounting',
+        confidence: 'low',
+        span_evidence: 'treatment',
+      },
+    ],
+  });
+  const report = mergeA19AdjudicationCodes({ packetPath, coderPaths: [coderPath] });
+  assert.equal(report.status, 'fail');
+  assert.match(JSON.stringify(report.issues), /coder_packet_hash_mismatch/);
 });

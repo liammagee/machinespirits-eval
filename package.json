@@ -125,6 +125,7 @@
     "a19:report:json": "node scripts/report-teaching-drama-axiom-framework.js --json --out exports/a19/reports/framework.json",
     "a19:generalize": "node scripts/run-a19-generalization-loop.js",
     "a19:adjudication-packet": "node scripts/build-a19-adjudication-packet.js",
+    "a19:adjudication-merge": "node scripts/merge-a19-adjudication-codes.js",
     "test:a19": "node --test tests/teachingDramaAxiomProtocol.test.js",
     "atlas:validate": "node scripts/build-atlas.js validate",
     "atlas:build": "node scripts/build-atlas.js build",

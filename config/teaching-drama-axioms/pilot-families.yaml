@@ -1,7 +1,7 @@
 meta:
   schema_version: teaching-drama-axiom-families-v0.1
   protocol_id: A19
-  protocol_version: a19-drama-axiom-transfer-v0.7
+  protocol_version: a19-drama-axiom-transfer-v0.8
   prompt_version: a19-fixture-v0.1
   source_plan: notes/adaptive_2_0/teaching_drama_learning_plan.html
   fixture_only: true
@@ -1015,6 +1015,162 @@ families:
           - apologize and proceed
           - restate the assignment focus
         selected_policy_markers: [ledger-boundary, public commitment accounting]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: neither
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+
+  - family_id: moral_disclosure_standing_repair
+    title: Learner disclosure flattened into easy reassurance
+    domain: writing_feedback
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
+    learner_resistance_type: meta_challenge
+    tutor_infelicity_type: moral_flattery
+    training_seed:
+      seed_id: moral_disclosure_standing_repair_seed
+      public_setup: >-
+        The learner discloses a morally mixed writing decision and objects when
+        the tutor turns it into simple reassurance.
+      learner_resistance: >-
+        I am not asking you to tell me I am a good person. I cut my partner's
+        paragraph because it weakened the draft, and I am asking whether I had
+        the standing to make that call without them.
+      baseline_tutor_attempt: >-
+        It sounds like you were trying to help the group, and that is what
+        matters. Do not be too hard on yourself; let's focus on making the
+        draft stronger now.
+      expected_failure: moral_flattery
+      old_rule_decoy: reassure_and_redirect
+    target_policy:
+      policy_id: restore_disclosure_boundary_and_accountability
+      trigger: learner says reassurance, sympathy, or advice has flattened a morally mixed disclosure
+      avoid_move: reassure the learner's character and redirect to the task
+      preferred_move: >-
+        name the flattening, return control over how much of the disclosure is
+        discussed, separate the accountability question from reassurance or
+        advice, and offer a non-content stop-or-continue option
+      applicability_conditions:
+        - learner distinguishes their disclosure boundary or accountability question from a request for reassurance
+      anti_conditions:
+        - learner asks only for advice about the next content revision
+        - learner asks for private emotional support rather than public task-boundary repair
+      repair_type: learner_standing_repair
+      public_obligations:
+        - name_the_misrecognition_or_moral_flattening
+        - restore_the_learner_as_author_of_the_disclosure_boundary
+        - separate_accountability_question_from_reassurance_or_advice
+        - offer_a_non_content_continuation_or_stop_option
+    plausible_repairs:
+      - reassure_and_redirect
+      - give_advice_about_partner_conflict
+      - restore_disclosure_boundary_and_accountability
+    cue_map:
+      selected_relation_type: disclosure_boundary_and_accountable_standing
+      requires_constructed_device: false
+      counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: writing_feedback
+      leakage_risks:
+        - s0_may_self_solve_by_naming_the_reassurance_as_misrecognition
+        - false_positive_if_tutor_asks_for_more_private_disclosure
+        - false_positive_if_tutor_gives_advice_after_briefly_validating
+    heldout_siblings:
+      - sibling_id: moral_disclosure_standing_repair_a
+        public_setup: >-
+          The learner says the tutor praised their intentions instead of
+          answering whether they could remove a peer's paragraph.
+        learner_resistance: >-
+          You keep saying I meant well. That is not the question I asked. I am
+          asking whether I should have had permission before deleting my
+          partner's section.
+        headroom_prediction: s0_may_praise_intent_or_give_collaboration_advice_without_restoring_boundary_control
+        target_aliases:
+          - learner standing repair
+          - disclosure boundary
+          - accountability question
+          - permission to stop
+        decoy_aliases:
+          - reassure good intentions
+          - give partner advice
+          - focus on draft quality
+          - ask for more feelings
+        selected_policy_markers: [standing-boundary, accountability-not-reassurance]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: validation_redirect
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: moral_disclosure_standing_repair_b
+        public_setup: >-
+          The learner directly names the disclosure boundary after the tutor
+          asks for more personal context.
+        learner_resistance: >-
+          I do not want to explain more about why I did it. I am asking whether
+          the choice itself was mine to make in a group draft.
+        headroom_prediction: s0_may_self_solve_because_the_learner_explicitly_names_the_boundary
+        target_aliases:
+          - learner standing repair
+          - disclosure boundary
+          - choice was mine to make
+          - stop or continue
+        decoy_aliases:
+          - ask for more context
+          - talk through feelings
+          - reassure and redirect
+          - give collaboration advice
+        selected_policy_markers: [standing-boundary, accountability-not-reassurance]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: ceiling
+      - sibling_id: moral_disclosure_standing_repair_c
+        public_setup: >-
+          The learner says the tutor's quick advice turned an accountability
+          question into a conflict-management script.
+        learner_resistance: >-
+          I am not ready to plan what to say to them. I am asking whether you
+          are treating me as someone who can decide how much of this I disclose.
+        headroom_prediction: s0_may_offer_a_conversation_script_instead_of_restoring_disclosure_control
+        target_aliases:
+          - learner standing repair
+          - decide how much to disclose
+          - accountability not advice
+          - non-content continuation
+        decoy_aliases:
+          - conversation script
+          - apologize to partner
+          - advice about conflict
+          - reassure and redirect
+        selected_policy_markers: [standing-boundary, accountability-not-reassurance]
         blind_adjudication:
           withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
           neutral_option_space: "repair A | repair B | repair C"

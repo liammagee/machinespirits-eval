@@ -1,5 +1,24 @@
 # A19 Teaching-Drama Axiom Protocol Changelog
 
+## a19-drama-axiom-transfer-v0.8
+
+- Added `learner_standing_repair` after feasibility review: it is admissible
+  only as public boundary-control and accountability repair, not as a moral or
+  therapeutic quality judgment.
+- Required public obligations: name the misrecognition or moral flattening,
+  restore the learner as author of the disclosure boundary, separate the
+  accountability question from reassurance or advice, and offer a non-content
+  continuation or stop option.
+- Added the recursive-full `moral_disclosure_standing_repair` family. It is
+  scoped to writing-feedback disclosures and remains below Paper 2.0, atlas,
+  sidecar, or panel-claim bars until real attempt-1 and held-out S0/S1 evidence
+  exists.
+- Local replay outcome: the real attempt-1 survived and admitted one bounded
+  axiom. Held-out screens produced one local policy-headroom card with
+  target-granularity risk, one S0 ceiling with target-granularity risk, and one
+  clean S0 ceiling. This version does not license paid-panel, Paper 2.0, atlas,
+  or sidecar escalation.
+
 ## a19-drama-axiom-transfer-v0.7
 
 - Recorded the real v0.6 `addressed_claim_withdrawal` attempt-1 gate as

@@ -1,6 +1,6 @@
 meta:
   protocol_id: A19
-  protocol_version: a19-drama-axiom-transfer-v0.7
+  protocol_version: a19-drama-axiom-transfer-v0.8
   frozen_at: 2026-06-07
   status: zero_api_scaffold
   claim_boundary: simulated_teacher_as_learner_not_human_learning
@@ -49,6 +49,7 @@ family_fixture_requirements:
   require_public_obligations_for_repair_types:
     - claim_address_repair
     - commitment_ledger_repair
+    - learner_standing_repair
     - offer_diagnostic_options
     - instructional_contract_repair
     - preserve_struggle
@@ -89,6 +90,7 @@ allowed_labels:
     - ask_scope_test
     - claim_address_repair
     - commitment_ledger_repair
+    - learner_standing_repair
     - instructional_contract_repair
     - repair_misalignment
     - transfer_control
@@ -170,6 +172,26 @@ repair_type_obligation_taxonomy:
       distinction_from_transfer_control: >-
         The public repair is the tutor's accountable revision of its own
         commitment ledger, not a learner application gate or fresh content test.
+    learner_standing_repair:
+      definition: >-
+        The tutor repairs a flattened or over-claimed learner disclosure by
+        naming the misrecognition, restoring the learner as author of the
+        disclosure boundary, separating accountability from reassurance or
+        advice, and offering a non-content continuation or stop option.
+      required_public_obligations:
+        - name_the_misrecognition_or_moral_flattening
+        - restore_the_learner_as_author_of_the_disclosure_boundary
+        - separate_accountability_question_from_reassurance_or_advice
+        - offer_a_non_content_continuation_or_stop_option
+      excludes:
+        - advice_or_sympathy_as_the_committed_repair
+        - fresh_reflection_prompt_as_transfer_check
+        - moral_flattery_without_boundary_control
+        - asking_for_more_private_disclosure_as_the_repair
+      distinction_from_transfer_control: >-
+        The public repair is restoring the learner's standing and boundary
+        control in the conversation, not requiring the learner to apply a
+        corrected academic rule or complete a fresh test before closure.
     offer_diagnostic_options:
       definition: >-
         The tutor preserves productive impasse by making the possible source of

@@ -36,7 +36,6 @@ coding_dimensions:
       - claim_address_repair
       - commitment_ledger_repair
       - learner_standing_repair
-      - commitment_ledger_repair
       - other
       - unclear
     coder_instruction: >-
