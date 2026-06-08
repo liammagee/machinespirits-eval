@@ -118,6 +118,21 @@ function sha256Short(text) {
     .slice(0, 16);
 }
 
+function sourceModelProvenance(provenance) {
+  if (!provenance) return null;
+  return {
+    backend: provenance.backend || null,
+    cli: provenance.cli || null,
+    cli_version: provenance.cliVersion || null,
+    model: provenance.model || null,
+    requested_model: provenance.requestedModel || null,
+    resolved_model: provenance.resolvedModel || null,
+    model_resolution: provenance.modelResolution || null,
+    reasoning_effort: provenance.reasoningEffort || null,
+    reasoning_effort_source: provenance.reasoningEffortSource || null,
+  };
+}
+
 function selectedFamily(configPath, familyId) {
   const config = readYaml(configPath);
   const family = asArray(config?.families).find((candidate) => candidate.family_id === familyId);
@@ -336,6 +351,8 @@ export function induceTeachingDramaAxiom({
       recommended_action: record?.check?.recommended_action || null,
       generator_backend: record?.generator?.backend || recordBundle.manifest?.generator || null,
       checker_backend: record?.checker?.backend || recordBundle.manifest?.checker || null,
+      generator_model_provenance: sourceModelProvenance(record?.generator),
+      checker_model_provenance: sourceModelProvenance(record?.checker),
       manifest_path: rel(recordBundle.manifestPath),
       revision_json_path: rel(recordBundle.revisionPath),
       revised_public_path: rel(recordBundle.revisedPublicPath),

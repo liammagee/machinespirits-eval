@@ -1,5 +1,13 @@
 # A19 Drama-Axiom Transfer Todo
 
+Current pause note:
+`notes/adaptive_2_0/a19-substantive-closeout-2026-06-08.md`.
+
+Substantive status: A19 is paused below claim threshold while adjudication UX
+and server consolidation are handled separately. Resume only through
+independent coding of preserved packets or a newly preregistered repair family
+with stricter anti-collapse criteria.
+
 ## Phase 0: Zero-API Scaffold
 
 - [x] Create branch `codex/a19-drama-axiom-framework`.

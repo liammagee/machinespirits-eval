@@ -806,6 +806,17 @@ test('free-text blind adjudication maps paraphrased scope repairs by hidden repa
   assert.equal(report.arms.s0.committed_option_class, 'target');
   assert.equal(report.arms.s1.committed_option_class, 'target');
   assert.equal(report.critic_prompt_audit.target_repair_type_visible_to_critic, false);
+  assert.deepEqual(report.critic_model_provenance, {
+    backend: 'deterministic_free_text_mock',
+    cli: null,
+    cliVersion: null,
+    model: 'mock',
+    requestedModel: 'mock',
+    resolvedModel: 'mock',
+    modelResolution: 'explicit_cli_arg',
+    reasoningEffort: null,
+    reasoningEffortSource: null,
+  });
 });
 
 test('free-text blind adjudication calibrates transfer-control repairs from fresh public tests', async () => {
@@ -1143,8 +1154,30 @@ test('axiom induction admits one typed axiom and rejects full revision bundles a
           revisionJson: revisionPath,
           revisedPublic: revisedPublicPath,
         },
-        generator: { backend: 'codex', promptHashes: { system: 'g', user: 'u' } },
-        checker: { backend: 'claude', promptHashes: { system: 'c', user: 'u' } },
+        generator: {
+          backend: 'codex',
+          cli: 'codex exec',
+          cliVersion: 'codex-cli-fixture',
+          model: 'gpt-fixture',
+          requestedModel: 'gpt-fixture',
+          resolvedModel: 'gpt-fixture',
+          modelResolution: 'explicit_cli_arg',
+          reasoningEffort: 'xhigh',
+          reasoningEffortSource: 'test_fixture',
+          promptHashes: { system: 'g', user: 'u' },
+        },
+        checker: {
+          backend: 'claude',
+          cli: 'claude',
+          cliVersion: 'claude-cli-fixture',
+          model: 'sonnet-fixture',
+          requestedModel: 'sonnet-fixture',
+          resolvedModel: 'sonnet-fixture',
+          modelResolution: 'explicit_cli_arg',
+          reasoningEffort: 'high',
+          reasoningEffortSource: 'test_fixture',
+          promptHashes: { system: 'c', user: 'u' },
+        },
         check: {
           recommended_action: 'accept_for_blind_panel',
           recursive_tutor_learning: {
@@ -1168,6 +1201,28 @@ test('axiom induction admits one typed axiom and rejects full revision bundles a
   assert.equal(axiom.gate.status, 'pass');
   assert.equal(axiom.policy_memory_contract.memory_unit, 'single_teaching_drama_axiom');
   assert.equal(axiom.policy_memory_contract.full_revision_bundle_allowed, false);
+  assert.deepEqual(axiom.source_attempt1.generator_model_provenance, {
+    backend: 'codex',
+    cli: 'codex exec',
+    cli_version: 'codex-cli-fixture',
+    model: 'gpt-fixture',
+    requested_model: 'gpt-fixture',
+    resolved_model: 'gpt-fixture',
+    model_resolution: 'explicit_cli_arg',
+    reasoning_effort: 'xhigh',
+    reasoning_effort_source: 'test_fixture',
+  });
+  assert.deepEqual(axiom.source_attempt1.checker_model_provenance, {
+    backend: 'claude',
+    cli: 'claude',
+    cli_version: 'claude-cli-fixture',
+    model: 'sonnet-fixture',
+    requested_model: 'sonnet-fixture',
+    resolved_model: 'sonnet-fixture',
+    model_resolution: 'explicit_cli_arg',
+    reasoning_effort: 'high',
+    reasoning_effort_source: 'test_fixture',
+  });
 
   const revisionGate = validateTeachingDramaAxiomMemory(revision);
   assert.equal(revisionGate.status, 'fail');

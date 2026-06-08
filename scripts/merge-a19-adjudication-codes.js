@@ -16,7 +16,9 @@ function usage() {
   return `Usage:
   node scripts/merge-a19-adjudication-codes.js \\
     --packet exports/a19/adjudication-packets/family-sibling.packet.json \\
-    [--coder coder-a.json --coder coder-b.json] [--coder-dir dir] \\
+    [--assignment exports/a19/human-coder-assignments/family-sibling.assignment.json] \\
+    [--assignment-key exports/a19/human-coder-assignments/family-sibling.assignment-key.json] \\
+    [--coder coder-a.json --coder coder-b.json] [--coder-dir dir] [--coders coder-a.json coder-b.json] \\
     [--out exports/a19/adjudication-reports/family-sibling.coders.json] [--json]
 
 Coder files must reference the same coder_packet_sha256 and provide one code per
@@ -27,6 +29,8 @@ not a panel claim.`;
 function parseArgs(argv = process.argv.slice(2)) {
   const args = {
     packet: null,
+    assignment: null,
+    assignmentKey: null,
     coders: [],
     coderDir: null,
     out: null,
@@ -37,8 +41,12 @@ function parseArgs(argv = process.argv.slice(2)) {
     const token = argv[i];
     if (token === '--help' || token === '-h') args.help = true;
     else if (token === '--packet') args.packet = path.resolve(argv[++i]);
+    else if (token === '--assignment') args.assignment = path.resolve(argv[++i]);
+    else if (token === '--assignment-key') args.assignmentKey = path.resolve(argv[++i]);
     else if (token === '--coder') args.coders.push(path.resolve(argv[++i]));
-    else if (token === '--coder-dir') args.coderDir = path.resolve(argv[++i]);
+    else if (token === '--coders') {
+      while (argv[i + 1] && !argv[i + 1].startsWith('--')) args.coders.push(path.resolve(argv[++i]));
+    } else if (token === '--coder-dir') args.coderDir = path.resolve(argv[++i]);
     else if (token === '--out') args.out = path.resolve(argv[++i]);
     else if (token === '--json') args.json = true;
     else throw new Error(`unknown arg: ${token}\n\n${usage()}`);
@@ -46,6 +54,10 @@ function parseArgs(argv = process.argv.slice(2)) {
   if (args.help) return args;
   if (!args.packet) throw new Error(`--packet is required\n\n${usage()}`);
   if (!fs.existsSync(args.packet)) throw new Error(`packet not found: ${args.packet}`);
+  if (args.assignment && !fs.existsSync(args.assignment)) throw new Error(`assignment not found: ${args.assignment}`);
+  if (args.assignmentKey && !fs.existsSync(args.assignmentKey)) {
+    throw new Error(`assignment key not found: ${args.assignmentKey}`);
+  }
   if (args.coderDir) {
     if (!fs.existsSync(args.coderDir)) throw new Error(`coder dir not found: ${args.coderDir}`);
     const dirCoders = fs
@@ -73,18 +85,44 @@ function asArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function confidenceBucket(value) {
+  if (typeof value !== 'number') return value || 'low';
+  if (value >= 0.67) return 'high';
+  if (value >= 0.34) return 'medium';
+  return 'low';
+}
+
+function optionClassFromTargetStatus(status) {
+  if (status === 'target') return 'target';
+  if (status === 'non_target' || status === 'near_target') return 'neither';
+  return status || 'unclear';
+}
+
 function normalizeCode(code, { coderId, armLabel, sourcePath }) {
   const flags = asArray(code.artifact_flags).length ? asArray(code.artifact_flags) : ['none'];
+  const humanConfidence = typeof code.confidence === 'number' ? code.confidence : null;
   return {
     coder_id: coderId,
     source_path: repoRel(sourcePath),
-    arm_label: armLabel || code.arm_label || null,
-    committed_option_class: code.committed_option_class || 'unclear',
-    committed_repair: code.committed_repair || '',
-    repair_type: code.repair_type || 'unclear',
-    basis_label: code.basis_label || 'unclear',
-    confidence: code.confidence || 'low',
-    span_evidence: code.span_evidence || '',
+    arm_label: armLabel || code.arm_label || code.arm_public_id || null,
+    committed_option_class: code.committed_option_class || optionClassFromTargetStatus(code.target_status),
+    committed_repair: code.committed_repair || code.rationale || '',
+    repair_type: code.repair_type || code.primary_label || 'unclear',
+    basis_label: code.basis_label || code.target_status || 'unclear',
+    confidence: confidenceBucket(code.confidence),
+    confidence_score: humanConfidence,
+    target_status: code.target_status || null,
+    target_granularity_risk: typeof code.target_granularity_risk === 'boolean' ? code.target_granularity_risk : null,
+    obligations: code.obligations || null,
+    excluded_moves_present: asArray(code.excluded_moves_present),
+    evidence_spans: asArray(code.evidence_spans),
+    rationale: code.rationale || '',
+    span_evidence:
+      code.span_evidence ||
+      asArray(code.evidence_spans)
+        .map((span) => span.quote)
+        .filter(Boolean)
+        .join(' | '),
     artifact_flags: flags,
     notes: code.notes || '',
   };
@@ -92,6 +130,11 @@ function normalizeCode(code, { coderId, armLabel, sourcePath }) {
 
 function codesByArm(coderFile, sourcePath) {
   const coderId = coderFile.coder_id || path.basename(sourcePath, '.json');
+  if (Array.isArray(coderFile.arm_judgments)) {
+    return coderFile.arm_judgments.map((code) =>
+      normalizeCode(code, { coderId, armLabel: code.arm_public_id, sourcePath }),
+    );
+  }
   const arms = coderFile.arms || coderFile.codes || [];
   if (Array.isArray(arms)) {
     return arms.map((code) => normalizeCode(code, { coderId, armLabel: code.arm_label, sourcePath }));
@@ -139,14 +182,69 @@ function summarizeArm(rawCodes) {
   };
 }
 
-export function mergeA19AdjudicationCodes({ packetPath, coderPaths = [] }) {
+function mergeContext({ packet, assignmentPath = null, assignmentKeyPath = null }) {
+  if (!assignmentPath) {
+    return {
+      expectedHash: packet.audit?.coder_packet_sha256,
+      expectedRunId: packet.run_id || null,
+      expectedCodebookId: null,
+      expectedArms: new Set(asArray(packet.coder_packet?.arms).map((arm) => arm.arm_label)),
+      privateMapping: {
+        arm_A: packet.private_key?.arm_A || null,
+        arm_B: packet.private_key?.arm_B || null,
+        target_repair_type: packet.private_key?.target_repair_type || null,
+        decoy_repair_types: packet.private_key?.decoy_repair_types || [],
+      },
+      assignment: null,
+      assignmentKey: null,
+    };
+  }
+  const assignment = readJson(assignmentPath);
+  const assignmentKey = assignmentKeyPath ? readJson(assignmentKeyPath) : null;
+  const armMap = Object.fromEntries(
+    asArray(assignmentKey?.arm_map).map((entry) => [
+      entry.arm_public_id,
+      {
+        source_arm_id: entry.source_arm_id,
+        transcript_sha256: entry.transcript_sha256,
+        private_packet_mapping: entry.private_packet_mapping || null,
+      },
+    ]),
+  );
+  return {
+    expectedHash: assignment.packet_sha256,
+    expectedRunId: assignment.assignment_id || null,
+    expectedCodebookId: assignment.codebook_id || null,
+    expectedArms: new Set(asArray(assignment.arms).map((arm) => arm.arm_public_id)),
+    privateMapping: {
+      ...armMap,
+      target_repair_type:
+        assignmentKey?.private_answer_key?.target_repair_type || packet.private_key?.target_repair_type || null,
+      decoy_repair_types:
+        assignmentKey?.private_answer_key?.decoy_repair_types || packet.private_key?.decoy_repair_types || [],
+    },
+    assignment,
+    assignmentKey,
+  };
+}
+
+export function mergeA19AdjudicationCodes({
+  packetPath,
+  coderPaths = [],
+  assignmentPath = null,
+  assignmentKeyPath = null,
+}) {
   const packet = readJson(packetPath);
-  const expectedHash = packet.audit?.coder_packet_sha256;
-  const expectedRunId = packet.run_id || null;
-  const expectedArms = new Set(asArray(packet.coder_packet?.arms).map((arm) => arm.arm_label));
+  const { expectedHash, expectedRunId, expectedCodebookId, expectedArms, privateMapping, assignment, assignmentKey } =
+    mergeContext({
+      packet,
+      assignmentPath,
+      assignmentKeyPath,
+    });
   const issues = [];
   const rawByArm = new Map();
   const coderSummaries = [];
+  const seenCoderIds = new Set();
 
   for (const coderPath of coderPaths) {
     if (!fs.existsSync(coderPath)) {
@@ -155,8 +253,12 @@ export function mergeA19AdjudicationCodes({ packetPath, coderPaths = [] }) {
     }
     const coderFile = readJson(coderPath);
     const coderId = coderFile.coder_id || path.basename(coderPath, '.json');
+    if (seenCoderIds.has(coderId)) {
+      issues.push({ severity: 'error', code: 'duplicate_coder_id', coder_id: coderId });
+    }
+    seenCoderIds.add(coderId);
     const coderHash = coderFile.coder_packet_sha256 || coderFile.packet_sha256 || null;
-    const coderRunId = coderFile.packet_run_id || coderFile.run_id || null;
+    const coderRunId = coderFile.packet_run_id || coderFile.run_id || coderFile.assignment_id || null;
     if (expectedHash && coderHash !== expectedHash) {
       issues.push({
         severity: 'error',
@@ -175,6 +277,15 @@ export function mergeA19AdjudicationCodes({ packetPath, coderPaths = [] }) {
         actual: coderRunId,
       });
     }
+    if (expectedCodebookId && coderFile.codebook_id && coderFile.codebook_id !== expectedCodebookId) {
+      issues.push({
+        severity: 'error',
+        code: 'codebook_id_mismatch',
+        coder_id: coderId,
+        expected: expectedCodebookId,
+        actual: coderFile.codebook_id,
+      });
+    }
     const codes = codesByArm(coderFile, coderPath);
     const seen = new Set();
     for (const code of codes) {
@@ -191,7 +302,15 @@ export function mergeA19AdjudicationCodes({ packetPath, coderPaths = [] }) {
         issues.push({ severity: 'error', code: 'missing_arm_code', coder_id: coderId, arm_label: armLabel });
       }
     }
-    coderSummaries.push({ coder_id: coderId, source_path: repoRel(coderPath), code_count: codes.length });
+    coderSummaries.push({
+      coder_id: coderId,
+      coder_role: coderFile.coder_role || null,
+      source_path: repoRel(coderPath),
+      code_count: codes.length,
+      codebook_id: coderFile.codebook_id || null,
+      pairwise_judgment: coderFile.pairwise_judgment || null,
+      codebook_feedback: coderFile.codebook_feedback || null,
+    });
   }
 
   const arms = Object.fromEntries(
@@ -208,19 +327,22 @@ export function mergeA19AdjudicationCodes({ packetPath, coderPaths = [] }) {
     status,
     created_at: new Date().toISOString(),
     packet_path: repoRel(packetPath),
+    assignment_path: assignmentPath ? repoRel(assignmentPath) : null,
+    assignment_key_path: assignmentKeyPath ? repoRel(assignmentKeyPath) : null,
     packet_run_id: expectedRunId,
+    packet_id: assignment?.packet_id || `${packet.family_id}-${packet.sibling_id}`,
     family_id: packet.family_id,
     sibling_id: packet.sibling_id,
     coder_packet_sha256: expectedHash,
+    codebook_id: expectedCodebookId,
     coder_count: coderCount,
     coders: coderSummaries,
     arms,
-    private_mapping_applied_after_raw_codes: {
-      arm_A: packet.private_key?.arm_A || null,
-      arm_B: packet.private_key?.arm_B || null,
-      target_repair_type: packet.private_key?.target_repair_type || null,
-      decoy_repair_types: packet.private_key?.decoy_repair_types || [],
-    },
+    private_mapping_applied_after_raw_codes: privateMapping,
+    visible_alias_hits_in_public_transcripts:
+      assignmentKey?.visible_alias_hits_in_public_transcripts ||
+      packet.audit?.visible_alias_hits_in_public_transcripts ||
+      [],
     issues,
     non_claims: [
       'paid_blind_panel_result',
@@ -271,7 +393,12 @@ function main() {
     process.stdout.write(`${usage()}\n`);
     return;
   }
-  const report = mergeA19AdjudicationCodes({ packetPath: args.packet, coderPaths: args.coders });
+  const report = mergeA19AdjudicationCodes({
+    packetPath: args.packet,
+    coderPaths: args.coders,
+    assignmentPath: args.assignment,
+    assignmentKeyPath: args.assignmentKey,
+  });
   fs.mkdirSync(path.dirname(args.out), { recursive: true });
   fs.writeFileSync(args.out, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
   if (args.json) process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);

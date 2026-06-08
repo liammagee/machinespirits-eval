@@ -16,6 +16,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import yaml from 'yaml';
 import { matchesAny } from './blind-option-adjudication.js';
 import { classifyCardVerdict } from './validate-teaching-drama-axiom-protocol.js';
+import { detectCliVersion, modelProvenance } from './lib/cliProvenance.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
@@ -878,6 +879,15 @@ export async function adjudicateTeachingDramaAxiomCardFreeText({
       channel: mock ? 'free_text_repair_extraction_mock' : 'free_text_blind_repair_extraction',
       critic_backend: mock ? 'deterministic_free_text_mock' : 'claude_cli',
       critic_model: model || (mock ? 'mock' : 'claude_cli_default'),
+      critic_model_provenance: {
+        backend: mock ? 'deterministic_free_text_mock' : 'claude_cli',
+        cli: mock ? null : 'claude',
+        cliVersion: mock ? null : detectCliVersion('claude'),
+        ...modelProvenance({
+          requestedModel: model || (mock ? 'mock' : null),
+          defaultLabel: mock ? 'mock' : 'claude_cli_default',
+        }),
+      },
       critics_per_arm: critics,
       claim_boundary: 'simulated_teacher_as_learner_not_human_learning',
       family_id: familyId,
@@ -935,6 +945,15 @@ export async function adjudicateTeachingDramaAxiomCardFreeText({
     channel: mock ? 'free_text_repair_extraction_mock' : 'free_text_blind_repair_extraction',
     critic_backend: mock ? 'deterministic_free_text_mock' : 'claude_cli',
     critic_model: model || (mock ? 'mock' : 'claude_cli_default'),
+    critic_model_provenance: {
+      backend: mock ? 'deterministic_free_text_mock' : 'claude_cli',
+      cli: mock ? null : 'claude',
+      cliVersion: mock ? null : detectCliVersion('claude'),
+      ...modelProvenance({
+        requestedModel: model || (mock ? 'mock' : null),
+        defaultLabel: mock ? 'mock' : 'claude_cli_default',
+      }),
+    },
     critics_per_arm: critics,
     claim_boundary: 'simulated_teacher_as_learner_not_human_learning',
     family_id: familyId,
