@@ -920,6 +920,16 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
     }
   });
   app.get('/compose', (_req, res) => res.type('html').send(renderComposeHtml()));
+  // Standalone nav fragment so the static tool surfaces (/chat, /adjudication,
+  // /pilot-admin) can fetch + inject the SAME rail the rendered pages carry.
+  // railHtml() is the single source of nav truth; `bare: true` drops the bits
+  // that belong only to a dashboard-rendered page (the shader canvas, the x-ray
+  // overlay, the grid/theme toggles, and the three enhancer scripts) so the
+  // fragment carries only the rail + its own .rail* CSS — no host-page CSS bleed
+  // and no duplicate #field/#xrayGrid ids. See public/components/rail-inject.js.
+  app.get('/_nav.html', (req, res) =>
+    res.type('html').send(railHtml({ active: String((req.query && req.query.active) || ''), bare: true })),
+  );
   app.post('/api/compose/validate', async (req, res) => {
     try {
       const spec = (req.body && req.body.spec) || {};
@@ -1570,11 +1580,11 @@ function mdLectureToHtml(md) {
 // The rail's destination table (key → href, label, title). The rail does NOT
 // render these flat: it shows NAV_PRIMARY as plain links and folds the rest into
 // the labelled NAV_GROUPS dropdowns, so the bar stays legible (was 10 flat links
-// crowding one row). The former :8081 eval server's two researcher-facing
-// interactive surfaces (/chat, /adjudication) fold in here as a "tools" group,
-// so the primary bar stays at four. /pilot + /pilot-admin are reachable by URL
-// but stay OUT of the rail — they are participant/operator surfaces with their
-// own access model, not researcher destinations.
+// crowding one row). The former :8081 eval server's researcher-facing
+// interactive surfaces (/chat, /adjudication) plus the operator console
+// (/pilot-admin) fold in here as a "tools" group, so the primary bar stays at
+// four. /pilot stays OUT of the rail — it is the participant study surface
+// (reached by a study link), and must not leak researcher chrome to subjects.
 const NAV = [
   ['home', '/', 'home', 'Dashboard — overview, live stats &amp; guided first steps'],
   ['browse', '/browse', 'browse', 'Browse generated scripts, full traces, critic scores &amp; labels'],
@@ -1614,6 +1624,12 @@ const NAV = [
     'adjudicate',
     'Blinded A19 human-adjudication forms — complete coding tasks through the dashboard',
   ],
+  [
+    'pilot-admin',
+    '/pilot-admin',
+    'pilot admin',
+    'Pilot operator console — session monitoring, recruitment toggle &amp; run launching (admin token-gated)',
+  ],
 ];
 // Shown flat, left-to-right: the everyday action surfaces.
 const NAV_PRIMARY = ['home', 'browse', 'compose', 'runs'];
@@ -1621,7 +1637,7 @@ const NAV_PRIMARY = ['home', 'browse', 'compose', 'runs'];
 // dated/durable techne notes. A group whose member is the active page shows a
 // moss accent on its summary so the current location is still legible when closed.
 const NAV_GROUPS = [
-  ['tools', ['tutor', 'adjudicate']],
+  ['tools', ['tutor', 'adjudicate', 'pilot-admin']],
   ['reference', ['ontology', 'rubric', 'replays']],
   ['notes', ['summary', 'story', 'repertoire', 'board']],
 ];
@@ -1636,7 +1652,7 @@ const NAV_GROUPS = [
 // one place that puts the ground on all of them. `extra` (e.g. /browse's live DB
 // beacon) sits to the LEFT of the nav links so the menu + theme-toggle cluster stays
 // identical on every page, beacon or not.
-function railHtml({ active = '', brand = 'machine spirits', sub = '', extra = '' } = {}) {
+function railHtml({ active = '', brand = 'machine spirits', sub = '', extra = '', bare = false } = {}) {
   const byKey = Object.fromEntries(NAV.map((n) => [n[0], n]));
   const link = (key) => {
     const n = byKey[key];
@@ -1692,21 +1708,29 @@ function railHtml({ active = '', brand = 'machine spirits', sub = '', extra = ''
 .rail__pop{ position:absolute; top:calc(100% + 7px); right:0; min-width:190px; display:flex; flex-direction:column; gap:3px; padding:7px; background:color-mix(in srgb, var(--paper) 96%, transparent); border:1px solid var(--rule); border-radius:9px; box-shadow:0 10px 30px rgba(28,22,16,.18); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); z-index:40; }
 .rail__pop .rail__btn{ border-color:transparent; justify-content:flex-start; width:100%; }
 .rail__pop .rail__btn:hover{ border-color:var(--rule); background:var(--paper-3); }
-.xray-overlay{ position:fixed; inset:0; pointer-events:none; z-index:12; opacity:0; transition:opacity .25s var(--ease,ease); }
+${
+  bare
+    ? ''
+    : `.xray-overlay{ position:fixed; inset:0; pointer-events:none; z-index:12; opacity:0; transition:opacity .25s var(--ease,ease); }
 body.xray-on .xray-overlay{ opacity:1; }
 .xray-overlay__grid{ position:absolute; inset:0; padding-inline:var(--margin,clamp(12px,1.8vw,34px)); display:grid; grid-template-columns:repeat(60,1fr); column-gap:var(--gutter,clamp(3px,0.32vw,8px)); }
 .xray-overlay__col{ background:color-mix(in oklab, var(--brick,#A53E2E) 7%, transparent); outline:1px dashed color-mix(in oklab, var(--brick,#A53E2E) 22%, transparent); outline-offset:-1px; }
 .xray-overlay__col[data-i="23"], .xray-overlay__col[data-i="37"]{ background:color-mix(in oklab, var(--sun,#E4B644) 14%, transparent); outline-color:var(--brick,#A53E2E); }
 .xray-overlay__col[data-i="30"]{ outline-color:color-mix(in oklab, var(--prussian,#2A4F6B) 55%, transparent); }
-#gridToggle[aria-pressed="true"]{ color:var(--moss-deep); border-color:var(--moss); background:var(--moss-soft); }
+#gridToggle[aria-pressed="true"]{ color:var(--moss-deep); border-color:var(--moss); background:var(--moss-soft); }`
+}
 @media (max-width:860px){
   .rail__brand{ font-size:14px; }
   .rail__inner{ gap:.6em; padding:.45em .8em; }
   .rail__sub{ display:none; }
 }
 </style>
-<canvas id="field" aria-hidden="true" style="position:fixed;inset:0;width:100vw;height:100vh;z-index:-3;opacity:.5;pointer-events:none"></canvas>
-<div class="xray-overlay" id="xrayOverlay" aria-hidden="true"><div class="xray-overlay__grid" id="xrayGrid"></div></div>
+${
+  bare
+    ? ''
+    : `<canvas id="field" aria-hidden="true" style="position:fixed;inset:0;width:100vw;height:100vh;z-index:-3;opacity:.5;pointer-events:none"></canvas>
+<div class="xray-overlay" id="xrayOverlay" aria-hidden="true"><div class="xray-overlay__grid" id="xrayGrid"></div></div>`
+}
 <header class="rail">
   <div class="rail__inner">
     <span class="rail__glyph" aria-hidden="true">◐</span>
@@ -1714,11 +1738,18 @@ body.xray-on .xray-overlay{ opacity:1; }
     <span class="rail__sub">${sub}</span>
     ${extra}${primary}
     ${groups}
-    <button class="rail__btn" id="gridToggle" type="button" aria-pressed="false" title="grid — toggle the 60-column layout overlay (alignment aid)">grid</button>
-    <button class="rail__btn" id="themeToggle" type="button">theme</button>
+    ${
+      bare
+        ? ''
+        : `<button class="rail__btn" id="gridToggle" type="button" aria-pressed="false" title="grid — toggle the 60-column layout overlay (alignment aid)">grid</button>
+    <button class="rail__btn" id="themeToggle" type="button">theme</button>`
+    }
     <span class="rail__stamp" aria-hidden="true"><span class="rail__stamp-glyph">◎</span>MMXXVI</span>
   </div>
-</header>
+</header>${
+    bare
+      ? ''
+      : `
 <script>
 (function () {
   var canvas = document.getElementById('field');
@@ -1875,7 +1906,8 @@ body.xray-on .xray-overlay{ opacity:1; }
     try { sessionStorage.setItem('poetics-grid', on ? 'on' : ''); } catch (_e) {}
   });
 })();
-</script>`;
+</script>`
+  }`;
 }
 
 // The summary note is an external techne-framework HTML doc that owns its own
@@ -1950,7 +1982,7 @@ function summaryWrapperHtml() {
 // /browse could later drop its bespoke copy and adopt pageHead() too.
 // Page-specific CSS is passed in via `css` and appended after this.
 const BASE_CSS = `@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Source+Serif+4:opsz,wght@8..60,200..900&family=JetBrains+Mono:wght@300..700&display=swap");
-:root{ color-scheme: light dark; --paper:#F1E9D8; --paper-2:#E9DFC7; --paper-3:#EFE4CC; --paper-4:#F7EFDD; --ink:#181310; --ink-2:#3A2F27; --ink-3:#6A5C50; --ink-4:#8C7E6A; --linen:#D8C7A9; --moss:#56683A; --moss-deep:#3A4824; --moss-soft:#E3E6CE; --brick:#A53E2E; --brick-d:#7C2C1F; --brick-soft:#F3DDD6; --ochre:#C08A3E; --ochre-d:#8C5F1F; --ochre-soft:#F5E6C2; --indigo:#2A4F6B; --indigo-soft:#DCE6EE; --prussian:#2A4F6B; --sun:#E4B644; --red-mark:#D62828; --rule:rgba(28,22,16,.18); --rule-soft:rgba(28,22,16,.10); --ease:cubic-bezier(.22,.61,.36,1); --cols:60; --gutter:clamp(3px,0.32vw,8px); --margin:clamp(12px,1.8vw,34px); --lead:1.5; --lead-tight:1.05; --s-0:clamp(0.70rem,0.66rem + 0.14vw,0.78rem); --s-1:clamp(0.82rem,0.78rem + 0.18vw,0.94rem); --s-2:clamp(0.95rem,0.88rem + 0.32vw,1.14rem); --s-3:clamp(1.18rem,1.02rem + 0.74vw,1.62rem); --s-4:clamp(1.65rem,1.28rem + 1.72vw,2.60rem); --s-5:clamp(2.40rem,1.60rem + 3.80vw,4.80rem); --bg:var(--paper); --panel:var(--paper-4); --muted:var(--ink-3); --line:var(--rule); --accent:var(--moss-deep); --accent-soft:var(--moss-soft); --warn:var(--ochre-d); --trap:var(--brick-d); --flat:var(--ink-3); }
+:root{ color-scheme: light dark; --paper:#F1E9D8; --paper-2:#E9DFC7; --paper-3:#EFE4CC; --paper-4:#F7EFDD; --ink:#181310; --ink-2:#3A2F27; --ink-3:#6A5C50; --ink-4:#695B47; --linen:#D8C7A9; --moss:#56683A; --moss-deep:#3A4824; --moss-soft:#E3E6CE; --brick:#A53E2E; --brick-d:#7C2C1F; --brick-soft:#F3DDD6; --ochre:#C08A3E; --ochre-d:#835A1B; --ochre-soft:#F5E6C2; --indigo:#2A4F6B; --indigo-soft:#DCE6EE; --prussian:#2A4F6B; --sun:#E4B644; --red-mark:#D62828; --rule:rgba(28,22,16,.18); --rule-soft:rgba(28,22,16,.10); --ease:cubic-bezier(.22,.61,.36,1); --cols:60; --gutter:clamp(3px,0.32vw,8px); --margin:clamp(12px,1.8vw,34px); --lead:1.5; --lead-tight:1.05; --s-0:clamp(0.70rem,0.66rem + 0.14vw,0.78rem); --s-1:clamp(0.82rem,0.78rem + 0.18vw,0.94rem); --s-2:clamp(0.95rem,0.88rem + 0.32vw,1.14rem); --s-3:clamp(1.18rem,1.02rem + 0.74vw,1.62rem); --s-4:clamp(1.65rem,1.28rem + 1.72vw,2.60rem); --s-5:clamp(2.40rem,1.60rem + 3.80vw,4.80rem); --bg:var(--paper); --panel:var(--paper-4); --muted:var(--ink-3); --line:var(--rule); --accent:var(--moss-deep); --accent-soft:var(--moss-soft); --warn:var(--ochre-d); --trap:var(--brick-d); --flat:var(--ink-3); }
 [data-theme="dark"]{ --paper:#14100C; --paper-2:#1B1612; --paper-3:#1F1A14; --paper-4:#221C16; --ink:#F4EEDD; --ink-2:#E0D8C3; --ink-3:#B9AD96; --ink-4:#8C7E6A; --linen:#3A322A; --moss:#8DA868; --moss-deep:#B5CD92; --moss-soft:#2C3520; --brick:#E36953; --brick-d:#F08A75; --brick-soft:#3A1C16; --ochre:#E6B265; --ochre-d:#F3CB88; --ochre-soft:#3A2C12; --indigo:#7FA6CC; --indigo-soft:#1B2A38; --prussian:#7FA6CC; --sun:#E4B644; --red-mark:#E8584B; --rule:rgba(244,238,221,.18); --rule-soft:rgba(244,238,221,.08); }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
@@ -3901,7 +3933,7 @@ ${railHtml({ active: 'replays', brand: 'discursive replays', sub: 'counterfactua
 </div>
 <div class="layout">
   <div class="list" id="list"><div class="loading">loading…</div></div>
-  <div class="detail" id="detail"><div class="loading">pick an item on the left.</div></div>
+  <div class="detail" id="detail" role="region" aria-label="Replay detail" tabindex="0"><div class="loading">pick an item on the left.</div></div>
 </div>
 <script>
 const GATE_BUCKETS = ${JSON.stringify(GATE_BUCKETS)};
@@ -4495,14 +4527,14 @@ function renderBrowserHtml() {
 
 :root {
   color-scheme: light dark;
-  --paper:       #F4EEDD;
-  --paper-2:     #ECE3CB;
-  --paper-3:     #F8F2E2;
-  --paper-4:     #FBF6E8;
-  --ink:         #14100C;
-  --ink-2:       #2C241B;
-  --ink-3:       #5C5040;
-  --ink-4:       #8C7E6A;
+  --paper:       #F1E9D8;
+  --paper-2:     #E9DFC7;
+  --paper-3:     #EFE4CC;
+  --paper-4:     #F7EFDD;
+  --ink:         #181310;
+  --ink-2:       #3A2F27;
+  --ink-3:       #6A5C50;
+  --ink-4:       #695B47;
   --linen:       #D8C7A9;
   --moss:        #56683A;
   --moss-deep:   #3A4824;
@@ -4511,10 +4543,10 @@ function renderBrowserHtml() {
   --brick-d:     #7C2C1F;
   --brick-soft:  #F3DDD6;
   --ochre:       #C08A3E;
-  --ochre-d:     #8C5F1F;
+  --ochre-d:     #835A1B;
   --ochre-soft:  #F5E6C2;
-  --indigo:      #5A6797;
-  --indigo-soft: #E2E5F0;
+  --indigo:      #2A4F6B;
+  --indigo-soft: #DCE6EE;
   --rule:        rgba(28, 22, 16, 0.18);
   --rule-soft:   rgba(28, 22, 16, 0.10);
   --ease:        cubic-bezier(.22,.61,.36,1);
@@ -4550,8 +4582,8 @@ function renderBrowserHtml() {
   --ochre:       #E6B265;
   --ochre-d:     #F3CB88;
   --ochre-soft:  #3A2C12;
-  --indigo:      #98A6D4;
-  --indigo-soft: #1F2434;
+  --indigo:      #7FA6CC;
+  --indigo-soft: #1B2A38;
   --rule:        rgba(244, 238, 221, 0.18);
   --rule-soft:   rgba(244, 238, 221, 0.08);
 }
@@ -5296,19 +5328,19 @@ ${railHtml({
       <div id="appSub" class="sub">Generated public scripts, full traces, critic scores, and labels-as-perspective.</div>
     </div>
     <div class="filters">
-      <select id="runSelect"></select>
+      <select id="runSelect" aria-label="Select run"></select>
       <input id="searchInput" placeholder="Search id · drama · discipline · condition · arm · critic form (recognition/trap/flat)">
-      <select id="disciplineSelect"><option value="">all disciplines</option></select>
+      <select id="disciplineSelect" aria-label="Filter by discipline"><option value="">all disciplines</option></select>
       <input id="labellerInput" class="blind-only" placeholder="Labeller id">
       <div class="filter-row score-only">
-        <select id="roleSelect">
+        <select id="roleSelect" aria-label="Filter by role">
           <option value="">all roles</option>
           <option value="target">target</option>
           <option value="flat_control">flat controls</option>
           <option value="boundary_trap_control">boundary traps</option>
           <option value="hard_trap_control">hard traps</option>
         </select>
-        <select id="formSelect">
+        <select id="formSelect" aria-label="Filter by critic form">
           <option value="">all forms</option>
           <option value="recognition">recognition</option>
           <option value="trap">trap</option>

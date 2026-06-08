@@ -40,6 +40,8 @@
   --brick:     #A53E2E;
   --sun:       #E4B644;
   --moss:      #56683A;
+  --moss-deep: #3A4824;  /* injected rail (rail-inject.js) active-state highlight */
+  --moss-soft: #E3E6CE;
   --linen:     #D8C7A9;
   --red-mark:  #D62828;
 
@@ -3376,5 +3378,9 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
     };
   }
 </script>
+<!-- Dashboard nav rail (shared with the rendered pages via /_nav.html);
+     compact = drop the rail's own glyph + stamp since the chat chrome below
+     already carries a brand mark. -->
+<script src="/components/rail-inject.js" data-active="tutor" data-compact="1" defer></script>
 </body>
 </html>

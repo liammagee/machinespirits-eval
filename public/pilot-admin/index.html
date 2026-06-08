@@ -13,21 +13,36 @@
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked@13.0.3/marked.min.js"></script>
 <style>
+  /* Canonical warm "paper/ink" palette — shared with the dashboard + techne.css
+     so the operator view stops being a cool-grey island. --accent maps to the
+     dashboard's prussian indigo (closest hue to the old teal); warn/good/bad use
+     the WCAG-AA-safe dashboard values. Token NAMES are unchanged, so every
+     component style below keeps working — only the values shift. */
   :root {
-    --paper:    #fafaf7;
-    --paper-2:  #f1efe7;
-    --paper-3:  #e8e4da;
-    --ink:      #1a1a1a;
-    --ink-2:    #3d3d3d;
-    --ink-3:    #6f6f6f;
-    --ink-4:    #9a9a9a;
-    --rule:     #d8d4ca;
-    --accent:   #2d5d6e;
-    --accent-2: #1f4252;
-    --warn:     #b35c1a;
-    --good:     #3a6a3a;
-    --bad:      #a43a2e;
-    --shadow:   rgba(0,0,0,0.06);
+    --paper:    #F1E9D8;
+    --paper-2:  #E9DFC7;
+    --paper-3:  #EFE4CC;
+    --paper-4:  #F7EFDD;
+    --ink:      #181310;
+    --ink-2:    #3A2F27;
+    --ink-3:    #6A5C50;
+    --ink-4:    #695B47;
+    --rule:     rgba(28, 22, 16, 0.18);
+    --accent:   #2A4F6B;
+    --accent-2: #1D3A50;
+    --warn:     #835A1B;
+    --good:     #3A4824;
+    --bad:      #7C2C1F;
+    --shadow:   rgba(28, 22, 16, 0.06);
+    /* rail-contract tokens — the injected dashboard rail (rail-inject.js) styles
+       its accents with these; define them here (light-only page) so the active
+       highlight, ◐ glyph and transitions match the dashboard. */
+    --moss:      #56683A;
+    --moss-deep: #3A4824;
+    --moss-soft: #E3E6CE;
+    --brick:     #A53E2E;
+    --prussian:  #2A4F6B;
+    --ease:      cubic-bezier(.22, .61, .36, 1);
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
@@ -64,7 +79,7 @@
   }
   .auth-box input {
     flex: 1; padding: 0.4rem 0.6rem; border: 1px solid var(--rule); border-radius: 3px;
-    font: inherit; background: white;
+    font: inherit; background: var(--paper-4);
   }
   button {
     padding: 0.4rem 1rem; border: 1px solid var(--accent); background: var(--accent);
@@ -73,7 +88,7 @@
   button:hover:not(:disabled) { background: var(--accent-2); }
   button:disabled { opacity: 0.4; cursor: not-allowed; }
   button.secondary {
-    background: white; color: var(--accent); border: 1px solid var(--rule);
+    background: var(--paper-4); color: var(--accent); border: 1px solid var(--rule);
   }
   button.secondary:hover:not(:disabled) { background: var(--paper-2); border-color: var(--accent); }
 
@@ -93,7 +108,7 @@
     margin: 0.5rem 0 1rem;
   }
   .count-card {
-    background: white; border: 1px solid var(--rule); border-radius: 4px;
+    background: var(--paper-4); border: 1px solid var(--rule); border-radius: 4px;
     padding: 0.75rem 1rem; box-shadow: 0 1px 2px var(--shadow);
   }
   .count-card .name { font-family: "JetBrains Mono", monospace; font-size: 0.78rem; color: var(--ink-3); margin-bottom: 0.3rem; word-break: break-all; }
@@ -114,7 +129,7 @@
   }
   .filter-row .pill {
     padding: 0.25rem 0.7rem; border: 1px solid var(--rule); border-radius: 99px;
-    font-size: 0.78rem; cursor: pointer; background: white; color: var(--ink-2);
+    font-size: 0.78rem; cursor: pointer; background: var(--paper-4); color: var(--ink-2);
   }
   .filter-row .pill.is-active {
     background: var(--accent); color: white; border-color: var(--accent);
@@ -123,7 +138,7 @@
   /* table */
   table.sessions {
     width: 100%; border-collapse: collapse; font-size: 0.85rem;
-    background: white; border: 1px solid var(--rule); border-radius: 4px; overflow: hidden;
+    background: var(--paper-4); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden;
   }
   table.sessions thead th {
     text-align: left; padding: 0.5rem 0.75rem;
@@ -170,14 +185,14 @@
 
   /* operator panels */
   .op-panel {
-    background: white; border: 1px solid var(--rule); border-radius: 4px;
+    background: var(--paper-4); border: 1px solid var(--rule); border-radius: 4px;
     padding: 0.85rem 1rem; margin: 0.5rem 0 1rem;
   }
   .op-panel .row { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
   .op-panel label { font-size: 0.78rem; color: var(--ink-3); }
   .op-panel select, .op-panel input[type="number"], .op-panel input[type="text"] {
     padding: 0.35rem 0.5rem; border: 1px solid var(--rule); border-radius: 3px;
-    font: inherit; background: white;
+    font: inherit; background: var(--paper-4);
   }
   .op-panel input[type="number"] { width: 5rem; }
   .metered-warn {
@@ -197,7 +212,7 @@
 
   /* session detail panel */
   .detail {
-    margin-top: 1.5rem; background: white; border: 1px solid var(--rule);
+    margin-top: 1.5rem; background: var(--paper-4); border: 1px solid var(--rule);
     border-radius: 4px; padding: 1rem 1.25rem;
   }
   .detail .meta-grid {
@@ -212,7 +227,7 @@
     margin: 0.4rem 0; font-size: 0.88rem;
   }
   .turn.turn--learner { background: var(--paper-2); }
-  .turn.turn--tutor   { background: white; }
+  .turn.turn--tutor   { background: var(--paper-4); }
   .turn .turn-header {
     display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--ink-3);
     margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.04em;
@@ -714,5 +729,7 @@ function adminApp() {
   };
 }
 </script>
+<!-- Dashboard nav rail (shared with the rendered pages via /_nav.html). -->
+<script src="/components/rail-inject.js" data-active="pilot-admin" defer></script>
 </body>
 </html>
