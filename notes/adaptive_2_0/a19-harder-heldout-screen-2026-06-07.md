@@ -353,3 +353,26 @@ productive-impasse failure pattern as `target_granularity_risk` when diagnostic
 menu language is visible but the committed repair extracts as `transfer_control`.
 This preserves the conservative `neither_correct` result while making the next
 screen harder to overread.
+
+## V0.3/V0.4 Loop Resolution
+
+The unattended follow-on loop is recorded in:
+`notes/adaptive_2_0/a19-loop-resolution-2026-06-08.md`.
+
+The fresh v0.3 diagnostic-options sibling,
+`productive_impasse_answer_leakage_b`, stopped before S1. Its weak S0 arm was
+already `target` under post-hoc mapping, while the committed repair extracted as
+`transfer_control`; the obligation audit flagged `target_granularity_risk=true`.
+No recursive-full rerun is triggered because no `offer_diagnostic_options`
+headroom appeared.
+
+The new recursive-full family, `over_compliance_scaffold_dependency`, admitted a
+bounded `preserve_struggle` axiom after a real attempt-1 survivor. Both held-out
+siblings then resolved as `neither_correct`: S0 and S1 were consistently
+extracted as `transfer_control`, not `preserve_struggle`. This is a
+target-granularity failure under the strongest S0 stratum, not a transfer result.
+
+Protocol v0.4 therefore adds `preserve_struggle` public obligations rather than
+reclassifying the v0.3 screen. Future preserve-struggle families must explicitly
+withhold copyable completion, remove or limit one scaffold, and require a
+bounded learner-owned decision before any generation can support a target claim.

@@ -1,7 +1,7 @@
 meta:
   schema_version: teaching-drama-axiom-families-v0.1
   protocol_id: A19
-  protocol_version: a19-drama-axiom-transfer-v0.3
+  protocol_version: a19-drama-axiom-transfer-v0.4
   prompt_version: a19-fixture-v0.1
   source_plan: notes/adaptive_2_0/teaching_drama_learning_plan.html
   fixture_only: true
@@ -541,6 +541,102 @@ families:
             basis_label: no_commitment
             artifact_flags: [arbiter_disagreement]
           expected_card_verdict: arbiter_disagreement
+
+  - family_id: over_compliance_scaffold_dependency
+    title: Over-compliance mistaken as mastery
+    domain: writing_feedback
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
+    learner_resistance_type: over_compliance
+    tutor_infelicity_type: over_scaffolding
+    training_seed:
+      seed_id: over_compliance_scaffold_dependency_seed
+      public_setup: >-
+        The learner accepts help by asking for a copyable next line, and the
+        tutor treats this compliance as readiness to receive the polished move.
+      learner_resistance: >-
+        I can do it if you just give me the exact sentence to write next. I will
+        copy that and then keep going.
+      expected_failure: over_scaffolding
+      old_rule_decoy: supply_copyable_template_to_keep_momentum
+    target_policy:
+      policy_id: fade_scaffold_before_copying
+      trigger: learner asks to copy the tutor's next move instead of making a bounded choice
+      avoid_move: provide the exact sentence or full template to copy
+      preferred_move: preserve the learner's productive struggle by removing one scaffold and asking for a bounded learner-owned choice
+      applicability_conditions:
+        - learner compliance replaces their own next decision
+      anti_conditions:
+        - learner has already stated the criterion for the next move independently
+      repair_type: preserve_struggle
+      public_obligations:
+        - explicitly_withhold_copyable_completion
+        - remove_or_limit_one_scaffold
+        - require_bounded_learner_owned_decision
+    plausible_repairs:
+      - supply_copyable_template_to_keep_momentum
+      - praise_compliance_and_continue
+      - fade_scaffold_before_copying
+    cue_map:
+      selected_relation_type: scaffold_dependency
+      requires_constructed_device: false
+      counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: writing_feedback
+      leakage_risks:
+        - s0_may_infer_scaffold_fading_from_copy_request
+        - false_positive_if_tutor_withholds_help_without_bounded_choice
+    heldout_siblings:
+      - sibling_id: over_compliance_scaffold_dependency_a
+        public_setup: >-
+          The learner says they can continue if the tutor gives them the next
+          sentence to copy.
+        learner_resistance: >-
+          I am fine with your feedback. Just give me the sentence I should put
+          here and I will use it exactly.
+        headroom_prediction: s0_may_supply_a_template_or_overcorrect_instead_of_requiring_a_learner_owned_choice
+        target_aliases: [fade scaffold, learner-owned choice, remove one support, preserve struggle, choose the next move]
+        decoy_aliases: [copyable template, exact sentence, praise compliance, give the sentence]
+        selected_policy_markers: [scaffold-fade-choice, copy-resistant-next-move]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: over_scaffolding
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: over_compliance_scaffold_dependency_b
+        public_setup: >-
+          The learner asks for help but already names the decision they need to
+          make before revising.
+        learner_resistance: >-
+          I think the next choice is whether my evidence should define the key
+          term or show a contrast case. I need help deciding which one fits.
+        headroom_prediction: s0_may_self_solve_because_the_learner_already_names_the_choice
+        target_aliases: [fade scaffold, learner-owned choice, remove one support, bounded choice]
+        decoy_aliases: [copyable template, exact sentence, praise compliance, give the sentence]
+        selected_policy_markers: [scaffold-fade-choice, copy-resistant-next-move]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: ceiling
 
   - family_id: frustration_rupture_repair
     title: Frustration mistaken as refusal

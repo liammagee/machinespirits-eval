@@ -1,5 +1,16 @@
 # A19 Teaching-Drama Axiom Protocol Changelog
 
+## a19-drama-axiom-transfer-v0.4
+
+- Added `preserve_struggle` to the repair-type obligation taxonomy after the
+  recursive-full over-compliance screen collapsed both S0 and S1 into
+  `transfer_control`.
+- Required preserve-struggle target policies to declare public obligations:
+  withhold copyable completion, remove or limit one scaffold, and require a
+  bounded learner-owned decision.
+- Kept the v0.3 over-compliance result as a negative target-granularity result;
+  this version does not reclassify it as A19 transfer.
+
 ## a19-drama-axiom-transfer-v0.3
 
 - Added a repair-type obligation taxonomy for the ambiguous

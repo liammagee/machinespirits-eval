@@ -70,6 +70,10 @@
 - [x] Run the paired weak S0/S1 contrast for `productive_impasse_answer_leakage_a`; result: `neither_correct` because both arms extracted as `transfer_control`.
 - [ ] If a future `productive_impasse_answer_leakage` screen produces actual `policy_headroom` under `offer_diagnostic_options`, rerun it against `recursive_full_no_policy_memory` before stability, paid adjudication, Paper 2.0, atlas, or sidecar use.
 - [x] Freeze v0.3 repair-type obligations for `offer_diagnostic_options` versus `transfer_control`; keep diagnostic-options distinct for now, but require explicit public obligations and report target-granularity risk when diagnostic menu language collapses into transfer-control extraction.
+- [x] Run the fresh v0.3 diagnostic-options sibling `productive_impasse_answer_leakage_b`; S0 was already `target` while extracted as `transfer_control`, with `target_granularity_risk=true`, so the branch stopped before S1.
+- [x] Add one genuinely new recursive-full family, `over_compliance_scaffold_dependency`, and admit one bounded `preserve_struggle` axiom from a real attempt-1 survivor.
+- [x] Screen both over-compliance held-out siblings under recursive-full S0/S1; both resolved as `neither_correct` because S0 and S1 extracted as `transfer_control`, not `preserve_struggle`.
+- [x] Freeze v0.4 repair-type obligations for `preserve_struggle`; future preserve-struggle screens must distinguish scaffold removal and learner-owned decision from ordinary transfer-control application gates.
 
 ## Phase 5: Evaluation And Human Validation
 

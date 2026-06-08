@@ -1,6 +1,6 @@
 meta:
   protocol_id: A19
-  protocol_version: a19-drama-axiom-transfer-v0.3
+  protocol_version: a19-drama-axiom-transfer-v0.4
   frozen_at: 2026-06-07
   status: zero_api_scaffold
   claim_boundary: simulated_teacher_as_learner_not_human_learning
@@ -48,6 +48,7 @@ family_fixture_requirements:
   require_s0_baseline_design: true
   require_public_obligations_for_repair_types:
     - offer_diagnostic_options
+    - preserve_struggle
     - transfer_control
   require_blind_withholding:
     - target_aliases
@@ -146,6 +147,23 @@ repair_type_obligation_taxonomy:
       distinction_from_transfer_control: >-
         The public learner action is choosing or testing the source of impasse,
         not merely applying a corrected rule to a fresh case before closure.
+    preserve_struggle:
+      definition: >-
+        The tutor prevents over-scaffolding by withholding copyable completion
+        and preserving one bounded learner-owned decision before any polished
+        answer or sentence is accepted.
+      required_public_obligations:
+        - explicitly_withhold_copyable_completion
+        - remove_or_limit_one_scaffold
+        - require_bounded_learner_owned_decision
+      excludes:
+        - test_only_followed_by_tutor_selected_answer
+        - public_application_without_scaffold_fade
+        - exact_sentence_or_full_template_as_committed_repair
+      distinction_from_transfer_control: >-
+        The public learner action is choosing or owning the next move after a
+        scaffold is removed, not merely applying a revised relation to prove
+        readiness for closure.
     transfer_control:
       definition: >-
         The tutor withholds closure until the learner publicly applies the
