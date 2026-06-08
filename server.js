@@ -19,7 +19,8 @@
 
 import 'dotenv/config';
 import express from 'express';
-import { resolveBasicAuthGuard } from './services/httpBasicAuth.js';
+import { resolveBasicAuthGuard, makeRoleGate } from './services/httpBasicAuth.js';
+import { mountEvalSurfaces } from './services/evalSurfaces.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { existsSync, mkdirSync, readFileSync } from 'fs';
@@ -42,6 +43,10 @@ if (authGuard) {
   app.use(authGuard);
   console.log('[EvalServer] basic-auth ENABLED (credentials required)');
 }
+// Default-deny role gate (Design A — perimeter RBAC). No-op on localhost-open
+// and for the admin role; restricts a 'participant' credential to the pilot +
+// adjudication allowlist (see services/httpBasicAuth.js PARTICIPANT_ALLOWLIST).
+app.use(makeRoleGate());
 
 // Middleware
 app.use(express.json());
@@ -63,43 +68,12 @@ app.get('/health', (req, res) => {
   });
 });
 
-// API routes
-import evalRoutes from './routes/evalRoutes.js';
-import chatRoutes from './routes/chatRoutes.js';
-import pilotRoutes from './routes/pilotRoutes.js';
-app.use('/api/eval', evalRoutes);
-app.use('/api/chat', chatRoutes);
-app.use('/api/pilot', pilotRoutes);
-
-// Serve the interactive chat UI
-const chatPublicDir = path.join(__dirname, 'public', 'chat');
-if (existsSync(chatPublicDir)) {
-  app.use('/chat', express.static(chatPublicDir));
-}
-
-// Serve the participant-facing pilot UI (A1 human-learner study)
-const pilotPublicDir = path.join(__dirname, 'public', 'pilot');
-if (existsSync(pilotPublicDir)) {
-  app.use('/pilot', express.static(pilotPublicDir));
-}
-
-// Serve the operator-facing admin dashboard (token-gated; calls /api/pilot/admin/*)
-const pilotAdminDir = path.join(__dirname, 'public', 'pilot-admin');
-if (existsSync(pilotAdminDir)) {
-  app.use('/pilot-admin', express.static(pilotAdminDir));
-}
-
-// Serve components as static files
-const componentsDir = path.join(__dirname, 'components');
-if (existsSync(componentsDir)) {
-  app.use('/components', express.static(componentsDir));
-}
-
-// Serve documentation
-const docsDir = path.join(__dirname, 'docs');
-if (existsSync(docsDir)) {
-  app.use('/docs', express.static(docsDir));
-}
+// API routers + static UI surfaces (the four /api/* routers and the public/
+// UI dirs) are defined once in services/evalSurfaces.js and shared with the
+// poetics browser (scripts/browse-poetics-scripts.js), so the eval route-set
+// can't drift between the two servers. Auth, JSON parsing, the health check,
+// the standalone '/', and listen() stay here — this app owns those.
+mountEvalSurfaces(app, { root: __dirname });
 
 // In standalone mode, serve a basic UI
 if (isStandalone) {
@@ -142,6 +116,10 @@ if (isStandalone) {
   <div class="endpoint">
     <strong><a href="/chat">/chat</a></strong>
     <p>Explore tutor architectures interactively — play the learner, watch the ego/superego deliberation for any cell from <code>tutor-agents.yaml</code>.</p>
+  </div>
+  <div class="endpoint">
+    <strong><a href="/adjudication">/adjudication</a></strong>
+    <p>Complete blinded A19 human adjudication forms through the dashboard server.</p>
   </div>
 
   <h2>API Endpoints</h2>

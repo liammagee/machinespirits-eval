@@ -1281,14 +1281,21 @@ async function runTutorTurn({
   topic,
   curriculum = null,
   useClaudeCli = false,
+  // Optional, live-only knobs. Defaults preserve the scored instrument exactly:
+  // styleDirective is appended to the ego draft + superego revision instructions
+  // (e.g. a brevity / one-question-per-turn rule for the interactive sit-in), and
+  // maxTokens caps the ego/superego output. Batch eval never sets either.
+  styleDirective = '',
+  maxTokens = null,
 }) {
   const conversationContext = recentContext(history);
   const deliberation = [];
+  const styleLine = styleDirective ? `\n\n${styleDirective}` : '';
 
   const egoModelRef = evalConfigLoader.resolveModel(`${profile.ego.provider}.${profile.ego.model}`);
   const egoPromptBody = loadPromptFile(profile.ego.prompt_file);
   const egoTemp = profile.ego.hyperparameters?.temperature ?? 0.6;
-  const egoMaxTokens = profile.ego.hyperparameters?.max_tokens ?? 2000;
+  const egoMaxTokens = maxTokens ?? profile.ego.hyperparameters?.max_tokens ?? 2000;
 
   const curriculumBlock = curriculum
     ? `
@@ -1317,7 +1324,7 @@ ${conversationContext || '(none)'}
 The learner just said:
 "${learnerMessage}"
 
-Draft your initial response as a tutor. Be warm but intellectually challenging. Don't be condescending. Build on their words. Provide ONLY the response text (no JSON, no meta-commentary).`;
+Draft your initial response as a tutor. Be warm but intellectually challenging. Don't be condescending. Build on their words.${styleLine} Provide ONLY the response text (no JSON, no meta-commentary).`;
 
   const egoOut = useClaudeCli
     ? await callClaudeCli({ system: egoSystem, user: learnerMessage })
@@ -1350,7 +1357,7 @@ Draft your initial response as a tutor. Be warm but intellectually challenging. 
     const superModelRef = evalConfigLoader.resolveModel(`${profile.superego.provider}.${profile.superego.model}`);
     const superPromptBody = loadPromptFile(profile.superego.prompt_file);
     const superTemp = profile.superego.hyperparameters?.temperature ?? 0.2;
-    const superMaxTokens = profile.superego.hyperparameters?.max_tokens ?? 2000;
+    const superMaxTokens = maxTokens ?? profile.superego.hyperparameters?.max_tokens ?? 2000;
 
     const superSystem = `${superPromptBody || 'You are a pedagogical critic reviewing tutor responses.'}
 
@@ -1365,7 +1372,7 @@ The learner said:
 The tutor's DRAFT response:
 "${egoDraft}"
 
-Critique this draft for pedagogical soundness, emotional attunement, Socratic quality, and ZPD awareness. Then provide an improved version (or write "APPROVED" if the draft is already strong).
+Critique this draft for pedagogical soundness, emotional attunement, Socratic quality, and ZPD awareness. Then provide an improved version (or write "APPROVED" if the draft is already strong).${styleLine ? `\n\nThe improved version MUST also obey:${styleLine}` : ''}
 
 Format strictly:
 CRITIQUE: [your analysis]

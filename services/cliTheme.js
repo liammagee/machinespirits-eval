@@ -15,6 +15,9 @@ export function status(text) {
   if (lower === 'running') return chalk.yellow(text);
   if (lower === 'completed') return chalk.green(text);
   if (lower === 'failed') return chalk.red(text);
+  if (lower === 'pass' || lower === 'ok') return chalk.green(text);
+  if (lower === 'fail' || lower === 'error') return chalk.red(text);
+  if (lower === 'warn' || lower === 'warning') return chalk.yellow(text);
   if (lower.includes('stale')) return chalk.red(text);
   return chalk.dim(text);
 }
@@ -97,6 +100,52 @@ export function warn(text) {
   return chalk.yellow(text);
 }
 
+// ── Interactive prompt colors ─────────────────────────────────
+
+export function prompt(text) {
+  return chalk.whiteBright.bold(text);
+}
+
+export function defaultValue(text) {
+  return chalk.dim(`[${text}]`);
+}
+
+export function choiceIndex(text) {
+  return chalk.dim(text);
+}
+
+export function choiceValue(text) {
+  return chalk.cyan(text);
+}
+
+export function choiceDescription(text) {
+  return chalk.dim(text);
+}
+
+export function filePath(text) {
+  return chalk.blue(text);
+}
+
+export function key(text) {
+  return chalk.dim(text);
+}
+
+export function value(text) {
+  return chalk.white(text);
+}
+
+export function divider(text = '─'.repeat(60)) {
+  return chalk.dim(text);
+}
+
+export function transcriptRole(role) {
+  const upper = String(role || '').toUpperCase();
+  if (upper === 'TUTOR') return chalk.magenta(upper);
+  if (upper === 'LEARNER') return chalk.green(upper);
+  if (upper === 'STAGE') return chalk.yellow(upper);
+  return chalk.cyan(upper);
+}
+
 // ── Box drawing helpers ────────────────────────────────────────
 
 export function box(title, content, color = chalk.dim) {
@@ -127,6 +176,16 @@ export default {
   error,
   success,
   warn,
+  prompt,
+  defaultValue,
+  choiceIndex,
+  choiceValue,
+  choiceDescription,
+  filePath,
+  key,
+  value,
+  divider,
+  transcriptRole,
   box,
   chalk,
 };

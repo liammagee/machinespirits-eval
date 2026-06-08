@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>A19 Human Adjudication</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #101114;
+        --panel: #171a20;
+        --panel-2: #20242c;
+        --line: #343a45;
+        --text: #edf0f4;
+        --muted: #aab2bf;
+        --accent: #7cc6ff;
+        --good: #7ad99b;
+        --warn: #f3c56b;
+        --bad: #ff7a7a;
+        --focus: #e0f2ff;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.45;
+      }
+
+      main {
+        width: min(1280px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 24px 0 48px;
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 24px;
+        padding: 10px 0 20px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+        letter-spacing: 0;
+      }
+
+      h1 {
+        font-size: 24px;
+        font-weight: 700;
+      }
+
+      h2 {
+        font-size: 17px;
+        margin-bottom: 12px;
+      }
+
+      h3 {
+        font-size: 15px;
+        margin-bottom: 10px;
+      }
+
+      code {
+        color: var(--accent);
+        word-break: break-word;
+      }
+
+      button,
+      input,
+      select,
+      textarea {
+        font: inherit;
+      }
+
+      button {
+        border: 1px solid var(--line);
+        background: var(--panel-2);
+        color: var(--text);
+        border-radius: 6px;
+        min-height: 36px;
+        padding: 0 12px;
+        cursor: pointer;
+      }
+
+      button.primary {
+        border-color: #456f8e;
+        background: #173449;
+      }
+
+      button:focus,
+      input:focus,
+      select:focus,
+      textarea:focus {
+        outline: 2px solid var(--focus);
+        outline-offset: 2px;
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.55;
+      }
+
+      input,
+      select,
+      textarea {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: #0d0f12;
+        color: var(--text);
+        padding: 9px 10px;
+      }
+
+      textarea {
+        min-height: 78px;
+        resize: vertical;
+      }
+
+      label {
+        display: grid;
+        gap: 6px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .meta {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px 20px;
+        margin-top: 16px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .status {
+        max-width: 420px;
+        color: var(--muted);
+        text-align: right;
+        font-size: 13px;
+      }
+
+      .section {
+        padding: 22px 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .wide {
+        grid-column: 1 / -1;
+      }
+
+      .arm {
+        display: grid;
+        grid-template-columns: minmax(280px, 0.9fr) minmax(320px, 1.1fr);
+        gap: 18px;
+        padding: 18px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        margin-top: 14px;
+      }
+
+      .transcript {
+        max-height: 620px;
+        overflow: auto;
+        white-space: pre-wrap;
+        padding: 14px;
+        background: #0d0f12;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 12px;
+      }
+
+      .role-stage {
+        color: var(--warn);
+      }
+
+      .role-learner {
+        color: var(--good);
+      }
+
+      .role-tutor {
+        color: var(--accent);
+      }
+
+      .obligations {
+        display: grid;
+        gap: 10px;
+      }
+
+      .checks {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px 12px;
+      }
+
+      .checks label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text);
+      }
+
+      .checks input {
+        width: auto;
+      }
+
+      .evidence-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1.4fr) minmax(180px, 0.6fr) auto;
+        gap: 10px;
+        align-items: end;
+        margin-top: 10px;
+      }
+
+      .inline {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .inline input[type="checkbox"] {
+        width: auto;
+      }
+
+      .actions {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 10px;
+        padding-top: 22px;
+      }
+
+      .message {
+        padding: 12px;
+        border-radius: 6px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        color: var(--muted);
+        white-space: pre-wrap;
+      }
+
+      .message.ok {
+        color: var(--good);
+        border-color: #315d3e;
+      }
+
+      .message.error {
+        color: var(--bad);
+        border-color: #713838;
+      }
+
+      .small {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      @media (max-width: 860px) {
+        main {
+          width: min(100vw - 20px, 720px);
+        }
+
+        header,
+        .grid,
+        .arm,
+        .evidence-row,
+        .meta {
+          grid-template-columns: 1fr;
+        }
+
+        header {
+          display: grid;
+        }
+
+        .status {
+          text-align: left;
+        }
+
+        .checks {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <h1>A19 Human Adjudication</h1>
+          <div class="meta" id="meta"></div>
+        </div>
+        <div class="status" id="status">Loading assignment...</div>
+      </header>
+
+      <form id="adjudication-form" hidden>
+        <section class="section">
+          <h2>Coder</h2>
+          <div class="grid">
+            <label>
+              Coder ID
+              <input id="coder-id" name="coder_id" autocomplete="off" required />
+            </label>
+            <label>
+              Coder role
+              <input id="coder-role" name="coder_role" value="expert_or_semi_expert" required />
+            </label>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2>Codebook</h2>
+          <div class="message" id="codebook-summary"></div>
+        </section>
+
+        <section class="section" id="arms"></section>
+
+        <section class="section">
+          <h2>Pairwise Judgment</h2>
+          <div class="grid">
+            <label>
+              Better arm for learner standing
+              <select id="better-arm" required></select>
+            </label>
+            <label class="inline">
+              <input id="better-for-target" type="checkbox" />
+              Preference is for the target construct reason
+            </label>
+            <label class="wide">
+              Pairwise reason
+              <textarea id="pairwise-reason" required></textarea>
+            </label>
+            <label>
+              Visible answer-key hint or alias leakage
+              <select id="alias-leakage" required></select>
+            </label>
+            <label class="wide">
+              Ambiguous codebook terms, comma-separated
+              <input id="ambiguous-terms" />
+            </label>
+            <label class="wide">
+              Suggested codebook revision
+              <textarea id="suggested-revision"></textarea>
+            </label>
+          </div>
+        </section>
+
+        <div id="result" class="message" hidden></div>
+        <div class="actions">
+          <label class="inline small">
+            <input id="overwrite" type="checkbox" />
+            overwrite existing coder file
+          </label>
+          <button type="submit" class="primary">Submit adjudication</button>
+        </div>
+      </form>
+    </main>
+
+    <script>
+      const state = { assignment: null, codebook: null };
+      const qs = (selector, root = document) => root.querySelector(selector);
+      const qsa = (selector, root = document) => [...root.querySelectorAll(selector)];
+
+      function option(value) {
+        const el = document.createElement("option");
+        el.value = value;
+        el.textContent = value;
+        return el;
+      }
+
+      function fillSelect(select, values, defaultValue) {
+        select.innerHTML = "";
+        values.forEach((value) => select.append(option(value)));
+        if (defaultValue) select.value = defaultValue;
+      }
+
+      function roleClass(role) {
+        const lower = role.toLowerCase();
+        if (lower === "stage") return "role-stage";
+        if (lower === "learner") return "role-learner";
+        if (lower === "tutor") return "role-tutor";
+        return "";
+      }
+
+      function formatTranscript(text) {
+        return text
+          .split("\n")
+          .map((line) =>
+            line.replace(/^(STAGE|LEARNER|TUTOR):/, (match, role) => `<span class="${roleClass(role)}">${role}</span>:`),
+          )
+          .join("\n");
+      }
+
+      function valuesFromCodebook() {
+        const codebook = state.codebook;
+        return {
+          labels: [codebook.target_label, ...codebook.near_miss_labels],
+          statuses: codebook.target_status_values,
+          obligationValues: codebook.obligation_values,
+          excludedMoves: ["none", ...codebook.excluded_moves],
+          leakage: codebook.alias_leakage_assessment_values,
+          better: codebook.pairwise_better_arm_values,
+          supports: [
+            "primary_label",
+            "target_status",
+            "target_granularity_risk",
+            ...codebook.required_obligations.map((entry) => entry.id),
+            ...codebook.excluded_moves,
+          ],
+        };
+      }
+
+      function addEvidenceRow(container, supportValues) {
+        const row = document.createElement("div");
+        row.className = "evidence-row";
+        row.innerHTML = `
+          <label>Evidence quote<textarea data-field="quote" required></textarea></label>
+          <label>Supports<select data-field="supports" required></select></label>
+          <button type="button" data-action="remove-evidence">Remove</button>
+        `;
+        fillSelect(qs("select", row), supportValues, "primary_label");
+        qs("[data-action='remove-evidence']", row).addEventListener("click", () => {
+          if (qsa(".evidence-row", container).length > 1) row.remove();
+        });
+        container.append(row);
+      }
+
+      function renderArm(arm) {
+        const values = valuesFromCodebook();
+        const node = document.createElement("section");
+        node.className = "arm";
+        node.dataset.arm = arm.arm_public_id;
+        node.innerHTML = `
+          <div>
+            <h3>${arm.arm_public_id}</h3>
+            <div class="transcript">${formatTranscript(arm.transcript)}</div>
+            <p class="small">${arm.visible_alias_audit?.instruction || ""}</p>
+          </div>
+          <div class="grid">
+            <label>Primary repair label<select data-field="primary_label" required></select></label>
+            <label>Target status<select data-field="target_status" required></select></label>
+            <label class="inline wide">
+              <input data-field="target_granularity_risk" type="checkbox" />
+              target-granularity risk present
+            </label>
+            <div class="wide obligations" data-field="obligations"></div>
+            <div class="wide">
+              <h3>Excluded Moves</h3>
+              <div class="checks" data-field="excluded_moves_present"></div>
+            </div>
+            <div class="wide" data-field="evidence_spans">
+              <h3>Evidence</h3>
+              <button type="button" data-action="add-evidence">Add quote</button>
+            </div>
+            <label class="wide">Rationale<textarea data-field="rationale" required></textarea></label>
+            <label>Confidence<input data-field="confidence" type="number" min="0" max="1" step="0.01" value="0.5" required /></label>
+          </div>
+        `;
+        fillSelect(qs("[data-field='primary_label']", node), values.labels, "unclear");
+        fillSelect(qs("[data-field='target_status']", node), values.statuses, "unclear");
+
+        const obligations = qs("[data-field='obligations']", node);
+        state.codebook.required_obligations.forEach((obligation) => {
+          const label = document.createElement("label");
+          label.textContent = obligation.id;
+          const select = document.createElement("select");
+          select.dataset.obligation = obligation.id;
+          fillSelect(select, values.obligationValues, "unclear");
+          label.append(select);
+          obligations.append(label);
+        });
+
+        const checks = qs("[data-field='excluded_moves_present']", node);
+        values.excludedMoves.forEach((move) => {
+          const label = document.createElement("label");
+          label.innerHTML = `<input type="checkbox" value="${move}" ${move === "none" ? "checked" : ""} /> ${move}`;
+          checks.append(label);
+        });
+        checks.addEventListener("change", (event) => {
+          const box = event.target;
+          if (box.value === "none" && box.checked) {
+            qsa("input", checks).forEach((input) => {
+              if (input.value !== "none") input.checked = false;
+            });
+          } else if (box.checked) {
+            qs("input[value='none']", checks).checked = false;
+          }
+        });
+
+        const evidence = qs("[data-field='evidence_spans']", node);
+        qs("[data-action='add-evidence']", node).addEventListener("click", () => addEvidenceRow(evidence, values.supports));
+        addEvidenceRow(evidence, values.supports);
+        return node;
+      }
+
+      function collectArm(node) {
+        const checks = qsa("[data-field='excluded_moves_present'] input", node)
+          .filter((input) => input.checked)
+          .map((input) => input.value);
+        const obligations = {};
+        qsa("[data-obligation]", node).forEach((select) => {
+          obligations[select.dataset.obligation] = select.value;
+        });
+        const evidence_spans = qsa(".evidence-row", node).map((row) => ({
+          quote: qs("[data-field='quote']", row).value.trim(),
+          supports: qs("[data-field='supports']", row).value,
+        }));
+        return {
+          arm_public_id: node.dataset.arm,
+          primary_label: qs("[data-field='primary_label']", node).value,
+          target_status: qs("[data-field='target_status']", node).value,
+          target_granularity_risk: qs("[data-field='target_granularity_risk']", node).checked,
+          obligations,
+          excluded_moves_present: checks.length ? checks : ["none"],
+          evidence_spans,
+          rationale: qs("[data-field='rationale']", node).value.trim(),
+          confidence: Number.parseFloat(qs("[data-field='confidence']", node).value),
+        };
+      }
+
+      function render(data) {
+        state.assignment = data.assignment;
+        state.codebook = data.codebook;
+        qs("#status").textContent = `Assignment ${data.assignment.assignment_id}`;
+        qs("#coder-id").value = data.next_coder_id;
+        qs("#meta").innerHTML = `
+          <div><span class="small">packet</span><br /><code>${data.assignment.packet_id}</code></div>
+          <div><span class="small">codebook</span><br /><code>${data.codebook.codebook_id}</code></div>
+          <div><span class="small">assignment</span><br /><code>${data.paths.assignment}</code></div>
+          <div><span class="small">submissions</span><br /><code>${data.submissions.length}</code></div>
+        `;
+        qs("#codebook-summary").textContent = data.codebook.target_definition;
+        const arms = qs("#arms");
+        arms.innerHTML = "<h2>Arms</h2>";
+        data.assignment.arms.forEach((arm) => arms.append(renderArm(arm)));
+        const values = valuesFromCodebook();
+        fillSelect(qs("#better-arm"), values.better, "unclear");
+        fillSelect(qs("#alias-leakage"), values.leakage, "none_observed");
+        qs("#adjudication-form").hidden = false;
+      }
+
+      async function loadAssignment() {
+        const res = await fetch("/api/a19/adjudication/assignment");
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Could not load assignment");
+        render(data);
+      }
+
+      function showResult(message, ok) {
+        const node = qs("#result");
+        node.hidden = false;
+        node.className = `message ${ok ? "ok" : "error"}`;
+        node.textContent = message;
+      }
+
+      qs("#adjudication-form").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const payload = {
+          coder_id: qs("#coder-id").value.trim(),
+          coder_role: qs("#coder-role").value.trim(),
+          overwrite: qs("#overwrite").checked,
+          arm_judgments: qsa(".arm").map(collectArm),
+          pairwise_judgment: {
+            better_arm_public_id: qs("#better-arm").value,
+            better_for_target_reason: qs("#better-for-target").checked,
+            reason: qs("#pairwise-reason").value.trim(),
+            alias_leakage_assessment: qs("#alias-leakage").value,
+          },
+          codebook_feedback: {
+            ambiguous_terms: qs("#ambiguous-terms").value
+              .split(",")
+              .map((entry) => entry.trim())
+              .filter(Boolean),
+            suggested_revision: qs("#suggested-revision").value.trim(),
+          },
+        };
+        try {
+          const res = await fetch("/api/a19/adjudication/submissions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          const data = await res.json();
+          if (!res.ok || !data.success) {
+            const issues = data.validation?.issues?.map((issue) => `${issue.path}: ${issue.message}`).join("\n");
+            throw new Error([data.error || "Submission failed", issues].filter(Boolean).join("\n"));
+          }
+          showResult(`Saved ${data.coder_path}\nValidation status: ${data.validation.status}`, true);
+          await loadAssignment();
+        } catch (error) {
+          showResult(error.message, false);
+        }
+      });
+
+      loadAssignment().catch((error) => {
+        qs("#status").textContent = error.message;
+      });
+    </script>
+  </body>
+</html>

@@ -121,8 +121,17 @@ db.exec(`
 // table_info so re-running is a no-op. Mirrors evaluationStore's migrateAddColumn.
 function ensureColumn(table, column, ddl) {
   const cols = db.prepare(`PRAGMA table_info(${table})`).all();
-  if (!cols.some((c) => c.name === column)) {
+  if (cols.some((c) => c.name === column)) return;
+  try {
     db.exec(`ALTER TABLE ${table} ADD COLUMN ${ddl}`);
+  } catch (e) {
+    // The PRAGMA check above is a fast path, not a lock: two processes sharing
+    // one DB file (e.g. parallel hermetic test subprocesses migrating a fresh
+    // temp DB) can both pass the check, and the loser's ALTER then throws
+    // "duplicate column name". That race is benign — the column now exists, so
+    // swallow it, exactly as evaluationStore's migrateAddColumn does.
+    if (e.message && e.message.includes('duplicate column name')) return;
+    throw e;
   }
 }
 
