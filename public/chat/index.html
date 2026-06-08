@@ -36,6 +36,7 @@
   --ink-2:     #3a2f27;
   --ink-3:     #6a5c50;
   --ochre:     #C08A3E;
+  --ochre-d:   #835A1B;  /* AA-legible ochre for text (transmission family); bright --ochre is 2.5:1 on paper */
   --prussian:  #2A4F6B;
   --brick:     #A53E2E;
   --sun:       #E4B644;
@@ -857,7 +858,7 @@ section.fg::before {
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
-.lineage__family[data-family="transmission"]   { color: var(--ochre); }
+.lineage__family[data-family="transmission"]   { color: var(--ochre-d); }
 .lineage__family[data-family="intersubjective"] { color: var(--prussian); }
 .lineage__family[data-family="neutral"]        { color: var(--moss); }
 .lineage__family[data-family="architectural_variant"] { color: var(--ink-3); border-style: dashed; }
@@ -1113,7 +1114,7 @@ section.fg::before {
   margin-right: 2px;
   font-family: "JetBrains Mono", monospace;
 }
-.cell-row .fam[data-family="transmission"]   { color: var(--ochre); }
+.cell-row .fam[data-family="transmission"]   { color: var(--ochre-d); }
 .cell-row .fam[data-family="intersubjective"] { color: var(--prussian); }
 .cell-row .fam[data-family="neutral"]        { color: var(--moss); }
 .cell-row .fam[data-family="architectural_variant"] { color: var(--ink-3); border-style: dashed; }
