@@ -1,7 +1,7 @@
 meta:
   schema_version: teaching-drama-axiom-families-v0.1
   protocol_id: A19
-  protocol_version: a19-drama-axiom-transfer-v0.2
+  protocol_version: a19-drama-axiom-transfer-v0.3
   prompt_version: a19-fixture-v0.1
   source_plan: notes/adaptive_2_0/teaching_drama_learning_plan.html
   fixture_only: true
@@ -149,6 +149,9 @@ families:
       anti_conditions:
         - learner independently applies the new rule correctly to a fresh case
       repair_type: transfer_control
+      public_obligations:
+        - require_fresh_or_discriminating_public_application
+        - use_the_application_as_the_basis_for_closure_or_revision
     plausible_repairs:
       - praise_and_close
       - repeat_the_explanation
@@ -386,6 +389,10 @@ families:
       anti_conditions:
         - learner has already chosen a diagnostic option and needs feedback on that attempt
       repair_type: offer_diagnostic_options
+      public_obligations:
+        - name_two_or_more_possible_stuck_locations
+        - ask_learner_to_choose_or_test_one_location
+        - withhold_final_answer_until_after_diagnostic_choice
     plausible_repairs:
       - give_full_answer_to_reduce_frustration
       - restate_the_problem

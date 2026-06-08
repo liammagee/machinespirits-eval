@@ -98,3 +98,12 @@ protocol work is to decide prospectively whether `offer_diagnostic_options`
 should remain a distinct repair family, be retargeted as a subtype of
 `transfer_control`, or require an adjudication prompt that distinguishes
 choosing a diagnostic lane from merely applying a repaired check.
+
+## Follow-On Protocol Decision
+
+The v0.3 protocol keeps `offer_diagnostic_options` distinct for now, but makes
+that distinction enforceable through public obligations and a non-verdict
+adjudication audit. Future diagnostic-options screens must show diagnostic-lane
+choice before any answer reveal; if the critic extracts the committed repair as
+`transfer_control`, the report must surface `target_granularity_risk` rather
+than treating menu language alone as positive transfer.

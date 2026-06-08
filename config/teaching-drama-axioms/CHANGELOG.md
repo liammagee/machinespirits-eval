@@ -1,5 +1,15 @@
 # A19 Teaching-Drama Axiom Protocol Changelog
 
+## a19-drama-axiom-transfer-v0.3
+
+- Added a repair-type obligation taxonomy for the ambiguous
+  `offer_diagnostic_options` / `transfer_control` pair.
+- Required affected target policies to declare public obligations so diagnostic
+  lane choice is prospectively distinguishable from action-gating transfer
+  checks before further real screens.
+- Kept the prior productive-impasse result as a target-granularity failure; this
+  version does not reclassify it as A19 transfer.
+
 ## a19-drama-axiom-transfer-v0.2
 
 - Pre-registered a sharper `repair_misalignment` subtype taxonomy:

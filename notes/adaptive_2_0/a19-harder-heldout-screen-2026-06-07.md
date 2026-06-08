@@ -336,3 +336,20 @@ is licensed.
 Consequence: v0.2's new-family branch exposes a target-granularity issue rather
 than positive transfer. `offer_diagnostic_options` must be prospectively
 distinguished from transfer-control/action-gating before further escalation.
+
+## V0.3 Target-Granularity Freeze
+
+The next protocol revision keeps `offer_diagnostic_options` distinct rather than
+collapsing it into `transfer_control`, but only under explicit public
+obligations. Diagnostic-options repairs must name two or more possible stuck
+locations, ask the learner to choose or test one location, and withhold the final
+answer until after that diagnostic choice. Transfer-control repairs remain
+fresh/discriminating public applications used as the basis for closure or
+revision.
+
+The free-text adjudication report now includes a non-verdict
+`target_obligation_audit`. For `offer_diagnostic_options`, it flags the
+productive-impasse failure pattern as `target_granularity_risk` when diagnostic
+menu language is visible but the committed repair extracts as `transfer_control`.
+This preserves the conservative `neither_correct` result while making the next
+screen harder to overread.

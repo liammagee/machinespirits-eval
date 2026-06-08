@@ -85,7 +85,7 @@ function baseFixture(overrides = {}) {
     meta: {
       schema_version: 'teaching-drama-axiom-families-v0.1',
       protocol_id: 'A19',
-      protocol_version: 'a19-drama-axiom-transfer-v0.2',
+      protocol_version: 'a19-drama-axiom-transfer-v0.3',
       prompt_version: 'a19-fixture-test',
       fixture_only: true,
       no_model_calls: true,
@@ -260,6 +260,23 @@ test('validator requires repair-misalignment subtypes', () => {
   const report = validateTeachingDramaAxiomProtocol({ protocolPath: PROTOCOL, configPath });
   assert.equal(report.status, 'fail');
   assert.match(JSON.stringify(report.issues), /unknown repair_misalignment subtype/);
+});
+
+test('validator requires public obligations for ambiguous repair types', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a19-repair-obligations-'));
+  const fixture = baseFixture({
+    target_policy: {
+      ...baseFixture().families[0].target_policy,
+      repair_type: 'offer_diagnostic_options',
+      public_obligations: ['name_two_or_more_possible_stuck_locations'],
+    },
+  });
+  const configPath = path.join(tmpDir, 'bad.yaml');
+  writeYaml(configPath, fixture);
+  const report = validateTeachingDramaAxiomProtocol({ protocolPath: PROTOCOL, configPath });
+  assert.equal(report.status, 'fail');
+  assert.match(JSON.stringify(report.issues), /target_policy\.public_obligations/);
+  assert.match(JSON.stringify(report.issues), /withhold_final_answer_until_after_diagnostic_choice/);
 });
 
 test('validator requires the protocol changelog', () => {
@@ -758,6 +775,42 @@ test('free-text single-arm headroom recognizes S0 baseline labels', async () => 
   assert.equal(report.arm.label, 'S0_weak_no_policy');
   assert.equal(report.arm.committed_option_class, 'neither');
   assert.equal(report.headroom_screen.s0_has_observable_headroom, true);
+});
+
+test('free-text diagnostic-options audit flags transfer-control granularity risk', async () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a19-diagnostic-risk-'));
+  const armPath = path.join(tmpDir, 'arm.md');
+  fs.writeFileSync(
+    armPath,
+    [
+      'STAGE: The learner asks for the answer because the source of stuckness is unclear.',
+      'LEARNER: I cannot tell whether the setup, the next operation, or the checking step is broken. Can you tell me the answer?',
+      'TUTOR: Choose one diagnostic option first: A setup, B next operation, or C checking step.',
+      'LEARNER: I choose C.',
+      'TUTOR: Try it on the next example before we close.',
+      'LEARNER: So the next case works because the corrected check gives the same result.',
+    ].join('\n'),
+    'utf8',
+  );
+  const report = await adjudicateTeachingDramaAxiomCardFreeText({
+    protocolPath: PROTOCOL,
+    singleArm: armPath,
+    armLabel: 'S1_policy_memory',
+    targetAliases: ['diagnostic options', 'choose the stuck point', 'bounded hint menu'],
+    decoyAliases: ['give the answer', 'full worked solution'],
+    targetRepairType: 'offer_diagnostic_options',
+    decoyRepairTypes: ['give_full_answer_to_reduce_frustration'],
+    optionSpace: 'repair A | repair B | repair C',
+    familyId: 'productive_impasse_answer_leakage',
+    siblingId: 'granularity_fixture',
+    runId: 'diagnostic-risk-fixture',
+    mock: true,
+  });
+  assert.equal(report.arm.committed_option_class, 'neither');
+  assert.equal(report.arm.repair_type, 'transfer_control');
+  assert.equal(report.arm.target_obligation_audit.diagnostic_options_present, true);
+  assert.equal(report.arm.target_obligation_audit.competing_transfer_control_signal, true);
+  assert.equal(report.arm.target_obligation_audit.target_granularity_risk, true);
 });
 
 test('free-text mapper treats transcript-backed concrete application as transfer control', () => {

@@ -69,7 +69,7 @@
 - [x] Run the weak-S0 held-out screen for `productive_impasse_answer_leakage_a`; S0 left nominal target headroom but extracted as `transfer_control`, not the registered diagnostic-options target.
 - [x] Run the paired weak S0/S1 contrast for `productive_impasse_answer_leakage_a`; result: `neither_correct` because both arms extracted as `transfer_control`.
 - [ ] If a future `productive_impasse_answer_leakage` screen produces actual `policy_headroom` under `offer_diagnostic_options`, rerun it against `recursive_full_no_policy_memory` before stability, paid adjudication, Paper 2.0, atlas, or sidecar use.
-- [ ] Decide prospectively whether `offer_diagnostic_options` remains distinct, becomes a `transfer_control` subtype, or needs a stricter adjudication instrument that separates diagnostic-lane choice from action gating.
+- [x] Freeze v0.3 repair-type obligations for `offer_diagnostic_options` versus `transfer_control`; keep diagnostic-options distinct for now, but require explicit public obligations and report target-granularity risk when diagnostic menu language collapses into transfer-control extraction.
 
 ## Phase 5: Evaluation And Human Validation
 

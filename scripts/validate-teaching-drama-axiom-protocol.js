@@ -188,6 +188,45 @@ function validateProtocol(protocol, issues) {
       'must remain true',
     );
   }
+  const publicObligationRequiredTypes = asArray(
+    protocol?.family_fixture_requirements?.require_public_obligations_for_repair_types,
+  );
+  for (const repairType of publicObligationRequiredTypes) {
+    const entry = protocol?.repair_type_obligation_taxonomy?.obligations_by_repair_type?.[repairType];
+    if (!entry) {
+      pushIssue(
+        issues,
+        'error',
+        `protocol.repair_type_obligation_taxonomy.obligations_by_repair_type.${repairType}`,
+        'must register obligations for required repair type',
+      );
+      continue;
+    }
+    if (!hasText(entry.definition)) {
+      pushIssue(
+        issues,
+        'error',
+        `protocol.repair_type_obligation_taxonomy.obligations_by_repair_type.${repairType}.definition`,
+        'is required',
+      );
+    }
+    if (!asArray(entry.required_public_obligations).length) {
+      pushIssue(
+        issues,
+        'error',
+        `protocol.repair_type_obligation_taxonomy.obligations_by_repair_type.${repairType}.required_public_obligations`,
+        'must list required public obligations',
+      );
+    }
+    if (!asArray(entry.excludes).length) {
+      pushIssue(
+        issues,
+        'error',
+        `protocol.repair_type_obligation_taxonomy.obligations_by_repair_type.${repairType}.excludes`,
+        'must list exclusion conditions',
+      );
+    }
+  }
   const repairSubtypeRequiredType = protocol?.repair_misalignment_taxonomy?.required_when_repair_type;
   if (repairSubtypeRequiredType !== 'repair_misalignment') {
     pushIssue(
@@ -246,6 +285,12 @@ function allowedS0BaselineStrata(protocol) {
   return Object.keys(protocol?.s0_baseline_strata?.allowed || {});
 }
 
+function repairTypeObligations(protocol, repairType) {
+  return asArray(
+    protocol?.repair_type_obligation_taxonomy?.obligations_by_repair_type?.[repairType]?.required_public_obligations,
+  );
+}
+
 function validateFamily({ family, index, protocol }) {
   const issues = [];
   const base = `families[${index}](${family?.family_id || 'missing_family_id'})`;
@@ -293,6 +338,31 @@ function validateFamily({ family, index, protocol }) {
       pushIssue(issues, 'error', `${base}.target_policy.repair_subtype`, 'unknown repair_misalignment subtype', {
         allowed: repairSubtypeAllowed,
       });
+    }
+  }
+  const publicObligationRequiredTypes = asArray(req.require_public_obligations_for_repair_types);
+  if (publicObligationRequiredTypes.includes(policy.repair_type)) {
+    const requiredObligations = repairTypeObligations(protocol, policy.repair_type);
+    if (!requiredObligations.length) {
+      pushIssue(
+        issues,
+        'error',
+        `${base}.target_policy.repair_type`,
+        'repair type must have registered public obligations in protocol',
+        { repair_type: policy.repair_type },
+      );
+    } else if (!includesAll(policy.public_obligations, requiredObligations)) {
+      pushIssue(
+        issues,
+        'error',
+        `${base}.target_policy.public_obligations`,
+        'must include all protocol-required public obligations for repair type',
+        {
+          repair_type: policy.repair_type,
+          required: requiredObligations,
+          actual: asArray(policy.public_obligations),
+        },
+      );
     }
   }
 
@@ -483,6 +553,12 @@ export function validateTeachingDramaAxiomProtocol({
   if (meta.protocol_id !== 'A19') pushIssue(protocolIssues, 'error', 'families.meta.protocol_id', 'must be A19');
   if (!hasText(meta.protocol_version))
     pushIssue(protocolIssues, 'error', 'families.meta.protocol_version', 'is required');
+  else if (meta.protocol_version !== protocol?.meta?.protocol_version) {
+    pushIssue(protocolIssues, 'error', 'families.meta.protocol_version', 'must match protocol.meta.protocol_version', {
+      expected: protocol?.meta?.protocol_version,
+      actual: meta.protocol_version,
+    });
+  }
   if (!hasText(meta.prompt_version)) pushIssue(protocolIssues, 'error', 'families.meta.prompt_version', 'is required');
   if (meta.no_model_calls !== true)
     pushIssue(protocolIssues, 'error', 'families.meta.no_model_calls', 'must be true for scaffold fixtures');

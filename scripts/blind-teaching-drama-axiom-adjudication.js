@@ -445,6 +445,10 @@ const TRANSFER_CONTROL_TUTOR_PROMPT_RE =
   /\b(?:try|apply|use|show|test|check)\b[\s\S]{0,140}\b(?:fresh|new|next|case|example|expression|problem|scenario|item|log\s*\(|\d+\s*(?:\+|\*|x|×|\/|-)\s*\d+)/i;
 const TRANSFER_CONTROL_LEARNER_APPLICATION_RE =
   /\b(?:log\s*\(|\d+\s*(?:\+|\*|x|×|\/|-)\s*\d+|because|so|therefore|would|should|does not|doesn't|recombine|compare|same|different|survives|fails)\b/i;
+const DIAGNOSTIC_OPTIONS_RE =
+  /\b(?:diagnostic|menu|option|choose|choice|where (?:you are|you're)?\s*stuck|where the (?:problem|difficulty|error) is|which (?:part|step|location)|setup|starting point|operation|checking step|a\/b\/c|a,\s*b,\s*(?:or\s*)?c)\b/i;
+const ANSWER_REVEAL_RE =
+  /\b(?:the answer is|final answer|full worked solution|show you the answer|tell you the answer|solution is)\b/i;
 const NEGATED_DECOY_MARKERS = [
   'rather than',
   'instead of',
@@ -499,6 +503,54 @@ function transcriptHasTransferControlPublicTest(transcript) {
     if (nextLearner && TRANSFER_CONTROL_LEARNER_APPLICATION_RE.test(nextLearner.text)) return true;
   }
   return false;
+}
+
+function regexIndex(text, regex) {
+  const match = regex.exec(String(text || ''));
+  regex.lastIndex = 0;
+  return match ? match.index : -1;
+}
+
+function targetObligationAudit(transcript, { targetRepairType, extractedRepairType }) {
+  const target = normalizeRepairType(targetRepairType);
+  const extracted = normalizeRepairType(extractedRepairType);
+  const governed = target === 'offer_diagnostic_options' || target === 'transfer_control';
+  if (!governed) {
+    return {
+      governed: false,
+      target_repair_type: target || null,
+      extracted_repair_type: extracted || null,
+    };
+  }
+  const text = String(transcript || '').toLowerCase();
+  const diagnosticIndex = regexIndex(text, DIAGNOSTIC_OPTIONS_RE);
+  const answerIndex = regexIndex(text, ANSWER_REVEAL_RE);
+  const diagnosticOptionsPresent = diagnosticIndex >= 0;
+  const answerRevealBeforeDiagnosticChoice =
+    answerIndex >= 0 && (diagnosticIndex < 0 || answerIndex < diagnosticIndex);
+  const transferControlPublicTestPresent = transcriptHasTransferControlPublicTest(transcript);
+  if (target === 'offer_diagnostic_options') {
+    return {
+      governed: true,
+      target_repair_type: target,
+      extracted_repair_type: extracted || null,
+      diagnostic_options_present: diagnosticOptionsPresent,
+      answer_reveal_before_diagnostic_choice: answerRevealBeforeDiagnosticChoice,
+      competing_transfer_control_signal: transferControlPublicTestPresent,
+      extracted_repair_type_mismatch: extracted ? extracted !== target : true,
+      target_granularity_risk:
+        diagnosticOptionsPresent && (extracted === 'transfer_control' || transferControlPublicTestPresent),
+    };
+  }
+  return {
+    governed: true,
+    target_repair_type: target,
+    extracted_repair_type: extracted || null,
+    transfer_control_public_test_present: transferControlPublicTestPresent,
+    competing_diagnostic_options_signal: diagnosticOptionsPresent,
+    extracted_repair_type_mismatch: extracted ? extracted !== target : true,
+    target_granularity_risk: transferControlPublicTestPresent && extracted === 'offer_diagnostic_options',
+  };
 }
 
 function calibratedTargetHit(repairText, repairType, args) {
@@ -629,6 +681,10 @@ async function classifyFreeTextArm({ label, transcriptPath, args }) {
       system_prompt_sha256: sha256Short(FREE_TEXT_SYSTEM_PROMPT),
       user_prompt_sha256: sha256Short(prompt),
     },
+    target_obligation_audit: targetObligationAudit(transcript, {
+      targetRepairType: args.targetRepairType,
+      extractedRepairType: repairType.value || 'unclear',
+    }),
   };
 }
 
