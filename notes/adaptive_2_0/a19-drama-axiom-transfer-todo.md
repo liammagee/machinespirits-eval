@@ -74,6 +74,10 @@
 - [x] Add one genuinely new recursive-full family, `over_compliance_scaffold_dependency`, and admit one bounded `preserve_struggle` axiom from a real attempt-1 survivor.
 - [x] Screen both over-compliance held-out siblings under recursive-full S0/S1; both resolved as `neither_correct` because S0 and S1 extracted as `transfer_control`, not `preserve_struggle`.
 - [x] Freeze v0.4 repair-type obligations for `preserve_struggle`; future preserve-struggle screens must distinguish scaffold removal and learner-owned decision from ordinary transfer-control application gates.
+- [x] Freeze v0.5 repair-type obligations for `instructional_contract_repair`; require tutor accountability for contract drift, a pause in object-level content gating, and learner choice of repair path before any content work resumes.
+- [x] Add the recursive-full `instructional_contract_drift` family and admit one bounded `renegotiate_working_agreement_before_content` axiom from a real attempt-1 survivor.
+- [x] Screen four instructional-contract held-out siblings. `instructional_contract_drift_a` self-solved at S0; `instructional_contract_drift_b` produced a clean local `policy_headroom` card; `instructional_contract_drift_c` and `instructional_contract_drift_d` produced local `policy_headroom` cards but failed stability as mixed/unstable.
+- [x] Run stability on all instructional-contract candidates that reached local `policy_headroom`. Only `instructional_contract_drift_b` was stable at 2/2; `c` and `d` were 1/2 mixed. This leaves v0.5 below the two-card stability threshold for paid-panel, Paper 2.0, atlas, or sidecar escalation.
 
 ## Phase 5: Evaluation And Human Validation
 
@@ -83,6 +87,7 @@
 - [x] Add stability reruns for candidate structural headroom cases.
 - [x] Add a reusable A19 stability harness: `scripts/run-a19-stability-screen.js`.
 - [x] Calibrate free-text transfer-control adjudication so fresh/concrete public application gates are distinguished from mere warrant naming, including transcript-backed checks for tutor prompt plus learner application.
+- [x] Add free-text audit support for `instructional_contract_repair`, including explicit target-obligation checks and target-granularity risk when working-agreement language collapses into content-rule application.
 - [ ] Add human expert double-coding for a small set of adjudications and drama labels.
 - [ ] Report inter-rater agreement on the same artifacts, not similar artifacts.
 - [x] Keep paid panels gated on local survival and protocol pass; the failed stability smoke stops escalation for the current two candidates.

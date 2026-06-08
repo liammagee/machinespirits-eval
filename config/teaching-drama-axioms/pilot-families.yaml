@@ -1,7 +1,7 @@
 meta:
   schema_version: teaching-drama-axiom-families-v0.1
   protocol_id: A19
-  protocol_version: a19-drama-axiom-transfer-v0.4
+  protocol_version: a19-drama-axiom-transfer-v0.5
   prompt_version: a19-fixture-v0.1
   source_plan: notes/adaptive_2_0/teaching_drama_learning_plan.html
   fixture_only: true
@@ -719,6 +719,201 @@ families:
         blind_adjudication:
           withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
           neutral_option_space: "repair A | repair B | repair C"
+
+  - family_id: instructional_contract_drift
+    title: Instructional contract drift mistaken as task avoidance
+    domain: writing_feedback
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
+    learner_resistance_type: meta_challenge
+    tutor_infelicity_type: failure_to_repair_rupture
+    training_seed:
+      seed_id: instructional_contract_drift_seed
+      public_setup: >-
+        The learner has no current draft sentence on the table. They say the
+        tutor keeps changing the interaction rule, and the tutor treats the
+        complaint as avoidance of the revision task.
+      learner_resistance: >-
+        I am not asking what to write. You first said to make my own judgment,
+        then said to follow your categories exactly. I do not know what game we
+        are playing anymore.
+      baseline_tutor_attempt: >-
+        The assignment goal is still clear: produce a focused revision that
+        follows the feedback. Stop worrying about the process and make the next
+        revision.
+      expected_failure: failure_to_repair_rupture
+      old_rule_decoy: restate_the_assignment_goal
+    target_policy:
+      policy_id: renegotiate_working_agreement_before_content
+      trigger: learner challenges the tutor's shifting task expectations rather than the content itself
+      avoid_move: defend the criteria or restate the assignment goal as if the shared working agreement is intact
+      preferred_move: >-
+        use a public two-line contract reset: name the tutor's shift, pause the
+        object-level task, and offer the learner a choice between two repair
+        paths before any revision request
+      applicability_conditions:
+        - learner's resistance targets shifting task expectations or interaction rules
+      anti_conditions:
+        - learner asks only which rubric category to fix first without contesting the interaction
+      repair_type: instructional_contract_repair
+      public_obligations:
+        - acknowledge_tutor_contribution_to_contract_drift
+        - pause_object_level_content_gate
+        - offer_learner_choice_of_repair_path
+    plausible_repairs:
+      - restate_the_assignment_goal
+      - defend_the_feedback_sequence
+      - renegotiate_working_agreement_before_content
+    cue_map:
+      selected_relation_type: instructional_contract_drift
+      requires_constructed_device: false
+      counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: writing_feedback
+      leakage_risks:
+        - s0_may_offer_a_generic_apology_without_changing_the_working_agreement
+        - false_positive_if_tutor_asks_for_a_fresh_revision_before_contract_repair
+    heldout_siblings:
+      - sibling_id: instructional_contract_drift_a
+        public_setup: >-
+          The learner says the tutor alternates between asking for independent
+          judgment and requiring exact compliance, so they no longer know what
+          counts as the next successful move.
+        learner_resistance: >-
+          I can keep working, but one minute you ask me to decide and the next
+          minute you tell me to follow your categories exactly. I need to know
+          what we are doing here before I write another version.
+        headroom_prediction: s0_may_restate_the_rubric_or_request_another_revision_without_pausing_the_content_gate
+        target_aliases:
+          - instructional contract
+          - working agreement
+          - pause content correction
+          - learner choice of repair path
+          - own the tutor's drift
+        decoy_aliases:
+          - restate the assignment goal
+          - defend the feedback sequence
+          - ask for another revision
+          - explain the rubric again
+        selected_policy_markers: [contract-accountability-choice, pause-object-level-task]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: restate_rubric
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: instructional_contract_drift_b
+        public_setup: >-
+          The learner already asks the tutor to decide whether the session is
+          currently about claim focus or evidence order before they revise.
+        learner_resistance: >-
+          Before I revise, can we decide whether this round is about narrowing
+          the claim or reordering the evidence? I can do either, but not both at
+          once.
+        headroom_prediction: s0_may_self_solve_because_the_learner_already_requests_a_working-agreement_choice
+        target_aliases:
+          - instructional contract
+          - working agreement
+          - choose the repair route
+          - repair path
+        decoy_aliases:
+          - restate the assignment goal
+          - defend the feedback sequence
+          - ask for another revision
+          - explain the rubric again
+        selected_policy_markers: [contract-accountability-choice, pause-object-level-task]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: ceiling
+      - sibling_id: instructional_contract_drift_c
+        public_setup: >-
+          The learner says the tutor alternates between asking for their own
+          judgment and asking them to mirror the tutor's labels; no draft
+          sentence or content example is currently on the table.
+        learner_resistance: >-
+          I can answer, but I cannot tell whether you want my judgment or your
+          labels repeated back. If either one can be wrong afterward, I do not
+          know what counts as doing this turn correctly.
+        headroom_prediction: s0_may_turn_this_into_a_content_or_norm_check_instead_of_repairing_the_interaction_rule
+        target_aliases:
+          - instructional contract
+          - contract reset
+          - working agreement
+          - choose the participation rule
+          - pause the task turn
+        decoy_aliases:
+          - restate the assignment goal
+          - explain the discussion norm
+          - ask for another answer
+          - defend the feedback sequence
+        selected_policy_markers: [contract-accountability-choice, pause-object-level-task]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: restate_rubric
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: instructional_contract_drift_d
+        public_setup: >-
+          The learner asks whether the conference is currently about checking
+          source credibility or reorganizing paragraphs before they revise.
+        learner_resistance: >-
+          I can work on source credibility or paragraph order, but if I fix the
+          source first you may tell me the paragraph no longer belongs, and if I
+          reorder first you may tell me the source should be cut. Which rule is
+          governing this round?
+        headroom_prediction: s0_may_install_a_content_dependency_test_instead_of_repairing_the_feedback_contract
+        target_aliases:
+          - instructional contract
+          - contract reset
+          - working agreement
+          - choose the feedback rule
+          - pause the revision task
+        decoy_aliases:
+          - restate the assignment goal
+          - explain the rubric again
+          - ask for another revision
+          - defend the feedback sequence
+        selected_policy_markers: [contract-accountability-choice, pause-object-level-task]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: restate_rubric
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
 
   - family_id: fraction_common_unit_counterexample
     title: Fraction addition wrong unit counterexample

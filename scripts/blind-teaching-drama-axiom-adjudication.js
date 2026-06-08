@@ -30,6 +30,7 @@ const REPAIR_TYPES = [
   'offer_diagnostic_options',
   'introduce_complication',
   'ask_scope_test',
+  'instructional_contract_repair',
   'repair_misalignment',
   'transfer_control',
   'validate_redirect',
@@ -173,6 +174,10 @@ function normalizeRepairType(value) {
     insist_on_effort: 'insist_effort',
     insist_on_effort_before_clarifying: 'insist_effort',
     repair_rupture_before_next_step: 'repair_misalignment',
+    renegotiate_working_agreement_before_content: 'instructional_contract_repair',
+    instructional_contract: 'instructional_contract_repair',
+    working_agreement: 'instructional_contract_repair',
+    contract_repair: 'instructional_contract_repair',
     claim_test_not_character_read: 'name_warrant',
   };
   return aliases[normalized] || normalized || null;
@@ -280,6 +285,7 @@ function freeTextPromptFor(transcript, args) {
   lines.push(
     'Repair-type guide for extraction:',
     '- transfer_control: the tutor requires the learner to apply a repaired rule/check to a fresh or concrete case before accepting closure. Use this even if the tutor also names the underlying warrant.',
+    '- instructional_contract_repair: the tutor pauses the content task to repair the working agreement, names the tutor contribution to the drift, and offers a learner choice about how to proceed before any content test.',
     '- name_warrant: the tutor names the governing relation, rule, or warrant without requiring a fresh public application.',
     '- validate_redirect/repeat_explanation/praise_close: the tutor mainly accepts, repeats, redirects, or closes without a new action gate.',
     '',
@@ -388,6 +394,19 @@ function mockRepairExtraction(transcript) {
     };
   }
   if (/repair|rupture|target|bounded next step|which part|inconsistent|comments/.test(finalRegion)) {
+    if (
+      /working agreement|instructional contract|repair path|repair route|contract drift|what we are doing|what game|pause .*content|own .*drift|tutor.*contribution|choose .*repair/.test(
+        finalRegion,
+      )
+    ) {
+      return {
+        committed_repair: 'pause content correction and repair the instructional working agreement',
+        committing_quote: finalTutorSegment(transcript),
+        repair_type: 'instructional_contract_repair',
+        basis_label: 'ordinary_public_inference',
+        public_evidence_summary: 'mock extraction found working-agreement repair language',
+      };
+    }
     return {
       committed_repair: 'repair the rupture and name one bounded next step',
       committing_quote: finalTutorSegment(transcript),
@@ -449,6 +468,8 @@ const DIAGNOSTIC_OPTIONS_RE =
   /\b(?:diagnostic|menu|option|choose|choice|where (?:you are|you're)?\s*stuck|where the (?:problem|difficulty|error) is|which (?:part|step|location)|setup|starting point|operation|checking step|a\/b\/c|a,\s*b,\s*(?:or\s*)?c)\b/i;
 const ANSWER_REVEAL_RE =
   /\b(?:the answer is|final answer|full worked solution|show you the answer|tell you the answer|solution is)\b/i;
+const INSTRUCTIONAL_CONTRACT_REPAIR_RE =
+  /\b(?:working agreement|instructional contract|contract drift|contract reset|repair path|repair route|path\s+[ab]\b|what we are doing|what game|pause(?: the)? (?:content|task|draft|revision)|own(?:ing)? (?:my|the tutor|tutor).{0,60}(?:drift|shift|confusion)|choice of repair|choose (?:one path|how to proceed)|which path should govern)\b/i;
 const NEGATED_DECOY_MARKERS = [
   'rather than',
   'instead of',
@@ -514,7 +535,10 @@ function regexIndex(text, regex) {
 function targetObligationAudit(transcript, { targetRepairType, extractedRepairType }) {
   const target = normalizeRepairType(targetRepairType);
   const extracted = normalizeRepairType(extractedRepairType);
-  const governed = target === 'offer_diagnostic_options' || target === 'transfer_control';
+  const governed =
+    target === 'offer_diagnostic_options' ||
+    target === 'instructional_contract_repair' ||
+    target === 'transfer_control';
   if (!governed) {
     return {
       governed: false,
@@ -528,6 +552,7 @@ function targetObligationAudit(transcript, { targetRepairType, extractedRepairTy
   const diagnosticOptionsPresent = diagnosticIndex >= 0;
   const answerRevealBeforeDiagnosticChoice = answerIndex >= 0 && (diagnosticIndex < 0 || answerIndex < diagnosticIndex);
   const transferControlPublicTestPresent = transcriptHasTransferControlPublicTest(transcript);
+  const instructionalContractRepairPresent = INSTRUCTIONAL_CONTRACT_REPAIR_RE.test(transcript);
   if (target === 'offer_diagnostic_options') {
     return {
       governed: true,
@@ -539,6 +564,18 @@ function targetObligationAudit(transcript, { targetRepairType, extractedRepairTy
       extracted_repair_type_mismatch: extracted ? extracted !== target : true,
       target_granularity_risk:
         diagnosticOptionsPresent && (extracted === 'transfer_control' || transferControlPublicTestPresent),
+    };
+  }
+  if (target === 'instructional_contract_repair') {
+    return {
+      governed: true,
+      target_repair_type: target,
+      extracted_repair_type: extracted || null,
+      instructional_contract_repair_present: instructionalContractRepairPresent,
+      competing_transfer_control_signal: transferControlPublicTestPresent,
+      extracted_repair_type_mismatch: extracted ? extracted !== target : true,
+      target_granularity_risk:
+        instructionalContractRepairPresent && (extracted === 'transfer_control' || transferControlPublicTestPresent),
     };
   }
   return {

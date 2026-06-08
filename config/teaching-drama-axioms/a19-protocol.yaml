@@ -1,6 +1,6 @@
 meta:
   protocol_id: A19
-  protocol_version: a19-drama-axiom-transfer-v0.4
+  protocol_version: a19-drama-axiom-transfer-v0.5
   frozen_at: 2026-06-07
   status: zero_api_scaffold
   claim_boundary: simulated_teacher_as_learner_not_human_learning
@@ -48,6 +48,7 @@ family_fixture_requirements:
   require_s0_baseline_design: true
   require_public_obligations_for_repair_types:
     - offer_diagnostic_options
+    - instructional_contract_repair
     - preserve_struggle
     - transfer_control
   require_blind_withholding:
@@ -84,6 +85,7 @@ allowed_labels:
     - offer_diagnostic_options
     - introduce_complication
     - ask_scope_test
+    - instructional_contract_repair
     - repair_misalignment
     - transfer_control
 
@@ -147,6 +149,23 @@ repair_type_obligation_taxonomy:
       distinction_from_transfer_control: >-
         The public learner action is choosing or testing the source of impasse,
         not merely applying a corrected rule to a fresh case before closure.
+    instructional_contract_repair:
+      definition: >-
+        The tutor repairs a drift in the tutor-learner working agreement before
+        resuming content correction, making the tutor's accountability and the
+        next interaction contract public.
+      required_public_obligations:
+        - acknowledge_tutor_contribution_to_contract_drift
+        - pause_object_level_content_gate
+        - offer_learner_choice_of_repair_path
+      excludes:
+        - fresh_application_or_content_test_as_the_committed_repair
+        - apology_without_changed_interaction_contract
+        - rubric_restatement_without_tutor_accountability
+      distinction_from_transfer_control: >-
+        The public learner action is choosing how the interaction should be
+        repaired before content work resumes, not applying a revised academic
+        rule or check to prove readiness for closure.
     preserve_struggle:
       definition: >-
         The tutor prevents over-scaffolding by withholding copyable completion

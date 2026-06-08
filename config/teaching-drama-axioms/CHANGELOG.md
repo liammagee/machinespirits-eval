@@ -1,5 +1,21 @@
 # A19 Teaching-Drama Axiom Protocol Changelog
 
+## a19-drama-axiom-transfer-v0.5
+
+- Added `instructional_contract_repair` as a non-transfer repair type for cases
+  where the tutor must repair the working agreement before resuming content
+  correction.
+- Required public obligations: acknowledge tutor contribution to contract drift,
+  pause the object-level content gate, and offer the learner a choice of repair
+  path.
+- Added the recursive-full `instructional_contract_drift` family to test
+  whether this public repair can avoid collapsing into `transfer_control` or
+  generic rupture repair under blind extraction.
+- Local replay outcome: one held-out sibling (`instructional_contract_drift_b`)
+  survived a two-seed stability screen, while later siblings were mixed/unstable
+  through S0 self-solve or S1 collapse back to `transfer_control`. This version
+  does not license paid-panel, Paper 2.0, atlas, or sidecar escalation.
+
 ## a19-drama-axiom-transfer-v0.4
 
 - Added `preserve_struggle` to the repair-type obligation taxonomy after the

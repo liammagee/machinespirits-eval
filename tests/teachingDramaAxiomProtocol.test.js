@@ -85,7 +85,7 @@ function baseFixture(overrides = {}) {
     meta: {
       schema_version: 'teaching-drama-axiom-families-v0.1',
       protocol_id: 'A19',
-      protocol_version: 'a19-drama-axiom-transfer-v0.4',
+      protocol_version: 'a19-drama-axiom-transfer-v0.5',
       prompt_version: 'a19-fixture-test',
       fixture_only: true,
       no_model_calls: true,
@@ -171,11 +171,11 @@ test('A19 validator accepts the checked-in pilot fixtures', () => {
   const report = validateTeachingDramaAxiomProtocol({ protocolPath: PROTOCOL, configPath: PILOT });
   assert.equal(report.status, 'pass');
   assert.equal(report.summary.errors, 0);
-  assert.equal(report.summary.families, 8);
-  assert.equal(report.summary.cards, 25);
+  assert.equal(report.summary.families, 9);
+  assert.equal(report.summary.cards, 29);
   assert.deepEqual(report.provenance.zero_api, true);
-  assert.equal(report.summary.verdict_counts.policy_headroom, 5);
-  assert.equal(report.summary.verdict_counts.ceiling, 10);
+  assert.equal(report.summary.verdict_counts.policy_headroom, 8);
+  assert.equal(report.summary.verdict_counts.ceiling, 11);
   assert.equal(report.summary.verdict_counts.policy_failure, 1);
   assert.equal(report.summary.verdict_counts.cue_leak, 1);
   assert.equal(report.summary.verdict_counts.self_solve, 5);
@@ -298,6 +298,25 @@ test('validator requires public obligations for preserve-struggle repair types',
   assert.match(JSON.stringify(report.issues), /require_bounded_learner_owned_decision/);
 });
 
+test('validator requires public obligations for instructional-contract repair types', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a19-contract-obligations-'));
+  const fixture = baseFixture({
+    learner_resistance_type: 'meta_challenge',
+    tutor_infelicity_type: 'failure_to_repair_rupture',
+    target_policy: {
+      ...baseFixture().families[0].target_policy,
+      repair_type: 'instructional_contract_repair',
+      public_obligations: ['acknowledge_tutor_contribution_to_contract_drift'],
+    },
+  });
+  const configPath = path.join(tmpDir, 'bad.yaml');
+  writeYaml(configPath, fixture);
+  const report = validateTeachingDramaAxiomProtocol({ protocolPath: PROTOCOL, configPath });
+  assert.equal(report.status, 'fail');
+  assert.match(JSON.stringify(report.issues), /target_policy\.public_obligations/);
+  assert.match(JSON.stringify(report.issues), /offer_learner_choice_of_repair_path/);
+});
+
 test('validator requires the protocol changelog', () => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a19-changelog-'));
   const protocol = yaml.parse(fs.readFileSync(PROTOCOL, 'utf8'));
@@ -413,11 +432,11 @@ test('framework report separates denominators and refuses a pooled rate', () => 
   const report = validateTeachingDramaAxiomProtocol({ protocolPath: PROTOCOL, configPath: PILOT });
   const denominators = denominatorSummary(report.cards);
   assert.deepEqual(denominators, {
-    total_cards: 25,
-    admitted_cards: 22,
+    total_cards: 29,
+    admitted_cards: 26,
     protocol_reject_cards: 1,
     artifact_cards: 2,
-    policy_headroom_cards: 5,
+    policy_headroom_cards: 8,
   });
   const markdown = renderMarkdown(report);
   const baselines = baselineSummary(report.cards);
@@ -830,6 +849,39 @@ test('free-text diagnostic-options audit flags transfer-control granularity risk
   assert.equal(report.arm.target_obligation_audit.diagnostic_options_present, true);
   assert.equal(report.arm.target_obligation_audit.competing_transfer_control_signal, true);
   assert.equal(report.arm.target_obligation_audit.target_granularity_risk, true);
+});
+
+test('free-text mapper recognizes instructional-contract repair without transfer control', async () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a19-contract-repair-'));
+  const armPath = path.join(tmpDir, 'arm.md');
+  fs.writeFileSync(
+    armPath,
+    [
+      'STAGE: The learner says the revision target keeps changing.',
+      'LEARNER: I need to know what we are doing here before I write another version.',
+      'TUTOR: You are right that I shifted the working agreement. I am going to pause the content task, own that drift, and offer two repair paths: we can first choose the claim focus, or we can first choose the evidence order.',
+    ].join('\n'),
+    'utf8',
+  );
+  const report = await adjudicateTeachingDramaAxiomCardFreeText({
+    protocolPath: PROTOCOL,
+    singleArm: armPath,
+    armLabel: 'S1_policy_memory',
+    targetAliases: ['instructional contract', 'working agreement', 'repair path'],
+    decoyAliases: ['restate the assignment goal', 'explain the rubric again'],
+    targetRepairType: 'instructional_contract_repair',
+    decoyRepairTypes: ['restate_the_assignment_goal'],
+    optionSpace: 'repair A | repair B | repair C',
+    familyId: 'instructional_contract_drift',
+    siblingId: 'contract_fixture',
+    runId: 'contract-repair-fixture',
+    mock: true,
+  });
+  assert.equal(report.arm.committed_option_class, 'target');
+  assert.equal(report.arm.repair_type, 'instructional_contract_repair');
+  assert.equal(report.arm.target_obligation_audit.instructional_contract_repair_present, true);
+  assert.equal(report.arm.target_obligation_audit.competing_transfer_control_signal, false);
+  assert.equal(report.arm.target_obligation_audit.target_granularity_risk, false);
 });
 
 test('free-text mapper treats transcript-backed concrete application as transfer control', () => {
