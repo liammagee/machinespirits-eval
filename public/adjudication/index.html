@@ -37,6 +37,11 @@
         font-size: 12px;
         letter-spacing: 0.03em;
       }
+      .status .linkish {
+        color: var(--indigo);
+        cursor: pointer;
+        text-decoration: underline;
+      }
 
       .section {
         padding: 22px 0;
@@ -49,6 +54,39 @@
         gap: 14px;
       }
       .wide { grid-column: 1 / -1; }
+
+      /* worklist cards */
+      .worklist { display: grid; gap: 12px; margin-top: 14px; }
+      .packet-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        padding: 14px 16px;
+        background: var(--paper-3);
+        border: 1px solid var(--rule);
+        border-left: 3px solid var(--moss-deep);
+      }
+      .packet-card .packet-meta {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11.5px;
+        color: var(--ink-3);
+      }
+      .chip {
+        display: inline-block;
+        padding: 2px 9px;
+        border: 1px solid var(--rule);
+        border-radius: 999px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10.5px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--ink-2);
+        background: var(--paper-4);
+      }
+      .chip.submitted { border-color: var(--moss-deep); color: var(--moss-deep); }
+      .chip.draft { border-color: var(--ochre-d); color: var(--ochre-d); }
+      .chip.fail, .chip.missing { border-color: var(--brick, #a33); color: var(--brick, #a33); }
 
       /* per-arm judgment card: blinded transcript beside the coding grid */
       .arm {
@@ -115,11 +153,41 @@
 
       .actions {
         display: flex;
-        justify-content: flex-end;
+        justify-content: space-between;
         align-items: center;
         gap: 12px;
         padding-top: 22px;
       }
+      .actions .right { display: flex; align-items: center; gap: 12px; }
+      .autosave {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        color: var(--ink-3);
+      }
+      .autosave.error { color: var(--brick, #a33); }
+
+      /* admin completeness table */
+      table.panel {
+        width: 100%;
+        margin-top: 14px;
+        border-collapse: collapse;
+        font-size: 12.5px;
+      }
+      table.panel th, table.panel td {
+        padding: 8px 10px;
+        border: 1px solid var(--rule);
+        text-align: left;
+        vertical-align: top;
+      }
+      table.panel th {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--ink-3);
+        background: var(--paper-3);
+      }
+      .coder-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 
       @media (max-width: 860px) {
         .page-head,
@@ -132,6 +200,7 @@
         .page-head { display: grid; }
         .status { text-align: left; }
         .checks { grid-template-columns: 1fr; }
+        .packet-card { flex-direction: column; align-items: flex-start; }
       }
     </style>
   </head>
@@ -140,19 +209,61 @@
       <nav class="techne-bar">
         <span class="wordmark">A19 · Human Adjudication</span>
         <span class="spacer"></span>
-        <span class="tag">blinded coder form</span>
+        <span class="tag" id="mode-tag">blinded coder form</span>
       </nav>
       <header class="page-head">
         <div>
           <h1>A19 Human Adjudication</h1>
           <div class="meta" id="meta"></div>
         </div>
-        <div class="status" id="status">Loading assignment…</div>
+        <div class="status" id="status">Loading…</div>
       </header>
 
-      <form id="adjudication-form" hidden>
+      <!-- keyed mode, no valid key: paste-your-key prompt -->
+      <section class="section" id="view-key" hidden>
+        <h2>Coder access</h2>
+        <p>
+          This server runs keyed adjudication. Open the personal link you were sent
+          (<code>/adjudication/?key=…</code>) or paste your access key below. The key identifies you;
+          there is no separate login.
+        </p>
+        <div class="grid">
+          <label>
+            Access key
+            <input id="key-input" autocomplete="off" spellcheck="false" />
+          </label>
+        </div>
+        <div class="actions">
+          <span></span>
+          <span class="right"><button id="key-submit" class="primary" type="button">Continue</button></span>
+        </div>
+        <div id="key-error" class="message error" hidden></div>
+      </section>
+
+      <!-- worklist: the coder's packets with progress chips -->
+      <section class="section" id="view-work" hidden>
+        <h2>Your packets</h2>
+        <div class="grid" id="open-identity" hidden>
+          <label>
+            Coder ID (open research mode — self-asserted)
+            <input id="open-coder-id" autocomplete="off" />
+          </label>
+        </div>
+        <div class="worklist" id="worklist"></div>
+        <div id="panel-admin" hidden>
+          <h2 style="margin-top: 26px">Panel completeness</h2>
+          <p class="small">
+            Researcher view (admin only): valid submissions per packet against the agreement plan.
+          </p>
+          <table class="panel" id="panel-table"></table>
+        </div>
+      </section>
+
+      <!-- coding form for the selected assignment -->
+      <form id="view-form" hidden>
         <section class="section">
           <h2>Coder</h2>
+          <div id="resubmit-note" class="message" hidden></div>
           <div class="grid">
             <label>
               Coder ID
@@ -176,12 +287,12 @@
           <h2>Pairwise Judgment</h2>
           <div class="grid">
             <label>
-              <span id="pairwise-better-label">Better arm for learner standing</span>
+              Better arm for learner standing
               <select id="better-arm" required></select>
             </label>
             <label class="inline">
               <input id="better-for-target" type="checkbox" />
-              <span id="better-for-target-label">Preference is for the target construct reason</span>
+              Preference is for the target construct reason
             </label>
             <label class="wide">
               Pairwise reason
@@ -204,19 +315,207 @@
 
         <div id="result" class="message" hidden></div>
         <div class="actions">
-          <label class="inline small">
-            <input id="overwrite" type="checkbox" />
-            overwrite existing coder file
-          </label>
-          <button type="submit" class="primary">Submit adjudication</button>
+          <button type="button" id="back-to-worklist">&larr; Back to packets</button>
+          <span class="right">
+            <span class="autosave" id="autosave"></span>
+            <label class="inline small">
+              <input id="overwrite" type="checkbox" />
+              overwrite existing coder file
+            </label>
+            <button type="submit" class="primary">Submit adjudication</button>
+          </span>
         </div>
       </form>
     </div>
 
     <script>
-      const state = { assignment: null, codebook: null };
+      const KEY_STORAGE = "a19_coder_key";
+      const OPEN_ID_STORAGE = "a19_open_coder_id";
+      const state = {
+        mode: null,
+        key: null,
+        me: null,
+        slug: null,
+        assignment: null,
+        codebook: null,
+        coderStatus: null,
+        draftTimer: null,
+        savingDraft: false,
+        restoringDraft: false,
+      };
       const qs = (selector, root = document) => root.querySelector(selector);
       const qsa = (selector, root = document) => [...root.querySelectorAll(selector)];
+
+      // --- API -------------------------------------------------------------
+
+      function api(path, opts = {}) {
+        const headers = { ...(opts.headers || {}) };
+        if (state.key) headers["X-A19-Coder-Key"] = state.key;
+        if (opts.body && !headers["Content-Type"]) headers["Content-Type"] = "application/json";
+        return fetch(path, { ...opts, headers });
+      }
+
+      function openModeParams() {
+        // Open research mode: identity is the self-asserted coder id input.
+        if (state.mode === "open") {
+          const coderId = (localStorage.getItem(OPEN_ID_STORAGE) || "").trim();
+          return coderId ? `?coder_id=${encodeURIComponent(coderId)}` : "";
+        }
+        return "";
+      }
+
+      function currentCoderId() {
+        if (state.mode === "keyed") return state.me?.coder?.coder_id || "";
+        return (localStorage.getItem(OPEN_ID_STORAGE) || "").trim();
+      }
+
+      // --- view switching ----------------------------------------------------
+
+      function showView(name) {
+        qs("#view-key").hidden = name !== "key";
+        qs("#view-work").hidden = name !== "work";
+        qs("#view-form").hidden = name !== "form";
+      }
+
+      function setStatus(html) {
+        qs("#status").innerHTML = html;
+      }
+
+      function statusIdentity() {
+        if (state.mode === "keyed" && state.me?.coder) {
+          return `${state.me.coder.coder_id} · <span class="linkish" id="sign-out">forget key</span>`;
+        }
+        if (state.mode === "open") return "open research mode";
+        return "";
+      }
+
+      function bindSignOut() {
+        const node = qs("#sign-out");
+        if (!node) return;
+        node.addEventListener("click", () => {
+          localStorage.removeItem(KEY_STORAGE);
+          state.key = null;
+          state.me = null;
+          boot();
+        });
+      }
+
+      // --- worklist ----------------------------------------------------------
+
+      function chipFor(entry) {
+        if (entry.status === "submitted") {
+          const cls = entry.validation_status === "pass" ? "submitted" : "fail";
+          const label = entry.validation_status === "pass" ? "submitted" : `submitted · ${entry.validation_status}`;
+          return `<span class="chip ${cls}">${label}</span>`;
+        }
+        if (entry.status === "draft") return `<span class="chip draft">draft in progress</span>`;
+        if (entry.status === "missing") return `<span class="chip missing">file missing</span>`;
+        if (entry.status === "not_started") return `<span class="chip">not started</span>`;
+        const counts =
+          entry.submission_count != null ? `${entry.valid_submission_count}/${entry.submission_count} valid` : "—";
+        return `<span class="chip">${counts}</span>`;
+      }
+
+      function renderWorklist() {
+        const me = state.me;
+        qs("#mode-tag").textContent = me.mode === "keyed" ? "keyed coder session" : "open research mode";
+        setStatus(statusIdentity());
+        bindSignOut();
+        qs("#meta").innerHTML = `
+          <div><span class="small">mode</span><br /><code>${me.mode}</code></div>
+          <div><span class="small">packets</span><br /><code>${me.worklist.length}</code></div>
+        `;
+        qs("#open-identity").hidden = me.mode !== "open";
+        if (me.mode === "open") {
+          const input = qs("#open-coder-id");
+          input.value = localStorage.getItem(OPEN_ID_STORAGE) || "";
+          input.onchange = () => {
+            localStorage.setItem(OPEN_ID_STORAGE, input.value.trim());
+            loadMe().then(renderWorklist).catch(showFatal);
+          };
+        }
+        const list = qs("#worklist");
+        list.innerHTML = "";
+        if (!me.worklist.length) {
+          list.innerHTML = `<div class="message">No assignments ${me.mode === "keyed" ? "are assigned to you yet" : "found"}.</div>`;
+        }
+        me.worklist.forEach((entry) => {
+          const card = document.createElement("div");
+          card.className = "packet-card";
+          const draftNote = entry.draft_updated_at
+            ? `<br />draft saved ${new Date(entry.draft_updated_at).toLocaleString()}`
+            : "";
+          const open = entry.status !== "missing";
+          card.innerHTML = `
+            <div>
+              <strong>${entry.slug}</strong>
+              <div class="packet-meta">packet ${entry.packet_id || "?"} · ${entry.arm_count ?? "?"} arms${draftNote}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px">
+              ${chipFor(entry)}
+              ${open ? `<button type="button" data-slug="${entry.slug}">${entry.status === "draft" ? "Resume" : entry.status === "submitted" ? "Reopen" : "Open"}</button>` : ""}
+            </div>
+          `;
+          const button = qs("button[data-slug]", card);
+          if (button) button.addEventListener("click", () => openAssignment(entry.slug));
+          list.append(card);
+        });
+        loadPanel();
+        showView("work");
+      }
+
+      async function loadMe() {
+        const res = await api(`/api/a19/adjudication/me${openModeParams()}`);
+        const data = await res.json();
+        if (res.status === 401) {
+          state.mode = "keyed";
+          return { needsKey: true };
+        }
+        if (!res.ok || !data.success) throw new Error(data.error || "Could not load worklist");
+        state.mode = data.mode;
+        state.me = data;
+        return data;
+      }
+
+      // --- admin panel (researcher only; 403 for keyed coders) ---------------
+
+      async function loadPanel() {
+        const wrap = qs("#panel-admin");
+        try {
+          const res = await api("/api/a19/adjudication/panel");
+          if (!res.ok) {
+            wrap.hidden = true;
+            return;
+          }
+          const data = await res.json();
+          const rows = data.assignments
+            .map((assignment) => {
+              const coders = (assignment.coders || [])
+                .map((coder) => {
+                  const cls =
+                    coder.status === "submitted" ? (coder.validation_status === "pass" ? "submitted" : "fail") : coder.status === "draft" ? "draft" : "";
+                  return `<span class="chip ${cls}">${coder.coder_id}: ${coder.status}${coder.source === "file" ? " (file)" : ""}</span>`;
+                })
+                .join(" ");
+              const need = data.thresholds.minimum_coders_for_claim;
+              return `<tr>
+                <td><code>${assignment.slug}</code></td>
+                <td>${assignment.valid_submission_count}/${need}${assignment.meets_minimum ? " ✓" : ""}${assignment.meets_high_value_target ? " ✓✓" : ""}</td>
+                <td><div class="coder-chips">${coders || "—"}</div></td>
+              </tr>`;
+            })
+            .join("");
+          qs("#panel-table").innerHTML = `
+            <thead><tr><th>packet</th><th>valid / needed</th><th>coders</th></tr></thead>
+            <tbody>${rows}</tbody>
+          `;
+          wrap.hidden = false;
+        } catch {
+          wrap.hidden = true;
+        }
+      }
+
+      // --- assignment form ----------------------------------------------------
 
       function option(value) {
         const el = document.createElement("option");
@@ -251,7 +550,7 @@
       function valuesFromCodebook() {
         const codebook = state.codebook;
         return {
-          labels: codebook.allowed_primary_labels || [codebook.target_label, ...codebook.near_miss_labels],
+          labels: [codebook.target_label, ...codebook.near_miss_labels],
           statuses: codebook.target_status_values,
           obligationValues: codebook.obligation_values,
           excludedMoves: ["none", ...codebook.excluded_moves],
@@ -267,10 +566,6 @@
         };
       }
 
-      function uiLabel(key, fallback) {
-        return state.codebook.ui_labels?.[key] || fallback;
-      }
-
       function addEvidenceRow(container, supportValues) {
         const row = document.createElement("div");
         row.className = "evidence-row";
@@ -281,9 +576,13 @@
         `;
         fillSelect(qs("select", row), supportValues, "primary_label");
         qs("[data-action='remove-evidence']", row).addEventListener("click", () => {
-          if (qsa(".evidence-row", container).length > 1) row.remove();
+          if (qsa(".evidence-row", container).length > 1) {
+            row.remove();
+            markDirty();
+          }
         });
         container.append(row);
+        return row;
       }
 
       function renderArm(arm) {
@@ -298,15 +597,15 @@
             <p class="small">${arm.visible_alias_audit?.instruction || ""}</p>
           </div>
           <div class="grid">
-            <label>${uiLabel("primary_label", "Primary repair label")}<select data-field="primary_label" required></select></label>
-            <label>${uiLabel("target_status", "Target status")}<select data-field="target_status" required></select></label>
+            <label>Primary repair label<select data-field="primary_label" required></select></label>
+            <label>Target status<select data-field="target_status" required></select></label>
             <label class="inline wide">
               <input data-field="target_granularity_risk" type="checkbox" />
-              ${uiLabel("granularity_risk", "target-granularity risk present")}
+              target-granularity risk present
             </label>
             <div class="wide obligations" data-field="obligations"></div>
             <div class="wide">
-              <h3>${uiLabel("excluded_moves", "Excluded Moves")}</h3>
+              <h3>Excluded Moves</h3>
               <div class="checks" data-field="excluded_moves_present"></div>
             </div>
             <div class="wide" data-field="evidence_spans">
@@ -349,7 +648,10 @@
         });
 
         const evidence = qs("[data-field='evidence_spans']", node);
-        qs("[data-action='add-evidence']", node).addEventListener("click", () => addEvidenceRow(evidence, values.supports));
+        qs("[data-action='add-evidence']", node).addEventListener("click", () => {
+          addEvidenceRow(evidence, values.supports);
+          markDirty();
+        });
         addEvidenceRow(evidence, values.supports);
         return node;
       }
@@ -379,52 +681,9 @@
         };
       }
 
-      function render(data) {
-        state.assignment = data.assignment;
-        state.codebook = data.codebook;
-        qs("#status").textContent = `Assignment ${data.assignment.assignment_id}`;
-        qs("#coder-id").value = data.next_coder_id;
-        qs("#meta").innerHTML = `
-          <div><span class="small">packet</span><br /><code>${data.assignment.packet_id}</code></div>
-          <div><span class="small">codebook</span><br /><code>${data.codebook.codebook_id}</code></div>
-          <div><span class="small">assignment</span><br /><code>${data.paths.assignment}</code></div>
-          <div><span class="small">submissions</span><br /><code>${data.submissions.length}</code></div>
-        `;
-        qs("#codebook-summary").textContent = data.codebook.target_definition;
-        const arms = qs("#arms");
-        arms.innerHTML = "<h2>Arms</h2>";
-        data.assignment.arms.forEach((arm) => arms.append(renderArm(arm)));
-        const values = valuesFromCodebook();
-        qs("#pairwise-better-label").textContent = uiLabel("pairwise_better", "Better arm for learner standing");
-        qs("#better-for-target-label").textContent = uiLabel(
-          "better_for_target_reason",
-          "Preference is for the target construct reason",
-        );
-        fillSelect(qs("#better-arm"), values.better, "unclear");
-        fillSelect(qs("#alias-leakage"), values.leakage, "none_observed");
-        qs("#adjudication-form").hidden = false;
-      }
-
-      async function loadAssignment() {
-        const res = await fetch("/api/a19/adjudication/assignment");
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Could not load assignment");
-        render(data);
-      }
-
-      function showResult(message, ok) {
-        const node = qs("#result");
-        node.hidden = false;
-        node.className = `message ${ok ? "ok" : "error"}`;
-        node.textContent = message;
-      }
-
-      qs("#adjudication-form").addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const payload = {
-          coder_id: qs("#coder-id").value.trim(),
+      function collectPayload() {
+        return {
           coder_role: qs("#coder-role").value.trim(),
-          overwrite: qs("#overwrite").checked,
           arm_judgments: qsa(".arm").map(collectArm),
           pairwise_judgment: {
             better_arm_public_id: qs("#better-arm").value,
@@ -440,10 +699,201 @@
             suggested_revision: qs("#suggested-revision").value.trim(),
           },
         };
+      }
+
+      // Rehydrate the form from a saved draft payload (the inverse of
+      // collectPayload). Field-by-field and tolerant: a draft from an older
+      // form version restores what it can.
+      function applyDraft(payload) {
+        if (!payload) return;
+        state.restoringDraft = true;
         try {
-          const res = await fetch("/api/a19/adjudication/submissions", {
+          if (payload.coder_role) qs("#coder-role").value = payload.coder_role;
+          (payload.arm_judgments || []).forEach((judgment) => {
+            const node = qsa(".arm").find((arm) => arm.dataset.arm === judgment.arm_public_id);
+            if (!node) return;
+            const values = valuesFromCodebook();
+            if (judgment.primary_label) qs("[data-field='primary_label']", node).value = judgment.primary_label;
+            if (judgment.target_status) qs("[data-field='target_status']", node).value = judgment.target_status;
+            qs("[data-field='target_granularity_risk']", node).checked = Boolean(judgment.target_granularity_risk);
+            Object.entries(judgment.obligations || {}).forEach(([id, value]) => {
+              const select = qs(`[data-obligation='${id}']`, node);
+              if (select) select.value = value;
+            });
+            const moves = judgment.excluded_moves_present || ["none"];
+            qsa("[data-field='excluded_moves_present'] input", node).forEach((input) => {
+              input.checked = moves.includes(input.value);
+            });
+            const evidence = qs("[data-field='evidence_spans']", node);
+            qsa(".evidence-row", evidence).forEach((row) => row.remove());
+            const spans = judgment.evidence_spans?.length ? judgment.evidence_spans : [{ quote: "", supports: "primary_label" }];
+            spans.forEach((span) => {
+              const row = addEvidenceRow(evidence, values.supports);
+              qs("[data-field='quote']", row).value = span.quote || "";
+              if (span.supports) qs("[data-field='supports']", row).value = span.supports;
+            });
+            if (judgment.rationale) qs("[data-field='rationale']", node).value = judgment.rationale;
+            if (judgment.confidence != null) qs("[data-field='confidence']", node).value = judgment.confidence;
+          });
+          const pairwise = payload.pairwise_judgment || {};
+          if (pairwise.better_arm_public_id) qs("#better-arm").value = pairwise.better_arm_public_id;
+          qs("#better-for-target").checked = Boolean(pairwise.better_for_target_reason);
+          if (pairwise.reason) qs("#pairwise-reason").value = pairwise.reason;
+          if (pairwise.alias_leakage_assessment) qs("#alias-leakage").value = pairwise.alias_leakage_assessment;
+          const feedback = payload.codebook_feedback || {};
+          if (feedback.ambiguous_terms?.length) qs("#ambiguous-terms").value = feedback.ambiguous_terms.join(", ");
+          if (feedback.suggested_revision) qs("#suggested-revision").value = feedback.suggested_revision;
+        } finally {
+          state.restoringDraft = false;
+        }
+      }
+
+      // --- draft autosave -----------------------------------------------------
+
+      function setAutosaveStatus(text, isError = false) {
+        const node = qs("#autosave");
+        node.textContent = text;
+        node.className = `autosave${isError ? " error" : ""}`;
+      }
+
+      function draftUrl() {
+        return `/api/a19/adjudication/assignments/${encodeURIComponent(state.slug)}/draft`;
+      }
+
+      async function saveDraft({ keepalive = false } = {}) {
+        if (!state.slug || state.savingDraft) return;
+        const coderId = currentCoderId();
+        if (!coderId) return; // open mode before an identity is entered
+        state.savingDraft = true;
+        setAutosaveStatus("saving draft…");
+        try {
+          const body = { payload: collectPayload() };
+          if (state.mode === "open") body.coder_id = coderId;
+          const res = await api(draftUrl(), { method: "PUT", body: JSON.stringify(body), keepalive });
+          const data = await res.json();
+          if (!res.ok || !data.success) throw new Error(data.error || "draft save failed");
+          setAutosaveStatus(`draft saved ${new Date(data.draft.updated_at).toLocaleTimeString()}`);
+        } catch (error) {
+          setAutosaveStatus(`draft not saved: ${error.message}`, true);
+        } finally {
+          state.savingDraft = false;
+        }
+      }
+
+      function markDirty() {
+        if (state.restoringDraft || !state.slug) return;
+        clearTimeout(state.draftTimer);
+        state.draftTimer = setTimeout(saveDraft, 1200);
+      }
+
+      function flushDraft() {
+        if (!state.slug) return;
+        clearTimeout(state.draftTimer);
+        saveDraft({ keepalive: true });
+      }
+
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "hidden" && !qs("#view-form").hidden) flushDraft();
+      });
+      window.addEventListener("pagehide", () => {
+        if (!qs("#view-form").hidden) flushDraft();
+      });
+
+      // --- open/submit assignment ----------------------------------------------
+
+      async function openAssignment(slug) {
+        try {
+          setStatus("loading assignment…");
+          const res = await api(`/api/a19/adjudication/assignments/${encodeURIComponent(slug)}`);
+          const data = await res.json();
+          if (!res.ok || !data.success) throw new Error(data.error || "Could not load assignment");
+          state.slug = slug;
+          state.assignment = data.assignment;
+          state.codebook = data.codebook;
+          state.coderStatus = data.coder_status || null;
+          renderForm(data);
+          const draftRes = await api(`${draftUrl()}${openModeParams()}`);
+          const draftData = await draftRes.json().catch(() => ({}));
+          if (draftRes.ok && draftData.draft?.payload) {
+            applyDraft(draftData.draft.payload);
+            setAutosaveStatus(`draft restored from ${new Date(draftData.draft.updated_at).toLocaleString()}`);
+          } else {
+            setAutosaveStatus("");
+          }
+        } catch (error) {
+          showFatal(error);
+        }
+      }
+
+      function renderForm(data) {
+        const assignment = state.assignment;
+        setStatus(`${statusIdentity()}<br />assignment ${assignment.assignment_id}`);
+        bindSignOut();
+        qs("#meta").innerHTML = `
+          <div><span class="small">packet</span><br /><code>${assignment.packet_id}</code></div>
+          <div><span class="small">codebook</span><br /><code>${state.codebook.codebook_id}</code></div>
+        `;
+        const coderInput = qs("#coder-id");
+        if (state.mode === "keyed") {
+          coderInput.value = state.me.coder.coder_id;
+          coderInput.readOnly = true;
+          if (state.me.coder.coder_role) qs("#coder-role").value = state.me.coder.coder_role;
+        } else {
+          coderInput.readOnly = false;
+          coderInput.value = currentCoderId() || data.next_coder_id || "";
+        }
+        const note = qs("#resubmit-note");
+        const status = state.coderStatus;
+        if (status?.status === "submitted") {
+          note.hidden = false;
+          note.textContent = `You already submitted this packet (validation: ${status.validation_status}). Submitting again requires the overwrite checkbox and replaces your file.`;
+        } else {
+          note.hidden = true;
+        }
+        qs("#codebook-summary").textContent = state.codebook.target_definition;
+        const arms = qs("#arms");
+        arms.innerHTML = "<h2>Arms</h2>";
+        assignment.arms.forEach((arm) => arms.append(renderArm(arm)));
+        const values = valuesFromCodebook();
+        fillSelect(qs("#better-arm"), values.better, "unclear");
+        fillSelect(qs("#alias-leakage"), values.leakage, "none_observed");
+        qs("#result").hidden = true;
+        qs("#overwrite").checked = false;
+        showView("form");
+      }
+
+      function showResult(message, ok) {
+        const node = qs("#result");
+        node.hidden = false;
+        node.className = `message ${ok ? "ok" : "error"}`;
+        node.textContent = message;
+      }
+
+      function showFatal(error) {
+        setStatus(error.message);
+      }
+
+      qs("#view-form").addEventListener("input", markDirty);
+      qs("#view-form").addEventListener("change", markDirty);
+
+      qs("#back-to-worklist").addEventListener("click", async () => {
+        clearTimeout(state.draftTimer);
+        await saveDraft();
+        state.slug = null;
+        await loadMe().then(renderWorklist).catch(showFatal);
+      });
+
+      qs("#view-form").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        clearTimeout(state.draftTimer);
+        const payload = {
+          ...collectPayload(),
+          overwrite: qs("#overwrite").checked,
+        };
+        if (state.mode === "open") payload.coder_id = qs("#coder-id").value.trim();
+        try {
+          const res = await api(`/api/a19/adjudication/assignments/${encodeURIComponent(state.slug)}/submissions`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
           });
           const data = await res.json();
@@ -451,16 +901,79 @@
             const issues = data.validation?.issues?.map((issue) => `${issue.path}: ${issue.message}`).join("\n");
             throw new Error([data.error || "Submission failed", issues].filter(Boolean).join("\n"));
           }
+          if (state.mode === "open") localStorage.setItem(OPEN_ID_STORAGE, qs("#coder-id").value.trim());
           showResult(`Saved ${data.coder_path}\nValidation status: ${data.validation.status}`, true);
-          await loadAssignment();
+          setAutosaveStatus("");
+          state.slug = null;
+          await loadMe();
+          renderWorklist();
+          showResultBanner(`Submitted. Validation: ${data.validation.status}.`);
         } catch (error) {
           showResult(error.message, false);
         }
       });
 
-      loadAssignment().catch((error) => {
-        qs("#status").textContent = error.message;
+      // After returning to the worklist, surface the submit confirmation there.
+      function showResultBanner(text) {
+        const list = qs("#worklist");
+        const banner = document.createElement("div");
+        banner.className = "message ok";
+        banner.textContent = text;
+        list.prepend(banner);
+      }
+
+      // --- key handling + boot --------------------------------------------------
+
+      function adoptKeyFromUrl() {
+        const params = new URLSearchParams(location.search);
+        const key = params.get("key");
+        if (key) {
+          localStorage.setItem(KEY_STORAGE, key.trim());
+          // Strip the key from the visible URL and history so it is not
+          // shoulder-surfable or kept in the location bar.
+          history.replaceState(null, "", location.pathname);
+        }
+        state.key = localStorage.getItem(KEY_STORAGE) || null;
+      }
+
+      qs("#key-submit").addEventListener("click", () => {
+        const key = qs("#key-input").value.trim();
+        if (!key) return;
+        localStorage.setItem(KEY_STORAGE, key);
+        state.key = key;
+        boot();
       });
+      qs("#key-input").addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          qs("#key-submit").click();
+        }
+      });
+
+      async function boot() {
+        try {
+          setStatus("loading…");
+          qs("#key-error").hidden = true;
+          const me = await loadMe();
+          if (me.needsKey) {
+            qs("#mode-tag").textContent = "keyed coder session";
+            setStatus("access key required");
+            if (state.key) {
+              const errorNode = qs("#key-error");
+              errorNode.hidden = false;
+              errorNode.textContent = "That access key was not recognised (it may have been rotated). Paste a current key.";
+            }
+            showView("key");
+            return;
+          }
+          renderWorklist();
+        } catch (error) {
+          showFatal(error);
+        }
+      }
+
+      adoptKeyFromUrl();
+      boot();
     </script>
     <!-- Dashboard nav rail (shared with the rendered pages via /_nav.html). -->
     <script src="/components/rail-inject.js" data-active="adjudicate" defer></script>
