@@ -27,7 +27,9 @@ const ALIAS_LEAKAGE_VALUES = new Set([
   'possible_hint',
   'decisive_contamination',
 ]);
-const FORBIDDEN_PRIVATE_MARKERS = [
+// Shared with services/a19AdjudicationPanel.js, which applies the same leak
+// definition to assignments BEFORE serving them to a coder's browser.
+export const FORBIDDEN_PRIVATE_MARKERS = [
   /\bS0_no_policy\b/u,
   /\bS1_policy_memory\b/u,
   /\bpolicy_memory\b/u,
