@@ -249,9 +249,7 @@ export function fillRecursiveTutorPolicies({
   const planPath = path.join(chainDir, 'attempt-chain-plan.json');
   if (!fileExists(planPath)) throw new Error(`attempt-chain plan not found: ${planPath}`);
   const plan = readJson(planPath);
-  const families = (plan.families || []).map((family) =>
-    fillFamilyPolicy(family, { includeReviseAgain, dryRun }),
-  );
+  const families = (plan.families || []).map((family) => fillFamilyPolicy(family, { includeReviseAgain, dryRun }));
   const status_counts = families.reduce((acc, family) => {
     const key = family.status === 'skipped' ? `skipped_${family.reason}` : family.status;
     acc[key] = (acc[key] || 0) + 1;

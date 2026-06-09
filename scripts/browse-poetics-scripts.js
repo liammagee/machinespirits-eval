@@ -6,6 +6,10 @@
  * scripts/ingest-poetics-artifacts.js first when a new artifact root is added.
  */
 
+// Load .env first: this server hosts metered surfaces (the live-compose turn engine
+// and setup guide both read OPENROUTER_API_KEY at call time), so the key must be in
+// process.env before any request lands. Matches the repo convention (eval-cli.js).
+import 'dotenv/config';
 import express from 'express';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -13,7 +17,8 @@ import { exec } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import YAML from 'yaml';
 import { openPoeticsStore, upsertPoeticsLabel, upsertPoeticsReviewFlag } from '../services/poeticsStore.js';
-import { resolveBasicAuthGuard } from '../services/httpBasicAuth.js';
+import { resolveBasicAuthGuard, makeRoleGate } from '../services/httpBasicAuth.js';
+import { mountEvalSurfaces } from '../services/evalSurfaces.js';
 import { classifyPoeticsConsensus, parseCriticFormString } from './lib/poeticsConsensus.js';
 import { ORIGIN_CLASSES, originCounts, recognitionOriginForScoreRow } from './lib/recognitionOrigin.js';
 import { validateTurnPlan } from '../services/ontology/reasoningOntology.js';
@@ -39,7 +44,14 @@ import {
   humanTurn as liveHumanTurn,
   viewSession as liveViewSession,
   saveSession as liveSaveSession,
+  endSession as liveEndSession,
+  scoreSession as liveScoreSession,
   buildMockDeps as liveBuildMockDeps,
+  proposeSpec as liveProposeSpec,
+  buildMockGuideDeps as liveBuildMockGuideDeps,
+  listCourses as liveListCourses,
+  getLectureContent as liveGetLectureContent,
+  LIVE_VOCAB,
 } from '../services/poetics/liveCompose.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -847,6 +859,11 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
     app.use(authGuard);
     console.log('[poetics] basic-auth ENABLED (credentials required)');
   }
+  // Default-deny role gate (Design A — perimeter RBAC). No-op on localhost-open
+  // and for the admin role; restricts a 'participant' credential to the pilot +
+  // adjudication allowlist (services/httpBasicAuth.js PARTICIPANT_ALLOWLIST), so
+  // every metered/researcher surface on this consolidated app stays admin-only.
+  app.use(makeRoleGate());
   app.use(express.json({ limit: '64kb' }));
   app.use('/images', express.static(path.resolve(ROOT, 'notes/poetics/images'), { index: false }));
   app.use('/assets', express.static(path.resolve(ROOT, 'notes/poetics/assets'), { index: false }));
@@ -903,6 +920,16 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
     }
   });
   app.get('/compose', (_req, res) => res.type('html').send(renderComposeHtml()));
+  // Standalone nav fragment so the static tool surfaces (/chat, /adjudication,
+  // /pilot-admin) can fetch + inject the SAME rail the rendered pages carry.
+  // railHtml() is the single source of nav truth; `bare: true` drops the bits
+  // that belong only to a dashboard-rendered page (the shader canvas, the x-ray
+  // overlay, the grid/theme toggles, and the three enhancer scripts) so the
+  // fragment carries only the rail + its own .rail* CSS — no host-page CSS bleed
+  // and no duplicate #field/#xrayGrid ids. See public/components/rail-inject.js.
+  app.get('/_nav.html', (req, res) =>
+    res.type('html').send(railHtml({ active: String((req.query && req.query.active) || ''), bare: true })),
+  );
   app.post('/api/compose/validate', async (req, res) => {
     try {
       const spec = (req.body && req.body.spec) || {};
@@ -986,7 +1013,9 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
     try {
       const body = req.body || {};
       const deps = body.mock ? liveBuildMockDeps() : {};
-      const out = await liveHumanTurn(body.id, body.text, deps);
+      // The client re-sends its console (deliberation) toggle on every turn; the
+      // per-turn meta (time/latency/tokens) always ships regardless of this flag.
+      const out = await liveHumanTurn(body.id, body.text, deps, { debug: !!body.showDeliberation });
       return res.json(out);
     } catch (error) {
       return res.status(error.statusCode || 400).json({ error: error.message || String(error), code: error.code });
@@ -994,7 +1023,8 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   });
   app.get('/api/compose/live/:id', (req, res) => {
     try {
-      return res.json({ session: liveViewSession(req.params.id) });
+      const debug = req.query.debug === '1' || req.query.debug === 'true';
+      return res.json({ session: liveViewSession(req.params.id, { debug }) });
     } catch (error) {
       return res.status(error.statusCode || 404).json({ error: error.message || String(error), code: error.code });
     }
@@ -1003,6 +1033,64 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
     try {
       const body = req.body || {};
       const out = liveSaveSession(body.id, { filename: body.filename });
+      return res.json({ ok: true, ...out });
+    } catch (error) {
+      return res.status(error.statusCode || 400).json({ error: error.message || String(error), code: error.code });
+    }
+  });
+  // Terminate a live scene early. Idempotent: marks the session done so no more
+  // turns can be appended, then the client can score the (now frozen) transcript.
+  app.post('/api/compose/live/:id/end', (req, res) => {
+    try {
+      const body = req.body || {};
+      return res.json({ ok: true, session: liveEndSession(req.params.id, body.reason || 'user_ended') });
+    } catch (error) {
+      return res.status(error.statusCode || 400).json({ error: error.message || String(error), code: error.code });
+    }
+  });
+  // Score the transcript-so-far against the poetics rubric. Metered (one critic
+  // call) unless body.mock swaps in the deterministic free-preview verdict.
+  app.post('/api/compose/live/:id/score', async (req, res) => {
+    try {
+      const body = req.body || {};
+      const deps = body.mock ? liveBuildMockDeps() : {};
+      const out = await liveScoreSession(req.params.id, deps);
+      return res.json({ ok: true, ...out });
+    } catch (error) {
+      return res.status(error.statusCode || 400).json({ error: error.message || String(error), code: error.code });
+    }
+  });
+  // The "reading" behind the scene: when a sit-in is bound to a course lecture, the
+  // human learner can read the SAME text the AI tutor is grounded in (closing the
+  // tutor-reads / learner-can't asymmetry). Read-only, no spend — just resolves the ref.
+  app.get('/api/compose/live/lecture/:ref', (req, res) => {
+    try {
+      const lecture = liveGetLectureContent(req.params.ref);
+      if (!lecture)
+        return res.status(404).json({ error: `no lecture for ref '${req.params.ref}'`, code: 'LIVE_NO_LECTURE' });
+      const { courseId, courseTitle, lectureNum, lectureRef, title } = lecture;
+      return res.json({
+        ok: true,
+        lecture: { courseId, courseTitle, lectureNum, lectureRef, title, html: mdLectureToHtml(lecture.text) },
+      });
+    } catch (error) {
+      return res.status(error.statusCode || 400).json({ error: error.message || String(error), code: error.code });
+    }
+  });
+  // The "describe it in plain language" guide: an LLM reads a free-text wish and
+  // proposes a full compose spec, clamped to the live vocabulary + real course
+  // catalog. Metered (one OpenRouter call) unless body.mock is set, which swaps
+  // in a deterministic canned spec for a zero-cost preview.
+  app.post('/api/compose/live/guide', async (req, res) => {
+    try {
+      const body = req.body || {};
+      const catalog = {
+        courses: liveListCourses(),
+        personas: COMPOSER_VOCAB.personas,
+        learnerArch: COMPOSER_VOCAB.learnerArch,
+      };
+      const deps = body.mock ? liveBuildMockGuideDeps() : {};
+      const out = await liveProposeSpec({ description: body.description, catalog }, deps);
       return res.json({ ok: true, ...out });
     } catch (error) {
       return res.status(error.statusCode || 400).json({ error: error.message || String(error), code: error.code });
@@ -1089,7 +1177,17 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   // durable /summary synthesis, this is a dated, provisional lab-notebook
   // narrative of the adaptation arc — it links to /summary + the paper for the
   // claims that have earned the right to be stable.
-  app.get('/story', (_req, res) => {
+  app.get('/story', (_req, res) =>
+    res.type('html').send(
+      framedNoteHtml({
+        active: 'story',
+        sub: 'the story so far — a dated, provisional narrative of the adaptation arc',
+        src: '/story-doc',
+        title: 'The story so far · the adaptation arc',
+      }),
+    ),
+  );
+  app.get('/story-doc', (_req, res) => {
     const notePath = path.resolve(ROOT, 'notes/poetics/2026-06-06-adaptation-story-so-far.html');
     if (!fs.existsSync(notePath)) return res.status(404).type('text').send('story-so-far note not found');
     res.type('html').sendFile(notePath);
@@ -1101,7 +1199,17 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   // repertoire of controlled adaptive mechanisms to exploit the few real wins,
   // with a filterable gallery of failed & minimally-succeeded adaptation. Like
   // /story it narrates and links; durable claims live in /summary + the paper.
-  app.get('/repertoire', (_req, res) => {
+  app.get('/repertoire', (_req, res) =>
+    res.type('html').send(
+      framedNoteHtml({
+        active: 'repertoire',
+        sub: 'three instruments, one repertoire — measurement grain & a repertoire of controlled adaptive mechanisms',
+        src: '/repertoire-doc',
+        title: 'Controlled adaptation repertoire · machine spirits',
+      }),
+    ),
+  );
+  app.get('/repertoire-doc', (_req, res) => {
     const notePath = path.resolve(ROOT, 'notes/poetics/2026-06-06-controlled-adaptation-repertoire.html');
     if (!fs.existsSync(notePath)) return res.status(404).type('text').send('repertoire note not found');
     res.type('html').sendFile(notePath);
@@ -1112,12 +1220,30 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   // (status × theme), with the 8 open items given detailed treatment and the 40
   // closed/ruled-out items archived as one-line cards. It originates no claims —
   // durable results live in /summary + the paper; TODO.md remains the source.
-  app.get('/board', (_req, res) => {
+  app.get('/board', (_req, res) =>
+    res.type('html').send(
+      framedNoteHtml({
+        active: 'board',
+        sub: 'the development board — TODO.md as a two-axis filterable board (status × theme)',
+        src: '/board-doc',
+        title: 'Development board · machine spirits',
+      }),
+    ),
+  );
+  app.get('/board-doc', (_req, res) => {
     const notePath = path.resolve(ROOT, 'notes/poetics/2026-06-06-development-board.html');
     if (!fs.existsSync(notePath)) return res.status(404).type('text').send('development-board note not found');
     res.type('html').sendFile(notePath);
   });
   app.get('/browse', (_req, res) => res.type('html').send(renderBrowserHtml()));
+  // Fold in the eval server's surfaces (the four /api/* routers + the public/
+  // UI dirs: /chat, /pilot, /pilot-admin, /adjudication, /components, /docs) so
+  // this one port hosts both the poetics scriptorium and the eval app. Shared
+  // with server.js via services/evalSurfaces.js — single source, no drift.
+  // Mounted AFTER the poetics routes (so /api/* and /compose stay poetics-owned)
+  // and AFTER /docs/research (line ~864, { index:false }) so the paper subtree
+  // keeps precedence over the broader /docs mount here; BEFORE the catch-all '/'.
+  mountEvalSurfaces(app, { root: ROOT });
   app.get('/', (req, res) => {
     // Deep links from before the browser moved to /browse (e.g. /?runId=…,
     // /?itemId=…) still arrive at /. Preserve them by forwarding the query.
@@ -1150,8 +1276,10 @@ const COMPOSER_VOCAB = Object.freeze({
   promptTypes: ['recognition', 'base', 'placebo', 'naive', 'dialectical_suspicious', 'matched_recognition'],
   tutorArch: ['ego_superego', 'ego_only', 'id_director'],
   superego: ['suspicious', 'standard', 'adversary', 'advocate', 'strict', 'coupling'],
-  personas: ['struggling_anxious', 'confused_novice', 'eager_explorer', 'focused_achiever', 'adversarial_tester'],
-  learnerArch: ['ego_superego_recognition_authentic', 'ego_superego_recognition', 'ego_superego', 'unified'],
+  // Sourced from the live engine so the sit-in form, its CLI, and the LLM guide
+  // can't drift (see liveCompose.LIVE_VOCAB).
+  personas: LIVE_VOCAB.personas,
+  learnerArch: LIVE_VOCAB.learnerArch,
   continuationPolicy: ['none', 'anchor', 'revoice', 'reconsider', 'reframe'],
   adaptationPolicy: [
     'none',
@@ -1239,8 +1367,109 @@ const composeOptions = (list, selected) =>
     .map((v) => `<option value="${escapeHtml(v)}"${v === selected ? ' selected' : ''}>${escapeHtml(v)}</option>`)
     .join('');
 
+// Same as composeOptions but renders friendlier display labels (underscores →
+// spaces) while keeping the raw value — so the form still POSTs the exact vocab
+// term but the reader sees "ego superego" instead of "ego_superego".
+const composeOptionsPretty = (list, selected) =>
+  list
+    .map(
+      (v) =>
+        `<option value="${escapeHtml(v)}"${v === selected ? ' selected' : ''}>${escapeHtml(
+          String(v).replace(/_/g, ' '),
+        )}</option>`,
+    )
+    .join('');
+
+// The live-only AI-learner model picker. The blank default keeps the configured
+// learner model (kimi-k2.5, a reasoning model that occasionally emits an empty
+// external turn); the rest are raw OpenRouter slugs the engine uses verbatim
+// (they contain "/", so they bypass dot-alias resolution) — a plain-completion
+// escape hatch for when the default returns a blank line.
+const LEARNER_MODEL_CHOICES = [
+  { value: '', label: 'default · kimi-k2.5 (reasoning)' },
+  { value: 'openai/gpt-5-mini', label: 'gpt-5-mini' },
+  { value: 'anthropic/claude-sonnet-4.6', label: 'claude sonnet 4.6' },
+  { value: 'nvidia/nemotron-3-nano-30b-a3b', label: 'nemotron nano' },
+  { value: 'z-ai/glm-4.7', label: 'glm 4.7' },
+  { value: 'google/gemini-3-flash-preview', label: 'gemini 3 flash' },
+];
+const composeLearnerModelOptions = () =>
+  LEARNER_MODEL_CHOICES.map((m) => `<option value="${escapeHtml(m.value)}">${escapeHtml(m.label)}</option>`).join('');
+
 const composeDatalist = (id, list) =>
   `<datalist id="${id}">${list.map((v) => `<option value="${escapeHtml(v)}"></option>`).join('')}</datalist>`;
+
+// The syllabus picker for both composers. The course catalog lives in the engine
+// (liveCompose.listCourses) so the picker, the AI guide, and the curriculum-injection
+// bridge all read one source. Rather than one flat <select> burying the curriculum,
+// it is a two-tier course → lesson picker (the syllabus, made explicit at both
+// levels) with a caption that names the chosen course + its one-line subtitle.
+// content-test-* courses come back flagged isFixture, so they sort last + are labelled.
+
+// The catalog as client JSON — the lesson <select> is repopulated in the browser
+// from this when a course is picked, so the two tiers stay in sync without a fetch.
+const composeCoursesJson = () => JSON.stringify(liveListCourses());
+
+// Course <select> options: a "free topic" sentinel + one option per course.
+const composeCourseOptions = () =>
+  ['<option value="">— free topic · no course —</option>']
+    .concat(
+      liveListCourses().map(
+        (c) =>
+          `<option value="${escapeHtml(c.courseId)}">${escapeHtml(
+            c.isFixture ? `${c.courseTitle} · test fixture` : c.courseTitle,
+          )}</option>`,
+      ),
+    )
+    .join('');
+
+// The two-tier picker markup: a course <select>, a lesson <select> (filled
+// client-side), and a caption line. ids are caller-supplied so the live page can
+// keep lessonId='f-lecture' (what begin()/applySpecToForm already read) while the
+// spec page uses 'd-lecture'. lessonHint distinguishes "ground the tutor" (live,
+// where the engine injects the lecture) from "borrow a topic" (spec, batch).
+const composeSyllabusPicker = ({ courseId, lessonId, capId, lessonHint }) =>
+  `<label class="fld">syllabus · course<select id="${courseId}">${composeCourseOptions()}</select><span class="hint">a real course to teach from — or leave free to teach from the topic alone</span></label>` +
+  `<label class="fld">syllabus · lesson<select id="${lessonId}" disabled><option value="">— pick a course first —</option></select><span class="hint">${escapeHtml(
+    lessonHint,
+  )}</span></label>` +
+  `<div class="syl-cap" id="${capId}"></div>`;
+
+// Shared client wiring (injected into both composers' <script>, so the two pages
+// can't drift). Relies on esc() + $ being defined in the host scope (both are).
+// mkSyllabus repopulates the lesson <select> when the course changes, paints the
+// caption, and calls onPick(option) when a lesson is chosen. setByRef() lets the
+// AI guide drive it from a proposed lectureRef (derives the course from the ref).
+const SYLLABUS_CLIENT_JS = `
+function mkSyllabus(courses, courseSel, lessonSel, capEl, onPick){
+  function findCourse(id){ for(var i=0;i<courses.length;i++){ if(courses[i].courseId===id) return courses[i]; } return null; }
+  function fillLessons(cid, ref){
+    var c = findCourse(cid);
+    var html = '<option value="">'+(c ? '— whole course · pick a lesson —' : '— pick a course first —')+'</option>';
+    if(c){ for(var i=0;i<c.lectures.length;i++){ var l=c.lectures[i]; html += '<option value="'+esc(l.ref)+'" data-topic="'+esc(l.title)+'">L'+l.num+' · '+esc(l.title)+'</option>'; } }
+    lessonSel.innerHTML = html; lessonSel.disabled = !c;
+    if(ref){ lessonSel.value = ref; }
+  }
+  function caption(){
+    var c = findCourse(courseSel.value);
+    if(!c){ capEl.innerHTML = '<span class="muted">no course — the scene teaches from the free-text topic below</span>'; return; }
+    var l=null; for(var i=0;i<c.lectures.length;i++){ if(c.lectures[i].ref===lessonSel.value){ l=c.lectures[i]; break; } }
+    var html = '<b>'+esc(c.courseTitle)+'</b>'+(c.courseSubtitle ? (' — '+esc(c.courseSubtitle)) : '');
+    html += l ? ('<br><b>Lesson '+l.num+':</b> '+esc(l.title)) : ('<br><span class="muted">'+c.lectures.length+' lessons — pick one to ground the scene</span>');
+    capEl.innerHTML = html;
+  }
+  courseSel.addEventListener('change', function(){ fillLessons(courseSel.value); caption(); if(onPick){ onPick(null); } });
+  lessonSel.addEventListener('change', function(){ caption(); if(onPick){ onPick(lessonSel.options[lessonSel.selectedIndex]); } });
+  caption();
+  return {
+    setByRef: function(ref){
+      if(!ref){ courseSel.value=''; fillLessons(''); caption(); return; }
+      var cid = String(ref).split('-lecture-')[0];
+      courseSel.value = cid; fillLessons(cid, ref); caption();
+    }
+  };
+}
+`;
 
 const composeFormChecks = (selected) =>
   COMPOSER_VOCAB.forms
@@ -1259,23 +1488,118 @@ function escapeHtml(value) {
   );
 }
 
+// Minimal block-markdown → HTML for the sit-in "reading" panel: headings, paragraphs,
+// `-`/`*`/`1.` lists, fenced code, blockquotes, rules, plus inline bold/italic/code. It
+// mirrors the chat bubble's mdInline subset (asterisk emphasis only, so snake_case ids
+// survive) but adds block structure so a whole lecture reads legibly. NOT a general
+// CommonMark engine — scoped to lecture prose. esc-first, so lecture source can't inject
+// markup. Rendered server-side (sane escaping) rather than in the client template string.
+function mdLectureToHtml(md) {
+  const inline = (t) =>
+    escapeHtml(t)
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
+  const lines = String(md ?? '')
+    .replace(/<a\b[^>]*>\s*<\/a>/g, '') // drop empty anchor targets (e.g. <a id="…"></a>) that pollute headings
+    .replace(/\r\n?/g, '\n')
+    .split('\n');
+  const out = [];
+  let i = 0;
+  const list = (tag, items) => `<${tag}>${items.map((x) => `<li>${inline(x)}</li>`).join('')}</${tag}>`;
+  const blockStart = /^(#{1,6}\s|```|>|\s*[-*+]\s+|\s*\d+\.\s+|-{3,}\s*$|\*{3,}\s*$)/;
+  while (i < lines.length) {
+    const ln = lines[i];
+    if (/^```/.test(ln)) {
+      const buf = [];
+      i++;
+      while (i < lines.length && !/^```/.test(lines[i])) {
+        buf.push(lines[i]);
+        i++;
+      }
+      i++;
+      out.push(`<pre><code>${escapeHtml(buf.join('\n'))}</code></pre>`);
+      continue;
+    }
+    if (!ln.trim()) {
+      i++;
+      continue;
+    }
+    const h = ln.match(/^(#{1,6})\s+(.*)$/);
+    if (h) {
+      const lvl = Math.min(6, h[1].length + 3);
+      out.push(`<h${lvl}>${inline(h[2].replace(/\s+#+\s*$/, ''))}</h${lvl}>`);
+      i++;
+      continue;
+    }
+    if (/^(-{3,}|\*{3,}|_{3,})\s*$/.test(ln)) {
+      out.push('<hr>');
+      i++;
+      continue;
+    }
+    if (/^>\s?/.test(ln)) {
+      const q = [];
+      while (i < lines.length && /^>\s?/.test(lines[i])) {
+        q.push(lines[i].replace(/^>\s?/, ''));
+        i++;
+      }
+      out.push(`<blockquote>${inline(q.join(' '))}</blockquote>`);
+      continue;
+    }
+    if (/^\s*[-*+]\s+/.test(ln)) {
+      const items = [];
+      while (i < lines.length && /^\s*[-*+]\s+/.test(lines[i])) {
+        items.push(lines[i].replace(/^\s*[-*+]\s+/, ''));
+        i++;
+      }
+      out.push(list('ul', items));
+      continue;
+    }
+    if (/^\s*\d+\.\s+/.test(ln)) {
+      const items = [];
+      while (i < lines.length && /^\s*\d+\.\s+/.test(lines[i])) {
+        items.push(lines[i].replace(/^\s*\d+\.\s+/, ''));
+        i++;
+      }
+      out.push(list('ol', items));
+      continue;
+    }
+    const p = [];
+    while (i < lines.length && lines[i].trim() && !blockStart.test(lines[i])) {
+      p.push(lines[i]);
+      i++;
+    }
+    out.push(`<p>${inline(p.join(' '))}</p>`);
+  }
+  return out.join('');
+}
+
 // Single source of truth for the top-nav items, consumed by railHtml() — which
 // every scriptorium page renders, including the /summary iframe wrapper. Adding an
 // entry here adds the tab everywhere at once. Each entry is [key, href, label, title].
+// The rail's destination table (key → href, label, title). The rail does NOT
+// render these flat: it shows NAV_PRIMARY as plain links and folds the rest into
+// the labelled NAV_GROUPS dropdowns, so the bar stays legible (was 10 flat links
+// crowding one row). The former :8081 eval server's researcher-facing
+// interactive surfaces (/chat, /adjudication) plus the operator console
+// (/pilot-admin) fold in here as a "tools" group, so the primary bar stays at
+// four. /pilot stays OUT of the rail — it is the participant study surface
+// (reached by a study link), and must not leak researcher chrome to subjects.
 const NAV = [
   ['home', '/', 'home', 'Dashboard — overview, live stats &amp; guided first steps'],
   ['browse', '/browse', 'browse', 'Browse generated scripts, full traces, critic scores &amp; labels'],
-  ['compose', '/compose', 'compose', 'Assemble a drama-machine spec, validated live against the ontology'],
+  ['compose', '/compose/live', 'compose', 'Sit in on a tutoring scene turn by turn — or switch to batch-spec mode'],
+  ['runs', '/runs', 'runs', 'Launch runs — generative · replay · adversarial-CLI · online scoring'],
   ['ontology', '/ontology', 'ontology', 'The shared ontology — system, tutor &amp; learner lenses'],
   ['rubric', '/rubric', 'rubric', 'The poetics rubric — the 6 dramatic-form dimensions critics score against'],
   ['replays', '/replays', 'replays', 'Counterfactual replays diffed against their originals'],
-  ['runs', '/runs', 'runs', 'Launch runs — generative · replay · adversarial-CLI · online scoring'],
   [
     'summary',
     '/summary',
     'summary',
     'The synthesis note — the whole dramatic-recognition arc, from the paper to this scriptorium',
   ],
+  ['story', '/story', 'story', 'The story so far — a dated, provisional narrative of the adaptation arc'],
   [
     'repertoire',
     '/repertoire',
@@ -1288,30 +1612,302 @@ const NAV = [
     'board',
     'The development board — every tracked item as a filterable status × theme grid: what is open, what is closed, what is ruled out',
   ],
+  [
+    'tutor',
+    '/chat',
+    'tutor',
+    'Interactive tutor — play the learner &amp; watch the ego/superego deliberation for any cell in tutor-agents.yaml',
+  ],
+  [
+    'adjudicate',
+    '/adjudication',
+    'adjudicate',
+    'Blinded A19 human-adjudication forms — complete coding tasks through the dashboard',
+  ],
+  [
+    'pilot-admin',
+    '/pilot-admin',
+    'pilot admin',
+    'Pilot operator console — session monitoring, recruitment toggle &amp; run launching (admin token-gated)',
+  ],
+];
+// Shown flat, left-to-right: the everyday action surfaces.
+const NAV_PRIMARY = ['home', 'browse', 'compose', 'runs'];
+// Folded into labelled dropdowns, in order: the reference surfaces, then the
+// dated/durable techne notes. A group whose member is the active page shows a
+// moss accent on its summary so the current location is still legible when closed.
+const NAV_GROUPS = [
+  ['tools', ['tutor', 'adjudicate', 'pilot-admin']],
+  ['reference', ['ontology', 'rubric', 'replays']],
+  ['notes', ['summary', 'story', 'repertoire', 'board']],
 ];
 
-// Single source of truth for the top-nav markup. Every page already ships
-// identical .rail*/.rail__btn CSS, so this stays markup-only; the active link
-// gets aria-current + an inline accent (theme vars exist on every page) so no
-// page needs a bespoke active-state rule. Replaces five hand-maintained rails.
-// `extra` (e.g. /browse's live DB beacon) sits to the LEFT of the nav links so
-// the menu + theme-toggle cluster stays identical on every page, beacon or not.
-function railHtml({ active = '', brand = 'machine spirits', sub = '', extra = '' } = {}) {
-  const links = NAV.map(([key, href, label, title]) => {
+// Single source of truth for the top-nav markup + the specimen ground every page
+// shares: a spinning brick mark, the prussian MMXXVI stamp, and the warm Klee-drift
+// shader "field" canvas (ported from /chat). The active link gets aria-current + an
+// inline accent (theme vars exist on every page) so no page needs a bespoke
+// active-state rule. The shader self-gates on prefers-reduced-motion and is hidden
+// by CSS in dark theme (it is a light-paper pigment field); the canvas + its IIFE
+// ride here because every page already calls railHtml() exactly once, so this is the
+// one place that puts the ground on all of them. `extra` (e.g. /browse's live DB
+// beacon) sits to the LEFT of the nav links so the menu + theme-toggle cluster stays
+// identical on every page, beacon or not.
+function railHtml({ active = '', brand = 'machine spirits', sub = '', extra = '', bare = false } = {}) {
+  const byKey = Object.fromEntries(NAV.map((n) => [n[0], n]));
+  const link = (key) => {
+    const n = byKey[key];
+    if (!n) return '';
+    const [, href, label, title] = n;
     const on = key === active;
     const attrs = on
       ? ' aria-current="page" style="color:var(--moss-deep);border-color:var(--moss);background:var(--moss-soft)"'
       : '';
     return `<a class="rail__btn" href="${href}" title="${title}"${attrs}>${label}</a>`;
+  };
+  const primary = NAV_PRIMARY.map(link).join('\n    ');
+  const groups = NAV_GROUPS.map(([label, keys]) => {
+    // A closed group whose member is the current page keeps a moss accent so the
+    // active location stays legible without opening the menu.
+    const onAttrs = keys.includes(active) ? ' style="color:var(--moss-deep);border-color:var(--moss)"' : '';
+    const items = keys.map(link).join('\n      ');
+    return `<details class="rail__menu"><summary class="rail__btn"${onAttrs}>${label}</summary><div class="rail__pop">
+      ${items}
+    </div></details>`;
   }).join('\n    ');
-  return `<header class="rail">
+  // railHtml owns BOTH the rail markup and its styling. The full rule set rides
+  // inline here (like the canvas below), emitted as the first node in the body so
+  // it parses before first paint. That makes it the single source: pages built via
+  // pageHead()+BASE_CSS and the bespoke-head /browse (which skips BASE_CSS) all get
+  // the identical rail with no second copy to drift. Do NOT re-add a .rail* block to
+  // BASE_CSS or any page's head — change the rail here, once.
+  return `<style id="rail-extra">
+.rail{ position:sticky; top:0; z-index:30; background:color-mix(in srgb, var(--paper) 92%, transparent); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-bottom:1px solid var(--rule); font-family:"JetBrains Mono","SFMono-Regular",Consolas,monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); }
+.rail__inner{ display:flex; align-items:center; gap:.9em; padding:.55em clamp(.8rem,2vw,1.2rem); }
+.rail__brand{ font-family:"Fraunces","Source Serif 4",Georgia,serif; font-style:italic; font-variation-settings:"SOFT" 50,"WONK" 1,"opsz" 96; font-size:17px; letter-spacing:-.005em; text-transform:none; color:var(--ink); flex:0 0 auto; }
+.rail__brand::before{ content:""; }
+.rail__sub{ flex:1 1 auto; color:var(--ink-3); text-transform:none; letter-spacing:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.rail__glyph{ flex:0 0 auto; color:var(--brick); display:inline-flex; align-items:center; font-size:1.2em; line-height:1; transform-origin:50% 50%; animation:railspin 32s linear infinite; }
+@keyframes railspin{ to{ transform:rotate(360deg); } }
+.rail__stamp{ flex:0 0 auto; display:inline-flex; align-items:center; gap:.4em; color:var(--ink-3); letter-spacing:.18em; }
+.rail__stamp-glyph{ color:var(--prussian); }
+.rail__btn{ display:inline-flex; align-items:center; gap:.45em; border:1px solid var(--rule); background:transparent; color:var(--ink-3); font:inherit; padding:.32em .8em; cursor:pointer; text-decoration:none; flex:0 0 auto; transition:color .15s var(--ease), border-color .15s var(--ease); }
+.rail__btn:hover{ color:var(--ink); border-color:var(--ink-3); }
+/* live-status beacon — only rendered on pages that pass it via railHtml's \`extra\` slot (e.g. /browse) */
+.rail__beacon{ display:inline-flex; align-items:center; gap:.55em; padding:.3em .75em; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-3); flex:0 0 auto; }
+.rail__beacon[data-state="live"]{ color:var(--moss-deep); border-color:color-mix(in srgb, var(--moss) 55%, var(--rule)); }
+.rail__beacon[data-state="offline"]{ color:var(--ink-3); }
+.rail__dot{ width:7px; height:7px; border-radius:50%; background:var(--ink-4); flex:0 0 auto; }
+.rail__beacon[data-state="checking"] .rail__dot{ background:var(--ochre); animation:railPulse 1.2s var(--ease) infinite; }
+.rail__beacon[data-state="live"] .rail__dot{ background:var(--moss); animation:railPulse 2.2s var(--ease) infinite; }
+@keyframes railPulse{ 0%{ box-shadow:0 0 0 0 color-mix(in srgb, currentColor 55%, transparent); } 70%{ box-shadow:0 0 0 7px color-mix(in srgb, currentColor 0%, transparent); } 100%{ box-shadow:0 0 0 0 color-mix(in srgb, currentColor 0%, transparent); } }
+.rail__menu{ position:relative; flex:0 0 auto; }
+.rail__menu>summary{ list-style:none; cursor:pointer; }
+.rail__menu>summary::-webkit-details-marker{ display:none; }
+.rail__menu>summary::after{ content:"▾"; margin-left:.4em; font-size:.8em; opacity:.55; }
+.rail__menu[open]>summary{ color:var(--ink); border-color:var(--ink-3); }
+.rail__pop{ position:absolute; top:calc(100% + 7px); right:0; min-width:190px; display:flex; flex-direction:column; gap:3px; padding:7px; background:color-mix(in srgb, var(--paper) 96%, transparent); border:1px solid var(--rule); border-radius:9px; box-shadow:0 10px 30px rgba(28,22,16,.18); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); z-index:40; }
+.rail__pop .rail__btn{ border-color:transparent; justify-content:flex-start; width:100%; }
+.rail__pop .rail__btn:hover{ border-color:var(--rule); background:var(--paper-3); }
+${
+  bare
+    ? ''
+    : `.xray-overlay{ position:fixed; inset:0; pointer-events:none; z-index:12; opacity:0; transition:opacity .25s var(--ease,ease); }
+body.xray-on .xray-overlay{ opacity:1; }
+.xray-overlay__grid{ position:absolute; inset:0; padding-inline:var(--margin,clamp(12px,1.8vw,34px)); display:grid; grid-template-columns:repeat(60,1fr); column-gap:var(--gutter,clamp(3px,0.32vw,8px)); }
+.xray-overlay__col{ background:color-mix(in oklab, var(--brick,#A53E2E) 7%, transparent); outline:1px dashed color-mix(in oklab, var(--brick,#A53E2E) 22%, transparent); outline-offset:-1px; }
+.xray-overlay__col[data-i="23"], .xray-overlay__col[data-i="37"]{ background:color-mix(in oklab, var(--sun,#E4B644) 14%, transparent); outline-color:var(--brick,#A53E2E); }
+.xray-overlay__col[data-i="30"]{ outline-color:color-mix(in oklab, var(--prussian,#2A4F6B) 55%, transparent); }
+#gridToggle[aria-pressed="true"]{ color:var(--moss-deep); border-color:var(--moss); background:var(--moss-soft); }`
+}
+@media (max-width:860px){
+  .rail__brand{ font-size:14px; }
+  .rail__inner{ gap:.6em; padding:.45em .8em; }
+  .rail__sub{ display:none; }
+}
+</style>
+${
+  bare
+    ? ''
+    : `<canvas id="field" aria-hidden="true" style="position:fixed;inset:0;width:100vw;height:100vh;z-index:-3;opacity:.5;pointer-events:none"></canvas>
+<div class="xray-overlay" id="xrayOverlay" aria-hidden="true"><div class="xray-overlay__grid" id="xrayGrid"></div></div>`
+}
+<header class="rail">
   <div class="rail__inner">
+    <span class="rail__glyph" aria-hidden="true">◐</span>
     <span class="rail__brand">${brand}</span>
     <span class="rail__sub">${sub}</span>
-    ${extra}${links}
-    <button class="rail__btn" id="themeToggle" type="button">theme</button>
+    ${extra}${primary}
+    ${groups}
+    ${
+      bare
+        ? ''
+        : `<button class="rail__btn" id="gridToggle" type="button" aria-pressed="false" title="grid — toggle the 60-column layout overlay (alignment aid)">grid</button>
+    <button class="rail__btn" id="themeToggle" type="button">theme</button>`
+    }
+    <span class="rail__stamp" aria-hidden="true"><span class="rail__stamp-glyph">◎</span>MMXXVI</span>
   </div>
-</header>`;
+</header>${
+    bare
+      ? ''
+      : `
+<script>
+(function () {
+  var canvas = document.getElementById('field');
+  if (!canvas) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var gl = canvas.getContext('webgl', { antialias: false, premultipliedAlpha: false, powerPreference: 'low-power', alpha: true });
+  if (!gl) return;
+  var vs = 'attribute vec2 a_pos; void main(){ gl_Position=vec4(a_pos,0.0,1.0); }';
+  var fs = [
+    'precision highp float;',
+    'uniform vec2 u_res; uniform float u_t; uniform vec2 u_mouse;',
+    'float hash(vec2 p){ p=fract(p*vec2(123.34,456.21)); p+=dot(p,p+45.32); return fract(p.x*p.y); }',
+    'float noise(vec2 p){ vec2 i=floor(p), f=fract(p); vec2 u=f*f*(3.0-2.0*f);',
+    '  float a=hash(i), b=hash(i+vec2(1,0)), c=hash(i+vec2(0,1)), d=hash(i+vec2(1,1));',
+    '  return mix(mix(a,b,u.x),mix(c,d,u.x),u.y); }',
+    'float fbm(vec2 p){ float v=0.0,a=0.5; for(int i=0;i<5;i++){ v+=a*noise(p); p*=2.03; a*=0.52; } return v; }',
+    'void main(){',
+    '  vec2 uv = gl_FragCoord.xy/u_res.xy;',
+    '  vec2 p = (gl_FragCoord.xy - 0.5*u_res.xy)/min(u_res.x,u_res.y);',
+    '  float t = u_t*0.015;',
+    '  vec2 q = p*1.6 + vec2(t*0.4,-t*0.3);',
+    '  vec2 r = p*2.3 - vec2(t*0.5, t*0.25);',
+    '  float warm = fbm(q + vec2(fbm(q+t)));',
+    '  float cool = fbm(r - vec2(fbm(r-t*0.7)));',
+    '  vec2 m = (u_mouse - 0.5*u_res.xy)/min(u_res.x,u_res.y);',
+    '  float md = length(p-m);',
+    '  float bloom = smoothstep(0.55, 0.0, md) * 0.12;',
+    '  vec3 paper    = vec3(0.945, 0.913, 0.847);',
+    '  vec3 ochre    = vec3(0.753, 0.541, 0.243);',
+    '  vec3 prussian = vec3(0.165, 0.310, 0.420);',
+    '  vec3 brick    = vec3(0.647, 0.243, 0.180);',
+    '  vec3 sulphur  = vec3(0.894, 0.714, 0.267);',
+    '  vec3 col = paper;',
+    '  col = mix(col, ochre,    smoothstep(0.38, 0.72, warm) * 0.45);',
+    '  col = mix(col, sulphur,  smoothstep(0.55, 0.85, warm) * 0.22);',
+    '  col = mix(col, prussian, smoothstep(0.46, 0.80, cool) * 0.16);',
+    '  col = mix(col, brick,    smoothstep(0.72, 0.92, cool*warm) * 0.14);',
+    '  float vig = smoothstep(1.2, 0.3, length(p));',
+    '  col *= mix(0.90, 1.02, vig);',
+    '  col += bloom * vec3(0.9, 0.55, 0.2);',
+    '  float grain = (hash(gl_FragCoord.xy + vec2(t*120.0)) - 0.5) * 0.035;',
+    '  col += grain;',
+    '  float cx = uv.x * 60.0;',
+    '  float line = smoothstep(0.985, 1.0, abs(fract(cx)-0.5)*2.0);',
+    '  col = mix(col, col*0.94, line * 0.22);',
+    '  gl_FragColor = vec4(col, 1.0);',
+    '}'
+  ].join('\\n');
+  function compile(type, src) {
+    var sh = gl.createShader(type);
+    gl.shaderSource(sh, src);
+    gl.compileShader(sh);
+    if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) { return null; }
+    return sh;
+  }
+  var v = compile(gl.VERTEX_SHADER, vs);
+  var f = compile(gl.FRAGMENT_SHADER, fs);
+  if (!v || !f) return;
+  var prog = gl.createProgram();
+  gl.attachShader(prog, v); gl.attachShader(prog, f); gl.linkProgram(prog); gl.useProgram(prog);
+  var buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
+  var loc_pos = gl.getAttribLocation(prog, 'a_pos');
+  gl.enableVertexAttribArray(loc_pos);
+  gl.vertexAttribPointer(loc_pos, 2, gl.FLOAT, false, 0, 0);
+  var u_res = gl.getUniformLocation(prog, 'u_res');
+  var u_t = gl.getUniformLocation(prog, 'u_t');
+  var u_mouse = gl.getUniformLocation(prog, 'u_mouse');
+  var mouse = [0, 0]; var mouseTarget = [0, 0];
+  var dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    var w = Math.floor(canvas.clientWidth * dpr);
+    var h = Math.floor(canvas.clientHeight * dpr);
+    if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; gl.viewport(0, 0, w, h); }
+  }
+  window.addEventListener('resize', resize, { passive: true });
+  window.addEventListener('pointermove', function (e) {
+    mouseTarget[0] = e.clientX * dpr;
+    mouseTarget[1] = (window.innerHeight - e.clientY) * dpr;
+  }, { passive: true });
+  var last = 0; var step = 1000 / 45; var darkCleared = false;
+  function frame(now) {
+    if (document.documentElement.getAttribute('data-theme') === 'dark') {
+      if (!darkCleared) { gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); darkCleared = true; }
+      requestAnimationFrame(frame); return;
+    }
+    darkCleared = false;
+    if (now - last >= step) {
+      last = now;
+      resize();
+      mouse[0] += (mouseTarget[0] - mouse[0]) * 0.06;
+      mouse[1] += (mouseTarget[1] - mouse[1]) * 0.06;
+      gl.uniform2f(u_res, canvas.width, canvas.height);
+      gl.uniform1f(u_t, now * 0.001);
+      gl.uniform2f(u_mouse, mouse[0], mouse[1]);
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+    }
+    requestAnimationFrame(frame);
+  }
+  resize();
+  requestAnimationFrame(frame);
+  document.addEventListener('visibilitychange', function () { if (document.hidden) last = performance.now(); });
+})();
+</script>
+<script>
+(function () {
+  // Rail dropdowns (native <details>): only one open at a time, close on
+  // outside-click or Escape. Separate IIFE so it runs even when the shader IIFE
+  // above bails early (reduced-motion / no-WebGL).
+  var menus = [].slice.call(document.querySelectorAll('.rail__menu'));
+  if (!menus.length) return;
+  menus.forEach(function (m) {
+    m.addEventListener('toggle', function () {
+      if (m.open) menus.forEach(function (o) { if (o !== m) o.open = false; });
+    });
+  });
+  document.addEventListener('click', function (e) {
+    var inside = menus.some(function (m) { return m.contains(e.target); });
+    if (!inside) menus.forEach(function (m) { m.open = false; });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') menus.forEach(function (m) { m.open = false; });
+  });
+})();
+</script>
+<script>
+(function () {
+  // Grid x-ray: a 60-column alignment overlay matching the --cols/--margin/--gutter
+  // design grid this page already sits on (the faint vertical rules in body::before).
+  // Builder aid, off by default; sessionStorage keeps it on across full-page nav
+  // within a tab so an alignment pass survives clicking between pages, then clears
+  // when the tab closes (no "still gridded tomorrow" surprise for a research viewer).
+  var grid = document.getElementById('xrayGrid');
+  var btn = document.getElementById('gridToggle');
+  if (!grid || !btn) return;
+  if (!grid.children.length) {
+    for (var i = 0; i < 60; i++) {
+      var c = document.createElement('div');
+      c.className = 'xray-overlay__col';
+      c.setAttribute('data-i', i);
+      grid.appendChild(c);
+    }
+  }
+  function apply(on) {
+    document.body.classList.toggle('xray-on', on);
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  }
+  try { if (sessionStorage.getItem('poetics-grid') === 'on') apply(true); } catch (_e) {}
+  btn.addEventListener('click', function () {
+    var on = !document.body.classList.contains('xray-on');
+    apply(on);
+    try { sessionStorage.setItem('poetics-grid', on ? 'on' : ''); } catch (_e) {}
+  });
+})();
+</script>`
+  }`;
 }
 
 // The summary note is an external techne-framework HTML doc that owns its own
@@ -1322,21 +1918,34 @@ function railHtml({ active = '', brand = 'machine spirits', sub = '', extra = ''
 // anchors to the iframe, the rail owns the real top with the common links
 // (summary active), and a small script mirrors the rail's light/dark into the
 // framed doc so the two layers stay in step.
-function summaryWrapperHtml() {
+// Generalised note-wrapper: any raw techne doc served at a single-segment path
+// (so its relative assets/* resolve to /assets/*) can be framed beneath the
+// standard rail. `src` is that single-segment doc path, `active` the NAV key to
+// highlight, `frameTitle` the iframe's a11y label (defaults to the page title).
+function framedNoteHtml({ active, sub, src, title, frameTitle, brand = 'machine spirits' }) {
   const css = `html,body{height:100%}
 body{display:flex;flex-direction:column;overflow:hidden}
 .rail{flex:0 0 auto}
 .summaryframe{flex:1 1 auto;width:100%;border:0;display:block;background:var(--paper)}`;
-  return `${pageHead({ title: 'Summary · the dramatic-recognition arc', css })}
+  return `${pageHead({ title, css })}
 <body>
-${railHtml({ active: 'summary', brand: 'machine spirits', sub: 'the synthesis note — the whole dramatic-recognition arc, from the paper to this scriptorium' })}
-<iframe id="summaryFrame" class="summaryframe" src="/arc" title="From Paper 2.0 to dramatic recognition — the synthesis note"></iframe>
+${railHtml({ active, brand, sub })}
+<iframe id="summaryFrame" class="summaryframe" src="${src}" title="${frameTitle || title}"></iframe>
 <script>
 (function () {
   try { if (localStorage.getItem('poetics-theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); } catch (_e) {}
   var f = document.getElementById('summaryFrame');
   function syncFrame() { try { f.contentDocument.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme') || ''); } catch (_e) {} }
-  f.addEventListener('load', syncFrame);
+  f.addEventListener('load', function () {
+    try {
+      var doc = f.contentDocument;
+      if (doc && doc.head && !doc.querySelector('base[target]')) {
+        var b = doc.createElement('base'); b.setAttribute('target', '_top');
+        doc.head.insertBefore(b, doc.head.firstChild);
+      }
+    } catch (_e) {}
+    syncFrame();
+  });
   var t = document.getElementById('themeToggle');
   if (t) t.addEventListener('click', function () {
     var d = document.documentElement, nx = d.getAttribute('data-theme') === 'dark' ? '' : 'dark';
@@ -1348,6 +1957,16 @@ ${railHtml({ active: 'summary', brand: 'machine spirits', sub: 'the synthesis no
 </script>
 </body>
 </html>`;
+}
+
+function summaryWrapperHtml() {
+  return framedNoteHtml({
+    active: 'summary',
+    sub: 'the synthesis note — the whole dramatic-recognition arc, from the paper to this scriptorium',
+    src: '/arc',
+    title: 'Summary · the dramatic-recognition arc',
+    frameTitle: 'From Paper 2.0 to dramatic recognition — the synthesis note',
+  });
 }
 
 // ── Shared page chrome ────────────────────────────────────────────────────────
@@ -1363,25 +1982,28 @@ ${railHtml({ active: 'summary', brand: 'machine spirits', sub: 'the synthesis no
 // /browse could later drop its bespoke copy and adopt pageHead() too.
 // Page-specific CSS is passed in via `css` and appended after this.
 const BASE_CSS = `@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Source+Serif+4:opsz,wght@8..60,200..900&family=JetBrains+Mono:wght@300..700&display=swap");
-:root{ color-scheme: light dark; --paper:#F4EEDD; --paper-2:#ECE3CB; --paper-3:#F8F2E2; --paper-4:#FBF6E8; --ink:#14100C; --ink-2:#2C241B; --ink-3:#5C5040; --ink-4:#8C7E6A; --linen:#D8C7A9; --moss:#56683A; --moss-deep:#3A4824; --moss-soft:#E3E6CE; --brick:#A53E2E; --brick-d:#7C2C1F; --brick-soft:#F3DDD6; --ochre:#C08A3E; --ochre-d:#8C5F1F; --ochre-soft:#F5E6C2; --indigo:#5A6797; --indigo-soft:#E2E5F0; --rule:rgba(28,22,16,.18); --rule-soft:rgba(28,22,16,.10); --ease:cubic-bezier(.22,.61,.36,1); --bg:var(--paper); --panel:var(--paper-4); --muted:var(--ink-3); --line:var(--rule); --accent:var(--moss-deep); --accent-soft:var(--moss-soft); --warn:var(--ochre-d); --trap:var(--brick-d); --flat:var(--ink-3); }
-[data-theme="dark"]{ --paper:#14100C; --paper-2:#1B1612; --paper-3:#1F1A14; --paper-4:#221C16; --ink:#F4EEDD; --ink-2:#E0D8C3; --ink-3:#B9AD96; --ink-4:#8C7E6A; --linen:#3A322A; --moss:#8DA868; --moss-deep:#B5CD92; --moss-soft:#2C3520; --brick:#E36953; --brick-d:#F08A75; --brick-soft:#3A1C16; --ochre:#E6B265; --ochre-d:#F3CB88; --ochre-soft:#3A2C12; --indigo:#98A6D4; --indigo-soft:#1F2434; --rule:rgba(244,238,221,.18); --rule-soft:rgba(244,238,221,.08); }
+:root{ color-scheme: light dark; --paper:#F1E9D8; --paper-2:#E9DFC7; --paper-3:#EFE4CC; --paper-4:#F7EFDD; --ink:#181310; --ink-2:#3A2F27; --ink-3:#6A5C50; --ink-4:#695B47; --linen:#D8C7A9; --moss:#56683A; --moss-deep:#3A4824; --moss-soft:#E3E6CE; --brick:#A53E2E; --brick-d:#7C2C1F; --brick-soft:#F3DDD6; --ochre:#C08A3E; --ochre-d:#835A1B; --ochre-soft:#F5E6C2; --indigo:#2A4F6B; --indigo-soft:#DCE6EE; --prussian:#2A4F6B; --sun:#E4B644; --red-mark:#D62828; --rule:rgba(28,22,16,.18); --rule-soft:rgba(28,22,16,.10); --ease:cubic-bezier(.22,.61,.36,1); --cols:60; --gutter:clamp(3px,0.32vw,8px); --margin:clamp(12px,1.8vw,34px); --lead:1.5; --lead-tight:1.05; --s-0:clamp(0.70rem,0.66rem + 0.14vw,0.78rem); --s-1:clamp(0.82rem,0.78rem + 0.18vw,0.94rem); --s-2:clamp(0.95rem,0.88rem + 0.32vw,1.14rem); --s-3:clamp(1.18rem,1.02rem + 0.74vw,1.62rem); --s-4:clamp(1.65rem,1.28rem + 1.72vw,2.60rem); --s-5:clamp(2.40rem,1.60rem + 3.80vw,4.80rem); --bg:var(--paper); --panel:var(--paper-4); --muted:var(--ink-3); --line:var(--rule); --accent:var(--moss-deep); --accent-soft:var(--moss-soft); --warn:var(--ochre-d); --trap:var(--brick-d); --flat:var(--ink-3); }
+[data-theme="dark"]{ --paper:#14100C; --paper-2:#1B1612; --paper-3:#1F1A14; --paper-4:#221C16; --ink:#F4EEDD; --ink-2:#E0D8C3; --ink-3:#B9AD96; --ink-4:#8C7E6A; --linen:#3A322A; --moss:#8DA868; --moss-deep:#B5CD92; --moss-soft:#2C3520; --brick:#E36953; --brick-d:#F08A75; --brick-soft:#3A1C16; --ochre:#E6B265; --ochre-d:#F3CB88; --ochre-soft:#3A2C12; --indigo:#7FA6CC; --indigo-soft:#1B2A38; --prussian:#7FA6CC; --sun:#E4B644; --red-mark:#E8584B; --rule:rgba(244,238,221,.18); --rule-soft:rgba(244,238,221,.08); }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 html{ background:var(--paper); -webkit-text-size-adjust:100%; }
-body{ background:var(--paper); color:var(--ink-2); font-family:"Source Serif 4","Source Serif Pro",Cambria,Georgia,serif; font-feature-settings:"ss01","kern","liga"; font-optical-sizing:auto; font-size:14.5px; line-height:1.5; letter-spacing:.003em; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; position:relative; min-height:100vh; }
+body{ background:transparent; color:var(--ink-2); font-family:"Source Serif 4","Iowan Old Style",Georgia,serif; font-optical-sizing:auto; font-size:var(--s-1); line-height:var(--lead); letter-spacing:.003em; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; position:relative; min-height:100vh; }
+/* warm "specimen" ground — a vignette + two faint pigment glows (ported from /chat's klee-aged paper) */
+body::before{ content:""; position:fixed; inset:0; z-index:-2; pointer-events:none; mix-blend-mode:multiply; background:linear-gradient(to right, rgba(24,16,12,.05) 1px, transparent 1px), radial-gradient(120% 80% at 50% 10%, transparent 40%, rgba(24,19,16,.10) 100%), radial-gradient(70% 50% at 10% 90%, rgba(165,62,46,.07), transparent 60%), radial-gradient(60% 50% at 95% 20%, rgba(42,79,107,.07), transparent 60%); background-size:calc((100vw - 2 * var(--margin)) / var(--cols)) 100%, auto, auto, auto; background-position:var(--margin) 0, 0 0, 0 0, 0 0; background-repeat:repeat-x, no-repeat, no-repeat, no-repeat; }
+[data-theme="dark"] body::before{ mix-blend-mode:screen; background:linear-gradient(to right, rgba(244,238,221,.05) 1px, transparent 1px), radial-gradient(120% 80% at 50% 10%, transparent 40%, rgba(0,0,0,.28) 100%), radial-gradient(70% 50% at 10% 90%, rgba(227,105,83,.06), transparent 60%), radial-gradient(60% 50% at 95% 20%, rgba(143,176,204,.06), transparent 60%); }
 body::after{ content:""; position:fixed; inset:0; z-index:-1; pointer-events:none; opacity:.14; background-image:radial-gradient(rgba(20,16,12,.55) .5px, transparent .5px); background-size:3px 3px; mix-blend-mode:multiply; }
 [data-theme="dark"] body::after{ opacity:.08; background-image:radial-gradient(rgba(244,238,221,.45) .5px, transparent .5px); mix-blend-mode:screen; }
 button,input,select,textarea{ font:inherit; color:inherit; }
 em{ font-style:italic; }
 code,pre{ font-family:"JetBrains Mono",ui-monospace,'SF Mono',Menlo,monospace; }
 ::selection{ background:color-mix(in srgb, var(--ochre) 50%, transparent); color:var(--ink); }
-.rail{ position:sticky; top:0; z-index:30; background:color-mix(in srgb, var(--paper) 92%, transparent); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-bottom:1px solid var(--rule); font-family:"JetBrains Mono","SFMono-Regular",Consolas,monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); }
-.rail__inner{ display:flex; align-items:center; gap:.9em; padding:.55em clamp(.8rem,2vw,1.2rem); }
-.rail__brand{ font-family:"Fraunces","Source Serif 4",Georgia,serif; font-style:italic; font-variation-settings:"SOFT" 50,"WONK" 1,"opsz" 96; font-size:17px; letter-spacing:-.005em; text-transform:none; color:var(--ink); flex:0 0 auto; }
-.rail__brand::before{ content:"▸ "; color:var(--brick); font-style:normal; }
-.rail__sub{ flex:1 1 auto; color:var(--ink-3); text-transform:none; letter-spacing:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.rail__btn{ display:inline-flex; align-items:center; gap:.45em; border:1px solid var(--rule); background:transparent; color:var(--ink-3); font:inherit; padding:.32em .8em; cursor:pointer; text-decoration:none; flex:0 0 auto; transition:color .15s var(--ease), border-color .15s var(--ease); }
-.rail__btn:hover{ color:var(--ink); border-color:var(--ink-3); }`;
+/* the rail (.rail*, .rail__beacon, .rail__menu, x-ray overlay) is styled once in
+   railHtml()'s inline <style id="rail-extra"> so it ships identically everywhere —
+   do not re-add a .rail* block here. */
+/* shader field — Klee-drift pigment ground; light theme only, JS self-gates on reduced-motion */
+#field{ position:fixed; inset:0; width:100vw; height:100vh; z-index:-3; opacity:.5; pointer-events:none; }
+[data-theme="dark"] #field{ display:none; }
+@media (prefers-reduced-motion: reduce){ #field{ display:none; } *,*::before,*::after{ animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; } }`;
 
 // Emit the <!doctype>…</head> shell with the shared chrome + this page's own CSS.
 // Each render*Html() then continues with its <body>. Keeps every page's <head>
@@ -1589,7 +2211,7 @@ function renderDashboardHtml(stats = {}) {
     title: 'machine spirits · poetics scriptorium',
     css: `
 .wrap{ max-width:1080px; margin:0 auto; padding:0 22px 64px; }
-.welcome{ margin:18px 0 0; border:1px solid var(--moss); background:var(--moss-soft); padding:16px 18px; }
+.welcome{ margin:18px 0 0; border:1px solid var(--rule); border-left:3px solid var(--moss); background:var(--paper-4); padding:16px 18px; }
 .welcome__k{ font:600 11px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.08em; color:var(--moss-deep); }
 .welcome h2{ margin:7px 0 6px; font:italic 22px/1.2 "Fraunces","Source Serif 4",Georgia,serif; font-variation-settings:"SOFT" 50,"WONK" 1,"opsz" 72; color:var(--ink); }
 .welcome p{ margin:0; color:var(--ink-2); max-width:66ch; }
@@ -1827,6 +2449,9 @@ label.mini .t-turn{ width:56px; }
 .write-result code,.run-hint code{ background:rgba(127,127,127,.15); padding:0 3px; color:var(--moss-deep); }
 .run-hint{ font:11px/1.5 ui-monospace,monospace; color:var(--ink-4); border-top:1px dashed var(--rule); padding-top:8px; }
 .muted{ color:var(--ink-4); font-style:italic; font-size:11px; }
+.fld .hint{ font:10.5px/1.4 -apple-system,system-ui,sans-serif; color:var(--ink-4); text-transform:none; letter-spacing:0; font-weight:400; }
+.syl-cap{ grid-column:1 / -1; font:11.5px/1.5 -apple-system,system-ui,sans-serif; color:var(--ink-2); background:var(--paper-3); border-left:3px solid var(--moss); border-radius:0 6px 6px 0; padding:7px 11px; }
+.syl-cap b{ color:var(--moss-deep); }
 ${MODETABS_CSS}
 `,
   })}
@@ -1838,8 +2463,14 @@ ${modeTabsHtml('spec')}
     <section class="sec"><h3>Drama · mythos / melos</h3><div class="body">
       <label class="fld">id<input type="text" id="d-id" value="D_LOG_PERIPETEIA_1"></label>
       <label class="fld">max_turns<input type="number" id="d-maxturns" min="1" value="7"></label>
+      ${composeSyllabusPicker({
+        courseId: 'd-course',
+        lessonId: 'd-lecture',
+        capId: 'd-syl-cap',
+        lessonHint: 'fills the topic from this lesson · the batch spec teaches from the topic text',
+      })}
       <label class="fld wide">topic<input type="text" id="d-topic" value="logarithms as the inverse of exponentiation"></label>
-      <label class="fld wide">hamartia — the misconception that drives the plot<input type="text" id="d-hamartia" value="treats log(a+b) as log a + log b"></label>
+      <label class="fld wide">hamartia <span class="muted">— the misconception that drives the plot</span><input type="text" id="d-hamartia" placeholder="the specific wrong idea the learner keeps reaching for"></label>
       <label class="fld">continuation_policy<select id="d-cont">${composeOptions(V.continuationPolicy, 'reframe')}</select></label>
       <label class="fld">tutor_adaptation_policy<select id="d-adapt">${composeOptions(V.adaptationPolicy, 'peripeteia')}</select></label>
       <div class="fld wide"><span>targets — dramatic forms to bias toward</span><div class="checks">${composeFormChecks(['peripeteia', 'catharsis'])}</div></div>
@@ -1909,6 +2540,8 @@ ${composeDatalist('panelList', V.panelSuggest)}
 const VOCAB = ${JSON.stringify(V)};
 const $ = (id) => document.getElementById(id);
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+var COMPOSE_COURSES = ${composeCoursesJson()};
+${SYLLABUS_CLIENT_JS}
 function val(id){ var e=$(id); return e ? String(e.value).trim() : ''; }
 function checkedBox(id){ var e=$(id); return e ? !!e.checked : false; }
 function oNone(v){ return v==='none' ? '' : v; }
@@ -2061,6 +2694,30 @@ $('themeToggle').addEventListener('click', function(){
   try { localStorage.setItem('poetics-theme', nx); } catch (_e) {}
 });
 try { if (localStorage.getItem('poetics-theme')==='dark') document.documentElement.setAttribute('data-theme','dark'); } catch (_e) {}
+// The syllabus picker is a topic-seeding aid here: the batch pipeline teaches
+// from drama.topic (it has no lecture-binding), so picking a lesson fills the
+// topic + retargets the hamartia placeholder, then re-validates. d-lecture is
+// deliberately NOT read by readSpec — it would be a dead key in the .drama.yaml.
+// We also re-derive the scene id from the lesson so it never reads stale (the
+// shipped "D_LOG_PERIPETEIA_1" makes no sense once a non-logs lesson is chosen),
+// but only while the id is still the auto value — a user-typed id is left alone.
+var autoId = 'D_LOG_PERIPETEIA_1';
+function topicToId(t){
+  var s = String(t).toUpperCase().replace(/[^A-Z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,40).replace(/_+$/,'');
+  return 'D_' + (s || 'SCENE') + '_1';
+}
+var SYL = mkSyllabus(COMPOSE_COURSES, $('d-course'), $('d-lecture'), $('d-syl-cap'), function(opt){
+  var t = opt && opt.getAttribute && opt.getAttribute('data-topic');
+  if(t){
+    $('d-topic').value = t;
+    if($('d-id').value === autoId){ autoId = topicToId(t); $('d-id').value = autoId; }
+  }
+  $('d-hamartia').placeholder = t
+    ? ('the misreading a learner keeps bringing to “'+t+'”')
+    : 'the specific wrong idea the learner keeps reaching for';
+  scheduleValidate();
+});
+void SYL;
 renderTurns();
 validate();
 </script>
@@ -2076,9 +2733,10 @@ function modeTabsHtml(active) {
     `<a class="modetab${key === active ? ' on' : ''}" href="${href}"${
       key === active ? ' aria-current="page"' : ''
     } title="${hint}">${label}</a>`;
+  // Live (sit-in) is the more obvious entry point, so it leads; Spec (batch) follows.
   return `<nav class="modetabs" aria-label="compose mode">
-    ${tab('spec', '/compose', '◐ Spec · batch', 'Assemble a full drama spec and write it as YAML for batch generation')}
     ${tab('live', '/compose/live', '● Live · sit-in', 'Sit in: you play one seat, the AI plays the other, turn by turn')}
+    ${tab('spec', '/compose', '◐ Spec · batch', 'Assemble a full drama spec and write it as YAML for batch generation')}
   </nav>`;
 }
 const MODETABS_CSS = `.modetabs{ display:flex; gap:3px; padding:9px 18px 0; background:var(--paper-3); border-bottom:1px solid var(--rule); }
@@ -2100,7 +2758,19 @@ code{ font-family: ui-monospace,'SF Mono',Menlo,monospace; background:rgba(127,1
 kbd{ font:11px ui-monospace,monospace; background:var(--paper-2); border:1px solid var(--rule); border-bottom-width:2px; border-radius:4px; padding:1px 5px; color:var(--ink-2); }
 ${MODETABS_CSS}
 .live{ display:grid; grid-template-columns: minmax(0,1fr) 270px; align-items:start; max-width:1180px; margin:0 auto; }
+/* setup state: the live rail (#liveside) and any reading are still hidden, so collapse to
+   one centered column — otherwise the setup card sits against an empty 270px rail. */
+.live:not(.live--reading):has(#liveside[hidden]){ grid-template-columns:minmax(0,1fr); max-width:760px; }
 @media (max-width:900px){ .live{ grid-template-columns:1fr; } }
+/* when a reading is bound, the lecture becomes a third co-equal column to the LEFT of the
+   chat (reading · chat · meta-rail) so the source text and the conversation share prominence. */
+.live--reading{ grid-template-columns: minmax(300px,0.92fr) minmax(360px,1fr) 244px; max-width:1420px; }
+@media (max-width:1080px){
+  .live--reading{ grid-template-columns:1fr; max-width:780px; }
+  .live--reading .stage{ order:1; }
+  .live--reading .readpane{ order:2; position:static; max-height:58vh; border-right:0; border-top:1px solid var(--rule); }
+  .live--reading .liveside{ order:3; }
+}
 .stage{ display:flex; flex-direction:column; min-height:calc(100vh - 95px); padding:18px 20px; }
 /* setup card */
 .setup{ border:1px solid var(--rule); background:var(--paper-4); padding:18px; display:flex; flex-direction:column; gap:16px; }
@@ -2117,6 +2787,12 @@ ${MODETABS_CSS}
 .seat__d{ font-size:11.5px; color:var(--ink-3); margin-top:3px; }
 .setgrid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:11px 14px; }
 .grp{ display:contents; }
+/* an author display:contents would otherwise beat the UA [hidden] rule, so the
+   seat toggle could never hide the opposite role's dials — pin it explicitly. */
+.grp[hidden]{ display:none; }
+/* syllabus caption — names the chosen course (+ subtitle) and lesson */
+.syl-cap{ grid-column:1 / -1; font:11.5px/1.5 -apple-system,system-ui,sans-serif; color:var(--ink-2); background:var(--paper-3); border-left:3px solid var(--moss); border-radius:0 6px 6px 0; padding:7px 11px; }
+.syl-cap b{ color:var(--moss-deep); }
 label.fld{ display:flex; flex-direction:column; gap:4px; font:11px ui-monospace,monospace; color:var(--ink-3); text-transform:uppercase; letter-spacing:.04em; }
 label.fld.wide{ grid-column:1 / -1; }
 input[type=text],input[type=number],select{ width:100%; font:13px ui-monospace,monospace; color:var(--ink); background:var(--paper); border:1px solid var(--rule); padding:6px 8px; border-radius:5px; }
@@ -2140,6 +2816,10 @@ input[type=text],input[type=number],select{ width:100%; font:13px ui-monospace,m
 .line--learner .bubble{ background:var(--ochre-soft); border-color:var(--ochre); border-bottom-right-radius:4px; }
 .line--mine .bubble{ box-shadow:0 1px 0 rgba(0,0,0,.05); outline:2px solid var(--ink); outline-offset:-2px; }
 .line--ghost .bubble{ opacity:.7; }
+.bubble strong{ font-weight:650; color:var(--ink); }
+.bubble em{ font-style:italic; }
+.bubble code{ font-size:.9em; background:color-mix(in srgb, var(--ink) 8%, transparent); border:1px solid var(--rule-soft); border-radius:4px; padding:.04em .35em; }
+.composing{ font-style:italic; color:var(--ink-3); }
 .dots{ display:inline-flex; gap:4px; align-items:center; height:18px; }
 .dots i{ width:6px; height:6px; border-radius:50%; background:var(--ink-3); animation:blink 1.2s infinite ease-in-out; }
 .dots i:nth-child(2){ animation-delay:.2s; } .dots i:nth-child(3){ animation-delay:.4s; }
@@ -2150,6 +2830,11 @@ input[type=text],input[type=number],select{ width:100%; font:13px ui-monospace,m
 .composer textarea{ flex:1; font:14px/1.5 -apple-system,system-ui,sans-serif; color:var(--ink); background:var(--paper-4); border:1px solid var(--rule); border-radius:9px; padding:9px 12px; min-height:2.6rem; max-height:180px; resize:none; overflow-y:auto; }
 .composer textarea:disabled{ opacity:.55; }
 .composer__hint{ font:11px ui-monospace,monospace; color:var(--ink-4); padding:6px 4px 0; }
+/* Both panes carry display:flex, which beats the UA [hidden]{display:none} rule —
+   so in the setup state they'd stay laid out and steal grid tracks (the empty reading
+   pane was filling the wide column and squeezing the setup form). Pin hidden explicitly,
+   same fix as .grp[hidden] above. They reveal via showReading()/.live--reading. */
+.liveside[hidden], .readpane[hidden]{ display:none; }
 /* side rail */
 .liveside{ position:sticky; top:95px; padding:18px 16px; display:flex; flex-direction:column; gap:13px; border-left:1px solid var(--rule); background:var(--paper-3); min-height:calc(100vh - 95px); }
 .lpanel{ border:1px solid var(--rule); background:var(--paper-4); border-radius:7px; overflow:hidden; }
@@ -2161,6 +2846,83 @@ input[type=text],input[type=number],select{ width:100%; font:13px ui-monospace,m
 .spend__sub{ font:11px ui-monospace,monospace; color:var(--ink-4); }
 .saveres{ font:11px ui-monospace,monospace; color:var(--ink-3); min-height:14px; }
 .muted{ color:var(--ink-4); font-style:italic; }
+/* the reading — a co-equal pane beside the chat: the lecture the AI tutor was grounded in,
+   so the human learner reads the same source. Full-height sticky column, scrolls on its own. */
+.readpane{ position:sticky; top:95px; max-height:calc(100vh - 95px); display:flex; flex-direction:column; background:var(--paper-3); border-right:1px solid var(--rule); }
+.readpane__h{ flex:none; display:flex; align-items:baseline; gap:10px; padding:13px 18px 11px; background:var(--paper-2); border-bottom:1px solid var(--rule); }
+.readpane__k{ font:600 11px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.08em; color:var(--moss-deep); }
+.readpane__meta{ margin-left:auto; text-align:right; font:11px/1.4 ui-monospace,monospace; color:var(--ink-4); }
+.readpane__b{ flex:1; min-height:0; overflow-y:auto; padding:17px 19px 24px; font-family:"Source Serif 4","Source Serif Pro",Cambria,Georgia,serif; font-size:14.5px; line-height:1.66; color:var(--ink-2); }
+.readpane__b > :first-child{ margin-top:0; }
+.readpane__b > :last-child{ margin-bottom:0; }
+.readpane__b h4{ margin:18px 0 7px; font:600 17px/1.25 Georgia,serif; color:var(--ink); }
+.readpane__b h5{ margin:15px 0 5px; font:600 14.5px/1.25 Georgia,serif; color:var(--ink); }
+.readpane__b h6{ margin:14px 0 5px; font:600 11px/1.2 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-3); }
+.readpane__b p{ margin:0 0 11px; }
+.readpane__b ul,.readpane__b ol{ margin:0 0 11px; padding-left:22px; }
+.readpane__b li{ margin:0 0 4px; }
+.readpane__b blockquote{ margin:0 0 11px; padding:3px 0 3px 13px; border-left:3px solid var(--moss); color:var(--ink-3); font-style:italic; }
+.readpane__b hr{ border:0; border-top:1px solid var(--rule); margin:15px 0; }
+.readpane__b code{ font:0.88em ui-monospace,monospace; background:color-mix(in srgb, var(--ink) 8%, transparent); border:1px solid var(--rule-soft); border-radius:4px; padding:.04em .35em; }
+.readpane__b pre{ margin:0 0 11px; padding:10px 12px; background:var(--paper-2); border:1px solid var(--rule); border-radius:6px; overflow-x:auto; }
+.readpane__b pre code{ background:none; border:0; padding:0; font-size:12px; line-height:1.5; }
+.readpane__empty{ margin:auto; padding:30px 22px; text-align:center; color:var(--ink-4); font-style:italic; }
+/* guide hero — describe it in plain language, the LLM dials it in */
+.guide{ border:1px solid var(--rule); border-left:3px solid var(--moss); background:var(--paper-4); border-radius:11px; padding:17px 19px; display:flex; flex-direction:column; gap:12px; }
+.guide__head h2{ margin:0 0 5px; font:600 21px/1.15 Georgia,serif; color:var(--moss-deep); }
+.guide__head h2 .spark{ font-style:normal; }
+.guide__lede{ margin:0; color:var(--ink-2); font-size:13.5px; line-height:1.5; max-width:66ch; }
+.guide__row textarea{ width:100%; font:14.5px/1.55 -apple-system,system-ui,sans-serif; color:var(--ink); background:var(--paper); border:1px solid var(--rule); border-radius:9px; padding:11px 13px; min-height:3.6rem; max-height:220px; resize:vertical; }
+.guide__row textarea:focus{ outline:2px solid var(--moss); outline-offset:-1px; }
+.guide__go{ display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+.guide__out{ font-size:13px; line-height:1.6; color:var(--ink-2); border-left:3px solid var(--moss-deep); background:var(--paper-4); padding:9px 13px; border-radius:0 7px 7px 0; }
+.guide__out b{ color:var(--moss-deep); }
+.guide__out.err{ border-left-color:var(--brick); color:var(--brick-d); }
+/* "or" divider between the guided path and the manual dials */
+.setup__or{ display:flex; align-items:center; gap:13px; color:var(--ink-4); font:10.5px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.09em; margin:2px 0; }
+.setup__or::before, .setup__or::after{ content:''; flex:1; height:1px; background:var(--rule); }
+/* progressive disclosure — the eight expert dials, collapsed by default */
+details.adv{ border:1px solid var(--rule); border-radius:8px; background:var(--paper-3); }
+details.adv > summary{ cursor:pointer; padding:11px 14px; font:12px ui-monospace,monospace; color:var(--ink-2); list-style:none; display:flex; align-items:center; gap:10px; user-select:none; }
+details.adv > summary::-webkit-details-marker{ display:none; }
+details.adv > summary::before{ content:'▸'; color:var(--ink-4); transition:transform .12s; }
+details.adv[open] > summary::before{ transform:rotate(90deg); }
+details.adv > summary:hover{ color:var(--ink); }
+.adv__hint{ color:var(--ink-4); font-size:11px; }
+details.adv > .setgrid{ padding:2px 14px 15px; }
+/* per-field plain-language hint under a dial */
+.fld .hint{ font:10.5px/1.4 -apple-system,system-ui,sans-serif; color:var(--ink-4); text-transform:none; letter-spacing:0; font-weight:400; }
+/* per-message meta row (time · gen latency · tokens) — always available on the
+   wire, shown only when the "message details" view toggle is on */
+.meta{ font:10px ui-monospace,monospace; color:var(--ink-4); padding:1px 5px 0; }
+.line--learner .meta{ text-align:right; }
+/* the AI's thinking clock — a live elapsed counter so a slow turn reads as
+   progress, not dead air */
+.thinkclock{ font:10px ui-monospace,monospace; color:var(--ink-3); margin-left:6px; }
+/* opt-in deliberation console under an AI bubble (ego/superego steps) */
+.delib{ margin:3px 4px 0; border:1px solid var(--rule); border-radius:7px; background:var(--paper-2); max-width:100%; }
+.delib > summary{ cursor:pointer; padding:5px 9px; font:9.5px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-3); list-style:none; }
+.delib > summary::-webkit-details-marker{ display:none; }
+.delib > summary::before{ content:'▸ '; }
+.delib[open] > summary::before{ content:'▾ '; }
+.delib__step{ border-top:1px solid var(--rule); padding:7px 10px; }
+.delib__h{ font:10px ui-monospace,monospace; color:var(--moss-deep); margin-bottom:3px; }
+.delib__h code{ font-size:9.5px; }
+.delib__c{ font:12px/1.5 -apple-system,system-ui,sans-serif; color:var(--ink-2); white-space:normal; }
+.caveat{ font:11px/1.45 -apple-system,system-ui,sans-serif; color:var(--brick-d); }
+.spend__note{ font:10.5px/1.45 -apple-system,system-ui,sans-serif; color:var(--ink-4); margin-top:7px; padding-top:7px; border-top:1px dotted var(--rule); }
+.spend__note code{ font-size:10px; }
+/* end & score the scene at any point — terminate early, then read the dramatic
+   form of the transcript-so-far against the poetics rubric */
+.endrow{ display:flex; gap:8px; }
+.endrow .btn{ flex:1; }
+.scoreres{ font:11px/1.5 ui-monospace,monospace; color:var(--ink-3); min-height:14px; }
+.score__overall{ font:600 22px/1 Georgia,serif; color:var(--moss-deep); }
+.score__headline{ font:11px/1.45 -apple-system,system-ui,sans-serif; color:var(--ink-2); font-style:italic; margin:4px 0 8px; }
+.score__dim{ display:grid; grid-template-columns:1fr auto; gap:1px 8px; padding:5px 0; border-top:1px solid var(--rule); }
+.score__dname{ font:10.5px ui-monospace,monospace; color:var(--ink-2); }
+.score__dval{ font:10.5px ui-monospace,monospace; color:var(--moss-deep); text-align:right; }
+.score__dwhy{ grid-column:1/3; font:10.5px/1.4 -apple-system,system-ui,sans-serif; color:var(--ink-4); }
 `,
   })}
 <body>
@@ -2170,13 +2932,34 @@ ${railHtml({
   sub: 'sit in · you play one seat, the AI plays the other, turn by turn',
 })}
 ${modeTabsHtml('live')}
-<div class="live">
+<div class="live" id="liveGrid">
+
+  <aside class="readpane" id="readingPane" hidden>
+    <div class="readpane__h"><span class="readpane__k">the reading</span><span class="readpane__meta" id="readingMeta"></span></div>
+    <div class="readpane__b" id="readingBody"></div>
+  </aside>
+
   <main class="stage">
     <section class="setup" id="setup">
-      <div class="setup__head">
-        <h2>Sit in on a scene</h2>
-        <p class="setup__lede">Take one chair — Learner or Tutor — and the AI takes the other, driven by the same engines the scored runs use. Drive the tempo turn by turn, then save the transcript to run through the critics later.</p>
+      <!-- Guided path: describe it in plain language, the LLM dials the machine in -->
+      <div class="guide">
+        <div class="guide__head">
+          <h2><span class="spark">✦</span> Compose a scene</h2>
+          <p class="guide__lede">Say what you want to explore in plain language — who you'd like to play, what's being taught, what should go wrong — and the guide sets the machine up for you. Everything it picks lands in the dials below, ready to tweak. No vocabulary required.</p>
+        </div>
+        <div class="guide__row">
+          <textarea id="g-desc" rows="2" placeholder="e.g. I want to play a nervous student who keeps splitting log(a+b) into log a + log b, and have the AI tutor push me toward a real click of understanding."></textarea>
+        </div>
+        <div class="guide__go">
+          <button type="button" class="btn primary" id="guideBtn">Compose it for me →</button>
+          <label class="dry"><input type="checkbox" id="f-mock"> free preview — canned AI, no spend</label>
+        </div>
+        <div class="guide__out" id="guideOut" hidden></div>
       </div>
+
+      <div class="setup__or"><span>or set the dials yourself</span></div>
+
+      <!-- Seat: the one choice everyone makes -->
       <div class="seatpick">
         <button type="button" class="seat seat--on" id="seatLearner">
           <span class="seat__k">I play the</span><span class="seat__v">Learner</span>
@@ -2187,21 +2970,55 @@ ${modeTabsHtml('live')}
           <span class="seat__d">the AI is the learner — stage a recognition, test a persona</span>
         </button>
       </div>
+
+      <!-- Essentials: plain-language, always visible. The syllabus picker is
+           tutor-only (a lecture grounds the AI tutor; it has no meaning when the
+           AI plays the learner) — pickSeat() toggles #sylBox with the seat. -->
       <div class="setgrid">
-        <label class="fld wide">topic<input id="f-topic" type="text" value="logarithms as the inverse of exponentiation"></label>
-        <label class="fld wide">hamartia — the misconception in play (optional)<input id="f-hamartia" type="text" value="treats log(a+b) as log a + log b"></label>
-        <div class="grp" id="grpTutor">
-          <label class="fld">AI tutor · prompt<select id="f-prompt">${composeOptions(['recognition', 'base'], 'recognition')}</select></label>
-          <label class="fld">AI tutor · architecture<select id="f-tarch">${composeOptions(['ego_superego', 'ego_only'], 'ego_superego')}</select></label>
-        </div>
-        <div class="grp" id="grpLearner" hidden>
-          <label class="fld">AI learner · persona<select id="f-persona">${composeOptions(V.personas, 'struggling_anxious')}</select></label>
-          <label class="fld">AI learner · architecture<select id="f-larch">${composeOptions(V.learnerArch, 'ego_superego_recognition_authentic')}</select></label>
-        </div>
-        <label class="fld">opening speaker<select id="f-open">${composeOptions(['tutor', 'learner'], 'tutor')}</select></label>
-        <label class="fld">max turns<input id="f-max" type="number" min="2" max="40" value="16"></label>
+        <div class="grp" id="sylBox">${composeSyllabusPicker({
+          courseId: 'f-course',
+          lessonId: 'f-lecture',
+          capId: 'f-syl-cap',
+          lessonHint: 'ground the AI tutor in a real lesson — sets the topic too',
+        })}</div>
+        <label class="fld wide">topic<input id="f-topic" type="text" placeholder="pick a lesson above, or type what the scene is about"><span class="hint">what the scene is about — auto-filled when you choose a lesson</span></label>
+        <label class="fld wide">hamartia <span class="muted">(optional)</span><input id="f-hamartia" type="text" placeholder="the specific wrong idea the learner keeps reaching for"><span class="hint">the tragic flaw the scene turns on — leave blank, type your own, or let the guide suggest one</span></label>
       </div>
-      <label class="dry"><input type="checkbox" id="f-mock"> ✦ free preview — canned AI lines, no spend (logarithms demo)</label>
+
+      <!-- Expert dials: collapsed by default so newcomers needn't read them -->
+      <details class="adv" id="advBox">
+        <summary>Fine-tune the machine <span class="adv__hint">stance · deliberation · persona · tempo</span></summary>
+        <div class="setgrid">
+          <div class="grp" id="grpTutor">
+            <label class="fld">AI tutor · stance<select id="f-prompt">${composeOptionsPretty(
+              ['recognition', 'base'],
+              'recognition',
+            )}</select><span class="hint">recognition aims for a genuine click of understanding · base is plain, competent teaching</span></label>
+            <label class="fld">AI tutor · deliberation<select id="f-tarch">${composeOptionsPretty(
+              ['ego_superego', 'ego_only'],
+              'ego_superego',
+            )}</select><span class="hint">ego only answers in one pass · ego superego drafts, self-critiques, then revises</span></label>
+            <label class="fld wide"><span class="dry" style="text-transform:none;letter-spacing:0;"><input type="checkbox" id="f-concise" checked> concise replies</span><span class="hint">keep each AI-tutor turn short and to one question — faster and cheaper. Off restores the full instrument behavior (longer, multi-question turns).</span></label>
+          </div>
+          <div class="grp" id="grpLearner" hidden>
+            <label class="fld">AI learner · persona<select id="f-persona">${composeOptionsPretty(
+              V.personas,
+              'struggling_anxious',
+            )}</select><span class="hint">the kind of student the AI plays</span></label>
+            <label class="fld">AI learner · deliberation<select id="f-larch">${composeOptionsPretty(
+              V.learnerArch,
+              'ego_superego_recognition_authentic',
+            )}</select><span class="hint">how much inner back-and-forth the AI learner does before it speaks</span></label>
+            <label class="fld">AI learner · model<select id="f-lmodel">${composeLearnerModelOptions()}</select><span class="hint">the default is a reasoning model that occasionally returns a blank turn — pick a plain-completion model if a learner line comes back empty</span></label>
+          </div>
+          <label class="fld">opening speaker<select id="f-open">${composeOptionsPretty(
+            ['tutor', 'learner'],
+            'tutor',
+          )}</select><span class="hint">who moves first</span></label>
+          <label class="fld">max turns<input id="f-max" type="number" min="2" max="40" value="16"><span class="hint">scene length cap</span></label>
+        </div>
+      </details>
+
       <div class="setup__go">
         <button type="button" class="btn primary" id="beginBtn">Begin the scene →</button>
         <span class="metered" id="meterNote">metered · real LLM calls per AI turn · localhost only</span>
@@ -2222,9 +3039,21 @@ ${modeTabsHtml('live')}
 
   <aside class="liveside" id="liveside" hidden>
     <div class="lpanel"><div class="lpanel__h">scene</div><div class="lpanel__b" id="sceneMeta"></div></div>
-    <div class="lpanel"><div class="lpanel__h">spend</div><div class="lpanel__b"><div class="spend"><span class="spend__usd" id="spendUsd">$0.0000</span><span class="spend__sub" id="spendTok">0 tokens</span></div></div></div>
+    <div class="lpanel"><div class="lpanel__h">spend</div><div class="lpanel__b"><div class="spend"><span class="spend__usd" id="spendUsd">$0.0000</span><span class="spend__sub" id="spendTok">0 tokens</span></div>
+      <div class="spend__note">A flat estimate: <code>(input + output tokens) ÷ 1000 × $0.01</code>, summed over every AI turn. It is a deliberately high, single-rate ceiling — not per-model billing or input-vs-output pricing — so the real OpenRouter cost is at or below this.</div>
+    </div></div>
+    <div class="lpanel"><div class="lpanel__h">view</div><div class="lpanel__b lpanel__b--col">
+      <label class="dry"><input type="checkbox" id="optMeta"> message details <span class="muted">— time · gen · tokens</span></label>
+      <label class="dry"><input type="checkbox" id="optDelib"> AI deliberation <span class="muted">— ego / superego</span></label>
+      <div class="caveat" id="delibCaveat" hidden>You're the tutor — this exposes the AI learner's private reasoning. The instrument is meant to read recognition only from the surface, so treat this as inspection/debugging, not part of the scene.</div>
+    </div></div>
+    <div class="lpanel"><div class="lpanel__h">end &amp; score</div><div class="lpanel__b lpanel__b--col">
+      <div class="endrow"><button type="button" class="btn" id="endBtn">End scene</button><button type="button" class="btn" id="scoreBtn">Score scene</button></div>
+      <span class="hint" id="scoreHint">end the scene whenever you like; scoring reads the transcript-so-far for dramatic form (one critic call unless free preview)</span>
+      <div class="scoreres" id="scoreRes"></div>
+    </div></div>
     <div class="lpanel"><div class="lpanel__h">save transcript</div><div class="lpanel__b lpanel__b--col">
-      <input id="saveName" type="text" placeholder="filename (optional)">
+      <input id="saveName" type="text" placeholder="filename (auto-named if blank)">
       <button type="button" class="btn" id="saveBtn">Save to exports/</button>
       <div class="saveres" id="saveRes"></div>
     </div></div>
@@ -2235,7 +3064,65 @@ ${modeTabsHtml('live')}
 var $ = function(id){ return document.getElementById(id); };
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 function nl2br(s){ return esc(s).replace(/\\n/g, '<br>'); }
-var S = { id:null, mock:false, humanRole:'learner', aiRole:'tutor', status:'idle', nextSpeaker:null };
+// Tutor + learner turns arrive as markdown (the models emphasise terms with *italic*
+// / **bold** and cite refs in \`code\`). Render a safe inline subset so the bubble
+// reads as prose, not raw syntax. esc() runs FIRST (text is untrusted model output),
+// then we split on backticks so code spans are verbatim and emphasis never reaches
+// inside them; only **/* asterisk emphasis is supported (underscore emphasis is
+// skipped so snake_case ids like cell_7_recog survive untouched).
+function mdEmph(t){ return t.replace(/\\*\\*([^*]+)\\*\\*/g, '<strong>$1</strong>').replace(/(^|[^*])\\*([^*\\n]+)\\*/g, '$1<em>$2</em>'); }
+function mdInline(s){ var parts = esc(s).split('\`'); var out = ''; for (var i = 0; i < parts.length; i++){ out += (i % 2 === 1) ? ('<code>' + parts[i] + '</code>') : mdEmph(parts[i]); } return out.replace(/\\n/g, '<br>'); }
+var S = { id:null, mock:false, humanRole:'learner', aiRole:'tutor', status:'idle', nextSpeaker:null,
+  showMeta:false, showDelib:false, lastSession:null, namePrefilled:false, timer:null, tStart:0, readingRef:null };
+
+// View prefs persist across reloads (purely client-side display toggles).
+function getPref(k, dflt){ try { var v=localStorage.getItem(k); return v==null?dflt:(v==='1'); } catch(_e){ return dflt; } }
+function setPref(k, on){ try { localStorage.setItem(k, on?'1':'0'); } catch(_e){} }
+
+// Per-message meta is always on the wire (it isn't the AI's private interior), so
+// these are pure display formatters; the toggle just shows/hides the row.
+function fmtClock(ms){ if(!ms) return ''; try { return new Date(ms).toLocaleTimeString(); } catch(_e){ return ''; } }
+function fmtDur(ms){ if(ms==null) return ''; return ms<1000 ? (ms+'ms') : ((ms/1000).toFixed(1)+'s'); }
+function turnMetaHtml(t){
+  if(!S.showMeta) return '';
+  var bits=[];
+  if(t.at) bits.push('sent '+esc(fmtClock(t.at)));
+  if(t.by==='ai'){
+    if(t.latencyMs!=null) bits.push('gen '+esc(fmtDur(t.latencyMs)));
+    // Always show the token count for an AI turn (the user asked for "tokens used"):
+    // a real turn reads e.g. "1,204 tok"; a free-preview turn truthfully reads "0 tok".
+    var tok=(Number(t.inputTokens||0)+Number(t.outputTokens||0));
+    bits.push(tok.toLocaleString()+' tok');
+  }
+  return bits.length ? ('<div class="meta">'+bits.join(' · ')+'</div>') : '';
+}
+// The deliberation console: ego/superego steps under an AI bubble. Only rendered
+// when the toggle is on AND the server shipped the content (debug view).
+function turnDelibHtml(t){
+  if(!S.showDelib || t.by!=='ai' || !t.deliberation || !t.deliberation.length) return '';
+  var steps = t.deliberation.map(function(d){
+    var head = esc(d.label || d.role || 'step')
+      + (d.model ? (' · <code>'+esc(d.model)+'</code>') : '')
+      + (d.latencyMs!=null ? (' · '+esc(fmtDur(d.latencyMs))) : '');
+    return '<div class="delib__step"><div class="delib__h">'+head+'</div><div class="delib__c">'+nl2br(d.content||'')+'</div></div>';
+  }).join('');
+  var n = t.deliberation.length;
+  return '<details class="delib"><summary>deliberation · '+n+' step'+(n===1?'':'s')+'</summary>'+steps+'</details>';
+}
+// A live elapsed-seconds counter shown in the AI's ghost bubble while it generates,
+// so a slow (multi-call) turn reads as progress rather than dead air.
+function startThinkTimer(){
+  stopThinkTimer(); S.tStart = Date.now();
+  S.timer = setInterval(function(){
+    var s = ((Date.now()-S.tStart)/1000).toFixed(1)+'s';
+    var els = document.getElementsByClassName('thinkclock');
+    for(var i=0;i<els.length;i++){ els[i].textContent = s; }
+  }, 100);
+}
+function stopThinkTimer(){ if(S.timer){ clearInterval(S.timer); S.timer=null; } }
+var COMPOSE_COURSES = ${composeCoursesJson()};
+var SYL = null; // the syllabus picker controller (course→lesson); wired at load
+${SYLLABUS_CLIENT_JS}
 
 function pickSeat(role){
   S.humanRole = role; S.aiRole = role==='learner' ? 'tutor' : 'learner';
@@ -2243,6 +3130,8 @@ function pickSeat(role){
   $('seatTutor').classList.toggle('seat--on', role==='tutor');
   $('grpTutor').hidden = role!=='learner';
   $('grpLearner').hidden = role!=='tutor';
+  // The syllabus grounds the AI tutor; hide it when the human plays tutor (AI=learner).
+  var sb = $('sylBox'); if(sb) sb.hidden = role!=='learner';
 }
 function autoGrow(el){ if(!el) return; el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,180)+'px'; }
 
@@ -2254,16 +3143,68 @@ async function postJson(url, body){
 }
 function whoLabel(role, by){ return role + ' · ' + (by==='human' ? 'you' : 'ai'); }
 
+function modelsLineHtml(sess){
+  var m = sess.aiModels||{}; var bits=[];
+  if(m.ego) bits.push('ego <code>'+esc(m.ego)+'</code>');
+  if(m.superego) bits.push('superego <code>'+esc(m.superego)+'</code>');
+  return bits.length ? ('<br>'+bits.join('<br>')) : '';
+}
+// The cell isn't a free choice — it is the join of the two tutor dials (stance ×
+// deliberation). Recognition + ego/superego is the page default, which is why a
+// fresh scene lands on cell_7. Spell that out so the cell id isn't a mystery.
+function cellWhyHtml(sess){
+  var pt = sess.promptType==='base' ? 'base' : 'recognition';
+  var ta = sess.tutorArchitecture==='ego_only' ? 'ego only' : 'ego + superego';
+  var isDefault = (pt==='recognition' && sess.tutorArchitecture==='ego_superego');
+  return '<br><span class="muted">'+esc(pt)+' stance · '+esc(ta)+' → this cell'+(isDefault?' (the default)':'')+'</span>';
+}
+// The tutor teaches FROM a lecture; without surfacing it the human learner is
+// asked to recognise a text they cannot see. So when the AI holds the tutor seat
+// the lecture becomes a pane co-equal with the chat (the grid grows a third column
+// via .live--reading). Fetch it once per ref (the markdown is rendered to safe HTML
+// server-side), cache the ref on S so polls/later turns do not refetch. Only the
+// tutor seat is grounded in a reading, so the learner seat hides the pane.
+function loadReading(ref){
+  var pane = $('readingPane'); if(!pane) return;
+  pane.hidden = false;
+  var grid = $('liveGrid'); if(grid) grid.classList.add('live--reading');
+  if(S.readingRef === ref) return;
+  S.readingRef = ref;
+  $('readingMeta').textContent = 'loading…';
+  $('readingBody').innerHTML = '<div class="readpane__empty">loading the reading…</div>';
+  fetch('/api/compose/live/lecture/'+encodeURIComponent(ref))
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(!d || !d.ok || !d.lecture){ throw new Error((d && d.error) || 'no lecture'); }
+      var L = d.lecture;
+      $('readingMeta').textContent = [L.courseTitle, 'lecture '+L.lectureNum].filter(Boolean).join(' · ');
+      $('readingBody').innerHTML = L.html || '';
+      $('readingBody').scrollTop = 0;
+    })
+    .catch(function(e){
+      S.readingRef = null;
+      $('readingMeta').textContent = '';
+      $('readingBody').innerHTML = '<div class="readpane__empty">could not load the reading ('+esc(e.message||String(e))+')</div>';
+    });
+}
+function hideReading(){ var p=$('readingPane'); if(p){ p.hidden = true; } var grid=$('liveGrid'); if(grid) grid.classList.remove('live--reading'); S.readingRef = null; }
 function renderSession(sess){
+  S.lastSession = sess; stopThinkTimer();
   S.id = sess.id; S.status = sess.status; S.nextSpeaker = sess.nextSpeaker;
   S.humanRole = sess.humanRole; S.aiRole = sess.aiRole;
   $('setup').classList.add('setup--min');
   $('transcript').hidden = false; $('liveside').hidden = false; $('composerForm').hidden = false;
+  // Pre-fill the save box with a good timestamped default (once), leaving it editable
+  // and never clobbering whatever the user has already typed.
+  if(!S.namePrefilled && sess.suggestedFilename){ var sn=$('saveName'); if(sn && !sn.value){ sn.value=sess.suggestedFilename; } S.namePrefilled=true; }
   var html = '';
   sess.transcript.forEach(function(t){
     html += '<div class="line line--'+t.role+(t.by==='human'?' line--mine':'')+'">'
       + '<div class="who">'+esc(whoLabel(t.role, t.by))+'</div>'
-      + '<div class="bubble">'+nl2br(t.text)+'</div></div>';
+      + '<div class="bubble">'+mdInline(t.text)+'</div>'
+      + turnMetaHtml(t)
+      + turnDelibHtml(t)
+      + '</div>';
   });
   $('transcript').innerHTML = html || '<div class="t-empty">the stage is set — make the first move</div>';
   $('transcript').scrollTop = $('transcript').scrollHeight;
@@ -2271,7 +3212,11 @@ function renderSession(sess){
   $('spendUsd').textContent = '$'+Number(sess.spend.estimatedCostUsd||0).toFixed(4);
   $('spendTok').textContent = tok.toLocaleString()+' tokens · '+sess.turnCount+'/'+sess.maxTurns+' turns';
   $('sceneMeta').innerHTML = 'you are the <b>'+esc(sess.humanRole)+'</b><br>AI is the <b>'+esc(sess.aiRole)+'</b><br>'
-    + (sess.aiRole==='tutor' ? ('cell <code>'+esc(sess.tutorCell)+'</code>') : ('persona <code>'+esc(sess.persona)+'</code>'))
+    + (sess.aiRole==='tutor' ? ('cell <code>'+esc(sess.tutorCell)+'</code>'+cellWhyHtml(sess)) : ('persona <code>'+esc(sess.persona)+'</code>'))
+    + (sess.aiRole==='tutor' && sess.lectureRef ? ('<br>teaching <code>'+esc(sess.lectureRef)+'</code>') : '')
+    + modelsLineHtml(sess)
+    + (sess.aiRole==='learner' && sess.learnerModel ? ('<br>learner model <code>'+esc(sess.learnerModel)+'</code>') : '')
+    + (sess.aiRole==='tutor' ? ('<br>concise <b>'+(sess.concise?'on':'off')+'</b>') : '')
     + (S.mock ? '<br><span class="metered--free">free preview</span>' : '');
   var done = sess.status!=='live';
   var yours = sess.nextSpeaker===sess.humanRole && !done;
@@ -2279,32 +3224,120 @@ function renderSession(sess){
   if(done){ $('composerHint').innerHTML = 'scene ended ('+esc(sess.stoppedReason||sess.status)+') — save it, or reload to start another'; }
   else if(yours){ $('composerHint').innerHTML = '<kbd>Enter</kbd> send · <kbd>Shift</kbd>+<kbd>Enter</kbd> newline · you are the <b>'+esc(sess.humanRole)+'</b>'; setTimeout(function(){ $('composerInput').focus(); }, 0); }
   else { $('composerHint').textContent = 'the '+sess.aiRole+' is thinking…'; }
+  // A scored session carries its verdict on the wire, so re-renders (polls, later
+  // turns) keep showing it; an unscored render leaves the panel untouched so a
+  // transient "scoring…" / error message isn't clobbered.
+  if(sess.score) renderScore(sess.score);
+  // Surface the lecture the tutor is teaching from, so the human learner can read
+  // what they are being asked to recognise. Only the tutor seat carries a reading.
+  if(sess.aiRole==='tutor' && sess.lectureRef) loadReading(sess.lectureRef); else hideReading();
+  updateDelibCaveat();
 }
 function appendOptimistic(text){
   var t = $('transcript');
   t.insertAdjacentHTML('beforeend',
-    '<div class="line line--'+S.humanRole+' line--mine"><div class="who">'+esc(whoLabel(S.humanRole,'human'))+'</div><div class="bubble">'+nl2br(text)+'</div></div>'
-    + '<div class="line line--'+S.aiRole+' line--ghost"><div class="who">'+esc(whoLabel(S.aiRole,'ai'))+'</div><div class="bubble"><span class="dots"><i></i><i></i><i></i></span></div></div>');
+    '<div class="line line--'+S.humanRole+' line--mine"><div class="who">'+esc(whoLabel(S.humanRole,'human'))+'</div><div class="bubble">'+mdInline(text)+'</div></div>'
+    + '<div class="line line--'+S.aiRole+' line--ghost"><div class="who">'+esc(whoLabel(S.aiRole,'ai'))+'</div><div class="bubble"><span class="dots"><i></i><i></i><i></i></span><span class="thinkclock">0.0s</span></div></div>');
   t.scrollTop = t.scrollHeight;
+  startThinkTimer();
 }
-async function refresh(){ try { var r = await fetch('/api/compose/live/'+S.id); var d = await r.json(); if(d.session) renderSession(d.session); } catch(_e){} }
+async function refresh(){ try { var u='/api/compose/live/'+S.id+(S.showDelib?'?debug=1':''); var r = await fetch(u); var d = await r.json(); if(d.session) renderSession(d.session); } catch(_e){} }
 
+// Set a <select> only if the proposed value is one of its options, so a value the
+// server clamped away can't blank the control.
+function setSelect(id, val){
+  var el = $(id); if(!el || val==null || val==='') return;
+  for(var i=0;i<el.options.length;i++){ if(el.options[i].value===val){ el.value=val; return; } }
+}
+// Pour an LLM-proposed spec into the form. The form stays the source of truth —
+// begin() reads it, not the guide — so every machine choice is visible + editable.
+function applySpecToForm(spec){
+  if(!spec) return;
+  if(spec.humanRole==='tutor' || spec.humanRole==='learner') pickSeat(spec.humanRole);
+  if(spec.topic) $('f-topic').value = spec.topic;
+  if('hamartia' in spec) $('f-hamartia').value = spec.hamartia || '';
+  setSelect('f-prompt', spec.promptType);
+  setSelect('f-tarch', spec.tutorArchitecture);
+  if(SYL) SYL.setByRef(spec.lectureRef);
+  setSelect('f-persona', spec.persona);
+  setSelect('f-larch', spec.learnerArchitecture);
+  setSelect('f-lmodel', spec.learnerModel);
+  setSelect('f-open', spec.openingSpeaker);
+  if(spec.maxTurns) $('f-max').value = spec.maxTurns;
+  $('advBox').open = true; // reveal what was dialled in
+}
+// Metered (one OpenRouter call) unless free preview is on — then a canned spec.
+async function guide(){
+  var desc = $('g-desc').value.trim();
+  var out = $('guideOut');
+  if(!desc){ out.hidden=false; out.className='guide__out err'; out.textContent='describe the scene you want first'; $('g-desc').focus(); return; }
+  S.mock = $('f-mock').checked;
+  $('guideBtn').disabled=true; var lab=$('guideBtn').textContent; $('guideBtn').textContent='composing…';
+  out.hidden=false; out.className='guide__out'; out.innerHTML='<span class="muted">the guide is setting the dials…</span>';
+  try {
+    var r = await postJson('/api/compose/live/guide', { description:desc, mock:S.mock });
+    applySpecToForm(r.spec);
+    var bits = [];
+    if(r.rationale) bits.push('<b>set-up:</b> '+esc(r.rationale));
+    if(r.notes) bits.push('<span class="muted">'+esc(r.notes)+'</span>');
+    bits.push('<span class="muted">— dialled in below; tweak anything, then begin the scene.</span>');
+    out.innerHTML = bits.join('<br>');
+  } catch(e){
+    out.className='guide__out err';
+    out.textContent = (e.code==='LIVE_NO_API_KEY')
+      ? 'no OpenRouter key on this server — tick “free preview” for a canned demo, or set the dials by hand.'
+      : 'guide failed: '+(e.message||String(e));
+  } finally {
+    $('guideBtn').disabled=false; $('guideBtn').textContent=lab;
+  }
+}
+
+function showStage(){
+  $('setup').classList.add('setup--min');
+  $('transcript').hidden=false; $('liveside').hidden=false; $('composerForm').hidden=false;
+}
+function restoreSetup(){
+  $('setup').classList.remove('setup--min');
+  $('transcript').hidden=true; $('liveside').hidden=true; $('composerForm').hidden=true;
+}
+// Show the stage the instant Begin is clicked, so the metered opening turn never
+// reads as dead air: an animated ghost stands in for the AI's opening line (when
+// the AI opens) until /start returns and renderSession swaps in the real turn.
+function renderSceneLoading(aiOpens){
+  showStage();
+  $('transcript').innerHTML = aiOpens
+    ? ('<div class="line line--'+S.aiRole+' line--ghost"><div class="who">'+esc(whoLabel(S.aiRole,'ai'))
+        +'</div><div class="bubble"><span class="composing">composing the opening line</span> <span class="dots"><i></i><i></i><i></i></span><span class="thinkclock">0.0s</span></div></div>')
+    : '<div class="t-empty">setting the scene… <span class="dots"><i></i><i></i><i></i></span></div>';
+  $('sceneMeta').innerHTML = 'you are the <b>'+esc(S.humanRole)+'</b><br>AI is the <b>'+esc(S.aiRole)+'</b><br><span class="muted">setting the scene…</span>';
+  $('spendUsd').textContent='$0.0000'; $('spendTok').textContent='0 tokens';
+  $('composerInput').disabled=true; $('sendBtn').disabled=true;
+  $('composerHint').textContent = aiOpens ? ('the '+S.aiRole+' is composing the opening line…') : 'setting the scene…';
+  if(aiOpens) startThinkTimer();
+}
 async function begin(){
   $('setupErr').textContent=''; S.mock = $('f-mock').checked;
+  // A lecture only grounds the AI when it plays the tutor; never send one for an
+  // AI learner (the syllabus picker is hidden in that seat anyway).
   var spec = { humanRole:S.humanRole, topic:$('f-topic').value, hamartia:$('f-hamartia').value,
     promptType:$('f-prompt').value, tutorArchitecture:$('f-tarch').value,
+    lectureRef:(S.aiRole==='tutor' ? ($('f-lecture')||{}).value : '')||'',
     persona:$('f-persona').value, learnerArchitecture:$('f-larch').value,
-    openingSpeaker:$('f-open').value, maxTurns:Number($('f-max').value)||16 };
+    learnerModel:(S.aiRole==='learner' ? ($('f-lmodel')||{}).value : '')||'',
+    openingSpeaker:$('f-open').value, maxTurns:Number($('f-max').value)||16,
+    concise:($('f-concise') ? $('f-concise').checked : true),
+    showDeliberation:S.showDelib };
   $('beginBtn').disabled=true; $('beginBtn').textContent='setting the scene…';
+  renderSceneLoading(spec.openingSpeaker===S.aiRole);
   try { var r = await postJson('/api/compose/live/start', { spec:spec, mock:S.mock }); renderSession(r.session); }
-  catch(e){ $('setupErr').textContent='could not start: '+(e.message||e); $('beginBtn').disabled=false; $('beginBtn').textContent='Begin the scene →'; }
+  catch(e){ restoreSetup(); $('setupErr').textContent='could not start: '+(e.message||e); $('beginBtn').disabled=false; $('beginBtn').textContent='Begin the scene →'; }
 }
 async function send(){
   var text = $('composerInput').value.trim();
   if(!text || S.status!=='live') return;
   $('composerInput').disabled=true; $('sendBtn').disabled=true;
   appendOptimistic(text); $('composerHint').textContent='the '+S.aiRole+' is thinking…';
-  try { var r = await postJson('/api/compose/live/turn', { id:S.id, text:text, mock:S.mock });
+  try { var r = await postJson('/api/compose/live/turn', { id:S.id, text:text, mock:S.mock, showDeliberation:S.showDelib });
     $('composerInput').value=''; autoGrow($('composerInput')); renderSession(r.session); }
   catch(e){ $('composerHint').innerHTML='<span class="metered">turn failed: '+esc(e.message||String(e))+'</span>'; await refresh(); }
 }
@@ -2314,12 +3347,78 @@ async function save(){
     $('saveRes').innerHTML='saved <code>'+esc(r.path)+'</code> · '+r.bytes+' bytes'; }
   catch(e){ $('saveRes').textContent='save failed: '+(e.message||e); }
 }
+// End the scene early (idempotent on the server). Freezes the transcript so no
+// further turns can be appended; the composer locks because renderSession sees
+// status==='done'. Re-fetch (debug-aware) so the frozen view is consistent.
+async function endScene(){
+  if(!S.id) return;
+  if(S.status!=='live'){ $('scoreRes').textContent='the scene has already ended.'; return; }
+  $('endBtn').disabled=true;
+  try { await postJson('/api/compose/live/'+S.id+'/end', { reason:'user_ended' }); await refresh(); }
+  catch(e){ $('scoreRes').textContent='could not end the scene: '+(e.message||e); }
+  finally { $('endBtn').disabled=false; }
+}
+// Score the transcript-so-far on dramatic form (the poetics rubric). Metered — one
+// critic call — unless free preview is on, which returns a canned zero-spend verdict.
+// You can score a live scene mid-play or a finished one; it doesn't end the scene.
+async function scoreScene(){
+  if(!S.id) return;
+  if(!S.lastSession || !S.lastSession.turnCount){ $('scoreRes').textContent='play at least one turn before scoring.'; return; }
+  $('scoreBtn').disabled=true; var lab=$('scoreBtn').textContent; $('scoreBtn').textContent='scoring…';
+  $('scoreRes').innerHTML='<span class="muted">the critic is reading the scene'+(S.mock?' (free preview)':'')+'…</span>';
+  try {
+    var r = await postJson('/api/compose/live/'+S.id+'/score', { mock:S.mock });
+    if(r.session) renderSession(r.session); else renderScore(r.score);
+  } catch(e){
+    $('scoreRes').textContent = (e.code==='LIVE_NO_API_KEY')
+      ? 'no OpenRouter key on this server — tick “free preview” for a canned score.'
+      : 'score failed: '+(e.message||String(e));
+  } finally { $('scoreBtn').disabled=false; $('scoreBtn').textContent=lab; }
+}
+// Render a dramatic-form verdict (overall + per-dimension, each with the moment the
+// critic cited) into the score panel. The poetics rubric is 1–5.
+function renderScore(score){
+  if(!score){ return; }
+  var html = '<div><span class="score__overall">'+esc(String(score.overall))+'</span> <span class="muted">/ 5 · dramatic form</span></div>';
+  if(score.headline) html += '<div class="score__headline">'+esc(score.headline)+'</div>';
+  (score.dimensions||[]).forEach(function(d){
+    html += '<div class="score__dim"><span class="score__dname">'+esc(d.name||d.id)+'</span>'
+      + '<span class="score__dval">'+esc(String(d.score))+'/5</span>'
+      + (d.why ? '<span class="score__dwhy">'+esc(d.why)+'</span>' : '')+'</div>';
+  });
+  var foot=[];
+  if(score.model) foot.push('critic <code>'+esc(score.model)+'</code>');
+  if(score.scoredAtTurn!=null) foot.push('scored at turn '+esc(String(score.scoredAtTurn)));
+  if(score.rubricVersion) foot.push('rubric v'+esc(String(score.rubricVersion)));
+  if(foot.length) html += '<div class="score__dwhy" style="border-top:1px dotted var(--rule);padding-top:5px;margin-top:5px;">'+foot.join(' · ')+'</div>';
+  $('scoreRes').innerHTML = html;
+}
+// The caveat fires only when the console would expose the AI LEARNER's interior
+// (human-as-tutor) — the surface-only signal the instrument must not peek at. The
+// AI tutor's own ego/superego is not that hidden-interior signal, so no caveat there.
+function updateDelibCaveat(){ var c=$('delibCaveat'); if(c) c.hidden = !(S.showDelib && S.aiRole==='learner'); }
+// "message details" is a pure view filter — the meta is already on the wire — so a
+// re-render from the cached session is enough.
+function onMetaToggle(){ S.showMeta = $('optMeta').checked; setPref('live-meta', S.showMeta); if(S.lastSession) renderSession(S.lastSession); }
+// "AI deliberation" content is shipped only when asked for (debug view), so turning
+// it on re-fetches so past turns gain their steps; turning it off just hides them.
+async function onDelibToggle(){
+  S.showDelib = $('optDelib').checked; setPref('live-delib', S.showDelib); updateDelibCaveat();
+  if(S.showDelib && S.id){ await refresh(); }
+  else if(S.lastSession){ renderSession(S.lastSession); }
+}
 
 $('seatLearner').addEventListener('click', function(){ pickSeat('learner'); });
 $('seatTutor').addEventListener('click', function(){ pickSeat('tutor'); });
+$('guideBtn').addEventListener('click', guide);
+$('g-desc').addEventListener('keydown', function(e){ if(e.key==='Enter' && (e.metaKey||e.ctrlKey)){ e.preventDefault(); guide(); } });
 $('beginBtn').addEventListener('click', begin);
 $('sendBtn').addEventListener('click', send);
 $('saveBtn').addEventListener('click', save);
+$('endBtn').addEventListener('click', endScene);
+$('scoreBtn').addEventListener('click', scoreScene);
+$('optMeta').addEventListener('change', onMetaToggle);
+$('optDelib').addEventListener('change', onDelibToggle);
 $('composerInput').addEventListener('input', function(){ autoGrow($('composerInput')); });
 $('composerInput').addEventListener('keydown', function(e){ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); send(); } });
 $('f-mock').addEventListener('change', function(){
@@ -2327,8 +3426,34 @@ $('f-mock').addEventListener('change', function(){
   $('meterNote').textContent = on ? 'free preview · canned AI lines · no spend' : 'metered · real LLM calls per AI turn · localhost only';
   $('meterNote').classList.toggle('metered--free', on);
 });
+// Wire the course→lesson syllabus picker. Choosing a lesson aligns the free-text
+// topic with it (so the injected lecture + topic stay coherent) and retargets the
+// hamartia *placeholder* at the chosen lesson. Both fields start blank: the topic is
+// auto-filled only while a lesson is chosen, and cleared again when the lesson is
+// deselected — but a topic the human typed themselves is never clobbered.
+var topicAutoFilled = false;
+$('f-topic').addEventListener('input', function(){ topicAutoFilled = false; });
+SYL = mkSyllabus(COMPOSE_COURSES, $('f-course'), $('f-lecture'), $('f-syl-cap'), function(opt){
+  var t = opt && opt.getAttribute && opt.getAttribute('data-topic');
+  if(t){
+    $('f-topic').value = t;
+    topicAutoFilled = true;
+  } else if(topicAutoFilled){
+    // Lesson cleared (course change or the blank "— lesson —" option) and the topic
+    // still holds the title we auto-filled — blank it so no stale topic lingers.
+    $('f-topic').value = '';
+    topicAutoFilled = false;
+  }
+  $('f-hamartia').placeholder = t
+    ? ('the misreading a learner keeps bringing to “'+t+'”')
+    : 'the specific wrong idea the learner keeps reaching for';
+});
 $('themeToggle').addEventListener('click', function(){ var d=document.documentElement; var nx=d.getAttribute('data-theme')==='dark'?'':'dark'; if(nx)d.setAttribute('data-theme','dark'); else d.removeAttribute('data-theme'); try{ localStorage.setItem('poetics-theme',nx); }catch(_e){} });
 try { if(localStorage.getItem('poetics-theme')==='dark') document.documentElement.setAttribute('data-theme','dark'); } catch(_e){}
+// Restore the view toggles (message details + deliberation console) from prefs.
+S.showMeta = getPref('live-meta', false); S.showDelib = getPref('live-delib', false);
+if($('optMeta')) $('optMeta').checked = S.showMeta;
+if($('optDelib')) $('optDelib').checked = S.showDelib;
 pickSeat('learner');
 </script>
 </body>
@@ -2376,7 +3501,7 @@ label.mod{ display:inline-flex; align-items:center; gap:5px; font:12px ui-monosp
 .spacer{ flex:1; }
 .counts{ font:11px ui-monospace,monospace; color:var(--ink-4); }
 main{ padding:18px 22px; max-width:1100px; }
-.blurb{ font-size:13px; color:var(--ink-3); border-left:3px solid var(--moss); background:var(--moss-soft); padding:8px 12px; margin-bottom:16px; }
+.blurb{ font-size:13px; color:var(--ink-3); border-left:3px solid var(--moss); background:var(--paper-4); padding:8px 12px; margin-bottom:16px; }
 section.sec{ border:1px solid var(--rule); background:var(--paper-4); margin-bottom:16px; }
 .sec > h3{ margin:0; padding:9px 12px; font:600 12px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-2); background:var(--paper-2); border-bottom:1px solid var(--rule); display:flex; gap:8px; align-items:baseline; }
 .sec > h3 .h-note{ font-weight:400; text-transform:none; letter-spacing:0; color:var(--ink-4); }
@@ -2668,7 +3793,7 @@ function renderRubricHtml() {
     title: 'poetics rubric · machine spirits',
     css: `
 main{ max-width:900px; margin:0 auto; padding:22px 22px 64px; }
-.blurb{ font-size:13px; color:var(--ink-3); border-left:3px solid var(--moss); background:var(--moss-soft); padding:10px 14px; margin:0 0 18px; }
+.blurb{ font-size:13px; color:var(--ink-3); border-left:3px solid var(--moss); background:var(--paper-4); padding:10px 14px; margin:0 0 18px; }
 .blurb a{ color:var(--moss-deep); }
 .meta{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px; }
 .meta .chip{ font:12px ui-monospace,monospace; padding:3px 9px; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-2); }
@@ -2808,7 +3933,7 @@ ${railHtml({ active: 'replays', brand: 'discursive replays', sub: 'counterfactua
 </div>
 <div class="layout">
   <div class="list" id="list"><div class="loading">loading…</div></div>
-  <div class="detail" id="detail"><div class="loading">pick an item on the left.</div></div>
+  <div class="detail" id="detail" role="region" aria-label="Replay detail" tabindex="0"><div class="loading">pick an item on the left.</div></div>
 </div>
 <script>
 const GATE_BUCKETS = ${JSON.stringify(GATE_BUCKETS)};
@@ -3402,14 +4527,14 @@ function renderBrowserHtml() {
 
 :root {
   color-scheme: light dark;
-  --paper:       #F4EEDD;
-  --paper-2:     #ECE3CB;
-  --paper-3:     #F8F2E2;
-  --paper-4:     #FBF6E8;
-  --ink:         #14100C;
-  --ink-2:       #2C241B;
-  --ink-3:       #5C5040;
-  --ink-4:       #8C7E6A;
+  --paper:       #F1E9D8;
+  --paper-2:     #E9DFC7;
+  --paper-3:     #EFE4CC;
+  --paper-4:     #F7EFDD;
+  --ink:         #181310;
+  --ink-2:       #3A2F27;
+  --ink-3:       #6A5C50;
+  --ink-4:       #695B47;
   --linen:       #D8C7A9;
   --moss:        #56683A;
   --moss-deep:   #3A4824;
@@ -3418,10 +4543,10 @@ function renderBrowserHtml() {
   --brick-d:     #7C2C1F;
   --brick-soft:  #F3DDD6;
   --ochre:       #C08A3E;
-  --ochre-d:     #8C5F1F;
+  --ochre-d:     #835A1B;
   --ochre-soft:  #F5E6C2;
-  --indigo:      #5A6797;
-  --indigo-soft: #E2E5F0;
+  --indigo:      #2A4F6B;
+  --indigo-soft: #DCE6EE;
   --rule:        rgba(28, 22, 16, 0.18);
   --rule-soft:   rgba(28, 22, 16, 0.10);
   --ease:        cubic-bezier(.22,.61,.36,1);
@@ -3457,8 +4582,8 @@ function renderBrowserHtml() {
   --ochre:       #E6B265;
   --ochre-d:     #F3CB88;
   --ochre-soft:  #3A2C12;
-  --indigo:      #98A6D4;
-  --indigo-soft: #1F2434;
+  --indigo:      #7FA6CC;
+  --indigo-soft: #1B2A38;
   --rule:        rgba(244, 238, 221, 0.18);
   --rule-soft:   rgba(244, 238, 221, 0.08);
 }
@@ -3508,94 +4633,10 @@ button, input, select, textarea {
 }
 
 /* ═══════ top rail ═══════ */
-.rail {
-  position: sticky;
-  top: 0;
-  z-index: 30;
-  background: color-mix(in srgb, var(--paper) 92%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--rule);
-  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-}
-.rail__inner {
-  display: flex;
-  align-items: center;
-  gap: 0.9em;
-  padding: 0.55em clamp(0.8rem, 2vw, 1.2rem);
-}
-.rail__brand {
-  font-family: "Fraunces", "Source Serif 4", Georgia, serif;
-  font-style: italic;
-  font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
-  font-size: 17px;
-  letter-spacing: -0.005em;
-  text-transform: none;
-  color: var(--ink);
-  flex: 0 0 auto;
-}
-.rail__brand::before {
-  content: "▸ ";
-  color: var(--brick);
-  font-style: normal;
-}
-.rail__sub {
-  flex: 1 1 auto;
-  color: var(--ink-3);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.rail__beacon {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55em;
-  padding: 0.3em 0.75em;
-  border: 1px solid var(--rule);
-  background: var(--paper-3);
-  color: var(--ink-3);
-  flex: 0 0 auto;
-}
-.rail__beacon[data-state="live"] {
-  color: var(--moss-deep);
-  border-color: color-mix(in srgb, var(--moss) 55%, var(--rule));
-}
-.rail__beacon[data-state="offline"] { color: var(--ink-3); }
-.rail__dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--ink-4);
-  flex: 0 0 auto;
-}
-.rail__beacon[data-state="checking"] .rail__dot {
-  background: var(--ochre);
-  animation: railPulse 1.2s var(--ease) infinite;
-}
-.rail__beacon[data-state="live"] .rail__dot {
-  background: var(--moss);
-  animation: railPulse 2.2s var(--ease) infinite;
-}
-@keyframes railPulse {
-  0% { box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 55%, transparent); }
-  70% { box-shadow: 0 0 0 7px color-mix(in srgb, currentColor 0%, transparent); }
-  100% { box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 0%, transparent); }
-}
-.rail__btn {
-  border: 1px solid var(--rule);
-  background: transparent;
-  color: var(--ink-3);
-  font: inherit;
-  padding: 0.32em 0.8em;
-  cursor: pointer;
-  transition: color .15s var(--ease), border-color .15s var(--ease);
-  flex: 0 0 auto;
-}
-.rail__btn:hover { color: var(--ink); border-color: var(--ink-3); }
+/* The rail (.rail*, .rail__beacon, .rail__menu, x-ray overlay) is styled once in
+   railHtml()'s inline <style id="rail-extra">, which rides on this page too even
+   though /browse skips BASE_CSS. Kept out of this head copy so it cannot drift —
+   this block formerly diverged (a ▸ brand caret, a private beacon copy). */
 
 /* ═══════ application grid ═══════ */
 .app {
@@ -4266,9 +5307,7 @@ tbody th {
   .app { grid-template-columns: 1fr; grid-template-rows: 46vh 54vh; }
   .sidebar { border-right: 0; border-bottom: 1px solid var(--rule); }
   .label-fields { grid-template-columns: 1fr; }
-  .rail__brand { font-size: 14px; }
-  .rail__inner { gap: 0.6em; padding: 0.45em 0.8em; }
-  .rail__sub { display: none; }
+  /* rail responsive rules live in rail-extra's own @media query (single source) */
   .detail-title h2 { font-size: 20px; }
   .pane { padding: 18px 18px 28px; }
 }
@@ -4289,19 +5328,19 @@ ${railHtml({
       <div id="appSub" class="sub">Generated public scripts, full traces, critic scores, and labels-as-perspective.</div>
     </div>
     <div class="filters">
-      <select id="runSelect"></select>
+      <select id="runSelect" aria-label="Select run"></select>
       <input id="searchInput" placeholder="Search id · drama · discipline · condition · arm · critic form (recognition/trap/flat)">
-      <select id="disciplineSelect"><option value="">all disciplines</option></select>
+      <select id="disciplineSelect" aria-label="Filter by discipline"><option value="">all disciplines</option></select>
       <input id="labellerInput" class="blind-only" placeholder="Labeller id">
       <div class="filter-row score-only">
-        <select id="roleSelect">
+        <select id="roleSelect" aria-label="Filter by role">
           <option value="">all roles</option>
           <option value="target">target</option>
           <option value="flat_control">flat controls</option>
           <option value="boundary_trap_control">boundary traps</option>
           <option value="hard_trap_control">hard traps</option>
         </select>
-        <select id="formSelect">
+        <select id="formSelect" aria-label="Filter by critic form">
           <option value="">all forms</option>
           <option value="recognition">recognition</option>
           <option value="trap">trap</option>

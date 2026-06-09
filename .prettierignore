@@ -2,6 +2,7 @@ node_modules/
 tutor-core/
 data/
 logs/
+logs.pre-symlink-backup-*/
 exports/
 docs/
 content/

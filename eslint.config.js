@@ -30,6 +30,13 @@ export default [
     },
   },
   {
+    // Served front-end assets (public/components/*.js etc.) run in the browser, not Node.
+    files: ['public/**/*.js'],
+    languageOptions: {
+      globals: { ...globals.browser },
+    },
+  },
+  {
     // tutor-core/ is vendored (in-housed from @machinespirits/tutor-core, see
     // TUTOR-CORE-INHOUSING.md) — keep it under its own upstream lint rules, not the eval repo's.
     ignores: [

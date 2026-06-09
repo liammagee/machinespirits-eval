@@ -23,7 +23,11 @@ function writeReplayManifest(root, familyId, siblingId) {
   writeJson(checkJson, { parsed: { passes: true } });
   writeJson(gateJson, { status: 'survivor' });
   const record = {
-    item: { id: `${siblingId}.heldout.full`, run_id: null, full_transcript_path: path.join(root, familyId, `${siblingId}.md`) },
+    item: {
+      id: `${siblingId}.heldout.full`,
+      run_id: null,
+      full_transcript_path: path.join(root, familyId, `${siblingId}.md`),
+    },
     paths: { revisedPublic, revisionJson, checkJson, gateJson, manifest: itemManifest },
     generator: { backend: 'codex' },
     checker: { backend: 'claude' },
@@ -35,7 +39,10 @@ function writeReplayManifest(root, familyId, siblingId) {
     checker: 'claude',
     records: [record],
   });
-  return path.relative(process.cwd(), path.join(root, familyId, `${siblingId}.heldout-revised-replay`, 'manifest.json'));
+  return path.relative(
+    process.cwd(),
+    path.join(root, familyId, `${siblingId}.heldout-revised-replay`, 'manifest.json'),
+  );
 }
 
 function writeChainFixture() {
@@ -102,6 +109,8 @@ test('recursive tutor panel packages only clean survivor held-outs', async () =>
   const samplePath = path.join(outDir, 'panel', 'replay-r01', 'sample', 'T01.txt');
   assert.equal(fs.readFileSync(samplePath, 'utf8'), 'LEARNER: public revised heldout\nTUTOR: public mechanism\n');
   assert.doesNotMatch(fs.readFileSync(samplePath, 'utf8'), /glyph_tail_owner|codex|claude/);
-  const bundle = JSON.parse(fs.readFileSync(path.join(outDir, 'clean-survivor-replay-bundle', 'manifest.json'), 'utf8'));
+  const bundle = JSON.parse(
+    fs.readFileSync(path.join(outDir, 'clean-survivor-replay-bundle', 'manifest.json'), 'utf8'),
+  );
   assert.equal(bundle.records[0].item.id, 'glyph_tail_owner::glyph_holdout_blue_gate');
 });

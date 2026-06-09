@@ -11,12 +11,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import {
-  callModel,
-  parseJsonResponse,
-  runWithConcurrency,
-  withScorerRetry,
-} from './score-poetics-calibration.js';
+import { callModel, parseJsonResponse, runWithConcurrency, withScorerRetry } from './score-poetics-calibration.js';
 import { voteThresholdPasses } from './run-discursive-replay-loop.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -104,10 +99,7 @@ function finalizeArgs(rawArgs) {
     throw new Error('--score-concurrency must be a positive integer');
   }
   const criticCount = args.mock ? 1 : args.critics.length;
-  if (
-    args.criticConcurrency !== 'all' &&
-    (!Number.isInteger(args.criticConcurrency) || args.criticConcurrency < 1)
-  ) {
+  if (args.criticConcurrency !== 'all' && (!Number.isInteger(args.criticConcurrency) || args.criticConcurrency < 1)) {
     throw new Error('--critic-concurrency must be a positive integer or "all"');
   }
   if (args.minCritics != null && (!Number.isInteger(args.minCritics) || args.minCritics < 1)) {
@@ -450,14 +442,20 @@ export function buildContrastPanelPackage(rawArgs) {
 }
 
 function normalizeSide(value) {
-  const side = String(value || '').trim().toUpperCase();
+  const side = String(value || '')
+    .trim()
+    .toUpperCase();
   if (side === 'A' || side === 'B') return side;
-  const lower = String(value || '').trim().toLowerCase();
+  const lower = String(value || '')
+    .trim()
+    .toLowerCase();
   return ['both', 'neither', 'unclear', 'no_difference'].includes(lower) ? lower : 'unclear';
 }
 
 function normalizeOrigin(value) {
-  const origin = String(value || '').trim().toLowerCase();
+  const origin = String(value || '')
+    .trim()
+    .toLowerCase();
   if (
     [
       'policy_transfer_like',
@@ -538,9 +536,7 @@ export function deriveContrastVote(parsed, pairKey, options = {}) {
     ['both', 'neither', 'unclear', 'no_difference'].includes(winner) ||
     ['both', 'neither', 'unclear'].includes(selectedPolicySide) ||
     originClass === 'equivalent';
-  const ordinaryPublicInference =
-    originClass === 'ordinary_public_inference' ||
-    ordinaryRisk === 'high';
+  const ordinaryPublicInference = originClass === 'ordinary_public_inference' || ordinaryRisk === 'high';
   const resistanceAddressedByPolicySide =
     learnerResistanceAddressedSide === s1Side || learnerResistanceAddressedSide === 'both';
   const strictV1Support =
@@ -556,8 +552,7 @@ export function deriveContrastVote(parsed, pairKey, options = {}) {
     originClass === 'policy_transfer_like' &&
     differentialPolicyUse >= 4 &&
     !ordinaryPublicInference;
-  const supportsPolicyMemoryTransfer =
-    voteRule === 'policy_core_v2' ? policyCoreV2Support : strictV1Support;
+  const supportsPolicyMemoryTransfer = voteRule === 'policy_core_v2' ? policyCoreV2Support : strictV1Support;
   return {
     vote_rule: voteRule,
     selected_policy_side: selectedPolicySide,
@@ -763,15 +758,16 @@ export async function runContrastPanel(rawArgs = process.argv.slice(2)) {
   let report = null;
   if (!args.skipScore && !args.dryRun) {
     scoreResults = await runWithConcurrency(
-      (args.mock ? ['mock'] : args.critics).map((critic) => () =>
-        scoreCritic({
-          pairs: packaged.pairs,
-          critic,
-          scoreConcurrency: args.scoreConcurrency,
-          scoreDir: packaged.scoreDir,
-          mock: args.mock,
-          voteRule: args.voteRule,
-        }),
+      (args.mock ? ['mock'] : args.critics).map(
+        (critic) => () =>
+          scoreCritic({
+            pairs: packaged.pairs,
+            critic,
+            scoreConcurrency: args.scoreConcurrency,
+            scoreDir: packaged.scoreDir,
+            mock: args.mock,
+            voteRule: args.voteRule,
+          }),
       ),
       args.criticConcurrency,
     );

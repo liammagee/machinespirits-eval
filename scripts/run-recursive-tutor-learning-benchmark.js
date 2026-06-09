@@ -73,7 +73,9 @@ function textFieldsForLeakage(family, seedLike) {
 }
 
 function containsPhrase(text, phrase) {
-  return String(text || '').toLowerCase().includes(String(phrase || '').toLowerCase());
+  return String(text || '')
+    .toLowerCase()
+    .includes(String(phrase || '').toLowerCase());
 }
 
 function validateRequired(value, pathLabel, issues) {
@@ -178,7 +180,13 @@ export function validateBenchmarkConfig(config) {
     validateUnderdeterminedTransfer(family, prefix, issues);
 
     const seed = family.training_seed || {};
-    for (const field of ['seed_id', 'public_setup', 'learner_resistance', 'baseline_tutor_attempt', 'expected_failure']) {
+    for (const field of [
+      'seed_id',
+      'public_setup',
+      'learner_resistance',
+      'baseline_tutor_attempt',
+      'expected_failure',
+    ]) {
       validateRequired(seed[field], `${prefix}.training_seed.${field}`, issues);
     }
     if (!asArray(family.heldout_siblings).length) {
@@ -344,7 +352,10 @@ export function buildAttemptChainPlan(config, { outDir = DEFAULT_OUT_DIR } = {})
         baseline_replay_command_text: commandString(
           replayCommandFor(transcript, { outDir: heldoutBaselineReplayDir, generator: 'none' }),
         ),
-        revised_replay_command: replayCommandFor(transcript, { outDir: heldoutRevisedReplayDir, policyMemoryPath: policyRevision }),
+        revised_replay_command: replayCommandFor(transcript, {
+          outDir: heldoutRevisedReplayDir,
+          policyMemoryPath: policyRevision,
+        }),
         revised_replay_command_text: commandString(
           replayCommandFor(transcript, { outDir: heldoutRevisedReplayDir, policyMemoryPath: policyRevision }),
         ),
@@ -374,7 +385,8 @@ export function buildAttemptChainPlan(config, { outDir = DEFAULT_OUT_DIR } = {})
     out_dir: outDir,
     validation,
     families,
-    stop_rule: 'Do not run panel until at least one held-out family survives local gate without leakage, organic drift, or coherence confound.',
+    stop_rule:
+      'Do not run panel until at least one held-out family survives local gate without leakage, organic drift, or coherence confound.',
   };
 }
 
@@ -383,7 +395,10 @@ function writeJson(filePath, value) {
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
 }
 
-export function materializeAttemptChain(config, { configPath = DEFAULT_CONFIG, outDir = DEFAULT_OUT_DIR, force = false } = {}) {
+export function materializeAttemptChain(
+  config,
+  { configPath = DEFAULT_CONFIG, outDir = DEFAULT_OUT_DIR, force = false } = {},
+) {
   if (fs.existsSync(outDir)) {
     if (!force) throw new Error(`output exists: ${outDir} (pass --force to overwrite)`);
     fs.rmSync(outDir, { recursive: true, force: true });

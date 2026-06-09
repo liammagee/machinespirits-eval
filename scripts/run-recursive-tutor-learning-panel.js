@@ -87,10 +87,7 @@ function finalizeArgs(rawArgs) {
   if (!Number.isInteger(args.scoreConcurrency) || args.scoreConcurrency < 1) {
     throw new Error('--score-concurrency must be a positive integer');
   }
-  if (
-    args.criticConcurrency !== 'all' &&
-    (!Number.isInteger(args.criticConcurrency) || args.criticConcurrency < 1)
-  ) {
+  if (args.criticConcurrency !== 'all' && (!Number.isInteger(args.criticConcurrency) || args.criticConcurrency < 1)) {
     throw new Error('--critic-concurrency must be a positive integer or "all"');
   }
   if (args.minCritics != null && (!Number.isInteger(args.minCritics) || args.minCritics < 1)) {
@@ -168,7 +165,9 @@ function cleanSurvivorEntries(localGate) {
 function recordForPanel({ family, heldout }) {
   const revisedManifestPath = resolveRepoPath(heldout.revised?.manifest_path);
   if (!revisedManifestPath || !fs.existsSync(revisedManifestPath)) {
-    throw new Error(`missing revised manifest for ${family.family_id}/${heldout.sibling_id}: ${heldout.revised?.manifest_path}`);
+    throw new Error(
+      `missing revised manifest for ${family.family_id}/${heldout.sibling_id}: ${heldout.revised?.manifest_path}`,
+    );
   }
   const manifest = readJson(revisedManifestPath);
   const record = cloneJson((manifest.records || [])[0]);
@@ -227,8 +226,12 @@ function materializeReplayBundle({ localGate, outDir }) {
 function runScoreJob(job) {
   return new Promise((resolve) => {
     const child = spawn(job.cmd[0], job.cmd.slice(1), { cwd: ROOT, stdio: 'inherit' });
-    child.on('error', (error) => resolve({ critic: job.critic, outPath: job.outPath, status: 'failed', error: error.message }));
-    child.on('close', (code) => resolve({ critic: job.critic, outPath: job.outPath, status: code === 0 ? 'ok' : 'failed', exitCode: code }));
+    child.on('error', (error) =>
+      resolve({ critic: job.critic, outPath: job.outPath, status: 'failed', error: error.message }),
+    );
+    child.on('close', (code) =>
+      resolve({ critic: job.critic, outPath: job.outPath, status: code === 0 ? 'ok' : 'failed', exitCode: code }),
+    );
   });
 }
 
@@ -239,7 +242,9 @@ async function runScoreCommands(commands, criticConcurrency = commands.length) {
   );
   const results = new Array(commands.length);
   let next = 0;
-  console.log(`Scoring ${commands.length} A18 panel critic${commands.length === 1 ? '' : 's'} with concurrency ${workerCount}...`);
+  console.log(
+    `Scoring ${commands.length} A18 panel critic${commands.length === 1 ? '' : 's'} with concurrency ${workerCount}...`,
+  );
   const workers = Array.from({ length: workerCount }, async () => {
     while (next < commands.length) {
       const index = next++;
@@ -249,7 +254,9 @@ async function runScoreCommands(commands, criticConcurrency = commands.length) {
   await Promise.all(workers);
   const failures = results.filter((result) => result?.status === 'failed');
   if (failures.length) {
-    throw new Error(`score job failures: ${failures.map((failure) => `${failure.critic}:${failure.exitCode ?? failure.error}`).join(', ')}`);
+    throw new Error(
+      `score job failures: ${failures.map((failure) => `${failure.critic}:${failure.exitCode ?? failure.error}`).join(', ')}`,
+    );
   }
   return results;
 }
@@ -314,16 +321,18 @@ export async function runRecursiveTutorPanel(rawArgs = process.argv.slice(2)) {
   };
   if (args.critics) packageArgs.critics = args.critics;
   const packaged = buildReplayPanelPackage(packageArgs);
-  const scoreResults = args.skipScore || args.dryRun
-    ? []
-    : await runScoreCommands(packaged.scoreCommands, packaged.manifest.criticConcurrency || args.criticConcurrency);
-  const panelSummary = args.skipScore || args.dryRun
-    ? null
-    : summarizePanelScores(panelDir, {
-        panelThreshold: args.panelThreshold,
-        originThreshold: args.originThreshold,
-        minCritics: args.minCritics,
-      });
+  const scoreResults =
+    args.skipScore || args.dryRun
+      ? []
+      : await runScoreCommands(packaged.scoreCommands, packaged.manifest.criticConcurrency || args.criticConcurrency);
+  const panelSummary =
+    args.skipScore || args.dryRun
+      ? null
+      : summarizePanelScores(panelDir, {
+          panelThreshold: args.panelThreshold,
+          originThreshold: args.originThreshold,
+          minCritics: args.minCritics,
+        });
   const families = summarizeFamilies({ panelSummary, selectedFamilies: replayBundle.selectedFamilies });
   const report = {
     kind: 'recursive_tutor_learning_panel_report',

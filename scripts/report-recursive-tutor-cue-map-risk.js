@@ -58,7 +58,9 @@ function asArray(value) {
 }
 
 function clean(value) {
-  return String(value || '').trim().toLowerCase();
+  return String(value || '')
+    .trim()
+    .toLowerCase();
 }
 
 function publicFields(family) {

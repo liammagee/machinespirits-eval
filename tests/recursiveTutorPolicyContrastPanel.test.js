@@ -347,8 +347,14 @@ test('summarizeContrastScores can apply policy_core_v2 to saved critic rows', ()
     },
   });
   writeJson(path.join(outDir, 'scores', 'critic-a.json'), { critic: 'critic-a', scored: [mkRow('critic-a', s1)] });
-  writeJson(path.join(outDir, 'scores', 'critic-b.json'), { critic: 'critic-b', scored: [mkRow('critic-b', 'neither')] });
-  writeJson(path.join(outDir, 'scores', 'critic-c.json'), { critic: 'critic-c', scored: [mkRow('critic-c', 'unclear')] });
+  writeJson(path.join(outDir, 'scores', 'critic-b.json'), {
+    critic: 'critic-b',
+    scored: [mkRow('critic-b', 'neither')],
+  });
+  writeJson(path.join(outDir, 'scores', 'critic-c.json'), {
+    critic: 'critic-c',
+    scored: [mkRow('critic-c', 'unclear')],
+  });
 
   const strict = summarizeContrastScores(outDir, {
     expectedCritics: 3,

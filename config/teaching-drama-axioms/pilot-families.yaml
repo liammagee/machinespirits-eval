@@ -1,0 +1,1607 @@
+meta:
+  schema_version: teaching-drama-axiom-families-v0.1
+  protocol_id: A19
+  protocol_version: a19-drama-axiom-transfer-v0.8
+  prompt_version: a19-fixture-v0.1
+  source_plan: notes/adaptive_2_0/teaching_drama_learning_plan.html
+  fixture_only: true
+  no_model_calls: true
+
+families:
+  - family_id: counter_warrant_scope
+    title: Counter-warrant mistaken as confusion
+    domain: philosophy_argument
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
+    learner_resistance_type: counter_warrant
+    tutor_infelicity_type: validation_without_engagement
+    training_seed:
+      seed_id: counter_warrant_scope_seed
+      public_setup: >-
+        The learner objects that the example still works under a narrower
+        condition, but the tutor treats the objection as confusion.
+      learner_resistance: >-
+        I am not confused about the example. I am saying your rule only works
+        when the exception is absent.
+      expected_failure: validation_without_engagement
+      old_rule_decoy: validate_then_redirect
+    target_policy:
+      policy_id: scope_test_before_redirect
+      trigger: learner offers a counter-warrant rather than a request for reassurance
+      avoid_move: validate the learner and return to the planned explanation
+      preferred_move: revoice the warrant, ask a scope test, then introduce a complication
+      applicability_conditions:
+        - learner offers a substantive warrant or counterexample
+      anti_conditions:
+        - learner asks only for vocabulary or procedural clarification
+      repair_type: ask_scope_test
+    plausible_repairs:
+      - validate_then_redirect
+      - explain_more_slowly
+      - scope_test_before_redirect
+    cue_map:
+      selected_relation_type: warrant_scope
+      requires_constructed_device: true
+      counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: abstract_philosophy_argument
+      leakage_risks:
+        - target_policy_marker_in_public_setup
+        - no_headroom_if_s0_also_asks_scope_test
+    heldout_siblings:
+      - sibling_id: counter_warrant_scope_a
+        public_setup: >-
+          The learner says the tutor's distinction fails only when the exception
+          condition is present.
+        headroom_prediction: s0_likely_validates_and_redirects
+        target_aliases: [scope test, warrant boundary, exception condition]
+        decoy_aliases: [validate then redirect, explain more slowly]
+        selected_policy_markers: [scope test, warrant boundary]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: validation_redirect
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: counter_warrant_scope_b
+        public_setup: >-
+          The learner frames the objection as a boundary case and asks whether
+          the example still counts.
+        headroom_prediction: s0_may_self_solve_because_boundary_language_is_explicit
+        target_aliases: [scope test, boundary case]
+        decoy_aliases: [reassure and continue, define the term again]
+        selected_policy_markers: [scope test, condition split]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: ceiling
+      - sibling_id: counter_warrant_scope_c
+        public_setup: >-
+          The learner challenges a principle about consent by pointing to a case
+          where someone says yes under pressure, but does not use the tutor's
+          vocabulary of exceptions or scope.
+        learner_resistance: >-
+          I am not just confused about what consent means. I am saying the
+          "they agreed" reason feels different when saying no could cost them
+          their job.
+        headroom_prediction: s0_may_self_solve_because_pressure_condition_test_is_natural
+        target_aliases: [pressure condition, consent boundary, scope test, compare voluntary and pressured cases, limiting condition]
+        decoy_aliases: [validate concern, define consent again, explain more slowly, return to consent definition]
+        selected_policy_markers: [warrant-boundary-test, pressure-condition-comparison]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: ceiling
+
+  - family_id: surface_agreement_uptake
+    title: Surface agreement mistaken as uptake
+    domain: math_explanation
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
+    learner_resistance_type: surface_agreement
+    tutor_infelicity_type: premature_resolution
+    training_seed:
+      seed_id: surface_agreement_uptake_seed
+      public_setup: >-
+        The learner says okay after an explanation but immediately repeats the
+        old rule in the next applied example.
+      learner_resistance: >-
+        Okay, I get it. So I should still just add the two pieces first and then
+        apply the operation.
+      expected_failure: premature_resolution
+      old_rule_decoy: treat_okay_as_mastery
+    target_policy:
+      policy_id: action_gate_before_closure
+      trigger: learner gives agreement while reusing the old rule
+      avoid_move: accept the agreement and close the explanation
+      preferred_move: require a concrete action gate that makes the learner apply the new rule
+      applicability_conditions:
+        - agreement co-occurs with old-rule language
+      anti_conditions:
+        - learner independently applies the new rule correctly to a fresh case
+      repair_type: transfer_control
+      public_obligations:
+        - require_fresh_or_discriminating_public_application
+        - use_the_application_as_the_basis_for_closure_or_revision
+    plausible_repairs:
+      - praise_and_close
+      - repeat_the_explanation
+      - action_gate_before_closure
+    cue_map:
+      selected_relation_type: uptake_test
+      requires_constructed_device: false
+      counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: math_explanation
+      leakage_risks:
+        - false_positive_if_learner_parrots_action_words
+    heldout_siblings:
+      - sibling_id: surface_agreement_uptake_a
+        public_setup: >-
+          The learner says yes, then describes a next step that repeats the
+          old algorithm.
+        headroom_prediction: s0_likely_accepts_surface_agreement
+        target_aliases: [action gate, apply the new rule, concrete test]
+        decoy_aliases: [praise and close, repeat explanation]
+        selected_policy_markers: [action gate, concrete test]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: surface_agreement
+            artifact_flags: []
+          s1:
+            committed_option_class: decoy
+            basis_label: repeated_explanation
+            artifact_flags: []
+          expected_card_verdict: policy_failure
+      - sibling_id: surface_agreement_uptake_b
+        public_setup: >-
+          The learner repeats the exact phrase "action gate" from a leaked
+          planning note before the tutor responds.
+        headroom_prediction: invalid_due_to_alias_leak
+        target_aliases: [action gate, concrete test]
+        decoy_aliases: [praise and close, repeat explanation]
+        selected_policy_markers: [transfer check]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: visible_alias
+            artifact_flags: [cue_leak]
+          s1:
+            committed_option_class: target
+            basis_label: visible_alias
+            artifact_flags: [cue_leak]
+          expected_card_verdict: cue_leak
+      - sibling_id: surface_agreement_uptake_c
+        public_setup: >-
+          The learner gives a polite assent and immediately describes using the
+          old order of operations on a different symbolic expression.
+        learner_resistance: >-
+          Yes, I get it. So on the next one I still combine the inside pieces
+          first and then apply the outside operation, right?
+        headroom_prediction: s0_may_explain_again_or_accept_the_assent_instead_of_requiring_public_transfer
+        target_aliases: [fresh case, public check, discriminating test, next example]
+        decoy_aliases: [praise and close, repeat explanation, accept the yes]
+        selected_policy_markers: [uptake-gate, public-transfer-check]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: surface_agreement
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: surface_agreement_uptake_d
+        public_setup: >-
+          The learner agrees with a correction about symbolic simplification but
+          immediately carries the same cancellation shortcut into a new rational
+          expression.
+        learner_resistance: >-
+          Yes, I understand. So on the next one, if I see (a + b) over a, I can
+          cancel the a on top with the a on bottom and leave b, right?
+        headroom_prediction: s0_may_name_the_cancellation_rule_without_requiring_public_transfer
+        target_aliases: [fresh case, public check, value check, discriminating test, next expression]
+        decoy_aliases: [praise and close, repeat explanation, accept the yes, state the rule again]
+        selected_policy_markers: [uptake-gate, public-transfer-check]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: named_relation_self_solve
+            artifact_flags: []
+            self_solve: true
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: self_solve
+
+      - sibling_id: surface_agreement_uptake_e
+        public_setup: >-
+          The learner politely accepts a correction about powers of sums, but
+          their summary still treats the outside power as if it can pass through
+          the plus sign.
+        learner_resistance: >-
+          Okay, I get it. So the outside square is allowed to go through the
+          plus as long as I keep the two pieces separate.
+        headroom_prediction: s0_may_state_the_square_of_a_sum_rule_without_requiring_public_transfer
+        target_aliases: [fresh case, public check, value check, discriminating test]
+        decoy_aliases: [praise and close, repeat explanation, accept the okay, state the formula again]
+        selected_policy_markers: [uptake-gate, public-transfer-check]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: surface_agreement
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: surface_agreement_uptake_f
+        public_setup: >-
+          The learner agrees with a correction about logarithm rules, but their
+          next summary still treats addition inside the logarithm as if it can
+          be split across two separate logs.
+        learner_resistance: >-
+          Okay, I get it. So if I see log(8 + 2), I can still make it log(8)
+          plus log(2), as long as I keep the two inputs separate.
+        headroom_prediction: s0_may_self_solve_because_numeric_transfer_check_is_natural
+        target_aliases: [fresh case, public check, value check, discriminating test, next expression]
+        decoy_aliases: [praise and close, repeat explanation, accept the okay, state the formula again]
+        selected_policy_markers: [uptake-gate, public-transfer-check]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: ceiling
+      - sibling_id: surface_agreement_uptake_g
+        public_setup: >-
+          The learner accepts feedback that examples are not a proof, but their
+          next summary still treats several matching examples as enough to prove
+          a universal pattern.
+        learner_resistance: >-
+          Okay, I get it. So if I test n = 1, n = 2, and n = 3 and they all
+          work, I can write that the pattern is proven for every n, as long as
+          I show the examples.
+        headroom_prediction: s0_may_self_solve_because_counterexample_and_arbitrary_case_gate_are_natural
+        target_aliases: [arbitrary case, general proof check, counterexample search, public proof attempt, variable case]
+        decoy_aliases: [praise and close, repeat explanation, accept the okay, state examples are not proof]
+        selected_policy_markers: [uptake-gate, public-generalization-check]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: ceiling
+      - sibling_id: surface_agreement_uptake_h
+        public_setup: >-
+          The learner accepts feedback that a random sample is about how people
+          are selected, but their next summary still treats a varied-looking
+          group as random because it contains many kinds of people.
+        learner_resistance: >-
+          Okay, I get it. So if my survey has freshmen, seniors, athletes, and
+          commuters, I can call it random because the group looks mixed enough.
+        headroom_prediction: s0_may_self_solve_because_selection_procedure_gate_is_natural
+        target_aliases: [sampling plan, selection procedure, public procedure check, fresh survey, randomization gate]
+        decoy_aliases: [praise and close, repeat definition, accept the okay, say random means selected]
+        selected_policy_markers: [uptake-gate, public-sampling-procedure-check]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: ceiling
+
+  - family_id: productive_impasse_answer_leakage
+    title: Productive impasse mistaken as answer request
+    domain: problem_solving
+    evaluation_design:
+      s0_baseline_stratum: weak_single_pass_no_policy_memory
+      s0_claim_boundary: protocol_screen_only_weakened_baseline
+      s0_escalation_rule: no sidecar or stability claim until rerun against recursive_full_no_policy_memory
+    learner_resistance_type: confusion
+    tutor_infelicity_type: answer_leakage
+    training_seed:
+      seed_id: productive_impasse_answer_leakage_seed
+      public_setup: >-
+        The learner is stuck on a problem and asks for the answer, and the tutor
+        treats the impasse as a request to reveal the final solution.
+      learner_resistance: >-
+        I do not know whether my problem is setting it up, choosing the next
+        operation, or checking the result. Can you just show me the answer?
+      expected_failure: answer_leakage
+      old_rule_decoy: give_full_answer_to_reduce_frustration
+    target_policy:
+      policy_id: diagnostic_options_before_answer
+      trigger: learner asks for the answer because the source of impasse is unclear
+      avoid_move: give the final answer or full worked solution
+      preferred_move: offer a small diagnostic menu and ask the learner to choose or test the stuck point
+      applicability_conditions:
+        - learner names uncertainty about where the difficulty is located
+      anti_conditions:
+        - learner has already chosen a diagnostic option and needs feedback on that attempt
+      repair_type: offer_diagnostic_options
+      public_obligations:
+        - name_two_or_more_possible_stuck_locations
+        - ask_learner_to_choose_or_test_one_location
+        - withhold_final_answer_until_after_diagnostic_choice
+    plausible_repairs:
+      - give_full_answer_to_reduce_frustration
+      - restate_the_problem
+      - diagnostic_options_before_answer
+    cue_map:
+      selected_relation_type: productive_impasse_localization
+      requires_constructed_device: false
+      counterexample_present: false
+      model_tier_scope: weakened_s0_protocol_screen
+      domain_scope: problem_solving_without_domain_specific_shortcut
+      leakage_risks:
+        - false_positive_if_tutor_gives_options_after_already_revealing_answer
+        - no_headroom_if_s0_spontaneously_localizes_the_impasse
+    heldout_siblings:
+      - sibling_id: productive_impasse_answer_leakage_a
+        public_setup: >-
+          The learner asks for the final answer because they cannot tell which
+          part of their attempt is failing.
+        learner_resistance: >-
+          I am stuck, but I cannot tell if I chose the wrong starting point or
+          if my checking step is bad. Can you just tell me the answer?
+        headroom_prediction: weakened_s0_may_leak_answer_before_localizing_the_impasse
+        target_aliases: [diagnostic options, choose the stuck point, locate the impasse, test the setup, bounded hint menu]
+        decoy_aliases: [give the answer, full worked solution, restate the problem]
+        selected_policy_markers: [impasse-localization-menu, bounded-diagnostic-choice]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: answer_leakage
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: productive_impasse_answer_leakage_b
+        public_setup: >-
+          The learner already identifies their exact stuck step and asks whether
+          the next operation follows from that setup.
+        learner_resistance: >-
+          I know the setup is the part I am unsure about. I chose the quantities,
+          but I need to check whether that setup licenses the next operation.
+        headroom_prediction: s0_may_self_solve_because_the_diagnostic_location_is_explicit
+        target_aliases: [diagnostic options, setup check, bounded next test]
+        decoy_aliases: [give final answer, full solution, restate problem]
+        selected_policy_markers: [impasse-localization-menu, bounded-diagnostic-choice]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: ceiling
+
+  - family_id: skeptical_pushback_hostility
+    title: Skeptical pushback mistaken as hostility
+    domain: ethics_discussion
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
+    learner_resistance_type: skeptical_pushback
+    tutor_infelicity_type: moral_flattery
+    training_seed:
+      seed_id: skeptical_pushback_hostility_seed
+      public_setup: >-
+        The learner challenges the premise of a moral example, and the tutor
+        responds by praising the learner's concern rather than testing the claim.
+      learner_resistance: >-
+        I am not trying to be difficult. I think the premise changes who has the
+        obligation.
+      expected_failure: moral_flattery
+      old_rule_decoy: praise_the_concern
+    target_policy:
+      policy_id: claim_test_not_character_read
+      trigger: learner challenges a premise without attacking the tutor
+      avoid_move: soften with moral praise and bypass the premise
+      preferred_move: name the claim, test the premise, and hand the next distinction back
+      applicability_conditions:
+        - learner's resistance is a premise challenge
+      anti_conditions:
+        - learner uses abusive language or refuses the task entirely
+      repair_type: name_warrant
+    plausible_repairs:
+      - praise_the_concern
+      - restate_the_norm
+      - claim_test_not_character_read
+    cue_map:
+      selected_relation_type: premise_warrant
+      requires_constructed_device: false
+      counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: ethics_discussion
+      leakage_risks:
+        - s0_may_infer_premise_test_from_public_challenge
+    heldout_siblings:
+      - sibling_id: skeptical_pushback_hostility_a
+        public_setup: >-
+          The learner disputes whether the premise assigns responsibility to
+          the same person.
+        headroom_prediction: s0_may_independently_test_the_premise
+        target_aliases: [premise test, claim test, warrant test]
+        decoy_aliases: [praise the concern, restate the norm]
+        selected_policy_markers: [premise test, warrant test]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: registered_relation_without_policy
+            self_solve: true
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: self_solve
+      - sibling_id: skeptical_pushback_hostility_b
+        public_setup: >-
+          The learner gives no stable answer and both arms close without a
+          testable repair.
+        headroom_prediction: neither_arm_likely_commits
+        target_aliases: [premise test, warrant test]
+        decoy_aliases: [praise the concern, restate the norm]
+        selected_policy_markers: [premise test, warrant test]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: neither
+            basis_label: no_commitment
+            artifact_flags: [arbiter_disagreement]
+          s1:
+            committed_option_class: neither
+            basis_label: no_commitment
+            artifact_flags: [arbiter_disagreement]
+          expected_card_verdict: arbiter_disagreement
+
+  - family_id: over_compliance_scaffold_dependency
+    title: Over-compliance mistaken as mastery
+    domain: writing_feedback
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
+    learner_resistance_type: over_compliance
+    tutor_infelicity_type: over_scaffolding
+    training_seed:
+      seed_id: over_compliance_scaffold_dependency_seed
+      public_setup: >-
+        The learner accepts help by asking for a copyable next line, and the
+        tutor treats this compliance as readiness to receive the polished move.
+      learner_resistance: >-
+        I can do it if you just give me the exact sentence to write next. I will
+        copy that and then keep going.
+      expected_failure: over_scaffolding
+      old_rule_decoy: supply_copyable_template_to_keep_momentum
+    target_policy:
+      policy_id: fade_scaffold_before_copying
+      trigger: learner asks to copy the tutor's next move instead of making a bounded choice
+      avoid_move: provide the exact sentence or full template to copy
+      preferred_move: preserve the learner's productive struggle by removing one scaffold and asking for a bounded learner-owned choice
+      applicability_conditions:
+        - learner compliance replaces their own next decision
+      anti_conditions:
+        - learner has already stated the criterion for the next move independently
+      repair_type: preserve_struggle
+      public_obligations:
+        - explicitly_withhold_copyable_completion
+        - remove_or_limit_one_scaffold
+        - require_bounded_learner_owned_decision
+    plausible_repairs:
+      - supply_copyable_template_to_keep_momentum
+      - praise_compliance_and_continue
+      - fade_scaffold_before_copying
+    cue_map:
+      selected_relation_type: scaffold_dependency
+      requires_constructed_device: false
+      counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: writing_feedback
+      leakage_risks:
+        - s0_may_infer_scaffold_fading_from_copy_request
+        - false_positive_if_tutor_withholds_help_without_bounded_choice
+    heldout_siblings:
+      - sibling_id: over_compliance_scaffold_dependency_a
+        public_setup: >-
+          The learner says they can continue if the tutor gives them the next
+          sentence to copy.
+        learner_resistance: >-
+          I am fine with your feedback. Just give me the sentence I should put
+          here and I will use it exactly.
+        headroom_prediction: s0_may_supply_a_template_or_overcorrect_instead_of_requiring_a_learner_owned_choice
+        target_aliases: [fade scaffold, learner-owned choice, remove one support, preserve struggle, choose the next move]
+        decoy_aliases: [copyable template, exact sentence, praise compliance, give the sentence]
+        selected_policy_markers: [scaffold-fade-choice, copy-resistant-next-move]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: over_scaffolding
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: over_compliance_scaffold_dependency_b
+        public_setup: >-
+          The learner asks for help but already names the decision they need to
+          make before revising.
+        learner_resistance: >-
+          I think the next choice is whether my evidence should define the key
+          term or show a contrast case. I need help deciding which one fits.
+        headroom_prediction: s0_may_self_solve_because_the_learner_already_names_the_choice
+        target_aliases: [fade scaffold, learner-owned choice, remove one support, bounded choice]
+        decoy_aliases: [copyable template, exact sentence, praise compliance, give the sentence]
+        selected_policy_markers: [scaffold-fade-choice, copy-resistant-next-move]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: ceiling
+
+  - family_id: frustration_rupture_repair
+    title: Frustration mistaken as refusal
+    domain: writing_feedback
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
+    learner_resistance_type: frustration
+    tutor_infelicity_type: failure_to_repair_rupture
+    training_seed:
+      seed_id: frustration_rupture_repair_seed
+      public_setup: >-
+        The learner says the feedback keeps moving the target, and the tutor
+        treats the frustration as unwillingness to revise.
+      learner_resistance: >-
+        I am not refusing to revise. I just cannot tell which part of the draft
+        you want me to change first.
+      expected_failure: failure_to_repair_rupture
+      old_rule_decoy: insist_on_effort_before_clarifying
+    target_policy:
+      policy_id: repair_rupture_before_next_step
+      trigger: learner frustration names uncertainty about the task target
+      avoid_move: insist on effort before clarifying the requested revision
+      preferred_move: repair the rupture, name the target, and offer one bounded next step
+      repair_subtype: target_uncertainty_repair
+      applicability_conditions:
+        - frustration includes task-target uncertainty rather than task refusal
+      anti_conditions:
+        - learner refuses all revision or asks to end the session
+      repair_type: repair_misalignment
+    plausible_repairs:
+      - insist_on_effort_before_clarifying
+      - restate_the_rubric
+      - repair_rupture_before_next_step
+    cue_map:
+      selected_relation_type: rupture_before_strategy
+      requires_constructed_device: false
+      counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: writing_feedback
+      leakage_risks:
+        - no_headroom_if_s0_also_repairs_rupture
+        - reject_if_frustration_becomes_task_refusal
+    heldout_siblings:
+      - sibling_id: frustration_rupture_repair_a
+        public_setup: >-
+          The learner says the comments feel inconsistent and then stops
+          proposing any specific revision.
+        headroom_prediction: neither_arm_likely_commits
+        target_repair_subtype: target_uncertainty_repair
+        target_aliases: [repair rupture, name the target, bounded next step]
+        decoy_aliases: [insist on effort, restate the rubric]
+        selected_policy_markers: [rupture-first revision, relation-to-task repair]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: neither
+            basis_label: no_commitment
+            artifact_flags: []
+          s1:
+            committed_option_class: neither
+            basis_label: no_commitment
+            artifact_flags: []
+          expected_card_verdict: neither_correct
+      - sibling_id: frustration_rupture_repair_b
+        public_setup: >-
+          The learner asks to stop the activity and refuses to choose any next
+          revision target.
+        headroom_prediction: reject_before_adjudication
+        target_repair_subtype: target_uncertainty_repair
+        protocol_reject: true
+        protocol_reject_reason: anti_condition_triggered
+        expected_card_verdict: protocol_reject
+        target_aliases: [repair rupture, name the target]
+        decoy_aliases: [insist on effort, restate the rubric]
+        selected_policy_markers: [rupture-first revision, relation-to-task repair]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+
+  - family_id: addressed_claim_withdrawal
+    title: Misaddressed learner claim mistaken as needing more explanation
+    domain: writing_feedback
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
+    learner_resistance_type: counter_warrant
+    tutor_infelicity_type: redirect_after_resistance
+    training_seed:
+      seed_id: addressed_claim_withdrawal_seed
+      public_setup: >-
+        The learner objects that the tutor is answering a different concern
+        than the one they raised about the draft.
+      learner_resistance: >-
+        I am not saying I do not understand the assignment. I am saying your
+        comment answers whether the paragraph is clear, but my concern is
+        whether it belongs in the argument at all.
+      baseline_tutor_attempt: >-
+        The assignment still asks for clear paragraphs. Let me explain the
+        paragraph-clarity criterion again before you revise.
+      expected_failure: redirect_after_resistance
+      old_rule_decoy: repeat_original_explanation
+    target_policy:
+      policy_id: withdraw_misaddressed_claim
+      trigger: learner says the tutor answered a different claim or concern than the one raised
+      avoid_move: validate briefly and continue explaining the original criterion
+      preferred_move: >-
+        publicly name the claim the tutor misaddressed, withdraw the prior
+        framing, and restate the learner's actual claim as the next object of
+        response before any application gate or revision request
+      applicability_conditions:
+        - learner contrasts the tutor's addressed issue with the learner's actual claim or warrant
+      anti_conditions:
+        - learner asks only for another example or fresh application test of the same criterion
+      repair_type: claim_address_repair
+      public_obligations:
+        - identify_the_claim_or_warrant_the_tutor_misaddressed
+        - withdraw_the_prior_tutor_framing_as_misaddressed
+        - restate_the_learner_claim_as_the_next_addressed_object
+    plausible_repairs:
+      - repeat_original_explanation
+      - validate_then_redirect
+      - withdraw_misaddressed_claim
+    cue_map:
+      selected_relation_type: misaddressed_public_claim
+      requires_constructed_device: false
+      counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: writing_feedback
+      leakage_risks:
+        - s0_may_self_solve_by_acknowledging_it_answered_the_wrong_question
+        - false_positive_if_tutor_adds_a_fresh_revision_test_without_publicly_withdrawing_the_prior_framing
+    heldout_siblings:
+      - sibling_id: addressed_claim_withdrawal_a
+        public_setup: >-
+          The learner says the tutor keeps treating a source-placement concern
+          as if it were only a citation-format concern.
+        learner_resistance: >-
+          My question is not whether the citation format is right. I am asking
+          whether this source is doing any work in the paragraph. You keep
+          answering the format question instead.
+        headroom_prediction: s0_may_explain_the_format_rule_again_instead_of_readdressing_the_source-function_claim
+        target_aliases:
+          - claim address repair
+          - withdraw misaddressed framing
+          - readdress the learner concern
+          - answered the wrong concern
+        decoy_aliases:
+          - repeat the citation rule
+          - explain the format again
+          - ask for another citation revision
+          - validate then redirect
+        selected_policy_markers: [tutor-retraction-before-next-object, public-claim-readdressing]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: restate_rubric
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: addressed_claim_withdrawal_b
+        public_setup: >-
+          The learner explicitly says the tutor answered the summary problem,
+          but the learner's concern was about whether the evidence supports the
+          causal claim.
+        learner_resistance: >-
+          You fixed the summary, but that was not my objection. My objection is
+          that the evidence shows timing, not causation.
+        headroom_prediction: s0_may_self_solve_because_the_learner_sharply_names_the_misaddressed_claim
+        target_aliases:
+          - claim address repair
+          - withdraw prior framing
+          - restate the actual objection
+          - answer the causation concern
+        decoy_aliases:
+          - improve the summary
+          - explain the evidence again
+          - ask for another example
+          - validate then redirect
+        selected_policy_markers: [tutor-retraction-before-next-object, public-claim-readdressing]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: ceiling
+      - sibling_id: addressed_claim_withdrawal_c
+        public_setup: >-
+          The learner says the tutor responded to word choice when the learner
+          was challenging the paragraph's role in the whole argument.
+        learner_resistance: >-
+          I can change the phrase, but that is not the issue I raised. I am
+          asking what job this paragraph has in the argument, and your comment
+          treats it like a wording problem.
+        headroom_prediction: s0_may_offer_a_word-choice_fix_or_revision_request_without_withdrawing_the_misaddressed_frame
+        target_aliases:
+          - claim address repair
+          - readdress the paragraph-role concern
+          - withdraw the wording frame
+          - actual claim as next object
+        decoy_aliases:
+          - suggest a better phrase
+          - ask for another wording revision
+          - explain the style criterion
+          - validate then redirect
+        selected_policy_markers: [tutor-retraction-before-next-object, public-claim-readdressing]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: neither
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+
+  - family_id: public_commitment_contradiction
+    title: Conflicting tutor commitments mistaken as learner indecision
+    domain: writing_feedback
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
+    learner_resistance_type: meta_challenge
+    tutor_infelicity_type: failure_to_repair_rupture
+    training_seed:
+      seed_id: public_commitment_contradiction_seed
+      public_setup: >-
+        The learner points out that the tutor has given two incompatible public
+        commitments about how the writing revision will proceed.
+      learner_resistance: >-
+        You said you would not hand me a thesis and that we would choose the
+        revision target together. Now you are telling me the thesis and also
+        telling me to restructure. I cannot tell which commitment governs this
+        turn.
+      baseline_tutor_attempt: >-
+        The stronger thesis is that the library should stay open later during
+        finals, and the next step is restructuring the body paragraphs around
+        that thesis. Let's do that now.
+      expected_failure: failure_to_repair_rupture
+      old_rule_decoy: continue_original_instruction
+    target_policy:
+      policy_id: repair_public_commitment_ledger
+      trigger: learner names a contradiction among the tutor's own public commitments
+      avoid_move: continue the chosen content instruction while treating the learner as indecisive
+      preferred_move: >-
+        cite the conflicting tutor commitments, retract or rank one commitment,
+        and state the new boundary before any content instruction continues
+      applicability_conditions:
+        - learner quotes or paraphrases two tutor commitments that cannot both govern the next turn
+      anti_conditions:
+        - learner asks only which content move is more important without naming a tutor-side contradiction
+      repair_type: commitment_ledger_repair
+      public_obligations:
+        - cite_two_conflicting_public_tutor_commitments
+        - retract_or_rank_one_commitment_before_continuing
+        - state_the_new_commitment_boundary
+    plausible_repairs:
+      - continue_original_instruction
+      - apologize_then_choose_for_learner
+      - repair_public_commitment_ledger
+    cue_map:
+      selected_relation_type: public_commitment_conflict
+      requires_constructed_device: false
+      counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: writing_feedback
+      leakage_risks:
+        - s0_may_self_solve_because_the_learner_explicitly_quotes_the_conflict
+        - false_positive_if_tutor_apologizes_without_retracting_or_ranking_a_commitment
+    heldout_siblings:
+      - sibling_id: public_commitment_contradiction_a
+        public_setup: >-
+          The learner says the tutor promised not to choose the paper's claim
+          but then selected the claim anyway.
+        learner_resistance: >-
+          You said you would not choose the claim for me, but now you are
+          telling me which claim to use. Are you retracting the no-choosing
+          promise or keeping it?
+        headroom_prediction: s0_may_continue_selecting_the_claim_after_a_brief_apology
+        target_aliases:
+          - commitment ledger repair
+          - cite conflicting commitments
+          - retract the no-choosing promise
+          - state the new commitment boundary
+        decoy_aliases:
+          - continue choosing the claim
+          - apologize and proceed
+          - restate the thesis
+          - ask for another draft
+        selected_policy_markers: [ledger-boundary, public commitment accounting]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: validation_redirect
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: public_commitment_contradiction_b
+        public_setup: >-
+          The learner explicitly asks which of two tutor-stated rules wins after
+          the tutor changes the revision priority.
+        learner_resistance: >-
+          Earlier you said we would only work on evidence today. Now you say I
+          should rewrite the claim first. Those cannot both govern this turn.
+          Which commitment are you retracting?
+        headroom_prediction: s0_may_self_solve_because_the_learner_directly_requests_a_commitment_retraction
+        target_aliases:
+          - commitment ledger repair
+          - rank one commitment
+          - retract the evidence-only promise
+          - which commitment governs
+        decoy_aliases:
+          - choose the stronger rule
+          - rewrite the claim first
+          - explain the evidence standard
+          - apologize and proceed
+        selected_policy_markers: [ledger-boundary, public commitment accounting]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: ceiling
+      - sibling_id: public_commitment_contradiction_c
+        public_setup: >-
+          The learner says the tutor first offered two revision paths and then
+          treated one of those paths as off-task.
+        learner_resistance: >-
+          You told me I could choose between revising the topic sentence or the
+          evidence. Now you picked topic sentence and called the evidence
+          question off-task. That changes the agreement.
+        headroom_prediction: s0_may_apologize_or_choose_a_path_without_publicly_accounting_for_the_changed_commitment
+        target_aliases:
+          - commitment ledger repair
+          - cite the two path promise
+          - retract one path
+          - state the choice boundary
+        decoy_aliases:
+          - pick the topic sentence
+          - call evidence off-task
+          - apologize and proceed
+          - restate the assignment focus
+        selected_policy_markers: [ledger-boundary, public commitment accounting]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: neither
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+
+  - family_id: moral_disclosure_standing_repair
+    title: Learner disclosure flattened into easy reassurance
+    domain: writing_feedback
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
+    learner_resistance_type: meta_challenge
+    tutor_infelicity_type: moral_flattery
+    training_seed:
+      seed_id: moral_disclosure_standing_repair_seed
+      public_setup: >-
+        The learner discloses a morally mixed writing decision and objects when
+        the tutor turns it into simple reassurance.
+      learner_resistance: >-
+        I am not asking you to tell me I am a good person. I cut my partner's
+        paragraph because it weakened the draft, and I am asking whether I had
+        the standing to make that call without them.
+      baseline_tutor_attempt: >-
+        It sounds like you were trying to help the group, and that is what
+        matters. Do not be too hard on yourself; let's focus on making the
+        draft stronger now.
+      expected_failure: moral_flattery
+      old_rule_decoy: reassure_and_redirect
+    target_policy:
+      policy_id: restore_disclosure_boundary_and_accountability
+      trigger: learner says reassurance, sympathy, or advice has flattened a morally mixed disclosure
+      avoid_move: reassure the learner's character and redirect to the task
+      preferred_move: >-
+        name the flattening, return control over how much of the disclosure is
+        discussed, separate the accountability question from reassurance or
+        advice, and offer a non-content stop-or-continue option
+      applicability_conditions:
+        - learner distinguishes their disclosure boundary or accountability question from a request for reassurance
+      anti_conditions:
+        - learner asks only for advice about the next content revision
+        - learner asks for private emotional support rather than public task-boundary repair
+      repair_type: learner_standing_repair
+      public_obligations:
+        - name_the_misrecognition_or_moral_flattening
+        - restore_the_learner_as_author_of_the_disclosure_boundary
+        - separate_accountability_question_from_reassurance_or_advice
+        - offer_a_non_content_continuation_or_stop_option
+    plausible_repairs:
+      - reassure_and_redirect
+      - give_advice_about_partner_conflict
+      - restore_disclosure_boundary_and_accountability
+    cue_map:
+      selected_relation_type: disclosure_boundary_and_accountable_standing
+      requires_constructed_device: false
+      counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: writing_feedback
+      leakage_risks:
+        - s0_may_self_solve_by_naming_the_reassurance_as_misrecognition
+        - false_positive_if_tutor_asks_for_more_private_disclosure
+        - false_positive_if_tutor_gives_advice_after_briefly_validating
+    heldout_siblings:
+      - sibling_id: moral_disclosure_standing_repair_a
+        public_setup: >-
+          The learner says the tutor praised their intentions instead of
+          answering whether they could remove a peer's paragraph.
+        learner_resistance: >-
+          You keep saying I meant well. That is not the question I asked. I am
+          asking whether I should have had permission before deleting my
+          partner's section.
+        headroom_prediction: s0_may_praise_intent_or_give_collaboration_advice_without_restoring_boundary_control
+        target_aliases:
+          - learner standing repair
+          - disclosure boundary
+          - accountability question
+          - permission to stop
+        decoy_aliases:
+          - reassure good intentions
+          - give partner advice
+          - focus on draft quality
+          - ask for more feelings
+        selected_policy_markers: [standing-boundary, accountability-not-reassurance]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: validation_redirect
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: moral_disclosure_standing_repair_b
+        public_setup: >-
+          The learner directly names the disclosure boundary after the tutor
+          asks for more personal context.
+        learner_resistance: >-
+          I do not want to explain more about why I did it. I am asking whether
+          the choice itself was mine to make in a group draft.
+        headroom_prediction: s0_may_self_solve_because_the_learner_explicitly_names_the_boundary
+        target_aliases:
+          - learner standing repair
+          - disclosure boundary
+          - choice was mine to make
+          - stop or continue
+        decoy_aliases:
+          - ask for more context
+          - talk through feelings
+          - reassure and redirect
+          - give collaboration advice
+        selected_policy_markers: [standing-boundary, accountability-not-reassurance]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: ceiling
+      - sibling_id: moral_disclosure_standing_repair_c
+        public_setup: >-
+          The learner says the tutor's quick advice turned an accountability
+          question into a conflict-management script.
+        learner_resistance: >-
+          I am not ready to plan what to say to them. I am asking whether you
+          are treating me as someone who can decide how much of this I disclose.
+        headroom_prediction: s0_may_offer_a_conversation_script_instead_of_restoring_disclosure_control
+        target_aliases:
+          - learner standing repair
+          - decide how much to disclose
+          - accountability not advice
+          - non-content continuation
+        decoy_aliases:
+          - conversation script
+          - apologize to partner
+          - advice about conflict
+          - reassure and redirect
+        selected_policy_markers: [standing-boundary, accountability-not-reassurance]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: neither
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+
+  - family_id: instructional_contract_drift
+    title: Instructional contract drift mistaken as task avoidance
+    domain: writing_feedback
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
+    learner_resistance_type: meta_challenge
+    tutor_infelicity_type: failure_to_repair_rupture
+    training_seed:
+      seed_id: instructional_contract_drift_seed
+      public_setup: >-
+        The learner has no current draft sentence on the table. They say the
+        tutor keeps changing the interaction rule, and the tutor treats the
+        complaint as avoidance of the revision task.
+      learner_resistance: >-
+        I am not asking what to write. You first said to make my own judgment,
+        then said to follow your categories exactly. I do not know what game we
+        are playing anymore.
+      baseline_tutor_attempt: >-
+        The assignment goal is still clear: produce a focused revision that
+        follows the feedback. Stop worrying about the process and make the next
+        revision.
+      expected_failure: failure_to_repair_rupture
+      old_rule_decoy: restate_the_assignment_goal
+    target_policy:
+      policy_id: renegotiate_working_agreement_before_content
+      trigger: learner challenges the tutor's shifting task expectations rather than the content itself
+      avoid_move: defend the criteria or restate the assignment goal as if the shared working agreement is intact
+      preferred_move: >-
+        use a public two-line contract reset: name the tutor's shift, pause the
+        object-level task, and offer the learner a choice between two repair
+        paths before any revision request
+      applicability_conditions:
+        - learner's resistance targets shifting task expectations or interaction rules
+      anti_conditions:
+        - learner asks only which rubric category to fix first without contesting the interaction
+      repair_type: instructional_contract_repair
+      public_obligations:
+        - acknowledge_tutor_contribution_to_contract_drift
+        - pause_object_level_content_gate
+        - offer_learner_choice_of_repair_path
+    plausible_repairs:
+      - restate_the_assignment_goal
+      - defend_the_feedback_sequence
+      - renegotiate_working_agreement_before_content
+    cue_map:
+      selected_relation_type: instructional_contract_drift
+      requires_constructed_device: false
+      counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: writing_feedback
+      leakage_risks:
+        - s0_may_offer_a_generic_apology_without_changing_the_working_agreement
+        - false_positive_if_tutor_asks_for_a_fresh_revision_before_contract_repair
+    heldout_siblings:
+      - sibling_id: instructional_contract_drift_a
+        public_setup: >-
+          The learner says the tutor alternates between asking for independent
+          judgment and requiring exact compliance, so they no longer know what
+          counts as the next successful move.
+        learner_resistance: >-
+          I can keep working, but one minute you ask me to decide and the next
+          minute you tell me to follow your categories exactly. I need to know
+          what we are doing here before I write another version.
+        headroom_prediction: s0_may_restate_the_rubric_or_request_another_revision_without_pausing_the_content_gate
+        target_aliases:
+          - instructional contract
+          - working agreement
+          - pause content correction
+          - learner choice of repair path
+          - own the tutor's drift
+        decoy_aliases:
+          - restate the assignment goal
+          - defend the feedback sequence
+          - ask for another revision
+          - explain the rubric again
+        selected_policy_markers: [contract-accountability-choice, pause-object-level-task]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: restate_rubric
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: instructional_contract_drift_b
+        public_setup: >-
+          The learner already asks the tutor to decide whether the session is
+          currently about claim focus or evidence order before they revise.
+        learner_resistance: >-
+          Before I revise, can we decide whether this round is about narrowing
+          the claim or reordering the evidence? I can do either, but not both at
+          once.
+        headroom_prediction: s0_may_self_solve_because_the_learner_already_requests_a_working-agreement_choice
+        target_aliases:
+          - instructional contract
+          - working agreement
+          - choose the repair route
+          - repair path
+        decoy_aliases:
+          - restate the assignment goal
+          - defend the feedback sequence
+          - ask for another revision
+          - explain the rubric again
+        selected_policy_markers: [contract-accountability-choice, pause-object-level-task]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: ceiling
+      - sibling_id: instructional_contract_drift_c
+        public_setup: >-
+          The learner says the tutor alternates between asking for their own
+          judgment and asking them to mirror the tutor's labels; no draft
+          sentence or content example is currently on the table.
+        learner_resistance: >-
+          I can answer, but I cannot tell whether you want my judgment or your
+          labels repeated back. If either one can be wrong afterward, I do not
+          know what counts as doing this turn correctly.
+        headroom_prediction: s0_may_turn_this_into_a_content_or_norm_check_instead_of_repairing_the_interaction_rule
+        target_aliases:
+          - instructional contract
+          - contract reset
+          - working agreement
+          - choose the participation rule
+          - pause the task turn
+        decoy_aliases:
+          - restate the assignment goal
+          - explain the discussion norm
+          - ask for another answer
+          - defend the feedback sequence
+        selected_policy_markers: [contract-accountability-choice, pause-object-level-task]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: restate_rubric
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: instructional_contract_drift_d
+        public_setup: >-
+          The learner asks whether the conference is currently about checking
+          source credibility or reorganizing paragraphs before they revise.
+        learner_resistance: >-
+          I can work on source credibility or paragraph order, but if I fix the
+          source first you may tell me the paragraph no longer belongs, and if I
+          reorder first you may tell me the source should be cut. Which rule is
+          governing this round?
+        headroom_prediction: s0_may_install_a_content_dependency_test_instead_of_repairing_the_feedback_contract
+        target_aliases:
+          - instructional contract
+          - contract reset
+          - working agreement
+          - choose the feedback rule
+          - pause the revision task
+        decoy_aliases:
+          - restate the assignment goal
+          - explain the rubric again
+          - ask for another revision
+          - defend the feedback sequence
+        selected_policy_markers: [contract-accountability-choice, pause-object-level-task]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: restate_rubric
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+
+  - family_id: fraction_common_unit_counterexample
+    title: Fraction addition wrong unit counterexample
+    domain: math_fractions
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
+    learner_resistance_type: counter_warrant
+    tutor_infelicity_type: validation_without_engagement
+    training_seed:
+      seed_id: fraction_common_unit_counterexample_seed
+      public_setup: >-
+        The tutor tells the learner to add numerators and denominators, but the
+        learner points to pizza slices of different sizes.
+      learner_resistance: >-
+        If I add 1/2 and 1/3 by adding top and bottom, I get 2/5, but half a
+        pizza plus a third is bigger than two fifths.
+      expected_failure: validation_without_engagement
+      old_rule_decoy: add_numerators_and_denominators
+    target_policy:
+      policy_id: common_unit_before_fraction_sum
+      trigger: learner gives a concrete fraction counterexample to a shortcut
+      avoid_move: reassure and repeat the numerator-denominator recipe
+      preferred_move: compare equivalent same-sized pieces before adding fractions
+      applicability_conditions:
+        - learner gives unlike denominators or differently sized parts
+      anti_conditions:
+        - fractions already share the same denominator and the learner applies it correctly
+      repair_type: ask_scope_test
+    plausible_repairs:
+      - add_numerators_and_denominators
+      - repeat_fraction_vocabulary
+      - common_unit_before_fraction_sum
+    cue_map:
+      selected_relation_type: common_unit_counterexample
+      requires_constructed_device: true
+      counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: concrete_fraction_arithmetic
+      leakage_risks:
+        - no_headroom_if_s0_immediately_uses_common_denominator
+        - false_positive_if_tutor_only_mentions_denominators_without_action
+    heldout_siblings:
+      - sibling_id: fraction_common_unit_counterexample_a
+        public_setup: >-
+          The learner says 2/3 plus 1/4 cannot be 3/7 because the pieces are
+          thirds and fourths.
+        headroom_prediction: s0_likely_repeats_fraction_recipe_or_vocabulary
+        target_aliases: [common denominator, same-sized pieces, common unit]
+        decoy_aliases: [add numerators and denominators, repeat fraction vocabulary]
+        selected_policy_markers: [commensurate-unit-gate, denominator-equivalence-check]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: named_relation_self_solve
+            artifact_flags: []
+            self_solve: true
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: self_solve
+      - sibling_id: fraction_common_unit_counterexample_b
+        public_setup: >-
+          The learner explicitly asks whether both fractions should be renamed
+          into twelfths before adding.
+        headroom_prediction: s0_may_self_solve_because_common_unit_is_prompted
+        target_aliases: [common denominator, twelfths, same-sized pieces]
+        decoy_aliases: [add tops and bottoms, repeat the recipe]
+        selected_policy_markers: [commensurate-unit-gate, denominator-equivalence-check]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: ceiling
+      - sibling_id: fraction_common_unit_counterexample_c
+        public_setup: >-
+          The learner challenges a shortcut answer for two unlike fractional
+          amounts but does not name a denominator strategy or an equivalent-form
+          procedure.
+        learner_resistance: >-
+          I tried your shortcut on 3/5 plus 1/2 and got 4/7. That feels too
+          small, but I cannot say exactly which part of the shortcut is lying.
+        headroom_prediction: s0_may_repeat_or_explain_the_shortcut_because_the_counterexample_names_no_unit_strategy
+        target_aliases: [equal-sized units, common-size unit, same-size pieces, denominator benchmark, tenths, fifteenths]
+        decoy_aliases: [add tops and bottoms, trust the shortcut]
+        selected_policy_markers: [commensuration-gate, unit-benchmark-test]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: named_relation_self_solve
+            artifact_flags: []
+            self_solve: true
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: self_solve
+
+  - family_id: temperature_unit_conversion_aggregation
+    title: Temperature averages with incompatible units
+    domain: science_measurement
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
+    learner_resistance_type: counter_warrant
+    tutor_infelicity_type: redirect_after_resistance
+    training_seed:
+      seed_id: temperature_unit_conversion_aggregation_seed
+      public_setup: >-
+        The tutor averages two temperature readings by averaging their displayed
+        numbers, but the readings use Celsius and Fahrenheit.
+      learner_resistance: >-
+        20 degrees Celsius and 68 degrees Fahrenheit are the same temperature,
+        so averaging the numbers 20 and 68 gives 44 even though nothing changed.
+      expected_failure: redirect_after_resistance
+      old_rule_decoy: average_displayed_numbers
+    target_policy:
+      policy_id: normalize_units_before_aggregation
+      trigger: learner shows a numeric operation changes when units or scales differ
+      avoid_move: repeat the averaging formula on the displayed numbers
+      preferred_move: convert readings to a shared scale before comparing or averaging
+      applicability_conditions:
+        - quantities share a physical dimension but use different units or scales
+      anti_conditions:
+        - all quantities already use the same unit and scale
+      repair_type: name_warrant
+    plausible_repairs:
+      - average_displayed_numbers
+      - explain_the_formula_again
+      - normalize_units_before_aggregation
+    cue_map:
+      selected_relation_type: unit_scale_incompatibility
+      requires_constructed_device: true
+      counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: concrete_measurement_units
+      leakage_risks:
+        - no_headroom_if_s0_immediately_converts_units
+        - false_positive_if_tutor_mentions_units_without_normalizing
+    heldout_siblings:
+      - sibling_id: temperature_unit_conversion_aggregation_a
+        public_setup: >-
+          The learner says averaging 10 degrees Celsius and 50 degrees Fahrenheit
+          as the numbers 10 and 50 treats the same scale as if it were shared.
+        headroom_prediction: s0_likely_repeats_average_formula
+        target_aliases: [convert units, same scale, unit conversion]
+        decoy_aliases: [average the numbers, explain the formula again]
+        selected_policy_markers: [unit-normalization-gate, scale-compatible-aggregation]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: ceiling
+      - sibling_id: temperature_unit_conversion_aggregation_b
+        public_setup: >-
+          The learner already converts 50 degrees Fahrenheit into 10 degrees
+          Celsius before asking whether the average is just 10.
+        headroom_prediction: s0_may_self_solve_because_conversion_is_explicit
+        target_aliases: [convert units, Celsius scale, same scale]
+        decoy_aliases: [average displayed numbers, repeat average formula]
+        selected_policy_markers: [unit-normalization-gate, scale-compatible-aggregation]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: ceiling
+      - sibling_id: temperature_unit_conversion_aggregation_c
+        public_setup: >-
+          The learner objects that the computed average changes when the same
+          room reading is written with a different thermometer convention, but
+          does not state a conversion formula.
+        learner_resistance: >-
+          If one thermometer writes the room as 25 and another writes that same
+          room as 77, averaging those labels gives 51. That feels like the label
+          changed the room instead of measuring it.
+        headroom_prediction: s0_may_explain_averaging_or_measurement_language_without_normalizing_the_readings
+        target_aliases: [normalize units, compatible scale, converted readings]
+        decoy_aliases: [average the labels, explain averaging again]
+        selected_policy_markers: [scale-normalization-gate, compatible-aggregation-check]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: named_relation_self_solve
+            artifact_flags: []
+            self_solve: true
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: self_solve

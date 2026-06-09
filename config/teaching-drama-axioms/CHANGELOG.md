@@ -1,0 +1,103 @@
+# A19 Teaching-Drama Axiom Protocol Changelog
+
+## a19-drama-axiom-transfer-v0.8
+
+- Added `learner_standing_repair` after feasibility review: it is admissible
+  only as public boundary-control and accountability repair, not as a moral or
+  therapeutic quality judgment.
+- Required public obligations: name the misrecognition or moral flattening,
+  restore the learner as author of the disclosure boundary, separate the
+  accountability question from reassurance or advice, and offer a non-content
+  continuation or stop option.
+- Added the recursive-full `moral_disclosure_standing_repair` family. It is
+  scoped to writing-feedback disclosures and remains below Paper 2.0, atlas,
+  sidecar, or panel-claim bars until real attempt-1 and held-out S0/S1 evidence
+  exists.
+- Local replay outcome: the real attempt-1 survived and admitted one bounded
+  axiom. Held-out screens produced one local policy-headroom card with
+  target-granularity risk, one S0 ceiling with target-granularity risk, and one
+  clean S0 ceiling. This version does not license paid-panel, Paper 2.0, atlas,
+  or sidecar escalation.
+
+## a19-drama-axiom-transfer-v0.7
+
+- Recorded the real v0.6 `addressed_claim_withdrawal` attempt-1 gate as
+  blocked before S0/S1 escalation: the replay returned `revise_again` with
+  `recursive_dyadic_update = 0.65 < 0.7`.
+- Added `commitment_ledger_repair` as the next non-collapsing repair type. Its
+  obligations require the tutor to cite two conflicting public tutor
+  commitments, retract or rank one, and state the new commitment boundary.
+- Added the recursive-full `public_commitment_contradiction` family as the next
+  repair-family loop candidate. This remains fixture/pre-registration evidence
+  until a real attempt-1 survivor and held-out S0/S1 screens exist.
+
+## a19-drama-axiom-transfer-v0.6
+
+- Added `claim_address_repair` as the first v0.6 non-collapsing repair
+  candidate. The distinctive public act is tutor-side withdrawal and
+  re-addressing of the learner's actual claim, not learner application of a
+  corrected rule or check.
+- Required public obligations: identify the claim or warrant the tutor
+  misaddressed, withdraw the prior tutor framing, and restate the learner's
+  claim as the next addressed object.
+- Added the recursive-full `addressed_claim_withdrawal` family as the selected
+  Track 1 candidate from the A19 generalization loop registry. This preregisters
+  the candidate only; it does not license a new empirical claim.
+
+## a19-drama-axiom-transfer-v0.5
+
+- Added `instructional_contract_repair` as a non-transfer repair type for cases
+  where the tutor must repair the working agreement before resuming content
+  correction.
+- Required public obligations: acknowledge tutor contribution to contract drift,
+  pause the object-level content gate, and offer the learner a choice of repair
+  path.
+- Added the recursive-full `instructional_contract_drift` family to test
+  whether this public repair can avoid collapsing into `transfer_control` or
+  generic rupture repair under blind extraction.
+- Local replay outcome: one held-out sibling (`instructional_contract_drift_b`)
+  survived a two-seed stability screen, while later siblings were mixed/unstable
+  through S0 self-solve or S1 collapse back to `transfer_control`. This version
+  does not license paid-panel, Paper 2.0, atlas, or sidecar escalation.
+
+## a19-drama-axiom-transfer-v0.4
+
+- Added `preserve_struggle` to the repair-type obligation taxonomy after the
+  recursive-full over-compliance screen collapsed both S0 and S1 into
+  `transfer_control`.
+- Required preserve-struggle target policies to declare public obligations:
+  withhold copyable completion, remove or limit one scaffold, and require a
+  bounded learner-owned decision.
+- Kept the v0.3 over-compliance result as a negative target-granularity result;
+  this version does not reclassify it as A19 transfer.
+
+## a19-drama-axiom-transfer-v0.3
+
+- Added a repair-type obligation taxonomy for the ambiguous
+  `offer_diagnostic_options` / `transfer_control` pair.
+- Required affected target policies to declare public obligations so diagnostic
+  lane choice is prospectively distinguishable from action-gating transfer
+  checks before further real screens.
+- Kept the prior productive-impasse result as a target-granularity failure; this
+  version does not reclassify it as A19 transfer.
+
+## a19-drama-axiom-transfer-v0.2
+
+- Pre-registered a sharper `repair_misalignment` subtype taxonomy:
+  `target_uncertainty_repair`, `feedback_dependency_repair`, and
+  `relational_rupture_repair`.
+- Added required family-level S0 baseline stratification. Stronger local,
+  stability, paid-panel, and sidecar claims still require
+  `recursive_full_no_policy_memory`; weaker baselines are protocol-screen-only.
+- Added a genuinely new fixture repair family, `productive_impasse_answer_leakage`,
+  to test answer leakage versus diagnostic-option preservation without starting
+  another sidecar claim.
+
+## a19-drama-axiom-transfer-v0.1
+
+- Initial zero-API scaffold with fixture families, verdict vocabulary, denominator discipline, and atlas claim boundary.
+- Added attempt-1 gate reporting, axiom induction/gating, and free-text blind repair extraction while preserving fixture-only deterministic paths.
+- Added cue-map scope requirements for model tier and domain scope so held-out screens can track where self-solve/headroom judgments apply.
+- Added JSON report command for `exports/a19/reports/framework.json`.
+
+Any substantive gate change after this entry should create a new protocol version before additional real S0/S1 generation.

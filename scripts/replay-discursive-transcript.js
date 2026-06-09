@@ -27,6 +27,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import Database from 'better-sqlite3';
 import yaml from 'yaml';
 import { jsonrepair } from 'jsonrepair';
+import { detectCliVersion, modelProvenance } from './lib/cliProvenance.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -1253,7 +1254,8 @@ export async function callBackend(backend, prompts, options, role) {
         backend: 'mock',
         role,
         latencyMs: 0,
-        model: 'mock',
+        ...modelProvenance({ requestedModel: 'mock', defaultLabel: 'mock' }),
+        cliVersion: null,
         promptHashes: {
           system: sha256Short(prompts.systemPrompt),
           user: sha256Short(prompts.userPrompt),
@@ -1288,6 +1290,7 @@ function callCodex({ systemPrompt, userPrompt }, options, role) {
     if (options.codexModel) args.push('-m', options.codexModel);
     if (options.codexEffort) args.push('-c', `model_reasoning_effort="${options.codexEffort}"`);
     args.push('-o', outFile, '-');
+    const cliVersion = detectCliVersion('codex');
 
     const child = spawn('codex', args, { stdio: ['pipe', 'pipe', 'pipe'], cwd: tmpDir });
     let err = '';
@@ -1319,9 +1322,14 @@ function callCodex({ systemPrompt, userPrompt }, options, role) {
           provenance: {
             backend: 'codex',
             cli: 'codex exec',
+            cliVersion,
             role,
-            model: options.codexModel || 'config-default',
-            reasoningEffort: options.codexEffort || null,
+            ...modelProvenance({
+              requestedModel: options.codexModel || null,
+              defaultLabel: 'config-default',
+              effort: options.codexEffort || null,
+              effortSource: options.codexEffort ? 'CODEX_REASONING_EFFORT_or_cli_arg' : null,
+            }),
             latencyMs: Date.now() - start,
             promptHashes: {
               system: sha256Short(systemPrompt),
@@ -1359,6 +1367,7 @@ function callClaude({ systemPrompt, userPrompt }, options, role) {
     ];
     if (options.claudeModel) args.push('--model', options.claudeModel);
     if (options.claudeEffort) args.push('--effort', options.claudeEffort);
+    const cliVersion = detectCliVersion('claude');
     const env = { ...process.env };
     delete env.ANTHROPIC_API_KEY;
 
@@ -1388,9 +1397,14 @@ function callClaude({ systemPrompt, userPrompt }, options, role) {
           provenance: {
             backend: 'claude',
             cli: 'claude',
+            cliVersion,
             role,
-            model: options.claudeModel || 'default',
-            reasoningEffort: options.claudeEffort || null,
+            ...modelProvenance({
+              requestedModel: options.claudeModel || null,
+              defaultLabel: 'default',
+              effort: options.claudeEffort || null,
+              effortSource: options.claudeEffort ? 'CLAUDE_CODE_EFFORT_or_cli_arg' : null,
+            }),
             latencyMs: Date.now() - start,
             promptHashes: {
               system: sha256Short(systemPrompt),
@@ -1422,6 +1436,7 @@ function callAgy({ systemPrompt, userPrompt }, options, role) {
     const cleanup = () => fs.rmSync(tmpDir, { recursive: true, force: true });
     const timeoutMs = Math.max(options.timeoutMs, DEFAULT_AGY_TIMEOUT_MS);
     const args = ['--print', '--print-timeout', '10m', '--dangerously-skip-permissions'];
+    const cliVersion = detectCliVersion(options.agyBin);
     const child = spawn(options.agyBin, args, {
       stdio: ['pipe', 'pipe', 'pipe'],
       cwd: tmpDir,
@@ -1452,9 +1467,13 @@ function callAgy({ systemPrompt, userPrompt }, options, role) {
           provenance: {
             backend: 'agy',
             cli: 'agy',
+            cliVersion,
             role,
-            model: options.agyModelLabel,
-            reasoningEffort: null,
+            ...modelProvenance({
+              requestedModel: options.agyModelLabel || null,
+              defaultLabel: 'agy-default',
+              effort: null,
+            }),
             latencyMs: Date.now() - start,
             promptHashes: {
               system: sha256Short(systemPrompt),

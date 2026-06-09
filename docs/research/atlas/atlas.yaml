@@ -137,6 +137,29 @@ modules:
     sections: []
     cross_refs: ["superego-error-correction", "id-director-charisma"]
 
+  - id: teaching-drama-axiom-transfer
+    n: 11
+    title: "Teaching-Drama Axiom Transfer"
+    family: drama-charisma
+    status: scope-bound
+    claim: >-
+      Can A18's bounded teacher-as-learner counterfactual replay result be
+      generalized into a reusable, scope-bounded framework for tutor speech
+      policies without drifting into human-learning, deployment, or weight-update
+      claims?
+    abstract: >-
+      A scope-bound A19 module. The scaffold defines a protocol,
+      literature-positioning matrix, card-level verdict grammar, attempt-1
+      materializer, blind-adjudication scaffold, and sidecar-paper outline.
+      Section 7.9 is the only current canonical source: A18's 10-of-14 bounded
+      result remains the primary evidence, while A19 now adds a local one-family
+      screen with two n=1 surface-agreement headroom candidates followed by a
+      two-seed stability smoke that fails to replicate either candidate. No
+      pooled A19 rate, stability-confirmed A19 transfer effect, human-learning,
+      deployment, or weight-learning claim is licensed.
+    sections: ["7.9"]
+    cross_refs: ["drama-machine", "adaptive-null", "ontology-state-interior", "provable-discourse"]
+
   - id: id-director-charisma
     n: 6
     title: "The Id-Director and Charismatic Pedagogy"

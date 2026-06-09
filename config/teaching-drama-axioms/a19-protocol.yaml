@@ -1,0 +1,334 @@
+meta:
+  protocol_id: A19
+  protocol_version: a19-drama-axiom-transfer-v0.8
+  frozen_at: 2026-06-07
+  status: zero_api_scaffold
+  claim_boundary: simulated_teacher_as_learner_not_human_learning
+  changelog_path: config/teaching-drama-axioms/CHANGELOG.md
+  purpose: >-
+    Define the deterministic validation and reporting layer for teaching-drama
+    axioms before any new generation, judging, retrieval, or post-training.
+
+canonical_evidence:
+  source: docs/research/paper-full-2.0.md#7.9
+  inherited_result: >-
+    A18 is bounded simulated counterfactual replay, currently reported as 10
+    of 14 held-out siblings across seven frozen-protocol-admitted families.
+  interpretation: >-
+    A19 inherits this only as a design input. It does not create a new empirical
+    claim until canonical paper prose is updated.
+
+scope:
+  applies_to: teaching_drama_axiom_fixture_validation
+  does_not_claim:
+    - human_learning
+    - deployed_adaptive_tutor
+    - model_weight_learning
+    - main_harness_rate_effect
+  downstream_requires_canonical_paper_first: true
+
+family_fixture_requirements:
+  schema_version: teaching-drama-axiom-families-v0.1
+  min_families: 1
+  min_heldout_siblings: 2
+  min_plausible_repairs: 3
+  min_applicability_conditions: 1
+  min_anti_conditions: 1
+  min_target_aliases: 1
+  min_decoy_aliases: 1
+  require_training_seed: true
+  require_old_rule_decoy: true
+  require_target_policy: true
+  require_prompt_version: true
+  require_protocol_version: true
+  require_cue_map: true
+  require_model_tier_scope: true
+  require_domain_scope: true
+  require_headroom_prediction: true
+  require_s0_baseline_design: true
+  require_public_obligations_for_repair_types:
+    - claim_address_repair
+    - commitment_ledger_repair
+    - learner_standing_repair
+    - offer_diagnostic_options
+    - instructional_contract_repair
+    - preserve_struggle
+    - transfer_control
+  require_blind_withholding:
+    - target_aliases
+    - decoy_aliases
+    - arm_provenance
+    - policy_memory_condition
+
+allowed_labels:
+  learner_resistance_type:
+    - confusion
+    - skeptical_pushback
+    - counter_warrant
+    - refusal
+    - frustration
+    - over_compliance
+    - surface_agreement
+    - self_correction
+    - meta_challenge
+  tutor_infelicity_type:
+    - premature_resolution
+    - validation_without_engagement
+    - redirect_after_resistance
+    - generic_elicitation
+    - answer_leakage
+    - moral_flattery
+    - over_scaffolding
+    - under_scaffolding
+    - failure_to_repair_rupture
+  repair_type:
+    - revoice_claim
+    - name_warrant
+    - preserve_struggle
+    - offer_diagnostic_options
+    - introduce_complication
+    - ask_scope_test
+    - claim_address_repair
+    - commitment_ledger_repair
+    - learner_standing_repair
+    - instructional_contract_repair
+    - repair_misalignment
+    - transfer_control
+
+headroom_verdicts:
+  - policy_headroom
+  - ceiling
+  - policy_failure
+  - cue_leak
+  - self_solve
+  - arbiter_disagreement
+  - neither_correct
+  - protocol_reject
+
+protocol_reject_reasons:
+  - static_validation_fail
+  - missing_alias_withholding
+  - marker_leakage
+  - no_headroom_prediction
+  - anti_condition_triggered
+  - rejected_before_adjudication
+
+classification:
+  option_classes:
+    - target
+    - decoy
+    - neither
+  cue_leak_artifact_flags:
+    - cue_leak
+    - alias_leak
+    - prompt_leak
+  arbiter_disagreement_flags:
+    - arbiter_disagreement
+    - critic_split
+  self_solve_basis_labels:
+    - registered_relation_without_policy
+    - named_relation_self_solve
+  report_discipline:
+    no_pooled_rate_without_card_basis: true
+    separate_denominators:
+      - total_cards
+      - admitted_cards
+      - protocol_reject_cards
+      - artifact_cards
+      - policy_headroom_cards
+
+repair_type_obligation_taxonomy:
+  required_policy_obligations_field: target_policy.public_obligations
+  obligations_by_repair_type:
+    claim_address_repair:
+      definition: >-
+        The tutor repairs a misaddressed learner claim by withdrawing the
+        tutor's prior framing and making the learner's actual public claim the
+        next addressed object before any application or closure gate.
+      required_public_obligations:
+        - identify_the_claim_or_warrant_the_tutor_misaddressed
+        - withdraw_the_prior_tutor_framing_as_misaddressed
+        - restate_the_learner_claim_as_the_next_addressed_object
+      excludes:
+        - fresh_application_or_discriminating_case_as_committed_repair
+        - generic_validation_then_return_to_original_task
+        - diagnostic_menu_without_tutor_retraction
+      distinction_from_transfer_control: >-
+        The public repair is tutor-side retraction and re-addressing of the
+        learner's claim, not a learner application of a corrected rule or check.
+    commitment_ledger_repair:
+      definition: >-
+        The tutor repairs a contradiction among its own public commitments by
+        citing the conflicting commitments, retracting or ranking one, and
+        stating the new boundary before continuing.
+      required_public_obligations:
+        - cite_two_conflicting_public_tutor_commitments
+        - retract_or_rank_one_commitment_before_continuing
+        - state_the_new_commitment_boundary
+      excludes:
+        - asking_learner_to_apply_a_rule_to_prove_the_boundary
+        - apology_without_commitment_retraction
+        - rubric_restatement_without_public_commitment_accounting
+      distinction_from_transfer_control: >-
+        The public repair is the tutor's accountable revision of its own
+        commitment ledger, not a learner application gate or fresh content test.
+    learner_standing_repair:
+      definition: >-
+        The tutor repairs a flattened or over-claimed learner disclosure by
+        naming the misrecognition, restoring the learner as author of the
+        disclosure boundary, separating accountability from reassurance or
+        advice, and offering a non-content continuation or stop option.
+      required_public_obligations:
+        - name_the_misrecognition_or_moral_flattening
+        - restore_the_learner_as_author_of_the_disclosure_boundary
+        - separate_accountability_question_from_reassurance_or_advice
+        - offer_a_non_content_continuation_or_stop_option
+      excludes:
+        - advice_or_sympathy_as_the_committed_repair
+        - fresh_reflection_prompt_as_transfer_check
+        - moral_flattery_without_boundary_control
+        - asking_for_more_private_disclosure_as_the_repair
+      distinction_from_transfer_control: >-
+        The public repair is restoring the learner's standing and boundary
+        control in the conversation, not requiring the learner to apply a
+        corrected academic rule or complete a fresh test before closure.
+    offer_diagnostic_options:
+      definition: >-
+        The tutor preserves productive impasse by making the possible source of
+        stuckness public before any answer reveal.
+      required_public_obligations:
+        - name_two_or_more_possible_stuck_locations
+        - ask_learner_to_choose_or_test_one_location
+        - withhold_final_answer_until_after_diagnostic_choice
+      excludes:
+        - final_answer_or_full_solution_before_diagnostic_choice
+        - mere_transfer_check_after_tutor_has_selected_the_location
+        - options_added_after_the_answer_has_already_been_revealed
+      distinction_from_transfer_control: >-
+        The public learner action is choosing or testing the source of impasse,
+        not merely applying a corrected rule to a fresh case before closure.
+    instructional_contract_repair:
+      definition: >-
+        The tutor repairs a drift in the tutor-learner working agreement before
+        resuming content correction, making the tutor's accountability and the
+        next interaction contract public.
+      required_public_obligations:
+        - acknowledge_tutor_contribution_to_contract_drift
+        - pause_object_level_content_gate
+        - offer_learner_choice_of_repair_path
+      excludes:
+        - fresh_application_or_content_test_as_the_committed_repair
+        - apology_without_changed_interaction_contract
+        - rubric_restatement_without_tutor_accountability
+      distinction_from_transfer_control: >-
+        The public learner action is choosing how the interaction should be
+        repaired before content work resumes, not applying a revised academic
+        rule or check to prove readiness for closure.
+    preserve_struggle:
+      definition: >-
+        The tutor prevents over-scaffolding by withholding copyable completion
+        and preserving one bounded learner-owned decision before any polished
+        answer or sentence is accepted.
+      required_public_obligations:
+        - explicitly_withhold_copyable_completion
+        - remove_or_limit_one_scaffold
+        - require_bounded_learner_owned_decision
+      excludes:
+        - test_only_followed_by_tutor_selected_answer
+        - public_application_without_scaffold_fade
+        - exact_sentence_or_full_template_as_committed_repair
+      distinction_from_transfer_control: >-
+        The public learner action is choosing or owning the next move after a
+        scaffold is removed, not merely applying a revised relation to prove
+        readiness for closure.
+    transfer_control:
+      definition: >-
+        The tutor withholds closure until the learner publicly applies the
+        revised relation to a fresh or discriminating case.
+      required_public_obligations:
+        - require_fresh_or_discriminating_public_application
+        - use_the_application_as_the_basis_for_closure_or_revision
+      excludes:
+        - diagnostic_menu_without_a_fresh_application
+        - praise_or_repetition_without_public_application
+        - answer_reveal_as_the_committed_repair
+      distinction_from_offer_diagnostic_options: >-
+        The public learner action is applying a selected relation or corrected
+        check, not choosing among possible stuck locations.
+
+repair_misalignment_taxonomy:
+  required_when_repair_type: repair_misalignment
+  subtype_field: target_policy.repair_subtype
+  allowed_subtypes:
+    target_uncertainty_repair:
+      definition: >-
+        The learner says the task target or requested revision is unclear, and
+        the tutor repairs the misalignment by naming the immediate target and
+        one bounded next step before asking for effort.
+      required_public_obligations:
+        - acknowledge_task_target_misalignment
+        - name_immediate_revision_target
+        - offer_one_bounded_next_step
+      excludes:
+        - dependency_pass_without_rupture_acknowledgment
+        - generic_effort_prompt
+        - rubric_restatement_without_target
+    feedback_dependency_repair:
+      definition: >-
+        The learner identifies feedback items or tutor directions that interact,
+        and the tutor repairs the misalignment by making the control relation
+        among comments public before ordering revisions.
+      required_public_obligations:
+        - acknowledge_conflicting_or_interdependent_feedback
+        - identify_control_relation_among_comments
+        - bound_next_revision_action_to_that_relation
+      excludes:
+        - target_naming_without_dependency_test
+        - effort_prompt_without_comment_relation
+    relational_rupture_repair:
+      definition: >-
+        The learner contests the tutor-learner relation itself, and the tutor
+        repairs accountability before returning to the object-level task.
+      required_public_obligations:
+        - acknowledge_relation_level_rupture
+        - state_tutor_accountability_for_the_misalignment
+        - reconnect_to_one_task_next_step
+      excludes:
+        - apology_without_task_reconnection
+        - task_step_without_relation_repair
+
+s0_baseline_strata:
+  default: recursive_full_no_policy_memory
+  allowed:
+    recursive_full_no_policy_memory:
+      description: >-
+        The current strongest S0: no A19 policy memory, but the same recursive
+        tutor-learning replay gate, generator, checker, and thresholds as S1.
+      claim_status: eligible_for_local_headroom_screen
+    weak_single_pass_no_policy_memory:
+      description: >-
+        A weaker S0 for mechanism diagnosis only: no policy memory and no
+        recursive tutor-learning gate. This can test whether A19 memory helps a
+        less reflective tutor, but cannot support sidecar claims without a
+        recursive-full comparison.
+      claim_status: protocol_screen_only
+    decoy_continuation_no_revision:
+      description: >-
+        A deliberately weak continuation of the registered old-rule decoy, used
+        only to debug target/decoy aliases and task wording.
+      claim_status: fixture_or_debug_only
+  escalation_rules:
+    stability_claim_requires: recursive_full_no_policy_memory
+    paid_panel_requires: recursive_full_no_policy_memory
+    sidecar_empirical_claim_requires: recursive_full_no_policy_memory
+    weakened_s0_must_be_reported_as: protocol_screen_only
+
+recommended_commands:
+  validate: npm run a19:validate
+  materialize_attempts: npm run a19:materialize
+  attempt1_gate_report: npm run a19:attempt1
+  induce_axiom: npm run a19:induce-axiom
+  blind_adjudication_fixture: npm run a19:blind-adjudicate
+  report: npm run a19:report
+  deterministic_tests: npm run test:a19
+  atlas_validation_if_manifest_touched: npm run atlas:validate
