@@ -1,13 +1,19 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import {
+  DEFAULT_A18_A19_RHETORICAL_BATTERY,
+  DEFAULT_SELECTOR_RAIL_COLLISION_FANOUT,
+  DEFAULT_SELECTOR_RAIL_REDIRECT_FANOUT,
+  DEFAULT_SELECTOR_RAIL_TRANSFER_FANOUT,
   adjudicateMiniDramaCoderPacket,
   applyMiniDramaPrivateKey,
   buildMiniDramaPacket,
   generateMiniDramaRun,
+  selectMiniDramaMovesForCard,
   loadMiniDramaCards,
   loadMiniDramaCodebook,
   loadMiniDramaOntology,
@@ -18,6 +24,11 @@ import {
   validateMiniDramaCodebook,
 } from '../services/miniDramaMachines.js';
 import { adjudicateA19RMiniDramaPackets } from '../scripts/adjudicate-a19r-mini-drama.js';
+
+function writeJson(filePath, data) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, `${JSON.stringify(data, null, 2)}\n`, 'utf8');
+}
 
 function makeRun() {
   return generateMiniDramaRun({
@@ -70,6 +81,217 @@ test('mini-drama battery screen reports deterministic proxy headroom only', () =
       'automated/model adjudication is required before treating any candidate as real headroom',
     ),
   );
+});
+
+test('mini-drama heuristic selector is seeded and favors fit for A19-style cards', () => {
+  const ontology = loadMiniDramaOntology();
+  const battery = loadMiniDramaCards(DEFAULT_A18_A19_RHETORICAL_BATTERY);
+  const card = battery.cards.find((entry) => entry.card_id === 'a19_productive_impasse_answer_leakage_a');
+  const first = selectMiniDramaMovesForCard({ card, ontology, samplesPerCard: 2, seed: 'fixed-seed' });
+  const second = selectMiniDramaMovesForCard({ card, ontology, samplesPerCard: 2, seed: 'fixed-seed' });
+  assert.deepEqual(first, second);
+  assert.equal(first.length, 2);
+  assert.equal(first[0].move_id, 'enargeia_subgoal');
+});
+
+test('A18/A19 rhetorical battery screen summarizes proxy feasibility without claims', () => {
+  const ontology = loadMiniDramaOntology();
+  const battery = loadMiniDramaCards(DEFAULT_A18_A19_RHETORICAL_BATTERY);
+  const screen = runMiniDramaBatteryScreen({
+    ontology,
+    cardPool: battery,
+    samplesPerCard: 2,
+    seed: 'battery-test-seed',
+    createdAt: '2026-06-09T00:00:00.000Z',
+  });
+  const report = summarizeMiniDramaBatteryScreen(screen);
+  assert.equal(screen.card_ids.length, 10);
+  assert.equal(screen.candidates.length, 20);
+  assert.equal(report.gate_status, 'pass');
+  assert.equal(report.non_claims.includes('a19_transfer_claim'), true);
+  assert.ok(report.proxy_headroom_rate > 0);
+  assert.ok(
+    ['feasible_for_blinded_packet_screen', 'borderline_needs_human_packet_screen'].includes(report.feasibility),
+  );
+});
+
+test('selector-rail transfer fanout produces gated peripeteia candidates', () => {
+  const ontology = loadMiniDramaOntology();
+  const fanout = loadMiniDramaCards(DEFAULT_SELECTOR_RAIL_TRANSFER_FANOUT);
+  const screen = runMiniDramaBatteryScreen({
+    ontology,
+    cardPool: fanout,
+    moveIds: ['peripeteia_error_spotting'],
+    samplesPerCard: 1,
+    seed: 'selector-fanout-test',
+    createdAt: '2026-06-09T00:00:00.000Z',
+  });
+  const report = summarizeMiniDramaBatteryScreen(screen);
+  assert.equal(screen.card_ids.length, 6);
+  assert.equal(screen.candidates.length, 6);
+  assert.equal(report.gate_status, 'pass');
+  assert.equal(new Set(screen.candidates.map((candidate) => candidate.move_id)).size, 1);
+  assert.equal(
+    screen.candidates.every((candidate) => candidate.move_id === 'peripeteia_error_spotting'),
+    true,
+  );
+});
+
+test('redesigned selector-rail fanout separates diagnostic lure baseline from neutral shadow', () => {
+  const ontology = loadMiniDramaOntology();
+  const fanout = loadMiniDramaCards(DEFAULT_SELECTOR_RAIL_REDIRECT_FANOUT);
+  const screen = runMiniDramaBatteryScreen({
+    ontology,
+    cardPool: fanout,
+    moveIds: ['peripeteia_error_spotting'],
+    samplesPerCard: 1,
+    seed: 'selector-redesign-test',
+    createdAt: '2026-06-09T00:00:00.000Z',
+  });
+  const report = summarizeMiniDramaBatteryScreen(screen);
+  assert.equal(screen.card_ids.length, 4);
+  assert.equal(screen.candidates.length, 4);
+  assert.equal(report.gate_status, 'pass');
+  for (const candidate of screen.candidates) {
+    assert.equal(candidate.baseline_control.mode, 'diagnostic_lure');
+    assert.equal(candidate.baseline_control.gates.status, 'pass');
+    assert.notEqual(candidate.baseline_control.response, candidate.shadow_control.response);
+    assert.match(candidate.baseline_control.response, /\bHold the odd small mark aside\b/u);
+    assert.equal(candidate.mini_drama.gates.status, 'pass');
+  }
+});
+
+test('collision selector-rail fanout carries explicit old-warrant collision into candidates', () => {
+  const ontology = loadMiniDramaOntology();
+  const fanout = loadMiniDramaCards(DEFAULT_SELECTOR_RAIL_COLLISION_FANOUT);
+  const screen = runMiniDramaBatteryScreen({
+    ontology,
+    cardPool: fanout,
+    moveIds: ['peripeteia_error_spotting'],
+    samplesPerCard: 1,
+    seed: 'selector-collision-test',
+    createdAt: '2026-06-09T00:00:00.000Z',
+  });
+  assert.equal(screen.card_ids.length, 6);
+  assert.equal(screen.candidates.length, 6);
+  assert.equal(qaMiniDramaRun(screen).status, 'pass');
+  for (const candidate of screen.candidates) {
+    assert.ok(candidate.wrong_prediction_collision);
+    assert.match(candidate.wrong_prediction_collision.old_rule_prediction, /\brail\b/u);
+    assert.match(candidate.wrong_prediction_collision.visible_refutation, /\brail\b/u);
+    assert.match(candidate.mini_drama.response, /\bold rule predict\b/u);
+  }
+});
+
+test('A19R model-screen dry run can use checker-only S0 with diagnostic baseline', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mini-drama-redesign-dry-'));
+  const screenPath = path.join(tmpDir, 'screen.json');
+  const outDir = path.join(tmpDir, 'model-screen');
+  const ontology = loadMiniDramaOntology();
+  const fanout = loadMiniDramaCards(DEFAULT_SELECTOR_RAIL_REDIRECT_FANOUT);
+  const screen = runMiniDramaBatteryScreen({
+    ontology,
+    cardPool: fanout,
+    moveIds: ['peripeteia_error_spotting'],
+    samplesPerCard: 1,
+    seed: 'selector-redesign-dry-test',
+    createdAt: '2026-06-09T00:00:00.000Z',
+  });
+  writeJson(screenPath, screen);
+  const selected = screen.candidates[0].candidate_id;
+  const output = execFileSync(
+    'node',
+    [
+      'scripts/a19r-mini-drama.js',
+      'model-screen',
+      '--run',
+      screenPath,
+      '--candidate-ids',
+      selected,
+      '--out-dir',
+      outDir,
+      '--rewrite-mode',
+      'role_separated_continuation',
+      '--bounded-max-added-lines',
+      '5',
+      '--codex-model',
+      'gpt-5.5',
+      '--codex-effort',
+      'xhigh',
+      '--claude-model',
+      'claude-fable-5',
+      '--claude-effort',
+      'medium',
+      '--baseline-mode',
+      'diagnostic_lure',
+      '--s0-mode',
+      'checker_only',
+      '--dry-run',
+      '--json',
+    ],
+    { encoding: 'utf8' },
+  );
+  const summary = JSON.parse(output.slice(output.indexOf('{')));
+  assert.equal(summary.baseline_mode, 'diagnostic_lure');
+  assert.equal(summary.rewrite_mode, 'role_separated_continuation');
+  assert.equal(summary.codex_model, 'gpt-5.5');
+  assert.equal(summary.codex_effort, 'xhigh');
+  assert.equal(summary.claude_model, 'claude-fable-5');
+  assert.equal(summary.claude_effort, 'medium');
+  assert.equal(summary.s0_mode, 'checker_only');
+  assert.equal(summary.rows[0].baseline_source, 'baseline_control');
+  assert.match(summary.rows[0].commands.s0, /--generator" "none/u);
+  assert.match(summary.rows[0].commands.s1, /--rewrite-mode" "role_separated_continuation/u);
+  assert.match(summary.rows[0].commands.s1, /--codex-model" "gpt-5\.5/u);
+  assert.match(summary.rows[0].commands.s1, /--claude-model" "claude-fable-5/u);
+  assert.match(summary.rows[0].commands.s1, /--policy-memory/u);
+});
+
+test('A19R model-screen policy memory includes explicit collision metadata when present', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mini-drama-collision-dry-'));
+  const screenPath = path.join(tmpDir, 'screen.json');
+  const outDir = path.join(tmpDir, 'model-screen');
+  const ontology = loadMiniDramaOntology();
+  const fanout = loadMiniDramaCards(DEFAULT_SELECTOR_RAIL_COLLISION_FANOUT);
+  const screen = runMiniDramaBatteryScreen({
+    ontology,
+    cardPool: fanout,
+    moveIds: ['peripeteia_error_spotting'],
+    samplesPerCard: 1,
+    seed: 'selector-collision-dry-test',
+    createdAt: '2026-06-09T00:00:00.000Z',
+  });
+  writeJson(screenPath, screen);
+  const selected = screen.candidates[0].candidate_id;
+  execFileSync(
+    'node',
+    [
+      'scripts/a19r-mini-drama.js',
+      'model-screen',
+      '--run',
+      screenPath,
+      '--candidate-ids',
+      selected,
+      '--out-dir',
+      outDir,
+      '--rewrite-mode',
+      'bounded_continuation',
+      '--bounded-max-added-lines',
+      '4',
+      '--baseline-mode',
+      'diagnostic_lure',
+      '--s0-mode',
+      'checker_only',
+      '--dry-run',
+      '--json',
+    ],
+    { encoding: 'utf8' },
+  );
+  const policyPath = path.join(outDir, selected, 'inputs', 'rhetorical-policy-memory.json');
+  const policy = JSON.parse(fs.readFileSync(policyPath, 'utf8'));
+  assert.equal(policy.wrong_prediction_collision.old_rule_prediction, 'top rail');
+  assert.match(policy.selected_policy.wrong_prediction_collision_instruction, /old prediction: top rail/u);
+  assert.match(policy.selected_policy.wrong_prediction_collision_instruction, /visible refutation:/u);
 });
 
 test('mini-drama packet keeps intended move and provenance out of coder-facing materials', () => {

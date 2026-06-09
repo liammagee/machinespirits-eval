@@ -114,13 +114,20 @@ function hitsByArm(packet) {
   return byArm;
 }
 
+function primaryLabelsFromCodebook(codebook) {
+  if (Array.isArray(codebook.allowed_primary_labels) && codebook.allowed_primary_labels.length) {
+    return codebook.allowed_primary_labels;
+  }
+  return [codebook.target_label, ...(codebook.near_miss_labels || [])];
+}
+
 function responseSchemaFromCodebook(codebook) {
   const obligationIds = (codebook.required_obligations || []).map((entry) => entry.id);
   return {
     coder_file_version: 'a19-human-coder-v01',
     arm_judgments: {
       arm_public_id: 'one of the assignment arm_public_id values',
-      primary_label: [codebook.target_label, ...(codebook.near_miss_labels || [])],
+      primary_label: primaryLabelsFromCodebook(codebook),
       target_status: ['target', 'near_target', 'non_target', 'unclear'],
       target_granularity_risk: 'boolean',
       obligations: Object.fromEntries(obligationIds.map((id) => [id, ['present', 'partial', 'absent', 'unclear']])),
@@ -194,11 +201,14 @@ export function createHumanAdjudicationAssignment({
       };
     }),
     coder_task: {
-      primary_question: 'Classify each arm repair type using the supplied codebook.',
-      secondary_question: 'Judge whether either arm better restores learner standing, and explain why.',
+      primary_question:
+        codebook.coder_task?.primary_question || 'Classify each arm repair type using the supplied codebook.',
+      secondary_question:
+        codebook.coder_task?.secondary_question ||
+        'Judge whether either arm better restores learner standing, and explain why.',
       leakage_question: 'State whether any visible wording looks like an answer-key hint.',
     },
-    coder_instructions: [
+    coder_instructions: codebook.coder_instructions || [
       'Your task is not to judge whether the response is kind, fluent, safe, or generally good.',
       'Classify what public repair action the response performs.',
       'Use only the transcript, neutral arm labels, and codebook.',

@@ -91,6 +91,13 @@ function asArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function primaryLabelsFromCodebook(codebook) {
+  if (Array.isArray(codebook.allowed_primary_labels) && codebook.allowed_primary_labels.length) {
+    return codebook.allowed_primary_labels;
+  }
+  return [codebook.target_label, ...asArray(codebook.near_miss_labels)];
+}
+
 function hasText(value) {
   return typeof value === 'string' && value.trim().length > 0;
 }
@@ -198,7 +205,7 @@ export function validateA19HumanCoderFile({ assignmentPath, coderPath, codebookP
   const expectedArms = new Set(asArray(assignment.arms).map((arm) => arm.arm_public_id));
   const judgments = asArray(coder.arm_judgments);
   const seenArms = new Set();
-  const allowedLabels = new Set([codebook.target_label, ...asArray(codebook.near_miss_labels)]);
+  const allowedLabels = new Set(primaryLabelsFromCodebook(codebook));
   const excludedMoves = new Set(asArray(codebook.excluded_moves));
   judgments.forEach((judgment, index) => {
     if (seenArms.has(judgment.arm_public_id)) {

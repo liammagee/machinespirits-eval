@@ -5,6 +5,7 @@ import path from 'node:path';
 import test from 'node:test';
 import {
   adversarialCheckerFor,
+  buildRoleSeparatedLearnerPrompt,
   buildRewritePrompt,
   escapeInteriorQuotes,
   evaluateLocalGate,
@@ -153,6 +154,19 @@ test('parseArgs accepts bounded continuation rewrite mode', () => {
   ]);
   assert.equal(args.rewriteMode, 'bounded_continuation');
   assert.equal(args.boundedMaxAddedLines, 4);
+});
+
+test('parseArgs accepts role-separated continuation rewrite mode', () => {
+  const args = parseArgs([
+    '--transcript',
+    '/tmp/T01.txt',
+    '--rewrite-mode',
+    'role_separated_continuation',
+    '--bounded-max-added-lines',
+    '5',
+  ]);
+  assert.equal(args.rewriteMode, 'role_separated_continuation');
+  assert.equal(args.boundedMaxAddedLines, 5);
 });
 
 test('parseArgs accepts recursive tutor-learning gate thresholds', () => {
@@ -793,6 +807,86 @@ test('bounded rewrite prompt names the continuation constraint', () => {
   });
   assert.match(prompt.systemPrompt, /Bounded-continuation constraint/);
   assert.match(prompt.systemPrompt, /Append at most 3 nonblank public lines/);
+});
+
+test('role-separated replay keeps learner prompt blind to policy memory', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'disc-replay-role-separated-'));
+  const transcript = path.join(tmp, 'T01.full.md');
+  const policyMemory = path.join(tmp, 'policy.md');
+  const outDir = path.join(tmp, 'out');
+  fs.writeFileSync(
+    transcript,
+    `# Full held-out role transcript
+
+## Public Performance
+
+\`\`\`text
+LEARNER: "Both marks look like mira."
+TUTOR: "Compare them again."
+\`\`\`
+`,
+  );
+  fs.writeFileSync(policyMemory, 'SECRET_POLICY_MEMORY: use the marker test\n', 'utf8');
+
+  const learnerPrompt = buildRoleSeparatedLearnerPrompt({
+    item: { id: 'T01' },
+    publicTranscript: 'LEARNER: "Both marks look like mira."\nTUTOR: "Compare them again."',
+    tutorPublicLine: 'TUTOR: Try the old check, then test the visible marker.',
+  });
+  assert.doesNotMatch(learnerPrompt.systemPrompt, /SECRET_POLICY_MEMORY/u);
+  assert.doesNotMatch(learnerPrompt.userPrompt, /SECRET_POLICY_MEMORY/u);
+
+  const result = await runReplay({
+    transcript,
+    outDir,
+    generator: 'mock',
+    checker: 'mock',
+    rewriteMode: 'role_separated_continuation',
+    boundedMaxAddedLines: 5,
+    limit: 1,
+    timeoutMs: 1000,
+    publicMaxChars: 5000,
+    innerMaxChars: 0,
+    policyMemoryMaxChars: 5000,
+    force: false,
+    dryRun: false,
+    codexEffort: 'xhigh',
+    codexModel: 'gpt-5.5',
+    claudeModel: 'claude-fable-5',
+    claudeEffort: 'medium',
+    agyBin: 'agy',
+    agyModelLabel: 'mock',
+    itemIds: [],
+    runId: null,
+    db: path.join(tmp, 'missing.db'),
+    feedbackByItem: {},
+    policyMemoryFiles: [policyMemory],
+  });
+
+  const record = result.manifest.records[0];
+  const revised = fs.readFileSync(record.paths.revisedPublic, 'utf8').trim();
+  assert.equal(record.rewriteMode, 'role_separated_continuation');
+  assert.equal(record.roleSeparatedGeneration.learner_policy_memory_visible, false);
+  assert.equal(record.roleSeparatedGeneration.tutor_policy_memory_visible, true);
+  assert.equal(record.roleSeparatedGeneration.sequence, 'learner_tutor_learner_tutor');
+  assert.ok(record.roleSeparatedGeneration.initial_learner_response);
+  assert.match(revised, /^LEARNER:/u);
+  assert.match(revised, /\nTUTOR: "Compare them again\."\nLEARNER: I still want/u);
+  assert.match(revised, /\nTUTOR: Try the old check/u);
+  assert.match(revised, /\nLEARNER: The old check gives/u);
+  assert.match(revised, /\nTUTOR: Good; I should/u);
+  assert.doesNotMatch(
+    fs.readFileSync(path.join(outDir, 'T01.full', 'role-separated-initial-learner-response.prompt.txt'), 'utf8'),
+    /SECRET_POLICY_MEMORY/u,
+  );
+  assert.doesNotMatch(
+    fs.readFileSync(path.join(outDir, 'T01.full', 'role-separated-learner-response.prompt.txt'), 'utf8'),
+    /SECRET_POLICY_MEMORY/u,
+  );
+  assert.match(
+    fs.readFileSync(path.join(outDir, 'T01.full', 'role-separated-tutor-move.prompt.txt'), 'utf8'),
+    /SECRET_POLICY_MEMORY/u,
+  );
 });
 
 test('policy memory remains available when held-out inner context is withheld', async () => {

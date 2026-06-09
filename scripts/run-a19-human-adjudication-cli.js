@@ -242,6 +242,13 @@ function descriptionsById(entries = []) {
   return Object.fromEntries(entries.map((entry) => [entry.id, entry.description]));
 }
 
+function primaryLabelsFromCodebook(codebook) {
+  if (Array.isArray(codebook.allowed_primary_labels) && codebook.allowed_primary_labels.length) {
+    return codebook.allowed_primary_labels;
+  }
+  return [codebook.target_label, ...codebook.near_miss_labels];
+}
+
 function labelDescriptions(codebook) {
   return {
     [codebook.target_label]: codebook.target_definition,
@@ -281,15 +288,26 @@ async function collectArmJudgment(rl, { arm, codebook }) {
 
   const primaryLabel = await chooseOne(
     rl,
-    'Primary repair label',
-    [codebook.target_label, ...codebook.near_miss_labels],
+    codebook.ui_labels?.primary_label || 'Primary repair label',
+    primaryLabelsFromCodebook(codebook),
     {
       defaultValue: 'unclear',
       descriptions: labelDescriptions(codebook),
     },
   );
-  const targetStatus = await chooseOne(rl, 'Target status', codebook.target_status_values, { defaultValue: 'unclear' });
-  const targetGranularityRisk = await chooseBoolean(rl, 'Target-granularity risk present?', { defaultValue: false });
+  const targetStatus = await chooseOne(
+    rl,
+    codebook.ui_labels?.target_status || 'Target status',
+    codebook.target_status_values,
+    {
+      defaultValue: 'unclear',
+    },
+  );
+  const targetGranularityRisk = await chooseBoolean(
+    rl,
+    codebook.ui_labels?.granularity_risk || 'Target-granularity risk present?',
+    { defaultValue: false },
+  );
   const obligations = {};
   const obligationDescriptions = descriptionsById(codebook.required_obligations);
   for (const obligation of codebook.required_obligations) {
@@ -300,9 +318,14 @@ async function collectArmJudgment(rl, { arm, codebook }) {
       { defaultValue: 'unclear' },
     );
   }
-  const excludedMovesPresent = await chooseMany(rl, 'Excluded moves present', ['none', ...codebook.excluded_moves], {
-    defaultValues: ['none'],
-  });
+  const excludedMovesPresent = await chooseMany(
+    rl,
+    codebook.ui_labels?.excluded_moves || 'Excluded moves present',
+    ['none', ...codebook.excluded_moves],
+    {
+      defaultValues: ['none'],
+    },
+  );
   const evidenceSpans = await collectEvidenceSpans(rl, { codebook });
   const rationale = await promptLine(rl, 'Rationale, 2-5 sentences');
   const confidence = await promptConfidence(rl);
@@ -322,13 +345,17 @@ async function collectArmJudgment(rl, { arm, codebook }) {
 async function collectPairwiseJudgment(rl, { codebook }) {
   const betterArmPublicId = await chooseOne(
     rl,
-    'Which arm better restores learner standing?',
+    codebook.ui_labels?.pairwise_better || 'Which arm better restores learner standing?',
     codebook.pairwise_better_arm_values,
     { defaultValue: 'unclear' },
   );
-  const betterForTargetReason = await chooseBoolean(rl, 'Is that preference for the target construct reason?', {
-    defaultValue: betterArmPublicId !== 'unclear' && betterArmPublicId !== 'neither',
-  });
+  const betterForTargetReason = await chooseBoolean(
+    rl,
+    codebook.ui_labels?.better_for_target_reason || 'Is that preference for the target construct reason?',
+    {
+      defaultValue: betterArmPublicId !== 'unclear' && betterArmPublicId !== 'neither',
+    },
+  );
   const reason = await promptLine(rl, 'Pairwise reason');
   const aliasLeakageAssessment = await chooseOne(
     rl,

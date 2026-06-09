@@ -14,6 +14,24 @@ export const DEFAULT_A18_A19_RHETORICAL_BATTERY = path.join(
   'rhetoric',
   'a18-a19-rhetorical-battery.v0.1.json',
 );
+export const DEFAULT_SELECTOR_RAIL_TRANSFER_FANOUT = path.join(
+  ROOT,
+  'config',
+  'rhetoric',
+  'selector-rail-transfer-fanout.v0.1.json',
+);
+export const DEFAULT_SELECTOR_RAIL_REDIRECT_FANOUT = path.join(
+  ROOT,
+  'config',
+  'rhetoric',
+  'selector-rail-redesigned-fanout.v0.2.json',
+);
+export const DEFAULT_SELECTOR_RAIL_COLLISION_FANOUT = path.join(
+  ROOT,
+  'config',
+  'rhetoric',
+  'selector-rail-collision-fanout.v0.4.json',
+);
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
@@ -114,23 +132,58 @@ export function generateShadowControl(card) {
   );
 }
 
+export function generateDiagnosticLureControl(card) {
+  const lureRule = card.baseline_lure_rule || card.surface_lure_rule || `use this rule first: ${card.wrong_turn}`;
+  const lureTask =
+    card.baseline_lure_task ||
+    card.surface_lure_task ||
+    'name what that surface rule would choose, then say what still does not fit';
+  return sentence(`Hold the odd small mark aside for one pass. Try the visible surface rule: ${lureRule}. ${lureTask}`);
+}
+
+export function generateBaselineControl(card, mode = 'neutral_shadow') {
+  if (mode === 'neutral_shadow') return generateShadowControl(card);
+  if (mode === 'diagnostic_lure') return generateDiagnosticLureControl(card);
+  throw new Error(`unknown baseline control mode: ${mode}`);
+}
+
 export function generateMiniDramaResponse(card, moveId, ontology = loadMiniDramaOntology()) {
   requireMove(ontology, moveId);
+  const collision = resolveWrongPredictionCollision(card);
+  const collisionPhrase = collision
+    ? `let the old rule predict ${collision.old_rule_prediction}, then test why ${collision.visible_refutation}`
+    : card.micro_task;
   const templates = {
     stasis_hypophora_reset: () =>
-      `Question: ${card.stasis_question}? Answer: ${card.brief_answer}. Now ${card.micro_task}.`,
+      `Question: ${card.stasis_question}? Answer: ${card.brief_answer}. Now ${collisionPhrase}.`,
     synkrisis_exemplum: () =>
       `This is like ${card.near_analog}. Example: first match the role, then compare the count. Try it here: ${card.micro_task}.`,
     enargeia_subgoal: () =>
       `Picture three small boxes. First: name the job. Second: touch the clue. Third: ${card.micro_task}. Keep only those boxes in view.`,
     peripeteia_error_spotting: () =>
-      `Switch the job: do not solve the whole thing yet. Spot the wrong turn: ${card.wrong_turn}. Then ${card.micro_task}.`,
+      `Switch the job: do not solve the whole thing yet. Spot the wrong turn: ${card.wrong_turn}. Then ${collisionPhrase}.`,
     anagnorisis_sententia: () =>
       `What just became visible: ${card.hidden_relation}. Keep this principle: mark the role before judging the result. Now ${card.micro_task}.`,
     ethopoeia_correctio: () =>
       `"${card.voiced_position}." More exactly: ${card.correction}. Try only this: ${card.micro_task}.`,
   };
   return sentence(templates[moveId]());
+}
+
+export function resolveWrongPredictionCollision(card) {
+  if (card?.wrong_prediction_collision) return card.wrong_prediction_collision;
+  if (!card?.baseline_lure_rule || !card?.surface_lure_target || !card?.selector_target || !card?.selector_mark) {
+    return null;
+  }
+  return {
+    old_public_rule: card.baseline_lure_rule,
+    old_rule_prediction: card.surface_lure_target,
+    visible_refutation: `${card.selector_mark} marks ${card.selector_target}`,
+    new_relation_required: `${card.selector_mark} is a rail marker, not another surface vote`,
+    learner_collision_task:
+      card.baseline_lure_task ||
+      `name ${card.surface_lure_target} as the old-rule prediction, then explain why ${card.selector_mark} changes the rail`,
+  };
 }
 
 function forbiddenTermHits(text, terms) {
@@ -365,6 +418,14 @@ export function runMiniDramaBatteryScreen({
       gates: shadowGates,
       ontology,
     });
+    const baselineResponse = generateDiagnosticLureControl(card);
+    const baselineGates = runMiniDramaGates({ response: baselineResponse, moveId: 'shadow_control', ontology });
+    const baselineProxy = scoreCandidateProxy({
+      response: baselineResponse,
+      moveId: 'shadow_control',
+      gates: baselineGates,
+      ontology,
+    });
     for (const selection of selectedMoves) {
       const response = generateMiniDramaResponse(card, selection.move_id, ontology);
       const gates = runMiniDramaGates({ response, moveId: selection.move_id, ontology });
@@ -383,6 +444,7 @@ export function runMiniDramaBatteryScreen({
         risk_budget: card.risk_budget,
         frame_bound: card.frame_bound,
         expected_baseline_failure: card.expected_baseline_failure || null,
+        wrong_prediction_collision: resolveWrongPredictionCollision(card),
         screen_status: delta >= 0.08 && gates.status === 'pass' ? 'rhetorical_proxy_headroom' : 'no_proxy_headroom',
         proxy_score: proxy.score,
         shadow_proxy_score: shadowProxy.score,
@@ -395,6 +457,15 @@ export function runMiniDramaBatteryScreen({
           gates: shadowGates,
           proxy_score: shadowProxy.score,
           proxy_components: shadowProxy.components,
+        },
+        baseline_control: {
+          mode: 'diagnostic_lure',
+          response: baselineResponse,
+          response_sha256: sha256(baselineResponse),
+          transcript: formatMiniDramaTranscript(card, baselineResponse),
+          gates: baselineGates,
+          proxy_score: baselineProxy.score,
+          proxy_components: baselineProxy.components,
         },
         mini_drama: {
           response,
@@ -441,6 +512,8 @@ export function generateMiniDramaRun({
   for (const card of cards) {
     const shadowResponse = generateShadowControl(card);
     const shadowGates = runMiniDramaGates({ response: shadowResponse, moveId: 'shadow_control', ontology });
+    const baselineResponse = generateDiagnosticLureControl(card);
+    const baselineGates = runMiniDramaGates({ response: baselineResponse, moveId: 'shadow_control', ontology });
     for (const moveId of moves) {
       const response = generateMiniDramaResponse(card, moveId, ontology);
       const gates = runMiniDramaGates({ response, moveId, ontology });
@@ -453,11 +526,19 @@ export function generateMiniDramaRun({
         task_stage: card.task_stage,
         risk_budget: card.risk_budget,
         frame_bound: card.frame_bound,
+        wrong_prediction_collision: resolveWrongPredictionCollision(card),
         shadow_control: {
           response: shadowResponse,
           response_sha256: sha256(shadowResponse),
           transcript: formatMiniDramaTranscript(card, shadowResponse),
           gates: shadowGates,
+        },
+        baseline_control: {
+          mode: 'diagnostic_lure',
+          response: baselineResponse,
+          response_sha256: sha256(baselineResponse),
+          transcript: formatMiniDramaTranscript(card, baselineResponse),
+          gates: baselineGates,
         },
         mini_drama: {
           response,

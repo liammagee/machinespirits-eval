@@ -156,7 +156,13 @@
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "a19r:generate": "node scripts/a19r-mini-drama.js generate",
+    "a19r:packetize": "node scripts/a19r-mini-drama.js packetize",
+    "a19r:model-screen": "node scripts/a19r-mini-drama.js model-screen",
+    "a19r:codebook-validate": "node scripts/a19r-mini-drama.js codebook-validate",
+    "a19r:qa": "node scripts/a19r-mini-drama.js qa",
+    "a19r:report": "node scripts/a19r-mini-drama.js report"
   },
   "keywords": [
     "evaluation",
