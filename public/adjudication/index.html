@@ -176,12 +176,12 @@
           <h2>Pairwise Judgment</h2>
           <div class="grid">
             <label>
-              Better arm for learner standing
+              <span id="pairwise-better-label">Better arm for learner standing</span>
               <select id="better-arm" required></select>
             </label>
             <label class="inline">
               <input id="better-for-target" type="checkbox" />
-              Preference is for the target construct reason
+              <span id="better-for-target-label">Preference is for the target construct reason</span>
             </label>
             <label class="wide">
               Pairwise reason
@@ -251,7 +251,7 @@
       function valuesFromCodebook() {
         const codebook = state.codebook;
         return {
-          labels: [codebook.target_label, ...codebook.near_miss_labels],
+          labels: codebook.allowed_primary_labels || [codebook.target_label, ...codebook.near_miss_labels],
           statuses: codebook.target_status_values,
           obligationValues: codebook.obligation_values,
           excludedMoves: ["none", ...codebook.excluded_moves],
@@ -265,6 +265,10 @@
             ...codebook.excluded_moves,
           ],
         };
+      }
+
+      function uiLabel(key, fallback) {
+        return state.codebook.ui_labels?.[key] || fallback;
       }
 
       function addEvidenceRow(container, supportValues) {
@@ -294,15 +298,15 @@
             <p class="small">${arm.visible_alias_audit?.instruction || ""}</p>
           </div>
           <div class="grid">
-            <label>Primary repair label<select data-field="primary_label" required></select></label>
-            <label>Target status<select data-field="target_status" required></select></label>
+            <label>${uiLabel("primary_label", "Primary repair label")}<select data-field="primary_label" required></select></label>
+            <label>${uiLabel("target_status", "Target status")}<select data-field="target_status" required></select></label>
             <label class="inline wide">
               <input data-field="target_granularity_risk" type="checkbox" />
-              target-granularity risk present
+              ${uiLabel("granularity_risk", "target-granularity risk present")}
             </label>
             <div class="wide obligations" data-field="obligations"></div>
             <div class="wide">
-              <h3>Excluded Moves</h3>
+              <h3>${uiLabel("excluded_moves", "Excluded Moves")}</h3>
               <div class="checks" data-field="excluded_moves_present"></div>
             </div>
             <div class="wide" data-field="evidence_spans">
@@ -391,6 +395,11 @@
         arms.innerHTML = "<h2>Arms</h2>";
         data.assignment.arms.forEach((arm) => arms.append(renderArm(arm)));
         const values = valuesFromCodebook();
+        qs("#pairwise-better-label").textContent = uiLabel("pairwise_better", "Better arm for learner standing");
+        qs("#better-for-target-label").textContent = uiLabel(
+          "better_for_target_reason",
+          "Preference is for the target construct reason",
+        );
         fillSelect(qs("#better-arm"), values.better, "unclear");
         fillSelect(qs("#alias-leakage"), values.leakage, "none_observed");
         qs("#adjudication-form").hidden = false;
