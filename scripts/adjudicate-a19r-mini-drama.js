@@ -8,7 +8,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { pathToFileURL } from 'node:url';
 import {
   DEFAULT_MINI_DRAMA_CODEBOOK,
   DEFAULT_MINI_DRAMA_ONTOLOGY,
@@ -19,8 +19,6 @@ import {
   repoRel,
   summarizeMiniDramaAutomatedAdjudications,
 } from '../services/miniDramaMachines.js';
-
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 function usage() {
   return `Usage:
