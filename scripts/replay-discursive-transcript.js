@@ -90,7 +90,7 @@ function usage() {
     [--key <path>] [--out-dir <dir>]
     [--generator none|mock|codex|claude|agy|gemini]
     [--checker none|mock|codex|claude|agy|gemini|adversarial]
-    [--rewrite-mode full|bounded_continuation]
+    [--rewrite-mode full|bounded_continuation|role_separated_continuation]
     [--bounded-max-added-lines N]
     [--adversarial-check]
     [--no-local-gate]
@@ -252,8 +252,8 @@ function finalizeArgs(rawArgs) {
     args.checker = adversarialCheckerFor(args.generator);
     args.checkerPolicy = 'adversarial';
   }
-  if (!['full', 'bounded_continuation'].includes(args.rewriteMode)) {
-    throw new Error('--rewrite-mode must be full|bounded_continuation');
+  if (!['full', 'bounded_continuation', 'role_separated_continuation'].includes(args.rewriteMode)) {
+    throw new Error('--rewrite-mode must be full|bounded_continuation|role_separated_continuation');
   }
   if (!Number.isInteger(args.boundedMaxAddedLines) || args.boundedMaxAddedLines < 1) {
     throw new Error('--bounded-max-added-lines must be a positive integer');
@@ -982,6 +982,246 @@ ${heldOutContext || '[none]'}`;
   return { systemPrompt, userPrompt };
 }
 
+export function buildRoleSeparatedTutorMovePrompt({
+  item,
+  publicTranscript,
+  policyMemoryText = '',
+  boundedMaxAddedLines = 6,
+}) {
+  const systemPrompt = `You are the tutor-side generator in a role-separated counterfactual replay.
+
+You may use the reusable learned-policy memory to choose the next tutor move, but you must write only one public TUTOR line. Do not write a LEARNER line. Do not reveal hidden-only labels, answer keys, or policy-memory metadata.
+
+${buildOntologySummary({ policyMemoryText })}
+
+Role-separation constraint:
+- Output exactly one public line beginning with "TUTOR:".
+- The line must be usable by a learner who sees only the public transcript plus this tutor line.
+- Prefer a move that asks the learner to test or contest a visible relation rather than completing the learner's work.
+- The later learner response will be generated separately without policy memory.
+- This mode may append at most ${boundedMaxAddedLines} nonblank public lines in total across all role-separated steps.`;
+
+  const userPrompt = `Generate the next tutor line only.
+
+Required JSON shape:
+{
+  "tutor_public_line": "TUTOR: one public tutor line",
+  "tutor_hypothesis": "what learner resistance or misconstrual this move responds to",
+  "tactic": "finite tactic name such as scope_test or pose_counterexample",
+  "rejected_continuation": "what plausible continuation the tutor is not taking",
+  "public_causal_bridge": {
+    "public_obstruction": "visible pressure in the public transcript",
+    "old_check_blocked_by": "why the old visible check is unavailable or insufficient",
+    "tutor_mechanism_change": "what public test/device the tutor introduces",
+    "device_specificity": "why this device answers this obstruction rather than generic scaffolding"
+  },
+  "non_leakage_check": {"passes": true, "notes": ["..."]},
+  "claim_boundary": "counterfactual_revision_not_online_adaptation"
+}
+
+Item: ${JSON.stringify({ id: item.id, run_id: item.run_id }, null, 2)}
+
+Original public transcript:
+${publicTranscript}`;
+
+  return { systemPrompt, userPrompt };
+}
+
+export function buildRoleSeparatedLearnerPrompt({ item, publicTranscript, tutorPublicLine = '' }) {
+  const hasNewTutorLine = Boolean(String(tutorPublicLine || '').trim());
+  const systemPrompt = `You are the learner-side generator in a role-separated counterfactual replay.
+
+You do not receive hidden tutor policy memory, answer keys, intended rhetorical devices, or grading criteria. Respond only to the public transcript${hasNewTutorLine ? ' and the new tutor line' : ', including its latest tutor line'}. You may uptake, contest, misunderstand, or remain stuck if that is the natural response. Do not cooperate with hidden criteria you cannot see.
+
+Output JSON only.`;
+
+  const userPrompt = `Generate the next learner line only.
+
+Required JSON shape:
+{
+  "learner_public_line": "LEARNER: one public learner line",
+  "visible_basis": "what public words or visible task facts the learner is responding to",
+  "uptake_or_contest": "whether the learner applies, contests, or fails to use the tutor move",
+  "self_reframe": {
+    "old_check": "old check named by the learner, or null",
+    "limit": "why it no longer settles the case, or null",
+    "new_check": "new check named by the learner, or null",
+    "application": "how the learner applies it, or null"
+  },
+  "non_leakage_check": {"passes": true, "notes": ["..."]},
+  "claim_boundary": "counterfactual_revision_not_online_adaptation"
+}
+
+Item: ${JSON.stringify({ id: item.id, run_id: item.run_id }, null, 2)}
+
+Public transcript so far:
+${publicTranscript.trim()}
+${String(tutorPublicLine || '').trim()}`;
+
+  return { systemPrompt, userPrompt };
+}
+
+export function buildRoleSeparatedTutorStocktakePrompt({
+  item,
+  publicTranscript,
+  tutorPublicLine,
+  learnerPublicLine,
+  policyMemoryText = '',
+}) {
+  const systemPrompt = `You are the tutor-side generator for the final stock-taking line in a role-separated counterfactual replay.
+
+You may use learned-policy memory to decide whether the learner response licenses a tutor policy update. Write only one public TUTOR line. Do not write a LEARNER line. If the learner did not uptake the move, say what remains unresolved instead of pretending success.
+
+${buildOntologySummary({ policyMemoryText })}
+
+Output JSON only.`;
+
+  const userPrompt = `Generate the final tutor stock-taking line only.
+
+Required JSON shape:
+{
+  "tutor_public_line": "TUTOR: one public tutor line",
+  "tutor_learning_update": "what the tutor learned from the learner response, or what remains unresolved",
+  "strategy_revision_accountability": "how this update follows from visible learner uptake or contest",
+  "non_leakage_check": {"passes": true, "notes": ["..."]},
+  "claim_boundary": "counterfactual_revision_not_online_adaptation"
+}
+
+Item: ${JSON.stringify({ id: item.id, run_id: item.run_id }, null, 2)}
+
+Public transcript so far:
+${publicTranscript.trim()}
+${tutorPublicLine.trim()}
+${learnerPublicLine.trim()}`;
+
+  return { systemPrompt, userPrompt };
+}
+
+function validateRoleLinePayload(payload, key, prefix) {
+  if (!payload || typeof payload !== 'object') throw new Error(`${key} payload must be an object`);
+  const line = String(payload[key] || '').trim();
+  if (!line.startsWith(`${prefix}:`)) throw new Error(`${key} must begin with "${prefix}:"`);
+  if (line.split(/\n/u).filter((entry) => entry.trim()).length !== 1) {
+    throw new Error(`${key} must be exactly one public line`);
+  }
+  if (payload.claim_boundary && payload.claim_boundary !== 'counterfactual_revision_not_online_adaptation') {
+    throw new Error(`${key} claim_boundary is ${JSON.stringify(payload.claim_boundary)}`);
+  }
+  return line;
+}
+
+function combineRoleSeparatedRevision({
+  publicTranscript,
+  initialLearnerResponse = null,
+  tutorMove,
+  learnerResponse,
+  tutorStocktake,
+}) {
+  const initialLearnerLine = initialLearnerResponse
+    ? validateRoleLinePayload(initialLearnerResponse, 'learner_public_line', 'LEARNER')
+    : null;
+  const tutorLine = validateRoleLinePayload(tutorMove, 'tutor_public_line', 'TUTOR');
+  const learnerLine = validateRoleLinePayload(learnerResponse, 'learner_public_line', 'LEARNER');
+  const finalTutorLine = validateRoleLinePayload(tutorStocktake, 'tutor_public_line', 'TUTOR');
+  const learnerSelfReframe = learnerResponse.self_reframe || {};
+  const initialSignal = initialLearnerResponse?.uptake_or_contest || initialLearnerLine || null;
+  const initialEvidence = initialLearnerResponse?.visible_basis || initialLearnerLine || null;
+  const turnName = initialLearnerLine ? 'role-separated-after-tutor-continuation' : 'role-separated-continuation';
+
+  return {
+    revised_public_transcript: [publicTranscript.trim(), initialLearnerLine, tutorLine, learnerLine, finalTutorLine]
+      .filter(Boolean)
+      .join('\n'),
+    move_ledger: [
+      {
+        turn: turnName,
+        learner_signal:
+          initialSignal || tutorMove.public_causal_bridge?.public_obstruction || learnerResponse.visible_basis || null,
+        evidence_quote: initialEvidence || learnerResponse.visible_basis || null,
+        tutor_hypothesis: tutorMove.tutor_hypothesis || null,
+        tactic: tutorMove.tactic || null,
+        public_action: tutorLine,
+        public_causal_bridge: {
+          ...(tutorMove.public_causal_bridge || {}),
+          learner_uses_changed_test: learnerResponse.uptake_or_contest || learnerLine,
+        },
+        learner_actional_uptake: learnerResponse.uptake_or_contest || learnerLine,
+        learner_self_reframe: {
+          old_warrant: learnerSelfReframe.old_check ?? null,
+          warrant_limit: learnerSelfReframe.limit ?? null,
+          new_warrant: learnerSelfReframe.new_check ?? null,
+          application: learnerSelfReframe.application ?? null,
+        },
+        tutor_revision: finalTutorLine,
+        ontology_terms: ['RoleSeparatedContinuation', 'AccountableScorekeepingEpisode', 'DyadicRevision'],
+      },
+    ],
+    tutor_learning_ledger: [
+      {
+        turn: turnName,
+        tutor_prior_strategy: tutorMove.rejected_continuation || null,
+        learner_resistance_as_feedback: {
+          public_signal:
+            initialSignal ||
+            tutorMove.public_causal_bridge?.public_obstruction ||
+            learnerResponse.uptake_or_contest ||
+            learnerLine,
+          evidence_quote: initialEvidence || learnerResponse.visible_basis || learnerLine,
+          why_it_challenges_prior_strategy:
+            initialLearnerResponse?.self_reframe?.limit ||
+            initialLearnerResponse?.uptake_or_contest ||
+            learnerSelfReframe.limit ||
+            learnerResponse.uptake_or_contest ||
+            null,
+        },
+        tutor_diagnosis: tutorMove.tutor_hypothesis || null,
+        rejected_continuation: tutorMove.rejected_continuation || null,
+        revised_strategy: {
+          strategy_name: tutorMove.tactic || null,
+          new_public_test_or_device: tutorMove.public_causal_bridge?.tutor_mechanism_change || tutorLine,
+          why_this_strategy_now: tutorMove.public_causal_bridge?.device_specificity || null,
+        },
+        strategic_timing: initialLearnerLine
+          ? 'learner response follows the existing tutor line; tutor revision follows that learner signal; stock-take follows learner feedback on the revision'
+          : 'tutor move is generated before learner response; stock-take follows learner response',
+        learner_feedback_on_revision: learnerResponse.uptake_or_contest || learnerLine,
+        recursive_update: tutorStocktake.tutor_learning_update || finalTutorLine,
+      },
+    ],
+    hidden_state_use_ledger: [
+      {
+        private_fact: 'rhetorical policy memory',
+        used_for: 'tutor-side move selection only',
+        public_license_quote: null,
+        leakage_risk: 'learner generation did not receive policy memory',
+      },
+    ],
+    non_leakage_check: {
+      passes:
+        initialLearnerResponse?.non_leakage_check?.passes !== false &&
+        tutorMove.non_leakage_check?.passes !== false &&
+        learnerResponse.non_leakage_check?.passes !== false &&
+        tutorStocktake.non_leakage_check?.passes !== false,
+      notes: [
+        ...(initialLearnerResponse?.non_leakage_check?.notes || []),
+        ...(tutorMove.non_leakage_check?.notes || []),
+        ...(learnerResponse.non_leakage_check?.notes || []),
+        ...(tutorStocktake.non_leakage_check?.notes || []),
+      ],
+    },
+    role_separated_generation: {
+      learner_policy_memory_visible: false,
+      tutor_policy_memory_visible: true,
+      sequence: initialLearnerLine ? 'learner_tutor_learner_tutor' : 'tutor_learner_tutor',
+      initial_learner_response: initialLearnerResponse,
+      tutor_move: tutorMove,
+      learner_response: learnerResponse,
+      tutor_stocktake: tutorStocktake,
+    },
+    claim_boundary: 'counterfactual_revision_not_online_adaptation',
+  };
+}
+
 function feedbackForItem(args, item) {
   const direct = args.feedbackFile ? readText(args.feedbackFile) : '';
   const byItem = args.feedbackByItem || {};
@@ -1174,18 +1414,93 @@ function checkerOnlyRevision({ publicTranscript }) {
   };
 }
 
+function mockRoleSeparatedPayload(role) {
+  if (role === 'role_separated_initial_learner_response') {
+    return {
+      learner_public_line:
+        'LEARNER: I still want to use the old check, but it is not explaining the visible mark you asked about.',
+      visible_basis: 'the existing tutor line asks the learner to compare the visible mark again',
+      uptake_or_contest: 'learner exposes that the old check is still tempting but incomplete',
+      self_reframe: {
+        old_check: 'the old visible check',
+        limit: 'it does not explain the mark',
+        new_check: null,
+        application: null,
+      },
+      non_leakage_check: { passes: true, notes: ['mock initial learner saw public transcript only'] },
+      claim_boundary: 'counterfactual_revision_not_online_adaptation',
+    };
+  }
+  if (role === 'role_separated_tutor_move') {
+    return {
+      tutor_public_line:
+        'TUTOR: Try the old check once in public, then ask whether it explains the mark the learner is pointing at.',
+      tutor_hypothesis: 'the learner needs the old check to fail visibly before the new relation is available',
+      tactic: 'pose_counterexample',
+      rejected_continuation: 'repeat the original explanation with a smoother prompt',
+      public_causal_bridge: {
+        public_obstruction: 'the learner points to a visible mark the old check leaves unexplained',
+        old_check_blocked_by: 'the old check cannot account for that mark',
+        tutor_mechanism_change: 'the tutor asks the learner to test the old check against the mark',
+        device_specificity: 'the test is specific to the visible mark rather than a generic hint',
+      },
+      non_leakage_check: { passes: true, notes: ['mock tutor line uses public evidence only'] },
+      claim_boundary: 'counterfactual_revision_not_online_adaptation',
+    };
+  }
+  if (role === 'role_separated_learner_response') {
+    return {
+      learner_public_line:
+        'LEARNER: The old check gives one answer, but it does not explain that mark, so I need the mark-test instead.',
+      visible_basis: 'the tutor asked whether the old check explains the visible mark',
+      uptake_or_contest: 'learner applies the public mark-test and rejects the old check as insufficient',
+      self_reframe: {
+        old_check: 'the old visible check',
+        limit: 'it does not explain the mark',
+        new_check: 'test the mark itself',
+        application: 'use the mark-test instead',
+      },
+      non_leakage_check: { passes: true, notes: ['mock learner saw public transcript only'] },
+      claim_boundary: 'counterfactual_revision_not_online_adaptation',
+    };
+  }
+  if (role === 'role_separated_tutor_stocktake') {
+    return {
+      tutor_public_line:
+        'TUTOR: Good; I should make the old check answer to that public mark before treating it as the rule.',
+      tutor_learning_update: 'the tutor should require public mark-accountability before continuing the old route',
+      strategy_revision_accountability: 'the update follows the learner applying the mark-test',
+      non_leakage_check: { passes: true, notes: ['mock stock-take uses learner response only'] },
+      claim_boundary: 'counterfactual_revision_not_online_adaptation',
+    };
+  }
+  return null;
+}
+
 function normalizePublicForPrefix(value) {
   return String(value || '')
     .replace(/\r\n/g, '\n')
     .trim();
 }
 
+function lastPublicSpeaker(publicTranscript) {
+  const lines = String(publicTranscript || '')
+    .split(/\n/u)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  for (let i = lines.length - 1; i >= 0; i -= 1) {
+    const match = lines[i].match(/^(TUTOR|LEARNER)\s*:/iu);
+    if (match) return match[1].toUpperCase();
+  }
+  return null;
+}
+
 function validateRewriteModeRevision(revision, publicTranscript, args) {
-  if (args.rewriteMode !== 'bounded_continuation') return;
+  if (!['bounded_continuation', 'role_separated_continuation'].includes(args.rewriteMode)) return;
   const original = normalizePublicForPrefix(publicTranscript);
   const revised = normalizePublicForPrefix(revision?.revised_public_transcript);
   if (!revised.startsWith(original)) {
-    throw new Error('bounded_continuation revision must preserve the original public transcript as a prefix');
+    throw new Error(`${args.rewriteMode} revision must preserve the original public transcript as a prefix`);
   }
   const appended = revised.slice(original.length).trim();
   const addedLines = appended
@@ -1193,11 +1508,11 @@ function validateRewriteModeRevision(revision, publicTranscript, args) {
     .map((line) => line.trim())
     .filter(Boolean);
   if (!addedLines.length) {
-    throw new Error('bounded_continuation revision must append at least one public line');
+    throw new Error(`${args.rewriteMode} revision must append at least one public line`);
   }
   if (addedLines.length > args.boundedMaxAddedLines) {
     throw new Error(
-      `bounded_continuation appended ${addedLines.length} nonblank lines; max is ${args.boundedMaxAddedLines}`,
+      `${args.rewriteMode} appended ${addedLines.length} nonblank lines; max is ${args.boundedMaxAddedLines}`,
     );
   }
 }
@@ -1244,9 +1559,11 @@ function mockCheck() {
 
 export async function callBackend(backend, prompts, options, role) {
   if (backend === 'mock') {
+    const roleSeparatedPayload = mockRoleSeparatedPayload(role);
     return {
       content: JSON.stringify(
-        role === 'checker' ? mockCheck() : mockRevision({ publicTranscript: options.publicTranscript }),
+        roleSeparatedPayload ||
+          (role === 'checker' ? mockCheck() : mockRevision({ publicTranscript: options.publicTranscript })),
         null,
         2,
       ),
@@ -1489,6 +1806,134 @@ function callAgy({ systemPrompt, userPrompt }, options, role) {
   });
 }
 
+async function generateRoleSeparatedRevision({ item, publicTranscript, policyMemoryText, args, itemDir }) {
+  const startsAfterTutor = lastPublicSpeaker(publicTranscript) === 'TUTOR';
+  let transcriptForTutor = publicTranscript.trim();
+  let initialLearnerCall = null;
+  let initialLearnerResponse = null;
+  let initialLearnerLine = null;
+
+  if (startsAfterTutor) {
+    const initialLearnerPrompt = buildRoleSeparatedLearnerPrompt({
+      item,
+      publicTranscript,
+    });
+    fs.writeFileSync(
+      path.join(itemDir, 'role-separated-initial-learner-response.prompt.txt'),
+      `${initialLearnerPrompt.systemPrompt}\n\n---\n\n${initialLearnerPrompt.userPrompt}`,
+    );
+    initialLearnerCall = await callBackend(
+      args.generator,
+      initialLearnerPrompt,
+      { ...args, publicTranscript },
+      'role_separated_initial_learner_response',
+    );
+    fs.writeFileSync(path.join(itemDir, 'role-separated-initial-learner-response.raw.txt'), initialLearnerCall.content);
+    initialLearnerResponse = parseJsonResponse(initialLearnerCall.content);
+    initialLearnerLine = validateRoleLinePayload(initialLearnerResponse, 'learner_public_line', 'LEARNER');
+    transcriptForTutor = `${publicTranscript.trim()}\n${initialLearnerLine}`;
+  }
+
+  const tutorMovePrompt = buildRoleSeparatedTutorMovePrompt({
+    item,
+    publicTranscript: transcriptForTutor,
+    policyMemoryText,
+    boundedMaxAddedLines: args.boundedMaxAddedLines,
+  });
+  fs.writeFileSync(
+    path.join(itemDir, 'role-separated-tutor-move.prompt.txt'),
+    `${tutorMovePrompt.systemPrompt}\n\n---\n\n${tutorMovePrompt.userPrompt}`,
+  );
+  const tutorMoveCall = await callBackend(
+    args.generator,
+    tutorMovePrompt,
+    { ...args, publicTranscript: transcriptForTutor },
+    'role_separated_tutor_move',
+  );
+  fs.writeFileSync(path.join(itemDir, 'role-separated-tutor-move.raw.txt'), tutorMoveCall.content);
+  const tutorMove = parseJsonResponse(tutorMoveCall.content);
+  const tutorLine = validateRoleLinePayload(tutorMove, 'tutor_public_line', 'TUTOR');
+
+  const transcriptAfterTutor = `${transcriptForTutor.trim()}\n${tutorLine}`;
+  const learnerPrompt = buildRoleSeparatedLearnerPrompt({
+    item,
+    publicTranscript: transcriptForTutor,
+    tutorPublicLine: tutorLine,
+  });
+  fs.writeFileSync(
+    path.join(itemDir, 'role-separated-learner-response.prompt.txt'),
+    `${learnerPrompt.systemPrompt}\n\n---\n\n${learnerPrompt.userPrompt}`,
+  );
+  const learnerCall = await callBackend(
+    args.generator,
+    learnerPrompt,
+    { ...args, publicTranscript: transcriptAfterTutor },
+    'role_separated_learner_response',
+  );
+  fs.writeFileSync(path.join(itemDir, 'role-separated-learner-response.raw.txt'), learnerCall.content);
+  const learnerResponse = parseJsonResponse(learnerCall.content);
+  const learnerLine = validateRoleLinePayload(learnerResponse, 'learner_public_line', 'LEARNER');
+
+  const transcriptAfterLearner = `${transcriptAfterTutor}\n${learnerLine}`;
+  const tutorStocktakePrompt = buildRoleSeparatedTutorStocktakePrompt({
+    item,
+    publicTranscript: transcriptForTutor,
+    tutorPublicLine: tutorLine,
+    learnerPublicLine: learnerLine,
+    policyMemoryText,
+  });
+  fs.writeFileSync(
+    path.join(itemDir, 'role-separated-tutor-stocktake.prompt.txt'),
+    `${tutorStocktakePrompt.systemPrompt}\n\n---\n\n${tutorStocktakePrompt.userPrompt}`,
+  );
+  const tutorStocktakeCall = await callBackend(
+    args.generator,
+    tutorStocktakePrompt,
+    { ...args, publicTranscript: transcriptAfterLearner },
+    'role_separated_tutor_stocktake',
+  );
+  fs.writeFileSync(path.join(itemDir, 'role-separated-tutor-stocktake.raw.txt'), tutorStocktakeCall.content);
+  const tutorStocktake = parseJsonResponse(tutorStocktakeCall.content);
+
+  const revision = combineRoleSeparatedRevision({
+    publicTranscript,
+    initialLearnerResponse,
+    tutorMove,
+    learnerResponse,
+    tutorStocktake,
+  });
+
+  return {
+    revision,
+    generation: {
+      mode: 'role_separated_continuation',
+      learner_policy_memory_visible: false,
+      tutor_policy_memory_visible: true,
+      sequence: startsAfterTutor ? 'learner_tutor_learner_tutor' : 'tutor_learner_tutor',
+      initial_learner_response: initialLearnerCall?.provenance || null,
+      tutor_move: tutorMoveCall.provenance,
+      learner_response: learnerCall.provenance,
+      tutor_stocktake: tutorStocktakeCall.provenance,
+    },
+    primaryProvenance: {
+      backend: args.generator,
+      role: 'role_separated_generator',
+      model: tutorMoveCall.provenance?.model || null,
+      requestedModel: tutorMoveCall.provenance?.requestedModel || null,
+      resolvedModel: tutorMoveCall.provenance?.resolvedModel || null,
+      modelResolution: tutorMoveCall.provenance?.modelResolution || null,
+      reasoningEffort: tutorMoveCall.provenance?.reasoningEffort || null,
+      reasoningEffortSource: tutorMoveCall.provenance?.reasoningEffortSource || null,
+      calls: {
+        initial_learner_response: initialLearnerCall?.provenance || null,
+        tutor_move: tutorMoveCall.provenance,
+        learner_response: learnerCall.provenance,
+        tutor_stocktake: tutorStocktakeCall.provenance,
+      },
+    },
+  };
+}
+
 function validateRevisionPayload(payload) {
   const required = [
     'revised_public_transcript',
@@ -1569,6 +2014,7 @@ async function replayOne(item, args, outDir) {
   }
 
   let generatorCall = null;
+  let roleSeparatedGeneration = null;
   let revision = null;
   if (args.generator === 'none') {
     revision = checkerOnlyRevision({ publicTranscript });
@@ -1584,6 +2030,21 @@ async function replayOne(item, args, outDir) {
         },
         skipped: true,
       },
+    };
+    fs.writeFileSync(path.join(itemDir, 'rewrite.raw.txt'), JSON.stringify(revision, null, 2));
+  } else if (args.rewriteMode === 'role_separated_continuation') {
+    const generated = await generateRoleSeparatedRevision({
+      item,
+      publicTranscript,
+      policyMemoryText,
+      args,
+      itemDir,
+    });
+    revision = generated.revision;
+    roleSeparatedGeneration = generated.generation;
+    generatorCall = {
+      content: JSON.stringify(revision, null, 2),
+      provenance: generated.primaryProvenance,
     };
     fs.writeFileSync(path.join(itemDir, 'rewrite.raw.txt'), JSON.stringify(revision, null, 2));
   } else {
@@ -1636,6 +2097,7 @@ async function replayOne(item, args, outDir) {
     checkerPolicy: args.checkerPolicy || null,
     rewriteMode: args.rewriteMode,
     boundedMaxAddedLines: args.boundedMaxAddedLines,
+    roleSeparatedGeneration,
     check: checker?.parsed || null,
     gate,
     feedback: {

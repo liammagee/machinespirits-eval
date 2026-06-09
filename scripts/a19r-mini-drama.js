@@ -34,13 +34,14 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const MEMORY_MODES = new Set(['full', 'device_only', 'policy_only', 'exemplar_only']);
 const BASELINE_MODES = new Set(['neutral_shadow', 'diagnostic_lure']);
 const S0_MODES = new Set(['rewrite', 'checker_only']);
+const REWRITE_MODES = new Set(['full', 'bounded_continuation', 'role_separated_continuation']);
 
 function usage() {
   return `Usage:
   node scripts/a19r-mini-drama.js generate [--out exports/a19r/runs/run.json] [--moves a,b] [--card-ids a,b] [--json]
   node scripts/a19r-mini-drama.js screen [--out exports/a19r/runs/battery.json] [--samples-per-card 2] [--seed text] [--json]
   node scripts/a19r-mini-drama.js packetize --run exports/a19r/runs/run.json [--out-dir exports/a19r/adjudication-packets/run] [--assignments] [--blind]
-  node scripts/a19r-mini-drama.js model-screen --run exports/a19r/runs/battery.json [--candidate-ids a,b] [--out-dir exports/a19r/model-screens/run] [--generator codex] [--checker claude] [--rewrite-mode bounded_continuation] [--memory-mode full|device_only|policy_only|exemplar_only] [--baseline-mode neutral_shadow|diagnostic_lure] [--s0-mode rewrite|checker_only] [--dry-run]
+  node scripts/a19r-mini-drama.js model-screen --run exports/a19r/runs/battery.json [--candidate-ids a,b] [--out-dir exports/a19r/model-screens/run] [--generator codex] [--checker claude] [--rewrite-mode bounded_continuation|role_separated_continuation] [--codex-model gpt-5.5] [--codex-effort xhigh] [--claude-model claude-fable-5] [--claude-effort medium] [--memory-mode full|device_only|policy_only|exemplar_only] [--baseline-mode neutral_shadow|diagnostic_lure] [--s0-mode rewrite|checker_only] [--dry-run]
   node scripts/a19r-mini-drama.js codebook-validate [--json]
   node scripts/a19r-mini-drama.js qa --run exports/a19r/runs/run.json [--json]
   node scripts/a19r-mini-drama.js report --run exports/a19r/runs/run.json [--out exports/a19r/reports/run.json] [--json]
@@ -77,6 +78,10 @@ function parseArgs(argv = process.argv.slice(2)) {
     samplesPerCard: 2,
     generator: 'codex',
     checker: 'claude',
+    codexModel: process.env.CODEX_MODEL || null,
+    codexEffort: process.env.CODEX_REASONING_EFFORT || 'xhigh',
+    claudeModel: process.env.CLAUDE_CODE_MODEL || null,
+    claudeEffort: process.env.CLAUDE_CODE_EFFORT || null,
     rewriteMode: 'full',
     boundedMaxAddedLines: 6,
     memoryMode: 'full',
@@ -108,6 +113,10 @@ function parseArgs(argv = process.argv.slice(2)) {
     else if (token === '--samples-per-card') args.samplesPerCard = Number.parseInt(argv[++i], 10);
     else if (token === '--generator') args.generator = argv[++i];
     else if (token === '--checker') args.checker = argv[++i];
+    else if (token === '--codex-model') args.codexModel = argv[++i];
+    else if (token === '--codex-effort') args.codexEffort = argv[++i];
+    else if (token === '--claude-model') args.claudeModel = argv[++i];
+    else if (token === '--claude-effort') args.claudeEffort = argv[++i];
     else if (token === '--rewrite-mode') args.rewriteMode = argv[++i];
     else if (token === '--bounded-max-added-lines') args.boundedMaxAddedLines = Number.parseInt(argv[++i], 10);
     else if (token === '--memory-mode') args.memoryMode = argv[++i];
@@ -124,8 +133,8 @@ function parseArgs(argv = process.argv.slice(2)) {
   if (!Number.isInteger(args.samplesPerCard) || args.samplesPerCard < 1) {
     throw new Error('--samples-per-card must be a positive integer');
   }
-  if (!['full', 'bounded_continuation'].includes(args.rewriteMode)) {
-    throw new Error('--rewrite-mode must be full|bounded_continuation');
+  if (!REWRITE_MODES.has(args.rewriteMode)) {
+    throw new Error(`--rewrite-mode must be one of ${[...REWRITE_MODES].join('|')}`);
   }
   if (!Number.isInteger(args.boundedMaxAddedLines) || args.boundedMaxAddedLines < 1) {
     throw new Error('--bounded-max-added-lines must be a positive integer');
@@ -451,9 +460,13 @@ function replayArgs({ transcriptPath, policyMemoryPath, outDir, args }) {
     String(args.stepTimeoutMs),
   ];
   if (args.rewriteMode) scriptArgs.push('--rewrite-mode', args.rewriteMode);
-  if (args.rewriteMode === 'bounded_continuation') {
+  if (['bounded_continuation', 'role_separated_continuation'].includes(args.rewriteMode)) {
     scriptArgs.push('--bounded-max-added-lines', String(args.boundedMaxAddedLines));
   }
+  if (args.codexModel) scriptArgs.push('--codex-model', args.codexModel);
+  if (args.codexEffort) scriptArgs.push('--codex-effort', args.codexEffort);
+  if (args.claudeModel) scriptArgs.push('--claude-model', args.claudeModel);
+  if (args.claudeEffort) scriptArgs.push('--claude-effort', args.claudeEffort);
   if (policyMemoryPath) scriptArgs.push('--policy-memory', policyMemoryPath);
   if (args.force) scriptArgs.push('--force');
   return scriptArgs;
@@ -561,8 +574,14 @@ function cmdModelScreen(args) {
     source_run: repoRel(args.run),
     generator: args.generator,
     checker: args.checker,
+    codex_model: args.codexModel || null,
+    codex_effort: args.codexEffort || null,
+    claude_model: args.claudeModel || null,
+    claude_effort: args.claudeEffort || null,
     rewrite_mode: args.rewriteMode,
-    bounded_max_added_lines: args.rewriteMode === 'bounded_continuation' ? args.boundedMaxAddedLines : null,
+    bounded_max_added_lines: ['bounded_continuation', 'role_separated_continuation'].includes(args.rewriteMode)
+      ? args.boundedMaxAddedLines
+      : null,
     memory_mode: args.memoryMode,
     baseline_mode: args.baselineMode,
     s0_mode: args.s0Mode,
@@ -620,6 +639,8 @@ function renderModelScreenMarkdown(summary) {
     '',
     `Created: ${summary.created_at}`,
     `Generator: \`${summary.generator}\`; checker: \`${summary.checker}\`.`,
+    `Codex model: \`${summary.codex_model || 'unresolved_cli_default'}\`; Codex effort: \`${summary.codex_effort || 'unresolved_cli_default'}\`.`,
+    `Claude model: \`${summary.claude_model || 'unresolved_cli_default'}\`; Claude effort: \`${summary.claude_effort || 'unresolved_cli_default'}\`.`,
     `Rewrite mode: \`${summary.rewrite_mode}\`${summary.bounded_max_added_lines ? `; bounded max added lines: ${summary.bounded_max_added_lines}` : ''}.`,
     `Memory mode: \`${summary.memory_mode}\`.`,
     `Baseline mode: \`${summary.baseline_mode}\`; S0 mode: \`${summary.s0_mode}\`.`,

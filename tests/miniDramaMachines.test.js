@@ -190,9 +190,17 @@ test('A19R model-screen dry run can use checker-only S0 with diagnostic baseline
       '--out-dir',
       outDir,
       '--rewrite-mode',
-      'bounded_continuation',
+      'role_separated_continuation',
       '--bounded-max-added-lines',
-      '4',
+      '5',
+      '--codex-model',
+      'gpt-5.5',
+      '--codex-effort',
+      'xhigh',
+      '--claude-model',
+      'claude-fable-5',
+      '--claude-effort',
+      'medium',
       '--baseline-mode',
       'diagnostic_lure',
       '--s0-mode',
@@ -204,9 +212,17 @@ test('A19R model-screen dry run can use checker-only S0 with diagnostic baseline
   );
   const summary = JSON.parse(output.slice(output.indexOf('{')));
   assert.equal(summary.baseline_mode, 'diagnostic_lure');
+  assert.equal(summary.rewrite_mode, 'role_separated_continuation');
+  assert.equal(summary.codex_model, 'gpt-5.5');
+  assert.equal(summary.codex_effort, 'xhigh');
+  assert.equal(summary.claude_model, 'claude-fable-5');
+  assert.equal(summary.claude_effort, 'medium');
   assert.equal(summary.s0_mode, 'checker_only');
   assert.equal(summary.rows[0].baseline_source, 'baseline_control');
   assert.match(summary.rows[0].commands.s0, /--generator" "none/u);
+  assert.match(summary.rows[0].commands.s1, /--rewrite-mode" "role_separated_continuation/u);
+  assert.match(summary.rows[0].commands.s1, /--codex-model" "gpt-5\.5/u);
+  assert.match(summary.rows[0].commands.s1, /--claude-model" "claude-fable-5/u);
   assert.match(summary.rows[0].commands.s1, /--policy-memory/u);
 });
 
