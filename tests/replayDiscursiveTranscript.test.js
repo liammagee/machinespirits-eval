@@ -10,6 +10,7 @@ import {
   escapeInteriorQuotes,
   evaluateLocalGate,
   extractPublicTranscript,
+  formatPolicyMemoryForPrompt,
   normalizeBackend,
   parseArgs,
   parseJsonResponse,
@@ -114,6 +115,32 @@ test('parseArgs accepts explicit replay item concurrency and feedback file', () 
   assert.equal(args.gateThresholds.public_causal_bridge, 0.85);
   assert.equal(args.gateThresholds.device_specificity, 0.8);
   assert.equal(args.gateThresholds.old_warrant_misclassification, 0.9);
+});
+
+test('formatPolicyMemoryForPrompt compacts admitted A19 axiom JSON and preserves plain text', () => {
+  const plain = 'Policy memory: keep ledger entries temporally scoped.';
+  assert.equal(formatPolicyMemoryForPrompt(plain), plain);
+
+  const rendered = formatPolicyMemoryForPrompt(
+    JSON.stringify({
+      schema_version: 'a19-teaching-drama-axiom-v0.1',
+      status: 'admitted',
+      axiom_id: 'a19_example_001',
+      repair_type: 'commitment_ledger_repair',
+      trigger: 'learner points out conflicting tutor commitments',
+      avoided_move: 'continue with the old quote-first advice',
+      replacement_move: 'cite the conflict, retract quote-first, and state the new evidence boundary',
+      applicability_conditions: ['tutor made both commitments', 'learner names the conflict'],
+      anti_conditions: ['learner only asks for style advice'],
+      source_attempt1: { revision_json_path: '/tmp/full-bundle.json' },
+    }),
+    'exports/a19/axioms/example/axiom.json',
+  );
+  assert.match(rendered, /A19 admitted teaching-drama axiom/);
+  assert.match(rendered, /repair_type: commitment_ledger_repair/);
+  assert.match(rendered, /Treat this as one typed policy prior/);
+  assert.doesNotMatch(rendered, /source_attempt1/);
+  assert.doesNotMatch(rendered, /full-bundle/);
 });
 
 test('parseArgs accepts bounded continuation rewrite mode', () => {

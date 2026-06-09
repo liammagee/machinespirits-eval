@@ -36,6 +36,7 @@ const REPAIR_TYPES = [
   'learner_standing_repair',
   'instructional_contract_repair',
   'repair_misalignment',
+  'strategy_reversal_repair',
   'transfer_control',
   'validate_redirect',
   'repeat_explanation',
@@ -182,6 +183,12 @@ function normalizeRepairType(value) {
     withdraw_misaddressed_claim: 'claim_address_repair',
     claim_address: 'claim_address_repair',
     readdress_learner_claim: 'claim_address_repair',
+    fade_scaffold_before_copying: 'preserve_struggle',
+    fade_scaffold: 'preserve_struggle',
+    scaffold_fade: 'preserve_struggle',
+    learner_owned_choice: 'preserve_struggle',
+    preserve_productive_struggle: 'preserve_struggle',
+    copy_resistant_next_move: 'preserve_struggle',
     public_commitment_contradiction: 'commitment_ledger_repair',
     public_commitment_contradiction_repair: 'commitment_ledger_repair',
     commitment_ledger: 'commitment_ledger_repair',
@@ -197,6 +204,11 @@ function normalizeRepairType(value) {
     instructional_contract: 'instructional_contract_repair',
     working_agreement: 'instructional_contract_repair',
     contract_repair: 'instructional_contract_repair',
+    strategy_reversal: 'strategy_reversal_repair',
+    wrong_turn_spotting: 'strategy_reversal_repair',
+    error_spotting: 'strategy_reversal_repair',
+    wrong_strategy_family: 'strategy_reversal_repair',
+    reverse_to_wrong_turn_spotting: 'strategy_reversal_repair',
     claim_test_not_character_read: 'name_warrant',
   };
   return aliases[normalized] || normalized || null;
@@ -304,8 +316,10 @@ function freeTextPromptFor(transcript, args) {
   lines.push(
     'Repair-type guide for extraction:',
     '- claim_address_repair: the tutor withdraws a misaddressed framing and restates the learner claim or warrant it will now answer, before any learner application or revision test.',
+    '- preserve_struggle: the tutor withholds copyable completion, removes or limits one scaffold, and returns exactly one bounded learner-owned decision before accepting a polished answer.',
     '- commitment_ledger_repair: the tutor cites conflicting public tutor commitments, retracts or ranks one, and states the new commitment boundary before continuing.',
     '- learner_standing_repair: the tutor names a flattened disclosure or misrecognition, restores the learner as author of the disclosure boundary, separates accountability from reassurance/advice, and offers a non-content stop or continuation option.',
+    '- strategy_reversal_repair: the tutor stops continued solving, names the wrong strategy family or wrong turn, and requires local error identification before solution work resumes.',
     '- transfer_control: the tutor requires the learner to apply a repaired rule/check to a fresh or concrete case before accepting closure. Use this even if the tutor also names the underlying warrant.',
     '- instructional_contract_repair: the tutor pauses the content task to repair the working agreement, names the tutor contribution to the drift, and offers a learner choice about how to proceed before any content test.',
     '- name_warrant: the tutor names the governing relation, rule, or warrant without requiring a fresh public application.',
@@ -414,6 +428,38 @@ function mockRepairExtraction(transcript) {
       repair_type: 'learner_standing_repair',
       basis_label: 'ordinary_public_inference',
       public_evidence_summary: 'mock extraction found public standing and disclosure-boundary repair language',
+    };
+  }
+  if (
+    /\b(?:not|won't|will not|cannot|can't|refuse|withhold|withholding)\b[\s\S]{0,120}\b(?:copyable|exact|sentence|template|completion|polished answer)\b[\s\S]{0,180}\b(?:one|single|bounded)\b[\s\S]{0,80}\b(?:choice|decision|move)\b/i.test(
+      finalTutorSegment(transcript),
+    ) ||
+    /\b(?:remove|limit|fade|drop)\b[\s\S]{0,80}\b(?:scaffold|support|template|sentence frame)\b[\s\S]{0,160}\b(?:you choose|your choice|learner-owned|one bounded)\b/i.test(
+      finalTutorSegment(transcript),
+    )
+  ) {
+    return {
+      committed_repair: 'withhold copyable completion and return one bounded learner-owned decision before polishing',
+      committing_quote: finalTutorSegment(transcript),
+      repair_type: 'preserve_struggle',
+      basis_label: 'ordinary_public_inference',
+      public_evidence_summary: 'mock extraction found scaffold fading plus a bounded learner-owned choice',
+    };
+  }
+  if (
+    /\b(?:stop|pause|reverse|switch)\b[\s\S]{0,100}\b(?:solving|answering|choosing|picking|visible cues?|surface cues?)\b[\s\S]{0,160}\b(?:wrong (?:strategy|turn|path)|strategy family|error identification|spot (?:the )?(?:wrong|error)|spotting (?:the )?(?:wrong|error))\b/i.test(
+      finalTutorSegment(transcript),
+    ) ||
+    /\b(?:wrong (?:strategy|turn|path)|strategy family)\b[\s\S]{0,160}\b(?:before|then)\b[\s\S]{0,100}\b(?:continue|resume|solve|choose|answer)\b/i.test(
+      finalTutorSegment(transcript),
+    )
+  ) {
+    return {
+      committed_repair: 'reverse from continued solving to spotting the wrong strategy family or wrong turn first',
+      committing_quote: finalTutorSegment(transcript),
+      repair_type: 'strategy_reversal_repair',
+      basis_label: 'ordinary_public_inference',
+      public_evidence_summary: 'mock extraction found tutor-side wrong-strategy reversal before solution continuation',
     };
   }
   if (
@@ -538,6 +584,10 @@ const COMMITMENT_LEDGER_REPAIR_RE =
   /\b(?:commitment ledger|conflicting (?:public )?(?:commitments|promises)|you said[\s\S]{0,120}\bnow\b|earlier[\s\S]{0,120}\bnow\b|cannot both govern|which (?:commitment|rule) (?:governs|wins)|retract(?:ing)? (?:that|one|the)?\s*(?:commitment|promise)|rank(?:ing)? (?:that|one|the)?\s*(?:commitment|promise)|new commitment boundary)\b/i;
 const LEARNER_STANDING_REPAIR_RE =
   /\b(?:learner standing|standing repair|disclosure boundary|author of (?:the )?disclosure|how much (?:of this )?(?:you|i) disclose|accountability (?:question|not advice|from reassurance)|not asking (?:for|you to give) (?:reassurance|advice)|restore(?:ing)? (?:your|the learner's) boundary|permission to (?:stop|withhold)|stop or continue|non-content continuation)\b/i;
+const PRESERVE_STRUGGLE_REPAIR_RE =
+  /\b(?:not|won't|will not|cannot|can't|refuse|withhold|withholding)\b[\s\S]{0,120}\b(?:copyable|exact|sentence|template|completion|polished answer)\b[\s\S]{0,180}\b(?:one|single|bounded)\b[\s\S]{0,80}\b(?:choice|decision|move)\b|\b(?:remove|limit|fade|drop)\b[\s\S]{0,80}\b(?:scaffold|support|template|sentence frame)\b[\s\S]{0,160}\b(?:you choose|your choice|learner-owned|one bounded)\b/i;
+const STRATEGY_REVERSAL_REPAIR_RE =
+  /\b(?:stop|pause|reverse|switch)\b[\s\S]{0,100}\b(?:solving|answering|choosing|picking|visible cues?|surface cues?)\b[\s\S]{0,160}\b(?:wrong (?:strategy|turn|path)|strategy family|error identification|spot (?:the )?(?:wrong|error)|spotting (?:the )?(?:wrong|error))\b|\b(?:wrong (?:strategy|turn|path)|strategy family)\b[\s\S]{0,160}\b(?:before|then)\b[\s\S]{0,100}\b(?:continue|resume|solve|choose|answer)\b/i;
 const STANDING_REPAIR_ADVICE_RE =
   /\b(?:you should|here is what to say|conversation script|apologize to|talk to them|tell them|advice|reassur(?:e|ance)|good person|meant well|do not be too hard on yourself)\b/i;
 const NEGATED_DECOY_MARKERS = [
@@ -551,14 +601,42 @@ const NEGATED_DECOY_MARKERS = [
   'avoided',
   'reject',
   'rejected',
+  'rejects',
+  'rejecting',
   'replace',
   'replaces',
   'replaced',
+  'replacing',
+  'reverse',
+  'reverses',
+  'reversed',
+  'reversing',
+  'pause',
+  'pauses',
+  'paused',
+  'stop',
+  'stops',
+  'stopped',
   'abandon',
   'abandons',
   'abandoned',
+  'abandoning',
+  'retract',
+  'retracts',
+  'retracted',
+  'retracting',
+  'withdraw',
+  'withdraws',
+  'withdrew',
+  'withdrawn',
+  'withdrawing',
+  'demote',
+  'demotes',
+  'demoted',
+  'demoting',
   'cannot',
   "can't",
+  'no longer',
 ];
 const FAILED_DECOY_MARKERS = [
   'fail',
@@ -609,6 +687,8 @@ function targetObligationAudit(transcript, { targetRepairType, extractedRepairTy
     target === 'claim_address_repair' ||
     target === 'commitment_ledger_repair' ||
     target === 'learner_standing_repair' ||
+    target === 'preserve_struggle' ||
+    target === 'strategy_reversal_repair' ||
     target === 'offer_diagnostic_options' ||
     target === 'instructional_contract_repair' ||
     target === 'transfer_control';
@@ -620,16 +700,23 @@ function targetObligationAudit(transcript, { targetRepairType, extractedRepairTy
     };
   }
   const text = String(transcript || '').toLowerCase();
+  const finalTutorText = finalTutorSegment(transcript).toLowerCase();
   const diagnosticIndex = regexIndex(text, DIAGNOSTIC_OPTIONS_RE);
   const answerIndex = regexIndex(text, ANSWER_REVEAL_RE);
+  const strategyReversalIndex = regexIndex(finalTutorText, STRATEGY_REVERSAL_REPAIR_RE);
+  const finalTutorAnswerIndex = regexIndex(finalTutorText, ANSWER_REVEAL_RE);
   const diagnosticOptionsPresent = diagnosticIndex >= 0;
   const answerRevealBeforeDiagnosticChoice = answerIndex >= 0 && (diagnosticIndex < 0 || answerIndex < diagnosticIndex);
+  const answerRevealBeforeStrategyReversal =
+    finalTutorAnswerIndex >= 0 && (strategyReversalIndex < 0 || finalTutorAnswerIndex < strategyReversalIndex);
   const transferControlPublicTestPresent = transcriptHasTransferControlPublicTest(transcript);
   const claimAddressRepairPresent = CLAIM_ADDRESS_REPAIR_RE.test(transcript);
   const commitmentLedgerRepairPresent = COMMITMENT_LEDGER_REPAIR_RE.test(transcript);
   const learnerStandingRepairPresent = LEARNER_STANDING_REPAIR_RE.test(transcript);
   const standingAdviceSignalPresent = STANDING_REPAIR_ADVICE_RE.test(transcript);
+  const preserveStruggleRepairPresent = PRESERVE_STRUGGLE_REPAIR_RE.test(finalTutorSegment(transcript));
   const instructionalContractRepairPresent = INSTRUCTIONAL_CONTRACT_REPAIR_RE.test(transcript);
+  const strategyReversalRepairPresent = strategyReversalIndex >= 0;
   if (target === 'claim_address_repair') {
     return {
       governed: true,
@@ -668,6 +755,36 @@ function targetObligationAudit(transcript, { targetRepairType, extractedRepairTy
         (extracted === 'transfer_control' ||
           transferControlPublicTestPresent ||
           (standingAdviceSignalPresent && extracted !== target)),
+    };
+  }
+  if (target === 'preserve_struggle') {
+    return {
+      governed: true,
+      target_repair_type: target,
+      extracted_repair_type: extracted || null,
+      preserve_struggle_present: preserveStruggleRepairPresent,
+      competing_transfer_control_signal: transferControlPublicTestPresent,
+      answer_reveal_or_copyable_completion_signal: ANSWER_REVEAL_RE.test(finalTutorSegment(transcript)),
+      extracted_repair_type_mismatch: extracted ? extracted !== target : true,
+      target_granularity_risk:
+        preserveStruggleRepairPresent &&
+        (extracted === 'transfer_control' ||
+          transferControlPublicTestPresent ||
+          ANSWER_REVEAL_RE.test(finalTutorSegment(transcript))),
+    };
+  }
+  if (target === 'strategy_reversal_repair') {
+    return {
+      governed: true,
+      target_repair_type: target,
+      extracted_repair_type: extracted || null,
+      strategy_reversal_repair_present: strategyReversalRepairPresent,
+      competing_transfer_control_signal: transferControlPublicTestPresent,
+      answer_reveal_before_error_identification: answerRevealBeforeStrategyReversal,
+      extracted_repair_type_mismatch: extracted ? extracted !== target : true,
+      target_granularity_risk:
+        strategyReversalRepairPresent &&
+        (extracted === 'transfer_control' || transferControlPublicTestPresent || answerRevealBeforeStrategyReversal),
     };
   }
   if (target === 'offer_diagnostic_options') {
@@ -727,7 +844,31 @@ function significantTokens(text) {
     .toLowerCase()
     .split(/[^a-z0-9]+/u)
     .map(stemToken)
-    .filter((token) => token && !['the', 'a', 'an', 'and', 'or', 'to', 'of', 'again'].includes(token));
+    .filter(
+      (token) =>
+        token &&
+        ![
+          'the',
+          'a',
+          'an',
+          'and',
+          'or',
+          'to',
+          'of',
+          'again',
+          'i',
+          'as',
+          'by',
+          'for',
+          'with',
+          'it',
+          'its',
+          'thi',
+          'that',
+          'my',
+          'your',
+        ].includes(token),
+    );
 }
 
 function allAliasTokensInWindow(alias, windowText) {

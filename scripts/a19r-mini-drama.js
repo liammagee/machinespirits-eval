@@ -3,15 +3,15 @@
  * Fast CLI loop for the A19 rhetoric / mini-drama branch.
  *
  * This script is deliberately offline by default. It creates deterministic
- * candidates, cheap gate reports, blinded packets, and optional human-coder
- * assignments that can be opened in the existing /adjudication web UI.
+ * candidates, cheap gate reports, and blinded packets for later automated
+ * adjudication. Human-coder assignment generation is intentionally out of this
+ * branch while A19 stays on the automated path.
  */
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { createHumanAdjudicationAssignment } from './create-a19-human-adjudication-assignment.js';
 import {
   DEFAULT_A18_A19_RHETORICAL_BATTERY,
   DEFAULT_MINI_DRAMA_CARDS,
@@ -40,7 +40,7 @@ function usage() {
   return `Usage:
   node scripts/a19r-mini-drama.js generate [--out exports/a19r/runs/run.json] [--moves a,b] [--card-ids a,b] [--json]
   node scripts/a19r-mini-drama.js screen [--out exports/a19r/runs/battery.json] [--samples-per-card 2] [--seed text] [--json]
-  node scripts/a19r-mini-drama.js packetize --run exports/a19r/runs/run.json [--out-dir exports/a19r/adjudication-packets/run] [--assignments] [--blind]
+  node scripts/a19r-mini-drama.js packetize --run exports/a19r/runs/run.json [--out-dir exports/a19r/adjudication-packets/run]
   node scripts/a19r-mini-drama.js model-screen --run exports/a19r/runs/battery.json [--candidate-ids a,b] [--out-dir exports/a19r/model-screens/run] [--generator codex] [--checker claude] [--rewrite-mode bounded_continuation|role_separated_continuation] [--codex-model gpt-5.5] [--codex-effort xhigh] [--claude-model claude-fable-5] [--claude-effort medium] [--memory-mode full|device_only|policy_only|exemplar_only] [--baseline-mode neutral_shadow|diagnostic_lure] [--s0-mode rewrite|checker_only] [--dry-run]
   node scripts/a19r-mini-drama.js codebook-validate [--json]
   node scripts/a19r-mini-drama.js qa --run exports/a19r/runs/run.json [--json]
@@ -69,8 +69,6 @@ function parseArgs(argv = process.argv.slice(2)) {
     run: null,
     out: null,
     outDir: null,
-    assignmentDir: null,
-    keyDir: null,
     moves: [],
     cardIds: [],
     candidateIds: [],
@@ -88,8 +86,6 @@ function parseArgs(argv = process.argv.slice(2)) {
     baselineMode: 'neutral_shadow',
     s0Mode: 'rewrite',
     stepTimeoutMs: 900_000,
-    assignments: false,
-    blind: false,
     force: false,
     dryRun: false,
     json: false,
@@ -104,8 +100,6 @@ function parseArgs(argv = process.argv.slice(2)) {
     else if (token === '--run') args.run = path.resolve(argv[++i]);
     else if (token === '--out') args.out = path.resolve(argv[++i]);
     else if (token === '--out-dir') args.outDir = path.resolve(argv[++i]);
-    else if (token === '--assignment-dir') args.assignmentDir = path.resolve(argv[++i]);
-    else if (token === '--key-dir') args.keyDir = path.resolve(argv[++i]);
     else if (token === '--moves') args.moves = splitCsv(argv[++i]);
     else if (token === '--card-ids') args.cardIds = splitCsv(argv[++i]);
     else if (token === '--candidate-ids') args.candidateIds = splitCsv(argv[++i]);
@@ -123,8 +117,6 @@ function parseArgs(argv = process.argv.slice(2)) {
     else if (token === '--baseline-mode') args.baselineMode = argv[++i];
     else if (token === '--s0-mode') args.s0Mode = argv[++i];
     else if (token === '--step-timeout-ms') args.stepTimeoutMs = Number.parseInt(argv[++i], 10);
-    else if (token === '--assignments') args.assignments = true;
-    else if (token === '--blind') args.blind = true;
     else if (token === '--force') args.force = true;
     else if (token === '--dry-run') args.dryRun = true;
     else if (token === '--json') args.json = true;
@@ -166,10 +158,6 @@ function defaultRunPath(run) {
 
 function defaultPacketDir(run) {
   return path.join(ROOT, 'exports', 'a19r', 'adjudication-packets', run.run_id);
-}
-
-function defaultAssignmentDir(run) {
-  return path.join(ROOT, 'exports', 'a19r', 'human-coder-assignments', run.run_id);
 }
 
 function defaultModelScreenDir(run) {
@@ -246,28 +234,6 @@ function cmdScreen(args) {
       `proxy headroom: ${report.proxy_headroom_count}/${summary.candidate_count} (${summary.proxy_headroom_rate}); feasibility: ${summary.feasibility}\n`,
     );
   }
-}
-
-function writeAssignment({ packetPath, packet, args, run, index }) {
-  const assignmentDir = args.assignmentDir || defaultAssignmentDir(run);
-  const keyDir = args.keyDir || assignmentDir;
-  const base = `${packet.packet_id}.assignment.json`;
-  const keyBase = `${packet.packet_id}.assignment-key.json`;
-  const result = createHumanAdjudicationAssignment({
-    packetPath,
-    codebookPath: args.codebook,
-    outPath: path.join(assignmentDir, base),
-    keyOutPath: path.join(keyDir, keyBase),
-    assignmentId: `a19r-human-${packet.packet_id}-${String(index + 1).padStart(3, '0')}`,
-    randomizeArms: args.blind,
-    seed: `${run.run_id}:${packet.packet_id}`,
-  });
-  writeJson(result.outPath, result.assignment);
-  writeJson(result.keyOutPath, result.assignmentKey);
-  return {
-    assignment: repoRel(result.outPath),
-    assignment_key: repoRel(result.keyOutPath),
-  };
 }
 
 function safeSlug(value) {
@@ -667,39 +633,25 @@ function cmdPacketize(args) {
   const run = readJson(args.run);
   const packets = buildMiniDramaPackets({ run, ontology, candidateIds: args.candidateIds });
   const outDir = args.outDir || defaultPacketDir(run);
-  const written = packets.map((packet, index) => {
+  const written = packets.map((packet) => {
     const packetPath = path.join(outDir, `${packet.packet_id}.packet.json`);
     writeJson(packetPath, packet);
-    const entry = {
+    return {
       packet: repoRel(packetPath),
       packet_id: packet.packet_id,
       coder_packet_sha256: packet.audit.coder_packet_sha256,
     };
-    if (args.assignments) {
-      Object.assign(entry, writeAssignment({ packetPath, packet, args, run, index }));
-    }
-    return entry;
   });
   const summary = {
     run: repoRel(args.run),
     packet_count: written.length,
     packets: written,
-    web_test:
-      args.assignments && written[0]
-        ? {
-            assignment_env: `A19_ADJUDICATION_ASSIGNMENT=${written[0].assignment}`,
-            codebook_env: `A19_ADJUDICATION_CODEBOOK=${repoRel(args.codebook)}`,
-            path: '/adjudication',
-          }
-        : null,
+    automated_branch_note: 'packet_only_no_human_assignment',
   };
   if (args.json) process.stdout.write(JSON.stringify(summary, null, 2) + '\n');
   else {
     process.stdout.write(`A19R packets written: ${summary.packet_count}\n`);
-    if (summary.web_test) {
-      process.stdout.write(`web assignment env: ${summary.web_test.assignment_env}\n`);
-      process.stdout.write(`web codebook env: ${summary.web_test.codebook_env}\n`);
-    }
+    process.stdout.write('human assignment generation: disabled for automated branch\n');
   }
 }
 

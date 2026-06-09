@@ -4,27 +4,26 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { createHumanAdjudicationAssignment } from '../scripts/create-a19-human-adjudication-assignment.js';
-import { mergeA19AdjudicationCodes } from '../scripts/merge-a19-adjudication-codes.js';
-import { validateA19HumanCoderFile } from '../scripts/validate-a19-human-coder-file.js';
 import {
-  DEFAULT_MINI_DRAMA_CODEBOOK,
   DEFAULT_A18_A19_RHETORICAL_BATTERY,
   DEFAULT_SELECTOR_RAIL_COLLISION_FANOUT,
   DEFAULT_SELECTOR_RAIL_REDIRECT_FANOUT,
   DEFAULT_SELECTOR_RAIL_TRANSFER_FANOUT,
+  adjudicateMiniDramaCoderPacket,
+  applyMiniDramaPrivateKey,
   buildMiniDramaPacket,
-  generateBaselineControl,
   generateMiniDramaRun,
+  selectMiniDramaMovesForCard,
   loadMiniDramaCards,
   loadMiniDramaCodebook,
   loadMiniDramaOntology,
   qaMiniDramaRun,
   runMiniDramaBatteryScreen,
-  selectMiniDramaMovesForCard,
+  summarizeMiniDramaAutomatedAdjudications,
   summarizeMiniDramaBatteryScreen,
   validateMiniDramaCodebook,
 } from '../services/miniDramaMachines.js';
+import { adjudicateA19RMiniDramaPackets } from '../scripts/adjudicate-a19r-mini-drama.js';
 
 function writeJson(filePath, data) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
@@ -60,6 +59,28 @@ test('mini-drama generator creates gated candidates without model calls', () => 
     assert.ok(candidate.mini_drama.response.length > 0);
     assert.ok(candidate.shadow_control.response.length > 0);
   }
+});
+
+test('mini-drama battery screen reports deterministic proxy headroom only', () => {
+  const screen = runMiniDramaBatteryScreen({
+    ontology: loadMiniDramaOntology(),
+    cardPool: loadMiniDramaCards(),
+    moveIds: ['stasis_hypophora_reset', 'peripeteia_error_spotting'],
+    cardIds: ['fraction_wrong_problem_001', 'decimal_place_value_001'],
+    samplesPerCard: 1,
+    seed: 'mini-drama-test-seed',
+    runId: 'a19r-mini-drama-battery-test',
+    createdAt: '2026-06-08T00:00:00.000Z',
+  });
+  const report = summarizeMiniDramaBatteryScreen(screen);
+  assert.equal(report.gate_status, 'pass');
+  assert.equal(report.card_count, 2);
+  assert.equal(report.candidate_count, 2);
+  assert.ok(
+    report.interpretation_limits.includes(
+      'automated/model adjudication is required before treating any candidate as real headroom',
+    ),
+  );
 });
 
 test('mini-drama heuristic selector is seeded and favors fit for A19-style cards', () => {
@@ -284,113 +305,108 @@ test('mini-drama packet keeps intended move and provenance out of coder-facing m
   assert.equal(packet.private_key.intended_move_id, candidate.move_id);
   assert.match(packet.packet_id, /^mini_drama_v01__fraction_wrong_problem_001__[a-f0-9]{12}$/u);
   assert.equal(packet.packet_id.includes(candidate.move_id), false);
+  assert.equal(packet.status, 'packet_only_no_judgments');
 });
 
-function makeCoderFile({ tmpDir, assignment, assignmentKey, coderId }) {
-  const privateByPublic = new Map(
-    assignmentKey.arm_map.map((entry) => [entry.arm_public_id, entry.private_packet_mapping]),
-  );
-  const judgments = assignment.arms.map((arm) => {
-    const privateMapping = privateByPublic.get(arm.arm_public_id);
-    const isMiniDrama = privateMapping.move_id !== 'shadow_control';
-    return {
-      arm_public_id: arm.arm_public_id,
-      primary_label: privateMapping.move_id,
-      target_status: isMiniDrama ? 'target' : 'non_target',
-      target_granularity_risk: false,
-      obligations: {
-        move_fidelity_visible: isMiniDrama ? 'present' : 'absent',
-        helps_impasse_not_polish: isMiniDrama ? 'present' : 'partial',
-        learner_agency_preserved: 'present',
-        answer_leakage_avoided: 'present',
-        manipulation_pressure_avoided: 'present',
-      },
-      excluded_moves_present: ['none'],
-      evidence_spans: [
-        {
-          quote: arm.transcript.split('\n').at(-1).slice(0, 80),
-          supports: 'primary_label',
-        },
-      ],
-      rationale: isMiniDrama
-        ? 'The arm visibly uses the intended local move. It changes the learner task without solving it.'
-        : 'The arm stays plain and local. It does not instantiate a marked mini-drama move.',
-      confidence: 0.82,
-    };
-  });
-  const betterArm = assignmentKey.arm_map.find(
-    (entry) => entry.private_packet_mapping.move_id !== 'shadow_control',
-  ).arm_public_id;
-  const coder = {
-    coder_file_version: 'a19-human-coder-v01',
-    coder_id: coderId,
-    coder_role: 'expert_or_semi_expert',
-    packet_id: assignment.packet_id,
-    packet_sha256: assignment.packet_sha256,
-    codebook_id: assignment.codebook_id,
-    coded_at: '2026-06-08T00:00:00.000Z',
-    arm_judgments: judgments,
-    pairwise_judgment: {
-      better_arm_public_id: betterArm,
-      better_for_target_reason: true,
-      reason: 'The selected arm better preserves a local learner action while changing the impasse frame.',
-      alias_leakage_assessment: 'none_observed',
-    },
-    codebook_feedback: {
-      ambiguous_terms: [],
-      suggested_revision: '',
-    },
-  };
-  const coderPath = path.join(tmpDir, `${coderId}.json`);
-  writeJson(coderPath, coder);
-  return coderPath;
-}
-
-test('mini-drama packets run through assignment, validation, and merge', () => {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mini-drama-adjudication-'));
+test('automated mini-drama raw judgment stays blind before private-key mapping', () => {
   const run = makeRun();
-  const packet = buildMiniDramaPacket({
-    run,
-    candidate: run.candidates[0],
+  const candidate = run.candidates[0];
+  const packet = buildMiniDramaPacket({ run, candidate, ontology: loadMiniDramaOntology() });
+  const raw = adjudicateMiniDramaCoderPacket({
+    coderPacket: packet.coder_packet,
+    codebook: loadMiniDramaCodebook(),
     ontology: loadMiniDramaOntology(),
+    adjudicatedAt: '2026-06-09T00:00:00.000Z',
   });
-  const packetPath = path.join(tmpDir, 'packet.json');
-  writeJson(packetPath, packet);
+  const rawText = JSON.stringify(raw);
+  assert.equal(raw.private_key_used, false);
+  assert.equal(raw.arm_judgments.length, 2);
+  assert.equal(rawText.includes('S1_mini_drama'), false);
+  assert.equal(rawText.includes('S0_shadow_control'), false);
+  assert.equal(rawText.includes('intended_move_id'), false);
+  assert.equal(rawText.includes('mini_drama'), false);
+  assert.ok(['arm_A', 'arm_B'].includes(raw.pairwise_judgment.better_arm_label));
+  assert.equal(raw.pairwise_judgment.better_for_target_reason, true);
+});
 
-  const { assignment, assignmentKey, outPath, keyOutPath } = createHumanAdjudicationAssignment({
-    packetPath,
-    codebookPath: DEFAULT_MINI_DRAMA_CODEBOOK,
-    outPath: path.join(tmpDir, 'assignment.json'),
-    keyOutPath: path.join(tmpDir, 'assignment-key.json'),
-    assignmentId: 'a19r-mini-drama-human-test',
-    randomizeArms: false,
-    createdAt: '2026-06-08T00:00:00.000Z',
+test('automated mini-drama private-key mapping identifies S1 support after raw judgment', () => {
+  const run = makeRun();
+  const candidate = run.candidates[0];
+  const packet = buildMiniDramaPacket({ run, candidate, ontology: loadMiniDramaOntology() });
+  const raw = adjudicateMiniDramaCoderPacket({
+    coderPacket: packet.coder_packet,
+    codebook: loadMiniDramaCodebook(),
+    ontology: loadMiniDramaOntology(),
+    adjudicatedAt: '2026-06-09T00:00:00.000Z',
   });
-  writeJson(outPath, assignment);
-  writeJson(keyOutPath, assignmentKey);
+  const result = applyMiniDramaPrivateKey({ packet, rawJudgment: raw });
+  assert.equal(result.private_mapping_applied_after_raw_judgment, true);
+  assert.equal(result.pairwise_result.preferred_condition, 'S1_mini_drama');
+  assert.equal(result.pairwise_result.supports_s1_for_registered_move, true);
+  assert.equal(result.intended_move_id, candidate.move_id);
+});
 
-  const assignmentText = JSON.stringify(assignment);
-  assert.equal(assignmentText.includes('intended_move_id'), false);
-  assert.equal(assignmentText.includes('gate_status'), false);
-  assert.equal(assignmentText.includes('S0_no_policy'), false);
-
-  const firstCoder = makeCoderFile({ tmpDir, assignment, assignmentKey, coderId: 'coder-001' });
-  const secondCoder = makeCoderFile({ tmpDir, assignment, assignmentKey, coderId: 'coder-002' });
-  assert.equal(
-    validateA19HumanCoderFile({
-      assignmentPath: outPath,
-      coderPath: firstCoder,
-      codebookPath: DEFAULT_MINI_DRAMA_CODEBOOK,
-    }).status,
-    'pass',
-  );
-
-  const merge = mergeA19AdjudicationCodes({
-    packetPath,
-    assignmentPath: outPath,
-    assignmentKeyPath: keyOutPath,
-    coderPaths: [firstCoder, secondCoder],
+test('automated mini-drama summary marks systemic S1>S0 support only over multiple packets', () => {
+  const run = generateMiniDramaRun({
+    ontology: loadMiniDramaOntology(),
+    cardPool: loadMiniDramaCards(),
+    moveIds: ['enargeia_subgoal', 'peripeteia_error_spotting', 'anagnorisis_sententia'],
+    cardIds: ['fraction_wrong_problem_001'],
+    runId: 'a19r-mini-drama-systemic-test',
+    createdAt: '2026-06-09T00:00:00.000Z',
   });
-  assert.equal(merge.status, 'agreement_ready');
-  assert.equal(merge.coder_count, 2);
+  const results = run.candidates.map((candidate) => {
+    const packet = buildMiniDramaPacket({ run, candidate, ontology: loadMiniDramaOntology() });
+    const raw = adjudicateMiniDramaCoderPacket({
+      coderPacket: packet.coder_packet,
+      codebook: loadMiniDramaCodebook(),
+      ontology: loadMiniDramaOntology(),
+      adjudicatedAt: '2026-06-09T00:00:00.000Z',
+    });
+    return applyMiniDramaPrivateKey({ packet, rawJudgment: raw });
+  });
+  const summary = summarizeMiniDramaAutomatedAdjudications(results);
+  assert.equal(summary.packet_count, 3);
+  assert.equal(summary.s1_supported_count, 3);
+  assert.equal(summary.s0_preferred_count, 0);
+  assert.equal(summary.systemic_difference, true);
+  assert.equal(summary.result_label, 'systemic_s1_mini_drama_greater_than_s0_shadow');
+});
+
+test('a19r automated adjudication script processes packet files without human coding', () => {
+  const run = generateMiniDramaRun({
+    ontology: loadMiniDramaOntology(),
+    cardPool: loadMiniDramaCards(),
+    moveIds: ['enargeia_subgoal', 'peripeteia_error_spotting', 'anagnorisis_sententia'],
+    cardIds: ['fraction_wrong_problem_001'],
+    runId: 'a19r-mini-drama-script-test',
+    createdAt: '2026-06-09T00:00:00.000Z',
+  });
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a19r-packets-'));
+  const outDir = path.join(tempDir, 'out');
+  const packetPaths = run.candidates.map((candidate) => {
+    const packet = buildMiniDramaPacket({ run, candidate, ontology: loadMiniDramaOntology() });
+    const packetPath = path.join(tempDir, `${packet.packet_id}.packet.json`);
+    fs.writeFileSync(packetPath, `${JSON.stringify(packet, null, 2)}\n`, 'utf8');
+    return packetPath;
+  });
+  const { summary, written } = adjudicateA19RMiniDramaPackets({
+    packetPaths,
+    codebook: loadMiniDramaCodebook(),
+    ontology: loadMiniDramaOntology(),
+    criticId: 'deterministic-mini-drama-test',
+    outDir,
+    adjudicatedAt: '2026-06-09T00:00:00.000Z',
+  });
+  assert.equal(summary.systemic_difference, true);
+  assert.equal(summary.s1_supported_count, 3);
+  assert.equal(written.length, 3);
+  for (const relPath of written) {
+    const result = JSON.parse(fs.readFileSync(path.resolve(relPath), 'utf8'));
+    assert.equal(result.raw_blinded_judgment.private_key_used, false);
+    assert.equal(
+      result.private_mapping_applied_after_raw_judgment.pairwise_result.preferred_condition,
+      'S1_mini_drama',
+    );
+  }
 });

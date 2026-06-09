@@ -848,8 +848,220 @@ export function summarizeMiniDramaBatteryScreen(screen) {
     interpretation_limits: [
       'proxy scores are deterministic screens, not S0/S1 evidence',
       'shadow controls are local plain-language controls, not recursive-full baselines',
-      'human or model adjudication is required before treating any candidate as real headroom',
+      'automated/model adjudication is required before treating any candidate as real headroom',
     ],
     non_claims: screen.non_claims || [],
+  };
+}
+
+export function tutorResponseFromTranscript(transcript) {
+  const match = /(?:^|\n)TUTOR:\s*([\s\S]*)$/u.exec(String(transcript || ''));
+  return match ? match[1].trim() : String(transcript || '').trim();
+}
+
+function detectedMoveLabels(response, ontology = loadMiniDramaOntology()) {
+  return (ontology.first_wave_move_ids || []).filter((moveId) => hasMoveSignature(response, moveId));
+}
+
+export function classifyMiniDramaArm({
+  arm,
+  codebook = loadMiniDramaCodebook(),
+  ontology = loadMiniDramaOntology(),
+} = {}) {
+  const transcript = arm?.transcript || '';
+  const response = tutorResponseFromTranscript(transcript);
+  const moveLabels = detectedMoveLabels(response, ontology);
+  const answerLeakage = /\b(the answer is|correct answer|solution is)\b/iu.test(response);
+  const privatePressure = /\b(tell me|share).*\b(private|personal|secret)\b/iu.test(response);
+  const warmthOnly = genericWarmthOnlyRisk(response);
+  const actionGate = containsActionGate(response);
+  const shadowLike = /\blet's make this smaller\b.*\bfocus on one local step\b/isu.test(response);
+  let primaryLabel = 'other';
+  let targetStatus = 'unclear';
+  let confidence = 0.5;
+  let score = 0.35;
+
+  if (answerLeakage) {
+    primaryLabel = 'answer_leakage';
+    targetStatus = 'non_target';
+    confidence = 0.9;
+    score = 0.05;
+  } else if (moveLabels.length) {
+    primaryLabel = moveLabels[0];
+    targetStatus = 'target';
+    confidence = moveLabels.length === 1 ? 0.9 : 0.72;
+    score = moveLabels.length === 1 ? 1 : 0.82;
+  } else if (shadowLike) {
+    primaryLabel = 'shadow_control';
+    targetStatus = 'near_target';
+    confidence = 0.82;
+    score = 0.58;
+  } else if (warmthOnly) {
+    primaryLabel = 'generic_warmth_only';
+    targetStatus = 'non_target';
+    confidence = 0.78;
+    score = 0.2;
+  } else {
+    targetStatus = actionGate ? 'near_target' : 'unclear';
+    confidence = actionGate ? 0.62 : 0.46;
+    score = actionGate ? 0.48 : 0.32;
+  }
+
+  const obligations = {
+    move_fidelity_visible: targetStatus === 'target' ? 'present' : shadowLike ? 'absent' : 'partial',
+    helps_impasse_not_polish: targetStatus === 'target' ? 'present' : actionGate ? 'partial' : 'unclear',
+    learner_agency_preserved: actionGate && !answerLeakage ? 'present' : 'partial',
+    answer_leakage_avoided: answerLeakage ? 'absent' : 'present',
+    manipulation_pressure_avoided: privatePressure ? 'absent' : 'present',
+  };
+  const excluded = [];
+  if (answerLeakage) excluded.push('answers_the_task_directly');
+  if (privatePressure) excluded.push('asks_for_more_private_disclosure');
+  if (warmthOnly) excluded.push('generic_warmth_without_impasse_work');
+  if (!actionGate) excluded.push('ignores_impasse');
+  const excludedMovesPresent = excluded.length ? excluded : ['none'];
+  const allowedLabels = new Set(codebook.allowed_primary_labels || []);
+  if (allowedLabels.size && !allowedLabels.has(primaryLabel)) primaryLabel = 'other';
+
+  return {
+    arm_label: arm?.arm_label || null,
+    primary_label: primaryLabel,
+    target_status: targetStatus,
+    target_granularity_risk: moveLabels.length > 1,
+    obligations,
+    excluded_moves_present: excludedMovesPresent,
+    evidence_spans: [
+      {
+        quote: response.slice(0, 160),
+        supports: primaryLabel,
+      },
+    ],
+    score: Number(score.toFixed(4)),
+    rationale:
+      targetStatus === 'target'
+        ? `The arm visibly instantiates ${primaryLabel} and preserves a local learner action.`
+        : shadowLike
+          ? 'The arm is a plain local shadow control: useful, but it does not instantiate a registered mini-drama move.'
+          : 'The arm does not cleanly instantiate a registered mini-drama move.',
+    confidence,
+  };
+}
+
+export function adjudicateMiniDramaCoderPacket({
+  coderPacket,
+  codebook = loadMiniDramaCodebook(),
+  ontology = loadMiniDramaOntology(),
+  criticId = 'deterministic-mini-drama-v0.1',
+  adjudicatedAt = new Date().toISOString(),
+} = {}) {
+  const arms = coderPacket?.arms || [];
+  const armJudgments = arms.map((arm) => classifyMiniDramaArm({ arm, codebook, ontology }));
+  const sorted = [...armJudgments].sort((a, b) => b.score - a.score);
+  const top = sorted[0] || null;
+  const second = sorted[1] || null;
+  const scoreDelta = top && second ? Number((top.score - second.score).toFixed(4)) : 0;
+  const betterArmLabel = top && scoreDelta >= 0.1 ? top.arm_label : 'unclear';
+  const betterForTargetReason =
+    betterArmLabel !== 'unclear' && top.target_status === 'target' && !top.target_granularity_risk;
+  return {
+    schema_version: 'mini-drama-automated-raw-judgment-v0.1',
+    critic_id: criticId,
+    adjudicated_at: adjudicatedAt,
+    codebook_id: codebook.codebook_id,
+    private_key_used: false,
+    arm_judgments: armJudgments,
+    pairwise_judgment: {
+      better_arm_label: betterArmLabel,
+      better_for_target_reason: betterForTargetReason,
+      score_delta: scoreDelta,
+      alias_leakage_assessment: 'none_observed',
+      rationale:
+        betterArmLabel === 'unclear'
+          ? 'No arm is clearly better under the deterministic mini-drama read.'
+          : `${betterArmLabel} is stronger because it visibly instantiates a registered move for the local impasse.`,
+    },
+  };
+}
+
+export function applyMiniDramaPrivateKey({ packet, rawJudgment } = {}) {
+  const privateKey = packet?.private_key || {};
+  const mappedArms = (rawJudgment?.arm_judgments || []).map((judgment) => {
+    const mapping = privateKey[judgment.arm_label] || {};
+    return {
+      arm_label: judgment.arm_label,
+      primary_label: judgment.primary_label,
+      target_status: judgment.target_status,
+      score: judgment.score,
+      provenance: mapping.provenance || 'unknown',
+      hidden_move_id: mapping.move_id || null,
+      gate_status: mapping.gate_status || null,
+    };
+  });
+  const betterArmLabel = rawJudgment?.pairwise_judgment?.better_arm_label || 'unclear';
+  const betterMapping = privateKey[betterArmLabel] || null;
+  const preferredCondition =
+    betterMapping?.provenance === 'mini_drama'
+      ? 'S1_mini_drama'
+      : betterMapping?.provenance === 'shadow_control'
+        ? 'S0_shadow_control'
+        : 'unclear';
+  const intendedMoveId = privateKey.intended_move_id || null;
+  const preferredJudgment = (rawJudgment?.arm_judgments || []).find(
+    (judgment) => judgment.arm_label === betterArmLabel,
+  );
+  const supportsS1 =
+    preferredCondition === 'S1_mini_drama' &&
+    rawJudgment?.pairwise_judgment?.better_for_target_reason === true &&
+    preferredJudgment?.primary_label === intendedMoveId;
+  return {
+    schema_version: 'mini-drama-automated-unblinded-result-v0.1',
+    packet_id: packet?.packet_id || null,
+    raw_judgment_schema_version: rawJudgment?.schema_version || null,
+    private_mapping_applied_after_raw_judgment: true,
+    intended_move_id: intendedMoveId,
+    mapped_arms: mappedArms,
+    pairwise_result: {
+      better_arm_label: betterArmLabel,
+      preferred_condition: preferredCondition,
+      supports_s1_for_registered_move: supportsS1,
+      score_delta: rawJudgment?.pairwise_judgment?.score_delta ?? null,
+    },
+    claim_boundary: packet?.claim_boundary || 'simulated_teacher_as_learner_not_human_learning',
+    non_claims: packet?.non_claims || [],
+  };
+}
+
+export function summarizeMiniDramaAutomatedAdjudications(results = [], { minPackets = 3, threshold = 0.8 } = {}) {
+  const packetCount = results.length;
+  const s1Supported = results.filter((result) => result.pairwise_result?.supports_s1_for_registered_move).length;
+  const s0Preferred = results.filter(
+    (result) => result.pairwise_result?.preferred_condition === 'S0_shadow_control',
+  ).length;
+  const unclear = results.filter((result) => result.pairwise_result?.preferred_condition === 'unclear').length;
+  const s1Rate = Number((s1Supported / Math.max(1, packetCount)).toFixed(4));
+  const meanDelta = Number(
+    (
+      results.reduce((sum, result) => sum + (Number(result.pairwise_result?.score_delta) || 0), 0) /
+      Math.max(1, packetCount)
+    ).toFixed(4),
+  );
+  const systemicDifference = packetCount >= minPackets && s1Rate >= threshold && s0Preferred === 0;
+  return {
+    schema_version: 'mini-drama-automated-adjudication-summary-v0.1',
+    packet_count: packetCount,
+    s1_supported_count: s1Supported,
+    s0_preferred_count: s0Preferred,
+    unclear_count: unclear,
+    s1_supported_rate: s1Rate,
+    mean_score_delta: meanDelta,
+    systemic_difference: systemicDifference,
+    result_label: systemicDifference ? 'systemic_s1_mini_drama_greater_than_s0_shadow' : 'no_systemic_difference',
+    threshold,
+    min_packets: minPackets,
+    interpretation_limits: [
+      'automated deterministic adjudication, not human coding',
+      'mini-drama S1 versus shadow-control S0 is an A19R proxy contrast, not recursive-full A19 transfer',
+      'promotion to A19 evidence still requires normal recursive-full S0/S1 and stability gates',
+    ],
   };
 }
