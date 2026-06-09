@@ -100,6 +100,7 @@ function summarizeTrack(track) {
   const missingArtifacts = artifactChecks.filter((artifact) => !artifact.exists);
   const known = track.known_result || {};
   const distinctKnown = known.distinct_result_known === true || TERMINAL_STATUSES.has(track.status);
+  const declaredNextAction = firstPendingAction(track);
   const candidates = [
     ...asArray(track.candidate_queue).map(summarizeCandidate),
     ...asArray(track.candidate_conditions).map(summarizeCandidate),
@@ -107,11 +108,11 @@ function summarizeTrack(track) {
   const nextAction =
     missingArtifacts.length > 0
       ? `create_required_artifact:${missingArtifacts[0].path}`
-      : distinctKnown
-        ? 'hold_boundary_until_next_preregistered_unit'
-        : firstPendingAction(track) ||
-          candidates.find((candidate) => candidate.next_action)?.next_action ||
-          'no_next_action';
+      : declaredNextAction
+        ? declaredNextAction
+        : distinctKnown
+          ? 'hold_boundary_until_next_preregistered_unit'
+          : candidates.find((candidate) => candidate.next_action)?.next_action || 'no_next_action';
 
   return {
     track_id: track.track_id,

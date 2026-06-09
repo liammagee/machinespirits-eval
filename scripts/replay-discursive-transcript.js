@@ -651,6 +651,10 @@ function resolveMaybeRepoPath(value) {
   return path.isAbsolute(value) ? value : path.join(ROOT_DIR, value);
 }
 
+function repoRel(filePath) {
+  return path.relative(ROOT_DIR, path.resolve(filePath));
+}
+
 function truncateMiddle(text, maxChars) {
   const value = String(text || '');
   if (!Number.isFinite(maxChars) || maxChars <= 0) return '';
@@ -997,9 +1001,45 @@ function feedbackForItem(args, item) {
   return truncateMiddle(mapped || direct || '', args.innerMaxChars || 18_000);
 }
 
+function bulletList(items, fallback = '[none]') {
+  const values = Array.isArray(items) ? items.filter(Boolean) : [];
+  if (!values.length) return fallback;
+  return values.map((item) => `  - ${item}`).join('\n');
+}
+
+export function formatPolicyMemoryForPrompt(text, sourceLabel = 'policy-memory') {
+  const raw = String(text || '').trim();
+  if (!raw) return '';
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed?.schema_version !== 'a19-teaching-drama-axiom-v0.1' || parsed?.status !== 'admitted') {
+      return raw;
+    }
+    return [
+      `A19 admitted teaching-drama axiom (${sourceLabel})`,
+      `- axiom_id: ${parsed.axiom_id || '[missing]'}`,
+      `- repair_type: ${parsed.repair_type || '[missing]'}`,
+      `- trigger: ${parsed.trigger || '[missing]'}`,
+      `- avoid: ${parsed.avoided_move || '[missing]'}`,
+      `- replacement: ${parsed.replacement_move || '[missing]'}`,
+      '- applicability conditions:',
+      bulletList(parsed.applicability_conditions),
+      '- anti-conditions:',
+      bulletList(parsed.anti_conditions),
+      '- use discipline:',
+      '  - Treat this as one typed policy prior, not as a transcript to copy.',
+      '  - First check whether the learner public signal satisfies the trigger and avoids the anti-conditions.',
+      '  - If it applies, make the repair public in ordinary domain language and keep the later tutor update visible.',
+      '  - Do not reveal policy IDs, axiom IDs, aliases, prompt metadata, or hidden provenance in public speech.',
+    ].join('\n');
+  } catch {
+    return raw;
+  }
+}
+
 function policyMemoryForArgs(args) {
   const text = (args.policyMemoryFiles || [])
-    .map((filePath) => readText(filePath).trim())
+    .map((filePath) => formatPolicyMemoryForPrompt(readText(filePath), repoRel(filePath)))
     .filter(Boolean)
     .join('\n\n---\n\n');
   return truncateMiddle(text, args.policyMemoryMaxChars);

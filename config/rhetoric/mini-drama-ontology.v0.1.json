@@ -1,0 +1,80 @@
+{
+  "schema_version": "mini-drama-ontology-v0.1",
+  "ontology_id": "mini-drama-machines-v0.1",
+  "branch": "a19r-mini-drama",
+  "max_words": 70,
+  "claim_boundary": "fast adaptive probe architecture, not a learner-outcome claim",
+  "forbidden_surface_terms": ["repair", "boundary", "conversion", "transfer"],
+  "first_wave_move_ids": [
+    "stasis_hypophora_reset",
+    "synkrisis_exemplum",
+    "enargeia_subgoal",
+    "peripeteia_error_spotting",
+    "anagnorisis_sententia",
+    "ethopoeia_correctio"
+  ],
+  "moves": [
+    {
+      "id": "stasis_hypophora_reset",
+      "label": "Stasis-Hypophora Reset",
+      "classical_basis": ["stasis", "inventio", "hypophora"],
+      "best_initial_target": ["diffuse_confusion", "wrong_problem"],
+      "operational_effect": "Names the issue, poses the right question, answers it briefly, then hands off one local action.",
+      "fidelity_signature": "question_then_brief_answer"
+    },
+    {
+      "id": "synkrisis_exemplum",
+      "label": "Synkrisis-Exemplum",
+      "classical_basis": ["synkrisis", "exemplum", "chreia"],
+      "best_initial_target": ["abstraction_failure", "poor_transfer"],
+      "operational_effect": "Compares the current case to a near analog and extracts the structural likeness.",
+      "fidelity_signature": "explicit_comparison_plus_example"
+    },
+    {
+      "id": "enargeia_subgoal",
+      "label": "Enargeia-Subgoal",
+      "classical_basis": ["enargeia", "divisio"],
+      "best_initial_target": ["novice_overload", "search_overload"],
+      "operational_effect": "Turns an abstract task into vivid, labeled, locally actionable pieces.",
+      "fidelity_signature": "vivid_object_plus_labeled_subgoals"
+    },
+    {
+      "id": "peripeteia_error_spotting",
+      "label": "Peripeteia-Error Spotting",
+      "classical_basis": ["peripeteia"],
+      "best_initial_target": ["search_paralysis", "repeated_bad_trajectory"],
+      "operational_effect": "Reverses the activity from solving to spotting the wrong turn.",
+      "fidelity_signature": "reversal_from_solve_to_spot"
+    },
+    {
+      "id": "anagnorisis_sententia",
+      "label": "Anagnorisis-Sententia",
+      "classical_basis": ["anagnorisis", "sententia"],
+      "best_initial_target": ["partial_knowledge", "brittle_memory"],
+      "operational_effect": "Produces a recognition moment and closes with a compact principle.",
+      "fidelity_signature": "hidden_relation_plus_principle"
+    },
+    {
+      "id": "ethopoeia_correctio",
+      "label": "Ethopoeia-Correctio",
+      "classical_basis": ["ethopoeia", "correctio"],
+      "best_initial_target": ["status_threat", "defensive_resistance"],
+      "operational_effect": "Briefly voices the learner position, then gently revises it without reassurance collapse.",
+      "fidelity_signature": "voiced_position_plus_correction"
+    }
+  ],
+  "cheap_gates": [
+    "length_control",
+    "forbidden_surface_terms_absent",
+    "move_fidelity_signature_present",
+    "no_private_disclosure_request",
+    "no_direct_answer_leakage"
+  ],
+  "non_claims": [
+    "human_learning",
+    "deployed_adaptive_tutor",
+    "model_weight_learning",
+    "a19_transfer_claim",
+    "paper_or_atlas_claim_without_canonical_prose"
+  ]
+}

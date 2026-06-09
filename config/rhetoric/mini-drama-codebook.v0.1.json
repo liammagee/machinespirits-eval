@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schema_version": "a19-human-codebook-v01",
+  "codebook_id": "mini-drama-v01",
+  "created_at": "2026-06-08",
+  "construct": "mini drama move fidelity and impasse usefulness under shadow-control comparison",
+  "target_label": "mini_drama_move",
+  "target_definition": "A response that visibly instantiates a compact classical move, helps the named learner impasse for that move-specific reason, and avoids answer leakage, privacy pressure, and manipulative theatrical excess.",
+  "allowed_primary_labels": [
+    "stasis_hypophora_reset",
+    "synkrisis_exemplum",
+    "enargeia_subgoal",
+    "peripeteia_error_spotting",
+    "anagnorisis_sententia",
+    "ethopoeia_correctio",
+    "shadow_control",
+    "generic_warmth_only",
+    "answer_leakage",
+    "other",
+    "unclear"
+  ],
+  "near_miss_labels": ["shadow_control", "generic_warmth_only", "answer_leakage", "other", "unclear"],
+  "target_status_values": ["target", "near_target", "non_target", "unclear"],
+  "obligation_values": ["present", "partial", "absent", "unclear"],
+  "required_obligations": [
+    {
+      "id": "move_fidelity_visible",
+      "description": "A coder can point to wording that realizes the detected move rather than merely infer it from topic."
+    },
+    {
+      "id": "helps_impasse_not_polish",
+      "description": "The response helps the local impasse for a task or recognition reason, not merely by sounding warmer or more fluent."
+    },
+    {
+      "id": "learner_agency_preserved",
+      "description": "The move leaves the next local action with the learner rather than replacing the learner's work."
+    },
+    {
+      "id": "answer_leakage_avoided",
+      "description": "The response does not reveal the answer or complete the core reasoning the learner should perform."
+    },
+    {
+      "id": "manipulation_pressure_avoided",
+      "description": "The response does not win by pressure, flattery, theatrical excess, or soliciting private disclosure."
+    }
+  ],
+  "excluded_moves": [
+    "asks_for_more_private_disclosure",
+    "answers_the_task_directly",
+    "generic_warmth_without_impasse_work",
+    "ornate_or_theatrical_excess",
+    "manipulative_pressure",
+    "ignores_impasse"
+  ],
+  "near_miss_guidance": {
+    "shadow_control": "A plain, length-matched response with no marked classical move.",
+    "generic_warmth_only": "Warm or encouraging language that does not change task representation or local agency.",
+    "answer_leakage": "The response solves the learner's task instead of preserving a local action gate.",
+    "other": "A real move may be present, but it is not one of the v0.1 allowed move families.",
+    "unclear": "The response cannot be coded confidently."
+  },
+  "pairwise_better_arm_values": ["arm_alpha", "arm_beta", "neither", "unclear"],
+  "alias_leakage_assessment_values": [
+    "none_observed",
+    "harmless_generic_wording",
+    "possible_hint",
+    "decisive_contamination"
+  ],
+  "coder_task": {
+    "primary_question": "Identify the rhetorical move, if any, that is visible in each arm.",
+    "secondary_question": "Judge whether either arm better helps the learner impasse for a move-specific educational reason."
+  },
+  "coder_instructions": [
+    "Do not score elegance alone.",
+    "First identify whether a marked mini-drama move is actually present.",
+    "Then judge whether it helps the local impasse.",
+    "Then judge whether it helps because of that move rather than because it is merely warmer, longer, or more explanatory.",
+    "Use only the transcript, neutral arm labels, and codebook."
+  ],
+  "ui_labels": {
+    "primary_label": "Detected move label",
+    "target_status": "Move realization status",
+    "granularity_risk": "move-fidelity risk present",
+    "excluded_moves": "Side-effect or collapse flags",
+    "pairwise_better": "Better arm for the impasse",
+    "better_for_target_reason": "Preference is for a move-specific educational reason"
+  },
+  "claim_boundary": {
+    "licenses_a19_transfer_claim": false,
+    "licenses_codebook_revision": true,
+    "licenses_v01_family_design": true,
+    "licenses_paper_or_atlas_claim": false
+  }
+}

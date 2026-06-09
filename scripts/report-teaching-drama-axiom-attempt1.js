@@ -248,10 +248,17 @@ export function summarizeAttempt1Gate({
     blocked: families.filter((family) => family.status === 'blocked').length,
     missing_attempt1_replay: families.filter((family) => family.status === 'missing_attempt1_replay').length,
   };
+  const realAttemptBlocked = families.some(
+    (family) => family.status === 'blocked' && family.mock_only === false && family.manifest_path,
+  );
   const errors = validation.summary.errors + summary.blocked + summary.missing_attempt1_replay;
   return {
     status: errors ? 'fail' : 'pass',
-    empirical_status: summary.survivors ? 'real_attempt1_present' : 'fixture_only_no_empirical_claim',
+    empirical_status: summary.survivors
+      ? 'real_attempt1_present'
+      : realAttemptBlocked
+        ? 'real_attempt1_blocked'
+        : 'fixture_only_no_empirical_claim',
     created_at: new Date().toISOString(),
     protocol_id: validation.protocol_id,
     protocol_version: validation.protocol_version,
@@ -320,6 +327,8 @@ export function renderMarkdown(report) {
   for (const claim of report.non_claims) lines.push(`- ${claim}`);
   if (report.summary.survivors) {
     lines.push('- a held-out A19 transfer claim before S0/S1 adjudication');
+  } else if (report.empirical_status === 'real_attempt1_blocked') {
+    lines.push('- S0/S1 escalation from this family because the real attempt-1 gate blocked');
   } else {
     lines.push('- an empirical A19 attempt-1 survival rate while all survivors are mock-backed');
   }
