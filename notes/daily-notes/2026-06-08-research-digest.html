@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Digest — 2026-06-08</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --border: #2a2d3a;
+      --accent: #7c6af7;
+      --accent2: #4fc3a1;
+      --warn: #f7a84a;
+      --text: #d4d8e8;
+      --muted: #7a7f96;
+      --tag-bg: #252838;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.65;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem;
+    }
+    header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    header h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.02em;
+    }
+    header .meta {
+      margin-top: 0.4rem;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+    header .meta span { margin-right: 1.5rem; }
+    .toc {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.2rem 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .toc h2 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.8rem; }
+    .toc ol { padding-left: 1.2rem; }
+    .toc li { margin: 0.25rem 0; }
+    .toc a { color: var(--accent); text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+    .section-heading {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin: 2.5rem 0 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .section-heading::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.4rem 1.6rem;
+      margin-bottom: 1.2rem;
+      position: relative;
+    }
+    .card.flag {
+      border-left: 3px solid var(--warn);
+    }
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.8rem;
+      margin-bottom: 0.7rem;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-top: 0.2rem;
+    }
+    .badge.this-week { background: #1e3a2a; color: #4fc3a1; }
+    .badge.recent     { background: #2a2838; color: #a78bfa; }
+    .card h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.4;
+    }
+    .card h3 a { color: #fff; text-decoration: none; border-bottom: 1px dashed var(--border); }
+    .card h3 a:hover { border-color: var(--accent); color: var(--accent); }
+    .card .byline {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin: 0.3rem 0 0.7rem;
+    }
+    .card p { font-size: 0.93rem; color: var(--text); margin-bottom: 0.6rem; }
+    .card .relevance {
+      font-size: 0.88rem;
+      color: #a8b2cc;
+      padding: 0.6rem 0.8rem;
+      background: rgba(124,106,247,0.07);
+      border-radius: 6px;
+      margin-top: 0.6rem;
+    }
+    .flag-note {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      background: rgba(247,168,74,0.08);
+      border: 1px solid rgba(247,168,74,0.25);
+      border-radius: 6px;
+      padding: 0.6rem 0.8rem;
+      margin-top: 0.7rem;
+      font-size: 0.85rem;
+      color: #f7c96a;
+    }
+    .flag-note::before { content: '⚑'; flex-shrink: 0; }
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.8rem;
+    }
+    .tag {
+      font-size: 0.72rem;
+      background: var(--tag-bg);
+      color: var(--muted);
+      padding: 0.15rem 0.55rem;
+      border-radius: 3px;
+    }
+    .citation {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 0.6rem;
+      font-style: italic;
+    }
+    .summary-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.2rem 1.5rem;
+      margin-top: 2.5rem;
+    }
+    .summary-box h2 { font-size: 0.9rem; font-weight: 600; color: #fff; margin-bottom: 0.7rem; }
+    .summary-box ul { padding-left: 1.2rem; }
+    .summary-box li { font-size: 0.9rem; color: var(--text); margin: 0.35rem 0; }
+    footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Research Digest</h1>
+  <div class="meta">
+    <span>2026-06-08</span>
+    <span>Topics: Prompt Engineering · Agent Architecture · Ontology · Dramaturgy · Rhetoric</span>
+    <span>Project: machinespirits-eval</span>
+  </div>
+</header>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#agent-arch">Agent Architecture</a> — 3 papers (this week)</li>
+    <li><a href="#prompt-eng">Prompt Engineering</a> — 1 paper (last month)</li>
+    <li><a href="#ontology">Ontology</a> — 1 paper (last 2 months)</li>
+    <li><a href="#rhetoric">Rhetoric &amp; Argumentation</a> — 2 papers (last 2 months)</li>
+    <li><a href="#dramaturgy">Dramaturgy &amp; Roleplay</a> — 1 paper (recently indexed)</li>
+    <li><a href="#summary">Unblocking Summary</a></li>
+  </ol>
+</div>
+
+<!-- ─────────────────────────────────────────── AGENT ARCHITECTURE -->
+<div class="section-heading" id="agent-arch">Agent Architecture</div>
+
+<div class="card flag">
+  <div class="card-header">
+    <span class="badge this-week">This Week</span>
+    <h3>
+      <a href="https://arxiv.org/abs/2606.05411" target="_blank">
+        A Motivational Architecture for Conversational AGI
+      </a>
+    </h3>
+  </div>
+  <div class="byline">Anna Mikeda &amp; Ben Goertzel · arXiv:2606.05411 · June 2026</div>
+  <p>
+    Proposes a dialogue-native motivational homeostasis for conversational agents, recasting the
+    OpenPsi/MetaMo motivational lineage so agents regulate <em>competence, uncertainty reduction,
+    affiliation, affinity, legitimacy, nurturing,</em> and <em>aesthetic coherence</em> rather than
+    bodily deficits. The agent's "sensorimotor loop" is linguistic; consequential actions are speech
+    acts, tool invocations, and strategic silences.
+  </p>
+  <div class="relevance">
+    <strong>Project relevance:</strong> The motivational drives—especially <em>affiliation</em> and
+    <em>aesthetic coherence</em>—directly parallel recognition theory's relational ontology and may
+    explain why recognition-enhanced prompts outperform baseline. Could inform how the tutor's ego
+    models its own engagement state and why agents sometimes lapse into compliance rather than genuine
+    Socratic challenge. The "legitimacy" drive maps neatly onto the superego's pedagogical oversight role.
+  </div>
+  <div class="flag-note">
+    Could accelerate current work: maps motivation-theory concepts onto the ego/superego architecture
+    and provides vocabulary for explaining the recognition-prompt effect found in §6.3.
+  </div>
+  <div class="tags">
+    <span class="tag">agent architecture</span>
+    <span class="tag">motivation</span>
+    <span class="tag">recognition theory</span>
+    <span class="tag">ego/superego</span>
+  </div>
+  <div class="citation">Mikeda, A. &amp; Goertzel, B. (2026). A Motivational Architecture for Conversational AGI. arXiv:2606.05411.</div>
+</div>
+
+<div class="card flag">
+  <div class="card-header">
+    <span class="badge this-week">This Week</span>
+    <h3>
+      <a href="https://arxiv.org/abs/2606.05402" target="_blank">
+        ReasoningFlow: Discourse Structures for Understanding LLM Reasoning Traces
+      </a>
+    </h3>
+  </div>
+  <div class="byline">Jinu Lee, Shivam Agarwal, Amruta Parulekar, Siddarth Madala, Dilek Hakkani-Tür &amp; Julia Hockenmaier · arXiv:2606.05402 · 3 June 2026</div>
+  <p>
+    Maps LLM reasoning traces to fine-grained directed acyclic graphs (DAGs) capturing backtracking,
+    self-correction, and divergent reasoning paths. Validated against 1,260 traces (247.7k steps) spanning
+    math, science, and argumentation tasks across five models; achieves high inter-annotator agreement in
+    a 31-trace manual annotation corpus.
+  </p>
+  <div class="relevance">
+    <strong>Project relevance:</strong> The DAG structure is a natural formalism for ego/superego
+    deliberation traces: the superego's critique introduces a branch, and the ego's revision is a
+    merge. Applying ReasoningFlow to the project's dialogue logs could replace or sharpen the current
+    RevΔ/EgoSpec/AdaptΔ process measures in <code>analyze-mechanism-traces.js</code>.
+  </div>
+  <div class="flag-note">
+    Could directly enhance <code>scripts/analyze-mechanism-traces.js</code> — use DAG structure to
+    quantify deliberation depth and backtrack frequency per cell.
+  </div>
+  <div class="tags">
+    <span class="tag">discourse analysis</span>
+    <span class="tag">reasoning traces</span>
+    <span class="tag">deliberation</span>
+    <span class="tag">graph structures</span>
+  </div>
+  <div class="citation">Lee, J., Agarwal, S., Parulekar, A., Madala, S., Hakkani-Tür, D. &amp; Hockenmaier, J. (2026). ReasoningFlow: Discourse Structures for Understanding LLM Reasoning Traces. arXiv:2606.05402.</div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <span class="badge this-week">This Week</span>
+    <h3>
+      <a href="https://arxiv.org/abs/2606.06448" target="_blank">
+        Agent Memory: Characterization and System Implications of Stateful Long-Horizon Workloads
+      </a>
+    </h3>
+  </div>
+  <div class="byline">Yasmine Omri, Ziyu Gan, Zachary Broveak, Robin Geens, Zexue He, Alex Pentland, Marian Verhelst, Tsachy Weissman &amp; Thierry Tambe · arXiv:2606.06448 · 4 June 2026</div>
+  <p>
+    First systems characterisation of agent memory, spanning flat retrieval, LLM-mediated extraction,
+    consolidating fact stores, and agentic control flows. Analyses how agents must persistently store,
+    retrieve, and update memory across sessions to sustain reasoning on long-horizon tasks.
+  </p>
+  <div class="relevance">
+    <strong>Project relevance:</strong> Multi-turn tutoring dialogues are exactly the stateful
+    long-horizon workloads characterised here. The taxonomy of memory architectures directly applies
+    to the adaptive tutor (cells 110–113) and could inform how conversation history is managed across
+    turns in the bilateral ego-superego loop.
+  </div>
+  <div class="tags">
+    <span class="tag">agent architecture</span>
+    <span class="tag">memory</span>
+    <span class="tag">long-horizon</span>
+    <span class="tag">multi-turn dialogue</span>
+  </div>
+  <div class="citation">Omri, Y., Gan, Z. et al. (2026). Agent Memory: Characterization and System Implications of Stateful Long-Horizon Workloads. arXiv:2606.06448.</div>
+</div>
+
+<!-- ─────────────────────────────────────────── PROMPT ENGINEERING -->
+<div class="section-heading" id="prompt-eng">Prompt Engineering</div>
+
+<div class="card">
+  <div class="card-header">
+    <span class="badge recent">Last Month</span>
+    <h3>
+      <a href="https://arxiv.org/abs/2605.12280" target="_blank">
+        Iterative Audit Convergence in LLM-Managed Multi-Agent Systems: A Case Study in Prompt Engineering Quality Assurance
+      </a>
+    </h3>
+  </div>
+  <div class="byline">Elias Calboreanu · arXiv:2605.12280 · May 2026</div>
+  <p>
+    Empirical case study of Claude sub-agents auditing 7,150 lines of prompt specifications across
+    a seven-lane multi-agent pipeline (AEGIS). Nine sequential audit rounds surfaced 51 prompt-specification
+    consistency defects; the study derives a seven-category defect taxonomy and shows non-monotonic
+    convergence consistent with cascading edits.
+  </p>
+  <div class="relevance">
+    <strong>Project relevance:</strong> The AEGIS architecture (layered orchestration, coordinator+expert
+    agent prompts) is structurally similar to the ego/superego prompt chain. The defect taxonomy—covering
+    instruction conflicts, scope drift, role confusion, etc.—could be applied directly to audit the
+    project's <code>prompts/</code> directory, particularly the dialectical and superego variants (cells 22–33).
+  </div>
+  <div class="tags">
+    <span class="tag">prompt engineering</span>
+    <span class="tag">multi-agent</span>
+    <span class="tag">quality assurance</span>
+    <span class="tag">audit</span>
+  </div>
+  <div class="citation">Calboreanu, E. (2026). Iterative Audit Convergence in LLM-Managed Multi-Agent Systems. arXiv:2605.12280.</div>
+</div>
+
+<!-- ─────────────────────────────────────────── ONTOLOGY -->
+<div class="section-heading" id="ontology">Ontology</div>
+
+<div class="card flag">
+  <div class="card-header">
+    <span class="badge recent">Last 2 Months</span>
+    <h3>
+      <a href="https://arxiv.org/abs/2604.00555" target="_blank">
+        Ontology-Constrained Neural Reasoning in Enterprise Agentic Systems: A Neurosymbolic Architecture for Domain-Grounded AI Agents
+      </a>
+    </h3>
+  </div>
+  <div class="byline">arXiv:2604.00555 · April 2026 (v2)</div>
+  <p>
+    Proposes a neurosymbolic architecture that constrains LLM generation with formal ontological
+    graphs, ensuring domain-grounded reasoning in enterprise agents. Microsoft's Fabric IQ
+    independently converged on the same pattern, providing industry-scale validation. The
+    architecture preserves ontological validity while retaining the flexibility of neural generation.
+  </p>
+  <div class="relevance">
+    <strong>Project relevance:</strong> The poetics rubric (<code>config/evaluation-rubric-poetics.yaml</code>)
+    and the 6-dimension Aristotelian ontology are exactly the kind of domain graph this architecture
+    targets. Constraining the critic LLM with an explicit poetics ontology graph could address the
+    catastrophic inter-rater reliability failure (weighted κ ≈ 0.04 vs ≥0.60 target) by forcing the
+    critic to reason from defined nodes rather than free-associating.
+  </div>
+  <div class="flag-note">
+    Potentially unblocking: the κ failure in poetics scoring may be addressable by ontology-grounded
+    critic generation rather than free-form rubric prompting.
+  </div>
+  <div class="tags">
+    <span class="tag">ontology</span>
+    <span class="tag">neurosymbolic</span>
+    <span class="tag">knowledge representation</span>
+    <span class="tag">poetics</span>
+    <span class="tag">evaluation</span>
+  </div>
+  <div class="citation">arXiv:2604.00555 (2026). Ontology-Constrained Neural Reasoning in Enterprise Agentic Systems. arXiv:2604.00555v2.</div>
+</div>
+
+<!-- ─────────────────────────────────────────── RHETORIC -->
+<div class="section-heading" id="rhetoric">Rhetoric &amp; Argumentation</div>
+
+<div class="card">
+  <div class="card-header">
+    <span class="badge recent">Last 2 Months</span>
+    <h3>
+      <a href="https://arxiv.org/abs/2604.14128" target="_blank">
+        Rhetorical Questions in LLM Representations: A Linear Probing Study
+      </a>
+    </h3>
+  </div>
+  <div class="byline">arXiv:2604.14128 · April 2026</div>
+  <p>
+    Investigates how LLMs internally represent rhetorical questions (asked to persuade or signal
+    stance rather than seek information). Finds that rhetorical signals emerge early in layer
+    progression and are most stably captured by last-token representations across multiple model
+    families.
+  </p>
+  <div class="relevance">
+    <strong>Project relevance:</strong> Tutoring dialogues are saturated with rhetorical questions as
+    Socratic devices. Understanding that LLMs encode rhetorical intent differently from sincere
+    questions—and that this signal is geometrically stable—suggests recognition-prompt design could
+    explicitly target rhetorical framing to activate the right internal representations in the ego model.
+  </div>
+  <div class="tags">
+    <span class="tag">rhetoric</span>
+    <span class="tag">probing</span>
+    <span class="tag">LLM representations</span>
+    <span class="tag">Socratic method</span>
+  </div>
+  <div class="citation">arXiv:2604.14128 (2026). Rhetorical Questions in LLM Representations: A Linear Probing Study. arXiv:2604.14128.</div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <span class="badge recent">Last 2 Months</span>
+    <h3>
+      <a href="https://arxiv.org/abs/2604.07028" target="_blank">
+        Strategic Persuasion with Trait-Conditioned Multi-Agent Systems for Iterative Legal Argumentation
+      </a>
+    </h3>
+  </div>
+  <div class="byline">arXiv:2604.07028 · April 2026</div>
+  <p>
+    Comprehensive empirical analysis of multi-agent argumentation where each agent's rhetorical
+    strategy is conditioned on explicit personality traits. Evaluates 84 three-trait team
+    configurations across 10 synthetic legal cases using DeepSeek-R1 and Gemini 2.5 Pro;
+    quantifies how trait combinations affect argumentative dynamics and persuasion outcomes.
+  </p>
+  <div class="relevance">
+    <strong>Project relevance:</strong> Trait-conditioning is the argumentative analogue of the
+    project's learner persona modeling (<code>services/learnerConfigLoader.js</code>). The evaluation
+    methodology—measuring which trait combos win arguments—is directly applicable to the dialectical
+    superego cells (22–33) as a framework for understanding when adversary vs. advocate superego
+    personas produce better learning outcomes.
+  </div>
+  <div class="tags">
+    <span class="tag">rhetoric</span>
+    <span class="tag">multi-agent</span>
+    <span class="tag">trait conditioning</span>
+    <span class="tag">learner persona</span>
+    <span class="tag">argumentation</span>
+  </div>
+  <div class="citation">arXiv:2604.07028 (2026). Strategic Persuasion with Trait-Conditioned Multi-Agent Systems for Iterative Legal Argumentation. arXiv:2604.07028.</div>
+</div>
+
+<!-- ─────────────────────────────────────────── DRAMATURGY -->
+<div class="section-heading" id="dramaturgy">Dramaturgy &amp; Roleplay</div>
+
+<div class="card">
+  <div class="card-header">
+    <span class="badge recent">Recently Indexed</span>
+    <h3>
+      <a href="https://www.frontiersin.org/journals/sociology/articles/10.3389/fsoc.2025.1614473/full" target="_blank">
+        The Presentation of Self in the Age of ChatGPT
+      </a>
+    </h3>
+  </div>
+  <div class="byline">Nils Klowait &amp; Maria Erofeeva · Frontiers in Sociology, 2025 · DOI: 10.3389/fsoc.2025.1614473</div>
+  <p>
+    Applies Goffman's dramaturgical sociology to AI-assisted professional work. Argues that LLMs
+    handle backstage (invisible, routinised) tasks while humans maintain frontstage (visible,
+    relational) performance, generating impression management dynamics that utopian/dystopian AI
+    narratives both misread.
+  </p>
+  <div class="relevance">
+    <strong>Project relevance:</strong> Goffman's frontstage/backstage distinction maps precisely
+    onto the ego/superego architecture: the ego performs frontstage (visible learner-facing output)
+    while the superego operates backstage (invisible deliberation). The impression management
+    framework—and the gap between what is performed and what is actually processed—could yield new
+    evaluation dimensions for the holistic and deliberation rubrics, and frames the poetics
+    peripeteia/anagnorisis arc in sociological rather than purely Aristotelian terms.
+  </div>
+  <div class="tags">
+    <span class="tag">dramaturgy</span>
+    <span class="tag">Goffman</span>
+    <span class="tag">impression management</span>
+    <span class="tag">frontstage/backstage</span>
+    <span class="tag">sociology</span>
+  </div>
+  <div class="citation">Klowait, N. &amp; Erofeeva, M. (2025). The Presentation of Self in the Age of ChatGPT. <em>Frontiers in Sociology</em>. DOI: 10.3389/fsoc.2025.1614473.</div>
+</div>
+
+<!-- ─────────────────────────────────────────── SUMMARY -->
+<div class="summary-box" id="summary">
+  <h2>Unblocking Summary — What Could Move the Needle This Week</h2>
+  <ul>
+    <li>
+      <strong>ReasoningFlow (2606.05402)</strong> — Apply the DAG trace formalism to ego/superego
+      deliberation logs. Could sharpen RevΔ/EgoSpec/AdaptΔ metrics in
+      <code>analyze-mechanism-traces.js</code> and give a richer picture of deliberation depth per cell.
+    </li>
+    <li>
+      <strong>Ontology-Constrained Neural Reasoning (2604.00555)</strong> — Most promising path to
+      fixing the poetics κ ≈ 0.04 failure. Encode the 6-dimension Aristotelian rubric as a
+      constraint graph fed to the critic LLM rather than relying on free-form rubric prompting.
+    </li>
+    <li>
+      <strong>Motivational Architecture (2606.05411)</strong> — Read in conjunction with the
+      recognition-prompt effect (§6.3). The Mikeda/Goertzel affiliation + legitimacy drives offer
+      a mechanistic account of why recognition-enhanced prompts improve scores across all models.
+    </li>
+    <li>
+      <strong>Goffman / Presentation of Self</strong> — Frontstage/backstage framing is worth a
+      paragraph in §7 (discussion) as sociological corroboration of the ego/superego split. Adds a
+      second theoretical lens alongside Hegel and Aristotle.
+    </li>
+  </ul>
+</div>
+
+<footer>
+  Generated 2026-06-08 by Claude Code (claude-sonnet-4-6) for the machinespirits-eval project.
+  Coverage window: June 1–8 2026 (this-week badges) plus notable papers from the last 2 months.
+  All arXiv links point to abstract pages.
+</footer>
+
+</body>
+</html>
