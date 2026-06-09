@@ -13,6 +13,10 @@ const outDir = path.join(tmpDir, 'submissions');
 process.env.A19_ADJUDICATION_ASSIGNMENT = assignmentPath;
 process.env.A19_ADJUDICATION_CODEBOOK = codebookPath;
 process.env.A19_ADJUDICATION_OUT_DIR = outDir;
+// Pin the roster to a nonexistent tmp path: this file tests the OPEN-mode
+// contract, and a real roster at the repo default would flip the server into
+// keyed mode (tests/a19AdjudicationKeyedRoutes.test.js covers that side).
+process.env.A19_ADJUDICATION_ROSTER = path.join(tmpDir, 'no-roster.json');
 
 const assignment = {
   schema_version: 'a19-human-assignment-v01',
@@ -149,6 +153,7 @@ describe('A19 adjudication dashboard routes', () => {
     delete process.env.A19_ADJUDICATION_ASSIGNMENT;
     delete process.env.A19_ADJUDICATION_CODEBOOK;
     delete process.env.A19_ADJUDICATION_OUT_DIR;
+    delete process.env.A19_ADJUDICATION_ROSTER;
   });
 
   it('serves the blinded assignment and codebook metadata', async () => {
