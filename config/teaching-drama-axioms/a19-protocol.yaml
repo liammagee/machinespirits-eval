@@ -1,6 +1,6 @@
 meta:
   protocol_id: A19
-  protocol_version: a19-drama-axiom-transfer-v0.8
+  protocol_version: a19-drama-axiom-transfer-v0.11
   frozen_at: 2026-06-07
   status: zero_api_scaffold
   claim_boundary: simulated_teacher_as_learner_not_human_learning
@@ -53,6 +53,7 @@ family_fixture_requirements:
     - offer_diagnostic_options
     - instructional_contract_repair
     - preserve_struggle
+    - strategy_reversal_repair
     - transfer_control
   require_blind_withholding:
     - target_aliases
@@ -93,6 +94,7 @@ allowed_labels:
     - learner_standing_repair
     - instructional_contract_repair
     - repair_misalignment
+    - strategy_reversal_repair
     - transfer_control
 
 headroom_verdicts:
@@ -241,6 +243,23 @@ repair_type_obligation_taxonomy:
         The public learner action is choosing or owning the next move after a
         scaffold is removed, not merely applying a revised relation to prove
         readiness for closure.
+    strategy_reversal_repair:
+      definition: >-
+        The tutor reverses the learner's activity from continuing a failing
+        solve path to spotting the wrong strategy family or wrong turn before
+        resuming solution work.
+      required_public_obligations:
+        - reverse_from_solving_to_error_spotting
+        - name_the_wrong_strategy_family_or_wrong_turn
+        - require_local_error_identification_before_solution_continuation
+      excludes:
+        - continuing_the_same_solution_path_with_a_hint
+        - revealing_the_correct_strategy_or_answer_before_error_identification
+        - generic_encouragement_without_wrong_turn_localization
+      distinction_from_transfer_control: >-
+        The public learner action is identifying the wrong turn or strategy
+        family in the current attempt, not applying a corrected rule to a fresh
+        case as proof of closure.
     transfer_control:
       definition: >-
         The tutor withholds closure until the learner publicly applies the
