@@ -70,6 +70,12 @@ export function validateWorld(raw, source = '<inline>') {
     title: raw.title || raw.id,
     question: raw.question,
     questionPattern: raw.question_pattern,
+    // Authorial fields: K_L prose for the underivability screen + register
+    // notes for the real role bridges. Never read by the engine/chainer.
+    discipline: raw.discipline || null,
+    setting: raw.setting || null,
+    learnerVoice: raw.learner_voice || null,
+    dramaturgy: raw.dramaturgy || null,
     secret: raw.secret,
     mirror: raw.mirror || null,
     rules: raw.rules,

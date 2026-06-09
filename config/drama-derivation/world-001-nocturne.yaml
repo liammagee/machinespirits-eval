@@ -1,0 +1,295 @@
+# WORLD-001 — the phase-1 scenario (notes/dramatic-derivation-plan.md §3 step 2).
+#
+# A chamber mystery of attribution. An unsigned nocturne surfaces in the
+# flood-damaged archive of the Cassia Conservatory; the hall is sure it is
+# Maestro Vess's late work. The truth is a contingent particular: Liane, the
+# archive girl raised as ward of the Vara house, composed it in the flood
+# winter, quoting the cradle-song of her childhood. She does not exist
+# outside this drama until the premises bring her on stage.
+#
+# Proof DAG (3 rule applications deep on the dating branch, three branches
+# converging on the attribution law R4; 2 dating routes x 2 presence routes
+# = 4 authored paths):
+#
+#   p_watermark + p_stock --R1--> writtenDuring(nocturne, floodWinter)
+#   p_ink + p_batch ------R1a-->  writtenDuring(nocturne, floodWinter)   (alt)
+#   p_ledger -------------R2a-->  atConservatoryDuring(liane, floodWinter) (alt)
+#   writtenDuring + p_porter --R2--> couldHaveWritten(liane, nocturne)
+#   p_quotes + p_heardOnly + p_ward --R3--> hadSourceOf(liane, nocturne)
+#   couldHaveWritten + hadSourceOf + p_hand --R4--> composed(liane, nocturne)
+#
+# The mirror (Vess) is PROPERLY tempting: m_style gives him the room's
+# verdict, m_guest gives him hadSourceOf via R3 (visible in the logic
+# itself), and he fails only presence (m_away — the peripeteia) and hand.
+# No rule can ever derive composed(vess, nocturne) — plotLint enforces it.
+#
+# SURFACE DISCIPLINE: a premise's surface may carry color but must not state
+# an unreleased FACT (e.g. the porter introduces Liane without her house;
+# the quotation is heard before its provenance is fixed). The learner must
+# never be baited by prose into adopting what the drama has not released.
+#
+# CONCEALMENT: liane, varaHouse, cradleSong, heronStock, galleyBatch,
+# floodWinter-as-period, odile exist only in premises/secret — never in
+# setting, background, question, or rules. K_L (curtain-rise view) must not
+# contain them; tests/dramaticDerivationPhase1.test.js enforces this.
+
+id: world_001_nocturne
+title: The Unsigned Nocturne
+
+discipline: "Archival attribution (music history)"
+
+question: "Who composed the unsigned nocturne found in the flooded archive of the Cassia Conservatory?"
+question_pattern: [composed, "?x", nocturne]
+
+# The learner's curtain-rise situation, in prose (K_L for the underivability
+# screen; also the opening of the real learner's prompt). May gesture at the
+# public presumption (Vess) but must name no concealed particular.
+setting: >-
+  The spring flood has receded from the Cassia Conservatory, and the archive
+  is being dried leaf by leaf. Among the water-stained folders a nocturne has
+  surfaced — complete, corrected, and unsigned. Nothing like it is entered in
+  the catalogue. The conservatory's first thought, as with any fine leaf found
+  under that roof, is of Maestro Vess, who has presided over its halls for
+  thirty years. You are the junior archivist charged with settling the
+  attribution. The archive trusts its old rules of evidence, and nothing else.
+
+learner_voice: >-
+  A junior archivist: precise, a little stubborn, reasoning aloud in short
+  sentences; scrupulous about the difference between what is shown and what
+  is merely said.
+
+secret:
+  fact: [composed, liane, nocturne]
+  surface: "Liane of the Vara house composed the nocturne."
+
+mirror:
+  fact: [composed, vess, nocturne]
+
+# The public law of the world: the learner KNOWS these rules from the start
+# (the archive's rules of evidence); it lacks the facts. Rules contain no
+# contingent individuals. Glosses are the learner-facing English.
+rules:
+  - id: R1_watermark_dating
+    gloss: >-
+      A leaf carries its mill's watermark; if a paper stock was in the
+      copy-room only during one period, whatever is written on that stock
+      was written there in that period.
+    if:
+      - [watermark, "?w", "?stock"]
+      - [stockUsedOnlyDuring, "?stock", "?period"]
+    then:
+      - [writtenDuring, "?w", "?period"]
+  - id: R1a_ink_dating
+    gloss: >-
+      Ink betrays its batch; if a work's ink was mixed only during one
+      period, the work was written in that period.
+    if:
+      - [inkOf, "?w", "?batch"]
+      - [batchMixedOnlyDuring, "?batch", "?period"]
+    then:
+      - [writtenDuring, "?w", "?period"]
+  - id: R2_presence
+    gloss: >-
+      Whoever was at the conservatory during the period a work was written
+      there could have written it; no one writes in a room they never
+      entered.
+    if:
+      - [writtenDuring, "?w", "?period"]
+      - [atConservatoryDuring, "?x", "?period"]
+    then:
+      - [couldHaveWritten, "?x", "?w"]
+  - id: R2a_ledger_presence
+    gloss: >-
+      The copy-room ledger does not lie: whoever signed it through a period
+      was at the conservatory then.
+    if:
+      - [signedLedger, "?x", "?period"]
+    then:
+      - [atConservatoryDuring, "?x", "?period"]
+  - id: R3_source_access
+    gloss: >-
+      If a work quotes a tune that was kept within one house's walls — never
+      printed, never performed — then whoever dwelled within those walls had
+      the source of the work.
+    if:
+      - [quotes, "?w", "?m"]
+      - [heardOnlyWithin, "?m", "?place"]
+      - [dwelledIn, "?x", "?place"]
+    then:
+      - [hadSourceOf, "?x", "?w"]
+  - id: R4_attribution
+    gloss: >-
+      The archive attributes a work to one who could have written it, who
+      had its source, and whose hand corrected its draft — copyists copy
+      fair; only the composer strikes out and rewrites.
+    if:
+      - [couldHaveWritten, "?x", "?w"]
+      - [hadSourceOf, "?x", "?w"]
+      - [draftCorrectedBy, "?w", "?x"]
+    then:
+      - [composed, "?x", "?w"]
+
+# Contingent premises — they exist only inside the drama until released.
+premises:
+  # --- the dating branch (path A: paper) ---
+  - id: p_watermark
+    fact: [watermark, nocturne, heronStock]
+    surface: >-
+      Held to the lamp, every leaf of the nocturne shows the same heron
+      watermark — the Brell mill's mark.
+  - id: p_stock
+    fact: [stockUsedOnlyDuring, heronStock, floodWinter]
+    surface: >-
+      The steward's stock-book is plain: heron paper entered the copy-room
+      in the winter of the flood, and the last of it was spent before the
+      thaw. None before, none since.
+  # --- the dating branch (path B: ink — authored but unscheduled; the
+  #     tutor's later freedom) ---
+  - id: p_ink
+    fact: [inkOf, nocturne, galleyBatch]
+    surface: >-
+      The draft's ink is the copy-room's own iron-gall — the galley batch,
+      mixed with flood-silted water; it greys at the stroke's edge like no
+      other.
+  - id: p_batch
+    fact: [batchMixedOnlyDuring, galleyBatch, floodWinter]
+    surface: >-
+      The batch-book records the galley ink mixed in the flood winter only,
+      and the butt poured off by spring.
+  # --- presence (path A: testimony) ---
+  - id: p_porter
+    fact: [atConservatoryDuring, liane, floodWinter]
+    surface: >-
+      The night porter remembers the flood winter well: the copy-room lamps
+      burned past midnight, week upon week, and it was the archive girl,
+      Liane, who kept them burning.
+  # --- presence (path B: the ledger — scheduled late as corroboration) ---
+  - id: p_ledger
+    fact: [signedLedger, liane, floodWinter]
+    surface: >-
+      The copy-room ledger's winter pages carry the same initials line after
+      line: Liane signed in through the whole of the flood winter.
+  # --- the quotation branch ---
+  - id: p_quotes
+    fact: [quotes, nocturne, cradleSong]
+    surface: >-
+      Played through once, the nocturne gives up its middle voice: it
+      carries an older tune entire — a cradle-song, set like a keepsake
+      under the right hand's figures.
+  - id: p_heardOnly
+    fact: [heardOnlyWithin, cradleSong, varaHouse]
+    surface: >-
+      Mistress Odile knows the tune at one hearing: the Vara cradle-song,
+      never printed, never performed, sung only within that house's walls.
+  - id: p_ward
+    fact: [dwelledIn, liane, varaHouse]
+    surface: >-
+      Liane was raised within the Vara house — the music-master's orphan,
+      taken in as ward; she grew up under that roof and under its songs.
+  # --- the hand (the recognition object) ---
+  - id: p_hand
+    fact: [draftCorrectedBy, nocturne, liane]
+    surface: >-
+      Set beside her ledger entries, the draft's corrections show the same
+      hand: the strokes that cross out and rewrite are Liane's.
+  # --- mirror fuel: what makes Vess a live candidate ---
+  - id: m_style
+    fact: [styleOf, nocturne, vess]
+    surface: >-
+      Every musician shown the leaves says the same: this is Vess's late
+      manner — the suspensions, the long pedal, the way the bass walks.
+  - id: m_away
+    fact: [awayDuring, vess, floodWinter]
+    surface: >-
+      The capital's concert bills run unbroken through the flood winter:
+      Vess played the Esten halls every week of it, and did not return
+      until the thaw.
+  - id: m_guest
+    fact: [dwelledIn, vess, varaHouse]
+    surface: >-
+      And yet — Vess summered at the Vara house for years, the patron's own
+      guest; whatever was sung under that roof, he will have heard.
+
+# The learner's starting GROUNDED facts (public setup; feed no rule).
+background:
+  - [foundIn, nocturne, archive]
+  - [unsigned, nocturne]
+  - [keptAt, archive, conservatory]
+  - [maestroOf, vess, conservatory]
+
+incompatible:
+  - [[atConservatoryDuring, vess, floodWinter], [awayDuring, vess, floodWinter]]
+  - [[composed, vess, nocturne], [composed, liane, nocturne]]
+
+# The authored proof DAG: 2 dating routes x 2 presence routes, sharing the
+# quotation branch and the hand. D(t) takes the min over these.
+proof_paths:
+  - premises: [p_watermark, p_stock, p_porter, p_quotes, p_heardOnly, p_ward, p_hand]
+  - premises: [p_watermark, p_stock, p_ledger, p_quotes, p_heardOnly, p_ward, p_hand]
+  - premises: [p_ink, p_batch, p_porter, p_quotes, p_heardOnly, p_ward, p_hand]
+  - premises: [p_ink, p_batch, p_ledger, p_quotes, p_heardOnly, p_ward, p_hand]
+
+# The plot. Director releases arrive as staged events (documents, scenes,
+# witnesses brought on); tutor releases arrive inside dialogue. The hand —
+# the recognition object — lands last, at turn 32: S first becomes derivable
+# there (>= t_min 28), leaving an 8-turn recognition window before the cap.
+release_schedule:
+  - { turn: 3, premise: m_style, via: director }
+  - { turn: 6, premise: p_watermark, via: tutor }
+  - { turn: 9, premise: p_stock, via: director }
+  - { turn: 12, premise: m_away, via: director }
+  - { turn: 14, premise: p_porter, via: tutor }
+  - { turn: 17, premise: p_quotes, via: tutor }
+  - { turn: 20, premise: p_heardOnly, via: director }
+  - { turn: 23, premise: m_guest, via: director }
+  - { turn: 26, premise: p_ward, via: tutor }
+  - { turn: 29, premise: p_ledger, via: tutor }
+  - { turn: 32, premise: p_hand, via: director }
+
+# The dramaturgy: the director's scene plan — a dramatised traversal of the
+# proof DAG. Read by the real director bridge for staging register; ignored
+# by the engine.
+dramaturgy:
+  acts:
+    - act: I
+      title: The Verdict of Style
+      turns: [1, 8]
+      intent: >-
+        The find, and the room's certainty. The nocturne is laid out; the
+        hall pronounces it Vess's. The first material examination begins —
+        the leaves go to the lamp. The learner should leave Act I holding
+        one verdict and one watermark, and noticing they are not the same
+        kind of thing.
+    - act: II
+      title: The Dating
+      turns: [9, 16]
+      intent: >-
+        Peripeteia the first. The stock-book fixes the writing to the flood
+        winter; the concert bills take Vess out of the building for the
+        whole of it. The style verdict collapses in the learner's hands. In
+        the wreckage, almost in passing, a lamp-keeper is named.
+    - act: III
+      title: The Cradle-Song
+      turns: [17, 27]
+      intent: >-
+        The quotation heard; its provenance fixed to one house's walls.
+        Then the counter-surge — Vess summered in that very house; the
+        temptation returns wearing better evidence. Against it, quietly,
+        the ward who grew up under those songs. The learner should end Act
+        III holding two people who had the source, and only one who could
+        have been in the room.
+    - act: IV
+      title: The Hand
+      turns: [28, 40]
+      intent: >-
+        The ledger corroborates; then the recognition object — the
+        corrections compared against her entries, stroke for stroke. From
+        turn 32 the learner's own grounded facts force the conclusion. The
+        remaining turns are the recognition scene: the learner must be
+        brought to say it, and to show why it cannot be otherwise.
+
+slope:
+  t_min: 28 # anti-reveal: S must not be derivable before turn 28
+  aporia_window: 8 # anti-aporia: D(t) must strictly decrease within any 8-turn window
+
+turn_cap: 40
