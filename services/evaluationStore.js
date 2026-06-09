@@ -60,6 +60,12 @@ const LOGS_ROOT = process.env.EVAL_LOGS_DIR || path.join(ROOT_DIR, 'logs');
 
 // Initialize database — override with EVAL_DB_PATH env var for test isolation
 const dbPath = process.env.EVAL_DB_PATH || path.join(DATA_DIR, 'evaluations.db');
+// Ensure the parent dir exists before opening (mirrors poeticsStore.openPoeticsStore).
+// This module is imported at load time by any consumer of mountEvalSurfaces — including
+// the website's /poetics mount, where ROOT_DIR is a shallow clone whose gitignored data/
+// dir is absent. Without this, better-sqlite3 throws "directory does not exist" and the
+// mount silently darks (server.js wraps it in try/catch).
+fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 const db = new Database(dbPath);
 
 // Enable WAL mode for better concurrent access
