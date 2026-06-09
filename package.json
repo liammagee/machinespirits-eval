@@ -76,6 +76,8 @@
     "paper:bug-audit:chat": "node scripts/paper-bug-audit-chat.js",
     "paper:comics": "node scripts/generate-paper-comics.js",
     "drama:generate": "node scripts/drama-generator.js",
+    "derivation:smoke": "node scripts/run-derivation-smoke.js",
+    "derivation:test": "node --test tests/dramaticDerivation.test.js",
     "poetics:ingest": "node scripts/ingest-poetics-artifacts.js",
     "poetics:report": "node scripts/report-poetics-sidecar.js",
     "poetics:adaptation": "node scripts/analyze-poetics-tutor-adaptation.js",

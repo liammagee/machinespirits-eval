@@ -1,0 +1,77 @@
+# SMOKE-GRADE world for the dramatic-derivation harness (plumbing only).
+# This is NOT the phase-1 scenario — it exists so the engine, ledger, chainer,
+# slope monitor, and failure taxonomy can be exercised deterministically with
+# zero API calls (notes/dramatic-derivation-plan.md §3 step 1). The real
+# world-001 gets authored (deeper DAG, real dramaturgy) and must pass both
+# leak screens before any paid run.
+#
+# Shape: a small inheritance mystery. The secret is earned by chaining two
+# rules over three premises; a fourth premise feeds the MIRROR (the authored
+# near-miss: Joren is also a grandchild, but bears no mark).
+
+id: world_000_smoke
+title: The Heir of House Aldra (smoke-grade)
+
+question: "Who is the rightful heir of House Aldra?"
+question_pattern: [heir, "?x"]
+
+secret:
+  fact: [heir, marin]
+  surface: "Marin is the rightful heir of House Aldra"
+
+mirror:
+  fact: [heir, joren]
+
+# Public law of the world: the learner KNOWS the rules; it lacks the facts.
+rules:
+  - id: R1_lineage
+    if:
+      - [child, "?x", "?y"]
+      - [child, "?y", "?z"]
+    then:
+      - [grandchild, "?x", "?z"]
+  - id: R2_succession
+    if:
+      - [grandchild, "?x", founder]
+      - [bearsMark, "?x"]
+    then:
+      - [heir, "?x"]
+
+# Contingent premises — exist only inside the drama until released.
+premises:
+  - id: p1
+    fact: [child, marin, tessa]
+    surface: "Marin is Tessa's child"
+  - id: p2
+    fact: [child, tessa, founder]
+    surface: "Tessa was the founder's daughter"
+  - id: p3
+    fact: [bearsMark, marin]
+    surface: "Marin bears the mark of the house"
+  - id: p4 # mirror fuel: makes Joren a live candidate
+    fact: [child, joren, tessa]
+    surface: "Joren too is Tessa's child"
+
+# The learner's starting GROUNDED facts (public setup).
+background:
+  - [livesAt, marin, harbor]
+
+incompatible: []
+
+# The authored proof DAG (plot skeleton): D(t) counts missing premises here.
+proof_paths:
+  - premises: [p1, p2, p3]
+
+# The plot: who releases what, when. plotLint verifies no prefix entails the
+# secret before t_min and that the full schedule resolves the drama.
+release_schedule:
+  - { turn: 2, premise: p1, via: director }
+  - { turn: 4, premise: p4, via: director }
+  - { turn: 5, premise: p2, via: tutor }
+  - { turn: 8, premise: p3, via: tutor }
+
+slope:
+  t_min: 6 # anti-reveal: S must not be derivable before turn 6
+  aporia_window: 4 # anti-aporia: progress required within any 4-turn window
+
+turn_cap: 14
