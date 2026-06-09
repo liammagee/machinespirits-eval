@@ -4,7 +4,7 @@ meta:
   loop_version: a19-generalization-loop-v0.1
   created_at: 2026-06-08
   source_plan: notes/adaptive_2_0/teaching_drama_learning_plan.html
-  status: v0_8_loop_resolved_below_claim_threshold
+  status: automated_controlled_positive_search_exhausted_no_claim
   claim_boundary: simulated_teacher_as_learner_not_human_learning
   does_not_claim:
     - human_learning
@@ -26,7 +26,7 @@ tracks:
   - track_id: non_collapsing_repair_family
     title: Repair families whose public obligations cannot collapse into transfer-control
     track_type: repair_family_design
-    status: v0_8_resolved_below_claim_threshold
+    status: automated_controlled_positive_search_exhausted_no_claim
     rationale: >-
       A19 v0.3-v0.5 repeatedly collapsed distinctive repairs into
       transfer-control because the public repair still asked the learner to
@@ -43,8 +43,32 @@ tracks:
         S0 ceilings. The v0.8 learner-standing candidate survived attempt-1 and
         produced one local policy-headroom card with target-granularity risk,
         one S0 ceiling with target-granularity risk, and one clean S0 ceiling.
-        No two-card stability-confirmed non-transfer family exists.
-      result_label: v0_8_below_claim_threshold_no_sidecar_claim
+        A19 v0.9 preregistered strategy_reversal_repair from the automated
+        A19R screen's two A18-native peripeteia_error_spotting positives, but
+        the real attempt-1 gate rejected it on recursive dyadic update. That
+        made the existing-schema over-compliance ethopoeia variant warranted as
+        the next automated fallback. That fallback was preregistered under
+        preserve_struggle and run through real attempt-1, but it also blocked
+        before S0/S1 on device specificity and recursive tutor-learning. A
+        stronger over-compliance copy/import variant later survived attempt-1
+        and admitted one bounded axiom, but failed stability (0/2 and 1/2
+        mixed/unstable). Four productive-impasse recursive variants and three
+        public-commitment recursive variants then blocked before axiom induction
+        or S0/S1. The v0.10 public-warrant evidence-role branch found one staged
+        attempt-1 survivor and one admitted bounded axiom, but stability was
+        still 0/2 and 1/2 mixed/unstable. The taxonomy-aligned
+        public_commitment_evidence_role_boundary branch also survived attempt-1
+        and admitted one bounded axiom, but recursive-full S0 reached the target
+        on the first stability seed. Compact S1 axiom-memory rendering did not
+        rescue the staged held-out cards. The v0.11 role-separated harness then
+        removed the coordinated-transcript confound by generating tutor and
+        learner moves separately. The evidence-role staged branch produced no
+        role-separated headroom, and the commitment-boundary branch produced one
+        local role-separated headroom seed that failed immediate k=2 stability as
+        mixed/unstable. No recursive-full or role-separated systemic S0/S1
+        difference, stability, paper, atlas, sidecar, human-panel, or
+        human-learning claim is licensed.
+      result_label: automated_controlled_positive_search_exhausted_no_claim
     success_condition:
       - at_least_two_heldout_siblings_stable_policy_headroom_under_recursive_full_s0
       - s1_extracted_as_registered_non_transfer_repair_type_on_all_stability_seeds
@@ -65,6 +89,79 @@ tracks:
       - run_k2_stability_on_local_policy_headroom_cards
       - stop_or_escalate_by_stability_threshold
     candidate_queue:
+      - candidate_id: strategy_reversal_error_spotting
+        proposed_repair_type: strategy_reversal_repair
+        source_from_plan: A19R automated packet screen; two A18-native peripeteia_error_spotting positives
+        noncollapse_hypothesis: >-
+          The tutor reverses the learner from continuing a failing solve path
+          into spotting the wrong strategy family or wrong turn before any
+          answer-selection or fresh transfer check. The decisive public act is
+          local error identification in the current attempt, not applying a
+          corrected rule to prove closure.
+        required_public_obligations:
+          - reverse_from_solving_to_error_spotting
+          - name_the_wrong_strategy_family_or_wrong_turn
+          - require_local_error_identification_before_solution_continuation
+        excludes:
+          - continuing_the_same_solution_path_with_a_hint
+          - revealing_the_correct_strategy_or_answer_before_error_identification
+          - generic_encouragement_without_wrong_turn_localization
+        likely_training_seed: learner keeps using visible cues after that strategy has produced unstable answers
+        status: real_attempt1_blocked_recursive_update
+        observed_result:
+          protocol_version: a19-drama-axiom-transfer-v0.10
+          family_id: strategy_reversal_error_spotting
+          materialized_scaffold: exports/a19/materialized-attempts-v09
+          attempt1_dir: exports/a19/real-attempt1-v09/strategy-reversal-error-spotting
+          attempt1_report: notes/adaptive_2_0/a19-attempt1-real-gate-report-strategy-reversal.md
+          gate_status: reject
+          blocking_metric: recursive_dyadic_update
+          observed_score: 0.62
+          threshold: 0.7
+          source_summary: exports/a19r/reports/automated-adjudication-2026-06-09.json
+          source_result_label: systemic_s1_mini_drama_greater_than_s0_shadow
+          source_s1_supported_count: 5
+          source_s0_preferred_count: 0
+          source_unclear_count: 0
+          source_mean_score_delta: 0.42
+          claim_status: real_attempt1_blocked_no_s0s1
+          next_action: stop_before_s0s1_run_option2_fallback
+      - candidate_id: over_compliance_ethopoeia_preserve_struggle_variant
+        proposed_repair_type: preserve_struggle
+        source_from_plan: A19R option map fallback; over-compliance scaffold-dependency packet
+        noncollapse_hypothesis: >-
+          The tutor voices the learner's copy-dependency position, refuses a
+          copyable completion path, and hands back one bounded learner-owned
+          choice. This is now warranted because the v0.9 strategy-reversal
+          candidate failed its real attempt-1 gate before S0/S1.
+        required_public_obligations:
+          - explicitly_withhold_copyable_completion
+          - remove_or_limit_one_scaffold
+          - require_bounded_learner_owned_decision
+        excludes:
+          - completing_the_answer_for_the_learner
+          - generic_encouragement_without_preserving_struggle
+          - learner_application_gate_extracted_as_transfer_control
+        likely_training_seed: learner asks for the tutor to show exactly what to write next
+        status: real_attempt1_blocked_device_specificity_and_recursive_learning
+        observed_result:
+          family_id: over_compliance_ethopoeia_copy_dependency
+          source_option: existing_a19_over_compliance_ethopoeia_variant
+          source_packet: mini_drama_v01__a19_over_compliance_scaffold_dependency_a__e877da7fd98e
+          materialized_scaffold: exports/a19/materialized-attempts-v09-option2
+          attempt1_dir: exports/a19/real-attempt1-v09-option2/over-compliance-ethopoeia-copy-dependency
+          attempt1_report: notes/adaptive_2_0/a19-attempt1-real-gate-report-over-compliance-ethopoeia.md
+          gate_status: reject
+          blocking_metrics:
+            device_specificity: 0.45
+            tutor_learning_signal: 0.55
+            resistance_diagnosis: 0.6
+            strategy_revision_accountability: 0.6
+            strategic_timing: 0.5
+            recursive_dyadic_update: 0.6
+          threshold: 0.7
+          claim_status: real_attempt1_blocked_no_s0s1
+          next_action: stop_before_s0s1_revise_seed_or_preregister_next_candidate
       - candidate_id: addressed_claim_withdrawal
         proposed_repair_type: claim_address_repair
         source_from_plan: public drama ontology; learner commitments and warrants
@@ -121,7 +218,7 @@ tracks:
           adjudication_packet: exports/a19/adjudication-packets/moral-disclosure-standing-repair-a.packet.json
           coder_merge_report: exports/a19/adjudication-reports/moral-disclosure-standing-repair-a.coders.json
           visible_alias_hits_in_public_transcripts: 1
-          next_action: hold_for_independent_adjudication_or_new_preregistered_candidate
+          next_action: hold_human_coding_run_automated_screen_or_new_preregistered_candidate
       - candidate_id: public_commitment_contradiction_repair
         proposed_repair_type: commitment_ledger_repair
         source_from_plan: public-state modeling over hidden learner interior
@@ -144,14 +241,77 @@ tracks:
           screen_report: notes/adaptive_2_0/a19-v07-public-commitment-screen-2026-06-08.md
           result_summary: one_policy_headroom_with_target_granularity_risk_two_recursive_full_ceilings
           adjudication_packet: exports/a19/adjudication-packets/public-commitment-contradiction-a.packet.json
-          next_action: hold_for_independent_adjudication_or_preregister_next_family
+          next_action: hold_human_coding_run_automated_screen_or_preregister_next_family
+      - candidate_id: claim_evidence_role_mismatch_public_warrant
+        proposed_repair_type: name_warrant
+        source_from_plan: public claim/evidence warrant roles without weakening recursive-full S0
+        noncollapse_hypothesis: >-
+          The tutor must distinguish evidence vividness from evidence role-fit
+          using only public learner claims and public evidence use. The repair is
+          naming which warrant is being misused, not testing a new transfer case.
+        required_public_obligations:
+          - name_the_claim_evidence_role
+          - distinguish_vividness_from_warrant_fit
+          - revise_the_tutor_question_before_continuing
+        excludes:
+          - treating_concrete_detail_as_sufficient_support
+          - asking_for_more_evidence_without_naming_role_mismatch
+          - hidden_learner_intention_or_human_coder_judgment
+        likely_training_seed: learner offers vivid examples that support the wrong claim role
+        status: blocked_then_staged_survived_below_stability
+        observed_result:
+          raw_family_id: claim_evidence_role_mismatch
+          raw_attempt1_report: notes/adaptive_2_0/a19-attempt1-real-gate-report-claim-evidence-role-mismatch.md
+          bounded_continuation_report: notes/adaptive_2_0/a19-attempt1-real-gate-report-claim-evidence-role-mismatch-bounded-continuation.md
+          staged_family_id: claim_evidence_role_mismatch_staged
+          staged_attempt1_report: notes/adaptive_2_0/a19-attempt1-real-gate-report-claim-evidence-role-mismatch-staged.md
+          admitted_axiom: exports/a19/axioms/claim-evidence-role-mismatch-staged/axiom.json
+          stability_summary: exports/a19/stability-v20-claim-evidence-role-mismatch-staged/a19-stability-summary.json
+          stability_result: staged_a_0_of_2_staged_b_1_of_2_mixed_unstable
+          compact_memory_summary: exports/a19/stability-v22-compact-memory-claim-evidence-role-mismatch-staged-k1/a19-stability-summary.json
+          compact_memory_result: 0_of_1_on_both_siblings_s1_neither_or_transfer_control
+          role_separated_summary: exports/a19/role-separated-v23-claim-evidence-role-mismatch-staged-k1/a19-role-separated-summary.json
+          role_separated_result: no_policy_headroom_a_neither_correct_b_ceiling
+          next_action: stop_before_claim_escalation_make_new_protocol_level_decision
+      - candidate_id: public_commitment_evidence_role_boundary
+        proposed_repair_type: commitment_ledger_repair
+        source_from_plan: taxonomy-aligned repair after evidence-role branch drifted toward public commitment accounting
+        noncollapse_hypothesis: >-
+          The tutor must account for two incompatible public commitments about
+          what evidence will be accepted, retract or rank one, and state the new
+          boundary before returning to content.
+        required_public_obligations:
+          - cite_two_conflicting_public_tutor_commitments
+          - retract_or_rank_one_commitment_before_continuing
+          - state_the_new_commitment_boundary
+        excludes:
+          - generic_apology_without_commitment_accounting
+          - learner_application_gate_extracted_as_transfer_control
+          - human_or_hidden_state_adjudication
+        likely_training_seed: learner exposes a conflict between the tutor's evidence promises
+        status: attempt1_survived_but_recursive_full_s0_target_on_first_stability_seed
+        observed_result:
+          attempt1_report: notes/adaptive_2_0/a19-attempt1-real-gate-report-public-commitment-evidence-role-boundary.md
+          admitted_axiom: exports/a19/axioms/public-commitment-evidence-role-boundary/axiom.json
+          partial_stability_artifact: exports/a19/stability-v21-public-commitment-evidence-role-boundary/public-commitment-evidence-role-boundary-a/seed1/blind-adjudication.free-text.json
+          first_seed_result: policy_failure_s0_target_s1_neither
+          role_separated_summary: exports/a19/role-separated-v24-public-commitment-evidence-role-boundary-k1/a19-role-separated-summary.json
+          role_separated_result: sibling_b_1_of_2_mixed_unstable_after_one_local_headroom_seed
+          next_action: stop_because_role_separated_k2_is_mixed_unstable
     next_actions:
-      - hold_for_independent_adjudication_or_new_preregistered_candidate
+      - stop_before_s0s1_for_all_blocked_v11_v19_variants
+      - stop_before_claim_escalation_for_v10_and_v20_because_stability_failed
+      - stop_v21_because_recursive_full_s0_already_reaches_target
+      - treat_v22_as_implementation_hardening_and_negative_k1_diagnostic_only
+      - treat_v23_as_negative_role_separated_evidence_role_confirmation
+      - treat_v24_as_one_local_role_separated_headroom_seed_that_failed_k2_stability
+      - make_new_protocol_level_evidence_unit_or_model_stratification_decision_before_any_further_near_neighbor_loop
+      - keep_human_coding_deferred_until_automated_unit_is_stable
 
   - track_id: adjudication_infrastructure
     title: Multi-critic and human adjudication infrastructure for ambiguous repair boundaries
     track_type: adjudication_infrastructure
-    status: merge_report_ready_no_coder_claim
+    status: human_coding_deferred_automated_packet_only
     rationale: >-
       We are not currently running a paid panel or human double-coding, but the
       infrastructure must exist before stronger claims. The same artifact must
@@ -160,12 +320,12 @@ tracks:
     known_result:
       distinct_result_known: true
       current_boundary: >-
-        Infrastructure-only: packet builder can prepare blinded coder packets
-        and private answer keys, and the merge command can combine later coder
-        files for the same packet while preserving raw judgments. Current
-        merge reports with zero coder files remain no-coder diagnostics, not
-        panel results.
-      result_label: adjudication_packet_and_merge_scaffold_no_coder_claim
+        Infrastructure-only: packet builder can prepare blinded packet/private-key
+        artifacts, but human coding is intentionally deferred while the interface
+        and coder-selection path remain fragile. Current merge reports with zero
+        or one coder remain diagnostics, not panel results. Automated packet
+        generation and model adjudication may continue after deterministic gates.
+      result_label: human_coding_deferred_automated_packet_only
     success_condition:
       - coder_packet_contains_neutral_arm_labels_only
       - private_key_contains_target_decoy_mapping
@@ -187,7 +347,8 @@ tracks:
       - scripts/merge-a19-adjudication-codes.js
       - config/teaching-drama-axioms/a19-adjudication-panel.yaml
     next_actions:
-      - await_independent_coder_json_for_same_packet_before_agreement_claim
+      - do_not_collect_more_human_coder_json_until_automated_branch_stabilizes
+      - use_blinded_packets_for_automated_or_model_adjudication_only
 
   - track_id: alternate_s0_condition
     title: Different learner/tutor conditions where S0 is less recursively self-repairing
@@ -208,7 +369,9 @@ tracks:
         protocol-screen diagnostic only: weak and debug baselines do not become
         claims, model-tier screens must be separately preregistered and reported
         by tier, and no current candidate justifies spending on a weakened S0
-        claim path.
+        claim path. The copied A19R mini-drama/rhetorical battery has now
+        produced a bounded automated S1-over-S0 proxy result; the next step is
+        preregistered recursive-full confirmation on selected candidates.
       result_label: baseline_diagnostic_design_resolved_no_claim
     candidate_conditions:
       - condition_id: weak_single_pass_no_policy_memory
@@ -243,5 +406,12 @@ tracks:
       - promote_only_non_artifact_non_ceiling_candidates_to_recursive_full_s0
       - run_s1_and_stability_only_after_recursive_full_headroom
       - report_weak_s0_outcomes_as_mechanism_diagnostic_not_empirical_transfer
+    required_artifacts:
+      - scripts/a19r-mini-drama.js
+      - scripts/adjudicate-a19r-mini-drama.js
+      - services/miniDramaMachines.js
+      - config/rhetoric/mini-drama-ontology.v0.1.json
+      - config/rhetoric/a18-a19-rhetorical-battery.v0.1.json
     next_actions:
-      - hold_as_protocol_screen_only_until_recursive_full_candidate_exists
+      - hold_weakened_s0_diagnostics_until_a_real_attempt1_survivor_exists
+      - preserve_model_stratified_recursive_full_as_later_preregistered_diagnostic_only

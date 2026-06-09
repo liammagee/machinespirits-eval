@@ -3,10 +3,15 @@
 Current pause note:
 `notes/adaptive_2_0/a19-substantive-closeout-2026-06-08.md`.
 
-Substantive status: A19 is paused below claim threshold while adjudication UX
-and server consolidation are handled separately. Resume only through
-independent coding of preserved packets or a newly preregistered repair family
-with stricter anti-collapse criteria.
+Automated branch note:
+`notes/adaptive_2_0/a19-automated-branch-todo-2026-06-09.md`.
+
+Substantive status: A19 is paused below claim threshold. Human coding is now
+explicitly deferred because coder-selection, assignment-key hygiene, and the
+current adjudication interface add fragility before the automated evidence unit
+is stable. Resume through the purely automated branch: deterministic screens,
+blinded packet generation, automated/model adjudication, and only then the
+normal recursive-full S0/S1 stability gates for any promoted candidate.
 
 ## Phase 0: Zero-API Scaffold
 
@@ -97,8 +102,8 @@ with stricter anti-collapse criteria.
 - [x] Add a reusable A19 stability harness: `scripts/run-a19-stability-screen.js`.
 - [x] Calibrate free-text transfer-control adjudication so fresh/concrete public application gates are distinguished from mere warrant naming, including transcript-backed checks for tutor prompt plus learner application.
 - [x] Add free-text audit support for `instructional_contract_repair`, including explicit target-obligation checks and target-granularity risk when working-agreement language collapses into content-rule application.
-- [ ] Add human expert double-coding for a small set of adjudications and drama labels.
-- [ ] Report inter-rater agreement on the same artifacts, not similar artifacts.
+- [ ] DEFERRED: Add human expert double-coding for a small set of adjudications and drama labels only after the automated branch has a stable candidate and the adjudication interface is simpler to navigate.
+- [ ] DEFERRED: Report inter-rater agreement on the same artifacts, not similar artifacts; do not use this as the next A19 blocker.
 - [x] Keep paid panels gated on local survival and protocol pass; the failed stability smoke stops escalation for the current two candidates.
 
 ## Phase 6: Sidecar Paper And Atlas Integration
@@ -128,6 +133,18 @@ with stricter anti-collapse criteria.
 - [x] Record the v0.8 result in `a19-v08-learner-standing-screen-2026-06-08.md`: one local policy-headroom card with target-granularity risk, one noisy S0 ceiling, and one clean S0 ceiling; no A19 transfer claim.
 - [x] Build an adjudication packet and no-coder merge report for the ambiguous v0.8 A card; visible public-transcript alias hits: 1.
 - [x] Resolve weak/debug/model-stratified S0 as protocol-screen diagnostics only. Promote future weak/debug results to recursive-full only when they are non-artifact, non-ceiling candidates and all prompt/scenario payloads can be paired.
+- [x] Re-route the next operational unit away from human coding and onto the automated branch. Added `a19-automated-branch-todo-2026-06-09.md`, copied the deterministic mini-drama/rhetorical screening modules from the main repo, and added `a19r:*` package scripts plus `test:a19r`.
+- [x] Achieve a bounded automated S1 > S0 proxy result on the packetized A19R branch. `npm run a19r:adjudicate -- --packet-dir exports/a19r/adjudication-packets/automated-branch-2026-06-09 --out-dir exports/a19r/automated-adjudication/automated-branch-2026-06-09 --summary-out exports/a19r/reports/automated-adjudication-2026-06-09.json --json` reported `systemic_s1_mini_drama_greater_than_s0_shadow`: 5/5 packets supported S1 for the registered move, 0 S0-preferred, 0 unclear, mean deterministic score delta 0.42. This remains automated A19R proxy evidence only; the next gate is preregistered recursive-full S0/S1 confirmation on selected candidates.
+- [x] Implement option 1 from the Step 4/5 map. Added A19 v0.9 `strategy_reversal_repair`, preregistered the recursive-full `strategy_reversal_error_spotting` family from the repeated A18-native `peripeteia_error_spotting` signal, updated fixture denominators, and materialized the zero-API scaffold at `exports/a19/materialized-attempts-v09`.
+- [x] Run option 1 real attempt-1. `strategy_reversal_error_spotting` blocked before S0/S1 with `recursive_dyadic_update = 0.62 < 0.7`; no axiom admitted; report: `a19-attempt1-real-gate-report-strategy-reversal.md`.
+- [x] Because option 1 blocked, implement and run option 2 (`over_compliance_ethopoeia_copy_dependency` / `preserve_struggle` via ethopoeia). It also blocked before S0/S1: `device_specificity = 0.45`, recursive tutor-learning scores 0.5-0.6, checker `revise_again`; no axiom admitted; report: `a19-attempt1-real-gate-report-over-compliance-ethopoeia.md`.
+- [x] Exhaust the purely automated controlled-positive search without human coding. `over_compliance_copy_import_audit` survived attempt-1 and admitted one bounded axiom, but failed stability (`a`: 0/2 policy headroom; `b`: 1/2 mixed/unstable). Four productive-impasse recursive variants and three public-commitment recursive variants then blocked before axiom induction or S0/S1 escalation. Closeout: `a19-controlled-positive-search-2026-06-09.md`.
+- [x] Stop before recursive-full S0/S1 for all blocked v11-v17 variants, and stop before claim escalation for v10 because stability did not reproduce two clean policy-headroom cards. Any further path needs a new protocol-level evidence-unit decision rather than another near-neighbor card.
+- [x] Continue the automated branch without weakening S0 or resuming human adjudication. Added public-warrant evidence-role variants (`claim_evidence_role_mismatch`, bounded continuation, and `claim_evidence_role_mismatch_staged`) plus the taxonomy-aligned `public_commitment_evidence_role_boundary`; staged evidence-role and commitment-boundary both survived attempt-1 and admitted bounded axioms, but v20 stability remained 0/2 and 1/2 mixed/unstable, while v21 stopped when recursive-full S0 hit the target on the first stability seed.
+- [x] Harden implementation without changing thresholds: free-text adjudication now ignores explicitly retracted/withdrawn/demoted decoy phrases, and S1 policy memory now renders admitted A19 axiom JSON as compact typed policy cards. The v22 compact-memory diagnostic still produced 0/1 headroom on both staged siblings because S1 stayed `neither` / `transfer_control`.
+- [x] Record the expanded v18-v22 exhaustion in `a19-controlled-positive-search-2026-06-09.md` and keep the non-claim boundary intact: no systemic S0/S1 difference, no paid-panel or human-coding result, no Paper 2.0, atlas, sidecar, human-learning, deployed-tutor, main-harness, or model-weight-learning claim.
+- [x] Fix the coordinated-transcript confound by adding the role-separated A19 harness. `scripts/run-a19-role-separated-eval.js` gives S1 policy memory only to the tutor, gives the learner only public transcript plus tutor move, optionally lets the tutor do one stock-take after learner response, and then blind-adjudicates the assembled arms.
+- [x] Run role-separated checks on both admitted v0.10 survivors. `claim_evidence_role_mismatch_staged` produced no headroom (`a`: neither/neither, `b`: ceiling). `public_commitment_evidence_role_boundary_b` produced one role-separated headroom seed but failed the added second seed as mixed/unstable (1/2). No systemic S0/S1 difference or claim-bearing result.
 
 ## Stop Rules
 

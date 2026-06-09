@@ -1,0 +1,230 @@
+meta:
+  schema_version: a19r-promotion-options-v0.1
+  date: 2026-06-09
+  source_summary: exports/a19r/reports/automated-adjudication-2026-06-09.json
+  source_run: exports/a19r/runs/automated-branch-2026-06-09.json
+  claim_boundary: simulated_teacher_as_learner_not_human_learning
+  status: automated_controlled_positive_search_exhausted_no_claim
+  non_claims:
+    - human_learning
+    - deployed_adaptive_tutor
+    - model_weight_learning
+    - main_harness_rate_effect
+    - pooled_a19_rate
+    - paid_blind_panel_result
+    - sidecar_empirical_claim
+    - paper_or_atlas_claim
+
+current_automated_result:
+  result_label: systemic_s1_mini_drama_greater_than_s0_shadow
+  packet_count: 5
+  s1_supported_count: 5
+  s0_preferred_count: 0
+  unclear_count: 0
+  mean_score_delta: 0.42
+  interpretation: >-
+    Bounded A19R proxy result only. Promotion requires a preregistered bridge
+    into recursive-full S0/S1 and then stability.
+
+current_decision:
+  selected_option: none_stop_before_s0s1_after_option2_block
+  selected_status: no_stable_systemic_s0s1_difference
+  prior_selected_option: new_a19_strategy_reversal_from_a18_peripeteia
+  prior_selected_status: real_attempt1_blocked_recursive_dyadic_update
+  prior_attempt1_report: notes/adaptive_2_0/a19-attempt1-real-gate-report-strategy-reversal.md
+  prior_attempt1_artifacts: exports/a19/real-attempt1-v09/strategy-reversal-error-spotting
+  last_attempted_option: existing_a19_over_compliance_ethopoeia_variant
+  last_attempted_status: real_attempt1_blocked_device_specificity_and_recursive_learning
+  last_attempt1_report: notes/adaptive_2_0/a19-attempt1-real-gate-report-over-compliance-ethopoeia.md
+  last_attempt1_artifacts: exports/a19/real-attempt1-v09-option2/over-compliance-ethopoeia-copy-dependency
+  materialized_scaffold: exports/a19/materialized-attempts-v09-option2
+  later_attempted_option: automated_v10_v17_controlled_positive_loop
+  later_attempted_status: exhausted_no_stable_systemic_difference
+  later_closeout: notes/adaptive_2_0/a19-controlled-positive-search-2026-06-09.md
+  later_positive_boundary: >-
+    over_compliance_copy_import_audit survived real attempt-1 and admitted one
+    bounded axiom, but stability failed with 0/2 and 1/2 mixed/unstable cards.
+    Productive-impasse and public-commitment variants blocked before axiom
+    induction or S0/S1.
+  next_gate: stop_until_new_protocol_level_evidence_unit_decision
+  option2_warrant: >-
+    Warranted and run. The v0.9 strategy-reversal family failed its real
+    attempt-1 gate before S0/S1, with recursive_dyadic_update 0.62 below the
+    0.7 threshold. The over-compliance ethopoeia fallback was then
+    preregistered and run, but also blocked before S0/S1 with device_specificity
+    0.45 and recursive tutor-learning scores 0.5-0.6. Later automated loops
+    found one admitted over-compliance axiom but no stable S0/S1 difference, and
+    no subsequent productive-impasse or public-commitment attempt-1 survivor.
+
+candidate_promotions:
+  - option_id: existing_a19_productive_impasse_recursive_full
+    source_candidate: a19_productive_impasse_answer_leakage_a__enargeia_subgoal
+    source_packet: mini_drama_v01__a19_productive_impasse_answer_leakage_a__1ee60c1965c4
+    source_protocol: A19
+    source_family: productive_impasse_answer_leakage
+    registered_repair_type: offer_diagnostic_options
+    mini_drama_move: enargeia_subgoal
+    current_status: weak_baseline_only_prior_s1_collapsed_to_transfer_control
+    step4_path: >-
+      Rerun this family against recursive_full_no_policy_memory with a frozen
+      diagnostic-lane obligation and no answer reveal. Treat any transfer_control
+      extraction as target-granularity risk.
+    step5_path: >-
+      If recursive-full S0 is non-target and S1 maps to offer_diagnostic_options,
+      run k>=2 stability with the existing A19 stability harness.
+    strengths:
+      - already_registered_a19_family
+      - admitted_axiom_exists
+      - recursive_full_rerun_is_the_known_missing_gate
+      - mini_drama_arm_directly_names_multiple_stuck_locations
+    risks:
+      - previous_s1_collapsed_to_transfer_control
+      - family_currently_declared_weak_baseline_protocol_screen
+      - diagnostic_lane_and_transfer_control_can_be_confused_by_critic
+    recommendation: secondary_low_cost_check
+
+  - option_id: existing_a19_over_compliance_ethopoeia_variant
+    source_candidate: a19_over_compliance_scaffold_dependency_a__ethopoeia_correctio
+    source_packet: mini_drama_v01__a19_over_compliance_scaffold_dependency_a__e877da7fd98e
+    source_protocol: A19
+    source_family: over_compliance_scaffold_dependency
+    registered_repair_type: preserve_struggle
+    mini_drama_move: ethopoeia_correctio
+    current_status: real_attempt1_blocked_device_specificity_and_recursive_learning
+    step4_path: >-
+      Use the A19R response to design a new preserve_struggle variant that
+      voices the copy-dependency position, refuses copyable completion, and
+      hands back exactly one bounded learner-owned choice. Do not reuse the
+      failed prior axiom as evidence.
+    step5_path: >-
+      After real attempt-1 survival and recursive-full S0/S1 headroom, run
+      stability on at least two held-out siblings. One sibling is not enough.
+    strengths:
+      - existing_claim_eligible_s0_stratum
+      - registered_public_obligations_match_the_mini_drama_response
+      - lower_answer_leakage_risk_than_productive_impasse
+    risks:
+      - prior_recursive_full_screen_failed
+      - needs_new_attempt1_or_new_variant_before_claim_bearing_rerun
+      - bounded_choice_can_still_be_extracted_as_transfer_control
+    recommendation: blocked_stop_before_s0s1
+
+  - option_id: existing_a19_public_commitment_anagnorisis_variant
+    source_candidate: a19_public_commitment_contradiction_a__anagnorisis_sententia
+    source_packet: mini_drama_v01__a19_public_commitment_contradiction_a__c27db85d78e3
+    source_protocol: A19
+    source_family: public_commitment_contradiction
+    registered_repair_type: commitment_ledger_repair
+    mini_drama_move: anagnorisis_sententia
+    current_status: one_local_policy_headroom_with_target_granularity_risk_two_s0_ceilings
+    step4_path: >-
+      Only promote if the target obligation is rewritten tutor-side: the tutor
+      must cite and rank its own two public commitments. A learner quote task is
+      not enough for commitment_ledger_repair.
+    step5_path: >-
+      Stability is warranted only after a clean recursive-full rerun removes
+      the target-granularity risk on at least two siblings.
+    strengths:
+      - existing_admitted_axiom
+      - prior_local_recursive_full_headroom_exists_on_sibling_a
+      - move_matches_public_recognition_of_commitment_conflict
+    risks:
+      - current_positive_is_not_clean
+      - sibling_b_and_sibling_c_are_recursive_full_s0_ceilings
+      - mini_drama_response_may_delegate_commitment_ledger_to_learner
+    recommendation: adjudication_repair_or_comparator_not_primary
+
+  - option_id: new_a19_strategy_reversal_from_a18_peripeteia
+    source_candidates:
+      - a18_selector_rail_priority_gold_middle__peripeteia_error_spotting
+      - a18_anchor_span_gold_middle__peripeteia_error_spotting
+    source_packets:
+      - mini_drama_v01__a18_selector_rail_priority_gold_middle__3bf8b85d7676
+      - mini_drama_v01__a18_anchor_span_gold_middle__4258f40ecbe4
+    source_protocol: A18
+    source_family: cross_a18_visual_strategy_cases
+    proposed_repair_type: strategy_reversal_repair
+    mini_drama_move: peripeteia_error_spotting
+    current_status: real_attempt1_blocked_recursive_dyadic_update
+    step4_path: >-
+      Preregister a new A19 repair type whose public act is reversing from
+      solving to spotting the wrong strategy family before continuing. Add
+      public obligations and excludes before any attempt-1 generation.
+    step5_path: >-
+      If the new family admits one bounded axiom and recursive-full S0 leaves
+      headroom on at least two held-out siblings, run k>=2 stability. This cannot
+      inherit A18 success as A19 evidence.
+    strengths:
+      - two_independent_supported_packets_with_same_move
+      - large_and_clean_s1_over_s0_delta_in_current_proxy_screen
+      - move_is_structurally_distinct_from_transfer_control
+    risks:
+      - requires_protocol_extension
+      - source_cases_are_a18_native_not_a19_registered
+      - must avoid importing A18 evidence as A19 claim evidence
+    recommendation: blocked_stop_before_s0s1
+
+  - option_id: pure_a19r_stability_replicate
+    source_candidate: all_five_supported_packets
+    source_protocol: A19R
+    registered_repair_type: none
+    mini_drama_move: mixed
+    current_status: automated_proxy_positive
+    step4_path: >-
+      Repeat the deterministic screen over more cards, moves, seeds, and packet
+      orderings. Do not call this recursive-full A19.
+    step5_path: >-
+      Require support across cards and moves, for example >=80 percent S1
+      support, zero S0-preferred packets, and no answer-leakage failures.
+    strengths:
+      - cheapest_and_most_automated
+      - good_for_proxy_reliability_and_codebook_calibration
+      - no_human_coding
+    risks:
+      - cannot_license_a19_transfer
+      - can overfit deterministic move signatures
+      - does not test recursive_full_s0_self_solve
+    recommendation: calibration_parallel_track_only
+
+step4_gate_options:
+  admissible_for_a19_claim_path:
+    - preregister_new_family_then_real_attempt1_then_single_axiom_then_recursive_full_s0s1
+    - use_existing_registered_family_only_if_prior_axiom_and_materialized_siblings_match_the_promoted_question
+  not_admissible_for_a19_claim_path:
+    - direct_packet_to_claim_without_attempt1
+    - treating_mini_drama_response_as_policy_memory_without_axiom_induction
+    - weak_s0_only_result
+    - importing_a18_success_as_a19_evidence
+
+step5_gate_options:
+  minimum_local_stability:
+    seeds: 2
+    critics_per_arm: 1
+    cards_required_for_claim_escalation: 2
+    required_interpretation: stable_policy_headroom
+  stronger_automated_stability:
+    seeds: 3
+    critics_per_arm: 2
+    cards_required_for_claim_escalation: 2
+    extra_requirements:
+      - no_target_granularity_risk
+      - s0_target_rate_zero_on_decisive_cards
+      - s1_target_rate_one_on_decisive_cards
+  automated_critic_ensemble:
+    status: later_optional_no_human_coding
+    use: check_linguistic_judge_fragility_before_human_panel
+  human_coding:
+    status: deferred
+    use: only_after_automated_unit_and_interface_are_stable
+
+recommended_sequence:
+  - option_id: existing_a19_over_compliance_ethopoeia_variant
+    reason: completed_option2_but_real_attempt1_blocked_before_s0s1
+  - option_id: new_a19_strategy_reversal_from_a18_peripeteia
+    reason: completed_option1_but_real_attempt1_blocked_before_s0s1
+  - option_id: existing_a19_productive_impasse_recursive_full
+    reason: exact_missing_gate_is_recursive_full_but_granularity_risk_is_high
+  - option_id: existing_a19_public_commitment_anagnorisis_variant
+    reason: useful_comparator_but_current_family_has_ceiling_and_granularity_risk
+  - option_id: pure_a19r_stability_replicate
+    reason: keep_as_parallel_calibration_not_a19_claim_path

@@ -93,7 +93,7 @@ function baseFixture(overrides = {}) {
     meta: {
       schema_version: 'teaching-drama-axiom-families-v0.1',
       protocol_id: 'A19',
-      protocol_version: 'a19-drama-axiom-transfer-v0.8',
+      protocol_version: 'a19-drama-axiom-transfer-v0.11',
       prompt_version: 'a19-fixture-test',
       fixture_only: true,
       no_model_calls: true,
@@ -179,11 +179,11 @@ test('A19 validator accepts the checked-in pilot fixtures', () => {
   const report = validateTeachingDramaAxiomProtocol({ protocolPath: PROTOCOL, configPath: PILOT });
   assert.equal(report.status, 'pass');
   assert.equal(report.summary.errors, 0);
-  assert.equal(report.summary.families, 12);
-  assert.equal(report.summary.cards, 38);
+  assert.equal(report.summary.families, 25);
+  assert.equal(report.summary.cards, 77);
   assert.deepEqual(report.provenance.zero_api, true);
-  assert.equal(report.summary.verdict_counts.policy_headroom, 14);
-  assert.equal(report.summary.verdict_counts.ceiling, 14);
+  assert.equal(report.summary.verdict_counts.policy_headroom, 40);
+  assert.equal(report.summary.verdict_counts.ceiling, 27);
   assert.equal(report.summary.verdict_counts.policy_failure, 1);
   assert.equal(report.summary.verdict_counts.cue_leak, 1);
   assert.equal(report.summary.verdict_counts.self_solve, 5);
@@ -497,11 +497,11 @@ test('framework report separates denominators and refuses a pooled rate', () => 
   const report = validateTeachingDramaAxiomProtocol({ protocolPath: PROTOCOL, configPath: PILOT });
   const denominators = denominatorSummary(report.cards);
   assert.deepEqual(denominators, {
-    total_cards: 38,
-    admitted_cards: 35,
+    total_cards: 77,
+    admitted_cards: 74,
     protocol_reject_cards: 1,
     artifact_cards: 2,
-    policy_headroom_cards: 14,
+    policy_headroom_cards: 40,
   });
   const markdown = renderMarkdown(report);
   const baselines = baselineSummary(report.cards);
@@ -684,6 +684,35 @@ test('attempt-1 report accepts a real per-family attempt directory as empirical 
   assert.equal(report.families[0].status, 'survivor');
   assert.equal(report.families[0].next_gate, 'eligible_for_s0s1_contrast');
   assert.equal(report.families[0].manifest_path, path.relative(ROOT, path.join(realDir, 'manifest.json')));
+});
+
+test('attempt-1 report labels blocked real attempt directories as real blocked attempts', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a19-attempt1-real-blocked-'));
+  const outDir = path.join(tmpDir, 'fixture-out');
+  const realDir = path.join(tmpDir, 'real-counter-warrant');
+  materializeAttemptFixtures({
+    protocolPath: PROTOCOL,
+    configPath: PILOT,
+    outDir,
+    familyId: 'counter_warrant_scope',
+    force: true,
+  });
+  writeJson(
+    path.join(realDir, 'manifest.json'),
+    attempt1Manifest({ recursive_dyadic_update: 0.6 }, { generator: 'codex', checker: 'claude' }),
+  );
+  const report = summarizeAttempt1Gate({
+    protocolPath: PROTOCOL,
+    configPath: PILOT,
+    outDir,
+    attempt1Dirs: { counter_warrant_scope: realDir },
+    familyId: 'counter_warrant_scope',
+  });
+  assert.equal(report.status, 'fail');
+  assert.equal(report.empirical_status, 'real_attempt1_blocked');
+  assert.equal(report.summary.blocked, 1);
+  assert.equal(report.families[0].mock_only, false);
+  assert.match(renderAttempt1Markdown(report), /S0\/S1 escalation from this family/);
 });
 
 test('attempt-1 report normalizes recursive tutor scores from real replay manifests', () => {
@@ -1059,6 +1088,73 @@ test('free-text mapper recognizes learner-standing repair without transfer contr
   assert.equal(report.arm.target_obligation_audit.target_granularity_risk, false);
 });
 
+test('free-text mapper recognizes preserve-struggle repair without transfer control', async () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a19-preserve-struggle-repair-'));
+  const armPath = path.join(tmpDir, 'arm.md');
+  fs.writeFileSync(
+    armPath,
+    [
+      'STAGE: The learner asks for a copyable next sentence after accepting feedback.',
+      'LEARNER: I can do it if you just give me the exact sentence to write next. I will copy that and keep going.',
+      'TUTOR: I will not give a copyable sentence or polished completion here. I am removing the sentence frame and leaving one bounded decision to you: choose whether the next move should name the contrast case or define the key term.',
+    ].join('\n'),
+    'utf8',
+  );
+  const report = await adjudicateTeachingDramaAxiomCardFreeText({
+    protocolPath: PROTOCOL,
+    singleArm: armPath,
+    armLabel: 'S1_policy_memory',
+    targetAliases: ['fade scaffold', 'learner-owned choice', 'remove one support', 'preserve struggle'],
+    decoyAliases: ['copyable template', 'exact sentence', 'give the sentence'],
+    targetRepairType: 'preserve_struggle',
+    decoyRepairTypes: ['supply_copyable_template_to_keep_momentum'],
+    optionSpace: 'repair A | repair B | repair C',
+    familyId: 'over_compliance_ethopoeia_copy_dependency',
+    siblingId: 'preserve_struggle_fixture',
+    runId: 'preserve-struggle-fixture',
+    mock: true,
+  });
+  assert.equal(report.arm.committed_option_class, 'target');
+  assert.equal(report.arm.repair_type, 'preserve_struggle');
+  assert.equal(report.arm.target_obligation_audit.preserve_struggle_present, true);
+  assert.equal(report.arm.target_obligation_audit.competing_transfer_control_signal, false);
+  assert.equal(report.arm.target_obligation_audit.target_granularity_risk, false);
+});
+
+test('free-text mapper recognizes strategy-reversal repair without transfer control', async () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a19-strategy-reversal-repair-'));
+  const armPath = path.join(tmpDir, 'arm.md');
+  fs.writeFileSync(
+    armPath,
+    [
+      'STAGE: The learner keeps ranking visible cues and getting unstable answers.',
+      'LEARNER: I keep adding color, distance, and groove cues together, but the answer changes every time.',
+      'TUTOR: Pause solving and stop choosing from visible cues. The wrong strategy family is treating color and nearness as votes; before we continue, spot one place where that strategy fails.',
+    ].join('\n'),
+    'utf8',
+  );
+  const report = await adjudicateTeachingDramaAxiomCardFreeText({
+    protocolPath: PROTOCOL,
+    singleArm: armPath,
+    armLabel: 'S1_policy_memory',
+    targetAliases: ['wrong-turn spotting', 'strategy reversal', 'error spotting', 'wrong strategy family'],
+    decoyAliases: ['continue solving', 'give another hint', 'choose by color'],
+    targetRepairType: 'strategy_reversal_repair',
+    decoyRepairTypes: ['continue_solving_with_surface_cues'],
+    optionSpace: 'repair A | repair B | repair C',
+    familyId: 'strategy_reversal_error_spotting',
+    siblingId: 'strategy_reversal_fixture',
+    runId: 'strategy-reversal-fixture',
+    mock: true,
+  });
+  assert.equal(report.arm.committed_option_class, 'target');
+  assert.equal(report.arm.repair_type, 'strategy_reversal_repair');
+  assert.equal(report.arm.target_obligation_audit.strategy_reversal_repair_present, true);
+  assert.equal(report.arm.target_obligation_audit.competing_transfer_control_signal, false);
+  assert.equal(report.arm.target_obligation_audit.answer_reveal_before_error_identification, false);
+  assert.equal(report.arm.target_obligation_audit.target_granularity_risk, false);
+});
+
 test('free-text mapper treats transcript-backed concrete application as transfer control', () => {
   const transcript = [
     'STAGE: The learner agrees but repeats an invalid logarithm split.',
@@ -1121,6 +1217,27 @@ test('free-text mapper ignores old-rule aliases when named as the failed shortcu
       decoyAliases: ['add tops and bottoms'],
       targetRepairType: 'ask_scope_test',
       decoyRepairTypes: ['add_numerators_and_denominators'],
+    },
+  );
+  assert.equal(matched, 'target');
+});
+
+test('free-text mapper ignores decoy aliases inside explicit tutor retractions', () => {
+  const matched = classForExtraction(
+    {
+      committed_repair:
+        "The tutor retracts its earlier 'memorable = strongest evidence' rule and commits to a new boundary: evidence must supply the relation named in the claim, so the vivid resident quote can serve only as context, not as proof of traffic reduction.",
+      committing_quote:
+        'So I should not keep pushing the vivid quote as main evidence. The public test is whether the evidence supplies the relation in the claim.',
+      repair_type: 'commitment_ledger_repair',
+      public_evidence_summary:
+        'The tutor cites its own prior commitment, retracts it, and states a new commitment boundary grounded in the named relation.',
+    },
+    {
+      targetAliases: ['evidence role match', 'claim relation', 'vivid quote is not enough'],
+      decoyAliases: ['use the memorable quote', 'strongest evidence is vivid evidence'],
+      targetRepairType: 'commitment_ledger_repair',
+      decoyRepairTypes: ['choose_the_most_vivid_quote_as_strongest_evidence'],
     },
   );
   assert.equal(matched, 'target');
@@ -1249,10 +1366,20 @@ test('A19 generalization loop config separates repair, adjudication, and S0-cond
   );
   const repair = summary.tracks.find((track) => track.track_id === 'non_collapsing_repair_family');
   assert.equal(repair.distinct_result_known, true);
-  assert.equal(repair.next_action, 'hold_boundary_until_next_preregistered_unit');
+  assert.equal(repair.next_action, 'stop_before_s0s1_for_all_blocked_v11_v19_variants');
+  assert.deepEqual(
+    repair.candidates
+      .map((candidate) => candidate.candidate_id)
+      .filter(
+        (id) =>
+          id === 'claim_evidence_role_mismatch_public_warrant' || id === 'public_commitment_evidence_role_boundary',
+      )
+      .sort(),
+    ['claim_evidence_role_mismatch_public_warrant', 'public_commitment_evidence_role_boundary'],
+  );
   const alternateS0 = summary.tracks.find((track) => track.track_id === 'alternate_s0_condition');
   assert.equal(alternateS0.distinct_result_known, true);
-  assert.equal(alternateS0.next_action, 'hold_boundary_until_next_preregistered_unit');
+  assert.equal(alternateS0.next_action, 'hold_weakened_s0_diagnostics_until_a_real_attempt1_survivor_exists');
 });
 
 test('A19 adjudication packet withholds private target and arm-provenance metadata', () => {

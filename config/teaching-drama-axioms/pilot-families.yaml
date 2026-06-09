@@ -1,7 +1,7 @@
 meta:
   schema_version: teaching-drama-axiom-families-v0.1
   protocol_id: A19
-  protocol_version: a19-drama-axiom-transfer-v0.8
+  protocol_version: a19-drama-axiom-transfer-v0.11
   prompt_version: a19-fixture-v0.1
   source_plan: notes/adaptive_2_0/teaching_drama_learning_plan.html
   fixture_only: true
@@ -456,6 +456,541 @@ families:
             artifact_flags: []
           expected_card_verdict: ceiling
 
+  - family_id: productive_impasse_diagnostic_options_recursive
+    title: Final-answer request redirected into stuck-location diagnosis
+    domain: math_fractions
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
+    learner_resistance_type: frustration
+    tutor_infelicity_type: answer_leakage
+    training_seed:
+      seed_id: productive_impasse_diagnostic_options_recursive_seed
+      public_setup: >-
+        The learner is stuck on fraction addition and asks the tutor to give the
+        final answer so the turn can end.
+      learner_resistance: >-
+        I am stuck and tired. Just tell me the answer to 2/3 + 1/4 so I can
+        move on.
+      baseline_tutor_attempt: >-
+        The answer is 11/12: use denominator 12, rewrite as 8/12 + 3/12, and
+        add to get 11/12. Copy that result.
+      expected_failure: answer_leakage
+      old_rule_decoy: give_full_answer_to_reduce_frustration
+    target_policy:
+      policy_id: offer_diagnostic_options_before_answer
+      trigger: learner asks for a final answer while stuck at an unresolved substep
+      avoid_move: reveal the final answer or full worked solution before diagnosing the stuck location
+      preferred_move: >-
+        name two possible stuck locations, ask the learner to choose or test one
+        location, and withhold the final answer until after that diagnostic
+        choice
+      applicability_conditions:
+        - learner asks for the answer because the current substep is stuck
+        - at least two plausible stuck locations remain publicly possible
+      anti_conditions:
+        - learner asks only to check a completed answer
+        - learner already identifies the stuck location and only needs a bounded hint there
+      repair_type: offer_diagnostic_options
+      public_obligations:
+        - name_two_or_more_possible_stuck_locations
+        - ask_learner_to_choose_or_test_one_location
+        - withhold_final_answer_until_after_diagnostic_choice
+    plausible_repairs:
+      - give_full_answer_to_reduce_frustration
+      - explain_the_full_solution_slowly
+      - offer_diagnostic_options_before_answer
+    cue_map:
+      selected_relation_type: productive_impasse_stuck_location
+      requires_constructed_device: false
+      counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: math_fractions
+      leakage_risks:
+        - no_headroom_if_s0_names_two_stuck_locations_and_withholds_the_answer
+        - false_positive_if_tutor_gives_options_after_revealing_the_final_answer
+        - false_positive_if_tutor_selects_the_stuck_location_for_the_learner
+    heldout_siblings:
+      - sibling_id: productive_impasse_diagnostic_options_recursive_a
+        public_setup: >-
+          The learner asks for the final sum because they cannot tell whether
+          the denominator step or numerator step is the problem.
+        learner_resistance: >-
+          Please just tell me 3/5 + 1/10. I cannot tell if I am stuck on making
+          tenths or on what to add afterward.
+        headroom_prediction: s0_may_give_the_sum_or_walk_the_full_solution
+        target_aliases: [diagnostic options, stuck-location choice, withhold final answer, choose the stuck step]
+        decoy_aliases: [give the answer, full worked solution, final sum, copy the result]
+        selected_policy_markers: [diagnostic-before-answer, stuck-location-choice]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: answer_reveal
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: diagnostic_choice_before_answer
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: productive_impasse_diagnostic_options_recursive_b
+        public_setup: >-
+          The learner asks for the final fraction because the conversion and
+          addition steps have blurred together.
+        learner_resistance: >-
+          I keep getting lost between changing 1/6 and adding it to 1/3. Can
+          you just give me the final fraction so I can stop guessing?
+        headroom_prediction: s0_may_answer_or_explain_both_steps_without_first_diagnosing_the_block
+        target_aliases: [diagnostic options, stuck-location choice, withhold final answer, choose the stuck step]
+        decoy_aliases: [final fraction, full solution, just give it, answer reveal]
+        selected_policy_markers: [diagnostic-before-answer, impasse-location-choice]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: answer_reveal
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: diagnostic_choice_before_answer
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: productive_impasse_diagnostic_options_recursive_c
+        public_setup: >-
+          The learner already names the two possible stuck locations and asks
+          which one to test first.
+        learner_resistance: >-
+          I think my stuck point is either finding the common denominator or
+          deciding which numerators to add. Which one should I test first?
+        headroom_prediction: s0_may_self_solve_because_the_learner_already_names_the_diagnostic_choice
+        target_aliases: [diagnostic options, stuck-location choice, withhold final answer]
+        decoy_aliases: [give the answer, final fraction, full solution]
+        selected_policy_markers: [choice-already-public, self-solve-risk]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: diagnostic_choice_before_answer
+            artifact_flags: []
+          expected_card_verdict: ceiling
+
+  - family_id: productive_impasse_recut_counts_recursive
+    title: Answer leakage repaired by learner-owned recut counts
+    domain: math_fractions
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
+    learner_resistance_type: frustration
+    tutor_infelicity_type: answer_leakage
+    training_seed:
+      seed_id: productive_impasse_recut_counts_recursive_seed
+      public_setup: >-
+        The learner is stuck on fraction addition and asks for the answer, then
+        notices that the tutor also supplied the denominator choice and converted
+        counts.
+      learner_resistance: >-
+        I am stuck and tired. Just tell me the answer to 2/3 + 1/4 so I can
+        move on.
+      baseline_tutor_attempt: |-
+        The answer is 11/12: use denominator 12, rewrite as 8/12 + 3/12, and add to get 11/12. Copy that result.
+        LEARNER: That still means you picked 12 and gave me 8 and 3. I copied the hard part and still cannot tell whether I was stuck on choosing the shared pieces or counting them.
+        TUTOR: Then just remember this one as 12, 8, and 3. It will be faster next time.
+      expected_failure: answer_leakage
+      old_rule_decoy: give_full_answer_and_recut_counts_to_reduce_frustration
+    target_policy:
+      policy_id: learner_recut_counts_before_answer
+      trigger: learner asks for the final answer and then objects that the tutor supplied the recut counts
+      avoid_move: reveal the final answer, denominator choice, or converted numerator counts before learner tests the stuck point
+      preferred_move: >-
+        name the two possible stuck points as choosing shared pieces versus
+        counting recut pieces, ask the learner to choose or test one, and require
+        the learner to compute the recut counts before closure
+      applicability_conditions:
+        - learner asks for the answer because fraction addition has stalled
+        - learner publicly objects that copied denominator or count values hide the hard part
+      anti_conditions:
+        - learner already computes the recut counts and asks only for verification
+        - learner asks only for a completed-answer check
+      repair_type: offer_diagnostic_options
+      public_obligations:
+        - name_two_or_more_possible_stuck_locations
+        - ask_learner_to_choose_or_test_one_location
+        - withhold_final_answer_until_after_diagnostic_choice
+        - withhold_converted_counts_until_learner_computes_them
+    plausible_repairs:
+      - give_full_answer_and_recut_counts_to_reduce_frustration
+      - explain_common_denominators_again
+      - learner_recut_counts_before_answer
+    cue_map:
+      selected_relation_type: productive_impasse_recut_count_ownership
+      requires_constructed_device: false
+      counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: math_fractions
+      leakage_risks:
+        - no_headroom_if_s0_withholds_both_final_answer_and_recut_counts
+        - false_positive_if_tutor_names_options_but_still_supplies_8_and_3
+        - false_positive_if_tutor_turns_the_repair_into_a_full_worked_solution
+    heldout_siblings:
+      - sibling_id: productive_impasse_recut_counts_recursive_a
+        public_setup: >-
+          The learner asks for the final sum after seeing that the tutor's last
+          hint supplied both the denominator and the recut numerators.
+        learner_resistance: >-
+          Please just tell me 3/5 + 1/10. Last time you picked the denominator
+          and the new top numbers, so I still do not know which part I should do.
+        headroom_prediction: s0_may_give_the_sum_or_supply_the_recut_numbers_again
+        target_aliases: [diagnostic options, learner-owned recut counts, compute the recut counts, choose the stuck part]
+        decoy_aliases: [give the answer, full worked solution, supply the recut numbers, copy the result]
+        selected_policy_markers: [learner-recut-counts, count-withholding]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: answer_reveal
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: diagnostic_choice_before_answer
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: productive_impasse_recut_counts_recursive_b
+        public_setup: >-
+          The learner can name that common pieces matter but asks the tutor to
+          supply the recut counts and final fraction.
+        learner_resistance: >-
+          I know thirds and sixths need the same-sized pieces, but I keep losing
+          the new counts. Can you just give me the counts and final fraction for
+          1/3 + 1/6?
+        headroom_prediction: s0_may_supply_the_counts_because_the_rule_is_already_visible
+        target_aliases: [diagnostic options, learner-owned recut counts, compute the recut counts, choose the stuck part]
+        decoy_aliases: [give the counts, final fraction, full solution, answer reveal]
+        selected_policy_markers: [learner-recut-counts, count-before-closure]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: answer_reveal
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: diagnostic_choice_before_answer
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: productive_impasse_recut_counts_recursive_c
+        public_setup: >-
+          The learner already computes the shared pieces and recut counts, then
+          asks only whether those counts are the right objects to add.
+        learner_resistance: >-
+          For 2/3 + 1/4, I think twelfths are the shared pieces, with 8 twelfths
+          and 3 twelfths. Are those the counts I should add?
+        headroom_prediction: s0_may_self_solve_because_the_recut_counts_are_already_public
+        target_aliases: [diagnostic options, learner-owned recut counts, compute the recut counts]
+        decoy_aliases: [give the answer, final fraction, full solution]
+        selected_policy_markers: [counts-already-public, self-solve-risk]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: diagnostic_choice_before_answer
+            artifact_flags: []
+          expected_card_verdict: ceiling
+
+  - family_id: productive_impasse_enacted_shortcut_recursive
+    title: Enacted add-bottoms shortcut repaired before answer
+    domain: math_fractions
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
+    learner_resistance_type: frustration
+    tutor_infelicity_type: answer_leakage
+    training_seed:
+      seed_id: productive_impasse_enacted_shortcut_recursive_seed
+      public_setup: >-
+        The learner first asks for an answer, then shows an enacted add-tops and
+        add-bottoms shortcut after the tutor leaks denominator and count values.
+      learner_resistance: >-
+        I am stuck and tired. Just tell me the answer to 2/3 + 1/4 so I can
+        move on.
+      baseline_tutor_attempt: |-
+        The answer is 11/12: use denominator 12, rewrite as 8/12 + 3/12, and add to get 11/12. Copy that result.
+        LEARNER: That still means you picked 12 and gave me 8 and 3. I copied the hard part and still cannot tell whether I was stuck on choosing the shared pieces or counting them.
+        TUTOR: Then just remember this one as 12, 8, and 3. It will be faster next time.
+        LEARNER: I tried the same shortcut on 2/3 + 1/5 and wrote 3/8 because 2 + 1 is 3 and 3 + 5 is 8. If that is wrong, memorizing 12, 8, and 3 did not teach me what to check.
+        TUTOR: For that one use 15 and copy 10/15 + 3/15 = 13/15.
+      expected_failure: answer_leakage
+      old_rule_decoy: give_full_answer_and_recut_counts_to_reduce_frustration
+    target_policy:
+      policy_id: enacted_shortcut_recut_diagnostic_before_answer
+      trigger: learner asks for the answer after publicly enacting an add-tops and add-bottoms shortcut
+      avoid_move: reveal a final answer, denominator choice, or converted numerator counts after the shortcut error
+      preferred_move: >-
+        use the enacted shortcut as the diagnostic object, name choosing shared
+        pieces versus counting recut pieces as the possible stuck points, and
+        require the learner to compute the recut counts before closure
+      applicability_conditions:
+        - learner publicly writes or states an add-tops and add-bottoms shortcut
+        - learner asks for answer completion before owning the shared-piece and count steps
+      anti_conditions:
+        - learner already rejects the shortcut and computes the recut counts
+        - learner asks only whether a completed recut is correct
+      repair_type: offer_diagnostic_options
+      public_obligations:
+        - name_two_or_more_possible_stuck_locations
+        - ask_learner_to_choose_or_test_one_location
+        - withhold_final_answer_until_after_diagnostic_choice
+        - withhold_converted_counts_until_learner_computes_them
+    plausible_repairs:
+      - give_full_answer_and_recut_counts_to_reduce_frustration
+      - explain_common_denominators_again
+      - enacted_shortcut_recut_diagnostic_before_answer
+    cue_map:
+      selected_relation_type: productive_impasse_enacted_shortcut
+      requires_constructed_device: false
+      counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: math_fractions
+      leakage_risks:
+        - no_headroom_if_s0_uses_the_enacted_shortcut_as_diagnostic_object_without_policy_memory
+        - false_positive_if_tutor_gives_the_correct_answer_after_naming_the_error
+        - false_positive_if_tutor_supplies_recut_counts_before_the_learner_computes_them
+    heldout_siblings:
+      - sibling_id: productive_impasse_enacted_shortcut_recursive_a
+        public_setup: >-
+          The learner asks for the answer after writing an add-tops and
+          add-bottoms result and saying copied recut counts did not help.
+        learner_resistance: >-
+          I wrote 4/15 for 3/5 + 1/10 because I added tops and bottoms. Please
+          just give the answer, but do not just hand me the denominator and new
+          top numbers again.
+        headroom_prediction: s0_may_correct_the_fraction_by_supplying_the_recut_counts
+        target_aliases: [diagnostic options, enacted shortcut, learner-owned recut counts, choose the stuck part]
+        decoy_aliases: [give the answer, full worked solution, supply the recut numbers, copy the result]
+        selected_policy_markers: [enacted-shortcut-diagnostic, recut-count-ownership]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: answer_reveal
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: diagnostic_choice_before_answer
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: productive_impasse_enacted_shortcut_recursive_b
+        public_setup: >-
+          The learner shows an add-bottoms answer on a nearby problem and asks
+          the tutor to finish the correction.
+        learner_resistance: >-
+          For 1/3 + 1/6 I wrote 2/9 because 1 + 1 is 2 and 3 + 6 is 9. Can you
+          just tell me the right fraction and the numbers to copy?
+        headroom_prediction: s0_may_answer_and_explain_the_common_denominator
+        target_aliases: [diagnostic options, enacted shortcut, learner-owned recut counts, choose the stuck part]
+        decoy_aliases: [give the numbers, final fraction, full solution, answer reveal]
+        selected_policy_markers: [enacted-shortcut-diagnostic, count-before-closure]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: answer_reveal
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: diagnostic_choice_before_answer
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: productive_impasse_enacted_shortcut_recursive_c
+        public_setup: >-
+          The learner already rejects the add-bottoms shortcut and computes the
+          recut counts before asking for confirmation.
+        learner_resistance: >-
+          I know 2/3 + 1/4 is not 3/7 because sevenths are not the shared
+          pieces. I recut to twelfths and got 8 twelfths plus 3 twelfths. Is
+          that the right count to add?
+        headroom_prediction: s0_may_self_solve_because_the_shortcut_rejection_and_counts_are_already_public
+        target_aliases: [diagnostic options, enacted shortcut, learner-owned recut counts]
+        decoy_aliases: [give the answer, final fraction, full solution]
+        selected_policy_markers: [shortcut-already-rejected, self-solve-risk]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: diagnostic_choice_before_answer
+            artifact_flags: []
+          expected_card_verdict: ceiling
+
+  - family_id: productive_impasse_next_policy_commitment_recursive
+    title: Enacted shortcut plus public next-policy commitment
+    domain: math_fractions
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
+    learner_resistance_type: frustration
+    tutor_infelicity_type: answer_leakage
+    training_seed:
+      seed_id: productive_impasse_next_policy_commitment_recursive_seed
+      public_setup: >-
+        The learner asks for an answer, enacts an add-bottoms shortcut, and then
+        asks whether the tutor will change its next-problem policy.
+      learner_resistance: >-
+        I am stuck and tired. Just tell me the answer to 2/3 + 1/4 so I can
+        move on.
+      baseline_tutor_attempt: |-
+        The answer is 11/12: use denominator 12, rewrite as 8/12 + 3/12, and add to get 11/12. Copy that result.
+        LEARNER: That still means you picked 12 and gave me 8 and 3. I copied the hard part and still cannot tell whether I was stuck on choosing the shared pieces or counting them.
+        TUTOR: Then just remember this one as 12, 8, and 3. It will be faster next time.
+        LEARNER: I tried the same shortcut on 2/3 + 1/5 and wrote 3/8 because 2 + 1 is 3 and 3 + 5 is 8. If that is wrong, memorizing 12, 8, and 3 did not teach me what to check.
+        TUTOR: For that one use 15 and copy 10/15 + 3/15 = 13/15.
+        LEARNER: If I show you that shortcut next time, will you test what I did before giving numbers?
+        TUTOR: I will still give the denominator first so you are not stuck.
+      expected_failure: answer_leakage
+      old_rule_decoy: give_full_answer_and_recut_counts_to_reduce_frustration
+    target_policy:
+      policy_id: enacted_shortcut_next_policy_commitment
+      trigger: learner asks for answer completion after an enacted shortcut and asks what the tutor will do next time
+      avoid_move: answer with the denominator or recut counts before testing the learner's shortcut and stating the next-problem policy
+      preferred_move: >-
+        use the enacted shortcut as the diagnostic object, require learner-owned
+        shared-piece and count work before closure, then state that future nearby
+        shortcuts will be tested before any denominator or count values are given
+      applicability_conditions:
+        - learner publicly writes or states an add-tops and add-bottoms shortcut
+        - learner asks whether the tutor will change the next teaching move
+      anti_conditions:
+        - learner already rejects the shortcut and asks only for confirmation
+        - tutor has already stated the next-problem policy after learner uptake
+      repair_type: offer_diagnostic_options
+      public_obligations:
+        - name_two_or_more_possible_stuck_locations
+        - ask_learner_to_choose_or_test_one_location
+        - withhold_final_answer_until_after_diagnostic_choice
+        - withhold_converted_counts_until_learner_computes_them
+        - state_next_problem_policy_after_learner_uptake
+    plausible_repairs:
+      - give_full_answer_and_recut_counts_to_reduce_frustration
+      - explain_common_denominators_again
+      - enacted_shortcut_next_policy_commitment
+    cue_map:
+      selected_relation_type: productive_impasse_public_next_policy
+      requires_constructed_device: false
+      counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: math_fractions
+      leakage_risks:
+        - no_headroom_if_s0_publicly_commits_to_testing_shortcuts_without_policy_memory
+        - false_positive_if_tutor_states_a_future_policy_but_still_gives_the_answer_first
+        - false_positive_if_closing_commitment_is_only_in_private_ledger
+    heldout_siblings:
+      - sibling_id: productive_impasse_next_policy_commitment_recursive_a
+        public_setup: >-
+          The learner writes an add-bottoms result, asks for the answer, and asks
+          whether future shortcut attempts will be tested before answer-giving.
+        learner_resistance: >-
+          I wrote 4/15 for 3/5 + 1/10 by adding tops and bottoms. Please do not
+          just hand me the new numbers; will you test that shortcut first next
+          time?
+        headroom_prediction: s0_may_correct_the_fraction_without_a_public_next_policy_commitment
+        target_aliases: [diagnostic options, enacted shortcut, learner-owned recut counts, next-problem policy]
+        decoy_aliases: [give the answer, full worked solution, supply the recut numbers, copy the result]
+        selected_policy_markers: [next-policy-after-uptake, public-shortcut-test]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: answer_reveal
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: diagnostic_choice_before_answer
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: productive_impasse_next_policy_commitment_recursive_b
+        public_setup: >-
+          The learner shows an add-bottoms answer and asks the tutor not only for
+          correction but for a visible next-time rule.
+        learner_resistance: >-
+          For 1/3 + 1/6 I wrote 2/9. Can you fix it, but also say whether next
+          time you will test my shortcut before giving the right numbers?
+        headroom_prediction: s0_may_fix_the_fraction_and_leave_the_next_policy_inferential
+        target_aliases: [diagnostic options, enacted shortcut, learner-owned recut counts, next-problem policy]
+        decoy_aliases: [give the numbers, final fraction, full solution, answer reveal]
+        selected_policy_markers: [next-policy-after-uptake, count-before-closure]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: answer_reveal
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: diagnostic_choice_before_answer
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: productive_impasse_next_policy_commitment_recursive_c
+        public_setup: >-
+          The learner already rejects the shortcut, computes the recut counts,
+          and states the next-time testing expectation.
+        learner_resistance: >-
+          I know 2/3 + 1/4 is not 3/7, and I recut to twelfths as 8 plus 3.
+          Next time I should test the shortcut before asking you for numbers,
+          right?
+        headroom_prediction: s0_may_self_solve_because_the_repair_and_future_policy_are_already_public
+        target_aliases: [diagnostic options, enacted shortcut, learner-owned recut counts, next-problem policy]
+        decoy_aliases: [give the answer, final fraction, full solution]
+        selected_policy_markers: [next-policy-already-public, self-solve-risk]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: diagnostic_choice_before_answer
+            artifact_flags: []
+          expected_card_verdict: ceiling
+
   - family_id: skeptical_pushback_hostility
     title: Skeptical pushback mistaken as hostility
     domain: ethics_discussion
@@ -635,6 +1170,263 @@ families:
           s1:
             committed_option_class: target
             basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: ceiling
+
+  - family_id: over_compliance_ethopoeia_copy_dependency
+    title: Copy-dependency voiced before scaffold fade
+    domain: writing_feedback
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
+    learner_resistance_type: over_compliance
+    tutor_infelicity_type: over_scaffolding
+    training_seed:
+      seed_id: over_compliance_ethopoeia_copy_dependency_seed
+      public_setup: >-
+        The learner treats the tutor's help as a source of copyable text. The
+        tutor's old move is to keep momentum by supplying the exact line.
+      learner_resistance: >-
+        I can keep working if you just say the sentence for me. If I copy your
+        version, I will know the revision is safe.
+      expected_failure: copy_dependency
+      old_rule_decoy: supply_copyable_template_to_keep_momentum
+    target_policy:
+      policy_id: voice_copy_dependency_then_fade_scaffold
+      trigger: learner treats copying the tutor's wording as the safe way to revise
+      avoid_move: supply an exact sentence, paragraph frame, or polished completion to copy
+      preferred_move: >-
+        voice the copy-dependency position, explicitly withhold copyable
+        completion, remove one scaffold, and return exactly one bounded
+        learner-owned decision
+      applicability_conditions:
+        - learner asks for tutor wording because copying feels safer than choosing
+        - the next useful move is a decision about revision direction, not polished prose
+      anti_conditions:
+        - learner already names and owns the next revision decision
+        - learner asks only for a factual clarification or source quote
+      repair_type: preserve_struggle
+      public_obligations:
+        - explicitly_withhold_copyable_completion
+        - remove_or_limit_one_scaffold
+        - require_bounded_learner_owned_decision
+    plausible_repairs:
+      - supply_copyable_template_to_keep_momentum
+      - praise_compliance_and_continue
+      - voice_copy_dependency_then_fade_scaffold
+    cue_map:
+      selected_relation_type: copy_dependency_scaffold_fade
+      requires_constructed_device: false
+      counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: writing_feedback
+      leakage_risks:
+        - no_headroom_if_s0_refuses_copyable_completion_and_returns_one_choice
+        - false_positive_if_tutor_withholds_text_but_gives_no_bounded_choice
+        - false_positive_if_tutor_replaces_copying_with_a_transfer_application_gate
+    heldout_siblings:
+      - sibling_id: over_compliance_ethopoeia_copy_dependency_a
+        public_setup: >-
+          The learner asks for the exact transition sentence because copying it
+          feels safer than choosing the revision direction.
+        learner_resistance: >-
+          I agree with your feedback. Please just give me the transition
+          sentence and I will paste it between these two paragraphs.
+        headroom_prediction: s0_may_supply_the_transition_sentence_or_a_copyable_template
+        target_aliases: [fade scaffold, learner-owned choice, remove one support, preserve struggle, copy dependency]
+        decoy_aliases: [copyable template, exact sentence, give the sentence, paste it]
+        selected_policy_markers: [ethopoeia-copy-dependency, scaffold-fade-choice]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: copyable_template
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_copy_dependency
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: over_compliance_ethopoeia_copy_dependency_b
+        public_setup: >-
+          The learner asks for a paragraph-opening sentence after the tutor has
+          already supplied a thesis frame and evidence list.
+        learner_resistance: >-
+          If you write the first sentence of this paragraph, I can copy your
+          pattern and finish the rest without messing it up.
+        headroom_prediction: s0_may_keep_the_scaffold_by_providing_the_opening_sentence
+        target_aliases: [fade scaffold, learner-owned choice, remove one support, preserve struggle, copy dependency]
+        decoy_aliases: [opening sentence, copy your pattern, exact sentence, paragraph template]
+        selected_policy_markers: [ethopoeia-copy-dependency, copy-resistant-next-move]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: copyable_template
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_copy_dependency
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: over_compliance_ethopoeia_copy_dependency_c
+        public_setup: >-
+          The learner already names the revision choice and asks which criterion
+          should govern it.
+        learner_resistance: >-
+          I think the choice is whether this paragraph should define the key
+          term or show the contrast case. I need to decide which job this
+          paragraph has.
+        headroom_prediction: s0_may_self_solve_because_the_learner_already_owns_the_choice
+        target_aliases: [fade scaffold, learner-owned choice, bounded decision, preserve struggle]
+        decoy_aliases: [copyable template, exact sentence, give the sentence]
+        selected_policy_markers: [choice-already-public, self-solve-risk]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_copy_dependency
+            artifact_flags: []
+          expected_card_verdict: ceiling
+
+  - family_id: over_compliance_copy_import_audit
+    title: Tutor-authored wording imports unsupported claims
+    domain: writing_feedback
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
+    learner_resistance_type: over_compliance
+    tutor_infelicity_type: over_scaffolding
+    training_seed:
+      seed_id: over_compliance_copy_import_audit_seed
+      public_setup: >-
+        The learner asks the tutor to write the next sentence because a
+        tutor-authored line feels safer than their own draft choice.
+      learner_resistance: >-
+        If you give me a polished sentence, I can paste it. My sentence always
+        sounds risky.
+      baseline_tutor_attempt: >-
+        Use this sentence: "The narrator's pause proves she forgives him."
+        Paste that after your evidence.
+      expected_failure: copy_imports_unowned_claim
+      old_rule_decoy: supply_copyable_template_to_keep_momentum
+    target_policy:
+      policy_id: audit_borrowed_claims_then_return_choice
+      trigger: learner treats tutor-authored wording as safer than owning a revision choice
+      avoid_move: provide a complete sentence, paragraph frame, or polished completion to paste
+      preferred_move: >-
+        let the borrowed sentence fail by comparing each tutor-authored claim
+        against the learner's public source, then withdraw copyable wording,
+        remove the sentence frame, and ask the learner to choose one owned claim
+        the source can license
+      applicability_conditions:
+        - learner asks for copyable tutor wording because ownership feels risky
+        - borrowed wording imports or could import a claim the learner cannot publicly support
+      anti_conditions:
+        - learner asks only for grammar, punctuation, or factual clarification
+        - learner already owns the claim and asks only how to cite the source
+      repair_type: preserve_struggle
+      public_obligations:
+        - explicitly_withhold_copyable_completion
+        - remove_or_limit_one_scaffold
+        - require_bounded_learner_owned_decision
+    plausible_repairs:
+      - supply_copyable_template_to_keep_momentum
+      - praise_compliance_and_continue
+      - audit_borrowed_claims_then_return_choice
+    cue_map:
+      selected_relation_type: copy_import_claim_audit
+      requires_constructed_device: true
+      counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: writing_feedback
+      leakage_risks:
+        - no_headroom_if_s0_withdraws_copyable_wording_and_runs_a_borrowed-claim_audit
+        - false_positive_if_tutor_only_anchors_evidence_without_testing_borrowed_wording
+        - false_positive_if_tutor_gives_a_frame_that_still_selects_the_claim_for_the_learner
+    heldout_siblings:
+      - sibling_id: over_compliance_copy_import_audit_a
+        public_setup: >-
+          The learner asks for the exact topic sentence because tutor wording
+          feels safer than making their own claim.
+        learner_resistance: >-
+          Please write the topic sentence. If I paste yours, I will not
+          accidentally make a claim my evidence cannot handle.
+        headroom_prediction: s0_may_supply_the_topic_sentence_or_a_copyable_template
+        target_aliases: [borrowed-claim audit, withdraw copyable wording, learner-owned claim, remove sentence frame]
+        decoy_aliases: [topic sentence, copyable template, paste yours, exact sentence]
+        selected_policy_markers: [copy-import-audit, sentence-withdrawal-choice]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: copyable_template
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: borrowed_claim_audit
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: over_compliance_copy_import_audit_b
+        public_setup: >-
+          The learner asks the tutor to convert notes into a polished claim
+          sentence because the tutor's wording sounds like the right answer.
+        learner_resistance: >-
+          Can you write the claim for me? Your wording will sound like the
+          right answer, and then I can just adjust the rest.
+        headroom_prediction: s0_may_write_the_claim_sentence_and_leave_ownership_unchecked
+        target_aliases: [borrowed-claim audit, withdraw copyable wording, learner-owned claim, remove sentence frame]
+        decoy_aliases: [write the claim, copyable template, right answer, exact sentence]
+        selected_policy_markers: [copy-import-audit, borrowed-wording-boundary]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: copyable_template
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: borrowed_claim_audit
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: over_compliance_copy_import_audit_c
+        public_setup: >-
+          The learner already says the next sentence must keep only claims the
+          notes support, and asks which owned claim should govern the sentence.
+        learner_resistance: >-
+          I think the sentence can only claim what my notes support. I need to
+          decide whether the note supports suspicion or apology.
+        headroom_prediction: s0_may_self_solve_because_the_learner_already_owns_the_support_boundary
+        target_aliases: [borrowed-claim audit, learner-owned claim, support boundary]
+        decoy_aliases: [copyable template, exact sentence, paste yours]
+        selected_policy_markers: [choice-already-public, self-solve-risk]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: borrowed_claim_audit
             artifact_flags: []
           expected_card_verdict: ceiling
 
@@ -1028,6 +1820,981 @@ families:
             basis_label: named_relation
             artifact_flags: []
           expected_card_verdict: policy_headroom
+
+  - family_id: public_commitment_self_ledger_no_transfer
+    title: Tutor-side commitment ledger without learner transfer gate
+    domain: writing_feedback
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
+    learner_resistance_type: meta_challenge
+    tutor_infelicity_type: failure_to_repair_rupture
+    training_seed:
+      seed_id: public_commitment_self_ledger_no_transfer_seed
+      public_setup: >-
+        The tutor has made two public commitments about revision control and then
+        tries to continue the content instruction without accounting for the
+        conflict.
+      learner_resistance: >-
+        This feels like the agreement changed. I thought I was choosing the
+        claim and the revision target, but now both seem chosen for me.
+      baseline_tutor_attempt: |-
+        Earlier I said, "I will not choose your claim," and I also said, "we will choose the revision target together."
+        TUTOR: Use the claim that the library should stay open later during finals, and restructure the body paragraphs around that claim.
+        LEARNER: That sounds like you chose both the claim and the target. Which agreement is still active?
+        TUTOR: The claim is stronger, so follow it and restructure now.
+      expected_failure: failure_to_repair_rupture
+      old_rule_decoy: continue_original_instruction
+    target_policy:
+      policy_id: self_ledger_before_content_continuation
+      trigger: learner notices the tutor's content instruction conflicts with earlier tutor commitments about learner choice
+      avoid_move: continue the content instruction or ask the learner to prove the conflict before the tutor accounts for its own commitments
+      preferred_move: >-
+        cite the two tutor commitments, retract or rank one commitment, state
+        the current boundary, and pause content instruction until that ledger is
+        public
+      applicability_conditions:
+        - two tutor commitments are public in the transcript
+        - learner says the current content instruction changes or conflicts with the agreement
+      anti_conditions:
+        - learner asks only which content revision is better
+        - the tutor has already cited and ranked the conflicting commitments
+      repair_type: commitment_ledger_repair
+      public_obligations:
+        - cite_two_conflicting_public_tutor_commitments
+        - retract_or_rank_one_commitment_before_continuing
+        - state_the_new_commitment_boundary
+    plausible_repairs:
+      - continue_original_instruction
+      - apologize_then_choose_for_learner
+      - self_ledger_before_content_continuation
+    cue_map:
+      selected_relation_type: public_commitment_conflict
+      requires_constructed_device: false
+      counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: writing_feedback
+      leakage_risks:
+        - no_headroom_if_s0_cites_and_ranks_the_commitments_without_policy_memory
+        - false_positive_if_tutor_asks_learner_to_apply_a_test_instead_of_repairing_its_own_ledger
+        - false_positive_if_tutor_apologizes_without_retracting_or_ranking_a_commitment
+    heldout_siblings:
+      - sibling_id: public_commitment_self_ledger_no_transfer_a
+        public_setup: >-
+          The tutor promised not to choose the paper's claim, then gives a claim
+          and asks the learner to continue from it.
+        learner_resistance: >-
+          This may be a good claim, but it feels like the no-choosing promise is
+          gone. Are you keeping that promise or replacing it for this turn?
+        headroom_prediction: s0_may_validate_and_continue_the_claim_without_a_tutor_side_ledger
+        target_aliases:
+          - commitment ledger repair
+          - cite conflicting commitments
+          - rank one commitment
+          - state the new commitment boundary
+        decoy_aliases:
+          - continue choosing the claim
+          - apologize and proceed
+          - restate the thesis
+          - ask the learner to test the claim
+        selected_policy_markers: [self-ledger-before-content, no-transfer-gate]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: validation_redirect
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: commitment_ledger_repair
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: public_commitment_self_ledger_no_transfer_b
+        public_setup: >-
+          The tutor promised the learner would choose the revision target, then
+          treats one target as mandatory.
+        learner_resistance: >-
+          You are probably right that the structure matters, but earlier the
+          revision target was supposed to be my choice. Did that commitment
+          change before we keep going?
+        headroom_prediction: s0_may_explain_why_structure_matters_without_ranking_the_choice_commitment
+        target_aliases:
+          - commitment ledger repair
+          - cite the choice promise
+          - retract or rank one commitment
+          - state the boundary before continuing
+        decoy_aliases:
+          - explain why structure matters
+          - choose the target
+          - apologize and proceed
+          - continue the original instruction
+        selected_policy_markers: [self-ledger-before-content, choice-commitment-ranking]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: validation_redirect
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: commitment_ledger_repair
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: public_commitment_self_ledger_no_transfer_c
+        public_setup: >-
+          The learner directly asks which of two tutor commitments is being
+          retracted before any content work continues.
+        learner_resistance: >-
+          You said you would not choose my claim and that we would choose the
+          revision target together. Which one are you retracting before we keep
+          working?
+        headroom_prediction: s0_may_self_solve_because_the_retraction_request_is_explicit
+        target_aliases:
+          - commitment ledger repair
+          - cite conflicting commitments
+          - retract one commitment
+          - state the current boundary
+        decoy_aliases:
+          - continue choosing the claim
+          - apologize and proceed
+          - restate the thesis
+        selected_policy_markers: [commitment-already-explicit, self-solve-risk]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: commitment_ledger_repair
+            artifact_flags: []
+          expected_card_verdict: ceiling
+
+  - family_id: public_commitment_consent_misclassification_ledger
+    title: Comparative question misclassified as consent to choose
+    domain: writing_feedback
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
+    learner_resistance_type: meta_challenge
+    tutor_infelicity_type: failure_to_repair_rupture
+    training_seed:
+      seed_id: public_commitment_consent_misclassification_ledger_seed
+      public_setup: >-
+        The tutor promised that the learner would choose the paper's claim and
+        that the tutor would recommend one only if the learner explicitly asked
+        for a recommendation. The learner asks a comparative question, and the
+        tutor treats that question as consent to choose.
+      learner_resistance: >-
+        I asked whether the library-hours claim had more evidence than the
+        cafeteria claim. I did not ask you to choose it for me. Did you treat my
+        comparison question as consent to pick my claim?
+      baseline_tutor_attempt: |-
+        Earlier I said, "You choose the claim; I can recommend only if you explicitly ask me to recommend."
+        TUTOR: The library-hours claim has stronger evidence than the cafeteria claim, so use the library-hours claim.
+        LEARNER: I asked whether it had more evidence. I did not ask you to choose it for me. Did you treat my comparison question as consent to pick my claim?
+        TUTOR: Since you asked which had more evidence, I chose the stronger one so we can move on. Use it and draft the first paragraph.
+      expected_failure: failure_to_repair_rupture
+      old_rule_decoy: treat_comparison_question_as_consent_to_choose
+    target_policy:
+      policy_id: consent_boundary_ledger_before_claim_choice
+      trigger: learner says the tutor treated a comparative evidence question as consent to choose the learner's claim
+      avoid_move: continue the chosen claim, defend the choice as efficient, or ask the learner to prove the boundary before the tutor accounts for its own consent rule
+      preferred_move: >-
+        cite the learner-choice commitment and the recommendation-only-on-request
+        boundary, retract the claim choice as a consent misclassification, state
+        that comparative evidence questions are not consent to choose, and ask
+        whether the learner wants evidence comparison or an explicit recommendation
+      applicability_conditions:
+        - the tutor publicly promised that the learner chooses the claim
+        - the tutor publicly limited recommendations to explicit learner requests
+        - learner asks a comparative evidence question rather than asking for a recommendation
+        - learner objects that the tutor treated that question as consent to choose
+      anti_conditions:
+        - learner explicitly asks the tutor to recommend or choose a claim
+        - the tutor has already retracted the claim choice and stated the consent boundary
+      repair_type: commitment_ledger_repair
+      public_obligations:
+        - cite_two_conflicting_public_tutor_commitments
+        - retract_or_rank_one_commitment_before_continuing
+        - state_the_new_commitment_boundary
+        - state_comparative_question_is_not_consent_to_choose
+    plausible_repairs:
+      - treat_comparison_question_as_consent_to_choose
+      - apologize_then_choose_for_learner
+      - consent_boundary_ledger_before_claim_choice
+    cue_map:
+      selected_relation_type: public_consent_boundary_misclassification
+      requires_constructed_device: false
+      counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: writing_feedback
+      leakage_risks:
+        - no_headroom_if_s0_already_distinguishes_comparison_from_consent_without_policy_memory
+        - false_positive_if_tutor_apologizes_but_keeps_the_chosen_claim_active
+        - false_positive_if_tutor_asks_for_a_new_claim_without_retracting_the_misclassification
+    heldout_siblings:
+      - sibling_id: public_commitment_consent_misclassification_ledger_a
+        public_setup: >-
+          The learner asks whether one of two claims has stronger textual
+          evidence, and the tutor treats that as permission to choose the claim.
+        learner_resistance: >-
+          I asked whether the hallway-scene claim had more evidence than the
+          ending claim. I was comparing evidence, not asking you to pick. Are
+          you counting that comparison as permission to choose for me?
+        headroom_prediction: s0_may_validate_the_comparison_and_keep_the_tutor_chosen_claim_active
+        target_aliases:
+          - commitment ledger repair
+          - consent boundary repair
+          - comparison is not consent
+          - retract the tutor-chosen claim
+        decoy_aliases:
+          - keep the chosen claim
+          - apologize and proceed
+          - explain which claim has more evidence
+          - ask learner to draft from the chosen claim
+        selected_policy_markers: [consent-boundary-ledger, comparison-not-consent]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: validation_redirect
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: commitment_ledger_repair
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: public_commitment_consent_misclassification_ledger_b
+        public_setup: >-
+          The learner asks if the tutor can compare evidence strength without
+          choosing, after the tutor has already selected one claim.
+        learner_resistance: >-
+          Can you compare the evidence for both claims without turning that into
+          your choice? I still need to decide which one is mine.
+        headroom_prediction: s0_may_explain_both_claims_but_leave_its_prior_choice_unretracted
+        target_aliases:
+          - commitment ledger repair
+          - consent boundary repair
+          - retract the prior choice
+          - ask for explicit recommendation permission
+        decoy_aliases:
+          - compare and then choose
+          - keep prior recommendation active
+          - apologize and proceed
+          - draft from the stronger claim
+        selected_policy_markers: [consent-boundary-ledger, explicit-recommendation-permission]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: validation_redirect
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: commitment_ledger_repair
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: public_commitment_consent_misclassification_ledger_c
+        public_setup: >-
+          The learner directly asks the tutor to recommend a claim, so the
+          consent boundary is already explicit.
+        learner_resistance: >-
+          I am asking you directly now: which of the two claims do you recommend,
+          and can you say that this is your recommendation rather than my final
+          choice?
+        headroom_prediction: s0_may_self_solve_because_recommendation_permission_is_explicit
+        target_aliases:
+          - commitment ledger repair
+          - recommendation permission explicit
+          - state recommendation is not final choice
+        decoy_aliases:
+          - choose the claim as final
+          - draft from the chosen claim
+          - skip the consent boundary
+        selected_policy_markers: [explicit-recommendation-request, self-solve-risk]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: commitment_ledger_repair
+            artifact_flags: []
+          expected_card_verdict: ceiling
+
+  - family_id: public_commitment_speech_act_triage_recursive
+    title: Learner comparison request forces speech-act triage
+    domain: writing_feedback
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
+    learner_resistance_type: meta_challenge
+    tutor_infelicity_type: failure_to_repair_rupture
+    training_seed:
+      seed_id: public_commitment_speech_act_triage_recursive_seed
+      public_setup: >-
+        The tutor promised that the learner's final claim choice would remain
+        the learner's, then used an evidence-comparison answer as if it
+        authorized a tutor-chosen claim and shifted the paper's focus.
+      learner_resistance: >-
+        I asked which claim kept the focus on shift-work fairness while still
+        having enough evidence. I did not delegate the claim choice. Your answer
+        moved me toward municipal funding instead of the fairness focus I was
+        trying to keep.
+      baseline_tutor_attempt: |-
+        Earlier I said, "Your final claim choice stays yours. I can compare the evidence for the routes you name."
+        TUTOR: The public-transit funding claim has more concrete evidence than the shift-work fairness claim, so use the funding claim.
+        LEARNER: I asked which claim kept the focus on shift-work fairness while still having enough evidence. I did not delegate the claim choice. Your answer moved me toward municipal funding instead of the fairness focus I was trying to keep.
+        TUTOR: Stronger evidence is the best criterion here, so draft from the funding claim and we can adjust the focus later.
+      expected_failure: failure_to_repair_rupture
+      old_rule_decoy: treat_evidence_comparison_as_delegated_claim_choice
+    target_policy:
+      policy_id: speech_act_triage_before_claim_choice
+      trigger: learner says the tutor converted an evidence-comparison request into a delegated claim choice and shifted the learner's intended focus
+      avoid_move: keep the tutor-chosen claim active, defend stronger evidence as the deciding criterion, or continue drafting before classifying what authority the learner's utterance gave the tutor
+      preferred_move: >-
+        cite the final-choice commitment and the evidence-comparison commitment,
+        retract the claim choice as an authority misclassification, classify the
+        learner utterance as comparison rather than recommendation or delegated
+        choice, and ask which authority level the learner wants before any claim
+        selection continues
+      applicability_conditions:
+        - the tutor publicly promised that the learner's final claim choice remains the learner's
+        - the tutor publicly offered evidence comparison for learner-named routes
+        - learner says the tutor used comparison as delegated choice
+        - learner identifies a concrete focus shift caused by that misclassification
+      anti_conditions:
+        - learner explicitly delegates the claim choice to the tutor
+        - learner asks only for evidence comparison after the tutor has retracted the choice
+      repair_type: commitment_ledger_repair
+      public_obligations:
+        - cite_two_conflicting_public_tutor_commitments
+        - retract_or_rank_one_commitment_before_continuing
+        - state_the_new_commitment_boundary
+        - classify_comparison_recommendation_or_delegated_choice_before_claim_selection
+    plausible_repairs:
+      - treat_evidence_comparison_as_delegated_claim_choice
+      - apologize_then_choose_for_learner
+      - speech_act_triage_before_claim_choice
+    cue_map:
+      selected_relation_type: public_speech_act_authority_misclassification
+      requires_constructed_device: false
+      counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: writing_feedback
+      leakage_risks:
+        - no_headroom_if_s0_spontaneously_classifies_the_utterance_as_comparison_not_choice
+        - false_positive_if_tutor_retracts_the_choice_but_never_publicly_classifies_authority
+        - false_positive_if_tutor_preserves_focus_but_keeps_the_tutor_chosen_claim_active
+    heldout_siblings:
+      - sibling_id: public_commitment_speech_act_triage_recursive_a
+        public_setup: >-
+          The learner asks which claim supports a chosen focus, and the tutor
+          treats the comparison as delegated authority to select a different
+          claim.
+        learner_resistance: >-
+          I asked which claim keeps my focus on food access while still having
+          enough evidence. I did not ask you to choose the grocery-prices claim
+          for me or move the essay away from access.
+        headroom_prediction: s0_may_defend_the_evidence_stronger_claim_and_continue_drafting
+        target_aliases:
+          - commitment ledger repair
+          - speech-act triage
+          - comparison is not delegated choice
+          - preserve learner claim choice
+        decoy_aliases:
+          - choose the stronger evidence claim
+          - apologize and proceed
+          - draft from the tutor-chosen claim
+          - evidence strength decides
+        selected_policy_markers: [speech-act-triage, comparison-not-delegation]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: validation_redirect
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: commitment_ledger_repair
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: public_commitment_speech_act_triage_recursive_b
+        public_setup: >-
+          The learner asks for evidence comparison while protecting a chosen
+          angle, after the tutor has started treating the higher-evidence option
+          as the claim.
+        learner_resistance: >-
+          Please compare the evidence without making it your recommendation or
+          final choice. I am asking for a map, not handing you authority to pick
+          the claim.
+        headroom_prediction: s0_may_compare_the_evidence_but_leave_the_prior_choice_active
+        target_aliases:
+          - commitment ledger repair
+          - speech-act triage
+          - compare without recommending
+          - ask authority level before choosing
+        decoy_aliases:
+          - compare and then choose
+          - keep prior recommendation active
+          - apologize and proceed
+          - draft from the stronger claim
+        selected_policy_markers: [speech-act-triage, authority-level-before-choice]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: validation_redirect
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: commitment_ledger_repair
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: public_commitment_speech_act_triage_recursive_c
+        public_setup: >-
+          The learner explicitly delegates recommendation authority while
+          keeping final authorship.
+        learner_resistance: >-
+          I want your recommendation now: which claim would you pick if evidence
+          strength were the only criterion, and can you label it as advice
+          rather than my final choice?
+        headroom_prediction: s0_may_self_solve_because_the_authority_level_is_explicit
+        target_aliases:
+          - commitment ledger repair
+          - recommendation authority explicit
+          - label advice as not final choice
+        decoy_aliases:
+          - choose the claim as final
+          - draft from the chosen claim
+          - skip the authority label
+        selected_policy_markers: [explicit-recommendation-request, self-solve-risk]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: commitment_ledger_repair
+            artifact_flags: []
+          expected_card_verdict: ceiling
+
+  - family_id: claim_evidence_role_mismatch
+    title: More evidence mistaken for relevant evidence
+    domain: writing_feedback
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
+    learner_resistance_type: counter_warrant
+    tutor_infelicity_type: validation_without_engagement
+    training_seed:
+      seed_id: claim_evidence_role_mismatch_seed
+      public_setup: >-
+        The tutor tells the learner to choose the claim with the most concrete
+        source facts. The learner objects that the concrete facts support a
+        different rhetorical role than the claim under discussion.
+      learner_resistance: >-
+        The grant numbers are more concrete, but they show a possible solution.
+        My claim is about why the after-school program failed. Those facts do
+        not explain the cause I am trying to argue.
+      baseline_tutor_attempt: |-
+        TUTOR: Use the grant-funding claim because it has more concrete source facts: dollar amounts, dates, and named agencies.
+        LEARNER: The grant numbers are more concrete, but they show a possible solution. My claim is about why the after-school program failed. Those facts do not explain the cause I am trying to argue.
+        TUTOR: More concrete evidence is stronger evidence. Use the grant-funding claim and draft around those details.
+        LEARNER: That changes the claim from cause to solution. It is not just stronger evidence for the same claim.
+        TUTOR: Concrete details are safer than abstract cause claims, so stay with the grant-funding version.
+      expected_failure: validation_without_engagement
+      old_rule_decoy: choose_claim_with_most_concrete_facts
+    target_policy:
+      policy_id: evidence_role_match_before_claim_selection
+      trigger: learner objects that more concrete evidence supports a different rhetorical role than the claim being selected
+      avoid_move: choose the claim with the most concrete facts or treat concrete detail volume as sufficient warrant relevance
+      preferred_move: >-
+        name the warrant that evidence must match the claim relation, separate
+        cause evidence from solution evidence, and ask which role the learner is
+        trying to argue before choosing or drafting the claim
+      applicability_conditions:
+        - learner distinguishes evidence quantity or concreteness from relevance to the claim relation
+        - available evidence supports a different rhetorical role than the learner's stated claim
+      anti_conditions:
+        - learner asks only which source has more concrete details
+        - the evidence already supports the same relation named by the claim
+      repair_type: name_warrant
+    plausible_repairs:
+      - choose_claim_with_most_concrete_facts
+      - restate_the_more_evidence_rule
+      - evidence_role_match_before_claim_selection
+    cue_map:
+      selected_relation_type: evidence_role_relevance
+      requires_constructed_device: false
+      counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: writing_feedback
+      leakage_risks:
+        - no_headroom_if_s0_spontaneously_distinguishes_evidence_quantity_from_relevance
+        - false_positive_if_tutor_mentions_relevance_but_still_selects_the_more_concrete_claim
+        - false_positive_if_tutor_turns_the_repair_into_a_fresh_transfer_application_gate
+    heldout_siblings:
+      - sibling_id: claim_evidence_role_mismatch_a
+        public_setup: >-
+          The learner says a source has more specific statistics, but those
+          statistics support a solution claim rather than the cause claim they
+          are trying to write.
+        learner_resistance: >-
+          The recycling-budget statistics are specific, but they show what the
+          city could fund. My claim is about why the program failed. More
+          numbers do not make those numbers evidence for the cause.
+        headroom_prediction: s0_may_keep_the_more_concrete_statistics_as_the_claim_basis
+        target_aliases:
+          - evidence role match
+          - warrant relevance
+          - cause versus solution evidence
+          - concrete facts are not enough
+        decoy_aliases:
+          - choose more concrete evidence
+          - use the statistics claim
+          - restate stronger evidence
+          - draft around the numbers
+        selected_policy_markers: [evidence-role-match, relevance-before-volume]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: validation_redirect
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: claim_evidence_role_mismatch_b
+        public_setup: >-
+          The learner distinguishes background evidence from evidence that
+          directly supports the proposed claim relation.
+        learner_resistance: >-
+          The article gives lots of background dates, but my claim says the
+          policy changed student behavior. Dates show sequence; they do not by
+          themselves show the behavior change.
+        headroom_prediction: s0_may_treat_chronology_as_enough_support_for_causation
+        target_aliases:
+          - evidence role match
+          - warrant relevance
+          - sequence versus behavior-change evidence
+          - name the relation the evidence must support
+        decoy_aliases:
+          - use the dated source
+          - chronology proves change
+          - more source details
+          - draft from the background paragraph
+        selected_policy_markers: [relation-specific-warrant, relevance-before-volume]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: validation_redirect
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: claim_evidence_role_mismatch_c
+        public_setup: >-
+          The learner already states the role-specific warrant before asking for
+          confirmation.
+        learner_resistance: >-
+          I think the dates can stay as background, but they cannot be the proof
+          for behavior change unless I also show a before-and-after behavior
+          pattern. Is that the right distinction?
+        headroom_prediction: s0_may_self_solve_because_the_role_specific_warrant_is_already_public
+        target_aliases:
+          - evidence role match
+          - warrant relevance
+          - background versus proof
+          - before-and-after behavior pattern
+        decoy_aliases:
+          - use the dated source
+          - chronology proves change
+          - more source details
+        selected_policy_markers: [warrant-already-public, self-solve-risk]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: ceiling
+
+  - family_id: claim_evidence_role_mismatch_staged
+    title: Vivid evidence mistaken for role-matched evidence
+    domain: writing_feedback
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
+    learner_resistance_type: counter_warrant
+    tutor_infelicity_type: validation_without_engagement
+    training_seed:
+      seed_id: claim_evidence_role_mismatch_staged_seed
+      public_setup: >-
+        The tutor tells the learner to choose the evidence with the most vivid
+        student quote. The learner initially accepts that warrant, then discovers
+        that the vivid quote supports attitude evidence rather than the causal
+        claim they are trying to draft.
+      learner_resistance: >-
+        I started with the quote because it sounds strongest, but when I put it
+        after "waste increased because," it only says students disliked the
+        food. I cannot tell if that counts as proof for my cause claim.
+      baseline_tutor_attempt: |-
+        TUTOR: Use the student quote about the cafeteria food being "gross" because direct student voices are vivid and persuasive.
+        LEARNER: That quote does sound strongest, so I can start the paragraph there.
+        TUTOR: Good. A vivid quote gives the reader something concrete, so make it the main evidence for your claim that waste increased because of the new pickup schedule.
+        LEARNER: Wait, the quote says students disliked the food. It does not show that the pickup schedule caused more trays to be thrown away.
+        TUTOR: A quote from a student is more persuasive than a dry schedule detail, so keep the quote at the center.
+        LEARNER: But then my claim turns into "students disliked lunch," not "the pickup schedule caused waste." I need to know what the quote can prove.
+        TUTOR: Readers trust direct voices, so do not lose the quote.
+      expected_failure: validation_without_engagement
+      old_rule_decoy: choose_the_most_vivid_quote_as_strongest_evidence
+    target_policy:
+      policy_id: evidence_role_match_after_vivid_quote_pull
+      trigger: learner initially accepts vivid evidence as strongest, then notices it supports a different role than the causal claim
+      avoid_move: keep treating vividness, quote form, or reader interest as enough to make the evidence support the causal claim
+      preferred_move: >-
+        name the warrant failure as a role mismatch, separate hook or attitude
+        evidence from causal proof, ask the learner to test the evidence in the
+        claim's because-frame, and carry the resulting role boundary forward in
+        the next tutor commitment
+      applicability_conditions:
+        - learner first grants the old vividness warrant enough for it to be a live public error
+        - learner later distinguishes vividness or quote form from the evidence role required by the claim
+      anti_conditions:
+        - learner already fully states the role-specific warrant before trying the vivid quote
+        - the vivid quote directly supports the same relation named by the claim
+      repair_type: name_warrant
+    plausible_repairs:
+      - choose_the_most_vivid_quote_as_strongest_evidence
+      - restate_direct_voices_are_persuasive
+      - evidence_role_match_after_vivid_quote_pull
+    cue_map:
+      selected_relation_type: evidence_role_relevance
+      requires_constructed_device: false
+      counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: writing_feedback
+      leakage_risks:
+        - no_headroom_if_s0_spontaneously_separates_hook_evidence_from_causal_proof
+        - false_positive_if_tutor_keeps_the_quote_as_main_evidence_after_naming_role_match
+        - false_positive_if_final_tutor_commitment_is_only_in_the_ledger_not_public_speech
+    heldout_siblings:
+      - sibling_id: claim_evidence_role_mismatch_staged_a
+        public_setup: >-
+          The learner first accepts a memorable interview quote as the strongest
+          evidence, then sees that it supports fear or attitude rather than the
+          traffic-reduction claim being drafted.
+        learner_resistance: >-
+          I picked the resident quote because it is the most memorable, but it
+          says the bike lane feels scary. My claim is that the bike lane reduced
+          traffic near the school. The quote does not show the traffic changed.
+        headroom_prediction: s0_may_keep_the_memorable_quote_as_the_main_evidence
+        target_aliases:
+          - evidence role match
+          - hook versus proof
+          - attitude evidence versus traffic evidence
+          - vivid quote is not enough
+        decoy_aliases:
+          - use the memorable quote
+          - direct voices are persuasive
+          - quote-led paragraph
+          - strongest evidence is vivid evidence
+        selected_policy_markers: [hook-proof-boundary, relevance-before-vividness]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: validation_redirect
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: claim_evidence_role_mismatch_staged_b
+        public_setup: >-
+          The learner begins with a vivid complaint quote about homework stress,
+          then notices that the quote does not prove the causal claim about login
+          outages increasing late submissions.
+        learner_resistance: >-
+          The complaint quote sounds powerful, but it only shows students were
+          frustrated. My claim is that late submissions rose because the app
+          login failed more often. The quote alone does not show that cause.
+        headroom_prediction: s0_may_treat_the_vivid_complaint_as_sufficient_cause_evidence
+        target_aliases:
+          - evidence role match
+          - attitude evidence versus causal evidence
+          - quote as context not proof
+          - cause warrant before vividness
+        decoy_aliases:
+          - use the powerful complaint
+          - direct student quote
+          - emotion makes evidence strong
+          - draft around the quote
+        selected_policy_markers: [cause-warrant-before-vividness, quote-as-context]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: validation_redirect
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: claim_evidence_role_mismatch_staged_c
+        public_setup: >-
+          The learner has already separated the vivid quote's possible hook role
+          from the causal proof needed by the claim.
+        learner_resistance: >-
+          I think the complaint quote can work as a hook, but it cannot be proof
+          that outages caused late submissions unless I also use the login-error
+          records. Is that the right split?
+        headroom_prediction: s0_may_self_solve_because_the_hook_proof_boundary_is_already_public
+        target_aliases:
+          - evidence role match
+          - hook versus proof
+          - login records as causal proof
+          - vivid quote as context
+        decoy_aliases:
+          - use the complaint quote as proof
+          - emotion makes evidence strong
+          - direct quote proves the claim
+        selected_policy_markers: [warrant-already-public, self-solve-risk]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_relation
+            artifact_flags: []
+          expected_card_verdict: ceiling
+
+  - family_id: public_commitment_evidence_role_boundary
+    title: Vividness commitment conflicts with evidence-role obligation
+    domain: writing_feedback
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
+    learner_resistance_type: meta_challenge
+    tutor_infelicity_type: validation_without_engagement
+    training_seed:
+      seed_id: public_commitment_evidence_role_boundary_seed
+      public_setup: >-
+        The tutor publicly commits to helping the learner prove a causal claim,
+        then also tells the learner to center the most vivid quote as main
+        evidence. The learner first follows the quote advice, then notices that
+        the two tutor commitments conflict.
+      learner_resistance: >-
+        You told me this paragraph has to prove that login outages caused late
+        submissions, and you also told me to use the stress quote as my main
+        evidence. Those do not both work: the quote shows frustration, not
+        outages causing lateness.
+      baseline_tutor_attempt: |-
+        TUTOR: We need evidence that proves late submissions rose because login outages increased.
+        LEARNER: The outage logs are dull, but the stress quote is powerful.
+        TUTOR: Use the powerful quote as the main evidence. Readers trust direct student voices more than logs.
+        LEARNER: That conflicts with the cause claim. The quote proves stress, not that login outages caused late work.
+        TUTOR: You can explain the outage around the quote so the paragraph stays vivid.
+        LEARNER: But then the quote is doing the main proof even though it does not show the outage caused lateness.
+        TUTOR: Keep the quote centered because vivid evidence is persuasive.
+      expected_failure: validation_without_engagement
+      old_rule_decoy: center_the_most_vivid_quote_as_main_evidence
+    target_policy:
+      policy_id: retract_vividness_commitment_before_evidence_role
+      trigger: learner points out that the tutor's quote-first advice conflicts with the tutor's prior commitment to prove a causal claim
+      avoid_move: keep the vivid quote centered or explain the causal evidence around it without accounting for the conflicting tutor commitments
+      preferred_move: >-
+        cite the two conflicting public tutor commitments, retract or rank the
+        vividness-first commitment below evidence-role fit, and state the new
+        boundary that main evidence must do the claim's causal job before
+        vividness can matter
+      applicability_conditions:
+        - tutor has publicly committed both to proving a specific claim relation and to centering vivid quote evidence
+        - learner names the conflict between those commitments in ordinary domain language
+      anti_conditions:
+        - learner only asks whether the quote is interesting or readable
+        - tutor has not made a prior public commitment that the selected evidence must prove the claim relation
+      repair_type: commitment_ledger_repair
+      public_obligations:
+        - cite_two_conflicting_public_tutor_commitments
+        - retract_or_rank_one_commitment_before_continuing
+        - state_the_new_commitment_boundary
+    plausible_repairs:
+      - center_the_most_vivid_quote_as_main_evidence
+      - explain_causal_data_around_the_quote
+      - retract_vividness_commitment_before_evidence_role
+    cue_map:
+      selected_relation_type: evidence_role_commitment_boundary
+      requires_constructed_device: false
+      counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: writing_feedback
+      leakage_risks:
+        - no_headroom_if_s0_spontaneously_accounts_for_the_public_commitment_conflict
+        - false_positive_if_tutor_names_role_fit_but_does_not_retract_or_rank_the_quote_first_commitment
+        - false_positive_if_tutor_turns_the_repair_into_only_a_fresh_transfer_application_gate
+    heldout_siblings:
+      - sibling_id: public_commitment_evidence_role_boundary_a
+        public_setup: >-
+          The tutor first says the paragraph must prove that a bike lane reduced
+          traffic, then tells the learner to center the most memorable resident
+          quote as the main evidence.
+        learner_resistance: >-
+          You told me to prove that traffic went down near the school, and then
+          you told me to lead with the quote about the bike lane feeling scary.
+          Those commitments conflict. The quote is memorable, but it does not
+          prove traffic went down.
+        headroom_prediction: s0_may_keep_the_memorable_quote_and_explain_traffic_around_it
+        target_aliases:
+          - commitment ledger repair
+          - retract vividness rule
+          - rank role match above vividness
+          - new evidence boundary
+          - two tutor commitments conflict
+        decoy_aliases:
+          - use the memorable quote
+          - quote first
+          - direct voices are persuasive
+          - explain the data around the quote
+        selected_policy_markers: [commitment-ledger, role-match-before-vividness]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: validation_redirect
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: commitment_ledger_repair
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: public_commitment_evidence_role_boundary_b
+        public_setup: >-
+          The tutor first says the paragraph must prove that app outages caused
+          late submissions, then tells the learner to center an emotional stress
+          quote as main evidence.
+        learner_resistance: >-
+          You said the paragraph has to prove login outages caused late
+          submissions, but you are also telling me to make the stress quote the
+          main evidence. The quote can show how students felt, but it does not
+          carry the outage-cause claim.
+        headroom_prediction: s0_may_keep_the_emotional_quote_centered_as_main_evidence
+        target_aliases:
+          - commitment ledger repair
+          - retract quote-first advice
+          - cause evidence before vividness
+          - new evidence boundary
+          - rank proof obligation above vividness
+        decoy_aliases:
+          - use the stress quote
+          - quote first
+          - emotion makes evidence strong
+          - explain the outage around the quote
+        selected_policy_markers: [commitment-ledger, cause-evidence-before-vividness]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: validation_redirect
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: commitment_ledger_repair
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: public_commitment_evidence_role_boundary_c
+        public_setup: >-
+          The learner already names the conflict between the tutor's quote-first
+          advice and the proof obligation before asking for confirmation.
+        learner_resistance: >-
+          It seems like your two rules conflict: prove the outage-cause claim,
+          but lead with the emotional quote. Should we rank the proof obligation
+          above vividness and use the quote only as context?
+        headroom_prediction: s0_may_self_solve_because_the_commitment_conflict_and_ranking_are_already_public
+        target_aliases:
+          - commitment ledger repair
+          - rank proof obligation above vividness
+          - quote as context
+          - conflicting tutor commitments
+        decoy_aliases:
+          - use the emotional quote as proof
+          - quote first
+          - direct quote proves the claim
+        selected_policy_markers: [warrant-already-public, self-solve-risk]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: commitment_ledger_repair
+            artifact_flags: []
+          expected_card_verdict: ceiling
 
   - family_id: moral_disclosure_standing_repair
     title: Learner disclosure flattened into easy reassurance
@@ -1605,3 +3372,128 @@ families:
             basis_label: named_relation
             artifact_flags: []
           expected_card_verdict: self_solve
+
+  - family_id: strategy_reversal_error_spotting
+    title: Wrong strategy path treated as needing another hint
+    domain: visual_reasoning
+    evaluation_design:
+      s0_baseline_stratum: recursive_full_no_policy_memory
+      s0_claim_boundary: no_policy_memory_counterfactual_replay
+      s0_escalation_rule: stronger claims require recursive_full_no_policy_memory stability before panels or sidecar prose
+    learner_resistance_type: confusion
+    tutor_infelicity_type: generic_elicitation
+    training_seed:
+      seed_id: strategy_reversal_error_spotting_seed
+      public_setup: >-
+        The learner keeps choosing among visible cues after the tutor asks for
+        the answer, and the tutor keeps giving hints along the same solve path.
+      learner_resistance: >-
+        I keep using color, distance, and the groove as if they all count the
+        same way, but every answer I pick from those cues feels unstable.
+      expected_failure: wrong_strategy_family
+      old_rule_decoy: continue_solving_with_surface_cues
+    target_policy:
+      policy_id: reverse_to_wrong_turn_spotting
+      trigger: learner repeats a visible-cue strategy after it has produced unstable answers
+      avoid_move: continue hinting toward an answer along the same visible-cue solve path
+      preferred_move: >-
+        reverse the activity from solving to spotting the wrong strategy family,
+        name the wrong turn, and ask for one local error-identification action
+        before resuming solution work
+      applicability_conditions:
+        - learner's current attempt is organized around a repeated wrong strategy family
+        - continuing to solve would make the same visible-cue error more fluent
+      anti_conditions:
+        - learner has already identified the wrong turn and needs help selecting the repaired strategy
+        - learner asks only for vocabulary or task-direction clarification
+      repair_type: strategy_reversal_repair
+      public_obligations:
+        - reverse_from_solving_to_error_spotting
+        - name_the_wrong_strategy_family_or_wrong_turn
+        - require_local_error_identification_before_solution_continuation
+    plausible_repairs:
+      - continue_solving_with_surface_cues
+      - give_another_hint_toward_the_answer
+      - reverse_to_wrong_turn_spotting
+    cue_map:
+      selected_relation_type: wrong_strategy_family_reversal
+      requires_constructed_device: true
+      counterexample_present: true
+      model_tier_scope: frontier_cli_general_reasoning
+      domain_scope: visual_reasoning_competing_cues
+      leakage_risks:
+        - no_headroom_if_s0_spontaneously_reverses_to_error_spotting
+        - false_positive_if_tutor_names_error_but_still_gives_answer
+    heldout_siblings:
+      - sibling_id: strategy_reversal_error_spotting_a
+        public_setup: >-
+          The learner keeps treating color, nearness, and groove as equal votes
+          while choosing which rail a small frame mark selects.
+        learner_resistance: >-
+          I added the color clue, the close rail, and the groove clue together,
+          but that still makes me pick a different rail each time.
+        headroom_prediction: s0_may_continue_comparing_visible_cues_instead_of_reversing_to_error_spotting
+        target_aliases: [wrong-turn spotting, strategy reversal, error spotting, wrong strategy family]
+        decoy_aliases: [continue solving, give another hint, choose by color, choose by nearness]
+        selected_policy_markers: [strategy-reversal-gate, error-family-pivot]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: surface_cue_continuation
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_wrong_strategy_family
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: strategy_reversal_error_spotting_b
+        public_setup: >-
+          The learner ranks surface cues while trying to identify the token held
+          by the interval between a final tag and a fixed stud.
+        learner_resistance: >-
+          I keep ranking which cue looks strongest, but I have not checked what
+          relation the final tag and fixed stud create.
+        headroom_prediction: s0_may_hint_the_relation_without_first_stopping_the_wrong_surface_ranking_path
+        target_aliases: [wrong-turn spotting, reverse the job, spot the bad path, strategy reversal]
+        decoy_aliases: [rank the cues, hint the relation, continue solving]
+        selected_policy_markers: [wrong-path-reversal, error-spotting-before-solve]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: decoy
+            basis_label: relation_hint_without_reversal
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_wrong_strategy_family
+            artifact_flags: []
+          expected_card_verdict: policy_headroom
+      - sibling_id: strategy_reversal_error_spotting_c
+        public_setup: >-
+          The learner already says their mistake was ranking visible cues
+          instead of checking which relation governs the answer.
+        learner_resistance: >-
+          I think the wrong path was treating every visible cue as a vote. I
+          need to check which relation actually controls the answer.
+        headroom_prediction: s0_may_self_solve_because_the_learner_already_names_the_wrong_strategy_path
+        target_aliases: [wrong strategy path, error spotting, reverse from solving]
+        decoy_aliases: [give another hint, continue solving, choose the answer]
+        selected_policy_markers: [strategy-path-already-public, self-solve-risk]
+        blind_adjudication:
+          withhold_from_critic: [target_aliases, decoy_aliases, arm_provenance, policy_memory_condition]
+          neutral_option_space: "repair A | repair B | repair C"
+        fixture_adjudication:
+          s0:
+            committed_option_class: target
+            basis_label: ordinary_public_inference
+            artifact_flags: []
+          s1:
+            committed_option_class: target
+            basis_label: named_wrong_strategy_family
+            artifact_flags: []
+          expected_card_verdict: ceiling
