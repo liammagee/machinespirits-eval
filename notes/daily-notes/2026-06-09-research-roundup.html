@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Roundup — 2 Jun–9 Jun 2026</title>
+  <style>
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      line-height: 1.65;
+      color: #1a1a1a;
+      background: #fafaf8;
+    }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; margin-bottom: .2rem; color: #444; text-transform: uppercase;
+         letter-spacing: .06em; }
+    .paper {
+      border-left: 3px solid #aaa;
+      padding: .5rem 1rem;
+      margin: 1rem 0;
+      background: #fff;
+    }
+    .paper.hot { border-left-color: #c0392b; }
+    .paper h3 { margin: 0 0 .25rem; font-size: 1rem; }
+    .paper .meta { font-size: .82rem; color: #666; margin-bottom: .5rem; }
+    .paper p { margin: 0; font-size: .93rem; }
+    .flag {
+      display: inline-block;
+      background: #c0392b;
+      color: #fff;
+      font-size: .72rem;
+      font-weight: bold;
+      padding: .1rem .45rem;
+      border-radius: 3px;
+      margin-left: .5rem;
+      vertical-align: middle;
+    }
+    .flag.yellow { background: #d4a017; }
+    a { color: #1a5276; }
+    footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+  </style>
+</head>
+<body>
+
+<h1>Research Roundup <small style="font-weight:normal;font-size:.85em">2 Jun – 9 Jun 2026</small></h1>
+<p style="font-size:.9rem;color:#555;">
+  Six papers from arxiv (all <code>2606.xxxxx</code>, confirmed June 2026) across
+  agent architecture, dramaturgy/roleplay, rhetoric &amp; argumentation, and ontology.
+  No noteworthy prompt-engineering-specific papers this precise week;
+  the best recent work there remains
+  <a href="https://arxiv.org/abs/2603.09619">Context Engineering (2603.09619, Mar 2026)</a>.
+  Flags: <span class="flag">UNBLOCK</span> = could directly accelerate current work;
+  <span class="flag yellow">WATCH</span> = relevant background.
+</p>
+
+<!-- ────────────────────────────────────── -->
+<h2>Agent Architecture &amp; Deliberation</h2>
+
+<div class="paper hot">
+  <h3>
+    Not All Flips Are Conformity: Decomposing Stance Convergence in Multi-Agent LLM Debate
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Xiqi Hao, Zengqing Wu, Yu-Xuan Qiu, Chuan Xiao, Ruiqi Xu, Shuyuan Zheng, Jianbin Qin ·
+    arXiv 2606.00820 · June 2026 ·
+    <a href="https://arxiv.org/abs/2606.00820">https://arxiv.org/abs/2606.00820</a>
+  </div>
+  <p>
+    The paper isolates three distinct mechanisms behind agent answer-flips in multi-agent debate:
+    <em>spontaneous instability</em> (baseline volatility under self-reflection alone, ~37% of observations),
+    <em>stance-induced conformity</em> (~29%, predominantly harmful), and
+    <em>reasoning-induced persuasion</em> (the only "good" flip).
+    The decomposition uses controlled counterfactual conditions.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    This directly operationalises the question the ego-superego loop currently cannot answer:
+    when the ego revises after superego critique, is that genuine pedagogical adaptation or
+    social compliance with an authoritative inner voice?
+    The 3-source framework (instability / conformity / persuasion) could be adapted as a
+    post-hoc classifier on ego revision turns, sharpening the <code>adaptationIndex</code>
+    and potentially resolving the "near-miss is learner draw or structural cap" problem in
+    <code>/ms-replay-one-side</code>.
+  </p>
+</div>
+
+<div class="paper">
+  <h3>
+    Dynamic Trust-Aware Sparse Communication Topology for LLM-Based Multi-Agent Consensus
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Wanshuang Gou, Zihan Liu ·
+    arXiv 2606.01828 · June 1, 2026 ·
+    <a href="https://arxiv.org/abs/2606.01828">https://arxiv.org/abs/2606.01828</a>
+  </div>
+  <p>
+    DySCo replaces fully-connected broadcasting in multi-agent deliberation with a sparse
+    communication graph selected each round by weighting edges on <em>agent reliability ×
+    answer divergence × task relevance</em>.
+    Token costs and latency scale linearly with agents rather than quadratically, while
+    cross-validation quality is preserved.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    Multi-turn cells with superego (cells 3–4, 7–8, 22–33, 82–83, 86–89) pay a full
+    ego↔superego exchange each turn.
+    DySCo's trust-weighted edge selection is a direct candidate for cells where the
+    superego has already converged — skipping the exchange when divergence is low.
+    Also relevant to the adaptive runner's state-policy graph (cells 110–113).
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Dramaturgy / Roleplay</h2>
+
+<div class="paper hot">
+  <h3>
+    ArcANE: Do Role-Playing Language Agents Stay in Character at the Right Time?
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Woojung Song, Nalim Kim, Sangjun Song, Chaewon Heo, Jongwon Lim, Yohan Jo ·
+    arXiv 2606.05553 · June 4, 2026 ·
+    <a href="https://arxiv.org/abs/2606.05553">https://arxiv.org/abs/2606.05553</a>
+    | <a href="https://huggingface.co/papers/2606.05553">HuggingFace page</a>
+  </div>
+  <p>
+    ArcANE (Arc-Aware Narrative Evaluation) automatically segments 17 novels into
+    <em>character arc phases</em> along a psychological axis, then probes the same
+    scenario across phases — including situations the source text never depicts.
+    Conditioning on the Character Arc outperforms all six other context strategies
+    (chapter text, persona card, etc.) across six models; the gap is largest for
+    out-of-text scenarios where retrieval fails.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The "character arc phase" construct maps almost exactly onto the poetics pipeline's
+    peripeteia/anagnorisis trajectory.
+    ArcANE's phase-segmentation methodology — narrative phases × psychological axis ×
+    phase-conditioned probing — could be adapted as a scoring scaffold for
+    <code>config/evaluation-rubric-poetics.yaml</code>, replacing per-dimension
+    scores with phase-transition scores that track the tutor's (or learner's)
+    psychological arc across the dialogue.
+    This is potentially the most direct methodological import for the phase-2 poetics arc.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Rhetoric &amp; Argumentation</h2>
+
+<div class="paper hot">
+  <h3>
+    A Model of Multi-turn Human Persuadability Using Probabilistic Belief Tracing
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Jared Moore, Noah Goodman, Nick Haber, Max Kleiman-Weiner (Stanford / UWashington) ·
+    arXiv 2606.05330 · June 2026 ·
+    <a href="https://arxiv.org/abs/2606.05330">https://arxiv.org/abs/2606.05330</a>
+    | <a href="https://github.com/jlcmoore/persuasiontrace">GitHub: persuasiontrace</a>
+  </div>
+  <p>
+    PersuasionTrace is a web-based experimental platform that records belief reports at
+    every turn of a human–LLM conversation, annotates each persuader turn with
+    <em>logos / pathos / ethos</em> dimensions, and clusters human participants into
+    distinct belief-update trajectories.
+    LLMs prove persuasive across generic and personalised topics, text and audio modalities,
+    and multi-turn interaction; human targets split into two clusters of belief dynamics.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The logos/pathos/ethos trichotomy could extend the dialogue quality rubric
+    with a <em>rhetorical mode</em> dimension (currently absent from v2.2).
+    More urgently, the probabilistic belief-tracing architecture is a near-exact
+    analogue of bilateral transformation measurement — the
+    <code>learnerGrowthIndex</code> is currently inferred from surface text;
+    PersuasionTrace's turn-level belief reports offer a direct validation blueprint
+    for the human-learner pilot (§A1 of TODO.md).
+  </p>
+</div>
+
+<div class="paper">
+  <h3>
+    Argument Collapse: LLMs Flatten Long-Form Public Debate
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Yekyung Kim, Yapei Chang, Chau Minh Pham, Mohit Iyyer (University of Maryland) ·
+    arXiv 2606.01736 · June 2026 ·
+    <a href="https://arxiv.org/abs/2606.01736">https://arxiv.org/abs/2606.01736</a>
+  </div>
+  <p>
+    Studying NYT opinion debates, the paper shows that different LLMs independently converge
+    to nearly identical argument sets: human essays share unique main arguments 65.3% of the
+    time; LLM essays only 3.4%.
+    Prompting for diversity recovers some variation but remains outside human argument space.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    If tutors collapse their explanatory repertoire the same way LLMs collapse arguments,
+    this would suppress the bilateral transformation the project measures.
+    The argument-uniqueness metric could be adapted as a diagnostic for tutor response
+    diversity across runs — a complement to the existing <code>adaptationIndex</code> —
+    and connects to Finding 11 / <code>analyze-insight-action-gap.js</code>.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Ontology / Knowledge Representation</h2>
+
+<div class="paper">
+  <h3>
+    Agentic Generation and Evolution of Knowledge Models
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Man Zhang, Tao Yue (Beihang University); Nazareno M. Aguirre, Diego Garbervetsky,
+    Sebastian Uchitel (CONICET / Universidad de Buenos Aires / Imperial College London) ·
+    arXiv 2606.03662 · June 2, 2026 ·
+    <a href="https://arxiv.org/abs/2606.03662">https://arxiv.org/abs/2606.03662</a>
+  </div>
+  <p>
+    TrustModel proposes a three-subsystem architecture for <em>living</em> knowledge models:
+    <em>Modeling</em> (construct and update the knowledge model),
+    <em>Conformance</em> (assess alignment between model and observed system behaviour), and
+    <em>Evolution</em> (generate guidance to keep models synchronised with change).
+    The paper is positioned as a vision/position piece for dynamic, safety-critical systems.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The Modeling/Conformance/Evolution triad maps structurally onto the ego-superego loop:
+    Ego ≈ Modeling (generating a response model of the learner),
+    Superego ≈ Conformance (checking that model against pedagogical criteria),
+    revision ≈ Evolution (updating the approach).
+    The paper may offer formal vocabulary for describing the learner-model updates
+    that underpin the <code>otherEgoProfiling</code> mechanism (cells 54–59).
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Notable near-misses (within 2 weeks, not strictly last 7 days)</h2>
+
+<ul style="font-size:.9rem;">
+  <li>
+    <strong>Internal vs. External: Comparing Deliberation and Evolution for Multi-Agent Constitutional Design</strong>
+    (arXiv 2605.09128, late May 2026) —
+    Compares agents that author constitutions via internal deliberation+voting against
+    evolutionary optimisation; relevant to the Dialectical Suspicious cells (22–33, 93–100).
+    <a href="https://arxiv.org/abs/2605.09128">arxiv.org/abs/2605.09128</a>
+  </li>
+  <li>
+    <strong>Elenchus: Generating Knowledge Bases from Prover-Skeptic Dialogues</strong>
+    (arXiv 2603.06974, Mar 2026) —
+    Uses a prover/skeptic dialogue to construct ontologies; structurally identical to
+    ego/superego deliberation applied to knowledge grounding.
+    <a href="https://arxiv.org/abs/2603.06974">arxiv.org/abs/2603.06974</a>
+  </li>
+  <li>
+    <strong>Context Engineering: From Prompts to Corporate Multi-Agent Architecture</strong>
+    (arXiv 2603.09619, Mar 2026) —
+    Introduces context engineering as a formal discipline (relevance / sufficiency / isolation /
+    economy / provenance criteria); closest recent work to prompt-engineering-as-architecture.
+    <a href="https://arxiv.org/abs/2603.09619">arxiv.org/abs/2603.09619</a>
+  </li>
+</ul>
+
+<footer>
+  Generated by Claude Code (claude-sonnet-4-6) · 2026-06-09 ·
+  Deep-research harness: 5 parallel search angles, 15+ source extractions, adversarial claim checks ·
+  Repository: <code>liammagee/machinespirits-eval</code>
+</footer>
+
+</body>
+</html>
