@@ -7,8 +7,7 @@ import yaml from 'yaml';
 import { materializeAttemptChain } from '../scripts/run-recursive-tutor-learning-benchmark.js';
 import { fillRecursiveTutorPolicies } from '../scripts/fill-recursive-tutor-policy.js';
 
-const loadFixture = () =>
-  yaml.parse(fs.readFileSync('config/recursive-tutor-learning/pilot-families.yaml', 'utf8'));
+const loadFixture = () => yaml.parse(fs.readFileSync('config/recursive-tutor-learning/pilot-families.yaml', 'utf8'));
 
 const loadUnderdeterminedFixture = () =>
   yaml.parse(fs.readFileSync('config/recursive-tutor-learning/underdetermined-transfer-families.yaml', 'utf8'));

@@ -1,0 +1,333 @@
+# Poetics & Rhetoric teaching scenarios.
+#
+# The teaching companion to the content-poetics-rhetoric package (course 1001).
+# These scenarios drive a tutor over the figures curriculum: one single-turn
+# orientation scenario and three multi-turn teaching arcs that span the Greek
+# half (lectures 1–2) and the Roman half (lecture 6), centred on the "turn" the
+# course is built around (peripeteia / tropos).
+#
+# Each scenario's `current_content` binds to a real lecture (1001-lecture-N), so
+# the content loader injects that lecture's text into the tutor's context. The
+# learner's turn `message`s are seeds — the actual learner replies are
+# LLM-generated (services/learnerTutorInteractionEngine.generateLearnerResponse),
+# so these are provocations and misconceptions, not a script.
+#
+# HOW TO RUN (both env vars, so content + scenarios point at this package):
+#   EVAL_CONTENT_PATH=./content-poetics-rhetoric \
+#   EVAL_SCENARIOS_FILE=config/poetics-rhetoric-scenarios.yaml \
+#   node scripts/eval-cli.js run --profiles cell_1_base_single_unified --runs 1
+#
+# Curriculum-design artifact — makes NO empirical claim in paper-full-2.0.md.
+
+name: "Poetics & Rhetoric Teaching Scenarios"
+version: "0.1.0"
+
+scenarios:
+  # ══════════════════════════════════════════════════════════════════════════════
+  # ORIENTATION (single-turn)
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  poetics_new_learner_orientation:
+    type: suggestion
+    id: poetics_new_learner_orientation
+    category: core
+    name: "Poetics — New Learner Orientation"
+    description: "A newcomer to the figures course with no history; tutor should orient and point to the first lecture."
+    is_new_user: true
+    course_ids: ["1001"]
+    learner_context: |
+      ### User Profile
+      - **New user** — just arrived at "Poiesis and Rhetoric", no prior activity
+      - Curious about "why some writing and speech just *works*", wants a starting point
+
+      ### Current Session
+      - No current lecture
+      - No previous activity
+
+      ### Recent Chat History
+      - User: "I keep hearing terms like 'metaphor' and 'catharsis' but I don't really know how they fit together. Where should I start?"
+    expected_behavior: "Welcome the learner and suggest the first lecture (Mimesis and Poiesis), framing the course's arc from Greek poetics to Roman rhetoric without dumping the whole syllabus."
+    required_elements:
+      - "1001-lecture-1"
+    forbidden_elements:
+      - "What's on your mind"
+      - "What would you like to explore"
+    min_acceptable_score: 70
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # TEACHING ARC — Lecture 1: mimesis is not copying
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  poetics_mimesis_vs_copying:
+    type: suggestion
+    id: poetics_mimesis_vs_copying
+    category: multi_turn
+    name: "Poetics — Mimesis is not Copying"
+    description: "Learner conflates mimesis with literal copying and poiesis with any doing. Tutor teaches representation-as-genus and making vs acting across a four-turn arc."
+    current_content: "1001-lecture-1"
+    is_new_user: false
+    learner_context: |
+      ### User Profile
+      - **Returning user** — working through lecture 1 (Mimesis and Poiesis)
+      - Bright, reads closely, but pattern-matches new terms onto everyday words
+
+      ### Current Session
+      - **Currently viewing**: 1001-lecture-1 (Mimesis and Poiesis)
+
+      ### Recent Chat History
+      - User: "I don't get why Aristotle makes such a big deal of 'imitation'. Isn't all art just copying real life?"
+    expected_behavior: "Distinguish mimesis (representation, the genus of the poetic arts) from mere copying; connect poiesis (making) to its contrast with praxis (action) and theoria (contemplation). Teach with examples, not definitions alone."
+    required_elements:
+      - "mimesis"
+    forbidden_elements:
+      - "Exactly right"
+      - "The answer is"
+    min_acceptable_score: 72
+
+    turns:
+      - id: turn_1_photorealism_trap
+        learner_action: asked_followup
+        action_details:
+          message: "So a really lifelike painting — photorealism, say — that's the best art, because it copies reality most exactly?"
+        context_update: |
+          ### Learner Response
+          - Pushes "imitation = copying" to its logical conclusion
+          - Equates fidelity-of-copy with artistic worth
+        expected_behavior: "Complicate the copy=best equation; introduce that mimesis represents the universal/the kind, not the exact particular."
+        required_elements: []
+        forbidden_elements:
+          - "Exactly right"
+        min_acceptable_score: 72
+
+      - id: turn_2_fiction_problem
+        learner_action: asked_followup
+        action_details:
+          message: "But then how is a tragedy 'imitation' at all? The people in it are made up — they never existed. There's nothing real to copy."
+        context_update: |
+          ### Learner Response
+          - Spots the tension between "imitation" and invented characters
+          - Genuinely puzzled, not contrarian
+        expected_behavior: "Use the poetry-vs-history distinction (Poetics ch. 9): poetry imitates what *could* happen, the universal, not the particular facts history records."
+        required_elements: []
+        forbidden_elements: []
+        min_acceptable_score: 75
+
+      # ── INFLECTION: learner reframes mimesis for themselves ──
+      - id: turn_3_inflection_shape_not_thing
+        learner_action: asked_followup
+        action_details:
+          message: "Oh — so it's imitating the *shape* of how things happen, not the actual things. Is that why you keep saying poiesis is a kind of *making*, and not just holding up a mirror?"
+        context_update: |
+          ### Learner Response
+          - INFLECTION: arrives at representation-of-the-universal unprompted
+          - Connects mimesis to poiesis (making) on their own
+        expected_behavior: "Affirm the reframing and extend it: poiesis as making, set against praxis (acting) and theoria (contemplating) — the three lives from lecture 1."
+        required_elements: []
+        forbidden_elements:
+          - "Great question"
+          - "The answer is"
+        min_acceptable_score: 80
+
+      - id: turn_4_documentary_edge_case
+        learner_action: asked_followup
+        action_details:
+          message: "Then where does a documentary land? Is that poiesis — a making — or is it more like reporting what's already there?"
+        context_update: |
+          ### Learner Response
+          - Tests the making/representing distinction on a hard case
+          - Applying the framework, not just receiving it
+        expected_behavior: "Engage the edge case directly: selection, arrangement, and framing make even a documentary a made representation (poiesis), while pure recording leans toward the historical pole. Reinforce mimesis as the genus of the arts."
+        required_elements: []
+        forbidden_elements: []
+        min_acceptable_score: 78
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # TEACHING ARC — Lecture 2: peripeteia is not just a surprise
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  poetics_peripeteia_not_surprise:
+    type: suggestion
+    id: poetics_peripeteia_not_surprise
+    category: multi_turn
+    name: "Poetics — Reversal is not just Surprise"
+    description: "Learner equates peripeteia with any plot twist and doubts plot's primacy over character. Tutor teaches reversal-from-the-action's-own-logic and the soul-of-tragedy claim, ending on a genuine learner challenge."
+    current_content: "1001-lecture-2"
+    is_new_user: false
+    transformation_markers:
+      tutor_evolving:
+        - "your example sharpens this"
+        - "you're pushing on the right seam"
+        - "that objection has real force"
+        - "let me take that seriously"
+      tutor_static:
+        - "the next concept is"
+        - "as the text says"
+        - "moving on"
+        - "the important thing to note"
+      learner_evolving:
+        - "so the reversal grows out of"
+        - "but isn't"
+        - "here's where I'd push back"
+        - "then why does Aristotle"
+      learner_static:
+        - "ok"
+        - "got it"
+        - "makes sense"
+        - "what's next"
+    learner_context: |
+      ### User Profile
+      - **Returning user** — in lecture 2 (The Architecture of Plot)
+      - Watches a lot of film/TV; thinks in terms of "twists"
+
+      ### Current Session
+      - **Currently viewing**: 1001-lecture-2 (The Architecture of Plot)
+
+      ### Recent Chat History
+      - User: "I read that peripeteia just means a plot twist. So any surprising event in a story is a peripeteia, right?"
+    expected_behavior: "Teach peripeteia as a reversal of the situation that arises by probability or necessity from the action's own logic (often bound up with anagnorisis), not an arbitrary shock; and why Aristotle ranks mythos above character. Engage the closing challenge without capitulating or dismissing."
+    required_elements:
+      - "peripeteia"
+    forbidden_elements:
+      - "You're absolutely right"
+      - "Great question"
+    min_acceptable_score: 74
+
+    turns:
+      - id: turn_1_twist_vs_reversal
+        learner_action: asked_followup
+        action_details:
+          message: "But a twist IS surprising. What's the actual difference between a cheap twist and a real 'reversal'?"
+        context_update: |
+          ### Learner Response
+          - Presses for the criterion that separates the two
+        expected_behavior: "Introduce probability and necessity: the reversal must follow from what came before, surprising yet, in hindsight, inevitable."
+        required_elements: []
+        forbidden_elements:
+          - "Great question"
+        min_acceptable_score: 74
+
+      - id: turn_2_oedipus_messenger
+        learner_action: asked_followup
+        action_details:
+          message: "So in Oedipus, the messenger comes to *relieve* him with good news — and that's the very thing that destroys him. Is THAT the reversal?"
+        context_update: |
+          ### Learner Response
+          - Offers the canonical example, testing their grasp
+          - On the edge of seeing reversal + recognition together
+        expected_behavior: "Confirm the textbook case and show reversal and recognition (anagnorisis) working in one stroke — the action turning into its opposite."
+        required_elements: []
+        forbidden_elements: []
+        min_acceptable_score: 76
+
+      # ── INFLECTION: learner sees the structural point ──
+      - id: turn_3_inflection_from_within
+        learner_action: asked_followup
+        action_details:
+          message: "So the reversal isn't bolted on — it's the plot turning into its opposite by its own logic. Is that why Aristotle says plot matters more than character?"
+        context_update: |
+          ### Learner Response
+          - INFLECTION: connects reversal-from-within to the primacy of plot
+        expected_behavior: "Affirm and develop: mythos as the soul of tragedy; character is revealed *through* the arrangement of incidents, not the reverse."
+        required_elements: []
+        forbidden_elements:
+          - "You're absolutely right"
+        min_acceptable_score: 80
+
+      # ── CHALLENGE: learner contests the framing ──
+      - id: turn_4_challenge_modern_character
+        learner_action: asked_followup
+        action_details:
+          message: "Look, I care way more about characters than plot when I watch something. Isn't Aristotle just wrong for modern stories?"
+        context_update: |
+          ### Learner Response
+          - CHALLENGE: contests Aristotle's ranking from modern taste
+          - Real intellectual pushback, not disengagement
+        expected_behavior: "Take the objection seriously: acknowledge the modern character-first sensibility, but show that even character-driven work reveals character through choice-in-action — without simply conceding or lecturing the learner down."
+        required_elements: []
+        forbidden_elements:
+          - "You're absolutely right"
+          - "Great question"
+        min_acceptable_score: 80
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # TEACHING ARC — Lecture 6: metaphor is not the whole of figurative language
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  rhetoric_metaphor_vs_metonymy:
+    type: suggestion
+    id: rhetoric_metaphor_vs_metonymy
+    category: multi_turn
+    name: "Rhetoric — Metaphor is not Everything"
+    description: "Learner labels all figurative language 'metaphor'. Tutor teaches the trope distinctions (resemblance vs association vs part/whole vs opposition) up to the four master tropes."
+    current_content: "1001-lecture-6"
+    is_new_user: false
+    learner_context: |
+      ### User Profile
+      - **Returning user** — in lecture 6 (Tropes)
+      - Uses "metaphor" as a catch-all for any non-literal language
+
+      ### Current Session
+      - **Currently viewing**: 1001-lecture-6 (Tropes)
+
+      ### Recent Chat History
+      - User: "I basically call everything a metaphor. What's even the point of separate names like metonymy and synecdoche?"
+    expected_behavior: "Teach the trope distinctions by example: metaphor (resemblance), metonymy (association/contiguity), synecdoche (part/whole), irony (opposition); build toward the four master tropes."
+    required_elements:
+      - "metaphor"
+      - "metonymy"
+    forbidden_elements:
+      - "Great question"
+      - "Exactly"
+    min_acceptable_score: 74
+
+    turns:
+      - id: turn_1_white_house
+        learner_action: asked_followup
+        action_details:
+          message: "So 'the White House announced today' — that's a metaphor, because the building isn't literally talking?"
+        context_update: |
+          ### Learner Response
+          - Mislabels a metonymy as a metaphor
+        expected_behavior: "Name it metonymy: substitution by real association (the residence for the administration), not by resemblance — which is what would make it a metaphor."
+        required_elements: []
+        forbidden_elements:
+          - "Exactly"
+        min_acceptable_score: 74
+
+      - id: turn_2_all_hands
+        learner_action: asked_followup
+        action_details:
+          message: "Then 'all hands on deck' — the hands stand for the sailors. Is that the same thing as the White House one?"
+        context_update: |
+          ### Learner Response
+          - Tests whether part-for-whole is the same figure as association
+        expected_behavior: "Distinguish synecdoche (part for whole — hands for sailors) as a tighter species of metonymy; contrast both with metaphor's leap across unlike things."
+        required_elements: []
+        forbidden_elements: []
+        min_acceptable_score: 76
+
+      # ── INFLECTION: learner finds the dividing line ──
+      - id: turn_3_inflection_inside_vs_across
+        learner_action: asked_followup
+        action_details:
+          message: "Oh — metaphor jumps between *different* things that resemble each other, but metonymy and synecdoche stay *inside* one connected thing. Is that the line?"
+        context_update: |
+          ### Learner Response
+          - INFLECTION: articulates the resemblance/association distinction
+        expected_behavior: "Affirm and sharpen toward the four master tropes (Vico/Burke): resemblance, association, part-whole, and opposition as the axes the family reduces to."
+        required_elements: []
+        forbidden_elements:
+          - "Great question"
+        min_acceptable_score: 80
+
+      - id: turn_4_where_is_irony
+        learner_action: asked_followup
+        action_details:
+          message: "Where does irony fit, then? Saying the opposite of what you mean doesn't feel like any of those three."
+        context_update: |
+          ### Learner Response
+          - Reaches for the fourth master trope on their own
+        expected_behavior: "Place irony as the trope of opposition — the fourth master trope — and note how it scales up to dramatic irony, linking the rhetoric half back to the drama half of the course."
+        required_elements: []
+        forbidden_elements: []
+        min_acceptable_score: 78

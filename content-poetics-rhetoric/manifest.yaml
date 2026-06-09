@@ -1,0 +1,17 @@
+# Poetics & Rhetoric content package.
+#
+# Curriculum subject = the Greek poiesis / Roman rhetorical vocabulary that the
+# drama-machine ontology is itself built from (config/ontology/poetics-core.ttl,
+# and rhetoric-core.ttl in a later slice). The course is authored in lockstep
+# with the ontology: every figure taught in a lecture is a class in the TBox.
+#
+# To evaluate a tutor over this package, point config/eval-settings.yaml
+# `content.content_package_path` here (or set EVAL_CONTENT_PATH=./content-poetics-rhetoric).
+# Course id is numeric (1001) because services/contentResolver.js parseLectureRef
+# requires `^(\d+)-lecture-(\d+)$`.
+
+name: "@machinespirits/poetics-rhetoric-content"
+version: "0.1.0"
+
+content:
+  courses: "./courses"

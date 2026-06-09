@@ -15,11 +15,7 @@
     "status": "fail",
     "total_mentions": 116,
     "unique_run_ids": 98,
-    "missing_in_db": [
-      "eval-2026-04-26-759e1a02",
-      "eval-2026-05-30-f4e36e14",
-      "eval-2026-05-30-a9e12d4b"
-    ],
+    "missing_in_db": ["eval-2026-04-26-759e1a02", "eval-2026-05-30-f4e36e14", "eval-2026-05-30-a9e12d4b"],
     "missing_in_manifest": [
       "eval-2026-04-25-4fb605db",
       "eval-2026-04-26-a1e75b9a",
@@ -230,9 +226,7 @@
         "claim": "N=366,",
         "value": 366,
         "lower_bound": false,
-        "nearby_run_ids": [
-          "eval-2026-02-13-8d40e086"
-        ],
+        "nearby_run_ids": ["eval-2026-02-13-8d40e086"],
         "target_counts": [
           {
             "label": "db_scored_rows",
@@ -264,9 +258,7 @@
         "claim": "N=118",
         "value": 118,
         "lower_bound": false,
-        "nearby_run_ids": [
-          "eval-2026-02-07-b6d75e87"
-        ],
+        "nearby_run_ids": ["eval-2026-02-07-b6d75e87"],
         "matched_metric": "db_scored_rows",
         "matched_value": 118
       },
@@ -338,9 +330,7 @@
         "claim": "N=96,",
         "value": 96,
         "lower_bound": false,
-        "nearby_run_ids": [
-          "eval-2026-02-17-25aaae85"
-        ],
+        "nearby_run_ids": ["eval-2026-02-17-25aaae85"],
         "target_counts": [
           {
             "label": "db_scored_rows",
@@ -372,9 +362,7 @@
         "claim": "N=20,",
         "value": 20,
         "lower_bound": false,
-        "nearby_run_ids": [
-          "eval-2026-02-11-35c53e99"
-        ],
+        "nearby_run_ids": ["eval-2026-02-11-35c53e99"],
         "target_counts": [
           {
             "label": "db_scored_rows",
@@ -538,9 +526,7 @@
         "value": 146,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -565,9 +551,7 @@
         "value": 163,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -592,9 +576,7 @@
         "value": 146,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -619,9 +601,7 @@
         "value": 73,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -646,9 +626,7 @@
         "value": 73,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -673,9 +651,7 @@
         "value": 37,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -700,9 +676,7 @@
         "value": 36,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -727,9 +701,7 @@
         "value": 36,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -754,9 +726,7 @@
         "value": 37,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -781,9 +751,7 @@
         "value": 163,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -808,9 +776,7 @@
         "value": 39,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -835,9 +801,7 @@
         "value": 42,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -862,9 +826,7 @@
         "value": 39,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -889,9 +851,7 @@
         "value": 43,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -916,9 +876,7 @@
         "value": 350,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -943,9 +901,7 @@
         "value": 432,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -1226,11 +1182,7 @@
         "value": 432,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -1255,11 +1207,7 @@
         "value": 432,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -1284,11 +1232,7 @@
         "value": 432,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -1313,11 +1257,7 @@
         "value": 432,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -1342,11 +1282,7 @@
         "value": 216,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -1371,11 +1307,7 @@
         "value": 72,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -1400,11 +1332,7 @@
         "value": 32,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -1429,11 +1357,7 @@
         "value": 24,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -1458,11 +1382,7 @@
         "value": 432,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -1487,11 +1407,7 @@
         "value": 432,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -1516,11 +1432,7 @@
         "value": 360,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -1545,11 +1457,7 @@
         "value": 432,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -1574,11 +1482,7 @@
         "value": 432,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -1603,11 +1507,7 @@
         "value": 432,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -1632,11 +1532,7 @@
         "value": 32,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -1661,11 +1557,7 @@
         "value": 432,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -1690,11 +1582,7 @@
         "value": 32,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ],
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -1721,11 +1609,7 @@
         "nearby_run_ids": [],
         "matched_metric": "section_db_learner_scored_rows",
         "matched_value": 48,
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "pass",
@@ -1738,11 +1622,7 @@
         "nearby_run_ids": [],
         "matched_metric": "section_db_learner_scored_rows",
         "matched_value": 48,
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "pass",
@@ -1755,11 +1635,7 @@
         "nearby_run_ids": [],
         "matched_metric": "section_db_learner_scored_rows",
         "matched_value": 48,
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "warn",
@@ -2234,10 +2110,7 @@
         "claim": "N=108",
         "value": 108,
         "lower_bound": false,
-        "nearby_run_ids": [
-          "eval-2026-03-06-768ba77b",
-          "eval-2026-03-06-e4abd0df"
-        ],
+        "nearby_run_ids": ["eval-2026-03-06-768ba77b", "eval-2026-03-06-e4abd0df"],
         "matched_metric": "db_scored_rows",
         "matched_value": 108
       },
@@ -2249,9 +2122,7 @@
         "claim": "N = 125",
         "value": 125,
         "lower_bound": false,
-        "nearby_run_ids": [
-          "eval-2026-04-22-b56be6c7"
-        ],
+        "nearby_run_ids": ["eval-2026-04-22-b56be6c7"],
         "max_available": 655,
         "target_counts": [
           {
@@ -2361,9 +2232,7 @@
         "value": 146,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-05-e87f452d"
-        ],
+        "inferred_section_runs": ["eval-2026-02-05-e87f452d"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -2388,9 +2257,7 @@
         "value": 163,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-05-e87f452d"
-        ],
+        "inferred_section_runs": ["eval-2026-02-05-e87f452d"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -2415,9 +2282,7 @@
         "value": 144,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-05-e87f452d"
-        ],
+        "inferred_section_runs": ["eval-2026-02-05-e87f452d"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -2442,9 +2307,7 @@
         "value": 146,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-05-e87f452d"
-        ],
+        "inferred_section_runs": ["eval-2026-02-05-e87f452d"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -2469,9 +2332,7 @@
         "value": 163,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-05-e87f452d"
-        ],
+        "inferred_section_runs": ["eval-2026-02-05-e87f452d"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -2496,9 +2357,7 @@
         "value": 144,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-05-e87f452d"
-        ],
+        "inferred_section_runs": ["eval-2026-02-05-e87f452d"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -2523,9 +2382,7 @@
         "value": 1,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-05-e87f452d"
-        ],
+        "inferred_section_runs": ["eval-2026-02-05-e87f452d"],
         "section_scored_rows": 60
       },
       {
@@ -2537,9 +2394,7 @@
         "value": 1,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-05-e87f452d"
-        ],
+        "inferred_section_runs": ["eval-2026-02-05-e87f452d"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -2564,9 +2419,7 @@
         "value": 1,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-05-e87f452d"
-        ],
+        "inferred_section_runs": ["eval-2026-02-05-e87f452d"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -2620,9 +2473,7 @@
         "claim": "N = 252",
         "value": 252,
         "lower_bound": false,
-        "nearby_run_ids": [
-          "eval-2026-04-17-f1e851c3"
-        ],
+        "nearby_run_ids": ["eval-2026-04-17-f1e851c3"],
         "matched_metric": "db_scored_rows",
         "matched_value": 252
       },
@@ -2635,11 +2486,7 @@
         "value": 24,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-11-35c53e99",
-          "eval-2026-02-11-5f6d51f5",
-          "eval-2026-02-11-a54235ea"
-        ],
+        "inferred_section_runs": ["eval-2026-02-11-35c53e99", "eval-2026-02-11-5f6d51f5", "eval-2026-02-11-a54235ea"],
         "section_scored_rows": 264
       },
       {
@@ -2651,11 +2498,7 @@
         "value": 32,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-11-35c53e99",
-          "eval-2026-02-11-5f6d51f5",
-          "eval-2026-02-11-a54235ea"
-        ],
+        "inferred_section_runs": ["eval-2026-02-11-35c53e99", "eval-2026-02-11-5f6d51f5", "eval-2026-02-11-a54235ea"],
         "section_scored_rows": 264
       },
       {
@@ -2667,11 +2510,7 @@
         "value": 24,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-11-35c53e99",
-          "eval-2026-02-11-5f6d51f5",
-          "eval-2026-02-11-a54235ea"
-        ],
+        "inferred_section_runs": ["eval-2026-02-11-35c53e99", "eval-2026-02-11-5f6d51f5", "eval-2026-02-11-a54235ea"],
         "section_scored_rows": 264
       },
       {
@@ -2683,11 +2522,7 @@
         "value": 71,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-11-35c53e99",
-          "eval-2026-02-11-5f6d51f5",
-          "eval-2026-02-11-a54235ea"
-        ],
+        "inferred_section_runs": ["eval-2026-02-11-35c53e99", "eval-2026-02-11-5f6d51f5", "eval-2026-02-11-a54235ea"],
         "section_scored_rows": 264
       },
       {
@@ -2698,9 +2533,7 @@
         "claim": "N = 23",
         "value": 23,
         "lower_bound": false,
-        "nearby_run_ids": [
-          "eval-2026-05-05-486d7d1e"
-        ],
+        "nearby_run_ids": ["eval-2026-05-05-486d7d1e"],
         "matched_metric": "db_total_rows",
         "matched_value": 23
       },
@@ -2712,9 +2545,7 @@
         "claim": "N = 24",
         "value": 24,
         "lower_bound": false,
-        "nearby_run_ids": [
-          "eval-2026-05-12-c53a1d8f"
-        ],
+        "nearby_run_ids": ["eval-2026-05-12-c53a1d8f"],
         "target_counts": [
           {
             "label": "db_scored_rows",
@@ -2739,11 +2570,7 @@
         "value": 24,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-11-35c53e99",
-          "eval-2026-02-11-5f6d51f5",
-          "eval-2026-02-11-a54235ea"
-        ],
+        "inferred_section_runs": ["eval-2026-02-11-35c53e99", "eval-2026-02-11-5f6d51f5", "eval-2026-02-11-a54235ea"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -2768,11 +2595,7 @@
         "value": 23,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-11-35c53e99",
-          "eval-2026-02-11-5f6d51f5",
-          "eval-2026-02-11-a54235ea"
-        ],
+        "inferred_section_runs": ["eval-2026-02-11-35c53e99", "eval-2026-02-11-5f6d51f5", "eval-2026-02-11-a54235ea"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -2796,9 +2619,7 @@
         "claim": "N = 24",
         "value": 24,
         "lower_bound": false,
-        "nearby_run_ids": [
-          "eval-2026-06-06-460fc561"
-        ],
+        "nearby_run_ids": ["eval-2026-06-06-460fc561"],
         "matched_metric": "db_total_rows",
         "matched_value": 24
       },
@@ -2811,11 +2632,7 @@
         "value": 24,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-11-35c53e99",
-          "eval-2026-02-11-5f6d51f5",
-          "eval-2026-02-11-a54235ea"
-        ],
+        "inferred_section_runs": ["eval-2026-02-11-35c53e99", "eval-2026-02-11-5f6d51f5", "eval-2026-02-11-a54235ea"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -2840,11 +2657,7 @@
         "value": 48,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-11-35c53e99",
-          "eval-2026-02-11-5f6d51f5",
-          "eval-2026-02-11-a54235ea"
-        ],
+        "inferred_section_runs": ["eval-2026-02-11-35c53e99", "eval-2026-02-11-5f6d51f5", "eval-2026-02-11-a54235ea"],
         "section_scored_rows": 264
       },
       {
@@ -2856,11 +2669,7 @@
         "value": 32,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-11-35c53e99",
-          "eval-2026-02-11-5f6d51f5",
-          "eval-2026-02-11-a54235ea"
-        ],
+        "inferred_section_runs": ["eval-2026-02-11-35c53e99", "eval-2026-02-11-5f6d51f5", "eval-2026-02-11-a54235ea"],
         "section_scored_rows": 264
       },
       {
@@ -2872,11 +2681,7 @@
         "value": 23,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-11-35c53e99",
-          "eval-2026-02-11-5f6d51f5",
-          "eval-2026-02-11-a54235ea"
-        ],
+        "inferred_section_runs": ["eval-2026-02-11-35c53e99", "eval-2026-02-11-5f6d51f5", "eval-2026-02-11-a54235ea"],
         "section_scored_rows": 264
       },
       {
@@ -2888,11 +2693,7 @@
         "value": 32,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-11-35c53e99",
-          "eval-2026-02-11-5f6d51f5",
-          "eval-2026-02-11-a54235ea"
-        ],
+        "inferred_section_runs": ["eval-2026-02-11-35c53e99", "eval-2026-02-11-5f6d51f5", "eval-2026-02-11-a54235ea"],
         "section_scored_rows": 264
       },
       {
@@ -2904,11 +2705,7 @@
         "value": 32,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-11-35c53e99",
-          "eval-2026-02-11-5f6d51f5",
-          "eval-2026-02-11-a54235ea"
-        ],
+        "inferred_section_runs": ["eval-2026-02-11-35c53e99", "eval-2026-02-11-5f6d51f5", "eval-2026-02-11-a54235ea"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -2933,11 +2730,7 @@
         "value": 432,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-11-35c53e99",
-          "eval-2026-02-11-5f6d51f5",
-          "eval-2026-02-11-a54235ea"
-        ],
+        "inferred_section_runs": ["eval-2026-02-11-35c53e99", "eval-2026-02-11-5f6d51f5", "eval-2026-02-11-a54235ea"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -2962,11 +2755,7 @@
         "value": 432,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-11-35c53e99",
-          "eval-2026-02-11-5f6d51f5",
-          "eval-2026-02-11-a54235ea"
-        ],
+        "inferred_section_runs": ["eval-2026-02-11-35c53e99", "eval-2026-02-11-5f6d51f5", "eval-2026-02-11-a54235ea"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -2991,11 +2780,7 @@
         "value": 24,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-11-35c53e99",
-          "eval-2026-02-11-5f6d51f5",
-          "eval-2026-02-11-a54235ea"
-        ],
+        "inferred_section_runs": ["eval-2026-02-11-35c53e99", "eval-2026-02-11-5f6d51f5", "eval-2026-02-11-a54235ea"],
         "section_scored_rows": 264
       },
       {
@@ -3007,11 +2792,7 @@
         "value": 6,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-11-35c53e99",
-          "eval-2026-02-11-5f6d51f5",
-          "eval-2026-02-11-a54235ea"
-        ],
+        "inferred_section_runs": ["eval-2026-02-11-35c53e99", "eval-2026-02-11-5f6d51f5", "eval-2026-02-11-a54235ea"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -3036,10 +2817,7 @@
         "value": 3,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-13-8d40e086",
-          "eval-2026-02-14-559d854b"
-        ],
+        "inferred_section_runs": ["eval-2026-02-13-8d40e086", "eval-2026-02-14-559d854b"],
         "section_scored_rows": 257
       },
       {
@@ -3051,10 +2829,7 @@
         "value": 3,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-13-8d40e086",
-          "eval-2026-02-14-559d854b"
-        ],
+        "inferred_section_runs": ["eval-2026-02-13-8d40e086", "eval-2026-02-14-559d854b"],
         "section_scored_rows": 257
       },
       {
@@ -3066,10 +2841,7 @@
         "value": 3,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-13-8d40e086",
-          "eval-2026-02-14-559d854b"
-        ],
+        "inferred_section_runs": ["eval-2026-02-13-8d40e086", "eval-2026-02-14-559d854b"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -3094,10 +2866,7 @@
         "value": 3,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-13-8d40e086",
-          "eval-2026-02-14-559d854b"
-        ],
+        "inferred_section_runs": ["eval-2026-02-13-8d40e086", "eval-2026-02-14-559d854b"],
         "section_scored_rows": 257
       },
       {
@@ -3109,10 +2878,7 @@
         "value": 3,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-13-8d40e086",
-          "eval-2026-02-14-559d854b"
-        ],
+        "inferred_section_runs": ["eval-2026-02-13-8d40e086", "eval-2026-02-14-559d854b"],
         "target_counts": [
           {
             "label": "section_db_scored_rows",
@@ -3137,10 +2903,7 @@
         "value": 3,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-13-8d40e086",
-          "eval-2026-02-14-559d854b"
-        ],
+        "inferred_section_runs": ["eval-2026-02-13-8d40e086", "eval-2026-02-14-559d854b"],
         "section_scored_rows": 257
       },
       {
@@ -3152,10 +2915,7 @@
         "value": 2,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-13-8d40e086",
-          "eval-2026-02-14-559d854b"
-        ],
+        "inferred_section_runs": ["eval-2026-02-13-8d40e086", "eval-2026-02-14-559d854b"],
         "section_scored_rows": 257
       },
       {
@@ -3167,10 +2927,7 @@
         "value": 2,
         "lower_bound": false,
         "nearby_run_ids": [],
-        "inferred_section_runs": [
-          "eval-2026-02-13-8d40e086",
-          "eval-2026-02-14-559d854b"
-        ],
+        "inferred_section_runs": ["eval-2026-02-13-8d40e086", "eval-2026-02-14-559d854b"],
         "section_scored_rows": 257
       },
       {
@@ -3378,153 +3135,119 @@
         "reason": "section-inferred",
         "line_no": 970,
         "claim": "r = 0.776",
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 985,
         "claim": "d=0.52",
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 989,
         "claim": "d=0.52",
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 989,
         "claim": "d=0.64",
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1068,
         "claim": "d=0.64",
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1068,
         "claim": "d=0.52",
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1117,
         "claim": "d=0.52",
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1117,
         "claim": "d=0.64",
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1125,
         "claim": "d=0.64",
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1157,
         "claim": "p < .001",
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1159,
         "claim": "p < .005",
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1159,
         "claim": "p < .001",
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1165,
         "claim": "r = -0.18",
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1165,
         "claim": "r = -0.31",
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1165,
         "claim": "r = -0.38",
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1167,
         "claim": "r = -0.28",
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1167,
         "claim": "r = -0.24",
-        "inferred_section_runs": [
-          "eval-2026-02-03-86b159cd"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-86b159cd"]
       },
       {
         "status": "traceable",
@@ -3545,616 +3268,392 @@
         "reason": "section-inferred",
         "line_no": 1331,
         "claim": "r = -0.132",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1331,
         "claim": "p = .011",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1331,
         "claim": "r = -0.02",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1331,
         "claim": "p > .05",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1331,
         "claim": "r = -0.33",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1331,
         "claim": "p < .001",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1333,
         "claim": "r = -0.49",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1333,
         "claim": "p < .001",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1333,
         "claim": "r = -0.24",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1333,
         "claim": "p = .008",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1333,
         "claim": "r = -0.02",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1333,
         "claim": "p > .05",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1333,
         "claim": "p < .05",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1333,
         "claim": "r = -0.39",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1333,
         "claim": "p < .001",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1343,
         "claim": "d = 0.03",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1343,
         "claim": "p > .05",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1343,
         "claim": "d = 0.21",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1343,
         "claim": "d = -0.29",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1343,
         "claim": "d = 0.09",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1343,
         "claim": "d = 0.03",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1345,
         "claim": "d = -0.03",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1355,
         "claim": "d = 0.15",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1357,
         "claim": "d=0.219",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1357,
         "claim": "p=.36",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1374,
         "claim": "d = 0.5",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1374,
         "claim": "d = 2.03",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1374,
         "claim": "d = -0.93",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1376,
         "claim": "d = 1.63",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1376,
         "claim": "d = 2.03",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1380,
         "claim": "d=1.63",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1380,
         "claim": "p<.001",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1382,
         "claim": "d=-0.00",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1410,
         "claim": "d = -0.13",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1410,
         "claim": "d = 0.01",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1429,
         "claim": "d = 0.28",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1429,
         "claim": "d = 0.24",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1429,
         "claim": "p < .05",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1429,
         "claim": "d = 0.09",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1429,
         "claim": "d = 0.11",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1431,
         "claim": "d = 0.12",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1431,
         "claim": "d = 0.15",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1493,
         "claim": "d = 0.03",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1497,
         "claim": "d = 0.03",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1497,
         "claim": "d = 0.21",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1497,
         "claim": "d = -0.29",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1497,
         "claim": "d = 0.09",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1497,
         "claim": "d = 1.63",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1497,
         "claim": "d = 0.5",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1497,
         "claim": "d = 2.03",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1499,
         "claim": "d = -0.03",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1501,
         "claim": "d = 0.15",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1501,
         "claim": "d = 0.24",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1501,
         "claim": "d = 0.13",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1501,
         "claim": "d = 0.12",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1503,
         "claim": "d = 1.63",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
@@ -4173,249 +3672,161 @@
         "reason": "section-inferred",
         "line_no": 1573,
         "claim": "d = -0.167",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1573,
         "claim": "d = 0.286",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1573,
         "claim": "d = 0.239",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1573,
         "claim": "d = 0.114",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1573,
         "claim": "d = 0.065",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1573,
         "claim": "d = -0.052",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1575,
         "claim": "d = 0.29",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1575,
         "claim": "d = 0.24",
-        "inferred_section_runs": [
-          "eval-2026-02-03-f5d4dd93",
-          "eval-2026-02-06-a933d745",
-          "eval-2026-02-20-25c78e91"
-        ]
+        "inferred_section_runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745", "eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 1645,
         "claim": "d=1.15",
-        "nearby_run_ids": [
-          "eval-2026-03-06-768ba77b",
-          "eval-2026-03-06-e4abd0df",
-          "eval-2026-04-22-b56be6c7"
-        ]
+        "nearby_run_ids": ["eval-2026-03-06-768ba77b", "eval-2026-03-06-e4abd0df", "eval-2026-04-22-b56be6c7"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 1645,
         "claim": "d=0.36",
-        "nearby_run_ids": [
-          "eval-2026-03-06-768ba77b",
-          "eval-2026-03-06-e4abd0df",
-          "eval-2026-04-22-b56be6c7"
-        ]
+        "nearby_run_ids": ["eval-2026-03-06-768ba77b", "eval-2026-03-06-e4abd0df", "eval-2026-04-22-b56be6c7"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 1645,
         "claim": "d = -0.57",
-        "nearby_run_ids": [
-          "eval-2026-03-06-768ba77b",
-          "eval-2026-03-06-e4abd0df",
-          "eval-2026-04-22-b56be6c7"
-        ]
+        "nearby_run_ids": ["eval-2026-03-06-768ba77b", "eval-2026-03-06-e4abd0df", "eval-2026-04-22-b56be6c7"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 1645,
         "claim": "d=1.13",
-        "nearby_run_ids": [
-          "eval-2026-03-06-768ba77b",
-          "eval-2026-03-06-e4abd0df",
-          "eval-2026-04-22-b56be6c7"
-        ]
+        "nearby_run_ids": ["eval-2026-03-06-768ba77b", "eval-2026-03-06-e4abd0df", "eval-2026-04-22-b56be6c7"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 1645,
         "claim": "p=.002",
-        "nearby_run_ids": [
-          "eval-2026-03-06-768ba77b",
-          "eval-2026-03-06-e4abd0df",
-          "eval-2026-04-22-b56be6c7"
-        ]
+        "nearby_run_ids": ["eval-2026-03-06-768ba77b", "eval-2026-03-06-e4abd0df", "eval-2026-04-22-b56be6c7"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 1645,
         "claim": "d=0.08",
-        "nearby_run_ids": [
-          "eval-2026-03-06-768ba77b",
-          "eval-2026-03-06-e4abd0df",
-          "eval-2026-04-22-b56be6c7"
-        ]
+        "nearby_run_ids": ["eval-2026-03-06-768ba77b", "eval-2026-03-06-e4abd0df", "eval-2026-04-22-b56be6c7"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 1645,
         "claim": "p=.81",
-        "nearby_run_ids": [
-          "eval-2026-03-06-768ba77b",
-          "eval-2026-03-06-e4abd0df",
-          "eval-2026-04-22-b56be6c7"
-        ]
+        "nearby_run_ids": ["eval-2026-03-06-768ba77b", "eval-2026-03-06-e4abd0df", "eval-2026-04-22-b56be6c7"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 1645,
         "claim": "d=1.03",
-        "nearby_run_ids": [
-          "eval-2026-03-06-768ba77b",
-          "eval-2026-03-06-e4abd0df",
-          "eval-2026-04-22-b56be6c7"
-        ]
+        "nearby_run_ids": ["eval-2026-03-06-768ba77b", "eval-2026-03-06-e4abd0df", "eval-2026-04-22-b56be6c7"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 1645,
         "claim": "p<.001",
-        "nearby_run_ids": [
-          "eval-2026-03-06-768ba77b",
-          "eval-2026-03-06-e4abd0df",
-          "eval-2026-04-22-b56be6c7"
-        ]
+        "nearby_run_ids": ["eval-2026-03-06-768ba77b", "eval-2026-03-06-e4abd0df", "eval-2026-04-22-b56be6c7"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 1647,
         "claim": "d = 1.46",
-        "nearby_run_ids": [
-          "eval-2026-03-06-768ba77b",
-          "eval-2026-03-06-e4abd0df",
-          "eval-2026-04-22-b56be6c7"
-        ]
+        "nearby_run_ids": ["eval-2026-03-06-768ba77b", "eval-2026-03-06-e4abd0df", "eval-2026-04-22-b56be6c7"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 1647,
         "claim": "d = 2.34",
-        "nearby_run_ids": [
-          "eval-2026-03-06-768ba77b",
-          "eval-2026-03-06-e4abd0df",
-          "eval-2026-04-22-b56be6c7"
-        ]
+        "nearby_run_ids": ["eval-2026-03-06-768ba77b", "eval-2026-03-06-e4abd0df", "eval-2026-04-22-b56be6c7"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 1647,
         "claim": "d = 1.13",
-        "nearby_run_ids": [
-          "eval-2026-03-06-768ba77b",
-          "eval-2026-03-06-e4abd0df",
-          "eval-2026-04-22-b56be6c7"
-        ]
+        "nearby_run_ids": ["eval-2026-03-06-768ba77b", "eval-2026-03-06-e4abd0df", "eval-2026-04-22-b56be6c7"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 1647,
         "claim": "d = 1.76",
-        "nearby_run_ids": [
-          "eval-2026-03-06-768ba77b",
-          "eval-2026-03-06-e4abd0df",
-          "eval-2026-04-22-b56be6c7"
-        ]
+        "nearby_run_ids": ["eval-2026-03-06-768ba77b", "eval-2026-03-06-e4abd0df", "eval-2026-04-22-b56be6c7"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 1649,
         "claim": "d=1.13",
-        "nearby_run_ids": [
-          "eval-2026-04-22-b56be6c7"
-        ]
+        "nearby_run_ids": ["eval-2026-04-22-b56be6c7"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 1649,
         "claim": "d=1.85",
-        "nearby_run_ids": [
-          "eval-2026-04-22-b56be6c7"
-        ]
+        "nearby_run_ids": ["eval-2026-04-22-b56be6c7"]
       },
       {
         "status": "traceable",
@@ -4513,45 +3924,35 @@
         "reason": "section-inferred",
         "line_no": 1747,
         "claim": "d = 1.18",
-        "inferred_section_runs": [
-          "eval-2026-02-05-e87f452d"
-        ]
+        "inferred_section_runs": ["eval-2026-02-05-e87f452d"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1800,
         "claim": "d=0.08",
-        "inferred_section_runs": [
-          "eval-2026-02-05-e87f452d"
-        ]
+        "inferred_section_runs": ["eval-2026-02-05-e87f452d"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1813,
         "claim": "r = 0.57",
-        "inferred_section_runs": [
-          "eval-2026-02-05-e87f452d"
-        ]
+        "inferred_section_runs": ["eval-2026-02-05-e87f452d"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1813,
         "claim": "r = 0.75",
-        "inferred_section_runs": [
-          "eval-2026-02-05-e87f452d"
-        ]
+        "inferred_section_runs": ["eval-2026-02-05-e87f452d"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 1813,
         "claim": "r = 0.51",
-        "inferred_section_runs": [
-          "eval-2026-02-05-e87f452d"
-        ]
+        "inferred_section_runs": ["eval-2026-02-05-e87f452d"]
       },
       {
         "status": "untraceable",
@@ -4726,81 +4127,63 @@
         "reason": "run-nearby",
         "line_no": 1952,
         "claim": "d = 0.85",
-        "nearby_run_ids": [
-          "eval-2026-04-17-4a9b765a"
-        ]
+        "nearby_run_ids": ["eval-2026-04-17-4a9b765a"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 1952,
         "claim": "d = 0.62",
-        "nearby_run_ids": [
-          "eval-2026-04-17-4a9b765a"
-        ]
+        "nearby_run_ids": ["eval-2026-04-17-4a9b765a"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 1952,
         "claim": "d = 0.51",
-        "nearby_run_ids": [
-          "eval-2026-04-17-4a9b765a"
-        ]
+        "nearby_run_ids": ["eval-2026-04-17-4a9b765a"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 1954,
         "claim": "d = -0.01",
-        "nearby_run_ids": [
-          "eval-2026-04-17-4a9b765a"
-        ]
+        "nearby_run_ids": ["eval-2026-04-17-4a9b765a"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 1954,
         "claim": "d = 0.97",
-        "nearby_run_ids": [
-          "eval-2026-04-17-4a9b765a"
-        ]
+        "nearby_run_ids": ["eval-2026-04-17-4a9b765a"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 1954,
         "claim": "d = 1.70",
-        "nearby_run_ids": [
-          "eval-2026-04-17-4a9b765a"
-        ]
+        "nearby_run_ids": ["eval-2026-04-17-4a9b765a"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 1954,
         "claim": "d = 1.25",
-        "nearby_run_ids": [
-          "eval-2026-04-17-4a9b765a"
-        ]
+        "nearby_run_ids": ["eval-2026-04-17-4a9b765a"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 1954,
         "claim": "d = 0.53",
-        "nearby_run_ids": [
-          "eval-2026-04-17-4a9b765a"
-        ]
+        "nearby_run_ids": ["eval-2026-04-17-4a9b765a"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 1954,
         "claim": "d = 1.09",
-        "nearby_run_ids": [
-          "eval-2026-04-17-4a9b765a"
-        ]
+        "nearby_run_ids": ["eval-2026-04-17-4a9b765a"]
       },
       {
         "status": "untraceable",
@@ -4967,53 +4350,35 @@
         "reason": "run-nearby",
         "line_no": 2166,
         "claim": "p = 0.68",
-        "nearby_run_ids": [
-          "eval-2026-06-06-460fc561"
-        ]
+        "nearby_run_ids": ["eval-2026-06-06-460fc561"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 2224,
         "claim": "d = 0.27",
-        "inferred_section_runs": [
-          "eval-2026-02-11-35c53e99",
-          "eval-2026-02-11-5f6d51f5",
-          "eval-2026-02-11-a54235ea"
-        ]
+        "inferred_section_runs": ["eval-2026-02-11-35c53e99", "eval-2026-02-11-5f6d51f5", "eval-2026-02-11-a54235ea"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 2224,
         "claim": "d = 0.03",
-        "inferred_section_runs": [
-          "eval-2026-02-11-35c53e99",
-          "eval-2026-02-11-5f6d51f5",
-          "eval-2026-02-11-a54235ea"
-        ]
+        "inferred_section_runs": ["eval-2026-02-11-35c53e99", "eval-2026-02-11-5f6d51f5", "eval-2026-02-11-a54235ea"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 2224,
         "claim": "d = 0.41",
-        "inferred_section_runs": [
-          "eval-2026-02-11-35c53e99",
-          "eval-2026-02-11-5f6d51f5",
-          "eval-2026-02-11-a54235ea"
-        ]
+        "inferred_section_runs": ["eval-2026-02-11-35c53e99", "eval-2026-02-11-5f6d51f5", "eval-2026-02-11-a54235ea"]
       },
       {
         "status": "traceable",
         "reason": "section-inferred",
         "line_no": 2242,
         "claim": "d = 0.41",
-        "inferred_section_runs": [
-          "eval-2026-02-11-35c53e99",
-          "eval-2026-02-11-5f6d51f5",
-          "eval-2026-02-11-a54235ea"
-        ]
+        "inferred_section_runs": ["eval-2026-02-11-35c53e99", "eval-2026-02-11-5f6d51f5", "eval-2026-02-11-a54235ea"]
       },
       {
         "status": "traceable",
@@ -5203,27 +4568,21 @@
         "reason": "run-nearby",
         "line_no": 2686,
         "claim": "d = 0.23",
-        "nearby_run_ids": [
-          "eval-2026-04-23-42e7acbe"
-        ]
+        "nearby_run_ids": ["eval-2026-04-23-42e7acbe"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 2686,
         "claim": "d = 0.22",
-        "nearby_run_ids": [
-          "eval-2026-04-23-42e7acbe"
-        ]
+        "nearby_run_ids": ["eval-2026-04-23-42e7acbe"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 2686,
         "claim": "d = 0.06",
-        "nearby_run_ids": [
-          "eval-2026-04-23-42e7acbe"
-        ]
+        "nearby_run_ids": ["eval-2026-04-23-42e7acbe"]
       },
       {
         "status": "untraceable",
@@ -5278,124 +4637,91 @@
         "reason": "run-nearby",
         "line_no": 2716,
         "claim": "d = 0.17",
-        "nearby_run_ids": [
-          "eval-2026-05-30-f4e36e14",
-          "eval-2026-05-30-a9e12d4b"
-        ]
+        "nearby_run_ids": ["eval-2026-05-30-f4e36e14", "eval-2026-05-30-a9e12d4b"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 2716,
         "claim": "p = 0.43",
-        "nearby_run_ids": [
-          "eval-2026-05-30-f4e36e14",
-          "eval-2026-05-30-a9e12d4b"
-        ]
+        "nearby_run_ids": ["eval-2026-05-30-f4e36e14", "eval-2026-05-30-a9e12d4b"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 2716,
         "claim": "d = 0.95",
-        "nearby_run_ids": [
-          "eval-2026-05-30-f4e36e14",
-          "eval-2026-05-30-a9e12d4b"
-        ]
+        "nearby_run_ids": ["eval-2026-05-30-f4e36e14", "eval-2026-05-30-a9e12d4b"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 2716,
         "claim": "d = -0.02",
-        "nearby_run_ids": [
-          "eval-2026-05-30-f4e36e14",
-          "eval-2026-05-30-a9e12d4b"
-        ]
+        "nearby_run_ids": ["eval-2026-05-30-f4e36e14", "eval-2026-05-30-a9e12d4b"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 2716,
         "claim": "p = 0.96",
-        "nearby_run_ids": [
-          "eval-2026-05-30-f4e36e14",
-          "eval-2026-05-30-a9e12d4b"
-        ]
+        "nearby_run_ids": ["eval-2026-05-30-f4e36e14", "eval-2026-05-30-a9e12d4b"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 2716,
         "claim": "d = 0.89",
-        "nearby_run_ids": [
-          "eval-2026-05-30-f4e36e14",
-          "eval-2026-05-30-a9e12d4b"
-        ]
+        "nearby_run_ids": ["eval-2026-05-30-f4e36e14", "eval-2026-05-30-a9e12d4b"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 2716,
         "claim": "d = 0.89",
-        "nearby_run_ids": [
-          "eval-2026-05-30-f4e36e14",
-          "eval-2026-05-30-a9e12d4b"
-        ]
+        "nearby_run_ids": ["eval-2026-05-30-f4e36e14", "eval-2026-05-30-a9e12d4b"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 2724,
         "claim": "d = 0.81",
-        "nearby_run_ids": [
-          "eval-2026-04-24-e9a785c0"
-        ]
+        "nearby_run_ids": ["eval-2026-04-24-e9a785c0"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 2726,
         "claim": "r = -0.28",
-        "nearby_run_ids": [
-          "eval-2026-04-24-e9a785c0"
-        ]
+        "nearby_run_ids": ["eval-2026-04-24-e9a785c0"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 2726,
         "claim": "r = -0.24",
-        "nearby_run_ids": [
-          "eval-2026-04-24-e9a785c0"
-        ]
+        "nearby_run_ids": ["eval-2026-04-24-e9a785c0"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 2726,
         "claim": "r = -0.18",
-        "nearby_run_ids": [
-          "eval-2026-04-24-e9a785c0"
-        ]
+        "nearby_run_ids": ["eval-2026-04-24-e9a785c0"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 2726,
         "claim": "r = -0.31",
-        "nearby_run_ids": [
-          "eval-2026-04-24-e9a785c0"
-        ]
+        "nearby_run_ids": ["eval-2026-04-24-e9a785c0"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 2726,
         "claim": "r = -0.38",
-        "nearby_run_ids": [
-          "eval-2026-04-24-e9a785c0"
-        ]
+        "nearby_run_ids": ["eval-2026-04-24-e9a785c0"]
       },
       {
         "status": "untraceable",
@@ -5514,99 +4840,77 @@
         "reason": "run-nearby",
         "line_no": 2770,
         "claim": "r = 0.72",
-        "nearby_run_ids": [
-          "eval-2026-02-20-25c78e91"
-        ]
+        "nearby_run_ids": ["eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 2770,
         "claim": "d = 0.25",
-        "nearby_run_ids": [
-          "eval-2026-02-20-25c78e91"
-        ]
+        "nearby_run_ids": ["eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 2770,
         "claim": "d = 0.39",
-        "nearby_run_ids": [
-          "eval-2026-02-20-25c78e91"
-        ]
+        "nearby_run_ids": ["eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 2770,
         "claim": "d = 3.05",
-        "nearby_run_ids": [
-          "eval-2026-02-20-25c78e91"
-        ]
+        "nearby_run_ids": ["eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 2772,
         "claim": "d = -2.82",
-        "nearby_run_ids": [
-          "eval-2026-02-20-25c78e91"
-        ]
+        "nearby_run_ids": ["eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 2772,
         "claim": "d = -3.11",
-        "nearby_run_ids": [
-          "eval-2026-02-20-25c78e91"
-        ]
+        "nearby_run_ids": ["eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 2772,
         "claim": "d = -1.34",
-        "nearby_run_ids": [
-          "eval-2026-02-20-25c78e91"
-        ]
+        "nearby_run_ids": ["eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 2772,
         "claim": "d = -1.06",
-        "nearby_run_ids": [
-          "eval-2026-02-20-25c78e91"
-        ]
+        "nearby_run_ids": ["eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 2772,
         "claim": "r = 0.06",
-        "nearby_run_ids": [
-          "eval-2026-02-20-25c78e91"
-        ]
+        "nearby_run_ids": ["eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 2772,
         "claim": "r = 0.72",
-        "nearby_run_ids": [
-          "eval-2026-02-20-25c78e91"
-        ]
+        "nearby_run_ids": ["eval-2026-02-20-25c78e91"]
       },
       {
         "status": "traceable",
         "reason": "run-nearby",
         "line_no": 2772,
         "claim": "d = 3.05",
-        "nearby_run_ids": [
-          "eval-2026-02-20-25c78e91"
-        ]
+        "nearby_run_ids": ["eval-2026-02-20-25c78e91"]
       },
       {
         "status": "untraceable",

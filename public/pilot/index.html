@@ -18,18 +18,27 @@
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"></script>
 
 <style>
+  /* Canonical warm "paper/ink" palette — shared with the dashboard + techne.css
+     so the participant pilot stops being a cool-grey island. Token NAMES are
+     unchanged, so the participant flow's layout/typography is untouched — only
+     the colour values shift. --accent maps to the dashboard's prussian indigo;
+     warn/good/bad use the WCAG-AA-safe dashboard values. */
   :root {
-    --paper:    #fafaf7;
-    --paper-2:  #f1efe7;
-    --ink:      #1a1a1a;
-    --ink-2:    #3d3d3d;
-    --ink-3:    #6f6f6f;
-    --rule:     #d8d4ca;
-    --accent:   #2d5d6e;
-    --accent-2: #1f4252;
-    --warn:     #b35c1a;
-    --good:     #3a6a3a;
-    --shadow:   rgba(0,0,0,0.06);
+    --paper:    #F1E9D8;
+    --paper-2:  #E9DFC7;
+    --paper-3:  #EFE4CC;
+    --paper-4:  #F7EFDD;
+    --ink:      #181310;
+    --ink-2:    #3A2F27;
+    --ink-3:    #6A5C50;
+    --ink-4:    #695B47;
+    --rule:     rgba(28, 22, 16, 0.18);
+    --accent:   #2A4F6B;
+    --accent-2: #1D3A50;
+    --warn:     #835A1B;
+    --good:     #3A4824;
+    --bad:      #7C2C1F;
+    --shadow:   rgba(28, 22, 16, 0.06);
     --max-w:    640px;
   }
   * { box-sizing: border-box; }
@@ -124,7 +133,7 @@
     border: 1px solid var(--rule);
     border-radius: 4px;
     font: inherit;
-    background: white;
+    background: var(--paper-4);
     color: var(--ink);
   }
   textarea { min-height: 80px; resize: vertical; }
@@ -167,7 +176,7 @@
   .radio-row span, .check-row span { color: var(--ink); }
 
   .item-card {
-    background: white;
+    background: var(--paper-4);
     border: 1px solid var(--rule);
     border-radius: 6px;
     padding: 1.5rem;
@@ -190,7 +199,7 @@
     border: 1px solid var(--rule);
     border-radius: 4px;
     cursor: pointer;
-    background: white;
+    background: var(--paper-4);
     transition: background 0.1s;
   }
   .scale label:hover { background: var(--paper-2); }
@@ -205,7 +214,7 @@
 
   /* chat */
   .chat-window {
-    background: white;
+    background: var(--paper-4);
     border: 1px solid var(--rule);
     border-radius: 6px;
     padding: 1rem;
@@ -315,7 +324,7 @@
   }
 
   /* For consent prose */
-  .consent-text { background: white; border: 1px solid var(--rule); border-radius: 4px; padding: 1rem 1.25rem; max-height: 50vh; overflow-y: auto; font-size: 0.95rem; }
+  .consent-text { background: var(--paper-4); border: 1px solid var(--rule); border-radius: 4px; padding: 1rem 1.25rem; max-height: 50vh; overflow-y: auto; font-size: 0.95rem; }
   .consent-text h3:first-child { margin-top: 0; }
   .consent-text ul { padding-left: 1.2rem; }
 

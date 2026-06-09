@@ -1,0 +1,311 @@
+/*
+ * techne.css — the shared "paper/ink" editorial design system.
+ *
+ * This is the single served copy of the design tokens + base element styles
+ * that the poetics dashboard (scripts/browse-poetics-scripts.js) renders inline.
+ * The folded-in static surfaces (/adjudication, /chat, /pilot) link THIS file so
+ * they stop being styled islands and inherit the dashboard's look with one
+ * <link rel="stylesheet" href="/components/techne.css">.
+ *
+ * Served by services/evalSurfaces.js at /components (static). The :root token
+ * values below MIRROR the dashboard's inline :root (browse-poetics-scripts.js
+ * ~L4496) — keep them in sync if either moves. The legacy aliases (--bg, --panel,
+ * --muted, --line, --accent, --warn, --text, --good, --bad ...) let pages that
+ * predate the palette get re-skinned without touching their markup or JS.
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=JetBrains+Mono:wght@400;500;600&display=swap");
+
+:root {
+  color-scheme: light dark;
+  --paper:       #F1E9D8;
+  --paper-2:     #E9DFC7;
+  --paper-3:     #EFE4CC;
+  --paper-4:     #F7EFDD;
+  --ink:         #181310;
+  --ink-2:       #3A2F27;
+  --ink-3:       #6A5C50;
+  --ink-4:       #695B47;
+  --linen:       #D8C7A9;
+  --moss:        #56683A;
+  --moss-deep:   #3A4824;
+  --moss-soft:   #E3E6CE;
+  --brick:       #A53E2E;
+  --brick-d:     #7C2C1F;
+  --brick-soft:  #F3DDD6;
+  --ochre:       #C08A3E;
+  --ochre-d:     #835A1B;
+  --ochre-soft:  #F5E6C2;
+  --indigo:      #2A4F6B;
+  --indigo-soft: #DCE6EE;
+  /* the injected rail (railHtml bare mode, via /components/rail-inject.js) styles
+     its ◎ stamp-glyph with --prussian; alias it to --indigo so it tracks the theme
+     without a second value to keep in sync. */
+  --prussian:    var(--indigo);
+  --rule:        rgba(28, 22, 16, 0.18);
+  --rule-soft:   rgba(28, 22, 16, 0.10);
+  --ease:        cubic-bezier(.22, .61, .36, 1);
+
+  /* legacy aliases so island markup keeps working as it is re-skinned */
+  --bg: var(--paper);
+  --panel: var(--paper-4);
+  --panel-2: var(--paper-2);
+  --muted: var(--ink-3);
+  --line: var(--rule);
+  --accent: var(--moss-deep);
+  --accent-soft: var(--moss-soft);
+  --text: var(--ink-2);
+  --good: var(--moss-deep);
+  --warn: var(--ochre-d);
+  --bad: var(--brick-d);
+  --trap: var(--brick-d);
+  --flat: var(--ink-3);
+  --focus: var(--brick);
+}
+
+[data-theme="dark"] {
+  --paper:       #14100C;
+  --paper-2:     #1B1612;
+  --paper-3:     #1F1A14;
+  --paper-4:     #221C16;
+  --ink:         #F4EEDD;
+  --ink-2:       #E0D8C3;
+  --ink-3:       #B9AD96;
+  --ink-4:       #8C7E6A;
+  --linen:       #3A322A;
+  --moss:        #8DA868;
+  --moss-deep:   #B5CD92;
+  --moss-soft:   #2C3520;
+  --brick:       #E36953;
+  --brick-d:     #F08A75;
+  --brick-soft:  #3A1C16;
+  --ochre:       #E6B265;
+  --ochre-d:     #F3CB88;
+  --ochre-soft:  #3A2C12;
+  --indigo:      #7FA6CC;
+  --indigo-soft: #1B2A38;
+  --rule:        rgba(244, 238, 221, 0.18);
+  --rule-soft:   rgba(244, 238, 221, 0.08);
+}
+
+/* Static pages have no theme toggle of their own, so honour the OS preference
+   when the page hasn't explicitly pinned a theme. The dashboard pins
+   data-theme, so this never fights its toggle. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper:       #14100C;
+    --paper-2:     #1B1612;
+    --paper-3:     #1F1A14;
+    --paper-4:     #221C16;
+    --ink:         #F4EEDD;
+    --ink-2:       #E0D8C3;
+    --ink-3:       #B9AD96;
+    --ink-4:       #8C7E6A;
+    --linen:       #3A322A;
+    --moss:        #8DA868;
+    --moss-deep:   #B5CD92;
+    --moss-soft:   #2C3520;
+    --brick:       #E36953;
+    --brick-d:     #F08A75;
+    --brick-soft:  #3A1C16;
+    --ochre:       #E6B265;
+    --ochre-d:     #F3CB88;
+    --ochre-soft:  #3A2C12;
+    --indigo:      #7FA6CC;
+    --indigo-soft: #1B2A38;
+    --rule:        rgba(244, 238, 221, 0.18);
+    --rule-soft:   rgba(244, 238, 221, 0.08);
+  }
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+html { background: var(--paper); -webkit-text-size-adjust: 100%; }
+
+body {
+  font-family: "Source Serif 4", "Source Serif Pro", Cambria, Georgia, serif;
+  font-feature-settings: "ss01", "kern", "liga";
+  font-optical-sizing: auto;
+  background: var(--paper);
+  color: var(--ink-2);
+  font-size: 14.5px;
+  line-height: 1.5;
+  letter-spacing: 0.003em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  position: relative;
+  min-height: 100vh;
+}
+/* paper grain — the same dot overlay the dashboard rides on */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.14;
+  background-image: radial-gradient(rgba(20, 16, 12, 0.55) 0.5px, transparent 0.5px);
+  background-size: 3px 3px;
+  mix-blend-mode: multiply;
+}
+:root[data-theme="dark"] body::after,
+body[data-theme="dark"]::after {
+  opacity: 0.08;
+  background-image: radial-gradient(rgba(244, 238, 221, 0.45) 0.5px, transparent 0.5px);
+  mix-blend-mode: screen;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) body::after {
+    opacity: 0.08;
+    background-image: radial-gradient(rgba(244, 238, 221, 0.45) 0.5px, transparent 0.5px);
+    mix-blend-mode: screen;
+  }
+}
+
+h1, h2, h3, h4 {
+  font-family: "Fraunces", "Source Serif 4", Georgia, serif;
+  font-optical-sizing: auto;
+  font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+  color: var(--ink);
+  font-weight: 500;
+  letter-spacing: -0.012em;
+  line-height: 1.12;
+  margin: 0 0 0.5em;
+}
+h1 { font-size: 1.55rem; }
+h2 { font-size: 1.15rem; }
+h3 { font-size: 0.98rem; }
+
+a { color: var(--brick-d); text-underline-offset: 2px; }
+a:hover { color: var(--brick); }
+
+/* mono labels / meta / machine ids — the editorial "sub" voice */
+.mono, .sub, code, kbd, samp {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+.sub {
+  color: var(--ink-3);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.45;
+}
+code {
+  color: var(--moss-deep);
+  font-size: 0.86em;
+  word-break: break-word;
+}
+
+button, input, select, textarea { font: inherit; color: inherit; }
+::selection { background: color-mix(in srgb, var(--ochre) 50%, transparent); color: var(--ink); }
+
+/* ── buttons ── */
+button, .btn {
+  border: 1px solid var(--rule);
+  background: var(--paper-4);
+  color: var(--ink);
+  min-height: 36px;
+  padding: 0 14px;
+  cursor: pointer;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  border-radius: 0;
+  transition: background .12s var(--ease), border-color .12s var(--ease), color .12s var(--ease);
+}
+button:hover, .btn:hover { background: color-mix(in srgb, var(--moss-soft) 60%, var(--paper-4)); }
+button.primary, .btn.primary {
+  border-color: var(--moss-deep);
+  background: var(--moss-deep);
+  color: var(--paper);
+}
+button.primary:hover, .btn.primary:hover { background: var(--moss); border-color: var(--moss); }
+button:disabled, .btn:disabled { cursor: not-allowed; opacity: 0.5; }
+
+/* ── inputs ── */
+input, select, textarea {
+  width: 100%;
+  border: 1px solid var(--rule);
+  background: var(--paper-4);
+  color: var(--ink);
+  padding: 8px 10px;
+  border-radius: 0;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12.5px;
+  transition: border-color .12s var(--ease), box-shadow .12s var(--ease);
+}
+textarea { min-height: 78px; resize: vertical; line-height: 1.5; }
+input:focus, select:focus, textarea:focus, button:focus-visible {
+  outline: none;
+  border-color: var(--brick);
+  box-shadow: inset 0 -2px 0 var(--brick);
+}
+button:focus-visible { box-shadow: 0 0 0 2px var(--brick-soft); }
+
+label {
+  display: grid;
+  gap: 6px;
+  color: var(--ink-3);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* ── panels / cards ── */
+.panel, .card {
+  background: var(--paper-4);
+  border: 1px solid var(--rule);
+  padding: 16px 18px;
+}
+
+/* ── shared page shell + masthead with back-to-dashboard affordance ── */
+.techne-shell { width: min(1280px, calc(100vw - 40px)); margin: 0 auto; padding: 0 0 56px; }
+.techne-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0 12px;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 4px;
+}
+.techne-bar .home {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--ink-3);
+  border: 1px solid var(--rule);
+  padding: 6px 10px;
+  white-space: nowrap;
+  transition: background .12s var(--ease), color .12s var(--ease);
+}
+.techne-bar .home:hover { background: var(--moss-soft); color: var(--ink); }
+.techne-bar .wordmark {
+  font-family: "Fraunces", Georgia, serif;
+  font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+  font-size: 15px;
+  color: var(--ink);
+}
+.techne-bar .spacer { flex: 1; }
+.techne-bar .tag {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+}
+
+/* ── status / message banners ── */
+.message {
+  padding: 12px 14px;
+  border: 1px solid var(--rule);
+  background: var(--paper-4);
+  color: var(--ink-3);
+  white-space: pre-wrap;
+}
+.message.ok { color: var(--moss-deep); border-color: var(--moss); background: color-mix(in srgb, var(--moss-soft) 50%, var(--paper-4)); }
+.message.error { color: var(--brick-d); border-color: var(--brick); background: color-mix(in srgb, var(--brick-soft) 45%, var(--paper-4)); }
+
+.small { color: var(--ink-3); font-size: 12px; }

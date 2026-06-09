@@ -11,6 +11,7 @@ node_modules
 # Private research artifacts (symlinked from ../machinespirits-eval-private/)
 data
 logs
+logs.pre-symlink-backup-*/
 exports
 notes/private/
 notes/local/

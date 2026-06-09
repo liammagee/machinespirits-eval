@@ -33,6 +33,13 @@ const TBOX_MODULES = Object.freeze({
   // DEFAULT_MODULES: opt in via loadSharedTBox([...,'consistency','casting']). Axioms
   // only; the generic disjointness rule lives in the consistency module.
   casting: { tbox: 'casting-axioms.ttl' },
+  // Roman rhetoric (the figures of persuasion) — curriculum companion to the
+  // poetics module for course 1001 (content-poetics-rhetoric), lectures 5–8: the
+  // five canons, the parts of an oration, the three styles, and the figures
+  // (tropes, schemes, figures of thought). TBox only; OPT-IN (not in
+  // DEFAULT_MODULES): load via loadSharedTBox([...,'poetics','rhetoric']).
+  // Seam: ms:Elocutio rdfs:seeAlso ms:Lexis (style = Aristotle's lexis).
+  rhetoric: { tbox: 'rhetoric-core.ttl' },
 });
 export const DEFAULT_MODULES = Object.freeze(['reasoning', 'poetics', 'discursive', 'consistency']);
 

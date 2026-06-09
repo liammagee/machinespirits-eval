@@ -15,6 +15,7 @@ import readline from 'node:readline/promises';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import yaml from 'yaml';
+import theme from '../services/cliTheme.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -262,8 +263,8 @@ function answerValue(answers, key) {
 }
 
 async function ask(rl, prompt, defaultValue) {
-  const suffix = defaultValue ? ` [${defaultValue}]` : '';
-  const value = (await rl.question(`${prompt}${suffix}: `)).trim();
+  const suffix = defaultValue ? ` ${theme.defaultValue(defaultValue)}` : '';
+  const value = (await rl.question(`${theme.prompt(prompt)}${suffix}: `)).trim();
   return value || defaultValue || '';
 }
 
@@ -547,11 +548,17 @@ function printResult({ args, paths, command }) {
     );
     return;
   }
-  console.log(`\nwrote spec -> ${rel(paths.specPath)}`);
-  console.log(`wrote run summary -> ${rel(paths.summaryPath)}`);
-  if (fs.existsSync(paths.publicSamplePath)) console.log(`public sample -> ${rel(paths.publicSamplePath)}`);
-  if (fs.existsSync(paths.fullTranscriptPath)) console.log(`full transcript -> ${rel(paths.fullTranscriptPath)}`);
-  if (args.printCommand || args.specOnly) console.log(`\ngenerate command:\n  ${command.map(shellQuote).join(' ')}`);
+  console.log(`\n${theme.success('wrote spec')} ${theme.dim('->')} ${theme.filePath(rel(paths.specPath))}`);
+  console.log(`${theme.success('wrote run summary')} ${theme.dim('->')} ${theme.filePath(rel(paths.summaryPath))}`);
+  if (fs.existsSync(paths.publicSamplePath)) {
+    console.log(`${theme.key('public sample')} ${theme.dim('->')} ${theme.filePath(rel(paths.publicSamplePath))}`);
+  }
+  if (fs.existsSync(paths.fullTranscriptPath)) {
+    console.log(`${theme.key('full transcript')} ${theme.dim('->')} ${theme.filePath(rel(paths.fullTranscriptPath))}`);
+  }
+  if (args.printCommand || args.specOnly) {
+    console.log(`\n${theme.header('generate command:')}\n  ${command.map(shellQuote).join(' ')}`);
+  }
 }
 
 function shellQuote(value) {
@@ -567,7 +574,9 @@ async function main() {
   }
   if (args.templatePath) {
     writeAnswersTemplate(args.templatePath);
-    console.log(`wrote answers template -> ${rel(args.templatePath)}`);
+    console.log(
+      `${theme.success('wrote answers template')} ${theme.dim('->')} ${theme.filePath(rel(args.templatePath))}`,
+    );
     return;
   }
   const answers =
@@ -597,7 +606,7 @@ async function main() {
 
 if (path.resolve(process.argv[1] || '') === __filename) {
   main().catch((error) => {
-    console.error(error?.stack || String(error));
+    console.error(theme.error(error?.stack || String(error)));
     process.exit(1);
   });
 }

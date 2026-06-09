@@ -11,8 +11,7 @@ import {
   validateBenchmarkConfig,
 } from '../scripts/run-recursive-tutor-learning-benchmark.js';
 
-const loadFixture = () =>
-  yaml.parse(fs.readFileSync('config/recursive-tutor-learning/pilot-families.yaml', 'utf8'));
+const loadFixture = () => yaml.parse(fs.readFileSync('config/recursive-tutor-learning/pilot-families.yaml', 'utf8'));
 
 const loadUnderdeterminedFixture = () =>
   yaml.parse(fs.readFileSync('config/recursive-tutor-learning/underdetermined-transfer-families.yaml', 'utf8'));

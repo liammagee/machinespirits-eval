@@ -8,7 +8,15 @@ import assert from 'node:assert/strict';
 import http from 'node:http';
 import express from 'express';
 
-import { isLocalHost, parseBasicAuthHeader, basicAuthMiddleware, resolveBasicAuthGuard } from '../httpBasicAuth.js';
+import {
+  isLocalHost,
+  parseBasicAuthHeader,
+  basicAuthMiddleware,
+  resolveBasicAuthGuard,
+  roleAuthMiddleware,
+  makeRoleGate,
+  PARTICIPANT_ALLOWLIST,
+} from '../httpBasicAuth.js';
 
 const servers = [];
 after(() => servers.forEach((s) => s.close()));
@@ -107,5 +115,133 @@ describe('httpBasicAuth · basicAuthMiddleware over HTTP', () => {
     const r = await get(base, { user: 'u', pass: 'p' });
     assert.equal(r.status, 200);
     assert.equal(r.body, 'ok');
+  });
+});
+
+// ─── Design A: perimeter RBAC (roles + default-deny gate) ───────────────────
+
+// Path- and method-flexible request helper for the role tests.
+function req(base, p, { user, pass, method = 'GET' } = {}) {
+  const headers = {};
+  if (user != null) headers.Authorization = 'Basic ' + Buffer.from(`${user}:${pass}`).toString('base64');
+  return new Promise((resolve, reject) => {
+    const r = http.request(`${base}${p}`, { method, headers }, (res) => {
+      let body = '';
+      res.on('data', (c) => (body += c));
+      res.on('end', () => resolve({ status: res.statusCode, body }));
+    });
+    r.on('error', reject);
+    r.end();
+  });
+}
+
+// Boot an app wired like the real servers: [optional role-aware guard] → role
+// gate → routes spanning the allowlist boundary.
+function bootRoles(guard) {
+  const app = express();
+  if (guard) app.use(guard);
+  app.use(makeRoleGate());
+  const ok = (label) => (_q, s) => s.type('text/plain').send(label);
+  app.get('/api/eval/runs', ok('eval')); // admin-only
+  app.get('/api/pilot/admin/counts', ok('pilot-admin')); // admin-only
+  app.get('/browse', ok('browse')); // admin-only (researcher dashboard)
+  app.get('/pilot/index.html', ok('pilot-ui')); // participant-allowed (static)
+  app.post('/api/chat/turn', ok('turn')); // participant-allowed (metered exception)
+  app.get('/api/pilot/session/abc/consent', ok('consent')); // participant-allowed
+  app.get('/api/a19/adjudication/assignment', ok('adj')); // participant-allowed
+  return new Promise((resolve) => {
+    const server = app.listen(0, '127.0.0.1', () => {
+      servers.push(server);
+      resolve(`http://127.0.0.1:${server.address().port}`);
+    });
+  });
+}
+
+const ADMIN = { user: 'a', pass: 'ap' };
+const PART = { user: 'p', pass: 'pp' };
+
+describe('httpBasicAuth · resolveBasicAuthGuard (roles)', () => {
+  it('returns a role-aware guard when a participant pair is configured', () => {
+    const g = resolveBasicAuthGuard({
+      env: { EVAL_AUTH_USER: 'a', EVAL_AUTH_PASS: 'ap', EVAL_PARTICIPANT_USER: 'p', EVAL_PARTICIPANT_PASS: 'pp' },
+      prefix: 'EVAL',
+      host: '127.0.0.1',
+    });
+    assert.equal(typeof g, 'function');
+  });
+  it('binds a participant-only public server (does NOT throw) when only participant creds are set', () => {
+    const g = resolveBasicAuthGuard({
+      env: { MS_PARTICIPANT_USER: 'p', MS_PARTICIPANT_PASS: 'pp' },
+      prefix: 'EVAL',
+      host: '0.0.0.0',
+    });
+    assert.equal(typeof g, 'function');
+  });
+  it('STILL throws on a public bind with no creds of either role', () => {
+    assert.throws(() => resolveBasicAuthGuard({ env: {}, prefix: 'EVAL', host: '0.0.0.0' }), /Refusing to bind/);
+  });
+});
+
+describe('httpBasicAuth · roleAuthMiddleware tags req.evalRole', () => {
+  it('authenticates admin and participant pairs, 401s anything else', async () => {
+    const base = await bootRoles(roleAuthMiddleware({ admin: ADMIN, participant: PART, realm: 'r' }));
+    assert.equal((await req(base, '/pilot/index.html', ADMIN)).status, 200);
+    assert.equal((await req(base, '/pilot/index.html', PART)).status, 200);
+    assert.equal((await req(base, '/pilot/index.html', { user: 'x', pass: 'y' })).status, 401);
+    assert.equal((await req(base, '/pilot/index.html')).status, 401);
+  });
+});
+
+describe('httpBasicAuth · makeRoleGate default-deny', () => {
+  it('admin role reaches every surface', async () => {
+    const base = await bootRoles(roleAuthMiddleware({ admin: ADMIN, participant: PART, realm: 'r' }));
+    for (const p of ['/api/eval/runs', '/api/pilot/admin/counts', '/browse', '/pilot/index.html'])
+      assert.equal((await req(base, p, ADMIN)).status, 200, `admin → ${p}`);
+  });
+  it('participant role reaches ONLY the allowlist (pilot flow, chat/turn, adjudication)', async () => {
+    const base = await bootRoles(roleAuthMiddleware({ admin: ADMIN, participant: PART, realm: 'r' }));
+    assert.equal((await req(base, '/pilot/index.html', PART)).status, 200);
+    assert.equal((await req(base, '/api/chat/turn', { ...PART, method: 'POST' })).status, 200);
+    assert.equal((await req(base, '/api/pilot/session/abc/consent', PART)).status, 200);
+    assert.equal((await req(base, '/api/a19/adjudication/assignment', PART)).status, 200);
+  });
+  it('participant role is 403d on every metered/admin surface', async () => {
+    const base = await bootRoles(roleAuthMiddleware({ admin: ADMIN, participant: PART, realm: 'r' }));
+    for (const p of ['/api/eval/runs', '/api/pilot/admin/counts', '/browse'])
+      assert.equal((await req(base, p, PART)).status, 403, `participant → ${p} must be 403`);
+  });
+  it('localhost-open (no guard, req.evalRole undefined) reaches everything', async () => {
+    const base = await bootRoles(null); // no guard → evalRole undefined → admin-equivalent
+    for (const p of ['/api/eval/runs', '/browse', '/pilot/index.html'])
+      assert.equal((await req(base, p)).status, 200, `open → ${p}`);
+  });
+});
+
+describe('httpBasicAuth · PARTICIPANT_ALLOWLIST excludes the danger paths', () => {
+  const matches = (p) => PARTICIPANT_ALLOWLIST.some((e) => p === e || p.startsWith(e + '/'));
+  it('denies every metered/admin surface', () => {
+    for (const p of [
+      '/pilot-admin',
+      '/pilot-admin/index.html',
+      '/chat',
+      '/chat/index.html',
+      '/api/eval/quick',
+      '/api/jobs',
+      '/api/compose/live/turn',
+      '/api/chat/learner-turn',
+      '/api/chat/cells',
+      '/api/pilot/admin/counts',
+    ])
+      assert.equal(matches(p), false, `${p} must NOT be participant-allowed`);
+  });
+  it('allows exactly the participant/coder surfaces', () => {
+    for (const p of [
+      '/pilot',
+      '/pilot/x.js',
+      '/api/chat/turn',
+      '/api/pilot/session/1/consent',
+      '/api/a19/adjudication/submissions',
+    ])
+      assert.equal(matches(p), true, `${p} must be participant-allowed`);
   });
 });

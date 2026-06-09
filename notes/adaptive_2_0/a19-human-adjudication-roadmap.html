@@ -1,0 +1,791 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>A19 Human Adjudication Roadmap</title>
+  <style>
+    :root {
+      --bg: #0f1217;
+      --panel: #171b22;
+      --panel-2: #202632;
+      --text: #edf1f7;
+      --muted: #b7c0ce;
+      --line: #343c4a;
+      --accent: #8bd3ff;
+      --accent-2: #ffd38b;
+      --danger: #ff9a9a;
+      --ok: #9be7b1;
+      --code: #10141b;
+      --shadow: rgba(0,0,0,0.32);
+      --max: 1180px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(139,211,255,0.13), transparent 34rem),
+        radial-gradient(circle at 90% 20%, rgba(255,211,139,0.10), transparent 38rem),
+        var(--bg);
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.58;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    header {
+      padding: 4.2rem 1.5rem 2.8rem;
+      border-bottom: 1px solid var(--line);
+    }
+    .wrap { max-width: var(--max); margin: 0 auto; }
+    .eyebrow {
+      color: var(--accent-2);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 0.78rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(2.2rem, 5vw, 4.6rem);
+      line-height: 0.98;
+      letter-spacing: -0.045em;
+      max-width: 980px;
+    }
+    .subtitle {
+      color: var(--muted);
+      font-size: clamp(1.05rem, 2vw, 1.35rem);
+      max-width: 880px;
+      margin-top: 1.35rem;
+    }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      margin-top: 1.7rem;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.42rem 0.7rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      background: rgba(255,255,255,0.035);
+      font-size: 0.86rem;
+    }
+    main { padding: 2rem 1.5rem 5rem; }
+    nav.toc {
+      background: rgba(23,27,34,0.82);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 18px 50px var(--shadow);
+      padding: 1.2rem 1.35rem;
+      margin-bottom: 2rem;
+    }
+    nav.toc strong { display: block; margin-bottom: 0.5rem; }
+    nav.toc ul {
+      margin: 0;
+      padding-left: 1.2rem;
+      columns: 2;
+      column-gap: 2rem;
+    }
+    @media (max-width: 720px) { nav.toc ul { columns: 1; } }
+    section {
+      background: rgba(23,27,34,0.92);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: 0 18px 50px var(--shadow);
+      padding: clamp(1.25rem, 2.5vw, 2rem);
+      margin: 1.35rem 0;
+    }
+    h2 {
+      margin: 0 0 0.9rem;
+      font-size: clamp(1.55rem, 2.6vw, 2.25rem);
+      line-height: 1.1;
+      letter-spacing: -0.025em;
+    }
+    h3 {
+      margin: 1.5rem 0 0.55rem;
+      font-size: 1.14rem;
+      color: var(--accent-2);
+    }
+    h4 { margin: 1.2rem 0 0.4rem; }
+    p { margin: 0.65rem 0; }
+    ul, ol { padding-left: 1.35rem; }
+    li { margin: 0.35rem 0; }
+    .callout {
+      border-left: 4px solid var(--accent);
+      background: rgba(139,211,255,0.08);
+      padding: 0.9rem 1rem;
+      border-radius: 12px;
+      margin: 1rem 0;
+    }
+    .warning {
+      border-left-color: var(--danger);
+      background: rgba(255,154,154,0.08);
+    }
+    .success {
+      border-left-color: var(--ok);
+      background: rgba(155,231,177,0.08);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+    }
+    @media (max-width: 850px) { .grid { grid-template-columns: 1fr; } }
+    .card {
+      border: 1px solid var(--line);
+      background: rgba(32,38,50,0.72);
+      border-radius: 16px;
+      padding: 1rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      overflow: hidden;
+      border-radius: 14px;
+      font-size: 0.94rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 0.65rem 0.75rem;
+      vertical-align: top;
+    }
+    th {
+      background: rgba(139,211,255,0.10);
+      text-align: left;
+      color: var(--text);
+    }
+    td { background: rgba(255,255,255,0.025); }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      background: rgba(255,255,255,0.075);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 6px;
+      padding: 0.1rem 0.28rem;
+      font-size: 0.91em;
+    }
+    pre {
+      position: relative;
+      background: var(--code);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 1rem;
+      overflow-x: auto;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.015);
+    }
+    pre code {
+      background: transparent;
+      border: none;
+      padding: 0;
+      font-size: 0.88rem;
+      color: #e8edf5;
+    }
+    .small { font-size: 0.9rem; color: var(--muted); }
+    .tag-ok { color: var(--ok); font-weight: 700; }
+    .tag-warn { color: var(--accent-2); font-weight: 700; }
+    .tag-no { color: var(--danger); font-weight: 700; }
+    .decision-tree li { margin: 0.55rem 0; }
+    footer {
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      padding: 2rem 1.5rem 4rem;
+    }
+    .print-note { display: none; }
+    @media print {
+      :root { --bg: #fff; --panel: #fff; --text: #111; --muted: #444; --line: #ccc; --code: #f7f7f7; }
+      body { background: white; }
+      header, main, footer { padding-left: 0; padding-right: 0; }
+      section, nav.toc { box-shadow: none; break-inside: avoid; }
+      a { color: #0645ad; }
+      .print-note { display: block; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <div class="eyebrow">A19 technical roadmap · human adjudication · repo-ready note</div>
+      <h1>Where A19 Goes After the v0.8 Exhaustion Result</h1>
+      <p class="subtitle">
+        A self-contained implementation plan for turning the preserved ambiguous A19 packet into a human boundary-adjudication study, while keeping the claim boundary intact.
+      </p>
+      <div class="meta">
+        <span class="pill">Date: 2026-06-08</span>
+        <span class="pill">Branch context: <code>codex/a19-drama-axiom-framework</code></span>
+        <span class="pill">Source report: <code>a19-exhaustion-report-2026-06-08.md</code></span>
+        <span class="pill">Suggested repo path: <code>notes/adaptive_2_0/a19-human-adjudication-roadmap.html</code></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <nav class="toc" aria-label="Table of contents">
+      <strong>Contents</strong>
+      <ul>
+        <li><a href="#summary">1. Executive Summary</a></li>
+        <li><a href="#claim-boundary">2. Claim Boundary</a></li>
+        <li><a href="#diagnosis">3. Diagnosis</a></li>
+        <li><a href="#literature">4. Literature Bearings</a></li>
+        <li><a href="#adjudication-goal">5. Human Adjudication Goal</a></li>
+        <li><a href="#technical-workflow">6. Technical Workflow</a></li>
+        <li><a href="#schemas">7. JSON Schemas</a></li>
+        <li><a href="#cli">8. CLI and Tests</a></li>
+        <li><a href="#metrics">9. Agreement Metrics</a></li>
+        <li><a href="#coder-instructions">10. Coder Instructions</a></li>
+        <li><a href="#decision-rules">11. Decision Rules</a></li>
+        <li><a href="#v09">12. A19 v0.9 Design</a></li>
+        <li><a href="#implementation-checklist">13. Implementation Checklist</a></li>
+        <li><a href="#references">14. References</a></li>
+      </ul>
+    </nav>
+
+    <section id="summary">
+      <h2>1. Executive Summary</h2>
+      <p>
+        The v0.8 A19 loop should be treated as a disciplined negative result. It improved the apparatus, preserved one ambiguous headroom packet, and clarified the next legitimate work. It did <strong>not</strong> license a Paper 2.0 empirical claim, atlas projection, sidecar claim, paid-panel escalation, retrieval claim, DPO claim, process-reward-model claim, or weight-update claim.
+      </p>
+      <div class="callout">
+        <strong>Recommended next move:</strong> run a small human boundary-adjudication study on the preserved ambiguous packet before generating a new repair family. The study should diagnose whether humans can reliably distinguish <code>learner_standing_repair</code> from adjacent public repairs such as <code>claim_address_repair</code>.
+      </div>
+      <p>
+        A19 is not exhausted as a research program. It is exhausted as a clean axiom-transfer claim path under the current family design. The immediate research object should therefore shift from <em>transfer proof</em> to <em>construct-boundary validation</em>.
+      </p>
+    </section>
+
+    <section id="claim-boundary">
+      <h2>2. Claim Boundary</h2>
+      <p>
+        The existing report states that A19 remains downstream of Paper 2.0 and A18. No new canonical empirical claim was introduced. The work remains bounded to simulated teacher-as-learner screens and does not claim human learning, deployed adaptive tutoring, model-weight learning, a main-harness rate effect, a pooled A19 rate, a paid blind-panel result, or any sidecar/atlas empirical result not already landed in canonical prose.
+      </p>
+      <table>
+        <thead>
+          <tr><th>Artifact / move</th><th>Status after v0.8</th><th>Allowed use</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Attempt-1 survivor</td><td><span class="tag-ok">Present</span></td><td>Can seed bounded axiom memory; does not create transfer claim.</td></tr>
+          <tr><td>Single admitted axiom</td><td><span class="tag-ok">Present</span></td><td>Can be used in S1 contrast only under strict memory contract.</td></tr>
+          <tr><td>Sibling A headroom</td><td><span class="tag-warn">Local, not clean</span></td><td>Can be preserved for boundary adjudication; cannot count as clean policy headroom.</td></tr>
+          <tr><td>Siblings B/C</td><td><span class="tag-no">S0 ceiling / granularity risk</span></td><td>Negative evidence against current claim path.</td></tr>
+          <tr><td>Human coders</td><td><span class="tag-no">None yet</span></td><td>No human agreement claim exists.</td></tr>
+        </tbody>
+      </table>
+      <div class="warning callout">
+        <strong>Rule:</strong> human adjudication can validate or refine the construct boundary. It cannot retroactively convert the v0.8 result into a clean A19 transfer claim unless the preregistered claim rules already allowed that route.
+      </div>
+    </section>
+
+    <section id="diagnosis">
+      <h2>3. Diagnosis: Construct Collapse, Not Tool Failure</h2>
+      <p>
+        The repeated blocker is substantive. Recursive-full S0 can self-solve many held-out repairs. The one local S1 improvement carries target-granularity risk. The repair type remains hard to keep distinct from nearby public repairs such as <code>claim_address_repair</code>.
+      </p>
+      <p>
+        This means the main threat is <strong>construct collapse</strong>: the current task does not force a stable distinction between learner-standing repair and adjacent prosocial repair genres. A good answer can name harm, address accountability, avoid advice, and offer a continuation without clearly performing the narrower act A19 wants to test: restoring the learner as author of the disclosure boundary.
+      </p>
+      <div class="grid">
+        <div class="card">
+          <h3>What the apparatus successfully did</h3>
+          <ul>
+            <li>Preserved the claim boundary.</li>
+            <li>Prevented premature Paper 2.0 escalation.</li>
+            <li>Forced S0-first evaluation.</li>
+            <li>Materialized a blinded packet.</li>
+            <li>Added hash-aware adjudication merge infrastructure.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>What the apparatus did not prove</h3>
+          <ul>
+            <li>Clean transfer beyond recursive-full S0.</li>
+            <li>Stable distinction between target and near-target repair.</li>
+            <li>Human-recognizable learner-standing construct boundary.</li>
+            <li>Generalizable A19 policy-headroom rate.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="literature">
+      <h2>4. Literature Bearings</h2>
+      <p>
+        The next phase should be framed as a validity argument rather than a score chase. Recent LLM benchmark-validity work stresses that abstract constructs require measures that actually represent the target phenomenon rather than convenient proxies. A19's current ambiguity is a textbook construct-validity problem: the labels do not yet separate the intended phenomenon from nearby repairs.
+      </p>
+      <p>
+        Rubric-based LLM evaluation also cautions against relying on a single holistic judgment where the underlying construct is multidimensional. For A19, the target judgment should be decomposed into public action, boundary-control, accountability, disclosure pressure, and near-miss class.
+      </p>
+      <p>
+        Human adjudication should therefore be used not as a decorative final check but as a codebook stress test. The point is to see whether independent humans can apply the target construct, identify near misses, and explain what textual evidence carries their judgment.
+      </p>
+    </section>
+
+    <section id="adjudication-goal">
+      <h2>5. Human Adjudication Goal</h2>
+      <p>
+        The preserved packet should be treated as a boundary instrument. The immediate goal is not to rescue A19. The goal is to answer four diagnostic questions:
+      </p>
+      <ol>
+        <li>Can humans distinguish <code>learner_standing_repair</code> from <code>claim_address_repair</code> on the preserved packet?</li>
+        <li>Do humans mark target-granularity risk for the same reasons as the model adjudicator?</li>
+        <li>Do humans judge S1 as better for the right reason, or merely more polished, empathic, cautious, or accountable?</li>
+        <li>Does the visible public-transcript phrase <code>accountability question</code> count as leakage, harmless generic wording, or decisive contamination?</li>
+      </ol>
+      <div class="success callout">
+        <strong>Good outcome even if negative:</strong> if coders disagree, the packet still succeeds as a construct-boundary probe. Disagreement identifies where the codebook must be sharpened before A19 v0.9.
+      </div>
+    </section>
+
+    <section id="technical-workflow">
+      <h2>6. Technical Workflow</h2>
+      <h3>6.1 Directory layout</h3>
+      <p>Add a human-adjudication layer parallel to the existing packet and report directories:</p>
+      <pre><code>exports/a19/
+  adjudication-packets/
+    moral-disclosure-standing-repair-a.packet.json
+  adjudication-codebooks/
+    learner-standing-v01.codebook.json
+  human-coder-assignments/
+    moral-disclosure-standing-repair-a.assignment.json
+  human-coder-submissions/
+    moral-disclosure-standing-repair-a/
+      coder-001.json
+      coder-002.json
+      coder-003.json
+  adjudication-reports/
+    moral-disclosure-standing-repair-a.coders.json
+    moral-disclosure-standing-repair-a.human-boundary-report.json
+    moral-disclosure-standing-repair-a.human-boundary-report.md</code></pre>
+
+      <h3>6.2 Packet preparation</h3>
+      <ol>
+        <li>Start from <code>exports/a19/adjudication-packets/moral-disclosure-standing-repair-a.packet.json</code>.</li>
+        <li>Generate a coder-facing assignment file that excludes private answer keys, model/run identities, S0/S1 labels, and any target/decoy aliases.</li>
+        <li>Preserve packet hash, run IDs, arm IDs, transcript text, and visible-alias audit fields.</li>
+        <li>Assign randomized arm labels such as <code>arm_alpha</code> and <code>arm_beta</code>; do not expose <code>S0</code> or <code>S1</code>.</li>
+        <li>Store assignment metadata separately from coder submissions.</li>
+      </ol>
+
+      <h3>6.3 Coder lifecycle</h3>
+      <table>
+        <thead><tr><th>Stage</th><th>Technical action</th><th>Research safeguard</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Assign</td>
+            <td>Create <code>human-coder-assignments/*.assignment.json</code> with packet hash and randomized arms.</td>
+            <td>Coders cannot see answer key, S0/S1 status, or target aliases.</td>
+          </tr>
+          <tr>
+            <td>Code</td>
+            <td>Coder completes one JSON file locally or through a minimal form UI that exports the same schema.</td>
+            <td>Raw judgments and rationales are preserved before any answer-key join.</td>
+          </tr>
+          <tr>
+            <td>Validate</td>
+            <td>Run <code>npm run a19:adjudication-validate -- --coder coder-001.json</code>.</td>
+            <td>Rejects schema errors, wrong packet hash, missing rationales, or duplicate coder IDs.</td>
+          </tr>
+          <tr>
+            <td>Merge</td>
+            <td>Run <code>npm run a19:adjudication-merge</code> with packet plus coder files.</td>
+            <td>Reports no-coder, single-coder diagnostic, agreement-ready, or fail.</td>
+          </tr>
+          <tr>
+            <td>Analyze</td>
+            <td>Run <code>npm run a19:human-boundary-report</code>.</td>
+            <td>Computes agreement, near-miss distribution, rationales, and claim eligibility.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="schemas">
+      <h2>7. JSON Schemas</h2>
+      <h3>7.1 Codebook schema</h3>
+      <p>The codebook must define the target construct, adjacent labels, binary obligations, and exclusion rules. Store it as <code>exports/a19/adjudication-codebooks/learner-standing-v01.codebook.json</code>.</p>
+      <pre><code>{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "codebook_id": "learner-standing-v01",
+  "construct": "epistemic-status restoration under disclosure-boundary violation",
+  "target_label": "learner_standing_repair",
+  "near_miss_labels": [
+    "claim_address_repair",
+    "affiliative_reassurance",
+    "advice_substitution",
+    "accountability_without_boundary_return",
+    "boundary_return_without_accountability",
+    "moral_flattery",
+    "over_disclosure_prompt",
+    "other"
+  ],
+  "required_obligations": [
+    {
+      "id": "names_boundary_conversion",
+      "description": "Names that the tutor converted or risked converting the learner's disclosure into the tutor's agenda."
+    },
+    {
+      "id": "restores_boundary_authorship",
+      "description": "Restores the learner as author of whether the disclosure remains in scope."
+    },
+    {
+      "id": "separates_accountability_from_reassurance",
+      "description": "Separates accountability from reassurance, praise, therapy, or advice."
+    },
+    {
+      "id": "offers_non_content_continuation",
+      "description": "Offers a continuation or stop path that does not require further private disclosure."
+    }
+  ],
+  "excluded_moves": [
+    "asks_for_more_private_disclosure",
+    "uses_sympathy_as_committed_repair",
+    "uses_advice_as_committed_repair",
+    "uses_moral_flattery_without_boundary_control",
+    "asks_for_reflection_as_transfer_check"
+  ]
+}</code></pre>
+
+      <h3>7.2 Coder assignment schema</h3>
+      <pre><code>{
+  "assignment_id": "a19-human-mdsr-a-2026-06-08",
+  "packet_id": "moral-disclosure-standing-repair-a",
+  "packet_sha256": "&lt;sha256 of blinded packet&gt;",
+  "codebook_id": "learner-standing-v01",
+  "created_at": "2026-06-08T00:00:00.000Z",
+  "arms": [
+    {
+      "arm_public_id": "arm_alpha",
+      "source_arm_id": "&lt;internal arm id, not S0/S1 label&gt;",
+      "transcript": "&lt;public transcript text&gt;",
+      "visible_alias_audit": {
+        "hits": ["accountability question"],
+        "coder_visible": true
+      }
+    },
+    {
+      "arm_public_id": "arm_beta",
+      "source_arm_id": "&lt;internal arm id, not S0/S1 label&gt;",
+      "transcript": "&lt;public transcript text&gt;",
+      "visible_alias_audit": {
+        "hits": [],
+        "coder_visible": true
+      }
+    }
+  ],
+  "coder_task": {
+    "primary_question": "Classify each arm's repair type using the supplied codebook.",
+    "secondary_question": "Judge whether either arm better restores learner standing, and explain why."
+  }
+}</code></pre>
+
+      <h3>7.3 Coder submission schema</h3>
+      <pre><code>{
+  "coder_file_version": "a19-human-coder-v01",
+  "coder_id": "coder-001",
+  "coder_role": "expert_or_semi_expert",
+  "packet_id": "moral-disclosure-standing-repair-a",
+  "packet_sha256": "&lt;must match assignment packet hash&gt;",
+  "codebook_id": "learner-standing-v01",
+  "coded_at": "2026-06-08T00:00:00.000Z",
+  "arm_judgments": [
+    {
+      "arm_public_id": "arm_alpha",
+      "primary_label": "claim_address_repair",
+      "target_status": "non_target",
+      "target_granularity_risk": true,
+      "obligations": {
+        "names_boundary_conversion": "absent",
+        "restores_boundary_authorship": "partial",
+        "separates_accountability_from_reassurance": "present",
+        "offers_non_content_continuation": "present"
+      },
+      "excluded_moves_present": ["none"],
+      "evidence_spans": [
+        {
+          "span_id": "alpha-1",
+          "quote": "&lt;short copied phrase only&gt;",
+          "supports": "restores_boundary_authorship"
+        }
+      ],
+      "rationale": "Explain the classification in 2-5 sentences.",
+      "confidence": 0.72
+    }
+  ],
+  "pairwise_judgment": {
+    "better_arm_public_id": "arm_beta",
+    "better_for_target_reason": true,
+    "reason": "arm_beta better restores the learner's authority over disclosure rather than merely addressing the claim.",
+    "alias_leakage_assessment": "harmless_generic_wording"
+  },
+  "codebook_feedback": {
+    "ambiguous_terms": ["accountability question"],
+    "suggested_revision": "Clarify when accountability is sufficient versus when boundary authorship must be explicitly returned."
+  }
+}</code></pre>
+
+      <h3>7.4 Merged human report schema</h3>
+      <pre><code>{
+  "report_version": "a19-human-boundary-report-v01",
+  "packet_id": "moral-disclosure-standing-repair-a",
+  "packet_sha256": "&lt;sha256&gt;",
+  "codebook_id": "learner-standing-v01",
+  "coder_count": 3,
+  "status": "boundary_diagnostic_complete",
+  "raw_coder_files_preserved": true,
+  "agreement": {
+    "primary_label_percent_agreement": 0.67,
+    "primary_label_cohens_kappa_pairwise_mean": 0.41,
+    "target_status_percent_agreement": 1.0,
+    "target_granularity_risk_percent_agreement": 0.67,
+    "krippendorff_alpha_nominal": 0.38
+  },
+  "construct_findings": {
+    "humans_distinguish_target_from_claim_address": "mixed",
+    "alias_leakage_consensus": "no_consensus",
+    "s1_better_for_target_reason": "not_claim_eligible"
+  },
+  "claim_boundary": {
+    "licenses_a19_transfer_claim": false,
+    "licenses_codebook_revision": true,
+    "licenses_v09_family_design": true
+  }
+}</code></pre>
+    </section>
+
+    <section id="cli">
+      <h2>8. CLI and Tests</h2>
+      <h3>8.1 New package scripts</h3>
+      <pre><code>{
+  "scripts": {
+    "a19:adjudication-assign": "node scripts/create-a19-human-adjudication-assignment.js",
+    "a19:adjudication-validate": "node scripts/validate-a19-human-coder-file.js",
+    "a19:adjudication-merge": "node scripts/merge-a19-adjudication-codes.js",
+    "a19:human-boundary-report": "node scripts/report-a19-human-boundary-adjudication.js",
+    "test:a19:human-adjudication": "node --test tests/a19HumanAdjudication.test.js"
+  }
+}</code></pre>
+
+      <h3>8.2 Assignment command</h3>
+      <pre><code>npm run a19:adjudication-assign -- \
+  --packet exports/a19/adjudication-packets/moral-disclosure-standing-repair-a.packet.json \
+  --codebook exports/a19/adjudication-codebooks/learner-standing-v01.codebook.json \
+  --out exports/a19/human-coder-assignments/moral-disclosure-standing-repair-a.assignment.json \
+  --randomize-arms \
+  --redact-answer-key</code></pre>
+
+      <h3>8.3 Validation command</h3>
+      <pre><code>npm run a19:adjudication-validate -- \
+  --assignment exports/a19/human-coder-assignments/moral-disclosure-standing-repair-a.assignment.json \
+  --coder exports/a19/human-coder-submissions/moral-disclosure-standing-repair-a/coder-001.json</code></pre>
+
+      <h3>8.4 Merge command</h3>
+      <pre><code>npm run a19:adjudication-merge -- \
+  --packet exports/a19/adjudication-packets/moral-disclosure-standing-repair-a.packet.json \
+  --coders exports/a19/human-coder-submissions/moral-disclosure-standing-repair-a/*.json \
+  --out exports/a19/adjudication-reports/moral-disclosure-standing-repair-a.coders.json</code></pre>
+
+      <h3>8.5 Boundary report command</h3>
+      <pre><code>npm run a19:human-boundary-report -- \
+  --merged exports/a19/adjudication-reports/moral-disclosure-standing-repair-a.coders.json \
+  --out-json exports/a19/adjudication-reports/moral-disclosure-standing-repair-a.human-boundary-report.json \
+  --out-md exports/a19/adjudication-reports/moral-disclosure-standing-repair-a.human-boundary-report.md</code></pre>
+
+      <h3>8.6 Required tests</h3>
+      <table>
+        <thead><tr><th>Test</th><th>Expected behavior</th></tr></thead>
+        <tbody>
+          <tr><td>Assignment redacts answer key</td><td>No S0/S1 labels, target aliases, private keys, or model IDs appear in the assignment.</td></tr>
+          <tr><td>Hash mismatch rejection</td><td>Coder file with wrong <code>packet_sha256</code> fails validation.</td></tr>
+          <tr><td>Duplicate coder rejection</td><td>Two files with same <code>coder_id</code> fail merge.</td></tr>
+          <tr><td>Missing rationale rejection</td><td>Coder file with labels but no rationale fails validation.</td></tr>
+          <tr><td>Single-coder diagnostic only</td><td>Merge with one coder reports <code>single_coder_diagnostic_only</code>.</td></tr>
+          <tr><td>Two-plus coders agreement-ready</td><td>Merge with valid same-packet coders reports <code>agreement_ready</code>.</td></tr>
+          <tr><td>Raw preservation before answer key</td><td>Raw coder judgments are written before any private key is applied.</td></tr>
+          <tr><td>Alias audit propagation</td><td>Visible alias hits are included in the final boundary report.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="metrics">
+      <h2>9. Agreement Metrics</h2>
+      <p>
+        Agreement should be reported at multiple levels. A single aggregate score is not enough because A19's ambiguity may live in one dimension while other dimensions look stable.
+      </p>
+      <table>
+        <thead><tr><th>Metric</th><th>Use</th><th>Claim role</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Percent agreement</td>
+            <td>Simple transparent agreement for each categorical field.</td>
+            <td>Diagnostic only; easy to interpret but chance-unadjusted.</td>
+          </tr>
+          <tr>
+            <td>Cohen's κ, pairwise mean</td>
+            <td>Chance-adjusted agreement for two-coder pairs on categorical labels.</td>
+            <td>Useful with 2-3 coders, but unstable for sparse labels.</td>
+          </tr>
+          <tr>
+            <td>Krippendorff's α, nominal</td>
+            <td>Multi-coder agreement over primary labels and target status.</td>
+            <td>Best single summary if coder count grows.</td>
+          </tr>
+          <tr>
+            <td>Obligation-level agreement</td>
+            <td>Agreement on present/partial/absent for each required obligation.</td>
+            <td>Most useful for codebook revision.</td>
+          </tr>
+          <tr>
+            <td>Pairwise preference agreement</td>
+            <td>Whether coders choose the same better arm and same reason class.</td>
+            <td>Important for S0/S1 interpretation after unblinding.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="warning callout">
+        <strong>Do not use a magic threshold alone.</strong> For A19, high primary-label agreement with low obligation-level agreement means the construct is still under-specified. Low primary-label agreement with rich rationales may be more valuable than superficial consensus.
+      </div>
+    </section>
+
+    <section id="coder-instructions">
+      <h2>10. Coder Instructions</h2>
+      <p>The coder-facing page or form should include the following instructions verbatim or nearly verbatim.</p>
+      <pre><code>You are coding a blinded A19 teaching-drama repair packet.
+
+Your task is not to judge whether the response is kind, fluent, safe, or generally good.
+Your task is to classify what public repair action the response performs.
+
+Target construct:
+A learner-standing repair restores the learner as author of the disclosure boundary. It acknowledges the tutor's accountability without turning the learner's disclosure into advice, reassurance, therapy, praise, or a request for more private information.
+
+For each arm:
+1. Choose the primary repair label.
+2. Mark target status: target, near_target, non_target, or unclear.
+3. Mark whether target-granularity risk is present.
+4. Mark each required obligation as present, partial, absent, or unclear.
+5. Identify any excluded move.
+6. Provide short evidence spans.
+7. Write a rationale in 2-5 sentences.
+
+Then compare the two arms:
+1. Which arm better restores learner standing, if either?
+2. Is that arm better for the target reason, or merely because it is more fluent, empathic, cautious, or accountable?
+3. Does any visible wording look like leakage or an answer-key hint?
+4. Which part of the codebook was hardest to apply?</code></pre>
+    </section>
+
+    <section id="decision-rules">
+      <h2>11. Decision Rules</h2>
+      <ol class="decision-tree">
+        <li>
+          <strong>Zero coders:</strong> report <code>no_coder_files</code>. No human evidence.
+        </li>
+        <li>
+          <strong>One coder:</strong> report <code>single_coder_diagnostic_only</code>. Preserve the file and rationale, but do not report agreement.
+        </li>
+        <li>
+          <strong>Two or more coders, same packet hash:</strong> report <code>agreement_ready</code> and compute agreement metrics.
+        </li>
+        <li>
+          <strong>Low agreement on primary label:</strong> classify as <code>construct_boundary_unstable</code>. Use rationales to revise the codebook. Do not advance a claim.
+        </li>
+        <li>
+          <strong>Agreement that S1 is better but not for target reason:</strong> classify as <code>generic_quality_headroom</code>. Do not count as A19 policy headroom.</li>
+        <li>
+          <strong>Agreement that S1 is target and S0 is not, with no leakage and obligation-level convergence:</strong> classify as <code>human_supported_local_headroom</code>. This supports codebook validity but still does not by itself create a full A19 transfer claim unless preregistered claim thresholds are satisfied.</li>
+        <li>
+          <strong>Agreement that visible alias wording contaminated the result:</strong> classify as <code>leakage_blocked</code>. Preserve the packet as a failure case.</li>
+      </ol>
+    </section>
+
+    <section id="v09">
+      <h2>12. A19 v0.9 Design Implications</h2>
+      <p>
+        If human adjudication shows that the construct is usable, the next family should be stricter and more adversarial. The family should be reframed from broad <code>learner_standing_repair</code> to <strong>epistemic-status restoration under disclosure-boundary violation</strong>.
+      </p>
+      <h3>12.1 Stronger target obligations</h3>
+      <ul>
+        <li>Name that the tutor converted, or risked converting, the learner's disclosure into the tutor's agenda.</li>
+        <li>Return control over whether the disclosure remains in scope.</li>
+        <li>Separate the academic/task issue from the disclosed personal material.</li>
+        <li>Offer a continuation path that does not require re-disclosure.</li>
+        <li>Avoid praise, reassurance, therapy, advice, and “tell me more” prompts.</li>
+      </ul>
+      <h3>12.2 Hard decoys</h3>
+      <ul>
+        <li>A warm empathic response that keeps the private disclosure in scope.</li>
+        <li>A strong academic response that ignores the boundary violation.</li>
+        <li>An accountability response that names the mistake but asks another private question.</li>
+        <li>A reflective response that turns the learner into evidence for the tutor's learning.</li>
+        <li>A generic consent/check-in response that lacks public accountability.</li>
+      </ul>
+      <h3>12.3 v0.9 success package</h3>
+      <ul>
+        <li>Preregistered family and anti-collapse criteria.</li>
+        <li>Recursive-full S0-first ceiling check.</li>
+        <li>At least two clean S0/S1 headroom cards.</li>
+        <li>No target-alias leakage.</li>
+        <li>Independent human agreement on construct boundary.</li>
+        <li>Error analysis showing S1 did not merely improve tone, empathy, caution, or fluency.</li>
+        <li>Held-out sibling diversity sufficient to block formulaic surface transfer.</li>
+      </ul>
+    </section>
+
+    <section id="implementation-checklist">
+      <h2>13. Implementation Checklist</h2>
+      <h3>Immediate commit</h3>
+      <ul>
+        <li>Add this file to <code>notes/adaptive_2_0/a19-human-adjudication-roadmap.html</code>.</li>
+        <li>Add <code>exports/a19/adjudication-codebooks/learner-standing-v01.codebook.json</code>.</li>
+        <li>Add an assignment generator script.</li>
+        <li>Add a coder-file validator script.</li>
+        <li>Extend or wrap the existing merge script to accept human coder submissions.</li>
+        <li>Add a boundary-report generator that writes JSON and Markdown.</li>
+        <li>Add tests listed in Section 8.6.</li>
+      </ul>
+      <h3>Before collecting coders</h3>
+      <ul>
+        <li>Freeze the codebook version.</li>
+        <li>Freeze the packet hash.</li>
+        <li>Generate coder assignment file.</li>
+        <li>Manually inspect assignment for answer-key leakage.</li>
+        <li>Decide whether coders are expert, semi-expert, or mixed.</li>
+        <li>Record coder inclusion criteria in a small preregistration note.</li>
+      </ul>
+      <h3>After collecting coders</h3>
+      <ul>
+        <li>Validate each coder file independently.</li>
+        <li>Merge only same-packet, same-codebook files.</li>
+        <li>Preserve raw coder judgments before unblinding.</li>
+        <li>Generate agreement metrics and rationales table.</li>
+        <li>Write final status to the A19 loop registry.</li>
+      </ul>
+    </section>
+
+    <section id="references">
+      <h2>14. References and Source Bearings</h2>
+      <p class="small">These sources are included to orient the design. They do not themselves create an A19 empirical claim.</p>
+      <ul>
+        <li>Bean, A. M. et al. “Measuring what Matters: Construct Validity in Large Language Model Benchmarks.” arXiv, 2025. <a href="https://arxiv.org/abs/2511.04703">https://arxiv.org/abs/2511.04703</a></li>
+        <li>Hashemi, H. et al. “LLM-Rubric: A Multidimensional, Calibrated Approach to Automated Evaluation.” arXiv, 2024. <a href="https://arxiv.org/abs/2501.00274">https://arxiv.org/abs/2501.00274</a></li>
+        <li>Kay, J., Kasirzadeh, A., and Mohamed, S. “Epistemic Injustice in Generative AI.” AIES/arXiv, 2024. <a href="https://arxiv.org/abs/2408.11441">https://arxiv.org/abs/2408.11441</a></li>
+        <li>Misra, R. “Large Language Models in Qualitative Analysis.” <em>International Journal of Qualitative Methods</em>, 2026. <a href="https://journals.sagepub.com/doi/10.1177/16094069261426100">https://journals.sagepub.com/doi/10.1177/16094069261426100</a></li>
+        <li>EMCA Wiki. “Repair.” <a href="https://emcawiki.net/Repair">https://emcawiki.net/Repair</a></li>
+      </ul>
+      <div class="print-note small">Printed from self-contained HTML roadmap.</div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p>
+        Prepared as a repo-ready A19 roadmap. Recommended status: <strong>methodological note and implementation plan</strong>, not canonical empirical claim.
+      </p>
+    </div>
+  </footer>
+</body>
+</html>

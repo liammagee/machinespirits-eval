@@ -102,7 +102,13 @@ function loadReplay(replayDir) {
     present: true,
     replay_dir: replayDir,
     manifest_path: manifestPath,
-    status: statuses.survivor ? 'survivor' : statuses.revise_again ? 'revise_again' : statuses.reject ? 'reject' : 'unknown',
+    status: statuses.survivor
+      ? 'survivor'
+      : statuses.revise_again
+        ? 'revise_again'
+        : statuses.reject
+          ? 'reject'
+          : 'unknown',
     statuses,
     records,
     first_record: first,
@@ -184,7 +190,11 @@ function classifyFamily({ family, staticValidation }) {
   if (!attempt1.present) {
     reasons.push({ code: 'missing_attempt1_replay', path: repoRel(attempt1.manifest_path) });
   } else if (attempt1.status !== 'survivor') {
-    reasons.push({ code: 'attempt1_not_local_survivor', status: attempt1.status, path: repoRel(attempt1.manifest_path) });
+    reasons.push({
+      code: 'attempt1_not_local_survivor',
+      status: attempt1.status,
+      path: repoRel(attempt1.manifest_path),
+    });
   }
 
   const policy = loadPolicy(family.policy_revision_template);
@@ -202,20 +212,29 @@ function classifyFamily({ family, staticValidation }) {
   for (const sibling of family.heldout || []) {
     const baseline = loadReplay(sibling.baseline_replay_dir);
     const revised = loadReplay(sibling.revised_replay_dir);
-    const baselinePasses = baseline.present && baseline.status === 'survivor' && recursiveScoresPass(baseline.first_record);
+    const baselinePasses =
+      baseline.present && baseline.status === 'survivor' && recursiveScoresPass(baseline.first_record);
     const revisedPasses = revised.present && revised.status === 'survivor' && recursiveScoresPass(revised.first_record);
     const siblingReasons = [];
 
-    if (!baseline.present) siblingReasons.push({ code: 'missing_heldout_baseline_replay', path: repoRel(baseline.manifest_path) });
-    if (!revised.present) siblingReasons.push({ code: 'missing_heldout_revised_replay', path: repoRel(revised.manifest_path) });
+    if (!baseline.present)
+      siblingReasons.push({ code: 'missing_heldout_baseline_replay', path: repoRel(baseline.manifest_path) });
+    if (!revised.present)
+      siblingReasons.push({ code: 'missing_heldout_revised_replay', path: repoRel(revised.manifest_path) });
     if (revised.present && replayHasProblem(revised, /\bcoherence\b|\bnaturalness\b/i)) {
       siblingReasons.push({ code: 'coherence_confound_warning', path: repoRel(revised.manifest_path) });
     }
-    if (revised.present && (bridgeScoresLow(revised.first_record) || replayHasProblem(revised, /\borganic\b|\bdrift\b/i))) {
+    if (
+      revised.present &&
+      (bridgeScoresLow(revised.first_record) || replayHasProblem(revised, /\borganic\b|\bdrift\b/i))
+    ) {
       siblingReasons.push({ code: 'organic_drift_or_weak_bridge', path: repoRel(revised.manifest_path) });
     }
     if (baselinePasses && revisedPasses) {
-      siblingReasons.push({ code: 'no_headroom', detail: 'baseline and revised replay both pass recursive local gate' });
+      siblingReasons.push({
+        code: 'no_headroom',
+        detail: 'baseline and revised replay both pass recursive local gate',
+      });
     } else if (!revisedPasses && revised.present) {
       siblingReasons.push({ code: 'revised_does_not_pass_recursive_gate', path: repoRel(revised.manifest_path) });
     }
@@ -244,7 +263,10 @@ function classifyFamily({ family, staticValidation }) {
   if (allReasons.some((reason) => reason.code === 'coherence_confound_warning')) status = 'coherence_confound';
   else if (allReasons.some((reason) => reason.code === 'organic_drift_or_weak_bridge')) status = 'organic_drift';
   else if (allReasons.some((reason) => reason.code === 'no_headroom')) status = 'no_headroom';
-  else if (!allReasons.length && heldout.some((row) => row.revised.recursive_passes && !row.baseline.recursive_passes)) {
+  else if (
+    !allReasons.length &&
+    heldout.some((row) => row.revised.recursive_passes && !row.baseline.recursive_passes)
+  ) {
     status = 'clean_survivor';
   }
 

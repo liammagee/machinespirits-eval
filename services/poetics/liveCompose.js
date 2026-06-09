@@ -30,7 +30,7 @@ import YAML from 'yaml';
 
 import * as evalConfigLoader from '../evalConfigLoader.js';
 import interactionEngine from '../learnerTutorInteractionEngine.js';
-import { runTutorTurn } from '../../routes/chatRoutes.js';
+import { runTutorTurn, loadCurriculumContext } from '../../routes/chatRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '../..');
@@ -43,6 +43,18 @@ const CHAT_MIN_MAX_TOKENS = 4000;
 const MAX_TEXT_LEN = 8000;
 const MAX_LIVE_SESSIONS = 50; // evict oldest beyond this — localhost, single user
 const CONSERVATIVE_USD_PER_1K_TOKENS = 0.01; // safety-biased backstop, not accounting
+
+// Live-only conciseness. The interactive sit-in trades the batch instrument's full
+// verbosity for timeliness + cost: a real-time partner shouldn't answer with four
+// stacked questions across five paragraphs. Default ON for live; passed to
+// runTutorTurn ONLY from here, so the scored eval path is untouched. The
+// load-bearing rule is one-question-per-turn (the "double-barreled question" fix);
+// brevity + the token cap follow. NOTE: a concise live transcript is stylistically
+// terser than a batch-scored one — relevant only if such artifacts are later
+// compared head-to-head with batch output.
+const CONCISE_TUTOR_DIRECTIVE =
+  'IMPORTANT — this is a real-time, face-to-face sit-in. Keep your reply brief: at most one short paragraph (roughly 2–4 sentences), and ask AT MOST ONE question. Never stack multiple questions in a single turn. Lead with the single most useful move and cut throat-clearing, recaps, and meta-framing.';
+const CONCISE_MAX_TOKENS = 600;
 
 // Map the live config (prompt_type × tutor architecture) to a representative
 // registered cell — runTutorTurn just needs a tutor-agents profile object, and
@@ -60,6 +72,114 @@ export function tutorCellFor(promptType, architecture) {
   const pt = promptType === 'base' ? 'base' : 'recognition';
   const arch = architecture === 'ego_superego' ? 'ego_superego' : 'ego_only';
   return TUTOR_CELL[`${pt}|${arch}`];
+}
+
+// ── Course catalog (shared by the UI lecture picker + the AI setup guide) ─────
+// Every course a sit-in tutor can be bound to: each top-level content/ or
+// content-*/ package with courses/<id>/lecture-N.md — the SAME set
+// loadCurriculumContext (routes/chatRoutes.js) resolves from a "<courseId>-lecture-N"
+// ref. content-test-* packages are eval fixtures (flagged isFixture so callers can
+// sort/label them apart from real curricula). One home so the picker + guide + bridge
+// can never drift.
+
+// The lecture's first heading IS its title; strip a leading <a id=…></a> anchor.
+// Poetics-rhetoric writes "Lecture N — Title" (keep the Title half); every other
+// course leads with its content heading, taken whole.
+function lectureTitleFrom(raw, num) {
+  const h = raw.match(/^#{1,4}\s+(.+?)\s*$/m);
+  if (!h) return `Lecture ${num}`;
+  let t = h[1].replace(/<a[^>]*><\/a>\s*/g, '').trim();
+  const lm = t.match(/^Lecture\s+\d+\s*[—–-]\s*(.+)$/);
+  if (lm) t = lm[1].trim();
+  return t || `Lecture ${num}`;
+}
+
+export function listCourses() {
+  let pkgs = [];
+  try {
+    pkgs = fs
+      .readdirSync(ROOT, { withFileTypes: true })
+      .filter((e) => e.isDirectory() && (e.name === 'content' || e.name.startsWith('content-')))
+      .map((e) => e.name);
+  } catch {
+    return []; // no content tree → no courses
+  }
+  const courses = [];
+  for (const pkg of pkgs) {
+    const coursesRoot = path.join(ROOT, pkg, 'courses');
+    let courseIds = [];
+    try {
+      courseIds = fs.readdirSync(coursesRoot).filter((c) => /^\d+$/.test(c));
+    } catch {
+      continue; // package carries no courses/ dir
+    }
+    for (const courseId of courseIds) {
+      const courseDir = path.join(coursesRoot, courseId);
+      let files = [];
+      try {
+        files = fs.readdirSync(courseDir).filter((f) => /^lecture-\d+\.md$/.test(f));
+      } catch {
+        continue;
+      }
+      if (!files.length) continue;
+      files.sort((a, b) => Number(a.match(/\d+/)[0]) - Number(b.match(/\d+/)[0]));
+      let courseTitle = `Course ${courseId}`;
+      let courseSubtitle = '';
+      try {
+        const cm = fs.readFileSync(path.join(courseDir, 'course.md'), 'utf8');
+        const tm = cm.match(/^title:\s*["']?(.+?)["']?\s*$/m);
+        if (tm) courseTitle = tm[1].trim();
+        const sm = cm.match(/^subtitle:\s*["']?(.+?)["']?\s*$/m);
+        if (sm) courseSubtitle = sm[1].trim();
+      } catch {
+        /* keep the default course title + empty subtitle */
+      }
+      const lectures = files.map((f) => {
+        const num = Number(f.match(/\d+/)[0]);
+        let title = `Lecture ${num}`;
+        try {
+          title = lectureTitleFrom(fs.readFileSync(path.join(courseDir, f), 'utf8'), num);
+        } catch {
+          /* keep the default lecture title */
+        }
+        return { ref: `${courseId}-lecture-${num}`, num, title };
+      });
+      courses.push({
+        courseId,
+        courseTitle,
+        courseSubtitle,
+        lectures,
+        isFixture: pkg.startsWith('content-test-'),
+      });
+    }
+  }
+  // Subject courses first, eval fixtures last; ties broken by numeric course id.
+  courses.sort((a, b) => Number(a.isFixture) - Number(b.isFixture) || Number(a.courseId) - Number(b.courseId));
+  return courses;
+}
+
+// Resolve a lecture ref ("1001-lecture-1") to the SAME content block the AI tutor is
+// grounded in — loadCurriculumContext strips speaker notes and caps at 20k chars — plus
+// the course + lecture title. The sit-in uses this to put the very reading the tutor
+// teaches from in front of the human learner, closing the tutor-can-read/learner-cannot
+// asymmetry. Returns null for a blank or unknown ref (free-text-topic scenes).
+export function getLectureContent(ref) {
+  const c = ref ? loadCurriculumContext(ref) : null;
+  if (!c) return null;
+  let title = `Lecture ${c.lectureNum}`;
+  try {
+    title = lectureTitleFrom(c.text, c.lectureNum);
+  } catch {
+    /* keep the default lecture title */
+  }
+  return {
+    courseId: c.courseId,
+    courseTitle: c.courseTitle,
+    lectureNum: c.lectureNum,
+    lectureRef: c.lectureRef,
+    title,
+    text: c.text,
+  };
 }
 
 // ── Session store (in-memory) ───────────────────────────────────────────────
@@ -92,11 +212,14 @@ function estimateCost(spend) {
 
 // A public, blinding-free view of the session for the client. (Nothing secret
 // here — but it keeps the wire shape stable + omits internals like deps.)
-function sessionView(s) {
+// `debug` controls ONLY whether each turn carries its deliberation content; the
+// lightweight per-turn meta (timestamp, latency, tokens) always ships.
+function sessionView(s, debug = false) {
   return {
     id: s.id,
     topic: s.topic,
     hamartia: s.hamartia,
+    lectureRef: s.lectureRef,
     humanRole: s.humanRole,
     aiRole: s.aiRole,
     persona: s.persona,
@@ -104,30 +227,140 @@ function sessionView(s) {
     promptType: s.promptType,
     tutorArchitecture: s.tutorArchitecture,
     tutorCell: s.tutorCell,
+    concise: !!s.concise,
+    // The live-only AI-learner model override (null ⇒ the configured kimi-k2.5).
+    learnerModel: s.learnerModel || null,
+    // The AI seat's ego/superego model ids — resolved up front for the tutor,
+    // backfilled from the first AI turn's deliberation for the learner.
+    aiModels: { ...(s.aiModels || {}) },
     nextSpeaker: s.nextSpeaker,
     status: s.status,
     stoppedReason: s.stoppedReason,
     maxTurns: s.maxTurns,
     turnCount: s.transcript.length,
-    transcript: s.transcript.map(publicTurn),
+    createdAt: s.createdAt,
+    // A good default transcript filename (timestamped) so the client can pre-fill
+    // the save box; the user may still override it.
+    suggestedFilename: defaultTranscriptName(s),
+    debug: !!debug,
+    transcript: s.transcript.map((t) => publicTurn(t, debug)),
     spend: { ...s.spend },
+    // The on-demand dramatic-form score, once the critic has run (null until then).
+    score: s.score || null,
   };
 }
 
-// The human never needs the AI's private deliberation mid-play (it would leak
-// the learner's interior — the very thing the instrument is supposed to read
-// only from the surface). Keep it in the stored turn for the saved artifact,
-// but strip it from the live wire view.
-function publicTurn(t) {
-  return { role: t.role, by: t.by, text: t.text };
+// The live wire always carries a turn's lightweight meta — when it landed, how
+// long the AI took to generate it, and the tokens it cost. Those are not the
+// AI's private interior, so the client can show/hide them freely.
+//
+// The deliberation CONTENT is different: mid-play it would leak the learner's
+// interior — the very thing the instrument is supposed to read only from the
+// surface — so it is STRIPPED by default and shipped only when `debug` asks for
+// it (the opt-in console, an author/debug affordance). The saved artifact keeps
+// it regardless.
+function publicTurn(t, includeDeliberation = false) {
+  const base = {
+    role: t.role,
+    by: t.by,
+    text: t.text,
+    at: t.at || null,
+    latencyMs: t.latencyMs ?? null,
+    inputTokens: (t.usage && t.usage.inputTokens) || 0,
+    outputTokens: (t.usage && t.usage.outputTokens) || 0,
+  };
+  if (includeDeliberation && Array.isArray(t.deliberation) && t.deliberation.length) {
+    base.deliberation = t.deliberation.map(normalizeDeliberationForWire);
+  }
+  return base;
+}
+
+// A turn's deliberation entries come in two engine shapes — the tutor engine
+// (runTutorTurn) puts model/latency at the top level; the learner engine
+// (makeDeliberationEntry) nests them under .metrics. Read either, and normalise
+// to one lean wire shape (never shipping apiPayload / inputMessages / provenance).
+function deliberationModelOf(d) {
+  return (d && (d.model || (d.metrics && d.metrics.model))) || null;
+}
+function deliberationLatencyOf(d) {
+  const ms = d && (d.latencyMs ?? (d.metrics && d.metrics.latencyMs));
+  return typeof ms === 'number' ? ms : null;
+}
+function normalizeDeliberationForWire(d) {
+  const m = (d && d.metrics) || {};
+  return {
+    role: String((d && d.role) || ''),
+    stage: (d && d.stage) || null,
+    label: (d && d.label) || null,
+    model: deliberationModelOf(d),
+    content: typeof d?.content === 'string' ? d.content : String(d?.content ?? ''),
+    inputTokens: d?.inputTokens ?? m.inputTokens ?? 0,
+    outputTokens: d?.outputTokens ?? m.outputTokens ?? 0,
+    latencyMs: deliberationLatencyOf(d),
+  };
+}
+
+// Sum the per-step generation latency for an AI turn (ego + superego run
+// sequentially, so the sum approximates wall-clock). null when no step timed.
+function deliberationLatency(deliberation) {
+  let sum = 0;
+  let any = false;
+  for (const d of deliberation || []) {
+    const ms = deliberationLatencyOf(d);
+    if (ms != null) {
+      sum += ms;
+      any = true;
+    }
+  }
+  return any ? sum : null;
+}
+
+// Pull the ego + superego model ids out of a turn's deliberation (both engine
+// shapes via deliberationModelOf). ego_revision carries no model (no LLM call)
+// so it is skipped. First model seen per bucket wins.
+export function aiModelsFromDeliberation(deliberation) {
+  const out = {};
+  for (const d of deliberation || []) {
+    const model = deliberationModelOf(d);
+    if (!model) continue;
+    const role = String((d && d.role) || '');
+    if (/superego/i.test(role)) {
+      if (!out.superego) out.superego = model;
+    } else if (/^ego/i.test(role)) {
+      if (!out.ego) out.ego = model;
+    }
+  }
+  return out;
+}
+
+// Resolve the AI tutor's ego/superego models from config up front (no turn
+// needed), so a human-as-learner scene shows them before the AI's first line.
+// The learner seat has no equally cheap path, so it backfills from the first AI
+// turn's deliberation instead (see applyTurn).
+function resolveTutorModels(tutorCell) {
+  const out = {};
+  try {
+    const profile = evalConfigLoader.loadTutorAgents()?.profiles?.[tutorCell];
+    if (profile?.ego) {
+      out.ego = evalConfigLoader.resolveModel(`${profile.ego.provider}.${profile.ego.model}`).model;
+    }
+    if (profile?.superego) {
+      out.superego = evalConfigLoader.resolveModel(`${profile.superego.provider}.${profile.superego.model}`).model;
+    }
+  } catch {
+    /* best-effort — the first AI turn's deliberation will backfill */
+  }
+  return out;
 }
 
 // ── AI turn generation ──────────────────────────────────────────────────────
 
-// Minimal OpenRouter learner adapter — mirrors the one in services/pilotAutoplay.js
-// (same single-metered-provider posture); kept local so this engine doesn't
-// depend on the pilot's internals.
-async function openRouterLearnerCall(apiKey, modelRef, systemPrompt, messages, options = {}) {
+// Minimal OpenRouter chat-completion — mirrors the adapter in services/pilotAutoplay.js
+// (same single-metered-provider posture); kept local so this engine doesn't depend
+// on the pilot's internals. Used for AI learner turns AND the setup guide. A bare
+// dot-notation ref (e.g. "openrouter.sonnet") is resolved via providers.yaml; a
+// slug ("anthropic/claude-sonnet-4.6") is passed through.
+async function openRouterChat(apiKey, modelRef, systemPrompt, messages, options = {}) {
   let modelId = modelRef;
   if (!modelRef) {
     modelId = 'nvidia/nemotron-3-nano-30b-a3b';
@@ -141,7 +374,7 @@ async function openRouterLearnerCall(apiKey, modelRef, systemPrompt, messages, o
       'Content-Type': 'application/json',
       Authorization: `Bearer ${apiKey}`,
       'HTTP-Referer': 'http://localhost:3466/compose/live',
-      'X-Title': 'Machine Spirits Live Compose (AI learner)',
+      'X-Title': options.title || 'Machine Spirits Live Compose',
     },
     body: JSON.stringify({
       model: modelId,
@@ -173,6 +406,14 @@ async function openRouterLearnerCall(apiKey, modelRef, systemPrompt, messages, o
   };
 }
 
+// The AI-learner turn uses the generic chat with a learner-tagged title.
+function openRouterLearnerCall(apiKey, modelRef, systemPrompt, messages, options = {}) {
+  return openRouterChat(apiKey, modelRef, systemPrompt, messages, {
+    ...options,
+    title: 'Machine Spirits Live Compose (AI learner)',
+  });
+}
+
 // Default AI-tutor turn — the real ego(/superego) tutor. history must NOT
 // include the triggering learner message; runTutorTurn takes it separately.
 async function defaultTutorTurn({ session, learnerMessage, history, apiKey }) {
@@ -180,14 +421,21 @@ async function defaultTutorTurn({ session, learnerMessage, history, apiKey }) {
   if (!profile) {
     throw liveError(`unknown tutor cell '${session.tutorCell}'`, 'LIVE_BAD_TUTOR_CELL', 500);
   }
+  // Bind the sit-in tutor to a lecture when the spec names one (e.g. a
+  // content-poetics-rhetoric course lecture like "1001-lecture-1"). This is the
+  // same curriculum block the scored live chat injects. loadCurriculumContext
+  // returns null for an unknown/blank ref, so free-text-topic sessions are a no-op.
+  const curriculum = session.lectureRef ? loadCurriculumContext(session.lectureRef) : null;
   const trace = await runTutorTurn({
     profile,
     apiKey,
     history,
     learnerMessage,
     topic: session.topic,
-    curriculum: null,
+    curriculum,
     useClaudeCli: false,
+    // Live-only brevity (default on) — never set on the batch eval path.
+    ...(session.concise ? { styleDirective: CONCISE_TUTOR_DIRECTIVE, maxTokens: CONCISE_MAX_TOKENS } : {}),
   });
   return {
     text: trace.finalMessage || '',
@@ -202,8 +450,12 @@ async function defaultTutorTurn({ session, learnerMessage, history, apiKey }) {
 // live view).
 async function defaultLearnerTurn({ session, tutorMessage, history, apiKey }) {
   const trace = { metrics: { learnerInputTokens: 0, learnerOutputTokens: 0 } };
+  // session.learnerModel (a live-only pick) forces ALL learner agents onto one
+  // model, overriding the per-agent YAML default (kimi-k2.5) — the escape hatch
+  // when the configured model won't answer. Falls back to the engine's per-agent
+  // model, then the session model. The scored eval path never sets learnerModel.
   const llmCall = (modelRef, systemPrompt, messages, options = {}) =>
-    openRouterLearnerCall(apiKey, modelRef || session.model, systemPrompt, messages, options);
+    openRouterLearnerCall(apiKey, session.learnerModel || modelRef || session.model, systemPrompt, messages, options);
   const res = await interactionEngine.generateLearnerResponse({
     tutorMessage,
     topic: session.topic,
@@ -224,6 +476,26 @@ async function defaultLearnerTurn({ session, tutorMessage, history, apiKey }) {
   };
 }
 
+// An AI turn that comes back with no visible line must never land as a silent
+// blank bubble. A reasoning model (kimi-k2.5 has done this) can spend its whole
+// token budget thinking and emit empty content; the learner pipeline has no canned
+// fallback the way the tutor path does. Surface it as a clear, actionable error and
+// DON'T advance the turn — the human can retry or switch the AI model.
+function assertAiTurnSpoke(session, role, out) {
+  if (out && String(out.text || '').trim()) return out;
+  const model =
+    role === ROLES.TUTOR
+      ? session.aiModels?.ego || session.tutorCell
+      : session.learnerModel || 'kimi-k2.5 (the default AI-learner model)';
+  throw liveError(
+    `The AI ${role} (${model}) returned an empty response — no visible line came back. ` +
+      'Reasoning models sometimes spend their whole token budget thinking and emit nothing. ' +
+      'Send again to retry, or switch the AI model under "Fine-tune the machine".',
+    'LIVE_EMPTY_AI_TURN',
+    502,
+  );
+}
+
 // Generate one AI turn for whichever seat the AI holds, using the transcript so
 // far. The human seat must NOT be next (callers guard turn order).
 async function generateAiTurn(session, deps) {
@@ -241,6 +513,7 @@ async function generateAiTurn(session, deps) {
     const priorHistory = last && last.role === ROLES.LEARNER ? history.slice(0, -1) : history;
     const fn = deps.tutorTurnFn || defaultTutorTurn;
     const out = await fn({ session, learnerMessage, history: priorHistory, apiKey });
+    assertAiTurnSpoke(session, ROLES.TUTOR, out);
     return { role: ROLES.TUTOR, by: 'ai', ...out };
   }
 
@@ -252,10 +525,23 @@ async function generateAiTurn(session, deps) {
       : `Let's get started. We're going to work on ${session.topic}. What's on your mind?`;
   const fn = deps.learnerTurnFn || defaultLearnerTurn;
   const out = await fn({ session, tutorMessage, history, apiKey });
+  assertAiTurnSpoke(session, ROLES.LEARNER, out);
   return { role: ROLES.LEARNER, by: 'ai', ...out };
 }
 
 function applyTurn(session, turn) {
+  // Stamp arrival time on every turn (human + AI) — "time of message".
+  if (turn.at == null) turn.at = Date.now();
+  // AI turns also carry a generation latency ("time to generate") summed from
+  // the deliberation steps, and let us backfill the learner seat's model ids
+  // from the actual call (the tutor seat is resolved up front in startSession).
+  if (turn.by === 'ai') {
+    if (turn.latencyMs == null) turn.latencyMs = deliberationLatency(turn.deliberation);
+    const models = aiModelsFromDeliberation(turn.deliberation);
+    if (Object.keys(models).length) {
+      session.aiModels = { ...(session.aiModels || {}), ...models };
+    }
+  }
   session.transcript.push(turn);
   if (turn.usage) {
     session.spend.inputTokens += turn.usage.inputTokens || 0;
@@ -290,6 +576,10 @@ export async function startSession(spec = {}, deps = {}) {
     id: `live_${crypto.randomBytes(6).toString('hex')}`,
     topic: String(spec.topic || 'logarithms as the inverse of exponentiation').slice(0, 500),
     hamartia: String(spec.hamartia || '').slice(0, 500),
+    // Optional lecture binding: accept either `lectureRef` or the scenario-style
+    // `currentContent` (both name a ref like "1001-lecture-1"). Resolved per
+    // tutor turn via loadCurriculumContext; null means teach from topic alone.
+    lectureRef: String(spec.lectureRef || spec.currentContent || '').slice(0, 40) || null,
     humanRole,
     aiRole,
     persona: spec.persona || 'struggling_anxious',
@@ -297,7 +587,14 @@ export async function startSession(spec = {}, deps = {}) {
     promptType: spec.promptType || 'recognition',
     tutorArchitecture: spec.tutorArchitecture === 'ego_superego' ? 'ego_superego' : 'ego_only',
     tutorCell: tutorCellFor(spec.promptType, spec.tutorArchitecture),
+    // Live-only brevity for the AI tutor (one-question-per-turn + a token cap).
+    // Default ON; set spec.concise === false to see the full batch-style instrument.
+    concise: spec.concise !== false,
     model: spec.model || null,
+    // Live-only AI-learner model override. When set, the live llmCall forces ALL
+    // learner agents onto it (overriding the YAML kimi-k2.5 default) — the escape
+    // hatch when the default model returns nothing. null ⇒ use the configured model.
+    learnerModel: spec.learnerModel || null,
     openingSpeaker,
     maxTurns,
     transcript: [],
@@ -305,16 +602,27 @@ export async function startSession(spec = {}, deps = {}) {
     status: 'live',
     stoppedReason: null,
     spend: { inputTokens: 0, outputTokens: 0, estimatedCostUsd: 0 },
+    // The AI seat's ego/superego model ids. The tutor seat is resolved from
+    // config up front (cheap, no turn needed); the learner seat backfills from
+    // its first turn's deliberation in applyTurn.
+    aiModels: aiRole === ROLES.TUTOR ? resolveTutorModels(tutorCellFor(spec.promptType, spec.tutorArchitecture)) : {},
     createdAt: Date.now(),
   };
   SESSIONS.set(session.id, session);
   evictIfNeeded();
 
+  // `debug` (opt-in) ships each turn's deliberation content on the wire; the
+  // lightweight per-turn meta (time/latency/tokens) always ships regardless.
+  const debug = !!(spec.showDeliberation || spec.debug);
+
   let openingTurn = null;
   if (openingSpeaker === aiRole) {
     openingTurn = applyTurn(session, await generateAiTurn(session, deps));
   }
-  return { session: sessionView(session), openingTurn: openingTurn ? publicTurn(openingTurn) : null };
+  return {
+    session: sessionView(session, debug),
+    openingTurn: openingTurn ? publicTurn(openingTurn, debug) : null,
+  };
 }
 
 /**
@@ -322,7 +630,7 @@ export async function startSession(spec = {}, deps = {}) {
  * { humanTurn, aiTurn|null, session }. aiTurn is null only if the session hit
  * its turn cap on the human turn.
  */
-export async function humanTurn(sessionId, text, deps = {}) {
+export async function humanTurn(sessionId, text, deps = {}, opts = {}) {
   const session = getSession(sessionId);
   if (session.status !== 'live') {
     throw liveError(`session is '${session.status}', not accepting turns`, 'LIVE_SESSION_CLOSED', 409);
@@ -340,16 +648,17 @@ export async function humanTurn(sessionId, text, deps = {}) {
   if (session.status === 'live') {
     ai = applyTurn(session, await generateAiTurn(session, deps));
   }
+  const debug = !!opts.debug;
   return {
-    humanTurn: publicTurn(human),
-    aiTurn: ai ? publicTurn(ai) : null,
-    session: sessionView(session),
+    humanTurn: publicTurn(human, debug),
+    aiTurn: ai ? publicTurn(ai, debug) : null,
+    session: sessionView(session, debug),
   };
 }
 
-/** Read-only session view (for reconnect / polling). */
-export function viewSession(sessionId) {
-  return sessionView(getSession(sessionId));
+/** Read-only session view (for reconnect / polling). `opts.debug` ships deliberation. */
+export function viewSession(sessionId, opts = {}) {
+  return sessionView(getSession(sessionId), !!opts.debug);
 }
 
 const SAVE_DIR = path.resolve(ROOT, 'exports/live-compose');
@@ -362,6 +671,22 @@ function safeSlug(s) {
     .slice(0, 60);
 }
 
+// Compact UTC stamp matching the repo's export convention (e.g. 20260529T040243Z).
+function timestampSlug(ms) {
+  return new Date(ms)
+    .toISOString()
+    .replace(/[-:]/g, '')
+    .replace(/\.\d+Z$/, 'Z');
+}
+
+// A good default transcript name: live-<topic>-<utc-timestamp>. Stable across a
+// session (keyed on createdAt), so the pre-filled save box and a no-filename save
+// agree. Exported so the route/client can pre-fill the box.
+export function defaultTranscriptName(session) {
+  const topic = safeSlug(session.topic).slice(0, 40);
+  return ['live', topic, timestampSlug(session.createdAt)].filter(Boolean).join('-');
+}
+
 /**
  * Persist the played transcript as a self-describing artifact (spec + ordered
  * turns, learner deliberation included). v1 writes to exports/live-compose/ and
@@ -371,7 +696,7 @@ function safeSlug(s) {
 export function saveSession(sessionId, opts = {}) {
   const session = getSession(sessionId);
   fs.mkdirSync(SAVE_DIR, { recursive: true });
-  const base = safeSlug(opts.filename || `${session.id}-${session.topic}`) || session.id;
+  const base = safeSlug(opts.filename) || defaultTranscriptName(session) || session.id;
   const dest = path.resolve(SAVE_DIR, `${base}.yaml`);
   if (!dest.startsWith(`${SAVE_DIR}${path.sep}`)) {
     throw liveError('unsafe filename', 'LIVE_UNSAFE_FILENAME', 400);
@@ -383,6 +708,7 @@ export function saveSession(sessionId, opts = {}) {
     spec: {
       topic: session.topic,
       hamartia: session.hamartia,
+      lecture_ref: session.lectureRef,
       human_role: session.humanRole,
       ai_role: session.aiRole,
       persona: session.persona,
@@ -393,6 +719,8 @@ export function saveSession(sessionId, opts = {}) {
     },
     spend: { ...session.spend },
     stopped_reason: session.stoppedReason,
+    // The dramatic-form verdict, if the critic was run before saving (else null).
+    score: session.score || null,
     transcript: session.transcript.map((t) => ({
       role: t.role,
       by: t.by,
@@ -403,6 +731,313 @@ export function saveSession(sessionId, opts = {}) {
   const yamlText = YAML.stringify(artifact);
   fs.writeFileSync(dest, yamlText, 'utf8');
   return { path: path.relative(ROOT, dest), bytes: Buffer.byteLength(yamlText) };
+}
+
+// ── Terminate + score on demand ──────────────────────────────────────────────
+// The sit-in's payoff: a played transcript can be ENDED at any point and run
+// through the SAME dramatic-form instrument the batch critics use — the canonical
+// config/evaluation-rubric-poetics.yaml (v1.0, 6 dimensions). This is a hand-probing
+// affordance, not a paper claim: it scores the SURFACE transcript on dramatic FORM
+// (peripeteia / anagnorisis / …), never the learner's interior. Metered (one critic
+// LLM call) unless deps.critFn is injected (mock → zero spend).
+
+const POETICS_RUBRIC_PATH = path.resolve(ROOT, 'config/evaluation-rubric-poetics.yaml');
+const DEFAULT_CRITIC_MODEL = 'openrouter.sonnet';
+let _poeticsRubricCache = null;
+
+function loadPoeticsRubric() {
+  if (_poeticsRubricCache) return _poeticsRubricCache;
+  const doc = YAML.parse(fs.readFileSync(POETICS_RUBRIC_PATH, 'utf8'));
+  const dims = Object.entries(doc.dimensions || {}).map(([id, d]) => ({
+    id,
+    name: d.name || id,
+    weight: Number(d.weight) || 0,
+    description: d.description || '',
+  }));
+  const scale = doc.scale || { min: 1, max: 5 };
+  _poeticsRubricCache = { version: String(doc.version || '1.0'), dims, scale };
+  return _poeticsRubricCache;
+}
+
+/** End a live session at any time (no further turns accepted). Idempotent. */
+export function endSession(sessionId, reason = 'user_ended') {
+  const session = getSession(sessionId);
+  if (session.status === 'live') {
+    session.status = 'done';
+    session.stoppedReason = reason;
+  }
+  return sessionView(session, false);
+}
+
+// The surface transcript, one labelled line per turn — what an audience-critic sees.
+// Deliberation is deliberately excluded: the instrument reads FORM off the surface,
+// not the concealed interior.
+function surfaceTranscript(session) {
+  return session.transcript.map((t, i) => `[${i + 1}] ${t.role.toUpperCase()}: ${t.text}`).join('\n\n');
+}
+
+function buildScorePrompt(session, rubric) {
+  const dimLines = rubric.dims.map((d) => `- ${d.id} — ${d.name} (weight ${d.weight}): ${d.description}`).join('\n');
+  return [
+    'You are a literary critic. Score a tutor–learner dialogue as a miniature DRAMA, on dramatic FORM only — NOT on whether real learning, comprehension, or mind-reading occurred. The unit of analysis is the WHOLE transcript as a little plot. Judge ONLY what is visible on the surface of the exchange.',
+    '',
+    `Scene topic: ${session.topic}`,
+    session.hamartia ? `Hamartia (the misconception the scene turns on): ${session.hamartia}` : '',
+    '',
+    `Poetics rubric v${rubric.version} — score each dimension ${rubric.scale.min}–${rubric.scale.max}:`,
+    dimLines,
+    '',
+    'Anti-simulation guard: recognition VOCABULARY ("aha — I was avoiding the concept!") with no genuine surprising-yet-coherent turn scores LOW on surprise_and_inevitability, not high.',
+    '',
+    '=== TRANSCRIPT ===',
+    surfaceTranscript(session),
+    '=== END TRANSCRIPT ===',
+    '',
+    'Return ONLY a JSON object, no prose outside it, shaped exactly:',
+    '{',
+    '  "dimensions": [ { "id": "<dimension id>", "score": <int>, "why": "<one sentence citing the moment>" } ],',
+    '  "overall": <int>,',
+    '  "headline": "<one sentence: does this read as a complete little drama, or as flat Q&A?>"',
+    '}',
+    'Include exactly one entry per dimension id listed above.',
+  ]
+    .filter(Boolean)
+    .join('\n');
+}
+
+// Coerce the critic's JSON onto the rubric: one clamped score per dimension, plus a
+// weighted-mean fallback for `overall` if the model omits/garbles it.
+function coerceScoreVerdict(parsed, rubric) {
+  const min = rubric.scale.min ?? 1;
+  const max = rubric.scale.max ?? 5;
+  const clamp = (n) => Math.min(Math.max(Math.round(Number(n) || min), min), max);
+  const byId = new Map((Array.isArray(parsed?.dimensions) ? parsed.dimensions : []).map((d) => [d.id, d]));
+  const dimensions = rubric.dims.map((d) => {
+    const got = byId.get(d.id) || {};
+    return {
+      id: d.id,
+      name: d.name,
+      weight: d.weight,
+      score: clamp(got.score),
+      why: String(got.why || '').slice(0, 400),
+    };
+  });
+  const wsum = dimensions.reduce((a, d) => a + d.weight, 0) || 1;
+  const weighted = dimensions.reduce((a, d) => a + d.score * d.weight, 0) / wsum;
+  const overall = parsed?.overall != null ? clamp(parsed.overall) : Math.round(weighted);
+  return {
+    dimensions,
+    overall,
+    weightedOverall: Math.round(weighted * 100) / 100,
+    headline: String(parsed?.headline || '').slice(0, 300),
+  };
+}
+
+// Default critic call — mirrors proposeSpec's deps/model resolution (env override
+// COMPOSE_CRITIC_MODEL, else openrouter.sonnet).
+async function defaultScoreCall(session, apiKey) {
+  const rubric = loadPoeticsRubric();
+  const model = process.env.COMPOSE_CRITIC_MODEL || DEFAULT_CRITIC_MODEL;
+  const res = await openRouterChat(
+    apiKey,
+    model,
+    buildScorePrompt(session, rubric),
+    [{ role: 'user', content: 'Score the transcript now. Return only the JSON object.' }],
+    { temperature: 0.2, maxTokens: 1400, title: 'Machine Spirits Live Compose (critic)' },
+  );
+  return { raw: res.content, model: res.model, usage: res.usage, latencyMs: res.latencyMs };
+}
+
+/**
+ * Score the played transcript (so far) on dramatic form using the canonical
+ * poetics rubric. Inject deps.critFn for a mock (zero spend). The critic call's
+ * spend is added to the session, and the verdict is stashed (session.score) so the
+ * view + saved artifact carry it. Returns { score, session }.
+ */
+export async function scoreSession(sessionId, deps = {}) {
+  const session = getSession(sessionId);
+  if (!session.transcript.length) {
+    throw liveError('nothing to score yet — play at least one turn first', 'LIVE_NOTHING_TO_SCORE', 400);
+  }
+  const apiKey = deps.apiKey ?? process.env.OPENROUTER_API_KEY;
+  if (!deps.critFn && !apiKey) {
+    throw liveError('OPENROUTER_API_KEY is not set (and no mock critic injected)', 'LIVE_NO_API_KEY', 503);
+  }
+  const rubric = loadPoeticsRubric();
+  const fn = deps.critFn || defaultScoreCall;
+  const out = await fn(session, apiKey);
+  const parsed = extractJsonObject(out.raw);
+  if (!parsed) throw liveError('the critic did not return a usable score — try again', 'LIVE_SCORE_PARSE', 502);
+  if (out.usage) {
+    session.spend.inputTokens += out.usage.inputTokens || 0;
+    session.spend.outputTokens += out.usage.outputTokens || 0;
+    session.spend.estimatedCostUsd = estimateCost(session.spend);
+  }
+  session.score = {
+    ...coerceScoreVerdict(parsed, rubric),
+    rubricVersion: rubric.version,
+    model: out.model || null,
+    latencyMs: out.latencyMs ?? null,
+    scoredAtTurn: session.transcript.length,
+    at: Date.now(),
+  };
+  return { score: session.score, session: sessionView(session, false) };
+}
+
+// ── AI setup guide ("construct a language machine") ──────────────────────────
+// Translate a plain-language description into a valid compose spec. Localhost-only,
+// metered (one LLM call, default openrouter.sonnet — override COMPOSE_GUIDE_MODEL).
+// The returned spec is validated/clamped against the live catalog so the UI/CLI can
+// apply it verbatim; an unknown lecture ref or enum value falls back to a safe default
+// rather than erroring. deps.chatFn injects a mock for zero-cost tests + free preview.
+
+const PROMPT_TYPES = Object.freeze(['recognition', 'base']);
+const TUTOR_ARCHS = Object.freeze(['ego_only', 'ego_superego']);
+
+// The curated vocabulary the live sit-in offers a hand player: a readable subset
+// of the full learner-agents.yaml roster plus the tutor stance/deliberation dials.
+// One exported source so the web form, the CLI, and the LLM guide's catalog stay
+// in lockstep (clampSpecToCatalog enforces exactly this set as valid).
+export const LIVE_VOCAB = Object.freeze({
+  promptTypes: PROMPT_TYPES,
+  tutorArchs: TUTOR_ARCHS,
+  personas: Object.freeze([
+    'struggling_anxious',
+    'confused_novice',
+    'eager_explorer',
+    'focused_achiever',
+    'adversarial_tester',
+  ]),
+  learnerArch: Object.freeze([
+    'ego_superego_recognition_authentic',
+    'ego_superego_recognition',
+    'ego_superego',
+    'unified',
+  ]),
+});
+const DEFAULT_GUIDE_MODEL = 'openrouter.sonnet';
+
+function buildGuideSystemPrompt(catalog) {
+  const courseLines = (catalog.courses || [])
+    .map((c) => {
+      const tag = c.isFixture ? ' [test fixture]' : '';
+      const lectures = c.lectures.map((l) => `${l.ref} = ${l.title}`).join('; ');
+      return `  • ${c.courseTitle}${tag}: ${lectures}`;
+    })
+    .join('\n');
+  const personas = (catalog.personas || []).join(', ');
+  const learnerArch = (catalog.learnerArch || []).join(', ');
+  return [
+    'You are the setup guide for a "live compose" tutoring sandbox. A human sits in ONE chair (tutor or learner) and an AI plays the other, turn by turn. Turn the user\'s plain-language description of what they want to explore into a precise scene spec.',
+    '',
+    'Return ONLY a JSON object (no prose outside it), shaped exactly:',
+    '{',
+    '  "spec": {',
+    '    "humanRole": "learner" | "tutor",        // chair the HUMAN takes; the AI takes the other',
+    '    "topic": "<short phrase>",                // the subject of the lesson',
+    '    "hamartia": "<the misconception in play, or empty>",',
+    '    "lectureRef": "<a ref from the list below, or empty>",',
+    '    "promptType": "recognition" | "base",     // AI tutor stance (matters when AI is tutor)',
+    `    "persona": one of [${personas}],          // AI learner persona (matters when AI is learner)`,
+    `    "learnerArchitecture": one of [${learnerArch}],`,
+    '    "tutorArchitecture": "ego_only" | "ego_superego",',
+    '    "openingSpeaker": "tutor" | "learner",',
+    '    "maxTurns": <integer 2..40>',
+    '  },',
+    '  "rationale": "<1-2 plain sentences: what this scene will surface, in lay terms>",',
+    '  "notes": "<optional: anything to tweak, or empty>"',
+    '}',
+    '',
+    'Field meanings (you translate the jargon; the user should not have to know it):',
+    '- recognition = the tutor treats the learner as a subject to be understood (mutual recognition); base = a standard, competent helpful tutor with no such theory.',
+    '- ego_only = the AI deliberates in one pass; ego_superego = it drafts, self-critiques, then revises (slower, more reflective).',
+    '- hamartia = the specific wrong idea the learner holds — the flaw that drives the scene.',
+    '- lectureRef binds the AI tutor to real course content; set it ONLY when the topic matches a course below, else leave it empty.',
+    '',
+    'Available course lectures (use the EXACT ref on the left of each "="):',
+    courseLines || '  (none found)',
+    '',
+    'Decide humanRole from intent: wanting to "probe"/"test"/"stress" the tutor ⇒ the human is the learner; wanting to "play teacher" or "test a student/persona" ⇒ the human is the tutor. If the subject matches a course, set lectureRef and make topic match it. Keep topic concise. Default maxTurns to 12 unless they ask for more. Never invent a lectureRef.',
+  ].join('\n');
+}
+
+// Pull the first balanced {…} (optionally inside a ```json fence) and JSON.parse it.
+function extractJsonObject(text) {
+  if (!text) return null;
+  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  const candidate = fenced ? fenced[1] : text;
+  const start = candidate.indexOf('{');
+  if (start === -1) return null;
+  let depth = 0;
+  for (let i = start; i < candidate.length; i += 1) {
+    if (candidate[i] === '{') depth += 1;
+    else if (candidate[i] === '}') {
+      depth -= 1;
+      if (depth === 0) {
+        try {
+          return JSON.parse(candidate.slice(start, i + 1));
+        } catch {
+          return null;
+        }
+      }
+    }
+  }
+  return null;
+}
+
+// Coerce a model-proposed spec onto the known vocabulary so it is always applyable.
+function clampSpecToCatalog(raw, catalog) {
+  const lectureRefs = new Set((catalog.courses || []).flatMap((c) => c.lectures.map((l) => l.ref)));
+  const personas = catalog.personas || [];
+  const learnerArch = catalog.learnerArch || [];
+  const oneOf = (v, list, dflt) => (list.includes(v) ? v : dflt);
+  const s = raw && typeof raw === 'object' ? raw : {};
+  return {
+    humanRole: oneOf(s.humanRole, ['learner', 'tutor'], 'learner'),
+    topic: String(s.topic || '').slice(0, 500) || 'logarithms as the inverse of exponentiation',
+    hamartia: String(s.hamartia || '').slice(0, 500),
+    lectureRef: typeof s.lectureRef === 'string' && lectureRefs.has(s.lectureRef) ? s.lectureRef : '',
+    promptType: oneOf(s.promptType, PROMPT_TYPES, 'recognition'),
+    tutorArchitecture: oneOf(s.tutorArchitecture, TUTOR_ARCHS, 'ego_superego'),
+    persona: oneOf(s.persona, personas, personas[0] || 'struggling_anxious'),
+    learnerArchitecture: oneOf(
+      s.learnerArchitecture,
+      learnerArch,
+      learnerArch[0] || 'ego_superego_recognition_authentic',
+    ),
+    openingSpeaker: oneOf(s.openingSpeaker, ['tutor', 'learner'], 'tutor'),
+    maxTurns: Math.min(Math.max(Number(s.maxTurns) || DEFAULT_MAX_TURNS, 2), MAX_TURNS_CEILING),
+  };
+}
+
+/**
+ * Turn a plain-language description into a validated compose spec.
+ * Returns { spec, rationale, notes, model, usage }. Inject deps.chatFn for tests.
+ */
+export async function proposeSpec({ description, catalog = {} } = {}, deps = {}) {
+  const desc = String(description || '').trim();
+  if (!desc) throw liveError('describe the scene you want first', 'LIVE_GUIDE_EMPTY', 400);
+  const apiKey = deps.apiKey ?? process.env.OPENROUTER_API_KEY;
+  if (!deps.chatFn && !apiKey) {
+    throw liveError('OPENROUTER_API_KEY is not set (and no mock guide injected)', 'LIVE_NO_API_KEY', 503);
+  }
+  const chat =
+    deps.chatFn ||
+    ((modelRef, system, messages, options) => openRouterChat(apiKey, modelRef, system, messages, options));
+  const model = deps.model || process.env.COMPOSE_GUIDE_MODEL || DEFAULT_GUIDE_MODEL;
+  const res = await chat(model, buildGuideSystemPrompt(catalog), [{ role: 'user', content: desc.slice(0, 4000) }], {
+    temperature: 0.4,
+    title: 'Machine Spirits Live Compose (setup guide)',
+  });
+  const parsed = extractJsonObject(res.content);
+  if (!parsed) throw liveError('the guide did not return a usable spec — try rephrasing', 'LIVE_GUIDE_PARSE', 502);
+  return {
+    spec: clampSpecToCatalog(parsed.spec || parsed, catalog),
+    rationale: String(parsed.rationale || '').slice(0, 800),
+    notes: String(parsed.notes || '').slice(0, 800),
+    model: res.model,
+    usage: res.usage || { inputTokens: 0, outputTokens: 0 },
+  };
 }
 
 // ── Mock deps (deterministic, zero-network — for tests/smoke) ────────────────
@@ -426,14 +1061,42 @@ const MOCK_LEARNER_LINES = [
 
 export function buildMockDeps() {
   return {
+    // The mock mirrors the real turn shape (per-step model + latencyMs) so the
+    // free-preview UI can exercise the models panel, the per-turn meta row, and
+    // the deliberation console at zero spend. usage stays 0 so the spend panel
+    // truthfully reads $0 in free preview. The superego step is included only for
+    // an ego_superego tutor, matching the real architecture.
     tutorTurnFn: async ({ session }) => {
       const i = Math.floor(session.transcript.length / 2) % MOCK_TUTOR_LINES.length;
       const line = MOCK_TUTOR_LINES[i];
-      return {
-        text: line,
-        deliberation: [{ role: 'ego', label: 'Ego — initial draft', content: line }],
-        usage: { inputTokens: 0, outputTokens: 0 },
-      };
+      const deliberation = [
+        {
+          role: 'ego',
+          label: 'Ego — initial draft',
+          content: line,
+          model: 'mock/tutor-ego',
+          latencyMs: 280,
+          inputTokens: 0,
+          outputTokens: 0,
+        },
+      ];
+      if (session.tutorArchitecture === 'ego_superego') {
+        deliberation.push({
+          role: 'superego',
+          label: 'Superego — critique',
+          content: '(mock) APPROVED — the draft is focused and asks a single question.',
+          model: 'mock/tutor-superego',
+          latencyMs: 190,
+          inputTokens: 0,
+          outputTokens: 0,
+        });
+        deliberation.push({
+          role: 'ego_revision',
+          label: 'Ego revision — keeps draft (superego approved)',
+          content: line,
+        });
+      }
+      return { text: line, deliberation, usage: { inputTokens: 0, outputTokens: 0 } };
     },
     learnerTurnFn: async ({ session }) => {
       const i = Math.floor(session.transcript.length / 2) % MOCK_LEARNER_LINES.length;
@@ -441,14 +1104,73 @@ export function buildMockDeps() {
       return {
         text: line,
         deliberation: [
-          { role: 'ego_initial', content: `(mock) first reaction: ${line.slice(0, 40)}…` },
-          { role: 'superego', content: '(mock) am I following the reasoning or just pattern-matching?' },
+          {
+            role: 'ego_initial',
+            content: `(mock) first reaction: ${line.slice(0, 40)}…`,
+            model: 'mock/learner-ego',
+            latencyMs: 240,
+          },
+          {
+            role: 'superego',
+            content: '(mock) am I following the reasoning or just pattern-matching?',
+            model: 'mock/learner-superego',
+            latencyMs: 160,
+          },
           { role: 'ego_revision', content: `(mock) after self-check: ${line}` },
         ],
         suggestsEnding: false,
         usage: { inputTokens: 0, outputTokens: 0 },
       };
     },
+    // Canned critic for the free-preview "Score scene" path — a fixed dramatic-form
+    // verdict over the logarithms scene, zero spend. The real critic shape is
+    // { raw: <JSON string>, model, usage, latencyMs }; coerceScoreVerdict parses it.
+    critFn: async () => ({
+      raw: JSON.stringify({
+        dimensions: [
+          { id: 'peripeteia', score: 4, why: '(mock) the learner abandons the add-both reading mid-scene.' },
+          { id: 'anagnorisis', score: 4, why: '(mock) the learner names their own misread: "+ as ×".' },
+          { id: 'surprise_and_inevitability', score: 3, why: '(mock) coherent in retrospect, lightly signposted.' },
+          { id: 'unity_of_action', score: 4, why: '(mock) one arc from rule-seeking to recognition.' },
+          { id: 'hamartia_integration', score: 4, why: '(mock) the misconception drives the whole exchange.' },
+          { id: 'cathartic_closure', score: 3, why: '(mock) closes on a stated realization, lightly earned.' },
+        ],
+        overall: 4,
+        headline: '(free preview) Reads as a small complete drama, not flat Q&A — mock score, no spend.',
+      }),
+      model: 'mock/critic',
+      usage: { inputTokens: 0, outputTokens: 0 },
+      latencyMs: 320,
+    }),
+  };
+}
+
+// A zero-cost guide for the free-preview toggle + tests: returns a canned, valid
+// spec (the logarithms recognition scene) without any network call. Mirrors how
+// buildMockDeps stands in for the metered turn engines.
+export function buildMockGuideDeps() {
+  return {
+    chatFn: async () => ({
+      content: JSON.stringify({
+        spec: {
+          humanRole: 'learner',
+          topic: 'logarithms as the inverse of exponentiation',
+          hamartia: 'treats log(a+b) as log a + log b',
+          lectureRef: '',
+          promptType: 'recognition',
+          tutorArchitecture: 'ego_superego',
+          persona: 'struggling_anxious',
+          learnerArchitecture: 'ego_superego_recognition_authentic',
+          openingSpeaker: 'tutor',
+          maxTurns: 12,
+        },
+        rationale:
+          '(free preview) You play a learner who splits log(a+b); the recognition tutor has to surface and repair that misread.',
+        notes: 'Free preview — canned spec, no LLM call. Toggle off for a real, described scene.',
+      }),
+      usage: { inputTokens: 0, outputTokens: 0 },
+      model: 'mock',
+    }),
   };
 }
 

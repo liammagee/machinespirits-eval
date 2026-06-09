@@ -169,13 +169,18 @@ function parseConcurrency(value) {
 }
 
 function parsePanelThreshold(value) {
-  const raw = String(value || '').trim().toLowerCase();
+  const raw = String(value || '')
+    .trim()
+    .toLowerCase();
   if (raw === 'majority' || raw === 'all') return raw;
   return positiveInt(raw, '--panel-threshold');
 }
 
 function timestampId() {
-  return new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+  return new Date()
+    .toISOString()
+    .replace(/[-:]/g, '')
+    .replace(/\.\d{3}Z$/, 'Z');
 }
 
 function safeSlug(value) {
@@ -321,12 +326,7 @@ export function voteThresholdPasses({ votes, totalCritics }, threshold, expected
 }
 
 export function recognitionPasses({ recognitionVotes, totalCritics }, threshold, expectedCritics, minCritics = null) {
-  const pass = voteThresholdPasses(
-    { votes: recognitionVotes, totalCritics },
-    threshold,
-    expectedCritics,
-    minCritics,
-  );
+  const pass = voteThresholdPasses({ votes: recognitionVotes, totalCritics }, threshold, expectedCritics, minCritics);
   return {
     passes: pass.passes,
     requiredRecognitionVotes: pass.requiredVotes,
@@ -417,18 +417,19 @@ export function summarizePanelScores(panelDir, options = {}) {
       expectedCritics || item.totalCritics,
       options.minCritics ?? null,
     );
-    const origin = options.originGate === false
-      ? {
-          passes: true,
-          requiredOriginVotes: 0,
-          minimumOriginCoverage: 0,
-        }
-      : originPasses(
-          item,
-          options.originThreshold || threshold,
-          expectedCritics || item.totalCritics,
-          options.minCritics ?? null,
-        );
+    const origin =
+      options.originGate === false
+        ? {
+            passes: true,
+            requiredOriginVotes: 0,
+            minimumOriginCoverage: 0,
+          }
+        : originPasses(
+            item,
+            options.originThreshold || threshold,
+            expectedCritics || item.totalCritics,
+            options.minCritics ?? null,
+          );
     const passes = recognition.passes && origin.passes;
     const status = !recognition.passes ? 'panel_recognition_fail' : passes ? 'panel_pass' : 'panel_origin_fail';
     return {
@@ -460,10 +461,14 @@ export function summarizePanelScores(panelDir, options = {}) {
 function localFeedback(recordSummary) {
   const lines = [`Local gate kept this item in ${recordSummary.status || 'unknown'} status.`];
   for (const failure of recordSummary.failures || []) {
-    lines.push(`- fail ${failure.criterion || 'criterion'}: ${failure.evidence || ''} ${failure.recommendation || ''}`.trim());
+    lines.push(
+      `- fail ${failure.criterion || 'criterion'}: ${failure.evidence || ''} ${failure.recommendation || ''}`.trim(),
+    );
   }
   for (const warning of recordSummary.warnings || []) {
-    lines.push(`- warning ${warning.criterion || 'criterion'}: ${warning.evidence || ''} ${warning.recommendation || ''}`.trim());
+    lines.push(
+      `- warning ${warning.criterion || 'criterion'}: ${warning.evidence || ''} ${warning.recommendation || ''}`.trim(),
+    );
   }
   return lines.join('\n');
 }
@@ -497,7 +502,8 @@ function writeList(filePath, values) {
 }
 
 export async function runLoop(rawArgs) {
-  const args = Array.isArray(rawArgs) || rawArgs == null ? parseArgs(rawArgs) : finalizeArgs({ ...defaultArgs(), ...rawArgs });
+  const args =
+    Array.isArray(rawArgs) || rawArgs == null ? parseArgs(rawArgs) : finalizeArgs({ ...defaultArgs(), ...rawArgs });
   if (args.help) return { help: usage() };
   if (fs.existsSync(args.outRoot)) {
     if (!args.force) throw new Error(`output exists: ${args.outRoot} (pass --force to overwrite)`);

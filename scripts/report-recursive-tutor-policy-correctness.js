@@ -123,7 +123,9 @@ export function buildPolicyCorrectnessReport({ chainDir = DEFAULT_CHAIN_DIR, out
     });
     const s0Record = armRecordFromReport(sourceReport, 'S0_no_policy');
     const s1Record = armRecordFromReport(sourceReport, 'S1_policy_memory');
-    const policyMemoryPath = resolveRepoPath(sourceReport.policy_contrast_gate?.policy_memory_path || plan.paths.policyMemory);
+    const policyMemoryPath = resolveRepoPath(
+      sourceReport.policy_contrast_gate?.policy_memory_path || plan.paths.policyMemory,
+    );
     const policyCorrectnessGate = analyzePolicyCorrectness({
       policyMemoryPath,
       sibling: plan.sibling,

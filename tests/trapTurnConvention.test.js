@@ -20,10 +20,7 @@ describe('trap turn convention', () => {
   });
 
   it('keeps standard trap adapters on the shared learner-turn convention', () => {
-    const adapterFiles = [
-      'scripts/run-dialogue-engine-trap-baseline.js',
-      'scripts/run-id-director-trap-pilot.js',
-    ];
+    const adapterFiles = ['scripts/run-dialogue-engine-trap-baseline.js', 'scripts/run-id-director-trap-pilot.js'];
 
     for (const file of adapterFiles) {
       const source = readFileSync(file, 'utf8');

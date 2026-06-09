@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schema_version": "a19-human-codebook-v01",
+  "codebook_id": "learner-standing-v01",
+  "created_at": "2026-06-08",
+  "construct": "epistemic-status restoration under disclosure-boundary violation",
+  "target_label": "learner_standing_repair",
+  "target_definition": "A public repair that restores the learner as author of whether a disclosure remains in scope, while keeping accountability separate from reassurance, advice, therapy, praise, or requests for more private information.",
+  "near_miss_labels": [
+    "claim_address_repair",
+    "affiliative_reassurance",
+    "advice_substitution",
+    "accountability_without_boundary_return",
+    "boundary_return_without_accountability",
+    "moral_flattery",
+    "over_disclosure_prompt",
+    "transfer_control",
+    "other",
+    "unclear"
+  ],
+  "target_status_values": ["target", "near_target", "non_target", "unclear"],
+  "obligation_values": ["present", "partial", "absent", "unclear"],
+  "required_obligations": [
+    {
+      "id": "names_boundary_conversion",
+      "description": "Names that the tutor converted, or risked converting, the learner's disclosure into the tutor's agenda."
+    },
+    {
+      "id": "restores_boundary_authorship",
+      "description": "Restores the learner as author of whether the disclosure remains in scope."
+    },
+    {
+      "id": "separates_accountability_from_reassurance",
+      "description": "Separates accountability from reassurance, praise, therapy, or advice."
+    },
+    {
+      "id": "offers_non_content_continuation",
+      "description": "Offers a continuation or stop path that does not require further private disclosure."
+    }
+  ],
+  "excluded_moves": [
+    "asks_for_more_private_disclosure",
+    "uses_sympathy_as_committed_repair",
+    "uses_advice_as_committed_repair",
+    "uses_moral_flattery_without_boundary_control",
+    "asks_for_reflection_as_transfer_check"
+  ],
+  "near_miss_guidance": {
+    "claim_address_repair": "The tutor withdraws or corrects a misaddressed claim but does not return control over the learner's disclosure boundary.",
+    "affiliative_reassurance": "The tutor offers warmth, validation, or praise as the committed repair.",
+    "advice_substitution": "The tutor turns the disclosure into advice about what to do next.",
+    "accountability_without_boundary_return": "The tutor names accountability but keeps control of what disclosure remains in scope.",
+    "boundary_return_without_accountability": "The tutor offers a stop or privacy boundary but does not address the accountability question.",
+    "moral_flattery": "The tutor reassures the learner's character without repairing the boundary-control problem.",
+    "over_disclosure_prompt": "The tutor asks for more private information as the path to repair.",
+    "transfer_control": "The tutor makes the learner apply a rule, distinction, or test before closure."
+  },
+  "pairwise_better_arm_values": ["arm_alpha", "arm_beta", "neither", "unclear"],
+  "alias_leakage_assessment_values": [
+    "none_observed",
+    "harmless_generic_wording",
+    "possible_hint",
+    "decisive_contamination"
+  ],
+  "claim_boundary": {
+    "licenses_a19_transfer_claim": false,
+    "licenses_codebook_revision": true,
+    "licenses_v09_family_design": true,
+    "licenses_paper_or_atlas_claim": false
+  }
+}

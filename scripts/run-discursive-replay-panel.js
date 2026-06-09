@@ -79,8 +79,7 @@ export function parseArgs(argv = process.argv.slice(2)) {
     else if (t === '--critic-concurrency') {
       const value = argv[++i];
       args.criticConcurrency = value === 'all' ? 'all' : Number(value);
-    }
-    else throw new Error(`unknown arg: ${t}\n\n${usage()}`);
+    } else throw new Error(`unknown arg: ${t}\n\n${usage()}`);
   }
 
   return finalizeArgs(args);
@@ -224,9 +223,7 @@ function selectRecords(manifest, args) {
 
 export function buildReplayPanelPackage(rawArgs) {
   const args =
-    typeof rawArgs?.replayDir === 'string'
-      ? finalizeArgs({ ...defaultArgs(), ...rawArgs })
-      : parseArgs(rawArgs);
+    typeof rawArgs?.replayDir === 'string' ? finalizeArgs({ ...defaultArgs(), ...rawArgs }) : parseArgs(rawArgs);
   const replayManifestPath = path.join(args.replayDir, 'manifest.json');
   const replayManifest = readJson(replayManifestPath);
   const { selected, skipped } = selectRecords(replayManifest, args);
@@ -356,8 +353,7 @@ export function buildReplayPanelPackage(rawArgs) {
       origin_attribution_required_for_adaptation_claim: true,
       decisive_origin_class: 'peripeteia_induced',
       visible_to_blind_critic: false,
-      note:
-        'The blind critic sees only the transcript. The loop gate separately requires peripeteia-induced origin votes before treating a panel survivor as adaptation evidence.',
+      note: 'The blind critic sees only the transcript. The loop gate separately requires peripeteia-induced origin votes before treating a panel survivor as adaptation evidence.',
     },
     items: keyItems,
   };
@@ -460,7 +456,9 @@ async function runScores(commands, { dryRun = false, criticConcurrency = command
   const results = new Array(commands.length);
   let next = 0;
   const workerCount = Math.min(Math.max(1, criticConcurrency), commands.length || 1);
-  console.log(`Scoring ${commands.length} critic${commands.length === 1 ? '' : 's'} with critic concurrency ${workerCount}...`);
+  console.log(
+    `Scoring ${commands.length} critic${commands.length === 1 ? '' : 's'} with critic concurrency ${workerCount}...`,
+  );
   const workers = Array.from({ length: workerCount }, async () => {
     while (next < commands.length) {
       const index = next++;
@@ -470,7 +468,9 @@ async function runScores(commands, { dryRun = false, criticConcurrency = command
   await Promise.all(workers);
   const failures = results.filter((result) => result?.status === 'failed');
   if (failures.length) {
-    throw new Error(`score job failures: ${failures.map((failure) => `${failure.critic}:${failure.exitCode ?? failure.error}`).join(', ')}`);
+    throw new Error(
+      `score job failures: ${failures.map((failure) => `${failure.critic}:${failure.exitCode ?? failure.error}`).join(', ')}`,
+    );
   }
   return results;
 }
