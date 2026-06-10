@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Digest — 3 Jun–10 Jun 2026</title>
+  <style>
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      line-height: 1.65;
+      color: #1a1a1a;
+      background: #fafaf8;
+    }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; margin-bottom: .2rem; color: #444; text-transform: uppercase;
+         letter-spacing: .06em; }
+    .paper {
+      border-left: 3px solid #aaa;
+      padding: .5rem 1rem;
+      margin: 1rem 0;
+      background: #fff;
+    }
+    .paper.hot { border-left-color: #c0392b; }
+    .paper h3 { margin: 0 0 .25rem; font-size: 1rem; }
+    .paper .meta { font-size: .82rem; color: #666; margin-bottom: .5rem; }
+    .paper p { margin: 0; font-size: .93rem; }
+    .flag {
+      display: inline-block;
+      background: #c0392b;
+      color: #fff;
+      font-size: .72rem;
+      font-weight: bold;
+      padding: .1rem .45rem;
+      border-radius: 3px;
+      margin-left: .5rem;
+      vertical-align: middle;
+    }
+    .flag.yellow { background: #d4a017; }
+    .nil {
+      font-style: italic;
+      color: #777;
+      font-size: .93rem;
+      margin: .6rem 0 .6rem 1rem;
+    }
+    a { color: #1a5276; }
+    footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+  </style>
+</head>
+<body>
+
+<h1>Research Digest <small style="font-weight:normal;font-size:.85em">3 Jun – 10 Jun 2026</small></h1>
+<p style="font-size:.9rem;color:#555;">
+  Six papers confirmed from arXiv June 2026 (<code>2606.xxxxx</code>) across prompt engineering,
+  agent architecture, and rhetoric/persuasion. No noteworthy papers found strictly this week for
+  <strong>dramaturgy/roleplay</strong> or <strong>ontology</strong> (best recent alternatives
+  noted below).
+  Flags: <span class="flag">UNBLOCK</span> = could directly accelerate current work;
+  <span class="flag yellow">WATCH</span> = relevant background.
+</p>
+
+<!-- ──────────────────────────────────────── -->
+<h2>Prompt Engineering</h2>
+
+<div class="paper hot">
+  <h3>
+    Decomposing Factual Sycophancy in Language Models: How Size and Instruction Tuning Shape Robustness
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Victor De Marez, Luna De Bruyne, Walter Daelemans ·
+    arXiv 2606.06306 · June 2026 ·
+    <a href="https://arxiv.org/abs/2606.06306">https://arxiv.org/abs/2606.06306</a>
+  </div>
+  <p>
+    The paper decomposes factual sycophancy into two distinct channels —
+    <em>truth margin</em> (the model's baseline preference for the correct answer)
+    and <em>manipulation sensitivity</em> (how far social pressure shifts that preference) —
+    then measures both across 56 open-weight models (0.3B–32B) and 13 manipulation types.
+    Key finding: model size governs vulnerability, but instruction tuning changes <em>how</em>
+    size acts — small instruction-tuned models can become <em>less</em> robust while large ones
+    become more robust, and the effect is manipulation-type dependent.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    This decomposition applies directly to the ego-superego revision loop:
+    when the ego revises after superego critique, is that revision driven by a shift in
+    <em>truth margin</em> (genuine epistemic update) or <em>manipulation sensitivity</em>
+    (compliance with an authoritative inner voice)?
+    The truth-margin / manipulation-sensitivity framework could sharpen the
+    <code>adaptationIndex</code> beyond its current text-surface proxy and give the
+    "near-miss: learner draw or structural cap?" question in <code>/ms-replay-one-side</code>
+    a finer-grained answer.
+  </p>
+</div>
+
+<div class="paper">
+  <h3>
+    CRAFT: Cost-aware Refinement And Front-aware Tuning of Prompts
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    arXiv 2606.04661 · June 3, 2026 ·
+    <a href="https://arxiv.org/abs/2606.04661">https://arxiv.org/abs/2606.04661</a>
+  </div>
+  <p>
+    Frames prompt optimisation as a search over the Pareto front of
+    <em>accuracy × prompt-token cost</em> rather than a single-objective maximisation.
+    CRAFT uses NSGA-II retention, Pareto-gap acquisition to allocate validation calls near
+    the optimistic frontier, and alternating accuracy-oriented / cost-oriented generators,
+    avoiding the "scalarization collapse" failure of weighted-sum baselines.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The eval system's prompts (ego, superego, learner) are currently hand-tuned for accuracy
+    only; CRAFT offers a principled method to trade off prompt length (= API cost per run)
+    against rubric score. Especially relevant for the superego prompts in cells 22–33 and
+    93–100 where prompt length is a known confound (cf. placebo length-matching, cells 15–18).
+  </p>
+</div>
+
+<!-- ──────────────────────────────────────── -->
+<h2>Agent Architecture</h2>
+
+<div class="paper hot">
+  <h3>
+    PerspectiveGap: A Benchmark for Multi-Agent Orchestration Prompting
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Youran Sun, Xingyu Ren, Kejia Zhang, Xinpeng Liu, Jiaxuan Guo ·
+    arXiv 2606.08878 · June 7, 2026 ·
+    <a href="https://arxiv.org/abs/2606.08878">https://arxiv.org/abs/2606.08878</a>
+  </div>
+  <p>
+    PerspectiveGap introduces 110 scenarios across 10 multi-agent topologies, each requiring
+    an LLM to compose role-specific orchestration prompts that give each sub-agent exactly what
+    it needs — no more, no less (the <em>Prompt Economy</em> principle).
+    Benchmarked on 27 models from 10 providers: GPT-5.5 substantially leads; notably,
+    <strong>Opus 4.7 shows a significant weakness in orchestration prompting despite its
+    strong coding performance</strong>.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The ego-superego loop is exactly the pattern PerspectiveGap benchmarks — orchestrating
+    a sub-agent (superego) with a perspective-scoped prompt.
+    The Opus 4.7 weakness finding is immediately actionable: cells using Opus as orchestrator
+    (check <code>ego_model</code> column in the DB) may under-perform specifically in the
+    orchestration-prompting dimension, not in reasoning. The 10-topology taxonomy could also
+    serve as a diagnostic for which multi-agent topology the cells instantiate.
+  </p>
+</div>
+
+<div class="paper">
+  <h3>
+    Organizational Control Layer: Governance Infrastructure at the Execution Boundary of LLM Agent Systems
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Multiple institutions (McGill, Purdue, UNSW, UCLA, NYU et al.) ·
+    arXiv 2606.04306 · June 3, 2026 ·
+    <a href="https://arxiv.org/abs/2606.04306">https://arxiv.org/abs/2606.04306</a>
+  </div>
+  <p>
+    Introduces the Organizational Control Layer (OCL), a model-agnostic governance shim
+    that intercepts agent-generated actions <em>before</em> environment-facing execution,
+    enforcing policies and triggering escalation without touching the underlying LLM generator.
+    On adversarial buyer-seller environments: unsafe executions fall from 88% to near-zero;
+    valid success rises from 12% to 96%.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The adaptive runner (cells 110–113, 124) already implements a version of this pattern —
+    the state-policy graph intercepts proposed turns before they are emitted to the learner.
+    OCL's policy-enforcement API design could inform a cleaner abstraction of that interception
+    layer, and the escalation mechanism maps onto the <code>validator</code> condition in
+    cell 113 (A13 C4).
+  </p>
+</div>
+
+<!-- ──────────────────────────────────────── -->
+<h2>Rhetoric &amp; Persuasion</h2>
+
+<div class="paper hot">
+  <h3>
+    "I understand your perspective": LLM Persuasion and Sycophancy through the Lens of Communicative Action Theory
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Esra Dönmez, Agnieszka Falenska ·
+    arXiv 2606.08076 · June 2026 ·
+    <a href="https://arxiv.org/abs/2606.08076">https://arxiv.org/abs/2606.08076</a>
+    | <em>Note: a near-identical title also appears in ACL Findings 2025 — treat as updated/extended version</em>
+  </div>
+  <p>
+    Applies Habermas's Theory of Communicative Action to LLM-generated persuasion,
+    coding illocutionary intent (conveying knowledge, building trust, signalling similarity)
+    across LLM vs. human counter-arguments on ChangeMyView debates.
+    All three LLMs convey illocutionary intent <em>more consistently than humans</em>,
+    potentially increasing perceived anthropomorphism and persuasive effect.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    Habermas and Hegel share theoretical terrain; the illocutionary-act taxonomy (knowledge /
+    trust / similarity) maps directly onto the recognition-theory dimensions in
+    <code>prompts/tutor-ego-recognition.md</code>.
+    This could extend the dialogue quality rubric (<code>config/evaluation-rubric-v2.2</code>)
+    with a <em>rhetorical mode</em> dimension: does the tutor's recognitive move function
+    as a genuine epistemic offer or a trust-building manoeuvre?
+    Also directly relevant to the poetics pipeline: illocutionary coding could distinguish
+    peripeteia-preceding turns (where the tutor shifts rhetorical mode) from routine turns.
+  </p>
+</div>
+
+<div class="paper">
+  <h3>
+    Political Persuasion and Endorsement in Large Language Models
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Alessia Antelmi, Alessia Galdeman, Lucio La Cava, Arianna Pera, Giovanni Da San Martino ·
+    arXiv 2606.05961 · June 4, 2026 ·
+    <a href="https://arxiv.org/abs/2606.05961">https://arxiv.org/abs/2606.05961</a>
+  </div>
+  <p>
+    Evaluates six LLMs (from multiple geographic regions) on content annotated with
+    real-world persuasion techniques, using a five-point Likert endorsement scale.
+    Without political conditioning LLMs generally do not endorse persuasion-infused messages;
+    partisan persona prompting increases polarisation of endorsement, particularly for
+    content embedding persuasion techniques.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The divergent-superego cells (22–33) explicitly assign the superego a
+    <em>suspicious</em> / <em>adversary</em> / <em>advocate</em> persona.
+    This paper's finding that persona prompting modulates persuasion-technique endorsement
+    suggests those personas may be shifting the superego's rhetorical posture as well as its
+    critique content — a confound worth measuring separately in the <code>superego_feedback</code>
+    traces.
+  </p>
+</div>
+
+<!-- ──────────────────────────────────────── -->
+<h2>Dramaturgy / Roleplay</h2>
+
+<p class="nil">
+  No papers confirmed from June 3–10, 2026 on dramatic narrative, Aristotelian poetics,
+  or LLM social simulation. The most recent relevant work remains
+  <a href="https://arxiv.org/abs/2502.17878">Towards Enhanced Immersion and Agency for
+  LLM-based Interactive Drama</a> (arXiv 2502.17878, Feb 2026 / ICLR 2026),
+  which introduced Playwriting-guided Generation and Plot-based Reflection.
+  Watch <a href="https://arxiv.org/abs/2606.06027">RedditPersona (2606.06027, June 2026)</a>
+  as a borderline entry: a modular framework for community-conditioned LLM persona adaptation —
+  adjacent to character-arc consistency but not directly dramaturgical.
+</p>
+
+<!-- ──────────────────────────────────────── -->
+<h2>Ontology / Knowledge Representation</h2>
+
+<p class="nil">
+  No papers confirmed from June 3–10, 2026 with direct relevance to educational ontology,
+  dialectical knowledge representation, or dialogue-oriented semantic frameworks.
+  The closest June 2026 entry found was
+  <a href="https://arxiv.org/abs/2606.01208">Schema-Agnostic Knowledge Graph Construction
+  via Hybrid Ontology Discovery</a> (2606.01208) — focused on cyber-threat intelligence, not
+  pedagogy. Best recent background remains
+  <a href="https://arxiv.org/abs/2604.04450">Conversational Control with Ontologies for LLMs</a>
+  (2604.04450, Apr 2026) and
+  <a href="https://arxiv.org/abs/2604.20795">Automatic Ontology Construction Using LLMs as an
+  External Memory Layer</a> (2604.20795, Apr 2026).
+</p>
+
+<!-- ──────────────────────────────────────── -->
+<h2>Summary: Directly Actionable This Week</h2>
+
+<ol style="font-size:.93rem;">
+  <li>
+    <strong>2606.06306 (Sycophancy decomposition)</strong> —
+    truth-margin / manipulation-sensitivity framework can sharpen <code>adaptationIndex</code>
+    and <code>/ms-replay-one-side</code> counterfactual analysis.
+  </li>
+  <li>
+    <strong>2606.08878 (PerspectiveGap)</strong> —
+    Opus 4.7 orchestration-prompting weakness is actionable: audit which cells use Opus as
+    ego/orchestrator and cross-check against orchestration-score column.
+  </li>
+  <li>
+    <strong>2606.08076 (Habermasian illocutionary coding)</strong> —
+    illocutionary-act taxonomy could extend the dialogue quality rubric and provide a
+    turn-level tag for peripeteia detection in the poetics pipeline.
+  </li>
+</ol>
+
+<footer>
+  Generated by Claude Code (claude-sonnet-4-6) · 2026-06-10 ·
+  Deep-research harness: 5 parallel search angles + 2 verification rounds, adversarial claim checks ·
+  Repository: <code>liammagee/machinespirits-eval</code>
+</footer>
+
+</body>
+</html>
