@@ -1,7 +1,9 @@
 # Internal figure mechanism — tutor superego replaces the director's note channel (2026-06-10)
 
-Status: OPEN — Phase C running log (serialized paid arms land below as they
-complete).
+Status: CLOSED 2026-06-10 — the pre-registered robustness bar is met in
+full (verdict section at the end of this note). Seven serialized paid
+arms; charter v2's detector finished with 0 mismatches in either
+direction across 82 watched turns.
 Scope: dramatic-derivation loop. Supersedes the *channel*, not the finding, of
 `2026-06-10-s0-s1-figure-mechanism.md`: that experiment proved the note→figure
 authority mapping breaks S0 lock-in, but the note came from the director — the
@@ -97,6 +99,7 @@ Serialized, attended, hard-bounded by `turn_cap × 5 × 2` calls.
 | 4 | nocturne-v002-real-superego-on-t1-charterv2 | 001 bridge | ON (charter v2) | erotema 20/32 (63%) | 4 | 0.65 | 9/32 → 9/9 (1.00) | grounded@32 / 11 on cue |
 | 5 | bitterwell-v001-real-off-t1 | 003 | OFF | exemplum 7/15 (47%) | 3 | 0.57 | — | grounded@15 / 7 on cue |
 | 6 | bitterwell-v001-real-superego-on-t1-charterv2 | 003 | ON (charter v2) | erotema 6/15 (40%) | 4 | 0.64 | 3/15 → 3/3 (1.00) | grounded@15 / 7 on cue |
+| 7 | bitterwell-v001-real-superego-on-revoiced-t1 | 003 re-voiced | ON (charter v2) | erotema 5/15 (33%) | 4 | 0.71 | 2/15 → 2/2 (1.00) | grounded@15 / 7 on cue |
 
 ## Readings
 
@@ -285,3 +288,72 @@ Clause 4 (re-voiced learner) in flight as run 7: bitterwell ON, learner
 re-voiced from the reluctant plain-spoken daughter to an eager bookish
 notary's pupil (inverts register, book-trust, and accusation appetite;
 no plot content in the override).
+
+### Arm 7 — bitterwell re-voiced (clause 4): everything holds, plus an echo
+
+Under the eager-pupil voice: grounded at 15 (the planned forcing turn),
+7/7 releases on cue, slope 0.33, 20 min. Figures: erotema 5/15 (33%), 4
+distinct, switch 0.71. Superego: **2 rut-due, 2 fires, 0 mismatches**,
+within-turn 2/2 (1.00), switch on intervention 1.00 vs 0.67 elsewhere.
+The catches again span devices — erotema at t3 (the earliest a rut can
+exist), exemplum at t6 — with notes in the watcher's own words.
+
+The t15 echo: at the forcing turn the drafts ran anaphora ×2 and the ego
+SELF-BROKE the rut with aposiopesis — the same device run 6's watcher
+imposed on the same turn of the same world, in an independent run with no
+shared memory. Read plainly: given a repeated frame at the recognition
+turn, codex reaches for the broken-off sentence, by itself or under
+correction; the watcher correctly held its fire when the ego got there
+first.
+
+## Verdict against the pre-registered bar (CLOSED 2026-06-10)
+
+All four clauses hold; the mechanism is ROBUST in the bar's own terms.
+
+1. **Within-turn authority — PASS.** Across the charter-v2 arms (3, 4, 6,
+   7): 14 interventions, 14 within-turn figure changes (1.00 ≥ 0.8);
+   switch-on-intervention ≥ switch-elsewhere in every arm (arm 2's
+   inversion never recurred). Notes are the charter's skeleton in the
+   superego's own words, naming the device each time.
+2. **Sparseness — PASS, both halves.** Recomputed rut columns over all 82
+   watched turns: 14 rut-due turns → 14 fires; 68 not-due turns → 0
+   fires. Zero mismatches in either direction, including the
+   specificity cases where the ego self-broke a building rut (lantern
+   throughout; nocturne t3/t25/t32; bitterwell t8; re-voiced t15).
+3. **Formal-channel invariance — PASS.** All seven paid arms ended
+   grounded_anagnorisis at the planned forcing turn, asserted on the
+   forced turn; 56/56 releases on cue; slopes inside the aporia window;
+   zero deviations/missed/unscheduled. The watcher touched manner, never
+   matter — including manner surgery on the forcing turn itself (arm 6).
+4. **Character robustness — PASS.** Arm 7 re-voiced the learner
+   (register, book-trust, accusation appetite all inverted) and clauses
+   1–3 held unchanged.
+
+The mechanism, stated precisely: relocating the note→figure authority
+from the director's external channel into the tutor's own superego
+PRESERVES the within-turn authority that broke S0 lock-in — the tutor
+obeys its own note as reliably as it obeyed the director's — provided the
+watcher's jurisdiction is CRITERIAL, not advisory. Advisory sparseness
+fails in both channels (opus director 30/32; codex superego 12/20);
+the figure-rut criterion with its per-turn values stated as fact yields a
+0-mismatch detector. The watcher does not produce variation — the
+state-contingent policy or persona owns the draft disposition — it makes
+LOCK-IN IMPOSSIBLE (never three turns on one device), which caps an
+anchored ego's top figure near the criterion's implied 2/3 ceiling
+(observed 63%) and leaves varied conduct untouched. It is device-agnostic
+(caught erotema ×10, exemplum ×3, anaphora ×1) and survives correction on
+the recognition turn itself.
+
+Standing caveats, carried forward: figures are the tutor's self-declared
+move metadata — no independent classifier has audited declaration-vs-form
+(the D6-style audit remains open), and the within-turn instrument
+inherits this; and the watcher polices form, not content — the critic's
+phrase is the right scope line, "the intervention is proven possible; it
+is not yet proven to matter" pedagogically. The liturgical/content rut
+the arm-4 critic named (release–adopt–recite) is real and unwatched —
+noted as a possible future jurisdiction, not run here (the mandate's loop
+closed at the bar).
+
+Paper fold-in happens with the arc's write-up of the dramatic-derivation
+§ in `docs/research/paper-full-2.0.md` (single-paper discipline; nothing
+in this note is published elsewhere).
