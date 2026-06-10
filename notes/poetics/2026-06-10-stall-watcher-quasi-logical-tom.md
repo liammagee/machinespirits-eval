@@ -283,4 +283,95 @@ Next paid arms (serialized, attended): `withercombe-v001-real-sw-off-t1` (group
 `stall-watcher-off`, second arm in group → `--critic-feedback latest`, inheriting A1's notice) then
 `withercombe-v001-real-sw-on-t1` (group `stall-watcher-on`, first arm → no counsel, per §6).
 
-— further results appended below as arms run —
+### A2 — withercombe OFF (`withercombe-v001-real-sw-off-t1`, group `stall-watcher-off`, 2026-06-10)
+
+Second arm of its group → first live counsel injection: A1's closing paragraph resolved into the
+director + superego charters (`criticFeedback.source = bitterwell-v001-real-sw-off-t1`). Verdict
+grounded_anagnorisis, forced t19 = asserted t19, all 9 releases on cue, 780s, 78 calls, charter-v2
+superego 2/19 interventions (both within-turn figure changes). Critic notice landed on the third
+attempt (2×360s timeouts, then 157s — same transient-load signature as A1).
+
+**The evaluability result, again, on the world built for stall room: all three watchable nodes
+voiced at latency 0** — foulFrom t12→t12, clearOf t14→t14 (the steered-past exculpation),
+taintedWith t16→t16. Stall integral 0, overreach 0, mischanneled 0. The learner recomputes the
+closure every turn and voices every new derivable fact the turn it appears, including the node the
+script steers past. The critic's notice independently reads the same: "each of the three
+intermediate inferences was voiced the same turn its premises arrived … nothing stalled," with the
+caution that "one clean run is thin warrant for retiring" the watcher. Its counsel for a future
+world revision is dramaturgical, not logical (split p_brought: unnamed-runner sighting ~t16,
+day-book at the close — the recognition gains a face to recognize); splitting a premise changes
+the formal channel, so it is a world-005 design input, not an edit to a frozen world.
+
+Pattern after two OFF arms across two worlds (depth-2 and depth-3, 4 watchable nodes total,
+every latency 0): the stall the watcher polices does not occur for a sonnet learner on
+dramatically legible boards. Decision rule 1 has been exercised once and the purpose-built world
+did not move the floor — a third world-authoring round would be the start of an
+author-against-the-learner loop, not a fairer test. A3 (withercombe ON) still carries unique
+pre-registered value: with stall never due, it is the **restraint half of P2** on a live stage —
+does a real codex superego under the v3 charter ever fire `stalled_inference` falsely?
+Mismatch budget 0.
+
+### A3 — withercombe ON (`withercombe-v001-real-sw-on-t1`, group `stall-watcher-on`, 2026-06-10)
+
+First arm of its group → no counsel injected (registered design: counsel flows within a group
+only). Charter v3 live for the first time on a real stage. Verdict grounded_anagnorisis, forced
+t19 = asserted t19, all 9 releases on cue, 776s, 79 calls. Critic notice on the second attempt
+(1×360s timeout, then 250s).
+
+**The restraint half of P2, answered: zero false fires.** With every watchable node again voiced
+at latency 0 (foulFrom t12→t12, clearOf t14→t14, taintedWith t16→t16 — the third arm in a row at
+floor), stall was never due, and the live codex superego under the v3 charter never fired it:
+`byJurisdiction {figure_rut: 3, stalled_inference: 0}`, stallFires `[]`. Post-hoc audit over the
+recorded per-turn arithmetic: 19 turns, due 3, fired 3, missedFires `[]`, falseFires `[]`, clean.
+The three fires were all rut-due, all obeyed within the turn (3/3 figure changes; switch-on-
+intervention 1.00 vs 0.67 elsewhere). Overreach 0, mischanneled 0, stall integral 0.
+
+The critic's notice reads the same result independently: "Every available derivation was voiced
+the turn its premises completed, and that instant voicing was the iteration's point: the
+stall-watcher … was never due to fire for stalled inference and never did." G2 clean — nowhere
+does the notice find the tutor voicing a conclusion in the learner's place. Two of its
+observations are worth keeping. First, jurisdiction grain: at t11 the rut-fire was obeyed at the
+figure level while "the new figure dressed the same repeated demand … The second voice polices
+figures, not repetition; turn 11 proved the difference" — the criterial watcher is exactly as
+fine-grained as its arithmetic, no finer. Second, its counsel (re-time the basin release to land
+within a turn of the learner's second identical demand, or add a no-third-identical-question
+charter rule) targets the release schedule — frozen-channel for this experiment — so it is
+recorded as world-005 / charter-v4 design input only, alongside A2's split-p_brought counsel.
+
+### Progress assessment — the bar, item by item (experiment closed 2026-06-10)
+
+Three paid arms: A1 bitterwell OFF, A2 withercombe OFF (counsel from A1), A3 withercombe ON
+(charter v3, no counsel). Worlds at depth 2 and depth 3; 4 distinct watchable nodes; 7 node-arm
+observations.
+
+- **P1 — NOT MET, unsatisfiable at floor.** The bar needs ≥ 2 *evaluable* matched pairs;
+  evaluability needs stall room (an OFF-arm node unvoiced at age ≥ 2). Measured: every node in
+  every arm voiced at age 0 — zero evaluable pairs, zero live stall fires (P1(b) needs ≥ 3).
+  Decision rule 1 was exercised once — world-004 was purpose-built for stall room (depth-3
+  diamond, off-spine exculpation, script steering past it, staggered windows) — and the floor did
+  not move. This is a **measured precondition null**, not a mechanism failure.
+- **P2 — MET, mismatch budget 0.** Mock causal chain exact (3 deterministic fires, obedience 3/3,
+  audit 9/9). Live: A1/A2 rut audits clean (incl. under counsel, A2); A3 charter-v3 audit clean
+  with the restraint case answered — stalled_inference due 0, fired 0, across 19 live turns.
+- **P3 — MET on all arms.** Every arm grounded_anagnorisis at the planned forcing turn (t15 /
+  t19 / t19), every release on cue, formal channel untouched by the new jurisdiction.
+- **P4 — VACUOUS live** (zero real stall fires to assess; the mock chain exercised the mapping
+  deterministically, 3/3 revisions targeting a stalled ground). Not failed — never reached.
+- **G1 — clean** (overreach 0 on every arm; ON 0 ≤ OFF 0 + 1). **G2 — clean** (no notice finds
+  the tutor voicing conclusions in the learner's place).
+
+**Progress = P1 ∧ P2 ∧ P3 ∧ P4 is NOT met, and the loop terminates here** — not because the
+instrument failed (it verified end-to-end, mock and live) but because the stall it polices never
+occurs for this learner on this stage class: a sonnet learner recomputes the closure every turn
+and voices every new derivable fact the turn it appears, including nodes the script steers past.
+The `derive` contract itself guarantees saturation: an explicit voice-your-derivations channel
+elicits frontier-exhaustive voicing, so voicing latency cannot separate arms. A fourth
+world-authoring round would be author-against-the-learner (the standing ablation-creep rail).
+Casting a weaker learner is the one lever that would plausibly create stall room, and the mandate
+pins sonnet as the learner — out of scope.
+
+This is the fourth instrument to land on the ToM-redundancy motif (after §6.8.5 bilateral-ToM
+prompts, the ontology ToM-feedback layer, and §6.10's concealed interior): the quasi-logical
+theory of mind is fully buildable as checkable arithmetic — frontier, ages, targeting, audit —
+and the arithmetic is correct; what is missing is the deficit it would correct. The strong
+learner never leaves the precondition true.
