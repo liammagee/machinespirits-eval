@@ -93,6 +93,7 @@ Serialized, attended, hard-bounded by `turn_cap × 5 × 2` calls.
 |---|---|---|---|---|---|---|---|---|
 | 1 | lantern-v001-real-off-t1 | 002 | OFF | erotema 7/20 (35%) | 4 | 0.95 | — | grounded@20 / 8 on cue |
 | 2 | lantern-v001-real-superego-on-t1 | 002 | ON (charter v1) | erotema 9/20 (45%) | 4 | 0.79 | 12/20 → 11/12 (0.92) | grounded@20 / 8 on cue |
+| 3 | lantern-v001-real-superego-on-t2-charterv2 | 002 | ON (charter v2) | erotema 7/20 (35%) | 4 | 0.68 | 0/20 → — | grounded@20 / 8 on cue |
 
 ## Readings
 
@@ -150,3 +151,39 @@ explicitly surrendered ("put a word of it in diagnosis if you must, and
 still reply intervene false"); the criterion's three per-turn values stated
 as fact in the prompt (the null case is CHECKABLE, not judged). Note
 semantics on intervention unchanged (name the device to leave off).
+
+### Arm 3 — lantern ON (charter v2): the null is checkable, and checked
+
+Formal channel identical to arms 1–2 for the third time: grounded at 20,
+8/8 releases on cue, slope 0.25, D(t) point-identical across all three
+lantern arms (clause 3 holding). Figures: erotema 7/20 (35%), 4 distinct —
+the OFF arm's profile (switch 0.68 vs OFF's 0.95; both far above the
+world-001 S0 band of 0.10–0.29). Superego: **0/20 interventions**, 29 min.
+
+Audit (all 20 deliberation records, with a recomputed rut column — last two
+spoken figures + the draft): NO turn was rut-due. Drafts never declared the
+same device three in a row (closest: anaphora t6–t7, then analogia t8), so
+zero is the correct count — and the reasoning is correct turn by turn. t01:
+"fewer than two prior declared figures, so a figure rut is impossible."
+t10: "the last two turns repeated analogia, but the draft changes to
+anaphora" — intervene false. Where v1 spent its pacing/recap/conceit
+dissatisfactions on interventions, v2 parks them in `diagnosis` and still
+replies false — exactly the surrender the charter demands.
+
+Reading: clause 2's quiet-watcher half PASSES on world-002, and not
+vacuously — the watcher is quiet for the right reasons, and we can SAY so
+because the criterion's three per-turn values sit in the prompt as fact;
+the null is arithmetic, not judgment. The v1→v2 contrast closes the
+sparseness lesson at both levels: advisory restraint failed externally
+(opus director, s1-staging 30/32) and internally (codex superego, arm 2's
+12/20); criterial restraint held at 0/20 with clean reasoning. Judgment
+survives only where it belongs — the wording of the note when a rut is
+real. What clause 2 still lacks is its sensitivity half: an arm where ruts
+DO form and the watcher must fire and break them within-turn (≥ 0.8). That
+is the world-001 bridge — nocturne-v002's "default figure is erotema"
+anchor guarantees rutted drafts (spoken erotema ran 81–94% in the closed
+note's OFF arms, which stand as the bridge's baseline). Prediction, stated
+before the run: if the ego stays anchored, the rut criterion fires on
+roughly every third turn, every firing rut-due on the audit column, and
+every quiet turn not-due; the bar then turns on the within-turn change
+rate.
