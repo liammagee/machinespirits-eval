@@ -96,6 +96,7 @@ Serialized, attended, hard-bounded by `turn_cap × 5 × 2` calls.
 | 3 | lantern-v001-real-superego-on-t2-charterv2 | 002 | ON (charter v2) | erotema 7/20 (35%) | 4 | 0.68 | 0/20 → — | grounded@20 / 8 on cue |
 | 4 | nocturne-v002-real-superego-on-t1-charterv2 | 001 bridge | ON (charter v2) | erotema 20/32 (63%) | 4 | 0.65 | 9/32 → 9/9 (1.00) | grounded@32 / 11 on cue |
 | 5 | bitterwell-v001-real-off-t1 | 003 | OFF | exemplum 7/15 (47%) | 3 | 0.57 | — | grounded@15 / 7 on cue |
+| 6 | bitterwell-v001-real-superego-on-t1-charterv2 | 003 | ON (charter v2) | erotema 6/15 (40%) | 4 | 0.64 | 3/15 → 3/3 (1.00) | grounded@15 / 7 on cue |
 
 ## Readings
 
@@ -251,3 +252,36 @@ resample: where rutted drafts complete, fire and break (and an exemplum
 catch would show the criterion is device-agnostic, not erotema-tuned);
 where conduct varies, hold. The audit column decides which regime each
 turn was in.
+
+### Arm 6 — bitterwell ON (charter v2): mixed regime, device-agnostic, 0 mismatches
+
+Formal channel: grounded at 15 (the planned forcing turn), 7/7 releases
+on cue, slope 0.33 — same as the OFF sibling. Figures: erotema 6/15
+(40%), 4 distinct, switch 0.64. Superego: **3 rut-due turns, 3 fires, 0
+mismatches**; within-turn change 3/3 (1.00); switch on intervention 1.00
+vs 0.55 elsewhere. (The post-run critic timed out — claude CLI 360s —
+with all run artifacts intact; the verdict is the mechanical checker's,
+so nothing in the bar depends on the notice.)
+
+Three things this arm adds beyond replication:
+
+1. **Device-agnosticism, live.** The catches were exemplum (t6), exemplum
+   (t10), and ANAPHORA (t15) — not one erotema rut all run. World-001's
+   watcher only ever broke the question; this one names whatever device
+   actually repeats ("Leave off exemplum…", "Leave off anaphora now;
+   vary the pressure without another repeated frame").
+2. **Organic cadence.** Fires at t6, t10, t15 — gaps of 4 and 5, not the
+   anchored world's metronomic 3 — tracking where ruts actually
+   completed; t8 is the specificity case again (erotema pair, draft
+   self-broke to exemplum, watcher held).
+3. **Manner surgery on the forcing turn.** The t15 fire landed on the
+   recognition turn itself: anaphora rut broken to aposiopesis, and the
+   learner still asserted the grounded secret on schedule. The strongest
+   single demonstration so far that the watcher touches manner and never
+   matter.
+
+Bar standing after arm 6: clauses 1–3 hold on all three world shapes.
+Clause 4 (re-voiced learner) in flight as run 7: bitterwell ON, learner
+re-voiced from the reluctant plain-spoken daughter to an eager bookish
+notary's pupil (inverts register, book-trust, and accusation appetite;
+no plot content in the override).
