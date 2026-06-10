@@ -298,19 +298,17 @@ function tutorSuperegoSystem(world) {
     `The drama: "${world.title}". The public question: ${world.question}`,
     '',
     "Each turn you see the tutor's DRAFT line with its declared figure, and the",
-    'recent record of conduct. You watch the MANNER of the teaching, never its',
-    'matter:',
-    '- FIGURES: the same device turn after turn is a rut. When the rut is figural,',
-    '  name the device to leave off — not just the mood.',
-    '- RHYTHM: question stacked on question with no room to breathe — or slackness',
-    '  the learner has outgrown. Both directions are yours: call for quiet, or for',
-    '  press.',
-    '- REGISTER: a tone that no longer answers what the learner just did.',
+    'recent record of conduct. You watch ONE thing: the FIGURE RUT — the same',
+    'declared device on both of the last two turns, and the draft declaring it a',
+    'third time. Three in a row is a rut; anything less is conduct, not a rut.',
     '',
-    'INTERVENE SPARINGLY. Most turns the draft should pass unremarked: reply',
-    '{"intervene": false}. A note every turn is a note never heard. Intervene only',
-    'when the staging must actually change, and then say it plainly, in one or two',
-    'sentences, as a note the tutor reads before speaking.',
+    'Your default reply is {"intervene": false}. The manner usually serves. Every',
+    'other dissatisfaction you may feel — pacing, register, a recap the learner',
+    'has outgrown, a conceit leaned on too often — is NOT yours to correct: put a',
+    'word of it in "diagnosis" if you must, and still reply intervene false. A',
+    'note every turn is a note never heard; you are credible because you are',
+    'rare. When the rut is real, intervene and name the device to leave off — in',
+    'one or two sentences, as a note the tutor reads before speaking.',
     '',
     'You NEVER touch the evidence: never name facts, premises, documents, or the',
     'answer; never tell the tutor what to reveal or withhold. The note governs how',
@@ -386,6 +384,16 @@ export function makeLlmTutor(world, client, { script, dials = {}, superego = fal
     const record = pastMoves
       .slice(-8)
       .map((l) => `turn ${l.turn}: ${l.meta.move.figure}${l.meta.move.intent ? ` (${l.meta.move.intent})` : ''}`);
+    const lastFigures = pastMoves.slice(-2).map((l) => String(l.meta.move.figure).toLowerCase().trim());
+    // The rut criterion, stated with this turn's values: the null case must be
+    // checkable from the prompt, not judged (charter v2 — the run-2 watcher
+    // answered "does the manner serve?" with available-critique, 12/20).
+    const rutLine =
+      lastFigures.length < 2
+        ? 'The record this turn: fewer than two prior figures — a rut is impossible; intervene must be false.'
+        : `The record this turn: last two declared figures ${lastFigures.join(', ')}; the draft declares ${
+            draftFigure || '(none)'
+          }. A rut requires all three to be one device.`;
     const superegoUser = [
       `Turn ${view.turn} of ${world.turnCap}.${
         lastPoint && lastPoint.forced ? ' The board now forces the conclusion; the recognition wants staging.' : ''
@@ -400,9 +408,9 @@ export function makeLlmTutor(world, client, { script, dials = {}, superego = fal
       `THE DRAFT about to be spoken (declared figure: ${draftFigure || '—'}):`,
       `"${draft.dialogue}"`,
       '',
-      'Does the manner serve? Reply with ONLY the JSON object.',
+      rutLine,
+      'Is this a figure rut? Reply with ONLY the JSON object.',
     ].join('\n');
-    const lastFigures = pastMoves.slice(-2).map((l) => String(l.meta.move.figure).toLowerCase().trim());
     const segOut = await callJson(client, 'tutor_superego', view.turn, {
       system: superegoSystem,
       user: superegoUser,
