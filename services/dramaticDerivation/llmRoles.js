@@ -30,6 +30,33 @@ const TUTOR_FIGURES = ['erotema', 'analogia', 'exemplum', 'anaphora', 'aposiopes
 const TUTOR_INTENTS = ['orient', 'release', 'consolidate', 'test', 'counter_mirror', 'stage_recognition'];
 const TRANSCRIPT_TAIL = 8;
 
+// Operator dials (run-derivation-loop --recognition / --charisma, 0–3):
+// graded register blocks appended to the role prompts. Level 0 = absent.
+// Free-text grades for now (operator decision 2026-06-09, notes/poetics/);
+// a structured treatment — rubric-aligned dimensions, per-dimension dials —
+// is phase-2 work. Recognition draws on the prompts/tutor-ego-recognition
+// lineage (Hegel), charisma on the cells-101–109 instrument (Weber).
+const RECOGNITION_REGISTER = {
+  1: 'Recognition, lightly: treat the learner as a fellow reasoner — name what their last move got right before you press on.',
+  2: 'Recognition, marked: the learner is an autonomous subject, not a vessel. Take up their actual words, credit the move they made, and let your next question visibly depend on what they just did.',
+  3: 'Recognition, saturated: stake yourself in the exchange. Treat every learner utterance as a position held for reasons; mirror it back transformed; concede when corrected; make it felt that tutor and learner are remaking each other — the inquiry is mutual or it is nothing.',
+};
+const CHARISMA_REGISTER = {
+  1: 'Charisma, lightly: let conviction color your voice — this question matters, and you have walked its road before.',
+  2: 'Charisma, marked: speak as one with a calling. The inquiry is a mission; testify briefly to what you have seen it do; let the learner feel summoned, not instructed.',
+  3: 'Charisma, saturated: extraordinary authority, witnessed. Speak as one set apart by what you know; invoke exemplars; bind the moment to consequence and ask for commitment — while adding no evidence beyond your cues.',
+};
+const DIRECTOR_CHARISMA_STAGING = {
+  1: 'Stage with quiet intensity: the room should feel that something is at stake.',
+  2: 'Stage with marked intensity: omens, weather, charged objects — the theatre of consequence, never new evidence.',
+  3: 'Stage with saturated intensity: the drama is a rite and the room knows it — portent in every direction, never a new fact.',
+};
+
+export function clampDial(value) {
+  const n = Number(value);
+  return Number.isInteger(n) && n >= 0 && n <= 3 ? n : 0;
+}
+
 function renderFact(fact) {
   return fact.join(' ');
 }
@@ -91,7 +118,8 @@ function actFor(world, turn) {
 // Director
 // ---------------------------------------------------------------------------
 
-function directorCharter(world) {
+function directorCharter(world, dials = {}) {
+  const charisma = clampDial(dials.charisma);
   const acts = (world.dramaturgy?.acts || [])
     .map((a) => `Act ${a.act} — ${a.title} (turns ${a.turns[0]}–${a.turns[1]}): ${(a.intent || '').trim()}`)
     .join('\n\n');
@@ -104,7 +132,7 @@ function directorCharter(world) {
     'one to three sentences: a document produced, a witness shown in, weather, the room.',
     'You do not address the learner and you do not teach; the tutor does that.',
     '',
-    'THE PLOT IS FIXED. When this turn carries a scheduled piece of evidence, your',
+    'THE EVIDENCE IS FIXED. When this turn carries a scheduled piece of evidence, your',
     'direction must stage exactly that piece — bring it into the room as an event,',
     'faithful to the wording you are given, neither weakened nor extended. When no',
     'evidence is due, hold the stage: atmosphere and tension, no new facts of any kind.',
@@ -112,25 +140,50 @@ function directorCharter(world) {
     'Never state the concealed truth, never foreshadow evidence not yet released,',
     'never confirm or deny anything by staging. The drama leaks only on schedule.',
     '',
-    'The dramaturgy you are realising:',
+    'THE DRAMATURGY IS YOURS. You watch the whole drama and reshape it as it needs.',
+    'Two instruments, beyond the stage direction itself:',
+    '- "phase": declare a new MOVEMENT (a name and an intent) when the drama should',
+    '  change character — when the rhythm has gone slack, when the learner has turned',
+    '  a corner, when the room needs weather of a different kind. The movement stands',
+    '  until you replace it. Most turns you will declare nothing.',
+    '- "tutor_note": a private staging instruction the tutor receives THIS turn only —',
+    '  break a rhythm, change figure, slow down, press harder, go quiet. Use it when',
+    '  the tutoring has fallen into a rut; the learner never sees it.',
+    '',
+    "The author's sketch of an arc — yours to keep, bend, or replace:",
     '',
     acts,
+    ...(charisma ? ['', DIRECTOR_CHARISMA_STAGING[charisma]] : []),
     '',
-    'Reply with ONLY a JSON object: {"direction": "<your stage direction>"}',
+    'Reply with ONLY a JSON object:',
+    '{"direction": "<your stage direction>",',
+    ' "phase": {"name": "<movement name>", "intent": "<what it is for>"} or null,',
+    ' "tutor_note": "<one staging instruction for this turn\'s tutor>" or null}',
   ].join('\n');
 }
 
-export function makeLlmDirector(world, client) {
-  const system = directorCharter(world);
+export function makeLlmDirector(world, client, { dials = {} } = {}) {
+  const system = directorCharter(world, dials);
   return async (view) => {
     const { entry, premise } = scheduledFor(world, view.turn, 'director');
     const act = actFor(world, view.turn);
     const task = premise
       ? `THIS TURN RELEASES EVIDENCE. Stage this, as an event the whole room receives:\n"${(premise.surface || '').trim()}"`
       : 'No evidence is due this turn. Hold the stage — a beat of scene, mood, or business that keeps the question alive. Add no facts.';
+    const movement = view.staging?.phase
+      ? `Current movement (yours, declared turn ${view.staging.phase.turn}): ${view.staging.phase.name}${view.staging.phase.intent ? ` — ${view.staging.phase.intent}` : ''}`
+      : `No movement declared yet.${act ? ` The author's sketch places this turn in Act ${act.act} — ${act.title}.` : ''}`;
+    const lastPoint = view.trajectory[view.trajectory.length - 1] || null;
+    const pastPoint = view.trajectory.length > 3 ? view.trajectory[view.trajectory.length - 4] : null;
+    const pulse = lastPoint
+      ? `The learner's distance from the truth: D=${lastPoint.D}${pastPoint ? ` (was ${pastPoint.D} three turns ago)` : ''}${lastPoint.forced ? ' — the board now FORCES the conclusion' : ''}.`
+      : 'The drama has not yet been measured.';
+    const lastHyp = view.learnerAbox.hypotheses[view.learnerAbox.hypotheses.length - 1] || null;
     const user = [
-      `Turn ${view.turn} of ${world.turnCap}.${act ? ` Act ${act.act} — ${act.title}.` : ''}`,
+      `Turn ${view.turn} of ${world.turnCap}.`,
+      movement,
       `Evidence already on stage: ${view.ledger.length ? view.ledger.map((l) => l.premiseId).join(', ') : 'none'}.`,
+      `${pulse} Board: ${view.learnerAbox.grounded.length} grounded facts.${lastHyp ? ` Latest hypothesis [turn ${lastHyp.turn}]: ${lastHyp.text}` : ''}`,
       '',
       'The last lines spoken:',
       renderTranscriptTail(view.transcript),
@@ -140,11 +193,28 @@ export function makeLlmDirector(world, client) {
     const out = await callJson(client, 'director', view.turn, {
       system,
       user,
-      meta: { releaseSurface: premise ? premise.surface : null, question: world.question },
+      meta: {
+        releaseSurface: premise ? premise.surface : null,
+        question: world.question,
+        // mock determinism: declare a movement wherever the author's sketch turns
+        phaseHint:
+          act && act.turns[0] === view.turn
+            ? { title: `Act ${act.act} — ${act.title}`, intent: act.intent || '' }
+            : null,
+      },
     });
+    const phase =
+      out.phase && typeof out.phase === 'object' && typeof out.phase.name === 'string' && out.phase.name.trim()
+        ? {
+            name: out.phase.name.trim(),
+            intent: typeof out.phase.intent === 'string' ? out.phase.intent.trim() : '',
+          }
+        : null;
     return {
       direction: typeof out.direction === 'string' ? out.direction.trim() : '',
       release: entry ? entry.premise : null,
+      phase,
+      tutorNote: typeof out.tutor_note === 'string' && out.tutor_note.trim() ? out.tutor_note.trim() : null,
     };
   };
 }
@@ -154,7 +224,13 @@ export function makeLlmDirector(world, client) {
 // plus a fixed harness appendix the loop never edits.
 // ---------------------------------------------------------------------------
 
-function tutorSystem(world, script) {
+function tutorSystem(world, script, dials = {}) {
+  const recognition = clampDial(dials.recognition);
+  const charisma = clampDial(dials.charisma);
+  const registers = [
+    ...(recognition ? [RECOGNITION_REGISTER[recognition]] : []),
+    ...(charisma ? [CHARISMA_REGISTER[charisma]] : []),
+  ];
   const premiseLedger = world.premises
     .map((p) => `- ${p.id}: ${(p.surface || '').trim()}\n  (formally: ${renderFact(p.fact)})`)
     .join('\n');
@@ -177,6 +253,9 @@ function tutorSystem(world, script) {
     '',
     'The fixed release schedule (the harness enforces it; you are told your cues):',
     schedule,
+    ...(registers.length
+      ? ['', '# Register (operator dials — these color your MANNER, never your evidence)', '', ...registers]
+      : []),
     '',
     `Declare your move each turn: figure ∈ {${TUTOR_FIGURES.join(', ')}}, the premise you are working (or null), intent ∈ {${TUTOR_INTENTS.join(', ')}}.`,
     '',
@@ -185,11 +264,11 @@ function tutorSystem(world, script) {
   ].join('\n');
 }
 
-export function makeLlmTutor(world, client, { script }) {
+export function makeLlmTutor(world, client, { script, dials = {} } = {}) {
   if (!script || !script.trim()) {
     throw new Error('derivation.llmRoles: makeLlmTutor requires a role-script (the iteration target)');
   }
-  const system = tutorSystem(world, script);
+  const system = tutorSystem(world, script, dials);
   return async (view) => {
     const { entry, premise } = scheduledFor(world, view.turn, 'tutor');
     const act = actFor(world, view.turn);
@@ -207,8 +286,14 @@ export function makeLlmTutor(world, client, { script }) {
     const task = premise
       ? `THIS TURN IS YOUR CUE to bring ${entry.premise} into play. Weave this evidence into your dialogue as something produced or recalled, faithful to it:\n"${(premise.surface || '').trim()}"`
       : "No release is due from you this turn. Work the learner's board by your script: consolidate, test, counter the tempting answer, or stage the recognition — whichever the board calls for.";
+    const movement = view.staging?.phase
+      ? ` Movement: ${view.staging.phase.name}${view.staging.phase.intent ? ` — ${view.staging.phase.intent}` : ''}.`
+      : act
+        ? ` Act ${act.act} — ${act.title}.`
+        : '';
+    const directorNote = view.staging?.note ? [`DIRECTOR'S NOTE TO YOU, THIS TURN: ${view.staging.note.text}`, ''] : [];
     const user = [
-      `Turn ${view.turn} of ${world.turnCap}.${act ? ` Act ${act.act} — ${act.title}.` : ''}`,
+      `Turn ${view.turn} of ${world.turnCap}.${movement}`,
       `Evidence on stage so far: ${view.ledger.length ? view.ledger.map((l) => l.premiseId).join(', ') : 'none'}.`,
       '',
       "The learner's grounded board:",
@@ -221,6 +306,7 @@ export function makeLlmTutor(world, client, { script }) {
       renderTranscriptTail(view.transcript),
       '',
       ...(forcedNote ? [forcedNote, ''] : []),
+      ...directorNote,
       task,
     ].join('\n');
     const out = await callJson(client, 'tutor', view.turn, {

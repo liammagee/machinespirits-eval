@@ -5,12 +5,20 @@
  * LLM role bridges → programmatic diagnosis → readable transcript → artifacts.
  *
  * The loop's discipline:
- *   - world + director + checker + slope are FROZEN; the only thing revised
- *     between iterations is the tutor role-script (--script).
+ *   - release schedule + checker + slope constraints + turn cap are FROZEN;
+ *     the dramaturgy is the director's (free movements + per-turn tutor
+ *     notes — engine.js header); the iterated artifact is the tutor
+ *     role-script (--script).
  *   - plotLint must pass before any roles run (frozen guardrail §5).
  *   - mock-first: default backend is the zero-cost mock; --real is the
  *     explicit, attended opt-in to paid calls (DERIVATION_PROVIDER /
- *     DERIVATION_MODEL select the target; default openrouter/gemini-flash).
+ *     DERIVATION_MODEL select the target; default openrouter/gemini-flash;
+ *     DERIVATION_PROVIDER=codex routes ALL roles through the local codex
+ *     CLI). Per-role overrides: DERIVATION_<ROLE>_PROVIDER / _MODEL
+ *     (e.g. DERIVATION_LEARNER_MODEL) — six-role ready.
+ *   - real runs report status live: one compact line per turn (the engine's
+ *     onTurn hook) + per-call trace on stderr (DERIVATION_TRACE, defaulted
+ *     on for --real; export DERIVATION_TRACE=0 to silence).
  *
  * Usage:
  *   node scripts/run-derivation-loop.js
@@ -19,11 +27,14 @@
  *     [--label nocturne-v001-trial1]   (default: <script>-<mode>-<timestamp>)
  *     [--out exports/dramatic-derivation/loop]
  *     [--real]                         (paid calls; default is mock)
+ *     [--recognition 0-3]              (tutor register dial; 0 = absent)
+ *     [--charisma 0-3]                 (tutor + director-staging dial; 0 = absent)
  *     [--note "what this iteration changes"]
  *
- * Artifacts land in <out>/<label>/: transcript.md (the drama, act by act),
- * diagnosis.json (taxonomy verdict, D(t), release adherence, dialogue
- * discipline, usage/cost), result.json (the raw engine output).
+ * Artifacts land in <out>/<label>/: transcript.md (the drama, movement by
+ * movement, instrument panel at the foot), diagnosis.json (taxonomy verdict,
+ * D(t), release adherence, staging, dialogue discipline, usage/cost),
+ * result.json (the raw engine output).
  */
 
 import 'dotenv/config';
@@ -40,7 +51,9 @@ import {
   makeLlmDirector,
   makeLlmTutor,
   makeLlmLearner,
+  clampDial,
   diagnose,
+  stagingSegments,
   renderDCurve,
   renderTranscript,
 } from '../services/dramaticDerivation/index.js';
@@ -66,6 +79,13 @@ async function main() {
   const scriptPath = path.resolve(ROOT, arg('script', 'config/drama-derivation/tutor-scripts/nocturne-v001.md'));
   const mode = flag('real') ? 'real' : llmMode() === 'real' ? 'real' : 'mock';
   const note = arg('note', null);
+  const dials = {
+    recognition: clampDial(arg('recognition', 0)),
+    charisma: clampDial(arg('charisma', 0)),
+  };
+  // Real runs report per-call liveness by default (the dramas are slow to
+  // build; an opaque shell was the complaint). DERIVATION_TRACE=0 silences.
+  if (mode === 'real' && process.env.DERIVATION_TRACE === undefined) process.env.DERIVATION_TRACE = '1';
 
   const world = loadWorld(worldPath);
   const lint = plotLint(world);
@@ -80,24 +100,50 @@ async function main() {
   const label = arg('label', `${scriptName}-${mode}-${timestamp()}`);
   const outDir = path.resolve(ROOT, arg('out', 'exports/dramatic-derivation/loop'), label);
 
-  const target = mode === 'real' ? resolveTarget() : { provider: 'mock', model: 'mock' };
+  const ROLE_NAMES = ['director', 'tutor', 'learner'];
+  const targets = Object.fromEntries(
+    ROLE_NAMES.map((r) => [r, mode === 'real' ? resolveTarget(r) : { provider: 'mock', model: 'mock' }]),
+  );
+  const showTarget = (t) => `${t.provider}/${t.model || '(cli default)'}`;
   console.log(`world   ${world.id} (lint PASS, S first derivable at release-turn ${lint.firstEntailedTurn})`);
   console.log(`script  ${path.relative(ROOT, scriptPath)}`);
-  console.log(`backend ${mode}${mode === 'real' ? ` → ${target.provider}/${target.model}` : ' (zero-cost)'}`);
   if (mode === 'real') {
+    console.log('backend real');
+    for (const r of ROLE_NAMES) console.log(`          ${r.padEnd(8)} ${showTarget(targets[r])}`);
+    if (Object.values(targets).some((t) => t.cli)) {
+      console.log('          (CLI roles bill plan quota; the CLI reports no token usage)');
+    }
     const maxCalls = world.turnCap * 3 * 2; // 3 roles/turn, worst-case one repair each
-    console.log(`        attended paid run: ≤${maxCalls} calls hard-bounded by turn_cap ${world.turnCap}`);
+    console.log(`        attended run: ≤${maxCalls} calls hard-bounded by turn_cap ${world.turnCap}`);
+  } else {
+    console.log('backend mock (zero-cost)');
+  }
+  if (dials.recognition || dials.charisma) {
+    console.log(`dials   recognition ${dials.recognition}/3, charisma ${dials.charisma}/3`);
   }
 
   const client = makeLlmClient({ mode });
   const roles = {
-    director: makeLlmDirector(world, client),
-    tutor: makeLlmTutor(world, client, { script }),
+    director: makeLlmDirector(world, client, { dials }),
+    tutor: makeLlmTutor(world, client, { script, dials }),
     learner: makeLlmLearner({ setting: world.setting, voice: world.learnerVoice, client }),
   };
 
+  // One compact line per completed turn — the shell's live pulse.
+  const onTurn = (s) => {
+    const bits = [`  t${String(s.turn).padStart(2, '0')}/${s.turnCap}`, `D=${s.D}${s.forced ? ' FORCED' : ''}`];
+    if (s.released.length) bits.push(`▲ ${s.released.map((f) => f.join(' ')).join('; ')}`);
+    if (s.adopted) bits.push(`+${s.adopted} adopted`);
+    if (s.retracted) bits.push(`−${s.retracted} retracted`);
+    if (s.phase && s.phase.turn === s.turn) bits.push(`movement "${s.phase.name}"`);
+    if (s.asserted) bits.push('ASSERTS');
+    for (const e of s.events) bits.push(`⚑ ${e.type}`);
+    if (s.endedBy) bits.push(`— ends: ${s.endedBy}`);
+    console.log(bits.join('  '));
+  };
+
   const started = Date.now();
-  const result = await runDrama({ world, roles });
+  const result = await runDrama({ world, roles, options: { onTurn } });
   const elapsedMs = Date.now() - started;
   const usage = client.usage();
   const diagnosis = {
@@ -105,7 +151,8 @@ async function main() {
     note,
     scriptPath: path.relative(ROOT, scriptPath),
     worldPath: path.relative(ROOT, worldPath),
-    backend: { mode, ...target },
+    backend: { mode, roles: targets },
+    dials,
     elapsedMs,
     usage,
     ...diagnose(result, world),
@@ -114,7 +161,7 @@ async function main() {
   fs.mkdirSync(outDir, { recursive: true });
   fs.writeFileSync(
     path.join(outDir, 'transcript.md'),
-    renderTranscript(result, world, { title: `${world.title} — ${label}` }),
+    renderTranscript(result, world, { title: `${world.title} — ${label}`, diagnosis }),
   );
   fs.writeFileSync(path.join(outDir, 'diagnosis.json'), `${JSON.stringify(diagnosis, null, 2)}\n`);
   fs.writeFileSync(path.join(outDir, 'result.json'), `${JSON.stringify(result, null, 2)}\n`);
@@ -133,7 +180,13 @@ async function main() {
     );
   }
   console.log('');
-  console.log(renderDCurve(result.trajectory));
+  console.log(
+    renderDCurve(result.trajectory, {
+      acts: stagingSegments(result, world),
+      releaseTurns: new Set(result.ledger.map((entry) => entry.turn)),
+      slope: diagnosis.learningSlope,
+    }),
+  );
   console.log('');
   const adherence = diagnosis.releaseAdherence;
   console.log(
@@ -143,6 +196,14 @@ async function main() {
     .map(([k, v]) => `${k}×${v}`)
     .join(', ');
   console.log(`events  ${eventLine || 'none'}`);
+  const staging = diagnosis.staging;
+  console.log(
+    `staging ${
+      staging.source === 'director'
+        ? `${staging.movements.length} movements declared by the director`
+        : "no movements declared (author's sketch held)"
+    }${staging.tutorNotes.length ? `, ${staging.tutorNotes.length} tutor notes` : ''}`,
+  );
   for (const [role, stats] of Object.entries(diagnosis.dialogueDiscipline)) {
     console.log(
       `        ${role}: ${stats.turns} turns, avg ${stats.avgSentences} sentences (max ${stats.maxSentences}), avg ${stats.avgWords} words`,
@@ -151,6 +212,11 @@ async function main() {
   console.log(
     `cost    ${usage.calls} calls, ${usage.inputTokens}+${usage.outputTokens} tokens, $${usage.costUSD.toFixed(4)}`,
   );
+  for (const [role, u] of Object.entries(usage.byRole || {})) {
+    console.log(
+      `        ${role.padEnd(8)} ${u.calls} calls, ${u.inputTokens}+${u.outputTokens} tokens, $${u.costUSD.toFixed(4)}`,
+    );
+  }
   console.log('');
   console.log(`artifacts ${path.relative(ROOT, outDir)}/{transcript.md, diagnosis.json, result.json}`);
 }

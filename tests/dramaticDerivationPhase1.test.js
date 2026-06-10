@@ -25,8 +25,11 @@ import {
   makeLlmDirector,
   makeLlmTutor,
   makeLlmLearner,
+  resolveTarget,
   diagnose,
   releaseAdherence,
+  stagingSegments,
+  renderEvalPanel,
 } from '../services/dramaticDerivation/index.js';
 import { buildScreenSpec } from '../scripts/screen-derivation-world.js';
 
@@ -177,6 +180,47 @@ test('learner prompts never carry a concealed token before its release turn', as
   }
 });
 
+test('free dramaturgy: mock director declares the sketched movements; diagnosis reports the staging', async () => {
+  const { client } = recordingClient();
+  const result = await runDrama({ world, roles: llmRoles(client) });
+
+  // The mock director converts each phaseHint (sketch-act boundary) into a
+  // declared movement + a same-turn tutor note — so declarations land exactly
+  // at the sketch's act starts, within the turns actually played.
+  const actStarts = world.dramaturgy.acts.map((a) => a.turns[0]).filter((t) => t <= result.turnsPlayed);
+  const declares = result.transcript.filter((l) => l.role === 'director' && l.meta?.phase?.name);
+  assert.deepEqual(
+    declares.map((l) => l.turn),
+    actStarts,
+  );
+  assert.ok(
+    declares.every((l) => l.meta.tutorNote),
+    'each mock declaration carries a note to the tutor',
+  );
+
+  // Realized segments come from the declarations (source director), not the
+  // sketch — and the diagnosis surfaces the same staging summary the shell
+  // and the viewer report.
+  const segments = stagingSegments(result, world);
+  assert.ok(segments.every((s) => s.source === 'director'));
+  assert.deepEqual(
+    segments.map((s) => s.turns[0]),
+    actStarts,
+  );
+
+  const d = diagnose(result, world);
+  assert.equal(d.staging.source, 'director');
+  assert.deepEqual(
+    d.staging.movements.map((m) => m.turn),
+    actStarts,
+  );
+  assert.equal(d.staging.tutorNotes.length, actStarts.length);
+
+  const panel = renderEvalPanel(d);
+  assert.match(panel, /movements declared by the director/);
+  assert.match(panel, /notes? to the tutor/);
+});
+
 test('learner adoption is index-mapped: nothing unreleased can enter the success channel', async () => {
   const { client } = recordingClient();
   const result = await runDrama({ world, roles: llmRoles(client) });
@@ -198,4 +242,57 @@ test('tutor factory requires a role-script; learner factory requires a client', 
   const { client } = recordingClient();
   assert.throws(() => makeLlmTutor(world, client, { script: '  ' }), /role-script/);
   assert.throws(() => makeLlmLearner({ setting: 'x', voice: 'y' }), /client/);
+});
+
+// ---------------------------------------------------------------------------
+// per-role provider/model targeting (six-role ready: the cast will grow to
+// director, tutor, learner + the two superegos — resolution must be generic
+// over role NAMES, not a hardcoded trio)
+// ---------------------------------------------------------------------------
+
+test('resolveTarget: role env overrides shared; codex is a CLI target; superego-style names resolve', () => {
+  const keys = [
+    'DERIVATION_PROVIDER',
+    'DERIVATION_MODEL',
+    'DERIVATION_LEARNER_MODEL',
+    'DERIVATION_DIRECTOR_PROVIDER',
+    'DERIVATION_DIRECTOR_MODEL',
+    'DERIVATION_TUTOR_SUPEREGO_PROVIDER',
+    'DERIVATION_TUTOR_SUPEREGO_MODEL',
+  ];
+  const saved = Object.fromEntries(keys.map((k) => [k, process.env[k]]));
+  try {
+    process.env.DERIVATION_PROVIDER = 'codex';
+    delete process.env.DERIVATION_MODEL;
+    process.env.DERIVATION_LEARNER_MODEL = 'gpt-5.2';
+    process.env.DERIVATION_DIRECTOR_PROVIDER = 'claude';
+    process.env.DERIVATION_DIRECTOR_MODEL = 'opus';
+    process.env.DERIVATION_TUTOR_SUPEREGO_PROVIDER = 'openrouter';
+    process.env.DERIVATION_TUTOR_SUPEREGO_MODEL = 'gemini-flash';
+
+    // shared codex default: CLI target, model null = the CLI's own default
+    const tutor = resolveTarget('tutor');
+    assert.deepEqual(tutor, { provider: 'codex', model: null, cli: true });
+
+    // role-level model override rides on the shared CLI provider
+    const learner = resolveTarget('learner');
+    assert.deepEqual(learner, { provider: 'codex', model: 'gpt-5.2', cli: true });
+
+    // claude is the second CLI provider — a full per-role provider+model
+    // override (the mixed-cast pattern: claude director over codex shared)
+    const director = resolveTarget('director');
+    assert.deepEqual(director, { provider: 'claude', model: 'opus', cli: true });
+
+    // a future role name resolves generically (non-alphanumerics → '_') and
+    // API providers still get providers.yaml alias resolution
+    const superego = resolveTarget('tutor_superego');
+    assert.equal(superego.provider, 'openrouter');
+    assert.equal(superego.model, 'google/gemini-3-flash-preview');
+    assert.ok(!superego.cli);
+  } finally {
+    for (const k of keys) {
+      if (saved[k] === undefined) delete process.env[k];
+      else process.env[k] = saved[k];
+    }
+  }
 });

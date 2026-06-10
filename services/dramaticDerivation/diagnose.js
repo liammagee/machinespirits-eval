@@ -5,10 +5,18 @@
  *
  * diagnose() computes everything the loop needs to decide WHAT failed —
  * trajectory shape, recognition timing, release adherence against the frozen
- * plot, dialogue discipline — without a judge anywhere. renderTranscript()
- * produces the markdown the operator actually reads: the drama as a drama,
- * act by act, with the instrument panel alongside.
+ * plot, dialogue discipline, learning slope per movement — without a judge
+ * anywhere. renderTranscript() produces the markdown the operator actually
+ * reads: the drama as a drama, movement by movement, with the instrument
+ * panel at the foot.
+ *
+ * Under free dramaturgy (engine.js header) the realized arc is the
+ * DIRECTOR'S declared movements, not the world's authored sketch;
+ * stagingSegments() recovers it from the transcript and every renderer here
+ * groups, draws, and rates against that.
  */
+
+import { derivationDistance } from './slope.js';
 
 function countSentences(text) {
   return (text || '')
@@ -56,6 +64,101 @@ export function releaseAdherence(world, ledger, turnsPlayed = Infinity) {
   };
 }
 
+/**
+ * The REALIZED dramaturgy: the movements the director actually declared
+ * (director transcript lines carrying meta.phase), falling back to the
+ * world's authored sketch when none was. Segments are act-shaped
+ * ({act, title, intent, turns:[start,end], source}) so the curve, the
+ * slope, and the transcript grouping consume sketch and declaration
+ * interchangeably.
+ */
+export function stagingSegments(result, world) {
+  const declared = result.transcript
+    .filter((line) => line.role === 'director' && line.meta?.phase?.name)
+    .map((line) => ({
+      turn: line.turn,
+      name: line.meta.phase.name,
+      intent: (line.meta.phase.intent || '').trim(),
+    }));
+  if (!declared.length) {
+    return (world?.dramaturgy?.acts || [])
+      .filter((a) => a.turns[0] <= result.turnsPlayed)
+      .map((a) => ({
+        act: a.act,
+        title: `Act ${a.act} — ${a.title}`,
+        intent: (a.intent || '').trim(),
+        turns: [a.turns[0], Math.min(a.turns[1], result.turnsPlayed)],
+        source: 'sketch',
+      }));
+  }
+  const segments = [];
+  if (declared[0].turn > 1) {
+    segments.push({
+      act: '0',
+      title: 'Overture (before the first declared movement)',
+      intent: '',
+      turns: [1, declared[0].turn - 1],
+      source: 'implicit',
+    });
+  }
+  declared.forEach((d, i) => {
+    const end = i + 1 < declared.length ? declared[i + 1].turn - 1 : result.turnsPlayed;
+    segments.push({
+      act: String(i + 1),
+      title: d.name,
+      intent: d.intent,
+      turns: [d.turn, Math.max(d.turn, end)],
+      source: 'director',
+    });
+  });
+  return segments;
+}
+
+/**
+ * Realized learning slope: how fast D(t) actually descended, overall and per
+ * movement. D₀ (the distance before the curtain rises) is recomputed from the
+ * background alone — exactly the engine's turn-0 grounded state — so the drop
+ * ON a movement's first turn is attributed to that movement. Rates are in
+ * D-units per turn; positive = descending (learning), 0 = plateau. The
+ * per-movement key stays `perAct` (segments are act-shaped) so older saved
+ * diagnoses and the new ones render through one path.
+ */
+export function learningSlope(result, world, segments = null) {
+  const d0 = derivationDistance(world, world.background);
+  const byTurn = new Map(result.trajectory.map((p) => [p.turn, p.D]));
+  const dAt = (turn) => (turn <= 0 ? d0 : (byTurn.get(turn) ?? null));
+  const rate = (dStart, dEnd, turns) =>
+    dStart === null || dEnd === null || !turns ? null : +((dStart - dEnd) / turns).toFixed(3);
+  const perAct = (segments || stagingSegments(result, world))
+    .filter((a) => a.turns[0] <= result.turnsPlayed)
+    .map((a) => {
+      const start = a.turns[0];
+      const end = Math.min(a.turns[1], result.turnsPlayed);
+      const dStart = dAt(start - 1);
+      const dEnd = dAt(end);
+      return {
+        act: a.act,
+        title: a.title,
+        turns: [start, end],
+        dStart,
+        dEnd,
+        delta: dStart !== null && dEnd !== null ? dStart - dEnd : null,
+        ratePerTurn: rate(dStart, dEnd, end - start + 1),
+      };
+    });
+  const dFinal = result.trajectory.length ? result.trajectory[result.trajectory.length - 1].D : d0;
+  return {
+    d0,
+    dFinal,
+    overall: {
+      delta: d0 - dFinal,
+      turns: result.turnsPlayed,
+      ratePerTurn: rate(d0, dFinal, result.turnsPlayed),
+    },
+    perAct,
+  };
+}
+
 /** Longest stretch of flat D between the first release and the forcing turn. */
 function longestPlateau(trajectory, firstReleaseTurn, firstForcedTurn) {
   let longest = 0;
@@ -97,6 +200,12 @@ export function diagnose(result, world) {
     delete stats.words;
   }
 
+  const segments = stagingSegments(result, world);
+  const movements = segments.filter((s) => s.source === 'director');
+  const tutorNotes = result.transcript
+    .filter((line) => line.role === 'director' && line.meta?.tutorNote)
+    .map((line) => ({ turn: line.turn, text: line.meta.tutorNote }));
+
   return {
     worldId: result.worldId,
     verdict: result.verdict,
@@ -109,40 +218,63 @@ export function diagnose(result, world) {
         ? result.assertedGroundedTurn - result.firstForcedTurn
         : null,
     dCurve: result.trajectory.map((p) => p.D),
+    learningSlope: learningSlope(result, world, segments),
     longestPlateau:
       firstReleaseTurn === null ? 0 : longestPlateau(result.trajectory, firstReleaseTurn, result.firstForcedTurn),
     aporiaWindow: world.slope.aporia_window,
     eventsByType,
     fabricatedFacts: result.events.filter((e) => e.type === 'fabricated_fact').map((e) => e.detail),
     releaseAdherence: releaseAdherence(world, result.ledger, result.turnsPlayed),
+    staging: {
+      source: movements.length ? 'director' : 'sketch',
+      movements: movements.map((s) => ({ turn: s.turns[0], name: s.title, intent: s.intent })),
+      tutorNotes,
+    },
     dialogueDiscipline: perRole,
     proofExtracted: Boolean(result.proof),
   };
 }
 
-/** ASCII D(t) staircase for the console + note files. */
-export function renderDCurve(trajectory) {
+/**
+ * ASCII D(t) staircase for the console + note files. Optional markers turn
+ * the picture into a readable slope instrument: `acts` draws a vertical bar
+ * at each act boundary (so per-act slope is visible as the staircase pitch
+ * between bars), `releaseTurns` adds a ▲ tick row under the axis, and
+ * `slope` (the diagnose() learningSlope block) appends per-act rates.
+ */
+export function renderDCurve(trajectory, { acts = null, releaseTurns = null, slope = null } = {}) {
   if (!trajectory.length) return '(no trajectory)';
   const maxD = Math.max(...trajectory.map((p) => p.D), 1);
+  const actStarts = new Set((acts || []).map((a) => a.turns[0]).filter((t) => t > trajectory[0].turn));
+  const row = (cell) => trajectory.map((p) => `${actStarts.has(p.turn) ? '│' : ''}${cell(p)}`).join('');
   const lines = [];
   for (let level = maxD; level >= 0; level -= 1) {
-    const row = trajectory.map((p) => (p.D === level ? (p.forced ? '◉' : '●') : p.D > level ? ' ' : '·')).join('');
-    lines.push(`D=${String(level).padStart(2)} ${row}`);
+    lines.push(
+      `D=${String(level).padStart(2)} ${row((p) => (p.D === level ? (p.forced ? '◉' : '●') : p.D > level ? ' ' : '·'))}`,
+    );
   }
-  const axis = trajectory
-    .map((p) => (p.turn % 10 === 0 ? String((p.turn / 10) % 10) : p.turn % 5 === 0 ? '+' : ' '))
-    .join('');
-  lines.push(`turn  ${axis} (+=5, digit=x10)`);
+  lines.push(
+    `turn  ${row((p) => (p.turn % 10 === 0 ? String((p.turn / 10) % 10) : p.turn % 5 === 0 ? '+' : ' '))} (+=5, digit=x10)`,
+  );
+  if (releaseTurns instanceof Set && releaseTurns.size) {
+    lines.push(`rel   ${row((p) => (releaseTurns.has(p.turn) ? '▲' : ' '))} (▲ = evidence released)`);
+  }
+  if (slope) {
+    const perAct = (slope.perAct || [])
+      .map((a) => `${a.act} ${a.ratePerTurn === null ? '—' : a.ratePerTurn.toFixed(2)}`)
+      .join(' │ ');
+    const overall = slope.overall?.ratePerTurn;
+    lines.push(
+      `slope ${overall === null || overall === undefined ? '—' : overall.toFixed(2)} D/turn overall (D ${slope.d0}→${slope.dFinal})${perAct ? `; per movement: ${perAct}` : ''}`,
+    );
+  }
   return lines.join('\n');
 }
 
-function actFor(world, turn) {
-  const acts = world.dramaturgy?.acts || [];
-  return acts.find((a) => turn >= a.turns[0] && turn <= a.turns[1]) || null;
-}
-
-/** The drama as a readable artifact: acts, lines, releases, instrument panel. */
-export function renderTranscript(result, world, { title = null } = {}) {
+/** The drama as a readable artifact: movements, lines, releases, instrument panel. */
+export function renderTranscript(result, world, { title = null, diagnosis = null } = {}) {
+  const segments = stagingSegments(result, world);
+  const panel = diagnosis || diagnose(result, world);
   const lines = [];
   lines.push(`# ${title || `${world.title} — ${result.verdict}`}`);
   lines.push('');
@@ -154,10 +286,17 @@ export function renderTranscript(result, world, { title = null } = {}) {
   }
   lines.push('');
   lines.push('```');
-  lines.push(renderDCurve(result.trajectory));
+  lines.push(
+    renderDCurve(result.trajectory, {
+      acts: segments,
+      releaseTurns: new Set(result.ledger.map((entry) => entry.turn)),
+      slope: panel.learningSlope || learningSlope(result, world, segments),
+    }),
+  );
   lines.push('```');
 
-  let currentAct = null;
+  let currentSegment = null;
+  const segmentFor = (turn) => segments.find((s) => turn >= s.turns[0] && turn <= s.turns[1]) || null;
   const byTurn = new Map();
   for (const line of result.transcript) {
     if (!byTurn.has(line.turn)) byTurn.set(line.turn, []);
@@ -170,11 +309,14 @@ export function renderTranscript(result, world, { title = null } = {}) {
   }
 
   for (const [turn, turnLines] of [...byTurn.entries()].sort((a, b) => a[0] - b[0])) {
-    const act = actFor(world, turn);
-    if (act && act !== currentAct) {
-      currentAct = act;
+    const segment = segmentFor(turn);
+    if (segment && segment !== currentSegment) {
+      currentSegment = segment;
       lines.push('');
-      lines.push(`## Act ${act.act} — ${act.title} (turns ${act.turns[0]}–${act.turns[1]})`);
+      lines.push(
+        `## ${segment.title} (turns ${segment.turns[0]}–${segment.turns[1]})${segment.source === 'director' ? ' — declared by the director' : ''}`,
+      );
+      if (segment.intent) lines.push(`*${segment.intent}*`);
     }
     lines.push('');
     lines.push(`### Turn ${turn}`);
@@ -182,6 +324,12 @@ export function renderTranscript(result, world, { title = null } = {}) {
       if (line.role === 'director') {
         lines.push(`*${(line.text || '').trim()}*`);
         if (line.meta?.release) lines.push(`  — *releases \`${line.meta.release}\`*`);
+        if (line.meta?.phase) {
+          lines.push(
+            `  — *declares the movement: **${line.meta.phase.name}**${line.meta.phase.intent ? ` (${line.meta.phase.intent})` : ''}*`,
+          );
+        }
+        if (line.meta?.tutorNote) lines.push(`  — *note to the tutor: "${line.meta.tutorNote}"*`);
       } else if (line.role === 'tutor') {
         lines.push(`**Tutor:** ${(line.text || '').trim()}`);
         const move = line.meta?.move;
@@ -213,6 +361,78 @@ export function renderTranscript(result, world, { title = null } = {}) {
     lines.push('```');
   }
   lines.push('');
+  lines.push(renderEvalPanel(panel));
+  lines.push('');
+  return lines.join('\n');
+}
+
+/**
+ * The instrument panel as markdown — the foot of every transcript (operator
+ * request 2026-06-09: "report on the eval at the bottom of the transcript").
+ * Pure formatting over diagnose() output; no judge anywhere. `dials`, when
+ * the loop attached them, are echoed so a transcript carries its own
+ * operator settings.
+ */
+export function renderEvalPanel(diagnosis) {
+  const d = diagnosis;
+  const lines = [];
+  lines.push('## Instrument panel (programmatic eval — no judge)');
+  lines.push('');
+  lines.push(`- **verdict** \`${d.verdict}\` · ${d.turnsPlayed}/${d.turnCap} turns played`);
+  const recognition =
+    d.firstForcedTurn === null
+      ? 'S never forced — the learner’s board never compelled the conclusion'
+      : `S forced at turn ${d.firstForcedTurn}${
+          d.assertedGroundedTurn !== null
+            ? `, asserted grounded at turn ${d.assertedGroundedTurn} (gap ${d.forcedToAssertedGap})`
+            : ', never asserted'
+        }`;
+  lines.push(`- **recognition** ${recognition}`);
+  const slope = d.learningSlope;
+  if (slope) {
+    lines.push(
+      `- **learning slope** ${slope.overall.ratePerTurn ?? '—'} D/turn overall (D ${slope.d0}→${slope.dFinal} over ${slope.overall.turns} turns)`,
+    );
+    for (const a of slope.perAct || []) {
+      lines.push(
+        `  - ${a.title || `movement ${a.act}`} (turns ${a.turns[0]}–${a.turns[1]}): ${a.ratePerTurn === null ? '—' : `${a.ratePerTurn} D/turn`}${a.delta !== null ? ` (ΔD ${a.delta})` : ''}`,
+      );
+    }
+  }
+  lines.push(`- **plateau** longest flat stretch ${d.longestPlateau} turns (aporia window ${d.aporiaWindow})`);
+  const ra = d.releaseAdherence;
+  if (ra) {
+    const bits = [`${ra.onCue}/${ra.rows.length} on cue`];
+    if (ra.deviations.length) bits.push(`${ra.deviations.length} deviated`);
+    if (ra.missed.length) bits.push(`${ra.missed.length} missed`);
+    if (ra.unscheduled.length) bits.push(`${ra.unscheduled.length} unscheduled`);
+    lines.push(`- **releases** ${bits.join(' · ')}`);
+  }
+  const events = Object.entries(d.eventsByType || {});
+  lines.push(`- **events** ${events.length ? events.map(([k, v]) => `${k}×${v}`).join(' · ') : 'none'}`);
+  if (d.staging) {
+    const movements = d.staging.movements.length;
+    const notes = d.staging.tutorNotes.length;
+    lines.push(
+      `- **staging** ${
+        d.staging.source === 'director'
+          ? `${movements} movement${movements === 1 ? '' : 's'} declared by the director`
+          : "no movements declared (author's sketch held)"
+      }${notes ? ` · ${notes} note${notes === 1 ? '' : 's'} to the tutor` : ''}`,
+    );
+  }
+  if (d.dials && (d.dials.recognition || d.dials.charisma)) {
+    lines.push(`- **dials** recognition ${d.dials.recognition || 0}/3 · charisma ${d.dials.charisma || 0}/3`);
+  }
+  const roles = Object.entries(d.dialogueDiscipline || {});
+  if (roles.length) {
+    lines.push('');
+    lines.push('| role | turns | avg sentences | max | avg words |');
+    lines.push('|------|-------|---------------|-----|-----------|');
+    for (const [role, s] of roles) {
+      lines.push(`| ${role} | ${s.turns} | ${s.avgSentences} | ${s.maxSentences} | ${s.avgWords} |`);
+    }
+  }
   return lines.join('\n');
 }
 

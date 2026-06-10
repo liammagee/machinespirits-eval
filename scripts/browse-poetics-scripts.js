@@ -31,6 +31,13 @@ import {
   GATE_BUCKETS,
 } from '../services/poetics/replayBundles.js';
 import {
+  loadWorld as loadDerivationWorld,
+  renderDCurve as renderDerivationDCurve,
+  renderProof as renderDerivationProof,
+  renderEvalPanel as renderDerivationEvalPanel,
+  stagingSegments as derivationStagingSegments,
+} from '../services/dramaticDerivation/index.js';
+import {
   planJob,
   launchJob,
   listJobs,
@@ -1235,6 +1242,12 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
     if (!fs.existsSync(notePath)) return res.status(404).type('text').send('development-board note not found');
     res.type('html').sendFile(notePath);
   });
+  app.get('/derivation', (_req, res) => res.type('html').send(renderDerivationIndexHtml(listDerivationRuns())));
+  app.get('/derivation/:label', (req, res) => {
+    const run = readDerivationRun(req.params.label);
+    if (!run) return res.status(404).type('text').send('derivation run not found');
+    res.type('html').send(renderDerivationRunHtml(run));
+  });
   app.get('/browse', (_req, res) => res.type('html').send(renderBrowserHtml()));
   // Fold in the eval server's surfaces (the four /api/* routers + the public/
   // UI dirs: /chat, /pilot, /pilot-admin, /adjudication, /components, /docs) so
@@ -1594,6 +1607,12 @@ const NAV = [
   ['rubric', '/rubric', 'rubric', 'The poetics rubric — the 6 dramatic-form dimensions critics score against'],
   ['replays', '/replays', 'replays', 'Counterfactual replays diffed against their originals'],
   [
+    'derivation',
+    '/derivation',
+    'derivation',
+    'Dramatic-derivation staging loop — run transcripts, D-curves &amp; checker verdicts',
+  ],
+  [
     'summary',
     '/summary',
     'summary',
@@ -1638,7 +1657,7 @@ const NAV_PRIMARY = ['home', 'browse', 'compose', 'runs'];
 // moss accent on its summary so the current location is still legible when closed.
 const NAV_GROUPS = [
   ['tools', ['tutor', 'adjudicate', 'pilot-admin']],
-  ['reference', ['ontology', 'rubric', 'replays']],
+  ['reference', ['ontology', 'rubric', 'replays', 'derivation']],
   ['notes', ['summary', 'story', 'repertoire', 'board']],
 ];
 
@@ -1922,6 +1941,306 @@ ${
 // (so its relative assets/* resolve to /assets/*) can be framed beneath the
 // standard rail. `src` is that single-segment doc path, `active` the NAV key to
 // highlight, `frameTitle` the iframe's a11y label (defaults to the page title).
+// ── Dramatic-derivation staging-loop viewer ──────────────────────────────────
+// Read-only window onto exports/dramatic-derivation/loop/<label>/ — each run
+// dir holds {result.json, diagnosis.json, transcript.md} written by
+// scripts/run-derivation-loop.js. Pages render from the STRUCTURED artifacts
+// (result.json + diagnosis.json; world YAML loaded only as the author's-sketch
+// fallback when the director declared no movements), not by parsing the
+// markdown twin. No metered surface: spawns nothing, writes nothing — safe
+// alongside the auth posture in the header note.
+const DERIVATION_LOOP_DIR = path.resolve(ROOT, 'exports/dramatic-derivation/loop');
+const DERIVATION_LABEL_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/; // path-traversal guard
+
+function listDerivationRuns() {
+  if (!fs.existsSync(DERIVATION_LOOP_DIR)) return [];
+  const runs = [];
+  for (const name of fs.readdirSync(DERIVATION_LOOP_DIR)) {
+    if (!DERIVATION_LABEL_RE.test(name)) continue;
+    const diagPath = path.join(DERIVATION_LOOP_DIR, name, 'diagnosis.json');
+    try {
+      runs.push({
+        label: name,
+        mtimeMs: fs.statSync(diagPath).mtimeMs,
+        diagnosis: JSON.parse(fs.readFileSync(diagPath, 'utf8')),
+      });
+    } catch {
+      /* partial or corrupt run dir — not listable */
+    }
+  }
+  return runs.sort((a, b) => b.mtimeMs - a.mtimeMs);
+}
+
+function readDerivationRun(label) {
+  if (!DERIVATION_LABEL_RE.test(label)) return null;
+  const dir = path.join(DERIVATION_LOOP_DIR, label);
+  let diagnosis;
+  let result;
+  try {
+    diagnosis = JSON.parse(fs.readFileSync(path.join(dir, 'diagnosis.json'), 'utf8'));
+    result = JSON.parse(fs.readFileSync(path.join(dir, 'result.json'), 'utf8'));
+  } catch {
+    return null;
+  }
+  let world = null;
+  try {
+    world = loadDerivationWorld(path.resolve(ROOT, diagnosis.worldPath));
+  } catch {
+    /* world file moved/renamed — declared movements still render; only the sketch fallback is lost */
+  }
+  return { label, diagnosis, result, world };
+}
+
+// Backend chips tolerate both ledger formats: per-role ({mode, roles:{...}},
+// current) and the flat pre-per-role shape ({mode, provider, model}).
+function derivationBackendChips(backend = {}) {
+  const chips = [`mode ${backend.mode || '?'}`];
+  if (backend.roles) {
+    for (const [role, t] of Object.entries(backend.roles)) {
+      chips.push(`${role} ${t.provider}/${t.model || '(cli default)'}`);
+    }
+  } else if (backend.provider) {
+    chips.push(`all roles ${backend.provider}/${backend.model || '(cli default)'}`);
+  }
+  return chips;
+}
+
+const DERIVATION_SUCCESS_EVENTS = new Set(['forced', 'grounded_anagnorisis']);
+
+// Trope glossary for the tutor's move-figure labels. The two figures the
+// rhetoric ontology registers (anaphora, erotema) take their gloss verbatim
+// from config/ontology/rhetoric-core.ttl rdfs:labels; the other three are
+// glossed per the tutor scripts' own usage. Lookup is case-insensitive;
+// unknown figures render as plain labels.
+const DERIVATION_FIGURE_GLOSSARY = {
+  erotema:
+    'rhetorical question (erotema / interrogatio): a question asked not for information but to assert or press — the audience supplies the answer ("How long, Catiline, will you abuse our patience?").',
+  anaphora: 'repetition at the START of successive clauses ("we shall fight … we shall fight …").',
+  analogia:
+    'argument by proportion — the known case carried onto the unknown one ("a watermark is to paper what a signature is not to music").',
+  exemplum:
+    'a concrete instance made to carry the rule — the particular case offered as evidence for the general claim.',
+  aposiopesis:
+    'breaking off mid-sentence and leaving the thought unfinished — the silence invites the hearer to complete the inference.',
+};
+
+// A move-figure label, expandable to its gloss when the glossary knows it.
+function derivationFigureHtml(figure) {
+  const name = String(figure || '—');
+  const gloss = DERIVATION_FIGURE_GLOSSARY[name.toLowerCase().trim()];
+  if (!gloss) return escapeHtml(name);
+  return `<details class="figdef"><summary title="show what this figure is">${escapeHtml(name)}</summary><span class="figdef__t">${escapeHtml(gloss)}</span></details>`;
+}
+
+const DERIVATION_CSS = `
+.wrap{max-width:1020px;margin:0 auto;padding:18px var(--margin) 80px}
+.wrap h1{font-family:Fraunces,serif;font-weight:600;font-size:var(--s-4);margin:.3em 0 .15em}
+.wrap .lede{color:var(--ink-3);margin:0 0 14px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.chip{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);border:1px solid var(--rule);border-radius:4px;padding:2px 8px;background:var(--paper-4)}
+.chip--ok{background:var(--moss-soft);border-color:var(--moss);color:var(--moss-deep)}
+.chip--bad{background:var(--brick-soft);border-color:var(--brick);color:var(--brick-d)}
+pre.panel{background:var(--paper-2);border:1px solid var(--rule-soft);border-radius:6px;padding:12px;overflow-x:auto;font-size:var(--s-0);line-height:1.35}
+h2.sect{font-family:Fraunces,serif;font-weight:600;margin:1.7em 0 .4em;font-size:var(--s-3);border-bottom:1px solid var(--rule);padding-bottom:.2em}
+.turn{margin:14px 0;padding:10px 14px;border:1px solid var(--rule-soft);border-radius:6px;background:var(--paper-4)}
+.turn__n{font-family:"JetBrains Mono",monospace;color:var(--ink-3);font-size:var(--s-0);margin-bottom:4px}
+.line{margin:7px 0}
+.line--director{font-style:italic;color:var(--ink-3)}
+.line .who{font-weight:600}
+.line--tutor .who{color:var(--moss-deep)}
+.line--learner .who{color:var(--indigo)}
+.tmeta{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);color:var(--ink-3);margin:2px 0 0 14px}
+.tmeta .release{color:var(--moss-deep);background:var(--moss-soft);padding:0 5px;border-radius:3px}
+.tmeta .assert{color:var(--brick-d);font-weight:600}
+.flag{display:inline-block;font-family:"JetBrains Mono",monospace;font-size:var(--s-0);margin:6px 0 0 14px;padding:2px 8px;border-radius:4px}
+.flag--ok{background:var(--moss-soft);color:var(--moss-deep)}
+.flag--bad{background:var(--brick-soft);color:var(--brick-d)}
+table.idx{border-collapse:collapse;width:100%;font-size:var(--s-1)}
+table.idx th,table.idx td{border-bottom:1px solid var(--rule-soft);padding:8px 10px;text-align:left;vertical-align:top}
+table.idx th{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em}
+.mono{font-family:"JetBrains Mono",monospace;font-size:var(--s-0)}
+.wrap a{color:var(--moss-deep)}
+.sect__intent{display:block;font-family:"Source Serif 4",Georgia,serif;font-style:italic;font-weight:400;font-size:var(--s-1);color:var(--ink-3);margin-top:2px}
+details.figdef{display:inline}
+details.figdef summary{display:inline;cursor:pointer;list-style:none;text-decoration:underline dotted;text-underline-offset:2px}
+details.figdef summary::-webkit-details-marker{display:none}
+details.figdef[open] summary{color:var(--moss-deep)}
+.figdef__t{display:block;margin:4px 0 2px;padding:5px 9px;border-left:2px solid var(--moss);background:var(--paper-2);color:var(--ink-2);font-style:italic;max-width:62ch;white-space:normal}
+`;
+
+function renderDerivationIndexHtml(runs) {
+  const rows = runs
+    .map(({ label, diagnosis: d }) => {
+      const events = Object.entries(d.eventsByType || {})
+        .map(([k, v]) => {
+          const txt = `${escapeHtml(k)}×${v}`;
+          return DERIVATION_SUCCESS_EVENTS.has(k) ? txt : `<span style="color:var(--brick-d)">${txt}</span>`;
+        })
+        .join(', ');
+      const verdictOk = d.verdict === 'grounded_anagnorisis';
+      const adherence = d.releaseAdherence || {};
+      const staging = d.staging
+        ? d.staging.source === 'director'
+          ? `${d.staging.movements.length} mv${d.staging.tutorNotes?.length ? ` · ${d.staging.tutorNotes.length} notes` : ''}`
+          : 'sketch held'
+        : '—';
+      return `<tr>
+<td><a href="/derivation/${encodeURIComponent(label)}">${escapeHtml(label)}</a></td>
+<td><span class="chip ${verdictOk ? 'chip--ok' : 'chip--bad'}">${escapeHtml(d.verdict || '?')}</span></td>
+<td class="mono">${d.firstForcedTurn ?? '—'} → ${d.assertedGroundedTurn ?? '—'}</td>
+<td class="mono">${d.turnsPlayed ?? '?'}/${d.turnCap ?? '?'}</td>
+<td class="mono">${events || '—'}</td>
+<td class="mono">${adherence.onCue ?? '—'} on cue${adherence.deviations?.length ? `, <span style="color:var(--brick-d)">${adherence.deviations.length} dev</span>` : ''}</td>
+<td class="mono">${staging}</td>
+<td class="mono">${derivationBackendChips(d.backend).slice(1).map(escapeHtml).join('<br>') || '—'}</td>
+<td class="mono">${d.elapsedMs ? `${(d.elapsedMs / 1000).toFixed(0)}s` : '—'} · $${(d.usage?.costUSD ?? 0).toFixed(2)}</td>
+</tr>`;
+    })
+    .join('\n');
+  return `${pageHead({ title: 'Derivation runs · machine spirits', css: DERIVATION_CSS })}
+<body>
+${railHtml({ active: 'derivation', sub: 'dramatic-derivation staging loop — checker-verdict transcripts, no judge anywhere' })}
+<main class="wrap">
+<h1>Dramatic derivation — staging-loop runs</h1>
+<p class="lede">One row per attended iteration of <span class="mono">npm run derivation:loop</span>. The verdict is the deterministic checker's (forced grounded anagnorisis vs the failure taxonomy) — no LLM judge. Artifacts live under <span class="mono">exports/dramatic-derivation/loop/</span>.</p>
+${runs.length ? `<table class="idx"><thead><tr><th>run</th><th>verdict</th><th>forced → asserted</th><th>turns</th><th>events</th><th>releases</th><th>dramaturgy</th><th>backend</th><th>wall · cost</th></tr></thead><tbody>${rows}</tbody></table>` : '<p>No runs found. Run <span class="mono">npm run derivation:loop</span> first.</p>'}
+</main>
+</body></html>`;
+}
+
+function renderDerivationRunHtml({ label, diagnosis, result, world }) {
+  // Realized staging: director-declared movements when there are any, the
+  // author's sketch otherwise — same segments feed the headers AND the curve.
+  const segments = derivationStagingSegments(result, world);
+  const segmentFor = (turn) => segments.find((s) => turn >= s.turns[0] && turn <= s.turns[1]) || null;
+  const byTurn = new Map();
+  for (const line of result.transcript || []) {
+    if (!byTurn.has(line.turn)) byTurn.set(line.turn, []);
+    byTurn.get(line.turn).push(line);
+  }
+  const eventsByTurn = new Map();
+  for (const event of result.events || []) {
+    if (!eventsByTurn.has(event.turn)) eventsByTurn.set(event.turn, []);
+    eventsByTurn.get(event.turn).push(event);
+  }
+
+  const blocks = [];
+  let currentSegment = null;
+  for (const [turn, turnLines] of [...byTurn.entries()].sort((a, b) => a[0] - b[0])) {
+    const segment = segmentFor(turn);
+    if (segment && segment !== currentSegment) {
+      currentSegment = segment;
+      const declared = segment.source === 'director' ? ' — declared by the director' : '';
+      const intent = segment.intent ? `<span class="sect__intent">${escapeHtml(segment.intent)}</span>` : '';
+      blocks.push(
+        `<h2 class="sect">${escapeHtml(segment.title)} <span class="mono" style="color:var(--ink-3)">(turns ${segment.turns[0]}–${segment.turns[1]}${declared})</span>${intent}</h2>`,
+      );
+    }
+    const lines = turnLines
+      .map((line) => {
+        const text = escapeHtml((line.text || '').trim());
+        if (line.role === 'director') {
+          const dbits = [];
+          if (line.meta?.phase?.name)
+            dbits.push(
+              `<div class="tmeta">— declares the movement <strong>${escapeHtml(line.meta.phase.name)}</strong>${line.meta.phase.intent ? `: ${escapeHtml(line.meta.phase.intent)}` : ''}</div>`,
+            );
+          if (line.meta?.tutorNote)
+            dbits.push(`<div class="tmeta">— note to the tutor: “${escapeHtml(line.meta.tutorNote)}”</div>`);
+          if (line.meta?.release)
+            dbits.push(
+              `<div class="tmeta">— releases <span class="release">${escapeHtml(line.meta.release)}</span></div>`,
+            );
+          return `<div class="line line--director">${text}</div>${dbits.join('')}`;
+        }
+        if (line.role === 'tutor') {
+          const move = line.meta?.move;
+          const bits = [];
+          if (move)
+            bits.push(
+              `move: ${derivationFigureHtml(move.figure)} → ${escapeHtml(move.targetPremise || '—')} (${escapeHtml(move.intent || '—')})`,
+            );
+          if (line.meta?.release) bits.push(`releases <span class="release">${escapeHtml(line.meta.release)}</span>`);
+          return `<div class="line line--tutor"><span class="who">Tutor:</span> ${text}</div>${bits.length ? `<div class="tmeta">— ${bits.join(', ')}</div>` : ''}`;
+        }
+        if (line.role === 'learner') {
+          const meta = line.meta || {};
+          const bits = [];
+          if (meta.adopt?.length)
+            bits.push(`adopts ${meta.adopt.map((f) => `<code>${escapeHtml(f.join(' '))}</code>`).join(', ')}`);
+          if (meta.retract?.length)
+            bits.push(`retracts ${meta.retract.map((f) => `<code>${escapeHtml(f.join(' '))}</code>`).join(', ')}`);
+          if (meta.hypothesis) bits.push(`hypothesis: ${escapeHtml(meta.hypothesis)}`);
+          if (meta.asserts)
+            bits.push(`<span class="assert">asserts <code>${escapeHtml(meta.asserts.join(' '))}</code></span>`);
+          return `<div class="line line--learner"><span class="who">Learner:</span> ${text}</div>${bits.length ? `<div class="tmeta">— ${bits.join(' · ')}</div>` : ''}`;
+        }
+        return `<div class="line">${text}</div>`;
+      })
+      .join('\n');
+    const flags = (eventsByTurn.get(turn) || [])
+      .map(
+        (e) =>
+          `<span class="flag ${DERIVATION_SUCCESS_EVENTS.has(e.type) ? 'flag--ok' : 'flag--bad'}">⚑ ${escapeHtml(e.type)} — ${escapeHtml(e.detail || '')}</span>`,
+      )
+      .join('\n');
+    blocks.push(`<div class="turn"><div class="turn__n">turn ${turn}</div>${lines}${flags}</div>`);
+  }
+
+  const verdictOk = result.verdict === 'grounded_anagnorisis';
+  const adherence = diagnosis.releaseAdherence || {};
+  const stagingChip = diagnosis.staging
+    ? diagnosis.staging.source === 'director'
+      ? `${diagnosis.staging.movements.length} movements declared${diagnosis.staging.tutorNotes?.length ? ` · ${diagnosis.staging.tutorNotes.length} tutor notes` : ''}`
+      : 'sketch held (no movements declared)'
+    : null;
+  const dials = diagnosis.dials || {};
+  const chips = [
+    `<span class="chip ${verdictOk ? 'chip--ok' : 'chip--bad'}">${escapeHtml(result.verdict || '?')}</span>`,
+    `<span class="chip">turns ${result.turnsPlayed}/${diagnosis.turnCap ?? '?'}</span>`,
+    `<span class="chip">forced ${result.firstForcedTurn ?? '—'} → asserted ${result.assertedGroundedTurn ?? '—'}</span>`,
+    `<span class="chip">releases ${adherence.onCue ?? '—'} on cue · ${adherence.deviations?.length ?? 0} dev · ${adherence.missed?.length ?? 0} missed · ${adherence.unscheduled?.length ?? 0} unscheduled</span>`,
+    ...(stagingChip ? [`<span class="chip">${escapeHtml(stagingChip)}</span>`] : []),
+    ...(dials.recognition || dials.charisma
+      ? [`<span class="chip">dials recognition ${dials.recognition || 0}/3 · charisma ${dials.charisma || 0}/3</span>`]
+      : []),
+    ...derivationBackendChips(diagnosis.backend).map((c) => `<span class="chip">${escapeHtml(c)}</span>`),
+    `<span class="chip">${diagnosis.elapsedMs ? `${(diagnosis.elapsedMs / 1000).toFixed(1)}s` : '—'} · ${diagnosis.usage?.calls ?? '?'} calls · $${(diagnosis.usage?.costUSD ?? 0).toFixed(4)}</span>`,
+  ].join('\n');
+
+  const discipline = Object.entries(diagnosis.dialogueDiscipline || {})
+    .map(
+      ([role, s]) =>
+        `<tr><td>${escapeHtml(role)}</td><td class="mono">${s.turns}</td><td class="mono">${s.avgSentences} (max ${s.maxSentences})</td><td class="mono">${s.avgWords}</td></tr>`,
+    )
+    .join('\n');
+
+  return `${pageHead({ title: `${label} · derivation`, css: DERIVATION_CSS })}
+<body>
+${railHtml({ active: 'derivation', sub: `staging-loop run — ${label}` })}
+<main class="wrap">
+<p class="mono" style="margin-top:14px"><a href="/derivation">← all runs</a></p>
+<h1>${escapeHtml(world?.title || result.worldId || label)}</h1>
+<p class="lede mono">${escapeHtml(label)} · script ${escapeHtml(diagnosis.scriptPath || '?')}${diagnosis.note ? ` · ${escapeHtml(diagnosis.note)}` : ''}</p>
+<div class="chips">${chips}</div>
+<h2 class="sect">D(t) — remaining derivation distance</h2>
+<pre class="panel">${escapeHtml(
+    renderDerivationDCurve(result.trajectory || [], {
+      acts: segments,
+      releaseTurns: new Set((result.ledger || []).map((entry) => entry.turn)),
+      slope: diagnosis.learningSlope || null,
+    }),
+  )}</pre>
+<h2 class="sect">Dialogue discipline</h2>
+<table class="idx"><thead><tr><th>role</th><th>turns</th><th>avg sentences</th><th>avg words</th></tr></thead><tbody>${discipline}</tbody></table>
+${blocks.join('\n')}
+${result.proof ? `<h2 class="sect">The extracted proof (what did the forcing)</h2><pre class="panel">${escapeHtml(renderDerivationProof(result.proof))}</pre>` : ''}
+<h2 class="sect">Instrument panel (programmatic eval — no judge)</h2>
+<pre class="panel">${escapeHtml(renderDerivationEvalPanel(diagnosis).replace(/^## .*\n+/, ''))}</pre>
+</main>
+</body></html>`;
+}
+
 function framedNoteHtml({ active, sub, src, title, frameTitle, brand = 'machine spirits' }) {
   const css = `html,body{height:100%}
 body{display:flex;flex-direction:column;overflow:hidden}
@@ -2164,6 +2483,12 @@ function renderDashboardHtml(stats = {}) {
           'Counterfactual revisions diffed against their originals — see where one changed move reshapes the recognition.',
           '/replays',
           'open replays',
+        ],
+        [
+          'Derivation runs',
+          'The staging loop where recognition must be earned by inference: D(t) descent curves, director-declared movements, release adherence — every verdict computed by the checker, no judge anywhere.',
+          '/derivation',
+          'open the runs',
         ],
         [
           'Summary',

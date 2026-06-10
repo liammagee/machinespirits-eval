@@ -4,10 +4,19 @@
  *
  * Roles are injected async functions (mock now, LLM-backed later — same
  * seam as services/adaptiveTutor's mock/real split):
- *   director(view) -> { direction, release?: premiseId }
+ *   director(view) -> { direction, release?: premiseId,
+ *                       phase?: {name, intent},   // declare/replace the current movement
+ *                       tutorNote?: string }      // staging instruction for THIS turn's tutor
  *   tutor(view)    -> { dialogue, move?: {figure,targetPremise,intent}, release?: premiseId }
  *   learner(view)  -> { dialogue, adopt?: fact[], retract?: fact[],
  *                       hypothesis?: string, asserts?: fact }
+ *
+ * THE DRAMATURGY IS THE DIRECTOR'S (operator decision 2026-06-09, logged in
+ * notes/poetics/): the world's authored acts are a SKETCH; the director may
+ * declare movements and inject per-turn notes to the tutor as the drama
+ * needs. What stays frozen is the formal channel: the release schedule, the
+ * checker, the slope constraints, the turn cap. The learner never sees any
+ * staging state (phases, notes) — symmetric with acts before.
  *
  * THE SINGLE-CONCEALMENT INVARIANT: the learner's view contains the public
  * question (+ pattern), the world RULES (the learner knows the law, lacks
@@ -50,6 +59,10 @@ export async function runDrama({ world, roles, options = {} }) {
   const transcript = [];
   const trajectory = []; // {turn, D, forced, groundedCount}
   const events = []; // {turn, type, detail}
+  // Director-declared staging: the current movement persists until replaced;
+  // a tutor note lives for exactly one turn (director speaks first, the
+  // tutor consumes it the same turn). The learner never sees either.
+  const staging = { phase: null, note: null };
   let firstForcedTurn = null;
   let assertedGroundedTurn = null;
   let endedBy = null;
@@ -89,6 +102,7 @@ export async function runDrama({ world, roles, options = {} }) {
     releasedFacts: [...releasedFacts],
     transcript: [...transcript],
     trajectory: [...trajectory],
+    staging: { phase: staging.phase, note: staging.note },
     learnerAbox: {
       grounded: validGroundedFacts(),
       hypotheses: [...hypotheses],
@@ -104,15 +118,31 @@ export async function runDrama({ world, roles, options = {} }) {
     const directorOut = (await roles.director(omniscientView(turn, 'director'))) || {};
     const directorRelease = applyRelease(turn, directorOut.release, 'director');
     if (directorRelease) releasedThisTurn.push(directorRelease);
+    if (directorOut.phase && typeof directorOut.phase.name === 'string' && directorOut.phase.name.trim()) {
+      staging.phase = {
+        name: directorOut.phase.name.trim(),
+        intent: typeof directorOut.phase.intent === 'string' ? directorOut.phase.intent.trim() : '',
+        turn,
+      };
+    }
+    staging.note =
+      typeof directorOut.tutorNote === 'string' && directorOut.tutorNote.trim()
+        ? { text: directorOut.tutorNote.trim(), turn }
+        : null;
     transcript.push({
       turn,
       role: 'director',
       text: directorOut.direction || '',
-      meta: { release: directorOut.release || null },
+      meta: {
+        release: directorOut.release || null,
+        phase: staging.phase && staging.phase.turn === turn ? { ...staging.phase } : null,
+        tutorNote: staging.note ? staging.note.text : null,
+      },
     });
 
     // --- tutor ---
     const tutorOut = (await roles.tutor(omniscientView(turn, 'tutor'))) || {};
+    staging.note = null; // a director's note addresses exactly this turn's tutor
     const tutorRelease = applyRelease(turn, tutorOut.release, 'tutor');
     if (tutorRelease) releasedThisTurn.push(tutorRelease);
     transcript.push({
@@ -218,6 +248,22 @@ export async function runDrama({ world, roles, options = {} }) {
       events.push({ turn, type: stall, detail: `no progress over ${world.slope.aporia_window} turns` });
       if (opts.stopOnStall) endedBy = stall;
     }
+
+    // --- live status hook (the attended shell watches the drama through this) ---
+    options.onTurn?.({
+      turn,
+      turnCap: world.turnCap,
+      D,
+      forced,
+      released: [...releasedThisTurn],
+      adopted: (learnerOut.adopt || []).length,
+      retracted: (learnerOut.retract || []).length,
+      hypothesis: Boolean(learnerOut.hypothesis),
+      asserted: Boolean(learnerOut.asserts),
+      phase: staging.phase ? { ...staging.phase } : null,
+      events: events.filter((e) => e.turn === turn).map(({ type, detail }) => ({ type, detail })),
+      endedBy,
+    });
   }
 
   const verdict = resolveVerdict({ endedBy, events, firstForcedTurn, assertedGroundedTurn });
