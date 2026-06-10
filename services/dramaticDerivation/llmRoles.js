@@ -118,8 +118,9 @@ function actFor(world, turn) {
 // Director
 // ---------------------------------------------------------------------------
 
-function directorCharter(world, dials = {}) {
+function directorCharter(world, dials = {}, dramaturgy = 'free') {
   const charisma = clampDial(dials.charisma);
+  const free = dramaturgy !== 'frozen';
   const acts = (world.dramaturgy?.acts || [])
     .map((a) => `Act ${a.act} — ${a.title} (turns ${a.turns[0]}–${a.turns[1]}): ${(a.intent || '').trim()}`)
     .join('\n\n');
@@ -140,30 +141,44 @@ function directorCharter(world, dials = {}) {
     'Never state the concealed truth, never foreshadow evidence not yet released,',
     'never confirm or deny anything by staging. The drama leaks only on schedule.',
     '',
-    'THE DRAMATURGY IS YOURS. You watch the whole drama and reshape it as it needs.',
-    'Two instruments, beyond the stage direction itself:',
-    '- "phase": declare a new MOVEMENT (a name and an intent) when the drama should',
-    '  change character — when the rhythm has gone slack, when the learner has turned',
-    '  a corner, when the room needs weather of a different kind. The movement stands',
-    '  until you replace it. Most turns you will declare nothing.',
-    '- "tutor_note": a private staging instruction the tutor receives THIS turn only —',
-    '  break a rhythm, change figure, slow down, press harder, go quiet. Use it when',
-    '  the tutoring has fallen into a rut; the learner never sees it.',
-    '',
-    "The author's sketch of an arc — yours to keep, bend, or replace:",
+    ...(free
+      ? [
+          'THE DRAMATURGY IS YOURS. You watch the whole drama and reshape it as it needs.',
+          'Two instruments, beyond the stage direction itself:',
+          '- "phase": declare a new MOVEMENT (a name and an intent) when the drama should',
+          '  change character — when the rhythm has gone slack, when the learner has turned',
+          '  a corner, when the room needs weather of a different kind. The movement stands',
+          '  until you replace it. Most turns you will declare nothing.',
+          '- "tutor_note": a private staging instruction the tutor receives THIS turn only —',
+          '  break a rhythm, change figure, slow down, press harder, go quiet. Use it when',
+          '  the tutoring has fallen into a rut; the learner never sees it.',
+          '',
+          "The author's sketch of an arc — yours to keep, bend, or replace:",
+        ]
+      : [
+          "THE ARC IS THE AUTHOR'S. Follow the acts below as written; you observe and",
+          'stage, you do not restructure the drama or instruct the tutor.',
+          '',
+          'The arc, act by act:',
+        ]),
     '',
     acts,
     ...(charisma ? ['', DIRECTOR_CHARISMA_STAGING[charisma]] : []),
     '',
     'Reply with ONLY a JSON object:',
-    '{"direction": "<your stage direction>",',
-    ' "phase": {"name": "<movement name>", "intent": "<what it is for>"} or null,',
-    ' "tutor_note": "<one staging instruction for this turn\'s tutor>" or null}',
+    ...(free
+      ? [
+          '{"direction": "<your stage direction>",',
+          ' "phase": {"name": "<movement name>", "intent": "<what it is for>"} or null,',
+          ' "tutor_note": "<one staging instruction for this turn\'s tutor>" or null}',
+        ]
+      : ['{"direction": "<your stage direction>"}']),
   ].join('\n');
 }
 
-export function makeLlmDirector(world, client, { dials = {} } = {}) {
-  const system = directorCharter(world, dials);
+export function makeLlmDirector(world, client, { dials = {}, dramaturgy = 'free' } = {}) {
+  const free = dramaturgy !== 'frozen';
+  const system = directorCharter(world, dials, dramaturgy);
   return async (view) => {
     const { entry, premise } = scheduledFor(world, view.turn, 'director');
     const act = actFor(world, view.turn);
@@ -172,7 +187,11 @@ export function makeLlmDirector(world, client, { dials = {} } = {}) {
       : 'No evidence is due this turn. Hold the stage — a beat of scene, mood, or business that keeps the question alive. Add no facts.';
     const movement = view.staging?.phase
       ? `Current movement (yours, declared turn ${view.staging.phase.turn}): ${view.staging.phase.name}${view.staging.phase.intent ? ` — ${view.staging.phase.intent}` : ''}`
-      : `No movement declared yet.${act ? ` The author's sketch places this turn in Act ${act.act} — ${act.title}.` : ''}`;
+      : free
+        ? `No movement declared yet.${act ? ` The author's sketch places this turn in Act ${act.act} — ${act.title}.` : ''}`
+        : act
+          ? `This turn falls in Act ${act.act} — ${act.title} (the author's arc).`
+          : '';
     const lastPoint = view.trajectory[view.trajectory.length - 1] || null;
     const pastPoint = view.trajectory.length > 3 ? view.trajectory[view.trajectory.length - 4] : null;
     const pulse = lastPoint
@@ -198,13 +217,13 @@ export function makeLlmDirector(world, client, { dials = {} } = {}) {
         question: world.question,
         // mock determinism: declare a movement wherever the author's sketch turns
         phaseHint:
-          act && act.turns[0] === view.turn
+          free && act && act.turns[0] === view.turn
             ? { title: `Act ${act.act} — ${act.title}`, intent: act.intent || '' }
             : null,
       },
     });
     const phase =
-      out.phase && typeof out.phase === 'object' && typeof out.phase.name === 'string' && out.phase.name.trim()
+      free && out.phase && typeof out.phase === 'object' && typeof out.phase.name === 'string' && out.phase.name.trim()
         ? {
             name: out.phase.name.trim(),
             intent: typeof out.phase.intent === 'string' ? out.phase.intent.trim() : '',
@@ -214,7 +233,10 @@ export function makeLlmDirector(world, client, { dials = {} } = {}) {
       direction: typeof out.direction === 'string' ? out.direction.trim() : '',
       release: entry ? entry.premise : null,
       phase,
-      tutorNote: typeof out.tutor_note === 'string' && out.tutor_note.trim() ? out.tutor_note.trim() : null,
+      // frozen dramaturgy (the control arm) hard-drops both staging channels at
+      // the parser, whatever the model emitted — the gate, not the charter, is
+      // the enforcement point.
+      tutorNote: free && typeof out.tutor_note === 'string' && out.tutor_note.trim() ? out.tutor_note.trim() : null,
     };
   };
 }

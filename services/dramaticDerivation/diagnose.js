@@ -178,6 +178,55 @@ function longestPlateau(trajectory, firstReleaseTurn, firstForcedTurn) {
   return longest;
 }
 
+/**
+ * Figure-diversity instrument — the S0→S1 adaptation measure. The lock-in
+ * defect is the tutor playing one figure regardless of state (erotema 30/32
+ * in the v002 paid runs); this counts the realized figure distribution and,
+ * crucially, whether figure SWITCHES are contingent on the director's
+ * one-turn notes (mechanism traceability: variety that ignores the staging
+ * channel is noise, not adaptation). All counts are programmatic — no judge.
+ */
+export function tutorFigures(result) {
+  const noteTurns = new Set(
+    result.transcript.filter((l) => l.role === 'director' && l.meta?.tutorNote).map((l) => l.turn),
+  );
+  const moves = result.transcript
+    .filter((l) => l.role === 'tutor' && l.meta?.move)
+    .map((l) => ({
+      turn: l.turn,
+      figure:
+        String(l.meta.move.figure || '')
+          .toLowerCase()
+          .trim() || '(none)',
+    }));
+  const counts = {};
+  for (const m of moves) counts[m.figure] = (counts[m.figure] || 0) + 1;
+  const total = moves.length;
+  const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0] || null;
+  const rate = (n, d) => (d ? +(n / d).toFixed(3) : null);
+  let switches = 0;
+  const onNote = { switches: 0, opportunities: 0 };
+  const elsewhere = { switches: 0, opportunities: 0 };
+  for (let i = 1; i < moves.length; i += 1) {
+    const switched = moves[i].figure !== moves[i - 1].figure;
+    if (switched) switches += 1;
+    const bucket = noteTurns.has(moves[i].turn) ? onNote : elsewhere;
+    bucket.opportunities += 1;
+    if (switched) bucket.switches += 1;
+  }
+  return {
+    total,
+    counts,
+    distinct: Object.keys(counts).length,
+    topFigure: top ? top[0] : null,
+    topShare: top && total ? rate(top[1], total) : null,
+    switchRate: rate(switches, total - 1),
+    noteTurns: noteTurns.size,
+    switchOnNoteTurns: rate(onNote.switches, onNote.opportunities),
+    switchElsewhere: rate(elsewhere.switches, elsewhere.opportunities),
+  };
+}
+
 export function diagnose(result, world) {
   const eventsByType = {};
   for (const event of result.events) {
@@ -230,6 +279,7 @@ export function diagnose(result, world) {
       movements: movements.map((s) => ({ turn: s.turns[0], name: s.title, intent: s.intent })),
       tutorNotes,
     },
+    tutorFigures: tutorFigures(result),
     dialogueDiscipline: perRole,
     proofExtracted: Boolean(result.proof),
   };
@@ -423,6 +473,18 @@ export function renderEvalPanel(diagnosis) {
   }
   if (d.dials && (d.dials.recognition || d.dials.charisma)) {
     lines.push(`- **dials** recognition ${d.dials.recognition || 0}/3 · charisma ${d.dials.charisma || 0}/3`);
+  }
+  if (d.dramaturgy === 'frozen') {
+    lines.push('- **dramaturgy** frozen (control: the director cannot declare movements or pass notes)');
+  }
+  const tf = d.tutorFigures;
+  if (tf && tf.total) {
+    const fmt = (r) => (r === null || r === undefined ? '—' : r.toFixed(2));
+    lines.push(
+      `- **figures** ${tf.topFigure} ${tf.counts[tf.topFigure]}/${tf.total} (${Math.round((tf.topShare || 0) * 100)}%) · ${tf.distinct} distinct · switch rate ${fmt(tf.switchRate)}${
+        tf.noteTurns ? ` (on note turns ${fmt(tf.switchOnNoteTurns)} vs elsewhere ${fmt(tf.switchElsewhere)})` : ''
+      }`,
+    );
   }
   const roles = Object.entries(d.dialogueDiscipline || {});
   if (roles.length) {

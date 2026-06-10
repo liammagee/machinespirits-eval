@@ -29,6 +29,7 @@ import {
   diagnose,
   releaseAdherence,
   stagingSegments,
+  tutorFigures,
   renderEvalPanel,
 } from '../services/dramaticDerivation/index.js';
 import { buildScreenSpec } from '../scripts/screen-derivation-world.js';
@@ -219,6 +220,65 @@ test('free dramaturgy: mock director declares the sketched movements; diagnosis 
   const panel = renderEvalPanel(d);
   assert.match(panel, /movements declared by the director/);
   assert.match(panel, /notes? to the tutor/);
+});
+
+test('frozen dramaturgy (control arm): both staging channels are hard-dropped; the formal layer is untouched', async () => {
+  const { client } = recordingClient();
+  const roles = {
+    director: makeLlmDirector(world, client, { dramaturgy: 'frozen' }),
+    tutor: makeLlmTutor(world, client, { script }),
+    learner: makeLlmLearner({ setting: world.setting, voice: world.learnerVoice, client }),
+  };
+  const result = await runDrama({ world, roles });
+
+  // The evidence channel is identical to the free run: same verdict, same
+  // recognition turn, every release on cue. Only the staging channels differ.
+  assert.equal(result.verdict, 'grounded_anagnorisis');
+  assert.equal(result.firstForcedTurn, 32);
+  const adherence = releaseAdherence(world, result.ledger, result.turnsPlayed);
+  assert.equal(adherence.onCue, world.releaseSchedule.length);
+
+  // No director line carries a declared movement or a tutor note — the
+  // parser gate, not the charter, is what the test leans on.
+  assert.ok(!result.transcript.some((l) => l.role === 'director' && l.meta?.phase));
+  assert.ok(!result.transcript.some((l) => l.role === 'director' && l.meta?.tutorNote));
+
+  const d = diagnose(result, world);
+  assert.equal(d.staging.source, 'sketch');
+  assert.equal(d.staging.movements.length, 0);
+  assert.equal(d.staging.tutorNotes.length, 0);
+  const segments = stagingSegments(result, world);
+  assert.ok(segments.length > 0 && segments.every((s) => s.source === 'sketch'));
+
+  // The shell composes the diagnosis as {dramaturgy, ...diagnose(...)} —
+  // the panel then carries the control-arm marker.
+  const panel = renderEvalPanel({ ...d, dramaturgy: 'frozen' });
+  assert.match(panel, /no movements declared \(author's sketch held\)/);
+  assert.match(panel, /\*\*dramaturgy\*\* frozen \(control/);
+});
+
+test('tutorFigures: mock run reads as total lock-in (the instrument the S0→S1 contrast scores)', async () => {
+  const { client } = recordingClient();
+  const result = await runDrama({ world, roles: llmRoles(client) });
+  const tf = tutorFigures(result);
+
+  // The mock tutor plays erotema every turn — the degenerate S0 the paid
+  // baseline approximated at 30/32. The instrument must read it exactly.
+  assert.equal(tf.total, result.turnsPlayed);
+  assert.equal(tf.topFigure, 'erotema');
+  assert.equal(tf.topShare, 1);
+  assert.equal(tf.distinct, 1);
+  assert.equal(tf.switchRate, 0);
+
+  // Note-contingent split: the mock director notes at each sketch-act start
+  // (4 within the played turns); zero switches on either side of the split.
+  const actStarts = world.dramaturgy.acts.map((a) => a.turns[0]).filter((t) => t <= result.turnsPlayed);
+  assert.equal(tf.noteTurns, actStarts.length);
+  assert.equal(tf.switchOnNoteTurns, 0);
+  assert.equal(tf.switchElsewhere, 0);
+
+  const panel = renderEvalPanel(diagnose(result, world));
+  assert.match(panel, /\*\*figures\*\* erotema \d+\/\d+ \(100%\)/);
 });
 
 test('learner adoption is index-mapped: nothing unreleased can enter the success channel', async () => {

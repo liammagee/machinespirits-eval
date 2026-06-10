@@ -10,6 +10,7 @@ export {
   releaseAdherence,
   learningSlope,
   stagingSegments,
+  tutorFigures,
   renderDCurve,
   renderTranscript,
   renderEvalPanel,

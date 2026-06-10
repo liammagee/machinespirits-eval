@@ -29,6 +29,13 @@
  *     [--real]                         (paid calls; default is mock)
  *     [--recognition 0-3]              (tutor register dial; 0 = absent)
  *     [--charisma 0-3]                 (tutor + director-staging dial; 0 = absent)
+ *     [--dramaturgy free|frozen]       (frozen = CONTROL ARM: director cannot
+ *                                       declare movements or pass tutor notes —
+ *                                       the pre-06-09 fixed-acts behavior,
+ *                                       flag-gated on the same code)
+ *     [--learner-voice "<text>"]       (override the world's learner voice —
+ *                                       personality/tonality variation; never
+ *                                       carries plot content)
  *     [--note "what this iteration changes"]
  *
  * Artifacts land in <out>/<label>/: transcript.md (the drama, movement by
@@ -83,6 +90,12 @@ async function main() {
     recognition: clampDial(arg('recognition', 0)),
     charisma: clampDial(arg('charisma', 0)),
   };
+  const dramaturgy = arg('dramaturgy', 'free');
+  if (!['free', 'frozen'].includes(dramaturgy)) {
+    console.error(`--dramaturgy must be "free" or "frozen" (got "${dramaturgy}")`);
+    process.exit(1);
+  }
+  const learnerVoice = arg('learner-voice', null);
   // Real runs report per-call liveness by default (the dramas are slow to
   // build; an opaque shell was the complaint). DERIVATION_TRACE=0 silences.
   if (mode === 'real' && process.env.DERIVATION_TRACE === undefined) process.env.DERIVATION_TRACE = '1';
@@ -121,12 +134,16 @@ async function main() {
   if (dials.recognition || dials.charisma) {
     console.log(`dials   recognition ${dials.recognition}/3, charisma ${dials.charisma}/3`);
   }
+  if (dramaturgy === 'frozen') {
+    console.log('staging dramaturgy FROZEN (control arm — no movements, no tutor notes)');
+  }
+  if (learnerVoice) console.log(`voice   learner override: ${learnerVoice}`);
 
   const client = makeLlmClient({ mode });
   const roles = {
-    director: makeLlmDirector(world, client, { dials }),
+    director: makeLlmDirector(world, client, { dials, dramaturgy }),
     tutor: makeLlmTutor(world, client, { script, dials }),
-    learner: makeLlmLearner({ setting: world.setting, voice: world.learnerVoice, client }),
+    learner: makeLlmLearner({ setting: world.setting, voice: learnerVoice || world.learnerVoice, client }),
   };
 
   // One compact line per completed turn — the shell's live pulse.
@@ -153,6 +170,8 @@ async function main() {
     worldPath: path.relative(ROOT, worldPath),
     backend: { mode, roles: targets },
     dials,
+    dramaturgy,
+    learnerVoice: learnerVoice || null,
     elapsedMs,
     usage,
     ...diagnose(result, world),
@@ -204,6 +223,13 @@ async function main() {
         : "no movements declared (author's sketch held)"
     }${staging.tutorNotes.length ? `, ${staging.tutorNotes.length} tutor notes` : ''}`,
   );
+  const tf = diagnosis.tutorFigures;
+  if (tf && tf.total) {
+    const fmt = (r) => (r === null || r === undefined ? '—' : r.toFixed(2));
+    console.log(
+      `figures ${tf.topFigure} ${tf.counts[tf.topFigure]}/${tf.total} (${Math.round((tf.topShare || 0) * 100)}%), ${tf.distinct} distinct, switch rate ${fmt(tf.switchRate)}${tf.noteTurns ? ` (on note turns ${fmt(tf.switchOnNoteTurns)} vs elsewhere ${fmt(tf.switchElsewhere)})` : ''}`,
+    );
+  }
   for (const [role, stats] of Object.entries(diagnosis.dialogueDiscipline)) {
     console.log(
       `        ${role}: ${stats.turns} turns, avg ${stats.avgSentences} sentences (max ${stats.maxSentences}), avg ${stats.avgWords} words`,
