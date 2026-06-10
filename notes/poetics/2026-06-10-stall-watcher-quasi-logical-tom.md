@@ -230,4 +230,57 @@ declaration-vs-form audit stays open).
 7. Tests (engine validation paths, charter stability, mock causal chain, metrics on synthetic
    results) + both mock smokes (`--superego`, `--superego --stall-watch`) green.
 
-— results to be appended below as arms run —
+## 8. Run log
+
+### A1 — bitterwell OFF (`bitterwell-v001-real-sw-off-t1`, group `stall-watcher-off`, 2026-06-10)
+
+All-codex stage (director + ego + superego), sonnet learner, charter v2 + derive instrumentation
+live. Verdict grounded_anagnorisis, forced t15 = asserted t15, all 7 releases on cue, 595s,
+62 calls. Charter-v2 superego: 2/15 interventions, both within-turn figure changes. Derive
+channel: the learner voiced the world's single watchable node `foulFrom(commonWell, springHouse)`
+at **latency 0** (firstAvailable t8 = firstVoiced t8), stall integral 0, overreach 0 (G1 baseline:
+ON arms must show ≤ 1), 1 mischanneled item. Critic notice backfilled (the in-run critic timed out
+3×360s; the standalone backfill wrote in 225s — same pinned fable target, so the timeout was
+transient load, not configuration).
+
+**Decision rule 1 fired**: the OFF arm voiced the node at age ≤ 1 — world-003 has no stall room
+(and at most one watchable node anyway). Per §6, the pair restarts on world-004; bitterwell ON
+(the planned A2) is NOT run — with an instantly-voiced frontier the watcher could never fire, and
+the arm would spend quota on a trivially-clean audit.
+
+Two consequences taken from A1 into world-004's authoring:
+
+- **P1(a) clarification (logged before any world-004 arm runs).** P1(a) quantifies over nodes
+  *with stall room in the pair* — a node the OFF arm voices at age ≤ 1 carries no information
+  about the watcher (which cannot fire before age 3) and is excluded from the per-node
+  comparison, exactly as the §6 evaluability rule already treats the single-node case. Nodes the
+  OFF arm voices at age ≥ 2, or never voices, are the comparison set.
+- **No twin-fact spares.** The A1 critic's counsel paragraph found the extracted proof citing
+  world-003's *unscheduled* alternates (p_verger, p_dyebook) — twins share the same FACT, so the
+  propositional checker cannot tell which witness was staged. world-004 has a single authored
+  proof path, fully scheduled: the proof afterward can only describe the play that was staged.
+
+### world-004 (`world_004_withercombe`) authored — the depth-3 stall-room world (2026-06-10)
+
+Per decision rule 1: depth-3 diamond DAG (R1 → foulFrom, R2 → taintedWith, R3 → S with foulFrom
+re-used), three watchable non-pattern intermediates with staggered availability — foulFrom t12
+(act-closing; the control node, expected voiced fast), clearOf(bray, schoolWell) t14 (the mirror's
+exculpation at the peripeteia, which the script then steers PAST — the authored stall candidate),
+taintedWith t16 (thin window before forcing). S derivable t19 ≥ t_min 17, cap 24, 9 releases,
+gaps ≤ 3. Both leak screens pass: plotLint (S first derivable exactly t19; mirror never entailed)
++ the concealment sweep (joss / font-house / wormwood / apothecary), registered in
+tests/dramaticDerivationWorlds.test.js (18/18 green). The contingent particular ENTERS at the
+forcing turn: the anagnorisis is Joss's entrance.
+
+Mock smokes (loop runner, group `mock-smoke`): OFF — stallWatch null, 6 rut interventions, the
+three nodes at avail t12/t14/t16 with mock voicings t16/t18/censored, stall integral 3. ON —
+identical formal channel and node trajectory (mock determinism), 6 rut + 3 stall fires
+(t16 foulFrom → p_course, t17 clearOf → m_works, t19 taintedWith → p_residue), obedience 3/3,
+uptake 2/3 (the t19 fire is end-censored), audit {turns 19, due 9, fired 9, mismatches 0} CLEAN;
+`--critic-feedback latest` resolved counsel from the same-group mock OFF run.
+
+Next paid arms (serialized, attended): `withercombe-v001-real-sw-off-t1` (group
+`stall-watcher-off`, second arm in group → `--critic-feedback latest`, inheriting A1's notice) then
+`withercombe-v001-real-sw-on-t1` (group `stall-watcher-on`, first arm → no counsel, per §6).
+
+— further results appended below as arms run —

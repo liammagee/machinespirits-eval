@@ -56,6 +56,12 @@ const WORLDS = [
     recognitionTurn: 15,
     concealed: ['mirel', 'springhouse', 'spring-house', 'copperas', 'crocks'],
   },
+  {
+    worldFile: 'config/drama-derivation/world-004-withercombe.yaml',
+    scriptFile: 'config/drama-derivation/tutor-scripts/withercombe-v001.md',
+    recognitionTurn: 19,
+    concealed: ['joss', 'fonthouse', 'font-house', 'wormwood', 'apothecary'],
+  },
 ];
 
 /** Wraps the mock client, recording every prompt the learner role receives. */
