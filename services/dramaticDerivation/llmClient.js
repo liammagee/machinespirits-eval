@@ -15,11 +15,11 @@
  *                        For 'codex' it is optional (-m); unset = the CLI's
  *                        own configured default model.
  *
- * Per-role overrides (six-role ready — director, tutor, learner now; the two
- * superegos later): DERIVATION_<ROLE>_PROVIDER / DERIVATION_<ROLE>_MODEL,
- * role name uppercased with non-alphanumerics → '_', falling back to the
- * shared pair above. E.g. DERIVATION_LEARNER_MODEL=gpt-5.2,
- * DERIVATION_TUTOR_SUPEREGO_PROVIDER=codex.
+ * Per-role overrides (six-role ready — director, tutor, tutor_superego,
+ * learner now; the learner superego later): DERIVATION_<ROLE>_PROVIDER /
+ * DERIVATION_<ROLE>_MODEL, role name uppercased with non-alphanumerics →
+ * '_', falling back to the shared pair above. E.g.
+ * DERIVATION_LEARNER_MODEL=gpt-5.2, DERIVATION_TUTOR_SUPEREGO_PROVIDER=codex.
  *
  *   DERIVATION_CODEX_REASONING  reasoning effort for codex CLI calls
  *                        (default: medium — drama turns are short; the user
@@ -227,13 +227,27 @@ function mockResponse(role, meta = {}) {
       direction: meta.releaseSurface
         ? `[It comes before the room: ${meta.releaseSurface}]`
         : `[The question holds the stage: ${meta.question || ''}]`,
-      // Exercise the free-dramaturgy channels deterministically: declare a
-      // movement (and conduct the tutor) wherever the author's sketch turns.
+      // Exercise the free-dramaturgy channel deterministically: declare a
+      // movement wherever the author's sketch turns.
       phase: meta.phaseHint ? { name: meta.phaseHint.title, intent: meta.phaseHint.intent || 'as sketched' } : null,
-      tutor_note: meta.phaseHint ? `New movement — ${meta.phaseHint.title}. Let the rhythm change.` : null,
     });
   }
   if (role === 'tutor') {
+    // A revision call (the ego rewriting under its superego's note) switches
+    // to the bridge-computed figure, so the mock exercises the within-turn
+    // draft→revision change the instrument measures.
+    if (meta.revision) {
+      return JSON.stringify({
+        dialogue: meta.releaseSurface
+          ? `Set it beside what you hold, like for like: ${meta.releaseSurface}`
+          : 'Like a ledger beside a letter: hold the two columns together and see which line they share.',
+        move: {
+          figure: meta.revision.switchTo || 'analogia',
+          target_premise: meta.cuePremise || null,
+          intent: meta.cuePremise ? 'release' : 'consolidate',
+        },
+      });
+    }
     return JSON.stringify({
       dialogue: meta.releaseSurface
         ? `Consider what is now before you: ${meta.releaseSurface} What does it do to what you already hold?`
@@ -244,6 +258,22 @@ function mockResponse(role, meta = {}) {
         intent: meta.cuePremise ? 'release' : 'consolidate',
       },
     });
+  }
+  if (role === 'tutor_superego') {
+    // Deterministic rut-watcher: intervene when the draft would make the
+    // third consecutive turn on one figure (mock tutor always drafts erotema,
+    // so interventions land every third turn — both paths exercised).
+    const figs = Array.isArray(meta.lastFigures) ? meta.lastFigures : [];
+    const rut = Boolean(meta.draftFigure) && figs.length >= 2 && figs.slice(-2).every((f) => f === meta.draftFigure);
+    return JSON.stringify(
+      rut
+        ? {
+            intervene: true,
+            diagnosis: `figure rut: ${meta.draftFigure} three turns running`,
+            note: `Leave off ${meta.draftFigure} this turn — change the device, keep the matter.`,
+          }
+        : { intervene: false, diagnosis: 'the manner serves; let it pass', note: null },
+    );
   }
   if (role === 'learner') {
     const adoptAll = Array.from({ length: meta.adoptableCount || 0 }, (_, i) => i);

@@ -8,7 +8,10 @@
  *   - the LEARNER bridge's prompts never see a concealed token before the
  *     drama releases it (single-concealment invariant at the prompt layer);
  *   - the bridges drive the full drama to grounded_anagnorisis in mock mode
- *     with every release on cue (mock-first: the paid path replays this).
+ *     with every release on cue (mock-first: the paid path replays this);
+ *   - the tutor's own superego (--superego, 2026-06-10) watches every draft,
+ *     intervenes on the figure rut, and the revision changes the figure
+ *     WITHIN the turn — with the formal channel untouched.
  */
 
 import assert from 'node:assert/strict';
@@ -30,6 +33,7 @@ import {
   releaseAdherence,
   stagingSegments,
   tutorFigures,
+  renderTranscript,
   renderEvalPanel,
 } from '../services/dramaticDerivation/index.js';
 import { buildScreenSpec } from '../scripts/screen-derivation-world.js';
@@ -79,10 +83,10 @@ function recordingClient() {
   };
 }
 
-function llmRoles(client) {
+function llmRoles(client, { superego = false } = {}) {
   return {
     director: makeLlmDirector(world, client),
-    tutor: makeLlmTutor(world, client, { script }),
+    tutor: makeLlmTutor(world, client, { script, superego }),
     learner: makeLlmLearner({ setting: world.setting, voice: world.learnerVoice, client }),
   };
 }
@@ -186,8 +190,9 @@ test('free dramaturgy: mock director declares the sketched movements; diagnosis 
   const result = await runDrama({ world, roles: llmRoles(client) });
 
   // The mock director converts each phaseHint (sketch-act boundary) into a
-  // declared movement + a same-turn tutor note — so declarations land exactly
-  // at the sketch's act starts, within the turns actually played.
+  // declared movement — so declarations land exactly at the sketch's act
+  // starts, within the turns actually played. Stage directions are ALL the
+  // director has since 2026-06-10: no director line may carry a tutor note.
   const actStarts = world.dramaturgy.acts.map((a) => a.turns[0]).filter((t) => t <= result.turnsPlayed);
   const declares = result.transcript.filter((l) => l.role === 'director' && l.meta?.phase?.name);
   assert.deepEqual(
@@ -195,8 +200,8 @@ test('free dramaturgy: mock director declares the sketched movements; diagnosis 
     actStarts,
   );
   assert.ok(
-    declares.every((l) => l.meta.tutorNote),
-    'each mock declaration carries a note to the tutor',
+    !result.transcript.some((l) => l.role === 'director' && l.meta?.tutorNote),
+    'the tutor-note channel was removed — a reappearing note means the engine regressed',
   );
 
   // Realized segments come from the declarations (source director), not the
@@ -215,14 +220,15 @@ test('free dramaturgy: mock director declares the sketched movements; diagnosis 
     d.staging.movements.map((m) => m.turn),
     actStarts,
   );
-  assert.equal(d.staging.tutorNotes.length, actStarts.length);
+  // tutorNotes is now a legacy READ (pre-06-10 artifacts on disk only).
+  assert.equal(d.staging.tutorNotes.length, 0);
 
   const panel = renderEvalPanel(d);
   assert.match(panel, /movements declared by the director/);
-  assert.match(panel, /notes? to the tutor/);
+  assert.doesNotMatch(panel, /notes? to the tutor/);
 });
 
-test('frozen dramaturgy (control arm): both staging channels are hard-dropped; the formal layer is untouched', async () => {
+test('frozen dramaturgy (control arm): the movement channel is hard-dropped; the formal layer is untouched', async () => {
   const { client } = recordingClient();
   const roles = {
     director: makeLlmDirector(world, client, { dramaturgy: 'frozen' }),
@@ -232,21 +238,20 @@ test('frozen dramaturgy (control arm): both staging channels are hard-dropped; t
   const result = await runDrama({ world, roles });
 
   // The evidence channel is identical to the free run: same verdict, same
-  // recognition turn, every release on cue. Only the staging channels differ.
+  // recognition turn, every release on cue. Only the movement channel differs
+  // (since 2026-06-10 it is the director's ONLY staging channel).
   assert.equal(result.verdict, 'grounded_anagnorisis');
   assert.equal(result.firstForcedTurn, 32);
   const adherence = releaseAdherence(world, result.ledger, result.turnsPlayed);
   assert.equal(adherence.onCue, world.releaseSchedule.length);
 
-  // No director line carries a declared movement or a tutor note — the
-  // parser gate, not the charter, is what the test leans on.
+  // No director line carries a declared movement — the parser gate, not the
+  // charter, is what the test leans on.
   assert.ok(!result.transcript.some((l) => l.role === 'director' && l.meta?.phase));
-  assert.ok(!result.transcript.some((l) => l.role === 'director' && l.meta?.tutorNote));
 
   const d = diagnose(result, world);
   assert.equal(d.staging.source, 'sketch');
   assert.equal(d.staging.movements.length, 0);
-  assert.equal(d.staging.tutorNotes.length, 0);
   const segments = stagingSegments(result, world);
   assert.ok(segments.length > 0 && segments.every((s) => s.source === 'sketch'));
 
@@ -270,15 +275,87 @@ test('tutorFigures: mock run reads as total lock-in (the instrument the S0→S1 
   assert.equal(tf.distinct, 1);
   assert.equal(tf.switchRate, 0);
 
-  // Note-contingent split: the mock director notes at each sketch-act start
-  // (4 within the played turns); zero switches on either side of the split.
-  const actStarts = world.dramaturgy.acts.map((a) => a.turns[0]).filter((t) => t <= result.turnsPlayed);
-  assert.equal(tf.noteTurns, actStarts.length);
-  assert.equal(tf.switchOnNoteTurns, 0);
+  // The director-note channel no longer exists, so the legacy note split is
+  // empty (it still reads pre-06-10 artifacts), and without --superego the
+  // tutor records no deliberation: the superego block is absent.
+  assert.equal(tf.noteTurns, 0);
+  assert.equal(tf.switchOnNoteTurns, null);
   assert.equal(tf.switchElsewhere, 0);
+  assert.equal(tf.superego, null);
 
   const panel = renderEvalPanel(diagnose(result, world));
   assert.match(panel, /\*\*figures\*\* erotema \d+\/\d+ \(100%\)/);
+  assert.doesNotMatch(panel, /\*\*superego\*\*/);
+});
+
+test('tutor superego (mock): watches every draft, breaks the rut within the turn, leaves the formal channel alone', async () => {
+  const { client, learnerPrompts } = recordingClient();
+  const result = await runDrama({ world, roles: llmRoles(client, { superego: true }) });
+
+  // The formal channel is untouched by deliberation: same verdict, same
+  // recognition turn, every release on cue — only the MANNER moves.
+  assert.equal(result.verdict, 'grounded_anagnorisis');
+  assert.equal(result.firstForcedTurn, 32);
+  const adherence = releaseAdherence(world, result.ledger, result.turnsPlayed);
+  assert.equal(adherence.onCue, world.releaseSchedule.length);
+  assert.equal(adherence.deviations.length, 0);
+
+  // Every tutor line carries deliberation (the superego watched every turn);
+  // the mock watcher fires exactly when the last two figures equal the draft
+  // — turns 3, 6, 9, … — and every intervention carries diagnosis + note.
+  const tutorLines = result.transcript.filter((l) => l.role === 'tutor');
+  assert.ok(tutorLines.every((l) => l.meta.deliberation));
+  const intervened = tutorLines.filter((l) => l.meta.deliberation.intervened);
+  const expectedTurns = [];
+  for (let t = 3; t <= result.turnsPlayed; t += 3) expectedTurns.push(t);
+  assert.deepEqual(
+    intervened.map((l) => l.turn),
+    expectedTurns,
+  );
+  assert.ok(intervened.every((l) => l.meta.deliberation.draftFigure === 'erotema' && l.meta.deliberation.note));
+
+  // The instrument's within-turn causal read: every intervention turned the
+  // erotema draft into a spoken analogia; switches concentrate on
+  // intervention turns (1.0) against a lower elsewhere rate (the mock snaps
+  // back to its default the turn after).
+  const tf = tutorFigures(result);
+  assert.equal(tf.superego.watched, result.turnsPlayed);
+  assert.equal(tf.superego.interventions, expectedTurns.length);
+  assert.equal(tf.superego.withinTurnChanges, expectedTurns.length);
+  assert.equal(tf.superego.withinTurnChangeRate, 1);
+  assert.equal(tf.superego.switchOnIntervention, 1);
+  assert.ok(tf.superego.switchElsewhere < 1);
+  assert.equal(tf.distinct, 2);
+  assert.equal(tf.counts.analogia, expectedTurns.length);
+  assert.equal(tf.counts.erotema, result.turnsPlayed - expectedTurns.length);
+
+  // Diagnosis + renderers surface the deliberation trail the operator reads.
+  const d = diagnose(result, world);
+  assert.equal(d.superegoNotes.length, expectedTurns.length);
+  assert.ok(d.superegoNotes.every((n) => n.draftFigure === 'erotema' && n.figure === 'analogia' && n.note));
+  const panel = renderEvalPanel(d);
+  assert.match(
+    panel,
+    new RegExp(`\\*\\*superego\\*\\* intervened ${expectedTurns.length}/${result.turnsPlayed} watched turns`),
+  );
+  assert.match(
+    panel,
+    new RegExp(`figure changed within-turn on ${expectedTurns.length}/${expectedTurns.length} interventions`),
+  );
+  const md = renderTranscript(result, world, { diagnosis: d });
+  assert.match(md, /the second voice: "/);
+  assert.match(md, /\(draft erotema → analogia\)/);
+
+  // Single-concealment holds through the deliberation loop: the extra
+  // superego/revision calls never leak a concealed token into the learner.
+  for (const token of CONCEALED_TOKENS) {
+    const lawful = firstLawfulTurn(token);
+    learnerPrompts.forEach((prompt, i) => {
+      if (i + 1 < lawful) {
+        assert.ok(!prompt.includes(token), `concealed token "${token}" reached the learner at turn ${i + 1}`);
+      }
+    });
+  }
 });
 
 test('learner adoption is index-mapped: nothing unreleased can enter the success channel', async () => {

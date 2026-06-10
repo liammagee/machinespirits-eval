@@ -2079,11 +2079,15 @@ function renderDerivationIndexHtml(runs) {
         .join(', ');
       const verdictOk = d.verdict === 'grounded_anagnorisis';
       const adherence = d.releaseAdherence || {};
-      const staging = d.staging
-        ? d.staging.source === 'director'
-          ? `${d.staging.movements.length} mv${d.staging.tutorNotes?.length ? ` · ${d.staging.tutorNotes.length} notes` : ''}`
-          : 'sketch held'
-        : '—';
+      const sg = d.tutorFigures?.superego;
+      const staging = [
+        d.staging
+          ? d.staging.source === 'director'
+            ? `${d.staging.movements.length} mv${d.staging.tutorNotes?.length ? ` · ${d.staging.tutorNotes.length} notes` : ''}`
+            : 'sketch held'
+          : '—',
+        ...(sg ? [`sego ${sg.interventions}/${sg.watched}`] : []),
+      ].join(' · ');
       return `<tr>
 <td><a href="/derivation/${encodeURIComponent(label)}">${escapeHtml(label)}</a></td>
 <td><span class="chip ${verdictOk ? 'chip--ok' : 'chip--bad'}">${escapeHtml(d.verdict || '?')}</span></td>
@@ -2161,7 +2165,15 @@ function renderDerivationRunHtml({ label, diagnosis, result, world }) {
               `move: ${derivationFigureHtml(move.figure)} → ${escapeHtml(move.targetPremise || '—')} (${escapeHtml(move.intent || '—')})`,
             );
           if (line.meta?.release) bits.push(`releases <span class="release">${escapeHtml(line.meta.release)}</span>`);
-          return `<div class="line line--tutor"><span class="who">Tutor:</span> ${text}</div>${bits.length ? `<div class="tmeta">— ${bits.join(', ')}</div>` : ''}`;
+          const delib = line.meta?.deliberation;
+          const voice = delib?.intervened
+            ? `<div class="tmeta">— the second voice: “${escapeHtml(delib.note || '')}”${
+                delib.draftFigure && move?.figure && delib.draftFigure !== move.figure
+                  ? ` (draft ${escapeHtml(delib.draftFigure)} → ${escapeHtml(move.figure)})`
+                  : ' (figure held)'
+              }</div>`
+            : '';
+          return `<div class="line line--tutor"><span class="who">Tutor:</span> ${text}</div>${bits.length ? `<div class="tmeta">— ${bits.join(', ')}</div>` : ''}${voice}`;
         }
         if (line.role === 'learner') {
           const meta = line.meta || {};
@@ -2194,6 +2206,10 @@ function renderDerivationRunHtml({ label, diagnosis, result, world }) {
       ? `${diagnosis.staging.movements.length} movements declared${diagnosis.staging.tutorNotes?.length ? ` · ${diagnosis.staging.tutorNotes.length} tutor notes` : ''}`
       : 'sketch held (no movements declared)'
     : null;
+  const sg = diagnosis.tutorFigures?.superego;
+  const superegoChip = sg
+    ? `superego ${sg.interventions}/${sg.watched} interventions · ${sg.withinTurnChanges} within-turn figure changes`
+    : null;
   const dials = diagnosis.dials || {};
   const chips = [
     `<span class="chip ${verdictOk ? 'chip--ok' : 'chip--bad'}">${escapeHtml(result.verdict || '?')}</span>`,
@@ -2201,6 +2217,7 @@ function renderDerivationRunHtml({ label, diagnosis, result, world }) {
     `<span class="chip">forced ${result.firstForcedTurn ?? '—'} → asserted ${result.assertedGroundedTurn ?? '—'}</span>`,
     `<span class="chip">releases ${adherence.onCue ?? '—'} on cue · ${adherence.deviations?.length ?? 0} dev · ${adherence.missed?.length ?? 0} missed · ${adherence.unscheduled?.length ?? 0} unscheduled</span>`,
     ...(stagingChip ? [`<span class="chip">${escapeHtml(stagingChip)}</span>`] : []),
+    ...(superegoChip ? [`<span class="chip">${escapeHtml(superegoChip)}</span>`] : []),
     ...(dials.recognition || dials.charisma
       ? [`<span class="chip">dials recognition ${dials.recognition || 0}/3 · charisma ${dials.charisma || 0}/3</span>`]
       : []),

@@ -5,18 +5,20 @@
  * Roles are injected async functions (mock now, LLM-backed later — same
  * seam as services/adaptiveTutor's mock/real split):
  *   director(view) -> { direction, release?: premiseId,
- *                       phase?: {name, intent},   // declare/replace the current movement
- *                       tutorNote?: string }      // staging instruction for THIS turn's tutor
- *   tutor(view)    -> { dialogue, move?: {figure,targetPremise,intent}, release?: premiseId }
+ *                       phase?: {name, intent} }  // declare/replace the current movement
+ *   tutor(view)    -> { dialogue, move?: {figure,targetPremise,intent}, release?: premiseId,
+ *                       deliberation?: {draftFigure, intervened, diagnosis, note} }
  *   learner(view)  -> { dialogue, adopt?: fact[], retract?: fact[],
  *                       hypothesis?: string, asserts?: fact }
  *
  * THE DRAMATURGY IS THE DIRECTOR'S (operator decision 2026-06-09, logged in
  * notes/poetics/): the world's authored acts are a SKETCH; the director may
- * declare movements and inject per-turn notes to the tutor as the drama
- * needs. What stays frozen is the formal channel: the release schedule, the
- * checker, the slope constraints, the turn cap. The learner never sees any
- * staging state (phases, notes) — symmetric with acts before.
+ * declare movements as the drama needs. The per-turn tutor-note channel was
+ * REMOVED 2026-06-10 (operator decision): manner-watching belongs to the
+ * tutor's own superego (llmRoles.makeLlmTutor, surfaced here only as the
+ * tutor line's `deliberation` meta). What stays frozen is the formal channel:
+ * the release schedule, the checker, the slope constraints, the turn cap.
+ * The learner never sees staging state or tutor deliberation.
  *
  * THE SINGLE-CONCEALMENT INVARIANT: the learner's view contains the public
  * question (+ pattern), the world RULES (the learner knows the law, lacks
@@ -59,10 +61,10 @@ export async function runDrama({ world, roles, options = {} }) {
   const transcript = [];
   const trajectory = []; // {turn, D, forced, groundedCount}
   const events = []; // {turn, type, detail}
-  // Director-declared staging: the current movement persists until replaced;
-  // a tutor note lives for exactly one turn (director speaks first, the
-  // tutor consumes it the same turn). The learner never sees either.
-  const staging = { phase: null, note: null };
+  // Director-declared staging: the current movement persists until replaced.
+  // The learner never sees it; since 2026-06-10 the tutor doesn't either —
+  // movements are diagnostic dramaturgy, read only by the instruments.
+  const staging = { phase: null };
   let firstForcedTurn = null;
   let assertedGroundedTurn = null;
   let endedBy = null;
@@ -102,7 +104,7 @@ export async function runDrama({ world, roles, options = {} }) {
     releasedFacts: [...releasedFacts],
     transcript: [...transcript],
     trajectory: [...trajectory],
-    staging: { phase: staging.phase, note: staging.note },
+    staging: { phase: staging.phase },
     learnerAbox: {
       grounded: validGroundedFacts(),
       hypotheses: [...hypotheses],
@@ -125,10 +127,6 @@ export async function runDrama({ world, roles, options = {} }) {
         turn,
       };
     }
-    staging.note =
-      typeof directorOut.tutorNote === 'string' && directorOut.tutorNote.trim()
-        ? { text: directorOut.tutorNote.trim(), turn }
-        : null;
     transcript.push({
       turn,
       role: 'director',
@@ -136,20 +134,22 @@ export async function runDrama({ world, roles, options = {} }) {
       meta: {
         release: directorOut.release || null,
         phase: staging.phase && staging.phase.turn === turn ? { ...staging.phase } : null,
-        tutorNote: staging.note ? staging.note.text : null,
       },
     });
 
     // --- tutor ---
     const tutorOut = (await roles.tutor(omniscientView(turn, 'tutor'))) || {};
-    staging.note = null; // a director's note addresses exactly this turn's tutor
     const tutorRelease = applyRelease(turn, tutorOut.release, 'tutor');
     if (tutorRelease) releasedThisTurn.push(tutorRelease);
     transcript.push({
       turn,
       role: 'tutor',
       text: tutorOut.dialogue || '',
-      meta: { move: tutorOut.move || null, release: tutorOut.release || null },
+      meta: {
+        move: tutorOut.move || null,
+        release: tutorOut.release || null,
+        deliberation: tutorOut.deliberation || null,
+      },
     });
 
     // Runtime anti-reveal guard (plotLint should make this unreachable).
@@ -260,6 +260,7 @@ export async function runDrama({ world, roles, options = {} }) {
       retracted: (learnerOut.retract || []).length,
       hypothesis: Boolean(learnerOut.hypothesis),
       asserted: Boolean(learnerOut.asserts),
+      intervened: Boolean(tutorOut.deliberation?.intervened),
       phase: staging.phase ? { ...staging.phase } : null,
       events: events.filter((e) => e.turn === turn).map(({ type, detail }) => ({ type, detail })),
       endedBy,

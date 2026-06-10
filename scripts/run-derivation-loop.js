@@ -6,9 +6,10 @@
  *
  * The loop's discipline:
  *   - release schedule + checker + slope constraints + turn cap are FROZEN;
- *     the dramaturgy is the director's (free movements + per-turn tutor
- *     notes — engine.js header); the iterated artifact is the tutor
- *     role-script (--script).
+ *     the dramaturgy is the director's (free movements — engine.js header;
+ *     the per-turn tutor-note channel was removed 2026-06-10, manner-watching
+ *     belongs to the tutor's own superego via --superego); the iterated
+ *     artifact is the tutor role-script (--script).
  *   - plotLint must pass before any roles run (frozen guardrail §5).
  *   - mock-first: default backend is the zero-cost mock; --real is the
  *     explicit, attended opt-in to paid calls (DERIVATION_PROVIDER /
@@ -29,10 +30,13 @@
  *     [--real]                         (paid calls; default is mock)
  *     [--recognition 0-3]              (tutor register dial; 0 = absent)
  *     [--charisma 0-3]                 (tutor + director-staging dial; 0 = absent)
- *     [--dramaturgy free|frozen]       (frozen = CONTROL ARM: director cannot
- *                                       declare movements or pass tutor notes —
- *                                       the pre-06-09 fixed-acts behavior,
- *                                       flag-gated on the same code)
+ *     [--dramaturgy free|frozen]       (frozen = director cannot declare
+ *                                       movements — the pre-06-09 fixed-acts
+ *                                       behavior, flag-gated on the same code)
+ *     [--superego]                     (the tutor's own superego watches each
+ *                                       draft and may demand a restaging before
+ *                                       the line is spoken — the internal
+ *                                       channel; control arm = flag absent)
  *     [--learner-voice "<text>"]       (override the world's learner voice —
  *                                       personality/tonality variation; never
  *                                       carries plot content)
@@ -96,6 +100,7 @@ async function main() {
     process.exit(1);
   }
   const learnerVoice = arg('learner-voice', null);
+  const superego = flag('superego');
   // Real runs report per-call liveness by default (the dramas are slow to
   // build; an opaque shell was the complaint). DERIVATION_TRACE=0 silences.
   if (mode === 'real' && process.env.DERIVATION_TRACE === undefined) process.env.DERIVATION_TRACE = '1';
@@ -113,7 +118,7 @@ async function main() {
   const label = arg('label', `${scriptName}-${mode}-${timestamp()}`);
   const outDir = path.resolve(ROOT, arg('out', 'exports/dramatic-derivation/loop'), label);
 
-  const ROLE_NAMES = ['director', 'tutor', 'learner'];
+  const ROLE_NAMES = ['director', 'tutor', ...(superego ? ['tutor_superego'] : []), 'learner'];
   const targets = Object.fromEntries(
     ROLE_NAMES.map((r) => [r, mode === 'real' ? resolveTarget(r) : { provider: 'mock', model: 'mock' }]),
   );
@@ -122,11 +127,13 @@ async function main() {
   console.log(`script  ${path.relative(ROOT, scriptPath)}`);
   if (mode === 'real') {
     console.log('backend real');
-    for (const r of ROLE_NAMES) console.log(`          ${r.padEnd(8)} ${showTarget(targets[r])}`);
+    for (const r of ROLE_NAMES) console.log(`          ${r.padEnd(14)} ${showTarget(targets[r])}`);
     if (Object.values(targets).some((t) => t.cli)) {
       console.log('          (CLI roles bill plan quota; the CLI reports no token usage)');
     }
-    const maxCalls = world.turnCap * 3 * 2; // 3 roles/turn, worst-case one repair each
+    // Worst case per turn: director + tutor draft + learner, plus superego +
+    // ego revision when the watcher is on — one repair each.
+    const maxCalls = world.turnCap * (superego ? 5 : 3) * 2;
     console.log(`        attended run: ≤${maxCalls} calls hard-bounded by turn_cap ${world.turnCap}`);
   } else {
     console.log('backend mock (zero-cost)');
@@ -135,14 +142,17 @@ async function main() {
     console.log(`dials   recognition ${dials.recognition}/3, charisma ${dials.charisma}/3`);
   }
   if (dramaturgy === 'frozen') {
-    console.log('staging dramaturgy FROZEN (control arm — no movements, no tutor notes)');
+    console.log('staging dramaturgy FROZEN (control arm — no movements declared)');
+  }
+  if (superego) {
+    console.log('tutor   superego ON — the tutor watches its own manner (draft → note → restaging)');
   }
   if (learnerVoice) console.log(`voice   learner override: ${learnerVoice}`);
 
   const client = makeLlmClient({ mode });
   const roles = {
     director: makeLlmDirector(world, client, { dials, dramaturgy }),
-    tutor: makeLlmTutor(world, client, { script, dials }),
+    tutor: makeLlmTutor(world, client, { script, dials, superego }),
     learner: makeLlmLearner({ setting: world.setting, voice: learnerVoice || world.learnerVoice, client }),
   };
 
@@ -153,6 +163,7 @@ async function main() {
     if (s.adopted) bits.push(`+${s.adopted} adopted`);
     if (s.retracted) bits.push(`−${s.retracted} retracted`);
     if (s.phase && s.phase.turn === s.turn) bits.push(`movement "${s.phase.name}"`);
+    if (s.intervened) bits.push('✎ superego');
     if (s.asserted) bits.push('ASSERTS');
     for (const e of s.events) bits.push(`⚑ ${e.type}`);
     if (s.endedBy) bits.push(`— ends: ${s.endedBy}`);
@@ -171,6 +182,7 @@ async function main() {
     backend: { mode, roles: targets },
     dials,
     dramaturgy,
+    tutorSuperego: superego,
     learnerVoice: learnerVoice || null,
     elapsedMs,
     usage,
@@ -229,6 +241,12 @@ async function main() {
     console.log(
       `figures ${tf.topFigure} ${tf.counts[tf.topFigure]}/${tf.total} (${Math.round((tf.topShare || 0) * 100)}%), ${tf.distinct} distinct, switch rate ${fmt(tf.switchRate)}${tf.noteTurns ? ` (on note turns ${fmt(tf.switchOnNoteTurns)} vs elsewhere ${fmt(tf.switchElsewhere)})` : ''}`,
     );
+    const sg = tf.superego;
+    if (sg) {
+      console.log(
+        `superego intervened ${sg.interventions}/${sg.watched}, within-turn figure change ${sg.withinTurnChanges}/${sg.interventions}${sg.switchOnIntervention !== null ? `, switch on intervention ${fmt(sg.switchOnIntervention)} vs elsewhere ${fmt(sg.switchElsewhere)}` : ''}`,
+      );
+    }
   }
   for (const [role, stats] of Object.entries(diagnosis.dialogueDiscipline)) {
     console.log(

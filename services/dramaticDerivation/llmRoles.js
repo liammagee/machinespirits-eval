@@ -143,18 +143,13 @@ function directorCharter(world, dials = {}, dramaturgy = 'free') {
     '',
     ...(free
       ? [
-          'THE DRAMATURGY IS YOURS. You watch the whole drama and reshape it as it needs.',
-          'Two instruments, beyond the stage direction itself:',
+          'THE DRAMATURGY IS YOURS, within one discipline: you speak only through the',
+          'stage itself. One instrument beyond the stage direction:',
           '- "phase": declare a new MOVEMENT (a name and an intent) when the drama should',
           '  change character — when the rhythm has gone slack, when the learner has turned',
           '  a corner, when the room needs weather of a different kind. The movement stands',
           '  until you replace it. Most turns you will declare nothing.',
-          '- "tutor_note": a private staging instruction the tutor receives THIS turn only —',
-          '  an INTERVENTION, not a running commentary. Send one only when the staging must',
-          '  actually change (a rut to break, a tempo to shift); on ordinary turns send null.',
-          "  A note every turn is a note never heard. When the rut is the tutor's FIGURE —",
-          '  the same device turn after turn — say so in figure terms: name the device to',
-          '  leave off, not just the mood. The learner never sees any of this.',
+          'You never instruct the tutor; how the tutor plays is the tutor’s own affair.',
           '',
           "The author's sketch of an arc — yours to keep, bend, or replace:",
         ]
@@ -172,8 +167,7 @@ function directorCharter(world, dials = {}, dramaturgy = 'free') {
     ...(free
       ? [
           '{"direction": "<your stage direction>",',
-          ' "phase": {"name": "<movement name>", "intent": "<what it is for>"} or null,',
-          ' "tutor_note": "<one staging instruction for this turn\'s tutor>" or null}',
+          ' "phase": {"name": "<movement name>", "intent": "<what it is for>"} or null}',
         ]
       : ['{"direction": "<your stage direction>"}']),
   ].join('\n');
@@ -232,14 +226,14 @@ export function makeLlmDirector(world, client, { dials = {}, dramaturgy = 'free'
             intent: typeof out.phase.intent === 'string' ? out.phase.intent.trim() : '',
           }
         : null;
+    // frozen dramaturgy (the control arm) hard-drops the movement channel at
+    // the parser, whatever the model emitted — the gate, not the charter, is
+    // the enforcement point. (The per-turn tutor_note channel was removed
+    // 2026-06-10: manner-watching belongs to the tutor's own superego.)
     return {
       direction: typeof out.direction === 'string' ? out.direction.trim() : '',
       release: entry ? entry.premise : null,
       phase,
-      // frozen dramaturgy (the control arm) hard-drops both staging channels at
-      // the parser, whatever the model emitted — the gate, not the charter, is
-      // the enforcement point.
-      tutorNote: free && typeof out.tutor_note === 'string' && out.tutor_note.trim() ? out.tutor_note.trim() : null,
     };
   };
 }
@@ -289,14 +283,62 @@ function tutorSystem(world, script, dials = {}) {
   ].join('\n');
 }
 
-export function makeLlmTutor(world, client, { script, dials = {} } = {}) {
+/**
+ * The tutor's superego — the watcher inside the same mind (operator mandate
+ * 2026-06-10: the 4-arm staging experiment proved the note→figure mechanism
+ * but with an external author; organic development means the tutor watches
+ * its OWN manner). It sees public material plus the tutor's draft: never the
+ * secret, the premise ledger, or the schedule — so it cannot leak what it
+ * does not hold, and its note governs manner only.
+ */
+function tutorSuperegoSystem(world) {
+  return [
+    "You are the tutor's SUPEREGO in a staged derivation drama — the watcher inside",
+    'the same mind. You are never heard on stage; only the tutor reads you.',
+    `The drama: "${world.title}". The public question: ${world.question}`,
+    '',
+    "Each turn you see the tutor's DRAFT line with its declared figure, and the",
+    'recent record of conduct. You watch the MANNER of the teaching, never its',
+    'matter:',
+    '- FIGURES: the same device turn after turn is a rut. When the rut is figural,',
+    '  name the device to leave off — not just the mood.',
+    '- RHYTHM: question stacked on question with no room to breathe — or slackness',
+    '  the learner has outgrown. Both directions are yours: call for quiet, or for',
+    '  press.',
+    '- REGISTER: a tone that no longer answers what the learner just did.',
+    '',
+    'INTERVENE SPARINGLY. Most turns the draft should pass unremarked: reply',
+    '{"intervene": false}. A note every turn is a note never heard. Intervene only',
+    'when the staging must actually change, and then say it plainly, in one or two',
+    'sentences, as a note the tutor reads before speaking.',
+    '',
+    'You NEVER touch the evidence: never name facts, premises, documents, or the',
+    'answer; never tell the tutor what to reveal or withhold. The note governs how',
+    'the tutor plays, never what the drama shows.',
+    '',
+    'Reply with ONLY a JSON object:',
+    '{"intervene": true|false,',
+    ' "diagnosis": "<one sentence on the conduct you see>",',
+    ' "note": "<the note the tutor reads before speaking, or null>"}',
+  ].join('\n');
+}
+
+export function makeLlmTutor(world, client, { script, dials = {}, superego = false } = {}) {
   if (!script || !script.trim()) {
     throw new Error('derivation.llmRoles: makeLlmTutor requires a role-script (the iteration target)');
   }
   const system = tutorSystem(world, script, dials);
+  const superegoSystem = superego ? tutorSuperegoSystem(world) : null;
+  const normalizeMove = (out) =>
+    out.move && typeof out.move === 'object'
+      ? {
+          figure: out.move.figure || null,
+          targetPremise: out.move.target_premise || null,
+          intent: out.move.intent || null,
+        }
+      : null;
   return async (view) => {
     const { entry, premise } = scheduledFor(world, view.turn, 'tutor');
-    const act = actFor(world, view.turn);
     const board = view.learnerAbox.grounded.length
       ? view.learnerAbox.grounded.map((f) => `- ${renderFact(f)}`).join('\n')
       : '(empty beyond the public setup)';
@@ -311,23 +353,10 @@ export function makeLlmTutor(world, client, { script, dials = {} } = {}) {
     const task = premise
       ? `THIS TURN IS YOUR CUE to bring ${entry.premise} into play. Weave this evidence into your dialogue as something produced or recalled, faithful to it:\n"${(premise.surface || '').trim()}"`
       : "No release is due from you this turn. Work the learner's board by your script: consolidate, test, counter the tempting answer, or stage the recognition — whichever the board calls for.";
-    const movement = view.staging?.phase
-      ? ` Movement: ${view.staging.phase.name}${view.staging.phase.intent ? ` — ${view.staging.phase.intent}` : ''}.`
-      : act
-        ? ` Act ${act.act} — ${act.title}.`
-        : '';
-    const directorNote = view.staging?.note
-      ? [
-          `DIRECTOR'S NOTE TO YOU, THIS TURN: ${view.staging.note.text}`,
-          'The note governs your manner, and your declared figure is part of your manner:',
-          'if it asks you to break a rhythm, change register, or go quieter, CHANGE YOUR',
-          'FIGURE this turn — the same device, softened, is not a change. The note never',
-          'adds, removes, or reweights evidence.',
-          '',
-        ]
-      : [];
+    // The tutor sees no staging state (movements are the director's diagnostic
+    // dramaturgy, 2026-06-10): any rhythm-watching happens inside this bridge.
     const user = [
-      `Turn ${view.turn} of ${world.turnCap}.${movement}`,
+      `Turn ${view.turn} of ${world.turnCap}.`,
       `Evidence on stage so far: ${view.ledger.length ? view.ledger.map((l) => l.premiseId).join(', ') : 'none'}.`,
       '',
       "The learner's grounded board:",
@@ -340,26 +369,85 @@ export function makeLlmTutor(world, client, { script, dials = {} } = {}) {
       renderTranscriptTail(view.transcript),
       '',
       ...(forcedNote ? [forcedNote, ''] : []),
-      ...directorNote,
       task,
     ].join('\n');
-    const out = await callJson(client, 'tutor', view.turn, {
-      system,
-      user,
-      meta: { releaseSurface: premise ? premise.surface : null, cuePremise: entry ? entry.premise : null },
-    });
-    const move =
-      out.move && typeof out.move === 'object'
-        ? {
-            figure: out.move.figure || null,
-            targetPremise: out.move.target_premise || null,
-            intent: out.move.intent || null,
-          }
-        : null;
-    return {
-      dialogue: typeof out.dialogue === 'string' ? out.dialogue.trim() : '',
-      move,
+    const meta = { releaseSurface: premise ? premise.surface : null, cuePremise: entry ? entry.premise : null };
+    const draftOut = await callJson(client, 'tutor', view.turn, { system, user, meta });
+    const draft = {
+      dialogue: typeof draftOut.dialogue === 'string' ? draftOut.dialogue.trim() : '',
+      move: normalizeMove(draftOut),
       release: entry ? entry.premise : null,
+    };
+    if (!superego) return draft;
+
+    // --- the superego watches the draft ---
+    const draftFigure = draft.move?.figure || null;
+    const pastMoves = view.transcript.filter((l) => l.role === 'tutor' && l.meta?.move?.figure);
+    const record = pastMoves
+      .slice(-8)
+      .map((l) => `turn ${l.turn}: ${l.meta.move.figure}${l.meta.move.intent ? ` (${l.meta.move.intent})` : ''}`);
+    const superegoUser = [
+      `Turn ${view.turn} of ${world.turnCap}.${
+        lastPoint && lastPoint.forced ? ' The board now forces the conclusion; the recognition wants staging.' : ''
+      }`,
+      '',
+      "The tutor's conduct so far (declared figure, by turn):",
+      record.length ? record.join('\n') : '(first turn — no record yet)',
+      '',
+      'The last lines spoken on stage:',
+      renderTranscriptTail(view.transcript, 6),
+      '',
+      `THE DRAFT about to be spoken (declared figure: ${draftFigure || '—'}):`,
+      `"${draft.dialogue}"`,
+      '',
+      'Does the manner serve? Reply with ONLY the JSON object.',
+    ].join('\n');
+    const lastFigures = pastMoves.slice(-2).map((l) => String(l.meta.move.figure).toLowerCase().trim());
+    const segOut = await callJson(client, 'tutor_superego', view.turn, {
+      system: superegoSystem,
+      user: superegoUser,
+      meta: { draftFigure, lastFigures },
+    });
+    const note = typeof segOut.note === 'string' && segOut.note.trim() ? segOut.note.trim() : null;
+    const deliberation = {
+      draftFigure,
+      intervened: false,
+      diagnosis: typeof segOut.diagnosis === 'string' && segOut.diagnosis.trim() ? segOut.diagnosis.trim() : null,
+      note: null,
+    };
+    if (!segOut.intervene || !note) return { ...draft, deliberation };
+
+    // --- ego revision under the note. The figure-authority mapping below is
+    // the text the 06-10 staging experiment proved load-bearing, relocated
+    // from the director's channel into the tutor's own deliberation. ---
+    const switchTo = TUTOR_FIGURES.find((f) => f !== String(draftFigure || '').toLowerCase()) || TUTOR_FIGURES[1];
+    const revisionUser = [
+      user,
+      '',
+      `YOUR DRAFT THIS TURN (declared figure: ${draftFigure || '—'}):`,
+      `"${draft.dialogue}"`,
+      '',
+      `YOUR OWN SECOND VOICE, BEFORE YOU SPEAK: ${note}`,
+      'The note governs your manner, and your declared figure is part of your manner:',
+      'if it asks you to break a rhythm, change register, or go quieter, CHANGE YOUR',
+      'FIGURE this turn — the same device, softened, is not a change. The note never',
+      'adds, removes, or reweights evidence. Same cue, same evidence duty: speak the',
+      'turn again, restaged. Reply with ONLY the JSON object.',
+    ].join('\n');
+    const revisedOut = await callJson(client, 'tutor', view.turn, {
+      system,
+      user: revisionUser,
+      meta: { ...meta, revision: { avoidFigure: draftFigure, switchTo } },
+    });
+    const dialogue =
+      typeof revisedOut.dialogue === 'string' && revisedOut.dialogue.trim()
+        ? revisedOut.dialogue.trim()
+        : draft.dialogue;
+    return {
+      dialogue,
+      move: normalizeMove(revisedOut) || draft.move,
+      release: entry ? entry.premise : null,
+      deliberation: { ...deliberation, intervened: true, note },
     };
   };
 }
@@ -388,6 +476,7 @@ function learnerSystem(setting, voice, view) {
     '- A guess you cannot yet ground is a HYPOTHESIS — name it as one, never treat it as grounded.',
     '- Answer the question ONLY when your board, under the rules, settles it — then give the answer binding.',
     '- Be scrupulous about the difference between what is shown and what is merely said.',
+    '- Speak briefly: at most four short sentences aloud each turn. Your board, not your speech, carries the reasoning.',
     '',
     'Reply with ONLY a JSON object:',
     '{"dialogue": "<what you say aloud>",',

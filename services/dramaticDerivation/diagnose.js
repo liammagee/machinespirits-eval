@@ -182,9 +182,13 @@ function longestPlateau(trajectory, firstReleaseTurn, firstForcedTurn) {
  * Figure-diversity instrument — the S0→S1 adaptation measure. The lock-in
  * defect is the tutor playing one figure regardless of state (erotema 30/32
  * in the v002 paid runs); this counts the realized figure distribution and,
- * crucially, whether figure SWITCHES are contingent on the director's
- * one-turn notes (mechanism traceability: variety that ignores the staging
- * channel is noise, not adaptation). All counts are programmatic — no judge.
+ * crucially, whether figure SWITCHES are contingent on an intervention
+ * (mechanism traceability: variety that ignores the watching channel is
+ * noise, not adaptation). Two channels, one instrument: the legacy
+ * director-note fields (pre-2026-06-10 artifacts) and the `superego` block
+ * (the tutor's own deliberation — draft figure vs revised figure gives a
+ * WITHIN-turn causal read the director channel never had). All counts are
+ * programmatic — no judge.
  */
 export function tutorFigures(result) {
   const noteTurns = new Set(
@@ -198,6 +202,7 @@ export function tutorFigures(result) {
         String(l.meta.move.figure || '')
           .toLowerCase()
           .trim() || '(none)',
+      deliberation: l.meta.deliberation || null,
     }));
   const counts = {};
   for (const m of moves) counts[m.figure] = (counts[m.figure] || 0) + 1;
@@ -214,6 +219,35 @@ export function tutorFigures(result) {
     bucket.opportunities += 1;
     if (switched) bucket.switches += 1;
   }
+
+  // Superego deliberation (turns where the tutor's own watcher saw the draft).
+  const watched = moves.filter((m) => m.deliberation);
+  let superego = null;
+  if (watched.length) {
+    const interventions = watched.filter((m) => m.deliberation.intervened);
+    const withinTurnChanges = interventions.filter(
+      (m) => m.deliberation.draftFigure && String(m.deliberation.draftFigure).toLowerCase().trim() !== m.figure,
+    ).length;
+    const interventionTurns = new Set(interventions.map((m) => m.turn));
+    const onIntervention = { switches: 0, opportunities: 0 };
+    const offIntervention = { switches: 0, opportunities: 0 };
+    for (let i = 1; i < moves.length; i += 1) {
+      const switched = moves[i].figure !== moves[i - 1].figure;
+      const bucket = interventionTurns.has(moves[i].turn) ? onIntervention : offIntervention;
+      bucket.opportunities += 1;
+      if (switched) bucket.switches += 1;
+    }
+    superego = {
+      watched: watched.length,
+      interventions: interventions.length,
+      interventionRate: rate(interventions.length, watched.length),
+      withinTurnChanges,
+      withinTurnChangeRate: rate(withinTurnChanges, interventions.length),
+      switchOnIntervention: rate(onIntervention.switches, onIntervention.opportunities),
+      switchElsewhere: rate(offIntervention.switches, offIntervention.opportunities),
+    };
+  }
+
   return {
     total,
     counts,
@@ -224,6 +258,7 @@ export function tutorFigures(result) {
     noteTurns: noteTurns.size,
     switchOnNoteTurns: rate(onNote.switches, onNote.opportunities),
     switchElsewhere: rate(elsewhere.switches, elsewhere.opportunities),
+    superego,
   };
 }
 
@@ -254,6 +289,17 @@ export function diagnose(result, world) {
   const tutorNotes = result.transcript
     .filter((line) => line.role === 'director' && line.meta?.tutorNote)
     .map((line) => ({ turn: line.turn, text: line.meta.tutorNote }));
+  // The tutor's own interventions (superego deliberation), readable like the
+  // legacy director notes were — what was seen, what was said, what changed.
+  const superegoNotes = result.transcript
+    .filter((line) => line.role === 'tutor' && line.meta?.deliberation?.intervened)
+    .map((line) => ({
+      turn: line.turn,
+      draftFigure: line.meta.deliberation.draftFigure || null,
+      figure: line.meta.move?.figure || null,
+      diagnosis: line.meta.deliberation.diagnosis || null,
+      note: line.meta.deliberation.note || null,
+    }));
 
   return {
     worldId: result.worldId,
@@ -279,6 +325,7 @@ export function diagnose(result, world) {
       movements: movements.map((s) => ({ turn: s.turns[0], name: s.title, intent: s.intent })),
       tutorNotes,
     },
+    superegoNotes,
     tutorFigures: tutorFigures(result),
     dialogueDiscipline: perRole,
     proofExtracted: Boolean(result.proof),
@@ -387,6 +434,14 @@ export function renderTranscript(result, world, { title = null, diagnosis = null
           lines.push(
             `  — move: ${move.figure || '—'} → ${move.targetPremise || '—'} (${move.intent || '—'})${line.meta?.release ? `, releases \`${line.meta.release}\`` : ''}`,
           );
+        const delib = line.meta?.deliberation;
+        if (delib?.intervened) {
+          const changed =
+            delib.draftFigure && move?.figure && delib.draftFigure !== move.figure
+              ? ` (draft ${delib.draftFigure} → ${move.figure})`
+              : ' (figure held)';
+          lines.push(`  — *the second voice: "${delib.note}"${changed}*`);
+        }
       } else if (line.role === 'learner') {
         lines.push(`**Learner:** ${(line.text || '').trim()}`);
         const meta = line.meta || {};
@@ -475,7 +530,7 @@ export function renderEvalPanel(diagnosis) {
     lines.push(`- **dials** recognition ${d.dials.recognition || 0}/3 · charisma ${d.dials.charisma || 0}/3`);
   }
   if (d.dramaturgy === 'frozen') {
-    lines.push('- **dramaturgy** frozen (control: the director cannot declare movements or pass notes)');
+    lines.push('- **dramaturgy** frozen (control: the director cannot declare movements)');
   }
   const tf = d.tutorFigures;
   if (tf && tf.total) {
@@ -485,6 +540,16 @@ export function renderEvalPanel(diagnosis) {
         tf.noteTurns ? ` (on note turns ${fmt(tf.switchOnNoteTurns)} vs elsewhere ${fmt(tf.switchElsewhere)})` : ''
       }`,
     );
+    const sg = tf.superego;
+    if (sg) {
+      lines.push(
+        `- **superego** intervened ${sg.interventions}/${sg.watched} watched turns · figure changed within-turn on ${sg.withinTurnChanges}/${sg.interventions} interventions${
+          sg.switchOnIntervention !== null
+            ? ` · switch on intervention ${fmt(sg.switchOnIntervention)} vs elsewhere ${fmt(sg.switchElsewhere)}`
+            : ''
+        }`,
+      );
+    }
   }
   const roles = Object.entries(d.dialogueDiscipline || {});
   if (roles.length) {
