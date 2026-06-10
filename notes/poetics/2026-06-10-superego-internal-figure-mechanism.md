@@ -95,6 +95,7 @@ Serialized, attended, hard-bounded by `turn_cap × 5 × 2` calls.
 | 2 | lantern-v001-real-superego-on-t1 | 002 | ON (charter v1) | erotema 9/20 (45%) | 4 | 0.79 | 12/20 → 11/12 (0.92) | grounded@20 / 8 on cue |
 | 3 | lantern-v001-real-superego-on-t2-charterv2 | 002 | ON (charter v2) | erotema 7/20 (35%) | 4 | 0.68 | 0/20 → — | grounded@20 / 8 on cue |
 | 4 | nocturne-v002-real-superego-on-t1-charterv2 | 001 bridge | ON (charter v2) | erotema 20/32 (63%) | 4 | 0.65 | 9/32 → 9/9 (1.00) | grounded@32 / 11 on cue |
+| 5 | bitterwell-v001-real-off-t1 | 003 | OFF | exemplum 7/15 (47%) | 3 | 0.57 | — | grounded@15 / 7 on cue |
 
 ## Readings
 
@@ -223,3 +224,30 @@ than the director's note channel (s1-full drove erotema to 31%) because
 its jurisdiction is minimal; that is the trade that bought 0-mismatch
 specificity. Remaining for the bar: world-003 OFF/ON replication, then
 one re-voiced arm (clause 4).
+
+Addendum — the run's critic notice (independent read of the artifacts)
+corroborates the instrument: nine drafted questions reached the stage as
+something else, forced switch 1.00 vs free 0.50. Two of its lines carry:
+the aposiopesis the superego introduced at t28 RETURNS UNFORCED at t32, on
+the recognition itself — a one-turn hint that the watcher's repertoire
+leaks back into the draft layer; and the scope caveat for any later
+write-up: the watcher polices form, not content — "the intervention is
+proven possible; it is not yet proven to matter" pedagogically.
+
+### Arm 5 — bitterwell OFF: organic ruts, on two devices
+
+Formal channel clean on the third world shape: grounded at 15 (the
+planned forcing turn), 7/7 releases on cue, slope 0.33, 20 min. Figures:
+exemplum 7/15 (47%), 3 distinct, switch 0.57 — and, for the first time on
+an anchor-free script, ORGANIC RUTS: the spoken sequence opens erotema ×3
+(t1–3) then exemplum ×3 (t4–6) before settling into varied conduct
+(alternation t7–13, an anaphora pair to close). The surveyor persona's
+example-leaning voice ruts on a DIFFERENT device than world-001's anchor
+— so world-003 is the mixed-regime test the suite needed: lantern tested
+pure specificity (no ruts to find), nocturne pure sensitivity (one
+anchored rut, forever rebuilding), bitterwell offers both regimes in one
+run. For the ON sibling the expectation is conditional, since drafts
+resample: where rutted drafts complete, fire and break (and an exemplum
+catch would show the criterion is device-agnostic, not erotema-tuned);
+where conduct varies, hold. The audit column decides which regime each
+turn was in.
