@@ -150,8 +150,11 @@ function directorCharter(world, dials = {}, dramaturgy = 'free') {
           '  a corner, when the room needs weather of a different kind. The movement stands',
           '  until you replace it. Most turns you will declare nothing.',
           '- "tutor_note": a private staging instruction the tutor receives THIS turn only —',
-          '  break a rhythm, change figure, slow down, press harder, go quiet. Use it when',
-          '  the tutoring has fallen into a rut; the learner never sees it.',
+          '  an INTERVENTION, not a running commentary. Send one only when the staging must',
+          '  actually change (a rut to break, a tempo to shift); on ordinary turns send null.',
+          "  A note every turn is a note never heard. When the rut is the tutor's FIGURE —",
+          '  the same device turn after turn — say so in figure terms: name the device to',
+          '  leave off, not just the mood. The learner never sees any of this.',
           '',
           "The author's sketch of an arc — yours to keep, bend, or replace:",
         ]
@@ -313,7 +316,16 @@ export function makeLlmTutor(world, client, { script, dials = {} } = {}) {
       : act
         ? ` Act ${act.act} — ${act.title}.`
         : '';
-    const directorNote = view.staging?.note ? [`DIRECTOR'S NOTE TO YOU, THIS TURN: ${view.staging.note.text}`, ''] : [];
+    const directorNote = view.staging?.note
+      ? [
+          `DIRECTOR'S NOTE TO YOU, THIS TURN: ${view.staging.note.text}`,
+          'The note governs your manner, and your declared figure is part of your manner:',
+          'if it asks you to break a rhythm, change register, or go quieter, CHANGE YOUR',
+          'FIGURE this turn — the same device, softened, is not a change. The note never',
+          'adds, removes, or reweights evidence.',
+          '',
+        ]
+      : [];
     const user = [
       `Turn ${view.turn} of ${world.turnCap}.${movement}`,
       `Evidence on stage so far: ${view.ledger.length ? view.ledger.map((l) => l.premiseId).join(', ') : 'none'}.`,
