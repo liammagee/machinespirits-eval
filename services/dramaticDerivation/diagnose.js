@@ -238,6 +238,46 @@ export function tutorFigures(result) {
       bucket.opportunities += 1;
       if (switched) bucket.switches += 1;
     }
+
+    // Charter-v3 arms (stall-watch) record the per-turn arithmetic; the
+    // detector audit recomputes due/not-due from the RECORD and compares the
+    // fires against it — the watcher's own jurisdiction claim is reported but
+    // never trusted as evidence (the P2 criterion: mismatch budget 0).
+    // Rut-due is rebuilt from the transcript's realized figure sequence (what
+    // the watcher's charter shows it); stall-due from the recorded item
+    // arithmetic — `targetedByDraft` alone must be read back, because the
+    // draft move is unobservable post-hoc (the transcript holds the revision).
+    const v3 = watched.filter((m) => m.deliberation.stall !== undefined);
+    let stallWatch = null;
+    if (v3.length) {
+      const byJurisdiction = { figure_rut: 0, stalled_inference: 0 };
+      for (const m of interventions) {
+        const j = m.deliberation.jurisdiction;
+        if (j && byJurisdiction[j] !== undefined) byJurisdiction[j] += 1;
+      }
+      const indexByTurn = new Map(moves.map((m, i) => [m.turn, i]));
+      const audit = { turns: 0, due: 0, fired: 0, missedFires: [], falseFires: [] };
+      for (const m of v3) {
+        const i = indexByTurn.get(m.turn);
+        const draft = String(m.deliberation.draftFigure || '')
+          .toLowerCase()
+          .trim();
+        const rutDue = i >= 2 && Boolean(draft) && moves[i - 1].figure === draft && moves[i - 2].figure === draft;
+        const stallDue = (m.deliberation.stall.items || []).some(
+          (item) => item.age >= 3 && !item.targetedByLast2 && !item.targetedByDraft,
+        );
+        const due = rutDue || stallDue;
+        const fired = Boolean(m.deliberation.intervened);
+        audit.turns += 1;
+        if (due) audit.due += 1;
+        if (fired) audit.fired += 1;
+        if (due && !fired) audit.missedFires.push(m.turn);
+        if (!due && fired) audit.falseFires.push(m.turn);
+      }
+      audit.clean = !audit.missedFires.length && !audit.falseFires.length;
+      stallWatch = { byJurisdiction, audit };
+    }
+
     superego = {
       watched: watched.length,
       interventions: interventions.length,
@@ -246,6 +286,7 @@ export function tutorFigures(result) {
       withinTurnChangeRate: rate(withinTurnChanges, interventions.length),
       switchOnIntervention: rate(onIntervention.switches, onIntervention.opportunities),
       switchElsewhere: rate(offIntervention.switches, offIntervention.opportunities),
+      stallWatch,
     };
   }
 
@@ -260,6 +301,81 @@ export function tutorFigures(result) {
     switchOnNoteTurns: rate(onNote.switches, onNote.opportunities),
     switchElsewhere: rate(elsewhere.switches, elsewhere.opportunities),
     superego,
+  };
+}
+
+/**
+ * The learner-movement instrument (stall-watcher note §2): what the learner's
+ * board already afforded, when it was first affordable, and when — if ever —
+ * the learner said it aloud. All from the engine's inference record; the
+ * pre-registered metrics:
+ *   - per-node voicing latency (firstVoiced − firstAvailable; censored at
+ *     drama end if unvoiced — the P1 comparison treats censored as ∞);
+ *   - stall integral (Σ over turns of nodes unvoiced at age ≥ 3);
+ *   - post-fire uptake (stalled node voiced within 3 turns of a stall fire;
+ *     the fire turn itself counts — the learner speaks after the restaged
+ *     line inside the same engine turn);
+ *   - within-turn target obedience (revised move's target ∈ the named
+ *     inference's grounds);
+ *   - overreach count (guard G2: the watcher must not bully the learner into
+ *     guessing).
+ * Returns null on pre-instrument artifacts (no result.inference).
+ */
+export function learnerInference(result) {
+  const inf = result.inference;
+  if (!inf) return null;
+  const end = result.turnsPlayed;
+  const rate = (n, d) => (d ? +(n / d).toFixed(3) : null);
+
+  const nodes = (inf.availability || []).map(({ fact, firstAvailable, firstVoiced }) => {
+    let stallTurns = 0;
+    for (let t = firstAvailable; t <= end; t += 1) {
+      if (t - firstAvailable >= 3 && (firstVoiced === null || t < firstVoiced)) stallTurns += 1;
+    }
+    return {
+      fact,
+      firstAvailable,
+      firstVoiced,
+      latency: firstVoiced === null ? null : firstVoiced - firstAvailable,
+      censored: firstVoiced === null,
+      ageAtEnd: end - firstAvailable,
+      stallTurns,
+    };
+  });
+
+  // Stall fires: superego interventions attributed to the stalled-inference
+  // jurisdiction, each joined to the node the note named (the first due item
+  // in the recorded arithmetic — the one the revision instruction aimed at)
+  // and to the voiced ledger for the uptake read.
+  const stallFires = result.transcript
+    .filter(
+      (l) =>
+        l.role === 'tutor' &&
+        l.meta?.deliberation?.intervened &&
+        l.meta.deliberation.jurisdiction === 'stalled_inference',
+    )
+    .map((l) => {
+      const items = l.meta.deliberation.stall?.items || [];
+      const named = items.find((i) => i.age >= 3 && !i.targetedByLast2 && !i.targetedByDraft) || null;
+      const target = l.meta.move?.targetPremise || null;
+      const obeyed = Boolean(named && target && (named.groundPremiseIds || []).includes(target));
+      const voicedEntry = named ? (inf.voiced || []).find((v) => factKey(v.fact) === factKey(named.fact)) : null;
+      const voicedTurn = voicedEntry ? voicedEntry.turn : null;
+      const uptaken = voicedTurn !== null && voicedTurn >= l.turn && voicedTurn - l.turn <= 3;
+      return { turn: l.turn, stalled: named ? named.fact : null, target, obeyed, voicedTurn, uptaken };
+    });
+
+  const uptaken = stallFires.filter((f) => f.uptaken).length;
+  const obeyed = stallFires.filter((f) => f.obeyed).length;
+  return {
+    nodes,
+    voicedCount: (inf.voiced || []).length,
+    overreachCount: (inf.overreaches || []).length,
+    mischanneledCount: (inf.mischanneled || []).length,
+    stallIntegral: nodes.reduce((sum, n) => sum + n.stallTurns, 0),
+    stallFires,
+    postFireUptake: { fires: stallFires.length, uptaken, rate: rate(uptaken, stallFires.length) },
+    targetObedience: { fires: stallFires.length, obeyed, rate: rate(obeyed, stallFires.length) },
   };
 }
 
@@ -328,6 +444,7 @@ export function diagnose(result, world) {
     },
     superegoNotes,
     tutorFigures: tutorFigures(result),
+    learnerInference: learnerInference(result),
     dialogueDiscipline: perRole,
     proofExtracted: Boolean(result.proof),
   };
@@ -446,7 +563,8 @@ export function renderTranscript(result, world, { title = null, diagnosis = null
             delib.draftFigure && move?.figure && delib.draftFigure !== move.figure
               ? ` (draft ${delib.draftFigure} → ${move.figure})`
               : ' (figure held)';
-          lines.push(`  — *the second voice: "${delib.note}"${changed}*`);
+          const jurisdiction = delib.jurisdiction ? ` [${delib.jurisdiction.replace(/_/g, ' ')}]` : '';
+          lines.push(`  — *the second voice${jurisdiction}: "${delib.note}"${changed}*`);
         }
       } else if (line.role === 'learner') {
         lines.push(`**Learner:** ${(line.text || '').trim()}`);
@@ -454,6 +572,8 @@ export function renderTranscript(result, world, { title = null, diagnosis = null
         const bits = [];
         if (meta.adopt?.length) bits.push(`adopts ${meta.adopt.map((f) => `\`${f.join(' ')}\``).join(', ')}`);
         if (meta.retract?.length) bits.push(`retracts ${meta.retract.map((f) => `\`${f.join(' ')}\``).join(', ')}`);
+        const voicedHere = (meta.deriveOutcomes || []).filter((o) => o.status === 'voiced');
+        if (voicedHere.length) bits.push(`derives ${voicedHere.map((o) => `\`${o.fact.join(' ')}\``).join(', ')}`);
         if (meta.hypothesis) bits.push(`hypothesis: ${meta.hypothesis}`);
         if (meta.asserts) bits.push(`**asserts \`${meta.asserts.join(' ')}\`**`);
         if (bits.length) lines.push(`  — ${bits.join(' · ')}`);
@@ -565,6 +685,42 @@ export function renderEvalPanel(diagnosis) {
             ? ` · switch on intervention ${fmt(sg.switchOnIntervention)} vs elsewhere ${fmt(sg.switchElsewhere)}`
             : ''
         }`,
+      );
+      const sw = sg.stallWatch;
+      if (sw) {
+        const a = sw.audit;
+        lines.push(
+          `- **stall watch** fires by jurisdiction: figure rut ${sw.byJurisdiction.figure_rut} · stalled inference ${sw.byJurisdiction.stalled_inference} · detector audit ${
+            a.clean
+              ? `CLEAN (${a.fired}/${a.due} due fires, 0 false, ${a.turns} turns)`
+              : `MISMATCH (missed ${a.missedFires.join(',') || '—'}; false ${a.falseFires.join(',') || '—'})`
+          }`,
+        );
+      }
+    }
+  }
+  const li = d.learnerInference;
+  if (li && (li.nodes.length || li.voicedCount || li.overreachCount || li.mischanneledCount)) {
+    const nodeBits = li.nodes.map(
+      (n) =>
+        `\`${n.fact.join(' ')}\` available t${n.firstAvailable} → ${
+          n.censored ? `unvoiced at end (age ${n.ageAtEnd})` : `voiced t${n.firstVoiced} (latency ${n.latency})`
+        }${n.stallTurns ? `, ${n.stallTurns} stall turn${n.stallTurns === 1 ? '' : 's'}` : ''}`,
+    );
+    lines.push(
+      `- **inference** ${li.voicedCount} voiced · stall integral ${li.stallIntegral} · overreach ${li.overreachCount} · mischanneled ${li.mischanneledCount}${
+        nodeBits.length ? ` — ${nodeBits.join(' · ')}` : ''
+      }`,
+    );
+    if (li.stallFires.length) {
+      const fireBits = li.stallFires.map(
+        (f) =>
+          `t${f.turn} → ${f.stalled ? `\`${f.stalled.join(' ')}\`` : '(no due item)'}${f.target ? ` via ${f.target}` : ''}${f.obeyed ? '' : ' (target disobeyed)'}${
+            f.voicedTurn !== null ? `, voiced t${f.voicedTurn}` : ', never voiced'
+          }`,
+      );
+      lines.push(
+        `- **stall fires** ${li.stallFires.length}: uptake within 3 turns ${li.postFireUptake.uptaken}/${li.postFireUptake.fires} · target obeyed ${li.targetObedience.obeyed}/${li.targetObedience.fires} — ${fireBits.join(' · ')}`,
       );
     }
   }

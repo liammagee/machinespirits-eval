@@ -11,6 +11,7 @@ export {
   learningSlope,
   stagingSegments,
   tutorFigures,
+  learnerInference,
   renderDCurve,
   renderTranscript,
   renderEvalPanel,

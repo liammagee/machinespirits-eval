@@ -254,10 +254,24 @@ function mockResponse(role, meta = {}) {
     });
   }
   if (role === 'tutor') {
-    // A revision call (the ego rewriting under its superego's note) switches
-    // to the bridge-computed figure, so the mock exercises the within-turn
-    // draft→revision change the instrument measures.
+    // A revision call (the ego rewriting under its superego's note): a figure
+    // fire switches to the bridge-computed figure; a stall fire keeps the
+    // figure and aims the move at the stalled inference's first ground — the
+    // two jurisdictions act on different axes, and the mock exercises both
+    // within-turn changes the instruments measure.
     if (meta.revision) {
+      if (meta.revision.jurisdiction === 'stalled_inference') {
+        return JSON.stringify({
+          dialogue: meta.releaseSurface
+            ? `Before anything new: two entries already stand on your board, side by side. Read them in one breath — then take this as well: ${meta.releaseSurface}`
+            : 'No new exhibit. Two entries already stand on your board; set them side by side, read them in one breath, and tell me what they share.',
+          move: {
+            figure: meta.revision.avoidFigure || 'erotema',
+            target_premise: meta.revision.stallTarget || meta.cuePremise || null,
+            intent: 'consolidate',
+          },
+        });
+      }
       return JSON.stringify({
         dialogue: meta.releaseSurface
           ? `Set it beside what you hold, like for like: ${meta.releaseSurface}`
@@ -283,29 +297,59 @@ function mockResponse(role, meta = {}) {
   if (role === 'tutor_superego') {
     // Deterministic rut-watcher: intervene when the draft would make the
     // third consecutive turn on one figure (mock tutor always drafts erotema,
-    // so interventions land every third turn — both paths exercised).
+    // so interventions land every third turn — both paths exercised). Under
+    // the stall-watch charter (meta.stall present) the mock also fires the
+    // second jurisdiction when the bridge's arithmetic says due — rut first,
+    // so v2 mock behavior is unchanged. The stall note names grounds and the
+    // joining rule, NEVER the stalled conclusion (charter v3 discipline).
     const figs = Array.isArray(meta.lastFigures) ? meta.lastFigures : [];
     const rut = Boolean(meta.draftFigure) && figs.length >= 2 && figs.slice(-2).every((f) => f === meta.draftFigure);
-    return JSON.stringify(
-      rut
-        ? {
-            intervene: true,
-            diagnosis: `figure rut: ${meta.draftFigure} three turns running`,
-            note: `Leave off ${meta.draftFigure} this turn — change the device, keep the matter.`,
-          }
-        : { intervene: false, diagnosis: 'the manner serves; let it pass', note: null },
-    );
+    const stallWatch = meta.stall && typeof meta.stall === 'object';
+    if (rut) {
+      return JSON.stringify({
+        intervene: true,
+        ...(stallWatch ? { jurisdiction: 'figure_rut' } : {}),
+        diagnosis: `figure rut: ${meta.draftFigure} three turns running`,
+        note: `Leave off ${meta.draftFigure} this turn — change the device, keep the matter.`,
+      });
+    }
+    if (stallWatch && meta.stall.due && meta.stall.dueItem) {
+      const item = meta.stall.dueItem;
+      const groundNames = (item.grounds || [])
+        .map((g) => (g.premiseId ? g.premiseId : (g.fact || []).join(' ')))
+        .join(' and ');
+      return JSON.stringify({
+        intervene: true,
+        jurisdiction: 'stalled_inference',
+        diagnosis: `stalled inference: the board has waited ${item.age} turns on what ${item.rule} yields`,
+        note: `The learner's board already holds ${groundNames}; rule ${item.rule} joins them, and the join has waited ${item.age} turns unspoken. Target one of those grounds and set them side by side.`,
+      });
+    }
+    return JSON.stringify({
+      intervene: false,
+      ...(stallWatch ? { jurisdiction: null } : {}),
+      diagnosis: 'the manner serves; let it pass',
+      note: null,
+    });
   }
   if (role === 'learner') {
     const adoptAll = Array.from({ length: meta.adoptableCount || 0 }, (_, i) => i);
+    // The bridge's derive clock hints aged derivable facts (seen-age >= 3 =
+    // engine age 4, one turn after the mock stall watcher fires at 3) — so a
+    // mock run exercises voicing, the voiced ledger, and post-fire uptake
+    // deterministically. The real backend never reads this hint.
+    const derives = Array.isArray(meta.deriveHint) ? meta.deriveHint : [];
     return JSON.stringify({
       dialogue: meta.patternAssertion
         ? `Then it is shown: ${meta.patternAssertion.surface}.`
-        : adoptAll.length
-          ? 'I take what has been shown and set it beside the rest.'
-          : 'I am listening; nothing new is on the table.',
+        : derives.length
+          ? `Taken together, what I hold settles something short of the question: ${derives.map((f) => f.join(' ')).join('; ')}.`
+          : adoptAll.length
+            ? 'I take what has been shown and set it beside the rest.'
+            : 'I am listening; nothing new is on the table.',
       adopt_indices: adoptAll,
       retract_indices: [],
+      derives,
       hypothesis: meta.patternAssertion ? null : adoptAll.length ? 'weighing what this changes' : null,
       asserts_binding: meta.patternAssertion ? meta.patternAssertion.binding : null,
     });

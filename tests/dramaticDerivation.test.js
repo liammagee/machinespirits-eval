@@ -271,6 +271,7 @@ test('learner views conceal exactly S, the mirror, and unreleased premises', asy
     'rules',
     'transcript',
     'turn',
+    'voiced', // the learner's own derive-channel ledger — facts it voiced itself
   ];
 
   for (const view of views) {

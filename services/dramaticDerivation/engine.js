@@ -7,9 +7,24 @@
  *   director(view) -> { direction, release?: premiseId,
  *                       phase?: {name, intent} }  // declare/replace the current movement
  *   tutor(view)    -> { dialogue, move?: {figure,targetPremise,intent}, release?: premiseId,
- *                       deliberation?: {draftFigure, intervened, diagnosis, note} }
- *   learner(view)  -> { dialogue, adopt?: fact[], retract?: fact[],
+ *                       deliberation?: {draftFigure, intervened, diagnosis, note, stall?} }
+ *   learner(view)  -> { dialogue, adopt?: fact[], retract?: fact[], derive?: fact[],
  *                       hypothesis?: string, asserts?: fact }
+ *
+ * THE DERIVE CHANNEL (2026-06-10, stall-watcher experiment): the learner may
+ * VOICE intermediate conclusions — facts it claims follow from its board
+ * under the public rules. The learner composes them itself (an enumerated
+ * pick-list would measure list-picking, not inference). Validation is
+ * mechanical: in the closure of the valid board → the voiced ledger; not in
+ * the closure → `overreach` event; base or question-pattern facts →
+ * mischanneled (adopt and assert are those channels). Voicing changes
+ * NOTHING formal — a derivable fact is in the closure whether or not spoken;
+ * D(t), forcing, and the verdict are untouched by construction. The engine
+ * also tracks the INFERENCE FRONTIER (derivable, non-base, non-pattern,
+ * unvoiced facts with first-available turns) and exposes it to the
+ * tutor-side view — the raw material of the superego's stall jurisdiction.
+ * Question-pattern facts are excluded BEFORE the frontier exists, so the
+ * superego never sees even a derivable S.
  *
  * THE DRAMATURGY IS THE DIRECTOR'S (operator decision 2026-06-09, logged in
  * notes/poetics/): the world's authored acts are a SKETCH; the director may
@@ -33,7 +48,7 @@
  * success channel.
  */
 
-import { closure, entails, factKey, proofTree } from './chainer.js';
+import { closure, entails, factKey, matchPattern, proofTree } from './chainer.js';
 import { derivationDistance, detectStall } from './slope.js';
 
 function renderFact(fact) {
@@ -71,6 +86,82 @@ export async function runDrama({ world, roles, options = {} }) {
 
   const validGroundedFacts = () => [...grounded.values()].filter((entry) => entry.valid).map((entry) => entry.fact);
 
+  // --- derive channel + inference frontier state (stall-watcher instrument) ---
+  const voicedLedger = []; // {fact, turn} — canonical closure facts the learner voiced via derive
+  const voicedKeys = new Set();
+  const firstAvailable = new Map(); // key -> {fact, turn} — first turn the fact was derivable from the valid board
+  const overreaches = []; // {turn, fact} — derive claims NOT in the closure (false inferences)
+  const mischanneled = []; // {turn, fact, kind: 'base'|'pattern'} — adopt/assert material sent down derive
+  const premiseIdByKey = new Map([...world.premiseById.values()].map((p) => [factKey(p.fact), p.id]));
+
+  // Token-normalized matching for learner-composed derive claims: case and
+  // punctuation are forgiven, content is not (pre-registered in
+  // notes/poetics/2026-06-10-stall-watcher-quasi-logical-tom.md §2).
+  const normToken = (atom) =>
+    String(atom)
+      .toLowerCase()
+      .replace(/[^a-z0-9?]/gu, '');
+  const normKey = (fact) => JSON.stringify(fact.map(normToken));
+
+  // Question-pattern facts (S, the mirror, any fact of their shape) are the
+  // assert channel's property — excluded from the frontier BEFORE it exists,
+  // so the tutor-side view never contains even a derivable S.
+  const isPatternFact = (fact) => matchPattern(world.questionPattern, fact) !== null;
+
+  // Record first-availability for every derived, non-pattern fact in the
+  // closure of the learner's valid board. Returns the closure for reuse.
+  const recordAvailability = (turn) => {
+    const cl = closure(validGroundedFacts(), world.rules);
+    for (const [key, fact] of cl.facts) {
+      if (!cl.proofs.get(key)) continue; // base fact
+      if (isPatternFact(fact)) continue;
+      if (!firstAvailable.has(key)) firstAvailable.set(key, { fact, turn });
+    }
+    return cl;
+  };
+
+  const lastTutorTargets = (n = 2) => {
+    const targets = [];
+    for (let i = transcript.length - 1; i >= 0 && targets.length < n; i -= 1) {
+      if (transcript[i].role !== 'tutor') continue;
+      targets.push(transcript[i].meta?.move?.targetPremise || null);
+    }
+    return targets.filter(Boolean);
+  };
+
+  // The inference frontier: derivable, non-base, non-pattern, not-yet-voiced
+  // facts with ages and ground premise ids — the raw material of the
+  // superego's stall jurisdiction. Computed fresh per view; availability
+  // history lives in firstAvailable.
+  const computeFrontier = (turn) => {
+    const cl = closure(validGroundedFacts(), world.rules);
+    const recentTargets = lastTutorTargets(2);
+    const items = [];
+    for (const [key, fact] of cl.facts) {
+      const proof = cl.proofs.get(key);
+      if (!proof) continue;
+      if (isPatternFact(fact)) continue;
+      if (voicedKeys.has(key)) continue;
+      const grounds = proof.premises.map((pk) => ({
+        fact: cl.facts.get(pk),
+        premiseId: premiseIdByKey.get(pk) || null,
+      }));
+      const groundPremiseIds = grounds.map((g) => g.premiseId).filter(Boolean);
+      const since = firstAvailable.get(key)?.turn ?? turn;
+      items.push({
+        fact,
+        rule: proof.rule,
+        grounds,
+        groundPremiseIds,
+        firstAvailable: since,
+        age: turn - since,
+        targetedByLast2: groundPremiseIds.some((id) => recentTargets.includes(id)),
+      });
+    }
+    items.sort((a, b) => a.firstAvailable - b.firstAvailable || factKey(a.fact).localeCompare(factKey(b.fact)));
+    return items;
+  };
+
   const applyRelease = (turn, premiseId, via) => {
     if (!premiseId) return null;
     const premise = world.premiseById.get(premiseId);
@@ -94,6 +185,7 @@ export async function runDrama({ world, roles, options = {} }) {
       grounded: validGroundedFacts(),
       hypotheses: [...hypotheses],
     },
+    voiced: voicedLedger.map((entry) => ({ ...entry })),
   });
 
   const omniscientView = (turn, roleName) => ({
@@ -109,8 +201,14 @@ export async function runDrama({ world, roles, options = {} }) {
       grounded: validGroundedFacts(),
       hypotheses: [...hypotheses],
     },
+    inference: {
+      frontier: computeFrontier(turn),
+      voiced: voicedLedger.map((entry) => ({ ...entry })),
+      overreachCount: overreaches.length,
+    },
   });
 
+  recordAvailability(0); // background-only board may already yield derivations
   let turn = 0;
   while (turn < world.turnCap && !endedBy) {
     turn += 1;
@@ -178,6 +276,44 @@ export async function runDrama({ world, roles, options = {} }) {
     if (learnerOut.hypothesis) {
       hypotheses.push({ turn, text: learnerOut.hypothesis });
     }
+
+    // --- derive channel: validate learner-composed inference claims ---
+    // Order matters: adopt/retract above first, so "I adopt X and can now
+    // derive Y" validates against the board the learner just updated.
+    const deriveOutcomes = []; // {fact, status: 'voiced'|'overreach'|'base'|'pattern'|'repeat'}
+    if (Array.isArray(learnerOut.derive) && learnerOut.derive.length) {
+      const cl = closure(validGroundedFacts(), world.rules);
+      const byNorm = new Map();
+      for (const [key, fact] of cl.facts) byNorm.set(normKey(fact), { key, fact });
+      for (const claim of learnerOut.derive) {
+        if (!Array.isArray(claim) || !claim.length) continue;
+        const hit = byNorm.get(normKey(claim));
+        if (!hit) {
+          overreaches.push({ turn, fact: claim });
+          events.push({ turn, type: 'overreach', detail: renderFact(claim) });
+          deriveOutcomes.push({ fact: claim, status: 'overreach' });
+          continue;
+        }
+        if (voicedKeys.has(hit.key)) {
+          deriveOutcomes.push({ fact: hit.fact, status: 'repeat' });
+          continue;
+        }
+        if (!cl.proofs.get(hit.key)) {
+          mischanneled.push({ turn, fact: hit.fact, kind: 'base' });
+          deriveOutcomes.push({ fact: hit.fact, status: 'base' });
+          continue;
+        }
+        if (isPatternFact(hit.fact)) {
+          mischanneled.push({ turn, fact: hit.fact, kind: 'pattern' });
+          deriveOutcomes.push({ fact: hit.fact, status: 'pattern' });
+          continue;
+        }
+        voicedKeys.add(hit.key);
+        voicedLedger.push({ fact: hit.fact, turn });
+        deriveOutcomes.push({ fact: hit.fact, status: 'voiced' });
+      }
+    }
+
     transcript.push({
       turn,
       role: 'learner',
@@ -185,6 +321,8 @@ export async function runDrama({ world, roles, options = {} }) {
       meta: {
         adopt: learnerOut.adopt || [],
         retract: learnerOut.retract || [],
+        derive: learnerOut.derive || [],
+        deriveOutcomes,
         hypothesis: learnerOut.hypothesis || null,
         asserts: learnerOut.asserts || null,
       },
@@ -192,6 +330,7 @@ export async function runDrama({ world, roles, options = {} }) {
 
     // --- instrumentation ---
     const valid = validGroundedFacts();
+    recordAvailability(turn); // frontier availability reflects this turn's adoptions
     const forced = entails(valid, world.rules, world.secret.fact);
     if (forced && firstForcedTurn === null) {
       firstForcedTurn = turn;
@@ -258,6 +397,8 @@ export async function runDrama({ world, roles, options = {} }) {
       released: [...releasedThisTurn],
       adopted: (learnerOut.adopt || []).length,
       retracted: (learnerOut.retract || []).length,
+      derived: deriveOutcomes.filter((o) => o.status === 'voiced').length,
+      overreached: deriveOutcomes.filter((o) => o.status === 'overreach').length,
       hypothesis: Boolean(learnerOut.hypothesis),
       asserted: Boolean(learnerOut.asserts),
       intervened: Boolean(tutorOut.deliberation?.intervened),
@@ -270,6 +411,13 @@ export async function runDrama({ world, roles, options = {} }) {
   const verdict = resolveVerdict({ endedBy, events, firstForcedTurn, assertedGroundedTurn });
   const proof = assertedGroundedTurn !== null ? proofTree(validGroundedFacts(), world.rules, world.secret.fact) : null;
 
+  const availability = [...firstAvailable.values()]
+    .map(({ fact, turn: avail }) => {
+      const voicedEntry = voicedLedger.find((entry) => factKey(entry.fact) === factKey(fact));
+      return { fact, firstAvailable: avail, firstVoiced: voicedEntry ? voicedEntry.turn : null };
+    })
+    .sort((a, b) => a.firstAvailable - b.firstAvailable || factKey(a.fact).localeCompare(factKey(b.fact)));
+
   return {
     worldId: world.id,
     verdict,
@@ -281,6 +429,13 @@ export async function runDrama({ world, roles, options = {} }) {
     assertedGroundedTurn,
     turnsPlayed: turn,
     proof,
+    inference: {
+      voiced: voicedLedger,
+      overreaches,
+      mischanneled,
+      availability,
+      frontierFinal: computeFrontier(turn),
+    },
   };
 }
 

@@ -303,14 +303,18 @@ function normalizeTtsRequest(input = {}) {
     : 'en-us';
   const role = normalizeTtsRole(input.role);
   const allowedVoices = TTS_VOICES_BY_LANGUAGE[language] || TTS_VOICES_BY_LANGUAGE['en-us'];
-  const requestedVoice = String(input.voice || '').trim().toLowerCase();
+  const requestedVoice = String(input.voice || '')
+    .trim()
+    .toLowerCase();
   const fallbackVoice = defaultVoiceForRole(role);
   const voice = allowedVoices.has(requestedVoice)
     ? requestedVoice
     : allowedVoices.has(fallbackVoice)
       ? fallbackVoice
       : TTS_ROLE_VOICE.default;
-  const responseFormat = TTS_RESPONSE_FORMATS.has(String(input.responseFormat || input.response_format || '').toLowerCase())
+  const responseFormat = TTS_RESPONSE_FORMATS.has(
+    String(input.responseFormat || input.response_format || '').toLowerCase(),
+  )
     ? String(input.responseFormat || input.response_format).toLowerCase()
     : 'mp3';
   const rawSpeed = Number(input.speed ?? 1);
@@ -336,7 +340,10 @@ function audioContentType(format) {
   return 'application/octet-stream';
 }
 
-async function synthesizeLemonFoxSpeech(input = {}, { apiKey = process.env.LEMONFOX_API_KEY, fetchImpl = globalThis.fetch } = {}) {
+async function synthesizeLemonFoxSpeech(
+  input = {},
+  { apiKey = process.env.LEMONFOX_API_KEY, fetchImpl = globalThis.fetch } = {},
+) {
   if (!apiKey) {
     const error = new Error('LEMONFOX_API_KEY is not configured');
     error.statusCode = 503;
@@ -2561,27 +2568,32 @@ svg.arc{display:block;width:100%;height:auto;margin:6px 0 2px;background:var(--p
 `;
 
 function renderDerivationIndexHtml(runs) {
-  const rows = runs
-    .map(({ label, diagnosis: d, hasNotice }) => {
-      const events = Object.entries(d.eventsByType || {})
-        .map(([k, v]) => {
-          const txt = `${escapeHtml(k)}×${v}`;
-          return DERIVATION_SUCCESS_EVENTS.has(k) ? txt : `<span style="color:var(--brick-d)">${txt}</span>`;
-        })
-        .join(', ');
-      const verdictOk = d.verdict === 'grounded_anagnorisis';
-      const adherence = d.releaseAdherence || {};
-      const sg = d.tutorFigures?.superego;
-      const staging = [
-        d.staging
-          ? d.staging.source === 'director'
-            ? `${d.staging.movements.length} mv${d.staging.tutorNotes?.length ? ` · ${d.staging.tutorNotes.length} notes` : ''}`
-            : 'sketch held'
-          : '—',
-        ...(sg ? [`sego ${sg.interventions}/${sg.watched}`] : []),
-      ].join(' · ');
-      return `<tr>
-<td><a href="/derivation/${encodeURIComponent(label)}">${escapeHtml(label)}</a>${hasNotice ? ' <span title="critic’s notice on file" style="color:var(--moss-deep)">✎</span>' : ''}</td>
+  const rowHtml = ({ label, diagnosis: d, hasNotice }) => {
+    const events = Object.entries(d.eventsByType || {})
+      .map(([k, v]) => {
+        const txt = `${escapeHtml(k)}×${v}`;
+        return DERIVATION_SUCCESS_EVENTS.has(k) ? txt : `<span style="color:var(--brick-d)">${txt}</span>`;
+      })
+      .join(', ');
+    const verdictOk = d.verdict === 'grounded_anagnorisis';
+    const adherence = d.releaseAdherence || {};
+    const sg = d.tutorFigures?.superego;
+    const staging = [
+      d.staging
+        ? d.staging.source === 'director'
+          ? `${d.staging.movements.length} mv${d.staging.tutorNotes?.length ? ` · ${d.staging.tutorNotes.length} notes` : ''}`
+          : 'sketch held'
+        : '—',
+      ...(sg ? [`sego ${sg.interventions}/${sg.watched}${d.tutorStallWatch ? ' +stall' : ''}`] : []),
+    ].join(' · ');
+    const marks = [
+      hasNotice ? ' <span title="critic’s notice on file" style="color:var(--moss-deep)">✎</span>' : '',
+      d.criticFeedback
+        ? ` <span title="counsel folded in from ${escapeHtml(d.criticFeedback.source)}" style="color:var(--moss-deep)">⟲</span>`
+        : '',
+    ].join('');
+    return `<tr>
+<td><a href="/derivation/${encodeURIComponent(label)}">${escapeHtml(label)}</a>${marks}</td>
 <td><span class="chip ${verdictOk ? 'chip--ok' : 'chip--bad'}">${escapeHtml(d.verdict || '?')}</span></td>
 <td class="mono">${d.firstForcedTurn ?? '—'} → ${d.assertedGroundedTurn ?? '—'}</td>
 <td class="mono">${d.turnsPlayed ?? '?'}/${d.turnCap ?? '?'}</td>
@@ -2591,15 +2603,37 @@ function renderDerivationIndexHtml(runs) {
 <td class="mono">${derivationBackendChips(d.backend).slice(1).map(escapeHtml).join('<br>') || '—'}</td>
 <td class="mono">${d.elapsedMs ? `${(d.elapsedMs / 1000).toFixed(0)}s` : '—'} · $${(d.usage?.costUSD ?? 0).toFixed(2)}</td>
 </tr>`;
-    })
-    .join('\n');
+  };
+  const tableFor = (rs) =>
+    `<table class="idx"><thead><tr><th>run</th><th>verdict</th><th>forced → asserted</th><th>turns</th><th>events</th><th>releases</th><th>dramaturgy</th><th>backend</th><th>wall · cost</th></tr></thead><tbody>${rs.map(rowHtml).join('\n')}</tbody></table>`;
+  // Experimental-condition grouping (diagnosis.group, set by --group or the
+  // backfill script): one section per group, ordered by each group's most
+  // recent run (the list arrives mtime-sorted). All-ungrouped keeps the flat
+  // single table.
+  const grouped = new Map();
+  for (const run of runs) {
+    const key = run.diagnosis.group || '(ungrouped)';
+    if (!grouped.has(key)) grouped.set(key, []);
+    grouped.get(key).push(run);
+  }
+  const flat = grouped.size === 1 && grouped.has('(ungrouped)');
+  const body = !runs.length
+    ? '<p>No runs found. Run <span class="mono">npm run derivation:loop</span> first.</p>'
+    : flat
+      ? tableFor(runs)
+      : [...grouped.entries()]
+          .map(
+            ([g, rs]) =>
+              `<h2 class="sect">${escapeHtml(g)} <span class="mono" style="color:var(--ink-3);font-weight:normal">(${rs.length} run${rs.length === 1 ? '' : 's'})</span></h2>\n${tableFor(rs)}`,
+          )
+          .join('\n');
   return `${pageHead({ title: 'Derivation runs · machine spirits', css: DERIVATION_CSS })}
 <body>
 ${railHtml({ active: 'derivation', sub: 'dramatic-derivation staging loop — checker-verdict transcripts, no judge anywhere' })}
 <main class="wrap">
 <h1>Dramatic derivation — staging-loop runs</h1>
-<p class="lede">One row per attended iteration of <span class="mono">npm run derivation:loop</span>. The verdict is the deterministic checker's (forced grounded anagnorisis vs the failure taxonomy) — no LLM judge. Artifacts live under <span class="mono">exports/dramatic-derivation/loop/</span>.</p>
-${runs.length ? `<table class="idx"><thead><tr><th>run</th><th>verdict</th><th>forced → asserted</th><th>turns</th><th>events</th><th>releases</th><th>dramaturgy</th><th>backend</th><th>wall · cost</th></tr></thead><tbody>${rows}</tbody></table>` : '<p>No runs found. Run <span class="mono">npm run derivation:loop</span> first.</p>'}
+<p class="lede">One row per attended iteration of <span class="mono">npm run derivation:loop</span>, grouped by experimental condition (<span class="mono">--group</span>). The verdict is the deterministic checker's (forced grounded anagnorisis vs the failure taxonomy) — no LLM judge. Artifacts live under <span class="mono">exports/dramatic-derivation/loop/</span>.</p>
+${body}
 </main>
 </body></html>`;
 }
@@ -2702,11 +2736,15 @@ function renderDerivationRunHtml({ label, diagnosis, result, world, commentary }
     : null;
   const sg = diagnosis.tutorFigures?.superego;
   const superegoChip = sg
-    ? `superego ${sg.interventions}/${sg.watched} interventions · ${sg.withinTurnChanges} within-turn figure changes`
+    ? `superego ${sg.interventions}/${sg.watched} interventions · ${sg.withinTurnChanges} within-turn figure changes${diagnosis.tutorStallWatch ? ' · stall-watch v3' : ''}`
     : null;
   const dials = diagnosis.dials || {};
   const chips = [
     `<span class="chip ${verdictOk ? 'chip--ok' : 'chip--bad'}">${escapeHtml(result.verdict || '?')}</span>`,
+    ...(diagnosis.group ? [`<span class="chip">group ${escapeHtml(diagnosis.group)}</span>`] : []),
+    ...(diagnosis.criticFeedback
+      ? [`<span class="chip">⟲ counsel from ${escapeHtml(diagnosis.criticFeedback.source)}</span>`]
+      : []),
     `<span class="chip">turns ${result.turnsPlayed}/${diagnosis.turnCap ?? '?'}</span>`,
     `<span class="chip">forced ${result.firstForcedTurn ?? '—'} → asserted ${result.assertedGroundedTurn ?? '—'}</span>`,
     `<span class="chip">releases ${adherence.onCue ?? '—'} on cue · ${adherence.deviations?.length ?? 0} dev · ${adherence.missed?.length ?? 0} missed · ${adherence.unscheduled?.length ?? 0} unscheduled</span>`,
@@ -3055,7 +3093,11 @@ const TRANSCRIPT_TTS_CLIENT = `<script>
 })();
 </script>`;
 
-function transcriptTtsToolbarHtml({ fullLabel = 'Play transcript', includeLabel = 'include superego', compact = false } = {}) {
+function transcriptTtsToolbarHtml({
+  fullLabel = 'Play transcript',
+  includeLabel = 'include superego',
+  compact = false,
+} = {}) {
   return `<div class="tts-toolbar${compact ? ' tts-toolbar--compact' : ''}">
     <button type="button" class="tts-control" data-tts-full>${escapeHtml(fullLabel)}</button>
     <button type="button" class="tts-control" data-tts-stop>Stop</button>
@@ -3065,7 +3107,9 @@ function transcriptTtsToolbarHtml({ fullLabel = 'Play transcript', includeLabel 
 }
 
 function ttsDataAttrs(role, text, speaker = role, { click = true } = {}) {
-  const cleaned = String(text || '').replace(/\s+/g, ' ').trim();
+  const cleaned = String(text || '')
+    .replace(/\s+/g, ' ')
+    .trim();
   if (!cleaned) return '';
   return ` data-tts-role="${escapeHtml(role)}" data-tts-speaker="${escapeHtml(speaker)}" data-tts-text="${escapeHtml(cleaned)}"${click ? ' data-tts-click="1" tabindex="0"' : ''}`;
 }

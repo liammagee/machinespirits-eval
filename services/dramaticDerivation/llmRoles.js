@@ -118,7 +118,7 @@ function actFor(world, turn) {
 // Director
 // ---------------------------------------------------------------------------
 
-function directorCharter(world, dials = {}, dramaturgy = 'free') {
+function directorCharter(world, dials = {}, dramaturgy = 'free', counsel = null) {
   const charisma = clampDial(dials.charisma);
   const free = dramaturgy !== 'frozen';
   const acts = (world.dramaturgy?.acts || [])
@@ -162,6 +162,17 @@ function directorCharter(world, dials = {}, dramaturgy = 'free') {
     '',
     acts,
     ...(charisma ? ['', DIRECTOR_CHARISMA_STAGING[charisma]] : []),
+    ...(counsel
+      ? [
+          '',
+          "# A reader's judgment on the previous performance in this series",
+          '',
+          'It adds no evidence and overrides none of your constraints above; weigh it',
+          'as counsel on the staging.',
+          '',
+          counsel.trim(),
+        ]
+      : []),
     '',
     'Reply with ONLY a JSON object:',
     ...(free
@@ -173,9 +184,9 @@ function directorCharter(world, dials = {}, dramaturgy = 'free') {
   ].join('\n');
 }
 
-export function makeLlmDirector(world, client, { dials = {}, dramaturgy = 'free' } = {}) {
+export function makeLlmDirector(world, client, { dials = {}, dramaturgy = 'free', counsel = null } = {}) {
   const free = dramaturgy !== 'frozen';
-  const system = directorCharter(world, dials, dramaturgy);
+  const system = directorCharter(world, dials, dramaturgy, counsel);
   return async (view) => {
     const { entry, premise } = scheduledFor(world, view.turn, 'director');
     const act = actFor(world, view.turn);
@@ -290,43 +301,111 @@ function tutorSystem(world, script, dials = {}) {
  * its OWN manner). It sees public material plus the tutor's draft: never the
  * secret, the premise ledger, or the schedule — so it cannot leak what it
  * does not hold, and its note governs manner only.
+ *
+ * Charter v3 (`stallWatch`, pre-registered in notes/poetics/2026-06-10-
+ * stall-watcher-quasi-logical-tom.md §3) adds a SECOND criterial
+ * jurisdiction: the stalled inference — board-closure arithmetic the harness
+ * states as fact (available ≥ 3 turns, unvoiced, grounds untargeted). With
+ * `stallWatch` false the v2 charter is returned byte-identical (the OFF
+ * control). `counsel` (the critic-feedback loop, §4) is a labeled appendix
+ * in both modes — counsel, never a jurisdiction.
  */
-function tutorSuperegoSystem(world) {
+function tutorSuperegoSystem(world, { stallWatch = false, counsel = null } = {}) {
   return [
     "You are the tutor's SUPEREGO in a staged derivation drama — the watcher inside",
     'the same mind. You are never heard on stage; only the tutor reads you.',
     `The drama: "${world.title}". The public question: ${world.question}`,
     '',
-    "Each turn you see the tutor's DRAFT line with its declared figure, and the",
-    'recent record of conduct. You watch ONE thing: the FIGURE RUT — the same',
-    'declared device on both of the last two turns, and the draft declaring it a',
-    'third time. Three in a row is a rut; anything less is conduct, not a rut.',
+    ...(stallWatch
+      ? [
+          "Each turn you see the tutor's DRAFT line with its declared figure, the",
+          'recent record of conduct, and the inference record. You watch TWO things',
+          'and two only.',
+          '',
+          'Your first jurisdiction is the FIGURE RUT — the same declared device on',
+          'both of the last two turns, and the draft declaring it a third time.',
+          'Three in a row is a rut; anything less is conduct, not a rut.',
+          '',
+          'Your second jurisdiction is the STALLED INFERENCE. You hold the same rules',
+          'of evidence the learner reasons by; the record each turn states what those',
+          "rules already yield from the learner's public board that the learner has",
+          "not yet said aloud, how many turns it has waited, and whether the tutor's",
+          'recent turns or the draft touch its grounds. A stall requires ALL THREE:',
+          'the inference has been available three turns or more; the learner has not',
+          "voiced it; and neither of the tutor's last two turns nor the draft targets",
+          'any of its grounds. Anything less is patience, not a stall. When the record',
+          'shows a stall the draft does not answer, intervene: name the facts already',
+          "on the learner's board that are not being put together, and the rule that",
+          'joins them — that exactly, and nothing more.',
+        ]
+      : [
+          "Each turn you see the tutor's DRAFT line with its declared figure, and the",
+          'recent record of conduct. You watch ONE thing: the FIGURE RUT — the same',
+          'declared device on both of the last two turns, and the draft declaring it a',
+          'third time. Three in a row is a rut; anything less is conduct, not a rut.',
+        ]),
     '',
     'Your default reply is {"intervene": false}. The manner usually serves. Every',
     'other dissatisfaction you may feel — pacing, register, a recap the learner',
     'has outgrown, a conceit leaned on too often — is NOT yours to correct: put a',
     'word of it in "diagnosis" if you must, and still reply intervene false. A',
     'note every turn is a note never heard; you are credible because you are',
-    'rare. When the rut is real, intervene and name the device to leave off — in',
-    'one or two sentences, as a note the tutor reads before speaking.',
-    '',
-    'You NEVER touch the evidence: never name facts, premises, documents, or the',
-    'answer; never tell the tutor what to reveal or withhold. The note governs how',
-    'the tutor plays, never what the drama shows.',
+    ...(stallWatch
+      ? [
+          'rare. When a rut is real, intervene and name the device to leave off; when',
+          'a stall is real, intervene with the stall note exactly as your second',
+          'jurisdiction describes — in one or two sentences either way, as a note the',
+          'tutor reads before speaking.',
+          '',
+          'THE EVIDENCE BOUNDARY: never name or describe evidence not yet on the',
+          "learner's board; never name the answer or any fact of its shape; never",
+          'tell the tutor what to reveal or withhold. Facts already grounded on the',
+          "learner's public board are public property — a stall note names those,",
+          'the rule that joins them, and nothing else.',
+        ]
+      : [
+          'rare. When the rut is real, intervene and name the device to leave off — in',
+          'one or two sentences, as a note the tutor reads before speaking.',
+          '',
+          'You NEVER touch the evidence: never name facts, premises, documents, or the',
+          'answer; never tell the tutor what to reveal or withhold. The note governs how',
+          'the tutor plays, never what the drama shows.',
+        ]),
+    ...(counsel
+      ? [
+          '',
+          "# Counsel from the previous performance's reader",
+          '',
+          'Counsel, never a jurisdiction — your triggers are exactly those above and',
+          'only those. It adds no evidence and changes no criterion.',
+          '',
+          counsel.trim(),
+        ]
+      : []),
     '',
     'Reply with ONLY a JSON object:',
     '{"intervene": true|false,',
+    ...(stallWatch ? [' "jurisdiction": "figure_rut" | "stalled_inference" | null,'] : []),
     ' "diagnosis": "<one sentence on the conduct you see>",',
     ' "note": "<the note the tutor reads before speaking, or null>"}',
   ].join('\n');
 }
 
-export function makeLlmTutor(world, client, { script, dials = {}, superego = false } = {}) {
+export function makeLlmTutor(
+  world,
+  client,
+  { script, dials = {}, superego = false, stallWatch = false, counsel = null } = {},
+) {
   if (!script || !script.trim()) {
     throw new Error('derivation.llmRoles: makeLlmTutor requires a role-script (the iteration target)');
   }
+  if (stallWatch && !superego) {
+    throw new Error(
+      'derivation.llmRoles: stallWatch requires the superego (the stall jurisdiction lives in its charter)',
+    );
+  }
   const system = tutorSystem(world, script, dials);
-  const superegoSystem = superego ? tutorSuperegoSystem(world) : null;
+  const superegoSystem = superego ? tutorSuperegoSystem(world, { stallWatch, counsel }) : null;
   const normalizeMove = (out) =>
     out.move && typeof out.move === 'object'
       ? {
@@ -394,6 +473,46 @@ export function makeLlmTutor(world, client, { script, dials = {}, superego = fal
         : `The record this turn: last two declared figures ${lastFigures.join(', ')}; the draft declares ${
             draftFigure || '(none)'
           }. A rut requires all three to be one device.`;
+    // The stall arithmetic, same criterial grammar: every value stated as
+    // fact, the conclusion left to the watcher (and recomputed by the audit).
+    // The engine's frontier already excludes question-pattern facts, so the
+    // record can never name S or the mirror.
+    const draftTarget = draft.move?.targetPremise || null;
+    const stallItems = stallWatch
+      ? (view.inference?.frontier || []).map((item) => ({
+          fact: item.fact,
+          rule: item.rule,
+          grounds: item.grounds,
+          groundPremiseIds: item.groundPremiseIds,
+          firstAvailable: item.firstAvailable,
+          age: item.age,
+          targetedByLast2: item.targetedByLast2,
+          targetedByDraft: Boolean(draftTarget && item.groundPremiseIds.includes(draftTarget)),
+        }))
+      : [];
+    const stallDue = stallItems.filter((i) => i.age >= 3 && !i.targetedByLast2 && !i.targetedByDraft);
+    const stallLines = stallWatch
+      ? stallItems.length
+        ? [
+            '',
+            "The inference record this turn (the learner's public board, under the public rules):",
+            ...stallItems.map(
+              (i) =>
+                `- the board yields ${renderFact(i.fact)} (rule ${i.rule}) from ${i.grounds
+                  .map((g) => (g.premiseId ? `${g.premiseId}: ${renderFact(g.fact)}` : renderFact(g.fact)))
+                  .join(' + ')}; available since turn ${i.firstAvailable} — waited ${i.age} turn${
+                  i.age === 1 ? '' : 's'
+                }; the learner has not voiced it; the last two tutor turns target its grounds: ${
+                  i.targetedByLast2 ? 'yes' : 'no'
+                }; the draft targets its grounds: ${i.targetedByDraft ? 'yes' : 'no'}.`,
+            ),
+            'A stall requires all three: waited three turns or more; not voiced; neither the last two tutor turns nor the draft targeting any of its grounds.',
+          ]
+        : [
+            '',
+            "The inference record this turn: nothing derivable from the learner's board waits unvoiced — a stall is impossible this turn.",
+          ]
+      : [];
     const superegoUser = [
       `Turn ${view.turn} of ${world.turnCap}.${
         lastPoint && lastPoint.forced ? ' The board now forces the conclusion; the recognition wants staging.' : ''
@@ -409,26 +528,87 @@ export function makeLlmTutor(world, client, { script, dials = {}, superego = fal
       `"${draft.dialogue}"`,
       '',
       rutLine,
-      'Is this a figure rut? Reply with ONLY the JSON object.',
+      ...stallLines,
+      stallWatch
+        ? 'Is this a figure rut, a stalled inference, or neither? Reply with ONLY the JSON object.'
+        : 'Is this a figure rut? Reply with ONLY the JSON object.',
     ].join('\n');
+    const rutDue =
+      lastFigures.length === 2 &&
+      Boolean(draftFigure) &&
+      lastFigures.every((f) => f === String(draftFigure).toLowerCase().trim());
     const segOut = await callJson(client, 'tutor_superego', view.turn, {
       system: superegoSystem,
       user: superegoUser,
-      meta: { draftFigure, lastFigures },
+      meta: {
+        draftFigure,
+        lastFigures,
+        ...(stallWatch
+          ? {
+              stall: {
+                items: stallItems,
+                due: stallDue.length > 0,
+                dueItem: stallDue[0] || null,
+              },
+            }
+          : {}),
+      },
     });
     const note = typeof segOut.note === 'string' && segOut.note.trim() ? segOut.note.trim() : null;
+    const claimedJurisdiction = typeof segOut.jurisdiction === 'string' ? segOut.jurisdiction.trim() : null;
     const deliberation = {
       draftFigure,
       intervened: false,
       diagnosis: typeof segOut.diagnosis === 'string' && segOut.diagnosis.trim() ? segOut.diagnosis.trim() : null,
       note: null,
+      // Detector-audit bookkeeping (charter v3 arms only): the per-turn
+      // arithmetic recorded fired-or-not, so P2 recomputes due/not-due from
+      // the record rather than trusting the watcher.
+      ...(stallWatch
+        ? {
+            lastFigures: [...lastFigures],
+            jurisdiction: null,
+            stall: { items: stallItems, due: stallDue.length > 0 },
+          }
+        : {}),
     };
     if (!segOut.intervene || !note) return { ...draft, deliberation };
 
-    // --- ego revision under the note. The figure-authority mapping below is
-    // the text the 06-10 staging experiment proved load-bearing, relocated
-    // from the director's channel into the tutor's own deliberation. ---
+    // Which jurisdiction fired: the watcher's own attribution when it gives
+    // one (v3 contract), else resolved from the recorded arithmetic. v2 arms
+    // have only the one jurisdiction.
+    const jurisdiction =
+      stallWatch && ['figure_rut', 'stalled_inference'].includes(claimedJurisdiction)
+        ? claimedJurisdiction
+        : stallWatch && !rutDue && stallDue.length
+          ? 'stalled_inference'
+          : 'figure_rut';
+
+    // --- ego revision under the note. The figure-authority mapping is the
+    // text the 06-10 staging experiment proved load-bearing, relocated from
+    // the director's channel into the tutor's own deliberation. The stall
+    // mapping is its content-coupled sibling (pre-registered §3): aim the
+    // restaged turn at the stalled inference's grounds, never draw the
+    // conclusion in the learner's place. ---
     const switchTo = TUTOR_FIGURES.find((f) => f !== String(draftFigure || '').toLowerCase()) || TUTOR_FIGURES[1];
+    const revisionInstruction =
+      jurisdiction === 'stalled_inference'
+        ? [
+            "The note names an inference your learner's own board already affords. Aim the",
+            'restaged turn at its grounds: set the already-public facts side by side, make',
+            "the gap conspicuous, and declare one of those grounds as your move's",
+            "target_premise. Never draw the conclusion in the learner's place — a tutor",
+            'who says it has ended the inference, not taught it. The note never adds,',
+            'removes, or reweights evidence. Same cue, same evidence duty: speak the turn',
+            'again, restaged. Reply with ONLY the JSON object.',
+          ]
+        : [
+            'The note governs your manner, and your declared figure is part of your manner:',
+            'if it asks you to break a rhythm, change register, or go quieter, CHANGE YOUR',
+            'FIGURE this turn — the same device, softened, is not a change. The note never',
+            'adds, removes, or reweights evidence. Same cue, same evidence duty: speak the',
+            'turn again, restaged. Reply with ONLY the JSON object.',
+          ];
     const revisionUser = [
       user,
       '',
@@ -436,16 +616,20 @@ export function makeLlmTutor(world, client, { script, dials = {}, superego = fal
       `"${draft.dialogue}"`,
       '',
       `YOUR OWN SECOND VOICE, BEFORE YOU SPEAK: ${note}`,
-      'The note governs your manner, and your declared figure is part of your manner:',
-      'if it asks you to break a rhythm, change register, or go quieter, CHANGE YOUR',
-      'FIGURE this turn — the same device, softened, is not a change. The note never',
-      'adds, removes, or reweights evidence. Same cue, same evidence duty: speak the',
-      'turn again, restaged. Reply with ONLY the JSON object.',
+      ...revisionInstruction,
     ].join('\n');
     const revisedOut = await callJson(client, 'tutor', view.turn, {
       system,
       user: revisionUser,
-      meta: { ...meta, revision: { avoidFigure: draftFigure, switchTo } },
+      meta: {
+        ...meta,
+        revision: {
+          jurisdiction,
+          avoidFigure: draftFigure,
+          switchTo,
+          stallTarget: stallDue[0]?.groundPremiseIds?.[0] || null,
+        },
+      },
     });
     const dialogue =
       typeof revisedOut.dialogue === 'string' && revisedOut.dialogue.trim()
@@ -455,7 +639,12 @@ export function makeLlmTutor(world, client, { script, dials = {}, superego = fal
       dialogue,
       move: normalizeMove(revisedOut) || draft.move,
       release: entry ? entry.premise : null,
-      deliberation: { ...deliberation, intervened: true, note },
+      deliberation: {
+        ...deliberation,
+        intervened: true,
+        note,
+        ...(stallWatch ? { jurisdiction } : {}),
+      },
     };
   };
 }
@@ -482,6 +671,7 @@ function learnerSystem(setting, voice, view) {
     '- Your BOARD holds the facts you have grounded. You may treat as true ONLY what is on it.',
     '- Each turn you may enter exhibits onto your board (adopt) or strike facts from it (retract).',
     '- A guess you cannot yet ground is a HYPOTHESIS — name it as one, never treat it as grounded.',
+    '- When facts on your board, taken together under the rules, settle something short of the question itself, you may VOICE that derived conclusion: say it aloud and enter it in "derives". Voice only what the rules genuinely yield from your board — a derived fact is reasoning made public, not a guess.',
     '- Answer the question ONLY when your board, under the rules, settles it — then give the answer binding.',
     '- Be scrupulous about the difference between what is shown and what is merely said.',
     '- Speak briefly: at most four short sentences aloud each turn. Your board, not your speech, carries the reasoning.',
@@ -490,6 +680,7 @@ function learnerSystem(setting, voice, view) {
     '{"dialogue": "<what you say aloud>",',
     ' "adopt_indices": [<indices from NEW EXHIBITS to enter on your board>],',
     ' "retract_indices": [<indices from YOUR BOARD to strike>],',
+    ' "derives": [["<predicate>", "<name>", ...], ...] — derived conclusions your board now yields under the rules, each as a fact array ([] when none; the final answer never goes here),',
     ' "hypothesis": "<a conjecture you cannot yet ground, or null>",',
     ` "asserts_binding": {"<variable>": "<name>"} or null — the answer to the question pattern (${view.questionPattern.join(' ')}), given ONLY when your grounded board forces it}`,
   ].join('\n');
@@ -533,8 +724,27 @@ function validIndices(raw, max) {
   return [...new Set(raw.filter((i) => Number.isInteger(i) && i >= 0 && i < max))];
 }
 
+/** Lenient fact-array coercion for learner-composed derive claims. */
+function toFactArray(entry) {
+  if (Array.isArray(entry)) return entry.map((t) => String(t).trim()).filter(Boolean);
+  if (typeof entry === 'string') {
+    return entry
+      .trim()
+      .split(/[\s,()]+/u)
+      .filter(Boolean);
+  }
+  return [];
+}
+
 export function makeLlmLearner({ setting = '', voice = '', client }) {
   if (!client) throw new Error('derivation.llmRoles: makeLlmLearner requires a client');
+  // Mock-determinism clock for the derive channel, view-visible material only:
+  // a derivable non-pattern fact first SEEN at turn t (from the learner's own
+  // board — one turn after the engine's firstAvailable, since the view shows
+  // the pre-adoption board) is hinted for voicing at seen-age >= 3 = engine
+  // age 4, one turn after the mock stall watcher fires at age 3. The real
+  // backend ignores meta entirely.
+  const firstSeen = new Map(); // factKey -> turn first seen derivable
   return async (view) => {
     const groundedKeys = new Set(view.abox.grounded.map(factKey));
     const seen = new Set();
@@ -546,6 +756,17 @@ export function makeLlmLearner({ setting = '', voice = '', client }) {
     });
     const newKeys = new Set(view.releasedThisTurn.map(factKey));
 
+    const voicedKeys = new Set((view.voiced || []).map((entry) => factKey(entry.fact)));
+    const deriveHint = [];
+    const ownClosure = closure(view.abox.grounded, view.rules);
+    for (const [key, fact] of ownClosure.facts) {
+      if (!ownClosure.proofs.get(key)) continue; // base fact
+      if (matchPattern(view.questionPattern, fact)) continue; // the assert channel's
+      if (!firstSeen.has(key)) firstSeen.set(key, view.turn);
+      if (voicedKeys.has(key)) continue;
+      if (view.turn - firstSeen.get(key) >= 3) deriveHint.push(fact);
+    }
+
     const exhibits = adoptable.length
       ? adoptable
           .map((fact, i) => `${i}. ${renderFact(fact)}${newKeys.has(factKey(fact)) ? '   <- entered this turn' : ''}`)
@@ -556,6 +777,9 @@ export function makeLlmLearner({ setting = '', voice = '', client }) {
       : '(empty)';
     const hyps = view.abox.hypotheses.length
       ? view.abox.hypotheses.map((h) => `- [turn ${h.turn}] ${h.text}`).join('\n')
+      : '(none yet)';
+    const voicedList = (view.voiced || []).length
+      ? view.voiced.map((entry) => `- [turn ${entry.turn}] ${renderFact(entry.fact)}`).join('\n')
       : '(none yet)';
 
     const system = learnerSystem(setting, voice, view);
@@ -571,25 +795,34 @@ export function makeLlmLearner({ setting = '', voice = '', client }) {
       'YOUR BOARD (index. grounded fact):',
       board,
       '',
+      'Conclusions you have already voiced (derived, on the record):',
+      voicedList,
+      '',
       'Your hypotheses so far:',
       hyps,
       '',
       'Respond in role, then decide: what do you adopt, what do you retract, what do you',
-      'conjecture — and does your board now settle the question? Reply with ONLY the JSON object.',
+      'derive or conjecture — and does your board now settle the question? Reply with ONLY the JSON object.',
     ].join('\n');
 
     const out = await callJson(client, 'learner', view.turn, {
       system,
       user,
-      meta: { adoptableCount: adoptable.length, patternAssertion: computePatternAssertion(view, adoptable) },
+      meta: {
+        adoptableCount: adoptable.length,
+        patternAssertion: computePatternAssertion(view, adoptable),
+        deriveHint,
+      },
     });
 
     const adopt = validIndices(out.adopt_indices, adoptable.length).map((i) => adoptable[i]);
     const retract = validIndices(out.retract_indices, view.abox.grounded.length).map((i) => view.abox.grounded[i]);
+    const derive = Array.isArray(out.derives) ? out.derives.map(toFactArray).filter((f) => f.length) : [];
     return {
       dialogue: typeof out.dialogue === 'string' ? out.dialogue.trim() : '',
       adopt,
       retract,
+      derive,
       hypothesis: typeof out.hypothesis === 'string' && out.hypothesis.trim() ? out.hypothesis.trim() : null,
       asserts: bindingToFact(view.questionPattern, out.asserts_binding),
     };

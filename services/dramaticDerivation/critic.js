@@ -100,11 +100,14 @@ function transcriptBlock(result) {
           delib.draftFigure && meta.move?.figure && delib.draftFigure !== meta.move.figure
             ? ` (draft ${delib.draftFigure} → ${meta.move.figure})`
             : ' (figure held)';
-        marks.push(`⟨second voice intervened: "${delib.note || ''}"${change}⟩`);
+        const jurisdiction = delib.jurisdiction ? ` [${String(delib.jurisdiction).replace(/_/g, ' ')}]` : '';
+        marks.push(`⟨second voice intervened${jurisdiction}: "${delib.note || ''}"${change}⟩`);
       }
     } else if (line.role === 'learner') {
       if (meta.adopt?.length) marks.push(`⟨adopts: ${meta.adopt.map(fmtFact).join('; ')}⟩`);
       if (meta.retract?.length) marks.push(`⟨retracts: ${meta.retract.map(fmtFact).join('; ')}⟩`);
+      const voicedHere = (meta.deriveOutcomes || []).filter((o) => o.status === 'voiced');
+      if (voicedHere.length) marks.push(`⟨derives aloud: ${voicedHere.map((o) => fmtFact(o.fact)).join('; ')}⟩`);
       if (meta.hypothesis) marks.push(`⟨hypothesis: ${meta.hypothesis}⟩`);
       if (meta.asserts) marks.push(`⟨ASSERTS: ${fmtFact(meta.asserts)}⟩`);
     }

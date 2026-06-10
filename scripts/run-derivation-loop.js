@@ -37,6 +37,22 @@
  *                                       draft and may demand a restaging before
  *                                       the line is spoken — the internal
  *                                       channel; control arm = flag absent)
+ *     [--stall-watch]                  (requires --superego; charter v3 — the
+ *                                       watcher also holds the learner's rules
+ *                                       and fires on stalled inferences: the
+ *                                       quasi-logical-ToM experiment, notes/
+ *                                       poetics/2026-06-10-stall-watcher-*.md)
+ *     [--group <name>]                 (named experimental condition; persisted
+ *                                       to diagnosis.json, grouped in the
+ *                                       scriptorium index)
+ *     [--critic-feedback off|latest|<label>]
+ *                                      (fold a previous run's critic notice —
+ *                                       its closing judgment paragraph — into
+ *                                       the director + superego charters as
+ *                                       labeled counsel; never into the tutor
+ *                                       ego, the pinned iteration artifact.
+ *                                       "latest" = most recent same-group run
+ *                                       with a notice on file; default off)
  *     [--learner-voice "<text>"]       (override the world's learner voice —
  *                                       personality/tonality variation; never
  *                                       carries plot content)
@@ -96,6 +112,68 @@ function timestamp() {
   return new Date().toISOString().replace(/[-:]/g, '').replace(/T/, '-').replace(/\..+$/, '');
 }
 
+/**
+ * The critic-feedback loop (stall-watcher note §4): fold a previous run's
+ * notice — its FINAL paragraph, by the critic charter's construction the
+ * judgment naming the one change the next performance should make — into the
+ * director + superego charters as labeled counsel. Same-group only
+ * (cross-group inheritance would contaminate the ON/OFF contrast); the run's
+ * own label is excluded; NEVER the tutor ego (the pinned iteration artifact).
+ * Returns { source, paragraph } or null; throws rather than silently running
+ * uncounseled — diagnosis.json and the charters must never disagree.
+ */
+function resolveCounsel(baseDir, { request, group, ownLabel }) {
+  if (!request || request === 'off') return null;
+  const lastParagraph = (file) => {
+    const paragraphs = fs
+      .readFileSync(file, 'utf8')
+      .split(/\n\s*\n/)
+      .map((p) => p.trim())
+      .filter((p) => p && !p.startsWith('# ') && !p.startsWith('> critic'));
+    return paragraphs.length ? paragraphs[paragraphs.length - 1] : null;
+  };
+  const runGroup = (dir) => {
+    try {
+      return JSON.parse(fs.readFileSync(path.join(dir, 'diagnosis.json'), 'utf8')).group ?? null;
+    } catch {
+      return null;
+    }
+  };
+  if (request !== 'latest') {
+    const file = path.join(baseDir, request, 'commentary.md');
+    if (!fs.existsSync(file)) throw new Error(`--critic-feedback ${request}: no notice on file at ${file}`);
+    const sourceGroup = runGroup(path.join(baseDir, request));
+    if (sourceGroup !== group) {
+      throw new Error(
+        `--critic-feedback ${request}: cross-group counsel forbidden (source group ${JSON.stringify(sourceGroup)}, this run ${JSON.stringify(group)})`,
+      );
+    }
+    const paragraph = lastParagraph(file);
+    if (!paragraph) throw new Error(`--critic-feedback ${request}: notice at ${file} has no closing paragraph`);
+    return { source: request, paragraph };
+  }
+  const candidates = !fs.existsSync(baseDir)
+    ? []
+    : fs
+        .readdirSync(baseDir, { withFileTypes: true })
+        .filter((e) => e.isDirectory() && e.name !== ownLabel)
+        .map((e) => path.join(baseDir, e.name))
+        .filter((dir) => fs.existsSync(path.join(dir, 'commentary.md')) && runGroup(dir) === group)
+        .sort(
+          (a, b) =>
+            fs.statSync(path.join(b, 'commentary.md')).mtimeMs - fs.statSync(path.join(a, 'commentary.md')).mtimeMs,
+        );
+  if (!candidates.length) {
+    throw new Error(
+      `--critic-feedback latest: no prior run in group ${JSON.stringify(group)} has a notice on file under ${baseDir} (a group's first arm runs with --critic-feedback off)`,
+    );
+  }
+  const source = path.basename(candidates[0]);
+  const paragraph = lastParagraph(path.join(candidates[0], 'commentary.md'));
+  if (!paragraph) throw new Error(`--critic-feedback latest: notice for ${source} has no closing paragraph`);
+  return { source, paragraph };
+}
+
 async function main() {
   const worldPath = path.resolve(ROOT, arg('world', 'config/drama-derivation/world-001-nocturne.yaml'));
   const scriptPath = path.resolve(ROOT, arg('script', 'config/drama-derivation/tutor-scripts/nocturne-v001.md'));
@@ -112,6 +190,13 @@ async function main() {
   }
   const learnerVoice = arg('learner-voice', null);
   const superego = flag('superego');
+  const stallWatch = flag('stall-watch');
+  if (stallWatch && !superego) {
+    console.error('--stall-watch requires --superego (the stall jurisdiction is a clause of the watcher charter)');
+    process.exit(1);
+  }
+  const group = arg('group', null);
+  const criticFeedback = arg('critic-feedback', 'off');
   const criticArg = arg('critic', 'auto');
   if (!['auto', 'real', 'mock', 'off'].includes(criticArg)) {
     console.error(`--critic must be "auto", "real", "mock" or "off" (got "${criticArg}")`);
@@ -135,7 +220,9 @@ async function main() {
   const script = fs.readFileSync(scriptPath, 'utf8');
   const scriptName = path.basename(scriptPath, path.extname(scriptPath));
   const label = arg('label', `${scriptName}-${mode}-${timestamp()}`);
-  const outDir = path.resolve(ROOT, arg('out', 'exports/dramatic-derivation/loop'), label);
+  const loopBaseDir = path.resolve(ROOT, arg('out', 'exports/dramatic-derivation/loop'));
+  const outDir = path.join(loopBaseDir, label);
+  const counsel = resolveCounsel(loopBaseDir, { request: criticFeedback, group, ownLabel: label });
 
   const ROLE_NAMES = ['director', 'tutor', ...(superego ? ['tutor_superego'] : []), 'learner'];
   const targets = Object.fromEntries(
@@ -164,14 +251,21 @@ async function main() {
     console.log('staging dramaturgy FROZEN (control arm — no movements declared)');
   }
   if (superego) {
-    console.log('tutor   superego ON — the tutor watches its own manner (draft → note → restaging)');
+    console.log(
+      stallWatch
+        ? "tutor   superego ON + stall-watch — charter v3: the watcher also holds the learner's rules and fires on stalled inferences"
+        : 'tutor   superego ON — the tutor watches its own manner (draft → note → restaging)',
+    );
   }
+  if (group) console.log(`group   ${group}`);
+  if (counsel) console.log(`counsel from ${counsel.source} → director + superego charters (closing paragraph)`);
   if (learnerVoice) console.log(`voice   learner override: ${learnerVoice}`);
 
   const client = makeLlmClient({ mode });
+  const counselText = counsel ? counsel.paragraph : null;
   const roles = {
-    director: makeLlmDirector(world, client, { dials, dramaturgy }),
-    tutor: makeLlmTutor(world, client, { script, dials, superego }),
+    director: makeLlmDirector(world, client, { dials, dramaturgy, counsel: counselText }),
+    tutor: makeLlmTutor(world, client, { script, dials, superego, stallWatch, counsel: counselText }),
     learner: makeLlmLearner({ setting: world.setting, voice: learnerVoice || world.learnerVoice, client }),
   };
 
@@ -195,6 +289,7 @@ async function main() {
   const usage = client.usage();
   const diagnosis = {
     label,
+    group,
     note,
     scriptPath: path.relative(ROOT, scriptPath),
     worldPath: path.relative(ROOT, worldPath),
@@ -202,6 +297,8 @@ async function main() {
     dials,
     dramaturgy,
     tutorSuperego: superego,
+    tutorStallWatch: stallWatch,
+    criticFeedback: counsel,
     learnerVoice: learnerVoice || null,
     elapsedMs,
     usage,
