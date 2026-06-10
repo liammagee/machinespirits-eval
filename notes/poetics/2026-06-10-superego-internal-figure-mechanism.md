@@ -94,6 +94,7 @@ Serialized, attended, hard-bounded by `turn_cap × 5 × 2` calls.
 | 1 | lantern-v001-real-off-t1 | 002 | OFF | erotema 7/20 (35%) | 4 | 0.95 | — | grounded@20 / 8 on cue |
 | 2 | lantern-v001-real-superego-on-t1 | 002 | ON (charter v1) | erotema 9/20 (45%) | 4 | 0.79 | 12/20 → 11/12 (0.92) | grounded@20 / 8 on cue |
 | 3 | lantern-v001-real-superego-on-t2-charterv2 | 002 | ON (charter v2) | erotema 7/20 (35%) | 4 | 0.68 | 0/20 → — | grounded@20 / 8 on cue |
+| 4 | nocturne-v002-real-superego-on-t1-charterv2 | 001 bridge | ON (charter v2) | erotema 20/32 (63%) | 4 | 0.65 | 9/32 → 9/9 (1.00) | grounded@32 / 11 on cue |
 
 ## Readings
 
@@ -187,3 +188,38 @@ before the run: if the ego stays anchored, the rut criterion fires on
 roughly every third turn, every firing rut-due on the audit column, and
 every quiet turn not-due; the bar then turns on the within-turn change
 rate.
+
+### Arm 4 — nocturne bridge ON (charter v2): perfect detector, both directions
+
+Formal channel: grounded at 32 (the planned forcing turn), 11/11 releases
+on cue, slope 0.22, 47 min (clause 3 holding on the third world-shape).
+Figures: spoken erotema 20/32 (63%), 4 distinct, switch 0.65 — against the
+same-script OFF baseline (s0-control) of 81% / switch 0.29. Superego:
+**9 interventions, 9/9 within-turn figure changes (1.00)**, switch on
+intervention 1.00 vs 0.50 elsewhere — arm 2's inversion is gone.
+
+Audit (recomputed rut column over all 32 turns): **9 rut-due turns, 9
+fires, 0 mismatches in either direction.** Every completed rut was caught
+(t6, 9, 12, 15, 18, 21, 24, 28, 31 — the predicted ~every-3rd-turn
+cadence) and every quiet turn was genuinely not-due, including the three
+turns where the EGO broke the pattern itself (t3, t25, t32 drafts varied
+unprompted; t3 diagnosis: "this draft changes to analogia, so there is no
+three-turn figure rut"). The drafts confirm the anchor is real and lives
+in the draft layer: 28/32 drafts erotema (87.5%), matching the OFF arm's
+spoken share. Notes are the charter's skeleton in the superego's own
+words ("let the line proceed by declaration or command"; "state the limit
+of the present inference and the remaining gap"; "by assertion or
+reversal, not by another question").
+
+Reading: clause 1 PASSES at 1.00; clause 2 now has BOTH halves — quiet
+against varied conduct (arm 3, zero false fires over 20 turns) and firing
+against anchored conduct (arm 4, zero misses over 32 turns). The precise
+shape of the claim: the watcher does not make the tutor varied (the
+policy, or the anchor, owns the draft disposition); it makes LOCK-IN
+IMPOSSIBLE — never three turns on one device — which caps the top figure
+near 2/3 (observed 63% against the criterion's implied ceiling) and
+restores the draft→spoken switch ordering. It is deliberately gentler
+than the director's note channel (s1-full drove erotema to 31%) because
+its jurisdiction is minimal; that is the trade that bought 0-mismatch
+specificity. Remaining for the bar: world-003 OFF/ON replication, then
+one re-voiced arm (clause 4).
