@@ -1,0 +1,267 @@
+# WORLD-002 — the elimination-shaped scenario (Phase B of the superego arc,
+# 2026-06-10). A SHORTER drama (cap 26 vs nocturne's 40) with a different
+# rule shape: where world-001 CONVERGES three branches on one attribution
+# law, world-002 ELIMINATES — the room's candidate dies on stage (the
+# official light was sealed dark), the chart's uniqueness premise strikes
+# every light but one, and the positive case then lands on a contingent
+# particular nobody had named.
+#
+# A court of inquiry sits on the wreck of the brig Mara, lost on the Knock
+# bar steering for a steady fixed light. The room's verdict is ready-made:
+# keeper Brandt's negligence at Harlow Point. The truth is a contingent
+# particular: Senna, ward of the South Stack's last keeper, relit the
+# decommissioned Stack lamp that night, and the Mara steered by her light.
+# She does not exist outside this drama until the premises bring her on.
+#
+# Proof DAG (depth 3; 2 burning routes x 2 presence routes = 4 authored
+# paths):
+#
+#   p_bearing + p_chart --R1--> steeredToward(mara, southStack)
+#   p_residue (or p_glimpse) ---> lampBurnedAt(southStack, wreckNight)
+#   steeredToward + lampBurnedAt --R2--> steeredByLampOf(mara, southStack)
+#   lampBurnedAt + p_key + p_skiff (or p_ferry) --R3--> litLampOf(senna, southStack)
+#   steeredByLampOf + litLampOf --R4--> steeredByLightOf(mara, senna)
+#
+# The mirror (Brandt) is PROPERLY tempting: m_key + m_post give him two of
+# R3's three conjuncts at his own tower — he fails only the burning
+# (m_shutter: Harlow Point sealed dark at the dusk gun, the peripeteia) and
+# the bearing (the chart never puts Harlow on the Mara's line). No rule can
+# ever derive steeredByLightOf(mara, brandt) — plotLint enforces it.
+#
+# SURFACE DISCIPLINE: a premise's surface may carry color but must not
+# state an unreleased FACT (the bearing-book names no tower; the locksmith
+# names the keyholder without placing her at the Stack).
+#
+# CONCEALMENT: senna, southStack, sswHalfWest, the skiff, the oyster-watch
+# exist only in premises/secret — never in setting, background, question,
+# or rules. tests/dramaticDerivationWorlds.test.js enforces this.
+
+id: world_002_lantern
+title: The Light on the Knock
+
+discipline: "Marine court of inquiry (wreck commission)"
+
+question: "Whose light did the brig Mara steer by on the night she struck the Knock?"
+question_pattern: [steeredByLightOf, mara, "?x"]
+
+setting: >-
+  The brig Mara went onto the Knock bar in the autumn gale and broke her
+  back; her people came ashore, her cargo did not. The court of inquiry
+  sits in the harbour sail-loft, and the town has settled its verdict
+  before the first witness: she steered for a light, and lights on this
+  coast are the keeper's business — Brandt's business. You are the clerk
+  the underwriters have sent to follow the evidence, because money will
+  move on the answer. The court trusts its rules of evidence, and nothing
+  else.
+
+learner_voice: >-
+  The underwriters' young clerk: quick with figures, eager — too eager —
+  to close the account; apt to say the sum aloud before checking the
+  carry. Respectful of the court, hungry to be right, and learning, line
+  by line, to let the evidence finish speaking first.
+
+secret:
+  fact: [steeredByLightOf, mara, senna]
+  surface: "The Mara steered by Senna's light — the old South Stack lamp, relit by the keeper's ward."
+
+mirror:
+  fact: [steeredByLightOf, mara, brandt]
+
+# The court's public rules of evidence: known from the start; the facts are
+# not. Rules contain no contingent individuals.
+rules:
+  - id: R1_bearing
+    gloss: >-
+      A ship steers by what stands on her steered bearing: if her logged
+      bearing is known, and one tower and one only stands on that bearing
+      from her channel, she was steering toward that tower.
+    if:
+      - [loggedBearingOf, "?ship", "?b"]
+      - [towerOnBearing, "?b", "?t"]
+    then:
+      - [steeredToward, "?ship", "?t"]
+  - id: R2_lamp
+    gloss: >-
+      A ship steering toward a tower whose lamp burned that night was
+      steering by that lamp; a dark tower steers no one.
+    if:
+      - [steeredToward, "?ship", "?t"]
+      - [lampBurnedAt, "?t", wreckNight]
+    then:
+      - [steeredByLampOf, "?ship", "?t"]
+  - id: R3_hand
+    gloss: >-
+      A lamp that burned was lit. If one hand alone held the key to a
+      lamp-room, and that hand was at the tower that night, and the lamp
+      burned, then that hand lit it — lamps do not light themselves.
+    if:
+      - [lampBurnedAt, "?t", wreckNight]
+      - [onlyKeyTo, "?t", "?x"]
+      - [atTowerThatNight, "?x", "?t"]
+    then:
+      - [litLampOf, "?x", "?t"]
+  - id: R4_light
+    gloss: >-
+      The light a ship steered by belongs to the hand that lit it: who lit
+      the lamp a ship steered by, by that one's light she steered.
+    if:
+      - [steeredByLampOf, "?ship", "?t"]
+      - [litLampOf, "?x", "?t"]
+    then:
+      - [steeredByLightOf, "?ship", "?x"]
+
+premises:
+  # --- the bearing branch ---
+  - id: p_bearing
+    fact: [loggedBearingOf, mara, sswHalfWest]
+    surface: >-
+      The mate's bearing-book came ashore dry in its oilskin. From the
+      mid-channel buoy she held sou'-sou'-west a half west the last hour
+      entire, on a steady fixed light — the course is pricked, timed, and
+      initialed.
+  - id: p_chart
+    fact: [towerOnBearing, sswHalfWest, southStack]
+    surface: >-
+      Lay the rule on the Trinity chart from the mid-channel buoy:
+      sou'-sou'-west a half west crosses one tower and one only on all
+      this coast — the old South Stack, struck off the light-list six
+      years since.
+  # --- the burning branch (path A: the lamp-room itself) ---
+  - id: p_residue
+    fact: [lampBurnedAt, southStack, wreckNight]
+    surface: >-
+      The court's officer boarded the South Stack at low water: the
+      lamp-room unshuttered, fresh char on the wick, oil in the cup still
+      sweet, the glass wiped clean. That lamp burned, and burned the night
+      of the gale.
+  # --- the burning branch (path B: the pilot — authored but unscheduled;
+  #     the tutor's later freedom) ---
+  - id: p_glimpse
+    fact: [lampBurnedAt, southStack, wreckNight]
+    surface: >-
+      The pilot's deposition, taken wet and signed sober: through the
+      rain, at the gale's height, a light burning where no light has
+      stood these six years — on the South Stack.
+  # --- the hand: the key ---
+  - id: p_key
+    fact: [onlyKeyTo, southStack, senna]
+    surface: >-
+      The locksmith's book is exact. When the Stack was struck off, the
+      old lock was changed and a single key cut, signed for by Senna,
+      ward of the Stack's last keeper, who stayed on in the shore
+      cottage when the light went dark.
+  # --- the hand: presence (path A: the oyster-watch) ---
+  - id: p_skiff
+    fact: [atTowerThatNight, senna, southStack]
+    surface: >-
+      The oyster-watch will swear to it: a skiff lay tied at the Stack
+      steps from dusk until the gale's height — Senna's skiff, by the
+      patched brown lug, and a small light moving up the tower stair.
+  # --- the hand: presence (path B: the ferryman — authored but
+  #     unscheduled) ---
+  - id: p_ferry
+    fact: [atTowerThatNight, senna, southStack]
+    surface: >-
+      The ferryman carried one passenger out before the gale closed the
+      water, and one only: the keeper's ward, set down at the Stack
+      landing with oil enough to be no errand of habit.
+  # --- mirror fuel: what makes Brandt the room's answer ---
+  - id: m_key
+    fact: [onlyKeyTo, harlowPoint, brandt]
+    surface: >-
+      Harlow Point keeps one key to its lamp-room and the keeper keeps
+      it: Brandt's, on his own belt, by the Board's standing rule. No
+      other hand could touch that lamp.
+  - id: m_post
+    fact: [atTowerThatNight, brandt, harlowPoint]
+    surface: >-
+      Brandt's log has him at his post the night entire, and the dawn
+      relief found him there: wood dry, glass polished, log ruled and
+      signed to the hour.
+  - id: m_shutter
+    fact: [shutteredOn, harlowPoint, wreckNight]
+    surface: >-
+      The harbourmaster's storm-order stands in the book: Harlow Point to
+      shutter at the dusk gun, the channel closed to all sail. The
+      inspector found the shutter drawn and the Board's seal on it
+      unbroken at first light.
+
+# Public setup; feeds no rule.
+background:
+  - [wreckedOn, mara, knockBar]
+  - [inquiryInto, theCourt, mara]
+  - [keeperOf, brandt, harlowPoint]
+  - [steeredForLight, mara, wreckNight]
+
+incompatible:
+  - [[lampBurnedAt, harlowPoint, wreckNight], [shutteredOn, harlowPoint, wreckNight]]
+  - [[steeredByLightOf, mara, senna], [steeredByLightOf, mara, brandt]]
+
+# 2 burning routes x 2 presence routes.
+proof_paths:
+  - premises: [p_bearing, p_chart, p_residue, p_key, p_skiff]
+  - premises: [p_bearing, p_chart, p_residue, p_key, p_ferry]
+  - premises: [p_bearing, p_chart, p_glimpse, p_key, p_skiff]
+  - premises: [p_bearing, p_chart, p_glimpse, p_key, p_ferry]
+
+# The plot: the charge swells (m_key, m_post), dies at the sealed shutter
+# (the peripeteia), and the positive case then walks the bearing to the
+# dead tower, the dead tower to its one key, the key to the skiff at the
+# steps. S first derivable at turn 20 (>= t_min 18), 6 turns before cap.
+release_schedule:
+  - { turn: 2, premise: m_key, via: director }
+  - { turn: 4, premise: p_bearing, via: tutor }
+  - { turn: 6, premise: m_post, via: director }
+  - { turn: 8, premise: m_shutter, via: director }
+  - { turn: 9, premise: p_chart, via: tutor }
+  - { turn: 13, premise: p_residue, via: director }
+  - { turn: 17, premise: p_key, via: tutor }
+  - { turn: 20, premise: p_skiff, via: director }
+
+dramaturgy:
+  acts:
+    - act: I
+      title: The Charge
+      turns: [1, 5]
+      intent: >-
+        The wreck, and the room's ready verdict: lights are the keeper's
+        business. The keeper's own key sharpens the charge; against the
+        room's certainty, the first hard fact — the mate's bearing, a
+        number that names no tower. The learner should leave Act I
+        holding a verdict and a bearing, and noticing only one of them
+        was logged.
+    - act: II
+      title: The Shuttered Light
+      turns: [6, 11]
+      intent: >-
+        Peripeteia. The keeper at his post all night — and his light
+        sealed dark at the dusk gun, the Board's seal unbroken. The
+        charge dies of its own evidence: a dark tower steers no one.
+        Into the emptied room, the chart: one tower and one only stands
+        on the Mara's bearing, and it has been off the list six years.
+        The question transforms — not "what did Brandt neglect" but
+        "what burned where nothing should."
+    - act: III
+      title: The Dead Lamp
+      turns: [12, 17]
+      intent: >-
+        The Stack boarded: fresh char, sweet oil, wiped glass — the dark
+        tower burned. The court's rules now want a hand: one key, cut at
+        the striking-off, signed for in a name the room has never
+        spoken. The learner should end Act III holding a burning lamp
+        and a single key, one conjunct short of a hand.
+    - act: IV
+      title: The Skiff at the Steps
+      turns: [18, 26]
+      intent: >-
+        The oyster-watch places the skiff at the Stack steps through the
+        gale. From turn 20 the learner's own grounded facts force the
+        conclusion. The remaining turns are the recognition scene: the
+        learner must be brought to say whose light wrecked the Mara, and
+        to show why it can be no one else's.
+
+slope:
+  t_min: 18 # anti-reveal: S must not be derivable before turn 18
+  aporia_window: 6 # anti-aporia: D(t) must strictly decrease within any 6-turn window
+
+turn_cap: 26

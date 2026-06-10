@@ -1,0 +1,239 @@
+# WORLD-003 — the two-stage-chain scenario (Phase B of the superego arc,
+# 2026-06-10). The SHORTEST world (cap 20): where world-001 converges
+# branches and world-002 eliminates candidates, world-003 stages a proof
+# whose first stage is itself a recognition. Stage 1 (turns 4-8) derives a
+# concealed INTERMEDIATE — the fouling entered at the spring-house, not at
+# the well — and the dramatic question transforms ("what ails the well?" →
+# "whose hand was at the spring-house?"). Stage 2 (turns 12-15) puts a
+# contingent particular's hand on that place and forces S.
+#
+# Aldermere's common well turned bitter after the autumn fair; the parish
+# verdict is ready-made: Garrod the tanner and his bitter pits. The truth
+# is a contingent particular: Mirel, the dyer's apprentice, steeped her
+# mordant-crocks in the spring-house basin through fair week (the dye-yard
+# cistern had cracked; she worked by night to hide the breakage). She does
+# not exist outside this drama until the premises bring her on.
+#
+# Proof DAG (depth 2, an explicit two-stage chain; 2 witness routes x
+# 2 stuff routes = 4 authored paths):
+#
+#   p_course + p_basin + p_rill --R1--> foulFrom(commonWell, springHouse)   [stage 1]
+#   foulFrom + p_lantern (or p_verger) + p_mordant (or p_dyebook)
+#                                --R2--> turnedBitter(mirel, commonWell)    [stage 2]
+#
+# The mirror (Garrod) is PROPERLY tempting: m_pits gives him R2's
+# steepsBitter conjunct outright — the whole village case is one true
+# conjunct wearing a verdict. He fails placement (no rule ever puts him at
+# the spring-house) and m_drain kills the mechanism on stage (his pits
+# drain two fathoms below the well; water does not climb). No rule can
+# ever derive turnedBitter(garrod, commonWell) — plotLint enforces it.
+#
+# SURFACE DISCIPLINE: a premise's surface may carry color but must not
+# state an unreleased FACT (the sexton sees lantern-light and crocks
+# before anyone knows what the crocks held).
+#
+# CONCEALMENT: mirel, springHouse, copperas, the crocks exist only in
+# premises/secret — never in setting, background, question, or rules.
+# tests/dramaticDerivationWorlds.test.js enforces this.
+
+id: world_003_bitterwell
+title: The Bitter Well
+
+discipline: "Parish surveying (waters and bounds)"
+
+question: "Whose hand turned the Aldermere common well bitter?"
+question_pattern: [turnedBitter, "?x", commonWell]
+
+setting: >-
+  Since the week of the autumn fair the common well of Aldermere has drawn
+  bitter — tea spoiled, bread sour, the brewer's mash thrown to the pigs.
+  The parish has its answer already: Garrod's tan-pits, that have stunk on
+  the south lane these twenty years. The vestry, wanting more than a
+  grudge to act on, has sent for the circuit surveyor of waters and
+  bounds, and you are the well-warden's daughter, told to walk with the
+  survey and learn how a parish proves a thing instead of merely voting
+  it. The survey trusts its rules of evidence, and nothing else.
+
+learner_voice: >-
+  The well-warden's daughter: practical, plain-spoken, suspicious of
+  book-talk; wants to taste, touch, and see for herself; slow to accuse a
+  neighbour and quietly ashamed of how badly the parish wants it to be
+  Garrod.
+
+secret:
+  fact: [turnedBitter, mirel, commonWell]
+  surface: "Mirel, the dyer's apprentice, turned the well — her mordant-crocks steeped in the spring-house basin through fair week."
+
+mirror:
+  fact: [turnedBitter, garrod, commonWell]
+
+# The survey's public rules: known from the start; the facts are not.
+# Rules contain no contingent individuals.
+rules:
+  - id: R1_entry
+    gloss: >-
+      Water carries its history. If a well is fed from a source, and the
+      source itself runs foul while the water above the source runs
+      sweet, then the fouling entered at the source — not above it, and
+      not at the well.
+    if:
+      - [fedBy, "?w", "?s"]
+      - [foulAt, "?s"]
+      - [sweetAbove, "?s"]
+    then:
+      - [foulFrom, "?w", "?s"]
+  - id: R2_hand
+    gloss: >-
+      If the fouling entered at a place, then one who steeped their wares
+      at that place, and whose wares steep bitter, turned the water: the
+      hand, the place, and the stuff must meet, and where they meet the
+      survey writes its finding.
+    if:
+      - [foulFrom, "?w", "?s"]
+      - [steepedAt, "?x", "?s"]
+      - [steepsBitter, "?x"]
+    then:
+      - [turnedBitter, "?x", "?w"]
+
+premises:
+  # --- stage 1: the water's course ---
+  - id: p_course
+    fact: [fedBy, commonWell, springHouse]
+    surface: >-
+      The mason who rebuilt the well-head knows what the parish forgot:
+      the common well is no spring. It fills by a stone lead from the old
+      spring-house on the glebe slope, laid before anyone living was
+      christened.
+  - id: p_rill
+    fact: [sweetAbove, springHouse]
+    surface: >-
+      The surveyor walked the glebe rill with a cup, tasting as he went:
+      above the spring-house door the water runs sweet as ever it did,
+      every yard of it.
+  - id: p_basin
+    fact: [foulAt, springHouse]
+    surface: >-
+      Inside the spring-house, the basin itself: bitter in the cup,
+      bitter on the stone, and a grey bloom dried along the curb where
+      the water has stood.
+  # --- stage 2: the hand at the place (path A: the sexton) ---
+  - id: p_lantern
+    fact: [steepedAt, mirel, springHouse]
+    surface: >-
+      The sexton, late from the fair-week ringing, saw lantern-light
+      under the spring-house door two nights together — and at dawn,
+      crocks drying along the curb. It was the dyer's apprentice, Mirel,
+      who carried them home in a barrow.
+  # --- stage 2: the hand (path B: the verger's wife — authored but
+  #     unscheduled; the tutor's later freedom) ---
+  - id: p_verger
+    fact: [steepedAt, mirel, springHouse]
+    surface: >-
+      The verger's wife, crossing the glebe before light in fair week,
+      met Mirel at the spring-house stile with wet crocks in a barrow
+      and no good answer for the hour.
+  # --- stage 2: the stuff (path A: the order-book) ---
+  - id: p_mordant
+    fact: [steepsBitter, mirel]
+    surface: >-
+      The dye-master's order-book, against Mirel's name in fair week:
+      gall and copperas, drawn for mordant. What steeped in her crocks
+      steeps bitter as wormwood, and a child could taste it in a
+      hogshead.
+  # --- stage 2: the stuff (path B: the waste-jar — authored but
+  #     unscheduled) ---
+  - id: p_dyebook
+    fact: [steepsBitter, mirel]
+    surface: >-
+      Behind the dye-yard, her waste-jar: gall lees and green copperas,
+      the same liquor the crocks held, bitter to the smell without
+      tasting.
+  # --- mirror fuel: the village case against Garrod ---
+  - id: m_pits
+    fact: [steepsBitter, garrod]
+    surface: >-
+      No one need teach Aldermere what a tan-pit holds: oak-bark and
+      lime, liquor bitter as gall itself. What Garrod steeps, steeps
+      bitter — and there the village case stands, twenty years strong.
+  - id: m_drain
+    fact: [drainsBelow, tanPits, commonWell]
+    surface: >-
+      The surveyor's levels are against the parish: the tan-pits lie a
+      full two fathoms below the well-head, and their drain runs away
+      south to the brook. Water does not climb.
+
+# Public setup; feeds no rule.
+background:
+  - [wellOf, aldermere, commonWell]
+  - [bitterSince, commonWell, autumnFair]
+  - [tannerOf, garrod, aldermere]
+
+incompatible:
+  - [[turnedBitter, mirel, commonWell], [turnedBitter, garrod, commonWell]]
+
+# 2 witness routes x 2 stuff routes, all through the stage-1 intermediate.
+proof_paths:
+  - premises: [p_course, p_rill, p_basin, p_lantern, p_mordant]
+  - premises: [p_course, p_rill, p_basin, p_lantern, p_dyebook]
+  - premises: [p_course, p_rill, p_basin, p_verger, p_mordant]
+  - premises: [p_course, p_rill, p_basin, p_verger, p_dyebook]
+
+# The plot: the village case (m_pits), then stage 1 — course, rill, basin —
+# closing at turn 8 with the intermediate forced and the question
+# transformed. The levels kill the tanner's mechanism at 10; the lantern
+# puts a hand at the place at 12; the order-book names the stuff at 15.
+# S first derivable at turn 15 (>= t_min 13), 5 turns before cap.
+release_schedule:
+  - { turn: 2, premise: m_pits, via: director }
+  - { turn: 4, premise: p_course, via: tutor }
+  - { turn: 6, premise: p_rill, via: director }
+  - { turn: 8, premise: p_basin, via: tutor }
+  - { turn: 10, premise: m_drain, via: director }
+  - { turn: 12, premise: p_lantern, via: tutor }
+  - { turn: 15, premise: p_mordant, via: director }
+
+dramaturgy:
+  acts:
+    - act: I
+      title: The Village Case
+      turns: [1, 5]
+      intent: >-
+        The spoiled water and the ready verdict: the tanner's pits, of
+        course. Against the grudge, the first hard fact — the mason's
+        correction: the well is no spring; it is FED. The learner should
+        leave Act I holding a verdict and a water-course, and noticing
+        the verdict never asked where the water comes from.
+    - act: II
+      title: The Water's Course
+      turns: [6, 9]
+      intent: >-
+        Stage-one recognition. Sweet above the spring-house, bitter in
+        its basin: the survey's first rule closes, and the fouling has
+        an ADDRESS. The question transforms in the learner's hands —
+        not "what ails the well" but "whose hand was at the
+        spring-house". The learner should say the intermediate finding
+        themselves before Act III opens.
+    - act: III
+      title: The Case That Drains Away
+      turns: [10, 14]
+      intent: >-
+        Peripeteia for the parish: the levels are read, and the tanner's
+        pits drain AWAY from the well — the village case dies of
+        arithmetic, not mercy. Into the emptied case, the sexton's
+        lantern-light and crocks at dawn, and a name the parish has
+        never thought to suspect.
+    - act: IV
+      title: The Order-Book
+      turns: [15, 20]
+      intent: >-
+        The stuff is named: gall and copperas against her name in fair
+        week. From turn 15 the learner's own grounded facts force the
+        finding. The remaining turns are the recognition scene: the
+        learner must be brought to say it — reluctantly, exactly — and
+        to show why the survey's rules leave no one else.
+
+slope:
+  t_min: 13 # anti-reveal: S must not be derivable before turn 13
+  aporia_window: 6 # anti-aporia: D(t) must strictly decrease within any 6-turn window
+
+turn_cap: 20
