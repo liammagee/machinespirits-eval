@@ -40,12 +40,21 @@
  *     [--learner-voice "<text>"]       (override the world's learner voice —
  *                                       personality/tonality variation; never
  *                                       carries plot content)
+ *     [--critic auto|real|mock|off]    (post-run critic's notice; auto = follow
+ *                                       the run mode — real dramas get the
+ *                                       Fable notice, mock dramas the
+ *                                       deterministic template. The critic is
+ *                                       pinned to claude/claude-fable-5;
+ *                                       DERIVATION_CRITIC_* overrides. Its
+ *                                       notice gates nothing — the verdict
+ *                                       stays the checker's.)
  *     [--note "what this iteration changes"]
  *
  * Artifacts land in <out>/<label>/: transcript.md (the drama, movement by
- * movement, instrument panel at the foot), diagnosis.json (taxonomy verdict,
- * D(t), release adherence, staging, dialogue discipline, usage/cost),
- * result.json (the raw engine output).
+ * movement, instrument panel at the foot, critic's notice at the very end),
+ * diagnosis.json (taxonomy verdict, D(t), release adherence, staging,
+ * dialogue discipline, usage/cost), result.json (the raw engine output),
+ * commentary.md (the critic's notice, standalone).
  */
 
 import 'dotenv/config';
@@ -67,6 +76,8 @@ import {
   stagingSegments,
   renderDCurve,
   renderTranscript,
+  runCritic,
+  commentaryFileMd,
 } from '../services/dramaticDerivation/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -101,6 +112,14 @@ async function main() {
   }
   const learnerVoice = arg('learner-voice', null);
   const superego = flag('superego');
+  const criticArg = arg('critic', 'auto');
+  if (!['auto', 'real', 'mock', 'off'].includes(criticArg)) {
+    console.error(`--critic must be "auto", "real", "mock" or "off" (got "${criticArg}")`);
+    process.exit(1);
+  }
+  // auto = the critic follows the run: real dramas get the Fable notice, mock
+  // dramas the deterministic template (so smokes exercise the same plumbing).
+  const criticMode = criticArg === 'auto' ? mode : criticArg;
   // Real runs report per-call liveness by default (the dramas are slow to
   // build; an opaque shell was the complaint). DERIVATION_TRACE=0 silences.
   if (mode === 'real' && process.env.DERIVATION_TRACE === undefined) process.env.DERIVATION_TRACE = '1';
@@ -189,13 +208,34 @@ async function main() {
     ...diagnose(result, world),
   };
 
+  // Drama artifacts land before the critic runs: a critic failure (CLI not
+  // installed, quota window closed) must never cost the run itself.
   fs.mkdirSync(outDir, { recursive: true });
-  fs.writeFileSync(
-    path.join(outDir, 'transcript.md'),
-    renderTranscript(result, world, { title: `${world.title} — ${label}`, diagnosis }),
-  );
   fs.writeFileSync(path.join(outDir, 'diagnosis.json'), `${JSON.stringify(diagnosis, null, 2)}\n`);
   fs.writeFileSync(path.join(outDir, 'result.json'), `${JSON.stringify(result, null, 2)}\n`);
+
+  let commentaryEmbed = null;
+  if (criticMode !== 'off') {
+    try {
+      if (criticMode === 'real') console.log('\ncritic  reading the performance…');
+      const notice = await runCritic({ result, diagnosis, world, label, mode: criticMode });
+      const by = `${notice.target.provider}/${notice.target.model || '(cli default)'}`;
+      fs.writeFileSync(
+        path.join(outDir, 'commentary.md'),
+        commentaryFileMd({ label, commentary: notice.commentary, target: notice.target }),
+      );
+      commentaryEmbed = [`*— notice by ${by}*`, '', notice.commentary].join('\n');
+      if (criticMode === 'real') console.log(`critic  notice by ${by} in ${(notice.elapsedMs / 1000).toFixed(1)}s`);
+    } catch (err) {
+      console.warn(`critic  FAILED (run artifacts are intact): ${err.message}`);
+      console.warn(`        backfill later: npm run derivation:critic -- --label ${label}`);
+    }
+  }
+
+  fs.writeFileSync(
+    path.join(outDir, 'transcript.md'),
+    renderTranscript(result, world, { title: `${world.title} — ${label}`, diagnosis, commentary: commentaryEmbed }),
+  );
 
   console.log('');
   console.log(
@@ -262,7 +302,9 @@ async function main() {
     );
   }
   console.log('');
-  console.log(`artifacts ${path.relative(ROOT, outDir)}/{transcript.md, diagnosis.json, result.json}`);
+  console.log(
+    `artifacts ${path.relative(ROOT, outDir)}/{transcript.md, diagnosis.json, result.json${commentaryEmbed ? ', commentary.md' : ''}}`,
+  );
 }
 
 main().catch((err) => {

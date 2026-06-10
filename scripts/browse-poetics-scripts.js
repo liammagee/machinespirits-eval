@@ -32,8 +32,8 @@ import {
 } from '../services/poetics/replayBundles.js';
 import {
   loadWorld as loadDerivationWorld,
-  renderDCurve as renderDerivationDCurve,
   renderProof as renderDerivationProof,
+  renderProofProse as renderDerivationProofProse,
   renderEvalPanel as renderDerivationEvalPanel,
   stagingSegments as derivationStagingSegments,
 } from '../services/dramaticDerivation/index.js';
@@ -131,9 +131,9 @@ function stripOuterSpeechQuotes(text) {
 function classifyTranscriptSpeaker(label) {
   const normalized = String(label || '').toUpperCase();
   if (normalized === 'STAGE' || normalized === 'DIRECTOR' || normalized === 'CHORUS') return 'stage';
+  if (normalized.includes('SUPEREGO') || normalized.includes('EGO')) return 'internal';
   if (normalized.startsWith('TUTOR')) return 'tutor';
   if (normalized.startsWith('LEARNER')) return 'learner';
-  if (normalized.includes('SUPEREGO') || normalized.includes('EGO')) return 'internal';
   return 'other';
 }
 
@@ -218,6 +218,168 @@ function parseTranscriptPreview(text) {
   }
   flush();
   return blocks.map((block, index) => ({ ...block, index: index + 1 }));
+}
+
+const LEMONFOX_TTS_URL = 'https://api.lemonfox.ai/v1/audio/speech';
+const MAX_TTS_CHARS = 30000;
+const TTS_RESPONSE_FORMATS = new Set(['mp3', 'opus', 'aac', 'flac', 'pcm', 'ogg', 'wav']);
+const TTS_LANGUAGES = new Set(['en-us', 'en-gb']);
+const TTS_ROLE_VOICE = {
+  director: 'onyx',
+  stage: 'alloy',
+  tutor: 'michael',
+  learner: 'sarah',
+  internal: 'echo',
+  tutor_superego: 'echo',
+  learner_superego: 'nova',
+  default: 'heart',
+};
+const TTS_VOICES_BY_LANGUAGE = {
+  'en-us': new Set([
+    'heart',
+    'bella',
+    'michael',
+    'alloy',
+    'aoede',
+    'kore',
+    'jessica',
+    'nicole',
+    'nova',
+    'river',
+    'sarah',
+    'sky',
+    'echo',
+    'eric',
+    'fenrir',
+    'liam',
+    'onyx',
+    'puck',
+    'adam',
+    'santa',
+  ]),
+  'en-gb': new Set(['alice', 'emma', 'isabella', 'lily', 'daniel', 'fable', 'george', 'lewis']),
+};
+
+function normalizeTtsText(text) {
+  const cleaned = String(text || '')
+    .replace(/\r\n/g, '\n')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+  if (!cleaned) {
+    const error = new Error('missing text');
+    error.statusCode = 400;
+    throw error;
+  }
+  if (cleaned.length > MAX_TTS_CHARS) {
+    const error = new Error(`text exceeds ${MAX_TTS_CHARS.toLocaleString('en-US')} character TTS limit`);
+    error.statusCode = 413;
+    throw error;
+  }
+  return cleaned;
+}
+
+function normalizeTtsRole(role) {
+  const normalized = String(role || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, '_');
+  if (normalized.includes('superego') || normalized.includes('ego')) return normalized;
+  if (['director', 'stage', 'tutor', 'learner', 'internal'].includes(normalized)) return normalized;
+  return 'default';
+}
+
+function defaultVoiceForRole(role) {
+  const normalized = normalizeTtsRole(role);
+  if (normalized.includes('tutor_superego')) return TTS_ROLE_VOICE.tutor_superego;
+  if (normalized.includes('learner_superego')) return TTS_ROLE_VOICE.learner_superego;
+  if (normalized.includes('superego') || normalized.includes('ego')) return TTS_ROLE_VOICE.internal;
+  return TTS_ROLE_VOICE[normalized] || TTS_ROLE_VOICE.default;
+}
+
+function normalizeTtsRequest(input = {}) {
+  const language = TTS_LANGUAGES.has(String(input.language || '').toLowerCase())
+    ? String(input.language).toLowerCase()
+    : 'en-us';
+  const role = normalizeTtsRole(input.role);
+  const allowedVoices = TTS_VOICES_BY_LANGUAGE[language] || TTS_VOICES_BY_LANGUAGE['en-us'];
+  const requestedVoice = String(input.voice || '').trim().toLowerCase();
+  const fallbackVoice = defaultVoiceForRole(role);
+  const voice = allowedVoices.has(requestedVoice)
+    ? requestedVoice
+    : allowedVoices.has(fallbackVoice)
+      ? fallbackVoice
+      : TTS_ROLE_VOICE.default;
+  const responseFormat = TTS_RESPONSE_FORMATS.has(String(input.responseFormat || input.response_format || '').toLowerCase())
+    ? String(input.responseFormat || input.response_format).toLowerCase()
+    : 'mp3';
+  const rawSpeed = Number(input.speed ?? 1);
+  const speed = Number.isFinite(rawSpeed) ? Math.min(4, Math.max(0.5, rawSpeed)) : 1;
+  return {
+    text: normalizeTtsText(input.text || input.input),
+    role,
+    voice,
+    language,
+    responseFormat,
+    speed,
+  };
+}
+
+function audioContentType(format) {
+  if (format === 'mp3') return 'audio/mpeg';
+  if (format === 'aac') return 'audio/aac';
+  if (format === 'flac') return 'audio/flac';
+  if (format === 'wav') return 'audio/wav';
+  if (format === 'opus') return 'audio/opus';
+  if (format === 'ogg') return 'audio/ogg';
+  if (format === 'pcm') return 'audio/L16';
+  return 'application/octet-stream';
+}
+
+async function synthesizeLemonFoxSpeech(input = {}, { apiKey = process.env.LEMONFOX_API_KEY, fetchImpl = globalThis.fetch } = {}) {
+  if (!apiKey) {
+    const error = new Error('LEMONFOX_API_KEY is not configured');
+    error.statusCode = 503;
+    throw error;
+  }
+  if (typeof fetchImpl !== 'function') {
+    const error = new Error('fetch is not available in this runtime');
+    error.statusCode = 500;
+    throw error;
+  }
+  const request = normalizeTtsRequest(input);
+  const response = await fetchImpl(LEMONFOX_TTS_URL, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+      Accept: audioContentType(request.responseFormat),
+    },
+    body: JSON.stringify({
+      input: request.text,
+      voice: request.voice,
+      language: request.language,
+      response_format: request.responseFormat,
+      speed: request.speed,
+    }),
+  });
+  if (!response.ok) {
+    let detail = '';
+    try {
+      detail = (await response.text()).slice(0, 600);
+    } catch {
+      detail = '';
+    }
+    const error = new Error(`Lemon Fox TTS failed (${response.status})${detail ? `: ${detail}` : ''}`);
+    error.statusCode = response.status >= 400 && response.status < 600 ? response.status : 502;
+    throw error;
+  }
+  const buffer = Buffer.from(await response.arrayBuffer());
+  return {
+    buffer,
+    contentType: response.headers.get('content-type') || audioContentType(request.responseFormat),
+    request,
+  };
 }
 
 function listRuns(db) {
@@ -871,7 +1033,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   // adjudication allowlist (services/httpBasicAuth.js PARTICIPANT_ALLOWLIST), so
   // every metered/researcher surface on this consolidated app stays admin-only.
   app.use(makeRoleGate());
-  app.use(express.json({ limit: '64kb' }));
+  app.use(express.json({ limit: '256kb' }));
   app.use('/images', express.static(path.resolve(ROOT, 'notes/poetics/images'), { index: false }));
   app.use('/assets', express.static(path.resolve(ROOT, 'notes/poetics/assets'), { index: false }));
   app.use('/docs/research', express.static(path.resolve(ROOT, 'docs/research'), { index: false }));
@@ -924,6 +1086,22 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
       return res.json({ ok: true, detail });
     } catch (error) {
       return res.status(400).json({ error: error.message || String(error) });
+    }
+  });
+  app.post('/api/tts', async (req, res) => {
+    try {
+      const speech = await synthesizeLemonFoxSpeech(req.body || {});
+      return res
+        .status(200)
+        .set({
+          'Content-Type': speech.contentType,
+          'Cache-Control': 'no-store',
+          'X-TTS-Voice': speech.request.voice,
+          'X-TTS-Role': speech.request.role,
+        })
+        .send(speech.buffer);
+    } catch (error) {
+      return res.status(error.statusCode || 500).json({ error: error.message || String(error) });
     }
   });
   app.get('/compose', (_req, res) => res.type('html').send(renderComposeHtml()));
@@ -1963,6 +2141,7 @@ function listDerivationRuns() {
         label: name,
         mtimeMs: fs.statSync(diagPath).mtimeMs,
         diagnosis: JSON.parse(fs.readFileSync(diagPath, 'utf8')),
+        hasNotice: fs.existsSync(path.join(DERIVATION_LOOP_DIR, name, 'commentary.md')),
       });
     } catch {
       /* partial or corrupt run dir — not listable */
@@ -1988,7 +2167,13 @@ function readDerivationRun(label) {
   } catch {
     /* world file moved/renamed — declared movements still render; only the sketch fallback is lost */
   }
-  return { label, diagnosis, result, world };
+  let commentary = null;
+  try {
+    commentary = fs.readFileSync(path.join(dir, 'commentary.md'), 'utf8');
+  } catch {
+    /* no notice yet — the page shows the backfill hint */
+  }
+  return { label, diagnosis, result, world, commentary };
 }
 
 // Backend chips tolerate both ledger formats: per-role ({mode, roles:{...}},
@@ -2032,6 +2217,267 @@ function derivationFigureHtml(figure) {
   return `<details class="figdef"><summary title="show what this figure is">${escapeHtml(name)}</summary><span class="figdef__t">${escapeHtml(gloss)}</span></details>`;
 }
 
+// Inline markdown → HTML for the derivation artifacts (escape first, then the
+// few spans the panel/notice/proof actually use: \`code\`, **bold**, *italic*,
+// and «fact» — the proof prose marks logical tokens with guillemets).
+function derivationInlineMd(text) {
+  return escapeHtml(String(text))
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+    .replace(/«([^»]+)»/g, '<span class="fact">«$1»</span>');
+}
+
+// Block-level markdown → HTML, sized to what the run artifacts emit
+// (renderEvalPanel, commentary.md): ##/### headings (mapped one level down so
+// they sit under the page's own h2 sections), nested "- " lists, pipe tables,
+// "> " blockquotes, paragraphs. Not a general markdown engine on purpose —
+// the artifacts are ours, and everything is escaped before any tag is added.
+function derivationMdToHtml(md) {
+  const lines = String(md || '')
+    .replace(/\r\n/g, '\n')
+    .split('\n');
+  const out = [];
+  const para = [];
+  const quote = [];
+  let listDepth = 0;
+  let tableRows = null;
+
+  const flushPara = () => {
+    if (!para.length) return;
+    out.push(`<p>${derivationInlineMd(para.join(' '))}</p>`);
+    para.length = 0;
+  };
+  const flushQuote = () => {
+    if (!quote.length) return;
+    out.push(`<blockquote>${derivationInlineMd(quote.join(' '))}</blockquote>`);
+    quote.length = 0;
+  };
+  const closeLists = (to = 0) => {
+    while (listDepth > to) {
+      out.push('</ul>');
+      listDepth -= 1;
+    }
+  };
+  const flushTable = () => {
+    if (!tableRows) return;
+    const [head, ...body] = tableRows;
+    const cells = (row, tag) => row.map((c) => `<${tag}>${derivationInlineMd(c)}</${tag}>`).join('');
+    out.push(
+      `<table><thead><tr>${cells(head, 'th')}</tr></thead>${
+        body.length ? `<tbody>${body.map((r) => `<tr>${cells(r, 'td')}</tr>`).join('')}</tbody>` : ''
+      }</table>`,
+    );
+    tableRows = null;
+  };
+  const flushAll = () => {
+    flushPara();
+    flushQuote();
+    closeLists();
+    flushTable();
+  };
+
+  for (const raw of lines) {
+    const line = raw.replace(/\s+$/, '');
+    if (/^\|.*\|$/.test(line.trim())) {
+      flushPara();
+      flushQuote();
+      closeLists();
+      const cells = line
+        .trim()
+        .slice(1, -1)
+        .split('|')
+        .map((c) => c.trim());
+      if (cells.every((c) => /^:?-{2,}:?$/.test(c))) continue;
+      if (!tableRows) tableRows = [];
+      tableRows.push(cells);
+      continue;
+    }
+    if (tableRows) flushTable();
+    const heading = line.match(/^(#{1,4})\s+(.*)$/);
+    if (heading) {
+      flushAll();
+      const level = Math.min(heading[1].length + 1, 4);
+      out.push(`<h${level}>${derivationInlineMd(heading[2])}</h${level}>`);
+      continue;
+    }
+    const item = line.match(/^(\s*)-\s+(.*)$/);
+    if (item) {
+      flushPara();
+      flushQuote();
+      const depth = Math.floor(item[1].length / 2) + 1;
+      while (listDepth < depth) {
+        out.push('<ul>');
+        listDepth += 1;
+      }
+      closeLists(depth);
+      out.push(`<li>${derivationInlineMd(item[2])}</li>`);
+      continue;
+    }
+    if (/^>\s?/.test(line)) {
+      flushPara();
+      closeLists();
+      flushTable();
+      quote.push(line.replace(/^>\s?/, ''));
+      continue;
+    }
+    if (!line.trim()) {
+      flushAll();
+      continue;
+    }
+    flushQuote();
+    closeLists();
+    flushTable();
+    para.push(line.trim());
+  }
+  flushAll();
+  return out.join('\n');
+}
+
+// The dramaturgical arc as an inline SVG: movement bands behind a step-after
+// D(t) staircase, release ▲ ticks (hover = which premise, via whom), the
+// forced moment as a dashed vertical, the grounded assertion as a star, event
+// flags at the top. All colors ride the page's CSS variables, so dark mode
+// follows for free. Tolerates the early-run diagnosis shape (no slope/staging).
+function renderDerivationArcSvg({
+  trajectory = [],
+  segments = [],
+  ledger = [],
+  events = [],
+  world = null,
+  result = {},
+}) {
+  if (!trajectory.length) return '<p class="mono">(no trajectory recorded)</p>';
+  const W = 940;
+  const left = 44;
+  const right = 16;
+  const top = 16;
+  const plotH = 220;
+  const bottom = top + plotH;
+  const H = bottom + 46;
+  const t0 = trajectory[0].turn;
+  const tN = Math.max(trajectory[trajectory.length - 1].turn, t0 + 1);
+  const maxD = Math.max(...trajectory.map((p) => p.D), 1);
+  const x = (turn) => left + ((turn - t0) / (tN - t0)) * (W - left - right);
+  const y = (D) => bottom - (D / maxD) * plotH;
+  const svg = [];
+
+  // movement bands (alternating wash) + clipped names, full title on hover
+  segments.forEach((seg, i) => {
+    const x0 = Math.max(x(seg.turns[0] - 0.5), left);
+    const x1 = Math.min(x(seg.turns[1] + 0.5), W - right);
+    if (x1 <= x0) return;
+    if (i % 2 === 0) {
+      svg.push(
+        `<rect x="${x0.toFixed(1)}" y="${top}" width="${(x1 - x0).toFixed(1)}" height="${plotH}" class="arc__band"/>`,
+      );
+    }
+    const label = String(seg.title || '');
+    const fit = Math.max(0, Math.floor((x1 - x0 - 10) / 6.4));
+    const shown = label.length > fit ? `${label.slice(0, Math.max(fit - 1, 0))}…` : label;
+    if (shown) {
+      svg.push(
+        `<text x="${(x0 + 5).toFixed(1)}" y="${top + 13}" class="arc__bandlabel">${escapeHtml(shown)}<title>${escapeHtml(
+          `${label} (turns ${seg.turns[0]}–${seg.turns[1]}${seg.source === 'director' ? ', declared by the director' : ''})${seg.intent ? ` — ${seg.intent}` : ''}`,
+        )}</title></text>`,
+      );
+    }
+  });
+
+  // D gridlines + axis labels (thin to every 2nd line when D runs deep)
+  const dStep = maxD > 10 ? 2 : 1;
+  for (let level = 0; level <= maxD; level += dStep) {
+    svg.push(
+      `<line x1="${left}" y1="${y(level).toFixed(1)}" x2="${W - right}" y2="${y(level).toFixed(1)}" class="arc__grid"/>`,
+      `<text x="${left - 6}" y="${(y(level) + 3.5).toFixed(1)}" text-anchor="end" class="arc__tick">${level}</text>`,
+    );
+  }
+  // turn axis ticks every 5
+  for (let turn = Math.ceil(t0 / 5) * 5; turn <= tN; turn += 5) {
+    svg.push(
+      `<line x1="${x(turn).toFixed(1)}" y1="${bottom}" x2="${x(turn).toFixed(1)}" y2="${bottom + 4}" class="arc__grid"/>`,
+      `<text x="${x(turn).toFixed(1)}" y="${bottom + 15}" text-anchor="middle" class="arc__tick">${turn}</text>`,
+    );
+  }
+
+  // the forced moment — dashed vertical where the board first compels S
+  const forcedTurn = result.firstForcedTurn ?? null;
+  if (forcedTurn !== null) {
+    svg.push(
+      `<line x1="${x(forcedTurn).toFixed(1)}" y1="${top}" x2="${x(forcedTurn).toFixed(1)}" y2="${bottom}" class="arc__forced"/>`,
+      `<text x="${(x(forcedTurn) + 4).toFixed(1)}" y="${top + 30}" class="arc__forcedlabel">forced t${forcedTurn}</text>`,
+    );
+  }
+
+  // step-after staircase: D holds until the next turn moves it
+  const d0 = trajectory[0];
+  let dPath = `M ${x(d0.turn).toFixed(1)} ${y(d0.D).toFixed(1)}`;
+  for (let i = 1; i < trajectory.length; i += 1) {
+    dPath += ` H ${x(trajectory[i].turn).toFixed(1)} V ${y(trajectory[i].D).toFixed(1)}`;
+  }
+  svg.push(`<path d="${dPath}" class="arc__d"/>`);
+  for (const p of trajectory) {
+    svg.push(
+      `<circle cx="${x(p.turn).toFixed(1)}" cy="${y(p.D).toFixed(1)}" r="2.4" class="arc__dot${p.forced ? ' arc__dot--forced' : ''}"><title>turn ${p.turn} — D=${p.D}${p.forced ? ' (S forced)' : ''}, ${p.groundedCount ?? '?'} facts grounded</title></circle>`,
+    );
+  }
+
+  // release ▲ ticks under the axis — which premise, via whom, on hover
+  const premiseById = new Map((world?.premises || []).map((p) => [p.id, p]));
+  const relByTurn = new Map();
+  for (const entry of ledger) {
+    if (!relByTurn.has(entry.turn)) relByTurn.set(entry.turn, []);
+    relByTurn.get(entry.turn).push(entry);
+  }
+  for (const [turn, entries] of relByTurn) {
+    const title = entries
+      .map((e) => {
+        const surface = premiseById.get(e.premiseId)?.surface;
+        return `${e.premiseId}${surface ? ` — ${surface}` : ''} (via ${e.via})`;
+      })
+      .join('\n');
+    svg.push(
+      `<text x="${x(turn).toFixed(1)}" y="${bottom + 30}" text-anchor="middle" class="arc__rel">▲<title>${escapeHtml(`released turn ${turn}:\n${title}`)}</title></text>`,
+    );
+  }
+
+  // event flags inside the top edge (stacked when a turn carries several)
+  const evByTurn = new Map();
+  for (const event of events) {
+    if (!evByTurn.has(event.turn)) evByTurn.set(event.turn, []);
+    evByTurn.get(event.turn).push(event);
+  }
+  for (const [turn, list] of evByTurn) {
+    list.forEach((e, i) => {
+      const ok = DERIVATION_SUCCESS_EVENTS.has(e.type);
+      svg.push(
+        `<text x="${x(turn).toFixed(1)}" y="${top + 44 + i * 13}" text-anchor="middle" class="arc__flag ${ok ? 'arc__flag--ok' : 'arc__flag--bad'}">⚑<title>${escapeHtml(`${e.type} — ${e.detail || ''}`)}</title></text>`,
+      );
+    });
+  }
+
+  // the grounded assertion — a star where the recognition landed
+  const assertedTurn = result.assertedGroundedTurn ?? null;
+  if (assertedTurn !== null) {
+    const at = trajectory.find((p) => p.turn === assertedTurn);
+    svg.push(
+      `<text x="${x(assertedTurn).toFixed(1)}" y="${(y(at ? at.D : 0) - 8).toFixed(1)}" text-anchor="middle" class="arc__star">★<title>grounded assertion at turn ${assertedTurn}</title></text>`,
+    );
+  }
+
+  return `<svg viewBox="0 0 ${W} ${H}" class="arc" role="img" aria-label="D(t) — remaining derivation distance per turn, with movements, releases and events">${svg.join('')}</svg>`;
+}
+
+// The slope line under the arc, in words (mirrors the ASCII curve's caption).
+function derivationSlopeCaption(slope) {
+  if (!slope) return '';
+  const overall = slope.overall?.ratePerTurn;
+  const perAct = (slope.perAct || [])
+    .map((a) => `${a.act} ${a.ratePerTurn === null ? '—' : a.ratePerTurn.toFixed(2)}`)
+    .join(' · ');
+  return `<p class="slopecap">slope ${overall === null || overall === undefined ? '—' : overall.toFixed(2)} D/turn overall (D ${slope.d0}→${slope.dFinal})${perAct ? ` · per movement: ${perAct}` : ''} — D counts the premises still missing for the nearest proof of the secret; ▲ marks evidence entering the room.</p>`;
+}
+
 const DERIVATION_CSS = `
 .wrap{max-width:1020px;margin:0 auto;padding:18px var(--margin) 80px}
 .wrap h1{font-family:Fraunces,serif;font-weight:600;font-size:var(--s-4);margin:.3em 0 .15em}
@@ -2040,16 +2486,30 @@ const DERIVATION_CSS = `
 .chip{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);border:1px solid var(--rule);border-radius:4px;padding:2px 8px;background:var(--paper-4)}
 .chip--ok{background:var(--moss-soft);border-color:var(--moss);color:var(--moss-deep)}
 .chip--bad{background:var(--brick-soft);border-color:var(--brick);color:var(--brick-d)}
+.tts-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:14px 0 18px;padding:9px 10px;border:1px solid var(--rule-soft);border-radius:6px;background:var(--paper-4)}
+.tts-toolbar--compact{margin:4px 0 8px}
+.tts-control,.tts-btn{border:1px solid var(--rule);background:var(--paper);color:var(--moss-deep);cursor:pointer;font-family:"JetBrains Mono",monospace;text-transform:uppercase}
+.tts-control{min-height:28px;padding:5px 10px;font-size:var(--s-0);letter-spacing:.08em}
+.tts-btn{margin-right:7px;padding:2px 7px;font-size:10px;letter-spacing:.07em;vertical-align:middle}
+.tts-control:hover,.tts-btn:hover{color:var(--brick-d);border-color:var(--brick)}
+.tts-check,.tts-status{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);color:var(--ink-3)}
+.tts-check{display:inline-flex;gap:5px;align-items:center}
+.tts-status[data-state="error"]{color:var(--brick-d)}
 pre.panel{background:var(--paper-2);border:1px solid var(--rule-soft);border-radius:6px;padding:12px;overflow-x:auto;font-size:var(--s-0);line-height:1.35}
 h2.sect{font-family:Fraunces,serif;font-weight:600;margin:1.7em 0 .4em;font-size:var(--s-3);border-bottom:1px solid var(--rule);padding-bottom:.2em}
 .turn{margin:14px 0;padding:10px 14px;border:1px solid var(--rule-soft);border-radius:6px;background:var(--paper-4)}
 .turn__n{font-family:"JetBrains Mono",monospace;color:var(--ink-3);font-size:var(--s-0);margin-bottom:4px}
-.line{margin:7px 0}
+.line{margin:7px 0;transition:background .12s var(--ease),box-shadow .12s var(--ease)}
+.line[data-tts-click="1"]{cursor:pointer;border-radius:4px;padding:3px 5px;margin-left:-5px}
+.line[data-tts-click="1"]:focus{outline:2px solid color-mix(in srgb,var(--moss) 70%,transparent);outline-offset:2px}
+.line[data-tts-click="1"]:hover,.line.is-playing{background:var(--paper-2);box-shadow:inset 3px 0 0 var(--moss)}
 .line--director{font-style:italic;color:var(--ink-3)}
 .line .who{font-weight:600}
 .line--tutor .who{color:var(--moss-deep)}
 .line--learner .who{color:var(--indigo)}
 .tmeta{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);color:var(--ink-3);margin:2px 0 0 14px}
+.tmeta[data-tts-click="1"]{cursor:pointer;border-radius:4px;padding:3px 5px;margin-left:9px}
+.tmeta[data-tts-click="1"]:hover,.tmeta.is-playing{background:var(--paper-2);box-shadow:inset 3px 0 0 var(--brick)}
 .tmeta .release{color:var(--moss-deep);background:var(--moss-soft);padding:0 5px;border-radius:3px}
 .tmeta .assert{color:var(--brick-d);font-weight:600}
 .flag{display:inline-block;font-family:"JetBrains Mono",monospace;font-size:var(--s-0);margin:6px 0 0 14px;padding:2px 8px;border-radius:4px}
@@ -2066,11 +2526,43 @@ details.figdef summary{display:inline;cursor:pointer;list-style:none;text-decora
 details.figdef summary::-webkit-details-marker{display:none}
 details.figdef[open] summary{color:var(--moss-deep)}
 .figdef__t{display:block;margin:4px 0 2px;padding:5px 9px;border-left:2px solid var(--moss);background:var(--paper-2);color:var(--ink-2);font-style:italic;max-width:62ch;white-space:normal}
+.mdblock{max-width:74ch}
+.mdblock p{margin:.55em 0;line-height:1.55}
+.mdblock ul{margin:.4em 0 .4em 1.2em;padding:0}
+.mdblock li{margin:.25em 0;line-height:1.5}
+.mdblock code{font-family:"JetBrains Mono",monospace;font-size:.9em;background:var(--paper-2);border:1px solid var(--rule-soft);border-radius:3px;padding:0 4px}
+.mdblock h3,.mdblock h4{font-family:Fraunces,serif;font-weight:600;margin:1.1em 0 .3em}
+.mdblock table{border-collapse:collapse;margin:.6em 0;font-size:var(--s-1)}
+.mdblock th,.mdblock td{border-bottom:1px solid var(--rule-soft);padding:5px 10px;text-align:left}
+.mdblock th{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em}
+.mdblock blockquote{margin:.6em 0;padding:2px 12px;border-left:2px solid var(--rule);color:var(--ink-3);font-style:italic}
+.mdblock--notice{font-family:"Source Serif 4",Georgia,serif;font-size:var(--s-2)}
+.mdblock--notice p{line-height:1.62}
+.mdblock--notice blockquote{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);font-style:normal}
+.fact{font-family:"JetBrains Mono",monospace;font-size:.88em;color:var(--moss-deep);white-space:nowrap}
+svg.arc{display:block;width:100%;height:auto;margin:6px 0 2px;background:var(--paper-4);border:1px solid var(--rule-soft);border-radius:6px}
+.arc text{font-family:"JetBrains Mono",monospace;font-size:10.5px;fill:var(--ink-3)}
+.arc__band{fill:var(--rule-soft);fill-opacity:.28}
+.arc__bandlabel{font-size:11px;fill:var(--ink-2)}
+.arc__grid{stroke:var(--rule-soft);stroke-width:1}
+.arc__tick{font-size:10px}
+.arc__d{fill:none;stroke:var(--moss-deep);stroke-width:2.2;stroke-linejoin:round}
+.arc__dot{fill:var(--moss-deep)}
+.arc__dot--forced{fill:var(--indigo)}
+.arc__forced{stroke:var(--indigo);stroke-width:1.2;stroke-dasharray:4 3}
+.arc__forcedlabel{fill:var(--indigo);font-size:10.5px}
+.arc__rel{fill:var(--moss-deep);font-size:11px;cursor:default}
+.arc__flag{font-size:12px;cursor:default}
+.arc__flag--ok{fill:var(--moss-deep)}
+.arc__flag--bad{fill:var(--brick-d)}
+.arc__star{fill:var(--brick-d);font-size:16px;cursor:default}
+.slopecap{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);color:var(--ink-3);margin:4px 0 0}
+.notice-missing{color:var(--ink-3);font-style:italic}
 `;
 
 function renderDerivationIndexHtml(runs) {
   const rows = runs
-    .map(({ label, diagnosis: d }) => {
+    .map(({ label, diagnosis: d, hasNotice }) => {
       const events = Object.entries(d.eventsByType || {})
         .map(([k, v]) => {
           const txt = `${escapeHtml(k)}×${v}`;
@@ -2089,7 +2581,7 @@ function renderDerivationIndexHtml(runs) {
         ...(sg ? [`sego ${sg.interventions}/${sg.watched}`] : []),
       ].join(' · ');
       return `<tr>
-<td><a href="/derivation/${encodeURIComponent(label)}">${escapeHtml(label)}</a></td>
+<td><a href="/derivation/${encodeURIComponent(label)}">${escapeHtml(label)}</a>${hasNotice ? ' <span title="critic’s notice on file" style="color:var(--moss-deep)">✎</span>' : ''}</td>
 <td><span class="chip ${verdictOk ? 'chip--ok' : 'chip--bad'}">${escapeHtml(d.verdict || '?')}</span></td>
 <td class="mono">${d.firstForcedTurn ?? '—'} → ${d.assertedGroundedTurn ?? '—'}</td>
 <td class="mono">${d.turnsPlayed ?? '?'}/${d.turnCap ?? '?'}</td>
@@ -2112,7 +2604,7 @@ ${runs.length ? `<table class="idx"><thead><tr><th>run</th><th>verdict</th><th>f
 </body></html>`;
 }
 
-function renderDerivationRunHtml({ label, diagnosis, result, world }) {
+function renderDerivationRunHtml({ label, diagnosis, result, world, commentary }) {
   // Realized staging: director-declared movements when there are any, the
   // author's sketch otherwise — same segments feed the headers AND the curve.
   const segments = derivationStagingSegments(result, world);
@@ -2142,7 +2634,8 @@ function renderDerivationRunHtml({ label, diagnosis, result, world }) {
     }
     const lines = turnLines
       .map((line) => {
-        const text = escapeHtml((line.text || '').trim());
+        const rawText = (line.text || '').trim();
+        const text = escapeHtml(rawText);
         if (line.role === 'director') {
           const dbits = [];
           if (line.meta?.phase?.name)
@@ -2155,7 +2648,7 @@ function renderDerivationRunHtml({ label, diagnosis, result, world }) {
             dbits.push(
               `<div class="tmeta">— releases <span class="release">${escapeHtml(line.meta.release)}</span></div>`,
             );
-          return `<div class="line line--director">${text}</div>${dbits.join('')}`;
+          return `<div class="line line--director tts-fragment"${ttsDataAttrs('director', rawText, 'Director')}>${rawText ? ttsPlayButton('director') : ''}${text}</div>${dbits.join('')}`;
         }
         if (line.role === 'tutor') {
           const move = line.meta?.move;
@@ -2166,14 +2659,15 @@ function renderDerivationRunHtml({ label, diagnosis, result, world }) {
             );
           if (line.meta?.release) bits.push(`releases <span class="release">${escapeHtml(line.meta.release)}</span>`);
           const delib = line.meta?.deliberation;
+          const delibNote = (delib?.note || '').trim();
           const voice = delib?.intervened
-            ? `<div class="tmeta">— the second voice: “${escapeHtml(delib.note || '')}”${
+            ? `<div class="tmeta tts-fragment"${ttsDataAttrs('tutor_superego', delibNote, 'Tutor superego')}>${delibNote ? ttsPlayButton('tutor superego') : ''}— the second voice: “${escapeHtml(delib.note || '')}”${
                 delib.draftFigure && move?.figure && delib.draftFigure !== move.figure
                   ? ` (draft ${escapeHtml(delib.draftFigure)} → ${escapeHtml(move.figure)})`
                   : ' (figure held)'
               }</div>`
             : '';
-          return `<div class="line line--tutor"><span class="who">Tutor:</span> ${text}</div>${bits.length ? `<div class="tmeta">— ${bits.join(', ')}</div>` : ''}${voice}`;
+          return `<div class="line line--tutor tts-fragment"${ttsDataAttrs('tutor', rawText, 'Tutor')}>${rawText ? ttsPlayButton('tutor') : ''}<span class="who">Tutor:</span> ${text}</div>${bits.length ? `<div class="tmeta">— ${bits.join(', ')}</div>` : ''}${voice}`;
         }
         if (line.role === 'learner') {
           const meta = line.meta || {};
@@ -2185,7 +2679,7 @@ function renderDerivationRunHtml({ label, diagnosis, result, world }) {
           if (meta.hypothesis) bits.push(`hypothesis: ${escapeHtml(meta.hypothesis)}`);
           if (meta.asserts)
             bits.push(`<span class="assert">asserts <code>${escapeHtml(meta.asserts.join(' '))}</code></span>`);
-          return `<div class="line line--learner"><span class="who">Learner:</span> ${text}</div>${bits.length ? `<div class="tmeta">— ${bits.join(' · ')}</div>` : ''}`;
+          return `<div class="line line--learner tts-fragment"${ttsDataAttrs('learner', rawText, 'Learner')}>${rawText ? ttsPlayButton('learner') : ''}<span class="who">Learner:</span> ${text}</div>${bits.length ? `<div class="tmeta">— ${bits.join(' · ')}</div>` : ''}`;
         }
         return `<div class="line">${text}</div>`;
       })
@@ -2240,21 +2734,35 @@ ${railHtml({ active: 'derivation', sub: `staging-loop run — ${label}` })}
 <h1>${escapeHtml(world?.title || result.worldId || label)}</h1>
 <p class="lede mono">${escapeHtml(label)} · script ${escapeHtml(diagnosis.scriptPath || '?')}${diagnosis.note ? ` · ${escapeHtml(diagnosis.note)}` : ''}</p>
 <div class="chips">${chips}</div>
-<h2 class="sect">D(t) — remaining derivation distance</h2>
-<pre class="panel">${escapeHtml(
-    renderDerivationDCurve(result.trajectory || [], {
-      acts: segments,
-      releaseTurns: new Set((result.ledger || []).map((entry) => entry.turn)),
-      slope: diagnosis.learningSlope || null,
-    }),
-  )}</pre>
+${transcriptTtsToolbarHtml({ fullLabel: 'Play full transcript', includeLabel: 'include tutor superego' })}
+${
+  commentary
+    ? `<h2 class="sect">Critic's commentary</h2><div class="mdblock mdblock--notice">${derivationMdToHtml(commentary.replace(/^# .*\n+/, ''))}</div>`
+    : `<h2 class="sect">Critic's commentary</h2><p class="notice-missing">No notice for this run yet — backfill with <span class="mono">npm run derivation:critic -- --label ${escapeHtml(label)}</span>.</p>`
+}
+<h2 class="sect">The dramaturgical arc — D(t), remaining derivation distance</h2>
+${renderDerivationArcSvg({
+  trajectory: result.trajectory || [],
+  segments,
+  ledger: result.ledger || [],
+  events: result.events || [],
+  world,
+  result,
+})}
+${derivationSlopeCaption(diagnosis.learningSlope || null)}
 <h2 class="sect">Dialogue discipline</h2>
 <table class="idx"><thead><tr><th>role</th><th>turns</th><th>avg sentences</th><th>avg words</th></tr></thead><tbody>${discipline}</tbody></table>
 ${blocks.join('\n')}
-${result.proof ? `<h2 class="sect">The extracted proof (what did the forcing)</h2><pre class="panel">${escapeHtml(renderDerivationProof(result.proof))}</pre>` : ''}
+${
+  result.proof
+    ? `<h2 class="sect">The extracted proof (what did the forcing)</h2><pre class="panel">${escapeHtml(renderDerivationProof(result.proof))}</pre><div class="mdblock">${derivationMdToHtml(renderDerivationProofProse(result.proof, world))}</div>`
+    : ''
+}
 <h2 class="sect">Instrument panel (programmatic eval — no judge)</h2>
-<pre class="panel">${escapeHtml(renderDerivationEvalPanel(diagnosis).replace(/^## .*\n+/, ''))}</pre>
+<div class="mdblock">${derivationMdToHtml(renderDerivationEvalPanel(diagnosis).replace(/^## .*\n+/, ''))}</div>
 </main>
+${TRANSCRIPT_TTS_CLIENT}
+<script>window.TranscriptTts.bind(document.body);</script>
 </body></html>`;
 }
 
@@ -2356,6 +2864,214 @@ ${BASE_CSS}
 ${css}
 </style>
 </head>`;
+}
+
+const TRANSCRIPT_TTS_CLIENT = `<script>
+(function () {
+  if (window.TranscriptTts) return;
+  var audio = new Audio();
+  var objectUrl = null;
+  var token = 0;
+  var controller = null;
+  var playingNode = null;
+
+  function clean(text) {
+    return String(text || '').replace(/\\s+/g, ' ').trim();
+  }
+  function roleIsInternal(role) {
+    var r = String(role || '').toLowerCase();
+    return r.indexOf('superego') >= 0 || r.indexOf('ego') >= 0 || r === 'internal';
+  }
+  function setStatus(root, text, mode) {
+    var host = root && root.querySelector ? root : document;
+    host.querySelectorAll('[data-tts-status]').forEach(function (el) {
+      el.textContent = text || '';
+      el.dataset.state = mode || '';
+    });
+  }
+  function releaseUrl() {
+    if (objectUrl) URL.revokeObjectURL(objectUrl);
+    objectUrl = null;
+  }
+  function clearPlaying() {
+    if (playingNode) playingNode.classList.remove('is-playing');
+    playingNode = null;
+  }
+  function stop(root) {
+    token += 1;
+    if (controller) controller.abort();
+    controller = null;
+    audio.pause();
+    audio.removeAttribute('src');
+    audio.load();
+    releaseUrl();
+    clearPlaying();
+    setStatus(root || document, 'stopped', '');
+  }
+  function fragmentFromNode(node, includeSpeaker) {
+    if (!node) return null;
+    var text = clean(node.dataset.ttsText || '');
+    if (!text) return null;
+    var role = node.dataset.ttsRole || 'default';
+    var speaker = clean(node.dataset.ttsSpeaker || role);
+    return {
+      role: role,
+      speaker: speaker,
+      text: includeSpeaker && speaker ? speaker + '. ' + text : text,
+      node: node,
+    };
+  }
+  async function fetchSpeech(fragment, signal) {
+    var response = await fetch('/api/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: signal,
+      body: JSON.stringify({
+        text: fragment.text,
+        role: fragment.role,
+        responseFormat: 'mp3',
+      }),
+    });
+    if (!response.ok) {
+      var message = 'TTS failed';
+      try {
+        var json = await response.json();
+        if (json && json.error) message = json.error;
+      } catch (_e) {
+        try { message = await response.text(); } catch (_e2) {}
+      }
+      throw new Error(message);
+    }
+    return response.blob();
+  }
+  function playBlob(blob, runToken) {
+    return new Promise(function (resolve, reject) {
+      releaseUrl();
+      objectUrl = URL.createObjectURL(blob);
+      audio.src = objectUrl;
+      audio.onended = resolve;
+      audio.onerror = function () { reject(new Error('audio playback failed')); };
+      audio.play().then(function () {
+        if (runToken !== token) resolve();
+      }).catch(reject);
+    });
+  }
+  async function playUnit(fragment, runToken, signal, root) {
+    if (!fragment || runToken !== token) return;
+    clearPlaying();
+    playingNode = fragment.node || null;
+    if (playingNode) playingNode.classList.add('is-playing');
+    setStatus(root, 'loading ' + (fragment.speaker || fragment.role || 'fragment'), 'loading');
+    var blob = await fetchSpeech(fragment, signal);
+    if (runToken !== token || signal.aborted) return;
+    setStatus(root, 'playing ' + (fragment.speaker || fragment.role || 'fragment'), 'playing');
+    await playBlob(blob, runToken);
+  }
+  async function playFragment(node, root) {
+    stop(root);
+    token += 1;
+    controller = new AbortController();
+    var runToken = token;
+    var fragment = fragmentFromNode(node, false);
+    try {
+      await playUnit(fragment, runToken, controller.signal, root || document);
+      if (runToken === token) setStatus(root || document, 'done', '');
+    } catch (error) {
+      if (error.name !== 'AbortError') setStatus(root || document, error.message || String(error), 'error');
+    } finally {
+      if (runToken === token) {
+        clearPlaying();
+        controller = null;
+      }
+    }
+  }
+  async function playTranscript(root) {
+    var host = root && root.querySelector ? root : document;
+    var includeInternal = !!(host.querySelector('[data-tts-include-internal]') || {}).checked;
+    var nodes = Array.from(host.querySelectorAll('[data-tts-text]')).filter(function (node) {
+      var role = node.dataset.ttsRole || '';
+      return includeInternal || !roleIsInternal(role);
+    });
+    var fragments = nodes.map(function (node) { return fragmentFromNode(node, true); }).filter(Boolean);
+    if (!fragments.length) {
+      setStatus(host, 'no transcript fragments visible', 'error');
+      return;
+    }
+    stop(host);
+    token += 1;
+    controller = new AbortController();
+    var runToken = token;
+    try {
+      for (var i = 0; i < fragments.length; i += 1) {
+        if (runToken !== token || controller.signal.aborted) break;
+        setStatus(host, (i + 1) + '/' + fragments.length + ' ' + (fragments[i].speaker || fragments[i].role), 'loading');
+        await playUnit(fragments[i], runToken, controller.signal, host);
+      }
+      if (runToken === token) setStatus(host, 'done', '');
+    } catch (error) {
+      if (error.name !== 'AbortError') setStatus(host, error.message || String(error), 'error');
+    } finally {
+      if (runToken === token) {
+        clearPlaying();
+        controller = null;
+      }
+    }
+  }
+  function bind(root) {
+    if (!root || root.dataset.ttsBound === '1') return;
+    root.dataset.ttsBound = '1';
+    root.addEventListener('click', function (event) {
+      var stopButton = event.target.closest('[data-tts-stop]');
+      if (stopButton) {
+        event.preventDefault();
+        stop(root);
+        return;
+      }
+      var fullButton = event.target.closest('[data-tts-full]');
+      if (fullButton) {
+        event.preventDefault();
+        playTranscript(root);
+        return;
+      }
+      var playButton = event.target.closest('[data-tts-play]');
+      if (playButton) {
+        event.preventDefault();
+        playFragment(playButton.closest('[data-tts-text]'), root);
+        return;
+      }
+      if (event.target.closest('a, button, input, label, select, summary, details, textarea')) return;
+      var card = event.target.closest('[data-tts-click="1"]');
+      if (card) playFragment(card, root);
+    });
+    root.addEventListener('keydown', function (event) {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      var card = event.target.closest('[data-tts-click="1"]');
+      if (!card) return;
+      event.preventDefault();
+      playFragment(card, root);
+    });
+  }
+  window.TranscriptTts = { bind: bind, playTranscript: playTranscript, playFragment: playFragment, stop: stop };
+})();
+</script>`;
+
+function transcriptTtsToolbarHtml({ fullLabel = 'Play transcript', includeLabel = 'include superego', compact = false } = {}) {
+  return `<div class="tts-toolbar${compact ? ' tts-toolbar--compact' : ''}">
+    <button type="button" class="tts-control" data-tts-full>${escapeHtml(fullLabel)}</button>
+    <button type="button" class="tts-control" data-tts-stop>Stop</button>
+    <label class="tts-check"><input type="checkbox" data-tts-include-internal> ${escapeHtml(includeLabel)}</label>
+    <span class="tts-status" data-tts-status></span>
+  </div>`;
+}
+
+function ttsDataAttrs(role, text, speaker = role, { click = true } = {}) {
+  const cleaned = String(text || '').replace(/\s+/g, ' ').trim();
+  if (!cleaned) return '';
+  return ` data-tts-role="${escapeHtml(role)}" data-tts-speaker="${escapeHtml(speaker)}" data-tts-text="${escapeHtml(cleaned)}"${click ? ' data-tts-click="1" tabindex="0"' : ''}`;
+}
+
+function ttsPlayButton(label = 'fragment') {
+  return `<button type="button" class="tts-btn" data-tts-play title="Play ${escapeHtml(label)}" aria-label="Play ${escapeHtml(label)}">play</button>`;
 }
 
 // ── Dashboard front door (GET /) ──────────────────────────────────────────────
@@ -5251,6 +5967,56 @@ h1 {
 }
 .preview-link:hover { color: var(--brick); border-color: var(--brick); }
 
+.tts-toolbar {
+  max-width: 70rem;
+  margin: 0 auto 12px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.tts-control,
+.tts-btn {
+  border: 1px solid var(--rule);
+  background: var(--paper-4);
+  color: var(--moss-deep);
+  cursor: pointer;
+  font-family: "JetBrains Mono", monospace;
+  text-transform: uppercase;
+}
+.tts-control {
+  min-height: 28px;
+  padding: 5px 10px;
+  font-size: 10.5px;
+  letter-spacing: 0.11em;
+}
+.tts-btn {
+  padding: 3px 7px;
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+}
+.tts-control:hover,
+.tts-btn:hover {
+  color: var(--brick-d);
+  border-color: var(--brick);
+}
+.tts-check,
+.tts-status {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
+  color: var(--ink-3);
+}
+.tts-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.tts-status[data-state="error"] {
+  color: var(--brick-d);
+}
+
 .pane {
   overflow: auto;
   padding: 26px clamp(20px, 3vw, 32px) 40px;
@@ -5335,6 +6101,19 @@ pre {
   background: var(--paper-4);
   padding: 14px 18px;
   position: relative;
+  transition: border-color .12s var(--ease), box-shadow .12s var(--ease), background .12s var(--ease);
+}
+.scene-card[data-tts-click="1"] {
+  cursor: pointer;
+}
+.scene-card[data-tts-click="1"]:focus {
+  outline: 2px solid color-mix(in srgb, var(--moss) 70%, transparent);
+  outline-offset: 2px;
+}
+.scene-card[data-tts-click="1"]:hover,
+.scene-card.is-playing {
+  border-color: var(--moss);
+  box-shadow: inset 3px 0 0 var(--moss);
 }
 .scene-card.stage {
   background: color-mix(in srgb, var(--linen) 28%, var(--paper-4));
@@ -5709,6 +6488,7 @@ ${railHtml({
     <div id="pane" class="pane"><div class="empty">No script selected.</div></div>
   </main>
 </div>
+${TRANSCRIPT_TTS_CLIENT}
 <script>
 const ORIGIN_CLASSES = ${JSON.stringify(ORIGIN_CLASSES)};
 const state = {
@@ -5798,14 +6578,36 @@ function previewHref(item) {
   return '/browse?' + params.toString();
 }
 
+function ttsClean(s) {
+  return String(s || '').replace(/\\s+/g, ' ').trim();
+}
+function ttsAttrs(role, speaker, text) {
+  const cleaned = ttsClean(text);
+  if (!cleaned) return '';
+  return ' data-tts-role="' + esc(role || 'default') + '" data-tts-speaker="' + esc(speaker || role || 'Fragment') + '" data-tts-text="' + esc(cleaned) + '" data-tts-click="1" tabindex="0"';
+}
+function ttsButton(label) {
+  return '<button type="button" class="tts-btn" data-tts-play title="Play ' + esc(label || 'fragment') + '" aria-label="Play ' + esc(label || 'fragment') + '">play</button>';
+}
+function renderTtsToolbar() {
+  return '<div class="tts-toolbar">' +
+    '<button type="button" class="tts-control" data-tts-full>Play visible transcript</button>' +
+    '<button type="button" class="tts-control" data-tts-stop>Stop</button>' +
+    '<label class="tts-check"><input type="checkbox" data-tts-include-internal> include superego</label>' +
+    '<span class="tts-status" data-tts-status></span>' +
+    '</div>';
+}
 function sceneCardHtml(block) {
   const type = block.type || 'other';
   const speech = block.speech || (type === 'stage' ? '' : block.raw || '');
   const blocking = block.blocking || (type === 'stage' ? block.raw || '' : '');
+  const audioText = speech || blocking || block.raw || '';
+  const audioRole = type === 'stage' ? 'stage' : type;
+  const speaker = type === 'stage' ? 'Stage direction' : block.speaker || 'Text';
   const head = type === 'stage'
-    ? '<div class="scene-head"><span class="speaker">STAGE DIRECTION</span><span class="turn-num">' + esc(String(block.index || '')) + '</span></div>'
-    : '<div class="scene-head"><span class="speaker">' + esc(block.speaker || 'TEXT') + '</span><span class="turn-num">' + esc(String(block.index || '')) + '</span></div>';
-  return '<section class="scene-card ' + esc(type) + '">' + head +
+    ? '<div class="scene-head"><span class="speaker">STAGE DIRECTION</span><span class="turn-num">' + esc(String(block.index || '')) + '</span>' + (audioText ? ttsButton('stage direction') : '') + '</div>'
+    : '<div class="scene-head"><span class="speaker">' + esc(block.speaker || 'TEXT') + '</span><span class="turn-num">' + esc(String(block.index || '')) + '</span>' + (audioText ? ttsButton(block.speaker || 'fragment') : '') + '</div>';
+  return '<section class="scene-card ' + esc(type) + '"' + ttsAttrs(audioRole, speaker, audioText) + '>' + head +
     (blocking ? '<div class="blocking">[' + inlineEsc(blocking).replace(/^\\[|\\]$/g, '') + ']</div>' : '') +
     (speech ? '<div class="speech">' + inlineEsc(speech) + '</div>' : '') +
     '</section>';
@@ -5836,7 +6638,7 @@ function renderScriptView(blocks, fallbackText) {
     '<button type="button" class="vt-btn' + (mode === 'swimlane' ? ' active' : '') + '" data-view="swimlane">swimlane</button>' +
     '</div>';
   const body = mode === 'swimlane' ? renderSwimlane(blocks, fallbackText) : renderTranscriptPreview(blocks, fallbackText);
-  return toggle + body;
+  return renderTtsToolbar() + toggle + body;
 }
 
 function renderAdaptationSidecar(adaptation) {
@@ -6341,6 +7143,7 @@ async function init() {
     state.previewMode = btn.dataset.view === 'swimlane' ? 'swimlane' : 'script';
     renderPane();
   });
+  window.TranscriptTts.bind(el('pane'));
 }
 init().catch((err) => { el('items').innerHTML = '<div class="empty">' + esc(err.message) + '</div>'; });
 </script>
@@ -6389,6 +7192,7 @@ export {
   getItem,
   listItems,
   listRuns,
+  normalizeTtsRequest,
   parseTranscriptPreview,
   renderBrowserHtml,
   renderDashboardHtml,
@@ -6396,4 +7200,6 @@ export {
   renderRubricHtml,
   saveBrowserLabel,
   saveBrowserReviewFlag,
+  synthesizeLemonFoxSpeech,
+  TTS_ROLE_VOICE,
 };

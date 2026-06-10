@@ -21,6 +21,10 @@
  * '_', falling back to the shared pair above. E.g.
  * DERIVATION_LEARNER_MODEL=gpt-5.2, DERIVATION_TUTOR_SUPEREGO_PROVIDER=codex.
  *
+ * Exception — PINNED roles (see PINNED_ROLE_TARGETS): the post-run `critic`
+ * defaults to claude/claude-fable-5 regardless of the shared pair; only its
+ * own DERIVATION_CRITIC_* env overrides it.
+ *
  *   DERIVATION_CODEX_REASONING  reasoning effort for codex CLI calls
  *                        (default: medium — drama turns are short; the user
  *                        config's interactive default may be far heavier).
@@ -51,15 +55,26 @@ export function llmMode() {
   return (process.env.DERIVATION_LLM || 'mock').toLowerCase();
 }
 
-function roleEnv(role, suffix) {
-  if (role) {
-    const key = `DERIVATION_${String(role)
-      .toUpperCase()
-      .replace(/[^A-Z0-9]+/g, '_')}_${suffix}`;
-    if (process.env[key]) return process.env[key];
-  }
-  return process.env[`DERIVATION_${suffix}`];
+function roleEnvOnly(role, suffix) {
+  if (!role) return undefined;
+  const key = `DERIVATION_${String(role)
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, '_')}_${suffix}`;
+  return process.env[key] || undefined;
 }
+
+function roleEnv(role, suffix) {
+  return roleEnvOnly(role, suffix) || process.env[`DERIVATION_${suffix}`];
+}
+
+// Roles pinned to their own default target instead of the shared drama pair.
+// The post-run CRITIC is Fable by operator decision (2026-06-10: "with Fable
+// as critic" on every run): DERIVATION_CRITIC_PROVIDER/_MODEL still override,
+// but the shared DERIVATION_PROVIDER/_MODEL never reach a pinned role — a
+// codex- or gemini-routed drama keeps its Fable critic. The pinned model only
+// applies while the pinned provider does (override the provider and the model
+// falls back to that provider's own default).
+const PINNED_ROLE_TARGETS = { critic: { provider: 'claude', model: 'claude-fable-5' } };
 
 /**
  * Resolve the provider/model pair for a role (or the shared default when no
@@ -67,11 +82,17 @@ function roleEnv(role, suffix) {
  * (null = the CLI's own configured default).
  */
 export function resolveTarget(role = null) {
-  const provider = roleEnv(role, 'PROVIDER') || DEFAULT_PROVIDER;
+  const pinned = role ? PINNED_ROLE_TARGETS[role] : null;
+  const provider = pinned
+    ? roleEnvOnly(role, 'PROVIDER') || pinned.provider
+    : roleEnv(role, 'PROVIDER') || DEFAULT_PROVIDER;
+  const modelRaw = pinned
+    ? roleEnvOnly(role, 'MODEL') || (provider === pinned.provider ? pinned.model : undefined)
+    : roleEnv(role, 'MODEL');
   if (CLI_PROVIDERS.has(provider)) {
-    return { provider, model: roleEnv(role, 'MODEL') || null, cli: true };
+    return { provider, model: modelRaw || null, cli: true };
   }
-  const alias = roleEnv(role, 'MODEL') || DEFAULT_MODEL_ALIAS;
+  const alias = modelRaw || DEFAULT_MODEL_ALIAS;
   let model = alias;
   try {
     const cfg = getProviderConfig(provider);

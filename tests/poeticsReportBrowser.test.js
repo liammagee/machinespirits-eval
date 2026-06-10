@@ -12,6 +12,7 @@ import {
   originDiagnosticsForScores,
   listItems,
   listRuns,
+  normalizeTtsRequest,
   parseTranscriptPreview,
   renderBrowserHtml,
   renderDashboardHtml,
@@ -19,6 +20,7 @@ import {
   renderRubricHtml,
   saveBrowserLabel,
   saveBrowserReviewFlag,
+  synthesizeLemonFoxSpeech,
 } from '../scripts/browse-poetics-scripts.js';
 import { buildPoeticsReport, renderCsv, renderMarkdown } from '../scripts/report-poetics-sidecar.js';
 import {
@@ -368,6 +370,66 @@ LEARNER: "The arrow names who acts on the cart. [moves the motion strip aside] T
     assert.equal(blocks[1].blocking, 'sets two strips beside the diagram');
     assert.match(blocks[1].speech, /Sort the motion sentence/);
     assert.match(blocks[2].speech, /The arrow names who acts/);
+  });
+
+  it('parses ego and superego transcript blocks as internal fragments', () => {
+    const blocks = parseTranscriptPreview(`TUTOR SUPEREGO: tighten the turn.
+
+LEARNER EGO: I think the pattern is changing.
+
+TUTOR: Try the second case.`);
+    assert.deepEqual(
+      blocks.map((block) => [block.speaker, block.type]),
+      [
+        ['TUTOR SUPEREGO', 'internal'],
+        ['LEARNER EGO', 'internal'],
+        ['TUTOR', 'tutor'],
+      ],
+    );
+  });
+
+  it('normalizes Lemon Fox TTS requests without exposing credentials', () => {
+    const request = normalizeTtsRequest({
+      text: '  Try this fraction again.  ',
+      role: 'learner',
+      speed: 7,
+      responseFormat: 'wav',
+    });
+    assert.equal(request.text, 'Try this fraction again.');
+    assert.equal(request.role, 'learner');
+    assert.equal(request.voice, 'sarah');
+    assert.equal(request.responseFormat, 'wav');
+    assert.equal(request.speed, 4);
+    assert.throws(() => normalizeTtsRequest({ text: 'x'.repeat(30001) }), /30,000 character/);
+  });
+
+  it('synthesizes Lemon Fox speech through an injected fetch implementation', async () => {
+    const calls = [];
+    const response = await synthesizeLemonFoxSpeech(
+      { text: 'Tutor. Try the second case.', role: 'tutor' },
+      {
+        apiKey: 'test-key',
+        fetchImpl: async (url, init) => {
+          calls.push({ url, init });
+          return new Response(new Uint8Array([1, 2, 3]), {
+            status: 200,
+            headers: { 'content-type': 'audio/mpeg' },
+          });
+        },
+      },
+    );
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].url, 'https://api.lemonfox.ai/v1/audio/speech');
+    assert.equal(calls[0].init.headers.Authorization, 'Bearer test-key');
+    assert.deepEqual(JSON.parse(calls[0].init.body), {
+      input: 'Tutor. Try the second case.',
+      voice: 'michael',
+      language: 'en-us',
+      response_format: 'mp3',
+      speed: 1,
+    });
+    assert.equal(response.contentType, 'audio/mpeg');
+    assert.deepEqual([...response.buffer], [1, 2, 3]);
   });
 
   it('renders target, control, and disagreement summaries from sidecar tables', () =>

@@ -17,6 +17,7 @@
  */
 
 import { derivationDistance } from './slope.js';
+import { factKey } from './chainer.js';
 
 function countSentences(text) {
   return (text || '')
@@ -368,8 +369,13 @@ export function renderDCurve(trajectory, { acts = null, releaseTurns = null, slo
   return lines.join('\n');
 }
 
-/** The drama as a readable artifact: movements, lines, releases, instrument panel. */
-export function renderTranscript(result, world, { title = null, diagnosis = null } = {}) {
+/**
+ * The drama as a readable artifact: movements, lines, releases, proof (tree +
+ * prose), instrument panel, and — when the loop ran the critic — the notice
+ * at the foot. `commentary` is the finished prose (byline included by the
+ * caller); this renderer only places it.
+ */
+export function renderTranscript(result, world, { title = null, diagnosis = null, commentary = null } = {}) {
   const segments = stagingSegments(result, world);
   const panel = diagnosis || diagnose(result, world);
   const lines = [];
@@ -464,9 +470,20 @@ export function renderTranscript(result, world, { title = null, diagnosis = null
     lines.push('```');
     lines.push(renderProof(result.proof));
     lines.push('```');
+    const prose = renderProofProse(result.proof, world);
+    if (prose) {
+      lines.push('');
+      lines.push(prose);
+    }
   }
   lines.push('');
   lines.push(renderEvalPanel(panel));
+  if (commentary) {
+    lines.push('');
+    lines.push("## Critic's commentary");
+    lines.push('');
+    lines.push(commentary.trim());
+  }
   lines.push('');
   return lines.join('\n');
 }
@@ -559,6 +576,94 @@ export function renderEvalPanel(diagnosis) {
     for (const [role, s] of roles) {
       lines.push(`| ${role} | ${s.turns} | ${s.avgSentences} | ${s.maxSentences} | ${s.avgWords} |`);
     }
+  }
+  return lines.join('\n');
+}
+
+/** "writtenDuring" → "written during"; "heronStock" → "heron stock". */
+function humanizeToken(token) {
+  return String(token)
+    .replace(/[_-]+/g, ' ')
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .toLowerCase()
+    .trim();
+}
+
+/**
+ * A fact array as a readable phrase. Facts are [predicate, args...]; the
+ * binary case reads subject-predicate-object ("liane composed nocturne").
+ */
+function humanizeFact(fact) {
+  if (!Array.isArray(fact)) return humanizeToken(fact);
+  const [pred, ...args] = fact.map(humanizeToken);
+  if (args.length === 2) return `${args[0]} ${pred} ${args[1]}`;
+  if (args.length === 1) return `${args[0]} — ${pred}`;
+  return [pred, ...args].join(' ');
+}
+
+/** "R1_watermark_dating" → "watermark dating". */
+function humanizeRuleName(ruleId) {
+  return humanizeToken(String(ruleId).replace(/^R\d+[a-z]?_/i, ''));
+}
+
+/**
+ * The extracted proof told in prose, for a reader who has never seen a horn
+ * clause: first the evidence the learner actually held (premise surfaces when
+ * the world supplies them), then the chain of rule applications, each as one
+ * sentence, ending on the secret. Deterministic formatting over the chainer's
+ * tree — no model anywhere. `world` is optional; without it facts render as
+ * humanized phrases and rules by their bare names.
+ */
+export function renderProofProse(proof, world = null) {
+  if (!proof) return '';
+  const premiseByKey = new Map((world?.premises || []).map((p) => [factKey(p.fact), p]));
+  const backgroundKeys = new Set((world?.background || []).map((f) => factKey(f)));
+  const ruleById = new Map((world?.rules || []).map((r) => [r.id, r]));
+
+  const leaves = [];
+  const steps = [];
+  const seen = new Set();
+  (function walk(node) {
+    const key = factKey(node.fact);
+    if (node.base) {
+      if (!seen.has(key)) {
+        seen.add(key);
+        leaves.push(node.fact);
+      }
+      return;
+    }
+    for (const premise of node.premises) walk(premise);
+    if (!seen.has(key)) {
+      seen.add(key);
+      steps.push(node);
+    }
+  })(proof);
+
+  const evidence = leaves.map((fact, i) => {
+    const premise = premiseByKey.get(factKey(fact));
+    if (premise?.surface) return `(${i + 1}) ${premise.surface.trim().replace(/\s+/g, ' ')}`;
+    const phrase = `«${humanizeFact(fact)}»`;
+    return backgroundKeys.has(factKey(fact)) ? `(${i + 1}) ${phrase} — known from the start.` : `(${i + 1}) ${phrase}.`;
+  });
+
+  const chain = steps.map((node) => {
+    const rule = ruleById.get(node.rule);
+    const ruleName = `the ${humanizeRuleName(node.rule)} rule`;
+    const gloss = rule?.gloss ? ` — "${rule.gloss.trim().replace(/\s+/g, ' ')}" —` : '';
+    const from = node.premises.map((p) => `«${humanizeFact(p.fact)}»`).join(' and ');
+    return `Because ${from}, ${ruleName}${gloss} yields «${humanizeFact(node.fact)}».`;
+  });
+
+  const lines = [];
+  lines.push(
+    `The conclusion rests on ${leaves.length} grounded fact${leaves.length === 1 ? '' : 's'}, chained through ${steps.length} rule application${steps.length === 1 ? '' : 's'}. The evidence on the table: ${evidence.join(' ')}`,
+  );
+  lines.push('');
+  lines.push(chain.join(' '));
+  const secretSurface = world?.secret?.surface;
+  if (secretSurface && factKey(proof.fact) === factKey(world.secret.fact)) {
+    lines.push('');
+    lines.push(`That final fact is the secret itself: ${secretSurface.trim()}`);
   }
   return lines.join('\n');
 }
