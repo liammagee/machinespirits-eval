@@ -146,3 +146,21 @@ exist for the eventual notes/paper fold-in.
   recognition turn t35). Heaviest D-reversal run of the told arm (4).
   Critic's notice MISSING (3× CLI timeout) — backfill:
   `npm run derivation:critic -- --label noc-decay-v1-A-s3`.
+
+- **run 12 — noc-decay-v1-B-s3 (conduct, seed 3, codex director)**:
+  disengagement t39/40, 1725.9s, 166 calls; 4 slips, 2 blind repairs
+  (latency 1.0), 0 readoption, releases 11/11 on cue. Same opening slip
+  schedule as conduct seeds 1-2 and the same incidental shape: m_style
+  d4→r5 and p_watermark d7→r8 are next-turn restatements landing on the
+  exact turns the script was releasing/consolidating those premises (the
+  lastRelease classification), while each premise's *second* lapse (m_style
+  d6, p_watermark d9) stays down to the end — p_watermark unrepaired for
+  30 turns. Endgame is the arm's signature: lucky_leap ×8, overreach ×10,
+  the learner asserting S unforced from t37 while D sticks at 1; formally
+  this one ends disengagement rather than aporia (the only outcome
+  difference from seeds 1-2). Critic's notice landed (156.2s).
+  **Nocturne block complete: told 33/36 slips repaired (0.917 in each of
+  3 runs), conduct 7/13; told outcomes 3 anagnorises, conduct 2 aporias +
+  1 disengagement. Registered set complete: 12/12 runs, every release on
+  cue, zero schedule violations. Arithmetic pooled rates ahead of the
+  scorer: told 49/57 ≈ 0.860, conduct 7/19 ≈ 0.368.**
