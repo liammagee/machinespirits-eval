@@ -54,3 +54,11 @@ exist for the eventual notes/paper fold-in.
   design anticipated. Critic's notice MISSING (3× API 529 Overloaded —
   server-side, not the CLI-timeout mode) — backfill:
   `npm run derivation:critic -- --label wit-decay-v1-A-s2`.
+
+- **run 4 — wit-decay-v1-B-s2 (conduct, seed 2, codex director)**:
+  disengagement t7/24, 303.6s, 29 calls; 2 slips (m_taint@t3, p_course@t5 —
+  the same opening schedule as seed 1, decay draws not yet diverged by t7),
+  0 repairs, byReadoption 0, releases 3/3 on cue. Replicates B-s1's shape
+  exactly: blind run, no repairs, dead on the window-6 stall clock at t7.
+  Within-world the conduct arm is now 0/4 on repairs while its told siblings
+  are 12/15. Critic's notice landed (325.1s).
