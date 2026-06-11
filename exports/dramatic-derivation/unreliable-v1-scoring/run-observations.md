@@ -125,3 +125,13 @@ exist for the eventual notes/paper fold-in.
   endgame as B-s1: lucky_leap ×7, learner asserting S unforced while
   p_watermark (true path) stays down from t9 to the end; aporia at D=1.
   Critic's notice landed (218.6s).
+
+- **run 10 — noc-decay-v1-A-s2 (told, seed 2, codex director)**:
+  grounded_anagnorisis t36/40, 1445.3s, 152 calls; 12 slips, 11 tutor
+  repairs (0.917, latency 5.18), 0 readoption, releases 11/11 on cue.
+  Near-twin of noc A-s1: same verdict at the same turn, same slip and
+  repair counts, same single unrepaired premise (m_away slipping at t35,
+  one turn before close), and again a true-path premise re-grounded on the
+  recognition turn itself (p_watermark d16→r36). The told arm's behavior
+  is now strongly reproducible across seeds in both worlds. Critic's
+  notice landed on attempt 2 (667.3s total, one timeout).

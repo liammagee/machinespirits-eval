@@ -1,0 +1,2454 @@
+{
+  "worldId": "world_001_nocturne",
+  "verdict": "grounded_anagnorisis",
+  "events": [
+    {
+      "turn": 4,
+      "type": "decay",
+      "detail": "m_style slips from the learner's board"
+    },
+    {
+      "turn": 5,
+      "type": "repair",
+      "detail": "m_style restored by the tutor"
+    },
+    {
+      "turn": 6,
+      "type": "decay",
+      "detail": "m_style slips from the learner's board"
+    },
+    {
+      "turn": 7,
+      "type": "decay",
+      "detail": "p_watermark slips from the learner's board"
+    },
+    {
+      "turn": 8,
+      "type": "repair",
+      "detail": "p_watermark restored by the tutor"
+    },
+    {
+      "turn": 9,
+      "type": "decay",
+      "detail": "p_watermark slips from the learner's board"
+    },
+    {
+      "turn": 10,
+      "type": "repair",
+      "detail": "p_watermark restored by the tutor"
+    },
+    {
+      "turn": 11,
+      "type": "repair",
+      "detail": "m_style restored by the tutor"
+    },
+    {
+      "turn": 11,
+      "type": "decay",
+      "detail": "p_watermark slips from the learner's board"
+    },
+    {
+      "turn": 11,
+      "type": "decay",
+      "detail": "p_stock slips from the learner's board"
+    },
+    {
+      "turn": 12,
+      "type": "repair",
+      "detail": "p_stock restored by the tutor"
+    },
+    {
+      "turn": 12,
+      "type": "decay",
+      "detail": "m_style slips from the learner's board"
+    },
+    {
+      "turn": 13,
+      "type": "repair",
+      "detail": "p_watermark restored by the tutor"
+    },
+    {
+      "turn": 13,
+      "type": "decay",
+      "detail": "m_away slips from the learner's board"
+    },
+    {
+      "turn": 16,
+      "type": "repair",
+      "detail": "m_away restored by the tutor"
+    },
+    {
+      "turn": 16,
+      "type": "decay",
+      "detail": "p_watermark slips from the learner's board"
+    },
+    {
+      "turn": 32,
+      "type": "lucky_leap",
+      "detail": "asserted S unforced"
+    },
+    {
+      "turn": 33,
+      "type": "repair",
+      "detail": "m_style restored by the tutor"
+    },
+    {
+      "turn": 33,
+      "type": "lucky_leap",
+      "detail": "asserted S unforced"
+    },
+    {
+      "turn": 33,
+      "type": "decay",
+      "detail": "m_away slips from the learner's board"
+    },
+    {
+      "turn": 34,
+      "type": "repair",
+      "detail": "m_away restored by the tutor"
+    },
+    {
+      "turn": 34,
+      "type": "lucky_leap",
+      "detail": "asserted S unforced"
+    },
+    {
+      "turn": 34,
+      "type": "decay",
+      "detail": "p_stock slips from the learner's board"
+    },
+    {
+      "turn": 35,
+      "type": "repair",
+      "detail": "p_stock restored by the tutor"
+    },
+    {
+      "turn": 35,
+      "type": "lucky_leap",
+      "detail": "asserted S unforced"
+    },
+    {
+      "turn": 35,
+      "type": "decay",
+      "detail": "m_away slips from the learner's board"
+    },
+    {
+      "turn": 36,
+      "type": "repair",
+      "detail": "p_watermark restored by the tutor"
+    },
+    {
+      "turn": 36,
+      "type": "forced",
+      "detail": "learner facts now force S"
+    },
+    {
+      "turn": 36,
+      "type": "grounded_anagnorisis",
+      "detail": "Liane of the Vara house composed the nocturne."
+    }
+  ],
+  "trajectory": [
+    {
+      "turn": 1,
+      "D": 7,
+      "forced": false,
+      "groundedCount": 4
+    },
+    {
+      "turn": 2,
+      "D": 7,
+      "forced": false,
+      "groundedCount": 4
+    },
+    {
+      "turn": 3,
+      "D": 7,
+      "forced": false,
+      "groundedCount": 5
+    },
+    {
+      "turn": 4,
+      "D": 7,
+      "forced": false,
+      "groundedCount": 5
+    },
+    {
+      "turn": 5,
+      "D": 7,
+      "forced": false,
+      "groundedCount": 5
+    },
+    {
+      "turn": 6,
+      "D": 6,
+      "forced": false,
+      "groundedCount": 6
+    },
+    {
+      "turn": 7,
+      "D": 6,
+      "forced": false,
+      "groundedCount": 5
+    },
+    {
+      "turn": 8,
+      "D": 6,
+      "forced": false,
+      "groundedCount": 5
+    },
+    {
+      "turn": 9,
+      "D": 5,
+      "forced": false,
+      "groundedCount": 6
+    },
+    {
+      "turn": 10,
+      "D": 5,
+      "forced": false,
+      "groundedCount": 6
+    },
+    {
+      "turn": 11,
+      "D": 5,
+      "forced": false,
+      "groundedCount": 7
+    },
+    {
+      "turn": 12,
+      "D": 6,
+      "forced": false,
+      "groundedCount": 7
+    },
+    {
+      "turn": 13,
+      "D": 5,
+      "forced": false,
+      "groundedCount": 7
+    },
+    {
+      "turn": 14,
+      "D": 4,
+      "forced": false,
+      "groundedCount": 7
+    },
+    {
+      "turn": 15,
+      "D": 4,
+      "forced": false,
+      "groundedCount": 7
+    },
+    {
+      "turn": 16,
+      "D": 4,
+      "forced": false,
+      "groundedCount": 8
+    },
+    {
+      "turn": 17,
+      "D": 4,
+      "forced": false,
+      "groundedCount": 8
+    },
+    {
+      "turn": 18,
+      "D": 4,
+      "forced": false,
+      "groundedCount": 8
+    },
+    {
+      "turn": 19,
+      "D": 4,
+      "forced": false,
+      "groundedCount": 8
+    },
+    {
+      "turn": 20,
+      "D": 3,
+      "forced": false,
+      "groundedCount": 9
+    },
+    {
+      "turn": 21,
+      "D": 3,
+      "forced": false,
+      "groundedCount": 9
+    },
+    {
+      "turn": 22,
+      "D": 3,
+      "forced": false,
+      "groundedCount": 9
+    },
+    {
+      "turn": 23,
+      "D": 3,
+      "forced": false,
+      "groundedCount": 10
+    },
+    {
+      "turn": 24,
+      "D": 3,
+      "forced": false,
+      "groundedCount": 10
+    },
+    {
+      "turn": 25,
+      "D": 3,
+      "forced": false,
+      "groundedCount": 10
+    },
+    {
+      "turn": 26,
+      "D": 2,
+      "forced": false,
+      "groundedCount": 11
+    },
+    {
+      "turn": 27,
+      "D": 2,
+      "forced": false,
+      "groundedCount": 11
+    },
+    {
+      "turn": 28,
+      "D": 2,
+      "forced": false,
+      "groundedCount": 11
+    },
+    {
+      "turn": 29,
+      "D": 2,
+      "forced": false,
+      "groundedCount": 12
+    },
+    {
+      "turn": 30,
+      "D": 2,
+      "forced": false,
+      "groundedCount": 12
+    },
+    {
+      "turn": 31,
+      "D": 2,
+      "forced": false,
+      "groundedCount": 12
+    },
+    {
+      "turn": 32,
+      "D": 1,
+      "forced": false,
+      "groundedCount": 13
+    },
+    {
+      "turn": 33,
+      "D": 1,
+      "forced": false,
+      "groundedCount": 14
+    },
+    {
+      "turn": 34,
+      "D": 1,
+      "forced": false,
+      "groundedCount": 14
+    },
+    {
+      "turn": 35,
+      "D": 1,
+      "forced": false,
+      "groundedCount": 14
+    },
+    {
+      "turn": 36,
+      "D": 0,
+      "forced": true,
+      "groundedCount": 14
+    }
+  ],
+  "transcript": [
+    {
+      "turn": 1,
+      "role": "director",
+      "text": "[Rain worries the high windows of the Cassia Conservatory as the archive room is opened to lamplight. A long table waits beneath its green shades, bare except for blotting paper, cotton gloves, and the hush of people not yet willing to speak first.]",
+      "meta": {
+        "release": null,
+        "phase": {
+          "name": "The Verdict of Style",
+          "intent": "To let the room gather around the unsigned nocturne before certainty begins to harden.",
+          "turn": 1
+        }
+      }
+    },
+    {
+      "turn": 1,
+      "role": "tutor",
+      "text": "Before a name enters the room, what do we actually possess: an unsigned nocturne, an archive table, and a maestro nearby in reputation only? Which of those is evidence, and which is merely temptation?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": null,
+          "intent": "orient"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "Fewer than two prior declared figures means no three-turn figure rut is possible.",
+          "note": null
+        }
+      }
+    },
+    {
+      "turn": 1,
+      "role": "learner",
+      "text": "What lands on my board so far: location, unsigned status, and a name attached to the building — not to the leaf. 'Maestro of the conservatory' is a reputation fact; it does not place Vess at the copy-room table, nor does it say whose hand struck through a line. The nocturne is found here, yes. So is the blotting paper. Neither fact proves authorship.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Vess composed the nocturne — the conservatory's instinct — but nothing on my board yet grounds it.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 2,
+      "role": "director",
+      "text": "[The lamplight steadies over the long table while the rain keeps its small pressure on the glass. No one reaches for the pages yet; the room holds its breath around the unsigned thing.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 2,
+      "role": "tutor",
+      "text": "Good: you have separated possession from authorship. If the archive only tells us where the leaf slept, what kind of fact would begin to tell us when or by whom it was made?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": null,
+          "intent": "orient"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "Only one prior turn is on record, so a three-turn erotema rut is impossible.",
+          "note": null
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "role": "learner",
+      "text": "The leaf itself could speak first: its watermark names the paper stock, and if that stock sat in the copy-room only during one span of years, we have a window. The ink is the same — if the batch was mixed in a single period, the writing falls inside it. Period established, a ledger signature places a name in the room. None of that evidence is on the table yet.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Vess composed the nocturne — the conservatory's instinct — but nothing on my board yet grounds it.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 3,
+      "role": "director",
+      "text": "[The first witnesses are shown in one by one, damp coats surrendered at the door, and the leaves pass under their eyes. Every musician shown the leaves says the same: this is Vess's late manner — the suspensions, the long pedal, the way the bass walks.]",
+      "meta": {
+        "release": "m_style",
+        "phase": null
+      }
+    },
+    {
+      "turn": 3,
+      "role": "tutor",
+      "text": "Style is likeness, not signature. Let it stand as a lantern pointed toward Vess, while the law still waits for place, source, and correcting hand.",
+      "meta": {
+        "move": {
+          "figure": "analogia",
+          "targetPremise": "m_style",
+          "intent": "consolidate"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": true,
+          "diagnosis": "The last two turns declared erotema and the draft would make erotema a third consecutive turn.",
+          "note": "Leave off erotema this turn. Do not frame the move as another question; make a declarative pressure on the form instead."
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "role": "learner",
+      "text": "Style testimony is real and I will enter it. But none of my six rules carry 'styleOf' to any conclusion — it is a pointer, not a chain. I still lack period, presence, source, and correcting hand; the question stays open.",
+      "meta": {
+        "adopt": [
+          [
+            "styleOf",
+            "nocturne",
+            "vess"
+          ]
+        ],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Vess composed the nocturne — the conservatory's instinct, now sharpened by style consensus — but nothing on my board yet grounds it under the rules.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 4,
+      "role": "director",
+      "text": "[The witnesses withdraw, leaving wet footprints dulling on the boards and a murmur trapped beneath the rafters. The nocturne remains under the lamp, unchanged by the room's certainty.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 4,
+      "role": "tutor",
+      "text": "Then keep that lantern at arm's length: if style points toward Vess but no rule carries style into authorship, what must the next evidence do before any name can bear weight?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "m_style",
+          "intent": "test"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "The last two figures are mixed, so the draft's erotema does not make three in a row.",
+          "note": null
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "role": "learner",
+      "text": "The next evidence must do four things. First: fix the period — watermark stock or ink batch, whichever speaks first. Second: put a name in the room during that period — the ledger, nothing else. Third: show that name had the source of whatever tune this nocturne quotes, if it quotes one heard nowhere outside a particular house. Fourth: show that same hand struck out and rewrote the draft — not copied it fair, but corrected it. Style does none of those four things. Until all four legs are under it, no name bears weight.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Vess composed the nocturne — the conservatory's instinct, now sharpened by style consensus — but nothing on my board grounds it under the rules; period, presence, source, and correcting hand are all still absent.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 5,
+      "role": "director",
+      "text": "[The lamp gutters once and steadies, throwing the same pale rim around the unsigned leaves. Outside the chamber, rain works softly at the stone, and the waiting room holds its breath.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 5,
+      "role": "tutor",
+      "text": "Let the style testimony return to the board: the room hears Vess's late manner, but your law gives style no throne. If that lantern tempts you toward a name, which rule refuses to carry it there?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "m_style",
+          "intent": "counter_mirror"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "No figure rut: the last two turns are analogia and erotema, and the draft's erotema makes only two recent uses of that device, not three.",
+          "note": null
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "role": "learner",
+      "text": "Every rule refuses it — not one rule has 'styleOf' in its antecedent. Style sits on my board as fact 4, inert. Rule 6, the only rule that yields 'composed', demands couldHaveWritten, hadSourceOf, and draftCorrectedBy; style delivers none of those three. The lantern is real, but it lights no chain.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Vess composed the nocturne — the conservatory's instinct, now sharpened by style consensus — but nothing on my board grounds it under the rules; period, presence, source, and correcting hand are all still absent.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 6,
+      "role": "director",
+      "text": "[The clerk turns the board a little away from the benches, so the chalked name and the empty spaces no longer face the same eyes. Water ticks from a coat hem into a brass pan, each drop small enough to be ignored until the room begins counting them.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 6,
+      "role": "tutor",
+      "text": "Hold the leaves to the lamp: every page gives the same sign, the heron of Brell mill. Style was a likeness in the ear; this is a mark in the paper. Enter it as paper evidence, not yet as a name.",
+      "meta": {
+        "move": {
+          "figure": "analogia",
+          "targetPremise": "p_watermark",
+          "intent": "release"
+        },
+        "release": "p_watermark",
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": true,
+          "diagnosis": "The last two turns declared erotema and this draft declares erotema again, making a real three-turn figure rut.",
+          "note": "Leave off erotema this turn. Let the new kind of fact arrive by assertion or contrast, not by another question."
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "role": "learner",
+      "text": "The heron of Brell mill: that is a fact in the paper, not in anyone's ear. Rule 1 can carry it — but only if I also know when Brell's heron stock was in the copy-room and nowhere else. I have the watermark; I still lack the period it can unlock. One leg of the chain is in my hand; three remain missing.",
+      "meta": {
+        "adopt": [
+          [
+            "watermark",
+            "nocturne",
+            "heronStock"
+          ]
+        ],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Vess composed the nocturne — the conservatory's instinct, now sharpened by style consensus and a matching watermark — but Rule 1 still needs stockUsedOnlyDuring heronStock to yield a period; period, presence, source, and correcting hand remain ungrounded.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 7,
+      "role": "director",
+      "text": "[The leaves remain under the lamp, their edges faintly warped by old damp. In the gallery, no one speaks; the room listens instead to the rain and to the clerk's pen hovering above an unfinished line.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 7,
+      "role": "tutor",
+      "text": "You have the heron mark, but not yet the season it names. Under Rule 1, what exact second fact must join the watermark before the paper can speak of a period?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "p_watermark",
+          "intent": "consolidate"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "No figure rut: the last two declared figures are mixed, and the draft does not make three of the same device in a row.",
+          "note": null
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "role": "learner",
+      "text": "Rule 1 is explicit: I need (stockUsedOnlyDuring heronStock ?period) — the fact that Brell's heron stock was in the copy-room only during one named period. The watermark is one leg; that period-lock is the other. Neither the table nor my board holds it. The chain stays broken at exactly that joint.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Vess composed the nocturne — the conservatory's instinct, now sharpened by style consensus and a matching watermark — but Rule 1 still needs (stockUsedOnlyDuring heronStock ?period) to yield a period; period, presence, source, and correcting hand remain ungrounded.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 8,
+      "role": "director",
+      "text": "[The lamp is lowered, and the paper falls back into ordinary shadow. Along the long table, the witnesses keep their hands folded while the clerk leaves one blank space open beneath the watermark entry.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 8,
+      "role": "tutor",
+      "text": "Keep two entries separate: the musicians' likeness in the ear, and the heron mark in the paper. Which of those can enter a rule now, and what empty slot keeps it from yielding a season?",
+      "meta": {
+        "move": {
+          "figure": "anaphora",
+          "targetPremise": "p_watermark",
+          "intent": "consolidate"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "anaphora",
+          "intervened": false,
+          "diagnosis": "No figure rut: the last two declared devices differ, and the draft changes device again.",
+          "note": null
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "role": "learner",
+      "text": "The ear-likeness enters no rule at all — the six rules speak of watermarks, ink, ledgers, tunes, hands; none speaks of style. The heron mark does enter Rule 1 at its first slot: (watermark nocturne heronStock) is on my board. The empty slot is the second: (stockUsedOnlyDuring heronStock ?period) — without it, Rule 1 cannot fire and the paper yields no season. So: one entry stands at the threshold of a rule; the other stands outside every rule entirely.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Vess composed the nocturne — the conservatory's instinct, sharpened by style consensus and a matching watermark — but Rule 1 still needs (stockUsedOnlyDuring heronStock ?period) to yield a period; period, presence, source, and correcting hand remain ungrounded.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 9,
+      "role": "director",
+      "text": "[The steward is shown in with the stock-book still buckled from damp, and the clerk reads the entry aloud to the whole table: \"The steward's stock-book is plain: heron paper entered the copy-room in the winter of the flood, and the last of it was spent before the thaw. None before, none since.\"]",
+      "meta": {
+        "release": "p_stock",
+        "phase": {
+          "name": "The Dating",
+          "intent": "To let the paper stop resembling a person and begin naming a season.",
+          "turn": 9
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "role": "tutor",
+      "text": "Now the paper has both halves: the heron mark, and the stock-book's winter lock. Under Rule 1, what exact conclusion may you write about when the nocturne was written? Leave the tempting name aside; name only the period the paper now licenses.",
+      "meta": {
+        "move": {
+          "figure": "anaphora",
+          "targetPremise": "p_stock",
+          "intent": "consolidate"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "anaphora",
+          "intervened": false,
+          "diagnosis": "The last two figures are erotema then anaphora, so the draft's anaphora is not a three-turn rut.",
+          "note": null
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "role": "learner",
+      "text": "Both halves are now in hand. Board holds (watermark nocturne heronStock) and now (stockUsedOnlyDuring heronStock floodWinter). Rule 1 fires cleanly: the nocturne was written during the flood winter. The paper licenses exactly that period — nothing more.",
+      "meta": {
+        "adopt": [
+          [
+            "stockUsedOnlyDuring",
+            "heronStock",
+            "floodWinter"
+          ]
+        ],
+        "retract": [],
+        "derive": [
+          [
+            "writtenDuring",
+            "nocturne",
+            "floodWinter"
+          ]
+        ],
+        "deriveOutcomes": [
+          {
+            "fact": [
+              "writtenDuring",
+              "nocturne",
+              "floodWinter"
+            ],
+            "status": "voiced"
+          }
+        ],
+        "hypothesis": "Vess composed the nocturne — instinct sharpened by style and watermark, now with a period established — but Rule 6 still wants couldHaveWritten, hadSourceOf, and draftCorrectedBy; none of those are yet on my board.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 10,
+      "role": "director",
+      "text": "[Rain ticks steadily against the high windows, and the stock-book remains open beneath the lamp. The clerk lets the new season stand in the silence, while the unsigned pages lie apart from every name on the table.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 10,
+      "role": "tutor",
+      "text": "The heron mark and the winter stock-book now give you a season, not a composer. Under the attribution law, which conjunct has the paper helped you approach, and which two remain wholly unshown?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "p_watermark",
+          "intent": "consolidate"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "No figure rut: the last two turns used anaphora, but this draft moves to erotema rather than making three in a row.",
+          "note": null
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "role": "learner",
+      "text": "The paper opened a path toward Rule 6's first conjunct — couldHaveWritten — but only partway: it gave the period, which is Rule 3's first input; Rule 3 still wants atConservatoryDuring before it can yield couldHaveWritten. The second conjunct, hadSourceOf, has not been touched by any exhibit. The third, draftCorrectedBy, likewise stands wholly empty. So: the paper advanced one conjunct halfway, left two untouched entirely.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Vess composed the nocturne — instinct sharpened by style and watermark, with a period now established — but Rule 6 still wants couldHaveWritten (half-built: period shown, atConservatoryDuring absent), hadSourceOf (wholly unshown), and draftCorrectedBy (wholly unshown).",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 11,
+      "role": "director",
+      "text": "[The lamp is trimmed lower, and the wet buckles of the stock-book throw small warped shadows across the table. No one moves the unsigned leaves; the room holds its breath around the gap between a winter and a hand.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 11,
+      "role": "tutor",
+      "text": "The musicians' style verdict still whispers Vess, but which rule lets a whisper become an attribution? If the board gives you only style and flood winter, what must the Vess case still show before Rule 6 can even begin to hold him?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "m_style",
+          "intent": "counter_mirror"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "No figure rut: the last two declared figures are anaphora and erotema, so the draft's erotema is only a repeat of the immediately prior turn.",
+          "note": null
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "role": "learner",
+      "text": "Style is a whisper; Rule 6 does not hear whispers. Three things must be shown for Vess specifically: first, that he signed the ledger through the flood winter — that is the only path to atConservatoryDuring, the missing half of couldHaveWritten. Second, that the nocturne quotes a tune heard only within walls where he dwelled — without that, hadSourceOf stays dark. Third, that his hand struck through and rewrote the draft — copyists leave clean pages; only the composer leaves crossings-out. The board has none of these three; so Rule 6 cannot even begin to run against Vess's name.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Vess composed the nocturne — instinct sharpened by style and watermark, with a period now established — but Rule 6 still wants couldHaveWritten (needs atConservatoryDuring vess floodWinter, which needs signedLedger vess floodWinter), hadSourceOf (needs a quoted tune heard only within walls Vess dwelled), and draftCorrectedBy nocturne vess; all three conjuncts remain wholly ungrounded.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 12,
+      "role": "director",
+      "text": "[A courier is shown in with a pasteboard bundle softened at the corners, and the clerk spreads the capital's concert bills beside the stock-book. The capital's concert bills run unbroken through the flood winter: Vess played the Esten halls every week of it, and did not return until the thaw.]",
+      "meta": {
+        "release": "m_away",
+        "phase": null
+      }
+    },
+    {
+      "turn": 12,
+      "role": "tutor",
+      "text": "The stock-book fixes the nocturne to the flood winter; the concert bills fix Vess away through that same winter. Conceded: the style still sounds like him. But his first Rule 6 conjunct, couldHaveWritten, now bears the pressure before source or hand even enter.",
+      "meta": {
+        "move": {
+          "figure": "anaphora",
+          "targetPremise": "p_stock",
+          "intent": "counter_mirror"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": true,
+          "diagnosis": "The last two turns used erotema and the draft declares erotema again, making a three-turn figure rut.",
+          "note": "Leave off erotema for this turn. Make the turn declarative or concessive instead, so the pressure changes shape without changing the evidence."
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "role": "learner",
+      "text": "The concert bills strike harder than style. writtenDuring nocturne floodWinter is already on my board; awayDuring vess floodWinter now joins it — both anchored to the same season. Rule 3 needs atConservatoryDuring vess floodWinter before couldHaveWritten can fire; the Esten bills make that condition impossible to meet. The Vess hypothesis is not merely ungrounded — it is contradicted.",
+      "meta": {
+        "adopt": [
+          [
+            "awayDuring",
+            "vess",
+            "floodWinter"
+          ]
+        ],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Some other person — present at the conservatory during the flood winter — composed the nocturne; but I have no name, no ledger entry, no source, and no correcting hand for any such person yet.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 13,
+      "role": "director",
+      "text": "[The bills remain spread open, their neat columns drying beside the warped stock-book. Rain ticks in the high gutters of the conservatory, and the empty space where a name should stand seems larger under the lamp.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 13,
+      "role": "tutor",
+      "text": "Before we hunt a name, put the leaf back under the lamp: the heron mark ties these pages to that winter stock, and the bills keep Vess out of that winter. If Vess cannot supply presence, what kind of fact would let another person cross Rule 3's threshold?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "p_watermark",
+          "intent": "test"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "The last two declared figures are not the same device, so the draft's erotema does not make a three-turn rut.",
+          "note": null
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "role": "learner",
+      "text": "Rule 3 needs atConservatoryDuring for whoever I name; Rule 4 is the only door in: signedLedger ?x floodWinter yields that presence. So the fact that would let any new name cross the threshold is a ledger signature — that person's hand in the copy-room record through the flood winter. Without a signed entry, neither Rule 4 nor Rule 3 can fire, and couldHaveWritten stays dark for any candidate. The board has no such signature yet for anyone.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Some person who signed the conservatory ledger through the flood winter composed the nocturne — but no such person's name is yet on my board.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 14,
+      "role": "director",
+      "text": "[The clerk closes no book, and no hand reaches for the blank line in the room's reasoning. The lamp gutters once, steadies, and leaves the stock-book, the bills, and the waiting ledger-space in a hard triangle of light.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 14,
+      "role": "tutor",
+      "text": "Call the night porter, then: he remembers the flood winter, the copy-room lamps burning past midnight, week upon week, and the archive girl, Liane, keeping them lit. If Rule 3 asks who was at the conservatory in the winter fixed by the paper, what has his memory just put on your board?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "p_porter",
+          "intent": "release"
+        },
+        "release": "p_porter",
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "No figure rut is present: the last two turns were anaphora then erotema, and the draft's erotema is only a second adjacent use.",
+          "note": null
+        }
+      }
+    },
+    {
+      "turn": 14,
+      "role": "learner",
+      "text": "The porter's memory is evidence of presence, and presence is exactly what Rule 3 demands. Adopt: atConservatoryDuring liane floodWinter. Rule 3 fires at once: writtenDuring nocturne floodWinter is already on my board, and that pair yields couldHaveWritten liane nocturne. First conjunct of Rule 6 is now lit — but hadSourceOf and draftCorrectedBy are still dark.",
+      "meta": {
+        "adopt": [
+          [
+            "atConservatoryDuring",
+            "liane",
+            "floodWinter"
+          ]
+        ],
+        "retract": [],
+        "derive": [
+          [
+            "couldHaveWritten",
+            "liane",
+            "nocturne"
+          ]
+        ],
+        "deriveOutcomes": [
+          {
+            "fact": [
+              "couldHaveWritten",
+              "liane",
+              "nocturne"
+            ],
+            "status": "voiced"
+          }
+        ],
+        "hypothesis": "Liane composed the nocturne — presence established by the porter's testimony, couldHaveWritten now derivable — but hadSourceOf liane nocturne and draftCorrectedBy nocturne liane remain wholly ungrounded; Rule 6 cannot fire yet.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 15,
+      "role": "director",
+      "text": "[The porter is shown back into the rain-dark corridor, and the copy-room ledger remains unopened at the edge of the table. In the hall, the damp air swells the pages just enough that each leaf lifts and settles like a held breath.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 15,
+      "role": "tutor",
+      "text": "The porter lights only the first lamp, not the whole room. Liane can now cross Rule 3's threshold, but Rule 6 still keeps two doors shut: source and correcting hand. Do not let a possible writer become an attributed composer before those doors open.",
+      "meta": {
+        "move": {
+          "figure": "analogia",
+          "targetPremise": "p_porter",
+          "intent": "consolidate"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": true,
+          "diagnosis": "The draft would make erotema run for a third consecutive turn, which is a figure rut.",
+          "note": "Leave off erotema this turn. State the pressure plainly rather than casting it as another question."
+        }
+      }
+    },
+    {
+      "turn": 15,
+      "role": "learner",
+      "text": "The tutor is right to check my hand. couldHaveWritten is lit for Liane — that much my board shows. But hadSourceOf and draftCorrectedBy are still wholly dark; Rule 6 cannot fire on one conjunct alone. I hold Liane as my sharpest hypothesis and wait: the next fact must be a quoted tune heard only within walls she dwelled, or her own strike-throughs on the draft.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Liane composed the nocturne — presence established, couldHaveWritten derivable — but hadSourceOf liane nocturne and draftCorrectedBy nocturne liane remain wholly ungrounded; Rule 6 cannot fire yet.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 16,
+      "role": "director",
+      "text": "[The rain thins to a cold ticking on the high windows, and the unopened ledger casts a narrow shadow across the table. No one speaks over it; the nocturne waits beneath the lamp, its unsigned corner turned toward the room.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 16,
+      "role": "tutor",
+      "text": "Before the next door opens, bring the absent master back under the rule. If the paper fixes flood winter, and the bills keep Vess in the capital through that winter, what happens to the style verdict as evidence of authorship?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "m_away",
+          "intent": "counter_mirror"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "No figure rut: the last two figures are erotema and analogia, and the draft returns to erotema without making three in a row.",
+          "note": null
+        }
+      }
+    },
+    {
+      "turn": 16,
+      "role": "learner",
+      "text": "The style verdict was never a rule — it was what is merely said. Now the period makes it worse: writtenDuring nocturne floodWinter is on my board, and awayDuring vess floodWinter is there beside it. Rule 3 cannot fire for Vess without atConservatoryDuring vess floodWinter, which the bills actively deny us. Style pointed at him; the rules point away. The hypothesis of Vess is not merely ungrounded — the period evidence positively bars him from Rule 3's threshold.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Liane composed the nocturne — couldHaveWritten is lit for her, Vess is barred by absence — but hadSourceOf liane nocturne and draftCorrectedBy nocturne liane remain wholly dark; Rule 6 still cannot fire.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 17,
+      "role": "director",
+      "text": "[The hall settles into the thin silence after a verdict has lost its body. Rainwater threads down the outer glass, and the lamp over the nocturne burns steadily, making the blank corner look less empty than withheld.]",
+      "meta": {
+        "release": null,
+        "phase": {
+          "name": "The Cradle-Song",
+          "intent": "To turn from dating and absence toward the question of borrowed music, letting source become the next pressure on the room.",
+          "turn": 17
+        }
+      }
+    },
+    {
+      "turn": 17,
+      "role": "tutor",
+      "text": "Play the middle voice once, softly: beneath the right hand's figures, the nocturne carries an older cradle-song entire. If Rule 6 still asks for source, what has this tune just made possible to prove, and what is still missing before it proves it?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "p_quotes",
+          "intent": "release"
+        },
+        "release": "p_quotes",
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "No figure rut: the last two declared figures are analogia and erotema, and the draft's erotema makes only two adjacent uses, not three.",
+          "note": null
+        }
+      }
+    },
+    {
+      "turn": 17,
+      "role": "learner",
+      "text": "The cradle-song gives me the first conjunct of Rule 5: quotes nocturne cradleSong now sits on my board. But Rule 5 needs two more facts to fire: where that song was heard only within, and that some person dwelled in that same place. Neither is on my board. The tune makes hadSourceOf reachable in principle — not yet grounded.",
+      "meta": {
+        "adopt": [
+          [
+            "quotes",
+            "nocturne",
+            "cradleSong"
+          ]
+        ],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Liane composed the nocturne — couldHaveWritten is lit, and the cradle-song now opens Rule 5's path to hadSourceOf liane nocturne — but heardOnlyWithin cradleSong ?place and dwelledIn liane ?place remain unshown; hadSourceOf and draftCorrectedBy are still wholly dark, and Rule 6 cannot fire.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 18,
+      "role": "director",
+      "text": "[The pianist's hands leave the keys, and the last vibration thins into the damp rafters. On the table, the manuscript remains open where the quoted bars have just been marked, while the rest of the room waits without moving.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 18,
+      "role": "tutor",
+      "text": "A tune is only a keyhole until the room is named and someone is shown to have lived within it. For Rule 5, hold the quote apart from its missing companions: the place where the song was confined, and the person whose dwelling gives access.",
+      "meta": {
+        "move": {
+          "figure": "analogia",
+          "targetPremise": "p_quotes",
+          "intent": "consolidate"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": true,
+          "diagnosis": "The last two turns declared erotema and the draft declares erotema again, making a three-turn figure rut.",
+          "note": "Leave off erotema for this turn. Let the tutor move by statement, contrast, or image rather than another question."
+        }
+      }
+    },
+    {
+      "turn": 18,
+      "role": "learner",
+      "text": "The quote is on my board — one leg of Rule 5 stands. But the stool needs two more: where that song was heard only within, and who dwelled in that place. Both are absent; heardOnlyWithin and dwelledIn are still dark. Until they appear, hadSourceOf cannot be derived, and Rule 6 cannot fire for anyone.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Liane composed the nocturne — couldHaveWritten is lit, and the cradle-song opens Rule 5's path to hadSourceOf liane nocturne — but heardOnlyWithin cradleSong ?place and dwelledIn liane ?place remain unshown; hadSourceOf and draftCorrectedBy are still wholly dark, and Rule 6 cannot fire.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 19,
+      "role": "director",
+      "text": "[The marked bars lie under the lamplight, neither playing nor silent, as if the room has learned to listen for what is not yet named. Outside, the rain slackens to a cold tapping along the panes, and no one reaches for the next bundle.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 19,
+      "role": "tutor",
+      "text": "Do not let the tune outrun the rule: it proves nothing by being beautiful, only by being confined. What exact two forms of fact must arrive before this quoted song can become source rather than ornament?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "p_quotes",
+          "intent": "consolidate"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "No figure rut: the last two declared figures are erotema and analogia, and the draft returns to erotema rather than making three in a row.",
+          "note": null
+        }
+      }
+    },
+    {
+      "turn": 19,
+      "role": "learner",
+      "text": "Two forms exactly: heardOnlyWithin cradleSong ?place — that the song never left some named walls — and dwelledIn ?x ?place — that a named person lived within those same walls. Without both, Rule 5's consequent cannot fire and the tune stays ornament. The quote sits ready on my board; the room and the resident are still dark.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Liane composed the nocturne — couldHaveWritten is lit, and the cradle-song opens Rule 5's path to hadSourceOf liane nocturne — but heardOnlyWithin cradleSong ?place and dwelledIn liane ?place remain unshown; hadSourceOf and draftCorrectedBy are still wholly dark, and Rule 6 cannot fire.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 20,
+      "role": "director",
+      "text": "[Mistress Odile is shown in with rain still shining on the shoulders of her black shawl, and the marked bars are played once for her at the table. She knows the tune at one hearing: the Vara cradle-song, never printed, never performed, sung only within that house's walls.]",
+      "meta": {
+        "release": "p_heardOnly",
+        "phase": null
+      }
+    },
+    {
+      "turn": 20,
+      "role": "tutor",
+      "text": "Now the room is named: the Vara house, and the song confined within it. What does that do to Rule 5's first missing companion, and what companion is still not yet shown?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "p_heardOnly",
+          "intent": "consolidate"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "No figure rut: the last two declared figures are not the same device before this erotema draft.",
+          "note": null
+        }
+      }
+    },
+    {
+      "turn": 20,
+      "role": "learner",
+      "text": "The room is now named: varaHouse, and the song is confirmed never to have left it. That fills Rule 5's first dark socket — heardOnlyWithin cradleSong varaHouse now stands on my board. Two legs of Rule 5 are lit; the stool still needs the third: dwelledIn ?x varaHouse. Until a person is shown to have lived within those walls, hadSourceOf cannot fire.",
+      "meta": {
+        "adopt": [
+          [
+            "heardOnlyWithin",
+            "cradleSong",
+            "varaHouse"
+          ]
+        ],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Liane composed the nocturne — couldHaveWritten is lit, heardOnlyWithin cradleSong varaHouse is now grounded, opening two of three legs of Rule 5 — but dwelledIn liane varaHouse and draftCorrectedBy nocturne liane remain wholly dark; hadSourceOf and the full Rule 6 still cannot fire.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 21,
+      "role": "director",
+      "text": "[The room keeps the tune without repeating it; the marked bars remain open on the table while damp gloves, lamp-smoke, and silence gather around them. Beyond the high windows, the flooded court reflects a wavering strip of yellow light, and the witnesses wait as if the next name might disturb the water.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 21,
+      "role": "tutor",
+      "text": "The tune is shown; the walls are shown; the dweller is not. Keep Rule 5 there: until dwelledIn ?x varaHouse stands beside heardOnlyWithin, source remains unproved for every name.",
+      "meta": {
+        "move": {
+          "figure": "anaphora",
+          "targetPremise": "p_heardOnly",
+          "intent": "consolidate"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": true,
+          "diagnosis": "The last two turns used erotema and this draft declares erotema again, so the tutor is entering a three-turn figure rut.",
+          "note": "Leave off erotema this turn. Make the pressure declarative or imperative instead of another question."
+        }
+      }
+    },
+    {
+      "turn": 21,
+      "role": "learner",
+      "text": "No new exhibit crosses the table this turn. Two legs of Rule 5 stand firm — quotes and heardOnlyWithin — but the third, dwelledIn ?x varaHouse, is still dark. Until a person is placed inside those walls, hadSourceOf cannot fire for any name, and Rule 6 stays shut. I hold my board unchanged and wait.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Liane composed the nocturne — couldHaveWritten is lit, heardOnlyWithin cradleSong varaHouse is grounded, opening two of three legs of Rule 5 — but dwelledIn liane varaHouse and draftCorrectedBy nocturne liane remain wholly dark; hadSourceOf and the full Rule 6 still cannot fire.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 22,
+      "role": "director",
+      "text": "[The pages lie under their glass weights while the rain softens against the roof and the lamp gutters once, then steadies. No witness is called; the conservatory's long table holds its silence around the unnamed resident the evidence has not yet brought in.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 22,
+      "role": "tutor",
+      "text": "Then let the silence do its office: which name has Rule 6 already barred from the winter room, and which name has only the room but not yet the source? Answer by conjunct, not by instinct.",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": null,
+          "intent": "test"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "No figure rut: the last two declared figures are erotema and anaphora, so the draft's erotema does not make three in a row.",
+          "note": null
+        }
+      }
+    },
+    {
+      "turn": 22,
+      "role": "learner",
+      "text": "Vess is barred at the first conjunct: awayDuring vess floodWinter blocks atConservatoryDuring, which blocks couldHaveWritten — Rule 6 cannot even begin for him. Liane clears the first conjunct — couldHaveWritten stands — but stalls at the second: dwelledIn liane varaHouse is still dark, so hadSourceOf cannot fire. She has the room; she does not yet have the source.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Liane composed the nocturne — couldHaveWritten is lit, heardOnlyWithin cradleSong varaHouse is grounded — but dwelledIn liane varaHouse and draftCorrectedBy nocturne liane remain wholly dark; Rule 6 still cannot fire.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 23,
+      "role": "director",
+      "text": "[A guest-book, swollen at the corners, is carried in and opened under the lamp. A patron's note is read into the room: \"And yet — Vess summered at the Vara house for years, the patron's own guest; whatever was sung under that roof, he will have heard.\"]",
+      "meta": {
+        "release": "m_guest",
+        "phase": null
+      }
+    },
+    {
+      "turn": 23,
+      "role": "tutor",
+      "text": "The guest-book gives Vess a path to the song, but does it give him a path to the winter room? Set the two conjuncts apart: source may brighten while couldHaveWritten remains barred.",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "m_guest",
+          "intent": "counter_mirror"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "No figure rut: the last two figures are mixed, and the draft's erotema makes only a two-turn return, not three in a row.",
+          "note": null
+        }
+      }
+    },
+    {
+      "turn": 23,
+      "role": "learner",
+      "text": "I adopt the guest-book entry: dwelledIn vess varaHouse now stands on my board. Rule 5 fires at once — quotes, heardOnlyWithin, dwelledIn all met — so hadSourceOf vess nocturne is derived. But the tutor's partition holds: source brightens for Vess while couldHaveWritten remains barred by awayDuring vess floodWinter. Rule 6 needs three conjuncts; Vess clears only one, and the third — draftCorrectedBy — is dark for every name. The question is not yet settled.",
+      "meta": {
+        "adopt": [
+          [
+            "dwelledIn",
+            "vess",
+            "varaHouse"
+          ]
+        ],
+        "retract": [],
+        "derive": [
+          [
+            "hadSourceOf",
+            "vess",
+            "nocturne"
+          ]
+        ],
+        "deriveOutcomes": [
+          {
+            "fact": [
+              "hadSourceOf",
+              "vess",
+              "nocturne"
+            ],
+            "status": "voiced"
+          }
+        ],
+        "hypothesis": "Liane composed the nocturne — couldHaveWritten is lit for her, Vess is barred at that conjunct despite now having a source — but dwelledIn liane varaHouse and draftCorrectedBy nocturne liane remain wholly dark; Rule 6 cannot fire for any name.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 24,
+      "role": "director",
+      "text": "[The guest-book remains open where the last hand left it, its damp spine creaking softly as the room settles. Beyond the windows the flooded quadrangle reflects the lamps in broken strips, and no one reaches for another packet.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 24,
+      "role": "tutor",
+      "text": "Good: Vess has the song but not the winter room; Liane has the winter room but not yet the song. If the law is a three-lock door, which lock is still unopened for each name?",
+      "meta": {
+        "move": {
+          "figure": "analogia",
+          "targetPremise": "m_guest",
+          "intent": "consolidate"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "analogia",
+          "intervened": false,
+          "diagnosis": "The last two turns used erotema, but this draft declares analogia, so there is no three-turn figure rut.",
+          "note": null
+        }
+      }
+    },
+    {
+      "turn": 24,
+      "role": "learner",
+      "text": "For Vess: lock one is barred — couldHaveWritten cannot fire while awayDuring stands; locks two and three are moot. For Liane: lock one stands open; lock two is dark — dwelledIn liane varaHouse has never been shown, so hadSourceOf cannot fire; lock three is dark for every name. The door has three locks; no name has cleared all three.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Liane composed the nocturne — couldHaveWritten is lit for her, Vess is barred at that conjunct despite having a source — but dwelledIn liane varaHouse and draftCorrectedBy nocturne liane remain wholly dark; Rule 6 cannot fire for any name.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 25,
+      "role": "director",
+      "text": "[The lamp flame gutters once, then steadies over the opened book and the untouched packets beside it. In the wet hush, the room seems to wait for a hand willing to turn the next page.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 25,
+      "role": "tutor",
+      "text": "Then keep the locks separate. For Liane's second lock, what kind of released fact would have to meet the Vara song before Rule 5 could speak?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": null,
+          "intent": "test"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "The last two figures are mixed, so this erotema does not make a three-turn rut.",
+          "note": null
+        }
+      }
+    },
+    {
+      "turn": 25,
+      "role": "learner",
+      "text": "Rule 5 needs three conjuncts: quotes, heardOnlyWithin, dwelledIn. Two stand lit on my board — the nocturne quotes cradleSong, and cradleSong was heard only within the Vara house. The conjunct that stays dark is dwelledIn liane varaHouse. Release that one fact — show that Liane was herself a dweller there — and Rule 5 fires at once, yielding hadSourceOf liane nocturne. The second lock is precisely that dwelling-fact; without it, source stays barred.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Liane composed the nocturne — couldHaveWritten is lit for her, Vess is barred at that conjunct despite having a source — but dwelledIn liane varaHouse and draftCorrectedBy nocturne liane remain wholly dark; Rule 6 cannot fire for any name.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 26,
+      "role": "director",
+      "text": "[The unopened packet nearest the lamp darkens at one corner where damp has crept into the string. Around the table, the papers already named lie in their separate islands of light, and the rain resumes against the high glass.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 26,
+      "role": "tutor",
+      "text": "Then open that packet: the household register names Liane as the music-master's orphan, taken into the Vara house as ward, raised under that roof and under its songs. With quotes and heard-only already on your board, what does that do to Rule 5 for her?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "p_ward",
+          "intent": "release"
+        },
+        "release": "p_ward",
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "The last two declared figures are mixed, so a third-turn erotema rut has not formed.",
+          "note": null
+        }
+      }
+    },
+    {
+      "turn": 26,
+      "role": "learner",
+      "text": "The dwelling-fact lands on my board; Rule 5's three conjuncts are now all lit for Liane. quotes stands, heardOnlyWithin stands, dwelledIn now stands — hadSourceOf liane nocturne follows at once. Two locks are open: couldHaveWritten and hadSourceOf both hold for her. The third lock — draftCorrectedBy nocturne liane — is still dark; the door has not moved.",
+      "meta": {
+        "adopt": [
+          [
+            "dwelledIn",
+            "liane",
+            "varaHouse"
+          ]
+        ],
+        "retract": [],
+        "derive": [
+          [
+            "hadSourceOf",
+            "liane",
+            "nocturne"
+          ]
+        ],
+        "deriveOutcomes": [
+          {
+            "fact": [
+              "hadSourceOf",
+              "liane",
+              "nocturne"
+            ],
+            "status": "voiced"
+          }
+        ],
+        "hypothesis": "Liane composed the nocturne — couldHaveWritten and hadSourceOf are now both lit for her, Vess is barred at the first lock despite holding source — but draftCorrectedBy nocturne liane remains wholly dark; Rule 6 cannot fire for any name.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 27,
+      "role": "director",
+      "text": "[The household register remains open, its damp page held flat by two brass weights. Beyond the table, the corridor gives a long wooden creak, and the untouched packets sit in their patient row beside the lamp.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 27,
+      "role": "tutor",
+      "text": "The first lock is presence in the winter; the second lock is source from the Vara house; the third lock is still only a blank place where a correcting hand must be shown. Keep the verdict behind the glass until that last lock has a released fact of its own.",
+      "meta": {
+        "move": {
+          "figure": "anaphora",
+          "targetPremise": null,
+          "intent": "consolidate"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": true,
+          "diagnosis": "The tutor is about to make erotema the declared figure for a third consecutive turn, which is a real figure rut.",
+          "note": "Leave off erotema for this turn. Let the next line proceed by assertion, contrast, or another device rather than another guiding question."
+        }
+      }
+    },
+    {
+      "turn": 27,
+      "role": "learner",
+      "text": "No new exhibits on the table; I adopt nothing. Two locks stand lit for Liane — couldHaveWritten and hadSourceOf — and the third is still an empty frame. I will not reach through the glass. The verdict waits on draftCorrectedBy nocturne liane, and that fact has not yet been released.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Liane composed the nocturne — couldHaveWritten and hadSourceOf are now both lit for her, Vess is barred at the first lock — but draftCorrectedBy nocturne liane remains wholly dark; Rule 6 cannot fire for any name.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 28,
+      "role": "director",
+      "text": "[The brass weights are lifted and set down again with more care than necessity requires. The lamp is trimmed lower, drawing the table into a narrower circle while the rest of the archive recedes into rain and shelving.]",
+      "meta": {
+        "release": null,
+        "phase": {
+          "name": "The Hand",
+          "intent": "To narrow the room from source and alibi to the last unreleased question: whose corrections can be made to stand on the page.",
+          "turn": 28
+        }
+      }
+    },
+    {
+      "turn": 28,
+      "role": "tutor",
+      "text": "You have two locks lit and one named absence; what kind of released exhibit, under the law, could fill that absence without borrowing from rumor or style? Say the missing conjunct, not the verdict.",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": null,
+          "intent": "test"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "The last two figures are mixed, so erotema here does not make three in a row.",
+          "note": null
+        }
+      }
+    },
+    {
+      "turn": 28,
+      "role": "learner",
+      "text": "The missing conjunct is draftCorrectedBy nocturne liane. Only one kind of exhibit releases it: a grounded fact that the strike-outs and rewrites in the draft are in Liane's hand — shown by comparing those corrections to a known specimen of her writing. Style cannot do it; testimony about authorship cannot do it. A physical match of the correcting hand to a documented hand-sample is the only path the rules permit.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Liane composed the nocturne — couldHaveWritten and hadSourceOf are both lit for her, Vess is barred at the first lock — but draftCorrectedBy nocturne liane remains wholly dark; Rule 6 cannot fire for any name.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 29,
+      "role": "director",
+      "text": "[The unopened packet nearest the lamp is not touched. Rain works steadily at the high windows, and the shadows of the shelves lengthen over the table as though the room itself were waiting for a hand to be named.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 29,
+      "role": "tutor",
+      "text": "Then set the copy-room ledger under the lamp: its winter pages carry the same initials line after line, Liane signed in through the whole flood winter. What does that ledger do to the first lock, and what does it still not do to the third?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "p_ledger",
+          "intent": "release"
+        },
+        "release": "p_ledger",
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "The last two figures are not the same as the draft, so this is not a three-turn erotema rut.",
+          "note": null
+        }
+      }
+    },
+    {
+      "turn": 29,
+      "role": "learner",
+      "text": "The ledger fires Rule 4 and yields atConservatoryDuring liane floodWinter — but that fact already stands on my board from the porter's word. The first lock is reinforced, not newly opened. A signature in the copy-room places Liane at the conservatory; it says nothing of strike-outs and rewrites. The third lock is still an empty frame.",
+      "meta": {
+        "adopt": [
+          [
+            "signedLedger",
+            "liane",
+            "floodWinter"
+          ]
+        ],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Liane composed the nocturne — couldHaveWritten and hadSourceOf are both lit for her, Vess is barred at the first lock — but draftCorrectedBy nocturne liane remains wholly dark; Rule 6 cannot fire for any name.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 30,
+      "role": "director",
+      "text": "[The copy-room ledger remains open beneath the lamp, its ruled columns flattening into shadow at the page edge. No one breaks the seal on the packet; the rain fills the pause with a patient, repeated tapping.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 30,
+      "role": "tutor",
+      "text": "The ledger places her in the winter; the Vara roof gives her the song; the correcting hand is still only an empty place in the law. Keep those three compartments apart, and let the third remain unsaid until the room produces it.",
+      "meta": {
+        "move": {
+          "figure": "anaphora",
+          "targetPremise": "p_ledger",
+          "intent": "consolidate"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": true,
+          "diagnosis": "The last two turns used erotema and the draft declares erotema again, making a three-turn figure rut.",
+          "note": "Leave off erotema for this turn. Make the distinction as a plain placement or quiet correction rather than another question."
+        }
+      }
+    },
+    {
+      "turn": 30,
+      "role": "learner",
+      "text": "Two locks are lit for Liane; the third compartment is empty and the room has not produced it. No new exhibit lies on the table. I hold what I hold — couldHaveWritten, hadSourceOf — and name nothing more until a physical match of the correcting hand arrives under this lamp.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Liane composed the nocturne — couldHaveWritten and hadSourceOf are both lit for her, Vess is barred at the first lock — but draftCorrectedBy nocturne liane remains wholly dark; Rule 6 cannot fire for any name.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 31,
+      "role": "director",
+      "text": "[The sealed packet stays where it is, untouched beside the circle of lamplight. The ledger's open page stirs faintly in the damp draft, and the room holds its breath around the blank place no witness has yet filled.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 31,
+      "role": "tutor",
+      "text": "Good: hold the empty frame empty. If the law were read aloud now, which two conjuncts could Liane answer, and which one must remain blank until an exhibit, not desire, fills it?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": null,
+          "intent": "test"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "The last two figures are mixed, so the draft's erotema does not make a three-turn rut.",
+          "note": null
+        }
+      }
+    },
+    {
+      "turn": 31,
+      "role": "learner",
+      "text": "Rule 6 has three conjuncts. For Liane: couldHaveWritten is lit — derived at turn 14 from her presence. hadSourceOf is lit — derived at turn 26 from the cradle-song and Vara House. draftCorrectedBy nocturne liane is the blank frame — no exhibit on this table has yet touched it. Two conjuncts answered; the third stays empty until the room produces it.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Liane composed the nocturne — couldHaveWritten and hadSourceOf are both lit for her, Vess is barred at the first lock — but draftCorrectedBy nocturne liane remains wholly dark; Rule 6 cannot fire for any name.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 32,
+      "role": "director",
+      "text": "[The sealed packet is opened at last, and the draft is laid beside the copy-room ledger under the same lamp. Set beside her ledger entries, the draft's corrections show the same hand: the strokes that cross out and rewrite are Liane's.]",
+      "meta": {
+        "release": "p_hand",
+        "phase": null
+      }
+    },
+    {
+      "turn": 32,
+      "role": "tutor",
+      "text": "Now read Rule 6 without haste: the winter room, the Vara song, the correcting hand. Conjunct by conjunct, what does the law yield for the work and for the hand that rewrote it? The archive attributes the nocturne to...",
+      "meta": {
+        "move": {
+          "figure": "aposiopesis",
+          "targetPremise": "p_hand",
+          "intent": "stage_recognition"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "aposiopesis",
+          "intervened": false,
+          "diagnosis": "No figure rut: the last two declared figures differ, and the draft moves to aposiopesis rather than repeating either one.",
+          "note": null
+        }
+      }
+    },
+    {
+      "turn": 32,
+      "role": "learner",
+      "text": "The third lock opens. draftCorrectedBy nocturne liane enters the board — and Rule 6's three conjuncts are all lit at last: couldHaveWritten, hadSourceOf, draftCorrectedBy. The law yields one name. The archive's answer is Liane.",
+      "meta": {
+        "adopt": [
+          [
+            "draftCorrectedBy",
+            "nocturne",
+            "liane"
+          ]
+        ],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": null,
+        "asserts": [
+          "composed",
+          "liane",
+          "nocturne"
+        ]
+      }
+    },
+    {
+      "turn": 33,
+      "role": "director",
+      "text": "[The lamp burns lower over the opened packet, its light thinning across the ledger and the draft. No one reaches for another exhibit; the room remains fixed around the name the archive has just allowed to be spoken.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 33,
+      "role": "tutor",
+      "text": "Before the ledger closes, test the rival name once more: style gave Vess a likeness, but which Rule 6 conjunct failed him, and which three now stand for the hand before you? Let the answer remain grounded in the law, not in the room's instinct.",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "m_style",
+          "intent": "counter_mirror"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "The last two turns do not repeat the same declared device, so this erotema is not a three-turn figure rut.",
+          "note": null
+        }
+      }
+    },
+    {
+      "turn": 33,
+      "role": "learner",
+      "text": "Vess fails at the first lock: awayDuring vess floodWinter bars Rule 3, so couldHaveWritten never fired for him — hadSourceOf and draftCorrectedBy never mattered. For Liane all three conjuncts stand: couldHaveWritten from turn 14, hadSourceOf from turn 26, draftCorrectedBy from fact 13. Rule 6 fires on one name only.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": null,
+        "asserts": [
+          "composed",
+          "liane",
+          "nocturne"
+        ]
+      }
+    },
+    {
+      "turn": 34,
+      "role": "director",
+      "text": "[The rain against the high windows settles into a finer, colder sound. On the table, the draft and ledger remain side by side, and the closed hall beyond the door offers no new witness.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 34,
+      "role": "tutor",
+      "text": "Good: let likeness keep its place as likeness, not authorship. If the rival lacks the winter room, and Liane holds the room, the song, and the correcting hand, what remains for style to overturn?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "m_away",
+          "intent": "counter_mirror"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "The last two declared figures are not the same, so the draft's erotema does not make a three-turn figure rut.",
+          "note": null
+        }
+      }
+    },
+    {
+      "turn": 34,
+      "role": "learner",
+      "text": "Style has no conjunct in Rule 6. It cannot overturn a finding grounded in period, presence, source, and hand. Nothing on the table can reach the first lock for Vess; his absence from the winter room closes it permanently. The board is settled and the answer is binding: Liane composed the nocturne.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": null,
+        "asserts": [
+          "composed",
+          "liane",
+          "nocturne"
+        ]
+      }
+    },
+    {
+      "turn": 35,
+      "role": "director",
+      "text": "[The archivist's pencil rests untouched beside the ruled sheet, its point hovering over no new line. The lamp gutters once, then steadies, leaving the draft, the ledger, and the learner's spoken answer in the same narrow circle of light.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 35,
+      "role": "tutor",
+      "text": "The stock-book gives the winter; the ledger gives the room; the house-song gives the source; the corrected draft gives the hand. If those four lines stand, what sentence may the archive enter without borrowing anything from style?",
+      "meta": {
+        "move": {
+          "figure": "anaphora",
+          "targetPremise": "p_stock",
+          "intent": "stage_recognition"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "anaphora",
+          "intervened": false,
+          "diagnosis": "The last two turns repeated erotema, but the draft breaks the sequence with anaphora, so there is no three-turn figure rut.",
+          "note": null
+        }
+      }
+    },
+    {
+      "turn": 35,
+      "role": "learner",
+      "text": "Stock gives the winter; ledger gives the room; house-song gives the source; draft gives the hand. All four lines stand on my board without a syllable of style. Rule 6 fires on Liane alone, and the archive may enter the name.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": null,
+        "asserts": [
+          "composed",
+          "liane",
+          "nocturne"
+        ]
+      }
+    },
+    {
+      "turn": 36,
+      "role": "director",
+      "text": "[The ink in the registrar's well darkens under the lamp, unspent. Beyond the windows, the drowned courtyard gives back only the sound of rain, while the papers wait in their exact order.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 36,
+      "role": "tutor",
+      "text": "One last check before the registrar writes: the heron mark puts these leaves on heron stock, and the stock-book confines that stock to the flood winter. With winter, room, source, and correcting hand in order, which rule gives the archive its entry?",
+      "meta": {
+        "move": {
+          "figure": "anaphora",
+          "targetPremise": "p_watermark",
+          "intent": "stage_recognition"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "anaphora",
+          "intervened": false,
+          "diagnosis": "The last two declared figures are mixed, so the draft's anaphora does not make three in a row.",
+          "note": null
+        }
+      }
+    },
+    {
+      "turn": 36,
+      "role": "learner",
+      "text": "Rule 1 gives the winter from the heron mark. Rule 4 gives the room from the ledger. Rule 3 closes the first conjunct: couldHaveWritten liane nocturne. Rule 5 closes the second: hadSourceOf liane nocturne. Board item 13 closes the third: draftCorrectedBy nocturne liane. Rule 6 fires on Liane alone — the archive writes her name.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": null,
+        "asserts": [
+          "composed",
+          "liane",
+          "nocturne"
+        ]
+      }
+    }
+  ],
+  "ledger": [
+    {
+      "turn": 3,
+      "premiseId": "m_style",
+      "via": "director"
+    },
+    {
+      "turn": 6,
+      "premiseId": "p_watermark",
+      "via": "tutor"
+    },
+    {
+      "turn": 9,
+      "premiseId": "p_stock",
+      "via": "director"
+    },
+    {
+      "turn": 12,
+      "premiseId": "m_away",
+      "via": "director"
+    },
+    {
+      "turn": 14,
+      "premiseId": "p_porter",
+      "via": "tutor"
+    },
+    {
+      "turn": 17,
+      "premiseId": "p_quotes",
+      "via": "tutor"
+    },
+    {
+      "turn": 20,
+      "premiseId": "p_heardOnly",
+      "via": "director"
+    },
+    {
+      "turn": 23,
+      "premiseId": "m_guest",
+      "via": "director"
+    },
+    {
+      "turn": 26,
+      "premiseId": "p_ward",
+      "via": "tutor"
+    },
+    {
+      "turn": 29,
+      "premiseId": "p_ledger",
+      "via": "tutor"
+    },
+    {
+      "turn": 32,
+      "premiseId": "p_hand",
+      "via": "director"
+    }
+  ],
+  "firstForcedTurn": 36,
+  "assertedGroundedTurn": 36,
+  "turnsPlayed": 36,
+  "proof": {
+    "fact": [
+      "composed",
+      "liane",
+      "nocturne"
+    ],
+    "base": false,
+    "rule": "R4_attribution",
+    "premises": [
+      {
+        "fact": [
+          "couldHaveWritten",
+          "liane",
+          "nocturne"
+        ],
+        "base": false,
+        "rule": "R2_presence",
+        "premises": [
+          {
+            "fact": [
+              "writtenDuring",
+              "nocturne",
+              "floodWinter"
+            ],
+            "base": false,
+            "rule": "R1_watermark_dating",
+            "premises": [
+              {
+                "fact": [
+                  "watermark",
+                  "nocturne",
+                  "heronStock"
+                ],
+                "base": true
+              },
+              {
+                "fact": [
+                  "stockUsedOnlyDuring",
+                  "heronStock",
+                  "floodWinter"
+                ],
+                "base": true
+              }
+            ]
+          },
+          {
+            "fact": [
+              "atConservatoryDuring",
+              "liane",
+              "floodWinter"
+            ],
+            "base": true
+          }
+        ]
+      },
+      {
+        "fact": [
+          "hadSourceOf",
+          "liane",
+          "nocturne"
+        ],
+        "base": false,
+        "rule": "R3_source_access",
+        "premises": [
+          {
+            "fact": [
+              "quotes",
+              "nocturne",
+              "cradleSong"
+            ],
+            "base": true
+          },
+          {
+            "fact": [
+              "heardOnlyWithin",
+              "cradleSong",
+              "varaHouse"
+            ],
+            "base": true
+          },
+          {
+            "fact": [
+              "dwelledIn",
+              "liane",
+              "varaHouse"
+            ],
+            "base": true
+          }
+        ]
+      },
+      {
+        "fact": [
+          "draftCorrectedBy",
+          "nocturne",
+          "liane"
+        ],
+        "base": true
+      }
+    ]
+  },
+  "inference": {
+    "voiced": [
+      {
+        "fact": [
+          "writtenDuring",
+          "nocturne",
+          "floodWinter"
+        ],
+        "turn": 9
+      },
+      {
+        "fact": [
+          "couldHaveWritten",
+          "liane",
+          "nocturne"
+        ],
+        "turn": 14
+      },
+      {
+        "fact": [
+          "hadSourceOf",
+          "vess",
+          "nocturne"
+        ],
+        "turn": 23
+      },
+      {
+        "fact": [
+          "hadSourceOf",
+          "liane",
+          "nocturne"
+        ],
+        "turn": 26
+      }
+    ],
+    "overreaches": [],
+    "mischanneled": [],
+    "availability": [
+      {
+        "fact": [
+          "writtenDuring",
+          "nocturne",
+          "floodWinter"
+        ],
+        "firstAvailable": 9,
+        "firstVoiced": 9
+      },
+      {
+        "fact": [
+          "couldHaveWritten",
+          "liane",
+          "nocturne"
+        ],
+        "firstAvailable": 14,
+        "firstVoiced": 14
+      },
+      {
+        "fact": [
+          "hadSourceOf",
+          "vess",
+          "nocturne"
+        ],
+        "firstAvailable": 23,
+        "firstVoiced": 23
+      },
+      {
+        "fact": [
+          "hadSourceOf",
+          "liane",
+          "nocturne"
+        ],
+        "firstAvailable": 26,
+        "firstVoiced": 26
+      }
+    ],
+    "frontierFinal": []
+  },
+  "corruption": {
+    "config": {
+      "seed": 2,
+      "rate": 0.75,
+      "graceTurns": 1,
+      "maxConcurrent": 2,
+      "startTurn": 1
+    },
+    "ledger": [
+      {
+        "turn": 4,
+        "type": "decay",
+        "premiseId": "m_style",
+        "fact": [
+          "styleOf",
+          "nocturne",
+          "vess"
+        ]
+      },
+      {
+        "turn": 5,
+        "type": "repair",
+        "premiseId": "m_style",
+        "via": "tutor"
+      },
+      {
+        "turn": 6,
+        "type": "decay",
+        "premiseId": "m_style",
+        "fact": [
+          "styleOf",
+          "nocturne",
+          "vess"
+        ]
+      },
+      {
+        "turn": 7,
+        "type": "decay",
+        "premiseId": "p_watermark",
+        "fact": [
+          "watermark",
+          "nocturne",
+          "heronStock"
+        ]
+      },
+      {
+        "turn": 8,
+        "type": "repair",
+        "premiseId": "p_watermark",
+        "via": "tutor"
+      },
+      {
+        "turn": 9,
+        "type": "decay",
+        "premiseId": "p_watermark",
+        "fact": [
+          "watermark",
+          "nocturne",
+          "heronStock"
+        ]
+      },
+      {
+        "turn": 10,
+        "type": "repair",
+        "premiseId": "p_watermark",
+        "via": "tutor"
+      },
+      {
+        "turn": 11,
+        "type": "repair",
+        "premiseId": "m_style",
+        "via": "tutor"
+      },
+      {
+        "turn": 11,
+        "type": "decay",
+        "premiseId": "p_watermark",
+        "fact": [
+          "watermark",
+          "nocturne",
+          "heronStock"
+        ]
+      },
+      {
+        "turn": 11,
+        "type": "decay",
+        "premiseId": "p_stock",
+        "fact": [
+          "stockUsedOnlyDuring",
+          "heronStock",
+          "floodWinter"
+        ]
+      },
+      {
+        "turn": 12,
+        "type": "repair",
+        "premiseId": "p_stock",
+        "via": "tutor"
+      },
+      {
+        "turn": 12,
+        "type": "decay",
+        "premiseId": "m_style",
+        "fact": [
+          "styleOf",
+          "nocturne",
+          "vess"
+        ]
+      },
+      {
+        "turn": 13,
+        "type": "repair",
+        "premiseId": "p_watermark",
+        "via": "tutor"
+      },
+      {
+        "turn": 13,
+        "type": "decay",
+        "premiseId": "m_away",
+        "fact": [
+          "awayDuring",
+          "vess",
+          "floodWinter"
+        ]
+      },
+      {
+        "turn": 16,
+        "type": "repair",
+        "premiseId": "m_away",
+        "via": "tutor"
+      },
+      {
+        "turn": 16,
+        "type": "decay",
+        "premiseId": "p_watermark",
+        "fact": [
+          "watermark",
+          "nocturne",
+          "heronStock"
+        ]
+      },
+      {
+        "turn": 33,
+        "type": "repair",
+        "premiseId": "m_style",
+        "via": "tutor"
+      },
+      {
+        "turn": 33,
+        "type": "decay",
+        "premiseId": "m_away",
+        "fact": [
+          "awayDuring",
+          "vess",
+          "floodWinter"
+        ]
+      },
+      {
+        "turn": 34,
+        "type": "repair",
+        "premiseId": "m_away",
+        "via": "tutor"
+      },
+      {
+        "turn": 34,
+        "type": "decay",
+        "premiseId": "p_stock",
+        "fact": [
+          "stockUsedOnlyDuring",
+          "heronStock",
+          "floodWinter"
+        ]
+      },
+      {
+        "turn": 35,
+        "type": "repair",
+        "premiseId": "p_stock",
+        "via": "tutor"
+      },
+      {
+        "turn": 35,
+        "type": "decay",
+        "premiseId": "m_away",
+        "fact": [
+          "awayDuring",
+          "vess",
+          "floodWinter"
+        ]
+      },
+      {
+        "turn": 36,
+        "type": "repair",
+        "premiseId": "p_watermark",
+        "via": "tutor"
+      }
+    ],
+    "decayedAtEnd": [
+      {
+        "premiseId": "m_away",
+        "fact": [
+          "awayDuring",
+          "vess",
+          "floodWinter"
+        ],
+        "sinceTurn": 35
+      }
+    ]
+  }
+}
