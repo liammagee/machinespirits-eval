@@ -17,3 +17,14 @@ exist for the eventual notes/paper fold-in.
   fedBy on the board ("With only fedBy on the board…") — blind in the precise
   sense: it works the board it last saw. Critic's notice missing (Fable CLI
   timeouts).
+
+- **run 1 — wit-decay-v1-B-s1 (conduct, seed 1, codex director)**:
+  disengagement t7/24, 342.7s; decay m_taint@t3, p_course@t5 (same slip
+  schedule as the superseded attempt), 0 repairs, byReadoption 0, releases
+  3/3 on cue. Opposite conduct texture to the superseded run: here the
+  learner *keeps citing the decayed fact as held* — t6 "the sexton's pipe
+  named the source" after p_course slipped at t5 — the stale-residue
+  mechanism the G2 note predicted (conduct need not betray a slip). What it
+  names as missing are the never-released ground facts (foulAt, sweetAbove,
+  residueAt), not the slipped premises. Critic's notice landed (322.7s):
+  "slipped facts circulate as ghosts in the dialogue."

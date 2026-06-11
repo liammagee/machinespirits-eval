@@ -1,0 +1,364 @@
+{
+  "label": "wit-decay-v1-B-s1",
+  "group": "unreliable-v1",
+  "note": "unreliable-learner v1, arm B (conduct), seed 1, codex director (amendment 2)",
+  "scriptPath": "config/drama-derivation/tutor-scripts/withercombe-v001.md",
+  "worldPath": "config/drama-derivation/world-004-withercombe.yaml",
+  "backend": {
+    "mode": "real",
+    "roles": {
+      "director": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "tutor": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "tutor_superego": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "learner": {
+        "provider": "claude",
+        "model": "sonnet",
+        "cli": true
+      }
+    }
+  },
+  "dials": {
+    "recognition": 0,
+    "charisma": 0
+  },
+  "dramaturgy": "free",
+  "tutorSuperego": true,
+  "tutorStallWatch": true,
+  "criticFeedback": null,
+  "learnerVoice": null,
+  "decay": {
+    "seed": 1,
+    "rate": 0.75,
+    "graceTurns": 1,
+    "maxConcurrent": 2,
+    "startTurn": 1
+  },
+  "decayVisibility": "conduct",
+  "elapsedMs": 342712,
+  "usage": {
+    "calls": 29,
+    "inputTokens": 0,
+    "outputTokens": 0,
+    "costUSD": 0,
+    "byRole": {
+      "director": {
+        "calls": 7,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "tutor": {
+        "calls": 8,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "tutor_superego": {
+        "calls": 7,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "learner": {
+        "calls": 7,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      }
+    }
+  },
+  "worldId": "world_004_withercombe",
+  "verdict": "disengagement",
+  "turnsPlayed": 7,
+  "turnCap": 24,
+  "firstForcedTurn": null,
+  "assertedGroundedTurn": null,
+  "forcedToAssertedGap": null,
+  "dCurve": [
+    6,
+    6,
+    6,
+    5,
+    5,
+    5,
+    5
+  ],
+  "learningSlope": {
+    "d0": 6,
+    "dFinal": 5,
+    "overall": {
+      "delta": 1,
+      "turns": 7,
+      "ratePerTurn": 0.143
+    },
+    "perAct": [
+      {
+        "act": "1",
+        "title": "The First Smell",
+        "turns": [
+          1,
+          5
+        ],
+        "dStart": 6,
+        "dEnd": 5,
+        "delta": 1,
+        "ratePerTurn": 0.2
+      },
+      {
+        "act": "2",
+        "title": "The Walk Up the Slope",
+        "turns": [
+          6,
+          7
+        ],
+        "dStart": 5,
+        "dEnd": 5,
+        "delta": 0,
+        "ratePerTurn": 0
+      }
+    ]
+  },
+  "longestPlateau": 3,
+  "aporiaWindow": 6,
+  "eventsByType": {
+    "decay": 2,
+    "disengagement": 1
+  },
+  "fabricatedFacts": [],
+  "releaseAdherence": {
+    "rows": [
+      {
+        "premise": "m_taint",
+        "plannedTurn": 2,
+        "plannedVia": "director",
+        "actualTurn": 2,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_course",
+        "plannedTurn": 4,
+        "plannedVia": "tutor",
+        "actualTurn": 4,
+        "actualVia": "tutor",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_lore",
+        "plannedTurn": 6,
+        "plannedVia": "director",
+        "actualTurn": 6,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_rill",
+        "plannedTurn": 8,
+        "plannedVia": "tutor",
+        "actualTurn": null,
+        "actualVia": null,
+        "status": "unreached"
+      },
+      {
+        "premise": "m_works",
+        "plannedTurn": 10,
+        "plannedVia": "director",
+        "actualTurn": null,
+        "actualVia": null,
+        "status": "unreached"
+      },
+      {
+        "premise": "p_basin",
+        "plannedTurn": 12,
+        "plannedVia": "tutor",
+        "actualTurn": null,
+        "actualVia": null,
+        "status": "unreached"
+      },
+      {
+        "premise": "m_drain",
+        "plannedTurn": 14,
+        "plannedVia": "director",
+        "actualTurn": null,
+        "actualVia": null,
+        "status": "unreached"
+      },
+      {
+        "premise": "p_residue",
+        "plannedTurn": 16,
+        "plannedVia": "tutor",
+        "actualTurn": null,
+        "actualVia": null,
+        "status": "unreached"
+      },
+      {
+        "premise": "p_brought",
+        "plannedTurn": 19,
+        "plannedVia": "director",
+        "actualTurn": null,
+        "actualVia": null,
+        "status": "unreached"
+      }
+    ],
+    "onCue": 3,
+    "deviations": [],
+    "missed": [],
+    "unscheduled": []
+  },
+  "staging": {
+    "source": "director",
+    "movements": [
+      {
+        "turn": 1,
+        "name": "The First Smell",
+        "intent": "To let suspicion enter before evidence, so the room begins with revulsion rather than knowledge."
+      },
+      {
+        "turn": 6,
+        "name": "The Walk Up the Slope",
+        "intent": "To move suspicion from the table onto the ground, where course, lore, and measured places can begin to test the village's first verdict."
+      }
+    ],
+    "tutorNotes": []
+  },
+  "superegoNotes": [
+    {
+      "turn": 3,
+      "draftFigure": "erotema",
+      "figure": "exemplum",
+      "diagnosis": "The draft would make erotema the declared figure for a third consecutive tutor turn.",
+      "note": "Leave off erotema here; the question-form has become the rut."
+    }
+  ],
+  "tutorFigures": {
+    "total": 7,
+    "counts": {
+      "erotema": 3,
+      "exemplum": 3,
+      "anaphora": 1
+    },
+    "distinct": 3,
+    "topFigure": "erotema",
+    "topShare": 0.429,
+    "switchRate": 0.667,
+    "noteTurns": 0,
+    "switchOnNoteTurns": null,
+    "switchElsewhere": 0.667,
+    "superego": {
+      "watched": 7,
+      "interventions": 1,
+      "interventionRate": 0.143,
+      "withinTurnChanges": 1,
+      "withinTurnChangeRate": 1,
+      "switchOnIntervention": 1,
+      "switchElsewhere": 0.6,
+      "stallWatch": {
+        "byJurisdiction": {
+          "figure_rut": 1,
+          "stalled_inference": 0
+        },
+        "audit": {
+          "turns": 7,
+          "due": 1,
+          "fired": 1,
+          "missedFires": [],
+          "falseFires": [],
+          "clean": true
+        }
+      }
+    }
+  },
+  "learnerInference": {
+    "nodes": [],
+    "voicedCount": 0,
+    "overreachCount": 0,
+    "mischanneledCount": 0,
+    "stallIntegral": 0,
+    "stallFires": [],
+    "postFireUptake": {
+      "fires": 0,
+      "uptaken": 0,
+      "rate": null
+    },
+    "targetObedience": {
+      "fires": 0,
+      "obeyed": 0,
+      "rate": null
+    }
+  },
+  "dialogueDiscipline": {
+    "director": {
+      "turns": 7,
+      "maxSentences": 3,
+      "avgSentences": 2.86,
+      "avgWords": 42
+    },
+    "tutor": {
+      "turns": 7,
+      "maxSentences": 3,
+      "avgSentences": 2.29,
+      "avgWords": 47.4
+    },
+    "learner": {
+      "turns": 7,
+      "maxSentences": 4,
+      "avgSentences": 3.29,
+      "avgWords": 72.6
+    }
+  },
+  "proofExtracted": false,
+  "corruption": {
+    "config": {
+      "seed": 1,
+      "rate": 0.75,
+      "graceTurns": 1,
+      "maxConcurrent": 2,
+      "startTurn": 1
+    },
+    "decayEvents": 2,
+    "repairs": {
+      "total": 0,
+      "byTutor": 0,
+      "byReadoption": 0
+    },
+    "meanRepairLatency": null,
+    "unrepairedAtEnd": 2,
+    "degradedTurnIntegral": 6,
+    "dReversals": 0,
+    "timeline": [
+      {
+        "premiseId": "m_taint",
+        "fact": [
+          "taints",
+          "tallowLees"
+        ],
+        "decayTurn": 3,
+        "repairTurn": null,
+        "via": null
+      },
+      {
+        "premiseId": "p_course",
+        "fact": [
+          "fedBy",
+          "schoolWell",
+          "fontHouse"
+        ],
+        "decayTurn": 5,
+        "repairTurn": null,
+        "via": null
+      }
+    ]
+  }
+}
