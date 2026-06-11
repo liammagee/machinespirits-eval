@@ -41,3 +41,16 @@ exist for the eventual notes/paper fold-in.
   p_lore ×2. The blind seed-1 sibling died at t7 with the same opening slip
   schedule. Critic's notice MISSING (3× Fable CLI timeout) — backfill:
   `npm run derivation:critic -- --label wit-decay-v1-A-s1`.
+
+- **run 3 — wit-decay-v1-A-s2 (told, seed 2, codex director)**: disengagement
+  t11/24, 529.2s, 47 calls; 6 slips, 4 tutor repairs (per-slip 0.667, mean
+  latency 1.5), 0 readoption, 2 unrepaired (m_taint 3rd lapse t8 — the same
+  mirror-premise abandonment as run 2 — and p_lore t9, lapsed two turns
+  before the stall ended things), releases 5/5 on cue. The told channel does
+  not buy survival: the tutor used it (and again triaged the mirror premise
+  away on its third lapse) but withercombe's ground facts arrive late
+  (S derivable at release-turn 19) and the window-6 stall clock fired at t11.
+  Rate is the endpoint, not survival — this is the case the distributional
+  design anticipated. Critic's notice MISSING (3× API 529 Overloaded —
+  server-side, not the CLI-timeout mode) — backfill:
+  `npm run derivation:critic -- --label wit-decay-v1-A-s2`.
