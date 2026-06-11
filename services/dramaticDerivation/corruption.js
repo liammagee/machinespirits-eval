@@ -1,0 +1,76 @@
+/**
+ * Seeded, parametric corruption of the learner's grounded board — the
+ * "unreliable learner" condition (notes/poetics/2026-06-10-unreliable-
+ * learner-design.md). The design rule is load-bearing: unreliability is
+ * HARNESS-implemented, never prompt-roleplayed. The model reasons at full
+ * strength from a degraded axiom base; the harness owns the ground truth of
+ * what was lost and when, so manifest-vs-latent is structural, not judged.
+ *
+ * v1 is DECAY ONLY: a masked (forgotten) released premise disappears from the
+ * learner's visible board and from D(t)/forcing until the tutor repairs it
+ * (a move whose targetPremise names it) or the learner re-adopts it. Other
+ * corruption modes (misremembering, intrusion) are design-note material, not
+ * built. The decay schedule is a RUN-LEVEL condition: worlds stay frozen.
+ */
+
+/**
+ * mulberry32 — tiny seedable PRNG, deterministic across platforms. Returns a
+ * function yielding floats in [0, 1). One draw per eligible board entry per
+ * turn; the draw count depends only on board state, which is deterministic
+ * given role outputs, so a seed pins the whole corruption schedule.
+ */
+export function mulberry32(seed) {
+  let a = seed >>> 0;
+  return function next() {
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const DECAY_DEFAULTS = Object.freeze({
+  seed: 1,
+  rate: 0.15,
+  graceTurns: 2,
+  maxConcurrent: 2,
+  startTurn: 1,
+});
+
+/**
+ * Validate and default a decay config. Accepts an object or a JSON string
+ * (the CLI's `--decay '<json>'`). Unknown keys are rejected — a typo'd
+ * parameter must fail loudly, not silently run at its default.
+ */
+export function normalizeDecayConfig(raw) {
+  let cfg = raw;
+  if (typeof cfg === 'string') {
+    try {
+      cfg = JSON.parse(cfg);
+    } catch (err) {
+      throw new Error(`decay config is not valid JSON: ${err.message}`);
+    }
+  }
+  if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg)) {
+    throw new Error('decay config must be a JSON object, e.g. {"seed":7,"rate":0.15}');
+  }
+  for (const key of Object.keys(cfg)) {
+    if (!(key in DECAY_DEFAULTS)) {
+      throw new Error(`decay config: unknown key "${key}" (known: ${Object.keys(DECAY_DEFAULTS).join(', ')})`);
+    }
+  }
+  const out = { ...DECAY_DEFAULTS, ...cfg };
+  const intField = (name, min) => {
+    if (!Number.isInteger(out[name]) || out[name] < min) {
+      throw new Error(`decay config: ${name} must be an integer >= ${min} (got ${JSON.stringify(out[name])})`);
+    }
+  };
+  intField('seed', 0);
+  intField('graceTurns', 0);
+  intField('maxConcurrent', 1);
+  intField('startTurn', 1);
+  if (typeof out.rate !== 'number' || !(out.rate >= 0 && out.rate <= 1)) {
+    throw new Error(`decay config: rate must be a number in [0, 1] (got ${JSON.stringify(out.rate)})`);
+  }
+  return out;
+}

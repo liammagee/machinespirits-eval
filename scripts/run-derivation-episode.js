@@ -1,0 +1,413 @@
+#!/usr/bin/env node
+/**
+ * Episode replay shell — "change this one condition and re-run" without
+ * waiting out the whole drama (notes/poetics/2026-06-10-unreliable-learner-
+ * design.md, Build A). Replays a recorded run's role outputs for turns
+ * 1..N-1 (instant, zero calls), hands the roles live to the normal bridges
+ * at turn N, and stops after a bounded window. A 25-minute question becomes
+ * a 1–2 minute one.
+ *
+ * Conditions are INHERITED from the source run's diagnosis.json — script,
+ * dials, dramaturgy, superego, stall-watch, learner voice, counsel, decay —
+ * and only the flags you pass override them. The world is never overridable:
+ * replay into a different world is undefined. The backend mode never
+ * inherits: episodes are mock unless --real is given (a --from <real run>
+ * must not silently spawn paid calls).
+ *
+ * Usage:
+ *   node scripts/run-derivation-episode.js
+ *     --from <label|dir|result.json>   (loop label, episodes label, or path)
+ *     --turn N                         (first LIVE turn; 1..turnsPlayed+1)
+ *     [--window K]                     (live turns to play; default 3)
+ *     [--real]                         (paid calls; default mock)
+ *     [--script <path>]                (try a new tutor script mid-drama)
+ *     [--recognition 0-3] [--charisma 0-3]
+ *     [--dramaturgy free|frozen]
+ *     [--superego on|off] [--stall-watch on|off]
+ *     [--learner-voice "<text>"]
+ *     [--decay '<json>'|off]           (run-level decay condition — corruption.js)
+ *     [--critic auto|real|mock|off]    (default off — episodes are scratch
+ *                                       iterations; promote keepers to a full
+ *                                       loop run for the archived notice)
+ *     [--label <name>] [--out exports/dramatic-derivation/episodes]
+ *     [--note "what this episode probes"]
+ *
+ * After the run the replayed prefix is VERIFIED against the recording
+ * (replay.js comparePrefix): trajectory, release ledger, and event stream
+ * must match field-for-field. Divergence is loud — and expected in exactly
+ * one case: a condition change that reaches back into the prefix (a decay
+ * schedule with startTurn < --turn). The report says which.
+ *
+ * Artifacts land in <out>/<label>/ in the loop run shape (diagnosis.json,
+ * result.json, transcript.md [+ commentary.md]) plus episode.json — so an
+ * episode can itself be a --from source for the next episode.
+ */
+
+import 'dotenv/config';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import {
+  loadWorld,
+  plotLint,
+  runDrama,
+  makeLlmClient,
+  llmMode,
+  resolveTarget,
+  makeLlmDirector,
+  makeLlmTutor,
+  makeLlmLearner,
+  clampDial,
+  makeReplayRoles,
+  comparePrefix,
+  normalizeDecayConfig,
+  diagnose,
+  renderDCurve,
+  renderTranscript,
+  runCritic,
+  commentaryFileMd,
+} from '../services/dramaticDerivation/index.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const ROOT = path.resolve(path.dirname(__filename), '..');
+
+function arg(name, fallback) {
+  const i = process.argv.indexOf(`--${name}`);
+  return i !== -1 && process.argv[i + 1] && !process.argv[i + 1].startsWith('--') ? process.argv[i + 1] : fallback;
+}
+
+function flag(name) {
+  return process.argv.includes(`--${name}`);
+}
+
+function timestamp() {
+  return new Date().toISOString().replace(/[-:]/g, '').replace(/T/, '-').replace(/\..+$/, '');
+}
+
+/** on|off|inherit tri-state for booleans whose default is the source run's value. */
+function triState(name, inherited) {
+  const v = arg(name, null);
+  if (v === null) return inherited;
+  if (v === 'on') return true;
+  if (v === 'off') return false;
+  console.error(`--${name} must be "on" or "off" (got "${v}")`);
+  process.exit(1);
+}
+
+/**
+ * Resolve --from to a run directory holding result.json + diagnosis.json.
+ * Accepts a path (directory or result.json file) or a bare label searched
+ * under the loop and episodes export trees.
+ */
+function resolveSource(from) {
+  const candidates = [];
+  const asPath = path.resolve(ROOT, from);
+  if (fs.existsSync(asPath)) {
+    candidates.push(fs.statSync(asPath).isDirectory() ? asPath : path.dirname(asPath));
+  } else {
+    for (const base of ['exports/dramatic-derivation/loop', 'exports/dramatic-derivation/episodes']) {
+      candidates.push(path.resolve(ROOT, base, from));
+    }
+  }
+  for (const dir of candidates) {
+    if (fs.existsSync(path.join(dir, 'result.json')) && fs.existsSync(path.join(dir, 'diagnosis.json'))) {
+      return {
+        dir,
+        label: path.basename(dir),
+        result: JSON.parse(fs.readFileSync(path.join(dir, 'result.json'), 'utf8')),
+        diagnosis: JSON.parse(fs.readFileSync(path.join(dir, 'diagnosis.json'), 'utf8')),
+      };
+    }
+  }
+  console.error(`--from ${from}: no run found (need result.json + diagnosis.json; looked at ${candidates.join(', ')})`);
+  process.exit(1);
+}
+
+async function main() {
+  if (flag('world') || arg('world', null)) {
+    console.error('--world is not an episode condition: replaying role outputs into a different world is undefined.');
+    console.error('Start a fresh run with scripts/run-derivation-loop.js instead.');
+    process.exit(1);
+  }
+  const from = arg('from', null);
+  const fromTurn = Number(arg('turn', NaN));
+  if (!from || !Number.isInteger(fromTurn) || fromTurn < 1) {
+    console.error('required: --from <label|dir|result.json> and --turn N (first live turn, integer >= 1)');
+    process.exit(1);
+  }
+  const window = Number(arg('window', 3));
+  if (!Number.isInteger(window) || window < 1) {
+    console.error(`--window must be an integer >= 1 (got ${arg('window', '3')})`);
+    process.exit(1);
+  }
+
+  const src = resolveSource(from);
+  const srcDiag = src.diagnosis;
+  if (fromTurn > (src.result.turnsPlayed ?? 0) + 1) {
+    console.error(
+      `--turn ${fromTurn} is beyond the recording: ${src.label} played ${src.result.turnsPlayed} turns (max usable --turn is ${src.result.turnsPlayed + 1})`,
+    );
+    process.exit(1);
+  }
+
+  // --- conditions: inherit from the source, override only what was named ---
+  const mode = flag('real') ? 'real' : llmMode() === 'real' ? 'real' : 'mock';
+  const overrides = [];
+  const track = (name, value, inherited) => {
+    if (value !== inherited) overrides.push(name);
+    return value;
+  };
+  const scriptPath = path.resolve(ROOT, track('script', arg('script', srcDiag.scriptPath), srcDiag.scriptPath));
+  const dials = {
+    recognition: track(
+      'recognition',
+      clampDial(arg('recognition', srcDiag.dials?.recognition ?? 0)),
+      srcDiag.dials?.recognition ?? 0,
+    ),
+    charisma: track('charisma', clampDial(arg('charisma', srcDiag.dials?.charisma ?? 0)), srcDiag.dials?.charisma ?? 0),
+  };
+  const dramaturgy = track('dramaturgy', arg('dramaturgy', srcDiag.dramaturgy ?? 'free'), srcDiag.dramaturgy ?? 'free');
+  if (!['free', 'frozen'].includes(dramaturgy)) {
+    console.error(`--dramaturgy must be "free" or "frozen" (got "${dramaturgy}")`);
+    process.exit(1);
+  }
+  const superego = track(
+    'superego',
+    triState('superego', Boolean(srcDiag.tutorSuperego)),
+    Boolean(srcDiag.tutorSuperego),
+  );
+  const stallWatch = track(
+    'stall-watch',
+    triState('stall-watch', Boolean(srcDiag.tutorStallWatch)),
+    Boolean(srcDiag.tutorStallWatch),
+  );
+  if (stallWatch && !superego) {
+    console.error('--stall-watch on requires the superego (inherit it or pass --superego on)');
+    process.exit(1);
+  }
+  const learnerVoice = track(
+    'learner-voice',
+    arg('learner-voice', srcDiag.learnerVoice ?? null),
+    srcDiag.learnerVoice ?? null,
+  );
+  const decayArg = arg('decay', null);
+  const inheritedDecay = srcDiag.decay ?? null;
+  const decay = decayArg === null ? inheritedDecay : decayArg === 'off' ? null : normalizeDecayConfig(decayArg);
+  if (decayArg !== null) overrides.push('decay');
+  // The counsel paragraph the source run folded into its charters is part of
+  // its conditions — inherit the stored text verbatim (no re-resolution).
+  const counsel = srcDiag.criticFeedback?.paragraph ?? null;
+  const note = arg('note', null);
+  const criticArg = arg('critic', 'off');
+  if (!['auto', 'real', 'mock', 'off'].includes(criticArg)) {
+    console.error(`--critic must be "auto", "real", "mock" or "off" (got "${criticArg}")`);
+    process.exit(1);
+  }
+  const criticMode = criticArg === 'auto' ? mode : criticArg;
+  if (mode === 'real' && process.env.DERIVATION_TRACE === undefined) process.env.DERIVATION_TRACE = '1';
+
+  const worldPath = path.resolve(ROOT, srcDiag.worldPath);
+  const world = loadWorld(worldPath);
+  const lint = plotLint(world);
+  if (!lint.ok) {
+    console.error(`REFUSING TO RUN — plotLint failed for ${world.id}:`);
+    for (const err of lint.errors) console.error(`  - ${err}`);
+    process.exit(1);
+  }
+
+  const script = fs.readFileSync(scriptPath, 'utf8');
+  const label = arg('label', `${src.label}-t${fromTurn}-${mode}-${timestamp()}`);
+  const outDir = path.join(path.resolve(ROOT, arg('out', 'exports/dramatic-derivation/episodes')), label);
+  const maxTurns = fromTurn - 1 + window;
+
+  const ROLE_NAMES = ['director', 'tutor', ...(superego ? ['tutor_superego'] : []), 'learner'];
+  const targets = Object.fromEntries(
+    ROLE_NAMES.map((r) => [r, mode === 'real' ? resolveTarget(r) : { provider: 'mock', model: 'mock' }]),
+  );
+  console.log(`episode ${src.label} → live from turn ${fromTurn}, window ${window} (stops after turn ${maxTurns})`);
+  console.log(`world   ${world.id} (lint PASS)`);
+  console.log(`script  ${path.relative(ROOT, scriptPath)}`);
+  console.log(`backend ${mode}${mode === 'real' ? '' : ' (zero-cost)'}`);
+  if (mode === 'real') {
+    for (const r of ROLE_NAMES)
+      console.log(`          ${r.padEnd(14)} ${targets[r].provider}/${targets[r].model || '(cli default)'}`);
+    console.log(`        live calls bounded by window: ≤${window * (superego ? 5 : 3) * 2}`);
+  }
+  if (decay)
+    console.log(
+      `decay   seed ${decay.seed} rate ${decay.rate} grace ${decay.graceTurns} maxConcurrent ${decay.maxConcurrent} from turn ${decay.startTurn}`,
+    );
+  console.log(
+    `conds   ${overrides.length ? `overridden: ${overrides.join(', ')} — all else inherited` : 'all inherited from source'}`,
+  );
+
+  const client = makeLlmClient({ mode });
+  const live = {
+    director: makeLlmDirector(world, client, { dials, dramaturgy, counsel }),
+    tutor: makeLlmTutor(world, client, { script, dials, superego, stallWatch, counsel }),
+    learner: makeLlmLearner({ setting: world.setting, voice: learnerVoice || world.learnerVoice, client }),
+  };
+  const roles = makeReplayRoles({ recorded: src.result, fromTurn, live });
+
+  const onTurn = (s) => {
+    if (s.turn < fromTurn) return; // replayed turns are silent — verified after the run instead
+    const bits = [`  t${String(s.turn).padStart(2, '0')}/${s.turnCap}`, `D=${s.D}${s.forced ? ' FORCED' : ''}`];
+    if (s.released.length) bits.push(`▲ ${s.released.map((f) => f.join(' ')).join('; ')}`);
+    if (s.adopted) bits.push(`+${s.adopted} adopted`);
+    if (s.retracted) bits.push(`−${s.retracted} retracted`);
+    if (s.decayedNow?.length) bits.push(`☄ ${s.decayedNow.join(', ')} fades`);
+    if (s.repairedNow?.length) bits.push(`✚ ${s.repairedNow.join(', ')} restored`);
+    if (s.phase && s.phase.turn === s.turn) bits.push(`movement "${s.phase.name}"`);
+    if (s.intervened) bits.push('✎ superego');
+    if (s.asserted) bits.push('ASSERTS');
+    for (const e of s.events) bits.push(`⚑ ${e.type}`);
+    if (s.endedBy) bits.push(`— ends: ${s.endedBy}`);
+    console.log(bits.join('  '));
+  };
+
+  const started = Date.now();
+  const result = await runDrama({ world, roles, options: { onTurn, maxTurns, ...(decay ? { decay } : {}) } });
+  const elapsedMs = Date.now() - started;
+  const usage = client.usage();
+
+  // --- prefix integrity ---
+  const prefix = comparePrefix(result, src.result, fromTurn);
+  // A decay-condition change explains prefix divergence only when the change
+  // is visible BEFORE the live turns — i.e. the effective config differs from
+  // the inherited one and either of them acts on a prefix turn. This is
+  // symmetric: adding/retuning decay (new config reaches back) and removing
+  // it (the recording's decay events vanish from the replay) both qualify.
+  const reachesPrefix = (cfg) => Boolean(cfg) && cfg.startTurn < fromTurn;
+  const decayReachesPrefix =
+    JSON.stringify(decay ?? null) !== JSON.stringify(inheritedDecay ?? null) &&
+    (reachesPrefix(decay) || reachesPrefix(inheritedDecay));
+  if (prefix.ok) {
+    console.log(`\nprefix  ${prefix.prefixTurns} turns replayed — formal channel identical to ${src.label}`);
+  } else {
+    console.log(
+      `\nprefix  DIVERGED from ${src.label} (${prefix.mismatches.length}${prefix.mismatches.length === 20 ? '+' : ''} mismatches)`,
+    );
+    if (decayReachesPrefix) {
+      console.log(
+        `        expected: the decay-condition change reaches back into the prefix (${
+          decay ? `startTurn ${decay.startTurn}` : `source decay startTurn ${inheritedDecay.startTurn}`
+        } < --turn ${fromTurn})`,
+      );
+    }
+    for (const m of prefix.mismatches.slice(0, 5)) {
+      console.log(
+        `        ${m.kind}${m.turn !== null && m.turn !== undefined ? ` t${m.turn}` : ''}: recorded ${m.expected} → replayed ${m.actual}`,
+      );
+    }
+    if (!decayReachesPrefix) {
+      console.log('        no condition change explains this — treat the episode as invalid and investigate');
+    }
+  }
+
+  const windowExhausted =
+    !result.events.some((e) => e.turn >= fromTurn && ['grounded_anagnorisis', 'leak'].includes(e.type)) &&
+    result.turnsPlayed === maxTurns &&
+    maxTurns < world.turnCap;
+  const episode = {
+    label,
+    source: { label: src.label, dir: path.relative(ROOT, src.dir) },
+    fromTurn,
+    window,
+    maxTurns,
+    overrides,
+    prefixIntegrity: { ok: prefix.ok, mismatches: prefix.mismatches, expectedDivergence: decayReachesPrefix },
+    windowExhausted,
+  };
+  const diagnosis = {
+    label,
+    group: srcDiag.group ?? null,
+    note,
+    scriptPath: path.relative(ROOT, scriptPath),
+    worldPath: path.relative(ROOT, worldPath),
+    backend: { mode, roles: targets },
+    dials,
+    dramaturgy,
+    tutorSuperego: superego,
+    tutorStallWatch: stallWatch,
+    criticFeedback: srcDiag.criticFeedback ?? null,
+    learnerVoice: learnerVoice || null,
+    decay: decay || null,
+    elapsedMs,
+    usage,
+    episode,
+    ...diagnose(result, world),
+  };
+
+  fs.mkdirSync(outDir, { recursive: true });
+  fs.writeFileSync(path.join(outDir, 'diagnosis.json'), `${JSON.stringify(diagnosis, null, 2)}\n`);
+  fs.writeFileSync(path.join(outDir, 'result.json'), `${JSON.stringify(result, null, 2)}\n`);
+  fs.writeFileSync(path.join(outDir, 'episode.json'), `${JSON.stringify(episode, null, 2)}\n`);
+
+  let commentaryEmbed = null;
+  if (criticMode !== 'off') {
+    try {
+      if (criticMode === 'real') console.log('\ncritic  reading the performance…');
+      const notice = await runCritic({ result, diagnosis, world, label, mode: criticMode });
+      const by = `${notice.target.provider}/${notice.target.model || '(cli default)'}`;
+      fs.writeFileSync(
+        path.join(outDir, 'commentary.md'),
+        commentaryFileMd({ label, commentary: notice.commentary, target: notice.target }),
+      );
+      commentaryEmbed = [`*— notice by ${by}*`, '', notice.commentary].join('\n');
+    } catch (err) {
+      console.warn(`critic  FAILED (episode artifacts are intact): ${err.message}`);
+    }
+  }
+
+  fs.writeFileSync(
+    path.join(outDir, 'transcript.md'),
+    renderTranscript(result, world, { title: `${world.title} — ${label}`, diagnosis, commentary: commentaryEmbed }),
+  );
+
+  // --- focused report: the window, not the whole drama ---
+  console.log('');
+  console.log(
+    `VERDICT ${result.verdict}${windowExhausted ? ' — window exhausted (no terminal event within the episode window)' : ''}  (${result.turnsPlayed}/${world.turnCap} turns, ${(elapsedMs / 1000).toFixed(1)}s)`,
+  );
+  if (result.firstForcedTurn !== null) {
+    console.log(
+      `        S forced at turn ${result.firstForcedTurn}; ${
+        result.assertedGroundedTurn !== null
+          ? `asserted grounded at turn ${result.assertedGroundedTurn}`
+          : 'never asserted'
+      }`,
+    );
+  }
+  console.log('');
+  console.log(renderDCurve(result.trajectory.filter((p) => p.turn >= fromTurn - 1)));
+  const windowEvents = result.events.filter((e) => e.turn >= fromTurn);
+  console.log('');
+  console.log(
+    `window  turns ${fromTurn}–${result.turnsPlayed}: ${windowEvents.length ? windowEvents.map((e) => `${e.type}@t${e.turn}`).join(', ') : 'no events'}`,
+  );
+  const windowReleases = result.ledger.filter((e) => e.turn >= fromTurn);
+  console.log(
+    `        releases ${windowReleases.length ? windowReleases.map((e) => `${e.premiseId}@t${e.turn}`).join(', ') : 'none'}`,
+  );
+  if (result.corruption) {
+    const decays = result.corruption.ledger.filter((e) => e.type === 'decay');
+    const repairs = result.corruption.ledger.filter((e) => e.type === 'repair');
+    console.log(
+      `decay   ${decays.length} decay event${decays.length === 1 ? '' : 's'}, ${repairs.length} repaired, ${result.corruption.decayedAtEnd.length} still degraded at end`,
+    );
+  }
+  if (mode === 'real') {
+    console.log(
+      `cost    ${usage.calls} live calls, ${usage.inputTokens}+${usage.outputTokens} tokens, $${usage.costUSD.toFixed(4)}`,
+    );
+  }
+  console.log('');
+  console.log(
+    `artifacts ${path.relative(ROOT, outDir)}/{transcript.md, diagnosis.json, result.json, episode.json${commentaryEmbed ? ', commentary.md' : ''}}`,
+  );
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

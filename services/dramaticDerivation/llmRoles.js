@@ -442,6 +442,19 @@ export function makeLlmTutor(
       "The learner's hypotheses:",
       hyps,
       '',
+      // v1 decay visibility (corruption.js): the tutor reads the harness's
+      // ground truth of what slipped. The v2 manipulation — infer decay from
+      // conduct — removes this block; design-note material, not built.
+      ...(view.corruption?.decayed?.length
+        ? [
+            `SLIPPED FROM THE BOARD: the learner has lost hold of ${view.corruption.decayed
+              .map((d) => `${d.premiseId || renderFact(d.fact)} (since turn ${d.sinceTurn})`)
+              .join(
+                ', ',
+              )}. Staged evidence can fade; a move whose target_premise names a slipped exhibit re-stages it and restores it to the learner's hands.`,
+            '',
+          ]
+        : []),
       'The last lines spoken:',
       renderTranscriptTail(view.transcript),
       '',

@@ -49,6 +49,7 @@
  */
 
 import { closure, entails, factKey, matchPattern, proofTree } from './chainer.js';
+import { normalizeDecayConfig, mulberry32 } from './corruption.js';
 import { derivationDistance, detectStall } from './slope.js';
 
 function renderFact(fact) {
@@ -60,8 +61,17 @@ export async function runDrama({ world, roles, options = {} }) {
     stopOnStall: true,
     stopOnLeak: true,
     recognitionGrace: 3,
+    maxTurns: Infinity, // episode replay (replay.js) stops the loop early; world.turnCap still bounds it
     ...options,
   };
+  // The unreliable-learner condition (corruption.js header): seeded decay of
+  // the learner's grounded board, a RUN-LEVEL condition — worlds stay frozen.
+  // null = condition absent, and absent means absent: no entry ever gains a
+  // `decayed` flag, no new event types appear, and the result object is
+  // field-for-field what the engine returned before the condition existed
+  // (the decay-off invariance the tests pin).
+  const decay = options.decay ? normalizeDecayConfig(options.decay) : null;
+  const corruption = decay ? { config: decay, rng: mulberry32(decay.seed), ledger: [] } : null;
   const ledger = []; // {turn, premiseId, via}
   const releasedKeys = new Set();
   const releasedFacts = [];
@@ -84,7 +94,8 @@ export async function runDrama({ world, roles, options = {} }) {
   let assertedGroundedTurn = null;
   let endedBy = null;
 
-  const validGroundedFacts = () => [...grounded.values()].filter((entry) => entry.valid).map((entry) => entry.fact);
+  const validGroundedFacts = () =>
+    [...grounded.values()].filter((entry) => entry.valid && !entry.decayed).map((entry) => entry.fact);
 
   // --- derive channel + inference frontier state (stall-watcher instrument) ---
   const voicedLedger = []; // {fact, turn} — canonical closure facts the learner voiced via derive
@@ -172,14 +183,23 @@ export async function runDrama({ world, roles, options = {} }) {
     return premise.fact;
   };
 
+  // What the world has staged is not what the learner still holds: a decayed
+  // fact vanishes from the learner's view of the released record too —
+  // otherwise the learner would trivially re-adopt it from the list each turn
+  // and the condition would be a no-op. The transcript prose still carries
+  // the staging dialogue; re-deriving the fact from there is a legitimate
+  // (and measured) recovery path.
+  const visibleToLearner = (facts) =>
+    corruption ? facts.filter((fact) => !grounded.get(factKey(fact))?.decayed) : facts;
+
   const learnerView = (turn, releasedThisTurn) => ({
     turn,
     question: world.question,
     questionPattern: world.questionPattern,
     rules: world.rules,
     background: world.background,
-    releasedFacts: [...releasedFacts],
-    releasedThisTurn,
+    releasedFacts: visibleToLearner([...releasedFacts]),
+    releasedThisTurn: visibleToLearner(releasedThisTurn),
     transcript: transcript.map(({ turn: t, role, text }) => ({ turn: t, role, text })),
     abox: {
       grounded: validGroundedFacts(),
@@ -206,11 +226,30 @@ export async function runDrama({ world, roles, options = {} }) {
       voiced: voicedLedger.map((entry) => ({ ...entry })),
       overreachCount: overreaches.length,
     },
+    // v1 visibility: world-side roles read the corruption ground truth (the
+    // harness owns what was lost and when). The v2 manipulation — superego
+    // must INFER decay from conduct — gates this block off; design-note
+    // material, not built.
+    ...(corruption
+      ? {
+          corruption: {
+            decayed: [...grounded.entries()]
+              .filter(([, entry]) => entry.decayed)
+              .map(([key, entry]) => ({
+                premiseId: premiseIdByKey.get(key) || null,
+                fact: entry.fact,
+                sinceTurn: entry.decayTurn,
+              })),
+            ledger: corruption.ledger.map((e) => ({ ...e })),
+          },
+        }
+      : {}),
   });
 
   recordAvailability(0); // background-only board may already yield derivations
+  const turnLimit = Math.min(world.turnCap, Number.isFinite(opts.maxTurns) ? opts.maxTurns : Infinity);
   let turn = 0;
-  while (turn < world.turnCap && !endedBy) {
+  while (turn < turnLimit && !endedBy) {
     turn += 1;
     const releasedThisTurn = [];
 
@@ -250,6 +289,21 @@ export async function runDrama({ world, roles, options = {} }) {
       },
     });
 
+    // Tutor-side repair: a move that TARGETS a decayed premise restores it —
+    // the tutor re-staged the evidence, so it is back in the learner's hands
+    // before the learner speaks this turn. Repair is declared move metadata,
+    // never inferred from prose.
+    if (corruption && tutorOut.move?.targetPremise) {
+      const premise = world.premiseById.get(tutorOut.move.targetPremise);
+      const entry = premise ? grounded.get(factKey(premise.fact)) : null;
+      if (entry?.decayed) {
+        entry.decayed = false;
+        entry.regroundedTurn = turn;
+        corruption.ledger.push({ turn, type: 'repair', premiseId: tutorOut.move.targetPremise, via: 'tutor' });
+        events.push({ turn, type: 'repair', detail: `${tutorOut.move.targetPremise} restored by the tutor` });
+      }
+    }
+
     // Runtime anti-reveal guard (plotLint should make this unreachable).
     if (turn < world.slope.t_min && entails([...world.background, ...releasedFacts], world.rules, world.secret.fact)) {
       events.push({ turn, type: 'leak', detail: 'released closure forces S before t_min' });
@@ -266,7 +320,19 @@ export async function runDrama({ world, roles, options = {} }) {
     }
     for (const fact of learnerOut.adopt || []) {
       const key = factKey(fact);
-      if (grounded.has(key)) continue;
+      const existing = grounded.get(key);
+      if (existing) {
+        // Re-adoption heals decay: taking the fact up again restores it to
+        // the board (the learner-side repair channel).
+        if (corruption && existing.decayed) {
+          existing.decayed = false;
+          existing.regroundedTurn = turn;
+          const premiseId = premiseIdByKey.get(key) || null;
+          corruption.ledger.push({ turn, type: 'repair', premiseId, via: 'readoption' });
+          events.push({ turn, type: 'repair', detail: `${premiseId || renderFact(fact)} restored by re-adoption` });
+        }
+        continue;
+      }
       const valid = releasedKeys.has(key) || backgroundKeys.has(key);
       grounded.set(key, { fact, turn, valid });
       if (!valid) {
@@ -388,6 +454,39 @@ export async function runDrama({ world, roles, options = {} }) {
       if (opts.stopOnStall) endedBy = stall;
     }
 
+    // --- decay draw (end of turn, after the learner has acted) ---
+    // One PRNG draw per eligible entry per turn, in board insertion order, so
+    // the corruption schedule is a pure function of (seed, role outputs).
+    // Decayed facts vanish from next turn's views and from D(t): the drama
+    // can move BACKWARD, which is the point of the condition.
+    const decayedNow = [];
+    if (corruption && !endedBy && turn >= corruption.config.startTurn) {
+      const active = [...grounded.values()].filter((entry) => entry.decayed).length;
+      const eligible = [];
+      for (const [key, entry] of grounded) {
+        if (!entry.valid || entry.decayed) continue;
+        if (!releasedKeys.has(key)) continue; // background is immune — released premises are the experimental material
+        const since = entry.regroundedTurn ?? entry.turn;
+        if (turn - since < corruption.config.graceTurns) continue;
+        eligible.push([key, entry]);
+      }
+      // Every eligible entry gets its draw (the draw count never depends on
+      // earlier hits); maxConcurrent then caps how many hits land.
+      const hits = eligible.filter(() => corruption.rng() < corruption.config.rate);
+      for (const [key, entry] of hits.slice(0, Math.max(0, corruption.config.maxConcurrent - active))) {
+        entry.decayed = true;
+        entry.decayTurn = turn;
+        const premiseId = premiseIdByKey.get(key) || null;
+        corruption.ledger.push({ turn, type: 'decay', premiseId, fact: entry.fact });
+        events.push({
+          turn,
+          type: 'decay',
+          detail: `${premiseId || renderFact(entry.fact)} slips from the learner's board`,
+        });
+        decayedNow.push(premiseId || renderFact(entry.fact));
+      }
+    }
+
     // --- live status hook (the attended shell watches the drama through this) ---
     options.onTurn?.({
       turn,
@@ -404,6 +503,15 @@ export async function runDrama({ world, roles, options = {} }) {
       intervened: Boolean(tutorOut.deliberation?.intervened),
       phase: staging.phase ? { ...staging.phase } : null,
       events: events.filter((e) => e.turn === turn).map(({ type, detail }) => ({ type, detail })),
+      ...(corruption
+        ? {
+            decayedNow,
+            repairedNow: corruption.ledger
+              .filter((e) => e.type === 'repair' && e.turn === turn)
+              .map((e) => e.premiseId),
+            decayActive: [...grounded.values()].filter((entry) => entry.decayed).length,
+          }
+        : {}),
       endedBy,
     });
   }
@@ -436,6 +544,21 @@ export async function runDrama({ world, roles, options = {} }) {
       availability,
       frontierFinal: computeFrontier(turn),
     },
+    ...(corruption
+      ? {
+          corruption: {
+            config: corruption.config,
+            ledger: corruption.ledger,
+            decayedAtEnd: [...grounded.entries()]
+              .filter(([, entry]) => entry.decayed)
+              .map(([key, entry]) => ({
+                premiseId: premiseIdByKey.get(key) || null,
+                fact: entry.fact,
+                sinceTurn: entry.decayTurn,
+              })),
+          },
+        }
+      : {}),
   };
 }
 

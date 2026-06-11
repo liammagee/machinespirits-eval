@@ -379,6 +379,62 @@ export function learnerInference(result) {
   };
 }
 
+/**
+ * Decay-condition panel block (null when the run had no decay condition, so
+ * the OFF-state diagnosis object is byte-identical to the pre-corruption
+ * shape). Everything is derived from the engine's corruption ledger except
+ * `unrepairedAtEnd`, which reads the engine's own end-state field — the two
+ * agree by construction, and the end-state is the authority.
+ *
+ * `degradedTurnIntegral` is the headline burden number: turns × premises the
+ * learner's board spent degraded (unrepaired slips accrue until the run ends).
+ * `dReversals` counts turns where D(t) ROSE — the signature of decay knocking
+ * out a premise the proof path needed.
+ */
+export function corruptionReport(result) {
+  const c = result.corruption;
+  if (!c) return null;
+  const ledger = c.ledger || [];
+  const timeline = [];
+  const openByPremise = new Map();
+  for (const e of ledger) {
+    if (e.type === 'decay') {
+      const row = { premiseId: e.premiseId, fact: e.fact, decayTurn: e.turn, repairTurn: null, via: null };
+      timeline.push(row);
+      openByPremise.set(e.premiseId, row);
+    } else if (e.type === 'repair') {
+      const open = openByPremise.get(e.premiseId);
+      if (open) {
+        open.repairTurn = e.turn;
+        open.via = e.via;
+        openByPremise.delete(e.premiseId);
+      }
+    }
+  }
+  const repairs = ledger.filter((e) => e.type === 'repair');
+  const latencies = timeline.filter((t) => t.repairTurn !== null).map((t) => t.repairTurn - t.decayTurn);
+  let dReversals = 0;
+  for (let i = 1; i < result.trajectory.length; i += 1) {
+    if (result.trajectory[i].D > result.trajectory[i - 1].D) dReversals += 1;
+  }
+  return {
+    config: c.config,
+    decayEvents: timeline.length,
+    repairs: {
+      total: repairs.length,
+      byTutor: repairs.filter((e) => e.via === 'tutor').length,
+      byReadoption: repairs.filter((e) => e.via === 'readoption').length,
+    },
+    meanRepairLatency: latencies.length
+      ? +(latencies.reduce((sum, l) => sum + l, 0) / latencies.length).toFixed(2)
+      : null,
+    unrepairedAtEnd: (c.decayedAtEnd || []).length,
+    degradedTurnIntegral: timeline.reduce((sum, t) => sum + ((t.repairTurn ?? result.turnsPlayed) - t.decayTurn), 0),
+    dReversals,
+    timeline,
+  };
+}
+
 export function diagnose(result, world) {
   const eventsByType = {};
   for (const event of result.events) {
@@ -447,6 +503,7 @@ export function diagnose(result, world) {
     learnerInference: learnerInference(result),
     dialogueDiscipline: perRole,
     proofExtracted: Boolean(result.proof),
+    ...(result.corruption ? { corruption: corruptionReport(result) } : {}),
   };
 }
 
@@ -649,6 +706,25 @@ export function renderEvalPanel(diagnosis) {
     if (ra.missed.length) bits.push(`${ra.missed.length} missed`);
     if (ra.unscheduled.length) bits.push(`${ra.unscheduled.length} unscheduled`);
     lines.push(`- **releases** ${bits.join(' · ')}`);
+  }
+  const cr = d.corruption;
+  if (cr) {
+    lines.push(
+      `- **decay** ${cr.decayEvents} slip${cr.decayEvents === 1 ? '' : 's'} (seed ${cr.config.seed} · rate ${cr.config.rate} · grace ${cr.config.graceTurns}) · repaired ${cr.repairs.total} (tutor ${cr.repairs.byTutor}, re-adoption ${cr.repairs.byReadoption})${
+        cr.meanRepairLatency !== null ? ` · mean repair latency ${cr.meanRepairLatency} turns` : ''
+      } · unrepaired at end ${cr.unrepairedAtEnd} · degraded-turn integral ${cr.degradedTurnIntegral} · D reversals ${cr.dReversals}`,
+    );
+    if (cr.timeline.length) {
+      const rows = cr.timeline.map(
+        (t) =>
+          `${t.premiseId || t.fact.join(' ')} t${t.decayTurn}${
+            t.repairTurn !== null
+              ? `→t${t.repairTurn} (${t.via === 'tutor' ? 'tutor' : 're-adoption'})`
+              : ' (never repaired)'
+          }`,
+      );
+      lines.push(`  - ${rows.join(' · ')}`);
+    }
   }
   const events = Object.entries(d.eventsByType || {});
   lines.push(`- **events** ${events.length ? events.map(([k, v]) => `${k}×${v}`).join(' · ') : 'none'}`);
