@@ -10,7 +10,7 @@
  * peeking at the world.
  */
 
-import { closure, matchPattern } from './chainer.js';
+import { closure, factKey, matchPattern } from './chainer.js';
 
 const FIGURES = ['erotema', 'analogia', 'exemplum', 'anaphora'];
 
@@ -31,7 +31,14 @@ export function makeMockDirector(world) {
   };
 }
 
-export function makeMockTutor(world) {
+/**
+ * @param {object} policy
+ *   repairDecayed   when the decay condition is on and the view shows slipped
+ *                   premises, target the oldest one (the deterministic repair
+ *                   choreography for the corruption tests; default false so
+ *                   the no-policy tutor is byte-stable with its old self)
+ */
+export function makeMockTutor(world, policy = {}) {
   return async (view) => {
     const figure = FIGURES[(view.turn - 1) % FIGURES.length];
     const entry = world.releaseSchedule.find((e) => e.turn === view.turn && e.via === 'tutor');
@@ -41,6 +48,15 @@ export function makeMockTutor(world) {
         dialogue: `Consider what the record shows: ${fact.join(' ')}.`,
         move: { figure, targetPremise: entry.premise, intent: 'release' },
         release: entry.premise,
+      };
+    }
+    // Releases stay on cue (the frozen channel) — repair fills the turns
+    // between them.
+    if (policy.repairDecayed && view.corruption?.decayed?.length) {
+      const target = view.corruption.decayed[0];
+      return {
+        dialogue: `Hold again what slipped from you: ${target.fact.join(' ')}. Place it back on the table.`,
+        move: { figure, targetPremise: target.premiseId, intent: 'repair' },
       };
     }
     const lastRelease = view.ledger[view.ledger.length - 1] || null;
@@ -66,6 +82,11 @@ export function makeMockTutor(world) {
  *   leapFact        the fact the lucky guesser blurts out
  *   assertMirrorAt  turn to assert `mirrorFact` (the near-miss sim)
  *   mirrorFact      the near-miss fact
+ *   readoptForgotten  re-adopt a fact this learner once held that has gone
+ *                   missing from its visible board (the learner-side repair
+ *                   channel under the decay condition) — view-only, no world
+ *                   peeking: it diffs its own memory of what it adopted
+ *                   against what the view still shows
  */
 export function makeMockLearner(policy = {}) {
   const {
@@ -75,11 +96,19 @@ export function makeMockLearner(policy = {}) {
     leapFact = null,
     assertMirrorAt = null,
     mirrorFact = null,
+    readoptForgotten = false,
   } = policy;
   const heard = [];
   return async (view) => {
     const stalled = stallAfter !== null && view.turn > stallAfter;
     heard.push(...view.releasedThisTurn.map((fact) => ({ fact, at: view.turn, adopted: false })));
+
+    if (readoptForgotten) {
+      const visible = new Set(view.abox.grounded.map(factKey));
+      for (const item of heard) {
+        if (item.adopted && !visible.has(factKey(item.fact))) item.adopted = false; // hear it again below
+      }
+    }
 
     const adopt = [];
     if (!stalled) {

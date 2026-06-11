@@ -2,11 +2,14 @@ export { factKey, matchPattern, closure, entails, proofTree } from './chainer.js
 export { loadWorld, validateWorld, plotLint, worldClosure } from './world.js';
 export { derivationDistance, detectStall } from './slope.js';
 export { runDrama } from './engine.js';
+export { mulberry32, normalizeDecayConfig } from './corruption.js';
+export { makeReplayRoles, comparePrefix } from './replay.js';
 export { makeMockDirector, makeMockTutor, makeMockLearner } from './mockRoles.js';
 export { makeLlmClient, llmMode, resolveTarget } from './llmClient.js';
 export { makeLlmDirector, makeLlmTutor, makeLlmLearner, clampDial } from './llmRoles.js';
 export {
   diagnose,
+  corruptionReport,
   releaseAdherence,
   learningSlope,
   stagingSegments,

@@ -56,6 +56,16 @@
  *     [--learner-voice "<text>"]       (override the world's learner voice —
  *                                       personality/tonality variation; never
  *                                       carries plot content)
+ *     [--decay '<json>'|off]           (the unreliable-learner condition:
+ *                                       seeded parametric decay of the
+ *                                       learner's grounded board — harness-
+ *                                       implemented, never prompt-roleplayed.
+ *                                       JSON keys: seed, rate, graceTurns,
+ *                                       maxConcurrent, startTurn (defaults in
+ *                                       corruption.js). Run-level condition;
+ *                                       worlds stay frozen. Design note:
+ *                                       notes/poetics/2026-06-10-unreliable-
+ *                                       learner-design.md)
  *     [--critic auto|real|mock|off]    (post-run critic's notice; auto = follow
  *                                       the run mode — real dramas get the
  *                                       Fable notice, mock dramas the
@@ -81,6 +91,7 @@ import {
   loadWorld,
   plotLint,
   runDrama,
+  normalizeDecayConfig,
   makeLlmClient,
   llmMode,
   resolveTarget,
@@ -189,6 +200,10 @@ async function main() {
     process.exit(1);
   }
   const learnerVoice = arg('learner-voice', null);
+  // Normalized up front so a malformed --decay JSON dies here as a CLI error,
+  // not twelve turns into a run. 'off' is accepted for matrix-arm overrides.
+  const decayArg = arg('decay', null);
+  const decay = decayArg && decayArg !== 'off' ? normalizeDecayConfig(decayArg) : null;
   const superego = flag('superego');
   const stallWatch = flag('stall-watch');
   if (stallWatch && !superego) {
@@ -260,6 +275,11 @@ async function main() {
   if (group) console.log(`group   ${group}`);
   if (counsel) console.log(`counsel from ${counsel.source} → director + superego charters (closing paragraph)`);
   if (learnerVoice) console.log(`voice   learner override: ${learnerVoice}`);
+  if (decay) {
+    console.log(
+      `decay   seed ${decay.seed} · rate ${decay.rate} · grace ${decay.graceTurns} · maxConcurrent ${decay.maxConcurrent} · from turn ${decay.startTurn}`,
+    );
+  }
 
   const client = makeLlmClient({ mode });
   const counselText = counsel ? counsel.paragraph : null;
@@ -278,13 +298,18 @@ async function main() {
     if (s.phase && s.phase.turn === s.turn) bits.push(`movement "${s.phase.name}"`);
     if (s.intervened) bits.push('✎ superego');
     if (s.asserted) bits.push('ASSERTS');
-    for (const e of s.events) bits.push(`⚑ ${e.type}`);
+    for (const e of s.events) {
+      if (e.type === 'decay' || e.type === 'repair') continue; // dedicated bits below carry the ids
+      bits.push(`⚑ ${e.type}`);
+    }
+    if (s.decayedNow?.length) bits.push(`☄ ${s.decayedNow.join(', ')} fades`);
+    if (s.repairedNow?.length) bits.push(`✚ ${s.repairedNow.join(', ')} restored`);
     if (s.endedBy) bits.push(`— ends: ${s.endedBy}`);
     console.log(bits.join('  '));
   };
 
   const started = Date.now();
-  const result = await runDrama({ world, roles, options: { onTurn } });
+  const result = await runDrama({ world, roles, options: { onTurn, ...(decay ? { decay } : {}) } });
   const elapsedMs = Date.now() - started;
   const usage = client.usage();
   const diagnosis = {
@@ -300,6 +325,9 @@ async function main() {
     tutorStallWatch: stallWatch,
     criticFeedback: counsel,
     learnerVoice: learnerVoice || null,
+    // Normalized (defaults filled), so an episode inheriting this run's decay
+    // condition (run-derivation-episode.js --from) reproduces it exactly.
+    decay: decay || null,
     elapsedMs,
     usage,
     ...diagnose(result, world),
@@ -364,6 +392,12 @@ async function main() {
     .map(([k, v]) => `${k}×${v}`)
     .join(', ');
   console.log(`events  ${eventLine || 'none'}`);
+  if (diagnosis.corruption) {
+    const c = diagnosis.corruption;
+    console.log(
+      `decay   ${c.decayEvents} slips, ${c.repairs.total} repaired (tutor ${c.repairs.byTutor}, re-adoption ${c.repairs.byReadoption}), ${c.unrepairedAtEnd} unrepaired at end, degraded-turn integral ${c.degradedTurnIntegral}, D reversals ${c.dReversals}`,
+    );
+  }
   const staging = diagnosis.staging;
   console.log(
     `staging ${
