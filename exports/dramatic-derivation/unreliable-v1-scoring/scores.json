@@ -1,0 +1,881 @@
+{
+  "group": "unreliable-v1",
+  "scoredAt": "2026-06-11T21:25:41.253Z",
+  "registration": "UNRELIABLE-LEARNER-PREREG.md",
+  "expect": 12,
+  "runs": [
+    {
+      "label": "noc-decay-v1-A-s1",
+      "world": "world_001_nocturne",
+      "arm": "A",
+      "seed": 1,
+      "verdict": "grounded_anagnorisis",
+      "turnsPlayed": 36,
+      "decayEvents": 12,
+      "byTutor": 11,
+      "byReadoption": 0,
+      "unrepairedAtEnd": 1,
+      "meanRepairLatency": 5,
+      "perSlipRate": 0.917,
+      "tutorRepairs": [
+        {
+          "premiseId": "m_style",
+          "decayTurn": 4,
+          "repairTurn": 5,
+          "latency": 1,
+          "lastReleaseAtRepair": "m_style",
+          "nonLastRelease": false,
+          "derivationCritical": false,
+          "selected": false
+        },
+        {
+          "premiseId": "m_style",
+          "decayTurn": 6,
+          "repairTurn": 7,
+          "latency": 1,
+          "lastReleaseAtRepair": "p_watermark",
+          "nonLastRelease": true,
+          "derivationCritical": false,
+          "selected": false
+        },
+        {
+          "premiseId": "p_watermark",
+          "decayTurn": 7,
+          "repairTurn": 8,
+          "latency": 1,
+          "lastReleaseAtRepair": "p_watermark",
+          "nonLastRelease": false,
+          "derivationCritical": true,
+          "selected": false
+        },
+        {
+          "premiseId": "p_watermark",
+          "decayTurn": 9,
+          "repairTurn": 15,
+          "latency": 6,
+          "lastReleaseAtRepair": "p_porter",
+          "nonLastRelease": true,
+          "derivationCritical": true,
+          "selected": true
+        },
+        {
+          "premiseId": "m_style",
+          "decayTurn": 10,
+          "repairTurn": 11,
+          "latency": 1,
+          "lastReleaseAtRepair": "p_stock",
+          "nonLastRelease": true,
+          "derivationCritical": false,
+          "selected": false
+        },
+        {
+          "premiseId": "p_stock",
+          "decayTurn": 11,
+          "repairTurn": 13,
+          "latency": 2,
+          "lastReleaseAtRepair": "m_away",
+          "nonLastRelease": true,
+          "derivationCritical": true,
+          "selected": true
+        },
+        {
+          "premiseId": "m_style",
+          "decayTurn": 13,
+          "repairTurn": 22,
+          "latency": 9,
+          "lastReleaseAtRepair": "p_heardOnly",
+          "nonLastRelease": true,
+          "derivationCritical": false,
+          "selected": false
+        },
+        {
+          "premiseId": "p_stock",
+          "decayTurn": 15,
+          "repairTurn": 19,
+          "latency": 4,
+          "lastReleaseAtRepair": "p_quotes",
+          "nonLastRelease": true,
+          "derivationCritical": true,
+          "selected": true
+        },
+        {
+          "premiseId": "p_watermark",
+          "decayTurn": 19,
+          "repairTurn": 36,
+          "latency": 17,
+          "lastReleaseAtRepair": "p_hand",
+          "nonLastRelease": true,
+          "derivationCritical": true,
+          "selected": true
+        },
+        {
+          "premiseId": "p_stock",
+          "decayTurn": 22,
+          "repairTurn": 24,
+          "latency": 2,
+          "lastReleaseAtRepair": "m_guest",
+          "nonLastRelease": true,
+          "derivationCritical": true,
+          "selected": true
+        },
+        {
+          "premiseId": "m_style",
+          "decayTurn": 24,
+          "repairTurn": 35,
+          "latency": 11,
+          "lastReleaseAtRepair": "p_hand",
+          "nonLastRelease": true,
+          "derivationCritical": false,
+          "selected": false
+        }
+      ],
+      "selectedCount": 5,
+      "schedule": {
+        "ok": true,
+        "missing": [],
+        "extra": []
+      }
+    },
+    {
+      "label": "noc-decay-v1-A-s2",
+      "world": "world_001_nocturne",
+      "arm": "A",
+      "seed": 2,
+      "verdict": "grounded_anagnorisis",
+      "turnsPlayed": 36,
+      "decayEvents": 12,
+      "byTutor": 11,
+      "byReadoption": 0,
+      "unrepairedAtEnd": 1,
+      "meanRepairLatency": 5.18,
+      "perSlipRate": 0.917,
+      "tutorRepairs": [
+        {
+          "premiseId": "m_style",
+          "decayTurn": 4,
+          "repairTurn": 5,
+          "latency": 1,
+          "lastReleaseAtRepair": "m_style",
+          "nonLastRelease": false,
+          "derivationCritical": false,
+          "selected": false
+        },
+        {
+          "premiseId": "m_style",
+          "decayTurn": 6,
+          "repairTurn": 11,
+          "latency": 5,
+          "lastReleaseAtRepair": "p_stock",
+          "nonLastRelease": true,
+          "derivationCritical": false,
+          "selected": false
+        },
+        {
+          "premiseId": "p_watermark",
+          "decayTurn": 7,
+          "repairTurn": 8,
+          "latency": 1,
+          "lastReleaseAtRepair": "p_watermark",
+          "nonLastRelease": false,
+          "derivationCritical": true,
+          "selected": false
+        },
+        {
+          "premiseId": "p_watermark",
+          "decayTurn": 9,
+          "repairTurn": 10,
+          "latency": 1,
+          "lastReleaseAtRepair": "p_stock",
+          "nonLastRelease": true,
+          "derivationCritical": true,
+          "selected": true
+        },
+        {
+          "premiseId": "p_watermark",
+          "decayTurn": 11,
+          "repairTurn": 13,
+          "latency": 2,
+          "lastReleaseAtRepair": "m_away",
+          "nonLastRelease": true,
+          "derivationCritical": true,
+          "selected": true
+        },
+        {
+          "premiseId": "p_stock",
+          "decayTurn": 11,
+          "repairTurn": 12,
+          "latency": 1,
+          "lastReleaseAtRepair": "m_away",
+          "nonLastRelease": true,
+          "derivationCritical": true,
+          "selected": true
+        },
+        {
+          "premiseId": "m_style",
+          "decayTurn": 12,
+          "repairTurn": 33,
+          "latency": 21,
+          "lastReleaseAtRepair": "p_hand",
+          "nonLastRelease": true,
+          "derivationCritical": false,
+          "selected": false
+        },
+        {
+          "premiseId": "m_away",
+          "decayTurn": 13,
+          "repairTurn": 16,
+          "latency": 3,
+          "lastReleaseAtRepair": "p_porter",
+          "nonLastRelease": true,
+          "derivationCritical": false,
+          "selected": false
+        },
+        {
+          "premiseId": "p_watermark",
+          "decayTurn": 16,
+          "repairTurn": 36,
+          "latency": 20,
+          "lastReleaseAtRepair": "p_hand",
+          "nonLastRelease": true,
+          "derivationCritical": true,
+          "selected": true
+        },
+        {
+          "premiseId": "m_away",
+          "decayTurn": 33,
+          "repairTurn": 34,
+          "latency": 1,
+          "lastReleaseAtRepair": "p_hand",
+          "nonLastRelease": true,
+          "derivationCritical": false,
+          "selected": false
+        },
+        {
+          "premiseId": "p_stock",
+          "decayTurn": 34,
+          "repairTurn": 35,
+          "latency": 1,
+          "lastReleaseAtRepair": "p_hand",
+          "nonLastRelease": true,
+          "derivationCritical": true,
+          "selected": true
+        }
+      ],
+      "selectedCount": 5,
+      "schedule": {
+        "ok": true,
+        "missing": [],
+        "extra": []
+      }
+    },
+    {
+      "label": "noc-decay-v1-A-s3",
+      "world": "world_001_nocturne",
+      "arm": "A",
+      "seed": 3,
+      "verdict": "grounded_anagnorisis",
+      "turnsPlayed": 35,
+      "decayEvents": 12,
+      "byTutor": 11,
+      "byReadoption": 0,
+      "unrepairedAtEnd": 1,
+      "meanRepairLatency": 4,
+      "perSlipRate": 0.917,
+      "tutorRepairs": [
+        {
+          "premiseId": "p_watermark",
+          "decayTurn": 7,
+          "repairTurn": 8,
+          "latency": 1,
+          "lastReleaseAtRepair": "p_watermark",
+          "nonLastRelease": false,
+          "derivationCritical": true,
+          "selected": false
+        },
+        {
+          "premiseId": "p_watermark",
+          "decayTurn": 9,
+          "repairTurn": 10,
+          "latency": 1,
+          "lastReleaseAtRepair": "p_stock",
+          "nonLastRelease": true,
+          "derivationCritical": true,
+          "selected": true
+        },
+        {
+          "premiseId": "p_stock",
+          "decayTurn": 10,
+          "repairTurn": 11,
+          "latency": 1,
+          "lastReleaseAtRepair": "p_stock",
+          "nonLastRelease": false,
+          "derivationCritical": true,
+          "selected": false
+        },
+        {
+          "premiseId": "p_watermark",
+          "decayTurn": 11,
+          "repairTurn": 12,
+          "latency": 1,
+          "lastReleaseAtRepair": "m_away",
+          "nonLastRelease": true,
+          "derivationCritical": true,
+          "selected": true
+        },
+        {
+          "premiseId": "p_watermark",
+          "decayTurn": 13,
+          "repairTurn": 15,
+          "latency": 2,
+          "lastReleaseAtRepair": "p_porter",
+          "nonLastRelease": true,
+          "derivationCritical": true,
+          "selected": true
+        },
+        {
+          "premiseId": "p_stock",
+          "decayTurn": 13,
+          "repairTurn": 16,
+          "latency": 3,
+          "lastReleaseAtRepair": "p_porter",
+          "nonLastRelease": true,
+          "derivationCritical": true,
+          "selected": true
+        },
+        {
+          "premiseId": "m_away",
+          "decayTurn": 15,
+          "repairTurn": 23,
+          "latency": 8,
+          "lastReleaseAtRepair": "m_guest",
+          "nonLastRelease": true,
+          "derivationCritical": false,
+          "selected": false
+        },
+        {
+          "premiseId": "p_watermark",
+          "decayTurn": 16,
+          "repairTurn": 22,
+          "latency": 6,
+          "lastReleaseAtRepair": "p_heardOnly",
+          "nonLastRelease": true,
+          "derivationCritical": true,
+          "selected": true
+        },
+        {
+          "premiseId": "p_stock",
+          "decayTurn": 22,
+          "repairTurn": 28,
+          "latency": 6,
+          "lastReleaseAtRepair": "p_ward",
+          "nonLastRelease": true,
+          "derivationCritical": true,
+          "selected": true
+        },
+        {
+          "premiseId": "p_watermark",
+          "decayTurn": 23,
+          "repairTurn": 35,
+          "latency": 12,
+          "lastReleaseAtRepair": "p_hand",
+          "nonLastRelease": true,
+          "derivationCritical": true,
+          "selected": true
+        },
+        {
+          "premiseId": "p_quotes",
+          "decayTurn": 28,
+          "repairTurn": 31,
+          "latency": 3,
+          "lastReleaseAtRepair": "p_ledger",
+          "nonLastRelease": true,
+          "derivationCritical": true,
+          "selected": true
+        }
+      ],
+      "selectedCount": 8,
+      "schedule": {
+        "ok": true,
+        "missing": [],
+        "extra": []
+      }
+    },
+    {
+      "label": "noc-decay-v1-B-s1",
+      "world": "world_001_nocturne",
+      "arm": "B",
+      "seed": 1,
+      "verdict": "aporia",
+      "turnsPlayed": 39,
+      "decayEvents": 4,
+      "byTutor": 2,
+      "byReadoption": 0,
+      "unrepairedAtEnd": 2,
+      "meanRepairLatency": 14.5,
+      "perSlipRate": 0.5,
+      "tutorRepairs": [
+        {
+          "premiseId": "m_style",
+          "decayTurn": 4,
+          "repairTurn": 8,
+          "latency": 4,
+          "lastReleaseAtRepair": "p_watermark",
+          "nonLastRelease": true,
+          "derivationCritical": false,
+          "selected": false
+        },
+        {
+          "premiseId": "m_style",
+          "decayTurn": 9,
+          "repairTurn": 34,
+          "latency": 25,
+          "lastReleaseAtRepair": "p_hand",
+          "nonLastRelease": true,
+          "derivationCritical": false,
+          "selected": false
+        }
+      ],
+      "selectedCount": 0,
+      "schedule": {
+        "ok": true,
+        "missing": [],
+        "extra": []
+      }
+    },
+    {
+      "label": "noc-decay-v1-B-s2",
+      "world": "world_001_nocturne",
+      "arm": "B",
+      "seed": 2,
+      "verdict": "aporia",
+      "turnsPlayed": 39,
+      "decayEvents": 5,
+      "byTutor": 3,
+      "byReadoption": 0,
+      "unrepairedAtEnd": 2,
+      "meanRepairLatency": 11,
+      "perSlipRate": 0.6,
+      "tutorRepairs": [
+        {
+          "premiseId": "m_style",
+          "decayTurn": 4,
+          "repairTurn": 5,
+          "latency": 1,
+          "lastReleaseAtRepair": "m_style",
+          "nonLastRelease": false,
+          "derivationCritical": false,
+          "selected": false
+        },
+        {
+          "premiseId": "m_style",
+          "decayTurn": 6,
+          "repairTurn": 37,
+          "latency": 31,
+          "lastReleaseAtRepair": "p_hand",
+          "nonLastRelease": true,
+          "derivationCritical": false,
+          "selected": false
+        },
+        {
+          "premiseId": "p_watermark",
+          "decayTurn": 7,
+          "repairTurn": 8,
+          "latency": 1,
+          "lastReleaseAtRepair": "p_watermark",
+          "nonLastRelease": false,
+          "derivationCritical": true,
+          "selected": false
+        }
+      ],
+      "selectedCount": 0,
+      "schedule": {
+        "ok": true,
+        "missing": [],
+        "extra": []
+      }
+    },
+    {
+      "label": "noc-decay-v1-B-s3",
+      "world": "world_001_nocturne",
+      "arm": "B",
+      "seed": 3,
+      "verdict": "disengagement",
+      "turnsPlayed": 39,
+      "decayEvents": 4,
+      "byTutor": 2,
+      "byReadoption": 0,
+      "unrepairedAtEnd": 2,
+      "meanRepairLatency": 1,
+      "perSlipRate": 0.5,
+      "tutorRepairs": [
+        {
+          "premiseId": "m_style",
+          "decayTurn": 4,
+          "repairTurn": 5,
+          "latency": 1,
+          "lastReleaseAtRepair": "m_style",
+          "nonLastRelease": false,
+          "derivationCritical": false,
+          "selected": false
+        },
+        {
+          "premiseId": "p_watermark",
+          "decayTurn": 7,
+          "repairTurn": 8,
+          "latency": 1,
+          "lastReleaseAtRepair": "p_watermark",
+          "nonLastRelease": false,
+          "derivationCritical": true,
+          "selected": false
+        }
+      ],
+      "selectedCount": 0,
+      "schedule": {
+        "ok": true,
+        "missing": [],
+        "extra": []
+      }
+    },
+    {
+      "label": "wit-decay-v1-A-s1",
+      "world": "world_004_withercombe",
+      "arm": "A",
+      "seed": 1,
+      "verdict": "grounded_anagnorisis",
+      "turnsPlayed": 21,
+      "decayEvents": 9,
+      "byTutor": 8,
+      "byReadoption": 0,
+      "unrepairedAtEnd": 1,
+      "meanRepairLatency": 2.13,
+      "perSlipRate": 0.889,
+      "tutorRepairs": [
+        {
+          "premiseId": "m_taint",
+          "decayTurn": 3,
+          "repairTurn": 5,
+          "latency": 2,
+          "lastReleaseAtRepair": "p_course",
+          "nonLastRelease": true,
+          "derivationCritical": false,
+          "selected": false
+        },
+        {
+          "premiseId": "p_course",
+          "decayTurn": 5,
+          "repairTurn": 6,
+          "latency": 1,
+          "lastReleaseAtRepair": "p_lore",
+          "nonLastRelease": true,
+          "derivationCritical": true,
+          "selected": true
+        },
+        {
+          "premiseId": "m_taint",
+          "decayTurn": 6,
+          "repairTurn": 7,
+          "latency": 1,
+          "lastReleaseAtRepair": "p_lore",
+          "nonLastRelease": true,
+          "derivationCritical": false,
+          "selected": false
+        },
+        {
+          "premiseId": "p_course",
+          "decayTurn": 8,
+          "repairTurn": 9,
+          "latency": 1,
+          "lastReleaseAtRepair": "p_rill",
+          "nonLastRelease": true,
+          "derivationCritical": true,
+          "selected": true
+        },
+        {
+          "premiseId": "p_lore",
+          "decayTurn": 9,
+          "repairTurn": 15,
+          "latency": 6,
+          "lastReleaseAtRepair": "m_drain",
+          "nonLastRelease": true,
+          "derivationCritical": true,
+          "selected": true
+        },
+        {
+          "premiseId": "p_course",
+          "decayTurn": 15,
+          "repairTurn": 17,
+          "latency": 2,
+          "lastReleaseAtRepair": "p_residue",
+          "nonLastRelease": true,
+          "derivationCritical": true,
+          "selected": true
+        },
+        {
+          "premiseId": "p_lore",
+          "decayTurn": 17,
+          "repairTurn": 18,
+          "latency": 1,
+          "lastReleaseAtRepair": "p_residue",
+          "nonLastRelease": true,
+          "derivationCritical": true,
+          "selected": true
+        },
+        {
+          "premiseId": "p_course",
+          "decayTurn": 18,
+          "repairTurn": 21,
+          "latency": 3,
+          "lastReleaseAtRepair": "p_brought",
+          "nonLastRelease": true,
+          "derivationCritical": true,
+          "selected": true
+        }
+      ],
+      "selectedCount": 6,
+      "schedule": {
+        "ok": true,
+        "missing": [],
+        "extra": []
+      }
+    },
+    {
+      "label": "wit-decay-v1-A-s2",
+      "world": "world_004_withercombe",
+      "arm": "A",
+      "seed": 2,
+      "verdict": "disengagement",
+      "turnsPlayed": 11,
+      "decayEvents": 6,
+      "byTutor": 4,
+      "byReadoption": 0,
+      "unrepairedAtEnd": 2,
+      "meanRepairLatency": 1.5,
+      "perSlipRate": 0.667,
+      "tutorRepairs": [
+        {
+          "premiseId": "m_taint",
+          "decayTurn": 3,
+          "repairTurn": 5,
+          "latency": 2,
+          "lastReleaseAtRepair": "p_course",
+          "nonLastRelease": true,
+          "derivationCritical": false,
+          "selected": false
+        },
+        {
+          "premiseId": "p_course",
+          "decayTurn": 5,
+          "repairTurn": 6,
+          "latency": 1,
+          "lastReleaseAtRepair": "p_lore",
+          "nonLastRelease": true,
+          "derivationCritical": true,
+          "selected": true
+        },
+        {
+          "premiseId": "m_taint",
+          "decayTurn": 6,
+          "repairTurn": 7,
+          "latency": 1,
+          "lastReleaseAtRepair": "p_lore",
+          "nonLastRelease": true,
+          "derivationCritical": false,
+          "selected": false
+        },
+        {
+          "premiseId": "p_course",
+          "decayTurn": 7,
+          "repairTurn": 9,
+          "latency": 2,
+          "lastReleaseAtRepair": "p_rill",
+          "nonLastRelease": true,
+          "derivationCritical": true,
+          "selected": true
+        }
+      ],
+      "selectedCount": 2,
+      "schedule": {
+        "ok": true,
+        "missing": [],
+        "extra": []
+      }
+    },
+    {
+      "label": "wit-decay-v1-A-s3",
+      "world": "world_004_withercombe",
+      "arm": "A",
+      "seed": 3,
+      "verdict": "disengagement",
+      "turnsPlayed": 11,
+      "decayEvents": 6,
+      "byTutor": 4,
+      "byReadoption": 0,
+      "unrepairedAtEnd": 2,
+      "meanRepairLatency": 1.5,
+      "perSlipRate": 0.667,
+      "tutorRepairs": [
+        {
+          "premiseId": "m_taint",
+          "decayTurn": 3,
+          "repairTurn": 5,
+          "latency": 2,
+          "lastReleaseAtRepair": "p_course",
+          "nonLastRelease": true,
+          "derivationCritical": false,
+          "selected": false
+        },
+        {
+          "premiseId": "p_course",
+          "decayTurn": 5,
+          "repairTurn": 6,
+          "latency": 1,
+          "lastReleaseAtRepair": "p_lore",
+          "nonLastRelease": true,
+          "derivationCritical": true,
+          "selected": true
+        },
+        {
+          "premiseId": "m_taint",
+          "decayTurn": 6,
+          "repairTurn": 7,
+          "latency": 1,
+          "lastReleaseAtRepair": "p_lore",
+          "nonLastRelease": true,
+          "derivationCritical": false,
+          "selected": false
+        },
+        {
+          "premiseId": "p_course",
+          "decayTurn": 7,
+          "repairTurn": 9,
+          "latency": 2,
+          "lastReleaseAtRepair": "p_rill",
+          "nonLastRelease": true,
+          "derivationCritical": true,
+          "selected": true
+        }
+      ],
+      "selectedCount": 2,
+      "schedule": {
+        "ok": true,
+        "missing": [],
+        "extra": []
+      }
+    },
+    {
+      "label": "wit-decay-v1-B-s1",
+      "world": "world_004_withercombe",
+      "arm": "B",
+      "seed": 1,
+      "verdict": "disengagement",
+      "turnsPlayed": 7,
+      "decayEvents": 2,
+      "byTutor": 0,
+      "byReadoption": 0,
+      "unrepairedAtEnd": 2,
+      "meanRepairLatency": null,
+      "perSlipRate": 0,
+      "tutorRepairs": [],
+      "selectedCount": 0,
+      "schedule": {
+        "ok": true,
+        "missing": [],
+        "extra": []
+      }
+    },
+    {
+      "label": "wit-decay-v1-B-s2",
+      "world": "world_004_withercombe",
+      "arm": "B",
+      "seed": 2,
+      "verdict": "disengagement",
+      "turnsPlayed": 7,
+      "decayEvents": 2,
+      "byTutor": 0,
+      "byReadoption": 0,
+      "unrepairedAtEnd": 2,
+      "meanRepairLatency": null,
+      "perSlipRate": 0,
+      "tutorRepairs": [],
+      "selectedCount": 0,
+      "schedule": {
+        "ok": true,
+        "missing": [],
+        "extra": []
+      }
+    },
+    {
+      "label": "wit-decay-v1-B-s3",
+      "world": "world_004_withercombe",
+      "arm": "B",
+      "seed": 3,
+      "verdict": "disengagement",
+      "turnsPlayed": 7,
+      "decayEvents": 2,
+      "byTutor": 0,
+      "byReadoption": 0,
+      "unrepairedAtEnd": 2,
+      "meanRepairLatency": null,
+      "perSlipRate": 0,
+      "tutorRepairs": [],
+      "selectedCount": 0,
+      "schedule": {
+        "ok": true,
+        "missing": [],
+        "extra": []
+      }
+    }
+  ],
+  "pooled": {
+    "A": {
+      "runs": 6,
+      "decayEvents": 57,
+      "byTutor": 49,
+      "byReadoption": 0,
+      "unrepairedAtEnd": 8,
+      "selected": 28,
+      "rate": 0.8596491228070176,
+      "crossCheckRate": 0.8596491228070176,
+      "decayPerRun": 9.5,
+      "repairsPerRun": 8.17,
+      "successes": 4,
+      "stallEnded": 2
+    },
+    "B": {
+      "runs": 6,
+      "decayEvents": 19,
+      "byTutor": 7,
+      "byReadoption": 0,
+      "unrepairedAtEnd": 12,
+      "selected": 0,
+      "rate": 0.3684210526315789,
+      "crossCheckRate": 0.3684210526315789,
+      "decayPerRun": 3.17,
+      "repairsPerRun": 1.17,
+      "successes": 0,
+      "stallEnded": 6
+    }
+  },
+  "hypotheses": {
+    "h1a": true,
+    "h1b": true,
+    "h1": true,
+    "h2": true,
+    "bootstrap": {
+      "seed": 20260611,
+      "resamples": 10000,
+      "degenerateRedraws": 0,
+      "ci95": [
+        0.313,
+        0.746
+      ],
+      "shareBelowZero": 0
+    }
+  },
+  "integrity": {
+    "scheduleViolations": [],
+    "g2Breaks": []
+  },
+  "complete": true,
+  "halted": false
+}
