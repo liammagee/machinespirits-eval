@@ -104,6 +104,15 @@ export async function runDrama({ world, roles, options = {} }) {
   const overreaches = []; // {turn, fact} — derive claims NOT in the closure (false inferences)
   const mischanneled = []; // {turn, fact, kind: 'base'|'pattern'} — adopt/assert material sent down derive
   const premiseIdByKey = new Map([...world.premiseById.values()].map((p) => [factKey(p.fact), p.id]));
+  // Twin-fact premises stage the SAME fact under different ids (alternative
+  // evidentiary routes — lantern's p_residue/p_glimpse; only one twin is ever
+  // scheduled). premiseIdByKey is last-writer-wins over that many-to-one map,
+  // so it can name the twin that was never staged. Reported identity must be
+  // the id whose release actually put the fact on the board: repairs BY id
+  // are immune (they collapse to the fact key), but id-COMPARING consumers
+  // (corruptionReport pairing, repair guards) silently mismatch otherwise.
+  const releasedIdByKey = new Map(); // factKey -> premise id whose release staged it
+  const premiseIdForKey = (key) => releasedIdByKey.get(key) ?? premiseIdByKey.get(key) ?? null;
 
   // Token-normalized matching for learner-composed derive claims: case and
   // punctuation are forgiven, content is not (pre-registered in
@@ -155,7 +164,7 @@ export async function runDrama({ world, roles, options = {} }) {
       if (voicedKeys.has(key)) continue;
       const grounds = proof.premises.map((pk) => ({
         fact: cl.facts.get(pk),
-        premiseId: premiseIdByKey.get(pk) || null,
+        premiseId: premiseIdForKey(pk),
       }));
       const groundPremiseIds = grounds.map((g) => g.premiseId).filter(Boolean);
       const since = firstAvailable.get(key)?.turn ?? turn;
@@ -178,6 +187,7 @@ export async function runDrama({ world, roles, options = {} }) {
     const premise = world.premiseById.get(premiseId);
     if (!premise || releasedKeys.has(factKey(premise.fact))) return null;
     releasedKeys.add(factKey(premise.fact));
+    releasedIdByKey.set(factKey(premise.fact), premiseId);
     releasedFacts.push(premise.fact);
     ledger.push({ turn, premiseId, via });
     return premise.fact;
@@ -236,7 +246,7 @@ export async function runDrama({ world, roles, options = {} }) {
             decayed: [...grounded.entries()]
               .filter(([, entry]) => entry.decayed)
               .map(([key, entry]) => ({
-                premiseId: premiseIdByKey.get(key) || null,
+                premiseId: premiseIdForKey(key),
                 fact: entry.fact,
                 sinceTurn: entry.decayTurn,
               })),
@@ -299,8 +309,13 @@ export async function runDrama({ world, roles, options = {} }) {
       if (entry?.decayed) {
         entry.decayed = false;
         entry.regroundedTurn = turn;
-        corruption.ledger.push({ turn, type: 'repair', premiseId: tutorOut.move.targetPremise, via: 'tutor' });
-        events.push({ turn, type: 'repair', detail: `${tutorOut.move.targetPremise} restored by the tutor` });
+        // Ledger identity is the staged id, not the raw target: a move may
+        // name a twin alias and still repair (key collapse), but the decay
+        // entry it answers names the released id — pairing must agree. The
+        // raw target survives in the transcript's move metadata.
+        const repairedId = premiseIdForKey(factKey(premise.fact));
+        corruption.ledger.push({ turn, type: 'repair', premiseId: repairedId, via: 'tutor' });
+        events.push({ turn, type: 'repair', detail: `${repairedId} restored by the tutor` });
       }
     }
 
@@ -327,7 +342,7 @@ export async function runDrama({ world, roles, options = {} }) {
         if (corruption && existing.decayed) {
           existing.decayed = false;
           existing.regroundedTurn = turn;
-          const premiseId = premiseIdByKey.get(key) || null;
+          const premiseId = premiseIdForKey(key);
           corruption.ledger.push({ turn, type: 'repair', premiseId, via: 'readoption' });
           events.push({ turn, type: 'repair', detail: `${premiseId || renderFact(fact)} restored by re-adoption` });
         }
@@ -476,7 +491,7 @@ export async function runDrama({ world, roles, options = {} }) {
       for (const [key, entry] of hits.slice(0, Math.max(0, corruption.config.maxConcurrent - active))) {
         entry.decayed = true;
         entry.decayTurn = turn;
-        const premiseId = premiseIdByKey.get(key) || null;
+        const premiseId = premiseIdForKey(key);
         corruption.ledger.push({ turn, type: 'decay', premiseId, fact: entry.fact });
         events.push({
           turn,
@@ -552,7 +567,7 @@ export async function runDrama({ world, roles, options = {} }) {
             decayedAtEnd: [...grounded.entries()]
               .filter(([, entry]) => entry.decayed)
               .map(([key, entry]) => ({
-                premiseId: premiseIdByKey.get(key) || null,
+                premiseId: premiseIdForKey(key),
                 fact: entry.fact,
                 sinceTurn: entry.decayTurn,
               })),

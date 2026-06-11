@@ -310,3 +310,80 @@ test('corruptionReport pairs decay→repair chronologically and totals the degra
   const d = diagnose(repaired, world);
   assert.deepEqual(d.corruption, report);
 });
+
+// ---------------------------------------------------------------------------
+// twin-fact premise aliases (lantern, bitterwell)
+// ---------------------------------------------------------------------------
+
+// Two worlds deliberately stage the SAME fact under two premise ids
+// (alternative evidentiary routes; only one twin is ever scheduled). Board
+// state is keyed on the fact, so every REPORTED id must be the released
+// twin's — last-writer-wins aliasing here poisoned id-comparing consumers
+// (corruptionReport pairing, no-repair guards) in the v1 mock sweeps.
+test('decay/repair identity names the released twin, never the unstaged alias', async () => {
+  const cases = [
+    {
+      file: '../config/drama-derivation/world-002-lantern.yaml',
+      released: 'p_residue',
+      alias: 'p_glimpse',
+      // grace 0 from the twin's release turn: it decays the turn it lands
+      decay: { seed: 1, rate: 1, graceTurns: 0, maxConcurrent: 8, startTurn: 13 },
+    },
+    {
+      file: '../config/drama-derivation/world-003-bitterwell.yaml',
+      released: 'p_lantern',
+      alias: 'p_verger',
+      decay: { seed: 1, rate: 1, graceTurns: 0, maxConcurrent: 8, startTurn: 12 },
+    },
+  ];
+  for (const c of cases) {
+    const twinWorld = loadWorld(path.resolve(path.dirname(fileURLToPath(import.meta.url)), c.file));
+    // sanity: the twins really are one fact under two ids
+    assert.equal(
+      factKey(twinWorld.premiseById.get(c.released).fact),
+      factKey(twinWorld.premiseById.get(c.alias).fact),
+      `${c.released}/${c.alias} should share a fact key`,
+    );
+    const result = await runDrama({
+      world: twinWorld,
+      roles: {
+        director: makeMockDirector(twinWorld),
+        tutor: makeMockTutor(twinWorld, {}),
+        learner: makeMockLearner({}),
+      },
+      options: { decay: c.decay },
+    });
+    const corruptionIds = [
+      ...result.corruption.ledger.map((e) => e.premiseId),
+      ...result.corruption.decayedAtEnd.map((d) => d.premiseId),
+    ];
+    // the released twin's slip is reported under ITS id...
+    assert.ok(
+      result.corruption.ledger.some((e) => e.type === 'decay' && e.premiseId === c.released),
+      `${c.released} should decay under its own id`,
+    );
+    // ...and the unstaged alias never appears anywhere
+    assert.ok(
+      corruptionIds.every((id) => id !== c.alias),
+      `unstaged alias ${c.alias} leaked into the corruption record`,
+    );
+    // every reported id was actually released in THIS run
+    const releasedIds = new Set(result.ledger.map((e) => e.premiseId));
+    for (const id of corruptionIds) {
+      assert.ok(releasedIds.has(id), `${id} reported but never released`);
+    }
+    // the scorer-level pin: with ids canonical, every repair closes a decay —
+    // the mock tutor's consolidate move repairs the twin incidentally, so the
+    // pairing is exercised, not vacuous
+    assert.ok(
+      result.corruption.ledger.some((e) => e.type === 'repair' && e.premiseId === c.released),
+      `expected an incidental tutor repair of ${c.released}`,
+    );
+    const report = corruptionReport(result);
+    assert.equal(
+      report.repairs.total,
+      report.timeline.filter((t) => t.repairTurn !== null).length,
+      'every repair event should close a decay row (id-keyed pairing)',
+    );
+  }
+});

@@ -72,9 +72,28 @@ Sorted by full-grid success (seeds 1–5; fresh = seeds 11–15). Verification: 
 
 7. **Contention/bandwidth decomposition of s01's cap.** Same-turn release+repair (cadence fix) repairs maxC=1 *completely* (0.840 → 1.000 incl. rate 1.0/grace 0 — that stratum's cap was release-turn contention: the release branch occupies the move slot) but does not move the rate-1.0 maxC≥2 cells at all (0.200→0.200, 0.000→0.000 — that cap is bandwidth: 1 repair/turn vs maxC landings/turn). Two different walls behind one aggregate number.
 
-## Engine/world defect found (fix candidate — not yet applied)
+## Engine/world defect found (RESOLVED 2026-06-11 — engine-side fix)
 
 **Twin-fact premise aliases.** `002-lantern` contains p_residue/p_glimpse and p_skiff/p_ferry; `003-bitterwell` contains p_lantern/p_verger and p_mordant/p_dyebook — identical fact strings under different premise ids, only one id per pair on the release schedule. The engine keys decay on **fact keys**, and the corruption view reports the **alias** id (last-writer-wins in `premiseIdByKey`), while tutor moves (e.g. the consolidate branch) target the **scheduled** id. Consequence: *id-based* no-repair guards leak — 224 illicit incidental repairs in the ladder v1 sweep, 195 in triage v1 (both corrected to fact-key neutering in v2; headline numbers are v2). Performing repairs by id is safe; *comparing* ids is not. Verified directly against the world YAMLs. Candidate fixes: dedupe the twin facts in the two worlds, or make the corruption view report all ids sharing the fact key.
+
+**Resolution (2026-06-11, engine-side; worlds stay frozen).** The twins are deliberate world design — alternative evidentiary routes, with each world's support sets enumerating all four twin combinations — so the fix is in reporting, not authoring. `engine.js` now records the releasing id per fact key at the single point a key can be released (`releasedIdByKey`, set inside `applyRelease`'s once-per-key guard), and every reported id (`corruption.decayed`, decay/repair ledger entries, `decayedAtEnd`, frontier grounds) resolves through it; last-writer-wins survives only as a fallback for never-released keys. Tutor-repair ledger entries are normalized to the staged id as well (the raw target survives in the transcript's move metadata), so `corruptionReport`'s id-keyed decay→repair pairing holds even if a move names the unstaged twin. Regression test: `tests/dramaticDerivationCorruption.test.js` ("decay/repair identity names the released twin") — fails on the pre-fix engine at exactly the pinned defect (p_residue decaying under p_glimpse), passes post-fix; full derivation suite 54/54.
+
+**Post-fix re-measurement** (full grid, seeds 1–5; artifacts in `summaries/postfix/`): decay semantics are untouched — s01 reproduces 0.490 exactly, and learner-side strategies are bit-identical (recency-w5: 1360/2250, same byRate/byWorld) since the learner never sees ids. Strategies that *read* ids shift slightly, via repair-order tie-breaks now operating on released ids:
+
+| strategy | recorded | post-fix | Δ |
+|---|---|---|---|
+| tutor-keystone-repair-v2 | 0.873 | 0.876 | +0.003 |
+| blocking-greedy-clean | 0.870 | 0.872 | +0.002 |
+| stall-clock-surfing | 0.869 | **0.883** | +0.014 |
+| decay-slot-blockade | 0.861 | 0.862 | +0.001 |
+| hybrid-bgc-x-p50 | 0.962 | 0.962 | 0.000 |
+| hybrid-bgc-x-k1 | 0.935 | 0.928 | −0.007 |
+| hybrid-bgc-x-w5 | 0.974 | 0.970 | −0.004 |
+| hybrid-scs-x-p50 | 0.956 | 0.958 | +0.002 |
+| hybrid-scs-x-k1 | 0.944 | 0.945 | +0.001 |
+| hybrid-scs-x-w5 | 0.967 | 0.970 | +0.003 |
+
+No finding flips. The tutor band remains a dead heat (now 0.862–0.883; stall-clock-surfing is the biggest mover and nominal leader — the ordering scrambled across fresh seeds before the fix and scrambles across the fix too). Finding 8 holds like-for-like: both w5 hybrids land at 0.970 and remain the only hybrids over the independence bound (bgc×w5 0.970 > 0.949; scs×w5 0.970 > 0.954); both are still 1.000 at the rate-1.0/grace-0/maxC-4 corner (50/50) and at the maxC-8 stress cell (25/25). Tables elsewhere in this document keep the recorded pre-fix values — they match the archived summary JSONs; `summaries/postfix/` holds the post-fix artifacts.
 
 ## Verification provenance
 
@@ -92,7 +111,7 @@ Sorted by full-grid success (seeds 1–5; fresh = seeds 11–15). Verification: 
 4. **Pre-register the stall-detector parameters.** Findings 5–6 show verdicts at grace 0 are partly detector economics (groundedCount growth pairs), not just epistemic state. The aporia/disengagement windows materially shape outcomes; freeze them in the pre-registration.
 5. **Log the process metrics the mock layer proved informative:** repairs/run, decay events/run (the re-arming loop), repair latency, degraded-turn integral, unrepaired-at-end — all already in `corruptionReport`.
 6. **Keep the matched-seed discipline.** Decay draw sequences depend on the eligible count, so seeds are comparable within a strategy, not across strategies — paid arms inherit this caveat when citing per-seed contrasts.
-7. **Fix or document the twin-fact alias first** if any scorer or guard will compare premise ids.
+7. ~~Fix or document the twin-fact alias first~~ **Done 2026-06-11** — engine-side fix + regression test landed (see the defect section); id-comparing scorers and guards are now sound.
 
 ## Round 2 (run post-workflow, locally, free): hybrid strategies
 

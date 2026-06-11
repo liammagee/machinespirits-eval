@@ -43,9 +43,11 @@ The four leading tutor-side mechanisms are a statistical dead heat (band 0.85–
 6. **Always-repair is hard-capped** at grace 0 by forced disengagement (repair offset by same-turn re-decay → flat stall window, counting argument). Escape requires deliberately *skipping* a repair. Repair timing is a first-class policy dimension.
 7. **Contention/bandwidth decomposition** of s01's cap: cadence fix repairs maxC=1 completely (0.840→1.000) but leaves rate-1.0 maxC≥2 untouched — two different walls behind one aggregate.
 
-## Defect surfaced (fix candidate, not applied)
+## Defect surfaced (RESOLVED 2026-06-11 — engine-side)
 
-**Twin-fact premise aliases**: lantern (p_residue/p_glimpse, p_skiff/p_ferry) and bitterwell (p_lantern/p_verger, p_mordant/p_dyebook) carry identical fact strings under different ids, one per pair scheduled. Engine keys decay on fact key; the corruption view reports the *alias* id (last-writer-wins `premiseIdByKey`); id-based repair guards therefore leak (224 and 195 illicit incidental repairs in two v1 sweeps — both re-done with fact-key neutering for the headline numbers). Performing repairs by id is safe; comparing ids is not. Verified against the world YAMLs. Decide: dedupe the twin facts in the two worlds, or make the corruption view report all ids per fact key.
+**Twin-fact premise aliases**: lantern (p_residue/p_glimpse, p_skiff/p_ferry) and bitterwell (p_lantern/p_verger, p_mordant/p_dyebook) carry identical fact strings under different ids, one per pair scheduled. Engine keys decay on fact key; the corruption view reports the *alias* id (last-writer-wins `premiseIdByKey`); id-based repair guards therefore leak (224 and 195 illicit incidental repairs in two v1 sweeps — both re-done with fact-key neutering for the headline numbers). Performing repairs by id is safe; comparing ids is not. Verified against the world YAMLs.
+
+**Resolved engine-side, worlds frozen** (the twins are deliberate — alternative evidentiary routes whose support sets enumerate all four combinations): `engine.js` records the releasing id per fact key (`releasedIdByKey`, set in `applyRelease`) and every reported id resolves through it; tutor-repair ledger entries are normalized to the staged id so `corruptionReport`'s id-keyed pairing holds. Regression test pinned in `tests/dramaticDerivationCorruption.test.js` (fails pre-fix on exactly the p_residue/p_glimpse swap). Post-fix re-measurement (SURVIVAL-MAP.md §defect): s01 exact at 0.490, learner strategies bit-identical, id-reading tutor strategies shift ≤ +0.014 (stall-clock-surfing 0.869→0.883, now nominal band leader), Finding 8 intact (both w5 hybrids 0.970, still the only pair over the independence bound; corner 50/50 and maxC-8 stress 25/25 both still 1.000).
 
 ## What was never covered
 
@@ -61,7 +63,7 @@ The four leading tutor-side mechanisms are a statistical dead heat (band 0.85–
 4. Pre-register stall-detector windows (verdicts at grace 0 are partly detector economics).
 5. Log `corruptionReport` process metrics (repairs, decay events, latency, degraded-turn integral).
 6. Matched seeds are within-strategy only (draw sequences depend on eligible count).
-7. Resolve the twin-fact alias before any id-comparing scorer runs.
+7. Resolve the twin-fact alias before any id-comparing scorer runs. *(Done 2026-06-11 — see the defect section above.)*
 
 No paid arms are sanctioned for this condition; the above is design input for whenever v1 is.
 
