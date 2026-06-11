@@ -135,3 +135,14 @@ exist for the eventual notes/paper fold-in.
   recognition turn itself (p_watermark d16→r36). The told arm's behavior
   is now strongly reproducible across seeds in both worlds. Critic's
   notice landed on attempt 2 (667.3s total, one timeout).
+
+- **run 11 — noc-decay-v1-A-s3 (told, seed 3, codex director)**:
+  grounded_anagnorisis t35/40, 1504.1s, 152 calls; 12 slips, 11 tutor
+  repairs (0.917, latency 4.0), 0 readoption, releases 11/11 on cue. Third
+  nocturne told run, third anagnorisis — same 12/11/1 slip-repair-unrepaired
+  profile as seeds 1-2, and the one unrepaired slip is again the mirror-side
+  premise (m_away d31). Seed 3's churn concentrated on the true path
+  (p_watermark slipped five times, repaired five times — the fifth on the
+  recognition turn t35). Heaviest D-reversal run of the told arm (4).
+  Critic's notice MISSING (3× CLI timeout) — backfill:
+  `npm run derivation:critic -- --label noc-decay-v1-A-s3`.
