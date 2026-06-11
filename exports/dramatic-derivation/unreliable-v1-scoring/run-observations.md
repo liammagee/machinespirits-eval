@@ -28,3 +28,16 @@ exist for the eventual notes/paper fold-in.
   names as missing are the never-released ground facts (foulAt, sweetAbove,
   residueAt), not the slipped premises. Critic's notice landed (322.7s):
   "slipped facts circulate as ghosts in the dialogue."
+
+- **run 2 — wit-decay-v1-A-s1 (told, seed 1, codex director)**:
+  grounded_anagnorisis t21/24, 982.8s, 87 calls; 9 slips, 8 tutor repairs
+  (per-slip 0.889, mean latency 2.13 turns), 0 readoption, releases 9/9 on
+  cue. First completed derivation under decay. The repair pattern reads as
+  triage: m_taint (the *mirror* premise — Bray's tallow) was repaired twice
+  while the mirror was dialectically live (t3→5, t6→7) and then abandoned on
+  its third lapse (t8, the run's one unrepaired slip) just as the case moved
+  up the slope past Bray; the true-path premises were repaired every time —
+  p_course ×4 (last re-grounded on the recognition turn itself, t18→21) and
+  p_lore ×2. The blind seed-1 sibling died at t7 with the same opening slip
+  schedule. Critic's notice MISSING (3× Fable CLI timeout) — backfill:
+  `npm run derivation:critic -- --label wit-decay-v1-A-s1`.
