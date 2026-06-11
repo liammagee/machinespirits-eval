@@ -8,8 +8,8 @@
  * a 1–2 minute one.
  *
  * Conditions are INHERITED from the source run's diagnosis.json — script,
- * dials, dramaturgy, superego, stall-watch, learner voice, counsel, decay —
- * and only the flags you pass override them. The world is never overridable:
+ * dials, dramaturgy, superego, stall-watch, learner voice, counsel, decay,
+ * decay visibility — and only the flags you pass override them. The world is never overridable:
  * replay into a different world is undefined. The backend mode never
  * inherits: episodes are mock unless --real is given (a --from <real run>
  * must not silently spawn paid calls).
@@ -26,6 +26,7 @@
  *     [--superego on|off] [--stall-watch on|off]
  *     [--learner-voice "<text>"]
  *     [--decay '<json>'|off]           (run-level decay condition — corruption.js)
+ *     [--decay-visibility told|conduct] (conduct = SLIPPED block hidden from tutor)
  *     [--critic auto|real|mock|off]    (default off — episodes are scratch
  *                                       iterations; promote keepers to a full
  *                                       loop run for the archived notice)
@@ -194,6 +195,15 @@ async function main() {
   const inheritedDecay = srcDiag.decay ?? null;
   const decay = decayArg === null ? inheritedDecay : decayArg === 'off' ? null : normalizeDecayConfig(decayArg);
   if (decayArg !== null) overrides.push('decay');
+  const decayVisibility = track(
+    'decay-visibility',
+    arg('decay-visibility', srcDiag.decayVisibility ?? 'told'),
+    srcDiag.decayVisibility ?? 'told',
+  );
+  if (!['told', 'conduct'].includes(decayVisibility)) {
+    console.error(`--decay-visibility must be "told" or "conduct" (got "${decayVisibility}")`);
+    process.exit(1);
+  }
   // The counsel paragraph the source run folded into its charters is part of
   // its conditions — inherit the stored text verbatim (no re-resolution).
   const counsel = srcDiag.criticFeedback?.paragraph ?? null;
@@ -233,10 +243,12 @@ async function main() {
       console.log(`          ${r.padEnd(14)} ${targets[r].provider}/${targets[r].model || '(cli default)'}`);
     console.log(`        live calls bounded by window: ≤${window * (superego ? 5 : 3) * 2}`);
   }
-  if (decay)
+  if (decay) {
     console.log(
       `decay   seed ${decay.seed} rate ${decay.rate} grace ${decay.graceTurns} maxConcurrent ${decay.maxConcurrent} from turn ${decay.startTurn}`,
     );
+    if (decayVisibility === 'conduct') console.log('decay   visibility CONDUCT — SLIPPED block suppressed');
+  }
   console.log(
     `conds   ${overrides.length ? `overridden: ${overrides.join(', ')} — all else inherited` : 'all inherited from source'}`,
   );
@@ -244,7 +256,7 @@ async function main() {
   const client = makeLlmClient({ mode });
   const live = {
     director: makeLlmDirector(world, client, { dials, dramaturgy, counsel }),
-    tutor: makeLlmTutor(world, client, { script, dials, superego, stallWatch, counsel }),
+    tutor: makeLlmTutor(world, client, { script, dials, superego, stallWatch, counsel, decayVisibility }),
     learner: makeLlmLearner({ setting: world.setting, voice: learnerVoice || world.learnerVoice, client }),
   };
   const roles = makeReplayRoles({ recorded: src.result, fromTurn, live });
@@ -332,6 +344,7 @@ async function main() {
     criticFeedback: srcDiag.criticFeedback ?? null,
     learnerVoice: learnerVoice || null,
     decay: decay || null,
+    decayVisibility,
     elapsedMs,
     usage,
     episode,

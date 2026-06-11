@@ -66,6 +66,14 @@
  *                                       worlds stay frozen. Design note:
  *                                       notes/poetics/2026-06-10-unreliable-
  *                                       learner-design.md)
+ *     [--decay-visibility told|conduct] (who learns of decay: told = the tutor
+ *                                       ego prompt carries the SLIPPED block
+ *                                       (default); conduct = block suppressed,
+ *                                       the tutor must read decay off the
+ *                                       learner's behaviour. Engine view and
+ *                                       instruments keep ground truth in both.
+ *                                       The registered visibility contrast:
+ *                                       UNRELIABLE-LEARNER-PREREG.md §7 G3)
  *     [--critic auto|real|mock|off]    (post-run critic's notice; auto = follow
  *                                       the run mode — real dramas get the
  *                                       Fable notice, mock dramas the
@@ -204,6 +212,19 @@ async function main() {
   // not twelve turns into a run. 'off' is accepted for matrix-arm overrides.
   const decayArg = arg('decay', null);
   const decay = decayArg && decayArg !== 'off' ? normalizeDecayConfig(decayArg) : null;
+  // Who learns of decay, and how: 'told' = the tutor ego prompt carries the
+  // SLIPPED block (v1 behaviour, default); 'conduct' = the block is suppressed
+  // and the tutor can read decay only off the learner's behaviour. The engine
+  // and instruments keep ground truth either way (the manipulation is textual).
+  const decayVisibility = arg('decay-visibility', 'told');
+  if (!['told', 'conduct'].includes(decayVisibility)) {
+    console.error(`--decay-visibility must be "told" or "conduct" (got "${decayVisibility}")`);
+    process.exit(1);
+  }
+  if (decayVisibility === 'conduct' && !decay) {
+    console.error('--decay-visibility conduct without --decay is a no-op — refusing (probable arm-B typo)');
+    process.exit(1);
+  }
   const superego = flag('superego');
   const stallWatch = flag('stall-watch');
   if (stallWatch && !superego) {
@@ -279,13 +300,18 @@ async function main() {
     console.log(
       `decay   seed ${decay.seed} · rate ${decay.rate} · grace ${decay.graceTurns} · maxConcurrent ${decay.maxConcurrent} · from turn ${decay.startTurn}`,
     );
+    console.log(
+      decayVisibility === 'conduct'
+        ? 'decay   visibility CONDUCT — SLIPPED block suppressed; the tutor must read decay off the learner'
+        : 'decay   visibility told — the tutor ego prompt carries the SLIPPED block',
+    );
   }
 
   const client = makeLlmClient({ mode });
   const counselText = counsel ? counsel.paragraph : null;
   const roles = {
     director: makeLlmDirector(world, client, { dials, dramaturgy, counsel: counselText }),
-    tutor: makeLlmTutor(world, client, { script, dials, superego, stallWatch, counsel: counselText }),
+    tutor: makeLlmTutor(world, client, { script, dials, superego, stallWatch, counsel: counselText, decayVisibility }),
     learner: makeLlmLearner({ setting: world.setting, voice: learnerVoice || world.learnerVoice, client }),
   };
 
@@ -328,6 +354,7 @@ async function main() {
     // Normalized (defaults filled), so an episode inheriting this run's decay
     // condition (run-derivation-episode.js --from) reproduces it exactly.
     decay: decay || null,
+    decayVisibility,
     elapsedMs,
     usage,
     ...diagnose(result, world),

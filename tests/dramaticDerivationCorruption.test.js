@@ -34,6 +34,10 @@ import {
   makeMockDirector,
   makeMockTutor,
   makeMockLearner,
+  makeLlmClient,
+  makeLlmDirector,
+  makeLlmTutor,
+  makeLlmLearner,
 } from '../services/dramaticDerivation/index.js';
 
 const WORLD_PATH = path.resolve(
@@ -386,4 +390,124 @@ test('decay/repair identity names the released twin, never the unstaged alias', 
       'every repair event should close a decay row (id-keyed pairing)',
     );
   }
+});
+
+// ---------------------------------------------------------------------------
+// decay visibility (the G3 dial — UNRELIABLE-LEARNER-PREREG.md §7)
+// arm A 'told': the tutor ego user prompt carries the SLIPPED block;
+// arm B 'conduct': the block is suppressed and the tutor prompt is
+// byte-identical to a corruption-free render. The engine view and the
+// corruption instruments keep ground truth in BOTH arms — the manipulation
+// is textual, nothing else may move.
+// ---------------------------------------------------------------------------
+
+const TUTOR_SCRIPT = 'Teach by questions; never state the conclusion yourself.';
+
+/** Client that records every (role, system, user) and answers from the mock backend. */
+function recordingLlmClient() {
+  const inner = makeLlmClient({ mode: 'mock' });
+  const payloads = [];
+  return {
+    payloads,
+    client: {
+      mode: inner.mode,
+      usage: inner.usage,
+      call(role, payload) {
+        payloads.push({ role, system: payload.system, user: payload.user });
+        return inner.call(role, payload);
+      },
+    },
+  };
+}
+
+test('makeLlmTutor rejects unknown decayVisibility values', () => {
+  assert.throws(
+    () => makeLlmTutor(world, { call() {} }, { script: TUTOR_SCRIPT, decayVisibility: 'blind' }),
+    /decayVisibility/,
+  );
+});
+
+test('told renders the SLIPPED block; conduct is byte-identical to a corruption-free render', async () => {
+  const capture = () => {
+    const calls = [];
+    return {
+      calls,
+      client: {
+        mode: 'mock',
+        usage: () => ({}),
+        call(role, payload) {
+          calls.push({ role, system: payload.system, user: payload.user });
+          return JSON.stringify({
+            dialogue: 'A line.',
+            move: { figure: 'erotema', target_premise: null, intent: 'consolidate' },
+          });
+        },
+      },
+    };
+  };
+  const baseView = {
+    turn: 3,
+    learnerAbox: { grounded: [['water', 'reaches', 'well']], hypotheses: [] },
+    trajectory: [{ turn: 2, D: 2, forced: false }],
+    ledger: [{ premiseId: 'p1' }],
+    transcript: [{ turn: 2, role: 'tutor', text: 'Consider the well.' }],
+  };
+  const decayedView = {
+    ...baseView,
+    corruption: { decayed: [{ premiseId: 'p1', fact: ['water', 'reaches', 'well'], sinceTurn: 2 }], repaired: [] },
+  };
+
+  const told = capture();
+  await makeLlmTutor(world, told.client, { script: TUTOR_SCRIPT })(decayedView);
+  assert.match(told.calls[0].user, /SLIPPED FROM THE BOARD/);
+  assert.match(told.calls[0].user, /p1 \(since turn 2\)/);
+
+  const conduct = capture();
+  await makeLlmTutor(world, conduct.client, { script: TUTOR_SCRIPT, decayVisibility: 'conduct' })(decayedView);
+  const clean = capture();
+  await makeLlmTutor(world, clean.client, { script: TUTOR_SCRIPT })(baseView);
+  assert.equal(conduct.calls[0].user.includes('SLIPPED'), false);
+  assert.equal(conduct.calls[0].user, clean.calls[0].user);
+  assert.equal(conduct.calls[0].system, clean.calls[0].system);
+});
+
+test('end-to-end blindness: under conduct no role prompt ever carries the notice; under told only the tutor ego does; the formal channel is invariant', async () => {
+  const run = async (decayVisibility) => {
+    const rec = recordingLlmClient();
+    const roles = {
+      director: makeLlmDirector(world, rec.client, {}),
+      tutor: makeLlmTutor(world, rec.client, { script: TUTOR_SCRIPT, superego: true, decayVisibility }),
+      learner: makeLlmLearner({ setting: world.setting, voice: world.learnerVoice, client: rec.client }),
+    };
+    const result = await runDrama({ world, roles, options: { decay: AGGRESSIVE } });
+    return { rec, result };
+  };
+
+  const told = await run('told');
+  const decayEvents = told.result.corruption.ledger.filter((e) => e.type === 'decay');
+  assert.ok(decayEvents.length > 0, 'precondition: the mock drama must actually decay');
+  const slipped = told.rec.payloads.filter((p) => `${p.system}\n${p.user}`.includes('SLIPPED FROM THE BOARD'));
+  assert.ok(slipped.length > 0, 'told arm: the notice must reach the tutor');
+  assert.ok(
+    slipped.every((p) => p.role === 'tutor'),
+    'the notice may reach ONLY the tutor ego — superego/learner/director are blind by construction',
+  );
+
+  const conduct = await run('conduct');
+  assert.equal(
+    conduct.rec.payloads.some((p) => `${p.system}\n${p.user}`.includes('SLIPPED')),
+    false,
+    'conduct arm: no prompt for any role may carry the notice',
+  );
+  // The manipulation is textual: with the prompt-indifferent mock cast the
+  // two arms must agree on every formal field — corruption schedule included.
+  assert.deepEqual(
+    conduct.result.corruption.ledger.filter((e) => e.type === 'decay'),
+    decayEvents,
+  );
+  assert.deepEqual(
+    conduct.result.trajectory.map((p) => p.D),
+    told.result.trajectory.map((p) => p.D),
+  );
+  assert.deepEqual(conduct.result.ledger, told.result.ledger);
 });

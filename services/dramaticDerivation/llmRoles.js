@@ -394,7 +394,7 @@ function tutorSuperegoSystem(world, { stallWatch = false, counsel = null } = {})
 export function makeLlmTutor(
   world,
   client,
-  { script, dials = {}, superego = false, stallWatch = false, counsel = null } = {},
+  { script, dials = {}, superego = false, stallWatch = false, counsel = null, decayVisibility = 'told' } = {},
 ) {
   if (!script || !script.trim()) {
     throw new Error('derivation.llmRoles: makeLlmTutor requires a role-script (the iteration target)');
@@ -402,6 +402,11 @@ export function makeLlmTutor(
   if (stallWatch && !superego) {
     throw new Error(
       'derivation.llmRoles: stallWatch requires the superego (the stall jurisdiction lives in its charter)',
+    );
+  }
+  if (decayVisibility !== 'told' && decayVisibility !== 'conduct') {
+    throw new Error(
+      `derivation.llmRoles: decayVisibility must be 'told' or 'conduct', got ${JSON.stringify(decayVisibility)}`,
     );
   }
   const system = tutorSystem(world, script, dials);
@@ -442,10 +447,11 @@ export function makeLlmTutor(
       "The learner's hypotheses:",
       hyps,
       '',
-      // v1 decay visibility (corruption.js): the tutor reads the harness's
-      // ground truth of what slipped. The v2 manipulation — infer decay from
-      // conduct — removes this block; design-note material, not built.
-      ...(view.corruption?.decayed?.length
+      // Decay visibility (corruption.js): under 'told' the tutor reads the
+      // harness's ground truth of what slipped; under 'conduct' the block is
+      // suppressed and decay is legible only through the learner's behaviour.
+      // The engine view is untouched either way — instruments keep ground truth.
+      ...(decayVisibility !== 'conduct' && view.corruption?.decayed?.length
         ? [
             `SLIPPED FROM THE BOARD: the learner has lost hold of ${view.corruption.decayed
               .map((d) => `${d.premiseId || renderFact(d.fact)} (since turn ${d.sinceTurn})`)
