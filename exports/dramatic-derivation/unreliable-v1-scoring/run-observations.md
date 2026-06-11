@@ -111,3 +111,17 @@ exist for the eventual notes/paper fold-in.
   inverse of the told arm's selection signature (told repairs target the
   true path; blind repairs land where the rhetoric happens to walk).
   Critic's notice landed (226.6s).
+
+- **run 9 — noc-decay-v1-B-s2 (conduct, seed 2, codex director)**: aporia
+  t39/40, 1586.5s, 167 calls; 5 slips, 3 blind repairs (latency 11),
+  0 readoption, releases 11/11 on cue. The scorer's classification makes
+  the incidental mechanism legible run-internally: m_style t4→t5 and
+  p_watermark t7→t8 are *lastRelease* repairs (each premise slipped on the
+  very turns the script was releasing/consolidating it — the tutor restates
+  it because that is the work, not because it noticed), and m_style's
+  31-turn resurrection (t6→t37) targets the mirror premise during late
+  counter-mirror work. Selected: 0. With this run pooled B sits at 0.333 —
+  numerically AT the registered incidental floor (§4 anchor 0.33). Same
+  endgame as B-s1: lucky_leap ×7, learner asserting S unforced while
+  p_watermark (true path) stays down from t9 to the end; aporia at D=1.
+  Critic's notice landed (218.6s).
