@@ -64,3 +64,15 @@ The four leading tutor-side mechanisms are a statistical dead heat (band 0.85–
 7. Resolve the twin-fact alias before any id-comparing scorer runs.
 
 No paid arms are sanctioned for this condition; the above is design input for whenever v1 is.
+
+---
+
+## Addendum (same day): round 2 run locally + first real-LLM probe
+
+### Round 2 — hybrids (free, local; the refinement round the workflow never reached)
+
+Six role-swap hybrids ({bgc, scs} tutors × {p50, k1, w5} learners, `strategies/hybrids/` in the export). **Finding 8 — failure-profile tiling beats channel strength**: every hybrid beats both parents, and the *worst* single learner (recency-w5, 0.604) makes the *best* hybrid — bgc×w5 = **0.974** (fresh seeds 0.970), scs×w5 = 0.967 (fresh 0.974), both **1.000** at the rate-1.0/grace-0/maxC-4 corner *and* at the maxC-8 stress cell where every parent is 0.000. Only the w5 hybrids exceed the independence bound 1−(1−p_T)(1−p_L): their failure profiles are anti-correlated along the rate axis (w5 dies at low rates, where the tutor is strong; the tutor dies at the high-rate bandwidth wall, where w5 is perfect). The p50/k1 hybrids land below the bound — correlated failures in the same corner. Full table in SURVIVAL-MAP.md §Round 2.
+
+### First real-LLM probe — the live tutor uses the repair channel
+
+[`exports/dramatic-derivation/episodes/decay-probe-real-001/`](../../exports/dramatic-derivation/episodes/decay-probe-real-001/transcript.md) — episode replay of the charter-v2 nocturne run, 4 live turns (t20–23), original casting, decay rate 0.75/grace 1/maxC 2 from t20. Mock rehearsal as null arm (`decay-probe-rehearsal-mock`: tutor leaves all slips rotting). Live: decay takes `m_style` + `p_watermark` at t20; at t21 the codex tutor re-stages `p_watermark` — repair latency 1 turn, derivation-critical slip chosen over the mirror-feeder, against habit (last release was `p_heardOnly`). The freed slot re-fills the same turn (finding 1's re-arming loop, live). The sonnet learner tracked the corrupted board accurately and never spontaneously re-adopted — the tutor-side contrast is clean for v1. Cost: 16 plan-quota CLI calls. Willingness + selection settled at n=1; throughput (one move slot vs maxC slips/turn) is the structural residue the mock map already prices.

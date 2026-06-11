@@ -94,6 +94,34 @@ Sorted by full-grid success (seeds 1–5; fresh = seeds 11–15). Verification: 
 6. **Keep the matched-seed discipline.** Decay draw sequences depend on the eligible count, so seeds are comparable within a strategy, not across strategies — paid arms inherit this caveat when citing per-seed contrasts.
 7. **Fix or document the twin-fact alias first** if any scorer or guard will compare premise ids.
 
+## Round 2 (run post-workflow, locally, free): hybrid strategies
+
+The refinement round the workflow never reached, run as plain local sweeps. Six hybrids = {blocking-greedy-clean, stall-clock-surfing} tutors × {notice-p50, capacity-k1, recency-w5} learners, composed by role-swap (`strategies/hybrids/`; each parent builds closure-scoped roles, so taking A's tutor and B's learner is clean).
+
+| hybrid | full grid | fresh (11–15) | vs independence bound | rate-1.0/grace-0/maxC-4 corner |
+|---|---|---|---|---|
+| bgc × w5 | **0.974** | 0.970 | **above** (0.949) | **1.00** |
+| scs × w5 | **0.967** | 0.974 | **above** (0.948) | **1.00** |
+| bgc × p50 | 0.962 | — | below (0.973) | 0.68 |
+| scs × p50 | 0.956 | — | below (0.973) | — |
+| scs × k1 | 0.944 | — | below (0.965) | 0.20 |
+| bgc × k1 | 0.935 | — | below (0.965) | — |
+
+Parents at that corner: bgc 0.20, scs 0.20, w5 **1.00**, p50 0.60. Both w5 hybrids also hold **1.000 at the maxC=8 stress cell** where every parent (and every tutor-side strategy) collapses to 0.000. Zero schedule violations throughout.
+
+**Finding 8 — failure-profile tiling beats channel strength.** Every hybrid beats both parents, but the *worst* single learner (recency-w5, 0.604) makes the *best* hybrid (0.974). The independence bound 1−(1−p_tutor)(1−p_learner) splits them: only the w5 hybrids exceed it — their failures are anti-correlated along the rate axis (w5 dies at low rates where the tutor is strong; the tutor dies at the high-rate bandwidth wall where w5 is perfect), so the profiles tile the grid (~0.95–1.00 in every rate band). The p50/k1 hybrids fall below the bound: both channels die in the same harsh corner. The interference risk from finding 1 (readopt churn re-arming decay against a parsimonious tutor) never outweighs coverage at any cell.
+
+## Real-LLM probe (episode decay-probe-real-001)
+
+First live test of the condition: episode replay of `loop/nocturne-v002-real-superego-on-t1-charterv2` (turns 1–19 free from the recording), 4 live turns (t20–23) with the original casting (codex tutor + superego, opus director, sonnet learner) under diagnostic-corner decay (rate 0.75, grace 1, maxC 2, seed 1). 16 plan-quota CLI calls, ~6 min. Mock rehearsal of the identical episode (`decay-probe-rehearsal-mock`) ran first as the null arm — its tutor left every slip rotting.
+
+- t20: decay takes `m_style` + `p_watermark`. t21: the live tutor's next move re-stages `p_watermark` (`anaphora → p_watermark (consolidate)`) — **repair latency 1 turn**, and it picked the derivation-critical slip over the mirror-feeding `m_style`, against habit (last release was `p_heardOnly`).
+- The freed slot re-fills the same turn (`p_stock` decays) — finding 1's re-arming loop, live.
+- The sonnet learner's epistemic reports stayed accurate to the corrupted board (no confabulated premises) and it never spontaneously re-adopted.
+- Verdict `cap_reached` (bounded window — expected for episodes). Artifacts: `exports/dramatic-derivation/episodes/decay-probe-real-001/` (transcript.md, diagnosis.json, result.json, episode.json).
+
+Read: *willingness and selection* are settled at n=1 — given visibility, the tutor repairs immediately and triages like the map's winning policies. What the probe cannot settle (and the mock map says is the real constraint at harsh settings) is throughput: one move slot per turn against up to maxC slips per turn.
+
 ## Files
 
 - `harness.mjs` — sweep harness (CLI, grids, frozen-channel guard, aggregates)
