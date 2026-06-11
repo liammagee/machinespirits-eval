@@ -130,4 +130,4 @@ Changes to worlds, detector windows, decay semantics, endpoints, or hypothesis t
 
 ## Amendments
 
-(none)
+**2026-06-11 (clarification, before run 1 — no protocol change).** §8's casting parenthetical "(unchanged from the baselines and the probe)" is inaccurate for one role: the withercombe baseline `withercombe-v001-real-sw-on-t1` ran a **codex** director, while the registered casting (and all three G2 probe episodes, both worlds) uses **claude/opus**. The explicit registered casting governs: all 12 runs use director claude/opus. Consequence: the withercombe no-decay baseline differs from its decay arms in director casting as well as in `--decay`; this touches only exploratory baseline color, not H1/H2 (within-experiment, casting-identical across arms) and not H3 (anchored on the mock survival map, not the real baselines).
