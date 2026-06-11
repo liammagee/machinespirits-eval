@@ -14,19 +14,37 @@ import { closure, factKey, matchPattern } from './chainer.js';
 
 const FIGURES = ['erotema', 'analogia', 'exemplum', 'anaphora'];
 
-export function makeMockDirector(world) {
+/**
+ * @param {object} policy
+ *   endActAt   array of turns at which the mock returns {act:'end'} with a
+ *              strategic direction (stage v2 acts-mode choreography for the
+ *              boundary-guard tests; default none, so the no-policy director
+ *              is byte-stable with its old self)
+ */
+export function makeMockDirector(world, policy = {}) {
+  const endActAt = new Set(policy.endActAt || []);
   return async (view) => {
+    const act = endActAt.has(view.turn) ? 'end' : 'continue';
     const entry = world.releaseSchedule.find((e) => e.turn === view.turn && e.via === 'director');
     if (entry) {
       const fact = world.premiseById.get(entry.premise).fact;
       return {
         direction: `[The scene turns: it comes to light that ${fact.join(' ')}.]`,
         release: entry.premise,
+        ...(endActAt.size ? { act } : {}),
+      };
+    }
+    if (act === 'end') {
+      return {
+        direction: `[The act closes on turn ${view.turn}; press the chain one link further.]`,
+        release: null,
+        act,
       };
     }
     return {
       direction: `[Turn ${view.turn}. The question hangs in the air: ${world.question}]`,
       release: null,
+      ...(endActAt.size ? { act } : {}),
     };
   };
 }
@@ -37,40 +55,52 @@ export function makeMockDirector(world) {
  *                   premises, target the oldest one (the deterministic repair
  *                   choreography for the corruption tests; default false so
  *                   the no-policy tutor is byte-stable with its old self)
+ *   reconstruct     emit a credulous per-turn `theory` (everything staged is
+ *                   believed held) — plumbing-grade reconstruction for the
+ *                   stage-v2 recording tests; sharper theories belong to
+ *                   inline test roles
  */
 export function makeMockTutor(world, policy = {}) {
   return async (view) => {
     const figure = FIGURES[(view.turn - 1) % FIGURES.length];
+    const theory = policy.reconstruct
+      ? {
+          believed_held: view.ledger.map((e) => e.premiseId),
+          believed_missing: [],
+          believed_mistaken: [],
+        }
+      : null;
+    const withTheory = (out) => (theory ? { ...out, theory } : out);
     const entry = world.releaseSchedule.find((e) => e.turn === view.turn && e.via === 'tutor');
     if (entry) {
       const fact = world.premiseById.get(entry.premise).fact;
-      return {
+      return withTheory({
         dialogue: `Consider what the record shows: ${fact.join(' ')}.`,
         move: { figure, targetPremise: entry.premise, intent: 'release' },
         release: entry.premise,
-      };
+      });
     }
     // Releases stay on cue (the frozen channel) — repair fills the turns
     // between them.
     if (policy.repairDecayed && view.corruption?.decayed?.length) {
       const target = view.corruption.decayed[0];
-      return {
+      return withTheory({
         dialogue: `Hold again what slipped from you: ${target.fact.join(' ')}. Place it back on the table.`,
         move: { figure, targetPremise: target.premiseId, intent: 'repair' },
-      };
+      });
     }
     const lastRelease = view.ledger[view.ledger.length - 1] || null;
     if (lastRelease) {
       const fact = world.premiseById.get(lastRelease.premiseId).fact;
-      return {
+      return withTheory({
         dialogue: `Hold "${fact.join(' ')}" against what you already know. What follows?`,
         move: { figure, targetPremise: lastRelease.premiseId, intent: 'consolidate' },
-      };
+      });
     }
-    return {
+    return withTheory({
       dialogue: `Begin with the question itself: ${world.question}`,
       move: { figure, targetPremise: null, intent: 'orient' },
-    };
+    });
   };
 }
 

@@ -8,9 +8,16 @@
  *
  * v1 is DECAY ONLY: a masked (forgotten) released premise disappears from the
  * learner's visible board and from D(t)/forcing until the tutor repairs it
- * (a move whose targetPremise names it) or the learner re-adopts it. Other
- * corruption modes (misremembering, intrusion) are design-note material, not
- * built. The decay schedule is a RUN-LEVEL condition: worlds stay frozen.
+ * (a move whose targetPremise names it) or the learner re-adopts it.
+ *
+ * Stage v2 (notes/poetics/2026-06-11-act-bounded-learner-design.md §1.3) adds
+ * MUTATION: with probability `mutateShare`, a decay hit misremembers instead
+ * of deleting — one argument of the lost fact is swapped for a plausible
+ * same-slot constant, and the false form lands on the learner's belief board
+ * as a mistaken axiom (engine.js owns the swap; this module only carries the
+ * config key). At the default `mutateShare: 0` the draw stream and ledger are
+ * byte-identical to v1. The decay schedule remains a RUN-LEVEL condition:
+ * worlds stay frozen.
  */
 
 /**
@@ -35,6 +42,7 @@ const DECAY_DEFAULTS = Object.freeze({
   graceTurns: 2,
   maxConcurrent: 2,
   startTurn: 1,
+  mutateShare: 0,
 });
 
 /**
@@ -71,6 +79,9 @@ export function normalizeDecayConfig(raw) {
   intField('startTurn', 1);
   if (typeof out.rate !== 'number' || !(out.rate >= 0 && out.rate <= 1)) {
     throw new Error(`decay config: rate must be a number in [0, 1] (got ${JSON.stringify(out.rate)})`);
+  }
+  if (typeof out.mutateShare !== 'number' || !(out.mutateShare >= 0 && out.mutateShare <= 1)) {
+    throw new Error(`decay config: mutateShare must be a number in [0, 1] (got ${JSON.stringify(out.mutateShare)})`);
   }
   return out;
 }

@@ -35,6 +35,32 @@
  * the release schedule, the checker, the slope constraints, the turn cap.
  * The learner never sees staging state or tutor deliberation.
  *
+ * STAGE V2 — ACTS, THE BOUNDED LEARNER, THE RECONSTRUCTING TUTOR
+ * (notes/poetics/2026-06-11-act-bounded-learner-design.md; opt-in via
+ * options.acts, off-state invariant when absent). The act becomes a
+ * first-class unit: the director is still consulted every turn but returns an
+ * act verdict ({act:'continue'|'end', direction?}) instead of free movements;
+ * the engine owns the boundaries (minActTurns/maxActTurns guards) and
+ * synthesizes an `Act N` staging phase at each boundary so every
+ * phase-reading instrument works unchanged. Turn 1's direction is Act 1's
+ * brief. The LEARNER is bounded: its view carries (a) its own theory store
+ * and (b) the current act's dialogue/releases/voicings only — the theory is
+ * the only thing that crosses an act boundary. The TUTOR view is redacted to
+ * dialogue + its own release ledger (no learnerAbox, no corruption ledger, no
+ * frontier/trajectory — each is computed FROM the hidden store and would leak
+ * decay as deltas): §6.13.7's conduct condition made total at the view layer,
+ * in BOTH probe arms. The director keeps its evaluative instruments
+ * (trajectory, frontier, grounded count) but loses the corruption ledger and
+ * the store dump, so act briefs cannot smuggle slip identities to the tutor.
+ * Decay gains a mutation mode (corruption.js `mutateShare`): a hit may
+ * misremember instead of delete — the false form sits on the learner's
+ * BELIEF board (visible to the learner, never valid for forcing) until the
+ * learner retracts it (`retract_false` ledger row); the true premise comes
+ * back only via tutor repair or re-adoption, exactly as v1. A reconstructing
+ * tutor (roles-layer dial) may emit per-turn `theory` — its model of the
+ * learner's store — which the engine records beside a harness-truth snapshot
+ * (result.reconstruction); arm-internal color, never cross-arm scoring.
+ *
  * THE SINGLE-CONCEALMENT INVARIANT: the learner's view contains the public
  * question (+ pattern), the world RULES (the learner knows the law, lacks
  * the facts), its own background, the public transcript, and facts already
@@ -56,6 +82,45 @@ function renderFact(fact) {
   return fact.join(' ');
 }
 
+const ACTS_DEFAULTS = Object.freeze({
+  minActTurns: 3,
+  maxActTurns: 8,
+});
+
+/**
+ * Validate and default an acts config (stage v2). Accepts an object or a
+ * JSON string (the CLI's `--acts '<json>'`). Unknown keys are rejected — a
+ * typo'd guard must fail loudly, not silently run at its default.
+ */
+export function normalizeActsConfig(raw) {
+  let cfg = raw;
+  if (typeof cfg === 'string') {
+    try {
+      cfg = JSON.parse(cfg);
+    } catch (err) {
+      throw new Error(`acts config is not valid JSON: ${err.message}`);
+    }
+  }
+  if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg)) {
+    throw new Error('acts config must be a JSON object, e.g. {"minActTurns":3,"maxActTurns":8}');
+  }
+  for (const key of Object.keys(cfg)) {
+    if (!(key in ACTS_DEFAULTS)) {
+      throw new Error(`acts config: unknown key "${key}" (known: ${Object.keys(ACTS_DEFAULTS).join(', ')})`);
+    }
+  }
+  const out = { ...ACTS_DEFAULTS, ...cfg };
+  for (const name of ['minActTurns', 'maxActTurns']) {
+    if (!Number.isInteger(out[name]) || out[name] < 1) {
+      throw new Error(`acts config: ${name} must be an integer >= 1 (got ${JSON.stringify(out[name])})`);
+    }
+  }
+  if (out.minActTurns > out.maxActTurns) {
+    throw new Error(`acts config: minActTurns (${out.minActTurns}) must not exceed maxActTurns (${out.maxActTurns})`);
+  }
+  return out;
+}
+
 export async function runDrama({ world, roles, options = {} }) {
   const opts = {
     stopOnStall: true,
@@ -72,9 +137,15 @@ export async function runDrama({ world, roles, options = {} }) {
   // (the decay-off invariance the tests pin).
   const decay = options.decay ? normalizeDecayConfig(options.decay) : null;
   const corruption = decay ? { config: decay, rng: mulberry32(decay.seed), ledger: [] } : null;
+  // Stage v2 (header): acts mode is opt-in and, like decay, absent means
+  // absent — no act state, no view bounding, no redaction, no new fields.
+  const acts = options.acts ? normalizeActsConfig(options.acts) : null;
+  const actState = acts ? { index: 1, startTurn: 1, brief: '', history: [] } : null;
+  const reconstructionRows = []; // {turn, believed, truth} — reconstructing-tutor dial (roles-layer)
   const ledger = []; // {turn, premiseId, via}
   const releasedKeys = new Set();
   const releasedFacts = [];
+  const releasedAtByKey = new Map(); // factKey -> release turn (act-bounding needs WHEN, not just whether)
   const backgroundKeys = new Set(world.background.map(factKey));
 
   const grounded = new Map(); // key -> {fact, turn, valid}
@@ -96,6 +167,34 @@ export async function runDrama({ world, roles, options = {} }) {
 
   const validGroundedFacts = () =>
     [...grounded.values()].filter((entry) => entry.valid && !entry.decayed).map((entry) => entry.fact);
+
+  // The learner's BELIEF board — what it would assent to. Differs from the
+  // forcing board in exactly one class: mutation-born false beliefs
+  // (mutatedFalse) are visible to the learner, which believes them, while
+  // staying invalid for forcing/D. Fabricated adoptions stay invisible in
+  // both (v1 behavior). With mutateShare 0 this is validGroundedFacts(),
+  // fact for fact, in the same insertion order.
+  const learnerBoardFacts = () =>
+    [...grounded.values()]
+      .filter((entry) => !entry.decayed && (entry.valid || entry.mutatedFalse))
+      .map((entry) => entry.fact);
+
+  // F(t): Jaccard fidelity between the learner's belief board and the ideal
+  // no-decay store (background ∪ everything released so far). 1 = the theory
+  // is exactly what the play has staged; deletions and false beliefs both
+  // drag it down. Recorded onto trajectory rows only when corruption is on
+  // (the design note's documented additive relaxation of v1 byte-identity).
+  const theoryFidelity = () => {
+    const idealKeys = new Set([...backgroundKeys, ...releasedKeys]);
+    const union = new Set(idealKeys);
+    let inter = 0;
+    for (const [key, entry] of grounded) {
+      if (entry.decayed || !(entry.valid || entry.mutatedFalse)) continue;
+      if (idealKeys.has(key)) inter += 1;
+      union.add(key);
+    }
+    return union.size ? inter / union.size : 1;
+  };
 
   // --- derive channel + inference frontier state (stall-watcher instrument) ---
   const voicedLedger = []; // {fact, turn} — canonical closure facts the learner voiced via derive
@@ -127,6 +226,50 @@ export async function runDrama({ world, roles, options = {} }) {
   // assert channel's property — excluded from the frontier BEFORE it exists,
   // so the tutor-side view never contains even a derivable S.
   const isPatternFact = (fact) => matchPattern(world.questionPattern, fact) !== null;
+
+  // Mutation ("misremembering") support, stage v2: a decay hit may, at
+  // mutateShare odds, swap one argument of the lost fact for a plausible
+  // same-slot constant — a mistaken axiom the learner now believes. The
+  // candidate pool is deterministic (sorted constants seen at the same
+  // predicate+position across the world's premises and background); the pick
+  // is one seeded rng draw over the filtered candidate list. Constraints keep
+  // the false form strictly false and strictly novel: no collision with any
+  // premise (released or not), background fact, current board entry, the
+  // secret, the mirror, or the question pattern. An empty candidate list
+  // falls back to a plain delete.
+  const mutationPoolByPredPos = new Map(); // "pred|pos" -> sorted constants
+  const mutationPool = (pred, pos) => {
+    const poolKey = `${pred}|${pos}`;
+    if (mutationPoolByPredPos.has(poolKey)) return mutationPoolByPredPos.get(poolKey);
+    const constants = new Set();
+    const harvest = (fact) => {
+      if (fact[0] === pred && fact.length > pos) constants.add(fact[pos]);
+    };
+    for (const premise of world.premiseById.values()) harvest(premise.fact);
+    for (const fact of world.background) harvest(fact);
+    const sorted = [...constants].sort();
+    mutationPoolByPredPos.set(poolKey, sorted);
+    return sorted;
+  };
+  const mutationCandidates = (fact) => {
+    const candidates = [];
+    for (let pos = 1; pos < fact.length; pos += 1) {
+      for (const constant of mutationPool(fact[0], pos)) {
+        if (constant === fact[pos]) continue;
+        const candidate = [...fact];
+        candidate[pos] = constant;
+        const key = factKey(candidate);
+        if (grounded.has(key)) continue;
+        if (premiseIdByKey.has(key)) continue;
+        if (backgroundKeys.has(key)) continue;
+        if (key === factKey(world.secret.fact)) continue;
+        if (world.mirror && key === factKey(world.mirror.fact)) continue;
+        if (isPatternFact(candidate)) continue;
+        candidates.push(candidate);
+      }
+    }
+    return candidates;
+  };
 
   // Record first-availability for every derived, non-pattern fact in the
   // closure of the learner's valid board. Returns the closure for reuse.
@@ -188,6 +331,7 @@ export async function runDrama({ world, roles, options = {} }) {
     if (!premise || releasedKeys.has(factKey(premise.fact))) return null;
     releasedKeys.add(factKey(premise.fact));
     releasedIdByKey.set(factKey(premise.fact), premiseId);
+    releasedAtByKey.set(factKey(premise.fact), turn);
     releasedFacts.push(premise.fact);
     ledger.push({ turn, premiseId, via });
     return premise.fact;
@@ -202,59 +346,105 @@ export async function runDrama({ world, roles, options = {} }) {
   const visibleToLearner = (facts) =>
     corruption ? facts.filter((fact) => !grounded.get(factKey(fact))?.decayed) : facts;
 
+  // Stage v2 bounding (header): in acts mode the learner's context is (a) its
+  // own theory store and (b) the current act only — prior acts' prose,
+  // releases, and voiced theorems drop from view; the theory is the only
+  // thing that crosses an act boundary. Hypotheses stay unbounded by design
+  // (the learner's own conjectural thread, not staged evidence). The board
+  // shown is the BELIEF board: mutation-born false axioms are visible (the
+  // learner believes them); fabrications stay invisible, as in v1.
   const learnerView = (turn, releasedThisTurn) => ({
     turn,
     question: world.question,
     questionPattern: world.questionPattern,
     rules: world.rules,
     background: world.background,
-    releasedFacts: visibleToLearner([...releasedFacts]),
+    releasedFacts: visibleToLearner(
+      actState
+        ? releasedFacts.filter((fact) => (releasedAtByKey.get(factKey(fact)) ?? 0) >= actState.startTurn)
+        : [...releasedFacts],
+    ),
     releasedThisTurn: visibleToLearner(releasedThisTurn),
-    transcript: transcript.map(({ turn: t, role, text }) => ({ turn: t, role, text })),
+    transcript: transcript
+      .filter((entry) => !actState || entry.turn >= actState.startTurn)
+      .map(({ turn: t, role, text }) => ({ turn: t, role, text })),
     abox: {
-      grounded: validGroundedFacts(),
+      grounded: learnerBoardFacts(),
       hypotheses: [...hypotheses],
     },
-    voiced: voicedLedger.map((entry) => ({ ...entry })),
+    voiced: voicedLedger
+      .filter((entry) => !actState || entry.turn >= actState.startTurn)
+      .map((entry) => ({ ...entry })),
+    ...(actState ? { act: { index: actState.index, startTurn: actState.startTurn, brief: actState.brief } } : {}),
   });
 
-  const omniscientView = (turn, roleName) => ({
-    turn,
-    role: roleName,
-    world,
-    ledger: [...ledger],
-    releasedFacts: [...releasedFacts],
-    transcript: [...transcript],
-    trajectory: [...trajectory],
-    staging: { phase: staging.phase },
-    learnerAbox: {
-      grounded: validGroundedFacts(),
-      hypotheses: [...hypotheses],
-    },
-    inference: {
-      frontier: computeFrontier(turn),
-      voiced: voicedLedger.map((entry) => ({ ...entry })),
-      overreachCount: overreaches.length,
-    },
-    // v1 visibility: world-side roles read the corruption ground truth (the
-    // harness owns what was lost and when). The v2 manipulation — superego
-    // must INFER decay from conduct — gates this block off; design-note
-    // material, not built.
-    ...(corruption
-      ? {
-          corruption: {
-            decayed: [...grounded.entries()]
-              .filter(([, entry]) => entry.decayed)
-              .map(([key, entry]) => ({
-                premiseId: premiseIdForKey(key),
-                fact: entry.fact,
-                sinceTurn: entry.decayTurn,
-              })),
-            ledger: corruption.ledger.map((e) => ({ ...e })),
-          },
-        }
-      : {}),
+  const actsView = (turn) => ({
+    index: actState.index,
+    startTurn: actState.startTurn,
+    brief: actState.brief,
+    turnsThisAct: turn - actState.startTurn,
+    minActTurns: acts.minActTurns,
+    maxActTurns: acts.maxActTurns,
+    closed: actState.history.map((a) => ({ ...a })),
   });
+
+  const omniscientView = (turn, roleName) => {
+    const base = {
+      turn,
+      role: roleName,
+      world,
+      ledger: [...ledger],
+      releasedFacts: [...releasedFacts],
+      transcript: [...transcript],
+      staging: { phase: staging.phase },
+      ...(actState ? { acts: actsView(turn) } : {}),
+    };
+    // Stage v2 redaction (header): in acts mode the TUTOR's blindness is
+    // total and structural, in both probe arms — no learner store, no
+    // corruption ledger, no frontier or trajectory (each is computed FROM
+    // the hidden store and would leak decay as deltas). The tutor works from
+    // the dialogue and its own release ledger; reconstruction is its job,
+    // not its input.
+    if (actState && roleName === 'tutor') return base;
+    return {
+      ...base,
+      trajectory: [...trajectory],
+      // The director keeps its evaluative instruments (it must judge an
+      // act's work done — that IS board movement) but in acts mode loses the
+      // store dump: its briefs open acts in front of the tutor, so they must
+      // not be able to name what only the hidden board could tell it.
+      learnerAbox:
+        actState && roleName === 'director'
+          ? { groundedCount: validGroundedFacts().length, hypotheses: [...hypotheses] }
+          : {
+              grounded: validGroundedFacts(),
+              hypotheses: [...hypotheses],
+            },
+      inference: {
+        frontier: computeFrontier(turn),
+        voiced: voicedLedger.map((entry) => ({ ...entry })),
+        overreachCount: overreaches.length,
+      },
+      // v1 visibility: world-side roles read the corruption ground truth (the
+      // harness owns what was lost and when). Acts mode strips it from the
+      // director too — slip identities must not reach the stage through a
+      // brief. Outside acts mode this block is what the told arm reads.
+      ...(corruption && !actState
+        ? {
+            corruption: {
+              decayed: [...grounded.entries()]
+                .filter(([, entry]) => entry.decayed)
+                .map(([key, entry]) => ({
+                  premiseId: premiseIdForKey(key),
+                  fact: entry.fact,
+                  sinceTurn: entry.decayTurn,
+                })),
+              ledger: corruption.ledger.map((e) => ({ ...e })),
+            },
+          }
+        : {}),
+    };
+  };
 
   recordAvailability(0); // background-only board may already yield derivations
   const turnLimit = Math.min(world.turnCap, Number.isFinite(opts.maxTurns) ? opts.maxTurns : Infinity);
@@ -267,7 +457,48 @@ export async function runDrama({ world, roles, options = {} }) {
     const directorOut = (await roles.director(omniscientView(turn, 'director'))) || {};
     const directorRelease = applyRelease(turn, directorOut.release, 'director');
     if (directorRelease) releasedThisTurn.push(directorRelease);
-    if (directorOut.phase && typeof directorOut.phase.name === 'string' && directorOut.phase.name.trim()) {
+    if (actState) {
+      // The act verdict (stage v2, header). Turn 1's direction is Act 1's
+      // brief; afterwards {act:'end', direction} closes the act at turn-1 and
+      // opens the next with the direction as its strategic brief. Guards: an
+      // end below minActTurns is overridden (act_min_blocked); an act at
+      // maxActTurns is force-closed (harness_max). The synthesized `Act N`
+      // phase keeps every phase-reading instrument working unchanged;
+      // directorOut.phase is ignored in acts mode.
+      const turnsThisAct = turn - actState.startTurn;
+      if (turn === 1) {
+        actState.brief = (directorOut.direction || '').trim();
+        staging.phase = { name: 'Act 1', intent: actState.brief, turn };
+      } else {
+        const wantsEnd = directorOut.act === 'end';
+        const mustEnd = turnsThisAct >= acts.maxActTurns;
+        if (wantsEnd && turnsThisAct < acts.minActTurns) {
+          events.push({
+            turn,
+            type: 'act_min_blocked',
+            detail: `director end of act ${actState.index} overridden at ${turnsThisAct} turns (min ${acts.minActTurns})`,
+          });
+        } else if (wantsEnd || mustEnd) {
+          const direction = (directorOut.direction || '').trim() || '[The act turns.]';
+          const endedByAct = wantsEnd ? 'director' : 'harness_max';
+          actState.history.push({
+            act: actState.index,
+            turns: [actState.startTurn, turn - 1],
+            endedBy: endedByAct,
+            brief: actState.brief,
+          });
+          events.push({
+            turn,
+            type: 'act_end',
+            detail: `act ${actState.index} closed (${endedByAct}) after ${turnsThisAct} turns`,
+          });
+          actState.index += 1;
+          actState.startTurn = turn;
+          actState.brief = direction;
+          staging.phase = { name: `Act ${actState.index}`, intent: direction, turn };
+        }
+      }
+    } else if (directorOut.phase && typeof directorOut.phase.name === 'string' && directorOut.phase.name.trim()) {
       staging.phase = {
         name: directorOut.phase.name.trim(),
         intent: typeof directorOut.phase.intent === 'string' ? directorOut.phase.intent.trim() : '',
@@ -281,6 +512,7 @@ export async function runDrama({ world, roles, options = {} }) {
       meta: {
         release: directorOut.release || null,
         phase: staging.phase && staging.phase.turn === turn ? { ...staging.phase } : null,
+        ...(actState ? { act: directorOut.act || null } : {}),
       },
     });
 
@@ -296,8 +528,32 @@ export async function runDrama({ world, roles, options = {} }) {
         move: tutorOut.move || null,
         release: tutorOut.release || null,
         deliberation: tutorOut.deliberation || null,
+        ...(tutorOut.theory ? { theory: tutorOut.theory } : {}),
       },
     });
+
+    // Reconstructing-tutor recording (stage v2, header): when the roles layer
+    // emits a per-turn `theory` — the tutor's model of the learner's store —
+    // pair it with a harness-truth snapshot taken at the same moment: which
+    // released premises the learner actually holds, which are absent (decayed
+    // or never adopted), and which stand misremembered (a mutation-born false
+    // form on the board). Arm-internal color; cross-arm endpoints never read it.
+    if (tutorOut.theory) {
+      const held = [];
+      const missing = [];
+      for (const [key, premiseId] of releasedIdByKey) {
+        const entry = grounded.get(key);
+        if (entry && entry.valid && !entry.decayed) held.push(premiseId);
+        else missing.push(premiseId);
+      }
+      const mistaken = [];
+      for (const entry of grounded.values()) {
+        if (!entry.mutatedFalse) continue;
+        const id = premiseIdForKey(entry.mutationOf);
+        if (id && !mistaken.includes(id)) mistaken.push(id);
+      }
+      reconstructionRows.push({ turn, believed: tutorOut.theory, truth: { held, missing, mistaken } });
+    }
 
     // Tutor-side repair: a move that TARGETS a decayed premise restores it —
     // the tutor re-staged the evidence, so it is back in the learner's hands
@@ -331,7 +587,21 @@ export async function runDrama({ world, roles, options = {} }) {
     // --- learner ---
     const learnerOut = (await roles.learner(learnerView(turn, releasedThisTurn))) || {};
     for (const fact of learnerOut.retract || []) {
-      grounded.delete(factKey(fact));
+      const key = factKey(fact);
+      // Retracting a mutation-born false belief is half of a REVISION (the
+      // other half is the true premise coming back via repair/re-adoption);
+      // the ledger row lets the scorer pair the two without inference.
+      const entry = grounded.get(key);
+      if (corruption && entry?.mutatedFalse) {
+        const premiseId = premiseIdForKey(entry.mutationOf);
+        corruption.ledger.push({ turn, type: 'retract_false', premiseId, falseForm: entry.fact });
+        events.push({
+          turn,
+          type: 'retract_false',
+          detail: `${premiseId || 'unknown'}: false form "${renderFact(entry.fact)}" retracted`,
+        });
+      }
+      grounded.delete(key);
     }
     for (const fact of learnerOut.adopt || []) {
       const key = factKey(fact);
@@ -418,7 +688,11 @@ export async function runDrama({ world, roles, options = {} }) {
       events.push({ turn, type: 'forced', detail: 'learner facts now force S' });
     }
     const D = derivationDistance(world, valid);
-    trajectory.push({ turn, D, forced, groundedCount: valid.length });
+    // F(t) is decay-conditional and additive: trajectory rows in corruption
+    // runs gain a fidelity field (design note §2's documented relaxation of
+    // strict v1 byte-identity); decay-off rows are untouched.
+    const F = corruption ? theoryFidelity() : null;
+    trajectory.push({ turn, D, forced, groundedCount: valid.length, ...(corruption ? { F } : {}) });
 
     for (const [a, b] of world.incompatible) {
       const cl = closure(valid, world.rules).facts;
@@ -492,12 +766,41 @@ export async function runDrama({ world, roles, options = {} }) {
         entry.decayed = true;
         entry.decayTurn = turn;
         const premiseId = premiseIdForKey(key);
-        corruption.ledger.push({ turn, type: 'decay', premiseId, fact: entry.fact });
-        events.push({
-          turn,
-          type: 'decay',
-          detail: `${premiseId || renderFact(entry.fact)} slips from the learner's board`,
-        });
+        // Mutation mode (stage v2): the extra mode/pick draws happen ONLY
+        // when mutateShare > 0, so the default stream is byte-identical to
+        // v1. A mutate hit is formally a deletion (the victim decays exactly
+        // as above) PLUS a false belief: the misremembered form lands on the
+        // board invalid-but-believed until the learner retracts it. Delete
+        // ledger rows keep the exact v1 shape; mutate rows add mode/falseForm.
+        let falseForm = null;
+        if (corruption.config.mutateShare > 0 && corruption.rng() < corruption.config.mutateShare) {
+          const candidates = mutationCandidates(entry.fact);
+          if (candidates.length) {
+            falseForm = candidates[Math.floor(corruption.rng() * candidates.length)];
+          }
+        }
+        if (falseForm) {
+          grounded.set(factKey(falseForm), {
+            fact: falseForm,
+            turn,
+            valid: false,
+            mutatedFalse: true,
+            mutationOf: key,
+          });
+          corruption.ledger.push({ turn, type: 'decay', mode: 'mutate', premiseId, fact: entry.fact, falseForm });
+          events.push({
+            turn,
+            type: 'decay',
+            detail: `${premiseId || renderFact(entry.fact)} slips — misremembered as "${renderFact(falseForm)}"`,
+          });
+        } else {
+          corruption.ledger.push({ turn, type: 'decay', premiseId, fact: entry.fact });
+          events.push({
+            turn,
+            type: 'decay',
+            detail: `${premiseId || renderFact(entry.fact)} slips from the learner's board`,
+          });
+        }
         decayedNow.push(premiseId || renderFact(entry.fact));
       }
     }
@@ -525,9 +828,21 @@ export async function runDrama({ world, roles, options = {} }) {
               .filter((e) => e.type === 'repair' && e.turn === turn)
               .map((e) => e.premiseId),
             decayActive: [...grounded.values()].filter((entry) => entry.decayed).length,
+            F,
           }
         : {}),
+      ...(actState ? { act: { index: actState.index, startTurn: actState.startTurn } } : {}),
       endedBy,
+    });
+  }
+
+  // Close the final open act at the last turn played (stage v2).
+  if (actState) {
+    actState.history.push({
+      act: actState.index,
+      turns: [actState.startTurn, turn],
+      endedBy: 'run_end',
+      brief: actState.brief,
     });
   }
 
@@ -559,6 +874,8 @@ export async function runDrama({ world, roles, options = {} }) {
       availability,
       frontierFinal: computeFrontier(turn),
     },
+    ...(actState ? { acts: actState.history } : {}),
+    ...(reconstructionRows.length ? { reconstruction: reconstructionRows } : {}),
     ...(corruption
       ? {
           corruption: {

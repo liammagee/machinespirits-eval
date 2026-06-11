@@ -1,7 +1,7 @@
 export { factKey, matchPattern, closure, entails, proofTree } from './chainer.js';
 export { loadWorld, validateWorld, plotLint, worldClosure } from './world.js';
 export { derivationDistance, detectStall } from './slope.js';
-export { runDrama } from './engine.js';
+export { runDrama, normalizeActsConfig } from './engine.js';
 export { mulberry32, normalizeDecayConfig } from './corruption.js';
 export { makeReplayRoles, comparePrefix } from './replay.js';
 export { makeMockDirector, makeMockTutor, makeMockLearner } from './mockRoles.js';
@@ -10,6 +10,7 @@ export { makeLlmDirector, makeLlmTutor, makeLlmLearner, clampDial } from './llmR
 export {
   diagnose,
   corruptionReport,
+  reconstructionReport,
   releaseAdherence,
   learningSlope,
   stagingSegments,

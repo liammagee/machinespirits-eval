@@ -48,7 +48,11 @@ import { lookupRates } from '../adaptiveTutor/budgetTracker.js';
 const DEFAULT_PROVIDER = 'openrouter';
 const DEFAULT_MODEL_ALIAS = 'gemini-flash';
 const CLI_PROVIDERS = new Set(['codex', 'claude']);
-const CLI_TIMEOUT_MS = 360_000;
+// Per-call CLI wall clock. Overridable for slow readings (a Fable critic over
+// a long decay transcript has twice outrun the 360s default): export
+// DERIVATION_CLI_TIMEOUT_MS=900000 for that one backfill, not globally.
+const CLI_TIMEOUT_MS =
+  Number(process.env.DERIVATION_CLI_TIMEOUT_MS) > 0 ? Number(process.env.DERIVATION_CLI_TIMEOUT_MS) : 360_000;
 const DEFAULT_CODEX_REASONING = 'medium';
 
 export function llmMode() {
@@ -247,13 +251,24 @@ function mockResponse(role, meta = {}) {
     return JSON.stringify({
       direction: meta.releaseSurface
         ? `[It comes before the room: ${meta.releaseSurface}]`
-        : `[The question holds the stage: ${meta.question || ''}]`,
+        : meta.actHint === 'end'
+          ? `[The act closes; the next opens on the same question: ${meta.question || ''}]`
+          : `[The question holds the stage: ${meta.question || ''}]`,
       // Exercise the free-dramaturgy channel deterministically: declare a
       // movement wherever the author's sketch turns.
       phase: meta.phaseHint ? { name: meta.phaseHint.title, intent: meta.phaseHint.intent || 'as sketched' } : null,
+      // Acts mode (stage v2): the bridge's actHint carries its deterministic
+      // "work done" arithmetic; echo it so mock runs traverse act boundaries.
+      ...(meta.actHint ? { act: meta.actHint } : {}),
     });
   }
   if (role === 'tutor') {
+    // Arm-ON (stage v2): the bridge's theoryHint is the credulous theory —
+    // everything released is believed held. Appended to every tutor reply so
+    // the engine's reconstruction recording runs each turn of a mock drama.
+    const theory = Array.isArray(meta.theoryHint)
+      ? { theory: { believed_held: meta.theoryHint, believed_missing: [], believed_mistaken: [] } }
+      : {};
     // A revision call (the ego rewriting under its superego's note): a figure
     // fire switches to the bridge-computed figure; a stall fire keeps the
     // figure and aims the move at the stalled inference's first ground — the
@@ -270,6 +285,7 @@ function mockResponse(role, meta = {}) {
             target_premise: meta.revision.stallTarget || meta.cuePremise || null,
             intent: 'consolidate',
           },
+          ...theory,
         });
       }
       return JSON.stringify({
@@ -281,6 +297,7 @@ function mockResponse(role, meta = {}) {
           target_premise: meta.cuePremise || null,
           intent: meta.cuePremise ? 'release' : 'consolidate',
         },
+        ...theory,
       });
     }
     return JSON.stringify({
@@ -292,6 +309,7 @@ function mockResponse(role, meta = {}) {
         target_premise: meta.cuePremise || null,
         intent: meta.cuePremise ? 'release' : 'consolidate',
       },
+      ...theory,
     });
   }
   if (role === 'tutor_superego') {

@@ -32,12 +32,14 @@ const RECONSTRUCT = {
     direction: line.text,
     release: line.meta?.release ?? null,
     phase: line.meta?.phase ?? null,
+    act: line.meta?.act ?? null, // stage v2 act verdict (null on pre-v2 recordings)
   }),
   tutor: (line) => ({
     dialogue: line.text,
     move: line.meta?.move ?? null,
     release: line.meta?.release ?? null,
     deliberation: line.meta?.deliberation ?? null,
+    theory: line.meta?.theory ?? null, // stage v2 reconstruction (null keeps the engine's gate closed)
   }),
   learner: (line) => ({
     dialogue: line.text,

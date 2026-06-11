@@ -63,11 +63,13 @@ const AGGRESSIVE = { seed: 1, rate: 1, graceTurns: 0, maxConcurrent: 1, startTur
 
 test('normalizeDecayConfig fills defaults, accepts JSON strings, rejects junk', () => {
   const filled = normalizeDecayConfig({});
-  assert.deepEqual(filled, { seed: 1, rate: 0.15, graceTurns: 2, maxConcurrent: 2, startTurn: 1 });
+  // mutateShare joined the surface in stage v2 (default 0 = v1 byte-identity).
+  assert.deepEqual(filled, { seed: 1, rate: 0.15, graceTurns: 2, maxConcurrent: 2, startTurn: 1, mutateShare: 0 });
   assert.deepEqual(normalizeDecayConfig('{"rate":0.5,"seed":9}').rate, 0.5);
   assert.throws(() => normalizeDecayConfig({ rate: 1.5 }), /rate/);
   assert.throws(() => normalizeDecayConfig({ unknownKnob: 1 }), /unknownKnob/);
   assert.throws(() => normalizeDecayConfig({ maxConcurrent: 0 }), /maxConcurrent/);
+  assert.throws(() => normalizeDecayConfig({ mutateShare: 1.5 }), /mutateShare/);
   assert.throws(() => normalizeDecayConfig('not json'), /JSON|json/);
 });
 

@@ -118,10 +118,10 @@ function actFor(world, turn) {
 // Director
 // ---------------------------------------------------------------------------
 
-function directorCharter(world, dials = {}, dramaturgy = 'free', counsel = null) {
+function directorCharter(world, dials = {}, dramaturgy = 'free', counsel = null, actsMode = false) {
   const charisma = clampDial(dials.charisma);
   const free = dramaturgy !== 'frozen';
-  const acts = (world.dramaturgy?.acts || [])
+  const sketch = (world.dramaturgy?.acts || [])
     .map((a) => `Act ${a.act} — ${a.title} (turns ${a.turns[0]}–${a.turns[1]}): ${(a.intent || '').trim()}`)
     .join('\n\n');
   return [
@@ -141,26 +141,53 @@ function directorCharter(world, dials = {}, dramaturgy = 'free', counsel = null)
     'Never state the concealed truth, never foreshadow evidence not yet released,',
     'never confirm or deny anything by staging. The drama leaks only on schedule.',
     '',
-    ...(free
+    ...(actsMode
       ? [
-          'THE DRAMATURGY IS YOURS, within one discipline: you speak only through the',
-          'stage itself. One instrument beyond the stage direction:',
-          '- "phase": declare a new MOVEMENT (a name and an intent) when the drama should',
-          '  change character — when the rhythm has gone slack, when the learner has turned',
-          '  a corner, when the room needs weather of a different kind. The movement stands',
-          '  until you replace it. Most turns you will declare nothing.',
-          'You never instruct the tutor; how the tutor plays is the tutor’s own affair.',
+          'THE DRAMA PLAYS IN ACTS, and the act verdict is your instrument. Each turn you',
+          'judge whether the current act\'s WORK is done — reply "continue" while the act',
+          'still earns its stage, "end" when it does not. Work done means the dialogue has',
+          'genuinely moved (evidence taken up, a conclusion voiced, a corner turned) or has',
+          'stalled (turns passing with nothing new grounded, the same ground re-trodden).',
+          'Judge the work, not the clock; the harness bounds act length either way — the',
+          'bounds are shown each turn, an "end" below the minimum is overridden, and an act',
+          'at the maximum closes whatever you reply.',
           '',
-          "The author's sketch of an arc — yours to keep, bend, or replace:",
+          'When you end an act, your stage direction that turn OPENS THE NEXT ACT and',
+          'stands as its brief — your one strategic intervention: what kind of pressure,',
+          'tempo, or scene the new act should bring. Strategy, never puppetry: you still',
+          'never instruct the tutor in so many words.',
+          '',
+          'An act boundary clears the stage for the learner: only the theory kept on their',
+          "own board crosses it — earlier acts' dialogue and exhibits are gone from their",
+          'view. A brief that restated evidence would smuggle memory past the boundary; a',
+          'brief names moods, stakes, and direction of travel, never evidence.',
+          '',
+          'On a turn that both ends an act and carries scheduled evidence, the direction',
+          'does double duty: it must still stage that evidence, faithfully — the release',
+          'discipline above outranks everything.',
+          '',
+          "The author's sketch of an arc — material for an act structure now yours to set:",
         ]
-      : [
-          "THE ARC IS THE AUTHOR'S. Follow the acts below as written; you observe and",
-          'stage, you do not restructure the drama or instruct the tutor.',
-          '',
-          'The arc, act by act:',
-        ]),
+      : free
+        ? [
+            'THE DRAMATURGY IS YOURS, within one discipline: you speak only through the',
+            'stage itself. One instrument beyond the stage direction:',
+            '- "phase": declare a new MOVEMENT (a name and an intent) when the drama should',
+            '  change character — when the rhythm has gone slack, when the learner has turned',
+            '  a corner, when the room needs weather of a different kind. The movement stands',
+            '  until you replace it. Most turns you will declare nothing.',
+            'You never instruct the tutor; how the tutor plays is the tutor’s own affair.',
+            '',
+            "The author's sketch of an arc — yours to keep, bend, or replace:",
+          ]
+        : [
+            "THE ARC IS THE AUTHOR'S. Follow the acts below as written; you observe and",
+            'stage, you do not restructure the drama or instruct the tutor.',
+            '',
+            'The arc, act by act:',
+          ]),
     '',
-    acts,
+    sketch,
     ...(charisma ? ['', DIRECTOR_CHARISMA_STAGING[charisma]] : []),
     ...(counsel
       ? [
@@ -175,24 +202,51 @@ function directorCharter(world, dials = {}, dramaturgy = 'free', counsel = null)
       : []),
     '',
     'Reply with ONLY a JSON object:',
-    ...(free
-      ? [
-          '{"direction": "<your stage direction>",',
-          ' "phase": {"name": "<movement name>", "intent": "<what it is for>"} or null}',
-        ]
-      : ['{"direction": "<your stage direction>"}']),
+    ...(actsMode
+      ? ['{"direction": "<your stage direction>",', ' "act": "continue" | "end"}']
+      : free
+        ? [
+            '{"direction": "<your stage direction>",',
+            ' "phase": {"name": "<movement name>", "intent": "<what it is for>"} or null}',
+          ]
+        : ['{"direction": "<your stage direction>"}']),
   ].join('\n');
 }
 
-export function makeLlmDirector(world, client, { dials = {}, dramaturgy = 'free', counsel = null } = {}) {
+export function makeLlmDirector(
+  world,
+  client,
+  { dials = {}, dramaturgy = 'free', counsel = null, actsMode = false } = {},
+) {
   const free = dramaturgy !== 'frozen';
-  const system = directorCharter(world, dials, dramaturgy, counsel);
+  const system = directorCharter(world, dials, dramaturgy, counsel, actsMode);
   return async (view) => {
     const { entry, premise } = scheduledFor(world, view.turn, 'director');
     const act = actFor(world, view.turn);
     const task = premise
       ? `THIS TURN RELEASES EVIDENCE. Stage this, as an event the whole room receives:\n"${(premise.surface || '').trim()}"`
       : 'No evidence is due this turn. Hold the stage — a beat of scene, mood, or business that keeps the question alive. Add no facts.';
+    // Acts mode replaces the movement line with act status + the verdict
+    // arithmetic for THIS turn (an end-verdict closes the act at turn-1, so
+    // turnsThisAct is the length it would seal). The engine's guards are
+    // restated as fact so the verdict is judged, never guessed.
+    let actLines = [];
+    if (actsMode) {
+      const a = view.acts;
+      const verdictLine =
+        view.turn === 1
+          ? 'This is the opening turn: your direction opens Act 1 and stands as its brief (reply "continue").'
+          : a.turnsThisAct < a.minActTurns
+            ? `An "end" now would seal the act at ${a.turnsThisAct} turn${a.turnsThisAct === 1 ? '' : 's'} — below the minimum of ${a.minActTurns}; the harness would override it.`
+            : a.turnsThisAct >= a.maxActTurns
+              ? `The act has reached its maximum (${a.maxActTurns} turns): it closes this turn whatever you reply — your direction opens the next act; make it the brief.`
+              : `You may end the act this turn (it would seal at ${a.turnsThisAct} turns); if you do, your direction opens the next act as its brief.`;
+      actLines = [
+        `Act ${a.index}, turn ${a.turnsThisAct + 1} of the act (bounds: min ${a.minActTurns} / max ${a.maxActTurns} turns; ${a.closed.length} act${a.closed.length === 1 ? '' : 's'} closed so far).`,
+        ...(a.brief ? [`The act's brief (your direction at its opening): ${a.brief}`] : []),
+        verdictLine,
+      ];
+    }
     const movement = view.staging?.phase
       ? `Current movement (yours, declared turn ${view.staging.phase.turn}): ${view.staging.phase.name}${view.staging.phase.intent ? ` — ${view.staging.phase.intent}` : ''}`
       : free
@@ -205,12 +259,15 @@ export function makeLlmDirector(world, client, { dials = {}, dramaturgy = 'free'
     const pulse = lastPoint
       ? `The learner's distance from the truth: D=${lastPoint.D}${pastPoint ? ` (was ${pastPoint.D} three turns ago)` : ''}${lastPoint.forced ? ' — the board now FORCES the conclusion' : ''}.`
       : 'The drama has not yet been measured.';
+    // Acts-mode redaction (engine.js omniscientView): the director keeps its
+    // instruments but loses the store dump — count, not contents.
+    const boardCount = actsMode ? view.learnerAbox.groundedCount : view.learnerAbox.grounded.length;
     const lastHyp = view.learnerAbox.hypotheses[view.learnerAbox.hypotheses.length - 1] || null;
     const user = [
       `Turn ${view.turn} of ${world.turnCap}.`,
-      movement,
+      ...(actsMode ? actLines : [movement]),
       `Evidence already on stage: ${view.ledger.length ? view.ledger.map((l) => l.premiseId).join(', ') : 'none'}.`,
-      `${pulse} Board: ${view.learnerAbox.grounded.length} grounded facts.${lastHyp ? ` Latest hypothesis [turn ${lastHyp.turn}]: ${lastHyp.text}` : ''}`,
+      `${pulse} Board: ${boardCount} grounded facts.${lastHyp ? ` Latest hypothesis [turn ${lastHyp.turn}]: ${lastHyp.text}` : ''}`,
       '',
       'The last lines spoken:',
       renderTranscriptTail(view.transcript),
@@ -225,13 +282,31 @@ export function makeLlmDirector(world, client, { dials = {}, dramaturgy = 'free'
         question: world.question,
         // mock determinism: declare a movement wherever the author's sketch turns
         phaseHint:
-          free && act && act.turns[0] === view.turn
+          !actsMode && free && act && act.turns[0] === view.turn
             ? { title: `Act ${act.act} — ${act.title}`, intent: act.intent || '' }
             : null,
+        // mock determinism, acts mode: end the act once it has reached the
+        // minimum AND some evidence landed in it (the "work done" reading,
+        // computed from view-visible material only)
+        ...(actsMode
+          ? {
+              actHint:
+                view.turn > 1 &&
+                view.acts.turnsThisAct >= view.acts.minActTurns &&
+                view.ledger.some((l) => l.turn >= view.acts.startTurn)
+                  ? 'end'
+                  : 'continue',
+            }
+          : {}),
       },
     });
     const phase =
-      free && out.phase && typeof out.phase === 'object' && typeof out.phase.name === 'string' && out.phase.name.trim()
+      !actsMode &&
+      free &&
+      out.phase &&
+      typeof out.phase === 'object' &&
+      typeof out.phase.name === 'string' &&
+      out.phase.name.trim()
         ? {
             name: out.phase.name.trim(),
             intent: typeof out.phase.intent === 'string' ? out.phase.intent.trim() : '',
@@ -240,11 +315,14 @@ export function makeLlmDirector(world, client, { dials = {}, dramaturgy = 'free'
     // frozen dramaturgy (the control arm) hard-drops the movement channel at
     // the parser, whatever the model emitted — the gate, not the charter, is
     // the enforcement point. (The per-turn tutor_note channel was removed
-    // 2026-06-10: manner-watching belongs to the tutor's own superego.)
+    // 2026-06-10: manner-watching belongs to the tutor's own superego.) Acts
+    // mode drops it too — the engine synthesizes phases from act briefs — and
+    // gates the verdict to the two legal values.
     return {
       direction: typeof out.direction === 'string' ? out.direction.trim() : '',
       release: entry ? entry.premise : null,
       phase,
+      ...(actsMode ? { act: out.act === 'end' ? 'end' : 'continue' } : {}),
     };
   };
 }
@@ -254,7 +332,7 @@ export function makeLlmDirector(world, client, { dials = {}, dramaturgy = 'free'
 // plus a fixed harness appendix the loop never edits.
 // ---------------------------------------------------------------------------
 
-function tutorSystem(world, script, dials = {}) {
+function tutorSystem(world, script, dials = {}, { actsMode = false, reconstruct = false } = {}) {
   const recognition = clampDial(dials.recognition);
   const charisma = clampDial(dials.charisma);
   const registers = [
@@ -283,6 +361,48 @@ function tutorSystem(world, script, dials = {}) {
     '',
     'The fixed release schedule (the harness enforces it; you are told your cues):',
     schedule,
+    ...(actsMode
+      ? [
+          '',
+          '# The acts, and the bounded learner (what the staging does to memory)',
+          '',
+          'The drama plays in ACTS: the director opens each act with a strategic brief',
+          "and closes it when its work is done. An act boundary clears the learner's",
+          'stage — the learner enters each act holding (a) the theory kept on their own',
+          "board and (b) nothing else. Earlier acts' dialogue, your consolidations, the",
+          'wording of earlier exhibits: gone from their view. What they did not keep,',
+          'they have lost — and staged evidence can also fade from their board between',
+          'turns, or survive in a corrupted form, one detail swapped in memory.',
+          '',
+          "You never see the learner's board; you remember the whole drama, they cannot.",
+          'Infer what they still hold from conduct alone — what they cite, what they ask',
+          'after, what they garble, what they stop mentioning — and supply what the',
+          'inquiry needs: a move whose target_premise names an already-released exhibit',
+          "RE-STAGES it, restoring it to the learner's hands; a misremembered form is",
+          'displaced only by staging the true form again, plainly, so the false version',
+          'cannot stand beside it.',
+        ]
+      : []),
+    ...(reconstruct
+      ? [
+          '',
+          "# Your reconstruction of the learner's theory (every turn)",
+          '',
+          "Each turn, alongside your dialogue, commit your working model of the learner's",
+          'theory over the premises RELEASED SO FAR (premise ids from the ledger above):',
+          '- "believed_held": released premises you judge the learner still holds;',
+          '- "believed_missing": released premises you judge have slipped from them;',
+          '- "believed_mistaken": released premises you judge they hold in a corrupted',
+          '  form (one detail swapped for a plausible wrong one).',
+          'Infer from conduct. An empty list is a claim too — commit your model every',
+          'turn, even uncertain; the drama is long and your model can move.',
+          '',
+          'THE SUPPLEMENT MANDATE: let the reconstruction drive the turn. A premise you',
+          "believe missing wants re-staging (name it as your move's target_premise); one",
+          'you believe mistaken wants the true form spoken again, named as your target.',
+          'Your release cues are unchanged — the mandate governs the turns between them.',
+        ]
+      : []),
     ...(registers.length
       ? ['', '# Register (operator dials — these color your MANNER, never your evidence)', '', ...registers]
       : []),
@@ -290,7 +410,9 @@ function tutorSystem(world, script, dials = {}) {
     `Declare your move each turn: figure ∈ {${TUTOR_FIGURES.join(', ')}}, the premise you are working (or null), intent ∈ {${TUTOR_INTENTS.join(', ')}}.`,
     '',
     'Reply with ONLY a JSON object:',
-    '{"dialogue": "<what you say to the learner>", "move": {"figure": "...", "target_premise": "<premise id or null>", "intent": "..."}}',
+    reconstruct
+      ? '{"dialogue": "<what you say to the learner>", "move": {"figure": "...", "target_premise": "<premise id or null>", "intent": "..."}, "theory": {"believed_held": ["<premise id>", ...], "believed_missing": [...], "believed_mistaken": [...]}}'
+      : '{"dialogue": "<what you say to the learner>", "move": {"figure": "...", "target_premise": "<premise id or null>", "intent": "..."}}',
   ].join('\n');
 }
 
@@ -310,7 +432,7 @@ function tutorSystem(world, script, dials = {}) {
  * control). `counsel` (the critic-feedback loop, §4) is a labeled appendix
  * in both modes — counsel, never a jurisdiction.
  */
-function tutorSuperegoSystem(world, { stallWatch = false, counsel = null } = {}) {
+function tutorSuperegoSystem(world, { stallWatch = false, counsel = null, reconstruct = false } = {}) {
   return [
     "You are the tutor's SUPEREGO in a staged derivation drama — the watcher inside",
     'the same mind. You are never heard on stage; only the tutor reads you.',
@@ -371,6 +493,17 @@ function tutorSuperegoSystem(world, { stallWatch = false, counsel = null } = {})
           'answer; never tell the tutor what to reveal or withhold. The note governs how',
           'the tutor plays, never what the drama shows.',
         ]),
+    ...(reconstruct
+      ? [
+          '',
+          "The draft comes with the tutor's RECONSTRUCTION of the learner's theory",
+          "(believed held / missing / mistaken — the learner's board is hidden from",
+          "you both; the reconstruction is the ego's inference from conduct). Read it",
+          'as context; when the draft plainly ignores its own reconstruction — a',
+          'premise believed missing that the turn does nothing to restore — say so in',
+          '"diagnosis". Your jurisdiction is unchanged: intervene only on the rut.',
+        ]
+      : []),
     ...(counsel
       ? [
           '',
@@ -394,7 +527,16 @@ function tutorSuperegoSystem(world, { stallWatch = false, counsel = null } = {})
 export function makeLlmTutor(
   world,
   client,
-  { script, dials = {}, superego = false, stallWatch = false, counsel = null, decayVisibility = 'told' } = {},
+  {
+    script,
+    dials = {},
+    superego = false,
+    stallWatch = false,
+    counsel = null,
+    decayVisibility = 'told',
+    actsMode = false,
+    reconstruct = false,
+  } = {},
 ) {
   if (!script || !script.trim()) {
     throw new Error('derivation.llmRoles: makeLlmTutor requires a role-script (the iteration target)');
@@ -409,8 +551,26 @@ export function makeLlmTutor(
       `derivation.llmRoles: decayVisibility must be 'told' or 'conduct', got ${JSON.stringify(decayVisibility)}`,
     );
   }
-  const system = tutorSystem(world, script, dials);
-  const superegoSystem = superego ? tutorSuperegoSystem(world, { stallWatch, counsel }) : null;
+  // Acts-mode wiring guards: the engine's redaction removes exactly the view
+  // fields these features read, so a contradictory wiring fails at build, not
+  // mid-drama. reconstruct is the adapt-ON arm dial and presupposes the
+  // bounded stage; stallWatch reads the inference frontier (computed FROM the
+  // hidden store); the told channel reads the corruption view.
+  if (reconstruct && !actsMode) {
+    throw new Error('derivation.llmRoles: reconstruct is acts-mode machinery (pass actsMode: true)');
+  }
+  if (actsMode && stallWatch) {
+    throw new Error(
+      'derivation.llmRoles: stallWatch cannot run in acts mode — the stall jurisdiction reads the inference frontier, which acts-mode redaction withholds from the tutor',
+    );
+  }
+  if (actsMode && decayVisibility !== 'conduct') {
+    throw new Error(
+      "derivation.llmRoles: acts mode requires decayVisibility 'conduct' — the told channel reads a corruption view the acts-mode tutor no longer has",
+    );
+  }
+  const system = tutorSystem(world, script, dials, { actsMode, reconstruct });
+  const superegoSystem = superego ? tutorSuperegoSystem(world, { stallWatch, counsel, reconstruct }) : null;
   const normalizeMove = (out) =>
     out.move && typeof out.move === 'object'
       ? {
@@ -419,60 +579,105 @@ export function makeLlmTutor(
           intent: out.move.intent || null,
         }
       : null;
+  // Theory shape gate (arm-ON): premise-id string arrays or nothing — a
+  // malformed theory drops to null, which keeps the engine's recording gate
+  // closed for that turn (absence is visible to the scorer; an empty claim
+  // is not fabricated on the model's behalf).
+  const normalizeTheory = (raw) => {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+    const ids = (v) => (Array.isArray(v) ? v.map((x) => String(x).trim()).filter(Boolean) : []);
+    return {
+      believed_held: ids(raw.believed_held),
+      believed_missing: ids(raw.believed_missing),
+      believed_mistaken: ids(raw.believed_mistaken),
+    };
+  };
   return async (view) => {
     const { entry, premise } = scheduledFor(world, view.turn, 'tutor');
-    const board = view.learnerAbox.grounded.length
-      ? view.learnerAbox.grounded.map((f) => `- ${renderFact(f)}`).join('\n')
-      : '(empty beyond the public setup)';
-    const hyps = view.learnerAbox.hypotheses.length
-      ? view.learnerAbox.hypotheses.map((h) => `- [turn ${h.turn}] ${h.text}`).join('\n')
-      : '(none ventured)';
-    const lastPoint = view.trajectory[view.trajectory.length - 1] || null;
+    // Acts-mode redaction (engine.js omniscientView): no learnerAbox, no
+    // trajectory, no corruption — the tutor works from the dialogue and its
+    // own ledger. The v1 branch below is untouched.
+    const lastPoint = actsMode ? null : view.trajectory[view.trajectory.length - 1] || null;
     const forcedNote =
       lastPoint && lastPoint.forced
         ? "THE LEARNER'S OWN GROUNDED FACTS NOW FORCE THE CONCLUSION. Stage the recognition — bring them to say it and ground it; do not say it yourself."
         : null;
     const task = premise
       ? `THIS TURN IS YOUR CUE to bring ${entry.premise} into play. Weave this evidence into your dialogue as something produced or recalled, faithful to it:\n"${(premise.surface || '').trim()}"`
-      : "No release is due from you this turn. Work the learner's board by your script: consolidate, test, counter the tempting answer, or stage the recognition — whichever the board calls for.";
+      : actsMode
+        ? 'No release is due from you this turn. Work the inquiry by your script — consolidate, test, counter the tempting answer, re-stage what you judge lost, or stage the recognition — whichever your reading of the learner calls for.'
+        : "No release is due from you this turn. Work the learner's board by your script: consolidate, test, counter the tempting answer, or stage the recognition — whichever the board calls for.";
     // The tutor sees no staging state (movements are the director's diagnostic
     // dramaturgy, 2026-06-10): any rhythm-watching happens inside this bridge.
-    const user = [
-      `Turn ${view.turn} of ${world.turnCap}.`,
-      `Evidence on stage so far: ${view.ledger.length ? view.ledger.map((l) => l.premiseId).join(', ') : 'none'}.`,
-      '',
-      "The learner's grounded board:",
-      board,
-      '',
-      "The learner's hypotheses:",
-      hyps,
-      '',
-      // Decay visibility (corruption.js): under 'told' the tutor reads the
-      // harness's ground truth of what slipped; under 'conduct' the block is
-      // suppressed and decay is legible only through the learner's behaviour.
-      // The engine view is untouched either way — instruments keep ground truth.
-      ...(decayVisibility !== 'conduct' && view.corruption?.decayed?.length
-        ? [
-            `SLIPPED FROM THE BOARD: the learner has lost hold of ${view.corruption.decayed
-              .map((d) => `${d.premiseId || renderFact(d.fact)} (since turn ${d.sinceTurn})`)
-              .join(
-                ', ',
-              )}. Staged evidence can fade; a move whose target_premise names a slipped exhibit re-stages it and restores it to the learner's hands.`,
-            '',
-          ]
-        : []),
-      'The last lines spoken:',
-      renderTranscriptTail(view.transcript),
-      '',
-      ...(forcedNote ? [forcedNote, ''] : []),
-      task,
-    ].join('\n');
-    const meta = { releaseSurface: premise ? premise.surface : null, cuePremise: entry ? entry.premise : null };
+    let user;
+    if (actsMode) {
+      const a = view.acts;
+      const thisAct = view.ledger.filter((l) => l.turn >= a.startTurn).map((l) => l.premiseId);
+      const priorActs = view.ledger.filter((l) => l.turn < a.startTurn).map((l) => l.premiseId);
+      user = [
+        `Turn ${view.turn} of ${world.turnCap}. Act ${a.index}, turn ${a.turnsThisAct + 1} of the act.`,
+        ...(a.brief ? [`The director's brief for this act: ${a.brief}`] : []),
+        `Evidence on stage so far: ${view.ledger.length ? view.ledger.map((l) => l.premiseId).join(', ') : 'none'}.`,
+        `Released THIS act (still before the learner): ${thisAct.length ? thisAct.join(', ') : 'none'}.`,
+        `Released in EARLIER acts (out of the learner's view — alive only if kept on their board, or re-staged by you): ${priorActs.length ? priorActs.join(', ') : 'none'}.`,
+        '',
+        'The dialogue so far (you remember all of it; the learner sees only this act):',
+        renderTranscriptTail(view.transcript, view.transcript.length),
+        '',
+        task,
+      ].join('\n');
+    } else {
+      const board = view.learnerAbox.grounded.length
+        ? view.learnerAbox.grounded.map((f) => `- ${renderFact(f)}`).join('\n')
+        : '(empty beyond the public setup)';
+      const hyps = view.learnerAbox.hypotheses.length
+        ? view.learnerAbox.hypotheses.map((h) => `- [turn ${h.turn}] ${h.text}`).join('\n')
+        : '(none ventured)';
+      user = [
+        `Turn ${view.turn} of ${world.turnCap}.`,
+        `Evidence on stage so far: ${view.ledger.length ? view.ledger.map((l) => l.premiseId).join(', ') : 'none'}.`,
+        '',
+        "The learner's grounded board:",
+        board,
+        '',
+        "The learner's hypotheses:",
+        hyps,
+        '',
+        // Decay visibility (corruption.js): under 'told' the tutor reads the
+        // harness's ground truth of what slipped; under 'conduct' the block is
+        // suppressed and decay is legible only through the learner's behaviour.
+        // The engine view is untouched either way — instruments keep ground truth.
+        ...(decayVisibility !== 'conduct' && view.corruption?.decayed?.length
+          ? [
+              `SLIPPED FROM THE BOARD: the learner has lost hold of ${view.corruption.decayed
+                .map((d) => `${d.premiseId || renderFact(d.fact)} (since turn ${d.sinceTurn})`)
+                .join(
+                  ', ',
+                )}. Staged evidence can fade; a move whose target_premise names a slipped exhibit re-stages it and restores it to the learner's hands.`,
+              '',
+            ]
+          : []),
+        'The last lines spoken:',
+        renderTranscriptTail(view.transcript),
+        '',
+        ...(forcedNote ? [forcedNote, ''] : []),
+        task,
+      ].join('\n');
+    }
+    const meta = {
+      releaseSurface: premise ? premise.surface : null,
+      cuePremise: entry ? entry.premise : null,
+      // mock determinism (arm-ON): the credulous theory — everything released
+      // is believed held. The real backend ignores meta.
+      ...(reconstruct ? { theoryHint: view.ledger.map((l) => l.premiseId) } : {}),
+    };
     const draftOut = await callJson(client, 'tutor', view.turn, { system, user, meta });
+    const draftTheory = reconstruct ? normalizeTheory(draftOut.theory) : null;
     const draft = {
       dialogue: typeof draftOut.dialogue === 'string' ? draftOut.dialogue.trim() : '',
       move: normalizeMove(draftOut),
       release: entry ? entry.premise : null,
+      ...(draftTheory ? { theory: draftTheory } : {}),
     };
     if (!superego) return draft;
 
@@ -545,6 +750,15 @@ export function makeLlmTutor(
       '',
       `THE DRAFT about to be spoken (declared figure: ${draftFigure || '—'}):`,
       `"${draft.dialogue}"`,
+      ...(draftTheory
+        ? [
+            '',
+            "The draft's reconstruction of the learner's theory:",
+            `held: ${draftTheory.believed_held.join(', ') || '(none)'}; missing: ${
+              draftTheory.believed_missing.join(', ') || '(none)'
+            }; mistaken: ${draftTheory.believed_mistaken.join(', ') || '(none)'}`,
+          ]
+        : []),
       '',
       rutLine,
       ...stallLines,
@@ -654,10 +868,14 @@ export function makeLlmTutor(
       typeof revisedOut.dialogue === 'string' && revisedOut.dialogue.trim()
         ? revisedOut.dialogue.trim()
         : draft.dialogue;
+    // The revision may re-commit the theory (same contract); a parse-miss
+    // falls back to the draft's, so an intervened turn never loses its row.
+    const revisedTheory = reconstruct ? normalizeTheory(revisedOut.theory) || draftTheory : null;
     return {
       dialogue,
       move: normalizeMove(revisedOut) || draft.move,
       release: entry ? entry.premise : null,
+      ...(revisedTheory ? { theory: revisedTheory } : {}),
       deliberation: {
         ...deliberation,
         intervened: true,
@@ -682,6 +900,22 @@ function learnerSystem(setting, voice, view) {
     '',
     `The question you must settle: ${view.question}`,
     `Your voice: ${(voice || 'plain, careful, first person').trim()}`,
+    ...(view.act
+      ? [
+          '',
+          'The inquiry plays in ACTS, and the stage clears between them: dialogue and',
+          `exhibits from earlier acts are no longer shown to you. You are in Act ${view.act.index}.`,
+          'YOUR BOARD IS YOUR ONLY MEMORY ACROSS ACTS — what is not on it, you have',
+          'lost until someone brings it back on stage. Tend it each turn like the',
+          'theory it is: enter what you will need, strike what proves false.',
+          '',
+          'And boards are fallible here: an entry can go missing, or stand subtly',
+          'wrong — a name or a place swapped — without announcement. When the staged',
+          'record contradicts an entry you hold, trust the stage: strike the false',
+          'entry and enter the corrected form. If a gap opens in your reasoning where',
+          'you once had ground, say so aloud — asking for what slipped is good method.',
+        ]
+      : []),
     '',
     'The rules of evidence you know and trust (your ONLY law):',
     ...view.rules.map((rule, i) => renderRule(rule, i)),
@@ -689,6 +923,11 @@ function learnerSystem(setting, voice, view) {
     'Discipline:',
     '- Your BOARD holds the facts you have grounded. You may treat as true ONLY what is on it.',
     '- Each turn you may enter exhibits onto your board (adopt) or strike facts from it (retract).',
+    ...(view.act
+      ? [
+          '- Each turn, REVISE your board: adopt what this act has shown, strike what the record contradicts, and keep what you will need beyond this act — nothing else survives the boundary.',
+        ]
+      : []),
     '- A guess you cannot yet ground is a HYPOTHESIS — name it as one, never treat it as grounded.',
     '- When facts on your board, taken together under the rules, settle something short of the question itself, you may VOICE that derived conclusion: say it aloud and enter it in "derives". Voice only what the rules genuinely yield from your board — a derived fact is reasoning made public, not a guess.',
     '- Answer the question ONLY when your board, under the rules, settles it — then give the answer binding.',
@@ -803,7 +1042,9 @@ export function makeLlmLearner({ setting = '', voice = '', client }) {
 
     const system = learnerSystem(setting, voice, view);
     const user = [
-      `Turn ${view.turn}.`,
+      `Turn ${view.turn}.${
+        view.act ? ` Act ${view.act.index} — the stage shows this act only; your board carries everything else.` : ''
+      }`,
       '',
       'The last lines spoken:',
       renderTranscriptTail(view.transcript),

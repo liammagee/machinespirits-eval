@@ -61,11 +61,15 @@
  *                                       learner's grounded board — harness-
  *                                       implemented, never prompt-roleplayed.
  *                                       JSON keys: seed, rate, graceTurns,
- *                                       maxConcurrent, startTurn (defaults in
- *                                       corruption.js). Run-level condition;
- *                                       worlds stay frozen. Design note:
- *                                       notes/poetics/2026-06-10-unreliable-
- *                                       learner-design.md)
+ *                                       maxConcurrent, startTurn, mutateShare
+ *                                       (defaults in corruption.js; mutateShare
+ *                                       > 0 lets a slip misremember — one
+ *                                       argument swapped — instead of vanish).
+ *                                       Run-level condition; worlds stay
+ *                                       frozen. Design notes: notes/poetics/
+ *                                       2026-06-10-unreliable-learner-design.md
+ *                                       + 2026-06-11-act-bounded-learner-
+ *                                       design.md)
  *     [--decay-visibility told|conduct] (who learns of decay: told = the tutor
  *                                       ego prompt carries the SLIPPED block
  *                                       (default); conduct = block suppressed,
@@ -73,7 +77,25 @@
  *                                       learner's behaviour. Engine view and
  *                                       instruments keep ground truth in both.
  *                                       The registered visibility contrast:
- *                                       UNRELIABLE-LEARNER-PREREG.md §7 G3)
+ *                                       UNRELIABLE-LEARNER-PREREG.md §7 G3.
+ *                                       Acts mode implies conduct; an explicit
+ *                                       told there is refused.)
+ *     [--acts '<json>'|off]            (stage v2: the director judges per turn
+ *                                       whether the act's work is done — min/
+ *                                       maxActTurns bound the verdict; an act
+ *                                       boundary clears the learner's stage
+ *                                       (its theory store is the only carry-
+ *                                       over) and the closing direction opens
+ *                                       the next act as its strategic brief.
+ *                                       JSON keys: minActTurns, maxActTurns.
+ *                                       Design note: notes/poetics/2026-06-11-
+ *                                       act-bounded-learner-design.md)
+ *     [--reconstruct]                  (adapt-ON arm dial; requires --acts.
+ *                                       The tutor commits a per-turn theory of
+ *                                       the learner's store — believed_held/
+ *                                       missing/mistaken — recorded beside the
+ *                                       harness-truth snapshot. Arm-internal
+ *                                       color; never cross-arm scoring.)
  *     [--critic auto|real|mock|off]    (post-run critic's notice; auto = follow
  *                                       the run mode — real dramas get the
  *                                       Fable notice, mock dramas the
@@ -100,6 +122,7 @@ import {
   plotLint,
   runDrama,
   normalizeDecayConfig,
+  normalizeActsConfig,
   makeLlmClient,
   llmMode,
   resolveTarget,
@@ -212,16 +235,36 @@ async function main() {
   // not twelve turns into a run. 'off' is accepted for matrix-arm overrides.
   const decayArg = arg('decay', null);
   const decay = decayArg && decayArg !== 'off' ? normalizeDecayConfig(decayArg) : null;
+  // Stage v2: acts mode (director-judged act termination + bounded learner +
+  // act-boundary briefs) and the adapt-ON arm dial (reconstructing tutor).
+  const actsArg = arg('acts', null);
+  const acts = actsArg && actsArg !== 'off' ? normalizeActsConfig(actsArg) : null;
+  const reconstruct = flag('reconstruct');
+  if (reconstruct && !acts) {
+    console.error(
+      '--reconstruct requires --acts (reconstruction is acts-mode machinery — without the bounded learner there is nothing to reconstruct)',
+    );
+    process.exit(1);
+  }
   // Who learns of decay, and how: 'told' = the tutor ego prompt carries the
   // SLIPPED block (v1 behaviour, default); 'conduct' = the block is suppressed
   // and the tutor can read decay only off the learner's behaviour. The engine
   // and instruments keep ground truth either way (the manipulation is textual).
-  const decayVisibility = arg('decay-visibility', 'told');
-  if (!['told', 'conduct'].includes(decayVisibility)) {
-    console.error(`--decay-visibility must be "told" or "conduct" (got "${decayVisibility}")`);
+  // Acts mode forces 'conduct': the told channel reads a corruption view the
+  // acts-mode tutor no longer has — an explicit 'told' is a config error.
+  const decayVisibilityArg = arg('decay-visibility', null);
+  if (decayVisibilityArg && !['told', 'conduct'].includes(decayVisibilityArg)) {
+    console.error(`--decay-visibility must be "told" or "conduct" (got "${decayVisibilityArg}")`);
     process.exit(1);
   }
-  if (decayVisibility === 'conduct' && !decay) {
+  if (acts && decayVisibilityArg === 'told') {
+    console.error(
+      '--decay-visibility told cannot run in acts mode — the SLIPPED block reads a corruption view the acts-mode tutor no longer has (omit the flag; acts mode implies conduct)',
+    );
+    process.exit(1);
+  }
+  const decayVisibility = decayVisibilityArg || (acts ? 'conduct' : 'told');
+  if (decayVisibility === 'conduct' && !decay && !acts) {
     console.error('--decay-visibility conduct without --decay is a no-op — refusing (probable arm-B typo)');
     process.exit(1);
   }
@@ -296,9 +339,19 @@ async function main() {
   if (group) console.log(`group   ${group}`);
   if (counsel) console.log(`counsel from ${counsel.source} → director + superego charters (closing paragraph)`);
   if (learnerVoice) console.log(`voice   learner override: ${learnerVoice}`);
+  if (acts) {
+    console.log(
+      `acts    ON — director judges the work: min ${acts.minActTurns} · max ${acts.maxActTurns} turns per act; the learner is bounded to the current act (its theory store is the only carry-over)`,
+    );
+  }
+  if (reconstruct) {
+    console.log(
+      "theory  RECONSTRUCT ON — the tutor commits a per-turn theory of the learner's store (arm-internal color; never cross-arm scoring)",
+    );
+  }
   if (decay) {
     console.log(
-      `decay   seed ${decay.seed} · rate ${decay.rate} · grace ${decay.graceTurns} · maxConcurrent ${decay.maxConcurrent} · from turn ${decay.startTurn}`,
+      `decay   seed ${decay.seed} · rate ${decay.rate} · grace ${decay.graceTurns} · maxConcurrent ${decay.maxConcurrent} · from turn ${decay.startTurn}${decay.mutateShare ? ` · mutateShare ${decay.mutateShare} (slips may misremember, not just vanish)` : ''}`,
     );
     console.log(
       decayVisibility === 'conduct'
@@ -309,9 +362,19 @@ async function main() {
 
   const client = makeLlmClient({ mode });
   const counselText = counsel ? counsel.paragraph : null;
+  const actsMode = Boolean(acts);
   const roles = {
-    director: makeLlmDirector(world, client, { dials, dramaturgy, counsel: counselText }),
-    tutor: makeLlmTutor(world, client, { script, dials, superego, stallWatch, counsel: counselText, decayVisibility }),
+    director: makeLlmDirector(world, client, { dials, dramaturgy, counsel: counselText, actsMode }),
+    tutor: makeLlmTutor(world, client, {
+      script,
+      dials,
+      superego,
+      stallWatch,
+      counsel: counselText,
+      decayVisibility,
+      actsMode,
+      reconstruct,
+    }),
     learner: makeLlmLearner({ setting: world.setting, voice: learnerVoice || world.learnerVoice, client }),
   };
 
@@ -330,12 +393,17 @@ async function main() {
     }
     if (s.decayedNow?.length) bits.push(`☄ ${s.decayedNow.join(', ')} fades`);
     if (s.repairedNow?.length) bits.push(`✚ ${s.repairedNow.join(', ')} restored`);
+    if (typeof s.F === 'number') bits.push(`F=${s.F.toFixed(2)}`);
     if (s.endedBy) bits.push(`— ends: ${s.endedBy}`);
     console.log(bits.join('  '));
   };
 
   const started = Date.now();
-  const result = await runDrama({ world, roles, options: { onTurn, ...(decay ? { decay } : {}) } });
+  const result = await runDrama({
+    world,
+    roles,
+    options: { onTurn, ...(decay ? { decay } : {}), ...(acts ? { acts } : {}) },
+  });
   const elapsedMs = Date.now() - started;
   const usage = client.usage();
   const diagnosis = {
@@ -355,6 +423,9 @@ async function main() {
     // condition (run-derivation-episode.js --from) reproduces it exactly.
     decay: decay || null,
     decayVisibility,
+    // Stage v2 condition (normalized) + arm dial — null/false on v1 runs.
+    actsConfig: acts || null,
+    reconstruct,
     elapsedMs,
     usage,
     ...diagnose(result, world),

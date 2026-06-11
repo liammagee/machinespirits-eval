@@ -396,18 +396,40 @@ export function corruptionReport(result) {
   if (!c) return null;
   const ledger = c.ledger || [];
   const timeline = [];
-  const openByPremise = new Map();
+  // A mutate slip opens TWO debts that close independently and in either
+  // order: the deletion (closed by a `repair` row — tutor re-stage or
+  // re-adoption) and the false belief (closed by a `retract_false` row —
+  // the learner striking the misremembered form). Hence two open-row maps;
+  // a repeat decay of the same premise re-points both at the newest row.
+  const openRepairByPremise = new Map();
+  const openFalseByPremise = new Map();
   for (const e of ledger) {
     if (e.type === 'decay') {
-      const row = { premiseId: e.premiseId, fact: e.fact, decayTurn: e.turn, repairTurn: null, via: null };
+      const row = {
+        premiseId: e.premiseId,
+        fact: e.fact,
+        mode: e.mode === 'mutate' ? 'mutate' : 'delete',
+        falseForm: e.falseForm || null,
+        decayTurn: e.turn,
+        retractTurn: null,
+        repairTurn: null,
+        via: null,
+      };
       timeline.push(row);
-      openByPremise.set(e.premiseId, row);
+      openRepairByPremise.set(e.premiseId, row);
+      if (row.mode === 'mutate') openFalseByPremise.set(e.premiseId, row);
+    } else if (e.type === 'retract_false') {
+      const open = openFalseByPremise.get(e.premiseId);
+      if (open && open.retractTurn === null) {
+        open.retractTurn = e.turn;
+        openFalseByPremise.delete(e.premiseId);
+      }
     } else if (e.type === 'repair') {
-      const open = openByPremise.get(e.premiseId);
+      const open = openRepairByPremise.get(e.premiseId);
       if (open) {
         open.repairTurn = e.turn;
         open.via = e.via;
-        openByPremise.delete(e.premiseId);
+        openRepairByPremise.delete(e.premiseId);
       }
     }
   }
@@ -417,6 +439,9 @@ export function corruptionReport(result) {
   for (let i = 1; i < result.trajectory.length; i += 1) {
     if (result.trajectory[i].D > result.trajectory[i - 1].D) dReversals += 1;
   }
+  const mutations = timeline.filter((t) => t.mode === 'mutate');
+  // F(t) rides the trajectory rows in corruption runs (engine: theoryFidelity).
+  const fCurve = result.trajectory.filter((p) => typeof p.F === 'number').map((p) => p.F);
   return {
     config: c.config,
     decayEvents: timeline.length,
@@ -431,7 +456,74 @@ export function corruptionReport(result) {
     unrepairedAtEnd: (c.decayedAtEnd || []).length,
     degradedTurnIntegral: timeline.reduce((sum, t) => sum + ((t.repairTurn ?? result.turnsPlayed) - t.decayTurn), 0),
     dReversals,
+    mutations: {
+      total: mutations.length,
+      retracted: mutations.filter((t) => t.retractTurn !== null).length,
+      // A completed REVISE: false form struck AND true premise back on the board.
+      revised: mutations.filter((t) => t.retractTurn !== null && t.repairTurn !== null).length,
+      falseBeliefsAtEnd: mutations.filter((t) => t.retractTurn === null).length,
+    },
+    fidelity: fCurve.length
+      ? { final: +fCurve[fCurve.length - 1].toFixed(3), min: +Math.min(...fCurve).toFixed(3) }
+      : null,
     timeline,
+  };
+}
+
+/**
+ * Reconstructing-tutor accuracy (stage v2 adapt-ON arm): per turn, the
+ * tutor's committed theory of the learner's store against the harness-truth
+ * snapshot the engine recorded beside it. `held` scores as Jaccard overlap;
+ * `missing`/`mistaken` score as detection — of the gaps and false beliefs
+ * that actually existed, how many did the tutor name? Arm-internal color
+ * only: the OFF arm has no theory channel, so nothing here may cross arms.
+ */
+export function reconstructionReport(result) {
+  const rows = result.reconstruction;
+  if (!rows || !rows.length) return null;
+  const rate = (n, d) => (d ? +(n / d).toFixed(3) : null);
+  const setOf = (xs) => new Set((xs || []).map(String));
+  const jaccard = (a, b) => {
+    if (!a.size && !b.size) return 1;
+    let inter = 0;
+    for (const x of a) if (b.has(x)) inter += 1;
+    return inter / (a.size + b.size - inter);
+  };
+  const perTurn = rows.map((row) => {
+    const believedMissing = setOf(row.believed?.believed_missing);
+    const believedMistaken = setOf(row.believed?.believed_mistaken);
+    const truthMissing = setOf(row.truth?.missing);
+    const truthMistaken = setOf(row.truth?.mistaken);
+    return {
+      turn: row.turn,
+      heldJaccard: +jaccard(setOf(row.believed?.believed_held), setOf(row.truth?.held)).toFixed(3),
+      missingActual: truthMissing.size,
+      missingCaught: [...truthMissing].filter((id) => believedMissing.has(id)).length,
+      mistakenActual: truthMistaken.size,
+      mistakenCaught: [...truthMistaken].filter((id) => believedMistaken.has(id)).length,
+    };
+  });
+  const sum = (sel) => perTurn.reduce((acc, r) => acc + sel(r), 0);
+  return {
+    turns: perTurn.length,
+    meanHeldJaccard: +(sum((r) => r.heldJaccard) / perTurn.length).toFixed(3),
+    missing: {
+      actual: sum((r) => r.missingActual),
+      caught: sum((r) => r.missingCaught),
+      rate: rate(
+        sum((r) => r.missingCaught),
+        sum((r) => r.missingActual),
+      ),
+    },
+    mistaken: {
+      actual: sum((r) => r.mistakenActual),
+      caught: sum((r) => r.mistakenCaught),
+      rate: rate(
+        sum((r) => r.mistakenCaught),
+        sum((r) => r.mistakenActual),
+      ),
+    },
+    perTurn,
   };
 }
 
@@ -504,6 +596,10 @@ export function diagnose(result, world) {
     dialogueDiscipline: perRole,
     proofExtracted: Boolean(result.proof),
     ...(result.corruption ? { corruption: corruptionReport(result) } : {}),
+    // Stage v2 (acts mode / adapt-ON arm); absent keys keep the OFF-state
+    // diagnosis object byte-identical to its pre-v2 shape.
+    ...(result.acts ? { acts: result.acts } : {}),
+    ...(result.reconstruction ? { reconstruction: reconstructionReport(result) } : {}),
   };
 }
 
@@ -607,6 +703,7 @@ export function renderTranscript(result, world, { title = null, diagnosis = null
           );
         }
         if (line.meta?.tutorNote) lines.push(`  — *note to the tutor: "${line.meta.tutorNote}"*`);
+        if (line.meta?.act === 'end') lines.push('  — *calls the act closed*');
       } else if (line.role === 'tutor') {
         lines.push(`**Tutor:** ${(line.text || '').trim()}`);
         const move = line.meta?.move;
@@ -622,6 +719,12 @@ export function renderTranscript(result, world, { title = null, diagnosis = null
               : ' (figure held)';
           const jurisdiction = delib.jurisdiction ? ` [${delib.jurisdiction.replace(/_/g, ' ')}]` : '';
           lines.push(`  — *the second voice${jurisdiction}: "${delib.note}"${changed}*`);
+        }
+        const theory = line.meta?.theory;
+        if (theory) {
+          lines.push(
+            `  — *theory of the learner: ${(theory.believed_held || []).length} held · ${(theory.believed_missing || []).length} missing · ${(theory.believed_mistaken || []).length} mistaken*`,
+          );
         }
       } else if (line.role === 'learner') {
         lines.push(`**Learner:** ${(line.text || '').trim()}`);
@@ -714,15 +817,25 @@ export function renderEvalPanel(diagnosis) {
         cr.meanRepairLatency !== null ? ` · mean repair latency ${cr.meanRepairLatency} turns` : ''
       } · unrepaired at end ${cr.unrepairedAtEnd} · degraded-turn integral ${cr.degradedTurnIntegral} · D reversals ${cr.dReversals}`,
     );
-    if (cr.timeline.length) {
-      const rows = cr.timeline.map(
-        (t) =>
-          `${t.premiseId || t.fact.join(' ')} t${t.decayTurn}${
-            t.repairTurn !== null
-              ? `→t${t.repairTurn} (${t.via === 'tutor' ? 'tutor' : 're-adoption'})`
-              : ' (never repaired)'
-          }`,
+    if (cr.mutations?.total) {
+      lines.push(
+        `- **mutations** ${cr.mutations.total} of the slips misremembered (false belief staged) · false form struck ${cr.mutations.retracted} · fully revised (struck + restored) ${cr.mutations.revised} · false beliefs held to the end ${cr.mutations.falseBeliefsAtEnd}`,
       );
+    }
+    if (cr.fidelity) {
+      lines.push(`- **theory fidelity** F ${cr.fidelity.final} at end · min ${cr.fidelity.min}`);
+    }
+    if (cr.timeline.length) {
+      const rows = cr.timeline.map((t) => {
+        const head = `${t.premiseId || t.fact.join(' ')} t${t.decayTurn}`;
+        const repair =
+          t.repairTurn !== null
+            ? `→t${t.repairTurn} (${t.via === 'tutor' ? 'tutor' : 're-adoption'})`
+            : ' (never repaired)';
+        if (t.mode !== 'mutate') return `${head}${repair}`;
+        const strike = t.retractTurn !== null ? `false form struck t${t.retractTurn}` : 'false belief held to the end';
+        return `${head} misremembered as "${(t.falseForm || []).join(' ')}"${repair}; ${strike}`;
+      });
       lines.push(`  - ${rows.join(' · ')}`);
     }
   }
@@ -737,6 +850,21 @@ export function renderEvalPanel(diagnosis) {
           ? `${movements} movement${movements === 1 ? '' : 's'} declared by the director`
           : "no movements declared (author's sketch held)"
       }${notes ? ` · ${notes} note${notes === 1 ? '' : 's'} to the tutor` : ''}`,
+    );
+  }
+  if (d.acts && d.acts.length) {
+    const closedBy = { director: 0, harness_max: 0, run_end: 0 };
+    for (const a of d.acts) closedBy[a.endedBy] = (closedBy[a.endedBy] || 0) + 1;
+    const rows = d.acts.map((a) => `Act ${a.act} t${a.turns[0]}–${a.turns[1]} (${a.endedBy.replace(/_/g, ' ')})`);
+    lines.push(
+      `- **acts** ${d.acts.length} played · closed by the director ${closedBy.director} · at max length ${closedBy.harness_max} · at run end ${closedBy.run_end} — ${rows.join(' · ')}`,
+    );
+  }
+  const rc = d.reconstruction;
+  if (rc) {
+    const det = (b) => `${b.caught}/${b.actual}${b.rate !== null ? ` (${Math.round(b.rate * 100)}%)` : ''}`;
+    lines.push(
+      `- **reconstruction** ${rc.turns} theory commits · held-set overlap ${rc.meanHeldJaccard} mean Jaccard · gaps caught ${det(rc.missing)} · false beliefs caught ${det(rc.mistaken)}`,
     );
   }
   if (d.dials && (d.dials.recognition || d.dials.charisma)) {
