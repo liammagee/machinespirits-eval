@@ -94,3 +94,20 @@ exist for the eventual notes/paper fold-in.
   recognition turn t36; m_style d24→r35) but nothing on the true path stays
   lost. D reversals 4 — the board visibly sags and recovers four times.
   Critic's notice landed (173.4s).
+
+- **run 8 — noc-decay-v1-B-s1 (conduct, seed 1, codex director)**: aporia
+  t39/40, 1981.3s, 165 calls; 4 slips, **2 tutor repairs — the first in the
+  blind arm** (latency 14.5), 0 readoption, releases 11/11 on cue. But both
+  blind repairs are *incidental*, not diagnostic: each is an
+  `erotema → m_style (counter_mirror)` move — the tutor re-states the style
+  premise while doing the mirror-deflation its script demands anyway
+  (m_style d4→r8, d9→r34). Both land on the mirror premise; neither
+  true-path slip was ever re-grounded (p_watermark down t7→end, 32 turns;
+  p_stock t34→end). Consequence on stage: the learner asserts S unforced
+  *eight times* (lucky_leap ×8, overreach ×15) while D sticks at 2 — it
+  "knows" the answer but the board cannot compel it, recognition-by-luck
+  blocked by the very premises the blind tutor never repaired. This is the
+  incidental-floor mechanism from the §4 anchors operating in vivo, and the
+  inverse of the told arm's selection signature (told repairs target the
+  true path; blind repairs land where the rhetoric happens to walk).
+  Critic's notice landed (226.6s).
