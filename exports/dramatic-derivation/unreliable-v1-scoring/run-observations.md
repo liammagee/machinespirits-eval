@@ -84,3 +84,13 @@ exist for the eventual notes/paper fold-in.
   notice landed (150.0s). **Withercombe block complete: told 16/21 slips
   repaired (0.762), conduct 0/6; told outcomes 1 anagnorisis + 2 stalls,
   conduct 3 stalls at t7.**
+
+- **run 7 — noc-decay-v1-A-s1 (told, seed 1, codex director)**:
+  grounded_anagnorisis t36/40, 1473.2s, 152 calls; 12 slips, 11 tutor
+  repairs (0.917, mean latency 5.0), 0 readoption, 1 unrepaired (m_away@t35,
+  one turn before close), releases 11/11 on cue. Nocturne's longer leash
+  shows a different repair texture than withercombe: latencies stretch when
+  slips pile up mid-play (p_watermark d19 not re-grounded until the
+  recognition turn t36; m_style d24→r35) but nothing on the true path stays
+  lost. D reversals 4 — the board visibly sags and recovers four times.
+  Critic's notice landed (173.4s).
