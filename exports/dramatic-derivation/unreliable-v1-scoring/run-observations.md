@@ -62,3 +62,13 @@ exist for the eventual notes/paper fold-in.
   exactly: blind run, no repairs, dead on the window-6 stall clock at t7.
   Within-world the conduct arm is now 0/4 on repairs while its told siblings
   are 12/15. Critic's notice landed (325.1s).
+
+- **run 5 — wit-decay-v1-B-s3 (conduct, seed 3, codex director)**:
+  disengagement t7/24, 325.6s, 28 calls; 2 slips (m_taint@t3, p_course@t5),
+  0 repairs, byReadoption 0, releases 3/3 on cue. All three withercombe
+  conduct runs are near-replicas — same slip schedule (at rate 0.75 every
+  seed slips at first eligibility; maxConcurrent 2 caps the rest), same t7
+  stall death, 0 repairs each. Withercombe conduct total: 0/6 slips
+  repaired. Quirk: this learner ran verbose at the end (one 9-sentence
+  turn). Critic's notice MISSING (3× CLI timeout) — backfill:
+  `npm run derivation:critic -- --label wit-decay-v1-B-s3`.
