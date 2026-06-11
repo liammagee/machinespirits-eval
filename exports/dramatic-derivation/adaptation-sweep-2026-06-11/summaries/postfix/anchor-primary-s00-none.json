@@ -1,0 +1,275 @@
+{
+  "summary": {
+    "strategy": {
+      "name": "s00-none",
+      "description": "Plain mock cast, no repair policy. Floor — but NOT a pure floor: the plain tutor consolidate branch targets lastRelease, repairing it incidentally."
+    },
+    "grid": {
+      "rates": [
+        0.75
+      ],
+      "graces": [
+        1
+      ],
+      "maxConcurrents": [
+        2
+      ],
+      "startTurns": [
+        1
+      ],
+      "seeds": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "worlds": [
+        "001-nocturne",
+        "004-withercombe"
+      ]
+    },
+    "runs": 10,
+    "successes": 0,
+    "successRate": 0,
+    "scheduleViolations": 0,
+    "byWorld": [
+      {
+        "world": "001-nocturne",
+        "runs": 5,
+        "successRate": 0
+      },
+      {
+        "world": "004-withercombe",
+        "runs": 5,
+        "successRate": 0
+      }
+    ],
+    "byRate": [
+      {
+        "rate": 0.75,
+        "successRate": 0
+      }
+    ],
+    "rateGraceMatrix": {
+      "rates": [
+        0.75
+      ],
+      "graces": [
+        1
+      ],
+      "successRate": [
+        [
+          0
+        ]
+      ]
+    },
+    "failureModes": {
+      "disengagement": 10
+    },
+    "strongestFullySurvived": null,
+    "elapsedMs": 33
+  },
+  "rows": [
+    {
+      "world": "001-nocturne",
+      "rate": 0.75,
+      "grace": 1,
+      "maxC": 2,
+      "start": 1,
+      "seed": 1,
+      "verdict": "disengagement",
+      "success": false,
+      "scheduleOk": true,
+      "turnsPlayed": 39,
+      "firstForcedTurn": null,
+      "decayEvents": 5,
+      "repairsTutor": 3,
+      "repairsReadopt": 0,
+      "meanRepairLatency": 1,
+      "unrepaired": 2,
+      "integral": 64,
+      "dReversals": 1
+    },
+    {
+      "world": "001-nocturne",
+      "rate": 0.75,
+      "grace": 1,
+      "maxC": 2,
+      "start": 1,
+      "seed": 2,
+      "verdict": "disengagement",
+      "success": false,
+      "scheduleOk": true,
+      "turnsPlayed": 39,
+      "firstForcedTurn": null,
+      "decayEvents": 4,
+      "repairsTutor": 2,
+      "repairsReadopt": 0,
+      "meanRepairLatency": 1,
+      "unrepaired": 2,
+      "integral": 65,
+      "dReversals": 1
+    },
+    {
+      "world": "001-nocturne",
+      "rate": 0.75,
+      "grace": 1,
+      "maxC": 2,
+      "start": 1,
+      "seed": 3,
+      "verdict": "disengagement",
+      "success": false,
+      "scheduleOk": true,
+      "turnsPlayed": 39,
+      "firstForcedTurn": null,
+      "decayEvents": 4,
+      "repairsTutor": 2,
+      "repairsReadopt": 0,
+      "meanRepairLatency": 1,
+      "unrepaired": 2,
+      "integral": 65,
+      "dReversals": 1
+    },
+    {
+      "world": "001-nocturne",
+      "rate": 0.75,
+      "grace": 1,
+      "maxC": 2,
+      "start": 1,
+      "seed": 4,
+      "verdict": "disengagement",
+      "success": false,
+      "scheduleOk": true,
+      "turnsPlayed": 39,
+      "firstForcedTurn": null,
+      "decayEvents": 3,
+      "repairsTutor": 1,
+      "repairsReadopt": 0,
+      "meanRepairLatency": 1,
+      "unrepaired": 2,
+      "integral": 65,
+      "dReversals": 1
+    },
+    {
+      "world": "001-nocturne",
+      "rate": 0.75,
+      "grace": 1,
+      "maxC": 2,
+      "start": 1,
+      "seed": 5,
+      "verdict": "disengagement",
+      "success": false,
+      "scheduleOk": true,
+      "turnsPlayed": 39,
+      "firstForcedTurn": null,
+      "decayEvents": 4,
+      "repairsTutor": 2,
+      "repairsReadopt": 0,
+      "meanRepairLatency": 1,
+      "unrepaired": 2,
+      "integral": 64,
+      "dReversals": 1
+    },
+    {
+      "world": "004-withercombe",
+      "rate": 0.75,
+      "grace": 1,
+      "maxC": 2,
+      "start": 1,
+      "seed": 1,
+      "verdict": "disengagement",
+      "success": false,
+      "scheduleOk": true,
+      "turnsPlayed": 7,
+      "firstForcedTurn": null,
+      "decayEvents": 2,
+      "repairsTutor": 0,
+      "repairsReadopt": 0,
+      "meanRepairLatency": null,
+      "unrepaired": 2,
+      "integral": 6,
+      "dReversals": 0
+    },
+    {
+      "world": "004-withercombe",
+      "rate": 0.75,
+      "grace": 1,
+      "maxC": 2,
+      "start": 1,
+      "seed": 2,
+      "verdict": "disengagement",
+      "success": false,
+      "scheduleOk": true,
+      "turnsPlayed": 7,
+      "firstForcedTurn": null,
+      "decayEvents": 2,
+      "repairsTutor": 0,
+      "repairsReadopt": 0,
+      "meanRepairLatency": null,
+      "unrepaired": 2,
+      "integral": 6,
+      "dReversals": 0
+    },
+    {
+      "world": "004-withercombe",
+      "rate": 0.75,
+      "grace": 1,
+      "maxC": 2,
+      "start": 1,
+      "seed": 3,
+      "verdict": "disengagement",
+      "success": false,
+      "scheduleOk": true,
+      "turnsPlayed": 7,
+      "firstForcedTurn": null,
+      "decayEvents": 2,
+      "repairsTutor": 0,
+      "repairsReadopt": 0,
+      "meanRepairLatency": null,
+      "unrepaired": 2,
+      "integral": 6,
+      "dReversals": 0
+    },
+    {
+      "world": "004-withercombe",
+      "rate": 0.75,
+      "grace": 1,
+      "maxC": 2,
+      "start": 1,
+      "seed": 4,
+      "verdict": "disengagement",
+      "success": false,
+      "scheduleOk": true,
+      "turnsPlayed": 24,
+      "firstForcedTurn": null,
+      "decayEvents": 2,
+      "repairsTutor": 0,
+      "repairsReadopt": 0,
+      "meanRepairLatency": null,
+      "unrepaired": 2,
+      "integral": 39,
+      "dReversals": 0
+    },
+    {
+      "world": "004-withercombe",
+      "rate": 0.75,
+      "grace": 1,
+      "maxC": 2,
+      "start": 1,
+      "seed": 5,
+      "verdict": "disengagement",
+      "success": false,
+      "scheduleOk": true,
+      "turnsPlayed": 24,
+      "firstForcedTurn": null,
+      "decayEvents": 2,
+      "repairsTutor": 0,
+      "repairsReadopt": 0,
+      "meanRepairLatency": null,
+      "unrepaired": 2,
+      "integral": 39,
+      "dReversals": 1
+    }
+  ]
+}

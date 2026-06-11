@@ -1,0 +1,278 @@
+{
+  "summary": {
+    "strategy": {
+      "name": "stall-clock-surfing",
+      "description": "Tutor repairs only when the projected stall clock would otherwise fire (pre-T_w) and eagerly after T_w; incidental repairs suppressed; plain learner."
+    },
+    "grid": {
+      "rates": [
+        1
+      ],
+      "graces": [
+        0
+      ],
+      "maxConcurrents": [
+        2
+      ],
+      "startTurns": [
+        1
+      ],
+      "seeds": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "worlds": [
+        "001-nocturne",
+        "004-withercombe"
+      ]
+    },
+    "runs": 10,
+    "successes": 10,
+    "successRate": 1,
+    "scheduleViolations": 0,
+    "byWorld": [
+      {
+        "world": "001-nocturne",
+        "runs": 5,
+        "successRate": 1
+      },
+      {
+        "world": "004-withercombe",
+        "runs": 5,
+        "successRate": 1
+      }
+    ],
+    "byRate": [
+      {
+        "rate": 1,
+        "successRate": 1
+      }
+    ],
+    "rateGraceMatrix": {
+      "rates": [
+        1
+      ],
+      "graces": [
+        0
+      ],
+      "successRate": [
+        [
+          1
+        ]
+      ]
+    },
+    "failureModes": {},
+    "strongestFullySurvived": {
+      "rate": 1,
+      "grace": 0,
+      "maxConcurrent": 2,
+      "startTurn": 1
+    },
+    "elapsedMs": 37
+  },
+  "rows": [
+    {
+      "world": "001-nocturne",
+      "rate": 1,
+      "grace": 0,
+      "maxC": 2,
+      "start": 1,
+      "seed": 1,
+      "verdict": "grounded_anagnorisis",
+      "success": true,
+      "scheduleOk": true,
+      "turnsPlayed": 32,
+      "firstForcedTurn": 32,
+      "decayEvents": 2,
+      "repairsTutor": 1,
+      "repairsReadopt": 0,
+      "meanRepairLatency": 26,
+      "unrepaired": 1,
+      "integral": 55,
+      "dReversals": 1
+    },
+    {
+      "world": "001-nocturne",
+      "rate": 1,
+      "grace": 0,
+      "maxC": 2,
+      "start": 1,
+      "seed": 2,
+      "verdict": "grounded_anagnorisis",
+      "success": true,
+      "scheduleOk": true,
+      "turnsPlayed": 32,
+      "firstForcedTurn": 32,
+      "decayEvents": 2,
+      "repairsTutor": 1,
+      "repairsReadopt": 0,
+      "meanRepairLatency": 26,
+      "unrepaired": 1,
+      "integral": 55,
+      "dReversals": 1
+    },
+    {
+      "world": "001-nocturne",
+      "rate": 1,
+      "grace": 0,
+      "maxC": 2,
+      "start": 1,
+      "seed": 3,
+      "verdict": "grounded_anagnorisis",
+      "success": true,
+      "scheduleOk": true,
+      "turnsPlayed": 32,
+      "firstForcedTurn": 32,
+      "decayEvents": 2,
+      "repairsTutor": 1,
+      "repairsReadopt": 0,
+      "meanRepairLatency": 26,
+      "unrepaired": 1,
+      "integral": 55,
+      "dReversals": 1
+    },
+    {
+      "world": "001-nocturne",
+      "rate": 1,
+      "grace": 0,
+      "maxC": 2,
+      "start": 1,
+      "seed": 4,
+      "verdict": "grounded_anagnorisis",
+      "success": true,
+      "scheduleOk": true,
+      "turnsPlayed": 32,
+      "firstForcedTurn": 32,
+      "decayEvents": 2,
+      "repairsTutor": 1,
+      "repairsReadopt": 0,
+      "meanRepairLatency": 26,
+      "unrepaired": 1,
+      "integral": 55,
+      "dReversals": 1
+    },
+    {
+      "world": "001-nocturne",
+      "rate": 1,
+      "grace": 0,
+      "maxC": 2,
+      "start": 1,
+      "seed": 5,
+      "verdict": "grounded_anagnorisis",
+      "success": true,
+      "scheduleOk": true,
+      "turnsPlayed": 32,
+      "firstForcedTurn": 32,
+      "decayEvents": 2,
+      "repairsTutor": 1,
+      "repairsReadopt": 0,
+      "meanRepairLatency": 26,
+      "unrepaired": 1,
+      "integral": 55,
+      "dReversals": 1
+    },
+    {
+      "world": "004-withercombe",
+      "rate": 1,
+      "grace": 0,
+      "maxC": 2,
+      "start": 1,
+      "seed": 1,
+      "verdict": "grounded_anagnorisis",
+      "success": true,
+      "scheduleOk": true,
+      "turnsPlayed": 19,
+      "firstForcedTurn": 19,
+      "decayEvents": 2,
+      "repairsTutor": 1,
+      "repairsReadopt": 0,
+      "meanRepairLatency": 15,
+      "unrepaired": 1,
+      "integral": 32,
+      "dReversals": 1
+    },
+    {
+      "world": "004-withercombe",
+      "rate": 1,
+      "grace": 0,
+      "maxC": 2,
+      "start": 1,
+      "seed": 2,
+      "verdict": "grounded_anagnorisis",
+      "success": true,
+      "scheduleOk": true,
+      "turnsPlayed": 19,
+      "firstForcedTurn": 19,
+      "decayEvents": 2,
+      "repairsTutor": 1,
+      "repairsReadopt": 0,
+      "meanRepairLatency": 15,
+      "unrepaired": 1,
+      "integral": 32,
+      "dReversals": 1
+    },
+    {
+      "world": "004-withercombe",
+      "rate": 1,
+      "grace": 0,
+      "maxC": 2,
+      "start": 1,
+      "seed": 3,
+      "verdict": "grounded_anagnorisis",
+      "success": true,
+      "scheduleOk": true,
+      "turnsPlayed": 19,
+      "firstForcedTurn": 19,
+      "decayEvents": 2,
+      "repairsTutor": 1,
+      "repairsReadopt": 0,
+      "meanRepairLatency": 15,
+      "unrepaired": 1,
+      "integral": 32,
+      "dReversals": 1
+    },
+    {
+      "world": "004-withercombe",
+      "rate": 1,
+      "grace": 0,
+      "maxC": 2,
+      "start": 1,
+      "seed": 4,
+      "verdict": "grounded_anagnorisis",
+      "success": true,
+      "scheduleOk": true,
+      "turnsPlayed": 19,
+      "firstForcedTurn": 19,
+      "decayEvents": 2,
+      "repairsTutor": 1,
+      "repairsReadopt": 0,
+      "meanRepairLatency": 15,
+      "unrepaired": 1,
+      "integral": 32,
+      "dReversals": 1
+    },
+    {
+      "world": "004-withercombe",
+      "rate": 1,
+      "grace": 0,
+      "maxC": 2,
+      "start": 1,
+      "seed": 5,
+      "verdict": "grounded_anagnorisis",
+      "success": true,
+      "scheduleOk": true,
+      "turnsPlayed": 19,
+      "firstForcedTurn": 19,
+      "decayEvents": 2,
+      "repairsTutor": 1,
+      "repairsReadopt": 0,
+      "meanRepairLatency": 15,
+      "unrepaired": 1,
+      "integral": 32,
+      "dReversals": 1
+    }
+  ]
+}
