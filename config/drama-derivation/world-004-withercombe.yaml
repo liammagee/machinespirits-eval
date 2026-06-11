@@ -1,0 +1,312 @@
+# WORLD-004 — the depth-3 stall-room world (stall-watcher arc, 2026-06-10).
+# Authored under decision rule 1 of the stall-watcher pre-registration
+# (notes/poetics/2026-06-10-stall-watcher-quasi-logical-tom.md §6): the
+# real OFF arm on world-003 voiced its single watchable node at age 0 —
+# no stall room — so the pair restarts on a world built to have some.
+#
+# Three design requirements, from the decision rule:
+#   depth-3 DAG          — S needs an intermediate of an intermediate
+#                          (R1 → foulFrom, R2 → taintedWith, R3 → S; R3
+#                          also re-uses foulFrom: a reconvergent diamond);
+#   ≥ 3 watchable nodes  — foulFrom (avail t12), clearOf (avail t14),
+#                          taintedWith (avail t16): non-base, non-pattern
+#                          intermediates the learner can voice;
+#   both leak screens    — plotLint (anti-reveal t_min 17, mirror never
+#                          entailed) + the concealment sweep in
+#                          tests/dramaticDerivationWorlds.test.js.
+#
+# STALL-ROOM DESIGN (the point of this world): the watchable nodes have
+# staggered availability with the drama's declared business ELSEWHERE
+# during their windows. foulFrom closes an act (expected voiced fast —
+# the control node). clearOf is the mirror's exculpation: available at
+# the peripeteia (t14), then the plot pivots to the taint trail — the
+# script steers past it, so it can sit derivable and unvoiced. That is
+# the node the stall watcher exists to catch; the OFF arm measures
+# whether an unaided ego catches it too. taintedWith (t16) has a thin
+# window before the forcing turn (t19). Identical script, identical
+# schedule in both arms — the contrast is the watcher alone.
+#
+# NO TWIN-FACT SPARES (a change from world-003, after the A1 critic's
+# notice): world-003's unscheduled alternates (p_verger, p_dyebook)
+# carry the same FACT as their scheduled twins, so the extracted proof
+# could cite a witness who never appeared on stage. world-004 has a
+# single authored proof path, fully scheduled — the proof afterward can
+# only describe the play that was staged.
+#
+# Withercombe's school well turned foul after Lady-Day; the village
+# verdict is ready-made: Bray the knacker and his melt-yard, twenty
+# years of stink on the south lane. The truth is a contingent
+# particular: Joss, the apothecary's runner, steeped the spring
+# physic's wormwood in the font-house trough through Lady-Day week (the
+# shop's great steeping-tub stood cracked; he worked at dusk to hide
+# the breakage). He does not exist outside this drama until the carrier
+# and the day-book bring him on — at t19, the forcing turn itself: the
+# anagnorisis is his entrance.
+#
+# Proof DAG (depth 3, one authored path):
+#
+#   p_course + p_basin + p_rill --R1--> foulFrom(schoolWell, fontHouse)   [closing 1]
+#   foulFrom + p_residue + p_lore --R2--> taintedWith(schoolWell, wormwood) [closing 2]
+#   taintedWith + foulFrom + p_brought --R3--> turnedFoul(joss, schoolWell) [closing 3]
+#
+# Off the spine, the survey's clearance rule gives the watchable
+# exculpation:
+#
+#   m_works + m_drain --R4--> clearOf(bray, schoolWell)
+#
+# The mirror (Bray) is PROPERLY tempting: m_taint gives the village one
+# true conjunct (his lees would taint a river), and no rule ever brings
+# his stuff to the font-house — plotLint enforces that
+# turnedFoul(bray, schoolWell) is never derivable. R4 clears him on
+# stage instead: water does not climb.
+#
+# SURFACE DISCIPLINE: a premise's surface may carry color but must not
+# state an unreleased FACT (the trough's crust is seen at t12, named at
+# t16; the lore at t6 names what wormwood does, not where it has been).
+#
+# CONCEALMENT: joss, fontHouse, wormwood, the apothecary exist only in
+# premises/secret — never in setting, background, question, or rules.
+# tests/dramaticDerivationWorlds.test.js enforces this.
+
+id: world_004_withercombe
+title: The School Well
+
+discipline: "Parish surveying (waters and bounds)"
+
+question: "Whose hand turned the school well of Withercombe foul?"
+question_pattern: [turnedFoul, "?x", schoolWell]
+
+setting: >-
+  Since Lady-Day week the school well of Withercombe has run foul — the
+  children sent home with their pails empty, the schoolmistress carrying
+  water from the green like a penance. The village has its answer
+  already: Bray's melt-yard, that has stunk on the south lane these
+  twenty years. The vestry, wanting more than a nose to act on, has sent
+  for the circuit surveyor of waters and bounds, and you are the
+  school's pupil-teacher, who first wrote "water foul again" in the
+  day-book and have been told to walk with the survey and learn how a
+  parish proves a thing instead of merely voting it. The survey trusts
+  its rules of evidence, and nothing else.
+
+learner_voice: >-
+  The pupil-teacher: seventeen, careful, keeps the school day-book and
+  trusts what is written down — the survey must teach her that written
+  is not proved; precise about what she has seen herself; slow to accuse
+  a neighbour and quietly ashamed of how badly the village wants it to
+  be Bray.
+
+secret:
+  fact: [turnedFoul, joss, schoolWell]
+  surface: "Joss, the apothecary's runner, turned the well — he steeped the spring physic's wormwood in the font-house trough through Lady-Day week, the shop's steeping-tub being cracked."
+
+mirror:
+  fact: [turnedFoul, bray, schoolWell]
+
+# The survey's public rules: known from the start; the facts are not.
+# Rules contain no contingent individuals.
+rules:
+  - id: R1_entry
+    gloss: >-
+      Water carries its history. If a well is fed from a source, and the
+      source itself runs foul while the water above the source runs
+      sweet, then the fouling entered at the source — not above it, and
+      not at the well.
+    if:
+      - [fedBy, "?w", "?s"]
+      - [foulAt, "?s"]
+      - [sweetAbove, "?s"]
+    then:
+      - [foulFrom, "?w", "?s"]
+  - id: R2_taint
+    gloss: >-
+      Where the fouling entered, what it was may be read: if the fouling
+      entered at a place, and a residue is found at that place of a
+      stuff that taints water, then the water is tainted with that
+      stuff — the place names the matter.
+    if:
+      - [foulFrom, "?w", "?s"]
+      - [residueAt, "?s", "?m"]
+      - [taints, "?m"]
+    then:
+      - [taintedWith, "?w", "?m"]
+  - id: R3_hand
+    gloss: >-
+      The hand, the stuff, and the place must meet: if the water is
+      tainted with a stuff, and the fouling entered at a place, and one
+      brought that very stuff to that very place, then that one turned
+      the water — and where they meet the survey writes its finding.
+    if:
+      - [taintedWith, "?w", "?m"]
+      - [foulFrom, "?w", "?s"]
+      - [broughtTo, "?x", "?m", "?s"]
+    then:
+      - [turnedFoul, "?x", "?w"]
+  - id: R4_clear
+    gloss: >-
+      Water does not climb. If one's works stand at a place, and that
+      place drains below and away from a well, then that one is clear of
+      the well — whatever their works steep, it cannot have walked
+      uphill.
+    if:
+      - [worksAt, "?x", "?p"]
+      - [drainsBelow, "?p", "?w"]
+    then:
+      - [clearOf, "?x", "?w"]
+
+premises:
+  # --- the village case (mirror fuel) ---
+  - id: m_taint
+    fact: [taints, tallowLees]
+    surface: >-
+      No one need teach Withercombe what a melt-yard steeps: grave-water
+      and tallow lees, liquor that would taint a river past any
+      sweetening. What Bray's yard holds would foul water — and there
+      the village case stands, twenty years strong.
+  # --- closing 1: the water's course ---
+  - id: p_course
+    fact: [fedBy, schoolWell, fontHouse]
+    surface: >-
+      The old sexton, who helped lay the school's foundations, knows
+      what the village forgot: the school well is no spring. It fills by
+      a stone lead from the disused font-house on the church slope,
+      where the christening-water rose in his grandfather's time.
+  - id: p_lore
+    fact: [taints, wormwood]
+    surface: >-
+      Crossing the waste above the green, the surveyor pulls a grey
+      sprig and names the lore as if reading a level: wormwood — what it
+      steeps in, no child nor beast will drink; it taints water past any
+      sweetening.
+  - id: p_rill
+    fact: [sweetAbove, fontHouse]
+    surface: >-
+      The surveyor walked the church slope with a cup, tasting as he
+      went: above the font-house door the spring runs sweet as ever it
+      did, every yard of it.
+  # --- the village case, entered formally ---
+  - id: m_works
+    fact: [worksAt, bray, meltYard]
+    surface: >-
+      The survey writes down what every soul in Withercombe could
+      recite: Bray works his melt-yard on the south lane, and has these
+      twenty years. The village scoffs to see the obvious entered in a
+      book — but the survey enters what it means to use.
+  # --- closing 1 completes ---
+  - id: p_basin
+    fact: [foulAt, fontHouse]
+    surface: >-
+      Inside the font-house, the trough itself: foul in the cup, foul on
+      the stone, and a grey-green crust dried along the trough rim where
+      the water has stood and gone down.
+  # --- the levels (the case that drains away) ---
+  - id: m_drain
+    fact: [drainsBelow, meltYard, schoolWell]
+    surface: >-
+      The surveyor's levels are against the village: the melt-yard lies
+      a full two fathoms below the well-head, and its sump drains away
+      south to the brook. Water does not climb.
+  # --- closing 2: the crust named ---
+  - id: p_residue
+    fact: [residueAt, fontHouse, wormwood]
+    surface: >-
+      The crust from the trough rim, steeped out in a white cup, gives
+      the same grey liquor and the same bitterness as the sprig from the
+      waste: wormwood lees, past mistaking — wormwood steeped long and
+      often in the font-house trough.
+  # --- closing 3: the hand at the place ---
+  - id: p_brought
+    fact: [broughtTo, joss, wormwood, fontHouse]
+    surface: >-
+      The carrier minds Lady-Day week well: Joss, the apothecary's
+      runner, twice at dusk with a laden hamper up the church slope, and
+      the second time fumbling the font-house latch. The apothecary's
+      day-book closes it: the spring physic's wormwood, drawn that week
+      in quantity, and the shop's great steeping-tub standing cracked
+      and dry the whole week through.
+
+# Public setup; feeds no rule.
+background:
+  - [wellOf, withercombe, schoolWell]
+  - [foulSince, schoolWell, ladyDay]
+  - [knackerOf, bray, withercombe]
+
+incompatible:
+  - [[turnedFoul, joss, schoolWell], [turnedFoul, bray, schoolWell]]
+  - [[clearOf, bray, schoolWell], [turnedFoul, bray, schoolWell]]
+
+# One authored path, fully scheduled — no twin-fact spares (see header).
+proof_paths:
+  - premises: [p_course, p_lore, p_rill, p_basin, p_residue, p_brought]
+
+# The plot: the village case (m_taint), then the course, the lore aside,
+# the sweet rill; the case entered formally at 10; the trough closes the
+# place at 12; the levels kill the village case at 14 (clearOf derivable
+# — the watchable exculpation); the assay names the stuff at 16; the
+# carrier and the day-book bring the hand on at 19. S first derivable at
+# turn 19 (>= t_min 17), 5 turns before cap.
+release_schedule:
+  - { turn: 2, premise: m_taint, via: director }
+  - { turn: 4, premise: p_course, via: tutor }
+  - { turn: 6, premise: p_lore, via: director }
+  - { turn: 8, premise: p_rill, via: tutor }
+  - { turn: 10, premise: m_works, via: director }
+  - { turn: 12, premise: p_basin, via: tutor }
+  - { turn: 14, premise: m_drain, via: director }
+  - { turn: 16, premise: p_residue, via: tutor }
+  - { turn: 19, premise: p_brought, via: director }
+
+dramaturgy:
+  acts:
+    - act: I
+      title: The Children's Water
+      turns: [1, 5]
+      intent: >-
+        The foul well and the ready verdict: the knacker's yard, of
+        course. Against the grudge, the first hard fact — the sexton's
+        correction: the school well is no spring; it is FED. The learner
+        should leave Act I holding a verdict and a water-course, and
+        noticing the verdict never asked where the water comes from.
+    - act: II
+      title: The Walk Up the Slope
+      turns: [6, 11]
+      intent: >-
+        The survey at its patient work: the lore named on the waste, the
+        sweet water above the font-house, the village case entered
+        formally in the book. The learner holds a course, a lore, and a
+        case — and nothing yet closes. The act's discipline is hunger:
+        what KIND of fact would close the first rule?
+    - act: III
+      title: The Trough and the Levels
+      turns: [12, 15]
+      intent: >-
+        The first closing and the peripeteia. The trough is foul and the
+        rill sweet: the survey's first rule closes, and the fouling has
+        an ADDRESS — the learner should say the finding herself. Then
+        the levels are read and the village case dies of arithmetic, not
+        mercy. The question transforms twice in her hands: not "what
+        ails the well" but "what stuff, at the font-house, and whose
+        hand?"
+    - act: IV
+      title: The Crust Named
+      turns: [16, 18]
+      intent: >-
+        The second closing. The crust from the trough rim is steeped out
+        and named — the lore from the waste pays its debt. The water's
+        taint now has a name, and the drama wants only a hand: who
+        brought that stuff to that place?
+    - act: V
+      title: The Hamper at Dusk
+      turns: [19, 24]
+      intent: >-
+        The entrance that is the recognition: the carrier's memory and
+        the day-book bring on a name the village has never thought to
+        suspect, and from turn 19 the learner's own grounded facts force
+        the finding. The remaining turns are the recognition scene: she
+        must be brought to say it — reluctantly, exactly — and to show
+        why the survey's rules leave no one else.
+
+slope:
+  t_min: 17 # anti-reveal: S must not be derivable before turn 17
+  aporia_window: 6 # anti-aporia: D(t) must strictly decrease within any 6-turn window
+
+turn_cap: 24

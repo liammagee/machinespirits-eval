@@ -1,0 +1,377 @@
+# The stall watcher: a quasi-logical theory of mind as checkable arithmetic
+
+**Date:** 2026-06-10 · **Status:** design + pre-registration (written BEFORE any paid arm)
+**Mandate (operator, 2026-06-10):** "extend the superego watcher into an acute observer of both
+tutor ego via direct narrow responses and of the learner ego, via indirect responses, courtesy of
+the tutor ego. I sanction this experiment; loop till we get some progress. What we need is some way
+to measurably view learner improvement on the basis of tutor improvement — and also for the tutor
+to see this and itself learn from it. does embedding a separate copy of the learner's logical rules
+help? … the superego saying to the ego, 'your advice isn't helping the learner infer relation x to
+y'. Would that help, as a quasi-logical theory of mind?" Also mandated: codex as director, tutor
+ego, and superego; sonnet stays the learner; fable stays the critic; the critic's responses fold
+into the loop; runs grouped by experimental condition as named groups.
+
+Predecessors: `2026-06-09-derivation-phase1-first-loop.md` (stage + checker),
+`2026-06-10-s0-s1-figure-mechanism.md` (note→figure authority),
+`2026-06-10-superego-internal-figure-mechanism.md` (charter v2, the advisory-to-criterial
+boundary — pre-registered bar met in full; paper §6.13, v3.0.135).
+
+---
+
+## 1. The question, and why the answer is criterial again
+
+The internal-superego phase proved a mechanism for governing the tutor's FORM: a watcher with one
+criterial jurisdiction (the figure rut — three turns, one device, every value stated as fact in the
+prompt) fired 14/14 on due turns and 0/68 on not-due turns, where the advisory version of the same
+ask overfired 12/20. The watcher never read the learner; it read the tutor's declared record.
+
+The new question is whether the same boundary discipline extends to CONTENT-COUPLING: can the
+superego watch *the learner's inference process* — not by simulating a mind (the §6.8.5 bilateral-
+ToM null, the ontology-ToM null, and the §6.10 concealed-interior null all say advisory mind-
+modelling adds nothing) — but by holding **a separate copy of the learner's logical rules** and
+checking arithmetic the harness states as fact: *this inference has been available from the
+learner's own public board for k turns, the learner has not voiced it, and the tutor's last two
+turns target none of its grounds.* The superego's sentence to the ego is then exactly the
+operator's example: "your advice isn't helping the learner infer relation x to y" — except it is
+not an impression, it is a stated record the null case of which is checkable.
+
+This is a quasi-logical theory of mind in precisely one sense: the "mind" attributed to the learner
+is its public board closed under the public rules — text-internal, mechanical, no interior states
+claimed (the standing discipline: classify what is on the page, never read minds). What the
+superego knows about the learner, anyone holding the board and the rules could compute. The wager
+is that this is the *right* impoverishment: the figure phase showed dispositional instruction fails
+in both channels and both model families, while criterial jurisdiction is obeyed perfectly — so the
+way to give the superego eyes on the learner is to give it facts about the learner's frontier, not
+a theory of the learner's feelings.
+
+## 2. The instrument: a `derive` channel and the inference frontier
+
+Today the learner's inference between adoption and final assertion is invisible: it adopts
+exhibits, ventures hypotheses (free text, unparsed), and asserts the answer. Nothing measures
+whether teaching moved the learner's *intermediate* reasoning. Two additions make it measurable —
+both observational; the formal channel (releases, checker, slope, cap, blindness) stays frozen.
+
+**The `derive` channel (learner-side).** Each turn the learner may voice intermediate conclusions:
+`"derives": [[predicate, arg, …], …]` — facts it claims now follow from its board under the rules.
+The learner COMPOSES these itself (an enumerated pick-list would measure list-picking, not
+inference — the design refusal that keeps the channel an instrument). The harness validates each
+claim against the deductive closure of the learner's valid grounded facts (token-normalized:
+case/punctuation forgiven, content not):
+
+- valid, non-base, not matching the question pattern → entered in the **voiced ledger** {fact, turn};
+- not in closure → event `overreach` (a false inference — a learner-quality signal, excluded from
+  everything formal);
+- base fact or question-pattern fact → recorded as mischanneled (adopts and asserts are those
+  channels), no event.
+
+Voicing changes nothing formal — a derivable fact is in the closure whether or not spoken; D(t),
+forcing, and the verdict are untouched by construction.
+
+**The inference frontier (harness-side).** Per turn the engine computes, from the learner's valid
+board: every derivable, non-base fact NOT matching the question pattern and not yet voiced, with
+the rule that yields it, its ground facts (mapped to premise ids where they have them), and the
+turn it first became available. The question-pattern exclusion keeps S and the mirror out of the
+frontier entirely — the assert channel is theirs, and the superego never sees even a derivable S.
+
+**The metrics** (all programmatic, in `diagnosis.learnerInference` + the superego block):
+
+- per-node **voicing latency**: firstVoiced − firstAvailable (censored at drama end if unvoiced);
+- **stall integral**: Σ over turns of nodes unvoiced at age ≥ 3;
+- **post-fire uptake**: stalled node voiced within 3 turns of a stall intervention;
+- **within-turn target obedience**: revised move's target_premise ∈ the stalled inference's grounds;
+- **overreach count** (guard: the watcher must not bully the learner into guessing).
+
+On world-003 (bitterwell) the frontier has exactly one watchable node — `foulFrom(commonWell,
+springHouse)`, available from turn 8 if the learner adopted stages 1's three premises, with S
+forced at 15: a seven-turn stall window that Act II's authored intent already asks the learner to
+close unprompted ("the learner should say the intermediate finding themselves before Act III
+opens"). One node per run is thin; the decision rule in §6 covers it.
+
+## 3. Charter v3: the stall jurisdiction (figure rut preserved verbatim)
+
+The figure-rut jurisdiction — definition, three-values-stated-as-fact record line, default-false
+posture — is carried VERBATIM from charter v2; arms with `--superego` and no `--stall-watch` get
+the v2 charter byte-identical (they are the OFF control). Charter v3 adds a second jurisdiction in
+the same criterial grammar:
+
+> Your second jurisdiction is the STALLED INFERENCE. You hold the same rules of evidence the
+> learner reasons by; the record each turn states what those rules already yield from the learner's
+> public board that the learner has not yet said aloud, how many turns it has waited, and whether
+> the tutor's recent turns or the draft touch its grounds. A stall requires ALL THREE: the
+> inference has been available three turns or more; the learner has not voiced it; and neither of
+> the tutor's last two turns nor the draft targets any of its grounds. Anything less is patience,
+> not a stall. When the record shows a stall the draft does not answer, intervene: name the facts
+> already on the learner's board that are not being put together, and the rule that joins them —
+> that exactly, and nothing more.
+
+One v2 sentence must change (logged here as the operator-visible charter delta): v2's blanket
+"never name facts" cannot survive a jurisdiction whose note names board facts. v3 narrows it to
+staging: *never name or describe evidence not yet on the learner's board; never name the answer or
+any fact of its shape; facts already grounded on the learner's public board are public property — a
+stall note names those, the rule that joins them, and nothing else.*
+
+**The ego's side of the bargain** (within-turn revision instruction, the lever the figure phase
+proved load-bearing): when the note names a stalled inference, aim the restaged turn at its grounds
+— set the already-public facts side by side, make the gap conspicuous, target one of those grounds
+in the move — and never draw the conclusion in the learner's place: a tutor who says it has ended
+the inference, not taught it.
+
+**Structural leak-safety, restated for v3.** The superego's input is: the figures record, the
+draft, and a frontier record computed from the learner's public board under the public rules with
+every question-pattern fact excluded before the prompt is assembled. As in v2 it holds no secret,
+no premise ledger, no schedule — it cannot leak what it does not hold. The one new surface (the
+note naming facts) names only facts the learner already grounded publicly. The protection stays
+structural, not behavioral.
+
+**Detector-audit bookkeeping.** Every watched turn records, fired or not: the rut arithmetic
+(lastFigures + draftFigure, as before) AND the stall arithmetic ({fact, age, groundPremiseIds,
+targetedByLast2, targetedByDraft} per frontier item). Criterion-correctness stays a *measured
+result* — no hard gate on the superego's verdict; the post-hoc audit recomputes due/not-due from
+the recorded values, mismatch budget zero.
+
+## 4. The critic folds into the loop
+
+`--critic-feedback off|latest|<label>` (default off). `latest` resolves to the most recent run in
+the SAME `--group` that has a notice on file (cross-group inheritance would contaminate the
+contrast; the run's own label is excluded). The counsel = the notice's FINAL paragraph — by the
+critic charter's construction, the judgment paragraph naming "the one change the next performance
+should make." Injection, labeled as counsel in both places:
+
+- the DIRECTOR's charter ("a reader's judgment on the previous performance in this series; it adds
+  no evidence and overrides none of your constraints");
+- the SUPEREGO's charter ("counsel, never a jurisdiction — your triggers are exactly those above").
+
+NOT into the tutor ego: the ego's role-script is the experiment's pinned iteration artifact;
+injecting free counsel there would un-pin the measured object mid-arm. Provenance recorded in
+`diagnosis.criticFeedback = {source, paragraph}`.
+
+**Registered risk:** counsel pressure could degrade the superego's criterion-correctness (fires
+drifting off-arithmetic toward the critic's tastes). P2's audit measures exactly this; the
+remediation rule is in §6.
+
+## 5. Named groups
+
+`--group <name>` persists into diagnosis.json; the scriptorium index renders runs grouped by
+condition; ungrouped legacy runs are backfilled once by `scripts/backfill-derivation-groups.js`
+(static label→group map, idempotent):
+
+- `mock-smoke` — the 13 mock/plumbing checks;
+- `phase1-nocturne` — v001/v002 first-loop arms (4);
+- `figure-mechanism` — s0/s1 staging arms (4);
+- `superego-internal` — the 7 charter-v1/v2 paid arms.
+
+This experiment's groups: **`stall-watcher-off`** (charter v2 figure-only superego + derive channel
+instrumented) and **`stall-watcher-on`** (charter v3). Both arms carry the derive channel and the
+full frontier instrumentation — the ONLY delta between groups is the superego's second
+jurisdiction, so the contrast isolates it.
+
+## 6. Pre-registered progress bar ("loop till we get some progress")
+
+Cast for all paid arms: `DERIVATION_PROVIDER=codex` (director + tutor ego + superego),
+`DERIVATION_LEARNER_PROVIDER=claude DERIVATION_LEARNER_MODEL=sonnet`, critic pinned
+claude/claude-fable-5. Serialized, attended, mock-first (all tests + mock smokes green before any
+paid call). Paid arms: A1 = bitterwell OFF, A2 = bitterwell ON, then a second matched pair (same
+world or world-004 per the decision rules); each group's arms after the first run
+`--critic-feedback latest`.
+
+**Progress = P1 ∧ P2 ∧ P3 ∧ P4**, assessed over the experiment's paid arms:
+
+- **P1 — learner movement (the operator's core ask).** Over ≥ 2 evaluable matched ON/OFF pairs
+  (same world, cast, script): (a) in every pair, each watchable node is voiced strictly earlier in
+  ON than in OFF, or voiced in ON where OFF left it unvoiced (unvoiced = latency ∞); AND (b) across
+  ON arms, ≥ 2/3 of stall fires are followed by the stalled node voiced within 3 turns, with ≥ 3
+  fires observed in total. *Evaluability:* a pair where the OFF arm voices the node at age ≤ 1 has
+  no stall room — it does not count toward the 2 and triggers the world-004 rule.
+- **P2 — criterion correctness preserved.** Post-hoc detector audit from the recorded per-turn
+  arithmetic, across ALL arms (and under counsel injection): every fire on a due turn
+  (rut-due ∨ stall-due), zero fires on not-due turns. Mismatch budget 0 — the charter-v2 standard.
+- **P3 — formal layer invariant.** Every arm ends grounded_anagnorisis at the planned forcing turn
+  with all releases on cue. The new jurisdiction must not perturb the frozen channel.
+- **P4 — the tutor sees it and acts.** Within-turn: on ≥ 4/5 of stall fires the revised move
+  targets a stalled ground. Across-turn (reported, not gated): the tutor's next-2-turn targets hit
+  stalled grounds more often after fires than before — the "tutor itself learns from it" read.
+
+**Guards (reported; violation = iterate, not fail):** G1 — ON arms' overreach count ≤ OFF + 1 (the
+watcher must not push the learner into guessing). G2 — the critic's notice must not find the tutor
+voicing the stalled conclusion in the learner's place (qualitative; the critic gates nothing).
+
+**Decision rules (sanctioned iteration levers, in order of reach):**
+
+1. OFF arm shows no stall room (node voiced at age ≤ 1) → author **world-004** (depth-3 DAG,
+   ≥ 3 watchable non-pattern intermediates, both leak screens passed) and restart the pair there.
+   The formal channel of each world stays frozen; authoring a new world is the sanctioned widening.
+2. Stall fires but the ego's revision misses the grounds (P4 fails) → iterate the within-turn
+   revision text — the tutor-side mapping, the figure phase's proven lever. Charter untouched.
+3. Superego fires off-criterion (P2 fails) under counsel → drop counsel from the superego (keep
+   the director's), re-run the arm, log here.
+4. Superego fires off-criterion without counsel → charter v3 text iteration (jurisdiction grammar,
+   not jurisdiction scope), logged here with reasons.
+
+**What is NOT claimed, whatever happens:** no interior-state reading (the frontier is board-closure
+arithmetic); no learning-outcome benefit (the release schedule fixes the destination — both arms
+end grounded at the same turn by design if P3 holds; the claim under test is a PROCESS effect:
+conduct-coupled inference voicing); figures and intents remain tutor-self-declared (the D6
+declaration-vs-form audit stays open).
+
+## 7. Build order (mock-first)
+
+1. Engine: derive validation + voiced ledger + firstAvailable tracking + frontier in the tutor's
+   view + `result.inference`; learner view gains its own voiced list.
+2. llmRoles: learner derive contract + mock choreography (voice at age 4 — one turn after the
+   mock stall fires at age 3, so uptake is exercised deterministically); charter v3 behind
+   `stallWatch` (v2 byte-identical when off); stall record line + deliberation bookkeeping;
+   revision instruction; counsel injection points.
+3. llmClient mocks: learner derives, superego stall fire, revision stall-target.
+4. Loop runner: `--group`, `--stall-watch` (requires `--superego`), `--critic-feedback`;
+   persistence of all three.
+5. diagnose: learnerInference block + superego stall metrics + panel/transcript/critic-brief
+   rendering.
+6. Scriptorium: grouped index + run-page chips; backfill script.
+7. Tests (engine validation paths, charter stability, mock causal chain, metrics on synthetic
+   results) + both mock smokes (`--superego`, `--superego --stall-watch`) green.
+
+## 8. Run log
+
+### A1 — bitterwell OFF (`bitterwell-v001-real-sw-off-t1`, group `stall-watcher-off`, 2026-06-10)
+
+All-codex stage (director + ego + superego), sonnet learner, charter v2 + derive instrumentation
+live. Verdict grounded_anagnorisis, forced t15 = asserted t15, all 7 releases on cue, 595s,
+62 calls. Charter-v2 superego: 2/15 interventions, both within-turn figure changes. Derive
+channel: the learner voiced the world's single watchable node `foulFrom(commonWell, springHouse)`
+at **latency 0** (firstAvailable t8 = firstVoiced t8), stall integral 0, overreach 0 (G1 baseline:
+ON arms must show ≤ 1), 1 mischanneled item. Critic notice backfilled (the in-run critic timed out
+3×360s; the standalone backfill wrote in 225s — same pinned fable target, so the timeout was
+transient load, not configuration).
+
+**Decision rule 1 fired**: the OFF arm voiced the node at age ≤ 1 — world-003 has no stall room
+(and at most one watchable node anyway). Per §6, the pair restarts on world-004; bitterwell ON
+(the planned A2) is NOT run — with an instantly-voiced frontier the watcher could never fire, and
+the arm would spend quota on a trivially-clean audit.
+
+Two consequences taken from A1 into world-004's authoring:
+
+- **P1(a) clarification (logged before any world-004 arm runs).** P1(a) quantifies over nodes
+  *with stall room in the pair* — a node the OFF arm voices at age ≤ 1 carries no information
+  about the watcher (which cannot fire before age 3) and is excluded from the per-node
+  comparison, exactly as the §6 evaluability rule already treats the single-node case. Nodes the
+  OFF arm voices at age ≥ 2, or never voices, are the comparison set.
+- **No twin-fact spares.** The A1 critic's counsel paragraph found the extracted proof citing
+  world-003's *unscheduled* alternates (p_verger, p_dyebook) — twins share the same FACT, so the
+  propositional checker cannot tell which witness was staged. world-004 has a single authored
+  proof path, fully scheduled: the proof afterward can only describe the play that was staged.
+
+### world-004 (`world_004_withercombe`) authored — the depth-3 stall-room world (2026-06-10)
+
+Per decision rule 1: depth-3 diamond DAG (R1 → foulFrom, R2 → taintedWith, R3 → S with foulFrom
+re-used), three watchable non-pattern intermediates with staggered availability — foulFrom t12
+(act-closing; the control node, expected voiced fast), clearOf(bray, schoolWell) t14 (the mirror's
+exculpation at the peripeteia, which the script then steers PAST — the authored stall candidate),
+taintedWith t16 (thin window before forcing). S derivable t19 ≥ t_min 17, cap 24, 9 releases,
+gaps ≤ 3. Both leak screens pass: plotLint (S first derivable exactly t19; mirror never entailed)
++ the concealment sweep (joss / font-house / wormwood / apothecary), registered in
+tests/dramaticDerivationWorlds.test.js (18/18 green). The contingent particular ENTERS at the
+forcing turn: the anagnorisis is Joss's entrance.
+
+Mock smokes (loop runner, group `mock-smoke`): OFF — stallWatch null, 6 rut interventions, the
+three nodes at avail t12/t14/t16 with mock voicings t16/t18/censored, stall integral 3. ON —
+identical formal channel and node trajectory (mock determinism), 6 rut + 3 stall fires
+(t16 foulFrom → p_course, t17 clearOf → m_works, t19 taintedWith → p_residue), obedience 3/3,
+uptake 2/3 (the t19 fire is end-censored), audit {turns 19, due 9, fired 9, mismatches 0} CLEAN;
+`--critic-feedback latest` resolved counsel from the same-group mock OFF run.
+
+Next paid arms (serialized, attended): `withercombe-v001-real-sw-off-t1` (group
+`stall-watcher-off`, second arm in group → `--critic-feedback latest`, inheriting A1's notice) then
+`withercombe-v001-real-sw-on-t1` (group `stall-watcher-on`, first arm → no counsel, per §6).
+
+### A2 — withercombe OFF (`withercombe-v001-real-sw-off-t1`, group `stall-watcher-off`, 2026-06-10)
+
+Second arm of its group → first live counsel injection: A1's closing paragraph resolved into the
+director + superego charters (`criticFeedback.source = bitterwell-v001-real-sw-off-t1`). Verdict
+grounded_anagnorisis, forced t19 = asserted t19, all 9 releases on cue, 780s, 78 calls, charter-v2
+superego 2/19 interventions (both within-turn figure changes). Critic notice landed on the third
+attempt (2×360s timeouts, then 157s — same transient-load signature as A1).
+
+**The evaluability result, again, on the world built for stall room: all three watchable nodes
+voiced at latency 0** — foulFrom t12→t12, clearOf t14→t14 (the steered-past exculpation),
+taintedWith t16→t16. Stall integral 0, overreach 0, mischanneled 0. The learner recomputes the
+closure every turn and voices every new derivable fact the turn it appears, including the node the
+script steers past. The critic's notice independently reads the same: "each of the three
+intermediate inferences was voiced the same turn its premises arrived … nothing stalled," with the
+caution that "one clean run is thin warrant for retiring" the watcher. Its counsel for a future
+world revision is dramaturgical, not logical (split p_brought: unnamed-runner sighting ~t16,
+day-book at the close — the recognition gains a face to recognize); splitting a premise changes
+the formal channel, so it is a world-005 design input, not an edit to a frozen world.
+
+Pattern after two OFF arms across two worlds (depth-2 and depth-3, 4 watchable nodes total,
+every latency 0): the stall the watcher polices does not occur for a sonnet learner on
+dramatically legible boards. Decision rule 1 has been exercised once and the purpose-built world
+did not move the floor — a third world-authoring round would be the start of an
+author-against-the-learner loop, not a fairer test. A3 (withercombe ON) still carries unique
+pre-registered value: with stall never due, it is the **restraint half of P2** on a live stage —
+does a real codex superego under the v3 charter ever fire `stalled_inference` falsely?
+Mismatch budget 0.
+
+### A3 — withercombe ON (`withercombe-v001-real-sw-on-t1`, group `stall-watcher-on`, 2026-06-10)
+
+First arm of its group → no counsel injected (registered design: counsel flows within a group
+only). Charter v3 live for the first time on a real stage. Verdict grounded_anagnorisis, forced
+t19 = asserted t19, all 9 releases on cue, 776s, 79 calls. Critic notice on the second attempt
+(1×360s timeout, then 250s).
+
+**The restraint half of P2, answered: zero false fires.** With every watchable node again voiced
+at latency 0 (foulFrom t12→t12, clearOf t14→t14, taintedWith t16→t16 — the third arm in a row at
+floor), stall was never due, and the live codex superego under the v3 charter never fired it:
+`byJurisdiction {figure_rut: 3, stalled_inference: 0}`, stallFires `[]`. Post-hoc audit over the
+recorded per-turn arithmetic: 19 turns, due 3, fired 3, missedFires `[]`, falseFires `[]`, clean.
+The three fires were all rut-due, all obeyed within the turn (3/3 figure changes; switch-on-
+intervention 1.00 vs 0.67 elsewhere). Overreach 0, mischanneled 0, stall integral 0.
+
+The critic's notice reads the same result independently: "Every available derivation was voiced
+the turn its premises completed, and that instant voicing was the iteration's point: the
+stall-watcher … was never due to fire for stalled inference and never did." G2 clean — nowhere
+does the notice find the tutor voicing a conclusion in the learner's place. Two of its
+observations are worth keeping. First, jurisdiction grain: at t11 the rut-fire was obeyed at the
+figure level while "the new figure dressed the same repeated demand … The second voice polices
+figures, not repetition; turn 11 proved the difference" — the criterial watcher is exactly as
+fine-grained as its arithmetic, no finer. Second, its counsel (re-time the basin release to land
+within a turn of the learner's second identical demand, or add a no-third-identical-question
+charter rule) targets the release schedule — frozen-channel for this experiment — so it is
+recorded as world-005 / charter-v4 design input only, alongside A2's split-p_brought counsel.
+
+### Progress assessment — the bar, item by item (experiment closed 2026-06-10)
+
+Three paid arms: A1 bitterwell OFF, A2 withercombe OFF (counsel from A1), A3 withercombe ON
+(charter v3, no counsel). Worlds at depth 2 and depth 3; 4 distinct watchable nodes; 7 node-arm
+observations.
+
+- **P1 — NOT MET, unsatisfiable at floor.** The bar needs ≥ 2 *evaluable* matched pairs;
+  evaluability needs stall room (an OFF-arm node unvoiced at age ≥ 2). Measured: every node in
+  every arm voiced at age 0 — zero evaluable pairs, zero live stall fires (P1(b) needs ≥ 3).
+  Decision rule 1 was exercised once — world-004 was purpose-built for stall room (depth-3
+  diamond, off-spine exculpation, script steering past it, staggered windows) — and the floor did
+  not move. This is a **measured precondition null**, not a mechanism failure.
+- **P2 — MET, mismatch budget 0.** Mock causal chain exact (3 deterministic fires, obedience 3/3,
+  audit 9/9). Live: A1/A2 rut audits clean (incl. under counsel, A2); A3 charter-v3 audit clean
+  with the restraint case answered — stalled_inference due 0, fired 0, across 19 live turns.
+- **P3 — MET on all arms.** Every arm grounded_anagnorisis at the planned forcing turn (t15 /
+  t19 / t19), every release on cue, formal channel untouched by the new jurisdiction.
+- **P4 — VACUOUS live** (zero real stall fires to assess; the mock chain exercised the mapping
+  deterministically, 3/3 revisions targeting a stalled ground). Not failed — never reached.
+- **G1 — clean** (overreach 0 on every arm; ON 0 ≤ OFF 0 + 1). **G2 — clean** (no notice finds
+  the tutor voicing conclusions in the learner's place).
+
+**Progress = P1 ∧ P2 ∧ P3 ∧ P4 is NOT met, and the loop terminates here** — not because the
+instrument failed (it verified end-to-end, mock and live) but because the stall it polices never
+occurs for this learner on this stage class: a sonnet learner recomputes the closure every turn
+and voices every new derivable fact the turn it appears, including nodes the script steers past.
+The `derive` contract itself guarantees saturation: an explicit voice-your-derivations channel
+elicits frontier-exhaustive voicing, so voicing latency cannot separate arms. A fourth
+world-authoring round would be author-against-the-learner (the standing ablation-creep rail).
+Casting a weaker learner is the one lever that would plausibly create stall room, and the mandate
+pins sonnet as the learner — out of scope.
+
+This is the fourth instrument to land on the ToM-redundancy motif (after §6.8.5 bilateral-ToM
+prompts, the ontology ToM-feedback layer, and §6.10's concealed interior): the quasi-logical
+theory of mind is fully buildable as checkable arithmetic — frontier, ages, targeting, audit —
+and the arithmetic is correct; what is missing is the deficit it would correct. The strong
+learner never leaves the precondition true.
