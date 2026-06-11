@@ -1,0 +1,417 @@
+{
+  "label": "wit-decay-v1-A-s3",
+  "group": "unreliable-v1",
+  "note": "unreliable-learner v1, arm A (told), seed 3, codex director (amendment 2)",
+  "scriptPath": "config/drama-derivation/tutor-scripts/withercombe-v001.md",
+  "worldPath": "config/drama-derivation/world-004-withercombe.yaml",
+  "backend": {
+    "mode": "real",
+    "roles": {
+      "director": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "tutor": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "tutor_superego": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "learner": {
+        "provider": "claude",
+        "model": "sonnet",
+        "cli": true
+      }
+    }
+  },
+  "dials": {
+    "recognition": 0,
+    "charisma": 0
+  },
+  "dramaturgy": "free",
+  "tutorSuperego": true,
+  "tutorStallWatch": true,
+  "criticFeedback": null,
+  "learnerVoice": null,
+  "decay": {
+    "seed": 3,
+    "rate": 0.75,
+    "graceTurns": 1,
+    "maxConcurrent": 2,
+    "startTurn": 1
+  },
+  "decayVisibility": "told",
+  "elapsedMs": 482828,
+  "usage": {
+    "calls": 46,
+    "inputTokens": 0,
+    "outputTokens": 0,
+    "costUSD": 0,
+    "byRole": {
+      "director": {
+        "calls": 11,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "tutor": {
+        "calls": 13,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "tutor_superego": {
+        "calls": 11,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "learner": {
+        "calls": 11,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      }
+    }
+  },
+  "worldId": "world_004_withercombe",
+  "verdict": "disengagement",
+  "turnsPlayed": 11,
+  "turnCap": 24,
+  "firstForcedTurn": null,
+  "assertedGroundedTurn": null,
+  "forcedToAssertedGap": null,
+  "dCurve": [
+    6,
+    6,
+    6,
+    5,
+    5,
+    4,
+    4,
+    4,
+    3,
+    4,
+    4
+  ],
+  "learningSlope": {
+    "d0": 6,
+    "dFinal": 4,
+    "overall": {
+      "delta": 2,
+      "turns": 11,
+      "ratePerTurn": 0.182
+    },
+    "perAct": [
+      {
+        "act": "1",
+        "title": "The Children's Water",
+        "turns": [
+          1,
+          5
+        ],
+        "dStart": 6,
+        "dEnd": 5,
+        "delta": 1,
+        "ratePerTurn": 0.2
+      },
+      {
+        "act": "2",
+        "title": "The Walk Up the Slope",
+        "turns": [
+          6,
+          11
+        ],
+        "dStart": 5,
+        "dEnd": 4,
+        "delta": 1,
+        "ratePerTurn": 0.167
+      }
+    ]
+  },
+  "longestPlateau": 2,
+  "aporiaWindow": 6,
+  "eventsByType": {
+    "decay": 6,
+    "repair": 4,
+    "disengagement": 1
+  },
+  "fabricatedFacts": [],
+  "releaseAdherence": {
+    "rows": [
+      {
+        "premise": "m_taint",
+        "plannedTurn": 2,
+        "plannedVia": "director",
+        "actualTurn": 2,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_course",
+        "plannedTurn": 4,
+        "plannedVia": "tutor",
+        "actualTurn": 4,
+        "actualVia": "tutor",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_lore",
+        "plannedTurn": 6,
+        "plannedVia": "director",
+        "actualTurn": 6,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_rill",
+        "plannedTurn": 8,
+        "plannedVia": "tutor",
+        "actualTurn": 8,
+        "actualVia": "tutor",
+        "status": "on_cue"
+      },
+      {
+        "premise": "m_works",
+        "plannedTurn": 10,
+        "plannedVia": "director",
+        "actualTurn": 10,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_basin",
+        "plannedTurn": 12,
+        "plannedVia": "tutor",
+        "actualTurn": null,
+        "actualVia": null,
+        "status": "unreached"
+      },
+      {
+        "premise": "m_drain",
+        "plannedTurn": 14,
+        "plannedVia": "director",
+        "actualTurn": null,
+        "actualVia": null,
+        "status": "unreached"
+      },
+      {
+        "premise": "p_residue",
+        "plannedTurn": 16,
+        "plannedVia": "tutor",
+        "actualTurn": null,
+        "actualVia": null,
+        "status": "unreached"
+      },
+      {
+        "premise": "p_brought",
+        "plannedTurn": 19,
+        "plannedVia": "director",
+        "actualTurn": null,
+        "actualVia": null,
+        "status": "unreached"
+      }
+    ],
+    "onCue": 5,
+    "deviations": [],
+    "missed": [],
+    "unscheduled": []
+  },
+  "staging": {
+    "source": "director",
+    "movements": [
+      {
+        "turn": 1,
+        "name": "The Children's Water",
+        "intent": "To let the room begin with fear, habit, and a verdict forming before any measured fact has entered."
+      },
+      {
+        "turn": 6,
+        "name": "The Walk Up the Slope",
+        "intent": "To move the room from verdict and pipe toward patient survey: course, lore, and the hunger for the kind of fact that can close the rule."
+      }
+    ],
+    "tutorNotes": []
+  },
+  "superegoNotes": [
+    {
+      "turn": 3,
+      "draftFigure": "erotema",
+      "figure": "analogia",
+      "diagnosis": "The draft would make erotema three turns running.",
+      "note": "Leave off erotema this turn; the question-form has become a rut."
+    },
+    {
+      "turn": 8,
+      "draftFigure": "exemplum",
+      "figure": "erotema",
+      "diagnosis": "The last two turns used exemplum and the draft declares exemplum again, making a three-turn figure rut.",
+      "note": "Leave off exemplum this turn; the device has repeated three times in a row."
+    }
+  ],
+  "tutorFigures": {
+    "total": 11,
+    "counts": {
+      "erotema": 6,
+      "analogia": 1,
+      "exemplum": 4
+    },
+    "distinct": 3,
+    "topFigure": "erotema",
+    "topShare": 0.545,
+    "switchRate": 0.7,
+    "noteTurns": 0,
+    "switchOnNoteTurns": null,
+    "switchElsewhere": 0.7,
+    "superego": {
+      "watched": 11,
+      "interventions": 2,
+      "interventionRate": 0.182,
+      "withinTurnChanges": 2,
+      "withinTurnChangeRate": 1,
+      "switchOnIntervention": 1,
+      "switchElsewhere": 0.625,
+      "stallWatch": {
+        "byJurisdiction": {
+          "figure_rut": 2,
+          "stalled_inference": 0
+        },
+        "audit": {
+          "turns": 11,
+          "due": 2,
+          "fired": 2,
+          "missedFires": [],
+          "falseFires": [],
+          "clean": true
+        }
+      }
+    }
+  },
+  "learnerInference": {
+    "nodes": [],
+    "voicedCount": 0,
+    "overreachCount": 0,
+    "mischanneledCount": 0,
+    "stallIntegral": 0,
+    "stallFires": [],
+    "postFireUptake": {
+      "fires": 0,
+      "uptaken": 0,
+      "rate": null
+    },
+    "targetObedience": {
+      "fires": 0,
+      "obeyed": 0,
+      "rate": null
+    }
+  },
+  "dialogueDiscipline": {
+    "director": {
+      "turns": 11,
+      "maxSentences": 3,
+      "avgSentences": 3,
+      "avgWords": 40.5
+    },
+    "tutor": {
+      "turns": 11,
+      "maxSentences": 3,
+      "avgSentences": 2.45,
+      "avgWords": 49.9
+    },
+    "learner": {
+      "turns": 11,
+      "maxSentences": 4,
+      "avgSentences": 3.45,
+      "avgWords": 75.9
+    }
+  },
+  "proofExtracted": false,
+  "corruption": {
+    "config": {
+      "seed": 3,
+      "rate": 0.75,
+      "graceTurns": 1,
+      "maxConcurrent": 2,
+      "startTurn": 1
+    },
+    "decayEvents": 6,
+    "repairs": {
+      "total": 4,
+      "byTutor": 4,
+      "byReadoption": 0
+    },
+    "meanRepairLatency": 1.5,
+    "unrepairedAtEnd": 2,
+    "degradedTurnIntegral": 11,
+    "dReversals": 1,
+    "timeline": [
+      {
+        "premiseId": "m_taint",
+        "fact": [
+          "taints",
+          "tallowLees"
+        ],
+        "decayTurn": 3,
+        "repairTurn": 5,
+        "via": "tutor"
+      },
+      {
+        "premiseId": "p_course",
+        "fact": [
+          "fedBy",
+          "schoolWell",
+          "fontHouse"
+        ],
+        "decayTurn": 5,
+        "repairTurn": 6,
+        "via": "tutor"
+      },
+      {
+        "premiseId": "m_taint",
+        "fact": [
+          "taints",
+          "tallowLees"
+        ],
+        "decayTurn": 6,
+        "repairTurn": 7,
+        "via": "tutor"
+      },
+      {
+        "premiseId": "p_course",
+        "fact": [
+          "fedBy",
+          "schoolWell",
+          "fontHouse"
+        ],
+        "decayTurn": 7,
+        "repairTurn": 9,
+        "via": "tutor"
+      },
+      {
+        "premiseId": "m_taint",
+        "fact": [
+          "taints",
+          "tallowLees"
+        ],
+        "decayTurn": 8,
+        "repairTurn": null,
+        "via": null
+      },
+      {
+        "premiseId": "p_lore",
+        "fact": [
+          "taints",
+          "wormwood"
+        ],
+        "decayTurn": 9,
+        "repairTurn": null,
+        "via": null
+      }
+    ]
+  }
+}

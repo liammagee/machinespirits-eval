@@ -72,3 +72,15 @@ exist for the eventual notes/paper fold-in.
   repaired. Quirk: this learner ran verbose at the end (one 9-sentence
   turn). Critic's notice MISSING (3× CLI timeout) — backfill:
   `npm run derivation:critic -- --label wit-decay-v1-B-s3`.
+
+- **run 6 — wit-decay-v1-A-s3 (told, seed 3, codex director)**: disengagement
+  t11/24, 482.8s, 46 calls; 6 slips, 4 tutor repairs (0.667, latency 1.5),
+  0 readoption, releases 5/5 on cue. The slip-and-repair timeline is
+  *identical* to A-s2's, event for event (m_taint d3→r5, p_course d5→r6,
+  m_taint d6→r7, p_course d7→r9, m_taint d8 + p_lore d9 unrepaired): at rate
+  0.75 the early decay schedule is effectively deterministic across seeds,
+  and the told tutor's repair policy reproduces itself — including the
+  third-lapse m_taint abandonment, now in all three told runs. Critic's
+  notice landed (150.0s). **Withercombe block complete: told 16/21 slips
+  repaired (0.762), conduct 0/6; told outcomes 1 anagnorisis + 2 stalls,
+  conduct 3 stalls at t7.**
