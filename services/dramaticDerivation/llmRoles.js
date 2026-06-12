@@ -383,6 +383,16 @@ function tutorSystem(
           'Hold to let a beat land; play early when the board is ready — either way the',
           'reason is part of the record. When you play an exhibit, weave its evidence',
           'into your dialogue as something produced or recalled, faithful to it.',
+          '',
+          'THE HOUSE CLOCK: this stage has a stall rule. If any',
+          `${world.slope.aporia_window}-turn stretch passes with no fresh ground gained — the case`,
+          `visibly no further on than it stood ${world.slope.aporia_window} turns before — the house calls`,
+          'the inquiry off, unfinished. You cannot see the clock; you can only keep it',
+          'fed. Bending the calendar moves more than the exhibit: an early claim spends',
+          'a future advance now, and what is played earlier is exposed earlier; a hold',
+          'delays an advance you may need sooner than you think. When the board has',
+          'gone quiet too long, an exhibit in your window is a rescue — spend it. Bend',
+          'the calendar with the clock in mind.',
         ]
       : ['The fixed release schedule (the harness enforces it; you are told your cues):', schedule]),
     ...(actsMode
@@ -441,6 +451,12 @@ function tutorSystem(
           'no quotation, no paraphrase, no hint of the detail you suspect lost or bent.',
           'Only after they have answered may you re-stage it; one confrontation licenses',
           'ONE re-entry. The self-audit comes first, or the repair teaches nothing.',
+          '',
+          'TREATMENT FOLLOWS DIAGNOSIS: when the read-back exposes a loss — the learner',
+          'cannot produce the exhibit, or produces it bent — the licensed re-entry is no',
+          'longer optional. Spend it on your NEXT turn: re-stage that paper, plainly. A',
+          'confrontation that exposes an absence and is followed by silence teaches the',
+          'absence twice and repairs nothing.',
         ]
       : []),
     ...(registers.length

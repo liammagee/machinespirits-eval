@@ -147,6 +147,8 @@ test('both dials off: no confrontation clause, no window, no re-entry jurisdicti
   assert.ok(!tutorSystem.includes('confrontation obligation'));
   assert.ok(!/"confront"/.test(tutorSystem));
   assert.ok(!tutorSystem.includes('YOURS TO KEEP OR BEND'));
+  assert.ok(!tutorSystem.includes('THE HOUSE CLOCK'));
+  assert.ok(!tutorSystem.includes('TREATMENT FOLLOWS DIAGNOSIS'));
   assert.ok(!superegoSystem.includes('UNCONFRONTED RE-ENTRY'));
   assert.ok(!superegoSystem.includes('unconfronted_reentry'));
 });
@@ -163,6 +165,25 @@ test('release authority swaps the fixed cue for the exhibit window', async () =>
   const { tutorSystem } = await capturedSystems({ releaseAuthority: true });
   assert.ok(tutorSystem.includes('YOURS TO KEEP OR BEND'));
   assert.ok(tutorSystem.includes('hold limit'));
+});
+
+// charter v2 (plan §10, registered 2026-06-12): two text-only clauses. The
+// clock clause rides the release-authority dial; the treatment clause rides
+// confront. Pinned here so the registered text cannot drift silently.
+test('charter v2: release authority carries the house clock, with the world window interpolated', async () => {
+  const { tutorSystem } = await capturedSystems({ releaseAuthority: true });
+  assert.ok(tutorSystem.includes('THE HOUSE CLOCK'));
+  assert.ok(tutorSystem.includes(`${smokeWorld.slope.aporia_window}-turn stretch passes with no fresh ground gained`));
+  assert.ok(tutorSystem.includes('You cannot see the clock; you can only keep it'));
+  assert.ok(tutorSystem.includes('an exhibit in your window is a rescue — spend it'));
+  assert.ok(!tutorSystem.includes('TREATMENT FOLLOWS DIAGNOSIS'));
+});
+
+test('charter v2: confront carries treatment-follows-diagnosis', async () => {
+  const { tutorSystem } = await capturedSystems({ confront: true });
+  assert.ok(tutorSystem.includes('TREATMENT FOLLOWS DIAGNOSIS'));
+  assert.ok(tutorSystem.includes('Spend it on your NEXT turn'));
+  assert.ok(!tutorSystem.includes('THE HOUSE CLOCK'));
 });
 
 // ---------------------------------------------------------------------------

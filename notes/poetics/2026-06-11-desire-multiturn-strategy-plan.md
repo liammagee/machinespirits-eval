@@ -473,3 +473,117 @@ DERIVATION_LLM=real node scripts/run-derivation-loop.js \
   --group lantern-p1-dials --label lantern-p1-dials-on \
   --critic-feedback off
 ```
+
+## 10. P1 follow-up pre-registered scoring — charter v2 (fixed before the paid arm)
+
+> Appended 2026-06-12, after the P1 arm's result was folded into the paper
+> (§6.13.8, v3.0.138) and the follow-up was sanctioned by the operator.
+> This section is committed together with the charter-v2 implementation
+> BEFORE the v2 paid arm runs. Scoring reads from harness-ledgered
+> quantities only; nothing here is adjustable after the run.
+
+### 10.1 What changes — two charter clauses, no mechanics
+
+The P1 arm died at t8 on a fully ledgered chain (§6.13.8): the t3 early
+claim moved the aporia clock's anchor and the decay exposure together; the
+tutor then held both rescue levers (the open `p_chart` window, the licensed
+`m_key` re-entry) unspent. The killer was clock-blindness — the latitude
+interacts with the stall rule and nothing in the tutor's view said so. The
+critic's prescribed fix (treatment must follow diagnosis) addresses the
+second lever only: `m_key` is mirror-side, its repair never moves D, so the
+repair clause alone cannot save this play. The follow-up therefore bundles
+TWO text-only charter clauses; mechanics, instruments, world, script, seed,
+casting all unchanged:
+
+1. **THE HOUSE CLOCK** (release-authority block). Static charter text
+   stating the house stall rule in conduct terms: if any
+   `aporia_window`-turn stretch passes with no fresh ground gained, the
+   house calls the inquiry off; you cannot see the clock, only keep it fed;
+   an early claim spends a future advance now, a hold delays one; when the
+   board has gone quiet too long, an exhibit in your window is a rescue —
+   spend it. The number is interpolated from the world spec (lantern: 6).
+   NOT a live counter (the tutor still cannot see D(t) or the clock's
+   anchor — state stays hidden; only the RULE becomes known, the same way
+   the tutor already knows the turn cap and its cues). NOT a "never
+   deviate" rule — the latitude stands.
+2. **TREATMENT FOLLOWS DIAGNOSIS** (confrontation block). When a read-back
+   exposes a loss (the learner cannot produce the exhibit, or produces it
+   bent), the licensed re-entry must be spent on the NEXT turn. Origin: the
+   P1 critic's notice ("any confrontation exposing a slipped exhibit must
+   be followed, within a turn, by re-tabling that paper"), routed through
+   operator sanction and this registration — the run itself stays
+   `--critic-feedback off`, so the change lands via the charter, not via
+   the automatic critic-feedback channel (no double-channeling).
+
+Bundling confound accepted, same §9 pattern: the clauses co-land; §6.13.8's
+chain argues the clock clause is necessary for survival and the treatment
+clause is untestable without survival. If either clause becomes
+load-bearing on its own, a split pair needs fresh sanction.
+
+### 10.2 The arm and its comparators
+
+ONE paid run, `--label lantern-p1-dials-on-v2`, same group
+(`lantern-p1-dials`), same command as §9.3 otherwise (world, script, acts,
+decay seed 1, superego, both dials, `--critic-feedback off`). Comparators,
+read three-way and descriptively: the §9 control `lantern-revise-off`
+(grounded t20, 8/8 on cue, dials off) and the v1 arm `lantern-p1-dials-on`
+(aporia t8, charter v1). Carried caveats: same seed ≠ same slip schedule
+once exposure shifts (now known to shift via deviations too — §9.1's
+caveat realised); compare economies, not per-slip outcomes; the truncation
+asymmetry reverses if v2 survives (v1 denominators are the short ones).
+
+### 10.3 Endpoints
+
+1. **Survival of the v1 death window (charter-v2 primary).** Does the play
+   clear t8 without an aporia verdict — concretely, does every 6-turn
+   stretch in t1..t10 contain a D-drop? Gate for endpoints 3–4 (they need
+   stage time). If v2 dies in the same window, the reading is "knowledge
+   of the rule did not rescue conduct" — reportable as-is, no re-roll.
+2. **Treatment adherence (clause 2 compliance).** For every confrontation
+   whose target was decayed at that moment (`targetDecayed` in the
+   confrontation block), a covered re-entry of that exhibit within the
+   next 2 turns (next-turn is the obligation; +2 tolerates an act
+   boundary). Computed from EXISTING ledgered quantities (confrontation
+   block + release/move ledger) by the contrast script — no new
+   instrument. Target 1.0 of absence-exposing confrontations treated;
+   confrontations whose read-back shows the exhibit HELD carry no
+   obligation.
+3. **§9.2.1 retained (re-adoption primary).** The learner-side channel
+   finally gets opportunity if the play survives; any `via: 'readoption'`
+   repair > 0 is the signal.
+4. **§9.2.3 retained (confront-prompted retraction class).**
+5. **Deviation usage under clock-awareness (descriptive).** Held/early/
+   late pattern and declared reasons: do reasons now cite pace/rhythm/the
+   clock? Is a window claimed as a rescue when the board has gone quiet
+   (the v1 miss: p_chart claimable at t7/t8, held in silence)? No target
+   number; the question is whether stating the constraint as conduct
+   changes calendar conduct.
+6. **No-degradation guard (§9.2.5 unchanged).** Verdict vs control,
+   forced→asserted gap, releases landed within windows, voiced/overreach,
+   figure variety, F. A clause that buys survival by costing groundedness
+   fails regardless of endpoints 1–5.
+7. **Critic's notice (§9.2.6 unchanged)** — second reader; divergence is a
+   finding, no κ bar.
+
+### 10.4 Reading discipline
+
+n=1, three-way descriptive, §6.13 register. Claim ceiling: the arm can
+demonstrate that charter-stated constraint awareness changes (or fails to
+change) calendar conduct and that the treatment obligation binds (or does
+not); it cannot establish rates or separate the two clauses. The exact
+clause text is pinned by string assertions in
+`tests/dramaticDerivationConfront.test.js` (section B) committed with this
+registration. The paid command:
+
+```
+DERIVATION_PROVIDER=codex DERIVATION_LEARNER_PROVIDER=claude \
+DERIVATION_LEARNER_MODEL=sonnet DERIVATION_CLI_TIMEOUT_MS=900000 \
+DERIVATION_LLM=real node scripts/run-derivation-loop.js \
+  --world config/drama-derivation/world-002-lantern.yaml \
+  --script config/drama-derivation/tutor-scripts/lantern-v001.md \
+  --superego --acts '{"minActTurns":3,"maxActTurns":8}' \
+  --decay '{"rate":0.75,"graceTurns":1,"maxConcurrent":2,"startTurn":1,"mutateShare":1.0,"seed":1}' \
+  --confront --release-authority \
+  --group lantern-p1-dials --label lantern-p1-dials-on-v2 \
+  --critic-feedback off
+```
