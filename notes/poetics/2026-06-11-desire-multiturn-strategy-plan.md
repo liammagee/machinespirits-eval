@@ -381,3 +381,95 @@ before the next phase is specced in detail.
    held as instrument (reconstruction rows stay a free diagnostic on any ON
    arm). One reopening condition remains: a C1-era discovery that plots fail
    specifically for want of a learner model.
+
+## 9. P1 pre-registered scoring (fixed before the paid arm)
+
+> Appended 2026-06-12, after the P1 dials were implemented and verified
+> mock-first (24 dedicated tests + full hermetic suite green + a zero-cost
+> mock loop on lantern exercising the complete causal cycle: slip →
+> confrontation against the decayed exhibit → repair by the licensed
+> re-entry, with all releases deviation-zero and all watcher fires
+> converted). This section is committed BEFORE the paid arm runs. Scoring
+> below reads from harness-ledgered quantities only; nothing here is
+> adjustable after the run.
+
+### 9.1 The arm and its control
+
+ONE paid run, both dials ON (`--confront --release-authority`), on
+`world-002-lantern` with `lantern-v001.md` — everything else identical to
+the revise pair: stage v2 acts (min 3 / max 8), bounded learner, decay
+`{rate:0.75, graceTurns:1, maxConcurrent:2, startTurn:1, mutateShare:1.0,
+seed:1}`, superego ON, casting codex director/tutor/superego + Sonnet
+learner + Fable critic. Group `lantern-p1-dials`, first arm so
+`--critic-feedback off`.
+
+**Control = the lantern-revise OFF arm** (group `lantern-revise-probe`,
+digest committed at `exports/dramatic-derivation/loop/lantern-revise-digest.md`).
+It ran superego-ON with default mechanisms — the P1 arm differs from it in
+exactly the two dials. Confound accepted per §7: the dials land together in
+one run; if either becomes load-bearing, a follow-up pair splits them under
+separate sanction. Carried caveat from the revise digest: same seed ≠ same
+slip schedule once repairs free `maxConcurrent` slots — confrontation-paced
+repairs WILL shift slip exposure, so compare repair/retraction *economies*,
+not per-slip outcomes.
+
+C2's surface is small by design: only the three via-tutor releases
+(p_bearing t4, p_chart t9, p_key t17) get ±2-turn windows; the five
+via-director releases stay fixed. The mock plays deviation-zero (a
+parse-path exercise), so ANY deviation in the paid arm is model-authored
+conduct, not harness default.
+
+### 9.2 Endpoints
+
+1. **Learner-side repair channel opens (C5 primary).** Corruption-ledger
+   repairs with `via: 'readoption'` — the learner re-takes a slipped
+   exhibit from its own resources. Zero in BOTH prior lantern arms (every
+   repair was a tutor restatement). The read-back demand bans restatement,
+   so a slipped-but-held exhibit produced by the learner lands here. ANY
+   count > 0 is the signal; 0 with confrontations demanded is itself a
+   finding (the learner never holds what it cannot be handed).
+2. **Confrontation-before-re-entry adherence (C5 compliance).** From the
+   `confrontation` block: uncovered re-entries (target 0), watcher
+   fires → converted-to-confrontation rate, fires without recorded due
+   (target 0 — watcher precision). This is the §6.13 within-turn-breaking
+   quantity transposed to the re-entry jurisdiction.
+3. **Confrontation-prompted retraction class (C5 on mutations).** The
+   `confrontPromptedRetractions` annotation: false-form retractions landing
+   in window {0, +1} of a confrontation of that premise. The control's
+   retraction contexts were move/restage/spontaneous 1/1/2 (mean latency
+   1.75); this class did not exist there. Read: does the read-back become
+   the retraction trigger, and does mean latency move?
+4. **Deviation usage (C2).** From `releaseDeviations`: held/early counts,
+   declared reasons, and clustering (do deviations land near friction —
+   slips, act ends, confrontations?). Descriptive, no target number: the
+   endpoint is whether the tutor USES the latitude at all and whether the
+   declared reasons are dramaturgically coherent. Force-plays at the hold
+   limit and invalid claims are discipline quantities (recorded; expected
+   0).
+5. **No-degradation guard.** The held-out dramatic instruments must not
+   pay for the dials: verdict (control: grounded_anagnorisis t20),
+   forced→asserted gap (control: 0), all 8 releases landed (within
+   windows), voiced inferences / overreach (control: 3/1), figure variety,
+   D reversals, F final (control: 0.833). A dial that buys its effect by
+   costing groundedness fails P1 regardless of endpoints 1–4.
+6. **Critic's notice** (Fable, pinned role) — qualitative second reader on
+   whether confrontations read as drama or as compliance ceremony; no κ
+   bar, divergence is a finding.
+
+### 9.3 Reading discipline
+
+n=1 vs n=1, read descriptively in §6.13's register (mechanism
+demonstration, not effect size). The paid command:
+
+```
+DERIVATION_PROVIDER=codex DERIVATION_LEARNER_PROVIDER=claude \
+DERIVATION_LEARNER_MODEL=sonnet DERIVATION_CLI_TIMEOUT_MS=900000 \
+DERIVATION_LLM=real node scripts/run-derivation-loop.js \
+  --world config/drama-derivation/world-002-lantern.yaml \
+  --script config/drama-derivation/tutor-scripts/lantern-v001.md \
+  --superego --acts '{"minActTurns":3,"maxActTurns":8}' \
+  --decay '{"rate":0.75,"graceTurns":1,"maxConcurrent":2,"startTurn":1,"mutateShare":1.0,"seed":1}' \
+  --confront --release-authority \
+  --group lantern-p1-dials --label lantern-p1-dials-on \
+  --critic-feedback off
+```

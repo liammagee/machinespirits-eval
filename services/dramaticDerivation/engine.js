@@ -325,7 +325,7 @@ export async function runDrama({ world, roles, options = {} }) {
     return items;
   };
 
-  const applyRelease = (turn, premiseId, via) => {
+  const applyRelease = (turn, premiseId, via, extra = null) => {
     if (!premiseId) return null;
     const premise = world.premiseById.get(premiseId);
     if (!premise || releasedKeys.has(factKey(premise.fact))) return null;
@@ -333,7 +333,12 @@ export async function runDrama({ world, roles, options = {} }) {
     releasedIdByKey.set(factKey(premise.fact), premiseId);
     releasedAtByKey.set(factKey(premise.fact), turn);
     releasedFacts.push(premise.fact);
-    ledger.push({ turn, premiseId, via });
+    // `extra` (C2 release authority): the tutor's declared reason and the
+    // offset from the scheduled turn ride on the ledger row, so adherence
+    // instruments read deviation-as-strategy without joining the transcript.
+    // Hold turns (nothing played) never reach here — their decision records
+    // live only in the tutor transcript meta.
+    ledger.push({ turn, premiseId, via, ...(extra || {}) });
     return premise.fact;
   };
 
@@ -518,7 +523,14 @@ export async function runDrama({ world, roles, options = {} }) {
 
     // --- tutor ---
     const tutorOut = (await roles.tutor(omniscientView(turn, 'tutor'))) || {};
-    const tutorRelease = applyRelease(turn, tutorOut.release, 'tutor');
+    const tutorRelease = applyRelease(
+      turn,
+      tutorOut.release,
+      'tutor',
+      tutorOut.releaseDecision
+        ? { reason: tutorOut.releaseReason || null, offset: tutorOut.releaseDecision.offset ?? null }
+        : null,
+    );
     if (tutorRelease) releasedThisTurn.push(tutorRelease);
     transcript.push({
       turn,
@@ -528,6 +540,8 @@ export async function runDrama({ world, roles, options = {} }) {
         move: tutorOut.move || null,
         release: tutorOut.release || null,
         deliberation: tutorOut.deliberation || null,
+        ...(tutorOut.releaseDecision ? { releaseDecision: tutorOut.releaseDecision } : {}),
+        ...(tutorOut.releaseReason ? { releaseReason: tutorOut.releaseReason } : {}),
         ...(tutorOut.theory ? { theory: tutorOut.theory } : {}),
       },
     });
@@ -558,8 +572,15 @@ export async function runDrama({ world, roles, options = {} }) {
     // Tutor-side repair: a move that TARGETS a decayed premise restores it —
     // the tutor re-staged the evidence, so it is back in the learner's hands
     // before the learner speaks this turn. Repair is declared move metadata,
-    // never inferred from prose.
-    if (corruption && tutorOut.move?.targetPremise) {
+    // never inferred from prose. A confront move (C5) is the one exception:
+    // it demands the learner produce the exhibit and restates nothing, so it
+    // cannot put the words back in the learner's hands — if the read-back
+    // fails, the licensed re-entry that follows is what repairs. Repairing on
+    // the confrontation itself would make the read-back test nothing.
+    const tutorIntent = String(tutorOut.move?.intent || '')
+      .toLowerCase()
+      .trim();
+    if (corruption && tutorOut.move?.targetPremise && tutorIntent !== 'confront') {
       const premise = world.premiseById.get(tutorOut.move.targetPremise);
       const entry = premise ? grounded.get(factKey(premise.fact)) : null;
       if (entry?.decayed) {

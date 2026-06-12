@@ -66,6 +66,38 @@ export function releaseAdherence(world, ledger, turnsPlayed = Infinity) {
 }
 
 /**
+ * C2 (release authority) — the per-turn decision series the tutor bridge
+ * recorded: what was claimable, what was claimed, what played, at what offset
+ * from the authored cue, and for what declared reason. Under the dial a
+ * late/early release is STRATEGY, not a staging failure — releaseAdherence
+ * above still reports against the authored calendar, so read the two
+ * together. Null on every arm without the dial (no tutor line carries a
+ * decision record); `held` counts include force-plays at the hold limit
+ * (offset = +latitude), which `forced`/`overridden` separate out.
+ */
+export function releaseDeviations(result) {
+  const rows = (result.transcript || []).filter((l) => l.role === 'tutor' && l.meta?.releaseDecision);
+  if (!rows.length) return null;
+  const decisions = rows.map((l) => ({ turn: l.turn, ...l.meta.releaseDecision }));
+  const played = decisions.filter((d) => d.played);
+  const offsets = played.filter((d) => typeof d.offset === 'number');
+  return {
+    turnsWithWindow: decisions.filter((d) => d.windowSize > 0).length,
+    played: played.length,
+    onSchedule: offsets.filter((d) => d.offset === 0).length,
+    early: offsets.filter((d) => d.offset < 0).length,
+    held: offsets.filter((d) => d.offset > 0).length,
+    forced: decisions.filter((d) => Boolean(d.forced)).length,
+    overridden: decisions.filter((d) => d.overridden).length,
+    invalidClaims: decisions.filter((d) => d.invalidClaim).length,
+    reasons: played
+      .filter((d) => d.reason)
+      .map((d) => ({ turn: d.turn, premise: d.played, offset: d.offset, reason: d.reason })),
+    decisions,
+  };
+}
+
+/**
  * The REALIZED dramaturgy: the movements the director actually declared
  * (director transcript lines carrying meta.phase), falling back to the
  * world's authored sketch when none was. Segments are act-shaped
@@ -445,6 +477,32 @@ export function corruptionReport(result) {
     if (result.trajectory[i].D > result.trajectory[i - 1].D) dReversals += 1;
   }
   const mutations = timeline.filter((t) => t.mode === 'mutate');
+  // C5: a confrontation can be what exposes a false form — the learner reads
+  // the exhibit back and the misremembered line falls. Window {0, +1}: the
+  // tutor speaks before the learner, so the read-back lands the same turn,
+  // but the strike may take until the learner's next line. Rows are annotated
+  // only on arms where a confront was actually spoken, so the OFF-state
+  // report shape is unchanged.
+  const confrontTurnsByPremise = new Map();
+  for (const line of result.transcript || []) {
+    if (line.role !== 'tutor') continue;
+    const intent = String(line.meta?.move?.intent || '')
+      .toLowerCase()
+      .trim();
+    const target = line.meta?.move?.targetPremise;
+    if (intent !== 'confront' || !target) continue;
+    if (!confrontTurnsByPremise.has(target)) confrontTurnsByPremise.set(target, []);
+    confrontTurnsByPremise.get(target).push(line.turn);
+  }
+  if (confrontTurnsByPremise.size) {
+    for (const row of mutations) {
+      row.confrontPrompted =
+        row.retractTurn !== null &&
+        (confrontTurnsByPremise.get(row.premiseId) || []).some(
+          (t) => row.retractTurn - t === 0 || row.retractTurn - t === 1,
+        );
+    }
+  }
   // F(t) rides the trajectory rows in corruption runs (engine: theoryFidelity).
   const fCurve = result.trajectory.filter((p) => typeof p.F === 'number').map((p) => p.F);
   return {
@@ -467,11 +525,104 @@ export function corruptionReport(result) {
       // A completed REVISE: false form struck AND true premise back on the board.
       revised: mutations.filter((t) => t.retractTurn !== null && t.repairTurn !== null).length,
       falseBeliefsAtEnd: mutations.filter((t) => t.retractTurn === null).length,
+      ...(confrontTurnsByPremise.size
+        ? { confrontPromptedRetractions: mutations.filter((t) => t.confrontPrompted).length }
+        : {}),
     },
     fidelity: fCurve.length
       ? { final: +fCurve[fCurve.length - 1].toFixed(3), min: +Math.min(...fCurve).toFixed(3) }
       : null,
     timeline,
+  };
+}
+
+/**
+ * C5 (confrontation obligation) — the conduct-rule audit, recomputed from the
+ * SPOKEN record exactly as the superego's recorded arithmetic computes it
+ * from the draft: a tutor move onto an exhibit staged on an earlier turn,
+ * with any intent but "confront", is covered only by a confrontation of that
+ * exhibit standing since its last staging; a covered re-entry spends the
+ * license. Also collects the watcher's re-entry fires (did the spoken move
+ * become the confrontation?) and, under decay, whether each confrontation
+ * tested a real absence (target down at the moment of the demand). Null
+ * unless the arm ran the dial — no deliberation row carries re-entry
+ * arithmetic and no move declares confront.
+ */
+export function confrontReport(result) {
+  const transcript = result.transcript || [];
+  const tutorLines = transcript.filter((l) => l.role === 'tutor');
+  const norm = (v) =>
+    String(v || '')
+      .toLowerCase()
+      .trim();
+  const armOn = tutorLines.some(
+    (l) => l.meta?.deliberation?.reentry !== undefined || norm(l.meta?.move?.intent) === 'confront',
+  );
+  if (!armOn) return null;
+  const releaseTurnByPremise = new Map((result.ledger || []).map((e) => [e.premiseId, e.turn]));
+  // Decayed-at check: corruption ledger rows are pushed in chronological
+  // order within the run loop, so array order resolves same-turn sequencing
+  // (a decay lands before the tutor's move on that turn; a tutor repair
+  // lands on the move's own turn).
+  const corruptionRows = result.corruption?.ledger || null;
+  const decayedAt = (premiseId, turn) => {
+    if (!corruptionRows) return null;
+    let down = false;
+    for (const e of corruptionRows) {
+      if (e.turn > turn) break;
+      if (e.premiseId !== premiseId) continue;
+      if (e.type === 'decay') down = true;
+      else if (e.type === 'repair') down = false;
+    }
+    return down;
+  };
+  const confrontations = [];
+  const reentries = [];
+  const stateByTarget = new Map(); // target -> { lastStagedTurn, confrontedAt }
+  for (const l of tutorLines) {
+    const target = l.meta?.move?.targetPremise || null;
+    if (!target) continue;
+    const intent = norm(l.meta.move.intent);
+    const releaseTurn = releaseTurnByPremise.get(target);
+    if (releaseTurn === undefined || releaseTurn >= l.turn) continue; // not yet staged-earlier
+    const st = stateByTarget.get(target) || { lastStagedTurn: releaseTurn, confrontedAt: null };
+    if (intent === 'confront') {
+      confrontations.push({ turn: l.turn, target, targetDecayed: decayedAt(target, l.turn) });
+      st.confrontedAt = l.turn;
+    } else {
+      const covered = st.confrontedAt !== null && st.confrontedAt > st.lastStagedTurn;
+      reentries.push({ turn: l.turn, target, intent, covered, confrontTurn: covered ? st.confrontedAt : null });
+      st.lastStagedTurn = l.turn; // a re-entry re-stages; any license is spent
+    }
+    stateByTarget.set(target, st);
+  }
+  // The watcher's re-entry fires and whether the spoken move became the
+  // confrontation (the within-turn break — stall-watcher P2's analogue),
+  // plus the detector audit: a fire whose own recorded arithmetic says
+  // not-due is a mismatch; due-without-fire may be priority (rut first)
+  // or restraint, so it is counted, not judged.
+  const fires = tutorLines
+    .filter((l) => l.meta?.deliberation?.jurisdiction === 'unconfronted_reentry')
+    .map((l) => ({
+      turn: l.turn,
+      target: l.meta.deliberation.reentry?.target ?? null,
+      convertedToConfront: norm(l.meta.move?.intent) === 'confront',
+      dueByRecord: Boolean(l.meta.deliberation.reentry?.due),
+    }));
+  return {
+    confrontations,
+    reentries: {
+      total: reentries.length,
+      covered: reentries.filter((r) => r.covered).length,
+      uncovered: reentries.filter((r) => !r.covered),
+    },
+    superego: {
+      reentryFires: fires.length,
+      convertedToConfront: fires.filter((f) => f.convertedToConfront).length,
+      firesWithoutDue: fires.filter((f) => !f.dueByRecord).length,
+      draftsDueByRecord: tutorLines.filter((l) => l.meta?.deliberation?.reentry?.due).length,
+      fires,
+    },
   };
 }
 
@@ -556,6 +707,9 @@ export function diagnose(result, world) {
 
   const segments = stagingSegments(result, world);
   const movements = segments.filter((s) => s.source === 'director');
+  // P1 dial reporters — null (and the diagnosis keys absent) off their arms.
+  const releaseDeviationsReport = releaseDeviations(result);
+  const confrontation = confrontReport(result);
   const tutorNotes = result.transcript
     .filter((line) => line.role === 'director' && line.meta?.tutorNote)
     .map((line) => ({ turn: line.turn, text: line.meta.tutorNote }));
@@ -605,6 +759,10 @@ export function diagnose(result, world) {
     // diagnosis object byte-identical to its pre-v2 shape.
     ...(result.acts ? { acts: result.acts } : {}),
     ...(result.reconstruction ? { reconstruction: reconstructionReport(result) } : {}),
+    // P1 dials (C2 release authority / C5 confrontation); both reporters
+    // return null on arms without their dial, so the keys stay absent.
+    ...(releaseDeviationsReport ? { releaseDeviations: releaseDeviationsReport } : {}),
+    ...(confrontation ? { confrontation } : {}),
   };
 }
 
@@ -871,6 +1029,32 @@ export function renderEvalPanel(diagnosis) {
     lines.push(
       `- **reconstruction** ${rc.turns} theory commits · held-set overlap ${rc.meanHeldJaccard} mean Jaccard · gaps caught ${det(rc.missing)} · false beliefs caught ${det(rc.mistaken)}`,
     );
+  }
+  const rd = d.releaseDeviations;
+  if (rd) {
+    lines.push(
+      `- **release authority** ${rd.played} played: ${rd.onSchedule} on schedule · ${rd.held} held · ${rd.early} early · forced at hold limit ${rd.forced} · overridden ${rd.overridden} · invalid claims ${rd.invalidClaims}`,
+    );
+    for (const r of rd.reasons) {
+      if (r.offset) {
+        lines.push(`  - ${r.premise} ${r.offset > 0 ? `+${r.offset}` : r.offset} (t${r.turn}): "${r.reason}"`);
+      }
+    }
+  }
+  const cf = d.confrontation;
+  if (cf) {
+    const absences = cf.confrontations.filter((c) => c.targetDecayed === true).length;
+    const knowsDecay = cf.confrontations.some((c) => c.targetDecayed !== null);
+    lines.push(
+      `- **confrontation** ${cf.confrontations.length} demanded${
+        knowsDecay ? ` (${absences} against a slipped exhibit)` : ''
+      } · re-entries ${cf.reentries.total}: covered ${cf.reentries.covered}, uncovered ${cf.reentries.uncovered.length} · watcher fires ${cf.superego.reentryFires} (became the confrontation ${cf.superego.convertedToConfront}) · fires without recorded due ${cf.superego.firesWithoutDue}`,
+    );
+    if (cf.reentries.uncovered.length) {
+      lines.push(
+        `  - uncovered: ${cf.reentries.uncovered.map((r) => `${r.target} t${r.turn} (${r.intent || 'no intent'})`).join(' · ')}`,
+      );
+    }
   }
   if (d.dials && (d.dials.recognition || d.dials.charisma)) {
     lines.push(`- **dials** recognition ${d.dials.recognition || 0}/3 · charisma ${d.dials.charisma || 0}/3`);

@@ -269,11 +269,22 @@ function mockResponse(role, meta = {}) {
     const theory = Array.isArray(meta.theoryHint)
       ? { theory: { believed_held: meta.theoryHint, believed_missing: [], believed_mistaken: [] } }
       : {};
+    // C2 (release authority): the bridge's releaseChoice is the zero-deviation
+    // policy — declare each exhibit exactly on its scheduled turn — so the
+    // declare-and-validate parse path runs every turn of a mock drama. Key
+    // presence marks the regime; null means hold (nothing playable is due).
+    const releaseBits =
+      meta.releaseChoice !== undefined
+        ? {
+            release: meta.releaseChoice,
+            release_reason: meta.releaseChoice ? 'its scheduled turn has come' : null,
+          }
+        : {};
     // A revision call (the ego rewriting under its superego's note): a figure
     // fire switches to the bridge-computed figure; a stall fire keeps the
-    // figure and aims the move at the stalled inference's first ground — the
-    // two jurisdictions act on different axes, and the mock exercises both
-    // within-turn changes the instruments measure.
+    // figure and aims the move at the stalled inference's first ground; a
+    // re-entry fire (C5) rewrites the move as a confrontation of the same
+    // exhibit — three jurisdictions, three axes, all exercised within-turn.
     if (meta.revision) {
       if (meta.revision.jurisdiction === 'stalled_inference') {
         return JSON.stringify({
@@ -284,6 +295,18 @@ function mockResponse(role, meta = {}) {
             figure: meta.revision.avoidFigure || 'erotema',
             target_premise: meta.revision.stallTarget || meta.cuePremise || null,
             intent: 'consolidate',
+          },
+          ...theory,
+        });
+      }
+      if (meta.revision.jurisdiction === 'unconfronted_reentry') {
+        return JSON.stringify({
+          dialogue:
+            'Before I set that out again: read me the entry as you hold it — word for word, from your own board.',
+          move: {
+            figure: meta.revision.avoidFigure || 'erotema',
+            target_premise: meta.revision.confrontTarget || null,
+            intent: 'confront',
           },
           ...theory,
         });
@@ -300,6 +323,19 @@ function mockResponse(role, meta = {}) {
         ...theory,
       });
     }
+    // C5 mock choreography: on a cue-less turn with an exhibit already staged,
+    // draft a bare re-entry against it. The superego's recorded arithmetic
+    // fires unconfronted_reentry, the revision above turns it into the
+    // confrontation, and the NEXT such draft rides the spent license through —
+    // the full fire → confront → licensed re-entry cycle, deterministically.
+    if (!meta.cuePremise && meta.reentryHint) {
+      return JSON.stringify({
+        dialogue: 'Go back to what was staged before: set it beside the rest and tell me what it adds.',
+        move: { figure: 'erotema', target_premise: meta.reentryHint, intent: 'consolidate' },
+        ...releaseBits,
+        ...theory,
+      });
+    }
     return JSON.stringify({
       dialogue: meta.releaseSurface
         ? `Consider what is now before you: ${meta.releaseSurface} What does it do to what you already hold?`
@@ -309,6 +345,7 @@ function mockResponse(role, meta = {}) {
         target_premise: meta.cuePremise || null,
         intent: meta.cuePremise ? 'release' : 'consolidate',
       },
+      ...releaseBits,
       ...theory,
     });
   }
@@ -320,13 +357,17 @@ function mockResponse(role, meta = {}) {
     // second jurisdiction when the bridge's arithmetic says due — rut first,
     // so v2 mock behavior is unchanged. The stall note names grounds and the
     // joining rule, NEVER the stalled conclusion (charter v3 discipline).
+    // Under the confront charter (meta.reentry present, C5) the same pattern:
+    // rut first, then an uncovered re-entry when the recorded arithmetic says
+    // due. The note demands the read-back, never restates the exhibit.
     const figs = Array.isArray(meta.lastFigures) ? meta.lastFigures : [];
     const rut = Boolean(meta.draftFigure) && figs.length >= 2 && figs.slice(-2).every((f) => f === meta.draftFigure);
     const stallWatch = meta.stall && typeof meta.stall === 'object';
+    const confrontWatch = meta.reentry && typeof meta.reentry === 'object';
     if (rut) {
       return JSON.stringify({
         intervene: true,
-        ...(stallWatch ? { jurisdiction: 'figure_rut' } : {}),
+        ...(stallWatch || confrontWatch ? { jurisdiction: 'figure_rut' } : {}),
         diagnosis: `figure rut: ${meta.draftFigure} three turns running`,
         note: `Leave off ${meta.draftFigure} this turn — change the device, keep the matter.`,
       });
@@ -343,9 +384,17 @@ function mockResponse(role, meta = {}) {
         note: `The learner's board already holds ${groundNames}; rule ${item.rule} joins them, and the join has waited ${item.age} turns unspoken. Target one of those grounds and set them side by side.`,
       });
     }
+    if (confrontWatch && meta.reentry.due) {
+      return JSON.stringify({
+        intervene: true,
+        jurisdiction: 'unconfronted_reentry',
+        diagnosis: `bare re-entry: ${meta.reentry.target} last staged turn ${meta.reentry.lastStagedTurn}, no confrontation since`,
+        note: `You are going back to ${meta.reentry.target} without first hearing it from the learner. Demand the read-back — let the words come from the learner's hands, or be seen missing.`,
+      });
+    }
     return JSON.stringify({
       intervene: false,
-      ...(stallWatch ? { jurisdiction: null } : {}),
+      ...(stallWatch || confrontWatch ? { jurisdiction: null } : {}),
       diagnosis: 'the manner serves; let it pass',
       note: null,
     });

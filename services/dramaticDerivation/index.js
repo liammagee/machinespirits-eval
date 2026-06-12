@@ -6,12 +6,14 @@ export { mulberry32, normalizeDecayConfig } from './corruption.js';
 export { makeReplayRoles, comparePrefix } from './replay.js';
 export { makeMockDirector, makeMockTutor, makeMockLearner } from './mockRoles.js';
 export { makeLlmClient, llmMode, resolveTarget } from './llmClient.js';
-export { makeLlmDirector, makeLlmTutor, makeLlmLearner, clampDial } from './llmRoles.js';
+export { makeLlmDirector, makeLlmTutor, makeLlmLearner, clampDial, RELEASE_LATITUDE } from './llmRoles.js';
 export {
   diagnose,
   corruptionReport,
   reconstructionReport,
   releaseAdherence,
+  releaseDeviations,
+  confrontReport,
   learningSlope,
   stagingSegments,
   tutorFigures,

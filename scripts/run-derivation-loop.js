@@ -96,6 +96,29 @@
  *                                       missing/mistaken — recorded beside the
  *                                       harness-truth snapshot. Arm-internal
  *                                       color; never cross-arm scoring.)
+ *     [--confront]                     (P1/C5; requires --superego + --acts,
+ *                                       excludes --stall-watch. The
+ *                                       confrontation obligation: the first
+ *                                       move back onto an already-staged
+ *                                       exhibit must be intent "confront" —
+ *                                       demand the learner's read-back,
+ *                                       restate nothing — and one confrontation
+ *                                       licenses one re-entry. The superego
+ *                                       charter gains the re-entry
+ *                                       jurisdiction; a confront move never
+ *                                       repairs. Design: notes/poetics/
+ *                                       2026-06-11-desire-multiturn-strategy-
+ *                                       plan.md §C5)
+ *     [--release-authority]            (P1/C2. The tutor's via-tutor exhibit
+ *                                       cues become a window: hold a due
+ *                                       release or play one early, up to
+ *                                       RELEASE_LATITUDE turns either way,
+ *                                       with a declared one-line reason; the
+ *                                       harness force-plays at the hold limit
+ *                                       and validates every claim against the
+ *                                       window. Decision records land in the
+ *                                       ledger + transcript meta. Design:
+ *                                       same note §C2)
  *     [--critic auto|real|mock|off]    (post-run critic's notice; auto = follow
  *                                       the run mode — real dramas get the
  *                                       Fable notice, mock dramas the
@@ -130,6 +153,7 @@ import {
   makeLlmTutor,
   makeLlmLearner,
   clampDial,
+  RELEASE_LATITUDE,
   diagnose,
   stagingSegments,
   renderDCurve,
@@ -274,6 +298,27 @@ async function main() {
     console.error('--stall-watch requires --superego (the stall jurisdiction is a clause of the watcher charter)');
     process.exit(1);
   }
+  // P1 dials (notes/poetics/2026-06-11-desire-multiturn-strategy-plan.md):
+  // C5 = the confrontation obligation (charter clause + superego re-entry
+  // watch); C2 = release authority (the exhibit calendar becomes a window).
+  const confront = flag('confront');
+  if (confront && !superego) {
+    console.error('--confront requires --superego (the re-entry jurisdiction is a clause of the watcher charter)');
+    process.exit(1);
+  }
+  if (confront && !acts) {
+    console.error(
+      '--confront requires --acts (re-entry is an acts-mode concept — outside acts the tutor reads decay directly and a read-back tests nothing)',
+    );
+    process.exit(1);
+  }
+  if (confront && stallWatch) {
+    console.error(
+      '--confront and --stall-watch cannot combine in v1 — the superego charter renders one criterial watch block (pick one jurisdiction pair)',
+    );
+    process.exit(1);
+  }
+  const releaseAuthority = flag('release-authority');
   const group = arg('group', null);
   const criticFeedback = arg('critic-feedback', 'off');
   const criticArg = arg('critic', 'auto');
@@ -349,6 +394,16 @@ async function main() {
       "theory  RECONSTRUCT ON — the tutor commits a per-turn theory of the learner's store (arm-internal color; never cross-arm scoring)",
     );
   }
+  if (confront) {
+    console.log(
+      'tutor   CONFRONT ON — re-entry of a staged exhibit requires a prior confrontation (the learner reads it back, or is seen to have lost it); the superego watches the re-entry jurisdiction',
+    );
+  }
+  if (releaseAuthority) {
+    console.log(
+      `tutor   RELEASE AUTHORITY ON — the exhibit calendar is the tutor's to keep or bend (±${RELEASE_LATITUDE} turns, declared reason; the harness force-plays at the hold limit)`,
+    );
+  }
   if (decay) {
     console.log(
       `decay   seed ${decay.seed} · rate ${decay.rate} · grace ${decay.graceTurns} · maxConcurrent ${decay.maxConcurrent} · from turn ${decay.startTurn}${decay.mutateShare ? ` · mutateShare ${decay.mutateShare} (slips may misremember, not just vanish)` : ''}`,
@@ -374,6 +429,8 @@ async function main() {
       decayVisibility,
       actsMode,
       reconstruct,
+      confront,
+      releaseAuthority,
     }),
     learner: makeLlmLearner({ setting: world.setting, voice: learnerVoice || world.learnerVoice, client }),
   };
@@ -426,6 +483,9 @@ async function main() {
     // Stage v2 condition (normalized) + arm dial — null/false on v1 runs.
     actsConfig: acts || null,
     reconstruct,
+    // P1 dials — false on every run before 2026-06-11.
+    confront,
+    releaseAuthority,
     elapsedMs,
     usage,
     ...diagnose(result, world),

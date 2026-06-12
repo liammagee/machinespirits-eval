@@ -29,6 +29,11 @@ import { closure, factKey, matchPattern } from './chainer.js';
 const TUTOR_FIGURES = ['erotema', 'analogia', 'exemplum', 'anaphora', 'aposiopesis'];
 const TUTOR_INTENTS = ['orient', 'release', 'consolidate', 'test', 'counter_mirror', 'stage_recognition'];
 const TRANSCRIPT_TAIL = 8;
+// C2 (release authority): how far the tutor may bend its own exhibit
+// calendar — an exhibit is playable from this many turns before its
+// scheduled turn, and holdable this many past it (the hold limit; the
+// bridge force-plays at the limit). Plan §C2: hold ≤ 2, play early allowed.
+export const RELEASE_LATITUDE = 2;
 
 // Operator dials (run-derivation-loop --recognition / --charisma, 0–3):
 // graded register blocks appended to the role prompts. Level 0 = absent.
@@ -332,7 +337,12 @@ export function makeLlmDirector(
 // plus a fixed harness appendix the loop never edits.
 // ---------------------------------------------------------------------------
 
-function tutorSystem(world, script, dials = {}, { actsMode = false, reconstruct = false } = {}) {
+function tutorSystem(
+  world,
+  script,
+  dials = {},
+  { actsMode = false, reconstruct = false, confront = false, releaseAuthority = false } = {},
+) {
   const recognition = clampDial(dials.recognition);
   const charisma = clampDial(dials.charisma);
   const registers = [
@@ -343,6 +353,7 @@ function tutorSystem(world, script, dials = {}, { actsMode = false, reconstruct 
     .map((p) => `- ${p.id}: ${(p.surface || '').trim()}\n  (formally: ${renderFact(p.fact)})`)
     .join('\n');
   const schedule = world.releaseSchedule.map((e) => `- turn ${e.turn}: ${e.premise} (via ${e.via})`).join('\n');
+  const intents = confront ? [...TUTOR_INTENTS, 'confront'] : TUTOR_INTENTS;
   return [
     script.trim(),
     '',
@@ -359,8 +370,21 @@ function tutorSystem(world, script, dials = {}, { actsMode = false, reconstruct 
     'The full premise ledger (concealed until released; never voice an unreleased one):',
     premiseLedger,
     '',
-    'The fixed release schedule (the harness enforces it; you are told your cues):',
-    schedule,
+    ...(releaseAuthority
+      ? [
+          'The release schedule — the exhibit calendar, YOURS TO KEEP OR BEND:',
+          schedule,
+          '',
+          'You hold release authority. Each turn you may play an exhibit up to',
+          `${RELEASE_LATITUDE} turns before or after its scheduled turn — declare it in "release",`,
+          'with a one-line "release_reason" whenever you play it off its scheduled turn.',
+          `One exhibit per turn at most. An exhibit ${RELEASE_LATITUDE} turns past its cue has reached`,
+          'its hold limit and MUST be played that turn (the harness enforces the limit).',
+          'Hold to let a beat land; play early when the board is ready — either way the',
+          'reason is part of the record. When you play an exhibit, weave its evidence',
+          'into your dialogue as something produced or recalled, faithful to it.',
+        ]
+      : ['The fixed release schedule (the harness enforces it; you are told your cues):', schedule]),
     ...(actsMode
       ? [
           '',
@@ -403,16 +427,38 @@ function tutorSystem(world, script, dials = {}, { actsMode = false, reconstruct 
           'Your release cues are unchanged — the mandate governs the turns between them.',
         ]
       : []),
+    ...(confront
+      ? [
+          '',
+          '# The confrontation obligation (no bare re-entry)',
+          '',
+          'An exhibit, once staged, is never simply restated. When you return to an',
+          'already-staged exhibit — any move whose target_premise names one staged on an',
+          'earlier turn — your FIRST move on it must be a CONFRONTATION: intent',
+          '"confront", target_premise naming the exhibit, and a demand that the learner',
+          'READ BACK what they hold of it — in their words, from their board, before you',
+          "repair anything. A confrontation restates NOTHING of the exhibit's content:",
+          'no quotation, no paraphrase, no hint of the detail you suspect lost or bent.',
+          'Only after they have answered may you re-stage it; one confrontation licenses',
+          'ONE re-entry. The self-audit comes first, or the repair teaches nothing.',
+        ]
+      : []),
     ...(registers.length
       ? ['', '# Register (operator dials — these color your MANNER, never your evidence)', '', ...registers]
       : []),
     '',
-    `Declare your move each turn: figure ∈ {${TUTOR_FIGURES.join(', ')}}, the premise you are working (or null), intent ∈ {${TUTOR_INTENTS.join(', ')}}.`,
+    `Declare your move each turn: figure ∈ {${TUTOR_FIGURES.join(', ')}}, the premise you are working (or null), intent ∈ {${intents.join(', ')}}.`,
     '',
     'Reply with ONLY a JSON object:',
-    reconstruct
-      ? '{"dialogue": "<what you say to the learner>", "move": {"figure": "...", "target_premise": "<premise id or null>", "intent": "..."}, "theory": {"believed_held": ["<premise id>", ...], "believed_missing": [...], "believed_mistaken": [...]}}'
-      : '{"dialogue": "<what you say to the learner>", "move": {"figure": "...", "target_premise": "<premise id or null>", "intent": "..."}}',
+    `{"dialogue": "<what you say to the learner>", "move": {"figure": "...", "target_premise": "<premise id or null>", "intent": "..."}${
+      releaseAuthority
+        ? ', "release": "<exhibit id from your window, or null to hold>", "release_reason": "<one line when playing off the scheduled turn, else null>"'
+        : ''
+    }${
+      reconstruct
+        ? ', "theory": {"believed_held": ["<premise id>", ...], "believed_missing": [...], "believed_mistaken": [...]}'
+        : ''
+    }}`,
   ].join('\n');
 }
 
@@ -432,7 +478,10 @@ function tutorSystem(world, script, dials = {}, { actsMode = false, reconstruct 
  * control). `counsel` (the critic-feedback loop, §4) is a labeled appendix
  * in both modes — counsel, never a jurisdiction.
  */
-function tutorSuperegoSystem(world, { stallWatch = false, counsel = null, reconstruct = false } = {}) {
+function tutorSuperegoSystem(
+  world,
+  { stallWatch = false, counsel = null, reconstruct = false, confront = false } = {},
+) {
   return [
     "You are the tutor's SUPEREGO in a staged derivation drama — the watcher inside",
     'the same mind. You are never heard on stage; only the tutor reads you.',
@@ -460,12 +509,33 @@ function tutorSuperegoSystem(world, { stallWatch = false, counsel = null, recons
           "on the learner's board that are not being put together, and the rule that",
           'joins them — that exactly, and nothing more.',
         ]
-      : [
-          "Each turn you see the tutor's DRAFT line with its declared figure, and the",
-          'recent record of conduct. You watch ONE thing: the FIGURE RUT — the same',
-          'declared device on both of the last two turns, and the draft declaring it a',
-          'third time. Three in a row is a rut; anything less is conduct, not a rut.',
-        ]),
+      : confront
+        ? [
+            "Each turn you see the tutor's DRAFT line with its declared figure and its",
+            'declared target, and the recent record of conduct. You watch TWO things',
+            'and two only.',
+            '',
+            'Your first jurisdiction is the FIGURE RUT — the same declared device on',
+            'both of the last two turns, and the draft declaring it a third time.',
+            'Three in a row is a rut; anything less is conduct, not a rut.',
+            '',
+            'Your second jurisdiction is the UNCONFRONTED RE-ENTRY. The tutor is bound',
+            'to confront before re-staging: a draft move that targets an exhibit staged',
+            'on an earlier turn, with any intent but "confront", is licensed only by a',
+            'confrontation of that same exhibit standing since its last staging — and',
+            'each confrontation licenses one re-entry, no more. The record each turn',
+            "states the draft's target and intent, whether that exhibit was staged",
+            'earlier, and whether an unspent confrontation covers it — every value as',
+            'fact. When the record shows an uncovered re-entry, intervene: tell the',
+            'tutor to confront first — demand the read-back of what the learner holds',
+            'of that exhibit, restating nothing of its content.',
+          ]
+        : [
+            "Each turn you see the tutor's DRAFT line with its declared figure, and the",
+            'recent record of conduct. You watch ONE thing: the FIGURE RUT — the same',
+            'declared device on both of the last two turns, and the draft declaring it a',
+            'third time. Three in a row is a rut; anything less is conduct, not a rut.',
+          ]),
     '',
     'Your default reply is {"intervene": false}. The manner usually serves. Every',
     'other dissatisfaction you may feel — pacing, register, a recap the learner',
@@ -485,14 +555,26 @@ function tutorSuperegoSystem(world, { stallWatch = false, counsel = null, recons
           "learner's public board are public property — a stall note names those,",
           'the rule that joins them, and nothing else.',
         ]
-      : [
-          'rare. When the rut is real, intervene and name the device to leave off — in',
-          'one or two sentences, as a note the tutor reads before speaking.',
-          '',
-          'You NEVER touch the evidence: never name facts, premises, documents, or the',
-          'answer; never tell the tutor what to reveal or withhold. The note governs how',
-          'the tutor plays, never what the drama shows.',
-        ]),
+      : confront
+        ? [
+            'rare. When a rut is real, intervene and name the device to leave off; when',
+            'an uncovered re-entry is real, intervene and order the confrontation first',
+            '— in one or two sentences either way, as a note the tutor reads before',
+            'speaking.',
+            '',
+            'THE EVIDENCE BOUNDARY: never name or describe evidence not yet staged;',
+            'never restate any content of the exhibit in question; never name the',
+            'answer or any fact of its shape. The note demands the read-back; it never',
+            'supplies what the read-back should contain.',
+          ]
+        : [
+            'rare. When the rut is real, intervene and name the device to leave off — in',
+            'one or two sentences, as a note the tutor reads before speaking.',
+            '',
+            'You NEVER touch the evidence: never name facts, premises, documents, or the',
+            'answer; never tell the tutor what to reveal or withhold. The note governs how',
+            'the tutor plays, never what the drama shows.',
+          ]),
     ...(reconstruct
       ? [
           '',
@@ -518,7 +600,11 @@ function tutorSuperegoSystem(world, { stallWatch = false, counsel = null, recons
     '',
     'Reply with ONLY a JSON object:',
     '{"intervene": true|false,',
-    ...(stallWatch ? [' "jurisdiction": "figure_rut" | "stalled_inference" | null,'] : []),
+    ...(stallWatch
+      ? [' "jurisdiction": "figure_rut" | "stalled_inference" | null,']
+      : confront
+        ? [' "jurisdiction": "figure_rut" | "unconfronted_reentry" | null,']
+        : []),
     ' "diagnosis": "<one sentence on the conduct you see>",',
     ' "note": "<the note the tutor reads before speaking, or null>"}',
   ].join('\n');
@@ -536,6 +622,8 @@ export function makeLlmTutor(
     decayVisibility = 'told',
     actsMode = false,
     reconstruct = false,
+    confront = false,
+    releaseAuthority = false,
   } = {},
 ) {
   if (!script || !script.trim()) {
@@ -569,8 +657,14 @@ export function makeLlmTutor(
       "derivation.llmRoles: acts mode requires decayVisibility 'conduct' — the told channel reads a corruption view the acts-mode tutor no longer has",
     );
   }
-  const system = tutorSystem(world, script, dials, { actsMode, reconstruct });
-  const superegoSystem = superego ? tutorSuperegoSystem(world, { stallWatch, counsel, reconstruct }) : null;
+  // C5 is acts-mode machinery: "re-entry" is only defined where a move
+  // targeting an already-staged exhibit RE-STAGES it (the acts-mode charter);
+  // in v1 the learner never lost the exhibit, so there is nothing to confront.
+  if (confront && !actsMode) {
+    throw new Error('derivation.llmRoles: confront requires acts mode (re-entry is an acts-mode concept)');
+  }
+  const system = tutorSystem(world, script, dials, { actsMode, reconstruct, confront, releaseAuthority });
+  const superegoSystem = superego ? tutorSuperegoSystem(world, { stallWatch, counsel, reconstruct, confront }) : null;
   const normalizeMove = (out) =>
     out.move && typeof out.move === 'object'
       ? {
@@ -593,7 +687,24 @@ export function makeLlmTutor(
     };
   };
   return async (view) => {
-    const { entry, premise } = scheduledFor(world, view.turn, 'tutor');
+    // C2 (release authority): the fixed per-turn cue becomes a WINDOW. Each
+    // unreleased via-tutor entry is playable from RELEASE_LATITUDE turns
+    // before its scheduled turn; at RELEASE_LATITUDE past it, it hits the
+    // hold limit and the bridge force-plays it (a model choice to the
+    // contrary is overridden and recorded). The schedule-driven branch is
+    // byte-identical when the dial is off.
+    const alreadyReleased = new Set(view.ledger.map((l) => l.premiseId));
+    const playable = releaseAuthority
+      ? world.releaseSchedule.filter(
+          (e) => e.via === 'tutor' && !alreadyReleased.has(e.premise) && view.turn >= e.turn - RELEASE_LATITUDE,
+        )
+      : [];
+    const forcedPlay = releaseAuthority
+      ? playable.filter((e) => view.turn >= e.turn + RELEASE_LATITUDE).sort((a, b) => a.turn - b.turn)[0] || null
+      : null;
+    const { entry, premise } = releaseAuthority
+      ? { entry: null, premise: null }
+      : scheduledFor(world, view.turn, 'tutor');
     // Acts-mode redaction (engine.js omniscientView): no learnerAbox, no
     // trajectory, no corruption — the tutor works from the dialogue and its
     // own ledger. The v1 branch below is untouched.
@@ -602,11 +713,35 @@ export function makeLlmTutor(
       lastPoint && lastPoint.forced
         ? "THE LEARNER'S OWN GROUNDED FACTS NOW FORCE THE CONCLUSION. Stage the recognition — bring them to say it and ground it; do not say it yourself."
         : null;
-    const task = premise
-      ? `THIS TURN IS YOUR CUE to bring ${entry.premise} into play. Weave this evidence into your dialogue as something produced or recalled, faithful to it:\n"${(premise.surface || '').trim()}"`
-      : actsMode
-        ? 'No release is due from you this turn. Work the inquiry by your script — consolidate, test, counter the tempting answer, re-stage what you judge lost, or stage the recognition — whichever your reading of the learner calls for.'
-        : "No release is due from you this turn. Work the learner's board by your script: consolidate, test, counter the tempting answer, or stage the recognition — whichever the board calls for.";
+    const windowLines = playable.map((e) => {
+      const held = view.turn - e.turn;
+      const status =
+        forcedPlay && forcedPlay.premise === e.premise
+          ? 'AT ITS HOLD LIMIT — must be played THIS turn'
+          : held < 0
+            ? `playable early (scheduled turn ${e.turn})`
+            : held === 0
+              ? 'scheduled THIS turn'
+              : `held ${held} turn${held === 1 ? '' : 's'} (scheduled turn ${e.turn}; hold limit turn ${e.turn + RELEASE_LATITUDE})`;
+      return `- ${e.premise}: ${status}`;
+    });
+    const task = releaseAuthority
+      ? [
+          'YOUR EXHIBIT WINDOW this turn:',
+          windowLines.length ? windowLines.join('\n') : '(no exhibit playable this turn — "release" must be null)',
+          '',
+          'Declare "release": one exhibit id from the window to play it this turn, or',
+          'null to hold. Playing off the scheduled turn needs a one-line',
+          '"release_reason". When you play an exhibit, weave its evidence (from the',
+          'premise ledger) into your dialogue as something produced or recalled,',
+          'faithful to it. Beyond the window, work the inquiry by your script —',
+          'whichever your reading of the learner calls for.',
+        ].join('\n')
+      : premise
+        ? `THIS TURN IS YOUR CUE to bring ${entry.premise} into play. Weave this evidence into your dialogue as something produced or recalled, faithful to it:\n"${(premise.surface || '').trim()}"`
+        : actsMode
+          ? 'No release is due from you this turn. Work the inquiry by your script — consolidate, test, counter the tempting answer, re-stage what you judge lost, or stage the recognition — whichever your reading of the learner calls for.'
+          : "No release is due from you this turn. Work the learner's board by your script: consolidate, test, counter the tempting answer, or stage the recognition — whichever the board calls for.";
     // The tutor sees no staging state (movements are the director's diagnostic
     // dramaturgy, 2026-06-10): any rhythm-watching happens inside this bridge.
     let user;
@@ -664,19 +799,71 @@ export function makeLlmTutor(
         task,
       ].join('\n');
     }
+    // Mock release policy under authority: play each exhibit exactly on its
+    // scheduled turn (deviation zero) — the mock exercises the choose-release
+    // parse path while keeping adherence trivially clean. The real backend
+    // ignores meta.
+    const mockRelease = releaseAuthority
+      ? (forcedPlay?.premise ?? playable.find((e) => e.turn === view.turn)?.premise ?? null)
+      : null;
+    const mockReleasePremise = mockRelease ? world.premiseById.get(mockRelease) : null;
     const meta = {
-      releaseSurface: premise ? premise.surface : null,
-      cuePremise: entry ? entry.premise : null,
+      releaseSurface: releaseAuthority
+        ? mockReleasePremise
+          ? mockReleasePremise.surface
+          : null
+        : premise
+          ? premise.surface
+          : null,
+      cuePremise: releaseAuthority ? mockRelease : entry ? entry.premise : null,
+      ...(releaseAuthority ? { releaseChoice: mockRelease } : {}),
       // mock determinism (arm-ON): the credulous theory — everything released
       // is believed held. The real backend ignores meta.
       ...(reconstruct ? { theoryHint: view.ledger.map((l) => l.premiseId) } : {}),
+      // mock determinism (C5 arms): an exhibit staged on an earlier turn, for
+      // the mock tutor to draft bare re-entries against on cue-less turns —
+      // driving the fire → confront → licensed re-entry cycle without an LLM.
+      ...(confront ? { reentryHint: view.ledger.find((l) => l.turn < view.turn)?.premiseId ?? null } : {}),
+    };
+    // C2 harness enforcement: the model's declared release is honored only
+    // inside the window — an id outside it (unscheduled, already played, not
+    // yet playable) is an invalid claim and drops to a hold; an exhibit at
+    // its hold limit plays regardless of the claim. Every turn's decision is
+    // recorded (claimed/played/forced/overridden/reason) for the adherence
+    // instruments; the decision is made ONCE, on the draft — a superego
+    // revision restages manner, never the evidence calendar.
+    const normalizeRelease = (out) => {
+      if (!releaseAuthority) return { release: entry ? entry.premise : null };
+      const claimed = typeof out.release === 'string' && out.release.trim() ? out.release.trim() : null;
+      const validClaim = claimed && playable.some((e) => e.premise === claimed) ? claimed : null;
+      const played = forcedPlay ? forcedPlay.premise : validClaim;
+      const reason =
+        typeof out.release_reason === 'string' && out.release_reason.trim() ? out.release_reason.trim() : null;
+      const sched = played ? world.releaseSchedule.find((e) => e.premise === played) : null;
+      return {
+        release: played,
+        ...(reason ? { releaseReason: reason } : {}),
+        releaseDecision: {
+          turn: view.turn,
+          windowSize: playable.length,
+          claimed,
+          invalidClaim: Boolean(claimed && !validClaim),
+          forced: forcedPlay ? forcedPlay.premise : null,
+          overridden: Boolean(forcedPlay && claimed !== forcedPlay.premise),
+          played,
+          scheduledTurn: sched ? sched.turn : null,
+          offset: sched ? view.turn - sched.turn : null,
+          reason,
+        },
+      };
     };
     const draftOut = await callJson(client, 'tutor', view.turn, { system, user, meta });
     const draftTheory = reconstruct ? normalizeTheory(draftOut.theory) : null;
+    const releaseBits = normalizeRelease(draftOut);
     const draft = {
       dialogue: typeof draftOut.dialogue === 'string' ? draftOut.dialogue.trim() : '',
       move: normalizeMove(draftOut),
-      release: entry ? entry.premise : null,
+      ...releaseBits,
       ...(draftTheory ? { theory: draftTheory } : {}),
     };
     if (!superego) return draft;
@@ -697,6 +884,62 @@ export function makeLlmTutor(
         : `The record this turn: last two declared figures ${lastFigures.join(', ')}; the draft declares ${
             draftFigure || '(none)'
           }. A rut requires all three to be one device.`;
+    // The re-entry arithmetic (C5), same criterial grammar as the stall:
+    // every value stated as fact, computed from material the acts-mode tutor
+    // legitimately holds (its release ledger + its own declared past moves),
+    // the conclusion left to the watcher and recomputable by the audit. A
+    // confrontation licenses exactly one re-entry: lastStagedTurn advances
+    // past spent licenses, so a second bare re-entry falls due again.
+    const reentryGuard = (() => {
+      if (!confront) return null;
+      const target = draft.move?.targetPremise || null;
+      const intent = String(draft.move?.intent || '')
+        .toLowerCase()
+        .trim();
+      const releaseRow = target ? view.ledger.find((l) => l.premiseId === target) : null;
+      const releasedEarlier = Boolean(releaseRow && releaseRow.turn < view.turn);
+      if (!target || !releasedEarlier || intent === 'confront') {
+        return {
+          target,
+          releasedEarlier,
+          intent,
+          lastStagedTurn: releaseRow ? releaseRow.turn : null,
+          confrontedSince: false,
+          due: false,
+        };
+      }
+      const pastMovesOnTarget = view.transcript.filter(
+        (l) => l.role === 'tutor' && l.meta?.move?.targetPremise === target,
+      );
+      let lastStagedTurn = releaseRow.turn;
+      for (const l of pastMovesOnTarget) {
+        const mi = String(l.meta.move.intent || '')
+          .toLowerCase()
+          .trim();
+        if (l.turn > lastStagedTurn && mi !== 'confront') lastStagedTurn = l.turn;
+      }
+      const confrontedSince = pastMovesOnTarget.some(
+        (l) =>
+          l.turn > lastStagedTurn &&
+          String(l.meta.move.intent || '')
+            .toLowerCase()
+            .trim() === 'confront',
+      );
+      return { target, releasedEarlier: true, intent, lastStagedTurn, confrontedSince, due: !confrontedSince };
+    })();
+    const reentryLine = !confront
+      ? null
+      : !reentryGuard.target
+        ? 'The re-entry record this turn: the draft declares no target — an uncovered re-entry is impossible; on that jurisdiction intervene must be false.'
+        : !reentryGuard.releasedEarlier
+          ? `The re-entry record this turn: the draft's target ${reentryGuard.target} was not staged on an earlier turn — an uncovered re-entry is impossible; on that jurisdiction intervene must be false.`
+          : reentryGuard.intent === 'confront'
+            ? `The re-entry record this turn: the draft CONFRONTS ${reentryGuard.target} — a confrontation is never a re-entry; on that jurisdiction intervene must be false.`
+            : `The re-entry record this turn: the draft targets ${reentryGuard.target} with intent ${
+                reentryGuard.intent || '(none)'
+              }; ${reentryGuard.target} was last staged at turn ${reentryGuard.lastStagedTurn}; a confrontation of it since then: ${
+                reentryGuard.confrontedSince ? 'yes' : 'no'
+              }. An uncovered re-entry requires: target staged earlier, intent not "confront", no confrontation since its last staging.`;
     // The stall arithmetic, same criterial grammar: every value stated as
     // fact, the conclusion left to the watcher (and recomputed by the audit).
     // The engine's frontier already excludes question-pattern facts, so the
@@ -761,10 +1004,13 @@ export function makeLlmTutor(
         : []),
       '',
       rutLine,
+      ...(reentryLine ? [reentryLine] : []),
       ...stallLines,
       stallWatch
         ? 'Is this a figure rut, a stalled inference, or neither? Reply with ONLY the JSON object.'
-        : 'Is this a figure rut? Reply with ONLY the JSON object.',
+        : confront
+          ? 'Is this a figure rut, an uncovered re-entry, or neither? Reply with ONLY the JSON object.'
+          : 'Is this a figure rut? Reply with ONLY the JSON object.',
     ].join('\n');
     const rutDue =
       lastFigures.length === 2 &&
@@ -785,6 +1031,15 @@ export function makeLlmTutor(
               },
             }
           : {}),
+        ...(confront
+          ? {
+              reentry: {
+                due: reentryGuard.due,
+                target: reentryGuard.target,
+                lastStagedTurn: reentryGuard.lastStagedTurn,
+              },
+            }
+          : {}),
       },
     });
     const note = typeof segOut.note === 'string' && segOut.note.trim() ? segOut.note.trim() : null;
@@ -794,14 +1049,21 @@ export function makeLlmTutor(
       intervened: false,
       diagnosis: typeof segOut.diagnosis === 'string' && segOut.diagnosis.trim() ? segOut.diagnosis.trim() : null,
       note: null,
-      // Detector-audit bookkeeping (charter v3 arms only): the per-turn
-      // arithmetic recorded fired-or-not, so P2 recomputes due/not-due from
-      // the record rather than trusting the watcher.
+      // Detector-audit bookkeeping (charter v3 + C5 arms): the per-turn
+      // arithmetic recorded fired-or-not, so the audit recomputes due/not-due
+      // from the record rather than trusting the watcher.
       ...(stallWatch
         ? {
             lastFigures: [...lastFigures],
             jurisdiction: null,
             stall: { items: stallItems, due: stallDue.length > 0 },
+          }
+        : {}),
+      ...(confront
+        ? {
+            lastFigures: [...lastFigures],
+            jurisdiction: null,
+            reentry: { ...reentryGuard },
           }
         : {}),
     };
@@ -813,9 +1075,13 @@ export function makeLlmTutor(
     const jurisdiction =
       stallWatch && ['figure_rut', 'stalled_inference'].includes(claimedJurisdiction)
         ? claimedJurisdiction
-        : stallWatch && !rutDue && stallDue.length
-          ? 'stalled_inference'
-          : 'figure_rut';
+        : confront && ['figure_rut', 'unconfronted_reentry'].includes(claimedJurisdiction)
+          ? claimedJurisdiction
+          : stallWatch && !rutDue && stallDue.length
+            ? 'stalled_inference'
+            : confront && !rutDue && reentryGuard.due
+              ? 'unconfronted_reentry'
+              : 'figure_rut';
 
     // --- ego revision under the note. The figure-authority mapping is the
     // text the 06-10 staging experiment proved load-bearing, relocated from
@@ -835,13 +1101,25 @@ export function makeLlmTutor(
             'removes, or reweights evidence. Same cue, same evidence duty: speak the turn',
             'again, restaged. Reply with ONLY the JSON object.',
           ]
-        : [
-            'The note governs your manner, and your declared figure is part of your manner:',
-            'if it asks you to break a rhythm, change register, or go quieter, CHANGE YOUR',
-            'FIGURE this turn — the same device, softened, is not a change. The note never',
-            'adds, removes, or reweights evidence. Same cue, same evidence duty: speak the',
-            'turn again, restaged. Reply with ONLY the JSON object.',
-          ];
+        : jurisdiction === 'unconfronted_reentry'
+          ? [
+              'The note names a bare re-entry: your draft returns to an exhibit already',
+              'staged without first making the learner produce it. Rewrite the move as a',
+              'confrontation — intent "confront", the same target_premise — and demand the',
+              "learner's read-back of that exhibit in its own words. Restate NOTHING of the",
+              "exhibit's content: the words must come from the learner's hands or be seen",
+              'missing. The re-entry you wanted is licensed AFTER the confrontation, not in',
+              'place of it. The note never adds, removes, or reweights evidence. Same cue,',
+              'same evidence duty: speak the turn again, restaged. Reply with ONLY the JSON',
+              'object.',
+            ]
+          : [
+              'The note governs your manner, and your declared figure is part of your manner:',
+              'if it asks you to break a rhythm, change register, or go quieter, CHANGE YOUR',
+              'FIGURE this turn — the same device, softened, is not a change. The note never',
+              'adds, removes, or reweights evidence. Same cue, same evidence duty: speak the',
+              'turn again, restaged. Reply with ONLY the JSON object.',
+            ];
     const revisionUser = [
       user,
       '',
@@ -861,6 +1139,7 @@ export function makeLlmTutor(
           avoidFigure: draftFigure,
           switchTo,
           stallTarget: stallDue[0]?.groundPremiseIds?.[0] || null,
+          confrontTarget: reentryGuard?.target || null,
         },
       },
     });
@@ -874,13 +1153,18 @@ export function makeLlmTutor(
     return {
       dialogue,
       move: normalizeMove(revisedOut) || draft.move,
-      release: entry ? entry.premise : null,
+      // The evidence calendar is decided once, on the draft: a revision
+      // restages manner, never the release (under authority the decision
+      // record rides along unchanged; without it this is the cue premise).
+      release: draft.release ?? null,
+      ...(draft.releaseReason ? { releaseReason: draft.releaseReason } : {}),
+      ...(draft.releaseDecision ? { releaseDecision: draft.releaseDecision } : {}),
       ...(revisedTheory ? { theory: revisedTheory } : {}),
       deliberation: {
         ...deliberation,
         intervened: true,
         note,
-        ...(stallWatch ? { jurisdiction } : {}),
+        ...(stallWatch || confront ? { jurisdiction } : {}),
       },
     };
   };
