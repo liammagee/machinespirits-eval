@@ -128,6 +128,61 @@ for (const label of ARMS) {
     for (const x of cf.confrontations) {
       console.log(`  confront t${x.turn} -> ${x.target}${x.targetDecayed ? ' (decayed at that moment)' : ''}`);
     }
+
+    // --- §10.3.2 treatment adherence (charter v2, registered 2026-06-12) ---
+    // An absence-exposing confrontation (targetDecayed) obligates a covered
+    // re-entry of that exhibit on the NEXT turn; +2 tolerates an act
+    // boundary. Re-entry rows are reconstructed per-row from the transcript
+    // (diagnosis.json stores covered re-entries as a count only), mirroring
+    // diagnose.js confrontReport's stateByTarget walk.
+    const releaseTurnByPremise = new Map(releases.map((e) => [e.premiseId, e.turn]));
+    const reentryRows = [];
+    const stateByTarget = new Map();
+    for (const [turn, m] of [...tutorMoves.entries()].sort((a, b) => a[0] - b[0])) {
+      const target = m?.move?.targetPremise || null;
+      if (!target) continue;
+      const intent = String(m.move.intent || '').toLowerCase().trim();
+      const releaseTurn = releaseTurnByPremise.get(target);
+      if (releaseTurn === undefined || releaseTurn >= turn) continue;
+      const st = stateByTarget.get(target) || { lastStagedTurn: releaseTurn, confrontedAt: null };
+      if (intent === 'confront') {
+        st.confrontedAt = turn;
+      } else {
+        reentryRows.push({ turn, target, covered: st.confrontedAt !== null && st.confrontedAt > st.lastStagedTurn });
+        st.lastStagedTurn = turn;
+      }
+      stateByTarget.set(target, st);
+    }
+    const obligations = cf.confrontations.filter((x) => x.targetDecayed);
+    if (obligations.length) {
+      console.log('\ntreatment adherence (endpoint §10.3.2: absence-exposing confrontation -> covered re-entry next turn; +2 tolerates an act boundary):');
+      let treated = 0;
+      let treatedNextTurn = 0;
+      for (const x of obligations) {
+        const hit = reentryRows.find(
+          (r) => r.target === x.target && r.covered && r.turn > x.turn && r.turn <= x.turn + 2,
+        );
+        if (hit) {
+          treated += 1;
+          if (hit.turn === x.turn + 1) treatedNextTurn += 1;
+        }
+        const windowEnd = Math.min(x.turn + 2, diag.turnsPlayed);
+        const truncation =
+          windowEnd < x.turn + 1
+            ? ' [NO opportunity — curtain]'
+            : windowEnd < x.turn + 2
+              ? ' [window truncated by curtain]'
+              : '';
+        console.log(
+          `  confront t${x.turn} -> ${x.target}: ${hit ? `treated t${hit.turn} (lat ${hit.turn - x.turn})` : 'UNTREATED'}${truncation}`,
+        );
+      }
+      console.log(
+        `  adherence: ${treated}/${obligations.length} within +2 (${treatedNextTurn}/${obligations.length} on the next turn — the charter's letter) | target 1.0`,
+      );
+    } else {
+      console.log('\ntreatment adherence (endpoint §10.3.2): no absence-exposing confrontations — class empty, no obligations');
+    }
   } else {
     console.log('\nconfrontation: absent (dial off — control arm)');
   }

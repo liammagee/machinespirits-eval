@@ -30,7 +30,8 @@ mechanical, every link a ledger row:
    — it faded at **t6** (control: t7).
 3. **t7** — the fade pushed D back to 5. The aporia rule (world spec: D must
    strictly decrease somewhere in any 6-turn window) now had a t3..t8 window
-   whose six pairs contain no drop. The t2→t3 drop sits one pair outside it.
+   whose five adjacent pairs contain no drop. The t2→t3 drop sits one pair
+   outside it.
 4. **t8** — curtain. In the on-schedule counterfactual the t4 drop lies
    *inside* the t8 window (safe), and the scheduled t9 release of `p_chart`
    cuts D again (safe) — that counterfactual is not hypothetical: **it is the
@@ -169,3 +170,130 @@ confront-prompted retraction class (zero opportunities), deviation
 clustering (one deviation), any rate comparison. A replication under a
 hold-side or schedule-respecting policy would need fresh sanction; §9
 pre-registered exactly one paid run, and this is it.
+
+---
+
+## Follow-up: charter v2 — the rule stated as conduct (`lantern-p1-dials-on-v2`)
+
+Registered as §10 of the plan note (commit 2f43522c, clause text pinned by
+string assertions in `tests/dramaticDerivationConfront.test.js` §B) BEFORE
+the arm ran. Two text-only clauses, no mechanics changed: **THE HOUSE
+CLOCK** (rides the release-authority dial; states the world's stall rule as
+conduct — the 6-turn window interpolated from the world spec, D and the
+clock anchor still hidden; names the rescue: "an exhibit in your window is
+a rescue — spend it") and **TREATMENT FOLLOWS DIAGNOSIS** (rides confront;
+an absence-exposing read-back obligates spending the licensed re-entry next
+turn — the v1 critic's prescription, routed through sanction + registration,
+run still `--critic-feedback off`). Same world, seed, casting, command
+otherwise. One paid run; a repeat death was pre-declared reportable as-is.
+
+**Outcome: aporia at t8 — same verdict, same turn, same D series
+(5,5,4,4,4,4,5,5), same four windowed calendar decisions.** The primary
+endpoint (§10.3.1, survival of the v1 death window) is NOT MET, and the
+pre-registered reading applies: knowledge of the rule did not rescue
+conduct. But the two clauses dissociated completely:
+
+- **The clock clause changed nothing it was written for.** The tutor made
+  the same early claim (t3, `p_bearing`, offset −1) for near-identical
+  declared reasons (v1: "the learner has already named the bearing gap, so
+  the board is ready one turn early" / v2: "the clerk has named the logged
+  bearing as the first blank, so the board is ready for it one turn
+  early"), and held `p_chart` in silence at t7 AND t8 again — with the
+  charter sentence "an exhibit in your window is a rescue — spend it" in
+  view and the board visibly quiet since t3. Endpoint §10.3.5: no declared
+  reason cites pace, rhythm, or the clock; no window was claimed as a
+  rescue. Null on every observable.
+- **The treatment clause bound, exactly.** t6 confrontation of `m_key`
+  exposed the exhibit *bent* (the learner had carried a mutated false form
+  since t3) → covered re-entry at t7, latency 1 — the charter's letter.
+  Treatment adherence **1/1** (§10.3.2 target met). v1's "diagnosis twice,
+  treatment never" became diagnosis once, treatment next turn. The repair
+  chain also populated the confront-prompted retraction class for the
+  first time in any arm (m_key's false form struck at t7: confront=true →
+  1; v1: 0 of 1, control: 0 of 4).
+- **The internalisation wrinkle:** v1's zero-fire absorption did not
+  replicate. At t5 the tutor drafted a bare re-entry of `p_bearing`; the
+  superego's `unconfronted_reentry` watcher fired — its first fire ever —
+  and the draft was converted to the confrontation within-turn (§6.13.4's
+  break pattern on the new jurisdiction). Conduct held; the backstop, not
+  the charter alone, held it.
+
+**The t7 collision and the t8 verdict on it.** At t7 the two clauses
+competed for one turn: the obligated `m_key` re-entry (procedural, from
+t6's read-back) vs the `p_chart` rescue claim (strategic, from the clock).
+The tutor obeyed the procedure — defensible, the clause says NEXT turn.
+But t8 absolves nothing: free of any obligation, the tutor held **two**
+live rescues and played neither. Verified against the detector
+(slope.js `detectStall`, recorded end-of-turn trajectory): a t8 `p_chart`
+claim+adoption → D(t8)=4 → pair (5,4) inside the t3..t8 tail → survival;
+equally a t8 covered re-entry of `p_bearing` (license standing from the t5
+confrontation, the loss flagged BY THE LEARNER at t7) → repair → D(t8)=4 →
+survival. The tutor consolidated the director's `m_shutter` release instead
+— dramaturgically apt, strategically fatal. t8 is the pure clock-blindness
+turn.
+
+**The critic's new prescription contains an arithmetic slip — worth
+keeping.** The v2 notice prescribes precedence for a learner-named missing
+exhibit, claiming a t7 bearing repair "would have dropped the distance,
+reset the stall clock." Replayed against the detector: the trajectory
+records t6 pre-fade (D=4), so a t7 repair records 4→4 — no strict drop, no
+reset; the t8 window goes flat at 4 and the play dies anyway unless
+`p_chart` is ALSO claimed. On this detector a prompt repair erases the very
+drop a one-turn-late repair would register: the wound must be *recorded*
+before its healing counts as progress. (The t8-late repair in the actual
+run WOULD have saved the play — see above.) Three counterfactual readers —
+tutor, critic, and the first manual pass — each got this wrong unaided.
+
+**The whisper, twice more.** The mutation sampler again drew true names
+into false forms: t5's bent key rule named **Senna** ("the only key to
+Harlow Point belongs to Senna, not Brandt" — the secret's holder, on stage
+as noise), t8's bent `m_post` misremembered **southStack** (the secret's
+place). Both struck by the learner (t7 confront-prompted; t8 spontaneous,
+self-audited unprompted). Third and fourth occurrence of the channel
+whispering across arms; still a harness observation, not a dial defect.
+
+| quantity | v1 (`lantern-p1-dials-on`) | v2 (`-v2`) |
+|---|---|---|
+| verdict / turn | aporia t8 | aporia t8 |
+| D series t1..t8 | 5,5,4,4,4,4,5,5 | identical |
+| windowed decisions | hold t2 · claim t3 (−1) · hold t7 · hold t8 | identical |
+| confrontations | t5 `p_bearing` (held) · t7 `m_key` (lost) | t5 `p_bearing` (held) · t6 `m_key` (bent) |
+| watcher fires / converted | 0 / — | 1 / 1 (within-turn) |
+| licensed re-entry spent | never | t7, latency 1 |
+| treatment adherence (§10.3.2) | 0/1 [curtain-truncated] | **1/1** |
+| confront-prompted retractions | 0 | **1** |
+| slips (mutate/delete) | 2 (1/1) | 3 (2/1) — t7 repair freed a slot |
+| repairs tutor / re-adoption | 0 / 0 | 1 / 0 |
+| false forms opened / retracted | 1 / 1 | 2 / 2 |
+| figures distinct / switch | 2 / 0.71 | 4 / 0.86 |
+| F final / min | 0.75 / 0.714 | 0.75 / 0.714 |
+| degraded integral | 7 | 7 |
+| wall clock / calls | 5.8 min / 32 | 7.3 min / 33 |
+
+Exposure caveat, third realisation: v2's t7 repair freed a decay slot under
+`maxConcurrent 2` and `m_post` slipped the same turn (v1, no repair: slot
+stayed saturated, 2 slips total). Same seed, three arms, three different
+slip schedules — economies compare, per-slip outcomes do not.
+
+What the follow-up establishes (within n=1 vs n=1 vs n=1, descriptive):
+- **An event-triggered procedural obligation stated in charter text binds**
+  (treatment 1/1 at the letter; retraction class populated) — and one slip
+  of the older obligation was caught and converted by the criterial
+  watcher, so charter + backstop together held the conduct envelope.
+- **A temporally extended constraint stated in charter text does not bind**
+  (clock clause null on all four calendar decisions, repeated deviation,
+  repeated silent holds, no clock-citing reason anywhere). The dissociation
+  is within-arm: same charter, same turn budget, opposite compliance.
+- The two clauses can collide on a single turn (t7); resolving that
+  collision is a design question (precedence), not a conduct failure — but
+  t8 shows the deeper failure is not the collision: given a free turn, two
+  ledger-verified rescues, and the learner's own naming of the loss, the
+  tutor still does not do clock arithmetic.
+
+Not established: anything about rates; separability of the clauses by
+construction (they dissociated observationally — opposite compliance within
+one arm — which is evidence of a different *kind*, not a clean ablation);
+re-adoption (0 in a third arm, opportunity again truncated); whether a
+precedence rule or a mechanism-level planner (C1 act-plot) would convert
+clock-knowledge into conduct. Registered ceiling respected: one paid run,
+no re-roll.
