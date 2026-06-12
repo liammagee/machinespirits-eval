@@ -1304,3 +1304,108 @@ conduct-level only (13.1a). n=1, one seed, descriptive throughout.
 This registration spends the 2026-06-12 sanction in full: after the
 arm, its outcome record here, and the paper fold-in, the paid loop is
 ended again.
+
+## §13.5 Outcome (2026-06-12, recorded after the run — registration text above unchanged)
+
+**Verdict: grounded anagnorisis at t20, 20/26 turns (1220.9s, 89 CLI
+calls).** S forced at t20 — the first turn it was derivable — and
+asserted grounded the same turn (forced→asserted gap 0). The second
+dialed-up arm in a row to ground, on the same turn with the same gap
+as p3, this time on the cleaned instrument. D ran 5→0 at 0.25/turn,
+longest plateau 4 (< the 6-turn window), one D reversal (the t5 fade
+of p_bearing undoing the very release that had dropped D at t4).
+Artifacts: `exports/dramatic-derivation/loop/lantern-p4-hygiene-on/`.
+The contingency resolved is **hygiene holds + survival**.
+
+- **Endpoint 1 (instrument integrity): MET, in the strong form — by
+  silence.** `mutations.total: 0`; all four slips (m_key t3,
+  p_bearing t5, m_key t7, m_post t8) carry `mode: "delete",
+  falseForm: null`. Verified against the world, not just the ledger:
+  `loggedBearingOf` appears on no other fact in the world
+  (pool-invariant); the alternate constants for `onlyKeyTo` and
+  `atTowerThatNight` live only on p_key (released t15) and
+  p_skiff/p_ferry (released t20) — so at every draw the staged pool
+  was genuinely empty and the registered fallback, not luck, produced
+  the silence. The two slips that whispered Senna's name at t3/t8
+  under the world pool in p3 are exactly the slips rendered mute
+  here. Zero unmet constants in any false form — vacuous at the
+  falseForm level, mechanically verified at the pool level.
+  Consequence (b) realized to its limit: not just "early slips become
+  deletes" — every slip this run became a delete, because all four
+  landed t3–t8 and the alternates arrive t15+.
+- **Endpoint 2 (verdict + window survival): grounded, gap 0,
+  reported as-is.** Consequence (a) visible in the books: 4 slips
+  here vs p3's 7 on the same seed — the stream diverged at the first
+  empty-pool fallback (t3), and the two unrepaired slips saturated
+  `maxConcurrent: 2` from t8 onward, so the decay channel itself went
+  quiet for the back half. p4's race was front-loaded (two
+  load-bearing fades inside t3–t8), its back half decay-free — the
+  conduct-level comparison §13.1a promised, not an arithmetic one.
+- **Endpoint 3 (repair conduct on mutations): UNEXERCISED — and the
+  unexercise is the reading.** No false form ever stood, so no bent
+  fact ever stood beside a missing one, and the bent-first clause
+  never had a case. What the run shows instead is delete-repair under
+  the §12 clause as a clean economy: 2/2 load-bearing slips repaired
+  at mean latency 2.5 turns — m_key t3→t5 (the learner itself named
+  the loss at t4: "if it slipped between acts, I will need it
+  returned" → restore next turn), p_bearing t5→t8 (the superego
+  converted the tutor's bare re-entry draft at t7 into a
+  confrontation; the read-back found "the chain is broken at its
+  first link" → restore next turn) — both `targetDecayed: true,
+  repaired: true`, and `restoreClaimFires: 0` (no false reports this
+  run, against p3's one benign). The 2 unrepaired at end are both
+  mirror-side (m_key's second fade t7, m_post t8), both *unreported*,
+  and both mooted by the same t8 shutter release that killed the
+  Brandt line — consequence (c) exactly: an unnamed slip is outside
+  the clause's jurisdiction. Fidelity's floor 0.778 / final 0.833
+  reads this mooted-mirror rot as damage; see the critic.
+- **Endpoint 4 (the §11/§12 books, unchanged meanings): MET.** Plots
+  4/4 at every opening, all disciplined (mean 5.75 clauses; the act-2
+  plot again named the slipping exhibits — m_key and p_bearing — as
+  holds). Audits 4/4 with the run-end included; verdict mix kept 20 /
+  drift 3 / unscored 0; hold/withhold cross-check violations all
+  zero. Throughline committed at the opening, disciplined; arc
+  verdicts 4/4 on_arc; final reckoning **7/7 kept** — the same
+  perfect reckoning as p3. Calendar: 7 releases on cue, 1 early with
+  declared reason (p_key −2 at t15: the learner had "explicitly named
+  South Stack's key as the next missing conjunct"), 0 held / 0
+  forced / 0 invalid — tighter than p3's 6+2. Jurisdiction:
+  `reentries.total: 0`, `firesWithoutDue: 0`, `fabricatedFacts: []`.
+  Superego economy: 5 fires in 20 turns — 3 re-entry conversions (all
+  due by record; the t7 one licensed the t8 repair and the critic
+  calls it the play's best scene) + 1 rut-fire (analogia
+  third-consecutive at t6, broken within-turn) — within-turn figure
+  change 4/5, switch-on-intervention 1.00 vs 0.71 elsewhere. Formal
+  layer invariant as ever: 4 distinct figures, erotema 40%, switch
+  rate 0.79. Unlike p3 there was no early assertion to refuse: the
+  learner asserted only at t20, when the chain closed.
+- **Endpoint 5 (critic's notice, Fable):** reads the run as
+  recognition earned and **the hygiene as working** ("this iteration
+  establishes that the decay hygiene asked for last time works:
+  slips were caught, load-bearing repairs came first"). Its located
+  defect sits this time in neither dial nor decay channel but the
+  calendar's last step: the **held finale** — the learner named the
+  wanted proof at t17, the skiff held to schedule until t20, and
+  t18–19 sagged into near-verbatim restatement, so the recognition
+  landed "compressed, adoption and assertion in a single breath."
+  Two new recommendations recorded for any future sanction — extend
+  the early-play discretion (already exercised for p_key) to the
+  final exhibit when the learner names the missing conjunct; and let
+  the charter/meter treat mooted mirror matter as abandonable
+  ("fidelity currently reads that mercy as damage") — **neither
+  licensed by this registration**, and the paid loop is ended.
+
+**Reading (within the §13.4 ceiling).** The whisper defect is closed
+on this seed: the channel that wrote an unstaged name onto the
+learner's board in p3 cannot leak one by construction, and did not by
+ledger. The cost surfaced exactly where registered: with every
+alternate constant unreleased until t15+, "mutate" under a staged
+pool *means* "delete" for the whole early game — so this arm tested
+the hygiene by elimination rather than exhibition. A mutation drawn
+from a non-empty staged pool has not yet been observed, and the
+bent-first clause remains charter text never exercised; a world whose
+constants are met early (or a later decay start) would exercise both,
+and is not licensed here. Attribution stays bundled — the two fixes
+jointly, on top of the full §11+§12 stack, with every prior ceiling
+compounding beneath. n=1, one seed, descriptive throughout. The
+2026-06-12 sanction is spent; the paid loop is ended again.
