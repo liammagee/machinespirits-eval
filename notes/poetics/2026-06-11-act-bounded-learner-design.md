@@ -233,3 +233,66 @@ the learner cannot.
 - Either way the probe's deliverable is the *legibility* of the ledger: recall
   separated from revision, repair channels attributed, act-bounded recall asymmetry
   visible.
+
+## 6. Lantern revise probe — scoring plan (fixed 2026-06-11, before either paid arm)
+
+Sanctioned follow-up to §5's structural amendment. Disclosure: this section was
+written and committed after the mock rehearsals only; neither paid arm had run.
+Clean pre-registration (no mid-pair disclosure this time).
+
+**Design.** World `world-002-lantern` (26-turn cap, 5/10 premises mutable:
+p_key, p_skiff, p_ferry, m_key, m_post), script `lantern-v001.md`, same casting
+as the bounded-v2 pair (codex director/tutor/superego, Sonnet learner, Fable
+critic pinned). Acts `{minActTurns:3, maxActTurns:8}`. Decay identical to
+bounded-v2 except **`mutateShare: 1.0`** — every slip on a mutable premise
+becomes a false belief; slips on non-mutable premises still delete, so both
+debts occur naturally. Rationale: a 26-turn world at `mutateShare 0.33` yields
+~1-2 mutations — too thin to read. Seed 1. Group `lantern-revise-probe`,
+labels `lantern-revise-{on,off}`, ON (`--reconstruct`) first, then OFF,
+serialized and attended. Acts mode forces `decayVisibility: conduct` — the
+tutor is never told of slips in either arm.
+
+**Mock rehearsal (done, not committed):** mutate rows fire on lantern
+(m_key → `[onlyKeyTo, harlowPoint, senna]` at seed 1 — a cross-contaminating
+false form), `truth.mistaken` is tracked per theory commit, and the real
+learner's `retract_indices` channel maps to `retract_false` ledger rows. The
+revise loop is structurally available end-to-end.
+
+**The question.** §5 closed recall: deletions self-announce (the learner
+stalls and complains), so the explicit theory had nothing to add over the
+default tutor. Mutations are the opposite regime: the learner reasons
+*fluently* from the false form and never complains; detection requires
+noticing a commission (the learner asserting something that contradicts the
+release ledger), not an omission. This is the last place the explicit
+`believed_mistaken` channel retains a theoretical edge. The engine gives a
+mutation two debts: the deletion debt (closed by tutor re-stage or learner
+re-adoption → `repair` row) and the false-belief debt (closed **only** by the
+learner striking the false form → `retract_false` row; a tutor re-stage never
+retracts it).
+
+**Cross-arm quantities** — everything in §5's table, plus (all
+harness-ledgered, architecture-independent):
+
+| quantity | source |
+|---|---|
+| mutations vs deletes (slip-mode mix) | corruption.ledger mode field |
+| false-belief debts retracted; standing at end | retract_false rows; decayedAtEnd/mistaken |
+| retraction latency (mutate turn → retract_false turn) | ledger |
+| prompted vs spontaneous retraction (what preceded each: tutor re-stage of the true form, tutor move targeting the premise, or neither) | ledger × release ledger × move metadata |
+| false-form consequences (did a false form enter a derivation, overreach, or leap; any mirror-ward jeopardy) | inference/leap rows + transcript, descriptive |
+| ON-only: believed_mistaken detection rate (caught / truth.mistaken instances) | reconstruction rows |
+| ON-only: theory→retraction coupling, k=3, both directions | reconstruction × ledger |
+
+**Reading frame** (descriptive, n=1 per arm; pre-stated):
+
+- OFF retracts false forms at similar rate/latency to ON → the redundancy
+  result extends to the revise regime; the fifth mechanism's last theoretical
+  edge did not cash. (Held open as instrument, not policy.)
+- ON detects mistaken beliefs materially better than its 12.3% missing-set
+  detection AND retraction couples to detection → first positive signal for
+  the explicit channel; registered follow-up (seeds × worlds) before any claim.
+- NEITHER arm retracts (false beliefs simply stand) → the revise loop needs a
+  charter obligation (a confrontation move), which is an S3 design input, not
+  a verdict on reconstruction.
+- Any false-form-corrupted ending (wrong assertion, blocked forcing, mirror
+  assertion) is the headline drama datum regardless of arm.
