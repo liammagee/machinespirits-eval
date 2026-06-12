@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Roundup — 9 Jun–12 Jun 2026</title>
+  <!-- meta: date=2026-06-12 window=(2026-06-09,2026-06-12] arxiv=2606.05976,2606.06448,2606.07054,2606.10296,2606.10307,2606.11521 generator=deep-research/claude-sonnet-4-6 -->
+  <style>
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      line-height: 1.65;
+      color: #1a1a1a;
+      background: #fafaf8;
+    }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; margin-bottom: .2rem; color: #444; text-transform: uppercase;
+         letter-spacing: .06em; }
+    .paper {
+      border-left: 3px solid #aaa;
+      padding: .5rem 1rem;
+      margin: 1rem 0;
+      background: #fff;
+    }
+    .paper.hot { border-left-color: #c0392b; }
+    .paper h3 { margin: 0 0 .25rem; font-size: 1rem; }
+    .paper .meta { font-size: .82rem; color: #666; margin-bottom: .5rem; }
+    .paper p { margin: 0; font-size: .93rem; }
+    .flag {
+      display: inline-block;
+      background: #c0392b;
+      color: #fff;
+      font-size: .72rem;
+      font-weight: bold;
+      padding: .1rem .45rem;
+      border-radius: 3px;
+      margin-left: .5rem;
+      vertical-align: middle;
+    }
+    .flag.yellow { background: #d4a017; }
+    a { color: #1a5276; }
+    footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+  </style>
+</head>
+<body>
+
+<h1>Research Roundup <small style="font-weight:normal;font-size:.85em">9 Jun – 12 Jun 2026</small></h1>
+<p style="font-size:.9rem;color:#555;">
+  Six papers (all <code>2606.xxxxx</code>, June 2026) across agent architecture &amp; deliberation,
+  evaluation methodology, and pedagogical reasoning.
+  This roundup covers the delta window <strong>(2026-06-09, 2026-06-12]</strong> — papers
+  in the prior roundup (2606.00820–2606.05553) are excluded by the dedup rule.
+  Flags: <span class="flag">UNBLOCK</span> = could directly accelerate current work;
+  <span class="flag yellow">WATCH</span> = relevant background.
+</p>
+
+<!-- ────────────────────────────────────── -->
+<h2>Agent Architecture &amp; Deliberation</h2>
+
+<div class="paper hot">
+  <h3>
+    The Self-Correction Illusion: LLMs Correct Others but Not Themselves
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Kuan-Yen Chen, Fang-Yi Su, Jung-Hsien Chiang ·
+    arXiv 2606.05976 · June 2026 ·
+    <a href="https://arxiv.org/abs/2606.05976">https://arxiv.org/abs/2606.05976</a>
+  </div>
+  <p>
+    Keeping an erroneous claim byte-identical (SHA-256 verified), the authors vary only its
+    chat-template role label — the agent's own <code>&lt;thought&gt;</code>, a
+    <code>user</code> message, a <code>tool</code> response, or a <code>system &lt;memory&gt;</code> block —
+    and find that relabeling from <code>&lt;thought&gt;</code> to any external role lifts
+    explicit correction rates by 23–93 percentage points (10 of 13 cells statistically significant,
+    across seven model families and three domains).
+    Self-correction failure is a role-label artifact, not a capability deficit.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    This provides direct empirical grounding for the ego-superego loop's core design choice:
+    the superego sees ego output as <em>external</em> content, which is exactly the framing
+    shown here to unlock correction.
+    Conversely, it warns that any merge of ego and superego into a single context (e.g. a
+    naive "self-reflect" prompt) will suppress correction to near-zero.
+    The 13-cell coverage also offers a replication scaffold for cells 3–4, 7–8, 22–33 —
+    measure correction rate vs. role-label to validate the architecture rather than just
+    assuming it works.
+    Additionally, the CLAUDE.md symmetry requirement (tutor/learner trace agent labels must
+    not default to a generic <code>user</code>) gains new empirical motivation: wrong role
+    labels would suppress correction on the tutor side.
+  </p>
+</div>
+
+<div class="paper hot">
+  <h3>
+    The Confident Liar: Diagnosing Multi-Agent Debate with Log-Probabilities and LLM-as-Judge
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Ali Keramati, Justin Cheok, Jacob Horne, Mark Warschauer (University of California, Irvine) ·
+    arXiv 2606.10296 · June 9, 2026 ·
+    <a href="https://arxiv.org/abs/2606.10296">https://arxiv.org/abs/2606.10296</a>
+  </div>
+  <p>
+    In a two-agent Constructor/Auditor debate framework, the paper maps the relationship
+    between token-level log-probability distributions, LLM-as-judge rubric scores, and
+    ground-truth task accuracy across rubric scoring, mathematical reasoning, and factual QA.
+    It exposes a "confident liar" failure mode: high-probability generation that receives
+    high judge scores yet corresponds to wrong answers — internal confidence and external
+    evaluation can systematically co-misalign with correctness.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The Constructor/Auditor pairing is structurally identical to the ego/superego pairing.
+    The confident-liar finding directly interrogates the project's evaluate pipeline:
+    if the judge scores high-fluency, high-confidence ego outputs independently of whether
+    the pedagogical content is correct, then <code>tutor_first_turn_score</code> may be
+    measuring confident generation, not genuine recognition.
+    The log-probability instrument is cheap to add to any eval run (no extra API calls) and
+    could serve as a calibration signal alongside the existing rubric scores.
+    Mark Warschauer is a prominent educational technology researcher (UCI); the rubric-scoring
+    domain in this paper maps closely to the v2.2 rubric evaluation workflow.
+  </p>
+</div>
+
+<div class="paper">
+  <h3>
+    Early-Token Confidence Predicts Reasoning Quality in Multi-Agent LLM Debate
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Ali Keramati, Justin Cheok, Jacob Horne, Mark Warschauer (University of California, Irvine) ·
+    arXiv 2606.10307 · June 9, 2026 ·
+    <a href="https://arxiv.org/abs/2606.10307">https://arxiv.org/abs/2606.10307</a>
+  </div>
+  <p>
+    Using the same debate-based essay-scoring framework as 2606.10296 (above), this companion
+    paper shows that early-token log-probability (first few tokens of the generated response)
+    is the strongest single predictor of downstream reasoning quality, outperforming
+    full-sequence statistics.
+    A systematic asymmetry emerges: confidence-quality alignment is substantially stronger for
+    the supportive (Constructor) agent role than for the adversarial (Auditor) role.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The supportive/adversarial asymmetry mirrors the ego (constructive) vs. superego (critical)
+    split.
+    If early-token confidence is a quality proxy for the ego but not the superego, it suggests
+    the superego's critique quality is harder to predict from its own generation signal alone —
+    which would explain why <code>tutor_deliberation_*</code> metrics have historically shown
+    weaker correlations with outcome scores than the tutor's own output metrics.
+    The education-specific framing (Warschauer's lab) grounds this in the essay-scoring task,
+    making it a plausible replication target for the project's dialogue-quality rubric.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Evaluation &amp; Trajectory Analysis</h2>
+
+<div class="paper">
+  <h3>
+    TRACE: Trajectory Reasoning through Adaptive Cross-Step Evidence Aggregation for LLM Agents
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Vijitha Mittapalli, Shreyaa Jayant Dani et al.
+    (University of Massachusetts Amherst / Adobe Research / Dolby Labs / University of Oregon / Cisco) ·
+    arXiv 2606.07054 · June 5, 2026 ·
+    <a href="https://arxiv.org/abs/2606.07054">https://arxiv.org/abs/2606.07054</a>
+  </div>
+  <p>
+    TRACE monitors long-horizon agent trajectories for hidden malicious objectives through a
+    TIJ (Triage-Inspect-Judge) loop: it triages each step for signal, performs targeted
+    inspection while accumulating evidence across temporally distant actions, and synthesises a
+    trajectory-level verdict.
+    Achieves aggregate F1 = 0.713 and recall = 0.844, with the largest gains on tasks requiring
+    long-range evidence linking across many steps.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The TIJ loop is an architectural parallel to the adaptive evaluator in the project:
+    Triage ≈ <code>analyze-learning-stagnation.js</code> (identifying low-signal turns),
+    Inspect ≈ <code>analyze-trajectory-curves.js</code> (targeted per-dimension drill-down),
+    Judge ≈ <code>tutor_holistic_*</code> scoring (whole-transcript verdict).
+    The cross-step evidence aggregation design — carrying forward evidence rather than
+    windowing — could improve the <code>bilateral_transformation_index</code> computation,
+    which currently aggregates turn deltas independently without long-range linking.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Pedagogical Reasoning &amp; Guided Discovery</h2>
+
+<div class="paper">
+  <h3>
+    Counterexample Guided Learning in the Large using Reasoning Agents
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    (Authors from submission 2606.11521) ·
+    arXiv 2606.11521 · June 9, 2026 ·
+    <a href="https://arxiv.org/abs/2606.11521">https://arxiv.org/abs/2606.11521</a>
+  </div>
+  <p>
+    An LLM agent proposes candidate solutions (regular expressions) while a verifier returns
+    minimal counterexamples that falsify each candidate; the agent refines iteratively.
+    Verifier feedback improves sample efficiency dramatically — success rates lift from 3.2%
+    to 38.1% and from 38.9% to 74.1% on two regex domains — outperforming self-reflection
+    alone.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The verifier-as-counterexample-provider is a formal instantiation of Socratic guided
+    discovery: the tutor withholds the answer and instead supplies the minimal disconfirming
+    evidence that forces the learner to revise.
+    This is precisely the mechanism the poetics rubric measures in the <em>peripeteia</em>
+    dimension (a sudden reversal triggered by new information).
+    The quantitative efficiency gains — comparing self-reflection baseline vs. external
+    verifier feedback — offer a clean experimental template for the recognition vs. placebo
+    cells (e.g. cells 5–6 vs. 15–18).
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Systems &amp; Memory (Background)</h2>
+
+<div class="paper">
+  <h3>
+    Agent Memory: Characterization and System Implications of Stateful Long-Horizon Workloads
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Yasmine Omri, Ziyu Gan, Zachary Broveak, Robin Geens, Zexue He,
+    Alex Pentland, Marian Verhelst, Tsachy Weissman, Thierry Tambe
+    (MIT / Stanford / KU Leuven) ·
+    arXiv 2606.06448 · June 4, 2026 ·
+    <a href="https://arxiv.org/abs/2606.06448">https://arxiv.org/abs/2606.06448</a>
+  </div>
+  <p>
+    The first systems-level characterization of agent memory, classifying ten representative
+    memory architectures along four axes (scope, persistence, update policy, retrieval
+    mechanism) and profiling cost across construction, retrieval, and generation phases.
+    Design choices shift cost sharply between the write path and read path, a tradeoff
+    invisible in accuracy-only benchmarks.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    Multi-turn cells (80–92) load growing dialogue histories on every turn; the write/read
+    cost breakdown helps reason about when per-turn full-history loading becomes a bottleneck
+    vs. a compressed memory representation.
+    The taxonomy's <em>persistence</em> axis is also directly applicable to the pilot-store
+    tables (<code>pilot_sessions</code>, <code>pilot_turns</code>) and their interaction with
+    the <code>ingest-pilot-sessions.js</code> workflow.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Near-misses (within 2 weeks, outside the strict window)</h2>
+
+<ul style="font-size:.9rem;">
+  <li>
+    <strong>Structured Prompt Optimization Meets Reinforcement Learning for Global and Local Interpretability</strong>
+    (arXiv 2605.29076, late May 2026) —
+    Combines structured prompt optimization with RL fine-tuning for interpretability;
+    directly extends the <em>prompt-lab</em> autotune workflow.
+    <a href="https://arxiv.org/abs/2605.29076">arxiv.org/abs/2605.29076</a>
+  </li>
+  <li>
+    <strong>Beyond Semantic Organization: Memory as Execution State Management for Long-Horizon Agents</strong>
+    (arXiv 2606.06090, June 2026) —
+    Companion to 2606.06448; frames memory as mutable execution state rather than
+    semantic retrieval — relevant to the adaptive runner's LangGraph state-policy (cells 110–113).
+    <a href="https://arxiv.org/abs/2606.06090">arxiv.org/abs/2606.06090</a>
+  </li>
+</ul>
+
+<footer>
+  Generated by Claude Code (claude-sonnet-4-6) · 2026-06-12 ·
+  Deep-research harness: 5 parallel search angles, 15+ source extractions, adversarial claim checks ·
+  Window: (2026-06-09, 2026-06-12] · Previously covered IDs excluded per dedup rule ·
+  Repository: <code>liammagee/machinespirits-eval</code>
+</footer>
+
+</body>
+</html>
