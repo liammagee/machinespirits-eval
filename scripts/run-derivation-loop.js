@@ -129,6 +129,17 @@
  *                                       clause (kept / justified_deviation /
  *                                       drift) and the verdict binds the next
  *                                       act's plot. Design: same note §5)
+ *     [--throughline]                  (two-layer planning; requires --plot.
+ *                                       At the first turn the tutor commits a
+ *                                       whole-play THROUGHLINE — arc waypoints
+ *                                       / hold_to_end / risk / salvage — read
+ *                                       back every turn above the act plot;
+ *                                       the act-close audit adds an on_arc /
+ *                                       off_arc verdict, off_arc binds a
+ *                                       revision at the next opening, and the
+ *                                       run-end audit reckons the throughline
+ *                                       clause by clause. Design: same note
+ *                                       §11 pre-run amendment, 2026-06-12)
  *     [--critic auto|real|mock|off]    (post-run critic's notice; auto = follow
  *                                       the run mode — real dramas get the
  *                                       Fable notice, mock dramas the
@@ -342,6 +353,14 @@ async function main() {
     console.error('--plot requires --superego (the act-close audit is its jurisdiction)');
     process.exit(1);
   }
+  // Two-layer planning (§11 pre-run amendment, 2026-06-12): the whole-play
+  // throughline above the per-act plot — no plot loop, nothing for the arc
+  // verdict to ride or bind.
+  const throughline = flag('throughline');
+  if (throughline && !plot) {
+    console.error('--throughline requires --plot (the arc verdict rides the act-close audit)');
+    process.exit(1);
+  }
   const group = arg('group', null);
   const criticFeedback = arg('critic-feedback', 'off');
   const criticArg = arg('critic', 'auto');
@@ -433,6 +452,11 @@ async function main() {
       'tutor   PLOT ON — at each act opening the tutor commits a per-act plot (hold/withhold/friction/fallback, from conduct only); the superego audits it clause by clause at the act close, and the audit binds the next plot',
     );
   }
+  if (throughline) {
+    console.log(
+      'tutor   THROUGHLINE ON — at the first turn the tutor commits a whole-play plan (arc/hold_to_end/risk/salvage) above the act plots; the act-close audit adds an on_arc/off_arc verdict, off_arc binds a revision at the next opening, and the run-end audit reckons the throughline clause by clause',
+    );
+  }
   if (decay) {
     console.log(
       `decay   seed ${decay.seed} · rate ${decay.rate} · grace ${decay.graceTurns} · maxConcurrent ${decay.maxConcurrent} · from turn ${decay.startTurn}${decay.mutateShare ? ` · mutateShare ${decay.mutateShare} (slips may misremember, not just vanish)` : ''}`,
@@ -461,6 +485,7 @@ async function main() {
       confront,
       releaseAuthority,
       plot,
+      throughline,
     }),
     learner: makeLlmLearner({ setting: world.setting, voice: learnerVoice || world.learnerVoice, client }),
   };
@@ -520,6 +545,9 @@ async function main() {
     // can't collide with diagnose()'s `plot` report (the audit/discipline
     // block, present only when the arm produced plots).
     plotDial: plot,
+    // Two-layer dial (§11 pre-run amendment) — false on every run before
+    // 2026-06-12. Same naming rule as plotDial.
+    throughlineDial: throughline,
     elapsedMs,
     usage,
     ...diagnose(result, world),

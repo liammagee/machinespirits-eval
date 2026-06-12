@@ -757,6 +757,40 @@ export function plotReport(result, world = null) {
       withholdNamed: sum((r) => r.withholdNamed.length),
       withholdPlayedInAct: sum((r) => r.withholdPlayedInAct.length),
     },
+    // Two-layer planning: present only when the run carried a throughline —
+    // plot-only arms keep the exact C1 report shape.
+    ...(block.throughlines?.length
+      ? {
+          throughline: (() => {
+            const rows = block.throughlines;
+            const byTrigger = { opening: 0, recommit: 0, audit_bound: 0, voluntary: 0 };
+            for (const r of rows) {
+              if (Object.hasOwn(byTrigger, r.trigger)) byTrigger[r.trigger] += 1;
+            }
+            const arcMix = { on_arc: 0, off_arc: 0, unscored: 0 };
+            let arcCount = 0;
+            for (const a of audits) {
+              if (!a.arc) continue;
+              arcCount += 1;
+              arcMix[Object.hasOwn(arcMix, a.arc.verdict) ? a.arc.verdict : 'unscored'] += 1;
+            }
+            const finalRow = audits.find((a) => a.final && a.throughlineAudit?.length) || null;
+            const finalMix = finalRow ? { kept: 0, justified_deviation: 0, drift: 0, unscored: 0 } : null;
+            if (finalRow) {
+              for (const c of finalRow.throughlineAudit) {
+                finalMix[Object.hasOwn(finalMix, c.verdict) ? c.verdict : 'unscored'] += 1;
+              }
+            }
+            return {
+              count: rows.length,
+              byTrigger,
+              disciplined: rows.filter((r) => (r.arc || []).length && r.holdToEnd && r.risk && r.salvage).length,
+              arcs: { count: arcCount, mix: arcMix },
+              finalReckoning: finalRow ? { clauses: finalRow.throughlineAudit.length, mix: finalMix } : null,
+            };
+          })(),
+        }
+      : {}),
   };
 }
 
@@ -1121,6 +1155,19 @@ export function renderEvalPanel(diagnosis) {
         vm.unscored ? ` / unscored ${vm.unscored}` : ''
       } · hold-named exhibits staged in act ${pl.crossCheck.holdStagedInAct}/${pl.crossCheck.holdNamed}`,
     );
+    const tl = pl.throughline;
+    if (tl) {
+      const fr = tl.finalReckoning;
+      lines.push(
+        `- **throughline** ${tl.count} commit${tl.count === 1 ? '' : 's'} (opening ${tl.byTrigger.opening} · recommit ${tl.byTrigger.recommit} · audit-bound ${tl.byTrigger.audit_bound} · voluntary ${tl.byTrigger.voluntary}) · all four clauses on ${tl.disciplined}/${tl.count} · arc verdicts ${tl.arcs.count}: on ${tl.arcs.mix.on_arc} / off ${tl.arcs.mix.off_arc}${
+          tl.arcs.mix.unscored ? ` / unscored ${tl.arcs.mix.unscored}` : ''
+        } · run-end reckoning ${
+          fr
+            ? `${fr.clauses} clauses: kept ${fr.mix.kept} / justified ${fr.mix.justified_deviation} / drift ${fr.mix.drift}${fr.mix.unscored ? ` / unscored ${fr.mix.unscored}` : ''}`
+            : 'absent'
+        }`,
+      );
+    }
   }
   const rd = d.releaseDeviations;
   if (rd) {

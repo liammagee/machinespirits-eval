@@ -285,6 +285,10 @@ function mockResponse(role, meta = {}) {
     // a plot each act (revision calls inherit the hint and re-emit — the
     // re-commit path). The real backend ignores meta.
     const plotBits = meta.plotHint ? { plot: meta.plotHint } : {};
+    // Two-layer planning: the bridge's throughlineHint is the schedule-derived
+    // whole-play plan on the turns the harness demands one; echoed on every
+    // reply shape, like the plot, so revision calls re-commit it.
+    const throughlineBits = meta.throughlineHint ? { throughline: meta.throughlineHint } : {};
     // A revision call (the ego rewriting under its superego's note): a figure
     // fire switches to the bridge-computed figure; a stall fire keeps the
     // figure and aims the move at the stalled inference's first ground; a
@@ -303,6 +307,7 @@ function mockResponse(role, meta = {}) {
           },
           ...theory,
           ...plotBits,
+          ...throughlineBits,
         });
       }
       if (meta.revision.jurisdiction === 'unconfronted_reentry') {
@@ -316,6 +321,7 @@ function mockResponse(role, meta = {}) {
           },
           ...theory,
           ...plotBits,
+          ...throughlineBits,
         });
       }
       return JSON.stringify({
@@ -329,6 +335,7 @@ function mockResponse(role, meta = {}) {
         },
         ...theory,
         ...plotBits,
+        ...throughlineBits,
       });
     }
     // C5 mock choreography: on a cue-less turn with an exhibit already staged,
@@ -343,6 +350,7 @@ function mockResponse(role, meta = {}) {
         ...releaseBits,
         ...theory,
         ...plotBits,
+        ...throughlineBits,
       });
     }
     return JSON.stringify({
@@ -357,6 +365,7 @@ function mockResponse(role, meta = {}) {
       ...releaseBits,
       ...theory,
       ...plotBits,
+      ...throughlineBits,
     });
   }
   if (role === 'tutor_superego') {
@@ -364,7 +373,14 @@ function mockResponse(role, meta = {}) {
     // precomputed deterministic verdicts; echo them. This check comes FIRST —
     // the audit sits under its own charter, not the turn watch's.
     if (meta.plotAuditHint) {
-      return JSON.stringify({ audit: meta.plotAuditHint.clauses, summary: meta.plotAuditHint.summary });
+      return JSON.stringify({
+        audit: meta.plotAuditHint.clauses,
+        summary: meta.plotAuditHint.summary,
+        // Two-layer planning: the arc verdict (and, on the run-end call, the
+        // throughline clause reckoning) ride the same audit reply.
+        ...(meta.plotAuditHint.arc ? { arc: meta.plotAuditHint.arc } : {}),
+        ...(meta.plotAuditHint.throughlineAudit ? { throughline_audit: meta.plotAuditHint.throughlineAudit } : {}),
+      });
     }
     // Deterministic rut-watcher: intervene when the draft would make the
     // third consecutive turn on one figure (mock tutor always drafts erotema,

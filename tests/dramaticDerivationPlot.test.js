@@ -29,6 +29,15 @@
  *      zero-cost: one plot per act, every plot audited (boundaries + run
  *      end), mock plots disciplined by construction, and the panel renders
  *      the plot line beside the P1 instruments.
+ *   G. TWO-LAYER PLANNING (§11 pre-run amendment, 2026-06-12) — the
+ *      THROUGHLINE: the whole play's plan above the act plots. Guard (no
+ *      plot loop, nothing binds), charter stability both ways, lifecycle
+ *      (commit at the first turn, read-back every turn above the act plot,
+ *      arc verdicts ride the act-close audit, off_arc binds the next
+ *      opening's revision, on_arc permits a declared voluntary one, the
+ *      run-end audit reckons the throughline clause by clause on the same
+ *      call), engine rows/events/meta, the report block, and the mock chain
+ *      — zero new LLM calls anywhere.
  *
  * NOTE the mock-artifact boundary (as in the stall-watch and confront
  * suites): the mock cast exercises plumbing and instruments, never the
@@ -673,4 +682,484 @@ test('mock chain: C1 on the full stack — a plot per act, every plot audited, t
   assert.ok(panel.includes('**plot**'));
   assert.ok(panel.includes('**release authority**'));
   assert.ok(panel.includes('**confrontation**'));
+});
+
+// ---------------------------------------------------------------------------
+// G. two-layer planning — the throughline above the act plots
+// ---------------------------------------------------------------------------
+
+// Model-shaped throughlines (raw hold_to_end key) and their normalized rows.
+const tl1 = {
+  arc: ['the learner holds p1 and can say why', 'the learner joins p1 to p2'],
+  hold_to_end: 'the conclusion stays unsaid until the board forces it',
+  risk: 'the play stages evidence and never forces the join',
+  salvage: 'fall back to the smallest two-fact join',
+};
+const tlRowOf = (tl) => ({ arc: tl.arc, holdToEnd: tl.hold_to_end, risk: tl.risk, salvage: tl.salvage });
+const tl2 = { ...tl1, arc: ['the learner rebuilds the board after each break', 'the learner joins p1 to p2'] };
+const tl3 = { ...tl1, arc: ['the learner forces the join unprompted'] };
+
+test('G guard: throughline without the plot loop fails at build (no audit, nothing binds)', () => {
+  const { client } = stubClient({});
+  assert.throws(
+    () => makeLlmTutor(smokeWorld, client, actsOpts({ superego: true, throughline: true })),
+    /throughline requires plot/,
+  );
+});
+
+/** Capture all three charters (tutor, watch, audit) for a given dial pair. */
+async function throughlineSystems({ throughline = false } = {}) {
+  const { client, calls } = stubClient({
+    tutor: [opening(act1Plot, throughline ? { throughline: tl1 } : {}), opening(act2Plot)],
+    tutor_superego: [watchOk, { audit: [{ clause: 'x', verdict: 'kept', evidence: 'y' }], summary: 's' }, watchOk],
+  });
+  const tutor = makeLlmTutor(smokeWorld, client, actsOpts({ superego: true, plot: true, throughline }));
+  await tutor(plotView(1));
+  await tutor(plotView(4, { index: 2, startTurn: 4, closed: closed13 }));
+  return {
+    tutorSystem: calls.find((c) => c.role === 'tutor').system,
+    superegoSystem: calls.find((c) => c.role === 'tutor_superego').system,
+    auditSystem: calls.filter((c) => c.role === 'tutor_superego')[1].system,
+  };
+}
+
+test('G dial off: the plot-only arm carries no throughline strings in any charter (the C1 regression pin)', async () => {
+  const { tutorSystem, superegoSystem, auditSystem } = await throughlineSystems();
+  assert.ok(!tutorSystem.includes('# The throughline'));
+  assert.ok(!tutorSystem.includes('"throughline"'));
+  assert.ok(!tutorSystem.includes('THROUGHLINE'));
+  assert.ok(!superegoSystem.includes('THROUGHLINE'));
+  assert.ok(superegoSystem.includes('act-close audit, not the turn watch, judges the plot.'));
+  assert.ok(!auditSystem.includes('THROUGHLINE'));
+  assert.ok(!auditSystem.includes('on_arc'));
+  assert.ok(!auditSystem.includes('"arc"'));
+});
+
+test('G dial on: the throughline charter (two frames), the reply field, the watch context clause, the audit arc jurisdiction', async () => {
+  const { tutorSystem, superegoSystem, auditSystem } = await throughlineSystems({ throughline: true });
+  assert.ok(tutorSystem.includes("# The throughline (the whole play's plan, above the act plots)"));
+  assert.ok(tutorSystem.includes('Two frames govern every line you speak: the ACT — the lesson, what this'));
+  assert.ok(tutorSystem.includes('- "arc": two to four waypoints, in order — the shape the whole inquiry'));
+  assert.ok(tutorSystem.includes('on_arc or off_arc. When the verdict is off_arc, the next act opening'));
+  assert.ok(tutorSystem.includes("correction is conduct; silent drift is the failure. At the run's end"));
+  assert.ok(
+    tutorSystem.includes(
+      ', "throughline": {"arc": ["<waypoint>", ...], "hold_to_end": "...", "risk": "...", "salvage": "..."}, "throughline_reason": "<one line when revising voluntarily, else null>"',
+    ),
+  );
+  assert.ok(
+    tutorSystem.includes(
+      '("throughline" belongs to the FIRST turn and to act-opening revisions — the harness marks when it is due; omit the key otherwise.)',
+    ),
+  );
+  assert.ok(
+    superegoSystem.includes(
+      'standing THROUGHLINE for the whole play (committed at the first turn). Read them as context',
+    ),
+  );
+  assert.ok(superegoSystem.includes('act-close audit, not the turn watch, judges the plot and the arc.'));
+  assert.ok(auditSystem.includes("You may also be shown the tutor's standing THROUGHLINE — the whole"));
+  assert.ok(auditSystem.includes('ONE further verdict on the act as a whole against it: "on_arc" (the act'));
+  assert.ok(auditSystem.includes('reckons the throughline clause by clause, not you.'));
+  assert.ok(
+    auditSystem.includes(
+      ' "arc": {"verdict": "on_arc" | "off_arc", "evidence": "<one line from the record>"} (only when a throughline is before you, else omit),',
+    ),
+  );
+});
+
+test('G lifecycle: commit at the first turn, read back above the plot every turn, arc verdicts bind — off_arc demands, on_arc permits, the run-end call reckons', async () => {
+  const arcAudit = (verdict, evidence) => ({
+    audit: [{ clause: 'a standing clause', verdict: 'kept', evidence: 'held' }],
+    summary: 'the act played out',
+    arc: { verdict, evidence },
+  });
+  const act3Plot = { ...act2Plot, withhold: 'p4 waits until p3 has landed' };
+  const act4Plot = { ...act2Plot, withhold: 'nothing held back — the join is due' };
+  const finalReply = {
+    audit: [{ clause: 'a standing clause', verdict: 'kept', evidence: 'held' }],
+    summary: 'final act held',
+    arc: { verdict: 'on_arc', evidence: 'the join was forced' },
+    throughline_audit: [
+      { clause: 'the learner forces the join unprompted', verdict: 'kept', evidence: 'turn 12' },
+      // a verdict outside the contract — must gate to 'unscored'
+      { clause: tl1.hold_to_end, verdict: 'maybe', evidence: 'mostly' },
+    ],
+  };
+  const closedActs = [
+    { act: 1, turns: [1, 3], endedBy: 'director', brief: null },
+    { act: 2, turns: [4, 6], endedBy: 'director', brief: null },
+    { act: 3, turns: [7, 9], endedBy: 'director', brief: null },
+  ];
+  const { client, calls } = stubClient({
+    tutor: [
+      opening(act1Plot, { throughline: tl1 }),
+      // mid-act: a decoy revision — must be ignored (the standing frame is the commitment)
+      opening(undefined, { throughline: tl3, throughline_reason: 'DECOY' }),
+      opening(act2Plot, { throughline: tl2, throughline_reason: 'the learner is faster than planned' }),
+      opening(act3Plot, { throughline: tl3 }),
+      opening(act4Plot),
+    ],
+    tutor_superego: [
+      watchOk, // t1 watch
+      watchOk, // t2 watch
+      arcAudit('on_arc', 'p1 staged and read back'), // t4 audit of act 1
+      watchOk, // t4 watch
+      arcAudit('off_arc', 'the act circled and the arc did not advance'), // t7 audit of act 2
+      watchOk, // t7 watch
+      arcAudit('sideways', 'neither here nor there'), // t10 audit of act 3 — gates to unscored
+      watchOk, // t10 watch
+      finalReply, // run-end audit of act 4 + the throughline reckoning
+    ],
+  });
+  const tutor = makeLlmTutor(smokeWorld, client, actsOpts({ superego: true, plot: true, throughline: true }));
+
+  // t1 — the play opens: the demand comes ABOVE the act-plot demand, and the
+  // commitment rides the out with trigger 'opening'.
+  const out1 = await tutor(plotView(1));
+  const t1user = calls.find((c) => c.role === 'tutor').user;
+  assert.ok(
+    t1user.includes(
+      'THIS TURN OPENS THE PLAY — COMMIT YOUR THROUGHLINE (the whole play\'s plan) in "throughline", alongside your dialogue and your act plot.',
+    ),
+  );
+  assert.ok(t1user.indexOf('THIS TURN OPENS THE PLAY') < t1user.indexOf('THIS TURN OPENS ACT 1'));
+  assert.deepEqual(out1.throughline, { act: 1, turn: 1, trigger: 'opening', ...tlRowOf(tl1) });
+
+  // t2 — mid-act: both frames read back, course above lesson; the decoy
+  // revision is ignored.
+  const out2 = await tutor(plotView(2));
+  const t2user = calls.filter((c) => c.role === 'tutor').at(-1).user;
+  assert.ok(t2user.includes('YOUR THROUGHLINE for the whole play (standing since turn 1):'));
+  assert.ok(t2user.includes('- arc[1]: the learner holds p1 and can say why'));
+  assert.ok(t2user.includes('The play moves under it; this act serves it.'));
+  assert.ok(t2user.indexOf('YOUR THROUGHLINE for the whole play') < t2user.indexOf('YOUR PLOT for this act'));
+  assert.ok(!t2user.includes('COMMIT YOUR THROUGHLINE'));
+  assert.ok(!('throughline' in out2));
+
+  // t4 — act 2 opens, the audit's arc verdict is on_arc: the audit user shows
+  // the throughline AS IT STOOD (tl1, not the decoy), the demand is permissive,
+  // and the model's voluntary revision lands with its declared reason.
+  const before4 = calls.length;
+  const out4 = await tutor(plotView(4, { index: 2, startTurn: 4, closed: closedActs.slice(0, 1) }));
+  const auditCall4 = calls[before4];
+  assert.ok(auditCall4.user.includes("THE THROUGHLINE the tutor holds for the whole play — give your 'arc'"));
+  assert.ok(auditCall4.user.includes('verdict on the closed act against it:'));
+  assert.ok(auditCall4.user.includes('- arc[1]: the learner holds p1 and can say why'));
+  assert.ok(!auditCall4.user.includes('RUN-END'));
+  assert.deepEqual(out4.plotAudit.arc, { verdict: 'on_arc', evidence: 'p1 staged and read back' });
+  const t4user = calls[before4 + 1].user;
+  assert.ok(
+    t4user.includes(
+      'The arc verdict on the closed act: ON_ARC. You MAY revise the throughline in "throughline" with a one-line "throughline_reason"; silence keeps it standing.',
+    ),
+  );
+  assert.deepEqual(out4.throughline, {
+    act: 2,
+    turn: 4,
+    trigger: 'voluntary',
+    reason: 'the learner is faster than planned',
+    ...tlRowOf(tl2),
+  });
+  // The watch reads the NEW standing frame as context, course above lesson.
+  const t4watch = calls[before4 + 2].user;
+  assert.ok(
+    t4watch.includes(
+      "The tutor's standing THROUGHLINE for the whole play (context only — the act-close audit judges the arc):",
+    ),
+  );
+  assert.ok(t4watch.includes('- arc[1]: the learner rebuilds the board after each break'));
+  assert.ok(t4watch.indexOf('standing THROUGHLINE for the whole play') < t4watch.indexOf('standing PLOT for this act'));
+
+  // t7 — the arc verdict went off_arc: THE AUDIT BINDS, the revision is demanded.
+  const before7 = calls.length;
+  const out7 = await tutor(plotView(7, { index: 3, startTurn: 7, closed: closedActs.slice(0, 2) }));
+  const t7user = calls[before7 + 1].user;
+  assert.ok(t7user.includes('THE ARC VERDICT on the closed act was OFF_ARC — THE AUDIT BINDS: revise'));
+  assert.ok(t7user.includes('your throughline in "throughline" THIS turn to answer the evidence,'));
+  assert.deepEqual(out7.throughline, { act: 3, turn: 7, trigger: 'audit_bound', ...tlRowOf(tl3) });
+
+  // t10 — an arc verdict outside the contract gates to 'unscored': no demand
+  // (the audit did not bind), the permissive line WITHOUT the ON_ARC prefix,
+  // and the model's silence keeps the frame standing.
+  const before10 = calls.length;
+  const out10 = await tutor(plotView(10, { index: 4, startTurn: 10, closed: closedActs }));
+  assert.deepEqual(out10.plotAudit.arc, { verdict: 'unscored', evidence: 'neither here nor there' });
+  const t10user = calls[before10 + 1].user;
+  assert.ok(!t10user.includes('THE AUDIT BINDS: revise'));
+  assert.ok(!t10user.includes('The arc verdict on the closed act: ON_ARC.'));
+  assert.ok(
+    t10user.includes(
+      'You MAY revise the throughline in "throughline" with a one-line "throughline_reason"; silence keeps it standing.',
+    ),
+  );
+  assert.ok(t10user.includes('- arc[1]: the learner forces the join unprompted'));
+  assert.ok(!('throughline' in out10));
+
+  // The run-end audit RIDES the final-audit call: the inline demand, the
+  // standing frame (tl3), and the clause reckoning with the unscored gate.
+  const fin = await tutor.finalAudit({
+    transcript: [],
+    ledger: [],
+    acts: [...closedActs, { act: 4, turns: [10, 12], endedBy: 'run_end', brief: null }],
+  });
+  const finCall = calls.filter((c) => c.role === 'tutor_superego').at(-1);
+  assert.ok(finCall.user.includes('This is the RUN-END audit: the play is over. Additionally reckon the'));
+  assert.ok(finCall.user.includes('"throughline_audit"'));
+  assert.ok(finCall.user.includes('- arc[1]: the learner forces the join unprompted'));
+  assert.deepEqual(fin, {
+    act: 4,
+    clauses: [{ clause: 'a standing clause', verdict: 'kept', evidence: 'held' }],
+    summary: 'final act held',
+    arc: { verdict: 'on_arc', evidence: 'the join was forced' },
+    throughlineAudit: [
+      { clause: 'the learner forces the join unprompted', verdict: 'kept', evidence: 'turn 12' },
+      { clause: 'the conclusion stays unsaid until the board forces it', verdict: 'unscored', evidence: 'mostly' },
+    ],
+  });
+});
+
+test('G recommit: a malformed first-turn throughline leaves the play frameless — the next opening re-demands; the audit shows no arc', async () => {
+  const { client, calls } = stubClient({
+    tutor: [opening(act1Plot, { throughline: 'wing it' }), opening(act2Plot, { throughline: tl1 })],
+    tutor_superego: [watchOk, { audit: [{ clause: 'x', verdict: 'kept', evidence: '' }], summary: 's' }, watchOk],
+  });
+  const tutor = makeLlmTutor(smokeWorld, client, actsOpts({ superego: true, plot: true, throughline: true }));
+  const out1 = await tutor(plotView(1));
+  assert.ok(!('throughline' in out1), "a malformed throughline is not fabricated on the model's behalf");
+  const out3 = await tutor(
+    plotView(3, { index: 2, startTurn: 3, closed: [{ act: 1, turns: [1, 2], endedBy: 'director', brief: null }] }),
+  );
+  // No standing frame at the audit: no arc demanded, none returned.
+  const auditCall = calls.filter((c) => c.role === 'tutor_superego')[1];
+  assert.ok(!auditCall.user.includes('THROUGHLINE'));
+  assert.ok(!('arc' in out3.plotAudit));
+  const t3user = calls.filter((c) => c.role === 'tutor').at(-1).user;
+  assert.ok(
+    t3user.includes(
+      'NO THROUGHLINE STANDS — COMMIT YOUR THROUGHLINE (the whole play\'s plan) in "throughline", alongside your dialogue and your act plot.',
+    ),
+  );
+  assert.deepEqual(out3.throughline, { act: 2, turn: 3, trigger: 'recommit', ...tlRowOf(tl1) });
+});
+
+test('G revision: an intervened opening keeps its throughline — rewrite honored, parse-miss falls back to the draft', async () => {
+  const rutTranscript = [
+    tutorLine(1, { targetPremise: null, intent: 'test' }),
+    tutorLine(2, { targetPremise: null, intent: 'test' }),
+  ];
+  const fire = { intervene: true, diagnosis: 'a third erotema', note: 'Leave the device this turn.' };
+  const revision = (extra = {}) => ({
+    dialogue: 'Another way in.',
+    move: { figure: 'exemplum', target_premise: null, intent: 'test' },
+    ...extra,
+  });
+
+  // Arm 1: the revision rewrites the throughline — the rewrite is the commitment.
+  {
+    const { client } = stubClient({
+      tutor: [opening(act1Plot, { throughline: tl1 }), revision({ plot: act2Plot, throughline: tl2 })],
+      tutor_superego: [fire],
+    });
+    const tutor = makeLlmTutor(smokeWorld, client, actsOpts({ superego: true, plot: true, throughline: true }));
+    const out = await tutor(plotView(3, { index: 2, startTurn: 3, transcript: rutTranscript }));
+    assert.equal(out.deliberation.intervened, true);
+    assert.deepEqual(out.throughline, { act: 2, turn: 3, trigger: 'recommit', ...tlRowOf(tl2) });
+  }
+
+  // Arm 2: the revision omits the throughline — the draft's commitment stands.
+  {
+    const { client } = stubClient({
+      tutor: [opening(act1Plot, { throughline: tl1 }), revision()],
+      tutor_superego: [fire],
+    });
+    const tutor = makeLlmTutor(smokeWorld, client, actsOpts({ superego: true, plot: true, throughline: true }));
+    const out = await tutor(plotView(3, { index: 2, startTurn: 3, transcript: rutTranscript }));
+    assert.deepEqual(out.throughline, { act: 2, turn: 3, trigger: 'recommit', ...tlRowOf(tl1) });
+  }
+});
+
+test('G engine: throughline rows ride the result, events, and transcript meta; audit details carry the arc and the run-end reckoning', async () => {
+  const tlRow = (act, turn, trigger) => ({
+    act,
+    turn,
+    trigger,
+    arc: ['w1', 'w2'],
+    holdToEnd: 'h',
+    risk: 'r',
+    salvage: 's',
+  });
+  const plotRow = (act, turn) => ({
+    act,
+    turn,
+    holdByEnd: ['the learner holds p1'],
+    withhold: 'p2 waits',
+    friction: 'a leap',
+    fallback: 'restage',
+  });
+  const auditRow = {
+    act: 1,
+    clauses: [{ clause: 'c', verdict: 'kept', evidence: 'e' }],
+    summary: 's',
+    arc: { verdict: 'off_arc', evidence: 'circled' },
+  };
+  const tutor = async (view) => {
+    const openingTurn = view.acts.startTurn === view.turn;
+    return {
+      dialogue: 'Consider the board.',
+      move: { figure: 'erotema', targetPremise: null, intent: 'consolidate' },
+      release: null,
+      ...(openingTurn ? { plot: plotRow(view.acts.index, view.turn) } : {}),
+      ...(view.turn === 1 ? { throughline: tlRow(1, 1, 'opening') } : {}),
+      ...(openingTurn && view.acts.index === 2
+        ? { plotAudit: auditRow, throughline: tlRow(2, view.turn, 'audit_bound') }
+        : {}),
+    };
+  };
+  tutor.finalAudit = async () => ({
+    act: 2,
+    clauses: [{ clause: 'end', verdict: 'kept', evidence: '' }],
+    summary: 'fin',
+    arc: { verdict: 'on_arc', evidence: 'forced' },
+    throughlineAudit: [
+      { clause: 'w1', verdict: 'kept', evidence: '' },
+      { clause: 'w2', verdict: 'drift', evidence: '' },
+    ],
+  });
+  const roles = {
+    director: async (view) => ({
+      direction: view.turn === 3 ? 'Act two.' : '[holds]',
+      release: scheduled(smokeWorld, view.turn, 'director')?.premise || null,
+      ...(view.turn === 3 ? { act: 'end' } : {}),
+    }),
+    tutor,
+    learner: async (view) => ({ dialogue: 'I am listening.', adopt: view.releasedThisTurn }),
+  };
+  const result = await runDrama({ world: smokeWorld, roles, options: { acts: { minActTurns: 2, maxActTurns: 99 } } });
+
+  assert.deepEqual(result.plot.throughlines, [tlRow(1, 1, 'opening'), tlRow(2, 3, 'audit_bound')]);
+  assert.deepEqual(
+    result.events.filter((e) => e.type === 'throughline').map((e) => e.detail),
+    ['throughline committed (opening)', 'throughline revised (audit_bound)'],
+  );
+  const auditEvents = result.events.filter((e) => e.type === 'plot_audit');
+  assert.equal(auditEvents[0].detail, 'act 1 plot audited: kept 1, justified 0, drift 0; arc off_arc');
+  assert.equal(
+    auditEvents[1].detail,
+    'act 2 plot audited at run end: kept 1, justified 0, drift 0; arc on_arc; throughline reckoned (2 clauses)',
+  );
+  const t1line = result.transcript.find((l) => l.role === 'tutor' && l.turn === 1);
+  assert.deepEqual(t1line.meta.throughline, tlRow(1, 1, 'opening'));
+  const finRow = result.plot.audits.at(-1);
+  assert.equal(finRow.final, true);
+  assert.equal(finRow.throughlineAudit.length, 2);
+});
+
+test('G plotReport: the throughline block — triggers, discipline, arc mix with the unscored gate, the run-end reckoning', () => {
+  const synthetic = {
+    ledger: [],
+    acts: [
+      { act: 1, turns: [1, 3], endedBy: 'director' },
+      { act: 2, turns: [4, 7], endedBy: 'run_end' },
+    ],
+    plot: {
+      plots: [{ act: 1, turn: 1, holdByEnd: ['x'], withhold: 'w', friction: 'f', fallback: 'b' }],
+      audits: [
+        {
+          turn: 4,
+          act: 1,
+          clauses: [{ clause: 'c', verdict: 'kept', evidence: '' }],
+          summary: null,
+          arc: { verdict: 'on_arc', evidence: '' },
+        },
+        {
+          turn: 7,
+          final: true,
+          act: 2,
+          clauses: [{ clause: 'c2', verdict: 'kept', evidence: '' }],
+          summary: null,
+          arc: { verdict: 'weird', evidence: '' }, // gates to unscored in the mix
+          throughlineAudit: [
+            { clause: 'w1', verdict: 'kept', evidence: '' },
+            { clause: 'w2', verdict: 'justified_deviation', evidence: '' },
+            { clause: 'w3', verdict: 'mystery', evidence: '' }, // gates to unscored
+          ],
+        },
+      ],
+      throughlines: [
+        { act: 1, turn: 1, trigger: 'opening', arc: ['w1', 'w2'], holdToEnd: 'h', risk: 'r', salvage: 's' },
+        { act: 2, turn: 4, trigger: 'audit_bound', arc: ['w3'], holdToEnd: 'h', risk: null, salvage: 's' },
+      ],
+    },
+  };
+  assert.deepEqual(plotReport(synthetic, null).throughline, {
+    count: 2,
+    byTrigger: { opening: 1, recommit: 0, audit_bound: 1, voluntary: 0 },
+    disciplined: 1, // the second row lacks its risk clause
+    arcs: { count: 2, mix: { on_arc: 1, off_arc: 0, unscored: 1 } },
+    finalReckoning: { clauses: 3, mix: { kept: 1, justified_deviation: 1, drift: 0, unscored: 1 } },
+  });
+  // The plot-only arm keeps the exact C1 report shape (no throughline key).
+  const { throughlines: _throughlines, ...plotOnly } = synthetic.plot;
+  assert.ok(!('throughline' in plotReport({ ...synthetic, plot: plotOnly }, null)));
+});
+
+test('G mock chain: two-layer planning on the full stack — committed at the first turn, an arc on every audit, the run-end reckoning, the panel line', async () => {
+  const client = makeLlmClient({ mode: 'mock' });
+  const roles = {
+    director: makeLlmDirector(lanternWorld, client, { actsMode: true }),
+    tutor: makeLlmTutor(lanternWorld, client, {
+      script: lanternScript,
+      superego: true,
+      decayVisibility: 'conduct',
+      actsMode: true,
+      confront: true,
+      releaseAuthority: true,
+      plot: true,
+      throughline: true,
+    }),
+    learner: makeLlmLearner({ setting: lanternWorld.setting, voice: lanternWorld.learnerVoice, client }),
+  };
+  const result = await runDrama({
+    world: lanternWorld,
+    roles,
+    options: {
+      decay: { rate: 0.75, graceTurns: 1, maxConcurrent: 2, startTurn: 1, mutateShare: 1.0, seed: 1 },
+      acts: { minActTurns: 3, maxActTurns: 8 },
+    },
+  });
+  const d = diagnose(result, lanternWorld);
+  const tl = d.plot.throughline;
+
+  // The frame is committed at the first turn, and every commit answers a
+  // harness demand (the mock revises only when the audit binds or the frame
+  // lapses — silence keeps it standing while on_arc).
+  assert.ok(result.plot.throughlines.length >= 1);
+  assert.deepEqual([result.plot.throughlines[0].turn, result.plot.throughlines[0].trigger], [1, 'opening']);
+  assert.equal(tl.byTrigger.opening, 1);
+  assert.equal(tl.byTrigger.voluntary, 0);
+  assert.equal(
+    tl.count,
+    tl.byTrigger.opening + tl.byTrigger.recommit + tl.byTrigger.audit_bound + tl.byTrigger.voluntary,
+  );
+  assert.equal(tl.disciplined, tl.count, 'the mock throughline carries all four clauses by construction');
+
+  // Every audit (boundaries + run end) carries an arc verdict inside the
+  // contract, and each off_arc boundary verdict binds exactly one revision.
+  assert.equal(tl.arcs.count, result.plot.audits.length);
+  assert.equal(tl.arcs.mix.unscored, 0);
+  assert.equal(tl.arcs.mix.on_arc + tl.arcs.mix.off_arc, tl.arcs.count);
+  const offArcBoundaries = result.plot.audits.filter((a) => !a.final && a.arc?.verdict === 'off_arc').length;
+  assert.equal(tl.byTrigger.audit_bound, offArcBoundaries);
+
+  // The run-end reckoning rides the final audit, inside the verdict contract.
+  assert.ok(tl.finalReckoning, 'the run-end reckoning landed');
+  assert.equal(tl.finalReckoning.mix.unscored, 0);
+
+  // No cross-dial interference, and the panel renders the line.
+  assert.equal(d.plot.plots.disciplined, d.plot.plots.count);
+  assert.equal(d.releaseDeviations.invalidClaims, 0);
+  const panel = renderEvalPanel(d);
+  assert.ok(panel.includes('**throughline**'));
+  assert.ok(panel.includes('**plot**'));
 });

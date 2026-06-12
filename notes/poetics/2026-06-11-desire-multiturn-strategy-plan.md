@@ -746,3 +746,93 @@ DERIVATION_LLM=real node scripts/run-derivation-loop.js \
   --group lantern-p2-plot --label lantern-p2-plot-on \
   --critic-feedback off
 ```
+
+> Amended before the run: §11.5 (2026-06-12) adds `--throughline` to this
+> command. The command actually executed is the one printed in §11.5.
+
+### 11.5 Pre-run amendment (2026-06-12): two-layer planning — the throughline above the act plots
+
+> Operator-directed, before any paid turn of this arm ran: "two layers of
+> planning — one whole drama, the other per act … the immediate frame
+> (what is happening in this act — equivalent to a lesson) and the whole
+> situation (what is happening in this drama — equivalent to a course)."
+> The act plot (§11.1) is the lesson frame; this amendment adds the
+> course frame above it. Implemented and verified mock-first (tests
+> section G, 9 dedicated tests; full hermetic suite green; zero-cost mock
+> loop on lantern with every dial up), committed together with this text
+> BEFORE the paid arm runs. Nothing below is adjustable after the run.
+
+Mechanics (flag-gated under `--throughline`, requiring `--plot` — the
+arc verdict rides the act-close audit, so without the plot loop nothing
+binds):
+
+1. **Commit at the first turn.** On t1 the tutor ego writes a
+   THROUGHLINE beside its dialogue and its act plot: `arc` (two to four
+   waypoints for the whole inquiry), `hold_to_end` (what the play must
+   not reach until its final phase), `risk` (the single greatest threat
+   to the whole play), `salvage` (the path if the arc breaks). Distinct
+   vocabulary from the act plot, same conduct-only construction.
+2. **Read back every turn, course above lesson.** Every subsequent turn
+   carries the standing throughline back into the ego prompt ABOVE the
+   act plot — the two frames the directive names, present together at
+   every line the tutor speaks.
+3. **The arc verdict rides the existing audit.** At each act close the
+   same act-close auditor gives ONE additional verdict on the closed act
+   against the standing throughline: `on_arc` / `off_arc` (outside the
+   vocabulary gates to `unscored`). Zero new LLM calls anywhere in the
+   loop: the commitment rides the draft call, the arc verdict rides the
+   audit call, and the run-end reckoning rides the final-audit call —
+   the per-run call ceiling is unchanged from §11.
+4. **Binding asymmetry.** An `off_arc` verdict BINDS: the next act
+   opening must revise the throughline to answer the evidence (trigger
+   `audit_bound`). While `on_arc`, revision is permitted but must carry
+   a declared one-line `throughline_reason` (trigger `voluntary`);
+   silence keeps the frame standing. A malformed commitment is data: the
+   play runs frameless and the next opening re-demands (`recommit`).
+5. **Run-end reckoning.** The final audit additionally reckons the
+   throughline clause by clause (kept / justified_deviation / drift,
+   same gate discipline), requested inline in the same call. An
+   unplotted final act leaves both layers unaudited — the missing row is
+   the ledger of that lapse.
+
+Amendments to the registration above:
+
+- **The arm (§11.2).** The paid command gains `--throughline`; label and
+  group unchanged. The contrast against `lantern-p1-dials-on-v2` is now
+  **+C1 two-layer** (act plots AND throughline land together).
+- **Endpoint 2, mechanism integrity**, additionally requires the
+  throughline cadence: a commitment standing from t1
+  (`throughline.byTrigger.opening = 1`), all four clauses present
+  (`disciplined = count`), an arc verdict on every audit
+  (`arcs.count = audits.count`, unscored rate reported), every `off_arc`
+  boundary verdict answered by an `audit_bound` revision at the next
+  opening, and the run-end reckoning present. The mock floor: 1 commit /
+  7 arc verdicts (6 on, 1 off — the off on the run-end audit, which no
+  opening follows) / 6-clause final reckoning, 0 unscored anywhere.
+- **Endpoint 4, audit bite**, extends to the arc channel: do arc
+  verdicts carry information (any `off_arc` on a boundary, and does the
+  bound revision answer its evidence), and is any voluntary revision
+  reasoned rather than churned?
+- **Claim ceiling (§11.4) tightens.** The two planning layers land
+  together in one arm: nothing in this run can attribute an effect to
+  the act plot alone or the throughline alone. If either layer alone
+  becomes the claim, a split pair needs fresh sanction. All other §11.3
+  endpoints, comparators, and reading discipline are unchanged.
+
+The throughline charter text, the two-frame prompt ordering, the binding
+asymmetry, and the run-end reckoning are pinned by string assertions in
+`tests/dramaticDerivationPlot.test.js` (section G) committed with this
+amendment. The paid command as amended:
+
+```
+DERIVATION_PROVIDER=codex DERIVATION_LEARNER_PROVIDER=claude \
+DERIVATION_LEARNER_MODEL=sonnet DERIVATION_CLI_TIMEOUT_MS=900000 \
+DERIVATION_LLM=real node scripts/run-derivation-loop.js \
+  --world config/drama-derivation/world-002-lantern.yaml \
+  --script config/drama-derivation/tutor-scripts/lantern-v001.md \
+  --superego --acts '{"minActTurns":3,"maxActTurns":8}' \
+  --decay '{"rate":0.75,"graceTurns":1,"maxConcurrent":2,"startTurn":1,"mutateShare":1.0,"seed":1}' \
+  --confront --release-authority --plot --throughline \
+  --group lantern-p2-plot --label lantern-p2-plot-on \
+  --critic-feedback off
+```

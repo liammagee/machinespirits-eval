@@ -341,7 +341,14 @@ function tutorSystem(
   world,
   script,
   dials = {},
-  { actsMode = false, reconstruct = false, confront = false, releaseAuthority = false, plot = false } = {},
+  {
+    actsMode = false,
+    reconstruct = false,
+    confront = false,
+    releaseAuthority = false,
+    plot = false,
+    throughline = false,
+  } = {},
 ) {
   const recognition = clampDial(dials.recognition);
   const charisma = clampDial(dials.charisma);
@@ -485,6 +492,32 @@ function tutorSystem(
           'new plot; they play under the standing one.',
         ]
       : []),
+    ...(throughline
+      ? [
+          '',
+          "# The throughline (the whole play's plan, above the act plots)",
+          '',
+          'Two frames govern every line you speak: the ACT — the lesson, what this',
+          'act must accomplish — and the PLAY — the course, where the whole inquiry',
+          'is going. The act plot serves the first; the THROUGHLINE you commit on',
+          'the FIRST turn of the drama serves the second. Four fields:',
+          '- "arc": two to four waypoints, in order — the shape the whole inquiry',
+          '  should take, each checkable from the record when it arrives;',
+          '- "hold_to_end": the one thing the play must not reach until its final',
+          '  phase, and what must stand before it;',
+          '- "risk": the single greatest threat to the WHOLE play — named now,',
+          '  before it arrives;',
+          '- "salvage": the path you take if the arc breaks.',
+          '',
+          'The throughline is the standing frame: every act plot must advance it,',
+          'and at each act close your own watcher judges the act against it —',
+          'on_arc or off_arc. When the verdict is off_arc, the next act opening',
+          'MUST revise the throughline to answer the evidence; while it is on_arc',
+          'you may revise only with a declared one-line reason. A course',
+          "correction is conduct; silent drift is the failure. At the run's end",
+          'the throughline itself is audited clause by clause, like any plot.',
+        ]
+      : []),
     ...(registers.length
       ? ['', '# Register (operator dials — these color your MANNER, never your evidence)', '', ...registers]
       : []),
@@ -502,8 +535,17 @@ function tutorSystem(
         : ''
     }${
       plot ? ', "plot": {"hold_by_end": ["<claim>", ...], "withhold": "...", "friction": "...", "fallback": "..."}' : ''
+    }${
+      throughline
+        ? ', "throughline": {"arc": ["<waypoint>", ...], "hold_to_end": "...", "risk": "...", "salvage": "..."}, "throughline_reason": "<one line when revising voluntarily, else null>"'
+        : ''
     }}`,
     ...(plot ? ['("plot" belongs to act-opening turns ONLY — the harness marks them; omit the key mid-act.)'] : []),
+    ...(throughline
+      ? [
+          '("throughline" belongs to the FIRST turn and to act-opening revisions — the harness marks when it is due; omit the key otherwise.)',
+        ]
+      : []),
   ].join('\n');
 }
 
@@ -525,7 +567,7 @@ function tutorSystem(
  */
 function tutorSuperegoSystem(
   world,
-  { stallWatch = false, counsel = null, reconstruct = false, confront = false, plot = false } = {},
+  { stallWatch = false, counsel = null, reconstruct = false, confront = false, plot = false, throughline = false } = {},
 ) {
   return [
     "You are the tutor's SUPEREGO in a staged derivation drama — the watcher inside",
@@ -635,10 +677,16 @@ function tutorSuperegoSystem(
       ? [
           '',
           "The draft may come with the tutor's standing PLOT for the act (committed",
-          'at its opening). Read it as context; when the draft plainly abandons its',
+          'at its opening)' +
+            (throughline
+              ? " and the tutor's standing THROUGHLINE for the whole play" + ' (committed at the first turn)'
+              : '') +
+            '. Read ' +
+            (throughline ? 'them' : 'it') +
+            ' as context; when the draft plainly abandons its',
           'own plot — a withhold about to be staged, a named friction met with',
           'nothing — say so in "diagnosis". Your jurisdiction is unchanged: the',
-          'act-close audit, not the turn watch, judges the plot.',
+          'act-close audit, not the turn watch, judges the plot' + (throughline ? ' and the arc' : '') + '.',
         ]
       : []),
     ...(counsel
@@ -669,6 +717,10 @@ function tutorSuperegoSystem(
 // 'unscored' rather than being trusted — the contract is the three words.
 const PLOT_VERDICTS = new Set(['kept', 'justified_deviation', 'drift']);
 
+// The arc verdict vocabulary (C1 two-layer): the act-close audit also reads
+// the act against the standing throughline. Same gate discipline.
+const ARC_VERDICTS = new Set(['on_arc', 'off_arc']);
+
 /**
  * The act-close plot audit — the same watcher, sitting in a SECOND seat (C1,
  * plan §5). At each act boundary it judges the closed act's PLOT against the
@@ -678,7 +730,7 @@ const PLOT_VERDICTS = new Set(['kept', 'justified_deviation', 'drift']);
  * learner's board — and its verdict is read by the ego alone: intra-mind,
  * no new evidence channel onto the stage.
  */
-function plotAuditSystem(world) {
+function plotAuditSystem(world, { throughline = false } = {}) {
   return [
     "You are the tutor's SUPEREGO in a staged derivation drama, sitting as the",
     'ACT-CLOSE AUDITOR. An act has just closed. Before you: the PLOT the tutor',
@@ -695,12 +747,27 @@ function plotAuditSystem(world) {
     '  Name the evidence.',
     '- "drift" — the act wandered off the clause with nothing in the record to',
     '  answer for it. A clause too vague to check is drift by default.',
+    ...(throughline
+      ? [
+          '',
+          "You may also be shown the tutor's standing THROUGHLINE — the whole",
+          "play's plan, committed at the first turn. When it is before you, give",
+          'ONE further verdict on the act as a whole against it: "on_arc" (the act',
+          "advanced the throughline's waypoints, or held its ground for a named",
+          'reason) or "off_arc" (the act spent itself away from the arc — name',
+          'where). One verdict for the act, not per waypoint; the run-end audit',
+          'reckons the throughline clause by clause, not you.',
+        ]
+      : []),
     '',
     'Your audit reaches the tutor alone — never the stage. Be exact and',
     'unsentimental: the next plot is built on these verdicts.',
     '',
     'Reply with ONLY a JSON object:',
-    '{"audit": [{"clause": "<the clause, quoted or tightly paraphrased>", "verdict": "kept" | "justified_deviation" | "drift", "evidence": "<one line from the record>"}, ...],',
+    '{"audit": [{"clause": "<the clause, quoted or tightly paraphrased>", "verdict": "kept" | "justified_deviation" | "drift", "evidence": "<one line from the record>"}, ...],' +
+      (throughline
+        ? '\n "arc": {"verdict": "on_arc" | "off_arc", "evidence": "<one line from the record>"} (only when a throughline is before you, else omit),'
+        : ''),
     ' "summary": "<one or two lines the tutor reads before plotting the next act>"}',
   ].join('\n');
 }
@@ -720,6 +787,7 @@ export function makeLlmTutor(
     confront = false,
     releaseAuthority = false,
     plot = false,
+    throughline = false,
   } = {},
 ) {
   if (!script || !script.trim()) {
@@ -770,11 +838,26 @@ export function makeLlmTutor(
   if (plot && !superego) {
     throw new Error('derivation.llmRoles: plot requires the superego (the act-close audit is its jurisdiction)');
   }
-  const system = tutorSystem(world, script, dials, { actsMode, reconstruct, confront, releaseAuthority, plot });
+  // Two-layer planning (operator-directed 2026-06-12): the throughline is the
+  // whole-play frame ABOVE the act plots — its arc verdict rides the act-close
+  // audit, so without the plot loop there is nothing for it to bind to.
+  if (throughline && !plot) {
+    throw new Error(
+      'derivation.llmRoles: throughline requires plot (the arc verdict rides the act-close audit — no plot loop, nothing binds)',
+    );
+  }
+  const system = tutorSystem(world, script, dials, {
+    actsMode,
+    reconstruct,
+    confront,
+    releaseAuthority,
+    plot,
+    throughline,
+  });
   const superegoSystem = superego
-    ? tutorSuperegoSystem(world, { stallWatch, counsel, reconstruct, confront, plot })
+    ? tutorSuperegoSystem(world, { stallWatch, counsel, reconstruct, confront, plot, throughline })
     : null;
-  const plotAuditCharter = plot ? plotAuditSystem(world) : null;
+  const plotAuditCharter = plot ? plotAuditSystem(world, { throughline }) : null;
   const normalizeMove = (out) =>
     out.move && typeof out.move === 'object'
       ? {
@@ -800,6 +883,11 @@ export function makeLlmTutor(
   // audited at each close. Per-run state lives in the bridge closure (the
   // firstSeen-Map pattern from makeLlmLearner). ---
   const plotState = plot ? { current: null, actIndex: null, authoredTurn: null, lastAudit: null } : null;
+  // Two-layer planning: the throughline is per-RUN state (one frame for the
+  // whole play), where plotState is per-act. lastArc carries the audit's arc
+  // verdict across the boundary — it is what makes an off_arc verdict bind
+  // the next opening's revision demand.
+  const throughlineState = throughline ? { current: null, committedTurn: null, revisedTurns: [], lastArc: null } : null;
   // Plot shape gate: a plot is real only when at least one field is
   // non-empty — a malformed or empty plot drops to null, which keeps the
   // engine's recording gate closed for that act (absence is visible to the
@@ -817,10 +905,12 @@ export function makeLlmTutor(
     return { holdByEnd, withhold, friction, fallback };
   };
   // Audit shape gate: a clause with a verdict outside the contract is kept
-  // but gated to 'unscored' rather than trusted; no clauses -> null.
-  const normalizeAudit = (raw, act) => {
-    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
-    const clauses = (Array.isArray(raw.audit) ? raw.audit : [])
+  // but gated to 'unscored' rather than trusted; no clauses -> null. The
+  // throughline rider parses with the same discipline: the arc verdict gates
+  // to 'unscored' outside ARC_VERDICTS, and the run-end clause reckoning
+  // reuses the plot's three-word vocabulary.
+  const parseClauses = (v) =>
+    (Array.isArray(v) ? v : [])
       .filter((c) => c && typeof c === 'object')
       .map((c) => ({
         clause: typeof c.clause === 'string' ? c.clause.trim() : '',
@@ -828,11 +918,24 @@ export function makeLlmTutor(
         evidence: typeof c.evidence === 'string' ? c.evidence.trim() : '',
       }))
       .filter((c) => c.clause);
+  const normalizeAudit = (raw, act) => {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+    const clauses = parseClauses(raw.audit);
     if (!clauses.length) return null;
+    const arc =
+      throughline && raw.arc && typeof raw.arc === 'object' && !Array.isArray(raw.arc)
+        ? {
+            verdict: ARC_VERDICTS.has(raw.arc.verdict) ? raw.arc.verdict : 'unscored',
+            evidence: typeof raw.arc.evidence === 'string' ? raw.arc.evidence.trim() : '',
+          }
+        : null;
+    const throughlineAudit = throughline ? parseClauses(raw.throughline_audit) : [];
     return {
       act,
       clauses,
       summary: typeof raw.summary === 'string' && raw.summary.trim() ? raw.summary.trim() : null,
+      ...(arc ? { arc } : {}),
+      ...(throughlineAudit.length ? { throughlineAudit } : {}),
     };
   };
   const renderPlotLines = (p) => [
@@ -841,22 +944,54 @@ export function makeLlmTutor(
     ...(p.friction ? [`- friction: ${p.friction}`] : []),
     ...(p.fallback ? [`- fallback: ${p.fallback}`] : []),
   ];
+  // Throughline shape gate: same discipline as the plot — real only when at
+  // least one field is non-empty; a malformed commitment drops to null, the
+  // play runs without a standing frame, and the next opening re-demands one
+  // (the lapse stays visible to the scorer).
+  const normalizeThroughline = (raw) => {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+    const str = (v) => (typeof v === 'string' && v.trim() ? v.trim() : null);
+    const arc = Array.isArray(raw.arc) ? raw.arc.map((x) => String(x).trim()).filter(Boolean) : [];
+    const holdToEnd = str(raw.hold_to_end);
+    const risk = str(raw.risk);
+    const salvage = str(raw.salvage);
+    if (!arc.length && !holdToEnd && !risk && !salvage) return null;
+    return { arc, holdToEnd, risk, salvage };
+  };
+  const renderThroughlineLines = (t) => [
+    ...t.arc.map((w, i) => `- arc[${i + 1}]: ${w}`),
+    ...(t.holdToEnd ? [`- hold_to_end: ${t.holdToEnd}`] : []),
+    ...(t.risk ? [`- risk: ${t.risk}`] : []),
+    ...(t.salvage ? [`- salvage: ${t.salvage}`] : []),
+  ];
   // The act-close audit call: a separate tutor_superego call under its own
   // charter. The auditor holds the ego's plot text and the act's public
   // record (its lines + the exhibit ids staged in its span) — the watch's
   // leak discipline: nothing concealed enters, and the verdict goes to the
   // ego alone, never the stage.
-  const auditClosedAct = async (closedAct, standingPlot, { transcript, ledger, turn }) => {
+  const auditClosedAct = async (closedAct, standingPlot, { transcript, ledger, turn, isFinal = false }) => {
     const [from, to] = closedAct.turns;
     const actLines = transcript.filter(
       (l) => l.turn >= from && l.turn <= to && (l.role === 'tutor' || l.role === 'learner'),
     );
     const staged = ledger.filter((l) => l.turn >= from && l.turn <= to).map((l) => l.premiseId);
+    // The standing throughline enters the auditor's view AS IT STOOD during
+    // the act — the call order at a boundary is audit -> draft -> watch, so
+    // any revision this turn lands after the verdict it must answer.
+    const standingThroughline = throughline ? throughlineState.current : null;
     const auditUser = [
       `Act ${closedAct.act} has closed (turns ${from}–${to}).`,
       '',
       'THE PLOT the tutor committed at its opening:',
       ...renderPlotLines(standingPlot),
+      ...(standingThroughline
+        ? [
+            '',
+            "THE THROUGHLINE the tutor holds for the whole play — give your 'arc'",
+            'verdict on the closed act against it:',
+            ...renderThroughlineLines(standingThroughline),
+          ]
+        : []),
       '',
       `Exhibits staged during the act: ${staged.length ? staged.join(', ') : 'none'}.`,
       '',
@@ -864,6 +999,14 @@ export function makeLlmTutor(
       actLines.map((l) => `[turn ${l.turn}] ${l.role.toUpperCase()}: ${(l.text || '').trim()}`).join('\n') ||
         '(no lines)',
       '',
+      ...(isFinal && standingThroughline
+        ? [
+            'This is the RUN-END audit: the play is over. Additionally reckon the',
+            'THROUGHLINE clause by clause against the whole record, as',
+            '"throughline_audit": [{"clause": "...", "verdict": "kept" | "justified_deviation" | "drift", "evidence": "..."}, ...].',
+            '',
+          ]
+        : []),
       'Audit the plot clause by clause. Reply with ONLY the JSON object.',
     ].join('\n');
     // mock determinism: a hold clause is kept iff a premise id it names was
@@ -886,10 +1029,62 @@ export function makeLlmTutor(
         ? [{ clause: standingPlot.fallback, verdict: 'kept', evidence: 'mock: fallback stood ready' }]
         : []),
     ];
+    // mock determinism for the throughline rider: on_arc iff the act staged
+    // at least one exhibit (an act that moved evidence advanced the arc); the
+    // final call reckons every throughline clause kept. The real backend
+    // ignores meta.
+    const mockArcBits = standingThroughline
+      ? {
+          arc: {
+            verdict: staged.length ? 'on_arc' : 'off_arc',
+            evidence: staged.length
+              ? `mock: act staged ${staged.join(', ')}`
+              : 'mock: act staged nothing — the arc did not advance',
+          },
+          ...(isFinal
+            ? {
+                throughlineAudit: [
+                  ...standingThroughline.arc.map((w) => ({
+                    clause: w,
+                    verdict: 'kept',
+                    evidence: 'mock: waypoint reckoned at run end',
+                  })),
+                  ...(standingThroughline.holdToEnd
+                    ? [
+                        {
+                          clause: standingThroughline.holdToEnd,
+                          verdict: 'kept',
+                          evidence: 'mock: hold_to_end reckoned at run end',
+                        },
+                      ]
+                    : []),
+                  ...(standingThroughline.risk
+                    ? [{ clause: standingThroughline.risk, verdict: 'kept', evidence: 'mock: risk named in advance' }]
+                    : []),
+                  ...(standingThroughline.salvage
+                    ? [
+                        {
+                          clause: standingThroughline.salvage,
+                          verdict: 'kept',
+                          evidence: 'mock: salvage stood ready',
+                        },
+                      ]
+                    : []),
+                ],
+              }
+            : {}),
+        }
+      : {};
     const out = await callJson(client, 'tutor_superego', turn, {
       system: plotAuditCharter,
       user: auditUser,
-      meta: { plotAuditHint: { clauses: mockClauses, summary: `mock audit of act ${closedAct.act}` } },
+      meta: {
+        plotAuditHint: {
+          clauses: mockClauses,
+          summary: `mock audit of act ${closedAct.act}`,
+          ...mockArcBits,
+        },
+      },
     });
     return normalizeAudit(out, closedAct.act);
   };
@@ -970,10 +1165,69 @@ export function makeLlmTutor(
           });
           if (plotAuditRow) plotState.lastAudit = plotAuditRow;
         }
+        // The arc verdict crosses the boundary here: written before the
+        // prompt section is assembled, so an off_arc verdict binds THIS
+        // opening's revision demand (audit -> draft -> watch).
+        if (throughline && plotAuditRow?.arc) throughlineState.lastArc = plotAuditRow.arc.verdict;
         plotState.current = null;
         plotState.actIndex = a.index;
       }
     }
+    // --- Throughline lifecycle (two-layer planning): committed at the first
+    // turn, read back EVERY turn above the act plot, revisable only at act
+    // openings — demanded when nothing stands (opening / recommit) or when
+    // the arc verdict went off_arc (audit_bound); permitted with a declared
+    // reason while on_arc (voluntary). ---
+    let throughlineDue = false;
+    let throughlineTrigger = null;
+    if (throughline && plotOpening) {
+      if (!throughlineState.current) {
+        throughlineDue = true;
+        throughlineTrigger = view.turn === 1 ? 'opening' : 'recommit';
+      } else if (throughlineState.lastArc === 'off_arc') {
+        throughlineDue = true;
+        throughlineTrigger = 'audit_bound';
+      }
+    }
+    const throughlineSection = (() => {
+      if (!throughline) return [];
+      const standing = throughlineState.current
+        ? [
+            '',
+            `YOUR THROUGHLINE for the whole play (standing since turn ${throughlineState.committedTurn}):`,
+            ...renderThroughlineLines(throughlineState.current),
+          ]
+        : [];
+      if (!plotOpening) {
+        return standing.length ? [...standing, 'The play moves under it; this act serves it.'] : [];
+      }
+      if (throughlineDue) {
+        if (throughlineTrigger === 'audit_bound') {
+          return [
+            ...standing,
+            'THE ARC VERDICT on the closed act was OFF_ARC — THE AUDIT BINDS: revise',
+            'your throughline in "throughline" THIS turn to answer the evidence,',
+            'alongside your dialogue and your act plot.',
+          ];
+        }
+        return [
+          '',
+          throughlineTrigger === 'opening'
+            ? 'THIS TURN OPENS THE PLAY — COMMIT YOUR THROUGHLINE (the whole play\'s plan) in "throughline", alongside your dialogue and your act plot.'
+            : 'NO THROUGHLINE STANDS — COMMIT YOUR THROUGHLINE (the whole play\'s plan) in "throughline", alongside your dialogue and your act plot.',
+        ];
+      }
+      return [
+        ...standing,
+        ...(throughlineState.lastArc === 'on_arc'
+          ? [
+              'The arc verdict on the closed act: ON_ARC. You MAY revise the throughline in "throughline" with a one-line "throughline_reason"; silence keeps it standing.',
+            ]
+          : [
+              'You MAY revise the throughline in "throughline" with a one-line "throughline_reason"; silence keeps it standing.',
+            ]),
+      ];
+    })();
     const plotSection = !plot
       ? []
       : plotOpening
@@ -1019,6 +1273,9 @@ export function makeLlmTutor(
         '',
         'The dialogue so far (you remember all of it; the learner sees only this act):',
         renderTranscriptTail(view.transcript, view.transcript.length),
+        // The two frames, course above lesson: the whole-play throughline
+        // reads back first, the act plot under it.
+        ...throughlineSection,
         ...plotSection,
         '',
         task,
@@ -1110,6 +1367,23 @@ export function makeLlmTutor(
             })(),
           }
         : {}),
+      // mock determinism (two-layer): a schedule-derived throughline on the
+      // turns the harness demands one — the remaining scheduled premises
+      // become waypoints. The real backend ignores meta.
+      ...(throughline && throughlineDue
+        ? {
+            throughlineHint: (() => {
+              const unreleased = world.releaseSchedule.filter((e) => !alreadyReleased.has(e.premise));
+              const waypoints = unreleased.slice(0, 3).map((e) => `the learner holds ${e.premise} and can say why`);
+              return {
+                arc: waypoints.length ? waypoints : ['the learner restates the standing board unprompted'],
+                hold_to_end: 'the conclusion stays unsaid until the board forces it from the learner',
+                risk: 'the play spends its acts staging evidence and never forces the join',
+                salvage: 'fall back to the smallest two-fact join the board affords and build from there',
+              };
+            })(),
+          }
+        : {}),
     };
     // C2 harness enforcement: the model's declared release is honored only
     // inside the window — an id outside it (unscheduled, already played, not
@@ -1154,10 +1428,50 @@ export function makeLlmTutor(
       plotState.current = draftPlot;
       plotState.authoredTurn = view.turn;
     }
+    // The throughline parses on opening turns only (the standing frame is the
+    // commitment mid-act). Demanded commits carry the harness's trigger;
+    // an undemanded commit at an opening is a voluntary revision — accepted
+    // with or without its declared reason, the absence visible in the row.
+    const parseThroughlineOut = (out) => {
+      const tl = throughline && plotOpening ? normalizeThroughline(out.throughline) : null;
+      if (!tl) return null;
+      const reason =
+        typeof out.throughline_reason === 'string' && out.throughline_reason.trim()
+          ? out.throughline_reason.trim()
+          : null;
+      return { tl, reason };
+    };
+    const commitThroughline = (parsed) => {
+      if (!parsed) return;
+      throughlineState.current = parsed.tl;
+      if (throughlineState.committedTurn == null) {
+        throughlineState.committedTurn = view.turn;
+      } else if (
+        throughlineState.committedTurn !== view.turn &&
+        throughlineState.revisedTurns[throughlineState.revisedTurns.length - 1] !== view.turn
+      ) {
+        throughlineState.revisedTurns.push(view.turn);
+      }
+    };
+    const draftThroughline = parseThroughlineOut(draftOut);
+    commitThroughline(draftThroughline);
     const releaseBits = normalizeRelease(draftOut);
     const plotBits = (finalPlot) => ({
       ...(finalPlot ? { plot: { act: view.acts?.index, turn: view.turn, ...finalPlot } } : {}),
       ...(plotAuditRow ? { plotAudit: plotAuditRow } : {}),
+    });
+    const throughlineBits = (parsed) => ({
+      ...(parsed
+        ? {
+            throughline: {
+              act: view.acts?.index,
+              turn: view.turn,
+              trigger: throughlineDue ? throughlineTrigger : 'voluntary',
+              ...(parsed.reason ? { reason: parsed.reason } : {}),
+              ...parsed.tl,
+            },
+          }
+        : {}),
     });
     const draft = {
       dialogue: typeof draftOut.dialogue === 'string' ? draftOut.dialogue.trim() : '',
@@ -1165,6 +1479,7 @@ export function makeLlmTutor(
       ...releaseBits,
       ...(draftTheory ? { theory: draftTheory } : {}),
       ...plotBits(draftPlot),
+      ...throughlineBits(draftThroughline),
     };
     if (!superego) return draft;
 
@@ -1300,6 +1615,13 @@ export function makeLlmTutor(
             `held: ${draftTheory.believed_held.join(', ') || '(none)'}; missing: ${
               draftTheory.believed_missing.join(', ') || '(none)'
             }; mistaken: ${draftTheory.believed_mistaken.join(', ') || '(none)'}`,
+          ]
+        : []),
+      ...(throughline && throughlineState.current
+        ? [
+            '',
+            "The tutor's standing THROUGHLINE for the whole play (context only — the act-close audit judges the arc):",
+            ...renderThroughlineLines(throughlineState.current),
           ]
         : []),
       ...(plot && plotState.current
@@ -1465,6 +1787,11 @@ export function makeLlmTutor(
       plotState.current = revisedPlot;
       plotState.authoredTurn = view.turn;
     }
+    // Same fallback contract for the throughline: a parse-miss on the
+    // revision keeps the draft's commitment, so an intervened opening never
+    // loses the standing frame.
+    const revisedThroughline = throughline && plotOpening ? parseThroughlineOut(revisedOut) || draftThroughline : null;
+    commitThroughline(revisedThroughline);
     return {
       dialogue,
       move: normalizeMove(revisedOut) || draft.move,
@@ -1476,6 +1803,7 @@ export function makeLlmTutor(
       ...(draft.releaseDecision ? { releaseDecision: draft.releaseDecision } : {}),
       ...(revisedTheory ? { theory: revisedTheory } : {}),
       ...plotBits(revisedPlot),
+      ...throughlineBits(revisedThroughline),
       deliberation: {
         ...deliberation,
         intervened: true,
@@ -1492,10 +1820,14 @@ export function makeLlmTutor(
     tutorFn.finalAudit = async ({ transcript, ledger, acts }) => {
       const finalAct = acts[acts.length - 1] || null;
       if (!plotState.current || !finalAct || plotState.actIndex !== finalAct.act) return null;
+      // The run-end throughline reckoning RIDES this call (no extra call):
+      // an unplotted final act therefore leaves both layers unaudited — the
+      // missing final row is the ledger of that lapse.
       return auditClosedAct(finalAct, plotState.current, {
         transcript,
         ledger,
         turn: finalAct.turns[1],
+        isFinal: true,
       });
     };
   }

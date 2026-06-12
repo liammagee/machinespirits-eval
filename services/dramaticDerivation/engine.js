@@ -143,7 +143,8 @@ export async function runDrama({ world, roles, options = {} }) {
   const actState = acts ? { index: 1, startTurn: 1, brief: '', history: [] } : null;
   const reconstructionRows = []; // {turn, believed, truth} — reconstructing-tutor dial (roles-layer)
   const plotRows = []; // {act, turn, holdByEnd, withhold, friction, fallback} — C1 act-plot dial (roles-layer)
-  const plotAuditRows = []; // {turn, [final,] act, clauses, summary} — C1 act-close audits
+  const plotAuditRows = []; // {turn, [final,] act, clauses, summary[, arc][, throughlineAudit]} — C1 act-close audits
+  const throughlineRows = []; // {act, turn, trigger[, reason], arc, holdToEnd, risk, salvage} — two-layer planning
   const ledger = []; // {turn, premiseId, via}
   const releasedKeys = new Set();
   const releasedFacts = [];
@@ -547,6 +548,7 @@ export async function runDrama({ world, roles, options = {} }) {
         ...(tutorOut.theory ? { theory: tutorOut.theory } : {}),
         ...(tutorOut.plot ? { plot: tutorOut.plot } : {}),
         ...(tutorOut.plotAudit ? { plotAudit: tutorOut.plotAudit } : {}),
+        ...(tutorOut.throughline ? { throughline: tutorOut.throughline } : {}),
       },
     });
 
@@ -584,6 +586,16 @@ export async function runDrama({ world, roles, options = {} }) {
     if (tutorOut.plotAudit) {
       plotAuditRows.push({ turn, ...tutorOut.plotAudit });
       events.push({ turn, type: 'plot_audit', detail: plotAuditDetail(tutorOut.plotAudit) });
+    }
+    // Two-layer planning: the whole-play throughline, committed at the first
+    // turn and revised at act openings (trigger says which demand produced it).
+    if (tutorOut.throughline) {
+      throughlineRows.push({ ...tutorOut.throughline });
+      events.push({
+        turn,
+        type: 'throughline',
+        detail: `throughline ${tutorOut.throughline.trigger === 'voluntary' || tutorOut.throughline.trigger === 'audit_bound' ? 'revised' : 'committed'} (${tutorOut.throughline.trigger})`,
+      });
     }
 
     // Tutor-side repair: a move that TARGETS a decayed premise restores it —
@@ -930,7 +942,15 @@ export async function runDrama({ world, roles, options = {} }) {
     },
     ...(actState ? { acts: actState.history } : {}),
     ...(reconstructionRows.length ? { reconstruction: reconstructionRows } : {}),
-    ...(plotRows.length || plotAuditRows.length ? { plot: { plots: plotRows, audits: plotAuditRows } } : {}),
+    ...(plotRows.length || plotAuditRows.length || throughlineRows.length
+      ? {
+          plot: {
+            plots: plotRows,
+            audits: plotAuditRows,
+            ...(throughlineRows.length ? { throughlines: throughlineRows } : {}),
+          },
+        }
+      : {}),
     ...(corruption
       ? {
           corruption: {
@@ -958,7 +978,9 @@ function plotAuditDetail(audit, suffix = '') {
   }
   return (
     `act ${audit.act} plot audited${suffix}: kept ${mix.kept}, justified ${mix.justified_deviation}, ` +
-    `drift ${mix.drift}${mix.unscored ? `, unscored ${mix.unscored}` : ''}`
+    `drift ${mix.drift}${mix.unscored ? `, unscored ${mix.unscored}` : ''}` +
+    (audit.arc ? `; arc ${audit.arc.verdict}` : '') +
+    (audit.throughlineAudit?.length ? `; throughline reckoned (${audit.throughlineAudit.length} clauses)` : '')
   );
 }
 
