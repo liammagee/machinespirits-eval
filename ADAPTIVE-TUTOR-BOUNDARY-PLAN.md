@@ -516,3 +516,29 @@ Artifacts: exports/dramatic-derivation/loop/<group>/ (git add -f on completion)
 Outcome record: §N.5 here; paper fold-in §6.13.x; manifest must pass.
 This registration spends the <date> <phase> sanction in full.
 ```
+
+## E2 registration — 2026-06-12 (committed pre-run; this text does not change after)
+
+Sanction: operator, 2026-06-12 ("run Gate-1 with codex as harness"). Harness
+operator: Codex. One sanction = the whole fan.
+
+Design: k=5 replicates of the frozen p4 recipe (§13.2 command), zero deltas,
+seed 1 in every arm. Labels lantern-e2-real-r1 … lantern-e2-real-r5, group
+lantern-e2-replication. Serialized, attended, human gate between arms. Critic
+deferred per arm (--critic off) and backfilled for all five once Claude quota
+allows — the notices are part of this registration, not optional.
+
+Endpoints:
+1. Grounding rate of 5, with Clopper–Pearson 95% lower bounds as tabled in
+   §E2 (5/5 → ≥0.48 · 4/5 → ≥0.28 · 3/5 → ≥0.15).
+2. Divergence inventory: for each arm, the first decision at which its
+   trajectory departs the others (release offsets from the ledger, repair
+   races from corruption ledger + transcript, figure ruts from diagnosis).
+3. Corridor occupancy vs the E0 map: every tutor release offset, placed in
+   its per-decision safe set; count of fatal-cell entries (bearing@t2/t3,
+   chart@t7/t10/t11, key@t19) and of late-side license uses (none exist in
+   any recorded run to date).
+
+Kill rule: rate ≤1/5 → STOP the plan (all five still report). No re-roll in
+either direction; crash/truncation = delete artifact dir, re-run same label,
+note it here.
