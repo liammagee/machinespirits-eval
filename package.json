@@ -84,6 +84,8 @@
     "derivation:episode": "node scripts/run-derivation-episode.js",
     "derivation:matrix": "node scripts/run-derivation-matrix.js",
     "derivation:critic": "node scripts/derivation-critic.js",
+    "derivation:corridor": "node scripts/derivation-corridor-map.js",
+    "derivation:mine": "node scripts/derivation-mine-conduct.js",
     "poetics:ingest": "node scripts/ingest-poetics-artifacts.js",
     "poetics:report": "node scripts/report-poetics-sidecar.js",
     "poetics:adaptation": "node scripts/analyze-poetics-tutor-adaptation.js",
