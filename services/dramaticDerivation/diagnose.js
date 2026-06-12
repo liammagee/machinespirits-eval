@@ -399,10 +399,14 @@ export function corruptionReport(result) {
   // A mutate slip opens TWO debts that close independently and in either
   // order: the deletion (closed by a `repair` row — tutor re-stage or
   // re-adoption) and the false belief (closed by a `retract_false` row —
-  // the learner striking the misremembered form). Hence two open-row maps;
-  // a repeat decay of the same premise re-points both at the newest row.
+  // the learner striking the misremembered form). The deletion debt is
+  // premise-keyed (a premise cannot re-decay while still down, so a repeat
+  // decay re-points at the newest row). The false-belief debt must match by
+  // FORM, not premise: false forms outlive repairs, so a premise can
+  // re-mutate while an earlier false form still stands, and the two forms
+  // coexist on the learner's board until each is struck by its own retract.
   const openRepairByPremise = new Map();
-  const openFalseByPremise = new Map();
+  const openFalseRows = []; // mutate rows with an unstruck false form, decay order
   for (const e of ledger) {
     if (e.type === 'decay') {
       const row = {
@@ -417,12 +421,13 @@ export function corruptionReport(result) {
       };
       timeline.push(row);
       openRepairByPremise.set(e.premiseId, row);
-      if (row.mode === 'mutate') openFalseByPremise.set(e.premiseId, row);
+      if (row.mode === 'mutate') openFalseRows.push(row);
     } else if (e.type === 'retract_false') {
-      const open = openFalseByPremise.get(e.premiseId);
-      if (open && open.retractTurn === null) {
-        open.retractTurn = e.turn;
-        openFalseByPremise.delete(e.premiseId);
+      const key = factKey(e.falseForm || []);
+      const idx = openFalseRows.findIndex((row) => factKey(row.falseForm || []) === key);
+      if (idx >= 0) {
+        openFalseRows[idx].retractTurn = e.turn;
+        openFalseRows.splice(idx, 1);
       }
     } else if (e.type === 'repair') {
       const open = openRepairByPremise.get(e.premiseId);

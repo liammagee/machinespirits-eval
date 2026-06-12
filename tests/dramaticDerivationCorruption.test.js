@@ -317,6 +317,44 @@ test('corruptionReport pairs decay→repair chronologically and totals the degra
   assert.deepEqual(d.corruption, report);
 });
 
+// Regression (lantern-revise-on, 2026-06-11): false-belief debts must be
+// matched by FORM, not premise. A premise can re-mutate while an earlier
+// false form still stands (false forms outlive repairs), and a premise-keyed
+// open map orphans the older row — its later retraction was dropped, so the
+// panel reported a false belief held to the end that the transcript showed
+// struck. Shape below is the paid run's m_post sequence: mutate t10 (form A),
+// repair t14, re-mutate t15 (form B), retract B t16, retract A t17.
+test('corruptionReport credits retractions of overlapping false forms of one premise', () => {
+  const truth = ['atTowerThatNight', 'brandt', 'harlowPoint'];
+  const formA = ['atTowerThatNight', 'senna', 'harlowPoint'];
+  const formB = ['atTowerThatNight', 'brandt', 'southStack'];
+  const result = {
+    turnsPlayed: 20,
+    trajectory: [],
+    corruption: {
+      config: { seed: 1 },
+      decayedAtEnd: [],
+      ledger: [
+        { type: 'decay', turn: 10, premiseId: 'm_post', fact: truth, mode: 'mutate', falseForm: formA },
+        { type: 'repair', turn: 14, premiseId: 'm_post', via: 'tutor' },
+        { type: 'decay', turn: 15, premiseId: 'm_post', fact: truth, mode: 'mutate', falseForm: formB },
+        { type: 'retract_false', turn: 16, premiseId: 'm_post', falseForm: formB },
+        { type: 'retract_false', turn: 17, premiseId: 'm_post', falseForm: formA },
+      ],
+    },
+  };
+  const report = corruptionReport(result);
+  assert.equal(report.mutations.total, 2);
+  assert.equal(report.mutations.retracted, 2);
+  assert.equal(report.mutations.falseBeliefsAtEnd, 0);
+  const [rowA, rowB] = report.timeline;
+  assert.equal(rowA.retractTurn, 17);
+  assert.equal(rowA.repairTurn, 14);
+  assert.equal(rowB.retractTurn, 16);
+  // fully revised = struck + restored: only the t10 episode has both debts closed
+  assert.equal(report.mutations.revised, 1);
+});
+
 // ---------------------------------------------------------------------------
 // twin-fact premise aliases (lantern, bitterwell)
 // ---------------------------------------------------------------------------
