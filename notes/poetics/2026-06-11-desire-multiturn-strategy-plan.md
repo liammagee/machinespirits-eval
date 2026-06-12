@@ -1077,3 +1077,110 @@ DERIVATION_LLM=real node scripts/run-derivation-loop.js \
   --group lantern-p3-repair --label lantern-p3-repair-on \
   --critic-feedback off
 ```
+
+## §12.5 Outcome (2026-06-12, recorded after the run — registration text above unchanged)
+
+**Verdict: grounded anagnorisis at t20, 20/26 turns (1671.7s, 87 CLI
+calls).** S forced at t20 — the first turn it was derivable — and
+asserted grounded the same turn (forced→asserted gap 0). The first
+dialed-up arm on this world to reach the grounded verdict, landing on
+the same turn as the dial-free control (`lantern-revise-off`, grounded
+t20) — but through seven decay slips, five restorations, two early
+calendar pulls, and a learner that asserted once too early and was
+refused. D ran 5→0, longest plateau 4 turns (< the 6-turn window).
+Artifacts: `exports/dramatic-derivation/loop/lantern-p3-repair-on/`.
+The contingency resolved is **clause obeyed + survival**: the located
+mechanism is confirmed on this seed at n=1.
+
+- **Endpoint 1 (t8 death-window survival): MET.** The exact §11.6
+  choreography ran: p_bearing faded t6 (recorded t7), the tutor pulled
+  p_chart early at t7 (offset −2, wound exactly offset, D 4→4), the
+  learner's t7 line named the bearing loss, and the tutor's t8 turn
+  **restored p_bearing with the director's m_shutter release riding
+  alongside as staging** — restoration before new matter, D 4→3
+  strict, inside every t1..t10 window. Three arms died on that turn
+  holding that lever; this arm spent it.
+- **Endpoint 2 (repair conduct): MET, as a repeated economy.** Six
+  restores, every one answering the learner's preceding line: m_key t5,
+  p_bearing t8, m_key t10, p_bearing t12, p_chart t16 — all five
+  `targetDecayed: true, repaired: true` (the report true, the repair
+  real) — plus p_key t19, `targetDecayed: false`: the learner's
+  overreaching t18 line read as a loss report, the tutor restored an
+  exhibit that was never down, and the cost was one re-statement turn
+  (the clause's failure mode is benign). The rejection path fired once
+  and worked end-to-end: at t15 the watcher could not license a
+  p_chart restore claim from the learner's last line
+  (`restoreClaimFires: 1`) → converted to a confrontation → the
+  read-back named the loss → t16's restore was licensed and repaired —
+  one turn late, through the front door, exactly §12.1(3). Zero bare
+  re-entries the whole run (`reentries.total: 0`), `firesWithoutDue:
+  0`. Of 7 slips: 5 tutor-repaired, 0 re-adoptions (the §9.2.1 channel
+  stayed empty even with 12 post-window turns of opportunity — every
+  repair came through the tutor's line), 2 unrepaired at end (both
+  mirror-side mutations, both *unreported* — the registered residual:
+  an unnamed slip is outside the clause's jurisdiction, and see the
+  critic's defect below).
+- **Endpoint 3 (planning-stack integrity): MET in full.** Plots 5/5 at
+  every opening, all disciplined (mean 5.8 clauses); the act-2 plot
+  *named m_key and p_bearing as holds* — the plan tracked exactly the
+  slipping exhibits. Audits 5/5 with the run-end included; verdict mix
+  kept 24 / justified_deviation 3 / drift 1 / unscored 0 — bite, not
+  boilerplate. Throughline committed at the opening
+  (`byTrigger.opening = 1`), disciplined; arc verdicts 5/5 `on_arc`;
+  final reckoning **7/7 kept** — against §11.5's kept 5 / drift 2,
+  where the drifted clauses named the unexecuted repair. The plan now
+  keeps its own promises, because conduct now executes them.
+- **Endpoint 4 (calendar, audit bite, no degradation, bound clauses):
+  MET with one watch-item.** Calendar: 6 releases on cue, 2 early with
+  declared reasons (p_bearing −1 at t3, p_chart −2 at t7 — the same
+  two pulls, near-identical reasons, as both dead controls; survivable
+  now because the repair economy kept feeding the clock), 0 held / 0
+  forced / 0 invalid — the t20 `forced` flag is the S-question
+  mechanism, not a release. Superego economy: 2 fires in 20 turns
+  (t14 bare-re-entry draft, t15 restore claim), both converting the
+  action, not the wording — conduct held by charter nearly everywhere
+  (v2 needed its watcher once in 8 turns; the §6.13.4 rut-watcher
+  fired 14 times). Formal layer: figures 5 distinct, switch rate 0.74,
+  analogia 40% (a lean, not a rut); every false form struck
+  (retract_false ×4, none surviving); F final 0.83. Watch-item: F
+  dipped to 0.64 mid-run (controls' min ≈ 0.70) and overreach ×5
+  clusters at t13 (×2) and t18 (×3) — the learner reached past its
+  board most at the leap.
+- **The t18 lucky leap, and the instruments refusing it.** At t18
+  (t_min) the learner asserted the finding with the chain one premise
+  short — flagged `lucky_leap` + overreach ×3, **not** ended as
+  grounded; the tutor mended the page at t19 (the false-report restore
+  above; the learner conceded the third conjunct "stands on air"), and
+  the t20 assertion landed grounded, gap 0. The checker separated the
+  unforced t18 assertion from the forced t20 one cleanly — the strict
+  non-gullible behaviour the Oedipus-screen work established, now load-
+  bearing in a surviving play.
+- **Endpoint 5 (critic's notice, Fable):** reads the run as recognition
+  earned ("asserted at the very turn the learner's own facts forced
+  it"), the mending machinery as working, and the superego's two fires
+  as changing "the action, not the wording." Its located defect sits in
+  the **decay channel, not any dial**: the mutation sampler wrote
+  Senna's name onto the learner's board at t3 and t8 *before any
+  exhibit had staged her* (the §6.13.8 whisper channel recurring), and
+  the one mutation the tutor never repaired became the scaffold of the
+  t18 leap. Two recommendations recorded for any future sanction —
+  restrict the mutation sampler to entities already staged; give
+  mutated facts priority over plain slips in the repair charter —
+  **neither licensed by this registration**, and the paid loop is
+  ended.
+
+**Reading (within the §12.4 ceiling).** The §11.6 diagnosis is
+confirmed on its own terms: the race between new matter and repair was
+real, one charter clause decided it, and with it decided the play —
+same world, same seed, same planning stack, the only registration
+delta the clause. What §11 established as "plans right, conduct loses
+the race" became "conduct wins the race" under a one-step,
+event-triggered rule — the §6.13.8 boundary holding exactly (charter
+text binds event-triggered procedure; the clause converts the repair
+race into that form: visible trigger this turn, prescribed act next
+turn). The clause also ran as an *economy* (five cycles under
+rate-0.75 decay), not a one-shot, with each path-side restoration
+doubling as the clock's strict drop. Attribution stays bundled: clause
+ON TOP of two-layer planning; nothing here separates the clause alone
+from the clause-with-planning, and the §11 bundle ceiling compounds
+beneath it. n=1, one seed, descriptive throughout.
