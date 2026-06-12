@@ -1524,3 +1524,105 @@ schedule comparability with any prior arm. This registration spends
 the 2026-06-12 battle-test sanction in full: after the arm, its
 outcome record here, and the paper fold-in, the paid loop is ended
 again.
+
+## §14.5 Outcome (2026-06-12, recorded after the run — registration text above unchanged)
+
+> **lantern-p5-mutation-on** · world-002 seed 1 · codex director/tutor/superego,
+> Sonnet learner · full p4 dial stack, single delta `startTurn: 17` ·
+> verdict **aporia at t12/26** ("no progress over 6 turns", 695.6s, 54 calls) ·
+> D 5→3, frozen from t7 · **the decay window never opened** — the run died
+> five turns short of t17. Zero slips, zero mutations, fidelity 1.0/1.0,
+> `fabricatedFacts: []`. The battle test was NOT REACHED. The sanction is
+> spent regardless, as registered: no re-roll in either direction.
+
+**Endpoint 1 (integrity, non-vacuous mutation expected): VACUOUS — second
+consecutive vacuous result, by the opposite mechanism.** P4's silence came
+from empty pools at draw; p5's comes from a run that ended before the first
+draw. `corruption.timeline` is empty; `mutations.total` 0. The §14.1
+arithmetic (m_key garble ≈0.98 by t19) was sound but conditional on reaching
+t17 — reach was assumed (p3 and p4 both grounded at t20 on this seed), not
+registered as an endpoint. The contingency that fired was the one the
+registration did not name: death before the window. The staged-pool mutation
+path has still fired only in mock (the smoke's m_key → `onlyKeyTo harlowPoint
+senna` at t17, met-on-stage, with p_bearing plain-deleted beside it — the
+plumbing is proven; the live exposure is not).
+
+**Endpoint 2 (verdict): aporia t12, reported as-is.** This is NOT §14.1(b)'s
+registered death ("corruption outran the repair economy") — corruption never
+began. It is a tempo death in an evidence desert of the tutor's own making:
+
+- Last D-advance t7 — the tutor pulled p_chart two turns early (−2, declared
+  reason: "the learner has twice named the chart as the next needed witness
+  and the bare table is stalling the inquiry"). The pull paid locally — the
+  learner struck the Brandt hypothesis the same turn, zero latency.
+- Next D-mover: p_residue, **fixed at t13 via director**. The bend authority
+  is the tutor's own exhibits only (plan §C2, `RELEASE_LATITUDE` applies to
+  via-tutor entries); the director never bends; the tutor's next own exhibit
+  (p_key, t17) could not enter the window until t15. `windowSize: 0` for
+  every turn t8–t12 — no licensed rescue existed.
+- Six turns at D=3 (t7..t12) hit the aporia window exactly, one turn short
+  of the director's relief at t13.
+
+The counterfactual is not speculative: p4 played p_chart **on cue at t9** on
+the same world and seed and survived this corridor (plateau 4). With this
+learner's same-turn adoption (it adopted every exhibit the turn it landed),
+the survivable plays of p_chart within the licensed ±2 window are exactly
+t8 and t9; t7, t10, and t11 are all fatal — **the safe corridor is narrower
+than the license**, and three of the five licensed moves kill the run. The
+tutor had the information to compute this: the full calendar with via labels
+is in its prompt ("YOURS TO KEEP OR BEND"), the stall rule and window size
+are stated ("THE HOUSE CLOCK"), and the prompt's own warning names the death
+verbatim — "an early claim spends a future advance now." It took the pull on
+the learner-responsive signal alone.
+
+**Endpoint 3 (the battle test a/b/c): NOT REACHED.** No garble lived on the
+board; no conduct-only detection of a false form was tested; no loss and
+garble ever stood open together, so the bent-first clause has STILL never
+had a live case. The §13.5 standing caveat now stands twice, by opposite
+mechanisms: the closing side proven by silence (p4), the positive side
+starved of a run (p5).
+
+**Endpoint 4 (the books, unchanged meanings): MET on what ran.** Releases
+4 on cue + 1 early with declared reason, 0 missed/unscheduled, 0 invalid
+claims, 0 overridden; plots 3/3 disciplined (mean 6 clauses), audits kept 15
+/ justified 1 / drift 2; throughline committed, one off_arc verdict bound a
+revision, final reckoning delivered (7 clauses, at the run-end audit);
+confrontations 2 (t3 m_key via a superego fire converted dueByRecord, t5
+p_bearing), reentries 0, `firesWithoutDue` 0, `restoreClaimFires` 0; the
+repair clause was never invoked (nothing decayed). Figures: erotema 7/12
+(58%), 3 distinct, switch rate 0.73; superego 3/12, within-turn figure
+change 2/3, both rut-fires broken within the turn (t8 analogia→erotema, t10
+erotema→anaphora). P4's two recommendations stayed unlicensed and unused.
+
+**Endpoint 5 (the critic's notice — gates nothing):** written, 172s. The
+critic credits the learner's conduct precisely (named the burned-lamp
+threshold four turns running; by t12 was drafting the sentence Rule 2 would
+permit and the one it would forbid — "never confused, only unsupplied",
+fidelity 1.0 agrees) and aligns with the verdict ("the panel scored it as a
+stall"). Its causal read — "the calendar, not the cast"; the early chart
+play "paid immediately" — is half-right and worth recording as a divergence:
+the local payment was real, but the calendar as written survives this
+corridor (p4 is the live proof); it was the pull that stretched the desert
+past the window. Its two NEW recommendations: (i) re-time p_residue to land
+by t11; (ii) teach the detector to tell a learner out of ideas from a
+learner out of evidence ("only the first is aporia; the second is a starved
+house") — (ii) matches the instrument evidence exactly (windowSize 0
+throughout the corridor). **Both UNLICENSED.**
+
+**Reading.** The arm missed its registered target and exposed something the
+registration did not aim at: the hazard side of release authority. The
+learner-responsive early pull — the same discretion p4's critic praised and
+asked to extend to the finale — selected a fatal move here, because the
+relevant constraint is not the learner's present need but the director's
+next fixed cue, and the dial gives the tutor no instrument to service a
+tempo debt (own-exhibits-only latitude; a director who never bends). The
+two-layer planning machinery audited every conduct clause it owns (15 kept,
+arc on_arc at the moment of death) while the fatal tempo decision passed
+unflagged: plots and throughlines have no tempo-debt clause. And the
+discriminant note: this aporia measures *supply*, not understanding — the
+learner held the exact threshold with perfect fidelity for four starved
+turns, which is precisely the distinction the critic's rec (ii) wants the
+detector to draw. No mechanism changes ride on any of this; the
+recommendations stay on the table unlicensed. The 2026-06-12 battle-test
+sanction is hereby SPENT in full: this record and the paper fold-in close
+the paid loop again.
