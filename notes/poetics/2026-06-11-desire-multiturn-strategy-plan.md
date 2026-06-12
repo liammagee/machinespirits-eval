@@ -903,3 +903,177 @@ progress (Harlow stood twice eliminated in the flat stretch), so on an
 elimination-shaped world the aporia bell rings during the play's best
 stretch. Neither is licensed as a change by this registration; both
 would need fresh sanction.
+
+## 12. P3 pre-registered scoring — the repair clause, fixed before the paid arm
+
+> Appended 2026-06-12 under fresh operator sanction ("the second option":
+> exactly one more paid arm testing the critic's repair clause on top of
+> the two-layer stack, then the paper fold-in). This registration
+> licenses the critic's recommendation (1) ONLY. Recommendation (2) — the
+> D-blindness-to-elimination instrument note — is recorded as a standing
+> caveat on the meter and explicitly NOT acted on: D, the aporia window,
+> and the verdict taxonomy are FROZEN as in every prior arm. A meter
+> changed after a death it predicted is a gate redefinition; the caveat
+> rides the reading instead. Implemented and verified mock-first (14
+> dedicated tests in `tests/dramaticDerivationRepair.test.js` — build
+> guards, charter stability on the §11 arms, pinned charter text, the
+> harness bridge arithmetic, claim rejection and conversion, the engine
+> repair contract, the audit buckets, the full mock stack — plus the
+> full hermetic suite green and a zero-cost mock loop on lantern with
+> every dial up). Committed together with this text BEFORE the paid arm
+> runs. Scoring reads from harness-ledgered quantities only; nothing
+> here is adjustable after the run.
+
+### 12.1 What changes — the confrontation obligation's one exception
+
+§11.6 located the death precisely: the learner *named* the p_bearing
+loss at t7 and t8 and asked for it back; the tutor's one actionable turn
+went to new matter; re-staging at t8 would have survived. The plans were
+right (act-2 withhold and throughline salvage both prescribed the move;
+the run-end audit called drift on exactly those clauses) — conduct lost
+the race between new matter and repair. The repair clause is that race
+decided in the charter, as the confrontation obligation's one exception,
+running the other way: a learner-named loss IS the read-back.
+
+Mechanics (flag-gated under `--repair-clause`, requiring `--confront`
+because it amends that obligation, and `--decay` because without slips
+there is nothing to restore):
+
+1. **The clause, in the tutor charter.** When the learner's last line
+   names a staged exhibit as lost or bent, their report is the
+   read-back — the tutor does not demand another. Its NEXT turn
+   re-stages the named exhibit, plainly and in full, BEFORE any new
+   matter, declared with intent `restore` and that exhibit as target.
+   One report licenses one restoration, of that exhibit alone. New
+   matter can wait a turn; a hole in the board cannot.
+2. **Three epistemic positions, no leaks.** The harness states only
+   mechanical facts in the re-entry record (the target, its staging
+   history, that the draft claims the repair-clause license) — `restore`
+   rides the record with `due: false` because the license is a
+   natural-language judgment, not arithmetic. The superego verifies the
+   claim against the learner's most recent line, which is already in
+   its transcript view: where the line names that exhibit's loss, the
+   re-entry is licensed and must not be delayed for a confrontation;
+   where it does not, the claim is false and the draft is an uncovered
+   re-entry. Only the post-hoc audit reads the hidden slip ledger for
+   ground truth (was the named exhibit really down — `targetDecayed`,
+   evaluated at the moment the tutor spoke, before the restore's own
+   repair row). Decay visibility stays CONDUCT throughout; no role is
+   told anything the §11 arms' roles were not.
+3. **A rejected claim converts, and still repairs.** A superego fire on
+   a false or stale restore claim resolves to the `unconfronted_reentry`
+   jurisdiction and the existing revision machinery rewrites the move as
+   a confrontation — which licenses the re-entry, so a true loss claimed
+   one turn too late still gets its restoration one turn later, through
+   the front door.
+4. **The engine is unchanged.** Re-staging a decayed premise already
+   repairs it for every intent except `confront` (the §C5 exception), so
+   `restore` heals by the standing rule; zero new engine code, zero new
+   LLM calls. The §11 planning stack (plots, throughline, audits,
+   release authority, charter v2) rides unchanged.
+5. **The audit keeps the §11 books clean.** Restores are bucketed apart
+   from covered/uncovered re-entries (the §11-comparable counts never
+   absorb them) but a restore re-stages, so it spends any standing
+   confrontation license. Superego fires on restore claims are tallied
+   as `restoreClaimFires`, excluded from `firesWithoutDue` (the
+   detector-integrity stat keeps its meaning). The bucket is absent
+   from any run where no restore is spoken — §11 artifacts re-diagnose
+   byte-identical.
+
+### 12.2 The arm and its comparators
+
+ONE paid run, `--label lantern-p3-repair-on`, new group
+`lantern-p3-repair`, the §11.5 command plus `--repair-clause` — same
+world, script, seed, decay schedule, acts geometry, dials, casting
+(codex director/tutor/superego + Sonnet learner + Fable critic),
+`--critic-feedback off`.
+
+- **Primary OFF control: `lantern-p2-plot-on`** — identical
+  configuration including both planning layers, minus the clause. The
+  contrast is exactly +repair-clause, on the seed whose death the
+  clause was written against.
+- Outer posts unchanged: `lantern-p1-dials-on-v2`, `lantern-p1-dials-on`
+  (both died t8), `lantern-revise-off` (grounded t20).
+
+Survival arithmetic on the control's trace, pre-checked: a t8 re-staging
+of p_bearing puts D at 3 (a strict drop inside every t1..t10 window);
+the later seed-1 gaps (p_residue t11–13, p_key t15–17, p_skiff t18–20)
+each sit inside a live window IF answered. Carried caveats: same seed ≠
+same slip schedule once exposure shifts (third realisation on record);
+the clause only fires on *reported* losses — the t7 m_key mutation went
+unnamed in the control, and an unreported slip is outside the clause's
+jurisdiction by design (that residual exposure is part of what the arm
+measures).
+
+### 12.3 Endpoints
+
+1. **Survival of the t8 death window — IDENTICAL to §11.3.1, the
+   primary.** Does every 6-turn stretch in t1..t10 contain a strict
+   D-drop, and what is the final verdict at the cap? Three arms have
+   died at t8 on this seed. If this arm dies there too, the
+   pre-declared reading is "the clause did not decide the race either"
+   — reportable as-is, no re-roll.
+2. **Repair conduct (gate for interpreting endpoint 1).** From the
+   transcript, the `restores` bucket, and the corruption ledger: every
+   learner line that names a staged exhibit as lost or bent is answered
+   by the tutor's next turn re-staging that exhibit (intent `restore`,
+   or confrontation-then-licensed-re-entry where the watcher rejected a
+   stale claim); zero false-claim breaches (no restore whose target the
+   learner had not just named — `restoreClaimFires` with conversion
+   covers the caught ones, the transcript read covers any uncaught);
+   `targetDecayed` on each restore read for whether the learner's
+   report was true. An arm where the learner never names a loss has not
+   triggered the clause — see contingencies.
+3. **Planning-stack integrity carried forward (§11.3.2 + §11.5).** The
+   two-layer cadence must hold as in the control: plots at every
+   opening, disciplined; audits at every close plus the run-end
+   reckoning; throughline committed at t1 and read back; `off_arc`
+   bound where verdicted; unscored rate reported. A clause that buys
+   its turn by collapsing the planning loop has not been tested on top
+   of the stack.
+4. **Calendar conduct, audit bite, no-degradation, bound clauses —
+   §11.3.3 through §11.3.6 retained verbatim** (windows kept, reasons
+   declared; verdict mix informative; groundedness/figure variety/F not
+   degraded; treatment-follows-diagnosis and §9.2 clauses
+   opportunity-gated on survival).
+5. **Critic's notice** (Fable, pinned) — second reader on whether the
+   restoration plays as repair or as ceremony; no κ bar; divergence is
+   a finding.
+
+Contingencies, pre-declared: clause **untriggered** (no learner-named
+loss this realisation) → the arm is a planning replicate, reported as
+such, no re-roll. Clause **obeyed + survival** → the located mechanism
+is confirmed on this seed at n=1. Clause **obeyed + death elsewhere**
+(post-window, e.g. an unreported slip or the elimination-shaped flat
+stretch) → conduct is fixed and the meter caveat (critic's
+recommendation 2) becomes the live reading, still without changing the
+meter. Clause **breached** (a named loss answered with new matter) →
+criterial failure of the clause as written, the charter channel's
+ceiling on this conduct class.
+
+### 12.4 Reading discipline
+
+n=1 against a single-run control, descriptive, §6.13 register. Claim
+ceiling: the clause is tested ON TOP of the two-layer planning stack —
+nothing in this run can attribute survival to the clause alone versus
+the clause-with-planning bundle (the §11.4 bundle ceiling compounds; a
+clause-without-planning arm needs fresh sanction). It cannot establish
+rates. The meter is FROZEN: D, the aporia window, and the verdict
+taxonomy are unchanged, and the D-blindness-to-elimination caveat is
+recorded against the reading, not the instrument. The charter text, the
+license bridge, the rejection path, and the audit buckets are pinned by
+string assertions in `tests/dramaticDerivationRepair.test.js` (sections
+B–C, E) committed with this registration. The paid command:
+
+```
+DERIVATION_PROVIDER=codex DERIVATION_LEARNER_PROVIDER=claude \
+DERIVATION_LEARNER_MODEL=sonnet DERIVATION_CLI_TIMEOUT_MS=900000 \
+DERIVATION_LLM=real node scripts/run-derivation-loop.js \
+  --world config/drama-derivation/world-002-lantern.yaml \
+  --script config/drama-derivation/tutor-scripts/lantern-v001.md \
+  --superego --acts '{"minActTurns":3,"maxActTurns":8}' \
+  --decay '{"rate":0.75,"graceTurns":1,"maxConcurrent":2,"startTurn":1,"mutateShare":1.0,"seed":1}' \
+  --confront --repair-clause --release-authority --plot --throughline \
+  --group lantern-p3-repair --label lantern-p3-repair-on \
+  --critic-feedback off
+```

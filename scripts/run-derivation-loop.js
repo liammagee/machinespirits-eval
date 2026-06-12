@@ -109,6 +109,15 @@
  *                                       repairs. Design: notes/poetics/
  *                                       2026-06-11-desire-multiturn-strategy-
  *                                       plan.md §C5)
+ *     [--repair-clause]                (§12; requires --confront + --decay.
+ *                                       The exception that runs the other
+ *                                       way: a learner-NAMED loss is already
+ *                                       the read-back — the tutor's next turn
+ *                                       re-stages the named exhibit (intent
+ *                                       "restore") before any new matter; the
+ *                                       superego verifies the claimed license
+ *                                       against the learner's last line.
+ *                                       Design: same plan §12)
  *     [--release-authority]            (P1/C2. The tutor's via-tutor exhibit
  *                                       cues become a window: hold a due
  *                                       release or play one early, up to
@@ -339,6 +348,17 @@ async function main() {
     );
     process.exit(1);
   }
+  // §12 = the repair clause: the learner's named loss licenses a next-turn
+  // re-staging (declared intent "restore"); the watcher verifies the claim.
+  const repairClause = flag('repair-clause');
+  if (repairClause && !confront) {
+    console.error('--repair-clause requires --confront (the clause is an exception to the confrontation obligation)');
+    process.exit(1);
+  }
+  if (repairClause && !decay) {
+    console.error('--repair-clause requires --decay (without slips there is nothing to restore — probable arm typo)');
+    process.exit(1);
+  }
   const releaseAuthority = flag('release-authority');
   // P2/C1 = the act-plot commitment loop (same note §5): plot at the act
   // opening, audit at the act close, the audit binds the next plot.
@@ -442,6 +462,11 @@ async function main() {
       'tutor   CONFRONT ON — re-entry of a staged exhibit requires a prior confrontation (the learner reads it back, or is seen to have lost it); the superego watches the re-entry jurisdiction',
     );
   }
+  if (repairClause) {
+    console.log(
+      'tutor   REPAIR CLAUSE ON — a learner-named loss is the read-back: the next turn re-stages the named exhibit (intent "restore") before any new matter; the superego verifies the claimed license against the learner\'s last line',
+    );
+  }
   if (releaseAuthority) {
     console.log(
       `tutor   RELEASE AUTHORITY ON — the exhibit calendar is the tutor's to keep or bend (±${RELEASE_LATITUDE} turns, declared reason; the harness force-plays at the hold limit)`,
@@ -483,6 +508,7 @@ async function main() {
       actsMode,
       reconstruct,
       confront,
+      repairClause,
       releaseAuthority,
       plot,
       throughline,
@@ -541,6 +567,8 @@ async function main() {
     // P1 dials — false on every run before 2026-06-11.
     confront,
     releaseAuthority,
+    // §12 dial (the repair clause) — false on every run before 2026-06-12.
+    repairClause,
     // P2/C1 dial — false on every run before 2026-06-12. Named plotDial so it
     // can't collide with diagnose()'s `plot` report (the audit/discipline
     // block, present only when the arm produced plots).

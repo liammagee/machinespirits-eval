@@ -345,6 +345,7 @@ function tutorSystem(
     actsMode = false,
     reconstruct = false,
     confront = false,
+    repairClause = false,
     releaseAuthority = false,
     plot = false,
     throughline = false,
@@ -360,7 +361,7 @@ function tutorSystem(
     .map((p) => `- ${p.id}: ${(p.surface || '').trim()}\n  (formally: ${renderFact(p.fact)})`)
     .join('\n');
   const schedule = world.releaseSchedule.map((e) => `- turn ${e.turn}: ${e.premise} (via ${e.via})`).join('\n');
-  const intents = confront ? [...TUTOR_INTENTS, 'confront'] : TUTOR_INTENTS;
+  const intents = confront ? [...TUTOR_INTENTS, 'confront', ...(repairClause ? ['restore'] : [])] : TUTOR_INTENTS;
   return [
     script.trim(),
     '',
@@ -466,6 +467,23 @@ function tutorSystem(
           'absence twice and repairs nothing.',
         ]
       : []),
+    ...(repairClause
+      ? [
+          '',
+          '# The repair clause (a named loss is already a read-back)',
+          '',
+          'The confrontation obligation has one exception, and it runs the other way.',
+          'When the LEARNER names an already-staged exhibit as lost or bent — they',
+          'cannot find it on their board, they ask for it back, they read it back',
+          'wrong — their report IS the read-back. Do not demand another: a',
+          'confrontation after a named loss teaches the absence twice. Your NEXT turn',
+          're-stages the named exhibit, plainly and in full, BEFORE any new matter —',
+          'declare the move with intent "restore" and that exhibit as target_premise.',
+          'One report licenses one restoration, of that exhibit alone; "restore"',
+          'claims the license, so spend it only on a loss the learner has just named.',
+          'New matter can wait a turn; a hole in the board cannot.',
+        ]
+      : []),
     ...(plot
       ? [
           '',
@@ -567,7 +585,15 @@ function tutorSystem(
  */
 function tutorSuperegoSystem(
   world,
-  { stallWatch = false, counsel = null, reconstruct = false, confront = false, plot = false, throughline = false } = {},
+  {
+    stallWatch = false,
+    counsel = null,
+    reconstruct = false,
+    confront = false,
+    repairClause = false,
+    plot = false,
+    throughline = false,
+  } = {},
 ) {
   return [
     "You are the tutor's SUPEREGO in a staged derivation drama — the watcher inside",
@@ -616,6 +642,20 @@ function tutorSuperegoSystem(
             'fact. When the record shows an uncovered re-entry, intervene: tell the',
             'tutor to confront first — demand the read-back of what the learner holds',
             'of that exhibit, restating nothing of its content.',
+            ...(repairClause
+              ? [
+                  '',
+                  'One further license, under the REPAIR CLAUSE: a draft re-entry with',
+                  'declared intent "restore" claims that the learner, in their most recent',
+                  'line, named that very exhibit as lost or bent. The record states the',
+                  "mechanical facts and leaves the claim to you: read the learner's last",
+                  "line in the record before you. Where it names that exhibit's loss, the",
+                  're-entry is licensed — the report stands as the read-back, and the',
+                  'restoration must not be delayed for a confrontation. Where it does not,',
+                  'the claim is false and the draft is an uncovered re-entry: intervene as',
+                  'for any other.',
+                ]
+              : []),
           ]
         : [
             "Each turn you see the tutor's DRAFT line with its declared figure, and the",
@@ -785,6 +825,7 @@ export function makeLlmTutor(
     actsMode = false,
     reconstruct = false,
     confront = false,
+    repairClause = false,
     releaseAuthority = false,
     plot = false,
     throughline = false,
@@ -827,6 +868,14 @@ export function makeLlmTutor(
   if (confront && !actsMode) {
     throw new Error('derivation.llmRoles: confront requires acts mode (re-entry is an acts-mode concept)');
   }
+  // §12: the repair clause is an exception WITHIN the confrontation
+  // obligation — without confront there is no obligation to except, and the
+  // "restore" license has nothing to claim against.
+  if (repairClause && !confront) {
+    throw new Error(
+      'derivation.llmRoles: repairClause requires confront (the clause is an exception to the confrontation obligation)',
+    );
+  }
   // C1 wiring guards: the plot is an act-scale commitment (no acts, no
   // opening to commit at and no close to audit), and the act-close audit is
   // the superego's jurisdiction — without the watcher nothing binds.
@@ -850,12 +899,13 @@ export function makeLlmTutor(
     actsMode,
     reconstruct,
     confront,
+    repairClause,
     releaseAuthority,
     plot,
     throughline,
   });
   const superegoSystem = superego
-    ? tutorSuperegoSystem(world, { stallWatch, counsel, reconstruct, confront, plot, throughline })
+    ? tutorSuperegoSystem(world, { stallWatch, counsel, reconstruct, confront, repairClause, plot, throughline })
     : null;
   const plotAuditCharter = plot ? plotAuditSystem(world, { throughline }) : null;
   const normalizeMove = (out) =>
@@ -1540,6 +1590,22 @@ export function makeLlmTutor(
             .toLowerCase()
             .trim() === 'confront',
       );
+      // §12 (repair clause): a "restore" draft claims the learner's most
+      // recent line named this exhibit as lost — a license the harness does
+      // not judge (the learner's line is natural language; reading it is the
+      // watcher's jurisdiction, and the slip ledger stays hidden). due stays
+      // false: the record states the claim, the watcher verifies it.
+      if (repairClause && intent === 'restore') {
+        return {
+          target,
+          releasedEarlier: true,
+          intent,
+          lastStagedTurn,
+          confrontedSince,
+          due: false,
+          restoreClaim: true,
+        };
+      }
       return { target, releasedEarlier: true, intent, lastStagedTurn, confrontedSince, due: !confrontedSince };
     })();
     const reentryLine = !confront
@@ -1550,11 +1616,15 @@ export function makeLlmTutor(
           ? `The re-entry record this turn: the draft's target ${reentryGuard.target} was not staged on an earlier turn — an uncovered re-entry is impossible; on that jurisdiction intervene must be false.`
           : reentryGuard.intent === 'confront'
             ? `The re-entry record this turn: the draft CONFRONTS ${reentryGuard.target} — a confrontation is never a re-entry; on that jurisdiction intervene must be false.`
-            : `The re-entry record this turn: the draft targets ${reentryGuard.target} with intent ${
-                reentryGuard.intent || '(none)'
-              }; ${reentryGuard.target} was last staged at turn ${reentryGuard.lastStagedTurn}; a confrontation of it since then: ${
-                reentryGuard.confrontedSince ? 'yes' : 'no'
-              }. An uncovered re-entry requires: target staged earlier, intent not "confront", no confrontation since its last staging.`;
+            : reentryGuard.restoreClaim
+              ? `The re-entry record this turn: the draft targets ${reentryGuard.target} with intent restore — the repair clause: it claims the learner's most recent line named ${reentryGuard.target} as lost or bent; ${reentryGuard.target} was last staged at turn ${reentryGuard.lastStagedTurn}; a confrontation of it since then: ${
+                  reentryGuard.confrontedSince ? 'yes' : 'no'
+                }. The claim is yours to verify against the learner's last line above: where it names that loss, the re-entry is licensed; where it does not, this is an uncovered re-entry.`
+              : `The re-entry record this turn: the draft targets ${reentryGuard.target} with intent ${
+                  reentryGuard.intent || '(none)'
+                }; ${reentryGuard.target} was last staged at turn ${reentryGuard.lastStagedTurn}; a confrontation of it since then: ${
+                  reentryGuard.confrontedSince ? 'yes' : 'no'
+                }. An uncovered re-entry requires: target staged earlier, intent not "confront", no confrontation since its last staging.`;
     // The stall arithmetic, same criterial grammar: every value stated as
     // fact, the conclusion left to the watcher (and recomputed by the audit).
     // The engine's frontier already excludes question-pattern facts, so the
@@ -1708,7 +1778,7 @@ export function makeLlmTutor(
           ? claimedJurisdiction
           : stallWatch && !rutDue && stallDue.length
             ? 'stalled_inference'
-            : confront && !rutDue && reentryGuard.due
+            : confront && !rutDue && (reentryGuard.due || reentryGuard.restoreClaim)
               ? 'unconfronted_reentry'
               : 'figure_rut';
 

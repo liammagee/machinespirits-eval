@@ -556,7 +556,7 @@ export function confrontReport(result) {
       .toLowerCase()
       .trim();
   const armOn = tutorLines.some(
-    (l) => l.meta?.deliberation?.reentry !== undefined || norm(l.meta?.move?.intent) === 'confront',
+    (l) => l.meta?.deliberation?.reentry !== undefined || ['confront', 'restore'].includes(norm(l.meta?.move?.intent)),
   );
   if (!armOn) return null;
   const releaseTurnByPremise = new Map((result.ledger || []).map((e) => [e.premiseId, e.turn]));
@@ -565,12 +565,16 @@ export function confrontReport(result) {
   // (a decay lands before the tutor's move on that turn; a tutor repair
   // lands on the move's own turn).
   const corruptionRows = result.corruption?.ledger || null;
-  const decayedAt = (premiseId, turn) => {
+  // beforeMove: state at the moment the tutor speaks — same-turn decay rows
+  // land before the move, but a same-turn repair IS the move (via tutor) or
+  // follows it (learner re-adoption), so it must not erase the evidence.
+  const decayedAt = (premiseId, turn, { beforeMove = false } = {}) => {
     if (!corruptionRows) return null;
     let down = false;
     for (const e of corruptionRows) {
       if (e.turn > turn) break;
       if (e.premiseId !== premiseId) continue;
+      if (beforeMove && e.turn === turn && e.type === 'repair') continue;
       if (e.type === 'decay') down = true;
       else if (e.type === 'repair') down = false;
     }
@@ -578,6 +582,16 @@ export function confrontReport(result) {
   };
   const confrontations = [];
   const reentries = [];
+  const restores = [];
+  // §12 (repair clause): a tutor repair row on the move's own turn — the
+  // post-hoc audit may read the slip ledger (ground truth) that no in-run
+  // role held; a restore that repaired nothing was a false or stale claim.
+  const repairedAt = (premiseId, turn) =>
+    corruptionRows
+      ? corruptionRows.some(
+          (e) => e.type === 'repair' && e.premiseId === premiseId && e.turn === turn && e.via === 'tutor',
+        )
+      : null;
   const stateByTarget = new Map(); // target -> { lastStagedTurn, confrontedAt }
   for (const l of tutorLines) {
     const target = l.meta?.move?.targetPremise || null;
@@ -589,6 +603,17 @@ export function confrontReport(result) {
     if (intent === 'confront') {
       confrontations.push({ turn: l.turn, target, targetDecayed: decayedAt(target, l.turn) });
       st.confrontedAt = l.turn;
+    } else if (intent === 'restore') {
+      // The repair-clause bucket: licensed by the learner's report, not by a
+      // confrontation — never counted covered/uncovered. It re-stages all the
+      // same, so any standing license is spent.
+      restores.push({
+        turn: l.turn,
+        target,
+        targetDecayed: decayedAt(target, l.turn, { beforeMove: true }),
+        repaired: repairedAt(target, l.turn),
+      });
+      st.lastStagedTurn = l.turn;
     } else {
       const covered = st.confrontedAt !== null && st.confrontedAt > st.lastStagedTurn;
       reentries.push({ turn: l.turn, target, intent, covered, confrontTurn: covered ? st.confrontedAt : null });
@@ -608,6 +633,10 @@ export function confrontReport(result) {
       target: l.meta.deliberation.reentry?.target ?? null,
       convertedToConfront: norm(l.meta.move?.intent) === 'confront',
       dueByRecord: Boolean(l.meta.deliberation.reentry?.due),
+      // §12: a fire on a "restore" draft is the watcher rejecting the claimed
+      // license — not mechanically due (the record cannot judge the learner's
+      // line), so it must not count against the detector audit.
+      onRestoreClaim: Boolean(l.meta.deliberation.reentry?.restoreClaim),
     }));
   return {
     confrontations,
@@ -616,10 +645,12 @@ export function confrontReport(result) {
       covered: reentries.filter((r) => r.covered).length,
       uncovered: reentries.filter((r) => !r.covered),
     },
+    ...(restores.length ? { restores } : {}),
     superego: {
       reentryFires: fires.length,
       convertedToConfront: fires.filter((f) => f.convertedToConfront).length,
-      firesWithoutDue: fires.filter((f) => !f.dueByRecord).length,
+      firesWithoutDue: fires.filter((f) => !f.dueByRecord && !f.onRestoreClaim).length,
+      restoreClaimFires: fires.filter((f) => f.onRestoreClaim).length,
       draftsDueByRecord: tutorLines.filter((l) => l.meta?.deliberation?.reentry?.due).length,
       fires,
     },
@@ -1192,6 +1223,17 @@ export function renderEvalPanel(diagnosis) {
     if (cf.reentries.uncovered.length) {
       lines.push(
         `  - uncovered: ${cf.reentries.uncovered.map((r) => `${r.target} t${r.turn} (${r.intent || 'no intent'})`).join(' · ')}`,
+      );
+    }
+    if (cf.restores) {
+      const repaired = cf.restores.filter((r) => r.repaired === true).length;
+      const knowsRepair = cf.restores.some((r) => r.repaired !== null);
+      lines.push(
+        `  - **repair clause** restores ${cf.restores.length}${
+          knowsRepair ? ` (${repaired} repaired a real slip)` : ''
+        } · watcher fires on restore claims ${cf.superego.restoreClaimFires}: ${cf.restores
+          .map((r) => `${r.target} t${r.turn}`)
+          .join(' · ')}`,
       );
     }
   }
