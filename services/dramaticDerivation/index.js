@@ -11,6 +11,7 @@ export {
   diagnose,
   corruptionReport,
   reconstructionReport,
+  plotReport,
   releaseAdherence,
   releaseDeviations,
   confrontReport,

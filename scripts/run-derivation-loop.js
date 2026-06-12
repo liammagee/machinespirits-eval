@@ -119,6 +119,16 @@
  *                                       window. Decision records land in the
  *                                       ledger + transcript meta. Design:
  *                                       same note §C2)
+ *     [--plot]                         (P2/C1; requires --superego + --acts.
+ *                                       At each act opening the tutor ego
+ *                                       commits a per-act plot — hold_by_end /
+ *                                       withhold / friction / fallback, built
+ *                                       from conduct only — and plays under
+ *                                       it; at the act close the superego
+ *                                       audits plot against play clause by
+ *                                       clause (kept / justified_deviation /
+ *                                       drift) and the verdict binds the next
+ *                                       act's plot. Design: same note §5)
  *     [--critic auto|real|mock|off]    (post-run critic's notice; auto = follow
  *                                       the run mode — real dramas get the
  *                                       Fable notice, mock dramas the
@@ -319,6 +329,19 @@ async function main() {
     process.exit(1);
   }
   const releaseAuthority = flag('release-authority');
+  // P2/C1 = the act-plot commitment loop (same note §5): plot at the act
+  // opening, audit at the act close, the audit binds the next plot.
+  const plot = flag('plot');
+  if (plot && !acts) {
+    console.error(
+      '--plot requires --acts (the plot is an act-scale commitment — no acts, no opening to commit at or close to audit)',
+    );
+    process.exit(1);
+  }
+  if (plot && !superego) {
+    console.error('--plot requires --superego (the act-close audit is its jurisdiction)');
+    process.exit(1);
+  }
   const group = arg('group', null);
   const criticFeedback = arg('critic-feedback', 'off');
   const criticArg = arg('critic', 'auto');
@@ -362,8 +385,9 @@ async function main() {
       console.log('          (CLI roles bill plan quota; the CLI reports no token usage)');
     }
     // Worst case per turn: director + tutor draft + learner, plus superego +
-    // ego revision when the watcher is on — one repair each.
-    const maxCalls = world.turnCap * (superego ? 5 : 3) * 2;
+    // ego revision when the watcher is on — one repair each. Plot adds at
+    // most one act-close audit call per turn (openings only, but bound it).
+    const maxCalls = world.turnCap * ((superego ? 5 : 3) + (plot ? 1 : 0)) * 2;
     console.log(`        attended run: ≤${maxCalls} calls hard-bounded by turn_cap ${world.turnCap}`);
   } else {
     console.log('backend mock (zero-cost)');
@@ -404,6 +428,11 @@ async function main() {
       `tutor   RELEASE AUTHORITY ON — the exhibit calendar is the tutor's to keep or bend (±${RELEASE_LATITUDE} turns, declared reason; the harness force-plays at the hold limit)`,
     );
   }
+  if (plot) {
+    console.log(
+      'tutor   PLOT ON — at each act opening the tutor commits a per-act plot (hold/withhold/friction/fallback, from conduct only); the superego audits it clause by clause at the act close, and the audit binds the next plot',
+    );
+  }
   if (decay) {
     console.log(
       `decay   seed ${decay.seed} · rate ${decay.rate} · grace ${decay.graceTurns} · maxConcurrent ${decay.maxConcurrent} · from turn ${decay.startTurn}${decay.mutateShare ? ` · mutateShare ${decay.mutateShare} (slips may misremember, not just vanish)` : ''}`,
@@ -431,6 +460,7 @@ async function main() {
       reconstruct,
       confront,
       releaseAuthority,
+      plot,
     }),
     learner: makeLlmLearner({ setting: world.setting, voice: learnerVoice || world.learnerVoice, client }),
   };
@@ -486,6 +516,10 @@ async function main() {
     // P1 dials — false on every run before 2026-06-11.
     confront,
     releaseAuthority,
+    // P2/C1 dial — false on every run before 2026-06-12. Named plotDial so it
+    // can't collide with diagnose()'s `plot` report (the audit/discipline
+    // block, present only when the arm produced plots).
+    plotDial: plot,
     elapsedMs,
     usage,
     ...diagnose(result, world),

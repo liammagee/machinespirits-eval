@@ -280,6 +280,11 @@ function mockResponse(role, meta = {}) {
             release_reason: meta.releaseChoice ? 'its scheduled turn has come' : null,
           }
         : {};
+    // C1 (plot): the bridge's plotHint is the schedule-derived plot for an
+    // act-opening turn; echo it on every reply shape so mock openings commit
+    // a plot each act (revision calls inherit the hint and re-emit — the
+    // re-commit path). The real backend ignores meta.
+    const plotBits = meta.plotHint ? { plot: meta.plotHint } : {};
     // A revision call (the ego rewriting under its superego's note): a figure
     // fire switches to the bridge-computed figure; a stall fire keeps the
     // figure and aims the move at the stalled inference's first ground; a
@@ -297,6 +302,7 @@ function mockResponse(role, meta = {}) {
             intent: 'consolidate',
           },
           ...theory,
+          ...plotBits,
         });
       }
       if (meta.revision.jurisdiction === 'unconfronted_reentry') {
@@ -309,6 +315,7 @@ function mockResponse(role, meta = {}) {
             intent: 'confront',
           },
           ...theory,
+          ...plotBits,
         });
       }
       return JSON.stringify({
@@ -321,6 +328,7 @@ function mockResponse(role, meta = {}) {
           intent: meta.cuePremise ? 'release' : 'consolidate',
         },
         ...theory,
+        ...plotBits,
       });
     }
     // C5 mock choreography: on a cue-less turn with an exhibit already staged,
@@ -334,6 +342,7 @@ function mockResponse(role, meta = {}) {
         move: { figure: 'erotema', target_premise: meta.reentryHint, intent: 'consolidate' },
         ...releaseBits,
         ...theory,
+        ...plotBits,
       });
     }
     return JSON.stringify({
@@ -347,9 +356,16 @@ function mockResponse(role, meta = {}) {
       },
       ...releaseBits,
       ...theory,
+      ...plotBits,
     });
   }
   if (role === 'tutor_superego') {
+    // C1 (plot audit): an act-close audit call carries the bridge's
+    // precomputed deterministic verdicts; echo them. This check comes FIRST —
+    // the audit sits under its own charter, not the turn watch's.
+    if (meta.plotAuditHint) {
+      return JSON.stringify({ audit: meta.plotAuditHint.clauses, summary: meta.plotAuditHint.summary });
+    }
     // Deterministic rut-watcher: intervene when the draft would make the
     // third consecutive turn on one figure (mock tutor always drafts erotema,
     // so interventions land every third turn — both paths exercised). Under

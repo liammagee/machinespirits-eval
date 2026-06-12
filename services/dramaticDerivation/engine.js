@@ -142,6 +142,8 @@ export async function runDrama({ world, roles, options = {} }) {
   const acts = options.acts ? normalizeActsConfig(options.acts) : null;
   const actState = acts ? { index: 1, startTurn: 1, brief: '', history: [] } : null;
   const reconstructionRows = []; // {turn, believed, truth} — reconstructing-tutor dial (roles-layer)
+  const plotRows = []; // {act, turn, holdByEnd, withhold, friction, fallback} — C1 act-plot dial (roles-layer)
+  const plotAuditRows = []; // {turn, [final,] act, clauses, summary} — C1 act-close audits
   const ledger = []; // {turn, premiseId, via}
   const releasedKeys = new Set();
   const releasedFacts = [];
@@ -543,6 +545,8 @@ export async function runDrama({ world, roles, options = {} }) {
         ...(tutorOut.releaseDecision ? { releaseDecision: tutorOut.releaseDecision } : {}),
         ...(tutorOut.releaseReason ? { releaseReason: tutorOut.releaseReason } : {}),
         ...(tutorOut.theory ? { theory: tutorOut.theory } : {}),
+        ...(tutorOut.plot ? { plot: tutorOut.plot } : {}),
+        ...(tutorOut.plotAudit ? { plotAudit: tutorOut.plotAudit } : {}),
       },
     });
 
@@ -567,6 +571,19 @@ export async function runDrama({ world, roles, options = {} }) {
         if (id && !mistaken.includes(id)) mistaken.push(id);
       }
       reconstructionRows.push({ turn, believed: tutorOut.theory, truth: { held, missing, mistaken } });
+    }
+
+    // C1 plot recording (roles-layer dial, zero engine config — the theory
+    // pattern): when the tutor bridge emits a per-act `plot` (act-opening
+    // turns) or a `plotAudit` (the previous act, audited on the same boundary
+    // turn), store them and mark the events; instruments read the rows later.
+    if (tutorOut.plot) {
+      plotRows.push({ ...tutorOut.plot });
+      events.push({ turn, type: 'plot', detail: `act ${tutorOut.plot.act} plot committed` });
+    }
+    if (tutorOut.plotAudit) {
+      plotAuditRows.push({ turn, ...tutorOut.plotAudit });
+      events.push({ turn, type: 'plot_audit', detail: plotAuditDetail(tutorOut.plotAudit) });
     }
 
     // Tutor-side repair: a move that TARGETS a decayed premise restores it —
@@ -867,6 +884,22 @@ export async function runDrama({ world, roles, options = {} }) {
     });
   }
 
+  // C1: the run-end act close has no following opening turn, so the final
+  // act's plot is audited here — the engine hands the tutor bridge the sealed
+  // record and stores the verdict like any boundary audit. Plot-off arms
+  // (and non-plot tutors) have no finalAudit and skip this entirely.
+  if (actState && typeof roles.tutor.finalAudit === 'function') {
+    const fin = await roles.tutor.finalAudit({
+      transcript: [...transcript],
+      ledger: [...ledger],
+      acts: actState.history.map((a) => ({ ...a })),
+    });
+    if (fin) {
+      plotAuditRows.push({ turn, final: true, ...fin });
+      events.push({ turn, type: 'plot_audit', detail: plotAuditDetail(fin, ' at run end') });
+    }
+  }
+
   const verdict = resolveVerdict({ endedBy, events, firstForcedTurn, assertedGroundedTurn });
   const proof = assertedGroundedTurn !== null ? proofTree(validGroundedFacts(), world.rules, world.secret.fact) : null;
 
@@ -897,6 +930,7 @@ export async function runDrama({ world, roles, options = {} }) {
     },
     ...(actState ? { acts: actState.history } : {}),
     ...(reconstructionRows.length ? { reconstruction: reconstructionRows } : {}),
+    ...(plotRows.length || plotAuditRows.length ? { plot: { plots: plotRows, audits: plotAuditRows } } : {}),
     ...(corruption
       ? {
           corruption: {
@@ -913,6 +947,19 @@ export async function runDrama({ world, roles, options = {} }) {
         }
       : {}),
   };
+}
+
+// One-line tally for plot_audit events: a verdict outside the contract
+// counts as unscored rather than crashing the event log.
+function plotAuditDetail(audit, suffix = '') {
+  const mix = { kept: 0, justified_deviation: 0, drift: 0, unscored: 0 };
+  for (const c of audit.clauses || []) {
+    mix[Object.hasOwn(mix, c.verdict) ? c.verdict : 'unscored'] += 1;
+  }
+  return (
+    `act ${audit.act} plot audited${suffix}: kept ${mix.kept}, justified ${mix.justified_deviation}, ` +
+    `drift ${mix.drift}${mix.unscored ? `, unscored ${mix.unscored}` : ''}`
+  );
 }
 
 function resolveVerdict({ endedBy, events, firstForcedTurn, assertedGroundedTurn }) {

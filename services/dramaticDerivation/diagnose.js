@@ -683,6 +683,83 @@ export function reconstructionReport(result) {
   };
 }
 
+/**
+ * C1 act-plot discipline (plan §5–6): per committed plot, harness-checkable
+ * form and conduct measures — was the plot disciplined (withhold + friction
+ * both present, the non-boilerplate shape), which exhibits do its clauses
+ * name, and were the named hold exhibits actually staged within the plotted
+ * act's span? Audits report the watcher's verdict mix. Arm-internal color
+ * (the OFF arm has no plot channel); cross-arm endpoints stay the
+ * harness-ledgered dramatic instruments.
+ */
+export function plotReport(result, world = null) {
+  const block = result.plot;
+  if (!block || (!block.plots?.length && !block.audits?.length)) return null;
+  const plots = block.plots || [];
+  const audits = block.audits || [];
+  // Premise-id extraction is substring matching over the known id vocabulary
+  // (world ledger when given, else the ids the run actually staged) — plot
+  // clauses are free prose, so naming is the checkable part.
+  const knownIds = world?.premiseById
+    ? [...world.premiseById.keys()]
+    : [...new Set((result.ledger || []).map((l) => l.premiseId))];
+  const idsIn = (text) => knownIds.filter((id) => String(text || '').includes(id));
+  const actSpan = new Map((result.acts || []).map((a) => [a.act, a.turns]));
+  const stagedIn = (act) => {
+    const span = actSpan.get(act);
+    if (!span) return new Set();
+    return new Set((result.ledger || []).filter((l) => l.turn >= span[0] && l.turn <= span[1]).map((l) => l.premiseId));
+  };
+  const perPlot = plots.map((p) => {
+    const staged = stagedIn(p.act);
+    const holdNamed = [...new Set((p.holdByEnd || []).flatMap((c) => idsIn(c)))];
+    const withholdNamed = idsIn(p.withhold);
+    const clauseCount = (p.holdByEnd || []).length + (p.withhold ? 1 : 0) + (p.friction ? 1 : 0) + (p.fallback ? 1 : 0);
+    return {
+      act: p.act,
+      turn: p.turn,
+      clauseCount,
+      hasWithhold: Boolean(p.withhold),
+      hasFriction: Boolean(p.friction),
+      holdNamed,
+      holdStagedInAct: holdNamed.filter((id) => staged.has(id)),
+      withholdNamed,
+      withholdPlayedInAct: withholdNamed.filter((id) => staged.has(id)),
+    };
+  });
+  const verdictMix = { kept: 0, justified_deviation: 0, drift: 0, unscored: 0 };
+  const perActAudit = audits.map((a) => {
+    const mix = { kept: 0, justified_deviation: 0, drift: 0, unscored: 0 };
+    for (const c of a.clauses || []) {
+      const v = Object.hasOwn(mix, c.verdict) ? c.verdict : 'unscored';
+      mix[v] += 1;
+      verdictMix[v] += 1;
+    }
+    return { act: a.act, turn: a.turn, final: Boolean(a.final), clauses: (a.clauses || []).length, mix };
+  });
+  const sum = (sel) => perPlot.reduce((acc, r) => acc + sel(r), 0);
+  return {
+    plots: {
+      count: perPlot.length,
+      disciplined: perPlot.filter((r) => r.hasWithhold && r.hasFriction).length,
+      meanClauses: perPlot.length ? +(sum((r) => r.clauseCount) / perPlot.length).toFixed(2) : null,
+      perAct: perPlot,
+    },
+    audits: {
+      count: perActAudit.length,
+      finalIncluded: perActAudit.some((a) => a.final),
+      verdictMix,
+      perAct: perActAudit,
+    },
+    crossCheck: {
+      holdNamed: sum((r) => r.holdNamed.length),
+      holdStagedInAct: sum((r) => r.holdStagedInAct.length),
+      withholdNamed: sum((r) => r.withholdNamed.length),
+      withholdPlayedInAct: sum((r) => r.withholdPlayedInAct.length),
+    },
+  };
+}
+
 export function diagnose(result, world) {
   const eventsByType = {};
   for (const event of result.events) {
@@ -710,6 +787,8 @@ export function diagnose(result, world) {
   // P1 dial reporters — null (and the diagnosis keys absent) off their arms.
   const releaseDeviationsReport = releaseDeviations(result);
   const confrontation = confrontReport(result);
+  // C1 dial reporter — same contract: null off the plot arm.
+  const plotRpt = plotReport(result, world);
   const tutorNotes = result.transcript
     .filter((line) => line.role === 'director' && line.meta?.tutorNote)
     .map((line) => ({ turn: line.turn, text: line.meta.tutorNote }));
@@ -763,6 +842,8 @@ export function diagnose(result, world) {
     // return null on arms without their dial, so the keys stay absent.
     ...(releaseDeviationsReport ? { releaseDeviations: releaseDeviationsReport } : {}),
     ...(confrontation ? { confrontation } : {}),
+    // C1 (act-plot dial): absent off the arm.
+    ...(plotRpt ? { plot: plotRpt } : {}),
   };
 }
 
@@ -1028,6 +1109,17 @@ export function renderEvalPanel(diagnosis) {
     const det = (b) => `${b.caught}/${b.actual}${b.rate !== null ? ` (${Math.round(b.rate * 100)}%)` : ''}`;
     lines.push(
       `- **reconstruction** ${rc.turns} theory commits · held-set overlap ${rc.meanHeldJaccard} mean Jaccard · gaps caught ${det(rc.missing)} · false beliefs caught ${det(rc.mistaken)}`,
+    );
+  }
+  const pl = d.plot;
+  if (pl) {
+    const vm = pl.audits.verdictMix;
+    lines.push(
+      `- **plot** ${pl.plots.count} committed · withhold+friction on ${pl.plots.disciplined}/${pl.plots.count} · ${pl.plots.meanClauses ?? '—'} clauses avg · audits ${pl.audits.count}${
+        pl.audits.finalIncluded ? ' (incl. final act)' : ''
+      }: kept ${vm.kept} / justified ${vm.justified_deviation} / drift ${vm.drift}${
+        vm.unscored ? ` / unscored ${vm.unscored}` : ''
+      } · hold-named exhibits staged in act ${pl.crossCheck.holdStagedInAct}/${pl.crossCheck.holdNamed}`,
     );
   }
   const rd = d.releaseDeviations;

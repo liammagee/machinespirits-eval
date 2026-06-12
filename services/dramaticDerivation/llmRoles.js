@@ -341,7 +341,7 @@ function tutorSystem(
   world,
   script,
   dials = {},
-  { actsMode = false, reconstruct = false, confront = false, releaseAuthority = false } = {},
+  { actsMode = false, reconstruct = false, confront = false, releaseAuthority = false, plot = false } = {},
 ) {
   const recognition = clampDial(dials.recognition);
   const charisma = clampDial(dials.charisma);
@@ -459,6 +459,32 @@ function tutorSystem(
           'absence twice and repairs nothing.',
         ]
       : []),
+    ...(plot
+      ? [
+          '',
+          '# The act plot (committed at each opening; audited at each close)',
+          '',
+          'On the FIRST turn of each act — the harness marks it — commit a PLOT for',
+          'the act alongside your dialogue, built from conduct alone (what the learner',
+          'has said and done on stage; you are never shown their board). Four fields:',
+          '- "hold_by_end": one to three claims the learner should DEMONSTRABLY hold',
+          "  by the act's close — each checkable from the record (they cite it, use",
+          "  it, read it back), never from anyone's interior;",
+          '- "withhold": what you will NOT stage or concede this act, and until when;',
+          '- "friction": where you expect the learner to balk, leap, or garble —',
+          '  named before it happens;',
+          '- "fallback": what you will do when that friction arrives.',
+          '',
+          'The plot is a commitment, not a mood. Play the act under it. At the act',
+          'close your own watcher audits it clause by clause against the record:',
+          'kept, justified_deviation (bent, and the record shows why), or drift (the',
+          'act wandered off it with nothing to answer for it). A clause too vague to',
+          'check audits as drift — write clauses the record can check. THE AUDIT',
+          "BINDS: your next act's plot must answer every drifted clause — carry it",
+          'forward, revise it, or retire it with a reason. Mid-act turns commit no',
+          'new plot; they play under the standing one.',
+        ]
+      : []),
     ...(registers.length
       ? ['', '# Register (operator dials — these color your MANNER, never your evidence)', '', ...registers]
       : []),
@@ -474,7 +500,10 @@ function tutorSystem(
       reconstruct
         ? ', "theory": {"believed_held": ["<premise id>", ...], "believed_missing": [...], "believed_mistaken": [...]}'
         : ''
+    }${
+      plot ? ', "plot": {"hold_by_end": ["<claim>", ...], "withhold": "...", "friction": "...", "fallback": "..."}' : ''
     }}`,
+    ...(plot ? ['("plot" belongs to act-opening turns ONLY — the harness marks them; omit the key mid-act.)'] : []),
   ].join('\n');
 }
 
@@ -496,7 +525,7 @@ function tutorSystem(
  */
 function tutorSuperegoSystem(
   world,
-  { stallWatch = false, counsel = null, reconstruct = false, confront = false } = {},
+  { stallWatch = false, counsel = null, reconstruct = false, confront = false, plot = false } = {},
 ) {
   return [
     "You are the tutor's SUPEREGO in a staged derivation drama — the watcher inside",
@@ -602,6 +631,16 @@ function tutorSuperegoSystem(
           '"diagnosis". Your jurisdiction is unchanged: intervene only on the rut.',
         ]
       : []),
+    ...(plot
+      ? [
+          '',
+          "The draft may come with the tutor's standing PLOT for the act (committed",
+          'at its opening). Read it as context; when the draft plainly abandons its',
+          'own plot — a withhold about to be staged, a named friction met with',
+          'nothing — say so in "diagnosis". Your jurisdiction is unchanged: the',
+          'act-close audit, not the turn watch, judges the plot.',
+        ]
+      : []),
     ...(counsel
       ? [
           '',
@@ -626,6 +665,46 @@ function tutorSuperegoSystem(
   ].join('\n');
 }
 
+// The audit's verdict vocabulary (C1): anything outside it gates to
+// 'unscored' rather than being trusted — the contract is the three words.
+const PLOT_VERDICTS = new Set(['kept', 'justified_deviation', 'drift']);
+
+/**
+ * The act-close plot audit — the same watcher, sitting in a SECOND seat (C1,
+ * plan §5). At each act boundary it judges the closed act's PLOT against the
+ * record as played: every clause kept, justified_deviation, or drift. It
+ * holds the ego's own plot text plus stage-public conduct (the act's lines
+ * and staged exhibit ids) — never the secret, the premise ledger, or the
+ * learner's board — and its verdict is read by the ego alone: intra-mind,
+ * no new evidence channel onto the stage.
+ */
+function plotAuditSystem(world) {
+  return [
+    "You are the tutor's SUPEREGO in a staged derivation drama, sitting as the",
+    'ACT-CLOSE AUDITOR. An act has just closed. Before you: the PLOT the tutor',
+    'committed at its opening, and the public record of the act as played —',
+    "nothing else. No secret, no exhibit ledger, no view of the learner's board.",
+    `The drama: "${world.title}". The public question: ${world.question}`,
+    '',
+    'Judge the plot CLAUSE BY CLAUSE against the record:',
+    '- "kept" — the record honours the clause: a hold_by_end claim the learner',
+    '  demonstrably holds (cites it, uses it, reads it back); a withhold that',
+    '  stayed unstaged; a named friction met by its fallback when it arrived.',
+    '- "justified_deviation" — the clause was bent and the record shows why: a',
+    '  better line opened, the learner forced the issue, the act closed early.',
+    '  Name the evidence.',
+    '- "drift" — the act wandered off the clause with nothing in the record to',
+    '  answer for it. A clause too vague to check is drift by default.',
+    '',
+    'Your audit reaches the tutor alone — never the stage. Be exact and',
+    'unsentimental: the next plot is built on these verdicts.',
+    '',
+    'Reply with ONLY a JSON object:',
+    '{"audit": [{"clause": "<the clause, quoted or tightly paraphrased>", "verdict": "kept" | "justified_deviation" | "drift", "evidence": "<one line from the record>"}, ...],',
+    ' "summary": "<one or two lines the tutor reads before plotting the next act>"}',
+  ].join('\n');
+}
+
 export function makeLlmTutor(
   world,
   client,
@@ -640,6 +719,7 @@ export function makeLlmTutor(
     reconstruct = false,
     confront = false,
     releaseAuthority = false,
+    plot = false,
   } = {},
 ) {
   if (!script || !script.trim()) {
@@ -679,8 +759,22 @@ export function makeLlmTutor(
   if (confront && !actsMode) {
     throw new Error('derivation.llmRoles: confront requires acts mode (re-entry is an acts-mode concept)');
   }
-  const system = tutorSystem(world, script, dials, { actsMode, reconstruct, confront, releaseAuthority });
-  const superegoSystem = superego ? tutorSuperegoSystem(world, { stallWatch, counsel, reconstruct, confront }) : null;
+  // C1 wiring guards: the plot is an act-scale commitment (no acts, no
+  // opening to commit at and no close to audit), and the act-close audit is
+  // the superego's jurisdiction — without the watcher nothing binds.
+  if (plot && !actsMode) {
+    throw new Error(
+      'derivation.llmRoles: plot requires acts mode (the plot is an act-scale commitment — no acts, no opening to commit at or close to audit)',
+    );
+  }
+  if (plot && !superego) {
+    throw new Error('derivation.llmRoles: plot requires the superego (the act-close audit is its jurisdiction)');
+  }
+  const system = tutorSystem(world, script, dials, { actsMode, reconstruct, confront, releaseAuthority, plot });
+  const superegoSystem = superego
+    ? tutorSuperegoSystem(world, { stallWatch, counsel, reconstruct, confront, plot })
+    : null;
+  const plotAuditCharter = plot ? plotAuditSystem(world) : null;
   const normalizeMove = (out) =>
     out.move && typeof out.move === 'object'
       ? {
@@ -702,7 +796,104 @@ export function makeLlmTutor(
       believed_mistaken: ids(raw.believed_mistaken),
     };
   };
-  return async (view) => {
+  // --- C1 (plan §5): the per-act plot, committed at each act opening and
+  // audited at each close. Per-run state lives in the bridge closure (the
+  // firstSeen-Map pattern from makeLlmLearner). ---
+  const plotState = plot ? { current: null, actIndex: null, authoredTurn: null, lastAudit: null } : null;
+  // Plot shape gate: a plot is real only when at least one field is
+  // non-empty — a malformed or empty plot drops to null, which keeps the
+  // engine's recording gate closed for that act (absence is visible to the
+  // scorer; an empty commitment is not fabricated on the model's behalf).
+  const normalizePlot = (raw) => {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+    const str = (v) => (typeof v === 'string' && v.trim() ? v.trim() : null);
+    const holdByEnd = Array.isArray(raw.hold_by_end)
+      ? raw.hold_by_end.map((x) => String(x).trim()).filter(Boolean)
+      : [];
+    const withhold = str(raw.withhold);
+    const friction = str(raw.friction);
+    const fallback = str(raw.fallback);
+    if (!holdByEnd.length && !withhold && !friction && !fallback) return null;
+    return { holdByEnd, withhold, friction, fallback };
+  };
+  // Audit shape gate: a clause with a verdict outside the contract is kept
+  // but gated to 'unscored' rather than trusted; no clauses -> null.
+  const normalizeAudit = (raw, act) => {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+    const clauses = (Array.isArray(raw.audit) ? raw.audit : [])
+      .filter((c) => c && typeof c === 'object')
+      .map((c) => ({
+        clause: typeof c.clause === 'string' ? c.clause.trim() : '',
+        verdict: PLOT_VERDICTS.has(c.verdict) ? c.verdict : 'unscored',
+        evidence: typeof c.evidence === 'string' ? c.evidence.trim() : '',
+      }))
+      .filter((c) => c.clause);
+    if (!clauses.length) return null;
+    return {
+      act,
+      clauses,
+      summary: typeof raw.summary === 'string' && raw.summary.trim() ? raw.summary.trim() : null,
+    };
+  };
+  const renderPlotLines = (p) => [
+    ...p.holdByEnd.map((c, i) => `- hold_by_end[${i + 1}]: ${c}`),
+    ...(p.withhold ? [`- withhold: ${p.withhold}`] : []),
+    ...(p.friction ? [`- friction: ${p.friction}`] : []),
+    ...(p.fallback ? [`- fallback: ${p.fallback}`] : []),
+  ];
+  // The act-close audit call: a separate tutor_superego call under its own
+  // charter. The auditor holds the ego's plot text and the act's public
+  // record (its lines + the exhibit ids staged in its span) — the watch's
+  // leak discipline: nothing concealed enters, and the verdict goes to the
+  // ego alone, never the stage.
+  const auditClosedAct = async (closedAct, standingPlot, { transcript, ledger, turn }) => {
+    const [from, to] = closedAct.turns;
+    const actLines = transcript.filter(
+      (l) => l.turn >= from && l.turn <= to && (l.role === 'tutor' || l.role === 'learner'),
+    );
+    const staged = ledger.filter((l) => l.turn >= from && l.turn <= to).map((l) => l.premiseId);
+    const auditUser = [
+      `Act ${closedAct.act} has closed (turns ${from}–${to}).`,
+      '',
+      'THE PLOT the tutor committed at its opening:',
+      ...renderPlotLines(standingPlot),
+      '',
+      `Exhibits staged during the act: ${staged.length ? staged.join(', ') : 'none'}.`,
+      '',
+      'The act as played:',
+      actLines.map((l) => `[turn ${l.turn}] ${l.role.toUpperCase()}: ${(l.text || '').trim()}`).join('\n') ||
+        '(no lines)',
+      '',
+      'Audit the plot clause by clause. Reply with ONLY the JSON object.',
+    ].join('\n');
+    // mock determinism: a hold clause is kept iff a premise id it names was
+    // staged within the act span, else drift; the other clause kinds audit
+    // kept. The real backend ignores meta.
+    const stagedSet = new Set(staged);
+    const mockClauses = [
+      ...standingPlot.holdByEnd.map((c) => ({
+        clause: c,
+        verdict: [...world.premiseById.keys()].some((id) => c.includes(id) && stagedSet.has(id)) ? 'kept' : 'drift',
+        evidence: 'mock: hold clause checked against the act-span ledger',
+      })),
+      ...(standingPlot.withhold
+        ? [{ clause: standingPlot.withhold, verdict: 'kept', evidence: 'mock: withhold honoured' }]
+        : []),
+      ...(standingPlot.friction
+        ? [{ clause: standingPlot.friction, verdict: 'kept', evidence: 'mock: friction named in advance' }]
+        : []),
+      ...(standingPlot.fallback
+        ? [{ clause: standingPlot.fallback, verdict: 'kept', evidence: 'mock: fallback stood ready' }]
+        : []),
+    ];
+    const out = await callJson(client, 'tutor_superego', turn, {
+      system: plotAuditCharter,
+      user: auditUser,
+      meta: { plotAuditHint: { clauses: mockClauses, summary: `mock audit of act ${closedAct.act}` } },
+    });
+    return normalizeAudit(out, closedAct.act);
+  };
+  const tutorFn = async (view) => {
     // C2 (release authority): the fixed per-turn cue becomes a WINDOW. Each
     // unreleased via-tutor entry is playable from RELEASE_LATITUDE turns
     // before its scheduled turn; at RELEASE_LATITUDE past it, it hits the
@@ -758,6 +949,60 @@ export function makeLlmTutor(
         : actsMode
           ? 'No release is due from you this turn. Work the inquiry by your script — consolidate, test, counter the tempting answer, re-stage what you judge lost, or stage the recognition — whichever your reading of the learner calls for.'
           : "No release is due from you this turn. Work the learner's board by your script: consolidate, test, counter the tempting answer, or stage the recognition — whichever the board calls for.";
+    // --- C1 plot lifecycle (acts mode only): on an act-opening turn the
+    // bridge FIRST audits the act just closed (the engine seals act N during
+    // the director phase of this same turn, so the closed act is already in
+    // view.acts.closed), THEN demands a fresh plot — the ordering is the
+    // binding: the verdicts are on the table before the next plot is
+    // written. Mid-act turns read the standing plot back. ---
+    let plotAuditRow = null;
+    let plotOpening = false;
+    if (plot) {
+      const a = view.acts;
+      plotOpening = a.startTurn === view.turn;
+      if (plotOpening) {
+        const closedAct = a.closed[a.closed.length - 1] || null;
+        if (plotState.current && closedAct && plotState.actIndex === closedAct.act) {
+          plotAuditRow = await auditClosedAct(closedAct, plotState.current, {
+            transcript: view.transcript,
+            ledger: view.ledger,
+            turn: view.turn,
+          });
+          if (plotAuditRow) plotState.lastAudit = plotAuditRow;
+        }
+        plotState.current = null;
+        plotState.actIndex = a.index;
+      }
+    }
+    const plotSection = !plot
+      ? []
+      : plotOpening
+        ? [
+            '',
+            ...(plotAuditRow
+              ? [
+                  `THE AUDIT of your act ${plotAuditRow.act} plot (your own watcher, clause by clause):`,
+                  ...plotAuditRow.clauses.map(
+                    (c) => `- [${c.verdict}] ${c.clause}${c.evidence ? ` — ${c.evidence}` : ''}`,
+                  ),
+                  ...(plotAuditRow.summary ? [`The auditor's summary: ${plotAuditRow.summary}`] : []),
+                  'THE AUDIT BINDS: the plot you now commit must answer every drifted',
+                  'clause — carry it forward, revise it, or retire it with a reason.',
+                  '',
+                ]
+              : view.acts.index > 1
+                ? ['(No audit: the previous act closed without a plot on record.)', '']
+                : []),
+            `THIS TURN OPENS ACT ${view.acts.index} — COMMIT YOUR PLOT for the act in "plot", alongside your dialogue.`,
+          ]
+        : plotState.current
+          ? [
+              '',
+              'YOUR PLOT for this act (committed at its opening):',
+              ...renderPlotLines(plotState.current),
+              'Play under it; the audit at the act close distinguishes justified deviation from drift.',
+            ]
+          : [];
     // The tutor sees no staging state (movements are the director's diagnostic
     // dramaturgy, 2026-06-10): any rhythm-watching happens inside this bridge.
     let user;
@@ -774,6 +1019,7 @@ export function makeLlmTutor(
         '',
         'The dialogue so far (you remember all of it; the learner sees only this act):',
         renderTranscriptTail(view.transcript, view.transcript.length),
+        ...plotSection,
         '',
         task,
       ].join('\n');
@@ -840,6 +1086,30 @@ export function makeLlmTutor(
       // the mock tutor to draft bare re-entries against on cue-less turns —
       // driving the fire → confront → licensed re-entry cycle without an LLM.
       ...(confront ? { reentryHint: view.ledger.find((l) => l.turn < view.turn)?.premiseId ?? null } : {}),
+      // mock determinism (C1, opening turns): a schedule-derived plot — the
+      // next two unreleased scheduled premises become the hold and withhold
+      // clauses, friction/fallback fixed. The real backend ignores meta.
+      ...(plot && plotOpening
+        ? {
+            plotHint: (() => {
+              const unreleased = world.releaseSchedule.filter((e) => !alreadyReleased.has(e.premise));
+              const p1 = unreleased[0]?.premise || null;
+              const p2 = unreleased[1]?.premise || null;
+              return {
+                hold_by_end: [
+                  p1
+                    ? `the learner holds ${p1} beside what already stands`
+                    : 'the learner restates the standing board unprompted',
+                ],
+                withhold: p2
+                  ? `${p2} waits until ${p1} has landed`
+                  : 'the conclusion stays unsaid until the board forces it',
+                friction: 'the learner may leap to the tempting answer before the papers are in',
+                fallback: 'restage what the learner garbles before anything new',
+              };
+            })(),
+          }
+        : {}),
     };
     // C2 harness enforcement: the model's declared release is honored only
     // inside the window — an id outside it (unscheduled, already played, not
@@ -875,12 +1145,26 @@ export function makeLlmTutor(
     };
     const draftOut = await callJson(client, 'tutor', view.turn, { system, user, meta });
     const draftTheory = reconstruct ? normalizeTheory(draftOut.theory) : null;
+    // The plot parses only on an opening turn (mid-act re-commitments are
+    // ignored — the standing plot is the commitment); a parse-miss leaves
+    // plotState.current null, so the act runs unplotted and the next opening
+    // audits nothing — the lapse stays visible.
+    const draftPlot = plot && plotOpening ? normalizePlot(draftOut.plot) : null;
+    if (draftPlot) {
+      plotState.current = draftPlot;
+      plotState.authoredTurn = view.turn;
+    }
     const releaseBits = normalizeRelease(draftOut);
+    const plotBits = (finalPlot) => ({
+      ...(finalPlot ? { plot: { act: view.acts?.index, turn: view.turn, ...finalPlot } } : {}),
+      ...(plotAuditRow ? { plotAudit: plotAuditRow } : {}),
+    });
     const draft = {
       dialogue: typeof draftOut.dialogue === 'string' ? draftOut.dialogue.trim() : '',
       move: normalizeMove(draftOut),
       ...releaseBits,
       ...(draftTheory ? { theory: draftTheory } : {}),
+      ...plotBits(draftPlot),
     };
     if (!superego) return draft;
 
@@ -1016,6 +1300,13 @@ export function makeLlmTutor(
             `held: ${draftTheory.believed_held.join(', ') || '(none)'}; missing: ${
               draftTheory.believed_missing.join(', ') || '(none)'
             }; mistaken: ${draftTheory.believed_mistaken.join(', ') || '(none)'}`,
+          ]
+        : []),
+      ...(plot && plotState.current
+        ? [
+            '',
+            "The tutor's standing PLOT for this act (context only — the act-close audit judges it):",
+            ...renderPlotLines(plotState.current),
           ]
         : []),
       '',
@@ -1166,6 +1457,14 @@ export function makeLlmTutor(
     // The revision may re-commit the theory (same contract); a parse-miss
     // falls back to the draft's, so an intervened turn never loses its row.
     const revisedTheory = reconstruct ? normalizeTheory(revisedOut.theory) || draftTheory : null;
+    // Same fallback contract for the plot: an opening-turn revision may
+    // rewrite it; a parse-miss keeps the draft's, so an intervened opening
+    // never loses its commitment.
+    const revisedPlot = plot && plotOpening ? normalizePlot(revisedOut.plot) || draftPlot : null;
+    if (revisedPlot) {
+      plotState.current = revisedPlot;
+      plotState.authoredTurn = view.turn;
+    }
     return {
       dialogue,
       move: normalizeMove(revisedOut) || draft.move,
@@ -1176,6 +1475,7 @@ export function makeLlmTutor(
       ...(draft.releaseReason ? { releaseReason: draft.releaseReason } : {}),
       ...(draft.releaseDecision ? { releaseDecision: draft.releaseDecision } : {}),
       ...(revisedTheory ? { theory: revisedTheory } : {}),
+      ...plotBits(revisedPlot),
       deliberation: {
         ...deliberation,
         intervened: true,
@@ -1184,6 +1484,22 @@ export function makeLlmTutor(
       },
     };
   };
+  if (plot) {
+    // The run-end act close happens AFTER the last turn — no opening turn
+    // follows it, so without this hook the final act's plot (the longest-
+    // standing commitment of the run) would go unaudited. The engine calls
+    // it once, after sealing the final act.
+    tutorFn.finalAudit = async ({ transcript, ledger, acts }) => {
+      const finalAct = acts[acts.length - 1] || null;
+      if (!plotState.current || !finalAct || plotState.actIndex !== finalAct.act) return null;
+      return auditClosedAct(finalAct, plotState.current, {
+        transcript,
+        ledger,
+        turn: finalAct.turns[1],
+      });
+    };
+  }
+  return tutorFn;
 }
 
 // ---------------------------------------------------------------------------

@@ -587,3 +587,162 @@ DERIVATION_LLM=real node scripts/run-derivation-loop.js \
   --group lantern-p1-dials --label lantern-p1-dials-on-v2 \
   --critic-feedback off
 ```
+
+## 11. P2 pre-registered scoring — the act-plot (C1), fixed before the paid arm
+
+> Appended 2026-06-12, after the C1 mechanism was implemented and verified
+> mock-first (14 dedicated tests in `tests/dramaticDerivationPlot.test.js`
+> — charter text, call order at the boundary turn, the binding demand, the
+> absence contract, engine recording, the report, the full mock stack —
+> plus the full hermetic suite green and a zero-cost mock loop on lantern
+> with every dial up: 7 acts → 7 plots → 7 audits including the run-end
+> final audit, discipline 7/7). This section is committed together with
+> the implementation BEFORE the paid arm runs. Scoring reads from
+> harness-ledgered quantities only; nothing here is adjustable after the
+> run.
+
+### 11.1 What changes — the commitment loop at act scale
+
+§10's pair ended on a diagnosis, not a fix: charter text binds
+**event-triggered procedure** (treatment-follows-diagnosis went 1/1) and
+fails to bind **clock arithmetic** (the house-clock clause was null on
+every observable; the play died at t8 holding two live rescues). The
+per-turn tutor follows rules it can check against the present turn; it
+does not plan. C1 is the designed answer (§5), now built: it converts the
+act-scale calendar into a *written, standing, self-authored* artifact the
+tutor can check one step at a time.
+
+Mechanics (all flag-gated under `--plot`, requiring `--superego --acts`):
+
+1. **Commit at the opening.** On each act-opening turn the tutor ego must
+   write a plot beside its dialogue: `hold_by_end` (what the learner
+   holds by act close), `withhold` (what it delays and until what), a
+   named expected `friction`, and a `fallback`. Built from conduct only —
+   the D(t)/hidden-store instruments are never piped in; acts-mode
+   redaction is unchanged.
+2. **Read back mid-act.** Every subsequent turn of the act carries the
+   standing plot back into the ego prompt ("play under it; the audit
+   distinguishes justified deviation from drift"). This is the live
+   channel at a t7/t8: the clock clause was a rule about hidden state;
+   the plot is the tutor's own written calendar, present at the turn it
+   must bind.
+3. **Audit at the close, with authority.** At each act close the tutor
+   superego — second seat, before the ego drafts — audits plot against
+   play, clause by clause: kept / justified_deviation (quote the move
+   that made abandonment right) / drift. The auditor sees the ego's plot
+   text and the stage-public act record only (no secret, no exhibit
+   ledger, no learner board); its verdict reaches the ego alone. Verdicts
+   outside the three-term vocabulary gate to `unscored`.
+4. **The audit binds.** The next act's plot demand carries the verdict
+   clause by clause and requires the new plot to answer every drifted
+   clause. After the final act the same auditor delivers a run-end final
+   audit, so no plot escapes its reckoning.
+
+Sequencing is the mechanism: on a boundary turn the calls run audit →
+draft (verdicts in prompt) → watch, pinned by an order assertion in the
+tests. A malformed plot is data, not an error — the act runs unplotted,
+the next opening audits nothing, and the gap is ledgered. Release
+decisions stay drafted-once; the plot never overrides the C2 window
+discipline or the charter-v2 clauses, which ride unchanged.
+
+In §3's terms this closes the commitment loop at act scale: self-written
+mid-run (1), persistent and read back (2), audited with authority (3),
+revisable under the learner's contingency via the justified-deviation
+verdict (4).
+
+### 11.2 The arm and its comparators
+
+ONE paid run, `--label lantern-p2-plot-on`, new group `lantern-p2-plot`,
+same command as §10.4 otherwise (world, script, acts min 3 / max 8, decay
+seed 1, superego, confront, release-authority, charter v2,
+`--critic-feedback off`, casting codex director/tutor/superego + Sonnet
+learner + Fable critic) plus `--plot`.
+
+Comparators, read four-way and descriptively:
+
+- **Primary OFF control: `lantern-p1-dials-on-v2`** — identical
+  configuration including the charter-v2 clauses, minus the plot. The
+  contrast is exactly +C1 (one paid run; the §10 precedent of reusing the
+  prior arm as control).
+- `lantern-p1-dials-on` (charter v1) and `lantern-revise-off` (dials off,
+  grounded t20, 8/8 on cue) as the arc's outer posts.
+
+Act geometry inside the contrast window: v1 closed act 1 at t4, v2 at t3,
+so the plot arm gets its first full commit → audit → bind iteration
+inside the t1..t8 death window, and the standing read-back is in the ego
+prompt at every turn of it. Carried caveats: same seed ≠ same slip
+schedule once exposure shifts (third realisation already on record);
+compare economies, not per-slip outcomes; the truncation asymmetry
+reverses if the plot arm survives (the controls' denominators become the
+short ones).
+
+### 11.3 Endpoints
+
+1. **Survival of the t8 death window (C1 primary).** Does the play clear
+   t8 without an aporia verdict — concretely, does every 6-turn stretch
+   in t1..t10 contain a D-drop? Both controls died at t8 on the same four
+   windowed calendar decisions. Gate for endpoints 4–6 (they need stage
+   time). If the plot arm dies in the same window, the pre-declared
+   reading is "a standing self-written calendar did not rescue conduct
+   either" — reportable as-is, no re-roll.
+2. **Mechanism integrity (gate for interpreting endpoint 1).** From the
+   `plot` report: a plot at every act opening (plots.count = acts), every
+   plot disciplined (the four clauses present — disciplined = count),
+   every close audited plus the run-end final audit (audits.count =
+   plots.count, finalIncluded), unscored rate reported. The mock floor is
+   7/7/7; a paid arm that cannot keep the commit/audit cadence has not
+   tested C1, whatever its verdict.
+3. **Calendar conduct under a standing plot (the clock-conversion
+   question).** The controls' signature miss, re-asked: when the board
+   has gone quiet and a window claim stands open (v1/v2: `p_chart`
+   claimable at t7 AND t8, held in silence, no reason citing pace), does
+   the plot name the pending exhibit (withhold/hold clauses — crossCheck:
+   holdNamed staged in act, withholdNamed played in act) and is the claim
+   spent? Deviation reasons that cite the plot, the act's arc, or pace
+   count as plot-mediated; reasons identical to v1/v2's
+   exhibit-local ones do not. Descriptive, no target number.
+4. **Audit bite and binding (C1 secondary).** Verdict mix over the run:
+   does the audit channel carry information (any justified_deviation /
+   drift at all, or boilerplate kept×N), and does the next plot answer
+   drifted clauses (quoted in the digest)? The justified-deviation
+   verdict pricing responsiveness — a plot abandoned FOR the learner's
+   actual move — is the §3 criterion (4) made observable.
+5. **No-degradation guard (§9.2.5 / §10.3.6 unchanged).** Verdict vs
+   controls, forced→asserted gap, releases landed within windows,
+   voiced/overreach, figure variety, F. A plot that buys survival by
+   costing groundedness fails regardless of endpoints 1–4.
+6. **Bound clauses must stay bound.** §10.3.2 treatment adherence
+   retained verbatim (absence-exposing confrontation → covered re-entry
+   within 2 turns, target 1.0); §9.2.1 re-adoption and §9.2.3
+   confront-prompted retractions retained, opportunity-gated on survival.
+   A plot that crowds out the one clause that bound (the t7 collision
+   class) is a regression and gets reported as such.
+7. **Critic's notice** (Fable, pinned role) — second reader on whether
+   the plotted play reads as strategy or as compliance ceremony; no κ
+   bar, divergence is a finding.
+
+### 11.4 Reading discipline
+
+n=1, four-way descriptive, §6.13 register. Claim ceiling: the arm can
+demonstrate that an act-scale self-written commitment with audit
+authority changes (or fails to change) calendar conduct where charter
+text alone did not; it cannot establish rates, and it cannot separate the
+bundle (standing read-back + audit verdicts + binding demand land
+together — if any single channel becomes load-bearing, a split pair needs
+fresh sanction). The plot/audit charter text and the boundary-turn call
+order are pinned by string assertions in
+`tests/dramaticDerivationPlot.test.js` (sections B–C) committed with this
+registration. The paid command:
+
+```
+DERIVATION_PROVIDER=codex DERIVATION_LEARNER_PROVIDER=claude \
+DERIVATION_LEARNER_MODEL=sonnet DERIVATION_CLI_TIMEOUT_MS=900000 \
+DERIVATION_LLM=real node scripts/run-derivation-loop.js \
+  --world config/drama-derivation/world-002-lantern.yaml \
+  --script config/drama-derivation/tutor-scripts/lantern-v001.md \
+  --superego --acts '{"minActTurns":3,"maxActTurns":8}' \
+  --decay '{"rate":0.75,"graceTurns":1,"maxConcurrent":2,"startTurn":1,"mutateShare":1.0,"seed":1}' \
+  --confront --release-authority --plot \
+  --group lantern-p2-plot --label lantern-p2-plot-on \
+  --critic-feedback off
+```
