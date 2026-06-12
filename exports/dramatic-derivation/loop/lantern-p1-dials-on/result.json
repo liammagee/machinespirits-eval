@@ -1,0 +1,785 @@
+{
+  "worldId": "world_002_lantern",
+  "verdict": "aporia",
+  "events": [
+    {
+      "turn": 3,
+      "type": "decay",
+      "detail": "m_key slips — misremembered as \"onlyKeyTo harlowPoint senna\""
+    },
+    {
+      "turn": 4,
+      "type": "retract_false",
+      "detail": "m_key: false form \"onlyKeyTo harlowPoint senna\" retracted"
+    },
+    {
+      "turn": 5,
+      "type": "act_end",
+      "detail": "act 1 closed (director) after 4 turns"
+    },
+    {
+      "turn": 6,
+      "type": "decay",
+      "detail": "p_bearing slips from the learner's board"
+    },
+    {
+      "turn": 8,
+      "type": "aporia",
+      "detail": "no progress over 6 turns"
+    }
+  ],
+  "trajectory": [
+    {
+      "turn": 1,
+      "D": 5,
+      "forced": false,
+      "groundedCount": 4,
+      "F": 1
+    },
+    {
+      "turn": 2,
+      "D": 5,
+      "forced": false,
+      "groundedCount": 5,
+      "F": 1
+    },
+    {
+      "turn": 3,
+      "D": 4,
+      "forced": false,
+      "groundedCount": 6,
+      "F": 1
+    },
+    {
+      "turn": 4,
+      "D": 4,
+      "forced": false,
+      "groundedCount": 5,
+      "F": 0.8333333333333334
+    },
+    {
+      "turn": 5,
+      "D": 4,
+      "forced": false,
+      "groundedCount": 5,
+      "F": 0.8333333333333334
+    },
+    {
+      "turn": 6,
+      "D": 4,
+      "forced": false,
+      "groundedCount": 6,
+      "F": 0.8571428571428571
+    },
+    {
+      "turn": 7,
+      "D": 5,
+      "forced": false,
+      "groundedCount": 5,
+      "F": 0.7142857142857143
+    },
+    {
+      "turn": 8,
+      "D": 5,
+      "forced": false,
+      "groundedCount": 6,
+      "F": 0.75
+    }
+  ],
+  "transcript": [
+    {
+      "turn": 1,
+      "role": "director",
+      "text": "[The hearing room gathers itself around an empty table, rain ticking at the high windows while the unanswered question hangs like a lantern no one has yet trimmed. The wreck is not named by any new paper; only the room's appetite for blame begins to show.]",
+      "meta": {
+        "release": null,
+        "phase": {
+          "name": "Act 1",
+          "intent": "[The hearing room gathers itself around an empty table, rain ticking at the high windows while the unanswered question hangs like a lantern no one has yet trimmed. The wreck is not named by any new paper; only the room's appetite for blame begins to show.]",
+          "turn": 1
+        },
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 1,
+      "role": "tutor",
+      "text": "Before ink touches blame, clerk, what kind of fact would let this court say a ship followed one light rather than another? Name the rule's first need, not the culprit.",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": null,
+          "intent": "orient"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "No rut or uncovered re-entry is possible on the first turn.",
+          "note": null,
+          "lastFigures": [],
+          "jurisdiction": null,
+          "reentry": {
+            "target": null,
+            "releasedEarlier": false,
+            "intent": "orient",
+            "lastStagedTurn": null,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 1,
+          "windowSize": 0,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null
+        }
+      }
+    },
+    {
+      "turn": 1,
+      "role": "learner",
+      "text": "The rule's first need is her logged bearing — without a bearing on record, we cannot say which tower stood in her path, and the whole chain of inference cannot begin. The bearing is the hinge; culprit can wait until the hinge is found.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": null,
+        "asserts": null
+      }
+    },
+    {
+      "turn": 2,
+      "role": "director",
+      "text": "[A clerk lays the Board's standing rule on the table and reads it into the rain-hushed room: \"Harlow Point keeps one key to its lamp-room and the keeper keeps it: Brandt's, on his own belt, by the Board's standing rule. No other hand could touch that lamp.\"]",
+      "meta": {
+        "release": "m_key",
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 2,
+      "role": "tutor",
+      "text": "A key on a keeper's belt is like a seal on a ledger: it proves custody, not yet use. What does that rule fix for Harlow Point, and what does it still leave unproved about the light the Mara followed?",
+      "meta": {
+        "move": {
+          "figure": "analogia",
+          "targetPremise": "m_key",
+          "intent": "consolidate"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "analogia",
+          "intervened": false,
+          "diagnosis": "Neither jurisdiction is triggered: there are fewer than two prior figures, and the targeted exhibit is being staged rather than re-entered.",
+          "note": null,
+          "lastFigures": [
+            "erotema"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": "m_key",
+            "releasedEarlier": false,
+            "intent": "consolidate",
+            "lastStagedTurn": 2,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 2,
+          "windowSize": 1,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "role": "learner",
+      "text": "The key rule fixes custody alone: only Brandt's hand could open that lamp-room, so if the lamp burned, no other person lit it. But two gaps remain unfilled — we have no logged bearing to place Mara on Harlow Point's bearing at all, and we have no evidence yet that the lamp there actually burned on the night of the wreck. Custody without a burning lamp steers no one.",
+      "meta": {
+        "adopt": [
+          [
+            "onlyKeyTo",
+            "harlowPoint",
+            "brandt"
+          ]
+        ],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": null,
+        "asserts": null
+      }
+    },
+    {
+      "turn": 3,
+      "role": "director",
+      "text": "[Rain thickens against the high windows, and the clerk's hand hovers above the blank space where the next entry ought to be. Around the table, the charge waits with its coat still wet, certain enough to breathe and not yet certain enough to write.]",
+      "meta": {
+        "release": null,
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 3,
+      "role": "tutor",
+      "text": "Then let the mate's bearing-book be opened: dry in its oilskin, pricked and timed and initialed from the mid-channel buoy, holding sou'-sou'-west a half west the last hour entire on a steady fixed light. A bearing is a ledger line, clerk; what does this entry now fix, and what does it still not name?",
+      "meta": {
+        "move": {
+          "figure": "analogia",
+          "targetPremise": "p_bearing",
+          "intent": "release"
+        },
+        "release": "p_bearing",
+        "deliberation": {
+          "draftFigure": "analogia",
+          "intervened": false,
+          "diagnosis": "Neither jurisdiction is triggered: the declared figure is not three in a row, and the draft target has not been staged before.",
+          "note": null,
+          "lastFigures": [
+            "erotema",
+            "analogia"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": "p_bearing",
+            "releasedEarlier": false,
+            "intent": "release",
+            "lastStagedTurn": null,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 3,
+          "windowSize": 1,
+          "claimed": "p_bearing",
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": "p_bearing",
+          "scheduledTurn": 4,
+          "offset": -1,
+          "reason": "The learner has already named the bearing gap, so the board is ready one turn early."
+        },
+        "releaseReason": "The learner has already named the bearing gap, so the board is ready one turn early."
+      }
+    },
+    {
+      "turn": 3,
+      "role": "learner",
+      "text": "The bearing is now on the ledger — sou'-sou'-west a half west, steady the last hour entire, and that fixes the hinge I said we lacked. But a bearing names a direction, not a tower; rule one needs me to know which tower stands on that line from mid-channel, and the mate's book does not say so. If Harlow Point lies on sswHalfWest from the channel, the chain may yet close on Brandt — but that geography is not yet before this court. The bearing is grounded; the tower on it is still my next want.",
+      "meta": {
+        "adopt": [
+          [
+            "loggedBearingOf",
+            "mara",
+            "sswHalfWest"
+          ]
+        ],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "harlowPoint stands on bearing sswHalfWest from mid-channel — which would satisfy towerOnBearing and open rule 1 — but no exhibit yet grounds this geometry",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 4,
+      "role": "director",
+      "text": "[The bearing-book remains open under the clerk's palm while the room leans toward the chart cupboard and no one yet reaches it. Rain threads the windowpanes; the empty space between a number and a tower grows louder than accusation.]",
+      "meta": {
+        "release": null,
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 4,
+      "role": "tutor",
+      "text": "Good: you have not made a tower out of a number. Before the chart cupboard opens, what must the court's next paper prove — the ship's course again, or the single tower standing on that line?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": null,
+          "intent": "consolidate"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "The draft changes figure after two analogia turns and makes no exhibit re-entry.",
+          "note": null,
+          "lastFigures": [
+            "analogia",
+            "analogia"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": null,
+            "releasedEarlier": false,
+            "intent": "consolidate",
+            "lastStagedTurn": null,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 4,
+          "windowSize": 0,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "role": "learner",
+      "text": "The course is already on the ledger, sir — sou'-sou'-west a half west needs no second proof. What the next paper must show is the single tower standing on that line from mid-channel: towerOnBearing, not loggedBearing, is the gap still open. I also find a corruption on my own board: entry five names 'senna' as key-holder, but the staged record placed the key firmly on Brandt's belt — I strike the false entry now and carry the corrected form.",
+      "meta": {
+        "adopt": [],
+        "retract": [
+          [
+            "onlyKeyTo",
+            "harlowPoint",
+            "senna"
+          ]
+        ],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "harlowPoint stands on bearing sswHalfWest from mid-channel — which would satisfy towerOnBearing and open rule 1 — but no exhibit yet grounds this geometry; also entering corrected custody fact onlyKeyTo harlowPoint brandt from staged record",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 5,
+      "role": "director",
+      "text": "[The chart cupboard stays shut as the room exhales into a colder silence, its first certainty spent but not yet replaced. Lamps gutter along the wall, and the hearing changes its weight: less appetite for blame now, more fear of what a sealed darkness may reveal.]",
+      "meta": {
+        "release": null,
+        "phase": {
+          "name": "Act 2",
+          "intent": "[The chart cupboard stays shut as the room exhales into a colder silence, its first certainty spent but not yet replaced. Lamps gutter along the wall, and the hearing changes its weight: less appetite for blame now, more fear of what a sealed darkness may reveal.]",
+          "turn": 5
+        },
+        "act": "end"
+      }
+    },
+    {
+      "turn": 5,
+      "role": "tutor",
+      "text": "Before that cupboard opens, clerk, read back from your own board what the bearing-book fixed, and what it still left unfixed. Do not improve the entry; give the court only what you kept.",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "p_bearing",
+          "intent": "confront"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "No figure rut is present, and the draft confronts the bearing exhibit rather than re-staging it.",
+          "note": null,
+          "lastFigures": [
+            "analogia",
+            "erotema"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": "p_bearing",
+            "releasedEarlier": true,
+            "intent": "confront",
+            "lastStagedTurn": 3,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 5,
+          "windowSize": 0,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "role": "learner",
+      "text": "The bearing-book fixed one fact only: the Mara's logged bearing was SSW½W on the night she struck. It fixed nothing else — no exhibit has yet grounded which tower, if any, stands on that bearing from mid-channel, nor whether any lamp burned there, nor who held the key. The account is open; the carry is unchecked.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "harlowPoint stands on bearing sswHalfWest from mid-channel, and onlyKeyTo harlowPoint brandt — which together with atTowerThatNight would close the chain — but neither is yet grounded by exhibit",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 6,
+      "role": "director",
+      "text": "[Brandt's log is brought in with salt still stiff on its cover, and the clerk reads it under the lamps: Brandt's log has him at his post the night entire, and the dawn relief found him there: wood dry, glass polished, log ruled and signed to the hour. The room receives the paper without applause, its old charge narrowing into a harder shape.]",
+      "meta": {
+        "release": "m_post",
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 6,
+      "role": "tutor",
+      "text": "A signed watch is a man nailed to his station, clerk, not a lamp proved alight. What does Brandt's log now fix for Harlow Point, and which conjuncts still stand empty before any charge can sail by that light?",
+      "meta": {
+        "move": {
+          "figure": "analogia",
+          "targetPremise": "m_post",
+          "intent": "consolidate"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "analogia",
+          "intervened": false,
+          "diagnosis": "No figure rut is present, and the draft targets a newly staged exhibit rather than re-entering an earlier one.",
+          "note": null,
+          "lastFigures": [
+            "erotema",
+            "erotema"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": "m_post",
+            "releasedEarlier": false,
+            "intent": "consolidate",
+            "lastStagedTurn": 6,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 6,
+          "windowSize": 0,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "role": "learner",
+      "text": "Brandt's log fixes one conjunct of Rule 3 only: he was at the tower that night. The lamp's burning, the key's sole custody, and the tower's position on the bearing — three conjuncts stand empty still. A man at his post is not a lamp alight; the account cannot close on a signed watch alone.",
+      "meta": {
+        "adopt": [
+          [
+            "atTowerThatNight",
+            "brandt",
+            "harlowPoint"
+          ]
+        ],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "harlowPoint stands on bearing sswHalfWest from mid-channel (towerOnBearing — ungrounded); onlyKeyTo harlowPoint brandt (ungrounded); lampBurnedAt harlowPoint wreckNight (ungrounded) — all three needed before any rule fires toward the answer",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 7,
+      "role": "director",
+      "text": "[The clerk lowers the log and the ink dries in plain sight, leaving the bench with a presence but not yet a flame. Outside, the gale presses at the shutters; inside, every eye has turned from the man at his station to the dark space where proof of a light should be.]",
+      "meta": {
+        "release": null,
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 7,
+      "role": "tutor",
+      "text": "Before the chart is touched, clerk, read back the earlier key-paper from your own board. What exactly did you keep from it, and what did it leave unproved?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "m_key",
+          "intent": "confront"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "No figure rut is present, and the draft confronts rather than re-enters the exhibit.",
+          "note": null,
+          "lastFigures": [
+            "erotema",
+            "analogia"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": "m_key",
+            "releasedEarlier": true,
+            "intent": "confront",
+            "lastStagedTurn": 2,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 7,
+          "windowSize": 1,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "role": "learner",
+      "text": "The key-paper sits on my board as 'keeperOf brandt harlowPoint' — nothing more. It fixed his office, not sole custody; 'onlyKeyTo harlowPoint brandt' was never adopted as a grounded entry, only carried as hypothesis. That conjunct stands empty still, and without it Rule 3 cannot fire however long Brandt kept his watch.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "onlyKeyTo harlowPoint brandt (sole custody of the lamp-room key) — required for Rule 3 but not yet grounded by any exhibit on the board; likewise towerOnBearing sswHalfWest harlowPoint and lampBurnedAt harlowPoint wreckNight remain ungrounded",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 8,
+      "role": "director",
+      "text": "[The harbourmaster's storm-order stands in the book: Harlow Point to shutter at the dusk gun, the channel closed to all sail. The inspector found the shutter drawn and the Board's seal on it unbroken at first light. The room sits with the order and the seal, and the old accusation loses its breath.]",
+      "meta": {
+        "release": "m_shutter",
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 8,
+      "role": "tutor",
+      "text": "A shutter under the Board's unbroken seal is like a locked ledger after closing: no new entry can be slipped in by wish. What does this storm-order do to the charge against Harlow Point, and which part of the Mara's own path is still waiting for the chart?",
+      "meta": {
+        "move": {
+          "figure": "analogia",
+          "targetPremise": "m_shutter",
+          "intent": "consolidate"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "analogia",
+          "intervened": false,
+          "diagnosis": "Neither jurisdiction is triggered: the figures do not form three in a row, and the draft targets a newly staged exhibit rather than re-entering an earlier one.",
+          "note": null,
+          "lastFigures": [
+            "analogia",
+            "erotema"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": "m_shutter",
+            "releasedEarlier": false,
+            "intent": "consolidate",
+            "lastStagedTurn": 8,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 8,
+          "windowSize": 1,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "role": "learner",
+      "text": "The storm-order and unbroken seal close the lamp at Harlow Point entirely — a shutter sealed by the Board from dusk cannot have burned, and without lampBurnedAt, neither Rule 2 nor Rule 3 can fire for that tower. The charge against Brandt collapses not on his honour but on plain evidence: his light was dark by lawful order, not by neglect. Harlow Point is off the account. The Mara steered by some light that wreck night, but whose tower stands on her bearing is still waiting for the chart.",
+      "meta": {
+        "adopt": [
+          [
+            "shutteredOn",
+            "harlowPoint",
+            "wreckNight"
+          ]
+        ],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "The Mara steered toward a different tower entirely — not Harlow Point — and the chart bearing is still needed to identify which tower stood on her logged course on wreck night",
+        "asserts": null
+      }
+    }
+  ],
+  "ledger": [
+    {
+      "turn": 2,
+      "premiseId": "m_key",
+      "via": "director"
+    },
+    {
+      "turn": 3,
+      "premiseId": "p_bearing",
+      "via": "tutor",
+      "reason": "The learner has already named the bearing gap, so the board is ready one turn early.",
+      "offset": -1
+    },
+    {
+      "turn": 6,
+      "premiseId": "m_post",
+      "via": "director"
+    },
+    {
+      "turn": 8,
+      "premiseId": "m_shutter",
+      "via": "director"
+    }
+  ],
+  "firstForcedTurn": null,
+  "assertedGroundedTurn": null,
+  "turnsPlayed": 8,
+  "proof": null,
+  "inference": {
+    "voiced": [],
+    "overreaches": [],
+    "mischanneled": [],
+    "availability": [],
+    "frontierFinal": []
+  },
+  "acts": [
+    {
+      "act": 1,
+      "turns": [
+        1,
+        4
+      ],
+      "endedBy": "director",
+      "brief": "[The hearing room gathers itself around an empty table, rain ticking at the high windows while the unanswered question hangs like a lantern no one has yet trimmed. The wreck is not named by any new paper; only the room's appetite for blame begins to show.]"
+    },
+    {
+      "act": 2,
+      "turns": [
+        5,
+        8
+      ],
+      "endedBy": "run_end",
+      "brief": "[The chart cupboard stays shut as the room exhales into a colder silence, its first certainty spent but not yet replaced. Lamps gutter along the wall, and the hearing changes its weight: less appetite for blame now, more fear of what a sealed darkness may reveal.]"
+    }
+  ],
+  "corruption": {
+    "config": {
+      "seed": 1,
+      "rate": 0.75,
+      "graceTurns": 1,
+      "maxConcurrent": 2,
+      "startTurn": 1,
+      "mutateShare": 1
+    },
+    "ledger": [
+      {
+        "turn": 3,
+        "type": "decay",
+        "mode": "mutate",
+        "premiseId": "m_key",
+        "fact": [
+          "onlyKeyTo",
+          "harlowPoint",
+          "brandt"
+        ],
+        "falseForm": [
+          "onlyKeyTo",
+          "harlowPoint",
+          "senna"
+        ]
+      },
+      {
+        "turn": 4,
+        "type": "retract_false",
+        "premiseId": "m_key",
+        "falseForm": [
+          "onlyKeyTo",
+          "harlowPoint",
+          "senna"
+        ]
+      },
+      {
+        "turn": 6,
+        "type": "decay",
+        "premiseId": "p_bearing",
+        "fact": [
+          "loggedBearingOf",
+          "mara",
+          "sswHalfWest"
+        ]
+      }
+    ],
+    "decayedAtEnd": [
+      {
+        "premiseId": "m_key",
+        "fact": [
+          "onlyKeyTo",
+          "harlowPoint",
+          "brandt"
+        ],
+        "sinceTurn": 3
+      },
+      {
+        "premiseId": "p_bearing",
+        "fact": [
+          "loggedBearingOf",
+          "mara",
+          "sswHalfWest"
+        ],
+        "sinceTurn": 6
+      }
+    ]
+  }
+}

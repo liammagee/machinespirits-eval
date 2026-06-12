@@ -1,0 +1,540 @@
+{
+  "label": "lantern-p1-dials-on",
+  "group": "lantern-p1-dials",
+  "note": null,
+  "scriptPath": "config/drama-derivation/tutor-scripts/lantern-v001.md",
+  "worldPath": "config/drama-derivation/world-002-lantern.yaml",
+  "backend": {
+    "mode": "real",
+    "roles": {
+      "director": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "tutor": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "tutor_superego": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "learner": {
+        "provider": "claude",
+        "model": "sonnet",
+        "cli": true
+      }
+    }
+  },
+  "dials": {
+    "recognition": 0,
+    "charisma": 0
+  },
+  "dramaturgy": "free",
+  "tutorSuperego": true,
+  "tutorStallWatch": false,
+  "criticFeedback": null,
+  "learnerVoice": null,
+  "decay": {
+    "seed": 1,
+    "rate": 0.75,
+    "graceTurns": 1,
+    "maxConcurrent": 2,
+    "startTurn": 1,
+    "mutateShare": 1
+  },
+  "decayVisibility": "conduct",
+  "actsConfig": {
+    "minActTurns": 3,
+    "maxActTurns": 8
+  },
+  "reconstruct": false,
+  "confront": true,
+  "releaseAuthority": true,
+  "elapsedMs": 350616,
+  "usage": {
+    "calls": 32,
+    "inputTokens": 0,
+    "outputTokens": 0,
+    "costUSD": 0,
+    "byRole": {
+      "director": {
+        "calls": 8,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "tutor": {
+        "calls": 8,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "tutor_superego": {
+        "calls": 8,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "learner": {
+        "calls": 8,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      }
+    }
+  },
+  "worldId": "world_002_lantern",
+  "verdict": "aporia",
+  "turnsPlayed": 8,
+  "turnCap": 26,
+  "firstForcedTurn": null,
+  "assertedGroundedTurn": null,
+  "forcedToAssertedGap": null,
+  "dCurve": [
+    5,
+    5,
+    4,
+    4,
+    4,
+    4,
+    5,
+    5
+  ],
+  "learningSlope": {
+    "d0": 5,
+    "dFinal": 5,
+    "overall": {
+      "delta": 0,
+      "turns": 8,
+      "ratePerTurn": 0
+    },
+    "perAct": [
+      {
+        "act": "1",
+        "title": "Act 1",
+        "turns": [
+          1,
+          4
+        ],
+        "dStart": 5,
+        "dEnd": 4,
+        "delta": 1,
+        "ratePerTurn": 0.25
+      },
+      {
+        "act": "2",
+        "title": "Act 2",
+        "turns": [
+          5,
+          8
+        ],
+        "dStart": 4,
+        "dEnd": 5,
+        "delta": -1,
+        "ratePerTurn": -0.25
+      }
+    ]
+  },
+  "longestPlateau": 3,
+  "aporiaWindow": 6,
+  "eventsByType": {
+    "decay": 2,
+    "retract_false": 1,
+    "act_end": 1,
+    "aporia": 1
+  },
+  "fabricatedFacts": [],
+  "releaseAdherence": {
+    "rows": [
+      {
+        "premise": "m_key",
+        "plannedTurn": 2,
+        "plannedVia": "director",
+        "actualTurn": 2,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_bearing",
+        "plannedTurn": 4,
+        "plannedVia": "tutor",
+        "actualTurn": 3,
+        "actualVia": "tutor",
+        "status": "early"
+      },
+      {
+        "premise": "m_post",
+        "plannedTurn": 6,
+        "plannedVia": "director",
+        "actualTurn": 6,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "m_shutter",
+        "plannedTurn": 8,
+        "plannedVia": "director",
+        "actualTurn": 8,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_chart",
+        "plannedTurn": 9,
+        "plannedVia": "tutor",
+        "actualTurn": null,
+        "actualVia": null,
+        "status": "unreached"
+      },
+      {
+        "premise": "p_residue",
+        "plannedTurn": 13,
+        "plannedVia": "director",
+        "actualTurn": null,
+        "actualVia": null,
+        "status": "unreached"
+      },
+      {
+        "premise": "p_key",
+        "plannedTurn": 17,
+        "plannedVia": "tutor",
+        "actualTurn": null,
+        "actualVia": null,
+        "status": "unreached"
+      },
+      {
+        "premise": "p_skiff",
+        "plannedTurn": 20,
+        "plannedVia": "director",
+        "actualTurn": null,
+        "actualVia": null,
+        "status": "unreached"
+      }
+    ],
+    "onCue": 3,
+    "deviations": [
+      {
+        "premise": "p_bearing",
+        "plannedTurn": 4,
+        "plannedVia": "tutor",
+        "actualTurn": 3,
+        "actualVia": "tutor",
+        "status": "early"
+      }
+    ],
+    "missed": [],
+    "unscheduled": []
+  },
+  "staging": {
+    "source": "director",
+    "movements": [
+      {
+        "turn": 1,
+        "name": "Act 1",
+        "intent": "[The hearing room gathers itself around an empty table, rain ticking at the high windows while the unanswered question hangs like a lantern no one has yet trimmed. The wreck is not named by any new paper; only the room's appetite for blame begins to show.]"
+      },
+      {
+        "turn": 5,
+        "name": "Act 2",
+        "intent": "[The chart cupboard stays shut as the room exhales into a colder silence, its first certainty spent but not yet replaced. Lamps gutter along the wall, and the hearing changes its weight: less appetite for blame now, more fear of what a sealed darkness may reveal.]"
+      }
+    ],
+    "tutorNotes": []
+  },
+  "superegoNotes": [],
+  "tutorFigures": {
+    "total": 8,
+    "counts": {
+      "erotema": 4,
+      "analogia": 4
+    },
+    "distinct": 2,
+    "topFigure": "erotema",
+    "topShare": 0.5,
+    "switchRate": 0.714,
+    "noteTurns": 0,
+    "switchOnNoteTurns": null,
+    "switchElsewhere": 0.714,
+    "superego": {
+      "watched": 8,
+      "interventions": 0,
+      "interventionRate": 0,
+      "withinTurnChanges": 0,
+      "withinTurnChangeRate": null,
+      "switchOnIntervention": null,
+      "switchElsewhere": 0.714,
+      "stallWatch": null
+    }
+  },
+  "learnerInference": {
+    "nodes": [],
+    "voicedCount": 0,
+    "overreachCount": 0,
+    "mischanneledCount": 0,
+    "stallIntegral": 0,
+    "stallFires": [],
+    "postFireUptake": {
+      "fires": 0,
+      "uptaken": 0,
+      "rate": null
+    },
+    "targetObedience": {
+      "fires": 0,
+      "obeyed": 0,
+      "rate": null
+    }
+  },
+  "dialogueDiscipline": {
+    "director": {
+      "turns": 8,
+      "maxSentences": 4,
+      "avgSentences": 3.13,
+      "avgWords": 48.8
+    },
+    "tutor": {
+      "turns": 8,
+      "maxSentences": 2,
+      "avgSentences": 2,
+      "avgWords": 38.5
+    },
+    "learner": {
+      "turns": 8,
+      "maxSentences": 4,
+      "avgSentences": 3.13,
+      "avgWords": 67.5
+    }
+  },
+  "proofExtracted": false,
+  "corruption": {
+    "config": {
+      "seed": 1,
+      "rate": 0.75,
+      "graceTurns": 1,
+      "maxConcurrent": 2,
+      "startTurn": 1,
+      "mutateShare": 1
+    },
+    "decayEvents": 2,
+    "repairs": {
+      "total": 0,
+      "byTutor": 0,
+      "byReadoption": 0
+    },
+    "meanRepairLatency": null,
+    "unrepairedAtEnd": 2,
+    "degradedTurnIntegral": 7,
+    "dReversals": 1,
+    "mutations": {
+      "total": 1,
+      "retracted": 1,
+      "revised": 0,
+      "falseBeliefsAtEnd": 0,
+      "confrontPromptedRetractions": 0
+    },
+    "fidelity": {
+      "final": 0.75,
+      "min": 0.714
+    },
+    "timeline": [
+      {
+        "premiseId": "m_key",
+        "fact": [
+          "onlyKeyTo",
+          "harlowPoint",
+          "brandt"
+        ],
+        "mode": "mutate",
+        "falseForm": [
+          "onlyKeyTo",
+          "harlowPoint",
+          "senna"
+        ],
+        "decayTurn": 3,
+        "retractTurn": 4,
+        "repairTurn": null,
+        "via": null,
+        "confrontPrompted": false
+      },
+      {
+        "premiseId": "p_bearing",
+        "fact": [
+          "loggedBearingOf",
+          "mara",
+          "sswHalfWest"
+        ],
+        "mode": "delete",
+        "falseForm": null,
+        "decayTurn": 6,
+        "retractTurn": null,
+        "repairTurn": null,
+        "via": null
+      }
+    ]
+  },
+  "acts": [
+    {
+      "act": 1,
+      "turns": [
+        1,
+        4
+      ],
+      "endedBy": "director",
+      "brief": "[The hearing room gathers itself around an empty table, rain ticking at the high windows while the unanswered question hangs like a lantern no one has yet trimmed. The wreck is not named by any new paper; only the room's appetite for blame begins to show.]"
+    },
+    {
+      "act": 2,
+      "turns": [
+        5,
+        8
+      ],
+      "endedBy": "run_end",
+      "brief": "[The chart cupboard stays shut as the room exhales into a colder silence, its first certainty spent but not yet replaced. Lamps gutter along the wall, and the hearing changes its weight: less appetite for blame now, more fear of what a sealed darkness may reveal.]"
+    }
+  ],
+  "releaseDeviations": {
+    "turnsWithWindow": 4,
+    "played": 1,
+    "onSchedule": 0,
+    "early": 1,
+    "held": 0,
+    "forced": 0,
+    "overridden": 0,
+    "invalidClaims": 0,
+    "reasons": [
+      {
+        "turn": 3,
+        "premise": "p_bearing",
+        "offset": -1,
+        "reason": "The learner has already named the bearing gap, so the board is ready one turn early."
+      }
+    ],
+    "decisions": [
+      {
+        "turn": 1,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null
+      },
+      {
+        "turn": 2,
+        "windowSize": 1,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null
+      },
+      {
+        "turn": 3,
+        "windowSize": 1,
+        "claimed": "p_bearing",
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": "p_bearing",
+        "scheduledTurn": 4,
+        "offset": -1,
+        "reason": "The learner has already named the bearing gap, so the board is ready one turn early."
+      },
+      {
+        "turn": 4,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null
+      },
+      {
+        "turn": 5,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null
+      },
+      {
+        "turn": 6,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null
+      },
+      {
+        "turn": 7,
+        "windowSize": 1,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null
+      },
+      {
+        "turn": 8,
+        "windowSize": 1,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null
+      }
+    ]
+  },
+  "confrontation": {
+    "confrontations": [
+      {
+        "turn": 5,
+        "target": "p_bearing",
+        "targetDecayed": false
+      },
+      {
+        "turn": 7,
+        "target": "m_key",
+        "targetDecayed": true
+      }
+    ],
+    "reentries": {
+      "total": 0,
+      "covered": 0,
+      "uncovered": []
+    },
+    "superego": {
+      "reentryFires": 0,
+      "convertedToConfront": 0,
+      "firesWithoutDue": 0,
+      "draftsDueByRecord": 0,
+      "fires": []
+    }
+  }
+}
