@@ -18,6 +18,17 @@
  * config key). At the default `mutateShare: 0` the draw stream and ledger are
  * byte-identical to v1. The decay schedule remains a RUN-LEVEL condition:
  * worlds stay frozen.
+ *
+ * Stage v3 (the lantern-p3 critic's defect report, registration §13) adds the
+ * `pool` key governing where the swap constant may come from. `"world"` (the
+ * default, and the only pre-v3 behavior) samples constants seen anywhere in
+ * the world's premises and background — INCLUDING premises not yet released,
+ * which lets a mutation whisper an unmet name onto the learner's board (in
+ * lantern-p3, "senna" arrived by corruption at t3 before any exhibit staged
+ * her, and scaffolded the t18 unforced leap). `"staged"` restricts the pool
+ * to entities the learner has met on stage: background plus premises released
+ * so far. The default stays `"world"` so archived runs' seeded draw streams
+ * replay byte-identically; new arms opt in to `"staged"`.
  */
 
 /**
@@ -43,6 +54,7 @@ const DECAY_DEFAULTS = Object.freeze({
   maxConcurrent: 2,
   startTurn: 1,
   mutateShare: 0,
+  pool: 'world',
 });
 
 /**
@@ -82,6 +94,9 @@ export function normalizeDecayConfig(raw) {
   }
   if (typeof out.mutateShare !== 'number' || !(out.mutateShare >= 0 && out.mutateShare <= 1)) {
     throw new Error(`decay config: mutateShare must be a number in [0, 1] (got ${JSON.stringify(out.mutateShare)})`);
+  }
+  if (out.pool !== 'world' && out.pool !== 'staged') {
+    throw new Error(`decay config: pool must be "world" or "staged" (got ${JSON.stringify(out.pool)})`);
   }
   return out;
 }

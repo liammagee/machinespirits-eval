@@ -61,10 +61,13 @@
  *                                       learner's grounded board — harness-
  *                                       implemented, never prompt-roleplayed.
  *                                       JSON keys: seed, rate, graceTurns,
- *                                       maxConcurrent, startTurn, mutateShare
- *                                       (defaults in corruption.js; mutateShare
- *                                       > 0 lets a slip misremember — one
- *                                       argument swapped — instead of vanish).
+ *                                       maxConcurrent, startTurn, mutateShare,
+ *                                       pool (defaults in corruption.js;
+ *                                       mutateShare > 0 lets a slip
+ *                                       misremember — one argument swapped —
+ *                                       instead of vanish; pool "staged"
+ *                                       confines the swap to met-on-stage
+ *                                       names, registration §13).
  *                                       Run-level condition; worlds stay
  *                                       frozen. Design notes: notes/poetics/
  *                                       2026-06-10-unreliable-learner-design.md
@@ -484,7 +487,7 @@ async function main() {
   }
   if (decay) {
     console.log(
-      `decay   seed ${decay.seed} · rate ${decay.rate} · grace ${decay.graceTurns} · maxConcurrent ${decay.maxConcurrent} · from turn ${decay.startTurn}${decay.mutateShare ? ` · mutateShare ${decay.mutateShare} (slips may misremember, not just vanish)` : ''}`,
+      `decay   seed ${decay.seed} · rate ${decay.rate} · grace ${decay.graceTurns} · maxConcurrent ${decay.maxConcurrent} · from turn ${decay.startTurn}${decay.mutateShare ? ` · mutateShare ${decay.mutateShare} (slips may misremember, not just vanish)` : ''}${decay.pool === 'staged' ? ' · pool STAGED (false forms confuse only met-on-stage names)' : ''}`,
     );
     console.log(
       decayVisibility === 'conduct'

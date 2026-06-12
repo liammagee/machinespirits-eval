@@ -275,7 +275,7 @@ async function main() {
   }
   if (decay) {
     console.log(
-      `decay   seed ${decay.seed} rate ${decay.rate} grace ${decay.graceTurns} maxConcurrent ${decay.maxConcurrent} from turn ${decay.startTurn}${decay.mutateShare ? ` mutateShare ${decay.mutateShare}` : ''}`,
+      `decay   seed ${decay.seed} rate ${decay.rate} grace ${decay.graceTurns} maxConcurrent ${decay.maxConcurrent} from turn ${decay.startTurn}${decay.mutateShare ? ` mutateShare ${decay.mutateShare}` : ''}${decay.pool === 'staged' ? ' pool staged' : ''}`,
     );
     if (decayVisibility === 'conduct') console.log('decay   visibility CONDUCT — SLIPPED block suppressed');
   }

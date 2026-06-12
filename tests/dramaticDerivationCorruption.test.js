@@ -63,13 +63,24 @@ const AGGRESSIVE = { seed: 1, rate: 1, graceTurns: 0, maxConcurrent: 1, startTur
 
 test('normalizeDecayConfig fills defaults, accepts JSON strings, rejects junk', () => {
   const filled = normalizeDecayConfig({});
-  // mutateShare joined the surface in stage v2 (default 0 = v1 byte-identity).
-  assert.deepEqual(filled, { seed: 1, rate: 0.15, graceTurns: 2, maxConcurrent: 2, startTurn: 1, mutateShare: 0 });
+  // mutateShare joined the surface in stage v2 (default 0 = v1 byte-identity);
+  // pool joined in stage v3 (default "world" = pre-v3 byte-identity).
+  assert.deepEqual(filled, {
+    seed: 1,
+    rate: 0.15,
+    graceTurns: 2,
+    maxConcurrent: 2,
+    startTurn: 1,
+    mutateShare: 0,
+    pool: 'world',
+  });
   assert.deepEqual(normalizeDecayConfig('{"rate":0.5,"seed":9}').rate, 0.5);
+  assert.equal(normalizeDecayConfig({ pool: 'staged' }).pool, 'staged');
   assert.throws(() => normalizeDecayConfig({ rate: 1.5 }), /rate/);
   assert.throws(() => normalizeDecayConfig({ unknownKnob: 1 }), /unknownKnob/);
   assert.throws(() => normalizeDecayConfig({ maxConcurrent: 0 }), /maxConcurrent/);
   assert.throws(() => normalizeDecayConfig({ mutateShare: 1.5 }), /mutateShare/);
+  assert.throws(() => normalizeDecayConfig({ pool: 'met' }), /pool/);
   assert.throws(() => normalizeDecayConfig('not json'), /JSON|json/);
 });
 
@@ -226,6 +237,105 @@ test('background facts are immune — only released premises ever decay', async 
     assert.ok(!backgroundKeys.has(factKey(e.fact)), `background fact decayed: ${e.fact.join(' ')}`);
     assert.ok(e.premiseId, 'decayed entries are released premises with ids');
   }
+});
+
+// ---------------------------------------------------------------------------
+// mutation pool (stage v3): "staged" never whispers an unmet name
+// ---------------------------------------------------------------------------
+
+// The lantern-p3 defect (critic's notice; registration §13): under the only
+// pre-v3 pool ("world") a mutation could swap in a constant from a premise
+// not yet released — corruption staging a name before any exhibit did. Under
+// pool "staged" the sampler is confined to entities the learner has met on
+// stage: background plus premises released so far.
+const STAGED_MUTATING = {
+  seed: 1,
+  rate: 1,
+  graceTurns: 0,
+  maxConcurrent: 1,
+  startTurn: 2,
+  mutateShare: 1,
+  pool: 'staged',
+};
+
+// Constants the learner has met on stage by the END of turn T: background
+// arguments plus the arguments of every premise released at a turn <= T.
+const metConstantsByTurn = (result, turn) => {
+  const met = new Set();
+  for (const fact of world.background) for (const c of fact.slice(1)) met.add(c);
+  for (const row of result.ledger) {
+    if (row.turn > turn) continue;
+    const premise = world.premiseById.get(row.premiseId);
+    for (const c of premise.fact.slice(1)) met.add(c);
+  }
+  return met;
+};
+
+test('pool "staged": every false form is built from met-on-stage constants; an unmet pool falls back to plain delete', async () => {
+  const result = await runDrama({
+    world,
+    roles: mockRoles({}, { readoptForgotten: true }),
+    options: { decay: STAGED_MUTATING },
+  });
+  // The repair channel keeps the drama on the happy path (cf. the re-adoption
+  // test above): standing false beliefs never enter forcing, so the staged
+  // pool changes WHAT a slip becomes, not where the drama goes.
+  assert.equal(result.verdict, 'grounded_anagnorisis');
+
+  const decays = result.corruption.ledger.filter((e) => e.type === 'decay');
+  assert.ok(decays.length >= 4, `expected a decay cadence, got ${decays.length} rows`);
+
+  // (1) The invariant: a mutate row's false form uses ONLY constants the
+  // learner had met on stage by that turn — corruption can no longer whisper.
+  const mutates = decays.filter((e) => e.mode === 'mutate');
+  for (const e of mutates) {
+    const met = metConstantsByTurn(result, e.turn);
+    for (const c of e.falseForm.slice(1)) {
+      assert.ok(met.has(c), `t${e.turn} false form uses unmet constant "${c}": ${e.falseForm.join(' ')}`);
+    }
+  }
+
+  // (2) The refusal: while only p1 is on stage (t2-t3: the sole released
+  // premise offers no same-slot swap), a mutate-share-1 hit cannot mutate —
+  // it falls back to a plain delete (v1 row shape, no mode/falseForm).
+  for (const e of decays.filter((d) => d.turn <= 3)) {
+    assert.equal(e.mode, undefined, `t${e.turn} should be a plain delete under an unmet pool`);
+    assert.equal('falseForm' in e, false);
+  }
+
+  // (3) Staged still mutates once names ARE met: by t5 (p1+p4+p2 released)
+  // the pool offers met-constant swaps, and the share-1 schedule uses them.
+  assert.ok(
+    mutates.some((e) => e.turn >= 5),
+    'expected at least one mutation after enough names are met on stage',
+  );
+});
+
+test('pool "staged" diverges from "world" on the same seed; explicit "world" is byte-identical to the pre-v3 default', async () => {
+  const run = (pool) =>
+    runDrama({
+      world,
+      roles: mockRoles({}, { readoptForgotten: true }),
+      options: { decay: { ...STAGED_MUTATING, pool } },
+    });
+  const staged = await run('staged');
+  const worldPool = await run('world');
+  // The dial is live: same seed, different ledgers (world mutates at t2 where
+  // staged must delete).
+  assert.notDeepEqual(staged.corruption.ledger, worldPool.corruption.ledger);
+  assert.equal(worldPool.corruption.ledger.find((e) => e.type === 'decay' && e.turn === 2)?.mode, 'mutate');
+  // And the default IS "world": omitting the key replays the same stream.
+  const { pool: _unused, ...withoutPool } = STAGED_MUTATING;
+  const defaulted = await runDrama({
+    world,
+    roles: mockRoles({}, { readoptForgotten: true }),
+    options: { decay: withoutPool },
+  });
+  assert.deepEqual(defaulted.corruption.ledger, worldPool.corruption.ledger);
+  assert.deepEqual(
+    defaulted.trajectory.map((p) => p.D),
+    worldPool.trajectory.map((p) => p.D),
+  );
 });
 
 // ---------------------------------------------------------------------------

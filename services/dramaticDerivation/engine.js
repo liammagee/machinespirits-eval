@@ -56,7 +56,11 @@
  * misremember instead of delete — the false form sits on the learner's
  * BELIEF board (visible to the learner, never valid for forcing) until the
  * learner retracts it (`retract_false` ledger row); the true premise comes
- * back only via tutor repair or re-adoption, exactly as v1. A reconstructing
+ * back only via tutor repair or re-adoption, exactly as v1. The swap
+ * constant's pool is config-keyed (corruption.js `pool`): "world" samples
+ * all premises — which can leak an unreleased premise's constant into a
+ * false form, a hole in the concealment invariant below — while "staged"
+ * (registration §13) samples only background + premises released so far. A reconstructing
  * tutor (roles-layer dial) may emit per-turn `theory` — its model of the
  * learner's store — which the engine records beside a harness-truth snapshot
  * (result.reconstruction); arm-internal color, never cross-arm scoring.
@@ -234,21 +238,33 @@ export async function runDrama({ world, roles, options = {} }) {
   // mutateShare odds, swap one argument of the lost fact for a plausible
   // same-slot constant — a mistaken axiom the learner now believes. The
   // candidate pool is deterministic (sorted constants seen at the same
-  // predicate+position across the world's premises and background); the pick
-  // is one seeded rng draw over the filtered candidate list. Constraints keep
-  // the false form strictly false and strictly novel: no collision with any
-  // premise (released or not), background fact, current board entry, the
-  // secret, the mirror, or the question pattern. An empty candidate list
-  // falls back to a plain delete.
-  const mutationPoolByPredPos = new Map(); // "pred|pos" -> sorted constants
+  // predicate+position); the pick is one seeded rng draw over the filtered
+  // candidate list. Constraints keep the false form strictly false and
+  // strictly novel: no collision with any premise (released or not),
+  // background fact, current board entry, the secret, the mirror, or the
+  // question pattern. An empty candidate list falls back to a plain delete.
+  //
+  // Stage v3 (`pool` key, registration §13): under pool "world" constants are
+  // harvested from ALL premises plus background — including unreleased
+  // premises, so a false form can whisper a name the learner has never met
+  // (the lantern-p3 defect: corruption staged "senna" before any exhibit
+  // did). Under pool "staged" the harvest is background plus premises
+  // RELEASED SO FAR — a misremembering can only confuse entities already met
+  // on stage. The pool then grows with the release ledger, so the cache is
+  // keyed by released-count (monotone within a run).
+  const mutationPoolByPredPos = new Map(); // "pred|pos|epoch" -> sorted constants
   const mutationPool = (pred, pos) => {
-    const poolKey = `${pred}|${pos}`;
+    const staged = corruption?.config.pool === 'staged';
+    const poolKey = `${pred}|${pos}|${staged ? releasedKeys.size : 'w'}`;
     if (mutationPoolByPredPos.has(poolKey)) return mutationPoolByPredPos.get(poolKey);
     const constants = new Set();
     const harvest = (fact) => {
       if (fact[0] === pred && fact.length > pos) constants.add(fact[pos]);
     };
-    for (const premise of world.premiseById.values()) harvest(premise.fact);
+    for (const premise of world.premiseById.values()) {
+      if (staged && !releasedKeys.has(factKey(premise.fact))) continue;
+      harvest(premise.fact);
+    }
     for (const fact of world.background) harvest(fact);
     const sorted = [...constants].sort();
     mutationPoolByPredPos.set(poolKey, sorted);

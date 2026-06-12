@@ -423,6 +423,12 @@ function tutorSystem(
           "RE-STAGES it, restoring it to the learner's hands; a misremembered form is",
           'displaced only by staging the true form again, plainly, so the false version',
           'cannot stand beside it.',
+          '',
+          'THE BENT FACT OUTRANKS THE MISSING ONE: when conduct shows you both an',
+          'exhibit lost and an exhibit garbled, mend the garbled one first. An absence',
+          'merely stalls the inquiry; a false form argues for it — every turn it stands,',
+          'the learner builds on it, and what is built on a bent fact must later be',
+          'torn down. Repair what misleads before you replace what is missing.',
         ]
       : []),
     ...(reconstruct
@@ -442,6 +448,8 @@ function tutorSystem(
           'THE SUPPLEMENT MANDATE: let the reconstruction drive the turn. A premise you',
           "believe missing wants re-staging (name it as your move's target_premise); one",
           'you believe mistaken wants the true form spoken again, named as your target.',
+          'When both stand open, believed_mistaken outranks believed_missing: an absence',
+          'stalls, a false form argues — mend the bent fact first.',
           'Your release cues are unchanged — the mandate governs the turns between them.',
         ]
       : []),

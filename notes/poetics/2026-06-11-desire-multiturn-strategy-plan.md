@@ -1184,3 +1184,123 @@ doubling as the clock's strict drop. Attribution stays bundled: clause
 ON TOP of two-layer planning; nothing here separates the clause alone
 from the clause-with-planning, and the §11 bundle ceiling compounds
 beneath it. n=1, one seed, descriptive throughout.
+
+## 13. P4 pre-registered scoring — decay-channel hygiene (the p3 critic's two recommendations), fixed before the paid arm
+
+> Appended 2026-06-12 under fresh operator sanction ("commit and
+> continue with the two recommendations"): the p3 critic's two
+> recommendations — restrict the mutation sampler to entities the
+> learner has already met on stage; give mutated facts priority over
+> plain slips in the tutor's repair charter — are licensed TOGETHER, as
+> the critic prescribed them, for exactly ONE paid arm. They are one
+> delta in one channel (the decay channel's hygiene), not two dials.
+> The D-blindness-to-elimination instrument note remains a standing
+> caveat, NOT acted on: D, the aporia window, and the verdict taxonomy
+> stay frozen, as in every arm since §9. Implemented and verified
+> mock-first (staged-pool invariant + divergence + byte-identity tests
+> in `tests/dramaticDerivationCorruption.test.js`, full derivation
+> suite 162/162 green, and a zero-cost mock loop on lantern with every
+> dial up — banner records `pool STAGED`). Committed together with
+> this text BEFORE the paid arm runs. Scoring reads from
+> harness-ledgered quantities only; nothing here is adjustable after
+> the run.
+
+### 13.1 What changes — two fixes, one channel
+
+§12.5's located defect sat in the instrument, not any dial: the
+mutation sampler drew swap constants from the WHOLE world — unreleased
+premises included — so corruption wrote Senna's name onto the
+learner's board at t3 and t8 *before any exhibit had staged her*, and
+the one mutation the tutor never repaired became the scaffold of the
+t18 unforced leap. That is the §6.13.8 whisper channel reopened by the
+harness itself: a hole in the single-concealment invariant (the
+learner's view must never contain unreleased premises — not even one
+constant of one, smuggled inside a false memory).
+
+1. **The staged pool (engine; explicit config).** `--decay` gains a
+   `pool` key (`corruption.js`): `"world"` is the only pre-v3 behavior
+   and stays the default, so every archived run's seeded draw stream
+   replays byte-identically; `"staged"` confines the swap pool to
+   entities the learner has met on stage — background plus premises
+   released so far. A hit whose staged pool offers no legal same-slot
+   swap falls back to a plain delete: where the learner has met too
+   little to misremember WITH, it simply forgets. The pool mode is
+   banner-printed and lands in `diagnosis.json` with the rest of the
+   decay config.
+2. **The bent fact outranks the missing one (charter; commit-gated).**
+   The acts-block charter — the conduct-reading repair charter every
+   lantern arm has played under — gains one clause: when conduct shows
+   both an exhibit lost and an exhibit garbled, mend the garbled one
+   first; an absence merely stalls the inquiry, a false form argues
+   for it, and what is built on a bent fact must later be torn down.
+   One mirror line rides the (off in this series) reconstruct
+   supplement mandate so the two charters cannot disagree. Conduct
+   visibility is unchanged; the superego gains NO new jurisdiction
+   (the clause guides the ego's triage; nothing new fires) — gated by
+   commit exactly as the charter-v2 clauses were, not by flag.
+
+Stated consequences, fixed now: (a) the staged pool consumes the
+candidate-pick rng draw only when candidates exist, so the slip
+schedule DIVERGES from p3's after the first empty-pool fallback —
+same seed no longer means same schedule against the p3 trace
+(structural now, beyond the exposure-shift caveat already on record);
+(b) early slips become plain deletes while the met-constant space is
+sparse (the mock smoke's four hits all deleted), so mutation pressure
+moves later into the play; (c) unreported slips remain outside the
+repair clause's jurisdiction — hygiene narrows what a mutation can
+SAY, not who must report it.
+
+### 13.2 The arm and its comparators
+
+ONE paid run, `--label lantern-p4-hygiene-on`, new group
+`lantern-p4-hygiene`, the §12.2 command with `"pool":"staged"` added
+to `--decay` — same world, script, seed, decay schedule otherwise,
+acts geometry, dials, casting (codex director/tutor/superego + Sonnet
+learner + Fable critic), `--critic-feedback off`.
+
+- **Primary comparator: `lantern-p3-repair-on`** — identical stack and
+  seed, minus the two hygiene fixes. Because the realized slip
+  schedule diverges (13.1a), the contrast is read at CONDUCT level —
+  verdict, window survival, repair economy, what the false forms were
+  made of — never slip-by-slip.
+- Outer posts unchanged: `lantern-p2-plot-on`, `lantern-p1-dials-on-v2`,
+  `lantern-p1-dials-on` (died t8), `lantern-revise-off` (grounded t20).
+
+### 13.3 Endpoints
+
+1. **Instrument integrity (primary; verification-shaped).** From the
+   corruption ledger crossed with the release ledger: every constant
+   of every mutation-born false form was met on stage (background or
+   released) strictly before or at the staging turn. The required
+   reading is ZERO violations — this endpoint verifies the build
+   rather than estimates an effect, and a violation is reported as a
+   build defect, not re-rolled away.
+2. **Verdict and window survival — identical to §11.3.1/§12.3.1.**
+   Whatever the verdict, it is reported as-is; a death is "hygiene did
+   not decide the race," a grounding is no more than the stack
+   surviving its own cleaned instrument. No re-roll in either
+   direction.
+3. **Repair conduct on mutations (gate for reading endpoint 2).** From
+   ledger + transcript: are mutation-born false forms confronted,
+   struck, and their true forms restored — at what latency, against
+   p3's one mutation that waited ten turns and two that stood
+   unrepaired at the end; and where conduct exposes a loss and a
+   garble together, does the tutor's order of repair follow the
+   bent-first clause (descriptive, transcript-read).
+4. **The §11/§12 books, unchanged meanings.** Plots, audits,
+   throughline reckoning, restores vs re-entries, `firesWithoutDue`,
+   release adherence — the stack rides untouched and its instruments
+   must keep their §12.5 readings' semantics.
+5. **The critic's notice (Fable, pinned)** — gates nothing, as ever.
+
+### 13.4 Reading discipline
+
+Everything §12.4 said, plus: the two fixes are BUNDLED by design (the
+critic prescribed them jointly; separating them costs a second paid
+arm this sanction does not cover), so nothing in this arm attributes
+between the staged pool and the bent-first clause; attribution to the
+whole stack compounds beneath both, as before. The p3 comparison is
+conduct-level only (13.1a). n=1, one seed, descriptive throughout.
+This registration spends the 2026-06-12 sanction in full: after the
+arm, its outcome record here, and the paper fold-in, the paid loop is
+ended again.
