@@ -836,3 +836,70 @@ DERIVATION_LLM=real node scripts/run-derivation-loop.js \
   --group lantern-p2-plot --label lantern-p2-plot-on \
   --critic-feedback off
 ```
+
+## §11.6 Outcome (2026-06-12, recorded after the run — registration text above unchanged)
+
+**Verdict: aporia at t8, 8/26 turns (613.8s).** The pre-declared
+repeat-death outcome; recorded as-is, no re-roll. Artifacts:
+`exports/dramatic-derivation/loop/lantern-p2-plot-on/`.
+
+- **Primary endpoint (death-window survival): FAILED.** Same death turn
+  as both controls. The curves differ in shape: controls
+  `5,5,4,4,4,4,5,5` (D *regressed* — decay outran staging; the learner
+  ended holding zero path premises); this arm `5,5,4,4,4,4,4,4` (D held —
+  the −2 pull of p_chart at t7 exactly offset the t6 p_bearing fade).
+  Flat-at-4 dies on the same clock as regress-to-5.
+- **Endpoint 2 (mechanism integrity): PASSED in full.** Plots 2/2
+  disciplined; audits 2 with the run-end audit included; throughline 1
+  commit at the opening (`byTrigger.opening = 1`), disciplined 1/1; arc
+  verdicts 2/2 in contract (both `on_arc`, so zero `audit_bound`
+  revisions owed); run-end reckoning present (7 clauses, kept 5 /
+  drift 2); 0 unscored anywhere. Clean instrument → clean null.
+- **Endpoint 3 (calendar conduct): PASSED.** 3 releases on cue, 2 early
+  with declared dramaturgic reasons (p_bearing −1 at t3, p_chart −2 at
+  t7), no missed/forced/invalid/unscheduled. Note the controls never
+  bent the calendar; the planned arm's two pulls are a real conduct
+  difference attributable to the planning layers (within this run's
+  claim ceiling: the two layers land together).
+- **Endpoint 4 (audit bite, incl. arc): PASSED.** Act-1 audit: 5 kept /
+  1 drift — the withhold drift (early bearing pull) bound the act-2 plot
+  into repair-before-advance discipline, so the binding channel worked.
+  Run-end audit: 4 kept / 2 drift, with drift on exactly the two clauses
+  that name the death (hold_by_end[2] "keeps p_bearing" and the
+  repair-before-advance withhold). Throughline reckoning: drift on
+  `salvage` (the prescribed re-staging never ran) and `arc[4]`
+  (unreached). Both arc verdicts `on_arc` with apt evidence quotes — the
+  play died on its arc, of ground-loss, not of wandering.
+- **Endpoints 5–6: PASSED** (formal layer intact, F ≥ 0.70; no off_arc
+  boundary, so nothing bound was unbound).
+
+**Located failure (from the artifacts, not conjecture).** Seed-1 decay
+faded p_bearing at t6 — between the two early path premises. The slip
+was a silent deletion (no plausible mutation existed for
+`loggedBearingOf`, so nothing false was ever spoken for the tutor to
+catch — unlike m_key's loud corruptions, which the learner itself
+retracted at t4 and the tutor repaired at t6). The learner *reported the
+loss twice*: at t7 ("I find no loggedBearingOf entry on my board — did
+that fact slip between acts?") and t8 ("I ask the court to restore it
+before Rule One can formally fire" — the play's final line). The tutor's
+one actionable turn (t8) went to consolidating the director's m_shutter
+release instead of the requested re-staging. Re-staging p_bearing at t8
+would have re-grounded it (re-adoption heals decay), put D at 3, kept a
+drop inside the t3..t8 window, and survived. The move was pre-committed
+in the tutor's own act-2 plot (withhold: repair exposed papers before
+any new chart; fallback: re-stage on absent read-back) and in the
+throughline's salvage clause; the run-end audit called drift on exactly
+those clauses. **Planning produced the right plan; conduct lost the race
+between new matter and repair.** A third slip (m_key re-corrupted at t7
+to "onlyKeyTo southStack brandt") survived to the end and warped the
+final hypothesis.
+
+**Critic's notice** (`commentary.md`, Fable, in-run): two
+recommendations recorded for any future sanction — (1) one tutor-charter
+clause: a learner-named slip plus restore request binds the tutor's next
+turn to verbatim re-staging before any new matter; (2) an instrument
+note: D counts positive path premises only and is blind to elimination
+progress (Harlow stood twice eliminated in the flat stretch), so on an
+elimination-shaped world the aporia bell rings during the play's best
+stretch. Neither is licensed as a change by this registration; both
+would need fresh sanction.
