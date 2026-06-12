@@ -1409,3 +1409,118 @@ and is not licensed here. Attribution stays bundled — the two fixes
 jointly, on top of the full §11+§12 stack, with every prior ceiling
 compounding beneath. n=1, one seed, descriptive throughout. The
 2026-06-12 sanction is spent; the paid loop is ended again.
+
+## 14. P5 pre-registered scoring — battle-testing the staged pool (late decay start), fixed before the paid arm
+
+> Provenance: operator sanction 2026-06-12, "lets do the next funded
+> run, to begin to battle-test the fix" — one paid arm, its delta
+> chosen to make the §13 mutation path actually fire. §13.5's standing
+> caveat is the target: the staged pool was validated only on its
+> closing side (hygiene by elimination — every pool empty at draw,
+> zero mutations); a mutation drawn from a NON-EMPTY staged pool, and
+> the bent-first clause it would summon, have never run in paid
+> conduct. The p4 critic's two NEW recommendations (final-exhibit
+> early-play discretion; mooted-matter abandonment) remain UNLICENSED
+> — calendar discretion and the fidelity meter are untouched. No code
+> changes anywhere: every flag this arm uses already exists and is
+> contract-tested (`tests/dramaticDerivationCorruption.test.js`
+> proves the staged-pool mutation path mechanically on the smoke
+> world); the delta is one configuration knob. Mock-first verified
+> before the run; this section committed before any paid turn.
+> Scoring is harness-ledgered throughout, as in §§11–13.
+
+### 14.1 The delta — decay opens the turn the pool first fills
+
+One knob moves: decay `startTurn` 1 → **17**. Everything else is
+byte-identical to p4 (`pool: staged`, seed 1, rate 0.75, grace 1,
+maxConcurrent 2, mutateShare 1, visibility CONDUCT, full dial stack
+incl. the repair clause, same world / script / casting / critic).
+
+Why t17, by the world's own arithmetic (verified in §13.5): p_key —
+the first release whose constants give any staged pool an alternate —
+is *scheduled* at t17. Before it, every pool is empty and a slip can
+only delete (p4 demonstrated exactly this, four times). From its
+release turn, `onlyKeyTo` gains both-position alternates
+({harlowPoint, southStack} × {brandt, senna}), so m_key (grounded t2,
+long past grace) becomes mutable the moment decay opens. The engine's
+hit mechanics make the rest near-arithmetic: every eligible grounded
+fact draws `rate` independently each turn, hits land in grounding
+order capped by free slots; at t17 both slots are free and m_key is
+first in order, so P(m_key slips at t17) = 0.75, ≈0.98 cumulative by
+t19 — and with mutateShare 1 and a non-empty candidate list, that
+slip IS a mutation, with certainty. Its two candidates are both
+met-name garbles — `onlyKeyTo southStack brandt` (Brandt holding the
+South Stack key: poisons the proof's third conjunct and *contradicts
+p_key on the learner's own board*) or `onlyKeyTo harlowPoint senna`
+(Senna keyed to the wrong tower). p_bearing (second in grounding
+order, predicate pool-invariant) draws the same 0.75 — so a plain
+loss likely stands BESIDE the garble from the first decay turn: the
+bent-first clause's scenario arises from the arithmetic, not luck.
+
+Registered consequences:
+
+(a) **No early decay.** Turns 1–16 run clean — the p3/p4 early repair
+economy does not exist in this arm; conduct comparisons to p3/p4 are
+late-window only, and the slip schedule is incomparable to every
+prior arm by construction (fresh stream from t17).
+
+(b) **Corruption hits the proof-assembly window.** A standing
+proof-critical garble can hold D > 0 past t20 (forcing requires the
+learner's grounded board to derive S); turn_cap 26 leaves six turns
+of slack. A death here is "the corruption outran the repair economy,"
+not a hygiene failure — reported as-is.
+
+(c) **The learner believes its false form.** Visibility CONDUCT hides
+the slip from the tutor; the learner sees its own board but not the
+entry's falsity. Learner-side curation (voicing the contradiction
+with p_key, spontaneous strikes) is in scope as conduct, per the
+stage-v2 books.
+
+(d) **Residual all-delete tail.** If m_key's draw misses every
+in-window turn and no other mutable fact is hit (≈1–2%), the run is
+another vacuous pass — reported as-is, no re-roll.
+
+### 14.2 The arm and its comparators
+
+One paid arm: `lantern-p5-mutation-on`, group `lantern-p5-mutation` —
+the §13.2 command with `"startTurn":17` in the decay JSON and the
+label/group/note changed. Primary comparator: `lantern-p4-hygiene-on`
+(conduct-level only, late window; the six-arm table posts the rest).
+
+### 14.3 Endpoints
+
+1. **Instrument integrity, now expected non-vacuous (primary;
+   verification-shaped).** Same §13.3(1) check — every constant of
+   every mutation-born false form met on stage (background or
+   released) strictly before or at the staging turn — but this time
+   expected to bind on at least one real ledger row. ZERO violations
+   required; a violation is a build defect, not re-rolled away. An
+   all-delete run is the registered 14.1(d) tail, reported as-is.
+2. **Verdict and window survival — identical to §13.3(2).** Reported
+   as-is, no re-roll either direction, with 14.1(b)'s delayed-forcing
+   note in force.
+3. **The battle test (primary descriptive).** From ledger +
+   transcript: (a) the garble's life on the board — does the learner
+   voice it, build on it, or strike it by its own curation (one
+   candidate stands in direct contradiction with p_key); (b) tutor
+   detection from conduct only, and repair latency on a *bent* fact
+   against p3/p4's plain losses; (c) where a loss and a garble stand
+   open together, the repair ORDER — the first live case of the §13
+   bent-first clause, read kept/broken, descriptive.
+4. **The §11/§12/§13 books, unchanged meanings.** Plots, audits,
+   throughline reckoning, restores vs re-entries, `firesWithoutDue`,
+   release adherence, corruption panel — same semantics; and the p4
+   critic's two new recommendations stay unlicensed (no calendar or
+   meter change rides in).
+5. **The critic's notice (Fable, pinned)** — gates nothing, as ever.
+
+### 14.4 Reading discipline
+
+Everything §13.4 said. The arm adds no mechanism — only exposure: the
+hygiene pair (staged pool + bent-first clause) still attributes only
+as a bundle, and nothing separates pool-alone from
+pool-with-charter-clause. n=1, one seed, descriptive throughout; no
+schedule comparability with any prior arm. This registration spends
+the 2026-06-12 battle-test sanction in full: after the arm, its
+outcome record here, and the paper fold-in, the paid loop is ended
+again.
