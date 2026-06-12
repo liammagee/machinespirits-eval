@@ -542,3 +542,42 @@ Endpoints:
 Kill rule: rate ≤1/5 → STOP the plan (all five still report). No re-roll in
 either direction; crash/truncation = delete artifact dir, re-run same label,
 note it here.
+
+### E2 outcome — 2026-06-12
+
+Execution: all five registered labels ran serially under the frozen p4 command,
+with `--critic off` deferred as registered. Artifacts are committed under
+`exports/dramatic-derivation/loop/lantern-e2-real-r{1..5}/`. The post-fan
+conduct miner was refreshed by `npm run derivation:mine`
+(`conduct-parameters.md/json` now include the five E2 real arms).
+
+Rate: 3/5 grounded (`r2`, `r3`, `r4`) and 2/5 disengaged (`r1`, `r5`). The
+registered Clopper-Pearson table therefore uses the 3/5 row (lower bound
+≥0.15). The kill rule is not triggered: the rate is greater than 1/5.
+
+| arm | verdict | first split / conduct note | repairs / figures |
+|---|---|---|---|
+| `lantern-e2-real-r1` | disengagement t12 | `p_bearing` t3(-1), `p_chart` t7(-2); D reaches 3 at t7 and stays there through death | `p_bearing` repaired t6; top figure erotema 5/12 |
+| `lantern-e2-real-r2` | grounded t20, gap 0 | first major split from the death branch is `p_chart` held to t9(+0); `p_key` t15(-2) | `m_key` repaired t5, `p_bearing` t7; top figure analogia 7/20 |
+| `lantern-e2-real-r3` | grounded t20, gap 0 | shares early `p_chart` t7(-2), but D falls to 3 one turn later than the death branch, letting `p_residue` arrive at t13; `p_key` t16(-1) | `p_bearing` repaired t8; top figure erotema 10/20 |
+| `lantern-e2-real-r4` | grounded t20, gap 0 | first split from the early-bearing arms is `p_bearing` held to t4(+0); `p_chart` t9(+0), `p_key` t15(-2) | `m_key` repaired t5, `p_bearing` t7; top figure erotema 7/20 |
+| `lantern-e2-real-r5` | disengagement t12 | structural repeat of the r1 death branch: `p_bearing` t3(-1), `p_chart` t7(-2), D plateau at 3 through death | `p_bearing` repaired t6; top figure erotema 4/12 |
+
+Harness checks: every E2 arm had same-turn adoption for released exhibits, 0
+missed releases, 0 unscheduled releases, 0 uncovered re-entries, and 0
+superego fires without recorded due. Deaths are therefore reported outcomes,
+not re-roll candidates.
+
+Corridor occupancy against the E0 lambda=0 map:
+
+| decision | E0 safe set | E2 placements | fatal-cell entries |
+|---|---|---|---|
+| `p_bearing` cue t4 | {t4, t5, t6} | t3 in r1/r2/r3/r5; t4 in r4 | 4 (`bearing@t3`) |
+| `p_chart` cue t9 | {t8, t9} | t7 in r1/r3/r5; t9 in r2/r4 | 3 (`chart@t7`) |
+| `p_key` cue t17 | {t15, t16, t17, t18} | t15 in r2/r4; t16 in r3; unreached in r1/r5 | 0 |
+
+Total fatal-cell entries: 7. Late-side license uses: 0. The live fan therefore
+confirms the map's central warning: locally licensed early pulls, especially
+`p_chart@t7`, remain hazardous, but repair/adoption timing can sometimes bridge
+the arithmetic hazard. Gate 2 question, if sanctioned later: E3 solvency gate
+next?

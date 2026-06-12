@@ -4,14 +4,14 @@
 
 ## Aggregates by backend
 
-### real (30 arms, 231 releases)
+### real (35 arms, 265 releases)
 
-- verdicts: grounded_anagnorisis:18 · aporia:6 · disengagement:6
-- adoption lambda: 0:229 · 3+:1 · never:1
-- tutor offsets used: 0:89 · -1:4 · -2:4 (deviation rate 0.082)
-- director off-nominal: 0/134
-- decay slips: 95 · repair latency: 1:26 · 2:14 · 3+:25 · never:30
-- repair via: tutor:65 · unrepaired at end: 30 · false-form dwell (mutate->retract): 1, 4, 1, 1, 1, 4, 10, 1
+- verdicts: grounded_anagnorisis:21 · disengagement:8 · aporia:6
+- adoption lambda: 0:263 · 3+:1 · never:1
+- tutor offsets used: 0:92 · -1:9 · -2:9 (deviation rate 0.164)
+- director off-nominal: 0/155
+- decay slips: 112 · repair latency: 1:26 · 2:19 · 3+:27 · never:40
+- repair via: tutor:72 · unrepaired at end: 40 · false-form dwell (mutate->retract): 1, 4, 1, 1, 1, 4, 10, 1
 
 ### unknown (10 arms, 104 releases)
 
@@ -22,14 +22,14 @@
 - decay slips: 27 · repair latency: 1:2 · 2:2 · 3+:16 · never:7
 - repair via: tutor:20 · unrepaired at end: 7 · false-form dwell (mutate->retract): 1, 1, 4, 1, 1, 8, 6, 2, 1
 
-### mock (28 arms, 258 releases)
+### mock (29 arms, 266 releases)
 
-- verdicts: disengagement:10 · grounded_anagnorisis:18
-- adoption lambda: 0:258
-- tutor offsets used: 0:110 (deviation rate 0)
-- director off-nominal: 0/148
-- decay slips: 27 · repair latency: 2:1 · 3+:6 · never:20
-- repair via: tutor:7 · unrepaired at end: 20 · false-form dwell (mutate->retract): none
+- verdicts: disengagement:11 · grounded_anagnorisis:18
+- adoption lambda: 0:266
+- tutor offsets used: 0:113 (deviation rate 0)
+- director off-nominal: 0/153
+- decay slips: 31 · repair latency: 2:2 · 3+:7 · never:22
+- repair via: tutor:9 · unrepaired at end: 22 · false-form dwell (mutate->retract): none
 
 ## Arms
 
@@ -39,6 +39,11 @@
 | bitterwell-v001-real-superego-on-revoiced-t1 | real | world_003_bitterwell | grounded_anagnorisis | 15 | 3 (0) | 0,0,0,0,0,0,0 | 0 (0) |
 | bitterwell-v001-real-superego-on-t1-charterv2 | real | world_003_bitterwell | grounded_anagnorisis | 15 | 3 (0) | 0,0,0,0,0,0,0 | 0 (0) |
 | bitterwell-v001-real-sw-off-t1 | real | world_003_bitterwell | grounded_anagnorisis | 15 | 3 (0) | 0,0,0,0,0,0,0 | 0 (0) |
+| lantern-e2-real-r1 | real | world_002_lantern | disengagement | 12 | 2 (2) | 0,0,0,0,0 | 3 (1) |
+| lantern-e2-real-r2 | real | world_002_lantern | grounded_anagnorisis | 20 | 3 (2) | 0,0,0,0,0,0,0,0 | 4 (2) |
+| lantern-e2-real-r3 | real | world_002_lantern | grounded_anagnorisis | 20 | 3 (3) | 0,0,0,0,0,0,0,0 | 3 (1) |
+| lantern-e2-real-r4 | real | world_002_lantern | grounded_anagnorisis | 20 | 3 (1) | 0,0,0,0,0,0,0,0 | 4 (2) |
+| lantern-e2-real-r5 | real | world_002_lantern | disengagement | 12 | 2 (2) | 0,0,0,0,0 | 3 (1) |
 | lantern-p1-dials-on | real | world_002_lantern | aporia | 8 | 1 (1) | 0,0,0,0 | 2 (0) |
 | lantern-p1-dials-on-v2 | real | world_002_lantern | aporia | 8 | 1 (1) | 0,0,0,0 | 3 (1) |
 | lantern-p2-plot-on | real | world_002_lantern | aporia | 8 | 2 (2) | 0,0,0,0,0 | 3 (1) |
@@ -80,6 +85,7 @@
 | free-figures-mockcheck | mock | world_001_nocturne | grounded_anagnorisis | 32 | 5 (0) | 0,0,0,0,0,0,0,0,0,0,0 | 0 (0) |
 | freelance-director-mockcheck | mock | world_001_nocturne | grounded_anagnorisis | 32 | 5 (0) | 0,0,0,0,0,0,0,0,0,0,0 | 0 (0) |
 | frozen-gate-mockcheck | mock | world_001_nocturne | grounded_anagnorisis | 32 | 5 (0) | 0,0,0,0,0,0,0,0,0,0,0 | 0 (0) |
+| lantern-e2-mock-smoke | mock | world_002_lantern | disengagement | 25 | 3 (0) | 0,0,0,0,0,0,0,0 | 4 (2) |
 | lantern-p4-hygiene-mock-smoke | mock | world_002_lantern | disengagement | 25 | 3 (0) | 0,0,0,0,0,0,0,0 | 4 (2) |
 | lantern-p5-mutation-mock-smoke | mock | world_002_lantern | disengagement | 25 | 3 (0) | 0,0,0,0,0,0,0,0 | 3 (1) |
 | lantern-revise-mock-off | mock | world_002_lantern | disengagement | 25 | 3 (0) | 0,0,0,0,0,0,0,0 | 2 (0) |
