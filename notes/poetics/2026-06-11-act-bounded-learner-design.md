@@ -174,3 +174,62 @@ director/tutor/superego, Sonnet learner, Fable critic).
 - Mutation realism (argument swap vs predicate swap vs strength downgrade) — one mode
   (argument swap) for the probe.
 - Whether F(t) belongs in the paper's instrument set or stays probe-internal.
+
+## 5. Scoring plan for the pair (fixed 2026-06-12, mid-pair)
+
+Disclosure: fixed after the ON arm landed and was read (`bounded-v2-probe-on`,
+grounded_anagnorisis t38/40), before the OFF arm finished. Pre-specified with respect
+to the OFF arm only.
+
+**Structural amendment to §2's endpoints.** The revision endpoint is empty on nocturne
+*by construction*: every premise's mutation-candidate pool is empty (singleton
+predicates; the `dwelledIn` pair mutually blocked; background predicates disjoint), so
+every mutate draw falls back to delete. Verified offline across worlds: smoke 3/4
+premises mutable, lantern 5/10, nocturne 0/13, bitterwell 0/9, withercombe 0/9. The
+pair therefore tests **recall only**. Record `mutations.total = 0` in both arms as a
+structural fact, not a result. A revision probe needs lantern (no world edits) — a
+separate sanction.
+
+**Cross-arm contrast (harness-ledgered only — architecture-independent by
+construction; nothing the tutor self-reports crosses arms):**
+
+| quantity | source |
+|---|---|
+| verdict; forced turn; asserted turn; staged-vs-lawful gap | diagnosis top line |
+| slips; repaired (tutor / re-adoption); unrepaired at end | corruption.repairs, .timeline |
+| mean repair latency; degraded-turn integral (and per-turn-played) | corruptionReport |
+| F final / F min; D reversals | corruptionReport.fidelity, .dReversals |
+| repair selection signature (non-lastRelease, proof-path target) | §2's v1 signature, from timeline + move metadata |
+| same-act vs cross-act repairs | timeline × acts rows |
+| releases on cue; acts played / director-closed; act_min_blocked | adherence + acts + events |
+
+Exposure normalization: arms may differ in turns played; rates quoted per turn played
+beside raw counts. Same seed ≠ same slip schedule (draws depend on board state, which
+diverges with behaviour) — so the contrast is on the repair *economy*, never per-slip
+pairing.
+
+**Why same-act vs cross-act matters:** the bounded learner can only re-adopt what it
+can still see — the current act's releases plus its surviving store. Once the act
+turns, a slipped premise is invisible to it; **cross-act recall is tutor-only by
+construction**. The split therefore reads which arm's tutor carries the memory burden
+the learner cannot.
+
+**ON-arm-internal diagnostics (never cross-arm):**
+- reconstruction detection (missing caught/actual), held-Jaccard trajectory by act;
+- theory→repair coupling: for each repair, was the repaired premise named
+  `believed_missing` in any commit in the k turns before the repair (k=3)? And the
+  converse: of theory-caught gaps, how many were repaired within 3 turns? Separates
+  "the theory drives repairs" from "the theory is epiphenomenal colour on repairs the
+  conduct channel was producing anyway."
+
+**Reading frame (n=1, §2's modesty holds — descriptive, no thresholds-as-tests):**
+- OFF repairs at a similar rate/latency and the verdict class holds → the explicit
+  theory added nothing detectable here; default mechanisms (the learner naming gaps,
+  the tutor reading conduct) already drive repair. Consistent with the arc's
+  ToM-redundancy prior.
+- OFF shows materially worse repair economy (latency, integral, unrepaired) or the
+  verdict decays (aporia/disengagement/lucky-leap ending) → the reconstruction mandate
+  earns a registered follow-up (lantern, seeds × worlds).
+- Either way the probe's deliverable is the *legibility* of the ledger: recall
+  separated from revision, repair channels attributed, act-bounded recall asymmetry
+  visible.
