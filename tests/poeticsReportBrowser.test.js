@@ -727,14 +727,26 @@ describe('dashboard front door', () => {
   it('renders onboarding scaffolding, live stats and discipline deep-links', () =>
     withDb((db) => {
       const html = renderDashboardHtml({ ...corpusStats(db), replays: 0 });
-      // hero + reflexive pedagogy note
+      // control-room header + reflexive pedagogy note
+      assert.match(html, /Eval control room/);
       assert.match(html, /Tutoring, staged as drama\./);
       assert.match(html, /why the site is built this way/);
-      // six-rung scaffolding ladder
+      // status readout + command bar + the three operations panels
+      assert.match(html, /class="cr-status"/);
+      assert.match(html, /class="cr-cmd"/);
+      assert.match(html, /class="ops"/);
+      for (const panel of ['corpus', 'activity', 'review']) {
+        assert.match(html, new RegExp(`class="ops-panel__h">${panel}<`));
+      }
+      // recent-runs monitoring feed (empty corpus → the empty-state row)
+      assert.match(html, /class="feed"/);
+      assert.match(html, /no runs yet/);
+      // six-rung scaffolding ladder, now collapsed behind a <details> tour
+      assert.match(html, /<details class="tour"/);
       assert.match(html, /class="ladder"/);
       for (let n = 1; n <= 6; n += 1) assert.match(html, new RegExp(`id="rung-${n}"`));
-      // the five working surfaces (the rail's primary row) read as one matched set
-      assert.match(html, /The working surfaces/);
+      // the five working consoles (the rail's primary row) read as one matched set
+      assert.match(html, /class="section">Consoles</);
       for (const name of ['scripts', 'proof runs', 'replays', 'compose a scene', 'launch a run']) {
         assert.match(html, new RegExp(`class="surf__t">${name}<`));
       }
@@ -751,6 +763,28 @@ describe('dashboard front door', () => {
       // first-visit recognition banner ships hidden until the client clears it
       assert.match(html, /id="welcome"[^>]*hidden/);
     }));
+
+  it('renders the recent-runs feed with one row per run when runs are present', () => {
+    const html = renderDashboardHtml({
+      scripts: 10,
+      scored: 8,
+      runs: 2,
+      replays: 0,
+      proofRuns: 1,
+      recentRuns: [
+        { id: 'run-alpha', itemCount: 6, scoreCount: 6, reviewFlagCount: 2, createdAt: '2026-06-05 16:20:01' },
+        { id: 'run-beta', itemCount: 4, scoreCount: 2, reviewFlagCount: 0, createdAt: '2026-06-04 10:00:00' },
+      ],
+    });
+    // each run links into the corpus filtered by that run id
+    assert.match(html, /href="\/browse\?runId=run-alpha"/);
+    assert.match(html, /href="\/browse\?runId=run-beta"/);
+    // a flagged run carries the amber dot and reports its counts inline
+    assert.match(html, /class="feed-row__dot is-warn"/);
+    assert.match(html, /6 scripts · 6 scored · 2 flags/);
+    // the populated feed is NOT the empty state
+    assert.doesNotMatch(html, /no runs yet/);
+  });
 
   it('tolerates an empty corpus (called with no stats)', () => {
     const html = renderDashboardHtml();

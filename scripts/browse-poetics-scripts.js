@@ -1465,7 +1465,13 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
       const qs = new URLSearchParams(req.query).toString();
       return res.redirect(302, '/browse' + (qs ? '?' + qs : ''));
     }
-    const stats = { ...corpusStats(db), replays: listReplayBundles().length };
+    const derivationRuns = listDerivationRuns();
+    const stats = {
+      ...corpusStats(db),
+      replays: listReplayBundles().length,
+      proofRuns: derivationRuns.length,
+      recentRuns: listRuns(db).slice(0, 6),
+    };
     return res.type('html').send(renderDashboardHtml(stats));
   });
   return app;
@@ -1869,7 +1875,7 @@ const NAV_PRIMARY = ['home', 'browse', 'derivation', 'replays', 'compose', 'runs
 // dated/durable techne notes. A group whose member is the active page shows a
 // moss accent on its summary so the current location is still legible when closed.
 const NAV_GROUPS = [
-  ['tools', ['tutor', 'adjudicate', 'pilot-admin']],
+  ['tools', ['tutor', 'pilot-admin']],
   ['reference', ['ontology', 'rubric']],
   ['notes', ['summary', 'story', 'repertoire', 'board']],
 ];
@@ -3560,11 +3566,13 @@ function renderDashboardHtml(stats = {}) {
     labels: 0,
     openFlags: 0,
     replays: 0,
+    proofRuns: 0,
     disciplines: [],
     ...stats,
   };
   const fmt = (n) => Number(n || 0).toLocaleString('en-US');
   const disciplines = s.disciplines || [];
+  const recentRuns = Array.isArray(stats.recentRuns) ? stats.recentRuns : [];
   const disciplineChips = disciplines.length
     ? disciplines
         .map((d) => {
@@ -3575,21 +3583,69 @@ function renderDashboardHtml(stats = {}) {
         .join('')
     : '<span class="muted">no disciplines tagged yet — generate a run to populate the corpus</span>';
 
-  const statCell = (n, label) =>
-    `<div class="stat"><div class="stat__n">${fmt(n)}</div><div class="stat__l">${label}</div></div>`;
-  const statStrip = [
-    statCell(s.scripts, 'scripts'),
-    statCell(s.runs, 'runs'),
-    statCell(disciplines.length, 'disciplines'),
-    statCell(s.scores, 'critic scores'),
-    statCell(s.critics, 'critics'),
-    statCell(s.replays, 'replays'),
-  ].join('');
-  const statSub =
-    `${fmt(s.scored)} of ${fmt(s.scripts)} scripts scored · ${fmt(s.labels)} human labels · ` +
+  // SQLite CURRENT_TIMESTAMP is UTC and space-separated ("2026-06-05 16:20:01");
+  // parse as UTC, then render a coarse "Xh ago" against the server clock (this is
+  // a live server render, so Date.now() is fine here — unlike workflow scripts).
+  const parseTs = (str) => {
+    if (!str) return null;
+    const ms = Date.parse(String(str).replace(' ', 'T') + 'Z');
+    return Number.isFinite(ms) ? ms : null;
+  };
+  const relTime = (ms) => {
+    if (!ms) return '—';
+    const sec = Math.round((Date.now() - ms) / 1000);
+    if (sec < 0) return 'just now';
+    if (sec < 60) return `${sec}s ago`;
+    if (sec < 3600) return `${Math.round(sec / 60)}m ago`;
+    if (sec < 86400) return `${Math.round(sec / 3600)}h ago`;
+    return `${Math.round(sec / 86400)}d ago`;
+  };
+  const pctScored = s.scripts ? Math.round((s.scored / s.scripts) * 100) : 0;
+  const lastRunRel = recentRuns.length ? relTime(parseTs(recentRuns[0].createdAt)) : '—';
+
+  // Status command-bar digest: a factual one-liner, not a fabricated liveness
+  // claim (there is no cheap "a run is executing right now" signal). The dot and
+  // the open-flags segment turn amber only when something actually needs you.
+  const statusSegs = [
+    `${fmt(s.scripts)} scripts`,
+    `${fmt(s.proofRuns)} proof runs`,
+    `last run ${lastRunRel}`,
+    `${pctScored}% scored`,
+  ]
+    .map((t) => `<span class="cr-status__seg">${t}</span>`)
+    .join('');
+  const statusLine =
+    statusSegs +
     (s.openFlags
-      ? `<strong class="flag">${fmt(s.openFlags)} open review flag${s.openFlags === 1 ? '' : 's'}</strong>`
-      : '0 open review flags');
+      ? `<span class="cr-status__seg is-warn">${fmt(s.openFlags)} open flag${s.openFlags === 1 ? '' : 's'}</span>`
+      : '');
+
+  // Three instrument panels — same numbers as the old flat strip, regrouped as
+  // gauges: what exists (corpus) · what's moving (activity) · what needs review.
+  const opsRow = (n, label, warn = false) =>
+    `<div class="ops-row${warn ? ' is-warn' : ''}"><span class="ops-row__n">${n}</span><span class="ops-row__l">${label}</span></div>`;
+  const opsHtml = [
+    `<div class="ops-panel"><div class="ops-panel__h">corpus</div>${opsRow(fmt(s.scripts), 'scripts')}${opsRow(fmt(s.proofRuns), 'proof runs')}${opsRow(fmt(s.replays), 'replays')}</div>`,
+    `<div class="ops-panel"><div class="ops-panel__h">activity</div>${opsRow(fmt(s.runs), 'runs')}${opsRow(lastRunRel, 'last run')}${opsRow(fmt(disciplines.length), 'disciplines')}</div>`,
+    `<div class="ops-panel"><div class="ops-panel__h">review</div>${opsRow(`${pctScored}%`, `scored · ${fmt(s.scored)}/${fmt(s.scripts)}`)}${opsRow(fmt(s.labels), `human labels · ${fmt(s.critics)} critics`)}${opsRow(fmt(s.openFlags), `open flag${s.openFlags === 1 ? '' : 's'}`, s.openFlags > 0)}</div>`,
+  ].join('');
+
+  // Recent-runs monitoring feed — the genuinely "control room" piece, drawn from
+  // the same per-run query the run list uses (newest-first, with live counts).
+  const feedHtml = recentRuns.length
+    ? recentRuns
+        .map(
+          (r) =>
+            `<a class="feed-row" href="/browse?runId=${encodeURIComponent(r.id)}"><span class="feed-row__dot${
+              r.reviewFlagCount ? ' is-warn' : ''
+            }"></span><span class="feed-row__id">${escapeHtml(String(r.id))}</span><span class="feed-row__m">${fmt(
+              r.itemCount,
+            )} scripts · ${fmt(r.scoreCount)} scored${
+              r.reviewFlagCount ? ` · ${fmt(r.reviewFlagCount)} flag${r.reviewFlagCount === 1 ? '' : 's'}` : ''
+            }</span><span class="feed-row__t">${relTime(parseTs(r.createdAt))}</span></a>`,
+        )
+        .join('')
+    : '<div class="feed-empty">no runs yet — launch one to populate the corpus</div>';
 
   const RUNGS = [
     [
@@ -3743,21 +3799,53 @@ function renderDashboardHtml(stats = {}) {
 .welcome h2{ margin:7px 0 6px; font:italic 22px/1.2 "Fraunces","Source Serif 4",Georgia,serif; font-variation-settings:"SOFT" 50,"WONK" 1,"opsz" 72; color:var(--ink); }
 .welcome p{ margin:0; color:var(--ink-2); max-width:66ch; }
 .welcome__btns{ display:flex; gap:10px; margin-top:13px; flex-wrap:wrap; }
-.hero{ padding:40px 0 10px; }
-.hero__k{ font:600 11px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.1em; color:var(--ink-4); }
-.hero h1{ margin:10px 0 12px; font:italic 40px/1.05 "Fraunces","Source Serif 4",Georgia,serif; font-variation-settings:"SOFT" 50,"WONK" 1,"opsz" 96; letter-spacing:-.015em; color:var(--ink); }
-.hero p{ margin:0 0 20px; font-size:16px; color:var(--ink-2); max-width:70ch; }
-.hero__cta{ display:flex; gap:12px; flex-wrap:wrap; }
+.cr-head{ margin:18px 0 0; border:1px solid var(--rule); background:var(--paper-4); border-top:3px solid var(--moss-deep); padding:20px 22px 18px; }
+.cr-head__top{ display:flex; align-items:flex-start; justify-content:space-between; gap:18px 24px; flex-wrap:wrap; }
+.cr-head__k{ font:600 11px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.12em; color:var(--ink-4); }
+.cr-head h1{ margin:9px 0 4px; font:italic 34px/1.04 "Fraunces","Source Serif 4",Georgia,serif; font-variation-settings:"SOFT" 50,"WONK" 1,"opsz" 96; letter-spacing:-.015em; color:var(--ink); }
+.cr-head__tag{ font:13px/1.3 ui-monospace,monospace; color:var(--ink-3); }
+.cr-status{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; font:11px/1.4 ui-monospace,monospace; color:var(--ink-3); border:1px solid var(--rule); background:var(--paper-3); padding:8px 12px; }
+.cr-status__dot{ flex:none; width:8px; height:8px; border-radius:50%; background:var(--moss); box-shadow:0 0 0 3px var(--rule-soft); }
+.cr-status__dot.is-warn{ background:var(--brick); box-shadow:0 0 0 3px var(--ochre-soft); }
+.cr-status__seg{ white-space:nowrap; }
+.cr-status__seg + .cr-status__seg{ padding-left:10px; border-left:1px solid var(--rule); }
+.cr-status__seg.is-warn{ color:var(--brick-d); font-weight:600; }
+.cr-head__lede{ margin:14px 0 0; font-size:14px; line-height:1.55; color:var(--ink-2); max-width:80ch; }
+.cr-head__lede a{ color:var(--moss-deep); text-decoration:none; white-space:nowrap; }
+.cr-head__lede a:hover{ text-decoration:underline; }
+.cr-cmd{ display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
+.cmd{ display:inline-flex; align-items:center; gap:8px; text-decoration:none; font:600 13px ui-monospace,monospace; border:1px solid var(--rule); background:var(--paper); color:var(--ink); padding:11px 16px; transition:border-color .15s ease, background .15s ease; }
+.cmd:hover{ border-color:var(--ink-3); }
+.cmd__i{ font-size:13px; color:var(--ink-4); }
+.cmd--go{ background:var(--moss-deep); border-color:var(--moss-deep); color:var(--paper); }
+.cmd--go .cmd__i{ color:var(--paper); }
+.cmd--go:hover{ background:var(--moss); border-color:var(--moss); }
+@media(max-width:600px){ .cr-head h1{ font-size:28px; } .cmd{ flex:1 1 auto; justify-content:center; } }
 .btn{ display:inline-flex; align-items:center; gap:7px; font:13px ui-monospace,monospace; text-decoration:none; cursor:pointer; border:1px solid var(--rule); background:var(--paper-4); color:var(--ink); padding:9px 15px; }
 .btn.primary{ background:var(--moss-deep); color:var(--paper); border-color:var(--moss-deep); }
 .btn.ghost{ background:transparent; }
-.stats{ display:grid; grid-template-columns:repeat(6,1fr); gap:1px; background:var(--rule); border:1px solid var(--rule); margin:30px 0 8px; }
-@media(max-width:760px){ .stats{ grid-template-columns:repeat(3,1fr); } .hero h1{ font-size:32px; } }
-.stat{ background:var(--paper-4); padding:16px 14px; }
-.stat__n{ font:600 26px/1 Georgia,serif; color:var(--moss-deep); }
-.stat__l{ font:11px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-4); margin-top:8px; }
-.stats__sub{ font:12px/1.6 ui-monospace,monospace; color:var(--ink-4); margin:0 0 30px; }
-.stats__sub .flag{ color:var(--brick-d); }
+.ops{ display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--rule); border:1px solid var(--rule); }
+@media(max-width:760px){ .ops{ grid-template-columns:1fr; } }
+.ops-panel{ background:var(--paper-4); padding:14px 16px; }
+.ops-panel__h{ font:600 10px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.1em; color:var(--ink-4); margin-bottom:10px; }
+.ops-row{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding:6px 0; }
+.ops-row + .ops-row{ border-top:1px solid var(--rule-soft); }
+.ops-row__n{ font:600 20px/1 Georgia,serif; color:var(--moss-deep); white-space:nowrap; }
+.ops-row__l{ font:11px/1.3 ui-monospace,monospace; color:var(--ink-4); text-align:right; }
+.ops-row.is-warn .ops-row__n{ color:var(--brick-d); }
+.feed{ margin-top:18px; border:1px solid var(--rule); background:var(--paper-4); }
+.feed__h{ display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border-bottom:1px solid var(--rule); font:600 10px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.09em; color:var(--ink-4); }
+.feed__h a{ text-transform:none; letter-spacing:0; font-weight:400; color:var(--moss-deep); text-decoration:none; }
+.feed__h a:hover{ text-decoration:underline; }
+.feed-row{ display:flex; align-items:center; gap:12px; padding:9px 14px; text-decoration:none; }
+.feed-row + .feed-row{ border-top:1px solid var(--rule-soft); }
+.feed-row:hover{ background:var(--paper-3); }
+.feed-row__dot{ flex:none; width:7px; height:7px; border-radius:50%; background:var(--moss); }
+.feed-row__dot.is-warn{ background:var(--brick); }
+.feed-row__id{ flex:none; max-width:34ch; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font:600 12px ui-monospace,monospace; color:var(--ink); }
+.feed-row__m{ flex:1; font:11px ui-monospace,monospace; color:var(--ink-4); }
+.feed-row__t{ flex:none; font:11px ui-monospace,monospace; color:var(--ink-4); }
+.feed-empty{ padding:16px 14px; font:italic 12px ui-monospace,monospace; color:var(--ink-4); }
 .chips__lead{ font:13px/1.5 ui-monospace,monospace; color:var(--ink-3); margin:0 0 10px; }
 .chips{ display:flex; flex-wrap:wrap; gap:8px; margin:0 0 8px; }
 .chip{ display:inline-flex; align-items:center; gap:8px; text-decoration:none; border:1px solid var(--rule); background:var(--paper-4); color:var(--ink-2); padding:5px 11px; font:12px ui-monospace,monospace; }
@@ -3816,6 +3904,14 @@ h2.section{ font:600 13px/1 ui-monospace,monospace; text-transform:uppercase; le
 .reflect li{ color:var(--ink-2); font-size:13px; max-width:80ch; padding-left:14px; border-left:2px solid var(--rule); }
 .reflect li b{ color:var(--moss-deep); }
 .muted{ color:var(--ink-4); font-style:italic; }
+details.tour{ margin-top:30px; border:1px solid var(--rule); background:var(--paper-3); }
+.tour__sum{ display:flex; align-items:center; gap:14px; padding:12px 16px; cursor:pointer; list-style:none; }
+.tour__sum::-webkit-details-marker{ display:none; }
+.tour__lead{ font:13px ui-monospace,monospace; color:var(--ink-3); }
+.tour__lead b{ color:var(--moss-deep); }
+.tour__chev{ flex:none; font-size:12px; color:var(--ink-4); transition:transform .2s ease; }
+details.tour[open] .tour__chev{ transform:rotate(180deg); }
+.tour .ladder{ border:0; border-top:1px solid var(--rule); background:transparent; }
 .foot{ margin-top:32px; color:var(--ink-4); font:11px ui-monospace,monospace; }
 `,
   })}
@@ -3833,42 +3929,61 @@ ${railHtml({ active: 'home', brand: 'machine spirits', sub: 'a drama-machine for
     </div>
   </div>
 
-  <header class="hero">
-    <div class="hero__k">machine spirits · poetics scriptorium</div>
-    <h1>Tutoring, staged as drama.</h1>
-    <p>Generate tutoring dialogues that hinge on a reversal of understanding (a <em>peripeteia</em>). Score them the way a literary critic would, on dramatic form. Then study where recognition does and doesn't cohere — recognition meaning the moment a learner's understanding genuinely shifts, not just a correct answer. Browse what's been made, compose something new, or replay a single changed move.</p>
-    <div class="hero__cta">
-      <a class="btn primary" href="/browse">Read a script →</a>
-      <a class="btn ghost" href="/compose/live">Compose a scene →</a>
+  <header class="cr-head">
+    <div class="cr-head__top">
+      <div class="cr-head__id">
+        <div class="cr-head__k">machine spirits · poetics</div>
+        <h1>Eval control room</h1>
+        <div class="cr-head__tag">Tutoring, staged as drama.</div>
+      </div>
+      <div class="cr-status" role="status" aria-label="corpus status">
+        <span class="cr-status__dot${s.openFlags ? ' is-warn' : ''}" aria-hidden="true"></span>
+        ${statusLine}
+      </div>
+    </div>
+    <p class="cr-head__lede">Generate tutoring dialogues that hinge on a reversal of understanding, score them on dramatic form, then study where recognition coheres. Launch and watch runs here; read, compose and inspect from the consoles below. <a href="#why">Why it's built this way ↓</a></p>
+    <div class="cr-cmd">
+      <a class="cmd cmd--go" href="/runs"><span class="cmd__i" aria-hidden="true">▸</span> Launch a run</a>
+      <a class="cmd" href="/compose/live"><span class="cmd__i" aria-hidden="true">✎</span> Compose a scene</a>
+      <a class="cmd" href="/browse"><span class="cmd__i" aria-hidden="true">⊞</span> Browse scripts</a>
+      <a class="cmd" href="/derivation"><span class="cmd__i" aria-hidden="true">⌗</span> Proof runs</a>
     </div>
   </header>
 
-  <div class="stats">${statStrip}</div>
-  <p class="stats__sub">${statSub}</p>
+  <h2 class="section">Operations</h2>
+  <p class="section__sub">Live counts across the corpus, the run activity, and what's waiting on review. The flag light turns amber when something needs you.</p>
+  <div class="ops">${opsHtml}</div>
+
+  <div class="feed">
+    <div class="feed__h"><span>recent runs</span><a href="/browse">all runs →</a></div>
+    ${feedHtml}
+  </div>
 
   <p class="chips__lead">The corpus spans ${disciplines.length} field${disciplines.length === 1 ? '' : 's'} — jump straight into one:</p>
   <div class="chips">${disciplineChips}</div>
 
-  <h2 class="section">Start here · a six-step tour</h2>
-  <p class="section__sub">Each step assumes only the one before it. Tick what you already know; your progress is remembered on this device.</p>
-  <div class="ladder" id="ladder">
-    <div class="ladder__head">
-      <div class="prog"><div class="prog__fill" id="progFill"></div></div>
+  <details class="tour" id="tourDetails">
+    <summary class="tour__sum">
+      <span class="tour__lead">new here? <b>a six-step tour</b> of the whole surface</span>
+      <span class="prog" aria-hidden="true"><span class="prog__fill" id="progFill"></span></span>
       <span class="prog__label" id="progLabel">not started</span>
-      <a class="ladder__reset" id="resetTour" href="#">reset</a>
+      <span class="tour__chev" aria-hidden="true">▾</span>
+    </summary>
+    <div class="ladder" id="ladder">
+      <div class="ladder__head"><a class="ladder__reset" id="resetTour" href="#">reset progress</a></div>
+      ${rungsHtml}
     </div>
-    ${rungsHtml}
-  </div>
+  </details>
 
-  <h2 class="section">The working surfaces</h2>
-  <p class="section__sub">The five tabs in the top rail. Three collections of finished tutoring dialogue — graded by an AI critic, checked by a fixed rule-checker, or diffed one move at a time — and the two tools that make more. Everything else is reference &amp; reading, below.</p>
+  <h2 class="section">Consoles</h2>
+  <p class="section__sub">The five working consoles in the top rail — three collections of finished tutoring dialogue (graded by an AI critic, checked by a fixed rule-checker, or diffed one move at a time) and the two that make more. Everything else is reference &amp; reading, below.</p>
   <div class="surfaces">${surfacesHtml}</div>
 
   <h2 class="section">Reference &amp; reading</h2>
   <p class="section__sub">Background, analysis, and the project's own notes — read at your leisure.</p>
   <div class="refs">${refsHtml}</div>
 
-  <div class="reflect">
+  <div class="reflect" id="why">
     <div class="reflect__k">why the site is built this way</div>
     <h3>This scriptorium is built from the pedagogy it studies.</h3>
     <ul>
@@ -3878,7 +3993,7 @@ ${railHtml({ active: 'home', brand: 'machine spirits', sub: 'a drama-machine for
     </ul>
   </div>
 
-  <p class="foot">machine spirits · poetics — localhost scriptorium · read-only dashboard</p>
+  <p class="foot">machine spirits · poetics — localhost control room · read-only</p>
 </div>
 <script>
 (function(){
@@ -3897,7 +4012,7 @@ ${railHtml({ active: 'home', brand: 'machine spirits', sub: 'a drama-machine for
   if (banner && !welcomed) banner.hidden = false;
   function dismissWelcome(){ if (banner) banner.hidden = true; try { localStorage.setItem('poetics-welcomed','1'); } catch (_e) {} }
   var wd = $('welcomeDismiss'); if (wd) wd.addEventListener('click', dismissWelcome);
-  var wb = $('welcomeBegin'); if (wb) wb.addEventListener('click', function(){ dismissWelcome(); var l = $('ladder'); if (l) l.scrollIntoView({ behavior:'smooth', block:'start' }); });
+  var wb = $('welcomeBegin'); if (wb) wb.addEventListener('click', function(){ dismissWelcome(); var d = $('tourDetails'); if (d) d.open = true; var l = d || $('ladder'); if (l) l.scrollIntoView({ behavior:'smooth', block:'start' }); });
 
   var TOTAL = 6;
   function isDone(n){ try { return localStorage.getItem('poetics-rung-v2-'+n)==='1'; } catch (_e) { return false; } }
