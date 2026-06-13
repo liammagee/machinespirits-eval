@@ -25,6 +25,7 @@
  */
 
 import { closure, factKey, matchPattern } from './chainer.js';
+import { pacingGuardDecision, releaseSolvency, safeReleaseTurns } from './pacing.js';
 
 const TUTOR_FIGURES = ['erotema', 'analogia', 'exemplum', 'anaphora', 'aposiopesis'];
 const TUTOR_INTENTS = ['orient', 'release', 'consolidate', 'test', 'counter_mirror', 'stage_recognition'];
@@ -347,6 +348,7 @@ function tutorSystem(
     confront = false,
     repairClause = false,
     releaseAuthority = false,
+    pacingGuard = false,
     plot = false,
     throughline = false,
   } = {},
@@ -401,6 +403,17 @@ function tutorSystem(
           'delays an advance you may need sooner than you think. When the board has',
           'gone quiet too long, an exhibit in your window is a rescue — spend it. Bend',
           'the calendar with the clock in mind.',
+          ...(pacingGuard
+            ? [
+                '',
+                'SOLVENCY GUARD: the harness also computes a no-decay tempo floor from',
+                'the authored calendar and the releases already staged. A locally',
+                'licensed release can still be clock-fatal. The per-turn window marks',
+                'such releases as insolvent; the harness may hold an insolvent claim or',
+                'force an exhibit on its last computed safe turn. Treat that as the',
+                'house clock speaking, not as a new piece of evidence.',
+              ]
+            : []),
         ]
       : ['The fixed release schedule (the harness enforces it; you are told your cues):', schedule]),
     ...(actsMode
@@ -835,6 +848,7 @@ export function makeLlmTutor(
     confront = false,
     repairClause = false,
     releaseAuthority = false,
+    pacingGuard = false,
     plot = false,
     throughline = false,
   } = {},
@@ -884,6 +898,11 @@ export function makeLlmTutor(
       'derivation.llmRoles: repairClause requires confront (the clause is an exception to the confrontation obligation)',
     );
   }
+  if (pacingGuard && !releaseAuthority) {
+    throw new Error(
+      'derivation.llmRoles: pacingGuard requires releaseAuthority (it narrows the exhibit window to computed safe placements)',
+    );
+  }
   // C1 wiring guards: the plot is an act-scale commitment (no acts, no
   // opening to commit at and no close to audit), and the act-close audit is
   // the superego's jurisdiction — without the watcher nothing binds.
@@ -909,6 +928,7 @@ export function makeLlmTutor(
     confront,
     repairClause,
     releaseAuthority,
+    pacingGuard,
     plot,
     throughline,
   });
@@ -1165,6 +1185,18 @@ export function makeLlmTutor(
     const { entry, premise } = releaseAuthority
       ? { entry: null, premise: null }
       : scheduledFor(world, view.turn, 'tutor');
+    const pacingRows =
+      releaseAuthority && pacingGuard
+        ? playable.map((e) => {
+            const safeTurns = safeReleaseTurns(world, view.ledger, {
+              premise: e.premise,
+              latitude: RELEASE_LATITUDE,
+            });
+            const current = releaseSolvency(world, view.ledger, { premise: e.premise, turn: view.turn });
+            return { ...e, safeTurns, current };
+          })
+        : [];
+    const pacingByPremise = new Map(pacingRows.map((r) => [r.premise, r]));
     // Acts-mode redaction (engine.js omniscientView): no learnerAbox, no
     // trajectory, no corruption — the tutor works from the dialogue and its
     // own ledger. The v1 branch below is untouched.
@@ -1183,7 +1215,16 @@ export function makeLlmTutor(
             : held === 0
               ? 'scheduled THIS turn'
               : `held ${held} turn${held === 1 ? '' : 's'} (scheduled turn ${e.turn}; hold limit turn ${e.turn + RELEASE_LATITUDE})`;
-      return `- ${e.premise}: ${status}`;
+      const pacing = pacingByPremise.get(e.premise);
+      const pacingStatus =
+        pacingGuard && pacing
+          ? pacing.current?.safe
+            ? ` — tempo-solvent now; safe turns {${pacing.safeTurns.map((t) => `t${t}`).join(', ') || 'none'}}`
+            : ` — CLOCK-FATAL if played now (${pacing.current?.verdict || 'unknown'} t${
+                pacing.current?.endTurn || '?'
+              }); safe turns {${pacing.safeTurns.map((t) => `t${t}`).join(', ') || 'none'}}`
+          : '';
+      return `- ${e.premise}: ${status}${pacingStatus}`;
     });
     const task = releaseAuthority
       ? [
@@ -1196,6 +1237,14 @@ export function makeLlmTutor(
           'premise ledger) into your dialogue as something produced or recalled,',
           'faithful to it. Beyond the window, work the inquiry by your script —',
           'whichever your reading of the learner calls for.',
+          ...(pacingGuard
+            ? [
+                '',
+                'The solvency guard is active: prefer tempo-solvent placements. A',
+                'CLOCK-FATAL claim may be held by the harness, and an exhibit at its',
+                'last safe turn may be played even if you ask to hold.',
+              ]
+            : []),
         ].join('\n')
       : premise
         ? `THIS TURN IS YOUR CUE to bring ${entry.premise} into play. Weave this evidence into your dialogue as something produced or recalled, faithful to it:\n"${(premise.surface || '').trim()}"`
@@ -1394,6 +1443,17 @@ export function makeLlmTutor(
           : null,
       cuePremise: releaseAuthority ? mockRelease : entry ? entry.premise : null,
       ...(releaseAuthority ? { releaseChoice: mockRelease } : {}),
+      ...(releaseAuthority && pacingGuard
+        ? {
+            pacingGuard: {
+              rows: pacingRows.map((r) => ({
+                premise: r.premise,
+                safeTurns: r.safeTurns,
+                current: r.current,
+              })),
+            },
+          }
+        : {}),
       // mock determinism (arm-ON): the credulous theory — everything released
       // is believed held. The real backend ignores meta.
       ...(reconstruct ? { theoryHint: view.ledger.map((l) => l.premiseId) } : {}),
@@ -1454,24 +1514,55 @@ export function makeLlmTutor(
       if (!releaseAuthority) return { release: entry ? entry.premise : null };
       const claimed = typeof out.release === 'string' && out.release.trim() ? out.release.trim() : null;
       const validClaim = claimed && playable.some((e) => e.premise === claimed) ? claimed : null;
-      const played = forcedPlay ? forcedPlay.premise : validClaim;
+      const guard = pacingGuard
+        ? pacingGuardDecision(world, view.ledger, {
+            turn: view.turn,
+            playable,
+            validClaim,
+            forcedPlay,
+            latitude: RELEASE_LATITUDE,
+          })
+        : null;
+      const played = guard ? guard.played : forcedPlay ? forcedPlay.premise : validClaim;
       const reason =
         typeof out.release_reason === 'string' && out.release_reason.trim() ? out.release_reason.trim() : null;
       const sched = played ? world.releaseSchedule.find((e) => e.premise === played) : null;
+      const releaseReason = reason || (played && guard?.reason ? guard.reason : null);
+      const forced = forcedPlay && played === forcedPlay.premise ? forcedPlay.premise : null;
       return {
         release: played,
-        ...(reason ? { releaseReason: reason } : {}),
+        ...(releaseReason ? { releaseReason } : {}),
         releaseDecision: {
           turn: view.turn,
           windowSize: playable.length,
           claimed,
           invalidClaim: Boolean(claimed && !validClaim),
-          forced: forcedPlay ? forcedPlay.premise : null,
-          overridden: Boolean(forcedPlay && claimed !== forcedPlay.premise),
+          forced,
+          overridden: Boolean(
+            (forced && claimed !== forced) ||
+              (guard?.forcedSafe && claimed !== guard.played) ||
+              (guard?.blocked && (!played || claimed !== played)),
+          ),
           played,
           scheduledTurn: sched ? sched.turn : null,
           offset: sched ? view.turn - sched.turn : null,
-          reason,
+          reason: releaseReason,
+          ...(guard
+            ? {
+                pacingGuard: {
+                  blocked: guard.blocked,
+                  forcedSafe: guard.forcedSafe,
+                  forcedBy: guard.forcedBy || null,
+                  candidate: guard.candidate || null,
+                  alternative: guard.alternative || null,
+                  alternativeTurn: guard.alternativeTurn || null,
+                  reason: guard.reason || null,
+                  candidateSolvency: guard.candidateSolvency || null,
+                  playedSolvency: guard.playedSolvency || null,
+                  safeTurns: guard.safeTurns,
+                },
+              }
+            : {}),
         },
       };
     };

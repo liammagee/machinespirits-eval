@@ -131,6 +131,13 @@
  *                                       window. Decision records land in the
  *                                       ledger + transcript meta. Design:
  *                                       same note §C2)
+ *     [--pacing-guard]                 (E3/M1; requires --release-authority.
+ *                                       A mechanical no-decay solvency check
+ *                                       narrows the release window to computed
+ *                                       safe placements, can hold clock-fatal
+ *                                       claims, and can force an exhibit on
+ *                                       its last safe turn. Uses production
+ *                                       derivationDistance/detectStall.)
  *     [--plot]                         (P2/C1; requires --superego + --acts.
  *                                       At each act opening the tutor ego
  *                                       commits a per-act plot — hold_by_end /
@@ -363,6 +370,11 @@ async function main() {
     process.exit(1);
   }
   const releaseAuthority = flag('release-authority');
+  const pacingGuard = flag('pacing-guard');
+  if (pacingGuard && !releaseAuthority) {
+    console.error('--pacing-guard requires --release-authority (it narrows the exhibit window)');
+    process.exit(1);
+  }
   // P2/C1 = the act-plot commitment loop (same note §5): plot at the act
   // opening, audit at the act close, the audit binds the next plot.
   const plot = flag('plot');
@@ -475,6 +487,11 @@ async function main() {
       `tutor   RELEASE AUTHORITY ON — the exhibit calendar is the tutor's to keep or bend (±${RELEASE_LATITUDE} turns, declared reason; the harness force-plays at the hold limit)`,
     );
   }
+  if (pacingGuard) {
+    console.log(
+      'tutor   PACING GUARD ON — no-decay tempo solvency narrows the release window; clock-fatal claims are held and last-safe turns may be force-played',
+    );
+  }
   if (plot) {
     console.log(
       'tutor   PLOT ON — at each act opening the tutor commits a per-act plot (hold/withhold/friction/fallback, from conduct only); the superego audits it clause by clause at the act close, and the audit binds the next plot',
@@ -513,6 +530,7 @@ async function main() {
       confront,
       repairClause,
       releaseAuthority,
+      pacingGuard,
       plot,
       throughline,
     }),
@@ -570,6 +588,7 @@ async function main() {
     // P1 dials — false on every run before 2026-06-11.
     confront,
     releaseAuthority,
+    pacingGuard,
     // §12 dial (the repair clause) — false on every run before 2026-06-12.
     repairClause,
     // P2/C1 dial — false on every run before 2026-06-12. Named plotDial so it

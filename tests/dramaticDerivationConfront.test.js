@@ -120,6 +120,14 @@ test('confront composes with the acts-mode guards (legal build does not throw)',
   );
 });
 
+test('pacing guard requires release authority', () => {
+  const { client } = stubClient({});
+  assert.throws(
+    () => makeLlmTutor(smokeWorld, client, actsOpts({ pacingGuard: true })),
+    /pacingGuard requires releaseAuthority/,
+  );
+});
+
 // ---------------------------------------------------------------------------
 // B. charter stability
 // ---------------------------------------------------------------------------
@@ -199,6 +207,12 @@ async function releaseTurn({ turn, reply, ledger = [] }) {
   return tutor(actsView(turn, { ledger }));
 }
 
+async function lanternReleaseTurn({ turn, reply, ledger = [] }) {
+  const { client } = stubClient({ tutor: [reply] });
+  const tutor = makeLlmTutor(lanternWorld, client, actsOpts({ releaseAuthority: true, pacingGuard: true }));
+  return tutor(actsView(turn, { ledger }));
+}
+
 test('C2: a claim inside the window is honored, offset and reason recorded', async () => {
   const out = await releaseTurn({
     turn: 4,
@@ -258,6 +272,78 @@ test('C2: the hold limit force-plays over a contrary claim and records the overr
   assert.equal(out.releaseDecision.forced, 'p2');
   assert.equal(out.releaseDecision.overridden, true);
   assert.equal(out.releaseDecision.offset, RELEASE_LATITUDE);
+});
+
+test('E3 pacing guard blocks the known early-chart fatal pull', async () => {
+  const out = await lanternReleaseTurn({
+    turn: 7,
+    ledger: [
+      { turn: 2, premiseId: 'm_key', via: 'director' },
+      { turn: 3, premiseId: 'p_bearing', via: 'tutor' },
+      { turn: 6, premiseId: 'm_post', via: 'director' },
+    ],
+    reply: {
+      dialogue: 'The chart should enter now.',
+      move: { figure: 'analogia', target_premise: 'p_chart', intent: 'release' },
+      release: 'p_chart',
+      release_reason: 'the learner asked for the chart',
+    },
+  });
+  assert.equal(out.release, null);
+  assert.equal(out.releaseDecision.played, null);
+  assert.equal(out.releaseDecision.pacingGuard.blocked, true);
+  assert.equal(out.releaseDecision.pacingGuard.candidate, 'p_chart');
+  assert.equal(out.releaseDecision.pacingGuard.alternativeTurn, 8);
+  assert.deepEqual(out.releaseDecision.pacingGuard.safeTurns.p_chart, [8]);
+});
+
+test('E3 pacing guard force-plays an exhibit on its last safe turn', async () => {
+  const out = await lanternReleaseTurn({
+    turn: 8,
+    ledger: [
+      { turn: 2, premiseId: 'm_key', via: 'director' },
+      { turn: 3, premiseId: 'p_bearing', via: 'tutor' },
+      { turn: 6, premiseId: 'm_post', via: 'director' },
+      { turn: 8, premiseId: 'm_shutter', via: 'director' },
+    ],
+    reply: {
+      dialogue: 'Hold one more beat.',
+      move: { figure: 'erotema', target_premise: null, intent: 'test' },
+      release: null,
+    },
+  });
+  assert.equal(out.release, 'p_chart');
+  assert.equal(out.releaseDecision.played, 'p_chart');
+  assert.equal(out.releaseDecision.offset, -1);
+  assert.equal(out.releaseDecision.overridden, true);
+  assert.equal(out.releaseDecision.pacingGuard.forcedSafe, true);
+  assert.equal(out.releaseDecision.pacingGuard.forcedBy, 'last_safe_turn');
+});
+
+test('E3 pacing guard suppresses a late key release after the safe set closes', async () => {
+  const out = await lanternReleaseTurn({
+    turn: 19,
+    ledger: [
+      { turn: 2, premiseId: 'm_key', via: 'director' },
+      { turn: 4, premiseId: 'p_bearing', via: 'tutor' },
+      { turn: 6, premiseId: 'm_post', via: 'director' },
+      { turn: 8, premiseId: 'm_shutter', via: 'director' },
+      { turn: 9, premiseId: 'p_chart', via: 'tutor' },
+      { turn: 13, premiseId: 'p_residue', via: 'director' },
+    ],
+    reply: {
+      dialogue: 'Only now do we open the key book.',
+      move: { figure: 'exemplum', target_premise: 'p_key', intent: 'release' },
+      release: 'p_key',
+      release_reason: 'the hand question is finally live',
+    },
+  });
+  assert.equal(out.release, null);
+  assert.equal(out.releaseDecision.played, null);
+  assert.equal(out.releaseDecision.pacingGuard.blocked, true);
+  assert.equal(out.releaseDecision.pacingGuard.candidate, 'p_key');
+  assert.equal(out.releaseDecision.pacingGuard.alternativeTurn, null);
+  assert.deepEqual(out.releaseDecision.pacingGuard.safeTurns.p_key, [15, 16, 17, 18]);
 });
 
 // C5 — the license arithmetic. Ledger stages p1 at t1; the draft re-enters.
@@ -753,4 +839,38 @@ test('mock chain: full P1 arm on lantern — fires convert, nothing uncovered, d
   const panel = renderEvalPanel(d);
   assert.ok(panel.includes('**release authority**'));
   assert.ok(panel.includes('**confrontation**'));
+});
+
+test('mock chain: pacing guard preserves the on-cue lantern path', async () => {
+  const client = makeLlmClient({ mode: 'mock' });
+  const roles = {
+    director: makeLlmDirector(lanternWorld, client, { actsMode: true }),
+    tutor: makeLlmTutor(lanternWorld, client, {
+      script: lanternScript,
+      superego: true,
+      decayVisibility: 'conduct',
+      actsMode: true,
+      confront: true,
+      releaseAuthority: true,
+      pacingGuard: true,
+    }),
+    learner: makeLlmLearner({ setting: lanternWorld.setting, voice: lanternWorld.learnerVoice, client }),
+  };
+  const result = await runDrama({
+    world: lanternWorld,
+    roles,
+    options: {
+      decay: { rate: 0.75, graceTurns: 1, maxConcurrent: 2, startTurn: 1, mutateShare: 1.0, seed: 1 },
+      acts: { minActTurns: 3, maxActTurns: 8 },
+    },
+  });
+  const d = diagnose(result, lanternWorld);
+  assert.equal(d.releaseDeviations.invalidClaims, 0);
+  assert.equal(d.releaseDeviations.early, 0);
+  assert.equal(d.releaseDeviations.held, 0);
+  assert.equal(d.releaseDeviations.onSchedule, d.releaseDeviations.played);
+  assert.ok(
+    d.releaseDeviations.decisions.some((decision) => decision.pacingGuard),
+    'decision records carry pacing guard audit data',
+  );
 });
