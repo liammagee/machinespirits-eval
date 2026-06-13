@@ -77,86 +77,146 @@ mountEvalSurfaces(app, { root: __dirname });
 
 // In standalone mode, serve a basic UI
 if (isStandalone) {
+  // The landing links the shared design system (/components/techne.css — the
+  // same paper/ink tokens, type, and theming the poetics scriptorium renders)
+  // so the standalone server stops being a styled island. Page-specific layout
+  // (hero / stat strip / card grid) is inlined on top of those tokens, the same
+  // way the scriptorium home does. The scriptorium's nav rail is deliberately
+  // NOT reused: its links target poetics-only routes this server doesn't mount.
   app.get('/', (req, res) => {
-    res.send(`
-<!DOCTYPE html>
+    res.type('html').send(`<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Machine Spirits Eval</title>
-  <style>
-    body {
-      font-family: 'Space Mono', monospace;
-      background: #0a0a0a;
-      color: #fafafa;
-      margin: 0;
-      padding: 2rem;
-    }
-    h1 { color: #E63946; }
-    a { color: #E63946; }
-    .endpoint {
-      background: rgba(255,255,255,0.05);
-      padding: 1rem;
-      margin: 0.5rem 0;
-      border-radius: 4px;
-    }
-    code {
-      background: rgba(255,255,255,0.1);
-      padding: 0.2rem 0.4rem;
-      border-radius: 2px;
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>machine spirits · eval</title>
+<link rel="stylesheet" href="/components/techne.css">
+<style>
+.wrap{ width:min(1080px, calc(100vw - 40px)); margin:0 auto; }
+.bar{ display:flex; align-items:center; gap:14px; padding:14px 0 12px; border-bottom:1px solid var(--rule); }
+.bar .glyph{ color:var(--brick); font-size:1.15em; line-height:1; animation:railspin 32s linear infinite; }
+@keyframes railspin{ to{ transform:rotate(360deg); } }
+.bar .wordmark{ font-family:"Fraunces",Georgia,serif; font-style:italic; font-variation-settings:"SOFT" 50,"WONK" 1,"opsz" 96; font-size:16px; color:var(--ink); }
+.bar .tag{ font-family:"JetBrains Mono",monospace; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-4); }
+.bar .spacer{ flex:1; }
+.bar .toggle{ min-height:0; padding:5px 11px; font-size:11px; }
+.hero{ padding:42px 0 6px; }
+.hero .k{ font-family:"JetBrains Mono",monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-4); }
+.hero h1{ margin:10px 0 12px; font-style:italic; font-size:clamp(1.9rem,1.3rem + 2vw,2.8rem); line-height:1.03; }
+.hero p{ margin:0; font-size:16px; color:var(--ink-2); max-width:68ch; }
+.stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--rule); border:1px solid var(--rule); margin:28px 0 8px; }
+@media(max-width:620px){ .stats{ grid-template-columns:repeat(2,1fr); } }
+.stat{ background:var(--paper-4); padding:14px 14px; }
+.stat .n{ font-family:"Fraunces",Georgia,serif; font-weight:600; font-size:21px; color:var(--moss-deep); line-height:1; }
+.stat .l{ font-family:"JetBrains Mono",monospace; font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-4); margin-top:8px; }
+h2.section{ font-family:"JetBrains Mono",monospace; font-weight:600; font-size:13px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); margin:42px 0 4px; }
+.section-sub{ color:var(--ink-4); margin:0 0 16px; font-size:13px; max-width:74ch; }
+.grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(248px,1fr)); gap:13px; }
+a.card{ display:block; text-decoration:none; border-top:3px solid var(--ink-4); transition:background .12s var(--ease), border-color .12s var(--ease); }
+a.card:hover{ background:color-mix(in srgb, var(--moss-soft) 32%, var(--paper-4)); }
+a.card.moss{ border-top-color:var(--moss); }
+a.card.ochre{ border-top-color:var(--ochre); }
+a.card.indigo{ border-top-color:var(--indigo); }
+a.card .t{ font-family:-apple-system,system-ui,sans-serif; font-weight:600; font-size:14px; color:var(--ink); }
+a.card .d{ color:var(--ink-3); font-size:12.5px; margin:5px 0 10px; line-height:1.45; }
+a.card .cta{ font-family:"JetBrains Mono",monospace; font-size:11px; color:var(--moss-deep); }
+.api{ border:1px solid var(--rule); background:var(--paper-3); }
+.api .row{ display:flex; align-items:baseline; gap:12px; padding:10px 14px; border-bottom:1px solid var(--rule-soft); }
+.api .row:last-child{ border-bottom:0; }
+.api .m{ font-family:"JetBrains Mono",monospace; font-size:10px; font-weight:600; letter-spacing:.06em; padding:2px 7px; border:1px solid var(--rule); color:var(--ink-3); flex:0 0 auto; }
+.api .m.get{ color:var(--moss-deep); border-color:color-mix(in srgb, var(--moss) 50%, var(--rule)); }
+.api .m.post{ color:var(--ochre-d); border-color:color-mix(in srgb, var(--ochre) 50%, var(--rule)); }
+.api .p{ font-family:"JetBrains Mono",monospace; font-size:12.5px; color:var(--ink); }
+.api .dsc{ color:var(--ink-4); font-size:12px; margin-left:auto; text-align:right; }
+@media(max-width:620px){ .api .dsc{ display:none; } }
+.foot{ margin:38px 0 60px; color:var(--ink-4); font-family:"JetBrains Mono",monospace; font-size:11px; }
+.foot a{ color:var(--ink-3); }
+</style>
 </head>
 <body>
-  <h1>Machine Spirits Eval</h1>
-  <p>Evaluation system running in standalone mode.</p>
-
-  <h2>Interactive</h2>
-  <div class="endpoint">
-    <strong><a href="/chat">/chat</a></strong>
-    <p>Explore tutor architectures interactively — play the learner, watch the ego/superego deliberation for any cell from <code>tutor-agents.yaml</code>.</p>
-  </div>
-  <div class="endpoint">
-    <strong><a href="/adjudication">/adjudication</a></strong>
-    <p>Complete blinded A19 human adjudication forms through the dashboard server.</p>
+<div class="wrap">
+  <div class="bar">
+    <span class="glyph" aria-hidden="true">◐</span>
+    <span class="wordmark">machine spirits</span>
+    <span class="tag">eval · standalone</span>
+    <span class="spacer"></span>
+    <button class="btn toggle" id="themeToggle" type="button">theme</button>
   </div>
 
-  <h2>API Endpoints</h2>
+  <header class="hero">
+    <div class="k">evaluation server</div>
+    <h1>Machine Spirits Eval</h1>
+    <p>The tutoring-evaluation system, running standalone — interactive tutor surfaces, the human-learner pilot, blinded adjudication, and the eval API, all from one process.</p>
+  </header>
 
-  <div class="endpoint">
-    <strong>GET</strong> <code>/api/eval/scenarios</code>
-    <p>List available evaluation scenarios</p>
+  <div class="stats">
+    <div class="stat"><div class="n">v${pkg.version}</div><div class="l">package</div></div>
+    <div class="stat"><div class="n">standalone</div><div class="l">mode</div></div>
+    <div class="stat"><div class="n">4</div><div class="l">api routers</div></div>
+    <div class="stat"><div class="n">SQLite</div><div class="l">store</div></div>
   </div>
 
-  <div class="endpoint">
-    <strong>GET</strong> <code>/api/eval/profiles</code>
-    <p>List tutor profiles</p>
+  <h2 class="section">Interactive</h2>
+  <p class="section-sub">Hands-on surfaces — play a role, run a session, code a transcript.</p>
+  <div class="grid">
+    <a class="card panel moss" href="/chat">
+      <div class="t">Tutor playground</div>
+      <div class="d">Explore any cell from <code>tutor-agents.yaml</code> — play the learner and watch the ego / superego deliberation unfold.</div>
+      <div class="cta">/chat →</div>
+    </a>
+    <a class="card panel indigo" href="/pilot">
+      <div class="t">Learner pilot</div>
+      <div class="d">The participant flow: enrol → consent → pretest → tutoring → posttest → exit survey.</div>
+      <div class="cta">/pilot →</div>
+    </a>
+    <a class="card panel ochre" href="/adjudication">
+      <div class="t">A19 adjudication</div>
+      <div class="d">Complete blinded human-adjudication coding forms through the dashboard.</div>
+      <div class="cta">/adjudication →</div>
+    </a>
+    <a class="card panel" href="/pilot-admin">
+      <div class="t">Pilot admin</div>
+      <div class="d">Operator dashboard for pilot sessions — token-gated.</div>
+      <div class="cta">/pilot-admin →</div>
+    </a>
   </div>
 
-  <div class="endpoint">
-    <strong>GET</strong> <code>/api/eval/runs</code>
-    <p>List evaluation runs</p>
+  <h2 class="section">Reference</h2>
+  <div class="grid">
+    <a class="card panel moss" href="/health">
+      <div class="t">Health</div>
+      <div class="d">Service status, package version, and run mode as JSON — the liveness probe.</div>
+      <div class="cta">/health →</div>
+    </a>
   </div>
 
-  <div class="endpoint">
-    <strong>GET</strong> <code>/api/eval/runs/:id</code>
-    <p>Get details of a specific run</p>
+  <h2 class="section">Eval API</h2>
+  <p class="section-sub">Mounted under <code>/api/eval</code> · also live: <code>/api/chat</code>, <code>/api/pilot</code>, <code>/api/a19/adjudication</code>.</p>
+  <div class="api">
+    <div class="row"><span class="m get">GET</span><span class="p">/api/eval/scenarios</span><span class="dsc">list evaluation scenarios</span></div>
+    <div class="row"><span class="m get">GET</span><span class="p">/api/eval/profiles</span><span class="dsc">list tutor profiles</span></div>
+    <div class="row"><span class="m get">GET</span><span class="p">/api/eval/runs</span><span class="dsc">list evaluation runs</span></div>
+    <div class="row"><span class="m get">GET</span><span class="p">/api/eval/runs/:id</span><span class="dsc">run detail</span></div>
+    <div class="row"><span class="m post">POST</span><span class="p">/api/eval/quick</span><span class="dsc">run a quick evaluation</span></div>
   </div>
 
-  <div class="endpoint">
-    <strong>POST</strong> <code>/api/eval/quick</code>
-    <p>Run a quick evaluation test</p>
-  </div>
-
-  <h2>Documentation</h2>
-  <p><a href="/docs">/docs</a> - Research papers and analysis</p>
-
-  <h2>Health</h2>
-  <p><a href="/health">/health</a> - Service health check</p>
+  <div class="foot">machine spirits · eval · v${pkg.version} — <a href="/health">/health</a></div>
+</div>
+<script>
+(function(){
+  var KEY='ms-theme', root=document.documentElement, saved=null;
+  try{ saved=localStorage.getItem(KEY); }catch(e){}
+  if(saved){ root.setAttribute('data-theme', saved); }
+  var btn=document.getElementById('themeToggle');
+  if(btn){ btn.addEventListener('click', function(){
+    var next = root.getAttribute('data-theme')==='dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try{ localStorage.setItem(KEY, next); }catch(e){}
+  }); }
+})();
+</script>
 </body>
-</html>
-    `);
+</html>`);
   });
 }
 
@@ -175,7 +235,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     console.log(`[EvalServer] Machine Spirits Eval running at http://${HOST}:${PORT}`);
     console.log(`[EvalServer] Mode: ${isStandalone ? 'standalone' : 'mounted'}`);
     console.log(`[EvalServer] API: http://${HOST}:${PORT}/api/eval`);
-    console.log(`[EvalServer] Docs: http://${HOST}:${PORT}/docs`);
+    console.log(`[EvalServer] Chat: http://${HOST}:${PORT}/chat`);
   });
 }
 
