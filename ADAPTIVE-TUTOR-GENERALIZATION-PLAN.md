@@ -242,3 +242,147 @@ rather than the added structure, it reproduces on a second proof shape, and it
 shows up most stably as a shift in how runs fail."* That is a margin-of-generality
 claim about adaptive mechanism — defensible, bounded, and folded into the one
 paper.
+
+---
+
+## Step 1 registration — visible-guard (V) k=5 fan (2026-06-13)
+
+Operator sanction: **"Steps 1 and 2 look fine — sanctioned to do those next."** This
+is the separate pre-registration the plan requires before the first paid V arm
+(§"Sequencing": *"Step 1 … needs its own sanction and the V-guard engineering + mock
+calibration before the first paid arm"*). It pools **separately** from both the frozen
+4/10 baseline and the E2 hidden-guard (H) fan, and is never folded into either.
+
+**Zero-delta basis.** The arm command is the frozen p4 recipe verbatim plus exactly one
+added flag, `--pacing-guard-visible` (its required companion `--release-authority` is
+already in p4; the flag is mutually exclusive with `--pacing-guard` at parse time). No
+other change. The guard logic lives entirely in `visiblePacing.js` + the `visibleGuard`
+branches of `llmRoles.js`, all behind the `visibleGuard` predicate; the no-guard and
+hidden-guard paths carry 0 added lines (verified by the import-audit test below and by
+`git diff` on the no-guard path). V is the **form-match to H**: same flag-gating, same
+"shape the window, don't override," same `--release-authority` requirement, same two
+channels (a static system block + a per-turn note in the prompt, and a
+block/force decision). The **only** difference is the information source — V reads
+transcript-surface features (turns since last release, whether the learner echoed the
+prior exhibit on the page, hedging/length trend); H reads the proof distance `D` and the
+decay-driven stall, neither printed in the transcript.
+
+**Audit invariant (enforced, free).** `visiblePacing.js` must not import the hidden
+primitives (`slope.js`, `pacing.js`); `tests/dramaticDerivationVisiblePacing.test.js`
+asserts this (test 1) and the decision logic (tests 2–7), 7/7 green. This is the
+mechanical guarantee that V "sees only the page."
+
+### The confound control, reframed (free pre-flight, done 2026-06-13)
+
+The plan's confound control (§"Step 1 … Engineering") asked that V's intervention
+frequency be *"tuned on a free mock pass so V narrows about as often as H — otherwise
+the contrast is 'V intervened more/less,' not 'V used worse signal.'"* That instruction
+is **degenerate as written**, and the reason is itself a finding about H:
+
+> Across the whole E2 hidden-guard fan, **H fired 0 enforcement interventions over 87
+> release decisions** (r1 disengaged t7; r2–r5 grounded t20). Zero blocks, zero
+> force-plays. H's lift ran entirely through its **prompt** channel — the always-on
+> static `SOLVENCY GUARD` block plus the per-turn window annotation — with the model
+> *voluntarily* releasing on-cue (p_bearing t4, offset 0, where the unguarded baseline
+> early-pulls t3, offset −1). H never had to override anything; it told the model what
+> it could not see, and the model acted on it.
+
+So "tune V to narrow as often as H" reduces to "tune V to a no-op," which would make the
+contrast vacuous. The control's real purpose — *don't let a difference in intervention
+frequency masquerade as a difference in signal quality* — is served instead by a
+**counterfactual replay** of V's real decision function over the **frozen** baseline and
+H transcripts (`scripts/derivation-visible-guard-calibrate.js`, $0, read-only). It
+reconstructs, turn by turn, the exact `view`/`playable`/`validClaim`/`forcedPlay` the
+live bridge passed the guard (mirrors `llmRoles.js:1235-1242, 1624`), calls the real
+`visibleGuardDecision`, and counts where V *would* have intervened. A built-in self-check
+asserts the reconstructed `playable.length` equals each frozen row's recorded
+`windowSize`: **0 mismatches over all 235 decisions**, so the replay is faithful.
+
+Result of the replay:
+
+| group | arms | decisions | V would intervene | H enforced |
+|---|---|---|---|---|
+| baseline (unguarded 4/10) | 10 | 148 | 23 (blk 17 / push 6) | 0 |
+| H (hidden guard) | 5 | 87 | 9 (blk 5 / push 4) | 0 |
+
+V's enforcement propensity is ≈0.10–0.16/decision (≤4 fires per 20-turn arm),
+overwhelmingly early blocks (a release declared before the learner echoed the prior
+exhibit). **Crucially this is an upper bound on live-V enforcement:** those transcripts
+were generated with no V-prompt steering the model. In a live V arm the model sees V's
+per-turn "the page has not taken up the prior exhibit — hold" note — the same channel
+through which H got voluntary compliance — so if the model trusts V's *visible* read as
+it trusted H's *hidden* one, live-V's realized enforcement falls toward H's 0.
+
+**The design decision this licenses.** Run the registered fan as the **true
+architectural twin of H** — full V, enforcement channel live, exactly as `--pacing-guard`
+ran with its enforcement live-but-unused. No threshold-fishing, no prompt-only crippling.
+V's *realized* enforcement count in the live fan is then a reported **covariate** that
+measures whether the model complies with a visible-page signal as it did with a
+hidden-tempo one, and the primary read is conditioned on it (below).
+
+### Pre-flight (free, done 2026-06-13)
+
+- **Unit tests:** `tests/dramaticDerivationVisiblePacing.test.js` 7/7 (import-audit +
+  feature + decision). Full `npm test` green (recorded in the commit).
+- **Mock smoke** of the exact V command (`DERIVATION_LLM=mock`, throwaway label): runs
+  end-to-end, "VISIBLE PACING GUARD ON" logged, V decision exercised (1 block, 2 pushes
+  over 25 decisions), artifacts written; dir deleted.
+- **Counterfactual replay:** faithful (0 window-mismatches / 235), V propensity
+  ≈0.1/dec as tabled above.
+
+### Design
+
+k=5 exchangeable arms, decay `seed:1` fixed (same frozen seed as the baseline and H
+fans — the only live variance is LLM conduct stochasticity), `world-002-lantern`,
+learner pinned claude/sonnet. Labels `lantern-e2-visible-r1` … `r5`, group
+`lantern-e2-visible`. `--critic off` (Fable backfill deferred, as for the other fans).
+Meterless paid path → serialized, attended, no re-rolls (crash/truncation = delete the
+arm dir, rerun the same label, note it).
+
+### Pre-tabled k=5 Clopper–Pearson 95% (verified `scipy.stats.beta.ppf`)
+
+The prediction is **inverted** from the H fan — the hidden-signal thesis predicts V stays
+at the unguarded base rate while H sits above it. Fisher-exact one-sided columns: V
+**above** baseline 4/10, and V **below** H 4/5.
+
+| V grounds | rate | CP95 | Fisher vs baseline 4/10 (greater) | Fisher vs H 4/5 (V less) |
+|---|---|---|---|---|
+| 0/5 | 0.00 | [0.000, 0.522] | p=1.000 | p=0.024 |
+| 1/5 | 0.20 | [0.005, 0.716] | p=0.916 | p=0.103 |
+| 2/5 | 0.40 | [0.053, 0.853] | p=0.706 | p=0.262 |
+| 3/5 | 0.60 | [0.147, 0.947] | p=0.427 | p=0.500 |
+| 4/5 | 0.80 | [0.284, 0.995] | p=0.182 | p=0.778 |
+| 5/5 | 1.00 | [0.478, 1.000] | p=0.042 | p=1.000 |
+
+### Interpretation rule (pre-registered)
+
+Read on grounding, **conditioned** on V's realized enforcement covariate:
+
+- **≤2/5 — hidden-signal principle supported (directional at this n).** V sits at the
+  unguarded base rate while H sat above it: the visible signal did not buy what the
+  hidden signal did. Note the power limit honestly — V=2/5 vs H=4/5 is **not** a
+  significant separation (p=0.26); the clean separation is only at V≤1/5 (V<H p≤0.10).
+  The support is therefore *directional*, not converged, exactly as H's own 4/5 was.
+  **Clean only if** V's realized enforcement landed in H's low regime (≈0–few): then the
+  architectures and realized interventions matched and only the signal content differed.
+  If V instead force-blocked heavily, down-scope to "V at baseline, but with more
+  intervention than H" and do not claim the signal-source isolation.
+- **3/5 — ambiguous.** Overlaps both baseline and H; underpowered; report as such, claim
+  nothing.
+- **≥4/5 — "structure per se helps," hidden-signal story rejected.** V matches H's point
+  estimate (and separates up from baseline only at 5/5, p=0.042). Still a finding: the
+  win is the scheduling discipline, not the hidden signal. Conditioned on *how* V
+  grounded — via voluntary prompt compliance (realized enforcement ≈0) is the strong
+  form; via heavy force-plays is the weak form and is reported as such.
+
+### Kill / early-stop / no-re-roll
+
+One k=5 V-fan, **no early-stop — run all five serially.** Unlike the E2 fan (one
+win-band at 5/5, everything else null, so 0/3 killed it), V's outcome space is
+informative across its whole range: V=2/5 vs ≤1/5 changes how clean the support read is
+(only ≤1/5 separates V below H at p≤0.10), and 4/5 vs 5/5 changes whether the reject read
+separates above baseline (only 5/5, p=0.042). Every arm at k=5 refines the band, so
+there is no point at which a remaining arm is uninformative. No rescue arms in either
+direction. No re-rolls; crash/truncation = delete the arm dir, rerun the same label, note
+it in the outcome. If V and H land in the same band, the synthesis claim is rejected and
+we stop — no tuning, no second fan.
