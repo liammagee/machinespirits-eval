@@ -62,6 +62,12 @@ const WORLDS = [
     recognitionTurn: 19,
     concealed: ['joss', 'fonthouse', 'font-house', 'wormwood', 'apothecary'],
   },
+  {
+    worldFile: 'config/drama-derivation/world-005-marrick.yaml',
+    scriptFile: 'config/drama-derivation/tutor-scripts/marrick-v001.md',
+    recognitionTurn: 22,
+    concealed: ['edony', 'weir', 'dross', 'burin', 'notch'],
+  },
 ];
 
 /** Wraps the mock client, recording every prompt the learner role receives. */

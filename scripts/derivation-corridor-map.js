@@ -366,6 +366,10 @@ function observedConduct(world) {
   for (const { dir } of VALIDATION_ARMS) {
     const result = loadArm(dir);
     if (!result) continue;
+    // The recorded VALIDATION_ARMS belong to world-002-lantern; the observed
+    // overlay only applies to the world they were played on. Skip any arm whose
+    // ledger references a premise this world does not have (a different world).
+    if ((result.ledger || []).some((row) => !world.premiseById.has(row.premiseId))) continue;
     const placements = new Map(world.releaseSchedule.map((e) => [e.premise, e.turn]));
     const tutorMoves = [];
     for (const row of result.ledger || []) {
