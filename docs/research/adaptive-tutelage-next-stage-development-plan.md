@@ -1,252 +1,440 @@
-# Follow-up Plan for Next Stages of Development
+# Follow-up Plan for Next Stages of Development, updated for paper v3.0.152
 
 **Project:** *Geist in the Machine* / adaptive tutelage mechanisms  
-**Purpose:** Turn the literature review and mechanism audit into a staged research-and-development roadmap.  
+**Updated:** 2026-06-13  
+**Purpose:** Convert the updated manuscript findings into a staged research-and-development roadmap.  
 **Guiding claim:** Adaptive LLM tutoring should be developed as **auditable conduct governance over a stateful pedagogical task**, not as unsupported inference about the learner's inner state.
 
 ---
 
-## 0. Current evidence boundary
+## 0. What changed since the previous plan
 
-The next stage should preserve the existing claim structure:
+The previous plan treated Marrick/world-005 as the immediate next test. The updated manuscript reports that test as complete. This changes the roadmap.
 
-- **Supported:** recognition-oriented / intersubjective prompts improve judged tutor output quality in the studied apparatus; calibration and error correction are supported mechanisms; formal pacing guards move specific dramatic-derivation failure classes.
-- **Not supported:** recognition-modulated adaptive responsiveness as a general trajectory mechanism.
-- **Bounded:** visible/page-only pacing matched hidden proof-state pacing only in the lantern world, where visible uptake tracked latent proof distance.
-- **Not established:** human learning, long-term transfer, generality across proof shapes and domains, or any claim that the tutor reads the learner's mind.
+### 0.1 Marrick is now a completed boundary result
 
-The development plan below is organized to convert these boundaries into experiments rather than rhetoric.
+The forked AND-join world decoupled visible uptake from latent proof distance. Results:
+
+| Arm | Result | Interpretation |
+|---|---:|---|
+| Baseline | 0/5 grounded | The world is hard under the p4 conduct stack. |
+| Visible/page-only guard | 0/5 grounded | Visible uptake is not sufficient when page and proof decouple. |
+| Hidden proof-state guard | 5/5 grounded | Depth-aware pacing sees the open branch and holds to the join. |
+
+The visible guard was not merely inert. It regularized the failure into a consistent tempo-starved death one turn before the join. The lesson is therefore not "visible guards are useless." It is:
+
+> Visible guards are geometry-conditional projections. They work when visible uptake faithfully tracks latent proof progress; they fail when a world lets a learner look locally seated while a hidden branch remains open.
+
+### 0.2 The adaptation-elaboration path is mostly closed
+
+Several recent arcs converge negatively:
+
+- richer learner profiles do not outperform lean state;
+- bilateral ToM elaboration adds no measurable within-family discrimination;
+- evidence-bound hypothesis tracking creates useful audit traces but does not improve the pedagogical outcome channel;
+- learned policy selection fails the offline kill gate;
+- concealed-interior modeling fails because the logged "hidden" LLM deliberation is not a privileged latent variable;
+- adaptation-vs-compliance is not reliably annotatable at revision-event granularity.
+
+The resulting development rule is:
+
+> Do not keep adding interior state. Add checkable structure at the point of action.
+
+### 0.3 A7 longitudinal adds a new, bounded hypothesis
+
+Across eight sessions with persistent Writing Pad state, recognition arcs rise while base arcs degrade. The cleanest reading is ego pre-alignment with superego principles, not increased conflict volume. The result is promising but small-N and caveated by midstream bug fixes and run-order issues.
+
+Roadmap implication: add a clean longitudinal validation stream, but do not treat A7 as a settled human-learning or durable-adaptation result.
+
+### 0.4 Id-director/charisma becomes a separate branch
+
+The id-director family shows a real performative-register axis:
+
+- c104 is strongest on v2.2/recognition-quality;
+- c105 is strongest on charisma;
+- c107 is a promising generalist at lower N;
+- scenario effects dominate the large persona-shift lift;
+- learner uptake of charisma is unmeasured because the corpus is mostly scripted-learner/tutor-only.
+
+Roadmap implication: charisma is worth a separate uptake study, but it should not be fused into the main adaptive-tutoring mechanism claim.
+
+### 0.5 The central next artifact is now a dynamic guard compiler
+
+The strongest next engineering target is:
+
+```text
+WorldSpec -> GuardSpec -> RuntimeMonitor + AuditSuite
+```
+
+The guard generator should compile auditable, inspectable guard specifications from formal world structure. It should not let a live LLM invent new guard logic online.
 
 ---
 
-## 1. Priority map
+## 1. Updated priority map
 
-| Priority | Workstream | Why it comes next | Main output |
+| Priority | Workstream | Status after v3.0.152 | Main output |
 |---:|---|---|---|
-| P0 | Finish Marrick/world-005 fan | Tests whether visible pacing still works when visible uptake and proof distance decouple | Detector-split report across baseline / hidden / visible arms |
-| P1 | Guard-isolation matrix | Separates pacing, proof-debt, visible proxy, hidden proof-state, and placebo attention | Cross-world failure-mode table |
-| P2 | Human validation of process taxonomy | Validates or revises LLM-generated superego critique categories | Coder agreement report and revised codebook |
-| P3 | Critic-source ladder | Places superego in self-correction literature by varying feedback source | Error-correction externality study |
-| P4 | Stance-vs-surface experiment | Tests whether question-asking is a channel or a mechanism | Causal prompt-family and surface-feature ablation |
-| P5 | Judge and simulated-learner validation | Reduces measurement risk before human claims | Multi-judge + human expert + simulation-validity report |
-| P6 | Human learner pilot | Tests whether mechanism improvements translate to learning | Pre/post/delayed human study |
-| P7 | Testbed release | Makes the apparatus externally usable | Minimal reproducible benchmark package |
+| P0 | Claim hygiene and paper tightening | Immediate | Short manuscript patch list |
+| P1 | Dynamic guard compiler | New central target | WorldSpec -> GuardSpec compiler and audit suite |
+| P2 | Cross-world guard-isolation matrix | Upgraded from old P1 | Failure-mode table across linear, forked, distractor, and decay worlds |
+| P3 | Visible-proxy validation protocol | New after Marrick | Hidden-reference vs visible-projection agreement report |
+| P4 | Human validation of process taxonomy | Still needed | Human-coded superego taxonomy and revision validity report |
+| P5 | Evaluation stack hardening | Still needed | Human/LLM/mechanical judge calibration report |
+| P6 | Longitudinal pre-alignment study | New after A7 | Clean repeated-session test with fixed pad/consolidation path |
+| P7 | Critic-source ladder | Still useful, lower priority than guards | Error-correction externality study |
+| P8 | Charisma uptake branch | New, separate | Learner-receptivity instrument and id-director uptake study |
+| P9 | Human learner pilot | Still the learning bridge | Pre/post/delayed human learning study |
+| P10 | Minimal reproducible testbed | Still essential | Public dramatic-derivation conduct benchmark |
 
 ---
 
-## 2. P0: Finish Marrick/world-005 generalization
+## 2. P0: Claim hygiene and manuscript tightening
+
+### Goal
+
+Make sure the paper's prose now matches the updated evidence, especially after the Marrick, adaptation-null, and id-director additions.
+
+### Immediate edits
+
+1. **Soften the opening passive-learner claim.** Classic ITS and learning sciences are not simply passive-transfer paradigms. Target generic answer-delivery LLM tutoring instead.
+2. **Qualify Hegelian descent language.** Use "intersubjective / constructivist / dialogic pedagogical orientation" for the family. Reserve stronger Hegelian genealogy for Dewey, Vygotsky, Honneth, and explicitly recognition-theoretic education work.
+3. **Replace any lingering "conditional emergence" wording for adaptive responsiveness.** The main result is a clean null. A7 is across-session and exploratory/directional; it is not within-dialogue recognition-modulated adaptation.
+4. **Keep id-director as architectural extension.** It is not part of the three-mechanism core. It shows a separate performative-register axis and a Pareto frontier.
+5. **Add runtime-enforcement literature to related work.** The dramatic-derivation guards should be positioned alongside LLM-agent runtime monitors and shields, not only ITS.
+6. **State the Marrick boundary in the abstract/conclusion if space allows.** The paper now has both sides of the hidden-vs-visible boundary: lantern positive, Marrick negative.
+
+### Runtime-enforcement references to add
+
+Use these as adjacent literature for Section 2 or a short new subsection after proof tutors:
+
+- AgentSpec: runtime enforcement for LLM agents via structured triggers, predicates, and enforcement mechanisms.
+- ShieldAgent: trajectory-level policy compliance for LLM agents using verifiable safety-policy reasoning.
+- AGrail: adaptive safety-check generation and optimization for agent guardrails.
+- Aegis: synthesis of lightweight, permissive runtime shields for neural policies.
+- ProbGuard: proactive runtime monitoring for long-horizon LLM-agent safety.
+- Microsoft Agent Governance Toolkit: engineering signal that deterministic runtime governance for agents is becoming practical infrastructure.
+
+Suggested paragraph:
+
+> The dramatic-derivation guards also connect to a newer runtime-enforcement literature for LLM agents. AgentSpec specifies agent constraints as triggers, predicates, and enforcement mechanisms; ShieldAgent verifies action trajectories against explicit policies; AGrail explores adaptive safety-check generation; and runtime-shield synthesis work such as Aegis treats intervention policies as synthesized, permissive monitors. Our guards differ in domain and objective: they enforce pedagogical release, repair, and pacing constraints over a proof-world trajectory rather than security constraints over tool actions. The shared point is methodological: reliable agent conduct is obtained not by richer exhortation alone but by checkable runtime structure.
+
+---
+
+## 3. P1: Dynamic guard compiler
 
 ### Research question
 
-Does visible/page-state pacing still match hidden proof-state pacing when the proof world decouples visible uptake from latent proof distance?
+Can guard logic be generated from formal world structure in a way that is conservative, auditable, non-leaky, and cross-world reusable?
 
-### Rationale
+### Target architecture
 
-Lantern/world-002 is a linear chain where visible uptake is a good proxy for latent proof progress. Marrick/world-005 is a branching AND-join world designed to break that coupling. This is the most important immediate generalization test because either outcome is informative:
+```text
+WorldSpec
+  -> WorldIR
+  -> GuardSpec
+  -> RuntimeMonitor
+  -> AuditSuite
+```
 
-- If visible pacing still matches hidden pacing, the page-state proxy is more robust than expected.
-- If visible pacing fails while hidden pacing succeeds, the paper obtains a clean boundary condition: visible uptake is sufficient only when it tracks latent proof distance.
+Do not use:
 
-### Required arms
+```text
+Dialogue so far -> LLM invents guard code online
+```
 
-Run the registered k=5 fans:
+The live LLM can help name failure classes, propose candidate visible features, or summarize audit reports. It should not author executable guard logic on the critical path.
 
-| Arm | Labels | Purpose |
-|---|---|---|
-| Baseline | `marrick-real-r1` ... `r5` | Natural LLM conduct prior |
-| Hidden proof-state pacing | `marrick-guard-r1` ... `r5` | Mechanically proof-aware release discipline |
-| Visible/page-state pacing | `marrick-visible-r1` ... `r5` | Conduct-derived proxy discipline |
+### Difficulty estimate
 
-### Primary outcome
+| Generalization target | Difficulty | Current verdict |
+|---|---:|---|
+| Reuse hand-written guard templates across same-schema worlds | 3/10 | Refactor-level work. |
+| Compile hidden proof-state guards from proof DAG and schedule | 5-6/10 | Feasible and now highest priority. |
+| Compile visible/page-only guards | 7-8/10 | Research problem because proxy validity is world-dependent. |
+| Online dynamic guard invention during a run | 8-9/10 | Unsafe except for certified parameter selection. |
+| Open-domain human tutoring without formal task state | 9/10 | Requires domain modeling, not only guard code. |
 
-Failure-mode distribution, not just success rate:
+### WorldIR schema
 
-- grounded;
-- early-pull death;
-- wrong-branch overfocus;
-- premature AND-join;
-- decay-starvation;
-- visible-uptake false positive;
-- learner disengagement unrelated to proof state.
+Normalize each dramatic-derivation world into a shared intermediate representation:
 
-### Decision rules
+```yaml
+world_id: string
+entities: []
+facts: []
+inference_rules: []
+secret_target: predicate
+proof_graph:
+  nodes: []
+  edges: []
+  joins: []
+minimal_proofs: []
+release_exhibits: []
+release_calendar: []
+stall_rule: {}
+decay_model: {}
+corruption_model: {}
+learner_visible_state: {}
+tutor_visible_state: {}
+harness_hidden_state: {}
+```
 
-| Result pattern | Interpretation |
+### Generated GuardSpec
+
+The compiler should emit inspectable JSON/YAML, not opaque code. Example:
+
+```yaml
+guards:
+  hidden_pacing:
+    objective: avoid_tempo_starvation
+    inputs: [proof_distance, decay_stall, release_ledger]
+    actions: [hold, release, ask_diagnostic]
+    non_leak: true
+
+  proof_debt:
+    trigger:
+      released: true
+      proof_critical: true
+      absent_or_corrupted: true
+      restore_lowers_D: true
+    expose_to_tutor: [premiseId, surface, sinceTurn]
+    forbid: [raw_board, corruption_ledger, proof_path, secret, D_arithmetic]
+    actions: [restore_before_new_work]
+
+  visible_projection:
+    candidate: true
+    features:
+      - turns_since_release
+      - learner_echo_of_current_exhibit
+      - hedging_or_gap_markers
+      - branch_coverage_surface_markers
+      - unresolved_join_language
+    validation:
+      compare_to_hidden_reference: true
+      fail_closed_to_hidden: true
+```
+
+### Compiler modules
+
+1. **Proof-criticality analyzer**
+   - marks each exhibit as proof-critical, branch-local, join-blocking, distractor, or optional;
+   - computes whether restoration would lower proof distance;
+   - maps minimal proof paths and alternative paths.
+
+2. **Corridor mapper**
+   - computes earliest safe, latest useful, and fatal-early release regions;
+   - flags where the licensed calendar is wider than the safe corridor;
+   - emits safe/unsafe release cells for replay.
+
+3. **Branch/join analyzer**
+   - detects AND-joins and branch-coverage requirements;
+   - computes when local uptake can falsely imply global readiness;
+   - marks worlds where visible projection is likely unsafe.
+
+4. **Guard policy compiler**
+   - emits hidden pacing, proof-debt, decay hygiene, repetition watcher, and finale-discretion rules;
+   - keeps policies template-based and parameterized by WorldIR.
+
+5. **Visible-proxy compiler**
+   - generates a candidate projection from transcript-visible features;
+   - compares candidate decisions against the hidden guard on replay/simulation;
+   - marks projection as certified, uncertified, or unavailable.
+
+6. **Audit generator**
+   - creates import-fence tests, prompt non-leak tests, positive controls, detector-split tests, and hidden-vs-visible agreement tests.
+
+### Non-leak requirements
+
+Every generated guard must pass:
+
+- no proof-distance arithmetic in tutor-visible text;
+- secret predicate never supplied to tutor;
+- raw learner board never supplied to tutor;
+- proof path never supplied to tutor;
+- corruption ledger never supplied to tutor;
+- restore view limited to already released premise id, surface, and since-turn;
+- positive control proving the harness ledger contains the hidden arithmetic that the tutor did not see.
+
+### Runtime behavior
+
+At runtime, the monitor should be allowed to:
+
+- hold a release;
+- license a release;
+- license a restore;
+- ask for a diagnostic if visible and hidden signals disagree;
+- escalate from visible projection to hidden guard when projection confidence is below threshold;
+- log every decision with inputs, allowed view, action, and non-leak proof.
+
+It should not:
+
+- rewrite guard predicates online;
+- reveal proof distance or proof paths;
+- let the tutor infer the secret from guard explanations;
+- treat visible-proxy failure as a tuning problem without a topology analysis.
+
+### Deliverables
+
+- `guard-compiler-spec.md`
+- `world-ir-schema.yaml`
+- `guard-spec-schema.yaml`
+- `guard-compiler-report-world-002-lantern.md`
+- `guard-compiler-report-world-005-marrick.md`
+- `guard-non-leak-audit.md`
+
+---
+
+## 4. P2: Cross-world guard-isolation matrix
+
+### Research question
+
+Which guard removes which failure class, and what residual failure does it expose?
+
+### Why this matters now
+
+Marrick shows that hidden pacing and visible pacing can diverge sharply. The next stage should stop asking whether "a guard" helps and instead ask which guard has which signature across which world geometry.
+
+### Worlds to include
+
+| World shape | Purpose |
 |---|---|
-| Hidden and visible both remove early-pull deaths | Visible proxy generalizes beyond lantern. |
-| Hidden succeeds, visible fails by branch/join errors | Visible proxy is locally sufficient in lantern but not when uptake and proof distance decouple. |
-| Both hidden and visible fail | Current guard logic is underspecified for branching DAGs. Redesign guard state before broad claims. |
-| Baseline succeeds at high rate | Marrick may be too easy or the branch structure does not actually stress the proxy. Increase distractors or branch ambiguity. |
+| Linear chain | Reproduce lantern: visible uptake aligned with proof distance. |
+| Forked AND-join | Reproduce Marrick: visible uptake decoupled from global proof distance. |
+| Distractor-heavy graph | Tests same-surface decoys and false restores. |
+| Early-met constants | Exercises the staged-pool positive side not yet observed. |
+| Late-decay world | Exercises decay hygiene and proof-debt timing. |
+| Multi-join graph | Tests whether branch/join analyzer scales beyond one fork. |
 
-### Deliverable
+### Arms
 
-`exports/dramatic-derivation/boundary-marrick/detector-split-report.md`, with a short manuscript-ready paragraph that explicitly states whether the lantern visible-guard result generalized or hit its boundary.
-
----
-
-## 3. P1: Guard-isolation matrix across formal worlds
-
-### Research question
-
-Which guard does what, and which failure class does each guard leave behind?
-
-### Why this matters
-
-The current proof-debt result is stacked: proof-debt repair was added on top of pacing. The next phase should isolate each mechanism rather than treating the stack as one effect.
-
-### Experimental matrix
-
-Run the following across at least three world shapes:
-
-1. **Linear chain**: lantern-style, visible uptake aligned with latent proof distance.
-2. **Branching AND-join**: Marrick-style, visible uptake can mislead.
-3. **Distractor-heavy graph**: same-surface or near-surface decoys, requiring guard discrimination.
-
-| Arm | Description | Mechanism isolated |
+| Arm | Description | Main mechanism |
 |---|---|---|
 | Baseline | No guard | Natural conduct prior |
-| Hidden pacing only | Proof-state release pacing | Scheduling discipline with oracle state |
-| Visible pacing only | Page-state release pacing | Scheduling discipline using public proxy |
-| Proof-debt only | Restore released critical premises without pacing | Memory/common-ground repair |
-| Hidden pacing + proof-debt | Current stronger stack | Scheduling plus repair |
-| Visible pacing + proof-debt | Public-proxy stack | Deployable-ish guard stack |
-| Placebo guard | Extra “attention” / reminder with no proof-state content | Tests whether added friction alone explains gains |
-| Random-delay guard | Holds releases randomly within legal window | Tests whether “slower” alone explains gains |
+| Hidden pacing only | Proof-state release pacing | Scheduling discipline with hidden reference |
+| Visible pacing only | Page-state release pacing | Public proxy discipline |
+| Proof-debt only | Restore released critical premises without pacing | Common-ground/proof-state repair |
+| Hidden pacing + proof-debt | Strong current stack | Scheduling + repair |
+| Visible pacing + proof-debt | Deployable-ish public stack | Public scheduling + repair |
+| Visible with hidden escalation | Visible first, hidden if projection uncertified | Hybrid safety |
+| Placebo reminder | Extra attention with no proof-state content | Controls for added friction |
+| Random legal delay | Holds randomly inside legal window | Tests whether slowness alone helps |
+
+### Failure taxonomy
+
+Track at least:
+
+- grounded;
+- tempo-starved / early-pull death;
+- decay-seating death;
+- wrong-branch overfocus;
+- premature join;
+- visible-uptake false positive;
+- false restore;
+- late-finale compression;
+- learner disengagement unrelated to proof state;
+- guard leak / invalid run.
 
 ### Primary analysis
 
-Use a detector-split table by world and arm:
+Use detector-split tables by world and arm. Success-rate estimates are secondary at small k. The primary claim is failure-mode relocation.
 
-| World | Arm | grounded | early-pull | decay-starved | wrong-branch | premature-join | false-restore | other |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
+### Decision rules
 
-### Success criterion
-
-Do not require large-N success-rate certainty at first. The first target is mechanism specificity: each guard should have a predictable failure-mode signature.
-
-### Manuscript payoff
-
-This converts “guards help” into “this guard removes this failure class and exposes this residual class.” That is the core methodological contribution.
+| Pattern | Interpretation | Next action |
+|---|---|---|
+| Hidden succeeds, visible fails | Visible proxy unavailable or uncertified for that geometry. | Compile hidden guard or add branch-aware visible evidence. |
+| Hidden and visible both succeed | Page carries enough signal. | Certify visible projection for that geometry. |
+| Hidden fails | Guard compiler missing world constraint. | Inspect corridor and branch/join analyzer. |
+| Proof-debt only helps | Repair more important than pacing in that world. | Add debt-first policy variant. |
+| Placebo helps | Friction/tempo is a confound. | Add stronger placebo and random-delay controls. |
 
 ---
 
-## 4. P2: Human validation of superego critique taxonomy
+## 5. P3: Visible-proxy validation protocol
 
 ### Research question
 
-Do human expert coders agree with the LLM-generated taxonomy of superego critiques and revision types?
+When can a visible/page-only guard replace a hidden proof-state guard?
 
-### Current risk
+### Core rule
 
-The paper's factorial-level results are cross-judge validated, but the process-level taxonomy remains a recursive LLM-on-LLM judgment. This is the highest-value validation step before making strong process-tracing claims.
+A visible guard should be certified only when replay shows high agreement with the hidden reference on the relevant world distribution. Marrick shows why: a visible guard can intervene often and still be wrong because the page feature it acts on is not faithful to the hidden topology.
+
+### Validation stages
+
+1. **Hidden reference compilation**
+   - compile hidden pacing/proof-debt guard from WorldIR;
+   - treat this as the reference policy.
+
+2. **Visible feature proposal**
+   - generate candidate features from transcript-accessible signals;
+   - include topology-aware public signals where available, such as branch labels explicitly named by the learner.
+
+3. **Replay agreement test**
+   - compute hidden-vs-visible agreement on hold/release/restore decisions;
+   - report false releases, false holds, false restores, and missed debts.
+
+4. **Counterfactual stress test**
+   - construct adversarial transcript states where local uptake is high but global branch coverage is incomplete;
+   - require the visible guard to fail closed or declare uncertainty.
+
+5. **Certification decision**
+   - certified: visible projection agrees with hidden reference above threshold and no catastrophic false-release class appears;
+   - uncertified: visible projection useful but unsafe alone;
+   - unavailable: world geometry prevents faithful projection.
+
+### Proposed thresholds for first pass
+
+| Metric | Suggested threshold |
+|---|---:|
+| Hold/release agreement with hidden guard | >= 0.90 |
+| Catastrophic false-release rate | 0 in registered stress set |
+| False-restore rate | 0 in registered stress set |
+| Non-leak tests | 100% pass |
+| Detector-split improvement over baseline | Directionally positive, but not sufficient alone |
+
+### Manuscript payoff
+
+This turns the hidden-vs-visible story into a general method:
+
+> Visible adaptivity is not assumed; it is certified as a projection of hidden task state when the world makes that projection faithful.
+
+---
+
+## 6. P4: Human validation of superego and revision taxonomies
+
+### Research question
+
+Do human expert coders agree with the LLM-generated critique taxonomy and revision labels?
+
+### Why it remains necessary
+
+The process-level story still depends on LLM-classified critiques and revisions. The inter-LLM kappa baseline is useful, but human validation is needed before strong process-tracing claims.
 
 ### Procedure
 
-1. Use the existing deterministic sampling script to create a stratified sample of 40-60 ego/superego exchanges across critique categories, conditions, models, and outcome types.
-2. Recruit at least two expert coders with background in learning sciences, ITS, or tutoring dialogue analysis.
-3. Blind coders to condition and LLM labels.
-4. Have coders label:
+1. Use deterministic stratified sampling across critique categories, conditions, models, and outcomes.
+2. Blind human coders to condition, model, and LLM label.
+3. Code:
    - critique category;
-   - revision type: substantive, partial, cosmetic, harmful;
-   - whether the final output actually addresses the critique;
-   - whether the critique is pedagogically valid.
-5. Compute Cohen's kappa, Fleiss' kappa where possible, per-category F1, and confusion matrices.
-6. Compare human-human agreement to human-LLM and LLM-LLM baselines.
+   - revision type: substantive, partial, cosmetic, harmful, resistance;
+   - whether the critique is pedagogically valid;
+   - whether the revision actually addresses the critique.
+4. Compute human-human kappa, human-LLM kappa, LLM-LLM kappa, per-category F1, and confusion matrices.
+5. Collapse or retire unstable categories.
 
-### Acceptance criteria
+### Updated caution after Section 6.12
+
+The attempted persuasion/conformity/instability distinction is not reliably annotatable under the attempted setup. Do not force this distinction into the main taxonomy unless a redesigned codebook clears a reliability gate.
+
+### Acceptance rules
 
 | Result | Action |
 |---|---|
-| Human-human kappa >= 0.60 and human-LLM close to LLM-LLM baseline | Keep taxonomy with caveats. |
-| Human-human kappa >= 0.60 but human-LLM low | Revise automated classifier; human taxonomy becomes anchor. |
-| Human-human kappa < 0.60 | Taxonomy is not stable; collapse categories or rewrite codebook. |
-| Category-specific F1 failures | Retire or merge unstable categories. |
-
-### Deliverable
-
-`exports/human-validation/superego-taxonomy-validation.md`, including codebook changes and a list of which process-level claims remain licensed.
-
----
-
-## 5. P3: Critic-source ladder for error correction
-
-### Research question
-
-Is the superego genuinely adding external error correction, or is it mostly structured self-critique?
-
-### Design
-
-Hold the tutor ego, learner, scenarios, and scoring fixed. Vary only the critic source.
-
-| Arm | Critic source | What it tests |
-|---|---|---|
-| No critic | Single-agent baseline | No architecture-level correction |
-| Same-prompt self-critique | Ego reviews its own draft | Intrinsic self-correction |
-| Same-model separate superego | Current architecture | Structured separate-context critique |
-| Different-model critic | Model-family externality | Whether independent model priors help |
-| Mechanical/domain oracle critic | Checker / answer-key / proof-state feedback | Reliable external feedback |
-| Human/expert critic sample | Human validation ceiling | Gold-standard pedagogical critique |
-| Random/plausible critique placebo | Critique-shaped friction | Whether revision effort alone helps |
-
-### Outcomes
-
-- Initial output quality;
-- final output quality;
-- revision delta;
-- critique validity;
-- harmful revision rate;
-- failure classes caught and missed;
-- token/cost per point of quality lift.
-
-### Expected payoff
-
-This directly connects the project to the self-correction literature. If only oracle/human critics improve reliability, the superego should be framed as structured critique rather than external feedback. If separate-model or separate-context critics reliably help, the architecture claim becomes stronger.
-
----
-
-## 6. P4: Stance versus surface-feature ablation
-
-### Research question
-
-Is the intersubjective effect caused by the underlying pedagogical stance, by visible surface behaviors such as question-asking, or by their interaction?
-
-### Why this matters
-
-The paper shows question-asking mediates a large share of the recognition effect, but later response-level analysis suggests surface markers alone can be negative or misleading. This needs direct causal testing.
-
-### Prompt cells
-
-| Cell | Stance | Question instruction | Surface markers | Purpose |
-|---|---|---|---|---|
-| A | Intersubjective | No mandatory question | Natural stance effect |
-| B | Intersubjective | Mandatory turn-ending question | Stance + forced elicitation |
-| C | Transmission/behaviorist | Mandatory turn-ending question | Question without stance |
-| D | Surface empathy only | Acknowledgement / paraphrase markers | Surface without stance |
-| E | Generic strong tutor | Matched length and specificity | Prompt-density control |
-| F | Behaviorist/transmission | No question | Orthogonal family control |
-
-### Measures
-
-- tutor quality;
-- elicitation quality;
-- productive difficulty;
-- question quality, not just question count;
-- surface acknowledgement count;
-- learner response depth;
-- whether questions cede initiative or merely perform interactivity.
-
-### Decision logic
-
-| Pattern | Interpretation |
-|---|---|
-| A > C and D | Stance is load-bearing. |
-| B > A and C | Questions add value only when embedded in stance. |
-| C ~= A | Question behavior may be more causal than theory predicts. |
-| D underperforms | Surface empathy is not a substitute for pedagogical orientation. |
-
-### Manuscript payoff
-
-This turns the current mediation/correlation evidence into a causal mechanism test.
+| Human-human kappa >= 0.60 | Keep taxonomy with category caveats. |
+| Human-human kappa < 0.60 | Collapse categories or use coarser labels. |
+| Human-LLM much lower than LLM-LLM | Treat automated classifier as provisional only. |
+| Specific category F1 < 0.60 | Retire or merge category. |
 
 ---
 
@@ -256,67 +444,160 @@ This turns the current mediation/correlation evidence into a causal mechanism te
 
 Which claims survive when LLM judges, human judges, mechanical checkers, and simulated learners disagree?
 
-### Recommended evaluation stack
+### Evidence stack
 
 | Evidence type | Use | Limitation |
 |---|---|---|
-| Mechanical checker | Formal grounding, proof state, release legality | Only available in formal worlds |
-| LLM judges | Scalable quality comparisons | Biases, calibration drift, recursive evaluation |
-| Human expert judges | Pedagogical quality and process validity | Expensive, slower, lower N |
-| Human learners | Actual learning and transfer | Requires IRB/design overhead |
-| Simulated learners | Controlled probe of interaction | Authenticity limits |
+| Mechanical checker | Formal grounding, release legality, proof debt | Formal worlds only |
+| LLM judges | Scalable tutor-quality comparisons | Bias, calibration drift, recursive evaluation |
+| Human expert judges | Pedagogical quality and taxonomy validity | Cost, lower N |
+| Human learners | Learning, transfer, retention | Requires IRB/design overhead |
+| Simulated learners | Controlled stress probes | Authenticity limits |
 
 ### Immediate tasks
 
-1. Freeze a small “gold transcript” set of 50-100 tutor turns across conditions and quality bands.
-2. Get human expert ratings on the same rubric used by LLM judges.
-3. Estimate LLM-human agreement by dimension, not just overall.
-4. Use pairwise randomized order to detect position bias.
-5. Run length-normalized and verbosity-controlled scoring.
-6. Report absolute calibration separately from within-judge condition effects.
+1. Freeze a gold transcript set across conditions, worlds, and quality bands.
+2. Human-score the same transcripts with the v2.2 rubric and a coarser holistic rubric.
+3. Estimate LLM-human agreement by dimension.
+4. Test position bias using randomized pairwise order.
+5. Test verbosity sensitivity with length-normalized variants.
+6. Report within-judge effects separately from absolute calibration.
 
-### Deliverable
+### Updated emphasis
 
-`exports/evaluation-validity/judge-human-calibration.md`, with a short decision table specifying which paper claims can rely on LLM judges alone and which require human or mechanical validation.
+The paper's strongest formal claims do not depend on LLM judges because they are checker/detector based. The tutor-quality and process-taxonomy claims do depend on judges. Keep these evidentiary channels separate.
 
 ---
 
-## 8. P6: Simulated learner validity screen
+## 8. P6: Clean longitudinal pre-alignment study
 
 ### Research question
 
-Are the synthetic learners good enough to support mechanism testing, and where do they distort the tutor's behavior?
+Does recognition produce durable cross-session improvement through ego pre-alignment with superego principles?
+
+### Why add this
+
+A7 Phase 2 suggests recognition arcs can improve over repeated sessions while base arcs degrade. But the study was small and affected by bugs/restarts. It should be rerun cleanly before any strong longitudinal claim.
 
 ### Design
 
-Create a small human-transcript anchor set in one domain, then compare simulated learners to human learners on:
-
-- response length;
-- linguistic complexity;
-- confusion and error patterns;
-- emotional variability;
-- resistance/disengagement;
-- question asking;
-- consistency of misconception;
-- uptake and forgetting across turns.
-
-### Benchmark arms
-
-| Simulator | Purpose |
+| Feature | Recommendation |
 |---|---|
-| Current prompted learner | Existing baseline |
-| Prompted learner with profile noise | Tests variability and imperfection |
-| Retrieval-conditioned learner | Anchored to human transcript examples |
-| Fine-tuned / preference-optimized learner if feasible | Higher-fidelity simulator |
-| Human learner transcripts | Anchor |
+| Sessions | 8-12 ordered sessions per learner identity |
+| Conditions | Base vs recognition, with and without Writing Pad |
+| Learners | Simulated first, then human pilot if stable |
+| Models | At least two generation models |
+| Judges | At least two independent judges plus mechanical/text proxies |
+| Primary outcome | Per-session tutor-quality slope and delayed learner-performance proxy |
+| Secondary outcomes | Pad-message overlap, cross-session references, learner continuity, token cost |
 
-### Decision rule
+### Required fixes before rerun
 
-Synthetic learners remain acceptable for mechanism stress tests if they reproduce the *failure pressures* needed by the tutor, not if they perfectly imitate humans. For human-learning claims, they are insufficient regardless of fidelity.
+- Verify recognition orchestrator integration.
+- Verify Writing Pad consolidation under local timezone and UTC.
+- Freeze run-order handling.
+- Pre-register how failed/resumed sessions are handled.
+- Do not use moment-count as the primary recognition proxy.
+
+### Decision rules
+
+| Pattern | Interpretation |
+|---|---|
+| Recognition slope positive, base slope negative | Supports pre-alignment across sessions. |
+| Both positive | Longitudinal practice or memory helps independently of recognition. |
+| Recognition improves tutor but not learner | Keep tutor-production boundary. |
+| Human learners show retention/transfer gains | Begin cautious human-learning claim. |
 
 ---
 
-## 9. P7: Human learner pilot
+## 9. P7: Critic-source ladder
+
+### Research question
+
+Is the superego genuinely external error correction, or structured self-critique?
+
+### Design
+
+| Arm | Critic source | What it tests |
+|---|---|---|
+| No critic | Single-agent baseline | No correction |
+| Same-prompt self-critique | Ego reviews itself | Intrinsic self-correction |
+| Same-model separate superego | Current architecture | Separate-context critique |
+| Different-model critic | Independent model prior | Externality by model family |
+| Mechanical/domain oracle | Checker or answer key | Reliable external feedback |
+| Human/expert critic sample | Gold-standard critique | Human ceiling |
+| Random plausible critique | Critique-shaped friction | Placebo revision effort |
+
+### Outcomes
+
+- initial output quality;
+- final output quality;
+- critique validity;
+- revision magnitude;
+- harmful revision rate;
+- failure classes caught/missed;
+- cost per point of improvement.
+
+### Updated role in roadmap
+
+This remains useful, but it is now lower priority than dynamic guards because the guard work has produced clearer mechanism-level movement than the critic-source question.
+
+---
+
+## 10. P8: Charisma uptake branch
+
+### Research question
+
+Does id-director charisma produce learner uptake, or only judge-visible tutor performance?
+
+### Why this is separate
+
+Weberian charisma is conferred by the other. The current id-director corpus mostly measures tutor performance under scripted/unified learners and lacks learner interiority or a receptivity index. That means the charisma mechanism is only half-instrumented.
+
+### Required new instrument
+
+Build a learner-side receptivity/legitimacy-conferral rubric with dimensions such as:
+
+- uptake of tutor's invitation;
+- willingness to grant authority;
+- self-positioning in relation to the tutor's call;
+- resistance or deflation;
+- reflective transformation;
+- suspicion of performance/manipulation.
+
+### Study arms
+
+| Arm | Purpose |
+|---|---|
+| c101 baseline id-director | Substrate baseline |
+| c104 classifier + recognition | Best v2.2 cell |
+| c105 charisma-tuned | Best charisma cell |
+| c107 witness exemplars | Generalist cell |
+| fixed-prompt recognition tutor | Non-id comparison |
+| human-authored tutor sample | Human reference if available |
+
+### Scenario design
+
+Oversample the condition where c104's lift appeared:
+
+- morally ambiguous vulnerability disclosures;
+- sympathetic vulnerability disclosures;
+- skeptical pushback;
+- open invitation;
+- learner resistance to charisma.
+
+### Decision rules
+
+| Pattern | Interpretation |
+|---|---|
+| Tutor charisma rises but learner receptivity does not | Charisma is performed, not conferred. |
+| c105 wins tutor charisma but c104 wins learner uptake | Recognition moderates charismatic authority. |
+| c107 generalizes best | Exemplars supply useful register without overfitting. |
+| Human raters reject charismatic moves as manipulative | Add ethical constraint before further deployment. |
+
+---
+
+## 11. P9: Human learner pilot
 
 ### Research question
 
@@ -332,18 +613,19 @@ Use a domain where task state is inspectable but learning is real:
 - introductory programming debugging;
 - conceptual physics with misconception inventories.
 
-Logic/proof tutoring is the cleanest bridge because it connects the formal derivation apparatus to existing proof-tutor literature.
+Logic/proof tutoring remains the cleanest bridge because it connects the formal derivation apparatus to proof-tutor literature and mechanical checking.
 
-### Recommended arms
+### Arms
 
-| Arm | Description | Why include it |
+| Arm | Description | Mechanism |
 |---|---|---|
-| A | Standard single-agent LLM tutor | Baseline chatbot tutor |
-| B | Intersubjective prompt only | Calibration mechanism |
+| A | Standard single-agent LLM tutor | Baseline chatbot |
+| B | Intersubjective prompt only | Calibration |
 | C | Intersubjective prompt + superego | Calibration + error correction |
-| D | Intersubjective prompt + guard stack | Conduct governance |
-| E | Expert-authored ITS/scaffold if feasible | Non-LLM instructional benchmark |
-| F | Practice-only / reading control | Minimum instructional control |
+| D | Intersubjective prompt + hidden guard stack | Conduct governance |
+| E | Intersubjective prompt + certified visible guard, if available | Public-proxy governance |
+| F | Expert-authored scaffold / ITS if feasible | Non-LLM benchmark |
+| G | Practice-only or reading control | Minimum control |
 
 ### Measures
 
@@ -354,26 +636,27 @@ Logic/proof tutoring is the cleanest bridge because it connects the formal deriv
 - far transfer;
 - time on task;
 - hint dependence;
-- productive-struggle transcript markers;
-- learner affect and perceived autonomy;
-- whether students can explain the derivation, not just produce an answer.
+- productive-struggle markers;
+- learner affect and autonomy;
+- proof explanation quality, not only final correctness.
 
 ### Primary outcome
 
-Use learning gain and delayed transfer as primary outcomes. Treat satisfaction, engagement, and tutor quality as secondary.
+Learning gain and delayed transfer. Tutor quality, satisfaction, and engagement are secondary.
 
-### Stop/go criteria
+### Stop/go rules
 
-| Pilot result | Next action |
+| Result | Action |
 |---|---|
-| Tutor-quality gains but no learning gain | Reframe as tutor conduct, not learning; inspect over-helping and struggle preservation. |
-| Learning gain only in guard stack | Prioritize stateful conduct governance over prompt-only work. |
-| Prompt-only matches guard stack | Use cheaper calibration-first deployment; reserve guards for high-risk domains. |
-| High variance by learner prior knowledge | Add learner-stratified adaptation or mastery gating. |
+| Tutor-quality gain but no learning gain | Keep conduct-output framing; inspect over-helping. |
+| Learning gain only with guard stack | Prioritize stateful conduct governance. |
+| Prompt-only matches guard stack | Use cheaper calibration-first systems outside formal domains. |
+| Hidden guard beats visible guard | Visible proxies need certification before human deployment. |
+| High variance by prior knowledge | Add mastery gating or learner-stratified guards. |
 
 ---
 
-## 10. P8: Minimal reproducible testbed release
+## 12. P10: Minimal reproducible conduct testbed
 
 ### Goal
 
@@ -382,117 +665,155 @@ Make the apparatus publishable as a reusable benchmark rather than a one-off int
 ### Minimal package
 
 - one linear proof world;
-- one branching proof world;
-- release-calendar format;
-- checker script;
-- baseline transcripts;
-- guarded transcripts;
+- one forked AND-join proof world;
+- one distractor-heavy world if ready;
+- world schema;
+- guard schema;
+- hidden pacing guard;
+- visible projection guard;
+- proof-debt guard;
 - detector-split script;
-- scoring rubric;
-- claim-ledger example;
-- reproduction command for the lantern table;
-- documentation of formal-vs-human-learning limits.
+- non-leak audit script;
+- baseline and guarded transcripts;
+- claim-ledger examples;
+- reproduction commands for lantern and Marrick tables;
+- non-claims document.
 
-### Required documentation
+### External-facing framing
 
-1. **Quickstart:** reproduce a baseline vs guard detector split.
-2. **World schema:** how to author a new proof DAG.
-3. **Guard schema:** hidden proof-state, visible page-state, proof-debt repair.
-4. **Failure taxonomy:** definitions and examples.
-5. **Non-claims:** no human learning, no mind reading, no cross-world generality unless tested.
+Use a name like:
 
-### External-facing name
+- **LLM Tutor Conduct Testbed**
+- **Dramatic Derivation Harness**
+- **Pedagogical Guard Benchmark**
 
-Use a name like **LLM Tutor Conduct Testbed** or **Dramatic Derivation Harness**. Avoid names that imply solved adaptivity.
-
----
-
-## 11. Manuscript revision actions
-
-### Immediate edits
-
-1. Move classic ITS to the beginning of the related work.
-2. Translate “proof-debt guard” into model-state repair / common-ground repair / constraint repair language.
-3. Translate “pacing guard” into formalized scaffolding / feedback timing language.
-4. Rename or qualify “process tracing” as engineered trace analysis inspired by process tracing.
-5. Add simulated-learner validity literature and explicitly state that synthetic learners are controlled probes.
-6. Add proof-tutor and theorem-prover tutoring literature.
-7. Replace “recognition theory descendants” with “intersubjective / constructivist / dialogic pedagogical orientation” where genealogy is not essential.
-8. Keep Hegel as theoretical articulation, not empirical uniqueness.
-
-### Suggested revised contribution list
-
-The paper contributes:
-
-1. a mechanism-evaluation harness for LLM tutoring;
-2. evidence that intersubjective prompts primarily act through calibration;
-3. evidence that critic architecture provides overlapping, model-dependent error correction;
-4. a clean null for recognition-modulated adaptive responsiveness;
-5. a formal derivation testbed showing how pacing and repair guards move failure modes;
-6. an engineered trace and claim-ledger methodology for auditing LLM tutor mechanisms.
-
-### Claims to retire or soften
-
-| Current risk | Safer replacement |
-|---|---|
-| “Adaptive tutelage” as broad theory | “Adaptive tutelage as a guardable conduct-control problem” |
-| “The tutor recognizes the learner” | “The prompt instructs the tutor to respond to the learner as an autonomous contributor” |
-| “Visible pacing is enough” | “Visible pacing is enough in lantern, where page uptake tracks proof distance” |
-| “Proof-debt repair works” | “A stacked proof-debt repair arm converted one decay-starved failure” |
-| “Process tracing proves mechanism” | “Engineered trace analysis supplies within-case evidence for mechanism hypotheses” |
+Avoid names implying solved adaptivity or human-learning proof.
 
 ---
 
-## 12. Decision tree for the next paper version
+## 13. Dynamic guard generation: implementation phases
+
+### Phase 1: Static schema and replay
+
+- define WorldIR;
+- port lantern and Marrick into WorldIR;
+- implement replay over archived arms;
+- ensure detector-split reproducibility.
+
+### Phase 2: Hidden guard compiler
+
+- compile proof-criticality map;
+- compile release corridors;
+- compile branch/join constraints;
+- compile proof-debt triggers;
+- reproduce hand-written hidden guard results on lantern and Marrick.
+
+### Phase 3: Visible projection compiler
+
+- generate visible-feature candidates;
+- replay against hidden reference;
+- certify lantern-like geometries;
+- mark Marrick-like geometries as visible-proxy unavailable unless a branch-aware visible feature passes.
+
+### Phase 4: Runtime monitor
+
+- enforce hold/release/restore decisions;
+- log every guard decision;
+- expose only licensed tutor-visible view;
+- run import and prompt non-leak tests.
+
+### Phase 5: Audit suite
+
+- non-leak tests;
+- positive controls;
+- counterfactual replay;
+- hidden-vs-visible agreement;
+- false-release and false-restore stress tests;
+- mutation testing of world specs;
+- regression tests for rendering/provenance bugs.
+
+### Phase 6: Cross-world evaluation
+
+- run k-fans across world family;
+- use detector-split tables as primary outputs;
+- publish guard-support matrix.
+
+---
+
+## 14. Updated decision tree
 
 ```text
 Start
  |
- |-- Finish Marrick fan
+ |-- Tighten paper claims
  |     |
- |     |-- Visible matches hidden --> claim visible proxy has cross-world support, still bounded
- |     |-- Hidden beats visible --> claim lantern proxy boundary identified
- |     |-- Both fail --> redesign branching guard
+ |     |-- Runtime-enforcement literature added
+ |     |-- Passive-learner and Hegelian-genealogy risks softened
  |
- |-- Human-code superego taxonomy
+ |-- Build dynamic guard compiler
  |     |
- |     |-- Reliable --> keep mechanism trace claims
- |     |-- Unreliable --> collapse taxonomy and re-run process analysis
+ |     |-- Hidden compiler reproduces lantern/Marrick -> proceed
+ |     |-- Hidden compiler fails -> fix WorldIR/corridor/branch analyzer
  |
- |-- Run critic-source ladder
+ |-- Validate visible projection
  |     |
- |     |-- Oracle/different-model critic wins --> strengthen external-feedback account
- |     |-- Same-model superego equals self-critique --> reframe as structured self-critique
+ |     |-- Agrees with hidden on world -> certify visible guard for that geometry
+ |     |-- Disagrees catastrophically -> mark visible unavailable; use hidden/hybrid
  |
- |-- Run stance/surface ablation
+ |-- Run cross-world guard-isolation matrix
  |     |
- |     |-- Stance wins --> keep intersubjective-orientation theory
- |     |-- Questions alone win --> rewrite mechanism around elicitation behavior
+ |     |-- Failure classes move predictably -> strengthen mechanism claim
+ |     |-- Guards improve only aggregate rates -> revise taxonomy/instrument
+ |     |-- Placebo/random delay explains gains -> rethink pacing mechanism
+ |
+ |-- Human-validate taxonomy and judges
+ |     |
+ |     |-- Reliable -> keep process claims
+ |     |-- Unreliable -> collapse taxonomy and re-run analysis
  |
  |-- Human learner pilot
        |
-       |-- Learning gain + transfer --> cautiously extend to human learning
-       |-- Tutor quality only --> keep output-quality framing
+       |-- Learning and transfer improve -> cautious human-learning extension
+       |-- Tutor conduct improves only -> maintain output/conduct boundary
 ```
 
 ---
 
-## 13. Near-term checklist
+## 15. Near-term checklist
 
-1. Regenerate a current `references.bib` diff with the added ITS, proof-tutor, simulated-learner, and LLM-tutor references.
-2. Produce the Marrick detector-split report.
-3. Freeze a guard-isolation matrix preregistration before additional formal-world runs.
-4. Send the human validation packet to two coders.
-5. Build the critic-source ladder with at least no-critic / same-model superego / oracle critic.
-6. Build the stance-surface prompt family.
-7. Create a gold transcript set for judge calibration.
-8. Draft the human learner pilot protocol.
-9. Extract a minimal public testbed from the dramatic-derivation harness.
-10. Revise Section 2 and the conclusion to align novelty with the literature.
+1. Patch manuscript wording around passive-transfer rhetoric, Hegelian descent, and adaptive-responsiveness null.
+2. Add a runtime-enforcement paragraph to related work.
+3. Freeze the dynamic guard compiler design document.
+4. Implement WorldIR for lantern and Marrick.
+5. Compile hidden guards from WorldIR and reproduce existing hand-written results.
+6. Implement visible-proxy replay against hidden reference.
+7. Mark Marrick visible projection as failed/unavailable under unchanged page-only features.
+8. Design at least one branch-aware visible candidate and test it only as a candidate projection.
+9. Build non-leak audit generation into every GuardSpec.
+10. Register the cross-world guard-isolation matrix before new paid/backend runs.
+11. Send human taxonomy packet to coders.
+12. Create the gold transcript set for judge validation.
+13. Draft clean A7 longitudinal rerun protocol.
+14. Create charisma uptake rubric, but keep it separate from the main mechanism paper.
+15. Extract minimal conduct testbed package.
 
 ---
 
-## 14. Strongest next-stage claim if all P0-P4 succeed
+## 16. Strongest next-stage claim if P1-P5 succeed
 
-> We show that adaptive LLM tutoring can be decomposed into prompt-level calibration, critic-mediated error correction, and guard-level conduct control. Classic ITS supplies the underlying instructional commitments; our contribution is a reproducible mechanism harness that makes those commitments testable in open-ended LLM dialogue. Across formal proof worlds, guards do not merely improve aggregate success; they move specific failure classes. Human learning remains a separate validation target.
+> We show that adaptive LLM tutoring can be compiled into auditable conduct controls over formal task state. Classic ITS supplies the instructional principles; runtime-enforcement and shield-synthesis work supplies adjacent agent-governance vocabulary; our contribution is a pedagogical mechanism harness that compiles and audits release, repair, and pacing guards, then tests which failure classes they move. Visible transcript proxies can be certified where they faithfully project hidden task state, but Marrick shows they are not universal. Human learning remains a separate validation target.
+
+---
+
+## 17. External literature checked for this update
+
+- AgentSpec: Customizable Runtime Enforcement for Safe and Reliable LLM Agents. arXiv:2503.18666.
+- ShieldAgent: Shielding Agents via Verifiable Safety Policy Reasoning. arXiv:2503.22738.
+- AGrail: A Lifelong Agent Guardrail with Effective and Adaptive Safety Detection. ACL 2025.
+- Aegis: Synthesizing Efficient and Permissive Programmatic Runtime Shields for Neural Policies. arXiv:2410.05641.
+- ProbGuard: Probabilistic Runtime Monitoring for LLM Agent Safety. arXiv:2508.00500.
+- Microsoft Agent Governance Toolkit, 2026 runtime security governance for agents.
+- LeanTutor: Towards a Verified AI Mathematical Proof Tutor.
+- TutorGym: A Testbed for Evaluating AI Agents as Tutors and Students.
+- Bastani et al., Generative AI without Guardrails Can Harm Learning, PNAS 2025.
 
