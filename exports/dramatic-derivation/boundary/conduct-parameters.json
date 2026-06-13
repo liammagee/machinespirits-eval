@@ -968,6 +968,136 @@
       ]
     },
     {
+      "arm": "lantern-e3-real-r1",
+      "backend": "real",
+      "worldId": "world_002_lantern",
+      "worldLoaded": true,
+      "verdict": "disengagement",
+      "turnsPlayed": 24,
+      "firstForcedTurn": null,
+      "assertedGroundedTurn": null,
+      "releases": [
+        {
+          "premiseId": "m_key",
+          "via": "director",
+          "turn": 2,
+          "scheduledTurn": 2,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 2,
+          "lambda": 0
+        },
+        {
+          "premiseId": "p_bearing",
+          "via": "tutor",
+          "turn": 4,
+          "scheduledTurn": 4,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 4,
+          "lambda": 0
+        },
+        {
+          "premiseId": "m_post",
+          "via": "director",
+          "turn": 6,
+          "scheduledTurn": 6,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 6,
+          "lambda": 0
+        },
+        {
+          "premiseId": "m_shutter",
+          "via": "director",
+          "turn": 8,
+          "scheduledTurn": 8,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 8,
+          "lambda": 0
+        },
+        {
+          "premiseId": "p_chart",
+          "via": "tutor",
+          "turn": 9,
+          "scheduledTurn": 9,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 9,
+          "lambda": 0
+        },
+        {
+          "premiseId": "p_residue",
+          "via": "director",
+          "turn": 13,
+          "scheduledTurn": 13,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 13,
+          "lambda": 0
+        },
+        {
+          "premiseId": "p_key",
+          "via": "tutor",
+          "turn": 15,
+          "scheduledTurn": 17,
+          "offset": -2,
+          "reason": "Played two turns early because the learner has cleanly closed burning and is explicitly holding for the South Stack key before presence.",
+          "adoptTurn": 15,
+          "lambda": 0
+        },
+        {
+          "premiseId": "p_skiff",
+          "via": "director",
+          "turn": 20,
+          "scheduledTurn": 20,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 20,
+          "lambda": 0
+        }
+      ],
+      "tutorReleases": 3,
+      "tutorDeviations": 1,
+      "directorReleases": 5,
+      "directorOffNominal": 0,
+      "unscheduledReleases": 0,
+      "unadoptedReleases": 0,
+      "slips": [
+        {
+          "premiseId": "m_key",
+          "decayTurn": 17,
+          "mode": "mutate",
+          "repairTurn": 19,
+          "repairVia": "tutor",
+          "repairLatency": 2,
+          "retractTurn": 19,
+          "falseDwell": 2
+        },
+        {
+          "premiseId": "p_bearing",
+          "decayTurn": 17,
+          "mode": "vanish",
+          "repairTurn": null,
+          "repairVia": null,
+          "repairLatency": null,
+          "retractTurn": null,
+          "falseDwell": null
+        },
+        {
+          "premiseId": "m_post",
+          "decayTurn": 19,
+          "mode": "vanish",
+          "repairTurn": null,
+          "repairVia": null,
+          "repairLatency": null,
+          "retractTurn": null,
+          "falseDwell": null
+        }
+      ]
+    },
+    {
       "arm": "lantern-p1-dials-on",
       "backend": "real",
       "worldId": "world_002_lantern",
@@ -6790,6 +6920,276 @@
       ]
     },
     {
+      "arm": "lantern-e3-pacing-guard-mock-smoke",
+      "backend": "mock",
+      "worldId": "world_002_lantern",
+      "worldLoaded": true,
+      "verdict": "disengagement",
+      "turnsPlayed": 25,
+      "firstForcedTurn": null,
+      "assertedGroundedTurn": null,
+      "releases": [
+        {
+          "premiseId": "m_key",
+          "via": "director",
+          "turn": 2,
+          "scheduledTurn": 2,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 2,
+          "lambda": 0
+        },
+        {
+          "premiseId": "p_bearing",
+          "via": "tutor",
+          "turn": 4,
+          "scheduledTurn": 4,
+          "offset": 0,
+          "reason": "its scheduled turn has come",
+          "adoptTurn": 4,
+          "lambda": 0
+        },
+        {
+          "premiseId": "m_post",
+          "via": "director",
+          "turn": 6,
+          "scheduledTurn": 6,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 6,
+          "lambda": 0
+        },
+        {
+          "premiseId": "m_shutter",
+          "via": "director",
+          "turn": 8,
+          "scheduledTurn": 8,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 8,
+          "lambda": 0
+        },
+        {
+          "premiseId": "p_chart",
+          "via": "tutor",
+          "turn": 9,
+          "scheduledTurn": 9,
+          "offset": 0,
+          "reason": "its scheduled turn has come",
+          "adoptTurn": 9,
+          "lambda": 0
+        },
+        {
+          "premiseId": "p_residue",
+          "via": "director",
+          "turn": 13,
+          "scheduledTurn": 13,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 13,
+          "lambda": 0
+        },
+        {
+          "premiseId": "p_key",
+          "via": "tutor",
+          "turn": 17,
+          "scheduledTurn": 17,
+          "offset": 0,
+          "reason": "its scheduled turn has come",
+          "adoptTurn": 17,
+          "lambda": 0
+        },
+        {
+          "premiseId": "p_skiff",
+          "via": "director",
+          "turn": 20,
+          "scheduledTurn": 20,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 20,
+          "lambda": 0
+        }
+      ],
+      "tutorReleases": 3,
+      "tutorDeviations": 0,
+      "directorReleases": 5,
+      "directorOffNominal": 0,
+      "unscheduledReleases": 0,
+      "unadoptedReleases": 0,
+      "slips": [
+        {
+          "premiseId": "m_key",
+          "decayTurn": 3,
+          "mode": "vanish",
+          "repairTurn": 7,
+          "repairVia": "tutor",
+          "repairLatency": 4,
+          "retractTurn": null,
+          "falseDwell": null
+        },
+        {
+          "premiseId": "p_bearing",
+          "decayTurn": 5,
+          "mode": "vanish",
+          "repairTurn": null,
+          "repairVia": null,
+          "repairLatency": null,
+          "retractTurn": null,
+          "falseDwell": null
+        },
+        {
+          "premiseId": "m_key",
+          "decayTurn": 8,
+          "mode": "vanish",
+          "repairTurn": 10,
+          "repairVia": "tutor",
+          "repairLatency": 2,
+          "retractTurn": null,
+          "falseDwell": null
+        },
+        {
+          "premiseId": "m_post",
+          "decayTurn": 10,
+          "mode": "vanish",
+          "repairTurn": null,
+          "repairVia": null,
+          "repairLatency": null,
+          "retractTurn": null,
+          "falseDwell": null
+        }
+      ]
+    },
+    {
+      "arm": "lantern-e3-solvency-mock-smoke",
+      "backend": "mock",
+      "worldId": "world_002_lantern",
+      "worldLoaded": true,
+      "verdict": "disengagement",
+      "turnsPlayed": 25,
+      "firstForcedTurn": null,
+      "assertedGroundedTurn": null,
+      "releases": [
+        {
+          "premiseId": "m_key",
+          "via": "director",
+          "turn": 2,
+          "scheduledTurn": 2,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 2,
+          "lambda": 0
+        },
+        {
+          "premiseId": "p_bearing",
+          "via": "tutor",
+          "turn": 4,
+          "scheduledTurn": 4,
+          "offset": 0,
+          "reason": "its scheduled turn has come",
+          "adoptTurn": 4,
+          "lambda": 0
+        },
+        {
+          "premiseId": "m_post",
+          "via": "director",
+          "turn": 6,
+          "scheduledTurn": 6,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 6,
+          "lambda": 0
+        },
+        {
+          "premiseId": "m_shutter",
+          "via": "director",
+          "turn": 8,
+          "scheduledTurn": 8,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 8,
+          "lambda": 0
+        },
+        {
+          "premiseId": "p_chart",
+          "via": "tutor",
+          "turn": 9,
+          "scheduledTurn": 9,
+          "offset": 0,
+          "reason": "its scheduled turn has come",
+          "adoptTurn": 9,
+          "lambda": 0
+        },
+        {
+          "premiseId": "p_residue",
+          "via": "director",
+          "turn": 13,
+          "scheduledTurn": 13,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 13,
+          "lambda": 0
+        },
+        {
+          "premiseId": "p_key",
+          "via": "tutor",
+          "turn": 17,
+          "scheduledTurn": 17,
+          "offset": 0,
+          "reason": "its scheduled turn has come",
+          "adoptTurn": 17,
+          "lambda": 0
+        },
+        {
+          "premiseId": "p_skiff",
+          "via": "director",
+          "turn": 20,
+          "scheduledTurn": 20,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 20,
+          "lambda": 0
+        }
+      ],
+      "tutorReleases": 3,
+      "tutorDeviations": 0,
+      "directorReleases": 5,
+      "directorOffNominal": 0,
+      "unscheduledReleases": 0,
+      "unadoptedReleases": 0,
+      "slips": [
+        {
+          "premiseId": "m_key",
+          "decayTurn": 17,
+          "mode": "mutate",
+          "repairTurn": 20,
+          "repairVia": "tutor",
+          "repairLatency": 3,
+          "retractTurn": null,
+          "falseDwell": null
+        },
+        {
+          "premiseId": "p_bearing",
+          "decayTurn": 17,
+          "mode": "vanish",
+          "repairTurn": null,
+          "repairVia": null,
+          "repairLatency": null,
+          "retractTurn": null,
+          "falseDwell": null
+        },
+        {
+          "premiseId": "m_shutter",
+          "decayTurn": 20,
+          "mode": "vanish",
+          "repairTurn": null,
+          "repairVia": null,
+          "repairLatency": null,
+          "retractTurn": null,
+          "falseDwell": null
+        }
+      ]
+    },
+    {
       "arm": "lantern-p4-hygiene-mock-smoke",
       "backend": "mock",
       "worldId": "world_002_lantern",
@@ -9497,40 +9897,41 @@
   ],
   "aggregates": {
     "real": {
-      "arms": 35,
+      "arms": 36,
       "verdicts": {
         "grounded_anagnorisis": 21,
-        "disengagement": 8,
+        "disengagement": 9,
         "aporia": 6
       },
-      "releases": 265,
+      "releases": 273,
       "lambdaHistogram": {
-        "0": 263,
+        "0": 271,
         "1": 0,
         "2": 0,
         "3+": 1,
         "never": 1
       },
       "tutorOffsetHistogram": {
-        "0": 92,
+        "0": 94,
         "-1": 9,
-        "-2": 9
+        "-2": 10
       },
-      "tutorDeviationRate": 0.164,
+      "tutorDeviationRate": 0.168,
       "directorOffNominal": 0,
-      "directorReleases": 155,
-      "slips": 112,
+      "directorReleases": 160,
+      "slips": 115,
       "repairLatencyHistogram": {
         "0": 0,
         "1": 26,
-        "2": 19,
+        "2": 20,
         "3+": 27,
-        "never": 40
+        "never": 42
       },
       "repairVia": {
-        "tutor": 72
+        "tutor": 73
       },
       "falseDwells": [
+        2,
         1,
         4,
         1,
@@ -9540,7 +9941,7 @@
         10,
         1
       ],
-      "unrepaired": 40
+      "unrepaired": 42
     },
     "unknown": {
       "arms": 10,
@@ -9586,38 +9987,38 @@
       "unrepaired": 7
     },
     "mock": {
-      "arms": 29,
+      "arms": 31,
       "verdicts": {
-        "disengagement": 11,
+        "disengagement": 13,
         "grounded_anagnorisis": 18
       },
-      "releases": 266,
+      "releases": 282,
       "lambdaHistogram": {
-        "0": 266,
+        "0": 282,
         "1": 0,
         "2": 0,
         "3+": 0,
         "never": 0
       },
       "tutorOffsetHistogram": {
-        "0": 113
+        "0": 119
       },
       "tutorDeviationRate": 0,
       "directorOffNominal": 0,
-      "directorReleases": 153,
-      "slips": 31,
+      "directorReleases": 163,
+      "slips": 38,
       "repairLatencyHistogram": {
         "0": 0,
         "1": 0,
-        "2": 2,
-        "3+": 7,
-        "never": 22
+        "2": 3,
+        "3+": 9,
+        "never": 26
       },
       "repairVia": {
-        "tutor": 9
+        "tutor": 12
       },
       "falseDwells": [],
-      "unrepaired": 22
+      "unrepaired": 26
     }
   },
   "skipped": []

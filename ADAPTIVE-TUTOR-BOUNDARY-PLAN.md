@@ -613,3 +613,50 @@ Kill rule: if the guard constantly overrides ordinary tutor conduct, stop after 
 arm and return to E0/A3 license design rather than spending another paid arm. No
 re-roll in either direction; crash/truncation = delete the artifact dir, re-run the
 same label, and note it here.
+
+### E3 outcome — 2026-06-12
+
+Execution: the registered start-17 mock smoke ran first under
+`lantern-e3-solvency-mock-smoke`, then one paid arm ran as
+`lantern-e3-real-r1` with the p5 replay decay configuration and the single
+`--pacing-guard` delta. The paid artifact is committed under
+`exports/dramatic-derivation/loop/lantern-e3-real-r1/`. `npm run
+derivation:mine` was refreshed afterward.
+
+Verdict: disengagement at t24. This is not a repeat of p5's t12 pacing death.
+The arm survived past t12, reached the registered decay start at t17, and
+exercised the inherited decay-positive path live.
+
+Pacing endpoint: passed, but mostly by shaping rather than by override. The guard
+recorded audit payloads on all 24 release decisions, with 0 blocks, 0 forced-safe
+overrides, and 0 overridden tutor choices. The tutor releases were all
+tempo-solvent:
+
+| exhibit | turn | offset | guard safe set |
+|---|---:|---:|---|
+| `p_bearing` | 4 | 0 | {4, 5, 6} |
+| `p_chart` | 9 | 0 | {8, 9} |
+| `p_key` | 15 | -2 | {15, 16, 17, 18} |
+
+Survival endpoint: passed. `p_chart` did not repeat the fatal t7 pull; it landed
+on cue at t9 and D dropped to 3. `p_residue` landed at t13 and D dropped to 2.
+`p_key` landed at t15 and D dropped to 1. The old p5 cliff was gone.
+
+Decay inherited-secondary: exercised, and failed informatively. At t17 the staged
+pool fired: `m_key` mutated to the false South Stack/Brandt key form and
+`p_bearing` vanished. At t19 the tutor repaired `m_key` and struck the false
+form, but `m_post` also vanished. Final decay ledger: 3 slips, 1 repaired, 2
+unrepaired at end, degraded-turn integral 14, one D reversal. The learner asserted
+S from t20 onward, but because the board had lost `p_bearing`/`m_post`, the
+harness correctly classified the recognitions as overreach/lucky leap. At t24 the
+learner explicitly named the dropped bearing as the missing gap, but the run ended
+one premise short.
+
+Interpretation: E3 buys the BC-3 result: license can be made arithmetically safe
+without visibly suppressing ordinary conduct. It also closes BC-7's "window not
+reached" problem: the battle-test window was reached. The remaining failure is no
+longer release pacing; it is decay recovery and final proof-state hygiene. The next
+mechanism should not be another pacing edit. It should either (a) register a
+decay-repair instrument that forces restoration of dropped proof-critical premises
+before closure, or (b) return to E4's detector split and classify this arm as a
+decay-starved lucky-leap/disengagement case without changing the game.
