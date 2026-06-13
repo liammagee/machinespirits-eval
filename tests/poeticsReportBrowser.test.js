@@ -729,14 +729,19 @@ describe('dashboard front door', () => {
       const html = renderDashboardHtml({ ...corpusStats(db), replays: 0 });
       // hero + reflexive pedagogy note
       assert.match(html, /Tutoring, staged as drama\./);
-      assert.match(html, /applying our own lessons/);
-      // five-rung scaffolding ladder
+      assert.match(html, /why the site is built this way/);
+      // six-rung scaffolding ladder
       assert.match(html, /class="ladder"/);
-      for (let n = 1; n <= 5; n += 1) assert.match(html, new RegExp(`id="rung-${n}"`));
-      // the three acts
-      for (const act of ['Understand', 'Create', 'Recognize']) {
-        assert.match(html, new RegExp(`>${act}<`));
+      for (let n = 1; n <= 6; n += 1) assert.match(html, new RegExp(`id="rung-${n}"`));
+      // the four working surfaces (the rail's primary row) read as one matched set
+      assert.match(html, /The working surfaces/);
+      for (const name of ['scripts', 'proof runs', 'compose', 'launch']) {
+        assert.match(html, new RegExp(`class="surf__t">${name}<`));
       }
+      // each card states how that corpus is scored — AI critic vs fixed rule-checker
+      assert.match(html, /graded by an AI critic/);
+      assert.match(html, /checked by a fixed rule/);
+      assert.match(html, /Reference &amp; reading/);
       // discipline chips deep-link into the (now corpus-wide) filter
       assert.match(html, /\/browse\?discipline=chemistry/);
       // shared rail with the home tab marked active

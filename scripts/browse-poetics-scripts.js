@@ -1785,17 +1785,22 @@ function mdLectureToHtml(md) {
 // (reached by a study link), and must not leak researcher chrome to subjects.
 const NAV = [
   ['home', '/', 'home', 'Dashboard — overview, live stats &amp; guided first steps'],
-  ['browse', '/browse', 'browse', 'Browse generated scripts, full traces, critic scores &amp; labels'],
+  [
+    'browse',
+    '/browse',
+    'scripts',
+    'Generated drama scripts scored by LLM critics — full traces, scores &amp; human labels',
+  ],
   ['compose', '/compose/live', 'compose', 'Sit in on a tutoring scene turn by turn — or switch to batch-spec mode'],
-  ['runs', '/runs', 'runs', 'Launch runs — generative · replay · adversarial-CLI · online scoring'],
+  ['runs', '/runs', 'launch', 'Launch new runs — generative · replay · adversarial-CLI · online scoring'],
   ['ontology', '/ontology', 'ontology', 'The shared ontology — system, tutor &amp; learner lenses'],
   ['rubric', '/rubric', 'rubric', 'The poetics rubric — the 6 dramatic-form dimensions critics score against'],
   ['replays', '/replays', 'replays', 'Counterfactual replays diffed against their originals'],
   [
     'derivation',
     '/derivation',
-    'derivation',
-    'Dramatic-derivation staging loop — run transcripts, D-curves &amp; checker verdicts',
+    'proof runs',
+    'Tutoring runs where the tutor must lead the learner to a hidden answer by inference — a fixed rule-checker (not an AI judge, not a quality score) decides whether they got there: grounded / impasse / disengaged',
   ],
   [
     'summary',
@@ -1835,14 +1840,16 @@ const NAV = [
     'Pilot operator console — session monitoring, recruitment toggle &amp; run launching (admin token-gated)',
   ],
 ];
-// Shown flat, left-to-right: the everyday action surfaces.
-const NAV_PRIMARY = ['home', 'browse', 'compose', 'runs'];
+// Shown flat, left-to-right: the two corpus browsers (scripts = critic-scored
+// generation corpus at /browse; derivation = checker-scored staging loop) then
+// the two make-something actions (compose a spec, launch a run).
+const NAV_PRIMARY = ['home', 'browse', 'derivation', 'compose', 'runs'];
 // Folded into labelled dropdowns, in order: the reference surfaces, then the
 // dated/durable techne notes. A group whose member is the active page shows a
 // moss accent on its summary so the current location is still legible when closed.
 const NAV_GROUPS = [
   ['tools', ['tutor', 'adjudicate', 'pilot-admin']],
-  ['reference', ['ontology', 'rubric', 'replays', 'derivation']],
+  ['reference', ['ontology', 'rubric', 'replays']],
   ['notes', ['summary', 'story', 'repertoire', 'board']],
 ];
 
@@ -1856,7 +1863,7 @@ const NAV_GROUPS = [
 // one place that puts the ground on all of them. `extra` (e.g. /browse's live DB
 // beacon) sits to the LEFT of the nav links so the menu + theme-toggle cluster stays
 // identical on every page, beacon or not.
-function railHtml({ active = '', brand = 'machine spirits', sub = '', extra = '', bare = false } = {}) {
+function railHtml({ active = '', brand = 'machine spirits', sub = '', extra = '', hint = '', bare = false } = {}) {
   const byKey = Object.fromEntries(NAV.map((n) => [n[0], n]));
   const link = (key) => {
     const n = byKey[key];
@@ -1912,6 +1919,12 @@ function railHtml({ active = '', brand = 'machine spirits', sub = '', extra = ''
 .rail__pop{ position:absolute; top:calc(100% + 7px); right:0; min-width:190px; display:flex; flex-direction:column; gap:3px; padding:7px; background:color-mix(in srgb, var(--paper) 96%, transparent); border:1px solid var(--rule); border-radius:9px; box-shadow:0 10px 30px rgba(28,22,16,.18); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); z-index:40; }
 .rail__pop .rail__btn{ border-color:transparent; justify-content:flex-start; width:100%; }
 .rail__pop .rail__btn:hover{ border-color:var(--rule); background:var(--paper-3); }
+/* orientation band — a per-page "what this is / where its siblings are" note, rendered just under the rail */
+.navhint{ display:flex; flex-wrap:wrap; align-items:baseline; gap:.35em .9em; padding:.5em clamp(.8rem,2vw,1.2rem); border-bottom:1px solid var(--rule-soft); background:color-mix(in srgb, var(--paper) 70%, transparent); font-family:"JetBrains Mono","SFMono-Regular",Consolas,monospace; font-size:11px; letter-spacing:.03em; line-height:1.5; color:var(--ink-3); }
+.navhint b{ color:var(--ink-2); font-weight:600; }
+.navhint a{ color:var(--moss-deep); text-decoration:none; border-bottom:1px solid color-mix(in srgb, var(--moss) 42%, transparent); white-space:nowrap; }
+.navhint a:hover{ border-bottom-color:var(--moss); }
+.navhint .navhint__sep{ color:var(--ink-4); }
 ${
   bare
     ? ''
@@ -1950,7 +1963,8 @@ ${
     }
     <span class="rail__stamp" aria-hidden="true"><span class="rail__stamp-glyph">◎</span>MMXXVI</span>
   </div>
-</header>${
+</header>
+${hint ? `<div class="navhint" role="note">${hint}</div>` : ''}${
     bare
       ? ''
       : `
@@ -2195,6 +2209,35 @@ function derivationBackendChips(backend = {}) {
     chips.push(`all roles ${backend.provider}/${backend.model || '(cli default)'}`);
   }
   return chips;
+}
+
+// Compact backend cell for the runs index: group the roles by the model that
+// played them, so a typical run (three tutor-side roles on one model, learner
+// on another) reads as two lines instead of four near-identical ones. The
+// "(cli default)" suffix is dropped — it carries no signal in a dense table.
+function derivationBackendCell(backend = {}) {
+  const short = (provider, model) => (model && model !== '(cli default)' ? `${provider}/${model}` : provider);
+  let pairs;
+  if (backend.roles) {
+    pairs = Object.entries(backend.roles).map(([role, t]) => [role, short(t.provider, t.model)]);
+  } else if (backend.provider) {
+    return escapeHtml(short(backend.provider, backend.model));
+  } else {
+    return '—';
+  }
+  const byModel = new Map();
+  for (const [role, model] of pairs) {
+    if (!byModel.has(model)) byModel.set(model, []);
+    byModel.get(model).push(role);
+  }
+  return [...byModel.entries()]
+    .map(
+      ([model, roles]) =>
+        `<span class="bk"><span class="bk__m">${escapeHtml(model)}</span> <span class="bk__r">${escapeHtml(
+          roles.join(', '),
+        )}</span></span>`,
+    )
+    .join('');
 }
 
 const DERIVATION_SUCCESS_EVENTS = new Set(['forced', 'grounded_anagnorisis']);
@@ -2565,10 +2608,277 @@ svg.arc{display:block;width:100%;height:auto;margin:6px 0 2px;background:var(--p
 .arc__star{fill:var(--brick-d);font-size:16px;cursor:default}
 .slopecap{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);color:var(--ink-3);margin:4px 0 0}
 .notice-missing{color:var(--ink-3);font-style:italic}
+/* ── derivation index: scoreboard · toolbar · readability panel · win flags ── */
+.wrap--wide{max-width:1180px}
+.idx-scoreboard{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 14px}
+.idx-tally{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);border:1px solid var(--rule);border-radius:5px;padding:3px 10px;background:var(--paper-4);color:var(--ink-2)}
+.idx-tally b{color:var(--ink);font-size:var(--s-1)}
+.idx-tally--win{background:var(--ochre-soft);border-color:var(--ochre);color:var(--ochre-d)}
+.idx-tally--win b{color:var(--ochre-d)}
+.idx-tools{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 18px;padding:10px 12px;border:1px solid var(--rule-soft);border-radius:8px;background:var(--paper-4)}
+.idx-search{flex:1 1 220px;min-width:160px;font-family:"JetBrains Mono",monospace;font-size:var(--s-0);padding:6px 10px;border:1px solid var(--rule);border-radius:5px;background:var(--paper);color:var(--ink)}
+.idx-search:focus{outline:2px solid color-mix(in srgb,var(--ochre) 55%,transparent);outline-offset:1px;border-color:var(--ochre)}
+.idx-seg{display:inline-flex;border:1px solid var(--rule);border-radius:5px;overflow:hidden}
+.idx-seg button{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;letter-spacing:.05em;padding:5px 11px;border:0;border-right:1px solid var(--rule);background:var(--paper);color:var(--ink-3);cursor:pointer;transition:background .12s var(--ease),color .12s var(--ease)}
+.idx-seg button:last-child{border-right:0}
+.idx-seg button:hover{color:var(--ink)}
+.idx-seg button.is-on{background:var(--ochre-soft);color:var(--ochre-d)}
+.idx-check,.idx-sort{display:inline-flex;align-items:center;gap:6px;font-family:"JetBrains Mono",monospace;font-size:var(--s-0);color:var(--ink-3)}
+.idx-sort select{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);padding:5px 8px;border:1px solid var(--rule);border-radius:5px;background:var(--paper);color:var(--ink)}
+.idx-count{margin-left:auto;font-family:"JetBrains Mono",monospace;font-size:var(--s-0);color:var(--ink-3)}
+.idx-flatcount{margin:0 0 6px}
+.idx-empty{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);color:var(--ink-3);background:var(--paper-2);border:1px dashed var(--rule);border-radius:8px;padding:18px;text-align:center;margin:6px 0 24px}
+.idx-panel{background:var(--paper-2);border:1px solid var(--rule-soft);border-radius:8px;padding:2px 12px;margin:6px 0 24px;overflow-x:auto}
+/* runs table: fixed columns (colgroup-driven) + tokens that wrap inside cells */
+table.idx--runs{table-layout:fixed}
+table.idx--runs td{overflow-wrap:anywhere}
+table.idx--runs th,table.idx--runs td{padding-left:8px;padding-right:8px}
+/* headers stay whole-word (no mid-word breaks) and crisp/dark, not pale */
+table.idx--runs thead th{vertical-align:bottom;white-space:normal;overflow-wrap:normal;word-break:normal;font-size:0.68rem;letter-spacing:.03em;line-height:1.22;color:var(--ink-2);border-bottom:1px solid var(--rule)}
+table.idx--runs tbody tr.idx-row td{border-bottom:0;padding-bottom:4px}
+/* full-width summary caption row beneath each run */
+.idx-sum td{padding:2px 12px 12px 16px;border-bottom:1px solid var(--rule-soft)}
+.idx-sum .run-summary{display:block;margin:0;max-width:84ch;font-family:"Source Serif 4",Georgia,serif;font-size:var(--s-1);color:var(--ink-2);line-height:1.5}
+tr.idx-sum--win{box-shadow:inset 3px 0 0 var(--ochre);background:color-mix(in srgb,var(--ochre-soft) 32%,transparent)}
+tr.idx-sum--win.is-alt{background:color-mix(in srgb,var(--ochre-soft) 52%,transparent)}
+/* compressed backend cell: model + the roles that used it */
+.bk{display:block}
+.bk__m{color:var(--ink-2)}
+.bk__r{color:var(--ink-3)}
+table.idx tbody tr.idx-row{transition:background .12s var(--ease)}
+table.idx tbody tr.is-alt{background:color-mix(in srgb,var(--linen) 15%,transparent)}
+table.idx tbody tr.idx-row:hover{background:var(--paper-4)}
+tr.idx-row--win{box-shadow:inset 3px 0 0 var(--ochre);background:color-mix(in srgb,var(--ochre-soft) 32%,transparent)}
+tr.idx-row--win.is-alt{background:color-mix(in srgb,var(--ochre-soft) 52%,transparent)}
+tr.idx-row--win:hover{background:color-mix(in srgb,var(--ochre-soft) 62%,transparent)}
+.run-name{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);font-weight:600}
+.run-summary{display:block;margin-top:3px;font-family:"Source Serif 4",Georgia,serif;font-size:var(--s-0);color:var(--ink-3);line-height:1.42;max-width:48ch;white-space:normal}
+/* outcome badge: one distinct treatment per verdict, with a leading status dot */
+.vchip{display:inline-flex;align-items:center;gap:5px;font-family:"JetBrains Mono",monospace;font-size:var(--s-0);font-weight:600;border:1px solid var(--rule);border-radius:5px;padding:2px 9px 2px 7px;white-space:nowrap}
+.vchip::before{content:"";flex:0 0 auto;width:6px;height:6px;border-radius:50%;background:currentColor}
+.vchip--grounded{background:var(--ochre-soft);border-color:var(--ochre);color:var(--ochre-d)}
+.vchip--disengaged{background:color-mix(in srgb,var(--ink-3) 14%,var(--paper));border-color:var(--ink-4);color:var(--ink-2)}
+.vchip--impasse{background:var(--brick-soft);border-color:var(--brick);color:var(--brick-d)}
+.dvscore{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);color:var(--ink-2)}
+.dvscore--win{color:var(--ochre-d);font-weight:600}
+.dvscore__bar{display:inline-block;width:34px;height:6px;border-radius:3px;background:var(--paper-3);border:1px solid var(--rule-soft);vertical-align:middle;margin-left:6px;overflow:hidden}
+.dvscore__bar i{display:block;height:100%;background:var(--ochre)}
+.winflag{margin-left:5px}
+.when{white-space:nowrap;line-height:1.32}
+.when__t{color:var(--ink-3)}
+@media (max-width:760px){.idx-sum{display:none}}
 `;
 
+// The three verdicts the deterministic checker emits, in plain words. The win
+// is grounded_anagnorisis (the learner reached the secret and its proof closed);
+// the other two are the failure taxonomy.
+const DERIVATION_VERDICT_LABEL = {
+  grounded_anagnorisis: 'grounded',
+  disengagement: 'disengaged',
+  aporia: 'impasse',
+};
+// Each verdict gets its own badge treatment so the two failure modes
+// (disengaged vs impasse) no longer collapse into one undifferentiated red.
+const DERIVATION_VERDICT_CLASS = {
+  grounded_anagnorisis: 'vchip--grounded',
+  disengagement: 'vchip--disengaged',
+  aporia: 'vchip--impasse',
+};
+
+// One plain-language sentence per run, leading with the outcome — for readers
+// who don't carry the jargon. Deterministic facts only (no judge): the verdict,
+// how far the proof got (D counts the premises still missing; d0 is the full
+// set, so d0−dFinal is how many were established), and how the scheduled
+// evidence reveals landed.
+function derivationPlainSummary(d) {
+  const slope = d.learningSlope || {};
+  const d0 = typeof slope.d0 === 'number' ? slope.d0 : null;
+  const dFinal = typeof slope.dFinal === 'number' ? slope.dFinal : null;
+  const grounded = d0 !== null && dFinal !== null ? d0 - dFinal : null;
+  const steps = grounded !== null ? `${grounded} of ${d0} proof step${d0 === 1 ? '' : 's'} established` : null;
+  const adherence = d.releaseAdherence || {};
+  const devs = adherence.deviations?.length || 0;
+  const cues =
+    typeof adherence.onCue === 'number'
+      ? `${adherence.onCue} planned reveal${adherence.onCue === 1 ? '' : 's'} on cue${devs ? `, ${devs} off-schedule` : ''}`
+      : null;
+  const turn = d.turnsPlayed ?? '?';
+  let lead;
+  if (d.verdict === 'grounded_anagnorisis') {
+    lead = `The learner reached the hidden answer at turn ${d.assertedGroundedTurn ?? turn} and the proof closed`;
+  } else if (d.verdict === 'disengagement') {
+    lead = `The learner disengaged at turn ${turn}, before the proof closed`;
+  } else if (d.verdict === 'aporia') {
+    lead = `The dialogue reached an impasse at turn ${turn} with no way forward`;
+  } else {
+    lead = `Run ended at turn ${turn}`;
+  }
+  const tail = [steps, cues].filter(Boolean).join('; ');
+  return tail ? `${lead} — ${tail}.` : `${lead}.`;
+}
+
+// The deterministic "score": proof steps established (d0−dFinal) out of d0, with
+// a 🏁 + completion bar when the proof actually closed (dFinal 0 = a win). Not a
+// judge's rating — it reads straight off the D-curve. Returns the cell HTML plus
+// the integer value the client uses to sort by "most proof steps".
+function derivationScoreCell(d) {
+  const slope = d.learningSlope || {};
+  const d0 = typeof slope.d0 === 'number' ? slope.d0 : null;
+  const dFinal = typeof slope.dFinal === 'number' ? slope.dFinal : null;
+  if (d0 === null || dFinal === null || d0 <= 0) {
+    return { html: '<span class="dvscore">—</span>', value: -1 };
+  }
+  const grounded = d0 - dFinal;
+  const pct = Math.max(0, Math.min(100, Math.round((grounded / d0) * 100)));
+  const win = dFinal === 0;
+  const flag = win ? ' <span class="winflag" title="proof closed">🏁</span>' : '';
+  const html = `<span class="dvscore${win ? ' dvscore--win' : ''}" title="${grounded} of ${d0} proof steps established">${grounded}/${d0}${flag}<span class="dvscore__bar"><i style="width:${pct}%"></i></span></span>`;
+  return { html, value: grounded };
+}
+
+// When the run finished, from the diagnosis artifact's mtime (no wall-clock
+// stamp is written into the run). Compact two lines — "Jun 12, 2026" over the
+// HH:MM — with the full ISO timestamp on hover; value is the epoch ms the client
+// sorts on.
+const DERIVATION_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function derivationWhenCell(mtimeMs) {
+  if (!mtimeMs) return { html: '<span class="mono">—</span>', value: 0 };
+  const dt = new Date(mtimeMs);
+  const pad = (n) => String(n).padStart(2, '0');
+  const date = `${DERIVATION_MONTHS[dt.getMonth()]} ${dt.getDate()}, ${dt.getFullYear()}`;
+  const time = `${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+  const html = `<span class="when" title="${escapeHtml(dt.toISOString())}">${date}<br><span class="when__t">${time}</span></span>`;
+  return { html, value: mtimeMs };
+}
+
+// Client wiring for the index: live search, outcome filter, real-only toggle,
+// and sort — all in-page over the rows already rendered (no fetch). Each section
+// (experimental group) sorts and zebra-stripes independently; a group with no
+// matching rows hides itself, and the toolbar shows a live shown/grounded count.
+const DERIVATION_INDEX_CLIENT = `<script>
+(function () {
+  var root = document.querySelector('[data-derivation-index]');
+  if (!root) return;
+  var search = root.querySelector('.idx-search');
+  var seg = [].slice.call(root.querySelectorAll('.idx-seg button'));
+  var realChk = root.querySelector('.idx-real');
+  var sortSel = root.querySelector('.idx-sortsel');
+  var countEl = root.querySelector('[data-idx-count]');
+  var emptyEl = root.querySelector('[data-idx-empty]');
+  var sections = [].slice.call(root.querySelectorAll('.idx-group'));
+  var verdict = 'all';
+  var WIN = 'grounded_anagnorisis';
+  function num(v) { var n = parseFloat(v); return isNaN(n) ? 0 : n; }
+  function rowsOf(sec) { return [].slice.call(sec.querySelectorAll('tr.idx-row')); }
+  function matches(tr) {
+    var q = (search && search.value || '').trim().toLowerCase();
+    if (q && (tr.dataset.label || '').indexOf(q) < 0) return false;
+    if (verdict !== 'all' && tr.dataset.verdict !== verdict) return false;
+    if (realChk && realChk.checked && tr.dataset.mode !== 'real') return false;
+    return true;
+  }
+  function compare(key, a, b) {
+    var ord = num(a.dataset.ord) - num(b.dataset.ord);
+    if (key === 'wins') {
+      var aw = a.dataset.verdict === WIN ? 0 : 1;
+      var bw = b.dataset.verdict === WIN ? 0 : 1;
+      return (aw - bw) || ord;
+    }
+    if (key === 'score') return (num(b.dataset.score) - num(a.dataset.score)) || ord;
+    if (key === 'turns') return (num(a.dataset.turns) - num(b.dataset.turns)) || ord;
+    if (key === 'cost') return (num(b.dataset.cost) - num(a.dataset.cost)) || ord;
+    if (key === 'label') {
+      var an = a.dataset.name || '', bn = b.dataset.name || '';
+      return an < bn ? -1 : an > bn ? 1 : 0;
+    }
+    return ord;
+  }
+  // Order the GROUP sections for the current key, using each section's best
+  // visible run — so the whole page reorders, not just rows within a group.
+  // (Without this, sorting only shuffles rows inside each of the ~20 condition
+  // groups and the page looks unchanged.) Ties fall back to recency (min ord).
+  function compareSection(key, a, b) {
+    if (key === 'wins') return (b.wins - a.wins) || (a.ord - b.ord);
+    if (key === 'score') return (b.score - a.score) || (a.ord - b.ord);
+    if (key === 'turns') return (a.turns - b.turns) || (a.ord - b.ord);
+    if (key === 'cost') return (b.cost - a.cost) || (a.ord - b.ord);
+    if (key === 'label') return a.group < b.group ? -1 : a.group > b.group ? 1 : 0;
+    return a.ord - b.ord;
+  }
+  // Each run renders as two rows: the data row (.idx-row) and a full-width
+  // summary caption row (.idx-sum) right after it. Stash the caption on its
+  // data row so sort/filter/striping move and hide them together as one unit.
+  sections.forEach(function (sec) {
+    rowsOf(sec).forEach(function (tr) {
+      var nx = tr.nextElementSibling;
+      tr.sumRow = nx && nx.classList && nx.classList.contains('idx-sum') ? nx : null;
+    });
+  });
+  function apply() {
+    var key = sortSel ? sortSel.value : 'recent';
+    var shown = 0, wins = 0;
+    var stats = sections.map(function (sec) {
+      var tbody = sec.querySelector('tbody');
+      var rows = rowsOf(sec);
+      rows.sort(function (a, b) { return compare(key, a, b); });
+      rows.forEach(function (tr) { tbody.appendChild(tr); if (tr.sumRow) tbody.appendChild(tr.sumRow); });
+      var visible = 0, secWins = 0, alt = false;
+      var agg = { ord: Infinity, wins: 0, score: -1, turns: Infinity, cost: -1, group: sec.getAttribute('data-group') || '' };
+      rows.forEach(function (tr) {
+        var ok = matches(tr);
+        tr.hidden = !ok;
+        tr.classList.remove('is-alt');
+        if (tr.sumRow) { tr.sumRow.hidden = !ok; tr.sumRow.classList.remove('is-alt'); }
+        if (!ok) return;
+        visible += 1; shown += 1;
+        if (alt) { tr.classList.add('is-alt'); if (tr.sumRow) tr.sumRow.classList.add('is-alt'); }
+        alt = !alt;
+        agg.ord = Math.min(agg.ord, num(tr.dataset.ord));
+        agg.score = Math.max(agg.score, num(tr.dataset.score));
+        agg.turns = Math.min(agg.turns, num(tr.dataset.turns));
+        agg.cost = Math.max(agg.cost, num(tr.dataset.cost));
+        if (tr.dataset.verdict === WIN) { wins += 1; secWins += 1; agg.wins += 1; }
+      });
+      sec.hidden = visible === 0;
+      var counter = sec.querySelector('[data-sec-count]');
+      if (counter) counter.textContent = visible + (visible === 1 ? ' run' : ' runs') + (secWins ? ' \\u00b7 ' + secWins + ' grounded' : '');
+      return agg;
+    });
+    if (sections.length > 1 && sections[0].parentNode) {
+      var parent = sections[0].parentNode;
+      stats
+        .map(function (agg, i) { return { agg: agg, sec: sections[i] }; })
+        .sort(function (a, b) { return compareSection(key, a.agg, b.agg); })
+        .forEach(function (s) { parent.appendChild(s.sec); });
+    }
+    if (emptyEl) emptyEl.hidden = shown !== 0;
+    if (countEl) countEl.textContent = shown + ' shown \\u00b7 ' + wins + ' grounded';
+  }
+  if (search) search.addEventListener('input', apply);
+  if (realChk) realChk.addEventListener('change', apply);
+  if (sortSel) sortSel.addEventListener('change', apply);
+  seg.forEach(function (b) {
+    b.addEventListener('click', function () {
+      verdict = b.dataset.verdict;
+      seg.forEach(function (x) {
+        var on = x === b;
+        x.classList.toggle('is-on', on);
+        x.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+      apply();
+    });
+  });
+  apply();
+})();
+</script>`;
+
 function renderDerivationIndexHtml(runs) {
-  const rowHtml = ({ label, diagnosis: d, hasNotice }) => {
+  // Stable "most recent" ordering: the list arrives mtime-sorted, so the index
+  // here is what the client sorts back to when it resets to recency.
+  runs.forEach((run, i) => {
+    run.ord = i;
+  });
+  const rowHtml = ({ label, diagnosis: d, hasNotice, ord, mtimeMs }) => {
     const events = Object.entries(d.eventsByType || {})
       .map(([k, v]) => {
         const txt = `${escapeHtml(k)}×${v}`;
@@ -2576,6 +2886,11 @@ function renderDerivationIndexHtml(runs) {
       })
       .join(', ');
     const verdictOk = d.verdict === 'grounded_anagnorisis';
+    const verdictLabel = DERIVATION_VERDICT_LABEL[d.verdict] || d.verdict || '?';
+    const verdictClass = DERIVATION_VERDICT_CLASS[d.verdict] || 'vchip--disengaged';
+    const score = derivationScoreCell(d);
+    const when = derivationWhenCell(mtimeMs);
+    const summary = derivationPlainSummary(d);
     const adherence = d.releaseAdherence || {};
     const sg = d.tutorFigures?.superego;
     const staging = [
@@ -2592,24 +2907,40 @@ function renderDerivationIndexHtml(runs) {
         ? ` <span title="counsel folded in from ${escapeHtml(d.criticFeedback.source)}" style="color:var(--moss-deep)">⟲</span>`
         : '',
     ].join('');
-    return `<tr>
-<td><a href="/derivation/${encodeURIComponent(label)}">${escapeHtml(label)}</a>${marks}</td>
-<td><span class="chip ${verdictOk ? 'chip--ok' : 'chip--bad'}">${escapeHtml(d.verdict || '?')}</span></td>
+    // data-* attributes drive client-side search / filter / sort.
+    const haystack = escapeHtml(`${label} ${summary}`.toLowerCase());
+    return `<tr class="idx-row${verdictOk ? ' idx-row--win' : ''}" data-ord="${ord}" data-name="${escapeHtml(
+      label.toLowerCase(),
+    )}" data-label="${haystack}" data-verdict="${escapeHtml(d.verdict || '?')}" data-mode="${escapeHtml(
+      d.backend?.mode || '?',
+    )}" data-score="${score.value}" data-turns="${d.turnsPlayed ?? 0}" data-cost="${d.usage?.costUSD ?? 0}" data-mtime="${when.value}">
+<td><a class="run-name" href="/derivation/${encodeURIComponent(label)}">${escapeHtml(label)}</a>${marks}</td>
+<td><span class="vchip ${verdictClass}">${escapeHtml(verdictLabel)}</span></td>
+<td>${score.html}</td>
 <td class="mono">${d.firstForcedTurn ?? '—'} → ${d.assertedGroundedTurn ?? '—'}</td>
 <td class="mono">${d.turnsPlayed ?? '?'}/${d.turnCap ?? '?'}</td>
 <td class="mono">${events || '—'}</td>
 <td class="mono">${adherence.onCue ?? '—'} on cue${adherence.deviations?.length ? `, <span style="color:var(--brick-d)">${adherence.deviations.length} dev</span>` : ''}</td>
 <td class="mono">${staging}</td>
-<td class="mono">${derivationBackendChips(d.backend).slice(1).map(escapeHtml).join('<br>') || '—'}</td>
+<td class="mono">${derivationBackendCell(d.backend)}</td>
 <td class="mono">${d.elapsedMs ? `${(d.elapsedMs / 1000).toFixed(0)}s` : '—'} · $${(d.usage?.costUSD ?? 0).toFixed(2)}</td>
-</tr>`;
+<td class="mono">${when.html}</td>
+</tr>
+<tr class="idx-sum${verdictOk ? ' idx-sum--win' : ''}"><td colspan="11"><span class="run-summary">${escapeHtml(summary)}</span></td></tr>`;
   };
   const tableFor = (rs) =>
-    `<table class="idx"><thead><tr><th>run</th><th>verdict</th><th>forced → asserted</th><th>turns</th><th>events</th><th>releases</th><th>dramaturgy</th><th>backend</th><th>wall · cost</th></tr></thead><tbody>${rs.map(rowHtml).join('\n')}</tbody></table>`;
+    `<div class="idx-panel"><table class="idx idx--runs"><colgroup><col style="width:10%"><col style="width:12%"><col style="width:9%"><col style="width:7%"><col style="width:6%"><col style="width:11%"><col style="width:7%"><col style="width:9%"><col style="width:11%"><col style="width:7%"><col style="width:11%"></colgroup><thead><tr><th>run</th><th>outcome</th><th>proof</th><th>forced → asserted</th><th>turns</th><th>events</th><th>releases</th><th>dramaturgy</th><th>backend</th><th>wall · cost</th><th>when</th></tr></thead><tbody>${rs
+      .map(rowHtml)
+      .join('\n')}</tbody></table></div>`;
+  const winCount = (rs) => rs.filter((r) => r.diagnosis.verdict === 'grounded_anagnorisis').length;
+  const countText = (rs) => {
+    const w = winCount(rs);
+    return `${rs.length} run${rs.length === 1 ? '' : 's'}${w ? ` · ${w} grounded` : ''}`;
+  };
   // Experimental-condition grouping (diagnosis.group, set by --group or the
   // backfill script): one section per group, ordered by each group's most
-  // recent run (the list arrives mtime-sorted). All-ungrouped keeps the flat
-  // single table.
+  // recent run (the list arrives mtime-sorted). All-ungrouped keeps a single
+  // flat section. Each section is its own client-sortable unit.
   const grouped = new Map();
   for (const run of runs) {
     const key = run.diagnosis.group || '(ungrouped)';
@@ -2620,21 +2951,77 @@ function renderDerivationIndexHtml(runs) {
   const body = !runs.length
     ? '<p>No runs found. Run <span class="mono">npm run derivation:loop</span> first.</p>'
     : flat
-      ? tableFor(runs)
+      ? `<section class="idx-group" data-group="(all)"><p class="mono idx-flatcount" style="color:var(--ink-3)" data-sec-count>${countText(
+          runs,
+        )}</p>${tableFor(runs)}</section>`
       : [...grouped.entries()]
           .map(
             ([g, rs]) =>
-              `<h2 class="sect">${escapeHtml(g)} <span class="mono" style="color:var(--ink-3);font-weight:normal">(${rs.length} run${rs.length === 1 ? '' : 's'})</span></h2>\n${tableFor(rs)}`,
+              `<section class="idx-group" data-group="${escapeHtml(g)}"><h2 class="sect">${escapeHtml(
+                g,
+              )} <span class="mono" style="color:var(--ink-3);font-weight:normal" data-sec-count>${countText(
+                rs,
+              )}</span></h2>${tableFor(rs)}</section>`,
           )
           .join('\n');
+  // Top-line scoreboard — wins vs the two failure modes, across every run on
+  // disk (not just what the filters currently show; the client updates a live
+  // "shown" tally in the toolbar instead).
+  const tally = { grounded_anagnorisis: 0, disengagement: 0, aporia: 0, other: 0 };
+  for (const run of runs) {
+    const v = run.diagnosis.verdict;
+    if (v in tally) tally[v] += 1;
+    else tally.other += 1;
+  }
+  const scoreboard = runs.length
+    ? `<div class="idx-scoreboard">
+<span class="idx-tally idx-tally--win"><b>${tally.grounded_anagnorisis}</b> grounded</span>
+<span class="idx-tally"><b>${tally.disengagement}</b> disengaged</span>
+<span class="idx-tally"><b>${tally.aporia}</b> impasse</span>
+${tally.other ? `<span class="idx-tally"><b>${tally.other}</b> other</span>` : ''}
+<span class="idx-tally"><b>${runs.length}</b> runs total</span>
+</div>`
+    : '';
+  const toolbar = runs.length
+    ? `<div class="idx-tools" role="search">
+<input type="search" class="idx-search" placeholder="search runs by name or summary…" aria-label="Search runs by name or summary">
+<div class="idx-seg" role="group" aria-label="Filter by outcome">
+<button type="button" data-verdict="all" class="is-on" aria-pressed="true">all</button>
+<button type="button" data-verdict="grounded_anagnorisis" aria-pressed="false">wins</button>
+<button type="button" data-verdict="disengagement" aria-pressed="false">disengaged</button>
+<button type="button" data-verdict="aporia" aria-pressed="false">impasse</button>
+</div>
+<label class="idx-check"><input type="checkbox" class="idx-real"> real only</label>
+<label class="idx-sort">sort
+<select class="idx-sortsel" aria-label="Sort runs">
+<option value="recent">most recent</option>
+<option value="wins">wins first</option>
+<option value="score">most proof steps</option>
+<option value="turns">fewest turns</option>
+<option value="cost">highest cost</option>
+<option value="label">name A–Z</option>
+</select>
+</label>
+<span class="idx-count" data-idx-count></span>
+</div>`
+    : '';
   return `${pageHead({ title: 'Derivation runs · machine spirits', css: DERIVATION_CSS })}
 <body>
-${railHtml({ active: 'derivation', sub: 'dramatic-derivation staging loop — checker-verdict transcripts, no judge anywhere' })}
-<main class="wrap">
-<h1>Dramatic derivation — staging-loop runs</h1>
-<p class="lede">One row per attended iteration of <span class="mono">npm run derivation:loop</span>, grouped by experimental condition (<span class="mono">--group</span>). The verdict is the deterministic checker's (forced grounded anagnorisis vs the failure taxonomy) — no LLM judge. Artifacts live under <span class="mono">exports/dramatic-derivation/loop/</span>.</p>
+${railHtml({
+  active: 'derivation',
+  sub: 'proof runs — a fixed rule-checker decides each outcome, no AI judge anywhere',
+  hint: '<span><b>proof runs</b> — a fixed rule-checker (not an AI judge, not a quality score) decides whether the learner reached the hidden answer</span><span class="navhint__sep">·</span><span>for generated drama graded by AI critics, see <a href="/browse">scripts</a></span>',
+})}
+<main class="wrap wrap--wide" data-derivation-index>
+<h1>Proof runs — did the learner reach the hidden answer?</h1>
+<p class="lede">Each row is one tutoring run. The tutor has to lead the learner to a hidden conclusion purely by inference, and a fixed rule-checker — not an AI judge — decides the outcome: a run is <strong>grounded</strong> when the learner reaches the hidden conclusion and its proof closes; otherwise it ends in an <strong>impasse</strong> or the learner <strong>disengages</strong>. Runs are grouped by experimental condition (the <span class="mono">--group</span> flag); artifacts live under <span class="mono">exports/dramatic-derivation/loop/</span>.</p>
+${scoreboard}
+${toolbar}
+${runs.length ? '<p class="idx-empty" data-idx-empty hidden>No runs match your search or filters.</p>' : ''}
+${runs.length ? '<details class="idx-legend"><summary class="mono" style="cursor:pointer;color:var(--ink-3);font-size:12px">what the columns mean</summary><p class="mono" style="color:var(--ink-3);font-size:11px;line-height:1.6;margin:.4em 0 .8em">proof = how many of the required reasoning steps the learner established · forced → asserted = the turn the hidden fact had to be handed to the learner vs the turn the learner stated it themselves · events = per-turn flags from the rule-checker (plot move, repair, decay, act end…) · releases = planned fact-reveals that landed on cue vs off-schedule (dev) · dramaturgy = director-declared scene moves</p></details>' : ''}
 ${body}
 </main>
+${DERIVATION_INDEX_CLIENT}
 </body></html>`;
 }
 
@@ -3171,31 +3558,38 @@ function renderDashboardHtml(stats = {}) {
       'Read a finished drama',
       'Open the browser and read one generated script end to end — a tutoring dialogue staged as a short play, turn by turn.',
       '/browse',
-      'browse',
+      'scripts',
     ],
     [
       2,
+      'See the other corpus — proof runs',
+      'Open the proof runs: the same kind of tutoring dialogue, but here the tutor must lead the learner to a hidden answer by inference, and a fixed rule-checker — not an AI critic — decides whether they truly got there.',
+      '/derivation',
+      'proof runs',
+    ],
+    [
+      3,
       'Learn the shared vocabulary',
       'Open the ontology to see the terms the whole system reasons in — moves, agencies, recognition — through system, tutor &amp; learner lenses.',
       '/ontology',
       'ontology',
     ],
     [
-      3,
+      4,
       'Compose your own spec',
       'Assemble a drama-machine spec in the composer; it validates live against the ontology as you build the turn plan.',
       '/compose',
       'compose',
     ],
     [
-      4,
+      5,
       'Stage a run',
       'Launch a generation from the runs console — free/mock by default, with every cost class shown before you ever commit a paid call.',
       '/runs',
-      'runs',
+      'launch',
     ],
     [
-      5,
+      6,
       'Read a recognition',
       'Open a counterfactual replay diffed against its original — where a single changed move reshapes the drama.',
       '/replays',
@@ -3214,99 +3608,90 @@ function renderDashboardHtml(stats = {}) {
       </div>`,
   ).join('');
 
-  const ACTS = [
+  // The four working surfaces — the rail's primary row, minus home. Two corpora
+  // of finished drama that differ only in HOW they're scored (LLM critics vs a
+  // deterministic checker), and the two tools that make more. Grouping them here,
+  // matched and adjacent, is the dashboard mirror of the rail: the surfaces a
+  // visitor is most likely to confuse (scripts vs derivation vs launch) now read
+  // as one set, with the scoring distinction — AI critic vs fixed rule-checker —
+  // stated in each card's tag.
+  const SURFACES = [
     [
-      'act--moss',
-      'Understand',
-      [
-        [
-          'Browse scripts',
-          'Every generated drama with its full trace, critic scores &amp; human labels — filter by run, discipline or free text.',
-          '/browse',
-          'open browser',
-        ],
-        [
-          'Ontology atlas',
-          'The shared TBox the system reasons in, projected into system, tutor &amp; learner lenses with the raw rules per module.',
-          '/ontology',
-          'open atlas',
-        ],
-      ],
+      'surf--corpus',
+      'graded by an AI critic',
+      'scripts',
+      'Tutoring dialogues staged as short plays. An AI critic grades each one on dramatic form (was a reversal of understanding earned?). Filter by run, discipline or free text.',
+      '/browse',
     ],
     [
-      'act--ochre',
-      'Create',
-      [
-        [
-          'Drama composer',
-          'Assemble an Aristotelian spec — mythos, ethos, turn plan — validated live against the poetics ontology as you go.',
-          '/compose',
-          'open composer',
-        ],
-        [
-          'Runs console',
-          'Launch generative · replay · adversarial-CLI · online-scoring runs, with cost classes shown and a dry-run default.',
-          '/runs',
-          'open console',
-        ],
-      ],
+      'surf--corpus',
+      'checked by a fixed rule',
+      'proof runs',
+      'Tutoring runs where the tutor must lead the learner to a hidden answer by inference. A fixed rule-checker — not an AI judge, not a quality score — decides whether the learner genuinely got there. (The project calls these derivation runs.)',
+      '/derivation',
     ],
     [
-      'act--indigo',
-      'Recognize',
-      [
-        [
-          'Replays',
-          'Counterfactual revisions diffed against their originals — see where one changed move reshapes the recognition.',
-          '/replays',
-          'open replays',
-        ],
-        [
-          'Derivation runs',
-          'The staging loop where recognition must be earned by inference: D(t) descent curves, director-declared movements, release adherence — every verdict computed by the checker, no judge anywhere.',
-          '/derivation',
-          'open the runs',
-        ],
-        [
-          'Summary',
-          'The synthesis note tracing the whole dramatic-recognition arc, from the paper through to this scriptorium.',
-          '/summary',
-          'read the summary',
-        ],
-        [
-          'Adaptation — story so far',
-          'A dated lab-notebook narrative of every path tried toward making the tutor adapt — what works, what is a null, and what is still live. Provisional by design.',
-          '/story',
-          'read the story so far',
-        ],
-        [
-          'Three instruments — one repertoire',
-          'The ontology memory model, the small-rhetoric scorers &amp; the dramatic-form rubric — what each measured by grain, and how to exploit the few wins into controlled adaptive mechanisms. With a gallery of failed &amp; minimally-succeeded adaptation.',
-          '/repertoire',
-          'read the analysis',
-        ],
-        [
-          'The development board',
-          'A read-only rendering of TODO.md: every tracked item as a filterable status × theme grid. The 8 open items in detail, the 40 closed &amp; ruled-out items archived. Originates no claims — the source stays in TODO.md.',
-          '/board',
-          'open the board',
-        ],
-      ],
+      'surf--make',
+      'make · a spec',
+      'compose',
+      'Assemble a drama-machine spec — mythos, ethos, turn plan — validated live against the poetics ontology as you build.',
+      '/compose',
+    ],
+    [
+      'surf--make',
+      'make · a run',
+      'launch',
+      'Spawn runs — generative · replay · adversarial-CLI · online-scoring. Free/mock by default; cost shown before any paid call.',
+      '/runs',
     ],
   ];
-  const actsHtml = ACTS.map(
-    ([cls, name, cards]) => `
-      <section class="act ${cls}">
-        <h3 class="act__h">${name}</h3>
-        <div class="act__cards">
-          ${cards
-            .map(
-              ([t, d, href, cta]) =>
-                `<a class="card" href="${href}"><div class="card__t">${t}</div><div class="card__d">${d}</div><div class="card__cta">${cta} →</div></a>`,
-            )
-            .join('')}
-        </div>
-      </section>`,
+  const surfacesHtml = SURFACES.map(
+    ([cls, kind, name, desc, href]) => `
+      <a class="surf ${cls}" href="${href}">
+        <div class="surf__k">${kind}</div>
+        <div class="surf__t">${name}</div>
+        <div class="surf__d">${desc}</div>
+        <div class="surf__go">open →</div>
+      </a>`,
+  ).join('');
+
+  // Everything that isn't a working surface: reference material and the project's
+  // own writing. Lighter weight than the surfaces above — read at leisure.
+  const REFS = [
+    [
+      'Ontology atlas',
+      'The shared TBox the system reasons in, projected into system, tutor &amp; learner lenses with the raw rules per module.',
+      '/ontology',
+    ],
+    [
+      'Replays',
+      'Counterfactual revisions diffed against their originals — where one changed move reshapes the recognition.',
+      '/replays',
+    ],
+    [
+      'Summary',
+      'The synthesis note tracing the whole dramatic-recognition arc, from the paper through to this scriptorium.',
+      '/summary',
+    ],
+    [
+      'Adaptation — story so far',
+      'A dated lab-notebook narrative of every path tried toward making the tutor adapt: what works, what is a null, what is still live. Provisional by design.',
+      '/story',
+    ],
+    [
+      'Three instruments — one repertoire',
+      'The ontology memory model, the small-rhetoric scorers &amp; the dramatic-form rubric — what each measured by grain, and how the few wins might become adaptive mechanisms.',
+      '/repertoire',
+    ],
+    [
+      'The development board',
+      'A read-only rendering of TODO.md: every tracked item as a filterable status × theme grid. Originates no claims — the source stays in TODO.md.',
+      '/board',
+    ],
+  ];
+  const refsHtml = REFS.map(
+    ([t, d, href]) =>
+      `<a class="card" href="${href}"><div class="card__t">${t}</div><div class="card__d">${d}</div><div class="card__cta">open →</div></a>`,
   ).join('');
 
   return `${pageHead({
@@ -3363,14 +3748,22 @@ h2.section{ font:600 13px/1 ui-monospace,monospace; text-transform:uppercase; le
 .rung__desc{ color:var(--ink-3); font-size:13px; margin-top:3px; max-width:74ch; }
 .rung__go{ flex:none; align-self:center; text-decoration:none; font:12px ui-monospace,monospace; border:1px solid var(--rule); background:var(--paper-4); color:var(--ink-2); padding:7px 12px; }
 .rung__go:hover{ border-color:var(--moss); color:var(--moss-deep); }
-.acts{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
-@media(max-width:820px){ .acts{ grid-template-columns:1fr; } }
-.act{ border:1px solid var(--rule); background:var(--paper-3); border-top:3px solid var(--ink-4); }
-.act--moss{ border-top-color:var(--moss); }
-.act--ochre{ border-top-color:var(--ochre); }
-.act--indigo{ border-top-color:var(--indigo); }
-.act__h{ margin:0; padding:12px 14px 4px; font:italic 18px "Fraunces","Source Serif 4",Georgia,serif; font-variation-settings:"SOFT" 50,"opsz" 48; color:var(--ink); }
-.act__cards{ padding:6px 12px 13px; display:flex; flex-direction:column; gap:8px; }
+.surfaces{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+@media(max-width:900px){ .surfaces{ grid-template-columns:repeat(2,1fr); } }
+@media(max-width:520px){ .surfaces{ grid-template-columns:1fr; } }
+.surf{ display:flex; flex-direction:column; text-decoration:none; border:1px solid var(--rule); background:var(--paper-4); border-top:3px solid var(--ink-4); padding:13px 13px 12px; transition:border-color .15s ease; }
+.surf:hover{ border-color:var(--ink-3); }
+.surf--corpus{ border-top-color:var(--moss); }
+.surf--make{ border-top-color:var(--ochre); }
+.surf__k{ font:600 10px/1.3 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.07em; color:var(--ink-4); }
+.surf__t{ font:600 16px/1.1 "JetBrains Mono",ui-monospace,monospace; color:var(--ink); margin:7px 0 0; }
+.surf__d{ color:var(--ink-3); font-size:12px; line-height:1.5; margin:6px 0 0; flex:1; }
+.surf__go{ font:11px ui-monospace,monospace; color:var(--moss-deep); margin-top:10px; }
+.surf--make .surf__go{ color:var(--ochre-d); }
+.surf--corpus:hover{ border-color:var(--moss); }
+.surf--make:hover{ border-color:var(--ochre); }
+.refs{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+@media(max-width:820px){ .refs{ grid-template-columns:1fr; } }
 .card{ display:block; text-decoration:none; border:1px solid var(--rule); background:var(--paper-4); padding:11px 12px; }
 .card:hover{ border-color:var(--ink-3); }
 .card__t{ font:600 13px/1.3 -apple-system,system-ui,sans-serif; color:var(--ink); }
@@ -3393,7 +3786,7 @@ ${railHtml({ active: 'home', brand: 'machine spirits', sub: 'a drama-machine for
   <div class="welcome" id="welcome" hidden>
     <div class="welcome__k">new here · welcome</div>
     <h2>First time at the scriptorium?</h2>
-    <p>This is a research instrument that stages tutoring dialogues as <em>drama</em> and reads them the way a literary critic would — for dramatic form, not for what is in anyone's head. You don't need to know the codebase. The five-step tour below walks the whole surface; take it at your own pace.</p>
+    <p>This is a research instrument that stages tutoring dialogues as <em>drama</em> and reads them the way a literary critic would — for dramatic form, not for what is in anyone's head. You don't need to know the codebase. The six-step tour below walks the whole surface; take it at your own pace.</p>
     <div class="welcome__btns">
       <button class="btn primary" id="welcomeBegin" type="button">begin the tour ↓</button>
       <button class="btn ghost" id="welcomeDismiss" type="button">I'll explore on my own</button>
@@ -3403,7 +3796,7 @@ ${railHtml({ active: 'home', brand: 'machine spirits', sub: 'a drama-machine for
   <header class="hero">
     <div class="hero__k">machine spirits · poetics scriptorium</div>
     <h1>Tutoring, staged as drama.</h1>
-    <p>Generate tutoring dialogues that turn on a <em>peripeteia</em> — a reversal of understanding — score them as a literary critic would on dramatic form, and study where recognition does and doesn't cohere. Browse what's been made, compose something new, or replay a single changed move.</p>
+    <p>Generate tutoring dialogues that hinge on a reversal of understanding (a <em>peripeteia</em>). Score them the way a literary critic would, on dramatic form. Then study where recognition does and doesn't cohere — recognition meaning the moment a learner's understanding genuinely shifts, not just a correct answer. Browse what's been made, compose something new, or replay a single changed move.</p>
     <div class="hero__cta">
       <a class="btn primary" href="/browse">Read a script →</a>
       <a class="btn ghost" href="/compose">Compose one →</a>
@@ -3416,7 +3809,7 @@ ${railHtml({ active: 'home', brand: 'machine spirits', sub: 'a drama-machine for
   <p class="chips__lead">The corpus spans ${disciplines.length} field${disciplines.length === 1 ? '' : 's'} — jump straight into one:</p>
   <div class="chips">${disciplineChips}</div>
 
-  <h2 class="section">Start here · a five-step tour</h2>
+  <h2 class="section">Start here · a six-step tour</h2>
   <p class="section__sub">Each step assumes only the one before it. Tick what you already know; your progress is remembered on this device.</p>
   <div class="ladder" id="ladder">
     <div class="ladder__head">
@@ -3427,17 +3820,21 @@ ${railHtml({ active: 'home', brand: 'machine spirits', sub: 'a drama-machine for
     ${rungsHtml}
   </div>
 
-  <h2 class="section">Everything, in three acts</h2>
-  <p class="section__sub">The scriptorium falls into the shape it studies: understand the material, create something new, recognize what changed.</p>
-  <div class="acts">${actsHtml}</div>
+  <h2 class="section">The working surfaces</h2>
+  <p class="section__sub">The four tabs in the top rail. Two collections of tutoring dialogues, scored two different ways — one graded by an AI critic, one checked by a fixed rule — and the two tools that make more. Everything else is reference &amp; reading, below.</p>
+  <div class="surfaces">${surfacesHtml}</div>
+
+  <h2 class="section">Reference &amp; reading</h2>
+  <p class="section__sub">Background, analysis, and the project's own notes — read at your leisure.</p>
+  <div class="refs">${refsHtml}</div>
 
   <div class="reflect">
-    <div class="reflect__k">applying our own lessons</div>
+    <div class="reflect__k">why the site is built this way</div>
     <h3>This scriptorium is built from the pedagogy it studies.</h3>
     <ul>
       <li><b>Recognition.</b> It greets a first-time visitor and names where they are before instructing — the mutual recognition the tutor is asked to extend the learner.</li>
       <li><b>Scaffolding.</b> The tour is a zone-of-proximal-development ladder: one rung at a time, you set the pace, and you can mark what you already command.</li>
-      <li><b>Dramatic form.</b> The features group into three acts — understand, create, recognize — the arc of an <em>anagnorisis</em>, the same shape the critic looks for in a script.</li>
+      <li><b>Dramatic form.</b> The six-step tour traces an <em>anagnorisis</em> — read the material, make something new, recognize what changed — the same shape the critic looks for in a script.</li>
     </ul>
   </div>
 
@@ -3462,9 +3859,9 @@ ${railHtml({ active: 'home', brand: 'machine spirits', sub: 'a drama-machine for
   var wd = $('welcomeDismiss'); if (wd) wd.addEventListener('click', dismissWelcome);
   var wb = $('welcomeBegin'); if (wb) wb.addEventListener('click', function(){ dismissWelcome(); var l = $('ladder'); if (l) l.scrollIntoView({ behavior:'smooth', block:'start' }); });
 
-  var TOTAL = 5;
-  function isDone(n){ try { return localStorage.getItem('poetics-rung-'+n)==='1'; } catch (_e) { return false; } }
-  function setDone(n, v){ try { localStorage.setItem('poetics-rung-'+n, v ? '1' : '0'); } catch (_e) {} }
+  var TOTAL = 6;
+  function isDone(n){ try { return localStorage.getItem('poetics-rung-v2-'+n)==='1'; } catch (_e) { return false; } }
+  function setDone(n, v){ try { localStorage.setItem('poetics-rung-v2-'+n, v ? '1' : '0'); } catch (_e) {} }
   function paint(){
     var count = 0, next = 0;
     for (var i = 1; i <= TOTAL; i++){
@@ -5325,7 +5722,12 @@ function renderRunsHtml() {
 `,
   })}
 <body>
-${railHtml({ active: 'runs', brand: 'run launcher', sub: 'spawn generative · replay · adversarial-CLI · online-score runs — localhost only, no auth (deferred)' })}
+${railHtml({
+  active: 'runs',
+  brand: 'run launcher',
+  sub: 'spawn generative · replay · adversarial-CLI · online-score runs — localhost only, no auth (deferred)',
+  hint: '<span><b>launch</b> — spawn new runs</span><span class="navhint__sep">·</span><span>to explore finished ones, see <a href="/browse">scripts</a> or <a href="/derivation">proof runs</a></span>',
+})}
 <div class="controls">
   <div class="tabs" id="tabs"></div>
   <div class="spacer"></div>
@@ -6485,6 +6887,7 @@ ${railHtml({
   sub: 'sidecar browser · public scripts, full traces, critic scores, labels as perspective',
   extra:
     '<span class="rail__beacon" id="railBeacon" data-state="checking" title="Sidecar database connection"><span class="rail__dot"></span><span id="railBeaconText">checking</span></span>',
+  hint: '<span><b>scripts</b> — tutoring dialogues graded by an AI critic on dramatic form</span><span class="navhint__sep">·</span><span>for runs where a fixed rule-checker (not an AI critic) decides whether the learner reached a hidden answer, see <a href="/derivation">proof runs</a></span>',
 })}
 <div id="app" class="app">
   <aside class="sidebar">
