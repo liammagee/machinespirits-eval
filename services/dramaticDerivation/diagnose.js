@@ -675,7 +675,9 @@ export function proofDebtGuardReport(result) {
   const repairs = result.corruption?.ledger || [];
   const actionRows = actions.map((a) => ({
     ...a,
-    repaired: repairs.some((e) => e.type === 'repair' && e.via === 'tutor' && e.turn === a.turn && e.premiseId === a.target),
+    repaired: repairs.some(
+      (e) => e.type === 'repair' && e.via === 'tutor' && e.turn === a.turn && e.premiseId === a.target,
+    ),
   }));
   const targets = [...new Set(actionRows.map((a) => a.target).filter(Boolean))];
   return {
@@ -1095,7 +1097,7 @@ export function renderTranscript(result, world, { title = null, diagnosis = null
     lines.push('```');
     lines.push(renderProof(result.proof));
     lines.push('```');
-    const prose = renderProofProse(result.proof, world);
+    const prose = renderProofProse(result.proof, world, { ledger: result.ledger });
     if (prose) {
       lines.push('');
       lines.push(prose);
@@ -1386,9 +1388,24 @@ function humanizeRuleName(ruleId) {
  * tree — no model anywhere. `world` is optional; without it facts render as
  * humanized phrases and rules by their bare names.
  */
-export function renderProofProse(proof, world = null) {
+export function renderProofProse(proof, world = null, { ledger = null } = {}) {
   if (!proof) return '';
-  const premiseByKey = new Map((world?.premises || []).map((p) => [factKey(p.fact), p]));
+  // Twin disambiguation: several exhibits can assert the SAME fact (two
+  // witnesses to one event). A factKey->premise map collides on those twins,
+  // and `new Map(...)` silently keeps whichever twin is LAST in the world
+  // file — so the prose could cite an exhibit that was never staged this run.
+  // Resolve by preferring the premise actually RELEASED (from the ledger),
+  // with a deterministic first-in-file fallback for facts never individually
+  // released (background, or an unreleased twin).
+  const premiseById = new Map((world?.premises || []).map((p) => [p.id, p]));
+  const premiseByKey = new Map();
+  for (const p of world?.premises || []) {
+    if (!premiseByKey.has(factKey(p.fact))) premiseByKey.set(factKey(p.fact), p);
+  }
+  for (const row of ledger || []) {
+    const staged = premiseById.get(row.premiseId);
+    if (staged) premiseByKey.set(factKey(staged.fact), staged);
+  }
   const backgroundKeys = new Set((world?.background || []).map((f) => factKey(f)));
   const ruleById = new Map((world?.rules || []).map((r) => [r.id, r]));
 

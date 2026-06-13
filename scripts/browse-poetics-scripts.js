@@ -2793,7 +2793,7 @@ ${derivationSlopeCaption(diagnosis.learningSlope || null)}
 ${blocks.join('\n')}
 ${
   result.proof
-    ? `<h2 class="sect">The extracted proof (what did the forcing)</h2><pre class="panel">${escapeHtml(renderDerivationProof(result.proof))}</pre><div class="mdblock">${derivationMdToHtml(renderDerivationProofProse(result.proof, world))}</div>`
+    ? `<h2 class="sect">The extracted proof (what did the forcing)</h2><pre class="panel">${escapeHtml(renderDerivationProof(result.proof))}</pre><div class="mdblock">${derivationMdToHtml(renderDerivationProofProse(result.proof, world, { ledger: result.ledger }))}</div>`
     : ''
 }
 <h2 class="sect">Instrument panel (programmatic eval — no judge)</h2>
