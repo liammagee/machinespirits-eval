@@ -903,3 +903,75 @@ codex tutor happens to hold both early exhibits** — not noise around a true ra
 the frequency of a single binary conduct choice. This is precisely the latitude the
 pacing guard (`--pacing-guard`, E3/E5) removes by forcing the on-cue schedule, which
 makes a pacing-guard arm the theory-named mechanism delta for the loop below.
+
+### E2-mechanism registration — pacing-guard fan (2026-06-13)
+
+Operator sanction: **"Do the guard fan."** This is the separate mechanism-delta
+registration the E2 block reserved (lines 838–840, 905): the frozen replication ended
+in divergence (pooled 4/10), and under the operator's standing "loop on the mechanism"
+license this fan tests the theory-named fix. It pools **separately** from the ten
+frozen replicates and is never folded into the 4/10.
+
+**Pivot from the originally-floated candidate.** The E2 registration (line 838) floated
+a *quiet-director* arm as the lead mechanism candidate — chosen before fan-2's data. The
+fan-2 diagnosis relocates the load-bearing variable: deaths are not director chatter on
+connective turns but the tutor **pulling `p_bearing`/`p_chart` early** (6/6 deaths
+early-pulled, onCue ≤3/8; 4/4 groundings held both to cue, onCue 7/8, D→0). The pacing
+guard (`--pacing-guard`) is the delta that directly removes that latitude — it forces
+the on-cue schedule the diagnosis shows is decisive — so it supersedes the quiet-director
+arm as the registered mechanism delta.
+
+**Zero-delta basis.** The arm command is the frozen p4 recipe verbatim plus exactly one
+added flag, `--pacing-guard` (its required companion `--release-authority` is already in
+p4). No other change. Provenance: every harness commit since fan-1 (`a5f36078` E3 pacing,
+`49e2c55a` E5 proof-debt) is gated behind `--pacing-guard` / `--proof-debt-guard`; with
+the guard now ON, the arm exercises the E3-frozen pacing path (unchanged since
+2026-06-12). The guard logic lives entirely in `llmRoles.js`/`pacing.js`, all branches
+behind the `pacingGuard` predicate; `engine.js` carries 0 guard-gated lines on this path.
+
+**The scientific question (untested interaction).** E5 grounded *with* this guard — but
+only on the **late-decay** config (`startTurn:17`). p4 runs **early decay**
+(`startTurn:1`). The guard's interaction with early decay is untested: it forces the
+tutor to *hold* exhibits to cue, but under early decay a held exhibit can decay before
+the learner seats it. So the guard could (a) lift grounding by removing the early-pull
+deaths, or (b) fail to lift — or even harm — if the holds it forces collide with early
+decay. The fan measures which.
+
+**Design.** k=5 exchangeable arms, decay `seed:1` fixed (same frozen seed as the
+replicates — the only live variance is LLM conduct stochasticity), `world-002-lantern`,
+learner pinned claude/sonnet. Labels `lantern-e2-guard-r1` … `r5`, group
+`lantern-e2-guard`. `--critic off` (Fable backfill deferred, as for the frozen fans).
+Meterless paid path → serialized, attended, no re-rolls (crash/truncation = delete the
+arm dir, rerun the same label).
+
+**Pre-flight (free, done 2026-06-13).** Corridor re-validate: 5/5 PASS, 40/125 = 32.0%
+corridor reproduced at λ=0/1 (unchanged from E0). Mock smoke of the exact guard command
+(`DERIVATION_LLM=mock`, throwaway label): ran end-to-end, "PACING GUARD ON" logged,
+artifacts written; dir deleted.
+
+**Pre-tabled k=5 Clopper–Pearson 95% (verified `scipy.stats.beta.ppf`; Fisher-exact
+one-sided greater vs the frozen 4/10):**
+
+| grounded | rate | CP95 | Fisher vs 4/10 | verdict band |
+|---|---|---|---|---|
+| 5/5 | 1.000 | [0.478, 1.000] | p=0.0420 | **guard converges** — separates from the unguarded base rate at α=0.05; lower bound 0.478 clears 0.40 |
+| 4/5 | 0.800 | [0.284, 0.995] | p=0.1818 | **directional only** — point estimate up but interval overlaps frozen; suggestive, underpowered; no further paid spend without fresh sanction |
+| 3/5 | 0.600 | [0.147, 0.947] | p=0.4266 | **null** — indistinguishable from the unguarded 0.40 |
+| 2/5 | 0.400 | [0.053, 0.853] | p=0.7063 | **null** — identical point estimate to frozen |
+| ≤1/5 | ≤0.200 | — | — | **null / adverse** — guard fails to ground under early decay (consistent with the hold-then-decay hazard) |
+
+**Interpretation rule (pre-registered).** Only **5/5** converges the recipe (Fisher
+p=0.042 < 0.05, CP95 lower 0.478). **4/5** is reported as a directional signal, not a
+converged result, and does NOT by itself authorize more paid arms. **≤3/5** reports the
+guard as null on early decay — the diagnosed mechanism still stands (it is named and
+reproduced in the frozen fans), but the guard does not lift the rate under p4's decay
+schedule, which is itself the finding: the guard's grounding effect would then be
+**decay-schedule-dependent** (it grounds late-decay E5, not early-decay p4).
+
+**Kill / early-stop / no-re-roll.** Run all five serially unless a crash. Early-stop:
+**0/3 → STOP** — after a two-arm look at zero groundings the best reachable outcome is
+2/5 (= the frozen base rate exactly) and the 5/5 convergence band is unreachable, so the
+null is already the best-case read; spend no further arms. (This is a deliberate
+tightening of the frozen fans' 0/5 kill, to conserve the meterless quota.) No re-roll in
+either direction; crash/truncation = delete the arm dir, rerun the same label, note it in
+the outcome.
