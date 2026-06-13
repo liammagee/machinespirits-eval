@@ -86,6 +86,7 @@
     "derivation:critic": "node scripts/derivation-critic.js",
     "derivation:corridor": "node scripts/derivation-corridor-map.js",
     "derivation:mine": "node scripts/derivation-mine-conduct.js",
+    "derivation:detector-split": "node scripts/derivation-detector-split.js",
     "poetics:ingest": "node scripts/ingest-poetics-artifacts.js",
     "poetics:report": "node scripts/report-poetics-sidecar.js",
     "poetics:adaptation": "node scripts/analyze-poetics-tutor-adaptation.js",

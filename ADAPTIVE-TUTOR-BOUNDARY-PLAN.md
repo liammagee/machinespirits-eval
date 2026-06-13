@@ -660,3 +660,33 @@ mechanism should not be another pacing edit. It should either (a) register a
 decay-repair instrument that forces restoration of dropped proof-critical premises
 before closure, or (b) return to E4's detector split and classify this arm as a
 decay-starved lucky-leap/disengagement case without changing the game.
+
+### E4a dry detector-split follow-on — 2026-06-12
+
+Sanction/provenance: same operator instruction as E3 ("continue to iterate if you
+can"). Scope was dry only: no paid calls, no live verdict changes, no runtime
+detector changes. The registered verdicts stand.
+
+Implementation: `services/dramaticDerivation/boundaryClassifier.js` classifies
+frozen artifacts by checking (1) tempo-insolvent release choices using the same
+production solvency arithmetic as E3, (2) unrepaired decay at the terminal board,
+and (3) lucky-leap/overreach evidence. `npm run derivation:detector-split` writes
+`exports/dramatic-derivation/boundary/detector-split-report.{md,json}`.
+
+Result:
+
+| arm | registered verdict | dry split |
+|---|---|---|
+| `lantern-p2-plot-on` | aporia t8 | `tempo_starved_house` (`p_bearing@t3`, `p_chart@t7`) |
+| `lantern-p3-repair-on` | grounded t20 | `grounded_control` |
+| `lantern-p4-hygiene-on` | grounded t20 | `grounded_control` |
+| `lantern-p5-mutation-on` | aporia t12 | `tempo_starved_house` (`p_chart@t7`) |
+| `lantern-e2-real-r1` | disengagement t12 | `tempo_starved_house` (`p_bearing@t3`, `p_chart@t7`) |
+| `lantern-e2-real-r5` | disengagement t12 | `tempo_starved_house` (`p_bearing@t3`, `p_chart@t7`) |
+| `lantern-e3-real-r1` | disengagement t24 | `decay_starved_lucky_leap` |
+
+Interpretation: the dry split validates the E3 diagnosis. p3/p4 remain negative
+controls; the old p2/p5/E2 death branch is tempo starvation; E3 moves the failure
+class to decay starvation after the pacing corridor is protected. Next live spend,
+if any, should be registered as a decay-repair/proof-state hygiene mechanism, not
+as another release-pacing mechanism.
