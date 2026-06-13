@@ -1,0 +1,244 @@
+# Adaptive-Tutor Generalization Plan
+
+*Drafted 2026-06-13. Builds on `ADAPTIVE-TUTOR-BOUNDARY-PLAN.md` (E0–E5) and the
+E2 pacing-guard fan. Lands, if run, in §6.13 of `docs/research/paper-full-2.0.md` —
+no spin-off paper, no new instrument.*
+
+## What this is
+
+The derivation arc produced one clean positive result and a good measuring
+apparatus. This plan is about turning that into something that travels — at the
+margins, under stated limits — rather than running the next variant on the same
+world. It is a **consolidation** plan, not an ablation sweep: three moves, each
+chosen to close a specific gap between "a result on one toy world" and "a
+mechanism we can state."
+
+It does **not** authorize any paid spend. Each paid gate below is sanctioned
+separately, before its first paid arm, under the same meterless-quota discipline
+as the boundary plan (serialized, attended, no re-rolls; the learner stays pinned
+to claude/sonnet).
+
+## The result this stands on
+
+On `world-002-lantern`, with the decay seed fixed (`seed:1`) and the same
+verdict classifier scoring every arm, a single flag — `--pacing-guard` — that
+forces the tutor to release each exhibit on its scheduled turn moved the
+grounding outcome from the unguarded **4/10** (the frozen E2 fans, CP95
+[0.122, 0.738]) to a higher guard-on point estimate (the E2-guard fan,
+**4/5 = 0.80**, CP95 [0.284, 0.995], Fisher p = 0.18) — **directional** under the
+pre-registered bands, not a converged rate (the interval still overlaps the
+unguarded base, and the one death came first, so the 5/5 convergence band was
+unreachable). The point estimate moves the right way; the synthesis below tests
+*why*.
+
+Two properties make this cleaner than the program's earlier "architecture beats
+baseline" claims, all of which came back null:
+
+1. **The guard computes hidden state.** Its safe-release window is derived from
+   the decay arithmetic (decay visibility is `CONDUCT` — the slippage is *not*
+   printed in the transcript; the tutor must read it off the learner) and from
+   the derivation distance `D` (computed off the proof DAG, not visible as text).
+   The guard adds signal the base model cannot infer from the dialogue.
+2. **The scorer is architecture-independent.** `diagnose.js` produces the verdict
+   from the proof state; it does not know whether the guard was on. Frozen and
+   guarded arms are scored by the same channel.
+
+Those are exactly the two properties the recurring nulls (ontology ToM layer,
+stall-watcher, adaptive-persona, repertoire ceiling) lacked — each of those
+re-encoded what the model already inferred from context. So the lantern result is
+a candidate *exception* to the program-wide pattern, and the first job is to find
+out whether it really is one.
+
+## The gap
+
+Everything rides on one hand-authored proof structure (lantern: a single ~4-rule
+chain, `bearing → lamp/tower → hand/key → light`, shadowed by a decoy chain that
+yields a near-miss false secret). The verdict is **formal** — "the chain closed in
+the transcript," not "a mind learned." And the one quantity we tried to turn into
+a rate is noisy: the frozen replication pooled to 4/10 and *diverged* across its
+two fans (0.60 then 0.20). So the demonstrated claim is narrow: *on this one
+world, forcing on-time release improves derivation, and we can read why.*
+
+The three steps below each attack one face of that gap. None of them tries to lift
+the formal-vs-real limit — this apparatus measures derivation **form**, and the
+recognition-transfer work already showed it does not carry a mentalistic load
+(weighted κ ≈ 0.04). The generalization on offer is about the adaptive
+**mechanism**, not about real learning. That boundary is deliberate and stays
+stated.
+
+---
+
+## Step 1 — The hidden-signal contrast *(the synthesis; paid)*
+
+**Claim under test.** Adaptive gains come from injecting signal the base model
+cannot infer from the dialogue, *not* from re-representing what it already infers.
+If true, a guard that shapes release from **hidden** state lifts grounding, while
+a form-matched guard that shapes release from only **visible** transcript state
+sits at the unguarded base rate.
+
+**Design.** A three-way comparison on `world-002-lantern`, same `seed:1`, same
+frozen p4 stack, scored by the same classifier:
+
+| arm | source of the release window | status |
+|---|---|---|
+| baseline (no guard) | — | have it: frozen fans, 4/10 |
+| **H** — hidden guard (`--pacing-guard`) | decay slippage + derivation distance `D` (both hidden) | have it: E2-guard fan |
+| **V** — visible guard (new flag) | transcript-surface features only (turns since last release, whether the learner echoed/restated the prior exhibit, learner message-length / hedging trend) | **new k=5 fan** |
+
+V is matched to H in **form** — same flag-gating, same "shape the window, don't
+override," same `--release-authority` requirement, same number of decision points.
+The *only* difference is the information source. V re-expresses what is already on
+the page; H computes what is not.
+
+**Engineering.** A new flag (`--pacing-guard-visible`, mutually exclusive with
+`--pacing-guard`), gated in `llmRoles.js`/`pacing.js` behind a `visibleGuard`
+predicate exactly as `pacingGuard` is gated, adding 0 lines to the no-guard path.
+Its safety function takes only transcript-visible inputs. **Confound control:** V's
+intervention frequency (window-narrowings, force-plays) must be reported alongside
+H's, and tuned on a free mock pass so V narrows about as often as H — otherwise
+the contrast is "V intervened more/less," not "V used worse signal."
+
+**Pre-registered read (k=5 V-fan; CP95 verified `scipy.stats.beta.ppf`).** The
+prediction is *inverted* from the guard fan — we expect V to stay low:
+
+| V grounds | rate | CP95 | reading |
+|---|---|---|---|
+| ≤2/5 | ≤0.40 | [0.053, 0.853] @2/5 | V at the unguarded base rate → **hidden-signal principle supported** (if H is meanwhile above it) |
+| 3/5 | 0.60 | [0.147, 0.947] | ambiguous — overlaps both baseline and H; underpowered, report as such |
+| ≥4/5 | ≥0.80 | [0.284, 0.995] @4/5 | V matches H → **"structure per se helps," hidden-signal story rejected** (still a finding: the win is the scheduling discipline, not the signal) |
+
+**Kill / scope.** One k=5 V-fan. If V and H land in the same band, the synthesis
+claim is rejected and we stop — no rescue arms. No re-rolls.
+
+**What it would let us claim.** This is the move that converts a stack of nulls
+plus one positive into a single statable principle: *adaptivity comes from new
+signal, not re-representation.* That claim does not depend on believing anything
+about learning, and it explains the whole program in one sentence.
+
+---
+
+## Step 2 — One structurally different world *(generality; paid, gated on Step 1)*
+
+**Claim under test.** The mechanism is not lantern-specific. The same
+hold-to-cue → seat → ground dynamic, and the same guard lift, reproduce on a proof
+structure of a *different shape*.
+
+**Design.** Author **`world-003`** with a deliberately different DAG geometry.
+Lantern is a single chain plus a decoy. The highest-value contrast for a *pacing*
+mechanism is a **branching / AND-join** structure: the secret requires two
+independent sub-chains (α and β) that must each ground and then converge. This
+stresses the pacing problem the most — the tutor must hold *two* release schedules
+to cue at once, and the corridor geometry is genuinely different, not just longer.
+
+Then repeat the boundary→guard pipeline on it:
+
+1. Lint world-003; re-run **E0 corridor cartography** for it (its safe corridor
+   *will* differ — that is the point).
+2. **Calibrate difficulty.** Confirm the unguarded baseline is non-degenerate
+   (not 0/n or n/n) — otherwise floor/ceiling confounds the comparison. Tune decoy
+   density / depth until the unguarded rate sits near a coin flip, matching
+   lantern's regime.
+3. Run the **baseline frozen fan** and the **H guard fan** on world-003.
+
+**Pre-registered read.** Generality is claimed only if *both* hold: (a) the guard
+lifts grounding above the world-003 unguarded baseline (same direction as
+lantern), and (b) the failure-mode shift from Step 3 reproduces (early-reveal
+deaths removed, decay-seating deaths exposed). If the guard does **not** lift on
+world-003, that is a clean negative — the mechanism is shape-bound — and we report
+it as the limit, not paper over it.
+
+**Kill / scope.** Exactly **one** new world. "Travels" needs n=2 worlds (lantern +
+one different shape), not a sweep. If world-003 reproduces, that is the
+margin-of-generality result; if it does not, that is the boundary. Either way we
+stop at one.
+
+**Gated on Step 1.** Run only after Step 1 resolves. If Step 1 supports the
+hidden-signal principle, world-003 tests its reach. If Step 1 rejects it (V ≈ H),
+the framing changes — world-003 would be designed to probe "what scheduling
+discipline buys," a different question — so do not author it until Step 1 lands.
+
+---
+
+## Step 3 — Report the failure-mode shift, not the rate *(mostly free; do first)*
+
+**Claim under test.** The durable, generalizable observable is *which way runs
+fail*, which is visible inside each single arm — far more stable than the success
+rate, which needs cross-arm replication we cannot cheaply buy.
+
+**Design.** Extend the existing E4a detector-split classifier
+(`services/dramaticDerivation/boundaryClassifier.js`,
+`scripts/derivation-detector-split.js`) to label every arm's outcome into a
+failure-mode taxonomy read from `diagnosis.json` (release adherence + the `dCurve`
++ the verdict):
+
+- **grounded** — chain closes, `D → 0`.
+- **early-pull death** — an exhibit released ahead of cue (e.g. `p_bearing → t3`);
+  learner plateaus; disengages late (~t12). The dominant frozen-fan death.
+- **decay-seating death** — exhibit *held to cue* but slips before the learner
+  seats it (`D` wobbles up); disengages early (~round 7). The guard-on death (the
+  E2-guard r1 pattern).
+- **aporia** — learner hits an impasse and cannot proceed.
+
+Then build the **guard × failure-mode contingency table** across all arms (frozen
++ guard; both worlds, once Step 2 exists) and report the *shift* as the primary
+result, with the success rate demoted to a secondary, explicitly-underpowered
+figure.
+
+**Pre-registered read.** The headline becomes "the guard removes the early-reveal
+failure mode and exposes a decay-seating one" — a within-arm, replication-light
+claim — rather than "the guard lifts the rate to X." This is already what the
+traces show most plainly: every frozen death early-pulled `p_bearing`; the one
+guard-on death held it to cue and died on seating.
+
+**Cost.** Analysis over artifacts already on disk plus a classifier extension —
+**no new paid arms.** This is why it goes first: it sharpens the metric *before*
+any spend, and it is the cheapest of the three.
+
+---
+
+## Sequencing & sanction gating
+
+Execution order is **3 → 1 → 2**, by cost and dependency, not by the numbering:
+
+1. **Step 3 first (free).** Land the failure-mode metric on the artifacts we
+   already have. This fixes the headline and de-risks the rest.
+2. **Step 1 next (paid, one k=5 fan).** The synthesis. Needs its own sanction and
+   the V-guard engineering + mock calibration before the first paid arm.
+3. **Step 2 last (paid, most engineering).** Author world-003, redo corridor +
+   difficulty calibration, then baseline + guard fans. Run only if Step 1 has
+   resolved, with its own sanction.
+
+Each paid gate: registration committed alone before the first paid arm (pre-tabled
+CP95 + interpretation bands, like the boundary-plan registrations); arms serialized
+and attended; verdicts read from source-of-truth `diagnosis.json`; no re-rolls
+(crash/truncation = delete the arm dir, rerun the same label).
+
+## What we will NOT do
+
+- **Not** pour more paid arms into lantern chasing a tighter rate. The rate is the
+  least durable thing we have (the frozen fan already showed it is noisy); more
+  arms buy diminishing certainty on the wrong quantity.
+- **Not** add more cells or guard variants on the existing world. Three moves,
+  each closing a named gap; then stop and write.
+- **Not** sweep multiple new worlds. One differently-shaped world tests travel;
+  more is creep.
+- **Not** try to make the formal verdict carry a learning / mind-reading load. The
+  recognition transfer already failed (κ ≈ 0.04); the candid ceiling is derivation
+  *form*. The generalization is about mechanism, and stays there.
+
+## What this would and would not let us say
+
+| limit on "limited successful tutor adaptation" (§6.13) | moved by |
+|---|---|
+| attribution to a stack, not a knob | **Step 1** — isolates the signal source as the active ingredient |
+| lantern-specific | **Step 2** — n=2 worlds if it reproduces; a stated boundary if not |
+| noisy n=1 rate | **Step 3** — shifts the headline to a stable within-arm observable |
+| formal, not mentalistic | **unmoved, by design** — stated as the ceiling |
+| positive path lightly exercised | partly **Step 1/2** (more grounded arms), but not the focus |
+
+Best case across all three: *"forcing a tutor to act on state it cannot read off
+the dialogue improves a formal derivation outcome, the gain is the new signal
+rather than the added structure, it reproduces on a second proof shape, and it
+shows up most stably as a shift in how runs fail."* That is a margin-of-generality
+claim about adaptive mechanism — defensible, bounded, and folded into the one
+paper.
