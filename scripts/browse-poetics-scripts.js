@@ -448,6 +448,32 @@ function corpusStats(db) {
          GROUP BY discipline ORDER BY n DESC, name`,
       )
       .all(),
+    // The LLM critic's dramatic-form verdict on each scored script
+    // (recognition / flat / trap). Counted per critic-verdict row, NOT per
+    // script — an item scored by several critics contributes several rows.
+    formClass: db
+      .prepare(
+        `SELECT COALESCE(form_class, '(unclassified)') AS name, COUNT(*) AS n
+         FROM poetics_scores GROUP BY form_class ORDER BY n DESC`,
+      )
+      .all(),
+    // Where the corpus lands on each dramatic-form dimension. The rubric is a
+    // 0–100 scale quantized to five levels {0,25,50,75,100}; one GROUP BY per
+    // dimension returns [{lv, n}], binned into a fixed 5-bar histogram at
+    // render time. Dimension names are a hardcoded allowlist (not user input).
+    scoreDist: (() => {
+      const dims = ['recontextualization', 'stated_insight', 'rupture', 'global_coherence'];
+      const out = {};
+      for (const d of dims) {
+        out[d] = db
+          .prepare(
+            `SELECT CAST(${d} AS INTEGER) AS lv, COUNT(*) AS n
+             FROM poetics_scores WHERE ${d} IS NOT NULL GROUP BY lv ORDER BY lv`,
+          )
+          .all();
+      }
+      return out;
+    })(),
   };
 }
 
@@ -1466,10 +1492,19 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
       return res.redirect(302, '/browse' + (qs ? '?' + qs : ''));
     }
     const derivationRuns = listDerivationRuns();
+    // The deterministic rule-checker's verdict on each proof run (grounded /
+    // disengagement / aporia). Tallied here from the diagnoses already loaded —
+    // NOT a quality score, just the outcome the checker decided.
+    const proofVerdicts = {};
+    for (const r of derivationRuns) {
+      const v = r?.diagnosis?.verdict || '(none)';
+      proofVerdicts[v] = (proofVerdicts[v] || 0) + 1;
+    }
     const stats = {
       ...corpusStats(db),
       replays: listReplayBundles().length,
       proofRuns: derivationRuns.length,
+      proofVerdicts,
       recentRuns: listRuns(db).slice(0, 6),
     };
     return res.type('html').send(renderDashboardHtml(stats));
@@ -3550,6 +3585,60 @@ function ttsPlayButton(label = 'fragment') {
   return `<button type="button" class="tts-btn" data-tts-play title="Play ${escapeHtml(label)}" aria-label="Play ${escapeHtml(label)}">play</button>`;
 }
 
+// ── Dashboard mini-charts (server-rendered, palette-themed) ───────────────────
+// Pure functions returning HTML/CSS bar charts — no client JS, no chart library.
+// Every bar maps directly to a DB count, so the picture cannot drift from the
+// number it claims to show. Colours are CSS custom-property references so the
+// same category reads consistently across the light/dark themes.
+const fmtCount = (n) => Number(n || 0).toLocaleString('en-US');
+
+// A proportional stacked bar + legend from [{label, n, color}]. Percentages are
+// of the summed n, so callers pass exactly the segments they want totalled
+// (e.g. the three classified form-classes, excluding nulls).
+function splitBarHtml(segments, { ariaLabel = 'distribution' } = {}) {
+  const list = Array.isArray(segments) ? segments : [];
+  const total = list.reduce((sum, x) => sum + (x.n || 0), 0) || 1;
+  const pct = (n) => (n / total) * 100;
+  const bar = list
+    .filter((x) => x.n > 0)
+    .map(
+      (x) =>
+        `<span class="vbar__seg" style="width:${pct(x.n).toFixed(2)}%;background:${x.color}"` +
+        ` title="${escapeHtml(x.label)} ${fmtCount(x.n)} (${Math.round(pct(x.n))}%)"></span>`,
+    )
+    .join('');
+  const legend = list
+    .map(
+      (x) =>
+        `<span class="leg"><span class="leg__dot" style="background:${x.color}"></span>` +
+        `${escapeHtml(x.label)} <b>${fmtCount(x.n)}</b> <span class="leg__pct">${Math.round(pct(x.n))}%</span></span>`,
+    )
+    .join('');
+  return `<div class="vbar" role="img" aria-label="${escapeHtml(ariaLabel)}">${bar}</div><div class="legs">${legend}</div>`;
+}
+
+// A 5-bar mini-histogram for one 0–100 quantized dramatic-form dimension.
+// `levels` is [{lv, n}] (any subset of {0,25,50,75,100}); bars are rendered at
+// all five fixed bins so dimensions stay visually comparable, with the
+// count-weighted mean printed beneath.
+function histHtml(label, levels) {
+  const BINS = [0, 25, 50, 75, 100];
+  const byLv = new Map((Array.isArray(levels) ? levels : []).map((x) => [Number(x.lv), x.n]));
+  const counts = BINS.map((b) => byLv.get(b) || 0);
+  const max = Math.max(1, ...counts);
+  const totalN = counts.reduce((sum, n) => sum + n, 0) || 1;
+  const avg = Math.round(BINS.reduce((sum, b, i) => sum + b * counts[i], 0) / totalN);
+  const bars = BINS.map(
+    (b, i) =>
+      `<span class="hbar" style="height:${Math.max(2, (counts[i] / max) * 100).toFixed(1)}%"` +
+      ` title="${b}: ${fmtCount(counts[i])}"></span>`,
+  ).join('');
+  return (
+    `<div class="hist"><div class="hist__bars">${bars}</div>` +
+    `<div class="hist__l">${escapeHtml(label)}</div><div class="hist__avg">avg ${avg}</div></div>`
+  );
+}
+
 // ── Dashboard front door (GET /) ──────────────────────────────────────────────
 // The app's introduction + onboarding. Renders live corpus stats server-side
 // (no fetch flash, works JS-off), a first-visit recognition banner, a five-rung
@@ -3646,6 +3735,47 @@ function renderDashboardHtml(stats = {}) {
         )
         .join('')
     : '<div class="feed-empty">no runs yet — launch one to populate the corpus</div>';
+
+  // ── Corpus-signal charts ────────────────────────────────────────────────────
+  // Two verdict splits side by side — the LLM critic's dramatic-form class on
+  // scored scripts vs the deterministic rule-checker's outcome on proof runs —
+  // then where the script scores land on each dramatic-form dimension. Each
+  // headline % is of the bar's own total (classified verdicts / decided runs).
+  const fcMap = new Map((Array.isArray(s.formClass) ? s.formClass : []).map((r) => [r.name, r.n]));
+  const fcSegments = [
+    { label: 'recognition', n: fcMap.get('recognition') || 0, color: 'var(--moss)' },
+    { label: 'flat', n: fcMap.get('flat') || 0, color: 'var(--ink-4)' },
+    { label: 'trap', n: fcMap.get('trap') || 0, color: 'var(--brick)' },
+  ];
+  const fcClassified = fcSegments.reduce((sum, x) => sum + x.n, 0);
+  const fcUnclassified = fcMap.get('(unclassified)') || 0;
+  const fcRecogPct = fcClassified ? Math.round((fcSegments[0].n / fcClassified) * 100) : 0;
+
+  const PV_META = {
+    grounded_anagnorisis: { label: 'grounded', color: 'var(--moss)' },
+    disengagement: { label: 'disengagement', color: 'var(--ink-4)' },
+    aporia: { label: 'aporia', color: 'var(--brick)' },
+  };
+  const proofVerdicts = s.proofVerdicts && typeof s.proofVerdicts === 'object' ? s.proofVerdicts : {};
+  const pvSegments = Object.entries(proofVerdicts)
+    .filter(([k]) => k !== '(none)')
+    .map(([k, n]) => ({
+      label: PV_META[k]?.label || k.replace(/_/g, ' '),
+      n,
+      color: PV_META[k]?.color || 'var(--ochre)',
+    }))
+    .sort((a, b) => b.n - a.n);
+  const pvTotal = pvSegments.reduce((sum, x) => sum + x.n, 0);
+  const pvGroundedPct = pvTotal ? Math.round(((proofVerdicts.grounded_anagnorisis || 0) / pvTotal) * 100) : 0;
+
+  const scoreDist = s.scoreDist && typeof s.scoreDist === 'object' ? s.scoreDist : {};
+  const DIST_DIMS = [
+    ['recontextualization', 'recontextualization'],
+    ['stated_insight', 'stated insight'],
+    ['rupture', 'rupture'],
+    ['global_coherence', 'global coherence'],
+  ];
+  const distHtml = DIST_DIMS.map(([key, label]) => histHtml(label, scoreDist[key] || [])).join('');
 
   const RUNGS = [
     [
@@ -3846,6 +3976,32 @@ function renderDashboardHtml(stats = {}) {
 .feed-row__m{ flex:1; font:11px ui-monospace,monospace; color:var(--ink-4); }
 .feed-row__t{ flex:none; font:11px ui-monospace,monospace; color:var(--ink-4); }
 .feed-empty{ padding:16px 14px; font:italic 12px ui-monospace,monospace; color:var(--ink-4); }
+.sig{ display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+.sig-card{ border:1px solid var(--rule); background:var(--paper-4); padding:14px 16px; }
+.sig-card__top{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:11px; }
+.sig-card__k{ font:600 10px/1.3 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-4); }
+.sig-card__big{ font:600 26px/1 -apple-system,system-ui,sans-serif; color:var(--moss-deep); white-space:nowrap; }
+.sig-card__pct{ font-size:15px; color:var(--ink-4); }
+.sig-card__lbl{ font:600 11px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-3); margin-left:3px; }
+.sig-card__foot{ margin-top:10px; font:11px ui-monospace,monospace; color:var(--ink-4); }
+.vbar{ display:flex; height:18px; border-radius:3px; overflow:hidden; background:var(--rule-soft); }
+.vbar__seg{ height:100%; }
+.vbar__seg + .vbar__seg{ box-shadow:inset 1px 0 0 var(--paper-4); }
+.legs{ display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:9px; }
+.leg{ display:inline-flex; align-items:center; gap:6px; font:12px ui-monospace,monospace; color:var(--ink-3); }
+.leg__dot{ flex:none; width:9px; height:9px; border-radius:2px; }
+.leg b{ color:var(--ink); font-weight:600; }
+.leg__pct{ color:var(--ink-4); }
+.dist{ margin-top:12px; border:1px solid var(--rule); background:var(--paper-4); padding:14px 16px; }
+.dist__h{ font:600 10px/1.3 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-4); margin-bottom:14px; }
+.dist__grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.hist{ display:flex; flex-direction:column; align-items:center; }
+.hist__bars{ display:flex; align-items:flex-end; justify-content:center; gap:3px; height:54px; width:100%; padding:0 4px; }
+.hbar{ flex:1; max-width:14px; background:var(--moss); border-radius:2px 2px 0 0; opacity:.85; }
+.hist__l{ margin-top:7px; font:11px/1.3 ui-monospace,monospace; color:var(--ink-3); text-align:center; }
+.hist__avg{ margin-top:2px; font:10px ui-monospace,monospace; color:var(--ink-4); }
+@media(max-width:760px){ .sig{ grid-template-columns:1fr; } }
+@media(max-width:520px){ .dist__grid{ grid-template-columns:repeat(2,1fr); } }
 .chips__lead{ font:13px/1.5 ui-monospace,monospace; color:var(--ink-3); margin:0 0 10px; }
 .chips{ display:flex; flex-wrap:wrap; gap:8px; margin:0 0 8px; }
 .chip{ display:inline-flex; align-items:center; gap:8px; text-decoration:none; border:1px solid var(--rule); background:var(--paper-4); color:var(--ink-2); padding:5px 11px; font:12px ui-monospace,monospace; }
@@ -3953,6 +4109,31 @@ ${railHtml({ active: 'home', brand: 'machine spirits', sub: 'a drama-machine for
   <h2 class="section">Operations</h2>
   <p class="section__sub">Live counts across the corpus, the run activity, and what's waiting on review. The flag light turns amber when something needs you.</p>
   <div class="ops">${opsHtml}</div>
+
+  <h2 class="section">Signal</h2>
+  <p class="section__sub">What the two corpora hold, read straight from the database. An AI critic sorts each scored script's dramatic form into recognition, flat, or trap; a fixed rule-checker sorts each proof run into grounded, disengagement, or aporia — the same three-way shape, two different ways of scoring. Below that, where the script scores land on each dramatic-form dimension.</p>
+  <div class="sig">
+    <div class="sig-card">
+      <div class="sig-card__top">
+        <span class="sig-card__k">scripts · critic verdict</span>
+        <span class="sig-card__big">${fcRecogPct}<span class="sig-card__pct">%</span> <span class="sig-card__lbl">recognition</span></span>
+      </div>
+      ${splitBarHtml(fcSegments, { ariaLabel: 'critic form-class split: recognition, flat, trap' })}
+      <div class="sig-card__foot">${fmt(fcClassified)} critic verdict${fcClassified === 1 ? '' : 's'}${fcUnclassified ? ` · ${fmt(fcUnclassified)} unclassified` : ''}</div>
+    </div>
+    <div class="sig-card">
+      <div class="sig-card__top">
+        <span class="sig-card__k">proof runs · rule-checker verdict</span>
+        <span class="sig-card__big">${pvGroundedPct}<span class="sig-card__pct">%</span> <span class="sig-card__lbl">grounded</span></span>
+      </div>
+      ${splitBarHtml(pvSegments, { ariaLabel: 'proof-run verdict split: grounded, disengagement, aporia' })}
+      <div class="sig-card__foot">${fmt(pvTotal)} proof run${pvTotal === 1 ? '' : 's'} · a checker outcome, not a quality score</div>
+    </div>
+  </div>
+  <div class="dist">
+    <div class="dist__h">script scores · where the corpus lands on each dramatic-form dimension (0–100)</div>
+    <div class="dist__grid">${distHtml}</div>
+  </div>
 
   <div class="feed">
     <div class="feed__h"><span>recent runs</span><a href="/browse">all runs →</a></div>

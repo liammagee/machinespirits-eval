@@ -786,10 +786,63 @@ describe('dashboard front door', () => {
     assert.doesNotMatch(html, /no runs yet/);
   });
 
+  it('renders the Signal charts: two verdict bars and four score histograms', () => {
+    const html = renderDashboardHtml({
+      scripts: 105,
+      scored: 100,
+      runs: 4,
+      replays: 0,
+      proofRuns: 10,
+      // critic form-class on scored scripts: 100 classified + 5 unclassified
+      formClass: [
+        { name: 'recognition', n: 60 },
+        { name: 'flat', n: 30 },
+        { name: 'trap', n: 10 },
+        { name: '(unclassified)', n: 5 },
+      ],
+      // rule-checker outcomes; '(none)' is excluded from the bar's total
+      proofVerdicts: { grounded_anagnorisis: 7, disengagement: 2, aporia: 1, '(none)': 3 },
+      // 0–100 quantized dimension levels; recontextualization averages 75
+      scoreDist: {
+        recontextualization: [
+          { lv: 50, n: 2 },
+          { lv: 100, n: 2 },
+        ],
+        stated_insight: [{ lv: 25, n: 4 }],
+        rupture: [{ lv: 50, n: 4 }],
+        global_coherence: [{ lv: 100, n: 4 }],
+      },
+    });
+    // section heading + the prose that names the two scoring regimes apart
+    assert.match(html, /class="section">Signal</);
+    assert.match(html, /An AI critic sorts each scored script's dramatic form/);
+    assert.match(html, /a fixed rule-checker sorts each proof run/);
+    // two verdict cards with their category labels
+    assert.match(html, /class="sig-card__k">scripts · critic verdict</);
+    assert.match(html, /class="sig-card__k">proof runs · rule-checker verdict</);
+    // headline percentages are of each bar's own total (60/100, 7/10)
+    assert.match(html, /60<span class="sig-card__pct">%<\/span> <span class="sig-card__lbl">recognition</);
+    assert.match(html, /70<span class="sig-card__pct">%<\/span> <span class="sig-card__lbl">grounded</);
+    // the segmented bar + a legend entry carrying raw count and per-segment %
+    assert.match(html, /class="vbar"/);
+    assert.match(html, /recognition <b>60<\/b> <span class="leg__pct">60%/);
+    // footers: classified-vs-unclassified split, and the not-a-quality-score caveat
+    assert.match(html, /100 critic verdicts · 5 unclassified/);
+    assert.match(html, /10 proof runs · a checker outcome, not a quality score/);
+    // four score histograms, one per dramatic-form dimension, with mean beneath
+    for (const dim of ['recontextualization', 'stated insight', 'rupture', 'global coherence']) {
+      assert.match(html, new RegExp(`class="hist__l">${dim}<`));
+    }
+    assert.match(html, /class="hist__l">recontextualization<\/div><div class="hist__avg">avg 75</);
+  });
+
   it('tolerates an empty corpus (called with no stats)', () => {
     const html = renderDashboardHtml();
     assert.match(html, /no disciplines tagged yet/);
     assert.match(html, /Tutoring, staged as drama\./);
+    // Signal charts degrade gracefully to zeroed headlines, not NaN/undefined
+    assert.match(html, /0<span class="sig-card__pct">%<\/span> <span class="sig-card__lbl">recognition</);
+    assert.doesNotMatch(html, /NaN/);
   });
 
   it('filters by discipline independently of run — the fix for the empty-result bug', () =>
