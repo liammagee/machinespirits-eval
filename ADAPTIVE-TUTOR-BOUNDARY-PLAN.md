@@ -893,16 +893,22 @@ Corridor occupancy against the E0 λ=0 map (fan-2 only):
 
 Total fatal-cell entries: 7 (identical to fan-1). Late-side license uses: 0 (again).
 
-The mechanism, stated plainly: with the decay seed fixed, the only live variance is
-whether the tutor **holds `p_bearing` and `p_chart` to cue or pulls them early**.
-Hold both (r4, r9) → the chain seats, D descends to 0, the play grounds at t20. Pull
-either early (r1, r5, r6, r7, r8, r10) → the early-released exhibit decays before the
-learner seats it, D stalls at a 3–5 plateau, the play disengages at t12 (or, in r10,
-aports at t8). The 4/10 rate is therefore the **base rate at which an unguarded
-codex tutor happens to hold both early exhibits** — not noise around a true rate, but
-the frequency of a single binary conduct choice. This is precisely the latitude the
-pacing guard (`--pacing-guard`, E3/E5) removes by forcing the on-cue schedule, which
-makes a pacing-guard arm the theory-named mechanism delta for the loop below.
+The mechanism, stated plainly *(this paragraph was rewritten 2026-06-13 after the guard
+fan: the first pass over-simplified it to "hold both exhibits to cue," which `r2`/`r3`
+break — corrected here)*: with the decay seed fixed, the live variance is **where the
+tutor places `p_chart`, the keystone of the middle chain**. Holding `p_chart` to cue (t9)
+grounded 3/3 frozen arms (`r2`, `r4`, `r9`); pulling it early to t7 grounded only 1/6
+(`r3` alone — saved when seeded decay dropped D a turn later and let `p_residue` arrive in
+time); leaving it unreached died (`r10`, aporia t8). `p_bearing`'s early-pull is far more
+survivable — `r2` and `r3` both pulled `p_bearing` to t3 and still grounded — so the clean
+discriminator is `p_chart`-to-cue, **not** "hold both." Only **2 of 10** frozen arms held
+*both* exhibits to cue (`r4`, `r9`, both grounded); the 4/10 grounding rate is therefore
+NOT the rate at which the tutor holds both — it includes `r2`/`r3`, which grounded despite
+early pulls. What the unguarded tutor does spontaneously is pull early (8/10 `p_bearing`→t3,
+6/10 `p_chart`→t7 — the 14 fatal-cell entries above), holding `p_chart` to cue only 3/10 of
+the time. The pacing guard (`--pacing-guard`, E3/E5) removes that latitude by forcing the
+on-cue schedule, which makes a pacing-guard arm the theory-named mechanism delta for the
+loop below.
 
 ### E2-mechanism registration — pacing-guard fan (2026-06-13)
 
@@ -975,3 +981,77 @@ null is already the best-case read; spend no further arms. (This is a deliberate
 tightening of the frozen fans' 0/5 kill, to conserve the meterless quota.) No re-roll in
 either direction; crash/truncation = delete the arm dir, rerun the same label, note it in
 the outcome.
+
+### E2-mechanism outcome — pacing-guard fan (2026-06-13)
+
+**Execution.** Five arms run serially, attended, on the meterless Max-plan path; no
+re-rolls. Labels `lantern-e2-guard-r1` … `r5`, group `lantern-e2-guard`, the frozen p4
+command verbatim + `--pacing-guard` (zero other deltas). Commits: r1 `f5953a11`,
+r2 `24854747`, r3 `308376f6`, r4 `cf49aca8`, r5 `309de049` (registration `ccfa8021`).
+Per arm the three artifacts (`diagnosis.json`, `result.json`, `transcript.md`) were
+force-added over the gitignored `exports/` tree, matching the frozen-fan convention.
+Pre-registered early-stop (0 groundings in the first two arms → STOP) **not triggered**:
+`r1` died but `r2` grounded, so the fan ran to five. Fable critic backfill deferred (as
+for the frozen fans). One operational note: `r4` was launched inside a bundled
+commit-and-launch call whose tracked wrapper notified early; the arm's node process ran
+to completion uninterrupted and was verified from its written artifacts, not the wrapper's
+exit — no effect on the run.
+
+**Rate.** **4 of 5 grounded** (`r2`, `r3`, `r4`, `r5` — all `grounded_anagnorisis` t20,
+forced-to-asserted gap 0), **1 disengagement** (`r1`, round 7). Point estimate **0.80**,
+Clopper–Pearson 95% **[0.284, 0.995]**; Fisher-exact one-sided greater vs the frozen 4/10
+**p = 0.1818**.
+
+| arm | verdict | turn | p_bearing | p_chart | p_key | note |
+|---|---|---|---|---|---|---|
+| r1 | disengagement | round 7 | t4 on-cue | **unreached** | unreached | p_bearing decayed t5, unrestored; D 4→5; learner left t7 |
+| r2 | grounded | t20 (gap 0) | t4 on-cue | t9 on-cue | t15 (safe) | canonical safe schedule |
+| r3 | grounded | t20 (gap 0) | t4 on-cue | t9 on-cue | t15 (safe) | canonical safe schedule |
+| r4 | grounded | t20 (gap 0) | t4 on-cue | t9 on-cue | t15 (safe) | canonical safe schedule |
+| r5 | grounded | t20 (gap 0) | t4 on-cue | t9 on-cue | t15 (safe) | canonical safe schedule |
+
+(All four survivors show `onCue` 7 with a single flagged deviation, `p_key`@t15 — early
+relative to its t17 cue but **inside** the E0 safe set {t15–t18}; `r1` shows `onCue` 3,
+no early deviation at all — it simply never reached `p_chart`.)
+
+**Verdict band: DIRECTIONAL ONLY** (pre-registered). 4/5 = 0.80 lifts the point estimate
+from the unguarded 0.40, but CP95 [0.284, 0.995] overlaps the frozen interval and Fisher
+p = 0.18 ≥ 0.05. The 5/5 convergence band (Fisher p = 0.042, CP95 lower 0.478) became
+unreachable the moment `r1` — the first arm — died, so the fan cannot land the only band
+that would have converged the recipe. Per the registration this is reported as a
+directional signal, **not a converged rate, and it authorises no further paid spend**.
+
+**What the fan establishes (two things), and the residual death.**
+
+1. *The guard did its one job — zero early pulls.* Against the two frozen fans' **fourteen**
+   early fatal-cell entries (8 `p_bearing`→t3, 6 `p_chart`→t7), the guard removed the
+   early-pull latitude entirely: **0/5 arms pulled the keystone chain early.** The four
+   survivors each played the identical canonical safe schedule — `p_bearing`@t4,
+   `p_chart`@t9 on cue, `p_key`@t15.
+
+2. *The keystone read sharpens — and corrects the frozen-fan write-up.* Pooling all
+   fifteen frozen-plus-guard arms by **`p_chart` placement**: on cue (t9) → **7/7
+   grounded**; pulled early (t7) → **1/6**; unreached → **0/2**. That is the clean
+   discriminator. It supersedes the frozen fans' first pass (and the v3.0.145 paper entry),
+   which over-stated it as "holds *both* `p_bearing` and `p_chart` to cue": `r2` and `r3`
+   both grounded *after* pulling `p_bearing` early, and only **2 of 10** frozen arms held
+   both. `p_chart`, not "both," is the keystone; the guard grounds by forcing it to t9.
+
+*The residual death relocates, it does not reintroduce.* `r1` is **not** an early-pull
+death — it pulled nothing early (every release on cue). Its on-cue `p_bearing` (t4)
+**decayed at t5** and, with no proof-debt guard in this single-delta arm, was **never
+restored** (`unrepairedAtEnd: 1`); `D` bounced 4→5 and the learner disengaged at t7 before
+`p_chart` could be reached. That is the **decay-starvation** class — the same failure E3
+hits on the late-decay config (disengagement t24) and E5's proof-debt guard converts to
+grounded (t20). So the fan answers the registration's untested-interaction question:
+forcing `p_chart` on cue **lifts grounding directionally even under early decay**, and the
+price is a residual decay-seating death already named and fixed one rung up the guard
+ladder — **not** the hold-then-decay collapse the registration flagged as the adverse
+possibility (had the guard's forced holds collided destructively with early decay, the
+rate would have fallen at or below the frozen 0.40; it rose to 0.80).
+
+**Loop status.** The directional read does not authorise more paid arms. The paid
+E2-mechanism loop is **ended**. Any further move — a larger guard fan to reach the
+convergence band, a guard-alone isolation, or a proof-debt-guarded *early*-decay arm to
+convert `r1`'s decay-seating death the way E5 converted E3's on late decay — is a fresh
+sanction. Folded to paper §6.13.10 at v3.0.147.
