@@ -1,6 +1,6 @@
 # Guard compiler replay report: The Light Shillings
 
-Static P1a slice only: WorldIR + GuardSpec compilation and dry replay over archived arms. No live runtime behavior, model calls, database writes, or new k-fans.
+Static P1 slice only: WorldIR + GuardSpec compilation and dry replay over archived arms. No live runtime behavior, model calls, database writes, or new k-fans.
 
 ## WorldIR summary
 
@@ -45,6 +45,16 @@ Static P1a slice only: WorldIR + GuardSpec compilation and dry replay over archi
 | `unguarded` | 5 | 16 | 2 | 0 |
 | `pacing` | 5 | 20 | 0 | 0 |
 | `visible` | 5 | 20 | 7 | 9 |
+
+## Visible-vs-hidden agreement replay
+
+| arm | decision points | agreement | false releases | false holds | catastrophic false releases |
+|---|---:|---:|---:|---:|---:|
+| `marrick-visible-r1` | 6 | 0.333 | 2 | 2 | 2 |
+| `marrick-visible-r2` | 5 | 0.400 | 2 | 1 | 2 |
+| `marrick-visible-r3` | 5 | 0.600 | 1 | 1 | 1 |
+| `marrick-visible-r4` | 5 | 0.600 | 1 | 1 | 1 |
+| `marrick-visible-r5` | 6 | 0.500 | 1 | 2 | 1 |
 
 ## Arm details
 

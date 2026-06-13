@@ -1,6 +1,6 @@
 # Guard compiler replay report: The Light on the Knock
 
-Static P1a slice only: WorldIR + GuardSpec compilation and dry replay over archived arms. No live runtime behavior, model calls, database writes, or new k-fans.
+Static P1 slice only: WorldIR + GuardSpec compilation and dry replay over archived arms. No live runtime behavior, model calls, database writes, or new k-fans.
 
 ## WorldIR summary
 
@@ -44,6 +44,23 @@ Static P1a slice only: WorldIR + GuardSpec compilation and dry replay over archi
 | `unguarded` | 10 | 23 | 17 | 0 |
 | `pacing` | 5 | 13 | 0 | 0 |
 | `visible` | 5 | 15 | 8 | 2 |
+
+## Visible-vs-hidden agreement replay
+
+| arm | decision points | agreement | false releases | false holds | catastrophic false releases |
+|---|---:|---:|---:|---:|---:|
+| `lantern-e2-visible-r1` | 5 | 0.600 | 0 | 2 | 0 |
+| `lantern-e2-visible-r2` | 4 | 0.250 | 2 | 1 | 2 |
+| `lantern-e2-visible-r3` | 4 | 0.500 | 2 | 0 | 2 |
+| `lantern-e2-visible-r4` | 4 | 0.250 | 2 | 1 | 2 |
+| `lantern-e2-visible-r5` | 3 | 0.333 | 2 | 0 | 2 |
+
+## Proof-debt replay
+
+| arm | guard | verdict | failure mode | detected | restored | targets | tutor view | ledger ctrl | pass |
+|---|---|---|---|---:|---:|---|---|---|---|
+| `lantern-e3-real-r1` | `pacing` | disengagement t24 | `decay_seating_death` | 0 | 0 | none | narrow | absent | n/a |
+| `lantern-e5-proof-debt-real-r1` | `proof_debt` | grounded_anagnorisis t20 | `grounded` | 1 | 1 | `p_bearing` | narrow | present | PASS |
 
 ## Arm details
 

@@ -1,5 +1,5 @@
 {
-  "schema": "dramatic-derivation.guard-compiler-run.v0",
+  "schema": "dramatic-derivation.guard-compiler-run.v1",
   "mode": "static_replay_first",
   "worlds": [
     {
@@ -62,6 +62,27 @@
           "interventions": 2
         }
       },
+      "visibleAgreement": {
+        "arms": 5,
+        "decisionPoints": 20,
+        "agreements": 8,
+        "falseReleases": 8,
+        "falseHolds": 4,
+        "catastrophicFalseReleases": 8,
+        "agreementRate": 0.4
+      },
+      "proofDebt": {
+        "arms": 2,
+        "proofDebtArms": 1,
+        "validatedProofDebtArms": 1,
+        "debtsDetected": 1,
+        "restoredMoves": 1,
+        "repairedTargets": [
+          "p_bearing"
+        ],
+        "tutorViewLeaks": [],
+        "ledgerArithmeticPositiveControls": 1
+      },
       "missingArms": []
     },
     {
@@ -123,6 +144,16 @@
           "interventions": 9
         }
       },
+      "visibleAgreement": {
+        "arms": 5,
+        "decisionPoints": 27,
+        "agreements": 13,
+        "falseReleases": 7,
+        "falseHolds": 7,
+        "catastrophicFalseReleases": 7,
+        "agreementRate": 0.481
+      },
+      "proofDebt": null,
       "missingArms": []
     }
   ]

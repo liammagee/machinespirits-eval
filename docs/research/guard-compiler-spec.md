@@ -1,7 +1,8 @@
 # Dynamic Guard Compiler Spec, P1a Replay Slice
 
-**Status:** implemented as a static replay-first slice, not a live runtime compiler.  
-**Entry point:** `npm run derivation:guard-compiler`  
+**Status:** implemented as a static replay-first slice, not a live runtime compiler.
+**Entry point:** `npm run derivation:guard-compiler`
+**Golden check:** `npm run derivation:guard-compiler:check`
 **Generated artifacts:** `exports/dramatic-derivation/guard-compiler/`
 
 ## Scope
@@ -13,6 +14,8 @@ It does:
 - normalize existing worlds into `WorldIR`;
 - compile static `GuardSpec` JSON for hidden pacing, proof-debt repair, and visible projection;
 - replay archived lantern and Marrick arms through the existing detector-split and release-solvency readers;
+- compare visible guard decisions against hidden release-solvency references;
+- replay the E5 proof-debt arm against the narrow-view and positive-control requirements;
 - emit per-world reports that distinguish topology, guard specification, failure-mode movement, and played-release safety.
 
 It does not:
@@ -102,12 +105,31 @@ The report writes:
 - `guard-compiler-report-world-005-marrick.md`;
 - `guard-compiler-index.{md,json}`.
 
+`npm run derivation:guard-compiler:check` regenerates the same artifact set in a temporary directory and byte-compares it against the committed files. A nonzero exit means the committed reports are stale.
+
 The key reproduced contrasts are:
 
 - Lantern: unguarded `4 grounded / 6 early-pull`, hidden pacing `4 grounded / 1 decay-seating`, visible `5 grounded`.
 - Marrick: unguarded `0 grounded / 2 early-pull / 3 decay-seating`, hidden pacing `5 grounded`, visible `0 grounded / 5 early-pull`.
 
 The played-release safety replay adds a stricter hidden-reference view: visible pacing can ground on lantern while still disagreeing with hidden solvency on some placements; on Marrick that disagreement becomes fatal. This is why visible projection remains certification-gated rather than globally accepted.
+
+The current agreement metrics make that boundary explicit:
+
+- Lantern visible arms ground 5/5 but agree with the hidden release-solvency reference on only 8 of 20 visible decision points (`0.400`), with 8 hidden-forbidden releases and 4 false holds.
+- Marrick visible arms agree on 13 of 27 visible decision points (`0.481`), with 7 hidden-forbidden releases and 7 false holds; these arms fail 0/5.
+- E5 proof-debt replay validates the current proof-debt contract on the committed arm: 1 detected debt, 1 restored move, target `p_bearing`, narrow tutor view, and a positive-control arithmetic ledger present only on the harness side.
+
+These figures are not a new run result. They are stricter replay reads over already committed artifacts.
+
+## Validation Precursors Completed
+
+Four P1 validation precursors are now in place:
+
+1. **Golden-output validation:** `derivation:guard-compiler:check` regenerates and byte-compares the committed artifact set.
+2. **Visible-vs-hidden agreement:** reports include visible decision agreement, false releases, false holds, and hidden-forbidden release counts.
+3. **Proof-debt replay validation:** the E5 proof-debt arm is checked for detected/restored debt, narrow tutor view, and harness-side arithmetic positive control.
+4. **World-mutation tests:** `tests/dramaticDerivationGuardCompiler.test.js` verifies the topology classifier changes when Marrick's disjoint join is removed and when lantern is mutated into a disjoint top-level join.
 
 ## Boundary With P2/P5
 
