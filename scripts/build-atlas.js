@@ -201,8 +201,21 @@ function buildSpine(man, paper) {
       `the evidence map below are projected from \`atlas.yaml\` and stay in sync by construction.\n`,
   );
   if (a.orientation) out.push('## Orientation\n', `${a.orientation.trim()}\n`);
-  if (a.maps?.theoretical) out.push('## Theoretical map\n', `${a.maps.theoretical.trim()}\n`);
-  if (a.maps?.methodological) out.push('## Methodological map\n', `${a.maps.methodological.trim()}\n`);
+  if (a.core_idea) out.push('## The core idea\n', `${a.core_idea.trim()}\n`);
+
+  if (Array.isArray(a.findings) && a.findings.length) {
+    out.push('## The findings\n');
+    if (a.families_intro) out.push(`${a.families_intro.trim()}\n`);
+    for (const f of a.findings) {
+      const st = STATUS[f.verdict] || { tag: f.verdict, label: f.verdict };
+      out.push(`### ${f.family}\n`);
+      out.push(`**[${st.tag}]** ${st.label}\n`);
+      if (f.body) out.push(`${f.body.trim()}\n`);
+      if (f.caveat) out.push(`*Caveat.* ${f.caveat.trim()}\n`);
+    }
+  }
+
+  if (a.maps?.methodological) out.push('## How we know it\n', `${a.maps.methodological.trim()}\n`);
 
   out.push('## Evidence map\n');
   if (a.maps?.evidence) out.push(`${a.maps.evidence.trim()}\n`);
@@ -231,6 +244,14 @@ function buildSpine(man, paper) {
   out.push('## Claim-status grammar\n');
   for (const k of Object.keys(STATUS)) out.push(`- **[${STATUS[k].tag}]** — ${STATUS[k].label}`);
   out.push('');
+
+  if (a.glossary && typeof a.glossary === 'object') {
+    out.push('## A short glossary\n');
+    for (const [term, def] of Object.entries(a.glossary)) out.push(`**${term}.** ${String(def).trim()}\n`);
+  }
+
+  if (a.whats_open) out.push("## What's still open\n", `${a.whats_open.trim()}\n`);
+
   return out.join('\n');
 }
 
