@@ -1,0 +1,743 @@
+{
+  "label": "lantern-e2-guard-r1",
+  "group": "lantern-e2-guard",
+  "note": null,
+  "scriptPath": "config/drama-derivation/tutor-scripts/lantern-v001.md",
+  "worldPath": "config/drama-derivation/world-002-lantern.yaml",
+  "backend": {
+    "mode": "real",
+    "roles": {
+      "director": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "tutor": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "tutor_superego": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "learner": {
+        "provider": "claude",
+        "model": "sonnet",
+        "cli": true
+      }
+    }
+  },
+  "dials": {
+    "recognition": 0,
+    "charisma": 0
+  },
+  "dramaturgy": "free",
+  "tutorSuperego": true,
+  "tutorStallWatch": false,
+  "criticFeedback": null,
+  "learnerVoice": null,
+  "decay": {
+    "seed": 1,
+    "rate": 0.75,
+    "graceTurns": 1,
+    "maxConcurrent": 2,
+    "startTurn": 1,
+    "mutateShare": 1,
+    "pool": "staged"
+  },
+  "decayVisibility": "conduct",
+  "actsConfig": {
+    "minActTurns": 3,
+    "maxActTurns": 8
+  },
+  "reconstruct": false,
+  "confront": true,
+  "releaseAuthority": true,
+  "pacingGuard": true,
+  "proofDebtGuard": false,
+  "repairClause": true,
+  "plotDial": true,
+  "throughlineDial": true,
+  "elapsedMs": 402423,
+  "usage": {
+    "calls": 30,
+    "inputTokens": 0,
+    "outputTokens": 0,
+    "costUSD": 0,
+    "byRole": {
+      "director": {
+        "calls": 7,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "tutor": {
+        "calls": 7,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "tutor_superego": {
+        "calls": 9,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "learner": {
+        "calls": 7,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      }
+    }
+  },
+  "worldId": "world_002_lantern",
+  "verdict": "disengagement",
+  "turnsPlayed": 7,
+  "turnCap": 26,
+  "firstForcedTurn": null,
+  "assertedGroundedTurn": null,
+  "forcedToAssertedGap": null,
+  "dCurve": [
+    5,
+    5,
+    5,
+    4,
+    4,
+    5,
+    5
+  ],
+  "learningSlope": {
+    "d0": 5,
+    "dFinal": 5,
+    "overall": {
+      "delta": 0,
+      "turns": 7,
+      "ratePerTurn": 0
+    },
+    "perAct": [
+      {
+        "act": "1",
+        "title": "Act 1",
+        "turns": [
+          1,
+          4
+        ],
+        "dStart": 5,
+        "dEnd": 4,
+        "delta": 1,
+        "ratePerTurn": 0.25
+      },
+      {
+        "act": "2",
+        "title": "Act 2",
+        "turns": [
+          5,
+          7
+        ],
+        "dStart": 4,
+        "dEnd": 5,
+        "delta": -1,
+        "ratePerTurn": -0.333
+      }
+    ]
+  },
+  "longestPlateau": 1,
+  "aporiaWindow": 6,
+  "eventsByType": {
+    "plot": 2,
+    "throughline": 1,
+    "decay": 2,
+    "act_end": 1,
+    "plot_audit": 2,
+    "repair": 1,
+    "disengagement": 1
+  },
+  "fabricatedFacts": [],
+  "releaseAdherence": {
+    "rows": [
+      {
+        "premise": "m_key",
+        "plannedTurn": 2,
+        "plannedVia": "director",
+        "actualTurn": 2,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_bearing",
+        "plannedTurn": 4,
+        "plannedVia": "tutor",
+        "actualTurn": 4,
+        "actualVia": "tutor",
+        "status": "on_cue"
+      },
+      {
+        "premise": "m_post",
+        "plannedTurn": 6,
+        "plannedVia": "director",
+        "actualTurn": 6,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "m_shutter",
+        "plannedTurn": 8,
+        "plannedVia": "director",
+        "actualTurn": null,
+        "actualVia": null,
+        "status": "unreached"
+      },
+      {
+        "premise": "p_chart",
+        "plannedTurn": 9,
+        "plannedVia": "tutor",
+        "actualTurn": null,
+        "actualVia": null,
+        "status": "unreached"
+      },
+      {
+        "premise": "p_residue",
+        "plannedTurn": 13,
+        "plannedVia": "director",
+        "actualTurn": null,
+        "actualVia": null,
+        "status": "unreached"
+      },
+      {
+        "premise": "p_key",
+        "plannedTurn": 17,
+        "plannedVia": "tutor",
+        "actualTurn": null,
+        "actualVia": null,
+        "status": "unreached"
+      },
+      {
+        "premise": "p_skiff",
+        "plannedTurn": 20,
+        "plannedVia": "director",
+        "actualTurn": null,
+        "actualVia": null,
+        "status": "unreached"
+      }
+    ],
+    "onCue": 3,
+    "deviations": [],
+    "missed": [],
+    "unscheduled": []
+  },
+  "staging": {
+    "source": "director",
+    "movements": [
+      {
+        "turn": 1,
+        "name": "Act 1",
+        "intent": "[The hearing room gathers itself under a low, salt-stained light; wet coats steam along the back wall, and the empty table at the center waits for the first paper. Outside, the weather presses at the panes as if it too has come to listen.]"
+      },
+      {
+        "turn": 5,
+        "name": "Act 2",
+        "intent": "[The clerk closes the bearing-book without flourish, and the room seems for a moment to have spent its first anger. Beyond the windows the dusk thickens; the next act enters colder, with certainty asked to stand against sealed doors and official dark.]"
+      }
+    ],
+    "tutorNotes": []
+  },
+  "superegoNotes": [],
+  "tutorFigures": {
+    "total": 7,
+    "counts": {
+      "analogia": 3,
+      "erotema": 2,
+      "anaphora": 2
+    },
+    "distinct": 3,
+    "topFigure": "analogia",
+    "topShare": 0.429,
+    "switchRate": 0.667,
+    "noteTurns": 0,
+    "switchOnNoteTurns": null,
+    "switchElsewhere": 0.667,
+    "superego": {
+      "watched": 7,
+      "interventions": 0,
+      "interventionRate": 0,
+      "withinTurnChanges": 0,
+      "withinTurnChangeRate": null,
+      "switchOnIntervention": null,
+      "switchElsewhere": 0.667,
+      "stallWatch": null
+    }
+  },
+  "learnerInference": {
+    "nodes": [],
+    "voicedCount": 0,
+    "overreachCount": 0,
+    "mischanneledCount": 0,
+    "stallIntegral": 0,
+    "stallFires": [],
+    "postFireUptake": {
+      "fires": 0,
+      "uptaken": 0,
+      "rate": null
+    },
+    "targetObedience": {
+      "fires": 0,
+      "obeyed": 0,
+      "rate": null
+    }
+  },
+  "dialogueDiscipline": {
+    "director": {
+      "turns": 7,
+      "maxSentences": 4,
+      "avgSentences": 3,
+      "avgWords": 40.1
+    },
+    "tutor": {
+      "turns": 7,
+      "maxSentences": 3,
+      "avgSentences": 2.14,
+      "avgWords": 44.3
+    },
+    "learner": {
+      "turns": 7,
+      "maxSentences": 4,
+      "avgSentences": 3.57,
+      "avgWords": 82
+    }
+  },
+  "proofExtracted": false,
+  "corruption": {
+    "config": {
+      "seed": 1,
+      "rate": 0.75,
+      "graceTurns": 1,
+      "maxConcurrent": 2,
+      "startTurn": 1,
+      "mutateShare": 1,
+      "pool": "staged"
+    },
+    "decayEvents": 2,
+    "repairs": {
+      "total": 1,
+      "byTutor": 1,
+      "byReadoption": 0
+    },
+    "meanRepairLatency": 4,
+    "unrepairedAtEnd": 1,
+    "degradedTurnIntegral": 6,
+    "dReversals": 1,
+    "mutations": {
+      "total": 0,
+      "retracted": 0,
+      "revised": 0,
+      "falseBeliefsAtEnd": 0,
+      "confrontPromptedRetractions": 0
+    },
+    "fidelity": {
+      "final": 0.714,
+      "min": 0.714
+    },
+    "timeline": [
+      {
+        "premiseId": "m_key",
+        "fact": [
+          "onlyKeyTo",
+          "harlowPoint",
+          "brandt"
+        ],
+        "mode": "delete",
+        "falseForm": null,
+        "decayTurn": 3,
+        "retractTurn": null,
+        "repairTurn": 7,
+        "via": "tutor"
+      },
+      {
+        "premiseId": "p_bearing",
+        "fact": [
+          "loggedBearingOf",
+          "mara",
+          "sswHalfWest"
+        ],
+        "mode": "delete",
+        "falseForm": null,
+        "decayTurn": 5,
+        "retractTurn": null,
+        "repairTurn": null,
+        "via": null
+      }
+    ]
+  },
+  "acts": [
+    {
+      "act": 1,
+      "turns": [
+        1,
+        4
+      ],
+      "endedBy": "director",
+      "brief": "[The hearing room gathers itself under a low, salt-stained light; wet coats steam along the back wall, and the empty table at the center waits for the first paper. Outside, the weather presses at the panes as if it too has come to listen.]"
+    },
+    {
+      "act": 2,
+      "turns": [
+        5,
+        7
+      ],
+      "endedBy": "run_end",
+      "brief": "[The clerk closes the bearing-book without flourish, and the room seems for a moment to have spent its first anger. Beyond the windows the dusk thickens; the next act enters colder, with certainty asked to stand against sealed doors and official dark.]"
+    }
+  ],
+  "releaseDeviations": {
+    "turnsWithWindow": 4,
+    "played": 1,
+    "onSchedule": 1,
+    "early": 0,
+    "held": 0,
+    "forced": 0,
+    "overridden": 0,
+    "invalidClaims": 0,
+    "reasons": [],
+    "decisions": [
+      {
+        "turn": 1,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "pacingGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "alternative": null,
+          "alternativeTurn": null,
+          "reason": null,
+          "candidateSolvency": null,
+          "playedSolvency": null,
+          "safeTurns": {}
+        }
+      },
+      {
+        "turn": 2,
+        "windowSize": 1,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "pacingGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "alternative": null,
+          "alternativeTurn": null,
+          "reason": null,
+          "candidateSolvency": null,
+          "playedSolvency": null,
+          "safeTurns": {
+            "p_bearing": [
+              4,
+              5,
+              6
+            ]
+          }
+        }
+      },
+      {
+        "turn": 3,
+        "windowSize": 1,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "pacingGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "alternative": null,
+          "alternativeTurn": null,
+          "reason": null,
+          "candidateSolvency": null,
+          "playedSolvency": null,
+          "safeTurns": {
+            "p_bearing": [
+              4,
+              5,
+              6
+            ]
+          }
+        }
+      },
+      {
+        "turn": 4,
+        "windowSize": 1,
+        "claimed": "p_bearing",
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": "p_bearing",
+        "scheduledTurn": 4,
+        "offset": 0,
+        "reason": null,
+        "pacingGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": "p_bearing",
+          "alternative": null,
+          "alternativeTurn": null,
+          "reason": null,
+          "candidateSolvency": {
+            "premise": "p_bearing",
+            "turn": 4,
+            "safe": true,
+            "verdict": "survives_forced",
+            "endTurn": 20,
+            "forcedTurn": 20
+          },
+          "playedSolvency": {
+            "premise": "p_bearing",
+            "turn": 4,
+            "safe": true,
+            "verdict": "survives_forced",
+            "endTurn": 20,
+            "forcedTurn": 20
+          },
+          "safeTurns": {
+            "p_bearing": [
+              4,
+              5,
+              6
+            ]
+          }
+        }
+      },
+      {
+        "turn": 5,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "pacingGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "alternative": null,
+          "alternativeTurn": null,
+          "reason": null,
+          "candidateSolvency": null,
+          "playedSolvency": null,
+          "safeTurns": {}
+        }
+      },
+      {
+        "turn": 6,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "pacingGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "alternative": null,
+          "alternativeTurn": null,
+          "reason": null,
+          "candidateSolvency": null,
+          "playedSolvency": null,
+          "safeTurns": {}
+        }
+      },
+      {
+        "turn": 7,
+        "windowSize": 1,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "pacingGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "alternative": null,
+          "alternativeTurn": null,
+          "reason": null,
+          "candidateSolvency": null,
+          "playedSolvency": null,
+          "safeTurns": {
+            "p_chart": [
+              8,
+              9
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "confrontation": {
+    "confrontations": [
+      {
+        "turn": 5,
+        "target": "p_bearing",
+        "targetDecayed": true
+      }
+    ],
+    "reentries": {
+      "total": 0,
+      "covered": 0,
+      "uncovered": []
+    },
+    "restores": [
+      {
+        "turn": 7,
+        "target": "m_key",
+        "targetDecayed": true,
+        "repaired": true
+      }
+    ],
+    "superego": {
+      "reentryFires": 0,
+      "convertedToConfront": 0,
+      "firesWithoutDue": 0,
+      "restoreClaimFires": 0,
+      "proofDebtClaimFires": 0,
+      "draftsDueByRecord": 0,
+      "fires": []
+    }
+  },
+  "plot": {
+    "plots": {
+      "count": 2,
+      "disciplined": 2,
+      "meanClauses": 5.5,
+      "perAct": [
+        {
+          "act": 1,
+          "turn": 1,
+          "clauseCount": 5,
+          "hasWithhold": true,
+          "hasFriction": true,
+          "holdNamed": [],
+          "holdStagedInAct": [],
+          "withholdNamed": [],
+          "withholdPlayedInAct": []
+        },
+        {
+          "act": 2,
+          "turn": 5,
+          "clauseCount": 6,
+          "hasWithhold": true,
+          "hasFriction": true,
+          "holdNamed": [],
+          "holdStagedInAct": [],
+          "withholdNamed": [],
+          "withholdPlayedInAct": []
+        }
+      ]
+    },
+    "audits": {
+      "count": 2,
+      "finalIncluded": true,
+      "verdictMix": {
+        "kept": 8,
+        "justified_deviation": 2,
+        "drift": 1,
+        "unscored": 0
+      },
+      "perAct": [
+        {
+          "act": 1,
+          "turn": 5,
+          "final": false,
+          "clauses": 5,
+          "mix": {
+            "kept": 4,
+            "justified_deviation": 1,
+            "drift": 0,
+            "unscored": 0
+          }
+        },
+        {
+          "act": 2,
+          "turn": 7,
+          "final": true,
+          "clauses": 6,
+          "mix": {
+            "kept": 4,
+            "justified_deviation": 1,
+            "drift": 1,
+            "unscored": 0
+          }
+        }
+      ]
+    },
+    "crossCheck": {
+      "holdNamed": 0,
+      "holdStagedInAct": 0,
+      "withholdNamed": 0,
+      "withholdPlayedInAct": 0
+    },
+    "throughline": {
+      "count": 1,
+      "byTrigger": {
+        "opening": 1,
+        "recommit": 0,
+        "audit_bound": 0,
+        "voluntary": 0
+      },
+      "disciplined": 1,
+      "arcs": {
+        "count": 2,
+        "mix": {
+          "on_arc": 2,
+          "off_arc": 0,
+          "unscored": 0
+        }
+      },
+      "finalReckoning": {
+        "clauses": 7,
+        "mix": {
+          "kept": 6,
+          "justified_deviation": 1,
+          "drift": 0,
+          "unscored": 0
+        }
+      }
+    }
+  }
+}
