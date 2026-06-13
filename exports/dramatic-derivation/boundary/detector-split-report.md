@@ -11,6 +11,7 @@ Frozen-artifact classification only. Registered run verdicts stand; this report 
 | `lantern-e2-real-r1` | disengagement t12 | `tempo_starved_house` | tempo-insolvent tutor release(s): p_bearing@t3, p_chart@t7 |
 | `lantern-e2-real-r5` | disengagement t12 | `tempo_starved_house` | tempo-insolvent tutor release(s): p_bearing@t3, p_chart@t7 |
 | `lantern-e3-real-r1` | disengagement t24 | `decay_starved_lucky_leap` | 2 unrepaired dropped premise(s) at end; 4 lucky leap(s), 12 overreach event(s); terminal learner text names dropped premise(s): p_bearing |
+| `lantern-e5-proof-debt-real-r1` | grounded_anagnorisis t20 | `grounded_control` | grounded verdict; no detector split applied |
 
 ## Interpretation
 

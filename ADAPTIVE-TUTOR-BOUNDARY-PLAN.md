@@ -732,3 +732,48 @@ Kill rule: if the guard repeatedly overrides ordinary conduct without repairing 
 real proof debt, stop and do not spend another arm on this mechanism without a new
 registration. Crash/truncation = delete the artifact dir, re-run the same label,
 and note it in the outcome.
+
+### E5 outcome — 2026-06-13
+
+Execution: the proof-debt implementation was committed and pushed before the paid
+run (`49e2c55a`). Focused tests, full `npm test`, and the CLI mock smoke
+`lantern-m5-proof-debt-mock-smoke` passed first. One paid arm then ran as
+`lantern-e5-proof-debt-real-r1`; artifacts are committed under
+`exports/dramatic-derivation/loop/lantern-e5-proof-debt-real-r1/`.
+
+Verdict: grounded anagnorisis at t20. The learner's board forced S and the learner
+asserted S on the same turn (forced/asserted gap 0). This converts E3's
+decay-starved t24 failure into the intended grounded endpoint under the same p5
+decay replay configuration plus the single proof-debt delta.
+
+Proof-debt endpoint: passed. At t17, seeded decay dropped `p_bearing`, a true-path
+premise. At t18, the guard detected one proof debt: current D was 2, restoring
+`p_bearing` would reduce D to 1. The tutor restored `p_bearing` in its draft
+(`forcedMoves: 0`), and the engine recorded a tutor repair at t18. At t20,
+`p_skiff` landed, D reached 0, and the learner asserted the secret from the
+grounded chain.
+
+Decay endpoint: passed for proof-state hygiene, with residual non-proof debt left
+visible. The run had 3 slips: `m_key` mutated to the false South Stack/Brandt key
+form at t17, `p_bearing` deleted at t17, and `m_post` deleted at t18. The false
+`m_key` form was struck at t18; `p_bearing` was repaired by the tutor at t18.
+`m_key` and `m_post` remained unrepaired at end, but both are mirror-side residue,
+not the proof path to S. Degraded-turn integral fell to 6; D reversals were 0.
+
+Pacing interaction: stable. The run still avoided the old p5 pacing cliff:
+`p_bearing` landed t4, `p_chart` t9, `p_key` t15 (-2 but solvent), and `p_skiff`
+t20. Pacing guard recorded audits but no blocks, no force-safe moves, no invalid
+claims, and no overrides. This arm's new effect is therefore proof-state repair,
+not a release-pacing change.
+
+Detector split refresh: after the paid arm, `npm run derivation:detector-split`
+was rerun with E5 included. It classifies `lantern-e5-proof-debt-real-r1` as
+`grounded_control`, while E3 remains `decay_starved_lucky_leap`. `npm run
+derivation:mine` was also refreshed.
+
+Interpretation: the next mechanism was correctly aimed. E3 made the release
+corridor safe enough to reach decay; E5 repaired the proof-critical decay debt
+without exposing the raw learner board and without requiring a second paid arm.
+For adaptive tutelage, this is a live example of a minimal programmatic tutor
+guard that preserves conduct-blindness but protects the formal proof state at the
+moment recognition would otherwise become a lucky leap.

@@ -18,6 +18,7 @@ const DEFAULT_ARMS = [
   'lantern-e2-real-r1',
   'lantern-e2-real-r5',
   'lantern-e3-real-r1',
+  'lantern-e5-proof-debt-real-r1',
 ];
 
 const args = process.argv.slice(2);
@@ -91,4 +92,3 @@ for (const row of rows) {
   if (row.missing) console.log(`MISS  ${row.arm} — ${row.reason}`);
   else console.log(`${row.className.padEnd(25)} ${row.arm} · ${row.verdict}@t${row.endTurn}`);
 }
-

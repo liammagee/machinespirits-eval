@@ -421,6 +421,47 @@
         "luckyLeaps": 4,
         "overreaches": 12
       }
+    },
+    {
+      "arm": "lantern-e5-proof-debt-real-r1",
+      "worldId": "world_002_lantern",
+      "verdict": "grounded_anagnorisis",
+      "endTurn": 20,
+      "dFinal": 0,
+      "className": "grounded_control",
+      "reasons": [
+        "grounded verdict; no detector split applied"
+      ],
+      "evidence": {
+        "fatalReleases": [],
+        "unrepairedSlips": [
+          {
+            "premiseId": "m_key",
+            "decayTurn": 17,
+            "mode": "mutate",
+            "repairTurn": null
+          },
+          {
+            "premiseId": "m_post",
+            "decayTurn": 18,
+            "mode": "delete",
+            "repairTurn": null
+          }
+        ],
+        "namedDropped": [
+          "m_key",
+          "m_post"
+        ],
+        "terminalOpenWindows": [
+          {
+            "turn": 15,
+            "windowSize": 1,
+            "played": "p_key"
+          }
+        ],
+        "luckyLeaps": 0,
+        "overreaches": 0
+      }
     }
   ]
 }

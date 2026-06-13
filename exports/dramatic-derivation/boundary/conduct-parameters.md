@@ -4,14 +4,14 @@
 
 ## Aggregates by backend
 
-### real (36 arms, 273 releases)
+### real (37 arms, 281 releases)
 
-- verdicts: grounded_anagnorisis:21 · disengagement:9 · aporia:6
-- adoption lambda: 0:271 · 3+:1 · never:1
-- tutor offsets used: 0:94 · -1:9 · -2:10 (deviation rate 0.168)
-- director off-nominal: 0/160
-- decay slips: 115 · repair latency: 1:26 · 2:20 · 3+:27 · never:42
-- repair via: tutor:73 · unrepaired at end: 42 · false-form dwell (mutate->retract): 2, 1, 4, 1, 1, 1, 4, 10, 1
+- verdicts: grounded_anagnorisis:22 · disengagement:9 · aporia:6
+- adoption lambda: 0:279 · 3+:1 · never:1
+- tutor offsets used: 0:96 · -1:9 · -2:11 (deviation rate 0.172)
+- director off-nominal: 0/165
+- decay slips: 118 · repair latency: 1:27 · 2:20 · 3+:27 · never:44
+- repair via: tutor:74 · unrepaired at end: 44 · false-form dwell (mutate->retract): 2, 1, 1, 4, 1, 1, 1, 4, 10, 1
 
 ### unknown (10 arms, 104 releases)
 
@@ -22,14 +22,14 @@
 - decay slips: 27 · repair latency: 1:2 · 2:2 · 3+:16 · never:7
 - repair via: tutor:20 · unrepaired at end: 7 · false-form dwell (mutate->retract): 1, 1, 4, 1, 1, 8, 6, 2, 1
 
-### mock (31 arms, 282 releases)
+### mock (32 arms, 290 releases)
 
-- verdicts: disengagement:13 · grounded_anagnorisis:18
-- adoption lambda: 0:282
-- tutor offsets used: 0:119 (deviation rate 0)
-- director off-nominal: 0/163
-- decay slips: 38 · repair latency: 2:3 · 3+:9 · never:26
-- repair via: tutor:12 · unrepaired at end: 26 · false-form dwell (mutate->retract): none
+- verdicts: disengagement:13 · grounded_anagnorisis:19
+- adoption lambda: 0:290
+- tutor offsets used: 0:122 (deviation rate 0)
+- director off-nominal: 0/168
+- decay slips: 41 · repair latency: 1:1 · 2:3 · 3+:10 · never:27
+- repair via: tutor:14 · unrepaired at end: 27 · false-form dwell (mutate->retract): none
 
 ## Arms
 
@@ -45,6 +45,7 @@
 | lantern-e2-real-r4 | real | world_002_lantern | grounded_anagnorisis | 20 | 3 (1) | 0,0,0,0,0,0,0,0 | 4 (2) |
 | lantern-e2-real-r5 | real | world_002_lantern | disengagement | 12 | 2 (2) | 0,0,0,0,0 | 3 (1) |
 | lantern-e3-real-r1 | real | world_002_lantern | disengagement | 24 | 3 (1) | 0,0,0,0,0,0,0,0 | 3 (1) |
+| lantern-e5-proof-debt-real-r1 | real | world_002_lantern | grounded_anagnorisis | 20 | 3 (1) | 0,0,0,0,0,0,0,0 | 3 (1) |
 | lantern-p1-dials-on | real | world_002_lantern | aporia | 8 | 1 (1) | 0,0,0,0 | 2 (0) |
 | lantern-p1-dials-on-v2 | real | world_002_lantern | aporia | 8 | 1 (1) | 0,0,0,0 | 3 (1) |
 | lantern-p2-plot-on | real | world_002_lantern | aporia | 8 | 2 (2) | 0,0,0,0,0 | 3 (1) |
@@ -89,6 +90,7 @@
 | lantern-e2-mock-smoke | mock | world_002_lantern | disengagement | 25 | 3 (0) | 0,0,0,0,0,0,0,0 | 4 (2) |
 | lantern-e3-pacing-guard-mock-smoke | mock | world_002_lantern | disengagement | 25 | 3 (0) | 0,0,0,0,0,0,0,0 | 4 (2) |
 | lantern-e3-solvency-mock-smoke | mock | world_002_lantern | disengagement | 25 | 3 (0) | 0,0,0,0,0,0,0,0 | 3 (1) |
+| lantern-m5-proof-debt-mock-smoke | mock | world_002_lantern | grounded_anagnorisis | 20 | 3 (0) | 0,0,0,0,0,0,0,0 | 3 (2) |
 | lantern-p4-hygiene-mock-smoke | mock | world_002_lantern | disengagement | 25 | 3 (0) | 0,0,0,0,0,0,0,0 | 4 (2) |
 | lantern-p5-mutation-mock-smoke | mock | world_002_lantern | disengagement | 25 | 3 (0) | 0,0,0,0,0,0,0,0 | 3 (1) |
 | lantern-revise-mock-off | mock | world_002_lantern | disengagement | 25 | 3 (0) | 0,0,0,0,0,0,0,0 | 2 (0) |
