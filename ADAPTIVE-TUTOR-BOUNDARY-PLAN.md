@@ -777,3 +777,69 @@ without exposing the raw learner board and without requiring a second paid arm.
 For adaptive tutelage, this is a live example of a minimal programmatic tutor
 guard that preserves conduct-blindness but protects the formal proof state at the
 moment recognition would otherwise become a lucky leap.
+
+## E2-extension registration — 2026-06-12 (committed pre-run; this text does not change after)
+
+Sanction: operator, 2026-06-12 ("do the paid 5-run replication … Have licence to
+design and run related loops"; "subject to the results of this second run — if the
+results don't tighten, feel license to loop on the mechanism"; then "go"). Harness
+operator: this Claude (opus) session, succeeding Codex. One sanction = the whole
+second fan.
+
+Purpose: the E2 fan above gave 3/5 grounded, whose Clopper–Pearson 95% lower bound
+is only ≥0.15 — too wide to call a rate. This extension adds a second k=5 fan of the
+**identical** frozen p4 recipe and pools it with r1…r5 to n=10, to tighten the
+grounding-rate estimate. Because the decay seed is fixed (seed 1) and the only live
+variance is conduct stochasticity, r6…r10 are exchangeable draws from the same
+process as r1…r5; pooling is the in-design way to narrow the interval — NOT an
+independent-lab replication, which would need a seed/world change (out of scope per
+the E2 runbook §0.1).
+
+Pooling provenance (why r6…r10 are exchangeable with r1…r5):
+- Zero harness drift: `git diff cc995c61 HEAD` is empty for
+  `services/dramaticDerivation/`, `scripts/run-derivation-loop.js`,
+  `config/drama-derivation/world-002-lantern.yaml`, and the tutor script.
+- `npm run derivation:corridor -- --validate` returns 5/5 PASS today; the corridor
+  reproduces (40/125 = 32.0% at λ=0/1, 19.2% at λ=2).
+- Fan-1 ran 2026-06-12 17:00–18:29 CDT on codex-cli 0.134.0 / claude 2.1.177; fan-2
+  runs the same day on the same CLI versions. Operator identity (Codex → Claude)
+  does not enter the drama; the role models are unchanged (director/tutor/
+  tutor_superego = codex, learner = claude/sonnet pinned, critic = Fable deferred).
+
+Design: k=5 replicates of the frozen p4 recipe (§13.2 / runbook §4 command), zero
+deltas, seed 1 in every arm. Labels lantern-e2-real-r6 … lantern-e2-real-r10, group
+lantern-e2-replication. Serialized, attended, human gate between arms. Critic
+deferred per arm (`--critic off`) and backfilled once Claude quota allows.
+
+Endpoints (pooled n=10):
+1. Pooled grounding rate x/10, with the Clopper–Pearson 95% lower bound read from
+   this pre-tabled column (so it cannot be reverse-fit):
+
+   | pooled x/10 | rate | CP95 lower |
+   |---|---|---|
+   | 3/10 | 0.30 | ≥0.067 |
+   | 4/10 | 0.40 | ≥0.122 |
+   | 5/10 | 0.50 | ≥0.187 |
+   | 6/10 | 0.60 | ≥0.262 |
+   | 7/10 | 0.70 | ≥0.348 |
+   | 8/10 | 0.80 | ≥0.444 |
+
+2. Divergence inventory for r6…r10 (first split decision per arm; repair races;
+   figure ruts), as in the fan-1 outcome table.
+3. Corridor occupancy of r6…r10 against the E0 λ=0 map (every release offset placed
+   in its per-decision safe set; fatal-cell-entry and late-side-license counts).
+
+Convergence criterion (pre-registered): the estimate **tightens** iff (a) fan-2
+grounds 2–4 of 5 (pooled rate stays in [0.5, 0.7], consistent with fan-1) AND (b)
+the pooled CP95 lower bound exceeds fan-1's 0.15. A fan-2 result of ≤1/5 or =5/5 is
+recorded as **divergence, not convergence** (the rate is unstable across fans), and
+a pooled interval that stays uninformatively wide is likewise non-convergence.
+Either non-convergence outcome triggers the operator's "loop on the mechanism"
+license — a SEPARATE registration for a mechanism delta (lead candidate: a
+quiet-director arm that silences the director on connective turns), pooled
+separately from these frozen replicates, never folded into this extension.
+
+Kill / no-re-roll: fan-2 grounding 0/5 (pooled 3/10) → STOP the frozen replication,
+report, and move to the mechanism loop rather than spend a third fan. No re-roll in
+either direction; crash/truncation = delete the artifact dir, re-run the same label,
+note it in the outcome.
