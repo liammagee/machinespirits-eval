@@ -386,3 +386,54 @@ there is no point at which a remaining arm is uninformative. No rescue arms in e
 direction. No re-rolls; crash/truncation = delete the arm dir, rerun the same label, note
 it in the outcome. If V and H land in the same band, the synthesis claim is rejected and
 we stop — no tuning, no second fan.
+
+---
+
+## Step 1 outcome — V grounded 5/5 (added post-run 2026-06-13; pre-registered text above unaltered)
+
+**Result.** The k=5 visible-guard fan **grounded 5/5** — `lantern-e2-visible-r1`–`r5`, every
+arm forced-to-asserted at t20 with gap 0. This lands the pre-registered **≥4/5 → "structure
+per se helps," hidden-signal story rejected** branch (§"Interpretation rule" above).
+
+**Statistics (as pre-tabled).**
+- Grounding 5/5: Clopper–Pearson 95% CI lower bound **0.478**.
+- Vs unguarded baseline 4/10: **Fisher p = 0.042** — V separates *up* from baseline (the
+  5/5-only separation the interpretation rule anticipated).
+- V < H (5/5 vs 4/5): **Fisher p = 1.000** — V *matches* H; no separation below H. The hidden
+  signal bought nothing the visible signal did not.
+
+**Realized-enforcement covariate (the conditioning the rule requires).** V's live enforcement
+landed at **7/100 decisions ≈ 0.07/decision** — five blocks + two pushes, per-arm
+[3, 1, 1, 1, 1], all on the chain's release turns (t3/t4/t9). Low but **not zero** (H's was
+0/87). So by the rule's own clause V grounded **predominantly** through voluntary prompt
+compliance — the *strong* form — but conditioned on a small live-enforcement covariate, not
+the pure zero-enforcement arm (that was H). The strong-form reading is reported with that
+conditioning, not unconditionally.
+
+**Reading recorded.** The §6.13.10 guard's lift is the **scheduling discipline**
+(re-representation of what the page already carries), **not** the hidden proof-state. Both
+guards eliminate the unguarded baseline's dominant early-pull death entirely (20-arm
+contingency: unguarded 4 grounded / 6 early-pull / 0 decay-seating; pacing 4/0/1; visible
+**5/0/0**), and the page-only guard does it from features the model already has in front of
+it. This bounds — for this mechanism, in this world — the §6.13 claim that adaptive gains
+come from signal the model cannot infer.
+
+**Caveats carried (per the rule + §5.12.6).** k=5 power: "V matches H," not "beats it"
+(p=1.000); V vs baseline significant only at exactly 5/5 (p=0.042). Enforcement low-not-zero
+(covariate above). Visible-proxy *sufficiency* is world-specific — in world-002-lantern's
+chain visible uptake tracks latent distance; a world decoupling them need not let V track H.
+Scope otherwise as §6.13.10 (one world, frozen p4 stack, seed-1 conduct fan, formal verdicts).
+
+**No re-rolls used; all five arms first-pass.** Spend meterless (Max-plan CLI), serialized at
+first then — once the operator confirmed no quota constraint — fanned in parallel.
+
+**Fable critic notice.** Each arm is registered for the standing pinned-Fable critic's notice
+(`commentary.md`); the backfill is **deferred** — Fable 5 is currently unavailable
+(`fable-mythos-access` gate), so the real notices land when it returns. No mock substitute
+written.
+
+**Folded into the paper** as **§6.13.11** + revision-history **v3.0.149**. Artifacts
+`exports/dramatic-derivation/loop/lantern-e2-visible-r{1..5}/`; pooled contingency
+`exports/dramatic-derivation/boundary-v-fan/detector-split-report.{md,json}`. **Step-1 paid
+loop ended on this result.** Step 2 (branching-DAG world-003) remains human-gated under its
+own fresh sanction.
