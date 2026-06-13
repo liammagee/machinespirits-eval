@@ -735,3 +735,255 @@ ended on this result.** Per the kill rule above, we stop at one world — no sec
 arms, no guard variants.
 
 ---
+
+## Step 3 registration — world-006-hethel, distractor world, three-arm fan (baseline / H / V) (2026-06-13)
+
+Operator sanction: **"do the minimal defensible version of P2."** This is the separate
+pre-registration the discipline requires before the first paid Step-3 arm (each paid loop carries
+its own committed registration, pooled separately). The three world-006 fans pool **separately**
+from each other, from every world-005-marrick fan, and from every lantern fan, and are never folded
+into any of them.
+
+This step is **not** a violation of the Step-2 kill rule ("stop at one world"). That rule closed the
+*marrick question* — does the mechanism travel to a fork, does V track H on a fork-decoupling.
+world-006 asks a **different** question that marrick's own result newly raised, and which marrick
+cannot answer because of a confound in its design (below). It is separately sanctioned, carries its
+own stop-at-one kill rule, and is the *minimal* world that resolves the confound — one new world,
+the core three-arm contrast, no rescue arms, no guard variants.
+
+### The post-Step-2 reframe (why this is the design)
+
+Step 2 found **V 0/5 ≪ H 5/5** on `world-005-marrick` and read it as the §6.13.11 caveat realized:
+the page-only proxy's sufficiency is **geometry-conditional** (enough on lantern's coupled linear
+chain, insufficient on marrick's decoupled fork). But marrick changed **two things at once** versus
+lantern:
+
+1. **Geometry** — a forked **AND-join** (the secret needs two independent depth-2 sub-chains α ∧ β
+   to converge for the *same* `x`), where lantern is a single linear chain; and
+2. **Decoupling** — that fork lets a learner look seated (V reads "near-done": recent echo, low
+   hedging) on α while the global proof-distance `D` is still maximal because β is untouched.
+
+marrick's V-failure is consistent with **either** cause: the page proxy may fail because of the
+**fork geometry** *per se*, or because of the **decoupling** of surface-confidence from `D`
+*however that decoupling is produced*. The two are **confounded** in marrick. "It's
+geometry-conditional" is the conservative reading marrick licenses; "it's decoupling-conditional" (a
+wider boundary) is equally consistent with marrick's data and is **untested**.
+
+`world-006-hethel` **de-confounds** these. It holds the geometry constant at the **lantern shape** —
+a single **LINEAR** spine (R1→R5, depth 5), the very shape on which V already grounded **5/5 = H**
+(§6.13.11) — and supplies the decoupling through a **distractor** instead of a fork: a fully
+derivable **decoy** sub-chain (R6, R7) that grounds `liableFor(hethelSpan, reyner)`, a *complete,
+satisfying, wrong* finding to a **dead predicate** (no rule consumes `liableFor`; the question
+predicate is `felledBy`). The learner can climb the decoy early — the master is of record by t2,
+owns his yard by t6, holds the bond by t8 — looking confident and recently-on-topic the whole way,
+while `D`-to-the-secret never moves (no true-spine conjunct past the break-point has landed). The
+visible features ("turns since last release / learner echo / low hedging") read "near-done"
+**exactly while the learner is finished with the wrong chain** — the same V-misread marrick produced,
+on a linear spine, with no fork.
+
+So Step 3's question is: **is the V-failure mechanism (surface confidence decoupled from `D`)
+geometry-independent?** marrick established it on a fork; world-006 asks whether it also bites on a
+linear chain when the decoupling is supplied by a distractor.
+
+- If **V breaks here** (V < H) → decoupling alone defeats the page proxy, fork or not; marrick's
+  boundary is really about **decoupling** and generalizes to any decoupling shape. The §6.13.12
+  boundary **widens**.
+- If **V holds here** (V ≈ H) → a derivable decoy on a linear chain does **not** defeat V; marrick's
+  V-failure required the **fork** specifically; the page proxy is robust to a distractor as long as
+  the true spine is linear. The §6.13.12 boundary is **fork-specific** (narrower than
+  "decoupling-conditional").
+
+Either outcome **cleanly decomposes marrick's confound**. This is a confound-resolving probe, not a
+second fork run to pad n; the registration commits to reporting whichever way it falls.
+
+### world-006-hethel identity + difficulty calibration (free, done — committed ac8f63b7 + d7be7aac)
+
+- **Shape.** 7 rules, 8 premises. TRUE spine: 5 rules (R1_cause → R2_mark → R3_yard → R4_drawn →
+  R5_felled), a single **linear** chain of depth 5 with a final join of cause and hand at R5
+  (`failedThrough(span, struckCentering) ∧ pulledCentering(x, span) → felledBy(span, x)`); 5 true
+  premises (p_point, p_surface, p_mark, p_brand, p_carter). DISTRACTOR: 2 rules (R6_built, R7_liable)
+  grounding `liableFor(hethelSpan, reyner)` from 3 decoy premises (m_record, m_yard, m_bond). The
+  mirror `felledBy(hethelSpan, reyner)` is blocked **structurally**: striking the centering needs the
+  hand that *pulled the falsework*, and the falsework was Caudle timber drawn by Oswin; Reyner owns
+  the lodge-yard and the bond, never the Caudle cart. No rule consumes `liableFor` to make `felledBy`
+  — the decoy is a complete derivation to a **dead** predicate. plotLint enforces the mirror
+  non-entailment.
+- **Lint / recognition turn.** `plotLint` PASS; S first derivable **exactly at t20** (≥ `t_min` 18),
+  6 turns before cap 26. The peripeteia is the green crown-mortar (p_surface, cued t9): the arch was
+  *struck*, not mis-built, so the liability the learner just grounded is shown beside the question
+  (the bond answers who *pays*, never whose *hand*).
+- **Concealment.** The three concealed tokens (`oswin`, `caudle`, `crowsfoot`) appear only in
+  post-release premises/secret — never in setting, background, question, rules, or learner voice.
+  (`reyner` / lodge-yard / crown-joint / "struck centering" are **public** — the town's named master,
+  the obvious yard, the break-point, and the craft's name for the failure-mode, which the rules speak
+  openly.) **30/30** world-invariant tests green (6/6 for `world_006_hethel`).
+- **Difficulty (E0 corridor).** λ=0 survival **32.0%** (40/125), λ=1 32.0%, λ=2 19.2% —
+  **lantern-comparable**, in fact numerically identical to lantern's recomputed 32.0%@λ0 (both
+  **40/125** — both are linear spines with three tutor-cued releases, so both enumerate 5³=125
+  licensed sequences), non-degenerate, with distributed per-decision safe sets (p_point {t4,t5,t6},
+  p_surface {t8,t9}, p_brand {t15–t18}) and minSlack 0 (the knife edge is t4→t9, slack 0 —
+  decay-sensitive). Artifact:
+  `exports/dramatic-derivation/boundary-hethel/corridor-map-world-006-hethel.md`.
+- **The world is FROZEN.** The corridor map **is** the difficulty calibration. The baseline fan's
+  result is **accepted as-is**: a degenerate baseline (0/5 or 5/5) is a *reported confound*, **not** a
+  re-tune trigger. Re-tuning the world after seeing paid results would be a garden-of-forking-paths
+  violation; the world does not change after this line.
+
+### The three-arm fan
+
+k=5 exchangeable arms per fan, decay `seed:1` fixed (only live variance = LLM-conduct
+stochasticity), learner pinned **claude/sonnet**, `--critic off` (Fable backfill deferred). Each arm
+is the **same full-charter conduct stack** the lantern E2 and marrick fans ran, **verbatim** —
+`--superego --acts '{"minActTurns":3,"maxActTurns":8}' --decay '{"rate":0.75,"graceTurns":1,`
+`"maxConcurrent":2,"startTurn":1,"mutateShare":1.0,"seed":1,"pool":"staged"}' --confront`
+`--repair-clause --release-authority --plot --throughline --critic-feedback off --critic off` — with
+only the world swapped to `world-006-hethel` + its tutor script. `--release-authority` is already in
+the stack, so the guard arms add **exactly one flag** each (the Step-1 zero-delta basis, verbatim).
+Provider env mirrors lantern/marrick (`DERIVATION_PROVIDER=codex DERIVATION_LEARNER_PROVIDER=claude
+DERIVATION_LEARNER_MODEL=sonnet`).
+
+| fan | flag added to the p4 stack | k | labels | what it isolates |
+|---|---|---|---|---|
+| **baseline** | — (no guard) | 5 | `hethel-real-r1`…`r5` | the world-006 floor (does the distractor sink the unguarded stack?) |
+| **H** — hidden guard | `--pacing-guard` | 5 | `hethel-guard-r1`…`r5` | does the §6.13.10 true-state guard travel to the distractor world? |
+| **V** — visible guard | `--pacing-guard-visible` | 5 | `hethel-visible-r1`…`r5` | does the page-only proxy survive a decoupling that is **not** a fork? |
+
+The baseline carries the `-real-` infix so `derivation-mine-conduct.js` tags it the **real** backend;
+the guard/visible fans bucket *"unknown"* in the conduct miner (cosmetic — exactly as lantern's and
+marrick's own guard/visible arms did), because the **primary read** runs through
+`derivation-detector-split.js`, whose `guardStateOf(diagnosis)` reads the guard layer straight off
+each arm's recorded `diagnosis.json` flags (`pacingGuard`→`pacing`, `visibleGuard`→`visible`, else
+`unguarded`), **world-agnostically**. No analysis-code change: the contingency table is built with
+`--arms hethel-real-r1,…,hethel-guard-r1,…,hethel-visible-r1,…`.
+
+**Why V is in (and is not creep).** world-006 is the **one** sanctioned new world, and its distractor
+was built to decouple V from `D` **without** a fork. baseline + H alone would re-confirm "discipline
+travels" but **waste the decomposition** — leaving open the exact question marrick's confound raised
+(geometry vs decoupling). The V-vs-H contrast on a linear-spine distractor is the sharpest thing this
+world can buy; the baseline is the shared floor both guards are read against. *(15 paid arms total. A
+2-arm fallback (baseline + H, 10 arms) is available if spend must be bounded; it answers "does the
+mechanism travel to a distractor world" but not "does the page proxy survive non-fork decoupling.")*
+
+### Engineering status (no new guard code)
+
+- **H** is world-parametrized (`pacing.js` reads `D`/decay off the world + proof DAG) — runs on
+  world-006 **unchanged**.
+- **V** uses the lantern-tuned `VISIBLE_GUARD_DEFAULTS` **unchanged** (no per-world threshold fishing
+  — refitting V to world-006 would forfeit the form-match to H and the Step-1 zero-delta basis).
+- The audit invariant (`visiblePacing.js` imports no hidden primitive;
+  `tests/dramaticDerivationVisiblePacing.test.js`) is unchanged and green.
+- The only world-006 engineering (world YAML, tutor script, world-invariant test entry) is committed
+  at **ac8f63b7** + **d7be7aac**; no `services/dramaticDerivation/` change in this arc.
+
+### Pre-flight (free, done 2026-06-13)
+
+- **Lint / tests / corridor:** `plotLint` PASS (S@t20), 30/30 world-invariant tests (6/6 for
+  `world_006_hethel`), corridor 32.0%@λ0 (lantern-identical, 40/125).
+- **Pre-spend gate — lantern `--validate` PASS (5/5).** Required because `services/dramaticDerivation/`
+  changed since the last validated state (`e0891abf` added the guard-compiler replay slice).
+  `npm run derivation:corridor -- --validate` reproduces all four lantern detector verdicts
+  (`lantern-p2-plot-on` aporia@t8, `lantern-p3-repair-on` grounded, `lantern-p4-hygiene-on` grounded,
+  `lantern-p5-mutation-on` aporia@t12) plus the full p5 re-simulation (verdict aporia@t12, dCurve
+  true, grounded true, λ=[0,0,0,0,0]) — the shared engine is intact for the paid fan. The guard is a
+  no-op for lantern; its arms belong to it.
+
+### Confound control (V enforcement frequency) — post-hoc on world-006, mirroring Steps 1–2
+
+`scripts/derivation-visible-guard-calibrate.js` hardcodes the **lantern** frozen arms, so it cannot
+pre-flight world-006 — there are no frozen world-006 arms yet. The control is therefore **post-hoc**,
+exactly as Steps 1–2 measured it: after the world-006 fans land, counterfactual-replay V's real
+decision function over world-006's own frozen baseline + H transcripts (same faithful-reconstruction
+self-check: reconstructed `playable.length` must equal each row's recorded `windowSize`), and report
+V's **realized enforcement** as a covariate (Step-1 reference: V live ≈ 0.07/decision; H 0/87). The V
+grounding read below is **conditioned** on this covariate — a heavy-force-play V is down-scoped,
+exactly as in §6.13.11/.12.
+
+### Pre-tabled k=5 Clopper–Pearson 95% (verified `scipy.stats.beta.ppf`)
+
+Per-fan, identical for each of baseline / H / V (k=5 is k=5):
+
+| grounds | rate | CP95 |
+|---|---|---|
+| 0/5 | 0.00 | [0.000, 0.522] |
+| 1/5 | 0.20 | [0.005, 0.716] |
+| 2/5 | 0.40 | [0.053, 0.853] |
+| 3/5 | 0.60 | [0.147, 0.947] |
+| 4/5 | 0.80 | [0.284, 0.995] |
+| 5/5 | 1.00 | [0.478, 1.000] |
+
+### Achievable k=5-vs-k=5 Fisher envelope (verified `scipy.stats.fisher_exact`, one-sided)
+
+All three world-006 fans are k=5, so the between-fan Fisher tests are **k=5-vs-k=5**, where
+significance is reachable only at a **≥3-grounding gap**:
+
+| separation | Fisher p (greater) | |
+|---|---|---|
+| 5/5 vs 0/5 | 0.004 | **sig** |
+| 5/5 vs 1/5 | 0.024 | **sig** |
+| 4/5 vs 0/5 | 0.024 | **sig** |
+| 5/5 vs 2/5 | 0.083 | ns |
+| 4/5 vs 1/5 | 0.103 | ns |
+| 3/5 vs 0/5 | 0.083 | ns |
+
+The *rate* can only separate at the extremes; a real 4-vs-1 (80% vs 20%) effect still returns p=0.10.
+**This is why the rate is demoted** and the within-arm failure-mode shift is the primary read.
+
+### Interpretation rule (pre-registered)
+
+**Primary — failure-mode shift (E4a detector-split, per arm, pooled into the guard × failure-mode
+contingency table).** Generality of the §6.13.10/.11/.12 scheduling-discipline result to a
+**distractor** world is claimed iff **both**: (a) **H** removes the unguarded baseline's dominant
+death mode on world-006 (whatever it is — early-pull and/or decoy-seated disengagement), and (b) H's
+grounding point-estimate lifts **above** the world-006 baseline (directional, same sign as
+lantern/marrick). If neither holds, the mechanism is **distractor-bound** on this world — a clean
+negative reported as the limit, not papered over.
+
+**Secondary — V vs H on the distractor shape (the geometry-vs-decoupling decomposition):**
+
+- **V ≈ H, both lift above baseline** → the page-only proxy **survives** a derivable decoy on a linear
+  spine; marrick's V-failure was **fork-specific** (geometry), not decoupling-general. The §6.13.12
+  boundary is **narrower** than "any decoupling defeats V" — it needs the fork. The page proxy is more
+  robust than marrick alone implied.
+- **V < H, H lifts, V flat** → the page-only proxy **breaks** under a distractor even on a linear
+  chain; marrick's V-failure was **decoupling-general**, not fork-specific. The §6.13.12 boundary
+  **widens**: any decoupling of surface-confidence from latent `D` defeats the page proxy, fork or not;
+  the latent-depth signal becomes necessary wherever the page can be made to read "near-done" off the
+  wrong chain.
+- **V ≈ H ≈ baseline (neither lifts)** → scheduling discipline is bound to the worlds already shown; it
+  does not travel to a distractor world. Clean negative.
+- **V lifts, H flat** → anomaly (visible helps where true-state does not); report as such, no mechanism
+  claim.
+
+**Rate — secondary, explicitly underpowered.** Reported with CP95 (above); between-fan Fisher
+one-sided per the envelope (significant only at a ≥3-grounding gap). The failure-mode shift is the
+durable, replication-light observable; the rate is labeled underpowered wherever cited.
+
+### Kill / scope / no-re-roll
+
+- **Exactly one** new world (`world-006-hethel`). If V breaks, that widens the boundary; if V holds,
+  that narrows it; **either way we stop at one** — no second distractor world, no rescue arms, no guard
+  variants.
+- **No re-rolls.** Crash/truncation = delete the arm dir, rerun the **same** label, note it in the
+  outcome. No early-stop — run each fan's five arms (informative across the whole k=5 range).
+- The three world-006 fans pool **separately** from each other and from all lantern and marrick fans.
+- World **frozen** (above); `seed:1` fixed; learner pinned claude/sonnet; `--critic off` (Fable
+  backfill deferred to its return, as for the lantern and marrick fans).
+
+### Sequencing (spend discipline)
+
+The default is **serialized** (the three fans share the Max-plan quota window **and** feed between-arm
+contrasts, so a concurrent fan-out risks differential attrition biasing the contrast). As in
+Steps 1–2, the operator may elect to **run all three fans in parallel** under a no-quota-constraint
+window; the differential-attrition risk is bounded by the no-re-roll discipline (a quota-killed or
+truncated arm is deleted and rerun under the same label, so each fan still lands k=5 and the contrast
+stays balanced). Attended (verdicts watched as they land, read from source-of-truth `diagnosis.json`);
+the operator may pause/intervene at any point. Labels `hethel-{real,guard,visible}-r1..r5`, group
+`hethel-generalization`, `seed:1`, learner pinned claude/sonnet, `--critic off`. **The choice of
+serialized vs parallel is the operator's at go-time.**
+
+Outcome target (post-run, pre-registered text above unaltered): **§6.13.13** + revision-history
+**v3.0.154** (exact version contingent on what lands first), the marrick outcome's structure mirrored.
+No paper edit is made by this registration — it is forward-looking; the empirical claim is added only
+after the run.
+
+---
