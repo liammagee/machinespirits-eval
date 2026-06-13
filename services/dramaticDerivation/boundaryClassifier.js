@@ -86,9 +86,13 @@ export function failureModeOf(className) {
 // Which guard layer the arm ran under, read from the run's own recorded flags
 // (the contingency axis for the guard × failure-mode table). Proof-debt implies
 // pacing (E5 stacks on E3), so it is reported as its own, more-specific state.
+// The Step-1 visible guard ('visible') is the form-match to 'pacing' deciding
+// from page state only — mutually exclusive with it, kept a distinct state so the
+// hidden-vs-visible contrast reads off the same table.
 export function guardStateOf(diagnosis) {
   if (diagnosis?.proofDebtGuard) return 'proof_debt';
   if (diagnosis?.pacingGuard) return 'pacing';
+  if (diagnosis?.visibleGuard) return 'visible';
   return 'unguarded';
 }
 

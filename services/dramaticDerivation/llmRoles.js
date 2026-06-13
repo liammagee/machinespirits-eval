@@ -26,6 +26,10 @@
 
 import { closure, factKey, matchPattern } from './chainer.js';
 import { pacingGuardDecision, releaseSolvency, safeReleaseTurns } from './pacing.js';
+// The Step-1 V arm. Imported here, NOT in pacing.js — visiblePacing.js's own audit
+// test forbids it from importing back the other way, so the hidden/visible seam
+// stays one-directional and the no-hidden-state property is mechanically checkable.
+import { visibleGuardDecision, visibleSurfaceFeatures, isStalling } from './visiblePacing.js';
 
 const TUTOR_FIGURES = ['erotema', 'analogia', 'exemplum', 'anaphora', 'aposiopesis'];
 const TUTOR_INTENTS = ['orient', 'release', 'consolidate', 'test', 'counter_mirror', 'stage_recognition'];
@@ -349,6 +353,7 @@ function tutorSystem(
     repairClause = false,
     releaseAuthority = false,
     pacingGuard = false,
+    visibleGuard = false,
     proofDebtGuard = false,
     plot = false,
     throughline = false,
@@ -413,6 +418,19 @@ function tutorSystem(
                 'such releases as insolvent; the harness may hold an insolvent claim or',
                 'force an exhibit on its last computed safe turn. Treat that as the',
                 'house clock speaking, not as a new piece of evidence.',
+              ]
+            : []),
+          ...(visibleGuard
+            ? [
+                '',
+                'PAGE GUARD: the harness also reads the page itself — how many turns',
+                'since your last exhibit, whether the learner has taken up (echoed,',
+                'restated) the exhibit you last played, and whether their lines are',
+                'thinning or growing more hesitant. A new exhibit whose predecessor the',
+                'learner has not yet taken up may be held until they do; when the page',
+                'goes quiet, an exhibit in your window may be pushed to revive it. This',
+                'is only what is already on the page in front of you — no piece of',
+                'evidence you cannot see yourself.',
               ]
             : []),
         ]
@@ -512,7 +530,7 @@ function tutorSystem(
           '# The proof-debt guard (proof-state hygiene)',
           '',
           'The harness may mark a PROOF DEBT: an already-staged exhibit has fallen',
-          'out of the learner\'s working proof state, and restoring it would lower the',
+          "out of the learner's working proof state, and restoring it would lower the",
           'remaining derivation distance. This is not new evidence and not a raw board',
           'dump; it names only exhibits the play has already released.',
           '',
@@ -867,6 +885,7 @@ export function makeLlmTutor(
     repairClause = false,
     releaseAuthority = false,
     pacingGuard = false,
+    visibleGuard = false,
     proofDebtGuard = false,
     plot = false,
     throughline = false,
@@ -922,6 +941,19 @@ export function makeLlmTutor(
       'derivation.llmRoles: pacingGuard requires releaseAuthority (it narrows the exhibit window to computed safe placements)',
     );
   }
+  // The Step-1 visible guard is the form-match to pacingGuard: same authority
+  // requirement, and mutually exclusive with it — the whole experiment is hidden
+  // signal vs visible signal, so exactly one shapes the window per arm.
+  if (visibleGuard && !releaseAuthority) {
+    throw new Error(
+      'derivation.llmRoles: visibleGuard requires releaseAuthority (it narrows the exhibit window from transcript-visible state)',
+    );
+  }
+  if (visibleGuard && pacingGuard) {
+    throw new Error(
+      'derivation.llmRoles: visibleGuard and pacingGuard are mutually exclusive (the hidden-vs-visible-signal contrast runs one guard per arm)',
+    );
+  }
   if (proofDebtGuard && !repairClause) {
     throw new Error(
       'derivation.llmRoles: proofDebtGuard requires repairClause (it authorizes restore moves within the re-entry discipline)',
@@ -953,6 +985,7 @@ export function makeLlmTutor(
     repairClause,
     releaseAuthority,
     pacingGuard,
+    visibleGuard,
     proofDebtGuard,
     plot,
     throughline,
@@ -1222,6 +1255,14 @@ export function makeLlmTutor(
           })
         : [];
     const pacingByPremise = new Map(pacingRows.map((r) => [r.premise, r]));
+    // V's prompt channel: the same page read the decision enforces, computed once
+    // here for the per-turn note. Reads only view.ledger + view.transcript — the
+    // page — never the proof DAG or the decay ledger.
+    const visibleFeatures =
+      releaseAuthority && visibleGuard
+        ? visibleSurfaceFeatures(world, { turn: view.turn, ledger: view.ledger, transcript: view.transcript })
+        : null;
+    const visibleStalling = visibleFeatures ? isStalling(visibleFeatures) : false;
     const proofDebt = proofDebtGuard && view.proofDebt?.active ? view.proofDebt : null;
     const topProofDebt = proofDebt?.debts?.[0] || null;
     const proofDebtSection = topProofDebt
@@ -1230,7 +1271,9 @@ export function makeLlmTutor(
           'PROOF-DEBT GUARD ACTIVE:',
           `- Restore ${topProofDebt.premiseId} before closure or discretionary new work.`,
           `- Already-staged exhibit to put back in full: ${(topProofDebt.surface || '').trim()}`,
-          ...(topProofDebt.sinceTurn ? [`- It has been out of the working proof state since turn ${topProofDebt.sinceTurn}.`] : []),
+          ...(topProofDebt.sinceTurn
+            ? [`- It has been out of the working proof state since turn ${topProofDebt.sinceTurn}.`]
+            : []),
           'Use move.intent "restore" and target_premise for this exhibit. This is a harness-authorized proof-state repair, not a new release.',
         ]
       : [];
@@ -1280,6 +1323,22 @@ export function makeLlmTutor(
                 'The solvency guard is active: prefer tempo-solvent placements. A',
                 'CLOCK-FATAL claim may be held by the harness, and an exhibit at its',
                 'last safe turn may be played even if you ask to hold.',
+              ]
+            : []),
+          ...(visibleGuard && visibleFeatures
+            ? [
+                '',
+                'THE PAGE (visible-pacing guard active):',
+                visibleFeatures.priorPremiseId
+                  ? `- your last exhibit ${visibleFeatures.priorPremiseId}: ${
+                      visibleFeatures.priorEchoed
+                        ? 'taken up by the learner on the page'
+                        : 'NOT yet taken up — a new exhibit may be held until it is'
+                    }`
+                  : '- no exhibit released yet',
+                `- ${visibleFeatures.turnsSinceLastRelease} turn(s) since your last release${
+                  visibleStalling ? ' — the page reads as stalling; an exhibit in your window may be pushed' : ''
+                }`,
               ]
             : []),
         ].join('\n')
@@ -1572,11 +1631,20 @@ export function makeLlmTutor(
             latitude: RELEASE_LATITUDE,
           })
         : null;
-      const played = guard ? guard.played : forcedPlay ? forcedPlay.premise : validClaim;
+      // V's decision channel — the Step-1 form-match. Same {played, blocked,
+      // forcedSafe} contract the rest of this function consumes; the input is the
+      // page (view.ledger + view.transcript), not view's proof state. Mutually
+      // exclusive with the hidden guard at build, so at most one is set — the rest
+      // reads whichever is active.
+      const vGuard = visibleGuard
+        ? visibleGuardDecision(world, view, { turn: view.turn, playable, validClaim, forcedPlay })
+        : null;
+      const activeGuard = guard || vGuard;
+      const played = activeGuard ? activeGuard.played : forcedPlay ? forcedPlay.premise : validClaim;
       const reason =
         typeof out.release_reason === 'string' && out.release_reason.trim() ? out.release_reason.trim() : null;
       const sched = played ? world.releaseSchedule.find((e) => e.premise === played) : null;
-      const releaseReason = reason || (played && guard?.reason ? guard.reason : null);
+      const releaseReason = reason || (played && activeGuard?.reason ? activeGuard.reason : null);
       const forced = forcedPlay && played === forcedPlay.premise ? forcedPlay.premise : null;
       return {
         release: played,
@@ -1589,8 +1657,8 @@ export function makeLlmTutor(
           forced,
           overridden: Boolean(
             (forced && claimed !== forced) ||
-              (guard?.forcedSafe && claimed !== guard.played) ||
-              (guard?.blocked && (!played || claimed !== played)),
+            (activeGuard?.forcedSafe && claimed !== activeGuard.played) ||
+            (activeGuard?.blocked && (!played || claimed !== played)),
           ),
           played,
           scheduledTurn: sched ? sched.turn : null,
@@ -1609,6 +1677,18 @@ export function makeLlmTutor(
                   candidateSolvency: guard.candidateSolvency || null,
                   playedSolvency: guard.playedSolvency || null,
                   safeTurns: guard.safeTurns,
+                },
+              }
+            : {}),
+          ...(vGuard
+            ? {
+                visibleGuard: {
+                  blocked: vGuard.blocked,
+                  forcedSafe: vGuard.forcedSafe,
+                  forcedBy: vGuard.forcedBy || null,
+                  candidate: vGuard.candidate || null,
+                  reason: vGuard.reason || null,
+                  visibleFeatures: vGuard.visibleFeatures || null,
                 },
               }
             : {}),
@@ -1697,7 +1777,9 @@ export function makeLlmTutor(
       return {
         out: {
           ...out,
-          dialogue: releaseSurface ? `${restoreLine} After that is back in hand, take this new exhibit: ${releaseSurface}` : restoreLine,
+          dialogue: releaseSurface
+            ? `${restoreLine} After that is back in hand, take this new exhibit: ${releaseSurface}`
+            : restoreLine,
           move: {
             figure: out.move?.figure || 'anaphora',
             targetPremise: topProofDebt.premiseId,
@@ -1826,11 +1908,11 @@ export function makeLlmTutor(
                 }. The claim is yours to verify against the learner's last line above: where it names that loss, the re-entry is licensed; where it does not, this is an uncovered re-entry.`
               : reentryGuard.proofDebtClaim
                 ? `The re-entry record this turn: the draft targets ${reentryGuard.target} with intent restore under the PROOF-DEBT GUARD. The harness has marked this already-staged exhibit as proof-critical debt; this restore is authorized by that guard, not by a learner-named loss. On the re-entry jurisdiction, intervene must be false.`
-              : `The re-entry record this turn: the draft targets ${reentryGuard.target} with intent ${
-                  reentryGuard.intent || '(none)'
-                }; ${reentryGuard.target} was last staged at turn ${reentryGuard.lastStagedTurn}; a confrontation of it since then: ${
-                  reentryGuard.confrontedSince ? 'yes' : 'no'
-                }. An uncovered re-entry requires: target staged earlier, intent not "confront", no confrontation since its last staging.`;
+                : `The re-entry record this turn: the draft targets ${reentryGuard.target} with intent ${
+                    reentryGuard.intent || '(none)'
+                  }; ${reentryGuard.target} was last staged at turn ${reentryGuard.lastStagedTurn}; a confrontation of it since then: ${
+                    reentryGuard.confrontedSince ? 'yes' : 'no'
+                  }. An uncovered re-entry requires: target staged earlier, intent not "confront", no confrontation since its last staging.`;
     // The stall arithmetic, same criterial grammar: every value stated as
     // fact, the conclusion left to the watcher (and recomputed by the audit).
     // The engine's frontier already excludes question-pattern facts, so the

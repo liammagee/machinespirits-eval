@@ -55,7 +55,7 @@ function classifyArm(arm) {
 // of the detailed split classes). Grounded first, then the three death modes in
 // the order they bite along the dialogue, then the catch-all.
 const FAILURE_MODE_ORDER = ['grounded', 'early_pull_death', 'decay_seating_death', 'aporia', 'unresolved'];
-const GUARD_STATE_ORDER = ['unguarded', 'pacing', 'proof_debt'];
+const GUARD_STATE_ORDER = ['unguarded', 'pacing', 'visible', 'proof_debt'];
 
 // Guard × failure-mode contingency: the headline the generalization plan wants to
 // carry. The success *rate* is noisy at k=5; the *shift in failure mode* between

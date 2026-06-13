@@ -138,6 +138,16 @@
  *                                       claims, and can force an exhibit on
  *                                       its last safe turn. Uses production
  *                                       derivationDistance/detectStall.)
+ *     [--pacing-guard-visible]         (Step-1 V arm; requires --release-authority,
+ *                                       excludes --pacing-guard. The SAME window-
+ *                                       narrowing decided from transcript-visible
+ *                                       page state ONLY — turns since last release,
+ *                                       whether the learner echoed the prior
+ *                                       exhibit, the hedging/length trend — never
+ *                                       the proof DAG or decay ledger. The hidden-
+ *                                       vs-visible-signal contrast; services/
+ *                                       dramaticDerivation/visiblePacing.js, audit-
+ *                                       tested to import no hidden-state module.)
  *     [--proof-debt-guard]             (requires --repair-clause. When decay has
  *                                       dropped an already-staged proof-critical
  *                                       exhibit, the harness authorizes a restore
@@ -381,6 +391,20 @@ async function main() {
     console.error('--pacing-guard requires --release-authority (it narrows the exhibit window)');
     process.exit(1);
   }
+  // Step-1 V arm: the form-matched guard that decides from transcript-visible
+  // state only. Same authority requirement as --pacing-guard, and mutually
+  // exclusive with it — the experiment IS hidden-signal vs visible-signal.
+  const visibleGuard = flag('pacing-guard-visible');
+  if (visibleGuard && !releaseAuthority) {
+    console.error('--pacing-guard-visible requires --release-authority (it narrows the exhibit window)');
+    process.exit(1);
+  }
+  if (visibleGuard && pacingGuard) {
+    console.error(
+      '--pacing-guard-visible is mutually exclusive with --pacing-guard (the hidden-vs-visible-signal contrast runs one guard per arm)',
+    );
+    process.exit(1);
+  }
   const proofDebtGuard = flag('proof-debt-guard');
   if (proofDebtGuard && !repairClause) {
     console.error(
@@ -505,6 +529,11 @@ async function main() {
       'tutor   PACING GUARD ON — no-decay tempo solvency narrows the release window; clock-fatal claims are held and last-safe turns may be force-played',
     );
   }
+  if (visibleGuard) {
+    console.log(
+      'tutor   VISIBLE PACING GUARD ON — the same window-narrowing decided from transcript-visible page state only (turns since last release, learner echo of the prior exhibit, hedging/length trend); clock-blind by construction',
+    );
+  }
   if (proofDebtGuard) {
     console.log(
       'tutor   PROOF-DEBT GUARD ON — already-staged proof-critical exhibits that drop from the proof state authorize immediate restore moves before closure/new work',
@@ -549,6 +578,7 @@ async function main() {
       repairClause,
       releaseAuthority,
       pacingGuard,
+      visibleGuard,
       proofDebtGuard,
       plot,
       throughline,
@@ -613,6 +643,11 @@ async function main() {
     confront,
     releaseAuthority,
     pacingGuard,
+    // Step-1 V arm (the visible-signal guard) — false on every run before
+    // 2026-06-13. Recorded as its own top-level flag, distinct from pacingGuard,
+    // so the failure-mode classifier's guardStateOf and the Step-1 analysis read
+    // V apart from H.
+    visibleGuard,
     proofDebtGuard,
     // §12 dial (the repair clause) — false on every run before 2026-06-12.
     repairClause,
