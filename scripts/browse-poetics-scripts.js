@@ -1376,6 +1376,11 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
         sub: 'the story so far — a dated, provisional narrative of the adaptation arc',
         src: '/story-doc',
         title: 'The story so far · the adaptation arc',
+        hint: orientBand(
+          'story so far',
+          'a dated, provisional lab-notebook narrative of the adaptation arc',
+          'project notes; the working surfaces are on the rail above',
+        ),
       }),
     ),
   );
@@ -1398,6 +1403,11 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
         sub: 'three instruments, one repertoire — measurement grain & a repertoire of controlled adaptive mechanisms',
         src: '/repertoire-doc',
         title: 'Controlled adaptation repertoire · machine spirits',
+        hint: orientBand(
+          'repertoire',
+          'what the three measurement instruments caught, and the adaptive mechanisms the wins might become',
+          'project notes; the working surfaces are on the rail above',
+        ),
       }),
     ),
   );
@@ -1419,6 +1429,11 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
         sub: 'the development board — TODO.md as a two-axis filterable board (status × theme)',
         src: '/board-doc',
         title: 'Development board · machine spirits',
+        hint: orientBand(
+          'board',
+          'a read-only rendering of TODO.md — every tracked item as a status × theme grid',
+          'project notes; the working surfaces are on the rail above',
+        ),
       }),
     ),
   );
@@ -1791,8 +1806,13 @@ const NAV = [
     'scripts',
     'Generated drama scripts scored by LLM critics — full traces, scores &amp; human labels',
   ],
-  ['compose', '/compose/live', 'compose', 'Sit in on a tutoring scene turn by turn — or switch to batch-spec mode'],
-  ['runs', '/runs', 'launch', 'Launch new runs — generative · replay · adversarial-CLI · online scoring'],
+  [
+    'compose',
+    '/compose/live',
+    'compose a scene',
+    'Sit in on a tutoring scene turn by turn — or switch to batch-spec mode to assemble a full spec',
+  ],
+  ['runs', '/runs', 'launch a run', 'Launch new runs — generative · replay · adversarial-CLI · online scoring'],
   ['ontology', '/ontology', 'ontology', 'The shared ontology — system, tutor &amp; learner lenses'],
   ['rubric', '/rubric', 'rubric', 'The poetics rubric — the 6 dramatic-form dimensions critics score against'],
   ['replays', '/replays', 'replays', 'Counterfactual replays diffed against their originals'],
@@ -1840,18 +1860,27 @@ const NAV = [
     'Pilot operator console — session monitoring, recruitment toggle &amp; run launching (admin token-gated)',
   ],
 ];
-// Shown flat, left-to-right: the two corpus browsers (scripts = critic-scored
-// generation corpus at /browse; derivation = checker-scored staging loop) then
-// the two make-something actions (compose a spec, launch a run).
-const NAV_PRIMARY = ['home', 'browse', 'derivation', 'compose', 'runs'];
+// Shown flat, left-to-right: the three reading surfaces (scripts = critic-graded
+// generation corpus at /browse; proof runs = rule-checked staging loop at
+// /derivation; replays = counterfactual diffs) then the two make-something actions
+// (compose a scene, launch a run).
+const NAV_PRIMARY = ['home', 'browse', 'derivation', 'replays', 'compose', 'runs'];
 // Folded into labelled dropdowns, in order: the reference surfaces, then the
 // dated/durable techne notes. A group whose member is the active page shows a
 // moss accent on its summary so the current location is still legible when closed.
 const NAV_GROUPS = [
   ['tools', ['tutor', 'adjudicate', 'pilot-admin']],
-  ['reference', ['ontology', 'rubric', 'replays']],
+  ['reference', ['ontology', 'rubric']],
   ['notes', ['summary', 'story', 'repertoire', 'board']],
 ];
+
+// A per-page orientation band (the `hint` slot of railHtml): "<b>here</b> — what",
+// then a pointer back to the working surfaces. Mirrors the corpus-distinction bands
+// on /browse, /derivation and /runs so every page tells a first-time visitor where
+// they are and how to get back to the things you read and make.
+function orientBand(here, what, tail = 'the working surfaces are on the rail above') {
+  return `<span><b>${here}</b> — ${what}</span><span class="navhint__sep">·</span><span>${tail}</span>`;
+}
 
 // Single source of truth for the top-nav markup + the specimen ground every page
 // shares: a spinning brick mark, the prussian MMXXVI stamp, and the warm Klee-drift
@@ -3153,7 +3182,11 @@ function renderDerivationRunHtml({ label, diagnosis, result, world, commentary }
 
   return `${pageHead({ title: `${label} · derivation`, css: DERIVATION_CSS })}
 <body>
-${railHtml({ active: 'derivation', sub: `staging-loop run — ${label}` })}
+${railHtml({
+  active: 'derivation',
+  sub: `proof run — ${label}`,
+  hint: `<span><b>one proof run</b> — ${escapeHtml(label)}</span><span class="navhint__sep">·</span><span>back to all <a href="/derivation">proof runs</a>, or read generated drama in <a href="/browse">scripts</a></span>`,
+})}
 <main class="wrap">
 <p class="mono" style="margin-top:14px"><a href="/derivation">← all runs</a></p>
 <h1>${escapeHtml(world?.title || result.worldId || label)}</h1>
@@ -3191,14 +3224,15 @@ ${TRANSCRIPT_TTS_CLIENT}
 </body></html>`;
 }
 
-function framedNoteHtml({ active, sub, src, title, frameTitle, brand = 'machine spirits' }) {
+function framedNoteHtml({ active, sub, src, title, frameTitle, hint = '', brand = 'machine spirits' }) {
   const css = `html,body{height:100%}
 body{display:flex;flex-direction:column;overflow:hidden}
 .rail{flex:0 0 auto}
+.navhint{flex:0 0 auto}
 .summaryframe{flex:1 1 auto;width:100%;border:0;display:block;background:var(--paper)}`;
   return `${pageHead({ title, css })}
 <body>
-${railHtml({ active, brand, sub })}
+${railHtml({ active, brand, sub, hint })}
 <iframe id="summaryFrame" class="summaryframe" src="${src}" title="${frameTitle || title}"></iframe>
 <script>
 (function () {
@@ -3235,6 +3269,11 @@ function summaryWrapperHtml() {
     src: '/arc',
     title: 'Summary · the dramatic-recognition arc',
     frameTitle: 'From Paper 2.0 to dramatic recognition — the synthesis note',
+    hint: orientBand(
+      'summary',
+      'the durable synthesis note tracing the whole dramatic-recognition arc',
+      'project writing; the working surfaces are on the rail above',
+    ),
   });
 }
 
@@ -3576,17 +3615,17 @@ function renderDashboardHtml(stats = {}) {
     ],
     [
       4,
-      'Compose your own spec',
-      'Assemble a drama-machine spec in the composer; it validates live against the ontology as you build the turn plan.',
-      '/compose',
-      'compose',
+      'Compose a scene',
+      'Sit in on a live tutoring scene and play one seat turn by turn — or switch to batch mode to assemble a full spec, validated live against the ontology as you build the turn plan.',
+      '/compose/live',
+      'compose a scene',
     ],
     [
       5,
-      'Stage a run',
+      'Launch a run',
       'Launch a generation from the runs console — free/mock by default, with every cost class shown before you ever commit a paid call.',
       '/runs',
-      'launch',
+      'launch a run',
     ],
     [
       6,
@@ -3608,13 +3647,12 @@ function renderDashboardHtml(stats = {}) {
       </div>`,
   ).join('');
 
-  // The four working surfaces — the rail's primary row, minus home. Two corpora
-  // of finished drama that differ only in HOW they're scored (LLM critics vs a
-  // deterministic checker), and the two tools that make more. Grouping them here,
-  // matched and adjacent, is the dashboard mirror of the rail: the surfaces a
-  // visitor is most likely to confuse (scripts vs derivation vs launch) now read
-  // as one set, with the scoring distinction — AI critic vs fixed rule-checker —
-  // stated in each card's tag.
+  // The five working surfaces — the rail's primary row, minus home. Three
+  // collections of finished tutoring dialogue (scripts, proof runs, replays) and
+  // the two tools that make more. Grouping them here, matched and adjacent, mirrors
+  // the rail. The pair most often confused — scripts vs proof runs — sit side by
+  // side, with what decides each outcome (an AI critic vs a fixed rule-checker)
+  // stated in the card tag.
   const SURFACES = [
     [
       'surf--corpus',
@@ -3631,16 +3669,23 @@ function renderDashboardHtml(stats = {}) {
       '/derivation',
     ],
     [
+      'surf--corpus',
+      'one move changed',
+      'replays',
+      'A finished script re-run with a single move altered, then diffed against the original — so you can see how one change reshapes where recognition does or does not cohere.',
+      '/replays',
+    ],
+    [
       'surf--make',
-      'make · a spec',
-      'compose',
-      'Assemble a drama-machine spec — mythos, ethos, turn plan — validated live against the poetics ontology as you build.',
-      '/compose',
+      'make · a scene',
+      'compose a scene',
+      'Sit in on a live tutoring scene and play one seat turn by turn — or switch to batch mode to assemble a full spec, validated live against the poetics ontology.',
+      '/compose/live',
     ],
     [
       'surf--make',
       'make · a run',
-      'launch',
+      'launch a run',
       'Spawn runs — generative · replay · adversarial-CLI · online-scoring. Free/mock by default; cost shown before any paid call.',
       '/runs',
     ],
@@ -3662,11 +3707,6 @@ function renderDashboardHtml(stats = {}) {
       'Ontology atlas',
       'The shared TBox the system reasons in, projected into system, tutor &amp; learner lenses with the raw rules per module.',
       '/ontology',
-    ],
-    [
-      'Replays',
-      'Counterfactual revisions diffed against their originals — where one changed move reshapes the recognition.',
-      '/replays',
     ],
     [
       'Summary',
@@ -3748,7 +3788,7 @@ h2.section{ font:600 13px/1 ui-monospace,monospace; text-transform:uppercase; le
 .rung__desc{ color:var(--ink-3); font-size:13px; margin-top:3px; max-width:74ch; }
 .rung__go{ flex:none; align-self:center; text-decoration:none; font:12px ui-monospace,monospace; border:1px solid var(--rule); background:var(--paper-4); color:var(--ink-2); padding:7px 12px; }
 .rung__go:hover{ border-color:var(--moss); color:var(--moss-deep); }
-.surfaces{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.surfaces{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
 @media(max-width:900px){ .surfaces{ grid-template-columns:repeat(2,1fr); } }
 @media(max-width:520px){ .surfaces{ grid-template-columns:1fr; } }
 .surf{ display:flex; flex-direction:column; text-decoration:none; border:1px solid var(--rule); background:var(--paper-4); border-top:3px solid var(--ink-4); padding:13px 13px 12px; transition:border-color .15s ease; }
@@ -3799,7 +3839,7 @@ ${railHtml({ active: 'home', brand: 'machine spirits', sub: 'a drama-machine for
     <p>Generate tutoring dialogues that hinge on a reversal of understanding (a <em>peripeteia</em>). Score them the way a literary critic would, on dramatic form. Then study where recognition does and doesn't cohere — recognition meaning the moment a learner's understanding genuinely shifts, not just a correct answer. Browse what's been made, compose something new, or replay a single changed move.</p>
     <div class="hero__cta">
       <a class="btn primary" href="/browse">Read a script →</a>
-      <a class="btn ghost" href="/compose">Compose one →</a>
+      <a class="btn ghost" href="/compose/live">Compose a scene →</a>
     </div>
   </header>
 
@@ -3821,7 +3861,7 @@ ${railHtml({ active: 'home', brand: 'machine spirits', sub: 'a drama-machine for
   </div>
 
   <h2 class="section">The working surfaces</h2>
-  <p class="section__sub">The four tabs in the top rail. Two collections of tutoring dialogues, scored two different ways — one graded by an AI critic, one checked by a fixed rule — and the two tools that make more. Everything else is reference &amp; reading, below.</p>
+  <p class="section__sub">The five tabs in the top rail. Three collections of finished tutoring dialogue — graded by an AI critic, checked by a fixed rule-checker, or diffed one move at a time — and the two tools that make more. Everything else is reference &amp; reading, below.</p>
   <div class="surfaces">${surfacesHtml}</div>
 
   <h2 class="section">Reference &amp; reading</h2>
@@ -3955,7 +3995,12 @@ ${MODETABS_CSS}
 `,
   })}
 <body>
-${railHtml({ active: 'compose', brand: 'drama composer', sub: 'assemble a drama-machine spec · validated live against the poetics ontology' })}
+${railHtml({
+  active: 'compose',
+  brand: 'drama composer',
+  sub: 'assemble a drama-machine spec · validated live against the poetics ontology',
+  hint: '<span><b>compose · spec mode</b> — assemble a full drama-machine spec, validated live against the ontology</span><span class="navhint__sep">·</span><span>or <a href="/compose/live">sit in on a live scene</a></span>',
+})}
 ${modeTabsHtml('spec')}
 <div class="compose">
   <form class="cform" id="cform" onsubmit="return false">
@@ -4429,6 +4474,7 @@ ${railHtml({
   active: 'compose',
   brand: 'live compose',
   sub: 'sit in · you play one seat, the AI plays the other, turn by turn',
+  hint: '<span><b>compose a scene</b> — sit in and play one seat of a live tutoring scene, or switch to batch-spec mode</span><span class="navhint__sep">·</span><span>then <a href="/runs">launch a run</a> to generate at scale, or read finished ones in <a href="/browse">scripts</a></span>',
 })}
 ${modeTabsHtml('live')}
 <div class="live" id="liveGrid">
@@ -5039,7 +5085,16 @@ button.chip{ font:12px ui-monospace,monospace; cursor:default; }
 `,
   })}
 <body>
-${railHtml({ active: 'ontology', brand: 'ontology atlas', sub: 'the shared TBox · system-wide, and the tutor &amp; learner role projections' })}
+${railHtml({
+  active: 'ontology',
+  brand: 'ontology atlas',
+  sub: 'the shared TBox · system-wide, and the tutor &amp; learner role projections',
+  hint: orientBand(
+    'ontology',
+    'the shared vocabulary the whole system reasons in — moves, agencies, recognition',
+    'reference; the make-and-read surfaces are on the rail above',
+  ),
+})}
 <div class="controls">
   <div class="lenses" id="lenses">
     <button class="lens active" data-view="system">system-wide</button>
@@ -5310,7 +5365,16 @@ h2.sec-h{ font:600 12px/1 ui-monospace,monospace; text-transform:uppercase; lett
 `,
   })}
 <body>
-${railHtml({ active: 'rubric', brand: 'poetics rubric', sub: 'the 6 dramatic-form dimensions critics score against' })}
+${railHtml({
+  active: 'rubric',
+  brand: 'poetics rubric',
+  sub: 'the 6 dramatic-form dimensions critics score against',
+  hint: orientBand(
+    'rubric',
+    'the six dramatic-form dimensions an AI critic scores each script against',
+    'reference; the make-and-read surfaces are on the rail above',
+  ),
+})}
 <main>
   ${errBanner}
   <div class="blurb">Whole-transcript rubric for <em>dramatic form</em> — it classifies the shape of the dialogue (reversal, recognition, surprise-yet-inevitability), <strong>not</strong> what is in anyone's head. Each browse <a href="/browse">scores</a> row is a critic applying these dimensions; the vocabulary they formalise lives in the <a href="/ontology">ontology atlas</a>.</div>
@@ -5423,7 +5487,12 @@ section.sec{ border:1px solid var(--rule); background:var(--paper-4); margin-bot
 `,
   })}
 <body>
-${railHtml({ active: 'replays', brand: 'discursive replays', sub: 'counterfactual revisions of public transcripts · diffed against the originals &amp; locally gated' })}
+${railHtml({
+  active: 'replays',
+  brand: 'discursive replays',
+  sub: 'counterfactual revisions of public transcripts · diffed against the originals &amp; locally gated',
+  hint: '<span><b>replays</b> — a finished script re-run with one move changed, diffed against the original</span><span class="navhint__sep">·</span><span>see also <a href="/browse">scripts</a> &amp; <a href="/derivation">proof runs</a></span>',
+})}
 <div class="controls">
   <label>bundle <select id="bundleSel"></select></label>
   <span class="meta" id="bundleMeta"></span>

@@ -733,14 +733,16 @@ describe('dashboard front door', () => {
       // six-rung scaffolding ladder
       assert.match(html, /class="ladder"/);
       for (let n = 1; n <= 6; n += 1) assert.match(html, new RegExp(`id="rung-${n}"`));
-      // the four working surfaces (the rail's primary row) read as one matched set
+      // the five working surfaces (the rail's primary row) read as one matched set
       assert.match(html, /The working surfaces/);
-      for (const name of ['scripts', 'proof runs', 'compose', 'launch']) {
+      for (const name of ['scripts', 'proof runs', 'replays', 'compose a scene', 'launch a run']) {
         assert.match(html, new RegExp(`class="surf__t">${name}<`));
       }
-      // each card states how that corpus is scored — AI critic vs fixed rule-checker
+      // each corpus card states what decides its outcome — AI critic vs fixed
+      // rule-checker — and the replays card states it is a one-move diff
       assert.match(html, /graded by an AI critic/);
       assert.match(html, /checked by a fixed rule/);
+      assert.match(html, /one move changed/);
       assert.match(html, /Reference &amp; reading/);
       // discipline chips deep-link into the (now corpus-wide) filter
       assert.match(html, /\/browse\?discipline=chemistry/);
