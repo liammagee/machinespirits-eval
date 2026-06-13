@@ -68,6 +68,12 @@ const WORLDS = [
     recognitionTurn: 22,
     concealed: ['edony', 'weir', 'dross', 'burin', 'notch'],
   },
+  {
+    worldFile: 'config/drama-derivation/world-006-hethel.yaml',
+    scriptFile: 'config/drama-derivation/tutor-scripts/hethel-v001.md',
+    recognitionTurn: 20,
+    concealed: ['oswin', 'caudle', 'crowsfoot'],
+  },
 ];
 
 /** Wraps the mock client, recording every prompt the learner role receives. */
