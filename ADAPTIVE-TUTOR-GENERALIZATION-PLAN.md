@@ -656,3 +656,82 @@ label**, so each fan still lands k=5 regardless of when its arms complete, and t
 balanced. Attended (verdicts watched as they land, read from source-of-truth `diagnosis.json`);
 the operator may pause/intervene at any point. Labels `marrick-{real,guard,visible}-r1..r5`, group
 `marrick-generalization`, `seed:1`, learner pinned claude/sonnet, `--critic off`.
+
+---
+
+## Step 2 outcome — V grounded 0/5, H 5/5 (added post-run 2026-06-13; pre-registered text above unaltered)
+
+**Result.** All fifteen arms ran first-pass, no re-rolls: **baseline 0/5, H (hidden,
+`--pacing-guard`) 5/5, V (page-only, `--pacing-guard-visible`) 0/5.** Every H arm grounded at
+**t22 with gap 0** (the AND-join's earliest-derivable turn); both baseline and V failed every arm.
+This lands the pre-registered **primary** branch (H removes the baseline's death modes *and* lifts
+above baseline → the §6.13.10/.11 scheduling-discipline mechanism **travels** to the AND-join) and,
+on the secondary V-vs-H contrast, the pre-tabled **"V < H, H lifts, V flat → the §6.13.11 caveat
+realized"** branch.
+
+**Statistics (as pre-tabled).**
+- Grounding: H 5/5 Clopper–Pearson 95% **[0.478, 1.000]**; baseline and V 0/5 **[0.000, 0.522]**.
+- Between-fan Fisher (k=5-vs-k=5 — significance reachable only at the extremes, per the envelope):
+  **H vs V p = 0.0079**, **H vs baseline p = 0.0079**, **V vs baseline p = 1.000** (two-sided;
+  one-tailed 0.0040 / 0.0040 / 1.000). On the forked world the page-only guard is statistically
+  indistinguishable from no guard; the hidden guard separates from both.
+
+**Primary read (failure-mode shift — E4a detector-split, the durable observable).** Guard ×
+failure-mode contingency over all 15 arms (`derivation-detector-split.js`, dry, keyed on mechanism
+not verdict shape):
+
+| guard state | grounded | early-pull death | decay-seating death | n |
+|---|---|---|---|---|
+| `unguarded` (baseline) | 0 | 2 | 3 | 5 |
+| `visible` (page-only, V) | 0 | 5 | 0 | 5 |
+| `pacing` (hidden, H) | 5 | 0 | 0 | 5 |
+
+H clears **both** baseline failure modes — the 2 early-pull *and* the 3 decay-seating deaths all go
+to 0 — and grounds 5/5. (Pre-registered (a) required only that H remove the baseline's *early-pull*
+death; on world-005 the baseline death split 2 early-pull / 3 decay-seating rather than running
+early-pull-dominant as on lantern, and H removes both — so the mechanism reproduces even more cleanly
+than the rule demanded.) V is **not inert**: it converts baseline's mixed deaths into a **uniform
+tempo-starved disengagement at t21**, one turn before the t22 join — but it never grounds, because at
+the cusp it cannot see β still open behind a learner who looks seated on α.
+
+**Realized-enforcement covariate (the conditioning the registration tabled).** Read live off each
+arm's `releaseDeviations` (per-fan totals over k=5), not by counterfactual replay: **H grounded 5/5
+while overriding zero release decisions** (forced 0, overridden 0, held 1) — pacing through voluntary
+prompt compliance, exactly as on lantern (§6.13.11) — whereas **V overrode 16 decisions** (held 7
+releases late; per-arm overrides [3, 3, 3, 2, 5]) and still grounded 0/5. On the forked world the
+page-only guard does **not** under-fire — it intervenes *harder* than the guard that succeeds, and
+fails anyway, because the surface feature it acts on is the wrong one. The latent-distance signal is
+doing work the page cannot supply, not merely firing more often.
+
+**Reading recorded.** This **bounds** §6.13.11; it does not overturn it. The scheduling-discipline
+mechanism still travels — H grounds 5/5. What is now geometry-conditional is the **page-only proxy's
+sufficiency**: enough on world-002-lantern's coupled (linear) chain, where visible uptake tracks
+latent distance and V grounded 5/5 = H; **insufficient** on world-005-marrick's decoupled (forked)
+AND-join, where V 0/5 ≪ H 5/5 and the **latent depth signal becomes necessary**. The §6.13.11 caveat
+(*"a world decoupling them need not let V track H"*) is realized exactly where its geometry predicted
+— a bounded hidden-signal advantage reinstated on the shape built to require it.
+
+**Caveats carried (per the rule + §5.12.6).** Registered primary read at declared power: k=5 each, so
+the H-vs-V and H-vs-baseline separations sit at the exact 5/5-vs-0/5 Fisher corner where p first
+clears 0.05; the claim is "V fails where H grounds **on this world**," not a rate over worlds. The
+boundary is established at **one** forked geometry (world-005-marrick, seed 1, frozen p4 stack) — the
+page proxy's sufficiency is shown *not universal*, not shown to fail on *every* forked world. Verdicts
+are formal throughout (off `diagnose.js`, architecture-independent of the guard). V is the §6.13.11
+twin unchanged (`VISIBLE_GUARD_DEFAULTS` re-used, import audit `visiblePacing.js` ↛
+`slope.js`/`pacing.js` green) — the **world** changed, not the proxy.
+
+**No re-rolls used; all fifteen arms first-pass.** Spend meterless (Max-plan CLI); the three fans
+fanned in parallel under the operator's no-quota-constraint election, pooled separately from each
+other and from every lantern fan.
+
+**Fable critic notice.** Each arm is registered for the standing pinned-Fable critic's notice
+(`commentary.md`); the backfill is **deferred** — Fable 5 is currently unavailable — and lands when
+it returns. No mock substitute written.
+
+**Folded into the paper** as **§6.13.12** + revision-history **v3.0.150**. Artifacts
+`exports/dramatic-derivation/loop/marrick-{real,guard,visible}-r{1..5}/`; contingency
+`exports/dramatic-derivation/boundary-marrick/detector-split-report.{md,json}`. **Step-2 paid loop
+ended on this result.** Per the kill rule above, we stop at one world — no second world, no rescue
+arms, no guard variants.
+
+---

@@ -1,0 +1,1056 @@
+{
+  "worldId": "world_005_marrick",
+  "verdict": "aporia",
+  "events": [
+    {
+      "turn": 1,
+      "type": "plot",
+      "detail": "act 1 plot committed"
+    },
+    {
+      "turn": 1,
+      "type": "throughline",
+      "detail": "throughline committed (opening)"
+    },
+    {
+      "turn": 3,
+      "type": "decay",
+      "detail": "m_caster slips from the learner's board"
+    },
+    {
+      "turn": 4,
+      "type": "act_end",
+      "detail": "act 1 closed (director) after 3 turns"
+    },
+    {
+      "turn": 4,
+      "type": "plot",
+      "detail": "act 2 plot committed"
+    },
+    {
+      "turn": 4,
+      "type": "plot_audit",
+      "detail": "act 1 plot audited: kept 6, justified 0, drift 0; arc on_arc"
+    },
+    {
+      "turn": 4,
+      "type": "decay",
+      "detail": "p_alloy slips from the learner's board"
+    },
+    {
+      "turn": 5,
+      "type": "repair",
+      "detail": "p_alloy restored by the tutor"
+    },
+    {
+      "turn": 7,
+      "type": "decay",
+      "detail": "p_alloy slips from the learner's board"
+    },
+    {
+      "turn": 8,
+      "type": "aporia",
+      "detail": "no progress over 6 turns"
+    },
+    {
+      "turn": 8,
+      "type": "plot_audit",
+      "detail": "act 2 plot audited at run end: kept 5, justified 1, drift 0; arc on_arc; throughline reckoned (7 clauses)"
+    }
+  ],
+  "trajectory": [
+    {
+      "turn": 1,
+      "D": 6,
+      "forced": false,
+      "groundedCount": 4,
+      "F": 1
+    },
+    {
+      "turn": 2,
+      "D": 6,
+      "forced": false,
+      "groundedCount": 5,
+      "F": 1
+    },
+    {
+      "turn": 3,
+      "D": 5,
+      "forced": false,
+      "groundedCount": 6,
+      "F": 1
+    },
+    {
+      "turn": 4,
+      "D": 5,
+      "forced": false,
+      "groundedCount": 5,
+      "F": 0.8333333333333334
+    },
+    {
+      "turn": 5,
+      "D": 5,
+      "forced": false,
+      "groundedCount": 5,
+      "F": 0.8333333333333334
+    },
+    {
+      "turn": 6,
+      "D": 5,
+      "forced": false,
+      "groundedCount": 6,
+      "F": 0.8571428571428571
+    },
+    {
+      "turn": 7,
+      "D": 5,
+      "forced": false,
+      "groundedCount": 6,
+      "F": 0.8571428571428571
+    },
+    {
+      "turn": 8,
+      "D": 5,
+      "forced": false,
+      "groundedCount": 6,
+      "F": 0.75
+    }
+  ],
+  "transcript": [
+    {
+      "turn": 1,
+      "role": "director",
+      "text": "[Rain presses the fair-mud dark against the threshold, and the room waits with its benches drawn close. A tray stands under lamplight, empty for the first paper that will make accusation heavier than rumor.]",
+      "meta": {
+        "release": null,
+        "phase": {
+          "name": "Act 1",
+          "intent": "[Rain presses the fair-mud dark against the threshold, and the room waits with its benches drawn close. A tray stands under lamplight, empty for the first paper that will make accusation heavier than rumor.]",
+          "turn": 1
+        },
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 1,
+      "role": "tutor",
+      "text": "Set no name on the tray yet. Tell me first what an assay must prove before a false shilling can be laid to any hand: metal, die, and the meeting of the two.",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": null,
+          "intent": "orient"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "Fewer than two prior figures and no declared target leave neither jurisdiction engaged.",
+          "note": null,
+          "lastFigures": [],
+          "jurisdiction": null,
+          "reentry": {
+            "target": null,
+            "releasedEarlier": false,
+            "intent": "orient",
+            "lastStagedTurn": null,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 1,
+          "windowSize": 0,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null
+        },
+        "plot": {
+          "act": 1,
+          "turn": 1,
+          "holdByEnd": [
+            "The learner states that rumor is not proof until the assay fixes required conjuncts.",
+            "The learner distinguishes the question of the coin's metal from the question of the coin's die.",
+            "The learner keeps Verrell as only the town's expected answer, not as an assayed finding."
+          ],
+          "withhold": "No exhibit content and no named culprit this act until the first paper is staged by the calendar.",
+          "friction": "The learner may want the town's accusation before the proof has any marks on the board.",
+          "fallback": "Return him to the assay rule and ask which conjunct is shown rather than who the town wants."
+        },
+        "throughline": {
+          "act": 1,
+          "turn": 1,
+          "trigger": "opening",
+          "arc": [
+            "First make the learner require assayed conjuncts instead of rumor.",
+            "Close the blank chain from alloy to crucible to caster, then mark it as only half a proof.",
+            "Keep the die chain open until flaw, tool, and holder close as their own finding.",
+            "Join the cast blank and cut die in one hand only when both chains stand on the learner's board."
+          ],
+          "holdToEnd": "The striking hand must not be yielded until both castBlankFor and cutDieFor stand for the same hand on the learner's board.",
+          "risk": "The learner may accept the closed blank chain as the whole verdict and stop before the die is proved.",
+          "salvage": "If he leaps to a verdict, withhold confirmation and make him name the missing conjunct the rule still requires."
+        }
+      }
+    },
+    {
+      "turn": 1,
+      "role": "learner",
+      "text": "Before any name is written, the metal must speak first: the alloy of the blank must answer to one crucible, and one caster at that crucible. Then the die must speak: a flaw in the striking must answer to one graving-tool, and one hand alone on that tool. Only when both the blank and the die are shown to meet in a single hand does the shilling name its maker — metal, die, meeting; nothing less closes the book.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "The town names Verrell, but the board shows the shilling was struck — not clipped — and Verrell is recorded as a clipper; his hand cannot be grounded as the striker until alloy and die-flaw are traced.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 2,
+      "role": "director",
+      "text": "[The clerk brings in the town's first deposition, its seal dampened at the edge by rain. It is read aloud: \"The town has its founder ready: Verrell alone draws the mint-yard crucible, licensed to no one else since the old assay-master's day. Whatever metal is cast in Marrick, the town says, is cast by Verrell's hand.\"]",
+      "meta": {
+        "release": "m_caster",
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 2,
+      "role": "tutor",
+      "text": "The town has named a crucible and a hand, but only for the mint-yard. What mark on these shillings has yet shown that their metal came from that crucible, rather than merely from the town's wanting it so?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "m_caster",
+          "intent": "counter_mirror"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "Fewer than two prior figures make a rut impossible, and the draft targets no earlier-staged exhibit requiring confrontation.",
+          "note": null,
+          "lastFigures": [
+            "erotema"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": "m_caster",
+            "releasedEarlier": false,
+            "intent": "counter_mirror",
+            "lastStagedTurn": 2,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 2,
+          "windowSize": 1,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "role": "learner",
+      "text": "The deposition names Verrell sole caster at the mint crucible, and I will enter that on the board — it is the town's grounded record. But the tutor is right: between 'Verrell casts at the mint crucible' and 'this shilling's blank came from that crucible' stands a gap the touchstone alone can close. Until the coin's alloy is assayed and matched to that crucible's leavings, we have only one leg of Rule 1, and Rule 1 needs both. The mint-yard may well be the source, but 'may well be' is not what the trial-book demands.",
+      "meta": {
+        "adopt": [
+          [
+            "soleCasterAt",
+            "mintCrucible",
+            "verrell"
+          ]
+        ],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Verrell is sole caster at the mint crucible (now grounded), but blankFrom falseShilling mintCrucible cannot be derived until alloyOf falseShilling ?metal and meltedAt ?metal mintCrucible are both established by actual assay — the town's assertion substitutes desire for evidence.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 3,
+      "role": "director",
+      "text": "[Rain ticks steadily from the eaves into the yard-pail, counting out the pause after the deposition. The tray remains under the lamp, its damp seal darkening while the room waits for metal, not rumor, to answer.]",
+      "meta": {
+        "release": null,
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 3,
+      "role": "tutor",
+      "text": "Then let the cupel speak: these shillings are no clipped sterling, but struck poor dross, silver thinned with copper and a grey lead-sweat the touchstone catches. As a loaf tells its flour before it tells the baker, the blank now tells its metal before it tells a hand. What does that assay fix, and what crucible has it not yet fixed?",
+      "meta": {
+        "move": {
+          "figure": "exemplum",
+          "targetPremise": "p_alloy",
+          "intent": "release"
+        },
+        "release": "p_alloy",
+        "deliberation": {
+          "draftFigure": "exemplum",
+          "intervened": false,
+          "diagnosis": "No figure rut and no re-entry; the draft does appear to press against the act's stated withhold by staging new exhibit content, but that is outside this turn watch.",
+          "note": null,
+          "lastFigures": [
+            "erotema",
+            "erotema"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": "p_alloy",
+            "releasedEarlier": false,
+            "intent": "release",
+            "lastStagedTurn": null,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 3,
+          "windowSize": 1,
+          "claimed": "p_alloy",
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": "p_alloy",
+          "scheduledTurn": 4,
+          "offset": -1,
+          "reason": "The learner has explicitly asked for the touchstone, so the assay can enter one turn early without leaping the proof."
+        },
+        "releaseReason": "The learner has explicitly asked for the touchstone, so the assay can enter one turn early without leaping the proof."
+      }
+    },
+    {
+      "turn": 3,
+      "role": "learner",
+      "text": "The cupel has fixed one leg: the blank is drossSilver — that alloy is now the coin's own testimony, not the town's wish. But Rule 1 needs both legs, and the second is still open: which crucible's leavings answer to drossSilver? The mint-yard is the town's guess, and Verrell holds it — but until the assay matches this metal to that crucible's residue, blankFrom falseShilling mintCrucible is a hope, not a derivation. The loaf names its flour; it has not yet named the mill.",
+      "meta": {
+        "adopt": [
+          [
+            "alloyOf",
+            "falseShilling",
+            "drossSilver"
+          ]
+        ],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "The drossSilver alloy may match the mint crucible's leavings — if meltedAt drossSilver mintCrucible is established by assay of the crucible's residue, Rule 1 fires and blankFrom falseShilling mintCrucible follows; but that match is not yet on the board.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 4,
+      "role": "director",
+      "text": "[The rain slackens, leaving the room colder than before, and the lamp is lowered until the tray holds more shadow than shine. Beyond the door, a second bench is drawn into place for slower work: not accusation now, but the patient narrowing of metal through silence, residue, and hand.]",
+      "meta": {
+        "release": null,
+        "phase": {
+          "name": "Act 2",
+          "intent": "[The rain slackens, leaving the room colder than before, and the lamp is lowered until the tray holds more shadow than shine. Beyond the door, a second bench is drawn into place for slower work: not accusation now, but the patient narrowing of metal through silence, residue, and hand.]",
+          "turn": 4
+        },
+        "act": "end"
+      }
+    },
+    {
+      "turn": 4,
+      "role": "tutor",
+      "text": "Before we take up any colder residue, read back the cupel-mark from your own board. What did it fix, and what did it leave unfixed?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "p_alloy",
+          "intent": "confront"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "No figure rut is present, and the draft confronts the earlier alloy exhibit rather than re-entering it uncovered.",
+          "note": null,
+          "lastFigures": [
+            "erotema",
+            "exemplum"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": "p_alloy",
+            "releasedEarlier": true,
+            "intent": "confront",
+            "lastStagedTurn": 3,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 4,
+          "windowSize": 0,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null
+        },
+        "plot": {
+          "act": 2,
+          "turn": 4,
+          "holdByEnd": [
+            "learner reads back that the assay fixed the coin's alloy as evidence from the shilling, not rumor",
+            "learner keeps the crucible question open until residue, not reputation, answers it",
+            "learner distinguishes a proved blank-chain step from any verdict about striking"
+          ],
+          "withhold": "Do not yield any caster-hand finding or striking hand this act unless the crucible link and the required hand premise are both staged and read back.",
+          "friction": "The learner may let the assayed dross slide back toward the town's mint-yard story because Verrell already has a caster deposition on the board.",
+          "fallback": "Confront the assay mark first, then ask which crucible the rule still lacks before any hand can be named."
+        },
+        "plotAudit": {
+          "act": 1,
+          "clauses": [
+            {
+              "clause": "hold_by_end[1]: learner states rumor is not proof until the assay fixes required conjuncts",
+              "verdict": "kept",
+              "evidence": "[turn 3] LEARNER: The mint-yard is the town's guess, and Verrell holds it — but until the assay matches this metal to that crucible's residue, blankFrom falseShilling mintCrucible is a hope, not a derivation."
+            },
+            {
+              "clause": "hold_by_end[2]: learner distinguishes the coin's metal question from the coin's die question",
+              "verdict": "kept",
+              "evidence": "[turn 1] LEARNER: Then the die must speak: a flaw in the striking must answer to one graving-tool, and one hand alone on that tool."
+            },
+            {
+              "clause": "hold_by_end[3]: learner keeps Verrell as only the town's expected answer, not as an assayed finding",
+              "verdict": "kept",
+              "evidence": "[turn 3] LEARNER: The mint-yard is the town's guess, and Verrell holds it — but until the assay matches this metal to that crucible's residue, blankFrom falseShilling mintCrucible is a hope, not a derivation."
+            },
+            {
+              "clause": "withhold: no exhibit content and no named culprit this act until the first paper is staged by the calendar",
+              "verdict": "kept",
+              "evidence": "[turn 1] TUTOR: Set no name on the tray yet."
+            },
+            {
+              "clause": "friction: learner may want the town's accusation before proof has marks on the board",
+              "verdict": "kept",
+              "evidence": "[turn 2] LEARNER: The deposition names Verrell sole caster at the mint crucible, and I will enter that on the board — it is the town's grounded record."
+            },
+            {
+              "clause": "fallback: return him to the assay rule and ask which conjunct is shown rather than who the town wants",
+              "verdict": "kept",
+              "evidence": "[turn 2] TUTOR: What mark on these shillings has yet shown that their metal came from that crucible, rather than merely from the town's wanting it so?"
+            }
+          ],
+          "summary": "The act did its first work: the learner now requires assayed conjuncts and keeps Verrell as town expectation, not verdict. Next plot can advance the blank chain without letting the closed alloy leg masquerade as the striking hand.",
+          "arc": {
+            "verdict": "on_arc",
+            "evidence": "[turn 1] LEARNER: Only when both the blank and the die are shown to meet in a single hand does the shilling name its maker — metal, die, meeting; nothing less closes the book."
+          }
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "role": "learner",
+      "text": "The cupel-mark fixes one premise only: the shilling's alloy is dross-silver, which loads Rule 1's first condition. It leaves unfixed the other half — meltedAt drossSilver ?crucible — and every link beyond: soleCasterAt, the die-flaw, the tool, and the holder. The chain from alloy to hand has four gaps, and the board closes none of them yet.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "If the crucible-residue assay shows meltedAt drossSilver mintCrucible, and the graver-mark shows a die-flaw tied to one tool held by one hand, both chains may close on the same person — but neither is grounded until the cold work at the second bench yields actual exhibit.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 5,
+      "role": "director",
+      "text": "[The second bench sits ready under the lowered lamp, its empty surface making the room seem larger and more severe. Damp wool steams faintly near the wall, and no one reaches for the tray until the silence has had its weight.]",
+      "meta": {
+        "release": null,
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 5,
+      "role": "tutor",
+      "text": "Good: the cupel gives metal, not culprit. If dross-silver is one mark on the rule, what must answer it before any caster's name can weigh more than rain-noise? And even when that blank is traced, what part of the assay still lies untouched?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "p_alloy",
+          "intent": "consolidate"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "No figure rut is present, and the re-entry to the alloy mark is covered by the intervening confrontation.",
+          "note": null,
+          "lastFigures": [
+            "exemplum",
+            "erotema"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": "p_alloy",
+            "releasedEarlier": true,
+            "intent": "consolidate",
+            "lastStagedTurn": 3,
+            "confrontedSince": true,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 5,
+          "windowSize": 0,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "role": "learner",
+      "text": "To answer the alloy mark, the residue assay must show meltedAt drossSilver ?crucible — only then does Rule 1 fire and fix blankFrom. Even when that blank is traced and a sole caster named, the die-chain lies entirely untouched: no flaw is on the board, no tool, no holder. The blank-half and the die-half are separate chains, and Rule 5 demands both close on the same hand before the verdict is anything more than rain-noise. Until the second bench yields exhibits on both sides, the board settles nothing.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "If the residue assay establishes meltedAt drossSilver on some crucible, and the graver-work yields a die-flaw tied to one tool held by one hand, both chains may converge — but neither side is yet grounded, and the untouched die-chain is as essential as the blank-chain.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 6,
+      "role": "director",
+      "text": "[A guildman is shown in with wet sleeves and a dry oath, and the room receives his words without softening: \"And Verrell engraves: the broad graver on his bench is his alone, the guild will swear, and no clean-cut die in the borough is sunk without it. A caster and an engraver both — the town needs no more than that.\"]",
+      "meta": {
+        "release": "m_graver",
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 6,
+      "role": "tutor",
+      "text": "A graver on a bench proves the bench's keeping, as a crucible in a yard proves only its place. What mark on these shillings has yet shown that the die which struck them was a clean cut from Verrell's broad graver? And while that die waits, what residue still has to answer the dross-silver before the blank can be traced?",
+      "meta": {
+        "move": {
+          "figure": "exemplum",
+          "targetPremise": "m_graver",
+          "intent": "counter_mirror"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "exemplum",
+          "intervened": false,
+          "diagnosis": "No figure rut and no uncovered re-entry are present; the draft stays within the watcher's turn-level jurisdiction.",
+          "note": null,
+          "lastFigures": [
+            "erotema",
+            "erotema"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": "m_graver",
+            "releasedEarlier": false,
+            "intent": "counter_mirror",
+            "lastStagedTurn": 6,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 6,
+          "windowSize": 1,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "role": "learner",
+      "text": "The guild's word sets soleHolderOf broadGraver verrell on my board, and I take it — but that is Rule 4's second premise only, not its first. Before Rule 4 can fire, Rule 3 must give me dieCutWith falseShilling broadGraver, and Rule 3 demands dieFlawOf and flawCutBy — neither is on the board, nor is any die-flaw yet read from the coin itself. A graver kept on a bench cuts no die in evidence until the shilling's own face shows the mark, and the mark is traced to that tool alone.",
+      "meta": {
+        "adopt": [
+          [
+            "soleHolderOf",
+            "broadGraver",
+            "verrell"
+          ]
+        ],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "If the shilling's die shows a flaw, and that flaw is traced to the broad graver (flawCutBy flaw broadGraver), Rule 3 fires to give dieCutWith falseShilling broadGraver, and then Rule 4 yields cutDieFor falseShilling verrell — but neither dieFlawOf nor flawCutBy is yet on the board, and the blank-chain (meltedAt drossSilver ?crucible, soleCasterAt ?crucible ?x) remains entirely ungrounded.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 7,
+      "role": "director",
+      "text": "[The guildman's words are left hanging over the second bench, bright at the edges and hollow underneath. Rain ticks from the eaves into the yard, and the lowered lamp keeps the tray waiting in its half-light.]",
+      "meta": {
+        "release": null,
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 7,
+      "role": "tutor",
+      "text": "Before I let that guild oath touch the die-rule, read it back from your board in your own words. What exactly did it prove, and what did it leave still unproved about these shillings?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "m_graver",
+          "intent": "confront"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": true,
+          "diagnosis": "The draft re-enters m_graver to consolidate it before any confrontation has spent the learner's read-back of that exhibit since its staging.",
+          "note": "Confront m_graver first. Ask the learner to read back what they hold of that exhibit before you use it again.",
+          "lastFigures": [
+            "erotema",
+            "exemplum"
+          ],
+          "jurisdiction": "unconfronted_reentry",
+          "reentry": {
+            "target": "m_graver",
+            "releasedEarlier": true,
+            "intent": "consolidate",
+            "lastStagedTurn": 6,
+            "confrontedSince": false,
+            "due": true
+          }
+        },
+        "releaseDecision": {
+          "turn": 7,
+          "windowSize": 1,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "role": "learner",
+      "text": "The guild oath set soleHolderOf broadGraver verrell on my board — Rule 4's second premise, nothing more. It proved that one hand alone keeps that tool; it did not prove the shilling's die was cut with it. For that, I need dieFlawOf falseShilling and flawCutBy tracing that flaw to the broad graver — neither is before me. The die-chain cannot move until the coin's own face is read, and the blank-chain has not moved at all.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "If the shilling's die shows a flaw traceable solely to the broad graver (flawCutBy flaw broadGraver), Rule 3 fires to dieCutWith, and then Rule 4 yields cutDieFor falseShilling verrell — but neither dieFlawOf nor flawCutBy is yet in evidence, and the blank-chain (meltedAt drossSilver ?crucible, soleCasterAt ?crucible verrell) remains entirely ungrounded.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 8,
+      "role": "director",
+      "text": "[The tray remains between them, its pale coins unhandled while the rain settles into a thin, steady tapping. A clerk trims the lamp and finds no more light in it, only a cleaner edge to the shadow.]",
+      "meta": {
+        "release": null,
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 8,
+      "role": "tutor",
+      "text": "Now the founder's man sets the residue beside the cupel: that lead-sweat answers to the leavings of one crucible on this coast, the weir-forge crucible above the mill-leat, cold since the old founder died. As one ash tells which hearth burned it, the dross-silver now has its hearth. What does that do to the blank-rule, and what hand-premise is still missing before any caster can be written?",
+      "meta": {
+        "move": {
+          "figure": "exemplum",
+          "targetPremise": "p_crucible",
+          "intent": "release"
+        },
+        "release": "p_crucible",
+        "deliberation": {
+          "draftFigure": "exemplum",
+          "intervened": false,
+          "diagnosis": "No figure rut appears, and the record says the crucible target is newly staged, so no confrontation license is needed.",
+          "note": null,
+          "lastFigures": [
+            "exemplum",
+            "erotema"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": "p_crucible",
+            "releasedEarlier": false,
+            "intent": "release",
+            "lastStagedTurn": null,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 8,
+          "windowSize": 1,
+          "claimed": "p_crucible",
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": "p_crucible",
+          "scheduledTurn": 8,
+          "offset": 0,
+          "reason": null
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "role": "learner",
+      "text": "The dross-silver finds its hearth — but I must name a gap aloud: alloyOf falseShilling drossSilver is missing from my board, though the Act-one assay must have established it. If that fact is recoverable, Rule 1 yields blankFrom falseShilling weirCrucible. Yet the weir crucible has been cold since the old founder died — soleCasterAt weirCrucible is still the missing premise, and that hand may not be Verrell's.",
+      "meta": {
+        "adopt": [
+          [
+            "meltedAt",
+            "drossSilver",
+            "weirCrucible"
+          ]
+        ],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "If alloyOf falseShilling drossSilver can be restored to the board (a gap from Act one), Rule 1 yields blankFrom falseShilling weirCrucible; but the sole caster at the cold weir-forge crucible may be the old founder rather than Verrell — the blank-chain may yet point away from the man the town names.",
+        "asserts": null
+      }
+    }
+  ],
+  "ledger": [
+    {
+      "turn": 2,
+      "premiseId": "m_caster",
+      "via": "director"
+    },
+    {
+      "turn": 3,
+      "premiseId": "p_alloy",
+      "via": "tutor",
+      "reason": "The learner has explicitly asked for the touchstone, so the assay can enter one turn early without leaping the proof.",
+      "offset": -1
+    },
+    {
+      "turn": 6,
+      "premiseId": "m_graver",
+      "via": "director"
+    },
+    {
+      "turn": 8,
+      "premiseId": "p_crucible",
+      "via": "tutor",
+      "reason": null,
+      "offset": 0
+    }
+  ],
+  "firstForcedTurn": null,
+  "assertedGroundedTurn": null,
+  "turnsPlayed": 8,
+  "proof": null,
+  "inference": {
+    "voiced": [],
+    "overreaches": [],
+    "mischanneled": [],
+    "availability": [],
+    "frontierFinal": []
+  },
+  "acts": [
+    {
+      "act": 1,
+      "turns": [
+        1,
+        3
+      ],
+      "endedBy": "director",
+      "brief": "[Rain presses the fair-mud dark against the threshold, and the room waits with its benches drawn close. A tray stands under lamplight, empty for the first paper that will make accusation heavier than rumor.]"
+    },
+    {
+      "act": 2,
+      "turns": [
+        4,
+        8
+      ],
+      "endedBy": "run_end",
+      "brief": "[The rain slackens, leaving the room colder than before, and the lamp is lowered until the tray holds more shadow than shine. Beyond the door, a second bench is drawn into place for slower work: not accusation now, but the patient narrowing of metal through silence, residue, and hand.]"
+    }
+  ],
+  "plot": {
+    "plots": [
+      {
+        "act": 1,
+        "turn": 1,
+        "holdByEnd": [
+          "The learner states that rumor is not proof until the assay fixes required conjuncts.",
+          "The learner distinguishes the question of the coin's metal from the question of the coin's die.",
+          "The learner keeps Verrell as only the town's expected answer, not as an assayed finding."
+        ],
+        "withhold": "No exhibit content and no named culprit this act until the first paper is staged by the calendar.",
+        "friction": "The learner may want the town's accusation before the proof has any marks on the board.",
+        "fallback": "Return him to the assay rule and ask which conjunct is shown rather than who the town wants."
+      },
+      {
+        "act": 2,
+        "turn": 4,
+        "holdByEnd": [
+          "learner reads back that the assay fixed the coin's alloy as evidence from the shilling, not rumor",
+          "learner keeps the crucible question open until residue, not reputation, answers it",
+          "learner distinguishes a proved blank-chain step from any verdict about striking"
+        ],
+        "withhold": "Do not yield any caster-hand finding or striking hand this act unless the crucible link and the required hand premise are both staged and read back.",
+        "friction": "The learner may let the assayed dross slide back toward the town's mint-yard story because Verrell already has a caster deposition on the board.",
+        "fallback": "Confront the assay mark first, then ask which crucible the rule still lacks before any hand can be named."
+      }
+    ],
+    "audits": [
+      {
+        "turn": 4,
+        "act": 1,
+        "clauses": [
+          {
+            "clause": "hold_by_end[1]: learner states rumor is not proof until the assay fixes required conjuncts",
+            "verdict": "kept",
+            "evidence": "[turn 3] LEARNER: The mint-yard is the town's guess, and Verrell holds it — but until the assay matches this metal to that crucible's residue, blankFrom falseShilling mintCrucible is a hope, not a derivation."
+          },
+          {
+            "clause": "hold_by_end[2]: learner distinguishes the coin's metal question from the coin's die question",
+            "verdict": "kept",
+            "evidence": "[turn 1] LEARNER: Then the die must speak: a flaw in the striking must answer to one graving-tool, and one hand alone on that tool."
+          },
+          {
+            "clause": "hold_by_end[3]: learner keeps Verrell as only the town's expected answer, not as an assayed finding",
+            "verdict": "kept",
+            "evidence": "[turn 3] LEARNER: The mint-yard is the town's guess, and Verrell holds it — but until the assay matches this metal to that crucible's residue, blankFrom falseShilling mintCrucible is a hope, not a derivation."
+          },
+          {
+            "clause": "withhold: no exhibit content and no named culprit this act until the first paper is staged by the calendar",
+            "verdict": "kept",
+            "evidence": "[turn 1] TUTOR: Set no name on the tray yet."
+          },
+          {
+            "clause": "friction: learner may want the town's accusation before proof has marks on the board",
+            "verdict": "kept",
+            "evidence": "[turn 2] LEARNER: The deposition names Verrell sole caster at the mint crucible, and I will enter that on the board — it is the town's grounded record."
+          },
+          {
+            "clause": "fallback: return him to the assay rule and ask which conjunct is shown rather than who the town wants",
+            "verdict": "kept",
+            "evidence": "[turn 2] TUTOR: What mark on these shillings has yet shown that their metal came from that crucible, rather than merely from the town's wanting it so?"
+          }
+        ],
+        "summary": "The act did its first work: the learner now requires assayed conjuncts and keeps Verrell as town expectation, not verdict. Next plot can advance the blank chain without letting the closed alloy leg masquerade as the striking hand.",
+        "arc": {
+          "verdict": "on_arc",
+          "evidence": "[turn 1] LEARNER: Only when both the blank and the die are shown to meet in a single hand does the shilling name its maker — metal, die, meeting; nothing less closes the book."
+        }
+      },
+      {
+        "turn": 8,
+        "final": true,
+        "act": 2,
+        "clauses": [
+          {
+            "clause": "hold_by_end[1]: learner reads back that the assay fixed the coin's alloy as evidence from the shilling, not rumor",
+            "verdict": "kept",
+            "evidence": "[turn 4] LEARNER: The cupel-mark fixes one premise only: the shilling's alloy is dross-silver, which loads Rule 1's first condition."
+          },
+          {
+            "clause": "hold_by_end[2]: learner keeps the crucible question open until residue, not reputation, answers it",
+            "verdict": "kept",
+            "evidence": "[turn 5] LEARNER: To answer the alloy mark, the residue assay must show meltedAt drossSilver ?crucible — only then does Rule 1 fire and fix blankFrom."
+          },
+          {
+            "clause": "hold_by_end[3]: learner distinguishes a proved blank-chain step from any verdict about striking",
+            "verdict": "justified_deviation",
+            "evidence": "[turn 8] LEARNER: If that fact is recoverable, Rule 1 yields blankFrom falseShilling weirCrucible. Yet the weir crucible has been cold since the old founder died — soleCasterAt weirCrucible is still the missing premise, and that hand may not be Verrell's."
+          },
+          {
+            "clause": "withhold: Do not yield any caster-hand finding or striking hand this act unless the crucible link and the required hand premise are both staged and read back.",
+            "verdict": "kept",
+            "evidence": "[turn 8] LEARNER: soleCasterAt weirCrucible is still the missing premise, and that hand may not be Verrell's."
+          },
+          {
+            "clause": "friction: The learner may let the assayed dross slide back toward the town's mint-yard story because Verrell already has a caster deposition on the board.",
+            "verdict": "kept",
+            "evidence": "[turn 5] TUTOR: If dross-silver is one mark on the rule, what must answer it before any caster's name can weigh more than rain-noise?"
+          },
+          {
+            "clause": "fallback: Confront the assay mark first, then ask which crucible the rule still lacks before any hand can be named.",
+            "verdict": "kept",
+            "evidence": "[turn 4] TUTOR: read back the cupel-mark from your own board. What did it fix, and what did it leave unfixed?"
+          }
+        ],
+        "summary": "The act held the learner on assayed conjuncts and kept both caster and striking verdicts withheld. The blank chain advanced only to a conditional crucible step because the learner exposed a board gap; the next plot must repair that premise or keep the hand closed.",
+        "arc": {
+          "verdict": "on_arc",
+          "evidence": "[turn 5] LEARNER: The blank-half and the die-half are separate chains, and Rule 5 demands both close on the same hand before the verdict is anything more than rain-noise."
+        },
+        "throughlineAudit": [
+          {
+            "clause": "arc[1]: First make the learner require assayed conjuncts instead of rumor.",
+            "verdict": "kept",
+            "evidence": "[turn 5] LEARNER: To answer the alloy mark, the residue assay must show meltedAt drossSilver ?crucible — only then does Rule 1 fire and fix blankFrom."
+          },
+          {
+            "clause": "arc[2]: Close the blank chain from alloy to crucible to caster, then mark it as only half a proof.",
+            "verdict": "justified_deviation",
+            "evidence": "[turn 8] LEARNER: soleCasterAt weirCrucible is still the missing premise, and that hand may not be Verrell's."
+          },
+          {
+            "clause": "arc[3]: Keep the die chain open until flaw, tool, and holder close as their own finding.",
+            "verdict": "kept",
+            "evidence": "[turn 7] LEARNER: For that, I need dieFlawOf falseShilling and flawCutBy tracing that flaw to the broad graver — neither is before me."
+          },
+          {
+            "clause": "arc[4]: Join the cast blank and cut die in one hand only when both chains stand on the learner's board.",
+            "verdict": "kept",
+            "evidence": "[turn 5] LEARNER: Rule 5 demands both close on the same hand before the verdict is anything more than rain-noise."
+          },
+          {
+            "clause": "hold_to_end: The striking hand must not be yielded until both castBlankFor and cutDieFor stand for the same hand on the learner's board.",
+            "verdict": "kept",
+            "evidence": "[turn 8] LEARNER: soleCasterAt weirCrucible is still the missing premise, and that hand may not be Verrell's."
+          },
+          {
+            "clause": "risk: The learner may accept the closed blank chain as the whole verdict and stop before the die is proved.",
+            "verdict": "kept",
+            "evidence": "[turn 5] LEARNER: Even when that blank is traced and a sole caster named, the die-chain lies entirely untouched."
+          },
+          {
+            "clause": "salvage: If he leaps to a verdict, withhold confirmation and make him name the missing conjunct the rule still requires.",
+            "verdict": "kept",
+            "evidence": "[turn 8] TUTOR: What does that do to the blank-rule, and what hand-premise is still missing before any caster can be written?"
+          }
+        ]
+      }
+    ],
+    "throughlines": [
+      {
+        "act": 1,
+        "turn": 1,
+        "trigger": "opening",
+        "arc": [
+          "First make the learner require assayed conjuncts instead of rumor.",
+          "Close the blank chain from alloy to crucible to caster, then mark it as only half a proof.",
+          "Keep the die chain open until flaw, tool, and holder close as their own finding.",
+          "Join the cast blank and cut die in one hand only when both chains stand on the learner's board."
+        ],
+        "holdToEnd": "The striking hand must not be yielded until both castBlankFor and cutDieFor stand for the same hand on the learner's board.",
+        "risk": "The learner may accept the closed blank chain as the whole verdict and stop before the die is proved.",
+        "salvage": "If he leaps to a verdict, withhold confirmation and make him name the missing conjunct the rule still requires."
+      }
+    ]
+  },
+  "corruption": {
+    "config": {
+      "seed": 1,
+      "rate": 0.75,
+      "graceTurns": 1,
+      "maxConcurrent": 2,
+      "startTurn": 1,
+      "mutateShare": 1,
+      "pool": "staged"
+    },
+    "ledger": [
+      {
+        "turn": 3,
+        "type": "decay",
+        "premiseId": "m_caster",
+        "fact": [
+          "soleCasterAt",
+          "mintCrucible",
+          "verrell"
+        ]
+      },
+      {
+        "turn": 4,
+        "type": "decay",
+        "premiseId": "p_alloy",
+        "fact": [
+          "alloyOf",
+          "falseShilling",
+          "drossSilver"
+        ]
+      },
+      {
+        "turn": 5,
+        "type": "repair",
+        "premiseId": "p_alloy",
+        "via": "tutor"
+      },
+      {
+        "turn": 7,
+        "type": "decay",
+        "premiseId": "p_alloy",
+        "fact": [
+          "alloyOf",
+          "falseShilling",
+          "drossSilver"
+        ]
+      }
+    ],
+    "decayedAtEnd": [
+      {
+        "premiseId": "m_caster",
+        "fact": [
+          "soleCasterAt",
+          "mintCrucible",
+          "verrell"
+        ],
+        "sinceTurn": 3
+      },
+      {
+        "premiseId": "p_alloy",
+        "fact": [
+          "alloyOf",
+          "falseShilling",
+          "drossSilver"
+        ],
+        "sinceTurn": 7
+      }
+    ]
+  }
+}
