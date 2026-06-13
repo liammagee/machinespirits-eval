@@ -4,14 +4,14 @@
 
 ## Aggregates by backend
 
-### real (37 arms, 281 releases)
+### real (42 arms, 308 releases)
 
-- verdicts: grounded_anagnorisis:22 · disengagement:9 · aporia:6
-- adoption lambda: 0:279 · 3+:1 · never:1
-- tutor offsets used: 0:96 · -1:9 · -2:11 (deviation rate 0.172)
-- director off-nominal: 0/165
-- decay slips: 118 · repair latency: 1:27 · 2:20 · 3+:27 · never:44
-- repair via: tutor:74 · unrepaired at end: 44 · false-form dwell (mutate->retract): 2, 1, 1, 4, 1, 1, 1, 4, 10, 1
+- verdicts: grounded_anagnorisis:23 · disengagement:12 · aporia:7
+- adoption lambda: 0:306 · 3+:1 · never:1
+- tutor offsets used: 0:98 · -1:14 · -2:14 (deviation rate 0.222)
+- director off-nominal: 0/182
+- decay slips: 134 · repair latency: 1:28 · 2:24 · 3+:28 · never:54
+- repair via: tutor:80 · unrepaired at end: 54 · false-form dwell (mutate->retract): 2, 1, 1, 4, 1, 1, 1, 4, 10, 1
 
 ### unknown (10 arms, 104 releases)
 
@@ -22,14 +22,14 @@
 - decay slips: 27 · repair latency: 1:2 · 2:2 · 3+:16 · never:7
 - repair via: tutor:20 · unrepaired at end: 7 · false-form dwell (mutate->retract): 1, 1, 4, 1, 1, 8, 6, 2, 1
 
-### mock (32 arms, 290 releases)
+### mock (31 arms, 282 releases)
 
-- verdicts: disengagement:13 · grounded_anagnorisis:19
-- adoption lambda: 0:290
-- tutor offsets used: 0:122 (deviation rate 0)
-- director off-nominal: 0/168
-- decay slips: 41 · repair latency: 1:1 · 2:3 · 3+:10 · never:27
-- repair via: tutor:14 · unrepaired at end: 27 · false-form dwell (mutate->retract): none
+- verdicts: disengagement:12 · grounded_anagnorisis:19
+- adoption lambda: 0:282
+- tutor offsets used: 0:119 (deviation rate 0)
+- director off-nominal: 0/163
+- decay slips: 37 · repair latency: 1:1 · 2:2 · 3+:9 · never:25
+- repair via: tutor:12 · unrepaired at end: 25 · false-form dwell (mutate->retract): none
 
 ## Arms
 
@@ -40,10 +40,15 @@
 | bitterwell-v001-real-superego-on-t1-charterv2 | real | world_003_bitterwell | grounded_anagnorisis | 15 | 3 (0) | 0,0,0,0,0,0,0 | 0 (0) |
 | bitterwell-v001-real-sw-off-t1 | real | world_003_bitterwell | grounded_anagnorisis | 15 | 3 (0) | 0,0,0,0,0,0,0 | 0 (0) |
 | lantern-e2-real-r1 | real | world_002_lantern | disengagement | 12 | 2 (2) | 0,0,0,0,0 | 3 (1) |
+| lantern-e2-real-r10 | real | world_002_lantern | aporia | 8 | 1 (1) | 0,0,0,0 | 3 (1) |
 | lantern-e2-real-r2 | real | world_002_lantern | grounded_anagnorisis | 20 | 3 (2) | 0,0,0,0,0,0,0,0 | 4 (2) |
 | lantern-e2-real-r3 | real | world_002_lantern | grounded_anagnorisis | 20 | 3 (3) | 0,0,0,0,0,0,0,0 | 3 (1) |
 | lantern-e2-real-r4 | real | world_002_lantern | grounded_anagnorisis | 20 | 3 (1) | 0,0,0,0,0,0,0,0 | 4 (2) |
 | lantern-e2-real-r5 | real | world_002_lantern | disengagement | 12 | 2 (2) | 0,0,0,0,0 | 3 (1) |
+| lantern-e2-real-r6 | real | world_002_lantern | disengagement | 12 | 2 (2) | 0,0,0,0,0 | 3 (1) |
+| lantern-e2-real-r7 | real | world_002_lantern | disengagement | 12 | 2 (2) | 0,0,0,0,0 | 3 (1) |
+| lantern-e2-real-r8 | real | world_002_lantern | disengagement | 12 | 2 (2) | 0,0,0,0,0 | 3 (1) |
+| lantern-e2-real-r9 | real | world_002_lantern | grounded_anagnorisis | 20 | 3 (1) | 0,0,0,0,0,0,0,0 | 4 (2) |
 | lantern-e3-real-r1 | real | world_002_lantern | disengagement | 24 | 3 (1) | 0,0,0,0,0,0,0,0 | 3 (1) |
 | lantern-e5-proof-debt-real-r1 | real | world_002_lantern | grounded_anagnorisis | 20 | 3 (1) | 0,0,0,0,0,0,0,0 | 3 (1) |
 | lantern-p1-dials-on | real | world_002_lantern | aporia | 8 | 1 (1) | 0,0,0,0 | 2 (0) |
@@ -87,7 +92,6 @@
 | free-figures-mockcheck | mock | world_001_nocturne | grounded_anagnorisis | 32 | 5 (0) | 0,0,0,0,0,0,0,0,0,0,0 | 0 (0) |
 | freelance-director-mockcheck | mock | world_001_nocturne | grounded_anagnorisis | 32 | 5 (0) | 0,0,0,0,0,0,0,0,0,0,0 | 0 (0) |
 | frozen-gate-mockcheck | mock | world_001_nocturne | grounded_anagnorisis | 32 | 5 (0) | 0,0,0,0,0,0,0,0,0,0,0 | 0 (0) |
-| lantern-e2-mock-smoke | mock | world_002_lantern | disengagement | 25 | 3 (0) | 0,0,0,0,0,0,0,0 | 4 (2) |
 | lantern-e3-pacing-guard-mock-smoke | mock | world_002_lantern | disengagement | 25 | 3 (0) | 0,0,0,0,0,0,0,0 | 4 (2) |
 | lantern-e3-solvency-mock-smoke | mock | world_002_lantern | disengagement | 25 | 3 (0) | 0,0,0,0,0,0,0,0 | 3 (1) |
 | lantern-m5-proof-debt-mock-smoke | mock | world_002_lantern | grounded_anagnorisis | 20 | 3 (0) | 0,0,0,0,0,0,0,0 | 3 (2) |

@@ -458,6 +458,96 @@
       ]
     },
     {
+      "arm": "lantern-e2-real-r10",
+      "backend": "real",
+      "worldId": "world_002_lantern",
+      "worldLoaded": true,
+      "verdict": "aporia",
+      "turnsPlayed": 8,
+      "firstForcedTurn": null,
+      "assertedGroundedTurn": null,
+      "releases": [
+        {
+          "premiseId": "m_key",
+          "via": "director",
+          "turn": 2,
+          "scheduledTurn": 2,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 2,
+          "lambda": 0
+        },
+        {
+          "premiseId": "p_bearing",
+          "via": "tutor",
+          "turn": 3,
+          "scheduledTurn": 4,
+          "offset": -1,
+          "reason": "Played one turn early because the learner has explicitly identified the missing first ground and is ready to seat it.",
+          "adoptTurn": 3,
+          "lambda": 0
+        },
+        {
+          "premiseId": "m_post",
+          "via": "director",
+          "turn": 6,
+          "scheduledTurn": 6,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 6,
+          "lambda": 0
+        },
+        {
+          "premiseId": "m_shutter",
+          "via": "director",
+          "turn": 8,
+          "scheduledTurn": 8,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 8,
+          "lambda": 0
+        }
+      ],
+      "tutorReleases": 1,
+      "tutorDeviations": 1,
+      "directorReleases": 3,
+      "directorOffNominal": 0,
+      "unscheduledReleases": 0,
+      "unadoptedReleases": 0,
+      "slips": [
+        {
+          "premiseId": "m_key",
+          "decayTurn": 3,
+          "mode": "vanish",
+          "repairTurn": 6,
+          "repairVia": "tutor",
+          "repairLatency": 3,
+          "retractTurn": null,
+          "falseDwell": null
+        },
+        {
+          "premiseId": "p_bearing",
+          "decayTurn": 4,
+          "mode": "vanish",
+          "repairTurn": null,
+          "repairVia": null,
+          "repairLatency": null,
+          "retractTurn": null,
+          "falseDwell": null
+        },
+        {
+          "premiseId": "m_post",
+          "decayTurn": 7,
+          "mode": "vanish",
+          "repairTurn": null,
+          "repairVia": null,
+          "repairLatency": null,
+          "retractTurn": null,
+          "falseDwell": null
+        }
+      ]
+    },
+    {
       "arm": "lantern-e2-real-r2",
       "backend": "real",
       "worldId": "world_002_lantern",
@@ -958,6 +1048,446 @@
         {
           "premiseId": "m_post",
           "decayTurn": 7,
+          "mode": "vanish",
+          "repairTurn": null,
+          "repairVia": null,
+          "repairLatency": null,
+          "retractTurn": null,
+          "falseDwell": null
+        }
+      ]
+    },
+    {
+      "arm": "lantern-e2-real-r6",
+      "backend": "real",
+      "worldId": "world_002_lantern",
+      "worldLoaded": true,
+      "verdict": "disengagement",
+      "turnsPlayed": 12,
+      "firstForcedTurn": null,
+      "assertedGroundedTurn": null,
+      "releases": [
+        {
+          "premiseId": "m_key",
+          "via": "director",
+          "turn": 2,
+          "scheduledTurn": 2,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 2,
+          "lambda": 0
+        },
+        {
+          "premiseId": "p_bearing",
+          "via": "tutor",
+          "turn": 3,
+          "scheduledTurn": 4,
+          "offset": -1,
+          "reason": "The clerk has already named the bearing as the standing gap, so the paper can enter one turn early to keep the account moving.",
+          "adoptTurn": 3,
+          "lambda": 0
+        },
+        {
+          "premiseId": "m_post",
+          "via": "director",
+          "turn": 6,
+          "scheduledTurn": 6,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 6,
+          "lambda": 0
+        },
+        {
+          "premiseId": "p_chart",
+          "via": "tutor",
+          "turn": 7,
+          "scheduledTurn": 9,
+          "offset": -2,
+          "reason": "The clerk has twice named tower-on-bearing as the active gap and is ready for the chart before its scheduled cue.",
+          "adoptTurn": 7,
+          "lambda": 0
+        },
+        {
+          "premiseId": "m_shutter",
+          "via": "director",
+          "turn": 8,
+          "scheduledTurn": 8,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 8,
+          "lambda": 0
+        }
+      ],
+      "tutorReleases": 2,
+      "tutorDeviations": 2,
+      "directorReleases": 3,
+      "directorOffNominal": 0,
+      "unscheduledReleases": 0,
+      "unadoptedReleases": 0,
+      "slips": [
+        {
+          "premiseId": "m_key",
+          "decayTurn": 3,
+          "mode": "vanish",
+          "repairTurn": null,
+          "repairVia": null,
+          "repairLatency": null,
+          "retractTurn": null,
+          "falseDwell": null
+        },
+        {
+          "premiseId": "p_bearing",
+          "decayTurn": 4,
+          "mode": "vanish",
+          "repairTurn": 6,
+          "repairVia": "tutor",
+          "repairLatency": 2,
+          "retractTurn": null,
+          "falseDwell": null
+        },
+        {
+          "premiseId": "m_post",
+          "decayTurn": 7,
+          "mode": "vanish",
+          "repairTurn": null,
+          "repairVia": null,
+          "repairLatency": null,
+          "retractTurn": null,
+          "falseDwell": null
+        }
+      ]
+    },
+    {
+      "arm": "lantern-e2-real-r7",
+      "backend": "real",
+      "worldId": "world_002_lantern",
+      "worldLoaded": true,
+      "verdict": "disengagement",
+      "turnsPlayed": 12,
+      "firstForcedTurn": null,
+      "assertedGroundedTurn": null,
+      "releases": [
+        {
+          "premiseId": "m_key",
+          "via": "director",
+          "turn": 2,
+          "scheduledTurn": 2,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 2,
+          "lambda": 0
+        },
+        {
+          "premiseId": "p_bearing",
+          "via": "tutor",
+          "turn": 3,
+          "scheduledTurn": 4,
+          "offset": -1,
+          "reason": "Played one turn early because the clerk explicitly identified the logged bearing as the next lawful conjunct.",
+          "adoptTurn": 3,
+          "lambda": 0
+        },
+        {
+          "premiseId": "m_post",
+          "via": "director",
+          "turn": 6,
+          "scheduledTurn": 6,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 6,
+          "lambda": 0
+        },
+        {
+          "premiseId": "p_chart",
+          "via": "tutor",
+          "turn": 7,
+          "scheduledTurn": 9,
+          "offset": -2,
+          "reason": "Played early because the clerk has repeatedly named the chart as the exact missing conjunct and is ready to derive Rule 1.",
+          "adoptTurn": 7,
+          "lambda": 0
+        },
+        {
+          "premiseId": "m_shutter",
+          "via": "director",
+          "turn": 8,
+          "scheduledTurn": 8,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 8,
+          "lambda": 0
+        }
+      ],
+      "tutorReleases": 2,
+      "tutorDeviations": 2,
+      "directorReleases": 3,
+      "directorOffNominal": 0,
+      "unscheduledReleases": 0,
+      "unadoptedReleases": 0,
+      "slips": [
+        {
+          "premiseId": "m_key",
+          "decayTurn": 3,
+          "mode": "vanish",
+          "repairTurn": null,
+          "repairVia": null,
+          "repairLatency": null,
+          "retractTurn": null,
+          "falseDwell": null
+        },
+        {
+          "premiseId": "p_bearing",
+          "decayTurn": 4,
+          "mode": "vanish",
+          "repairTurn": 5,
+          "repairVia": "tutor",
+          "repairLatency": 1,
+          "retractTurn": null,
+          "falseDwell": null
+        },
+        {
+          "premiseId": "p_bearing",
+          "decayTurn": 7,
+          "mode": "vanish",
+          "repairTurn": null,
+          "repairVia": null,
+          "repairLatency": null,
+          "retractTurn": null,
+          "falseDwell": null
+        }
+      ]
+    },
+    {
+      "arm": "lantern-e2-real-r8",
+      "backend": "real",
+      "worldId": "world_002_lantern",
+      "worldLoaded": true,
+      "verdict": "disengagement",
+      "turnsPlayed": 12,
+      "firstForcedTurn": null,
+      "assertedGroundedTurn": null,
+      "releases": [
+        {
+          "premiseId": "m_key",
+          "via": "director",
+          "turn": 2,
+          "scheduledTurn": 2,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 2,
+          "lambda": 0
+        },
+        {
+          "premiseId": "p_bearing",
+          "via": "tutor",
+          "turn": 3,
+          "scheduledTurn": 4,
+          "offset": -1,
+          "reason": "The clerk has twice identified the bearing as the missing first conjunct, so the paper is ripe one turn early.",
+          "adoptTurn": 3,
+          "lambda": 0
+        },
+        {
+          "premiseId": "m_post",
+          "via": "director",
+          "turn": 6,
+          "scheduledTurn": 6,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 6,
+          "lambda": 0
+        },
+        {
+          "premiseId": "p_chart",
+          "via": "tutor",
+          "turn": 7,
+          "scheduledTurn": 9,
+          "offset": -2,
+          "reason": "The clerk is asking for the chart conjunct now, and playing it early prevents Harlow custody from hardening into the wrong tower.",
+          "adoptTurn": 7,
+          "lambda": 0
+        },
+        {
+          "premiseId": "m_shutter",
+          "via": "director",
+          "turn": 8,
+          "scheduledTurn": 8,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 8,
+          "lambda": 0
+        }
+      ],
+      "tutorReleases": 2,
+      "tutorDeviations": 2,
+      "directorReleases": 3,
+      "directorOffNominal": 0,
+      "unscheduledReleases": 0,
+      "unadoptedReleases": 0,
+      "slips": [
+        {
+          "premiseId": "m_key",
+          "decayTurn": 3,
+          "mode": "vanish",
+          "repairTurn": 5,
+          "repairVia": "tutor",
+          "repairLatency": 2,
+          "retractTurn": null,
+          "falseDwell": null
+        },
+        {
+          "premiseId": "p_bearing",
+          "decayTurn": 4,
+          "mode": "vanish",
+          "repairTurn": null,
+          "repairVia": null,
+          "repairLatency": null,
+          "retractTurn": null,
+          "falseDwell": null
+        },
+        {
+          "premiseId": "m_key",
+          "decayTurn": 7,
+          "mode": "vanish",
+          "repairTurn": null,
+          "repairVia": null,
+          "repairLatency": null,
+          "retractTurn": null,
+          "falseDwell": null
+        }
+      ]
+    },
+    {
+      "arm": "lantern-e2-real-r9",
+      "backend": "real",
+      "worldId": "world_002_lantern",
+      "worldLoaded": true,
+      "verdict": "grounded_anagnorisis",
+      "turnsPlayed": 20,
+      "firstForcedTurn": 20,
+      "assertedGroundedTurn": 20,
+      "releases": [
+        {
+          "premiseId": "m_key",
+          "via": "director",
+          "turn": 2,
+          "scheduledTurn": 2,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 2,
+          "lambda": 0
+        },
+        {
+          "premiseId": "p_bearing",
+          "via": "tutor",
+          "turn": 4,
+          "scheduledTurn": 4,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 4,
+          "lambda": 0
+        },
+        {
+          "premiseId": "m_post",
+          "via": "director",
+          "turn": 6,
+          "scheduledTurn": 6,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 6,
+          "lambda": 0
+        },
+        {
+          "premiseId": "m_shutter",
+          "via": "director",
+          "turn": 8,
+          "scheduledTurn": 8,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 8,
+          "lambda": 0
+        },
+        {
+          "premiseId": "p_chart",
+          "via": "tutor",
+          "turn": 9,
+          "scheduledTurn": 9,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 9,
+          "lambda": 0
+        },
+        {
+          "premiseId": "p_residue",
+          "via": "director",
+          "turn": 13,
+          "scheduledTurn": 13,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 13,
+          "lambda": 0
+        },
+        {
+          "premiseId": "p_key",
+          "via": "tutor",
+          "turn": 16,
+          "scheduledTurn": 17,
+          "offset": -1,
+          "reason": "Played one turn early because the learner has just named exclusive custody as the next required conjunct, and the board is ready for the key before presence.",
+          "adoptTurn": 16,
+          "lambda": 0
+        },
+        {
+          "premiseId": "p_skiff",
+          "via": "director",
+          "turn": 20,
+          "scheduledTurn": 20,
+          "offset": 0,
+          "reason": null,
+          "adoptTurn": 20,
+          "lambda": 0
+        }
+      ],
+      "tutorReleases": 3,
+      "tutorDeviations": 1,
+      "directorReleases": 5,
+      "directorOffNominal": 0,
+      "unscheduledReleases": 0,
+      "unadoptedReleases": 0,
+      "slips": [
+        {
+          "premiseId": "m_key",
+          "decayTurn": 3,
+          "mode": "vanish",
+          "repairTurn": null,
+          "repairVia": null,
+          "repairLatency": null,
+          "retractTurn": null,
+          "falseDwell": null
+        },
+        {
+          "premiseId": "p_bearing",
+          "decayTurn": 5,
+          "mode": "vanish",
+          "repairTurn": 7,
+          "repairVia": "tutor",
+          "repairLatency": 2,
+          "retractTurn": null,
+          "falseDwell": null
+        },
+        {
+          "premiseId": "p_bearing",
+          "decayTurn": 8,
+          "mode": "vanish",
+          "repairTurn": 10,
+          "repairVia": "tutor",
+          "repairLatency": 2,
+          "retractTurn": null,
+          "falseDwell": null
+        },
+        {
+          "premiseId": "m_post",
+          "decayTurn": 10,
           "mode": "vanish",
           "repairTurn": null,
           "repairVia": null,
@@ -6910,146 +7440,6 @@
       "slips": []
     },
     {
-      "arm": "lantern-e2-mock-smoke",
-      "backend": "mock",
-      "worldId": "world_002_lantern",
-      "worldLoaded": true,
-      "verdict": "disengagement",
-      "turnsPlayed": 25,
-      "firstForcedTurn": null,
-      "assertedGroundedTurn": null,
-      "releases": [
-        {
-          "premiseId": "m_key",
-          "via": "director",
-          "turn": 2,
-          "scheduledTurn": 2,
-          "offset": 0,
-          "reason": null,
-          "adoptTurn": 2,
-          "lambda": 0
-        },
-        {
-          "premiseId": "p_bearing",
-          "via": "tutor",
-          "turn": 4,
-          "scheduledTurn": 4,
-          "offset": 0,
-          "reason": "its scheduled turn has come",
-          "adoptTurn": 4,
-          "lambda": 0
-        },
-        {
-          "premiseId": "m_post",
-          "via": "director",
-          "turn": 6,
-          "scheduledTurn": 6,
-          "offset": 0,
-          "reason": null,
-          "adoptTurn": 6,
-          "lambda": 0
-        },
-        {
-          "premiseId": "m_shutter",
-          "via": "director",
-          "turn": 8,
-          "scheduledTurn": 8,
-          "offset": 0,
-          "reason": null,
-          "adoptTurn": 8,
-          "lambda": 0
-        },
-        {
-          "premiseId": "p_chart",
-          "via": "tutor",
-          "turn": 9,
-          "scheduledTurn": 9,
-          "offset": 0,
-          "reason": "its scheduled turn has come",
-          "adoptTurn": 9,
-          "lambda": 0
-        },
-        {
-          "premiseId": "p_residue",
-          "via": "director",
-          "turn": 13,
-          "scheduledTurn": 13,
-          "offset": 0,
-          "reason": null,
-          "adoptTurn": 13,
-          "lambda": 0
-        },
-        {
-          "premiseId": "p_key",
-          "via": "tutor",
-          "turn": 17,
-          "scheduledTurn": 17,
-          "offset": 0,
-          "reason": "its scheduled turn has come",
-          "adoptTurn": 17,
-          "lambda": 0
-        },
-        {
-          "premiseId": "p_skiff",
-          "via": "director",
-          "turn": 20,
-          "scheduledTurn": 20,
-          "offset": 0,
-          "reason": null,
-          "adoptTurn": 20,
-          "lambda": 0
-        }
-      ],
-      "tutorReleases": 3,
-      "tutorDeviations": 0,
-      "directorReleases": 5,
-      "directorOffNominal": 0,
-      "unscheduledReleases": 0,
-      "unadoptedReleases": 0,
-      "slips": [
-        {
-          "premiseId": "m_key",
-          "decayTurn": 3,
-          "mode": "vanish",
-          "repairTurn": 7,
-          "repairVia": "tutor",
-          "repairLatency": 4,
-          "retractTurn": null,
-          "falseDwell": null
-        },
-        {
-          "premiseId": "p_bearing",
-          "decayTurn": 5,
-          "mode": "vanish",
-          "repairTurn": null,
-          "repairVia": null,
-          "repairLatency": null,
-          "retractTurn": null,
-          "falseDwell": null
-        },
-        {
-          "premiseId": "m_key",
-          "decayTurn": 8,
-          "mode": "vanish",
-          "repairTurn": 10,
-          "repairVia": "tutor",
-          "repairLatency": 2,
-          "retractTurn": null,
-          "falseDwell": null
-        },
-        {
-          "premiseId": "m_post",
-          "decayTurn": 10,
-          "mode": "vanish",
-          "repairTurn": null,
-          "repairVia": null,
-          "repairLatency": null,
-          "retractTurn": null,
-          "falseDwell": null
-        }
-      ]
-    },
-    {
       "arm": "lantern-e3-pacing-guard-mock-smoke",
       "backend": "mock",
       "worldId": "world_002_lantern",
@@ -10157,38 +10547,38 @@
   ],
   "aggregates": {
     "real": {
-      "arms": 37,
+      "arms": 42,
       "verdicts": {
-        "grounded_anagnorisis": 22,
-        "disengagement": 9,
-        "aporia": 6
+        "grounded_anagnorisis": 23,
+        "disengagement": 12,
+        "aporia": 7
       },
-      "releases": 281,
+      "releases": 308,
       "lambdaHistogram": {
-        "0": 279,
+        "0": 306,
         "1": 0,
         "2": 0,
         "3+": 1,
         "never": 1
       },
       "tutorOffsetHistogram": {
-        "0": 96,
-        "-1": 9,
-        "-2": 11
+        "0": 98,
+        "-1": 14,
+        "-2": 14
       },
-      "tutorDeviationRate": 0.172,
+      "tutorDeviationRate": 0.222,
       "directorOffNominal": 0,
-      "directorReleases": 165,
-      "slips": 118,
+      "directorReleases": 182,
+      "slips": 134,
       "repairLatencyHistogram": {
         "0": 0,
-        "1": 27,
-        "2": 20,
-        "3+": 27,
-        "never": 44
+        "1": 28,
+        "2": 24,
+        "3+": 28,
+        "never": 54
       },
       "repairVia": {
-        "tutor": 74
+        "tutor": 80
       },
       "falseDwells": [
         2,
@@ -10202,7 +10592,7 @@
         10,
         1
       ],
-      "unrepaired": 44
+      "unrepaired": 54
     },
     "unknown": {
       "arms": 10,
@@ -10248,38 +10638,38 @@
       "unrepaired": 7
     },
     "mock": {
-      "arms": 32,
+      "arms": 31,
       "verdicts": {
-        "disengagement": 13,
+        "disengagement": 12,
         "grounded_anagnorisis": 19
       },
-      "releases": 290,
+      "releases": 282,
       "lambdaHistogram": {
-        "0": 290,
+        "0": 282,
         "1": 0,
         "2": 0,
         "3+": 0,
         "never": 0
       },
       "tutorOffsetHistogram": {
-        "0": 122
+        "0": 119
       },
       "tutorDeviationRate": 0,
       "directorOffNominal": 0,
-      "directorReleases": 168,
-      "slips": 41,
+      "directorReleases": 163,
+      "slips": 37,
       "repairLatencyHistogram": {
         "0": 0,
         "1": 1,
-        "2": 3,
-        "3+": 10,
-        "never": 27
+        "2": 2,
+        "3+": 9,
+        "never": 25
       },
       "repairVia": {
-        "tutor": 14
+        "tutor": 12
       },
       "falseDwells": [],
-      "unrepaired": 27
+      "unrepaired": 25
     }
   },
   "skipped": []

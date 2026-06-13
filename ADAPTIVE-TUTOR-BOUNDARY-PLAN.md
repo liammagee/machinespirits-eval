@@ -843,3 +843,63 @@ Kill / no-re-roll: fan-2 grounding 0/5 (pooled 3/10) → STOP the frozen replica
 report, and move to the mechanism loop rather than spend a third fan. No re-roll in
 either direction; crash/truncation = delete the artifact dir, re-run the same label,
 note it in the outcome.
+
+### E2-extension outcome — 2026-06-13 (fan-2 ran 2026-06-12 evening → 06-13)
+
+Execution: all five registered labels (`lantern-e2-real-r6` … `r10`) ran serially
+under the frozen p4 command, `--critic off` deferred as registered. Artifacts are
+committed under `exports/dramatic-derivation/loop/lantern-e2-real-r{6..10}/`. The
+conduct miner was refreshed by `npm run derivation:mine` (42 real arms now mined,
+tutor deviation rate 0.222). No crash/truncation; no re-rolls.
+
+Rate: fan-2 grounded **1/5** — `r9` (grounded t20); the other four died: `r6`,
+`r7`, `r8` (disengagement t12) and `r10` (aporia t8). Pooled with fan-1's 3/5:
+
+**pooled 4/10 = 0.40, Clopper–Pearson 95% [0.122, 0.738]** — lower bound ≥0.122,
+read from the registered 4/10 row (verified `scipy.stats.beta.ppf`, matches the
+pre-tabled column exactly). The kill rule's 0/5 trigger is not met (fan-2 is 1/5),
+but see the convergence verdict below.
+
+Convergence verdict: **DIVERGENCE → mechanism loop.** Both pre-registered tests
+fail. (a) fan-2 grounded 1/5, which is the declared "≤1/5 = divergence" boundary,
+not the 2–4/5 tightening band. (b) the pooled CP95 lower bound 0.122 does not exceed
+fan-1's 0.15 floor — the interval did not tighten in the direction required; it
+moved down and stayed wide. The frozen p4 recipe does **not** ground the lantern
+reliably: across two exchangeable fans it grounds 4/10 with an interval still
+spanning a fifth to three-quarters. This triggers the operator's "loop on the
+mechanism" license under a separate registration (see E2-mechanism below).
+
+Divergence inventory for r6…r10:
+
+| arm | verdict | first split / conduct note | repairs / figures |
+|---|---|---|---|
+| `lantern-e2-real-r6` | disengagement t12 | structural twin of fan-1 `r1`/`r5`: `p_bearing` t3(-1), `p_chart` t7(-2); D plateau at 3 from t7 through death; `p_key` unreached | onCue 3/8; top figure erotema 6 |
+| `lantern-e2-real-r7` | disengagement t12 | same early pulls `p_bearing` t3(-1), `p_chart` t7(-2); D reverses **up** to 4 (t8) and plateaus at 4 — worse than r6's stall; `p_key` unreached | onCue 3/8; top figure erotema 6 |
+| `lantern-e2-real-r8` | disengagement t12 | same early pulls; D plateau at 4–5 through death; `p_key` unreached | onCue 3/8; top figure erotema 5 |
+| `lantern-e2-real-r9` | grounded t20, gap 0 | the lone fan-2 grounding and the structural twin of fan-1 `r4`: `p_bearing` **held** t4(+0), `p_chart` **held** t9(+0), `p_key` t16(-1); D descends cleanly to 0; onCue 7/8 | top figure erotema 7 |
+| `lantern-e2-real-r10` | aporia t8 | earliest death in either fan: `p_bearing` t3(-1) early pull, then D reverses to 5 (t5) and never breaks; learner reaches an impasse at t8 with `p_chart` and all later exhibits unreached (4/8) | onCue 3/8; top figure erotema 5 |
+
+Harness checks: every fan-2 arm had same-turn adoption for released exhibits, 0
+missed releases, 0 unscheduled releases, 0 uncovered re-entries, and 0 superego
+fires without recorded due. Deaths are reported outcomes, not re-roll candidates.
+
+Corridor occupancy against the E0 λ=0 map (fan-2 only):
+
+| decision | E0 safe set | fan-2 placements | fatal-cell entries |
+|---|---|---|---|
+| `p_bearing` cue t4 | {t4, t5, t6} | t3 in r6/r7/r8/r10; t4 in r9 | 4 (`bearing@t3`) |
+| `p_chart` cue t9 | {t8, t9} | t7 in r6/r7/r8; t9 in r9; unreached in r10 | 3 (`chart@t7`) |
+| `p_key` cue t17 | {t15, t16, t17, t18} | t16 in r9; unreached in r6/r7/r8/r10 | 0 |
+
+Total fatal-cell entries: 7 (identical to fan-1). Late-side license uses: 0 (again).
+
+The mechanism, stated plainly: with the decay seed fixed, the only live variance is
+whether the tutor **holds `p_bearing` and `p_chart` to cue or pulls them early**.
+Hold both (r4, r9) → the chain seats, D descends to 0, the play grounds at t20. Pull
+either early (r1, r5, r6, r7, r8, r10) → the early-released exhibit decays before the
+learner seats it, D stalls at a 3–5 plateau, the play disengages at t12 (or, in r10,
+aports at t8). The 4/10 rate is therefore the **base rate at which an unguarded
+codex tutor happens to hold both early exhibits** — not noise around a true rate, but
+the frequency of a single binary conduct choice. This is precisely the latitude the
+pacing guard (`--pacing-guard`, E3/E5) removes by forcing the on-cue schedule, which
+makes a pacing-guard arm the theory-named mechanism delta for the loop below.
