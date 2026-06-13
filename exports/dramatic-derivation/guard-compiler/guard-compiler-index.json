@@ -1,0 +1,129 @@
+{
+  "schema": "dramatic-derivation.guard-compiler-run.v0",
+  "mode": "static_replay_first",
+  "worlds": [
+    {
+      "worldId": "world_002_lantern",
+      "worldTitle": "The Light on the Knock",
+      "worldIR": "world-ir-world-002-lantern.json",
+      "guardSpec": "guard-spec-world-002-lantern.json",
+      "report": "guard-compiler-report-world-002-lantern.md",
+      "guardSpecSummary": {
+        "worldId": "world_002_lantern",
+        "hiddenPacingPremises": 3,
+        "hiddenPacingUnsafeReferenceTurns": [
+          "p_bearing@t2",
+          "p_bearing@t3",
+          "p_chart@t7",
+          "p_chart@t10",
+          "p_chart@t11",
+          "p_key@t19"
+        ],
+        "visibleProjectionStatus": "candidate_requires_replay",
+        "proofDebtTutorView": [
+          "premiseId",
+          "surface",
+          "sinceTurn"
+        ]
+      },
+      "contingency": {
+        "unguarded": {
+          "grounded": 4,
+          "early_pull_death": 6,
+          "n": 10
+        },
+        "pacing": {
+          "grounded": 4,
+          "decay_seating_death": 1,
+          "n": 5
+        },
+        "visible": {
+          "grounded": 5,
+          "n": 5
+        }
+      },
+      "safety": {
+        "unguarded": {
+          "arms": 10,
+          "played": 23,
+          "unsafe": 17,
+          "interventions": 0
+        },
+        "pacing": {
+          "arms": 5,
+          "played": 13,
+          "unsafe": 0,
+          "interventions": 0
+        },
+        "visible": {
+          "arms": 5,
+          "played": 15,
+          "unsafe": 8,
+          "interventions": 2
+        }
+      },
+      "missingArms": []
+    },
+    {
+      "worldId": "world_005_marrick",
+      "worldTitle": "The Light Shillings",
+      "worldIR": "world-ir-world-005-marrick.json",
+      "guardSpec": "guard-spec-world-005-marrick.json",
+      "report": "guard-compiler-report-world-005-marrick.md",
+      "guardSpecSummary": {
+        "worldId": "world_005_marrick",
+        "hiddenPacingPremises": 4,
+        "hiddenPacingUnsafeReferenceTurns": [
+          "p_alloy@t2",
+          "p_crucible@t10",
+          "p_flaw@t12",
+          "p_flaw@t16",
+          "p_graver@t16",
+          "p_graver@t20"
+        ],
+        "visibleProjectionStatus": "uncertified_topology_risk",
+        "proofDebtTutorView": [
+          "premiseId",
+          "surface",
+          "sinceTurn"
+        ]
+      },
+      "contingency": {
+        "unguarded": {
+          "early_pull_death": 2,
+          "decay_seating_death": 3,
+          "n": 5
+        },
+        "pacing": {
+          "grounded": 5,
+          "n": 5
+        },
+        "visible": {
+          "early_pull_death": 5,
+          "n": 5
+        }
+      },
+      "safety": {
+        "unguarded": {
+          "arms": 5,
+          "played": 16,
+          "unsafe": 2,
+          "interventions": 0
+        },
+        "pacing": {
+          "arms": 5,
+          "played": 20,
+          "unsafe": 0,
+          "interventions": 0
+        },
+        "visible": {
+          "arms": 5,
+          "played": 20,
+          "unsafe": 7,
+          "interventions": 9
+        }
+      },
+      "missingArms": []
+    }
+  ]
+}
