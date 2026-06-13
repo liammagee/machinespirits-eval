@@ -772,8 +772,23 @@ describe('dashboard front door', () => {
       replays: 0,
       proofRuns: 1,
       recentRuns: [
-        { id: 'run-alpha', itemCount: 6, scoreCount: 6, reviewFlagCount: 2, createdAt: '2026-06-05 16:20:01' },
-        { id: 'run-beta', itemCount: 4, scoreCount: 2, reviewFlagCount: 0, createdAt: '2026-06-04 10:00:00' },
+        {
+          id: 'run-alpha',
+          itemCount: 6,
+          scoreCount: 6,
+          reviewFlagCount: 2,
+          createdAt: '2026-06-05 16:20:01',
+          spark: [100, 75, 0, 50, 100, 75],
+        },
+        // run-beta has no score series yet → its sparkline degrades to a placeholder
+        {
+          id: 'run-beta',
+          itemCount: 4,
+          scoreCount: 2,
+          reviewFlagCount: 0,
+          createdAt: '2026-06-04 10:00:00',
+          spark: [],
+        },
       ],
     });
     // each run links into the corpus filtered by that run id
@@ -784,6 +799,14 @@ describe('dashboard front door', () => {
     assert.match(html, /6 scripts · 6 scored · 2 flags/);
     // the populated feed is NOT the empty state
     assert.doesNotMatch(html, /no runs yet/);
+    // run-alpha's sparkline: one bar per scored script, a 0 rendered as a 0%-height gap,
+    // and the dimension/count/mean carried in the title (avg of [100,75,0,50,100,75] = 67)
+    assert.match(html, /class="spark" role="img"[^>]*title="recontextualization across 6 scored scripts · avg 67"/);
+    assert.match(html, /class="spark__b" style="height:100%"/);
+    assert.match(html, /class="spark__b" style="height:0%"/);
+    // run-beta with no series degrades to the muted placeholder, not a broken/NaN spark
+    assert.match(html, /class="spark spark--empty"/);
+    assert.doesNotMatch(html, /NaN/);
   });
 
   it('renders the Signal charts: two verdict bars and four score histograms', () => {

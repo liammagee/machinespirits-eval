@@ -416,6 +416,31 @@ function listRuns(db) {
     .all();
 }
 
+// Per-run recontextualization series — one value per scored script, oldest →
+// newest — for the dashboard feed's inline sparklines. recontextualization is
+// the headline dramatic-form dimension (the one the Signal histograms lead
+// with), so a feed row's spark shows the shape of that run's recohering at a
+// glance. One query for all the given run ids; returns Map<runId, number[]>.
+function runScoreSeries(db, runIds) {
+  const ids = (Array.isArray(runIds) ? runIds : []).filter(Boolean);
+  if (!ids.length) return new Map();
+  const placeholders = ids.map(() => '?').join(',');
+  const rows = db
+    .prepare(
+      `SELECT i.run_id AS runId, s.recontextualization AS rc
+       FROM poetics_items i JOIN poetics_scores s ON s.item_id = i.id
+       WHERE i.run_id IN (${placeholders}) AND s.recontextualization IS NOT NULL
+       ORDER BY s.created_at ASC, s.id ASC`,
+    )
+    .all(...ids);
+  const map = new Map();
+  for (const row of rows) {
+    if (!map.has(row.runId)) map.set(row.runId, []);
+    map.get(row.runId).push(row.rc);
+  }
+  return map;
+}
+
 // Distinct, non-empty disciplines present in poetics_items, for the browser's
 // discipline filter dropdown (sourced live so new disciplines need no code edit).
 function distinctDisciplines(db) {
@@ -1500,12 +1525,19 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
       const v = r?.diagnosis?.verdict || '(none)';
       proofVerdicts[v] = (proofVerdicts[v] || 0) + 1;
     }
+    const recentRuns = listRuns(db).slice(0, 6);
+    // Attach each feed row's recontextualization series for its inline sparkline.
+    const seriesMap = runScoreSeries(
+      db,
+      recentRuns.map((r) => r.id),
+    );
+    for (const r of recentRuns) r.spark = seriesMap.get(r.id) || [];
     const stats = {
       ...corpusStats(db),
       replays: listReplayBundles().length,
       proofRuns: derivationRuns.length,
       proofVerdicts,
-      recentRuns: listRuns(db).slice(0, 6),
+      recentRuns,
     };
     return res.type('html').send(renderDashboardHtml(stats));
   });
@@ -3639,6 +3671,22 @@ function histHtml(label, levels) {
   );
 }
 
+// An inline sparkline for one run's per-script score series (0–100 each). One
+// thin bar per scored script, oldest → newest; a 0 reads as a baseline gap so a
+// weak script shows as a dip. Every value is rendered (no cap), so the glyph
+// stays a faithful one-bar-per-script picture; the exact dimension, count and
+// mean ride along in the title for hover. Empty series → a muted placeholder.
+function sparkBarHtml(values, { dimension = 'recontextualization' } = {}) {
+  const list = (Array.isArray(values) ? values : []).filter((v) => Number.isFinite(v));
+  if (!list.length) return '<span class="spark spark--empty" aria-hidden="true"></span>';
+  const bars = list
+    .map((v) => `<span class="spark__b" style="height:${Math.max(0, Math.min(100, v)).toFixed(0)}%"></span>`)
+    .join('');
+  const avg = Math.round(list.reduce((sum, v) => sum + v, 0) / list.length);
+  const title = `${dimension} across ${fmtCount(list.length)} scored script${list.length === 1 ? '' : 's'} · avg ${avg}`;
+  return `<span class="spark" role="img" aria-label="${escapeHtml(title)}" title="${escapeHtml(title)}">${bars}</span>`;
+}
+
 // ── Dashboard front door (GET /) ──────────────────────────────────────────────
 // The app's introduction + onboarding. Renders live corpus stats server-side
 // (no fetch flash, works JS-off), a first-visit recognition banner, a five-rung
@@ -3731,7 +3779,7 @@ function renderDashboardHtml(stats = {}) {
               r.itemCount,
             )} scripts · ${fmt(r.scoreCount)} scored${
               r.reviewFlagCount ? ` · ${fmt(r.reviewFlagCount)} flag${r.reviewFlagCount === 1 ? '' : 's'}` : ''
-            }</span><span class="feed-row__t">${relTime(parseTs(r.createdAt))}</span></a>`,
+            }</span>${sparkBarHtml(r.spark)}<span class="feed-row__t">${relTime(parseTs(r.createdAt))}</span></a>`,
         )
         .join('')
     : '<div class="feed-empty">no runs yet — launch one to populate the corpus</div>';
@@ -3976,6 +4024,11 @@ function renderDashboardHtml(stats = {}) {
 .feed-row__m{ flex:1; font:11px ui-monospace,monospace; color:var(--ink-4); }
 .feed-row__t{ flex:none; font:11px ui-monospace,monospace; color:var(--ink-4); }
 .feed-empty{ padding:16px 14px; font:italic 12px ui-monospace,monospace; color:var(--ink-4); }
+.spark{ flex:none; display:flex; align-items:flex-end; gap:1px; width:88px; height:20px; }
+.spark__b{ flex:1 1 0; min-width:0; background:var(--moss); opacity:.7; border-radius:1px 1px 0 0; }
+.feed-row:hover .spark__b{ opacity:.9; }
+.spark--empty{ flex:none; width:88px; height:20px; }
+@media(max-width:600px){ .spark,.spark--empty{ display:none; } }
 .sig{ display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
 .sig-card{ border:1px solid var(--rule); background:var(--paper-4); padding:14px 16px; }
 .sig-card__top{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:11px; }
