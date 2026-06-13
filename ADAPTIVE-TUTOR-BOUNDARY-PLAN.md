@@ -581,3 +581,35 @@ confirms the map's central warning: locally licensed early pulls, especially
 `p_chart@t7`, remain hazardous, but repair/adoption timing can sometimes bridge
 the arithmetic hazard. Gate 2 question, if sanctioned later: E3 solvency gate
 next?
+
+## E3 registration — 2026-06-12 (committed pre-run; this text does not change after)
+
+Sanction: operator, 2026-06-12 ("do the new E3 arm, and continue to iterate if you
+can - I'll be out for a while"). Harness operator: Codex. This registration spends
+that sanction on one paid E3 arm, not an unattended two-arm fan.
+
+Design: p5 replay configuration plus one delta. The inherited command keeps the
+same world, script, seed, learner, acts, confrontation, repair clause, release
+authority, plot, and throughline as p5; decay remains staged with `startTurn:17`.
+The single delta is the mechanical no-decay solvency gate (`--pacing-guard`), which
+requires `--release-authority` and computes release safety from the production
+`derivationDistance`/`detectStall` arithmetic at each tutor release decision. Label:
+`lantern-e3-real-r1`; group: `lantern-e3-solvency`.
+
+Mock gate: before the paid arm, run the same command with `DERIVATION_LLM=mock`.
+Mock artifacts stay uncommitted. The mock must run to a verdict, record
+`pacingGuard: true`, and show guard audit objects on release decisions.
+
+Endpoints:
+1. Gate primary: the guard records per-decision solvency, blocks insolvent pulls, or
+   force-plays last-safe exhibits with a declared reason.
+2. Survival primary: the arm survives past the p5 death point (t12).
+3. Decay inherited-secondary: if the arm survives to t17 with a populated staged pool,
+   the §14.3 decay endpoints inherit inside this sanction: bent-first repair must be
+   observable, the board must be clean at ground/death, and decay events must be
+   reported as conduct rather than hidden plumbing.
+
+Kill rule: if the guard constantly overrides ordinary tutor conduct, stop after this
+arm and return to E0/A3 license design rather than spending another paid arm. No
+re-roll in either direction; crash/truncation = delete the artifact dir, re-run the
+same label, and note it here.
