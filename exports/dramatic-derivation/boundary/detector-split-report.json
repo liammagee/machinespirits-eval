@@ -7,6 +7,8 @@
       "endTurn": 8,
       "dFinal": 4,
       "className": "tempo_starved_house",
+      "failureMode": "early_pull_death",
+      "guardState": "unguarded",
       "reasons": [
         "tempo-insolvent tutor release(s): p_bearing@t3, p_chart@t7"
       ],
@@ -82,6 +84,8 @@
       "endTurn": 20,
       "dFinal": 0,
       "className": "grounded_control",
+      "failureMode": "grounded",
+      "guardState": "unguarded",
       "reasons": [
         "grounded verdict; no detector split applied"
       ],
@@ -176,6 +180,8 @@
       "endTurn": 20,
       "dFinal": 0,
       "className": "grounded_control",
+      "failureMode": "grounded",
+      "guardState": "unguarded",
       "reasons": [
         "grounded verdict; no detector split applied"
       ],
@@ -216,6 +222,8 @@
       "endTurn": 12,
       "dFinal": 3,
       "className": "tempo_starved_house",
+      "failureMode": "early_pull_death",
+      "guardState": "unguarded",
       "reasons": [
         "tempo-insolvent tutor release(s): p_chart@t7"
       ],
@@ -256,6 +264,8 @@
       "endTurn": 12,
       "dFinal": 3,
       "className": "tempo_starved_house",
+      "failureMode": "early_pull_death",
+      "guardState": "unguarded",
       "reasons": [
         "tempo-insolvent tutor release(s): p_bearing@t3, p_chart@t7"
       ],
@@ -323,6 +333,8 @@
       "endTurn": 12,
       "dFinal": 3,
       "className": "tempo_starved_house",
+      "failureMode": "early_pull_death",
+      "guardState": "unguarded",
       "reasons": [
         "tempo-insolvent tutor release(s): p_bearing@t3, p_chart@t7"
       ],
@@ -393,6 +405,8 @@
       "endTurn": 24,
       "dFinal": 1,
       "className": "decay_starved_lucky_leap",
+      "failureMode": "decay_seating_death",
+      "guardState": "pacing",
       "reasons": [
         "2 unrepaired dropped premise(s) at end",
         "4 lucky leap(s), 12 overreach event(s)",
@@ -429,6 +443,8 @@
       "endTurn": 20,
       "dFinal": 0,
       "className": "grounded_control",
+      "failureMode": "grounded",
+      "guardState": "proof_debt",
       "reasons": [
         "grounded verdict; no detector split applied"
       ],

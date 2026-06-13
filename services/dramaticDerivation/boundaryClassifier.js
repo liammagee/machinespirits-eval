@@ -65,6 +65,33 @@ function lateOpenWindows(diagnosis, endTurn, window) {
   );
 }
 
+// The public failure-mode taxonomy (Step 3 of the generalization plan): a coarse
+// projection of the detailed detector-split classes onto the four modes that
+// travel as a within-arm observable, far more stable than the success rate. Keyed
+// on *mechanism* (why the arm failed), not on the terminal verdict shape — an
+// early-pull that terminates in an early aporia is still an early-pull death.
+const FAILURE_MODE_BY_CLASS = {
+  grounded_control: 'grounded',
+  tempo_starved_house: 'early_pull_death',
+  decay_starved_stall: 'decay_seating_death',
+  decay_starved_lucky_leap: 'decay_seating_death',
+  supply_starved_stall: 'aporia',
+  unresolved_non_grounding: 'unresolved',
+};
+
+export function failureModeOf(className) {
+  return FAILURE_MODE_BY_CLASS[className] || 'unresolved';
+}
+
+// Which guard layer the arm ran under, read from the run's own recorded flags
+// (the contingency axis for the guard × failure-mode table). Proof-debt implies
+// pacing (E5 stacks on E3), so it is reported as its own, more-specific state.
+export function guardStateOf(diagnosis) {
+  if (diagnosis?.proofDebtGuard) return 'proof_debt';
+  if (diagnosis?.pacingGuard) return 'pacing';
+  return 'unguarded';
+}
+
 export function classifyBoundaryFailure(world, result, diagnosis) {
   const verdict = diagnosis?.verdict || result?.verdict || 'unknown';
   const endTurn = terminalTurn(result, diagnosis);
@@ -90,9 +117,7 @@ export function classifyBoundaryFailure(world, result, diagnosis) {
   } else if (fatalReleases.length) {
     className = 'tempo_starved_house';
     reasons.push(
-      `tempo-insolvent tutor release(s): ${fatalReleases
-        .map((row) => `${row.premise}@t${row.turn}`)
-        .join(', ')}`,
+      `tempo-insolvent tutor release(s): ${fatalReleases.map((row) => `${row.premise}@t${row.turn}`).join(', ')}`,
     );
   } else if (slips.length && (luckyLeaps || overreaches)) {
     className = 'decay_starved_lucky_leap';
@@ -116,6 +141,8 @@ export function classifyBoundaryFailure(world, result, diagnosis) {
     endTurn,
     dFinal,
     className,
+    failureMode: failureModeOf(className),
+    guardState: guardStateOf(diagnosis),
     reasons,
     evidence: {
       fatalReleases,
@@ -136,4 +163,3 @@ export function classifyBoundaryFailure(world, result, diagnosis) {
     },
   };
 }
-
