@@ -138,6 +138,12 @@
  *                                       claims, and can force an exhibit on
  *                                       its last safe turn. Uses production
  *                                       derivationDistance/detectStall.)
+ *     [--proof-debt-guard]             (requires --repair-clause. When decay has
+ *                                       dropped an already-staged proof-critical
+ *                                       exhibit, the harness authorizes a restore
+ *                                       move before closure/new work. Exposes only
+ *                                       released exhibit ids/surfaces, not the raw
+ *                                       learner board or corruption ledger.)
  *     [--plot]                         (P2/C1; requires --superego + --acts.
  *                                       At each act opening the tutor ego
  *                                       commits a per-act plot — hold_by_end /
@@ -375,6 +381,13 @@ async function main() {
     console.error('--pacing-guard requires --release-authority (it narrows the exhibit window)');
     process.exit(1);
   }
+  const proofDebtGuard = flag('proof-debt-guard');
+  if (proofDebtGuard && !repairClause) {
+    console.error(
+      '--proof-debt-guard requires --repair-clause (proof-debt restores live inside the restore/re-entry discipline)',
+    );
+    process.exit(1);
+  }
   // P2/C1 = the act-plot commitment loop (same note §5): plot at the act
   // opening, audit at the act close, the audit binds the next plot.
   const plot = flag('plot');
@@ -492,6 +505,11 @@ async function main() {
       'tutor   PACING GUARD ON — no-decay tempo solvency narrows the release window; clock-fatal claims are held and last-safe turns may be force-played',
     );
   }
+  if (proofDebtGuard) {
+    console.log(
+      'tutor   PROOF-DEBT GUARD ON — already-staged proof-critical exhibits that drop from the proof state authorize immediate restore moves before closure/new work',
+    );
+  }
   if (plot) {
     console.log(
       'tutor   PLOT ON — at each act opening the tutor commits a per-act plot (hold/withhold/friction/fallback, from conduct only); the superego audits it clause by clause at the act close, and the audit binds the next plot',
@@ -531,6 +549,7 @@ async function main() {
       repairClause,
       releaseAuthority,
       pacingGuard,
+      proofDebtGuard,
       plot,
       throughline,
     }),
@@ -561,7 +580,12 @@ async function main() {
   const result = await runDrama({
     world,
     roles,
-    options: { onTurn, ...(decay ? { decay } : {}), ...(acts ? { acts } : {}) },
+    options: {
+      onTurn,
+      ...(decay ? { decay } : {}),
+      ...(acts ? { acts } : {}),
+      ...(proofDebtGuard ? { proofDebtGuard } : {}),
+    },
   });
   const elapsedMs = Date.now() - started;
   const usage = client.usage();
@@ -589,6 +613,7 @@ async function main() {
     confront,
     releaseAuthority,
     pacingGuard,
+    proofDebtGuard,
     // §12 dial (the repair clause) — false on every run before 2026-06-12.
     repairClause,
     // P2/C1 dial — false on every run before 2026-06-12. Named plotDial so it
@@ -666,6 +691,12 @@ async function main() {
     const c = diagnosis.corruption;
     console.log(
       `decay   ${c.decayEvents} slips, ${c.repairs.total} repaired (tutor ${c.repairs.byTutor}, re-adoption ${c.repairs.byReadoption}), ${c.unrepairedAtEnd} unrepaired at end, degraded-turn integral ${c.degradedTurnIntegral}, D reversals ${c.dReversals}`,
+    );
+  }
+  if (diagnosis.proofDebt) {
+    const p = diagnosis.proofDebt;
+    console.log(
+      `proof   debt detected on ${p.detectedTurns} turns (${p.debtsDetected} debts), restore actions ${p.actionTurns} (forced ${p.forcedMoves}, repaired ${p.repairedTargets})${p.targets.length ? `: ${p.targets.join(', ')}` : ''}`,
     );
   }
   const staging = diagnosis.staging;

@@ -690,3 +690,45 @@ controls; the old p2/p5/E2 death branch is tempo starvation; E3 moves the failur
 class to decay starvation after the pacing corridor is protected. Next live spend,
 if any, should be registered as a decay-repair/proof-state hygiene mechanism, not
 as another release-pacing mechanism.
+
+## E5 registration — 2026-06-13 (committed pre-run; this text does not change after)
+
+Sanction: operator, 2026-06-13 ("okay, implement this and evaluate it"). Scope is
+one paid live arm after code/test/mock validation. No second paid arm is licensed
+by this registration.
+
+Mechanism: **proof-debt guard** (`--proof-debt-guard`), stacked on the E3
+solvency arm. The single delta from E3 is proof-state hygiene: when decay drops an
+already-staged premise whose restoration would lower D, the harness exposes only
+that released exhibit id/surface to the tutor and authorizes an immediate
+`restore` move before closure/new work. It does not expose the raw learner board,
+corruption ledger, proof path, or secret.
+
+Design: replay the exact E3 p5 configuration — world-002 lantern, acts mode,
+conduct-only decay, repair clause, release authority, pacing guard, plot, and
+throughline — with the one added proof-debt guard. Label:
+`lantern-e5-proof-debt-real-r1`; group: `lantern-e5-proof-debt`.
+
+Pre-paid validation already completed under this sanction:
+- Focused tests for proof-debt detection, bridge override, and lantern mock chain
+  passed.
+- Full `npm test` passed.
+- CLI mock smoke `lantern-m5-proof-debt-mock-smoke` grounded at t20; it detected
+  one proof debt (`p_bearing`), spoke one restore, and repaired the target.
+
+Endpoints:
+1. Primary: a proof-critical decayed premise is detected and, if active, restored
+   before final recognition; diagnosis records proof-debt detections/actions.
+2. Outcome: the arm should convert E3's t24 decay-starved disengagement/lucky-leap
+   failure to grounded anagnorisis, or at minimum remove unrepaired proof-critical
+   debt from the terminal board.
+3. Non-leak: the guard's tutor-facing view remains limited to released exhibit
+   ids/surfaces; no raw board/corruption/proof-path dump enters acts-mode tutor
+   prompts.
+4. Interaction: pacing-guard behavior should remain stable; a success here must
+   be attributable to proof-state repair, not a new release-pacing change.
+
+Kill rule: if the guard repeatedly overrides ordinary conduct without repairing a
+real proof debt, stop and do not spend another arm on this mechanism without a new
+registration. Crash/truncation = delete the artifact dir, re-run the same label,
+and note it in the outcome.

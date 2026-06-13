@@ -80,6 +80,7 @@
 
 import { closure, entails, factKey, matchPattern, proofTree } from './chainer.js';
 import { normalizeDecayConfig, mulberry32 } from './corruption.js';
+import { proofDebtReport, tutorProofDebtView } from './proofDebt.js';
 import { derivationDistance, detectStall } from './slope.js';
 
 function renderFact(fact) {
@@ -149,6 +150,7 @@ export async function runDrama({ world, roles, options = {} }) {
   const plotRows = []; // {act, turn, holdByEnd, withhold, friction, fallback} — C1 act-plot dial (roles-layer)
   const plotAuditRows = []; // {turn, [final,] act, clauses, summary[, arc][, throughlineAudit]} — C1 act-close audits
   const throughlineRows = []; // {act, turn, trigger[, reason], arc, holdToEnd, risk, salvage} — two-layer planning
+  const proofDebtRows = []; // guard audit rows — proof-critical decayed exhibits offered to the tutor
   const ledger = []; // {turn, premiseId, via}
   const releasedKeys = new Set();
   const releasedFacts = [];
@@ -370,6 +372,11 @@ export async function runDrama({ world, roles, options = {} }) {
   const visibleToLearner = (facts) =>
     corruption ? facts.filter((fact) => !grounded.get(factKey(fact))?.decayed) : facts;
 
+  const currentProofDebt = (turn) =>
+    options.proofDebtGuard && corruption
+      ? proofDebtReport(world, { grounded, releasedIdByKey, turn })
+      : { turn, active: false, dNow: derivationDistance(world, validGroundedFacts()), debts: [] };
+
   // Stage v2 bounding (header): in acts mode the learner's context is (a) its
   // own theory store and (b) the current act only — prior acts' prose,
   // releases, and voiced theorems drop from view; the theory is the only
@@ -413,6 +420,7 @@ export async function runDrama({ world, roles, options = {} }) {
   });
 
   const omniscientView = (turn, roleName) => {
+    const proofDebt = roleName === 'tutor' && options.proofDebtGuard ? currentProofDebt(turn) : null;
     const base = {
       turn,
       role: roleName,
@@ -422,6 +430,7 @@ export async function runDrama({ world, roles, options = {} }) {
       transcript: [...transcript],
       staging: { phase: staging.phase },
       ...(actState ? { acts: actsView(turn) } : {}),
+      ...(proofDebt ? { proofDebt: tutorProofDebtView(proofDebt) } : {}),
     };
     // Stage v2 redaction (header): in acts mode the TUTOR's blindness is
     // total and structural, in both probe arms — no learner store, no
@@ -541,7 +550,22 @@ export async function runDrama({ world, roles, options = {} }) {
     });
 
     // --- tutor ---
-    const tutorOut = (await roles.tutor(omniscientView(turn, 'tutor'))) || {};
+    const tutorView = omniscientView(turn, 'tutor');
+    const debtAudit = options.proofDebtGuard ? currentProofDebt(turn) : null;
+    if (debtAudit?.active) {
+      proofDebtRows.push({
+        turn,
+        dNow: debtAudit.dNow,
+        debts: debtAudit.debts.map(({ premiseId, sinceTurn, dIfRestored, deltaD, closesProof }) => ({
+          premiseId,
+          sinceTurn,
+          dIfRestored,
+          deltaD,
+          closesProof,
+        })),
+      });
+    }
+    const tutorOut = (await roles.tutor(tutorView)) || {};
     const tutorRelease = applyRelease(
       turn,
       tutorOut.release,
@@ -565,6 +589,7 @@ export async function runDrama({ world, roles, options = {} }) {
         ...(tutorOut.plot ? { plot: tutorOut.plot } : {}),
         ...(tutorOut.plotAudit ? { plotAudit: tutorOut.plotAudit } : {}),
         ...(tutorOut.throughline ? { throughline: tutorOut.throughline } : {}),
+        ...(tutorOut.proofDebt ? { proofDebt: tutorOut.proofDebt } : {}),
       },
     });
 
@@ -967,6 +992,7 @@ export async function runDrama({ world, roles, options = {} }) {
           },
         }
       : {}),
+    ...(proofDebtRows.length ? { proofDebt: proofDebtRows } : {}),
     ...(corruption
       ? {
           corruption: {

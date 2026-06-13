@@ -2,6 +2,7 @@ export { factKey, matchPattern, closure, entails, proofTree } from './chainer.js
 export { loadWorld, validateWorld, plotLint, worldClosure } from './world.js';
 export { derivationDistance, detectStall } from './slope.js';
 export { simulateReleaseTempo, releaseSolvency, safeReleaseTurns, pacingGuardDecision } from './pacing.js';
+export { proofDebtReport, tutorProofDebtView } from './proofDebt.js';
 export { runDrama, normalizeActsConfig } from './engine.js';
 export { mulberry32, normalizeDecayConfig } from './corruption.js';
 export { makeReplayRoles, comparePrefix } from './replay.js';
@@ -11,6 +12,7 @@ export { makeLlmDirector, makeLlmTutor, makeLlmLearner, clampDial, RELEASE_LATIT
 export {
   diagnose,
   corruptionReport,
+  proofDebtGuardReport,
   reconstructionReport,
   plotReport,
   releaseAdherence,

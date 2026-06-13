@@ -289,6 +289,19 @@ function mockResponse(role, meta = {}) {
     // whole-play plan on the turns the harness demands one; echoed on every
     // reply shape, like the plot, so revision calls re-commit it.
     const throughlineBits = meta.throughlineHint ? { throughline: meta.throughlineHint } : {};
+    // Proof-debt hygiene: when the bridge says an already-staged,
+    // proof-critical exhibit must be restored, the mock obeys so zero-cost
+    // runs exercise the same parser/repair path as real runs.
+    if (meta.proofDebtGuard?.target) {
+      return JSON.stringify({
+        dialogue: `Before we close anything, put this earlier exhibit back in full: ${meta.proofDebtGuard.surface || meta.proofDebtGuard.target}`,
+        move: { figure: 'anaphora', target_premise: meta.proofDebtGuard.target, intent: 'restore' },
+        ...releaseBits,
+        ...theory,
+        ...plotBits,
+        ...throughlineBits,
+      });
+    }
     // A revision call (the ego rewriting under its superego's note): a figure
     // fire switches to the bridge-computed figure; a stall fire keeps the
     // figure and aims the move at the stalled inference's first ground; a

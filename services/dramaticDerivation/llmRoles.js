@@ -349,6 +349,7 @@ function tutorSystem(
     repairClause = false,
     releaseAuthority = false,
     pacingGuard = false,
+    proofDebtGuard = false,
     plot = false,
     throughline = false,
   } = {},
@@ -503,6 +504,23 @@ function tutorSystem(
           'One report licenses one restoration, of that exhibit alone; "restore"',
           'claims the license, so spend it only on a loss the learner has just named.',
           'New matter can wait a turn; a hole in the board cannot.',
+        ]
+      : []),
+    ...(proofDebtGuard
+      ? [
+          '',
+          '# The proof-debt guard (proof-state hygiene)',
+          '',
+          'The harness may mark a PROOF DEBT: an already-staged exhibit has fallen',
+          'out of the learner\'s working proof state, and restoring it would lower the',
+          'remaining derivation distance. This is not new evidence and not a raw board',
+          'dump; it names only exhibits the play has already released.',
+          '',
+          'When a proof-debt block is active in your turn prompt, restore the first',
+          'listed exhibit before closure, recognition staging, or discretionary new',
+          'work. Declare intent "restore" and target_premise as that exhibit. If the',
+          'release harness also force-plays an exhibit this turn, let the formal',
+          'release stand, but your move and first words repair the debt.',
         ]
       : []),
     ...(plot
@@ -849,6 +867,7 @@ export function makeLlmTutor(
     repairClause = false,
     releaseAuthority = false,
     pacingGuard = false,
+    proofDebtGuard = false,
     plot = false,
     throughline = false,
   } = {},
@@ -903,6 +922,11 @@ export function makeLlmTutor(
       'derivation.llmRoles: pacingGuard requires releaseAuthority (it narrows the exhibit window to computed safe placements)',
     );
   }
+  if (proofDebtGuard && !repairClause) {
+    throw new Error(
+      'derivation.llmRoles: proofDebtGuard requires repairClause (it authorizes restore moves within the re-entry discipline)',
+    );
+  }
   // C1 wiring guards: the plot is an act-scale commitment (no acts, no
   // opening to commit at and no close to audit), and the act-close audit is
   // the superego's jurisdiction — without the watcher nothing binds.
@@ -929,6 +953,7 @@ export function makeLlmTutor(
     repairClause,
     releaseAuthority,
     pacingGuard,
+    proofDebtGuard,
     plot,
     throughline,
   });
@@ -1197,6 +1222,18 @@ export function makeLlmTutor(
           })
         : [];
     const pacingByPremise = new Map(pacingRows.map((r) => [r.premise, r]));
+    const proofDebt = proofDebtGuard && view.proofDebt?.active ? view.proofDebt : null;
+    const topProofDebt = proofDebt?.debts?.[0] || null;
+    const proofDebtSection = topProofDebt
+      ? [
+          '',
+          'PROOF-DEBT GUARD ACTIVE:',
+          `- Restore ${topProofDebt.premiseId} before closure or discretionary new work.`,
+          `- Already-staged exhibit to put back in full: ${(topProofDebt.surface || '').trim()}`,
+          ...(topProofDebt.sinceTurn ? [`- It has been out of the working proof state since turn ${topProofDebt.sinceTurn}.`] : []),
+          'Use move.intent "restore" and target_premise for this exhibit. This is a harness-authorized proof-state repair, not a new release.',
+        ]
+      : [];
     // Acts-mode redaction (engine.js omniscientView): no learnerAbox, no
     // trajectory, no corruption — the tutor works from the dialogue and its
     // own ledger. The v1 branch below is untouched.
@@ -1384,6 +1421,7 @@ export function makeLlmTutor(
         // reads back first, the act plot under it.
         ...throughlineSection,
         ...plotSection,
+        ...proofDebtSection,
         '',
         task,
       ].join('\n');
@@ -1422,6 +1460,8 @@ export function makeLlmTutor(
         renderTranscriptTail(view.transcript),
         '',
         ...(forcedNote ? [forcedNote, ''] : []),
+        ...proofDebtSection,
+        ...(proofDebtSection.length ? [''] : []),
         task,
       ].join('\n');
     }
@@ -1451,6 +1491,15 @@ export function makeLlmTutor(
                 safeTurns: r.safeTurns,
                 current: r.current,
               })),
+            },
+          }
+        : {}),
+      ...(topProofDebt
+        ? {
+            proofDebtGuard: {
+              target: topProofDebt.premiseId,
+              surface: topProofDebt.surface || null,
+              debts: proofDebt.debts.map((d) => d.premiseId),
             },
           }
         : {}),
@@ -1622,7 +1671,50 @@ export function makeLlmTutor(
           }
         : {}),
     });
-    const draft = {
+    const applyProofDebtGuard = (out, stage) => {
+      if (!topProofDebt) return { out, audit: null };
+      const intent = String(out.move?.intent || '')
+        .toLowerCase()
+        .trim();
+      const complied = out.move?.targetPremise === topProofDebt.premiseId && intent === 'restore';
+      if (complied) {
+        return {
+          out,
+          audit: {
+            active: true,
+            turn: view.turn,
+            target: topProofDebt.premiseId,
+            debtCount: proofDebt.debts.length,
+            forced: false,
+            stage,
+          },
+        };
+      }
+      const releaseSurface = out.release ? world.premiseById.get(out.release)?.surface || null : null;
+      const restoreLine = `Before we close anything, put this earlier exhibit back in full: ${(
+        topProofDebt.surface || topProofDebt.premiseId
+      ).trim()}`;
+      return {
+        out: {
+          ...out,
+          dialogue: releaseSurface ? `${restoreLine} After that is back in hand, take this new exhibit: ${releaseSurface}` : restoreLine,
+          move: {
+            figure: out.move?.figure || 'anaphora',
+            targetPremise: topProofDebt.premiseId,
+            intent: 'restore',
+          },
+        },
+        audit: {
+          active: true,
+          turn: view.turn,
+          target: topProofDebt.premiseId,
+          debtCount: proofDebt.debts.length,
+          forced: true,
+          stage,
+        },
+      };
+    };
+    let draft = {
       dialogue: typeof draftOut.dialogue === 'string' ? draftOut.dialogue.trim() : '',
       move: normalizeMove(draftOut),
       ...releaseBits,
@@ -1630,7 +1722,9 @@ export function makeLlmTutor(
       ...plotBits(draftPlot),
       ...throughlineBits(draftThroughline),
     };
-    if (!superego) return draft;
+    const draftGuard = applyProofDebtGuard(draft, 'draft');
+    draft = draftGuard.out;
+    if (!superego) return { ...draft, ...(draftGuard.audit ? { proofDebt: draftGuard.audit } : {}) };
 
     // --- the superego watches the draft ---
     const draftFigure = draft.move?.figure || null;
@@ -1695,6 +1789,17 @@ export function makeLlmTutor(
       // watcher's jurisdiction, and the slip ledger stays hidden). due stays
       // false: the record states the claim, the watcher verifies it.
       if (repairClause && intent === 'restore') {
+        if (proofDebtGuard && target === topProofDebt?.premiseId) {
+          return {
+            target,
+            releasedEarlier: true,
+            intent,
+            lastStagedTurn,
+            confrontedSince,
+            due: false,
+            proofDebtClaim: true,
+          };
+        }
         return {
           target,
           releasedEarlier: true,
@@ -1719,6 +1824,8 @@ export function makeLlmTutor(
               ? `The re-entry record this turn: the draft targets ${reentryGuard.target} with intent restore — the repair clause: it claims the learner's most recent line named ${reentryGuard.target} as lost or bent; ${reentryGuard.target} was last staged at turn ${reentryGuard.lastStagedTurn}; a confrontation of it since then: ${
                   reentryGuard.confrontedSince ? 'yes' : 'no'
                 }. The claim is yours to verify against the learner's last line above: where it names that loss, the re-entry is licensed; where it does not, this is an uncovered re-entry.`
+              : reentryGuard.proofDebtClaim
+                ? `The re-entry record this turn: the draft targets ${reentryGuard.target} with intent restore under the PROOF-DEBT GUARD. The harness has marked this already-staged exhibit as proof-critical debt; this restore is authorized by that guard, not by a learner-named loss. On the re-entry jurisdiction, intervene must be false.`
               : `The re-entry record this turn: the draft targets ${reentryGuard.target} with intent ${
                   reentryGuard.intent || '(none)'
                 }; ${reentryGuard.target} was last staged at turn ${reentryGuard.lastStagedTurn}; a confrontation of it since then: ${
@@ -1865,7 +1972,9 @@ export function makeLlmTutor(
           }
         : {}),
     };
-    if (!segOut.intervene || !note) return { ...draft, deliberation };
+    if (!segOut.intervene || !note) {
+      return { ...draft, deliberation, ...(draftGuard.audit ? { proofDebt: draftGuard.audit } : {}) };
+    }
 
     // Which jurisdiction fired: the watcher's own attribution when it gives
     // one (v3 contract), else resolved from the recorded arithmetic. v2 arms
@@ -1961,7 +2070,7 @@ export function makeLlmTutor(
     // loses the standing frame.
     const revisedThroughline = throughline && plotOpening ? parseThroughlineOut(revisedOut) || draftThroughline : null;
     commitThroughline(revisedThroughline);
-    return {
+    let revised = {
       dialogue,
       move: normalizeMove(revisedOut) || draft.move,
       // The evidence calendar is decided once, on the draft: a revision
@@ -1979,6 +2088,12 @@ export function makeLlmTutor(
         note,
         ...(stallWatch || confront ? { jurisdiction } : {}),
       },
+    };
+    const revisedGuard = applyProofDebtGuard(revised, 'revision');
+    revised = revisedGuard.out;
+    return {
+      ...revised,
+      ...(revisedGuard.audit || draftGuard.audit ? { proofDebt: revisedGuard.audit || draftGuard.audit } : {}),
     };
   };
   if (plot) {

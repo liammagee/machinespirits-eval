@@ -637,6 +637,7 @@ export function confrontReport(result) {
       // license — not mechanically due (the record cannot judge the learner's
       // line), so it must not count against the detector audit.
       onRestoreClaim: Boolean(l.meta.deliberation.reentry?.restoreClaim),
+      onProofDebtClaim: Boolean(l.meta.deliberation.reentry?.proofDebtClaim),
     }));
   return {
     confrontations,
@@ -649,11 +650,44 @@ export function confrontReport(result) {
     superego: {
       reentryFires: fires.length,
       convertedToConfront: fires.filter((f) => f.convertedToConfront).length,
-      firesWithoutDue: fires.filter((f) => !f.dueByRecord && !f.onRestoreClaim).length,
+      firesWithoutDue: fires.filter((f) => !f.dueByRecord && !f.onRestoreClaim && !f.onProofDebtClaim).length,
       restoreClaimFires: fires.filter((f) => f.onRestoreClaim).length,
+      proofDebtClaimFires: fires.filter((f) => f.onProofDebtClaim).length,
       draftsDueByRecord: tutorLines.filter((l) => l.meta?.deliberation?.reentry?.due).length,
       fires,
     },
+  };
+}
+
+export function proofDebtGuardReport(result) {
+  const detections = result.proofDebt || [];
+  const actions = (result.transcript || [])
+    .filter((l) => l.role === 'tutor' && l.meta?.proofDebt)
+    .map((l) => ({
+      turn: l.turn,
+      target: l.meta.proofDebt.target || null,
+      debtCount: l.meta.proofDebt.debtCount || 0,
+      forced: Boolean(l.meta.proofDebt.forced),
+      stage: l.meta.proofDebt.stage || null,
+      moveIntent: l.meta.move?.intent || null,
+    }));
+  if (!detections.length && !actions.length) return null;
+  const repairs = result.corruption?.ledger || [];
+  const actionRows = actions.map((a) => ({
+    ...a,
+    repaired: repairs.some((e) => e.type === 'repair' && e.via === 'tutor' && e.turn === a.turn && e.premiseId === a.target),
+  }));
+  const targets = [...new Set(actionRows.map((a) => a.target).filter(Boolean))];
+  return {
+    detectedTurns: detections.length,
+    debtsDetected: detections.reduce((sum, row) => sum + (row.debts || []).length, 0),
+    actionTurns: actionRows.length,
+    forcedMoves: actionRows.filter((a) => a.forced).length,
+    restoredMoves: actionRows.filter((a) => String(a.moveIntent).toLowerCase() === 'restore').length,
+    repairedTargets: actionRows.filter((a) => a.repaired).length,
+    targets,
+    detections,
+    actions: actionRows,
   };
 }
 
@@ -852,6 +886,7 @@ export function diagnose(result, world) {
   // P1 dial reporters — null (and the diagnosis keys absent) off their arms.
   const releaseDeviationsReport = releaseDeviations(result);
   const confrontation = confrontReport(result);
+  const proofDebt = proofDebtGuardReport(result);
   // C1 dial reporter — same contract: null off the plot arm.
   const plotRpt = plotReport(result, world);
   const tutorNotes = result.transcript
@@ -907,6 +942,7 @@ export function diagnose(result, world) {
     // return null on arms without their dial, so the keys stay absent.
     ...(releaseDeviationsReport ? { releaseDeviations: releaseDeviationsReport } : {}),
     ...(confrontation ? { confrontation } : {}),
+    ...(proofDebt ? { proofDebt } : {}),
     // C1 (act-plot dial): absent off the arm.
     ...(plotRpt ? { plot: plotRpt } : {}),
   };
@@ -1147,6 +1183,12 @@ export function renderEvalPanel(diagnosis) {
       });
       lines.push(`  - ${rows.join(' · ')}`);
     }
+  }
+  const pd = d.proofDebt;
+  if (pd) {
+    lines.push(
+      `- **proof debt** detected on ${pd.detectedTurns} turn${pd.detectedTurns === 1 ? '' : 's'} (${pd.debtsDetected} debt${pd.debtsDetected === 1 ? '' : 's'}) · restore actions ${pd.actionTurns} (guard-forced ${pd.forcedMoves}, repaired ${pd.repairedTargets})${pd.targets.length ? ` — ${pd.targets.join(' · ')}` : ''}`,
+    );
   }
   const events = Object.entries(d.eventsByType || {});
   lines.push(`- **events** ${events.length ? events.map(([k, v]) => `${k}×${v}`).join(' · ') : 'none'}`);
