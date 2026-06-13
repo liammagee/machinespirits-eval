@@ -849,6 +849,11 @@ describe('dashboard front door', () => {
     // the segmented bar + a legend entry carrying raw count and per-segment %
     assert.match(html, /class="vbar"/);
     assert.match(html, /recognition <b>60<\/b> <span class="leg__pct">60%/);
+    // the bars are navigation: each segment + legend entry deep-links into its slice
+    assert.match(html, /class="vbar__seg vbar__seg--link" href="\/browse\?form=recognition"/);
+    assert.match(html, /class="leg leg--link" href="\/browse\?form=trap"/);
+    assert.match(html, /class="vbar__seg vbar__seg--link" href="\/derivation\?verdict=grounded_anagnorisis"/);
+    assert.match(html, /class="leg leg--link" href="\/derivation\?verdict=aporia"/);
     // footers: classified-vs-unclassified split, and the not-a-quality-score caveat
     assert.match(html, /100 critic verdicts · 5 unclassified/);
     assert.match(html, /10 proof runs · a checker outcome, not a quality score/);
@@ -863,8 +868,31 @@ describe('dashboard front door', () => {
     const html = renderDashboardHtml();
     assert.match(html, /no disciplines tagged yet/);
     assert.match(html, /Tutoring, staged as drama\./);
-    // Signal charts degrade gracefully to zeroed headlines, not NaN/undefined
-    assert.match(html, /0<span class="sig-card__pct">%<\/span> <span class="sig-card__lbl">recognition</);
+    // Signal charts show a muted zero-state, not a misleading "0%" headline or NaN
+    assert.match(html, /class="sig-card__none">—</);
+    assert.match(html, /no scored scripts yet — an AI critic sorts each script/);
+    assert.match(html, /no proof runs yet — a fixed rule-checker decides/);
+    assert.match(html, /no scored scripts yet — dimension scores appear here/);
+    assert.doesNotMatch(html, /\d<span class="sig-card__pct">/); // no numeric headline anywhere
+    assert.doesNotMatch(html, /NaN/);
+  });
+
+  it('shows per-card zero-states independently (proof runs present, scripts unscored)', () => {
+    const html = renderDashboardHtml({
+      scripts: 4,
+      scored: 0,
+      runs: 1,
+      proofRuns: 5,
+      formClass: [], // nothing graded by a critic yet
+      scoreDist: {}, // → no dimension histograms
+      proofVerdicts: { grounded_anagnorisis: 3, disengagement: 1, aporia: 1 },
+    });
+    // scripts card collapses to its zero-state…
+    assert.match(html, /no scored scripts yet — an AI critic sorts each script/);
+    assert.match(html, /no scored scripts yet — dimension scores appear here/);
+    // …while the proof card stays a live, linked chart with its real headline
+    assert.match(html, /60<span class="sig-card__pct">%<\/span> <span class="sig-card__lbl">grounded</);
+    assert.match(html, /class="leg leg--link" href="\/derivation\?verdict=grounded_anagnorisis"/);
     assert.doesNotMatch(html, /NaN/);
   });
 

@@ -2970,6 +2970,23 @@ const DERIVATION_INDEX_CLIENT = `<script>
       apply();
     });
   });
+  // Seed the outcome filter from ?verdict= so the dashboard Signal chart can
+  // deep-link into one outcome (e.g. /derivation?verdict=aporia). Only a value
+  // matching one of the toggle buttons is honoured; anything else stays 'all'.
+  try {
+    var qv = new URL(window.location.href).searchParams.get('verdict');
+    var match = qv && seg.filter(function (b) { return b.dataset.verdict === qv; })[0];
+    if (match) {
+      verdict = qv;
+      seg.forEach(function (x) {
+        var on = x === match;
+        x.classList.toggle('is-on', on);
+        x.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+    }
+  } catch (_e) {
+    /* malformed URL — leave the filter at 'all' */
+  }
   apply();
 })();
 </script>`;
@@ -3624,27 +3641,35 @@ function ttsPlayButton(label = 'fragment') {
 // same category reads consistently across the light/dark themes.
 const fmtCount = (n) => Number(n || 0).toLocaleString('en-US');
 
-// A proportional stacked bar + legend from [{label, n, color}]. Percentages are
-// of the summed n, so callers pass exactly the segments they want totalled
-// (e.g. the three classified form-classes, excluding nulls).
+// A proportional stacked bar + legend from [{label, n, color, href?}]. Percentages
+// are of the summed n, so callers pass exactly the segments they want totalled
+// (e.g. the three classified form-classes, excluding nulls). A segment carrying an
+// `href` renders as a link (both the bar slice and its legend entry) so the chart
+// doubles as navigation into that slice; an anchor is keyboard-focusable for free,
+// and the bar slice — which has no text of its own — gets an aria-label.
 function splitBarHtml(segments, { ariaLabel = 'distribution' } = {}) {
   const list = Array.isArray(segments) ? segments : [];
   const total = list.reduce((sum, x) => sum + (x.n || 0), 0) || 1;
   const pct = (n) => (n / total) * 100;
   const bar = list
     .filter((x) => x.n > 0)
-    .map(
-      (x) =>
-        `<span class="vbar__seg" style="width:${pct(x.n).toFixed(2)}%;background:${x.color}"` +
-        ` title="${escapeHtml(x.label)} ${fmtCount(x.n)} (${Math.round(pct(x.n))}%)"></span>`,
-    )
+    .map((x) => {
+      const style = `width:${pct(x.n).toFixed(2)}%;background:${x.color}`;
+      const title = `${escapeHtml(x.label)} ${fmtCount(x.n)} (${Math.round(pct(x.n))}%)`;
+      return x.href
+        ? `<a class="vbar__seg vbar__seg--link" href="${escapeHtml(x.href)}" style="${style}" title="${title}" aria-label="${title}"></a>`
+        : `<span class="vbar__seg" style="${style}" title="${title}"></span>`;
+    })
     .join('');
   const legend = list
-    .map(
-      (x) =>
-        `<span class="leg"><span class="leg__dot" style="background:${x.color}"></span>` +
-        `${escapeHtml(x.label)} <b>${fmtCount(x.n)}</b> <span class="leg__pct">${Math.round(pct(x.n))}%</span></span>`,
-    )
+    .map((x) => {
+      const inner =
+        `<span class="leg__dot" style="background:${x.color}"></span>` +
+        `${escapeHtml(x.label)} <b>${fmtCount(x.n)}</b> <span class="leg__pct">${Math.round(pct(x.n))}%</span>`;
+      return x.href
+        ? `<a class="leg leg--link" href="${escapeHtml(x.href)}">${inner}</a>`
+        : `<span class="leg">${inner}</span>`;
+    })
     .join('');
   return `<div class="vbar" role="img" aria-label="${escapeHtml(ariaLabel)}">${bar}</div><div class="legs">${legend}</div>`;
 }
@@ -3789,11 +3814,14 @@ function renderDashboardHtml(stats = {}) {
   // scored scripts vs the deterministic rule-checker's outcome on proof runs —
   // then where the script scores land on each dramatic-form dimension. Each
   // headline % is of the bar's own total (classified verdicts / decided runs).
+  // Each form-class segment deep-links into /browse pre-filtered to that class
+  // (the browse client seeds its form filter from ?form=); recognition/flat/trap
+  // are exactly the formSelect option values, so the link lands on a live filter.
   const fcMap = new Map((Array.isArray(s.formClass) ? s.formClass : []).map((r) => [r.name, r.n]));
   const fcSegments = [
-    { label: 'recognition', n: fcMap.get('recognition') || 0, color: 'var(--moss)' },
-    { label: 'flat', n: fcMap.get('flat') || 0, color: 'var(--ink-4)' },
-    { label: 'trap', n: fcMap.get('trap') || 0, color: 'var(--brick)' },
+    { label: 'recognition', n: fcMap.get('recognition') || 0, color: 'var(--moss)', href: '/browse?form=recognition' },
+    { label: 'flat', n: fcMap.get('flat') || 0, color: 'var(--ink-4)', href: '/browse?form=flat' },
+    { label: 'trap', n: fcMap.get('trap') || 0, color: 'var(--brick)', href: '/browse?form=trap' },
   ];
   const fcClassified = fcSegments.reduce((sum, x) => sum + x.n, 0);
   const fcUnclassified = fcMap.get('(unclassified)') || 0;
@@ -3804,6 +3832,9 @@ function renderDashboardHtml(stats = {}) {
     disengagement: { label: 'disengagement', color: 'var(--ink-4)' },
     aporia: { label: 'aporia', color: 'var(--brick)' },
   };
+  // Each verdict segment deep-links into /derivation pre-filtered to that outcome
+  // (its index client seeds the outcome toggle from ?verdict=). Only the three
+  // verdicts the index recognises get a link; any unknown key stays a plain span.
   const proofVerdicts = s.proofVerdicts && typeof s.proofVerdicts === 'object' ? s.proofVerdicts : {};
   const pvSegments = Object.entries(proofVerdicts)
     .filter(([k]) => k !== '(none)')
@@ -3811,6 +3842,7 @@ function renderDashboardHtml(stats = {}) {
       label: PV_META[k]?.label || k.replace(/_/g, ' '),
       n,
       color: PV_META[k]?.color || 'var(--ochre)',
+      ...(PV_META[k] ? { href: '/derivation?verdict=' + encodeURIComponent(k) } : {}),
     }))
     .sort((a, b) => b.n - a.n);
   const pvTotal = pvSegments.reduce((sum, x) => sum + x.n, 0);
@@ -3824,6 +3856,10 @@ function renderDashboardHtml(stats = {}) {
     ['global_coherence', 'global coherence'],
   ];
   const distHtml = DIST_DIMS.map(([key, label]) => histHtml(label, scoreDist[key] || [])).join('');
+  const distTotal = DIST_DIMS.reduce(
+    (sum, [key]) => sum + (scoreDist[key] || []).reduce((a, x) => a + (x.n || 0), 0),
+    0,
+  );
 
   const RUNGS = [
     [
@@ -4037,11 +4073,20 @@ function renderDashboardHtml(stats = {}) {
 .sig-card__pct{ font-size:15px; color:var(--ink-4); }
 .sig-card__lbl{ font:600 11px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-3); margin-left:3px; }
 .sig-card__foot{ margin-top:10px; font:11px ui-monospace,monospace; color:var(--ink-4); }
+.sig-card__none{ color:var(--ink-4); }
+.sig-empty{ margin-top:2px; padding:10px 0 2px; font:italic 12px/1.5 ui-monospace,monospace; color:var(--ink-4); }
 .vbar{ display:flex; height:18px; border-radius:3px; overflow:hidden; background:var(--rule-soft); }
 .vbar__seg{ height:100%; }
 .vbar__seg + .vbar__seg{ box-shadow:inset 1px 0 0 var(--paper-4); }
+.vbar__seg--link{ display:block; text-decoration:none; transition:filter .12s var(--ease); }
+.vbar__seg--link:hover{ filter:brightness(1.12) saturate(1.08); }
+.vbar__seg--link:focus-visible{ outline:2px solid var(--ochre-d); outline-offset:2px; }
 .legs{ display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:9px; }
 .leg{ display:inline-flex; align-items:center; gap:6px; font:12px ui-monospace,monospace; color:var(--ink-3); }
+.leg--link{ text-decoration:none; cursor:pointer; border-radius:3px; transition:color .12s var(--ease); }
+.leg--link:hover{ color:var(--ink); }
+.leg--link:hover .leg__dot{ box-shadow:0 0 0 2px var(--ochre-soft); }
+.leg--link:focus-visible{ outline:2px solid var(--ochre-d); outline-offset:2px; }
 .leg__dot{ flex:none; width:9px; height:9px; border-radius:2px; }
 .leg b{ color:var(--ink); font-weight:600; }
 .leg__pct{ color:var(--ink-4); }
@@ -4169,23 +4214,43 @@ ${railHtml({ active: 'home', brand: 'machine spirits', sub: 'a drama-machine for
     <div class="sig-card">
       <div class="sig-card__top">
         <span class="sig-card__k">scripts · critic verdict</span>
-        <span class="sig-card__big">${fcRecogPct}<span class="sig-card__pct">%</span> <span class="sig-card__lbl">recognition</span></span>
+        <span class="sig-card__big">${
+          fcClassified
+            ? `${fcRecogPct}<span class="sig-card__pct">%</span> <span class="sig-card__lbl">recognition</span>`
+            : '<span class="sig-card__none">—</span>'
+        }</span>
       </div>
-      ${splitBarHtml(fcSegments, { ariaLabel: 'critic form-class split: recognition, flat, trap' })}
-      <div class="sig-card__foot">${fmt(fcClassified)} critic verdict${fcClassified === 1 ? '' : 's'}${fcUnclassified ? ` · ${fmt(fcUnclassified)} unclassified` : ''}</div>
+      ${
+        fcClassified
+          ? splitBarHtml(fcSegments, { ariaLabel: 'critic form-class split: recognition, flat, trap' }) +
+            `<div class="sig-card__foot">${fmt(fcClassified)} critic verdict${fcClassified === 1 ? '' : 's'}${fcUnclassified ? ` · ${fmt(fcUnclassified)} unclassified` : ''}</div>`
+          : '<div class="sig-empty">no scored scripts yet — an AI critic sorts each script into recognition, flat, or trap once it has graded the corpus</div>'
+      }
     </div>
     <div class="sig-card">
       <div class="sig-card__top">
         <span class="sig-card__k">proof runs · rule-checker verdict</span>
-        <span class="sig-card__big">${pvGroundedPct}<span class="sig-card__pct">%</span> <span class="sig-card__lbl">grounded</span></span>
+        <span class="sig-card__big">${
+          pvTotal
+            ? `${pvGroundedPct}<span class="sig-card__pct">%</span> <span class="sig-card__lbl">grounded</span>`
+            : '<span class="sig-card__none">—</span>'
+        }</span>
       </div>
-      ${splitBarHtml(pvSegments, { ariaLabel: 'proof-run verdict split: grounded, disengagement, aporia' })}
-      <div class="sig-card__foot">${fmt(pvTotal)} proof run${pvTotal === 1 ? '' : 's'} · a checker outcome, not a quality score</div>
+      ${
+        pvTotal
+          ? splitBarHtml(pvSegments, { ariaLabel: 'proof-run verdict split: grounded, disengagement, aporia' }) +
+            `<div class="sig-card__foot">${fmt(pvTotal)} proof run${pvTotal === 1 ? '' : 's'} · a checker outcome, not a quality score</div>`
+          : '<div class="sig-empty">no proof runs yet — a fixed rule-checker decides each outcome once a run lands</div>'
+      }
     </div>
   </div>
   <div class="dist">
     <div class="dist__h">script scores · where the corpus lands on each dramatic-form dimension (0–100)</div>
-    <div class="dist__grid">${distHtml}</div>
+    ${
+      distTotal
+        ? `<div class="dist__grid">${distHtml}</div>`
+        : '<div class="sig-empty">no scored scripts yet — dimension scores appear here once the corpus has been graded</div>'
+    }
   </div>
 
   <div class="feed">
@@ -7971,6 +8036,11 @@ async function init() {
   state.initialItemId = url.searchParams.get('itemId') || url.searchParams.get('id') || '';
   const requestedTab = url.searchParams.get('tab') || url.searchParams.get('view') || '';
   if (['preview', 'sample', 'full', 'scores', 'meta'].includes(requestedTab)) state.tab = requestedTab;
+  // Seed the critic-form filter from ?form= so the dashboard Signal chart can
+  // deep-link straight into one form-class (e.g. /browse?form=recognition).
+  // loadItems() reads formSelect.value, so set the control before the first load.
+  const requestedForm = url.searchParams.get('form') || '';
+  if (['recognition', 'trap', 'flat'].includes(requestedForm) && el('formSelect')) el('formSelect').value = requestedForm;
   document.body.classList.toggle('blind', state.blind);
   if (state.blind) {
     el('appTitle').textContent = 'Poetics Human Scoring';
