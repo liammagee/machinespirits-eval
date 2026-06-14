@@ -412,6 +412,947 @@
       "scheduledVia": "director"
     }
   ],
+  "logic": {
+    "schema": "dramatic-derivation.logic-ir.v0",
+    "worldId": "world_005_marrick",
+    "source": "config/drama-derivation/world-005-marrick.yaml",
+    "factNodes": [
+      {
+        "factKey": "[\"alloyOf\",\"falseShilling\",\"drossSilver\"]",
+        "fact": [
+          "alloyOf",
+          "falseShilling",
+          "drossSilver"
+        ],
+        "predicate": "alloyOf",
+        "constants": [
+          "falseShilling",
+          "drossSilver"
+        ],
+        "roles": [
+          "premise"
+        ],
+        "premiseIds": [
+          "p_alloy"
+        ],
+        "proofCritical": true,
+        "proofPathIds": [
+          "path_1"
+        ],
+        "sourcePremiseIds": [
+          "p_alloy"
+        ],
+        "sourceProofPathIds": [
+          "path_1"
+        ],
+        "release": [
+          {
+            "premise": "p_alloy",
+            "turn": 4,
+            "via": "tutor"
+          }
+        ],
+        "proof": null,
+        "surface": [
+          "The assay is plain in the cupel: these shillings are no clipped sterling but a struck coin of poor dross — silver eked out with too much copper and a grey lead-sweat the touchstone catches at once. Clipping shaves a true coin; it strikes no new one. These were struck."
+        ]
+      },
+      {
+        "factKey": "[\"blankFrom\",\"falseShilling\",\"weirCrucible\"]",
+        "fact": [
+          "blankFrom",
+          "falseShilling",
+          "weirCrucible"
+        ],
+        "predicate": "blankFrom",
+        "constants": [
+          "falseShilling",
+          "weirCrucible"
+        ],
+        "roles": [
+          "derived"
+        ],
+        "premiseIds": [],
+        "proofCritical": false,
+        "proofPathIds": [],
+        "sourcePremiseIds": [
+          "p_alloy",
+          "p_crucible"
+        ],
+        "sourceProofPathIds": [
+          "path_1"
+        ],
+        "release": [],
+        "proof": {
+          "rule": "R1_blank",
+          "inputFactKeys": [
+            "[\"alloyOf\",\"falseShilling\",\"drossSilver\"]",
+            "[\"meltedAt\",\"drossSilver\",\"weirCrucible\"]"
+          ],
+          "depth": 1
+        },
+        "surface": []
+      },
+      {
+        "factKey": "[\"castBlankFor\",\"falseShilling\",\"edony\"]",
+        "fact": [
+          "castBlankFor",
+          "falseShilling",
+          "edony"
+        ],
+        "predicate": "castBlankFor",
+        "constants": [
+          "falseShilling",
+          "edony"
+        ],
+        "roles": [
+          "derived"
+        ],
+        "premiseIds": [],
+        "proofCritical": false,
+        "proofPathIds": [],
+        "sourcePremiseIds": [
+          "p_alloy",
+          "p_caster",
+          "p_crucible"
+        ],
+        "sourceProofPathIds": [
+          "path_1"
+        ],
+        "release": [],
+        "proof": {
+          "rule": "R2_cast",
+          "inputFactKeys": [
+            "[\"blankFrom\",\"falseShilling\",\"weirCrucible\"]",
+            "[\"soleCasterAt\",\"weirCrucible\",\"edony\"]"
+          ],
+          "depth": 2
+        },
+        "surface": []
+      },
+      {
+        "factKey": "[\"clipperOf\",\"verrell\",\"marrick\"]",
+        "fact": [
+          "clipperOf",
+          "verrell",
+          "marrick"
+        ],
+        "predicate": "clipperOf",
+        "constants": [
+          "verrell",
+          "marrick"
+        ],
+        "roles": [
+          "background"
+        ],
+        "premiseIds": [],
+        "proofCritical": false,
+        "proofPathIds": [],
+        "sourcePremiseIds": [],
+        "sourceProofPathIds": [],
+        "release": [],
+        "proof": null,
+        "surface": []
+      },
+      {
+        "factKey": "[\"cutDieFor\",\"falseShilling\",\"edony\"]",
+        "fact": [
+          "cutDieFor",
+          "falseShilling",
+          "edony"
+        ],
+        "predicate": "cutDieFor",
+        "constants": [
+          "falseShilling",
+          "edony"
+        ],
+        "roles": [
+          "derived"
+        ],
+        "premiseIds": [],
+        "proofCritical": false,
+        "proofPathIds": [],
+        "sourcePremiseIds": [
+          "p_flaw",
+          "p_graver",
+          "p_holder"
+        ],
+        "sourceProofPathIds": [
+          "path_1"
+        ],
+        "release": [],
+        "proof": {
+          "rule": "R4_hold",
+          "inputFactKeys": [
+            "[\"dieCutWith\",\"falseShilling\",\"wornBurin\"]",
+            "[\"soleHolderOf\",\"wornBurin\",\"edony\"]"
+          ],
+          "depth": 2
+        },
+        "surface": []
+      },
+      {
+        "factKey": "[\"dieCutWith\",\"falseShilling\",\"wornBurin\"]",
+        "fact": [
+          "dieCutWith",
+          "falseShilling",
+          "wornBurin"
+        ],
+        "predicate": "dieCutWith",
+        "constants": [
+          "falseShilling",
+          "wornBurin"
+        ],
+        "roles": [
+          "derived"
+        ],
+        "premiseIds": [],
+        "proofCritical": false,
+        "proofPathIds": [],
+        "sourcePremiseIds": [
+          "p_flaw",
+          "p_graver"
+        ],
+        "sourceProofPathIds": [
+          "path_1"
+        ],
+        "release": [],
+        "proof": {
+          "rule": "R3_die",
+          "inputFactKeys": [
+            "[\"dieFlawOf\",\"falseShilling\",\"notchedSerif\"]",
+            "[\"flawCutBy\",\"notchedSerif\",\"wornBurin\"]"
+          ],
+          "depth": 1
+        },
+        "surface": []
+      },
+      {
+        "factKey": "[\"dieFlawOf\",\"falseShilling\",\"notchedSerif\"]",
+        "fact": [
+          "dieFlawOf",
+          "falseShilling",
+          "notchedSerif"
+        ],
+        "predicate": "dieFlawOf",
+        "constants": [
+          "falseShilling",
+          "notchedSerif"
+        ],
+        "roles": [
+          "premise"
+        ],
+        "premiseIds": [
+          "p_flaw"
+        ],
+        "proofCritical": true,
+        "proofPathIds": [
+          "path_1"
+        ],
+        "sourcePremiseIds": [
+          "p_flaw"
+        ],
+        "sourceProofPathIds": [
+          "path_1"
+        ],
+        "release": [
+          {
+            "premise": "p_flaw",
+            "turn": 14,
+            "via": "tutor"
+          }
+        ],
+        "proof": null,
+        "surface": [
+          "Lay a dozen of the light shillings under the glass and they share one fault to the hair: a broken letter in the legend, the serif of the R struck with a small square notch where the graver slipped and was never mended. One die struck them all."
+        ]
+      },
+      {
+        "factKey": "[\"flawCutBy\",\"notchedSerif\",\"wornBurin\"]",
+        "fact": [
+          "flawCutBy",
+          "notchedSerif",
+          "wornBurin"
+        ],
+        "predicate": "flawCutBy",
+        "constants": [
+          "notchedSerif",
+          "wornBurin"
+        ],
+        "roles": [
+          "premise"
+        ],
+        "premiseIds": [
+          "p_graver"
+        ],
+        "proofCritical": true,
+        "proofPathIds": [
+          "path_1"
+        ],
+        "sourcePremiseIds": [
+          "p_graver"
+        ],
+        "sourceProofPathIds": [
+          "path_1"
+        ],
+        "release": [
+          {
+            "premise": "p_graver",
+            "turn": 18,
+            "via": "tutor"
+          }
+        ],
+        "proof": null,
+        "surface": [
+          "The guild's die-sinker reads that notch like a hand he knows: it is no slip of the burnisher but the bite of a worn burin with a sprung heel — a tool that signs every line it cuts with that square notch. It is not the broad graver from Verrell's bench, which cuts clean."
+        ]
+      },
+      {
+        "factKey": "[\"inquiryInto\",\"theAssay\",\"falseShilling\"]",
+        "fact": [
+          "inquiryInto",
+          "theAssay",
+          "falseShilling"
+        ],
+        "predicate": "inquiryInto",
+        "constants": [
+          "theAssay",
+          "falseShilling"
+        ],
+        "roles": [
+          "background"
+        ],
+        "premiseIds": [],
+        "proofCritical": false,
+        "proofPathIds": [],
+        "sourcePremiseIds": [],
+        "sourceProofPathIds": [],
+        "release": [],
+        "proof": null,
+        "surface": []
+      },
+      {
+        "factKey": "[\"meltedAt\",\"drossSilver\",\"weirCrucible\"]",
+        "fact": [
+          "meltedAt",
+          "drossSilver",
+          "weirCrucible"
+        ],
+        "predicate": "meltedAt",
+        "constants": [
+          "drossSilver",
+          "weirCrucible"
+        ],
+        "roles": [
+          "premise"
+        ],
+        "premiseIds": [
+          "p_crucible"
+        ],
+        "proofCritical": true,
+        "proofPathIds": [
+          "path_1"
+        ],
+        "sourcePremiseIds": [
+          "p_crucible"
+        ],
+        "sourceProofPathIds": [
+          "path_1"
+        ],
+        "release": [
+          {
+            "premise": "p_crucible",
+            "turn": 8,
+            "via": "tutor"
+          }
+        ],
+        "proof": null,
+        "surface": [
+          "The founder's man knows that dross by its lead-sweat: it answers to the leavings of one crucible on all this coast — the weir-forge crucible above the mill-leat, cold these ten years since the old founder died and his yard was shut."
+        ]
+      },
+      {
+        "factKey": "[\"passedAt\",\"falseShilling\",\"autumnFair\"]",
+        "fact": [
+          "passedAt",
+          "falseShilling",
+          "autumnFair"
+        ],
+        "predicate": "passedAt",
+        "constants": [
+          "falseShilling",
+          "autumnFair"
+        ],
+        "roles": [
+          "background"
+        ],
+        "premiseIds": [],
+        "proofCritical": false,
+        "proofPathIds": [],
+        "sourcePremiseIds": [],
+        "sourceProofPathIds": [],
+        "release": [],
+        "proof": null,
+        "surface": []
+      },
+      {
+        "factKey": "[\"seenAtForge\",\"verrell\",\"fairWeek\"]",
+        "fact": [
+          "seenAtForge",
+          "verrell",
+          "fairWeek"
+        ],
+        "predicate": "seenAtForge",
+        "constants": [
+          "verrell",
+          "fairWeek"
+        ],
+        "roles": [
+          "premise"
+        ],
+        "premiseIds": [
+          "m_caught"
+        ],
+        "proofCritical": false,
+        "proofPathIds": [],
+        "sourcePremiseIds": [
+          "m_caught"
+        ],
+        "sourceProofPathIds": [],
+        "release": [
+          {
+            "premise": "m_caught",
+            "turn": 12,
+            "via": "director"
+          }
+        ],
+        "proof": null,
+        "surface": [
+          "The watch will swear to the rest: Verrell was seen at the mint-yard forge twice in fair-week, late and with the shutters drawn. Caster, engraver, and at the fire on the very nights — the town's case stands, and stands loud."
+        ]
+      },
+      {
+        "factKey": "[\"soleCasterAt\",\"mintCrucible\",\"verrell\"]",
+        "fact": [
+          "soleCasterAt",
+          "mintCrucible",
+          "verrell"
+        ],
+        "predicate": "soleCasterAt",
+        "constants": [
+          "mintCrucible",
+          "verrell"
+        ],
+        "roles": [
+          "premise"
+        ],
+        "premiseIds": [
+          "m_caster"
+        ],
+        "proofCritical": false,
+        "proofPathIds": [],
+        "sourcePremiseIds": [
+          "m_caster"
+        ],
+        "sourceProofPathIds": [],
+        "release": [
+          {
+            "premise": "m_caster",
+            "turn": 2,
+            "via": "director"
+          }
+        ],
+        "proof": null,
+        "surface": [
+          "The town has its founder ready: Verrell alone draws the mint-yard crucible, licensed to no one else since the old assay-master's day. Whatever metal is cast in Marrick, the town says, is cast by Verrell's hand."
+        ]
+      },
+      {
+        "factKey": "[\"soleCasterAt\",\"weirCrucible\",\"edony\"]",
+        "fact": [
+          "soleCasterAt",
+          "weirCrucible",
+          "edony"
+        ],
+        "predicate": "soleCasterAt",
+        "constants": [
+          "weirCrucible",
+          "edony"
+        ],
+        "roles": [
+          "premise"
+        ],
+        "premiseIds": [
+          "p_caster"
+        ],
+        "proofCritical": true,
+        "proofPathIds": [
+          "path_1"
+        ],
+        "sourcePremiseIds": [
+          "p_caster"
+        ],
+        "sourceProofPathIds": [
+          "path_1"
+        ],
+        "release": [
+          {
+            "premise": "p_caster",
+            "turn": 10,
+            "via": "director"
+          }
+        ],
+        "proof": null,
+        "surface": [
+          "The leat-keeper's book is exact. Since the forge was shut, one hand alone has drawn the weir crucible and signed for its charcoal: Edony, the founder's widow, who stayed on in the forge cottage when the fires went out."
+        ]
+      },
+      {
+        "factKey": "[\"soleHolderOf\",\"broadGraver\",\"verrell\"]",
+        "fact": [
+          "soleHolderOf",
+          "broadGraver",
+          "verrell"
+        ],
+        "predicate": "soleHolderOf",
+        "constants": [
+          "broadGraver",
+          "verrell"
+        ],
+        "roles": [
+          "premise"
+        ],
+        "premiseIds": [
+          "m_graver"
+        ],
+        "proofCritical": false,
+        "proofPathIds": [],
+        "sourcePremiseIds": [
+          "m_graver"
+        ],
+        "sourceProofPathIds": [],
+        "release": [
+          {
+            "premise": "m_graver",
+            "turn": 6,
+            "via": "director"
+          }
+        ],
+        "proof": null,
+        "surface": [
+          "And Verrell engraves: the broad graver on his bench is his alone, the guild will swear, and no clean-cut die in the borough is sunk without it. A caster and an engraver both — the town needs no more than that."
+        ]
+      },
+      {
+        "factKey": "[\"soleHolderOf\",\"wornBurin\",\"edony\"]",
+        "fact": [
+          "soleHolderOf",
+          "wornBurin",
+          "edony"
+        ],
+        "predicate": "soleHolderOf",
+        "constants": [
+          "wornBurin",
+          "edony"
+        ],
+        "roles": [
+          "premise"
+        ],
+        "premiseIds": [
+          "p_holder"
+        ],
+        "proofCritical": true,
+        "proofPathIds": [
+          "path_1"
+        ],
+        "sourcePremiseIds": [
+          "p_holder"
+        ],
+        "sourceProofPathIds": [
+          "path_1"
+        ],
+        "release": [
+          {
+            "premise": "p_holder",
+            "turn": 22,
+            "via": "director"
+          }
+        ],
+        "proof": null,
+        "surface": [
+          "The old founder's tools were never sold off. The inventory of his estate, sworn and unredeemed, leaves his graving-irons to his widow alone — among them the worn burin with the sprung heel, kept in Edony's keeping these ten years."
+        ]
+      },
+      {
+        "factKey": "[\"struckBy\",\"falseShilling\",\"edony\"]",
+        "fact": [
+          "struckBy",
+          "falseShilling",
+          "edony"
+        ],
+        "predicate": "struckBy",
+        "constants": [
+          "falseShilling",
+          "edony"
+        ],
+        "roles": [
+          "derived",
+          "secret"
+        ],
+        "premiseIds": [],
+        "proofCritical": false,
+        "proofPathIds": [],
+        "sourcePremiseIds": [
+          "p_alloy",
+          "p_caster",
+          "p_crucible",
+          "p_flaw",
+          "p_graver",
+          "p_holder"
+        ],
+        "sourceProofPathIds": [
+          "path_1"
+        ],
+        "release": [],
+        "proof": {
+          "rule": "R5_strike",
+          "inputFactKeys": [
+            "[\"castBlankFor\",\"falseShilling\",\"edony\"]",
+            "[\"cutDieFor\",\"falseShilling\",\"edony\"]"
+          ],
+          "depth": 3
+        },
+        "surface": []
+      },
+      {
+        "factKey": "[\"struckNotClipped\",\"falseShilling\"]",
+        "fact": [
+          "struckNotClipped",
+          "falseShilling"
+        ],
+        "predicate": "struckNotClipped",
+        "constants": [
+          "falseShilling"
+        ],
+        "roles": [
+          "background"
+        ],
+        "premiseIds": [],
+        "proofCritical": false,
+        "proofPathIds": [],
+        "sourcePremiseIds": [],
+        "sourceProofPathIds": [],
+        "release": [],
+        "proof": null,
+        "surface": []
+      }
+    ],
+    "ruleHyperedges": [
+      {
+        "id": "edge_001",
+        "ruleId": "R1_blank",
+        "inputFactKeys": [
+          "[\"alloyOf\",\"falseShilling\",\"drossSilver\"]",
+          "[\"meltedAt\",\"drossSilver\",\"weirCrucible\"]"
+        ],
+        "outputFactKey": "[\"blankFrom\",\"falseShilling\",\"weirCrucible\"]",
+        "inputPredicates": [
+          "alloyOf",
+          "meltedAt"
+        ],
+        "outputPredicate": "blankFrom",
+        "sourcePremiseIds": [
+          "p_alloy",
+          "p_crucible"
+        ],
+        "sourceProofPathIds": [
+          "path_1"
+        ],
+        "proofCritical": true
+      },
+      {
+        "id": "edge_003",
+        "ruleId": "R2_cast",
+        "inputFactKeys": [
+          "[\"blankFrom\",\"falseShilling\",\"weirCrucible\"]",
+          "[\"soleCasterAt\",\"weirCrucible\",\"edony\"]"
+        ],
+        "outputFactKey": "[\"castBlankFor\",\"falseShilling\",\"edony\"]",
+        "inputPredicates": [
+          "blankFrom",
+          "soleCasterAt"
+        ],
+        "outputPredicate": "castBlankFor",
+        "sourcePremiseIds": [
+          "p_alloy",
+          "p_caster",
+          "p_crucible"
+        ],
+        "sourceProofPathIds": [
+          "path_1"
+        ],
+        "proofCritical": true
+      },
+      {
+        "id": "edge_004",
+        "ruleId": "R4_hold",
+        "inputFactKeys": [
+          "[\"dieCutWith\",\"falseShilling\",\"wornBurin\"]",
+          "[\"soleHolderOf\",\"wornBurin\",\"edony\"]"
+        ],
+        "outputFactKey": "[\"cutDieFor\",\"falseShilling\",\"edony\"]",
+        "inputPredicates": [
+          "dieCutWith",
+          "soleHolderOf"
+        ],
+        "outputPredicate": "cutDieFor",
+        "sourcePremiseIds": [
+          "p_flaw",
+          "p_graver",
+          "p_holder"
+        ],
+        "sourceProofPathIds": [
+          "path_1"
+        ],
+        "proofCritical": true
+      },
+      {
+        "id": "edge_002",
+        "ruleId": "R3_die",
+        "inputFactKeys": [
+          "[\"dieFlawOf\",\"falseShilling\",\"notchedSerif\"]",
+          "[\"flawCutBy\",\"notchedSerif\",\"wornBurin\"]"
+        ],
+        "outputFactKey": "[\"dieCutWith\",\"falseShilling\",\"wornBurin\"]",
+        "inputPredicates": [
+          "dieFlawOf",
+          "flawCutBy"
+        ],
+        "outputPredicate": "dieCutWith",
+        "sourcePremiseIds": [
+          "p_flaw",
+          "p_graver"
+        ],
+        "sourceProofPathIds": [
+          "path_1"
+        ],
+        "proofCritical": true
+      },
+      {
+        "id": "edge_005",
+        "ruleId": "R5_strike",
+        "inputFactKeys": [
+          "[\"castBlankFor\",\"falseShilling\",\"edony\"]",
+          "[\"cutDieFor\",\"falseShilling\",\"edony\"]"
+        ],
+        "outputFactKey": "[\"struckBy\",\"falseShilling\",\"edony\"]",
+        "inputPredicates": [
+          "castBlankFor",
+          "cutDieFor"
+        ],
+        "outputPredicate": "struckBy",
+        "sourcePremiseIds": [
+          "p_alloy",
+          "p_caster",
+          "p_crucible",
+          "p_flaw",
+          "p_graver",
+          "p_holder"
+        ],
+        "sourceProofPathIds": [
+          "path_1"
+        ],
+        "proofCritical": true
+      }
+    ],
+    "ruleDefinitions": [
+      {
+        "id": "R1_blank",
+        "inputPatterns": [
+          [
+            "alloyOf",
+            "?coin",
+            "?metal"
+          ],
+          [
+            "meltedAt",
+            "?metal",
+            "?crucible"
+          ]
+        ],
+        "outputPatterns": [
+          [
+            "blankFrom",
+            "?coin",
+            "?crucible"
+          ]
+        ],
+        "gloss": "A struck coin's blank betrays its melt: if a coin is of a debased alloy, and that very alloy answers to the leavings of one crucible and one only, then the coin's blank was cast from that crucible."
+      },
+      {
+        "id": "R2_cast",
+        "inputPatterns": [
+          [
+            "blankFrom",
+            "?coin",
+            "?crucible"
+          ],
+          [
+            "soleCasterAt",
+            "?crucible",
+            "?x"
+          ]
+        ],
+        "outputPatterns": [
+          [
+            "castBlankFor",
+            "?coin",
+            "?x"
+          ]
+        ],
+        "gloss": "A blank is the work of the hand that cast it: if a coin's blank came from a crucible, and one hand alone cast at that crucible, then that hand cast the blank for the coin."
+      },
+      {
+        "id": "R3_die",
+        "inputPatterns": [
+          [
+            "dieFlawOf",
+            "?coin",
+            "?flaw"
+          ],
+          [
+            "flawCutBy",
+            "?flaw",
+            "?tool"
+          ]
+        ],
+        "outputPatterns": [
+          [
+            "dieCutWith",
+            "?coin",
+            "?tool"
+          ]
+        ],
+        "gloss": "A die leaves its flaw on every coin it strikes: if a coin bears a die-flaw, and that flaw is the signature of one graving-tool and one only, then the coin's die was cut with that tool."
+      },
+      {
+        "id": "R4_hold",
+        "inputPatterns": [
+          [
+            "dieCutWith",
+            "?coin",
+            "?tool"
+          ],
+          [
+            "soleHolderOf",
+            "?tool",
+            "?x"
+          ]
+        ],
+        "outputPatterns": [
+          [
+            "cutDieFor",
+            "?coin",
+            "?x"
+          ]
+        ],
+        "gloss": "A die is the work of the hand that held the tool: if a coin's die was cut with a tool, and one hand alone held that tool, then that hand cut the die for the coin."
+      },
+      {
+        "id": "R5_strike",
+        "inputPatterns": [
+          [
+            "castBlankFor",
+            "?coin",
+            "?x"
+          ],
+          [
+            "cutDieFor",
+            "?coin",
+            "?x"
+          ]
+        ],
+        "outputPatterns": [
+          [
+            "struckBy",
+            "?coin",
+            "?x"
+          ]
+        ],
+        "gloss": "To strike false coin needs both the cast blank and the cut die in one hand: who had the blank cast for a coin and the die cut for it, that one struck it. A blank without a die strikes nothing, and a die without a blank strikes nothing; both must meet in one hand."
+      }
+    ],
+    "indexes": {
+      "factKeysByPredicate": {
+        "alloyOf": [
+          "[\"alloyOf\",\"falseShilling\",\"drossSilver\"]"
+        ],
+        "blankFrom": [
+          "[\"blankFrom\",\"falseShilling\",\"weirCrucible\"]"
+        ],
+        "castBlankFor": [
+          "[\"castBlankFor\",\"falseShilling\",\"edony\"]"
+        ],
+        "clipperOf": [
+          "[\"clipperOf\",\"verrell\",\"marrick\"]"
+        ],
+        "cutDieFor": [
+          "[\"cutDieFor\",\"falseShilling\",\"edony\"]"
+        ],
+        "dieCutWith": [
+          "[\"dieCutWith\",\"falseShilling\",\"wornBurin\"]"
+        ],
+        "dieFlawOf": [
+          "[\"dieFlawOf\",\"falseShilling\",\"notchedSerif\"]"
+        ],
+        "flawCutBy": [
+          "[\"flawCutBy\",\"notchedSerif\",\"wornBurin\"]"
+        ],
+        "inquiryInto": [
+          "[\"inquiryInto\",\"theAssay\",\"falseShilling\"]"
+        ],
+        "meltedAt": [
+          "[\"meltedAt\",\"drossSilver\",\"weirCrucible\"]"
+        ],
+        "passedAt": [
+          "[\"passedAt\",\"falseShilling\",\"autumnFair\"]"
+        ],
+        "seenAtForge": [
+          "[\"seenAtForge\",\"verrell\",\"fairWeek\"]"
+        ],
+        "soleCasterAt": [
+          "[\"soleCasterAt\",\"mintCrucible\",\"verrell\"]",
+          "[\"soleCasterAt\",\"weirCrucible\",\"edony\"]"
+        ],
+        "soleHolderOf": [
+          "[\"soleHolderOf\",\"broadGraver\",\"verrell\"]",
+          "[\"soleHolderOf\",\"wornBurin\",\"edony\"]"
+        ],
+        "struckBy": [
+          "[\"struckBy\",\"falseShilling\",\"edony\"]"
+        ],
+        "struckNotClipped": [
+          "[\"struckNotClipped\",\"falseShilling\"]"
+        ]
+      },
+      "secretFactKey": "[\"struckBy\",\"falseShilling\",\"edony\"]",
+      "mirrorFactKey": "[\"struckBy\",\"falseShilling\",\"verrell\"]",
+      "backgroundFactKeys": [
+        "[\"clipperOf\",\"verrell\",\"marrick\"]",
+        "[\"inquiryInto\",\"theAssay\",\"falseShilling\"]",
+        "[\"passedAt\",\"falseShilling\",\"autumnFair\"]",
+        "[\"struckNotClipped\",\"falseShilling\"]"
+      ],
+      "proofCriticalPremiseIds": [
+        "p_alloy",
+        "p_caster",
+        "p_crucible",
+        "p_flaw",
+        "p_graver",
+        "p_holder"
+      ]
+    }
+  },
   "proofGraph": {
     "proofPaths": [
       {

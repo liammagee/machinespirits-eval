@@ -2,12 +2,15 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import {
+  buildLogicIR,
   buildWorldIR,
   compileGuardSpec,
+  projectWorldIRLogic,
   selectGuardRepresentation,
   selectGuardRepresentationV1,
   summarizeGuardSpec,
 } from '../services/dramaticDerivation/guardCompiler.js';
+import { factKey } from '../services/dramaticDerivation/chainer.js';
 import { loadWorld } from '../services/dramaticDerivation/world.js';
 
 const lantern = loadWorld('config/drama-derivation/world-002-lantern.yaml');
@@ -43,6 +46,65 @@ test('WorldIR does not falsely classify lantern as a disjoint join', () => {
   assert.equal(ir.world.id, 'world_002_lantern');
   assert.equal(ir.proofGraph.secretProof.independentTopLevelJoin, false);
   assert.ok(ir.proofGraph.secretProof.branchOverlap.length >= 1);
+});
+
+test('WorldIR includes a canonical proof-hypergraph logic form', () => {
+  const ir = buildWorldIR(withercombe);
+  assert.equal(ir.logic.schema, 'dramatic-derivation.logic-ir.v0');
+  assert.equal(ir.logic.worldId, 'world_004_withercombe');
+  assert.equal(buildLogicIR(withercombe).indexes.secretFactKey, factKey(withercombe.secret.fact));
+
+  const secretNode = ir.logic.factNodes.find((node) => node.factKey === factKey(withercombe.secret.fact));
+  assert.ok(secretNode.roles.includes('secret'));
+  assert.ok(secretNode.roles.includes('derived'));
+  assert.deepEqual(secretNode.sourcePremiseIds, [
+    'p_basin',
+    'p_brought',
+    'p_course',
+    'p_lore',
+    'p_residue',
+    'p_rill',
+  ]);
+  assert.equal(secretNode.proof.rule, 'R3_hand');
+
+  const foulFrom = ir.logic.factNodes.find((node) => node.factKey === factKey(['foulFrom', 'schoolWell', 'fontHouse']));
+  assert.deepEqual(foulFrom.sourcePremiseIds, ['p_basin', 'p_course', 'p_rill']);
+  assert.equal(foulFrom.proof.rule, 'R1_entry');
+
+  const taintEdge = ir.logic.ruleHyperedges.find(
+    (edge) => edge.outputFactKey === factKey(['taintedWith', 'schoolWell', 'wormwood']),
+  );
+  assert.equal(taintEdge.ruleId, 'R2_taint');
+  assert.deepEqual(taintEdge.sourcePremiseIds, ['p_basin', 'p_course', 'p_lore', 'p_residue', 'p_rill']);
+});
+
+test('runtime board projection reuses the same logic form without leaking the secret early', () => {
+  const ir = buildWorldIR(withercombe);
+  const fact = (id) => withercombe.premiseById.get(id).fact;
+  const partial = projectWorldIRLogic(ir, {
+    groundedFacts: [fact('p_course'), fact('p_rill'), fact('p_basin')],
+    releasedPremiseIds: ['p_course', 'p_rill', 'p_basin'],
+    voicedFacts: [['foulFrom', 'schoolWell', 'fontHouse']],
+    decayedPremiseIds: ['p_course'],
+  });
+  const partialKeys = new Set(partial.factNodes.map((node) => node.factKey));
+  assert.ok(partialKeys.has(factKey(['foulFrom', 'schoolWell', 'fontHouse'])));
+  assert.ok(!partialKeys.has(factKey(withercombe.secret.fact)));
+
+  const foulFrom = partial.factNodes.find((node) => node.factKey === factKey(['foulFrom', 'schoolWell', 'fontHouse']));
+  assert.equal(foulFrom.derived, true);
+  assert.equal(foulFrom.voiced, true);
+  assert.equal(foulFrom.decayed, true);
+  assert.equal(foulFrom.proof.rule, 'R1_entry');
+
+  const full = projectWorldIRLogic(ir, {
+    groundedFacts: withercombe.proofPaths[0].premises.map(fact),
+    releasedPremiseIds: withercombe.proofPaths[0].premises,
+  });
+  const secret = full.factNodes.find((node) => node.factKey === factKey(withercombe.secret.fact));
+  assert.ok(secret);
+  assert.equal(secret.derived, true);
+  assert.ok(secret.roles.includes('secret'));
 });
 
 test('GuardSpec emits hidden pacing corridors and a narrow proof-debt tutor view', () => {

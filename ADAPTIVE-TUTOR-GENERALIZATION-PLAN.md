@@ -1147,6 +1147,11 @@ role, branch membership, and runtime overlays such as grounded, decayed, voiced,
 repair-needed. Then learner board, hidden guard, visible guard, slope monitor, and selector would be
 different projections of the same formal object rather than separately maintained views.
 
+Implementation start (2026-06-14): the first consolidation slice adds a static fact-node/rule-hyperedge
+logic IR to `WorldIR`, plus a runtime board-closure projection helper. This is representation cleanup
+only: existing selector rules and runtime guard conduct stay unchanged until a separate declared
+selector/guard variant consumes the new projection.
+
 Cautions:
 
 - Do not expose the hidden proof graph, secret path, release schedule, or unreleased premises to the

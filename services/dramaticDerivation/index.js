@@ -4,7 +4,14 @@ export { derivationDistance, detectStall } from './slope.js';
 export { simulateReleaseTempo, releaseSolvency, safeReleaseTurns, pacingGuardDecision } from './pacing.js';
 export { proofDebtReport, tutorProofDebtView } from './proofDebt.js';
 export { createRuntimeMonitor, RUNTIME_MONITOR_SCHEMA } from './runtimeMonitor.js';
-export { buildWorldIR, compileGuardSpec, selectGuardRepresentation, selectGuardRepresentationV1 } from './guardCompiler.js';
+export {
+  buildLogicIR,
+  buildWorldIR,
+  compileGuardSpec,
+  projectWorldIRLogic,
+  selectGuardRepresentation,
+  selectGuardRepresentationV1,
+} from './guardCompiler.js';
 export { runDrama, normalizeActsConfig } from './engine.js';
 export { mulberry32, normalizeDecayConfig } from './corruption.js';
 export { makeReplayRoles, comparePrefix } from './replay.js';

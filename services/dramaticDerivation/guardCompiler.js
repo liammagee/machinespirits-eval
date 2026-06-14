@@ -5,6 +5,7 @@ import { VISIBLE_GUARD_DEFAULTS } from './visiblePacing.js';
 export const GUARD_COMPILER_SCHEMA = 'dramatic-derivation.guard-compiler.v0';
 export const DEFAULT_RELEASE_LATITUDE = 2;
 
+export const LOGIC_IR_SCHEMA = 'dramatic-derivation.logic-ir.v0';
 export const REPRESENTATION_SELECTOR_SCHEMA = 'dramatic-derivation.representation-selector.v0';
 export const REPRESENTATION_SELECTOR_V1_SCHEMA = 'dramatic-derivation.representation-selector.v1';
 
@@ -48,6 +49,10 @@ function factAtoms(fact) {
   return Array.isArray(fact)
     ? fact.slice(1).filter((atom) => typeof atom === 'string' && !isVariableAtom(atom))
     : [];
+}
+
+function uniqueSorted(values) {
+  return [...new Set(values.filter((value) => value != null))].sort();
 }
 
 function collectEntities(world) {
@@ -122,6 +127,266 @@ function proofPathIndexes(world) {
   return byPremise;
 }
 
+function sourcePremiseIdsForFact(key, proofs, premiseIdsByFact, memo = new Map()) {
+  if (memo.has(key)) return memo.get(key);
+  const direct = premiseIdsByFact.get(key) || [];
+  const proof = proofs.get(key);
+  const fromProof = proof?.premises?.flatMap((premiseKey) =>
+    sourcePremiseIdsForFact(premiseKey, proofs, premiseIdsByFact, memo),
+  ) || [];
+  const out = uniqueSorted([...direct, ...fromProof]);
+  memo.set(key, out);
+  return out;
+}
+
+function proofDepthForFact(key, proofs, memo = new Map()) {
+  if (memo.has(key)) return memo.get(key);
+  const proof = proofs.get(key);
+  if (!proof) {
+    memo.set(key, 0);
+    return 0;
+  }
+  const out = 1 + Math.max(...proof.premises.map((premiseKey) => proofDepthForFact(premiseKey, proofs, memo)));
+  memo.set(key, out);
+  return out;
+}
+
+function factNodeRoles({ key, backgroundKeys, premiseIds, secretKey, mirrorKey, derived }) {
+  const roles = [];
+  if (backgroundKeys.has(key)) roles.push('background');
+  if (premiseIds.length) roles.push('premise');
+  if (derived) roles.push('derived');
+  if (key === secretKey) roles.push('secret');
+  if (key === mirrorKey) roles.push('mirror');
+  return roles.length ? roles : ['derived'];
+}
+
+function factNodeFromClosure({
+  key,
+  fact,
+  proofs,
+  world,
+  scheduled,
+  pathIndexes,
+  premiseIdsByFact,
+  backgroundKeys,
+  secretKey,
+  mirrorKey,
+  proofCriticalIds,
+  sourceMemo,
+  depthMemo,
+}) {
+  const proof = proofs.get(key) || null;
+  const premiseIds = uniqueSorted(premiseIdsByFact.get(key) || []);
+  const sourcePremiseIds = sourcePremiseIdsForFact(key, proofs, premiseIdsByFact, sourceMemo);
+  const sourceProofPathIndexes = uniqueSorted(
+    sourcePremiseIds.flatMap((id) => pathIndexes.get(id) || []).map((index) => `path_${index + 1}`),
+  );
+  const releaseEntries = premiseIds
+    .map((id) => scheduled.get(id))
+    .filter(Boolean)
+    .map((entry) => ({ premise: entry.premise, turn: entry.turn, via: entry.via }));
+  return {
+    factKey: key,
+    fact,
+    predicate: predicateOf(fact),
+    constants: factAtoms(fact),
+    roles: factNodeRoles({
+      key,
+      backgroundKeys,
+      premiseIds,
+      secretKey,
+      mirrorKey,
+      derived: Boolean(proof),
+    }),
+    premiseIds,
+    proofCritical: premiseIds.some((id) => proofCriticalIds.has(id)),
+    proofPathIds: uniqueSorted(premiseIds.flatMap((id) => (pathIndexes.get(id) || []).map((index) => `path_${index + 1}`))),
+    sourcePremiseIds,
+    sourceProofPathIds: sourceProofPathIndexes,
+    release: releaseEntries,
+    proof: proof
+      ? {
+          rule: proof.rule,
+          inputFactKeys: proof.premises,
+          depth: proofDepthForFact(key, proofs, depthMemo),
+        }
+      : null,
+    surface: premiseIds.map((id) => world.premiseById.get(id)?.surface).filter(Boolean),
+  };
+}
+
+function ruleHyperedgesFromClosure({ facts, proofs, premiseIdsByFact, pathIndexes, proofCriticalIds }) {
+  const sourceMemo = new Map();
+  return [...proofs.entries()]
+    .filter(([, proof]) => proof)
+    .map(([outputFactKey, proof], index) => {
+      const outputFact = facts.get(outputFactKey);
+      const sourcePremiseIds = sourcePremiseIdsForFact(outputFactKey, proofs, premiseIdsByFact, sourceMemo);
+      return {
+        id: `edge_${String(index + 1).padStart(3, '0')}`,
+        ruleId: proof.rule,
+        inputFactKeys: proof.premises,
+        outputFactKey,
+        inputPredicates: proof.premises.map((key) => predicateOf(facts.get(key))).filter(Boolean),
+        outputPredicate: predicateOf(outputFact),
+        sourcePremiseIds,
+        sourceProofPathIds: uniqueSorted(
+          sourcePremiseIds.flatMap((id) => pathIndexes.get(id) || []).map((pathIndex) => `path_${pathIndex + 1}`),
+        ),
+        proofCritical: sourcePremiseIds.some((id) => proofCriticalIds.has(id)),
+      };
+    })
+    .sort((a, b) => a.outputFactKey.localeCompare(b.outputFactKey));
+}
+
+export function buildLogicIR(world, { source = null } = {}) {
+  const scheduled = scheduleByPremise(world);
+  const pathIndexes = proofPathIndexes(world);
+  const premiseIdsByFact = factToPremiseIds(world);
+  const backgroundKeys = new Set((world.background || []).map(factKey));
+  const secretKey = factKey(world.secret.fact);
+  const mirrorKey = world.mirror?.fact ? factKey(world.mirror.fact) : null;
+  const proofCriticalIds = new Set(world.proofPaths.flatMap((path) => path.premises || []));
+  const fullBase = [...(world.background || []), ...world.premises.map((premise) => premise.fact)];
+  const { facts, proofs } = closure(fullBase, world.rules);
+  const sourceMemo = new Map();
+  const depthMemo = new Map();
+  const factNodes = [...facts.entries()]
+    .map(([key, fact]) =>
+      factNodeFromClosure({
+        key,
+        fact,
+        proofs,
+        world,
+        scheduled,
+        pathIndexes,
+        premiseIdsByFact,
+        backgroundKeys,
+        secretKey,
+        mirrorKey,
+        proofCriticalIds,
+        sourceMemo,
+        depthMemo,
+      }),
+    )
+    .sort((a, b) => a.factKey.localeCompare(b.factKey));
+  const factKeysByPredicate = {};
+  for (const node of factNodes) {
+    if (!node.predicate) continue;
+    if (!factKeysByPredicate[node.predicate]) factKeysByPredicate[node.predicate] = [];
+    factKeysByPredicate[node.predicate].push(node.factKey);
+  }
+  const ruleHyperedges = ruleHyperedgesFromClosure({ facts, proofs, premiseIdsByFact, pathIndexes, proofCriticalIds });
+
+  return {
+    schema: LOGIC_IR_SCHEMA,
+    worldId: world.id,
+    source,
+    factNodes,
+    ruleHyperedges,
+    ruleDefinitions: world.rules.map((rule) => ({
+      id: rule.id,
+      inputPatterns: rule.if,
+      outputPatterns: rule.then,
+      gloss: rule.gloss || null,
+    })),
+    indexes: {
+      factKeysByPredicate,
+      secretFactKey: secretKey,
+      mirrorFactKey: mirrorKey,
+      backgroundFactKeys: [...backgroundKeys].sort(),
+      proofCriticalPremiseIds: [...proofCriticalIds].sort(),
+    },
+  };
+}
+
+function factEntriesFromInput(values) {
+  return (values || [])
+    .map((entry) => (Array.isArray(entry) ? entry : entry?.fact))
+    .filter((fact) => Array.isArray(fact));
+}
+
+export function projectWorldIRLogic(
+  worldIR,
+  { groundedFacts = [], voicedFacts = [], releasedPremiseIds = [], decayedPremiseIds = [] } = {},
+) {
+  const logic = worldIR?.logic;
+  if (!logic?.factNodes || !logic?.ruleDefinitions) {
+    throw new Error('derivation.guardCompiler: projectWorldIRLogic requires WorldIR.logic');
+  }
+
+  const grounded = factEntriesFromInput(groundedFacts);
+  const voiced = factEntriesFromInput(voicedFacts);
+  const groundedKeys = new Set(grounded.map(factKey));
+  const voicedKeys = new Set(voiced.map(factKey));
+  const releasedIds = new Set(releasedPremiseIds);
+  const decayedIds = new Set(decayedPremiseIds);
+  const staticNodeByKey = new Map(logic.factNodes.map((node) => [node.factKey, node]));
+  const { facts, proofs } = closure(
+    grounded,
+    logic.ruleDefinitions.map((rule) => ({ id: rule.id, if: rule.inputPatterns, then: rule.outputPatterns })),
+  );
+
+  const projectedFactNodes = [...facts.entries()]
+    .map(([key, fact]) => {
+      const staticNode = staticNodeByKey.get(key);
+      const premiseIds = staticNode?.premiseIds || [];
+      const sourcePremiseIds = staticNode?.sourcePremiseIds || [];
+      const touchedPremiseIds = uniqueSorted([...premiseIds, ...sourcePremiseIds]);
+      return {
+        factKey: key,
+        fact,
+        predicate: predicateOf(fact),
+        roles: staticNode?.roles || ['runtime_only'],
+        grounded: groundedKeys.has(key),
+        derived: Boolean(proofs.get(key)),
+        voiced: voicedKeys.has(key),
+        released: staticNode?.roles?.includes('background') || touchedPremiseIds.some((id) => releasedIds.has(id)),
+        unreleased: touchedPremiseIds.length > 0 && !touchedPremiseIds.some((id) => releasedIds.has(id)),
+        decayed: touchedPremiseIds.some((id) => decayedIds.has(id)),
+        proofCritical: Boolean(staticNode?.proofCritical),
+        premiseIds,
+        sourcePremiseIds,
+        proof: proofs.get(key)
+          ? {
+              rule: proofs.get(key).rule,
+              inputFactKeys: proofs.get(key).premises,
+            }
+          : null,
+      };
+    })
+    .sort((a, b) => a.factKey.localeCompare(b.factKey));
+
+  const projectedRuleHyperedges = [...proofs.entries()]
+    .filter(([, proof]) => proof)
+    .map(([outputFactKey, proof], index) => ({
+      id: `runtime_edge_${String(index + 1).padStart(3, '0')}`,
+      ruleId: proof.rule,
+      inputFactKeys: proof.premises,
+      outputFactKey,
+    }))
+    .sort((a, b) => a.outputFactKey.localeCompare(b.outputFactKey));
+
+  return {
+    schema: `${LOGIC_IR_SCHEMA}.projection`,
+    worldId: logic.worldId,
+    logicSchema: logic.schema,
+    projection: {
+      mode: 'runtime_board_closure',
+      exposesOnlyProvidedBoardClosure: true,
+    },
+    factNodes: projectedFactNodes,
+    ruleHyperedges: projectedRuleHyperedges,
+    counts: {
+      grounded: projectedFactNodes.filter((node) => node.grounded).length,
+      derived: projectedFactNodes.filter((node) => node.derived).length,
+      voiced: projectedFactNodes.filter((node) => node.voiced).length,
+      decayed: projectedFactNodes.filter((node) => node.decayed).length,
+    },
+  };
+}
+
 function premiseRole(premise, pathIndexes, scheduleEntry) {
   if (pathIndexes.length && scheduleEntry) return 'scheduled_proof_premise';
   if (pathIndexes.length) return 'unscheduled_alternative_proof_premise';
@@ -134,6 +399,7 @@ export function buildWorldIR(world, { source = null } = {}) {
   const pathIndexes = proofPathIndexes(world);
   const proofGraph = secretProofGraph(world);
   const proofCriticalIds = new Set(world.proofPaths.flatMap((path) => path.premises || []));
+  const logic = buildLogicIR(world, { source });
 
   const premises = world.premises.map((premise) => {
     const scheduleEntry = scheduled.get(premise.id) || null;
@@ -180,6 +446,7 @@ export function buildWorldIR(world, { source = null } = {}) {
       gloss: rule.gloss || null,
     })),
     premises,
+    logic,
     proofGraph: {
       proofPaths: world.proofPaths.map((path, index) => ({
         id: `path_${index + 1}`,
