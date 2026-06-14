@@ -366,6 +366,23 @@ function mockResponse(role, meta = {}) {
         ...throughlineBits,
       });
     }
+    if (meta.rhetoricalPolicy?.selected) {
+      const selected = meta.rhetoricalPolicy.selected;
+      return JSON.stringify({
+        dialogue: meta.releaseSurface
+          ? `Take this exhibit in the way the scene now asks: ${meta.releaseSurface}`
+          : 'Let us keep this small: say what you hold, and where the next link should bite.',
+        move: {
+          figure: selected.figure || 'erotema',
+          target_premise: selected.targetPremise || meta.cuePremise || null,
+          intent: selected.intent || (meta.cuePremise ? 'release' : 'consolidate'),
+        },
+        ...releaseBits,
+        ...theory,
+        ...plotBits,
+        ...throughlineBits,
+      });
+    }
     return JSON.stringify({
       dialogue: meta.releaseSurface
         ? `Consider what is now before you: ${meta.releaseSurface} What does it do to what you already hold?`
@@ -450,20 +467,23 @@ function mockResponse(role, meta = {}) {
     // engine age 4, one turn after the mock stall watcher fires at 3) — so a
     // mock run exercises voicing, the voiced ledger, and post-fire uptake
     // deterministically. The real backend never reads this hint.
-    const derives = Array.isArray(meta.deriveHint) ? meta.deriveHint : [];
+    const deriveIndices = Array.isArray(meta.deriveHintIndices) ? meta.deriveHintIndices : [];
+    const deriveLabels = Array.isArray(meta.deriveLabels) ? meta.deriveLabels : [];
     return JSON.stringify({
       dialogue: meta.patternAssertion
-        ? `Then it is shown: ${meta.patternAssertion.surface}.`
-        : derives.length
-          ? `Taken together, what I hold settles something short of the question: ${derives.map((f) => f.join(' ')).join('; ')}.`
+        ? `Then it is shown: ${meta.patternAssertion.answer || meta.patternAssertion.surface}.`
+        : deriveIndices.length
+          ? `Taken together, what I hold settles something short of the question: ${deriveIndices
+              .map((i) => deriveLabels[i] || 'one narrower conclusion')
+              .join('; ')}.`
           : adoptAll.length
             ? 'I take what has been shown and set it beside the rest.'
             : 'I am listening; nothing new is on the table.',
       adopt_indices: adoptAll,
       retract_indices: [],
-      derives,
+      derive_indices: deriveIndices,
       hypothesis: meta.patternAssertion ? null : adoptAll.length ? 'weighing what this changes' : null,
-      asserts_binding: meta.patternAssertion ? meta.patternAssertion.binding : null,
+      asserts_answer: meta.patternAssertion ? meta.patternAssertion.answer : null,
     });
   }
   throw new Error(`derivation.llmClient: unknown mock role '${role}'`);

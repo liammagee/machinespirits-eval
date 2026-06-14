@@ -26,13 +26,19 @@
 
 import { closure, factKey, matchPattern } from './chainer.js';
 import { pacingGuardDecision, releaseSolvency, safeReleaseTurns } from './pacing.js';
+import {
+  normalizeRhetoricalPolicyConfig,
+  recommendRhetoricalMove,
+  renderRhetoricalPolicy,
+  RHETORICAL_FIGURES,
+} from './rhetoricalMovePolicy.js';
 import { createRuntimeMonitor } from './runtimeMonitor.js';
 // The Step-1 V arm. Imported here, NOT in pacing.js — visiblePacing.js's own audit
 // test forbids it from importing back the other way, so the hidden/visible seam
 // stays one-directional and the no-hidden-state property is mechanically checkable.
 import { visibleGuardDecision, visibleSurfaceFeatures, isStalling } from './visiblePacing.js';
 
-const TUTOR_FIGURES = ['erotema', 'analogia', 'exemplum', 'anaphora', 'aposiopesis'];
+const TUTOR_FIGURES = [...RHETORICAL_FIGURES];
 const TUTOR_INTENTS = ['orient', 'release', 'consolidate', 'test', 'counter_mirror', 'stage_recognition'];
 const TRANSCRIPT_TAIL = 8;
 // C2 (release authority): how far the tutor may bend its own exhibit
@@ -79,10 +85,66 @@ function renderRule(rule, index) {
   return `${index + 1}. ${(rule.gloss || rule.id).trim()}\n   formally: ${formal}`;
 }
 
+function renderRuleGloss(rule, index) {
+  return `${index + 1}. ${(rule.gloss || rule.id).trim()}`;
+}
+
+function publicTranscriptLine(line) {
+  return line.role !== 'director' || line.meta?.release || line.meta?.phase?.name;
+}
+
 function renderTranscriptTail(transcript, n = TRANSCRIPT_TAIL) {
-  const tail = transcript.slice(-n);
+  const tail = transcript.filter(publicTranscriptLine).slice(-n);
   if (!tail.length) return '(curtain just rose — nothing said yet)';
-  return tail.map((line) => `[turn ${line.turn}] ${line.role}: ${(line.text || '').trim()}`).join('\n');
+  return tail
+    .map((line) => `[turn ${line.turn}] ${line.role === 'director' ? 'stage' : line.role}: ${(line.text || '').trim()}`)
+    .join('\n');
+}
+
+function splitAtom(atom) {
+  return String(atom || '')
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/[_-]+/g, ' ')
+    .toLowerCase();
+}
+
+function naturalFact(fact) {
+  if (!Array.isArray(fact) || !fact.length) return '';
+  const [pred, ...args] = fact;
+  const prettyArgs = args.map(splitAtom).join(', ');
+  return prettyArgs ? `${splitAtom(pred)}: ${prettyArgs}` : splitAtom(pred);
+}
+
+function factSurface(view, fact) {
+  return view.factSurfaces?.[factKey(fact)] || naturalFact(fact);
+}
+
+function answerFromBinding(binding) {
+  if (!binding || typeof binding !== 'object') return null;
+  const value = Object.values(binding).find((v) => typeof v === 'string' && v.trim());
+  return value ? value.trim() : null;
+}
+
+function answerToFact(pattern, rawAnswer, facts = [], rules = []) {
+  if (typeof rawAnswer !== 'string' || !rawAnswer.trim()) return null;
+  const vars = pattern.filter((token) => typeof token === 'string' && token.startsWith('?'));
+  if (vars.length !== 1) return null;
+  const answer = rawAnswer.toLowerCase();
+  const candidates = [];
+  const cl = closure(facts, rules).facts;
+  for (const fact of cl.values()) {
+    const binding = matchPattern(pattern, fact);
+    if (!binding) continue;
+    const value = binding[vars[0]];
+    if (typeof value === 'string' && !candidates.includes(value)) candidates.push(value);
+  }
+  const picked =
+    candidates.find((value) => answer.includes(value.toLowerCase())) ||
+    rawAnswer
+      .trim()
+      .replace(/[^\p{L}\p{N}_-].*$/u, '')
+      .toLowerCase();
+  return picked ? pattern.map((token) => (token === vars[0] ? picked : token)) : null;
 }
 
 function parseJsonLoose(text) {
@@ -358,6 +420,7 @@ function tutorSystem(
     proofDebtGuard = false,
     plot = false,
     throughline = false,
+    rhetoricalPolicy = false,
   } = {},
 ) {
   const recognition = clampDial(dials.recognition);
@@ -592,6 +655,20 @@ function tutorSystem(
           'you may revise only with a declared one-line reason. A course',
           "correction is conduct; silent drift is the failure. At the run's end",
           'the throughline itself is audited clause by clause, like any plot.',
+        ]
+      : []),
+    ...(rhetoricalPolicy
+      ? [
+          '',
+          '# The rhetorical move policy (scene-calibrated, advisory)',
+          '',
+          'Each turn may carry a RHETORICAL MOVE POLICY block. It maps the visible',
+          'state of the inquiry — proof pressure, learner uptake/confusion, available',
+          'exhibits, and scene budget — to a small distribution over the existing',
+          'figures. This is a disciplined hunch, not an oracle and not a new evidence',
+          'channel. Prefer the selected move when it fits the record; override it only',
+          'when the scene plainly asks for another figure, and let your declared move',
+          'make that reason inspectable.',
         ]
       : []),
     ...(registers.length
@@ -891,6 +968,7 @@ export function makeLlmTutor(
     guardSpec = null,
     plot = false,
     throughline = false,
+    rhetoricalPolicy = null,
   } = {},
 ) {
   if (!script || !script.trim()) {
@@ -986,6 +1064,7 @@ export function makeLlmTutor(
       'derivation.llmRoles: throughline requires plot (the arc verdict rides the act-close audit — no plot loop, nothing binds)',
     );
   }
+  const rhetoricalPolicyConfig = rhetoricalPolicy ? normalizeRhetoricalPolicyConfig(rhetoricalPolicy) : null;
   const system = tutorSystem(world, script, dials, {
     actsMode,
     reconstruct,
@@ -997,6 +1076,7 @@ export function makeLlmTutor(
     proofDebtGuard,
     plot,
     throughline,
+    rhetoricalPolicy: Boolean(rhetoricalPolicyConfig),
   });
   const superegoSystem = superego
     ? tutorSuperegoSystem(world, { stallWatch, counsel, reconstruct, confront, repairClause, plot, throughline })
@@ -1355,6 +1435,25 @@ export function makeLlmTutor(
         : actsMode
           ? 'No release is due from you this turn. Work the inquiry by your script — consolidate, test, counter the tempting answer, re-stage what you judge lost, or stage the recognition — whichever your reading of the learner calls for.'
           : "No release is due from you this turn. Work the learner's board by your script: consolidate, test, counter the tempting answer, or stage the recognition — whichever the board calls for.";
+    const cuePremiseForPolicy = releaseAuthority
+      ? forcedPlay?.premise || playable.find((e) => e.turn === view.turn)?.premise || null
+      : entry?.premise || null;
+    const rhetoricalAdvice = rhetoricalPolicyConfig
+      ? recommendRhetoricalMove(
+          world,
+          view,
+          {
+            topProofDebt,
+            forced: Boolean(forcedNote),
+            releaseCue: Boolean(cuePremiseForPolicy),
+            cuePremise: cuePremiseForPolicy,
+            playableCount: playable.length,
+            lastReleasePremise: view.ledger[view.ledger.length - 1]?.premiseId || null,
+          },
+          rhetoricalPolicyConfig,
+        )
+      : null;
+    const rhetoricalPolicySection = renderRhetoricalPolicy(rhetoricalAdvice);
     // --- C1 plot lifecycle (acts mode only): on an act-opening turn the
     // bridge FIRST audits the act just closed (the engine seals act N during
     // the director phase of this same turn, so the closed act is already in
@@ -1488,6 +1587,7 @@ export function makeLlmTutor(
         // reads back first, the act plot under it.
         ...throughlineSection,
         ...plotSection,
+        ...rhetoricalPolicySection,
         ...proofDebtSection,
         '',
         task,
@@ -1527,6 +1627,7 @@ export function makeLlmTutor(
         renderTranscriptTail(view.transcript),
         '',
         ...(forcedNote ? [forcedNote, ''] : []),
+        ...rhetoricalPolicySection,
         ...proofDebtSection,
         ...(proofDebtSection.length ? [''] : []),
         task,
@@ -1570,6 +1671,7 @@ export function makeLlmTutor(
             },
           }
         : {}),
+      ...(rhetoricalAdvice ? { rhetoricalPolicy: rhetoricalAdvice } : {}),
       // mock determinism (arm-ON): the credulous theory — everything released
       // is believed held. The real backend ignores meta.
       ...(reconstruct ? { theoryHint: view.ledger.map((l) => l.premiseId) } : {}),
@@ -1816,6 +1918,7 @@ export function makeLlmTutor(
     let draft = {
       dialogue: typeof draftOut.dialogue === 'string' ? draftOut.dialogue.trim() : '',
       move: normalizeMove(draftOut),
+      ...(rhetoricalAdvice ? { rhetoricalPolicy: rhetoricalAdvice } : {}),
       ...releaseBits,
       ...(draftTheory ? { theory: draftTheory } : {}),
       ...plotBits(draftPlot),
@@ -2181,6 +2284,7 @@ export function makeLlmTutor(
       ...(revisedTheory ? { theory: revisedTheory } : {}),
       ...plotBits(revisedPlot),
       ...throughlineBits(revisedThroughline),
+      ...(rhetoricalAdvice ? { rhetoricalPolicy: rhetoricalAdvice } : {}),
       deliberation: {
         ...deliberation,
         intervened: true,
@@ -2247,9 +2351,20 @@ function learnerSystem(setting, voice, view) {
           'you once had ground, say so aloud — asking for what slipped is good method.',
         ]
       : []),
+    ...(view.scene
+      ? [
+          '',
+          `You are in Scene ${view.scene.index}: ${view.scene.goal}`,
+          'A scene may take several exchanges. You do NOT need to advance the proof',
+          'in every utterance. If you genuinely follow, you may say so briefly. If',
+          'you are lost, say exactly that. Phatic uptake and confusion are part of',
+          'the inquiry, not failures — but do not mark board changes unless you are',
+          'actually entering, striking, deriving, hypothesizing, or answering.',
+        ]
+      : []),
     '',
     'The rules of evidence you know and trust (your ONLY law):',
-    ...view.rules.map((rule, i) => renderRule(rule, i)),
+    ...view.rules.map((rule, i) => renderRuleGloss(rule, i)),
     '',
     'Discipline:',
     '- Your BOARD holds the facts you have grounded. You may treat as true ONLY what is on it.',
@@ -2260,18 +2375,26 @@ function learnerSystem(setting, voice, view) {
         ]
       : []),
     '- A guess you cannot yet ground is a HYPOTHESIS — name it as one, never treat it as grounded.',
-    '- When facts on your board, taken together under the rules, settle something short of the question itself, you may VOICE that derived conclusion: say it aloud and enter it in "derives". Voice only what the rules genuinely yield from your board — a derived fact is reasoning made public, not a guess.',
-    '- Answer the question ONLY when your board, under the rules, settles it — then give the answer binding.',
+    '- When facts on your board, taken together under the rules, settle something short of the question itself, you may VOICE that derived conclusion in ordinary scene language and mark its private checklist index.',
+    '- Answer the question ONLY when your board, under the rules, settles it — then give the answer name.',
     '- Be scrupulous about the difference between what is shown and what is merely said.',
-    '- Speak briefly: at most four short sentences aloud each turn. Your board, not your speech, carries the reasoning.',
+    view.scene
+      ? '- Speak briefly: at most four short sentences aloud each turn. Natural short replies are allowed: "I see", "Yes, I get that", "No, sorry, you lost me." Your board, not your speech, carries the reasoning.'
+      : '- Speak briefly: at most four short sentences aloud each turn. Your board, not your speech, carries the reasoning.',
+    '- The JSON fields are private bookkeeping. NEVER say predicate names, variable names, fact arrays, parentheses notation, or JSON field names in dialogue. Speak like a clerk in the room, not like the harness.',
     '',
     'Reply with ONLY a JSON object:',
     '{"dialogue": "<what you say aloud>",',
     ' "adopt_indices": [<indices from NEW EXHIBITS to enter on your board>],',
     ' "retract_indices": [<indices from YOUR BOARD to strike>],',
-    ' "derives": [["<predicate>", "<name>", ...], ...] — derived conclusions your board now yields under the rules, each as a fact array ([] when none; the final answer never goes here),',
+    ' "derive_indices": [<indices from PRIVATE CONCLUSION CHECKLIST that you voiced aloud in ordinary words>],',
     ' "hypothesis": "<a conjecture you cannot yet ground, or null>",',
-    ` "asserts_binding": {"<variable>": "<name>"} or null — the answer to the question pattern (${view.questionPattern.join(' ')}), given ONLY when your grounded board forces it}`,
+    ...(view.scene
+      ? [
+          ' "exchange_type": "substantive" | "phatic_ack" | "confusion" | "repair_request" | "resistance" | "hypothesis" | "assertion",',
+        ]
+      : []),
+    ' "asserts_answer": "<the name that answers the public question, or null>"}',
   ].join('\n');
 }
 
@@ -2290,7 +2413,7 @@ function computePatternAssertion(view, adoptable) {
       view.questionPattern.forEach((token, i) => {
         if (typeof token === 'string' && token.startsWith('?')) binding[token] = fact[i];
       });
-      return { surface: renderFact(fact), binding };
+  return { surface: renderFact(fact), binding, answer: answerFromBinding(binding) };
     }
   }
   return null;
@@ -2346,36 +2469,46 @@ export function makeLlmLearner({ setting = '', voice = '', client }) {
     const newKeys = new Set(view.releasedThisTurn.map(factKey));
 
     const voicedKeys = new Set((view.voiced || []).map((entry) => factKey(entry.fact)));
-    const deriveHint = [];
+    const derivableCandidates = [];
     const ownClosure = closure(view.abox.grounded, view.rules);
     for (const [key, fact] of ownClosure.facts) {
       if (!ownClosure.proofs.get(key)) continue; // base fact
       if (matchPattern(view.questionPattern, fact)) continue; // the assert channel's
       if (!firstSeen.has(key)) firstSeen.set(key, view.turn);
       if (voicedKeys.has(key)) continue;
-      if (view.turn - firstSeen.get(key) >= 3) deriveHint.push(fact);
+      derivableCandidates.push({ fact, key, label: factSurface(view, fact), due: view.turn - firstSeen.get(key) >= 3 });
     }
+    const deriveHintIndices = derivableCandidates.map((candidate, i) => (candidate.due ? i : null)).filter((i) => i !== null);
 
     const exhibits = adoptable.length
       ? adoptable
-          .map((fact, i) => `${i}. ${renderFact(fact)}${newKeys.has(factKey(fact)) ? '   <- entered this turn' : ''}`)
+          .map((fact, i) => `${i}. ${factSurface(view, fact)}${newKeys.has(factKey(fact)) ? '   <- entered this turn' : ''}`)
           .join('\n')
       : '(none on the table)';
     const board = view.abox.grounded.length
-      ? view.abox.grounded.map((fact, i) => `${i}. ${renderFact(fact)}`).join('\n')
+      ? view.abox.grounded.map((fact, i) => `${i}. ${factSurface(view, fact)}`).join('\n')
       : '(empty)';
     const hyps = view.abox.hypotheses.length
       ? view.abox.hypotheses.map((h) => `- [turn ${h.turn}] ${h.text}`).join('\n')
       : '(none yet)';
     const voicedList = (view.voiced || []).length
-      ? view.voiced.map((entry) => `- [turn ${entry.turn}] ${renderFact(entry.fact)}`).join('\n')
+      ? view.voiced.map((entry) => `- [turn ${entry.turn}] ${factSurface(view, entry.fact)}`).join('\n')
+      : '(none yet)';
+    const privateConclusions = derivableCandidates.length
+      ? derivableCandidates.map((entry, i) => `${i}. ${entry.label}`).join('\n')
       : '(none yet)';
 
     const system = learnerSystem(setting, voice, view);
     const user = [
       `Turn ${view.turn}.${
         view.act ? ` Act ${view.act.index} — the stage shows this act only; your board carries everything else.` : ''
-      }`,
+      }${view.scene ? ` Scene ${view.scene.index}, exchange ${view.scene.exchangesSoFar + 1}.` : ''}`,
+      ...(view.scene
+        ? [
+            `Scene goal: ${view.scene.goal}`,
+            `Scene drift guard: ${view.scene.phaticSoFar} phatic exchange(s) so far; keep uptake real and ask for repair when needed.`,
+          ]
+        : []),
       '',
       'The last lines spoken:',
       renderTranscriptTail(view.transcript),
@@ -2386,14 +2519,17 @@ export function makeLlmLearner({ setting = '', voice = '', client }) {
       'YOUR BOARD (index. grounded fact):',
       board,
       '',
-      'Conclusions you have already voiced (derived, on the record):',
+      'Conclusions you have already voiced (ordinary-language conclusions, on the record):',
       voicedList,
+      '',
+      'PRIVATE CONCLUSION CHECKLIST (index. conclusion your board may now support; choose indices only when you also say the conclusion aloud in ordinary words):',
+      privateConclusions,
       '',
       'Your hypotheses so far:',
       hyps,
       '',
       'Respond in role, then decide: what do you adopt, what do you retract, what do you',
-      'derive or conjecture — and does your board now settle the question? Reply with ONLY the JSON object.',
+      'voice or conjecture — and does your board now settle the question? Reply with ONLY the JSON object.',
     ].join('\n');
 
     const out = await callJson(client, 'learner', view.turn, {
@@ -2402,20 +2538,35 @@ export function makeLlmLearner({ setting = '', voice = '', client }) {
       meta: {
         adoptableCount: adoptable.length,
         patternAssertion: computePatternAssertion(view, adoptable),
-        deriveHint,
+        deriveHintIndices,
+        deriveLabels: derivableCandidates.map((entry) => entry.label),
       },
     });
 
     const adopt = validIndices(out.adopt_indices, adoptable.length).map((i) => adoptable[i]);
     const retract = validIndices(out.retract_indices, view.abox.grounded.length).map((i) => view.abox.grounded[i]);
-    const derive = Array.isArray(out.derives) ? out.derives.map(toFactArray).filter((f) => f.length) : [];
+    const deriveFromIndices = validIndices(out.derive_indices, derivableCandidates.length).map(
+      (i) => derivableCandidates[i].fact,
+    );
+    const legacyDerives = Array.isArray(out.derives) ? out.derives.map(toFactArray).filter((f) => f.length) : [];
+    const seenDerives = new Set();
+    const derive = [...deriveFromIndices, ...legacyDerives].filter((fact) => {
+      const key = factKey(fact);
+      if (seenDerives.has(key)) return false;
+      seenDerives.add(key);
+      return true;
+    });
+    const factsForAnswer = [...view.abox.grounded, ...adopt];
     return {
       dialogue: typeof out.dialogue === 'string' ? out.dialogue.trim() : '',
       adopt,
       retract,
       derive,
       hypothesis: typeof out.hypothesis === 'string' && out.hypothesis.trim() ? out.hypothesis.trim() : null,
-      asserts: bindingToFact(view.questionPattern, out.asserts_binding),
+      exchangeType: typeof out.exchange_type === 'string' && out.exchange_type.trim() ? out.exchange_type.trim() : null,
+      asserts:
+        bindingToFact(view.questionPattern, out.asserts_binding) ||
+        answerToFact(view.questionPattern, out.asserts_answer, factsForAnswer, view.rules),
     };
   };
 }

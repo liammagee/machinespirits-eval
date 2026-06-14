@@ -82,6 +82,14 @@ import { closure, entails, factKey, matchPattern, proofTree } from './chainer.js
 import { normalizeDecayConfig, mulberry32 } from './corruption.js';
 import { buildWorldIR, projectWorldIRLogic } from './guardCompiler.js';
 import { proofDebtReport, tutorProofDebtView } from './proofDebt.js';
+import {
+  classifyLearnerExchange,
+  normalizeSceneConfig,
+  openScene,
+  sceneMeta,
+  sceneView,
+  updateScene,
+} from './rhetoricalMovePolicy.js';
 import { createRuntimeMonitor } from './runtimeMonitor.js';
 import { derivationDistance, detectStall } from './slope.js';
 
@@ -147,6 +155,7 @@ export async function runDrama({ world, roles, options = {} }) {
   // Stage v2 (header): acts mode is opt-in and, like decay, absent means
   // absent — no act state, no view bounding, no redaction, no new fields.
   const acts = options.acts ? normalizeActsConfig(options.acts) : null;
+  const sceneConfig = options.sceneMode ? normalizeSceneConfig(options.sceneMode) : null;
   const runtimeMonitor = options.guardSpec ? createRuntimeMonitor(world, options.guardSpec) : null;
   const proofDebtGuardActive = Boolean(options.proofDebtGuard);
   const logicProjectionActive = Boolean(options.logicProjection);
@@ -158,6 +167,8 @@ export async function runDrama({ world, roles, options = {} }) {
   const throughlineRows = []; // {act, turn, trigger[, reason], arc, holdToEnd, risk, salvage} — two-layer planning
   const proofDebtRows = []; // guard audit rows — proof-critical decayed exhibits offered to the tutor
   const logicSnapshots = []; // harness-only per-turn board closure over the canonical logic IR
+  const sceneRows = []; // opt-in scene/exchange overlay — does not replace the formal turn loop
+  let sceneState = null;
   const ledger = []; // {turn, premiseId, via}
   const releasedKeys = new Set();
   const releasedFacts = [];
@@ -379,10 +390,70 @@ export async function runDrama({ world, roles, options = {} }) {
   const visibleToLearner = (facts) =>
     corruption ? facts.filter((fact) => !grounded.get(factKey(fact))?.decayed) : facts;
 
+  const naturalFact = (fact) =>
+    Array.isArray(fact) && fact.length
+      ? `${String(fact[0])
+          .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+          .replace(/[_-]+/g, ' ')
+          .toLowerCase()}: ${fact
+          .slice(1)
+          .map((x) =>
+            String(x)
+              .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+              .replace(/[_-]+/g, ' ')
+              .toLowerCase(),
+          )
+          .join(', ')}`
+      : '';
+
+  const learnerSurfaceForFact = (fact) => {
+    const key = factKey(fact);
+    const premiseId = releasedIdByKey.get(key) ?? premiseIdByKey.get(key);
+    const premise = premiseId ? world.premiseById.get(premiseId) : null;
+    return premise?.surface || naturalFact(fact);
+  };
+
+  const learnerFactSurfaces = (facts) =>
+    Object.fromEntries(facts.map((fact) => [factKey(fact), learnerSurfaceForFact(fact)]));
+
+  const publicStageLine = (entry) => entry.role !== 'director' || entry.meta?.release || entry.meta?.phase?.name;
+
   const currentProofDebt = (turn) =>
     proofDebtGuardActive && corruption
       ? proofDebtReport(world, { grounded, releasedIdByKey, turn })
       : { turn, active: false, dNow: derivationDistance(world, validGroundedFacts()), debts: [] };
+
+  const nextScheduledRelease = (turn) =>
+    world.releaseSchedule
+      .filter((entry) => !ledger.some((row) => row.premiseId === entry.premise) && entry.turn >= turn)
+      .sort((a, b) => a.turn - b.turn)[0] || null;
+
+  const openSceneForTurn = (turn, reason = 'opening') => {
+    if (!sceneConfig || sceneState) return;
+    const dNow = derivationDistance(world, validGroundedFacts());
+    const debt = currentProofDebt(turn).debts?.[0] || null;
+    const frontier = computeFrontier(turn)[0] || null;
+    const nextRelease = nextScheduledRelease(turn);
+    const targetPremise = debt?.premiseId || frontier?.groundPremiseIds?.[0] || nextRelease?.premise || null;
+    const targetFact = frontier?.fact || (targetPremise ? world.premiseById.get(targetPremise)?.fact || null : null);
+    const goal = debt
+      ? `Repair proof debt on ${debt.premiseId} before new work.`
+      : frontier
+        ? `Bring the learner to voice a waiting local conclusion from ${frontier.groundPremiseIds.join(', ') || 'the current board'}.`
+        : nextRelease
+          ? `Prepare or seat ${nextRelease.premise} without forcing the concealed answer.`
+          : 'Keep the inquiry socially live while locating the next proof obligation.';
+    sceneState = openScene({
+      index: sceneRows.length + 1,
+      turn,
+      dNow,
+      targetPremise,
+      targetFact,
+      goal,
+      reason,
+    });
+    events.push({ turn, type: 'scene_open', detail: `scene ${sceneState.index}: ${sceneState.goal}` });
+  };
 
   const decayedPremiseIds = () =>
     [...grounded.entries()]
@@ -426,30 +497,46 @@ export async function runDrama({ world, roles, options = {} }) {
   // (the learner's own conjectural thread, not staged evidence). The board
   // shown is the BELIEF board: mutation-born false axioms are visible (the
   // learner believes them); fabrications stay invisible, as in v1.
-  const learnerView = (turn, releasedThisTurn) => ({
-    turn,
-    question: world.question,
-    questionPattern: world.questionPattern,
-    rules: world.rules,
-    background: world.background,
-    releasedFacts: visibleToLearner(
+  const learnerView = (turn, releasedThisTurn) => {
+    const background = world.background;
+    const visibleReleasedFacts = visibleToLearner(
       actState
         ? releasedFacts.filter((fact) => (releasedAtByKey.get(factKey(fact)) ?? 0) >= actState.startTurn)
         : [...releasedFacts],
-    ),
-    releasedThisTurn: visibleToLearner(releasedThisTurn),
-    transcript: transcript
+    );
+    const releasedThisTurnVisible = visibleToLearner(releasedThisTurn);
+    const grounded = learnerBoardFacts();
+    const voiced = voicedLedger
       .filter((entry) => !actState || entry.turn >= actState.startTurn)
-      .map(({ turn: t, role, text }) => ({ turn: t, role, text })),
-    abox: {
-      grounded: learnerBoardFacts(),
-      hypotheses: [...hypotheses],
-    },
-    voiced: voicedLedger
-      .filter((entry) => !actState || entry.turn >= actState.startTurn)
-      .map((entry) => ({ ...entry })),
-    ...(actState ? { act: { index: actState.index, startTurn: actState.startTurn, brief: actState.brief } } : {}),
-  });
+      .map((entry) => ({ ...entry }));
+    const surfaceFacts = [
+      ...background,
+      ...visibleReleasedFacts,
+      ...releasedThisTurnVisible,
+      ...grounded,
+      ...voiced.map((entry) => entry.fact),
+    ];
+    return {
+      turn,
+      question: world.question,
+      questionPattern: world.questionPattern,
+      rules: world.rules,
+      background,
+      releasedFacts: visibleReleasedFacts,
+      releasedThisTurn: releasedThisTurnVisible,
+      factSurfaces: learnerFactSurfaces(surfaceFacts),
+      transcript: transcript
+        .filter((entry) => (!actState || entry.turn >= actState.startTurn) && publicStageLine(entry))
+        .map(({ turn: t, role, text }) => ({ turn: t, role: role === 'director' ? 'stage' : role, text })),
+      abox: {
+        grounded,
+        hypotheses: [...hypotheses],
+      },
+      voiced,
+      ...(actState ? { act: { index: actState.index, startTurn: actState.startTurn, brief: actState.brief } } : {}),
+      ...(sceneState ? { scene: sceneView(sceneState) } : {}),
+    };
+  };
 
   const actsView = (turn) => ({
     index: actState.index,
@@ -472,6 +559,7 @@ export async function runDrama({ world, roles, options = {} }) {
       transcript: [...transcript],
       staging: { phase: staging.phase },
       ...(actState ? { acts: actsView(turn) } : {}),
+      ...(sceneState ? { scene: sceneView(sceneState) } : {}),
       ...(proofDebt
         ? { proofDebt: runtimeMonitor ? runtimeMonitor.proofDebtTutorView(proofDebt) : tutorProofDebtView(proofDebt) }
         : {}),
@@ -529,6 +617,8 @@ export async function runDrama({ world, roles, options = {} }) {
   while (turn < turnLimit && !endedBy) {
     turn += 1;
     const releasedThisTurn = [];
+    openSceneForTurn(turn, turn === 1 ? 'opening' : 'continuation');
+    const currentSceneMeta = sceneMeta(sceneState);
 
     // --- director ---
     const directorOut = (await roles.director(omniscientView(turn, 'director'))) || {};
@@ -590,6 +680,7 @@ export async function runDrama({ world, roles, options = {} }) {
         release: directorOut.release || null,
         phase: staging.phase && staging.phase.turn === turn ? { ...staging.phase } : null,
         ...(actState ? { act: directorOut.act || null } : {}),
+        ...(currentSceneMeta ? { scene: currentSceneMeta } : {}),
       },
     });
 
@@ -634,6 +725,8 @@ export async function runDrama({ world, roles, options = {} }) {
         ...(tutorOut.plotAudit ? { plotAudit: tutorOut.plotAudit } : {}),
         ...(tutorOut.throughline ? { throughline: tutorOut.throughline } : {}),
         ...(tutorOut.proofDebt ? { proofDebt: tutorOut.proofDebt } : {}),
+        ...(tutorOut.rhetoricalPolicy ? { rhetoricalPolicy: tutorOut.rhetoricalPolicy } : {}),
+        ...(currentSceneMeta ? { scene: currentSceneMeta } : {}),
       },
     });
 
@@ -720,6 +813,8 @@ export async function runDrama({ world, roles, options = {} }) {
     }
 
     // --- learner ---
+    const dBeforeLearner = derivationDistance(world, validGroundedFacts());
+    const groundedBeforeLearner = validGroundedFacts().length;
     const learnerOut = (await roles.learner(learnerView(turn, releasedThisTurn))) || {};
     for (const fact of learnerOut.retract || []) {
       const key = factKey(fact);
@@ -811,6 +906,8 @@ export async function runDrama({ world, roles, options = {} }) {
         deriveOutcomes,
         hypothesis: learnerOut.hypothesis || null,
         asserts: learnerOut.asserts || null,
+        exchangeType: learnerOut.exchangeType || null,
+        ...(currentSceneMeta ? { scene: currentSceneMeta } : {}),
       },
     });
 
@@ -828,6 +925,22 @@ export async function runDrama({ world, roles, options = {} }) {
     // strict v1 byte-identity); decay-off rows are untouched.
     const F = corruption ? theoryFidelity() : null;
     trajectory.push({ turn, D, forced, groundedCount: valid.length, ...(corruption ? { F } : {}) });
+    let sceneExchange = null;
+    if (sceneConfig && sceneState) {
+      sceneExchange = classifyLearnerExchange({
+        dialogue: learnerOut.dialogue || '',
+        adopt: learnerOut.adopt || [],
+        retract: learnerOut.retract || [],
+        deriveOutcomes,
+        hypothesis: learnerOut.hypothesis || null,
+        asserts: learnerOut.asserts || null,
+        dBefore: dBeforeLearner,
+        dAfter: D,
+        groundedBefore: groundedBeforeLearner,
+        groundedAfter: valid.length,
+      });
+      transcript[transcript.length - 1].meta.exchange = sceneExchange;
+    }
 
     for (const [a, b] of world.incompatible) {
       const cl = closure(valid, world.rules).facts;
@@ -868,6 +981,21 @@ export async function runDrama({ world, roles, options = {} }) {
       !events.some((e) => e.type === 'unstaged_recognition')
     ) {
       events.push({ turn, type: 'unstaged_recognition', detail: 'forced, not asserted' });
+    }
+
+    let closedScene = null;
+    if (sceneConfig && sceneState && sceneExchange) {
+      const updated = updateScene(sceneState, sceneExchange, { turn, dNow: D, forced, endedBy, config: sceneConfig });
+      sceneState = updated.scene;
+      if (updated.closed) {
+        closedScene = updated.closed;
+        sceneRows.push(closedScene);
+        events.push({
+          turn,
+          type: 'scene_close',
+          detail: `scene ${closedScene.index} closed: ${closedScene.status} (${closedScene.closeReason})`,
+        });
+      }
     }
 
     // --- stall detection ---
@@ -948,6 +1076,7 @@ export async function runDrama({ world, roles, options = {} }) {
       turnCap: world.turnCap,
       D,
       forced,
+      lines: transcript.filter((entry) => entry.turn === turn),
       released: [...releasedThisTurn],
       adopted: (learnerOut.adopt || []).length,
       retracted: (learnerOut.retract || []).length,
@@ -955,6 +1084,20 @@ export async function runDrama({ world, roles, options = {} }) {
       overreached: deriveOutcomes.filter((o) => o.status === 'overreach').length,
       hypothesis: Boolean(learnerOut.hypothesis),
       asserted: Boolean(learnerOut.asserts),
+      ...(sceneConfig
+        ? {
+            exchange: sceneExchange,
+            scene: sceneState ? sceneView(sceneState) : null,
+            closedScene: closedScene
+              ? {
+                  index: closedScene.index,
+                  status: closedScene.status,
+                  closeReason: closedScene.closeReason,
+                  turns: [closedScene.startTurn, closedScene.endTurn],
+                }
+              : null,
+          }
+        : {}),
       intervened: Boolean(tutorOut.deliberation?.intervened),
       phase: staging.phase ? { ...staging.phase } : null,
       events: events.filter((e) => e.turn === turn).map(({ type, detail }) => ({ type, detail })),
@@ -971,6 +1114,18 @@ export async function runDrama({ world, roles, options = {} }) {
       ...(actState ? { act: { index: actState.index, startTurn: actState.startTurn } } : {}),
       endedBy,
     });
+  }
+
+  // Close any open scene after the formal loop stops. A scene can remain open
+  // when the turn cap, a leak, or an external maxTurns replay boundary cuts
+  // through the exchange budget.
+  if (sceneState) {
+    sceneState.endTurn = turn;
+    sceneState.dEnd = trajectory[trajectory.length - 1]?.D ?? sceneState.dStart;
+    sceneState.status = endedBy ? 'failed' : 'run_end';
+    sceneState.closeReason = endedBy ? `run ended: ${endedBy}` : 'run ended before the scene budget closed';
+    sceneRows.push({ ...sceneState, exchanges: sceneState.exchanges.map((e) => ({ ...e })) });
+    sceneState = null;
   }
 
   // Close the final open act at the last turn played (stage v2).
@@ -1027,6 +1182,7 @@ export async function runDrama({ world, roles, options = {} }) {
       availability,
       frontierFinal: computeFrontier(turn),
     },
+    ...(sceneRows.length ? { scenes: sceneRows } : {}),
     ...(actState ? { acts: actState.history } : {}),
     ...(reconstructionRows.length ? { reconstruction: reconstructionRows } : {}),
     ...(plotRows.length || plotAuditRows.length || throughlineRows.length

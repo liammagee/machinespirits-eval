@@ -162,6 +162,11 @@ test('learner prompts never carry a concealed token before its release turn', as
   const result = await runDrama({ world, roles: llmRoles(client) });
   // One learner call per turn (mock JSON always parses — no repair calls).
   assert.equal(learnerPrompts.length, result.turnsPlayed);
+  for (const prompt of learnerPrompts) {
+    assert.ok(!prompt.includes('formally:'), 'learner prompt should not expose formal rule notation');
+    assert.ok(!prompt.includes('question pattern'), 'learner prompt should not expose the symbolic question pattern');
+    assert.ok(!prompt.includes('"derives"'), 'learner prompt should not ask the model for formal derive arrays');
+  }
   for (const token of CONCEALED_TOKENS) {
     // lawful === Infinity: the token lives only in authored-but-unscheduled
     // premises (e.g. the ink branch's "galley") — it must NEVER arrive.

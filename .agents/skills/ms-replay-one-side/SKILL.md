@@ -1,11 +1,13 @@
 ---
 name: ms-replay-one-side
-description: Counterfactual replay of a guided-discovery dialogue — freeze one side's turns + the scene from a source run and regenerate the OTHER side K times via a chosen bridge, then graded-score the result. Isolates learner-variance from scene-variance (the thing fresh re-runs confound). Use to ask "is this near-miss a learner draw or a structural cap?".
+description: Counterfactual replay of a guided-discovery dialogue — freeze one side's turns + the scene from a source run and regenerate the OTHER side K times via a chosen bridge, then graded-score the result. Isolates learner-variance from scene-variance (the thing fresh re-runs confound). Use to ask "is this near-miss a learner draw or a structural cap?" For dramatic derivation selector/pacing failures where the goal is to preserve turns 1..N and resume live from a failure turn, use `ms-derivation-episode-replay` instead.
 argument-hint: "<run-dir> <arm> [--side learner] [--repeats K] [--generator api|Codex|mock] [--model sonnet]"
 allowed-tools: Bash, Read
 ---
 
 Run a one-side replay and read its grade distribution. The point: a fresh re-run gives a *new scene* each time, so it can't separate "the learner drew badly" from "the scene lacked the evidence." This holds the scene + the frozen side fixed and varies only the regenerated side.
+
+If the source is a dramatic derivation run under `exports/dramatic-derivation/loop/<label>/` and the user wants to preserve the full prefix through a failure turn, stop here and use `ms-derivation-episode-replay`. This skill is for the older one-side guided-discovery replay harness, not the derivation episode CLI.
 
 Parse `$ARGUMENTS`: a source run dir (e.g. `exports/oedipus-d5-full/run3`), an arm (`socratic`/`none`/`reveal`), and optional `--side` (default `learner`), `--repeats` (default 8), `--generator` (default `api`), `--model` (default `sonnet`). Default spec: `config/poetics-calibration/oedipus-pilot-v2.yaml`; infer `--scenario` from the run (the D_OED* id in the key files) or ask.
 

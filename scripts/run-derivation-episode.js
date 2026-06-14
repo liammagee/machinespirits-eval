@@ -9,7 +9,8 @@
  *
  * Conditions are INHERITED from the source run's diagnosis.json — script,
  * dials, dramaturgy, superego, stall-watch, learner voice, counsel, decay,
- * decay visibility, acts, reconstruct — and only the flags you pass override them. The world is never overridable:
+ * decay visibility, acts, reconstruct, release/guard dials, and plot/throughline
+ * dials — and only the flags you pass override them. The world is never overridable:
  * replay into a different world is undefined. The backend mode never
  * inherits: episodes are mock unless --real is given (a --from <real run>
  * must not silently spawn paid calls).
@@ -32,6 +33,17 @@
  *                                       normalizeActsConfig; changing it
  *                                       reshapes the prefix from turn 1)
  *     [--reconstruct on|off]           (adapt-ON arm dial; requires acts mode)
+ *     [--confront on|off]
+ *     [--repair-clause on|off]
+ *     [--release-authority on|off]
+ *     [--pacing-guard on|off]
+ *     [--pacing-guard-visible on|off]
+ *     [--pacing-guard-selective on|off]
+ *     [--pacing-guard-selective-v1 on|off]
+ *     [--pacing-guard-selective-v2 on|off]
+ *     [--proof-debt-guard on|off]
+ *     [--compiled-guard on|off]
+ *     [--plot on|off] [--throughline on|off]
  *     [--critic auto|real|mock|off]    (default off — episodes are scratch
  *                                       iterations; promote keepers to a full
  *                                       loop run for the archived notice)
@@ -73,6 +85,11 @@ import {
   renderTranscript,
   runCritic,
   commentaryFileMd,
+  buildWorldIR,
+  compileGuardSpec,
+  selectGuardRepresentation,
+  selectGuardRepresentationV1,
+  selectGuardRepresentationV2,
 } from '../services/dramaticDerivation/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -89,6 +106,100 @@ function flag(name) {
 
 function timestamp() {
   return new Date().toISOString().replace(/[-:]/g, '').replace(/T/, '-').replace(/\..+$/, '');
+}
+
+function atomicWriteJson(file, value) {
+  const tmp = `${file}.${process.pid}.tmp`;
+  fs.writeFileSync(tmp, `${JSON.stringify(value, null, 2)}\n`);
+  fs.renameSync(tmp, file);
+}
+
+function factLabel(fact) {
+  return Array.isArray(fact) ? fact.join(' ') : String(fact || '');
+}
+
+function liveTurnRecord(summary) {
+  const line = (entry) => ({
+    role: entry.role,
+    text: entry.text || '',
+    ...(entry.meta ? { meta: entry.meta } : {}),
+  });
+  return {
+    turn: summary.turn,
+    turnCap: summary.turnCap,
+    D: summary.D,
+    forced: summary.forced,
+    released: (summary.released || []).map(factLabel),
+    adopted: summary.adopted || 0,
+    retracted: summary.retracted || 0,
+    derived: summary.derived || 0,
+    overreached: summary.overreached || 0,
+    hypothesis: Boolean(summary.hypothesis),
+    asserted: Boolean(summary.asserted),
+    intervened: Boolean(summary.intervened),
+    phase: summary.phase || null,
+    act: summary.act || null,
+    events: summary.events || [],
+    lines: (summary.lines || []).map(line),
+    ...(summary.decayedNow?.length ? { decayedNow: summary.decayedNow } : {}),
+    ...(summary.repairedNow?.length ? { repairedNow: summary.repairedNow } : {}),
+    ...(summary.decayActive !== undefined ? { decayActive: summary.decayActive } : {}),
+    ...(typeof summary.F === 'number' ? { F: summary.F } : {}),
+    ...(summary.endedBy ? { endedBy: summary.endedBy } : {}),
+  };
+}
+
+function createLiveRunPublisher(outDir, initial) {
+  const livePath = path.join(outDir, 'live.json');
+  const now = new Date().toISOString();
+  const state = {
+    schema: 'dramatic-derivation.live.v1',
+    status: 'running',
+    startedAt: now,
+    updatedAt: now,
+    turns: [],
+    ...initial,
+  };
+  const write = () => {
+    fs.mkdirSync(outDir, { recursive: true });
+    state.updatedAt = new Date().toISOString();
+    atomicWriteJson(livePath, state);
+  };
+  return {
+    file: livePath,
+    start() {
+      write();
+    },
+    turn(summary) {
+      const record = liveTurnRecord(summary);
+      state.status = 'running';
+      state.latest = record;
+      state.turns = state.turns.filter((t) => t.turn !== record.turn);
+      state.turns.push(record);
+      state.turns.sort((a, b) => a.turn - b.turn);
+      write();
+    },
+    finalizing() {
+      state.status = 'finalizing';
+      write();
+    },
+    complete({ result, diagnosis }) {
+      state.status = 'complete';
+      state.verdict = result.verdict;
+      state.turnsPlayed = result.turnsPlayed;
+      state.firstForcedTurn = result.firstForcedTurn;
+      state.assertedGroundedTurn = result.assertedGroundedTurn;
+      state.elapsedMs = diagnosis.elapsedMs;
+      state.usage = diagnosis.usage;
+      state.episode = diagnosis.episode;
+      write();
+    },
+    fail(error) {
+      state.status = 'failed';
+      state.error = error?.stack || error?.message || String(error);
+      write();
+    },
+  };
 }
 
 /** on|off|inherit tri-state for booleans whose default is the source run's value. */
@@ -234,6 +345,123 @@ async function main() {
     decayVisibilityArg ?? (acts && inheritedVisibility === 'told' ? 'conduct' : inheritedVisibility),
     inheritedVisibility,
   );
+  const confront = track('confront', triState('confront', Boolean(srcDiag.confront)), Boolean(srcDiag.confront));
+  if (confront && !superego) {
+    console.error('--confront on requires the superego (inherit it or pass --superego on)');
+    process.exit(1);
+  }
+  if (confront && !acts) {
+    console.error('--confront on requires acts mode (inherit it from an acts source or pass --acts)');
+    process.exit(1);
+  }
+  if (confront && stallWatch) {
+    console.error('--confront on and --stall-watch on cannot combine in this derivation engine');
+    process.exit(1);
+  }
+  const repairClause = track(
+    'repair-clause',
+    triState('repair-clause', Boolean(srcDiag.repairClause)),
+    Boolean(srcDiag.repairClause),
+  );
+  if (repairClause && !confront) {
+    console.error('--repair-clause on requires --confront on');
+    process.exit(1);
+  }
+  if (repairClause && !decay) {
+    console.error('--repair-clause on requires decay (inherit it or pass --decay)');
+    process.exit(1);
+  }
+  const releaseAuthority = track(
+    'release-authority',
+    triState('release-authority', Boolean(srcDiag.releaseAuthority)),
+    Boolean(srcDiag.releaseAuthority),
+  );
+  const inheritedSelectorActive = Boolean(
+    srcDiag.pacingGuardSelector ||
+      srcDiag.pacingGuardSelective ||
+      srcDiag.pacingGuardSelectiveV1 ||
+      srcDiag.pacingGuardSelectiveV2,
+  );
+  const inheritedExplicitPacingGuard = Boolean(srcDiag.pacingGuard) && !inheritedSelectorActive;
+  const inheritedExplicitVisibleGuard = Boolean(srcDiag.visibleGuard) && !inheritedSelectorActive;
+  const requestedPacingGuard = track(
+    'pacing-guard',
+    triState('pacing-guard', inheritedExplicitPacingGuard),
+    inheritedExplicitPacingGuard,
+  );
+  const requestedVisibleGuard = track(
+    'pacing-guard-visible',
+    triState('pacing-guard-visible', inheritedExplicitVisibleGuard),
+    inheritedExplicitVisibleGuard,
+  );
+  const pacingGuardSelective = track(
+    'pacing-guard-selective',
+    triState('pacing-guard-selective', Boolean(srcDiag.pacingGuardSelective)),
+    Boolean(srcDiag.pacingGuardSelective),
+  );
+  const pacingGuardSelectiveV1 = track(
+    'pacing-guard-selective-v1',
+    triState('pacing-guard-selective-v1', Boolean(srcDiag.pacingGuardSelectiveV1)),
+    Boolean(srcDiag.pacingGuardSelectiveV1),
+  );
+  const pacingGuardSelectiveV2 = track(
+    'pacing-guard-selective-v2',
+    triState('pacing-guard-selective-v2', Boolean(srcDiag.pacingGuardSelectiveV2)),
+    Boolean(srcDiag.pacingGuardSelectiveV2),
+  );
+  const selectorCount = [pacingGuardSelective, pacingGuardSelectiveV1, pacingGuardSelectiveV2].filter(Boolean).length;
+  if ((requestedPacingGuard || requestedVisibleGuard || selectorCount > 0) && !releaseAuthority) {
+    console.error('pacing guards and selector arms require --release-authority on');
+    process.exit(1);
+  }
+  if (requestedPacingGuard && requestedVisibleGuard) {
+    console.error('--pacing-guard on and --pacing-guard-visible on are mutually exclusive');
+    process.exit(1);
+  }
+  if (selectorCount > 1 || (selectorCount && (requestedPacingGuard || requestedVisibleGuard))) {
+    console.error('choose exactly one pacing representation: explicit H, explicit V, or one selector version');
+    process.exit(1);
+  }
+  const proofDebtGuard = track(
+    'proof-debt-guard',
+    triState('proof-debt-guard', Boolean(srcDiag.proofDebtGuard)),
+    Boolean(srcDiag.proofDebtGuard),
+  );
+  if (proofDebtGuard && !repairClause) {
+    console.error('--proof-debt-guard on requires --repair-clause on');
+    process.exit(1);
+  }
+  const compiledGuard = track(
+    'compiled-guard',
+    triState('compiled-guard', Boolean(srcDiag.compiledGuard)),
+    Boolean(srcDiag.compiledGuard),
+  );
+  if (compiledGuard && selectorCount) {
+    console.error('--compiled-guard on is not combined with selector arms in this selector slice');
+    process.exit(1);
+  }
+  if (compiledGuard && !requestedPacingGuard && !proofDebtGuard) {
+    console.error('--compiled-guard on requires explicit --pacing-guard on and/or --proof-debt-guard on');
+    process.exit(1);
+  }
+  const plot = track('plot', triState('plot', Boolean(srcDiag.plotDial)), Boolean(srcDiag.plotDial));
+  if (plot && !acts) {
+    console.error('--plot on requires acts mode');
+    process.exit(1);
+  }
+  if (plot && !superego) {
+    console.error('--plot on requires the superego');
+    process.exit(1);
+  }
+  const throughline = track(
+    'throughline',
+    triState('throughline', Boolean(srcDiag.throughlineDial)),
+    Boolean(srcDiag.throughlineDial),
+  );
+  if (throughline && !plot) {
+    console.error('--throughline on requires --plot on');
+    process.exit(1);
+  }
   // The counsel paragraph the source run folded into its charters is part of
   // its conditions — inherit the stored text verbatim (no re-resolution).
   const counsel = srcDiag.criticFeedback?.paragraph ?? null;
@@ -256,6 +484,18 @@ async function main() {
   }
 
   const script = fs.readFileSync(scriptPath, 'utf8');
+  const worldIR =
+    compiledGuard || pacingGuardSelective || pacingGuardSelectiveV1 || pacingGuardSelectiveV2 ? buildWorldIR(world) : null;
+  const pacingGuardSelector = pacingGuardSelective
+    ? selectGuardRepresentation(worldIR)
+    : pacingGuardSelectiveV1
+      ? selectGuardRepresentationV1(worldIR, { decayEnabled: Boolean(decay) })
+      : pacingGuardSelectiveV2
+        ? selectGuardRepresentationV2(worldIR, { decayEnabled: Boolean(decay) })
+        : null;
+  const pacingGuard = pacingGuardSelector ? pacingGuardSelector.selected === 'hidden' : requestedPacingGuard;
+  const visibleGuard = pacingGuardSelector ? pacingGuardSelector.selected === 'visible' : requestedVisibleGuard;
+  const guardSpec = compiledGuard ? compileGuardSpec(world, worldIR || buildWorldIR(world)) : null;
   const label = arg('label', `${src.label}-t${fromTurn}-${mode}-${timestamp()}`);
   const outDir = path.join(path.resolve(ROOT, arg('out', 'exports/dramatic-derivation/episodes')), label);
   const maxTurns = fromTurn - 1 + window;
@@ -264,6 +504,46 @@ async function main() {
   const targets = Object.fromEntries(
     ROLE_NAMES.map((r) => [r, mode === 'real' ? resolveTarget(r) : { provider: 'mock', model: 'mock' }]),
   );
+  const livePublisher = createLiveRunPublisher(outDir, {
+    label,
+    kind: 'episode',
+    note,
+    source: { label: src.label, dir: path.relative(ROOT, src.dir) },
+    fromTurn,
+    window,
+    maxTurns,
+    worldId: world.id,
+    worldTitle: world.title,
+    worldPath: path.relative(ROOT, worldPath),
+    scriptPath: path.relative(ROOT, scriptPath),
+    backend: { mode, roles: targets },
+    turnCap: world.turnCap,
+    dials,
+    flags: {
+      dramaturgy,
+      tutorSuperego: superego,
+      tutorStallWatch: stallWatch,
+      decay: decay || null,
+      decayVisibility,
+      actsConfig: acts || null,
+      reconstruct,
+      confront,
+      repairClause,
+      releaseAuthority,
+      pacingGuard,
+      pacingGuardSelective,
+      pacingGuardSelectiveV1,
+      pacingGuardSelectiveV2,
+      pacingGuardSelector,
+      visibleGuard,
+      proofDebtGuard,
+      compiledGuard,
+      plotDial: plot,
+      throughlineDial: throughline,
+      overrides,
+    },
+  });
+  livePublisher.start();
   console.log(`episode ${src.label} → live from turn ${fromTurn}, window ${window} (stops after turn ${maxTurns})`);
   console.log(`world   ${world.id} (lint PASS)`);
   console.log(`script  ${path.relative(ROOT, scriptPath)}`);
@@ -284,13 +564,24 @@ async function main() {
       `acts    ON — min ${acts.minActTurns} · max ${acts.maxActTurns} turns per act${reconstruct ? ' · reconstruct ON (per-turn tutor theory, arm-internal)' : ''}`,
     );
   }
+  if (releaseAuthority) console.log('tutor   RELEASE AUTHORITY ON — inherited/episode guard window active');
+  if (pacingGuardSelector) {
+    console.log(
+      `tutor   SELECTIVE PACING ON (${pacingGuardSelector.schema}) — ${pacingGuardSelector.gate || 'selector'} -> ${pacingGuardSelector.selectedFlag}`,
+    );
+  }
+  if (pacingGuard) console.log('tutor   PACING GUARD ON');
+  if (visibleGuard) console.log('tutor   VISIBLE PACING GUARD ON');
+  if (proofDebtGuard) console.log('tutor   PROOF-DEBT GUARD ON');
+  if (guardSpec) console.log(`guard   COMPILED — WorldIR -> GuardSpec (${guardSpec.world.id})`);
+  if (plot) console.log(`tutor   PLOT ON${throughline ? ' + THROUGHLINE ON' : ''}`);
   console.log(
     `conds   ${overrides.length ? `overridden: ${overrides.join(', ')} — all else inherited` : 'all inherited from source'}`,
   );
 
   const client = makeLlmClient({ mode });
   const actsMode = Boolean(acts);
-  const live = {
+  const liveRoles = {
     director: makeLlmDirector(world, client, { dials, dramaturgy, counsel, actsMode }),
     tutor: makeLlmTutor(world, client, {
       script,
@@ -301,13 +592,23 @@ async function main() {
       decayVisibility,
       actsMode,
       reconstruct,
+      confront,
+      repairClause,
+      releaseAuthority,
+      pacingGuard,
+      visibleGuard,
+      proofDebtGuard,
+      guardSpec,
+      plot,
+      throughline,
     }),
     learner: makeLlmLearner({ setting: world.setting, voice: learnerVoice || world.learnerVoice, client }),
   };
-  const roles = makeReplayRoles({ recorded: src.result, fromTurn, live });
+  const roles = makeReplayRoles({ recorded: src.result, fromTurn, live: liveRoles });
 
   const onTurn = (s) => {
     if (s.turn < fromTurn) return; // replayed turns are silent — verified after the run instead
+    livePublisher.turn(s);
     const bits = [`  t${String(s.turn).padStart(2, '0')}/${s.turnCap}`, `D=${s.D}${s.forced ? ' FORCED' : ''}`];
     if (s.released.length) bits.push(`▲ ${s.released.map((f) => f.join(' ')).join('; ')}`);
     if (s.adopted) bits.push(`+${s.adopted} adopted`);
@@ -323,11 +624,26 @@ async function main() {
   };
 
   const started = Date.now();
-  const result = await runDrama({
-    world,
-    roles,
-    options: { onTurn, maxTurns, ...(decay ? { decay } : {}), ...(acts ? { acts } : {}) },
-  });
+  let result;
+  try {
+    result = await runDrama({
+      world,
+      roles,
+      options: {
+        onTurn,
+        maxTurns,
+        logicProjection: true,
+        ...(decay ? { decay } : {}),
+        ...(acts ? { acts } : {}),
+        ...(proofDebtGuard ? { proofDebtGuard } : {}),
+        ...(guardSpec ? { guardSpec } : {}),
+      },
+    });
+    livePublisher.finalizing();
+  } catch (err) {
+    livePublisher.fail(err);
+    throw err;
+  }
   const elapsedMs = Date.now() - started;
   const usage = client.usage();
 
@@ -403,6 +719,28 @@ async function main() {
     decayVisibility,
     actsConfig: acts || null,
     reconstruct,
+    confront,
+    releaseAuthority,
+    pacingGuard,
+    pacingGuardSelective,
+    pacingGuardSelectiveV1,
+    pacingGuardSelectiveV2,
+    pacingGuardSelector,
+    visibleGuard,
+    proofDebtGuard,
+    compiledGuard,
+    guardSpec: guardSpec
+      ? {
+          schema: guardSpec.schema,
+          worldId: guardSpec.world.id,
+          hiddenPacingPremises: guardSpec.guards.hidden_pacing.releaseCorridors.length,
+          proofDebtTutorView: guardSpec.guards.proof_debt.exposeToTutor,
+          onlineLlmGuardAuthoring: guardSpec.compiler.onlineLlmGuardAuthoring,
+        }
+      : null,
+    repairClause,
+    plotDial: plot,
+    throughlineDial: throughline,
     elapsedMs,
     usage,
     episode,
@@ -413,6 +751,7 @@ async function main() {
   fs.writeFileSync(path.join(outDir, 'diagnosis.json'), `${JSON.stringify(diagnosis, null, 2)}\n`);
   fs.writeFileSync(path.join(outDir, 'result.json'), `${JSON.stringify(result, null, 2)}\n`);
   fs.writeFileSync(path.join(outDir, 'episode.json'), `${JSON.stringify(episode, null, 2)}\n`);
+  livePublisher.complete({ result, diagnosis });
 
   let commentaryEmbed = null;
   if (criticMode !== 'off') {

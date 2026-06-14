@@ -93,6 +93,15 @@
  *                                       JSON keys: minActTurns, maxActTurns.
  *                                       Design note: notes/poetics/2026-06-11-
  *                                       act-bounded-learner-design.md)
+ *     [--scene-mode '<json>'|on|off]   (scene/exchange overlay, new regime.
+ *                                       Scenes carry local proof obligations;
+ *                                       turns become exchanges inside a scene
+ *                                       and may be phatic, confused, repair-
+ *                                       seeking, or substantive. Does not
+ *                                       overwrite the formal turn loop.
+ *                                       JSON keys: maxExchanges,
+ *                                       maxPhaticExchanges,
+ *                                       closeOnDDecrease, closeOnConfusion.)
  *     [--reconstruct]                  (adapt-ON arm dial; requires --acts.
  *                                       The tutor commits a per-turn theory of
  *                                       the learner's store — believed_held/
@@ -197,6 +206,14 @@
  *                                       run-end audit reckons the throughline
  *                                       clause by clause. Design: same note
  *                                       §11 pre-run amendment, 2026-06-12)
+ *     [--rhetorical-policy '<json>']   (advisory shallow map from visible
+ *                                       proof/dialogue pressure to a figure
+ *                                       distribution and selected move. JSON:
+ *                                       mode deterministic|sample, seed,
+ *                                       temperature. Pair with --scene-mode
+ *                                       for phatic/scene calibration.)
+ *     [--rhetorical-policy-stochastic] (shortcut: same policy, mode=sample
+ *                                       with fixed seed unless overridden.)
  *     [--critic auto|real|mock|off]    (post-run critic's notice; auto = follow
  *                                       the run mode — real dramas get the
  *                                       Fable notice, mock dramas the
@@ -225,6 +242,8 @@ import {
   runDrama,
   normalizeDecayConfig,
   normalizeActsConfig,
+  normalizeSceneConfig,
+  normalizeRhetoricalPolicyConfig,
   makeLlmClient,
   llmMode,
   resolveTarget,
@@ -262,6 +281,103 @@ function flag(name) {
 
 function timestamp() {
   return new Date().toISOString().replace(/[-:]/g, '').replace(/T/, '-').replace(/\..+$/, '');
+}
+
+function atomicWriteJson(file, value) {
+  const tmp = `${file}.${process.pid}.tmp`;
+  fs.writeFileSync(tmp, `${JSON.stringify(value, null, 2)}\n`);
+  fs.renameSync(tmp, file);
+}
+
+function factLabel(fact) {
+  return Array.isArray(fact) ? fact.join(' ') : String(fact || '');
+}
+
+function liveTurnRecord(summary) {
+  const publicLine = (entry) => entry.role !== 'director' || entry.meta?.release || entry.meta?.phase?.name;
+  const line = (entry) => ({
+    role: entry.role === 'director' ? 'stage' : entry.role,
+    text: entry.text || '',
+    ...(entry.meta ? { meta: entry.meta } : {}),
+  });
+  return {
+    turn: summary.turn,
+    turnCap: summary.turnCap,
+    D: summary.D,
+    forced: summary.forced,
+    released: (summary.released || []).map(factLabel),
+    adopted: summary.adopted || 0,
+    retracted: summary.retracted || 0,
+    derived: summary.derived || 0,
+    overreached: summary.overreached || 0,
+    hypothesis: Boolean(summary.hypothesis),
+    asserted: Boolean(summary.asserted),
+    intervened: Boolean(summary.intervened),
+    phase: summary.phase || null,
+    act: summary.act || null,
+    scene: summary.scene || null,
+    closedScene: summary.closedScene || null,
+    exchange: summary.exchange || null,
+    events: summary.events || [],
+    lines: (summary.lines || []).filter(publicLine).map(line),
+    ...(summary.decayedNow?.length ? { decayedNow: summary.decayedNow } : {}),
+    ...(summary.repairedNow?.length ? { repairedNow: summary.repairedNow } : {}),
+    ...(summary.decayActive !== undefined ? { decayActive: summary.decayActive } : {}),
+    ...(typeof summary.F === 'number' ? { F: summary.F } : {}),
+    ...(summary.endedBy ? { endedBy: summary.endedBy } : {}),
+  };
+}
+
+function createLiveRunPublisher(outDir, initial) {
+  const livePath = path.join(outDir, 'live.json');
+  const now = new Date().toISOString();
+  const state = {
+    schema: 'dramatic-derivation.live.v1',
+    status: 'running',
+    startedAt: now,
+    updatedAt: now,
+    turns: [],
+    ...initial,
+  };
+  const write = () => {
+    fs.mkdirSync(outDir, { recursive: true });
+    state.updatedAt = new Date().toISOString();
+    atomicWriteJson(livePath, state);
+  };
+  return {
+    file: livePath,
+    start() {
+      write();
+    },
+    turn(summary) {
+      const record = liveTurnRecord(summary);
+      state.status = 'running';
+      state.latest = record;
+      state.turns = state.turns.filter((t) => t.turn !== record.turn);
+      state.turns.push(record);
+      state.turns.sort((a, b) => a.turn - b.turn);
+      write();
+    },
+    finalizing() {
+      state.status = 'finalizing';
+      write();
+    },
+    complete({ result, diagnosis }) {
+      state.status = 'complete';
+      state.verdict = result.verdict;
+      state.turnsPlayed = result.turnsPlayed;
+      state.firstForcedTurn = result.firstForcedTurn;
+      state.assertedGroundedTurn = result.assertedGroundedTurn;
+      state.elapsedMs = diagnosis.elapsedMs;
+      state.usage = diagnosis.usage;
+      write();
+    },
+    fail(error) {
+      state.status = 'failed';
+      state.error = error?.stack || error?.message || String(error);
+      write();
+    },
+  };
 }
 
 /**
@@ -349,6 +465,11 @@ async function main() {
   // act-boundary briefs) and the adapt-ON arm dial (reconstructing tutor).
   const actsArg = arg('acts', null);
   const acts = actsArg && actsArg !== 'off' ? normalizeActsConfig(actsArg) : null;
+  const sceneArg = arg('scene-mode', null);
+  const sceneMode =
+    flag('scene-mode') && sceneArg !== 'off'
+      ? normalizeSceneConfig(sceneArg && sceneArg !== 'on' ? sceneArg : true)
+      : null;
   const reconstruct = flag('reconstruct');
   if (reconstruct && !acts) {
     console.error(
@@ -503,6 +624,16 @@ async function main() {
     console.error('--throughline requires --plot (the arc verdict rides the act-close audit)');
     process.exit(1);
   }
+  const rhetoricalPolicyArg = arg('rhetorical-policy', null);
+  const rhetoricalPolicyRequested = flag('rhetorical-policy') || flag('rhetorical-policy-stochastic');
+  let rhetoricalPolicy = rhetoricalPolicyRequested
+    ? normalizeRhetoricalPolicyConfig(
+        rhetoricalPolicyArg && rhetoricalPolicyArg !== 'on' ? rhetoricalPolicyArg : true,
+      )
+    : null;
+  if (rhetoricalPolicy && flag('rhetorical-policy-stochastic')) {
+    rhetoricalPolicy = { ...rhetoricalPolicy, mode: 'sample' };
+  }
   const group = arg('group', null);
   const criticFeedback = arg('critic-feedback', 'off');
   const criticArg = arg('critic', 'auto');
@@ -547,6 +678,43 @@ async function main() {
   const targets = Object.fromEntries(
     ROLE_NAMES.map((r) => [r, mode === 'real' ? resolveTarget(r) : { provider: 'mock', model: 'mock' }]),
   );
+  const live = createLiveRunPublisher(outDir, {
+    label,
+    group,
+    note,
+    worldId: world.id,
+    worldTitle: world.title,
+    worldPath: path.relative(ROOT, worldPath),
+    scriptPath: path.relative(ROOT, scriptPath),
+    backend: { mode, roles: targets },
+    turnCap: world.turnCap,
+    dials,
+    flags: {
+      dramaturgy,
+      tutorSuperego: superego,
+      tutorStallWatch: stallWatch,
+      decay: decay || null,
+      decayVisibility,
+      actsConfig: acts || null,
+      sceneMode: sceneMode || null,
+      reconstruct,
+      confront,
+      repairClause,
+      releaseAuthority,
+      pacingGuard,
+      pacingGuardSelective,
+      pacingGuardSelectiveV1,
+      pacingGuardSelectiveV2,
+      pacingGuardSelector,
+      visibleGuard,
+      proofDebtGuard,
+      compiledGuard,
+      plotDial: plot,
+      throughlineDial: throughline,
+      rhetoricalPolicy: rhetoricalPolicy || null,
+    },
+  });
+  live.start();
   const showTarget = (t) => `${t.provider}/${t.model || '(cli default)'}`;
   console.log(`world   ${world.id} (lint PASS, S first derivable at release-turn ${lint.firstEntailedTurn})`);
   console.log(`script  ${path.relative(ROOT, scriptPath)}`);
@@ -583,6 +751,11 @@ async function main() {
   if (acts) {
     console.log(
       `acts    ON — director judges the work: min ${acts.minActTurns} · max ${acts.maxActTurns} turns per act; the learner is bounded to the current act (its theory store is the only carry-over)`,
+    );
+  }
+  if (sceneMode) {
+    console.log(
+      `scenes  ON — scene/exchange overlay: max ${sceneMode.maxExchanges} exchanges, phatic budget ${sceneMode.maxPhaticExchanges}; phatic/confusion lines are recorded as exchanges`,
     );
   }
   if (reconstruct) {
@@ -640,6 +813,11 @@ async function main() {
       'tutor   THROUGHLINE ON — at the first turn the tutor commits a whole-play plan (arc/hold_to_end/risk/salvage) above the act plots; the act-close audit adds an on_arc/off_arc verdict, off_arc binds a revision at the next opening, and the run-end audit reckons the throughline clause by clause',
     );
   }
+  if (rhetoricalPolicy) {
+    console.log(
+      `rhetor  POLICY ON (${rhetoricalPolicy.mode}) — visible-state figure distribution, seed ${rhetoricalPolicy.seed}, temperature ${rhetoricalPolicy.temperature}`,
+    );
+  }
   if (decay) {
     console.log(
       `decay   seed ${decay.seed} · rate ${decay.rate} · grace ${decay.graceTurns} · maxConcurrent ${decay.maxConcurrent} · from turn ${decay.startTurn}${decay.mutateShare ? ` · mutateShare ${decay.mutateShare} (slips may misremember, not just vanish)` : ''}${decay.pool === 'staged' ? ' · pool STAGED (false forms confuse only met-on-stage names)' : ''}`,
@@ -674,16 +852,20 @@ async function main() {
       guardSpec,
       plot,
       throughline,
+      rhetoricalPolicy,
     }),
     learner: makeLlmLearner({ setting: world.setting, voice: learnerVoice || world.learnerVoice, client }),
   };
 
   // One compact line per completed turn — the shell's live pulse.
   const onTurn = (s) => {
+    live.turn(s);
     const bits = [`  t${String(s.turn).padStart(2, '0')}/${s.turnCap}`, `D=${s.D}${s.forced ? ' FORCED' : ''}`];
     if (s.released.length) bits.push(`▲ ${s.released.map((f) => f.join(' ')).join('; ')}`);
     if (s.adopted) bits.push(`+${s.adopted} adopted`);
     if (s.retracted) bits.push(`−${s.retracted} retracted`);
+    if (s.exchange?.type) bits.push(`exchange ${s.exchange.type}`);
+    if (s.closedScene) bits.push(`scene ${s.closedScene.index} ${s.closedScene.status}`);
     if (s.phase && s.phase.turn === s.turn) bits.push(`movement "${s.phase.name}"`);
     if (s.intervened) bits.push('✎ superego');
     if (s.asserted) bits.push('ASSERTS');
@@ -699,18 +881,26 @@ async function main() {
   };
 
   const started = Date.now();
-  const result = await runDrama({
-    world,
-    roles,
-    options: {
-      onTurn,
-      logicProjection: true,
-      ...(decay ? { decay } : {}),
-      ...(acts ? { acts } : {}),
-      ...(proofDebtGuard ? { proofDebtGuard } : {}),
-      ...(guardSpec ? { guardSpec } : {}),
-    },
-  });
+  let result;
+  try {
+    result = await runDrama({
+      world,
+      roles,
+      options: {
+        onTurn,
+        logicProjection: true,
+        ...(sceneMode ? { sceneMode } : {}),
+        ...(decay ? { decay } : {}),
+        ...(acts ? { acts } : {}),
+        ...(proofDebtGuard ? { proofDebtGuard } : {}),
+        ...(guardSpec ? { guardSpec } : {}),
+      },
+    });
+    live.finalizing();
+  } catch (err) {
+    live.fail(err);
+    throw err;
+  }
   const elapsedMs = Date.now() - started;
   const usage = client.usage();
   const diagnosis = {
@@ -732,6 +922,8 @@ async function main() {
     decayVisibility,
     // Stage v2 condition (normalized) + arm dial — null/false on v1 runs.
     actsConfig: acts || null,
+    // Scene/exchange overlay — null on old turn-level runs.
+    sceneMode: sceneMode || null,
     reconstruct,
     // P1 dials — false on every run before 2026-06-11.
     confront,
@@ -766,6 +958,7 @@ async function main() {
     // Two-layer dial (§11 pre-run amendment) — false on every run before
     // 2026-06-12. Same naming rule as plotDial.
     throughlineDial: throughline,
+    rhetoricalPolicy: rhetoricalPolicy || null,
     elapsedMs,
     usage,
     ...diagnose(result, world),
@@ -799,6 +992,7 @@ async function main() {
     path.join(outDir, 'transcript.md'),
     renderTranscript(result, world, { title: `${world.title} — ${label}`, diagnosis, commentary: commentaryEmbed }),
   );
+  live.complete({ result, diagnosis });
 
   console.log('');
   console.log(

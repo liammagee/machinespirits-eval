@@ -1099,6 +1099,46 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   app.get('/favicon.ico', (_req, res) => res.status(204).end());
   app.get('/api/runs', (_req, res) => res.json({ runs: listRuns(db), disciplines: distinctDisciplines(db) }));
   app.get('/api/stats', (_req, res) => res.json({ ...corpusStats(db), replays: listReplayBundles().length }));
+  app.get('/api/derivation/live', (_req, res) => {
+    res.json({ runs: listDerivationLiveRuns({ includeComplete: true }) });
+  });
+  app.get('/api/derivation/live/:label', (req, res) => {
+    const live = readDerivationLive(req.params.label);
+    if (!live) return res.status(404).json({ error: 'live derivation run not found' });
+    return res.json({ run: live });
+  });
+  app.get('/api/derivation/live/:label/events', (req, res) => {
+    const label = req.params.label;
+    const dir = derivationLoopRunDir(label);
+    const livePath = dir ? path.join(dir, 'live.json') : null;
+    if (!livePath || !fs.existsSync(livePath)) return res.status(404).json({ error: 'live derivation run not found' });
+    res.set({
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-store, no-transform',
+      Connection: 'keep-alive',
+    });
+    res.flushHeaders?.();
+    let lastMtime = 0;
+    const send = () => {
+      try {
+        const stat = fs.statSync(livePath);
+        if (stat.mtimeMs === lastMtime) return;
+        lastMtime = stat.mtimeMs;
+        const live = readDerivationLive(label);
+        if (!live) return;
+        res.write(`event: update\ndata: ${JSON.stringify(live)}\n\n`);
+      } catch {
+        res.write(`event: error\ndata: ${JSON.stringify({ error: 'live derivation run disappeared' })}\n\n`);
+      }
+    };
+    send();
+    const timer = setInterval(send, 1000);
+    const keepalive = setInterval(() => res.write(': keepalive\n\n'), 15000);
+    req.on('close', () => {
+      clearInterval(timer);
+      clearInterval(keepalive);
+    });
+  });
   app.get('/api/items', (req, res) => {
     const runIds = String(req.query.runIds || '')
       .split(',')
@@ -1494,9 +1534,13 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
     res.type('html').sendFile(notePath);
   });
   app.get('/derivation', (_req, res) => res.type('html').send(renderDerivationIndexHtml(listDerivationRuns())));
+  app.get('/derivation/live', (_req, res) =>
+    res.type('html').send(renderDerivationLiveIndexHtml(listDerivationLiveRuns({ includeComplete: true }))),
+  );
   app.get('/derivation/:label', (req, res) => {
     const run = readDerivationRun(req.params.label);
     if (!run) return res.status(404).type('text').send('derivation run not found');
+    if (run.liveOnly) return res.type('html').send(renderDerivationLiveRunHtml(run.live));
     res.type('html').send(renderDerivationRunHtml(run));
   });
   app.get('/browse', (_req, res) => res.type('html').send(renderBrowserHtml()));
@@ -2252,6 +2296,32 @@ ${hint ? `<div class="navhint" role="note">${hint}</div>` : ''}${
 // alongside the auth posture in the header note.
 const DERIVATION_LOOP_DIR = path.resolve(ROOT, 'exports/dramatic-derivation/loop');
 const DERIVATION_LABEL_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/; // path-traversal guard
+const DERIVATION_LIVE_STALE_MS = 20 * 60 * 1000;
+
+function safeJsonForScript(value) {
+  return JSON.stringify(value)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+}
+
+function readJsonFile(file) {
+  return JSON.parse(fs.readFileSync(file, 'utf8'));
+}
+
+function derivationLoopRunDir(label) {
+  if (!DERIVATION_LABEL_RE.test(label)) return null;
+  const dir = path.join(DERIVATION_LOOP_DIR, label);
+  return dir.startsWith(`${DERIVATION_LOOP_DIR}${path.sep}`) ? dir : null;
+}
+
+function derivationLiveStatus(live, mtimeMs = 0) {
+  const status = live?.status || 'running';
+  if (status !== 'running' && status !== 'finalizing') return status;
+  return Date.now() - mtimeMs > DERIVATION_LIVE_STALE_MS ? 'stale' : status;
+}
 
 function listDerivationRuns() {
   if (!fs.existsSync(DERIVATION_LOOP_DIR)) return [];
@@ -2273,16 +2343,51 @@ function listDerivationRuns() {
   return runs.sort((a, b) => b.mtimeMs - a.mtimeMs);
 }
 
+function readDerivationLive(label) {
+  const dir = derivationLoopRunDir(label);
+  if (!dir) return null;
+  const livePath = path.join(dir, 'live.json');
+  try {
+    const stat = fs.statSync(livePath);
+    const live = readJsonFile(livePath);
+    return {
+      ...live,
+      label: live.label || label,
+      mtimeMs: stat.mtimeMs,
+      ageMs: Date.now() - stat.mtimeMs,
+      effectiveStatus: derivationLiveStatus(live, stat.mtimeMs),
+      completeAvailable:
+        fs.existsSync(path.join(dir, 'diagnosis.json')) && fs.existsSync(path.join(dir, 'result.json')),
+    };
+  } catch {
+    return null;
+  }
+}
+
+function listDerivationLiveRuns({ includeComplete = false } = {}) {
+  if (!fs.existsSync(DERIVATION_LOOP_DIR)) return [];
+  const runs = [];
+  for (const name of fs.readdirSync(DERIVATION_LOOP_DIR)) {
+    if (!DERIVATION_LABEL_RE.test(name)) continue;
+    const live = readDerivationLive(name);
+    if (!live) continue;
+    if (!includeComplete && live.effectiveStatus === 'complete') continue;
+    runs.push(live);
+  }
+  return runs.sort((a, b) => b.mtimeMs - a.mtimeMs);
+}
+
 function readDerivationRun(label) {
-  if (!DERIVATION_LABEL_RE.test(label)) return null;
-  const dir = path.join(DERIVATION_LOOP_DIR, label);
+  const dir = derivationLoopRunDir(label);
+  if (!dir) return null;
   let diagnosis;
   let result;
   try {
-    diagnosis = JSON.parse(fs.readFileSync(path.join(dir, 'diagnosis.json'), 'utf8'));
-    result = JSON.parse(fs.readFileSync(path.join(dir, 'result.json'), 'utf8'));
+    diagnosis = readJsonFile(path.join(dir, 'diagnosis.json'));
+    result = readJsonFile(path.join(dir, 'result.json'));
   } catch {
-    return null;
+    const live = readDerivationLive(label);
+    return live ? { label, live, liveOnly: true } : null;
   }
   let world = null;
   try {
@@ -2296,7 +2401,7 @@ function readDerivationRun(label) {
   } catch {
     /* no notice yet — the page shows the backfill hint */
   }
-  return { label, diagnosis, result, world, commentary };
+  return { label, diagnosis, result, world, commentary, live: readDerivationLive(label) };
 }
 
 // Backend chips tolerate both ledger formats: per-role ({mode, roles:{...}},
@@ -2776,6 +2881,25 @@ const DERIVATION_CSS = `
 .chip{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);border:1px solid var(--rule);border-radius:4px;padding:2px 8px;background:var(--paper-4)}
 .chip--ok{background:var(--moss-soft);border-color:var(--moss);color:var(--moss-deep)}
 .chip--bad{background:var(--brick-soft);border-color:var(--brick);color:var(--brick-d)}
+.chip--live{background:var(--ochre-soft);border-color:var(--ochre);color:var(--ochre-d)}
+.live-panel{border:1px solid var(--rule-soft);border-radius:8px;background:var(--paper-4);padding:12px 14px;margin:12px 0 22px}
+.live-panel__head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.live-panel__head h2{font-family:Fraunces,serif;font-size:var(--s-2);font-weight:600;margin:0}
+.live-panel__meta{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);color:var(--ink-3)}
+.live-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px;margin-top:10px}
+.live-link{display:block;border:1px solid var(--rule-soft);border-radius:6px;background:var(--paper);padding:9px 10px;text-decoration:none;color:var(--ink)}
+.live-link:hover{border-color:var(--ochre);background:var(--ochre-soft)}
+.live-link b{display:block;font-family:"JetBrains Mono",monospace;font-size:var(--s-0);overflow-wrap:anywhere}
+.live-link span{display:block;margin-top:3px;font-family:"JetBrains Mono",monospace;font-size:var(--s-0);color:var(--ink-3)}
+.live-progress{height:8px;background:var(--paper-2);border:1px solid var(--rule-soft);border-radius:999px;overflow:hidden;margin:10px 0 6px}
+.live-progress i{display:block;height:100%;background:var(--ochre);width:0}
+.live-status{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0}
+.live-turns{margin-top:14px}
+.live-turn{border:1px solid var(--rule-soft);border-radius:7px;background:var(--paper-4);padding:10px 12px;margin:10px 0}
+.live-turn__top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-family:"JetBrains Mono",monospace;font-size:var(--s-0);color:var(--ink-3);margin-bottom:5px}
+.live-turn__stats{display:flex;flex-wrap:wrap;gap:5px}
+.live-pill{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);border:1px solid var(--rule-soft);border-radius:4px;padding:1px 6px;background:var(--paper-2);color:var(--ink-2)}
+.live-empty{font-family:"JetBrains Mono",monospace;color:var(--ink-3);background:var(--paper-2);border:1px dashed var(--rule);border-radius:8px;padding:18px;text-align:center}
 .tts-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:14px 0 18px;padding:9px 10px;border:1px solid var(--rule-soft);border-radius:6px;background:var(--paper-4)}
 .tts-toolbar--compact{margin:4px 0 8px}
 .tts-control,.tts-btn{border:1px solid var(--rule);background:var(--paper);color:var(--moss-deep);cursor:pointer;font-family:"JetBrains Mono",monospace;text-transform:uppercase}
@@ -3152,6 +3276,204 @@ const DERIVATION_INDEX_CLIENT = `<script>
 })();
 </script>`;
 
+function liveStatusChip(live) {
+  const status = live.effectiveStatus || live.status || 'running';
+  const cls =
+    status === 'complete' ? 'chip--ok' : status === 'failed' || status === 'stale' ? 'chip--bad' : 'chip--live';
+  return `<span class="chip ${cls}">${escapeHtml(status)}</span>`;
+}
+
+function publicDerivationLine(line) {
+  return line.role !== 'director' || line.meta?.release || line.meta?.phase?.name;
+}
+
+function liveProgress(live) {
+  const turnCap = Number(live.turnCap || 0);
+  const turns = Array.isArray(live.turns) ? live.turns.length : 0;
+  const pct = turnCap ? Math.max(0, Math.min(100, Math.round((turns / turnCap) * 100))) : 0;
+  return { turns, turnCap, pct };
+}
+
+function renderDerivationLivePanel(liveRuns) {
+  const runs = (liveRuns || []).filter((run) => run.effectiveStatus !== 'complete');
+  if (!runs.length) return '';
+  const items = runs
+    .slice(0, 8)
+    .map((run) => {
+      const p = liveProgress(run);
+      const latest = run.latest ? `t${run.latest.turn} D=${run.latest.D}` : 'awaiting first turn';
+      return `<a class="live-link" href="/derivation/${encodeURIComponent(run.label)}">
+<b>${escapeHtml(run.label)}</b>
+<span>${escapeHtml(run.effectiveStatus || run.status || 'running')} · ${escapeHtml(latest)} · ${p.turns}/${p.turnCap || '?'} turns</span>
+</a>`;
+    })
+    .join('\n');
+  return `<section class="live-panel" aria-label="Live derivation runs">
+<div class="live-panel__head">
+<h2>Live runs</h2>
+<a class="mono" href="/derivation/live">all live artifacts</a>
+</div>
+<div class="live-list">${items}</div>
+</section>`;
+}
+
+function renderDerivationLiveIndexHtml(runs) {
+  const body = runs.length
+    ? `<div class="live-list">${runs
+        .map((run) => {
+          const p = liveProgress(run);
+          const latest = run.latest ? `t${run.latest.turn} D=${run.latest.D}` : 'awaiting first turn';
+          const when = derivationWhenCell(run.mtimeMs);
+          return `<a class="live-link" href="/derivation/${encodeURIComponent(run.label)}">
+<b>${escapeHtml(run.label)}</b>
+<span>${liveStatusChip(run)} ${escapeHtml(latest)} · ${p.turns}/${p.turnCap || '?'} turns · updated ${when.html}</span>
+</a>`;
+        })
+        .join('\n')}</div>`
+    : '<p class="live-empty">No live derivation artifacts found.</p>';
+  return `${pageHead({ title: 'Live derivation runs · machine spirits', css: DERIVATION_CSS })}
+<body>
+${railHtml({
+  active: 'derivation',
+  sub: 'live proof runs',
+  hint: '<span><b>live proof runs</b> — read-only progress artifacts from run-derivation-loop.js</span><span class="navhint__sep">·</span><span>finished runs are under <a href="/derivation">proof runs</a></span>',
+})}
+<main class="wrap wrap--wide">
+<p class="mono" style="margin-top:14px"><a href="/derivation">← proof runs</a></p>
+<h1>Live proof runs</h1>
+<p class="lede">These rows read <span class="mono">live.json</span> artifacts under <span class="mono">exports/dramatic-derivation/loop/</span>. They do not attach to running processes or start paid work.</p>
+${body}
+</main>
+</body></html>`;
+}
+
+function renderDerivationLiveRunClient(initial) {
+  return `<script>
+(function () {
+  var state = ${safeJsonForScript(initial)};
+  var root = document.querySelector('[data-live-run]');
+  if (!root) return;
+  var label = root.getAttribute('data-label') || (state && state.label) || '';
+  var fallbackTimer = null;
+  function esc(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+  function statusClass(status) {
+    if (status === 'complete') return 'chip--ok';
+    if (status === 'failed' || status === 'stale') return 'chip--bad';
+    return 'chip--live';
+  }
+  function roleLabel(role) {
+    if (role === 'tutor') return 'Tutor';
+    if (role === 'learner') return 'Learner';
+    if (role === 'stage') return 'Stage';
+    if (role === 'director') return 'Director';
+    return role || 'Role';
+  }
+  function lineHtml(line) {
+    var role = line.role || '';
+    var cls = role === 'tutor' ? 'line--tutor' : role === 'learner' ? 'line--learner' : (role === 'director' || role === 'stage') ? 'line--director' : '';
+    var out = '<div class="line ' + cls + '"><span class="who">' + esc(roleLabel(role)) + ':</span> ' + esc(line.text || '') + '</div>';
+    var delib = line.meta && line.meta.deliberation;
+    if (delib && delib.note) out += '<div class="tmeta">- second voice: ' + esc(delib.note) + '</div>';
+    return out;
+  }
+  function turnHtml(turn) {
+    var stats = [
+      'D=' + esc(turn.D),
+      turn.forced ? 'forced' : '',
+      turn.released && turn.released.length ? 'release ' + turn.released.map(esc).join(', ') : '',
+      turn.adopted ? '+' + turn.adopted + ' adopted' : '',
+      turn.retracted ? '-' + turn.retracted + ' retracted' : '',
+      turn.derived ? '+' + turn.derived + ' voiced' : '',
+      turn.overreached ? turn.overreached + ' overreach' : '',
+      turn.intervened ? 'superego' : '',
+      turn.asserted ? 'asserts' : '',
+      turn.decayedNow && turn.decayedNow.length ? 'decay ' + turn.decayedNow.map(esc).join(', ') : '',
+      turn.repairedNow && turn.repairedNow.length ? 'repair ' + turn.repairedNow.map(esc).join(', ') : '',
+      turn.endedBy ? 'ends ' + esc(turn.endedBy) : ''
+    ].filter(Boolean).map(function (x) { return '<span class="live-pill">' + x + '</span>'; }).join('');
+    var phase = turn.phase && turn.phase.name ? '<span class="live-pill">' + esc(turn.phase.name) + '</span>' : '';
+    var events = (turn.events || []).map(function (event) {
+      return '<span class="flag flag--bad">flag ' + esc(event.type) + (event.detail ? ' - ' + esc(event.detail) : '') + '</span>';
+    }).join('');
+    var lines = (turn.lines || []).map(lineHtml).join('');
+    return '<section class="live-turn"><div class="live-turn__top"><span>turn ' + esc(turn.turn) + '</span><span class="live-turn__stats">' + phase + stats + '</span></div>' + lines + events + '</section>';
+  }
+  function render(live) {
+    var turns = live && Array.isArray(live.turns) ? live.turns : [];
+    var turnCap = Number(live && live.turnCap || 0);
+    var pct = turnCap ? Math.max(0, Math.min(100, Math.round((turns.length / turnCap) * 100))) : 0;
+    var status = (live && (live.effectiveStatus || live.status)) || 'running';
+    var latest = live && live.latest ? 'latest t' + live.latest.turn + ' D=' + live.latest.D : 'awaiting first turn';
+    var doneLink = live && live.completeAvailable ? '<a class="mono" href="/derivation/' + encodeURIComponent(label) + '">open finished artifact</a>' : '';
+    root.innerHTML =
+      '<div class="live-status"><span class="chip ' + statusClass(status) + '">' + esc(status) + '</span>' +
+      '<span class="chip">world ' + esc(live && live.worldId || '?') + '</span>' +
+      '<span class="chip">' + esc(latest) + '</span>' +
+      '<span class="chip">updated ' + esc(live && live.updatedAt || '?') + '</span>' +
+      doneLink + '</div>' +
+      '<div class="live-progress" aria-label="turn progress"><i style="width:' + pct + '%"></i></div>' +
+      '<p class="live-panel__meta">' + turns.length + '/' + (turnCap || '?') + ' turns recorded from ' + esc(live && live.scriptPath || '?') + '</p>' +
+      '<div class="live-turns">' + (turns.length ? turns.map(turnHtml).join('') : '<p class="live-empty">Waiting for the first completed turn.</p>') + '</div>';
+  }
+  async function poll() {
+    try {
+      var res = await fetch('/api/derivation/live/' + encodeURIComponent(label), { cache: 'no-store' });
+      if (!res.ok) return;
+      var json = await res.json();
+      state = json.run;
+      render(state);
+    } catch (_e) {}
+  }
+  function startPolling() {
+    if (fallbackTimer) return;
+    fallbackTimer = setInterval(poll, 1500);
+  }
+  render(state);
+  if (window.EventSource) {
+    var es = new EventSource('/api/derivation/live/' + encodeURIComponent(label) + '/events');
+    es.addEventListener('update', function (event) {
+      state = JSON.parse(event.data);
+      render(state);
+      if (state.effectiveStatus === 'complete' || state.effectiveStatus === 'failed') es.close();
+    });
+    es.onerror = function () {
+      es.close();
+      startPolling();
+    };
+  } else {
+    startPolling();
+  }
+})();
+</script>`;
+}
+
+function renderDerivationLiveRunHtml(live) {
+  return `${pageHead({ title: `${live.label} · live derivation`, css: DERIVATION_CSS })}
+<body>
+${railHtml({
+  active: 'derivation',
+  sub: `live proof run — ${live.label}`,
+  hint: `<span><b>live proof run</b> — ${escapeHtml(live.label)}</span><span class="navhint__sep">·</span><span>back to <a href="/derivation/live">live runs</a> or <a href="/derivation">finished proof runs</a></span>`,
+})}
+<main class="wrap">
+<p class="mono" style="margin-top:14px"><a href="/derivation/live">← live runs</a></p>
+<h1>${escapeHtml(live.worldTitle || live.worldId || live.label)}</h1>
+<p class="lede mono">${escapeHtml(live.label)} · ${escapeHtml(live.backend?.mode || '?')} · live artifact ${escapeHtml(live.worldPath || '?')}</p>
+<section class="live-panel" data-live-run data-label="${escapeHtml(live.label)}">
+<p class="live-empty">Loading live run...</p>
+</section>
+</main>
+${renderDerivationLiveRunClient(live)}
+</body></html>`;
+}
+
 function renderDerivationIndexHtml(runs) {
   // Stable "most recent" ordering: the list arrives mtime-sorted, so the index
   // here is what the client sorts back to when it resets to recency.
@@ -3295,6 +3617,7 @@ ${railHtml({
 <main class="wrap wrap--wide" data-derivation-index>
 <h1>Proof runs — did the learner reach the hidden answer?</h1>
 <p class="lede">Each row is one tutoring run. The tutor has to lead the learner to a hidden conclusion purely by inference, and a fixed rule-checker — not an AI judge — decides the outcome: a run is <strong>grounded</strong> when the learner reaches the hidden conclusion and its proof closes; otherwise it ends in an <strong>impasse</strong> or the learner <strong>disengages</strong>. Runs are grouped by experimental condition (the <span class="mono">--group</span> flag); artifacts live under <span class="mono">exports/dramatic-derivation/loop/</span>.</p>
+${renderDerivationLivePanel(listDerivationLiveRuns())}
 ${scoreboard}
 ${toolbar}
 ${runs.length ? '<p class="idx-empty" data-idx-empty hidden>No runs match your search or filters.</p>' : ''}
@@ -3338,6 +3661,7 @@ function renderDerivationRunHtml({ label, diagnosis, result, world, commentary }
         const rawText = (line.text || '').trim();
         const text = escapeHtml(rawText);
         if (line.role === 'director') {
+          if (!publicDerivationLine(line)) return '';
           const dbits = [];
           if (line.meta?.phase?.name)
             dbits.push(
@@ -3349,7 +3673,7 @@ function renderDerivationRunHtml({ label, diagnosis, result, world, commentary }
             dbits.push(
               `<div class="tmeta">— releases <span class="release">${escapeHtml(line.meta.release)}</span></div>`,
             );
-          return `<div class="line line--director tts-fragment"${ttsDataAttrs('director', rawText, 'Director')}>${rawText ? ttsPlayButton('director') : ''}${text}</div>${dbits.join('')}`;
+          return `<div class="line line--director tts-fragment"${ttsDataAttrs('stage', rawText, 'Stage')}>${rawText ? ttsPlayButton('stage') : ''}${text}</div>${dbits.join('')}`;
         }
         if (line.role === 'tutor') {
           const move = line.meta?.move;

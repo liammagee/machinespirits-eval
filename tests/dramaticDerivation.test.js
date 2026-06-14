@@ -282,6 +282,7 @@ test('learner views conceal exactly S, the mirror, and unreleased premises', asy
   const VIEW_KEYS = [
     'abox',
     'background',
+    'factSurfaces',
     'question',
     'questionPattern',
     'releasedFacts',
@@ -297,6 +298,7 @@ test('learner views conceal exactly S, the mirror, and unreleased premises', asy
     assert.deepEqual(Object.keys(view).sort(), VIEW_KEYS);
     for (const entry of view.transcript) {
       assert.deepEqual(Object.keys(entry).sort(), ['role', 'text', 'turn']);
+      assert.notEqual(entry.role, 'director');
     }
 
     const serialized = JSON.stringify(view);

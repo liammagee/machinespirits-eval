@@ -158,6 +158,12 @@ test('loop → episode → matrix CLIs round-trip decay conditions hermetically'
   ]);
   const srcResult = JSON.parse(fs.readFileSync(path.join(tmp, 'loop/src/result.json'), 'utf8'));
   assert.equal(srcResult.logicSnapshots.length, srcResult.turnsPlayed);
+  const srcLive = JSON.parse(fs.readFileSync(path.join(tmp, 'loop/src/live.json'), 'utf8'));
+  assert.equal(srcLive.schema, 'dramatic-derivation.live.v1');
+  assert.equal(srcLive.status, 'complete');
+  assert.equal(srcLive.turns.length, srcResult.turnsPlayed);
+  assert.ok(srcLive.turns.every((turn) => Array.isArray(turn.lines) && turn.lines.length >= 2));
+  assert.ok(srcLive.turns.every((turn) => turn.lines.every((line) => line.role !== 'director')));
   const srcDiag = JSON.parse(fs.readFileSync(path.join(tmp, 'loop/src/diagnosis.json'), 'utf8'));
   assert.equal(srcDiag.decay.rate, 0.5);
   assert.ok(srcDiag.corruption);
@@ -180,6 +186,12 @@ test('loop → episode → matrix CLIs round-trip decay conditions hermetically'
   ]);
   const inherit = JSON.parse(fs.readFileSync(path.join(tmp, 'episodes/inherit/episode.json'), 'utf8'));
   assert.equal(inherit.prefixIntegrity.ok, true);
+  const inheritLive = JSON.parse(fs.readFileSync(path.join(tmp, 'episodes/inherit/live.json'), 'utf8'));
+  assert.equal(inheritLive.schema, 'dramatic-derivation.live.v1');
+  assert.equal(inheritLive.kind, 'episode');
+  assert.equal(inheritLive.status, 'complete');
+  assert.equal(inheritLive.fromTurn, 5);
+  assert.ok(inheritLive.turns.every((turn) => turn.turn >= 5));
   const inheritDiag = JSON.parse(fs.readFileSync(path.join(tmp, 'episodes/inherit/diagnosis.json'), 'utf8'));
   assert.deepEqual(inheritDiag.decay, srcDiag.decay);
 
@@ -232,6 +244,62 @@ test('loop → episode → matrix CLIs round-trip decay conditions hermetically'
   assert.ok(byLabel.control.diagnosis);
   assert.equal('corruption' in byLabel.control.diagnosis, false);
   assert.ok(byLabel.decayed.diagnosis.corruption.decayEvents >= 1);
+
+  fs.rmSync(tmp, { recursive: true, force: true });
+});
+
+test('episode CLI inherits modern guard and plot dials while preserving replay prefix', { timeout: CLI_TIMEOUT }, () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'derivation-modern-episode-'));
+  const run = (script, args) =>
+    execFileSync(process.execPath, [path.join(ROOT, 'scripts', script), ...args], {
+      cwd: ROOT,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+
+  run('run-derivation-loop.js', [
+    '--world',
+    'config/drama-derivation/world-000-smoke.yaml',
+    '--label',
+    'src',
+    '--out',
+    path.join(tmp, 'loop'),
+    '--critic',
+    'off',
+    '--superego',
+    '--acts',
+    '{"minActTurns":1,"maxActTurns":3}',
+    '--decay',
+    '{"seed":7,"rate":0.5,"graceTurns":0,"maxConcurrent":2,"startTurn":1,"mutateShare":0}',
+    '--confront',
+    '--repair-clause',
+    '--release-authority',
+    '--pacing-guard-selective-v2',
+    '--plot',
+    '--throughline',
+  ]);
+  run('run-derivation-episode.js', [
+    '--from',
+    path.join(tmp, 'loop/src'),
+    '--turn',
+    '3',
+    '--window',
+    '2',
+    '--label',
+    'ep',
+    '--out',
+    path.join(tmp, 'episodes'),
+  ]);
+
+  const d = JSON.parse(fs.readFileSync(path.join(tmp, 'episodes/ep/diagnosis.json'), 'utf8'));
+  assert.equal(d.episode.prefixIntegrity.ok, true);
+  assert.equal(d.confront, true);
+  assert.equal(d.repairClause, true);
+  assert.equal(d.releaseAuthority, true);
+  assert.equal(d.pacingGuardSelectiveV2, true);
+  assert.equal(d.pacingGuardSelector.schema, 'dramatic-derivation.representation-selector.v2');
+  assert.equal(d.plotDial, true);
+  assert.equal(d.throughlineDial, true);
 
   fs.rmSync(tmp, { recursive: true, force: true });
 });

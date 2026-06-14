@@ -15,6 +15,12 @@ export {
 } from './guardCompiler.js';
 export { runDrama, normalizeActsConfig } from './engine.js';
 export { mulberry32, normalizeDecayConfig } from './corruption.js';
+export {
+  normalizeSceneConfig,
+  normalizeRhetoricalPolicyConfig,
+  classifyLearnerExchange,
+  recommendRhetoricalMove,
+} from './rhetoricalMovePolicy.js';
 export { makeReplayRoles, comparePrefix } from './replay.js';
 export { makeMockDirector, makeMockTutor, makeMockLearner } from './mockRoles.js';
 export { makeLlmClient, llmMode, resolveTarget } from './llmClient.js';
@@ -26,6 +32,7 @@ export {
   logicProjectionReport,
   reconstructionReport,
   plotReport,
+  sceneReport,
   releaseAdherence,
   releaseDeviations,
   confrontReport,

@@ -39,7 +39,13 @@ const RECONSTRUCT = {
     move: line.meta?.move ?? null,
     release: line.meta?.release ?? null,
     deliberation: line.meta?.deliberation ?? null,
+    releaseDecision: line.meta?.releaseDecision ?? null,
+    releaseReason: line.meta?.releaseReason ?? null,
     theory: line.meta?.theory ?? null, // stage v2 reconstruction (null keeps the engine's gate closed)
+    plot: line.meta?.plot ?? null,
+    plotAudit: line.meta?.plotAudit ?? null,
+    throughline: line.meta?.throughline ?? null,
+    proofDebt: line.meta?.proofDebt ?? null,
   }),
   learner: (line) => ({
     dialogue: line.text,

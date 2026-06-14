@@ -29,6 +29,10 @@ function countSentences(text) {
     .filter(Boolean).length;
 }
 
+function publicStageLine(line) {
+  return line.role !== 'director' || line.meta?.release || line.meta?.phase?.name;
+}
+
 /**
  * Release adherence against the authored schedule. The plot is frozen in
  * phase 1, so every deviation is worth a line in the diagnosis: late and
@@ -962,6 +966,48 @@ export function logicProjectionReport(result, world) {
   };
 }
 
+export function sceneReport(result) {
+  const scenes = result.scenes || [];
+  if (!scenes.length) return null;
+  const statusMix = {};
+  const exchangeTypes = {};
+  let exchanges = 0;
+  let phatic = 0;
+  for (const scene of scenes) {
+    statusMix[scene.status] = (statusMix[scene.status] || 0) + 1;
+    for (const exchange of scene.exchanges || []) {
+      exchanges += 1;
+      exchangeTypes[exchange.type] = (exchangeTypes[exchange.type] || 0) + 1;
+      if (exchange.type === 'phatic_ack') phatic += 1;
+    }
+  }
+  return {
+    schema: 'dramatic-derivation.scene-report.v0',
+    count: scenes.length,
+    exchanges,
+    avgExchanges: scenes.length ? +(exchanges / scenes.length).toFixed(2) : 0,
+    phatic,
+    phaticShare: exchanges ? +(phatic / exchanges).toFixed(3) : 0,
+    statusMix,
+    exchangeTypes,
+    driftGuardScenes: scenes.filter((scene) => scene.status === 'drift_guard').map((scene) => scene.index),
+    scenes: scenes.map((scene) => ({
+      index: scene.index,
+      turns: [scene.startTurn, scene.endTurn],
+      status: scene.status,
+      closeReason: scene.closeReason,
+      goal: scene.goal,
+      targetPremise: scene.targetPremise,
+      exchanges: (scene.exchanges || []).map((exchange) => ({
+        turn: exchange.turn,
+        type: exchange.type,
+        dDelta: exchange.dDelta,
+        boardDelta: exchange.boardDelta,
+      })),
+    })),
+  };
+}
+
 export function diagnose(result, world) {
   const eventsByType = {};
   for (const event of result.events) {
@@ -991,6 +1037,7 @@ export function diagnose(result, world) {
   const confrontation = confrontReport(result);
   const proofDebt = proofDebtGuardReport(result);
   const logicProjection = logicProjectionReport(result, world);
+  const scenes = sceneReport(result);
   // C1 dial reporter — same contract: null off the plot arm.
   const plotRpt = plotReport(result, world);
   const tutorNotes = result.transcript
@@ -1048,6 +1095,7 @@ export function diagnose(result, world) {
     ...(confrontation ? { confrontation } : {}),
     ...(proofDebt ? { proofDebt } : {}),
     ...(logicProjection ? { logicProjection } : {}),
+    ...(scenes ? { scenes } : {}),
     // C1 (act-plot dial): absent off the arm.
     ...(plotRpt ? { plot: plotRpt } : {}),
   };
@@ -1130,6 +1178,12 @@ export function renderTranscript(result, world, { title = null, diagnosis = null
     if (!eventsByTurn.has(event.turn)) eventsByTurn.set(event.turn, []);
     eventsByTurn.get(event.turn).push(event);
   }
+  const sceneByTurn = new Map();
+  for (const scene of result.scenes || []) {
+    for (const exchange of scene.exchanges || []) {
+      sceneByTurn.set(exchange.turn, { scene, exchange });
+    }
+  }
 
   for (const [turn, turnLines] of [...byTurn.entries()].sort((a, b) => a[0] - b[0])) {
     const segment = segmentFor(turn);
@@ -1142,9 +1196,18 @@ export function renderTranscript(result, world, { title = null, diagnosis = null
       if (segment.intent) lines.push(`*${segment.intent}*`);
     }
     lines.push('');
-    lines.push(`### Turn ${turn}`);
+    const sceneInfo = sceneByTurn.get(turn);
+    lines.push(
+      sceneInfo
+        ? `### Scene ${sceneInfo.scene.index}, exchange ${sceneInfo.exchange.ordinal} — Turn ${turn}`
+        : `### Turn ${turn}`,
+    );
+    if (sceneInfo && sceneInfo.exchange.ordinal === 1) {
+      lines.push(`*Scene goal: ${sceneInfo.scene.goal}*`);
+    }
     for (const line of turnLines) {
       if (line.role === 'director') {
+        if (!publicStageLine(line)) continue;
         lines.push(`*${(line.text || '').trim()}*`);
         if (line.meta?.release) lines.push(`  — *releases \`${line.meta.release}\`*`);
         if (line.meta?.phase) {
@@ -1186,6 +1249,7 @@ export function renderTranscript(result, world, { title = null, diagnosis = null
         if (voicedHere.length) bits.push(`derives ${voicedHere.map((o) => `\`${o.fact.join(' ')}\``).join(', ')}`);
         if (meta.hypothesis) bits.push(`hypothesis: ${meta.hypothesis}`);
         if (meta.asserts) bits.push(`**asserts \`${meta.asserts.join(' ')}\`**`);
+        if (meta.exchange?.type) bits.push(`exchange: ${meta.exchange.type.replace(/_/g, ' ')}`);
         if (bits.length) lines.push(`  — ${bits.join(' · ')}`);
       }
     }
@@ -1321,6 +1385,20 @@ export function renderEvalPanel(diagnosis) {
     lines.push(
       `- **acts** ${d.acts.length} played · closed by the director ${closedBy.director} · at max length ${closedBy.harness_max} · at run end ${closedBy.run_end} — ${rows.join(' · ')}`,
     );
+  }
+  const sc = d.scenes;
+  if (sc) {
+    const status = Object.entries(sc.statusMix)
+      .map(([k, v]) => `${k.replace(/_/g, ' ')} ${v}`)
+      .join(' · ');
+    const exchanges = Object.entries(sc.exchangeTypes)
+      .map(([k, v]) => `${k.replace(/_/g, ' ')} ${v}`)
+      .join(' · ');
+    lines.push(
+      `- **scenes** ${sc.count} scene${sc.count === 1 ? '' : 's'} · ${sc.exchanges} exchange${sc.exchanges === 1 ? '' : 's'} (${sc.avgExchanges} avg) · phatic ${sc.phatic}/${sc.exchanges} (${Math.round(sc.phaticShare * 100)}%) · statuses ${status || 'none'}`,
+    );
+    if (exchanges) lines.push(`  - exchanges: ${exchanges}`);
+    if (sc.driftGuardScenes.length) lines.push(`  - drift guard scenes: ${sc.driftGuardScenes.join(', ')}`);
   }
   const rc = d.reconstruction;
   if (rc) {
