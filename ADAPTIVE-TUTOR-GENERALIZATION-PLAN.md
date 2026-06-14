@@ -987,3 +987,117 @@ No paper edit is made by this registration — it is forward-looking; the empiri
 after the run.
 
 ---
+
+## Step 3 outcome — V grounded 5/5, H 1/5 (added post-run 2026-06-13; pre-registered text above unaltered)
+
+**Result.** All fifteen arms ran first-pass, no re-rolls: **baseline 4/5, H (hidden, `--pacing-guard`)
+1/5, V (page-only, `--pacing-guard-visible`) 5/5.** Every grounded arm grounded at **t20 with gap 0**
+(the linear spine's earliest-derivable turn). The single baseline death is an early-pull aporia at
+t11 (real-r4, `p_point` pulled to t3). H's four deaths are all **decoy-seated disengagement** —
+three at t7, one at t19 — the exact failure the distractor was built to bait. V never failed.
+
+This is a **near-reverse of world-005-marrick** (baseline 0/5, H 5/5, V 0/5): on the linear-spine
+distractor the two guards **swap** — the page proxy carries the world the hidden guard cannot. Per
+the pre-registered interpretation rule this lands the **primary as a clean negative** (H does **not**
+lift above baseline → the §6.13.10/.11/.12 scheduling-discipline mechanism, *as carried by the hidden
+guard*, does **not** travel to this distractor world) and, on the secondary, the pre-specified
+**"V lifts, H flat → anomaly (visible helps where true-state does not); report as such, no mechanism
+claim"** branch — H is in fact *below* baseline, slightly stronger than the registered "flat."
+
+**Statistics (as pre-tabled).**
+- Grounding: V 5/5 Clopper–Pearson 95% **[0.478, 1.000]**; baseline 4/5 **[0.284, 0.995]**; H 1/5
+  **[0.005, 0.716]**.
+- Between-fan Fisher (k=5-vs-k=5, one-sided greater per the envelope — significance reachable only at
+  the extremes): **V vs H p = 0.0238** (the only contrast clearing the floor); **baseline vs H
+  p = 0.1032** (ns — H-below-baseline is **directional only**, exactly the "rate demoted/underpowered"
+  caveat the registration imposed); **V vs baseline p = 0.5000** (ns). The hidden guard separates
+  *downward* from the page proxy; it does not separate from no-guard at this power.
+
+**Primary read (failure-mode shift — E4a detector-split, the durable observable).** Guard ×
+failure-mode contingency over all 15 arms (`derivation-detector-split.js`, dry, keyed on mechanism
+not verdict shape):
+
+| guard state | grounded | early-pull death | decay-seating death | n |
+|---|---|---|---|---|
+| `unguarded` (baseline) | 4 | 1 | 0 | 5 |
+| `pacing` (hidden, H) | 1 | 0 | 4 | 5 |
+| `visible` (page-only, V) | 5 | 0 | 0 | 5 |
+
+The shift is unambiguous and runs the *wrong* way for the hidden guard: the decoy-seated decay death
+is **4/5 under H, 0/5 in both baseline and V**. H does not remove the baseline's death modes — it
+**manufactures** the one the world was built to bait, and only manufactures it. (Pre-registered (a)
+asked whether H removes the baseline's dominant death mode; the baseline death here is a single
+early-pull aporia, which H technically lacks — but H replaces it with four decoy-seated deaths, so
+the spirit of (a) — H makes the world *safer* — fails as decisively as (b).)
+
+**Realized-enforcement covariate (the conditioning the registration tabled).** Read live off each
+arm's `releaseDeviations` (per-fan totals over k=5), not by counterfactual replay:
+
+- **H grounded 1/5 while overriding zero release decisions** (forced 0, overridden 0, held 0) — the
+  *identical* passive discipline it ran on world-005-marrick, where the same 0/0/0 profile grounded
+  5/5. H's behavior did not change between worlds; the world's binding constraint moved into the
+  channel H cannot read. H played only 9 tutor releases of a possible 15 because four arms **died
+  before the spine could open** — not because H suppressed anything.
+- **V grounded 5/5 while overriding 11 decisions** (early 10, held 5; per-arm overrides [2, 2, 3, 2,
+  2]) — and in **all five arms** pulled `p_surface` to **t7**, *outside* the hidden guard's solvency
+  safe-set [8, 9]. That early pull bridges the knife-edge t4→t9 gap (slack 0) and catches the quick
+  learner one turn **before** they leap to the liable-master distractor and disengage. H, restricted
+  by solvency to [8, 9], reaches its earliest licensed bridging play one turn too late — the three
+  t7 deaths cool in the gap V's early move would have warmed.
+
+The covariate **inverts** Marrick's: there V over-intervened (16 overrides) onto the *wrong* feature
+and failed; here V over-intervenes (11) onto the *right* one and succeeds, while the passive
+latent-depth guard fails. Intervention frequency does not predict success across worlds — *which
+channel carries the binding constraint* does.
+
+**Reading recorded — the geometry-vs-decoupling decomposition lands (better than either tabled
+branch).** The pre-registration framed the secondary around "does V track H." The actual result is
+that V and H **anti-track**: each guard grounds the world whose binding scheduling constraint lives
+in the channel it reads, and fails the other.
+
+- **Marrick (forked AND-join):** the binding constraint is *which branch carries latent depth* → the
+  latent-distance reader H grounds 5/5; the page reader V fails 0/5.
+- **Hethel (linear spine + derivable distractor):** the binding constraint is *surface tempo through
+  the decoy gap* → the page/tempo reader V grounds 5/5; the latent-distance reader H fails 1/5,
+  because the distractor's tempo-keeping releases are **director-via, outside H's tutor-via candidate
+  set** — H is structurally blind to the dramatic function the distractor performs, and its
+  solvency-correct refusal to pull `p_surface` early is the dramatically-fatal move.
+
+This **decomposes the world-005 confound** cleanly. Marrick changed geometry *and* decoupling at once;
+the distractor world supplies decoupling **without** a fork, on a linear spine where §6.13.11 already
+showed V = H. The result: V **holds** on the linear distractor (5/5), so marrick's V-failure was
+**fork-specific (geometry)**, not decoupling-general — the §6.13.12 boundary is the **narrower**
+reading, as the secondary's first branch anticipated. *And*, unregistered, H **fails** on the linear
+distractor (1/5) where it grounded 5/5 on the fork — so marrick's H-*success* was **also**
+geometry-bound, not a general latent-depth advantage. Neither guard dominates; they are
+**complementary**, and §6.13.11/.12 are bounded on **both** sides: the page proxy's *insufficiency*
+(§6.13.12) is fork-specific, and the latent guard's *sufficiency* is fork-specific too.
+
+**Caveats carried (per the rule + §5.12.6).** The anomaly is reported *as* an anomaly — **no
+mechanism claim** is registered for "V beats H on the distractor"; the early-pull-bridges-the-gap
+account above is a **post-hoc** reading of the covariate and corridor arithmetic, offered as such, not
+a pre-registered finding. Rate contrasts are at declared k=5 power: only V-vs-H clears the Fisher
+floor (p = 0.0238); H-below-baseline is directional (p = 0.1032, ns). The durable observable is the
+failure-mode contingency, not the rate. The decomposition is established at **one** distractor
+geometry (world-006-hethel, seed 1, frozen p4 stack) — V's robustness to a decoy is shown *on a
+linear spine*, not on every non-fork shape; H's distractor-failure is shown *on this decoy*, not on
+every distractor. Verdicts are formal throughout (off `diagnose.js`, architecture-independent of the
+guard). V is the §6.13.11 twin unchanged (`VISIBLE_GUARD_DEFAULTS` re-used; import audit
+`visiblePacing.js` ↛ `slope.js`/`pacing.js` green) — the **world** changed, not the proxy. The
+non-degenerate baseline (4/5, not 0/5) was fixed at corridor calibration and frozen; it is a reported
+property of the world, not re-tuned.
+
+**No re-rolls used; all fifteen arms first-pass.** Spend meterless (Max-plan CLI); the three fans
+fanned in parallel under the operator's no-quota-constraint election, pooled separately from each
+other, from the lantern fans, and from the marrick fans.
+
+**Fable critic notice.** Each arm is registered for the standing pinned-Fable critic's notice;
+the backfill is **deferred** — Fable 5 is currently unavailable — and lands when it returns,
+alongside the lantern and marrick backfills. No mock substitute written.
+
+**Folded into the paper** as **§6.13.13** + revision-history **v3.0.154**. Artifacts
+`exports/dramatic-derivation/loop/hethel-{real,guard,visible}-r{1..5}/`; contingency
+`exports/dramatic-derivation/boundary-hethel/detector-split-report.{md,json}`; corridor map
+`exports/dramatic-derivation/boundary-hethel/corridor-map-world-006-hethel.{md,json}`. **Step-3 paid
+loop ended on this result.** Per the kill rule above, we stop at one distractor world — no second
+distractor world, no rescue arms, no guard variants.
