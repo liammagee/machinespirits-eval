@@ -13,6 +13,7 @@ import {
   loadWorld,
   validateWorld,
   plotLint,
+  diagnose,
   derivationDistance,
   detectStall,
   runDrama,
@@ -189,6 +190,23 @@ test('happy path reaches grounded anagnorisis on the authored slope', async () =
   // the proof of the recognition is extractable down to released facts
   assert.equal(result.proof.rule, 'R2_succession');
   assert.equal(factKey(result.proof.fact), factKey(world.secret.fact));
+});
+
+test('logic projection snapshots are opt-in and summarize board closure in diagnosis', async () => {
+  const plain = await runDrama({ world, roles: mockRoles() });
+  assert.equal('logicSnapshots' in plain, false);
+
+  const result = await runDrama({ world, roles: mockRoles(), options: { logicProjection: true } });
+  assert.equal(result.verdict, 'grounded_anagnorisis');
+  assert.equal(result.logicSnapshots.length, result.turnsPlayed);
+  assert.equal(result.logicSnapshots[0].projection.schema, 'dramatic-derivation.logic-ir.v0.projection');
+
+  const diagnosis = diagnose(result, world);
+  assert.equal(diagnosis.logicProjection.schema, 'dramatic-derivation.logic-projection-report.v0');
+  assert.equal(diagnosis.logicProjection.turns.length, result.turnsPlayed);
+  assert.equal(diagnosis.logicProjection.turns[0].secret.derived, false);
+  assert.equal(diagnosis.logicProjection.turns.at(-1).secret.derived, true);
+  assert.ok(diagnosis.logicProjection.summary.firedHyperedgesPeak > 0);
 });
 
 test('an unforced assertion of S is a lucky leap, not anagnorisis', async () => {

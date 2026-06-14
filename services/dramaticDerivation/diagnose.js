@@ -18,6 +18,9 @@
 
 import { derivationDistance } from './slope.js';
 import { factKey } from './chainer.js';
+import { buildWorldIR } from './guardCompiler.js';
+
+export const LOGIC_PROJECTION_REPORT_SCHEMA = 'dramatic-derivation.logic-projection-report.v0';
 
 function countSentences(text) {
   return (text || '')
@@ -861,6 +864,104 @@ export function plotReport(result, world = null) {
   };
 }
 
+function compactLogicFactNode(node) {
+  return {
+    factKey: node.factKey,
+    fact: node.fact,
+    predicate: node.predicate,
+    roles: node.roles || [],
+    rule: node.proof?.rule || null,
+    sourcePremiseIds: node.sourcePremiseIds || [],
+    proofCritical: Boolean(node.proofCritical),
+  };
+}
+
+function targetLogicSummary(staticNode, runtimeNode, snapshot) {
+  if (!staticNode) return null;
+  const sourcePremiseIds = staticNode.sourcePremiseIds || staticNode.premiseIds || [];
+  const grounded = new Set(snapshot.groundedPremiseIds || []);
+  const released = new Set(snapshot.releasedPremiseIds || []);
+  const decayed = new Set(snapshot.decayedPremiseIds || []);
+  return {
+    factKey: staticNode.factKey,
+    fact: staticNode.fact,
+    derived: Boolean(runtimeNode),
+    grounded: Boolean(runtimeNode?.grounded),
+    voiced: Boolean(runtimeNode?.voiced),
+    sourcePremiseIds,
+    heldSourcePremiseIds: sourcePremiseIds.filter((id) => grounded.has(id)),
+    missingSourcePremiseIds: sourcePremiseIds.filter((id) => !grounded.has(id)),
+    unreleasedSourcePremiseIds: sourcePremiseIds.filter((id) => !released.has(id)),
+    decayedSourcePremiseIds: sourcePremiseIds.filter((id) => decayed.has(id)),
+  };
+}
+
+export function logicProjectionReport(result, world) {
+  if (!Array.isArray(result.logicSnapshots) || !result.logicSnapshots.length) return null;
+  const worldIR = buildWorldIR(world);
+  const staticNodeByKey = new Map(worldIR.logic.factNodes.map((node) => [node.factKey, node]));
+  const proofCriticalIds = new Set(worldIR.logic.indexes.proofCriticalPremiseIds || []);
+  const secretKey = worldIR.logic.indexes.secretFactKey;
+  const mirrorKey = worldIR.logic.indexes.mirrorFactKey;
+
+  const turns = result.logicSnapshots.map((snapshot) => {
+    const nodes = snapshot.projection?.factNodes || [];
+    const nodeByKey = new Map(nodes.map((node) => [node.factKey, node]));
+    const derivedUnvoiced = nodes
+      .filter(
+        (node) =>
+          node.derived &&
+          !node.voiced &&
+          !(node.roles || []).includes('secret') &&
+          !(node.roles || []).includes('mirror'),
+      )
+      .map(compactLogicFactNode);
+    const firedHyperedges = (snapshot.projection?.ruleHyperedges || []).map((edge) => {
+      const output = nodeByKey.get(edge.outputFactKey) || staticNodeByKey.get(edge.outputFactKey) || null;
+      return {
+        ruleId: edge.ruleId,
+        inputFactKeys: edge.inputFactKeys,
+        outputFactKey: edge.outputFactKey,
+        outputFact: output?.fact || null,
+        outputPredicate: output?.predicate || null,
+      };
+    });
+
+    return {
+      turn: snapshot.turn,
+      trajectoryD: snapshot.trajectoryD,
+      boardD: snapshot.boardD,
+      postTurnDDelta: snapshot.boardD - snapshot.trajectoryD,
+      counts: {
+        ...(snapshot.projection?.counts || {}),
+        firedHyperedges: firedHyperedges.length,
+        derivedUnvoiced: derivedUnvoiced.length,
+      },
+      secret: targetLogicSummary(staticNodeByKey.get(secretKey), nodeByKey.get(secretKey), snapshot),
+      mirror: targetLogicSummary(staticNodeByKey.get(mirrorKey), nodeByKey.get(mirrorKey), snapshot),
+      decayedProofCriticalSources: (snapshot.decayedPremiseIds || []).filter((id) => proofCriticalIds.has(id)),
+      derivedUnvoiced,
+      firedHyperedges,
+    };
+  });
+
+  return {
+    schema: LOGIC_PROJECTION_REPORT_SCHEMA,
+    worldIRSchema: worldIR.logic.schema,
+    turns,
+    summary: {
+      turns: turns.length,
+      derivedUnvoicedPeak: Math.max(0, ...turns.map((row) => row.counts.derivedUnvoiced || 0)),
+      firedHyperedgesPeak: Math.max(0, ...turns.map((row) => row.counts.firedHyperedges || 0)),
+      secretDerivedTurns: turns.filter((row) => row.secret?.derived).map((row) => row.turn),
+      mirrorDerivedTurns: turns.filter((row) => row.mirror?.derived).map((row) => row.turn),
+      decayedProofCriticalTurns: turns
+        .filter((row) => row.decayedProofCriticalSources.length)
+        .map((row) => ({ turn: row.turn, premises: row.decayedProofCriticalSources })),
+    },
+  };
+}
+
 export function diagnose(result, world) {
   const eventsByType = {};
   for (const event of result.events) {
@@ -889,6 +990,7 @@ export function diagnose(result, world) {
   const releaseDeviationsReport = releaseDeviations(result);
   const confrontation = confrontReport(result);
   const proofDebt = proofDebtGuardReport(result);
+  const logicProjection = logicProjectionReport(result, world);
   // C1 dial reporter — same contract: null off the plot arm.
   const plotRpt = plotReport(result, world);
   const tutorNotes = result.transcript
@@ -945,6 +1047,7 @@ export function diagnose(result, world) {
     ...(releaseDeviationsReport ? { releaseDeviations: releaseDeviationsReport } : {}),
     ...(confrontation ? { confrontation } : {}),
     ...(proofDebt ? { proofDebt } : {}),
+    ...(logicProjection ? { logicProjection } : {}),
     // C1 (act-plot dial): absent off the arm.
     ...(plotRpt ? { plot: plotRpt } : {}),
   };
@@ -1190,6 +1293,12 @@ export function renderEvalPanel(diagnosis) {
   if (pd) {
     lines.push(
       `- **proof debt** detected on ${pd.detectedTurns} turn${pd.detectedTurns === 1 ? '' : 's'} (${pd.debtsDetected} debt${pd.debtsDetected === 1 ? '' : 's'}) · restore actions ${pd.actionTurns} (guard-forced ${pd.forcedMoves}, repaired ${pd.repairedTargets})${pd.targets.length ? ` — ${pd.targets.join(' · ')}` : ''}`,
+    );
+  }
+  const lp = d.logicProjection?.summary;
+  if (lp) {
+    lines.push(
+      `- **logic projection** ${lp.turns} turn snapshot${lp.turns === 1 ? '' : 's'} · derived-unvoiced peak ${lp.derivedUnvoicedPeak} · fired hyperedges peak ${lp.firedHyperedgesPeak}`,
     );
   }
   const events = Object.entries(d.eventsByType || {});

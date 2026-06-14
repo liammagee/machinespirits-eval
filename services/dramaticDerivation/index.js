@@ -22,6 +22,7 @@ export {
   diagnose,
   corruptionReport,
   proofDebtGuardReport,
+  logicProjectionReport,
   reconstructionReport,
   plotReport,
   releaseAdherence,

@@ -203,7 +203,8 @@
  * Artifacts land in <out>/<label>/: transcript.md (the drama, movement by
  * movement, instrument panel at the foot, critic's notice at the very end),
  * diagnosis.json (taxonomy verdict, D(t), release adherence, staging,
- * dialogue discipline, usage/cost), result.json (the raw engine output),
+ * dialogue discipline, logic projection, usage/cost), result.json (the raw
+ * engine output, including harness-only logic snapshots),
  * commentary.md (the critic's notice, standalone).
  */
 
@@ -682,6 +683,7 @@ async function main() {
     roles,
     options: {
       onTurn,
+      logicProjection: true,
       ...(decay ? { decay } : {}),
       ...(acts ? { acts } : {}),
       ...(proofDebtGuard ? { proofDebtGuard } : {}),

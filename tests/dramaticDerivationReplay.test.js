@@ -156,10 +156,14 @@ test('loop → episode → matrix CLIs round-trip decay conditions hermetically'
     '--decay',
     decayJson,
   ]);
+  const srcResult = JSON.parse(fs.readFileSync(path.join(tmp, 'loop/src/result.json'), 'utf8'));
+  assert.equal(srcResult.logicSnapshots.length, srcResult.turnsPlayed);
   const srcDiag = JSON.parse(fs.readFileSync(path.join(tmp, 'loop/src/diagnosis.json'), 'utf8'));
   assert.equal(srcDiag.decay.rate, 0.5);
   assert.ok(srcDiag.corruption);
   assert.equal(srcDiag.corruption.decayEvents, srcDiag.corruption.timeline.length);
+  assert.equal(srcDiag.logicProjection.schema, 'dramatic-derivation.logic-projection-report.v0');
+  assert.equal(srcDiag.logicProjection.turns.length, srcResult.turnsPlayed);
 
   // 2. episode inheriting the decay condition → prefix integrity holds
   run('run-derivation-episode.js', [

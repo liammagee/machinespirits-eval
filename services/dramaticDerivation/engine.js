@@ -80,6 +80,7 @@
 
 import { closure, entails, factKey, matchPattern, proofTree } from './chainer.js';
 import { normalizeDecayConfig, mulberry32 } from './corruption.js';
+import { buildWorldIR, projectWorldIRLogic } from './guardCompiler.js';
 import { proofDebtReport, tutorProofDebtView } from './proofDebt.js';
 import { createRuntimeMonitor } from './runtimeMonitor.js';
 import { derivationDistance, detectStall } from './slope.js';
@@ -148,12 +149,15 @@ export async function runDrama({ world, roles, options = {} }) {
   const acts = options.acts ? normalizeActsConfig(options.acts) : null;
   const runtimeMonitor = options.guardSpec ? createRuntimeMonitor(world, options.guardSpec) : null;
   const proofDebtGuardActive = Boolean(options.proofDebtGuard);
+  const logicProjectionActive = Boolean(options.logicProjection);
+  const worldIR = logicProjectionActive ? buildWorldIR(world) : null;
   const actState = acts ? { index: 1, startTurn: 1, brief: '', history: [] } : null;
   const reconstructionRows = []; // {turn, believed, truth} — reconstructing-tutor dial (roles-layer)
   const plotRows = []; // {act, turn, holdByEnd, withhold, friction, fallback} — C1 act-plot dial (roles-layer)
   const plotAuditRows = []; // {turn, [final,] act, clauses, summary[, arc][, throughlineAudit]} — C1 act-close audits
   const throughlineRows = []; // {act, turn, trigger[, reason], arc, holdToEnd, risk, salvage} — two-layer planning
   const proofDebtRows = []; // guard audit rows — proof-critical decayed exhibits offered to the tutor
+  const logicSnapshots = []; // harness-only per-turn board closure over the canonical logic IR
   const ledger = []; // {turn, premiseId, via}
   const releasedKeys = new Set();
   const releasedFacts = [];
@@ -379,6 +383,41 @@ export async function runDrama({ world, roles, options = {} }) {
     proofDebtGuardActive && corruption
       ? proofDebtReport(world, { grounded, releasedIdByKey, turn })
       : { turn, active: false, dNow: derivationDistance(world, validGroundedFacts()), debts: [] };
+
+  const decayedPremiseIds = () =>
+    [...grounded.entries()]
+      .filter(([, entry]) => entry.decayed)
+      .map(([key]) => premiseIdForKey(key))
+      .filter(Boolean)
+      .sort();
+
+  const groundedPremiseIds = () =>
+    validGroundedFacts()
+      .map((fact) => premiseIdForKey(factKey(fact)))
+      .filter(Boolean)
+      .sort();
+
+  const recordLogicSnapshot = (turn, { trajectoryD, forced }) => {
+    if (!logicProjectionActive) return;
+    const valid = validGroundedFacts();
+    const releasedPremiseIds = ledger.map((entry) => entry.premiseId);
+    const projection = projectWorldIRLogic(worldIR, {
+      groundedFacts: valid,
+      voicedFacts: voicedLedger.map((entry) => entry.fact),
+      releasedPremiseIds,
+      decayedPremiseIds: decayedPremiseIds(),
+    });
+    logicSnapshots.push({
+      turn,
+      trajectoryD,
+      boardD: derivationDistance(world, valid),
+      forced,
+      groundedPremiseIds: groundedPremiseIds(),
+      releasedPremiseIds,
+      decayedPremiseIds: decayedPremiseIds(),
+      projection,
+    });
+  };
 
   // Stage v2 bounding (header): in acts mode the learner's context is (a) its
   // own theory store and (b) the current act only — prior acts' prose,
@@ -901,6 +940,8 @@ export async function runDrama({ world, roles, options = {} }) {
       }
     }
 
+    recordLogicSnapshot(turn, { trajectoryD: D, forced });
+
     // --- live status hook (the attended shell watches the drama through this) ---
     options.onTurn?.({
       turn,
@@ -998,6 +1039,7 @@ export async function runDrama({ world, roles, options = {} }) {
         }
       : {}),
     ...(proofDebtRows.length ? { proofDebt: proofDebtRows } : {}),
+    ...(logicSnapshots.length ? { logicSnapshots } : {}),
     ...(corruption
       ? {
           corruption: {
