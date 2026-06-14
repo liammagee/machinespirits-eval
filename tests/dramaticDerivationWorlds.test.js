@@ -74,6 +74,18 @@ const WORLDS = [
     recognitionTurn: 20,
     concealed: ['oswin', 'caudle', 'crowsfoot'],
   },
+  {
+    worldFile: 'config/drama-derivation/world-007-fengate.yaml',
+    scriptFile: 'config/drama-derivation/tutor-scripts/fengate-v001.md',
+    recognitionTurn: 22,
+    concealed: ['sable', 'bluebit', 'redbarrow', 'fenlime'],
+  },
+  {
+    worldFile: 'config/drama-derivation/world-008-sealhouse.yaml',
+    scriptFile: 'config/drama-derivation/tutor-scripts/sealhouse-v001.md',
+    recognitionTurn: 22,
+    concealed: ['neris', 'greenwax', 'cloisterlamp', 'cloister lamp', 'thornpick'],
+  },
 ];
 
 /** Wraps the mock client, recording every prompt the learner role receives. */

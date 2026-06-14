@@ -1101,3 +1101,253 @@ alongside the lantern and marrick backfills. No mock substitute written.
 `exports/dramatic-derivation/boundary-hethel/corridor-map-world-006-hethel.{md,json}`. **Step-3 paid
 loop ended on this result.** Per the kill rule above, we stop at one distractor world — no second
 distractor world, no rescue arms, no guard variants.
+
+---
+
+## Representation-selection caution - prevent a brittle situation taxonomy
+
+The next live idea is a selector that chooses which representation should govern release conduct
+before a guard acts: page/tempo signal (V), hidden proof-state signal (H), or a conservative fallback.
+The risk is that this becomes a brittle hierarchy of "situation types": a growing classifier whose
+job is to determine, ever more abstractly, what kind of world we are in before choosing a guard. That
+would reproduce the endless-ablation failure mode at a higher level. Each anomaly would invite one
+more category, one more diagnostic feature, and one more rescue rule.
+
+This concern is now a design constraint:
+
+- The selector must be **shallow**: no nested taxonomy, no learned world classifier, no new guard
+  family. It may choose only among existing conduct channels already measured in this plan.
+- The selector must be **pre-declared before any held-out fan**: allowed inputs, decision rule,
+  fallback, and failure read are frozen together.
+- The selector is judged by **low regret**, not by perfect classification. A useful selector should
+  avoid the observed negative-transfer cases (H on Hethel, V on Marrick) while staying close to the
+  better static guard on held-out worlds. It does not need to name the world's essence correctly.
+- A result that requires adding a new category after the fact is a **selector failure**, not a license
+  to elaborate the taxonomy.
+- One bounded selector probe is allowed only if it has fewer moving parts than running another guard
+  ablation. If the selector design becomes more complex than the two guards it arbitrates, stop and
+  write the limitation instead.
+
+Working discipline: whenever the policy proposal adds a feature or branch, ask whether it reduces
+negative transfer on the three measured worlds without creating a new open-ended classification
+burden. If not, it is taxonomy creep and should be cut.
+
+### Future refinement note - align Horn board and proof geometry
+
+Flag for revisit after the current selector/stress runs: the learner's Horn-style board and the
+harness proof DAG are formally close, but the implementation currently treats them through several
+projections. Horn closure is the authoritative inference calculus; `proof_paths` provide the planned
+plot skeleton for `D(t)`; the selector currently reads a narrow proof-tree feature
+(`independentTopLevelJoin`). This is coherent, but lossy.
+
+Potential refinement: introduce a canonical proof-hypergraph IR generated from the Horn world. Fact
+nodes would include base, derived, secret, and mirror facts; rule hyperedges would encode the Horn
+applications; annotations would carry release turn, via, proof-critical status, distractor/mirror
+role, branch membership, and runtime overlays such as grounded, decayed, voiced, unreleased, and
+repair-needed. Then learner board, hidden guard, visible guard, slope monitor, and selector would be
+different projections of the same formal object rather than separately maintained views.
+
+Cautions:
+
+- Do not expose the hidden proof graph, secret path, release schedule, or unreleased premises to the
+  learner or tutor as an answer-key-like object. The learner should still see only its grounded board,
+  public rules, current exhibits, hypotheses, and its own voiced derivations.
+- Do not use the richer IR as a license for a larger situation taxonomy. If graph features are added,
+  freeze a small feature set before any paid run and judge it by low regret.
+- Include guard leverage in the IR. Fengate-style failures may depend not just on proof geometry but
+  on who controls the blocking proof-critical release (`tutor` vs `director`). A selector can classify
+  the topology correctly yet still choose a guard with little leverage over the actual bottleneck.
+- Treat this as a representation cleanup/refinement, not as evidence for a new mechanism. Any new
+  selector feature must first be written as a pre-declared rule and tested as a new selector, not
+  smuggled into the current run's interpretation.
+
+---
+
+## Step 4 draft - one-bit projection-risk selector
+
+**Status:** selector implementation slice landed; no paid selector run and no paper claim are licensed
+by this section until a held-out probe is explicitly sanctioned. This is written to keep the
+representation-selection idea shallow before any selector fan exists.
+
+### Policy
+
+Name: **projection-risk selector**.
+
+Input: the existing static `WorldIR` from `services/dramaticDerivation/guardCompiler.js`, specifically
+`worldIR.proofGraph.secretProof.independentTopLevelJoin`.
+
+Frozen geometry/action vocabulary:
+
+| geometry row | action | implementation status |
+|---|---|---|
+| linear-coupled | V (`--pacing-guard-visible`) | non-disjoint top-level proof projection |
+| forked-depth | H (`--pacing-guard`) | independent top-level proof join |
+| linear-distractor | V / anti-H | non-disjoint top-level proof projection; **not** a separate code branch |
+
+The distinction between linear-coupled and linear-distractor is kept as reporting vocabulary because
+it explains Lantern versus Hethel. It is not used as an online selector feature: both rows map to V,
+so adding a distractor detector would only create taxonomy creep without changing the action.
+
+Decision rule:
+
+```text
+if secret proof has independent top-level branches:
+  select H = hidden proof-state pacing guard (--pacing-guard)
+else:
+  select V = page/tempo visible guard (--pacing-guard-visible)
+```
+
+Abort rule: if `WorldIR` cannot be built, the proof tree is missing, or the selector input is absent,
+the selector arm does not run. It does not fall through to a hand-written situation label.
+
+What the rule is allowed to know: one formal topology bit, computed before the run from the authored
+world. It does not read the transcript, learner persona, decoy prose, world title, or any post-hoc
+failure mode. The selected guard may then read its ordinary measured channel (H reads proof-state
+solvency; V reads page/tempo), unchanged.
+
+### Why this is not a situation taxonomy
+
+The selector does not classify "fork world", "distractor world", "linear world", or any semantic
+scenario family. It asks one narrower question: **can local visible uptake falsely project global
+readiness because the secret proof requires disjoint top-level branches?** If yes, use the guard that
+can see global proof distance. If no, use the guard that has so far best preserved page tempo.
+
+No second feature is currently licensed. In particular:
+
+- Do not add a "distractor detector."
+- Do not add a "quick learner" detector.
+- Do not add a learned classifier over worlds or transcripts.
+- Do not add a dynamic switch unless this static one-bit selector fails and the failure is written as
+  a selector failure first.
+
+### Implementation slice
+
+Landed helpers and wiring:
+
+- `services/dramaticDerivation/guardCompiler.js#selectGuardRepresentation`
+- `scripts/run-derivation-loop.js --pacing-guard-selective`
+- `services/dramaticDerivation/index.js` export for the selector helper
+- `tests/dramaticDerivationGuardCompiler.test.js` mapping and fail-closed coverage
+
+The selector chooses once at run setup, then delegates to the existing H or V guard unchanged. The run
+records `pacingGuardSelective`, `pacingGuardSelector`, and the resolved active guard flag in
+`diagnosis.json`.
+
+### Retrospective sanity check (training data, not evidence)
+
+The rule exactly matches the three measured worlds, which is useful for sanity and dangerous as
+evidence. It must be treated as the training set that motivated the rule.
+
+| world | selector input | selected guard | observed selected-guard outcome | observed rejected-guard outcome |
+|---|---|---|---|---|
+| `world_002_lantern` | overlapping top branches | V | V 5/5 | H 4/5 |
+| `world_005_marrick` | independent top-level join | H | H 5/5 | V 0/5 |
+| `world_006_hethel` | overlapping top branches | V | V 5/5 | H 1/5 |
+
+Retrospective read: static H and static V each suffer one negative-transfer world; the selector avoids
+both on the worlds that taught us the rule. That is not a result. It is only a coherence check that
+the proposed rule is the minimal explanation currently on the table.
+
+### Success criterion
+
+Judge the selector by **low regret**, not by naming the world's "true type."
+
+For a held-out selector probe, pre-declare:
+
+- the world or worlds,
+- the selector input value,
+- the selected guard,
+- the rejected guard,
+- the exact arms needed to estimate regret,
+- and the stop rule if regret appears.
+
+Primary endpoint: selected guard avoids catastrophic negative transfer relative to the rejected guard.
+Secondary endpoint: selected guard is close to the better static guard on the same held-out world, if
+that static comparison is actually run. If the selected guard is worse and the only rescue is adding a
+new feature or category, record **selector failure** and stop.
+
+### Bounded implementation sketch
+
+If sanctioned, implementation should be thinner than either guard:
+
+1. Add a pure selector helper that consumes `WorldIR` and returns `{selected: "hidden"|"visible",
+   reason}`.
+2. Add one CLI flag, e.g. `--pacing-guard-selective`, mutually exclusive with `--pacing-guard` and
+   `--pacing-guard-visible`, requiring `--release-authority`.
+3. At run setup, compile `WorldIR`, choose H or V once for the whole arm, and then delegate to the
+   existing guard unchanged. No online switching.
+4. Persist the selector input, selected guard, and reason in the run result/diagnosis so the arm can
+   be audited.
+5. Tests only need to prove the selector maps the frozen worlds as declared and that the selected
+   guard path is exactly one of the existing H/V paths.
+
+No new prompt language beyond the already-measured H or V prompt channel is allowed. The selector
+chooses a representation; it does not author a third representation.
+
+### Held-out selector probe draft
+
+**Status:** frozen design draft only; not sanctioned to run here. The held-out worlds are existing
+authored worlds, not new worlds written to flatter the selector:
+
+| held-out world | selector input | selector action | reason for inclusion |
+|---|---|---|---|
+| `world_003_bitterwell` | independent top-level join | H | held-out fork/depth-side case |
+| `world_004_withercombe` | non-disjoint projection | V | held-out non-fork/page-side case |
+
+Arms per world, each as its own k=5 fan, all first-pass/no re-roll:
+
+| arm | flag state |
+|---|---|
+| baseline | no guard |
+| static H | `--pacing-guard` |
+| static V | `--pacing-guard-visible` |
+| selector S | `--pacing-guard-selective` |
+
+Primary claim: **low-regret representation selection**, not universal grounding. Per world, S passes
+only if it avoids catastrophic negative transfer and stays within one grounded arm of the best static
+guard among H/V/baseline at k=5. Catastrophic negative transfer is defined before the run as: S
+grounds <=1/5 while any comparator grounds >=4/5, or S uniquely concentrates a failure mode that the
+best comparator avoids. If either world triggers that condition, write selector failure and stop; no
+new selector feature is licensed.
+
+Secondary reads:
+
+- Does S match the guard it selected closely enough that the implementation is behaving like pure
+  delegation rather than a third prompt condition?
+- Does S avoid the known negative-transfer pattern: V on independent joins and H on page-tempo worlds?
+- Does the failure-mode table explain regret better than the raw grounding rate?
+
+Run-cost guardrail: this is already larger than prior k=5 probes (2 worlds x 4 arms x 5 = 40 arms).
+It needs an explicit go/no-go sanction before any paid execution. If that is too large, the allowed
+reduction is **one** held-out world chosen before execution; the disallowed reduction is picking a
+world after inspecting mock/real outcomes.
+
+### H-branch stress candidates after Bitterwell ceiling signal
+
+**Status:** authored design candidates only; no paid arms exist and no selector claim is licensed by
+this section. These worlds were created after the selector-held-out Bitterwell baseline and H arms
+showed ceiling behavior, so they are explicitly not part of the original held-out probe. They are a
+pre-run replacement pool for the H-branch stress question: can the selector match H and avoid V-like
+negative transfer on a newly authored independent-join world with real headroom?
+
+Authored candidates:
+
+| candidate | selector input | selector action | stress design |
+|---|---|---|---|
+| `world_007_fengate` | independent top-level join | H | lock branch closes early; cart/load branch closes late; breach needs the same hand at both |
+| `world_008_sealhouse` | independent top-level join | H | wax/lifting branch closes early; lock/entry branch closes late; theft needs both for the same hand |
+
+If sanctioned, each candidate must run the same four-arm fan before any interpretation:
+
+| arm | flag state |
+|---|---|
+| baseline | no guard |
+| static H | `--pacing-guard` |
+| static V | `--pacing-guard-visible` |
+| selector S | `--pacing-guard-selective` |
+
+First-pass/no-re-roll discipline applies. If the first candidate is ceilinged across all arms, the
+second candidate may be used as a predeclared fallback. If both are ceilinged, record that the new
+stress authoring failed to produce headroom; do not add a third world in the same loop. Success is
+still low regret, not universal grounding: S should behave like H on the independent-join topology
+and avoid the V-on-fork failure mode without adding any selector feature.

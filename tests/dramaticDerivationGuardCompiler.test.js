@@ -1,11 +1,17 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
-import { buildWorldIR, compileGuardSpec, summarizeGuardSpec } from '../services/dramaticDerivation/guardCompiler.js';
+import {
+  buildWorldIR,
+  compileGuardSpec,
+  selectGuardRepresentation,
+  summarizeGuardSpec,
+} from '../services/dramaticDerivation/guardCompiler.js';
 import { loadWorld } from '../services/dramaticDerivation/world.js';
 
 const lantern = loadWorld('config/drama-derivation/world-002-lantern.yaml');
 const marrick = loadWorld('config/drama-derivation/world-005-marrick.yaml');
+const hethel = loadWorld('config/drama-derivation/world-006-hethel.yaml');
 
 function withRuleIf(world, ruleId, nextIf) {
   return {
@@ -61,6 +67,29 @@ test('GuardSpec keeps lantern visible projection replay-gated rather than global
   const spec = compileGuardSpec(lantern, buildWorldIR(lantern));
   assert.equal(spec.guards.visible_projection.status, 'candidate_requires_replay');
   assert.ok(spec.guards.visible_projection.validation.compareToHiddenReference);
+});
+
+test('representation selector maps measured worlds with the one-bit topology rule', () => {
+  const rows = [
+    [lantern, false, 'linear_coupled_or_distractor', 'visible', '--pacing-guard-visible'],
+    [marrick, true, 'forked_depth', 'hidden', '--pacing-guard'],
+    [hethel, false, 'linear_coupled_or_distractor', 'visible', '--pacing-guard-visible'],
+  ];
+
+  for (const [world, independentTopLevelJoin, geometryFamily, selected, selectedFlag] of rows) {
+    const decision = selectGuardRepresentation(buildWorldIR(world));
+    assert.equal(decision.input.independentTopLevelJoin, independentTopLevelJoin);
+    assert.equal(decision.geometryFamily, geometryFamily);
+    assert.equal(decision.selected, selected);
+    assert.equal(decision.selectedFlag, selectedFlag);
+  }
+});
+
+test('representation selector fails closed when the topology bit is unavailable', () => {
+  assert.throws(
+    () => selectGuardRepresentation({ proofGraph: { secretProof: {} } }),
+    /selector requires WorldIR secretProof\.independentTopLevelJoin/,
+  );
 });
 
 test('summarizeGuardSpec exposes the report-level P1 signals', () => {

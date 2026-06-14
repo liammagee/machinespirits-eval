@@ -148,6 +148,12 @@
  *                                       vs-visible-signal contrast; services/
  *                                       dramaticDerivation/visiblePacing.js, audit-
  *                                       tested to import no hidden-state module.)
+ *     [--pacing-guard-selective]       (Step-4 draft selector; requires
+ *                                       --release-authority, excludes explicit H/V.
+ *                                       Builds static WorldIR once and selects H
+ *                                       for independent top-level secret joins,
+ *                                       otherwise V. No online switching and no
+ *                                       new prompt channel.)
  *     [--proof-debt-guard]             (requires --repair-clause. When decay has
  *                                       dropped an already-staged proof-critical
  *                                       exhibit, the harness authorizes a restore
@@ -222,7 +228,11 @@ import {
   runCritic,
   commentaryFileMd,
 } from '../services/dramaticDerivation/index.js';
-import { buildWorldIR, compileGuardSpec } from '../services/dramaticDerivation/guardCompiler.js';
+import {
+  buildWorldIR,
+  compileGuardSpec,
+  selectGuardRepresentation,
+} from '../services/dramaticDerivation/guardCompiler.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
@@ -392,23 +402,32 @@ async function main() {
     process.exit(1);
   }
   const releaseAuthority = flag('release-authority');
-  const pacingGuard = flag('pacing-guard');
-  if (pacingGuard && !releaseAuthority) {
+  const requestedPacingGuard = flag('pacing-guard');
+  if (requestedPacingGuard && !releaseAuthority) {
     console.error('--pacing-guard requires --release-authority (it narrows the exhibit window)');
     process.exit(1);
   }
   // Step-1 V arm: the form-matched guard that decides from transcript-visible
   // state only. Same authority requirement as --pacing-guard, and mutually
   // exclusive with it — the experiment IS hidden-signal vs visible-signal.
-  const visibleGuard = flag('pacing-guard-visible');
-  if (visibleGuard && !releaseAuthority) {
+  const requestedVisibleGuard = flag('pacing-guard-visible');
+  if (requestedVisibleGuard && !releaseAuthority) {
     console.error('--pacing-guard-visible requires --release-authority (it narrows the exhibit window)');
     process.exit(1);
   }
-  if (visibleGuard && pacingGuard) {
+  if (requestedVisibleGuard && requestedPacingGuard) {
     console.error(
       '--pacing-guard-visible is mutually exclusive with --pacing-guard (the hidden-vs-visible-signal contrast runs one guard per arm)',
     );
+    process.exit(1);
+  }
+  const pacingGuardSelective = flag('pacing-guard-selective');
+  if (pacingGuardSelective && !releaseAuthority) {
+    console.error('--pacing-guard-selective requires --release-authority (it selects a release-window guard)');
+    process.exit(1);
+  }
+  if (pacingGuardSelective && (requestedPacingGuard || requestedVisibleGuard)) {
+    console.error('--pacing-guard-selective is mutually exclusive with explicit --pacing-guard / --pacing-guard-visible');
     process.exit(1);
   }
   const proofDebtGuard = flag('proof-debt-guard');
@@ -419,7 +438,11 @@ async function main() {
     process.exit(1);
   }
   const compiledGuard = flag('compiled-guard');
-  if (compiledGuard && !pacingGuard && !proofDebtGuard) {
+  if (compiledGuard && pacingGuardSelective) {
+    console.error('--compiled-guard is not combined with --pacing-guard-selective in this selector slice');
+    process.exit(1);
+  }
+  if (compiledGuard && !requestedPacingGuard && !proofDebtGuard) {
     console.error('--compiled-guard requires --pacing-guard and/or --proof-debt-guard');
     process.exit(1);
   }
@@ -467,7 +490,11 @@ async function main() {
   }
 
   const script = fs.readFileSync(scriptPath, 'utf8');
-  const guardSpec = compiledGuard ? compileGuardSpec(world, buildWorldIR(world)) : null;
+  const worldIR = compiledGuard || pacingGuardSelective ? buildWorldIR(world) : null;
+  const pacingGuardSelector = pacingGuardSelective ? selectGuardRepresentation(worldIR) : null;
+  const pacingGuard = pacingGuardSelector ? pacingGuardSelector.selected === 'hidden' : requestedPacingGuard;
+  const visibleGuard = pacingGuardSelector ? pacingGuardSelector.selected === 'visible' : requestedVisibleGuard;
+  const guardSpec = compiledGuard ? compileGuardSpec(world, worldIR || buildWorldIR(world)) : null;
   const scriptName = path.basename(scriptPath, path.extname(scriptPath));
   const label = arg('label', `${scriptName}-${mode}-${timestamp()}`);
   const loopBaseDir = path.resolve(ROOT, arg('out', 'exports/dramatic-derivation/loop'));
@@ -534,6 +561,11 @@ async function main() {
   if (releaseAuthority) {
     console.log(
       `tutor   RELEASE AUTHORITY ON — the exhibit calendar is the tutor's to keep or bend (±${RELEASE_LATITUDE} turns, declared reason; the harness force-plays at the hold limit)`,
+    );
+  }
+  if (pacingGuardSelector) {
+    console.log(
+      `tutor   SELECTIVE PACING ON — ${pacingGuardSelector.input.independentTopLevelJoin ? 'independent top-level join' : 'no independent top-level join'} -> ${pacingGuardSelector.selectedFlag}`,
     );
   }
   if (pacingGuard) {
@@ -662,6 +694,8 @@ async function main() {
     confront,
     releaseAuthority,
     pacingGuard,
+    pacingGuardSelective,
+    pacingGuardSelector,
     // Step-1 V arm (the visible-signal guard) — false on every run before
     // 2026-06-13. Recorded as its own top-level flag, distinct from pacingGuard,
     // so the failure-mode classifier's guardStateOf and the Step-1 analysis read

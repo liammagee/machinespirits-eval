@@ -5,6 +5,8 @@ import { VISIBLE_GUARD_DEFAULTS } from './visiblePacing.js';
 export const GUARD_COMPILER_SCHEMA = 'dramatic-derivation.guard-compiler.v0';
 export const DEFAULT_RELEASE_LATITUDE = 2;
 
+export const REPRESENTATION_SELECTOR_SCHEMA = 'dramatic-derivation.representation-selector.v0';
+
 function predicateOf(fact) {
   return Array.isArray(fact) ? fact[0] : null;
 }
@@ -238,6 +240,27 @@ function visibleProjectionStatus(worldIR) {
   return {
     status: 'candidate_requires_replay',
     reason: 'no disjoint top-level secret join detected; replay agreement with hidden reference is still required',
+  };
+}
+
+export function selectGuardRepresentation(worldIR) {
+  const secretProof = worldIR?.proofGraph?.secretProof;
+  if (!secretProof || typeof secretProof.independentTopLevelJoin !== 'boolean') {
+    throw new Error('derivation.guardCompiler: selector requires WorldIR secretProof.independentTopLevelJoin');
+  }
+  const independentTopLevelJoin = secretProof.independentTopLevelJoin;
+  return {
+    schema: REPRESENTATION_SELECTOR_SCHEMA,
+    input: {
+      independentTopLevelJoin,
+    },
+    geometryFamily: independentTopLevelJoin ? 'forked_depth' : 'linear_coupled_or_distractor',
+    selected: independentTopLevelJoin ? 'hidden' : 'visible',
+    selectedFlag: independentTopLevelJoin ? '--pacing-guard' : '--pacing-guard-visible',
+    rejected: independentTopLevelJoin ? 'visible' : 'hidden',
+    reason: independentTopLevelJoin
+      ? 'secret proof has disjoint top-level branches; local visible uptake can falsely project global readiness'
+      : 'secret proof has no disjoint top-level branch split; use page/tempo guard unless a held-out failure proves selector regret',
   };
 }
 

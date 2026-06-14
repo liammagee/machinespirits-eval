@@ -1,0 +1,225 @@
+# WORLD-008 - selector stress world B (H-branch headroom candidate,
+# 2026-06-13). This is the second pre-run stress candidate in case
+# world-007 is also ceilinged. It is not a rescue rule for the selector; it is
+# a separate authored world with the same one-bit selector input: independent
+# top-level proof branches.
+#
+# Design target: an asymmetric fork. The wax branch closes early and gives a
+# satisfying local story about how the seal was lifted. The entry branch
+# closes late. A visible tempo guard may treat the early branch as a near
+# solution; the hidden proof-state guard should see that entry and lifting
+# must be proved for the same hand before S is licensed.
+#
+# Proof DAG:
+#
+#   beta first (the wax):
+#     p_wax + p_lamp --R1--> sealLiftedWith(priorySeal, cloisterLamp)
+#     sealLiftedWith + p_trimmer --R2--> liftedSeal(priorySeal, neris)
+#
+#   alpha late (the lock):
+#     p_scratch + p_pick --R3--> chestOpenedWith(chapterChest, thornpick)
+#     chestOpenedWith + p_holder --R4--> enteredChest(chapterChest, neris)
+#
+#   join:
+#     liftedSeal + enteredChest --R5--> stoleSeal(priorySeal, neris)
+#
+# The mirror, Baldric, has the chapter key and a public wax trade. He owns the
+# ordinary public explanation, but the rules require the lamp trace and the
+# picking trace, neither of which binds to him.
+#
+# CONCEALMENT: neris, greenwax, cloisterLamp, and thornpick exist only in
+# premises/secret. The test suite sweeps the prose variants listed below.
+
+id: world_008_sealhouse
+title: The Chapter Seal
+
+discipline: "Sacristy inquiry (locks, wax, and custody)"
+
+question: "Who stole the chapter seal from the priory chest?"
+question_pattern: [stoleSeal, priorySeal, "?x"]
+
+setting: >-
+  The priory chest was found shut at prime, yet the chapter seal was gone and
+  a false indulgence already hung in the market porch. The town has an answer
+  before the prior has lit the tapers: Baldric the pardoner, keeper of wax and
+  gossip, seen often enough near the sacristy to make a story. You are the
+  novice who keeps the custody roll, frightened by the empty chest and
+  trained to enter only what the inquiry can prove.
+
+learner_voice: >-
+  The custody-roll novice: precise, anxious, deferential to the prior, and
+  too ready to believe that the public sinner must have done the public sin;
+  learning to distinguish an official key from the trace of the actual entry.
+
+secret:
+  fact: [stoleSeal, priorySeal, neris]
+  surface: "Neris stole the chapter seal: she lifted the seal with greenwax at the cloister lamp and entered the chest with the thornpick."
+
+mirror:
+  fact: [stoleSeal, priorySeal, baldric]
+
+rules:
+  - id: R1_wax
+    gloss: >-
+      A lifted seal leaves its wax and flame. If the seal case carries a wax
+      trace, and that wax was melted at a lamp, then the seal was lifted with
+      that lamp's wax.
+    if:
+      - [waxTraceOf, "?seal", "?wax"]
+      - [waxMeltedAt, "?wax", "?lamp"]
+    then:
+      - [sealLiftedWith, "?seal", "?lamp"]
+  - id: R2_lifter
+    gloss: >-
+      The hand at the lifted seal is the keeper of the lamp that melted the
+      wax. If the seal was lifted with a lamp, and one person trimmed that
+      lamp that night, that person lifted the seal.
+    if:
+      - [sealLiftedWith, "?seal", "?lamp"]
+      - [lampTrimmedBy, "?lamp", "?x"]
+    then:
+      - [liftedSeal, "?seal", "?x"]
+  - id: R3_lock
+    gloss: >-
+      A chest opened by stealth names the tool, not the key. If the chest lock
+      bears a pick scratch, and that pick opens the chest, then the chest was
+      opened with that pick.
+    if:
+      - [scratchOf, "?chest", "?tool"]
+      - [pickOpens, "?tool", "?chest"]
+    then:
+      - [chestOpenedWith, "?chest", "?tool"]
+  - id: R4_entry
+    gloss: >-
+      The hand at the chest is the holder of the tool that opened it. If the
+      chest was opened with a tool, and one person held that tool that night,
+      that person entered the chest.
+    if:
+      - [chestOpenedWith, "?chest", "?tool"]
+      - [toolHeldBy, "?tool", "?x"]
+    then:
+      - [enteredChest, "?chest", "?x"]
+  - id: R5_theft
+    gloss: >-
+      Theft of the seal needs both custody broken and the seal lifted. Whoever
+      entered the chest and lifted the seal stole it.
+    if:
+      - [enteredChest, chapterChest, "?x"]
+      - [liftedSeal, "?seal", "?x"]
+    then:
+      - [stoleSeal, "?seal", "?x"]
+
+premises:
+  - id: p_wax
+    fact: [waxTraceOf, priorySeal, greenwax]
+    surface: >-
+      Under the seal case's rim the prior finds a crescent of green wax, thin
+      as a fingernail and pressed where no honest sealing wax should touch.
+  - id: p_lamp
+    fact: [waxMeltedAt, greenwax, cloisterLamp]
+    surface: >-
+      The wax-burner matches the smell and ash: that green wax melts only at
+      the small cloister lamp, whose smoky wick leaves black grit in the edge.
+  - id: p_trimmer
+    fact: [lampTrimmedBy, cloisterLamp, neris]
+    surface: >-
+      The lamp roll names the night hand. Neris trimmed the cloister lamp
+      after compline and kept its snuff-box until the bell for prime.
+  - id: p_scratch
+    fact: [scratchOf, chapterChest, thornpick]
+    surface: >-
+      The chest lock was not turned cleanly by its key. Inside the ward is a
+      three-pronged scratch, narrow and hooked, the mark of a thornpick worked
+      under the plate.
+  - id: p_pick
+    fact: [pickOpens, thornpick, chapterChest]
+    surface: >-
+      The smith lays the little hooked pick into the ward and it answers the
+      scratch tooth for tooth. It opens the chest with the same dragging catch.
+  - id: p_holder
+    fact: [toolHeldBy, thornpick, neris]
+    surface: >-
+      The infirmary inventory, checked at dawn, has one tool missing from its
+      splint box: the thornpick for drawing thorns, signed out by Neris and
+      returned with wax under the prongs.
+  - id: m_key
+    fact: [keyHeldBy, chapterKey, baldric]
+    surface: >-
+      Baldric held the chapter key often enough when pardons were sealed; the
+      market says a key in a pardoner's hand is proof enough.
+  - id: m_waxtrade
+    fact: [sellsWax, baldric]
+    surface: >-
+      Baldric sells wax at the porch and knows every color used for writs,
+      indulgences, and town seals. If wax made the fraud, the town says wax
+      points to him.
+  - id: m_near
+    fact: [seenNear, baldric, sacristy]
+    surface: >-
+      A lay brother saw Baldric near the sacristy after vespers, counting
+      coins under his cloak and looking twice toward the chest door.
+
+background:
+  - [keptIn, priorySeal, chapterChest]
+  - [foundMissingAt, priorySeal, prime]
+  - [pardonerOf, baldric, marketPorch]
+
+incompatible:
+  - [[stoleSeal, priorySeal, neris], [stoleSeal, priorySeal, baldric]]
+
+proof_paths:
+  - premises: [p_wax, p_lamp, p_trimmer, p_scratch, p_pick, p_holder]
+
+release_schedule:
+  - { turn: 2, premise: m_key, via: director }
+  - { turn: 4, premise: p_wax, via: tutor }
+  - { turn: 6, premise: m_waxtrade, via: director }
+  - { turn: 8, premise: p_lamp, via: tutor }
+  - { turn: 10, premise: m_near, via: director }
+  - { turn: 12, premise: p_trimmer, via: director }
+  - { turn: 14, premise: p_scratch, via: tutor }
+  - { turn: 18, premise: p_pick, via: tutor }
+  - { turn: 22, premise: p_holder, via: director }
+
+dramaturgy:
+  acts:
+    - act: I
+      title: The Public Sinner
+      turns: [1, 5]
+      intent: >-
+        Baldric's key and the first wax trace put the learner inside the
+        town's ready story. The inquiry must distinguish public custody from
+        the physical trace that actually lifted the seal.
+    - act: II
+      title: The Wax Branch
+      turns: [6, 13]
+      intent: >-
+        The wax is tied to the lamp, and the lamp's night hand is named. This
+        closes one branch early: the seal was lifted by a hand. The learner
+        should feel that local closure without mistaking it for theft.
+    - act: III
+      title: The Closed Chest
+      turns: [14, 17]
+      intent: >-
+        The chest now resists the official-key story. A scratch opens the late
+        branch: the theft still needs entry, not only lifted wax.
+    - act: IV
+      title: The Tool Answers
+      turns: [18, 21]
+      intent: >-
+        The pick fits the scratch. The learner should hold the wax branch and
+        the lock branch as two separate requirements, one named and one still
+        missing a hand.
+    - act: V
+      title: The Same Night Hand
+      turns: [22, 28]
+      intent: >-
+        The tool holder is named. The lifted-seal branch and entry branch meet
+        in one person. The learner must say the theft by both proofs, not by
+        the town's dislike of Baldric.
+
+slope:
+  t_min: 20
+  aporia_window: 6
+
+turn_cap: 28
