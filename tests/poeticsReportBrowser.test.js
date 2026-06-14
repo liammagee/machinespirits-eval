@@ -16,6 +16,7 @@ import {
   parseTranscriptPreview,
   renderBrowserHtml,
   renderDashboardHtml,
+  renderDerivationLogicVisualizer,
   renderOntologyHtml,
   renderRubricHtml,
   saveBrowserLabel,
@@ -908,6 +909,88 @@ describe('dashboard front door', () => {
       assert.equal(listItems(db, { discipline: 'chemistry', runId: 'poetics-second-run' }).length, 0);
       assert.equal(listItems(db, { discipline: 'chemistry', runId: 'poetics-test-run' }).length, 1);
     }));
+});
+
+describe('derivation logic visualizer', () => {
+  it('renders logic projection turns with target-path progress and derived facts', () => {
+    const html = renderDerivationLogicVisualizer({
+      schema: 'dramatic-derivation.logic-projection-report.v0',
+      turns: [
+        {
+          turn: 1,
+          counts: { firedHyperedges: 0, derivedUnvoiced: 0 },
+          firedHyperedges: [],
+          derivedUnvoiced: [],
+          secret: {
+            derived: false,
+            sourcePremiseIds: ['p1', 'p2'],
+            heldSourcePremiseIds: ['p1'],
+            missingSourcePremiseIds: ['p2'],
+            decayedSourcePremiseIds: [],
+          },
+          mirror: {
+            derived: false,
+            sourcePremiseIds: ['m1'],
+            heldSourcePremiseIds: [],
+            missingSourcePremiseIds: ['m1'],
+            decayedSourcePremiseIds: [],
+          },
+          decayedProofCriticalSources: [],
+        },
+        {
+          turn: 2,
+          counts: { firedHyperedges: 1, derivedUnvoiced: 1 },
+          firedHyperedges: [
+            {
+              ruleId: 'R1',
+              inputFactKeys: ['a'],
+              outputFactKey: 'b',
+              outputFact: ['foulFrom', 'well', 'fontHouse'],
+              outputPredicate: 'foulFrom',
+            },
+          ],
+          derivedUnvoiced: [
+            {
+              factKey: 'b',
+              fact: ['foulFrom', 'well', 'fontHouse'],
+              predicate: 'foulFrom',
+              roles: ['derived'],
+              rule: 'R1',
+              sourcePremiseIds: ['p1', 'p2'],
+              proofCritical: true,
+            },
+          ],
+          secret: {
+            derived: true,
+            sourcePremiseIds: ['p1', 'p2'],
+            heldSourcePremiseIds: ['p1', 'p2'],
+            missingSourcePremiseIds: [],
+            decayedSourcePremiseIds: [],
+          },
+          mirror: {
+            derived: false,
+            sourcePremiseIds: ['m1'],
+            heldSourcePremiseIds: [],
+            missingSourcePremiseIds: ['m1'],
+            decayedSourcePremiseIds: ['m1'],
+          },
+          decayedProofCriticalSources: ['m1'],
+        },
+      ],
+    });
+
+    assert.match(html, /class="logicviz__svg"/);
+    assert.match(html, /logic view is harness-only/);
+    assert.match(html, /R1/);
+    assert.match(html, /foulFrom well fontHouse/);
+    assert.match(html, /secret 2\/2 forced/);
+    assert.match(html, /mirror held 0\/1 · decayed m1/);
+  });
+
+  it('renders a clear empty state for older derivation artifacts', () => {
+    const html = renderDerivationLogicVisualizer(null);
+    assert.match(html, /No logic projection snapshots are present/);
+  });
 });
 
 describe('usability: browse search, empty scaffold, atlas legend, rubric page', () => {

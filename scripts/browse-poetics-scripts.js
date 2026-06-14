@@ -2630,6 +2630,144 @@ function derivationSlopeCaption(slope) {
   return `<p class="slopecap">slope ${overall === null || overall === undefined ? '—' : overall.toFixed(2)} D/turn overall (D ${slope.d0}→${slope.dFinal})${perAct ? ` · per movement: ${perAct}` : ''} — D counts the premises still missing for the nearest proof of the secret; ▲ marks evidence entering the room.</p>`;
 }
 
+function shortFactLabel(fact) {
+  if (!Array.isArray(fact) || !fact.length) return '—';
+  return fact.join(' ');
+}
+
+function targetProgress(target) {
+  const total = target?.sourcePremiseIds?.length || 0;
+  const held = target?.heldSourcePremiseIds?.length || 0;
+  const decayed = target?.decayedSourcePremiseIds?.length || 0;
+  return { total, held, decayed, pct: total ? held / total : target?.derived ? 1 : 0 };
+}
+
+function renderDerivationLogicVisualizer(logicProjection) {
+  const turns = logicProjection?.turns || [];
+  if (!turns.length) {
+    return '<p class="notice-missing">No logic projection snapshots are present for this run. New loop artifacts include them automatically.</p>';
+  }
+
+  const W = 940;
+  const labelW = 92;
+  const right = 12;
+  const top = 20;
+  const rowH = 34;
+  const gap = 8;
+  const rows = [
+    { key: 'rules', label: 'rules fired' },
+    { key: 'unvoiced', label: 'unvoiced' },
+    { key: 'secret', label: 'secret path' },
+    { key: 'mirror', label: 'mirror path' },
+  ];
+  const H = top + rows.length * rowH + (rows.length - 1) * gap + 36;
+  const colW = (W - labelW - right) / Math.max(turns.length, 1);
+  const maxRules = Math.max(1, ...turns.map((t) => t.counts?.firedHyperedges || 0));
+  const maxUnvoiced = Math.max(1, ...turns.map((t) => t.counts?.derivedUnvoiced || 0));
+  const yFor = (i) => top + i * (rowH + gap);
+  const svg = [];
+
+  rows.forEach((row, i) => {
+    const y = yFor(i);
+    svg.push(
+      `<text x="8" y="${y + rowH / 2 + 4}" class="logicviz__label">${escapeHtml(row.label)}</text>`,
+      `<line x1="${labelW}" y1="${y + rowH}" x2="${W - right}" y2="${y + rowH}" class="logicviz__rule"/>`,
+    );
+  });
+
+  turns.forEach((turn, i) => {
+    const x = labelW + i * colW;
+    const cx = x + colW / 2;
+    const activity = (turn.counts?.firedHyperedges || 0) + (turn.counts?.derivedUnvoiced || 0);
+    if (activity > 0) {
+      svg.push(`<rect x="${x.toFixed(1)}" y="${top - 8}" width="${colW.toFixed(1)}" height="${H - top - 18}" class="logicviz__active"/>`);
+    }
+    if (i % 2 === 0) {
+      svg.push(`<text x="${cx.toFixed(1)}" y="${H - 8}" text-anchor="middle" class="logicviz__tick">t${turn.turn}</text>`);
+    }
+
+    const rules = turn.counts?.firedHyperedges || 0;
+    const ruleH = rules ? Math.max(3, (rules / maxRules) * (rowH - 8)) : 0;
+    const rulesTitle = (turn.firedHyperedges || [])
+      .map((edge) => `${edge.ruleId} → ${shortFactLabel(edge.outputFact)}`)
+      .join('\n');
+    svg.push(
+      `<rect x="${(x + 3).toFixed(1)}" y="${(yFor(0) + rowH - ruleH).toFixed(1)}" width="${Math.max(2, colW - 6).toFixed(1)}" height="${ruleH.toFixed(1)}" class="logicviz__bar logicviz__bar--rules"><title>${escapeHtml(rulesTitle || `turn ${turn.turn}: no rule hyperedges fired`)}</title></rect>`,
+    );
+
+    const unvoiced = turn.counts?.derivedUnvoiced || 0;
+    const unvoicedH = unvoiced ? Math.max(3, (unvoiced / maxUnvoiced) * (rowH - 8)) : 0;
+    const unvoicedTitle = (turn.derivedUnvoiced || [])
+      .map((node) => `${shortFactLabel(node.fact)} (${node.rule || 'rule?'})`)
+      .join('\n');
+    svg.push(
+      `<rect x="${(x + 3).toFixed(1)}" y="${(yFor(1) + rowH - unvoicedH).toFixed(1)}" width="${Math.max(2, colW - 6).toFixed(1)}" height="${unvoicedH.toFixed(1)}" class="logicviz__bar logicviz__bar--unvoiced"><title>${escapeHtml(unvoicedTitle || `turn ${turn.turn}: no derived-unvoiced facts`)}</title></rect>`,
+    );
+
+    for (const [rowIndex, targetKey] of [
+      [2, 'secret'],
+      [3, 'mirror'],
+    ]) {
+      const target = turn[targetKey];
+      const p = targetProgress(target);
+      const y = yFor(rowIndex);
+      const w = Math.max(2, colW - 6);
+      const fill = Math.max(0, Math.min(1, p.pct)) * w;
+      const title = `${targetKey} ${target?.derived ? 'derived' : 'not derived'} at turn ${turn.turn}
+held ${p.held}/${p.total} source premises${target?.missingSourcePremiseIds?.length ? `; missing ${target.missingSourcePremiseIds.join(', ')}` : ''}${target?.decayedSourcePremiseIds?.length ? `; decayed ${target.decayedSourcePremiseIds.join(', ')}` : ''}`;
+      svg.push(
+        `<rect x="${(x + 3).toFixed(1)}" y="${(y + 8).toFixed(1)}" width="${w.toFixed(1)}" height="${(rowH - 16).toFixed(1)}" class="logicviz__path"><title>${escapeHtml(title)}</title></rect>`,
+        `<rect x="${(x + 3).toFixed(1)}" y="${(y + 8).toFixed(1)}" width="${fill.toFixed(1)}" height="${(rowH - 16).toFixed(1)}" class="logicviz__pathfill logicviz__pathfill--${targetKey}"><title>${escapeHtml(title)}</title></rect>`,
+      );
+      if (p.decayed) {
+        svg.push(
+          `<text x="${cx.toFixed(1)}" y="${(y + rowH - 5).toFixed(1)}" text-anchor="middle" class="logicviz__decay">×<title>${escapeHtml(title)}</title></text>`,
+        );
+      }
+      if (target?.derived) {
+        svg.push(
+          `<text x="${cx.toFixed(1)}" y="${(y + 20).toFixed(1)}" text-anchor="middle" class="logicviz__derived">●<title>${escapeHtml(title)}</title></text>`,
+        );
+      }
+    }
+  });
+
+  const activeTurns = turns.filter(
+    (t) =>
+      (t.firedHyperedges || []).length ||
+      (t.derivedUnvoiced || []).length ||
+      t.secret?.derived ||
+      t.mirror?.derived ||
+      (t.decayedProofCriticalSources || []).length,
+  );
+  const details = activeTurns.length
+    ? activeTurns
+        .map((turn) => {
+          const rules = (turn.firedHyperedges || [])
+            .map((edge) => `<li><code>${escapeHtml(edge.ruleId)}</code> → <code>${escapeHtml(shortFactLabel(edge.outputFact))}</code></li>`)
+            .join('');
+          const unvoiced = (turn.derivedUnvoiced || [])
+            .map((node) => `<li><code>${escapeHtml(shortFactLabel(node.fact))}</code>${node.rule ? ` via <code>${escapeHtml(node.rule)}</code>` : ''}</li>`)
+            .join('');
+          const secret = targetProgress(turn.secret);
+          const mirror = targetProgress(turn.mirror);
+          return `<details class="logicturn"><summary><span class="mono">t${turn.turn}</span> rules ${turn.counts?.firedHyperedges || 0} · unvoiced ${turn.counts?.derivedUnvoiced || 0} · secret ${secret.held}/${secret.total}${turn.secret?.derived ? ' forced' : ''} · mirror ${mirror.held}/${mirror.total}${turn.mirror?.derived ? ' derived' : ''}</summary>
+<div class="logicturn__grid">
+<div><strong>rules fired</strong>${rules ? `<ul>${rules}</ul>` : '<p class="mono">none</p>'}</div>
+<div><strong>derived but unvoiced</strong>${unvoiced ? `<ul>${unvoiced}</ul>` : '<p class="mono">none</p>'}</div>
+<div><strong>path status</strong><p class="mono">secret held ${secret.held}/${secret.total}${turn.secret?.decayedSourcePremiseIds?.length ? ` · decayed ${escapeHtml(turn.secret.decayedSourcePremiseIds.join(', '))}` : ''}<br>mirror held ${mirror.held}/${mirror.total}${turn.mirror?.decayedSourcePremiseIds?.length ? ` · decayed ${escapeHtml(turn.mirror.decayedSourcePremiseIds.join(', '))}` : ''}</p></div>
+</div></details>`;
+        })
+        .join('\n')
+    : '<p class="mono">No derived facts or target-path changes were recorded.</p>';
+
+  return `<div class="logicviz">
+<svg viewBox="0 0 ${W} ${H}" class="logicviz__svg" role="img" aria-label="Logic projection by turn: fired rules, unvoiced derived facts, secret path, and mirror path">${svg.join('')}</svg>
+<p class="slopecap">The logic view is harness-only: it renders the learner board closure from <code>WorldIR.logic</code>. Bar height shows rule firings and unvoiced derivations; path fill shows how many source premises for the secret or mirror are held; ● means the target fact is derived; × marks decayed proof-critical source material.</p>
+<div class="logicviz__details">${details}</div>
+</div>`;
+}
+
 const DERIVATION_CSS = `
 .wrap{max-width:1020px;margin:0 auto;padding:18px var(--margin) 80px}
 .wrap h1{font-family:Fraunces,serif;font-weight:600;font-size:var(--s-4);margin:.3em 0 .15em}
@@ -2710,6 +2848,29 @@ svg.arc{display:block;width:100%;height:auto;margin:6px 0 2px;background:var(--p
 .arc__star{fill:var(--brick-d);font-size:16px;cursor:default}
 .slopecap{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);color:var(--ink-3);margin:4px 0 0}
 .notice-missing{color:var(--ink-3);font-style:italic}
+.logicviz{margin:8px 0 20px}
+.logicviz__svg{display:block;width:100%;height:auto;margin:6px 0 4px;background:var(--paper-4);border:1px solid var(--rule-soft);border-radius:6px}
+.logicviz__label,.logicviz__tick{font-family:"JetBrains Mono",monospace;font-size:10px;fill:var(--ink-3)}
+.logicviz__label{fill:var(--ink-2)}
+.logicviz__rule{stroke:var(--rule-soft);stroke-width:1}
+.logicviz__active{fill:var(--ochre-soft);fill-opacity:.38}
+.logicviz__bar{rx:2}
+.logicviz__bar--rules{fill:var(--moss-deep)}
+.logicviz__bar--unvoiced{fill:var(--brick)}
+.logicviz__path{fill:var(--paper-2);stroke:var(--rule);stroke-width:1}
+.logicviz__pathfill{opacity:.75}
+.logicviz__pathfill--secret{fill:var(--indigo)}
+.logicviz__pathfill--mirror{fill:var(--ochre)}
+.logicviz__decay{font-family:"JetBrains Mono",monospace;font-size:16px;fill:var(--brick-d)}
+.logicviz__derived{font-family:"JetBrains Mono",monospace;font-size:13px;fill:var(--paper)}
+.logicviz__details{margin-top:10px}
+.logicturn{border:1px solid var(--rule-soft);border-radius:6px;background:var(--paper-4);margin:7px 0;padding:7px 10px}
+.logicturn summary{cursor:pointer;color:var(--ink-2)}
+.logicturn__grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:8px}
+.logicturn__grid strong{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;letter-spacing:.04em;color:var(--ink-3)}
+.logicturn__grid ul{margin:.35em 0 0 1.15em;padding:0}
+.logicturn__grid li{margin:.2em 0;line-height:1.35}
+@media (max-width:760px){.logicturn__grid{grid-template-columns:1fr}.logicviz__svg{min-width:760px}.logicviz{overflow-x:auto}}
 /* ── derivation index: scoreboard · toolbar · readability panel · win flags ── */
 .wrap--wide{max-width:1180px}
 .idx-scoreboard{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 14px}
@@ -3298,6 +3459,8 @@ ${renderDerivationArcSvg({
   result,
 })}
 ${derivationSlopeCaption(diagnosis.learningSlope || null)}
+<h2 class="sect">Logic projection — board closure by turn</h2>
+${renderDerivationLogicVisualizer(diagnosis.logicProjection || null)}
 <h2 class="sect">Dialogue discipline</h2>
 <table class="idx"><thead><tr><th>role</th><th>turns</th><th>avg sentences</th><th>avg words</th></tr></thead><tbody>${discipline}</tbody></table>
 ${blocks.join('\n')}
@@ -8131,6 +8294,7 @@ export {
   parseTranscriptPreview,
   renderBrowserHtml,
   renderDashboardHtml,
+  renderDerivationLogicVisualizer,
   renderOntologyHtml,
   renderRubricHtml,
   saveBrowserLabel,
