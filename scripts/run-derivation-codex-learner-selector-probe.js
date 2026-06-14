@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * Selector probe launcher with Codex used for the learner role too.
+ * Selector probe launcher with configurable tutor/learner role providers.
  *
  * Queue discipline is run-major and world-parallel: r1 for each world enters
  * the queue before r2, so early divergence is not hidden behind a single
- * world's full batch. Defaults are intentionally paid-real and concurrency 5;
- * use --dry-run to inspect commands.
+ * world's full batch. Defaults are intentionally paid-real, Codex/Codex, and
+ * concurrency 5; use --dry-run to inspect commands.
  */
 
 import 'dotenv/config';
@@ -18,8 +18,7 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
 const LOOP_SCRIPT = path.join(ROOT, 'scripts', 'run-derivation-loop.js');
-const DEFAULT_LOG_DIR = 'exports/dramatic-derivation/selector-codex-learner-run-logs';
-const DEFAULT_GROUP = 'selector-codex-learner-probe';
+const DEFAULT_LOG_BASE = 'exports/dramatic-derivation';
 const DEFAULT_WORLDS = ['withercombe', 'fengate', 'hethel'];
 const DEFAULT_ARMS = ['baseline', 'hidden', 'visible', 'selective-v1'];
 const WORLD_CONFIG = {
@@ -81,6 +80,18 @@ function resolveFromRoot(p) {
   return path.isAbsolute(p) ? p : path.resolve(ROOT, p);
 }
 
+function slugPart(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function learnerSlug({ learnerProvider, learnerModel }) {
+  return slugPart(learnerModel) || slugPart(learnerProvider) || 'learner';
+}
+
 function labelFor({ world, arm, run, labelPrefix }) {
   return `${world}-${labelPrefix}-${arm}-r${run}`;
 }
@@ -94,14 +105,17 @@ function completeArtifact(label, outDir) {
   return ['diagnosis.json', 'result.json', 'transcript.md'].every((name) => fs.existsSync(path.join(dir, name)));
 }
 
-function buildEnv() {
+function buildEnv({ provider, model, learnerProvider, learnerModel }) {
   const env = { ...process.env };
-  env.DERIVATION_PROVIDER = 'codex';
-  env.DERIVATION_LEARNER_PROVIDER = 'codex';
+  env.DERIVATION_PROVIDER = provider;
+  if (model) env.DERIVATION_MODEL = model;
+  else delete env.DERIVATION_MODEL;
+  env.DERIVATION_LEARNER_PROVIDER = learnerProvider;
+  if (learnerModel) env.DERIVATION_LEARNER_MODEL = learnerModel;
+  else delete env.DERIVATION_LEARNER_MODEL;
   env.DERIVATION_CLI_TIMEOUT_MS = env.DERIVATION_CLI_TIMEOUT_MS || '900000';
   env.DERIVATION_LLM = 'real';
   env.DERIVATION_TRACE = env.DERIVATION_TRACE || '0';
-  delete env.DERIVATION_LEARNER_MODEL;
   return env;
 }
 
@@ -194,24 +208,31 @@ function writeManifest(results, file) {
 
 async function main() {
   if (has('help')) {
-    console.log(`Usage: node scripts/run-derivation-codex-learner-selector-probe.js [--worlds a,b,c] [--arms baseline,hidden,visible,selective-v1,selective-v2] [--runs 5] [--parallelism 5] [--dry-run]`);
+    console.log(`Usage: node scripts/run-derivation-codex-learner-selector-probe.js [--worlds a,b,c] [--arms baseline,hidden,visible,selective-v1,selective-v2] [--runs 5] [--parallelism 5] [--provider codex] [--model MODEL] [--learner-provider codex] [--learner-model MODEL] [--dry-run]`);
     return;
   }
   const worlds = splitCsv(arg('worlds', DEFAULT_WORLDS.join(',')));
   const arms = splitCsv(arg('arms', DEFAULT_ARMS.join(',')));
   const runs = Number(arg('runs', '5'));
   const parallelism = Number(arg('parallelism', '5'));
-  const labelPrefix = arg('label-prefix', 'selector-codexlearner');
+  const provider = arg('provider', 'codex');
+  const model = arg('model', null);
+  const learnerProvider = arg('learner-provider', 'codex');
+  const learnerModel = arg('learner-model', null);
+  const slug = learnerSlug({ learnerProvider, learnerModel });
+  const labelPrefix = arg('label-prefix', `selector-${slug}learner`);
   const outDir = arg('out', 'exports/dramatic-derivation/loop');
-  const logDir = resolveFromRoot(arg('log-dir', DEFAULT_LOG_DIR));
-  const group = arg('group', DEFAULT_GROUP);
+  const logDir = resolveFromRoot(arg('log-dir', path.join(DEFAULT_LOG_BASE, `selector-${slug}-learner-run-logs`)));
+  const group = arg('group', `selector-${slug}-learner-probe`);
   const skipExisting = !has('no-skip-existing');
   const jobs = buildJobs({ worlds, arms, runs, labelPrefix, outDir, group });
 
   console.log(
-    `codex-learner selector probe: ${jobs.length} jobs; parallelism ${parallelism}; worlds ${worlds.join(',')}; arms ${arms.join(',')}; runs ${runs}`,
+    `selector probe: ${jobs.length} jobs; parallelism ${parallelism}; worlds ${worlds.join(',')}; arms ${arms.join(',')}; runs ${runs}`,
   );
-  console.log('env: DERIVATION_PROVIDER=codex DERIVATION_LEARNER_PROVIDER=codex DERIVATION_LLM=real DERIVATION_TRACE=0');
+  console.log(
+    `env: DERIVATION_PROVIDER=${provider}${model ? ` DERIVATION_MODEL=${model}` : ''} DERIVATION_LEARNER_PROVIDER=${learnerProvider}${learnerModel ? ` DERIVATION_LEARNER_MODEL=${learnerModel}` : ''} DERIVATION_LLM=real DERIVATION_TRACE=0`,
+  );
   console.log('queue: run-major, arm-major, world-minor; first jobs:');
   for (const job of jobs.slice(0, Math.min(10, jobs.length))) {
     console.log(`  ${job.label}`);
@@ -223,7 +244,7 @@ async function main() {
   }
 
   fs.mkdirSync(logDir, { recursive: true });
-  const env = buildEnv();
+  const env = buildEnv({ provider, model, learnerProvider, learnerModel });
   const partialResults = [];
   const results = await pool(jobs, parallelism, async (job) => {
     console.log(`  ▶ ${job.label}`);
