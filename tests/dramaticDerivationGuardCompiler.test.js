@@ -5,13 +5,16 @@ import {
   buildWorldIR,
   compileGuardSpec,
   selectGuardRepresentation,
+  selectGuardRepresentationV1,
   summarizeGuardSpec,
 } from '../services/dramaticDerivation/guardCompiler.js';
 import { loadWorld } from '../services/dramaticDerivation/world.js';
 
 const lantern = loadWorld('config/drama-derivation/world-002-lantern.yaml');
 const marrick = loadWorld('config/drama-derivation/world-005-marrick.yaml');
+const withercombe = loadWorld('config/drama-derivation/world-004-withercombe.yaml');
 const hethel = loadWorld('config/drama-derivation/world-006-hethel.yaml');
+const fengate = loadWorld('config/drama-derivation/world-007-fengate.yaml');
 
 function withRuleIf(world, ruleId, nextIf) {
   return {
@@ -90,6 +93,36 @@ test('representation selector fails closed when the topology bit is unavailable'
     () => selectGuardRepresentation({ proofGraph: { secretProof: {} } }),
     /selector requires WorldIR secretProof\.independentTopLevelJoin/,
   );
+});
+
+test('representation selector v1 corrects the Withercombe decay route without losing the Hethel decoy route', () => {
+  const withercombeDecay = selectGuardRepresentationV1(buildWorldIR(withercombe), { decayEnabled: true });
+  assert.equal(withercombeDecay.selected, 'hidden');
+  assert.equal(withercombeDecay.gate, 'decay_fail_closed_hidden');
+  assert.equal(withercombeDecay.input.mirrorDeadPredicateDecoy.present, false);
+
+  const withercombeNoDecay = selectGuardRepresentationV1(buildWorldIR(withercombe), { decayEnabled: false });
+  assert.equal(withercombeNoDecay.selected, 'visible');
+  assert.equal(withercombeNoDecay.gate, 'no_decay_default_visible');
+
+  const hethelDecay = selectGuardRepresentationV1(buildWorldIR(hethel), { decayEnabled: true });
+  assert.equal(hethelDecay.selected, 'visible');
+  assert.equal(hethelDecay.gate, 'mirror_dead_predicate_visible');
+  assert.equal(hethelDecay.input.mirrorDeadPredicateDecoy.present, true);
+  assert.deepEqual(
+    hethelDecay.input.mirrorDeadPredicateDecoy.candidates.map((row) => row.predicate),
+    ['builtUnder', 'liableFor'],
+  );
+});
+
+test('representation selector v1 still sends independent joins to hidden under decay', () => {
+  const marrickDecay = selectGuardRepresentationV1(buildWorldIR(marrick), { decayEnabled: true });
+  assert.equal(marrickDecay.selected, 'hidden');
+  assert.equal(marrickDecay.gate, 'independent_join_hidden');
+
+  const fengateDecay = selectGuardRepresentationV1(buildWorldIR(fengate), { decayEnabled: true });
+  assert.equal(fengateDecay.selected, 'hidden');
+  assert.equal(fengateDecay.gate, 'independent_join_hidden');
 });
 
 test('summarizeGuardSpec exposes the report-level P1 signals', () => {

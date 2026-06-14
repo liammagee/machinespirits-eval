@@ -63,6 +63,44 @@
       "verrell"
     ]
   },
+  "incompatible": [
+    {
+      "facts": [
+        [
+          "struckBy",
+          "falseShilling",
+          "edony"
+        ],
+        [
+          "struckBy",
+          "falseShilling",
+          "verrell"
+        ]
+      ],
+      "factKeys": [
+        "[\"struckBy\",\"falseShilling\",\"edony\"]",
+        "[\"struckBy\",\"falseShilling\",\"verrell\"]"
+      ]
+    },
+    {
+      "facts": [
+        [
+          "castBlankFor",
+          "falseShilling",
+          "verrell"
+        ],
+        [
+          "castBlankFor",
+          "falseShilling",
+          "edony"
+        ]
+      ],
+      "factKeys": [
+        "[\"castBlankFor\",\"falseShilling\",\"verrell\"]",
+        "[\"castBlankFor\",\"falseShilling\",\"edony\"]"
+      ]
+    }
+  ],
   "rules": [
     {
       "id": "R1_blank",

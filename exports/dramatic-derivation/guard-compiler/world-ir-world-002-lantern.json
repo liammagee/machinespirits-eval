@@ -60,6 +60,44 @@
       "brandt"
     ]
   },
+  "incompatible": [
+    {
+      "facts": [
+        [
+          "lampBurnedAt",
+          "harlowPoint",
+          "wreckNight"
+        ],
+        [
+          "shutteredOn",
+          "harlowPoint",
+          "wreckNight"
+        ]
+      ],
+      "factKeys": [
+        "[\"lampBurnedAt\",\"harlowPoint\",\"wreckNight\"]",
+        "[\"shutteredOn\",\"harlowPoint\",\"wreckNight\"]"
+      ]
+    },
+    {
+      "facts": [
+        [
+          "steeredByLightOf",
+          "mara",
+          "senna"
+        ],
+        [
+          "steeredByLightOf",
+          "mara",
+          "brandt"
+        ]
+      ],
+      "factKeys": [
+        "[\"steeredByLightOf\",\"mara\",\"senna\"]",
+        "[\"steeredByLightOf\",\"mara\",\"brandt\"]"
+      ]
+    }
+  ],
   "rules": [
     {
       "id": "R1_bearing",

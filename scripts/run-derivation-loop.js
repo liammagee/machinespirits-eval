@@ -154,6 +154,10 @@
  *                                       for independent top-level secret joins,
  *                                       otherwise V. No online switching and no
  *                                       new prompt channel.)
+ *     [--pacing-guard-selective-v1]    (Selector v1 probe; separate from v0.
+ *                                       H for independent joins; V for a formal
+ *                                       mirror dead-predicate decoy; otherwise
+ *                                       fail closed to H when decay is active.)
  *     [--proof-debt-guard]             (requires --repair-clause. When decay has
  *                                       dropped an already-staged proof-critical
  *                                       exhibit, the harness authorizes a restore
@@ -232,6 +236,7 @@ import {
   buildWorldIR,
   compileGuardSpec,
   selectGuardRepresentation,
+  selectGuardRepresentationV1,
 } from '../services/dramaticDerivation/guardCompiler.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -430,6 +435,17 @@ async function main() {
     console.error('--pacing-guard-selective is mutually exclusive with explicit --pacing-guard / --pacing-guard-visible');
     process.exit(1);
   }
+  const pacingGuardSelectiveV1 = flag('pacing-guard-selective-v1');
+  if (pacingGuardSelectiveV1 && !releaseAuthority) {
+    console.error('--pacing-guard-selective-v1 requires --release-authority (it selects a release-window guard)');
+    process.exit(1);
+  }
+  if (pacingGuardSelectiveV1 && (requestedPacingGuard || requestedVisibleGuard || pacingGuardSelective)) {
+    console.error(
+      '--pacing-guard-selective-v1 is mutually exclusive with explicit --pacing-guard / --pacing-guard-visible and v0 --pacing-guard-selective',
+    );
+    process.exit(1);
+  }
   const proofDebtGuard = flag('proof-debt-guard');
   if (proofDebtGuard && !repairClause) {
     console.error(
@@ -438,8 +454,8 @@ async function main() {
     process.exit(1);
   }
   const compiledGuard = flag('compiled-guard');
-  if (compiledGuard && pacingGuardSelective) {
-    console.error('--compiled-guard is not combined with --pacing-guard-selective in this selector slice');
+  if (compiledGuard && (pacingGuardSelective || pacingGuardSelectiveV1)) {
+    console.error('--compiled-guard is not combined with selector arms in this selector slice');
     process.exit(1);
   }
   if (compiledGuard && !requestedPacingGuard && !proofDebtGuard) {
@@ -490,8 +506,12 @@ async function main() {
   }
 
   const script = fs.readFileSync(scriptPath, 'utf8');
-  const worldIR = compiledGuard || pacingGuardSelective ? buildWorldIR(world) : null;
-  const pacingGuardSelector = pacingGuardSelective ? selectGuardRepresentation(worldIR) : null;
+  const worldIR = compiledGuard || pacingGuardSelective || pacingGuardSelectiveV1 ? buildWorldIR(world) : null;
+  const pacingGuardSelector = pacingGuardSelective
+    ? selectGuardRepresentation(worldIR)
+    : pacingGuardSelectiveV1
+      ? selectGuardRepresentationV1(worldIR, { decayEnabled: Boolean(decay) })
+      : null;
   const pacingGuard = pacingGuardSelector ? pacingGuardSelector.selected === 'hidden' : requestedPacingGuard;
   const visibleGuard = pacingGuardSelector ? pacingGuardSelector.selected === 'visible' : requestedVisibleGuard;
   const guardSpec = compiledGuard ? compileGuardSpec(world, worldIR || buildWorldIR(world)) : null;
@@ -565,7 +585,7 @@ async function main() {
   }
   if (pacingGuardSelector) {
     console.log(
-      `tutor   SELECTIVE PACING ON — ${pacingGuardSelector.input.independentTopLevelJoin ? 'independent top-level join' : 'no independent top-level join'} -> ${pacingGuardSelector.selectedFlag}`,
+      `tutor   SELECTIVE PACING ON (${pacingGuardSelector.schema}) — ${pacingGuardSelector.gate || (pacingGuardSelector.input.independentTopLevelJoin ? 'independent top-level join' : 'no independent top-level join')} -> ${pacingGuardSelector.selectedFlag}`,
     );
   }
   if (pacingGuard) {
@@ -695,6 +715,7 @@ async function main() {
     releaseAuthority,
     pacingGuard,
     pacingGuardSelective,
+    pacingGuardSelectiveV1,
     pacingGuardSelector,
     // Step-1 V arm (the visible-signal guard) — false on every run before
     // 2026-06-13. Recorded as its own top-level flag, distinct from pacingGuard,

@@ -1161,6 +1161,75 @@ Cautions:
   selector feature must first be written as a pre-declared rule and tested as a new selector, not
   smuggled into the current run's interpretation.
 
+### Post-v1 tool proposal - lesson plan to world compiler
+
+**Status:** design target only. Do not implement or run this until the selector-v1 probe has been
+allowed to finish and has been written up as-is.
+
+If selector-v1 confirms that the useful next move is representation consolidation rather than more
+selector taxonomy, add a world-authoring tool that converts an ordinary lesson plan into a draft
+dramatic-derivation world. The aim is not to automate paid experiments. The aim is to make world
+construction inspectable, mechanically validated, and compatible with the same canonical
+proof-hypergraph IR proposed above.
+
+Proposed command shape:
+
+```bash
+node scripts/lesson-plan-to-world.js \
+  --input notes/lesson-plans/<lesson>.md \
+  --out config/drama-derivation/drafts \
+  --topic <slug> \
+  --mode draft
+```
+
+Then, separately:
+
+```bash
+node scripts/lesson-plan-to-world.js \
+  --world config/drama-derivation/drafts/world-draft-<slug>.yaml \
+  --validate \
+  --mock-rehearse
+```
+
+Required outputs:
+
+- draft `world-XXX-<slug>.yaml`;
+- matching tutor script draft;
+- proof/IR report showing the target secret `S`, mirror, public Horn rules, premises, proof paths,
+  release schedule, first-entailment turn, and selector-relevant graph features;
+- deterministic validation report with failures and repair suggestions;
+- optional mock rehearsal artifacts only after validation passes.
+
+Conversion discipline:
+
+1. Extract the lesson target, prerequisite concepts, common misconception, examples/evidence, desired
+   sequence, and learner stance from the lesson plan.
+2. Formalize the target as a secret fact `S` matching a public `question_pattern`.
+3. Separate public rules from staged premises: rules become Horn clauses; examples, observations, or
+   cases become premises.
+4. Convert the misconception into a mirror fact or a dead-predicate decoy with partial support but no
+   valid proof to `S`.
+5. Generate one or more `proof_paths` plus a release schedule that makes `S` first derivable only at
+   the intended recognition turn.
+6. Emit the canonical proof-hypergraph IR as a companion artifact, so learner board, hidden guard,
+   visible guard, proof debt, slope monitor, and future selectors can all debug from the same object.
+7. Run the existing deterministic checks before any real LLM use: background does not entail `S`, full
+   premises entail `S`, mirror does not entail, release prefixes respect `t_min`, release gaps fit the
+   aporia window, and concealed tokens do not leak into learner-visible fields.
+8. Run mock rehearsal only after the static checks pass, and treat mock failure as authoring feedback,
+   not as evidence about a selector or guard.
+
+Cautions:
+
+- The LLM may draft candidate worlds, but the harness owns validity. A draft that fails `plotLint`,
+  concealment, or mock rehearsal is not a world yet.
+- Do not let the tool silently choose a selector label or situation type. It may report graph
+  features; any selector policy over those features must be pre-declared separately.
+- Do not expose the proof-hypergraph IR to the learner or tutor as an answer key. The IR is a harness
+  and authoring/debugging object.
+- Do not auto-launch paid runs from this tool. Human approval should sit between a validated draft and
+  any real arm.
+
 ---
 
 ## Step 4 draft - one-bit projection-risk selector

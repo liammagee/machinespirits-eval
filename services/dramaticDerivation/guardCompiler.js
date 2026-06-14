@@ -1,4 +1,4 @@
-import { factKey, proofTree } from './chainer.js';
+import { closure, factKey, proofTree } from './chainer.js';
 import { releaseSolvency } from './pacing.js';
 import { VISIBLE_GUARD_DEFAULTS } from './visiblePacing.js';
 
@@ -6,9 +6,14 @@ export const GUARD_COMPILER_SCHEMA = 'dramatic-derivation.guard-compiler.v0';
 export const DEFAULT_RELEASE_LATITUDE = 2;
 
 export const REPRESENTATION_SELECTOR_SCHEMA = 'dramatic-derivation.representation-selector.v0';
+export const REPRESENTATION_SELECTOR_V1_SCHEMA = 'dramatic-derivation.representation-selector.v1';
 
 function predicateOf(fact) {
   return Array.isArray(fact) ? fact[0] : null;
+}
+
+function isVariableAtom(atom) {
+  return typeof atom === 'string' && atom.startsWith('?');
 }
 
 function atomList(values) {
@@ -37,6 +42,12 @@ function collectBaseFactKeys(tree) {
   if (!tree) return [];
   if (tree.base) return [factKey(tree.fact)];
   return (tree.premises || []).flatMap(collectBaseFactKeys);
+}
+
+function factAtoms(fact) {
+  return Array.isArray(fact)
+    ? fact.slice(1).filter((atom) => typeof atom === 'string' && !isVariableAtom(atom))
+    : [];
 }
 
 function collectEntities(world) {
@@ -154,6 +165,10 @@ export function buildWorldIR(world, { source = null } = {}) {
     backgroundFacts: world.background || [],
     secret: world.secret,
     mirror: world.mirror || null,
+    incompatible: (world.incompatible || []).map((pair) => ({
+      facts: pair,
+      factKeys: pair.map(factKey),
+    })),
     rules: world.rules.map((rule) => ({
       id: rule.id,
       inputPatterns: rule.if,
@@ -187,6 +202,73 @@ export function buildWorldIR(world, { source = null } = {}) {
       tMin: world.slope.t_min,
       aporiaWindow: world.slope.aporia_window,
     },
+  };
+}
+
+function rulesForClosure(worldIR) {
+  return worldIR.rules.map((rule) => ({
+    id: rule.id,
+    if: rule.inputPatterns,
+    then: rule.outputPatterns,
+  }));
+}
+
+function questionConstants(worldIR) {
+  return factAtoms(worldIR.world.questionPattern || []);
+}
+
+function mirrorFocusAtoms(worldIR) {
+  const questionAtoms = new Set(questionConstants(worldIR));
+  return factAtoms(worldIR.mirror?.fact || []).filter((atom) => !questionAtoms.has(atom));
+}
+
+function incompatibleWithMirror(worldIR, fact) {
+  const mirrorKey = worldIR.mirror?.fact ? factKey(worldIR.mirror.fact) : null;
+  const candidateKey = factKey(fact);
+  if (!mirrorKey) return false;
+  return (worldIR.incompatible || []).some((pair) => pair.factKeys.includes(mirrorKey) && pair.factKeys.includes(candidateKey));
+}
+
+function mirrorDeadPredicateDecoy(worldIR) {
+  if (!worldIR.mirror?.fact) return { present: false, candidates: [] };
+  const mirrorFacts = worldIR.premises
+    .filter((premise) => premise.role === 'mirror_distractor')
+    .map((premise) => premise.fact);
+  if (!mirrorFacts.length) return { present: false, candidates: [] };
+
+  const baseFacts = [...(worldIR.backgroundFacts || []), ...mirrorFacts];
+  const baseKeys = new Set(baseFacts.map(factKey));
+  const cl = closure(baseFacts, rulesForClosure(worldIR));
+  const focusAtoms = new Set(mirrorFocusAtoms(worldIR));
+  const sharedQuestionAtoms = new Set(questionConstants(worldIR));
+  const secretPredicate = predicateOf(worldIR.secret?.fact);
+  const mirrorPredicate = predicateOf(worldIR.mirror.fact);
+  const candidates = [];
+
+  for (const [key, fact] of cl.facts) {
+    if (baseKeys.has(key)) continue;
+    const predicate = predicateOf(fact);
+    if (!predicate || predicate === secretPredicate || predicate === mirrorPredicate) continue;
+    if (incompatibleWithMirror(worldIR, fact)) continue;
+
+    const atoms = factAtoms(fact);
+    const hasMirrorFocus = atoms.some((atom) => focusAtoms.has(atom));
+    const hasQuestionAnchor = atoms.some((atom) => sharedQuestionAtoms.has(atom));
+    if (!hasMirrorFocus || !hasQuestionAnchor) continue;
+
+    const proof = cl.proofs.get(key);
+    candidates.push({
+      fact,
+      factKey: key,
+      predicate,
+      proofRule: proof?.rule || null,
+    });
+  }
+
+  candidates.sort((a, b) => a.factKey.localeCompare(b.factKey));
+  return {
+    present: candidates.length > 0,
+    candidates,
   };
 }
 
@@ -261,6 +343,47 @@ export function selectGuardRepresentation(worldIR) {
     reason: independentTopLevelJoin
       ? 'secret proof has disjoint top-level branches; local visible uptake can falsely project global readiness'
       : 'secret proof has no disjoint top-level branch split; use page/tempo guard unless a held-out failure proves selector regret',
+  };
+}
+
+export function selectGuardRepresentationV1(worldIR, { decayEnabled = false } = {}) {
+  const secretProof = worldIR?.proofGraph?.secretProof;
+  if (!secretProof || typeof secretProof.independentTopLevelJoin !== 'boolean') {
+    throw new Error('derivation.guardCompiler: selector v1 requires WorldIR secretProof.independentTopLevelJoin');
+  }
+
+  const independentTopLevelJoin = secretProof.independentTopLevelJoin;
+  const deadPredicateDecoy = mirrorDeadPredicateDecoy(worldIR);
+  let selected = 'visible';
+  let reason = 'non-fork proof without active decay uses the page/tempo guard';
+  let gate = 'no_decay_default_visible';
+
+  if (independentTopLevelJoin) {
+    selected = 'hidden';
+    gate = 'independent_join_hidden';
+    reason = 'secret proof has disjoint top-level branches; local visible uptake can falsely project global readiness';
+  } else if (deadPredicateDecoy.present) {
+    selected = 'visible';
+    gate = 'mirror_dead_predicate_visible';
+    reason = 'mirror premises derive a complete dead-predicate finding, so page-visible drift is the binding hazard';
+  } else if (decayEnabled) {
+    selected = 'hidden';
+    gate = 'decay_fail_closed_hidden';
+    reason = 'under decay, no independent-join absence is insufficient evidence for V; fail closed to proof continuity';
+  }
+
+  return {
+    schema: REPRESENTATION_SELECTOR_V1_SCHEMA,
+    input: {
+      independentTopLevelJoin,
+      decayEnabled: Boolean(decayEnabled),
+      mirrorDeadPredicateDecoy: deadPredicateDecoy,
+    },
+    gate,
+    selected,
+    selectedFlag: selected === 'hidden' ? '--pacing-guard' : '--pacing-guard-visible',
+    rejected: selected === 'hidden' ? 'visible' : 'hidden',
+    reason,
   };
 }
 
