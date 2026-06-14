@@ -8,6 +8,7 @@ import {
   projectWorldIRLogic,
   selectGuardRepresentation,
   selectGuardRepresentationV1,
+  selectGuardRepresentationV2,
   summarizeGuardSpec,
 } from '../services/dramaticDerivation/guardCompiler.js';
 import { factKey } from '../services/dramaticDerivation/chainer.js';
@@ -183,6 +184,35 @@ test('representation selector v1 still sends independent joins to hidden under d
   assert.equal(marrickDecay.gate, 'independent_join_hidden');
 
   const fengateDecay = selectGuardRepresentationV1(buildWorldIR(fengate), { decayEnabled: true });
+  assert.equal(fengateDecay.selected, 'hidden');
+  assert.equal(fengateDecay.gate, 'independent_join_hidden');
+});
+
+test('representation selector v2 fails closed for shared proof-critical source pressure under decay', () => {
+  const hethelDecay = selectGuardRepresentationV2(buildWorldIR(hethel), { decayEnabled: true });
+  assert.equal(hethelDecay.selected, 'hidden');
+  assert.equal(hethelDecay.gate, 'decay_shared_source_hidden');
+  assert.deepEqual(hethelDecay.input.consolidatedProofPressure.sharedCriticalSourcePremiseIds, ['p_point', 'p_surface']);
+  assert.equal(hethelDecay.input.mirrorDeadPredicateDecoy.present, true);
+
+  const withercombeDecay = selectGuardRepresentationV2(buildWorldIR(withercombe), { decayEnabled: true });
+  assert.equal(withercombeDecay.selected, 'hidden');
+  assert.equal(withercombeDecay.gate, 'decay_shared_source_hidden');
+  assert.deepEqual(withercombeDecay.input.consolidatedProofPressure.sharedCriticalSourcePremiseIds, [
+    'p_basin',
+    'p_course',
+    'p_rill',
+  ]);
+});
+
+test('representation selector v2 preserves mirror-visible route when decay is absent', () => {
+  const hethelNoDecay = selectGuardRepresentationV2(buildWorldIR(hethel), { decayEnabled: false });
+  assert.equal(hethelNoDecay.selected, 'visible');
+  assert.equal(hethelNoDecay.gate, 'mirror_dead_predicate_visible');
+});
+
+test('representation selector v2 still sends independent joins to hidden under decay', () => {
+  const fengateDecay = selectGuardRepresentationV2(buildWorldIR(fengate), { decayEnabled: true });
   assert.equal(fengateDecay.selected, 'hidden');
   assert.equal(fengateDecay.gate, 'independent_join_hidden');
 });

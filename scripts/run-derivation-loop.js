@@ -158,6 +158,13 @@
  *                                       H for independent joins; V for a formal
  *                                       mirror dead-predicate decoy; otherwise
  *                                       fail closed to H when decay is active.)
+ *     [--pacing-guard-selective-v2]    (Selector v2 probe; separate from v0/v1.
+ *                                       H for independent joins and for
+ *                                       decay-exposed shared proof-critical
+ *                                       source premises in the consolidated
+ *                                       proof graph; V only when no proof-
+ *                                       continuity override defeats a mirror
+ *                                       dead-predicate route.)
  *     [--proof-debt-guard]             (requires --repair-clause. When decay has
  *                                       dropped an already-staged proof-critical
  *                                       exhibit, the harness authorizes a restore
@@ -238,6 +245,7 @@ import {
   compileGuardSpec,
   selectGuardRepresentation,
   selectGuardRepresentationV1,
+  selectGuardRepresentationV2,
 } from '../services/dramaticDerivation/guardCompiler.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -447,6 +455,17 @@ async function main() {
     );
     process.exit(1);
   }
+  const pacingGuardSelectiveV2 = flag('pacing-guard-selective-v2');
+  if (pacingGuardSelectiveV2 && !releaseAuthority) {
+    console.error('--pacing-guard-selective-v2 requires --release-authority (it selects a release-window guard)');
+    process.exit(1);
+  }
+  if (pacingGuardSelectiveV2 && (requestedPacingGuard || requestedVisibleGuard || pacingGuardSelective || pacingGuardSelectiveV1)) {
+    console.error(
+      '--pacing-guard-selective-v2 is mutually exclusive with explicit --pacing-guard / --pacing-guard-visible and v0/v1 selector arms',
+    );
+    process.exit(1);
+  }
   const proofDebtGuard = flag('proof-debt-guard');
   if (proofDebtGuard && !repairClause) {
     console.error(
@@ -455,7 +474,7 @@ async function main() {
     process.exit(1);
   }
   const compiledGuard = flag('compiled-guard');
-  if (compiledGuard && (pacingGuardSelective || pacingGuardSelectiveV1)) {
+  if (compiledGuard && (pacingGuardSelective || pacingGuardSelectiveV1 || pacingGuardSelectiveV2)) {
     console.error('--compiled-guard is not combined with selector arms in this selector slice');
     process.exit(1);
   }
@@ -507,12 +526,14 @@ async function main() {
   }
 
   const script = fs.readFileSync(scriptPath, 'utf8');
-  const worldIR = compiledGuard || pacingGuardSelective || pacingGuardSelectiveV1 ? buildWorldIR(world) : null;
+  const worldIR = compiledGuard || pacingGuardSelective || pacingGuardSelectiveV1 || pacingGuardSelectiveV2 ? buildWorldIR(world) : null;
   const pacingGuardSelector = pacingGuardSelective
     ? selectGuardRepresentation(worldIR)
     : pacingGuardSelectiveV1
       ? selectGuardRepresentationV1(worldIR, { decayEnabled: Boolean(decay) })
-      : null;
+      : pacingGuardSelectiveV2
+        ? selectGuardRepresentationV2(worldIR, { decayEnabled: Boolean(decay) })
+        : null;
   const pacingGuard = pacingGuardSelector ? pacingGuardSelector.selected === 'hidden' : requestedPacingGuard;
   const visibleGuard = pacingGuardSelector ? pacingGuardSelector.selected === 'visible' : requestedVisibleGuard;
   const guardSpec = compiledGuard ? compileGuardSpec(world, worldIR || buildWorldIR(world)) : null;
@@ -718,6 +739,7 @@ async function main() {
     pacingGuard,
     pacingGuardSelective,
     pacingGuardSelectiveV1,
+    pacingGuardSelectiveV2,
     pacingGuardSelector,
     // Step-1 V arm (the visible-signal guard) — false on every run before
     // 2026-06-13. Recorded as its own top-level flag, distinct from pacingGuard,

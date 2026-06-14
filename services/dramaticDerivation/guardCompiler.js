@@ -8,6 +8,7 @@ export const DEFAULT_RELEASE_LATITUDE = 2;
 export const LOGIC_IR_SCHEMA = 'dramatic-derivation.logic-ir.v0';
 export const REPRESENTATION_SELECTOR_SCHEMA = 'dramatic-derivation.representation-selector.v0';
 export const REPRESENTATION_SELECTOR_V1_SCHEMA = 'dramatic-derivation.representation-selector.v1';
+export const REPRESENTATION_SELECTOR_V2_SCHEMA = 'dramatic-derivation.representation-selector.v2';
 
 function predicateOf(fact) {
   return Array.isArray(fact) ? fact[0] : null;
@@ -645,6 +646,90 @@ export function selectGuardRepresentationV1(worldIR, { decayEnabled = false } = 
       independentTopLevelJoin,
       decayEnabled: Boolean(decayEnabled),
       mirrorDeadPredicateDecoy: deadPredicateDecoy,
+    },
+    gate,
+    selected,
+    selectedFlag: selected === 'hidden' ? '--pacing-guard' : '--pacing-guard-visible',
+    rejected: selected === 'hidden' ? 'visible' : 'hidden',
+    reason,
+  };
+}
+
+function sharedSecretSourcePremiseIds(secretProof) {
+  return uniqueSorted((secretProof?.branchOverlap || []).flatMap((row) => row.sharedPremiseIds || []));
+}
+
+function secretSourcePremiseIds(secretProof) {
+  return uniqueSorted((secretProof?.topBranches || []).flatMap((row) => row.basePremiseIds || []));
+}
+
+function consolidatedProofPressure(worldIR) {
+  const secretProof = worldIR?.proofGraph?.secretProof;
+  const sourceIds = secretSourcePremiseIds(secretProof);
+  const sourceIdSet = new Set(sourceIds);
+  const sharedIds = sharedSecretSourcePremiseIds(secretProof);
+  const sharedIdSet = new Set(sharedIds);
+  const sourcePremises = worldIR.premises.filter((premise) => sourceIdSet.has(premise.id));
+  const sharedPremises = sourcePremises.filter((premise) => sharedIdSet.has(premise.id));
+  const criticalSourcePremises = sourcePremises.filter((premise) => premise.proofCritical);
+  const tutorCriticalSourcePremises = criticalSourcePremises.filter((premise) => premise.scheduledVia === 'tutor');
+  const directorCriticalSourcePremises = criticalSourcePremises.filter((premise) => premise.scheduledVia === 'director');
+  const sharedCriticalSourcePremises = sharedPremises.filter((premise) => premise.proofCritical);
+  return {
+    secretSourcePremiseIds: sourceIds,
+    proofCriticalSourcePremiseIds: criticalSourcePremises.map((premise) => premise.id).sort(),
+    tutorCriticalSourcePremiseIds: tutorCriticalSourcePremises.map((premise) => premise.id).sort(),
+    directorCriticalSourcePremiseIds: directorCriticalSourcePremises.map((premise) => premise.id).sort(),
+    sharedSourcePremiseIds: sharedIds,
+    sharedCriticalSourcePremiseIds: sharedCriticalSourcePremises.map((premise) => premise.id).sort(),
+    sourcePremiseCount: sourcePremises.length,
+    proofCriticalSourcePremiseCount: criticalSourcePremises.length,
+    tutorCriticalSourcePremiseCount: tutorCriticalSourcePremises.length,
+    directorCriticalSourcePremiseCount: directorCriticalSourcePremises.length,
+    sharedCriticalSourcePremiseCount: sharedCriticalSourcePremises.length,
+  };
+}
+
+export function selectGuardRepresentationV2(worldIR, { decayEnabled = false } = {}) {
+  const secretProof = worldIR?.proofGraph?.secretProof;
+  if (!secretProof || typeof secretProof.independentTopLevelJoin !== 'boolean') {
+    throw new Error('derivation.guardCompiler: selector v2 requires WorldIR secretProof.independentTopLevelJoin');
+  }
+
+  const independentTopLevelJoin = secretProof.independentTopLevelJoin;
+  const deadPredicateDecoy = mirrorDeadPredicateDecoy(worldIR);
+  const pressure = consolidatedProofPressure(worldIR);
+  let selected = 'visible';
+  let gate = 'no_decay_default_visible';
+  let reason = 'non-fork proof without active decay uses the page/tempo guard';
+
+  if (independentTopLevelJoin) {
+    selected = 'hidden';
+    gate = 'independent_join_hidden';
+    reason = 'secret proof has disjoint top-level branches; local visible uptake can falsely project global readiness';
+  } else if (decayEnabled && pressure.sharedCriticalSourcePremiseCount > 0) {
+    selected = 'hidden';
+    gate = 'decay_shared_source_hidden';
+    reason =
+      'under decay, shared proof-critical source premises can reopen multiple branches of the consolidated board, so proof continuity dominates visible drift';
+  } else if (deadPredicateDecoy.present) {
+    selected = 'visible';
+    gate = 'mirror_dead_predicate_visible';
+    reason = 'mirror premises derive a complete dead-predicate finding and no shared decaying source pressure overrides it';
+  } else if (decayEnabled && pressure.proofCriticalSourcePremiseCount >= 4) {
+    selected = 'hidden';
+    gate = 'decay_multi_source_hidden';
+    reason =
+      'under decay, a wide proof-critical source set makes local visible uptake a weak proxy for board closure';
+  }
+
+  return {
+    schema: REPRESENTATION_SELECTOR_V2_SCHEMA,
+    input: {
+      independentTopLevelJoin,
+      decayEnabled: Boolean(decayEnabled),
+      mirrorDeadPredicateDecoy: deadPredicateDecoy,
+      consolidatedProofPressure: pressure,
     },
     gate,
     selected,
