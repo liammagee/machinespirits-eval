@@ -3,6 +3,7 @@ export { loadWorld, validateWorld, plotLint, worldClosure } from './world.js';
 export { derivationDistance, detectStall } from './slope.js';
 export { simulateReleaseTempo, releaseSolvency, safeReleaseTurns, pacingGuardDecision } from './pacing.js';
 export { proofDebtReport, tutorProofDebtView } from './proofDebt.js';
+export { createRuntimeMonitor, RUNTIME_MONITOR_SCHEMA } from './runtimeMonitor.js';
 export { runDrama, normalizeActsConfig } from './engine.js';
 export { mulberry32, normalizeDecayConfig } from './corruption.js';
 export { makeReplayRoles, comparePrefix } from './replay.js';

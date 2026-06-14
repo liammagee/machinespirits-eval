@@ -81,6 +81,7 @@
 import { closure, entails, factKey, matchPattern, proofTree } from './chainer.js';
 import { normalizeDecayConfig, mulberry32 } from './corruption.js';
 import { proofDebtReport, tutorProofDebtView } from './proofDebt.js';
+import { createRuntimeMonitor } from './runtimeMonitor.js';
 import { derivationDistance, detectStall } from './slope.js';
 
 function renderFact(fact) {
@@ -145,6 +146,8 @@ export async function runDrama({ world, roles, options = {} }) {
   // Stage v2 (header): acts mode is opt-in and, like decay, absent means
   // absent — no act state, no view bounding, no redaction, no new fields.
   const acts = options.acts ? normalizeActsConfig(options.acts) : null;
+  const runtimeMonitor = options.guardSpec ? createRuntimeMonitor(world, options.guardSpec) : null;
+  const proofDebtGuardActive = Boolean(options.proofDebtGuard);
   const actState = acts ? { index: 1, startTurn: 1, brief: '', history: [] } : null;
   const reconstructionRows = []; // {turn, believed, truth} — reconstructing-tutor dial (roles-layer)
   const plotRows = []; // {act, turn, holdByEnd, withhold, friction, fallback} — C1 act-plot dial (roles-layer)
@@ -373,7 +376,7 @@ export async function runDrama({ world, roles, options = {} }) {
     corruption ? facts.filter((fact) => !grounded.get(factKey(fact))?.decayed) : facts;
 
   const currentProofDebt = (turn) =>
-    options.proofDebtGuard && corruption
+    proofDebtGuardActive && corruption
       ? proofDebtReport(world, { grounded, releasedIdByKey, turn })
       : { turn, active: false, dNow: derivationDistance(world, validGroundedFacts()), debts: [] };
 
@@ -420,7 +423,7 @@ export async function runDrama({ world, roles, options = {} }) {
   });
 
   const omniscientView = (turn, roleName) => {
-    const proofDebt = roleName === 'tutor' && options.proofDebtGuard ? currentProofDebt(turn) : null;
+    const proofDebt = roleName === 'tutor' && proofDebtGuardActive ? currentProofDebt(turn) : null;
     const base = {
       turn,
       role: roleName,
@@ -430,7 +433,9 @@ export async function runDrama({ world, roles, options = {} }) {
       transcript: [...transcript],
       staging: { phase: staging.phase },
       ...(actState ? { acts: actsView(turn) } : {}),
-      ...(proofDebt ? { proofDebt: tutorProofDebtView(proofDebt) } : {}),
+      ...(proofDebt
+        ? { proofDebt: runtimeMonitor ? runtimeMonitor.proofDebtTutorView(proofDebt) : tutorProofDebtView(proofDebt) }
+        : {}),
     };
     // Stage v2 redaction (header): in acts mode the TUTOR's blindness is
     // total and structural, in both probe arms — no learner store, no
@@ -551,7 +556,7 @@ export async function runDrama({ world, roles, options = {} }) {
 
     // --- tutor ---
     const tutorView = omniscientView(turn, 'tutor');
-    const debtAudit = options.proofDebtGuard ? currentProofDebt(turn) : null;
+    const debtAudit = proofDebtGuardActive ? currentProofDebt(turn) : null;
     if (debtAudit?.active) {
       proofDebtRows.push({
         turn,

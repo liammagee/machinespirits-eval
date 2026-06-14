@@ -26,6 +26,7 @@
 
 import { closure, factKey, matchPattern } from './chainer.js';
 import { pacingGuardDecision, releaseSolvency, safeReleaseTurns } from './pacing.js';
+import { createRuntimeMonitor } from './runtimeMonitor.js';
 // The Step-1 V arm. Imported here, NOT in pacing.js — visiblePacing.js's own audit
 // test forbids it from importing back the other way, so the hidden/visible seam
 // stays one-directional and the no-hidden-state property is mechanically checkable.
@@ -887,6 +888,7 @@ export function makeLlmTutor(
     pacingGuard = false,
     visibleGuard = false,
     proofDebtGuard = false,
+    guardSpec = null,
     plot = false,
     throughline = false,
   } = {},
@@ -959,6 +961,12 @@ export function makeLlmTutor(
       'derivation.llmRoles: proofDebtGuard requires repairClause (it authorizes restore moves within the re-entry discipline)',
     );
   }
+  if (guardSpec && !pacingGuard && !proofDebtGuard) {
+    throw new Error(
+      'derivation.llmRoles: guardSpec requires pacingGuard and/or proofDebtGuard (otherwise the compiled monitor is unused)',
+    );
+  }
+  const runtimeMonitor = guardSpec ? createRuntimeMonitor(world, guardSpec) : null;
   // C1 wiring guards: the plot is an act-scale commitment (no acts, no
   // opening to commit at and no close to audit), and the act-close audit is
   // the superego's jurisdiction — without the watcher nothing binds.
@@ -1623,13 +1631,21 @@ export function makeLlmTutor(
       const claimed = typeof out.release === 'string' && out.release.trim() ? out.release.trim() : null;
       const validClaim = claimed && playable.some((e) => e.premise === claimed) ? claimed : null;
       const guard = pacingGuard
-        ? pacingGuardDecision(world, view.ledger, {
-            turn: view.turn,
-            playable,
-            validClaim,
-            forcedPlay,
-            latitude: RELEASE_LATITUDE,
-          })
+        ? runtimeMonitor
+          ? runtimeMonitor.hiddenPacingDecision({
+              ledger: view.ledger,
+              turn: view.turn,
+              playable,
+              validClaim,
+              forcedPlay,
+            })
+          : pacingGuardDecision(world, view.ledger, {
+              turn: view.turn,
+              playable,
+              validClaim,
+              forcedPlay,
+              latitude: RELEASE_LATITUDE,
+            })
         : null;
       // V's decision channel — the Step-1 form-match. Same {played, blocked,
       // forcedSafe} contract the rest of this function consumes; the input is the
@@ -1677,6 +1693,7 @@ export function makeLlmTutor(
                   candidateSolvency: guard.candidateSolvency || null,
                   playedSolvency: guard.playedSolvency || null,
                   safeTurns: guard.safeTurns,
+                  runtimeMonitor: guard.runtimeMonitor || null,
                 },
               }
             : {}),

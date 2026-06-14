@@ -1,6 +1,6 @@
 # Dynamic Guard Compiler Spec, P1a Replay Slice
 
-**Status:** implemented as a static replay-first slice, not a live runtime compiler.
+**Status:** implemented as a static replay-first slice plus opt-in compiled runtime monitor.
 **Entry point:** `npm run derivation:guard-compiler`
 **Golden check:** `npm run derivation:guard-compiler:check`
 **Generated artifacts:** `exports/dramatic-derivation/guard-compiler/`
@@ -16,12 +16,14 @@ It does:
 - replay archived lantern and Marrick arms through the existing detector-split and release-solvency readers;
 - compare visible guard decisions against hidden release-solvency references;
 - replay the E5 proof-debt arm against the narrow-view and positive-control requirements;
+- compile `GuardSpec` into an opt-in `RuntimeMonitor` for hidden pacing and proof-debt tutor-view stripping;
 - emit per-world reports that distinguish topology, guard specification, failure-mode movement, and played-release safety.
 
 It does not:
 
 - author guard logic with an LLM;
-- change live runtime behavior;
+- change live runtime behavior by default;
+- turn compiled guards on by default;
 - schedule new evaluation arms;
 - certify visible guards globally;
 - make human-learning claims.
@@ -33,9 +35,10 @@ WorldSpec
   -> WorldIR
   -> GuardSpec
   -> Archived-arm replay report
+  -> RuntimeMonitor (opt-in)
 ```
 
-The implementation is deliberately conservative. `WorldIR` and `GuardSpec` are deterministic products of the committed world file plus the existing symbolic derivation utilities. Runtime execution remains unchanged.
+The implementation is deliberately conservative. `WorldIR` and `GuardSpec` are deterministic products of the committed world file plus the existing symbolic derivation utilities. Runtime execution changes only when the compiled-monitor path is explicitly selected.
 
 ## WorldIR
 
@@ -121,6 +124,16 @@ The current agreement metrics make that boundary explicit:
 - E5 proof-debt replay validates the current proof-debt contract on the committed arm: 1 detected debt, 1 restored move, target `p_bearing`, narrow tutor view, and a positive-control arithmetic ledger present only on the harness side.
 
 These figures are not a new run result. They are stricter replay reads over already committed artifacts.
+
+## Runtime Monitor Increment
+
+`services/dramaticDerivation/runtimeMonitor.js` now compiles a committed `GuardSpec` into an executable monitor:
+
+- hidden pacing decisions route through `RuntimeMonitor.hiddenPacingDecision(...)`, which delegates to the existing `pacingGuardDecision(...)` using the spec's release latitude and corridor premises;
+- proof-debt tutor views route through `RuntimeMonitor.proofDebtTutorView(...)`, which strips the hidden arithmetic down to the spec's `exposeToTutor` fields;
+- `RuntimeMonitor.auditProofDebtTutorView(...)` checks the tutor-facing view for forbidden proof-distance, proof-path, secret, raw-board, and corruption-ledger fields.
+
+This path is opt-in. In `scripts/run-derivation-loop.js`, `--compiled-guard` compiles the current world's `WorldIR -> GuardSpec` and feeds the result to active `--pacing-guard` and/or `--proof-debt-guard` mechanisms. The flag refuses to run when neither compatible guard is active. Existing hand-wired guard flags still work without a compiled spec.
 
 ## Validation Precursors Completed
 

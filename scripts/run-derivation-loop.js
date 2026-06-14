@@ -154,6 +154,11 @@
  *                                       move before closure/new work. Exposes only
  *                                       released exhibit ids/surfaces, not the raw
  *                                       learner board or corruption ledger.)
+ *     [--compiled-guard]               (P1 guard compiler runtime. Compile this
+ *                                       world's WorldIR -> GuardSpec and feed it
+ *                                       to active --pacing-guard / --proof-debt-
+ *                                       guard mechanisms. No online LLM guard
+ *                                       authoring.)
  *     [--plot]                         (P2/C1; requires --superego + --acts.
  *                                       At each act opening the tutor ego
  *                                       commits a per-act plot — hold_by_end /
@@ -217,6 +222,7 @@ import {
   runCritic,
   commentaryFileMd,
 } from '../services/dramaticDerivation/index.js';
+import { buildWorldIR, compileGuardSpec } from '../services/dramaticDerivation/guardCompiler.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
@@ -412,6 +418,11 @@ async function main() {
     );
     process.exit(1);
   }
+  const compiledGuard = flag('compiled-guard');
+  if (compiledGuard && !pacingGuard && !proofDebtGuard) {
+    console.error('--compiled-guard requires --pacing-guard and/or --proof-debt-guard');
+    process.exit(1);
+  }
   // P2/C1 = the act-plot commitment loop (same note §5): plot at the act
   // opening, audit at the act close, the audit binds the next plot.
   const plot = flag('plot');
@@ -456,6 +467,7 @@ async function main() {
   }
 
   const script = fs.readFileSync(scriptPath, 'utf8');
+  const guardSpec = compiledGuard ? compileGuardSpec(world, buildWorldIR(world)) : null;
   const scriptName = path.basename(scriptPath, path.extname(scriptPath));
   const label = arg('label', `${scriptName}-${mode}-${timestamp()}`);
   const loopBaseDir = path.resolve(ROOT, arg('out', 'exports/dramatic-derivation/loop'));
@@ -539,6 +551,11 @@ async function main() {
       'tutor   PROOF-DEBT GUARD ON — already-staged proof-critical exhibits that drop from the proof state authorize immediate restore moves before closure/new work',
     );
   }
+  if (guardSpec) {
+    console.log(
+      `guard   COMPILED — WorldIR -> GuardSpec -> RuntimeMonitor (${guardSpec.world.id}; no online LLM guard authoring)`,
+    );
+  }
   if (plot) {
     console.log(
       'tutor   PLOT ON — at each act opening the tutor commits a per-act plot (hold/withhold/friction/fallback, from conduct only); the superego audits it clause by clause at the act close, and the audit binds the next plot',
@@ -580,6 +597,7 @@ async function main() {
       pacingGuard,
       visibleGuard,
       proofDebtGuard,
+      guardSpec,
       plot,
       throughline,
     }),
@@ -615,6 +633,7 @@ async function main() {
       ...(decay ? { decay } : {}),
       ...(acts ? { acts } : {}),
       ...(proofDebtGuard ? { proofDebtGuard } : {}),
+      ...(guardSpec ? { guardSpec } : {}),
     },
   });
   const elapsedMs = Date.now() - started;
@@ -649,6 +668,16 @@ async function main() {
     // V apart from H.
     visibleGuard,
     proofDebtGuard,
+    compiledGuard,
+    guardSpec: guardSpec
+      ? {
+          schema: guardSpec.schema,
+          worldId: guardSpec.world.id,
+          hiddenPacingPremises: guardSpec.guards.hidden_pacing.releaseCorridors.length,
+          proofDebtTutorView: guardSpec.guards.proof_debt.exposeToTutor,
+          onlineLlmGuardAuthoring: guardSpec.compiler.onlineLlmGuardAuthoring,
+        }
+      : null,
     // §12 dial (the repair clause) — false on every run before 2026-06-12.
     repairClause,
     // P2/C1 dial — false on every run before 2026-06-12. Named plotDial so it
