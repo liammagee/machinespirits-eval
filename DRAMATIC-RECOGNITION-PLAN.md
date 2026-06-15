@@ -1,11 +1,41 @@
 # Dramatic Recognition: A Poetics-Level Evaluation of AI Tutoring
 
-**Status:** design / pre-registration draft. New arc sanctioned 2026-05-19.
-**Lands as:** a new numbered § of `docs/research/paper-full-2.0.md` (single-paper discipline — no spin-off).
+**Status:** historical pre-registration plus closeout ledger. New arc sanctioned 2026-05-19; ledger updated 2026-06-15.
+**Lands as:** scoped paragraphs in `docs/research/paper-full-2.0.md` (single-paper discipline — no spin-off). The live paper body currently carries the poetics sidecar near the §7.9 discussion block; avoid relying on a bare section number without checking current headings.
 **Supersedes the framing of:** `docs/critique/dialogical-felicity-experimental-design.md` and its `-response.md`. The felicity design was the right instinct (transcript-as-evidence, not interiority) but kept an effect-estimation grammar; this arc replaces that grammar with a typological/poetic one.
 **Relation to the closed arcs:** *orthogonal* to the six adaptation nulls (§6.7 / §6.8.8 / §6.9.7 / §6.9.8 / §6.10). Those measured a latent variable (did the tutor read a hidden learner state). This measures a property of the artifact (does the transcript instantiate tragic form). It is **not** a re-proposal of Plan 2.0 / concealment-inference; it is a different object.
 
 ---
+
+## Closeout ledger (2026-06-15)
+
+This document began as a pre-registration. The implementation path has since split into (a) the Poetics instrument and calibration sidecar, (b) the drama-machine production probes, and (c) the later dramatic-derivation proof harness. Treat this section as the current tick list; the sections below preserve the original design intent.
+
+### Completed or settled
+
+- [x] **Phase 0 — instrument + calibration.** Implemented `config/evaluation-rubric-poetics.yaml`, calibration corpus under `config/poetics-calibration/corpus/`, and `scripts/score-poetics-calibration.js`. `config/poetics-calibration/PHASE0-FINDINGS.md` records a pass on separation and margin, with the original trap ceiling preserved as failed and transparently re-specified.
+- [x] **Phase 1 — structural anti-simulation gate.** Implemented `PHASE1-DESIGN.md`, `scripts/score-poetics-phase1.js`, and critic comparison. `config/poetics-calibration/PHASE1-FINDINGS.md` records a triple-critic pass on the recontextualization gate and explicitly keeps rupture as a non-gating, foolable axis.
+- [x] **Phase 2 initial transfer test.** Implemented the tutoring-transcript scorer/label path and reported the negative in `config/poetics-calibration/PHASE2-FINDINGS.md`: the canon-validated instrument did not agree with one human FORM labeler on the homogeneous Hegel tutoring sample (weighted kappa 0.044 against the pinned 0.60 bar). This is a real failed gate, not erased.
+- [x] **De-confounded production retest.** Implemented the drama generator, paired `none`/`reframe` continuations, quality/admission checks, sidecar reports, and production summaries. The bounded production-v1 and breadth-v2 evidence now supports a narrow claim: Director reframe cues strongly manipulate critic-rated recognitive form while controls keep flat/trap distinctions visible. The claim remains about dramatic form, not learning.
+- [x] **Harder trap/control boundary.** D10 is now treated as a boundary-trap probe rather than a hard trap. D25/D26 hard-trap controls and the balanced calibration slice improve the bracket while preserving the caveat that DeepSeek is a permissive boundary critic.
+- [x] **Form-destruction control harness.** Added `scripts/build-poetics-form-destruction-controls.js` with tests. It creates deterministic shuffled-turn sample directories and a provenance manifest without any model calls, so saved public samples can be scored by the existing poetics scorer as a collapse check.
+- [x] **Tutor-private peripeteia loop boundary.** Clean-anchor and adaptation-recognition loops show a reliable deterministic sidecar signal that peripeteia pressure can make the tutor invent a public learning device, but recognitive closure is not repeat-stable. The gated adaptation-recognition loop reached one clean pass within three iterations, not the required two; later diagnosis localizes the residual problem to scoring/panel thresholds and the action-to-re-reading bridge, not to another generation cycle.
+- [x] **Paper landing discipline.** The live paper contains the bounded poetics sidecar result and caveats. It should remain scoped as calibration/construct-validity evidence outside `evaluation_results`, outside human-learning claims, and outside arbitrary-domain generality.
+- [x] **Artifact provenance audit.** Read-only audit on 2026-06-15 checked the sibling `../machinespirits-eval-*` worktrees. `machinespirits-eval-private` does not appear to hold relevant poetics production archives. The useful archive source is `../machinespirits-eval-dramatic`: it has `config/poetics-calibration/phase2-production-v1/`, `phase2-production-v2/`, `phase2-hard-trap-controls-v1/`, `phase2-balanced-calibration-v1/`, many `phase2-adaptation-recognition-loop-*` roots, and packaged loop archives under `artifacts/poetics-runs/`. The production-v1/v2 roots contain `.writing-pad/*.db` sidecars only in the checked copy, while the durable production summaries are `exports/poetics-production-v1-summary.{md,json}` and `exports/poetics-production-v2-summary.{md,json}`. Full sample/score/key/transcript payloads are present for the adaptation-recognition loop roots and their gzipped archives.
+
+### Still open before calling this plan fully ticked off
+
+- [ ] **Production-v1/v2 reproducible payload gap.** The bounded production claims are currently backed in this checkout by paper prose and by external summary reports in `../machinespirits-eval-dramatic/exports/`, not by a complete bundled sample/score/key payload in this worktree. Before final archive, either recover/package the raw payloads if they exist elsewhere, promote the summary `.md`/`.json` files as the explicit evidence layer, or rerun a bounded no-reroll reproduction whose raw payloads are archived at generation time.
+- [ ] **Phase 0 deferrals.** Resolve or explicitly waive F4 source re-verification, H4 marginality, and the Euripides/Shakespeare/thematic-sadness control note before using the calibration corpus as more than sidecar evidence.
+- [ ] **Shuffled-turn / form-destruction scoring.** The original Phase 3 comparative gate required a shuffled-turn collapse check. The zero-spend builder now exists, but no scored destruction-control artifact is present in this worktree. Once production public samples are restored, selected from the adaptation-recognition archives, or regenerated in a new bounded bundle, build a shuffled sample directory and score it with the existing poetics scorer, or explicitly demote the scored collapse check to deferred future work.
+- [ ] **Section-reference cleanup.** Current prose and notes often say "§7.9" for two different things: the poetics sidecar and the orientation-family density control. Before closeout, replace fragile bare section references with named anchors or file/artifact pointers.
+- [ ] **Archive decision.** Once the above are settled, archive this file as "historical pre-registration + completed/saturated ledger", not as a simple completed implementation note. The remaining active adaptive-tutor work should live in the A20/trajectory plan, not here.
+
+### Evidence discipline for future runs
+
+Every future evidence-bearing run should produce a single immutable run bundle at generation time: public samples/transcripts, private deliberation sidecars when allowed, keys, critic scores, model/provider provenance, command/env snapshot, git commit, random seeds, rerun/crash-recovery notes, and a manifest with file counts plus hashes. Summary reports should be generated from that bundle, not treated as a substitute for it unless the archive explicitly declares "summary-only evidence layer".
+
+For paper-facing claims, add a small claim map beside the report: claim identifier, paper section or paragraph, source run labels, artifact root, summary file, scorer version, and known gaps. If raw artifacts cannot be committed because they are large or private, keep a redacted public bundle plus a private bundle pointer, and record both in the manifest. Reports should not point at local sibling worktrees as though they were durable archives unless the sibling path is deliberately named as the archive source.
 
 ## 0. Thesis
 
