@@ -28,7 +28,9 @@ import {
   normalizeRhetoricalPolicyConfig,
   normalizePublicRegister,
   describePublicRegister,
+  classifyCognitiveTempo,
   detectPhaticRecognition,
+  estimateRecognitionNeed,
   recommendSceneTempoBeat,
   recommendRhetoricalMove,
   sanitizePublicDialogue,
@@ -162,7 +164,7 @@ test('scene tempo selects public beats and records them on exchanges', async () 
         learnerViews.push(JSON.parse(JSON.stringify(view)));
         return view.releasedThisTurn.length
           ? { dialogue: 'I take the new note.', adopt: view.releasedThisTurn }
-          : { dialogue: 'I see.' };
+          : { dialogue: 'I see what you mean about that link.' };
       },
     },
     options: { sceneMode, maxTurns: 2 },
@@ -182,23 +184,27 @@ test('scene tempo selects public beats and records them on exchanges', async () 
     result.transcript
       .find((line) => line.role === 'learner' && line.turn === 1)
       .meta.phaticRecognition.map((signal) => signal.type),
-    ['acknowledges_tutor_guidance'],
+    ['acknowledges_tutor_guidance', 'marks_tutor_line'],
   );
   assert.deepEqual(result.scenes[0].exchanges[0].phaticRecognition.map((signal) => signal.type), [
     'acknowledges_tutor_guidance',
+    'marks_tutor_line',
   ]);
   const d = diagnose(result, world);
   assert.equal(d.scenes.tempoBeats.uptake_only, 1);
   assert.equal(d.scenes.tempoBeats.evidence, 1);
-  assert.equal(d.scenes.phaticRecognition.total, 3);
+  assert.equal(d.scenes.cognitiveTempo.situated_uptake, 1);
+  assert.equal(d.scenes.phaticRecognition.total, 4);
   assert.equal(d.scenes.phaticRecognition.byRole.tutor, 2);
-  assert.equal(d.scenes.phaticRecognition.byRole.learner, 1);
+  assert.equal(d.scenes.phaticRecognition.byRole.learner, 2);
   assert.match(renderTranscript(result, world), /Tempo: uptake only/);
   assert.match(renderTranscript(result, world), /phatic recognition: acknowledges tutor guidance/);
+  assert.match(renderTranscript(result, world), /cognitive tempo: situated uptake/);
   assert.match(renderEvalPanel(d), /tempo: uptake only 1 · evidence 1/);
+  assert.match(renderEvalPanel(d), /cognitive tempo: situated uptake 1 · deliberative 1/);
   assert.match(
     renderEvalPanel(d),
-    /phatic recognition: affirms learner uptake 1 · uses learner language 1 · acknowledges tutor guidance 1/,
+    /phatic recognition: affirms learner uptake 1 · uses learner language 1 · acknowledges tutor guidance 1 · marks tutor line 1/,
   );
 
   const recommended = recommendSceneTempoBeat(
@@ -209,11 +215,55 @@ test('scene tempo selects public beats and records them on exchanges', async () 
   );
   assert.equal(recommended.beat, 'uptake_only');
   assert.deepEqual(
+    detectPhaticRecognition('Yes.', {
+      role: 'learner',
+      exchangeType: 'phatic_ack',
+    }),
+    [],
+  );
+  assert.equal(
+    classifyCognitiveTempo({ dialogue: 'Yes.', exchangeType: 'phatic_ack' }).mode,
+    'fast_reflex',
+  );
+  assert.deepEqual(
     detectPhaticRecognition('Wait, you lost me there. Can we go back one step?', {
       role: 'learner',
       exchangeType: 'repair_request',
     }).map((signal) => signal.type),
     ['requests_tutor_repair'],
+  );
+
+  const reflexScene = {
+    index: 2,
+    exchanges: [
+      {
+        type: 'phatic_ack',
+        cognitiveTempo: { mode: 'fast_reflex' },
+        phaticRecognition: [],
+        countsForProgress: false,
+        dDelta: 0,
+      },
+    ],
+    counts: { phatic: 1, substantive: 0, confusion: 0, repairRequest: 0, assertion: 0, situatedUptake: 0 },
+  };
+  const need = estimateRecognitionNeed(reflexScene);
+  assert.equal(need.level, 'medium');
+  assert.ok(need.sources.includes('fast_reflex_punctuation'));
+  const recognitionTempo = normalizeSceneTempoConfig({
+    mode: 'deterministic',
+    weights: {
+      uptake_only: 0.01,
+      repair_request: 0,
+      recap: 0,
+      hesitation: 0,
+      hypothesis: 0,
+      evidence: 0,
+      recognition: 0,
+    },
+  });
+  assert.equal(
+    recommendSceneTempoBeat(world, reflexScene, { turn: 3, recognitionNeed: need }, recognitionTempo).beat,
+    'recap',
   );
 });
 
@@ -382,4 +432,27 @@ test('rhetorical policy supports seeded sampling over the same distribution', ()
     closeOnConfusion: true,
     tempo: null,
   });
+});
+
+test('recognition need biases rhetorical policy without changing proof state', () => {
+  const view = {
+    turn: 4,
+    ledger: [{ turn: 2, premiseId: 'p1' }],
+    transcript: [{ turn: 3, role: 'learner', text: 'Yes.', meta: { exchange: { type: 'phatic_ack' } } }],
+    trajectory: [{ turn: 3, D: 2 }],
+    learnerAbox: { grounded: world.background, hypotheses: [] },
+    inference: { frontier: [] },
+    scene: {
+      index: 1,
+      recognitionNeed: {
+        debt: 0.8,
+        level: 'high',
+        sources: ['fast_reflex_punctuation'],
+        desiredActs: ['invite_situated_uptake'],
+      },
+    },
+  };
+  const advice = recommendRhetoricalMove(world, view, {}, normalizeRhetoricalPolicyConfig(true));
+  assert.equal(advice.selected.stance, 'recognitive_recap');
+  assert.ok(advice.distribution.some((row) => row.stance === 'situated_uptake_check'));
 });

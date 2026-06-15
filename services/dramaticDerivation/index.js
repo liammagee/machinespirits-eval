@@ -22,7 +22,9 @@ export {
   normalizeSceneTempoConfig,
   normalizeRhetoricalPolicyConfig,
   classifyLearnerExchange,
+  classifyCognitiveTempo,
   detectPhaticRecognition,
+  estimateRecognitionNeed,
   recommendSceneTempoBeat,
   recommendRhetoricalMove,
 } from './rhetoricalMovePolicy.js';

@@ -11,6 +11,7 @@
 export const RHETORICAL_POLICY_SCHEMA = 'dramatic-derivation.rhetorical-policy.v0';
 export const SCENE_SCHEMA = 'dramatic-derivation.scene.v0';
 export const SCENE_TEMPO_SCHEMA = 'dramatic-derivation.scene-tempo.v0';
+export const RECOGNITION_NEED_SCHEMA = 'dramatic-derivation.recognition-need.v0';
 
 const SCENE_DEFAULTS = Object.freeze({
   maxExchanges: 4,
@@ -219,6 +220,55 @@ function countWords(text) {
   return String(text || '').split(/\s+/u).filter(Boolean).length;
 }
 
+function cognitiveTempoRow(mode, rationale) {
+  return {
+    mode,
+    label: mode.replace(/_/g, ' '),
+    deliberative: mode === 'deliberative',
+    rationale,
+  };
+}
+
+export function classifyCognitiveTempo({
+  dialogue = '',
+  exchangeType = null,
+  formalActions = 0,
+  hypothesis = null,
+  asserts = null,
+  dDelta = 0,
+  boardDelta = 0,
+} = {}) {
+  const text = norm(dialogue);
+  const words = countWords(text);
+  const hasInferenceLanguage =
+    /\b(because|since|so|therefore|then|if|which means|that means|implies|follows|settles|shows|proves|i think|i suppose|maybe)\b/u.test(
+      text,
+    );
+  const anchoredUptake =
+    /\b(that helps|that makes sense|i see (what|why|how)|you mean|you said|your point|your question|that question|the gap|the link|that part|the missing)\b/u.test(
+      text,
+    );
+  if (asserts || hypothesis || formalActions > 0 || dDelta > 0 || boardDelta > 0 || hasInferenceLanguage) {
+    return cognitiveTempoRow('deliberative', 'the utterance does inferential or board-changing work');
+  }
+  if (exchangeType === 'repair_request' || exchangeType === 'confusion') {
+    return cognitiveTempoRow('repair_pause', 'the utterance pauses the proof to repair orientation');
+  }
+  if (exchangeType === 'resistance') {
+    return cognitiveTempoRow('deliberative', 'resistance asks the record to be tested');
+  }
+  if (exchangeType === 'phatic_ack') {
+    if (anchoredUptake) {
+      return cognitiveTempoRow('situated_uptake', 'the phatic turn anchors itself to another party or a named gap');
+    }
+    return cognitiveTempoRow('fast_reflex', 'short phatic punctuation without situated uptake');
+  }
+  if (words <= 6 && /\b(yes|yeah|right|okay|ok|i guess|i see|got it|hm|mm)\b/u.test(text)) {
+    return cognitiveTempoRow('fast_reflex', 'brief continuity marker');
+  }
+  return cognitiveTempoRow('deliberative', 'ordinary substantive dialogue');
+}
+
 function uniqueSignalRows(signals) {
   const seen = new Set();
   const out = [];
@@ -231,11 +281,15 @@ function uniqueSignalRows(signals) {
   return out;
 }
 
-export function detectPhaticRecognition(dialogue = '', { role = 'learner', exchangeType = null, tempo = null } = {}) {
+export function detectPhaticRecognition(
+  dialogue = '',
+  { role = 'learner', exchangeType = null, tempo = null, cognitiveTempo = null } = {},
+) {
   const text = norm(dialogue);
   if (!text) return [];
   const roleName = role === 'tutor' ? 'tutor' : 'learner';
   const tempoBeat = typeof tempo === 'string' ? tempo : tempo?.beat || null;
+  const cognitive = cognitiveTempo?.mode || classifyCognitiveTempo({ dialogue, exchangeType }).mode;
   const phaticFrame =
     ['phatic_ack', 'repair_request', 'confusion'].includes(exchangeType) ||
     ['uptake_only', 'repair_request', 'recap', 'hesitation'].includes(tempoBeat) ||
@@ -244,7 +298,7 @@ export function detectPhaticRecognition(dialogue = '', { role = 'learner', excha
   const add = (type, polarity) => signals.push({ role: roleName, type, polarity });
 
   if (roleName === 'learner') {
-    if (/\b(i see|got it|understood|that helps|that makes sense|yes|yeah|right|okay|ok|clear)\b/u.test(text)) {
+    if (/\b(that helps|that makes sense|i see (what|why|how)|you mean|you said|your point|your question|that question)\b/u.test(text)) {
       add('acknowledges_tutor_guidance', 'affirming');
     }
     if (/\b(wait|sorry|lost|confus|unclear|can we|could you|say that again|go back|you lost me)\b/u.test(text)) {
@@ -257,7 +311,7 @@ export function detectPhaticRecognition(dialogue = '', { role = 'learner', excha
       add('offers_own_state_for_tutor', 'state');
     }
   } else {
-    if (/\b(yes|yeah|right|exactly|good|that is|that's)\b/u.test(text)) {
+    if (/\b(exactly|that's right|that is right|yes,? (that|your|you)|right,? (that|your|you))\b/u.test(text)) {
       add('affirms_learner_uptake', 'affirming');
     }
     if (/\b(you said|your line|your last line|you named|you asked|you found|you saw|you have)\b/u.test(text)) {
@@ -268,7 +322,11 @@ export function detectPhaticRecognition(dialogue = '', { role = 'learner', excha
     }
   }
 
-  return phaticFrame ? uniqueSignalRows(signals) : [];
+  if (!phaticFrame) return [];
+  if (cognitive === 'fast_reflex' && !signals.some((signal) => signal.polarity !== 'affirming')) {
+    return [];
+  }
+  return uniqueSignalRows(signals);
 }
 
 export function classifyLearnerExchange({
@@ -305,8 +363,18 @@ export function classifyLearnerExchange({
     type = 'phatic_ack';
   }
   if (!EXCHANGE_TYPES.has(type)) type = 'substantive';
+  const cognitiveTempo = classifyCognitiveTempo({
+    dialogue,
+    exchangeType: type,
+    formalActions,
+    hypothesis,
+    asserts,
+    dDelta,
+    boardDelta,
+  });
   return {
     type,
+    cognitiveTempo,
     formalActions,
     dDelta,
     boardDelta,
@@ -336,11 +404,62 @@ export function openScene({ index, turn, dNow, targetPremise = null, targetFact 
       confusion: 0,
       repairRequest: 0,
       assertion: 0,
+      fastReflex: 0,
+      situatedUptake: 0,
     },
   };
 }
 
-export function sceneView(scene, tempo = null) {
+export function estimateRecognitionNeed(scene, context = {}) {
+  if (!scene) return null;
+  const exchanges = scene.exchanges || [];
+  const sources = [];
+  const desiredActs = new Set();
+  let debt = 0;
+  const addNeed = (amount, source, acts = []) => {
+    debt += amount;
+    if (!sources.includes(source)) sources.push(source);
+    for (const act of acts) desiredActs.add(act);
+  };
+  const last = exchanges[exchanges.length - 1] || null;
+  if (last?.type === 'repair_request' || last?.type === 'confusion') {
+    addNeed(0.45, 'unacknowledged_confusion', ['acknowledge_learner_state', 'repair_thread']);
+  }
+  if (last?.type === 'resistance') {
+    addNeed(0.35, 'unacknowledged_resistance', ['acknowledge_resistance', 'return_learner_words']);
+  }
+  if (last?.cognitiveTempo?.mode === 'fast_reflex') {
+    addNeed(0.3, 'fast_reflex_punctuation', ['invite_situated_uptake', 'slow_the_exchange']);
+  }
+  const lastRecognizedAt = exchanges.reduce(
+    (found, exchange, idx) => (exchange.phaticRecognition?.length ? idx : found),
+    -1,
+  );
+  const exchangesSinceRecognition = lastRecognizedAt < 0 ? exchanges.length : exchanges.length - lastRecognizedAt - 1;
+  if (exchanges.length >= 2 && exchangesSinceRecognition >= 2) {
+    addNeed(Math.min(0.28, exchangesSinceRecognition * 0.09), 'recognition_gap', [
+      'acknowledge_prior_line',
+      'invite_acknowledgement',
+    ]);
+  }
+  if (scene.counts.phatic >= 2 && scene.counts.situatedUptake === 0) {
+    addNeed(0.22, 'phatic_without_situated_uptake', ['invite_situated_uptake']);
+  }
+  if (context.forced) {
+    addNeed(0.18, 'answer_needs_ownership', ['preserve_learner_agency']);
+  }
+  debt = Math.min(1, +debt.toFixed(2));
+  return {
+    schema: RECOGNITION_NEED_SCHEMA,
+    debt,
+    level: debt >= 0.6 ? 'high' : debt >= 0.3 ? 'medium' : 'low',
+    sources,
+    desiredActs: [...desiredActs],
+    exchangesSinceRecognition,
+  };
+}
+
+export function sceneView(scene, tempo = null, recognitionNeed = null) {
   if (!scene) return null;
   return {
     schema: scene.schema,
@@ -352,11 +471,12 @@ export function sceneView(scene, tempo = null) {
     exchangesSoFar: scene.exchanges.length,
     phaticSoFar: scene.counts.phatic,
     ...(tempo ? { tempo } : {}),
+    ...(recognitionNeed ? { recognitionNeed } : {}),
   };
 }
 
-export function sceneMeta(scene, tempo = null) {
-  const view = sceneView(scene, tempo);
+export function sceneMeta(scene, tempo = null, recognitionNeed = null) {
+  const view = sceneView(scene, tempo, recognitionNeed);
   if (!view) return null;
   return {
     index: view.index,
@@ -364,6 +484,7 @@ export function sceneMeta(scene, tempo = null) {
     goal: view.goal,
     targetPremise: view.targetPremise,
     ...(view.tempo ? { tempo: view.tempo } : {}),
+    ...(view.recognitionNeed ? { recognitionNeed: view.recognitionNeed } : {}),
   };
 }
 
@@ -373,6 +494,7 @@ export function updateScene(scene, exchange, { turn, dNow, forced = false, ended
     turn,
     ordinal: scene.exchanges.length + 1,
     type: exchange.type,
+    ...(exchange.cognitiveTempo ? { cognitiveTempo: { ...exchange.cognitiveTempo } } : {}),
     ...(exchange.tempo ? { tempo: exchange.tempo } : {}),
     ...(exchange.phaticRecognition?.length
       ? { phaticRecognition: exchange.phaticRecognition.map((signal) => ({ ...signal })) }
@@ -388,6 +510,9 @@ export function updateScene(scene, exchange, { turn, dNow, forced = false, ended
   if (exchange.type === 'confusion') scene.counts.confusion += 1;
   if (exchange.type === 'repair_request') scene.counts.repairRequest += 1;
   if (exchange.type === 'assertion') scene.counts.assertion += 1;
+  if (exchange.cognitiveTempo?.mode === 'fast_reflex') scene.counts.fastReflex = (scene.counts.fastReflex || 0) + 1;
+  if (exchange.cognitiveTempo?.mode === 'situated_uptake')
+    scene.counts.situatedUptake = (scene.counts.situatedUptake || 0) + 1;
 
   let status = null;
   let closeReason = null;
@@ -448,6 +573,7 @@ export function recommendSceneTempoBeat(world, scene, context = {}, config = nul
 
   const releaseDue = Boolean(context.releaseDue || context.releasedThisTurnCount > 0);
   const forced = Boolean(context.forced || context.dNow === 0);
+  const recognitionNeed = context.recognitionNeed || estimateRecognitionNeed(scene, { forced });
   const hasProgress = scene.exchanges.some((exchange) => exchange.countsForProgress || exchange.dDelta > 0);
   const highPhatic = scene.counts.phatic >= Math.max(1, (context.maxPhaticExchanges || 2) - 1);
 
@@ -468,6 +594,14 @@ export function recommendSceneTempoBeat(world, scene, context = {}, config = nul
   if (highPhatic) {
     addTempo(scores, 'hypothesis', 0.5, 'near the drift guard, ask for a small substantive move');
     addTempo(scores, 'recap', 0.3, 'near the drift guard, consolidate what stands');
+  }
+  if (!forced && !releaseDue && recognitionNeed?.debt >= 0.3) {
+    addTempo(scores, 'recap', recognitionNeed.debt * 1.1, 'recognition debt asks the scene to return what has been heard');
+    addTempo(scores, 'hesitation', recognitionNeed.debt * 0.75, 'recognition debt can slow reflexive assent into owned uptake');
+    addTempo(scores, 'repair_request', recognitionNeed.debt * 0.6, 'recognition debt may need repair before proof pressure');
+    if (recognitionNeed.desiredActs?.includes('invite_situated_uptake')) {
+      addTempo(scores, 'uptake_only', recognitionNeed.debt * 0.35, 'invite a situated uptake rather than a new proof step');
+    }
   }
   if (!releaseDue && scores.has('evidence')) scores.get('evidence').score = 0;
   if (!forced && scores.has('recognition')) scores.get('recognition').score = 0;
@@ -565,6 +699,7 @@ export function recommendRhetoricalMove(world, view, context = {}, config = true
   const targetFromContext = context.topProofDebt?.premiseId || context.cuePremise || context.lastReleasePremise || null;
   const lastLearner = lastLearnerLine(view.transcript);
   const exchangeType = lastLearner?.meta?.exchange?.type || null;
+  const recognitionNeed = context.recognitionNeed || view.scene?.recognitionNeed || null;
   const lastPoint = view.trajectory?.[view.trajectory.length - 1] || null;
   const prevPoint = view.trajectory && view.trajectory.length > 1 ? view.trajectory[view.trajectory.length - 2] : null;
   const plateau = Boolean(lastPoint && prevPoint && lastPoint.D === prevPoint.D);
@@ -605,6 +740,28 @@ export function recommendRhetoricalMove(world, view, context = {}, config = true
   }
   if (plateau && !context.forced) {
     add(scores, keyOf('exemplum', 'orient', targetFromContext, 'unstick'), 0.2, 'the D curve is flat; make one obligation concrete');
+  }
+  if (recognitionNeed?.debt >= 0.3 && !context.releaseCue) {
+    add(
+      scores,
+      keyOf('anaphora', 'consolidate', targetFromContext, 'recognitive_recap'),
+      recognitionNeed.debt * 0.45,
+      'recognition debt asks the tutor to return what the learner has already offered',
+    );
+    add(
+      scores,
+      keyOf('erotema', 'test', targetFromContext, 'situated_uptake_check'),
+      recognitionNeed.debt * 0.32,
+      'recognition debt asks for owned uptake before new proof pressure',
+    );
+    if (recognitionNeed.desiredActs?.includes('repair_thread')) {
+      add(
+        scores,
+        keyOf('anaphora', 'restore', targetFromContext, 'recognitive_repair'),
+        recognitionNeed.debt * 0.42,
+        'the learner signaled rupture; repair the relation before advancing',
+      );
+    }
   }
 
   const distribution = normalizeDistribution([...scores.values()].map(rowFromKey), cfg.temperature);

@@ -417,6 +417,23 @@ function sceneTempoLines(scene, roleName) {
   ].filter(Boolean);
 }
 
+function sceneRecognitionNeedLines(scene, roleName) {
+  const need = scene?.recognitionNeed;
+  if (!need || need.debt < 0.3) return [];
+  const sourceText = need.sources?.length ? need.sources.map((s) => s.replace(/_/g, ' ')).join(', ') : 'general';
+  const actText = need.desiredActs?.length ? need.desiredActs.map((s) => s.replace(/_/g, ' ')).join(', ') : 'acknowledge before advancing';
+  const roleInstruction =
+    roleName === 'learner'
+      ? 'A bare "yes" can be only fast punctuation. If you actually recognize the other line, name what you recognize; if not, keep the uptake modest or ask repair.'
+      : 'Treat this as dialogical pressure, not evidence. Acknowledge, repair, or return the learner’s wording before adding proof pressure when that fits the record.';
+  return [
+    '',
+    `Dialogical recognition pressure: ${need.level} (${need.debt.toFixed(2)}).`,
+    `Sources: ${sourceText}. Desired act: ${actText}.`,
+    roleInstruction,
+  ];
+}
+
 export function sanitizePublicDialogue(text, { register = 'default' } = {}) {
   if (typeof text !== 'string') return '';
   const active = basePublicRegister(register);
@@ -2043,6 +2060,7 @@ export function makeLlmTutor(
         renderTranscriptTail(view.transcript, view.transcript.length),
         ...publicRegisterTurnLines(activeRegisterName, publicRegister),
         ...sceneTempoLines(view.scene, 'tutor'),
+        ...sceneRecognitionNeedLines(view.scene, 'tutor'),
         ...(visibleConsolidation?.lines.length ? ['', ...visibleConsolidation.lines] : []),
         // The two frames, course above lesson: the whole-play throughline
         // reads back first, the act plot under it.
@@ -2065,6 +2083,7 @@ export function makeLlmTutor(
         `Evidence on stage so far: ${view.ledger.length ? view.ledger.map((l) => l.premiseId).join(', ') : 'none'}.`,
         ...stagePrologueLines(view.stagePrologue, 'tutor'),
         ...sceneTempoLines(view.scene, 'tutor'),
+        ...sceneRecognitionNeedLines(view.scene, 'tutor'),
         '',
         "The learner's grounded board:",
         board,
@@ -2894,6 +2913,7 @@ function learnerSystem(setting, voice, view, publicRegister = 'default') {
           'Some exchanges carry a tempo beat. Follow it as a speech rhythm and',
           'permission structure, not as a new fact.',
           ...sceneTempoLines(view.scene, 'learner'),
+          ...sceneRecognitionNeedLines(view.scene, 'learner'),
         ]
       : []),
     '',
@@ -3054,6 +3074,7 @@ export function makeLlmLearner({
             `Scene goal: ${view.scene.goal}`,
             `Scene drift guard: ${view.scene.phaticSoFar} phatic exchange(s) so far; keep uptake real and ask for repair when needed.`,
             ...sceneTempoLines(view.scene, 'learner'),
+            ...sceneRecognitionNeedLines(view.scene, 'learner'),
           ]
         : []),
       '',

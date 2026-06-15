@@ -85,6 +85,7 @@ import { proofDebtReport, tutorProofDebtView } from './proofDebt.js';
 import {
   classifyLearnerExchange,
   detectPhaticRecognition,
+  estimateRecognitionNeed,
   normalizeSceneConfig,
   openScene,
   recommendSceneTempoBeat,
@@ -235,6 +236,7 @@ export async function runDrama({ world, roles, options = {} }) {
   const acts = options.acts ? normalizeActsConfig(options.acts) : null;
   const sceneConfig = options.sceneMode ? normalizeSceneConfig(options.sceneMode) : null;
   let sceneTempoThisTurn = null;
+  let sceneRecognitionNeedThisTurn = null;
   const directorCadence = normalizeDirectorCadence(options.directorCadence, { sceneMode: Boolean(sceneConfig) });
   const publicRegisterPlan = options.publicRegister || 'default';
   const dynamicPublicRegisterPlan = isDynamicPublicRegisterPlan(publicRegisterPlan) ? publicRegisterPlan : null;
@@ -564,13 +566,23 @@ export async function runDrama({ world, roles, options = {} }) {
         dNow: derivationDistance(world, validGroundedFacts()),
         releaseDue: unreleasedScheduledThisTurn(turn).length > 0,
         maxPhaticExchanges: sceneConfig.maxPhaticExchanges,
+        recognitionNeed: sceneRecognitionNeedThisTurn,
       },
       sceneConfig.tempo,
     );
   };
 
-  const currentSceneView = () => (sceneState ? sceneView(sceneState, sceneTempoThisTurn) : null);
-  const currentSceneMeta = () => (sceneState ? sceneMeta(sceneState, sceneTempoThisTurn) : null);
+  const selectSceneRecognitionNeedForTurn = () =>
+    sceneState
+      ? estimateRecognitionNeed(sceneState, {
+          forced: entails(validGroundedFacts(), world.rules, world.secret.fact),
+        })
+      : null;
+
+  const currentSceneView = () =>
+    sceneState ? sceneView(sceneState, sceneTempoThisTurn, sceneRecognitionNeedThisTurn) : null;
+  const currentSceneMeta = () =>
+    sceneState ? sceneMeta(sceneState, sceneTempoThisTurn, sceneRecognitionNeedThisTurn) : null;
 
   const shouldCallDirector = (turn, openedScene) => {
     if (acts) return true;
@@ -776,6 +788,7 @@ export async function runDrama({ world, roles, options = {} }) {
     turn += 1;
     const releasedThisTurn = [];
     const openedScene = openSceneForTurn(turn, turn === 1 ? 'opening' : 'continuation');
+    sceneRecognitionNeedThisTurn = selectSceneRecognitionNeedForTurn();
     sceneTempoThisTurn = selectSceneTempoForTurn(turn);
     const sceneMetaThisTurn = currentSceneMeta();
 
@@ -1123,6 +1136,7 @@ export async function runDrama({ world, roles, options = {} }) {
         role: 'learner',
         exchangeType: sceneExchange.type,
         tempo: sceneTempoThisTurn,
+        cognitiveTempo: sceneExchange.cognitiveTempo,
       });
       if (learnerPhaticRecognition.length) {
         sceneExchange.phaticRecognition = learnerPhaticRecognition;

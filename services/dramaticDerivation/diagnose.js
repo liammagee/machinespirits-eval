@@ -973,6 +973,8 @@ export function sceneReport(result) {
   const statusMix = {};
   const exchangeTypes = {};
   const tempoBeats = {};
+  const cognitiveTempo = {};
+  const recognitionNeed = { byLevel: {}, peakDebt: 0, sources: {} };
   const phaticRecognition = { total: 0, byRole: {}, byType: {} };
   let exchanges = 0;
   let phatic = 0;
@@ -982,6 +984,14 @@ export function sceneReport(result) {
       phaticRecognition.byRole[signal.role] = (phaticRecognition.byRole[signal.role] || 0) + 1;
       phaticRecognition.byType[signal.type] = (phaticRecognition.byType[signal.type] || 0) + 1;
     }
+    const need = line.role === 'learner' ? line.meta?.scene?.recognitionNeed : null;
+    if (need?.level) {
+      recognitionNeed.byLevel[need.level] = (recognitionNeed.byLevel[need.level] || 0) + 1;
+      recognitionNeed.peakDebt = Math.max(recognitionNeed.peakDebt, Number(need.debt) || 0);
+      for (const source of need.sources || []) {
+        recognitionNeed.sources[source] = (recognitionNeed.sources[source] || 0) + 1;
+      }
+    }
   }
   for (const scene of scenes) {
     statusMix[scene.status] = (statusMix[scene.status] || 0) + 1;
@@ -989,6 +999,9 @@ export function sceneReport(result) {
       exchanges += 1;
       exchangeTypes[exchange.type] = (exchangeTypes[exchange.type] || 0) + 1;
       if (exchange.tempo) tempoBeats[exchange.tempo] = (tempoBeats[exchange.tempo] || 0) + 1;
+      if (exchange.cognitiveTempo?.mode) {
+        cognitiveTempo[exchange.cognitiveTempo.mode] = (cognitiveTempo[exchange.cognitiveTempo.mode] || 0) + 1;
+      }
       if (exchange.type === 'phatic_ack') phatic += 1;
     }
   }
@@ -1002,6 +1015,8 @@ export function sceneReport(result) {
     statusMix,
     exchangeTypes,
     tempoBeats,
+    cognitiveTempo,
+    recognitionNeed,
     phaticRecognition,
     driftGuardScenes: scenes.filter((scene) => scene.status === 'drift_guard').map((scene) => scene.index),
     scenes: scenes.map((scene) => ({
@@ -1015,6 +1030,7 @@ export function sceneReport(result) {
         turn: exchange.turn,
         type: exchange.type,
         tempo: exchange.tempo || null,
+        cognitiveTempo: exchange.cognitiveTempo || null,
         phaticRecognition: exchange.phaticRecognition || [],
         dDelta: exchange.dDelta,
         boardDelta: exchange.boardDelta,
@@ -1291,6 +1307,8 @@ export function renderTranscript(result, world, { title = null, diagnosis = null
         if (meta.hypothesis) bits.push(`hypothesis: ${meta.hypothesis}`);
         if (meta.asserts) bits.push(`**asserts \`${meta.asserts.join(' ')}\`**`);
         if (meta.exchange?.type) bits.push(`exchange: ${meta.exchange.type.replace(/_/g, ' ')}`);
+        if (meta.exchange?.cognitiveTempo?.mode)
+          bits.push(`cognitive tempo: ${meta.exchange.cognitiveTempo.mode.replace(/_/g, ' ')}`);
         if (meta.phaticRecognition?.length)
           bits.push(`phatic recognition: ${meta.phaticRecognition.map((s) => s.type.replace(/_/g, ' ')).join(', ')}`);
         if (bits.length) lines.push(`  — ${bits.join(' · ')}`);
@@ -1455,6 +1473,12 @@ export function renderEvalPanel(diagnosis) {
     const tempos = Object.entries(sc.tempoBeats || {})
       .map(([k, v]) => `${k.replace(/_/g, ' ')} ${v}`)
       .join(' · ');
+    const cognitiveTempo = Object.entries(sc.cognitiveTempo || {})
+      .map(([k, v]) => `${k.replace(/_/g, ' ')} ${v}`)
+      .join(' · ');
+    const recognitionNeed = Object.entries(sc.recognitionNeed?.sources || {})
+      .map(([k, v]) => `${k.replace(/_/g, ' ')} ${v}`)
+      .join(' · ');
     const phaticRecognition = Object.entries(sc.phaticRecognition?.byType || {})
       .map(([k, v]) => `${k.replace(/_/g, ' ')} ${v}`)
       .join(' · ');
@@ -1463,6 +1487,9 @@ export function renderEvalPanel(diagnosis) {
     );
     if (exchanges) lines.push(`  - exchanges: ${exchanges}`);
     if (tempos) lines.push(`  - tempo: ${tempos}`);
+    if (cognitiveTempo) lines.push(`  - cognitive tempo: ${cognitiveTempo}`);
+    if (sc.recognitionNeed?.peakDebt)
+      lines.push(`  - recognition need: peak ${sc.recognitionNeed.peakDebt.toFixed(2)}${recognitionNeed ? ` · ${recognitionNeed}` : ''}`);
     if (sc.phaticRecognition?.total) lines.push(`  - phatic recognition: ${phaticRecognition}`);
     if (sc.driftGuardScenes.length) lines.push(`  - drift guard scenes: ${sc.driftGuardScenes.join(', ')}`);
   }
