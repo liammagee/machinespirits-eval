@@ -964,6 +964,7 @@ export function makeLlmTutor(
     releaseAuthority = false,
     pacingGuard = false,
     visibleGuard = false,
+    visiblePushProbeGuard = false,
     proofDebtGuard = false,
     guardSpec = null,
     plot = false,
@@ -1027,6 +1028,21 @@ export function makeLlmTutor(
   if (visibleGuard && !releaseAuthority) {
     throw new Error(
       'derivation.llmRoles: visibleGuard requires releaseAuthority (it narrows the exhibit window from transcript-visible state)',
+    );
+  }
+  if (visiblePushProbeGuard && !releaseAuthority) {
+    throw new Error(
+      'derivation.llmRoles: visiblePushProbeGuard requires releaseAuthority (it probes release-window pushes)',
+    );
+  }
+  if (visiblePushProbeGuard && !pacingGuard) {
+    throw new Error(
+      'derivation.llmRoles: visiblePushProbeGuard requires pacingGuard (hidden remains the default arbitration surface)',
+    );
+  }
+  if (visiblePushProbeGuard && visibleGuard) {
+    throw new Error(
+      'derivation.llmRoles: visiblePushProbeGuard cannot combine with visibleGuard (the visible arm is an active prompt guard, not a shadow probe)',
     );
   }
   if (visibleGuard && pacingGuard) {
@@ -1754,10 +1770,39 @@ export function makeLlmTutor(
       // page (view.ledger + view.transcript), not view's proof state. Mutually
       // exclusive with the hidden guard at build, so at most one is set — the rest
       // reads whichever is active.
-      const vGuard = visibleGuard
+      const vGuard =
+        visibleGuard || visiblePushProbeGuard
         ? visibleGuardDecision(world, view, { turn: view.turn, playable, validClaim, forcedPlay })
         : null;
-      const activeGuard = guard || vGuard;
+      let activeGuard = guard || vGuard;
+      let hybridGuard = null;
+      if (visiblePushProbeGuard) {
+        const visiblePush =
+          Boolean(vGuard?.forcedSafe) && vGuard?.forcedBy === 'visible_stall' && typeof vGuard.played === 'string';
+        const hiddenSafeTurns = visiblePush ? guard?.safeTurns?.[vGuard.played] || [] : [];
+        const hiddenSafeAtCurrentTurn = hiddenSafeTurns.includes(view.turn);
+        const hiddenForcedDifferent = Boolean(
+          guard?.forcedSafe && guard.played && vGuard?.played && guard.played !== vGuard.played,
+        );
+        const accepted = visiblePush && hiddenSafeAtCurrentTurn && !hiddenForcedDifferent;
+        activeGuard = accepted ? vGuard : guard;
+        hybridGuard = {
+          mode: 'hidden_default_visible_stall_probe',
+          accepted,
+          played: accepted ? vGuard.played : guard?.played || null,
+          visibleCandidate: vGuard?.played || vGuard?.candidate || null,
+          hiddenCandidate: guard?.played || guard?.candidate || null,
+          hiddenSafeAtCurrentTurn: Boolean(hiddenSafeAtCurrentTurn),
+          hiddenForcedDifferent,
+          reason: accepted
+            ? `${vGuard.played} visible-stall push accepted: hidden guard also marks t${view.turn} safe`
+            : visiblePush
+              ? hiddenSafeAtCurrentTurn
+                ? 'visible-stall push rejected: hidden guard has a different forced-safe release'
+                : `${vGuard.played} visible-stall push rejected: hidden guard does not mark t${view.turn} safe`
+              : 'visible probe ignored: only visible_stall forced-safe pushes can override hidden',
+        };
+      }
       const played = activeGuard ? activeGuard.played : forcedPlay ? forcedPlay.premise : validClaim;
       const reason =
         typeof out.release_reason === 'string' && out.release_reason.trim() ? out.release_reason.trim() : null;
@@ -1811,6 +1856,7 @@ export function makeLlmTutor(
                 },
               }
             : {}),
+          ...(hybridGuard ? { hybridGuard } : {}),
         },
       };
     };

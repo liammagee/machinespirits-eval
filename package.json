@@ -90,6 +90,8 @@
     "derivation:detector-split": "node scripts/derivation-detector-split.js",
     "derivation:cost-report": "node scripts/derivation-cost-report.js",
     "derivation:analyze-loop": "node scripts/analyze-derivation-loop-results.js",
+    "derivation:selector-consolidation": "node scripts/analyze-derivation-selector-consolidation.js",
+    "derivation:selector-candidates": "node scripts/analyze-derivation-selector-candidates.js",
     "derivation:leak-audit": "node scripts/derivation-leak-audit.js",
     "derivation:guard-compiler": "node scripts/derivation-guard-compiler.js",
     "derivation:guard-compiler:check": "node scripts/derivation-guard-compiler.js --check",

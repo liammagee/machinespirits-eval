@@ -86,6 +86,12 @@ const WORLDS = [
     recognitionTurn: 22,
     concealed: ['neris', 'greenwax', 'cloisterlamp', 'cloister lamp', 'thornpick'],
   },
+  {
+    worldFile: 'config/drama-derivation/world-009-ravensmark.yaml',
+    scriptFile: 'config/drama-derivation/tutor-scripts/ravensmark-v001.md',
+    recognitionTurn: 15,
+    concealed: ['elian', 'duskseal', 'dusk-seal'],
+  },
 ];
 
 /** Wraps the mock client, recording every prompt the learner role receives. */

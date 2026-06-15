@@ -174,6 +174,10 @@
  *                                       proof graph; V only when no proof-
  *                                       continuity override defeats a mirror
  *                                       dead-predicate route.)
+ *     [--pacing-guard-selective-v3]    (Selector v3 probe; hidden default plus
+ *                                       a shadow visible-stall push probe,
+ *                                       accepted only when the hidden guard
+ *                                       also marks the release safe.)
  *     [--proof-debt-guard]             (requires --repair-clause. When decay has
  *                                       dropped an already-staged proof-critical
  *                                       exhibit, the harness authorizes a restore
@@ -265,6 +269,7 @@ import {
   selectGuardRepresentation,
   selectGuardRepresentationV1,
   selectGuardRepresentationV2,
+  selectGuardRepresentationV3,
 } from '../services/dramaticDerivation/guardCompiler.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -587,6 +592,20 @@ async function main() {
     );
     process.exit(1);
   }
+  const pacingGuardSelectiveV3 = flag('pacing-guard-selective-v3');
+  if (pacingGuardSelectiveV3 && !releaseAuthority) {
+    console.error('--pacing-guard-selective-v3 requires --release-authority (it selects a release-window guard)');
+    process.exit(1);
+  }
+  if (
+    pacingGuardSelectiveV3 &&
+    (requestedPacingGuard || requestedVisibleGuard || pacingGuardSelective || pacingGuardSelectiveV1 || pacingGuardSelectiveV2)
+  ) {
+    console.error(
+      '--pacing-guard-selective-v3 is mutually exclusive with explicit --pacing-guard / --pacing-guard-visible and v0/v1/v2 selector arms',
+    );
+    process.exit(1);
+  }
   const proofDebtGuard = flag('proof-debt-guard');
   if (proofDebtGuard && !repairClause) {
     console.error(
@@ -595,7 +614,7 @@ async function main() {
     process.exit(1);
   }
   const compiledGuard = flag('compiled-guard');
-  if (compiledGuard && (pacingGuardSelective || pacingGuardSelectiveV1 || pacingGuardSelectiveV2)) {
+  if (compiledGuard && (pacingGuardSelective || pacingGuardSelectiveV1 || pacingGuardSelectiveV2 || pacingGuardSelectiveV3)) {
     console.error('--compiled-guard is not combined with selector arms in this selector slice');
     process.exit(1);
   }
@@ -657,16 +676,22 @@ async function main() {
   }
 
   const script = fs.readFileSync(scriptPath, 'utf8');
-  const worldIR = compiledGuard || pacingGuardSelective || pacingGuardSelectiveV1 || pacingGuardSelectiveV2 ? buildWorldIR(world) : null;
+  const worldIR =
+    compiledGuard || pacingGuardSelective || pacingGuardSelectiveV1 || pacingGuardSelectiveV2 || pacingGuardSelectiveV3
+      ? buildWorldIR(world)
+      : null;
   const pacingGuardSelector = pacingGuardSelective
     ? selectGuardRepresentation(worldIR)
     : pacingGuardSelectiveV1
       ? selectGuardRepresentationV1(worldIR, { decayEnabled: Boolean(decay) })
       : pacingGuardSelectiveV2
         ? selectGuardRepresentationV2(worldIR, { decayEnabled: Boolean(decay) })
-        : null;
+        : pacingGuardSelectiveV3
+          ? selectGuardRepresentationV3(worldIR, { decayEnabled: Boolean(decay) })
+          : null;
   const pacingGuard = pacingGuardSelector ? pacingGuardSelector.selected === 'hidden' : requestedPacingGuard;
   const visibleGuard = pacingGuardSelector ? pacingGuardSelector.selected === 'visible' : requestedVisibleGuard;
+  const visiblePushProbeGuard = pacingGuardSelectiveV3;
   const guardSpec = compiledGuard ? compileGuardSpec(world, worldIR || buildWorldIR(world)) : null;
   const scriptName = path.basename(scriptPath, path.extname(scriptPath));
   const label = arg('label', `${scriptName}-${mode}-${timestamp()}`);
@@ -705,7 +730,9 @@ async function main() {
       pacingGuardSelective,
       pacingGuardSelectiveV1,
       pacingGuardSelectiveV2,
+      pacingGuardSelectiveV3,
       pacingGuardSelector,
+      visiblePushProbeGuard,
       visibleGuard,
       proofDebtGuard,
       compiledGuard,
@@ -793,6 +820,11 @@ async function main() {
       'tutor   VISIBLE PACING GUARD ON — the same window-narrowing decided from transcript-visible page state only (turns since last release, learner echo of the prior exhibit, hedging/length trend); clock-blind by construction',
     );
   }
+  if (visiblePushProbeGuard) {
+    console.log(
+      'tutor   VISIBLE PUSH PROBE ON — shadow page-state probe can override hidden only on hidden-safe visible_stall pushes; visible blocks/echo alone are ignored',
+    );
+  }
   if (proofDebtGuard) {
     console.log(
       'tutor   PROOF-DEBT GUARD ON — already-staged proof-critical exhibits that drop from the proof state authorize immediate restore moves before closure/new work',
@@ -848,6 +880,7 @@ async function main() {
       releaseAuthority,
       pacingGuard,
       visibleGuard,
+      visiblePushProbeGuard,
       proofDebtGuard,
       guardSpec,
       plot,
@@ -932,7 +965,9 @@ async function main() {
     pacingGuardSelective,
     pacingGuardSelectiveV1,
     pacingGuardSelectiveV2,
+    pacingGuardSelectiveV3,
     pacingGuardSelector,
+    visiblePushProbeGuard,
     // Step-1 V arm (the visible-signal guard) — false on every run before
     // 2026-06-13. Recorded as its own top-level flag, distinct from pacingGuard,
     // so the failure-mode classifier's guardStateOf and the Step-1 analysis read

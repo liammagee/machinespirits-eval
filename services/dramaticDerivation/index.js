@@ -12,6 +12,7 @@ export {
   selectGuardRepresentation,
   selectGuardRepresentationV1,
   selectGuardRepresentationV2,
+  selectGuardRepresentationV3,
 } from './guardCompiler.js';
 export { runDrama, normalizeActsConfig } from './engine.js';
 export { mulberry32, normalizeDecayConfig } from './corruption.js';

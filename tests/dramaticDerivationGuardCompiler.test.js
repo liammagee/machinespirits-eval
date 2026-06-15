@@ -9,6 +9,7 @@ import {
   selectGuardRepresentation,
   selectGuardRepresentationV1,
   selectGuardRepresentationV2,
+  selectGuardRepresentationV3,
   summarizeGuardSpec,
 } from '../services/dramaticDerivation/guardCompiler.js';
 import { factKey } from '../services/dramaticDerivation/chainer.js';
@@ -19,6 +20,7 @@ const marrick = loadWorld('config/drama-derivation/world-005-marrick.yaml');
 const withercombe = loadWorld('config/drama-derivation/world-004-withercombe.yaml');
 const hethel = loadWorld('config/drama-derivation/world-006-hethel.yaml');
 const fengate = loadWorld('config/drama-derivation/world-007-fengate.yaml');
+const ravensmark = loadWorld('config/drama-derivation/world-009-ravensmark.yaml');
 
 function withRuleIf(world, ruleId, nextIf) {
   return {
@@ -211,10 +213,41 @@ test('representation selector v2 preserves mirror-visible route when decay is ab
   assert.equal(hethelNoDecay.gate, 'mirror_dead_predicate_visible');
 });
 
+test('representation selector v2 routes the held-out Ravensmark decoy world to visible under decay', () => {
+  const decision = selectGuardRepresentationV2(buildWorldIR(ravensmark), { decayEnabled: true });
+  assert.equal(decision.selected, 'visible');
+  assert.equal(decision.gate, 'mirror_dead_predicate_visible');
+  assert.equal(decision.input.independentTopLevelJoin, false);
+  assert.equal(decision.input.mirrorDeadPredicateDecoy.present, true);
+  assert.deepEqual(
+    decision.input.mirrorDeadPredicateDecoy.candidates.map((row) => row.predicate),
+    ['answerableFor'],
+  );
+  assert.equal(decision.input.consolidatedProofPressure.proofCriticalSourcePremiseCount, 2);
+  assert.equal(decision.input.consolidatedProofPressure.sharedCriticalSourcePremiseCount, 0);
+});
+
 test('representation selector v2 still sends independent joins to hidden under decay', () => {
   const fengateDecay = selectGuardRepresentationV2(buildWorldIR(fengate), { decayEnabled: true });
   assert.equal(fengateDecay.selected, 'hidden');
   assert.equal(fengateDecay.gate, 'independent_join_hidden');
+});
+
+test('representation selector v3 is hidden-default with a narrow runtime visible-stall probe', () => {
+  const decision = selectGuardRepresentationV3(buildWorldIR(hethel), { decayEnabled: true });
+  assert.equal(decision.schema, 'dramatic-derivation.representation-selector.v3');
+  assert.equal(decision.selected, 'hidden');
+  assert.equal(decision.selectedFlag, '--pacing-guard-selective-v3');
+  assert.equal(decision.baseFlag, '--pacing-guard');
+  assert.equal(decision.gate, 'hidden_default_visible_stall_probe');
+  assert.equal(decision.runtimeVisibleProbe.enabled, true);
+  assert.deepEqual(decision.runtimeVisibleProbe.acceptOnly, {
+    forcedSafe: true,
+    forcedBy: 'visible_stall',
+    requireHiddenSafeAtCurrentTurn: true,
+  });
+  assert.ok(decision.runtimeVisibleProbe.reject.includes('visible_block'));
+  assert.equal(decision.input.mirrorDeadPredicateDecoy.present, true);
 });
 
 test('summarizeGuardSpec exposes the report-level P1 signals', () => {

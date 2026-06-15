@@ -9,6 +9,7 @@ export const LOGIC_IR_SCHEMA = 'dramatic-derivation.logic-ir.v0';
 export const REPRESENTATION_SELECTOR_SCHEMA = 'dramatic-derivation.representation-selector.v0';
 export const REPRESENTATION_SELECTOR_V1_SCHEMA = 'dramatic-derivation.representation-selector.v1';
 export const REPRESENTATION_SELECTOR_V2_SCHEMA = 'dramatic-derivation.representation-selector.v2';
+export const REPRESENTATION_SELECTOR_V3_SCHEMA = 'dramatic-derivation.representation-selector.v3';
 
 function predicateOf(fact) {
   return Array.isArray(fact) ? fact[0] : null;
@@ -736,6 +737,44 @@ export function selectGuardRepresentationV2(worldIR, { decayEnabled = false } = 
     selectedFlag: selected === 'hidden' ? '--pacing-guard' : '--pacing-guard-visible',
     rejected: selected === 'hidden' ? 'visible' : 'hidden',
     reason,
+  };
+}
+
+export function selectGuardRepresentationV3(worldIR, { decayEnabled = false } = {}) {
+  const secretProof = worldIR?.proofGraph?.secretProof;
+  if (!secretProof || typeof secretProof.independentTopLevelJoin !== 'boolean') {
+    throw new Error('derivation.guardCompiler: selector v3 requires WorldIR secretProof.independentTopLevelJoin');
+  }
+
+  const independentTopLevelJoin = secretProof.independentTopLevelJoin;
+  const deadPredicateDecoy = mirrorDeadPredicateDecoy(worldIR);
+  const pressure = consolidatedProofPressure(worldIR);
+
+  return {
+    schema: REPRESENTATION_SELECTOR_V3_SCHEMA,
+    input: {
+      independentTopLevelJoin,
+      decayEnabled: Boolean(decayEnabled),
+      mirrorDeadPredicateDecoy: deadPredicateDecoy,
+      consolidatedProofPressure: pressure,
+    },
+    gate: 'hidden_default_visible_stall_probe',
+    selected: 'hidden',
+    selectedFlag: '--pacing-guard-selective-v3',
+    baseFlag: '--pacing-guard',
+    rejected: 'visible_default',
+    runtimeVisibleProbe: {
+      enabled: true,
+      mode: 'shadow_release_boundary_probe',
+      acceptOnly: {
+        forcedSafe: true,
+        forcedBy: 'visible_stall',
+        requireHiddenSafeAtCurrentTurn: true,
+      },
+      reject: ['visible_block', 'prior_echo_absent', 'echo_only', 'non_stall_pass_through'],
+    },
+    reason:
+      'default to hidden proof-continuity under decay/shared-source pressure; allow visible only as a hidden-safe stall-push at release boundaries',
   };
 }
 

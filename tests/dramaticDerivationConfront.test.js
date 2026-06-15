@@ -213,6 +213,16 @@ async function lanternReleaseTurn({ turn, reply, ledger = [] }) {
   return tutor(actsView(turn, { ledger }));
 }
 
+async function v3ReleaseTurn({ turn, reply, ledger = [], transcript = [] }) {
+  const { client } = stubClient({ tutor: [reply] });
+  const tutor = makeLlmTutor(
+    smokeWorld,
+    client,
+    actsOpts({ releaseAuthority: true, pacingGuard: true, visiblePushProbeGuard: true }),
+  );
+  return tutor(actsView(turn, { ledger, transcript }));
+}
+
 test('C2: a claim inside the window is honored, offset and reason recorded', async () => {
   const out = await releaseTurn({
     turn: 4,
@@ -344,6 +354,66 @@ test('E3 pacing guard suppresses a late key release after the safe set closes', 
   assert.equal(out.releaseDecision.pacingGuard.candidate, 'p_key');
   assert.equal(out.releaseDecision.pacingGuard.alternativeTurn, null);
   assert.deepEqual(out.releaseDecision.pacingGuard.safeTurns.p_key, [15, 16, 17, 18]);
+});
+
+test('v3 selector arbitration ignores visible block/echo evidence and keeps the hidden-safe release', async () => {
+  const out = await v3ReleaseTurn({
+    turn: 6,
+    ledger: [{ turn: 5, premiseId: 'p2', via: 'tutor' }],
+    transcript: [{ turn: 5, role: 'learner', text: 'I am not sure what that was for.' }],
+    reply: {
+      dialogue: 'Now take the next exhibit.',
+      move: { figure: 'exemplum', target_premise: 'p3', intent: 'release' },
+      release: 'p3',
+      release_reason: 'keep the proof moving',
+    },
+  });
+  assert.equal(out.release, 'p3');
+  assert.equal(out.releaseDecision.pacingGuard.blocked, false);
+  assert.equal(out.releaseDecision.visibleGuard.blocked, true);
+  assert.equal(out.releaseDecision.hybridGuard.accepted, false);
+  assert.match(out.releaseDecision.hybridGuard.reason, /only visible_stall/);
+});
+
+test('v3 selector arbitration accepts a visible-stall push only when hidden marks it safe now', async () => {
+  const transcript = [
+    { turn: 2, role: 'learner', text: 'The first matter gives us a fairly stable footing.' },
+    { turn: 3, role: 'learner', text: 'I can still describe the line of reasoning clearly.' },
+    { turn: 5, role: 'learner', text: 'maybe?' },
+    { turn: 6, role: 'learner', text: 'not sure?' },
+  ];
+  const out = await v3ReleaseTurn({
+    turn: 6,
+    ledger: [{ turn: 5, premiseId: 'p2', via: 'tutor' }],
+    transcript,
+    reply: {
+      dialogue: 'Hold one beat.',
+      move: { figure: 'erotema', target_premise: null, intent: 'test' },
+      release: null,
+    },
+  });
+  assert.equal(out.release, 'p3');
+  assert.equal(out.releaseDecision.visibleGuard.forcedSafe, true);
+  assert.equal(out.releaseDecision.visibleGuard.forcedBy, 'visible_stall');
+  assert.equal(out.releaseDecision.hybridGuard.accepted, true);
+  assert.equal(out.releaseDecision.hybridGuard.hiddenSafeAtCurrentTurn, true);
+});
+
+test('v3 selector arbitration rejects a visible-stall push when hidden says the current turn is unsafe', async () => {
+  const out = await v3ReleaseTurn({
+    turn: 4,
+    transcript: [{ turn: 3, role: 'learner', text: 'I am stuck. Maybe? Not sure.' }],
+    reply: {
+      dialogue: 'Hold one beat.',
+      move: { figure: 'erotema', target_premise: null, intent: 'test' },
+      release: null,
+    },
+  });
+  assert.equal(out.release, null);
+  assert.equal(out.releaseDecision.visibleGuard.forcedSafe, true);
+  assert.equal(out.releaseDecision.visibleGuard.forcedBy, 'visible_stall');
+  assert.equal(out.releaseDecision.hybridGuard.accepted, false);
+  assert.equal(out.releaseDecision.hybridGuard.hiddenSafeAtCurrentTurn, false);
 });
 
 // C5 — the license arithmetic. Ledger stages p1 at t1; the draft re-enters.
