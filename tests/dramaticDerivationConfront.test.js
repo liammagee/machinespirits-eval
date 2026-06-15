@@ -223,6 +223,16 @@ async function v3ReleaseTurn({ turn, reply, ledger = [], transcript = [] }) {
   return tutor(actsView(turn, { ledger, transcript }));
 }
 
+async function v4ReleaseTurn({ turn, reply, ledger = [], transcript = [] }) {
+  const { client } = stubClient({ tutor: [reply] });
+  const tutor = makeLlmTutor(
+    smokeWorld,
+    client,
+    actsOpts({ releaseAuthority: true, pacingGuard: true, visibleConsolidationGuard: true }),
+  );
+  return tutor(actsView(turn, { ledger, transcript }));
+}
+
 test('C2: a claim inside the window is honored, offset and reason recorded', async () => {
   const out = await releaseTurn({
     turn: 4,
@@ -414,6 +424,84 @@ test('v3 selector arbitration rejects a visible-stall push when hidden says the 
   assert.equal(out.releaseDecision.visibleGuard.forcedBy, 'visible_stall');
   assert.equal(out.releaseDecision.hybridGuard.accepted, false);
   assert.equal(out.releaseDecision.hybridGuard.hiddenSafeAtCurrentTurn, false);
+});
+
+test('v4 selector arbitration can hold a release for visible non-uptake but never pushes on visible stall', async () => {
+  const hold = await v4ReleaseTurn({
+    turn: 6,
+    ledger: [{ turn: 5, premiseId: 'p2', via: 'tutor' }],
+    transcript: [{ turn: 5, role: 'learner', text: 'I am not sure what that was for.' }],
+    reply: {
+      dialogue: 'Now take the next exhibit.',
+      move: { figure: 'exemplum', target_premise: 'p3', intent: 'release' },
+      release: 'p3',
+      release_reason: 'keep the proof moving',
+    },
+  });
+  assert.equal(hold.release, null);
+  assert.equal(hold.releaseDecision.visibleGuard.blocked, true);
+  assert.equal(hold.releaseDecision.consolidationGuard.held, true);
+  assert.match(hold.releaseDecision.consolidationGuard.reason, /visible hold accepted/);
+
+  const transcript = [
+    { turn: 2, role: 'learner', text: 'The first matter gives us a fairly stable footing.' },
+    { turn: 3, role: 'learner', text: 'I can still describe the line of reasoning clearly.' },
+    { turn: 5, role: 'learner', text: 'maybe?' },
+    { turn: 6, role: 'learner', text: 'not sure?' },
+  ];
+  const stall = await v4ReleaseTurn({
+    turn: 6,
+    ledger: [{ turn: 5, premiseId: 'p2', via: 'tutor' }],
+    transcript,
+    reply: {
+      dialogue: 'Hold one beat.',
+      move: { figure: 'erotema', target_premise: null, intent: 'test' },
+      release: null,
+    },
+  });
+  assert.equal(stall.release, null);
+  assert.equal(stall.releaseDecision.visibleGuard.forcedSafe, true);
+  assert.equal(stall.releaseDecision.visibleGuard.forcedBy, 'visible_stall');
+  assert.equal(stall.releaseDecision.consolidationGuard.visiblePushIgnored, true);
+  assert.match(stall.releaseDecision.consolidationGuard.reason, /never accelerates/);
+});
+
+test('v4 learner answer gate suppresses unsupported formal assertions', async () => {
+  const { client } = stubClient({
+    learner: [
+      {
+        dialogue: 'The answer is Marin.',
+        adopt_indices: [],
+        retract_indices: [],
+        derive_indices: [],
+        hypothesis: null,
+        asserts_answer: 'Marin',
+      },
+    ],
+  });
+  const learner = makeLlmLearner({
+    setting: smokeWorld.setting,
+    voice: smokeWorld.learnerVoice,
+    client,
+    assertionGroundingGate: true,
+  });
+  const out = await learner({
+    turn: 4,
+    question: smokeWorld.question,
+    questionPattern: smokeWorld.questionPattern,
+    rules: smokeWorld.rules,
+    background: smokeWorld.background,
+    releasedFacts: [],
+    releasedThisTurn: [],
+    abox: { grounded: [], hypotheses: [] },
+    voiced: [],
+    transcript: [],
+    factSurfaces: new Map(),
+  });
+  assert.equal(out.asserts, null);
+  assert.equal(out.assertionGate.blocked, true);
+  assert.match(out.hypothesis, /not yet settle/);
+  assert.match(out.dialogue, /not yet settle/);
 });
 
 // C5 — the license arithmetic. Ledger stages p1 at t1; the draft re-enters.

@@ -130,7 +130,10 @@ test('bridge: proof-debt guard rewrites an ignored debt into a restore move', as
       transcript: [tutorLine(2, { targetPremise: 'p1', intent: 'release' })],
       proofDebt: {
         active: true,
-        debts: [{ premiseId: 'p1', surface: "Marin is Tessa's child", sinceTurn: 2 }],
+        debts: [
+          { premiseId: 'p1', surface: "Marin is Tessa's child", sinceTurn: 2 },
+          { premiseId: 'p2', surface: 'Tessa carried the lamp', sinceTurn: 2 },
+        ],
       },
     }),
   );
@@ -139,11 +142,51 @@ test('bridge: proof-debt guard rewrites an ignored debt into a restore move', as
   assert.equal(out.move.targetPremise, 'p1');
   assert.equal(out.proofDebt.forced, true);
   assert.equal(out.proofDebt.target, 'p1');
+  assert.deepEqual(out.proofDebt.targets, ['p1', 'p2']);
+  assert.equal(out.proofDebt.debtCount, 2);
   assert.equal(out.deliberation.reentry.proofDebtClaim, true);
 
   const superegoPrompt = calls.find((c) => c.role === 'tutor_superego').user;
   assert.ok(superegoPrompt.includes('PROOF-DEBT GUARD'));
   assert.ok(superegoPrompt.includes('authorized by that guard'));
+});
+
+test('engine: proof-debt restore repairs the grouped target set before the learner speaks', async () => {
+  const scheduled = (turn, via) => smokeWorld.releaseSchedule.find((entry) => entry.turn === turn && entry.via === via);
+  const roles = {
+    director: async (view) => {
+      const entry = scheduled(view.turn, 'director');
+      return { direction: 'director', release: entry?.premise || null };
+    },
+    tutor: async (view) => {
+      if (view.turn === 5) {
+        return {
+          dialogue: 'Restore the slipped entries.',
+          move: { figure: 'anaphora', targetPremise: 'p1', intent: 'restore' },
+          proofDebt: { active: true, target: 'p1', targets: ['p1', 'p4'], debtCount: 2, forced: true },
+        };
+      }
+      return {
+        dialogue: 'Hold the board.',
+        move: { figure: 'erotema', targetPremise: null, intent: 'consolidate' },
+        release: null,
+      };
+    },
+    learner: async (view) => ({ dialogue: 'I adopt what is staged.', adopt: view.releasedThisTurn }),
+  };
+  const result = await runDrama({
+    world: smokeWorld,
+    roles,
+    options: {
+      maxTurns: 5,
+      decay: { rate: 1, graceTurns: 0, maxConcurrent: 2, startTurn: 3, seed: 1, mutateShare: 0, pool: 'staged' },
+    },
+  });
+  const repairedAtFive = result.corruption.ledger
+    .filter((entry) => entry.turn === 5 && entry.type === 'repair')
+    .map((entry) => entry.premiseId)
+    .sort();
+  assert.deepEqual(repairedAtFive, ['p1', 'p4']);
 });
 
 test('mock chain: proof-debt guard produces tutor repairs and panel accounting on lantern', async () => {

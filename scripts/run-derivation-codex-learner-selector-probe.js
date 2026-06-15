@@ -46,6 +46,7 @@ const ARM_FLAGS = {
   'selective-v1': ['--pacing-guard-selective-v1'],
   'selective-v2': ['--pacing-guard-selective-v2'],
   'selective-v3': ['--pacing-guard-selective-v3'],
+  'selective-v4': ['--pacing-guard-selective-v4'],
 };
 const COMMON_FLAGS = [
   '--real',
@@ -213,7 +214,7 @@ function writeManifest(results, file) {
 
 async function main() {
   if (has('help')) {
-    console.log(`Usage: node scripts/run-derivation-codex-learner-selector-probe.js [--worlds a,b,c] [--arms baseline,hidden,visible,selective-v1,selective-v2,selective-v3] [--runs 5] [--parallelism 5] [--provider codex] [--model MODEL] [--learner-provider codex] [--learner-model MODEL] [--dry-run]`);
+    console.log(`Usage: node scripts/run-derivation-codex-learner-selector-probe.js [--worlds a,b,c] [--arms baseline,hidden,visible,selective-v1,selective-v2,selective-v3,selective-v4] [--runs 5] [--parallelism 5] [--provider codex] [--model MODEL] [--learner-provider codex] [--learner-model MODEL] [--dry-run]`);
     return;
   }
   const worlds = splitCsv(arg('worlds', DEFAULT_WORLDS.join(',')));

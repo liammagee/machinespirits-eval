@@ -332,6 +332,8 @@ function replayCommand({ source, turn, labelSuffix, window = 6, real = false, to
     'off',
     '--pacing-guard-selective-v3',
     'off',
+    '--pacing-guard-selective-v4',
+    'off',
   ];
   const parts = [
     'node',
@@ -534,7 +536,8 @@ export function renderMarkdown(summary) {
     const arm = (name) => c.arms[name];
     const compact = (row) => (row ? `${row.verdict} t${row.turns} D${row.finalD}` : '-');
     const sel = c.selected ? `${c.selected.arm}/${c.selected.selected}${c.selected.gate ? ` (${c.selected.gate})` : ''}` : '-';
-    const selective = arm('selective-v3') || arm('selective-v2') || arm('selective-v1') || arm('selective');
+    const selective =
+      arm('selective-v4') || arm('selective-v3') || arm('selective-v2') || arm('selective-v1') || arm('selective');
     lines.push(
       tableLine([
         c.group,

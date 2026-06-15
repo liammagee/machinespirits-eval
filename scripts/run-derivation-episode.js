@@ -42,6 +42,7 @@
  *     [--pacing-guard-selective-v1 on|off]
  *     [--pacing-guard-selective-v2 on|off]
  *     [--pacing-guard-selective-v3 on|off]
+ *     [--pacing-guard-selective-v4 on|off]
  *     [--proof-debt-guard on|off]
  *     [--compiled-guard on|off]
  *     [--plot on|off] [--throughline on|off]
@@ -92,6 +93,7 @@ import {
   selectGuardRepresentationV1,
   selectGuardRepresentationV2,
   selectGuardRepresentationV3,
+  selectGuardRepresentationV4,
 } from '../services/dramaticDerivation/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -383,7 +385,8 @@ async function main() {
       srcDiag.pacingGuardSelective ||
       srcDiag.pacingGuardSelectiveV1 ||
       srcDiag.pacingGuardSelectiveV2 ||
-      srcDiag.pacingGuardSelectiveV3,
+      srcDiag.pacingGuardSelectiveV3 ||
+      srcDiag.pacingGuardSelectiveV4,
   );
   const inheritedExplicitPacingGuard = Boolean(srcDiag.pacingGuard) && !inheritedSelectorActive;
   const inheritedExplicitVisibleGuard = Boolean(srcDiag.visibleGuard) && !inheritedSelectorActive;
@@ -417,7 +420,18 @@ async function main() {
     triState('pacing-guard-selective-v3', Boolean(srcDiag.pacingGuardSelectiveV3)),
     Boolean(srcDiag.pacingGuardSelectiveV3),
   );
-  const selectorCount = [pacingGuardSelective, pacingGuardSelectiveV1, pacingGuardSelectiveV2, pacingGuardSelectiveV3].filter(Boolean).length;
+  const pacingGuardSelectiveV4 = track(
+    'pacing-guard-selective-v4',
+    triState('pacing-guard-selective-v4', Boolean(srcDiag.pacingGuardSelectiveV4)),
+    Boolean(srcDiag.pacingGuardSelectiveV4),
+  );
+  const selectorCount = [
+    pacingGuardSelective,
+    pacingGuardSelectiveV1,
+    pacingGuardSelectiveV2,
+    pacingGuardSelectiveV3,
+    pacingGuardSelectiveV4,
+  ].filter(Boolean).length;
   if ((requestedPacingGuard || requestedVisibleGuard || selectorCount > 0) && !releaseAuthority) {
     console.error('pacing guards and selector arms require --release-authority on');
     process.exit(1);
@@ -493,7 +507,12 @@ async function main() {
 
   const script = fs.readFileSync(scriptPath, 'utf8');
   const worldIR =
-    compiledGuard || pacingGuardSelective || pacingGuardSelectiveV1 || pacingGuardSelectiveV2 || pacingGuardSelectiveV3
+    compiledGuard ||
+    pacingGuardSelective ||
+    pacingGuardSelectiveV1 ||
+    pacingGuardSelectiveV2 ||
+    pacingGuardSelectiveV3 ||
+    pacingGuardSelectiveV4
       ? buildWorldIR(world)
       : null;
   const pacingGuardSelector = pacingGuardSelective
@@ -504,10 +523,14 @@ async function main() {
         ? selectGuardRepresentationV2(worldIR, { decayEnabled: Boolean(decay) })
         : pacingGuardSelectiveV3
           ? selectGuardRepresentationV3(worldIR, { decayEnabled: Boolean(decay) })
+          : pacingGuardSelectiveV4
+            ? selectGuardRepresentationV4(worldIR, { decayEnabled: Boolean(decay) })
           : null;
   const pacingGuard = pacingGuardSelector ? pacingGuardSelector.selected === 'hidden' : requestedPacingGuard;
   const visibleGuard = pacingGuardSelector ? pacingGuardSelector.selected === 'visible' : requestedVisibleGuard;
   const visiblePushProbeGuard = pacingGuardSelectiveV3;
+  const visibleConsolidationGuard = pacingGuardSelectiveV4;
+  const assertionGroundingGate = pacingGuardSelectiveV4;
   const guardSpec = compiledGuard ? compileGuardSpec(world, worldIR || buildWorldIR(world)) : null;
   const label = arg('label', `${src.label}-t${fromTurn}-${mode}-${timestamp()}`);
   const outDir = path.join(path.resolve(ROOT, arg('out', 'exports/dramatic-derivation/episodes')), label);
@@ -548,8 +571,11 @@ async function main() {
       pacingGuardSelectiveV1,
       pacingGuardSelectiveV2,
       pacingGuardSelectiveV3,
+      pacingGuardSelectiveV4,
       pacingGuardSelector,
       visiblePushProbeGuard,
+      visibleConsolidationGuard,
+      assertionGroundingGate,
       visibleGuard,
       proofDebtGuard,
       compiledGuard,
@@ -588,6 +614,8 @@ async function main() {
   if (pacingGuard) console.log('tutor   PACING GUARD ON');
   if (visibleGuard) console.log('tutor   VISIBLE PACING GUARD ON');
   if (visiblePushProbeGuard) console.log('tutor   VISIBLE PUSH PROBE ON');
+  if (visibleConsolidationGuard) console.log('tutor   VISIBLE CONSOLIDATION ON');
+  if (assertionGroundingGate) console.log('learner ANSWER GATE ON');
   if (proofDebtGuard) console.log('tutor   PROOF-DEBT GUARD ON');
   if (guardSpec) console.log(`guard   COMPILED — WorldIR -> GuardSpec (${guardSpec.world.id})`);
   if (plot) console.log(`tutor   PLOT ON${throughline ? ' + THROUGHLINE ON' : ''}`);
@@ -614,12 +642,18 @@ async function main() {
       pacingGuard,
       visibleGuard,
       visiblePushProbeGuard,
+      visibleConsolidationGuard,
       proofDebtGuard,
       guardSpec,
       plot,
       throughline,
     }),
-    learner: makeLlmLearner({ setting: world.setting, voice: learnerVoice || world.learnerVoice, client }),
+    learner: makeLlmLearner({
+      setting: world.setting,
+      voice: learnerVoice || world.learnerVoice,
+      client,
+      assertionGroundingGate,
+    }),
   };
   const roles = makeReplayRoles({ recorded: src.result, fromTurn, live: liveRoles });
 
@@ -743,8 +777,11 @@ async function main() {
     pacingGuardSelectiveV1,
     pacingGuardSelectiveV2,
     pacingGuardSelectiveV3,
+    pacingGuardSelectiveV4,
     pacingGuardSelector,
     visiblePushProbeGuard,
+    visibleConsolidationGuard,
+    assertionGroundingGate,
     visibleGuard,
     proofDebtGuard,
     compiledGuard,

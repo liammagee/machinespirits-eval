@@ -304,3 +304,56 @@ test('episode CLI inherits modern guard and plot dials while preserving replay p
 
   fs.rmSync(tmp, { recursive: true, force: true });
 });
+
+test('episode CLI inherits selector v4 consolidation and answer-gate dials', { timeout: CLI_TIMEOUT }, () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'derivation-v4-episode-'));
+  const run = (script, args) =>
+    execFileSync(process.execPath, [path.join(ROOT, 'scripts', script), ...args], {
+      cwd: ROOT,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+
+  run('run-derivation-loop.js', [
+    '--world',
+    'config/drama-derivation/world-000-smoke.yaml',
+    '--label',
+    'src',
+    '--out',
+    path.join(tmp, 'loop'),
+    '--critic',
+    'off',
+    '--superego',
+    '--acts',
+    '{"minActTurns":1,"maxActTurns":3}',
+    '--decay',
+    '{"seed":7,"rate":0.5,"graceTurns":0,"maxConcurrent":2,"startTurn":1,"mutateShare":0}',
+    '--confront',
+    '--repair-clause',
+    '--release-authority',
+    '--pacing-guard-selective-v4',
+    '--plot',
+    '--throughline',
+  ]);
+  run('run-derivation-episode.js', [
+    '--from',
+    path.join(tmp, 'loop/src'),
+    '--turn',
+    '3',
+    '--window',
+    '2',
+    '--label',
+    'ep',
+    '--out',
+    path.join(tmp, 'episodes'),
+  ]);
+
+  const d = JSON.parse(fs.readFileSync(path.join(tmp, 'episodes/ep/diagnosis.json'), 'utf8'));
+  assert.equal(d.episode.prefixIntegrity.ok, true);
+  assert.equal(d.pacingGuardSelectiveV4, true);
+  assert.equal(d.visibleConsolidationGuard, true);
+  assert.equal(d.assertionGroundingGate, true);
+  assert.equal(d.pacingGuardSelector.schema, 'dramatic-derivation.representation-selector.v4');
+
+  fs.rmSync(tmp, { recursive: true, force: true });
+});

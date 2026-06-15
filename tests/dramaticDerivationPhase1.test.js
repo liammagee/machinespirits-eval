@@ -63,6 +63,20 @@ const firstLawfulTurn = (token) => {
   }
   return first;
 };
+const normalizedText = (text) => String(text || '').toLowerCase().replace(/\s+/g, ' ').trim();
+const naturalFact = (fact) =>
+  fact
+    .map((token) =>
+      String(token)
+        .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+        .replace(/[_-]+/g, ' ')
+        .toLowerCase(),
+    )
+    .join(', ');
+const premiseSurface = (premise) => normalizedText(premise.surface || naturalFact(premise.fact));
+const concealedPremises = CONCEALED_TOKENS.flatMap((token) =>
+  world.premises.filter((premise) => normalizedText(`${premise.fact.join(' ')} ${premise.surface || ''}`).includes(token)),
+).filter((premise, i, all) => all.findIndex((p) => p.id === premise.id) === i);
 
 /** Wraps the mock client, recording every prompt the learner role receives. */
 function recordingClient() {
@@ -180,11 +194,16 @@ test('learner prompts never carry a concealed token before its release turn', as
         );
       }
     });
+  }
+  const normalizedPrompts = learnerPrompts.map(normalizedText);
+  for (const premise of concealedPremises) {
+    const lawful = releaseTurnOf(premise.id);
     if (lawful !== Infinity) {
-      // And it DOES arrive once released (the drama actually delivers).
+      // And the released premise DOES arrive in its learner-facing surface form.
+      const surface = premiseSurface(premise);
       assert.ok(
-        learnerPrompts.some((prompt, i) => i + 1 >= lawful && prompt.includes(token)),
-        `token "${token}" never reached the learner after release`,
+        normalizedPrompts.some((prompt, i) => i + 1 >= lawful && prompt.includes(surface)),
+        `premise "${premise.id}" never reached the learner after release`,
       );
     }
   }

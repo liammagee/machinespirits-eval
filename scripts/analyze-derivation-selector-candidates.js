@@ -18,6 +18,7 @@ import {
   selectGuardRepresentationV1,
   selectGuardRepresentationV2,
   selectGuardRepresentationV3,
+  selectGuardRepresentationV4,
 } from '../services/dramaticDerivation/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -95,6 +96,7 @@ function loadWorldIndex() {
     const v1Decay = selectGuardRepresentationV1(ir, { decayEnabled: true });
     const v2Decay = selectGuardRepresentationV2(ir, { decayEnabled: true });
     const v3Decay = selectGuardRepresentationV3(ir, { decayEnabled: true });
+    const v4Decay = selectGuardRepresentationV4(ir, { decayEnabled: true });
     const pressure = v2Decay.input.consolidatedProofPressure;
     const dead = v2Decay.input.mirrorDeadPredicateDecoy;
     entries.push([
@@ -120,6 +122,7 @@ function loadWorldIndex() {
           v1Decay,
           v2Decay,
           v3Decay,
+          v4Decay,
         },
       },
     ]);
@@ -373,6 +376,7 @@ function criticalCase(comparison, worlds) {
       hidden: comparison.arms?.hidden || null,
       visible: comparison.arms?.visible || null,
       selective:
+        comparison.arms?.['selective-v4'] ||
         comparison.arms?.['selective-v3'] ||
         comparison.arms?.['selective-v2'] ||
         comparison.arms?.['selective-v1'] ||
@@ -386,6 +390,7 @@ function criticalCase(comparison, worlds) {
           v1Decay: pickSelector(world.selectors.v1Decay),
           v2Decay: pickSelector(world.selectors.v2Decay),
           v3Decay: pickSelector(world.selectors.v3Decay),
+          v4Decay: pickSelector(world.selectors.v4Decay),
         }
       : null,
     firstVisibleIntervention: guard,

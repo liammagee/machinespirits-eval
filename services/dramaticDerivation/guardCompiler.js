@@ -10,6 +10,7 @@ export const REPRESENTATION_SELECTOR_SCHEMA = 'dramatic-derivation.representatio
 export const REPRESENTATION_SELECTOR_V1_SCHEMA = 'dramatic-derivation.representation-selector.v1';
 export const REPRESENTATION_SELECTOR_V2_SCHEMA = 'dramatic-derivation.representation-selector.v2';
 export const REPRESENTATION_SELECTOR_V3_SCHEMA = 'dramatic-derivation.representation-selector.v3';
+export const REPRESENTATION_SELECTOR_V4_SCHEMA = 'dramatic-derivation.representation-selector.v4';
 
 function predicateOf(fact) {
   return Array.isArray(fact) ? fact[0] : null;
@@ -775,6 +776,45 @@ export function selectGuardRepresentationV3(worldIR, { decayEnabled = false } = 
     },
     reason:
       'default to hidden proof-continuity under decay/shared-source pressure; allow visible only as a hidden-safe stall-push at release boundaries',
+  };
+}
+
+export function selectGuardRepresentationV4(worldIR, { decayEnabled = false } = {}) {
+  const secretProof = worldIR?.proofGraph?.secretProof;
+  if (!secretProof || typeof secretProof.independentTopLevelJoin !== 'boolean') {
+    throw new Error('derivation.guardCompiler: selector v4 requires WorldIR secretProof.independentTopLevelJoin');
+  }
+
+  const independentTopLevelJoin = secretProof.independentTopLevelJoin;
+  const deadPredicateDecoy = mirrorDeadPredicateDecoy(worldIR);
+  const pressure = consolidatedProofPressure(worldIR);
+
+  return {
+    schema: REPRESENTATION_SELECTOR_V4_SCHEMA,
+    input: {
+      independentTopLevelJoin,
+      decayEnabled: Boolean(decayEnabled),
+      mirrorDeadPredicateDecoy: deadPredicateDecoy,
+      consolidatedProofPressure: pressure,
+    },
+    gate: 'hidden_default_visible_consolidation_assertion_gate',
+    selected: 'hidden',
+    selectedFlag: '--pacing-guard-selective-v4',
+    baseFlag: '--pacing-guard',
+    rejected: 'visible_release_acceleration',
+    runtimeVisibleProbe: {
+      enabled: true,
+      mode: 'shadow_hold_and_consolidation_probe',
+      allow: ['visible_block_as_hold_when_hidden_not_forcing', 'visible_stall_as_consolidation_prompt'],
+      reject: ['visible_stall_release_push', 'hidden_forced_release_block'],
+    },
+    learnerAssertionGate: {
+      enabled: true,
+      mode: 'visible_board_entailment_only',
+      reject: ['unsupported_asserts_answer', 'unsupported_asserts_binding'],
+    },
+    reason:
+      'default to hidden proof-continuity; use visible page-state only to hold or consolidate, and require learner-visible board entailment before any formal answer assertion',
   };
 }
 

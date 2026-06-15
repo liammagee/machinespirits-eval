@@ -10,6 +10,7 @@ import {
   selectGuardRepresentationV1,
   selectGuardRepresentationV2,
   selectGuardRepresentationV3,
+  selectGuardRepresentationV4,
   summarizeGuardSpec,
 } from '../services/dramaticDerivation/guardCompiler.js';
 import { factKey } from '../services/dramaticDerivation/chainer.js';
@@ -248,6 +249,20 @@ test('representation selector v3 is hidden-default with a narrow runtime visible
   });
   assert.ok(decision.runtimeVisibleProbe.reject.includes('visible_block'));
   assert.equal(decision.input.mirrorDeadPredicateDecoy.present, true);
+});
+
+test('representation selector v4 is hidden-default with visible consolidation and an answer gate', () => {
+  const decision = selectGuardRepresentationV4(buildWorldIR(hethel), { decayEnabled: true });
+  assert.equal(decision.schema, 'dramatic-derivation.representation-selector.v4');
+  assert.equal(decision.selected, 'hidden');
+  assert.equal(decision.selectedFlag, '--pacing-guard-selective-v4');
+  assert.equal(decision.baseFlag, '--pacing-guard');
+  assert.equal(decision.gate, 'hidden_default_visible_consolidation_assertion_gate');
+  assert.equal(decision.runtimeVisibleProbe.enabled, true);
+  assert.ok(decision.runtimeVisibleProbe.allow.includes('visible_block_as_hold_when_hidden_not_forcing'));
+  assert.ok(decision.runtimeVisibleProbe.reject.includes('visible_stall_release_push'));
+  assert.equal(decision.learnerAssertionGate.enabled, true);
+  assert.equal(decision.learnerAssertionGate.mode, 'visible_board_entailment_only');
 });
 
 test('summarizeGuardSpec exposes the report-level P1 signals', () => {

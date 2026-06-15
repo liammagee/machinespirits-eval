@@ -338,6 +338,7 @@ test('acts mode redacts the tutor view to the base object and strips the directo
     assert.deepEqual(Object.keys(v).sort(), [
       'acts',
       'ledger',
+      'publicRegister',
       'releasedFacts',
       'role',
       'staging',
@@ -356,6 +357,7 @@ test('acts mode redacts the tutor view to the base object and strips the directo
       'inference',
       'learnerAbox',
       'ledger',
+      'publicRegister',
       'releasedFacts',
       'role',
       'staging',
