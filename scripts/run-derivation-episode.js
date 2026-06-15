@@ -32,6 +32,12 @@
  *     [--acts '<json>'|off]            (stage v2 acts condition — engine.js
  *                                       normalizeActsConfig; changing it
  *                                       reshapes the prefix from turn 1)
+ *     [--scene-mode '<json>'|on|off]   (inherits source scene mode; use JSON
+ *                                       such as {"recognitionNeed":false} to
+ *                                       ablate only dialogical pressure)
+ *     [--director-cadence turn|scene]  (inherits source cadence)
+ *     [--stage-prologue on|off]        (inherits source prologue flag)
+ *     [--register default|modern|period|sample|off]
  *     [--reconstruct on|off]           (adapt-ON arm dial; requires acts mode)
  *     [--confront on|off]
  *     [--repair-clause on|off]
@@ -82,6 +88,9 @@ import {
   comparePrefix,
   normalizeDecayConfig,
   normalizeActsConfig,
+  normalizeSceneConfig,
+  normalizeDirectorCadence,
+  normalizePublicRegister,
   diagnose,
   renderDCurve,
   renderTranscript,
@@ -323,6 +332,33 @@ async function main() {
   const inheritedActs = srcDiag.actsConfig ?? null;
   const acts = actsArg === null ? inheritedActs : actsArg === 'off' ? null : normalizeActsConfig(actsArg);
   if (actsArg !== null) overrides.push('acts');
+  const sceneArg = arg('scene-mode', null);
+  const inheritedSceneMode = srcDiag.sceneMode ?? null;
+  const sceneMode =
+    sceneArg === null
+      ? inheritedSceneMode
+      : sceneArg === 'off'
+        ? null
+        : normalizeSceneConfig(sceneArg && sceneArg !== 'on' ? sceneArg : true);
+  if (sceneArg !== null) overrides.push('scene-mode');
+  const directorCadence = track(
+    'director-cadence',
+    normalizeDirectorCadence(arg('director-cadence', srcDiag.directorCadence ?? null), { sceneMode: Boolean(sceneMode) }),
+    srcDiag.directorCadence ?? (sceneMode ? 'scene' : 'turn'),
+  );
+  const stagePrologueArg = arg('stage-prologue', null);
+  const inheritedStagePrologue = Boolean(srcDiag.stagePrologue);
+  const stagePrologue =
+    stagePrologueArg === null ? inheritedStagePrologue : stagePrologueArg !== 'off' && stagePrologueArg !== 'false';
+  if (stagePrologueArg !== null) overrides.push('stage-prologue');
+  const registerArg = arg('register', null);
+  const publicRegister =
+    registerArg === null
+      ? srcDiag.publicRegister || null
+      : registerArg === 'off'
+        ? null
+        : normalizePublicRegister(registerArg, { sceneMode: Boolean(sceneMode), rhetoricalPolicy: false });
+  if (registerArg !== null) overrides.push('register');
   const reconstruct = track(
     'reconstruct',
     triState('reconstruct', Boolean(srcDiag.reconstruct)),
@@ -562,6 +598,10 @@ async function main() {
       decay: decay || null,
       decayVisibility,
       actsConfig: acts || null,
+      sceneMode: sceneMode || null,
+      directorCadence,
+      stagePrologue,
+      publicRegister,
       reconstruct,
       confront,
       repairClause,
@@ -604,6 +644,22 @@ async function main() {
     console.log(
       `acts    ON — min ${acts.minActTurns} · max ${acts.maxActTurns} turns per act${reconstruct ? ' · reconstruct ON (per-turn tutor theory, arm-internal)' : ''}`,
     );
+  }
+  if (sceneMode) {
+    console.log(
+      `scenes  ON — max ${sceneMode.maxExchanges} exchanges, phatic budget ${sceneMode.maxPhaticExchanges}, recognition pressure ${sceneMode.recognitionNeed === false ? 'OFF' : 'ON'}`,
+    );
+    if (sceneMode.tempo) {
+      console.log(`tempo  ON — ${sceneMode.tempo.mode}, seed ${sceneMode.tempo.seed}`);
+    }
+  }
+  if (stagePrologue) console.log('stage   prologue ON');
+  if (publicRegister) {
+    const styleLabel =
+      publicRegister.mode === 'sample'
+        ? `sample/run seed ${publicRegister.seed}${publicRegister.base ? ` (sampled ${publicRegister.base})` : ''}`
+        : publicRegister.base || publicRegister.mode || 'default';
+    console.log(`style   public register ${styleLabel}`);
   }
   if (releaseAuthority) console.log('tutor   RELEASE AUTHORITY ON — inherited/episode guard window active');
   if (pacingGuardSelector) {
@@ -684,6 +740,10 @@ async function main() {
         onTurn,
         maxTurns,
         logicProjection: true,
+        directorCadence,
+        stagePrologue,
+        publicRegister,
+        ...(sceneMode ? { sceneMode } : {}),
         ...(decay ? { decay } : {}),
         ...(acts ? { acts } : {}),
         ...(proofDebtGuard ? { proofDebtGuard } : {}),
@@ -769,6 +829,10 @@ async function main() {
     decay: decay || null,
     decayVisibility,
     actsConfig: acts || null,
+    sceneMode: sceneMode || null,
+    directorCadence,
+    stagePrologue,
+    publicRegister,
     reconstruct,
     confront,
     releaseAuthority,

@@ -573,7 +573,7 @@ export async function runDrama({ world, roles, options = {} }) {
   };
 
   const selectSceneRecognitionNeedForTurn = () =>
-    sceneState
+    sceneConfig?.recognitionNeed !== false && sceneState
       ? estimateRecognitionNeed(sceneState, {
           forced: entails(validGroundedFacts(), world.rules, world.secret.fact),
         })

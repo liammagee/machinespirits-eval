@@ -102,8 +102,11 @@
  *                                       JSON keys: maxExchanges,
  *                                       maxPhaticExchanges,
  *                                       closeOnDDecrease, closeOnConfusion,
- *                                       tempo. tempo=true samples exchange
- *                                       beats: uptake_only, repair_request,
+ *                                       recognitionNeed, tempo.
+ *                                       recognitionNeed=false ablates the
+ *                                       dialogical pressure signal.
+ *                                       tempo=true samples exchange beats:
+ *                                       uptake_only, repair_request,
  *                                       recap, hesitation, hypothesis,
  *                                       evidence, recognition.)
  *     [--director-cadence turn|scene|release]

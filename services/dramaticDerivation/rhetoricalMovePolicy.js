@@ -18,6 +18,7 @@ const SCENE_DEFAULTS = Object.freeze({
   maxPhaticExchanges: 2,
   closeOnDDecrease: true,
   closeOnConfusion: true,
+  recognitionNeed: true,
   tempo: null,
 });
 
@@ -139,6 +140,7 @@ export function normalizeSceneConfig(raw = true) {
     tempo: normalizeSceneTempoConfig(cfg.tempo),
     closeOnDDecrease: Boolean(cfg.closeOnDDecrease),
     closeOnConfusion: Boolean(cfg.closeOnConfusion),
+    recognitionNeed: cfg.recognitionNeed !== false && cfg.recognitionNeed !== 'off',
   };
 }
 

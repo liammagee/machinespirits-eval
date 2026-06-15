@@ -430,8 +430,10 @@ test('rhetorical policy supports seeded sampling over the same distribution', ()
     maxPhaticExchanges: 2,
     closeOnDDecrease: true,
     closeOnConfusion: true,
+    recognitionNeed: true,
     tempo: null,
   });
+  assert.equal(normalizeSceneConfig({ recognitionNeed: false }).recognitionNeed, false);
 });
 
 test('recognition need biases rhetorical policy without changing proof state', () => {
