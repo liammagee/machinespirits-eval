@@ -144,7 +144,7 @@ test('loop → episode → matrix CLIs round-trip decay conditions hermetically'
   const decayJson = '{"seed":7,"rate":0.5,"graceTurns":0,"maxConcurrent":2}';
 
   // 1. loop run with decay → diagnosis carries the condition + the report
-  run('run-derivation-loop.js', [
+  const srcStdout = run('run-derivation-loop.js', [
     '--world',
     'config/drama-derivation/world-000-smoke.yaml',
     '--label',
@@ -156,6 +156,8 @@ test('loop → episode → matrix CLIs round-trip decay conditions hermetically'
     '--decay',
     decayJson,
   ]);
+  assert.equal(srcStdout.includes('critic  FAILED'), false);
+  assert.equal(fs.existsSync(path.join(tmp, 'loop/src/commentary.md')), false);
   const srcResult = JSON.parse(fs.readFileSync(path.join(tmp, 'loop/src/result.json'), 'utf8'));
   assert.equal(srcResult.logicSnapshots.length, srcResult.turnsPlayed);
   const srcLive = JSON.parse(fs.readFileSync(path.join(tmp, 'loop/src/live.json'), 'utf8'));

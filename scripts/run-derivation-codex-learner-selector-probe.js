@@ -22,9 +22,21 @@ const DEFAULT_LOG_BASE = 'exports/dramatic-derivation';
 const DEFAULT_WORLDS = ['withercombe', 'fengate', 'hethel'];
 const DEFAULT_ARMS = ['baseline', 'hidden', 'visible', 'selective-v1'];
 const WORLD_CONFIG = {
+  lantern: {
+    world: 'config/drama-derivation/world-002-lantern.yaml',
+    script: 'config/drama-derivation/tutor-scripts/lantern-v001.md',
+  },
+  bitterwell: {
+    world: 'config/drama-derivation/world-003-bitterwell.yaml',
+    script: 'config/drama-derivation/tutor-scripts/bitterwell-v001.md',
+  },
   withercombe: {
     world: 'config/drama-derivation/world-004-withercombe.yaml',
     script: 'config/drama-derivation/tutor-scripts/withercombe-v001.md',
+  },
+  marrick: {
+    world: 'config/drama-derivation/world-005-marrick.yaml',
+    script: 'config/drama-derivation/tutor-scripts/marrick-v001.md',
   },
   fengate: {
     world: 'config/drama-derivation/world-007-fengate.yaml',
@@ -48,15 +60,11 @@ const ARM_FLAGS = {
   'selective-v3': ['--pacing-guard-selective-v3'],
   'selective-v4': ['--pacing-guard-selective-v4'],
 };
-const COMMON_FLAGS = [
+const BASE_COMMON_FLAGS = [
   '--real',
   '--superego',
   '--acts',
   '{"minActTurns":3,"maxActTurns":8}',
-  '--decay',
-  '{"rate":0.75,"graceTurns":1,"maxConcurrent":2,"startTurn":1,"mutateShare":1.0,"seed":1,"pool":"staged"}',
-  '--confront',
-  '--repair-clause',
   '--release-authority',
   '--plot',
   '--throughline',
@@ -64,6 +72,7 @@ const COMMON_FLAGS = [
   'off',
   '--critic',
   'off',
+  '--logic-projection',
 ];
 
 function arg(name, fallback = null) {
@@ -125,7 +134,18 @@ function buildEnv({ provider, model, learnerProvider, learnerModel }) {
   return env;
 }
 
-function buildJobs({ worlds, arms, runs, labelPrefix, outDir, group }) {
+function buildCommonFlags({ decay, proofDebtGuard }) {
+  const flags = [...BASE_COMMON_FLAGS];
+  if (decay && decay !== 'off') {
+    flags.push('--decay', decay, '--confront', '--repair-clause');
+    if (proofDebtGuard) flags.push('--proof-debt-guard');
+  } else if (proofDebtGuard) {
+    throw new Error('--proof-debt-guard requires active --decay; omit it for --decay off');
+  }
+  return flags;
+}
+
+function buildJobs({ worlds, arms, runs, labelPrefix, outDir, group, commonFlags = BASE_COMMON_FLAGS }) {
   const jobs = [];
   for (let run = 1; run <= runs; run += 1) {
     for (const arm of arms) {
@@ -146,7 +166,7 @@ function buildJobs({ worlds, arms, runs, labelPrefix, outDir, group }) {
           outDir,
           '--group',
           group,
-          ...COMMON_FLAGS,
+          ...commonFlags,
           ...ARM_FLAGS[arm],
         ];
         jobs.push({ label, world, arm, run, args });
@@ -214,7 +234,7 @@ function writeManifest(results, file) {
 
 async function main() {
   if (has('help')) {
-    console.log(`Usage: node scripts/run-derivation-codex-learner-selector-probe.js [--worlds a,b,c] [--arms baseline,hidden,visible,selective-v1,selective-v2,selective-v3,selective-v4] [--runs 5] [--parallelism 5] [--provider codex] [--model MODEL] [--learner-provider codex] [--learner-model MODEL] [--dry-run]`);
+    console.log(`Usage: node scripts/run-derivation-codex-learner-selector-probe.js [--worlds a,b,c] [--arms baseline,hidden,visible,selective-v1,selective-v2,selective-v3,selective-v4] [--runs 5] [--parallelism 5] [--provider codex] [--model MODEL] [--learner-provider codex] [--learner-model MODEL] [--decay JSON|off] [--decay-seed N] [--proof-debt-guard] [--dry-run]`);
     return;
   }
   const worlds = splitCsv(arg('worlds', DEFAULT_WORLDS.join(',')));
@@ -230,8 +250,21 @@ async function main() {
   const outDir = arg('out', 'exports/dramatic-derivation/loop');
   const logDir = resolveFromRoot(arg('log-dir', path.join(DEFAULT_LOG_BASE, `selector-${slug}-learner-run-logs`)));
   const group = arg('group', `selector-${slug}-learner-probe`);
+  const decaySeed = Number(arg('decay-seed', '1'));
+  const defaultDecay = JSON.stringify({
+    rate: 0.75,
+    graceTurns: 1,
+    maxConcurrent: 2,
+    startTurn: 1,
+    mutateShare: 1.0,
+    seed: Number.isFinite(decaySeed) ? decaySeed : 1,
+    pool: 'staged',
+  });
+  const decay = arg('decay', defaultDecay);
+  const proofDebtGuard = has('proof-debt-guard');
+  const commonFlags = buildCommonFlags({ decay, proofDebtGuard });
   const skipExisting = !has('no-skip-existing');
-  const jobs = buildJobs({ worlds, arms, runs, labelPrefix, outDir, group });
+  const jobs = buildJobs({ worlds, arms, runs, labelPrefix, outDir, group, commonFlags });
 
   console.log(
     `selector probe: ${jobs.length} jobs; parallelism ${parallelism}; worlds ${worlds.join(',')}; arms ${arms.join(',')}; runs ${runs}`,
@@ -239,6 +272,7 @@ async function main() {
   console.log(
     `env: DERIVATION_PROVIDER=${provider}${model ? ` DERIVATION_MODEL=${model}` : ''} DERIVATION_LEARNER_PROVIDER=${learnerProvider}${learnerModel ? ` DERIVATION_LEARNER_MODEL=${learnerModel}` : ''} DERIVATION_LLM=real DERIVATION_TRACE=0`,
   );
+  console.log(`condition: decay=${decay || 'off'} proofDebt=${proofDebtGuard ? 'on' : 'off'}`);
   console.log('queue: run-major, arm-major, world-minor; first jobs:');
   for (const job of jobs.slice(0, Math.min(10, jobs.length))) {
     console.log(`  ${job.label}`);
