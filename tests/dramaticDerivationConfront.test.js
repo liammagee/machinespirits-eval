@@ -504,6 +504,50 @@ test('v4 learner answer gate suppresses unsupported formal assertions', async ()
   assert.match(out.dialogue, /not yet settle/);
 });
 
+test('same-turn assertion affordance prompts post-adoption answer and keeps grounding gate on', async () => {
+  const releasedFacts = ['p1', 'p2', 'p3'].map((id) => smokeWorld.premiseById.get(id).fact);
+  const { client, calls } = stubClient({
+    learner: [
+      {
+        dialogue: 'Then it is Marin.',
+        adopt_indices: [0, 1, 2],
+        retract_indices: [],
+        derive_indices: [],
+        hypothesis: null,
+        asserts_answer: 'Marin',
+      },
+    ],
+  });
+  const learner = makeLlmLearner({
+    setting: smokeWorld.setting,
+    voice: smokeWorld.learnerVoice,
+    client,
+    sameTurnAssertionAffordance: true,
+  });
+  const out = await learner({
+    turn: 8,
+    question: smokeWorld.question,
+    questionPattern: smokeWorld.questionPattern,
+    rules: smokeWorld.rules,
+    background: [],
+    releasedFacts,
+    releasedThisTurn: [releasedFacts[2]],
+    abox: { grounded: [], hypotheses: [] },
+    voiced: [],
+    transcript: [],
+    factSurfaces: {},
+  });
+
+  const learnerCall = calls.find((c) => c.role === 'learner');
+  assert.match(learnerCall.system, /Same-turn answer discipline/);
+  assert.match(learnerCall.user, /Same-turn answer check/);
+  assert.equal(learnerCall.meta.sameTurnAssertionAffordance, true);
+  assert.equal(learnerCall.meta.patternAssertion.answer, 'marin');
+  assert.deepEqual(out.asserts, ['heir', 'marin']);
+  assert.equal(out.assertionGate.supported, true);
+  assert.equal(out.assertionGate.blocked, false);
+});
+
 // C5 — the license arithmetic. Ledger stages p1 at t1; the draft re-enters.
 
 const p1Staged = {

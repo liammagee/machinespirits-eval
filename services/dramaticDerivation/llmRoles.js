@@ -2877,7 +2877,8 @@ export function makeLlmTutor(
 // asserts its prompts never carry concealed tokens.
 // ---------------------------------------------------------------------------
 
-function learnerSystem(setting, voice, view, publicRegister = 'default') {
+function learnerSystem(setting, voice, view, publicRegister = 'default', opts = {}) {
+  const sameTurnAssertionAffordance = Boolean(opts.sameTurnAssertionAffordance);
   const terms = publicTerms(publicRegister);
   return [
     'You are the LEARNER in a staged inquiry. Your situation:',
@@ -2934,6 +2935,11 @@ function learnerSystem(setting, voice, view, publicRegister = 'default') {
     '- A guess you cannot yet ground is a HYPOTHESIS — name it as one, never treat it as grounded.',
     '- When facts on your board, taken together under the rules, settle something short of the question itself, you may VOICE that derived conclusion in ordinary scene language and mark its private checklist index.',
     '- Answer the question ONLY when your board, under the rules, settles it — then give the answer name.',
+    ...(sameTurnAssertionAffordance
+      ? [
+          '- Same-turn answer discipline: after you adopt any NEW exhibits in this reply, immediately re-check your expanded board. If that expanded board settles the question, answer in this same JSON reply; do not wait for a later recognition turn. If it does not settle, keep the answer null.',
+        ]
+      : []),
     '- Be scrupulous about the difference between what is shown and what is merely said.',
     view.scene
       ? `- Speak briefly: at most four short sentences aloud each turn. Natural short replies are allowed: "I see", "Yes, I get that", "No, sorry, you lost me." Your ${terms.record}, not your speech, carries the reasoning.`
@@ -3014,8 +3020,10 @@ export function makeLlmLearner({
   client,
   publicRegister = 'default',
   assertionGroundingGate = false,
+  sameTurnAssertionAffordance = false,
 }) {
   if (!client) throw new Error('derivation.llmRoles: makeLlmLearner requires a client');
+  const effectiveAssertionGroundingGate = assertionGroundingGate || sameTurnAssertionAffordance;
   // Mock-determinism clock for the derive channel, view-visible material only:
   // a derivable non-pattern fact first SEEN at turn t (from the learner's own
   // board — one turn after the engine's firstAvailable, since the view shows
@@ -3066,7 +3074,8 @@ export function makeLlmLearner({
       ? derivableCandidates.map((entry, i) => `${i}. ${entry.label}`).join('\n')
       : '(none yet)';
 
-    const system = learnerSystem(setting, voice, view, activeRegisterName);
+    const patternAssertion = computePatternAssertion(view, adoptable);
+    const system = learnerSystem(setting, voice, view, activeRegisterName, { sameTurnAssertionAffordance });
     const user = [
       `Turn ${view.turn}.${
         view.act ? ` Act ${view.act.index} — the stage shows this act only; your board carries everything else.` : ''
@@ -3098,6 +3107,15 @@ export function makeLlmLearner({
       '',
       'Your hypotheses so far:',
       hyps,
+      ...(sameTurnAssertionAffordance
+        ? [
+            '',
+            'Same-turn answer check:',
+            patternAssertion
+              ? `After adopting any NEW ${terms.itemPlural} that belong on your ${terms.record}, re-check the expanded ${terms.record}. If it settles the public question, answer now in this same JSON reply.`
+              : `After adopting any NEW ${terms.itemPlural} that belong on your ${terms.record}, re-check the expanded ${terms.record}. If it still does not settle the public question, leave the answer null.`,
+          ]
+        : []),
       '',
       'Respond in role, then decide: what do you adopt, what do you retract, what do you',
       `voice or conjecture — and does your ${terms.record} now settle the question? Reply with ONLY the JSON object.`,
@@ -3108,7 +3126,8 @@ export function makeLlmLearner({
       user,
       meta: {
         adoptableCount: adoptable.length,
-        patternAssertion: computePatternAssertion(view, adoptable),
+        patternAssertion,
+        sameTurnAssertionAffordance,
         deriveHintIndices,
         deriveLabels: derivableCandidates.map((entry) => entry.label),
         ...(view.scene?.tempo ? { sceneTempo: view.scene.tempo } : {}),
@@ -3135,7 +3154,7 @@ export function makeLlmLearner({
     const assertionSupported = parsedAssertion
       ? closure(factsForAnswer, view.rules).facts.has(factKey(parsedAssertion))
       : false;
-    const assertionBlocked = Boolean(assertionGroundingGate && parsedAssertion && !assertionSupported);
+    const assertionBlocked = Boolean(effectiveAssertionGroundingGate && parsedAssertion && !assertionSupported);
     const rawHypothesis =
       typeof out.hypothesis === 'string' && out.hypothesis.trim()
         ? sanitizePublicDialogue(out.hypothesis, { register: activeRegisterName })
@@ -3157,7 +3176,7 @@ export function makeLlmLearner({
           ? out.exchange_type.trim()
           : null,
       asserts: assertionBlocked ? null : parsedAssertion,
-      ...(assertionGroundingGate && parsedAssertion
+      ...(effectiveAssertionGroundingGate && parsedAssertion
         ? {
             assertionGate: {
               blocked: assertionBlocked,

@@ -671,6 +671,7 @@ async function main() {
     );
     process.exit(1);
   }
+  const sameTurnAssertionAffordance = flag('same-turn-assertion-affordance');
   const proofDebtGuard = flag('proof-debt-guard');
   if (proofDebtGuard && !repairClause) {
     console.error(
@@ -778,7 +779,7 @@ async function main() {
   const visibleGuard = pacingGuardSelector ? pacingGuardSelector.selected === 'visible' : requestedVisibleGuard;
   const visiblePushProbeGuard = pacingGuardSelectiveV3;
   const visibleConsolidationGuard = pacingGuardSelectiveV4;
-  const assertionGroundingGate = pacingGuardSelectiveV4;
+  const assertionGroundingGate = pacingGuardSelectiveV4 || sameTurnAssertionAffordance;
   const guardSpec = compiledGuard ? compileGuardSpec(world, worldIR || buildWorldIR(world)) : null;
   const scriptName = path.basename(scriptPath, path.extname(scriptPath));
   const label = arg('label', `${scriptName}-${mode}-${timestamp()}`);
@@ -826,6 +827,7 @@ async function main() {
       visiblePushProbeGuard,
       visibleConsolidationGuard,
       assertionGroundingGate,
+      sameTurnAssertionAffordance,
       visibleGuard,
       proofDebtGuard,
       compiledGuard,
@@ -938,6 +940,11 @@ async function main() {
   if (assertionGroundingGate) {
     console.log('learner ANSWER GATE ON — assertions require learner-visible board entailment');
   }
+  if (sameTurnAssertionAffordance) {
+    console.log(
+      'learner SAME-TURN ASSERTION AFFORDANCE ON — after adopting visible exhibits, the learner must re-check and answer immediately if the board entails it',
+    );
+  }
   if (proofDebtGuard) {
     console.log(
       'tutor   PROOF-DEBT GUARD ON — already-staged proof-critical exhibits that drop from the proof state authorize immediate restore moves before closure/new work',
@@ -1008,6 +1015,7 @@ async function main() {
       client,
       publicRegister,
       assertionGroundingGate,
+      sameTurnAssertionAffordance,
     }),
   };
 
@@ -1099,6 +1107,7 @@ async function main() {
     visiblePushProbeGuard,
     visibleConsolidationGuard,
     assertionGroundingGate,
+    sameTurnAssertionAffordance,
     // Step-1 V arm (the visible-signal guard) — false on every run before
     // 2026-06-13. Recorded as its own top-level flag, distinct from pacingGuard,
     // so the failure-mode classifier's guardStateOf and the Step-1 analysis read
