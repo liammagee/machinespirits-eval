@@ -377,14 +377,76 @@ function mockResponse(role, meta = {}) {
         ...throughlineBits,
       });
     }
+    if (meta.sceneTempo?.beat && !meta.releaseSurface) {
+      const tempoLine = {
+        uptake_only: 'Take a breath with that. If it is clear, just say what part is clear.',
+        repair_request: 'If the thread has slipped, name the missing link and we will repair it.',
+        recap: 'Say back only the part that is already secure; no new claim yet.',
+        hesitation: 'It is acceptable not to write the line yet. Name the hesitation.',
+      }[meta.sceneTempo.beat];
+      if (tempoLine) {
+        return JSON.stringify({
+          dialogue: tempoLine,
+          move: {
+            figure: meta.sceneTempo.beat === 'recap' ? 'anaphora' : 'erotema',
+            target_premise: meta.cuePremise || null,
+            intent: meta.sceneTempo.beat === 'repair_request' ? 'orient' : 'consolidate',
+          },
+          ...releaseBits,
+          ...theory,
+          ...plotBits,
+          ...throughlineBits,
+        });
+      }
+    }
     if (meta.rhetoricalPolicy?.selected) {
       const selected = meta.rhetoricalPolicy.selected;
+      const figure = selected.figure || 'erotema';
+      const turn = Number(meta.rhetoricalPolicy.turn) || 0;
+      const target = selected.targetPremise ? 'that staged detail' : 'what is already in view';
+      const noReleaseByFigure = {
+        analogia: [
+          `Treat ${target} like a link in a chain: which link is firm, and which one is still missing?`,
+          `Set ${target} beside the rest. Where does the shape carry over, and where does it break?`,
+          `Use the same pattern again: what matches, and what still refuses to fit?`,
+        ],
+        anaphora: [
+          'First name what stands; then name what does not yet stand.',
+          'First keep the shown part; then mark the part still not shown.',
+          'First say the secure thing; then say what it still does not license.',
+        ],
+        aposiopesis: [
+          'Stop before the answer. Tell me only the missing piece you can now feel.',
+          'Do not finish it for me yet. Name the edge where your certainty stops.',
+          'Hold back the final name. What has the scene made almost sayable?',
+        ],
+        erotema: [
+          'Put the last two things in your own words: what do they show, and what is still missing?',
+          `Ask yourself the small question: with ${target}, what can you now say?`,
+          'Where does your record now point, and where does it still fall short?',
+        ],
+        exemplum: [
+          'Use one name as the example. What can you now say without guessing?',
+          `Let ${target} serve as the case. What does the case prove, and no more?`,
+          'Take the most concrete thing on the table. What does it teach you?',
+        ],
+      };
+      const releaseByFigure = {
+        analogia: 'Set this beside what you already hold',
+        anaphora: 'Here is the next detail; hold it, test it, use it',
+        aposiopesis: 'Take this much, and no more yet',
+        erotema: 'Ask what this new detail changes',
+        exemplum: 'Let this example do the work',
+      };
+      const noReleaseOptions = noReleaseByFigure[figure] || [
+        'Let us keep this small: say what you hold, and where the next link should bite.',
+      ];
       return JSON.stringify({
         dialogue: meta.releaseSurface
-          ? `Take this exhibit in the way the scene now asks: ${meta.releaseSurface}`
-          : 'Let us keep this small: say what you hold, and where the next link should bite.',
+          ? `${releaseByFigure[figure] || 'Take this new detail'}: ${meta.releaseSurface}`
+          : noReleaseOptions[turn % noReleaseOptions.length],
         move: {
-          figure: selected.figure || 'erotema',
+          figure,
           target_premise: selected.targetPremise || meta.cuePremise || null,
           intent: selected.intent || (meta.cuePremise ? 'release' : 'consolidate'),
         },
@@ -480,6 +542,25 @@ function mockResponse(role, meta = {}) {
     // deterministically. The real backend never reads this hint.
     const deriveIndices = Array.isArray(meta.deriveHintIndices) ? meta.deriveHintIndices : [];
     const deriveLabels = Array.isArray(meta.deriveLabels) ? meta.deriveLabels : [];
+    if (meta.sceneTempo?.beat && !meta.patternAssertion && !adoptAll.length && !deriveIndices.length) {
+      const tempo = {
+        uptake_only: { dialogue: 'I see. That part is clear.', exchange_type: 'phatic_ack' },
+        repair_request: { dialogue: 'Wait, I lost the link. Can we go back one step?', exchange_type: 'repair_request' },
+        recap: { dialogue: 'So far, I know what is shown, and I know what is still missing.', exchange_type: 'phatic_ack' },
+        hesitation: { dialogue: 'Wait. I am not ready to write that yet.', exchange_type: 'confusion' },
+      }[meta.sceneTempo.beat];
+      if (tempo) {
+        return JSON.stringify({
+          dialogue: tempo.dialogue,
+          adopt_indices: [],
+          retract_indices: [],
+          derive_indices: [],
+          hypothesis: null,
+          exchange_type: tempo.exchange_type,
+          asserts_answer: null,
+        });
+      }
+    }
     return JSON.stringify({
       dialogue: meta.patternAssertion
         ? `Then it is shown: ${meta.patternAssertion.answer || meta.patternAssertion.surface}.`

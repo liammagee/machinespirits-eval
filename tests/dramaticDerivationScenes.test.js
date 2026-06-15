@@ -23,10 +23,13 @@ import {
   renderEvalPanel,
   renderTranscript,
   normalizeSceneConfig,
+  normalizeSceneTempoConfig,
   normalizeDirectorCadence,
   normalizeRhetoricalPolicyConfig,
   normalizePublicRegister,
   describePublicRegister,
+  detectPhaticRecognition,
+  recommendSceneTempoBeat,
   recommendRhetoricalMove,
   sanitizePublicDialogue,
 } from '../services/dramaticDerivation/index.js';
@@ -118,6 +121,102 @@ test('scene director cadence skips ordinary continuation turns but keeps boundar
   assert.equal(normalizeDirectorCadence(null, { sceneMode: false }), 'turn');
 });
 
+test('scene tempo selects public beats and records them on exchanges', async () => {
+  const sceneMode = normalizeSceneConfig({
+    maxExchanges: 4,
+    maxPhaticExchanges: 3,
+    closeOnDDecrease: false,
+    tempo: {
+      mode: 'deterministic',
+      seed: 7,
+      weights: {
+        uptake_only: 1,
+        repair_request: 0,
+        recap: 0,
+        hesitation: 0,
+        hypothesis: 0,
+        evidence: 0,
+        recognition: 0,
+      },
+    },
+  });
+  assert.equal(sceneMode.tempo.mode, 'deterministic');
+  assert.equal(normalizeSceneTempoConfig(false), null);
+
+  const tutorViews = [];
+  const learnerViews = [];
+  let tutorTurn = 0;
+  const result = await runDrama({
+    world,
+    roles: {
+      director: makeMockDirector(world),
+      tutor: async (view) => {
+        tutorTurn += 1;
+        tutorViews.push(JSON.parse(JSON.stringify(view)));
+        return {
+          dialogue: tutorTurn === 1 ? 'Yes, your last line can rest here.' : 'Hold the new note briefly.',
+          move: { figure: 'erotema', targetPremise: null, intent: 'consolidate' },
+        };
+      },
+      learner: async (view) => {
+        learnerViews.push(JSON.parse(JSON.stringify(view)));
+        return view.releasedThisTurn.length
+          ? { dialogue: 'I take the new note.', adopt: view.releasedThisTurn }
+          : { dialogue: 'I see.' };
+      },
+    },
+    options: { sceneMode, maxTurns: 2 },
+  });
+
+  assert.equal(tutorViews[0].scene.tempo.beat, 'uptake_only');
+  assert.equal(learnerViews[0].scene.tempo.beat, 'uptake_only');
+  assert.equal(learnerViews[1].scene.tempo.beat, 'evidence');
+  assert.deepEqual(result.scenes[0].exchanges.map((exchange) => exchange.tempo), ['uptake_only', 'evidence']);
+  assert.deepEqual(
+    result.transcript
+      .find((line) => line.role === 'tutor' && line.turn === 1)
+      .meta.phaticRecognition.map((signal) => signal.type),
+    ['affirms_learner_uptake', 'uses_learner_language'],
+  );
+  assert.deepEqual(
+    result.transcript
+      .find((line) => line.role === 'learner' && line.turn === 1)
+      .meta.phaticRecognition.map((signal) => signal.type),
+    ['acknowledges_tutor_guidance'],
+  );
+  assert.deepEqual(result.scenes[0].exchanges[0].phaticRecognition.map((signal) => signal.type), [
+    'acknowledges_tutor_guidance',
+  ]);
+  const d = diagnose(result, world);
+  assert.equal(d.scenes.tempoBeats.uptake_only, 1);
+  assert.equal(d.scenes.tempoBeats.evidence, 1);
+  assert.equal(d.scenes.phaticRecognition.total, 3);
+  assert.equal(d.scenes.phaticRecognition.byRole.tutor, 2);
+  assert.equal(d.scenes.phaticRecognition.byRole.learner, 1);
+  assert.match(renderTranscript(result, world), /Tempo: uptake only/);
+  assert.match(renderTranscript(result, world), /phatic recognition: acknowledges tutor guidance/);
+  assert.match(renderEvalPanel(d), /tempo: uptake only 1 · evidence 1/);
+  assert.match(
+    renderEvalPanel(d),
+    /phatic recognition: affirms learner uptake 1 · uses learner language 1 · acknowledges tutor guidance 1/,
+  );
+
+  const recommended = recommendSceneTempoBeat(
+    world,
+    { index: 1, exchanges: [], counts: { phatic: 0 } },
+    { turn: 1 },
+    sceneMode.tempo,
+  );
+  assert.equal(recommended.beat, 'uptake_only');
+  assert.deepEqual(
+    detectPhaticRecognition('Wait, you lost me there. Can we go back one step?', {
+      role: 'learner',
+      exchangeType: 'repair_request',
+    }).map((signal) => signal.type),
+    ['requests_tutor_repair'],
+  );
+});
+
 test('public dialogue sanitizer strips proof-interface labels from spoken text', () => {
   const scrubbed = sanitizePublicDialogue(
     'R2_succession needs the second conjunct on my board; signedBy(gatePass, ?x) is the predicate for p3.',
@@ -127,15 +226,15 @@ test('public dialogue sanitizer strips proof-interface labels from spoken text',
   assert.match(scrubbed, /record/);
 });
 
-test('public register defaults to scene-level sampling for scene/rhetoric runs', () => {
+test('public register defaults to run-level sampling for scene/rhetoric runs', () => {
   const sceneDefault = normalizePublicRegister(null, { sceneMode: true });
   const rhetoricDefault = normalizePublicRegister(null, { rhetoricalPolicy: true });
   assert.equal(sceneDefault.mode, 'sample');
-  assert.equal(sceneDefault.scope, 'scene');
+  assert.equal(sceneDefault.scope, 'run');
   assert.deepEqual(sceneDefault.palette, ['modern', 'default', 'period']);
   assert.equal(rhetoricDefault.mode, 'sample');
   assert.equal(normalizePublicRegister(null), 'default');
-  assert.match(describePublicRegister(sceneDefault), /sample\/scene seed 1/);
+  assert.match(describePublicRegister(sceneDefault), /sample\/run seed 1/);
 });
 
 test('modern register uses contemporary public terms when explicitly selected', () => {
@@ -151,22 +250,27 @@ test('modern register uses contemporary public terms when explicitly selected', 
   assert.equal(sanitizePublicDialogue('A new record lands on the table.', { register: 'modern' }), 'A new note lands on the table.');
 });
 
-test('sampled public register rotates by scene and annotates transcript lines', async () => {
-  const publicRegister = normalizePublicRegister({ mode: 'sample', seed: 3, scope: 'scene' });
+test('sampled public register is chosen once and annotates transcript lines', async () => {
+  const publicRegister = normalizePublicRegister({ mode: 'sample', seed: 3 });
   const result = await runDrama({
     world,
     roles: mockRoles(),
     options: {
       sceneMode: { maxExchanges: 4, maxPhaticExchanges: 2 },
       publicRegister,
+      stagePrologue: true,
     },
   });
   assert.equal(result.publicRegister.mode, 'sample');
-  assert.ok(result.publicRegisters.length > 1);
-  assert.ok(new Set(result.publicRegisters.map((row) => row.register)).size > 1);
+  assert.equal(result.publicRegisters.length, 1);
+  assert.equal(result.publicRegisters[0].turn, 0);
+  assert.equal(result.publicRegisters[0].scope, 'run');
   const annotated = result.transcript.filter((line) => line.meta?.publicRegister);
   assert.ok(annotated.length > 0);
-  assert.ok(annotated.every((line) => ['modern', 'default', 'period'].includes(line.meta.publicRegister)));
+  assert.ok(annotated.every((line) => line.meta.publicRegister === result.publicRegisters[0].register));
+  const md = renderTranscript(result, world);
+  assert.match(md, /sampled register:/);
+  assert.doesNotMatch(md, /register .+ — Turn/);
 });
 
 test('director prologue is public character context, not a formal turn', async () => {
@@ -276,5 +380,6 @@ test('rhetorical policy supports seeded sampling over the same distribution', ()
     maxPhaticExchanges: 2,
     closeOnDDecrease: true,
     closeOnConfusion: true,
+    tempo: null,
   });
 });

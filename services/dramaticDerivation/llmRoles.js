@@ -45,7 +45,7 @@ const PUBLIC_REGISTERS = new Set(['default', 'modern', 'period']);
 const PUBLIC_REGISTER_SAMPLE_DEFAULTS = Object.freeze({
   mode: 'sample',
   seed: 1,
-  scope: 'scene',
+  scope: 'run',
   palette: ['modern', 'default', 'period'],
   weights: [0.55, 0.3, 0.15],
   base: 'modern',
@@ -124,8 +124,8 @@ function normalizePublicRegisterPlan(raw) {
   if (out.mode !== 'sample') {
     throw new Error(`register sample config: mode must be "sample" (got ${JSON.stringify(out.mode)})`);
   }
-  if (!['scene', 'turn'].includes(out.scope)) {
-    throw new Error(`register sample config: scope must be "scene" or "turn" (got ${JSON.stringify(out.scope)})`);
+  if (out.scope !== 'run') {
+    throw new Error(`register sample config: scope is now fixed at "run" (got ${JSON.stringify(out.scope)})`);
   }
   if (!Number.isFinite(Number(out.seed))) {
     throw new Error('register sample config: seed must be numeric');
@@ -325,12 +325,14 @@ function publicRegisterPolicy(register) {
   if (isDynamicPublicRegister(register)) {
     return [
       '',
-      '# Register policy: mixed',
+      '# Register policy: sampled',
       '',
-      'This run rotates public register. Each turn tells you the ACTIVE PUBLIC',
-      'REGISTER. Follow that register for manner and surface vocabulary while',
-      'keeping the same evidence discipline and the same concealed truth.',
-      'The rotation is aesthetic only: style may change, proof content may not.',
+      'This run has one public register, sampled before turn 1 and set by the',
+      'director prologue. Every role brief repeats the ACTIVE PUBLIC REGISTER',
+      'for clarity; do not change register mid-drama unless the operator has',
+      'explicitly configured a different run.',
+      'The sampling is aesthetic only: style may change across runs, proof',
+      'content may not.',
       'When the active register is modern, use present-day plain English. When it',
       'is default, use neutral evidentiary theatre. When it is period, heightened',
       'or ceremonial diction is allowed, but avoid parody archaism: no thee/thou,',
@@ -379,7 +381,7 @@ function publicRegisterTurnLines(activeRegisterName, configuredRegister) {
       : activeRegisterName === 'period'
         ? 'heightened or ceremonial surface is allowed, without parody archaism'
         : 'neutral evidentiary theatre; clear record/exhibit language without archaic excess';
-  return ['', `ACTIVE PUBLIC REGISTER THIS TURN: ${activeRegisterName} — ${tone}.`];
+  return ['', `ACTIVE PUBLIC REGISTER FOR THIS PLAY: ${activeRegisterName} — ${tone}.`];
 }
 
 function stagePrologueLines(stagePrologue, roleName) {
@@ -398,6 +400,21 @@ function stagePrologueLines(stagePrologue, roleName) {
       ? 'Let it color your voice and development, but keep your board governed only by shown facts and public rules.'
       : 'Let it color manner and dramatic development, but keep the proof channel governed only by the release ledger.',
   ];
+}
+
+function sceneTempoLines(scene, roleName) {
+  if (!scene?.tempo?.beat) return [];
+  const prefix = roleName === 'learner' ? 'Your exchange tempo' : 'Scene tempo to support';
+  const roleInstruction =
+    roleName === 'learner'
+      ? 'This is permission, not a demand: for uptake, repair, recap, or hesitation, you may answer briefly without advancing your record.'
+      : 'Shape your next line to make this tempo possible. Do not force a new proof step when the beat asks for uptake, repair, recap, or hesitation.';
+  return [
+    '',
+    `${prefix}: ${scene.tempo.label || scene.tempo.beat}.`,
+    scene.tempo.instruction,
+    roleInstruction,
+  ].filter(Boolean);
 }
 
 export function sanitizePublicDialogue(text, { register = 'default' } = {}) {
@@ -605,6 +622,8 @@ function directorPrologueCharter(world, publicRegister = 'default') {
     'notes and the authored world. Do not default to generic Elizabethan or',
     'court-pageant diction; let the LLM roles adapt the period surface to the',
     'specific tutor, learner, and scene.',
+    'The register note should set the register for the whole play, not rotate',
+    'style scene by scene.',
     ...publicSpeechDiscipline(publicRegister),
     ...publicRegisterPolicy(publicRegister),
     '',
@@ -1341,6 +1360,7 @@ export function makeLlmTutor(
     pacingGuard = false,
     visibleGuard = false,
     visiblePushProbeGuard = false,
+    visibleConsolidationGuard = false,
     proofDebtGuard = false,
     guardSpec = null,
     plot = false,
@@ -1420,6 +1440,26 @@ export function makeLlmTutor(
   if (visiblePushProbeGuard && visibleGuard) {
     throw new Error(
       'derivation.llmRoles: visiblePushProbeGuard cannot combine with visibleGuard (the visible arm is an active prompt guard, not a shadow probe)',
+    );
+  }
+  if (visibleConsolidationGuard && !releaseAuthority) {
+    throw new Error(
+      'derivation.llmRoles: visibleConsolidationGuard requires releaseAuthority (it narrows/consolidates the release window)',
+    );
+  }
+  if (visibleConsolidationGuard && !pacingGuard) {
+    throw new Error(
+      'derivation.llmRoles: visibleConsolidationGuard requires pacingGuard (hidden remains the release authority)',
+    );
+  }
+  if (visibleConsolidationGuard && visibleGuard) {
+    throw new Error(
+      'derivation.llmRoles: visibleConsolidationGuard cannot combine with visibleGuard (visible is advisory/holding only in v4)',
+    );
+  }
+  if (visibleConsolidationGuard && visiblePushProbeGuard) {
+    throw new Error(
+      'derivation.llmRoles: visibleConsolidationGuard cannot combine with visiblePushProbeGuard (v4 rejects release acceleration)',
     );
   }
   if (visibleGuard && pacingGuard) {
@@ -1708,6 +1748,28 @@ export function makeLlmTutor(
   };
   const tutorFn = async (view) => {
     const activeRegisterName = activePublicRegister(publicRegister, view);
+    const visibleConsolidation = visibleConsolidationGuard
+      ? (() => {
+          const features = visibleSurfaceFeatures(world, {
+            turn: view.turn,
+            ledger: view.ledger,
+            transcript: view.transcript,
+          });
+          const stalling = isStalling(features);
+          const lines = [];
+          if (!features.priorEchoed) {
+            lines.push(
+              `VISIBLE CONSOLIDATION: the prior exhibit ${features.priorPremiseId || '—'} is not yet clearly taken up on the page (echo ${features.priorEcho.toFixed(2)}). Hold or consolidate before adding new evidence unless the hidden pacing guard forces a release.`,
+            );
+          }
+          if (stalling) {
+            lines.push(
+              `VISIBLE CONSOLIDATION: the page reads as stalled (${features.turnsSinceLastRelease} turns since last release; hedge trend ${features.hedgeTrend.toFixed(2)}; length trend ${features.lenTrend.toFixed(1)}). Consolidate, ask for a repair/restatement, or test the existing board. Do not release early merely because the page stalls.`,
+            );
+          }
+          return { features: { ...features, stalling }, lines };
+        })()
+      : null;
     // C2 (release authority): the fixed per-turn cue becomes a WINDOW. Each
     // unreleased via-tutor entry is playable from RELEASE_LATITUDE turns
     // before its scheduled turn; at RELEASE_LATITUDE past it, it hits the
@@ -1980,6 +2042,8 @@ export function makeLlmTutor(
         'The dialogue so far (you remember all of it; the learner sees only this act):',
         renderTranscriptTail(view.transcript, view.transcript.length),
         ...publicRegisterTurnLines(activeRegisterName, publicRegister),
+        ...sceneTempoLines(view.scene, 'tutor'),
+        ...(visibleConsolidation?.lines.length ? ['', ...visibleConsolidation.lines] : []),
         // The two frames, course above lesson: the whole-play throughline
         // reads back first, the act plot under it.
         ...throughlineSection,
@@ -2000,6 +2064,7 @@ export function makeLlmTutor(
         `Turn ${view.turn} of ${world.turnCap}.`,
         `Evidence on stage so far: ${view.ledger.length ? view.ledger.map((l) => l.premiseId).join(', ') : 'none'}.`,
         ...stagePrologueLines(view.stagePrologue, 'tutor'),
+        ...sceneTempoLines(view.scene, 'tutor'),
         '',
         "The learner's grounded board:",
         board,
@@ -2024,6 +2089,7 @@ export function makeLlmTutor(
         'The last lines spoken:',
         renderTranscriptTail(view.transcript),
         ...publicRegisterTurnLines(activeRegisterName, publicRegister),
+        ...(visibleConsolidation?.lines.length ? ['', ...visibleConsolidation.lines] : []),
         '',
         ...(forcedNote ? [forcedNote, ''] : []),
         ...rhetoricalPolicySection,
@@ -2071,6 +2137,7 @@ export function makeLlmTutor(
           }
         : {}),
       ...(rhetoricalAdvice ? { rhetoricalPolicy: rhetoricalAdvice } : {}),
+      ...(view.scene?.tempo ? { sceneTempo: view.scene.tempo } : {}),
       // mock determinism (arm-ON): the credulous theory — everything released
       // is believed held. The real backend ignores meta.
       ...(reconstruct ? { theoryHint: view.ledger.map((l) => l.premiseId) } : {}),
@@ -2154,11 +2221,12 @@ export function makeLlmTutor(
       // exclusive with the hidden guard at build, so at most one is set — the rest
       // reads whichever is active.
       const vGuard =
-        visibleGuard || visiblePushProbeGuard
+        visibleGuard || visiblePushProbeGuard || visibleConsolidationGuard
         ? visibleGuardDecision(world, view, { turn: view.turn, playable, validClaim, forcedPlay })
         : null;
       let activeGuard = guard || vGuard;
       let hybridGuard = null;
+      let consolidationGuard = null;
       if (visiblePushProbeGuard) {
         const visiblePush =
           Boolean(vGuard?.forcedSafe) && vGuard?.forcedBy === 'visible_stall' && typeof vGuard.played === 'string';
@@ -2184,6 +2252,30 @@ export function makeLlmTutor(
                 ? 'visible-stall push rejected: hidden guard has a different forced-safe release'
                 : `${vGuard.played} visible-stall push rejected: hidden guard does not mark t${view.turn} safe`
               : 'visible probe ignored: only visible_stall forced-safe pushes can override hidden',
+        };
+      }
+      if (visibleConsolidationGuard) {
+        const visibleHold = Boolean(vGuard?.blocked);
+        const hiddenForced = Boolean(guard?.forcedSafe);
+        const held = visibleHold && !hiddenForced;
+        activeGuard = held ? vGuard : guard;
+        consolidationGuard = {
+          mode: 'hidden_default_visible_hold_consolidation',
+          held,
+          played: held ? null : guard?.played || null,
+          visibleCandidate: vGuard?.candidate || null,
+          hiddenCandidate: guard?.played || guard?.candidate || null,
+          hiddenForced,
+          visibleStalling: Boolean(vGuard?.visibleFeatures?.stalling),
+          visiblePushIgnored: Boolean(vGuard?.forcedSafe && vGuard?.forcedBy === 'visible_stall'),
+          promptAdvisory: visibleConsolidation?.lines || [],
+          reason: held
+            ? 'visible hold accepted: prior exhibit is not yet taken up and hidden is not forcing a release'
+            : vGuard?.forcedSafe && vGuard?.forcedBy === 'visible_stall'
+              ? 'visible stall push ignored: v4 never accelerates release'
+              : hiddenForced && visibleHold
+                ? 'visible hold ignored: hidden guard is forcing a release'
+                : 'visible consolidation advisory only; hidden guard remains release authority',
         };
       }
       const played = activeGuard ? activeGuard.played : forcedPlay ? forcedPlay.premise : validClaim;
@@ -2240,6 +2332,7 @@ export function makeLlmTutor(
               }
             : {}),
           ...(hybridGuard ? { hybridGuard } : {}),
+          ...(consolidationGuard ? { consolidationGuard } : {}),
         },
       };
     };
@@ -2301,17 +2394,19 @@ export function makeLlmTutor(
     });
     const applyProofDebtGuard = (out, stage) => {
       if (!topProofDebt) return { out, audit: null };
+      const debtTargets = [...new Set((proofDebt.debts || []).map((debt) => debt.premiseId).filter(Boolean))];
       const intent = String(out.move?.intent || '')
         .toLowerCase()
         .trim();
-      const complied = out.move?.targetPremise === topProofDebt.premiseId && intent === 'restore';
+      const complied = debtTargets.includes(out.move?.targetPremise) && intent === 'restore';
       if (complied) {
         return {
           out,
           audit: {
             active: true,
             turn: view.turn,
-            target: topProofDebt.premiseId,
+            target: out.move.targetPremise,
+            targets: debtTargets,
             debtCount: proofDebt.debts.length,
             forced: false,
             stage,
@@ -2338,13 +2433,14 @@ export function makeLlmTutor(
           },
         },
         audit: {
-          active: true,
-          turn: view.turn,
-          target: topProofDebt.premiseId,
-          debtCount: proofDebt.debts.length,
-          forced: true,
-          stage,
-        },
+        active: true,
+        turn: view.turn,
+        target: topProofDebt.premiseId,
+        targets: debtTargets,
+        debtCount: proofDebt.debts.length,
+        forced: true,
+        stage,
+      },
       };
     };
     let draft = {
@@ -2795,6 +2891,9 @@ function learnerSystem(setting, voice, view, publicRegister = 'default') {
           'you are lost, say exactly that. Phatic uptake and confusion are part of',
           'the inquiry, not failures — but do not mark board changes unless you are',
           'actually entering, striking, deriving, hypothesizing, or answering.',
+          'Some exchanges carry a tempo beat. Follow it as a speech rhythm and',
+          'permission structure, not as a new fact.',
+          ...sceneTempoLines(view.scene, 'learner'),
         ]
       : []),
     '',
@@ -2886,7 +2985,13 @@ function toFactArray(entry) {
   return [];
 }
 
-export function makeLlmLearner({ setting = '', voice = '', client, publicRegister = 'default' }) {
+export function makeLlmLearner({
+  setting = '',
+  voice = '',
+  client,
+  publicRegister = 'default',
+  assertionGroundingGate = false,
+}) {
   if (!client) throw new Error('derivation.llmRoles: makeLlmLearner requires a client');
   // Mock-determinism clock for the derive channel, view-visible material only:
   // a derivable non-pattern fact first SEEN at turn t (from the learner's own
@@ -2948,6 +3053,7 @@ export function makeLlmLearner({ setting = '', voice = '', client, publicRegiste
         ? [
             `Scene goal: ${view.scene.goal}`,
             `Scene drift guard: ${view.scene.phaticSoFar} phatic exchange(s) so far; keep uptake real and ask for repair when needed.`,
+            ...sceneTempoLines(view.scene, 'learner'),
           ]
         : []),
       '',
@@ -2981,6 +3087,7 @@ export function makeLlmLearner({ setting = '', voice = '', client, publicRegiste
         patternAssertion: computePatternAssertion(view, adoptable),
         deriveHintIndices,
         deriveLabels: derivableCandidates.map((entry) => entry.label),
+        ...(view.scene?.tempo ? { sceneTempo: view.scene.tempo } : {}),
       },
     });
 
@@ -2998,19 +3105,46 @@ export function makeLlmLearner({ setting = '', voice = '', client, publicRegiste
       return true;
     });
     const factsForAnswer = [...view.abox.grounded, ...adopt];
+    const parsedAssertion =
+      bindingToFact(view.questionPattern, out.asserts_binding) ||
+      answerToFact(view.questionPattern, out.asserts_answer, factsForAnswer, view.rules);
+    const assertionSupported = parsedAssertion
+      ? closure(factsForAnswer, view.rules).facts.has(factKey(parsedAssertion))
+      : false;
+    const assertionBlocked = Boolean(assertionGroundingGate && parsedAssertion && !assertionSupported);
+    const rawHypothesis =
+      typeof out.hypothesis === 'string' && out.hypothesis.trim()
+        ? sanitizePublicDialogue(out.hypothesis, { register: activeRegisterName })
+        : null;
+    const hypothesis = assertionBlocked
+      ? rawHypothesis || 'I am tempted to answer, but my notes do not yet settle it.'
+      : rawHypothesis;
     return {
-      dialogue: sanitizePublicDialogue(out.dialogue, { register: activeRegisterName }),
+      dialogue: assertionBlocked
+        ? 'I am tempted to answer, but my notes do not yet settle it.'
+        : sanitizePublicDialogue(out.dialogue, { register: activeRegisterName }),
       adopt,
       retract,
       derive,
-      hypothesis:
-        typeof out.hypothesis === 'string' && out.hypothesis.trim()
-          ? sanitizePublicDialogue(out.hypothesis, { register: activeRegisterName })
+      hypothesis,
+      exchangeType: assertionBlocked
+        ? 'hypothesis'
+        : typeof out.exchange_type === 'string' && out.exchange_type.trim()
+          ? out.exchange_type.trim()
           : null,
-      exchangeType: typeof out.exchange_type === 'string' && out.exchange_type.trim() ? out.exchange_type.trim() : null,
-      asserts:
-        bindingToFact(view.questionPattern, out.asserts_binding) ||
-        answerToFact(view.questionPattern, out.asserts_answer, factsForAnswer, view.rules),
+      asserts: assertionBlocked ? null : parsedAssertion,
+      ...(assertionGroundingGate && parsedAssertion
+        ? {
+            assertionGate: {
+              blocked: assertionBlocked,
+              supported: assertionSupported,
+              attempted: parsedAssertion,
+              reason: assertionBlocked
+                ? 'assertion suppressed: learner-visible board does not entail the answer'
+                : 'assertion allowed: learner-visible board entails the answer',
+            },
+          }
+        : {}),
     };
   };
 }

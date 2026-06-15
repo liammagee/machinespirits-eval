@@ -13,13 +13,17 @@ export {
   selectGuardRepresentationV1,
   selectGuardRepresentationV2,
   selectGuardRepresentationV3,
+  selectGuardRepresentationV4,
 } from './guardCompiler.js';
 export { runDrama, normalizeActsConfig, normalizeDirectorCadence } from './engine.js';
 export { mulberry32, normalizeDecayConfig } from './corruption.js';
 export {
   normalizeSceneConfig,
+  normalizeSceneTempoConfig,
   normalizeRhetoricalPolicyConfig,
   classifyLearnerExchange,
+  detectPhaticRecognition,
+  recommendSceneTempoBeat,
   recommendRhetoricalMove,
 } from './rhetoricalMovePolicy.js';
 export { makeReplayRoles, comparePrefix } from './replay.js';

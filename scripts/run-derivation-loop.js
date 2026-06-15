@@ -101,7 +101,11 @@
  *                                       overwrite the formal turn loop.
  *                                       JSON keys: maxExchanges,
  *                                       maxPhaticExchanges,
- *                                       closeOnDDecrease, closeOnConfusion.)
+ *                                       closeOnDDecrease, closeOnConfusion,
+ *                                       tempo. tempo=true samples exchange
+ *                                       beats: uptake_only, repair_request,
+ *                                       recap, hesitation, hypothesis,
+ *                                       evidence, recognition.)
  *     [--director-cadence turn|scene|release]
  *                                      (when the director speaks. Default:
  *                                       turn without scene mode; scene with
@@ -114,10 +118,10 @@
  *                                       mode, off otherwise.)
  *     [--register default|modern|period|sample|auto|'<json>']
  *                                      (public surface language. Default:
- *                                       sampled by scene when scene/rhetoric
- *                                       mode is on, default otherwise. JSON
- *                                       sample keys: seed, scope, palette,
- *                                       weights, base.)
+ *                                       sampled once before the prologue when
+ *                                       scene/rhetoric mode is on, default
+ *                                       otherwise. JSON sample keys: seed,
+ *                                       scope="run", palette, weights, base.)
  *     [--reconstruct]                  (adapt-ON arm dial; requires --acts.
  *                                       The tutor commits a per-turn theory of
  *                                       the learner's store — believed_held/
@@ -194,6 +198,10 @@
  *                                       a shadow visible-stall push probe,
  *                                       accepted only when the hidden guard
  *                                       also marks the release safe.)
+ *     [--pacing-guard-selective-v4]    (Selector v4 probe; hidden default plus
+ *                                       visible hold/consolidation and a
+ *                                       grounded-answer gate. Visible state
+ *                                       cannot accelerate release.)
  *     [--proof-debt-guard]             (requires --repair-clause. When decay has
  *                                       dropped an already-staged proof-critical
  *                                       exhibit, the harness authorizes a restore
@@ -289,6 +297,7 @@ import {
   selectGuardRepresentationV1,
   selectGuardRepresentationV2,
   selectGuardRepresentationV3,
+  selectGuardRepresentationV4,
 } from '../services/dramaticDerivation/guardCompiler.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -638,6 +647,27 @@ async function main() {
     );
     process.exit(1);
   }
+  const pacingGuardSelectiveV4 = flag('pacing-guard-selective-v4');
+  if (pacingGuardSelectiveV4 && !releaseAuthority) {
+    console.error('--pacing-guard-selective-v4 requires --release-authority (it selects a release-window guard)');
+    process.exit(1);
+  }
+  if (
+    pacingGuardSelectiveV4 &&
+    (
+      requestedPacingGuard ||
+      requestedVisibleGuard ||
+      pacingGuardSelective ||
+      pacingGuardSelectiveV1 ||
+      pacingGuardSelectiveV2 ||
+      pacingGuardSelectiveV3
+    )
+  ) {
+    console.error(
+      '--pacing-guard-selective-v4 is mutually exclusive with explicit --pacing-guard / --pacing-guard-visible and v0/v1/v2/v3 selector arms',
+    );
+    process.exit(1);
+  }
   const proofDebtGuard = flag('proof-debt-guard');
   if (proofDebtGuard && !repairClause) {
     console.error(
@@ -646,7 +676,10 @@ async function main() {
     process.exit(1);
   }
   const compiledGuard = flag('compiled-guard');
-  if (compiledGuard && (pacingGuardSelective || pacingGuardSelectiveV1 || pacingGuardSelectiveV2 || pacingGuardSelectiveV3)) {
+  if (
+    compiledGuard &&
+    (pacingGuardSelective || pacingGuardSelectiveV1 || pacingGuardSelectiveV2 || pacingGuardSelectiveV3 || pacingGuardSelectiveV4)
+  ) {
     console.error('--compiled-guard is not combined with selector arms in this selector slice');
     process.exit(1);
   }
@@ -719,7 +752,12 @@ async function main() {
 
   const script = fs.readFileSync(scriptPath, 'utf8');
   const worldIR =
-    compiledGuard || pacingGuardSelective || pacingGuardSelectiveV1 || pacingGuardSelectiveV2 || pacingGuardSelectiveV3
+    compiledGuard ||
+    pacingGuardSelective ||
+    pacingGuardSelectiveV1 ||
+    pacingGuardSelectiveV2 ||
+    pacingGuardSelectiveV3 ||
+    pacingGuardSelectiveV4
       ? buildWorldIR(world)
       : null;
   const pacingGuardSelector = pacingGuardSelective
@@ -730,10 +768,14 @@ async function main() {
         ? selectGuardRepresentationV2(worldIR, { decayEnabled: Boolean(decay) })
         : pacingGuardSelectiveV3
           ? selectGuardRepresentationV3(worldIR, { decayEnabled: Boolean(decay) })
+          : pacingGuardSelectiveV4
+            ? selectGuardRepresentationV4(worldIR, { decayEnabled: Boolean(decay) })
           : null;
   const pacingGuard = pacingGuardSelector ? pacingGuardSelector.selected === 'hidden' : requestedPacingGuard;
   const visibleGuard = pacingGuardSelector ? pacingGuardSelector.selected === 'visible' : requestedVisibleGuard;
   const visiblePushProbeGuard = pacingGuardSelectiveV3;
+  const visibleConsolidationGuard = pacingGuardSelectiveV4;
+  const assertionGroundingGate = pacingGuardSelectiveV4;
   const guardSpec = compiledGuard ? compileGuardSpec(world, worldIR || buildWorldIR(world)) : null;
   const scriptName = path.basename(scriptPath, path.extname(scriptPath));
   const label = arg('label', `${scriptName}-${mode}-${timestamp()}`);
@@ -776,8 +818,11 @@ async function main() {
       pacingGuardSelectiveV1,
       pacingGuardSelectiveV2,
       pacingGuardSelectiveV3,
+      pacingGuardSelectiveV4,
       pacingGuardSelector,
       visiblePushProbeGuard,
+      visibleConsolidationGuard,
+      assertionGroundingGate,
       visibleGuard,
       proofDebtGuard,
       compiledGuard,
@@ -829,6 +874,11 @@ async function main() {
     console.log(
       `scenes  ON — scene/exchange overlay: max ${sceneMode.maxExchanges} exchanges, phatic budget ${sceneMode.maxPhaticExchanges}; phatic/confusion lines are recorded as exchanges`,
     );
+    if (sceneMode.tempo) {
+      console.log(
+        `tempo  ON — ${sceneMode.tempo.mode}, seed ${sceneMode.tempo.seed}: uptake/repair/recap/hesitation/hypothesis/evidence/recognition beats`,
+      );
+    }
     console.log(`stage   director cadence ${directorCadence}`);
   }
   if (stagePrologue) {
@@ -876,6 +926,14 @@ async function main() {
     console.log(
       'tutor   VISIBLE PUSH PROBE ON — shadow page-state probe can override hidden only on hidden-safe visible_stall pushes; visible blocks/echo alone are ignored',
     );
+  }
+  if (visibleConsolidationGuard) {
+    console.log(
+      'tutor   VISIBLE CONSOLIDATION ON — page-state can hold or request consolidation, but cannot accelerate releases',
+    );
+  }
+  if (assertionGroundingGate) {
+    console.log('learner ANSWER GATE ON — assertions require learner-visible board entailment');
   }
   if (proofDebtGuard) {
     console.log(
@@ -933,6 +991,7 @@ async function main() {
       pacingGuard,
       visibleGuard,
       visiblePushProbeGuard,
+      visibleConsolidationGuard,
       proofDebtGuard,
       guardSpec,
       plot,
@@ -945,6 +1004,7 @@ async function main() {
       voice: learnerVoice || world.learnerVoice,
       client,
       publicRegister,
+      assertionGroundingGate,
     }),
   };
 
@@ -956,6 +1016,7 @@ async function main() {
     if (s.adopted) bits.push(`+${s.adopted} adopted`);
     if (s.retracted) bits.push(`−${s.retracted} retracted`);
     if (s.exchange?.type) bits.push(`exchange ${s.exchange.type}`);
+    if (s.exchange?.tempo) bits.push(`tempo ${s.exchange.tempo}`);
     if (s.closedScene) bits.push(`scene ${s.closedScene.index} ${s.closedScene.status}`);
     if (s.phase && s.phase.turn === s.turn) bits.push(`movement "${s.phase.name}"`);
     if (s.intervened) bits.push('✎ superego');
@@ -1030,8 +1091,11 @@ async function main() {
     pacingGuardSelectiveV1,
     pacingGuardSelectiveV2,
     pacingGuardSelectiveV3,
+    pacingGuardSelectiveV4,
     pacingGuardSelector,
     visiblePushProbeGuard,
+    visibleConsolidationGuard,
+    assertionGroundingGate,
     // Step-1 V arm (the visible-signal guard) — false on every run before
     // 2026-06-13. Recorded as its own top-level flag, distinct from pacingGuard,
     // so the failure-mode classifier's guardStateOf and the Step-1 analysis read

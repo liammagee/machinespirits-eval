@@ -10,18 +10,83 @@
 
 export const RHETORICAL_POLICY_SCHEMA = 'dramatic-derivation.rhetorical-policy.v0';
 export const SCENE_SCHEMA = 'dramatic-derivation.scene.v0';
+export const SCENE_TEMPO_SCHEMA = 'dramatic-derivation.scene-tempo.v0';
 
 const SCENE_DEFAULTS = Object.freeze({
   maxExchanges: 4,
   maxPhaticExchanges: 2,
   closeOnDDecrease: true,
   closeOnConfusion: true,
+  tempo: null,
 });
 
 const POLICY_DEFAULTS = Object.freeze({
   mode: 'deterministic',
   seed: 1,
   temperature: 1,
+});
+
+export const SCENE_TEMPO_BEATS = Object.freeze([
+  'uptake_only',
+  'repair_request',
+  'recap',
+  'hesitation',
+  'hypothesis',
+  'evidence',
+  'recognition',
+]);
+
+const SCENE_TEMPO_DEFAULTS = Object.freeze({
+  mode: 'sample',
+  seed: 1,
+  temperature: 1,
+  weights: Object.freeze({
+    uptake_only: 0.22,
+    repair_request: 0.08,
+    recap: 0.24,
+    hesitation: 0.12,
+    hypothesis: 0.2,
+    evidence: 0.08,
+    recognition: 0.06,
+  }),
+});
+
+const TEMPO_BEAT_INFO = Object.freeze({
+  uptake_only: {
+    label: 'uptake only',
+    instruction:
+      'Let this exchange be simple uptake if that is honest. A brief "I see" or "yes, that much is clear" is enough; do not add board changes or a hypothesis unless something genuinely changed.',
+  },
+  repair_request: {
+    label: 'repair request',
+    instruction:
+      'Make space for confusion or repair. If the thread is lost, ask for the missing link in ordinary words; do not pretend to have advanced.',
+  },
+  recap: {
+    label: 'recap',
+    instruction:
+      'Use this exchange to restate what is already public in short ordinary language. Consolidate continuity; avoid adding a new conjecture unless the record now demands one.',
+  },
+  hesitation: {
+    label: 'hesitation',
+    instruction:
+      'Allow a pause or uncertainty. It is acceptable to say "wait" or "I am not ready to write that yet" while naming the exact gap.',
+  },
+  hypothesis: {
+    label: 'hypothesis',
+    instruction:
+      'A conjecture is welcome, but mark it as tentative. Keep it grounded in shown details and do not treat it as settled.',
+  },
+  evidence: {
+    label: 'evidence uptake',
+    instruction:
+      'New evidence is entering or has just entered. Take up only what is shown, in short words, and say what it changes without racing past it.',
+  },
+  recognition: {
+    label: 'recognition',
+    instruction:
+      'The scene may now stage the finding. Let the learner say the answer from their own record, with the ordinary reasons that make it theirs.',
+  },
 });
 
 const EXCHANGE_TYPES = new Set([
@@ -70,8 +135,64 @@ export function normalizeSceneConfig(raw = true) {
   }
   return {
     ...cfg,
+    tempo: normalizeSceneTempoConfig(cfg.tempo),
     closeOnDDecrease: Boolean(cfg.closeOnDDecrease),
     closeOnConfusion: Boolean(cfg.closeOnConfusion),
+  };
+}
+
+export function normalizeSceneTempoConfig(raw = null) {
+  if (raw == null || raw === false || raw === 'off') return null;
+  let cfg = raw;
+  if (cfg === true || cfg === 'on') cfg = {};
+  if (typeof cfg === 'string') {
+    try {
+      cfg = JSON.parse(cfg);
+    } catch (err) {
+      throw new Error(`scene-mode tempo config is not valid JSON: ${err.message}`);
+    }
+  }
+  if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg)) {
+    throw new Error('scene-mode tempo config must be a JSON object, true, or "off"');
+  }
+  const allowed = new Set(Object.keys(SCENE_TEMPO_DEFAULTS));
+  for (const key of Object.keys(cfg)) {
+    if (!allowed.has(key)) {
+      throw new Error(`scene-mode tempo config: unknown key "${key}" (known: ${[...allowed].join(', ')})`);
+    }
+  }
+  const out = { ...SCENE_TEMPO_DEFAULTS, ...cfg };
+  if (!['deterministic', 'sample'].includes(out.mode)) {
+    throw new Error('scene-mode tempo config: mode must be "deterministic" or "sample"');
+  }
+  if (!Number.isFinite(Number(out.seed))) {
+    throw new Error('scene-mode tempo config: seed must be numeric');
+  }
+  if (!Number.isFinite(Number(out.temperature)) || Number(out.temperature) <= 0) {
+    throw new Error('scene-mode tempo config: temperature must be a positive number');
+  }
+  const weights = { ...SCENE_TEMPO_DEFAULTS.weights, ...(out.weights || {}) };
+  if (!out.weights || typeof out.weights !== 'object' || Array.isArray(out.weights)) {
+    if (out.weights != null) throw new Error('scene-mode tempo config: weights must be an object');
+  }
+  for (const key of Object.keys(weights)) {
+    if (!SCENE_TEMPO_BEATS.includes(key)) {
+      throw new Error(`scene-mode tempo config: unknown beat "${key}"`);
+    }
+    const n = Number(weights[key]);
+    if (!Number.isFinite(n) || n < 0) {
+      throw new Error(`scene-mode tempo config: weight for "${key}" must be a non-negative number`);
+    }
+    weights[key] = n;
+  }
+  if (!SCENE_TEMPO_BEATS.some((beat) => weights[beat] > 0)) {
+    throw new Error('scene-mode tempo config: at least one beat weight must be > 0');
+  }
+  return {
+    mode: out.mode,
+    seed: Number(out.seed),
+    temperature: Number(out.temperature),
+    weights,
   };
 }
 
@@ -96,6 +217,58 @@ function norm(text) {
 
 function countWords(text) {
   return String(text || '').split(/\s+/u).filter(Boolean).length;
+}
+
+function uniqueSignalRows(signals) {
+  const seen = new Set();
+  const out = [];
+  for (const signal of signals) {
+    const key = `${signal.role}:${signal.type}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(signal);
+  }
+  return out;
+}
+
+export function detectPhaticRecognition(dialogue = '', { role = 'learner', exchangeType = null, tempo = null } = {}) {
+  const text = norm(dialogue);
+  if (!text) return [];
+  const roleName = role === 'tutor' ? 'tutor' : 'learner';
+  const tempoBeat = typeof tempo === 'string' ? tempo : tempo?.beat || null;
+  const phaticFrame =
+    ['phatic_ack', 'repair_request', 'confusion'].includes(exchangeType) ||
+    ['uptake_only', 'repair_request', 'recap', 'hesitation'].includes(tempoBeat) ||
+    /\b(yes|yeah|right|okay|ok|i see|got it|understood|wait|sorry|lost|clear)\b/u.test(text);
+  const signals = [];
+  const add = (type, polarity) => signals.push({ role: roleName, type, polarity });
+
+  if (roleName === 'learner') {
+    if (/\b(i see|got it|understood|that helps|that makes sense|yes|yeah|right|okay|ok|clear)\b/u.test(text)) {
+      add('acknowledges_tutor_guidance', 'affirming');
+    }
+    if (/\b(wait|sorry|lost|confus|unclear|can we|could you|say that again|go back|you lost me)\b/u.test(text)) {
+      add('requests_tutor_repair', 'repair');
+    }
+    if (/\b(you said|you mean|your point|your question|that question|that helps)\b/u.test(text)) {
+      add('marks_tutor_line', 'responsive');
+    }
+    if (/\b(not ready|don't have|do not have|missing|gap|i need)\b/u.test(text)) {
+      add('offers_own_state_for_tutor', 'state');
+    }
+  } else {
+    if (/\b(yes|yeah|right|exactly|good|that is|that's)\b/u.test(text)) {
+      add('affirms_learner_uptake', 'affirming');
+    }
+    if (/\b(you said|your line|your last line|you named|you asked|you found|you saw|you have)\b/u.test(text)) {
+      add('uses_learner_language', 'responsive');
+    }
+    if (/\b(wait|take a breath|lost|slipped|gap|not ready|missing|pause)\b/u.test(text)) {
+      add('recognizes_learner_state', 'state');
+    }
+  }
+
+  return phaticFrame ? uniqueSignalRows(signals) : [];
 }
 
 export function classifyLearnerExchange({
@@ -167,7 +340,7 @@ export function openScene({ index, turn, dNow, targetPremise = null, targetFact 
   };
 }
 
-export function sceneView(scene) {
+export function sceneView(scene, tempo = null) {
   if (!scene) return null;
   return {
     schema: scene.schema,
@@ -178,17 +351,19 @@ export function sceneView(scene) {
     targetFact: scene.targetFact,
     exchangesSoFar: scene.exchanges.length,
     phaticSoFar: scene.counts.phatic,
+    ...(tempo ? { tempo } : {}),
   };
 }
 
-export function sceneMeta(scene) {
-  const view = sceneView(scene);
+export function sceneMeta(scene, tempo = null) {
+  const view = sceneView(scene, tempo);
   if (!view) return null;
   return {
     index: view.index,
     startTurn: view.startTurn,
     goal: view.goal,
     targetPremise: view.targetPremise,
+    ...(view.tempo ? { tempo: view.tempo } : {}),
   };
 }
 
@@ -198,6 +373,10 @@ export function updateScene(scene, exchange, { turn, dNow, forced = false, ended
     turn,
     ordinal: scene.exchanges.length + 1,
     type: exchange.type,
+    ...(exchange.tempo ? { tempo: exchange.tempo } : {}),
+    ...(exchange.phaticRecognition?.length
+      ? { phaticRecognition: exchange.phaticRecognition.map((signal) => ({ ...signal })) }
+      : {}),
     formalActions: exchange.formalActions,
     dDelta: exchange.dDelta,
     boardDelta: exchange.boardDelta,
@@ -240,6 +419,87 @@ export function updateScene(scene, exchange, { turn, dNow, forced = false, ended
   return { scene: null, closed: { ...scene, exchanges: scene.exchanges.map((e) => ({ ...e })) } };
 }
 
+function addTempo(scores, beat, score, rationale) {
+  const current = scores.get(beat) || { beat, score: 0, rationales: [] };
+  current.score += score;
+  if (rationale) current.rationales.push(rationale);
+  scores.set(beat, current);
+}
+
+function sceneTempoRow(entry) {
+  const info = TEMPO_BEAT_INFO[entry.beat] || { label: entry.beat, instruction: '' };
+  return {
+    beat: entry.beat,
+    label: info.label,
+    instruction: info.instruction,
+    score: entry.score,
+    rationale: entry.rationales.slice(0, 2).join('; '),
+  };
+}
+
+export function recommendSceneTempoBeat(world, scene, context = {}, config = null) {
+  const cfg = normalizeSceneTempoConfig(config);
+  if (!cfg || !scene) return null;
+  const exchangeOrdinal = scene.exchanges.length + 1;
+  const scores = new Map();
+  for (const beat of SCENE_TEMPO_BEATS) {
+    addTempo(scores, beat, cfg.weights[beat] || 0, 'base tempo weight');
+  }
+
+  const releaseDue = Boolean(context.releaseDue || context.releasedThisTurnCount > 0);
+  const forced = Boolean(context.forced || context.dNow === 0);
+  const hasProgress = scene.exchanges.some((exchange) => exchange.countsForProgress || exchange.dDelta > 0);
+  const highPhatic = scene.counts.phatic >= Math.max(1, (context.maxPhaticExchanges || 2) - 1);
+
+  if (forced) {
+    addTempo(scores, 'recognition', 3, 'the current board already forces the answer');
+    addTempo(scores, 'recap', 0.4, 'recognition should be grounded in the public path');
+  } else if (releaseDue) {
+    addTempo(scores, 'evidence', 2.5, 'scheduled evidence is entering this exchange');
+    addTempo(scores, 'uptake_only', 0.4, 'fresh evidence may need simple uptake');
+  } else if (exchangeOrdinal === 1) {
+    addTempo(scores, 'hesitation', 0.45, 'scene opening can locate the social posture');
+    addTempo(scores, 'uptake_only', 0.35, 'first exchange need not move the board');
+  } else {
+    addTempo(scores, 'recap', hasProgress ? 0.8 : 0.45, 'later exchanges can preserve continuity');
+    addTempo(scores, 'uptake_only', hasProgress ? 0.7 : 0.35, 'proof progress need not happen every exchange');
+    addTempo(scores, 'hesitation', 0.25, 'a natural pause can keep the scene human');
+  }
+  if (highPhatic) {
+    addTempo(scores, 'hypothesis', 0.5, 'near the drift guard, ask for a small substantive move');
+    addTempo(scores, 'recap', 0.3, 'near the drift guard, consolidate what stands');
+  }
+  if (!releaseDue && scores.has('evidence')) scores.get('evidence').score = 0;
+  if (!forced && scores.has('recognition')) scores.get('recognition').score = 0;
+
+  const distribution = normalizeDistribution(
+    [...scores.values()].filter((row) => row.score > 0).map(sceneTempoRow),
+    cfg.temperature,
+  );
+  const selected =
+    forced || releaseDue
+      ? distribution.find((row) => row.beat === (forced ? 'recognition' : 'evidence')) || distribution[0]
+      : choose(distribution, {
+          ...cfg,
+          turn: `${context.turn || 0}:${scene.index}:${exchangeOrdinal}`,
+          worldId: world.id,
+        });
+  return {
+    schema: SCENE_TEMPO_SCHEMA,
+    mode: cfg.mode,
+    seed: cfg.seed,
+    temperature: cfg.temperature,
+    turn: context.turn || null,
+    scene: scene.index,
+    exchange: exchangeOrdinal,
+    beat: selected.beat,
+    label: selected.label,
+    instruction: selected.instruction,
+    rationale: selected.rationale || 'selected from configured scene tempo distribution',
+    distribution,
+  };
+}
+
 function hashUnit(text) {
   let h = 2166136261;
   for (const ch of String(text)) {
@@ -258,7 +518,11 @@ function normalizeDistribution(rows, temperature = 1) {
   const total = adjusted.reduce((sum, row) => sum + row.weight, 0) || 1;
   return adjusted
     .map(({ score, ...row }) => ({ ...row, weight: +(row.weight / total).toFixed(3) }))
-    .sort((a, b) => b.weight - a.weight || a.figure.localeCompare(b.figure));
+    .sort(
+      (a, b) =>
+        b.weight - a.weight ||
+        String(a.figure || a.beat || '').localeCompare(String(b.figure || b.beat || '')),
+    );
 }
 
 function choose(distribution, { mode, seed, turn, worldId }) {

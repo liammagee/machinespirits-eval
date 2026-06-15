@@ -972,13 +972,23 @@ export function sceneReport(result) {
   if (!scenes.length) return null;
   const statusMix = {};
   const exchangeTypes = {};
+  const tempoBeats = {};
+  const phaticRecognition = { total: 0, byRole: {}, byType: {} };
   let exchanges = 0;
   let phatic = 0;
+  for (const line of result.transcript || []) {
+    for (const signal of line.meta?.phaticRecognition || []) {
+      phaticRecognition.total += 1;
+      phaticRecognition.byRole[signal.role] = (phaticRecognition.byRole[signal.role] || 0) + 1;
+      phaticRecognition.byType[signal.type] = (phaticRecognition.byType[signal.type] || 0) + 1;
+    }
+  }
   for (const scene of scenes) {
     statusMix[scene.status] = (statusMix[scene.status] || 0) + 1;
     for (const exchange of scene.exchanges || []) {
       exchanges += 1;
       exchangeTypes[exchange.type] = (exchangeTypes[exchange.type] || 0) + 1;
+      if (exchange.tempo) tempoBeats[exchange.tempo] = (tempoBeats[exchange.tempo] || 0) + 1;
       if (exchange.type === 'phatic_ack') phatic += 1;
     }
   }
@@ -991,6 +1001,8 @@ export function sceneReport(result) {
     phaticShare: exchanges ? +(phatic / exchanges).toFixed(3) : 0,
     statusMix,
     exchangeTypes,
+    tempoBeats,
+    phaticRecognition,
     driftGuardScenes: scenes.filter((scene) => scene.status === 'drift_guard').map((scene) => scene.index),
     scenes: scenes.map((scene) => ({
       index: scene.index,
@@ -1002,6 +1014,8 @@ export function sceneReport(result) {
       exchanges: (scene.exchanges || []).map((exchange) => ({
         turn: exchange.turn,
         type: exchange.type,
+        tempo: exchange.tempo || null,
+        phaticRecognition: exchange.phaticRecognition || [],
         dDelta: exchange.dDelta,
         boardDelta: exchange.boardDelta,
       })),
@@ -1216,18 +1230,16 @@ export function renderTranscript(result, world, { title = null, diagnosis = null
     }
     lines.push('');
     const sceneInfo = sceneByTurn.get(turn);
-    const register =
-      turnLines.find((line) => line.meta?.publicRegister)?.meta?.publicRegister ||
-      (result.publicRegisters || []).find((row) => row.turn === turn)?.register ||
-      null;
-    const registerSuffix = register ? ` · register ${register}` : '';
     lines.push(
       sceneInfo
-        ? `### Scene ${sceneInfo.scene.index}, exchange ${sceneInfo.exchange.ordinal}${registerSuffix} — Turn ${turn}`
-        : `### Turn ${turn}${registerSuffix}`,
+        ? `### Scene ${sceneInfo.scene.index}, exchange ${sceneInfo.exchange.ordinal} — Turn ${turn}`
+        : `### Turn ${turn}`,
     );
     if (sceneInfo && sceneInfo.exchange.ordinal === 1) {
       lines.push(`*Scene goal: ${sceneInfo.scene.goal}*`);
+    }
+    if (sceneInfo?.exchange?.tempo) {
+      lines.push(`*Tempo: ${sceneInfo.exchange.tempo.replace(/_/g, ' ')}*`);
     }
     for (const line of turnLines) {
       if (line.role === 'director') {
@@ -1263,6 +1275,11 @@ export function renderTranscript(result, world, { title = null, diagnosis = null
             `  — *theory of the learner: ${(theory.believed_held || []).length} held · ${(theory.believed_missing || []).length} missing · ${(theory.believed_mistaken || []).length} mistaken*`,
           );
         }
+        if (line.meta?.phaticRecognition?.length) {
+          lines.push(
+            `  — phatic recognition: ${line.meta.phaticRecognition.map((s) => s.type.replace(/_/g, ' ')).join(', ')}`,
+          );
+        }
       } else if (line.role === 'learner') {
         lines.push(`**Learner:** ${(line.text || '').trim()}`);
         const meta = line.meta || {};
@@ -1274,6 +1291,8 @@ export function renderTranscript(result, world, { title = null, diagnosis = null
         if (meta.hypothesis) bits.push(`hypothesis: ${meta.hypothesis}`);
         if (meta.asserts) bits.push(`**asserts \`${meta.asserts.join(' ')}\`**`);
         if (meta.exchange?.type) bits.push(`exchange: ${meta.exchange.type.replace(/_/g, ' ')}`);
+        if (meta.phaticRecognition?.length)
+          bits.push(`phatic recognition: ${meta.phaticRecognition.map((s) => s.type.replace(/_/g, ' ')).join(', ')}`);
         if (bits.length) lines.push(`  — ${bits.join(' · ')}`);
       }
     }
@@ -1394,9 +1413,13 @@ export function renderEvalPanel(diagnosis) {
   if (d.publicRegister && d.publicRegister !== 'default') {
     lines.push(`- **style** public register ${describePublicRegister(d.publicRegister)}`);
     if (d.publicRegisters?.length) {
-      lines.push(
-        `  - sampled sequence: ${d.publicRegisters.map((row) => `t${row.turn} ${row.register}`).join(' · ')}`,
-      );
+      if (d.publicRegisters.length === 1) {
+        lines.push(`  - sampled register: ${d.publicRegisters[0].register}`);
+      } else {
+        lines.push(
+          `  - sampled sequence: ${d.publicRegisters.map((row) => `t${row.turn} ${row.register}`).join(' · ')}`,
+        );
+      }
     }
   }
   if (d.stagePrologue) {
@@ -1429,10 +1452,18 @@ export function renderEvalPanel(diagnosis) {
     const exchanges = Object.entries(sc.exchangeTypes)
       .map(([k, v]) => `${k.replace(/_/g, ' ')} ${v}`)
       .join(' · ');
+    const tempos = Object.entries(sc.tempoBeats || {})
+      .map(([k, v]) => `${k.replace(/_/g, ' ')} ${v}`)
+      .join(' · ');
+    const phaticRecognition = Object.entries(sc.phaticRecognition?.byType || {})
+      .map(([k, v]) => `${k.replace(/_/g, ' ')} ${v}`)
+      .join(' · ');
     lines.push(
       `- **scenes** ${sc.count} scene${sc.count === 1 ? '' : 's'} · ${sc.exchanges} exchange${sc.exchanges === 1 ? '' : 's'} (${sc.avgExchanges} avg) · phatic ${sc.phatic}/${sc.exchanges} (${Math.round(sc.phaticShare * 100)}%)${d.directorCadence ? ` · director ${d.directorCadence}` : ''} · statuses ${status || 'none'}`,
     );
     if (exchanges) lines.push(`  - exchanges: ${exchanges}`);
+    if (tempos) lines.push(`  - tempo: ${tempos}`);
+    if (sc.phaticRecognition?.total) lines.push(`  - phatic recognition: ${phaticRecognition}`);
     if (sc.driftGuardScenes.length) lines.push(`  - drift guard scenes: ${sc.driftGuardScenes.join(', ')}`);
   }
   const rc = d.reconstruction;

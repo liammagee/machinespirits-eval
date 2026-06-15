@@ -84,8 +84,10 @@ import { buildWorldIR, projectWorldIRLogic } from './guardCompiler.js';
 import { proofDebtReport, tutorProofDebtView } from './proofDebt.js';
 import {
   classifyLearnerExchange,
+  detectPhaticRecognition,
   normalizeSceneConfig,
   openScene,
+  recommendSceneTempoBeat,
   sceneMeta,
   sceneView,
   updateScene,
@@ -232,12 +234,19 @@ export async function runDrama({ world, roles, options = {} }) {
   // absent — no act state, no view bounding, no redaction, no new fields.
   const acts = options.acts ? normalizeActsConfig(options.acts) : null;
   const sceneConfig = options.sceneMode ? normalizeSceneConfig(options.sceneMode) : null;
+  let sceneTempoThisTurn = null;
   const directorCadence = normalizeDirectorCadence(options.directorCadence, { sceneMode: Boolean(sceneConfig) });
   const publicRegisterPlan = options.publicRegister || 'default';
   const dynamicPublicRegisterPlan = isDynamicPublicRegisterPlan(publicRegisterPlan) ? publicRegisterPlan : null;
   const registerRows = [];
   let publicRegisterForTurn = staticPublicRegister(publicRegisterPlan);
-  let previousPublicRegister = null;
+  if (dynamicPublicRegisterPlan) {
+    publicRegisterForTurn = weightedRegisterPick(
+      dynamicPublicRegisterPlan,
+      `${dynamicPublicRegisterPlan.seed}:${world.id}:run`,
+    );
+    registerRows.push({ turn: 0, register: publicRegisterForTurn, scope: 'run', scene: null });
+  }
   const stagePrologueEnabled = Boolean(options.stagePrologue);
   let stagePrologue = null;
   const runtimeMonitor = options.guardSpec ? createRuntimeMonitor(world, options.guardSpec) : null;
@@ -545,32 +554,30 @@ export async function runDrama({ world, roles, options = {} }) {
       (entry) => entry.turn === turn && !ledger.some((row) => row.premiseId === entry.premise),
     );
 
+  const selectSceneTempoForTurn = (turn) => {
+    if (!sceneState || !sceneConfig?.tempo) return null;
+    return recommendSceneTempoBeat(
+      world,
+      sceneState,
+      {
+        turn,
+        dNow: derivationDistance(world, validGroundedFacts()),
+        releaseDue: unreleasedScheduledThisTurn(turn).length > 0,
+        maxPhaticExchanges: sceneConfig.maxPhaticExchanges,
+      },
+      sceneConfig.tempo,
+    );
+  };
+
+  const currentSceneView = () => (sceneState ? sceneView(sceneState, sceneTempoThisTurn) : null);
+  const currentSceneMeta = () => (sceneState ? sceneMeta(sceneState, sceneTempoThisTurn) : null);
+
   const shouldCallDirector = (turn, openedScene) => {
     if (acts) return true;
     if (directorCadence === 'turn') return true;
     const releaseDue = unreleasedScheduledThisTurn(turn).length > 0;
     if (directorCadence === 'release') return releaseDue;
     return Boolean(openedScene) || releaseDue;
-  };
-
-  const resolvePublicRegisterForTurn = (turn, openedScene) => {
-    if (!dynamicPublicRegisterPlan) return publicRegisterForTurn;
-    const sceneIndex = sceneState?.index || null;
-    const shouldResample =
-      !registerRows.length || dynamicPublicRegisterPlan.scope === 'turn' || !sceneConfig || Boolean(openedScene);
-    if (shouldResample) {
-      const register = weightedRegisterPick(
-        dynamicPublicRegisterPlan,
-        `${dynamicPublicRegisterPlan.seed}:${world.id}:${dynamicPublicRegisterPlan.scope}:${
-          sceneIndex || turn
-        }:${turn}`,
-        previousPublicRegister,
-      );
-      previousPublicRegister = register;
-      publicRegisterForTurn = register;
-      registerRows.push({ turn, register, scope: dynamicPublicRegisterPlan.scope, scene: sceneIndex });
-    }
-    return publicRegisterForTurn;
   };
 
   const decayedPremiseIds = () =>
@@ -652,7 +659,7 @@ export async function runDrama({ world, roles, options = {} }) {
       },
       voiced,
       ...(actState ? { act: { index: actState.index, startTurn: actState.startTurn, brief: actState.brief } } : {}),
-      ...(sceneState ? { scene: sceneView(sceneState) } : {}),
+      ...(sceneState ? { scene: currentSceneView() } : {}),
       ...(stagePrologue ? { stagePrologue } : {}),
       publicRegister: publicRegisterForTurn,
     };
@@ -679,7 +686,7 @@ export async function runDrama({ world, roles, options = {} }) {
       transcript: [...transcript],
       staging: { phase: staging.phase },
       ...(actState ? { acts: actsView(turn) } : {}),
-      ...(sceneState ? { scene: sceneView(sceneState) } : {}),
+      ...(sceneState ? { scene: currentSceneView() } : {}),
       ...(stagePrologue ? { stagePrologue } : {}),
       publicRegister: publicRegisterForTurn,
       ...(proofDebt
@@ -769,8 +776,8 @@ export async function runDrama({ world, roles, options = {} }) {
     turn += 1;
     const releasedThisTurn = [];
     const openedScene = openSceneForTurn(turn, turn === 1 ? 'opening' : 'continuation');
-    resolvePublicRegisterForTurn(turn, openedScene);
-    const currentSceneMeta = sceneMeta(sceneState);
+    sceneTempoThisTurn = selectSceneTempoForTurn(turn);
+    const sceneMetaThisTurn = currentSceneMeta();
 
     // --- director ---
     const callDirector = shouldCallDirector(turn, openedScene);
@@ -834,7 +841,7 @@ export async function runDrama({ world, roles, options = {} }) {
           release: directorOut.release || null,
           phase: staging.phase && staging.phase.turn === turn ? { ...staging.phase } : null,
           ...(actState ? { act: directorOut.act || null } : {}),
-          ...(currentSceneMeta ? { scene: currentSceneMeta } : {}),
+          ...(sceneMetaThisTurn ? { scene: sceneMetaThisTurn } : {}),
           publicRegister: publicRegisterForTurn,
         },
       });
@@ -866,6 +873,10 @@ export async function runDrama({ world, roles, options = {} }) {
         : null,
     );
     if (tutorRelease) releasedThisTurn.push(tutorRelease);
+    const tutorPhaticRecognition = detectPhaticRecognition(tutorOut.dialogue || '', {
+      role: 'tutor',
+      tempo: sceneTempoThisTurn,
+    });
     transcript.push({
       turn,
       role: 'tutor',
@@ -882,7 +893,8 @@ export async function runDrama({ world, roles, options = {} }) {
         ...(tutorOut.throughline ? { throughline: tutorOut.throughline } : {}),
         ...(tutorOut.proofDebt ? { proofDebt: tutorOut.proofDebt } : {}),
         ...(tutorOut.rhetoricalPolicy ? { rhetoricalPolicy: tutorOut.rhetoricalPolicy } : {}),
-        ...(currentSceneMeta ? { scene: currentSceneMeta } : {}),
+        ...(tutorPhaticRecognition.length ? { phaticRecognition: tutorPhaticRecognition } : {}),
+        ...(sceneMetaThisTurn ? { scene: sceneMetaThisTurn } : {}),
         publicRegister: publicRegisterForTurn,
       },
     });
@@ -944,8 +956,16 @@ export async function runDrama({ world, roles, options = {} }) {
     const tutorIntent = String(tutorOut.move?.intent || '')
       .toLowerCase()
       .trim();
-    if (corruption && tutorOut.move?.targetPremise && tutorIntent !== 'confront') {
-      const premise = world.premiseById.get(tutorOut.move.targetPremise);
+    const repairTargets = [];
+    if (tutorOut.move?.targetPremise && tutorIntent !== 'confront') {
+      repairTargets.push(tutorOut.move.targetPremise);
+    }
+    if (tutorIntent === 'restore' && Array.isArray(tutorOut.proofDebt?.targets)) {
+      repairTargets.push(...tutorOut.proofDebt.targets);
+    }
+    for (const targetPremise of [...new Set(repairTargets)]) {
+      if (!corruption) break;
+      const premise = world.premiseById.get(targetPremise);
       const entry = premise ? grounded.get(factKey(premise.fact)) : null;
       if (entry?.decayed) {
         entry.decayed = false;
@@ -1063,8 +1083,9 @@ export async function runDrama({ world, roles, options = {} }) {
         deriveOutcomes,
         hypothesis: learnerOut.hypothesis || null,
         asserts: learnerOut.asserts || null,
+        ...(learnerOut.assertionGate ? { assertionGate: learnerOut.assertionGate } : {}),
         exchangeType: learnerOut.exchangeType || null,
-        ...(currentSceneMeta ? { scene: currentSceneMeta } : {}),
+        ...(sceneMetaThisTurn ? { scene: sceneMetaThisTurn } : {}),
         publicRegister: publicRegisterForTurn,
       },
     });
@@ -1097,6 +1118,16 @@ export async function runDrama({ world, roles, options = {} }) {
         groundedBefore: groundedBeforeLearner,
         groundedAfter: valid.length,
       });
+      if (sceneTempoThisTurn) sceneExchange.tempo = sceneTempoThisTurn.beat;
+      const learnerPhaticRecognition = detectPhaticRecognition(learnerOut.dialogue || '', {
+        role: 'learner',
+        exchangeType: sceneExchange.type,
+        tempo: sceneTempoThisTurn,
+      });
+      if (learnerPhaticRecognition.length) {
+        sceneExchange.phaticRecognition = learnerPhaticRecognition;
+        transcript[transcript.length - 1].meta.phaticRecognition = learnerPhaticRecognition;
+      }
       transcript[transcript.length - 1].meta.exchange = sceneExchange;
     }
 
@@ -1245,7 +1276,7 @@ export async function runDrama({ world, roles, options = {} }) {
       ...(sceneConfig
         ? {
             exchange: sceneExchange,
-            scene: sceneState ? sceneView(sceneState) : null,
+            scene: sceneState ? currentSceneView() : null,
             closedScene: closedScene
               ? {
                   index: closedScene.index,
