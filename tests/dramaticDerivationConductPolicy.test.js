@@ -307,6 +307,47 @@ test('runtime conduct policy enforcement repairs noncompliant proof-debt moves w
   assert.equal(out.conductPolicy.generatorCompliance.ok, true);
 });
 
+test('runtime conduct policy enforcement keeps diagnostic prompts concise', async () => {
+  const longLearner =
+    'I set wormwood down as the sign, but I am not taking up the prior branch before any hand is named.';
+  const { client } = stubClient({
+    tutor: [
+      {
+        dialogue: 'Let us bring the next exhibit into view.',
+        release: 'p2',
+        release_reason: 'advance',
+        move: { figure: 'erotema', target_premise: 'p2', intent: 'release' },
+      },
+    ],
+  });
+  const tutor = makeLlmTutor(
+    smokeWorld,
+    client,
+    actsOpts({
+      conductPolicyEnforce: true,
+      pacingGuard: true,
+      releaseAuthority: true,
+      visibleConsolidationGuard: true,
+    }),
+  );
+  const out = await tutor(
+    actsView(3, {
+      ledger: [{ turn: 2, premiseId: 'p1', via: 'director' }],
+      transcript: [{ turn: 2, role: 'learner', text: longLearner, meta: {} }],
+    }),
+  );
+
+  assert.equal(out.conductPolicy.active, true);
+  assert.equal(out.conductPolicy.selectedMoveFamily, 'ask_diagnostic');
+  assert.equal(out.move.intent, 'test');
+  assert.equal(out.release, null);
+  assert.equal(out.dialogue, 'Pause there. What in the public record licenses that next step?');
+  assert.doesNotMatch(out.dialogue, /after "/u);
+  assert.doesNotMatch(out.dialogue, /wormwood|before any hand/u);
+  assert.equal(out.conductPolicy.generatorCompliance.checked, true);
+  assert.equal(out.conductPolicy.generatorCompliance.ok, true);
+});
+
 test('runtime conduct policy can invite final assertion in acts mode without prompt leakage', async () => {
   const { client, calls } = stubClient({
     tutor: [

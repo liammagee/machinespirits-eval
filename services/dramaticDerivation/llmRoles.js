@@ -1493,7 +1493,6 @@ function conductPolicyDialogue(decision, { release = null, register = 'default' 
   const view = decision.tutorView || {};
   const surface = typeof view.surface === 'string' && view.surface.trim() ? view.surface.trim() : null;
   const target = decision.targetPremise || view.targetPremise || release || null;
-  const learner = typeof view.learnerExcerpt === 'string' && view.learnerExcerpt.trim() ? view.learnerExcerpt.trim() : null;
   const line =
     family === 'repair_dependency'
       ? surface
@@ -1504,7 +1503,7 @@ function conductPolicyDialogue(decision, { release = null, register = 'default' 
           ? `Take this new piece now: ${trimTerminalPunctuation(surface)}. Say what it changes before we go on.`
           : `Take the next authorized piece${target ? ` (${target})` : ''}. Say what it changes before we go on.`
         : family === 'ask_diagnostic'
-          ? `Pause there. What in the public record makes that step licensed${learner ? ` after "${learner}"` : ''}?`
+          ? 'Pause there. What in the public record licenses that next step?'
           : family === 'ask_scope_test'
             ? 'Test the reach of that warrant before we use it. Where does it hold, and where would it fail?'
             : family === 'consolidate_subproof'
