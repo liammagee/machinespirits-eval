@@ -84,6 +84,7 @@ import { buildWorldIR, projectWorldIRLogic } from './guardCompiler.js';
 import { proofDebtReport, tutorProofDebtView } from './proofDebt.js';
 import {
   classifyLearnerExchange,
+  applyRecognitionNeedPolicy,
   detectPhaticRecognition,
   estimateRecognitionNeed,
   normalizeSceneConfig,
@@ -574,9 +575,16 @@ export async function runDrama({ world, roles, options = {} }) {
 
   const selectSceneRecognitionNeedForTurn = () =>
     sceneConfig?.recognitionNeed !== false && sceneState
-      ? estimateRecognitionNeed(sceneState, {
-          forced: entails(validGroundedFacts(), world.rules, world.secret.fact),
-        })
+      ? applyRecognitionNeedPolicy(
+          estimateRecognitionNeed(sceneState, {
+            forced: entails(validGroundedFacts(), world.rules, world.secret.fact),
+          }),
+          sceneState,
+          {
+            policy: sceneConfig.recognitionNeed,
+            forced: entails(validGroundedFacts(), world.rules, world.secret.fact),
+          },
+        )
       : null;
 
   const currentSceneView = () =>

@@ -25,6 +25,7 @@ export {
   classifyCognitiveTempo,
   detectPhaticRecognition,
   estimateRecognitionNeed,
+  applyRecognitionNeedPolicy,
   recommendSceneTempoBeat,
   recommendRhetoricalMove,
 } from './rhetoricalMovePolicy.js';

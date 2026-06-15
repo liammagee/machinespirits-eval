@@ -140,8 +140,20 @@ export function normalizeSceneConfig(raw = true) {
     tempo: normalizeSceneTempoConfig(cfg.tempo),
     closeOnDDecrease: Boolean(cfg.closeOnDDecrease),
     closeOnConfusion: Boolean(cfg.closeOnConfusion),
-    recognitionNeed: cfg.recognitionNeed !== false && cfg.recognitionNeed !== 'off',
+    recognitionNeed: normalizeRecognitionNeedPolicy(cfg.recognitionNeed),
   };
+}
+
+export function normalizeRecognitionNeedPolicy(raw = true) {
+  if (raw === false || raw === 'off') return false;
+  if (raw === true || raw == null || raw === 'on') return true;
+  if (raw === 'direct' || raw === 'v1') return true;
+  if (raw === 'gated' || raw === 'gated-v2' || raw === 'v2') return 'gated-v2';
+  throw new Error(
+    `scene-mode config: recognitionNeed must be true, false, "off", "direct", or "gated-v2" (got ${JSON.stringify(
+      raw,
+    )})`,
+  );
 }
 
 export function normalizeSceneTempoConfig(raw = null) {
@@ -461,6 +473,46 @@ export function estimateRecognitionNeed(scene, context = {}) {
   };
 }
 
+function recognitionPolicyName(policy) {
+  return policy === 'gated-v2' ? 'gated-v2' : 'direct';
+}
+
+export function applyRecognitionNeedPolicy(need, scene, context = {}) {
+  if (!need) return null;
+  const policy = recognitionPolicyName(context.policy);
+  if (policy === 'direct') {
+    return {
+      ...need,
+      policy,
+      active: need.debt >= 0.3,
+      gateReasons: need.debt >= 0.3 ? ['direct_debt'] : [],
+    };
+  }
+
+  const exchanges = scene?.exchanges || [];
+  const lastRecognizedAt = exchanges.reduce(
+    (found, exchange, idx) => (exchange.phaticRecognition?.length ? idx : found),
+    -1,
+  );
+  const unresolved = exchanges.slice(lastRecognizedAt + 1);
+  const breakdownCount = unresolved.filter((exchange) =>
+    ['confusion', 'repair_request', 'resistance'].includes(exchange.type),
+  ).length;
+  const fastReflexCount = unresolved.filter((exchange) => exchange.cognitiveTempo?.mode === 'fast_reflex').length;
+  const reasons = [];
+  if (breakdownCount >= 2) reasons.push('repeated_unacknowledged_breakdown');
+  if (fastReflexCount >= 2 && (scene?.counts?.situatedUptake || 0) === 0) reasons.push('repeated_fast_reflex');
+  if (context.forced && (scene?.counts?.assertion || 0) === 0) reasons.push('forced_answer_not_yet_asserted');
+  const active = need.debt >= 0.3 && reasons.length > 0;
+  return {
+    ...need,
+    policy,
+    active,
+    gateReasons: reasons,
+    ...(active ? {} : { suppressed: 'recognition pressure logged but not policy-active under gated-v2' }),
+  };
+}
+
 export function sceneView(scene, tempo = null, recognitionNeed = null) {
   if (!scene) return null;
   return {
@@ -597,7 +649,7 @@ export function recommendSceneTempoBeat(world, scene, context = {}, config = nul
     addTempo(scores, 'hypothesis', 0.5, 'near the drift guard, ask for a small substantive move');
     addTempo(scores, 'recap', 0.3, 'near the drift guard, consolidate what stands');
   }
-  if (!forced && !releaseDue && recognitionNeed?.debt >= 0.3) {
+  if (!forced && !releaseDue && recognitionNeed?.debt >= 0.3 && recognitionNeed.active !== false) {
     addTempo(scores, 'recap', recognitionNeed.debt * 1.1, 'recognition debt asks the scene to return what has been heard');
     addTempo(scores, 'hesitation', recognitionNeed.debt * 0.75, 'recognition debt can slow reflexive assent into owned uptake');
     addTempo(scores, 'repair_request', recognitionNeed.debt * 0.6, 'recognition debt may need repair before proof pressure');
@@ -743,7 +795,7 @@ export function recommendRhetoricalMove(world, view, context = {}, config = true
   if (plateau && !context.forced) {
     add(scores, keyOf('exemplum', 'orient', targetFromContext, 'unstick'), 0.2, 'the D curve is flat; make one obligation concrete');
   }
-  if (recognitionNeed?.debt >= 0.3 && !context.releaseCue) {
+  if (recognitionNeed?.debt >= 0.3 && recognitionNeed.active !== false && !context.releaseCue) {
     add(
       scores,
       keyOf('anaphora', 'consolidate', targetFromContext, 'recognitive_recap'),

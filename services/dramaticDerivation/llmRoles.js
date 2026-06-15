@@ -419,9 +419,12 @@ function sceneTempoLines(scene, roleName) {
 
 function sceneRecognitionNeedLines(scene, roleName) {
   const need = scene?.recognitionNeed;
-  if (!need || need.debt < 0.3) return [];
+  if (!need || need.active === false || need.debt < 0.3) return [];
   const sourceText = need.sources?.length ? need.sources.map((s) => s.replace(/_/g, ' ')).join(', ') : 'general';
   const actText = need.desiredActs?.length ? need.desiredActs.map((s) => s.replace(/_/g, ' ')).join(', ') : 'acknowledge before advancing';
+  const gateText = need.policy === 'gated-v2' && need.gateReasons?.length
+    ? ` Gate: ${need.gateReasons.map((s) => s.replace(/_/g, ' ')).join(', ')}.`
+    : '';
   const roleInstruction =
     roleName === 'learner'
       ? 'A bare "yes" can be only fast punctuation. If you actually recognize the other line, name what you recognize; if not, keep the uptake modest or ask repair.'
@@ -429,7 +432,7 @@ function sceneRecognitionNeedLines(scene, roleName) {
   return [
     '',
     `Dialogical recognition pressure: ${need.level} (${need.debt.toFixed(2)}).`,
-    `Sources: ${sourceText}. Desired act: ${actText}.`,
+    `Sources: ${sourceText}. Desired act: ${actText}.${gateText}`,
     roleInstruction,
   ];
 }

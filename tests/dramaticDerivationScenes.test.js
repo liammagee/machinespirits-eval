@@ -31,6 +31,7 @@ import {
   classifyCognitiveTempo,
   detectPhaticRecognition,
   estimateRecognitionNeed,
+  applyRecognitionNeedPolicy,
   recommendSceneTempoBeat,
   recommendRhetoricalMove,
   sanitizePublicDialogue,
@@ -434,6 +435,7 @@ test('rhetorical policy supports seeded sampling over the same distribution', ()
     tempo: null,
   });
   assert.equal(normalizeSceneConfig({ recognitionNeed: false }).recognitionNeed, false);
+  assert.equal(normalizeSceneConfig({ recognitionNeed: 'gated-v2' }).recognitionNeed, 'gated-v2');
 });
 
 test('recognition need biases rhetorical policy without changing proof state', () => {
@@ -457,4 +459,86 @@ test('recognition need biases rhetorical policy without changing proof state', (
   const advice = recommendRhetoricalMove(world, view, {}, normalizeRhetoricalPolicyConfig(true));
   assert.equal(advice.selected.stance, 'recognitive_recap');
   assert.ok(advice.distribution.some((row) => row.stance === 'situated_uptake_check'));
+});
+
+test('gated recognition policy logs need but suppresses single-turn pressure', () => {
+  const oneBreakScene = {
+    index: 1,
+    exchanges: [
+      {
+        type: 'confusion',
+        cognitiveTempo: { mode: 'repair_pause' },
+        countsForProgress: false,
+        dDelta: 0,
+      },
+    ],
+    counts: { phatic: 0, substantive: 0, confusion: 1, repairRequest: 0, assertion: 0, situatedUptake: 0 },
+  };
+  const need = applyRecognitionNeedPolicy(estimateRecognitionNeed(oneBreakScene), oneBreakScene, {
+    policy: 'gated-v2',
+  });
+  assert.equal(need.level, 'medium');
+  assert.equal(need.active, false);
+  assert.equal(need.policy, 'gated-v2');
+
+  const recognitionTempo = normalizeSceneTempoConfig({
+    mode: 'deterministic',
+    weights: {
+      uptake_only: 0.01,
+      repair_request: 0,
+      recap: 0,
+      hesitation: 0,
+      hypothesis: 0,
+      evidence: 0,
+      recognition: 0,
+    },
+  });
+  const suppressedTempo = recommendSceneTempoBeat(world, oneBreakScene, { turn: 3, recognitionNeed: need }, recognitionTempo);
+  assert.ok(!suppressedTempo.distribution.some((row) => /recognition debt/.test(row.rationale || '')));
+
+  const repeatedBreakScene = {
+    ...oneBreakScene,
+    exchanges: [
+      ...oneBreakScene.exchanges,
+      {
+        type: 'resistance',
+        cognitiveTempo: { mode: 'deliberative' },
+        countsForProgress: false,
+        dDelta: 0,
+      },
+    ],
+    counts: { ...oneBreakScene.counts, resistance: 1 },
+  };
+  const gatedNeed = applyRecognitionNeedPolicy(estimateRecognitionNeed(repeatedBreakScene), repeatedBreakScene, {
+    policy: 'gated-v2',
+  });
+  assert.equal(gatedNeed.active, true);
+  assert.ok(gatedNeed.gateReasons.includes('repeated_unacknowledged_breakdown'));
+  const activeTempo = recommendSceneTempoBeat(world, repeatedBreakScene, { turn: 4, recognitionNeed: gatedNeed }, recognitionTempo);
+  assert.ok(activeTempo.distribution.some((row) => /recognition debt/.test(row.rationale || '')));
+});
+
+test('inactive gated recognition need does not bias rhetorical policy', () => {
+  const view = {
+    turn: 4,
+    ledger: [{ turn: 2, premiseId: 'p1' }],
+    transcript: [{ turn: 3, role: 'learner', text: 'Wait, I am lost.', meta: { exchange: { type: 'confusion' } } }],
+    trajectory: [{ turn: 3, D: 2 }],
+    learnerAbox: { grounded: world.background, hypotheses: [] },
+    inference: { frontier: [] },
+    scene: {
+      index: 1,
+      recognitionNeed: {
+        debt: 0.8,
+        level: 'high',
+        sources: ['unacknowledged_confusion'],
+        desiredActs: ['repair_thread'],
+        policy: 'gated-v2',
+        active: false,
+      },
+    },
+  };
+  const advice = recommendRhetoricalMove(world, view, {}, normalizeRhetoricalPolicyConfig(true));
+  assert.notEqual(advice.selected.stance, 'recognitive_recap');
+  assert.ok(!advice.distribution.some((row) => row.stance === 'recognitive_recap'));
 });
