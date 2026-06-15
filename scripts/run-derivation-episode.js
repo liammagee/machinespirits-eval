@@ -49,6 +49,7 @@
  *     [--pacing-guard-selective-v2 on|off]
  *     [--pacing-guard-selective-v3 on|off]
  *     [--pacing-guard-selective-v4 on|off]
+ *     [--same-turn-assertion-affordance on|off]
  *     [--proof-debt-guard on|off]
  *     [--compiled-guard on|off]
  *     [--plot on|off] [--throughline on|off]
@@ -566,7 +567,12 @@ async function main() {
   const visibleGuard = pacingGuardSelector ? pacingGuardSelector.selected === 'visible' : requestedVisibleGuard;
   const visiblePushProbeGuard = pacingGuardSelectiveV3;
   const visibleConsolidationGuard = pacingGuardSelectiveV4;
-  const assertionGroundingGate = pacingGuardSelectiveV4;
+  const sameTurnAssertionAffordance = track(
+    'same-turn-assertion-affordance',
+    triState('same-turn-assertion-affordance', Boolean(srcDiag.sameTurnAssertionAffordance)),
+    Boolean(srcDiag.sameTurnAssertionAffordance),
+  );
+  const assertionGroundingGate = pacingGuardSelectiveV4 || sameTurnAssertionAffordance;
   const guardSpec = compiledGuard ? compileGuardSpec(world, worldIR || buildWorldIR(world)) : null;
   const label = arg('label', `${src.label}-t${fromTurn}-${mode}-${timestamp()}`);
   const outDir = path.join(path.resolve(ROOT, arg('out', 'exports/dramatic-derivation/episodes')), label);
@@ -616,6 +622,7 @@ async function main() {
       visiblePushProbeGuard,
       visibleConsolidationGuard,
       assertionGroundingGate,
+      sameTurnAssertionAffordance,
       visibleGuard,
       proofDebtGuard,
       compiledGuard,
@@ -672,6 +679,7 @@ async function main() {
   if (visiblePushProbeGuard) console.log('tutor   VISIBLE PUSH PROBE ON');
   if (visibleConsolidationGuard) console.log('tutor   VISIBLE CONSOLIDATION ON');
   if (assertionGroundingGate) console.log('learner ANSWER GATE ON');
+  if (sameTurnAssertionAffordance) console.log('learner SAME-TURN ASSERTION AFFORDANCE ON');
   if (proofDebtGuard) console.log('tutor   PROOF-DEBT GUARD ON');
   if (guardSpec) console.log(`guard   COMPILED — WorldIR -> GuardSpec (${guardSpec.world.id})`);
   if (plot) console.log(`tutor   PLOT ON${throughline ? ' + THROUGHLINE ON' : ''}`);
@@ -709,6 +717,7 @@ async function main() {
       voice: learnerVoice || world.learnerVoice,
       client,
       assertionGroundingGate,
+      sameTurnAssertionAffordance,
     }),
   };
   const roles = makeReplayRoles({ recorded: src.result, fromTurn, live: liveRoles });
@@ -846,6 +855,7 @@ async function main() {
     visiblePushProbeGuard,
     visibleConsolidationGuard,
     assertionGroundingGate,
+    sameTurnAssertionAffordance,
     visibleGuard,
     proofDebtGuard,
     compiledGuard,

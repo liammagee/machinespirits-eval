@@ -307,7 +307,7 @@ test('episode CLI inherits modern guard and plot dials while preserving replay p
   fs.rmSync(tmp, { recursive: true, force: true });
 });
 
-test('episode CLI inherits selector v4 consolidation and answer-gate dials', { timeout: CLI_TIMEOUT }, () => {
+test('episode CLI inherits selector v4 consolidation, answer-gate, and same-turn dials', { timeout: CLI_TIMEOUT }, () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'derivation-v4-episode-'));
   const run = (script, args) =>
     execFileSync(process.execPath, [path.join(ROOT, 'scripts', script), ...args], {
@@ -334,6 +334,7 @@ test('episode CLI inherits selector v4 consolidation and answer-gate dials', { t
     '--repair-clause',
     '--release-authority',
     '--pacing-guard-selective-v4',
+    '--same-turn-assertion-affordance',
     '--plot',
     '--throughline',
   ]);
@@ -355,6 +356,7 @@ test('episode CLI inherits selector v4 consolidation and answer-gate dials', { t
   assert.equal(d.pacingGuardSelectiveV4, true);
   assert.equal(d.visibleConsolidationGuard, true);
   assert.equal(d.assertionGroundingGate, true);
+  assert.equal(d.sameTurnAssertionAffordance, true);
   assert.equal(d.pacingGuardSelector.schema, 'dramatic-derivation.representation-selector.v4');
 
   fs.rmSync(tmp, { recursive: true, force: true });
