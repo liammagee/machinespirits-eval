@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Roundup — 9 Jun–15 Jun 2026</title>
+  <!-- meta: date=2026-06-15 window=(2026-06-09,2026-06-15] arxiv=2603.10450,2606.05961,2604.14128,2604.07028,2603.02775,2603.24639,2604.20795 generator=deep-research/claude-sonnet-4-6 -->
+  <style>
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      line-height: 1.65;
+      color: #1a1a1a;
+      background: #fafaf8;
+    }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; margin-bottom: .2rem; color: #444; text-transform: uppercase;
+         letter-spacing: .06em; }
+    .paper {
+      border-left: 3px solid #aaa;
+      padding: .5rem 1rem;
+      margin: 1rem 0;
+      background: #fff;
+    }
+    .paper.hot { border-left-color: #c0392b; }
+    .paper h3 { margin: 0 0 .25rem; font-size: 1rem; }
+    .paper .meta { font-size: .82rem; color: #666; margin-bottom: .5rem; }
+    .paper p { margin: 0; font-size: .93rem; }
+    .flag {
+      display: inline-block;
+      background: #c0392b;
+      color: #fff;
+      font-size: .72rem;
+      font-weight: bold;
+      padding: .1rem .45rem;
+      border-radius: 3px;
+      margin-left: .5rem;
+      vertical-align: middle;
+    }
+    .flag.yellow { background: #d4a017; }
+    .flag.blue { background: #1a5276; }
+    a { color: #1a5276; }
+    footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+  </style>
+</head>
+<body>
+
+<h1>Research Roundup <small style="font-weight:normal;font-size:.85em">9 Jun – 15 Jun 2026</small></h1>
+<p style="font-size:.9rem;color:#555;">
+  Seven papers across dramaturgy/recognition, pedagogy, agent architecture, rhetoric, and ontology.
+  This week's harvest from the <code>2606.xxxxx</code> slot is thin on direct project themes — only
+  one fresh-June item (2606.05961). The most important find is <strong>2603.10450</strong>, a March 2026
+  paper on ego/superego recognition architecture in AI-mediated tutoring that appears to be either
+  closely aligned external work or possibly from the same group — verify authorship before treating as
+  independent validation. Flags: <span class="flag">UNBLOCK</span> = could directly accelerate current work;
+  <span class="flag yellow">WATCH</span> = relevant background;
+  <span class="flag blue">VERIFY</span> = check provenance before citing.
+</p>
+
+<!-- ────────────────────────────────────── -->
+<h2>Dramaturgy / Recognition / Dialogue</h2>
+
+<div class="paper hot">
+  <h3>
+    Geist in the Machine: Simulating Recognition and Inner Dialogue in AI-Mediated Teaching and Research
+    <span class="flag">UNBLOCK</span>
+    <span class="flag blue">VERIFY</span>
+  </h3>
+  <div class="meta">
+    (Authors not retrieved — arxiv fetch blocked; check PDF directly) ·
+    arXiv 2603.10450 · March 2026 ·
+    <a href="https://arxiv.org/abs/2603.10450">https://arxiv.org/abs/2603.10450</a>
+  </div>
+  <p>
+    Describes an Ego/Superego multi-agent architecture with explicit Freudian-Hegelian theoretical
+    motivation applied to AI-mediated teaching: the Ego generates pedagogical suggestions incorporating
+    recognition principles; the Superego evaluates them against pedagogical criteria; the Drama Machine
+    deliberation protocol coordinates the two. The paper treats the tutoring session itself as
+    a site of Hegelian mutual recognition between AI and learner.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    This paper describes the exact architecture at the core of this project — ego/superego dialogue
+    engine, recognition theory grounding, drama-machine framing. <em>Critical action item:</em>
+    verify whether this is an earlier publication from the same group (in which case it belongs in
+    the paper's related-work or methods citation) or independent external work (in which case it
+    is the strongest external validation of the architecture to date). Either way it should appear
+    in <code>docs/research/paper-full-2.0.md</code> §2 or §3.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Pedagogy / Tutoring Evaluation</h2>
+
+<div class="paper hot">
+  <h3>
+    From Solver to Tutor: Evaluating the Pedagogical Intelligence of LLMs with KMP-Bench
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    (Authors: see PDF) · arXiv 2603.02775 · March 3, 2026 ·
+    <a href="https://arxiv.org/abs/2603.02775">https://arxiv.org/abs/2603.02775</a>
+  </div>
+  <p>
+    KMP-Bench (Knowledge-Mediated Pedagogy Benchmark) assesses LLM tutoring quality by inserting
+    models into truncated human dialogue snippets and scoring responses against six core pedagogical
+    principles: Challenge, Explanation, Modelling, Practice, Questioning, and Feedback.
+    The framing explicitly distinguishes <em>solver</em> competence (correct answers) from
+    <em>tutor</em> competence (contextually appropriate pedagogical moves).
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The six KMP dimensions could be mapped against the v2.2 tutor rubric's eight dimensions
+    as an external validity check (both decompose pedagogical quality, but from different
+    theoretical traditions). The "truncated dialogue" probing design is particularly
+    relevant to the counterfactual replay infrastructure in <code>/ms-replay-one-side</code>
+    and cell 110's LangGraph adaptive runner.
+  </p>
+</div>
+
+<div class="paper">
+  <h3>
+    Experiential Reflective Learning for Self-Improving LLM Agents
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    (Authors: see PDF) · arXiv 2603.24639 · March 2026 · ICLR 2026 MemAgents Workshop ·
+    <a href="https://arxiv.org/abs/2603.24639">https://arxiv.org/abs/2603.24639</a>
+  </div>
+  <p>
+    ERL agents generate generalised heuristics by reflecting on past experience across episodes,
+    storing them in a retrievable memory, and revising them when subsequent experience contradicts
+    them. Benchmarks show consistent gains over single-episode reflection (ReAct, Reflexion) on
+    multi-step tasks.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The heuristic-generation loop resembles the adaptive runner's policy-update mechanism
+    (cells 110–113). ERL's cross-episode memory is the missing piece for tutors that
+    improve <em>across</em> learner interactions rather than within a single session —
+    a natural next step after the within-session <code>adaptationIndex</code>.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Agent Architecture / Multi-Agent Persuasion</h2>
+
+<div class="paper">
+  <h3>
+    Strategic Persuasion with Trait-Conditioned Multi-Agent Systems for Iterative Legal Argumentation
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    (Authors: see PDF) · arXiv 2604.07028 · April 2026 ·
+    <a href="https://arxiv.org/abs/2604.07028">https://arxiv.org/abs/2604.07028</a>
+  </div>
+  <p>
+    Prosecution and defence are modelled as heterogeneous teams of LLM agents; each team
+    collectively generates arguments conditioned on shared strategic traits (e.g. aggressive,
+    conciliatory) over multiple debate rounds. The trait-conditioning mechanism enables
+    controlled variation in rhetorical style without fine-tuning.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The trait-conditioning approach is structurally close to the <em>divergent superego</em>
+    family (cells 22–27: suspicious / adversary / advocate variants). The paper's evaluation
+    of how trait-conditioned agents shift their argument style across rounds could
+    inform a more principled design of the dialectical cells (28–33) and sharpen the
+    hypothesis behind the <code>dialectical_suspicious</code> mechanism.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Rhetoric &amp; Persuasion</h2>
+
+<div class="paper hot">
+  <h3>
+    Political Persuasion and Endorsement in Large Language Models
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Labruna et al. · arXiv 2606.05961 · June 2026 · Findings of ACL: EACL 2026 ·
+    <a href="https://arxiv.org/abs/2606.05961">https://arxiv.org/abs/2606.05961</a>
+  </div>
+  <p>
+    Systematically tests whether major LLMs endorse political positions and whether their
+    outputs constitute persuasion under controlled conditions. Finds significant cross-model
+    variation in both endorsement tendency and persuasive efficacy; smaller models are
+    disproportionately persuasive in certain political domains.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The persuasion-efficacy measurement design is adjacent to the <code>learnerGrowthIndex</code>:
+    both try to detect belief/stance change from LLM output. The cross-model variation finding
+    is relevant for multi-judge IRR (the project's Opus vs. GPT rejudge infrastructure) —
+    judge models may also vary in their <em>persuasion susceptibility</em> as scorers,
+    not just their evaluation calibration.
+  </p>
+</div>
+
+<div class="paper">
+  <h3>
+    Rhetorical Questions in LLM Representations: A Linear Probing Study
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    (Authors: see PDF) · arXiv 2604.14128 · April 2026 ·
+    <a href="https://arxiv.org/abs/2604.14128">https://arxiv.org/abs/2604.14128</a>
+  </div>
+  <p>
+    Uses linear probes on intermediate LLM layer activations to test whether rhetorical questions
+    (asked to persuade or signal stance, not to seek information) are represented distinctly from
+    sincere questions. Finds that by mid-to-late layers, rhetorical and sincere questions
+    are linearly separable, suggesting models internally track pragmatic intent before decoding.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    Tutors using guided-discovery often pivot between sincere questions ("what do you notice?")
+    and rhetorical prods ("isn't it the case that…?"). The probe methodology could be applied
+    to tutor turns to measure the ratio of sincere-to-rhetorical questioning as a new process
+    measure alongside <code>adaptationIndex</code> — and offers an eventual empirical hook for
+    the Socratic stance assumed by the recognition-theory prompts.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Ontology / Knowledge Representation</h2>
+
+<div class="paper">
+  <h3>
+    Automatic Ontology Construction Using LLMs as an External Layer of Memory, Verification, and Planning
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    (Authors: see PDF) · arXiv 2604.20795 · April 2026 ·
+    <a href="https://arxiv.org/abs/2604.20795">https://arxiv.org/abs/2604.20795</a>
+  </div>
+  <p>
+    Proposes a hybrid architecture in which LLMs are coupled with an external RDF/OWL ontology
+    acting as a persistent, verifiable knowledge store. The LLM reads from and writes to the
+    ontology via a structured query interface; a validation layer enforces ontological consistency
+    before each write. Demonstrated on biomedical and enterprise knowledge construction tasks.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The poetics pipeline currently lacks a formal representation of the dramaturgical ontology
+    (peripeteia, anagnorisis, hamartia, etc.) — rubric dimensions are defined in YAML but
+    not as a machine-traversable graph. This architecture offers a concrete pattern for
+    externalising <code>config/evaluation-rubric-poetics.yaml</code> into a queryable OWL
+    ontology, enabling consistency checking across critic models and potential multi-hop
+    reasoning over dramatic form.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Coverage note</h2>
+<p style="font-size:.9rem;color:#555;">
+  The <code>2606.xxxxx</code> slot for this window was sparse on project-relevant themes
+  (fresh 2606 items already captured in prior notes: 2606.00820, 2606.01736, 2606.01828,
+  2606.03662, 2606.05330, 2606.05553). The most significant find this week is the
+  surface of <strong>2603.10450</strong> ("Geist in the Machine"), which merits immediate
+  provenance-check before treating as external literature — if it is independent work,
+  it is the strongest external validation of the project's ego/superego recognition
+  architecture published to date. Next roundup window opens 2026-06-15.
+</p>
+
+<footer>
+  Generated by Claude Code (claude-sonnet-4-6) · 2026-06-15 ·
+  Deep-research harness: 5 parallel search angles, multiple source extractions ·
+  Repository: <code>liammagee/machinespirits-eval</code>
+</footer>
+
+</body>
+</html>
