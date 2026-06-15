@@ -51,6 +51,7 @@
  *     [--pacing-guard-selective-v4 on|off]
  *     [--same-turn-assertion-affordance on|off]
  *     [--proof-debt-guard on|off]
+ *     [--conduct-policy on|off]
  *     [--compiled-guard on|off]
  *     [--plot on|off] [--throughline on|off]
  *     [--critic auto|real|mock|off]    (default off — episodes are scratch
@@ -490,6 +491,11 @@ async function main() {
     console.error('--proof-debt-guard on requires --repair-clause on');
     process.exit(1);
   }
+  const conductPolicy = track(
+    'conduct-policy',
+    triState('conduct-policy', Boolean(srcDiag.conductPolicy)),
+    Boolean(srcDiag.conductPolicy),
+  );
   const compiledGuard = track(
     'compiled-guard',
     triState('compiled-guard', Boolean(srcDiag.compiledGuard)),
@@ -625,6 +631,7 @@ async function main() {
       sameTurnAssertionAffordance,
       visibleGuard,
       proofDebtGuard,
+      conductPolicy,
       compiledGuard,
       plotDial: plot,
       throughlineDial: throughline,
@@ -681,6 +688,7 @@ async function main() {
   if (assertionGroundingGate) console.log('learner ANSWER GATE ON');
   if (sameTurnAssertionAffordance) console.log('learner SAME-TURN ASSERTION AFFORDANCE ON');
   if (proofDebtGuard) console.log('tutor   PROOF-DEBT GUARD ON');
+  if (conductPolicy) console.log('tutor   CONDUCT POLICY LOG ON');
   if (guardSpec) console.log(`guard   COMPILED — WorldIR -> GuardSpec (${guardSpec.world.id})`);
   if (plot) console.log(`tutor   PLOT ON${throughline ? ' + THROUGHLINE ON' : ''}`);
   console.log(
@@ -708,6 +716,7 @@ async function main() {
       visiblePushProbeGuard,
       visibleConsolidationGuard,
       proofDebtGuard,
+      conductPolicy,
       guardSpec,
       plot,
       throughline,
@@ -756,6 +765,7 @@ async function main() {
         ...(decay ? { decay } : {}),
         ...(acts ? { acts } : {}),
         ...(proofDebtGuard ? { proofDebtGuard } : {}),
+        ...(conductPolicy ? { conductPolicy } : {}),
         ...(guardSpec ? { guardSpec } : {}),
       },
     });
@@ -858,6 +868,7 @@ async function main() {
     sameTurnAssertionAffordance,
     visibleGuard,
     proofDebtGuard,
+    conductPolicy,
     compiledGuard,
     guardSpec: guardSpec
       ? {

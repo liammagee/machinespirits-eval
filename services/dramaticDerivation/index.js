@@ -3,6 +3,14 @@ export { loadWorld, validateWorld, plotLint, worldClosure } from './world.js';
 export { derivationDistance, detectStall } from './slope.js';
 export { simulateReleaseTempo, releaseSolvency, safeReleaseTurns, pacingGuardDecision } from './pacing.js';
 export { proofDebtReport, tutorProofDebtView } from './proofDebt.js';
+export {
+  auditConductTutorView,
+  conductMoveSpec,
+  conductMoveSpecs,
+  CONDUCT_MOVE_FAMILIES,
+  CONDUCT_POLICY_SCHEMA,
+  selectConductMove,
+} from './conductPolicy.js';
 export { createRuntimeMonitor, RUNTIME_MONITOR_SCHEMA } from './runtimeMonitor.js';
 export {
   buildLogicIR,
@@ -47,6 +55,7 @@ export {
   diagnose,
   corruptionReport,
   proofDebtGuardReport,
+  conductPolicyReport,
   logicProjectionReport,
   reconstructionReport,
   plotReport,

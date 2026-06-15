@@ -701,6 +701,44 @@ export function proofDebtGuardReport(result) {
   };
 }
 
+export function conductPolicyReport(result) {
+  const rows = (result.transcript || [])
+    .filter((l) => l.role === 'tutor' && l.meta?.conductPolicy)
+    .map((l) => ({
+      turn: l.turn,
+      active: Boolean(l.meta.conductPolicy.active),
+      selectedMoveFamily: l.meta.conductPolicy.selectedMoveFamily || null,
+      reasonCode: l.meta.conductPolicy.reasonCode || null,
+      targetPremise: l.meta.conductPolicy.targetPremise || null,
+      triggerType: l.meta.conductPolicy.triggerType || null,
+      realizedMove: l.meta.conductPolicy.realizedMove || l.meta.move || null,
+      realizedRelease: l.meta.conductPolicy.realizedRelease || l.meta.release || null,
+      loggingOnly: l.meta.conductPolicy.loggingOnly === true,
+      complianceChecked: l.meta.conductPolicy.generatorCompliance?.checked === true,
+    }));
+  if (!rows.length) return null;
+  const counts = (field) => {
+    const out = {};
+    for (const row of rows) {
+      const key = row[field] || '(none)';
+      out[key] = (out[key] || 0) + 1;
+    }
+    return out;
+  };
+  const active = rows.filter((row) => row.active);
+  return {
+    schema: 'dramatic-derivation.conduct-policy-report.v0',
+    loggedTurns: rows.length,
+    activeTurns: active.length,
+    inactiveTurns: rows.length - active.length,
+    moveFamilies: counts('selectedMoveFamily'),
+    reasonCodes: counts('reasonCode'),
+    loggingOnly: rows.every((row) => row.loggingOnly),
+    complianceChecked: rows.some((row) => row.complianceChecked),
+    decisions: rows,
+  };
+}
+
 /**
  * Reconstructing-tutor accuracy (stage v2 adapt-ON arm): per turn, the
  * tutor's committed theory of the learner's store against the harness-truth
@@ -1068,6 +1106,7 @@ export function diagnose(result, world) {
   const releaseDeviationsReport = releaseDeviations(result);
   const confrontation = confrontReport(result);
   const proofDebt = proofDebtGuardReport(result);
+  const conductPolicy = conductPolicyReport(result);
   const logicProjection = logicProjectionReport(result, world);
   const scenes = sceneReport(result);
   // C1 dial reporter — same contract: null off the plot arm.
@@ -1127,6 +1166,7 @@ export function diagnose(result, world) {
     ...(releaseDeviationsReport ? { releaseDeviations: releaseDeviationsReport } : {}),
     ...(confrontation ? { confrontation } : {}),
     ...(proofDebt ? { proofDebt } : {}),
+    ...(conductPolicy ? { conductPolicyReport: conductPolicy } : {}),
     ...(logicProjection ? { logicProjection } : {}),
     ...(result.directorCadence ? { directorCadence: result.directorCadence } : {}),
     ...(result.publicRegister ? { publicRegister: result.publicRegister } : {}),
@@ -1418,6 +1458,18 @@ export function renderEvalPanel(diagnosis) {
   if (pd) {
     lines.push(
       `- **proof debt** detected on ${pd.detectedTurns} turn${pd.detectedTurns === 1 ? '' : 's'} (${pd.debtsDetected} debt${pd.debtsDetected === 1 ? '' : 's'}) · restore actions ${pd.actionTurns} (guard-forced ${pd.forcedMoves}, repaired ${pd.repairedTargets})${pd.targets.length ? ` — ${pd.targets.join(' · ')}` : ''}`,
+    );
+  }
+  const cp = d.conductPolicyReport;
+  if (cp) {
+    const active = cp.activeTurns;
+    const families = Object.entries(cp.moveFamilies || {})
+      .filter(([family]) => family !== '(none)')
+      .map(([family, count]) => `${family}×${count}`);
+    lines.push(
+      `- **conduct policy** logged ${cp.loggedTurns} tutor turn${cp.loggedTurns === 1 ? '' : 's'} · active ${active} · ${
+        families.length ? families.join(' · ') : 'no active move-family trigger'
+      } · compliance ${cp.complianceChecked ? 'checked' : 'not checked (logging only)'}`,
     );
   }
   const lp = d.logicProjection?.summary;

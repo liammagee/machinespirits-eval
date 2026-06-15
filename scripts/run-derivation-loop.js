@@ -211,6 +211,10 @@
  *                                       move before closure/new work. Exposes only
  *                                       released exhibit ids/surfaces, not the raw
  *                                       learner board or corruption ledger.)
+ *     [--conduct-policy]               (A20 diagnostic. Logs conduct-policy
+ *                                       move-family decisions from the same
+ *                                       release/proof-debt evidence, but does
+ *                                       not constrain generation.)
  *     [--compiled-guard]               (P1 guard compiler runtime. Compile this
  *                                       world's WorldIR -> GuardSpec and feed it
  *                                       to active --pacing-guard / --proof-debt-
@@ -679,6 +683,7 @@ async function main() {
     );
     process.exit(1);
   }
+  const conductPolicy = flag('conduct-policy');
   const compiledGuard = flag('compiled-guard');
   if (
     compiledGuard &&
@@ -830,6 +835,7 @@ async function main() {
       sameTurnAssertionAffordance,
       visibleGuard,
       proofDebtGuard,
+      conductPolicy,
       compiledGuard,
       plotDial: plot,
       throughlineDial: throughline,
@@ -950,6 +956,11 @@ async function main() {
       'tutor   PROOF-DEBT GUARD ON — already-staged proof-critical exhibits that drop from the proof state authorize immediate restore moves before closure/new work',
     );
   }
+  if (conductPolicy) {
+    console.log(
+      'tutor   CONDUCT POLICY LOG ON — A20 move-family decisions are recorded beside tutor turns; no generation constraint yet',
+    );
+  }
   if (guardSpec) {
     console.log(
       `guard   COMPILED — WorldIR -> GuardSpec -> RuntimeMonitor (${guardSpec.world.id}; no online LLM guard authoring)`,
@@ -1003,6 +1014,7 @@ async function main() {
       visiblePushProbeGuard,
       visibleConsolidationGuard,
       proofDebtGuard,
+      conductPolicy,
       guardSpec,
       plot,
       throughline,
@@ -1059,6 +1071,7 @@ async function main() {
         ...(decay ? { decay } : {}),
         ...(acts ? { acts } : {}),
         ...(proofDebtGuard ? { proofDebtGuard } : {}),
+        ...(conductPolicy ? { conductPolicy } : {}),
         ...(guardSpec ? { guardSpec } : {}),
       },
     });
@@ -1114,6 +1127,7 @@ async function main() {
     // V apart from H.
     visibleGuard,
     proofDebtGuard,
+    conductPolicy,
     compiledGuard,
     guardSpec: guardSpec
       ? {

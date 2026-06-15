@@ -32,6 +32,7 @@ import {
   renderRhetoricalPolicy,
   RHETORICAL_FIGURES,
 } from './rhetoricalMovePolicy.js';
+import { CONDUCT_POLICY_SCHEMA, selectConductMove } from './conductPolicy.js';
 import { createRuntimeMonitor } from './runtimeMonitor.js';
 // The Step-1 V arm. Imported here, NOT in pacing.js — visiblePacing.js's own audit
 // test forbids it from importing back the other way, so the hidden/visible seam
@@ -1311,6 +1312,183 @@ const PLOT_VERDICTS = new Set(['kept', 'justified_deviation', 'drift']);
 // the act against the standing throughline. Same gate discipline.
 const ARC_VERDICTS = new Set(['on_arc', 'off_arc']);
 
+function lastLearnerExcerpt(transcript = []) {
+  for (let i = transcript.length - 1; i >= 0; i -= 1) {
+    const line = transcript[i];
+    if (line.role === 'learner' && typeof line.text === 'string' && line.text.trim()) {
+      return line.text.trim();
+    }
+  }
+  return null;
+}
+
+function compactReleaseDecision(releaseDecision) {
+  if (!releaseDecision) return null;
+  return {
+    turn: releaseDecision.turn,
+    windowSize: releaseDecision.windowSize,
+    claimed: releaseDecision.claimed || null,
+    played: releaseDecision.played || null,
+    forced: releaseDecision.forced || null,
+    overridden: Boolean(releaseDecision.overridden),
+    ...(releaseDecision.pacingGuard
+      ? {
+          pacingGuard: {
+            blocked: releaseDecision.pacingGuard.blocked,
+            forcedSafe: releaseDecision.pacingGuard.forcedSafe,
+            forcedBy: releaseDecision.pacingGuard.forcedBy || null,
+            candidate: releaseDecision.pacingGuard.candidate || null,
+            reason: releaseDecision.pacingGuard.reason || null,
+          },
+        }
+      : {}),
+    ...(releaseDecision.visibleGuard
+      ? {
+          visibleGuard: {
+            blocked: releaseDecision.visibleGuard.blocked,
+            forcedSafe: releaseDecision.visibleGuard.forcedSafe,
+            forcedBy: releaseDecision.visibleGuard.forcedBy || null,
+            candidate: releaseDecision.visibleGuard.candidate || null,
+            reason: releaseDecision.visibleGuard.reason || null,
+          },
+        }
+      : {}),
+    ...(releaseDecision.hybridGuard
+      ? {
+          hybridGuard: {
+            accepted: Boolean(releaseDecision.hybridGuard.accepted),
+            reason: releaseDecision.hybridGuard.reason || null,
+          },
+        }
+      : {}),
+    ...(releaseDecision.consolidationGuard
+      ? {
+          consolidationGuard: {
+            held: Boolean(releaseDecision.consolidationGuard.held),
+            visiblePushIgnored: Boolean(releaseDecision.consolidationGuard.visiblePushIgnored),
+            reason: releaseDecision.consolidationGuard.reason || null,
+          },
+        }
+      : {}),
+  };
+}
+
+function conductTriggerState({
+  view,
+  conductProofDebt,
+  releaseBits,
+  forcedNote,
+  finalOut,
+  visibleConsolidation,
+}) {
+  const evidence = {
+    learnerExcerpt: lastLearnerExcerpt(view.transcript),
+    releaseDecision: compactReleaseDecision(releaseBits.releaseDecision),
+  };
+  const topConductDebt = conductProofDebt?.debts?.[0] || null;
+  if (topConductDebt) {
+    return {
+      id: `t${view.turn}:proof-debt:${topConductDebt.premiseId}`,
+      triggerType: 'dependency_repair_needed',
+      premiseId: topConductDebt.premiseId,
+      proofDebtTutorView: conductProofDebt,
+      blockedActions: ['invite_final_assertion', 'release_unrelated_evidence'],
+      evidence,
+    };
+  }
+
+  const rd = releaseBits.releaseDecision;
+  const visibleConflict = Boolean(
+    rd?.hybridGuard?.accepted === false ||
+      rd?.consolidationGuard?.visiblePushIgnored ||
+      (rd?.visibleGuard?.blocked && rd?.pacingGuard && !rd.consolidationGuard?.held),
+  );
+  if (visibleConflict) {
+    return {
+      id: `t${view.turn}:visible-hidden-conflict`,
+      triggerType: 'visible_hidden_conflict',
+      visibleHiddenConflict: true,
+      hiddenCertifiedRelease: Boolean(rd?.hybridGuard?.accepted || (rd?.pacingGuard && rd.played)),
+      premiseId: rd?.played || rd?.visibleGuard?.candidate || rd?.pacingGuard?.candidate || null,
+      evidence,
+    };
+  }
+
+  const recognitionNeed = view.scene?.recognitionNeed;
+  if (recognitionNeed?.active) {
+    return {
+      id: `t${view.turn}:recognition`,
+      triggerType: 'recognition_rupture_active',
+      recognitionNeed,
+      evidence,
+    };
+  }
+
+  if (forcedNote) {
+    return {
+      id: `t${view.turn}:forced`,
+      triggerType: 'final_assertion_available_but_delayed',
+      canAssertFinal: true,
+      evidence,
+    };
+  }
+
+  if (rd?.played) {
+    return {
+      id: `t${view.turn}:release:${rd.played}`,
+      triggerType: 'release_candidate_certified',
+      releaseCandidate: rd.played,
+      premiseId: rd.played,
+      evidence,
+    };
+  }
+
+  if (visibleConsolidation?.features?.stalling || visibleConsolidation?.features?.priorEchoed === false) {
+    return {
+      id: `t${view.turn}:visible-consolidation`,
+      triggerType: 'visible_hidden_conflict',
+      visibleHiddenConflict: true,
+      premiseId: visibleConsolidation.features.priorPremiseId || finalOut.move?.targetPremise || null,
+      evidence: {
+        ...evidence,
+        visibleReason: (visibleConsolidation.lines || []).join(' '),
+      },
+    };
+  }
+
+  return null;
+}
+
+function conductRuntimeLog(args) {
+  const state = conductTriggerState(args);
+  if (!state) {
+    return {
+      schema: CONDUCT_POLICY_SCHEMA,
+      active: false,
+      loggingOnly: true,
+      reasonCode: 'no_policy_trigger',
+      selectedMoveFamily: null,
+      generatorCompliance: {
+        checked: false,
+        reason: 'logging_only_v0',
+      },
+    };
+  }
+  const decision = selectConductMove(state);
+  return {
+    ...decision,
+    active: true,
+    loggingOnly: true,
+    triggerType: state.triggerType,
+    realizedMove: args.finalOut.move || null,
+    realizedRelease: args.finalOut.release || null,
+    generatorCompliance: {
+      checked: false,
+      reason: 'logging_only_v0',
+    },
+  };
+}
+
 /**
  * The act-close plot audit — the same watcher, sitting in a SECOND seat (C1,
  * plan §5). At each act boundary it judges the closed act's PLOT against the
@@ -1386,6 +1564,7 @@ export function makeLlmTutor(
     plot = false,
     throughline = false,
     rhetoricalPolicy = null,
+    conductPolicy = false,
     publicRegister = 'default',
   } = {},
 ) {
@@ -1829,6 +2008,7 @@ export function makeLlmTutor(
         : null;
     const visibleStalling = visibleFeatures ? isStalling(visibleFeatures) : false;
     const proofDebt = proofDebtGuard && view.proofDebt?.active ? view.proofDebt : null;
+    const conductProofDebt = conductPolicy && view.proofDebt?.active ? view.proofDebt : null;
     const topProofDebt = proofDebt?.debts?.[0] || null;
     const proofDebtSection = topProofDebt
       ? [
@@ -2476,7 +2656,26 @@ export function makeLlmTutor(
     };
     const draftGuard = applyProofDebtGuard(draft, 'draft');
     draft = draftGuard.out;
-    if (!superego) return { ...draft, ...(draftGuard.audit ? { proofDebt: draftGuard.audit } : {}) };
+    const conductLog = (finalOut, proofDebtAudit) =>
+      conductPolicy
+        ? conductRuntimeLog({
+            view,
+            conductProofDebt,
+            releaseBits,
+            forcedNote,
+            finalOut,
+            proofDebtAudit,
+            visibleConsolidation,
+          })
+        : null;
+    if (!superego) {
+      const policy = conductLog(draft, draftGuard.audit);
+      return {
+        ...draft,
+        ...(draftGuard.audit ? { proofDebt: draftGuard.audit } : {}),
+        ...(policy ? { conductPolicy: policy } : {}),
+      };
+    }
 
     // --- the superego watches the draft ---
     const draftFigure = draft.move?.figure || null;
@@ -2725,7 +2924,13 @@ export function makeLlmTutor(
         : {}),
     };
     if (!segOut.intervene || !note) {
-      return { ...draft, deliberation, ...(draftGuard.audit ? { proofDebt: draftGuard.audit } : {}) };
+      const policy = conductLog(draft, draftGuard.audit);
+      return {
+        ...draft,
+        deliberation,
+        ...(draftGuard.audit ? { proofDebt: draftGuard.audit } : {}),
+        ...(policy ? { conductPolicy: policy } : {}),
+      };
     }
 
     // Which jurisdiction fired: the watcher's own attribution when it gives
@@ -2844,9 +3049,11 @@ export function makeLlmTutor(
     };
     const revisedGuard = applyProofDebtGuard(revised, 'revision');
     revised = revisedGuard.out;
+    const policy = conductLog(revised, revisedGuard.audit || draftGuard.audit);
     return {
       ...revised,
       ...(revisedGuard.audit || draftGuard.audit ? { proofDebt: revisedGuard.audit || draftGuard.audit } : {}),
+      ...(policy ? { conductPolicy: policy } : {}),
     };
   };
   if (plot) {

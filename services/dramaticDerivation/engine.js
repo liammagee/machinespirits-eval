@@ -254,6 +254,8 @@ export async function runDrama({ world, roles, options = {} }) {
   let stagePrologue = null;
   const runtimeMonitor = options.guardSpec ? createRuntimeMonitor(world, options.guardSpec) : null;
   const proofDebtGuardActive = Boolean(options.proofDebtGuard);
+  const conductPolicyActive = Boolean(options.conductPolicy);
+  const proofDebtViewActive = proofDebtGuardActive || conductPolicyActive;
   const logicProjectionActive = Boolean(options.logicProjection);
   const worldIR = logicProjectionActive ? buildWorldIR(world) : null;
   const actState = acts ? { index: 1, startTurn: 1, brief: '', history: [] } : null;
@@ -515,7 +517,7 @@ export async function runDrama({ world, roles, options = {} }) {
   const publicStageLine = (entry) => entry.role !== 'director' || entry.meta?.release || entry.meta?.phase?.name;
 
   const currentProofDebt = (turn) =>
-    proofDebtGuardActive && corruption
+    proofDebtViewActive && corruption
       ? proofDebtReport(world, { grounded, releasedIdByKey, turn })
       : { turn, active: false, dNow: derivationDistance(world, validGroundedFacts()), debts: [] };
 
@@ -696,7 +698,7 @@ export async function runDrama({ world, roles, options = {} }) {
   });
 
   const omniscientView = (turn, roleName) => {
-    const proofDebt = roleName === 'tutor' && proofDebtGuardActive ? currentProofDebt(turn) : null;
+    const proofDebt = roleName === 'tutor' && proofDebtViewActive ? currentProofDebt(turn) : null;
     const base = {
       turn,
       role: roleName,
@@ -913,6 +915,7 @@ export async function runDrama({ world, roles, options = {} }) {
         ...(tutorOut.plotAudit ? { plotAudit: tutorOut.plotAudit } : {}),
         ...(tutorOut.throughline ? { throughline: tutorOut.throughline } : {}),
         ...(tutorOut.proofDebt ? { proofDebt: tutorOut.proofDebt } : {}),
+        ...(tutorOut.conductPolicy ? { conductPolicy: tutorOut.conductPolicy } : {}),
         ...(tutorOut.rhetoricalPolicy ? { rhetoricalPolicy: tutorOut.rhetoricalPolicy } : {}),
         ...(tutorPhaticRecognition.length ? { phaticRecognition: tutorPhaticRecognition } : {}),
         ...(sceneMetaThisTurn ? { scene: sceneMetaThisTurn } : {}),

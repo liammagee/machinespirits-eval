@@ -1,191 +1,398 @@
-# Adaptive Tutor Active Plan: A20 Entitlement-and-Repair Controller
+# Adaptive Tutor Active Plan: A20 Conduct-Policy Compiler
 
-Status: active planning note, 2026-06-15. This is a documentation-only
-consolidation of the current derivation/adaptive-tutor trajectory. It does not
-authorize new paid runs or replace the existing evidence ledgers.
+Status: canonical active plan, 2026-06-15. This consolidates the adaptive
+tutor planning notes into one current roadmap. It is a planning artifact only:
+it does not authorize new paid runs, and it does not overwrite historical
+selector, replay, recognition, or learned-adaptation results.
 
-Source notes:
+This file is the active plan. The other plan-like notes remain evidence ledgers
+or closed arcs, not competing roadmaps.
 
-- `adaptive-tutor-trajectory-analysis-note.md`
-- `ADAPTIVE-TUTOR-GENERALIZATION-PLAN.md`
-- `ADAPTIVE-TUTOR-BOUNDARY-PLAN.md`
-- `LEARNED-ADAPTATION-PLAN.md`
-- `DRAMATIC-RECOGNITION-PLAN.md`
-- `exports/dramatic-derivation/same-turn-assertion-affordance-report.md`
+## Source Ledgers
 
-## Board Allocation
+| Source | Use in this plan |
+|---|---|
+| `adaptive-tutor-trajectory-analysis-note.md` | Main diagnosis: we have regulation, not yet robust adaptation; the missing object is policy, not representation selection. |
+| `docs/research/adaptive-tutelage-next-stage-development-plan.md` | GPT Pro synthesis: keep the dynamic guard compiler idea, but narrow it to a conduct-policy compiler layered onto the existing guard/runtime substrate. |
+| `ADAPTIVE-TUTOR-GENERALIZATION-PLAN.md` | Historical selector/generalization evidence. Use as a ledger, not as a new selector plan. |
+| `ADAPTIVE-TUTOR-BOUNDARY-PLAN.md` | Historical boundary, corridor, conduct-mining, and guard-isolation evidence. Reuse its artifacts and detector discipline. |
+| `LEARNED-ADAPTATION-PLAN.md` | Closed fitted-policy arc. Do not revive as the next adaptive mechanism. |
+| `ADAPTATION-PLAN-2.0.md` | Closed concealment/interiority arc. Keep its signal-boundary lesson, not the mechanism. |
+| `DRAMATIC-RECOGNITION-PLAN.md` | Recent drama/recognition work is a mature engine layer, not the next adaptive-reliability workstream. |
 
-`A19` is already occupied in the canonical paper by the teaching-drama axiom
-scaffold and local stability screen. The entitlement controller should therefore
-be tracked as `A20`.
+## What Is Explicitly Excluded
 
-There is an older sidecar HTML reference to `A20` as an EDRA policy compiler, but
-that is not the active canonical board or paper allocation. In this plan, `A20`
-means the entitlement-and-repair controller described below.
+The next arc should not re-plan work that has just landed or already failed its
+gate.
+
+- No H/V selector v5 as the main effort. The selector arc remains evidence that
+  hidden and visible channels are real, but the current selector has not earned
+  an adaptive-success claim.
+- No "always hidden" victory lap. Hidden proof state is the reliability
+  substrate, not a sufficient theory of tutoring.
+- No fresh taxonomy of many situation types. Keep typed moves few and force
+  each new distinction to earn its place in tests.
+- No learned fitted-policy rerun. The offline gate closed that arc.
+- No concealment/interiority rerun. That arc is closed as a separate result.
+- No extension of the recent scene, phatic, recognition-pressure, register, or
+  director-silence work inside this plan. Those features can stay in the
+  general derivation arm, but they are not the next adaptive-policy lever.
+- No same-turn assertion promotion as the first A20 component. The replay and
+  same-turn affordance work is useful debugging infrastructure and a local
+  suffix affordance, not yet the central adaptive policy.
+- No paid validation until the trigger corpus, policy fixtures, and replay
+  harness pass locally.
 
 ## Current Read
 
-The latest results do not support the claim that the current H/V selector is a
-successful adaptive representation selector. The stronger reading is:
+The strongest reading of the recent evidence is:
 
-- We have regulation, not yet robust adaptation.
-- Hidden proof state and proofDebt are reliable substrates for proof continuity,
-  especially under decay.
-- Visible/conduct state is still real and sometimes necessary; it is not a
-  dominated channel.
-- Recognition pressure shapes discourse and local repair, but it is not by
-  itself a success-rate lever.
-- Same-turn assertion affordance is the first small entitlement-controller slice:
-  it asks whether the tutor can invite closure once the proof has already become
-  available, instead of continuing to perform caution.
+- We can regulate proof continuity with hidden proof state, proofDebt, pacing,
+  and runtime-monitor constraints.
+- We cannot yet show that the tutor adapts in the strong sense: a learner-state
+  signal changes the tutor's next move, the change is locally correct, and the
+  policy transfers under predeclared conditions.
+- Visible/public conduct remains important, but only as evidence to be
+  certified against the hidden reference when formal proof state exists.
+- Recognition, scene texture, phatic exchange, and register improve the dramatic
+  surface and may aid readers, but they do not by themselves establish adaptive
+  reliability.
+- Episode replay is now a cost-control and debugging tool. It can screen local
+  policy changes from frozen prefixes, but promoted claims still require fresh
+  first-pass validation.
 
 The active hypothesis is:
 
-> Adaptive tutoring is entitlement-regulated move selection over a consolidated
-> proof board, with learner-visible conduct serving as evidence and proofDebt
-> serving as constraint.
+> Adaptive tutoring is auditable conduct-policy selection over a consolidated
+> proof board: hidden proof state supplies the reference, proofDebt supplies the
+> constraint, public learner conduct supplies evidence, and a typed policy
+> chooses the next pedagogical move before text generation.
 
-## Empirical Ledger
+## Target Architecture
 
-The older H/V selector work remains useful as evidence, but not as the next
-implementation target.
+The GPT Pro guard-compiler proposal is retained, but scoped to the current
+codebase:
 
-- The selector should not be reported as an adaptive success unless it beats or
-  matches simple policies and avoids negative transfer.
-- H/V complementarity matters. Existing summaries include worlds where hidden
-  wins and worlds where visible wins; hidden should not be described as simply
-  strongest in general.
-- Withercombe exposed a selector-risk pattern: the selector can choose visible
-  while visible/selective underperform baseline/hidden under decay.
-- Fengate/Sealhouse-style cases keep the hidden-positive lesson alive: hidden can
-  preserve proof continuity when visible discourse is misleading or too brittle.
-- Same-turn assertion affordance is a narrower question than selector choice: if
-  proofDebt is low enough and the learner has enough public ownership, can the
-  tutor stop repairing and invite the learner to assert?
+```text
+WorldIR / GuardSpec
+  + ProofDebtReport
+  + PublicLearnerEvidence
+  -> EntitlementState
+  -> ConductPolicySpec
+  -> RuntimeMonitor decision
+  -> Tutor generation constraint
+  -> Local uptake audit
+```
 
-## Immediate Gate
+Existing anchors:
 
-Do not broaden A20 until the current same-turn assertion affordance runs have
-landed and been read.
+- `services/dramaticDerivation/guardCompiler.js`
+- `services/dramaticDerivation/runtimeMonitor.js`
+- `services/dramaticDerivation/proofDebt.js`
+- `services/dramaticDerivation/replay.js`
+- `services/dramaticDerivation/rhetoricalMovePolicy.js`
+- `scripts/run-derivation-episode.js`
+- `scripts/derivation-mine-conduct.js`
+- `tests/dramaticDerivationGuardCompiler.test.js`
+- `tests/dramaticDerivationRuntimeMonitor.test.js`
+- `tests/dramaticDerivationProofDebt.test.js`
+- `tests/dramaticDerivationReplay.test.js`
 
-Gate cases:
+Do not build a parallel adaptive tutor subsystem. Extend this surface.
 
-- Withercombe: tests whether the policy closes the earlier final-gap failure.
-- Ravensmark: tests whether the policy introduces negative transfer in a
-  visible-positive or mixed case.
+## Core Objects
 
-If both are clean enough, the same-turn assertion affordance can be promoted as
-an opt-in candidate layer for the overall derivation arm, with the flag recorded
-in artifacts. If either fails, classify the failure before adding new controller
-logic.
+### `WorldIR`
 
-## A20 Minimal Design
+Already exists through the guard compiler. It is the formal account of proof
+topology, release schedule, branch/join structure, and visible projection
+candidate status.
 
-A20 is not H/V selector v5, a learned-policy rerun, or a broad situation
-taxonomy. It is a small controller layer between the proof ledger and the tutor's
-public utterance.
+### `GuardSpec`
 
-Minimal controller loop:
+Already exists. It remains the compiled reference for hidden pacing,
+proof-debt exposure, non-leak rules, and visible-projection certification.
 
-1. Parse the learner's public move.
-2. Update proofDebt.
-3. Update learner entitlement state.
-4. Classify only the local drama/rhetoric condition needed for the next move.
-5. Select one typed move family before text generation.
-6. Enforce allowed and blocked actions for that move.
-7. Generate the tutor utterance.
-8. Score local uptake at the next turn.
-9. Save any learned axiom only if S1 beats S0 on held-out siblings.
+### `EntitlementState`
 
-Minimal entitlement distinctions:
+New or lightly factored object. It should represent what the learner is
+publicly entitled to do next, without exposing hidden proof paths.
 
-- echoing versus owning
-- local fluency versus proof entitlement
-- hesitation versus contradiction
-- repairable dependency gap versus final assertion gap
-- recognition rupture versus ordinary uncertainty
+Minimum fields:
 
-Minimal move families:
+- `canAssertFinal`: the learner has enough public support to attempt the final
+  answer.
+- `needsDependencyRepair`: a released/decayed or missing support must be
+  restored before the next step.
+- `ownsCurrentStep`: public evidence suggests ownership rather than echoing.
+- `localFluencyOnly`: the learner sounds fluent but lacks proof entitlement.
+- `validAlternativeCandidate`: the learner may be pursuing a valid route not
+  identical to the authored route.
+- `recognitionRupture`: the exchange needs interpersonal repair before proof
+  pressure continues.
+- `uncertain`: evidence is too weak; ask a diagnostic instead of pretending.
 
-- `invite_final_assertion`
-- `block_assertion`
+### `ConductPolicySpec`
+
+New compiled policy surface. It maps `WorldIR + GuardSpec + EntitlementState`
+to a typed move family and blocked actions.
+
+Minimum move families:
+
 - `repair_dependency`
-- `consolidate_subproof`
 - `ask_diagnostic`
+- `ask_scope_test`
+- `consolidate_subproof`
+- `release_next_evidence`
+- `block_assertion`
+- `invite_final_assertion`
 - `repair_recognition_rupture`
 
-Move families should stay few. Add a family only when a failure cannot be
-expressed by one of the existing families without hiding a real distinction.
+Each move must declare:
 
-## First Slices
+- required preconditions
+- blocked conditions
+- permitted tutor-facing fields
+- expected local uptake at the next learner turn
+- non-leak audit notes
 
-Slice 0: same-turn assertion affordance.
+### `RuntimeMonitor`
 
-This is already implemented as a narrow flag and is being validated. It should
-remain the first proven A20 slice if the current runs hold.
+Existing executable layer. It should remain responsible for enforcing the
+compiled policy and logging decisions. It should not let the LLM write or revise
+guard predicates online.
 
-Slice 1: dependency repair entitlement gate.
+### `LocalUptakeAudit`
 
-Design only until Slice 0 finishes. Candidate trigger: proofDebt says a
-dependency is missing, while the learner's visible conduct shows ownership of a
-nearby but insufficient local conclusion. The controller should repair the
-dependency, not invite final assertion and not release unrelated evidence.
+New report layer, not a new judge. The primary unit is:
 
-Slice 2: hidden-hurts / alternative-path fixture.
+```text
+trigger state -> expected move family -> actual tutor move at t+1 -> learner uptake at t+2
+```
 
-Design only. This is the clean test that prevents "always hidden" from becoming
-an implicit policy. The world should allow a valid learner-owned route that is
-not the authored hidden route. Predeclare that hidden-only proofDebt should
-over-repair or block, while the controller should accept the alternative path
-after checking it.
+Final grounding remains necessary, but it is not the only success measure.
 
-## Evaluation Unit
+## Work Arc
 
-The unit should be local and trigger-based, not only final transcript quality.
+### Phase 0: Consolidate and Freeze Scope
 
-For each trigger:
+Status: this document.
 
-- source turn and trigger condition
-- expected move family
-- actual move family at trigger + 1
-- blocked actions respected or violated
-- learner uptake at trigger + 2
-- final proof outcome
+Deliverable:
 
-Primary comparison:
+- `ADAPTIVE-TUTOR-ACTIVE-PLAN.md` is the only active adaptive tutor plan.
 
-- S0: hidden + proofDebt baseline
-- S1: hidden + proofDebt + A20 slice
+Exit rule:
 
-Report:
+- The next implementation begins from the first work packet below, not from the
+  old selector, learned-policy, concealment, or recent drama-recognition plans.
 
-- local move correctness
+### Phase 1: Trigger Corpus and Fixture Set
+
+Status: local first slice implemented 2026-06-15.
+
+Goal: build a free, local corpus of states where a policy decision matters.
+
+Inputs:
+
+- existing derivation loop artifacts under `exports/dramatic-derivation/`
+- selector and stress reports
+- episode replay metadata
+- conduct-mining output from `scripts/derivation-mine-conduct.js`
+- existing guard/proofDebt diagnostics
+
+Deliverables:
+
+- `exports/dramatic-derivation/a20-conduct-policy/trigger-corpus.jsonl`
+- `exports/dramatic-derivation/a20-conduct-policy/trigger-corpus-report.md`
+- 8-12 fixture cases added to tests or test fixtures
+
+Fixture classes should stay shallow:
+
+- dependency repair needed
+- final assertion invited too late or too early
+- local fluency without entitlement
+- visible/public confidence conflicts with hidden proof debt
+- valid alternative route candidate
+- recognition rupture blocks proof pressure
+- implementation artifact such as detector false positive
+
+Do not introduce a larger taxonomy at this stage.
+
+Exit rule:
+
+- Each fixture has a source artifact, expected move family, blocked actions, and
+  local uptake expectation before any new runtime policy is implemented.
+
+### Phase 2: Entitlement State and Move Compiler
+
+Status: local first slice implemented 2026-06-15.
+
+Goal: implement the smallest deterministic policy layer that can classify the
+fixture set before text generation.
+
+Likely implementation surface:
+
+- `services/dramaticDerivation/conductPolicy.js`
+- `tests/dramaticDerivationConductPolicy.test.js`
+
+Required behavior:
+
+- consumes public learner evidence, `proofDebtReport`, and safe guard metadata
+- emits one typed move family before generation
+- logs preconditions, blocked conditions, and uncertainty
+- refuses to expose hidden proof path, secret, D arithmetic, or raw board state
+- falls back to `ask_diagnostic` when visible evidence is underdetermined
+
+Exit rule:
+
+- Unit tests pass on all Phase 1 fixtures without calling any LLM.
+
+### Phase 3: Runtime-Monitor Integration
+
+Status: logging-only runtime slice implemented 2026-06-15. The current flag
+records policy decisions in tutor-turn metadata and diagnosis reports, but it
+does not yet constrain generation or score generator compliance.
+
+Goal: wire the policy into the existing derivation runtime without changing
+historical selector behavior.
+
+Likely flag:
+
+- `--conduct-policy` or `--entitlement-policy`
+
+Required behavior:
+
+- opt-in only
+- compatible with hidden + proofDebt substrate
+- selector flags remain unchanged
+- runtime logs include policy input summary, selected move, blocked actions,
+  non-leak audit result, and generator compliance result
+- generator noncompliance is classified as implementation failure, not policy
+  success or world failure
+
+Exit rule:
+
+- next exit rule: mock/smoke tests prove the policy can constrain the tutor and
+  preserve replay prefix fidelity, with generator noncompliance audited rather
+  than inferred.
+
+### Phase 4: Episode-Replay Screen
+
+Goal: use the new replay facility to screen the policy from known failure
+prefixes without paying to regenerate the prefix.
+
+Comparison:
+
+- S0: hidden + proofDebt baseline from the same frozen prefix
+- S1: hidden + proofDebt + conduct policy from the same frozen prefix
+
+Rules:
+
+- replay is a debugging screen, not final evidence
+- one policy delta at a time
+- no reclassifying worlds after outcomes
+- failures keep their label: policy failure, guard failure, generator
+  compliance failure, detector artifact, or world instability
+
+Exit rule:
+
+- S1 improves the targeted local move on replay fixtures without creating clear
+  negative transfer against S0.
+
+### Phase 5: Fresh First-Pass Validation
+
+Goal: test whether the policy survives outside replay.
+
+Only run this after Phases 1-4 pass.
+
+Candidate arms:
+
+- S0: hidden + proofDebt
+- S1: hidden + proofDebt + conduct policy
+- optional diagnostic: visible projection only where pre-certified by the
+  `GuardSpec`
+
+Candidate worlds:
+
+- one hidden-positive branch/depth world
+- one visible-positive or hidden-hurts world
+- one mixed decay world
+- one valid-alternative-route fixture if available
+
+Primary metrics:
+
+- local move correctness at trigger + 1
 - final grounding
-- negative transfer against S0
-- artifacts, false triggers, and implementation failures
-- held-out sibling transfer before admitting any policy memory
+- regret and negative transfer against S0
+- generator compliance with typed move
+- non-leak audit pass rate
+- failure-class relocation, not just success rate
 
-## Guardrails
+Decision rule:
 
-- Keep the current selector unchanged for historical comparisons.
-- Do not silently reclassify worlds after outcomes.
-- Treat misroutes as evidence.
-- Avoid taxonomy creep; prefer a shallow controller with explicit preconditions.
-- Do not run paid arms without pre-registering the exact delta.
-- Change one contour per slice.
-- Keep source-of-truth empirical claims in `docs/research/paper-full-2.0.md`
-  before spin-offs or sidecars inherit them.
+- Promote only if S1 beats or matches S0 on final grounding, improves targeted
+  local move correctness, and does not introduce first-pass negative transfer on
+  held-out worlds.
 
-## Next Action
+## First Work Packet
 
-After the current Withercombe and Ravensmark same-turn assertion runs finish,
-write a short readout:
+Start here.
 
-1. Did the flag close the expected final-gap failure?
-2. Did it cause negative transfer?
-3. Did any failure come from route choice, guard brittleness, implementation, or
-   world instability?
-4. Should Slice 0 become the first A20 controller component, or should it stay a
-   local affordance only?
+1. Extend or wrap `scripts/derivation-mine-conduct.js` to emit an A20 trigger
+   corpus under `exports/dramatic-derivation/a20-conduct-policy/`.
+2. Mine only existing artifacts. No new LLM calls.
+3. Produce a compact markdown report with each trigger, source artifact, world,
+   current arm, expected move family, actual move family when inferable, and
+   failure class.
+4. Choose the first two policy fixtures:
+   - one dependency-repair case where hidden + proofDebt is already right;
+   - one case where hidden + proofDebt plausibly over-repairs or delays a valid
+     learner-owned move.
+5. Only after those fixtures are frozen, implement `conductPolicy.js`.
 
-Only then decide whether to implement Slice 1.
+## Failure Labels
+
+Use the same labels across replay and fresh runs:
+
+- `policy_failure`: the policy selected the wrong typed move.
+- `guard_failure`: the guard/proofDebt substrate supplied the wrong constraint.
+- `generator_compliance_failure`: the policy selected the right move but the
+  public tutor text ignored it.
+- `visible_projection_failure`: public signals were not faithful to hidden
+  topology.
+- `detector_artifact`: a local detector or uptake classifier misread the state.
+- `world_instability`: decay/adaptive release changed the effective constraint.
+- `valid_negative`: S1 fails honestly; the policy does not generalize.
+
+Misroutes are evidence. Do not rename them into successes after seeing the
+outcome.
+
+## Reporting Standard
+
+Every A20 report should include:
+
+- exact command or artifact path
+- zero-paid versus paid status
+- arms compared
+- fixture list and predeclared expectations
+- local trigger table
+- final grounding table
+- regret or negative-transfer table against S0
+- failure labels
+- caveats
+- whether the result changes `docs/research/paper-full-2.0.md`
+
+Paper discipline still holds: new empirical claims go to
+`docs/research/paper-full-2.0.md` before sidecars inherit them.
+
+## Working Claim If This Succeeds
+
+Do not claim "adaptive selector works." The strongest allowed claim would be:
+
+> The system can compile a small, auditable conduct policy from formal task
+> state plus public learner evidence; when the policy selects the tutor's next
+> move before generation, it improves local repair/advance decisions over a
+> hidden + proofDebt substrate without increasing first-pass negative transfer.
+
+That is the next adaptive tutor claim worth trying to earn.

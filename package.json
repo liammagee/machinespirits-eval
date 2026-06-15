@@ -95,6 +95,7 @@
     "derivation:leak-audit": "node scripts/derivation-leak-audit.js",
     "derivation:guard-compiler": "node scripts/derivation-guard-compiler.js",
     "derivation:guard-compiler:check": "node scripts/derivation-guard-compiler.js --check",
+    "derivation:a20-triggers": "node scripts/derivation-a20-trigger-corpus.js",
     "poetics:ingest": "node scripts/ingest-poetics-artifacts.js",
     "poetics:report": "node scripts/report-poetics-sidecar.js",
     "poetics:adaptation": "node scripts/analyze-poetics-tutor-adaptation.js",
