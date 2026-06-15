@@ -284,6 +284,12 @@ Exit rule:
 
 ### Phase 4: Episode-Replay Screen
 
+Status: partial mock replay screen run 2026-06-15; see
+`exports/dramatic-derivation/phase4-conduct-policy-replay-screen.md`.
+S1 matched S0 and introduced no clear negative transfer on the screened
+windows, but the improvement criterion is not yet met because the sampled
+dependency-repair moves were already enforced by `proofDebtGuard`.
+
 Goal: use the new replay facility to screen the policy from known failure
 prefixes without paying to regenerate the prefix.
 
@@ -304,6 +310,13 @@ Exit rule:
 
 - S1 improves the targeted local move on replay fixtures without creating clear
   negative transfer against S0.
+
+Current next gate:
+
+- add a replay fixture where S0 has an observable conduct-policy failure that
+  `proofDebtGuard` does not already repair, such as a release-forbidden family,
+  unsupported assertion block, diagnostic ask, or observation-only noncompliance
+  replay.
 
 ### Phase 5: Fresh First-Pass Validation
 
