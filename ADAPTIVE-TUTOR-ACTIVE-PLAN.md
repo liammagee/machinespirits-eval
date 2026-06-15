@@ -284,11 +284,19 @@ Exit rule:
 
 ### Phase 4: Episode-Replay Screen
 
-Status: partial mock replay screen run 2026-06-15; see
-`exports/dramatic-derivation/phase4-conduct-policy-replay-screen.md`.
-S1 matched S0 and introduced no clear negative transfer on the screened
-windows, but the improvement criterion is not yet met because the sampled
-dependency-repair moves were already enforced by `proofDebtGuard`.
+Status: partial mock replay screens run 2026-06-15; see
+`exports/dramatic-derivation/phase4-conduct-policy-replay-screen.md` and
+`exports/dramatic-derivation/phase4b-conduct-policy-replay-screen.md`.
+The first screen showed no clear negative transfer, but no value-add because the
+sampled dependency-repair moves were already enforced by `proofDebtGuard`.
+The Phase 4b observation-only fixture disabled `proofDebtGuard` for the replay
+suffix and did show enforcement mechanics: S0 logged 0/3 compliance on a
+`repair_dependency` obligation and regressed from D=4 to D=5, while S1 rewrote
+one tutor move to restore `p_bearing`, passed compliance, and held D=4 through
+the suffix. This is still not first-pass evidence and still not proof of
+value-add over hidden + proofDebt. A small enforcement-text punctuation issue
+observed in the Phase 4b replay was fixed after the screen and covered by the
+conduct-policy test.
 
 Goal: use the new replay facility to screen the policy from known failure
 prefixes without paying to regenerate the prefix.
@@ -313,10 +321,11 @@ Exit rule:
 
 Current next gate:
 
-- add a replay fixture where S0 has an observable conduct-policy failure that
-  `proofDebtGuard` does not already repair, such as a release-forbidden family,
-  unsupported assertion block, diagnostic ask, or observation-only noncompliance
-  replay.
+- decide or repair the acts-mode final-assertion conduct trigger, since
+  `forcedNote` is currently unavailable when acts mode redacts `lastPoint`;
+- add one non-proofDebt replay fixture where S0 has an observable
+  conduct-policy failure, such as release-forbidden, unsupported assertion
+  block, diagnostic ask, or valid-alternative-route candidate.
 
 ### Phase 5: Fresh First-Pass Validation
 

@@ -1483,6 +1483,10 @@ function conductIntentFor(moveFamily, fallback = 'orient') {
   return CONDUCT_INTENTS[moveFamily] || fallback;
 }
 
+function trimTerminalPunctuation(text) {
+  return String(text || '').trim().replace(/[.!?]+$/u, '');
+}
+
 function conductPolicyDialogue(decision, { release = null, register = 'default' } = {}) {
   const family = decision.selectedMoveFamily;
   const view = decision.tutorView || {};
@@ -1492,11 +1496,11 @@ function conductPolicyDialogue(decision, { release = null, register = 'default' 
   const line =
     family === 'repair_dependency'
       ? surface
-        ? `Before we close anything, put this earlier piece back in full: ${surface}. Tell me what it gives us.`
+        ? `Before we close anything, put this earlier piece back in full: ${trimTerminalPunctuation(surface)}. Tell me what it gives us.`
         : 'Before we close anything, recover the earlier piece in your own words, then use it here.'
       : family === 'release_next_evidence'
         ? surface
-          ? `Take this new piece now: ${surface}. Say what it changes before we go on.`
+          ? `Take this new piece now: ${trimTerminalPunctuation(surface)}. Say what it changes before we go on.`
           : `Take the next authorized piece${target ? ` (${target})` : ''}. Say what it changes before we go on.`
         : family === 'ask_diagnostic'
           ? `Pause there. What in the public record makes that step licensed${learner ? ` after "${learner}"` : ''}?`

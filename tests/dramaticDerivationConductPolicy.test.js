@@ -274,6 +274,7 @@ test('runtime conduct policy flags generator noncompliance without constraining 
 
 test('runtime conduct policy enforcement repairs noncompliant proof-debt moves without proof-debt guard', async () => {
   const proofDebt = smokeProofDebtTutorView();
+  proofDebt.debts[0] = { ...proofDebt.debts[0], surface: `${proofDebt.debts[0].surface}.` };
   const { client } = stubClient({
     tutor: [
       {
@@ -289,6 +290,7 @@ test('runtime conduct policy enforcement repairs noncompliant proof-debt moves w
   assert.equal(out.move.intent, 'restore');
   assert.equal(out.move.targetPremise, 'p1');
   assert.match(out.dialogue, /put this earlier piece back in full/i);
+  assert.doesNotMatch(out.dialogue, /\.\. Tell/u);
   assert.equal(out.conductPolicy.active, true);
   assert.equal(out.conductPolicy.loggingOnly, false);
   assert.equal(out.conductPolicy.selectedMoveFamily, 'repair_dependency');
