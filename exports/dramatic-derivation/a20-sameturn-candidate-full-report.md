@@ -57,32 +57,34 @@ Interpretation: episode replay is useful for suffix debugging and fast false-pos
 | --- | --- | ---: | ---: | --- | ---: | ---: | --- |
 | Withercombe | grounded | 0 | 6/9 | grounded | 0 | 7/9 | matched success; release adherence improved by one cue |
 | Fengate | grounded | 0 | 6/9 | grounded | 0 | 6/9 | matched success |
-| Hethel | grounded | 0 | 7/8 | disengagement | - | 5/8 | negative transfer; failure occurred before forcing |
+| Hethel | grounded | 0 | 7/8 | disengagement | - | 5/8 | archived stop at turn 11; later audit classifies it as premature stall detection under decay |
 | Ravensmark | grounded | 0 | 4/5 | grounded | 0 | 4/5 | matched success but took two more turns |
 | Lantern | grounded | 0 | 7/8 | grounded | 0 | 7/8 | matched success |
 | Marrick | grounded | 0 | 5/9 | grounded | 0 | 5/9 | matched success |
 
-S1 success rate: 5/6 grounded.
+Archived S1 success rate under the then-current detector: 5/6 grounded.
 
 Matched S0 success rate on the same first-pass labels: 6/6 grounded.
 
-All five S1 grounded runs had forced/asserted gap 0, no fabricated facts, and no learner overreach. Hethel failed by disengagement at turn 11, before `S` was forced and before the same-turn assertion affordance could fire.
+All five S1 grounded runs had forced/asserted gap 0, no fabricated facts, and no learner overreach. Hethel stopped by disengagement at turn 11, before `S` was forced and before the same-turn assertion affordance could fire.
+
+Follow-up detector audit: the Hethel tail was `D=4,4,4,3,3,3` over turns 6--11 while the net grounded count stayed flat at 7. The learner made proof progress at turn 9, but decay/repair churn masked it from the old disengagement detector, which checked net `groundedCount` growth before checking D decrease. The stop is therefore an implementation artifact of the stall detector under decay, not clean evidence that the same-turn assertion policy hurt Hethel.
 
 ## Failure Classification
 
 | World | Failure type | Classification |
 | --- | --- | --- |
-| Hethel | early disengagement | guard/runtime policy interaction or stochastic tutor progression failure; not a final-assertion failure |
+| Hethel | premature disengagement stop | implementation artifact: detector counted flat net `groundedCount` as disengagement despite a D decrease inside the window |
 
-Hethel did not crash and should not be rerolled as crash recovery. Treat it as evidence against promoting the flag broadly.
+Hethel did not crash and should not be rerolled as crash recovery. The archived verdict should remain as run-produced, but it should not be counted as clean policy negative transfer without rerunning under the corrected detector.
 
 ## Interpretation
 
 The same-turn affordance works as a local suffix mechanism: when a newly visible or newly consolidated final exhibit is adopted on the current turn, the learner can immediately recheck the expanded board and assert the answer without waiting an extra turn.
 
-But the current hidden+proofDebt candidate arm already had gap 0 on all six matched S0 worlds. In this stack, the same-turn affordance has little room to improve the primary metric and introduced a first-pass negative transfer in Hethel. The replay screen did not expose that because replay froze the successful S0 prefix and only regenerated the suffix.
+But the current hidden+proofDebt candidate arm already had gap 0 on all six matched S0 worlds. In this stack, the same-turn affordance has little room to improve the primary metric. The archived Hethel row initially looked like first-pass negative transfer, but the detector audit shows the stop fired while D had recently decreased and the next proof exhibit (`p_mark`) was still two turns away on the fixed release schedule.
 
-Policy call: keep the current candidate/default arm as static hidden plus proof-debt guard. Keep same-turn assertion affordance available for targeted failure repair and suffix diagnosis, but do not promote it as the broad reliability policy from this result.
+Policy call: keep the current candidate/default arm as static hidden plus proof-debt guard. Keep same-turn assertion affordance available for targeted failure repair and suffix diagnosis, but do not promote it as the broad reliability policy from this result because the baseline already solved the forced/asserted gap.
 
 ## Artifacts
 
@@ -91,11 +93,12 @@ Policy call: keep the current candidate/default arm as static hidden plus proof-
 - Replay episodes: `exports/dramatic-derivation/episodes/a20-replay-*-sameturn-codex-r1/`
 - Episode runner implementation: `scripts/run-derivation-episode.js`
 - Replay regression: `tests/dramaticDerivationReplay.test.js`
+- Stall-detector correction: `services/dramaticDerivation/slope.js`
 
 Validation:
 
 ```bash
+node --test tests/dramaticDerivation.test.js
 node --test tests/dramaticDerivationReplay.test.js
 git diff --check
 ```
-

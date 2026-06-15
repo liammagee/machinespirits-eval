@@ -164,6 +164,16 @@ test('detectStall separates disengagement from pure aporia', () => {
   );
   const progressing = aporia.map((e, i) => ({ ...e, D: 4 - i }));
   assert.equal(detectStall(progressing, 4, 2), null);
+
+  const decayChurnProgress = [
+    { turn: 6, D: 4, groundedCount: 7 },
+    { turn: 7, D: 4, groundedCount: 7 },
+    { turn: 8, D: 4, groundedCount: 7 },
+    { turn: 9, D: 3, groundedCount: 7 },
+    { turn: 10, D: 3, groundedCount: 7 },
+    { turn: 11, D: 3, groundedCount: 7 },
+  ];
+  assert.equal(detectStall(decayChurnProgress, 6, 2), null);
 });
 
 // ---------------------------------------------------------------------------

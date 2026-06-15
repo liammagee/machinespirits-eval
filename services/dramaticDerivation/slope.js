@@ -23,10 +23,12 @@ export function derivationDistance(world, groundedFacts) {
 }
 
 /**
- * Stall detection over the trajectory tail. `disengagement` (no GROUNDED
- * growth at all) is checked before `aporia` (no strict D decrease, D > 0);
- * both use the same window. Detection only begins once something has been
- * released (before that, a flat D is the overture, not a stall).
+ * Stall detection over the trajectory tail. A strict D decrease is proof
+ * progress even when decay/repair churn leaves the net grounded count flat.
+ * `disengagement` (no GROUNDED growth at all) and `aporia` (GROUNDED growth
+ * without D decrease, D > 0) use the same window. Detection only begins once
+ * something has been released (before that, a flat D is the overture, not a
+ * stall).
  */
 export function detectStall(trajectory, window, firstReleaseTurn) {
   if (trajectory.length < window) return null;
@@ -35,10 +37,11 @@ export function detectStall(trajectory, window, firstReleaseTurn) {
   const last = tail[tail.length - 1];
   if (last.D === 0) return null;
 
+  const dDecreased = tail.some((entry, i) => i > 0 && entry.D < tail[i - 1].D);
+  if (dDecreased) return null;
+
   const grew = tail.some((entry, i) => i > 0 && entry.groundedCount > tail[i - 1].groundedCount);
   if (!grew) return 'disengagement';
 
-  const dDecreased = tail.some((entry, i) => i > 0 && entry.D < tail[i - 1].D);
-  if (!dDecreased) return 'aporia';
-  return null;
+  return 'aporia';
 }
