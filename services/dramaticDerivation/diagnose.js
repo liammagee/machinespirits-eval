@@ -19,6 +19,7 @@
 import { derivationDistance } from './slope.js';
 import { factKey } from './chainer.js';
 import { buildWorldIR } from './guardCompiler.js';
+import { describePublicRegister } from './llmRoles.js';
 
 export const LOGIC_PROJECTION_REPORT_SCHEMA = 'dramatic-derivation.logic-projection-report.v0';
 
@@ -1016,6 +1017,7 @@ export function diagnose(result, world) {
   const firstReleaseTurn = result.ledger.length ? result.ledger[0].turn : null;
   const perRole = {};
   for (const line of result.transcript) {
+    if (line.meta?.prologue) continue;
     const stats = (perRole[line.role] ||= { turns: 0, sentences: 0, maxSentences: 0, words: 0 });
     const n = countSentences(line.text);
     stats.turns += 1;
@@ -1084,6 +1086,7 @@ export function diagnose(result, world) {
     learnerInference: learnerInference(result),
     dialogueDiscipline: perRole,
     proofExtracted: Boolean(result.proof),
+    ...(result.stagePrologue ? { stagePrologue: result.stagePrologue } : {}),
     ...(result.corruption ? { corruption: corruptionReport(result) } : {}),
     // Stage v2 (acts mode / adapt-ON arm); absent keys keep the OFF-state
     // diagnosis object byte-identical to its pre-v2 shape.
@@ -1095,6 +1098,9 @@ export function diagnose(result, world) {
     ...(confrontation ? { confrontation } : {}),
     ...(proofDebt ? { proofDebt } : {}),
     ...(logicProjection ? { logicProjection } : {}),
+    ...(result.directorCadence ? { directorCadence: result.directorCadence } : {}),
+    ...(result.publicRegister ? { publicRegister: result.publicRegister } : {}),
+    ...(result.publicRegisters ? { publicRegisters: result.publicRegisters } : {}),
     ...(scenes ? { scenes } : {}),
     // C1 (act-plot dial): absent off the arm.
     ...(plotRpt ? { plot: plotRpt } : {}),
@@ -1166,10 +1172,23 @@ export function renderTranscript(result, world, { title = null, diagnosis = null
   );
   lines.push('```');
 
+  if (result.stagePrologue) {
+    lines.push('');
+    lines.push("## Director's opening notes");
+    lines.push(`*${result.stagePrologue.stageNotes}*`);
+    lines.push('');
+    lines.push(`- **Tutor:** ${result.stagePrologue.tutorCharacter}`);
+    lines.push(`- **Learner:** ${result.stagePrologue.learnerCharacter}`);
+    if (result.stagePrologue.registerNote) {
+      lines.push(`- **Register:** ${result.stagePrologue.registerNote}`);
+    }
+  }
+
   let currentSegment = null;
   const segmentFor = (turn) => segments.find((s) => turn >= s.turns[0] && turn <= s.turns[1]) || null;
   const byTurn = new Map();
   for (const line of result.transcript) {
+    if (line.meta?.prologue) continue;
     if (!byTurn.has(line.turn)) byTurn.set(line.turn, []);
     byTurn.get(line.turn).push(line);
   }
@@ -1197,10 +1216,15 @@ export function renderTranscript(result, world, { title = null, diagnosis = null
     }
     lines.push('');
     const sceneInfo = sceneByTurn.get(turn);
+    const register =
+      turnLines.find((line) => line.meta?.publicRegister)?.meta?.publicRegister ||
+      (result.publicRegisters || []).find((row) => row.turn === turn)?.register ||
+      null;
+    const registerSuffix = register ? ` · register ${register}` : '';
     lines.push(
       sceneInfo
-        ? `### Scene ${sceneInfo.scene.index}, exchange ${sceneInfo.exchange.ordinal} — Turn ${turn}`
-        : `### Turn ${turn}`,
+        ? `### Scene ${sceneInfo.scene.index}, exchange ${sceneInfo.exchange.ordinal}${registerSuffix} — Turn ${turn}`
+        : `### Turn ${turn}${registerSuffix}`,
     );
     if (sceneInfo && sceneInfo.exchange.ordinal === 1) {
       lines.push(`*Scene goal: ${sceneInfo.scene.goal}*`);
@@ -1367,6 +1391,17 @@ export function renderEvalPanel(diagnosis) {
   }
   const events = Object.entries(d.eventsByType || {});
   lines.push(`- **events** ${events.length ? events.map(([k, v]) => `${k}×${v}`).join(' · ') : 'none'}`);
+  if (d.publicRegister && d.publicRegister !== 'default') {
+    lines.push(`- **style** public register ${describePublicRegister(d.publicRegister)}`);
+    if (d.publicRegisters?.length) {
+      lines.push(
+        `  - sampled sequence: ${d.publicRegisters.map((row) => `t${row.turn} ${row.register}`).join(' · ')}`,
+      );
+    }
+  }
+  if (d.stagePrologue) {
+    lines.push('- **prologue** director opening notes and tutor/learner character sketches present');
+  }
   if (d.staging) {
     const movements = d.staging.movements.length;
     const notes = d.staging.tutorNotes.length;
@@ -1395,7 +1430,7 @@ export function renderEvalPanel(diagnosis) {
       .map(([k, v]) => `${k.replace(/_/g, ' ')} ${v}`)
       .join(' · ');
     lines.push(
-      `- **scenes** ${sc.count} scene${sc.count === 1 ? '' : 's'} · ${sc.exchanges} exchange${sc.exchanges === 1 ? '' : 's'} (${sc.avgExchanges} avg) · phatic ${sc.phatic}/${sc.exchanges} (${Math.round(sc.phaticShare * 100)}%) · statuses ${status || 'none'}`,
+      `- **scenes** ${sc.count} scene${sc.count === 1 ? '' : 's'} · ${sc.exchanges} exchange${sc.exchanges === 1 ? '' : 's'} (${sc.avgExchanges} avg) · phatic ${sc.phatic}/${sc.exchanges} (${Math.round(sc.phaticShare * 100)}%)${d.directorCadence ? ` · director ${d.directorCadence}` : ''} · statuses ${status || 'none'}`,
     );
     if (exchanges) lines.push(`  - exchanges: ${exchanges}`);
     if (sc.driftGuardScenes.length) lines.push(`  - drift guard scenes: ${sc.driftGuardScenes.join(', ')}`);

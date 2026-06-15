@@ -23,7 +23,7 @@ const FIGURES = ['erotema', 'analogia', 'exemplum', 'anaphora'];
  */
 export function makeMockDirector(world, policy = {}) {
   const endActAt = new Set(policy.endActAt || []);
-  return async (view) => {
+  const director = async (view) => {
     const act = endActAt.has(view.turn) ? 'end' : 'continue';
     const entry = world.releaseSchedule.find((e) => e.turn === view.turn && e.via === 'director');
     if (entry) {
@@ -47,6 +47,13 @@ export function makeMockDirector(world, policy = {}) {
       ...(endActAt.size ? { act } : {}),
     };
   };
+  director.prologue = async () => ({
+    stageNotes: `[Before the first exchange, ${world.title} is set as a public inquiry: ${world.question}]`,
+    tutorCharacter: 'The tutor enters as a patient dramaturg of evidence, careful not to outrun the learner.',
+    learnerCharacter: 'The learner enters as attentive but not yet committed, willing to test each claim aloud.',
+    registerNote: 'Any period color should be adjusted to these public characters, never to hidden proof structure.',
+  });
+  return director;
 }
 
 /**

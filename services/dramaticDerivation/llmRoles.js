@@ -41,6 +41,15 @@ import { visibleGuardDecision, visibleSurfaceFeatures, isStalling } from './visi
 const TUTOR_FIGURES = [...RHETORICAL_FIGURES];
 const TUTOR_INTENTS = ['orient', 'release', 'consolidate', 'test', 'counter_mirror', 'stage_recognition'];
 const TRANSCRIPT_TAIL = 8;
+const PUBLIC_REGISTERS = new Set(['default', 'modern', 'period']);
+const PUBLIC_REGISTER_SAMPLE_DEFAULTS = Object.freeze({
+  mode: 'sample',
+  seed: 1,
+  scope: 'scene',
+  palette: ['modern', 'default', 'period'],
+  weights: [0.55, 0.3, 0.15],
+  base: 'modern',
+});
 // C2 (release authority): how far the tutor may bend its own exhibit
 // calendar — an exhibit is playable from this many turns before its
 // scheduled turn, and holdable this many past it (the hold limit; the
@@ -72,6 +81,103 @@ const DIRECTOR_CHARISMA_STAGING = {
 export function clampDial(value) {
   const n = Number(value);
   return Number.isInteger(n) && n >= 0 && n <= 3 ? n : 0;
+}
+
+export function normalizePublicRegister(raw, { sceneMode = false, rhetoricalPolicy = false } = {}) {
+  if (raw == null || raw === '') return sceneMode || rhetoricalPolicy ? normalizePublicRegisterPlan(true) : 'default';
+  if (raw === true) return normalizePublicRegisterPlan(true);
+  if (typeof raw !== 'string') {
+    return normalizePublicRegisterPlan(raw);
+  }
+  const trimmed = raw.trim();
+  if (trimmed.startsWith('{')) return normalizePublicRegisterPlan(trimmed);
+  const register = trimmed.toLowerCase();
+  if (register === 'auto' || register === 'sample') return normalizePublicRegisterPlan(true);
+  if (!PUBLIC_REGISTERS.has(register)) {
+    throw new Error(
+      `register must be one of default, modern, period, sample/auto, or a JSON sample config (got ${JSON.stringify(raw)})`,
+    );
+  }
+  return register;
+}
+
+function normalizePublicRegisterPlan(raw) {
+  let cfg = raw;
+  if (cfg === true || cfg === undefined || cfg === null) cfg = {};
+  if (typeof cfg === 'string') {
+    try {
+      cfg = JSON.parse(cfg);
+    } catch (err) {
+      throw new Error(`register sample config is not valid JSON: ${err.message}`);
+    }
+  }
+  if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg)) {
+    throw new Error('register sample config must be a JSON object');
+  }
+  const allowed = new Set(Object.keys(PUBLIC_REGISTER_SAMPLE_DEFAULTS));
+  for (const key of Object.keys(cfg)) {
+    if (!allowed.has(key)) {
+      throw new Error(`register sample config: unknown key "${key}" (known: ${[...allowed].join(', ')})`);
+    }
+  }
+  const out = { ...PUBLIC_REGISTER_SAMPLE_DEFAULTS, ...cfg };
+  if (out.mode !== 'sample') {
+    throw new Error(`register sample config: mode must be "sample" (got ${JSON.stringify(out.mode)})`);
+  }
+  if (!['scene', 'turn'].includes(out.scope)) {
+    throw new Error(`register sample config: scope must be "scene" or "turn" (got ${JSON.stringify(out.scope)})`);
+  }
+  if (!Number.isFinite(Number(out.seed))) {
+    throw new Error('register sample config: seed must be numeric');
+  }
+  if (!Array.isArray(out.palette) || out.palette.length < 1) {
+    throw new Error('register sample config: palette must contain at least one register');
+  }
+  const palette = out.palette.map((r) => String(r).trim().toLowerCase());
+  for (const register of palette) {
+    if (!PUBLIC_REGISTERS.has(register)) {
+      throw new Error(`register sample config: unknown palette register "${register}"`);
+    }
+  }
+  const weights =
+    out.weights == null
+      ? palette.map(() => 1)
+      : Array.isArray(out.weights)
+        ? out.weights.map(Number)
+        : null;
+  if (!weights || weights.length !== palette.length || weights.some((w) => !Number.isFinite(w) || w <= 0)) {
+    throw new Error('register sample config: weights must be positive numbers matching palette length');
+  }
+  const base = String(out.base || palette[0]).trim().toLowerCase();
+  if (!PUBLIC_REGISTERS.has(base)) {
+    throw new Error(`register sample config: base must be one of ${[...PUBLIC_REGISTERS].join(', ')}`);
+  }
+  return { mode: 'sample', seed: Number(out.seed), scope: out.scope, palette, weights, base };
+}
+
+export function isDynamicPublicRegister(register) {
+  return Boolean(register && typeof register === 'object' && register.mode === 'sample');
+}
+
+export function basePublicRegister(register) {
+  if (isDynamicPublicRegister(register)) return register.base || register.palette?.[0] || 'modern';
+  return PUBLIC_REGISTERS.has(register) ? register : 'default';
+}
+
+export function activePublicRegister(configured, view = null) {
+  const active =
+    view && typeof view.publicRegister === 'string' && PUBLIC_REGISTERS.has(view.publicRegister)
+      ? view.publicRegister
+      : null;
+  return active || basePublicRegister(configured);
+}
+
+export function describePublicRegister(register) {
+  if (isDynamicPublicRegister(register)) {
+    const weights = register.palette.map((name, i) => `${name}:${register.weights[i]}`).join(', ');
+    return `sample/${register.scope} seed ${register.seed} [${weights}]`;
+  }
+  return basePublicRegister(register);
 }
 
 function renderFact(fact) {
@@ -177,6 +283,176 @@ async function callJson(client, role, turn, { system, user, meta }) {
   }
 }
 
+function publicTerms(register) {
+  const active = basePublicRegister(register);
+  return active === 'modern'
+    ? {
+        item: 'detail',
+        itemPlural: 'details',
+        record: 'notes',
+        rule: 'rule',
+        case: 'reasoning',
+      }
+    : {
+        item: 'exhibit',
+        itemPlural: 'exhibits',
+        record: 'record',
+        rule: 'house rule',
+        case: 'case',
+      };
+}
+
+function publicSpeechDiscipline(register) {
+  const terms = publicTerms(register);
+  return [
+    '',
+    '# Public speech discipline',
+    '',
+    'In public stage directions and dialogue, never say rule IDs, exhibit IDs,',
+    'predicate names, variable names, fact arrays, parentheses notation, JSON',
+    'field names, or proof-interface words such as "premise", "predicate",',
+    '"conjunct", "board", or "proof distance". Translate the private logic into',
+    isDynamicPublicRegister(register)
+      ? 'ordinary scene language suited to the active register: detail or exhibit, notes or record, missing part, rule, what is'
+      : `ordinary scene language: ${terms.item}, ${terms.record}, missing part, ${terms.rule}, what is`,
+    'shown, what is still missing.',
+    'This ban applies to public speech only. Required JSON bookkeeping fields may',
+    'still use the formal IDs the harness asks for.',
+  ];
+}
+
+function publicRegisterPolicy(register) {
+  if (isDynamicPublicRegister(register)) {
+    return [
+      '',
+      '# Register policy: mixed',
+      '',
+      'This run rotates public register. Each turn tells you the ACTIVE PUBLIC',
+      'REGISTER. Follow that register for manner and surface vocabulary while',
+      'keeping the same evidence discipline and the same concealed truth.',
+      'The rotation is aesthetic only: style may change, proof content may not.',
+      'When the active register is modern, use present-day plain English. When it',
+      'is default, use neutral evidentiary theatre. When it is period, heightened',
+      'or ceremonial diction is allowed, but avoid parody archaism: no thee/thou,',
+      'forced "shall", or pseudo-Elizabethan padding unless the authored world',
+      'itself demands it.',
+    ];
+  }
+  if (basePublicRegister(register) === 'modern') {
+    return [
+      '',
+      '# Register policy: modern',
+      '',
+      'Use present-day, plain spoken English. This is a contemporary tutoring',
+      'scene, not a court pageant, archive melodrama, or Elizabethan stage.',
+      'This register instruction overrides any courtly, archival, or ceremonial',
+      'flavor in the role script when they conflict.',
+      'Stage directions should be sparse and concrete: a table, a note, a file,',
+      'a pause, a person entering. Avoid ceremonial weather, banners, wax, seals,',
+      'clerks, servants, halls, chambers, proclamations, and "let the hall..."',
+      'phrasing unless the world text itself explicitly requires that object.',
+      'Tutor and learner should sound like people reasoning together now:',
+      'contractions are fine, short clarification turns are fine, and a direct',
+      '"I see" or "I lost the thread" is better than heightened testimony.',
+    ];
+  }
+  if (basePublicRegister(register) === 'period') {
+    return [
+      '',
+      '# Register policy: period',
+      '',
+      'A heightened archival, courtly, or theatrical register is permitted when',
+      'it serves the authored world. Even then, never let style add evidence or',
+      "replace the learner's reasoning. Avoid parody archaism: no thee/thou,",
+      'forced "shall", or pseudo-Elizabethan padding unless the authored world',
+      'itself demands it.',
+    ];
+  }
+  return [];
+}
+
+function publicRegisterTurnLines(activeRegisterName, configuredRegister) {
+  if (!isDynamicPublicRegister(configuredRegister)) return [];
+  const tone =
+    activeRegisterName === 'modern'
+      ? 'present-day plain speech; sparse contemporary staging; no ceremonial padding'
+      : activeRegisterName === 'period'
+        ? 'heightened or ceremonial surface is allowed, without parody archaism'
+        : 'neutral evidentiary theatre; clear record/exhibit language without archaic excess';
+  return ['', `ACTIVE PUBLIC REGISTER THIS TURN: ${activeRegisterName} — ${tone}.`];
+}
+
+function stagePrologueLines(stagePrologue, roleName) {
+  if (!stagePrologue) return [];
+  return [
+    '',
+    '# Director prologue',
+    '',
+    `Opening stage notes: ${stagePrologue.stageNotes || '(none)'}`,
+    `Tutor character: ${stagePrologue.tutorCharacter || '(none)'}`,
+    `Learner character: ${stagePrologue.learnerCharacter || '(none)'}`,
+    ...(stagePrologue.registerNote ? [`Register note: ${stagePrologue.registerNote}`] : []),
+    'This prologue is public atmosphere and character orientation only. It is',
+    'not evidence, not a release, and not permission to infer any unstaged fact.',
+    roleName === 'learner'
+      ? 'Let it color your voice and development, but keep your board governed only by shown facts and public rules.'
+      : 'Let it color manner and dramatic development, but keep the proof channel governed only by the release ledger.',
+  ];
+}
+
+export function sanitizePublicDialogue(text, { register = 'default' } = {}) {
+  if (typeof text !== 'string') return '';
+  const active = basePublicRegister(register);
+  const terms = publicTerms(register);
+  return text
+    .trim()
+    .replace(/\bR\d+_([A-Za-z0-9_]+)\b/g, (_, name) => `the ${name.replace(/_/g, ' ')} rule`)
+    .replace(/\btarget_premise\b/gi, `target ${terms.item}`)
+    .replace(/\bp\d+\b/g, `the ${terms.item}`)
+    .replace(/\bpredicate(s)?\b/gi, (_, plural) => `claim${plural || ''}`)
+    .replace(/\bpremise(s)?\b/gi, (_, plural) => (plural ? terms.itemPlural : terms.item))
+    .replace(/\bconjunct(s)?\b/gi, (_, plural) => `part${plural || ''}`)
+    .replace(/\bproof distance\b/gi, 'distance')
+    .replace(/\bproof\b/gi, terms.case)
+    .replace(/\bboard\b/gi, terms.record)
+    .replace(/\bJSON\b/g, 'private')
+    .replace(/\b(a|an) (new )?record\b/gi, (match, article, newWord = '') => {
+      if (active !== 'modern') return match;
+      return `${article} ${newWord || ''}note`;
+    })
+    .replace(
+      /\b(exhibit|exhibits|record|records|house rule|house rules)\b/gi,
+      (match) => {
+        if (active !== 'modern') return match;
+        const lower = match.toLowerCase();
+        const replacement =
+          lower === 'exhibits'
+            ? terms.itemPlural
+            : lower === 'exhibit'
+              ? terms.item
+              : lower === 'records'
+                ? terms.record
+                : lower === 'record'
+                  ? terms.record
+                  : lower === 'house rules'
+                    ? 'rules'
+                    : 'rule';
+        return /^[A-Z]/.test(match) ? replacement[0].toUpperCase() + replacement.slice(1) : replacement;
+      },
+    )
+    .replace(/\bthe hall\b/gi, active === 'modern' ? 'the room' : 'the hall')
+    .replace(/\bhall\b/gi, active === 'modern' ? 'room' : 'hall')
+    .replace(/\bclerk\b/gi, active === 'modern' ? 'staff member' : 'clerk')
+    .replace(/\bservant\b/gi, active === 'modern' ? 'staff member' : 'servant')
+    .replace(/\bwax\b/gi, active === 'modern' ? 'stamp' : 'wax')
+    .replace(/\bbanners\b/gi, active === 'modern' ? 'signs' : 'banners')
+    .replace(/\bsealed paper\b/gi, active === 'modern' ? 'closed file' : 'sealed paper')
+    .replace(/\b[A-Za-z_][A-Za-z0-9_]*\([^)]*\)/g, 'the formal claim')
+    .replace(/\s+\./g, '.')
+    .replace(/[ \t]{2,}/g, ' ')
+    .trim();
+}
+
 function scheduledFor(world, turn, via) {
   const entry = world.releaseSchedule.find((e) => e.turn === turn && e.via === via) || null;
   return entry ? { entry, premise: world.premiseById.get(entry.premise) } : { entry: null, premise: null };
@@ -191,9 +467,11 @@ function actFor(world, turn) {
 // Director
 // ---------------------------------------------------------------------------
 
-function directorCharter(world, dials = {}, dramaturgy = 'free', counsel = null, actsMode = false) {
+function directorCharter(world, dials = {}, dramaturgy = 'free', counsel = null, actsMode = false, publicRegister = 'default') {
   const charisma = clampDial(dials.charisma);
   const free = dramaturgy !== 'frozen';
+  const baseRegister = basePublicRegister(publicRegister);
+  const mixedRegister = isDynamicPublicRegister(publicRegister);
   const sketch = (world.dramaturgy?.acts || [])
     .map((a) => `Act ${a.act} — ${a.title} (turns ${a.turns[0]}–${a.turns[1]}): ${(a.intent || '').trim()}`)
     .join('\n\n');
@@ -202,9 +480,25 @@ function directorCharter(world, dials = {}, dramaturgy = 'free', counsel = null,
     `The public question of the drama: ${world.question}`,
     `The concealed truth (yours alone, never to be spoken): ${world.secret.surface}`,
     '',
-    'Your lines are stage directions — the world moving, in brackets, third person,',
-    'one to three sentences: a document produced, a witness shown in, weather, the room.',
-    'You do not address the learner and you do not teach; the tutor does that.',
+    ...(mixedRegister
+      ? [
+          'Your lines are stage notes in brackets, third person, one or two concise',
+          'sentences. Match the ACTIVE PUBLIC REGISTER supplied each turn; the',
+          'register changes the surface, never the evidence.',
+          'You do not address the learner and you do not teach; the tutor does that.',
+        ]
+      : baseRegister === 'modern'
+      ? [
+          'Your lines are sparse contemporary stage notes, in brackets, third person,',
+          'one or two concise sentences: a pause, a file placed on a table, a screen',
+          'shared, someone entering, the group settling. No ceremonial weather or pageantry.',
+          'You do not address the learner and you do not teach; the tutor does that.',
+        ]
+      : [
+          'Your lines are stage directions — the world moving, in brackets, third person,',
+          'one to three sentences: a document produced, a witness shown in, weather, the room.',
+          'You do not address the learner and you do not teach; the tutor does that.',
+        ]),
     '',
     'THE EVIDENCE IS FIXED. When this turn carries a scheduled piece of evidence, your',
     'direction must stage exactly that piece — bring it into the room as an event,',
@@ -213,6 +507,8 @@ function directorCharter(world, dials = {}, dramaturgy = 'free', counsel = null,
     '',
     'Never state the concealed truth, never foreshadow evidence not yet released,',
     'never confirm or deny anything by staging. The drama leaks only on schedule.',
+    ...publicSpeechDiscipline(publicRegister),
+    ...publicRegisterPolicy(publicRegister),
     '',
     ...(actsMode
       ? [
@@ -286,18 +582,67 @@ function directorCharter(world, dials = {}, dramaturgy = 'free', counsel = null,
   ].join('\n');
 }
 
+function directorPrologueCharter(world, publicRegister = 'default') {
+  return [
+    `You are the DIRECTOR setting up a staged derivation drama: "${world.title}".`,
+    `The public question: ${world.question}`,
+    `The concealed truth (yours alone, never to be spoken): ${world.secret.surface}`,
+    '',
+    'Before turn 1, write a public prologue: an overall picture of the drama',
+    'and brief character introductions for the tutor and learner. These notes',
+    'will color how the roles develop, but they must not add evidence.',
+    '',
+    'ABSOLUTE LIMITS:',
+    '- Do not state, hint, foreshadow, or paraphrase the concealed truth.',
+    '- Do not mention premise IDs, rule IDs, predicate names, variables, proof',
+    '  structure, release schedule, or any fact not already in the public setup.',
+    '- Do not decide the case, rank candidate answers, or imply which later',
+    '  evidence will matter.',
+    '- Character notes are about voice, posture, patience, resistance, curiosity,',
+    '  and social relation only.',
+    '',
+    'For period register: refine the period color from these public character',
+    'notes and the authored world. Do not default to generic Elizabethan or',
+    'court-pageant diction; let the LLM roles adapt the period surface to the',
+    'specific tutor, learner, and scene.',
+    ...publicSpeechDiscipline(publicRegister),
+    ...publicRegisterPolicy(publicRegister),
+    '',
+    'Reply with ONLY a JSON object:',
+    '{"stage_notes": "<2-4 public sentences setting the whole drama>",',
+    ' "tutor_character": "<one public sentence introducing the tutor>",',
+    ' "learner_character": "<one public sentence introducing the learner>",',
+    ' "register_note": "<one public sentence about how register should be refined from these characters>"}',
+  ].join('\n');
+}
+
+function normalizeStagePrologue(out, register) {
+  const stringField = (name) =>
+    sanitizePublicDialogue(typeof out?.[name] === 'string' ? out[name] : '', { register });
+  return {
+    stageNotes: stringField('stage_notes') || stringField('stageNotes'),
+    tutorCharacter: stringField('tutor_character') || stringField('tutorCharacter'),
+    learnerCharacter: stringField('learner_character') || stringField('learnerCharacter'),
+    registerNote: stringField('register_note') || stringField('registerNote'),
+  };
+}
+
 export function makeLlmDirector(
   world,
   client,
-  { dials = {}, dramaturgy = 'free', counsel = null, actsMode = false } = {},
+  { dials = {}, dramaturgy = 'free', counsel = null, actsMode = false, publicRegister = 'default' } = {},
 ) {
   const free = dramaturgy !== 'frozen';
-  const system = directorCharter(world, dials, dramaturgy, counsel, actsMode);
-  return async (view) => {
+  const system = directorCharter(world, dials, dramaturgy, counsel, actsMode, publicRegister);
+  const directorFn = async (view) => {
+    const activeRegisterName = activePublicRegister(publicRegister, view);
     const { entry, premise } = scheduledFor(world, view.turn, 'director');
+    const { entry: tutorEntry } = scheduledFor(world, view.turn, 'tutor');
     const act = actFor(world, view.turn);
     const task = premise
       ? `THIS TURN RELEASES EVIDENCE. Stage this, as an event the whole room receives:\n"${(premise.surface || '').trim()}"`
+      : tutorEntry
+        ? 'A scheduled exhibit may enter through the tutor this turn. Prepare the room for an exhibit without stating, paraphrasing, or naming that evidence yourself.'
       : 'No evidence is due this turn. Hold the stage — a beat of scene, mood, or business that keeps the question alive. Add no facts.';
     // Acts mode replaces the movement line with act status + the verdict
     // arithmetic for THIS turn (an end-verdict closes the act at turn-1, so
@@ -344,6 +689,7 @@ export function makeLlmDirector(
       '',
       'The last lines spoken:',
       renderTranscriptTail(view.transcript),
+      ...publicRegisterTurnLines(activeRegisterName, publicRegister),
       '',
       task,
     ].join('\n');
@@ -380,9 +726,12 @@ export function makeLlmDirector(
       typeof out.phase === 'object' &&
       typeof out.phase.name === 'string' &&
       out.phase.name.trim()
-        ? {
-            name: out.phase.name.trim(),
-            intent: typeof out.phase.intent === 'string' ? out.phase.intent.trim() : '',
+            ? {
+            name: sanitizePublicDialogue(out.phase.name, { register: activeRegisterName }),
+            intent:
+              typeof out.phase.intent === 'string'
+                ? sanitizePublicDialogue(out.phase.intent, { register: activeRegisterName })
+                : '',
           }
         : null;
     // frozen dramaturgy (the control arm) hard-drops the movement channel at
@@ -392,12 +741,36 @@ export function makeLlmDirector(
     // mode drops it too — the engine synthesizes phases from act briefs — and
     // gates the verdict to the two legal values.
     return {
-      direction: typeof out.direction === 'string' ? out.direction.trim() : '',
+      direction: sanitizePublicDialogue(out.direction, { register: activeRegisterName }),
       release: entry ? entry.premise : null,
       phase,
       ...(actsMode ? { act: out.act === 'end' ? 'end' : 'continue' } : {}),
     };
   };
+  directorFn.prologue = async (view = {}) => {
+    const activeRegisterName = activePublicRegister(publicRegister, view);
+    const out = await callJson(client, 'director', 0, {
+      system: directorPrologueCharter(world, publicRegister),
+      user: [
+        'Write the opening director prologue now.',
+        ...publicRegisterTurnLines(activeRegisterName, publicRegister),
+        '',
+        `Public setting: ${(world.setting || '').trim() || '(none supplied)'}`,
+        `Public question: ${world.question}`,
+        '',
+        'Remember: this is a public frame for character and dramatic texture only, not evidence.',
+      ].join('\n'),
+      meta: {
+        stagePrologueHint: {
+          title: world.title,
+          question: world.question,
+          register: activeRegisterName,
+        },
+      },
+    });
+    return normalizeStagePrologue(out, activeRegisterName);
+  };
+  return directorFn;
 }
 
 // ---------------------------------------------------------------------------
@@ -421,6 +794,7 @@ function tutorSystem(
     plot = false,
     throughline = false,
     rhetoricalPolicy = false,
+    publicRegister = 'default',
   } = {},
 ) {
   const recognition = clampDial(dials.recognition);
@@ -674,6 +1048,8 @@ function tutorSystem(
     ...(registers.length
       ? ['', '# Register (operator dials — these color your MANNER, never your evidence)', '', ...registers]
       : []),
+    ...publicSpeechDiscipline(publicRegister),
+    ...publicRegisterPolicy(publicRegister),
     '',
     `Declare your move each turn: figure ∈ {${TUTOR_FIGURES.join(', ')}}, the premise you are working (or null), intent ∈ {${intents.join(', ')}}.`,
     '',
@@ -970,6 +1346,7 @@ export function makeLlmTutor(
     plot = false,
     throughline = false,
     rhetoricalPolicy = null,
+    publicRegister = 'default',
   } = {},
 ) {
   if (!script || !script.trim()) {
@@ -1093,6 +1470,7 @@ export function makeLlmTutor(
     plot,
     throughline,
     rhetoricalPolicy: Boolean(rhetoricalPolicyConfig),
+    publicRegister,
   });
   const superegoSystem = superego
     ? tutorSuperegoSystem(world, { stallWatch, counsel, reconstruct, confront, repairClause, plot, throughline })
@@ -1329,6 +1707,7 @@ export function makeLlmTutor(
     return normalizeAudit(out, closedAct.act);
   };
   const tutorFn = async (view) => {
+    const activeRegisterName = activePublicRegister(publicRegister, view);
     // C2 (release authority): the fixed per-turn cue becomes a WINDOW. Each
     // unreleased via-tutor entry is playable from RELEASE_LATITUDE turns
     // before its scheduled turn; at RELEASE_LATITUDE past it, it hits the
@@ -1596,9 +1975,11 @@ export function makeLlmTutor(
         `Evidence on stage so far: ${view.ledger.length ? view.ledger.map((l) => l.premiseId).join(', ') : 'none'}.`,
         `Released THIS act (still before the learner): ${thisAct.length ? thisAct.join(', ') : 'none'}.`,
         `Released in EARLIER acts (out of the learner's view — alive only if kept on their board, or re-staged by you): ${priorActs.length ? priorActs.join(', ') : 'none'}.`,
+        ...stagePrologueLines(view.stagePrologue, 'tutor'),
         '',
         'The dialogue so far (you remember all of it; the learner sees only this act):',
         renderTranscriptTail(view.transcript, view.transcript.length),
+        ...publicRegisterTurnLines(activeRegisterName, publicRegister),
         // The two frames, course above lesson: the whole-play throughline
         // reads back first, the act plot under it.
         ...throughlineSection,
@@ -1618,6 +1999,7 @@ export function makeLlmTutor(
       user = [
         `Turn ${view.turn} of ${world.turnCap}.`,
         `Evidence on stage so far: ${view.ledger.length ? view.ledger.map((l) => l.premiseId).join(', ') : 'none'}.`,
+        ...stagePrologueLines(view.stagePrologue, 'tutor'),
         '',
         "The learner's grounded board:",
         board,
@@ -1641,6 +2023,7 @@ export function makeLlmTutor(
           : []),
         'The last lines spoken:',
         renderTranscriptTail(view.transcript),
+        ...publicRegisterTurnLines(activeRegisterName, publicRegister),
         '',
         ...(forcedNote ? [forcedNote, ''] : []),
         ...rhetoricalPolicySection,
@@ -1943,8 +2326,11 @@ export function makeLlmTutor(
         out: {
           ...out,
           dialogue: releaseSurface
-            ? `${restoreLine} After that is back in hand, take this new exhibit: ${releaseSurface}`
-            : restoreLine,
+            ? sanitizePublicDialogue(
+                `${restoreLine} After that is back in hand, take this new exhibit: ${releaseSurface}`,
+                { register: activeRegisterName },
+              )
+            : sanitizePublicDialogue(restoreLine, { register: activeRegisterName }),
           move: {
             figure: out.move?.figure || 'anaphora',
             targetPremise: topProofDebt.premiseId,
@@ -1962,7 +2348,7 @@ export function makeLlmTutor(
       };
     };
     let draft = {
-      dialogue: typeof draftOut.dialogue === 'string' ? draftOut.dialogue.trim() : '',
+      dialogue: sanitizePublicDialogue(draftOut.dialogue, { register: activeRegisterName }),
       move: normalizeMove(draftOut),
       ...(rhetoricalAdvice ? { rhetoricalPolicy: rhetoricalAdvice } : {}),
       ...releaseBits,
@@ -2300,7 +2686,7 @@ export function makeLlmTutor(
     });
     const dialogue =
       typeof revisedOut.dialogue === 'string' && revisedOut.dialogue.trim()
-        ? revisedOut.dialogue.trim()
+        ? sanitizePublicDialogue(revisedOut.dialogue, { register: activeRegisterName })
         : draft.dialogue;
     // The revision may re-commit the theory (same contract); a parse-miss
     // falls back to the draft's, so an intervened turn never loses its row.
@@ -2373,7 +2759,8 @@ export function makeLlmTutor(
 // asserts its prompts never carry concealed tokens.
 // ---------------------------------------------------------------------------
 
-function learnerSystem(setting, voice, view) {
+function learnerSystem(setting, voice, view, publicRegister = 'default') {
+  const terms = publicTerms(publicRegister);
   return [
     'You are the LEARNER in a staged inquiry. Your situation:',
     '',
@@ -2381,6 +2768,8 @@ function learnerSystem(setting, voice, view) {
     '',
     `The question you must settle: ${view.question}`,
     `Your voice: ${(voice || 'plain, careful, first person').trim()}`,
+    ...stagePrologueLines(view.stagePrologue, 'learner'),
+    ...publicRegisterPolicy(publicRegister),
     ...(view.act
       ? [
           '',
@@ -2425,9 +2814,12 @@ function learnerSystem(setting, voice, view) {
     '- Answer the question ONLY when your board, under the rules, settles it — then give the answer name.',
     '- Be scrupulous about the difference between what is shown and what is merely said.',
     view.scene
-      ? '- Speak briefly: at most four short sentences aloud each turn. Natural short replies are allowed: "I see", "Yes, I get that", "No, sorry, you lost me." Your board, not your speech, carries the reasoning.'
-      : '- Speak briefly: at most four short sentences aloud each turn. Your board, not your speech, carries the reasoning.',
-    '- The JSON fields are private bookkeeping. NEVER say predicate names, variable names, fact arrays, parentheses notation, or JSON field names in dialogue. Speak like a clerk in the room, not like the harness.',
+      ? `- Speak briefly: at most four short sentences aloud each turn. Natural short replies are allowed: "I see", "Yes, I get that", "No, sorry, you lost me." Your ${terms.record}, not your speech, carries the reasoning.`
+      : `- Speak briefly: at most four short sentences aloud each turn. Your ${terms.record}, not your speech, carries the reasoning.`,
+    publicRegister === 'modern'
+      ? '- The JSON fields are private bookkeeping. NEVER say predicate names, variable names, fact arrays, parentheses notation, or JSON field names in dialogue. Speak like a person in a contemporary tutorial, not like the harness.'
+      : '- The JSON fields are private bookkeeping. NEVER say predicate names, variable names, fact arrays, parentheses notation, or JSON field names in dialogue. Speak like a clerk in the room, not like the harness.',
+    `- In dialogue and hypotheses, do not say rule IDs like R1_lineage, ${terms.item} IDs like p1, or proof-interface words like "premise", "predicate", "conjunct", "board", or "proof distance". Say what the scene would say: the lineage rule, a ${terms.item}, a missing part, the ${terms.record}, the ${terms.case}.`,
     '',
     'Reply with ONLY a JSON object:',
     '{"dialogue": "<what you say aloud>",',
@@ -2494,7 +2886,7 @@ function toFactArray(entry) {
   return [];
 }
 
-export function makeLlmLearner({ setting = '', voice = '', client }) {
+export function makeLlmLearner({ setting = '', voice = '', client, publicRegister = 'default' }) {
   if (!client) throw new Error('derivation.llmRoles: makeLlmLearner requires a client');
   // Mock-determinism clock for the derive channel, view-visible material only:
   // a derivable non-pattern fact first SEEN at turn t (from the learner's own
@@ -2504,6 +2896,8 @@ export function makeLlmLearner({ setting = '', voice = '', client }) {
   // backend ignores meta entirely.
   const firstSeen = new Map(); // factKey -> turn first seen derivable
   return async (view) => {
+    const activeRegisterName = activePublicRegister(publicRegister, view);
+    const terms = publicTerms(activeRegisterName);
     const groundedKeys = new Set(view.abox.grounded.map(factKey));
     const seen = new Set();
     const adoptable = [...view.background, ...view.releasedFacts].filter((fact) => {
@@ -2544,11 +2938,12 @@ export function makeLlmLearner({ setting = '', voice = '', client }) {
       ? derivableCandidates.map((entry, i) => `${i}. ${entry.label}`).join('\n')
       : '(none yet)';
 
-    const system = learnerSystem(setting, voice, view);
+    const system = learnerSystem(setting, voice, view, activeRegisterName);
     const user = [
       `Turn ${view.turn}.${
         view.act ? ` Act ${view.act.index} — the stage shows this act only; your board carries everything else.` : ''
       }${view.scene ? ` Scene ${view.scene.index}, exchange ${view.scene.exchangesSoFar + 1}.` : ''}`,
+      ...publicRegisterTurnLines(activeRegisterName, publicRegister),
       ...(view.scene
         ? [
             `Scene goal: ${view.scene.goal}`,
@@ -2559,23 +2954,23 @@ export function makeLlmLearner({ setting = '', voice = '', client }) {
       'The last lines spoken:',
       renderTranscriptTail(view.transcript),
       '',
-      'NEW EXHIBITS available to adopt (index. fact):',
+      `NEW ${terms.itemPlural.toUpperCase()} available to adopt (index. fact):`,
       exhibits,
       '',
-      'YOUR BOARD (index. grounded fact):',
+      `YOUR ${terms.record.toUpperCase()} (index. grounded fact):`,
       board,
       '',
       'Conclusions you have already voiced (ordinary-language conclusions, on the record):',
       voicedList,
       '',
-      'PRIVATE CONCLUSION CHECKLIST (index. conclusion your board may now support; choose indices only when you also say the conclusion aloud in ordinary words):',
+      `PRIVATE CONCLUSION CHECKLIST (index. conclusion your ${terms.record} may now support; choose indices only when you also say the conclusion aloud in ordinary words):`,
       privateConclusions,
       '',
       'Your hypotheses so far:',
       hyps,
       '',
       'Respond in role, then decide: what do you adopt, what do you retract, what do you',
-      'voice or conjecture — and does your board now settle the question? Reply with ONLY the JSON object.',
+      `voice or conjecture — and does your ${terms.record} now settle the question? Reply with ONLY the JSON object.`,
     ].join('\n');
 
     const out = await callJson(client, 'learner', view.turn, {
@@ -2604,11 +2999,14 @@ export function makeLlmLearner({ setting = '', voice = '', client }) {
     });
     const factsForAnswer = [...view.abox.grounded, ...adopt];
     return {
-      dialogue: typeof out.dialogue === 'string' ? out.dialogue.trim() : '',
+      dialogue: sanitizePublicDialogue(out.dialogue, { register: activeRegisterName }),
       adopt,
       retract,
       derive,
-      hypothesis: typeof out.hypothesis === 'string' && out.hypothesis.trim() ? out.hypothesis.trim() : null,
+      hypothesis:
+        typeof out.hypothesis === 'string' && out.hypothesis.trim()
+          ? sanitizePublicDialogue(out.hypothesis, { register: activeRegisterName })
+          : null,
       exchangeType: typeof out.exchange_type === 'string' && out.exchange_type.trim() ? out.exchange_type.trim() : null,
       asserts:
         bindingToFact(view.questionPattern, out.asserts_binding) ||

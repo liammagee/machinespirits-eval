@@ -283,6 +283,7 @@ test('learner views conceal exactly S, the mirror, and unreleased premises', asy
     'abox',
     'background',
     'factSurfaces',
+    'publicRegister', // style channel only; no evidentiary content
     'question',
     'questionPattern',
     'releasedFacts',

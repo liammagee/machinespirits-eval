@@ -104,7 +104,14 @@ export function makeReplayRoles({ recorded, fromTurn, live }) {
     return RECONSTRUCT[roleName](line);
   };
 
-  return { director: wrap('director'), tutor: wrap('tutor'), learner: wrap('learner') };
+  const director = wrap('director');
+  director.prologue = async () => {
+    if (recorded.stagePrologue) return recorded.stagePrologue;
+    const line = recorded.transcript.find((entry) => entry.role === 'director' && entry.meta?.prologue);
+    return line?.meta?.prologue || null;
+  };
+
+  return { director, tutor: wrap('tutor'), learner: wrap('learner') };
 }
 
 /**

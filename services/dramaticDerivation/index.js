@@ -14,7 +14,7 @@ export {
   selectGuardRepresentationV2,
   selectGuardRepresentationV3,
 } from './guardCompiler.js';
-export { runDrama, normalizeActsConfig } from './engine.js';
+export { runDrama, normalizeActsConfig, normalizeDirectorCadence } from './engine.js';
 export { mulberry32, normalizeDecayConfig } from './corruption.js';
 export {
   normalizeSceneConfig,
@@ -25,7 +25,17 @@ export {
 export { makeReplayRoles, comparePrefix } from './replay.js';
 export { makeMockDirector, makeMockTutor, makeMockLearner } from './mockRoles.js';
 export { makeLlmClient, llmMode, resolveTarget } from './llmClient.js';
-export { makeLlmDirector, makeLlmTutor, makeLlmLearner, clampDial, RELEASE_LATITUDE } from './llmRoles.js';
+export {
+  makeLlmDirector,
+  makeLlmTutor,
+  makeLlmLearner,
+  clampDial,
+  RELEASE_LATITUDE,
+  sanitizePublicDialogue,
+  normalizePublicRegister,
+  describePublicRegister,
+  isDynamicPublicRegister,
+} from './llmRoles.js';
 export {
   diagnose,
   corruptionReport,

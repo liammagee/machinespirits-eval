@@ -102,6 +102,22 @@
  *                                       JSON keys: maxExchanges,
  *                                       maxPhaticExchanges,
  *                                       closeOnDDecrease, closeOnConfusion.)
+ *     [--director-cadence turn|scene|release]
+ *                                      (when the director speaks. Default:
+ *                                       turn without scene mode; scene with
+ *                                       scene mode. scene = scene openings
+ *                                       plus scheduled exhibit turns; release
+ *                                       = scheduled exhibit turns only.)
+ *     [--stage-prologue [on|off]]      (director writes opening stage notes
+ *                                       plus tutor/learner character sketches
+ *                                       before turn 1. Default on in scene
+ *                                       mode, off otherwise.)
+ *     [--register default|modern|period|sample|auto|'<json>']
+ *                                      (public surface language. Default:
+ *                                       sampled by scene when scene/rhetoric
+ *                                       mode is on, default otherwise. JSON
+ *                                       sample keys: seed, scope, palette,
+ *                                       weights, base.)
  *     [--reconstruct]                  (adapt-ON arm dial; requires --acts.
  *                                       The tutor commits a per-turn theory of
  *                                       the learner's store — believed_held/
@@ -247,7 +263,10 @@ import {
   normalizeDecayConfig,
   normalizeActsConfig,
   normalizeSceneConfig,
+  normalizeDirectorCadence,
   normalizeRhetoricalPolicyConfig,
+  normalizePublicRegister,
+  describePublicRegister,
   makeLlmClient,
   llmMode,
   resolveTarget,
@@ -475,6 +494,19 @@ async function main() {
     flag('scene-mode') && sceneArg !== 'off'
       ? normalizeSceneConfig(sceneArg && sceneArg !== 'on' ? sceneArg : true)
       : null;
+  let directorCadence;
+  try {
+    directorCadence = normalizeDirectorCadence(arg('director-cadence', null), { sceneMode: Boolean(sceneMode) });
+  } catch (err) {
+    console.error(`--director-cadence ${err.message}`);
+    process.exit(1);
+  }
+  const stagePrologueArg = arg('stage-prologue', flag('stage-prologue') ? 'on' : null);
+  if (stagePrologueArg && !['on', 'off'].includes(stagePrologueArg)) {
+    console.error(`--stage-prologue must be "on" or "off" (got "${stagePrologueArg}")`);
+    process.exit(1);
+  }
+  const stagePrologue = stagePrologueArg ? stagePrologueArg !== 'off' : Boolean(sceneMode);
   const reconstruct = flag('reconstruct');
   if (reconstruct && !acts) {
     console.error(
@@ -653,6 +685,16 @@ async function main() {
   if (rhetoricalPolicy && flag('rhetorical-policy-stochastic')) {
     rhetoricalPolicy = { ...rhetoricalPolicy, mode: 'sample' };
   }
+  let publicRegister;
+  try {
+    publicRegister = normalizePublicRegister(arg('register', null), {
+      sceneMode: Boolean(sceneMode),
+      rhetoricalPolicy: Boolean(rhetoricalPolicy),
+    });
+  } catch (err) {
+    console.error(`--register ${err.message}`);
+    process.exit(1);
+  }
   const group = arg('group', null);
   const criticFeedback = arg('critic-feedback', 'off');
   const criticArg = arg('critic', 'auto');
@@ -722,6 +764,9 @@ async function main() {
       decayVisibility,
       actsConfig: acts || null,
       sceneMode: sceneMode || null,
+      directorCadence,
+      stagePrologue,
+      publicRegister,
       reconstruct,
       confront,
       repairClause,
@@ -784,6 +829,13 @@ async function main() {
     console.log(
       `scenes  ON — scene/exchange overlay: max ${sceneMode.maxExchanges} exchanges, phatic budget ${sceneMode.maxPhaticExchanges}; phatic/confusion lines are recorded as exchanges`,
     );
+    console.log(`stage   director cadence ${directorCadence}`);
+  }
+  if (stagePrologue) {
+    console.log('stage   prologue ON — director opening notes and tutor/learner character sketches before turn 1');
+  }
+  if (publicRegister !== 'default') {
+    console.log(`style   public register ${describePublicRegister(publicRegister)}`);
   }
   if (reconstruct) {
     console.log(
@@ -865,7 +917,7 @@ async function main() {
   const counselText = counsel ? counsel.paragraph : null;
   const actsMode = Boolean(acts);
   const roles = {
-    director: makeLlmDirector(world, client, { dials, dramaturgy, counsel: counselText, actsMode }),
+    director: makeLlmDirector(world, client, { dials, dramaturgy, counsel: counselText, actsMode, publicRegister }),
     tutor: makeLlmTutor(world, client, {
       script,
       dials,
@@ -886,8 +938,14 @@ async function main() {
       plot,
       throughline,
       rhetoricalPolicy,
+      publicRegister,
     }),
-    learner: makeLlmLearner({ setting: world.setting, voice: learnerVoice || world.learnerVoice, client }),
+    learner: makeLlmLearner({
+      setting: world.setting,
+      voice: learnerVoice || world.learnerVoice,
+      client,
+      publicRegister,
+    }),
   };
 
   // One compact line per completed turn — the shell's live pulse.
@@ -922,6 +980,9 @@ async function main() {
       options: {
         onTurn,
         logicProjection: true,
+        directorCadence,
+        stagePrologue,
+        publicRegister,
         ...(sceneMode ? { sceneMode } : {}),
         ...(decay ? { decay } : {}),
         ...(acts ? { acts } : {}),
@@ -957,6 +1018,9 @@ async function main() {
     actsConfig: acts || null,
     // Scene/exchange overlay — null on old turn-level runs.
     sceneMode: sceneMode || null,
+    directorCadence,
+    stagePrologue,
+    publicRegister,
     reconstruct,
     // P1 dials — false on every run before 2026-06-11.
     confront,

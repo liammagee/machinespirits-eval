@@ -102,6 +102,82 @@ const ACTS_DEFAULTS = Object.freeze({
   maxActTurns: 8,
 });
 
+const DIRECTOR_CADENCES = new Set(['turn', 'scene', 'release']);
+const PUBLIC_REGISTERS = new Set(['default', 'modern', 'period']);
+
+export function normalizeDirectorCadence(raw, { sceneMode = false } = {}) {
+  if (raw == null || raw === '') return sceneMode ? 'scene' : 'turn';
+  if (typeof raw !== 'string') {
+    throw new Error(`director cadence must be one of turn, scene, release (got ${JSON.stringify(raw)})`);
+  }
+  const cadence = raw.trim().toLowerCase();
+  if (!DIRECTOR_CADENCES.has(cadence)) {
+    throw new Error(`director cadence must be one of turn, scene, release (got ${JSON.stringify(raw)})`);
+  }
+  return cadence;
+}
+
+function isDynamicPublicRegisterPlan(plan) {
+  return Boolean(plan && typeof plan === 'object' && plan.mode === 'sample');
+}
+
+function staticPublicRegister(plan) {
+  return PUBLIC_REGISTERS.has(plan) ? plan : isDynamicPublicRegisterPlan(plan) ? plan.base || plan.palette?.[0] || 'modern' : 'default';
+}
+
+function hashUnit(text) {
+  let h = 2166136261;
+  for (const ch of String(text)) {
+    h ^= ch.charCodeAt(0);
+    h = Math.imul(h, 16777619);
+  }
+  return (h >>> 0) / 4294967296;
+}
+
+function weightedRegisterPick(plan, key, previous = null) {
+  const entries = plan.palette.map((register, i) => ({ register, weight: Number(plan.weights[i]) || 1 }));
+  const pick = (choices, unit) => {
+    const total = choices.reduce((sum, entry) => sum + entry.weight, 0);
+    let cursor = unit * total;
+    for (const entry of choices) {
+      cursor -= entry.weight;
+      if (cursor <= 0) return entry.register;
+    }
+    return choices[choices.length - 1].register;
+  };
+  let selected = pick(entries, hashUnit(key));
+  if (previous && selected === previous && entries.length > 1) {
+    selected = pick(
+      entries.filter((entry) => entry.register !== previous),
+      hashUnit(`${key}:alternate`),
+    );
+  }
+  return selected;
+}
+
+function normalizeStagePrologue(raw, world) {
+  const field = (...names) => {
+    for (const name of names) {
+      if (typeof raw?.[name] === 'string' && raw[name].trim()) return raw[name].trim();
+    }
+    return '';
+  };
+  return {
+    stageNotes:
+      field('stageNotes', 'stage_notes') ||
+      `[Before the first exchange, ${world.title} is set as a public inquiry: ${world.question}]`,
+    tutorCharacter:
+      field('tutorCharacter', 'tutor_character') ||
+      'The tutor enters as a careful guide who must let the learner make the decisive step.',
+    learnerCharacter:
+      field('learnerCharacter', 'learner_character') ||
+      'The learner enters as curious, fallible, and entitled to test each claim before keeping it.',
+    registerNote:
+      field('registerNote', 'register_note') ||
+      'Register should follow these characters and this world, never a generic period costume.',
+  };
+}
+
 /**
  * Validate and default an acts config (stage v2). Accepts an object or a
  * JSON string (the CLI's `--acts '<json>'`). Unknown keys are rejected — a
@@ -156,6 +232,14 @@ export async function runDrama({ world, roles, options = {} }) {
   // absent — no act state, no view bounding, no redaction, no new fields.
   const acts = options.acts ? normalizeActsConfig(options.acts) : null;
   const sceneConfig = options.sceneMode ? normalizeSceneConfig(options.sceneMode) : null;
+  const directorCadence = normalizeDirectorCadence(options.directorCadence, { sceneMode: Boolean(sceneConfig) });
+  const publicRegisterPlan = options.publicRegister || 'default';
+  const dynamicPublicRegisterPlan = isDynamicPublicRegisterPlan(publicRegisterPlan) ? publicRegisterPlan : null;
+  const registerRows = [];
+  let publicRegisterForTurn = staticPublicRegister(publicRegisterPlan);
+  let previousPublicRegister = null;
+  const stagePrologueEnabled = Boolean(options.stagePrologue);
+  let stagePrologue = null;
   const runtimeMonitor = options.guardSpec ? createRuntimeMonitor(world, options.guardSpec) : null;
   const proofDebtGuardActive = Boolean(options.proofDebtGuard);
   const logicProjectionActive = Boolean(options.logicProjection);
@@ -429,7 +513,7 @@ export async function runDrama({ world, roles, options = {} }) {
       .sort((a, b) => a.turn - b.turn)[0] || null;
 
   const openSceneForTurn = (turn, reason = 'opening') => {
-    if (!sceneConfig || sceneState) return;
+    if (!sceneConfig || sceneState) return null;
     const dNow = derivationDistance(world, validGroundedFacts());
     const debt = currentProofDebt(turn).debts?.[0] || null;
     const frontier = computeFrontier(turn)[0] || null;
@@ -453,6 +537,40 @@ export async function runDrama({ world, roles, options = {} }) {
       reason,
     });
     events.push({ turn, type: 'scene_open', detail: `scene ${sceneState.index}: ${sceneState.goal}` });
+    return sceneState;
+  };
+
+  const unreleasedScheduledThisTurn = (turn) =>
+    world.releaseSchedule.filter(
+      (entry) => entry.turn === turn && !ledger.some((row) => row.premiseId === entry.premise),
+    );
+
+  const shouldCallDirector = (turn, openedScene) => {
+    if (acts) return true;
+    if (directorCadence === 'turn') return true;
+    const releaseDue = unreleasedScheduledThisTurn(turn).length > 0;
+    if (directorCadence === 'release') return releaseDue;
+    return Boolean(openedScene) || releaseDue;
+  };
+
+  const resolvePublicRegisterForTurn = (turn, openedScene) => {
+    if (!dynamicPublicRegisterPlan) return publicRegisterForTurn;
+    const sceneIndex = sceneState?.index || null;
+    const shouldResample =
+      !registerRows.length || dynamicPublicRegisterPlan.scope === 'turn' || !sceneConfig || Boolean(openedScene);
+    if (shouldResample) {
+      const register = weightedRegisterPick(
+        dynamicPublicRegisterPlan,
+        `${dynamicPublicRegisterPlan.seed}:${world.id}:${dynamicPublicRegisterPlan.scope}:${
+          sceneIndex || turn
+        }:${turn}`,
+        previousPublicRegister,
+      );
+      previousPublicRegister = register;
+      publicRegisterForTurn = register;
+      registerRows.push({ turn, register, scope: dynamicPublicRegisterPlan.scope, scene: sceneIndex });
+    }
+    return publicRegisterForTurn;
   };
 
   const decayedPremiseIds = () =>
@@ -535,6 +653,8 @@ export async function runDrama({ world, roles, options = {} }) {
       voiced,
       ...(actState ? { act: { index: actState.index, startTurn: actState.startTurn, brief: actState.brief } } : {}),
       ...(sceneState ? { scene: sceneView(sceneState) } : {}),
+      ...(stagePrologue ? { stagePrologue } : {}),
+      publicRegister: publicRegisterForTurn,
     };
   };
 
@@ -560,6 +680,8 @@ export async function runDrama({ world, roles, options = {} }) {
       staging: { phase: staging.phase },
       ...(actState ? { acts: actsView(turn) } : {}),
       ...(sceneState ? { scene: sceneView(sceneState) } : {}),
+      ...(stagePrologue ? { stagePrologue } : {}),
+      publicRegister: publicRegisterForTurn,
       ...(proofDebt
         ? { proofDebt: runtimeMonitor ? runtimeMonitor.proofDebtTutorView(proofDebt) : tutorProofDebtView(proofDebt) }
         : {}),
@@ -612,16 +734,47 @@ export async function runDrama({ world, roles, options = {} }) {
   };
 
   recordAvailability(0); // background-only board may already yield derivations
+  if (stagePrologueEnabled) {
+    const prologueView = {
+      turn: 0,
+      role: 'director',
+      world,
+      ledger: [],
+      releasedFacts: [],
+      transcript: [],
+      staging: { phase: null },
+      trajectory: [],
+      learnerAbox: { grounded: validGroundedFacts(), hypotheses: [] },
+      inference: { frontier: computeFrontier(0), voiced: [], overreachCount: 0 },
+      publicRegister: publicRegisterForTurn,
+    };
+    const rawPrologue =
+      typeof roles.director.prologue === 'function'
+        ? await roles.director.prologue(prologueView)
+        : normalizeStagePrologue(null, world);
+    stagePrologue = normalizeStagePrologue(rawPrologue, world);
+    transcript.push({
+      turn: 0,
+      role: 'director',
+      text: stagePrologue.stageNotes,
+      meta: {
+        prologue: stagePrologue,
+        publicRegister: publicRegisterForTurn,
+      },
+    });
+  }
   const turnLimit = Math.min(world.turnCap, Number.isFinite(opts.maxTurns) ? opts.maxTurns : Infinity);
   let turn = 0;
   while (turn < turnLimit && !endedBy) {
     turn += 1;
     const releasedThisTurn = [];
-    openSceneForTurn(turn, turn === 1 ? 'opening' : 'continuation');
+    const openedScene = openSceneForTurn(turn, turn === 1 ? 'opening' : 'continuation');
+    resolvePublicRegisterForTurn(turn, openedScene);
     const currentSceneMeta = sceneMeta(sceneState);
 
     // --- director ---
-    const directorOut = (await roles.director(omniscientView(turn, 'director'))) || {};
+    const callDirector = shouldCallDirector(turn, openedScene);
+    const directorOut = callDirector ? (await roles.director(omniscientView(turn, 'director'))) || {} : {};
     const directorRelease = applyRelease(turn, directorOut.release, 'director');
     if (directorRelease) releasedThisTurn.push(directorRelease);
     if (actState) {
@@ -672,17 +825,20 @@ export async function runDrama({ world, roles, options = {} }) {
         turn,
       };
     }
-    transcript.push({
-      turn,
-      role: 'director',
-      text: directorOut.direction || '',
-      meta: {
-        release: directorOut.release || null,
-        phase: staging.phase && staging.phase.turn === turn ? { ...staging.phase } : null,
-        ...(actState ? { act: directorOut.act || null } : {}),
-        ...(currentSceneMeta ? { scene: currentSceneMeta } : {}),
-      },
-    });
+    if (callDirector || directorOut.release || (staging.phase && staging.phase.turn === turn)) {
+      transcript.push({
+        turn,
+        role: 'director',
+        text: directorOut.direction || '',
+        meta: {
+          release: directorOut.release || null,
+          phase: staging.phase && staging.phase.turn === turn ? { ...staging.phase } : null,
+          ...(actState ? { act: directorOut.act || null } : {}),
+          ...(currentSceneMeta ? { scene: currentSceneMeta } : {}),
+          publicRegister: publicRegisterForTurn,
+        },
+      });
+    }
 
     // --- tutor ---
     const tutorView = omniscientView(turn, 'tutor');
@@ -727,6 +883,7 @@ export async function runDrama({ world, roles, options = {} }) {
         ...(tutorOut.proofDebt ? { proofDebt: tutorOut.proofDebt } : {}),
         ...(tutorOut.rhetoricalPolicy ? { rhetoricalPolicy: tutorOut.rhetoricalPolicy } : {}),
         ...(currentSceneMeta ? { scene: currentSceneMeta } : {}),
+        publicRegister: publicRegisterForTurn,
       },
     });
 
@@ -908,6 +1065,7 @@ export async function runDrama({ world, roles, options = {} }) {
         asserts: learnerOut.asserts || null,
         exchangeType: learnerOut.exchangeType || null,
         ...(currentSceneMeta ? { scene: currentSceneMeta } : {}),
+        publicRegister: publicRegisterForTurn,
       },
     });
 
@@ -1112,6 +1270,7 @@ export async function runDrama({ world, roles, options = {} }) {
           }
         : {}),
       ...(actState ? { act: { index: actState.index, startTurn: actState.startTurn } } : {}),
+      publicRegister: publicRegisterForTurn,
       endedBy,
     });
   }
@@ -1171,6 +1330,7 @@ export async function runDrama({ world, roles, options = {} }) {
     trajectory,
     transcript,
     ledger,
+    ...(stagePrologue ? { stagePrologue } : {}),
     firstForcedTurn,
     assertedGroundedTurn,
     turnsPlayed: turn,
@@ -1183,6 +1343,9 @@ export async function runDrama({ world, roles, options = {} }) {
       frontierFinal: computeFrontier(turn),
     },
     ...(sceneRows.length ? { scenes: sceneRows } : {}),
+    ...(sceneConfig ? { directorCadence } : {}),
+    ...(publicRegisterPlan !== 'default' ? { publicRegister: publicRegisterPlan } : {}),
+    ...(registerRows.length ? { publicRegisters: registerRows } : {}),
     ...(actState ? { acts: actState.history } : {}),
     ...(reconstructionRows.length ? { reconstruction: reconstructionRows } : {}),
     ...(plotRows.length || plotAuditRows.length || throughlineRows.length

@@ -248,6 +248,17 @@ function callClaudeCli(system, user, model) {
 
 function mockResponse(role, meta = {}) {
   if (role === 'director') {
+    if (meta.stagePrologueHint) {
+      return JSON.stringify({
+        stage_notes: `[Before the first exchange, ${meta.stagePrologueHint.title} is set as a public inquiry: ${meta.stagePrologueHint.question}]`,
+        tutor_character:
+          'The tutor enters as a patient dramaturg of evidence, careful not to outrun the learner.',
+        learner_character:
+          'The learner enters as attentive but not yet committed, willing to test each claim aloud.',
+        register_note:
+          'Any period color should be refined through these public characters, not borrowed as generic archaism.',
+      });
+    }
     return JSON.stringify({
       direction: meta.releaseSurface
         ? `[It comes before the room: ${meta.releaseSurface}]`
