@@ -300,7 +300,11 @@ conduct-policy test. The acts-mode final-assertion trigger gap was then fixed
 with a sanitized `conductEntitlement.canAssertFinal` signal and checked in
 `exports/dramatic-derivation/phase4c-final-entitlement-replay-check.md`:
 Ravensmark replay from t16 selected `invite_final_assertion`, passed compliance,
-and preserved prefix identity.
+and preserved prefix identity. The remaining non-proofDebt replay gate then
+passed in `exports/dramatic-derivation/phase4d-nonproofdebt-replay-screen.md`:
+Withercombe no-decay replay from t7 improved conduct compliance from 1/3 to
+3/3 by enforcing `ask_diagnostic` on visible/hidden conflicts, while preserving
+prefix identity and the local D curve.
 
 Goal: use the new replay facility to screen the policy from known failure
 prefixes without paying to regenerate the prefix.
@@ -325,9 +329,10 @@ Exit rule:
 
 Current next gate:
 
-- add one non-proofDebt replay fixture where S0 has an observable
-  conduct-policy failure, such as release-forbidden, unsupported assertion
-  block, diagnostic ask, or valid-alternative-route candidate.
+- Phase 5 fresh first-pass validation, if paid runs are authorized. Keep the
+  first pass small: S0 hidden + proofDebt versus S1 hidden + proofDebt +
+  conduct policy on a mixed set containing one dependency-repair case, one
+  final-entitlement case, and one diagnostic/visible-hidden-conflict case.
 
 ### Phase 5: Fresh First-Pass Validation
 
