@@ -250,11 +250,13 @@ Exit rule:
 
 ### Phase 3: Runtime-Monitor Integration
 
-Status: runtime logging and generator-compliance audit slices implemented
-2026-06-15. The current flag records policy decisions in tutor-turn metadata
-and diagnosis reports, and classifies realized tutor moves as compliant or
-noncompliant with the selected move family. It still does not constrain
-generation.
+Status: runtime logging, generator-compliance audit, and opt-in enforcement
+slices implemented 2026-06-15. `--conduct-policy` records policy decisions in
+tutor-turn metadata and diagnosis reports without constraining generation.
+`--conduct-policy-enforce` implies logging and mechanically rewrites tutor
+move/release metadata when a selected move family can be satisfied without
+bypassing a forced release. Enforcement is covered by mock/smoke tests only so
+far; it still needs replay screening on known failure episodes.
 
 Goal: wire the policy into the existing derivation runtime without changing
 historical selector behavior.
@@ -275,10 +277,10 @@ Required behavior:
 
 Exit rule:
 
-- next exit rule: mock/smoke tests prove the policy can constrain the tutor and
-  preserve replay prefix fidelity. Generator noncompliance is now audited, so
-  constraint failures must be reported as implementation failures rather than
-  policy successes.
+- mock/smoke tests prove the policy can constrain the tutor and preserve replay
+  prefix fidelity. Generator noncompliance is now audited, so constraint
+  failures must be reported as implementation failures rather than policy
+  successes.
 
 ### Phase 4: Episode-Replay Screen
 

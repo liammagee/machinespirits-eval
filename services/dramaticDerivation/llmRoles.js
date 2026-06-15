@@ -1459,6 +1459,193 @@ function conductTriggerState({
   return null;
 }
 
+const CONDUCT_INTENTS = Object.freeze({
+  repair_dependency: 'restore',
+  ask_diagnostic: 'test',
+  ask_scope_test: 'test',
+  consolidate_subproof: 'consolidate',
+  release_next_evidence: 'release',
+  block_assertion: 'confront',
+  invite_final_assertion: 'stage_recognition',
+  repair_recognition_rupture: 'stage_recognition',
+});
+
+const CONDUCT_RELEASE_FORBIDDEN = new Set([
+  'ask_diagnostic',
+  'ask_scope_test',
+  'consolidate_subproof',
+  'block_assertion',
+  'invite_final_assertion',
+  'repair_recognition_rupture',
+]);
+
+function conductIntentFor(moveFamily, fallback = 'orient') {
+  return CONDUCT_INTENTS[moveFamily] || fallback;
+}
+
+function conductPolicyDialogue(decision, { release = null, register = 'default' } = {}) {
+  const family = decision.selectedMoveFamily;
+  const view = decision.tutorView || {};
+  const surface = typeof view.surface === 'string' && view.surface.trim() ? view.surface.trim() : null;
+  const target = decision.targetPremise || view.targetPremise || release || null;
+  const learner = typeof view.learnerExcerpt === 'string' && view.learnerExcerpt.trim() ? view.learnerExcerpt.trim() : null;
+  const line =
+    family === 'repair_dependency'
+      ? surface
+        ? `Before we close anything, put this earlier piece back in full: ${surface}. Tell me what it gives us.`
+        : 'Before we close anything, recover the earlier piece in your own words, then use it here.'
+      : family === 'release_next_evidence'
+        ? surface
+          ? `Take this new piece now: ${surface}. Say what it changes before we go on.`
+          : `Take the next authorized piece${target ? ` (${target})` : ''}. Say what it changes before we go on.`
+        : family === 'ask_diagnostic'
+          ? `Pause there. What in the public record makes that step licensed${learner ? ` after "${learner}"` : ''}?`
+          : family === 'ask_scope_test'
+            ? 'Test the reach of that warrant before we use it. Where does it hold, and where would it fail?'
+            : family === 'consolidate_subproof'
+              ? 'Hold the local result still for a moment. State the pieces already on stage that make this step stand.'
+              : family === 'block_assertion'
+                ? 'Do not close on that yet. Name the public support that would make the answer follow, or keep the inquiry open.'
+                : family === 'invite_final_assertion'
+                  ? 'Now say the conclusion yourself from the public record. Which staged pieces make it unavoidable?'
+                  : family === 'repair_recognition_rupture'
+                    ? 'Let me slow down. What part of my last move failed to meet what you were asking for?'
+                    : 'Pause and say what the public record licenses next.';
+  return sanitizePublicDialogue(line, { register });
+}
+
+function updateReleaseDecisionForConductBlock(releaseDecision, { blockedRelease, reason }) {
+  if (!releaseDecision || typeof releaseDecision !== 'object') return releaseDecision;
+  return {
+    ...releaseDecision,
+    played: null,
+    overridden: true,
+    conductPolicyEnforcement: {
+      blockedRelease,
+      reason,
+    },
+  };
+}
+
+function enforceConductPolicy(decision, finalOut, { activeRegisterName = 'default' } = {}) {
+  const activeDecision = { ...decision, active: true };
+  const preCompliance = auditConductGeneratorCompliance(activeDecision, {
+    move: finalOut.move || null,
+    release: finalOut.release || null,
+  });
+  if (preCompliance.ok === true) {
+    return {
+      out: finalOut,
+      preCompliance,
+      postCompliance: preCompliance,
+      enforcement: {
+        enabled: true,
+        applied: false,
+        changed: false,
+        preOk: true,
+        postOk: true,
+        reason: 'already_compliant',
+      },
+    };
+  }
+
+  const family = decision.selectedMoveFamily;
+  const target = decision.targetPremise || finalOut.move?.targetPremise || null;
+  const intent = conductIntentFor(family, finalOut.move?.intent || 'orient');
+  const enforcedTarget =
+    (family === 'repair_dependency' || target) ? target : finalOut.move?.targetPremise || null;
+  let out = {
+    ...finalOut,
+    dialogue: conductPolicyDialogue(decision, {
+      release: finalOut.release || target || null,
+      register: activeRegisterName,
+    }),
+    move: {
+      figure: finalOut.move?.figure || 'erotema',
+      targetPremise: enforcedTarget,
+      intent,
+    },
+  };
+
+  let reason = `forced_${family}`;
+  let blockedRelease = null;
+  let forcedReleasePreserved = false;
+
+  if (family === 'release_next_evidence') {
+    const certified = decision.targetPremise || finalOut.releaseDecision?.played || finalOut.release || null;
+    if (certified) {
+      out = {
+        ...out,
+        release: certified,
+        ...(out.releaseDecision
+          ? {
+              releaseDecision: {
+                ...out.releaseDecision,
+                played: certified,
+                conductPolicyEnforcement: {
+                  requiredRelease: certified,
+                  reason,
+                },
+              },
+            }
+          : {}),
+      };
+    }
+  } else if (CONDUCT_RELEASE_FORBIDDEN.has(family) && finalOut.release) {
+    const forced = finalOut.releaseDecision?.forced && finalOut.releaseDecision.forced === finalOut.release;
+    if (forced) {
+      forcedReleasePreserved = true;
+      reason = `forced_release_preserved_for_${family}`;
+    } else {
+      blockedRelease = finalOut.release;
+      reason = `blocked_release_for_${family}`;
+      out = {
+        ...out,
+        release: null,
+        releaseDecision: updateReleaseDecisionForConductBlock(out.releaseDecision, {
+          blockedRelease,
+          reason,
+        }),
+      };
+      delete out.releaseReason;
+    }
+  }
+
+  const postCompliance = auditConductGeneratorCompliance(activeDecision, {
+    move: out.move || null,
+    release: out.release || null,
+  });
+  const before = JSON.stringify({
+    dialogue: finalOut.dialogue || '',
+    move: finalOut.move || null,
+    release: finalOut.release || null,
+  });
+  const after =
+    JSON.stringify({
+      dialogue: out.dialogue || '',
+      move: out.move || null,
+      release: out.release || null,
+    });
+  const changed = before !== after;
+
+  return {
+    out,
+    preCompliance,
+    postCompliance,
+    enforcement: {
+      enabled: true,
+      applied: true,
+      changed,
+      preOk: preCompliance.ok === true,
+      postOk: postCompliance.ok === true,
+      reason,
+      selectedMoveFamily: family,
+      ...(blockedRelease ? { blockedRelease } : {}),
+      ...(forcedReleasePreserved ? { forcedReleasePreserved: true } : {}),
+    },
+  };
+}
+
 function conductRuntimeLog(args) {
   const state = conductTriggerState(args);
   if (!state) {
@@ -1467,27 +1654,59 @@ function conductRuntimeLog(args) {
       release: args.finalOut.release || null,
     });
     return {
-      schema: CONDUCT_POLICY_SCHEMA,
-      active: false,
-      loggingOnly: true,
-      reasonCode: 'no_policy_trigger',
-      selectedMoveFamily: null,
-      generatorCompliance,
+      out: args.finalOut,
+      policy: {
+        schema: CONDUCT_POLICY_SCHEMA,
+        active: false,
+        loggingOnly: !args.enforce,
+        reasonCode: 'no_policy_trigger',
+        selectedMoveFamily: null,
+        generatorCompliance,
+        ...(args.enforce
+          ? {
+              enforcement: {
+                enabled: true,
+                applied: false,
+                changed: false,
+                preOk: null,
+                postOk: null,
+                reason: 'no_policy_trigger',
+              },
+            }
+          : {}),
+      },
     };
   }
   const decision = selectConductMove(state);
-  const generatorCompliance = auditConductGeneratorCompliance({ ...decision, active: true }, {
-    move: args.finalOut.move || null,
-    release: args.finalOut.release || null,
-  });
+  const enforced = args.enforce
+    ? enforceConductPolicy({ ...decision, active: true }, args.finalOut, {
+        activeRegisterName: args.activeRegisterName,
+      })
+    : null;
+  const realizedOut = enforced?.out || args.finalOut;
+  const generatorCompliance =
+    enforced?.postCompliance ||
+    auditConductGeneratorCompliance({ ...decision, active: true }, {
+      move: realizedOut.move || null,
+      release: realizedOut.release || null,
+    });
   return {
-    ...decision,
-    active: true,
-    loggingOnly: true,
-    triggerType: state.triggerType,
-    realizedMove: args.finalOut.move || null,
-    realizedRelease: args.finalOut.release || null,
-    generatorCompliance,
+    out: realizedOut,
+    policy: {
+      ...decision,
+      active: true,
+      loggingOnly: !args.enforce,
+      triggerType: state.triggerType,
+      realizedMove: realizedOut.move || null,
+      realizedRelease: realizedOut.release || null,
+      ...(enforced
+        ? {
+            preEnforcementCompliance: enforced.preCompliance,
+            enforcement: enforced.enforcement,
+          }
+        : {}),
+      generatorCompliance,
+    },
   };
 }
 
@@ -1567,6 +1786,7 @@ export function makeLlmTutor(
     throughline = false,
     rhetoricalPolicy = null,
     conductPolicy = false,
+    conductPolicyEnforce = false,
     publicRegister = 'default',
   } = {},
 ) {
@@ -1698,6 +1918,7 @@ export function makeLlmTutor(
       'derivation.llmRoles: throughline requires plot (the arc verdict rides the act-close audit — no plot loop, nothing binds)',
     );
   }
+  const conductPolicyEnabled = Boolean(conductPolicy || conductPolicyEnforce);
   const rhetoricalPolicyConfig = rhetoricalPolicy ? normalizeRhetoricalPolicyConfig(rhetoricalPolicy) : null;
   const system = tutorSystem(world, script, dials, {
     actsMode,
@@ -2010,7 +2231,7 @@ export function makeLlmTutor(
         : null;
     const visibleStalling = visibleFeatures ? isStalling(visibleFeatures) : false;
     const proofDebt = proofDebtGuard && view.proofDebt?.active ? view.proofDebt : null;
-    const conductProofDebt = conductPolicy && view.proofDebt?.active ? view.proofDebt : null;
+    const conductProofDebt = conductPolicyEnabled && view.proofDebt?.active ? view.proofDebt : null;
     const topProofDebt = proofDebt?.debts?.[0] || null;
     const proofDebtSection = topProofDebt
       ? [
@@ -2659,7 +2880,7 @@ export function makeLlmTutor(
     const draftGuard = applyProofDebtGuard(draft, 'draft');
     draft = draftGuard.out;
     const conductLog = (finalOut, proofDebtAudit) =>
-      conductPolicy
+      conductPolicyEnabled
         ? conductRuntimeLog({
             view,
             conductProofDebt,
@@ -2668,14 +2889,16 @@ export function makeLlmTutor(
             finalOut,
             proofDebtAudit,
             visibleConsolidation,
+            enforce: conductPolicyEnforce,
+            activeRegisterName,
           })
-        : null;
+        : { out: finalOut, policy: null };
     if (!superego) {
-      const policy = conductLog(draft, draftGuard.audit);
+      const logged = conductLog(draft, draftGuard.audit);
       return {
-        ...draft,
+        ...logged.out,
         ...(draftGuard.audit ? { proofDebt: draftGuard.audit } : {}),
-        ...(policy ? { conductPolicy: policy } : {}),
+        ...(logged.policy ? { conductPolicy: logged.policy } : {}),
       };
     }
 
@@ -2926,12 +3149,12 @@ export function makeLlmTutor(
         : {}),
     };
     if (!segOut.intervene || !note) {
-      const policy = conductLog(draft, draftGuard.audit);
+      const logged = conductLog(draft, draftGuard.audit);
       return {
-        ...draft,
+        ...logged.out,
         deliberation,
         ...(draftGuard.audit ? { proofDebt: draftGuard.audit } : {}),
-        ...(policy ? { conductPolicy: policy } : {}),
+        ...(logged.policy ? { conductPolicy: logged.policy } : {}),
       };
     }
 
@@ -3051,11 +3274,11 @@ export function makeLlmTutor(
     };
     const revisedGuard = applyProofDebtGuard(revised, 'revision');
     revised = revisedGuard.out;
-    const policy = conductLog(revised, revisedGuard.audit || draftGuard.audit);
+    const logged = conductLog(revised, revisedGuard.audit || draftGuard.audit);
     return {
-      ...revised,
+      ...logged.out,
       ...(revisedGuard.audit || draftGuard.audit ? { proofDebt: revisedGuard.audit || draftGuard.audit } : {}),
-      ...(policy ? { conductPolicy: policy } : {}),
+      ...(logged.policy ? { conductPolicy: logged.policy } : {}),
     };
   };
   if (plot) {

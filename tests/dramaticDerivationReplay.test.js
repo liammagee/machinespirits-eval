@@ -278,6 +278,7 @@ test('episode CLI inherits modern guard and plot dials while preserving replay p
     '--release-authority',
     '--pacing-guard-selective-v3',
     '--conduct-policy',
+    '--conduct-policy-enforce',
     '--plot',
     '--throughline',
   ]);
@@ -303,7 +304,9 @@ test('episode CLI inherits modern guard and plot dials while preserving replay p
   assert.equal(d.visiblePushProbeGuard, true);
   assert.equal(d.pacingGuardSelector.schema, 'dramatic-derivation.representation-selector.v3');
   assert.equal(d.conductPolicy, true);
+  assert.equal(d.conductPolicyEnforce, true);
   assert.ok(d.conductPolicyReport?.loggedTurns >= 1);
+  assert.ok(d.conductPolicyReport?.enforcement?.enabledTurns >= 1);
   assert.equal(d.plotDial, true);
   assert.equal(d.throughlineDial, true);
 

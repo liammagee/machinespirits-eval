@@ -215,6 +215,12 @@
  *                                       move-family decisions from the same
  *                                       release/proof-debt evidence, but does
  *                                       not constrain generation.)
+ *     [--conduct-policy-enforce]       (A20 opt-in enforcement. Implies
+ *                                       --conduct-policy, mechanically rewrites
+ *                                       tutor move/release metadata to satisfy
+ *                                       selected conduct-family constraints when
+ *                                       this can be done without bypassing a
+ *                                       forced release.)
  *     [--compiled-guard]               (P1 guard compiler runtime. Compile this
  *                                       world's WorldIR -> GuardSpec and feed it
  *                                       to active --pacing-guard / --proof-debt-
@@ -683,7 +689,8 @@ async function main() {
     );
     process.exit(1);
   }
-  const conductPolicy = flag('conduct-policy');
+  const conductPolicyEnforce = flag('conduct-policy-enforce');
+  const conductPolicy = flag('conduct-policy') || conductPolicyEnforce;
   const compiledGuard = flag('compiled-guard');
   if (
     compiledGuard &&
@@ -836,6 +843,7 @@ async function main() {
       visibleGuard,
       proofDebtGuard,
       conductPolicy,
+      conductPolicyEnforce,
       compiledGuard,
       plotDial: plot,
       throughlineDial: throughline,
@@ -958,7 +966,14 @@ async function main() {
   }
   if (conductPolicy) {
     console.log(
-      'tutor   CONDUCT POLICY LOG ON — A20 move-family decisions are recorded beside tutor turns; no generation constraint yet',
+      conductPolicyEnforce
+        ? 'tutor   CONDUCT POLICY LOG ON — A20 move-family decisions are recorded beside tutor turns before/after enforcement'
+        : 'tutor   CONDUCT POLICY LOG ON — A20 move-family decisions are recorded beside tutor turns; no generation constraint yet',
+    );
+  }
+  if (conductPolicyEnforce) {
+    console.log(
+      'tutor   CONDUCT POLICY ENFORCE ON — A20 move-family decisions may mechanically rewrite tutor move/release metadata before the turn is recorded',
     );
   }
   if (guardSpec) {
@@ -1015,6 +1030,7 @@ async function main() {
       visibleConsolidationGuard,
       proofDebtGuard,
       conductPolicy,
+      conductPolicyEnforce,
       guardSpec,
       plot,
       throughline,
@@ -1072,6 +1088,7 @@ async function main() {
         ...(acts ? { acts } : {}),
         ...(proofDebtGuard ? { proofDebtGuard } : {}),
         ...(conductPolicy ? { conductPolicy } : {}),
+        ...(conductPolicyEnforce ? { conductPolicyEnforce } : {}),
         ...(guardSpec ? { guardSpec } : {}),
       },
     });
@@ -1128,6 +1145,7 @@ async function main() {
     visibleGuard,
     proofDebtGuard,
     conductPolicy,
+    conductPolicyEnforce,
     compiledGuard,
     guardSpec: guardSpec
       ? {

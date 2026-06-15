@@ -714,6 +714,19 @@ export function conductPolicyReport(result) {
       realizedMove: l.meta.conductPolicy.realizedMove || l.meta.move || null,
       realizedRelease: l.meta.conductPolicy.realizedRelease || l.meta.release || null,
       loggingOnly: l.meta.conductPolicy.loggingOnly === true,
+      enforcementEnabled: l.meta.conductPolicy.enforcement?.enabled === true,
+      enforcementApplied: l.meta.conductPolicy.enforcement?.applied === true,
+      enforcementChanged: l.meta.conductPolicy.enforcement?.changed === true,
+      enforcementReason: l.meta.conductPolicy.enforcement?.reason || null,
+      preEnforcementOk:
+        l.meta.conductPolicy.preEnforcementCompliance?.checked === true
+          ? l.meta.conductPolicy.preEnforcementCompliance?.ok === true
+          : null,
+      postEnforcementOk:
+        l.meta.conductPolicy.enforcement?.enabled === true &&
+        l.meta.conductPolicy.generatorCompliance?.checked === true
+          ? l.meta.conductPolicy.generatorCompliance?.ok === true
+          : null,
       complianceChecked: l.meta.conductPolicy.generatorCompliance?.checked === true,
       complianceOk:
         l.meta.conductPolicy.generatorCompliance?.checked === true
@@ -734,6 +747,9 @@ export function conductPolicyReport(result) {
   const checked = rows.filter((row) => row.complianceChecked);
   const passed = checked.filter((row) => row.complianceOk === true);
   const failed = checked.filter((row) => row.complianceOk === false);
+  const enforcementRows = rows.filter((row) => row.enforcementEnabled);
+  const enforcementApplied = enforcementRows.filter((row) => row.enforcementApplied);
+  const enforcementChanged = enforcementRows.filter((row) => row.enforcementChanged);
   return {
     schema: 'dramatic-derivation.conduct-policy-report.v0',
     loggedTurns: rows.length,
@@ -756,6 +772,22 @@ export function conductPolicyReport(result) {
         realizedMove: row.realizedMove,
         realizedRelease: row.realizedRelease,
         failures: row.complianceFailures,
+      })),
+    },
+    enforcement: {
+      enabledTurns: enforcementRows.length,
+      applied: enforcementApplied.length,
+      changed: enforcementChanged.length,
+      alreadyCompliant: enforcementRows.filter((row) => row.enforcementReason === 'already_compliant').length,
+      skipped: enforcementRows.filter((row) => !row.enforcementApplied).length,
+      postFailed: enforcementRows.filter((row) => row.postEnforcementOk === false).length,
+      changes: enforcementApplied.map((row) => ({
+        turn: row.turn,
+        selectedMoveFamily: row.selectedMoveFamily,
+        reasonCode: row.reasonCode,
+        reason: row.enforcementReason,
+        preOk: row.preEnforcementOk,
+        postOk: row.postEnforcementOk,
       })),
     },
     decisions: rows,
@@ -1496,6 +1528,10 @@ export function renderEvalPanel(diagnosis) {
         cp.complianceChecked
           ? `${cp.compliance.passed}/${cp.compliance.checked} pass${cp.compliance.failed ? `, ${cp.compliance.failed} fail` : ''}`
           : 'not checked'
+      }${
+        cp.enforcement?.enabledTurns
+          ? ` · enforcement applied ${cp.enforcement.applied}/${cp.enforcement.enabledTurns}${cp.enforcement.postFailed ? `, post-fail ${cp.enforcement.postFailed}` : ''}`
+          : ''
       }`,
     );
   }

@@ -272,6 +272,38 @@ test('runtime conduct policy flags generator noncompliance without constraining 
   );
 });
 
+test('runtime conduct policy enforcement repairs noncompliant proof-debt moves without proof-debt guard', async () => {
+  const proofDebt = smokeProofDebtTutorView();
+  const { client } = stubClient({
+    tutor: [
+      {
+        dialogue: 'We can close from here.',
+        move: { figure: 'erotema', target_premise: null, intent: 'stage_recognition' },
+      },
+    ],
+  });
+  const tutor = makeLlmTutor(smokeWorld, client, actsOpts({ conductPolicyEnforce: true }));
+  const out = await tutor(actsView(7, { proofDebt }));
+
+  assert.equal(out.proofDebt, undefined);
+  assert.equal(out.move.intent, 'restore');
+  assert.equal(out.move.targetPremise, 'p1');
+  assert.match(out.dialogue, /put this earlier piece back in full/i);
+  assert.equal(out.conductPolicy.active, true);
+  assert.equal(out.conductPolicy.loggingOnly, false);
+  assert.equal(out.conductPolicy.selectedMoveFamily, 'repair_dependency');
+  assert.equal(out.conductPolicy.preEnforcementCompliance.checked, true);
+  assert.equal(out.conductPolicy.preEnforcementCompliance.ok, false);
+  assert.equal(out.conductPolicy.enforcement.enabled, true);
+  assert.equal(out.conductPolicy.enforcement.applied, true);
+  assert.equal(out.conductPolicy.enforcement.changed, true);
+  assert.equal(out.conductPolicy.enforcement.preOk, false);
+  assert.equal(out.conductPolicy.enforcement.postOk, true);
+  assert.deepEqual(out.conductPolicy.realizedMove, out.move);
+  assert.equal(out.conductPolicy.generatorCompliance.checked, true);
+  assert.equal(out.conductPolicy.generatorCompliance.ok, true);
+});
+
 test('diagnosis summarizes conduct-policy decisions from transcript metadata', () => {
   const result = {
     worldId: smokeWorld.id,
@@ -320,4 +352,5 @@ test('diagnosis summarizes conduct-policy decisions from transcript metadata', (
   assert.equal(report.compliance.checked, 1);
   assert.equal(report.compliance.passed, 1);
   assert.equal(report.compliance.failed, 0);
+  assert.equal(report.enforcement.enabledTurns, 0);
 });

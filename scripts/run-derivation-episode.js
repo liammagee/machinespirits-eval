@@ -52,6 +52,7 @@
  *     [--same-turn-assertion-affordance on|off]
  *     [--proof-debt-guard on|off]
  *     [--conduct-policy on|off]
+ *     [--conduct-policy-enforce on|off]
  *     [--compiled-guard on|off]
  *     [--plot on|off] [--throughline on|off]
  *     [--critic auto|real|mock|off]    (default off — episodes are scratch
@@ -491,11 +492,17 @@ async function main() {
     console.error('--proof-debt-guard on requires --repair-clause on');
     process.exit(1);
   }
-  const conductPolicy = track(
-    'conduct-policy',
-    triState('conduct-policy', Boolean(srcDiag.conductPolicy)),
-    Boolean(srcDiag.conductPolicy),
+  const conductPolicyEnforce = track(
+    'conduct-policy-enforce',
+    triState('conduct-policy-enforce', Boolean(srcDiag.conductPolicyEnforce)),
+    Boolean(srcDiag.conductPolicyEnforce),
   );
+  const requestedConductPolicy = track(
+    'conduct-policy',
+    triState('conduct-policy', Boolean(srcDiag.conductPolicy) || conductPolicyEnforce),
+    Boolean(srcDiag.conductPolicy) || Boolean(srcDiag.conductPolicyEnforce),
+  );
+  const conductPolicy = requestedConductPolicy || conductPolicyEnforce;
   const compiledGuard = track(
     'compiled-guard',
     triState('compiled-guard', Boolean(srcDiag.compiledGuard)),
@@ -632,6 +639,7 @@ async function main() {
       visibleGuard,
       proofDebtGuard,
       conductPolicy,
+      conductPolicyEnforce,
       compiledGuard,
       plotDial: plot,
       throughlineDial: throughline,
@@ -688,7 +696,14 @@ async function main() {
   if (assertionGroundingGate) console.log('learner ANSWER GATE ON');
   if (sameTurnAssertionAffordance) console.log('learner SAME-TURN ASSERTION AFFORDANCE ON');
   if (proofDebtGuard) console.log('tutor   PROOF-DEBT GUARD ON');
-  if (conductPolicy) console.log('tutor   CONDUCT POLICY LOG ON');
+  if (conductPolicy) {
+    console.log(
+      conductPolicyEnforce
+        ? 'tutor   CONDUCT POLICY LOG ON — before/after enforcement'
+        : 'tutor   CONDUCT POLICY LOG ON',
+    );
+  }
+  if (conductPolicyEnforce) console.log('tutor   CONDUCT POLICY ENFORCE ON');
   if (guardSpec) console.log(`guard   COMPILED — WorldIR -> GuardSpec (${guardSpec.world.id})`);
   if (plot) console.log(`tutor   PLOT ON${throughline ? ' + THROUGHLINE ON' : ''}`);
   console.log(
@@ -717,6 +732,7 @@ async function main() {
       visibleConsolidationGuard,
       proofDebtGuard,
       conductPolicy,
+      conductPolicyEnforce,
       guardSpec,
       plot,
       throughline,
@@ -766,6 +782,7 @@ async function main() {
         ...(acts ? { acts } : {}),
         ...(proofDebtGuard ? { proofDebtGuard } : {}),
         ...(conductPolicy ? { conductPolicy } : {}),
+        ...(conductPolicyEnforce ? { conductPolicyEnforce } : {}),
         ...(guardSpec ? { guardSpec } : {}),
       },
     });
@@ -869,6 +886,7 @@ async function main() {
     visibleGuard,
     proofDebtGuard,
     conductPolicy,
+    conductPolicyEnforce,
     compiledGuard,
     guardSpec: guardSpec
       ? {
