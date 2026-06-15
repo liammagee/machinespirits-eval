@@ -1378,6 +1378,7 @@ function conductTriggerState({
   conductProofDebt,
   releaseBits,
   forcedNote,
+  finalEntitlement,
   finalOut,
   visibleConsolidation,
 }) {
@@ -1424,7 +1425,7 @@ function conductTriggerState({
     };
   }
 
-  if (forcedNote) {
+  if (forcedNote || finalEntitlement?.canAssertFinal) {
     return {
       id: `t${view.turn}:forced`,
       triggerType: 'final_assertion_available_but_delayed',
@@ -2257,6 +2258,7 @@ export function makeLlmTutor(
       lastPoint && lastPoint.forced
         ? "THE LEARNER'S OWN GROUNDED FACTS NOW FORCE THE CONCLUSION. Stage the recognition — bring them to say it and ground it; do not say it yourself."
         : null;
+    const finalEntitlement = view.conductEntitlement?.canAssertFinal ? { canAssertFinal: true } : null;
     const windowLines = playable.map((e) => {
       const held = view.turn - e.turn;
       const status =
@@ -2890,6 +2892,7 @@ export function makeLlmTutor(
             conductProofDebt,
             releaseBits,
             forcedNote,
+            finalEntitlement,
             finalOut,
             proofDebtAudit,
             visibleConsolidation,

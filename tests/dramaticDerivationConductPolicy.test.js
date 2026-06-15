@@ -28,11 +28,12 @@ const fixtures = JSON.parse(
 
 const actsOpts = (extra = {}) => ({ script: SCRIPT, actsMode: true, decayVisibility: 'conduct', ...extra });
 
-const actsView = (turn, { ledger = [], transcript = [], proofDebt = null } = {}) => ({
+const actsView = (turn, { ledger = [], transcript = [], proofDebt = null, conductEntitlement = null } = {}) => ({
   turn,
   ledger,
   transcript,
   acts: { index: 1, startTurn: 1, turnsThisAct: turn - 1, brief: null, closed: [] },
+  ...(conductEntitlement ? { conductEntitlement } : {}),
   ...(proofDebt ? { proofDebt } : {}),
 });
 
@@ -304,6 +305,48 @@ test('runtime conduct policy enforcement repairs noncompliant proof-debt moves w
   assert.deepEqual(out.conductPolicy.realizedMove, out.move);
   assert.equal(out.conductPolicy.generatorCompliance.checked, true);
   assert.equal(out.conductPolicy.generatorCompliance.ok, true);
+});
+
+test('runtime conduct policy can invite final assertion in acts mode without prompt leakage', async () => {
+  const { client, calls } = stubClient({
+    tutor: [
+      {
+        dialogue: 'Let us circle the record once more.',
+        move: { figure: 'erotema', target_premise: null, intent: 'orient' },
+      },
+    ],
+  });
+  const tutor = makeLlmTutor(smokeWorld, client, actsOpts({ conductPolicy: true }));
+  const out = await tutor(actsView(9, { conductEntitlement: { canAssertFinal: true } }));
+
+  assert.equal(out.conductPolicy.active, true);
+  assert.equal(out.conductPolicy.selectedMoveFamily, 'invite_final_assertion');
+  assert.equal(out.conductPolicy.reasonCode, 'final_assertion_available');
+  assert.equal(out.conductPolicy.generatorCompliance.checked, true);
+  assert.equal(out.conductPolicy.generatorCompliance.ok, false);
+  assert.equal(calls[0].meta.conductEntitlement, undefined);
+  assert.equal(calls[0].meta.conductPolicy, undefined);
+  assert.doesNotMatch(calls[0].user, /THE LEARNER'S OWN GROUNDED FACTS/u);
+  assert.doesNotMatch(calls[0].user, /D=/u);
+});
+
+test('runtime conduct policy keeps proof-debt repair ahead of final assertion entitlement', async () => {
+  const proofDebt = smokeProofDebtTutorView();
+  const { client } = stubClient({
+    tutor: [
+      {
+        dialogue: 'Now say the answer from the public record.',
+        move: { figure: 'erotema', target_premise: null, intent: 'stage_recognition' },
+      },
+    ],
+  });
+  const tutor = makeLlmTutor(smokeWorld, client, actsOpts({ conductPolicy: true }));
+  const out = await tutor(actsView(9, { proofDebt, conductEntitlement: { canAssertFinal: true } }));
+
+  assert.equal(out.conductPolicy.active, true);
+  assert.equal(out.conductPolicy.selectedMoveFamily, 'repair_dependency');
+  assert.equal(out.conductPolicy.reasonCode, 'dependency_repair_needed');
+  assert.equal(out.conductPolicy.targetPremise, 'p1');
 });
 
 test('diagnosis summarizes conduct-policy decisions from transcript metadata', () => {

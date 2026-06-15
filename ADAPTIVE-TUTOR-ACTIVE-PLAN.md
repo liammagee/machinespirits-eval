@@ -296,7 +296,11 @@ one tutor move to restore `p_bearing`, passed compliance, and held D=4 through
 the suffix. This is still not first-pass evidence and still not proof of
 value-add over hidden + proofDebt. A small enforcement-text punctuation issue
 observed in the Phase 4b replay was fixed after the screen and covered by the
-conduct-policy test.
+conduct-policy test. The acts-mode final-assertion trigger gap was then fixed
+with a sanitized `conductEntitlement.canAssertFinal` signal and checked in
+`exports/dramatic-derivation/phase4c-final-entitlement-replay-check.md`:
+Ravensmark replay from t16 selected `invite_final_assertion`, passed compliance,
+and preserved prefix identity.
 
 Goal: use the new replay facility to screen the policy from known failure
 prefixes without paying to regenerate the prefix.
@@ -321,8 +325,6 @@ Exit rule:
 
 Current next gate:
 
-- decide or repair the acts-mode final-assertion conduct trigger, since
-  `forcedNote` is currently unavailable when acts mode redacts `lastPoint`;
 - add one non-proofDebt replay fixture where S0 has an observable
   conduct-policy failure, such as release-forbidden, unsupported assertion
   block, diagnostic ask, or valid-alternative-route candidate.

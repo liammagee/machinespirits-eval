@@ -700,6 +700,10 @@ export async function runDrama({ world, roles, options = {} }) {
 
   const omniscientView = (turn, roleName) => {
     const proofDebt = roleName === 'tutor' && proofDebtViewActive ? currentProofDebt(turn) : null;
+    const conductEntitlement =
+      roleName === 'tutor' && (conductPolicyActive || conductPolicyEnforceActive)
+        ? { canAssertFinal: entails(validGroundedFacts(), world.rules, world.secret.fact) }
+        : null;
     const base = {
       turn,
       role: roleName,
@@ -712,6 +716,7 @@ export async function runDrama({ world, roles, options = {} }) {
       ...(sceneState ? { scene: currentSceneView() } : {}),
       ...(stagePrologue ? { stagePrologue } : {}),
       publicRegister: publicRegisterForTurn,
+      ...(conductEntitlement ? { conductEntitlement } : {}),
       ...(proofDebt
         ? { proofDebt: runtimeMonitor ? runtimeMonitor.proofDebtTutorView(proofDebt) : tutorProofDebtView(proofDebt) }
         : {}),
