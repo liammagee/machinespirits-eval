@@ -32,7 +32,7 @@ import {
   renderRhetoricalPolicy,
   RHETORICAL_FIGURES,
 } from './rhetoricalMovePolicy.js';
-import { CONDUCT_POLICY_SCHEMA, selectConductMove } from './conductPolicy.js';
+import { auditConductGeneratorCompliance, CONDUCT_POLICY_SCHEMA, selectConductMove } from './conductPolicy.js';
 import { createRuntimeMonitor } from './runtimeMonitor.js';
 // The Step-1 V arm. Imported here, NOT in pacing.js — visiblePacing.js's own audit
 // test forbids it from importing back the other way, so the hidden/visible seam
@@ -1462,19 +1462,24 @@ function conductTriggerState({
 function conductRuntimeLog(args) {
   const state = conductTriggerState(args);
   if (!state) {
+    const generatorCompliance = auditConductGeneratorCompliance(null, {
+      move: args.finalOut.move || null,
+      release: args.finalOut.release || null,
+    });
     return {
       schema: CONDUCT_POLICY_SCHEMA,
       active: false,
       loggingOnly: true,
       reasonCode: 'no_policy_trigger',
       selectedMoveFamily: null,
-      generatorCompliance: {
-        checked: false,
-        reason: 'logging_only_v0',
-      },
+      generatorCompliance,
     };
   }
   const decision = selectConductMove(state);
+  const generatorCompliance = auditConductGeneratorCompliance({ ...decision, active: true }, {
+    move: args.finalOut.move || null,
+    release: args.finalOut.release || null,
+  });
   return {
     ...decision,
     active: true,
@@ -1482,10 +1487,7 @@ function conductRuntimeLog(args) {
     triggerType: state.triggerType,
     realizedMove: args.finalOut.move || null,
     realizedRelease: args.finalOut.release || null,
-    generatorCompliance: {
-      checked: false,
-      reason: 'logging_only_v0',
-    },
+    generatorCompliance,
   };
 }
 

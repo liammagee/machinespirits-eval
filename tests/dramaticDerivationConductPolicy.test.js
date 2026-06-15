@@ -4,7 +4,9 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import {
+  auditConductGeneratorCompliance,
   auditConductTutorView,
+  CONDUCT_COMPLIANCE_SCHEMA,
   conductMoveSpecs,
   CONDUCT_MOVE_FAMILIES,
   CONDUCT_POLICY_SCHEMA,
@@ -169,6 +171,33 @@ test('conduct tutor-view audit catches forbidden hidden fields', () => {
   );
 });
 
+test('generator compliance audit checks realized move family and target', () => {
+  const ok = auditConductGeneratorCompliance(
+    { active: true, selectedMoveFamily: 'repair_dependency', targetPremise: 'p1' },
+    { move: { intent: 'restore', targetPremise: 'p1' } },
+  );
+  assert.equal(ok.schema, CONDUCT_COMPLIANCE_SCHEMA);
+  assert.equal(ok.checked, true);
+  assert.equal(ok.ok, true);
+
+  const bad = auditConductGeneratorCompliance(
+    { active: true, selectedMoveFamily: 'repair_dependency', targetPremise: 'p1' },
+    { move: { intent: 'stage_recognition', targetPremise: null } },
+  );
+  assert.equal(bad.checked, true);
+  assert.equal(bad.ok, false);
+  assert.deepEqual(
+    bad.failures.map((f) => f.code).sort(),
+    ['intent_mismatch', 'target_mismatch'],
+  );
+
+  const release = auditConductGeneratorCompliance(
+    { active: true, selectedMoveFamily: 'release_next_evidence', targetPremise: 'p2' },
+    { move: { intent: 'release', targetPremise: 'p2' }, release: 'p2' },
+  );
+  assert.equal(release.ok, true);
+});
+
 test('runtime conduct policy logs inactive rows without entering tutor prompt metadata', async () => {
   const { client, calls } = stubClient({
     tutor: [
@@ -185,10 +214,11 @@ test('runtime conduct policy logs inactive rows without entering tutor prompt me
   assert.equal(out.conductPolicy.active, false);
   assert.equal(out.conductPolicy.loggingOnly, true);
   assert.equal(out.conductPolicy.generatorCompliance.checked, false);
+  assert.equal(out.conductPolicy.generatorCompliance.ok, null);
   assert.equal(calls[0].meta.conductPolicy, undefined);
 });
 
-test('runtime conduct policy observes proof-debt state without being the enforcement path', async () => {
+test('runtime conduct policy reports compliance when proof-debt guard enforces the repair', async () => {
   const proofDebt = smokeProofDebtTutorView();
   const { client } = stubClient({
     tutor: [
@@ -213,7 +243,33 @@ test('runtime conduct policy observes proof-debt state without being the enforce
   assert.equal(out.conductPolicy.reasonCode, 'dependency_repair_needed');
   assert.equal(out.conductPolicy.targetPremise, 'p1');
   assert.deepEqual(out.conductPolicy.realizedMove, out.move);
-  assert.equal(out.conductPolicy.generatorCompliance.checked, false);
+  assert.equal(out.conductPolicy.generatorCompliance.checked, true);
+  assert.equal(out.conductPolicy.generatorCompliance.ok, true);
+});
+
+test('runtime conduct policy flags generator noncompliance without constraining generation', async () => {
+  const proofDebt = smokeProofDebtTutorView();
+  const { client } = stubClient({
+    tutor: [
+      {
+        dialogue: 'We can close from here.',
+        move: { figure: 'erotema', target_premise: null, intent: 'stage_recognition' },
+      },
+    ],
+  });
+  const tutor = makeLlmTutor(smokeWorld, client, actsOpts({ conductPolicy: true }));
+  const out = await tutor(actsView(7, { proofDebt }));
+
+  assert.equal(out.proofDebt, undefined);
+  assert.equal(out.move.intent, 'stage_recognition');
+  assert.equal(out.conductPolicy.active, true);
+  assert.equal(out.conductPolicy.selectedMoveFamily, 'repair_dependency');
+  assert.equal(out.conductPolicy.generatorCompliance.checked, true);
+  assert.equal(out.conductPolicy.generatorCompliance.ok, false);
+  assert.deepEqual(
+    out.conductPolicy.generatorCompliance.failures.map((f) => f.code).sort(),
+    ['intent_mismatch', 'target_mismatch'],
+  );
 });
 
 test('diagnosis summarizes conduct-policy decisions from transcript metadata', () => {
@@ -242,7 +298,12 @@ test('diagnosis summarizes conduct-policy decisions from transcript metadata', (
             targetPremise: 'p1',
             triggerType: 'dependency_repair_needed',
             realizedMove: { figure: 'erotema', targetPremise: 'p1', intent: 'restore' },
-            generatorCompliance: { checked: false, reason: 'logging_only_v0' },
+            generatorCompliance: {
+              checked: true,
+              ok: true,
+              reason: 'repair_dependency requires a restore move on the selected dependency',
+              failures: [],
+            },
           },
         },
       },
@@ -255,5 +316,8 @@ test('diagnosis summarizes conduct-policy decisions from transcript metadata', (
   assert.equal(report.moveFamilies.repair_dependency, 1);
   assert.equal(report.reasonCodes.dependency_repair_needed, 1);
   assert.equal(report.loggingOnly, true);
-  assert.equal(report.complianceChecked, false);
+  assert.equal(report.complianceChecked, true);
+  assert.equal(report.compliance.checked, 1);
+  assert.equal(report.compliance.passed, 1);
+  assert.equal(report.compliance.failed, 0);
 });

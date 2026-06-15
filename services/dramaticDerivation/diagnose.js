@@ -715,6 +715,11 @@ export function conductPolicyReport(result) {
       realizedRelease: l.meta.conductPolicy.realizedRelease || l.meta.release || null,
       loggingOnly: l.meta.conductPolicy.loggingOnly === true,
       complianceChecked: l.meta.conductPolicy.generatorCompliance?.checked === true,
+      complianceOk:
+        l.meta.conductPolicy.generatorCompliance?.checked === true
+          ? l.meta.conductPolicy.generatorCompliance?.ok === true
+          : null,
+      complianceFailures: l.meta.conductPolicy.generatorCompliance?.failures || [],
     }));
   if (!rows.length) return null;
   const counts = (field) => {
@@ -726,6 +731,9 @@ export function conductPolicyReport(result) {
     return out;
   };
   const active = rows.filter((row) => row.active);
+  const checked = rows.filter((row) => row.complianceChecked);
+  const passed = checked.filter((row) => row.complianceOk === true);
+  const failed = checked.filter((row) => row.complianceOk === false);
   return {
     schema: 'dramatic-derivation.conduct-policy-report.v0',
     loggedTurns: rows.length,
@@ -735,6 +743,21 @@ export function conductPolicyReport(result) {
     reasonCodes: counts('reasonCode'),
     loggingOnly: rows.every((row) => row.loggingOnly),
     complianceChecked: rows.some((row) => row.complianceChecked),
+    compliance: {
+      checked: checked.length,
+      passed: passed.length,
+      failed: failed.length,
+      unchecked: rows.length - checked.length,
+      failures: failed.map((row) => ({
+        turn: row.turn,
+        selectedMoveFamily: row.selectedMoveFamily,
+        reasonCode: row.reasonCode,
+        targetPremise: row.targetPremise,
+        realizedMove: row.realizedMove,
+        realizedRelease: row.realizedRelease,
+        failures: row.complianceFailures,
+      })),
+    },
     decisions: rows,
   };
 }
@@ -1469,7 +1492,11 @@ export function renderEvalPanel(diagnosis) {
     lines.push(
       `- **conduct policy** logged ${cp.loggedTurns} tutor turn${cp.loggedTurns === 1 ? '' : 's'} · active ${active} · ${
         families.length ? families.join(' · ') : 'no active move-family trigger'
-      } · compliance ${cp.complianceChecked ? 'checked' : 'not checked (logging only)'}`,
+      } · compliance ${
+        cp.complianceChecked
+          ? `${cp.compliance.passed}/${cp.compliance.checked} pass${cp.compliance.failed ? `, ${cp.compliance.failed} fail` : ''}`
+          : 'not checked'
+      }`,
     );
   }
   const lp = d.logicProjection?.summary;

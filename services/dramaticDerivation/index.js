@@ -5,6 +5,8 @@ export { simulateReleaseTempo, releaseSolvency, safeReleaseTurns, pacingGuardDec
 export { proofDebtReport, tutorProofDebtView } from './proofDebt.js';
 export {
   auditConductTutorView,
+  auditConductGeneratorCompliance,
+  CONDUCT_COMPLIANCE_SCHEMA,
   conductMoveSpec,
   conductMoveSpecs,
   CONDUCT_MOVE_FAMILIES,

@@ -1,4 +1,5 @@
 export const CONDUCT_POLICY_SCHEMA = 'dramatic-derivation.conduct-policy.v0';
+export const CONDUCT_COMPLIANCE_SCHEMA = 'dramatic-derivation.conduct-policy-compliance.v0';
 
 export const CONDUCT_MOVE_FAMILIES = Object.freeze([
   'repair_dependency',
@@ -86,6 +87,12 @@ const FORBIDDEN_TUTOR_KEYS = new Set([
 
 function uniq(values) {
   return [...new Set(values.filter(Boolean))];
+}
+
+function norm(value) {
+  return String(value || '')
+    .toLowerCase()
+    .trim();
 }
 
 function requireObject(value, label) {
@@ -304,6 +311,152 @@ export function selectConductMove(rawState = {}) {
     tutorView,
     nonLeakAudit,
     sourceTriggerId: state.id || null,
+  };
+}
+
+function realizedAction(raw = {}) {
+  const move = raw.move || raw.realizedMove || null;
+  return {
+    intent: norm(move?.intent),
+    targetPremise: move?.targetPremise || move?.target_premise || null,
+    release: raw.release ?? raw.realizedRelease ?? null,
+    figure: move?.figure || null,
+  };
+}
+
+function complianceSpec(moveFamily) {
+  switch (moveFamily) {
+    case 'repair_dependency':
+      return {
+        allowedIntents: ['restore'],
+        releasePolicy: 'allowed',
+        requireTarget: true,
+        rationale: 'repair_dependency requires a restore move on the selected dependency',
+      };
+    case 'release_next_evidence':
+      return {
+        allowedIntents: ['release', 'orient', 'consolidate'],
+        releasePolicy: 'required',
+        requireTarget: false,
+        rationale: 'release_next_evidence requires an actual release',
+      };
+    case 'ask_diagnostic':
+      return {
+        allowedIntents: ['test', 'confront', 'orient'],
+        releasePolicy: 'forbidden',
+        requireTarget: false,
+        rationale: 'ask_diagnostic should ask before acting, without releasing new evidence',
+      };
+    case 'ask_scope_test':
+      return {
+        allowedIntents: ['test', 'counter_mirror'],
+        releasePolicy: 'forbidden',
+        requireTarget: false,
+        rationale: 'ask_scope_test should test the warrant, not validate it or release new evidence',
+      };
+    case 'consolidate_subproof':
+      return {
+        allowedIntents: ['consolidate', 'orient', 'test'],
+        releasePolicy: 'forbidden',
+        requireTarget: false,
+        rationale: 'consolidate_subproof should keep attention on already-staged support',
+      };
+    case 'block_assertion':
+      return {
+        allowedIntents: ['test', 'counter_mirror', 'confront'],
+        releasePolicy: 'forbidden',
+        requireTarget: false,
+        rationale: 'block_assertion should interrupt unsupported closure without adding evidence',
+      };
+    case 'invite_final_assertion':
+      return {
+        allowedIntents: ['stage_recognition', 'test'],
+        releasePolicy: 'forbidden',
+        requireTarget: false,
+        rationale: 'invite_final_assertion should elicit the answer from the public record',
+      };
+    case 'repair_recognition_rupture':
+      return {
+        allowedIntents: ['stage_recognition', 'orient', 'consolidate'],
+        releasePolicy: 'forbidden',
+        requireTarget: false,
+        rationale: 'repair_recognition_rupture should acknowledge the relation before proof pressure resumes',
+      };
+    default:
+      return {
+        allowedIntents: [],
+        releasePolicy: 'forbidden',
+        requireTarget: false,
+        rationale: `unknown conduct move family ${JSON.stringify(moveFamily)}`,
+      };
+  }
+}
+
+export function auditConductGeneratorCompliance(rawDecision = {}, rawRealized = {}) {
+  const decision = rawDecision && typeof rawDecision === 'object' ? rawDecision : {};
+  const active = decision.active !== false && Boolean(decision.selectedMoveFamily);
+  const observed = realizedAction(rawRealized);
+  if (!active) {
+    return {
+      schema: CONDUCT_COMPLIANCE_SCHEMA,
+      checked: false,
+      ok: null,
+      reason: 'no_active_policy_trigger',
+      expected: null,
+      observed,
+      failures: [],
+    };
+  }
+
+  const expected = complianceSpec(decision.selectedMoveFamily);
+  const failures = [];
+  if (expected.allowedIntents.length && !expected.allowedIntents.includes(observed.intent)) {
+    failures.push({
+      code: 'intent_mismatch',
+      expected: expected.allowedIntents,
+      observed: observed.intent || null,
+    });
+  }
+  if (expected.requireTarget && decision.targetPremise && observed.targetPremise !== decision.targetPremise) {
+    failures.push({
+      code: 'target_mismatch',
+      expected: decision.targetPremise,
+      observed: observed.targetPremise,
+    });
+  }
+  if (expected.releasePolicy === 'required' && !observed.release) {
+    failures.push({ code: 'missing_release', expected: decision.targetPremise || '(any certified release)' });
+  }
+  if (expected.releasePolicy === 'forbidden' && observed.release) {
+    failures.push({ code: 'forbidden_release', observed: observed.release });
+  }
+  if (
+    expected.releasePolicy === 'required' &&
+    decision.targetPremise &&
+    observed.release &&
+    observed.release !== decision.targetPremise
+  ) {
+    failures.push({
+      code: 'release_target_mismatch',
+      expected: decision.targetPremise,
+      observed: observed.release,
+    });
+  }
+
+  return {
+    schema: CONDUCT_COMPLIANCE_SCHEMA,
+    checked: true,
+    ok: failures.length === 0,
+    reason: failures.length ? 'realized tutor move did not satisfy selected conduct move family' : expected.rationale,
+    selectedMoveFamily: decision.selectedMoveFamily,
+    expected: {
+      allowedIntents: expected.allowedIntents,
+      releasePolicy: expected.releasePolicy,
+      targetPremise: decision.targetPremise || null,
+      requireTarget: expected.requireTarget,
+    },
+    observed,
+    failures,
   };
 }
 

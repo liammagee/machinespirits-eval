@@ -250,9 +250,11 @@ Exit rule:
 
 ### Phase 3: Runtime-Monitor Integration
 
-Status: logging-only runtime slice implemented 2026-06-15. The current flag
-records policy decisions in tutor-turn metadata and diagnosis reports, but it
-does not yet constrain generation or score generator compliance.
+Status: runtime logging and generator-compliance audit slices implemented
+2026-06-15. The current flag records policy decisions in tutor-turn metadata
+and diagnosis reports, and classifies realized tutor moves as compliant or
+noncompliant with the selected move family. It still does not constrain
+generation.
 
 Goal: wire the policy into the existing derivation runtime without changing
 historical selector behavior.
@@ -274,8 +276,9 @@ Required behavior:
 Exit rule:
 
 - next exit rule: mock/smoke tests prove the policy can constrain the tutor and
-  preserve replay prefix fidelity, with generator noncompliance audited rather
-  than inferred.
+  preserve replay prefix fidelity. Generator noncompliance is now audited, so
+  constraint failures must be reported as implementation failures rather than
+  policy successes.
 
 ### Phase 4: Episode-Replay Screen
 
