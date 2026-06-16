@@ -746,6 +746,33 @@ function rowFromKey(entry) {
   return { ...JSON.parse(entry.key), score: entry.score, rationale: entry.rationales.slice(0, 2).join('; ') };
 }
 
+function discursiveSummary(calibration) {
+  if (!calibration || typeof calibration !== 'object') return null;
+  if (calibration.publicOnly !== true || calibration.mayOverrideProofControl !== false) return null;
+  return {
+    publicPosture: calibration.publicPosture || null,
+    uptakeQuality: calibration.uptakeQuality || null,
+    pressure: calibration.advisory?.pressure || null,
+    tempoBias: Array.isArray(calibration.advisory?.tempoBias) ? [...calibration.advisory.tempoBias] : [],
+  };
+}
+
+function addDiscursiveCalibration(scores, calibration) {
+  const summary = discursiveSummary(calibration);
+  if (!summary) return null;
+  const biases = Array.isArray(calibration.advisory?.rhetoricalBias) ? calibration.advisory.rhetoricalBias : [];
+  for (const bias of biases) {
+    if (!bias || typeof bias !== 'object') continue;
+    const figure = bias.figure || 'erotema';
+    const intent = bias.intent || 'test';
+    const stance = bias.stance || summary.publicPosture || 'discursive_calibration';
+    const targetPremise = bias.targetPremise || calibration.proofStep?.targetPremise || null;
+    const weight = Number.isFinite(Number(bias.weight)) ? Number(bias.weight) : 0.12;
+    add(scores, keyOf(figure, intent, targetPremise, stance), weight, `discursive calibration: ${summary.publicPosture}`);
+  }
+  return summary;
+}
+
 export function recommendRhetoricalMove(world, view, context = {}, config = true) {
   const cfg = normalizeRhetoricalPolicyConfig(config);
   if (!cfg) return null;
@@ -754,6 +781,7 @@ export function recommendRhetoricalMove(world, view, context = {}, config = true
   const lastLearner = lastLearnerLine(view.transcript);
   const exchangeType = lastLearner?.meta?.exchange?.type || null;
   const recognitionNeed = context.recognitionNeed || view.scene?.recognitionNeed || null;
+  const calibrationSummary = addDiscursiveCalibration(scores, context.discursiveCalibration || view.discursiveCalibration || null);
   const lastPoint = view.trajectory?.[view.trajectory.length - 1] || null;
   const prevPoint = view.trajectory && view.trajectory.length > 1 ? view.trajectory[view.trajectory.length - 2] : null;
   const plateau = Boolean(lastPoint && prevPoint && lastPoint.D === prevPoint.D);
@@ -828,6 +856,7 @@ export function recommendRhetoricalMove(world, view, context = {}, config = true
     turn: view.turn,
     selected,
     distribution,
+    ...(calibrationSummary ? { discursiveCalibration: calibrationSummary } : {}),
   };
 }
 
@@ -840,6 +869,11 @@ export function renderRhetoricalPolicy(policy) {
       policy.selected.targetPremise ? ` targeting ${policy.selected.targetPremise}` : ''
     }`,
     `- rationale: ${policy.selected.rationale || 'highest-weight visible fit'}`,
+    ...(policy.discursiveCalibration
+      ? [
+          `- discursive calibration: ${policy.discursiveCalibration.publicPosture} / ${policy.discursiveCalibration.uptakeQuality}; pressure ${policy.discursiveCalibration.pressure}`,
+        ]
+      : []),
     `- distribution: ${policy.distribution
       .slice(0, 4)
       .map((row) => `${row.figure}:${row.intent}:${row.weight}`)

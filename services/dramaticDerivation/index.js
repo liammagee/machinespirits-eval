@@ -13,6 +13,11 @@ export {
   visibleConflictDiagnosticBudget,
 } from './learnerEntitlement.js';
 export {
+  auditDiscursiveCalibrationPublicInput,
+  deriveDiscursiveCalibrationState,
+  DISCURSIVE_CALIBRATION_SCHEMA,
+} from './discursiveCalibration.js';
+export {
   auditConductTutorView,
   auditConductGeneratorCompliance,
   CONDUCT_COMPLIANCE_SCHEMA,
