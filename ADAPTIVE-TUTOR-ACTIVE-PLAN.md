@@ -368,10 +368,16 @@ decisions; S1 passed 12/12 and mechanically corrected two early
 non-replay world where enforcement improves local conduct compliance without
 observed final negative transfer.
 
-Current next gate: decide whether this is enough to promote conduct enforcement
-for selector-v4 visible-consolidation regimes only. Do not promote it as a
-general hidden + proofDebt default without a separate mixed-world first-pass
-matrix.
+Narrow promotion implemented 2026-06-16: fresh selector-v4 loop runs now imply
+conduct-policy enforcement, and episode replay does the same when selector-v4 is
+active unless `--conduct-policy-enforce off` is explicitly supplied. Hidden +
+proofDebt remains unchanged: it does not imply conduct policy or enforcement.
+Tests pin selector-v4 defaulting, hidden + proofDebt non-defaulting, and the
+final-turn priority edge.
+
+Current next gate: use the promoted selector-v4 clamp in visible-consolidation
+runs. Do not promote conduct enforcement as a general hidden + proofDebt default
+without a separate mixed-world first-pass matrix.
 
 Goal: test whether the policy survives outside replay.
 

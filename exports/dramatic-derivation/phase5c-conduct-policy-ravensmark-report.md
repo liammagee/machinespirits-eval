@@ -97,6 +97,13 @@ This supports promoting conduct enforcement only as a selector-v4
 visible-consolidation clamp. It still does not justify making enforcement the
 general hidden + proofDebt default.
 
+Implementation update, 2026-06-16: this narrow promotion is now wired into the
+fresh loop runner. `--pacing-guard-selective-v4` implies conduct-policy
+enforcement by default. Episode replay mirrors that behavior when selector-v4
+is active, while preserving an explicit `--conduct-policy-enforce off` override
+for exact old-condition reconstruction. Hidden + proofDebt alone remains
+unchanged and does not imply conduct policy.
+
 ## Commands
 
 The runner used the paid stack:
@@ -140,6 +147,34 @@ S1 added:
 ```bash
 --conduct-policy-enforce
 ```
+
+Promoted selector-v4 command shape for future visible-consolidation candidates:
+
+```bash
+node scripts/run-derivation-loop.js \
+  --world <world.yaml> \
+  --script <script.md> \
+  --out exports/dramatic-derivation/loop \
+  --group <group> \
+  --real \
+  --superego \
+  --acts '{"minActTurns":3,"maxActTurns":8}' \
+  --decay '{"rate":0.75,"graceTurns":1,"maxConcurrent":2,"startTurn":1,"mutateShare":1.0,"seed":1,"pool":"staged"}' \
+  --confront \
+  --repair-clause \
+  --release-authority \
+  --plot \
+  --throughline \
+  --critic-feedback off \
+  --critic off \
+  --pacing-guard-selective-v4 \
+  --proof-debt-guard \
+  --label <label>
+```
+
+`--pacing-guard-selective-v4` now supplies conduct-policy enforcement by
+default. Add `--conduct-policy-enforce off` only in episode replay when the
+goal is exact old-condition reconstruction.
 
 ## Caveats
 

@@ -202,8 +202,9 @@
  *                                       accepted only when the hidden guard
  *                                       also marks the release safe.)
  *     [--pacing-guard-selective-v4]    (Selector v4 probe; hidden default plus
- *                                       visible hold/consolidation and a
- *                                       grounded-answer gate. Visible state
+ *                                       visible hold/consolidation, a grounded-
+ *                                       answer gate, and conduct-policy
+ *                                       enforcement by default. Visible state
  *                                       cannot accelerate release.)
  *     [--proof-debt-guard]             (requires --repair-clause. When decay has
  *                                       dropped an already-staged proof-critical
@@ -215,7 +216,8 @@
  *                                       move-family decisions from the same
  *                                       release/proof-debt evidence, but does
  *                                       not constrain generation.)
- *     [--conduct-policy-enforce]       (A20 opt-in enforcement. Implies
+ *     [--conduct-policy-enforce]       (A20 opt-in enforcement, also implied by
+ *                                       --pacing-guard-selective-v4. Implies
  *                                       --conduct-policy, mechanically rewrites
  *                                       tutor move/release metadata to satisfy
  *                                       selected conduct-family constraints when
@@ -689,7 +691,7 @@ async function main() {
     );
     process.exit(1);
   }
-  const conductPolicyEnforce = flag('conduct-policy-enforce');
+  const conductPolicyEnforce = flag('conduct-policy-enforce') || pacingGuardSelectiveV4;
   const conductPolicy = flag('conduct-policy') || conductPolicyEnforce;
   const compiledGuard = flag('compiled-guard');
   if (

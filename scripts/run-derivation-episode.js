@@ -48,7 +48,8 @@
  *     [--pacing-guard-selective-v1 on|off]
  *     [--pacing-guard-selective-v2 on|off]
  *     [--pacing-guard-selective-v3 on|off]
- *     [--pacing-guard-selective-v4 on|off]
+ *     [--pacing-guard-selective-v4 on|off] (implies conduct-policy enforcement
+ *                                       unless --conduct-policy-enforce off)
  *     [--same-turn-assertion-affordance on|off]
  *     [--proof-debt-guard on|off]
  *     [--conduct-policy on|off]
@@ -492,9 +493,11 @@ async function main() {
     console.error('--proof-debt-guard on requires --repair-clause on');
     process.exit(1);
   }
+  const conductPolicyEnforceExplicit = arg('conduct-policy-enforce', null);
+  const conductPolicyEnforceDefault = Boolean(srcDiag.conductPolicyEnforce) || pacingGuardSelectiveV4;
   const conductPolicyEnforce = track(
     'conduct-policy-enforce',
-    triState('conduct-policy-enforce', Boolean(srcDiag.conductPolicyEnforce)),
+    triState('conduct-policy-enforce', conductPolicyEnforceDefault),
     Boolean(srcDiag.conductPolicyEnforce),
   );
   const requestedConductPolicy = track(
@@ -502,7 +505,7 @@ async function main() {
     triState('conduct-policy', Boolean(srcDiag.conductPolicy) || conductPolicyEnforce),
     Boolean(srcDiag.conductPolicy) || Boolean(srcDiag.conductPolicyEnforce),
   );
-  const conductPolicy = requestedConductPolicy || conductPolicyEnforce;
+  const conductPolicy = requestedConductPolicy || conductPolicyEnforce || (pacingGuardSelectiveV4 && conductPolicyEnforceExplicit !== 'off');
   const compiledGuard = track(
     'compiled-guard',
     triState('compiled-guard', Boolean(srcDiag.compiledGuard)),

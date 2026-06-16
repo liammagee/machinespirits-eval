@@ -364,6 +364,67 @@ test('episode CLI inherits selector v4 consolidation, answer-gate, and same-turn
   assert.equal(d.assertionGroundingGate, true);
   assert.equal(d.sameTurnAssertionAffordance, true);
   assert.equal(d.pacingGuardSelector.schema, 'dramatic-derivation.representation-selector.v4');
+  assert.equal(d.conductPolicy, true);
+  assert.equal(d.conductPolicyEnforce, true);
+  assert.ok(d.conductPolicyReport?.enforcement?.enabledTurns >= 1);
+
+  fs.rmSync(tmp, { recursive: true, force: true });
+});
+
+test('fresh loop defaults conduct enforcement only for selector v4, not hidden plus proofDebt', { timeout: CLI_TIMEOUT }, () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'derivation-v4-conduct-default-'));
+  const run = (args) =>
+    execFileSync(process.execPath, [path.join(ROOT, 'scripts/run-derivation-loop.js'), ...args], {
+      cwd: ROOT,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+
+  run([
+    '--world',
+    'config/drama-derivation/world-000-smoke.yaml',
+    '--label',
+    'v4',
+    '--out',
+    path.join(tmp, 'loop'),
+    '--critic',
+    'off',
+    '--release-authority',
+    '--pacing-guard-selective-v4',
+  ]);
+  const v4 = JSON.parse(fs.readFileSync(path.join(tmp, 'loop/v4/diagnosis.json'), 'utf8'));
+  assert.equal(v4.pacingGuardSelectiveV4, true);
+  assert.equal(v4.visibleConsolidationGuard, true);
+  assert.equal(v4.conductPolicy, true);
+  assert.equal(v4.conductPolicyEnforce, true);
+  assert.ok(v4.conductPolicyReport?.enforcement?.enabledTurns >= 1);
+
+  run([
+    '--world',
+    'config/drama-derivation/world-000-smoke.yaml',
+    '--label',
+    'hidden-proofdebt',
+    '--out',
+    path.join(tmp, 'loop'),
+    '--critic',
+    'off',
+    '--superego',
+    '--acts',
+    '{"minActTurns":1,"maxActTurns":3}',
+    '--decay',
+    '{"seed":7,"rate":0.5,"graceTurns":0,"maxConcurrent":2,"startTurn":1,"mutateShare":0}',
+    '--confront',
+    '--repair-clause',
+    '--release-authority',
+    '--pacing-guard',
+    '--proof-debt-guard',
+  ]);
+  const hidden = JSON.parse(fs.readFileSync(path.join(tmp, 'loop/hidden-proofdebt/diagnosis.json'), 'utf8'));
+  assert.equal(hidden.pacingGuard, true);
+  assert.equal(hidden.proofDebtGuard, true);
+  assert.equal(hidden.conductPolicy, false);
+  assert.equal(hidden.conductPolicyEnforce, false);
+  assert.equal(hidden.conductPolicyReport, undefined);
 
   fs.rmSync(tmp, { recursive: true, force: true });
 });
