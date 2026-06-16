@@ -532,6 +532,17 @@ four Hethel candidate actions and a deterministic durable learner state so later
 work can evaluate concrete action value rather than promote another local
 conduct overlay.
 
+A21 Phase 1/2 completed locally on 2026-06-16; see
+`exports/dramatic-derivation/a21-action-value/hethel-autopsy.md`,
+`exports/dramatic-derivation/a21-action-value/hethel-trigger-fixture.json`, and
+`exports/dramatic-derivation/a21-action-value/action-set.json`. The contrastive
+autopsy identifies the primary trigger at turn 4: hidden+proofDebt releases
+`p_point` on schedule and D falls from 5 to 4, while the failed overlay keeps
+diagnosing the visible/hidden conflict, delays `p_point`, and remains at D=5.
+The fixture preserves the failed overlay public prefix through turn 3 so turn 4
+remains a replaceable action point; the observed hidden/failed outcomes are kept
+as provenance, not as an encoded winner. No replay or paid run was launched.
+
 Goal: test whether the conduct layer can stop asking diagnostics and press
 forward when repeated visible/hidden conflict probes have exhausted their local
 budget.
