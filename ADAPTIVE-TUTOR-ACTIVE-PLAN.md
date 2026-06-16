@@ -375,9 +375,25 @@ proofDebt remains unchanged: it does not imply conduct policy or enforcement.
 Tests pin selector-v4 defaulting, hidden + proofDebt non-defaulting, and the
 final-turn priority edge.
 
-Current next gate: use the promoted selector-v4 clamp in visible-consolidation
-runs. Do not promote conduct enforcement as a general hidden + proofDebt default
-without a separate mixed-world first-pass matrix.
+Phase 5d promoted selector-v4 mini-run completed 2026-06-16; see
+`exports/dramatic-derivation/phase5d-promoted-v4-mini-report.md`. Because the
+existing Ravensmark V-positive attempts did not separate hidden from visible,
+this was run as a negative-transfer retest on the two known v4-risk worlds:
+Lantern and Marrick. Hidden + proofDebt and promoted selector-v4 + proofDebt
+both grounded in both worlds, with matched final D=0, forced/asserted gap 0, no
+fabrication, no overreach, and no lucky leap. The promoted selector-v4 arms
+selected hidden with visible consolidation/answer-gate shadowing, enforced five
+`ask_diagnostic` corrections in each world, and passed post-enforcement conduct
+compliance. This reduces the immediate negative-transfer concern for the
+promoted clamp, but it is not evidence that adaptive H/V selection works:
+selector-v4 still behaved as hidden-plus-extra-gates, and no true V-positive
+world was identified.
+
+Current next gate: do not broaden conduct enforcement to hidden + proofDebt. Do
+not claim selector-v4 as an adaptive-selector success. The next paid work should
+either (a) repeat the promoted clamp on these two negative-transfer worlds only
+if we need stability evidence, or (b) first construct/mine a real V-positive or
+hidden-hurts fixture before any mixed-world selector matrix.
 
 Goal: test whether the policy survives outside replay.
 
