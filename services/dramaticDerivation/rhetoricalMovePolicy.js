@@ -761,14 +761,27 @@ function addDiscursiveCalibration(scores, calibration) {
   const summary = discursiveSummary(calibration);
   if (!summary) return null;
   const biases = Array.isArray(calibration.advisory?.rhetoricalBias) ? calibration.advisory.rhetoricalBias : [];
+  const proofIntent =
+    {
+      release_next_evidence: 'release',
+      repair_dependency: 'restore',
+      invite_final_assertion: 'stage_recognition',
+      consolidate_subproof: 'consolidate',
+    }[calibration.proofStep?.moveFamily] || null;
+  const proofTarget = calibration.proofStep?.targetPremise || null;
   for (const bias of biases) {
     if (!bias || typeof bias !== 'object') continue;
     const figure = bias.figure || 'erotema';
-    const intent = bias.intent || 'test';
+    const intent = proofIntent || bias.intent || 'test';
     const stance = bias.stance || summary.publicPosture || 'discursive_calibration';
-    const targetPremise = bias.targetPremise || calibration.proofStep?.targetPremise || null;
+    const targetPremise = proofTarget || bias.targetPremise || null;
     const weight = Number.isFinite(Number(bias.weight)) ? Number(bias.weight) : 0.12;
-    add(scores, keyOf(figure, intent, targetPremise, stance), weight, `discursive calibration: ${summary.publicPosture}`);
+    add(
+      scores,
+      keyOf(figure, intent, targetPremise, stance),
+      weight,
+      `discursive calibration: ${summary.publicPosture}${proofIntent ? '; proof intent preserved' : ''}`,
+    );
   }
   return summary;
 }

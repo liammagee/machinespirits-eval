@@ -170,10 +170,39 @@ test('six public learner perturbations change only discursive advice over fixed 
 
     const advice = rhetoricalAdviceFor(calibration, row.text);
     assert.equal(advice.discursiveCalibration.publicPosture, row.expectedPosture, row.name);
+    assert.equal(advice.selected.intent, 'release', row.name);
     assert.equal(advice.selected.stance, row.expectedStance, row.name);
     assert.equal(advice.selected.targetPremise, 'p_point', row.name);
     assert.match(advice.selected.rationale, /discursive calibration/u, row.name);
   }
+});
+
+test('discursive calibration preserves proof-step intent while changing figure and stance', () => {
+  const calibration = deriveDiscursiveCalibrationState({
+    learnerText: 'But you keep correcting me. I already said that.',
+    learnerState: { defensive: true, repeatedCorrections: 2 },
+    proofStep: { moveFamily: 'repair_dependency', targetPremise: 'p_point' },
+    finalAssertionAvailable: false,
+  });
+  const advice = recommendRhetoricalMove(
+    world,
+    {
+      turn: 6,
+      transcript: [{ turn: 5, role: 'learner', text: 'But you keep correcting me.', meta: { exchange: { type: 'resistance' } } }],
+      learnerAbox: { grounded: world.background, hypotheses: [] },
+      inference: { frontier: [] },
+      trajectory: [],
+    },
+    {
+      topProofDebt: { premiseId: 'p_point' },
+      discursiveCalibration: calibration,
+    },
+    normalizeRhetoricalPolicyConfig({ mode: 'deterministic', seed: 1, temperature: 1 }),
+  );
+  assert.equal(advice.selected.intent, 'restore');
+  assert.equal(advice.selected.targetPremise, 'p_point');
+  assert.equal(advice.selected.stance, 'recognitive_recap');
+  assert.match(advice.selected.rationale, /proof intent preserved/u);
 });
 
 test('near-final permission cue is gated by proof-state final entitlement', () => {

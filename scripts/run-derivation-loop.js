@@ -262,6 +262,10 @@
  *                                       for phatic/scene calibration.)
  *     [--rhetorical-policy-stochastic] (shortcut: same policy, mode=sample
  *                                       with fixed seed unless overridden.)
+ *     [--discursive-calibration]       (public-only advisory layer that biases
+ *                                       rhetorical move advice from learner
+ *                                       stance/uptake/strain; never authorizes
+ *                                       release, restore, hold, or assertion.)
  *     [--critic auto|real|mock|off]    (post-run critic's notice; auto = follow
  *                                       the run mode — real dramas get the
  *                                       Fable notice, mock dramas the
@@ -742,11 +746,13 @@ async function main() {
   if (rhetoricalPolicy && flag('rhetorical-policy-stochastic')) {
     rhetoricalPolicy = { ...rhetoricalPolicy, mode: 'sample' };
   }
+  const discursiveCalibration = flag('discursive-calibration');
   let publicRegister;
   try {
     publicRegister = normalizePublicRegister(arg('register', null), {
       sceneMode: Boolean(sceneMode),
       rhetoricalPolicy: Boolean(rhetoricalPolicy),
+      discursiveCalibration,
     });
   } catch (err) {
     console.error(`--register ${err.message}`);
@@ -856,6 +862,7 @@ async function main() {
       plotDial: plot,
       throughlineDial: throughline,
       rhetoricalPolicy: rhetoricalPolicy || null,
+      discursiveCalibration,
     },
   });
   live.start();
@@ -1009,6 +1016,9 @@ async function main() {
       `rhetor  POLICY ON (${rhetoricalPolicy.mode}) — visible-state figure distribution, seed ${rhetoricalPolicy.seed}, temperature ${rhetoricalPolicy.temperature}`,
     );
   }
+  if (discursiveCalibration) {
+    console.log('discurs CALIBRATION ON — public stance/uptake/strain biases advisory rhetoric only');
+  }
   if (decay) {
     console.log(
       `decay   seed ${decay.seed} · rate ${decay.rate} · grace ${decay.graceTurns} · maxConcurrent ${decay.maxConcurrent} · from turn ${decay.startTurn}${decay.mutateShare ? ` · mutateShare ${decay.mutateShare} (slips may misremember, not just vanish)` : ''}${decay.pool === 'staged' ? ' · pool STAGED (false forms confuse only met-on-stage names)' : ''}`,
@@ -1049,6 +1059,7 @@ async function main() {
       plot,
       throughline,
       rhetoricalPolicy,
+      discursiveCalibration,
       publicRegister,
     }),
     learner: makeLlmLearner({
@@ -1182,6 +1193,7 @@ async function main() {
     // 2026-06-12. Same naming rule as plotDial.
     throughlineDial: throughline,
     rhetoricalPolicy: rhetoricalPolicy || null,
+    discursiveCalibration,
     elapsedMs,
     usage,
     ...diagnose(result, world),

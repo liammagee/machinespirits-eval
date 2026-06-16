@@ -33,6 +33,7 @@ import {
   RHETORICAL_FIGURES,
 } from './rhetoricalMovePolicy.js';
 import { auditConductGeneratorCompliance, CONDUCT_POLICY_SCHEMA, selectConductMove } from './conductPolicy.js';
+import { deriveDiscursiveCalibrationState } from './discursiveCalibration.js';
 import { deriveEntitlementState, entitlementNeedsConduct } from './learnerEntitlement.js';
 import { createRuntimeMonitor } from './runtimeMonitor.js';
 // The Step-1 V arm. Imported here, NOT in pacing.js — visiblePacing.js's own audit
@@ -1774,6 +1775,7 @@ export function makeLlmTutor(
     plot = false,
     throughline = false,
     rhetoricalPolicy = null,
+    discursiveCalibration = false,
     conductPolicy = false,
     conductPolicyEnforce = false,
     conductProgressPolicy = false,
@@ -2310,6 +2312,36 @@ export function makeLlmTutor(
     const cuePremiseForPolicy = releaseAuthority
       ? forcedPlay?.premise || playable.find((e) => e.turn === view.turn)?.premise || null
       : entry?.premise || null;
+    const publicTranscriptForCalibration = (view.transcript || []).map((line) => ({
+      turn: line.turn,
+      role: line.role,
+      text: line.text || '',
+      ...(line.meta?.exchange ? { meta: { exchange: line.meta.exchange } } : {}),
+    }));
+    const lastLearnerLineForCalibration = [...publicTranscriptForCalibration].reverse().find((line) => line.role === 'learner');
+    const discursiveProofStep = (() => {
+      if (topProofDebt) return { moveFamily: 'repair_dependency', targetPremise: topProofDebt.premiseId };
+      if (forcedNote || finalEntitlement?.canAssertFinal) return { moveFamily: 'invite_final_assertion', targetPremise: null };
+      if (cuePremiseForPolicy) return { moveFamily: 'release_next_evidence', targetPremise: cuePremiseForPolicy };
+      if (visibleConsolidation?.features?.priorPremiseId) {
+        return {
+          moveFamily: 'consolidate_subproof',
+          targetPremise: visibleConsolidation.features.priorPremiseId,
+        };
+      }
+      return null;
+    })();
+    const discursiveCalibrationState = discursiveCalibration
+      ? deriveDiscursiveCalibrationState({
+          transcript: publicTranscriptForCalibration,
+          learnerText: lastLearnerLineForCalibration?.text || null,
+          exchange: lastLearnerLineForCalibration?.meta?.exchange || null,
+          learnerState: view.discursiveLearnerState || view.publicLearnerState || {},
+          recognitionNeed: view.scene?.recognitionNeed || null,
+          finalAssertionAvailable: Boolean(forcedNote || finalEntitlement?.canAssertFinal),
+          proofStep: discursiveProofStep,
+        })
+      : null;
     const rhetoricalAdvice = rhetoricalPolicyConfig
       ? recommendRhetoricalMove(
           world,
@@ -2321,6 +2353,7 @@ export function makeLlmTutor(
             cuePremise: cuePremiseForPolicy,
             playableCount: playable.length,
             lastReleasePremise: view.ledger[view.ledger.length - 1]?.premiseId || null,
+            discursiveCalibration: discursiveCalibrationState,
           },
           rhetoricalPolicyConfig,
         )
@@ -2864,6 +2897,7 @@ export function makeLlmTutor(
       dialogue: sanitizePublicDialogue(draftOut.dialogue, { register: activeRegisterName }),
       move: normalizeMove(draftOut),
       ...(rhetoricalAdvice ? { rhetoricalPolicy: rhetoricalAdvice } : {}),
+      ...(discursiveCalibrationState ? { discursiveCalibration: discursiveCalibrationState } : {}),
       ...releaseBits,
       ...(draftTheory ? { theory: draftTheory } : {}),
       ...plotBits(draftPlot),
@@ -3262,6 +3296,7 @@ export function makeLlmTutor(
       ...plotBits(revisedPlot),
       ...throughlineBits(revisedThroughline),
       ...(rhetoricalAdvice ? { rhetoricalPolicy: rhetoricalAdvice } : {}),
+      ...(discursiveCalibrationState ? { discursiveCalibration: discursiveCalibrationState } : {}),
       deliberation: {
         ...deliberation,
         intervened: true,

@@ -313,6 +313,62 @@ test('episode CLI inherits modern guard and plot dials while preserving replay p
   fs.rmSync(tmp, { recursive: true, force: true });
 });
 
+test('episode CLI inherits discursive calibration as advisory tutor metadata', { timeout: CLI_TIMEOUT }, () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'derivation-discursive-episode-'));
+  const run = (script, args) =>
+    execFileSync(process.execPath, [path.join(ROOT, 'scripts', script), ...args], {
+      cwd: ROOT,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+
+  run('run-derivation-loop.js', [
+    '--world',
+    'config/drama-derivation/world-000-smoke.yaml',
+    '--label',
+    'src',
+    '--out',
+    path.join(tmp, 'loop'),
+    '--critic',
+    'off',
+    '--scene-mode',
+    'on',
+    '--rhetorical-policy',
+    '--discursive-calibration',
+  ]);
+  run('run-derivation-episode.js', [
+    '--from',
+    path.join(tmp, 'loop/src'),
+    '--turn',
+    '3',
+    '--window',
+    '2',
+    '--label',
+    'ep',
+    '--out',
+    path.join(tmp, 'episodes'),
+  ]);
+
+  const d = JSON.parse(fs.readFileSync(path.join(tmp, 'episodes/ep/diagnosis.json'), 'utf8'));
+  assert.equal(d.episode.prefixIntegrity.ok, true);
+  assert.equal(d.discursiveCalibration, true);
+  assert.equal(d.rhetoricalPolicy.mode, 'deterministic');
+  const result = JSON.parse(fs.readFileSync(path.join(tmp, 'episodes/ep/result.json'), 'utf8'));
+  const liveTutorLine = result.transcript.find((line) => line.turn >= 3 && line.role === 'tutor');
+  assert.equal(
+    liveTutorLine?.meta?.discursiveCalibration?.schema,
+    'dramatic-derivation.discursive-calibration.v0',
+  );
+  assert.equal(liveTutorLine.meta.discursiveCalibration.nonLeakAudit.ok, true);
+  assert.equal(liveTutorLine.meta.rhetoricalPolicy.schema, 'dramatic-derivation.rhetorical-policy.v0');
+  assert.equal(
+    liveTutorLine.meta.rhetoricalPolicy.discursiveCalibration.publicPosture,
+    liveTutorLine.meta.discursiveCalibration.publicPosture,
+  );
+
+  fs.rmSync(tmp, { recursive: true, force: true });
+});
+
 test('episode CLI inherits selector v4 consolidation and answer-gate without default conduct enforcement', { timeout: CLI_TIMEOUT }, () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'derivation-v4-episode-'));
   const run = (script, args) =>

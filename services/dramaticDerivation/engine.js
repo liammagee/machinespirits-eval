@@ -933,6 +933,7 @@ export async function runDrama({ world, roles, options = {} }) {
         ...(tutorOut.proofDebt ? { proofDebt: tutorOut.proofDebt } : {}),
         ...(tutorOut.conductPolicy ? { conductPolicy: tutorOut.conductPolicy } : {}),
         ...(tutorOut.rhetoricalPolicy ? { rhetoricalPolicy: tutorOut.rhetoricalPolicy } : {}),
+        ...(tutorOut.discursiveCalibration ? { discursiveCalibration: tutorOut.discursiveCalibration } : {}),
         ...(tutorPhaticRecognition.length ? { phaticRecognition: tutorPhaticRecognition } : {}),
         ...(sceneMetaThisTurn ? { scene: sceneMetaThisTurn } : {}),
         publicRegister: publicRegisterForTurn,

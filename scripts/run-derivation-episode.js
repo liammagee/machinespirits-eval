@@ -38,6 +38,10 @@
  *     [--director-cadence turn|scene]  (inherits source cadence)
  *     [--stage-prologue on|off]        (inherits source prologue flag)
  *     [--register default|modern|period|sample|off]
+ *     [--rhetorical-policy '<json>'|on|off]
+ *     [--rhetorical-policy-stochastic]
+ *     [--discursive-calibration on|off] (public-only advisory calibration; no
+ *                                       proof-control authority)
  *     [--reconstruct on|off]           (adapt-ON arm dial; requires acts mode)
  *     [--confront on|off]
  *     [--repair-clause on|off]
@@ -102,6 +106,7 @@ import {
   normalizeSceneConfig,
   normalizeDirectorCadence,
   normalizePublicRegister,
+  normalizeRhetoricalPolicyConfig,
   diagnose,
   renderDCurve,
   renderTranscript,
@@ -427,13 +432,34 @@ async function main() {
   const stagePrologue =
     stagePrologueArg === null ? inheritedStagePrologue : stagePrologueArg !== 'off' && stagePrologueArg !== 'false';
   if (stagePrologueArg !== null) overrides.push('stage-prologue');
+  const inheritedRhetoricalPolicy = srcDiag.rhetoricalPolicy ?? null;
+  const rhetoricalPolicyArg = arg('rhetorical-policy', null);
+  const rhetoricalPolicyRequested =
+    flag('rhetorical-policy') || flag('rhetorical-policy-stochastic') || rhetoricalPolicyArg !== null;
+  let rhetoricalPolicy =
+    !rhetoricalPolicyRequested && rhetoricalPolicyArg === null
+      ? inheritedRhetoricalPolicy
+      : rhetoricalPolicyArg === 'off'
+        ? null
+        : normalizeRhetoricalPolicyConfig(rhetoricalPolicyArg && rhetoricalPolicyArg !== 'on' ? rhetoricalPolicyArg : true);
+  if (rhetoricalPolicy && flag('rhetorical-policy-stochastic')) {
+    rhetoricalPolicy = { ...rhetoricalPolicy, mode: 'sample' };
+  }
+  if (JSON.stringify(rhetoricalPolicy ?? null) !== JSON.stringify(inheritedRhetoricalPolicy ?? null)) {
+    overrides.push('rhetorical-policy');
+  }
+  const discursiveCalibration = track(
+    'discursive-calibration',
+    triState('discursive-calibration', Boolean(srcDiag.discursiveCalibration)),
+    Boolean(srcDiag.discursiveCalibration),
+  );
   const registerArg = arg('register', null);
   const publicRegister =
     registerArg === null
       ? srcDiag.publicRegister || null
       : registerArg === 'off'
         ? null
-        : normalizePublicRegister(registerArg, { sceneMode: Boolean(sceneMode), rhetoricalPolicy: false });
+        : normalizePublicRegister(registerArg, { sceneMode: Boolean(sceneMode), rhetoricalPolicy: Boolean(rhetoricalPolicy) });
   if (registerArg !== null) overrides.push('register');
   const reconstruct = track(
     'reconstruct',
@@ -720,6 +746,8 @@ async function main() {
       directorCadence,
       stagePrologue,
       publicRegister,
+      rhetoricalPolicy: rhetoricalPolicy || null,
+      discursiveCalibration,
       reconstruct,
       confront,
       repairClause,
@@ -801,6 +829,14 @@ async function main() {
         : publicRegister.base || publicRegister.mode || 'default';
     console.log(`style   public register ${styleLabel}`);
   }
+  if (rhetoricalPolicy) {
+    console.log(
+      `rhetor  POLICY ON (${rhetoricalPolicy.mode}) — visible-state figure distribution, seed ${rhetoricalPolicy.seed}, temperature ${rhetoricalPolicy.temperature}`,
+    );
+  }
+  if (discursiveCalibration) {
+    console.log('discurs CALIBRATION ON — public stance/uptake/strain biases advisory rhetoric only');
+  }
   if (releaseAuthority) console.log('tutor   RELEASE AUTHORITY ON — inherited/episode guard window active');
   if (pacingGuardSelector) {
     console.log(
@@ -843,7 +879,7 @@ async function main() {
   const client = makeLlmClient({ mode });
   const actsMode = Boolean(acts);
   const liveRoles = {
-    director: makeLlmDirector(world, client, { dials, dramaturgy, counsel, actsMode }),
+    director: makeLlmDirector(world, client, { dials, dramaturgy, counsel, actsMode, publicRegister }),
     tutor: makeLlmTutor(world, client, {
       script,
       dials,
@@ -868,11 +904,15 @@ async function main() {
       guardSpec,
       plot,
       throughline,
+      rhetoricalPolicy,
+      discursiveCalibration,
+      publicRegister,
     }),
     learner: makeLlmLearner({
       setting: world.setting,
       voice: learnerVoice || world.learnerVoice,
       client,
+      publicRegister,
       assertionGroundingGate,
       sameTurnAssertionAffordance,
     }),
@@ -1004,6 +1044,8 @@ async function main() {
     directorCadence,
     stagePrologue,
     publicRegister,
+    rhetoricalPolicy: rhetoricalPolicy || null,
+    discursiveCalibration,
     reconstruct,
     confront,
     releaseAuthority,
