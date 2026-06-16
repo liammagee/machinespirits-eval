@@ -490,6 +490,16 @@ replay then failed by aporia at t9 with D stuck at 4. This is a valid negative
 replay gate. Do not run the no-harm replay or fresh paid retest from this policy
 state.
 
+Learner-entitlement increment completed 2026-06-16; see
+`exports/dramatic-derivation/phase6-learner-entitlement-report.md`. It adds a
+small deterministic public `deriveEntitlementState(...)` object and routes normal
+conduct-policy decisions through it without adding move families. Focused and
+full tests pass. The Hethel prefix replay improved over safe-now by clearing the
+t9 aporia and reaching D=2 by t15 with no release deviations, but it still ended
+`cap_reached`, not grounded. Treat this as useful infrastructure and a partial
+local repair, not a cleared replay gate. Do not run the no-harm replay or fresh
+paid retest from this policy state.
+
 Goal: test whether the conduct layer can stop asking diagnostics and press
 forward when repeated visible/hidden conflict probes have exhausted their local
 budget.
@@ -505,6 +515,9 @@ Implementation boundary:
 - It now treats scheduled-current or force-play releases as current-authorized;
   tempo solvency inside an early window is not by itself enough for progress
   pressure to release.
+- Normal conduct decisions now consume a public learner-entitlement object
+  instead of independently reconstructing proof-debt, release, visible-uptake,
+  diagnostic-history, final-assertion, and uncertainty signals.
 - Enforcement still requires explicit `--conduct-policy-enforce`.
 
 Candidate comparison:
@@ -537,6 +550,8 @@ Decision rule:
   held-out worlds.
 - If Hethel replay remains final D>0 or fails by aporia/disengagement, stop and
   report it as another valid negative; do not run the fresh paid retest.
+- If an entitlement variant improves local failure but remains D>0 at window
+  end, record it as a partial repair and stop before the no-harm replay.
 
 ## First Work Packet
 

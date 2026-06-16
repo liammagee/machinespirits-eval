@@ -151,16 +151,26 @@ function dependencyRepairNeeded(state) {
   return state.triggerType === 'dependency_repair_needed' || state.needsDependencyRepair === true || proofDebtActive(state);
 }
 
+function entitlementState(state) {
+  return state.learnerEntitlement || state.entitlementState || state.evidence?.learnerEntitlement || null;
+}
+
 function hiddenCertifiedRelease(state) {
   return state.hiddenCertifiedRelease === true || state.evidence?.hybridGuard?.accepted === true;
 }
 
 function targetPremise(state) {
+  const entitlement = entitlementState(state);
   return (
     state.premiseId ||
     state.targetPremise ||
     state.releaseCandidate ||
     state.evidence?.releaseCandidate ||
+    entitlement?.targetPremise ||
+    entitlement?.validAlternative?.targetPremise ||
+    entitlement?.proofDebt?.targetPremise ||
+    entitlement?.release?.targetPremise ||
+    entitlement?.visible?.premiseId ||
     state.proofDebt?.target ||
     state.proofDebtTutorView?.debts?.[0]?.premiseId ||
     state.proofDebtReport?.debts?.[0]?.premiseId ||
@@ -170,12 +180,96 @@ function targetPremise(state) {
 }
 
 function firstDebt(state) {
+  const entitlement = entitlementState(state);
   return (
     state.proofDebtTutorView?.debts?.[0] ||
     state.proofDebt?.debts?.[0] ||
     state.proofDebtReport?.debts?.[0] ||
+    entitlement?.proofDebt?.debts?.[0] ||
     null
   );
+}
+
+function classifyEntitlementState(entitlement) {
+  if (!entitlement || typeof entitlement !== 'object') return null;
+  if (entitlement.recognition?.active) {
+    return {
+      moveFamily: 'repair_recognition_rupture',
+      reasonCode: 'recognition_rupture',
+      rationale: 'recognition repair is active before further proof pressure',
+    };
+  }
+  if (entitlement.validAlternative?.active) {
+    return {
+      moveFamily: 'ask_diagnostic',
+      reasonCode: 'valid_alternative_candidate',
+      rationale: 'public evidence may license a route not served by hidden delay',
+    };
+  }
+  if (entitlement.proofDebt?.active) {
+    return {
+      moveFamily: 'repair_dependency',
+      reasonCode: 'dependency_repair_needed',
+      rationale: 'a proof-critical dependency must be restored before advancing',
+    };
+  }
+  if (entitlement.finalAssertion?.available) {
+    return {
+      moveFamily: 'invite_final_assertion',
+      reasonCode: 'final_assertion_available',
+      rationale: 'the public board can now support the answer',
+    };
+  }
+  if (entitlement.release?.earlyOptional) {
+    return {
+      moveFamily: 'consolidate_subproof',
+      reasonCode: 'early_release_not_current_authorized',
+      rationale: 'the candidate exhibit is in the early window but is not due or forced; consolidate current support',
+    };
+  }
+  if (entitlement.visible?.progressPressure) {
+    if (entitlement.release?.progressCandidate) {
+      return {
+        moveFamily: 'release_next_evidence',
+        reasonCode: 'progress_pressure_release',
+        rationale: 'diagnostic pressure is exhausted and a certified next exhibit can move the proof forward',
+      };
+    }
+    return {
+      moveFamily: 'consolidate_subproof',
+      reasonCode: 'progress_pressure_consolidate',
+      rationale: 'diagnostic pressure is exhausted; consolidate the staged support instead of asking again',
+    };
+  }
+  if (entitlement.visible?.active) {
+    if (entitlement.visible.hiddenCertifiedRelease) {
+      return {
+        moveFamily: 'release_next_evidence',
+        reasonCode: 'hidden_certifies_release_over_visible_conflict',
+        rationale: 'hidden reference certifies the release despite visible conflict',
+      };
+    }
+    return {
+      moveFamily: 'ask_diagnostic',
+      reasonCode: 'visible_hidden_conflict',
+      rationale: 'visible evidence and hidden continuity disagree; ask before acting',
+    };
+  }
+  if (entitlement.release?.played && entitlement.release?.currentAuthorized) {
+    return {
+      moveFamily: 'release_next_evidence',
+      reasonCode: 'release_candidate_certified',
+      rationale: 'the next exhibit is certified and no repair is due',
+    };
+  }
+  if (entitlement.uncertainty?.active) {
+    return {
+      moveFamily: 'ask_diagnostic',
+      reasonCode: 'underdetermined',
+      rationale: 'state evidence is too weak to advance or repair confidently',
+    };
+  }
+  return null;
 }
 
 function classifyConductState(state) {
@@ -193,6 +287,8 @@ function classifyConductState(state) {
       rationale: 'recognition repair is active before further proof pressure',
     };
   }
+  const entitlement = classifyEntitlementState(entitlementState(state));
+  if (entitlement) return entitlement;
   if (validAlternativeCandidate(state)) {
     return {
       moveFamily: 'ask_diagnostic',
@@ -274,6 +370,7 @@ function sanitizedDebt(debt) {
 
 function buildTutorView(state, classification, spec) {
   const debt = sanitizedDebt(firstDebt(state));
+  const entitlement = entitlementState(state);
   const view = {
     moveFamily: classification.moveFamily,
     reasonCode: classification.reasonCode,
@@ -286,12 +383,17 @@ function buildTutorView(state, classification, spec) {
   }
   const learnerExcerpt = state.evidence?.learnerExcerpt || state.learnerExcerpt || null;
   if (learnerExcerpt) view.learnerExcerpt = learnerExcerpt;
-  const visibleReason = state.evidence?.intervention?.reason || state.visibleReason || null;
+  const visibleReason = state.evidence?.intervention?.reason || state.visibleReason || entitlement?.visible?.reason || null;
   if (visibleReason && spec.permittedTutorFields.includes('visibleReason')) view.visibleReason = visibleReason;
   if (state.recognitionNeed && spec.permittedTutorFields.includes('recognitionNeed')) {
     view.recognitionNeed = {
       level: state.recognitionNeed.level ?? null,
       desiredActs: Array.isArray(state.recognitionNeed.desiredActs) ? state.recognitionNeed.desiredActs : [],
+    };
+  } else if (entitlement?.recognition?.active && spec.permittedTutorFields.includes('recognitionNeed')) {
+    view.recognitionNeed = {
+      level: entitlement.recognition.level ?? null,
+      desiredActs: Array.isArray(entitlement.recognition.desiredActs) ? entitlement.recognition.desiredActs : [],
     };
   }
   return Object.fromEntries(Object.entries(view).filter(([, value]) => value != null));
@@ -342,6 +444,7 @@ export function selectConductMove(rawState = {}) {
     tutorView,
     nonLeakAudit,
     sourceTriggerId: state.id || null,
+    ...(entitlementState(state) ? { learnerEntitlement: entitlementState(state) } : {}),
   };
 }
 

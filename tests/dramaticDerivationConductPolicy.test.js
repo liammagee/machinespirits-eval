@@ -594,6 +594,8 @@ test('runtime progress policy blocks tempo-safe but early optional releases', as
   assert.equal(out.conductPolicy.active, true);
   assert.equal(out.conductPolicy.selectedMoveFamily, 'consolidate_subproof');
   assert.equal(out.conductPolicy.reasonCode, 'early_release_not_current_authorized');
+  assert.equal(out.conductPolicy.learnerEntitlement.release.earlyOptional, true);
+  assert.equal(out.conductPolicy.learnerEntitlement.release.currentAuthorized, false);
   assert.equal(out.release, null);
   assert.equal(out.releaseDecision.conductPolicyEnforcement.blockedRelease, 'p3');
   assert.equal(out.move.intent, 'consolidate');
@@ -652,6 +654,8 @@ test('runtime progress pressure consolidates when only an early-window candidate
   assert.equal(out.conductPolicy.active, true);
   assert.equal(out.conductPolicy.selectedMoveFamily, 'consolidate_subproof');
   assert.equal(out.conductPolicy.reasonCode, 'progress_pressure_consolidate');
+  assert.equal(out.conductPolicy.learnerEntitlement.diagnostic.exhausted, true);
+  assert.equal(out.conductPolicy.learnerEntitlement.visible.progressPressure, true);
   assert.equal(out.release, null);
   assert.equal(out.conductPolicy.generatorCompliance.ok, true);
 });

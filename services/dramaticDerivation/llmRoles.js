@@ -33,6 +33,7 @@ import {
   RHETORICAL_FIGURES,
 } from './rhetoricalMovePolicy.js';
 import { auditConductGeneratorCompliance, CONDUCT_POLICY_SCHEMA, selectConductMove } from './conductPolicy.js';
+import { deriveEntitlementState, entitlementNeedsConduct } from './learnerEntitlement.js';
 import { createRuntimeMonitor } from './runtimeMonitor.js';
 // The Step-1 V arm. Imported here, NOT in pacing.js — visiblePacing.js's own audit
 // test forbids it from importing back the other way, so the hidden/visible seam
@@ -1389,6 +1390,27 @@ function conductTriggerState({
     learnerExcerpt: lastLearnerExcerpt(view.transcript),
     releaseDecision: compactReleaseDecision(releaseBits.releaseDecision),
   };
+  const overrideValidAlternative =
+    view.conductTriggerOverride?.triggerType === 'valid_alternative_route_candidate'
+      ? {
+          active: true,
+          premiseId: view.conductTriggerOverride.premiseId || view.conductTriggerOverride.targetPremise || null,
+          reason: view.conductTriggerOverride.evidence?.intervention?.reason || null,
+        }
+      : null;
+  const learnerEntitlement = deriveEntitlementState({
+    view,
+    proofDebtTutorView: conductProofDebt,
+    releaseDecision: releaseBits.releaseDecision,
+    playable,
+    forcedPlay,
+    forcedNote,
+    finalEntitlement,
+    visibleConsolidation,
+    conductProgressPolicy,
+    validAlternativeCandidate: overrideValidAlternative,
+    recognitionNeed: view.scene?.recognitionNeed || null,
+  });
   if (view.conductTriggerOverride) {
     return {
       ...view.conductTriggerOverride,
@@ -1396,309 +1418,27 @@ function conductTriggerState({
       turn: view.turn,
       evidence: {
         ...evidence,
+        learnerEntitlement,
         ...(view.conductTriggerOverride.evidence || {}),
       },
+      learnerEntitlement,
       ...(conductProofDebt ? { proofDebtTutorView: conductProofDebt } : {}),
     };
   }
-  const topConductDebt = conductProofDebt?.debts?.[0] || null;
-  if (topConductDebt) {
-    return {
-      id: `t${view.turn}:proof-debt:${topConductDebt.premiseId}`,
-      triggerType: 'dependency_repair_needed',
-      premiseId: topConductDebt.premiseId,
-      proofDebtTutorView: conductProofDebt,
-      blockedActions: ['invite_final_assertion', 'release_unrelated_evidence'],
-      evidence,
-    };
-  }
-
-  const recognitionNeed = view.scene?.recognitionNeed;
-  if (recognitionNeed?.active) {
-    return {
-      id: `t${view.turn}:recognition`,
-      triggerType: 'recognition_rupture_active',
-      recognitionNeed,
-      evidence,
-    };
-  }
-
-  if (forcedNote || finalEntitlement?.canAssertFinal) {
-    return {
-      id: `t${view.turn}:forced`,
-      triggerType: 'final_assertion_available_but_delayed',
-      canAssertFinal: true,
-      evidence,
-    };
-  }
-
-  const rd = releaseBits.releaseDecision;
-  if (rd?.played) {
-    if (
-      conductProgressPolicy &&
-      !isCurrentAuthorizedRelease(rd.played, {
-        turn: view.turn,
-        playable,
-        forcedPlay,
-        releaseDecision: rd,
-      })
-    ) {
-      const lastReleased = view.ledger[view.ledger.length - 1]?.premiseId || null;
-      return {
-        id: `t${view.turn}:early-release-hold:${rd.played}`,
-        triggerType: 'early_release_not_current_authorized',
-        holdEarlyRelease: true,
-        premiseId: lastReleased,
-        evidence: {
-          ...evidence,
-          earlyRelease: {
-            candidate: rd.played,
-            scheduledTurn: playableEntry(playable, rd.played)?.turn ?? rd.scheduledTurn ?? null,
-            offset: rd.offset ?? null,
-            forced: rd.forced || null,
-          },
-        },
-      };
-    }
-    return {
-      id: `t${view.turn}:release:${rd.played}`,
-      triggerType: 'release_candidate_certified',
-      releaseCandidate: rd.played,
-      premiseId: rd.played,
-      evidence,
-    };
-  }
-
-  const visibleConflict = Boolean(
-    rd?.hybridGuard?.accepted === false ||
-      rd?.consolidationGuard?.visiblePushIgnored ||
-      (rd?.visibleGuard?.blocked && rd?.pacingGuard && !rd.consolidationGuard?.held),
-  );
-  if (visibleConflict) {
-    return visibleConflictTrigger(view, {
-      premiseId: rd?.visibleGuard?.candidate || rd?.pacingGuard?.candidate || null,
-      evidence,
-      hiddenCertifiedRelease: Boolean(rd?.hybridGuard?.accepted),
-      conductProgressPolicy,
-      releaseDecision: rd,
-      playable,
-      forcedPlay,
-    });
-  }
-
-  if (visibleConsolidation?.features?.stalling || visibleConsolidation?.features?.priorEchoed === false) {
-    const premiseId = visibleConsolidation.features.priorPremiseId || finalOut.move?.targetPremise || null;
-    const trigger = visibleConflictTrigger(view, {
-      premiseId,
-      evidence: {
-        ...evidence,
-        visibleReason: (visibleConsolidation.lines || []).join(' '),
-      },
-      conductProgressPolicy,
-      releaseDecision: rd,
-      playable,
-      forcedPlay,
-    });
-    return trigger ? { ...trigger, id: `t${view.turn}:visible-consolidation` } : null;
-  }
-
-  return null;
-}
-
-function priorConductPolicies(transcript = [], turn) {
-  return (Array.isArray(transcript) ? transcript : [])
-    .filter((line) => line?.role === 'tutor' && Number(line.turn) < Number(turn) && line.meta?.conductPolicy)
-    .map((line) => ({ turn: Number(line.turn), policy: line.meta.conductPolicy }))
-    .filter((row) => Number.isFinite(row.turn));
-}
-
-function normConductToken(value) {
-  return String(value || '')
-    .toLowerCase()
-    .trim();
-}
-
-function priorDiagnosticLikeTutorMoves(transcript = [], turn) {
-  const diagnosticIntents = new Set(['test', 'confront']);
-  return (Array.isArray(transcript) ? transcript : [])
-    .filter((line) => line?.role === 'tutor' && Number(line.turn) < Number(turn))
-    .map((line) => {
-      const move = line.meta?.move || {};
-      return {
-        turn: Number(line.turn),
-        targetPremise: move.targetPremise || move.target_premise || null,
-        intent: normConductToken(move.intent),
-        release: line.meta?.release ?? null,
-      };
-    })
-    .filter((row) => Number.isFinite(row.turn) && !row.release && diagnosticIntents.has(row.intent));
-}
-
-function samePremise(a, b) {
-  return Boolean(a && b && String(a) === String(b));
-}
-
-function visibleConflictDiagnosticBudget(view, premiseId) {
-  const rows = priorConductPolicies(view.transcript, view.turn).filter(
-    (row) =>
-      row.policy?.active === true &&
-      row.policy?.reasonCode === 'visible_hidden_conflict' &&
-      row.policy?.selectedMoveFamily === 'ask_diagnostic',
-  );
-  const last = rows[rows.length - 1] || null;
-  if (last && Number(view.turn) - last.turn <= 1 && samePremise(last.policy?.targetPremise, premiseId)) {
-    return {
-      allowed: false,
-      reason: 'same_premise_adjacent_visible_conflict_diagnostic',
-      priorTurn: last.turn,
-    };
-  }
-  const recent = rows.filter((row) => Number(view.turn) - row.turn <= 3);
-  if (recent.length >= 2) {
-    return {
-      allowed: false,
-      reason: 'recent_visible_conflict_diagnostic_budget_exhausted',
-      priorTurns: recent.map((row) => row.turn),
-    };
-  }
-  const recentTutorDiagnostics = priorDiagnosticLikeTutorMoves(view.transcript, view.turn);
-  const lastTutorDiagnostic = recentTutorDiagnostics[recentTutorDiagnostics.length - 1] || null;
-  if (
-    lastTutorDiagnostic &&
-    Number(view.turn) - lastTutorDiagnostic.turn <= 1 &&
-    samePremise(lastTutorDiagnostic.targetPremise, premiseId)
-  ) {
-    return {
-      allowed: false,
-      reason: 'same_premise_adjacent_public_diagnostic',
-      priorTurn: lastTutorDiagnostic.turn,
-    };
-  }
-  const recentPublicDiagnostics = recentTutorDiagnostics.filter((row) => Number(view.turn) - row.turn <= 3);
-  if (recentPublicDiagnostics.length >= 2) {
-    return {
-      allowed: false,
-      reason: 'recent_public_diagnostic_budget_exhausted',
-      priorTurns: recentPublicDiagnostics.map((row) => row.turn),
-    };
-  }
-  return { allowed: true };
-}
-
-function playableEntry(playable = [], premiseId) {
-  if (!premiseId) return null;
-  return playable.find((entry) => entry?.premise === premiseId) || null;
-}
-
-function isCurrentAuthorizedRelease(premiseId, { turn, playable = [], forcedPlay = null, releaseDecision = null } = {}) {
-  if (!premiseId) return false;
-  const currentTurn = Number(turn ?? releaseDecision?.turn);
-  if (!Number.isFinite(currentTurn)) return false;
-  if (releaseDecision?.forced === premiseId || forcedPlay?.premise === premiseId) return true;
-  if (releaseDecision?.pacingGuard?.forcedSafe === true && releaseDecision?.played === premiseId) return true;
-  const scheduledTurn =
-    playableEntry(playable, premiseId)?.turn ??
-    (releaseDecision?.played === premiseId ? releaseDecision?.scheduledTurn : null);
-  return Number(scheduledTurn) === currentTurn;
-}
-
-function releaseSafeAtCurrentTurn(premiseId, releaseDecision) {
-  if (!premiseId || !releaseDecision) return false;
-  const turn = Number(releaseDecision.turn);
-  const safeTurns = releaseDecision?.pacingGuard?.safeTurns?.[premiseId];
-  if (Array.isArray(safeTurns) && safeTurns.map(Number).includes(turn)) return true;
-  const candidateSolvency = releaseDecision?.pacingGuard?.candidateSolvency;
-  if (candidateSolvency?.premise === premiseId && candidateSolvency.safe === true) return true;
-  const playedSolvency = releaseDecision?.pacingGuard?.playedSolvency;
-  if (playedSolvency?.premise === premiseId && playedSolvency.safe === true) return true;
-  return false;
-}
-
-function firstSafeReleaseCandidate(releaseDecision, { turn, playable = [], forcedPlay = null } = {}) {
-  const opts = { turn: turn ?? releaseDecision?.turn, playable, forcedPlay, releaseDecision };
-  const direct =
-    releaseDecision?.pacingGuard?.candidate ||
-    releaseDecision?.consolidationGuard?.hiddenCandidate ||
-    releaseDecision?.visibleGuard?.candidate ||
-    null;
-  if (direct && isCurrentAuthorizedRelease(direct, opts) && releaseSafeAtCurrentTurn(direct, releaseDecision)) {
-    return direct;
-  }
-  const safeTurns = releaseDecision?.pacingGuard?.safeTurns;
-  if (!safeTurns || typeof safeTurns !== 'object') return null;
-  const currentTurn = Number(releaseDecision?.turn);
-  for (const [premiseId, turns] of Object.entries(safeTurns)) {
-    if (!Array.isArray(turns)) continue;
-    if (
-      Number.isFinite(currentTurn) &&
-      turns.map(Number).includes(currentTurn) &&
-      isCurrentAuthorizedRelease(premiseId, opts)
-    ) {
-      return premiseId;
-    }
-  }
-  return null;
-}
-
-function progressPressureTrigger(view, { premiseId, evidence, budget, releaseDecision, playable = [], forcedPlay = null }) {
-  const releaseCandidate = firstSafeReleaseCandidate(releaseDecision, {
-    turn: view.turn,
-    playable,
-    forcedPlay,
-  });
+  if (!entitlementNeedsConduct(learnerEntitlement, { conductProgressPolicy })) return null;
   return {
-    id: `t${view.turn}:progress-pressure`,
-    triggerType: 'progress_pressure_after_diagnostic_budget',
-    progressPressure: {
-      active: true,
-      reason: budget.reason,
-      ...(budget.priorTurn != null ? { priorTurn: budget.priorTurn } : {}),
-      ...(budget.priorTurns ? { priorTurns: budget.priorTurns } : {}),
-    },
-    ...(releaseCandidate ? { releaseCandidate } : {}),
-    premiseId: releaseCandidate || premiseId || null,
+    id: `t${view.turn}:learner-entitlement`,
+    triggerType: 'learner_entitlement',
+    learnerEntitlement,
+    premiseId:
+      learnerEntitlement.proofDebt.targetPremise ||
+      learnerEntitlement.release.targetPremise ||
+      learnerEntitlement.validAlternative.targetPremise ||
+      learnerEntitlement.visible.premiseId ||
+      null,
     evidence: {
       ...evidence,
-      diagnosticBudget: budget,
-      ...(releaseCandidate ? { releaseCandidate } : {}),
-    },
-  };
-}
-
-function visibleConflictTrigger(
-  view,
-  {
-    premiseId,
-    evidence,
-    hiddenCertifiedRelease = false,
-    conductProgressPolicy = false,
-    releaseDecision = null,
-    playable = [],
-    forcedPlay = null,
-  },
-) {
-  const budget = visibleConflictDiagnosticBudget(view, premiseId);
-  if (!budget.allowed) {
-    return conductProgressPolicy
-      ? progressPressureTrigger(view, {
-          premiseId,
-          evidence,
-          budget,
-          releaseDecision,
-          playable,
-          forcedPlay,
-        })
-      : null;
-  }
-  return {
-    id: `t${view.turn}:visible-hidden-conflict`,
-    triggerType: 'visible_hidden_conflict',
-    visibleHiddenConflict: true,
-    hiddenCertifiedRelease,
-    premiseId,
-    evidence: {
-      ...evidence,
-      diagnosticBudget: budget,
+      learnerEntitlement,
     },
   };
 }

@@ -4,6 +4,15 @@ export { derivationDistance, detectStall } from './slope.js';
 export { simulateReleaseTempo, releaseSolvency, safeReleaseTurns, pacingGuardDecision } from './pacing.js';
 export { proofDebtReport, tutorProofDebtView } from './proofDebt.js';
 export {
+  deriveEntitlementState,
+  entitlementNeedsConduct,
+  firstSafeCurrentAuthorizedReleaseCandidate,
+  isCurrentAuthorizedRelease,
+  LEARNER_ENTITLEMENT_SCHEMA,
+  releaseSafeAtCurrentTurn,
+  visibleConflictDiagnosticBudget,
+} from './learnerEntitlement.js';
+export {
   auditConductTutorView,
   auditConductGeneratorCompliance,
   CONDUCT_COMPLIANCE_SCHEMA,
