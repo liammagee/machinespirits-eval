@@ -183,6 +183,20 @@ function classifyConductState(state) {
       rationale: 'recognition repair is active before further proof pressure',
     };
   }
+  if (dependencyRepairNeeded(state)) {
+    return {
+      moveFamily: 'repair_dependency',
+      reasonCode: 'dependency_repair_needed',
+      rationale: 'a proof-critical dependency must be restored before advancing',
+    };
+  }
+  if (finalAssertionAvailable(state)) {
+    return {
+      moveFamily: 'invite_final_assertion',
+      reasonCode: 'final_assertion_available',
+      rationale: 'the public board can now support the answer',
+    };
+  }
   if (validAlternativeCandidate(state)) {
     return {
       moveFamily: 'ask_diagnostic',
@@ -202,20 +216,6 @@ function classifyConductState(state) {
       moveFamily: 'ask_diagnostic',
       reasonCode: 'visible_hidden_conflict',
       rationale: 'visible evidence and hidden continuity disagree; ask before acting',
-    };
-  }
-  if (dependencyRepairNeeded(state)) {
-    return {
-      moveFamily: 'repair_dependency',
-      reasonCode: 'dependency_repair_needed',
-      rationale: 'a proof-critical dependency must be restored before advancing',
-    };
-  }
-  if (finalAssertionAvailable(state)) {
-    return {
-      moveFamily: 'invite_final_assertion',
-      reasonCode: 'final_assertion_available',
-      rationale: 'the public board can now support the answer',
     };
   }
   if (state.releaseCandidate || state.evidence?.releaseCandidate) {

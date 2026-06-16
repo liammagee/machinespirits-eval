@@ -1398,23 +1398,6 @@ function conductTriggerState({
     };
   }
 
-  const rd = releaseBits.releaseDecision;
-  const visibleConflict = Boolean(
-    rd?.hybridGuard?.accepted === false ||
-      rd?.consolidationGuard?.visiblePushIgnored ||
-      (rd?.visibleGuard?.blocked && rd?.pacingGuard && !rd.consolidationGuard?.held),
-  );
-  if (visibleConflict) {
-    return {
-      id: `t${view.turn}:visible-hidden-conflict`,
-      triggerType: 'visible_hidden_conflict',
-      visibleHiddenConflict: true,
-      hiddenCertifiedRelease: Boolean(rd?.hybridGuard?.accepted || (rd?.pacingGuard && rd.played)),
-      premiseId: rd?.played || rd?.visibleGuard?.candidate || rd?.pacingGuard?.candidate || null,
-      evidence,
-    };
-  }
-
   const recognitionNeed = view.scene?.recognitionNeed;
   if (recognitionNeed?.active) {
     return {
@@ -1430,6 +1413,23 @@ function conductTriggerState({
       id: `t${view.turn}:forced`,
       triggerType: 'final_assertion_available_but_delayed',
       canAssertFinal: true,
+      evidence,
+    };
+  }
+
+  const rd = releaseBits.releaseDecision;
+  const visibleConflict = Boolean(
+    rd?.hybridGuard?.accepted === false ||
+      rd?.consolidationGuard?.visiblePushIgnored ||
+      (rd?.visibleGuard?.blocked && rd?.pacingGuard && !rd.consolidationGuard?.held),
+  );
+  if (visibleConflict) {
+    return {
+      id: `t${view.turn}:visible-hidden-conflict`,
+      triggerType: 'visible_hidden_conflict',
+      visibleHiddenConflict: true,
+      hiddenCertifiedRelease: Boolean(rd?.hybridGuard?.accepted || (rd?.pacingGuard && rd.played)),
+      premiseId: rd?.played || rd?.visibleGuard?.candidate || rd?.pacingGuard?.candidate || null,
       evidence,
     };
   }

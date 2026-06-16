@@ -354,12 +354,11 @@ final grounding at turn 19 and no overreach/lucky-leap increase. This is useful
 local evidence for conduct enforcement as a visible-consolidation clamp, but it
 is not yet default-promotion evidence for the whole hidden + proofDebt arm.
 
-Current next gate: fix or decide the final-turn diagnostic priority edge case
-observed in the selector-v4 add-on. S1 enforced `ask_diagnostic` on the final
-forced turn; the run still grounded, but the policy should not
-over-diagnosticize an entitlement turn unless the learner's public assertion is
-unsupported. After that, run one more small selector-v4 diagnostic pair on a
-different world before defaulting enforcement for visible-consolidation cases.
+Final-turn priority edge case fixed 2026-06-15/16: final assertion entitlement
+now outranks visible-consolidation diagnostics while unsupported assertion
+blocking and proof-debt repair remain higher priority. Next gate: run one more
+small selector-v4 diagnostic pair on a different world before defaulting
+enforcement for visible-consolidation cases.
 
 Goal: test whether the policy survives outside replay.
 
