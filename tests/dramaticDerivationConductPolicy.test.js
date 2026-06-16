@@ -417,6 +417,49 @@ test('runtime conduct policy enforcement keeps diagnostic prompts concise', asyn
   assert.equal(out.conductPolicy.generatorCompliance.ok, true);
 });
 
+test('runtime conduct policy budgets repeated visible-hidden diagnostics on the same premise', async () => {
+  const { client } = stubClient({
+    tutor: [
+      {
+        dialogue: 'Keep the paper beside us, but do not let it close the case.',
+        release: null,
+        move: { figure: 'erotema', target_premise: 'p1', intent: 'consolidate' },
+      },
+    ],
+  });
+  const tutor = makeLlmTutor(
+    smokeWorld,
+    client,
+    actsOpts({
+      conductPolicyEnforce: true,
+      pacingGuard: true,
+      releaseAuthority: true,
+      visibleConsolidationGuard: true,
+    }),
+  );
+  const out = await tutor(
+    actsView(3, {
+      ledger: [{ turn: 2, premiseId: 'p1', via: 'director' }],
+      transcript: [
+        {
+          turn: 2,
+          role: 'tutor',
+          text: 'Pause there. What in the public record licenses that next step?',
+          meta: {
+            move: { figure: 'erotema', targetPremise: 'p1', intent: 'test' },
+          },
+        },
+        { turn: 2, role: 'learner', text: 'I do not yet have it clear.', meta: {} },
+      ],
+    }),
+  );
+
+  assert.equal(out.conductPolicy.active, false);
+  assert.equal(out.conductPolicy.reasonCode, 'no_policy_trigger');
+  assert.equal(out.move.intent, 'consolidate');
+  assert.equal(out.dialogue, 'Keep the paper beside us, but do not let it close the case.');
+});
+
 test('runtime conduct policy prioritizes final entitlement over visible diagnostics', async () => {
   const longLearner =
     'I set wormwood down as the sign, but I am not taking up the prior branch before any hand is named.';

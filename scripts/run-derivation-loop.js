@@ -202,10 +202,11 @@
  *                                       accepted only when the hidden guard
  *                                       also marks the release safe.)
  *     [--pacing-guard-selective-v4]    (Selector v4 probe; hidden default plus
- *                                       visible hold/consolidation, a grounded-
- *                                       answer gate, and conduct-policy
- *                                       enforcement by default. Visible state
- *                                       cannot accelerate release.)
+ *                                       visible hold/consolidation and a
+ *                                       grounded-answer gate. Conduct-policy
+ *                                       logging/enforcement must be requested
+ *                                       explicitly. Visible state cannot
+ *                                       accelerate release.)
  *     [--proof-debt-guard]             (requires --repair-clause. When decay has
  *                                       dropped an already-staged proof-critical
  *                                       exhibit, the harness authorizes a restore
@@ -691,7 +692,7 @@ async function main() {
     );
     process.exit(1);
   }
-  const conductPolicyEnforce = flag('conduct-policy-enforce') || pacingGuardSelectiveV4;
+  const conductPolicyEnforce = flag('conduct-policy-enforce');
   const conductPolicy = flag('conduct-policy') || conductPolicyEnforce;
   const compiledGuard = flag('compiled-guard');
   if (

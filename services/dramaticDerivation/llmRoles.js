@@ -1430,22 +1430,6 @@ function conductTriggerState({
   }
 
   const rd = releaseBits.releaseDecision;
-  const visibleConflict = Boolean(
-    rd?.hybridGuard?.accepted === false ||
-      rd?.consolidationGuard?.visiblePushIgnored ||
-      (rd?.visibleGuard?.blocked && rd?.pacingGuard && !rd.consolidationGuard?.held),
-  );
-  if (visibleConflict) {
-    return {
-      id: `t${view.turn}:visible-hidden-conflict`,
-      triggerType: 'visible_hidden_conflict',
-      visibleHiddenConflict: true,
-      hiddenCertifiedRelease: Boolean(rd?.hybridGuard?.accepted || (rd?.pacingGuard && rd.played)),
-      premiseId: rd?.played || rd?.visibleGuard?.candidate || rd?.pacingGuard?.candidate || null,
-      evidence,
-    };
-  }
-
   if (rd?.played) {
     return {
       id: `t${view.turn}:release:${rd.played}`,
@@ -1456,20 +1440,128 @@ function conductTriggerState({
     };
   }
 
+  const visibleConflict = Boolean(
+    rd?.hybridGuard?.accepted === false ||
+      rd?.consolidationGuard?.visiblePushIgnored ||
+      (rd?.visibleGuard?.blocked && rd?.pacingGuard && !rd.consolidationGuard?.held),
+  );
+  if (visibleConflict) {
+    return visibleConflictTrigger(view, {
+      premiseId: rd?.visibleGuard?.candidate || rd?.pacingGuard?.candidate || null,
+      evidence,
+      hiddenCertifiedRelease: Boolean(rd?.hybridGuard?.accepted),
+    });
+  }
+
   if (visibleConsolidation?.features?.stalling || visibleConsolidation?.features?.priorEchoed === false) {
-    return {
-      id: `t${view.turn}:visible-consolidation`,
-      triggerType: 'visible_hidden_conflict',
-      visibleHiddenConflict: true,
-      premiseId: visibleConsolidation.features.priorPremiseId || finalOut.move?.targetPremise || null,
+    const premiseId = visibleConsolidation.features.priorPremiseId || finalOut.move?.targetPremise || null;
+    const trigger = visibleConflictTrigger(view, {
+      premiseId,
       evidence: {
         ...evidence,
         visibleReason: (visibleConsolidation.lines || []).join(' '),
       },
-    };
+    });
+    return trigger ? { ...trigger, id: `t${view.turn}:visible-consolidation` } : null;
   }
 
   return null;
+}
+
+function priorConductPolicies(transcript = [], turn) {
+  return (Array.isArray(transcript) ? transcript : [])
+    .filter((line) => line?.role === 'tutor' && Number(line.turn) < Number(turn) && line.meta?.conductPolicy)
+    .map((line) => ({ turn: Number(line.turn), policy: line.meta.conductPolicy }))
+    .filter((row) => Number.isFinite(row.turn));
+}
+
+function normConductToken(value) {
+  return String(value || '')
+    .toLowerCase()
+    .trim();
+}
+
+function priorDiagnosticLikeTutorMoves(transcript = [], turn) {
+  const diagnosticIntents = new Set(['test', 'confront']);
+  return (Array.isArray(transcript) ? transcript : [])
+    .filter((line) => line?.role === 'tutor' && Number(line.turn) < Number(turn))
+    .map((line) => {
+      const move = line.meta?.move || {};
+      return {
+        turn: Number(line.turn),
+        targetPremise: move.targetPremise || move.target_premise || null,
+        intent: normConductToken(move.intent),
+        release: line.meta?.release ?? null,
+      };
+    })
+    .filter((row) => Number.isFinite(row.turn) && !row.release && diagnosticIntents.has(row.intent));
+}
+
+function samePremise(a, b) {
+  return Boolean(a && b && String(a) === String(b));
+}
+
+function visibleConflictDiagnosticBudget(view, premiseId) {
+  const rows = priorConductPolicies(view.transcript, view.turn).filter(
+    (row) =>
+      row.policy?.active === true &&
+      row.policy?.reasonCode === 'visible_hidden_conflict' &&
+      row.policy?.selectedMoveFamily === 'ask_diagnostic',
+  );
+  const last = rows[rows.length - 1] || null;
+  if (last && Number(view.turn) - last.turn <= 1 && samePremise(last.policy?.targetPremise, premiseId)) {
+    return {
+      allowed: false,
+      reason: 'same_premise_adjacent_visible_conflict_diagnostic',
+      priorTurn: last.turn,
+    };
+  }
+  const recent = rows.filter((row) => Number(view.turn) - row.turn <= 3);
+  if (recent.length >= 2) {
+    return {
+      allowed: false,
+      reason: 'recent_visible_conflict_diagnostic_budget_exhausted',
+      priorTurns: recent.map((row) => row.turn),
+    };
+  }
+  const recentTutorDiagnostics = priorDiagnosticLikeTutorMoves(view.transcript, view.turn);
+  const lastTutorDiagnostic = recentTutorDiagnostics[recentTutorDiagnostics.length - 1] || null;
+  if (
+    lastTutorDiagnostic &&
+    Number(view.turn) - lastTutorDiagnostic.turn <= 1 &&
+    samePremise(lastTutorDiagnostic.targetPremise, premiseId)
+  ) {
+    return {
+      allowed: false,
+      reason: 'same_premise_adjacent_public_diagnostic',
+      priorTurn: lastTutorDiagnostic.turn,
+    };
+  }
+  const recentPublicDiagnostics = recentTutorDiagnostics.filter((row) => Number(view.turn) - row.turn <= 3);
+  if (recentPublicDiagnostics.length >= 2) {
+    return {
+      allowed: false,
+      reason: 'recent_public_diagnostic_budget_exhausted',
+      priorTurns: recentPublicDiagnostics.map((row) => row.turn),
+    };
+  }
+  return { allowed: true };
+}
+
+function visibleConflictTrigger(view, { premiseId, evidence, hiddenCertifiedRelease = false }) {
+  const budget = visibleConflictDiagnosticBudget(view, premiseId);
+  if (!budget.allowed) return null;
+  return {
+    id: `t${view.turn}:visible-hidden-conflict`,
+    triggerType: 'visible_hidden_conflict',
+    visibleHiddenConflict: true,
+    hiddenCertifiedRelease,
+    premiseId,
+    evidence: {
+      ...evidence,
+      diagnosticBudget: budget,
+    },
+  };
 }
 
 const CONDUCT_INTENTS = Object.freeze({

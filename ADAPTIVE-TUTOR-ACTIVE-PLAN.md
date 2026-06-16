@@ -448,6 +448,27 @@ Keep hidden+proofDebt as the reliability baseline, and either de-promote
 selector-v4's default conduct enforcement or add a strict diagnostic budget
 before any fresh paid retest.
 
+Phase 5h completed 2026-06-16; see
+`exports/dramatic-derivation/phase5h-v4-depromotion-budget-replay-report.md`.
+The selector-v4 default was de-promoted so v4 no longer implies conduct-policy
+logging or enforcement; both must now be requested explicitly. A shallow
+diagnostic budget was added for repeated `visible_hidden_conflict`
+`ask_diagnostic` triggers, including a public transcript fallback for adjacent
+diagnostic tutor moves when replay prefixes do not carry conduct-policy metadata.
+Focused tests passed (`node --test
+tests/dramaticDerivationConductPolicy.test.js
+tests/dramaticDerivationReplay.test.js`: 29/29).
+
+Two prefix-preserving Hethel replays from the Phase 5g failure did not clear the
+gate. The first replay still failed by disengagement at t11, final D=4, with
+four `ask_diagnostic` moves. The stronger budget reduced the diagnostic count to
+one and improved release timing (`p_point` t6->t5, `p_surface` t11->t10), but
+still failed by aporia at t10, final D=4. Therefore no fresh paid Hethel retest
+was launched. Current decision: keep hidden+proofDebt as the reliability
+baseline, do not promote selector-v4/conduct enforcement, and only continue this
+line if the next change targets progress/release pressure rather than another
+visible/hidden diagnostic taxonomy.
+
 Goal: test whether the policy survives outside replay.
 
 Only run this after Phases 1-4 pass.

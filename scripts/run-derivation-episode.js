@@ -48,8 +48,8 @@
  *     [--pacing-guard-selective-v1 on|off]
  *     [--pacing-guard-selective-v2 on|off]
  *     [--pacing-guard-selective-v3 on|off]
- *     [--pacing-guard-selective-v4 on|off] (implies conduct-policy enforcement
- *                                       unless --conduct-policy-enforce off)
+ *     [--pacing-guard-selective-v4 on|off] (conduct-policy enforcement is
+ *                                       explicit: pass --conduct-policy-enforce on)
  *     [--same-turn-assertion-affordance on|off]
  *     [--proof-debt-guard on|off]
  *     [--conduct-policy on|off]
@@ -527,8 +527,7 @@ async function main() {
     console.error('--proof-debt-guard on requires --repair-clause on');
     process.exit(1);
   }
-  const conductPolicyEnforceExplicit = arg('conduct-policy-enforce', null);
-  const conductPolicyEnforceDefault = Boolean(srcDiag.conductPolicyEnforce) || pacingGuardSelectiveV4;
+  const conductPolicyEnforceDefault = Boolean(srcDiag.conductPolicyEnforce);
   const conductPolicyEnforce = track(
     'conduct-policy-enforce',
     triState('conduct-policy-enforce', conductPolicyEnforceDefault),
@@ -539,7 +538,7 @@ async function main() {
     triState('conduct-policy', Boolean(srcDiag.conductPolicy) || conductPolicyEnforce),
     Boolean(srcDiag.conductPolicy) || Boolean(srcDiag.conductPolicyEnforce),
   );
-  const conductPolicy = requestedConductPolicy || conductPolicyEnforce || (pacingGuardSelectiveV4 && conductPolicyEnforceExplicit !== 'off');
+  const conductPolicy = requestedConductPolicy || conductPolicyEnforce;
   const conductTriggerOverride = loadConductTriggerOverride();
   if (conductTriggerOverride && !conductPolicy) {
     console.error('--conduct-trigger requires --conduct-policy on or --conduct-policy-enforce on');
