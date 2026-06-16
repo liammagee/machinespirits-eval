@@ -522,6 +522,16 @@ over proof advance, and classify whether the failure is release starvation,
 learner uptake, decay/repair continuity, tutor discourse, or over-constrained
 runtime policy.
 
+A21 opened 2026-06-16 as a separate action-value microbench arc; see
+`A21-action-value-tutoring-microbench-implementation-plan.md` and the copied
+research note at `docs/research/A21-action-value-tutoring-microbench.md`.
+Initial implementation is isolated under `services/dramaticDerivation/a21/` and
+does not change selector defaults, hidden+proofDebt behavior, conduct
+enforcement, or paid/replay validation gates. The first scaffold freezes the
+four Hethel candidate actions and a deterministic durable learner state so later
+work can evaluate concrete action value rather than promote another local
+conduct overlay.
+
 Goal: test whether the conduct layer can stop asking diagnostics and press
 forward when repeated visible/hidden conflict probes have exhausted their local
 budget.

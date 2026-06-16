@@ -22,6 +22,26 @@ export {
   CONDUCT_POLICY_SCHEMA,
   selectConductMove,
 } from './conductPolicy.js';
+export {
+  A21_ACTION_EXECUTION_SCHEMA,
+  A21_ACTION_SET_SCHEMA,
+  A21_HETHEL_FIXTURE_ID,
+  A21_MOVE_FAMILIES,
+  defaultHethelActionSet,
+  executeA21Action,
+  getA21Action,
+  loadActionSet,
+  validateA21ActionSet,
+} from './a21/actionSet.js';
+export {
+  A21_LEARNER_STATE_SCHEMA,
+  cloneDurableLearnerState,
+  createDurableLearnerState,
+  initialHethelLearnerState,
+  statePublicSummary,
+  validateDurableLearnerState,
+} from './a21/learnerState.js';
+export { A21_LEARNER_SIMULATOR_SCHEMA, applyTutorActionToLearnerState } from './a21/learnerSimulator.js';
 export { createRuntimeMonitor, RUNTIME_MONITOR_SCHEMA } from './runtimeMonitor.js';
 export {
   buildLogicIR,
