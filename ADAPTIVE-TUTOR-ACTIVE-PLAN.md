@@ -395,6 +395,14 @@ either (a) repeat the promoted clamp on these two negative-transfer worlds only
 if we need stability evidence, or (b) first construct/mine a real V-positive or
 hidden-hurts fixture before any mixed-world selector matrix.
 
+Fixture mining completed 2026-06-16; see
+`exports/dramatic-derivation/selector-fixture-mining-report.md`. Hethel r2 is
+the primary fixture: baseline aporia, hidden disengagement at D=5, visible
+grounded, and selective-v1 selected visible by `mirror_dead_predicate_visible`.
+Withercombe r2 is demoted to a secondary unstable lead because the broader
+Withercombe record remains visible-negative/decay-sensitive. Next gate: use
+prefix-controlled Hethel r2 replay around t7 before any new mixed-world matrix.
+
 Goal: test whether the policy survives outside replay.
 
 Only run this after Phases 1-4 pass.
