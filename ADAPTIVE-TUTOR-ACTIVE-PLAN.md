@@ -336,6 +336,31 @@ Current next gate:
 
 ### Phase 5: Fresh First-Pass Validation
 
+Status: first-pass canary run 2026-06-15/16; see
+`exports/dramatic-derivation/phase5-conduct-policy-first-pass-report.md`.
+The main hidden + proofDebt matrix completed without final negative transfer:
+Withercombe dependency repair, Ravensmark final entitlement, and Hethel
+zero-decay all matched S0 on final grounding, turn count, forced/asserted gap,
+overreach, and lucky-leap counts. However, the main matrix did not show
+incremental value because all S0 conduct-triggered moves were already
+generator-compliant. The intended Hethel diagnostic case was an experiment-design
+miss: plain hidden + proofDebt does not arm selector-v4 visible-consolidation
+evidence, so no `ask_diagnostic` trigger appeared.
+
+Diagnostic add-on: a separate selector-v4/zero-decay Withercombe pair did arm
+visible consolidation. There S0 passed 11/17 checked conduct decisions, while
+S1 passed 17/17 and enforced five `ask_diagnostic` corrections, with matched
+final grounding at turn 19 and no overreach/lucky-leap increase. This is useful
+local evidence for conduct enforcement as a visible-consolidation clamp, but it
+is not yet default-promotion evidence for the whole hidden + proofDebt arm.
+
+Current next gate: fix or decide the final-turn diagnostic priority edge case
+observed in the selector-v4 add-on. S1 enforced `ask_diagnostic` on the final
+forced turn; the run still grounded, but the policy should not
+over-diagnosticize an entitlement turn unless the learner's public assertion is
+unsupported. After that, run one more small selector-v4 diagnostic pair on a
+different world before defaulting enforcement for visible-consolidation cases.
+
 Goal: test whether the policy survives outside replay.
 
 Only run this after Phases 1-4 pass.
