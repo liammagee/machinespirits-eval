@@ -500,6 +500,28 @@ t9 aporia and reaching D=2 by t15 with no release deviations, but it still ended
 local repair, not a cleared replay gate. Do not run the no-harm replay or fresh
 paid retest from this policy state.
 
+Interpretive update after the failed Phase 6 gates: do not read Hethel as
+showing that all derivation machinery is failing. It shows a narrower and more
+important negative result. Plain hidden+proofDebt grounded Hethel first-pass at
+t20, while promoted selector-v4/conduct enforcement failed first-pass and the
+progress-policy, safe-now, and learner-entitlement replays all failed to clear
+the local gate. The reliable substrate remains hidden proof continuity plus
+proofDebt/release authority; the failing component is the adaptive conduct
+overlay, which can be locally compliant, recognitive, and entitlement-aware while
+still starving proof progress through repeated ask/consolidate choices.
+
+Current Phase 6 decision: freeze this as negative evidence against promoting the
+conduct/progress/entitlement overlay. Hethel is now the kill-gate for any
+adaptive conduct controller: if a variant cannot match hidden+proofDebt on this
+case, it stays experimental. The next useful step is not another micro-policy or
+taxonomy expansion, but a contrastive Hethel autopsy comparing the successful
+`hethel-phase5g-a20-fresh-hidden-r1` transcript with the failed promoted and
+Phase 6 replay transcripts turn by turn. The autopsy should locate the first
+adaptive choice that prefers maintenance, diagnostic pressure, or consolidation
+over proof advance, and classify whether the failure is release starvation,
+learner uptake, decay/repair continuity, tutor discourse, or over-constrained
+runtime policy.
+
 Goal: test whether the conduct layer can stop asking diagnostics and press
 forward when repeated visible/hidden conflict probes have exhausted their local
 budget.
