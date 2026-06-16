@@ -431,6 +431,23 @@ promoted conduct as the reliability baseline and stop selector claims there, or
 create a separately labelled v5 diagnostic route if we still need a genuine
 adaptive H/V selector claim.
 
+Phase 5g A20 fresh validation completed 2026-06-16 after the replayable fixture
+increment; see
+`exports/dramatic-derivation/phase5g-a20-fresh-report.md`. The paired
+Hethel/Withercombe/Ravensmark first-pass run compared hidden+proofDebt against
+promoted selector-v4+proofDebt. Hidden grounded 3/3. Promoted selector-v4
+selected hidden in all three worlds, grounded Withercombe at the same turn and
+Ravensmark one turn later, but failed Hethel by disengagement at t11 with final
+D=4. Conduct enforcement passed its local compliance checks in all promoted
+arms, so the Hethel failure is not a generator-compliance failure; it is a
+policy-level negative transfer from repeated `visible_hidden_conflict`
+`ask_diagnostic` moves and delayed releases (`p_point` t4->t6, `p_surface`
+t9->t11). This supersedes the Phase 5f promotion decision: do not treat
+promoted selector-v4/conduct enforcement as a general reliability baseline.
+Keep hidden+proofDebt as the reliability baseline, and either de-promote
+selector-v4's default conduct enforcement or add a strict diagnostic budget
+before any fresh paid retest.
+
 Goal: test whether the policy survives outside replay.
 
 Only run this after Phases 1-4 pass.
