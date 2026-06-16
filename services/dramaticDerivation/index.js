@@ -42,6 +42,21 @@ export {
   validateDurableLearnerState,
 } from './a21/learnerState.js';
 export { A21_LEARNER_SIMULATOR_SCHEMA, applyTutorActionToLearnerState } from './a21/learnerSimulator.js';
+export { A21_TRANSITION_OUTCOME_SCHEMA, auditTransition } from './a21/transitionAudit.js';
+export { A21_REWARD_BREAKDOWN_SCHEMA, DEFAULT_A21_REWARD_WEIGHTS, scoreReward } from './a21/rewardScorer.js';
+export {
+  A21_TRIAL_ROW_SCHEMA,
+  A21_TRIAL_RUN_SCHEMA,
+  renderDeterministicLearnerText,
+  runA21Microbench,
+} from './a21/trialRunner.js';
+export { A21_ACTION_VALUE_ANALYSIS_SCHEMA, analyzeA21Trials } from './a21/analysis.js';
+export {
+  A21_POLICY_PATCH_PROPOSAL_SCHEMA,
+  buildA21PolicyPatchProposal,
+  cloneA21PolicyPatchProposal,
+  proposalKeepsRuntimeClosed,
+} from './a21/policyPatchProposal.js';
 export { createRuntimeMonitor, RUNTIME_MONITOR_SCHEMA } from './runtimeMonitor.js';
 export {
   buildLogicIR,

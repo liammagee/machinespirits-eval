@@ -543,6 +543,32 @@ The fixture preserves the failed overlay public prefix through turn 3 so turn 4
 remains a replaceable action point; the observed hidden/failed outcomes are kept
 as provenance, not as an encoded winner. No replay or paid run was launched.
 
+A21 Phase 5/7 local microbench completed 2026-06-16; see
+`exports/dramatic-derivation/a21-action-value/action-value-report.md`. The
+zero-paid deterministic table evaluates the four frozen actions from the same
+Hethel trigger fixture with logged assignment probability 0.25. The decision
+category is `release_beats_diagnostic`: `B_RELEASE_P_POINT` is top-ranked
+(mean reward 9, D 5->4, on-schedule release, no aporia), `C_RESTAGE_P_POINT`
+is second but pays an explicit delayed-release cost, consolidation produces
+release starvation, and repeated diagnostic scores negative because it delays
+`p_point` and drives aporia. This is local action-value evidence only. It does
+not modify runtime policy, selector defaults, hidden+proofDebt behavior, or
+paid/replay validation gates. The next A21 step is a separately labelled policy
+patch proposal and Hethel replay gate, not a fresh paid run.
+
+A21 Phase 8 completed locally on 2026-06-16; see
+`exports/dramatic-derivation/a21-action-value/policy-patch-proposal.md`. The
+proposal is `a21_hethel_release_after_diagnostic_budget` with
+`status: proposed_only`, `promoted: false`, and `runtime_behavior_changed:
+false`. It applies only to a Hethel-like mirror-dead-predicate trigger where
+visible/hidden conflict diagnostics are budget-exhausted, `p_point` is the
+current authorized public release, the learner is not disengaged, and `p_point`
+has not yet been seen or owned. The proposal prefers releasing `p_point`, blocks
+further repeated diagnostics and release-holding consolidation/repair variants,
+and explicitly requires a Phase 9 Hethel replay gate against hidden+proofDebt
+before any fresh paid validation. No runtime policy, selector default, conduct
+policy, or paid gate changed.
+
 Goal: test whether the conduct layer can stop asking diagnostics and press
 forward when repeated visible/hidden conflict probes have exhausted their local
 budget.
