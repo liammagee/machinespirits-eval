@@ -786,6 +786,70 @@ function addDiscursiveCalibration(scores, calibration) {
   return summary;
 }
 
+function didacticSummary(state) {
+  if (!state || typeof state !== 'object') return null;
+  if (state.publicOnly !== true || state.mayOverrideProofControl !== false) return null;
+  if (state.inputAudit && state.inputAudit.ok === false) return null;
+  return {
+    learningSignal: state.learningSignal || 'unknown',
+    recommendedMode: state.recommendedMode || null,
+    scope: state.scope || 'scene',
+    currentObject: state.currentObject || null,
+    exitCondition: state.exitCondition || null,
+    evidence: Array.isArray(state.evidence) ? state.evidence.slice(0, 3) : [],
+  };
+}
+
+function proofStepIntentAndTarget(context = {}, calibration = null) {
+  const moveFamily = context.proofStep?.moveFamily || calibration?.proofStep?.moveFamily || null;
+  const targetPremise =
+    context.proofStep?.targetPremise ||
+    calibration?.proofStep?.targetPremise ||
+    context.topProofDebt?.premiseId ||
+    context.cuePremise ||
+    context.lastReleasePremise ||
+    null;
+  const intent =
+    {
+      release_next_evidence: 'release',
+      repair_dependency: 'restore',
+      invite_final_assertion: 'stage_recognition',
+      consolidate_subproof: 'consolidate',
+    }[moveFamily] ||
+    (context.topProofDebt ? 'restore' : context.forced ? 'stage_recognition' : context.releaseCue ? 'release' : 'test');
+  return { intent, targetPremise };
+}
+
+function didacticModeRow(mode) {
+  return (
+    {
+      teach_back: { figure: 'erotema', stance: 'didactic_teach_back', weight: 0.74 },
+      concrete_example: { figure: 'exemplum', stance: 'didactic_concrete_example', weight: 0.72 },
+      analogy_bridge: { figure: 'analogia', stance: 'didactic_analogy_bridge', weight: 0.72 },
+      contrast_case: { figure: 'exemplum', stance: 'didactic_contrast_case', weight: 0.74 },
+      slow_recap: { figure: 'anaphora', stance: 'didactic_slow_recap', weight: 0.7 },
+      purpose_bridge: { figure: 'analogia', stance: 'didactic_purpose_bridge', weight: 0.74 },
+      decompose_subtask: { figure: 'erotema', stance: 'didactic_decompose_subtask', weight: 0.76 },
+      repair_vocabulary: { figure: 'anaphora', stance: 'didactic_repair_vocabulary', weight: 0.72 },
+    }[mode] || { figure: 'anaphora', stance: 'didactic_slow_recap', weight: 0.36 }
+  );
+}
+
+function addDidacticMode(scores, state, context = {}, calibration = null) {
+  const summary = didacticSummary(state);
+  if (!summary?.recommendedMode) return null;
+  if (summary.learningSignal === 'unknown') return null;
+  const { intent, targetPremise } = proofStepIntentAndTarget(context, calibration);
+  const row = didacticModeRow(summary.recommendedMode);
+  add(
+    scores,
+    keyOf(row.figure, intent, targetPremise, row.stance),
+    row.weight,
+    `didactic mode: ${summary.recommendedMode}; proof intent preserved`,
+  );
+  return summary;
+}
+
 export function recommendRhetoricalMove(world, view, context = {}, config = true) {
   const cfg = normalizeRhetoricalPolicyConfig(config);
   if (!cfg) return null;
@@ -795,6 +859,12 @@ export function recommendRhetoricalMove(world, view, context = {}, config = true
   const exchangeType = lastLearner?.meta?.exchange?.type || null;
   const recognitionNeed = context.recognitionNeed || view.scene?.recognitionNeed || null;
   const calibrationSummary = addDiscursiveCalibration(scores, context.discursiveCalibration || view.discursiveCalibration || null);
+  const didacticModeSummary = addDidacticMode(
+    scores,
+    context.didacticMode || view.didacticMode || null,
+    context,
+    context.discursiveCalibration || view.discursiveCalibration || null,
+  );
   const lastPoint = view.trajectory?.[view.trajectory.length - 1] || null;
   const prevPoint = view.trajectory && view.trajectory.length > 1 ? view.trajectory[view.trajectory.length - 2] : null;
   const plateau = Boolean(lastPoint && prevPoint && lastPoint.D === prevPoint.D);
@@ -870,6 +940,7 @@ export function recommendRhetoricalMove(world, view, context = {}, config = true
     selected,
     distribution,
     ...(calibrationSummary ? { discursiveCalibration: calibrationSummary } : {}),
+    ...(didacticModeSummary ? { didacticMode: didacticModeSummary } : {}),
   };
 }
 
@@ -885,6 +956,12 @@ export function renderRhetoricalPolicy(policy) {
     ...(policy.discursiveCalibration
       ? [
           `- discursive calibration: ${policy.discursiveCalibration.publicPosture} / ${policy.discursiveCalibration.uptakeQuality}; pressure ${policy.discursiveCalibration.pressure}`,
+        ]
+      : []),
+    ...(policy.didacticMode
+      ? [
+          `- didactic mode: ${policy.didacticMode.recommendedMode} / ${policy.didacticMode.learningSignal}; scope ${policy.didacticMode.scope}`,
+          `- didactic exit: ${policy.didacticMode.exitCondition}`,
         ]
       : []),
     `- distribution: ${policy.distribution

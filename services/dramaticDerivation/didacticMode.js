@@ -1,4 +1,5 @@
 export const DIDACTIC_MODE_SCHEMA = 'dramatic-derivation.didactic-mode.v0';
+export const DIDACTIC_ACT_FALLBACK_SCHEMA = 'dramatic-derivation.didactic-act-fallback.v0';
 
 export const DIDACTIC_MODE_FAMILIES = Object.freeze([
   'teach_back',

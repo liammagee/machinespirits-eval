@@ -80,6 +80,7 @@
 
 import { closure, entails, factKey, matchPattern, proofTree } from './chainer.js';
 import { normalizeDecayConfig, mulberry32 } from './corruption.js';
+import { DIDACTIC_ACT_FALLBACK_SCHEMA } from './didacticMode.js';
 import { buildWorldIR, projectWorldIRLogic } from './guardCompiler.js';
 import { proofDebtReport, tutorProofDebtView } from './proofDebt.js';
 import {
@@ -272,6 +273,7 @@ export async function runDrama({ world, roles, options = {} }) {
   const proofDebtRows = []; // guard audit rows — proof-critical decayed exhibits offered to the tutor
   const logicSnapshots = []; // harness-only per-turn board closure over the canonical logic IR
   const sceneRows = []; // opt-in scene/exchange overlay — does not replace the formal turn loop
+  const didacticModeRows = []; // public-only tutor advisory states, if the roles layer emits them
   let sceneState = null;
   const ledger = []; // {turn, premiseId, via}
   const releasedKeys = new Set();
@@ -599,6 +601,34 @@ export async function runDrama({ world, roles, options = {} }) {
     sceneState ? sceneView(sceneState, sceneTempoThisTurn, sceneRecognitionNeedThisTurn) : null;
   const currentSceneMeta = () =>
     sceneState ? sceneMeta(sceneState, sceneTempoThisTurn, sceneRecognitionNeedThisTurn) : null;
+  const didacticFallbackForAct = (actIndex, startTurn, endTurn) => {
+    const rows = didacticModeRows.filter(
+      (row) => row.act === actIndex && row.turn >= startTurn && row.turn <= endTurn,
+    );
+    if (!rows.length) return null;
+    const strainedSignals = new Set(['stalled', 'echo_only', 'misapplied', 'overloaded', 'purpose_gap']);
+    let selected = null;
+    for (let i = rows.length - 1; i >= 0; i -= 1) {
+      if (rows[i].scope === 'next_act') {
+        selected = rows[i];
+        break;
+      }
+      if (!selected && strainedSignals.has(rows[i].learningSignal)) selected = rows[i];
+    }
+    if (!selected) return null;
+    return {
+      schema: DIDACTIC_ACT_FALLBACK_SCHEMA,
+      publicOnly: true,
+      mayOverrideProofControl: false,
+      sourceAct: actIndex,
+      sourceTurn: selected.turn,
+      learningSignal: selected.learningSignal,
+      recommendedMode: selected.recommendedMode,
+      currentObject: selected.currentObject || null,
+      exitCondition: selected.exitCondition || null,
+      evidence: Array.isArray(selected.evidence) ? selected.evidence.slice(0, 3) : [],
+    };
+  };
 
   const shouldCallDirector = (turn, openedScene) => {
     if (acts) return true;
@@ -847,11 +877,13 @@ export async function runDrama({ world, roles, options = {} }) {
         } else if (wantsEnd || mustEnd) {
           const direction = (directorOut.direction || '').trim() || '[The act turns.]';
           const endedByAct = wantsEnd ? 'director' : 'harness_max';
+          const didacticFallback = didacticFallbackForAct(actState.index, actState.startTurn, turn - 1);
           actState.history.push({
             act: actState.index,
             turns: [actState.startTurn, turn - 1],
             endedBy: endedByAct,
             brief: actState.brief,
+            ...(didacticFallback ? { didacticFallback } : {}),
           });
           events.push({
             turn,
@@ -934,11 +966,29 @@ export async function runDrama({ world, roles, options = {} }) {
         ...(tutorOut.conductPolicy ? { conductPolicy: tutorOut.conductPolicy } : {}),
         ...(tutorOut.rhetoricalPolicy ? { rhetoricalPolicy: tutorOut.rhetoricalPolicy } : {}),
         ...(tutorOut.discursiveCalibration ? { discursiveCalibration: tutorOut.discursiveCalibration } : {}),
+        ...(tutorOut.didacticMode ? { didacticMode: tutorOut.didacticMode } : {}),
         ...(tutorPhaticRecognition.length ? { phaticRecognition: tutorPhaticRecognition } : {}),
         ...(sceneMetaThisTurn ? { scene: sceneMetaThisTurn } : {}),
         publicRegister: publicRegisterForTurn,
       },
     });
+    if (tutorOut.didacticMode) {
+      didacticModeRows.push({
+        turn,
+        ...(actState ? { act: actState.index } : {}),
+        schema: tutorOut.didacticMode.schema,
+        publicOnly: tutorOut.didacticMode.publicOnly,
+        mayOverrideProofControl: tutorOut.didacticMode.mayOverrideProofControl,
+        currentObject: tutorOut.didacticMode.currentObject || null,
+        learningSignal: tutorOut.didacticMode.learningSignal || null,
+        recommendedMode: tutorOut.didacticMode.recommendedMode || null,
+        scope: tutorOut.didacticMode.scope || null,
+        exitCondition: tutorOut.didacticMode.exitCondition || null,
+        evidence: Array.isArray(tutorOut.didacticMode.evidence) ? tutorOut.didacticMode.evidence.slice(0, 4) : [],
+        inputAuditOk: tutorOut.didacticMode.inputAudit?.ok === true,
+        nonLeakAuditOk: tutorOut.didacticMode.nonLeakAudit?.ok === true,
+      });
+    }
 
     // Reconstructing-tutor recording (stage v2, header): when the roles layer
     // emits a per-turn `theory` — the tutor's model of the learner's store —
@@ -1344,6 +1394,16 @@ export async function runDrama({ world, roles, options = {} }) {
           }
         : {}),
       ...(actState ? { act: { index: actState.index, startTurn: actState.startTurn } } : {}),
+      ...(tutorOut.didacticMode
+        ? {
+            didacticMode: {
+              learningSignal: tutorOut.didacticMode.learningSignal || null,
+              recommendedMode: tutorOut.didacticMode.recommendedMode || null,
+              scope: tutorOut.didacticMode.scope || null,
+              currentObject: tutorOut.didacticMode.currentObject || null,
+            },
+          }
+        : {}),
       publicRegister: publicRegisterForTurn,
       endedBy,
     });
@@ -1363,11 +1423,13 @@ export async function runDrama({ world, roles, options = {} }) {
 
   // Close the final open act at the last turn played (stage v2).
   if (actState) {
+    const didacticFallback = didacticFallbackForAct(actState.index, actState.startTurn, turn);
     actState.history.push({
       act: actState.index,
       turns: [actState.startTurn, turn],
       endedBy: 'run_end',
       brief: actState.brief,
+      ...(didacticFallback ? { didacticFallback } : {}),
     });
   }
 
@@ -1432,6 +1494,7 @@ export async function runDrama({ world, roles, options = {} }) {
         }
       : {}),
     ...(proofDebtRows.length ? { proofDebt: proofDebtRows } : {}),
+    ...(didacticModeRows.length ? { didacticMode: didacticModeRows } : {}),
     ...(logicSnapshots.length ? { logicSnapshots } : {}),
     ...(corruption
       ? {

@@ -313,7 +313,7 @@ test('episode CLI inherits modern guard and plot dials while preserving replay p
   fs.rmSync(tmp, { recursive: true, force: true });
 });
 
-test('episode CLI inherits discursive calibration as advisory tutor metadata', { timeout: CLI_TIMEOUT }, () => {
+test('episode CLI inherits discursive and didactic advisory tutor metadata', { timeout: CLI_TIMEOUT }, () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'derivation-discursive-episode-'));
   const run = (script, args) =>
     execFileSync(process.execPath, [path.join(ROOT, 'scripts', script), ...args], {
@@ -335,6 +335,7 @@ test('episode CLI inherits discursive calibration as advisory tutor metadata', {
     'on',
     '--rhetorical-policy',
     '--discursive-calibration',
+    '--didactic-mode',
   ]);
   run('run-derivation-episode.js', [
     '--from',
@@ -352,7 +353,10 @@ test('episode CLI inherits discursive calibration as advisory tutor metadata', {
   const d = JSON.parse(fs.readFileSync(path.join(tmp, 'episodes/ep/diagnosis.json'), 'utf8'));
   assert.equal(d.episode.prefixIntegrity.ok, true);
   assert.equal(d.discursiveCalibration, true);
+  assert.equal(d.didacticMode, true);
   assert.equal(d.rhetoricalPolicy.mode, 'deterministic');
+  assert.ok(d.didacticModeReport?.turns >= 1);
+  assert.equal(d.didacticModeReport.auditClean, true);
   const result = JSON.parse(fs.readFileSync(path.join(tmp, 'episodes/ep/result.json'), 'utf8'));
   const liveTutorLine = result.transcript.find((line) => line.turn >= 3 && line.role === 'tutor');
   assert.equal(
@@ -360,11 +364,22 @@ test('episode CLI inherits discursive calibration as advisory tutor metadata', {
     'dramatic-derivation.discursive-calibration.v0',
   );
   assert.equal(liveTutorLine.meta.discursiveCalibration.nonLeakAudit.ok, true);
+  assert.equal(liveTutorLine?.meta?.didacticMode?.schema, 'dramatic-derivation.didactic-mode.v0');
+  assert.equal(liveTutorLine.meta.didacticMode.inputAudit.ok, true);
+  assert.equal(liveTutorLine.meta.didacticMode.mayOverrideProofControl, false);
   assert.equal(liveTutorLine.meta.rhetoricalPolicy.schema, 'dramatic-derivation.rhetorical-policy.v0');
   assert.equal(
     liveTutorLine.meta.rhetoricalPolicy.discursiveCalibration.publicPosture,
     liveTutorLine.meta.discursiveCalibration.publicPosture,
   );
+  if (liveTutorLine.meta.rhetoricalPolicy.didacticMode) {
+    assert.equal(
+      liveTutorLine.meta.rhetoricalPolicy.didacticMode.recommendedMode,
+      liveTutorLine.meta.didacticMode.recommendedMode,
+    );
+  }
+  const live = JSON.parse(fs.readFileSync(path.join(tmp, 'episodes/ep/live.json'), 'utf8'));
+  assert.ok(live.turns.some((turn) => turn.didacticMode?.recommendedMode));
 
   fs.rmSync(tmp, { recursive: true, force: true });
 });

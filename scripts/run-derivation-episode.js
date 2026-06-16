@@ -42,6 +42,8 @@
  *     [--rhetorical-policy-stochastic]
  *     [--discursive-calibration on|off] (public-only advisory calibration; no
  *                                       proof-control authority)
+ *     [--didactic-mode on|off]          (public-only explanatory-mode advisory;
+ *                                       inherited from source unless overridden)
  *     [--reconstruct on|off]           (adapt-ON arm dial; requires acts mode)
  *     [--confront on|off]
  *     [--repair-clause on|off]
@@ -233,6 +235,7 @@ function liveTurnRecord(summary) {
     intervened: Boolean(summary.intervened),
     phase: summary.phase || null,
     act: summary.act || null,
+    didacticMode: summary.didacticMode || null,
     events: summary.events || [],
     lines: (summary.lines || []).map(line),
     ...(summary.decayedNow?.length ? { decayedNow: summary.decayedNow } : {}),
@@ -453,13 +456,22 @@ async function main() {
     triState('discursive-calibration', Boolean(srcDiag.discursiveCalibration)),
     Boolean(srcDiag.discursiveCalibration),
   );
+  const didacticMode = track(
+    'didactic-mode',
+    triState('didactic-mode', Boolean(srcDiag.didacticMode)),
+    Boolean(srcDiag.didacticMode),
+  );
   const registerArg = arg('register', null);
   const publicRegister =
     registerArg === null
       ? srcDiag.publicRegister || null
       : registerArg === 'off'
         ? null
-        : normalizePublicRegister(registerArg, { sceneMode: Boolean(sceneMode), rhetoricalPolicy: Boolean(rhetoricalPolicy) });
+        : normalizePublicRegister(registerArg, {
+            sceneMode: Boolean(sceneMode),
+            rhetoricalPolicy: Boolean(rhetoricalPolicy),
+            didacticMode,
+          });
   if (registerArg !== null) overrides.push('register');
   const reconstruct = track(
     'reconstruct',
@@ -748,6 +760,7 @@ async function main() {
       publicRegister,
       rhetoricalPolicy: rhetoricalPolicy || null,
       discursiveCalibration,
+      didacticMode,
       reconstruct,
       confront,
       repairClause,
@@ -837,6 +850,9 @@ async function main() {
   if (discursiveCalibration) {
     console.log('discurs CALIBRATION ON — public stance/uptake/strain biases advisory rhetoric only');
   }
+  if (didacticMode) {
+    console.log('didact  MODE ON — public scene/act learning signals choose explanatory mode only');
+  }
   if (releaseAuthority) console.log('tutor   RELEASE AUTHORITY ON — inherited/episode guard window active');
   if (pacingGuardSelector) {
     console.log(
@@ -906,6 +922,7 @@ async function main() {
       throughline,
       rhetoricalPolicy,
       discursiveCalibration,
+      didacticMode,
       publicRegister,
     }),
     learner: makeLlmLearner({
@@ -928,6 +945,9 @@ async function main() {
     if (s.retracted) bits.push(`−${s.retracted} retracted`);
     if (s.decayedNow?.length) bits.push(`☄ ${s.decayedNow.join(', ')} fades`);
     if (s.repairedNow?.length) bits.push(`✚ ${s.repairedNow.join(', ')} restored`);
+    if (s.didacticMode?.recommendedMode) {
+      bits.push(`didactic ${s.didacticMode.recommendedMode}/${s.didacticMode.learningSignal || 'unknown'}`);
+    }
     if (s.phase && s.phase.turn === s.turn) bits.push(`movement "${s.phase.name}"`);
     if (s.intervened) bits.push('✎ superego');
     if (s.asserted) bits.push('ASSERTS');
@@ -1046,6 +1066,7 @@ async function main() {
     publicRegister,
     rhetoricalPolicy: rhetoricalPolicy || null,
     discursiveCalibration,
+    didacticMode,
     reconstruct,
     confront,
     releaseAuthority,

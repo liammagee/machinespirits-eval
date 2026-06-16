@@ -293,6 +293,13 @@ Exit rule:
 
 - focused tests show local advice changes while proof-control fields remain fixed.
 
+Status 2026-06-16: implemented and locally gated.
+
+- `recommendRhetoricalMove(...)` now accepts a public didactic-mode state.
+- Non-unknown didactic pressure biases figure/stance while preserving proof intent and target.
+- Unknown/no-pressure didactic states are recorded but do not bias prompt/rhetorical policy.
+- Focused tests cover release-preserving `purpose_bridge` and proof-debt repair-preserving `teach_back`.
+
 ### Phase 3: Scene-Level Runtime Flag
 
 Wire `--didactic-mode` into full loop and episode replay.
@@ -310,6 +317,13 @@ Exit rule:
 - changed explanatory mode appears in tutor prompt/metadata;
 - no leaks.
 
+Status 2026-06-16: implemented and locally gated.
+
+- Added `--didactic-mode` to `run-derivation-loop.js`.
+- Added inherited `--didactic-mode on|off` to `run-derivation-episode.js`.
+- Tutor metadata, `live.json`, `result.json`, and diagnosis now include didactic-mode rows when enabled.
+- Episode replay smoke inherits the flag and preserves prefix integrity.
+
 ### Phase 4: Act-Level Escalation
 
 Only if scene-level gates pass, let act openings read recent didactic mode failures and commit an act-level explanatory fallback.
@@ -323,6 +337,14 @@ Act 2 plot fallback: if the learner still echoes p_point without own words, swit
 Exit rule:
 
 - act-close audit can say whether the fallback was attempted and whether its exit condition was met.
+
+Status 2026-06-16: minimal metadata path implemented.
+
+- The engine records public didactic-mode rows emitted by tutor turns.
+- When an act closes, the engine can carry the latest strained didactic signal into the closed act as `didacticFallback`.
+- The next act's tutor prompt can read the fallback as advisory conduct only.
+- This does not mutate act plots, proof control, release authority, or assertion timing.
+- Focused runtime test covers carryover across an act boundary.
 
 ### Phase 5: Paid Mini-Run
 
@@ -338,6 +360,19 @@ Candidate design:
 Exit rule:
 
 - report whether S1 improves uptake/turn count/impasse without harming final grounding.
+
+Status 2026-06-16: not run.
+
+- A mock local gate was run under `exports/dramatic-derivation/didactic-mode-local-gate/`.
+- Source `didactic-mode-local-src` grounded at turn 8 with clean didactic audit rows.
+- Episode `didactic-mode-local-episode-t3` replayed from turn 3 with prefix integrity `ok: true` and no overrides.
+- A Hethel candidate S0/S1 mock pair then replayed the A21 Phase 5g failed-overlay prefix from t4:
+  - S0: hidden + proofDebt + discursive calibration.
+  - S1: hidden + proofDebt + discursive calibration + didactic mode.
+  - Both preserved prefix integrity, release timing, and the same D curve through the t4-t11 window.
+  - S1 generated non-unknown didactic rows (`stalled`/`slow_recap`, then `overloaded`/`decompose_subtask`) with clean audits and act fallbacks.
+  - S1 changed the explanatory/rhetorical regime but did not improve the mock formal outcome: both arms ended `cap_reached` at D=3.
+- This completes the no-cost local gates. A paid mini-run is still not warranted because there is no local evidence yet that didactic mode improves uptake, engagement, turn count, impasse risk, or final grounding over hidden + proofDebt.
 
 ---
 

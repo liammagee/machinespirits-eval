@@ -34,6 +34,7 @@ import {
 } from './rhetoricalMovePolicy.js';
 import { auditConductGeneratorCompliance, CONDUCT_POLICY_SCHEMA, selectConductMove } from './conductPolicy.js';
 import { deriveDiscursiveCalibrationState } from './discursiveCalibration.js';
+import { deriveDidacticModeState } from './didacticMode.js';
 import { deriveEntitlementState, entitlementNeedsConduct } from './learnerEntitlement.js';
 import { createRuntimeMonitor } from './runtimeMonitor.js';
 // The Step-1 V arm. Imported here, NOT in pacing.js — visiblePacing.js's own audit
@@ -440,6 +441,39 @@ function sceneRecognitionNeedLines(scene, roleName) {
   ];
 }
 
+function didacticModeLines(state) {
+  if (!state || state.publicOnly !== true || state.mayOverrideProofControl !== false || state.inputAudit?.ok === false) {
+    return [];
+  }
+  if (state.learningSignal === 'unknown') return [];
+  return [
+    '',
+    'DIDACTIC MODE (public explanatory advisory, no proof-control authority):',
+    `- current object: ${state.currentObject || 'the current public object'}`,
+    `- signal: ${state.learningSignal}; mode: ${state.recommendedMode}; scope: ${state.scope}`,
+    `- exit condition: ${state.exitCondition}`,
+    ...(Array.isArray(state.evidence) && state.evidence.length
+      ? [`- public evidence: ${state.evidence.slice(0, 2).join('; ')}`]
+      : []),
+    'Teach the same proof obligation in this mode. Do not use this block to release, hold, restore, or assert anything the proof-control channel has not already licensed.',
+  ];
+}
+
+function didacticActFallbackLines(acts, turn) {
+  if (!acts || acts.startTurn !== turn) return [];
+  const closed = acts.closed?.[acts.closed.length - 1] || null;
+  const fallback = closed?.didacticFallback || null;
+  if (!fallback || fallback.publicOnly !== true || fallback.mayOverrideProofControl !== false) return [];
+  return [
+    '',
+    'DIDACTIC FALLBACK FROM THE CLOSED ACT (public advisory):',
+    `- Act ${fallback.sourceAct} left this learning signal: ${fallback.learningSignal}`,
+    `- Use mode: ${fallback.recommendedMode}${fallback.currentObject ? ` on ${fallback.currentObject}` : ''}`,
+    ...(fallback.exitCondition ? [`- exit condition: ${fallback.exitCondition}`] : []),
+    'Carry this as explanatory conduct for the next act. It does not change proof-control obligations or the release calendar.',
+  ];
+}
+
 export function sanitizePublicDialogue(text, { register = 'default' } = {}) {
   if (typeof text !== 'string') return '';
   const active = basePublicRegister(register);
@@ -836,6 +870,7 @@ function tutorSystem(
     plot = false,
     throughline = false,
     rhetoricalPolicy = false,
+    didacticMode = false,
     publicRegister = 'default',
   } = {},
 ) {
@@ -1085,6 +1120,20 @@ function tutorSystem(
           'channel. Prefer the selected move when it fits the record; override it only',
           'when the scene plainly asks for another figure, and let your declared move',
           'make that reason inspectable.',
+        ]
+      : []),
+    ...(didacticMode
+      ? [
+          '',
+          '# Didactic mode (scene/act explanatory advisory)',
+          '',
+          'Some turns may carry a DIDACTIC MODE block. It names a public learning',
+          'signal and an explanatory mode for the SAME proof obligation already in',
+          'force: teach-back, concrete example, analogy bridge, contrast case, slow',
+          'recap, purpose bridge, subtask decomposition, or vocabulary repair. It',
+          'does not authorize release, restore, hold, assertion, or any change to the',
+          'evidence calendar. Use it to alter how you teach the current object, then',
+          'look for its exit condition in the learner\'s public reply.',
         ]
       : []),
     ...(registers.length
@@ -1793,6 +1842,7 @@ export function makeLlmTutor(
     throughline = false,
     rhetoricalPolicy = null,
     discursiveCalibration = false,
+    didacticMode = false,
     conductPolicy = false,
     conductPolicyEnforce = false,
     conductProgressPolicy = false,
@@ -1942,6 +1992,7 @@ export function makeLlmTutor(
     plot,
     throughline,
     rhetoricalPolicy: Boolean(rhetoricalPolicyConfig),
+    didacticMode,
     publicRegister,
   });
   const superegoSystem = superego
@@ -2359,6 +2410,46 @@ export function makeLlmTutor(
           proofStep: discursiveProofStep,
         })
       : null;
+    const didacticCurrentObject =
+      topProofDebt?.surface ||
+      (visibleConsolidation?.features?.priorPremiseId ? 'the already staged exhibit under discussion' : null) ||
+      (discursiveProofStep?.moveFamily === 'release_next_evidence' ? 'the next exhibit entering the scene' : null) ||
+      (discursiveProofStep?.moveFamily === 'invite_final_assertion' ? 'the learner\'s final public answer' : null) ||
+      (view.scene?.goal ? 'the current scene object' : null);
+    const didacticModeState = didacticMode
+      ? deriveDidacticModeState({
+          currentObject: didacticCurrentObject,
+          transcript: publicTranscriptForCalibration,
+          learnerText: lastLearnerLineForCalibration?.text || null,
+          exchange: lastLearnerLineForCalibration?.meta?.exchange || null,
+          discursiveCalibration: discursiveCalibrationState,
+          scene: {
+            closeStatus: view.scene?.closeStatus || view.scene?.status || null,
+            exchangesSoFar: view.scene?.exchangesSoFar ?? view.scene?.exchanges?.length ?? null,
+            phaticSoFar: view.scene?.phaticSoFar ?? null,
+          },
+          uptake: {
+            quality: discursiveCalibrationState?.uptakeQuality || null,
+            echoOnly: discursiveCalibrationState?.publicPosture === 'fluent_echo',
+            purposeGap: discursiveCalibrationState?.publicPosture === 'purpose_question',
+            wrongRoute: discursiveCalibrationState?.publicPosture === 'wrong_route',
+          },
+          repairSignals: topProofDebt
+            ? [
+                {
+                  publicObject: topProofDebt.surface || 'already staged exhibit',
+                  count: 1,
+                  sameObject: true,
+                },
+              ]
+            : [],
+          act: view.acts?.closed?.[view.acts.closed.length - 1]?.didacticFallback
+            ? { audit: { outcome: 'fallback_failed' } }
+            : null,
+        })
+      : null;
+    const didacticModeSection = didacticModeLines(didacticModeState);
+    const actDidacticFallbackSection = didacticActFallbackLines(view.acts, view.turn);
     const highDiscursiveStrain = discursiveCalibrationState?.conversationalStrain?.level === 'high';
     const discursiveReleaseSection =
       highDiscursiveStrain && releaseAuthority
@@ -2381,6 +2472,8 @@ export function makeLlmTutor(
             playableCount: playable.length,
             lastReleasePremise: view.ledger[view.ledger.length - 1]?.premiseId || null,
             discursiveCalibration: discursiveCalibrationState,
+            didacticMode: didacticModeState,
+            proofStep: discursiveProofStep,
           },
           rhetoricalPolicyConfig,
         )
@@ -2519,6 +2612,8 @@ export function makeLlmTutor(
         ...publicRegisterTurnLines(activeRegisterName, publicRegister),
         ...sceneTempoLines(view.scene, 'tutor'),
         ...sceneRecognitionNeedLines(view.scene, 'tutor'),
+        ...actDidacticFallbackSection,
+        ...didacticModeSection,
         ...(visibleConsolidation?.lines.length ? ['', ...visibleConsolidation.lines] : []),
         // The two frames, course above lesson: the whole-play throughline
         // reads back first, the act plot under it.
@@ -2567,6 +2662,7 @@ export function makeLlmTutor(
         renderTranscriptTail(view.transcript),
         ...publicRegisterTurnLines(activeRegisterName, publicRegister),
         ...(visibleConsolidation?.lines.length ? ['', ...visibleConsolidation.lines] : []),
+        ...didacticModeSection,
         '',
         ...(forcedNote ? [forcedNote, ''] : []),
         ...rhetoricalPolicySection,
@@ -2615,6 +2711,7 @@ export function makeLlmTutor(
           }
         : {}),
       ...(rhetoricalAdvice ? { rhetoricalPolicy: rhetoricalAdvice } : {}),
+      ...(didacticModeState ? { didacticMode: didacticModeState } : {}),
       ...(view.scene?.tempo ? { sceneTempo: view.scene.tempo } : {}),
       // mock determinism (arm-ON): the credulous theory — everything released
       // is believed held. The real backend ignores meta.
@@ -3007,6 +3104,7 @@ export function makeLlmTutor(
       move: normalizeMove(draftOut),
       ...(rhetoricalAdvice ? { rhetoricalPolicy: rhetoricalAdvice } : {}),
       ...(discursiveCalibrationState ? { discursiveCalibration: discursiveCalibrationState } : {}),
+      ...(didacticModeState ? { didacticMode: didacticModeState } : {}),
       ...releaseBits,
       ...(draftTheory ? { theory: draftTheory } : {}),
       ...plotBits(draftPlot),
@@ -3406,6 +3504,7 @@ export function makeLlmTutor(
       ...throughlineBits(revisedThroughline),
       ...(rhetoricalAdvice ? { rhetoricalPolicy: rhetoricalAdvice } : {}),
       ...(discursiveCalibrationState ? { discursiveCalibration: discursiveCalibrationState } : {}),
+      ...(didacticModeState ? { didacticMode: didacticModeState } : {}),
       deliberation: {
         ...deliberation,
         intervened: true,

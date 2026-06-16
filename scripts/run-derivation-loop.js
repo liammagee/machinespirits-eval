@@ -266,6 +266,11 @@
  *                                       rhetorical move advice from learner
  *                                       stance/uptake/strain; never authorizes
  *                                       release, restore, hold, or assertion.)
+ *     [--didactic-mode]                (public-only scene/act explanatory-mode
+ *                                       advisory. Reads public learner/dialogue
+ *                                       signals and recommends how to teach the
+ *                                       same proof obligation; no release,
+ *                                       restore, hold, or assertion authority.)
  *     [--critic auto|real|mock|off]    (post-run critic's notice; auto = follow
  *                                       the run mode — real dramas get the
  *                                       Fable notice, mock dramas the
@@ -375,6 +380,7 @@ function liveTurnRecord(summary) {
     scene: summary.scene || null,
     closedScene: summary.closedScene || null,
     exchange: summary.exchange || null,
+    didacticMode: summary.didacticMode || null,
     events: summary.events || [],
     lines: (summary.lines || []).filter(publicLine).map(line),
     ...(summary.decayedNow?.length ? { decayedNow: summary.decayedNow } : {}),
@@ -747,12 +753,14 @@ async function main() {
     rhetoricalPolicy = { ...rhetoricalPolicy, mode: 'sample' };
   }
   const discursiveCalibration = flag('discursive-calibration');
+  const didacticMode = flag('didactic-mode');
   let publicRegister;
   try {
     publicRegister = normalizePublicRegister(arg('register', null), {
       sceneMode: Boolean(sceneMode),
       rhetoricalPolicy: Boolean(rhetoricalPolicy),
       discursiveCalibration,
+      didacticMode,
     });
   } catch (err) {
     console.error(`--register ${err.message}`);
@@ -863,6 +871,7 @@ async function main() {
       throughlineDial: throughline,
       rhetoricalPolicy: rhetoricalPolicy || null,
       discursiveCalibration,
+      didacticMode,
     },
   });
   live.start();
@@ -1019,6 +1028,9 @@ async function main() {
   if (discursiveCalibration) {
     console.log('discurs CALIBRATION ON — public stance/uptake/strain biases advisory rhetoric only');
   }
+  if (didacticMode) {
+    console.log('didact  MODE ON — public scene/act learning signals choose explanatory mode only');
+  }
   if (decay) {
     console.log(
       `decay   seed ${decay.seed} · rate ${decay.rate} · grace ${decay.graceTurns} · maxConcurrent ${decay.maxConcurrent} · from turn ${decay.startTurn}${decay.mutateShare ? ` · mutateShare ${decay.mutateShare} (slips may misremember, not just vanish)` : ''}${decay.pool === 'staged' ? ' · pool STAGED (false forms confuse only met-on-stage names)' : ''}`,
@@ -1060,6 +1072,7 @@ async function main() {
       throughline,
       rhetoricalPolicy,
       discursiveCalibration,
+      didacticMode,
       publicRegister,
     }),
     learner: makeLlmLearner({
@@ -1081,6 +1094,9 @@ async function main() {
     if (s.retracted) bits.push(`−${s.retracted} retracted`);
     if (s.exchange?.type) bits.push(`exchange ${s.exchange.type}`);
     if (s.exchange?.tempo) bits.push(`tempo ${s.exchange.tempo}`);
+    if (s.didacticMode?.recommendedMode) {
+      bits.push(`didactic ${s.didacticMode.recommendedMode}/${s.didacticMode.learningSignal || 'unknown'}`);
+    }
     if (s.closedScene) bits.push(`scene ${s.closedScene.index} ${s.closedScene.status}`);
     if (s.phase && s.phase.turn === s.turn) bits.push(`movement "${s.phase.name}"`);
     if (s.intervened) bits.push('✎ superego');
@@ -1194,6 +1210,7 @@ async function main() {
     throughlineDial: throughline,
     rhetoricalPolicy: rhetoricalPolicy || null,
     discursiveCalibration,
+    didacticMode,
     elapsedMs,
     usage,
     ...diagnose(result, world),

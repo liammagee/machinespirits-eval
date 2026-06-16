@@ -1132,6 +1132,44 @@ export function sceneReport(result) {
   };
 }
 
+function didacticModeReport(result) {
+  const rows = result.didacticMode || [];
+  if (!rows.length) return null;
+  const modes = {};
+  const signals = {};
+  for (const row of rows) {
+    if (row.recommendedMode) modes[row.recommendedMode] = (modes[row.recommendedMode] || 0) + 1;
+    if (row.learningSignal) signals[row.learningSignal] = (signals[row.learningSignal] || 0) + 1;
+  }
+  const actFallbacks = (result.acts || [])
+    .filter((act) => act.didacticFallback)
+    .map((act) => ({
+      act: act.act,
+      turns: act.turns,
+      sourceTurn: act.didacticFallback.sourceTurn,
+      learningSignal: act.didacticFallback.learningSignal,
+      recommendedMode: act.didacticFallback.recommendedMode,
+      currentObject: act.didacticFallback.currentObject || null,
+    }));
+  return {
+    schema: 'dramatic-derivation.didactic-mode-report.v0',
+    turns: rows.length,
+    modes,
+    signals,
+    auditClean: rows.every((row) => row.inputAuditOk !== false && row.nonLeakAuditOk !== false),
+    actFallbacks,
+    rows: rows.map((row) => ({
+      turn: row.turn,
+      act: row.act || null,
+      learningSignal: row.learningSignal,
+      recommendedMode: row.recommendedMode,
+      scope: row.scope,
+      currentObject: row.currentObject,
+      exitCondition: row.exitCondition,
+    })),
+  };
+}
+
 export function diagnose(result, world) {
   const eventsByType = {};
   for (const event of result.events) {
@@ -1164,6 +1202,7 @@ export function diagnose(result, world) {
   const conductPolicy = conductPolicyReport(result);
   const logicProjection = logicProjectionReport(result, world);
   const scenes = sceneReport(result);
+  const didacticModes = didacticModeReport(result);
   // C1 dial reporter — same contract: null off the plot arm.
   const plotRpt = plotReport(result, world);
   const tutorNotes = result.transcript
@@ -1227,6 +1266,7 @@ export function diagnose(result, world) {
     ...(result.publicRegister ? { publicRegister: result.publicRegister } : {}),
     ...(result.publicRegisters ? { publicRegisters: result.publicRegisters } : {}),
     ...(scenes ? { scenes } : {}),
+    ...(didacticModes ? { didacticModeReport: didacticModes } : {}),
     // C1 (act-plot dial): absent off the arm.
     ...(plotRpt ? { plot: plotRpt } : {}),
   };

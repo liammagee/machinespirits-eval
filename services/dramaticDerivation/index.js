@@ -20,6 +20,7 @@ export {
 export {
   auditDidacticModePublicInput,
   deriveDidacticModeState,
+  DIDACTIC_ACT_FALLBACK_SCHEMA,
   DIDACTIC_MODE_FAMILIES,
   DIDACTIC_MODE_SCHEMA,
 } from './didacticMode.js';

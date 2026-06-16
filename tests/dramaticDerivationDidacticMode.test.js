@@ -1,11 +1,20 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
+  DIDACTIC_ACT_FALLBACK_SCHEMA,
   DIDACTIC_MODE_FAMILIES,
   DIDACTIC_MODE_SCHEMA,
   auditDidacticModePublicInput,
   deriveDidacticModeState,
+  loadWorld,
+  recommendRhetoricalMove,
+  runDrama,
 } from '../services/dramaticDerivation/index.js';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const SMOKE_WORLD = loadWorld(path.join(ROOT, 'config/drama-derivation/world-000-smoke.yaml'));
 
 test('didactic mode exposes exactly the compact initial mode family set', () => {
   assert.deepEqual([...DIDACTIC_MODE_FAMILIES].sort(), [
@@ -152,4 +161,91 @@ test('vocabulary or context confusion maps to repair_vocabulary', () => {
   assert.equal(state.learningSignal, 'stalled');
   assert.equal(state.recommendedMode, 'repair_vocabulary');
   assert.match(state.exitCondition, /uses the term/u);
+});
+
+test('didactic mode biases rhetorical figure and stance while preserving release proof step', () => {
+  const didacticMode = deriveDidacticModeState({
+    currentObject: 'why the timber-reeve reading matters',
+    transcript: [{ turn: 8, role: 'learner', text: 'Why does that evidence matter for the question?' }],
+  });
+  const advice = recommendRhetoricalMove(
+    { id: 'world-didactic-test' },
+    { turn: 8, transcript: [], trajectory: [], inference: { frontier: [] } },
+    {
+      proofStep: { moveFamily: 'release_next_evidence', targetPremise: 'p_brand' },
+      releaseCue: true,
+      cuePremise: 'p_brand',
+      didacticMode,
+    },
+    { mode: 'deterministic', seed: 1, temperature: 1 },
+  );
+
+  assert.equal(advice.didacticMode.recommendedMode, 'purpose_bridge');
+  assert.equal(advice.selected.figure, 'analogia');
+  assert.equal(advice.selected.intent, 'release');
+  assert.equal(advice.selected.targetPremise, 'p_brand');
+  assert.equal(advice.selected.stance, 'didactic_purpose_bridge');
+  assert.match(advice.selected.rationale, /didactic mode: purpose_bridge; proof intent preserved/u);
+});
+
+test('didactic mode preserves repair intent and target under proof debt', () => {
+  const didacticMode = deriveDidacticModeState({
+    currentObject: 'the crowsfoot mark',
+    transcript: [{ turn: 10, role: 'learner', text: 'As you said, the crowsfoot mark is the phrase to keep.' }],
+    uptake: { quality: 'echo_only' },
+  });
+  const advice = recommendRhetoricalMove(
+    { id: 'world-didactic-test' },
+    { turn: 10, transcript: [], trajectory: [], inference: { frontier: [] } },
+    {
+      proofStep: { moveFamily: 'repair_dependency', targetPremise: 'p_mark' },
+      topProofDebt: { premiseId: 'p_mark' },
+      didacticMode,
+    },
+    { mode: 'deterministic', seed: 1, temperature: 1 },
+  );
+
+  assert.equal(advice.didacticMode.recommendedMode, 'teach_back');
+  assert.equal(advice.selected.intent, 'restore');
+  assert.equal(advice.selected.targetPremise, 'p_mark');
+  assert.equal(advice.selected.stance, 'didactic_teach_back');
+});
+
+test('act boundary carries public didactic fallback into the next act', async () => {
+  const didacticMode = deriveDidacticModeState({
+    currentObject: 'the marked falsework chain',
+    uptake: { overloaded: true },
+    repairSignals: [{ publicObject: 'the marked falsework chain', count: 2, sameObject: true }],
+  });
+  const tutorViews = [];
+  const result = await runDrama({
+    world: SMOKE_WORLD,
+    roles: {
+      director: async (view) =>
+        view.turn === 1
+          ? { direction: '[The first table is set.]', act: 'continue' }
+          : { direction: '[The next act narrows the table.]', act: 'end' },
+      tutor: async (view) => {
+        tutorViews.push(JSON.parse(JSON.stringify(view)));
+        return {
+          dialogue: view.turn === 1 ? 'Let us break that chain into one smaller link.' : 'Name the first link only.',
+          move: { figure: 'erotema', targetPremise: null, intent: 'consolidate' },
+          ...(view.turn === 1 ? { didacticMode } : {}),
+        };
+      },
+      learner: async () => ({ dialogue: 'I am still following only part of it.' }),
+    },
+    options: {
+      acts: { minActTurns: 1, maxActTurns: 3 },
+      maxTurns: 2,
+      stopOnStall: false,
+    },
+  });
+
+  assert.equal(result.didacticMode.length, 1);
+  assert.equal(result.didacticMode[0].recommendedMode, 'decompose_subtask');
+  assert.equal(result.acts[0].didacticFallback.schema, DIDACTIC_ACT_FALLBACK_SCHEMA);
+  assert.equal(result.acts[0].didacticFallback.recommendedMode, 'decompose_subtask');
+  assert.equal(result.acts[0].didacticFallback.mayOverrideProofControl, false);
+  assert.equal(tutorViews[1].acts.closed[0].didacticFallback.recommendedMode, 'decompose_subtask');
 });
