@@ -28,12 +28,16 @@ const fixtures = JSON.parse(
 
 const actsOpts = (extra = {}) => ({ script: SCRIPT, actsMode: true, decayVisibility: 'conduct', ...extra });
 
-const actsView = (turn, { ledger = [], transcript = [], proofDebt = null, conductEntitlement = null } = {}) => ({
+const actsView = (
+  turn,
+  { ledger = [], transcript = [], proofDebt = null, conductEntitlement = null, conductTriggerOverride = null } = {},
+) => ({
   turn,
   ledger,
   transcript,
   acts: { index: 1, startTurn: 1, turnsThisAct: turn - 1, brief: null, closed: [] },
   ...(conductEntitlement ? { conductEntitlement } : {}),
+  ...(conductTriggerOverride ? { conductTriggerOverride } : {}),
   ...(proofDebt ? { proofDebt } : {}),
 });
 
@@ -497,6 +501,40 @@ test('runtime conduct policy keeps proof-debt repair ahead of final assertion en
   assert.equal(out.conductPolicy.selectedMoveFamily, 'repair_dependency');
   assert.equal(out.conductPolicy.reasonCode, 'dependency_repair_needed');
   assert.equal(out.conductPolicy.targetPremise, 'p1');
+});
+
+test('runtime conduct trigger override can ask diagnostic before proof-debt default', async () => {
+  const proofDebt = smokeProofDebtTutorView();
+  const { client } = stubClient({
+    tutor: [
+      {
+        dialogue: 'Let us bring the next exhibit into view.',
+        move: { figure: 'erotema', target_premise: 'p2', intent: 'release' },
+      },
+    ],
+  });
+  const tutor = makeLlmTutor(smokeWorld, client, actsOpts({ conductPolicyEnforce: true }));
+  const out = await tutor(
+    actsView(7, {
+      proofDebt,
+      conductTriggerOverride: {
+        triggerType: 'valid_alternative_route_candidate',
+        turn: 7,
+        premiseId: 'p1',
+        expectedMoveFamily: 'ask_diagnostic',
+        blockedActions: ['repair_dependency_without_public_check'],
+      },
+    }),
+  );
+
+  assert.equal(out.conductPolicy.active, true);
+  assert.equal(out.conductPolicy.selectedMoveFamily, 'ask_diagnostic');
+  assert.equal(out.conductPolicy.reasonCode, 'valid_alternative_candidate');
+  assert.equal(out.conductPolicy.targetPremise, 'p1');
+  assert.equal(out.move.intent, 'test');
+  assert.equal(out.move.targetPremise, 'p1');
+  assert.equal(out.conductPolicy.generatorCompliance.checked, true);
+  assert.equal(out.conductPolicy.generatorCompliance.ok, true);
 });
 
 test('diagnosis summarizes conduct-policy decisions from transcript metadata', () => {

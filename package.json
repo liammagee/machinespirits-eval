@@ -96,6 +96,8 @@
     "derivation:guard-compiler": "node scripts/derivation-guard-compiler.js",
     "derivation:guard-compiler:check": "node scripts/derivation-guard-compiler.js --check",
     "derivation:a20-triggers": "node scripts/derivation-a20-trigger-corpus.js",
+    "derivation:a20-fixtures": "node scripts/derivation-a20-fixture-runner.js",
+    "derivation:a20-replay-panel": "node scripts/run-a20-conduct-replay-panel.js",
     "poetics:ingest": "node scripts/ingest-poetics-artifacts.js",
     "poetics:report": "node scripts/report-poetics-sidecar.js",
     "poetics:adaptation": "node scripts/analyze-poetics-tutor-adaptation.js",

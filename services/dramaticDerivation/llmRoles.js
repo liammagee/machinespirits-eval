@@ -1386,6 +1386,18 @@ function conductTriggerState({
     learnerExcerpt: lastLearnerExcerpt(view.transcript),
     releaseDecision: compactReleaseDecision(releaseBits.releaseDecision),
   };
+  if (view.conductTriggerOverride) {
+    return {
+      ...view.conductTriggerOverride,
+      id: view.conductTriggerOverride.id || `t${view.turn}:conduct-trigger-override`,
+      turn: view.turn,
+      evidence: {
+        ...evidence,
+        ...(view.conductTriggerOverride.evidence || {}),
+      },
+      ...(conductProofDebt ? { proofDebtTutorView: conductProofDebt } : {}),
+    };
+  }
   const topConductDebt = conductProofDebt?.debts?.[0] || null;
   if (topConductDebt) {
     return {

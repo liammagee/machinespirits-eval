@@ -256,6 +256,11 @@ export async function runDrama({ world, roles, options = {} }) {
   const proofDebtGuardActive = Boolean(options.proofDebtGuard);
   const conductPolicyActive = Boolean(options.conductPolicy);
   const conductPolicyEnforceActive = Boolean(options.conductPolicyEnforce);
+  const conductTriggerOverrides = Array.isArray(options.conductTriggerOverrides)
+    ? options.conductTriggerOverrides
+    : options.conductTriggerOverride
+      ? [options.conductTriggerOverride]
+      : [];
   const proofDebtViewActive = proofDebtGuardActive || conductPolicyActive || conductPolicyEnforceActive;
   const logicProjectionActive = Boolean(options.logicProjection);
   const worldIR = logicProjectionActive ? buildWorldIR(world) : null;
@@ -700,6 +705,10 @@ export async function runDrama({ world, roles, options = {} }) {
 
   const omniscientView = (turn, roleName) => {
     const proofDebt = roleName === 'tutor' && proofDebtViewActive ? currentProofDebt(turn) : null;
+    const conductTriggerOverride =
+      roleName === 'tutor' && (conductPolicyActive || conductPolicyEnforceActive)
+        ? conductTriggerOverrides.find((trigger) => Number(trigger?.turn) === turn) || null
+        : null;
     const conductEntitlement =
       roleName === 'tutor' && (conductPolicyActive || conductPolicyEnforceActive)
         ? { canAssertFinal: entails(validGroundedFacts(), world.rules, world.secret.fact) }
@@ -717,6 +726,7 @@ export async function runDrama({ world, roles, options = {} }) {
       ...(stagePrologue ? { stagePrologue } : {}),
       publicRegister: publicRegisterForTurn,
       ...(conductEntitlement ? { conductEntitlement } : {}),
+      ...(conductTriggerOverride ? { conductTriggerOverride } : {}),
       ...(proofDebt
         ? { proofDebt: runtimeMonitor ? runtimeMonitor.proofDebtTutorView(proofDebt) : tutorProofDebtView(proofDebt) }
         : {}),

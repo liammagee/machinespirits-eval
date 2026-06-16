@@ -54,6 +54,9 @@
  *     [--proof-debt-guard on|off]
  *     [--conduct-policy on|off]
  *     [--conduct-policy-enforce on|off]
+ *     [--conduct-trigger '<json>']     (episode-local A20 fixture trigger;
+ *                                       applies only on its `turn`)
+ *     [--conduct-trigger-file <path>]  (JSON trigger or {trigger})
  *     [--compiled-guard on|off]
  *     [--plot on|off] [--throughline on|off]
  *     [--critic auto|real|mock|off]    (default off — episodes are scratch
@@ -129,6 +132,37 @@ function atomicWriteJson(file, value) {
   const tmp = `${file}.${process.pid}.tmp`;
   fs.writeFileSync(tmp, `${JSON.stringify(value, null, 2)}\n`);
   fs.renameSync(tmp, file);
+}
+
+function readJsonFile(file) {
+  return JSON.parse(fs.readFileSync(path.resolve(ROOT, file), 'utf8'));
+}
+
+function loadConductTriggerOverride() {
+  const raw = arg('conduct-trigger', null);
+  const file = arg('conduct-trigger-file', null);
+  if (raw && file) {
+    console.error('choose only one of --conduct-trigger or --conduct-trigger-file');
+    process.exit(1);
+  }
+  if (!raw && !file) return null;
+  let parsed;
+  try {
+    parsed = raw ? JSON.parse(raw) : readJsonFile(file);
+  } catch (err) {
+    console.error(`invalid conduct trigger JSON: ${err.message}`);
+    process.exit(1);
+  }
+  const trigger = parsed?.trigger || parsed;
+  if (!trigger || typeof trigger !== 'object' || Array.isArray(trigger)) {
+    console.error('--conduct-trigger must be a trigger object or {trigger}');
+    process.exit(1);
+  }
+  if (!Number.isFinite(Number(trigger.turn))) {
+    console.error('--conduct-trigger requires a numeric trigger.turn');
+    process.exit(1);
+  }
+  return { ...trigger, turn: Number(trigger.turn) };
 }
 
 function factLabel(fact) {
@@ -506,6 +540,11 @@ async function main() {
     Boolean(srcDiag.conductPolicy) || Boolean(srcDiag.conductPolicyEnforce),
   );
   const conductPolicy = requestedConductPolicy || conductPolicyEnforce || (pacingGuardSelectiveV4 && conductPolicyEnforceExplicit !== 'off');
+  const conductTriggerOverride = loadConductTriggerOverride();
+  if (conductTriggerOverride && !conductPolicy) {
+    console.error('--conduct-trigger requires --conduct-policy on or --conduct-policy-enforce on');
+    process.exit(1);
+  }
   const compiledGuard = track(
     'compiled-guard',
     triState('compiled-guard', Boolean(srcDiag.compiledGuard)),
@@ -643,6 +682,15 @@ async function main() {
       proofDebtGuard,
       conductPolicy,
       conductPolicyEnforce,
+      conductTriggerOverride: conductTriggerOverride
+        ? {
+            id: conductTriggerOverride.id || null,
+            triggerType: conductTriggerOverride.triggerType || null,
+            turn: conductTriggerOverride.turn,
+            premiseId: conductTriggerOverride.premiseId || null,
+            expectedMoveFamily: conductTriggerOverride.expectedMoveFamily || null,
+          }
+        : null,
       compiledGuard,
       plotDial: plot,
       throughlineDial: throughline,
@@ -707,6 +755,11 @@ async function main() {
     );
   }
   if (conductPolicyEnforce) console.log('tutor   CONDUCT POLICY ENFORCE ON');
+  if (conductTriggerOverride) {
+    console.log(
+      `tutor   CONDUCT TRIGGER OVERRIDE ${conductTriggerOverride.triggerType || 'trigger'} @ t${conductTriggerOverride.turn}`,
+    );
+  }
   if (guardSpec) console.log(`guard   COMPILED — WorldIR -> GuardSpec (${guardSpec.world.id})`);
   if (plot) console.log(`tutor   PLOT ON${throughline ? ' + THROUGHLINE ON' : ''}`);
   console.log(
@@ -786,6 +839,7 @@ async function main() {
         ...(proofDebtGuard ? { proofDebtGuard } : {}),
         ...(conductPolicy ? { conductPolicy } : {}),
         ...(conductPolicyEnforce ? { conductPolicyEnforce } : {}),
+        ...(conductTriggerOverride ? { conductTriggerOverrides: [conductTriggerOverride] } : {}),
         ...(guardSpec ? { guardSpec } : {}),
       },
     });
@@ -890,6 +944,15 @@ async function main() {
     proofDebtGuard,
     conductPolicy,
     conductPolicyEnforce,
+    conductTriggerOverride: conductTriggerOverride
+      ? {
+          id: conductTriggerOverride.id || null,
+          triggerType: conductTriggerOverride.triggerType || null,
+          turn: conductTriggerOverride.turn,
+          premiseId: conductTriggerOverride.premiseId || null,
+          expectedMoveFamily: conductTriggerOverride.expectedMoveFamily || null,
+        }
+      : null,
     compiledGuard,
     guardSpec: guardSpec
       ? {

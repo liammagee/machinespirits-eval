@@ -494,6 +494,18 @@ tests passed, full `npm test` passed, and a no-cost Withercombe episode replay
 from t14 preserved prefix integrity with conduct policy active and 4/4 live
 conduct decisions compliant. No paid first-pass run was launched.
 
+Follow-up replayability step completed 2026-06-16; see
+`exports/dramatic-derivation/a20-conduct-policy-replayable-fixtures-report.md`.
+Two local commands now make the first fixtures reproducible:
+`npm run derivation:a20-fixtures` and `npm run derivation:a20-replay-panel`.
+The pure fixture gate passed 2/2. The zero-cost replay panel passed 2/2 with
+prefix integrity true for both fixtures. Withercombe t14 preserved
+`repair_dependency`; Hethel now replays from the actual hidden-failure source
+(`hethel-selector-v1-hidden-r2`) and injects the predeclared
+`valid_alternative_route_candidate` only at t4, where conduct policy selects a
+compliant `ask_diagnostic` with no release. This is still local debugging
+evidence, not held-out paid evidence, and it does not create selector-v5.
+
 ## Failure Labels
 
 Use the same labels across replay and fresh runs:
