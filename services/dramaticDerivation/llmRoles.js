@@ -1372,6 +1372,23 @@ function compactReleaseDecision(releaseDecision) {
           },
         }
       : {}),
+    ...(releaseDecision.discursiveReleaseGate
+      ? {
+          discursiveReleaseGate: {
+            held: Boolean(releaseDecision.discursiveReleaseGate.held),
+            candidate: releaseDecision.discursiveReleaseGate.candidate || null,
+            publicContentOverride: Boolean(releaseDecision.discursiveReleaseGate.publicContentOverride),
+            publicContentAudit: releaseDecision.discursiveReleaseGate.publicContentAudit
+              ? {
+                  voiced: Boolean(releaseDecision.discursiveReleaseGate.publicContentAudit.voiced),
+                  action: releaseDecision.discursiveReleaseGate.publicContentAudit.action || null,
+                  matches: releaseDecision.discursiveReleaseGate.publicContentAudit.matches || [],
+                }
+              : null,
+            reason: releaseDecision.discursiveReleaseGate.reason || null,
+          },
+        }
+      : {}),
   };
 }
 
@@ -2342,6 +2359,16 @@ export function makeLlmTutor(
           proofStep: discursiveProofStep,
         })
       : null;
+    const highDiscursiveStrain = discursiveCalibrationState?.conversationalStrain?.level === 'high';
+    const discursiveReleaseSection =
+      highDiscursiveStrain && releaseAuthority
+        ? [
+            '',
+            'DISCURSIVE RELEASE LATITUDE:',
+            '- Public strain is high. If an exhibit is only playable early, hold or consolidate unless a hard proof-control obligation forces it.',
+            '- This does not block scheduled, hold-limit, last-safe, proof-debt, or final-recognition obligations.',
+          ]
+        : [];
     const rhetoricalAdvice = rhetoricalPolicyConfig
       ? recommendRhetoricalMove(
           world,
@@ -2543,6 +2570,7 @@ export function makeLlmTutor(
         '',
         ...(forcedNote ? [forcedNote, ''] : []),
         ...rhetoricalPolicySection,
+        ...discursiveReleaseSection,
         ...proofDebtSection,
         ...(proofDebtSection.length ? [''] : []),
         task,
@@ -2728,12 +2756,91 @@ export function makeLlmTutor(
                 : 'visible consolidation advisory only; hidden guard remains release authority',
         };
       }
-      const played = activeGuard ? activeGuard.played : forcedPlay ? forcedPlay.premise : validClaim;
+      const proofClosingFallback =
+        pacingGuard && !vGuard && !validClaim && !activeGuard?.played
+          ? pacingRows
+              .filter(
+                (row) =>
+                  row.current?.safe === true &&
+                  Number.isFinite(row.current.forcedTurn) &&
+                  row.current.forcedTurn <= view.turn,
+              )
+              .sort((a, b) => a.turn - b.turn)[0] || null
+          : null;
+      if (proofClosingFallback) {
+        activeGuard = {
+          ...(guard || {}),
+          played: proofClosingFallback.premise,
+          blocked: false,
+          forcedSafe: true,
+          forcedBy: 'proof_closing_candidate',
+          candidate: null,
+          candidateSolvency: null,
+          playedSolvency: proofClosingFallback.current,
+          safeTurns:
+            guard?.safeTurns || Object.fromEntries(pacingRows.map((row) => [row.premise, row.safeTurns])),
+          alternative: proofClosingFallback.premise,
+          reason: `${proofClosingFallback.premise} closes the proof at t${view.turn}`,
+        };
+      }
+      const candidatePlayed = activeGuard ? activeGuard.played : forcedPlay ? forcedPlay.premise : validClaim;
+      const candidateSched = candidatePlayed ? world.releaseSchedule.find((e) => e.premise === candidatePlayed) : null;
+      const candidateOffset = candidateSched ? view.turn - candidateSched.turn : null;
+      const candidateSolvency =
+        activeGuard?.candidate === candidatePlayed
+          ? activeGuard.candidateSolvency
+          : activeGuard?.played === candidatePlayed
+            ? activeGuard.playedSolvency
+            : null;
+      const releaseWouldCloseProofNow =
+        candidateSolvency?.safe === true &&
+        Number.isFinite(candidateSolvency.forcedTurn) &&
+        candidateSolvency.forcedTurn <= view.turn;
+      const proofControlForcesRelease = Boolean(
+        forcedPlay?.premise === candidatePlayed ||
+          activeGuard?.forcedSafe ||
+          releaseWouldCloseProofNow ||
+          topProofDebt ||
+          forcedNote ||
+          finalEntitlement?.canAssertFinal,
+      );
+      const discursiveGateCandidate =
+        highDiscursiveStrain && candidatePlayed && candidateOffset < 0 && !proofControlForcesRelease;
+      const publicContentAudit = discursiveGateCandidate
+        ? publicLineVoicesReleaseContent(view, world, candidatePlayed, out.dialogue)
+        : null;
+      const discursiveReleaseGate = discursiveGateCandidate
+        ? publicContentAudit?.voiced
+          ? {
+              held: false,
+              candidate: candidatePlayed,
+              scheduledTurn: candidateSched.turn,
+              offset: candidateOffset,
+              posture: discursiveCalibrationState.publicPosture || null,
+              pressure: discursiveCalibrationState.advisory?.pressure || null,
+              publicContentOverride: true,
+              publicContentAudit,
+              reason: `${candidatePlayed} registered despite high public strain: public line voiced the exhibit content before the scheduled turn`,
+            }
+          : {
+              held: true,
+              candidate: candidatePlayed,
+              scheduledTurn: candidateSched.turn,
+              offset: candidateOffset,
+              posture: discursiveCalibrationState.publicPosture || null,
+              pressure: discursiveCalibrationState.advisory?.pressure || null,
+              publicContentAudit,
+              reason: `${candidatePlayed} held: high public strain suppresses discretionary early release until scheduled turn ${candidateSched.turn}`,
+            }
+        : null;
+      const played = discursiveReleaseGate?.held ? null : candidatePlayed;
       const reason =
         typeof out.release_reason === 'string' && out.release_reason.trim() ? out.release_reason.trim() : null;
       const sched = played ? world.releaseSchedule.find((e) => e.premise === played) : null;
-      const releaseReason = reason || (played && activeGuard?.reason ? activeGuard.reason : null);
+      const releaseReason =
+        discursiveReleaseGate?.reason || reason || (played && activeGuard?.reason ? activeGuard.reason : null);
       const forced = forcedPlay && played === forcedPlay.premise ? forcedPlay.premise : null;
+      const hiddenGuardForReport = guard && !vGuard ? activeGuard || guard : guard;
       return {
         release: played,
         ...(releaseReason ? { releaseReason } : {}),
@@ -2746,26 +2853,27 @@ export function makeLlmTutor(
           overridden: Boolean(
             (forced && claimed !== forced) ||
             (activeGuard?.forcedSafe && claimed !== activeGuard.played) ||
-            (activeGuard?.blocked && (!played || claimed !== played)),
+            (activeGuard?.blocked && (!played || claimed !== played)) ||
+            discursiveReleaseGate?.held,
           ),
           played,
           scheduledTurn: sched ? sched.turn : null,
           offset: sched ? view.turn - sched.turn : null,
           reason: releaseReason,
-          ...(guard
+          ...(hiddenGuardForReport
             ? {
                 pacingGuard: {
-                  blocked: guard.blocked,
-                  forcedSafe: guard.forcedSafe,
-                  forcedBy: guard.forcedBy || null,
-                  candidate: guard.candidate || null,
-                  alternative: guard.alternative || null,
-                  alternativeTurn: guard.alternativeTurn || null,
-                  reason: guard.reason || null,
-                  candidateSolvency: guard.candidateSolvency || null,
-                  playedSolvency: guard.playedSolvency || null,
-                  safeTurns: guard.safeTurns,
-                  runtimeMonitor: guard.runtimeMonitor || null,
+                  blocked: hiddenGuardForReport.blocked,
+                  forcedSafe: hiddenGuardForReport.forcedSafe,
+                  forcedBy: hiddenGuardForReport.forcedBy || null,
+                  candidate: hiddenGuardForReport.candidate || null,
+                  alternative: hiddenGuardForReport.alternative || null,
+                  alternativeTurn: hiddenGuardForReport.alternativeTurn || null,
+                  reason: hiddenGuardForReport.reason || null,
+                  candidateSolvency: hiddenGuardForReport.candidateSolvency || null,
+                  playedSolvency: hiddenGuardForReport.playedSolvency || null,
+                  safeTurns: hiddenGuardForReport.safeTurns,
+                  runtimeMonitor: hiddenGuardForReport.runtimeMonitor || null,
                 },
               }
             : {}),
@@ -2783,6 +2891,7 @@ export function makeLlmTutor(
             : {}),
           ...(hybridGuard ? { hybridGuard } : {}),
           ...(consolidationGuard ? { consolidationGuard } : {}),
+          ...(discursiveReleaseGate ? { discursiveReleaseGate } : {}),
         },
       };
     };
@@ -3466,6 +3575,139 @@ function validIndices(raw, max) {
   return [...new Set(raw.filter((i) => Number.isInteger(i) && i >= 0 && i < max))];
 }
 
+const RETRACTION_CONTINUITY_SCHEMA = 'dramatic-derivation.retraction-continuity.v0';
+
+const CONTINUITY_STOPWORDS = new Set([
+  'about',
+  'after',
+  'again',
+  'against',
+  'already',
+  'also',
+  'and',
+  'any',
+  'are',
+  'because',
+  'before',
+  'being',
+  'but',
+  'can',
+  'cannot',
+  'could',
+  'did',
+  'does',
+  'done',
+  'for',
+  'from',
+  'had',
+  'has',
+  'have',
+  'here',
+  'his',
+  'how',
+  'into',
+  'its',
+  'not',
+  'now',
+  'one',
+  'only',
+  'our',
+  'out',
+  'own',
+  'same',
+  'she',
+  'that',
+  'the',
+  'their',
+  'then',
+  'there',
+  'this',
+  'those',
+  'through',
+  'under',
+  'until',
+  'was',
+  'what',
+  'when',
+  'where',
+  'which',
+  'while',
+  'who',
+  'why',
+  'will',
+  'with',
+  'work',
+  'would',
+  'yet',
+]);
+
+const EXPLICIT_RETRACTION_RE =
+  /\b(retract|retracted|retracts|strike|strikes|striking|struck out|drop|dropped|remove|removed|erase|erased|cross out|crossed out|no longer|cannot keep|can't keep|should not keep|must not keep|wrong|false|mistaken|mistook|contradict|contradicts|contradicted|does not hold|doesn't hold)\b/u;
+
+function continuityTokens(text) {
+  return String(text || '')
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .toLowerCase()
+    .split(/[^a-z0-9]+/u)
+    .filter((token) => token.length >= 3 && !CONTINUITY_STOPWORDS.has(token));
+}
+
+function shouldSuppressContinuityRetraction(view, fact, text) {
+  if (!Array.isArray(fact) || !fact.length || !text || EXPLICIT_RETRACTION_RE.test(text.toLowerCase())) {
+    return { suppress: false, matches: [] };
+  }
+  const factTokens = new Set([...continuityTokens(factSurface(view, fact)), ...continuityTokens(renderFact(fact))]);
+  const textTokens = new Set(continuityTokens(text));
+  const matches = [...factTokens].filter((token) => textTokens.has(token)).sort();
+  return { suppress: matches.length >= 3, matches };
+}
+
+function publicLineVoicesReleaseContent(view, world, premiseId, dialogue) {
+  const text = typeof dialogue === 'string' ? dialogue.trim() : '';
+  const premise = world?.premiseById?.get(premiseId) || null;
+  if (!text || !premise) {
+    return { voiced: false, action: 'hold', matches: [] };
+  }
+  const surfaceTokens = [
+    ...continuityTokens(factSurface(view, premise.fact)),
+    ...continuityTokens(renderFact(premise.fact)),
+  ];
+  const distinctSurfaceTokens = [...new Set(surfaceTokens)].sort();
+  const textTokens = new Set(continuityTokens(text));
+  const matches = distinctSurfaceTokens.filter((token) => textTokens.has(token));
+  const threshold = Math.min(4, Math.max(2, Math.ceil(distinctSurfaceTokens.length * 0.35)));
+  const voiced = matches.length >= threshold;
+  return {
+    voiced,
+    action: voiced ? 'registered_release' : 'hold',
+    matches,
+    threshold,
+  };
+}
+
+function filterContinuityRetractions(view, rawRetract, { dialogue, hypothesis }) {
+  const text = [dialogue, hypothesis].filter((part) => typeof part === 'string' && part.trim()).join('\n');
+  const kept = [];
+  const suppressed = [];
+  for (const fact of rawRetract) {
+    const decision = shouldSuppressContinuityRetraction(view, fact, text);
+    if (decision.suppress) {
+      suppressed.push({
+        fact,
+        surface: factSurface(view, fact),
+        matches: decision.matches,
+        reason: 'public wording still invokes the grounded exhibit',
+      });
+    } else {
+      kept.push(fact);
+    }
+  }
+  return {
+    kept,
+    ...(suppressed.length ? { meta: { schema: RETRACTION_CONTINUITY_SCHEMA, suppressed } } : {}),
+  };
+}
+
 /** Lenient fact-array coercion for learner-composed derive claims. */
 function toFactArray(entry) {
   if (Array.isArray(entry)) return entry.map((t) => String(t).trim()).filter(Boolean);
@@ -3599,7 +3841,12 @@ export function makeLlmLearner({
     });
 
     const adopt = validIndices(out.adopt_indices, adoptable.length).map((i) => adoptable[i]);
-    const retract = validIndices(out.retract_indices, view.abox.grounded.length).map((i) => view.abox.grounded[i]);
+    const rawRetract = validIndices(out.retract_indices, view.abox.grounded.length).map((i) => view.abox.grounded[i]);
+    const retractionFilter = filterContinuityRetractions(view, rawRetract, {
+      dialogue: out.dialogue,
+      hypothesis: out.hypothesis,
+    });
+    const retract = retractionFilter.kept;
     const deriveFromIndices = validIndices(out.derive_indices, derivableCandidates.length).map(
       (i) => derivableCandidates[i].fact,
     );
@@ -3634,6 +3881,7 @@ export function makeLlmLearner({
       retract,
       derive,
       hypothesis,
+      ...(retractionFilter.meta ? { retractionFilter: retractionFilter.meta } : {}),
       exchangeType: assertionBlocked
         ? 'hypothesis'
         : typeof out.exchange_type === 'string' && out.exchange_type.trim()

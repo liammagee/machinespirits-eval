@@ -584,6 +584,78 @@ and should not be treated as a prelude to a fresh paid validation unless we
 first identify a case where S1 can improve over hidden+proofDebt rather than
 merely match it.
 
+High-level interpretation after Phase 9: hidden+proofDebt is not a weak static
+baseline. It is a compact proof-continuity controller: it trusts authored hidden
+geometry over noisy visible discourse, releases currently safe public evidence,
+repairs proof debt before advancing, and avoids treating fluent learner talk as
+ownership. Most adaptive overlays so far add a visible-discourse diagnostic
+layer on top of this controller. Those overlays can be locally pedagogically
+plausible while globally harmful: each extra diagnostic or consolidation turn
+costs decay headroom, delays public evidence, and can starve proof progress.
+A21 therefore beats the failed A20 selector/conduct overlay at the local action
+level, but Phase 9 shows that the proposed patch duplicates what hidden+proofDebt
+already does at the decisive Hethel turn. The current evidence does not support
+promoting adaptation over hidden+proofDebt as the main derivation policy.
+
+The next arc should be framed by four questions, not by another selector
+taxonomy:
+
+1. Where does hidden+proofDebt actually fail, under first-pass replay or paid
+   evidence rather than post-hoc speculation?
+2. For each failure, is the limiting cause action choice, learner uptake,
+   discourse texture, decay/repair continuity, world instability, or an
+   over-constrained runtime policy?
+3. Is there a public signal available before the action that predicts a better
+   choice than hidden+proofDebt would make?
+4. Can that signal improve final grounding or reduce turns without adding
+   negative transfer against hidden+proofDebt on held-out worlds?
+
+If the answer remains no, hidden+proofDebt should be treated as the production
+derivation arm, with adaptation retained as a diagnostic/research layer or as a
+separate human-readability/pedagogical-quality layer rather than as proof-control
+policy.
+
+Reframing for the next investigation: retain hidden+proofDebt as the minimal
+proof-state adaptation layer, then test a second, orthogonal discursive
+adaptation layer above it. The proof-state layer decides what the inquiry can
+safely do next: release, restore, hold, or assert. The discursive layer should
+not overrule that proof-control decision by default. Its job is to decide how
+the tutor conducts the same proof step when the public dialogue state changes:
+tone, pressure, recognition, phatic acknowledgement, uptake checking, pacing of
+short exchanges, and rhetorical figure selection.
+
+This gives a cleaner adaptive hypothesis:
+
+```text
+hidden+proofDebt handles proof continuity;
+discursive adaptation handles the learner's public relation to that proof step.
+```
+
+The first evaluation should therefore hold proof-state obligations fixed and
+vary public learner/dialogue state. Candidate perturbations should be small and
+pre-declared rather than taxonomic: a tentative but correct learner; a defensive
+learner after repeated correction; a fluent echo without usable uptake; a learner
+asking why the evidence matters; a near-final learner who needs permission to
+assert; and a socially disengaging learner whose formal board is still
+recoverable. In each case compare:
+
+- S0: hidden+proofDebt only;
+- S1: hidden+proofDebt plus a discursive calibration overlay.
+
+The overlay earns further work only if it improves at least one causal outcome
+without harming proof reliability: fewer turns to grounded assertion, fewer
+aporia/disengagement outcomes, stronger public uptake of the same released
+evidence, better recognition-pressure handling, or better human-reader quality
+at matched final grounding. Improvements that only make the prose prettier
+should be reported as discourse-quality gains, not proof-control adaptation.
+
+Hard boundary: do not revive H/V selector work and do not add a broad situation
+taxonomy. The discursive layer should consume public signals already present or
+small, auditable additions: recent learner stance, uptake quality, recognition
+pressure, conversational strain, and whether the learner is parroting, resisting,
+asking for purpose, or nearing assertion. It must not see raw proof paths,
+hidden boards, D arithmetic, secrets, or corruption ledgers.
+
 Goal: test whether the conduct layer can stop asking diagnostics and press
 forward when repeated visible/hidden conflict probes have exhausted their local
 budget.

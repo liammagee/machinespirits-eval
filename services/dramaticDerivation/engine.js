@@ -1123,6 +1123,7 @@ export async function runDrama({ world, roles, options = {} }) {
         derive: learnerOut.derive || [],
         deriveOutcomes,
         hypothesis: learnerOut.hypothesis || null,
+        ...(learnerOut.retractionFilter ? { retractionFilter: learnerOut.retractionFilter } : {}),
         asserts: learnerOut.asserts || null,
         ...(learnerOut.assertionGate ? { assertionGate: learnerOut.assertionGate } : {}),
         exchangeType: learnerOut.exchangeType || null,

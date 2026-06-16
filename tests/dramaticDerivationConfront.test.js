@@ -56,6 +56,8 @@ import {
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const smokeWorld = loadWorld(path.join(ROOT, 'config/drama-derivation/world-000-smoke.yaml'));
 const lanternWorld = loadWorld(path.join(ROOT, 'config/drama-derivation/world-002-lantern.yaml'));
+const hethelWorld = loadWorld(path.join(ROOT, 'config/drama-derivation/world-006-hethel.yaml'));
+const ravensmarkWorld = loadWorld(path.join(ROOT, 'config/drama-derivation/world-009-ravensmark.yaml'));
 const lanternScript = fs.readFileSync(path.join(ROOT, 'config/drama-derivation/tutor-scripts/lantern-v001.md'), 'utf8');
 const SCRIPT = 'Stay with the inquiry; release on cue; never name the conclusion.';
 
@@ -207,6 +209,44 @@ async function releaseTurn({ turn, reply, ledger = [] }) {
   return tutor(actsView(turn, { ledger }));
 }
 
+async function discursiveReleaseTurn({ turn, reply, ledger = [], transcript = [], world = smokeWorld, pacingGuard = false }) {
+  const { client } = stubClient({ tutor: [reply] });
+  const tutor = makeLlmTutor(
+    world,
+    client,
+    actsOpts({ releaseAuthority: true, pacingGuard, discursiveCalibration: true }),
+  );
+  return tutor(actsView(turn, { ledger, transcript }));
+}
+
+function factSurfaceMap(world, premiseIds) {
+  return Object.fromEntries(
+    premiseIds.map((premiseId) => {
+      const premise = world.premiseById.get(premiseId);
+      return [JSON.stringify(premise.fact), premise.surface];
+    }),
+  );
+}
+
+function hethelLearnerView({ groundedIds = [], releasedIds = [], releasedThisTurnIds = [] } = {}) {
+  return {
+    turn: 9,
+    question: hethelWorld.question,
+    questionPattern: hethelWorld.questionPattern,
+    rules: hethelWorld.rules,
+    background: hethelWorld.background,
+    releasedFacts: releasedIds.map((id) => hethelWorld.premiseById.get(id).fact),
+    releasedThisTurn: releasedThisTurnIds.map((id) => hethelWorld.premiseById.get(id).fact),
+    abox: {
+      grounded: groundedIds.map((id) => hethelWorld.premiseById.get(id).fact),
+      hypotheses: [],
+    },
+    voiced: [],
+    transcript: [],
+    factSurfaces: factSurfaceMap(hethelWorld, [...new Set([...groundedIds, ...releasedIds, ...releasedThisTurnIds])]),
+  };
+}
+
 async function lanternReleaseTurn({ turn, reply, ledger = [] }) {
   const { client } = stubClient({ tutor: [reply] });
   const tutor = makeLlmTutor(lanternWorld, client, actsOpts({ releaseAuthority: true, pacingGuard: true }));
@@ -256,6 +296,169 @@ test('C2: a claim inside the window is honored, offset and reason recorded', asy
     },
     { claimed: 'p2', played: 'p2', offset: -1, invalidClaim: false, forced: null, overridden: false },
   );
+});
+
+test('C2: high discursive strain holds optional early release inside the window', async () => {
+  const out = await discursiveReleaseTurn({
+    turn: 4,
+    transcript: [
+      { turn: 2, role: 'tutor', text: 'No, go back to the earlier exhibit.' },
+      { turn: 3, role: 'tutor', text: 'Not quite; put the missing link back first.' },
+      {
+        turn: 3,
+        role: 'learner',
+        text: 'You keep correcting me. I already said what I meant.',
+        meta: { exchange: { type: 'resistance' } },
+      },
+    ],
+    reply: {
+      dialogue: 'Take this now.',
+      move: { figure: 'exemplum', target_premise: 'p2', intent: 'release' },
+      release: 'p2',
+      release_reason: 'strike while the question is open',
+    },
+  });
+  assert.equal(out.release, null);
+  assert.equal(out.releaseDecision.claimed, 'p2');
+  assert.equal(out.releaseDecision.played, null);
+  assert.equal(out.releaseDecision.offset, null);
+  assert.equal(out.releaseDecision.overridden, true);
+  assert.equal(out.releaseDecision.discursiveReleaseGate.held, true);
+  assert.equal(out.releaseDecision.discursiveReleaseGate.candidate, 'p2');
+  assert.equal(out.releaseDecision.discursiveReleaseGate.offset, -1);
+  assert.match(out.releaseDecision.discursiveReleaseGate.reason, /high public strain/u);
+  assert.equal(out.discursiveCalibration.conversationalStrain.level, 'high');
+});
+
+test('C2: high discursive strain registers early release when public line voices exhibit content', async () => {
+  const out = await discursiveReleaseTurn({
+    turn: 4,
+    transcript: [
+      { turn: 2, role: 'tutor', text: 'No, go back to the earlier exhibit.' },
+      { turn: 3, role: 'tutor', text: 'Not quite; put the missing link back first.' },
+      {
+        turn: 3,
+        role: 'learner',
+        text: 'You keep correcting me. I already said what I meant.',
+        meta: { exchange: { type: 'resistance' } },
+      },
+    ],
+    reply: {
+      dialogue: "Tessa was the founder's daughter; set that beside Marin's line before you name an heir.",
+      move: { figure: 'exemplum', target_premise: 'p2', intent: 'release' },
+      release: 'p2',
+      release_reason: 'strike while the question is open',
+    },
+  });
+  assert.equal(out.release, 'p2');
+  assert.equal(out.releaseDecision.claimed, 'p2');
+  assert.equal(out.releaseDecision.played, 'p2');
+  assert.equal(out.releaseDecision.offset, -1);
+  assert.equal(out.releaseDecision.overridden, false);
+  assert.equal(out.releaseDecision.discursiveReleaseGate.held, false);
+  assert.equal(out.releaseDecision.discursiveReleaseGate.candidate, 'p2');
+  assert.equal(out.releaseDecision.discursiveReleaseGate.publicContentOverride, true);
+  assert.equal(out.releaseDecision.discursiveReleaseGate.publicContentAudit.voiced, true);
+  assert.equal(out.releaseDecision.discursiveReleaseGate.publicContentAudit.action, 'registered_release');
+  assert.ok(out.releaseDecision.discursiveReleaseGate.publicContentAudit.matches.includes('tessa'));
+  assert.match(out.releaseDecision.discursiveReleaseGate.reason, /public line voiced/u);
+});
+
+test('C2: high discursive strain does not block scheduled release', async () => {
+  const out = await discursiveReleaseTurn({
+    turn: 5,
+    transcript: [
+      { turn: 3, role: 'tutor', text: 'No, go back to the earlier exhibit.' },
+      { turn: 4, role: 'tutor', text: 'Not quite; put the missing link back first.' },
+      {
+        turn: 4,
+        role: 'learner',
+        text: 'You keep correcting me. I already said what I meant.',
+        meta: { exchange: { type: 'resistance' } },
+      },
+    ],
+    reply: {
+      dialogue: 'Take this now.',
+      move: { figure: 'exemplum', target_premise: 'p2', intent: 'release' },
+      release: 'p2',
+    },
+  });
+  assert.equal(out.release, 'p2');
+  assert.equal(out.releaseDecision.played, 'p2');
+  assert.equal(out.releaseDecision.offset, 0);
+  assert.equal(out.releaseDecision.discursiveReleaseGate, undefined);
+});
+
+test('C2: high discursive strain does not block a hidden last-safe release', async () => {
+  const out = await discursiveReleaseTurn({
+    world: lanternWorld,
+    pacingGuard: true,
+    turn: 8,
+    ledger: [
+      { turn: 2, premiseId: 'm_key', via: 'director' },
+      { turn: 3, premiseId: 'p_bearing', via: 'tutor' },
+      { turn: 6, premiseId: 'm_post', via: 'director' },
+      { turn: 8, premiseId: 'm_shutter', via: 'director' },
+    ],
+    transcript: [
+      { turn: 6, role: 'tutor', text: 'No, go back to the earlier exhibit.' },
+      { turn: 7, role: 'tutor', text: 'Not quite; put the missing link back first.' },
+      {
+        turn: 7,
+        role: 'learner',
+        text: 'You keep correcting me. I already said what I meant.',
+        meta: { exchange: { type: 'resistance' } },
+      },
+    ],
+    reply: {
+      dialogue: 'Hold one more beat.',
+      move: { figure: 'erotema', target_premise: null, intent: 'test' },
+      release: null,
+    },
+  });
+  assert.equal(out.release, 'p_chart');
+  assert.equal(out.releaseDecision.played, 'p_chart');
+  assert.equal(out.releaseDecision.offset, -1);
+  assert.equal(out.releaseDecision.pacingGuard.forcedSafe, true);
+  assert.equal(out.releaseDecision.discursiveReleaseGate, undefined);
+});
+
+test('C2: high discursive strain does not block an unclaimed early release that closes proof now', async () => {
+  const out = await discursiveReleaseTurn({
+    world: ravensmarkWorld,
+    pacingGuard: true,
+    turn: 13,
+    ledger: [
+      { turn: 2, premiseId: 'm_steward', via: 'director' },
+      { turn: 4, premiseId: 'p_mark', via: 'tutor' },
+      { turn: 6, premiseId: 'm_key', via: 'director' },
+      { turn: 7, premiseId: 'p_clause', via: 'tutor' },
+    ],
+    transcript: [
+      { turn: 11, role: 'tutor', text: 'No, keep the seal line separate from the gate account.' },
+      { turn: 12, role: 'tutor', text: 'Not quite; do not let the key fill the signing line.' },
+      {
+        turn: 12,
+        role: 'learner',
+        text: 'You keep correcting me. I know the key is not the seal.',
+        meta: { exchange: { type: 'resistance' } },
+      },
+    ],
+    reply: {
+      dialogue: 'Hold the signing line open.',
+      move: { figure: 'anaphora', target_premise: null, intent: 'consolidate' },
+      release: null,
+    },
+  });
+  assert.equal(out.release, 'p_registry');
+  assert.equal(out.releaseDecision.claimed, null);
+  assert.equal(out.releaseDecision.played, 'p_registry');
+  assert.equal(out.releaseDecision.offset, -2);
+  assert.equal(out.releaseDecision.pacingGuard.forcedSafe, true);
+  assert.equal(out.releaseDecision.pacingGuard.forcedBy, 'proof_closing_candidate');
+  assert.equal(out.releaseDecision.pacingGuard.playedSolvency.safe, true);
+  assert.equal(out.releaseDecision.pacingGuard.playedSolvency.forcedTurn, 13);
+  assert.equal(out.releaseDecision.discursiveReleaseGate, undefined);
 });
 
 test('C2: a claim outside the window is invalid and drops to a hold', async () => {
@@ -546,6 +749,72 @@ test('same-turn assertion affordance prompts post-adoption answer and keeps grou
   assert.deepEqual(out.asserts, ['heir', 'marin']);
   assert.equal(out.assertionGate.supported, true);
   assert.equal(out.assertionGate.blocked, false);
+});
+
+test('learner bridge suppresses implicit-continuity false retractions', async () => {
+  const { client } = stubClient({
+    learner: [
+      {
+        dialogue:
+          'The crown bed kills the town charge: where the span broke and what the bed now betrays together settle the cause.',
+        adopt_indices: [hethelWorld.background.length],
+        retract_indices: [0],
+        derive_indices: [],
+        hypothesis: 'The crown break and the green bed now point to struck centering, not bad building.',
+        asserts_answer: null,
+      },
+    ],
+  });
+  const learner = makeLlmLearner({
+    setting: hethelWorld.setting,
+    voice: hethelWorld.learnerVoice,
+    client,
+  });
+
+  const out = await learner(
+    hethelLearnerView({
+      groundedIds: ['p_point'],
+      releasedIds: ['p_point', 'p_surface'],
+      releasedThisTurnIds: ['p_surface'],
+    }),
+  );
+
+  assert.deepEqual(out.adopt, [hethelWorld.premiseById.get('p_surface').fact]);
+  assert.deepEqual(out.retract, []);
+  assert.equal(out.retractionFilter.schema, 'dramatic-derivation.retraction-continuity.v0');
+  assert.deepEqual(out.retractionFilter.suppressed[0].fact, hethelWorld.premiseById.get('p_point').fact);
+  assert.ok(out.retractionFilter.suppressed[0].matches.includes('crown'));
+  assert.ok(out.retractionFilter.suppressed[0].matches.includes('span'));
+});
+
+test('learner bridge preserves explicit retractions even when fact words recur', async () => {
+  const { client } = stubClient({
+    learner: [
+      {
+        dialogue: 'I strike the old crown-joint measure as wrong; that line does not hold.',
+        adopt_indices: [],
+        retract_indices: [0],
+        derive_indices: [],
+        hypothesis: null,
+        asserts_answer: null,
+      },
+    ],
+  });
+  const learner = makeLlmLearner({
+    setting: hethelWorld.setting,
+    voice: hethelWorld.learnerVoice,
+    client,
+  });
+
+  const out = await learner(
+    hethelLearnerView({
+      groundedIds: ['p_point'],
+      releasedIds: ['p_point'],
+    }),
+  );
+
+  assert.deepEqual(out.retract, [hethelWorld.premiseById.get('p_point').fact]);
+  assert.equal(out.retractionFilter, undefined);
 });
 
 // C5 — the license arithmetic. Ledger stages p1 at t1; the draft re-enters.
