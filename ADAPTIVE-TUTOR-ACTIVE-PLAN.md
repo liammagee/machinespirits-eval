@@ -476,16 +476,19 @@ separately labelled progress policy first clears replay against hidden+proofDebt
 
 ### Phase 6: Progress-Aware Conduct Policy
 
-Status: first opt-in runtime slice implemented 2026-06-16.
+Status: opt-in runtime slice implemented and replay-gated 2026-06-16.
 
 First replay screen completed 2026-06-16; see
 `exports/dramatic-derivation/phase6-progress-policy-replay-report.md`.
-Hethel replay from the Phase 5g failure prefix preserved prefix integrity and
-improved the failure substantially: no aporia/disengagement within the t4--t15
-window, D progressed to 1, and `p_point`/`p_surface` both released on cue.
-However, the episode ended `cap_reached`, not grounded, with one early release
-(`p_brand` t15 vs planned t17). This is a partial local repair, not a pass. Do
-not run the fresh paid retest yet.
+The first Hethel replay from the Phase 5g failure prefix preserved prefix
+integrity and improved the failure substantially: no aporia/disengagement within
+the t4--t15 window, D progressed to 1, and `p_point`/`p_surface` both released
+on cue. However, the episode ended `cap_reached`, not grounded, with one early
+release (`p_brand` t15 vs planned t17). A follow-up safe-now patch blocked
+optional early-window releases without adding a move family, but the controlled
+replay then failed by aporia at t9 with D stuck at 4. This is a valid negative
+replay gate. Do not run the no-harm replay or fresh paid retest from this policy
+state.
 
 Goal: test whether the conduct layer can stop asking diagnostics and press
 forward when repeated visible/hidden conflict probes have exhausted their local
@@ -499,6 +502,9 @@ Implementation boundary:
 - The policy reuses existing `release_next_evidence` and `consolidate_subproof`
   families.
 - It fires only when repeated visible/hidden diagnostics are budget-exhausted.
+- It now treats scheduled-current or force-play releases as current-authorized;
+  tempo solvency inside an early window is not by itself enough for progress
+  pressure to release.
 - Enforcement still requires explicit `--conduct-policy-enforce`.
 
 Candidate comparison:
@@ -511,7 +517,8 @@ Candidate comparison:
 Candidate worlds/prefixes:
 
 - Hethel Phase 5g failure prefix from t4.
-- One non-Hethel hidden+proofDebt success prefix as a no-harm replay check.
+- One non-Hethel hidden+proofDebt success prefix as a no-harm replay check only
+  after the Hethel replay gate clears.
 - Only if replay passes: one fresh first-pass Hethel paired retest.
 
 Primary metrics:

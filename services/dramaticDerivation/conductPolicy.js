@@ -143,6 +143,10 @@ function progressPressureActive(state) {
   return state.triggerType === 'progress_pressure_after_diagnostic_budget' || state.progressPressure?.active === true;
 }
 
+function earlyReleaseHold(state) {
+  return state.triggerType === 'early_release_not_current_authorized' || state.holdEarlyRelease === true;
+}
+
 function dependencyRepairNeeded(state) {
   return state.triggerType === 'dependency_repair_needed' || state.needsDependencyRepair === true || proofDebtActive(state);
 }
@@ -208,6 +212,13 @@ function classifyConductState(state) {
       moveFamily: 'invite_final_assertion',
       reasonCode: 'final_assertion_available',
       rationale: 'the public board can now support the answer',
+    };
+  }
+  if (earlyReleaseHold(state)) {
+    return {
+      moveFamily: 'consolidate_subproof',
+      reasonCode: 'early_release_not_current_authorized',
+      rationale: 'the candidate exhibit is in the early window but is not due or forced; consolidate current support',
     };
   }
   if (progressPressureActive(state)) {

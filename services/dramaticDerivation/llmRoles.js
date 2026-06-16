@@ -1378,6 +1378,8 @@ function conductTriggerState({
   conductProofDebt,
   conductProgressPolicy = false,
   releaseBits,
+  playable = [],
+  forcedPlay = null,
   forcedNote,
   finalEntitlement,
   finalOut,
@@ -1432,6 +1434,32 @@ function conductTriggerState({
 
   const rd = releaseBits.releaseDecision;
   if (rd?.played) {
+    if (
+      conductProgressPolicy &&
+      !isCurrentAuthorizedRelease(rd.played, {
+        turn: view.turn,
+        playable,
+        forcedPlay,
+        releaseDecision: rd,
+      })
+    ) {
+      const lastReleased = view.ledger[view.ledger.length - 1]?.premiseId || null;
+      return {
+        id: `t${view.turn}:early-release-hold:${rd.played}`,
+        triggerType: 'early_release_not_current_authorized',
+        holdEarlyRelease: true,
+        premiseId: lastReleased,
+        evidence: {
+          ...evidence,
+          earlyRelease: {
+            candidate: rd.played,
+            scheduledTurn: playableEntry(playable, rd.played)?.turn ?? rd.scheduledTurn ?? null,
+            offset: rd.offset ?? null,
+            forced: rd.forced || null,
+          },
+        },
+      };
+    }
     return {
       id: `t${view.turn}:release:${rd.played}`,
       triggerType: 'release_candidate_certified',
@@ -1453,6 +1481,8 @@ function conductTriggerState({
       hiddenCertifiedRelease: Boolean(rd?.hybridGuard?.accepted),
       conductProgressPolicy,
       releaseDecision: rd,
+      playable,
+      forcedPlay,
     });
   }
 
@@ -1466,6 +1496,8 @@ function conductTriggerState({
       },
       conductProgressPolicy,
       releaseDecision: rd,
+      playable,
+      forcedPlay,
     });
     return trigger ? { ...trigger, id: `t${view.turn}:visible-consolidation` } : null;
   }
@@ -1553,25 +1585,67 @@ function visibleConflictDiagnosticBudget(view, premiseId) {
   return { allowed: true };
 }
 
-function firstSafeReleaseCandidate(releaseDecision) {
+function playableEntry(playable = [], premiseId) {
+  if (!premiseId) return null;
+  return playable.find((entry) => entry?.premise === premiseId) || null;
+}
+
+function isCurrentAuthorizedRelease(premiseId, { turn, playable = [], forcedPlay = null, releaseDecision = null } = {}) {
+  if (!premiseId) return false;
+  const currentTurn = Number(turn ?? releaseDecision?.turn);
+  if (!Number.isFinite(currentTurn)) return false;
+  if (releaseDecision?.forced === premiseId || forcedPlay?.premise === premiseId) return true;
+  if (releaseDecision?.pacingGuard?.forcedSafe === true && releaseDecision?.played === premiseId) return true;
+  const scheduledTurn =
+    playableEntry(playable, premiseId)?.turn ??
+    (releaseDecision?.played === premiseId ? releaseDecision?.scheduledTurn : null);
+  return Number(scheduledTurn) === currentTurn;
+}
+
+function releaseSafeAtCurrentTurn(premiseId, releaseDecision) {
+  if (!premiseId || !releaseDecision) return false;
+  const turn = Number(releaseDecision.turn);
+  const safeTurns = releaseDecision?.pacingGuard?.safeTurns?.[premiseId];
+  if (Array.isArray(safeTurns) && safeTurns.map(Number).includes(turn)) return true;
+  const candidateSolvency = releaseDecision?.pacingGuard?.candidateSolvency;
+  if (candidateSolvency?.premise === premiseId && candidateSolvency.safe === true) return true;
+  const playedSolvency = releaseDecision?.pacingGuard?.playedSolvency;
+  if (playedSolvency?.premise === premiseId && playedSolvency.safe === true) return true;
+  return false;
+}
+
+function firstSafeReleaseCandidate(releaseDecision, { turn, playable = [], forcedPlay = null } = {}) {
+  const opts = { turn: turn ?? releaseDecision?.turn, playable, forcedPlay, releaseDecision };
   const direct =
     releaseDecision?.pacingGuard?.candidate ||
     releaseDecision?.consolidationGuard?.hiddenCandidate ||
     releaseDecision?.visibleGuard?.candidate ||
     null;
-  if (direct) return direct;
+  if (direct && isCurrentAuthorizedRelease(direct, opts) && releaseSafeAtCurrentTurn(direct, releaseDecision)) {
+    return direct;
+  }
   const safeTurns = releaseDecision?.pacingGuard?.safeTurns;
   if (!safeTurns || typeof safeTurns !== 'object') return null;
-  const turn = Number(releaseDecision?.turn);
+  const currentTurn = Number(releaseDecision?.turn);
   for (const [premiseId, turns] of Object.entries(safeTurns)) {
     if (!Array.isArray(turns)) continue;
-    if (!Number.isFinite(turn) || turns.map(Number).includes(turn)) return premiseId;
+    if (
+      Number.isFinite(currentTurn) &&
+      turns.map(Number).includes(currentTurn) &&
+      isCurrentAuthorizedRelease(premiseId, opts)
+    ) {
+      return premiseId;
+    }
   }
   return null;
 }
 
-function progressPressureTrigger(view, { premiseId, evidence, budget, releaseDecision }) {
-  const releaseCandidate = firstSafeReleaseCandidate(releaseDecision);
+function progressPressureTrigger(view, { premiseId, evidence, budget, releaseDecision, playable = [], forcedPlay = null }) {
+  const releaseCandidate = firstSafeReleaseCandidate(releaseDecision, {
+    turn: view.turn,
+    playable,
+    forcedPlay,
+  });
   return {
     id: `t${view.turn}:progress-pressure`,
     triggerType: 'progress_pressure_after_diagnostic_budget',
@@ -1593,7 +1667,15 @@ function progressPressureTrigger(view, { premiseId, evidence, budget, releaseDec
 
 function visibleConflictTrigger(
   view,
-  { premiseId, evidence, hiddenCertifiedRelease = false, conductProgressPolicy = false, releaseDecision = null },
+  {
+    premiseId,
+    evidence,
+    hiddenCertifiedRelease = false,
+    conductProgressPolicy = false,
+    releaseDecision = null,
+    playable = [],
+    forcedPlay = null,
+  },
 ) {
   const budget = visibleConflictDiagnosticBudget(view, premiseId);
   if (!budget.allowed) {
@@ -1603,6 +1685,8 @@ function visibleConflictTrigger(
           evidence,
           budget,
           releaseDecision,
+          playable,
+          forcedPlay,
         })
       : null;
   }
@@ -3050,6 +3134,8 @@ export function makeLlmTutor(
             view,
             conductProofDebt,
             releaseBits,
+            playable,
+            forcedPlay,
             forcedNote,
             finalEntitlement,
             finalOut,

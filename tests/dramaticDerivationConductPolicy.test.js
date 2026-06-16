@@ -204,6 +204,27 @@ test('A20 progress pressure consolidates when no certified release is available'
   assert.equal(decision.nonLeakAudit.ok, true);
 });
 
+test('A20 early optional release hold consolidates without adding a move family', () => {
+  const decision = selectConductMove({
+    triggerType: 'early_release_not_current_authorized',
+    holdEarlyRelease: true,
+    premiseId: 'p_mark',
+    evidence: {
+      earlyRelease: {
+        candidate: 'p_brand',
+        scheduledTurn: 17,
+        offset: -2,
+      },
+    },
+  });
+
+  assert.equal(decision.selectedMoveFamily, 'consolidate_subproof');
+  assert.equal(decision.reasonCode, 'early_release_not_current_authorized');
+  assert.equal(decision.targetPremise, 'p_mark');
+  assert.ok(decision.blockedActions.includes('release_unrelated_evidence'));
+  assert.equal(decision.nonLeakAudit.ok, true);
+});
+
 test('unsupported assertion and underdetermined state select safe moves', () => {
   const blocked = selectConductMove({
     triggerType: 'unsupported_assertion_blocked',
@@ -536,6 +557,102 @@ test('runtime conduct policy prioritizes final entitlement over visible diagnost
   assert.equal(out.conductPolicy.preEnforcementCompliance.checked, true);
   assert.equal(out.conductPolicy.preEnforcementCompliance.ok, false);
   assert.equal(out.conductPolicy.generatorCompliance.checked, true);
+  assert.equal(out.conductPolicy.generatorCompliance.ok, true);
+});
+
+test('runtime progress policy blocks tempo-safe but early optional releases', async () => {
+  const { client } = stubClient({
+    tutor: [
+      {
+        dialogue: 'The mark is enough; let us take the house seal now.',
+        release: 'p3',
+        release_reason: 'ready early',
+        move: { figure: 'analogia', target_premise: 'p3', intent: 'release' },
+      },
+    ],
+  });
+  const tutor = makeLlmTutor(
+    smokeWorld,
+    client,
+    actsOpts({
+      conductProgressPolicy: true,
+      conductPolicyEnforce: true,
+      pacingGuard: true,
+      releaseAuthority: true,
+    }),
+  );
+  const out = await tutor(
+    actsView(6, {
+      ledger: [
+        { turn: 2, premiseId: 'p1', via: 'director' },
+        { turn: 4, premiseId: 'p4', via: 'director' },
+        { turn: 5, premiseId: 'p2', via: 'tutor' },
+      ],
+    }),
+  );
+
+  assert.equal(out.conductPolicy.active, true);
+  assert.equal(out.conductPolicy.selectedMoveFamily, 'consolidate_subproof');
+  assert.equal(out.conductPolicy.reasonCode, 'early_release_not_current_authorized');
+  assert.equal(out.release, null);
+  assert.equal(out.releaseDecision.conductPolicyEnforcement.blockedRelease, 'p3');
+  assert.equal(out.move.intent, 'consolidate');
+  assert.doesNotMatch(out.dialogue, /house seal/i);
+  assert.equal(out.conductPolicy.preEnforcementCompliance.ok, false);
+  assert.equal(out.conductPolicy.generatorCompliance.ok, true);
+});
+
+test('runtime progress pressure consolidates when only an early-window candidate is safe', async () => {
+  const { client } = stubClient({
+    tutor: [
+      {
+        dialogue: 'Let us hold the current chain in place.',
+        release: null,
+        move: { figure: 'erotema', target_premise: 'p2', intent: 'consolidate' },
+      },
+    ],
+  });
+  const tutor = makeLlmTutor(
+    smokeWorld,
+    client,
+    actsOpts({
+      conductProgressPolicy: true,
+      conductPolicyEnforce: true,
+      pacingGuard: true,
+      releaseAuthority: true,
+      visibleConsolidationGuard: true,
+    }),
+  );
+  const out = await tutor(
+    actsView(6, {
+      ledger: [
+        { turn: 2, premiseId: 'p1', via: 'director' },
+        { turn: 4, premiseId: 'p4', via: 'director' },
+        { turn: 5, premiseId: 'p2', via: 'tutor' },
+      ],
+      transcript: [
+        {
+          turn: 4,
+          role: 'tutor',
+          text: 'Pause there. What in the public record licenses that next step?',
+          meta: { move: { figure: 'erotema', targetPremise: 'p2', intent: 'test' } },
+        },
+        { turn: 4, role: 'learner', text: 'I am not sure yet.', meta: {} },
+        {
+          turn: 5,
+          role: 'tutor',
+          text: 'Pause there. What in the public record licenses that next step?',
+          meta: { move: { figure: 'erotema', targetPremise: 'p2', intent: 'test' } },
+        },
+        { turn: 5, role: 'learner', text: 'Still unclear to me.', meta: {} },
+      ],
+    }),
+  );
+
+  assert.equal(out.conductPolicy.active, true);
+  assert.equal(out.conductPolicy.selectedMoveFamily, 'consolidate_subproof');
+  assert.equal(out.conductPolicy.reasonCode, 'progress_pressure_consolidate');
+  assert.equal(out.release, null);
   assert.equal(out.conductPolicy.generatorCompliance.ok, true);
 });
 

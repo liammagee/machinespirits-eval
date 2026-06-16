@@ -22,6 +22,10 @@ than adding another selector taxonomy?
 - When a repeated `visible_hidden_conflict` diagnostic is budget-exhausted:
   - if a certified safe release candidate exists, select `release_next_evidence`;
   - otherwise select `consolidate_subproof`.
+- Follow-up safe-now patch: a release is current-authorized only when it is on
+  its scheduled turn or force-played; tempo solvency somewhere in the early
+  release window is not enough. Early optional releases are redirected to
+  `consolidate_subproof`.
 
 This keeps the policy shallow: progress pressure is a budget response, not a new
 visible/hidden situation class.
@@ -35,6 +39,14 @@ node --test tests/dramaticDerivationConductPolicy.test.js tests/dramaticDerivati
 ```
 
 Result: 31/31 passing.
+
+After the safe-now patch:
+
+```bash
+node --test tests/dramaticDerivationConductPolicy.test.js tests/dramaticDerivationReplay.test.js
+```
+
+Result: 34/34 passing.
 
 ## Replay Command
 
@@ -97,28 +109,89 @@ Progress-policy reason codes:
 | `progress_pressure_release` | 2 |
 | `progress_pressure_consolidate` | 4 |
 
+## Safe-Now Replay
+
+After the early-release artifact in the first replay, the policy was tightened
+so that progress pressure and conduct enforcement distinguish "safe on the
+current cue" from "tempo-safe inside the early release window."
+
+Replay command:
+
+```bash
+DERIVATION_PROVIDER=codex \
+DERIVATION_LEARNER_PROVIDER=claude \
+DERIVATION_LEARNER_MODEL=sonnet \
+DERIVATION_CLI_TIMEOUT_MS=900000 \
+DERIVATION_LLM=real \
+DERIVATION_TRACE=0 \
+node scripts/run-derivation-episode.js \
+  --from exports/dramatic-derivation/loop/hethel-phase5g-a20-fresh-selective-v4-r1 \
+  --turn 4 \
+  --window 12 \
+  --real \
+  --conduct-policy on \
+  --conduct-progress-policy on \
+  --conduct-policy-enforce on \
+  --label phase6-hethel-safe-now-replay-from-t4 \
+  --out exports/dramatic-derivation/episodes
+```
+
+| Field | Value |
+|---|---|
+| Episode | `phase6-hethel-safe-now-replay-from-t4` |
+| Prefix integrity | ok, no mismatches |
+| Verdict | `aporia` |
+| End turn | t9 |
+| D curve | `5->5->5->4->4->4->4->4->4` |
+| Grounded | no |
+| Release deviations | none before failure |
+| Conduct compliance | 6/6 passed |
+| Enforcement | applied 3/6 turns; post-failures 0 |
+
+Release timing before failure:
+
+| Premise | Planned | Actual | Status |
+|---|---:|---:|---|
+| `p_point` | t4 | t4 | on cue |
+| `p_surface` | t9 | t9 | on cue |
+| `p_mark` | t13 | unreached | unreached |
+| `p_brand` | t17 | unreached | unreached |
+| `p_carter` | t20 | unreached | unreached |
+
+Conduct move families:
+
+| Family | Count |
+|---|---:|
+| `release_next_evidence` | 2 |
+| `consolidate_subproof` | 1 |
+| `repair_dependency` | 1 |
+| `ask_diagnostic` | 2 |
+
 ## Interpretation
 
 This is a useful partial repair. Compared with Phase 5h, the replay no longer
 fails at D=4 by aporia/disengagement. It releases the two critical early tutor
 premises on cue and reaches D=1 by t15.
 
-It is not a pass. The episode does not ground within the bounded window, and it
-introduces one early release (`p_brand` at t15 instead of t17). The right status
-is therefore: progress pressure is worth one more local design pass, but it has
-not earned a fresh paid first-pass retest.
+It is not a pass. The first episode does not ground within the bounded window,
+and it introduces one early release (`p_brand` at t15 instead of t17).
+
+The safe-now follow-up removes that early-release artifact, but the controlled
+replay regresses to aporia at t9. The failure is therefore not merely release
+calendar looseness. The current progress-aware conduct policy has not cleared
+the local Hethel gate.
 
 ## Next Gate
 
-Do not run the paid fresh Hethel paired retest yet.
+Do not run the paid fresh Hethel paired retest.
 
-The next local increment should address the remaining gap without expanding the
-taxonomy:
+Do not run the non-Hethel no-harm replay from this policy state. The Hethel
+replay gate failed before the no-harm screen became meaningful.
 
-- avoid early release when progress pressure selects `release_next_evidence`;
-- distinguish "safe to release now" from "safe sometime in the window";
-- re-run the same Hethel prefix after that fix;
-- only then consider a fresh paired retest against hidden+proofDebt.
+The next design question, if continued, should be pre-declared as a new variant:
+either relax safe-now only when visible uptake is already strong, or shift the
+policy from release timing to decay repair/proof continuity around `m_record`
+and `m_yard`. Do not treat the current safe-now variant as promotable.
 
 ## Caveats
 
@@ -126,3 +199,5 @@ taxonomy:
 - Selector-v4 shadowing was inherited from the source failure prefix; this does
   not revive selector-v4 as the evaluated arm.
 - The result uses a live LLM suffix and should not be overfit by repeated reruns.
+- The safe-now replay is also a live suffix; it is a controlled debugging
+  artifact, not held-out evidence.
