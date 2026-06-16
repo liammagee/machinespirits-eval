@@ -183,6 +183,13 @@ function classifyConductState(state) {
       rationale: 'recognition repair is active before further proof pressure',
     };
   }
+  if (validAlternativeCandidate(state)) {
+    return {
+      moveFamily: 'ask_diagnostic',
+      reasonCode: 'valid_alternative_candidate',
+      rationale: 'public evidence may license a route not served by hidden delay',
+    };
+  }
   if (dependencyRepairNeeded(state)) {
     return {
       moveFamily: 'repair_dependency',
@@ -195,13 +202,6 @@ function classifyConductState(state) {
       moveFamily: 'invite_final_assertion',
       reasonCode: 'final_assertion_available',
       rationale: 'the public board can now support the answer',
-    };
-  }
-  if (validAlternativeCandidate(state)) {
-    return {
-      moveFamily: 'ask_diagnostic',
-      reasonCode: 'valid_alternative_candidate',
-      rationale: 'public evidence may license a route not served by hidden delay',
     };
   }
   if (visibleHiddenConflict(state)) {

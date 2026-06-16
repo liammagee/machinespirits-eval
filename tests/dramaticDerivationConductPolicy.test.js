@@ -138,6 +138,33 @@ test('A20 hidden-hurts candidate asks diagnostic instead of repairing by hidden 
   assert.equal(decision.nonLeakAudit.ok, true);
 });
 
+test('A20 hidden-hurts candidate can override proof-debt default without leaking proof state', () => {
+  const trigger = fixture('a20-fixture-002-hidden-hurts-candidate');
+  const decision = selectConductMove({
+    ...trigger,
+    proofDebtTutorView: {
+      active: true,
+      debts: [
+        {
+          premiseId: 'p_point',
+          surface: 'the crown bed is fixed by the warden',
+          sinceTurn: 4,
+          dNow: 5,
+          proofPath: ['p_point', 'p_surface'],
+        },
+      ],
+    },
+  });
+
+  assert.equal(decision.selectedMoveFamily, 'ask_diagnostic');
+  assert.equal(decision.reasonCode, 'valid_alternative_candidate');
+  assert.equal(decision.targetPremise, 'p_point');
+  assert.ok(decision.blockedActions.includes('repair_dependency_without_public_check'));
+  assert.equal('dNow' in decision.tutorView, false);
+  assert.equal('proofPath' in decision.tutorView, false);
+  assert.equal(decision.nonLeakAudit.ok, true);
+});
+
 test('unsupported assertion and underdetermined state select safe moves', () => {
   const blocked = selectConductMove({
     triggerType: 'unsupported_assertion_blocked',

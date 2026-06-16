@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import {
+  A20_POLICY_FIXTURES_SCHEMA,
   analyzeArtifacts,
   collectTriggersFromResult,
   renderMarkdown,
@@ -180,7 +181,15 @@ test('analyzeArtifacts chooses the first two A20 policy fixtures', () => {
     assert.equal(existsSync(outputs.jsonlPath), true);
     assert.equal(existsSync(outputs.summaryPath), true);
     assert.equal(existsSync(outputs.reportPath), true);
+    assert.equal(existsSync(outputs.fixturesPath), true);
     assert.match(readFileSync(outputs.jsonlPath, 'utf8'), /dependency_repair_needed/);
+    const frozen = JSON.parse(readFileSync(outputs.fixturesPath, 'utf8'));
+    assert.equal(frozen.schema, A20_POLICY_FIXTURES_SCHEMA);
+    assert.deepEqual(
+      frozen.fixtures.map((fixture) => fixture.fixtureId),
+      ['a20-fixture-001-dependency-repair-reference', 'a20-fixture-002-hidden-hurts-candidate'],
+    );
+    assert.equal(frozen.fixtures[1].trigger.triggerType, 'valid_alternative_route_candidate');
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

@@ -480,6 +480,20 @@ Start here.
      learner-owned move.
 5. Only after those fixtures are frozen, implement `conductPolicy.js`.
 
+Status 2026-06-16: steps 1-5 completed; see
+`exports/dramatic-derivation/a20-conduct-policy-step1-5-report.md`. The corpus
+miner now emits frozen first-fixture JSON as well as the trigger corpus summary.
+The refreshed zero-paid corpus mined 492 completed runs and emitted 1000
+candidate triggers, selecting the same two first fixtures: Withercombe
+`p_rill` dependency repair at t14 as the conservative positive control, and the
+Hethel v1 r2 `p_point` valid-alternative candidate as the hidden/proofDebt
+counterweight. `conductPolicy.js` now lets a predeclared
+`valid_alternative_route_candidate` ask a diagnostic before ordinary proofDebt
+repair, while proofDebt still outranks final assertion entitlement. Focused A20
+tests passed, full `npm test` passed, and a no-cost Withercombe episode replay
+from t14 preserved prefix integrity with conduct policy active and 4/4 live
+conduct decisions compliant. No paid first-pass run was launched.
+
 ## Failure Labels
 
 Use the same labels across replay and fresh runs:

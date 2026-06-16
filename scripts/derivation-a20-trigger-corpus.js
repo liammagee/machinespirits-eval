@@ -19,6 +19,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const A20_TRIGGER_CORPUS_SCHEMA = 'dramatic-derivation.a20-conduct-policy.trigger-corpus.v0';
+export const A20_POLICY_FIXTURES_SCHEMA = 'dramatic-derivation.a20-conduct-policy.fixtures.v0';
 
 const DEFAULT_LOOP_DIR = 'exports/dramatic-derivation/loop';
 const DEFAULT_EPISODE_DIR = 'exports/dramatic-derivation/episodes';
@@ -462,6 +463,27 @@ export function chooseFirstPolicyFixtures(triggers) {
   ].filter(Boolean);
 }
 
+function freezeFirstPolicyFixtures(summary) {
+  const triggersById = new Map(summary.triggers.map((trigger) => [trigger.id, trigger]));
+  return {
+    schema: A20_POLICY_FIXTURES_SCHEMA,
+    generatedAt: summary.generatedAt,
+    sourceCorpusSchema: summary.schema,
+    sourceRoots: summary.sourceRoots,
+    selectorSummaryPath: summary.selectorSummaryPath,
+    fixtures: summary.firstPolicyFixtures.map((fixture) => {
+      const trigger = triggersById.get(fixture.triggerId);
+      if (!trigger) throw new Error(`cannot freeze missing trigger ${fixture.triggerId}`);
+      return {
+        fixtureId: fixture.fixtureId,
+        role: fixture.role,
+        reason: fixture.reason,
+        trigger,
+      };
+    }),
+  };
+}
+
 export function analyzeArtifacts({
   roots = [DEFAULT_LOOP_DIR, DEFAULT_EPISODE_DIR],
   selectorSummaryPath = DEFAULT_SELECTOR_SUMMARY,
@@ -538,6 +560,7 @@ export function renderMarkdown(summary) {
   lines.push(`- Selector summary: ${summary.selectorSummaryPath ? `\`${summary.selectorSummaryPath}\`` : 'not found'}`);
   lines.push(`- Runs mined: ${summary.runCount}`);
   lines.push(`- Triggers emitted: ${summary.triggerCount}`);
+  lines.push('- Frozen first-fixture JSON: `first-policy-fixtures.json`');
   lines.push('');
   lines.push('## Counts');
   lines.push('');
@@ -610,6 +633,7 @@ export function writeOutputs(summary, outDir = DEFAULT_OUT_DIR) {
   const jsonlPath = path.join(outDir, 'trigger-corpus.jsonl');
   const summaryPath = path.join(outDir, 'trigger-corpus-summary.json');
   const reportPath = path.join(outDir, 'trigger-corpus-report.md');
+  const fixturesPath = path.join(outDir, 'first-policy-fixtures.json');
   writeFileSync(jsonlPath, `${summary.triggers.map((t) => JSON.stringify(t)).join('\n')}\n`);
   writeFileSync(
     summaryPath,
@@ -630,7 +654,8 @@ export function writeOutputs(summary, outDir = DEFAULT_OUT_DIR) {
     ),
   );
   writeFileSync(reportPath, renderMarkdown(summary));
-  return { jsonlPath, summaryPath, reportPath };
+  writeFileSync(fixturesPath, JSON.stringify(freezeFirstPolicyFixtures(summary), null, 2));
+  return { jsonlPath, summaryPath, reportPath, fixturesPath };
 }
 
 export function parseArgs(argv = process.argv.slice(2)) {
@@ -682,6 +707,7 @@ export function main(argv = process.argv.slice(2)) {
   console.log(`A20 trigger corpus written: ${outputs.jsonlPath}`);
   console.log(`summary written:            ${outputs.summaryPath}`);
   console.log(`report written:             ${outputs.reportPath}`);
+  console.log(`fixtures written:           ${outputs.fixturesPath}`);
   console.log(`runs mined: ${summary.runCount}; triggers emitted: ${summary.triggerCount}`);
   console.log(`first fixtures: ${summary.firstPolicyFixtures.map((f) => f.fixtureId).join(', ') || 'none'}`);
 }
