@@ -356,9 +356,22 @@ is not yet default-promotion evidence for the whole hidden + proofDebt arm.
 
 Final-turn priority edge case fixed 2026-06-15/16: final assertion entitlement
 now outranks visible-consolidation diagnostics while unsupported assertion
-blocking and proof-debt repair remain higher priority. Next gate: run one more
-small selector-v4 diagnostic pair on a different world before defaulting
-enforcement for visible-consolidation cases.
+blocking and proof-debt repair remain higher priority.
+
+Phase 5c Ravensmark diagnostic pair completed 2026-06-16 after that fix. Both
+arms used selector-v4, zero decay, proof-debt guard, and conduct policy; S1
+added enforcement. S0 and S1 both grounded at turn 13 with forced/asserted gap
+0, no overreach, no lucky leap, no fabricated facts, and the same D curve
+(`2->2->2->1->1->1->1->1->1->1->1->1->0`). S0 passed 8/12 checked conduct
+decisions; S1 passed 12/12 and mechanically corrected two early
+`ask_diagnostic` turns (`m_steward` at t2, `m_key` at t6). This gives a second
+non-replay world where enforcement improves local conduct compliance without
+observed final negative transfer.
+
+Current next gate: decide whether this is enough to promote conduct enforcement
+for selector-v4 visible-consolidation regimes only. Do not promote it as a
+general hidden + proofDebt default without a separate mixed-world first-pass
+matrix.
 
 Goal: test whether the policy survives outside replay.
 
