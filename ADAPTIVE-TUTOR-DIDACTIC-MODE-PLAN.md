@@ -260,6 +260,25 @@ Exit rule:
 - leak audit rejects forbidden inputs;
 - no runtime wiring yet.
 
+Status 2026-06-16: implemented as the first local object gate.
+
+- Added `services/dramaticDerivation/didacticMode.js`.
+- Exported `deriveDidacticModeState(...)`, `auditDidacticModePublicInput(...)`, `DIDACTIC_MODE_SCHEMA`, and `DIDACTIC_MODE_FAMILIES` from `services/dramaticDerivation/index.js`.
+- The object is deterministic and public-only. It accepts public transcript/exchange summaries, discursive calibration summaries, scene/act status, public uptake signals, and sanitized repeated-repair signals.
+- The initial compact mode family is fixed at: `teach_back`, `concrete_example`, `analogy_bridge`, `contrast_case`, `slow_recap`, `purpose_bridge`, `decompose_subtask`, `repair_vocabulary`.
+- Forbidden inputs are audited recursively. If forbidden proof/private keys are present, the derivation returns an inert public state with `learningSignal: unknown`, `recommendedMode: slow_recap`, and `inputAudit.ok: false` rather than consuming the leaked values.
+- Added `tests/dramaticDerivationDidacticMode.test.js` covering echo-without-ownership, repeated confusion, purpose question, wrong nearby route, abstract-rule non-landing, transfer/analogy need, overload/repeated repair, vocabulary/context confusion, and leak-audit rejection.
+- Deliberately not wired into tutor prompts, rhetorical policy, scene runtime, act plots, CLI flags, or paid validation.
+
+Validation:
+
+```bash
+node --test tests/dramaticDerivationDidacticMode.test.js
+node --test tests/dramaticDerivationDidacticMode.test.js tests/dramaticDerivationDiscursiveCalibration.test.js tests/dramaticDerivationLearnerEntitlement.test.js
+```
+
+Both focused gates passed. This establishes only the classifier/state-object and public-safety boundary; it does not establish proof-control improvement, adaptive success, or human learning improvement.
+
 ### Phase 2: Rhetorical Policy Integration
 
 Pass didactic mode into rhetorical policy as an advisory layer.

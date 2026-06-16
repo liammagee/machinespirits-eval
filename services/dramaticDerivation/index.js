@@ -18,6 +18,12 @@ export {
   DISCURSIVE_CALIBRATION_SCHEMA,
 } from './discursiveCalibration.js';
 export {
+  auditDidacticModePublicInput,
+  deriveDidacticModeState,
+  DIDACTIC_MODE_FAMILIES,
+  DIDACTIC_MODE_SCHEMA,
+} from './didacticMode.js';
+export {
   auditConductTutorView,
   auditConductGeneratorCompliance,
   CONDUCT_COMPLIANCE_SCHEMA,
