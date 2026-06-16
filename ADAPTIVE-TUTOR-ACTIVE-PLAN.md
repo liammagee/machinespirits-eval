@@ -415,6 +415,22 @@ V-positive signal is now partly absorbed by proofDebt plus release authority.
 Next gate: run one fresh first-pass Hethel promoted-v4 + proofDebt loop only if
 we want to know whether the current stack can survive without the visible prefix.
 
+Phase 5f fresh Hethel promoted-v4 + proofDebt completed 2026-06-16; see
+`exports/dramatic-derivation/hethel-promoted-v4-proofdebt-fresh-report.md`.
+The fresh first-pass loop grounded at t20 with final D=0, forced/asserted gap
+0, no fabricated facts, no overreach, and no lucky leap. Selector-v4 still
+selected hidden despite the mirror-dead-predicate decoy being present
+(`builtUnder`, `liableFor`) and rejected visible release acceleration. ProofDebt
+repaired `p_point` once at t6; promoted conduct enforcement passed 18/18 checked
+turns and applied four `ask_diagnostic` corrections. This neutralizes the old
+Hethel first-pass negative-transfer concern for the current stack, but it is not
+evidence that adaptive H/V selection works. The old visible benefit appears to
+be absorbed by hidden proof continuity plus proofDebt, release authority, and
+the promoted conduct clamp. Next decision: either treat hidden + proofDebt +
+promoted conduct as the reliability baseline and stop selector claims there, or
+create a separately labelled v5 diagnostic route if we still need a genuine
+adaptive H/V selector claim.
+
 Goal: test whether the policy survives outside replay.
 
 Only run this after Phases 1-4 pass.
