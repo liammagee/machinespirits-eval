@@ -426,5 +426,22 @@ test('fresh loop does not default conduct enforcement for selector v4 or hidden 
   assert.equal(hidden.conductPolicyEnforce, false);
   assert.equal(hidden.conductPolicyReport, undefined);
 
+  run([
+    '--world',
+    'config/drama-derivation/world-000-smoke.yaml',
+    '--label',
+    'progress-policy',
+    '--out',
+    path.join(tmp, 'loop'),
+    '--critic',
+    'off',
+    '--conduct-progress-policy',
+  ]);
+  const progress = JSON.parse(fs.readFileSync(path.join(tmp, 'loop/progress-policy/diagnosis.json'), 'utf8'));
+  assert.equal(progress.conductProgressPolicy, true);
+  assert.equal(progress.conductPolicy, true);
+  assert.equal(progress.conductPolicyEnforce, false);
+  assert.ok(progress.conductPolicyReport?.loggedTurns >= 1);
+
   fs.rmSync(tmp, { recursive: true, force: true });
 });

@@ -469,23 +469,50 @@ baseline, do not promote selector-v4/conduct enforcement, and only continue this
 line if the next change targets progress/release pressure rather than another
 visible/hidden diagnostic taxonomy.
 
-Goal: test whether the policy survives outside replay.
+Phase 5 is closed. It produced useful infrastructure and one important negative
+result: local conduct compliance is not enough if the policy starves proof
+progress. Do not run another selector-v4/conduct promotion retest unless a
+separately labelled progress policy first clears replay against hidden+proofDebt.
 
-Only run this after Phases 1-4 pass.
+### Phase 6: Progress-Aware Conduct Policy
 
-Candidate arms:
+Status: first opt-in runtime slice implemented 2026-06-16.
 
-- S0: hidden + proofDebt
-- S1: hidden + proofDebt + conduct policy
-- optional diagnostic: visible projection only where pre-certified by the
-  `GuardSpec`
+First replay screen completed 2026-06-16; see
+`exports/dramatic-derivation/phase6-progress-policy-replay-report.md`.
+Hethel replay from the Phase 5g failure prefix preserved prefix integrity and
+improved the failure substantially: no aporia/disengagement within the t4--t15
+window, D progressed to 1, and `p_point`/`p_surface` both released on cue.
+However, the episode ended `cap_reached`, not grounded, with one early release
+(`p_brand` t15 vs planned t17). This is a partial local repair, not a pass. Do
+not run the fresh paid retest yet.
 
-Candidate worlds:
+Goal: test whether the conduct layer can stop asking diagnostics and press
+forward when repeated visible/hidden conflict probes have exhausted their local
+budget.
 
-- one hidden-positive branch/depth world
-- one visible-positive or hidden-hurts world
-- one mixed decay world
-- one valid-alternative-route fixture if available
+Implementation boundary:
+
+- No new move-family taxonomy.
+- `--conduct-progress-policy` is opt-in and implies conduct-policy logging, not
+  enforcement.
+- The policy reuses existing `release_next_evidence` and `consolidate_subproof`
+  families.
+- It fires only when repeated visible/hidden diagnostics are budget-exhausted.
+- Enforcement still requires explicit `--conduct-policy-enforce`.
+
+Candidate comparison:
+
+- S0: hidden + proofDebt.
+- S1: hidden + proofDebt + conduct policy + progress policy.
+- Optional diagnostic: selector-v4 shadowing only when replaying an existing
+  selector-v4 failure prefix; do not promote it as the arm under test.
+
+Candidate worlds/prefixes:
+
+- Hethel Phase 5g failure prefix from t4.
+- One non-Hethel hidden+proofDebt success prefix as a no-harm replay check.
+- Only if replay passes: one fresh first-pass Hethel paired retest.
 
 Primary metrics:
 
@@ -501,6 +528,8 @@ Decision rule:
 - Promote only if S1 beats or matches S0 on final grounding, improves targeted
   local move correctness, and does not introduce first-pass negative transfer on
   held-out worlds.
+- If Hethel replay remains final D>0 or fails by aporia/disengagement, stop and
+  report it as another valid negative; do not run the fresh paid retest.
 
 ## First Work Packet
 

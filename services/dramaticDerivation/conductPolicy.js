@@ -139,6 +139,10 @@ function visibleHiddenConflict(state) {
   return state.triggerType === 'visible_hidden_conflict' || state.visibleHiddenConflict === true;
 }
 
+function progressPressureActive(state) {
+  return state.triggerType === 'progress_pressure_after_diagnostic_budget' || state.progressPressure?.active === true;
+}
+
 function dependencyRepairNeeded(state) {
   return state.triggerType === 'dependency_repair_needed' || state.needsDependencyRepair === true || proofDebtActive(state);
 }
@@ -151,6 +155,8 @@ function targetPremise(state) {
   return (
     state.premiseId ||
     state.targetPremise ||
+    state.releaseCandidate ||
+    state.evidence?.releaseCandidate ||
     state.proofDebt?.target ||
     state.proofDebtTutorView?.debts?.[0]?.premiseId ||
     state.proofDebtReport?.debts?.[0]?.premiseId ||
@@ -202,6 +208,20 @@ function classifyConductState(state) {
       moveFamily: 'invite_final_assertion',
       reasonCode: 'final_assertion_available',
       rationale: 'the public board can now support the answer',
+    };
+  }
+  if (progressPressureActive(state)) {
+    if (state.releaseCandidate || state.evidence?.releaseCandidate) {
+      return {
+        moveFamily: 'release_next_evidence',
+        reasonCode: 'progress_pressure_release',
+        rationale: 'diagnostic pressure is exhausted and a certified next exhibit can move the proof forward',
+      };
+    }
+    return {
+      moveFamily: 'consolidate_subproof',
+      reasonCode: 'progress_pressure_consolidate',
+      rationale: 'diagnostic pressure is exhausted; consolidate the staged support instead of asking again',
     };
   }
   if (visibleHiddenConflict(state)) {

@@ -53,6 +53,7 @@
  *     [--same-turn-assertion-affordance on|off]
  *     [--proof-debt-guard on|off]
  *     [--conduct-policy on|off]
+ *     [--conduct-progress-policy on|off]
  *     [--conduct-policy-enforce on|off]
  *     [--conduct-trigger '<json>']     (episode-local A20 fixture trigger;
  *                                       applies only on its `turn`)
@@ -533,12 +534,17 @@ async function main() {
     triState('conduct-policy-enforce', conductPolicyEnforceDefault),
     Boolean(srcDiag.conductPolicyEnforce),
   );
+  const conductProgressPolicy = track(
+    'conduct-progress-policy',
+    triState('conduct-progress-policy', Boolean(srcDiag.conductProgressPolicy)),
+    Boolean(srcDiag.conductProgressPolicy),
+  );
   const requestedConductPolicy = track(
     'conduct-policy',
-    triState('conduct-policy', Boolean(srcDiag.conductPolicy) || conductPolicyEnforce),
-    Boolean(srcDiag.conductPolicy) || Boolean(srcDiag.conductPolicyEnforce),
+    triState('conduct-policy', Boolean(srcDiag.conductPolicy) || conductPolicyEnforce || conductProgressPolicy),
+    Boolean(srcDiag.conductPolicy) || Boolean(srcDiag.conductPolicyEnforce) || Boolean(srcDiag.conductProgressPolicy),
   );
-  const conductPolicy = requestedConductPolicy || conductPolicyEnforce;
+  const conductPolicy = requestedConductPolicy || conductPolicyEnforce || conductProgressPolicy;
   const conductTriggerOverride = loadConductTriggerOverride();
   if (conductTriggerOverride && !conductPolicy) {
     console.error('--conduct-trigger requires --conduct-policy on or --conduct-policy-enforce on');
@@ -753,6 +759,7 @@ async function main() {
         : 'tutor   CONDUCT POLICY LOG ON',
     );
   }
+  if (conductProgressPolicy) console.log('tutor   CONDUCT PROGRESS POLICY ON');
   if (conductPolicyEnforce) console.log('tutor   CONDUCT POLICY ENFORCE ON');
   if (conductTriggerOverride) {
     console.log(
@@ -788,6 +795,7 @@ async function main() {
       proofDebtGuard,
       conductPolicy,
       conductPolicyEnforce,
+      conductProgressPolicy,
       guardSpec,
       plot,
       throughline,
@@ -838,6 +846,7 @@ async function main() {
         ...(proofDebtGuard ? { proofDebtGuard } : {}),
         ...(conductPolicy ? { conductPolicy } : {}),
         ...(conductPolicyEnforce ? { conductPolicyEnforce } : {}),
+        ...(conductProgressPolicy ? { conductProgressPolicy } : {}),
         ...(conductTriggerOverride ? { conductTriggerOverrides: [conductTriggerOverride] } : {}),
         ...(guardSpec ? { guardSpec } : {}),
       },
@@ -943,6 +952,7 @@ async function main() {
     proofDebtGuard,
     conductPolicy,
     conductPolicyEnforce,
+    conductProgressPolicy,
     conductTriggerOverride: conductTriggerOverride
       ? {
           id: conductTriggerOverride.id || null,

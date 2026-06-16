@@ -1376,6 +1376,7 @@ function compactReleaseDecision(releaseDecision) {
 function conductTriggerState({
   view,
   conductProofDebt,
+  conductProgressPolicy = false,
   releaseBits,
   forcedNote,
   finalEntitlement,
@@ -1450,6 +1451,8 @@ function conductTriggerState({
       premiseId: rd?.visibleGuard?.candidate || rd?.pacingGuard?.candidate || null,
       evidence,
       hiddenCertifiedRelease: Boolean(rd?.hybridGuard?.accepted),
+      conductProgressPolicy,
+      releaseDecision: rd,
     });
   }
 
@@ -1461,6 +1464,8 @@ function conductTriggerState({
         ...evidence,
         visibleReason: (visibleConsolidation.lines || []).join(' '),
       },
+      conductProgressPolicy,
+      releaseDecision: rd,
     });
     return trigger ? { ...trigger, id: `t${view.turn}:visible-consolidation` } : null;
   }
@@ -1548,9 +1553,59 @@ function visibleConflictDiagnosticBudget(view, premiseId) {
   return { allowed: true };
 }
 
-function visibleConflictTrigger(view, { premiseId, evidence, hiddenCertifiedRelease = false }) {
+function firstSafeReleaseCandidate(releaseDecision) {
+  const direct =
+    releaseDecision?.pacingGuard?.candidate ||
+    releaseDecision?.consolidationGuard?.hiddenCandidate ||
+    releaseDecision?.visibleGuard?.candidate ||
+    null;
+  if (direct) return direct;
+  const safeTurns = releaseDecision?.pacingGuard?.safeTurns;
+  if (!safeTurns || typeof safeTurns !== 'object') return null;
+  const turn = Number(releaseDecision?.turn);
+  for (const [premiseId, turns] of Object.entries(safeTurns)) {
+    if (!Array.isArray(turns)) continue;
+    if (!Number.isFinite(turn) || turns.map(Number).includes(turn)) return premiseId;
+  }
+  return null;
+}
+
+function progressPressureTrigger(view, { premiseId, evidence, budget, releaseDecision }) {
+  const releaseCandidate = firstSafeReleaseCandidate(releaseDecision);
+  return {
+    id: `t${view.turn}:progress-pressure`,
+    triggerType: 'progress_pressure_after_diagnostic_budget',
+    progressPressure: {
+      active: true,
+      reason: budget.reason,
+      ...(budget.priorTurn != null ? { priorTurn: budget.priorTurn } : {}),
+      ...(budget.priorTurns ? { priorTurns: budget.priorTurns } : {}),
+    },
+    ...(releaseCandidate ? { releaseCandidate } : {}),
+    premiseId: releaseCandidate || premiseId || null,
+    evidence: {
+      ...evidence,
+      diagnosticBudget: budget,
+      ...(releaseCandidate ? { releaseCandidate } : {}),
+    },
+  };
+}
+
+function visibleConflictTrigger(
+  view,
+  { premiseId, evidence, hiddenCertifiedRelease = false, conductProgressPolicy = false, releaseDecision = null },
+) {
   const budget = visibleConflictDiagnosticBudget(view, premiseId);
-  if (!budget.allowed) return null;
+  if (!budget.allowed) {
+    return conductProgressPolicy
+      ? progressPressureTrigger(view, {
+          premiseId,
+          evidence,
+          budget,
+          releaseDecision,
+        })
+      : null;
+  }
   return {
     id: `t${view.turn}:visible-hidden-conflict`,
     triggerType: 'visible_hidden_conflict',
@@ -1895,6 +1950,7 @@ export function makeLlmTutor(
     rhetoricalPolicy = null,
     conductPolicy = false,
     conductPolicyEnforce = false,
+    conductProgressPolicy = false,
     publicRegister = 'default',
   } = {},
 ) {
@@ -2026,7 +2082,7 @@ export function makeLlmTutor(
       'derivation.llmRoles: throughline requires plot (the arc verdict rides the act-close audit — no plot loop, nothing binds)',
     );
   }
-  const conductPolicyEnabled = Boolean(conductPolicy || conductPolicyEnforce);
+  const conductPolicyEnabled = Boolean(conductPolicy || conductPolicyEnforce || conductProgressPolicy);
   const rhetoricalPolicyConfig = rhetoricalPolicy ? normalizeRhetoricalPolicyConfig(rhetoricalPolicy) : null;
   const system = tutorSystem(world, script, dials, {
     actsMode,
@@ -2999,6 +3055,7 @@ export function makeLlmTutor(
             finalOut,
             proofDebtAudit,
             visibleConsolidation,
+            conductProgressPolicy,
             enforce: conductPolicyEnforce,
             activeRegisterName,
           })

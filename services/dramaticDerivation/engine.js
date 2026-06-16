@@ -254,7 +254,7 @@ export async function runDrama({ world, roles, options = {} }) {
   let stagePrologue = null;
   const runtimeMonitor = options.guardSpec ? createRuntimeMonitor(world, options.guardSpec) : null;
   const proofDebtGuardActive = Boolean(options.proofDebtGuard);
-  const conductPolicyActive = Boolean(options.conductPolicy);
+  const conductPolicyActive = Boolean(options.conductPolicy || options.conductProgressPolicy);
   const conductPolicyEnforceActive = Boolean(options.conductPolicyEnforce);
   const conductTriggerOverrides = Array.isArray(options.conductTriggerOverrides)
     ? options.conductTriggerOverrides

@@ -217,8 +217,12 @@
  *                                       move-family decisions from the same
  *                                       release/proof-debt evidence, but does
  *                                       not constrain generation.)
- *     [--conduct-policy-enforce]       (A20 opt-in enforcement, also implied by
- *                                       --pacing-guard-selective-v4. Implies
+ *     [--conduct-progress-policy]      (A20 Phase 6 probe. When repeated
+ *                                       visible/hidden diagnostics exhaust the
+ *                                       local budget, prefer certified release
+ *                                       or consolidation over another diagnostic.
+ *                                       Implies --conduct-policy.)
+ *     [--conduct-policy-enforce]       (A20 opt-in enforcement. Implies
  *                                       --conduct-policy, mechanically rewrites
  *                                       tutor move/release metadata to satisfy
  *                                       selected conduct-family constraints when
@@ -693,7 +697,8 @@ async function main() {
     process.exit(1);
   }
   const conductPolicyEnforce = flag('conduct-policy-enforce');
-  const conductPolicy = flag('conduct-policy') || conductPolicyEnforce;
+  const conductProgressPolicy = flag('conduct-progress-policy');
+  const conductPolicy = flag('conduct-policy') || conductPolicyEnforce || conductProgressPolicy;
   const compiledGuard = flag('compiled-guard');
   if (
     compiledGuard &&
@@ -974,6 +979,11 @@ async function main() {
         : 'tutor   CONDUCT POLICY LOG ON — A20 move-family decisions are recorded beside tutor turns; no generation constraint yet',
     );
   }
+  if (conductProgressPolicy) {
+    console.log(
+      'tutor   CONDUCT PROGRESS POLICY ON — repeated diagnostics can become certified release/consolidation pressure',
+    );
+  }
   if (conductPolicyEnforce) {
     console.log(
       'tutor   CONDUCT POLICY ENFORCE ON — A20 move-family decisions may mechanically rewrite tutor move/release metadata before the turn is recorded',
@@ -1034,6 +1044,7 @@ async function main() {
       proofDebtGuard,
       conductPolicy,
       conductPolicyEnforce,
+      conductProgressPolicy,
       guardSpec,
       plot,
       throughline,
@@ -1092,6 +1103,7 @@ async function main() {
         ...(proofDebtGuard ? { proofDebtGuard } : {}),
         ...(conductPolicy ? { conductPolicy } : {}),
         ...(conductPolicyEnforce ? { conductPolicyEnforce } : {}),
+        ...(conductProgressPolicy ? { conductProgressPolicy } : {}),
         ...(guardSpec ? { guardSpec } : {}),
       },
     });
@@ -1149,6 +1161,7 @@ async function main() {
     proofDebtGuard,
     conductPolicy,
     conductPolicyEnforce,
+    conductProgressPolicy,
     compiledGuard,
     guardSpec: guardSpec
       ? {

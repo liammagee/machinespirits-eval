@@ -169,6 +169,41 @@ test('A20 hidden-hurts candidate can override proof-debt default without leaking
   assert.equal(decision.nonLeakAudit.ok, true);
 });
 
+test('A20 progress pressure releases certified evidence after diagnostic budget exhaustion', () => {
+  const decision = selectConductMove({
+    triggerType: 'progress_pressure_after_diagnostic_budget',
+    releaseCandidate: 'p_surface',
+    progressPressure: { active: true, reason: 'recent_public_diagnostic_budget_exhausted' },
+    evidence: {
+      releaseCandidate: 'p_surface',
+      diagnosticBudget: { allowed: false, reason: 'recent_public_diagnostic_budget_exhausted' },
+    },
+  });
+
+  assert.equal(decision.selectedMoveFamily, 'release_next_evidence');
+  assert.equal(decision.reasonCode, 'progress_pressure_release');
+  assert.equal(decision.targetPremise, 'p_surface');
+  assert.ok(decision.blockedActions.includes('release_uncertified_evidence'));
+  assert.equal(decision.nonLeakAudit.ok, true);
+});
+
+test('A20 progress pressure consolidates when no certified release is available', () => {
+  const decision = selectConductMove({
+    triggerType: 'progress_pressure_after_diagnostic_budget',
+    premiseId: 'm_bond',
+    progressPressure: { active: true, reason: 'same_premise_adjacent_public_diagnostic' },
+    evidence: {
+      diagnosticBudget: { allowed: false, reason: 'same_premise_adjacent_public_diagnostic' },
+    },
+  });
+
+  assert.equal(decision.selectedMoveFamily, 'consolidate_subproof');
+  assert.equal(decision.reasonCode, 'progress_pressure_consolidate');
+  assert.equal(decision.targetPremise, 'm_bond');
+  assert.ok(decision.blockedActions.includes('release_unrelated_evidence'));
+  assert.equal(decision.nonLeakAudit.ok, true);
+});
+
 test('unsupported assertion and underdetermined state select safe moves', () => {
   const blocked = selectConductMove({
     triggerType: 'unsupported_assertion_blocked',
