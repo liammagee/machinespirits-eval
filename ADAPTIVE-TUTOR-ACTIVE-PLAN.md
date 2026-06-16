@@ -403,6 +403,18 @@ Withercombe r2 is demoted to a secondary unstable lead because the broader
 Withercombe record remains visible-negative/decay-sensitive. Next gate: use
 prefix-controlled Hethel r2 replay around t7 before any new mixed-world matrix.
 
+Phase 5e Hethel r2 prefix replay completed 2026-06-16; see
+`exports/dramatic-derivation/hethel-vpositive-r2-promoted-v4-replay-report.md`.
+The short t7/window-8 replay was prefix-identical but exhausted at D=2. The
+extended t7/window-16 replay was also prefix-identical and grounded at t20 with
+gap 0. Current selector-v4 selected hidden, not visible, but proofDebt repaired
+`p_point` twice and conduct enforcement applied nine `ask_diagnostic`
+corrections. This means promoted v4 can survive the Hethel r2 visible-prefix
+fixture in replay, but it does not preserve the old visible route; the old
+V-positive signal is now partly absorbed by proofDebt plus release authority.
+Next gate: run one fresh first-pass Hethel promoted-v4 + proofDebt loop only if
+we want to know whether the current stack can survive without the visible prefix.
+
 Goal: test whether the policy survives outside replay.
 
 Only run this after Phases 1-4 pass.
