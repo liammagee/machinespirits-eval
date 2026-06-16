@@ -214,6 +214,48 @@ export function buildA21PolicyPatchProposal({ analysis, fixture }) {
   };
 }
 
+export function buildA21ReplayConductTrigger(proposal, { turn = null } = {}) {
+  if (!proposal || typeof proposal !== 'object') {
+    throw new Error('a21.policyPatchProposal: proposal is required');
+  }
+  if (proposal.policy_patch_id !== 'a21_hethel_release_after_diagnostic_budget') {
+    throw new Error(`a21.policyPatchProposal: unsupported patch ${JSON.stringify(proposal.policy_patch_id)}`);
+  }
+  if (proposal.status !== 'proposed_only' || proposal.promoted !== false || proposal.runtime_behavior_changed !== false) {
+    throw new Error('a21.policyPatchProposal: only proposed-only, non-promoted patches can be replayed');
+  }
+  const target = proposal.applies_when?.current_release_target || proposal.prefer?.release?.[0] || 'p_point';
+  const triggerTurn = Number(turn ?? proposal.applies_when?.triggerTurn);
+  if (!Number.isFinite(triggerTurn)) {
+    throw new Error('a21.policyPatchProposal: replay trigger turn is required');
+  }
+  return {
+    id: proposal.policy_patch_id,
+    policyPatchId: proposal.policy_patch_id,
+    a21PolicyPatch: true,
+    triggerType: 'a21_release_after_diagnostic_budget',
+    turn: triggerTurn,
+    premiseId: target,
+    targetPremise: target,
+    releaseCandidate: target,
+    hiddenCertifiedRelease: true,
+    expectedMoveFamily: proposal.prefer?.moveFamily || 'release_next_evidence',
+    blockedActions: [...(proposal.block || [])],
+    localUptakeExpectation: 'learner uses the newly released public exhibit before another diagnostic loop',
+    evidence: {
+      releaseCandidate: target,
+      intervention: {
+        reason: proposal.prefer?.rationale || 'A21 proposed patch prefers release over repeated diagnostic',
+      },
+      a21: {
+        fixtureHash: proposal.source?.fixtureHash || null,
+        decisionCategory: proposal.source?.decisionCategory || null,
+        bestMeanReward: proposal.source?.bestMeanReward ?? null,
+      },
+    },
+  };
+}
+
 export function proposalKeepsRuntimeClosed(proposal) {
   return proposal?.status === 'proposed_only' && proposal?.promoted === false && proposal?.runtime_behavior_changed === false;
 }

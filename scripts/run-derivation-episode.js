@@ -58,6 +58,9 @@
  *     [--conduct-trigger '<json>']     (episode-local A20 fixture trigger;
  *                                       applies only on its `turn`)
  *     [--conduct-trigger-file <path>]  (JSON trigger or {trigger})
+ *     [--a21-policy-patch <id|json>]   (episode-local A21 proposed-only patch;
+ *                                       implies conduct-policy enforcement and
+ *                                       suppresses general conduct triggers)
  *     [--compiled-guard on|off]
  *     [--plot on|off] [--throughline on|off]
  *     [--critic auto|real|mock|off]    (default off — episodes are scratch
@@ -111,6 +114,7 @@ import {
   selectGuardRepresentationV2,
   selectGuardRepresentationV3,
   selectGuardRepresentationV4,
+  buildA21ReplayConductTrigger,
 } from '../services/dramaticDerivation/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -137,6 +141,39 @@ function atomicWriteJson(file, value) {
 
 function readJsonFile(file) {
   return JSON.parse(fs.readFileSync(path.resolve(ROOT, file), 'utf8'));
+}
+
+function loadA21PolicyPatchOverride() {
+  const requested = arg('a21-policy-patch', null);
+  if (!requested) return null;
+  const defaultPath = 'exports/dramatic-derivation/a21-action-value/policy-patch-proposal.json';
+  const looksLikePath = requested.endsWith('.json') || requested.includes('/') || requested.includes('\\');
+  const proposalPath = looksLikePath ? requested : defaultPath;
+  let proposal;
+  try {
+    proposal = readJsonFile(proposalPath);
+  } catch (err) {
+    console.error(`invalid A21 policy patch ${requested}: ${err.message}`);
+    process.exit(1);
+  }
+  if (!looksLikePath && proposal.policy_patch_id !== requested) {
+    console.error(
+      `--a21-policy-patch ${requested}: loaded ${proposalPath} but found patch ${JSON.stringify(proposal.policy_patch_id)}`,
+    );
+    process.exit(1);
+  }
+  let trigger;
+  try {
+    trigger = buildA21ReplayConductTrigger(proposal);
+  } catch (err) {
+    console.error(`invalid A21 policy patch ${requested}: ${err.message}`);
+    process.exit(1);
+  }
+  return {
+    proposal,
+    trigger,
+    source: path.relative(ROOT, path.resolve(ROOT, proposalPath)),
+  };
 }
 
 function loadConductTriggerOverride() {
@@ -528,12 +565,18 @@ async function main() {
     console.error('--proof-debt-guard on requires --repair-clause on');
     process.exit(1);
   }
-  const conductPolicyEnforceDefault = Boolean(srcDiag.conductPolicyEnforce);
+  const a21PolicyPatch = loadA21PolicyPatchOverride();
+  if (a21PolicyPatch) overrides.push('a21-policy-patch');
+  const conductPolicyEnforceDefault = Boolean(srcDiag.conductPolicyEnforce) || Boolean(a21PolicyPatch);
   const conductPolicyEnforce = track(
     'conduct-policy-enforce',
     triState('conduct-policy-enforce', conductPolicyEnforceDefault),
     Boolean(srcDiag.conductPolicyEnforce),
   );
+  if (a21PolicyPatch && !conductPolicyEnforce) {
+    console.error('--a21-policy-patch requires conduct-policy enforcement; omit --conduct-policy-enforce off');
+    process.exit(1);
+  }
   const conductProgressPolicy = track(
     'conduct-progress-policy',
     triState('conduct-progress-policy', Boolean(srcDiag.conductProgressPolicy)),
@@ -541,11 +584,20 @@ async function main() {
   );
   const requestedConductPolicy = track(
     'conduct-policy',
-    triState('conduct-policy', Boolean(srcDiag.conductPolicy) || conductPolicyEnforce || conductProgressPolicy),
+    triState(
+      'conduct-policy',
+      Boolean(srcDiag.conductPolicy) || conductPolicyEnforce || conductProgressPolicy || Boolean(a21PolicyPatch),
+    ),
     Boolean(srcDiag.conductPolicy) || Boolean(srcDiag.conductPolicyEnforce) || Boolean(srcDiag.conductProgressPolicy),
   );
-  const conductPolicy = requestedConductPolicy || conductPolicyEnforce || conductProgressPolicy;
-  const conductTriggerOverride = loadConductTriggerOverride();
+  const conductPolicy = requestedConductPolicy || conductPolicyEnforce || conductProgressPolicy || Boolean(a21PolicyPatch);
+  const manualConductTriggerOverride = loadConductTriggerOverride();
+  if (a21PolicyPatch && manualConductTriggerOverride) {
+    console.error('choose only one of --a21-policy-patch and --conduct-trigger/--conduct-trigger-file');
+    process.exit(1);
+  }
+  const conductTriggerOverride = a21PolicyPatch?.trigger || manualConductTriggerOverride;
+  const conductTriggerOnly = Boolean(a21PolicyPatch);
   if (conductTriggerOverride && !conductPolicy) {
     console.error('--conduct-trigger requires --conduct-policy on or --conduct-policy-enforce on');
     process.exit(1);
@@ -687,6 +739,16 @@ async function main() {
       proofDebtGuard,
       conductPolicy,
       conductPolicyEnforce,
+      conductTriggerOnly,
+      a21PolicyPatch: a21PolicyPatch
+        ? {
+            id: a21PolicyPatch.proposal.policy_patch_id,
+            source: a21PolicyPatch.source,
+            status: a21PolicyPatch.proposal.status,
+            triggerTurn: a21PolicyPatch.trigger.turn,
+            targetPremise: a21PolicyPatch.trigger.targetPremise,
+          }
+        : null,
       conductTriggerOverride: conductTriggerOverride
         ? {
             id: conductTriggerOverride.id || null,
@@ -761,6 +823,12 @@ async function main() {
   }
   if (conductProgressPolicy) console.log('tutor   CONDUCT PROGRESS POLICY ON');
   if (conductPolicyEnforce) console.log('tutor   CONDUCT POLICY ENFORCE ON');
+  if (conductTriggerOnly) console.log('tutor   CONDUCT TRIGGER-ONLY MODE ON');
+  if (a21PolicyPatch) {
+    console.log(
+      `tutor   A21 PATCH ${a21PolicyPatch.proposal.policy_patch_id} @ t${a21PolicyPatch.trigger.turn} -> ${a21PolicyPatch.trigger.expectedMoveFamily}`,
+    );
+  }
   if (conductTriggerOverride) {
     console.log(
       `tutor   CONDUCT TRIGGER OVERRIDE ${conductTriggerOverride.triggerType || 'trigger'} @ t${conductTriggerOverride.turn}`,
@@ -796,6 +864,7 @@ async function main() {
       conductPolicy,
       conductPolicyEnforce,
       conductProgressPolicy,
+      conductTriggerOnly,
       guardSpec,
       plot,
       throughline,
@@ -847,6 +916,7 @@ async function main() {
         ...(conductPolicy ? { conductPolicy } : {}),
         ...(conductPolicyEnforce ? { conductPolicyEnforce } : {}),
         ...(conductProgressPolicy ? { conductProgressPolicy } : {}),
+        ...(conductTriggerOnly ? { conductTriggerOnly } : {}),
         ...(conductTriggerOverride ? { conductTriggerOverrides: [conductTriggerOverride] } : {}),
         ...(guardSpec ? { guardSpec } : {}),
       },
@@ -952,6 +1022,17 @@ async function main() {
     proofDebtGuard,
     conductPolicy,
     conductPolicyEnforce,
+    conductTriggerOnly,
+    a21PolicyPatch: a21PolicyPatch
+      ? {
+          id: a21PolicyPatch.proposal.policy_patch_id,
+          source: a21PolicyPatch.source,
+          status: a21PolicyPatch.proposal.status,
+          triggerTurn: a21PolicyPatch.trigger.turn,
+          targetPremise: a21PolicyPatch.trigger.targetPremise,
+          expectedMoveFamily: a21PolicyPatch.trigger.expectedMoveFamily,
+        }
+      : null,
     conductProgressPolicy,
     conductTriggerOverride: conductTriggerOverride
       ? {

@@ -432,6 +432,50 @@ test('runtime conduct policy enforcement repairs noncompliant proof-debt moves w
   assert.equal(out.conductPolicy.generatorCompliance.ok, true);
 });
 
+test('runtime conduct trigger-only mode suppresses general proof-debt conduct except explicit trigger', async () => {
+  const proofDebt = smokeProofDebtTutorView();
+  const { client } = stubClient({
+    tutor: [
+      {
+        dialogue: 'We can close from here.',
+        move: { figure: 'erotema', target_premise: null, intent: 'stage_recognition' },
+      },
+      {
+        dialogue: 'We can close from here.',
+        move: { figure: 'erotema', target_premise: null, intent: 'stage_recognition' },
+      },
+    ],
+  });
+  const tutor = makeLlmTutor(
+    smokeWorld,
+    client,
+    actsOpts({ conductPolicyEnforce: true, conductTriggerOnly: true }),
+  );
+  const noTrigger = await tutor(actsView(7, { proofDebt }));
+  assert.equal(noTrigger.conductPolicy.active, false);
+  assert.equal(noTrigger.conductPolicy.reasonCode, 'no_policy_trigger');
+
+  const withTrigger = await tutor(
+    actsView(8, {
+      proofDebt,
+      conductTriggerOverride: {
+        id: 'a21_hethel_release_after_diagnostic_budget',
+        a21PolicyPatch: true,
+        triggerType: 'a21_release_after_diagnostic_budget',
+        premiseId: 'p1',
+        targetPremise: 'p1',
+        releaseCandidate: 'p1',
+      },
+    }),
+  );
+  assert.equal(withTrigger.conductPolicy.active, true);
+  assert.equal(withTrigger.conductPolicy.selectedMoveFamily, 'release_next_evidence');
+  assert.equal(withTrigger.conductPolicy.reasonCode, 'a21_release_after_diagnostic_budget');
+  assert.equal(withTrigger.release, 'p1');
+  assert.equal(withTrigger.move.intent, 'release');
+  assert.equal(withTrigger.conductPolicy.generatorCompliance.ok, true);
+});
+
 test('runtime conduct policy enforcement keeps diagnostic prompts concise', async () => {
   const longLearner =
     'I set wormwood down as the sign, but I am not taking up the prior branch before any hand is named.';

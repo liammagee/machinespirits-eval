@@ -7,8 +7,10 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import {
   A21_POLICY_PATCH_PROPOSAL_SCHEMA,
+  buildA21ReplayConductTrigger,
   buildA21PolicyPatchProposal,
   proposalKeepsRuntimeClosed,
+  selectConductMove,
 } from '../services/dramaticDerivation/index.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -55,6 +57,25 @@ test('A21 policy patch proposal blocks itself when action-value evidence is not 
   assert.equal(blocked.status, 'blocked_by_microbench');
   assert.equal(blocked.promoted, false);
   assert.equal(blocked.runtime_behavior_changed, false);
+});
+
+test('A21 replay trigger converts the proposal into an existing release_next_evidence conduct move', () => {
+  const proposal = readJson(path.join(ROOT, 'exports/dramatic-derivation/a21-action-value/policy-patch-proposal.json'));
+  const trigger = buildA21ReplayConductTrigger(proposal);
+  const decision = selectConductMove({
+    ...trigger,
+    proofDebtTutorView: {
+      active: true,
+      debts: [{ premiseId: 'p_point', surface: 'The point is public.', sinceTurn: 4 }],
+    },
+  });
+
+  assert.equal(trigger.triggerType, 'a21_release_after_diagnostic_budget');
+  assert.equal(trigger.a21PolicyPatch, true);
+  assert.equal(trigger.targetPremise, 'p_point');
+  assert.equal(decision.selectedMoveFamily, 'release_next_evidence');
+  assert.equal(decision.reasonCode, 'a21_release_after_diagnostic_budget');
+  assert.equal(decision.targetPremise, 'p_point');
 });
 
 test('A21 report CLI writes proposed-only markdown and JSON without runtime mutation', () => {

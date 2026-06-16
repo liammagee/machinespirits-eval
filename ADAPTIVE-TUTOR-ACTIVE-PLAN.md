@@ -569,6 +569,21 @@ and explicitly requires a Phase 9 Hethel replay gate against hidden+proofDebt
 before any fresh paid validation. No runtime policy, selector default, conduct
 policy, or paid gate changed.
 
+A21 Phase 9 completed on 2026-06-16 as a real episode replay gate from the
+frozen Hethel Phase 5g prefix; see
+`exports/dramatic-derivation/a21-action-value/phase9-replay-gate-report.md`.
+S0 (`hidden + proofDebt`) and S1 (`hidden + proofDebt + A21 proposed patch`)
+both preserved prefix identity, released `p_point` at turn 4, grounded at turn
+20 with `D=0`, and had forced/asserted gap 0. S1's trigger-only conduct layer
+activated exactly once at turn 4, selected the existing
+`release_next_evidence` family for `p_point`, passed non-leak and generator
+compliance, and did not rewrite the already-compliant tutor output. Result:
+neutral pass, not promotion evidence. The patch is safe in this replay but does
+not beat hidden+proofDebt, so Phase 10 no-harm screening should remain optional
+and should not be treated as a prelude to a fresh paid validation unless we
+first identify a case where S1 can improve over hidden+proofDebt rather than
+merely match it.
+
 Goal: test whether the conduct layer can stop asking diagnostics and press
 forward when repeated visible/hidden conflict probes have exhausted their local
 budget.

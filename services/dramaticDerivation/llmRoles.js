@@ -1385,6 +1385,7 @@ function conductTriggerState({
   finalEntitlement,
   finalOut,
   visibleConsolidation,
+  conductTriggerOnly = false,
 }) {
   const evidence = {
     learnerExcerpt: lastLearnerExcerpt(view.transcript),
@@ -1425,6 +1426,7 @@ function conductTriggerState({
       ...(conductProofDebt ? { proofDebtTutorView: conductProofDebt } : {}),
     };
   }
+  if (conductTriggerOnly) return null;
   if (!entitlementNeedsConduct(learnerEntitlement, { conductProgressPolicy })) return null;
   return {
     id: `t${view.turn}:learner-entitlement`,
@@ -1775,6 +1777,7 @@ export function makeLlmTutor(
     conductPolicy = false,
     conductPolicyEnforce = false,
     conductProgressPolicy = false,
+    conductTriggerOnly = false,
     publicRegister = 'default',
   } = {},
 ) {
@@ -2882,6 +2885,7 @@ export function makeLlmTutor(
             proofDebtAudit,
             visibleConsolidation,
             conductProgressPolicy,
+            conductTriggerOnly,
             enforce: conductPolicyEnforce,
             activeRegisterName,
           })

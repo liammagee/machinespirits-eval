@@ -53,6 +53,7 @@ export {
 export { A21_ACTION_VALUE_ANALYSIS_SCHEMA, analyzeA21Trials } from './a21/analysis.js';
 export {
   A21_POLICY_PATCH_PROPOSAL_SCHEMA,
+  buildA21ReplayConductTrigger,
   buildA21PolicyPatchProposal,
   cloneA21PolicyPatchProposal,
   proposalKeepsRuntimeClosed,

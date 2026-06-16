@@ -147,6 +147,10 @@ function earlyReleaseHold(state) {
   return state.triggerType === 'early_release_not_current_authorized' || state.holdEarlyRelease === true;
 }
 
+function a21ReleaseAfterDiagnosticBudget(state) {
+  return state.triggerType === 'a21_release_after_diagnostic_budget' || state.a21PolicyPatch === true;
+}
+
 function dependencyRepairNeeded(state) {
   return state.triggerType === 'dependency_repair_needed' || state.needsDependencyRepair === true || proofDebtActive(state);
 }
@@ -285,6 +289,14 @@ function classifyConductState(state) {
       moveFamily: 'repair_recognition_rupture',
       reasonCode: 'recognition_rupture',
       rationale: 'recognition repair is active before further proof pressure',
+    };
+  }
+  if (a21ReleaseAfterDiagnosticBudget(state)) {
+    return {
+      moveFamily: 'release_next_evidence',
+      reasonCode: 'a21_release_after_diagnostic_budget',
+      rationale:
+        'A21 replay patch: visible/hidden diagnostics are budget-exhausted and the current public release should advance proof progress',
     };
   }
   const entitlement = classifyEntitlementState(entitlementState(state));
