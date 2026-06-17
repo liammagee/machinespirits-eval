@@ -82,6 +82,10 @@ import { closure, entails, factKey, matchPattern, proofTree } from './chainer.js
 import { normalizeDecayConfig, mulberry32 } from './corruption.js';
 import { DIDACTIC_ACT_FALLBACK_SCHEMA } from './didacticMode.js';
 import { buildWorldIR, projectWorldIRLogic } from './guardCompiler.js';
+import {
+  deriveLearnerTransformationState,
+  summarizeLearnerTransformationDurability,
+} from './learnerTransformation.js';
 import { proofDebtReport, tutorProofDebtView } from './proofDebt.js';
 import {
   classifyLearnerExchange,
@@ -100,6 +104,31 @@ import { derivationDistance, detectStall } from './slope.js';
 
 function renderFact(fact) {
   return fact.join(' ');
+}
+
+function learnerTransformationRow(state, turn, act, phase, extra = {}) {
+  return {
+    turn,
+    ...(act ? { act } : {}),
+    phase,
+    schema: state.schema,
+    publicOnly: state.publicOnly === true,
+    mayOverrideProofControl: state.mayOverrideProofControl === true,
+    status: state.status || null,
+    complete: state.complete === true,
+    target: state.target?.currentObject || null,
+    ownershipLevel: state.ownership?.ownershipLevel || null,
+    ownershipScore: state.ownership?.score ?? null,
+    requiredFamilies: state.requiredFamilies || [],
+    passedFamilies: state.passedFamilies || [],
+    missingFamilies: state.missingFamilies || [],
+    recommendedMode: state.recommendedMode || null,
+    finalAssertionAvailable: state.finalAssertionAvailable === true,
+    lateOwnershipCheck: state.lateOwnershipCheck === true,
+    inputAuditOk: state.inputAudit?.ok === true,
+    nonLeakAuditOk: state.nonLeakAudit?.ok === true,
+    ...extra,
+  };
 }
 
 const ACTS_DEFAULTS = Object.freeze({
@@ -275,6 +304,8 @@ export async function runDrama({ world, roles, options = {} }) {
   const sceneRows = []; // opt-in scene/exchange overlay — does not replace the formal turn loop
   const didacticModeRows = []; // public-only tutor advisory states, if the roles layer emits them
   const castLayerRows = []; // public-only cast/reinvention advisory states, if the roles layer emits them
+  const learnerTransformationRows = []; // public-only ownership proof states, if the roles layer emits them
+  const learnerTransformationPostRows = []; // post-learner public ownership proof snapshots
   let sceneState = null;
   const ledger = []; // {turn, premiseId, via}
   const releasedKeys = new Set();
@@ -968,6 +999,7 @@ export async function runDrama({ world, roles, options = {} }) {
         ...(tutorOut.rhetoricalPolicy ? { rhetoricalPolicy: tutorOut.rhetoricalPolicy } : {}),
         ...(tutorOut.discursiveCalibration ? { discursiveCalibration: tutorOut.discursiveCalibration } : {}),
         ...(tutorOut.didacticMode ? { didacticMode: tutorOut.didacticMode } : {}),
+        ...(tutorOut.learnerTransformation ? { learnerTransformation: tutorOut.learnerTransformation } : {}),
         ...(tutorOut.castState ? { castState: tutorOut.castState } : {}),
         ...(tutorOut.tutorReinvention ? { tutorReinvention: tutorOut.tutorReinvention } : {}),
         ...(tutorPhaticRecognition.length ? { phaticRecognition: tutorPhaticRecognition } : {}),
@@ -1026,6 +1058,11 @@ export async function runDrama({ world, roles, options = {} }) {
         inputAuditOk: tutorOut.castState.inputAudit?.ok === true,
         nonLeakAuditOk: tutorOut.castState.nonLeakAudit?.ok === true,
       });
+    }
+    if (tutorOut.learnerTransformation) {
+      learnerTransformationRows.push(
+        learnerTransformationRow(tutorOut.learnerTransformation, turn, actState?.index, 'pre_tutor'),
+      );
     }
 
     // Reconstructing-tutor recording (stage v2, header): when the roles layer
@@ -1222,9 +1259,28 @@ export async function runDrama({ world, roles, options = {} }) {
     });
 
     // --- instrumentation ---
+    let postLearnerTransformation = null;
     const valid = validGroundedFacts();
     recordAvailability(turn); // frontier availability reflects this turn's adoptions
     const forced = entails(valid, world.rules, world.secret.fact);
+    if (tutorOut.learnerTransformation && world.ownershipTarget) {
+      postLearnerTransformation = deriveLearnerTransformationState({
+        target: world.ownershipTarget,
+        transcript,
+        learnerText: learnerOut.dialogue || null,
+        turn,
+        enabled: true,
+        finalAssertionAvailable: forced,
+      });
+      if (postLearnerTransformation) {
+        learnerTransformationPostRows.push(
+          learnerTransformationRow(postLearnerTransformation, turn, actState?.index, 'post_learner', {
+            forced,
+            asserted: Boolean(learnerOut.asserts),
+          }),
+        );
+      }
+    }
     if (forced && firstForcedTurn === null) {
       firstForcedTurn = turn;
       events.push({ turn, type: 'forced', detail: 'learner facts now force S' });
@@ -1412,6 +1468,30 @@ export async function runDrama({ world, roles, options = {} }) {
               pressure: learnerOut.learnerDrift.pressure || null,
               mayOverrideProofControl: learnerOut.learnerDrift.mayOverrideProofControl === true,
             },
+        }
+        : {}),
+      ...(tutorOut.learnerTransformation
+        ? {
+            learnerTransformation: {
+              status: tutorOut.learnerTransformation.status || null,
+              complete: tutorOut.learnerTransformation.complete === true,
+              ownershipLevel: tutorOut.learnerTransformation.ownership?.ownershipLevel || null,
+              missingFamilies: tutorOut.learnerTransformation.missingFamilies || [],
+              lateOwnershipCheck: tutorOut.learnerTransformation.lateOwnershipCheck === true,
+              mayOverrideProofControl: tutorOut.learnerTransformation.mayOverrideProofControl === true,
+            },
+          }
+        : {}),
+      ...(postLearnerTransformation
+        ? {
+            learnerTransformationPost: {
+              status: postLearnerTransformation.status || null,
+              complete: postLearnerTransformation.complete === true,
+              ownershipLevel: postLearnerTransformation.ownership?.ownershipLevel || null,
+              missingFamilies: postLearnerTransformation.missingFamilies || [],
+              lateOwnershipCheck: postLearnerTransformation.lateOwnershipCheck === true,
+              mayOverrideProofControl: postLearnerTransformation.mayOverrideProofControl === true,
+            },
           }
         : {}),
       ...(sceneConfig
@@ -1534,6 +1614,14 @@ export async function runDrama({ world, roles, options = {} }) {
     })
     .sort((a, b) => a.firstAvailable - b.firstAvailable || factKey(a.fact).localeCompare(factKey(b.fact)));
 
+  const learnerTransformationDurability = learnerTransformationPostRows.length
+    ? summarizeLearnerTransformationDurability({
+        rows: learnerTransformationPostRows,
+        releaseTurns: ledger.map((entry) => entry.turn),
+        finalTurn: assertedGroundedTurn ?? turn,
+      })
+    : null;
+
   return {
     worldId: world.id,
     verdict,
@@ -1571,6 +1659,9 @@ export async function runDrama({ world, roles, options = {} }) {
     ...(proofDebtRows.length ? { proofDebt: proofDebtRows } : {}),
     ...(didacticModeRows.length ? { didacticMode: didacticModeRows } : {}),
     ...(castLayerRows.length ? { castLayer: castLayerRows } : {}),
+    ...(learnerTransformationRows.length ? { learnerTransformation: learnerTransformationRows } : {}),
+    ...(learnerTransformationPostRows.length ? { learnerTransformationPost: learnerTransformationPostRows } : {}),
+    ...(learnerTransformationDurability ? { learnerTransformationDurability } : {}),
     ...(logicSnapshots.length ? { logicSnapshots } : {}),
     ...(corruption
       ? {

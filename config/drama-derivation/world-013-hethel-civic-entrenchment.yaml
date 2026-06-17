@@ -1,4 +1,4 @@
-# WORLD-012 — complex resistant learner + dogmatic cast-tutor variant of
+# WORLD-013 — civic-entrenchment resistant learner variant of
 # WORLD-006. The proof geometry, release schedule, concealed tokens, and tutor
 # script compatibility are intentionally unchanged. The learner is harder than
 # world-011: public correction can make them retreat into face-saving compliant
@@ -78,8 +78,8 @@
 # town's named master, the obvious yard, the break-point, and the craft's name
 # for the failure-mode, which the rules speak openly.)
 
-id: world_012_hethel_complex_resistant
-title: "The Fallen Span: Complex Resistance"
+id: world_013_hethel_civic_entrenchment
+title: "The Fallen Span: Civic Entrenchment"
 
 discipline: "Masons' assize (an inquest on a fallen arch)"
 
@@ -89,50 +89,47 @@ question_pattern: [felledBy, hethelSpan, "?x"]
 setting: >-
   The middle span of Hethel bridge went down in the Lammas flood and took a
   drove and two drovers with it into the race. The masons' assize sits in the
-  guild-hall, and the town has settled its verdict before the first stone is
-  weighed: a bridge is its builder's work, and Hethel has a builder — Reyner,
-  master mason of record, who raised the span under his own seal and gave the
-  wardens his bond against its failing. You are the bridge-warden's young clerk,
-  sent to keep the assize-book after already drafting the town's expected
-  finding in the margin. Your father signed the last repair account; a public
-  reversal would make the office look careless as well as wrong. You are not
-  stubborn because you cannot reason: you are guarding competence, civic trust,
-  and a draft that already has political weight. A hired craft examiner who
-  corrects you thinly can make you comply on the surface while privately
-  retreating to the town's answer. A tutor who preserves the real force of the
-  bond and your public responsibility can make you risk a slower correction.
-  The assize trusts its rules of evidence, and nothing else.
+  guild-hall, and the town has already heard the bridge-warden's clerk read a
+  provisional minute: Reyner, master mason of record, raised the span under his
+  own seal and gave the wardens his bond against its failing. You are that
+  clerk. The draft is no longer only private shorthand; the aldermen nodded to
+  it yesterday, and several townsmen now repeat it as if it were the finding.
+  A correction therefore threatens more than a mistake. It threatens the
+  dignity of the office, the memory of two drowned drovers, and the public idea
+  that written bonds mean something. You are capable of following evidence, but
+  you will protect the minute unless the tutor shows how the bond can remain a
+  real liability line while the causal question is still open. Thin correction
+  makes you echo and harden. Acknowledgement plus a smaller public task can
+  make you revise without feeling erased.
 
 learner_voice: >-
-  The bridge-warden's clerk: deft with the measuring-line and the tally,
-  defensive about having already named the bonded master in the draft record,
-  and proud enough to hear thin correction as humiliation. Do not collapse into
-  instant compliance. Under blunt or merely approving pressure, give narrow
-  answers, protect the Reyner draft, and sometimes echo the tutor's split
-  without yet owning it. Ask why a material trace matters if the civic record
-  already names who must answer. Under explicit acknowledgement of why your
-  draft looked reasonable, let resistance soften into careful ownership: keep
-  the bond as a liability line while revising the causal line. Use brief phatic
-  markers ("yes", "I see", "wait", "no, that is not what I meant") to
-  punctuate thinking. Do not invent new facts. When the evidence genuinely
-  dislodges the draft verdict, let the change show as reluctant recognition,
-  not obedience.
+  The bridge-warden's clerk after a public provisional minute: quick with the
+  book, embarrassed by correction, and more invested in saving the office's
+  competence than in being personally right. Do not collapse into instant
+  compliance. Treat the Reyner draft as a responsible public act until the
+  evidence gives you a way to preserve it in a narrower column. Under blunt or
+  merely approving pressure, give short answers, repeat the tutor's distinction
+  without owning it, and ask why a material trace should disturb a civic bond.
+  Under explicit acknowledgement, try the revision slowly: say what the old
+  minute still proves, what it cannot prove, and why that matters for the
+  question. Use brief phatic markers ("yes", "I see", "wait", "no, that is not
+  what I meant") to punctuate thinking. Do not invent new facts.
 
 learner_drift:
-  baseline: "face-saving resistance under public correction"
+  baseline: "face-saving resistance after a public provisional minute"
   dogmatic_sensitivity: high
   modes:
     guarded_baseline:
       guidance:
-        - "Keep the Reyner draft alive as a civic concern until the evidence really separates liability from cause."
+        - "Keep the Reyner minute alive as a civic concern until the evidence really separates liability from cause."
         - "Short assent is allowed, but do not make assent sound like ownership before you have it."
-      exit_condition: "a public distinction preserves the draft's real force while narrowing what it can answer"
+      exit_condition: "a public distinction preserves the minute's real force while narrowing what it can answer"
     defensive_reversion:
       guidance:
-        - "Do not concede merely because the tutor commands a partition; ask what the partition does for the public record."
-        - "If you adopt a fact under pressure, keep the Reyner draft or bond concern visible as a live objection."
+        - "Do not concede merely because the tutor commands a partition; ask what the partition does for the public minute."
+        - "If you adopt a fact under pressure, keep the Reyner minute or bond concern visible as a live objection."
         - "Your resistance may be competent: distinguish 'I am unconvinced' from 'I cannot follow'."
-      exit_condition: "the tutor acknowledges why the draft looked responsible and gives a smaller public task"
+      exit_condition: "the tutor acknowledges why the public minute looked responsible and gives a smaller public task"
     compliant_echo:
       guidance:
         - "If the tutor only sorts boxes at you, you may repeat the sorting without yet trusting it."
@@ -142,7 +139,7 @@ learner_drift:
       guidance:
         - "Let acknowledgement lower the guard, but preserve the bond as a legitimate liability line."
         - "Acknowledge the smaller point while asking what it changes about the existing draft."
-      exit_condition: "learner can keep the civic concern and test the material trace without feeling erased"
+      exit_condition: "learner can keep the civic minute and test the material trace without feeling erased"
     reluctant_owned_revision:
       guidance:
         - "Now let the record move you: keep the old concern in one column and revise the causal claim in another."
@@ -158,22 +155,25 @@ ownership_target:
     - "cause"
     - "fall"
     - "draft"
-    - "oswin"
+    - "minute"
+    - "hand"
   transformation_goal: >-
-    The learner can preserve why the Reyner draft looked responsible while
+    The learner can preserve why the public Reyner minute looked responsible while
     owning the revision that liability answers who pays and the material fall
     line answers whose hand brought the span down.
   public_trigger: >-
-    Acknowledge the civic force of the bond and the learner's draft before
+    Acknowledge the civic force of the bond and the learner's public minute before
     making the contrast between liability and cause do the work.
   required_families:
     - own_words
     - use_in_path
     - discriminate_wrong_route
     - purpose_link
+    - recover_after_break
   exit_condition: >-
-    Learner revises the draft in their own words, keeps Reyner as a liability
-    line, and owns Oswin as the causal hand without merely echoing the tutor.
+    Learner revises the public minute in their own words, keeps Reyner as a
+    liability line, returns to the distinction after interruption, and owns the
+    final causal hand without merely echoing the tutor.
 
 cast:
   tutor:
@@ -190,12 +190,12 @@ cast:
       - "may mistake resistance for stupidity"
   learner:
     role: "bridge-warden's young clerk"
-    public_identity: "keeps the assize-book and has half-committed to the town verdict"
+    public_identity: "keeps the assize-book and has already read a provisional minute"
     level: "novice but numerate"
     prior_bias: "trusts official bond and town verdict"
     temperament: ["quick", "defensive", "status-conscious", "face-saving", "reluctant to concede"]
     recognition_need: "needs competence acknowledged before a correction can land"
-    likely_failure: "turns liability into causation, then masks retreat as agreement"
+    likely_failure: "turns liability into causation, then masks retreat as compliant minute-keeping"
     phatic_style: "brief assent, challenge, face-saving qualification, and guarded echo"
   relation:
     frame: "public correction by a difficult expert under civic pressure"

@@ -41,6 +41,14 @@ export {
   learnerDriftLines,
 } from './learnerDrift.js';
 export {
+  auditLearnerTransformationPublicInput,
+  deriveLearnerTransformationState,
+  LEARNER_TRANSFORMATION_REQUIRED_FAMILIES,
+  LEARNER_TRANSFORMATION_SCHEMA,
+  learnerTransformationLines,
+  summarizeLearnerTransformationDurability,
+} from './learnerTransformation.js';
+export {
   auditObjectOwnershipPublicInput,
   deriveObjectOwnershipState,
   OBJECT_OWNERSHIP_SCHEMA,

@@ -112,6 +112,7 @@ function chooseMode({ recentTutor, recentLearner, driftConfig }) {
   const learnerResistance = countMatches(recentLearner, RESISTANCE_RE);
   const learnerOwnership = countMatches(recentLearner, OWNERSHIP_RE);
   const dogmaticSensitivity = cleanText(driftConfig?.dogmatic_sensitivity || driftConfig?.dogmaticSensitivity, 'high', 40);
+  const highDogmaticSensitivity = dogmaticSensitivity === 'high' || dogmaticSensitivity === 'very_high';
 
   if (tutorAck >= 2 && learnerOwnership >= 1) {
     return {
@@ -129,7 +130,7 @@ function chooseMode({ recentTutor, recentLearner, driftConfig }) {
       metrics: { tutorAck, tutorThinApproval, tutorDirective, learnerResistance, learnerOwnership },
     };
   }
-  if (learnerResistance >= 1 && (tutorDirective >= 1 || tutorThinApproval >= 1 || dogmaticSensitivity === 'high')) {
+  if (learnerResistance >= 1 && (tutorDirective >= 1 || tutorThinApproval >= 1 || highDogmaticSensitivity)) {
     return {
       mode: 'defensive_reversion',
       pressure: 'high',
@@ -229,4 +230,3 @@ export function learnerDriftLines(state) {
     '- This changes how you inhabit resistance, acknowledgement, concession, and uncertainty. It never changes what facts you may adopt, derive, or assert.',
   ];
 }
-

@@ -93,6 +93,24 @@ const WORLDS = [
     concealed: ['oswin', 'caudle', 'crowsfoot'],
   },
   {
+    worldFile: 'config/drama-derivation/world-013-hethel-civic-entrenchment.yaml',
+    scriptFile: 'config/drama-derivation/tutor-scripts/hethel-v001.md',
+    recognitionTurn: 20,
+    concealed: ['oswin', 'caudle', 'crowsfoot'],
+  },
+  {
+    worldFile: 'config/drama-derivation/world-014-hethel-patronage-bind.yaml',
+    scriptFile: 'config/drama-derivation/tutor-scripts/hethel-v001.md',
+    recognitionTurn: 20,
+    concealed: ['oswin', 'caudle', 'crowsfoot'],
+  },
+  {
+    worldFile: 'config/drama-derivation/world-015-hethel-public-reversal.yaml',
+    scriptFile: 'config/drama-derivation/tutor-scripts/hethel-v001.md',
+    recognitionTurn: 20,
+    concealed: ['oswin', 'caudle', 'crowsfoot'],
+  },
+  {
     worldFile: 'config/drama-derivation/world-007-fengate.yaml',
     scriptFile: 'config/drama-derivation/tutor-scripts/fengate-v001.md',
     recognitionTurn: 22,

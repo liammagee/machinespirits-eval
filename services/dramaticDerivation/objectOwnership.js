@@ -147,6 +147,75 @@ function hasPattern(text, pattern) {
   return pattern.test(norm(text));
 }
 
+function hasAnyPattern(text, patterns = []) {
+  return patterns.some((pattern) => hasPattern(text, pattern));
+}
+
+function structuralOwnWords(text) {
+  return hasAnyPattern(text, [
+    /\b(the draft has to|the line has to|the claim has to|the point is|that leaves|that makes|i can write|i can put|i can see)\b/u,
+    /\b(two lines|two questions|not one|different question|different answer|separate sentence|same sentence)\b/u,
+    /\b(says who|shows who|tells us who|answers? who|answers? what|what actually|who brought|who caused)\b/u,
+  ]);
+}
+
+function purposeLink(text) {
+  return hasAnyPattern(text, [
+    /\b(matters because|matters for|proves|shows why|needed because|without it|so the question|to answer)\b/u,
+    /\b(says who|shows who|tells us who|answers? who|answers? what|what actually|who brought|who caused)\b/u,
+    /\b(so we can tell|lets me tell|lets us tell|tells me whether|tells us whether|for the question)\b/u,
+  ]);
+}
+
+function usesInReasoningPath(text) {
+  return hasAnyPattern(text, [
+    /\b(so|therefore|because|which means|that means|then|it lets me|it gives me|it follows)\b/u,
+    /\b(has to carry|line says|would say|that line holds|still runs|answers for|brought it down|what actually)\b/u,
+  ]);
+}
+
+function nearTransferMarker(text) {
+  return hasAnyPattern(text, [
+    /\b(as with|same pattern|same shape|another case|parallel)\b/u,
+    /\b(one case sideways|case sideways|different bridge file|different file)\b/u,
+    /\b(structure travels?|make the structure travel|structure can travel)\b/u,
+  ]);
+}
+
+function classicTransferMarker(text) {
+  return hasAnyPattern(text, [/\b(as with|same pattern|same shape|another case|parallel)\b/u]);
+}
+
+function transferGateMarker(text) {
+  return hasAnyPattern(text, [
+    /\b(one case sideways|case sideways|different bridge file|different file)\b/u,
+    /\b(structure travels?|make the structure travel|structure can travel)\b/u,
+  ]);
+}
+
+function transportedDistinction(text) {
+  return hasAnyPattern(text, [
+    /\b(liability|warranty|surety|bond|payment|who pays|answers? for)\b.*\b(cause|causal|fall line|hand|removed|pulled|props?|what happened|brought)\b/u,
+    /\b(cause|causal|fall line|hand|removed|pulled|props?|what happened|brought)\b.*\b(liability|warranty|surety|bond|payment|who pays|answers? for)\b/u,
+    /\b(first line|second line|two lines|two columns|same two lines|separate lines?)\b/u,
+    /\b(hand-that-removed|worker's line|source finding|person line)\b/u,
+  ]);
+}
+
+function transportedLineStructure(text) {
+  return hasAnyPattern(text, [
+    /\b(first line|second line|two lines|two columns|same two lines|separate lines?)\b/u,
+    /\b(liability line|warranty line|surety line|bond line|payment line|cause line|causal line|fall line|hand line)\b/u,
+    /\b(hand-that-removed|worker's line|source finding|person line)\b/u,
+  ]);
+}
+
+function nearTransferEvidence(text) {
+  if (!nearTransferMarker(text) || !transportedDistinction(text)) return false;
+  if (classicTransferMarker(text)) return true;
+  return transferGateMarker(text) && transportedLineStructure(text);
+}
+
 function makeProbe(family, passed, evidence = [], weight = 1) {
   return {
     family,
@@ -159,35 +228,38 @@ function makeProbe(family, passed, evidence = [], weight = 1) {
 function scoreProbeFamily(texts, keywords, input = {}) {
   const joined = texts.join('\n');
   const objectMentionTexts = texts.filter((text) => textMentionsObject(text, keywords));
-  const ownWordsEvidence = objectMentionTexts.filter((text) =>
-    hasPattern(text, /\b(i take it|i would say|in my words|so it means|what it gives me|i read it as|the point is)\b/u),
-  );
   const echoEvidence = objectMentionTexts.filter((text) =>
     hasPattern(text, /\b(as you said|you said|just repeating|i can repeat|the words are)\b/u),
   );
-  const useEvidence = objectMentionTexts.filter((text) =>
-    hasPattern(text, /\b(so|therefore|because|which means|that means|then|it lets me|it gives me|it follows)\b/u),
-  );
+  const ownWordsEvidence = objectMentionTexts.filter((text) => {
+    if (echoEvidence.includes(text)) return false;
+    return (
+      hasPattern(text, /\b(i take it|i would say|in my words|so it means|what it gives me|i read it as|the point is)\b/u) ||
+      structuralOwnWords(text)
+    );
+  });
+  const useEvidence = objectMentionTexts.filter((text) => usesInReasoningPath(text));
   const discriminateEvidence = texts.filter((text) =>
     textMentionsObject(text, keywords) &&
-    hasPattern(text, /\b(not .* but|not yet|does not|is not|rather than|instead of|separate|keep .* apart|wrong)\b/u),
+    hasPattern(
+      text,
+      /\b(not .* but|not yet|does not|is not|rather than|instead of|separate|keep .* apart|wrong|aren't the same|are not the same|different question|different answer|two lines|two columns)\b/u,
+    ),
   );
   const transferEvidence = texts.filter((text) =>
-    hasPattern(text, /\b(like|as with|same pattern|same shape|another case|parallel|as before)\b/u),
+    nearTransferEvidence(text),
   );
   const recoveryEvidence = texts.filter((text) => {
     if (!textMentionsObject(text, keywords)) return false;
     return input.recoveryProbe || hasPattern(text, /\b(back to|return to|recover|again|still|earlier)\b/u);
   });
-  const purposeEvidence = objectMentionTexts.filter((text) =>
-    hasPattern(text, /\b(matters because|matters for|proves|shows why|needed because|without it|so the question|to answer)\b/u),
-  );
+  const purposeEvidence = objectMentionTexts.filter((text) => purposeLink(text));
 
   return {
     ownWordsEvidence,
     echoEvidence,
     probes: [
-      makeProbe('own_words', ownWordsEvidence.length > 0 && echoEvidence.length === 0, ownWordsEvidence),
+      makeProbe('own_words', ownWordsEvidence.length > 0, ownWordsEvidence),
       makeProbe('use_in_path', useEvidence.length > 0, useEvidence),
       makeProbe('discriminate_wrong_route', discriminateEvidence.length > 0, discriminateEvidence),
       makeProbe('near_transfer', transferEvidence.length > 0 || input.transferObserved === true, transferEvidence),

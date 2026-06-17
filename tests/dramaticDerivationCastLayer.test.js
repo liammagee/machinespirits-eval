@@ -318,6 +318,13 @@ test('learner drift hardens under thin correction and softens under explicit ack
   assert.equal(defensive.mayOverrideProofControl, false);
   assert.equal(defensive.nonLeakAudit.ok, true);
 
+  const veryHighSensitivity = deriveLearnerDriftState({
+    worldLearnerDrift: { ...HETHEL_LEARNER_DRIFT, dogmatic_sensitivity: 'very_high' },
+    turn: 4,
+    transcript: [{ turn: 3, role: 'learner', text: "I am not sure. The bond is still the town's answer." }],
+  });
+  assert.equal(veryHighSensitivity.mode, 'defensive_reversion');
+
   const softened = deriveLearnerDriftState({
     worldLearnerDrift: HETHEL_LEARNER_DRIFT,
     turn: 5,

@@ -288,6 +288,17 @@
  *                                       correction or soften under explicit
  *                                       acknowledgement. Speech/uptake only;
  *                                       no proof-control authority.)
+ *     [--ownership-proof]              (tutor-private public learner-ownership
+ *                                       target, if the world declares
+ *                                       ownership_target. Tracks whether the
+ *                                       learner owns the revision in public
+ *                                       conduct; no release/restore/hold/
+ *                                       assertion authority.)
+ *     [--ownership-transfer-gate]      (requires --ownership-proof. If final
+ *                                       closure is available but the declared
+ *                                       ownership target still lacks a nearby
+ *                                       transfer, advise one compact parallel
+ *                                       case before closure. Conduct only.)
  *     [--critic auto|real|mock|off]    (post-run critic's notice; auto = follow
  *                                       the run mode — real dramas get the
  *                                       Fable notice, mock dramas the
@@ -401,6 +412,8 @@ function liveTurnRecord(summary) {
     castState: summary.castState || null,
     tutorReinvention: summary.tutorReinvention || null,
     learnerDrift: summary.learnerDrift || null,
+    learnerTransformation: summary.learnerTransformation || null,
+    learnerTransformationPost: summary.learnerTransformationPost || null,
     events: summary.events || [],
     lines: (summary.lines || []).filter(publicLine).map(line),
     ...(summary.decayedNow?.length ? { decayedNow: summary.decayedNow } : {}),
@@ -777,8 +790,14 @@ async function main() {
   const castLayer = flag('cast-layer');
   const castReinvention = flag('cast-reinvention');
   const learnerDrift = flag('learner-drift');
+  const ownershipProof = flag('ownership-proof');
+  const ownershipTransferGate = flag('ownership-transfer-gate');
   if (castReinvention && !castLayer) {
     console.error('--cast-reinvention requires --cast-layer');
+    process.exit(1);
+  }
+  if (ownershipTransferGate && !ownershipProof) {
+    console.error('--ownership-transfer-gate requires --ownership-proof');
     process.exit(1);
   }
   let publicRegister;
@@ -901,6 +920,9 @@ async function main() {
       didacticMode,
       castLayer,
       castReinvention,
+      learnerDrift,
+      ownershipProof,
+      ownershipTransferGate,
     },
   });
   live.start();
@@ -1068,6 +1090,12 @@ async function main() {
   if (learnerDrift) {
     console.log('learner DRIFT ON — public learner stance may harden or soften from recent dialogue only');
   }
+  if (ownershipProof) {
+    console.log('learner OWNERSHIP PROOF ON — tutor sees public ownership target; proof control remains dominant');
+  }
+  if (ownershipTransferGate) {
+    console.log('learner OWNERSHIP TRANSFER GATE ON — near-transfer check is conduct-only before closure');
+  }
   if (decay) {
     console.log(
       `decay   seed ${decay.seed} · rate ${decay.rate} · grace ${decay.graceTurns} · maxConcurrent ${decay.maxConcurrent} · from turn ${decay.startTurn}${decay.mutateShare ? ` · mutateShare ${decay.mutateShare} (slips may misremember, not just vanish)` : ''}${decay.pool === 'staged' ? ' · pool STAGED (false forms confuse only met-on-stage names)' : ''}`,
@@ -1120,6 +1148,9 @@ async function main() {
       didacticMode,
       castLayer,
       castReinvention,
+      ownershipTarget: world.ownershipTarget,
+      ownershipProof,
+      ownershipTransferGate,
       publicRegister,
     }),
     learner: makeLlmLearner({
@@ -1151,6 +1182,22 @@ async function main() {
     if (s.castState?.tutor?.currentStance) bits.push(`cast ${s.castState.tutor.currentStance}`);
     if (s.tutorReinvention?.active) bits.push(`reinvent ${s.tutorReinvention.toStance}`);
     if (s.learnerDrift?.mode) bits.push(`L-drift ${s.learnerDrift.mode}`);
+    if (s.learnerTransformation?.status) {
+      bits.push(
+        `own ${s.learnerTransformation.status}${s.learnerTransformation.complete ? '✓' : ''}/${
+          s.learnerTransformation.ownershipLevel || 'unknown'
+        }${s.learnerTransformation.lateOwnershipCheck ? '/late-check' : ''}${
+          s.learnerTransformation.transferGateActive ? '/transfer-gate' : ''
+        }`,
+      );
+    }
+    if (s.learnerTransformationPost?.status) {
+      bits.push(
+        `own-post ${s.learnerTransformationPost.status}${s.learnerTransformationPost.complete ? '✓' : ''}/${
+          s.learnerTransformationPost.ownershipLevel || 'unknown'
+        }`,
+      );
+    }
     if (s.closedScene) bits.push(`scene ${s.closedScene.index} ${s.closedScene.status}`);
     if (s.phase && s.phase.turn === s.turn) bits.push(`movement "${s.phase.name}"`);
     if (s.intervened) bits.push('✎ superego');
@@ -1268,6 +1315,8 @@ async function main() {
     castLayer,
     castReinvention,
     learnerDrift,
+    ownershipProof,
+    ownershipTransferGate,
     elapsedMs,
     usage,
     ...diagnose(result, world),

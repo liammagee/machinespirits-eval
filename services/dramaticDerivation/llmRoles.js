@@ -24,7 +24,7 @@
  *    JSON shapes, so a mock run exercises every line the real run will use.
  */
 
-import { closure, factKey, matchPattern } from './chainer.js';
+import { closure, entails, factKey, matchPattern } from './chainer.js';
 import { pacingGuardDecision, releaseSolvency, safeReleaseTurns } from './pacing.js';
 import {
   normalizeRhetoricalPolicyConfig,
@@ -35,6 +35,7 @@ import {
 import { auditConductGeneratorCompliance, CONDUCT_POLICY_SCHEMA, selectConductMove } from './conductPolicy.js';
 import { deriveCastState, projectCastStateForRole } from './castLayer.js';
 import { deriveLearnerDriftState, learnerDriftLines } from './learnerDrift.js';
+import { deriveLearnerTransformationState, learnerTransformationLines } from './learnerTransformation.js';
 import { deriveDiscursiveCalibrationState } from './discursiveCalibration.js';
 import { deriveDidacticModeState } from './didacticMode.js';
 import { deriveEntitlementState, entitlementNeedsConduct } from './learnerEntitlement.js';
@@ -762,6 +763,8 @@ export function makeLlmDirector(
     publicRegister = 'default',
     castLayer = false,
     castReinvention = false,
+    ownershipTarget = null,
+    ownershipProof = false,
   } = {},
 ) {
   const free = dramaturgy !== 'frozen';
@@ -956,6 +959,8 @@ function tutorSystem(
     didacticMode = false,
     castLayer = false,
     castReinvention = false,
+    ownershipProof = false,
+    ownershipTransferGate = false,
     publicRegister = 'default',
   } = {},
 ) {
@@ -1235,6 +1240,27 @@ function tutorSystem(
                 'When tutor reinvention is active, change stance, tone, figure,',
                 'tempo, example style, or recognition conduct only. The proof-control',
                 'channel remains dominant.',
+              ]
+            : []),
+        ]
+      : []),
+    ...(ownershipProof
+      ? [
+          '',
+          '# Learner ownership proof (tutor-private public conduct target)',
+          '',
+          'Some turns may carry a LEARNER OWNERSHIP PROOF block. It tracks whether',
+          'the learner publicly owns a revision: own words, use in the reasoning',
+          'path, discrimination from a nearby wrong route, and purpose link. This is',
+          'a conduct obligation, not proof control. It does not authorize release,',
+          'restore, hold, assertion, or a changed proof target. Use it to decide how',
+          'to ask for ownership while preserving the current proof obligation.',
+          ...(ownershipTransferGate
+            ? [
+                'When the transfer gate appears, it may ask for one compact nearby',
+                'parallel before final closure. This still cannot override proof',
+                'control, release authority, restoration, hold decisions, or the',
+                'assertion gate.',
               ]
             : []),
         ]
@@ -1971,6 +1997,9 @@ export function makeLlmTutor(
     publicRegister = 'default',
     castLayer = false,
     castReinvention = false,
+    ownershipTarget = null,
+    ownershipProof = false,
+    ownershipTransferGate = false,
   } = {},
 ) {
   if (!script || !script.trim()) {
@@ -2118,6 +2147,8 @@ export function makeLlmTutor(
     didacticMode,
     castLayer,
     castReinvention,
+    ownershipProof,
+    ownershipTransferGate,
     publicRegister,
   });
   const superegoSystem = superego
@@ -2516,6 +2547,24 @@ export function makeLlmTutor(
     const cuePremiseForPolicy = releaseAuthority
       ? forcedPlay?.premise || playable.find((e) => e.turn === view.turn)?.premise || null
       : entry?.premise || null;
+    const publicFactsEnableFinal = entails(
+      [...(world.background || []), ...(view.releasedFacts || [])],
+      world.rules,
+      world.secret.fact,
+    );
+    const releaseWillEnableFinal =
+      releaseAuthority && cuePremiseForPolicy
+        ? (() => {
+            const cueFact = world.premises.find((p) => p.id === cuePremiseForPolicy)?.fact || null;
+            const releasedFactKeys = new Set((view.releasedFacts || []).map((fact) => factKey(fact)));
+            const publicFacts = [
+              ...(world.background || []),
+              ...(view.releasedFacts || []),
+              ...(cueFact && !releasedFactKeys.has(factKey(cueFact)) ? [cueFact] : []),
+            ];
+            return entails(publicFacts, world.rules, world.secret.fact);
+          })()
+        : false;
     const publicTranscriptForCalibration = (view.transcript || []).map((line) => ({
       turn: line.turn,
       role: line.role,
@@ -2584,6 +2633,19 @@ export function makeLlmTutor(
             : null,
         })
       : null;
+    const learnerTransformationState = ownershipProof
+      ? deriveLearnerTransformationState({
+          target: ownershipTarget || world.ownershipTarget || null,
+          transcript: publicTranscriptForCalibration,
+          learnerText: lastLearnerLineForCalibration?.text || null,
+          turn: view.turn,
+          enabled: true,
+          finalAssertionAvailable: Boolean(
+            forcedNote || finalEntitlement?.canAssertFinal || publicFactsEnableFinal || releaseWillEnableFinal,
+          ),
+          transferGate: ownershipTransferGate,
+        })
+      : null;
     const sceneIndexForCast = view.scene?.index ?? null;
     const actIndexForCast = view.acts?.index ?? null;
     if (
@@ -2649,6 +2711,7 @@ export function makeLlmTutor(
     const didacticModeSection = didacticModeLines(didacticModeState);
     const actDidacticFallbackSection = didacticActFallbackLines(view.acts, view.turn);
     const castLayerSection = castLayerLines(castState, 'tutor');
+    const learnerTransformationSection = learnerTransformationLines(learnerTransformationState);
     const highDiscursiveStrain = discursiveCalibrationState?.conversationalStrain?.level === 'high';
     const discursiveReleaseSection =
       highDiscursiveStrain && releaseAuthority
@@ -2814,6 +2877,7 @@ export function makeLlmTutor(
         ...castLayerSection,
         ...actDidacticFallbackSection,
         ...didacticModeSection,
+        ...learnerTransformationSection,
         ...(visibleConsolidation?.lines.length ? ['', ...visibleConsolidation.lines] : []),
         // The two frames, course above lesson: the whole-play throughline
         // reads back first, the act plot under it.
@@ -2864,6 +2928,7 @@ export function makeLlmTutor(
         ...publicRegisterTurnLines(activeRegisterName, publicRegister),
         ...(visibleConsolidation?.lines.length ? ['', ...visibleConsolidation.lines] : []),
         ...didacticModeSection,
+        ...learnerTransformationSection,
         '',
         ...(forcedNote ? [forcedNote, ''] : []),
         ...rhetoricalPolicySection,
@@ -2913,6 +2978,7 @@ export function makeLlmTutor(
         : {}),
       ...(rhetoricalAdvice ? { rhetoricalPolicy: rhetoricalAdvice } : {}),
       ...(didacticModeState ? { didacticMode: didacticModeState } : {}),
+      ...(learnerTransformationState ? { learnerTransformation: learnerTransformationState } : {}),
       ...(castState ? { castState, tutorReinvention: castState.reinvention || null } : {}),
       ...(view.scene?.tempo ? { sceneTempo: view.scene.tempo } : {}),
       // mock determinism (arm-ON): the credulous theory — everything released
@@ -3307,6 +3373,7 @@ export function makeLlmTutor(
       ...(rhetoricalAdvice ? { rhetoricalPolicy: rhetoricalAdvice } : {}),
       ...(discursiveCalibrationState ? { discursiveCalibration: discursiveCalibrationState } : {}),
       ...(didacticModeState ? { didacticMode: didacticModeState } : {}),
+      ...(learnerTransformationState ? { learnerTransformation: learnerTransformationState } : {}),
       ...(castState ? { castState, tutorReinvention: castState.reinvention || null } : {}),
       ...releaseBits,
       ...(draftTheory ? { theory: draftTheory } : {}),
@@ -3710,6 +3777,7 @@ export function makeLlmTutor(
       ...(rhetoricalAdvice ? { rhetoricalPolicy: rhetoricalAdvice } : {}),
       ...(discursiveCalibrationState ? { discursiveCalibration: discursiveCalibrationState } : {}),
       ...(didacticModeState ? { didacticMode: didacticModeState } : {}),
+      ...(learnerTransformationState ? { learnerTransformation: learnerTransformationState } : {}),
       ...(castState ? { castState, tutorReinvention: castState.reinvention || null } : {}),
       deliberation: {
         ...deliberation,

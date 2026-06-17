@@ -65,6 +65,29 @@ test('own words and proof-path use produce emerging ownership', () => {
   assert.equal(state.gaps.includes('own_words'), false);
 });
 
+test('structural learner restatement counts as own words without ritual phrase', () => {
+  const state = deriveObjectOwnershipState({
+    currentObject: 'Reyner liability and causal fall split',
+    objectKeywords: ['reyner', 'liability', 'bond', 'cause', 'fall', 'draft', 'oswin'],
+    transcript: [
+      {
+        role: 'learner',
+        text: "The bond line says who must answer if the work fails; that's Reyner. A cause line would say what actually brought the arch down. I can see those aren't the same sentence.",
+      },
+      {
+        role: 'learner',
+        text: "The draft has to carry two lines, not one: Reyner's bond says he pays when the span fails, and that line holds; but the cause is the centering drawn early, and that's a different question with a different answer.",
+      },
+    ],
+  });
+
+  assert.equal(state.probes.find((probe) => probe.family === 'own_words').passed, true);
+  assert.equal(state.probes.find((probe) => probe.family === 'use_in_path').passed, true);
+  assert.equal(state.probes.find((probe) => probe.family === 'discriminate_wrong_route').passed, true);
+  assert.equal(state.probes.find((probe) => probe.family === 'purpose_link').passed, true);
+  assert.notEqual(state.ownershipLevel, 'echo_only');
+});
+
 test('echo without own words is classified separately from ownership', () => {
   const state = deriveObjectOwnershipState({
     currentObject: 'crowsfoot mark',
@@ -75,6 +98,27 @@ test('echo without own words is classified separately from ownership', () => {
   assert.equal(state.echoOnly, true);
   assert.equal(state.ownershipLevel, 'echo_only');
   assert.equal(state.probes.find((probe) => probe.family === 'own_words').passed, false);
+});
+
+test('early echo does not cancel later owned restatement', () => {
+  const state = deriveObjectOwnershipState({
+    currentObject: 'Reyner liability and causal fall split',
+    objectKeywords: ['reyner', 'bond', 'cause', 'fall', 'oswin'],
+    transcript: [
+      {
+        role: 'learner',
+        text: 'As you said, Reyner and cause are the words here.',
+      },
+      {
+        role: 'learner',
+        text: "The bond line says who must answer if the work fails; that's Reyner. A cause line would say what actually brought the arch down, and those aren't the same sentence.",
+      },
+    ],
+  });
+
+  assert.equal(state.echoOnly, false);
+  assert.equal(state.probes.find((probe) => probe.family === 'own_words').passed, true);
+  assert.equal(state.probes.find((probe) => probe.family === 'discriminate_wrong_route').passed, true);
 });
 
 test('contrast, purpose, transfer, and recovery support durable ownership', () => {
@@ -89,7 +133,7 @@ test('contrast, purpose, transfer, and recovery support durable ownership', () =
       },
       {
         role: 'learner',
-        text: 'Like the crown joint earlier, the same pattern turns a visible trace into the next rule step.',
+        text: 'As with the crown joint earlier, the same pattern keeps the payment line separate from the cause line.',
       },
       {
         role: 'learner',
@@ -102,6 +146,51 @@ test('contrast, purpose, transfer, and recovery support durable ownership', () =
   for (const family of OWNERSHIP_PROBE_FAMILIES) {
     assert.equal(state.probes.find((probe) => probe.family === family).passed, true, family);
   }
+});
+
+test('near transfer ignores ordinary preference uses of like', () => {
+  const ordinaryPreference = deriveObjectOwnershipState({
+    currentObject: 'liability cause split',
+    objectKeywords: ['liability', 'cause', 'split'],
+    learnerText: "I would like to know why before we go further, but I see the liability and cause split.",
+  });
+  const analogy = deriveObjectOwnershipState({
+    currentObject: 'liability cause split',
+    objectKeywords: ['liability', 'cause', 'split'],
+    learnerText:
+      'This is a parallel case with the same pattern: the liability and cause split keeps payment apart from what happened.',
+  });
+
+  assert.equal(ordinaryPreference.probes.find((probe) => probe.family === 'near_transfer').passed, false);
+  assert.equal(analogy.probes.find((probe) => probe.family === 'near_transfer').passed, true);
+});
+
+test('near transfer credits a different-file transfer only when the distinction travels', () => {
+  const transferred = deriveObjectOwnershipState({
+    currentObject: 'liability cause split',
+    objectKeywords: ['liability', 'cause', 'split', 'warranty', 'hand', 'props'],
+    learnerText:
+      "All right, try it on a different file. First line: the bonded builder holds the warranty, so that line is liability. Second line: the yard mark and toll book put the removed props in one carrier's hands, so that line is cause.",
+  });
+  const merelyTopical = deriveObjectOwnershipState({
+    currentObject: 'liability cause split',
+    objectKeywords: ['liability', 'cause', 'split', 'file'],
+    learnerText: 'I opened a different file and I would like to know why the liability and cause split matters.',
+  });
+
+  assert.equal(transferred.probes.find((probe) => probe.family === 'near_transfer').passed, true);
+  assert.equal(merelyTopical.probes.find((probe) => probe.family === 'near_transfer').passed, false);
+});
+
+test('near transfer credits structure-travel language paired with the liability cause distinction', () => {
+  const state = deriveObjectOwnershipState({
+    currentObject: 'liability cause split',
+    objectKeywords: ['liability', 'cause', 'split', 'bond', 'hand'],
+    learnerText:
+      "The same structure travels to another case: the bond line answers who pays, while the hand line answers what brought the work down.",
+  });
+
+  assert.equal(state.probes.find((probe) => probe.family === 'near_transfer').passed, true);
 });
 
 test('ownership summaries expose level and gap aggregates', () => {

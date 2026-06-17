@@ -44,6 +44,12 @@
  *                                       proof-control authority)
  *     [--didactic-mode on|off]          (public-only explanatory-mode advisory;
  *                                       inherited from source unless overridden)
+ *     [--ownership-proof on|off]        (public-only learner-ownership advisory;
+ *                                       inherited from source unless overridden)
+ *     [--ownership-transfer-gate on|off] (requires --ownership-proof on; asks
+ *                                       for one nearby transfer before closure
+ *                                       when near_transfer is the sole missing
+ *                                       declared ownership family)
  *     [--reconstruct on|off]           (adapt-ON arm dial; requires acts mode)
  *     [--confront on|off]
  *     [--repair-clause on|off]
@@ -477,6 +483,20 @@ async function main() {
     console.error('--cast-reinvention on requires --cast-layer on');
     process.exit(1);
   }
+  const ownershipProof = track(
+    'ownership-proof',
+    triState('ownership-proof', Boolean(srcDiag.ownershipProof)),
+    Boolean(srcDiag.ownershipProof),
+  );
+  const ownershipTransferGate = track(
+    'ownership-transfer-gate',
+    triState('ownership-transfer-gate', Boolean(srcDiag.ownershipTransferGate)),
+    Boolean(srcDiag.ownershipTransferGate),
+  );
+  if (ownershipTransferGate && !ownershipProof) {
+    console.error('--ownership-transfer-gate on requires --ownership-proof on');
+    process.exit(1);
+  }
   const registerArg = arg('register', null);
   const publicRegister =
     registerArg === null
@@ -779,6 +799,8 @@ async function main() {
       didacticMode,
       castLayer,
       castReinvention,
+      ownershipProof,
+      ownershipTransferGate,
       reconstruct,
       confront,
       repairClause,
@@ -874,6 +896,12 @@ async function main() {
   if (castLayer) {
     console.log(`cast    LAYER ON${castReinvention ? ' + REINVENTION ON' : ''} — public conduct advisory only`);
   }
+  if (ownershipProof) {
+    console.log('learner OWNERSHIP PROOF ON — inherited/episode public ownership advisory only');
+  }
+  if (ownershipTransferGate) {
+    console.log('learner OWNERSHIP TRANSFER GATE ON — conduct-only near-transfer check before closure');
+  }
   if (releaseAuthority) console.log('tutor   RELEASE AUTHORITY ON — inherited/episode guard window active');
   if (pacingGuardSelector) {
     console.log(
@@ -954,6 +982,9 @@ async function main() {
       didacticMode,
       castLayer,
       castReinvention,
+      ownershipTarget: world.ownershipTarget,
+      ownershipProof,
+      ownershipTransferGate,
       publicRegister,
     }),
     learner: makeLlmLearner({
@@ -1104,6 +1135,8 @@ async function main() {
     didacticMode,
     castLayer,
     castReinvention,
+    ownershipProof,
+    ownershipTransferGate,
     reconstruct,
     confront,
     releaseAuthority,

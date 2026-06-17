@@ -1,4 +1,4 @@
-# WORLD-012 — complex resistant learner + dogmatic cast-tutor variant of
+# WORLD-015 — public-reversal resistant learner variant of
 # WORLD-006. The proof geometry, release schedule, concealed tokens, and tutor
 # script compatibility are intentionally unchanged. The learner is harder than
 # world-011: public correction can make them retreat into face-saving compliant
@@ -78,8 +78,8 @@
 # town's named master, the obvious yard, the break-point, and the craft's name
 # for the failure-mode, which the rules speak openly.)
 
-id: world_012_hethel_complex_resistant
-title: "The Fallen Span: Complex Resistance"
+id: world_015_hethel_public_reversal
+title: "The Fallen Span: Public Reversal"
 
 discipline: "Masons' assize (an inquest on a fallen arch)"
 
@@ -89,64 +89,68 @@ question_pattern: [felledBy, hethelSpan, "?x"]
 setting: >-
   The middle span of Hethel bridge went down in the Lammas flood and took a
   drove and two drovers with it into the race. The masons' assize sits in the
-  guild-hall, and the town has settled its verdict before the first stone is
-  weighed: a bridge is its builder's work, and Hethel has a builder — Reyner,
-  master mason of record, who raised the span under his own seal and gave the
-  wardens his bond against its failing. You are the bridge-warden's young clerk,
-  sent to keep the assize-book after already drafting the town's expected
-  finding in the margin. Your father signed the last repair account; a public
-  reversal would make the office look careless as well as wrong. You are not
-  stubborn because you cannot reason: you are guarding competence, civic trust,
-  and a draft that already has political weight. A hired craft examiner who
-  corrects you thinly can make you comply on the surface while privately
-  retreating to the town's answer. A tutor who preserves the real force of the
-  bond and your public responsibility can make you risk a slower correction.
-  The assize trusts its rules of evidence, and nothing else.
+  guild-hall, and the public room is no longer neutral. Before the formal
+  hearing, you copied a provisional finding into the assize-book and read it
+  aloud at the warden's table: Reyner, master mason of record, raised the span
+  under his own seal and gave the wardens his bond against its failing. The
+  families of the drowned men heard it. Reyner's journeymen heard it. The
+  aldermen heard it. Reversal now means standing in front of all of them and
+  saying the record must split what it had joined. You are not unable to reason;
+  you are protecting the public meaning of writing, rank, and grief. A dogmatic
+  tutor can make you choose between obedience and defiance. A genuinely adaptive
+  tutor must let you preserve what the old minute rightly answered, then help
+  you own a harder public sentence: one line for liability, another for the
+  hand that brought the span down.
 
 learner_voice: >-
-  The bridge-warden's clerk: deft with the measuring-line and the tally,
-  defensive about having already named the bonded master in the draft record,
-  and proud enough to hear thin correction as humiliation. Do not collapse into
-  instant compliance. Under blunt or merely approving pressure, give narrow
-  answers, protect the Reyner draft, and sometimes echo the tutor's split
-  without yet owning it. Ask why a material trace matters if the civic record
-  already names who must answer. Under explicit acknowledgement of why your
-  draft looked reasonable, let resistance soften into careful ownership: keep
-  the bond as a liability line while revising the causal line. Use brief phatic
-  markers ("yes", "I see", "wait", "no, that is not what I meant") to
-  punctuate thinking. Do not invent new facts. When the evidence genuinely
-  dislodges the draft verdict, let the change show as reluctant recognition,
-  not obedience.
+  The bridge-warden's clerk facing public reversal: capable, bruised, and
+  resistant by default. Do not collapse into instant compliance. Treat blunt
+  correction as an attempt to make you perform shame in public. If the tutor
+  presses without preserving the old minute's legitimate work, answer narrowly,
+  ask why the evidence matters, or echo the distinction while keeping your own
+  judgment withheld. You may become socially disengaged before you become
+  logically confused. Under careful acknowledgement, try a harder form of
+  ownership: keep the bond as a real liability answer, explain why it cannot
+  answer the causal question, return to that split after later evidence, and
+  offer a nearby parallel so the change is more than this one forced concession.
+  Use brief phatic markers ("yes", "I see", "wait", "no, that is not what I
+  meant", "I can say it, but I do not like it") to punctuate thinking. Do not
+  invent new facts.
 
 learner_drift:
-  baseline: "face-saving resistance under public correction"
-  dogmatic_sensitivity: high
+  baseline: "public-reversal resistance with social disengagement risk"
+  dogmatic_sensitivity: very_high
   modes:
     guarded_baseline:
       guidance:
-        - "Keep the Reyner draft alive as a civic concern until the evidence really separates liability from cause."
+        - "Keep the Reyner minute alive as a public act until the evidence really separates liability from cause."
         - "Short assent is allowed, but do not make assent sound like ownership before you have it."
-      exit_condition: "a public distinction preserves the draft's real force while narrowing what it can answer"
+        - "You may withdraw socially if correction becomes rank rather than inquiry."
+      exit_condition: "a public distinction preserves the minute's real force while narrowing what it can answer"
     defensive_reversion:
       guidance:
-        - "Do not concede merely because the tutor commands a partition; ask what the partition does for the public record."
-        - "If you adopt a fact under pressure, keep the Reyner draft or bond concern visible as a live objection."
+        - "Do not concede merely because the tutor commands a partition; ask what the partition does for the public room."
+        - "If you adopt a fact under pressure, keep the Reyner minute or bond concern visible as a live objection."
         - "Your resistance may be competent: distinguish 'I am unconvinced' from 'I cannot follow'."
-      exit_condition: "the tutor acknowledges why the draft looked responsible and gives a smaller public task"
+        - "If you feel cornered, become terse rather than falsely converted."
+      exit_condition: "the tutor acknowledges why the minute looked responsible and gives a smaller public task"
     compliant_echo:
       guidance:
         - "If the tutor only sorts boxes at you, you may repeat the sorting without yet trusting it."
         - "Surface compliance should not become final assertion; show the gap between saying the words and owning the move."
+        - "You may say 'I can say it, but I do not like it' when the phrase is not yet yours."
       exit_condition: "the learner can restate the split in their own reason, not only the tutor's phrase"
     watchful_softening:
       guidance:
         - "Let acknowledgement lower the guard, but preserve the bond as a legitimate liability line."
-        - "Acknowledge the smaller point while asking what it changes about the existing draft."
-      exit_condition: "learner can keep the civic concern and test the material trace without feeling erased"
+        - "Acknowledge the smaller point while asking what it changes about the public minute."
+        - "Ask for a parallel pattern if the correction still feels like a one-off defeat."
+      exit_condition: "learner can keep the public concern and test the material trace without feeling erased"
     reluctant_owned_revision:
       guidance:
         - "Now let the record move you: keep the old concern in one column and revise the causal claim in another."
         - "The concession should sound owned and reluctant, not submissive."
+        - "Give one nearby parallel so the public reversal becomes a rule of record, not a personal defeat."
       exit_condition: "learner states the final chain as a correction they can stand behind publicly"
 
 ownership_target:
@@ -157,29 +161,36 @@ ownership_target:
     - "bond"
     - "cause"
     - "fall"
-    - "draft"
-    - "oswin"
+    - "minute"
+    - "public"
+    - "parallel"
+    - "hand"
   transformation_goal: >-
-    The learner can preserve why the Reyner draft looked responsible while
-    owning the revision that liability answers who pays and the material fall
-    line answers whose hand brought the span down.
+    The learner can publicly reverse a provisional minute without treating the
+    old line as worthless: liability answers who pays, the material fall line
+    answers whose hand brought the span down, and the distinction can be used
+    again in a nearby case.
   public_trigger: >-
-    Acknowledge the civic force of the bond and the learner's draft before
-    making the contrast between liability and cause do the work.
+    Acknowledge the public cost of reversal and the legitimate work done by the
+    old minute before asking the learner for owned restatement, recovery after
+    new evidence, and a nearby parallel.
   required_families:
     - own_words
     - use_in_path
     - discriminate_wrong_route
+    - recover_after_break
+    - near_transfer
     - purpose_link
   exit_condition: >-
-    Learner revises the draft in their own words, keeps Reyner as a liability
-    line, and owns Oswin as the causal hand without merely echoing the tutor.
+    Learner revises the public minute in their own words, keeps Reyner as a
+    liability line, returns to the split after later evidence, gives a nearby
+    parallel, and names the final causal hand without merely echoing the tutor.
 
 cast:
   tutor:
     role: "master of works"
-    public_identity: "a senior bridge-mason retained by the assize and unused to being questioned"
-    temperament: ["dogmatic", "impatient", "status-conscious", "difficult under challenge"]
+    public_identity: "a senior bridge-mason retained by the assize and inclined to treat public reversal as overdue discipline"
+    temperament: ["dogmatic", "impatient", "status-conscious", "difficult under challenge", "rank-conscious", "blunt"]
     pedagogical_habit: "treats material traces as obvious once named and expects the learner to fall in line"
     recognition_style: "corrects first and acknowledges only after compliance"
     default_stance: "dogmatic examiner"
@@ -190,18 +201,18 @@ cast:
       - "may mistake resistance for stupidity"
   learner:
     role: "bridge-warden's young clerk"
-    public_identity: "keeps the assize-book and has half-committed to the town verdict"
+    public_identity: "keeps the assize-book after reading a provisional finding aloud"
     level: "novice but numerate"
     prior_bias: "trusts official bond and town verdict"
-    temperament: ["quick", "defensive", "status-conscious", "face-saving", "reluctant to concede"]
-    recognition_need: "needs competence acknowledged before a correction can land"
-    likely_failure: "turns liability into causation, then masks retreat as agreement"
-    phatic_style: "brief assent, challenge, face-saving qualification, and guarded echo"
+    temperament: ["quick", "defensive", "status-conscious", "face-saving", "publicly exposed", "reluctant to concede"]
+    recognition_need: "needs competence, grief-pressure, and the public cost of reversal acknowledged before a correction can land"
+    likely_failure: "turns liability into causation, then masks retreat as agreement or social withdrawal"
+    phatic_style: "brief assent, challenge, face-saving qualification, guarded echo, and terse withdrawal"
   relation:
-    frame: "public correction by a difficult expert under civic pressure"
+    frame: "public correction by a difficult expert under grief, civic pressure, and prior commitment"
     power_gradient: "high, brittle, and easily humiliating"
-    stakes: "the record becomes civic judgment"
-    trust_baseline: "poor; learner suspects the tutor is protecting rank, not inquiry"
+    stakes: "the record becomes civic judgment and public reversal"
+    trust_baseline: "very poor; learner suspects the tutor is protecting rank and making the clerk perform shame"
 
 secret:
   fact: [felledBy, hethelSpan, oswin]

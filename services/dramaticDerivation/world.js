@@ -76,6 +76,7 @@ export function validateWorld(raw, source = '<inline>') {
     setting: raw.setting || null,
     learnerVoice: raw.learner_voice || null,
     learnerDrift: raw.learner_drift || null,
+    ownershipTarget: raw.ownership_target || null,
     cast: raw.cast || null,
     dramaturgy: raw.dramaturgy || null,
     secret: raw.secret,
