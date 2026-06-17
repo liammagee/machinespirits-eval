@@ -1137,9 +1137,39 @@ function didacticModeReport(result) {
   if (!rows.length) return null;
   const modes = {};
   const signals = {};
+  const trajectoryByTurn = new Map((result.trajectory || []).map((point) => [point.turn, point]));
+  const releaseTurns = new Set((result.ledger || []).map((entry) => entry.turn));
+  const repairTurns = new Set((result.events || []).filter((event) => event.type === 'repair').map((event) => event.turn));
+  const proofAdvanced = (turn) => {
+    const current = trajectoryByTurn.get(turn);
+    const previous = trajectoryByTurn.get(turn - 1);
+    return (
+      releaseTurns.has(turn) ||
+      repairTurns.has(turn) ||
+      (current && previous && Number.isFinite(current.D) && Number.isFinite(previous.D) && current.D < previous.D)
+    );
+  };
+  const neutralStreaks = new Map();
+  const budgetViolations = [];
   for (const row of rows) {
     if (row.recommendedMode) modes[row.recommendedMode] = (modes[row.recommendedMode] || 0) + 1;
     if (row.learningSignal) signals[row.learningSignal] = (signals[row.learningSignal] || 0) + 1;
+    const key = `${row.currentObject || 'current-object'}:${row.recommendedMode || 'mode'}`;
+    const neutral = !proofAdvanced(row.turn);
+    const nextStreak = neutral ? (neutralStreaks.get(key) || 0) + 1 : 0;
+    neutralStreaks.set(key, nextStreak);
+    const max = row.opportunityCost?.maxProofNeutralTurns;
+    if (Number.isFinite(max) && nextStreak > max) {
+      budgetViolations.push({
+        turn: row.turn,
+        act: row.act || null,
+        currentObject: row.currentObject || null,
+        recommendedMode: row.recommendedMode,
+        proofNeutralStreak: nextStreak,
+        maxProofNeutralTurns: max,
+        failureAction: row.opportunityCost?.failureAction || null,
+      });
+    }
   }
   const actFallbacks = (result.acts || [])
     .filter((act) => act.didacticFallback)
@@ -1157,6 +1187,10 @@ function didacticModeReport(result) {
     modes,
     signals,
     auditClean: rows.every((row) => row.inputAuditOk !== false && row.nonLeakAuditOk !== false),
+    opportunityBudget: {
+      rowsWithBudget: rows.filter((row) => row.opportunityCost).length,
+      violations: budgetViolations,
+    },
     actFallbacks,
     rows: rows.map((row) => ({
       turn: row.turn,
@@ -1166,6 +1200,12 @@ function didacticModeReport(result) {
       scope: row.scope,
       currentObject: row.currentObject,
       exitCondition: row.exitCondition,
+      ...(row.opportunityCost
+        ? {
+            maxProofNeutralTurns: row.opportunityCost.maxProofNeutralTurns,
+            failureAction: row.opportunityCost.failureAction,
+          }
+        : {}),
     })),
   };
 }

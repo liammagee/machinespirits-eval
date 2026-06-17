@@ -19,11 +19,20 @@ export {
 } from './discursiveCalibration.js';
 export {
   auditDidacticModePublicInput,
+  deriveDidacticOpportunityBudget,
   deriveDidacticModeState,
   DIDACTIC_ACT_FALLBACK_SCHEMA,
   DIDACTIC_MODE_FAMILIES,
   DIDACTIC_MODE_SCHEMA,
+  DIDACTIC_OPPORTUNITY_BUDGET_SCHEMA,
 } from './didacticMode.js';
+export {
+  auditObjectOwnershipPublicInput,
+  deriveObjectOwnershipState,
+  OBJECT_OWNERSHIP_SCHEMA,
+  OWNERSHIP_PROBE_FAMILIES,
+  summarizeOwnershipStates,
+} from './objectOwnership.js';
 export {
   auditConductTutorView,
   auditConductGeneratorCompliance,

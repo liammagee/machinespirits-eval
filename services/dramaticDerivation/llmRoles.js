@@ -452,6 +452,12 @@ function didacticModeLines(state) {
     `- current object: ${state.currentObject || 'the current public object'}`,
     `- signal: ${state.learningSignal}; mode: ${state.recommendedMode}; scope: ${state.scope}`,
     `- exit condition: ${state.exitCondition}`,
+    ...(state.opportunityCost
+      ? [
+          `- opportunity budget: at most ${state.opportunityCost.maxProofNeutralTurns} proof-neutral learner turn(s) before resuming the proof obligation`,
+          `- on budget failure: ${state.opportunityCost.failureAction}`,
+        ]
+      : []),
     ...(Array.isArray(state.evidence) && state.evidence.length
       ? [`- public evidence: ${state.evidence.slice(0, 2).join('; ')}`]
       : []),

@@ -984,6 +984,15 @@ export async function runDrama({ world, roles, options = {} }) {
         recommendedMode: tutorOut.didacticMode.recommendedMode || null,
         scope: tutorOut.didacticMode.scope || null,
         exitCondition: tutorOut.didacticMode.exitCondition || null,
+        ...(tutorOut.didacticMode.opportunityCost
+          ? {
+              opportunityCost: {
+                maxProofNeutralTurns: tutorOut.didacticMode.opportunityCost.maxProofNeutralTurns,
+                failureAction: tutorOut.didacticMode.opportunityCost.failureAction,
+                proofObligationPreserved: tutorOut.didacticMode.opportunityCost.proofObligationPreserved === true,
+              },
+            }
+          : {}),
         evidence: Array.isArray(tutorOut.didacticMode.evidence) ? tutorOut.didacticMode.evidence.slice(0, 4) : [],
         inputAuditOk: tutorOut.didacticMode.inputAudit?.ok === true,
         nonLeakAuditOk: tutorOut.didacticMode.nonLeakAudit?.ok === true,

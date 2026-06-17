@@ -6,7 +6,9 @@ import {
   DIDACTIC_ACT_FALLBACK_SCHEMA,
   DIDACTIC_MODE_FAMILIES,
   DIDACTIC_MODE_SCHEMA,
+  DIDACTIC_OPPORTUNITY_BUDGET_SCHEMA,
   auditDidacticModePublicInput,
+  deriveDidacticOpportunityBudget,
   deriveDidacticModeState,
   loadWorld,
   recommendRhetoricalMove,
@@ -70,7 +72,20 @@ test('echo without ownership maps to teach_back', () => {
   assert.equal(state.recommendedMode, 'teach_back');
   assert.equal(state.scope, 'scene');
   assert.match(state.exitCondition, /own words/u);
+  assert.equal(state.opportunityCost.schema, DIDACTIC_OPPORTUNITY_BUDGET_SCHEMA);
+  assert.equal(state.opportunityCost.maxProofNeutralTurns, 1);
+  assert.equal(state.opportunityCost.mayOverrideProofControl, false);
   assert.ok(state.evidence.some((line) => /echo/i.test(line)));
+});
+
+test('didactic opportunity budget preserves proof obligation and declares failure action', () => {
+  const budget = deriveDidacticOpportunityBudget('decompose_subtask');
+
+  assert.equal(budget.schema, DIDACTIC_OPPORTUNITY_BUDGET_SCHEMA);
+  assert.equal(budget.publicOnly, true);
+  assert.equal(budget.proofObligationPreserved, true);
+  assert.equal(budget.maxProofNeutralTurns, 1);
+  assert.match(budget.failureAction, /hidden_proofdebt/u);
 });
 
 test('repeated confusion maps to slow_recap', () => {
@@ -244,6 +259,7 @@ test('act boundary carries public didactic fallback into the next act', async ()
 
   assert.equal(result.didacticMode.length, 1);
   assert.equal(result.didacticMode[0].recommendedMode, 'decompose_subtask');
+  assert.equal(result.didacticMode[0].opportunityCost.maxProofNeutralTurns, 1);
   assert.equal(result.acts[0].didacticFallback.schema, DIDACTIC_ACT_FALLBACK_SCHEMA);
   assert.equal(result.acts[0].didacticFallback.recommendedMode, 'decompose_subtask');
   assert.equal(result.acts[0].didacticFallback.mayOverrideProofControl, false);

@@ -1,5 +1,6 @@
 export const DIDACTIC_MODE_SCHEMA = 'dramatic-derivation.didactic-mode.v0';
 export const DIDACTIC_ACT_FALLBACK_SCHEMA = 'dramatic-derivation.didactic-act-fallback.v0';
+export const DIDACTIC_OPPORTUNITY_BUDGET_SCHEMA = 'dramatic-derivation.didactic-opportunity-budget.v0';
 
 export const DIDACTIC_MODE_FAMILIES = Object.freeze([
   'teach_back',
@@ -46,6 +47,17 @@ const MODE_EXIT_CONDITIONS = Object.freeze({
   purpose_bridge: 'learner connects the evidence to the current question',
   decompose_subtask: 'learner completes the smaller subtask without a leap',
   repair_vocabulary: 'learner uses the term correctly in dialogue',
+});
+
+const MODE_PROOF_NEUTRAL_BUDGETS = Object.freeze({
+  teach_back: 1,
+  concrete_example: 1,
+  analogy_bridge: 1,
+  contrast_case: 1,
+  slow_recap: 1,
+  purpose_bridge: 1,
+  decompose_subtask: 1,
+  repair_vocabulary: 1,
 });
 
 function norm(text) {
@@ -148,11 +160,27 @@ function makeState({
     scope,
     evidence: cleanEvidence.length ? cleanEvidence : ['no public didactic pressure detected'],
     exitCondition: MODE_EXIT_CONDITIONS[mode],
+    opportunityCost: deriveDidacticOpportunityBudget(mode),
     inputAudit,
   };
   return {
     ...state,
     nonLeakAudit: auditDidacticModePublicInput(state),
+  };
+}
+
+export function deriveDidacticOpportunityBudget(mode) {
+  const selectedMode = MODE_SET.has(mode) ? mode : 'slow_recap';
+  return {
+    schema: DIDACTIC_OPPORTUNITY_BUDGET_SCHEMA,
+    publicOnly: true,
+    authority: 'advisory_budget',
+    mayOverrideProofControl: false,
+    mode: selectedMode,
+    proofObligationPreserved: true,
+    maxProofNeutralTurns: MODE_PROOF_NEUTRAL_BUDGETS[selectedMode] ?? 1,
+    exitCondition: MODE_EXIT_CONDITIONS[selectedMode],
+    failureAction: 'resume_hidden_proofdebt_obligation_mark_ownership_unproven',
   };
 }
 
