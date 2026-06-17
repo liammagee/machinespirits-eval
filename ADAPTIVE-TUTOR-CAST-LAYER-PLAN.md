@@ -1,6 +1,6 @@
 # Adaptive Tutor Cast Layer Plan
 
-**Status:** local implementation complete through Phase 6; no paid Phase 7 warranted yet  
+**Status:** local implementation complete through Phase 6; first-pass paired transcript comparison supports static cast, not default reinvention  
 **Date:** 2026-06-16  
 **Activation gate:** do not commence runtime implementation until the didactic-mode local integration/replay gates are settled, unless the first step is schema-only and read-only against existing transcripts.  
 **Primary substrate:** hidden + proofDebt proof-continuity control, with rhetorical/discursive/didactic layers advisory above it  
@@ -529,6 +529,16 @@ Interpretive rule:
   `exports/dramatic-derivation/cast-layer-local-gate/report.md`. Phase 7 paid
   validation is not warranted yet because the local gate shows proof invariance
   and discourse-control plumbing, not an uptake/turn/impasse improvement.
+- 2026-06-17 — Bounded first-pass paired transcript comparison completed on
+  Hethel with real role bridges and no rerolls. S0 no-cast, S1 static cast, and
+  S2 cast+reinvention all grounded with final D=0 and zero release deviations.
+  S1 asserted at turn 20, S2 at turn 21, S0 at turn 22. A blinded Codex
+  pairwise transcript judge preferred S1 over S0 slightly and S1 over S2
+  moderately; S2 lost both pairwise comparisons despite bounded reinvention.
+  Report:
+  `exports/dramatic-derivation/cast-layer-paired-transcript-comparison/report.md`.
+  Interpretation: keep static cast as a candidate transcript-quality default;
+  keep reinvention behind a flag pending tighter trigger/exit policy.
 
 ### Phase 0: Static Audit
 

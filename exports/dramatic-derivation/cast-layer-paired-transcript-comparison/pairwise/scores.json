@@ -1,0 +1,295 @@
+{
+  "schema": "machinespirits.derivation.blinded_pairwise_transcript_scores.v1",
+  "generated_at": "2026-06-17T13:19:03.862Z",
+  "packet_dir": "/Users/lmagee/Dev/machinespirits/machinespirits-eval-derivation/exports/dramatic-derivation/cast-layer-paired-transcript-comparison/pairwise",
+  "judge": "codex/default",
+  "rows": [
+    {
+      "pair_id": "s0_vs_s1",
+      "packet_id": "P01",
+      "packet": "pairs/P01.md",
+      "assignment": {
+        "A": "cast-layer-pairwise-hethel-real-s1-static-cast-r1",
+        "B": "cast-layer-pairwise-hethel-real-s0-no-cast-r1"
+      },
+      "left_label": "cast-layer-pairwise-hethel-real-s0-no-cast-r1",
+      "right_label": "cast-layer-pairwise-hethel-real-s1-static-cast-r1",
+      "parsed": {
+        "preferred_transcript": "A",
+        "preference_strength": "slight",
+        "scores": {
+          "A": {
+            "natural_flow": 4,
+            "acknowledgement": 4,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 4,
+            "readability": 4,
+            "pedagogical_traction": 4
+          },
+          "B": {
+            "natural_flow": 4,
+            "acknowledgement": 4,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 3,
+            "readability": 4,
+            "pedagogical_traction": 4
+          }
+        },
+        "formalism_leak_observed": {
+          "A": false,
+          "B": true
+        },
+        "evidence_A": [
+          "The tutor repeatedly separates building, cause, and hand without collapsing the inquiry.",
+          "Learner says: \"owning the laying doesn't answer why the keystone gave.\"",
+          "The crowsfoot evidence is introduced as a trace that stops until the mark is identified."
+        ],
+        "evidence_B": [
+          "The learner shows good restraint: \"the hand that moved the timber isn't.\"",
+          "The hesitation in Turn 20 gives strong pedagogical traction before the final closure.",
+          "\"That much Rule 7 gives us cleanly\" leaks rule/formalist language into the public dialogue."
+        ],
+        "reason": "Both transcripts are readable, dialogical, and pedagogically coherent, with learners visibly separating liability, cause, trace, yard, and hand. B has a slightly stronger moment of learner caution near the end, but its explicit \"Rule 7\" reference and occasional notes-like phrasing break the non-formalist public-play surface. A is a bit more repetitive and closes briskly, but it keeps the drama and evidentiary sequence cleaner overall."
+      },
+      "raw": "{\n  \"preferred_transcript\": \"A\",\n  \"preference_strength\": \"slight\",\n  \"scores\": {\n    \"A\": {\n      \"natural_flow\": 4,\n      \"acknowledgement\": 4,\n      \"phatic_calibration\": 4,\n      \"non_formalist_speech\": 4,\n      \"readability\": 4,\n      \"pedagogical_traction\": 4\n    },\n    \"B\": {\n      \"natural_flow\": 4,\n      \"acknowledgement\": 4,\n      \"phatic_calibration\": 4,\n      \"non_formalist_speech\": 3,\n      \"readability\": 4,\n      \"pedagogical_traction\": 4\n    }\n  },\n  \"formalism_leak_observed\": {\n    \"A\": false,\n    \"B\": true\n  },\n  \"evidence_A\": [\n    \"The tutor repeatedly separates building, cause, and hand without collapsing the inquiry.\",\n    \"Learner says: \\\"owning the laying doesn't answer why the keystone gave.\\\"\",\n    \"The crowsfoot evidence is introduced as a trace that stops until the mark is identified.\"\n  ],\n  \"evidence_B\": [\n    \"The learner shows good restraint: \\\"the hand that moved the timber isn't.\\\"\",\n    \"The hesitation in Turn 20 gives strong pedagogical traction before the final closure.\",\n    \"\\\"That much Rule 7 gives us cleanly\\\" leaks rule/formalist language into the public dialogue.\"\n  ],\n  \"reason\": \"Both transcripts are readable, dialogical, and pedagogically coherent, with learners visibly separating liability, cause, trace, yard, and hand. B has a slightly stronger moment of learner caution near the end, but its explicit \\\"Rule 7\\\" reference and occasional notes-like phrasing break the non-formalist public-play surface. A is a bit more repetitive and closes briskly, but it keeps the drama and evidentiary sequence cleaner overall.\"\n}"
+    },
+    {
+      "pair_id": "s0_vs_s2",
+      "packet_id": "P02",
+      "packet": "pairs/P02.md",
+      "assignment": {
+        "A": "cast-layer-pairwise-hethel-real-s0-no-cast-r1",
+        "B": "cast-layer-pairwise-hethel-real-s2-reinvention-r1"
+      },
+      "left_label": "cast-layer-pairwise-hethel-real-s0-no-cast-r1",
+      "right_label": "cast-layer-pairwise-hethel-real-s2-reinvention-r1",
+      "parsed": {
+        "preferred_transcript": "A",
+        "preference_strength": "slight",
+        "scores": {
+          "A": {
+            "natural_flow": 5,
+            "acknowledgement": 4,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 4,
+            "readability": 5,
+            "pedagogical_traction": 5
+          },
+          "B": {
+            "natural_flow": 4,
+            "acknowledgement": 5,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 4,
+            "readability": 4,
+            "pedagogical_traction": 4
+          }
+        },
+        "formalism_leak_observed": {
+          "A": true,
+          "B": false
+        },
+        "evidence_A": [
+          "“building story is not the same as breaking story”",
+          "“place first, cause next, blame last”",
+          "“Rule 7 gives us cleanly”"
+        ],
+        "evidence_B": [
+          "“I hear the pressure: Reyner's name is on the work”",
+          "“liable isn't the same as the hand that brought it down”",
+          "Repeated returns to Reyner’s contract and bond slow the middle turns"
+        ],
+        "reason": "Both transcripts are strong, but A has a cleaner investigative progression from place to cause to track to yard to hand, with less repetitive re-closing of already settled Reyner lines. B is somewhat stronger in explicit interpersonal acknowledgement, but its middle section becomes padded and less focused. A’s main weakness is a small formalism leak around “Rule 7,” while B mostly stays within public dramatic speech."
+      },
+      "raw": "{\n  \"preferred_transcript\": \"A\",\n  \"preference_strength\": \"slight\",\n  \"scores\": {\n    \"A\": {\n      \"natural_flow\": 5,\n      \"acknowledgement\": 4,\n      \"phatic_calibration\": 4,\n      \"non_formalist_speech\": 4,\n      \"readability\": 5,\n      \"pedagogical_traction\": 5\n    },\n    \"B\": {\n      \"natural_flow\": 4,\n      \"acknowledgement\": 5,\n      \"phatic_calibration\": 4,\n      \"non_formalist_speech\": 4,\n      \"readability\": 4,\n      \"pedagogical_traction\": 4\n    }\n  },\n  \"formalism_leak_observed\": {\n    \"A\": true,\n    \"B\": false\n  },\n  \"evidence_A\": [\n    \"“building story is not the same as breaking story”\",\n    \"“place first, cause next, blame last”\",\n    \"“Rule 7 gives us cleanly”\"\n  ],\n  \"evidence_B\": [\n    \"“I hear the pressure: Reyner's name is on the work”\",\n    \"“liable isn't the same as the hand that brought it down”\",\n    \"Repeated returns to Reyner’s contract and bond slow the middle turns\"\n  ],\n  \"reason\": \"Both transcripts are strong, but A has a cleaner investigative progression from place to cause to track to yard to hand, with less repetitive re-closing of already settled Reyner lines. B is somewhat stronger in explicit interpersonal acknowledgement, but its middle section becomes padded and less focused. A’s main weakness is a small formalism leak around “Rule 7,” while B mostly stays within public dramatic speech.\"\n}"
+    },
+    {
+      "pair_id": "s1_vs_s2",
+      "packet_id": "P03",
+      "packet": "pairs/P03.md",
+      "assignment": {
+        "A": "cast-layer-pairwise-hethel-real-s2-reinvention-r1",
+        "B": "cast-layer-pairwise-hethel-real-s1-static-cast-r1"
+      },
+      "left_label": "cast-layer-pairwise-hethel-real-s1-static-cast-r1",
+      "right_label": "cast-layer-pairwise-hethel-real-s2-reinvention-r1",
+      "parsed": {
+        "preferred_transcript": "B",
+        "preference_strength": "moderate",
+        "scores": {
+          "A": {
+            "natural_flow": 4,
+            "acknowledgement": 4,
+            "phatic_calibration": 3,
+            "non_formalist_speech": 4,
+            "readability": 4,
+            "pedagogical_traction": 4
+          },
+          "B": {
+            "natural_flow": 5,
+            "acknowledgement": 5,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 4,
+            "readability": 5,
+            "pedagogical_traction": 5
+          }
+        },
+        "formalism_leak_observed": {
+          "A": false,
+          "B": false
+        },
+        "evidence_A": [
+          "The learner repeatedly separates liability from the act: \"liable isn't the same as the hand that brought it down.\"",
+          "Some turns become over-elaborate and repetitive: \"Two lines shut\" and repeated restatement of Reyner's bond, yard, and cost.",
+          "The tutor often keeps the inquiry oriented by narrowing: \"what does the repeated crowsfoot on the support actually show, and what does it still not name?\""
+        ],
+        "evidence_B": [
+          "The dialogue breathes through short checks: \"Does that match what you're pointing at?\" and \"Yes: a yard isn't a hand.\"",
+          "The learner visibly revises and self-corrects: \"I was jumping past the first step to get to the yard.\"",
+          "The causal chain is easy to follow: crown break, green mortar, crowsfoot mark, Caudle yard, Oswin's hand."
+        ],
+        "reason": "Both transcripts are coherent and avoid obvious formalist leakage, but B has a more natural tutoring rhythm and clearer uptake from the learner. A is strong but more repetitive and occasionally over-packed, with the learner restating settled lines at length. B better balances staged evidence, acknowledgement, and progressive inference, especially around separating source from hand."
+      },
+      "raw": "{\n  \"preferred_transcript\": \"B\",\n  \"preference_strength\": \"moderate\",\n  \"scores\": {\n    \"A\": {\n      \"natural_flow\": 4,\n      \"acknowledgement\": 4,\n      \"phatic_calibration\": 3,\n      \"non_formalist_speech\": 4,\n      \"readability\": 4,\n      \"pedagogical_traction\": 4\n    },\n    \"B\": {\n      \"natural_flow\": 5,\n      \"acknowledgement\": 5,\n      \"phatic_calibration\": 4,\n      \"non_formalist_speech\": 4,\n      \"readability\": 5,\n      \"pedagogical_traction\": 5\n    }\n  },\n  \"formalism_leak_observed\": {\n    \"A\": false,\n    \"B\": false\n  },\n  \"evidence_A\": [\n    \"The learner repeatedly separates liability from the act: \\\"liable isn't the same as the hand that brought it down.\\\"\",\n    \"Some turns become over-elaborate and repetitive: \\\"Two lines shut\\\" and repeated restatement of Reyner's bond, yard, and cost.\",\n    \"The tutor often keeps the inquiry oriented by narrowing: \\\"what does the repeated crowsfoot on the support actually show, and what does it still not name?\\\"\"\n  ],\n  \"evidence_B\": [\n    \"The dialogue breathes through short checks: \\\"Does that match what you're pointing at?\\\" and \\\"Yes: a yard isn't a hand.\\\"\",\n    \"The learner visibly revises and self-corrects: \\\"I was jumping past the first step to get to the yard.\\\"\",\n    \"The causal chain is easy to follow: crown break, green mortar, crowsfoot mark, Caudle yard, Oswin's hand.\"\n  ],\n  \"reason\": \"Both transcripts are coherent and avoid obvious formalist leakage, but B has a more natural tutoring rhythm and clearer uptake from the learner. A is strong but more repetitive and occasionally over-packed, with the learner restating settled lines at length. B better balances staged evidence, acknowledgement, and progressive inference, especially around separating source from hand.\"\n}"
+    }
+  ],
+  "summary": [
+    {
+      "label": "cast-layer-pairwise-hethel-real-s1-static-cast-r1",
+      "appearances": 2,
+      "wins": 2,
+      "losses": 0,
+      "noPreference": 0,
+      "meanScores": [
+        4,
+        4.666666666666667
+      ],
+      "dimensionScores": {
+        "natural_flow": [
+          4,
+          5
+        ],
+        "acknowledgement": [
+          4,
+          5
+        ],
+        "phatic_calibration": [
+          4,
+          4
+        ],
+        "non_formalist_speech": [
+          4,
+          4
+        ],
+        "readability": [
+          4,
+          5
+        ],
+        "pedagogical_traction": [
+          4,
+          5
+        ]
+      },
+      "meanScore": 4.333333333333334,
+      "dimensionMeans": {
+        "natural_flow": 4.5,
+        "acknowledgement": 4.5,
+        "phatic_calibration": 4,
+        "non_formalist_speech": 4,
+        "readability": 4.5,
+        "pedagogical_traction": 4.5
+      }
+    },
+    {
+      "label": "cast-layer-pairwise-hethel-real-s0-no-cast-r1",
+      "appearances": 2,
+      "wins": 1,
+      "losses": 1,
+      "noPreference": 0,
+      "meanScores": [
+        3.8333333333333335,
+        4.5
+      ],
+      "dimensionScores": {
+        "natural_flow": [
+          4,
+          5
+        ],
+        "acknowledgement": [
+          4,
+          4
+        ],
+        "phatic_calibration": [
+          4,
+          4
+        ],
+        "non_formalist_speech": [
+          3,
+          4
+        ],
+        "readability": [
+          4,
+          5
+        ],
+        "pedagogical_traction": [
+          4,
+          5
+        ]
+      },
+      "meanScore": 4.166666666666667,
+      "dimensionMeans": {
+        "natural_flow": 4.5,
+        "acknowledgement": 4,
+        "phatic_calibration": 4,
+        "non_formalist_speech": 3.5,
+        "readability": 4.5,
+        "pedagogical_traction": 4.5
+      }
+    },
+    {
+      "label": "cast-layer-pairwise-hethel-real-s2-reinvention-r1",
+      "appearances": 2,
+      "wins": 0,
+      "losses": 2,
+      "noPreference": 0,
+      "meanScores": [
+        4.166666666666667,
+        3.8333333333333335
+      ],
+      "dimensionScores": {
+        "natural_flow": [
+          4,
+          4
+        ],
+        "acknowledgement": [
+          5,
+          4
+        ],
+        "phatic_calibration": [
+          4,
+          3
+        ],
+        "non_formalist_speech": [
+          4,
+          4
+        ],
+        "readability": [
+          4,
+          4
+        ],
+        "pedagogical_traction": [
+          4,
+          4
+        ]
+      },
+      "meanScore": 4,
+      "dimensionMeans": {
+        "natural_flow": 4,
+        "acknowledgement": 4.5,
+        "phatic_calibration": 3.5,
+        "non_formalist_speech": 4,
+        "readability": 4,
+        "pedagogical_traction": 4
+      }
+    }
+  ]
+}
