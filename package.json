@@ -103,6 +103,7 @@
     "derivation:a21-microbench": "node scripts/a21-run-microbench.js",
     "derivation:a21-analyze": "node scripts/a21-analyze-microbench.js",
     "derivation:a21-report": "node scripts/a21-report.js",
+    "derivation:ownership-eval": "node scripts/derivation-ownership-eval.js",
     "poetics:ingest": "node scripts/ingest-poetics-artifacts.js",
     "poetics:report": "node scripts/report-poetics-sidecar.js",
     "poetics:adaptation": "node scripts/analyze-poetics-tutor-adaptation.js",

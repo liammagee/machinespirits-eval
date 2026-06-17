@@ -95,6 +95,9 @@ Gate:
 - run on existing Hethel/Withercombe/Ravensmark pairs before any paid run;
 - report whether any S1 shows ownership gain at matched reliability.
 
+Status: implemented in `scripts/derivation-ownership-eval.js` with npm alias
+`npm run derivation:ownership-eval -- ...`.
+
 ## Phase 4: Coarse Evaluation Loop
 
 Run the scorer on available matched pairs:
@@ -113,6 +116,10 @@ Decision:
 - If all pairs show null or worse ownership, stop the policy arc and keep the
   ownership scorer as evaluator infrastructure.
 
+Status: first zero-paid coarse pass completed under
+`exports/dramatic-derivation/ownership-eval/`. No tested pair showed a coarse
+ownership gain at matched proof reliability.
+
 ## Phase 5: Closeout
 
 Write a compact report under `exports/dramatic-derivation/` with:
@@ -125,3 +132,5 @@ Write a compact report under `exports/dramatic-derivation/` with:
 
 No paid run is warranted unless Phase 4 shows a local ownership gain at matched
 proof reliability.
+
+Status: no paid run warranted from the first ownership-eval pass.
