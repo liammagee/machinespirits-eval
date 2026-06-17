@@ -27,6 +27,14 @@ export {
   DIDACTIC_OPPORTUNITY_BUDGET_SCHEMA,
 } from './didacticMode.js';
 export {
+  auditCastLayerPublicInput,
+  CAST_LAYER_SCHEMA,
+  CAST_REINVENTION_TRIGGERS,
+  deriveCastState,
+  projectCastStateForRole,
+  TUTOR_REINVENTION_SCHEMA,
+} from './castLayer.js';
+export {
   auditObjectOwnershipPublicInput,
   deriveObjectOwnershipState,
   OBJECT_OWNERSHIP_SCHEMA,
