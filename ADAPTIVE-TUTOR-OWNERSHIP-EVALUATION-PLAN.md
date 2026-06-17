@@ -134,3 +134,39 @@ No paid run is warranted unless Phase 4 shows a local ownership gain at matched
 proof reliability.
 
 Status: no paid run warranted from the first ownership-eval pass.
+
+## Phase 6: Proof-Matched Ownership Benchmark
+
+`codex_ownership_closeout_analysis.md` tightened the next requirement:
+
+- do not add a new policy;
+- do not tune the scorer until it finds a win;
+- validate the evaluator on proof-matched ownership controls before mining more
+  artifacts.
+
+Implemented a zero-paid benchmark with 12 declared controls:
+
+- 4 positive controls: same proof state and release signature, higher ownership
+  should be detected;
+- 4 negative controls: warmer or more fluent prose without ownership should
+  remain null;
+- 4 disqualification controls: apparent ownership gains with changed
+  proof/release state should be rejected.
+
+Status: implemented in `services/dramaticDerivation/ownershipBenchmark.js` with
+npm alias `npm run derivation:ownership-benchmark -- ...`.
+
+Result:
+
+- benchmark controls passed 12/12 under
+  `exports/dramatic-derivation/ownership-benchmark/`;
+- the post-benchmark mined-artifact pass remained negative:
+  - `phase9-hethel`: matched reliability, ownership delta +0.38, below gate;
+  - `didactic-hethel`: matched reliability, ownership delta +0.00;
+  - Withercombe/Ravensmark/Hethel promoted overlays: ownership movement remains
+    disqualified by proof/release mismatch.
+
+Decision: the evaluator is now calibrated enough for this local question, and
+the answer is still no qualifying proof-safe ownership gain. Do not launch paid
+validation or promote a didactic/ownership runtime policy from the current
+artifact pool.

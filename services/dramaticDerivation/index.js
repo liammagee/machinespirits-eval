@@ -34,6 +34,12 @@ export {
   summarizeOwnershipStates,
 } from './objectOwnership.js';
 export {
+  evaluateOwnershipBenchmark,
+  OWNERSHIP_BENCHMARK_CASES,
+  OWNERSHIP_BENCHMARK_SCHEMA,
+  renderOwnershipBenchmarkMarkdown,
+} from './ownershipBenchmark.js';
+export {
   auditConductTutorView,
   auditConductGeneratorCompliance,
   CONDUCT_COMPLIANCE_SCHEMA,

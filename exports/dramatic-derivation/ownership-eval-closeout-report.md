@@ -143,3 +143,47 @@ warrant a paid mini-run.
 
 The stronger next evaluation frame is still likely blinded pairwise transcript
 rubric scoring, with this ownership evaluator as a mechanical pre-screen.
+
+## Follow-Up: Proof-Matched Benchmark
+
+`codex_ownership_closeout_analysis.md` correctly sharpened the next object:
+before using the ownership scorer to mine new artifacts, validate it against
+proof-matched controls.
+
+Implemented `services/dramaticDerivation/ownershipBenchmark.js` and
+`scripts/derivation-ownership-benchmark.js`.
+
+Benchmark command:
+
+```bash
+npm run derivation:ownership-benchmark -- --out exports/dramatic-derivation/ownership-benchmark
+```
+
+Benchmark result:
+
+| Control class | Count | Passed | Meaning |
+| --- | ---: | ---: | --- |
+| positive controls | 4 | 4 | detects ownership gain with proof state fixed |
+| negative controls | 4 | 4 | does not reward warmer prose or phatic texture |
+| disqualification controls | 4 | 4 | rejects gains confounded by proof/release changes |
+
+Report:
+
+- `exports/dramatic-derivation/ownership-benchmark/ownership-benchmark-report.md`
+
+Post-benchmark artifact pass:
+
+| Pair | Reliability matched | Ownership delta | Decision |
+| --- | --- | ---: | --- |
+| `phase9-hethel` | yes | +0.38 | below ownership-gain gate |
+| `didactic-hethel` | yes | +0.00 | no ownership gain |
+| `phase5g-withercombe` | no | +0.67 | disqualified by release/proof mismatch |
+| `phase5g-ravensmark` | no | +0.60 | disqualified by release/proof mismatch |
+| `phase5g-hethel` | no | +0.42 | disqualified by proof failure |
+
+Updated decision:
+
+The evaluator passes the declared controls, but the current artifact pool still
+does not contain a qualifying proof-safe ownership delta. This closes the
+current A20/A21 ownership-promotion path more firmly: no paid run and no runtime
+policy promotion are warranted from these artifacts.
