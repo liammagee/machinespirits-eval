@@ -35,6 +35,12 @@ export {
   TUTOR_REINVENTION_SCHEMA,
 } from './castLayer.js';
 export {
+  auditLearnerDriftPublicInput,
+  deriveLearnerDriftState,
+  LEARNER_DRIFT_SCHEMA,
+  learnerDriftLines,
+} from './learnerDrift.js';
+export {
   auditObjectOwnershipPublicInput,
   deriveObjectOwnershipState,
   OBJECT_OWNERSHIP_SCHEMA,

@@ -282,6 +282,12 @@
  *                                       tone/figure/tempo/example/recognition
  *                                       conduct only, never release/restore/
  *                                       hold/assertion/proof target.)
+ *     [--learner-drift]                (public learner character drift, if the
+ *                                       world declares learner_drift. The
+ *                                       learner may harden under brittle
+ *                                       correction or soften under explicit
+ *                                       acknowledgement. Speech/uptake only;
+ *                                       no proof-control authority.)
  *     [--critic auto|real|mock|off]    (post-run critic's notice; auto = follow
  *                                       the run mode — real dramas get the
  *                                       Fable notice, mock dramas the
@@ -394,6 +400,7 @@ function liveTurnRecord(summary) {
     didacticMode: summary.didacticMode || null,
     castState: summary.castState || null,
     tutorReinvention: summary.tutorReinvention || null,
+    learnerDrift: summary.learnerDrift || null,
     events: summary.events || [],
     lines: (summary.lines || []).filter(publicLine).map(line),
     ...(summary.decayedNow?.length ? { decayedNow: summary.decayedNow } : {}),
@@ -769,6 +776,7 @@ async function main() {
   const didacticMode = flag('didactic-mode');
   const castLayer = flag('cast-layer');
   const castReinvention = flag('cast-reinvention');
+  const learnerDrift = flag('learner-drift');
   if (castReinvention && !castLayer) {
     console.error('--cast-reinvention requires --cast-layer');
     process.exit(1);
@@ -1057,6 +1065,9 @@ async function main() {
       `cast    LAYER ON${castReinvention ? ' + REINVENTION ON' : ''} — public character/relation conduct advisory only`,
     );
   }
+  if (learnerDrift) {
+    console.log('learner DRIFT ON — public learner stance may harden or soften from recent dialogue only');
+  }
   if (decay) {
     console.log(
       `decay   seed ${decay.seed} · rate ${decay.rate} · grace ${decay.graceTurns} · maxConcurrent ${decay.maxConcurrent} · from turn ${decay.startTurn}${decay.mutateShare ? ` · mutateShare ${decay.mutateShare} (slips may misremember, not just vanish)` : ''}${decay.pool === 'staged' ? ' · pool STAGED (false forms confuse only met-on-stage names)' : ''}`,
@@ -1120,6 +1131,8 @@ async function main() {
       sameTurnAssertionAffordance,
       cast: world.cast,
       castLayer,
+      learnerDrift: world.learnerDrift,
+      learnerDriftLayer: learnerDrift,
     }),
   };
 
@@ -1137,6 +1150,7 @@ async function main() {
     }
     if (s.castState?.tutor?.currentStance) bits.push(`cast ${s.castState.tutor.currentStance}`);
     if (s.tutorReinvention?.active) bits.push(`reinvent ${s.tutorReinvention.toStance}`);
+    if (s.learnerDrift?.mode) bits.push(`L-drift ${s.learnerDrift.mode}`);
     if (s.closedScene) bits.push(`scene ${s.closedScene.index} ${s.closedScene.status}`);
     if (s.phase && s.phase.turn === s.turn) bits.push(`movement "${s.phase.name}"`);
     if (s.intervened) bits.push('✎ superego');
@@ -1253,6 +1267,7 @@ async function main() {
     didacticMode,
     castLayer,
     castReinvention,
+    learnerDrift,
     elapsedMs,
     usage,
     ...diagnose(result, world),

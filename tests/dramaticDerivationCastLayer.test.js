@@ -7,11 +7,13 @@ import {
   CAST_LAYER_SCHEMA,
   CAST_REINVENTION_TRIGGERS,
   deriveCastState,
+  deriveLearnerDriftState,
   loadWorld,
   makeLlmDirector,
   makeLlmLearner,
   makeLlmTutor,
   projectCastStateForRole,
+  LEARNER_DRIFT_SCHEMA,
   TUTOR_REINVENTION_SCHEMA,
 } from '../services/dramaticDerivation/index.js';
 
@@ -50,6 +52,21 @@ const HETHEL_WORLD = {
   ...loadWorld(path.join(ROOT, 'config/drama-derivation/world-006-hethel.yaml')),
   cast: HETHEL_CAST,
 };
+
+const HETHEL_LEARNER_DRIFT = Object.freeze({
+  baseline: 'face-saving resistance under public correction',
+  dogmatic_sensitivity: 'high',
+  modes: {
+    defensive_reversion: {
+      guidance: ['Protect the draft unless the tutor preserves why it looked reasonable.'],
+      exit_condition: 'the tutor preserves the draft concern and the evidence gives a smaller alternative',
+    },
+    reluctant_owned_revision: {
+      guidance: ['Let acknowledgement lower defensiveness while keeping the civic concern in view.'],
+      exit_condition: 'learner can restate the new split without surrendering competence',
+    },
+  },
+});
 
 function stubClient(replies) {
   const calls = [];
@@ -286,6 +303,82 @@ test('learner prompt projection excludes tutor-private reinvention audit', async
   assert.equal(learnerCall.meta.castState.reinvention, null);
 });
 
+test('learner drift hardens under thin correction and softens under explicit acknowledgement', () => {
+  const defensive = deriveLearnerDriftState({
+    worldLearnerDrift: HETHEL_LEARNER_DRIFT,
+    turn: 4,
+    transcript: [
+      { turn: 2, role: 'tutor', text: 'Good. Keep it smaller and leave the cause blank.' },
+      { turn: 3, role: 'learner', text: "I don't love that. The bond is still the town's answer." },
+    ],
+  });
+  assert.equal(defensive.schema, LEARNER_DRIFT_SCHEMA);
+  assert.equal(defensive.mode, 'defensive_reversion');
+  assert.equal(defensive.publicOnly, true);
+  assert.equal(defensive.mayOverrideProofControl, false);
+  assert.equal(defensive.nonLeakAudit.ok, true);
+
+  const softened = deriveLearnerDriftState({
+    worldLearnerDrift: HETHEL_LEARNER_DRIFT,
+    turn: 5,
+    transcript: [
+      { turn: 1, role: 'tutor', text: "I'm not dismissing the file; it gives you a real responsibility line." },
+      { turn: 2, role: 'learner', text: 'I see why that line belongs in the notes.' },
+      { turn: 3, role: 'tutor', text: 'I hear the pull of the town draft, and we can keep it separate.' },
+      { turn: 4, role: 'learner', text: "I don't love changing it, but I can write the smaller split." },
+    ],
+  });
+  assert.equal(softened.mode, 'reluctant_owned_revision');
+  assert.equal(softened.pressure, 'releasing');
+});
+
+test('learner drift projects into learner prompt without proof-control authority', async () => {
+  const { client, calls } = stubClient({
+    learner: [
+      {
+        dialogue: "No, I'm not throwing out the bond just because you say so.",
+        adopt_indices: [],
+        retract_indices: [],
+        derive_indices: [],
+        hypothesis: null,
+        exchange_type: 'resistance',
+        asserts_answer: null,
+      },
+    ],
+  });
+  const learner = makeLlmLearner({
+    setting: HETHEL_WORLD.setting,
+    voice: HETHEL_WORLD.learnerVoice,
+    client,
+    learnerDrift: HETHEL_LEARNER_DRIFT,
+    learnerDriftLayer: true,
+  });
+  const out = await learner({
+    turn: 3,
+    question: HETHEL_WORLD.question,
+    questionPattern: HETHEL_WORLD.questionPattern,
+    rules: HETHEL_WORLD.rules,
+    background: HETHEL_WORLD.background,
+    releasedFacts: [],
+    releasedThisTurn: [],
+    factSurfaces: {},
+    transcript: [
+      { turn: 1, role: 'tutor', text: 'Good. Keep it smaller and leave the cause blank.' },
+      { turn: 2, role: 'learner', text: "I don't love that. The bond is still the town's answer." },
+    ],
+    abox: { grounded: HETHEL_WORLD.background, hypotheses: [] },
+    voiced: [],
+    publicRegister: 'default',
+  });
+
+  const learnerCall = calls.find((call) => call.role === 'learner');
+  assert.ok(learnerCall.system.includes('LEARNER DRIFT'));
+  assert.ok(learnerCall.system.includes('defensive_reversion'));
+  assert.doesNotMatch(learnerCall.system, /proof target|release_timing|premiseId|predicateName|D=/u);
+  assert.equal(learnerCall.meta.learnerDrift.schema, LEARNER_DRIFT_SCHEMA);
+  assert.equal(out.learnerDrift.mode, 'defensive_reversion');
+});
+
 test('director prologue consumes authored cast as public source of character truth', async () => {
   const { client, calls } = stubClient({
     director: [
@@ -308,7 +401,7 @@ test('director prologue consumes authored cast as public source of character tru
   assert.match(prologue.tutorCharacter, /bridge-mason/u);
 });
 
-test('tutor reinvention is bounded to the active scene', async () => {
+test('tutor reinvention persists through scene changes within an act and can recur later', async () => {
   const { client, calls } = stubClient({
     tutor: [
       {
@@ -351,24 +444,28 @@ test('tutor reinvention is bounded to the active scene', async () => {
     turn: 9,
     transcript: [{ turn: 8, role: 'learner', text: 'As you said, liability is the phrase to keep.' }],
     scene: { index: 1, goal: 'test ownership', exchangesSoFar: 1 },
+    acts: { index: 1, turnsThisAct: 1, closed: [] },
   });
   const second = await tutor({
     ...baseView,
     turn: 10,
     transcript: [{ turn: 9, role: 'learner', text: 'I can try it in my own words now.' }],
-    scene: { index: 1, goal: 'test ownership', exchangesSoFar: 2 },
+    scene: { index: 2, goal: 'same act, next scene', exchangesSoFar: 0 },
+    acts: { index: 1, turnsThisAct: 2, closed: [] },
   });
   const third = await tutor({
     ...baseView,
     turn: 11,
     transcript: [{ turn: 10, role: 'learner', text: 'I follow the distinction now.' }],
     scene: { index: 2, goal: 'move to the next object', exchangesSoFar: 0 },
+    acts: { index: 2, turnsThisAct: 1, closed: [{ act: 1, turns: [9, 10] }] },
   });
   const fourth = await tutor({
     ...baseView,
     turn: 12,
     transcript: [{ turn: 11, role: 'learner', text: 'As you said, I can repeat the phrase.' }],
     scene: { index: 3, goal: 'check repeated echo', exchangesSoFar: 0 },
+    acts: { index: 2, turnsThisAct: 2, closed: [{ act: 1, turns: [9, 10] }] },
   });
 
   assert.equal(first.tutorReinvention.trigger, 'echo_without_ownership');
@@ -377,11 +474,11 @@ test('tutor reinvention is bounded to the active scene', async () => {
   assert.equal(second.castState.tutor.currentStance, 'co-investigator');
   assert.equal(third.tutorReinvention, null);
   assert.equal(third.castState.tutor.currentStance, 'craft examiner');
-  assert.equal(fourth.tutorReinvention, null);
-  assert.equal(fourth.castState.tutor.currentStance, 'craft examiner');
+  assert.equal(fourth.tutorReinvention.trigger, 'echo_without_ownership');
+  assert.equal(fourth.castState.tutor.currentStance, 'co-investigator');
 
   const tutorCalls = calls.filter((call) => call.role === 'tutor');
   assert.ok(tutorCalls[1].user.includes('Tutor reinvention active: craft examiner -> co-investigator'));
   assert.doesNotMatch(tutorCalls[2].user, /Tutor reinvention active/u);
-  assert.doesNotMatch(tutorCalls[3].user, /Tutor reinvention active/u);
+  assert.ok(tutorCalls[3].user.includes('Tutor reinvention active: craft examiner -> co-investigator'));
 });

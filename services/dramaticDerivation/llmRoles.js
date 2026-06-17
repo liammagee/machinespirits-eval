@@ -34,6 +34,7 @@ import {
 } from './rhetoricalMovePolicy.js';
 import { auditConductGeneratorCompliance, CONDUCT_POLICY_SCHEMA, selectConductMove } from './conductPolicy.js';
 import { deriveCastState, projectCastStateForRole } from './castLayer.js';
+import { deriveLearnerDriftState, learnerDriftLines } from './learnerDrift.js';
 import { deriveDiscursiveCalibrationState } from './discursiveCalibration.js';
 import { deriveDidacticModeState } from './didacticMode.js';
 import { deriveEntitlementState, entitlementNeedsConduct } from './learnerEntitlement.js';
@@ -2163,7 +2164,7 @@ export function makeLlmTutor(
   // verdict across the boundary — it is what makes an off_arc verdict bind
   // the next opening's revision demand.
   const throughlineState = throughline ? { current: null, committedTurn: null, revisedTurns: [], lastArc: null } : null;
-  const castRuntimeState = castLayer ? { activeReinvention: null, sceneIndex: null, usedTriggers: new Set() } : null;
+  const castRuntimeState = castLayer ? { activeReinvention: null, sceneIndex: null, actIndex: null } : null;
   // Plot shape gate: a plot is real only when at least one field is
   // non-empty — a malformed or empty plot drops to null, which keeps the
   // engine's recording gate closed for that act (absence is visible to the
@@ -2584,8 +2585,18 @@ export function makeLlmTutor(
         })
       : null;
     const sceneIndexForCast = view.scene?.index ?? null;
+    const actIndexForCast = view.acts?.index ?? null;
     if (
       castRuntimeState?.activeReinvention &&
+      castRuntimeState.actIndex !== null &&
+      actIndexForCast !== castRuntimeState.actIndex
+    ) {
+      castRuntimeState.activeReinvention = null;
+      castRuntimeState.sceneIndex = null;
+      castRuntimeState.actIndex = null;
+    } else if (
+      castRuntimeState?.activeReinvention &&
+      castRuntimeState.actIndex === null &&
       castRuntimeState.sceneIndex !== null &&
       sceneIndexForCast !== castRuntimeState.sceneIndex
     ) {
@@ -2620,19 +2631,13 @@ export function makeLlmTutor(
       castState = deriveCastState({
         ...castInput,
         activeReinvention: castRuntimeState?.activeReinvention || null,
-        reinventionEnabled: castReinvention && !castRuntimeState?.activeReinvention && sceneIndexForCast !== null,
+        reinventionEnabled:
+          castReinvention && !castRuntimeState?.activeReinvention && (sceneIndexForCast !== null || actIndexForCast !== null),
       });
       if (castReinvention && !castRuntimeState.activeReinvention && castState.reinvention?.active) {
-        if (castRuntimeState.usedTriggers.has(castState.reinvention.trigger)) {
-          castState = deriveCastState({
-            ...castInput,
-            reinventionEnabled: false,
-          });
-        } else {
-          castRuntimeState.usedTriggers.add(castState.reinvention.trigger);
-          castRuntimeState.activeReinvention = castState.reinvention;
-          castRuntimeState.sceneIndex = sceneIndexForCast;
-        }
+        castRuntimeState.activeReinvention = castState.reinvention;
+        castRuntimeState.sceneIndex = sceneIndexForCast;
+        castRuntimeState.actIndex = actIndexForCast;
       } else if (castRuntimeState.activeReinvention) {
         castState = deriveCastState({
           ...castInput,
@@ -3753,6 +3758,7 @@ export function makeLlmTutor(
 function learnerSystem(setting, voice, view, publicRegister = 'default', opts = {}) {
   const sameTurnAssertionAffordance = Boolean(opts.sameTurnAssertionAffordance);
   const castState = opts.castState || null;
+  const learnerDriftState = opts.learnerDriftState || null;
   const terms = publicTerms(publicRegister);
   return [
     'You are the LEARNER in a staged inquiry. Your situation:',
@@ -3763,6 +3769,7 @@ function learnerSystem(setting, voice, view, publicRegister = 'default', opts = 
     `Your voice: ${(voice || 'plain, careful, first person').trim()}`,
     ...stagePrologueLines(view.stagePrologue, 'learner'),
     ...castLayerLines(castState, 'learner'),
+    ...learnerDriftLines(learnerDriftState),
     ...publicRegisterPolicy(publicRegister),
     ...(view.act
       ? [
@@ -4031,6 +4038,8 @@ export function makeLlmLearner({
   sameTurnAssertionAffordance = false,
   cast = null,
   castLayer = false,
+  learnerDrift = null,
+  learnerDriftLayer = false,
 }) {
   if (!client) throw new Error('derivation.llmRoles: makeLlmLearner requires a client');
   const effectiveAssertionGroundingGate = assertionGroundingGate || sameTurnAssertionAffordance;
@@ -4095,9 +4104,23 @@ export function makeLlmLearner({
           scene: view.scene,
           turn: view.turn,
           reinventionEnabled: false,
+      })
+      : null;
+    const learnerDriftState = learnerDriftLayer
+      ? deriveLearnerDriftState({
+          worldLearnerDrift: learnerDrift,
+          transcript: view.transcript,
+          scene: view.scene,
+          stagePrologue: view.stagePrologue,
+          turn: view.turn,
+          enabled: true,
         })
       : null;
-    const system = learnerSystem(setting, voice, view, activeRegisterName, { sameTurnAssertionAffordance, castState });
+    const system = learnerSystem(setting, voice, view, activeRegisterName, {
+      sameTurnAssertionAffordance,
+      castState,
+      learnerDriftState,
+    });
     const user = [
       `Turn ${view.turn}.${
         view.act ? ` Act ${view.act.index} — the stage shows this act only; your board carries everything else.` : ''
@@ -4154,6 +4177,7 @@ export function makeLlmLearner({
         deriveLabels: derivableCandidates.map((entry) => entry.label),
         ...(view.scene?.tempo ? { sceneTempo: view.scene.tempo } : {}),
         ...(castState ? { castState } : {}),
+        ...(learnerDriftState ? { learnerDrift: learnerDriftState } : {}),
       },
     });
 
@@ -4217,6 +4241,7 @@ export function makeLlmLearner({
             },
           }
         : {}),
+      ...(learnerDriftState ? { learnerDrift: learnerDriftState } : {}),
     };
   };
 }

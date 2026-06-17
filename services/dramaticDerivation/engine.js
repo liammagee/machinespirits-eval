@@ -1212,6 +1212,7 @@ export async function runDrama({ world, roles, options = {} }) {
         deriveOutcomes,
         hypothesis: learnerOut.hypothesis || null,
         ...(learnerOut.retractionFilter ? { retractionFilter: learnerOut.retractionFilter } : {}),
+        ...(learnerOut.learnerDrift ? { learnerDrift: learnerOut.learnerDrift } : {}),
         asserts: learnerOut.asserts || null,
         ...(learnerOut.assertionGate ? { assertionGate: learnerOut.assertionGate } : {}),
         exchangeType: learnerOut.exchangeType || null,
@@ -1404,6 +1405,15 @@ export async function runDrama({ world, roles, options = {} }) {
       overreached: deriveOutcomes.filter((o) => o.status === 'overreach').length,
       hypothesis: Boolean(learnerOut.hypothesis),
       asserted: Boolean(learnerOut.asserts),
+      ...(learnerOut.learnerDrift
+        ? {
+            learnerDrift: {
+              mode: learnerOut.learnerDrift.mode || null,
+              pressure: learnerOut.learnerDrift.pressure || null,
+              mayOverrideProofControl: learnerOut.learnerDrift.mayOverrideProofControl === true,
+            },
+          }
+        : {}),
       ...(sceneConfig
         ? {
             exchange: sceneExchange,
