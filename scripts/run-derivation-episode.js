@@ -236,6 +236,8 @@ function liveTurnRecord(summary) {
     phase: summary.phase || null,
     act: summary.act || null,
     didacticMode: summary.didacticMode || null,
+    castState: summary.castState || null,
+    tutorReinvention: summary.tutorReinvention || null,
     events: summary.events || [],
     lines: (summary.lines || []).map(line),
     ...(summary.decayedNow?.length ? { decayedNow: summary.decayedNow } : {}),
@@ -461,6 +463,20 @@ async function main() {
     triState('didactic-mode', Boolean(srcDiag.didacticMode)),
     Boolean(srcDiag.didacticMode),
   );
+  const castLayer = track(
+    'cast-layer',
+    triState('cast-layer', Boolean(srcDiag.castLayer)),
+    Boolean(srcDiag.castLayer),
+  );
+  const castReinvention = track(
+    'cast-reinvention',
+    triState('cast-reinvention', Boolean(srcDiag.castReinvention)),
+    Boolean(srcDiag.castReinvention),
+  );
+  if (castReinvention && !castLayer) {
+    console.error('--cast-reinvention on requires --cast-layer on');
+    process.exit(1);
+  }
   const registerArg = arg('register', null);
   const publicRegister =
     registerArg === null
@@ -761,6 +777,8 @@ async function main() {
       rhetoricalPolicy: rhetoricalPolicy || null,
       discursiveCalibration,
       didacticMode,
+      castLayer,
+      castReinvention,
       reconstruct,
       confront,
       repairClause,
@@ -853,6 +871,9 @@ async function main() {
   if (didacticMode) {
     console.log('didact  MODE ON — public scene/act learning signals choose explanatory mode only');
   }
+  if (castLayer) {
+    console.log(`cast    LAYER ON${castReinvention ? ' + REINVENTION ON' : ''} — public conduct advisory only`);
+  }
   if (releaseAuthority) console.log('tutor   RELEASE AUTHORITY ON — inherited/episode guard window active');
   if (pacingGuardSelector) {
     console.log(
@@ -895,7 +916,15 @@ async function main() {
   const client = makeLlmClient({ mode });
   const actsMode = Boolean(acts);
   const liveRoles = {
-    director: makeLlmDirector(world, client, { dials, dramaturgy, counsel, actsMode, publicRegister }),
+    director: makeLlmDirector(world, client, {
+      dials,
+      dramaturgy,
+      counsel,
+      actsMode,
+      publicRegister,
+      castLayer,
+      castReinvention,
+    }),
     tutor: makeLlmTutor(world, client, {
       script,
       dials,
@@ -923,6 +952,8 @@ async function main() {
       rhetoricalPolicy,
       discursiveCalibration,
       didacticMode,
+      castLayer,
+      castReinvention,
       publicRegister,
     }),
     learner: makeLlmLearner({
@@ -932,6 +963,8 @@ async function main() {
       publicRegister,
       assertionGroundingGate,
       sameTurnAssertionAffordance,
+      cast: world.cast,
+      castLayer,
     }),
   };
   const roles = makeReplayRoles({ recorded: src.result, fromTurn, live: liveRoles });
@@ -948,6 +981,8 @@ async function main() {
     if (s.didacticMode?.recommendedMode) {
       bits.push(`didactic ${s.didacticMode.recommendedMode}/${s.didacticMode.learningSignal || 'unknown'}`);
     }
+    if (s.castState?.tutor?.currentStance) bits.push(`cast ${s.castState.tutor.currentStance}`);
+    if (s.tutorReinvention?.active) bits.push(`reinvent ${s.tutorReinvention.toStance}`);
     if (s.phase && s.phase.turn === s.turn) bits.push(`movement "${s.phase.name}"`);
     if (s.intervened) bits.push('✎ superego');
     if (s.asserted) bits.push('ASSERTS');
@@ -1067,6 +1102,8 @@ async function main() {
     rhetoricalPolicy: rhetoricalPolicy || null,
     discursiveCalibration,
     didacticMode,
+    castLayer,
+    castReinvention,
     reconstruct,
     confront,
     releaseAuthority,

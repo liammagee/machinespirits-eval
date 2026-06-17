@@ -271,6 +271,17 @@
  *                                       signals and recommends how to teach the
  *                                       same proof obligation; no release,
  *                                       restore, hold, or assertion authority.)
+ *     [--cast-layer]                   (public cast layer. Projects authored
+ *                                       tutor/learner/relation character into
+ *                                       director, tutor, learner, and tutor
+ *                                       superego prompts. Advisory only; no
+ *                                       proof-control authority.)
+ *     [--cast-reinvention]             (requires --cast-layer. Allows bounded
+ *                                       tutor stance reinvention from public
+ *                                       discourse/didactic signals. Changes
+ *                                       tone/figure/tempo/example/recognition
+ *                                       conduct only, never release/restore/
+ *                                       hold/assertion/proof target.)
  *     [--critic auto|real|mock|off]    (post-run critic's notice; auto = follow
  *                                       the run mode — real dramas get the
  *                                       Fable notice, mock dramas the
@@ -381,6 +392,8 @@ function liveTurnRecord(summary) {
     closedScene: summary.closedScene || null,
     exchange: summary.exchange || null,
     didacticMode: summary.didacticMode || null,
+    castState: summary.castState || null,
+    tutorReinvention: summary.tutorReinvention || null,
     events: summary.events || [],
     lines: (summary.lines || []).filter(publicLine).map(line),
     ...(summary.decayedNow?.length ? { decayedNow: summary.decayedNow } : {}),
@@ -754,6 +767,12 @@ async function main() {
   }
   const discursiveCalibration = flag('discursive-calibration');
   const didacticMode = flag('didactic-mode');
+  const castLayer = flag('cast-layer');
+  const castReinvention = flag('cast-reinvention');
+  if (castReinvention && !castLayer) {
+    console.error('--cast-reinvention requires --cast-layer');
+    process.exit(1);
+  }
   let publicRegister;
   try {
     publicRegister = normalizePublicRegister(arg('register', null), {
@@ -872,6 +891,8 @@ async function main() {
       rhetoricalPolicy: rhetoricalPolicy || null,
       discursiveCalibration,
       didacticMode,
+      castLayer,
+      castReinvention,
     },
   });
   live.start();
@@ -1031,6 +1052,11 @@ async function main() {
   if (didacticMode) {
     console.log('didact  MODE ON — public scene/act learning signals choose explanatory mode only');
   }
+  if (castLayer) {
+    console.log(
+      `cast    LAYER ON${castReinvention ? ' + REINVENTION ON' : ''} — public character/relation conduct advisory only`,
+    );
+  }
   if (decay) {
     console.log(
       `decay   seed ${decay.seed} · rate ${decay.rate} · grace ${decay.graceTurns} · maxConcurrent ${decay.maxConcurrent} · from turn ${decay.startTurn}${decay.mutateShare ? ` · mutateShare ${decay.mutateShare} (slips may misremember, not just vanish)` : ''}${decay.pool === 'staged' ? ' · pool STAGED (false forms confuse only met-on-stage names)' : ''}`,
@@ -1046,7 +1072,15 @@ async function main() {
   const counselText = counsel ? counsel.paragraph : null;
   const actsMode = Boolean(acts);
   const roles = {
-    director: makeLlmDirector(world, client, { dials, dramaturgy, counsel: counselText, actsMode, publicRegister }),
+    director: makeLlmDirector(world, client, {
+      dials,
+      dramaturgy,
+      counsel: counselText,
+      actsMode,
+      publicRegister,
+      castLayer,
+      castReinvention,
+    }),
     tutor: makeLlmTutor(world, client, {
       script,
       dials,
@@ -1073,6 +1107,8 @@ async function main() {
       rhetoricalPolicy,
       discursiveCalibration,
       didacticMode,
+      castLayer,
+      castReinvention,
       publicRegister,
     }),
     learner: makeLlmLearner({
@@ -1082,6 +1118,8 @@ async function main() {
       publicRegister,
       assertionGroundingGate,
       sameTurnAssertionAffordance,
+      cast: world.cast,
+      castLayer,
     }),
   };
 
@@ -1097,6 +1135,8 @@ async function main() {
     if (s.didacticMode?.recommendedMode) {
       bits.push(`didactic ${s.didacticMode.recommendedMode}/${s.didacticMode.learningSignal || 'unknown'}`);
     }
+    if (s.castState?.tutor?.currentStance) bits.push(`cast ${s.castState.tutor.currentStance}`);
+    if (s.tutorReinvention?.active) bits.push(`reinvent ${s.tutorReinvention.toStance}`);
     if (s.closedScene) bits.push(`scene ${s.closedScene.index} ${s.closedScene.status}`);
     if (s.phase && s.phase.turn === s.turn) bits.push(`movement "${s.phase.name}"`);
     if (s.intervened) bits.push('✎ superego');
@@ -1211,6 +1251,8 @@ async function main() {
     rhetoricalPolicy: rhetoricalPolicy || null,
     discursiveCalibration,
     didacticMode,
+    castLayer,
+    castReinvention,
     elapsedMs,
     usage,
     ...diagnose(result, world),

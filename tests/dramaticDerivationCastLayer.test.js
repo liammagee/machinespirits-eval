@@ -1,13 +1,22 @@
 import assert from 'node:assert/strict';
+import path from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 import {
   auditCastLayerPublicInput,
   CAST_LAYER_SCHEMA,
   CAST_REINVENTION_TRIGGERS,
   deriveCastState,
+  loadWorld,
+  makeLlmDirector,
+  makeLlmLearner,
+  makeLlmTutor,
   projectCastStateForRole,
   TUTOR_REINVENTION_SCHEMA,
 } from '../services/dramaticDerivation/index.js';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const SCRIPT = 'You are the tutor in the assize. Guide without giving the answer.';
 
 const HETHEL_CAST = Object.freeze({
   tutor: {
@@ -36,6 +45,30 @@ const HETHEL_CAST = Object.freeze({
     trust_baseline: 'working but untested',
   },
 });
+
+const HETHEL_WORLD = {
+  ...loadWorld(path.join(ROOT, 'config/drama-derivation/world-006-hethel.yaml')),
+  cast: HETHEL_CAST,
+};
+
+function stubClient(replies) {
+  const calls = [];
+  const remaining = new Map(Object.entries(replies).map(([role, list]) => [role, [...list]]));
+  return {
+    calls,
+    client: {
+      mode: 'mock',
+      usage: () => ({}),
+      async call(role, payload) {
+        calls.push({ role, ...payload });
+        const queue = remaining.get(role);
+        if (!queue || !queue.length) throw new Error(`stubClient: no reply queued for ${role}`);
+        const next = queue.shift();
+        return typeof next === 'string' ? next : JSON.stringify(next);
+      },
+    },
+  };
+}
 
 test('cast layer exposes the bounded reinvention trigger vocabulary', () => {
   assert.deepEqual([...CAST_REINVENTION_TRIGGERS].sort(), [
@@ -166,4 +199,189 @@ test('repeated same-object repair chooses repair-and-rebuild guide and preserves
   assert.equal(state.reinvention.mayOverrideProofControl, false);
   assert.equal(state.reinvention.proofControlAuthority, 'none');
   assert.match(state.reinvention.exitCondition, /the break-point/u);
+});
+
+test('tutor prompt projection records cast state and bounded reinvention metadata', async () => {
+  const { client, calls } = stubClient({
+    tutor: [
+      {
+        dialogue: 'Let us check that together before the book closes.',
+        move: { figure: 'erotema', target_premise: null, intent: 'test' },
+      },
+    ],
+  });
+  const tutor = makeLlmTutor(HETHEL_WORLD, client, {
+    script: SCRIPT,
+    castLayer: true,
+    castReinvention: true,
+  });
+  const out = await tutor({
+    turn: 9,
+    role: 'tutor',
+    world: HETHEL_WORLD,
+    ledger: [],
+    releasedFacts: [],
+    transcript: [{ turn: 8, role: 'learner', text: 'As you said, liability is the phrase to keep.' }],
+    staging: { phase: null },
+    trajectory: [],
+    learnerAbox: { grounded: HETHEL_WORLD.background, hypotheses: [] },
+    inference: { frontier: [], voiced: [], overreachCount: 0 },
+    scene: { index: 1, goal: 'test ownership', exchangesSoFar: 1 },
+    publicRegister: 'default',
+  });
+
+  const tutorCall = calls.find((call) => call.role === 'tutor');
+  assert.ok(tutorCall.system.includes('# Cast layer'));
+  assert.ok(tutorCall.user.includes('CAST LAYER (TUTOR projection'));
+  assert.ok(tutorCall.user.includes('Tutor reinvention active: craft examiner -> co-investigator'));
+  assert.equal(tutorCall.meta.castState.schema, CAST_LAYER_SCHEMA);
+  assert.equal(tutorCall.meta.tutorReinvention.schema, TUTOR_REINVENTION_SCHEMA);
+  assert.equal(out.castState.reinvention.trigger, 'echo_without_ownership');
+  assert.equal(out.tutorReinvention.mayOverrideProofControl, false);
+  assert.equal(out.move.intent, 'test');
+  assert.equal(out.release, 'p_surface');
+});
+
+test('learner prompt projection excludes tutor-private reinvention audit', async () => {
+  const { client, calls } = stubClient({
+    learner: [
+      {
+        dialogue: 'I see the pressure on the book, but I will keep the cause separate.',
+        adopt_indices: [],
+        retract_indices: [],
+        derive_indices: [],
+        hypothesis: null,
+        exchange_type: 'substantive',
+        asserts_answer: null,
+      },
+    ],
+  });
+  const learner = makeLlmLearner({
+    setting: HETHEL_WORLD.setting,
+    voice: HETHEL_WORLD.learnerVoice,
+    client,
+    cast: HETHEL_CAST,
+    castLayer: true,
+  });
+  await learner({
+    turn: 3,
+    question: HETHEL_WORLD.question,
+    questionPattern: HETHEL_WORLD.questionPattern,
+    rules: HETHEL_WORLD.rules,
+    background: HETHEL_WORLD.background,
+    releasedFacts: [],
+    releasedThisTurn: [],
+    factSurfaces: {},
+    transcript: [{ turn: 2, role: 'tutor', text: 'Hold the record open.' }],
+    abox: { grounded: HETHEL_WORLD.background, hypotheses: [] },
+    voiced: [],
+    publicRegister: 'default',
+  });
+
+  const learnerCall = calls.find((call) => call.role === 'learner');
+  assert.ok(learnerCall.system.includes('CAST LAYER (LEARNER projection'));
+  assert.ok(learnerCall.system.includes("bridge-warden's young clerk"));
+  assert.doesNotMatch(learnerCall.system, /Tutor reinvention active|forbidden changes|release_timing|proof target:|target_premise/u);
+  assert.equal(learnerCall.meta.castState.schema, CAST_LAYER_SCHEMA);
+  assert.equal(learnerCall.meta.castState.reinvention, null);
+});
+
+test('director prologue consumes authored cast as public source of character truth', async () => {
+  const { client, calls } = stubClient({
+    director: [
+      {
+        stage_notes: 'The assize opens under pressure, with the record waiting.',
+        tutor_character: 'The bridge-mason is spare and exact.',
+        learner_character: 'The clerk is quick and anxious to close.',
+        register_note: 'The period surface follows assize craft and civic pressure.',
+      },
+    ],
+  });
+  const director = makeLlmDirector(HETHEL_WORLD, client, { castLayer: true, publicRegister: 'default' });
+  const prologue = await director.prologue({ turn: 0, publicRegister: 'default' });
+
+  const directorCall = calls.find((call) => call.role === 'director');
+  assert.ok(directorCall.system.includes('# Cast layer'));
+  assert.ok(directorCall.user.includes('CAST LAYER (DIRECTOR projection'));
+  assert.ok(directorCall.user.includes('master of works'));
+  assert.equal(directorCall.meta.castState.schema, CAST_LAYER_SCHEMA);
+  assert.match(prologue.tutorCharacter, /bridge-mason/u);
+});
+
+test('tutor reinvention is bounded to the active scene', async () => {
+  const { client, calls } = stubClient({
+    tutor: [
+      {
+        dialogue: 'Let us check that together.',
+        move: { figure: 'erotema', target_premise: null, intent: 'test' },
+      },
+      {
+        dialogue: 'Stay with the same shared check.',
+        move: { figure: 'erotema', target_premise: null, intent: 'test' },
+      },
+      {
+        dialogue: 'The next scene can return to the ordinary examination.',
+        move: { figure: 'erotema', target_premise: null, intent: 'test' },
+      },
+      {
+        dialogue: 'We do not need another stance change for the same friction.',
+        move: { figure: 'erotema', target_premise: null, intent: 'test' },
+      },
+    ],
+  });
+  const tutor = makeLlmTutor(HETHEL_WORLD, client, {
+    script: SCRIPT,
+    castLayer: true,
+    castReinvention: true,
+  });
+  const baseView = {
+    role: 'tutor',
+    world: HETHEL_WORLD,
+    ledger: [],
+    releasedFacts: [],
+    staging: { phase: null },
+    trajectory: [],
+    learnerAbox: { grounded: HETHEL_WORLD.background, hypotheses: [] },
+    inference: { frontier: [], voiced: [], overreachCount: 0 },
+    publicRegister: 'default',
+  };
+
+  const first = await tutor({
+    ...baseView,
+    turn: 9,
+    transcript: [{ turn: 8, role: 'learner', text: 'As you said, liability is the phrase to keep.' }],
+    scene: { index: 1, goal: 'test ownership', exchangesSoFar: 1 },
+  });
+  const second = await tutor({
+    ...baseView,
+    turn: 10,
+    transcript: [{ turn: 9, role: 'learner', text: 'I can try it in my own words now.' }],
+    scene: { index: 1, goal: 'test ownership', exchangesSoFar: 2 },
+  });
+  const third = await tutor({
+    ...baseView,
+    turn: 11,
+    transcript: [{ turn: 10, role: 'learner', text: 'I follow the distinction now.' }],
+    scene: { index: 2, goal: 'move to the next object', exchangesSoFar: 0 },
+  });
+  const fourth = await tutor({
+    ...baseView,
+    turn: 12,
+    transcript: [{ turn: 11, role: 'learner', text: 'As you said, I can repeat the phrase.' }],
+    scene: { index: 3, goal: 'check repeated echo', exchangesSoFar: 0 },
+  });
+
+  assert.equal(first.tutorReinvention.trigger, 'echo_without_ownership');
+  assert.equal(first.castState.tutor.currentStance, 'co-investigator');
+  assert.equal(second.tutorReinvention.trigger, 'echo_without_ownership');
+  assert.equal(second.castState.tutor.currentStance, 'co-investigator');
+  assert.equal(third.tutorReinvention, null);
+  assert.equal(third.castState.tutor.currentStance, 'craft examiner');
+  assert.equal(fourth.tutorReinvention, null);
+  assert.equal(fourth.castState.tutor.currentStance, 'craft examiner');
+
+  const tutorCalls = calls.filter((call) => call.role === 'tutor');
+  assert.ok(tutorCalls[1].user.includes('Tutor reinvention active: craft examiner -> co-investigator'));
+  assert.doesNotMatch(tutorCalls[2].user, /Tutor reinvention active/u);
+  assert.doesNotMatch(tutorCalls[3].user, /Tutor reinvention active/u);
 });

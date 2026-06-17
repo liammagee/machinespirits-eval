@@ -33,6 +33,7 @@ import {
   RHETORICAL_FIGURES,
 } from './rhetoricalMovePolicy.js';
 import { auditConductGeneratorCompliance, CONDUCT_POLICY_SCHEMA, selectConductMove } from './conductPolicy.js';
+import { deriveCastState, projectCastStateForRole } from './castLayer.js';
 import { deriveDiscursiveCalibrationState } from './discursiveCalibration.js';
 import { deriveDidacticModeState } from './didacticMode.js';
 import { deriveEntitlementState, entitlementNeedsConduct } from './learnerEntitlement.js';
@@ -480,6 +481,18 @@ function didacticActFallbackLines(acts, turn) {
   ];
 }
 
+function castLayerLines(state, roleName) {
+  const lines = projectCastStateForRole(state, roleName);
+  if (!lines.length) return [];
+  const label = roleName === 'tutor_superego' ? 'TUTOR SUPEREGO' : roleName.toUpperCase();
+  return [
+    '',
+    `CAST LAYER (${label} projection; public conduct advisory, no proof-control authority):`,
+    ...lines.map((line) => `- ${line}`),
+    'Use this for character, address, stance, tempo, examples, and recognition conduct only. Do not use it to release, hold, restore, assert, change the proof target, or add evidence.',
+  ];
+}
+
 export function sanitizePublicDialogue(text, { register = 'default' } = {}) {
   if (typeof text !== 'string') return '';
   const active = basePublicRegister(register);
@@ -547,7 +560,15 @@ function actFor(world, turn) {
 // Director
 // ---------------------------------------------------------------------------
 
-function directorCharter(world, dials = {}, dramaturgy = 'free', counsel = null, actsMode = false, publicRegister = 'default') {
+function directorCharter(
+  world,
+  dials = {},
+  dramaturgy = 'free',
+  counsel = null,
+  actsMode = false,
+  publicRegister = 'default',
+  castLayer = false,
+) {
   const charisma = clampDial(dials.charisma);
   const free = dramaturgy !== 'frozen';
   const baseRegister = basePublicRegister(publicRegister);
@@ -589,6 +610,16 @@ function directorCharter(world, dials = {}, dramaturgy = 'free', counsel = null,
     'never confirm or deny anything by staging. The drama leaks only on schedule.',
     ...publicSpeechDiscipline(publicRegister),
     ...publicRegisterPolicy(publicRegister),
+    ...(castLayer
+      ? [
+          '',
+          '# Cast layer (public conduct only)',
+          '',
+          'Turns may carry a CAST LAYER block. Use it to keep tutor, learner,',
+          'relation, and public stakes coherent in stage notes. It does not teach,',
+          'release evidence, foreshadow concealed facts, or instruct the tutor.',
+        ]
+      : []),
     '',
     ...(actsMode
       ? [
@@ -662,7 +693,7 @@ function directorCharter(world, dials = {}, dramaturgy = 'free', counsel = null,
   ].join('\n');
 }
 
-function directorPrologueCharter(world, publicRegister = 'default') {
+function directorPrologueCharter(world, publicRegister = 'default', castLayer = false) {
   return [
     `You are the DIRECTOR setting up a staged derivation drama: "${world.title}".`,
     `The public question: ${world.question}`,
@@ -687,6 +718,16 @@ function directorPrologueCharter(world, publicRegister = 'default') {
     'specific tutor, learner, and scene.',
     'The register note should set the register for the whole play, not rotate',
     'style scene by scene.',
+    ...(castLayer
+      ? [
+          '',
+          '# Cast layer (public character source)',
+          '',
+          'When an authored public cast is supplied, treat it as the source of',
+          'truth for the public tutor, learner, and relation. Refine it theatrically;',
+          'do not invent hidden motives, answer-bearing hints, or new evidence.',
+        ]
+      : []),
     ...publicSpeechDiscipline(publicRegister),
     ...publicRegisterPolicy(publicRegister),
     '',
@@ -712,12 +753,32 @@ function normalizeStagePrologue(out, register) {
 export function makeLlmDirector(
   world,
   client,
-  { dials = {}, dramaturgy = 'free', counsel = null, actsMode = false, publicRegister = 'default' } = {},
+  {
+    dials = {},
+    dramaturgy = 'free',
+    counsel = null,
+    actsMode = false,
+    publicRegister = 'default',
+    castLayer = false,
+    castReinvention = false,
+  } = {},
 ) {
   const free = dramaturgy !== 'frozen';
-  const system = directorCharter(world, dials, dramaturgy, counsel, actsMode, publicRegister);
+  const system = directorCharter(world, dials, dramaturgy, counsel, actsMode, publicRegister, castLayer);
   const directorFn = async (view) => {
     const activeRegisterName = activePublicRegister(publicRegister, view);
+    const castState = castLayer
+      ? deriveCastState({
+          worldCast: world.cast,
+          worldSetting: world.setting,
+          worldLearnerVoice: world.learnerVoice,
+          stagePrologue: view.stagePrologue,
+          transcript: view.transcript,
+          scene: view.scene,
+          turn: view.turn,
+          reinventionEnabled: castReinvention,
+        })
+      : null;
     const { entry, premise } = scheduledFor(world, view.turn, 'director');
     const { entry: tutorEntry } = scheduledFor(world, view.turn, 'tutor');
     const act = actFor(world, view.turn);
@@ -772,6 +833,7 @@ export function makeLlmDirector(
       'The last lines spoken:',
       renderTranscriptTail(view.transcript),
       ...publicRegisterTurnLines(activeRegisterName, publicRegister),
+      ...castLayerLines(castState, 'director'),
       '',
       task,
     ].join('\n');
@@ -791,14 +853,15 @@ export function makeLlmDirector(
         // computed from view-visible material only)
         ...(actsMode
           ? {
-              actHint:
+          actHint:
                 view.turn > 1 &&
                 view.acts.turnsThisAct >= view.acts.minActTurns &&
                 view.ledger.some((l) => l.turn >= view.acts.startTurn)
                   ? 'end'
                   : 'continue',
             }
-          : {}),
+            : {}),
+        ...(castState ? { castState } : {}),
       },
     });
     const phase =
@@ -831,11 +894,23 @@ export function makeLlmDirector(
   };
   directorFn.prologue = async (view = {}) => {
     const activeRegisterName = activePublicRegister(publicRegister, view);
+    const castState = castLayer
+      ? deriveCastState({
+          worldCast: world.cast,
+          worldSetting: world.setting,
+          worldLearnerVoice: world.learnerVoice,
+          stagePrologue: view.stagePrologue,
+          transcript: view.transcript,
+          turn: 0,
+          reinventionEnabled: false,
+        })
+      : null;
     const out = await callJson(client, 'director', 0, {
-      system: directorPrologueCharter(world, publicRegister),
+      system: directorPrologueCharter(world, publicRegister, castLayer),
       user: [
         'Write the opening director prologue now.',
         ...publicRegisterTurnLines(activeRegisterName, publicRegister),
+        ...castLayerLines(castState, 'director'),
         '',
         `Public setting: ${(world.setting || '').trim() || '(none supplied)'}`,
         `Public question: ${world.question}`,
@@ -848,6 +923,7 @@ export function makeLlmDirector(
           question: world.question,
           register: activeRegisterName,
         },
+        ...(castState ? { castState } : {}),
       },
     });
     return normalizeStagePrologue(out, activeRegisterName);
@@ -877,6 +953,8 @@ function tutorSystem(
     throughline = false,
     rhetoricalPolicy = false,
     didacticMode = false,
+    castLayer = false,
+    castReinvention = false,
     publicRegister = 'default',
   } = {},
 ) {
@@ -1142,6 +1220,24 @@ function tutorSystem(
           'look for its exit condition in the learner\'s public reply.',
         ]
       : []),
+    ...(castLayer
+      ? [
+          '',
+          '# Cast layer (public character and relation advisory)',
+          '',
+          'Some turns may carry a CAST LAYER block. It gives a public tutor role,',
+          'learner role, relation pressure, and conduct commitments for inhabiting',
+          'the same proof obligation. It does not authorize release, restore, hold,',
+          'assertion, or a changed proof target.',
+          ...(castReinvention
+            ? [
+                'When tutor reinvention is active, change stance, tone, figure,',
+                'tempo, example style, or recognition conduct only. The proof-control',
+                'channel remains dominant.',
+              ]
+            : []),
+        ]
+      : []),
     ...(registers.length
       ? ['', '# Register (operator dials — these color your MANNER, never your evidence)', '', ...registers]
       : []),
@@ -1201,6 +1297,8 @@ function tutorSuperegoSystem(
     repairClause = false,
     plot = false,
     throughline = false,
+    castLayer = false,
+    castReinvention = false,
   } = {},
 ) {
   return [
@@ -1335,6 +1433,22 @@ function tutorSuperegoSystem(
           'own plot — a withhold about to be staged, a named friction met with',
           'nothing — say so in "diagnosis". Your jurisdiction is unchanged: the',
           'act-close audit, not the turn watch, judges the plot' + (throughline ? ' and the arc' : '') + '.',
+        ]
+      : []),
+    ...(castLayer
+      ? [
+          '',
+          'The draft may also come with a CAST LAYER block. It is public conduct',
+          'context: tutor stance, learner posture, relation pressure, and optional',
+          'bounded tutor reinvention. Audit stance compliance and block any drift',
+          'that would change release timing, proof target, restore/hold authority,',
+          'or final assertion. Your jurisdiction is still conduct, not evidence.',
+          ...(castReinvention
+            ? [
+                'If reinvention is active, check whether the draft inhabits the new',
+                'stance without overcorrecting into answer-giving.',
+              ]
+            : []),
         ]
       : []),
     ...(counsel
@@ -1854,6 +1968,8 @@ export function makeLlmTutor(
     conductProgressPolicy = false,
     conductTriggerOnly = false,
     publicRegister = 'default',
+    castLayer = false,
+    castReinvention = false,
   } = {},
 ) {
   if (!script || !script.trim()) {
@@ -1999,10 +2115,22 @@ export function makeLlmTutor(
     throughline,
     rhetoricalPolicy: Boolean(rhetoricalPolicyConfig),
     didacticMode,
+    castLayer,
+    castReinvention,
     publicRegister,
   });
   const superegoSystem = superego
-    ? tutorSuperegoSystem(world, { stallWatch, counsel, reconstruct, confront, repairClause, plot, throughline })
+    ? tutorSuperegoSystem(world, {
+        stallWatch,
+        counsel,
+        reconstruct,
+        confront,
+        repairClause,
+        plot,
+        throughline,
+        castLayer,
+        castReinvention,
+      })
     : null;
   const plotAuditCharter = plot ? plotAuditSystem(world, { throughline }) : null;
   const normalizeMove = (out) =>
@@ -2035,6 +2163,7 @@ export function makeLlmTutor(
   // verdict across the boundary — it is what makes an off_arc verdict bind
   // the next opening's revision demand.
   const throughlineState = throughline ? { current: null, committedTurn: null, revisedTurns: [], lastArc: null } : null;
+  const castRuntimeState = castLayer ? { activeReinvention: null, sceneIndex: null, usedTriggers: new Set() } : null;
   // Plot shape gate: a plot is real only when at least one field is
   // non-empty — a malformed or empty plot drops to null, which keeps the
   // engine's recording gate closed for that act (absence is visible to the
@@ -2454,8 +2583,67 @@ export function makeLlmTutor(
             : null,
         })
       : null;
+    const sceneIndexForCast = view.scene?.index ?? null;
+    if (
+      castRuntimeState?.activeReinvention &&
+      castRuntimeState.sceneIndex !== null &&
+      sceneIndexForCast !== castRuntimeState.sceneIndex
+    ) {
+      castRuntimeState.activeReinvention = null;
+      castRuntimeState.sceneIndex = null;
+    }
+    const castInput = castLayer
+      ? {
+          worldCast: world.cast,
+          worldSetting: world.setting,
+          worldLearnerVoice: world.learnerVoice,
+          stagePrologue: view.stagePrologue,
+          transcript: publicTranscriptForCalibration,
+          scene: view.scene,
+          turn: view.turn,
+          discursiveCalibration: discursiveCalibrationState,
+          didacticMode: didacticModeState,
+          recognitionNeed: view.scene?.recognitionNeed || null,
+          repairSignals: topProofDebt
+            ? [
+                {
+                  publicObject: topProofDebt.surface || 'already staged exhibit',
+                  count: 1,
+                  sameObject: true,
+                },
+              ]
+            : [],
+        }
+      : null;
+    let castState = null;
+    if (castInput) {
+      castState = deriveCastState({
+        ...castInput,
+        activeReinvention: castRuntimeState?.activeReinvention || null,
+        reinventionEnabled: castReinvention && !castRuntimeState?.activeReinvention && sceneIndexForCast !== null,
+      });
+      if (castReinvention && !castRuntimeState.activeReinvention && castState.reinvention?.active) {
+        if (castRuntimeState.usedTriggers.has(castState.reinvention.trigger)) {
+          castState = deriveCastState({
+            ...castInput,
+            reinventionEnabled: false,
+          });
+        } else {
+          castRuntimeState.usedTriggers.add(castState.reinvention.trigger);
+          castRuntimeState.activeReinvention = castState.reinvention;
+          castRuntimeState.sceneIndex = sceneIndexForCast;
+        }
+      } else if (castRuntimeState.activeReinvention) {
+        castState = deriveCastState({
+          ...castInput,
+          activeReinvention: castRuntimeState.activeReinvention,
+          reinventionEnabled: false,
+        });
+      }
+    }
     const didacticModeSection = didacticModeLines(didacticModeState);
     const actDidacticFallbackSection = didacticActFallbackLines(view.acts, view.turn);
+    const castLayerSection = castLayerLines(castState, 'tutor');
     const highDiscursiveStrain = discursiveCalibrationState?.conversationalStrain?.level === 'high';
     const discursiveReleaseSection =
       highDiscursiveStrain && releaseAuthority
@@ -2618,6 +2806,7 @@ export function makeLlmTutor(
         ...publicRegisterTurnLines(activeRegisterName, publicRegister),
         ...sceneTempoLines(view.scene, 'tutor'),
         ...sceneRecognitionNeedLines(view.scene, 'tutor'),
+        ...castLayerSection,
         ...actDidacticFallbackSection,
         ...didacticModeSection,
         ...(visibleConsolidation?.lines.length ? ['', ...visibleConsolidation.lines] : []),
@@ -2643,6 +2832,7 @@ export function makeLlmTutor(
         ...stagePrologueLines(view.stagePrologue, 'tutor'),
         ...sceneTempoLines(view.scene, 'tutor'),
         ...sceneRecognitionNeedLines(view.scene, 'tutor'),
+        ...castLayerSection,
         '',
         "The learner's grounded board:",
         board,
@@ -2718,6 +2908,7 @@ export function makeLlmTutor(
         : {}),
       ...(rhetoricalAdvice ? { rhetoricalPolicy: rhetoricalAdvice } : {}),
       ...(didacticModeState ? { didacticMode: didacticModeState } : {}),
+      ...(castState ? { castState, tutorReinvention: castState.reinvention || null } : {}),
       ...(view.scene?.tempo ? { sceneTempo: view.scene.tempo } : {}),
       // mock determinism (arm-ON): the credulous theory — everything released
       // is believed held. The real backend ignores meta.
@@ -3111,6 +3302,7 @@ export function makeLlmTutor(
       ...(rhetoricalAdvice ? { rhetoricalPolicy: rhetoricalAdvice } : {}),
       ...(discursiveCalibrationState ? { discursiveCalibration: discursiveCalibrationState } : {}),
       ...(didacticModeState ? { didacticMode: didacticModeState } : {}),
+      ...(castState ? { castState, tutorReinvention: castState.reinvention || null } : {}),
       ...releaseBits,
       ...(draftTheory ? { theory: draftTheory } : {}),
       ...plotBits(draftPlot),
@@ -3327,6 +3519,7 @@ export function makeLlmTutor(
             ...renderPlotLines(plotState.current),
           ]
         : []),
+      ...castLayerLines(castState, 'tutor_superego'),
       '',
       rutLine,
       ...(reentryLine ? [reentryLine] : []),
@@ -3365,6 +3558,7 @@ export function makeLlmTutor(
               },
             }
           : {}),
+        ...(castState ? { castState, tutorReinvention: castState.reinvention || null } : {}),
       },
     });
     const note = typeof segOut.note === 'string' && segOut.note.trim() ? segOut.note.trim() : null;
@@ -3511,6 +3705,7 @@ export function makeLlmTutor(
       ...(rhetoricalAdvice ? { rhetoricalPolicy: rhetoricalAdvice } : {}),
       ...(discursiveCalibrationState ? { discursiveCalibration: discursiveCalibrationState } : {}),
       ...(didacticModeState ? { didacticMode: didacticModeState } : {}),
+      ...(castState ? { castState, tutorReinvention: castState.reinvention || null } : {}),
       deliberation: {
         ...deliberation,
         intervened: true,
@@ -3557,6 +3752,7 @@ export function makeLlmTutor(
 
 function learnerSystem(setting, voice, view, publicRegister = 'default', opts = {}) {
   const sameTurnAssertionAffordance = Boolean(opts.sameTurnAssertionAffordance);
+  const castState = opts.castState || null;
   const terms = publicTerms(publicRegister);
   return [
     'You are the LEARNER in a staged inquiry. Your situation:',
@@ -3566,6 +3762,7 @@ function learnerSystem(setting, voice, view, publicRegister = 'default', opts = 
     `The question you must settle: ${view.question}`,
     `Your voice: ${(voice || 'plain, careful, first person').trim()}`,
     ...stagePrologueLines(view.stagePrologue, 'learner'),
+    ...castLayerLines(castState, 'learner'),
     ...publicRegisterPolicy(publicRegister),
     ...(view.act
       ? [
@@ -3832,6 +4029,8 @@ export function makeLlmLearner({
   publicRegister = 'default',
   assertionGroundingGate = false,
   sameTurnAssertionAffordance = false,
+  cast = null,
+  castLayer = false,
 }) {
   if (!client) throw new Error('derivation.llmRoles: makeLlmLearner requires a client');
   const effectiveAssertionGroundingGate = assertionGroundingGate || sameTurnAssertionAffordance;
@@ -3886,7 +4085,19 @@ export function makeLlmLearner({
       : '(none yet)';
 
     const patternAssertion = computePatternAssertion(view, adoptable);
-    const system = learnerSystem(setting, voice, view, activeRegisterName, { sameTurnAssertionAffordance });
+    const castState = castLayer
+      ? deriveCastState({
+          worldCast: cast,
+          worldSetting: setting,
+          worldLearnerVoice: voice,
+          stagePrologue: view.stagePrologue,
+          transcript: view.transcript,
+          scene: view.scene,
+          turn: view.turn,
+          reinventionEnabled: false,
+        })
+      : null;
+    const system = learnerSystem(setting, voice, view, activeRegisterName, { sameTurnAssertionAffordance, castState });
     const user = [
       `Turn ${view.turn}.${
         view.act ? ` Act ${view.act.index} — the stage shows this act only; your board carries everything else.` : ''
@@ -3942,6 +4153,7 @@ export function makeLlmLearner({
         deriveHintIndices,
         deriveLabels: derivableCandidates.map((entry) => entry.label),
         ...(view.scene?.tempo ? { sceneTempo: view.scene.tempo } : {}),
+        ...(castState ? { castState } : {}),
       },
     });
 

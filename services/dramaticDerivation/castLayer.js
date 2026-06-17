@@ -310,6 +310,37 @@ function deriveTutorReinventionState({
   };
 }
 
+function normalizeActiveReinvention(raw) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw) || raw.active !== true) return null;
+  const state = {
+    schema: TUTOR_REINVENTION_SCHEMA,
+    publicOnly: true,
+    active: true,
+    source: cleanText(raw.source, 'public_dialogue_state', 80),
+    trigger: cleanText(raw.trigger, 'scene_needs_repair', 80),
+    fromStance: cleanText(raw.fromStance, 'careful guide', 80),
+    toStance: cleanText(raw.toStance, 'co-investigator', 80),
+    publicRationale: cleanText(raw.publicRationale, 'public conduct adaptation already authorized for this scene', 180),
+    allowedChanges: cleanList(raw.allowedChanges, 8, 80).length
+      ? cleanList(raw.allowedChanges, 8, 80)
+      : [...ALLOWED_REINVENTION_CHANGES],
+    forbiddenChanges: cleanList(raw.forbiddenChanges, 8, 80).length
+      ? cleanList(raw.forbiddenChanges, 8, 80)
+      : [...FORBIDDEN_REINVENTION_CHANGES],
+    exitCondition: cleanText(raw.exitCondition, 'learner takes up the current object without renewed repair', 180),
+    scope: cleanText(raw.scope, 'scene', 80),
+    startedTurn: Number.isFinite(Number(raw.startedTurn)) ? Number(raw.startedTurn) : null,
+    expiresAtActEnd: raw.expiresAtActEnd !== false,
+    mayOverrideProofControl: false,
+    proofControlAuthority: 'none',
+    inputAudit: raw.inputAudit?.ok === false ? raw.inputAudit : { ok: true, leaks: [], forbiddenKeys: [...FORBIDDEN_KEYS].sort() },
+  };
+  return {
+    ...state,
+    nonLeakAudit: auditCastLayerPublicInput(state),
+  };
+}
+
 function projectionLines(state, roleName) {
   if (!state || state.publicOnly !== true || state.mayOverrideProofControl !== false || state.inputAudit?.ok === false) return [];
   const reinvention = state.reinvention?.active ? state.reinvention : null;
@@ -463,17 +494,19 @@ export function deriveCastState(input = {}) {
     ],
     inputAudit,
   };
-  const reinvention = deriveTutorReinventionState({
-    castState: baseState,
-    transcript: input.transcript,
-    scene: input.scene,
-    turn: input.turn,
-    discursiveCalibration: input.discursiveCalibration,
-    didacticMode: input.didacticMode,
-    recognitionNeed: input.recognitionNeed,
-    repairSignals: input.repairSignals,
-    enabled: input.reinventionEnabled !== false,
-  });
+  const reinvention =
+    normalizeActiveReinvention(input.activeReinvention) ||
+    deriveTutorReinventionState({
+      castState: baseState,
+      transcript: input.transcript,
+      scene: input.scene,
+      turn: input.turn,
+      discursiveCalibration: input.discursiveCalibration,
+      didacticMode: input.didacticMode,
+      recognitionNeed: input.recognitionNeed,
+      repairSignals: input.repairSignals,
+      enabled: input.reinventionEnabled !== false,
+    });
   const currentStance = reinvention?.active ? reinvention.toStance : baseState.tutor.currentStance;
   const state = {
     ...baseState,

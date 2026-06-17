@@ -274,6 +274,7 @@ export async function runDrama({ world, roles, options = {} }) {
   const logicSnapshots = []; // harness-only per-turn board closure over the canonical logic IR
   const sceneRows = []; // opt-in scene/exchange overlay — does not replace the formal turn loop
   const didacticModeRows = []; // public-only tutor advisory states, if the roles layer emits them
+  const castLayerRows = []; // public-only cast/reinvention advisory states, if the roles layer emits them
   let sceneState = null;
   const ledger = []; // {turn, premiseId, via}
   const releasedKeys = new Set();
@@ -967,6 +968,8 @@ export async function runDrama({ world, roles, options = {} }) {
         ...(tutorOut.rhetoricalPolicy ? { rhetoricalPolicy: tutorOut.rhetoricalPolicy } : {}),
         ...(tutorOut.discursiveCalibration ? { discursiveCalibration: tutorOut.discursiveCalibration } : {}),
         ...(tutorOut.didacticMode ? { didacticMode: tutorOut.didacticMode } : {}),
+        ...(tutorOut.castState ? { castState: tutorOut.castState } : {}),
+        ...(tutorOut.tutorReinvention ? { tutorReinvention: tutorOut.tutorReinvention } : {}),
         ...(tutorPhaticRecognition.length ? { phaticRecognition: tutorPhaticRecognition } : {}),
         ...(sceneMetaThisTurn ? { scene: sceneMetaThisTurn } : {}),
         publicRegister: publicRegisterForTurn,
@@ -996,6 +999,32 @@ export async function runDrama({ world, roles, options = {} }) {
         evidence: Array.isArray(tutorOut.didacticMode.evidence) ? tutorOut.didacticMode.evidence.slice(0, 4) : [],
         inputAuditOk: tutorOut.didacticMode.inputAudit?.ok === true,
         nonLeakAuditOk: tutorOut.didacticMode.nonLeakAudit?.ok === true,
+      });
+    }
+    if (tutorOut.castState) {
+      castLayerRows.push({
+        turn,
+        ...(actState ? { act: actState.index } : {}),
+        schema: tutorOut.castState.schema,
+        publicOnly: tutorOut.castState.publicOnly === true,
+        mayOverrideProofControl: tutorOut.castState.mayOverrideProofControl === true,
+        tutorRole: tutorOut.castState.tutor?.stableRole || null,
+        tutorStance: tutorOut.castState.tutor?.currentStance || null,
+        learnerRole: tutorOut.castState.learner?.stableRole || null,
+        learnerPosture: tutorOut.castState.learner?.currentPosture || null,
+        relationTrust: tutorOut.castState.relation?.currentTrust || null,
+        reinvention: tutorOut.castState.reinvention
+          ? {
+              schema: tutorOut.castState.reinvention.schema,
+              active: tutorOut.castState.reinvention.active === true,
+              trigger: tutorOut.castState.reinvention.trigger || null,
+              fromStance: tutorOut.castState.reinvention.fromStance || null,
+              toStance: tutorOut.castState.reinvention.toStance || null,
+              mayOverrideProofControl: tutorOut.castState.reinvention.mayOverrideProofControl === true,
+            }
+          : null,
+        inputAuditOk: tutorOut.castState.inputAudit?.ok === true,
+        nonLeakAuditOk: tutorOut.castState.nonLeakAudit?.ok === true,
       });
     }
 
@@ -1413,6 +1442,33 @@ export async function runDrama({ world, roles, options = {} }) {
             },
           }
         : {}),
+      ...(tutorOut.castState
+        ? {
+            castState: {
+              tutor: {
+                role: tutorOut.castState.tutor?.stableRole || null,
+                currentStance: tutorOut.castState.tutor?.currentStance || null,
+              },
+              learner: {
+                role: tutorOut.castState.learner?.stableRole || null,
+                posture: tutorOut.castState.learner?.currentPosture || null,
+              },
+              relation: {
+                currentTrust: tutorOut.castState.relation?.currentTrust || null,
+              },
+            },
+          }
+        : {}),
+      ...(tutorOut.tutorReinvention
+        ? {
+            tutorReinvention: {
+              active: tutorOut.tutorReinvention.active === true,
+              trigger: tutorOut.tutorReinvention.trigger || null,
+              toStance: tutorOut.tutorReinvention.toStance || null,
+              mayOverrideProofControl: tutorOut.tutorReinvention.mayOverrideProofControl === true,
+            },
+          }
+        : {}),
       publicRegister: publicRegisterForTurn,
       endedBy,
     });
@@ -1504,6 +1560,7 @@ export async function runDrama({ world, roles, options = {} }) {
       : {}),
     ...(proofDebtRows.length ? { proofDebt: proofDebtRows } : {}),
     ...(didacticModeRows.length ? { didacticMode: didacticModeRows } : {}),
+    ...(castLayerRows.length ? { castLayer: castLayerRows } : {}),
     ...(logicSnapshots.length ? { logicSnapshots } : {}),
     ...(corruption
       ? {

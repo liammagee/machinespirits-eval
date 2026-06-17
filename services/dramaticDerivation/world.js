@@ -75,6 +75,7 @@ export function validateWorld(raw, source = '<inline>') {
     discipline: raw.discipline || null,
     setting: raw.setting || null,
     learnerVoice: raw.learner_voice || null,
+    cast: raw.cast || null,
     dramaturgy: raw.dramaturgy || null,
     secret: raw.secret,
     mirror: raw.mirror || null,

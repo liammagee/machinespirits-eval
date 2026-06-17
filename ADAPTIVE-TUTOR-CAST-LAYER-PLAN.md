@@ -1,6 +1,6 @@
 # Adaptive Tutor Cast Layer Plan
 
-**Status:** implementation in progress — Phase 1 schema/state complete locally  
+**Status:** local implementation complete through Phase 6; no paid Phase 7 warranted yet  
 **Date:** 2026-06-16  
 **Activation gate:** do not commence runtime implementation until the didactic-mode local integration/replay gates are settled, unless the first step is schema-only and read-only against existing transcripts.  
 **Primary substrate:** hidden + proofDebt proof-continuity control, with rhetorical/discursive/didactic layers advisory above it  
@@ -520,6 +520,15 @@ Interpretive rule:
   `tests/dramaticDerivationCastLayer.test.js`. Focused command:
   `node --test tests/dramaticDerivationCastLayer.test.js` passed. Runtime
   prompt wiring is deliberately not active yet.
+- 2026-06-16 — Phases 2-6 landed locally: `--cast-layer` projects role-specific
+  public cast notes to director, tutor, learner, and tutor superego;
+  `--cast-reinvention` enables one scene-bounded, trigger-cooldown tutor
+  stance change without proof-control authority; Hethel now carries the pilot
+  authored `cast` block. Local S0/S1/S2 mock matrix and an episode replay from
+  S0 turn 7 passed with identical grounding and release timing. Report:
+  `exports/dramatic-derivation/cast-layer-local-gate/report.md`. Phase 7 paid
+  validation is not warranted yet because the local gate shows proof invariance
+  and discourse-control plumbing, not an uptake/turn/impasse improvement.
 
 ### Phase 0: Static Audit
 
