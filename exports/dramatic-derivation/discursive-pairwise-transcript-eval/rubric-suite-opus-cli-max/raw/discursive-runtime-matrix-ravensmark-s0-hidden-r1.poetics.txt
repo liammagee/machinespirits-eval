@@ -1,0 +1,45 @@
+`★ Insight ─────────────────────────────────────`
+- The Poetics rubric's `unit_of_analysis: transcript` and its overall formula `((weighted_avg − 1) / 4) × 100` confirm the all-3s→50 anchor in the response template (a 1→0, 5→100 normalization, shared with v2.2/charisma for cross-correlation).
+- Lines 53–60 + 152 are the load-bearing distinction for this transcript: anagnorisis scores a **recognition EVENT in the plot**, not the tutor's recognitive manners — and explicitly docks "tutor-supplied" recognition to 3. That governs the hardest call here.
+- The evidence gate (line 73–75) makes any score >3 invalid without a verbatim quote, so my two 4s carry quotes.
+`─────────────────────────────────────────────────`
+
+Here is my scoring of the public transcript against the Poetics rubric.
+
+```json
+{
+  "scores": {
+    "peripeteia": {
+      "score": 3,
+      "reasoning": "The plot-level assumption is overturned — the table opens on 'Corvin kept the gate, and that is all the aldermen seem to need' and closes on a different hand entirely (Elian). There is a genuine reframe at Turn 4, where the red wax/public ribbon is inverted into a 'later thing, not the act that opened the gate' beneath which the operative dusk-seal sits. But the tutor-learner orientation does not veer: the learner already rejects the office-answer in Turn 1 ('the law asks for a hand on a seal, not merely an officer in charge') and restates that same stance in every subsequent turn. The opening framing (seek the sealing hand) survives and is confirmed rather than reversed; the Corvin→Elian flip is a disclosure delivered by the tutor at the close, not a hinge the exchange turns on. Mild/signposted shift -> 3."
+    },
+    "anagnorisis": {
+      "score": 3,
+      "reasoning": "A recognition is named at the close — the learner authors the final line ('the hand that pressed the operative seal signed the gate-pass. That hand is Elian's'), and the tutor never says it. But the decisive knowledge is tutor-supplied in the same turn ('the private-seal register has one entry for the dusk-seal. Elian, night notary...'), and the inferential frame (mark + law + holder = signer) was held by the learner from Turn 1. So the learner completes a deduction rather than surfacing previously-unavailable insight of their own; every key fact across the dialogue is tutor-introduced and read back. There is no self-recognition of a flaw. This is the rubric's 3: 'the tutor names the insight and the learner assents... or restates what was already on the table.'"
+    },
+    "surprise_and_inevitability": {
+      "score": 3,
+      "reasoning": "The retrospective coherence is strong: the closing detail that the seal was 'returned chipped at the raven's wing the morning after the coffer left town' clicks back to the 'raven's notch under the wing' from Turn 4, and the whole build demanded exactly one keeper-name. But the surprise leg is thin: the resolution mechanism (folio opens -> names the keeper -> keeper is the signer) is explicitly telegraphed across Turns 8-12 ('When the cord is untied... set only the new keeper beside what is already under the wax'). A competent reader fully predicts the shape of the ending; only the identity of a never-before-mentioned character is withheld. Coherent-but-largely-foreseeable — one leg present, not both -> 3."
+    },
+    "unity_of_action": {
+      "score": 4,
+      "reasoning": "One complete action with a necessary build, each turn taking up the specific prior one. The tutor names the tripartite spine verbatim at Turn 10 — 'Lamp for the mark, law for the force, folio for the keeping hand: three entries, not one overloaded page' — and Turn 13 closes by joining exactly those three ('Set that keeper beside the old wax and the house rule; what can the table now write'). The sequence is genuinely necessary: the signer cannot be named without the holder, who cannot be sought before the mark (dusk-seal) and the law (seal-press is operative) are fixed. Docked from 5 because the consolidation/holding beats (Turns 10-12 all stall the cord and re-list 'law, wax, folio'; Turns 11 and 12 are near-duplicates) mean at least one turn could be cut without breaking the arc."
+    },
+    "hamartia_integration": {
+      "score": 3,
+      "reasoning": "A driving misconception is present and well-worked — the office=signer conflation, dramatized as the 'heavier chair' that threatens to 'turn burden into blame' (Turn 5) and the morning book pinning Corvin's answerability (Turn 6) — and it is NOT corrected-and-discarded; it stays a live tension until the close and is what the resolution dissolves. But the rubric centers the LEARNER's error, and the learner bears none: they hold the correct distinction from Turn 1 and never err, so there is no learner-hamartia to work through and no self-recognition. The flaw belongs to the institution, with the learner as the corrective voice throughout. Engine present but locus mismatched -> 3."
+    },
+    "cathartic_closure": {
+      "score": 4,
+      "reasoning": "The close is earned and lands, not a generic sign-off. The staging builds real suspense — the cord held closed across Turns 8-12, then Turn 13's 'the silence hardens from waiting into demand' followed by 'The cord is untied' — and the release is registered in the learner's 'The folio has spoken at last' before the punch 'That hand is Elian's.' The 'coffer left town' detail gives the discharge a faint ominous weight (a crime implied), and the raven's-wing chip seals the retrospective fit. Docked from 5 because the catharsis is the satisfaction of an elegant puzzle-closure rather than a dramatic purgation — the stakes are procedural, the learner was never personally at risk (right all along), and the final speech dilutes the punch with one more careful restatement before the name lands."
+    }
+  },
+  "overall_score": 58,
+  "summary": "A tightly unified, atmospherically staged derivation drama whose strengths are formal — one necessary action (mark -> law -> holder -> signer) with a well-earned, well-built close. Its dramatic ceiling is capped by the learner's constancy: they hold the correct frame from Turn 1 and never err, so the misconception that drives the plot is the institution's rather than the learner's, the final recognition is the deductive closure of a tutor-supplied fact (Elian) rather than learner-authored insight, and the orientation between the two parties is confirmed, not reversed. Surprising-yet-inevitable is half-met (strong coherence, telegraphed resolution). Public discourse stays cleanly in-fiction — no formalism leaks to penalize.",
+  "caveats": [
+    "This is a guided-derivation shape: every decisive fact (dusk-seal at Turn 4, the law at Turn 7, Elian at Turn 13) is tutor-introduced and read back, which structurally caps anagnorisis and hamartia at the learner-locus and weakens peripeteia, independent of craft quality.",
+    "The 0 formalism leaks reported in the run summary is consistent with the transcript (the register stays in dramatic terms — seals, wax, folio, raven's notch); I treated this as nothing-to-penalize rather than a positive credit, per the instruction not to reward formalism or hidden-state language.",
+    "peripeteia and hamartia each carry a defensible 3-vs-4 tension (a strong driving misconception / a real plot-level overturning pull upward; the absent learner-error locus and constant learner orientation hold them at 3); a reader weighting the play-as-drama over the tutoring-locus could land either at 4, raising overall to ~61-65."
+  ]
+}
+```

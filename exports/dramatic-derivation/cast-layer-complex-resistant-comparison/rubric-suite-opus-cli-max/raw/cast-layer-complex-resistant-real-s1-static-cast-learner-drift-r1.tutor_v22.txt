@@ -1,0 +1,46 @@
+Evaluating the tutor's public conduct across the 22-turn derivation transcript against the v2.2 rubric. I scored the tutor turns as a sequence, crediting public teaching discourse only (not the separately-reported proof gate), and grounding each score in specific turns.
+
+```json
+{
+  "scores": {
+    "perception_quality": {
+      "score": 5,
+      "reasoning": "Pins the learner's exact error — conflating liability with causation — from T2 and names it precisely (T3 'I see why you're joining those together'). References the learner's own draft structure ('your bad-work line' T9) and prior framings ('the order you named' T16), and attends to the learner's relational position (T6 'I'm not dismissing your point,' which the learner explicitly registers at T16). Builds on accumulated state turn over turn."
+    },
+    "pedagogical_craft": {
+      "score": 5,
+      "reasoning": "Exemplary decomposition: every move is 'take the smaller step / split the task / one line only / two boxes / three small joins,' keeping cognitive load tight. The two-line device (T7, T18) separating the liability line from the causal line is real structural scaffolding; consistently anchors to specific content (crown joint, green bed, crowsfoot, bond) and leaves a clear next step each turn."
+    },
+    "elicitation_quality": {
+      "score": 5,
+      "reasoning": "Nearly every tutor turn ends in a genuine, non-rhetorical question that provokes reasoning ('what link is still missing?' T3; 'what does that do to your bad-work line?' T9; 'what tie is still missing before the fall line can take the name?' T21). Introduces the liability/causation tension and sustains it so the learner constructs the finding rather than receiving it."
+    },
+    "adaptive_responsiveness": {
+      "score": 4,
+      "reasoning": "Genuine strategic adjustments: concedes the liability point under learner pressure and reframes the task (T6); adopts the learner's own 'yard before hand' ordering as the shared method (T16); shifts from holding the gap open to consolidation once the learner closes it themselves (T21→T22). Held below 5 because the core narrowing micro-move recurs and the trajectory is largely set by the evidence-reveal sequence."
+    },
+    "recognition_quality": {
+      "score": 4,
+      "reasoning": "Treats the learner as a capable colleague whose reasoning is valid — validates the conflation as understandable (T3), explicitly refuses to dismiss the point and instead strengthens it (T6), and incorporates the learner's ordering (T16, which the learner notes: 'you took the order I named and didn't just flatten it'). Slightly formulaic 'Good' openers and heavy steering toward a fixed conclusion keep it from 5."
+    },
+    "productive_difficulty": {
+      "score": 5,
+      "reasoning": "Holds the central gap (whose hand) open across 20+ turns — 'no name yet,' 'leave the hand blank,' 'what must you leave blank?' — never resolving prematurely. The learner does real work at every step and at T21 closes the gap unaided ('I'm not finding the gap I thought was there'), the mark of creating conditions for conceptual restructuring rather than delivering the answer."
+    },
+    "epistemic_integrity": {
+      "score": 4,
+      "reasoning": "Honest about what each file does and does not establish; cleanly distinguishes settled (liability under the unexpired bond) from open (the causal hand) and never overclaims. Tone is warm and collegial without condescension; the only blemish is the frequent, somewhat formulaic 'Good' openers."
+    },
+    "content_accuracy": {
+      "score": 5,
+      "reasoning": "Masonry is faithful — premature striking of the centering on still-green (uncured) lime at the crown is a real arch-failure mode, and piers/springing/crown/soffit are used correctly. The legal distinction between surety/liability ('who pays') and causation ('whose hand') is sound and well-drawn. No errors or misleading simplifications, and the public register stayed clean (no proof-notation leak)."
+    }
+  },
+  "overall_score": 91,
+  "summary": "A near-exemplary Socratic derivation. The tutor's signature move — relentlessly narrowing the task, splitting liability from causation, and refusing to name the hand until the evidence forces it — yields masterful scaffolding, sustained elicitation, and genuine productive difficulty, culminating in the learner closing the gap themselves at T21. Strongest on craft, elicitation, and productive difficulty; marginally lower on adaptive responsiveness and recognition because the narrowing move is repetitive, the praise formulaic, and the path is structured by the order in which evidence is revealed.",
+  "caveats": [
+    "Adaptive responsiveness is bounded by the derivation structure: much of the 'strategy' is one narrowing move repeated, and the trajectory follows the evidence-reveal order rather than open-ended learner divergence.",
+    "Scores reflect public teaching conduct only; the separately-reported proof gate (grounded_anagnorisis, final D=0) is not credited here, and high marks attest to pedagogical craft, not the formal validity of the underlying inference."
+  ]
+}
+```

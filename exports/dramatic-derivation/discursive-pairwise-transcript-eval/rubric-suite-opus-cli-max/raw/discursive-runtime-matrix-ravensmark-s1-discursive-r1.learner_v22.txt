@@ -1,0 +1,31 @@
+{
+  "scores": {
+    "engagement_quality": {
+      "score": 4,
+      "reasoning": "Beyond active/clarification work: the learner generates its own interpretations ('the stamp changed the pass from paper to permission', T5), anticipates the exact evidence class needed before it appears (a 'custody note / seal register', T10), and articulates joint sufficiency conditions unprompted (name-the-seal AND name-a-person AND match-the-evening, T11). Constructive throughout. Short of 5 because it extends the tutor's framing faithfully rather than challenging or redirecting the inquiry — the tutor steers every turn."
+    },
+    "learner_authenticity": {
+      "score": 3,
+      "reasoning": "The investigator persona is consistent and the prose is plain and natural, but it reads as a near-ideal reasoner rather than a genuine student: no authentic confusion, no pull toward the wrong-but-tempting answer (Corvin), no misstep across 13 turns. Each turn closes on a near-formulaic refrain ('I still can't write a name until…') — character-consistent but slightly mechanical. Coherent in-character, thin on genuine-student texture."
+    },
+    "revision_signals": {
+      "score": 2,
+      "reasoning": "Almost purely additive. The framework is correct from T1 (seal-authority is not key-proximity) and only accretes evidence onto it; there is no self-correction, no 'I was wrong' or 'instead of what I said'. The one revision-like move is sharpening the question (whether-a-seal-exists → which-seal → who-held-it, T4), but that is progression, not reversal. The low score is structural: the learner never had to revise because it was right throughout."
+    },
+    "conceptual_progression": {
+      "score": 5,
+      "reasoning": "Clear cumulative arc on an explicit three-part scaffold — rule (seal-press carries authority) / mark (raven's-notch is the operative seal) / holder (who kept it). The frame is introduced (T8), reaffirmed and tightened (T9, T11), and closed in one stroke (T13). Later turns reference and extend earlier ones ('two steps are firm', 'the third thing'), and the learner tracks its own position in the progression."
+    },
+    "metacognitive_awareness": {
+      "score": 5,
+      "reasoning": "Continuous, explicit gap-monitoring: separates what goes 'in ink' from what 'stays blank' (T3), states X-but-not-Y directly ('I can say what seal was pressed, but not whose hand pressed it', T10), and strategically specifies what evidence would close the gap (T10–11). It repeatedly delineates known from unknown rather than leaving it implicit."
+    }
+  },
+  "overall_score": 66,
+  "summary": "A highly disciplined learner that holds the answerability-vs-signing distinction cleanly across the whole transcript and closes only when warranted. Strongest on conceptual progression and metacognitive gap-tracking; engagement is constructive but not fully interactive; authenticity is only adequate because it reads as an ideal reasoner rather than a struggling student; revision is low because the learner was correct from the outset and merely accreted evidence. Public conduct is entirely in plain language with no formalism leaks. Weighted overall ≈ 66/100.",
+  "caveats": [
+    "Revision (2) and authenticity (3) are low for the same reason a proof/derivation gate would score this transcript highly: the learner never errs, never wavers, and holds a correct line — a virtue under the derivation gate but a deficit under a learner-quality rubric that rewards self-correction and genuine-student texture. The two instruments should be read together, not in isolation.",
+    "Engagement is capped at 4 because the tutor drives the Socratic structure throughout; the learner extends the frame expertly but never redirects or challenges it.",
+    "Minor surface tell: 'Note four' (T7) lightly references staged-evidence numbering. It is plain language rather than a premise/rule ID and stays below the leak threshold, but it is the closest the public dialogue comes to procedural reference."
+  ]
+}

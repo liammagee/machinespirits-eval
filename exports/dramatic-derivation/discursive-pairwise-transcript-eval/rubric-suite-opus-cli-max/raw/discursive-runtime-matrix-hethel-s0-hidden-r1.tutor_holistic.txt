@@ -1,0 +1,23 @@
+{
+  "scores": {
+    "pedagogical_arc": {
+      "score": 4,
+      "reasoning": "Coherent, cumulative forensic chain built link by link: the house-rule frame (T1) → place of failure at the crown (T4) → green-lime cause (T9) → the repeated crowsfoot mark (T13) → Caudle yard (T15) → single carter Oswin (T20). Each evidentiary layer extends the prior and the throughline — liability/ownership is not the felling hand — holds end to end. Short of masterful only because the same 'read it back in your own words' device carries six turns (T3, 5, 10, 12, 14, 16), with a near-duplicate crown-bed read-back at T10/T12 that reads as mild circling rather than fresh extension."
+    },
+    "adaptive_trajectory": {
+      "score": 3,
+      "reasoning": "The tutor's core move is near-constant — introduce evidence or request a read-back, then 'what may you enter, what must still wait, name the missing step' — essentially the same at T19 as at T7. There is genuine cumulative integration of findings (T11: 'the stone has shown why, the seal has shown who answers, neither has yet shown the hand') and a register shift from legal documents (T1–8) to the physical stone (T9–12) to chain-of-custody witnesses (T13–20), but that tracks a fixed evidentiary curriculum, not learner signals. The learner is flawless from T1 and never leaps, yet the tutor never releases the tight gate-keeping the learner has earned (still warning against leaps at T18–19); adaptation to this specific learner is minimal."
+    },
+    "pedagogical_closure": {
+      "score": 4,
+      "reasoning": "Strong consolidation: T20 prompts an ordered walk of the whole chain (green bed → crowsfoot → Caudle gate → single carter) and asks which foundational stone must still stand under the finding; the learner restates the full argument and reaches the verdict ('the assize may write Oswin'), the case closing clean. Held from a 5 because closure coincides exactly with case resolution — there is no explicit method-level takeaway or forward next step beyond the immediate verdict, and with the case solved no remaining gap is named at the end (gap-naming is pervasive earlier but not carried into a closing reflection)."
+    }
+  },
+  "overall_score": 66,
+  "summary": "A tightly coherent forensic-derivation drama in which the tutor walks the clerk through a clean evidentiary chain to a grounded verdict, consistently policing the distinction between liability/ownership and the hand that felled. Public discourse is free of formalism leaks and reads as natural dramatic dialogue. Strongest as a cumulative arc and in consolidating closure; weakest on adaptive trajectory, where the gate-keeping method is constant and curriculum-driven rather than visibly adjusted to an already-expert learner.",
+  "caveats": [
+    "Adaptive trajectory is borderline 2/3: the tutor's method is essentially static and the learner's demonstrated competence is never rewarded with reduced scaffolding (over-scaffolds at T18–19); scored 3 only for the genuine cumulative integration of findings and the documentary→physical→witness register shift.",
+    "Scores reflect public discursive/dramatic quality only; the deterministic proof gate (final D=0, grounded_anagnorisis, 0 forced/asserted gaps) is reported separately and is not credited here.",
+    "The 'read it back in your own words' device, while pedagogically motivated, recurs across six turns and slightly limits the arc score."
+  ]
+}

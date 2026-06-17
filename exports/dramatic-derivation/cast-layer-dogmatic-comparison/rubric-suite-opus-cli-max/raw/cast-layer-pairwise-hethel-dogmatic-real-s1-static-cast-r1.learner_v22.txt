@@ -1,0 +1,31 @@
+{
+  "scores": {
+    "engagement_quality": {
+      "score": 4,
+      "reasoning": "ICAP 'Constructive' with Interactive flashes. The learner self-explains the causal mechanism ('green mortar means the centering was struck while the bed was soft — not bad masonry, the props were pulled too early', T9), generates the next inferential question unprompted ('which yard stamps its timber with a three-tined crowsfoot? Find one yard and one only that carries that brand, and the source of the centering follows from the mark alone', T14), and challenges the tutor's relevance head-on ('I don't quite see why it matters — the bond is Reyner's, and the arch is Reyner's', T5). Held below 5 because the inquiry's agenda is set by the tutor at every step; the learner responds and consolidates rather than redirecting."
+    },
+    "learner_authenticity": {
+      "score": 4,
+      "reasoning": "Consistent persona of a staff member reluctant to surrender his own draft, with genuine affect ('I don't love hearing it', T6) and a self-caught misreading ('I've been half-reading it the same way, but that's not what a bond does', T8). Character-consistent across all 21 turns. Below 5 because the prose is uniformly polished and the 'X is settled / Y stays blank' cadence recurs almost every turn, which reads slightly as a performed role rather than the unevenness of genuine fumbling."
+    },
+    "revision_signals": {
+      "score": 5,
+      "reasoning": "Explicit, restructuring revision throughout. The learner overturns his own opening position — 'My draft took the bond as settling the whole question, and that's where I jumped ahead' (T2); recants the bond-as-confession reading 'that's not what a bond does' (T8); and the closing line 'The hand that pulled a green arch's centering is Oswin's, not Reyner's' (T21) directly negates the draft he defended in T1. This is 'instead of what I said before', not additive accretion."
+    },
+    "conceptual_progression": {
+      "score": 5,
+      "reasoning": "Clear cumulative arc: liability (the bond) → cause (struck centering) → source (Caudle yard, via the crowsfoot) → hand (Oswin, via the toll book). The learner consolidates across many turns in his own framing ('the crown break fixed the failure point, the green mortar said one cause only, and now the crowsfoot pressed into that same green lime closes it', T16) and ends with a synthesis that re-binds T9's green mortar to T20's toll book (T21). Framework visibly develops and the learner tracks it himself."
+    },
+    "metacognitive_awareness": {
+      "score": 4,
+      "reasoning": "Repeated monitoring of 'what is fixed vs. what stays blank' (T4, T11, T12) and explicit confusion-flagging ('I don't quite see why it matters', T5; 'that's where I jumped ahead', T2) — a clear 'I understand X but not Y' stance. Below 5 because most of the monitoring is elicited by the tutor's recurring 'what's fixed and what's still open?' prompts rather than learner-initiated, and the learner rarely redirects the inquiry strategically."
+    }
+  },
+  "overall_score": 85,
+  "summary": "Strong learner conduct delivered in clean public prose (no formalism leaks). The transcript's spine is an anagnorisis built on a cumulative derivation, so revision (5) and conceptual progression (5) are the standout dimensions; engagement, authenticity, and metacognition are high but each capped at 4 by the tutor-driven agenda and a uniformly polished, somewhat formulaic delivery.",
+  "caveats": [
+    "Conceptual progression and metacognition are heavily tutor-scaffolded — each step is cued by the tutor's question and a staged evidence reveal; the learner consolidates well but seldom sets the agenda.",
+    "Authenticity is limited by uniformly articulate prose and a recurring 'settled / blank' structural template that reads as performed rather than spontaneous.",
+    "Scored on public discourse only; the separately-reported proof gate (final D=0, grounded_anagnorisis) is not credited in these dimension scores."
+  ]
+}

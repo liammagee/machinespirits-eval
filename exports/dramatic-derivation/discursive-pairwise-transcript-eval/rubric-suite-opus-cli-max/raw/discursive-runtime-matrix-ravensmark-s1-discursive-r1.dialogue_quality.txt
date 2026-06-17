@@ -1,0 +1,35 @@
+{
+  "scores": {
+    "pedagogical_progression": {
+      "score": 4,
+      "reasoning": "Clear arc from reframing the question (T1, 'what would make a pass speak with authority') to building the custody-record criterion (T10-11) to grounded resolution (T13). But turns 5-9 visibly circle the same 'rule/mark/holder, holder still blank' point, restating the responsibility-vs-signing distinction repeatedly with little added depth — a real mid-dialogue plateau rather than continuous deepening."
+    },
+    "dialogical_responsiveness": {
+      "score": 4,
+      "reasoning": "The learner integrates each specific reveal the tutor introduces — the under-stamp impression (T4), the belt key (T6), the pass-law (T8), the register entry (T13) — never ignoring a contribution. The tutor's 'read it back in your own words' checks (T5, T7) genuinely respond to and test the learner. Slightly undercut by the learner's near-identical template each turn ('X is settled, the holder stays blank, I can't name a hand')."
+    },
+    "knowledge_co_construction": {
+      "score": 3,
+      "reasoning": "Every piece of evidence and the entire framework (answerability vs signing, the river-gate law, the operative seal) is supplied by the tutor; the learner interprets and confirms rather than co-builds. The one genuinely collaborative stretch is T10-11, where the learner independently specifies what a custody record must show (name the seal, name a person, match the time) before it is revealed. Overall this reads as guided discovery, not symmetric construction."
+    },
+    "productive_tension_management": {
+      "score": 4,
+      "reasoning": "The sole tension is the deliberately held-open gap between who must answer (Corvin) and the signing hand; the tutor refuses premature closure ('do not let the gate-key do the stamp's work,' T11-T12) and converts the sustained impasse into the precise three-part criterion that the T13 entry then satisfies — a generative use of difficulty. Limited because there is no learner confusion, error, or disagreement; the tension is one-note and didactic, resolved by an external reveal."
+    },
+    "transformation_evidence": {
+      "score": 3,
+      "reasoning": "The learner reaches a grounded conclusion (Elian named, T13) but holds the same answerability-vs-signing frame from T1 onward and is never wrong and never revises. The change is a blank getting filled by incoming evidence, not an evolution of stance, approach, or framing — understanding completes within a fixed method rather than transforming."
+    },
+    "interactional_coherence": {
+      "score": 5,
+      "reasoning": "Strong, purposeful arc: opening reframing, staged evidence development, and a clean resolution. The recurring 'rule / mark / holder' spine and the closing antithesis ('Corvin accounts for the gate; Elian signed the warrant') give the exchange a discernible shape, with each turn following naturally from the previous and no dropped threads."
+    }
+  },
+  "overall_score": 69,
+  "summary": "A polished, highly coherent Socratic mystery that sustains one well-managed impasse through to a grounded recognition, with consistent responsiveness to specifics. Its ceiling is set by real limits: notable mid-dialogue repetition (T5-T9), a learner who never errs or shifts frame (weak transformation), and evidence and framework supplied almost entirely by the tutor (bounded co-construction).",
+  "caveats": [
+    "Public dialogue is in plain language with no formalism leaks (0 detected); scores reflect discourse quality only, not the underlying proof gate.",
+    "The learner's flawless, templated compliance leaves productive-tension and transformation under-tested — there is no genuine confusion, mistake, or disagreement to work through.",
+    "All evidence is introduced by the tutor; this is guided discovery rather than symmetric co-construction. The run summary's 1 release deviation reads as a minor pacing imperfection, not a public-discourse defect."
+  ]
+}

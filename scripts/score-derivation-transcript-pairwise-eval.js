@@ -25,7 +25,8 @@ function usage() {
     [--packet-dir exports/dramatic-derivation/pairwise-transcript-eval] \\
     [--out exports/dramatic-derivation/pairwise-transcript-eval/scores.json] \\
     [--report exports/dramatic-derivation/pairwise-transcript-eval/report.md] \\
-    [--judge-cli codex|claude] [--judge-model MODEL] [--force] [--dry-run]
+    [--judge-cli codex|claude] [--judge-model MODEL] [--judge-effort low|medium|high|xhigh|max] \\
+    [--force] [--dry-run]
 `;
 }
 
@@ -36,6 +37,7 @@ export function parseArgs(argv = []) {
     report: null,
     judgeCli: 'codex',
     judgeModel: null,
+    judgeEffort: null,
     force: false,
     dryRun: false,
   };
@@ -62,6 +64,10 @@ export function parseArgs(argv = []) {
       opts.judgeModel = argv[++i] || null;
       continue;
     }
+    if (arg === '--judge-effort') {
+      opts.judgeEffort = argv[++i] || null;
+      continue;
+    }
     if (arg === '--force') {
       opts.force = true;
       continue;
@@ -74,6 +80,9 @@ export function parseArgs(argv = []) {
   }
   if (!['codex', 'claude'].includes(opts.judgeCli)) {
     throw new Error(`--judge-cli must be codex or claude, got ${JSON.stringify(opts.judgeCli)}`);
+  }
+  if (opts.judgeEffort && !['low', 'medium', 'high', 'xhigh', 'max'].includes(opts.judgeEffort)) {
+    throw new Error(`--judge-effort must be low, medium, high, xhigh, or max, got ${JSON.stringify(opts.judgeEffort)}`);
   }
   opts.out = opts.out || path.join(opts.packetDir, 'scores.json');
   opts.report = opts.report || path.join(opts.packetDir, 'report.md');
@@ -131,10 +140,11 @@ ${packet}
 Return JSON only. Do not include markdown fences, caveats outside JSON, or guesses about runtime arm identity.`;
 }
 
-function callClaude(prompt, model) {
+function callClaude(prompt, { model, effort }) {
   return new Promise((resolve, reject) => {
     const args = ['-p', '-', '--output-format', 'text'];
     if (model) args.push('--model', model);
+    if (effort) args.push('--effort', effort);
     const env = { ...process.env };
     delete env.ANTHROPIC_API_KEY;
     delete env.ANTHROPIC_AUTH_TOKEN;
@@ -200,8 +210,8 @@ function callCodex(prompt, model) {
   });
 }
 
-async function callJudge(prompt, { judgeCli, judgeModel }) {
-  if (judgeCli === 'claude') return callClaude(prompt, judgeModel);
+async function callJudge(prompt, { judgeCli, judgeModel, judgeEffort }) {
+  if (judgeCli === 'claude') return callClaude(prompt, { model: judgeModel, effort: judgeEffort });
   return callCodex(prompt, judgeModel);
 }
 
@@ -356,7 +366,9 @@ export async function scorePairwiseTranscriptEval(options) {
     packet_dir: packetDir,
     judge: options.dryRun
       ? 'dry-run'
-      : `${options.judgeCli}${options.judgeModel ? `/${options.judgeModel}` : '/default'}`,
+      : `${options.judgeCli}${options.judgeModel ? `/${options.judgeModel}` : '/default'}${
+          options.judgeEffort ? `/${options.judgeEffort}` : ''
+        }`,
     rows,
     summary: summarizeRows(rows),
   };

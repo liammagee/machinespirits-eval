@@ -1,0 +1,31 @@
+{
+  "scores": {
+    "engagement_quality": {
+      "score": 4,
+      "reasoning": "Constructive throughout: the learner self-explains, generates predictions, and challenges the tutor's framing with penetrating questions ('what does that add?' T5; 'why isn't ownership enough — who else would have drawn the falsework?' T6). It even anticipates the next required evidence in T15 (the mark must be one yard's registered brand, 'not just a common chip-mark any adze might leave'), which the file then supplies in T17. Short of Interactive-5 because the inquiry's structure and evidence sequence stay tutor-led; the learner refines and anticipates within that frame rather than redirecting it."
+    },
+    "learner_authenticity": {
+      "score": 4,
+      "reasoning": "Consistent persona of a quick, overconfident clerk reluctant to surrender the easy answer, with character-coherent reluctance markers ('I don't like where that leaves the draft' T10; 'I don't enjoy saying it' T19; 'I don't much like writing it' T21). Docked from 5 by a formulaic turn rhythm (concede → restate the liability/hand split → note the blank line) and uniformly graceful absorption that reads less unpredictable than a real student would."
+    },
+    "revision_signals": {
+      "score": 5,
+      "reasoning": "Repeated explicit, restructuring revision rather than additive accretion: the learner names prior mistaken positions and corrects them — 'I was treating his name on the job as reasoning the fall was his doing' (T3); 'in my draft I had his name running across all three, and only one of those lines was mine to fill yet' (T19). The whole arc restructures 'Reyner felled it' into 'Reyner answers, Oswin felled it.'"
+    },
+    "conceptual_progression": {
+      "score": 5,
+      "reasoning": "Clear cumulative arc: the learner maintains an accumulating multi-line model and references earlier file entries by position ('entry five... entry eight', T10), building each new evidentiary piece onto prior ones, and culminates in T22 by joining cause (green crown bed) with hand (toll-book). Each turn extends, not just answers, the previous one."
+    },
+    "metacognitive_awareness": {
+      "score": 5,
+      "reasoning": "Sustained explicit monitoring of what is and is not yet warranted — 'the draft is ahead of the evidence on the hand, and I can see it now' (T11) — persistently distinguishing the line it can fill from the one that must stay blank, and specifying what further evidence each blank needs (T12, T15). It acts on this by withholding entries until earned ('the next line stays blank until someone brings a yard note... I can hold it there', T16)."
+    }
+  },
+  "overall_score": 90,
+  "summary": "Strong learner conduct. The transcript's spine is an explicit revision arc that untangles a liability/cause/agency conflation, paired with cumulative framework-building and sustained metacognitive tracking of what the evidence does and does not yet license. Engagement and authenticity are very good but each capped at 4 by a tutor-led inquiry and a somewhat formulaic, convergent response rhythm.",
+  "caveats": [
+    "The inquiry is heavily tutor-scaffolded; the learner's disciplined separation of lines is partly elicited by the tutor's recurring 'what can you write / what stays blank' prompts, though the learner also volunteers unprompted self-corrections (T9, T19).",
+    "Authenticity is judged within a stylized period-drama register, not naturalistic student speech.",
+    "Scored on public discourse only; the deterministic proof gate (Final D, forced/asserted gap) is excluded by design and not credited here. No public formalism leaks were present to discount."
+  ]
+}

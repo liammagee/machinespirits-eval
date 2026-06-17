@@ -1,0 +1,23 @@
+{
+  "scores": {
+    "pedagogical_arc": {
+      "score": 5,
+      "reasoning": "Masterful, dependency-ordered scaffolding. The dialogue opens by asking what the file must show (T1), then builds a strict evidentiary chain that cannot be rearranged without collapse: builder named (T2-3) → break-point at the crown (T4) → cause as a struck green centering (T9) → the crowsfoot prop-mark (T13) → the Caudle yard (T17) → the hand, Oswin (T20). The tutor maintains a running ledger of what is 'settled' versus 'still open' (T3, T5, T8, T11), so each turn demonstrably extends the prior one. The repeated cause-vs-hand distinction across T11-16 is purposeful pacing around the learner's breakthrough rather than aimless circling."
+    },
+    "adaptive_trajectory": {
+      "score": 4,
+      "reasoning": "Clear, substantive adaptation calibrated to this learner's emergent failure mode. Early turns are broad ('keep those three separate', T3); once the learner's recurring habit surfaces — pulling every settled step back onto Reyner's name — the tutor visibly adjusts, narrowing the analytic grain ('make this smaller', T14; 'take only the green crown bed', T11; 'don't name anyone', T16) and explicitly metabolizing the pattern back to the learner ('I hear that pull toward the draft; that's exactly the pressure to slow down', T16). This drives a genuine recognition moment (T15: 'I see what I keep doing'). Short of 5 because the core Socratic separation method stays constant throughout; the trajectory is an intensification and psychological attunement within that method rather than a strategic pivot."
+    },
+    "pedagogical_closure": {
+      "score": 4,
+      "reasoning": "An earned, specific consolidation: the toll book fills the literal blank line (T20) and the learner articulates the complete chain plus the central lesson — that liability, cause, and the felling hand are distinct columns — even registering the cost ('I don't love where that leaves my draft, but the file closes the circle'). Gaps were explicitly named throughout via the blank-line device, well beyond a generic summary. Short of 5 because the dialogue ends exactly at case resolution with no forward next steps and no tutor-led meta-synthesis of the separation method as a transferable skill; the closing consolidation is delivered by the learner, not framed by the tutor."
+    }
+  },
+  "overall_score": 85,
+  "summary": "A strong tutor trajectory whose dramatic form directly serves the pedagogy: progressive evidence revelation is the scaffolding, the learner's self-recognition is the adaptive payoff, and the blank-line resolution is the closure. Masterful arc (5), clear within-method adaptation to the learner's draft-collapsing habit (4), and an earned but slightly truncated closure lacking forward next steps (4). Public discourse is fully naturalistic with no formalism leaks, so nothing is rewarded for hidden rigor.",
+  "caveats": [
+    "Turns 11-16 repeat the cause-vs-hand distinction; read as pacing around the learner's anagnorisis here, but a stricter reading could dock the arc to 4.",
+    "Closure is learner-delivered and stops at case resolution — no explicit next steps or tutor-led consolidation of the transferable method.",
+    "Scored on public discourse only; the deterministic proof/problem-solving gate is reported separately and is not credited in these scores."
+  ]
+}

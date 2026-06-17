@@ -1,0 +1,23 @@
+{
+  "scores": {
+    "pedagogical_arc": {
+      "score": 4,
+      "reasoning": "Strong cumulative investigation. The tutor opens by splitting 'who pays' from 'what put the span down' (T1) and never lets that frame collapse, slotting each new fact into a persistent column structure: contract, yard-ownership and bond into liability (T2, T6, T8); crown break and green mortar into cause (T4, T9-10); crowsfoot and Caudle brand into source (T13, T17); toll book into the hand (T20). Each turn extends the prior and the sequence could not be rearranged without loss. Held just short of masterful by visible treading-water where the same 'what is fixed / what stays blank' move is restated across T14-16 and again T18-19."
+    },
+    "adaptive_trajectory": {
+      "score": 3,
+      "reasoning": "The tutor's strategy is essentially fixed end to end: 'one job at a time, leave the line blank until a fact fills it, do not let the claim outrun the evidence' is the same move at T21 as at T1. Adaptation is real but minor: as the learner internalizes the liability/cause split and begins self-correcting (T8-10), the tutor shifts from heavy correction toward lighter confirmation and hands more of the reasoning over, and it meets the learner's explicit resistance at T5-8 directly. No substantive strategic evolution tailored to this specific learner."
+    },
+    "pedagogical_closure": {
+      "score": 4,
+      "reasoning": "The final turn consolidates well. The tutor refuses to let the name 'outrun the reason' and has the learner restate both load-bearing links — green mortar meaning a struck centering, and the toll book putting one hand on the Caudle props — resolving the opening misconception by name ('Oswin's, not Reyner's'). Short of excellent because the close resolves rather than opens forward: it names no remaining gaps or next steps (motive, whether the act was directed), though for a completed derivation little is left open."
+    }
+  },
+  "overall_score": 66,
+  "summary": "A disciplined investigative dialogue with a clear, cumulative arc that resolves a genuine misconception — conflating who is liable with who committed the causal act — by tracing evidence step by step to a named hand. Strongest on arc and on a specific, consolidating final turn; weakest on adaptation, because the tutor applies one consistent separate-the-questions method throughout rather than evolving its strategy. The public discourse stays in plain investigative language (columns, blanks, links) without leaning on formal notation.",
+  "caveats": [
+    "The deterministic proof/problem-solving gate (final D, forced gap, formalism leaks) is reported separately; these three dimensions assess only public discourse quality.",
+    "Adaptive_trajectory scores middling by design: the tutor's steady method is pedagogically appropriate for a derivation, but consistency is not adaptation, which is what this dimension measures.",
+    "Closure could be read as a 3 if one requires explicit next-steps and gap-naming at the end; scored 4 because the final-turn consolidation is specific and load-bearing rather than generic."
+  ]
+}

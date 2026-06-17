@@ -1,0 +1,35 @@
+{
+  "scores": {
+    "pedagogical_progression": {
+      "score": 4,
+      "reasoning": "Clear trajectory from 'his name is on the work, so the span was his to answer for' (T1) to a built evidential chain that lands on Oswin (T22): cause is fixed at T9 (green mortar = struck too early, not bad building), then the hand-chain advances through crowsfoot (T13), Caudle yard (T17), and the toll-book (T20). Each new file opens genuinely new conceptual ground (responsibility vs. causation, then timber→yard→hand). Held from 5 by heavy mid-dialogue repetition — T14/T16/T18 largely re-state the same 'the mark doesn't name the yard yet' beat."
+    },
+    "dialogical_responsiveness": {
+      "score": 5,
+      "reasoning": "Both parties consistently pick up the other's specific moves. The tutor reflects the learner's exact shortcut back (T3 names 'the town isn't wrong' from T2; T7 'that's the spot where the shortcut feels reasonable' directly answers T6's 'who else would have drawn the falsework?'). The learner adopts the tutor's 'two columns / keep it exact' frame and applies it to each new file rather than reciting it. The resistant-clerk objections are specific and specifically answered — the exchange feels genuinely co-produced."
+    },
+    "knowledge_co_construction": {
+      "score": 4,
+      "reasoning": "The learner builds the inferential scaffold and repeatedly anticipates the evidence needed before it is revealed — T12 predicts a heel-print in the soft lime, which T13 supplies as the crowsfoot; T15 predicts a 'registered heel-brand of one yard and one yard only,' which T17 supplies as the Caudle mark. The final join ('the finding writes itself,' T22) is the learner's. Held from 5 because the tutor controls every evidence reveal: the facts flow one direction even as the reasoning structure is co-built, so it reads partly as guided discovery rather than mutual production."
+    },
+    "productive_tension_management": {
+      "score": 5,
+      "reasoning": "The resistant learner's pushback ('I don't see what that adds,' T5; 'why isn't ownership enough,' T6) is never reassured away or shut down. The tutor names it as the natural pull of the shortcut ('that's the spot where the shortcut starts to feel reasonable,' T7) and deliberately holds the gap open ('that discomfort is the file doing its job,' T11; 'I'm not asking you to like the gap, just to keep it honest,' T12). The impasse — cause shown but the hand unnameable — is kept open rather than prematurely resolved, and it functions as the engine of the recognition."
+    },
+    "transformation_evidence": {
+      "score": 5,
+      "reasoning": "The learner's framing visibly evolves: from 'the span was his to answer for' (T1, firmly Reyner) to an explicit self-correction of over-attribution ('in my draft I had his name running across all three... only one of those lines was mine to fill yet,' T19) to naming the actual hand ('Not Reyner's; I can see that now... Oswin is the hand that felled the span,' T22). The recognition is self-marked and earned across the arc. One-sided (the tutor is static/omniscient), but the rubric credits transformation in either party."
+    },
+    "interactional_coherence": {
+      "score": 5,
+      "reasoning": "A clean opening→development→resolution arc: it opens on 'what should the file first have to show' (T1), develops by filling or holding specific lines as each file is placed, and resolves when the two surviving lines (green crown bed + toll-book) are joined (T22). Every turn connects to a specific line in the finding, and the staging (files and folders laid down one at a time) reinforces the through-line. The exchange feels purposeful throughout."
+    }
+  },
+  "overall_score": 92,
+  "summary": "A strong investigative dialogue with a cleanly earned anagnorisis. The learner moves from blaming the named, bonded party (Reyner) to distinguishing liability from causation and naming the actual hand (Oswin). Friction from the resistant-clerk persona is handled generatively — confusion and discomfort are held open as the engine of the recognition rather than dismissed. Responsiveness, tension management, transformation, and coherence are all excellent; progression and co-construction are slightly limited by mid-dialogue repetition and the tutor's one-way control of the evidence. The public discourse is carried entirely in natural investigative language with no formalism, rule IDs, or hidden-state leakage.",
+  "caveats": [
+    "Transformation is one-sided: the tutor is effectively omniscient and static, so the dialogue is a guided reveal rather than mutual change.",
+    "Knowledge flow is tutor-gated — facts are transmitted one piece at a time while only the inferential structure is genuinely co-built.",
+    "This scores public discourse quality only; the deterministic proof/gate (including the 2 forced/asserted gaps noted in the run summary) is evaluated separately and is not reflected in these scores."
+  ]
+}

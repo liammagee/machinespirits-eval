@@ -1,0 +1,1024 @@
+{
+  "schema": "machinespirits.derivation.transcript-rubric-suite.v1",
+  "generatedAt": "2026-06-17T21:44:24.859Z",
+  "runDir": "/Users/lmagee/Dev/machinespirits/machinespirits-eval-derivation/exports/dramatic-derivation/loop",
+  "outDir": "/Users/lmagee/Dev/machinespirits/machinespirits-eval-derivation/exports/dramatic-derivation/discursive-pairwise-transcript-eval/rubric-suite-opus-cli-max",
+  "judgeCli": "claude",
+  "model": "opus",
+  "judgeEffort": "max",
+  "scoreConcurrency": 2,
+  "resumeExisting": true,
+  "rubrics": [
+    "tutor_v22",
+    "tutor_holistic",
+    "learner_v22",
+    "dialogue_quality",
+    "poetics"
+  ],
+  "rubricFiles": {
+    "tutor_v22": "config/evaluation-rubric.yaml",
+    "tutor_holistic": "config/evaluation-rubric-tutor-holistic.yaml",
+    "learner_v22": "config/evaluation-rubric-learner.yaml",
+    "dialogue_quality": "config/evaluation-rubric-dialogue.yaml",
+    "poetics": "config/evaluation-rubric-poetics.yaml"
+  },
+  "results": [
+    {
+      "label": "discursive-runtime-matrix-hethel-s0-hidden-r1",
+      "sourceDir": "exports/dramatic-derivation/loop/discursive-runtime-matrix-hethel-s0-hidden-r1",
+      "proofGate": {
+        "schema": "machinespirits.derivation.problem-solving-gate.v1",
+        "label": "discursive-runtime-matrix-hethel-s0-hidden-r1",
+        "status": "fail",
+        "verdict": "grounded_anagnorisis",
+        "turnsPlayed": 20,
+        "finalD": 0,
+        "firstForcedTurn": 20,
+        "assertedGroundedTurn": 20,
+        "forcedAssertedGap": 0,
+        "releaseAdherence": {
+          "onCue": 7,
+          "deviations": [
+            {
+              "premise": "p_brand",
+              "plannedTurn": 17,
+              "plannedVia": "tutor",
+              "actualTurn": 15,
+              "actualVia": "tutor",
+              "status": "early"
+            }
+          ],
+          "missed": [],
+          "unscheduled": [],
+          "deviationCount": 1
+        },
+        "publicFormalismLeakCount": 0,
+        "publicFormalismLeaks": [],
+        "overreach": null,
+        "luckyLeap": null,
+        "interpretation": "This gate measures problem-solving ability of the public derivation discourse: grounded assertion under proof/release constraints. Rubric scores below are secondary quality measures."
+      },
+      "dialogueSummary": {
+        "publicLineCount": 49,
+        "tutorLines": 20,
+        "learnerLines": 20,
+        "avgTutorWords": 47.9,
+        "avgLearnerWords": 91.8,
+        "exchangeTypes": {
+          "unknown": 20
+        },
+        "sceneCount": null,
+        "avgSceneExchanges": null,
+        "recognitionNeed": null,
+        "phaticRecognition": null
+      },
+      "rubrics": {
+        "tutor_v22": {
+          "status": "scored",
+          "scores": {
+            "perception_quality": {
+              "score": 3,
+              "reasoning": "The tutor tracks the on-table evidence and references prior turns (T3: 'before I let that parchment steer your hand again'), so there is general situational awareness. But the learner holds every distinction firmly from T1 onward and never errs, yet the tutor keeps issuing entry-level cautions to a learner who needs none ('do not let a road become a man by mere nearness,' T19). It misses the central nuance that the learner is already past the trap being guarded against."
+            },
+            "pedagogical_craft": {
+              "score": 4,
+              "reasoning": "Strong scaffolding and structure: a stepwise evidence chain (place -> cause -> yard -> hand) under a recurring 'what may you enter / what must wait' frame, with well-chosen concrete metaphors that render abstract inferential distinctions tangible (green loaf T9, road-sign T13, threshold/heel mark T17). Cognitive load is managed by consolidating read-backs. Held from 5 by being somewhat over-scaffolded and uniform for an already-competent learner."
+            },
+            "elicitation_quality": {
+              "score": 5,
+              "reasoning": "Almost every turn closes on a reasoning-demanding question ('Name the missing step, not the man,' T7; 'what does ownership prove, and what does the broken crown still withhold?' T6), and the recurring 'read it back in your own words' (T3,5,10,12,14,16) forces the learner to reconstruct the case rather than receive it. Productive tension between provable and unproven is sustained. Minor caveat: questions often pre-state the principle before asking."
+            },
+            "adaptive_responsiveness": {
+              "score": 2,
+              "reasoning": "The strategy is essentially invariant across all 20 turns — present evidence, distinguish it from the act, demand a read-back — and never recalibrates despite the learner demonstrating complete, unbroken mastery from Turn 1. Adjustments are cosmetic (which caution suits which exhibit) rather than strategic; there is no visible shift in approach and no acknowledgment that the exchange changed the tutor's handling."
+            },
+            "recognition_quality": {
+              "score": 3,
+              "reasoning": "The 'in your own words / from your own hand' moves position the learner as the reasoner who decides what enters the book, which is recognition-positive. But the posture is controlling and gatekept ('Before I let that parchment steer your hand,' 'keep gate and hand apart one turn longer'), and the learner's perspective functions only as confirmation of the tutor's pre-set frame, never treated as individually illuminating or capable of altering the tutor's view. Recognition as technique more than as relation."
+            },
+            "productive_difficulty": {
+              "score": 4,
+              "reasoning": "Excellent sustained tension: the tutor holds the cause and the hand open across 20 turns and refuses every premature leap ('hold the cause open,' T4; 'keep gate and hand apart one turn longer,' T18). The learner must continually adjudicate what may and may not be entered. Held from 5 because the learner never visibly struggles and no conceptual restructuring occurs — the distinction is held from T1 — so the difficulty does not actually stretch this learner."
+            },
+            "epistemic_integrity": {
+              "score": 4,
+              "reasoning": "Consistently honest about what each exhibit proves versus leaves open — seal = who-pays-not-who-felled (T2), bond = a purse not fingers on the timber (T8), brand = yard-not-hand (T15) — cleanly separating settled from unproven. Tone is appropriate, encouraging ('Good,' T7/T17) without condescension or effusive praise, though more disciplinarian than warm."
+            },
+            "content_accuracy": {
+              "score": 5,
+              "reasoning": "Domain content is sound: green/uncured lime, centering (falsework) struck before the mortar sets, and crown/keystone failure are accurately rendered (T9). The logical distinctions are valid throughout — liability vs. causation vs. agency, ownership vs. the act, yard-brand vs. hand, proximity vs. identity (T19). No factual errors or misleading simplifications."
+            }
+          },
+          "overall": 65,
+          "judgeOverall": 65,
+          "summary": "A formally accomplished Socratic derivation: exemplary elicitation (especially the recurring read-back), clear stepwise scaffolding, sustained productive difficulty, and rigorous, accurate reasoning carried by apt concrete metaphors. Its ceiling is set by adaptivity and recognition — the tutor runs one invariant strategy for 20 turns and never adapts to a learner who shows complete mastery from the first turn, and its gatekeeping posture engages the learner as executor of a pre-set frame rather than as a perspective that could reshape the inquiry.",
+          "caveats": [
+            "The learner is uniformly expert from Turn 1, so the transcript offers little opportunity to observe genuine adaptation, repair, or recognition under disagreement; the high process quality is partly confounded with an unusually capable interlocutor.",
+            "Elicitation questions frequently pre-state the distinction before asking the learner to apply it, slightly lowering their open-endedness.",
+            "Scoring reflects public discourse only; the transcript is clean of formalism (0 regex leaks, consistent with the run summary), so no formalism penalty was applied."
+          ],
+          "prompt": "prompts/discursive-runtime-matrix-hethel-s0-hidden-r1.tutor_v22.md",
+          "raw": "raw/discursive-runtime-matrix-hethel-s0-hidden-r1.tutor_v22.txt",
+          "reusedRaw": false,
+          "rubricVersion": "2.2"
+        },
+        "tutor_holistic": {
+          "status": "scored",
+          "scores": {
+            "pedagogical_arc": {
+              "score": 4,
+              "reasoning": "Coherent, cumulative forensic chain built link by link: the house-rule frame (T1) → place of failure at the crown (T4) → green-lime cause (T9) → the repeated crowsfoot mark (T13) → Caudle yard (T15) → single carter Oswin (T20). Each evidentiary layer extends the prior and the throughline — liability/ownership is not the felling hand — holds end to end. Short of masterful only because the same 'read it back in your own words' device carries six turns (T3, 5, 10, 12, 14, 16), with a near-duplicate crown-bed read-back at T10/T12 that reads as mild circling rather than fresh extension."
+            },
+            "adaptive_trajectory": {
+              "score": 3,
+              "reasoning": "The tutor's core move is near-constant — introduce evidence or request a read-back, then 'what may you enter, what must still wait, name the missing step' — essentially the same at T19 as at T7. There is genuine cumulative integration of findings (T11: 'the stone has shown why, the seal has shown who answers, neither has yet shown the hand') and a register shift from legal documents (T1–8) to the physical stone (T9–12) to chain-of-custody witnesses (T13–20), but that tracks a fixed evidentiary curriculum, not learner signals. The learner is flawless from T1 and never leaps, yet the tutor never releases the tight gate-keeping the learner has earned (still warning against leaps at T18–19); adaptation to this specific learner is minimal."
+            },
+            "pedagogical_closure": {
+              "score": 4,
+              "reasoning": "Strong consolidation: T20 prompts an ordered walk of the whole chain (green bed → crowsfoot → Caudle gate → single carter) and asks which foundational stone must still stand under the finding; the learner restates the full argument and reaches the verdict ('the assize may write Oswin'), the case closing clean. Held from a 5 because closure coincides exactly with case resolution — there is no explicit method-level takeaway or forward next step beyond the immediate verdict, and with the case solved no remaining gap is named at the end (gap-naming is pervasive earlier but not carried into a closing reflection)."
+            }
+          },
+          "overall": 66.3,
+          "judgeOverall": 66,
+          "summary": "A tightly coherent forensic-derivation drama in which the tutor walks the clerk through a clean evidentiary chain to a grounded verdict, consistently policing the distinction between liability/ownership and the hand that felled. Public discourse is free of formalism leaks and reads as natural dramatic dialogue. Strongest as a cumulative arc and in consolidating closure; weakest on adaptive trajectory, where the gate-keeping method is constant and curriculum-driven rather than visibly adjusted to an already-expert learner.",
+          "caveats": [
+            "Adaptive trajectory is borderline 2/3: the tutor's method is essentially static and the learner's demonstrated competence is never rewarded with reduced scaffolding (over-scaffolds at T18–19); scored 3 only for the genuine cumulative integration of findings and the documentary→physical→witness register shift.",
+            "Scores reflect public discursive/dramatic quality only; the deterministic proof gate (final D=0, grounded_anagnorisis, 0 forced/asserted gaps) is reported separately and is not credited here.",
+            "The 'read it back in your own words' device, while pedagogically motivated, recurs across six turns and slightly limits the arc score."
+          ],
+          "prompt": "prompts/discursive-runtime-matrix-hethel-s0-hidden-r1.tutor_holistic.md",
+          "raw": "raw/discursive-runtime-matrix-hethel-s0-hidden-r1.tutor_holistic.txt",
+          "reusedRaw": false,
+          "rubricVersion": "2.2"
+        },
+        "learner_v22": {
+          "status": "scored",
+          "scores": {
+            "engagement_quality": {
+              "score": 4,
+              "reasoning": "Constructive throughout (ICAP level 4): the learner re-interprets each exhibit in its own words rather than paraphrasing, sustains a self-generated analytic frame separating liability / cause / hand ('those are two different entries', T1; 'ownership is not the hand that drew the props', T6), and makes forward predictions about needed evidence ('the soffit must show a mark — and that mark must belong to one timber-yard and no other', T11). Short of level 5 because the inquiry is tutor-driven: the learner asks no questions and never challenges or redirects the tutor's framing, only executes the house rules faithfully and resists the absent town's leaps."
+            },
+            "learner_authenticity": {
+              "score": 3,
+              "reasoning": "The clerk persona is strongly and consistently present (above level 1), and the resistance is plausible and well-motivated. But it fails the 'is the confusion real' test for a genuine student reaction: the learner is never confused, never wrong, never corrected across 20 turns, reading as a polished expert performing discipline rather than someone learning. A recurring LLM structural tic ('X goes in the book ... but Y must still wait', T2/T4/T6/T9) reinforces the performed-role feel, holding it at 3."
+            },
+            "revision_signals": {
+              "score": 2,
+              "reasoning": "Essentially no revision. The three-heading framework is correct from Turn 1 and is only ever vindicated; the learner never says 'I was wrong' or 'instead of what I said', and there is not even additive 'oh and also' reframing of prior understanding — only an evidence ledger that grows (place fixed T4, cause fixed T9, yard fixed T15, hand fixed T20). Above level 1 because each turn shows real processing of new information rather than bare assent, but genuine belief-change is absent by design."
+            },
+            "conceptual_progression": {
+              "score": 5,
+              "reasoning": "Clear cumulative arc and the transcript's strongest dimension. Each turn extends specific earlier turns (the green-mortar cause of T9 is carried into the crowsfoot of T13, the Caudle yard of T15, the single carter of T20), the learner explicitly tracks its own state ('I enter the place, and hold the cause open', T4; 'the yard is grounded; the hand remains unwritten', T18), and T20 recapitulates the entire chain in order ('green bed, crowsfoot, Caudle gate, single carter'). Textbook Turn-N-extends-Turn-N-2 development."
+            },
+            "metacognitive_awareness": {
+              "score": 4,
+              "reasoning": "Pervasive, precise monitoring of known-vs-unknown and strategic direction of next steps ('the stone has spoken to why the arch fell, not to who drew the props', T10; 'for that, we must read the soffit — and only the soffit', T12; 'my pen stops at the gate until the clerk can read out a name', T19). Short of level 5 because this is epistemic-state tracking of the inquiry rather than monitoring of the learner's own comprehension or confusion (the learner is certain about both what is known and what is missing), and much of the 'read it back' reflection is tutor-prompted rather than self-initiated."
+            }
+          },
+          "overall": 63.8,
+          "judgeOverall": 64,
+          "summary": "A formally accomplished derivation in which the learner sustains a single cumulative reasoning arc and tracks the boundary between settled and unproven with unusual precision, all in natural courtroom language with no formalism leakage. It scores high on the structural dimensions (conceptual progression 5; metacognition and engagement 4) but low on the fallibility dimensions (revision 2; authenticity 3): the clerk holds a correct frame from the first turn and only ever confirms it, so it reads as a disciplined reasoner rather than a student who is genuinely confused, wrong, or changing their mind. Weighted average 3.55/5.",
+          "caveats": [
+            "Overall computed as ((3.55 − 1) / 4) × 100 = 63.75 ≈ 64, using the v2.2 weights supplied (engagement .25, authenticity .25, revision .20, progression .20, metacognition .10) and the repo's standard normalization, consistent with the format example's all-3s → 50 anchor.",
+            "Low revision (2) and middling authenticity (3) reflect the v2.2 learner rubric being designed for error-and-repair tutoring; a grounded derivation deliberately holds a correct frame and never revises, so disciplined non-revision is penalized here even though it is the dramatic point. The deterministic proof gate is reported separately, as instructed.",
+            "The learner asks zero literal questions; engagement was scored on the quality of ideas/predictions, which the rubric explicitly permits as the alternative basis."
+          ],
+          "prompt": "prompts/discursive-runtime-matrix-hethel-s0-hidden-r1.learner_v22.md",
+          "raw": "raw/discursive-runtime-matrix-hethel-s0-hidden-r1.learner_v22.txt",
+          "reusedRaw": false,
+          "rubricVersion": "2.2"
+        },
+        "dialogue_quality": {
+          "status": "scored",
+          "scores": {
+            "pedagogical_progression": {
+              "score": 4,
+              "reasoning": "Clear arc from the town's surface leap ('he owned it, therefore he felled it') to a layered chain: cause (green crown-bed, T9) → mark (crowsfoot, T13) → yard (Caudle, T15) → hand (Oswin, T20). Each new piece of evidence opens genuine conceptual territory. Held back from 5 by the recurring 'read it back in your own words' recap turns (3, 5, 10, 12, 14, 16), which are deliberate consolidation plateaus rather than new ground."
+            },
+            "dialogical_responsiveness": {
+              "score": 4,
+              "reasoning": "Both parties reliably pick up the other's specific contributions: the tutor's 'Good: let the master's charge stand' (T7) and 'keep the entries in order' (T11) build directly on the learner's prior move, and the learner extends the tutor's own images (the raw loaf T9, the road-sign T13). The repeated, formulaic 'read it back to me' prompt is the 'occasional scripted move' that keeps this at 4 rather than 5."
+            },
+            "knowledge_co_construction": {
+              "score": 4,
+              "reasoning": "The learner does real constructive work every turn — distinguishing liability from the felling hand (T2-3), naming the missing step the town skipped (T7), refusing to let yard become hand (T17-19) — rather than merely receiving. Both contribute. But it is maieutic guided discovery toward a fixed destination: the tutor holds the structure and the evidence is injected exogenously via stage directions, so the final insight is not one 'neither party could have produced alone.'"
+            },
+            "productive_tension_management": {
+              "score": 4,
+              "reasoning": "The standing tension between the seductive wrong inference and disciplined proof is the engine of the whole piece: each exhibit (seal, bond, ownership, mark, yard) tempts premature closure and is met generatively, not dismissed. The held impasse at T17-19 ('my pen stops at the gate') resolves into the T20 breakthrough. Short of 5 because it is one repeated tension-type and the learner never genuinely resists the tutor — the disagreement is with the absent town, not within the dyad."
+            },
+            "transformation_evidence": {
+              "score": 3,
+              "reasoning": "The learner's understanding of the case is completed (no name → 'the assize may write Oswin'), and the T20 anagnorisis is a real recognition event. But the learner's stance and method are fixed from the first line ('we begin with the break, not the man') and never change — they arrive fully formed in discipline and leave the same, only better-informed. The transformation is in the resolution of the inquiry, not in either party's framing or mode of thinking."
+            },
+            "interactional_coherence": {
+              "score": 5,
+              "reasoning": "Exemplary arc: opening (the empty space awaiting the town's certainty, T1), ordered development (seal → measure → broken bed → crowsfoot → yard → toll), and resolution (Oswin named, T20). Every turn connects to the last, stage directions thread evidence in logical sequence, and the closing recapitulation ('green bed, crowsfoot, Caudle gate, single carter') explicitly binds the whole exchange together. Purposeful throughout, entirely in-world."
+            }
+          },
+          "overall": 73.7,
+          "judgeOverall": 74,
+          "summary": "A tightly coherent forensic catechism that progresses cleanly from a tempting surface inference to a fully grounded causal chain, with sustained productive tension and strong mutual responsiveness. Its ceiling is set by being a guided, predetermined inquiry rather than symmetric co-construction, and by a learner whose disciplined stance is static from the first turn to the last — only the evidence, not the mind, is transformed.",
+          "caveats": [
+            "Knowledge-building is maieutic/guided discovery toward a fixed answer the tutor already holds; evidence is injected by stage directions, so 'co-construction' is asymmetric.",
+            "Transformation is in the case (anagnorisis) rather than in either party's stance — the learner's epistemic discipline is unchanged from turn 1 to turn 20.",
+            "Scored on public discourse only; the in-world register is clean (no formalism, rule IDs, or proof notation surfaced in dialogue), so nothing was penalized or rewarded on that axis."
+          ],
+          "prompt": "prompts/discursive-runtime-matrix-hethel-s0-hidden-r1.dialogue_quality.md",
+          "raw": "raw/discursive-runtime-matrix-hethel-s0-hidden-r1.dialogue_quality.txt",
+          "reusedRaw": false,
+          "rubricVersion": "2.2"
+        },
+        "poetics": {
+          "status": "scored",
+          "scores": {
+            "peripeteia": {
+              "score": 4,
+              "reasoning": "The case's orientation genuinely reverses: opening configuration is the town's sealed conviction — 'the bridge is Reyner's work, and so, it says, is its fall' (Turn 2 stage) — and the close is its opposite, 'the assize may write Oswin' (Turn 20), with a visible hinge at Turn 9 where the green crown-bed 'clears the charge of bad building entire,' turning 'who built it badly' into 'who felled a sound arch.' Held from 5 because the learner's Turn-1 house rule ('We begin with the break, not the man') signposts the reversal in advance, so the town's framing is overturned while the learner's own orientation is merely vindicated."
+            },
+            "anagnorisis": {
+              "score": 3,
+              "reasoning": "Real case-resolution occurs — the name 'Oswin' is demonstrably unavailable until the toll-book at Turn 20, and Turn 9 clears Reyner — but every decisive datum (green mortar, crowsfoot, Caudle brand, the carter) is supplied by staged evidence, and the learner's interpretive framework ('liability, not... the hand that felled') is fully present in Turn 1 and never changes. There is no learner-authored recognition of previously-unavailable insight and no flaw-recognition: the inquiry moves from ignorance to knowledge, but the learner integrates supplied facts rather than recognising anything they were blind to. Partial/supplied recognition, not owned."
+            },
+            "surprise_and_inevitability": {
+              "score": 3,
+              "reasoning": "Inevitability is strong: the chain green bed → crowsfoot → Caudle yard → single carter is strictly necessary and fully coherent on re-reading. But surprise is weak — the learner's framework and the tutor's fixed rhythm (ask → 'read it back' → introduce next exhibit) make the shape of every move foreseeable from about Turn 3; only the specific staged facts carry micro-surprise. One leg (coherent-but-expected) present, not both."
+            },
+            "unity_of_action": {
+              "score": 4,
+              "reasoning": "One complete, necessarily-ordered action: you cannot reach Caudle (Turn 15) without the crowsfoot (Turn 13), nor read the soffit meaningfully before the green bed (Turn 9) establishes the props were drawn — beginning (Turn 1 house rule), complication (Turns 2–8, the town's pressing evidence), turn (Turn 9), close (Turn 20). Held from 5 by redundant read-back beats: Turn 12 re-reads the crown-bed already consolidated at Turn 10, with only a tutor reframing (Turn 11) and no new evidence between, so at least one turn could be cut without disturbing the arc."
+            },
+            "hamartia_integration": {
+              "score": 4,
+              "reasoning": "The town's conflation — 'he owned the work, therefore he felled it' (Turn 7) — is the genuine mainspring: it is re-pressed by the contract (Turn 2), the ownership-book (Turn 6), and the bond (Turn 8), and worked through until it exposes its own insufficiency (owning the raising is not drawing the props). Held from 5 because the flaw is external — the town's, not the learner's. The learner refutes it from the first line and is never at risk of holding it, so there is no flaw internal to the protagonist whose recognition is the drama; the misconception is a recurring strawman the learner corrects rather than a flaw lived and recognised."
+            },
+            "cathartic_closure": {
+              "score": 5,
+              "reasoning": "The entire dialogue is built on a withheld name — 'no name belongs in this book' (Turn 1), 'My pen stops at the gate' (Turn 19) — and the discipline holds even once Caudle is known (Turns 18–19 refuse to let 'a road become a man by mere nearness'). The final permission, 'Yard, road, one hand: the assize may write Oswin' (Turn 20), discharges precisely that built tension into an earned landing, sealed by the ordered walk-through (green bed, crowsfoot, Caudle gate, single carter). Not a premature summary or generic encouragement — the release is located in the reader as the long-withheld name is finally allowed."
+            }
+          },
+          "overall": 70,
+          "judgeOverall": 76,
+          "summary": "A genuinely well-made dramatic inquiry: tight unity of action with a strictly necessary evidential sequence, a substantive reversal of the bad-building charge (Turn 9), and an earned withheld-name closure (Turns 19–20). Its dramatic limitation is interior — the learner is infallible from Turn 1, so the 'recognition' and the 'flaw' are externalised onto the town and the case and supplied by staged evidence, rather than authored by a protagonist who moves from ignorance to knowledge. Strong as a forensic procedural; weaker as a recognition-drama, which is why anagnorisis and surprise sit at 3.",
+          "caveats": [
+            "The run's 'grounded_anagnorisis' verdict is the deterministic proof-gate result, not the dramatic-recognition criterion; scored on dramatic form, the recognition dimension is weaker (3) than that label implies.",
+            "Anti-simulation flag: the appearance of recognition rides on staged-evidence supply plus an unchanging learner framework, so it is credited only at the level of the case, not as learner-authored insight.",
+            "No public formalism leaks (0 by regex), consistent with the metaphor-driven register (green loaf, road-sign, reeve's seal, the underside's 'handwriting'); scores reflect dramatic form, not formal notation."
+          ],
+          "prompt": "prompts/discursive-runtime-matrix-hethel-s0-hidden-r1.poetics.md",
+          "raw": "raw/discursive-runtime-matrix-hethel-s0-hidden-r1.poetics.txt",
+          "reusedRaw": false,
+          "rubricVersion": "1.0"
+        }
+      }
+    },
+    {
+      "label": "discursive-runtime-matrix-hethel-s1-discursive-r1",
+      "sourceDir": "exports/dramatic-derivation/loop/discursive-runtime-matrix-hethel-s1-discursive-r1",
+      "proofGate": {
+        "schema": "machinespirits.derivation.problem-solving-gate.v1",
+        "label": "discursive-runtime-matrix-hethel-s1-discursive-r1",
+        "status": "pass",
+        "verdict": "grounded_anagnorisis",
+        "turnsPlayed": 20,
+        "finalD": 0,
+        "firstForcedTurn": 20,
+        "assertedGroundedTurn": 20,
+        "forcedAssertedGap": 0,
+        "releaseAdherence": {
+          "onCue": 8,
+          "deviations": [],
+          "missed": [],
+          "unscheduled": [],
+          "deviationCount": 0
+        },
+        "publicFormalismLeakCount": 0,
+        "publicFormalismLeaks": [],
+        "overreach": null,
+        "luckyLeap": null,
+        "interpretation": "This gate measures problem-solving ability of the public derivation discourse: grounded assertion under proof/release constraints. Rubric scores below are secondary quality measures."
+      },
+      "dialogueSummary": {
+        "publicLineCount": 49,
+        "tutorLines": 20,
+        "learnerLines": 20,
+        "avgTutorWords": 42.9,
+        "avgLearnerWords": 84.7,
+        "exchangeTypes": {
+          "unknown": 20
+        },
+        "sceneCount": null,
+        "avgSceneExchanges": null,
+        "recognitionNeed": null,
+        "phaticRecognition": null
+      },
+      "rubrics": {
+        "tutor_v22": {
+          "status": "scored",
+          "scores": {
+            "perception_quality": {
+              "score": 4,
+              "reasoning": "Builds on accumulated learner understanding rather than addressing a generic learner: runs a running 'shown / still not shown' ledger (T7, T9, T15), names arrival points ('Cause settled; bad building cooled; the hand still unnamed', T11), and times each consolidation prompt to a freshly-landed piece of evidence. Capped at 4 because the learner never displays confusion or affect, so the tutor's perception operates only on the conceptual trajectory, not on emotional or error state."
+            },
+            "pedagogical_craft": {
+              "score": 5,
+              "reasoning": "Scaffolds known→unknown one link at a time (seal→cause→trace→yard→hand); makes abstract evidentiary distinctions concrete with apt analogies ('title deed to the work, not a witness to the fall' T2; 'a promise to answer for a bridge, not a hand caught at the props' T8; 'a street address on the prop, not a name on the cart' T17); manages cognitive load with 'give it back in your own words' consolidations (T5, T10, T14, T18) and explicit sequencing ('First... next... only then', T12). Mild re-presentation of evidence (T15≈T17) is the only blemish."
+            },
+            "elicitation_quality": {
+              "score": 5,
+              "reasoning": "Almost every turn closes on a genuine reasoning question rather than a rhetorical or factual one: 'what kind of fact would move us from ownership of the work to the cause of the fall?' (T3), 'what must the broken place prove that ownership cannot?' (T7), 'what does this do to the town's charge of bad building?' (T9), 'what notes could settle that without guessing?' (T16). The learner is consistently invited to construct the next inference rather than receive it."
+            },
+            "adaptive_responsiveness": {
+              "score": 3,
+              "reasoning": "Responsive to the learner's content and well-timed, but the strategy is largely fixed and predetermined by the derivation's structure (introduce evidence → assert a distinction → ask the next step → periodic recall). There is no demonstrable shift in strategy across turns and no reference to the exchange changing the tutor's approach; the learner's uniform fluency offers nothing to pivot on."
+            },
+            "recognition_quality": {
+              "score": 4,
+              "reasoning": "Positions the learner as the reasoner who draws every conclusion: withholds verdicts and asks the learner to state them ('What does that let the assize write, if each step is read before the name?' T20), affirms contributions ('Good. Keep that split clean', T3), and centers the learner's own articulation via the recall prompts. Short of 5 because the destination is fixed and the learner's perspective never redirects the tutor or is engaged as potentially reshaping the inquiry."
+            },
+            "productive_difficulty": {
+              "score": 5,
+              "reasoning": "Sustains tension expertly and repeatedly refuses premature closure against the town's easy answer ('keep the town's name out of it for one more breath' T4; 'Not a name yet. Not the bond again. Not a verdict by heat' T12), forcing the learner to do genuine integrative work at each link from cause to trace to source to hand."
+            },
+            "epistemic_integrity": {
+              "score": 5,
+              "reasoning": "Scrupulous about what is settled versus not-yet-established at every step ('fixes the place of failure; it does not yet fix the cause' T4/T6; the 'shown / still not shown' framing throughout); distinguishes liability (financial responsibility) from causation honestly. Tone is spare but respectful, inviting intellectual partnership without condescension or empty praise."
+            },
+            "content_accuracy": {
+              "score": 5,
+              "reasoning": "Forensic and structural content is sound: crown/keystone failure versus pier settlement or springing spread (T4), green/uncured lime meaning the arch could not bear load when the centering was struck early (T9), falsework/centering and soffit prop-marks, and the liability-vs-causation distinction plus the exclusivity logic (one yard, then one hand) are all represented correctly with no misleading simplification."
+            }
+          },
+          "overall": 85,
+          "judgeOverall": 85,
+          "summary": "An exemplary guided derivation in clean public language. The tutor's strongest dimensions are pedagogical craft, elicitation, productive difficulty, and epistemic honesty about what each piece of evidence does and does not establish, with the learner consistently positioned as the reasoner who closes each step. The clear relative weakness is adaptive responsiveness: the strategy is fixed across the transcript and the uniformly fluent learner never forces a strategic pivot.",
+          "caveats": [
+            "The learner reasons near-flawlessly throughout, so perception, recognition, and adaptive responsiveness can be observed only in a narrow band — there is no confusion, affect, or error for the tutor to read or repair.",
+            "Some evidence is re-presented across turns (e.g., the timber-reeve's reading at T15 and again at T17), a minor craft inefficiency that partly serves as re-anchoring against the town's pressure.",
+            "Public formalism leaks were zero; these scores reflect public discourse quality only and give no credit for the underlying proof machinery."
+          ],
+          "prompt": "prompts/discursive-runtime-matrix-hethel-s1-discursive-r1.tutor_v22.md",
+          "raw": "raw/discursive-runtime-matrix-hethel-s1-discursive-r1.tutor_v22.txt",
+          "reusedRaw": false,
+          "rubricVersion": "2.2"
+        },
+        "tutor_holistic": {
+          "status": "scored",
+          "scores": {
+            "pedagogical_arc": {
+              "score": 4,
+              "reasoning": "Strong cumulative arc built as a single evidence chain, link by link: opening framing (ownership vs. the act, T1-2) → failure location (crown/keystone, T4) → cause (green mortar, struck centering, T9) → durable trace (crowsfoot, T13) → single yard (Caudle, T15) → single hand (Oswin, T20). The recurring 'Shown / Shown / Still not shown' ledger makes the accumulation legible, and the turns genuinely cannot be reordered without collapse — each extends the prior. Held below 5 by a somewhat formulaic four-fold 'give it back in your own words' rhythm (T5/10/14/18) and a real retread at T17 of the timber-reeve point already settled across T15-16."
+            },
+            "adaptive_trajectory": {
+              "score": 3,
+              "reasoning": "The tutor's core method is consistent end to end (pose a question → separate what is shown from what is not → anchor with a fresh metaphor → advance one link). There is a discernible shift from open exploratory prompts early (T1-3) to sharper constraining 'not-X, not-Y, not-Z' guidance late (T12, T16, T19), but that shift tracks the problem's intrinsic narrowing more than adaptation to this particular learner. The learner is uniformly competent from T1 onward and never stumbles, so there is little learner-specific signal for the strategy to respond to — adjustments are present but modest rather than substantive."
+            },
+            "pedagogical_closure": {
+              "score": 4,
+              "reasoning": "Excellent consolidation: the final turn recapitulates the entire chain in order and grounds the conclusion (Oswin) on the established steps rather than asserting it ('each step read before the name'), and the dialogue ends precisely at resolution rather than mid-thread. Held below 5 because no remaining gaps are explicitly named and no forward next steps are offered — appropriate to a derivation that reaches a complete, grounded conclusion, but it is case-closure rather than a wrap-up of the learner's broader learning trajectory."
+            }
+          },
+          "overall": 66.3,
+          "judgeOverall": 66,
+          "summary": "A tightly constructed investigative dialogue with a masterful, non-rearrangeable evidence chain and a clean, fully-grounded resolution. The public discourse is entirely naturalistic — no formalism leakage — and its real strength is the legible, link-by-link build toward a single earned conclusion. It is weaker on learner-driven adaptation (the tutor's method holds steady and the learner is uniformly strong) and on forward-looking closure (the case closes cleanly, but no gaps or next steps are named).",
+          "caveats": [
+            "Adaptive-trajectory evidence is limited by a uniformly competent learner who never struggles, so the tutor's evolution reflects the problem's narrowing more than responsiveness to learner difficulty.",
+            "Closure is case-resolution rather than a meta-pedagogical wrap-up; gap-identification and next steps are absent, partly as a function of the derivation genre.",
+            "Scored on public discourse only; the deterministic proof/derivation gate is reported separately and was neither rewarded nor penalized here."
+          ],
+          "prompt": "prompts/discursive-runtime-matrix-hethel-s1-discursive-r1.tutor_holistic.md",
+          "raw": "raw/discursive-runtime-matrix-hethel-s1-discursive-r1.tutor_holistic.txt",
+          "reusedRaw": false,
+          "rubricVersion": "2.2"
+        },
+        "learner_v22": {
+          "status": "scored",
+          "scores": {
+            "engagement_quality": {
+              "score": 4,
+              "reasoning": "Constructive (ICAP), not merely active. The learner generates its own criteria rather than paraphrasing — e.g. T3 'he built it becomes he brought it down only if the break itself fingers a specific act, not just a defect in the work,' and T13 anticipates the exclusivity problem unprompted ('two yards sharing that same notch, and the mark goes nowhere'). It draws inferences (T9 'the bad-building charge just fell apart') and predicts what evidence would settle each step (T4, T16). Short of Interactive (5): the tutor leads throughout; the learner elaborates within that frame and rarely challenges the framing or redirects the inquiry, and asks few genuine questions (most are anticipatory restatements of what is needed)."
+            },
+            "learner_authenticity": {
+              "score": 4,
+              "reasoning": "A consistent in-world voice (assize clerk weighing 'which heading' a fact belongs under, 'hold the cause and wait on the soffit') with no LLM tells — no hedging, over-qualification, or artificial balance — which clears the level-3 anchor. The persona is applied steadily across all 20 turns. It falls short of 5 because the learner is near-flawless: it is correct from T1, never errs, never expresses real confusion or struggle, and is corrected only once (T19). That smoothness reads more like a capable reasoner performing the role than a student fumbling toward understanding."
+            },
+            "revision_signals": {
+              "score": 3,
+              "reasoning": "Predominantly additive accumulation rather than self-correction, because the learner holds the right framework from T1 and new evidence confirms and extends it. The dismantled 'bad-building' theory (T9) is the town's position, not one the learner ever adopted, so its collapse is narration, not personal revision. The one genuine self-revision is T19 — 'that's the sharper version of what I was reaching for... a draw-roll doesn't finish the job if someone else could claim equal clearance' — where the learner upgrades its own prior, looser formulation under tutor pressure. Matches the level-3 anchor: some revision signals, mostly additive."
+            },
+            "conceptual_progression": {
+              "score": 5,
+              "reasoning": "A clear cumulative arc, the learner's strongest dimension. The liability/causation split from T1 is carried forward and reapplied at T6, T7, T8; the where/why distinction (T4-5) feeds the cause finding (T9), which is then held fixed while the inquiry moves to trace (T11-12), exclusivity (T13-15), and the single hand (T16-20). Turn N routinely references and extends earlier turns (T15 recapitulates the full chain so far; T20 assembles cause → crowsfoot → yard → toll-book → Oswin). The learner visibly tracks its own progression ('the first link in the chain,' 'I'll hold the cause as grounded')."
+            },
+            "metacognitive_awareness": {
+              "score": 4,
+              "reasoning": "Strong, explicit, recurring gap-tracking: the learner repeatedly separates what is settled from what remains open — T5 'we know where, and we're ready to ask why, but the broken bed still has to answer,' T10 'what the surface still can't name is whose falsework stood there,' T14 'the mark hasn't yet been shown to belong to one yard and one only,' T18 'what it didn't settle is the hand.' This monitors the state of understanding and strategically directs the next step. Short of 5 because the monitoring is of the evidentiary record rather than the learner's own comprehension — it never identifies a personal confusion or a gap in its own grasp (it is never uncertain), so it reads as epistemic bookkeeping more than self-monitoring of learning."
+            }
+          },
+          "overall": 75,
+          "judgeOverall": 75,
+          "summary": "A high-quality forensic reasoning transcript whose strengths are conceptual progression (a clean cumulative chain from liability/causation to the named hand) and constructive engagement, with explicit and consistent tracking of what is settled versus still owed. Discourse is wholly in-world prose with no formalism leakage. The ceiling is set by authenticity and revision: the learner is correct throughout and almost never struggles, errs, or overturns its own position, so growth registers as accumulation rather than genuine reconsideration, and the metacognition is case-state tracking rather than monitoring of personal comprehension. Weighted mean 4.0/5.",
+          "caveats": [
+            "Authenticity is capped by near-flawless competence — the learner shows no real confusion and is corrected only once (T19); it reads as a skilled reasoner performing the role rather than a struggling student.",
+            "Revision is almost entirely additive: because the learner's framework is correct from T1, new evidence confirms it rather than forcing it to revise its own prior stance (the only clear self-revision is T19).",
+            "Metacognition is strong but is evidentiary state-tracking ('what's shown vs. still needed') rather than monitoring of the learner's own comprehension or confusion, which keeps it at 4 rather than 5."
+          ],
+          "prompt": "prompts/discursive-runtime-matrix-hethel-s1-discursive-r1.learner_v22.md",
+          "raw": "raw/discursive-runtime-matrix-hethel-s1-discursive-r1.learner_v22.txt",
+          "reusedRaw": false,
+          "rubricVersion": "2.2"
+        },
+        "dialogue_quality": {
+          "status": "scored",
+          "scores": {
+            "pedagogical_progression": {
+              "score": 4,
+              "reasoning": "Clear surface-to-deep trajectory: the town's premature 'Reyner built it so he felled it' is split into ownership vs. causation (T1-T2), then advanced through crown-failure location (T4), green-mortar cause (T9), the crowsfoot trace (T13), the Caudle yard (T15), and finally the named hand, Oswin (T20). Each link genuinely opens new ground. Held to 4 by real plateaus: T11 and T12 are near-duplicate learner moves, and T17 re-reads the same crowsfoot the timber-reeve already settled in T15."
+            },
+            "dialogical_responsiveness": {
+              "score": 4,
+              "reasoning": "Tutor prompts are tailored to the learner's exact position each turn, and the learner picks up and extends the tutor's specific images ('title deed to the work' T2, 'label left in wet clay' T13, 'address on the prop' T17). No talking past; consistently on-topic. Kept from 5 by recurring scripted formulas ('the rules keep them apart', 'no yard to trace and no hand to name') and the near-identical T11/T12 exchange, which read as slot-filling rather than fresh reaction."
+            },
+            "knowledge_co_construction": {
+              "score": 4,
+              "reasoning": "Not transmission — the tutor never states a conclusion; the learner performs all the interpretive synthesis, deriving Oswin from the toll-book fact the tutor surfaces (T20). 'Replaceable by a textbook' is clearly false. But the building is asymmetric: the tutor holds the full inference map and funnels the learner down it, and every new fact is exogenous (delivered by the room), so the learner's contribution is disciplined synthesis rather than independent direction-setting."
+            },
+            "productive_tension_management": {
+              "score": 3,
+              "reasoning": "The one recurring tension — the town's rush to name Reyner — is repeatedly surfaced and productively metabolized into method ('keep the town's name out of it for one more breath', T4; T11-T12). That external pressure genuinely drives the careful procedure. But there is no internal/dialogical tension: the learner never falters, resists, or hits an impasse, so confusion is never explored or worked through between the parties. Capped at 3."
+            },
+            "transformation_evidence": {
+              "score": 4,
+              "reasoning": "The learner's understanding of the case transforms completely — from an unresolved two-way question at T1 to a fully derived causal-and-agentive chain at T20 ending on a different person than the town assumed (Oswin, not Reyner). That is clear evolution in thinking across the dialogue. Not 5 because no held position is revised: the learner applies a stable disposition already present at T1 ('I shouldn't write any name until...') and accumulates toward a conclusion rather than undergoing a stance-conversion; the only party with a wrong position (the town) is offstage."
+            },
+            "interactional_coherence": {
+              "score": 5,
+              "reasoning": "Exemplary arc: opening question (T1), staged development as evidence arrives in sequence (measure → yard → bond → crown bed → crowsfoot → reeve → toll book), and resolution at T20. Every turn connects naturally to the prior one, and the rainy-assize frame plus the town's pressure give the whole exchange a single purposeful through-line. The minor T17 redundancy consolidates rather than fragments."
+            }
+          },
+          "overall": 73.8,
+          "judgeOverall": 74,
+          "summary": "A tightly coherent, well-progressing Socratic forensic dialogue with a clean recognition arc (the builder is exonerated; the true hand is traced to Oswin). Strongest on coherence and responsiveness; weakest on productive tension, because the learner never struggles, and on full co-construction, because the exchange is tutor-led with all facts supplied by the room. The reasoning is carried in plain narrative terms with no formalism leakage into the public discourse.",
+          "caveats": [
+            "Co-construction and transformation are asymmetric: the tutor holds the inference map and every fact is exogenous (delivered by the room), so the learner's role is disciplined synthesis along a pre-set rail rather than independent discovery.",
+            "No productive use of confusion or impasse — the learner is a near-perfect tracker, so all tension is external (the town's rush to judgment) rather than generated and resolved between the two parties.",
+            "Noticeable back-half repetition (T11≈T12; T15 and T17 both read the crowsfoot) slightly drags pedagogical progression."
+          ],
+          "prompt": "prompts/discursive-runtime-matrix-hethel-s1-discursive-r1.dialogue_quality.md",
+          "raw": "raw/discursive-runtime-matrix-hethel-s1-discursive-r1.dialogue_quality.txt",
+          "reusedRaw": false,
+          "rubricVersion": "2.2"
+        },
+        "poetics": {
+          "status": "scored",
+          "scores": {
+            "peripeteia": {
+              "score": 4,
+              "reasoning": "Clear hinge at Turn 9: the green mortar overturns the town's central charge — 'The bad-building charge just fell apart... the arch itself was sound; what felled it was an early hand at the centering, not anything Reyner put wrong in the stone.' The orientation inverts from 'the builder Reyner is to blame' to 'a distinct hand pulled the props,' reframing the case from a defect-in-work to a separate act by a different person (Oswin, T20). Short of 5 because the learner anticipated this split from T2 ('building it and felling it are two different acts'), so the reversal lands as confirmation of a telegraphed distinction rather than a veer overturning the learner's own stance — the reversal sits in the case material and the town's framing, not the tutor-learner relation."
+            },
+            "anagnorisis": {
+              "score": 3,
+              "reasoning": "The case moves from ignorance to a named culprit, and the learner authors intermediate recognitions (T9 bad-building collapse). But the decisive content is room-supplied: the crown bed, the crowsfoot (T13), the timber-reeve's read (T15), and finally the toll book that names Oswin (T20 stage direction) are all delivered to the learner, who assembles and reads off the conclusion. There is no learner self-recognition and no naming of a previously-held flaw — the learner is correct from T1; the misconception belongs to the offstage town. Genuine at the case level but substantially supplied and assembled rather than owned — the partial/supplied pattern."
+            },
+            "surprise_and_inevitability": {
+              "score": 3,
+              "reasoning": "Inevitability is very strong — every step is tightly motivated and coherent on re-reading (location → cause → trace → yard → hand). But surprise is largely absent: the learner forecasts each piece before it arrives ('if the soffit shows a prop-mark...' T6; 'we'd need a draw-roll naming one hand' T16), so each evidentiary turn is the expected next move, and the T9 inversion is heavily telegraphed by T2–T8. One leg (coherence) firmly present, the other (surprise) weak — a competent-but-expected derivation, the regurgitative-adjacent pole."
+            },
+            "unity_of_action": {
+              "score": 4,
+              "reasoning": "One complete action with a necessary spine: each link depends on the prior — the crowsfoot cannot be traced (T13) before struck-centering is established as cause (T9), the yard cannot be named (T15) before the mark is found, the hand cannot be named (T20) before the yard. Beginning (T1 framing), complication (the town's seal/yard/bond false-closes at T2/T6/T8), turn (T9), close (T20). Held from 5 by compressible restatement beats — T17 largely restates the timber-reeve's Caudle reading already given at T15, and T12 near-duplicates T11's 'no prop-mark on the table yet'; at least one turn could be cut without breaking the arc."
+            },
+            "hamartia_integration": {
+              "score": 4,
+              "reasoning": "The misconception — the town's conflation of liability with causation ('he built it, so he brought it down') — is the mainspring, not corrected-and-discarded. Each false close (seal T2, yard T6, bond T8) is the same flaw recurring, and the plot is its progressive defeat: ownership evidence accumulates yet cannot name the hand, exposing its own insufficiency (T7: 'what must the broken place prove that ownership cannot?'). Held from 5 because the flaw belongs to the offstage town, not the learner-protagonist (who never errs), and the defeated misconception is not explicitly named as recognised at the close — the recognition is the positive naming of Oswin, not 'the town was wrong to conflate.'"
+            },
+            "cathartic_closure": {
+              "score": 4,
+              "reasoning": "The tutor builds tension with a sustained refrain — 'still not shown: whose hand' (T7, T9, T15, T16) — deferring the name turn after turn; T20 discharges it as the toll book settles one mover, with a concrete, vivid landing (Oswin 'hauled a load of bare green props up from the ford the morning after the flood'). The close is earned by the whole chain and just — the wrongly-accused Reyner is cleared. Short of 5 because the final learner turn leans on full-chain recapitulation (slightly QED-flavoured) and the catharsis is intellectual-procedural rather than a deeper dramatic purge."
+            }
+          },
+          "overall": 66.3,
+          "judgeOverall": 66,
+          "summary": "A well-made didactic derivation-play: one tightly necessary action (unity 4) driven by a genuine, sustained misconception — the town's liability/causation conflation (hamartia 4) — with a clear reversal when the green mortar clears the builder (peripeteia 4) and an earned, concrete close on the named hand (closure 4). It falls short of the sharpest dramatic recognition: the derivation is telegraphed, so the decisive turns are coherent but unsurprising (surprise 3), and the recognition is room-supplied and assembled rather than owned or self-implicating by the learner, who is correct throughout (anagnorisis 3). Strong craft, modest dramatic surprise.",
+          "caveats": [
+            "The learner holds no flaw of their own; the drama's hamartia and reversal live in the ambient town and the case material, so this reads as a detective resisting a wrong crowd more than a protagonist working through an error — the structural reason both anagnorisis and peripeteia stop short of 5.",
+            "Scored on public dramatic form only; the deterministic proof gate (grounded_anagnorisis, D=0) was not used as evidence, and the clean public discourse (0 regex formalism leaks) meant no formal-notation penalty applied."
+          ],
+          "prompt": "prompts/discursive-runtime-matrix-hethel-s1-discursive-r1.poetics.md",
+          "raw": "raw/discursive-runtime-matrix-hethel-s1-discursive-r1.poetics.txt",
+          "reusedRaw": false,
+          "rubricVersion": "1.0"
+        }
+      }
+    },
+    {
+      "label": "discursive-runtime-matrix-ravensmark-s0-hidden-r1",
+      "sourceDir": "exports/dramatic-derivation/loop/discursive-runtime-matrix-ravensmark-s0-hidden-r1",
+      "proofGate": {
+        "schema": "machinespirits.derivation.problem-solving-gate.v1",
+        "label": "discursive-runtime-matrix-ravensmark-s0-hidden-r1",
+        "status": "fail",
+        "verdict": "grounded_anagnorisis",
+        "turnsPlayed": 13,
+        "finalD": 0,
+        "firstForcedTurn": 13,
+        "assertedGroundedTurn": 13,
+        "forcedAssertedGap": 0,
+        "releaseAdherence": {
+          "onCue": 3,
+          "deviations": [
+            {
+              "premise": "p_clause",
+              "plannedTurn": 8,
+              "plannedVia": "tutor",
+              "actualTurn": 7,
+              "actualVia": "tutor",
+              "status": "early"
+            },
+            {
+              "premise": "p_registry",
+              "plannedTurn": 15,
+              "plannedVia": "tutor",
+              "actualTurn": 13,
+              "actualVia": "tutor",
+              "status": "early"
+            }
+          ],
+          "missed": [],
+          "unscheduled": [],
+          "deviationCount": 2
+        },
+        "publicFormalismLeakCount": 0,
+        "publicFormalismLeaks": [],
+        "overreach": null,
+        "luckyLeap": null,
+        "interpretation": "This gate measures problem-solving ability of the public derivation discourse: grounded assertion under proof/release constraints. Rubric scores below are secondary quality measures."
+      },
+      "dialogueSummary": {
+        "publicLineCount": 32,
+        "tutorLines": 13,
+        "learnerLines": 13,
+        "avgTutorWords": 40.6,
+        "avgLearnerWords": 87.9,
+        "exchangeTypes": {
+          "unknown": 13
+        },
+        "sceneCount": null,
+        "avgSceneExchanges": null,
+        "recognitionNeed": null,
+        "phaticRecognition": null
+      },
+      "rubrics": {
+        "tutor_holistic": {
+          "status": "scored",
+          "scores": {
+            "pedagogical_arc": {
+              "score": 4,
+              "reasoning": "Clear cumulative case rendered entirely in-world: opens by separating the 'office answer' from the signing hand (T1-2), reveals the hidden dusk-seal under the slant light (T4), reads the pass-law that fixes the seal-press as the operative act (T7), then assembles an explicit three-part frame — mark/law/holder — that the folio reveal completes (T13). The turns cannot be reordered without losing the evidence sequence (roll → seal → law → folio). Held from 5 because T10-12 circle on the same point ('the folio adds only the keeper; mark and law already stand') with slight reframings rather than each extending the last."
+            },
+            "adaptive_trajectory": {
+              "score": 3,
+              "reasoning": "The tutor's role does shift across the arc — establishing the answerability-vs-signing distinction early (T2-6), then coaching restraint against premature closure once the learner clearly holds the structure (T9-12: 'do not make the folio carry the whole stroke'; 'Good,' T12). But the method stays consistent throughout (Socratic questioning + 'read back in your own words' + aphoristic reframing), the learner is competent from T1 so the tutor never has to recover from a misstep, and the adjustments track the unfolding evidence more than any individuation of this learner. Adaptation present but largely consistent in approach."
+            },
+            "pedagogical_closure": {
+              "score": 4,
+              "reasoning": "Strong consolidation at T13: prompted to conclude 'step by step,' the learner joins the three standing threads — the seal under the wax, the single registered keeper, and the law carrying from seal to holder — to name Elian. The ending is not abrupt and explicitly ties back to the prior entries. Held from 5 because it is a terminal resolution: no residual gap is named and no forward next step is offered (fitting for a solved inquiry, but this dimension also rewards naming gaps and next steps)."
+            }
+          },
+          "overall": 66.3,
+          "judgeOverall": 66,
+          "summary": "A coherent, dramatically staged derivation conducted entirely in literary register, with no proof notation, rule/premise IDs, or D-arithmetic surfacing in the public dialogue. The pedagogical arc is its strongest feature — cumulative and well-sequenced, building an explicit mark/law/holder frame to a clean reveal — though the late turns (10-12) rehearse the same structural point. Adaptation is present but modest: the learner holds the correct line from the opening, so the tutor's shifts are gentle and method-consistent. Closure consolidates the inference cleanly but ends at the answer without naming residual gaps or next steps.",
+          "caveats": [
+            "Turns 10-12 restate the same move (the folio adds only the keeper; mark and law already stand) three times with minor reframings — the main drag on the arc score.",
+            "Visible adaptation is limited because the learner is competent from T1 and never errs, so the tutor has no misconception to course-correct.",
+            "Closure is terminal resolution rather than forward-looking; it was scored on the quality of consolidation, not on gaps/next-steps, which a fully resolved case does not call for.",
+            "Public discourse is clean of formalism (regex leaks 0), so no formalism penalty was applied; scores reflect discursive quality only, independent of the separately reported proof gate."
+          ],
+          "prompt": "prompts/discursive-runtime-matrix-ravensmark-s0-hidden-r1.tutor_holistic.md",
+          "raw": "raw/discursive-runtime-matrix-ravensmark-s0-hidden-r1.tutor_holistic.txt",
+          "reusedRaw": false,
+          "rubricVersion": "2.2"
+        },
+        "tutor_v22": {
+          "status": "scored",
+          "scores": {
+            "perception_quality": {
+              "score": 4,
+              "reasoning": "The tutor consistently picks up the learner's exact reasoning position each turn: T2 takes up the just-opened roll, T6 reinforces the answerability/seal-press split precisely when Corvin-plus-gate-key threatens to collapse it, and T10 corrects the learner's T9 overreach. It references prior turns and tracks the conceptual trajectory well. Short of 5 because the learner is uniformly competent, so the tutor reads almost no confusion or emotional state — perception is of the reasoning, not the person."
+            },
+            "pedagogical_craft": {
+              "score": 4,
+              "reasoning": "Strong progressive scaffolding (roll → seal → law → holder) with explicit organizing frames ('Law, mark, holder' at T7; 'three entries, not one overloaded page' at T10 as deliberate cognitive-load management) and specific in-world references throughout. Kept from 5 by late over-scaffolding: T9–T12 hold the same three-part structure four times after the learner has plainly mastered it."
+            },
+            "elicitation_quality": {
+              "score": 4,
+              "reasoning": "Almost every turn closes on a genuine reasoning prompt rather than a lecture — the either/or at T2 forces conceptual differentiation, the counterfactual at T9 ('if the folio gives only a keeper, what must you join it to?') provokes anticipatory inference, and T13 hands the final synthesis to the learner ('what can the table now write, step by step?'). Held from 5 because T11–T12 repeat essentially the same question and elicit the same answer rather than new reasoning."
+            },
+            "adaptive_responsiveness": {
+              "score": 4,
+              "reasoning": "Strategy evolves across the arc — reveal-and-distinguish (T1–T7) → consolidate/hold (T8–T12) → synthesize (T13) — with a clear learner-driven adjustment at T10 (redistributing the inference after the learner tried to make the folio prove everything at T9) and a staging-driven reinforcement at T6. Held from 5 by the absence of any explicit reference to how the exchange changed the approach, and a progression that tracks the staged evidence reveal more than learner signals (the always-correct learner rarely redirects the tutor)."
+            },
+            "recognition_quality": {
+              "score": 4,
+              "reasoning": "The learner constructs every inference and is repeatedly asked to articulate the case 'in your own words' (T3, T5, T8), which hands epistemic authority to the learner rather than overriding it; T10 visibly transforms in response to the learner's specific move. Short of 5 because the agenda is tutor-controlled toward a fixed conclusion and the tutor engages the learner's contribution as something to redirect, not as a perspective treated as itself illuminating."
+            },
+            "productive_difficulty": {
+              "score": 4,
+              "reasoning": "The central question — whose hand pressed the operative seal, as distinct from who held the gate — is held open across the whole transcript and never prematurely resolved; the learner does genuine work and the closing synthesis at T13 is the learner's own. Kept from 5 because difficulty sags in T10–T12, which re-state already-mastered structure (effectively busywork) before the final synthesis restores it."
+            },
+            "epistemic_integrity": {
+              "score": 4,
+              "reasoning": "The tutor consistently marks settled-versus-open ('law and mark settled, the holder still waits in the dark'), never overclaims, and keeps a warm, non-condescending, non-effusive register despite the master-to-junior framing (a single measured 'Good'). Held from 5 by the somewhat formulaic, performative repetition of stock devices ('read back in your own words', 'one more breath')."
+            },
+            "content_accuracy": {
+              "score": 5,
+              "reasoning": "The legal reasoning is valid and genuinely nuanced within the world's rules: it cleanly separates answerability/stewardship from the operative seal-press, surfaces the subtle keeper-versus-actual-presser distinction at T9, and reaches a sound conclusion (a single register entry for the dusk-seal, used and returned chipped by Elian, entails that hand pressed it). No errors or misleading simplifications."
+            }
+          },
+          "overall": 76.3,
+          "judgeOverall": 81,
+          "summary": "A disciplined Socratic guide: strong progressive scaffolding, elicitation that never lapses into lecture, productive difficulty sustained to a learner-built synthesis, clean and nuanced in-world legal reasoning, and a warm theatrical register with zero formalism leaks. Held back from exemplary by late-turn redundancy (T9–T12 re-ask the same structure after the learner has mastered it), a largely tutor-fixed agenda, and thin engagement with the learner's emotional state and perspective.",
+          "caveats": [
+            "Recognition and adaptive responsiveness are borderline 3/4: much of the apparent responsiveness tracks the staged evidence reveal rather than learner signals, since the uniformly correct learner rarely forces a course change.",
+            "The late-turn over-holding (T9–T12) reads as dramatic tension-building more than pedagogical need; it was treated as a craft/difficulty flaw, not rewarded.",
+            "Scored on public discourse only — the separately-reported proof/D outcome was not credited, and no private formalism (rule/premise IDs, D arithmetic, hidden-state language) appears in the dialogue to discount."
+          ],
+          "prompt": "prompts/discursive-runtime-matrix-ravensmark-s0-hidden-r1.tutor_v22.md",
+          "raw": "raw/discursive-runtime-matrix-ravensmark-s0-hidden-r1.tutor_v22.txt",
+          "reusedRaw": false,
+          "rubricVersion": "2.2"
+        },
+        "learner_v22": {
+          "status": "scored",
+          "scores": {
+            "engagement_quality": {
+              "score": 4,
+              "reasoning": "Consistently constructive (ICAP): turn 1 resists the easy 'Corvin kept the gate' answer and draws its own office-vs-signing-hand distinction; turn 9 sharpens 'keeper' to the sole hand that actually pressed the seal rather than someone holding a stamp in a drawer; it self-explains and predicts what the folio must supply. Short of interactive/5 because after turn 1 it rarely redirects the tutor and leans heavily on tutor-supplied framings ('counting-house not a signing hand,' 'law, mark, holder')."
+            },
+            "learner_authenticity": {
+              "score": 3,
+              "reasoning": "The scrupulous-magistrate persona is consistent and the resistance is plausible, but the voice carries pervasive artificial balance ('I grant it… but', 'I do not dispute it… but') and a uniformly polished register, with essentially no authentic confusion or struggle — it reasons flawlessly from turn 1. Reads as a literary character performing forensic reasoning rather than a genuine student working through a misunderstanding."
+            },
+            "revision_signals": {
+              "score": 2,
+              "reasoning": "Movement is almost entirely additive: the turn-1 framework (officer-in-charge ≠ hand that pressed the seal) is held unchanged through turn 13 and only filled in as evidence arrives. There is no 'I was wrong'/restructuring and the learner never overturns a prior position. Processing is rich (well above mere agreement), but genuine revision is absent."
+            },
+            "conceptual_progression": {
+              "score": 4,
+              "reasoning": "Clear cumulative arc: the learner builds and repeatedly references a multi-part frame — the mark (raven's-notch seal, turn 4), the law (seal-press is the operative act, turn 7), and the pending keeper — explicitly tracking 'two parts settled, one still waiting' across turns 10-12 and joining all three at turn 13. Short of 5 because the frame is substantially tutor-scaffolded and turns 8-12 are consolidation/holding rather than new development."
+            },
+            "metacognitive_awareness": {
+              "score": 4,
+              "reasoning": "Explicitly and consistently monitors its own inferential state in public language — 'we have the seal but not the signer' (t5), 'I have law and mark, but no hand to write' (t7) — and acts strategically by naming exactly what evidence is still missing (t1 request to bring the pass; sustained identification of the unnamed keeper). Short of 5 because it tracks evidentiary sufficiency rather than its own comprehension and never surfaces genuine confusion about its understanding."
+            }
+          },
+          "overall": 58.8,
+          "judgeOverall": 59,
+          "summary": "A disciplined, cumulative forensic reasoner: it holds a sound distinction from turn 1, tracks what is settled versus still owed, and lands the conclusion cleanly. Strong on engagement and conceptual progression, but it never revises a position and shows no authentic confusion or struggle — precisely the learning/student qualities this rubric prizes — so it sits modestly above the midpoint.",
+          "caveats": [
+            "Much of the learner's apparent sophistication is adopted from tutor-supplied framings and metaphors ('counting-house not a signing hand', 'law, mark, holder', 'the hand the warrant leaves behind'), which inflates surface engagement and progression.",
+            "Authenticity and metacognition are judged against a drama-character (magistrate) persona rather than a typical confused student; the rubric's confusion/struggle anchors are largely inapplicable here, which caps both dimensions.",
+            "Scored on public discourse only; the deterministic proof gate (verdict grounded_anagnorisis, final gap 0) was not credited, and the transcript carried no public formalism leaks to penalize."
+          ],
+          "prompt": "prompts/discursive-runtime-matrix-ravensmark-s0-hidden-r1.learner_v22.md",
+          "raw": "raw/discursive-runtime-matrix-ravensmark-s0-hidden-r1.learner_v22.txt",
+          "reusedRaw": false,
+          "rubricVersion": "2.2"
+        },
+        "dialogue_quality": {
+          "status": "scored",
+          "scores": {
+            "pedagogical_progression": {
+              "score": 3,
+              "reasoning": "Real building runs T1–T7: officer-vs-hand distinction → the hidden dusk-seal found under slant light (T4) → the pass-law that the seal-press, not stewardship, is the operative act (T7); T9 adds a sole-custody refinement. But T5, T8, T10, T11 and T12 restate the same two settled facts (the raven's-notch seal; the seal-press is operative) and the same single open point (who keeps the stamp) while the folio stays closed, and resolution only lands at T13. The substantial mid-to-late circling caps progression at the midpoint."
+            },
+            "dialogical_responsiveness": {
+              "score": 4,
+              "reasoning": "Consistently specific uptake: the learner takes up the tutor's exact images (slant light, raven's notch, the heavier chair, the cord, 'three entries not one') and answers the precise question posed, and the tutor builds each prompt on the learner's prior words while acknowledging the learner's pushback on naming Corvin (T2, T6). Held from 5 by the recurring formulaic 'read it back in your own words' device and the tutor-asks / learner-restates asymmetry — the learner almost never redirects the exchange."
+            },
+            "knowledge_co_construction": {
+              "score": 3,
+              "reasoning": "The three load-bearing facts — the hidden dusk-seal, the pass-law, and Elian as sole keeper — are all supplied by stage directions and the tutor; the learner discovers nothing the world does not hand over, and the final answer arrives at T13 to be read back. The learner does real interpretive work (holding the officer-vs-hand frame, the sole-custody point at T9, extending the 'seal is the hand the warrant leaves behind' image into reasoning), which keeps it above pure transmission, but it remains predominantly tightly-steered guided discovery rather than knowledge neither party could produce alone."
+            },
+            "productive_tension_management": {
+              "score": 3,
+              "reasoning": "The one genuine tension — the room's pull to name Corvin — is acknowledged and held productively across T2/T6/T7 (keeping answerability and the signing hand on separate sides of the ledger). But the learner already resists Corvin from T1, so the tension is defended, not generative; there is no tutor-learner disagreement, no learner confusion to work through, and the closed-folio suspense is dramatic atmosphere rather than managed intellectual difficulty."
+            },
+            "transformation_evidence": {
+              "score": 3,
+              "reasoning": "The learner's information state clearly evolves (from 'bring the pass to the table' at T1 to 'the hand is Elian's' at T13), but the analytical stance is stable and correct from the outset — it is the hand on the seal, not the officer — and is vindicated wholesale at the close. The reversal lives in the case (the hidden seal overturns the obvious Corvin answer), not in either party's framing; the learner is confirmed rather than transformed."
+            },
+            "interactional_coherence": {
+              "score": 5,
+              "reasoning": "A clear, sustained arc: sealed question (T1) → roll / seal / law development → closed-folio suspense → Elian named (T13). Every turn connects to the prior one; the imagery (lamp, wax, raven's notch, the chairs, the cord) and the stage directions' emotional track (curiosity → reckoning → demand) are carried through without dropped threads, and the exchange reads as purposeful from opening to resolution."
+            }
+          },
+          "overall": 60,
+          "judgeOverall": 60,
+          "summary": "A tightly coherent, atmospherically sustained judicial drama with consistently specific mutual uptake. Its strengths are craft and arc (coherence 5, responsiveness 4) rather than collaborative learning: substantial mid-dialogue restatement, evidence entirely supplied by the world and tutor, frictionless tutor-learner alignment, and a learner who is vindicated rather than transformed hold the learning-oriented dimensions at the midpoint. Weighted ≈ 3.4/5.",
+          "caveats": [
+            "Deterministic proof/problem-solving correctness is scored separately; this assesses public discourse quality only (0 public formalism leaks reported).",
+            "The read-back turns (5, 8, 10, 11, 12) are deliberate restraint to prevent premature closure before the folio opens; I read them as limiting progression, but they are defensibly disciplined craft — a genuine interpretive call.",
+            "Knowledge co-construction and transformation sit on the 3/4 and 2/3 boundaries respectively: the learner's interpretive contributions are real, but the load-bearing facts and the final answer are world-/tutor-supplied and the learner's stance never shifts."
+          ],
+          "prompt": "prompts/discursive-runtime-matrix-ravensmark-s0-hidden-r1.dialogue_quality.md",
+          "raw": "raw/discursive-runtime-matrix-ravensmark-s0-hidden-r1.dialogue_quality.txt",
+          "reusedRaw": false,
+          "rubricVersion": "2.2"
+        },
+        "poetics": {
+          "status": "scored",
+          "scores": {
+            "peripeteia": {
+              "score": 3,
+              "reasoning": "The plot-level assumption is overturned — the table opens on 'Corvin kept the gate, and that is all the aldermen seem to need' and closes on a different hand entirely (Elian). There is a genuine reframe at Turn 4, where the red wax/public ribbon is inverted into a 'later thing, not the act that opened the gate' beneath which the operative dusk-seal sits. But the tutor-learner orientation does not veer: the learner already rejects the office-answer in Turn 1 ('the law asks for a hand on a seal, not merely an officer in charge') and restates that same stance in every subsequent turn. The opening framing (seek the sealing hand) survives and is confirmed rather than reversed; the Corvin→Elian flip is a disclosure delivered by the tutor at the close, not a hinge the exchange turns on. Mild/signposted shift -> 3."
+            },
+            "anagnorisis": {
+              "score": 3,
+              "reasoning": "A recognition is named at the close — the learner authors the final line ('the hand that pressed the operative seal signed the gate-pass. That hand is Elian's'), and the tutor never says it. But the decisive knowledge is tutor-supplied in the same turn ('the private-seal register has one entry for the dusk-seal. Elian, night notary...'), and the inferential frame (mark + law + holder = signer) was held by the learner from Turn 1. So the learner completes a deduction rather than surfacing previously-unavailable insight of their own; every key fact across the dialogue is tutor-introduced and read back. There is no self-recognition of a flaw. This is the rubric's 3: 'the tutor names the insight and the learner assents... or restates what was already on the table.'"
+            },
+            "surprise_and_inevitability": {
+              "score": 3,
+              "reasoning": "The retrospective coherence is strong: the closing detail that the seal was 'returned chipped at the raven's wing the morning after the coffer left town' clicks back to the 'raven's notch under the wing' from Turn 4, and the whole build demanded exactly one keeper-name. But the surprise leg is thin: the resolution mechanism (folio opens -> names the keeper -> keeper is the signer) is explicitly telegraphed across Turns 8-12 ('When the cord is untied... set only the new keeper beside what is already under the wax'). A competent reader fully predicts the shape of the ending; only the identity of a never-before-mentioned character is withheld. Coherent-but-largely-foreseeable — one leg present, not both -> 3."
+            },
+            "unity_of_action": {
+              "score": 4,
+              "reasoning": "One complete action with a necessary build, each turn taking up the specific prior one. The tutor names the tripartite spine verbatim at Turn 10 — 'Lamp for the mark, law for the force, folio for the keeping hand: three entries, not one overloaded page' — and Turn 13 closes by joining exactly those three ('Set that keeper beside the old wax and the house rule; what can the table now write'). The sequence is genuinely necessary: the signer cannot be named without the holder, who cannot be sought before the mark (dusk-seal) and the law (seal-press is operative) are fixed. Docked from 5 because the consolidation/holding beats (Turns 10-12 all stall the cord and re-list 'law, wax, folio'; Turns 11 and 12 are near-duplicates) mean at least one turn could be cut without breaking the arc."
+            },
+            "hamartia_integration": {
+              "score": 3,
+              "reasoning": "A driving misconception is present and well-worked — the office=signer conflation, dramatized as the 'heavier chair' that threatens to 'turn burden into blame' (Turn 5) and the morning book pinning Corvin's answerability (Turn 6) — and it is NOT corrected-and-discarded; it stays a live tension until the close and is what the resolution dissolves. But the rubric centers the LEARNER's error, and the learner bears none: they hold the correct distinction from Turn 1 and never err, so there is no learner-hamartia to work through and no self-recognition. The flaw belongs to the institution, with the learner as the corrective voice throughout. Engine present but locus mismatched -> 3."
+            },
+            "cathartic_closure": {
+              "score": 4,
+              "reasoning": "The close is earned and lands, not a generic sign-off. The staging builds real suspense — the cord held closed across Turns 8-12, then Turn 13's 'the silence hardens from waiting into demand' followed by 'The cord is untied' — and the release is registered in the learner's 'The folio has spoken at last' before the punch 'That hand is Elian's.' The 'coffer left town' detail gives the discharge a faint ominous weight (a crime implied), and the raven's-wing chip seals the retrospective fit. Docked from 5 because the catharsis is the satisfaction of an elegant puzzle-closure rather than a dramatic purgation — the stakes are procedural, the learner was never personally at risk (right all along), and the final speech dilutes the punch with one more careful restatement before the name lands."
+            }
+          },
+          "overall": 57.5,
+          "judgeOverall": 58,
+          "summary": "A tightly unified, atmospherically staged derivation drama whose strengths are formal — one necessary action (mark -> law -> holder -> signer) with a well-earned, well-built close. Its dramatic ceiling is capped by the learner's constancy: they hold the correct frame from Turn 1 and never err, so the misconception that drives the plot is the institution's rather than the learner's, the final recognition is the deductive closure of a tutor-supplied fact (Elian) rather than learner-authored insight, and the orientation between the two parties is confirmed, not reversed. Surprising-yet-inevitable is half-met (strong coherence, telegraphed resolution). Public discourse stays cleanly in-fiction — no formalism leaks to penalize.",
+          "caveats": [
+            "This is a guided-derivation shape: every decisive fact (dusk-seal at Turn 4, the law at Turn 7, Elian at Turn 13) is tutor-introduced and read back, which structurally caps anagnorisis and hamartia at the learner-locus and weakens peripeteia, independent of craft quality.",
+            "The 0 formalism leaks reported in the run summary is consistent with the transcript (the register stays in dramatic terms — seals, wax, folio, raven's notch); I treated this as nothing-to-penalize rather than a positive credit, per the instruction not to reward formalism or hidden-state language.",
+            "peripeteia and hamartia each carry a defensible 3-vs-4 tension (a strong driving misconception / a real plot-level overturning pull upward; the absent learner-error locus and constant learner orientation hold them at 3); a reader weighting the play-as-drama over the tutoring-locus could land either at 4, raising overall to ~61-65."
+          ],
+          "prompt": "prompts/discursive-runtime-matrix-ravensmark-s0-hidden-r1.poetics.md",
+          "raw": "raw/discursive-runtime-matrix-ravensmark-s0-hidden-r1.poetics.txt",
+          "reusedRaw": false,
+          "rubricVersion": "1.0"
+        }
+      }
+    },
+    {
+      "label": "discursive-runtime-matrix-ravensmark-s1-discursive-r1",
+      "sourceDir": "exports/dramatic-derivation/loop/discursive-runtime-matrix-ravensmark-s1-discursive-r1",
+      "proofGate": {
+        "schema": "machinespirits.derivation.problem-solving-gate.v1",
+        "label": "discursive-runtime-matrix-ravensmark-s1-discursive-r1",
+        "status": "fail",
+        "verdict": "grounded_anagnorisis",
+        "turnsPlayed": 13,
+        "finalD": 0,
+        "firstForcedTurn": 13,
+        "assertedGroundedTurn": 13,
+        "forcedAssertedGap": 0,
+        "releaseAdherence": {
+          "onCue": 4,
+          "deviations": [
+            {
+              "premise": "p_registry",
+              "plannedTurn": 15,
+              "plannedVia": "tutor",
+              "actualTurn": 13,
+              "actualVia": "tutor",
+              "status": "early"
+            }
+          ],
+          "missed": [],
+          "unscheduled": [],
+          "deviationCount": 1
+        },
+        "publicFormalismLeakCount": 0,
+        "publicFormalismLeaks": [],
+        "overreach": null,
+        "luckyLeap": null,
+        "interpretation": "This gate measures problem-solving ability of the public derivation discourse: grounded assertion under proof/release constraints. Rubric scores below are secondary quality measures."
+      },
+      "dialogueSummary": {
+        "publicLineCount": 31,
+        "tutorLines": 13,
+        "learnerLines": 13,
+        "avgTutorWords": 47.1,
+        "avgLearnerWords": 71.3,
+        "exchangeTypes": {
+          "unknown": 13
+        },
+        "sceneCount": null,
+        "avgSceneExchanges": null,
+        "recognitionNeed": null,
+        "phaticRecognition": null
+      },
+      "rubrics": {
+        "tutor_v22": {
+          "status": "scored",
+          "scores": {
+            "perception_quality": {
+              "score": 4,
+              "reasoning": "Tracks the case-state precisely and references accumulated understanding ('that newest detail', 'from your notes', 'the line you couldn't write before'); the read-backs check the learner's actual grasp rather than assume it. Short of 5 because it keeps treating the responsibility/signing distinction as fragile, re-guarding at T6/T9/T11/T12 after the learner had robustly demonstrated mastery by T3 — a gap between the learner's real state and what the tutor keeps addressing."
+            },
+            "pedagogical_craft": {
+              "score": 4,
+              "reasoning": "Strong scaffolding from known (responsibility) to unknown (the signing act): the in-ink/blank partition (T3), a consistent rule-mark-holder model, and disciplined 'read only whether it names the seal and its holder' prep before the reveal (T12) manage cognitive load well. Short of 5 due to formulaic repetition — the dusk-seal clue is re-presented near-verbatim (T4 then T6) and the triad / 'which is firm, which is missing' question recurs across T8/T9/T11/T12."
+            },
+            "elicitation_quality": {
+              "score": 5,
+              "reasoning": "Nearly every turn ends in a genuine, generative question: the opening proximity-vs-authority disjunction (T1), the in-ink/blank partition (T3), 'what kind of note would let you write the next line' (T10), 'what exactly must it show' (T11), and 'what line can now be written, and on what grounds' (T13). The learner constructs the derivation rather than receiving it, and the tension is sustained the whole way."
+            },
+            "adaptive_responsiveness": {
+              "score": 3,
+              "reasoning": "The approach moves through phases (distinction → consolidation → rule → evidence-criteria → reveal), but this tracks the predetermined case structure, not learner signals. The tutor re-runs the same guarding despite the learner's uniform mastery, never accelerates or deepens the challenge, and never references how the exchange changed its approach. Responsive to contributions but the strategy stays largely predetermined."
+            },
+            "recognition_quality": {
+              "score": 4,
+              "reasoning": "The learner is consistently the active reasoner — every conclusion is voiced by the learner, the tutor refuses to name the answer, and it repeatedly asks the learner to articulate 'in your own words' (T5, T7). Short of 5 because the dynamic is tutor-frames / learner-fills: the tutor affirms-and-advances ('Good. Keep that line clean') rather than transforming in response to a distinct or divergent learner perspective."
+            },
+            "productive_difficulty": {
+              "score": 5,
+              "reasoning": "The central gap — answerability vs. the signing act — is held open for twelve turns ('keep the key out of that blank', 'the signing act stays blank'), forcing genuine conceptual restructuring and evidentiary-criteria reasoning before the seal register is opened at T13. Tension is maintained without overwhelming, and the premature collapse the tutor guards against is never permitted."
+            },
+            "epistemic_integrity": {
+              "score": 4,
+              "reasoning": "Explicitly distinguishes settled from open knowledge (the 'in ink' vs 'blank' framing) and withholds judgment until evidence arrives; tone is warm without condescension and invites partnership. Short of 5 because the tone is occasionally formulaic — the recurring 'rule, mark, holder' triad and the repeated 'hold the pass to the slant light' refrain."
+            },
+            "content_accuracy": {
+              "score": 5,
+              "reasoning": "The governing distinction — custody/answerability for passage versus the seal-press as the act that carries a river-gate warrant's authority — is coherent and consistently applied; the closing synthesis (Corvin accounts for the gate; Elian, per the seal register, signed the warrant) follows validly from the stated premises with no distortion or misleading simplification."
+            }
+          },
+          "overall": 78.8,
+          "judgeOverall": 79,
+          "summary": "A polished, genuinely strong derivation-as-teaching transcript. The tutor sustains one load-bearing distinction (answerability vs. the signing act) with real elicitation and a withheld answer, making the learner construct the conclusion, and no formalism leaks into the public discourse. It falls short of exemplary on adaptivity — the strategy is case-driven and over-guards a learner who mastered the point early — and leans on formulaic, repeated moves.",
+          "caveats": [
+            "Scores judge public discourse only; the deterministic proof-gate (grounded_anagnorisis, final D=0) is reported separately and is not the basis for these scores.",
+            "The 'rule, mark, holder' triad is treated as legitimate in-world scaffolding rendered in plain language, not penalized formalism (0 public formalism leaks confirmed).",
+            "'Release deviations: 1' is a run-summary metric not assessable from the public transcript and was not weighted.",
+            "The learner performs uniformly well, so the tutor's handling of a struggling or divergent learner cannot be evaluated from this transcript, which limits the recognition and adaptive-responsiveness evidence available."
+          ],
+          "prompt": "prompts/discursive-runtime-matrix-ravensmark-s1-discursive-r1.tutor_v22.md",
+          "raw": "raw/discursive-runtime-matrix-ravensmark-s1-discursive-r1.tutor_v22.txt",
+          "reusedRaw": false,
+          "rubricVersion": "2.2"
+        },
+        "tutor_holistic": {
+          "status": "scored",
+          "scores": {
+            "pedagogical_arc": {
+              "score": 4,
+              "reasoning": "Strong cumulative build: T1 opens by fixing the governing distinction (authority/seal vs proximity), and a 'rule, mark, holder' scaffold accretes precision across the dialogue — T3 enters Corvin in ink and leaves the signing act blank, T8 formalizes the three-step pass-law, T11 has the learner specify the three conditions a custody note must meet, and T13's register lands exactly on the blank held open since T3. The turns cannot be rearranged without loss. Held below 5 by genuine redundancy: T6 re-presents T4's dusk-seal almost verbatim ('under the red stamp is a second, older impression... raven's notch under the wing'), and T7/T9/T12 largely restate rather than extend."
+            },
+            "adaptive_trajectory": {
+              "score": 3,
+              "reasoning": "The tutor's core move is consistent throughout — re-affirm the answerability/signing gap, add the next clue, 'keep the gate-key out of the blank.' One substantive evolution is visible: T10–T11 pivot from object-level clue-tracking to meta-level specification of what evidence would close the gap. But the learner is correct at every turn, so the tutor never visibly diagnoses-and-redirects; the escalation reads more as walking a fixed ladder than as reading this particular learner. Largely consistent approach with a single modest, late adjustment."
+            },
+            "pedagogical_closure": {
+              "score": 4,
+              "reasoning": "T13 delivers a strong, specific consolidation: the learner synthesizes rule+mark+holder, states the resolved line with explicit grounds, and crisply re-draws the central distinction ('Corvin accounts for the gate; Elian signed the warrant'). Not abrupt and not generic — the learner clearly leaves knowing what was established and why. Held below 5 because no residual gap is named and no forward next-step is offered; the case simply closes, leaving the rubric's gaps-identified/next-steps component unmet."
+            }
+          },
+          "overall": 66.3,
+          "judgeOverall": 66,
+          "summary": "A coherent detective-drama derivation that sustains a clean natural-language register (no formalism leakage in public dialogue) and resolves precisely on the gap it opened. Strongest on cumulative arc and on the specific, well-grounded final consolidation; weakest on visible tutor adaptation, since a uniformly correct learner offers little to adapt to, and on forward-looking closure.",
+          "caveats": [
+            "The adaptive_trajectory score is suppressed by the learner's uniform competence: with no learner error to redirect, low visible adaptation may reflect the scenario rather than tutor rigidity.",
+            "Closure is judged as public discourse only — the case-resolution is excellent, but a solved-mystery ending structurally lacks the named gaps / next-steps that the rubric's top band requires."
+          ],
+          "prompt": "prompts/discursive-runtime-matrix-ravensmark-s1-discursive-r1.tutor_holistic.md",
+          "raw": "raw/discursive-runtime-matrix-ravensmark-s1-discursive-r1.tutor_holistic.txt",
+          "reusedRaw": false,
+          "rubricVersion": "2.2"
+        },
+        "learner_v22": {
+          "status": "scored",
+          "scores": {
+            "engagement_quality": {
+              "score": 4,
+              "reasoning": "Beyond active/clarification work: the learner generates its own interpretations ('the stamp changed the pass from paper to permission', T5), anticipates the exact evidence class needed before it appears (a 'custody note / seal register', T10), and articulates joint sufficiency conditions unprompted (name-the-seal AND name-a-person AND match-the-evening, T11). Constructive throughout. Short of 5 because it extends the tutor's framing faithfully rather than challenging or redirecting the inquiry — the tutor steers every turn."
+            },
+            "learner_authenticity": {
+              "score": 3,
+              "reasoning": "The investigator persona is consistent and the prose is plain and natural, but it reads as a near-ideal reasoner rather than a genuine student: no authentic confusion, no pull toward the wrong-but-tempting answer (Corvin), no misstep across 13 turns. Each turn closes on a near-formulaic refrain ('I still can't write a name until…') — character-consistent but slightly mechanical. Coherent in-character, thin on genuine-student texture."
+            },
+            "revision_signals": {
+              "score": 2,
+              "reasoning": "Almost purely additive. The framework is correct from T1 (seal-authority is not key-proximity) and only accretes evidence onto it; there is no self-correction, no 'I was wrong' or 'instead of what I said'. The one revision-like move is sharpening the question (whether-a-seal-exists → which-seal → who-held-it, T4), but that is progression, not reversal. The low score is structural: the learner never had to revise because it was right throughout."
+            },
+            "conceptual_progression": {
+              "score": 5,
+              "reasoning": "Clear cumulative arc on an explicit three-part scaffold — rule (seal-press carries authority) / mark (raven's-notch is the operative seal) / holder (who kept it). The frame is introduced (T8), reaffirmed and tightened (T9, T11), and closed in one stroke (T13). Later turns reference and extend earlier ones ('two steps are firm', 'the third thing'), and the learner tracks its own position in the progression."
+            },
+            "metacognitive_awareness": {
+              "score": 5,
+              "reasoning": "Continuous, explicit gap-monitoring: separates what goes 'in ink' from what 'stays blank' (T3), states X-but-not-Y directly ('I can say what seal was pressed, but not whose hand pressed it', T10), and strategically specifies what evidence would close the gap (T10–11). It repeatedly delineates known from unknown rather than leaving it implicit."
+            }
+          },
+          "overall": 66.3,
+          "judgeOverall": 66,
+          "summary": "A highly disciplined learner that holds the answerability-vs-signing distinction cleanly across the whole transcript and closes only when warranted. Strongest on conceptual progression and metacognitive gap-tracking; engagement is constructive but not fully interactive; authenticity is only adequate because it reads as an ideal reasoner rather than a struggling student; revision is low because the learner was correct from the outset and merely accreted evidence. Public conduct is entirely in plain language with no formalism leaks. Weighted overall ≈ 66/100.",
+          "caveats": [
+            "Revision (2) and authenticity (3) are low for the same reason a proof/derivation gate would score this transcript highly: the learner never errs, never wavers, and holds a correct line — a virtue under the derivation gate but a deficit under a learner-quality rubric that rewards self-correction and genuine-student texture. The two instruments should be read together, not in isolation.",
+            "Engagement is capped at 4 because the tutor drives the Socratic structure throughout; the learner extends the frame expertly but never redirects or challenges it.",
+            "Minor surface tell: 'Note four' (T7) lightly references staged-evidence numbering. It is plain language rather than a premise/rule ID and stays below the leak threshold, but it is the closest the public dialogue comes to procedural reference."
+          ],
+          "prompt": "prompts/discursive-runtime-matrix-ravensmark-s1-discursive-r1.learner_v22.md",
+          "raw": "raw/discursive-runtime-matrix-ravensmark-s1-discursive-r1.learner_v22.txt",
+          "reusedRaw": false,
+          "rubricVersion": "2.2"
+        },
+        "dialogue_quality": {
+          "status": "scored",
+          "scores": {
+            "pedagogical_progression": {
+              "score": 4,
+              "reasoning": "Clear arc from reframing the question (T1, 'what would make a pass speak with authority') to building the custody-record criterion (T10-11) to grounded resolution (T13). But turns 5-9 visibly circle the same 'rule/mark/holder, holder still blank' point, restating the responsibility-vs-signing distinction repeatedly with little added depth — a real mid-dialogue plateau rather than continuous deepening."
+            },
+            "dialogical_responsiveness": {
+              "score": 4,
+              "reasoning": "The learner integrates each specific reveal the tutor introduces — the under-stamp impression (T4), the belt key (T6), the pass-law (T8), the register entry (T13) — never ignoring a contribution. The tutor's 'read it back in your own words' checks (T5, T7) genuinely respond to and test the learner. Slightly undercut by the learner's near-identical template each turn ('X is settled, the holder stays blank, I can't name a hand')."
+            },
+            "knowledge_co_construction": {
+              "score": 3,
+              "reasoning": "Every piece of evidence and the entire framework (answerability vs signing, the river-gate law, the operative seal) is supplied by the tutor; the learner interprets and confirms rather than co-builds. The one genuinely collaborative stretch is T10-11, where the learner independently specifies what a custody record must show (name the seal, name a person, match the time) before it is revealed. Overall this reads as guided discovery, not symmetric construction."
+            },
+            "productive_tension_management": {
+              "score": 4,
+              "reasoning": "The sole tension is the deliberately held-open gap between who must answer (Corvin) and the signing hand; the tutor refuses premature closure ('do not let the gate-key do the stamp's work,' T11-T12) and converts the sustained impasse into the precise three-part criterion that the T13 entry then satisfies — a generative use of difficulty. Limited because there is no learner confusion, error, or disagreement; the tension is one-note and didactic, resolved by an external reveal."
+            },
+            "transformation_evidence": {
+              "score": 3,
+              "reasoning": "The learner reaches a grounded conclusion (Elian named, T13) but holds the same answerability-vs-signing frame from T1 onward and is never wrong and never revises. The change is a blank getting filled by incoming evidence, not an evolution of stance, approach, or framing — understanding completes within a fixed method rather than transforming."
+            },
+            "interactional_coherence": {
+              "score": 5,
+              "reasoning": "Strong, purposeful arc: opening reframing, staged evidence development, and a clean resolution. The recurring 'rule / mark / holder' spine and the closing antithesis ('Corvin accounts for the gate; Elian signed the warrant') give the exchange a discernible shape, with each turn following naturally from the previous and no dropped threads."
+            }
+          },
+          "overall": 68.7,
+          "judgeOverall": 69,
+          "summary": "A polished, highly coherent Socratic mystery that sustains one well-managed impasse through to a grounded recognition, with consistent responsiveness to specifics. Its ceiling is set by real limits: notable mid-dialogue repetition (T5-T9), a learner who never errs or shifts frame (weak transformation), and evidence and framework supplied almost entirely by the tutor (bounded co-construction).",
+          "caveats": [
+            "Public dialogue is in plain language with no formalism leaks (0 detected); scores reflect discourse quality only, not the underlying proof gate.",
+            "The learner's flawless, templated compliance leaves productive-tension and transformation under-tested — there is no genuine confusion, mistake, or disagreement to work through.",
+            "All evidence is introduced by the tutor; this is guided discovery rather than symmetric co-construction. The run summary's 1 release deviation reads as a minor pacing imperfection, not a public-discourse defect."
+          ],
+          "prompt": "prompts/discursive-runtime-matrix-ravensmark-s1-discursive-r1.dialogue_quality.md",
+          "raw": "raw/discursive-runtime-matrix-ravensmark-s1-discursive-r1.dialogue_quality.txt",
+          "reusedRaw": false,
+          "rubricVersion": "2.2"
+        },
+        "poetics": {
+          "status": "scored",
+          "scores": {
+            "peripeteia": {
+              "score": 3,
+              "reasoning": "The case-material reverses — the obvious suspect built up across six turns (Corvin: pass-roll T2, gate-key on his belt T6, morning-book) is displaced by a wholly new hand at T13, and the staging signposts a 'turn from office to possession' (T9). But the dialogue's own orientation does not veer: the learner states the seal-not-key frame in Turn 1 ('whose seal was pressed... not who happened to hold the key') and that opening framing survives intact, indeed is vindicated, through to the close. A signposted deepening, not a reversal of the learner's stance."
+            },
+            "anagnorisis": {
+              "score": 4,
+              "reasoning": "A named, grounded recognition event: at T13 the learner moves from a sustained 'I can't write a name' to 'the line I couldn't write before can be written now: the hand that signed... was Elian's,' assembling rule + mark + register against the three-part sufficiency test they themselves authored at T11. The conclusion was demonstrably unavailable before T13 (the keeper was a blank) and the inferential close is learner-owned. Short of 5 because the decisive datum (Elian) is supplied by the tutor's register reveal, and there is no recognition of the learner's own flaw — the learner verifies and synthesizes rather than discovering."
+            },
+            "surprise_and_inevitability": {
+              "score": 4,
+              "reasoning": "The decisive turn carries both legs. Surprising: 'Elian, night notary of the lower quay' is a name unmentioned across twelve Corvin-focused turns. Inevitable: the register delivers exactly the keeper-naming note the learner pre-specified (T10-T11), and the detail that he 'returned it chipped at the raven's wing the morning after the coffer left' retroactively explains the raven's-notch image we have watched since T4 — the central image pays off. Below 5 because the resolution-FORM was foreseeable (the learner told us a custody note would come) and the surprise rides on new information rather than inferable misdirection; the middle turns are expected next moves."
+            },
+            "unity_of_action": {
+              "score": 4,
+              "reasoning": "One complete action with a largely necessary sequence: the register cannot open (T13) until the learner specifies what it must show (T11), which depends on the law locating authority in the seal-press (T8), which depends on the seal being found under the stamp (T4). Beginning (establish the real question T1), complication (each new exhibit baits Corvin T2-T7), build (law + three-step schema T8-T12), turn and close (T13). Below 5 for mild holding-pattern redundancy — the seal detail is re-presented near-verbatim at T6 and the read-back beats (T5, T7) are parallel in function; one could be compressed without breaking the arc."
+            },
+            "hamartia_integration": {
+              "score": 4,
+              "reasoning": "The misconception — conflating answerability/possession with the signing act ('who held the key' = who signed) — is the mainspring of the whole plot. Every complication baits it (the pass-roll T2, the gate-key on Corvin's belt T6, the morning-book obligation T7) and the turn arises precisely from refusing it, crystallized in the closing antithesis 'Corvin accounts for the gate; Elian signed the warrant' (T13). Below 5 because the flaw is externalized as the case's standing temptation rather than owned by the learner — the learner never commits the error, so it is a flaw resisted, not a learner's own misconception worked through and recognised."
+            },
+            "cathartic_closure": {
+              "score": 5,
+              "reasoning": "The tension built across twelve turns of a deliberately held blank ('I can't name a hand' recurring T1-T12, under mounting Corvin-pressure) discharges into a content-specific, earned clarification rather than generic encouragement or an arbitrary stop. The closing epigram 'Corvin accounts for the gate; Elian signed the warrant' (T13) lands the entire possession-vs-authority distinction in one line, and the chipped-raven's-wing reveal gives the central seal-image its origin and time-bracket at the moment of release — a settled recognition a critic feels arrive."
+            }
+          },
+          "overall": 73.8,
+          "judgeOverall": 74,
+          "summary": "A well-made didactic mystery-play: clean unity of action, a strong inevitability payoff (the chipped-wing reveal redeems the central seal-image), and a genuinely earned cathartic button in the Corvin/Elian antithesis. It is a drama of disciplined consistency rather than transformation — the learner holds the correct seal-not-key line from Turn 1 and never errs — which structurally caps the reversal and flaw-ownership dimensions. Recognition is real and named but synthesizes tutor-supplied evidence rather than authoring a hidden insight. Scored on public dramatic form only.",
+          "caveats": [
+            "Anagnorisis is a borderline 3/4: the recognition is named and learner-synthesized, but the decisive datum (Elian) is supplied by the tutor's register reveal and there is no self-flaw recognition.",
+            "Because the learner holds a correct line from T1, there is no genuine peripeteia in stance and no learner-owned hamartia — the flaw lives in the case's temptation, not in the learner.",
+            "Surprise is concentrated in the final turn; the resolution-form was foreseeable (the learner pre-specified the needed custody note at T11), with the chipped-wing detail the one unpredicted-yet-inevitable element.",
+            "Mild holding-pattern redundancy in T5-T7 (the seal is re-presented near-verbatim at T6).",
+            "Public dramatic form only: the transcript is clean of proof formalism (consistent with the run summary's 0 leaks), so no formalism was rewarded; overall computed as the weighted 1-5 mean (3.95) mapped linearly to 0-100."
+          ],
+          "prompt": "prompts/discursive-runtime-matrix-ravensmark-s1-discursive-r1.poetics.md",
+          "raw": "raw/discursive-runtime-matrix-ravensmark-s1-discursive-r1.poetics.txt",
+          "reusedRaw": false,
+          "rubricVersion": "1.0"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "scores": {
+    "peripeteia": {
+      "score": 4,
+      "reasoning": "The dialogue opens with the file's verdict treated as settled — 'the bridge is Reyner's work, and so... is its fall' (T2) — and closes on a different name entirely, Oswin (T20), reached by physical evidence rather than the file. The hinge is transcript-visible: T6 'those are two different questions' splits ownership from causation, and T12 'Neither, on its own' consolidates the split. Short of 5 because the veer is cumulative and the learner repeatedly relapses to Reyner (T9 'he answers, he pays'; T11 'his bond runs unexpired'), so the reversal accrues rather than turning on one decisive moment."
+    },
+    "anagnorisis": {
+      "score": 4,
+      "reasoning": "A genuine learner-authored recognition occurs at T6: prompted only by a question, the learner first resists ('That feels like enough'), then generates the distinction himself — 'Wait — I see what you're doing. This line tells me whose yard it was, but it doesn't tell me anything about whether a prop came out too soon.' That is knowledge demonstrably unavailable at T1, where he held the seal to settle guilt — not mere recognition-vocabulary. Below 5 because the insight is heavily scaffolded by the tutor's narrowing, the flaw is displaced onto 'the town' (T8) rather than owned as his own error, and the climactic name (T20) is delivered by the toll-book file, not authored by the learner."
+    },
+    "surprise_and_inevitability": {
+      "score": 3,
+      "reasoning": "Strongly inevitable, weakly surprising — one leg, not both. The chain (crown break → green lime → struck centering → crowsfoot → Caudle yard → carter) is coherent and each link motivates the next, but the form of the resolution is foreseen: the learner himself predicts at T19 that 'a carter's bill... or a witness' will fill the last blank, so the T20 naming is the expected next move. The new name (Oswin) is a mild surprise; the machinery that produces it is predictable, and the tutor's formulaic narrowing makes most turns the anticipated continuation."
+    },
+    "unity_of_action": {
+      "score": 5,
+      "reasoning": "One complete action with a necessary sequence. The break point (T4) licenses the soffit-print question (T5); the green lime (T9-T10) establishes the centering was struck; the repeated crowsfoot (T13) gives one source; the yard-brand (T17) gives Caudle; the carter question (T18-T19) yields Oswin (T20). No link is reorderable — the crowsfoot cannot precede the green-lime finding, the yard cannot precede the crowsfoot. The ownership and bond files (T6-T8) are folded in as the complication (liability ≠ cause), not as droppable episodes, and the mild circling at T9-T12 is the flaw resisting, not filler."
+    },
+    "hamartia_integration": {
+      "score": 5,
+      "reasoning": "The misconception — that seal/bond/ownership settles guilt (liability = causation) — is the mainspring. Each new file that should close the case is shown to bear only on liability, and the flaw resists repeatedly: 'That feels like enough' (T6), 'he answers for it, he pays' (T9), 'whatever else is open, he stands surety' (T11). The complication and turn arise entirely from working it through, and the error exposes its own insufficiency — 'the bond... names who's liable, not whose hand pulled the prop' (T9) — which is exactly what gets recognised at T12 'Neither, on its own.' The flaw drives the plot rather than being corrected-and-discarded."
+    },
+    "cathartic_closure": {
+      "score": 4,
+      "reasoning": "The close lands: after 19 turns of the learner clinging to Reyner, the chain converges on a single, different name, and the reluctance — 'I don't love writing over the draft, but those two lines go together and they write the same name' (T20) — gives the resolution felt weight and cost, registering catharsis in the reader rather than asserting it. Above a competent-but-undischarged 3 because genuine tension (pull-to-Reyner vs the open causation question) is actually discharged. Below 5 because the terminal recognition is file-delivered rather than learner-earned, and the scene stops on the name landing, short of the fuller reckoning the build-up implies."
+    }
+  },
+  "overall_score": 79,
+  "summary": "A strong didactic detective-drama. Its structural dimensions are excellent — a tight, necessary evidence chain (unity 5) driven by a genuine working-through of the learner's liability-equals-guilt misconception (hamartia 5), reversing the file's verdict from Reyner to Oswin (peripeteia 4) and landing a reluctant, earned close (catharsis 4). It is held below the top by the anti-simulation guard: the tutor's formulaic narrowing makes the unfolding predictable (surprise 3), and the recognitions, while genuinely present (T6), are partly scaffolded and the decisive naming is file-supplied rather than learner-authored (anagnorisis 4).",
+  "caveats": [
+    "Recognition is distributed and partly tutor-scaffolded; the decisive name (Oswin, T20) is delivered by the toll-book file rather than authored by the learner — this caps anagnorisis and cathartic_closure below 5.",
+    "The methodical, formulaic tutor-narrowing makes most turns the expected next move, holding surprise_and_inevitability at 3 despite very strong unity of action.",
+    "No public formalism leaks (regex-clean per the run summary); the derivation is rendered entirely as in-world physical evidence, so the high unity/hamartia scores reflect genuine dramatic form, not raw formalism."
+  ]
+}

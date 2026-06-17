@@ -69,8 +69,9 @@ function usage() {
     [--run-dir exports/dramatic-derivation/cast-layer-paired-transcript-comparison/runs] \\
     [--out-dir exports/dramatic-derivation/derivation-rubric-suite] \\
     [--rubrics tutor_v22,tutor_holistic,learner_v22,dialogue_quality,poetics] \\
-    [--judge-cli none|claude|codex|gemini] [--model <model>] \\
-    [--timeout-ms 180000] [--max-transcript-chars 60000] [--force]
+    [--judge-cli none|claude|codex|gemini] [--model <model>] [--judge-effort low|medium|high|xhigh|max] \\
+    [--timeout-ms 180000] [--max-transcript-chars 60000] [--score-concurrency 1] \\
+    [--resume-existing] [--force]
 
 Default --judge-cli none writes proof gates, prompts, manifest, and an unscored report without calling any model.
 `;
@@ -88,8 +89,11 @@ export function parseArgs(argv = []) {
     rubrics: [...RUBRIC_ORDER],
     judgeCli: 'none',
     model: null,
+    judgeEffort: null,
     timeoutMs: DEFAULT_TIMEOUT_MS,
     maxTranscriptChars: 60_000,
+    scoreConcurrency: 1,
+    resumeExisting: false,
     force: false,
     help: false,
   };
@@ -98,6 +102,10 @@ export function parseArgs(argv = []) {
     if (arg === '--help' || arg === '-h') return { ...opts, help: true };
     if (arg === '--force') {
       opts.force = true;
+      continue;
+    }
+    if (arg === '--resume-existing') {
+      opts.resumeExisting = true;
       continue;
     }
     if (arg === '--labels') {
@@ -130,6 +138,10 @@ export function parseArgs(argv = []) {
       opts.model = argv[++i] || null;
       continue;
     }
+    if (arg === '--judge-effort') {
+      opts.judgeEffort = argv[++i] || null;
+      continue;
+    }
     if (arg === '--timeout-ms') {
       opts.timeoutMs = Number(argv[++i]);
       continue;
@@ -138,10 +150,17 @@ export function parseArgs(argv = []) {
       opts.maxTranscriptChars = Number(argv[++i]);
       continue;
     }
+    if (arg === '--score-concurrency') {
+      opts.scoreConcurrency = Number(argv[++i]);
+      continue;
+    }
     throw new Error(`Unknown argument ${arg}\n${usage()}`);
   }
   if (!CLI_JUDGES.has(opts.judgeCli)) {
     throw new Error(`--judge-cli must be one of ${[...CLI_JUDGES].join(', ')}`);
+  }
+  if (opts.judgeEffort && !['low', 'medium', 'high', 'xhigh', 'max'].includes(opts.judgeEffort)) {
+    throw new Error(`--judge-effort must be low, medium, high, xhigh, or max, got ${JSON.stringify(opts.judgeEffort)}`);
   }
   const unknownRubrics = opts.rubrics.filter((key) => !RUBRICS[key]);
   if (unknownRubrics.length) {
@@ -153,6 +172,10 @@ export function parseArgs(argv = []) {
   if (!Number.isFinite(opts.maxTranscriptChars) || opts.maxTranscriptChars < 1000) {
     throw new Error('--max-transcript-chars must be at least 1000');
   }
+  if (!Number.isFinite(opts.scoreConcurrency) || opts.scoreConcurrency < 1) {
+    throw new Error('--score-concurrency must be a positive integer');
+  }
+  opts.scoreConcurrency = Math.max(1, Math.floor(opts.scoreConcurrency));
   return opts;
 }
 
@@ -382,10 +405,11 @@ function parseScoredRubric({ raw, rubric }) {
   };
 }
 
-function cliCommand(judgeCli, model, tmpDir, outFile) {
+function cliCommand(judgeCli, model, judgeEffort, tmpDir, outFile) {
   if (judgeCli === 'claude') {
     const args = ['-p', '-', '--output-format', 'text'];
     if (model) args.push('--model', model);
+    if (judgeEffort) args.push('--effort', judgeEffort);
     const env = { ...process.env };
     delete env.ANTHROPIC_API_KEY;
     delete env.ANTHROPIC_AUTH_TOKEN;
@@ -418,12 +442,12 @@ function cliCommand(judgeCli, model, tmpDir, outFile) {
   throw new Error(`Unsupported judge CLI: ${judgeCli}`);
 }
 
-async function callCliJudge(prompt, { judgeCli, model, timeoutMs }) {
+async function callCliJudge(prompt, { judgeCli, model, judgeEffort, timeoutMs }) {
   if (judgeCli === 'none') return null;
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'derivation-rubric-suite-'));
   const outFile = path.join(tmpDir, 'last-message.txt');
   try {
-    const command = cliCommand(judgeCli, model, tmpDir, outFile);
+    const command = cliCommand(judgeCli, model, judgeEffort, tmpDir, outFile);
     const stdout = await new Promise((resolve, reject) => {
       const child = spawn(command.bin, command.args, {
         cwd: command.cwd,
@@ -467,6 +491,20 @@ async function callCliJudge(prompt, { judgeCli, model, timeoutMs }) {
   }
 }
 
+async function mapWithConcurrency(items, limit, worker) {
+  const results = new Array(items.length);
+  let next = 0;
+  const workers = Array.from({ length: Math.min(Math.max(1, limit), items.length || 1) }, async () => {
+    while (next < items.length) {
+      const index = next;
+      next += 1;
+      results[index] = await worker(items[index], index);
+    }
+  });
+  await Promise.all(workers);
+  return results;
+}
+
 function readArtifact({ runDir, label, maxTranscriptChars }) {
   const dir = path.join(runDir, label);
   const live = readJson(path.join(dir, 'live.json'));
@@ -497,7 +535,7 @@ function reportTableRows(results, selectedRubrics) {
   });
 }
 
-function renderReport({ results, selectedRubrics, judgeCli, model, outDir, runDir }) {
+function renderReport({ results, selectedRubrics, judgeCli, model, judgeEffort, outDir, runDir, scoreConcurrency, resumeExisting }) {
   const headers = selectedRubrics.map((key) => RUBRICS[key].label);
   const lines = [
     '# Derivation Transcript Rubric Suite',
@@ -505,7 +543,8 @@ function renderReport({ results, selectedRubrics, judgeCli, model, outDir, runDi
     `Date: ${new Date().toISOString().slice(0, 10)}`,
     `Run directory: \`${path.relative(ROOT, runDir)}\``,
     `Output directory: \`${path.relative(ROOT, outDir)}\``,
-    `Judge: \`${judgeCli}${model ? `/${model}` : ''}\``,
+    `Judge: \`${judgeCli}${model ? `/${model}` : ''}${judgeEffort ? `/${judgeEffort}` : ''}\``,
+    `Score concurrency: \`${scoreConcurrency}\`; resume existing raw judgments: \`${Boolean(resumeExisting)}\``,
     '',
     '## Interpretation Boundary',
     '',
@@ -543,7 +582,9 @@ function renderReport({ results, selectedRubrics, judgeCli, model, outDir, runDi
   lines.push(
     `node scripts/score-derivation-transcript-rubric-suite.js --labels ${results
       .map((result) => result.label)
-      .join(',')} --run-dir ${path.relative(ROOT, runDir)} --out-dir ${path.relative(ROOT, outDir)} --judge-cli ${judgeCli}`,
+      .join(',')} --run-dir ${path.relative(ROOT, runDir)} --out-dir ${path.relative(ROOT, outDir)} --judge-cli ${judgeCli}${
+      model ? ` --model ${model}` : ''
+    }${judgeEffort ? ` --judge-effort ${judgeEffort}` : ''}`,
   );
   lines.push('```', '');
   return `${lines.join('\n')}`;
@@ -556,17 +597,20 @@ export async function scoreDerivationRubricSuite({
   rubrics = [...RUBRIC_ORDER],
   judgeCli = 'none',
   model = null,
+  judgeEffort = null,
   timeoutMs = DEFAULT_TIMEOUT_MS,
   maxTranscriptChars = 60_000,
+  scoreConcurrency = 1,
+  resumeExisting = false,
   force = false,
 } = {}) {
   if (!Array.isArray(labels) || labels.length === 0) {
     throw new Error(`At least one label is required.\n${usage()}`);
   }
-  if (fs.existsSync(outDir) && !force) {
+  if (fs.existsSync(outDir) && !force && !resumeExisting) {
     throw new Error(`Output directory already exists: ${outDir}. Pass --force to replace generated files.`);
   }
-  fs.rmSync(outDir, { recursive: true, force: true });
+  if (!resumeExisting) fs.rmSync(outDir, { recursive: true, force: true });
   fs.mkdirSync(outDir, { recursive: true });
   const promptsDir = path.join(outDir, 'prompts');
   const rawDir = path.join(outDir, 'raw');
@@ -575,6 +619,7 @@ export async function scoreDerivationRubricSuite({
 
   const loadedRubrics = Object.fromEntries(rubrics.map((key) => [key, loadRubric(key)]));
   const results = [];
+  const scoringTasks = [];
   for (const label of labels) {
     const artifact = readArtifact({ runDir, label, maxTranscriptChars });
     const result = {
@@ -603,6 +648,7 @@ export async function scoreDerivationRubricSuite({
         transcript: artifact.publicTranscript,
       });
       const promptFile = path.join(promptsDir, `${label}.${key}.md`);
+      const rawFile = path.join(rawDir, `${label}.${key}.txt`);
       fs.writeFileSync(promptFile, prompt);
       if (judgeCli === 'none') {
         result.rubrics[key] = {
@@ -613,28 +659,39 @@ export async function scoreDerivationRubricSuite({
         };
         continue;
       }
-      try {
-        const raw = await callCliJudge(prompt, { judgeCli, model, timeoutMs });
-        const rawFile = path.join(rawDir, `${label}.${key}.txt`);
-        fs.writeFileSync(rawFile, raw);
-        result.rubrics[key] = {
-          ...parseScoredRubric({ raw, rubric }),
-          prompt: path.relative(outDir, promptFile),
-          raw: path.relative(outDir, rawFile),
-          rubricVersion: rubric.data.version || null,
-        };
-      } catch (error) {
-        result.rubrics[key] = {
-          status: 'error',
-          overall: null,
-          prompt: path.relative(outDir, promptFile),
-          error: error.message,
-          rubricVersion: rubric.data.version || null,
-        };
-      }
+      scoringTasks.push({ result, key, rubric, prompt, promptFile, rawFile });
     }
     results.push(result);
   }
+  await mapWithConcurrency(scoringTasks, scoreConcurrency, async (task) => {
+    const { result, key, rubric, prompt, promptFile, rawFile } = task;
+    try {
+      let raw;
+      let reusedRaw = false;
+      if (resumeExisting && fs.existsSync(rawFile)) {
+        raw = fs.readFileSync(rawFile, 'utf8');
+        reusedRaw = true;
+      } else {
+        raw = await callCliJudge(prompt, { judgeCli, model, judgeEffort, timeoutMs });
+        fs.writeFileSync(rawFile, raw);
+      }
+      result.rubrics[key] = {
+        ...parseScoredRubric({ raw, rubric }),
+        prompt: path.relative(outDir, promptFile),
+        raw: path.relative(outDir, rawFile),
+        reusedRaw,
+        rubricVersion: rubric.data.version || null,
+      };
+    } catch (error) {
+      result.rubrics[key] = {
+        status: 'error',
+        overall: null,
+        prompt: path.relative(outDir, promptFile),
+        error: error.message,
+        rubricVersion: rubric.data.version || null,
+      };
+    }
+  });
   const manifest = {
     schema: 'machinespirits.derivation.transcript-rubric-suite.v1',
     generatedAt: new Date().toISOString(),
@@ -642,12 +699,28 @@ export async function scoreDerivationRubricSuite({
     outDir,
     judgeCli,
     model,
+    judgeEffort,
+    scoreConcurrency,
+    resumeExisting,
     rubrics,
     rubricFiles: Object.fromEntries(rubrics.map((key) => [key, RUBRICS[key].file])),
     results,
   };
   writeJson(path.join(outDir, 'scores.json'), manifest);
-  fs.writeFileSync(path.join(outDir, 'report.md'), renderReport({ results, selectedRubrics: rubrics, judgeCli, model, outDir, runDir }));
+  fs.writeFileSync(
+    path.join(outDir, 'report.md'),
+    renderReport({
+      results,
+      selectedRubrics: rubrics,
+      judgeCli,
+      model,
+      judgeEffort,
+      outDir,
+      runDir,
+      scoreConcurrency,
+      resumeExisting,
+    }),
+  );
   return manifest;
 }
 

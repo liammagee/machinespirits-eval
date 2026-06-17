@@ -1,0 +1,31 @@
+{
+  "scores": {
+    "engagement_quality": {
+      "score": 4,
+      "reasoning": "Constructive (ICAP), not merely active. The learner generates its own criteria rather than paraphrasing — e.g. T3 'he built it becomes he brought it down only if the break itself fingers a specific act, not just a defect in the work,' and T13 anticipates the exclusivity problem unprompted ('two yards sharing that same notch, and the mark goes nowhere'). It draws inferences (T9 'the bad-building charge just fell apart') and predicts what evidence would settle each step (T4, T16). Short of Interactive (5): the tutor leads throughout; the learner elaborates within that frame and rarely challenges the framing or redirects the inquiry, and asks few genuine questions (most are anticipatory restatements of what is needed)."
+    },
+    "learner_authenticity": {
+      "score": 4,
+      "reasoning": "A consistent in-world voice (assize clerk weighing 'which heading' a fact belongs under, 'hold the cause and wait on the soffit') with no LLM tells — no hedging, over-qualification, or artificial balance — which clears the level-3 anchor. The persona is applied steadily across all 20 turns. It falls short of 5 because the learner is near-flawless: it is correct from T1, never errs, never expresses real confusion or struggle, and is corrected only once (T19). That smoothness reads more like a capable reasoner performing the role than a student fumbling toward understanding."
+    },
+    "revision_signals": {
+      "score": 3,
+      "reasoning": "Predominantly additive accumulation rather than self-correction, because the learner holds the right framework from T1 and new evidence confirms and extends it. The dismantled 'bad-building' theory (T9) is the town's position, not one the learner ever adopted, so its collapse is narration, not personal revision. The one genuine self-revision is T19 — 'that's the sharper version of what I was reaching for... a draw-roll doesn't finish the job if someone else could claim equal clearance' — where the learner upgrades its own prior, looser formulation under tutor pressure. Matches the level-3 anchor: some revision signals, mostly additive."
+    },
+    "conceptual_progression": {
+      "score": 5,
+      "reasoning": "A clear cumulative arc, the learner's strongest dimension. The liability/causation split from T1 is carried forward and reapplied at T6, T7, T8; the where/why distinction (T4-5) feeds the cause finding (T9), which is then held fixed while the inquiry moves to trace (T11-12), exclusivity (T13-15), and the single hand (T16-20). Turn N routinely references and extends earlier turns (T15 recapitulates the full chain so far; T20 assembles cause → crowsfoot → yard → toll-book → Oswin). The learner visibly tracks its own progression ('the first link in the chain,' 'I'll hold the cause as grounded')."
+    },
+    "metacognitive_awareness": {
+      "score": 4,
+      "reasoning": "Strong, explicit, recurring gap-tracking: the learner repeatedly separates what is settled from what remains open — T5 'we know where, and we're ready to ask why, but the broken bed still has to answer,' T10 'what the surface still can't name is whose falsework stood there,' T14 'the mark hasn't yet been shown to belong to one yard and one only,' T18 'what it didn't settle is the hand.' This monitors the state of understanding and strategically directs the next step. Short of 5 because the monitoring is of the evidentiary record rather than the learner's own comprehension — it never identifies a personal confusion or a gap in its own grasp (it is never uncertain), so it reads as epistemic bookkeeping more than self-monitoring of learning."
+    }
+  },
+  "overall_score": 75,
+  "summary": "A high-quality forensic reasoning transcript whose strengths are conceptual progression (a clean cumulative chain from liability/causation to the named hand) and constructive engagement, with explicit and consistent tracking of what is settled versus still owed. Discourse is wholly in-world prose with no formalism leakage. The ceiling is set by authenticity and revision: the learner is correct throughout and almost never struggles, errs, or overturns its own position, so growth registers as accumulation rather than genuine reconsideration, and the metacognition is case-state tracking rather than monitoring of personal comprehension. Weighted mean 4.0/5.",
+  "caveats": [
+    "Authenticity is capped by near-flawless competence — the learner shows no real confusion and is corrected only once (T19); it reads as a skilled reasoner performing the role rather than a struggling student.",
+    "Revision is almost entirely additive: because the learner's framework is correct from T1, new evidence confirms it rather than forcing it to revise its own prior stance (the only clear self-revision is T19).",
+    "Metacognition is strong but is evidentiary state-tracking ('what's shown vs. still needed') rather than monitoring of the learner's own comprehension or confusion, which keeps it at 4 rather than 5."
+  ]
+}

@@ -25,11 +25,14 @@ test('pairwise transcript scorer parses CLI args', () => {
     'claude',
     '--judge-model',
     'sonnet',
+    '--judge-effort',
+    'max',
     '--force',
     '--dry-run',
   ]);
   assert.equal(args.judgeCli, 'claude');
   assert.equal(args.judgeModel, 'sonnet');
+  assert.equal(args.judgeEffort, 'max');
   assert.equal(args.force, true);
   assert.equal(args.dryRun, true);
   assert.match(args.packetDir, /exports\/example-packets$/u);

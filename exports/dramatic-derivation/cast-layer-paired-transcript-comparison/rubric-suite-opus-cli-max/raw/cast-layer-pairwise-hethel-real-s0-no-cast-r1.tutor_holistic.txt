@@ -1,0 +1,23 @@
+{
+  "scores": {
+    "pedagogical_arc": {
+      "score": 4,
+      "reasoning": "Tight cumulative scaffold built on an explicit 'place first, cause next, blame last' spine: shown-vs-assumed (T1) → who built it (T2–7) → failure place at the crown (T4) → cause, struck green centering (T9) → the crowsfoot track (T13) → Caudle as source (T17) → Oswin's hand (T20) → assembled finding (T22). The ordering is logically necessary and could not be rearranged without loss, and the tutor sustains one through-line (what is shown vs. what stays blank) while progressively adding evidence. Short of masterful only because T10–12 circle the same 'mortar settles the cause but names no hand' beat across three turns rather than extending it."
+    },
+    "adaptive_trajectory": {
+      "score": 2,
+      "reasoning": "The tutor's method is essentially invariant from T1 to T22 — the same incremental 'what's shown / what stays blank / keep the next step small' move every turn. There is within-turn calibration (pull back at T5, 'slow that last line down' at T14, 'set the morning-after line aside' at T21) and the prompts narrow as the proof frontier shrinks, but that tracks the shrinking material, not learner-specific adaptation. The learner is plainly expert from T1 — anticipates the soffit/falsework evidence at T4, self-flags the morning-after overreach at T20 before the tutor warns of it — yet the tutor keeps braking identically rather than adjusting to demonstrated mastery. The approach at the end is close to identical to the start; there is no arc of strategic adaptation."
+    },
+    "pedagogical_closure": {
+      "score": 4,
+      "reasoning": "Strong consolidation: T22 explicitly holds the two load-bearing lines together (cause = struck green centering shown by the crown bed; hand = the sole Caudle carter from the toll book) and joins them under the governing rule to state the finding. The learner restates the full chain unprompted, so they clearly leave knowing what was established and how. Short of 5 because no forward gaps are named and no next steps are offered — the dialogue terminates at the conclusion (the proof is complete), so it consolidates well but provides no onward direction."
+    }
+  },
+  "overall_score": 58,
+  "summary": "A near-masterful cumulative derivation arc with a clean, well-consolidated ending, paired with a flat adaptive trajectory: the tutor runs one fixed shown-vs-blank decomposition method throughout and does not visibly adapt to an already-expert learner. Public discourse stays in plain forensic language with no formalism leaks.",
+  "caveats": [
+    "The adaptive-trajectory score is partly scenario-bounded: an already-expert learner who rarely errs gives the tutor little to adapt to, so the flat trajectory is somewhat induced by the cast rather than being purely a tutor failing.",
+    "Closure lacks next-steps/forward gaps because the exercise reaches a terminal grounded finding (D=0); appropriate to a closed proof but caps a dimension that rewards onward direction.",
+    "Scored on public discourse only, per instructions; the deterministic proof/gate result (grounded_anagnorisis, 0 leaks) was not credited as discourse quality."
+  ]
+}

@@ -83,6 +83,13 @@ test('parseArgs accepts derivation rubric-suite controls', () => {
     'dialogue_quality,poetics',
     '--judge-cli',
     'none',
+    '--model',
+    'opus',
+    '--judge-effort',
+    'max',
+    '--score-concurrency',
+    '2',
+    '--resume-existing',
     '--force',
   ]);
   assert.deepEqual(args.labels, ['a', 'b']);
@@ -90,6 +97,10 @@ test('parseArgs accepts derivation rubric-suite controls', () => {
   assert.match(args.outDir, /exports\/out$/u);
   assert.deepEqual(args.rubrics, ['dialogue_quality', 'poetics']);
   assert.equal(args.judgeCli, 'none');
+  assert.equal(args.model, 'opus');
+  assert.equal(args.judgeEffort, 'max');
+  assert.equal(args.scoreConcurrency, 2);
+  assert.equal(args.resumeExisting, true);
   assert.equal(args.force, true);
 });
 

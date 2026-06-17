@@ -1,0 +1,37 @@
+```json
+{
+  "scores": {
+    "peripeteia": {
+      "score": 4,
+      "reasoning": "The opening installs the town's settled verdict — 'the town has already written... that the bridge was Reyner's work, and so was its fall' (T2 stage). The drama reverses it: the green-mortar reveal at T9 ('the mortar is still green to the knife, never set') is the visible hinge converting 'bad building' (the builder's flaw) into 'a sound arch... props pulled while the lime was still soft' (another's hand), and the close names a different hand — 'Oswin felled it' (T20). Orientation transformed from its opening, hinge shown. Short of 5 because the learner held the verdict-vs-cause distinction from T1, so it overturns the offstage town's position more than the learner's own stance."
+    },
+    "anagnorisis": {
+      "score": 4,
+      "reasoning": "A named, learner-authored recognition occurs at T19 — 'I was jumping past the first step to get to the yard' — diagnosing a tendency demonstrably present earlier (T13 'the next step writes itself', T17 'came out of Caudle') and previously unarticulated; the learner then owns the closing synthesis at T20 ('the chain is closed — Oswin felled it'), knowledge unavailable before the final evidence. Short of 5 because most knowledge is tutor-supplied evidence the learner integrates, and the self-recognition is prompted by the tutor's T19 redirection."
+    },
+    "surprise_and_inevitability": {
+      "score": 3,
+      "reasoning": "The chain is strongly coherent-in-retrospect — struck centering -> crowsfoot -> Caudle -> Oswin each follows by necessity — but the surprise leg is weak: the procedural form telegraphs from T1 that the town's verdict will be overturned and a real hand found, so the shape is foreseeable, and the decisive name (Oswin) arrives as fresh evidence in the closing stage direction rather than as a convergence of seeded particulars. Inevitability strongly present, surprise only intermittent."
+    },
+    "unity_of_action": {
+      "score": 4,
+      "reasoning": "One complete action with necessary sequence — question (T1) -> built-vs-felled distinction (T2-3) -> failure point (T4) -> cause via green mortar (T9) -> trace via crowsfoot (T13) -> source Caudle (T17) -> hand Oswin (T20); the mounting Reyner-pressure (ownership file T6, bond T8) complicates the middle. Each link depends on the prior; reorder and the arc breaks. Short of 5 because T14-16 consolidate the same point ('the trace stops at the mark') and one could be cut without disturbing the whole."
+    },
+    "hamartia_integration": {
+      "score": 3,
+      "reasoning": "The learner's flaw — impatience / premature closure — is engaged throughout (felt at T6 'it wants me to write his name', nearly enacted at T17, recognized at T19) and motivates the tutor's recurring brake ('two small steps', 'keep it that small', 'stop before the hand'). But it is a managed procedural tic the tutor pre-empts, never producing a consequential error, and the drama's engine is the evidence chain rather than the flaw exposing its own insufficiency. Engaged but not the mainspring."
+    },
+    "cathartic_closure": {
+      "score": 3,
+      "reasoning": "The close is content-specific and non-arbitrary — 'Oswin... hauled a load of bare green props up from the ford the morning after the flood' (T20 stage) ties the physical evidence to a human act, a genuinely satisfying particular. But it ends on a syllogistic restatement ('if struck centering, and Oswin pulled the props... Oswin felled it') delivered by fresh tutor-supplied evidence, with no settling beat and no release of the central Reyner-misdirection — the reader registers completion more than fully discharged catharsis."
+    }
+  },
+  "overall_score": 64,
+  "summary": "A well-made forensic derivation-drama whose strengths are a tight unity of action and a real reversal of the town's verdict, anchored in concrete diegetic particulars (green mortar, crowsfoot, green props the morning after the flood) and free of public formalism. Its dramatic ceiling is limited by an already-competent learner — which mutes the ignorance-to-knowledge arc and reduces the hamartia to a managed procedural tic — together with heavily tutor-scaffolded recognitions, genre-foreseeable surprise, and a competent-but-clipped close.",
+  "caveats": [
+    "The learner begins methodologically sophisticated (separates verdict from cause already at T1), so the anagnorisis and hamartia dimensions reflect refinement/grounding more than transformation.",
+    "Most knowledge-gains are tutor-supplied evidence the learner integrates; the genuinely learner-authored recognition (T19 self-diagnosis) is brief and prompted, so anagnorisis could defensibly be scored 3.",
+    "The culprit Oswin is introduced only in the final stage direction, which strengthens unity but weakens surprise-as-inevitable-convergence."
+  ]
+}
+```

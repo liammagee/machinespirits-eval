@@ -1,0 +1,35 @@
+{
+  "scores": {
+    "peripeteia": {
+      "score": 5,
+      "reasoning": "The dialogue's orientation fully inverts. It opens with the finding treated as essentially written — 'the bond names Reyner... liability is his... What else would the room be deciding?' (T1) — and with cause collapsed into liability: 'his work, and its failure. Isn't that the same thing?' (T2). By the close the causal slot is occupied by a wholly different agent and Reyner is demoted to mere surety: 'The finding is Oswin... but the bond still stands in Reyner's name for what the town must recover' (T22). The hinge is shown: the bad-work reading is closed at T9 ('this wasn't poor building... it was someone pulling the centering'), and the causal line is refilled at T21. Accretive rather than a single sharp veer, but the opening framing does not survive."
+    },
+    "anagnorisis": {
+      "score": 5,
+      "reasoning": "The standout dimension: a genuine, learner-authored recognition that names an own-flaw. At T21: 'I'm not finding the gap I thought was there. I kept wanting a witness who saw Oswin at this arch, but the rule doesn't ask for that extra step.' This was demonstrably unavailable earlier — for seven turns the learner insisted the hand 'stays blank' (T11, T14, T15, T18, T19). The tutor only sets the three notes 'side by side' and asks 'what tie is still missing' (T21), a question presupposing a gap; the learner overturns that premise and supplies the insight unaided. Owned by the speaker, not the simulation failure mode of bare recognition-vocabulary."
+    },
+    "surprise_and_inevitability": {
+      "score": 4,
+      "reasoning": "Strongly inevitable: every prior turn assembles exactly the three traces that fix the hand (green bed = how, crowsfoot = Caudle timber, toll book = sole carter), so the identification reads on re-reading as precisely prepared. The turn also subverts the tutor's own 'what tie is still missing' framing (T21), which primes reader and learner to expect one more incriminating file. Held at 4 rather than 5 because the surprise is moderate — the 'you already have what you need' convergence is a foreseeable detective-genre beat, so it is more coherent-and-earned than genuinely unpredictable."
+    },
+    "unity_of_action": {
+      "score": 5,
+      "reasoning": "One complete action with forced sequence. Each file answers the question the prior turn raised and raises the next: contract (build, not cause) → measure (crown break) → yard ownership → bond (liability) → green bed (struck too soon) → crowsfoot (trace) → reeve (Caudle) → toll book (Oswin) → identification (T21) → finding (T22). The order cannot be reshuffled — the crowsfoot is unreadable as Caudle before the reeve (T17), the toll book inert before the Caudle attribution. Even the reiterative middle beats ('the mark proves the trace, not the hand'; 'yard before hand', T14–15/T18–19) are load-bearing: they build the over-cautious habit recognised as the flaw at T21, so cutting them weakens the close rather than leaving the whole undisturbed."
+    },
+    "hamartia_integration": {
+      "score": 5,
+      "reasoning": "The learner's conflation of liability with causation — 'his work, and its failure. Isn't that the same thing?' (T2) — is the mainspring, not a defect corrected early and discarded. The entire complication is its working-through: the split is held open turn after turn, and a second face of the flaw (over-demanding proof of the hand, T19–T20) emerges and is itself what gets recognised at T21. The error exposes its own insufficiency rather than being patched and set aside."
+    },
+    "cathartic_closure": {
+      "score": 5,
+      "reasoning": "The held-blank hand — the tension sustained across the dialogue — is discharged in an earned close: 'The finding is Oswin. Green bed puts the crown down through a drawn prop... and that hand is his. I'll amend the causal line... but the bond still stands in Reyner's name' (T22). Both threads of the original conflation are now correctly placed, so nothing is dropped. The tutor's trailing 'leave the finding as...' (T22) hands authorship of the conclusion to the learner, who completes it — a fitting cathartic device. The discharge is cerebral rather than emotional, but the central tension genuinely resolves."
+    }
+  },
+  "overall_score": 96,
+  "summary": "A tightly constructed forensic one-act. The learner's conflation of liability ('who answers under the bond') with causation ('whose hand felled the span') is the engine of a unified, necessary-sequence action that reverses the culprit from Reyner to Oswin and closes on a learner-authored recognition naming an own-flaw — the unwarranted demand for a witness the rule never required. Strongest on anagnorisis, hamartia integration, and unity of action; the only real limit is that the convergent-evidence resolution is somewhat foreseeable in genre terms, holding surprise at 4. Scored purely on dramatic form of the public discourse; the transcript carries no formalism, rule-IDs, or hidden-state language.",
+  "caveats": [
+    "The peripeteia is accretive — built across many small concessions rather than one sharp veer — though the opening framing (Reyner as cause) is fully overturned.",
+    "Surprise is the weakest leg: the 'you already have what you need' convergence is a familiar detective-genre beat, so the decisive turn is more earned-and-coherent than genuinely unpredictable.",
+    "Catharsis is structural/cerebral rather than affective — fitting for the assize setting, but a reader seeking emotional discharge may register it as quiet."
+  ]
+}

@@ -1,0 +1,37 @@
+Looking at this transcript, I'll score the **learner's public conduct only**, anchoring each dimension to specific turns and ignoring the deterministic proof gate (the regex confirms 0 formalism leaks — the public dialogue is entirely in-world dramatic prose, so there's nothing to discount on that front).
+
+Here is my calibrated assessment:
+
+```json
+{
+  "scores": {
+    "engagement_quality": {
+      "score": 4,
+      "reasoning": "Consistently constructive. The learner distinguishes location from cause unprompted ('That's a location, not a cause', T4), generates its own hypothesis that the soffit would carry a prop-print BEFORE the tutor reveals the green crown bed (T5), separates 'liable and felled are two different columns' (T9), and names two distinct inference routes ('ownership route' vs 'timber mark route', T7). Self-explanatory throughout. Not a 5 because the examiner owns the decomposition and the learner fills in content rather than redirecting the inquiry."
+    },
+    "learner_authenticity": {
+      "score": 4,
+      "reasoning": "Sustained, plausible resistance — it keeps pulling back to the bond and the draft (T3 'I'm not sure the assize needs more', T11-12 'the draft still stands on that'), reverses with genuine 'wait —' beats (T2, T9), and lands an authentic emotional note at the close ('I don't love where that leaves my draft', T20). Persona is consistent and evolves. Not a 5: the uniformly eloquent register and revisions that arrive exactly on cue read as a polished dramatic rendering rather than a messy real student."
+    },
+    "revision_signals": {
+      "score": 5,
+      "reasoning": "The standout dimension. Explicit, restructuring revisions rather than additive ones: T2 catches itself ('that's the town reading liability in, not the page actually showing the mechanism'); T9 'Wait — that does change things'; and the pivotal T15 'I see what I keep doing: every time we close a step, I pull it straight back toward my draft... before we've earned it.' Earlier positions are visibly overturned and reintegrated."
+    },
+    "conceptual_progression": {
+      "score": 5,
+      "reasoning": "Clear cumulative arc, each link carried forward: liability/bond (T3,T8) → break-point at the crown (T4) → cause as struck centering / green bed (T9-10) → props via the crowsfoot (T13) → Caudle yard, explicitly noted as 'not Reyner's freehold by the church' (T17) → the hand, Oswin (T20). The learner tracks its own progression (T15) and integrates the full chain at the resolution ('the notes close the circle')."
+    },
+    "metacognitive_awareness": {
+      "score": 5,
+      "reasoning": "Explicit monitoring of its own reasoning: it labels the route it is on ('I was on the ownership route', T7), diagnoses its own recurring bias ('I see what I keep doing... I want them all to land on Reyner's name', T15), and then sustains the correction ('I can say that without reaching for the draft, and it holds on its own', T16). Identifies a gap and acts on it strategically."
+    }
+  },
+  "overall_score": 88,
+  "summary": "A strong learner performance whose center of gravity is revision and cumulative reasoning. The learner enters with a fixed liability verdict (Reyner holds the bond) and is walked off it, repeatedly and explicitly separating who-is-liable from what-caused-the-fall from whose-hand-did-it, building a six-link causal chain it tracks and finally integrates (Oswin). Revision, conceptual progression, and metacognition are exemplary (5s); engagement and authenticity are high but not maximal (4s), held there by a tutor-owned inquiry structure and a literary polish that makes the on-cue revisions read slightly cleaner than a real student's. Weighted 4.50/5.",
+  "caveats": [
+    "The Examiner is heavily Socratic and owns the decomposition at every step; much of the learner's 'progression' is tightly scaffolded rather than self-initiated, which caps engagement at constructive (4) rather than inquiry-redirecting (5).",
+    "Authenticity is judged within the dramatic genre: the persona is consistent and the emotional arc genuine, but the uniformly eloquent register and precisely-timed reversals read as a skilled rendering of a student more than an unpredictable real one.",
+    "Score reflects public discourse quality only; the proof/derivation gate (grounded_anagnorisis, final D=0) is reported separately and did not factor into these dimensions."
+  ]
+}
+```
