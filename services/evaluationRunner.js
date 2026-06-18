@@ -58,6 +58,115 @@ const LOGS_DIR = path.join(EVAL_ROOT, 'logs', 'tutor-dialogues');
 const TRANSCRIPTS_DIR = path.join(EVAL_ROOT, 'logs', 'transcripts');
 const CHECKPOINTS_DIR = path.join(EVAL_ROOT, 'logs', 'checkpoints');
 
+function isAdaptiveTraceLog(log) {
+  return Boolean(log?.schemaVersion >= 5 && log?.original && Array.isArray(log.original.dialogue));
+}
+
+function adaptiveTraceScenarioContext(trace, result) {
+  const initialLearner = trace?.scenario?.openingTurns?.find((turn) => turn?.role === 'learner')?.content || '';
+  const hidden = trace?.scenario?.hidden || {};
+  const expected = trace?.scenario?.expectedStrategyShift;
+  const expectedLabel = Array.isArray(expected) ? expected.join(', ') : expected || 'adaptive response';
+  const hiddenSummary = [
+    hidden.actual_misconception,
+    hidden.actual_sophistication && `sophistication: ${hidden.actual_sophistication}`,
+  ]
+    .filter(Boolean)
+    .join('; ');
+  return {
+    id: result.scenarioId,
+    type: 'adaptive_trap',
+    name: result.scenarioName || trace?.scenario?.id || result.scenarioId,
+    description: hiddenSummary || `Adaptive trap scenario ${result.scenarioId}`,
+    topic: result.scenarioType || result.scenarioId,
+    learner_context: initialLearner,
+    expected_behavior: `The tutor should adapt to the learner signal and realize the expected strategy shift: ${expectedLabel}.`,
+    required_elements: [],
+    forbidden_elements: [],
+  };
+}
+
+function adaptiveTraceToDialogueLog(trace) {
+  const dialogue = trace?.original?.dialogue || [];
+  const initialLearner = trace?.scenario?.openingTurns?.find((turn) => turn?.role === 'learner')?.content || '';
+  const turnResults = [];
+  const conversationHistory = [];
+  const dialogueTrace = [];
+  let tutorIndex = 0;
+  let lastLearner = initialLearner;
+  let learnerAfterTutorIndex = 0;
+
+  for (const message of dialogue) {
+    if (message?.role === 'learner') {
+      lastLearner = message.content || '';
+      if (tutorIndex > 0) {
+        learnerAfterTutorIndex += 1;
+        conversationHistory.push({ learnerMessage: lastLearner });
+        dialogueTrace.push({
+          agent: 'learner',
+          action: 'turn_action',
+          turnIndex: learnerAfterTutorIndex,
+          contextSummary: lastLearner,
+          detail: 'adaptive external learner turn',
+        });
+      }
+      continue;
+    }
+    if (message?.role !== 'tutor') continue;
+    turnResults.push({
+      turnIndex: tutorIndex,
+      turnId: `adaptive-turn-${tutorIndex}`,
+      suggestions: [{ message: message.content || '' }],
+      learnerAction: null,
+      learnerMessage: tutorIndex === 0 ? null : lastLearner,
+      contentTurnId: `adaptive-turn-${tutorIndex}`,
+    });
+    tutorIndex += 1;
+  }
+
+  const publicTranscript = dialogue
+    .map((message) => {
+      if (message.role === 'learner') return `[Learner] ${message.content || ''}`;
+      if (message.role === 'tutor') return `[Tutor Ego] ${message.content || ''}`;
+      return null;
+    })
+    .filter(Boolean)
+    .join('\n');
+
+  return {
+    isMultiTurn: turnResults.length > 1,
+    turnResults,
+    dialogueTrace,
+    conversationHistory,
+    learnerContext: initialLearner,
+    learnerArchitecture: 'adaptive_externalised',
+    transcripts: {
+      public: publicTranscript,
+      full: publicTranscript,
+    },
+    adaptiveTrace: trace,
+  };
+}
+
+function resolveRejudgeScenarioAndDialogueLog(result, preloadedDialogueLog = null) {
+  const standardScenario = evalConfigLoader.getScenario(result.scenarioId);
+  const dialogueLog = preloadedDialogueLog || evaluationStore.loadDialogueLog(result.dialogueId);
+  if (standardScenario) return { scenario: standardScenario, dialogueLog };
+  if (dialogueLog?.adaptiveTrace) {
+    return {
+      scenario: adaptiveTraceScenarioContext(dialogueLog.adaptiveTrace, result),
+      dialogueLog,
+    };
+  }
+  if (isAdaptiveTraceLog(dialogueLog)) {
+    return {
+      scenario: adaptiveTraceScenarioContext(dialogueLog, result),
+      dialogueLog: adaptiveTraceToDialogueLog(dialogueLog),
+    };
+  }
+  return { scenario: null, dialogueLog };
+}
+
 // Redirect tutor-core logs to this repo's logs/ directory (if available)
 import('../tutor-core/index.js')
   .then((mod) => {
@@ -5291,6 +5400,11 @@ function extractLearnerTurnsFromTrace(trace, isMultiAgent, conversationHistory) 
 async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
   const { judgeCli, judgeModel, effectiveCliJudgeModel, judgeOverrideObj, log, skipLearner, skipDeliberation } = opts;
 
+  const resolved = resolveRejudgeScenarioAndDialogueLog(result, dialogueLog);
+  const fullScenario = resolved.scenario;
+  dialogueLog = resolved.dialogueLog || dialogueLog;
+  if (!fullScenario) return;
+
   const turnResults = dialogueLog.turnResults || [];
   const dialogueTrace = dialogueLog.dialogueTrace || [];
   const totalTurns = turnResults.length;
@@ -5298,9 +5412,6 @@ async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
   const profileName = result.profileName || `${result.provider}/${result.model}`;
 
   if (totalTurns === 0) return;
-
-  const fullScenario = evalConfigLoader.getScenario(scenarioId);
-  if (!fullScenario) return;
 
   // ── Shared judge call helper (returns parsed JSON) ──
   async function callJudge(prompt) {
@@ -6050,7 +6161,9 @@ export async function rejudgeRun(runId, options = {}) {
       const result = items[i];
 
       try {
-        const fullScenario = evalConfigLoader.getScenario(result.scenarioId);
+        const resolved = resolveRejudgeScenarioAndDialogueLog(result);
+        const fullScenario = resolved.scenario;
+        let dialogueLog = resolved.dialogueLog;
         if (!fullScenario) {
           throw new Error(`Scenario not found: ${result.scenarioId}`);
         }
@@ -6062,28 +6175,17 @@ export async function rejudgeRun(runId, options = {}) {
 
         // Load dialogue context for multi-turn results
         let dialogueContext = null;
-        let dialogueLog = null;
-        if (result.dialogueId) {
-          const logPath = path.join(LOGS_DIR, `${result.dialogueId}.json`);
-          try {
-            if (fs.existsSync(logPath)) {
-              dialogueLog = JSON.parse(fs.readFileSync(logPath, 'utf-8'));
-              if (dialogueLog.isMultiTurn && dialogueLog.dialogueTrace?.length > 0) {
-                dialogueContext = {
-                  consolidatedTrace: dialogueLog.dialogueTrace,
-                  conversationHistory: (dialogueLog.turnResults || []).map((t, ti) => ({
-                    turnIndex: ti,
-                    turnId: t.turnId,
-                    suggestion: t.suggestions?.[0],
-                    learnerAction: t.learnerAction,
-                    learnerMessage: t.learnerMessage,
-                  })),
-                };
-              }
-            }
-          } catch (e) {
-            log(`  Warning: could not load dialogue log for ${result.dialogueId}: ${e.message}`);
-          }
+        if (dialogueLog?.isMultiTurn && dialogueLog.dialogueTrace?.length > 0) {
+          dialogueContext = {
+            consolidatedTrace: dialogueLog.dialogueTrace,
+            conversationHistory: (dialogueLog.turnResults || []).map((t, ti) => ({
+              turnIndex: ti,
+              turnId: t.turnId,
+              suggestion: t.suggestions?.[0],
+              learnerAction: t.learnerAction,
+              learnerMessage: t.learnerMessage,
+            })),
+          };
         }
 
         const scenarioContext = {
