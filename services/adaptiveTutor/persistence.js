@@ -147,7 +147,13 @@ function extractTurnTrace(history) {
     existing.dialogueLength = Array.isArray(v.dialogue) ? v.dialogue.length : existing.dialogueLength;
     byTurn.set(turn, existing);
   }
-  return [...byTurn.values()].sort((a, b) => a.turn - b.turn);
+  return [...byTurn.values()]
+    .sort((a, b) => a.turn - b.turn)
+    .filter((record) => {
+      const isPlan2Record = record.adaptationPolicyMode && record.adaptationPolicyMode !== 'legacy';
+      if (!isPlan2Record) return true;
+      return Array.isArray(record.adaptationTrace) && record.adaptationTrace.length > 0;
+    });
 }
 
 function buildTraceJson({
