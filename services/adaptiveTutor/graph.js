@@ -78,7 +78,11 @@ import { StateGraph, START, END } from '@langchain/langgraph';
 import { AdaptiveTutorState } from './stateSchema.js';
 import { callRole } from './llm.js';
 import { createAdaptationContract, updateContractRealizationChecks } from './adaptationContract.js';
-import { estimateLearnerStateBelief, selectPedagogicalAction } from './actionPolicy.js';
+import {
+  estimateLearnerStateBelief,
+  legacyPolicyActionForAdaptiveAction,
+  selectPedagogicalAction,
+} from './actionPolicy.js';
 import { validateProofReleaseOwnershipGate, repairActionFromGate } from './proofReleaseOwnershipGate.js';
 import { appendPendingIntervention, closePendingIntervention } from './interventionLedger.js';
 import { realizeTutorUtterance, repairRealization, verifyRealization } from './realizationVerifier.js';
@@ -821,13 +825,16 @@ function makeValidateAdaptationContract(defaultMode, defaultPolicyConfig) {
 
 async function realizeTutorUtteranceNode(state) {
   const realization = realizeTutorUtterance({ selectedAction: state.selectedPedagogicalAction });
+  const adaptationAction = state.selectedPedagogicalAction?.action_type || '';
+  const policyAction = legacyPolicyActionForAdaptiveAction(adaptationAction);
   return {
     tutorInternal: {
       ...state.tutorInternal,
       egoDraft: realization.text,
       egoRevision: '',
       superegoFeedback: '',
-      policyAction: state.selectedPedagogicalAction?.action_type || '',
+      adaptationAction,
+      policyAction,
     },
     adaptationTrace: [
       traceEntry('realize_tutor_utterance', state, {
@@ -850,12 +857,15 @@ async function verifyRealizationNode(state) {
   const contract = state.adaptationContract
     ? updateContractRealizationChecks(state.adaptationContract, { ...checks, repaired })
     : null;
+  const adaptationAction = state.selectedPedagogicalAction?.action_type || state.tutorInternal?.adaptationAction || '';
+  const policyAction = legacyPolicyActionForAdaptiveAction(adaptationAction || state.tutorInternal?.policyAction || '');
   return {
     tutorInternal: {
       ...state.tutorInternal,
       egoDraft: finalText,
       egoRevision: '',
-      policyAction: state.selectedPedagogicalAction?.action_type || state.tutorInternal?.policyAction || '',
+      adaptationAction,
+      policyAction,
     },
     adaptationContract: contract,
     constraintViolations: checks.allowed
