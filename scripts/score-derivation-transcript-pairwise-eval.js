@@ -293,7 +293,7 @@ function labelShort(label) {
 
 function renderReport({ packetDir, out, judge, rows, summary }) {
   const lines = [];
-  lines.push('# Cast Layer Paired Transcript Comparison');
+  lines.push('# Blinded Pairwise Transcript Comparison');
   lines.push('');
   lines.push(`Packet: \`${path.relative(ROOT, packetDir)}\``);
   lines.push(`Scores: \`${path.relative(ROOT, out)}\``);

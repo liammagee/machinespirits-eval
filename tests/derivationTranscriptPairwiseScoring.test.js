@@ -77,7 +77,7 @@ test('pairwise transcript scorer dry-run writes scores and report', async () => 
   assert.equal(result.summary.length, 2);
   assert.equal(result.summary[0].appearances, 1);
   assert.ok(fs.existsSync(out));
-  assert.match(fs.readFileSync(report, 'utf8'), /Cast Layer Paired Transcript Comparison/u);
+  assert.match(fs.readFileSync(report, 'utf8'), /Blinded Pairwise Transcript Comparison/u);
   assert.match(fs.readFileSync(report, 'utf8'), /S0 no cast/u);
   assert.match(fs.readFileSync(report, 'utf8'), /S1 static cast/u);
 });
