@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { aggregateQualityRows, strictShiftFromTrace } from '../scripts/analyze-adaptation-quality.js';
+import {
+  aggregateQualityRows,
+  filterRowsByJudgeModel,
+  strictShiftFromTrace,
+} from '../scripts/analyze-adaptation-quality.js';
 
 test('strictShiftFromTrace scores the tutor turn after the trigger', () => {
   const trace = {
@@ -136,4 +140,63 @@ test('incomplete quality rows are not averaged as zero-quality rows', () => {
   assert.equal(candidate.completeQualityN, 1);
   assert.equal(candidate.qualityCompositeMean, 80);
   assert.equal(candidate.qualityDeltaVsBaseline, 30);
+});
+
+test('judge-model filter is exact and preserves default mixed-judge behavior', () => {
+  const rows = [
+    {
+      profileName: 'cell_135_plan2_closed_loop',
+      judgeModel: 'claude-code/sonnet',
+      strictShiftEvaluable: true,
+      strictShiftMatched: true,
+      qualityComposite: 40,
+      dimensions: {},
+    },
+    {
+      profileName: 'cell_149_plan2_quality_repeat_contextual',
+      judgeModel: 'claude-code/sonnet',
+      strictShiftEvaluable: true,
+      strictShiftMatched: true,
+      qualityComposite: 50,
+      dimensions: {},
+    },
+    {
+      profileName: 'cell_149_plan2_quality_repeat_contextual',
+      judgeModel: 'claude-code/sonnet-4-6',
+      strictShiftEvaluable: true,
+      strictShiftMatched: true,
+      qualityComposite: 90,
+      dimensions: {},
+    },
+    {
+      profileName: 'cell_149_plan2_quality_repeat_contextual',
+      judgeModel: 'codex-cli/auto',
+      strictShiftEvaluable: true,
+      strictShiftMatched: true,
+      qualityComposite: 10,
+      dimensions: {},
+    },
+  ];
+
+  assert.equal(filterRowsByJudgeModel(rows), rows);
+  assert.deepEqual(
+    filterRowsByJudgeModel(rows, 'claude-code/sonnet').map((row) => row.qualityComposite),
+    [40, 50],
+  );
+
+  const mixedReport = aggregateQualityRows(rows, { baseline: 'cell_135_plan2_closed_loop' });
+  const mixedCandidate = mixedReport.profiles.find(
+    (profile) => profile.profileName === 'cell_149_plan2_quality_repeat_contextual',
+  );
+  assert.equal(mixedCandidate.n, 3);
+  assert.equal(mixedCandidate.qualityCompositeMean, 50);
+
+  const filteredReport = aggregateQualityRows(filterRowsByJudgeModel(rows, 'claude-code/sonnet'), {
+    baseline: 'cell_135_plan2_closed_loop',
+  });
+  const filteredCandidate = filteredReport.profiles.find(
+    (profile) => profile.profileName === 'cell_149_plan2_quality_repeat_contextual',
+  );
+  assert.equal(filteredCandidate.n, 1);
+  assert.equal(filteredCandidate.qualityCompositeMean, 50);
 });

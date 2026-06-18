@@ -981,13 +981,13 @@ function parseCliJudgeJsonResponse(text) {
   const errors = [];
   for (const candidate of [...candidates].reverse()) {
     try {
-      return JSON.parse(candidate);
+      return coerceCliJudgeJsonPayload(JSON.parse(candidate));
     } catch (error) {
       errors.push(`JSON.parse: ${error.message}`);
     }
 
     try {
-      return JSON.parse(jsonrepair(candidate));
+      return coerceCliJudgeJsonPayload(JSON.parse(jsonrepair(candidate)));
     } catch (error) {
       errors.push(`jsonrepair: ${error.message}`);
     }
@@ -997,6 +997,26 @@ function parseCliJudgeJsonResponse(text) {
   throw new Error(
     `Could not parse CLI judge response as JSON. Tried ${candidates.length} candidate(s). ${errors[errors.length - 1] || ''} Raw preview: ${preview}`,
   );
+}
+
+function coerceCliJudgeJsonPayload(parsed) {
+  if (!Array.isArray(parsed)) return parsed;
+
+  const scoredObject = parsed.find(
+    (item) =>
+      item &&
+      typeof item === 'object' &&
+      !Array.isArray(item) &&
+      (item.scores || item.turns || item.overall_score != null || item.overallScore != null),
+  );
+  if (scoredObject) return scoredObject;
+
+  const joinedText = parsed.filter((item) => typeof item === 'string').join('\n').trim();
+  if (joinedText) {
+    return parseCliJudgeJsonResponse(joinedText);
+  }
+
+  return parsed;
 }
 
 function extractCliJudgeOverallScore(parsed) {

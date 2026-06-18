@@ -49,6 +49,7 @@ function parseArgs(argv = process.argv.slice(2)) {
           .filter(Boolean)
       : [],
     profile: value('profile'),
+    judgeModel: value('judge-model'),
     baseline: value('baseline', 'cell_135_plan2_closed_loop'),
     minShiftRate: Number(value('min-shift-rate', '0.875')),
     minQualityDelta: Number(value('min-quality-delta', '0')),
@@ -111,7 +112,12 @@ function numberOrNull(value) {
   return Number.isFinite(n) ? n : null;
 }
 
-function loadRows({ dbPath, runIds, profile = null }) {
+export function filterRowsByJudgeModel(rows, judgeModel = null) {
+  if (!judgeModel) return rows;
+  return rows.filter((row) => row.judgeModel === judgeModel);
+}
+
+function loadRows({ dbPath, runIds, profile = null, judgeModel = null }) {
   if (!runIds?.length) throw new Error('analyze-adaptation-quality requires --run-id <id>[,<id2>...]');
   const db = new Database(dbPath, { readonly: true });
   const placeholders = runIds.map(() => '?').join(',');
@@ -128,6 +134,10 @@ function loadRows({ dbPath, runIds, profile = null }) {
   if (profile) {
     sql += ' AND profile_name = ?';
     params.push(profile);
+  }
+  if (judgeModel) {
+    sql += ' AND judge_model = ?';
+    params.push(judgeModel);
   }
   sql += ' ORDER BY profile_name, scenario_id, id';
   const rows = db.prepare(sql).all(...params).map(rowFromDb);
@@ -298,6 +308,7 @@ function renderMarkdown(report) {
   lines.push('');
   lines.push(`Generated: ${report.generatedAt}`);
   lines.push(`Run IDs: ${report.runIds.join(', ')}`);
+  if (report.options.judgeModel) lines.push(`Judge model: ${report.options.judgeModel}`);
   lines.push(`Baseline: ${report.options.baseline}`);
   lines.push(`Shift gate: ${(report.options.minShiftRate * 100).toFixed(1)}% strict shift`);
   lines.push('');
@@ -330,6 +341,7 @@ function renderMarkdown(report) {
 function printSummary(report) {
   console.log(`\nPlan 2.0 adaptation quality report`);
   console.log(`  runIds=${report.runIds.join(',')}`);
+  if (report.options.judgeModel) console.log(`  judgeModel=${report.options.judgeModel}`);
   console.log(`  baseline=${report.options.baseline}`);
   console.log(`  shift gate=${fmtPct(report.options.minShiftRate)}`);
   console.log('');
@@ -352,6 +364,7 @@ export function buildReport(rows, options = {}) {
     runIds: [...new Set(rows.map((r) => r.runId))],
     options: {
       baseline: options.baseline || 'cell_135_plan2_closed_loop',
+      judgeModel: options.judgeModel || null,
       minShiftRate: options.minShiftRate ?? 0.875,
       minQualityDelta: options.minQualityDelta ?? 0,
     },
