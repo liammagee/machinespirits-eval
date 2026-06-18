@@ -6220,6 +6220,8 @@ async function main() {
         let singleAgentCount = 0;
         for (const name of profilesToCheck) {
           const profile = allProfiles[name];
+          const usesAdaptiveRunner = profile.runner === 'adaptive';
+          const usesSingleAgentTutor = profile.factors?.multi_agent_tutor === false;
           const dialogueEnabled = profile.dialogue?.enabled ?? false;
           if (dialogueEnabled) {
             multiAgentCount++;
@@ -6227,7 +6229,7 @@ async function main() {
             if (maxRounds <= 0) {
               dialogueErrors.push(`${name}: dialogue enabled but max_rounds=${maxRounds}`);
             }
-            if (!profile.superego || profile.superego === null) {
+            if (!usesAdaptiveRunner && !usesSingleAgentTutor && (!profile.superego || profile.superego === null)) {
               dialogueErrors.push(`${name}: dialogue enabled but superego is null`);
             }
           } else {
@@ -6252,6 +6254,9 @@ async function main() {
           'ego_superego_recognition',
           'ego_superego_authentic',
           'ego_superego_recognition_authentic',
+          'adaptive_externalised',
+          'scripted_trap',
+          'ego_superego_bilateral_tom',
         ];
         const learnerErrors = [];
         for (const name of profilesToCheck) {
@@ -6352,7 +6357,13 @@ async function main() {
           }
         }
 
+        const promptDirs = [path.resolve(__dirname, '..', 'prompts')];
         if (tutorCorePromptsDir && fs.existsSync(tutorCorePromptsDir)) {
+          promptDirs.push(tutorCorePromptsDir);
+        }
+        const existingPromptDirs = promptDirs.filter((dir, index) => fs.existsSync(dir) && promptDirs.indexOf(dir) === index);
+
+        if (existingPromptDirs.length > 0) {
           const promptErrors = [];
           const checkedFiles = new Set();
           for (const name of profilesToCheck) {
@@ -6361,8 +6372,8 @@ async function main() {
               const promptFile = profile[role]?.prompt_file;
               if (promptFile && !checkedFiles.has(promptFile)) {
                 checkedFiles.add(promptFile);
-                const fullPath = path.join(tutorCorePromptsDir, promptFile);
-                if (!fs.existsSync(fullPath)) {
+                const found = existingPromptDirs.some((dir) => fs.existsSync(path.join(dir, promptFile)));
+                if (!found) {
                   promptErrors.push(`${name}: ${role} prompt_file '${promptFile}' not found`);
                 }
               }
@@ -6373,10 +6384,10 @@ async function main() {
             for (const e of promptErrors) console.log(`      - ${e}`);
             errors += promptErrors.length;
           } else {
-            console.log(`  \u2713 All ${checkedFiles.size} prompt files exist in tutor-core`);
+            console.log(`  \u2713 All ${checkedFiles.size} prompt files exist`);
           }
         } else {
-          console.log('  - Prompt files: tutor-core prompts directory not found (skipped)');
+          console.log('  - Prompt files: prompts directories not found (skipped)');
         }
 
         // ── Verbose: per-profile detail ───────────────────────────────

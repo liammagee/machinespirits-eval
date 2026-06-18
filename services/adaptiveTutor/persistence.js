@@ -62,6 +62,14 @@ function extractTurnTrace(history) {
       hypotheses: [],
       evidenceLog: [],
       revisionLedger: [],
+      adaptationPolicyMode: null,
+      learnerStateBelief: null,
+      selectedPedagogicalAction: null,
+      candidatePedagogicalActions: [],
+      adaptationContract: null,
+      pendingIntervention: null,
+      interventionLedger: [],
+      adaptationTrace: [],
       dialogueLength: 0,
     };
     if (v.learnerProfile && v.learnerProfile.updatedAtTurn === turn) {
@@ -110,6 +118,32 @@ function extractTurnTrace(history) {
     if (Array.isArray(v.revisionLedger)) {
       existing.revisionLedger = v.revisionLedger;
     }
+    if (v.adaptationPolicyMode) {
+      existing.adaptationPolicyMode = v.adaptationPolicyMode;
+    }
+    if (v.learnerStateBelief) {
+      existing.learnerStateBelief = v.learnerStateBelief;
+    }
+    if (v.selectedPedagogicalAction) {
+      existing.selectedPedagogicalAction = v.selectedPedagogicalAction;
+    }
+    if (Array.isArray(v.candidatePedagogicalActions)) {
+      existing.candidatePedagogicalActions = v.candidatePedagogicalActions;
+    }
+    if (v.adaptationContract) {
+      existing.adaptationContract = v.adaptationContract;
+    }
+    if (v.pendingIntervention) {
+      existing.pendingIntervention = v.pendingIntervention;
+    } else if (v.pendingIntervention === null) {
+      existing.pendingIntervention = null;
+    }
+    if (Array.isArray(v.interventionLedger)) {
+      existing.interventionLedger = v.interventionLedger;
+    }
+    if (Array.isArray(v.adaptationTrace)) {
+      existing.adaptationTrace = v.adaptationTrace.filter((entry) => entry?.turn === turn);
+    }
     existing.dialogueLength = Array.isArray(v.dialogue) ? v.dialogue.length : existing.dialogueLength;
     byTurn.set(turn, existing);
   }
@@ -134,7 +168,9 @@ function buildTraceJson({
     // superego-rewrite ledger growth directly. Nothing branches on this
     // number (it is informational); older trace files without these fields
     // stay readable — analyzers default them to [] when absent.
-    schemaVersion: 4,
+    // schemaVersion 5 (Plan 2.0) adds adaptation contracts, selected actions,
+    // pending/closed intervention ledgers, and adaptationTrace entries.
+    schemaVersion: 5,
     profileName,
     scenario: {
       id: scenario.id,
@@ -152,6 +188,13 @@ function buildTraceJson({
       finalEvidenceLog: runResult.final.evidenceLog ?? [],
       finalHypotheses: runResult.final.hypotheses ?? [],
       finalRevisionLedger: runResult.final.revisionLedger ?? [],
+      adaptationPolicyMode: runResult.final.adaptationPolicyMode ?? 'legacy',
+      finalLearnerStateBelief: runResult.final.learnerStateBelief ?? null,
+      finalSelectedPedagogicalAction: runResult.final.selectedPedagogicalAction ?? null,
+      finalAdaptationContract: runResult.final.adaptationContract ?? null,
+      finalPendingIntervention: runResult.final.pendingIntervention ?? null,
+      finalInterventionLedger: runResult.final.interventionLedger ?? [],
+      finalAdaptationTrace: runResult.final.adaptationTrace ?? [],
       constraintViolations: runResult.final.constraintViolations,
       perTurn: extractTurnTrace(runResult.history),
     },
@@ -166,6 +209,13 @@ function buildTraceJson({
       finalEvidenceLog: counterfactualResult.final.evidenceLog ?? [],
       finalHypotheses: counterfactualResult.final.hypotheses ?? [],
       finalRevisionLedger: counterfactualResult.final.revisionLedger ?? [],
+      adaptationPolicyMode: counterfactualResult.final.adaptationPolicyMode ?? 'legacy',
+      finalLearnerStateBelief: counterfactualResult.final.learnerStateBelief ?? null,
+      finalSelectedPedagogicalAction: counterfactualResult.final.selectedPedagogicalAction ?? null,
+      finalAdaptationContract: counterfactualResult.final.adaptationContract ?? null,
+      finalPendingIntervention: counterfactualResult.final.pendingIntervention ?? null,
+      finalInterventionLedger: counterfactualResult.final.interventionLedger ?? [],
+      finalAdaptationTrace: counterfactualResult.final.adaptationTrace ?? [],
       constraintViolations: counterfactualResult.final.constraintViolations,
       perTurn: extractTurnTrace(counterfactualResult.history),
     };
@@ -216,6 +266,9 @@ function buildResultRow({
     expectedStrategyShift: scenarioConfig?.expected_strategy_shift ?? null,
     policyActions: policies,
     finalLearnerProfile: runResult.final.learnerProfile,
+    adaptationPolicyMode: runResult.final.adaptationPolicyMode ?? 'legacy',
+    adaptationContracts: (traceJson.original.perTurn || []).map((t) => t.adaptationContract).filter(Boolean),
+    interventionLedger: runResult.final.interventionLedger ?? [],
     constraintViolations: runResult.final.constraintViolations,
     counterfactual: traceJson.counterfactual
       ? {

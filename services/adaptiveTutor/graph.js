@@ -77,12 +77,18 @@ import { createHash } from 'crypto';
 import { StateGraph, START, END } from '@langchain/langgraph';
 import { AdaptiveTutorState } from './stateSchema.js';
 import { callRole } from './llm.js';
+import { createAdaptationContract, updateContractRealizationChecks } from './adaptationContract.js';
+import { estimateLearnerStateBelief, selectPedagogicalAction } from './actionPolicy.js';
+import { validateProofReleaseOwnershipGate, repairActionFromGate } from './proofReleaseOwnershipGate.js';
+import { appendPendingIntervention, closePendingIntervention } from './interventionLedger.js';
+import { realizeTutorUtterance, repairRealization, verifyRealization } from './realizationVerifier.js';
 
 const SUPPORTED_ARCHITECTURES = Object.freeze([
   'recognition_only',
   'recognition_named_patterns',
   'ego_superego',
   'state_policy',
+  'state_policy_closed_loop',
   'state_policy_with_validator',
   'state_policy_minimal_profile',
   'state_policy_no_misconceptions',
@@ -632,6 +638,261 @@ const routeAfterConstraint = (state) => {
 
 const routeAfterLearner = (loopBackNode) => (state) => (state.turn >= state.maxTurns ? END : loopBackNode);
 
+const GATED_ADAPTATION_MODES = new Set(['contract_gate', 'closed_loop', 'closed_loop_counterfactual']);
+const LEDGER_ADAPTATION_MODES = new Set(['closed_loop', 'closed_loop_counterfactual']);
+
+function policyModeFromState(state, defaultMode = 'closed_loop') {
+  if (state?.adaptationPolicyMode && state.adaptationPolicyMode !== 'legacy') return state.adaptationPolicyMode;
+  return defaultMode;
+}
+
+function policyConfigFromState(state, defaultConfig = {}) {
+  return { ...defaultConfig, ...(state?.adaptivePolicyConfig || {}) };
+}
+
+function normalizePolicyConfig(config = {}) {
+  return {
+    ...config,
+    maxHypotheses: config.maxHypotheses ?? config.max_hypotheses,
+    maxActionCandidates: config.maxActionCandidates ?? config.max_action_candidates,
+    uncertaintyWeight: config.uncertaintyWeight ?? config.uncertainty_weight,
+    ownershipWeight: config.ownershipWeight ?? config.ownership_weight,
+    controlWeight: config.controlWeight ?? config.control_weight,
+    actionFitWeight: config.actionFitWeight ?? config.action_fit_weight,
+    repetitionPenalty: config.repetitionPenalty ?? config.repetition_penalty,
+    utilityTieEpsilon: config.utilityTieEpsilon ?? config.utility_tie_epsilon,
+  };
+}
+
+function traceEntry(type, state, payload = {}) {
+  return {
+    type,
+    turn: state?.turn,
+    payload,
+  };
+}
+
+function makeClosePreviousIntervention(defaultMode, defaultPolicyConfig) {
+  return async function closePreviousIntervention(state) {
+    const mode = policyModeFromState(state, defaultMode);
+    const config = policyConfigFromState(state, defaultPolicyConfig);
+    const ledger = state.interventionLedger || [];
+    const base = {
+      adaptationPolicyMode: mode,
+      adaptivePolicyConfig: config,
+    };
+
+    if (!LEDGER_ADAPTATION_MODES.has(mode) || !ledger.some((record) => record?.status === 'pending')) {
+      return {
+        ...base,
+        adaptationTrace: [traceEntry('close_previous_intervention_skipped', state, { mode })],
+      };
+    }
+
+    const learnerTurnText = lastTextOf(state.dialogue, 'learner');
+    const closed = closePendingIntervention({
+      ledger,
+      learnerTurn: learnerTurnText,
+      turnIndex: state.turn,
+    });
+    return {
+      ...base,
+      interventionLedger: closed.ledger,
+      pendingIntervention: closed.pendingIntervention,
+      adaptationTrace: [
+        traceEntry('close_previous_intervention', state, {
+          contract_id: closed.closedRecord?.contract_id || null,
+          outcome: closed.closedRecord?.outcome || null,
+          action_type: closed.closedRecord?.action_type || null,
+        }),
+      ],
+    };
+  };
+}
+
+function makeEstimateLearnerState(defaultMode, defaultPolicyConfig) {
+  return async function estimateLearnerState(state) {
+    const mode = policyModeFromState(state, defaultMode);
+    const config = normalizePolicyConfig(policyConfigFromState(state, defaultPolicyConfig));
+    const stateBelief = estimateLearnerStateBelief({
+      dialogue: state.dialogue,
+      interventionLedger: state.interventionLedger || [],
+      turnIndex: state.turn,
+      maxHypotheses: config.maxHypotheses,
+    });
+    return {
+      adaptationPolicyMode: mode,
+      learnerStateBelief: stateBelief,
+      adaptationTrace: [
+        traceEntry('estimate_learner_state', state, {
+          top_hypothesis: stateBelief.hypotheses?.[0]?.id || null,
+          needs_discrimination: stateBelief.uncertainty?.needs_discrimination === true,
+        }),
+      ],
+    };
+  };
+}
+
+function makeSelectPedagogicalAction(defaultMode, defaultPolicyConfig) {
+  return async function selectPedagogicalActionNode(state) {
+    const mode = policyModeFromState(state, defaultMode);
+    const config = normalizePolicyConfig(policyConfigFromState(state, defaultPolicyConfig));
+    const policy = selectPedagogicalAction({
+      stateBelief: state.learnerStateBelief,
+      interventionLedger: state.interventionLedger || [],
+      mode,
+      config,
+    });
+    return {
+      selectedPedagogicalAction: policy.selectedAction,
+      candidatePedagogicalActions: policy.candidateActions,
+      adaptationTrace: [
+        traceEntry('select_pedagogical_action', state, {
+          mode,
+          action_type: policy.selectedAction.action_type,
+          candidate_actions: policy.candidateActions.map((c) => c.action_type),
+        }),
+      ],
+    };
+  };
+}
+
+function makeValidateAdaptationContract(defaultMode, defaultPolicyConfig) {
+  return async function validateAdaptationContractNode(state) {
+    const mode = policyModeFromState(state, defaultMode);
+    const config = normalizePolicyConfig(policyConfigFromState(state, defaultPolicyConfig));
+    let selectedAction = state.selectedPedagogicalAction;
+    let gateResult = { allowed: true, violations: [], repairs: [] };
+    let repairedFrom = null;
+
+    if (GATED_ADAPTATION_MODES.has(mode)) {
+      gateResult = validateProofReleaseOwnershipGate({
+        stateBelief: state.learnerStateBelief,
+        selectedAction,
+        candidateActions: state.candidatePedagogicalActions || [],
+        interventionLedger: state.interventionLedger || [],
+        config,
+      });
+      if (!gateResult.allowed) {
+        const repaired = repairActionFromGate(selectedAction, gateResult);
+        if (repaired?.action_type && repaired.action_type !== selectedAction?.action_type) {
+          repairedFrom = selectedAction?.action_type || null;
+          selectedAction = repaired;
+          gateResult = validateProofReleaseOwnershipGate({
+            stateBelief: state.learnerStateBelief,
+            selectedAction,
+            candidateActions: state.candidatePedagogicalActions || [],
+            interventionLedger: state.interventionLedger || [],
+            config,
+          });
+        }
+      }
+    }
+
+    const contract = createAdaptationContract({
+      contractId: `adaptive-${state.scenarioId || 'scenario'}-turn-${state.turn}`,
+      dialogueId: state.scenarioId || 'adaptive',
+      turnIndex: state.turn,
+      stateBelief: state.learnerStateBelief,
+      selectedAction: repairedFrom ? { ...selectedAction, repaired_from: repairedFrom } : selectedAction,
+      candidateActions: state.candidatePedagogicalActions || [],
+      gateResult,
+      realizationChecks: { action_consistent: null, forbidden_move_detected: null },
+      policyMode: mode,
+    });
+
+    return {
+      selectedPedagogicalAction: contract.selected_action,
+      adaptationContract: contract,
+      constraintViolations: gateResult.allowed
+        ? []
+        : gateResult.violations.map((v) => `adaptation gate: ${v.code}: ${v.message}`),
+      adaptationTrace: [
+        traceEntry('validate_adaptation_contract', state, {
+          action_type: contract.selected_action.action_type,
+          gate_allowed: gateResult.allowed,
+          gate_violations: gateResult.violations.map((v) => v.code),
+          repaired_from: repairedFrom,
+        }),
+      ],
+    };
+  };
+}
+
+async function realizeTutorUtteranceNode(state) {
+  const realization = realizeTutorUtterance({ selectedAction: state.selectedPedagogicalAction });
+  return {
+    tutorInternal: {
+      ...state.tutorInternal,
+      egoDraft: realization.text,
+      egoRevision: '',
+      superegoFeedback: '',
+      policyAction: state.selectedPedagogicalAction?.action_type || '',
+    },
+    adaptationTrace: [
+      traceEntry('realize_tutor_utterance', state, {
+        action_type: state.selectedPedagogicalAction?.action_type || null,
+      }),
+    ],
+  };
+}
+
+async function verifyRealizationNode(state) {
+  const draft = state.tutorInternal?.egoDraft || '';
+  let checks = verifyRealization({ tutorText: draft, selectedAction: state.selectedPedagogicalAction });
+  let finalText = draft;
+  let repaired = false;
+  if (!checks.allowed) {
+    finalText = repairRealization({ tutorText: draft, selectedAction: state.selectedPedagogicalAction, checks });
+    checks = verifyRealization({ tutorText: finalText, selectedAction: state.selectedPedagogicalAction });
+    repaired = true;
+  }
+  const contract = state.adaptationContract
+    ? updateContractRealizationChecks(state.adaptationContract, { ...checks, repaired })
+    : null;
+  return {
+    tutorInternal: {
+      ...state.tutorInternal,
+      egoDraft: finalText,
+      egoRevision: '',
+      policyAction: state.selectedPedagogicalAction?.action_type || state.tutorInternal?.policyAction || '',
+    },
+    adaptationContract: contract,
+    constraintViolations: checks.allowed
+      ? []
+      : [`adaptation realization: selected action ${checks.action_type || 'unknown'} did not verify`],
+    adaptationTrace: [
+      traceEntry('verify_realization', state, {
+        action_type: checks.action_type,
+        allowed: checks.allowed,
+        repaired,
+      }),
+    ],
+  };
+}
+
+function makePersistPendingIntervention(defaultMode) {
+  return async function persistPendingIntervention(state) {
+    const mode = policyModeFromState(state, defaultMode);
+    if (!LEDGER_ADAPTATION_MODES.has(mode)) {
+      return {
+        adaptationTrace: [traceEntry('persist_pending_intervention_skipped', state, { mode })],
+      };
+    }
+    const appended = appendPendingIntervention(state.interventionLedger || [], state.adaptationContract);
+    return {
+      interventionLedger: appended.ledger,
+      pendingIntervention: appended.pendingIntervention,
+      adaptationTrace: [
+        traceEntry('persist_pending_intervention', state, {
+          contract_id: appended.pendingIntervention.contract_id,
+          action_type: appended.pendingIntervention.action_type,
+        }),
+      ],
+    };
+  };
+}
+
 export function buildGraph(options = {}) {
   const architecture = options.architecture ?? 'state_policy';
   if (!SUPPORTED_ARCHITECTURES.includes(architecture)) {
@@ -726,6 +987,35 @@ export function buildGraph(options = {}) {
       .addEdge('tutorEgoInitial', 'tutorEmit')
       .addEdge('tutorEmit', 'learnerTurn')
       .addConditionalEdges('learnerTurn', routeAfterLearner('superegoRevise'), ['superegoRevise', END]);
+  }
+
+  if (architecture === 'state_policy_closed_loop') {
+    const policyConfig = options.adaptivePolicy || {};
+    const policyMode =
+      options.adaptationPolicyMode || policyConfig.mode || process.env.ADAPTIVE_POLICY_MODE || 'closed_loop';
+    return new StateGraph(AdaptiveTutorState)
+      .addNode('close_previous_intervention', makeClosePreviousIntervention(policyMode, policyConfig))
+      .addNode('estimate_learner_state', makeEstimateLearnerState(policyMode, policyConfig))
+      .addNode('select_pedagogical_action', makeSelectPedagogicalAction(policyMode, policyConfig))
+      .addNode('validate_adaptation_contract', makeValidateAdaptationContract(policyMode, policyConfig))
+      .addNode('realize_tutor_utterance', realizeTutorUtteranceNode)
+      .addNode('verify_realization', verifyRealizationNode)
+      .addNode('persist_pending_intervention', makePersistPendingIntervention(policyMode))
+      .addNode('tutorEmit', tutorEmit)
+      .addNode('learnerTurn', learnerTurn)
+      .addEdge(START, 'close_previous_intervention')
+      .addEdge('close_previous_intervention', 'estimate_learner_state')
+      .addEdge('estimate_learner_state', 'select_pedagogical_action')
+      .addEdge('select_pedagogical_action', 'validate_adaptation_contract')
+      .addEdge('validate_adaptation_contract', 'realize_tutor_utterance')
+      .addEdge('realize_tutor_utterance', 'verify_realization')
+      .addEdge('verify_realization', 'persist_pending_intervention')
+      .addEdge('persist_pending_intervention', 'tutorEmit')
+      .addEdge('tutorEmit', 'learnerTurn')
+      .addConditionalEdges('learnerTurn', routeAfterLearner('close_previous_intervention'), [
+        'close_previous_intervention',
+        END,
+      ]);
   }
 
   // state_policy, state_policy_with_validator, bilateral_tom,

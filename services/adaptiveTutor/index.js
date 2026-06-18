@@ -106,6 +106,12 @@ export async function runAdaptiveEvaluation({
   const scenarios = applyScenarioFilter(loadScenarios(scenarioSource), scenarioFilter);
   const counterfactualEnabled = evalProfile.adaptive?.counterfactual?.enabled ?? true;
   const adaptiveCfg = evalProfile.adaptive ?? {};
+  const adaptivePolicy = {
+    ...(evalProfile.adaptive_policy || {}),
+    ...(adaptiveCfg.policy || {}),
+    ...(adaptiveCfg.adaptive_policy || {}),
+  };
+  const adaptationPolicyMode = process.env.ADAPTIVE_POLICY_MODE || adaptivePolicy.mode || 'legacy';
   // Architecture switches the graph topology. Defaults to 'state_policy' so
   // legacy cell_110 configs (which don't carry an architecture key) keep their
   // original semantics. Validated here so a typo in the cell config produces
@@ -116,7 +122,7 @@ export async function runAdaptiveEvaluation({
       `profile ${profileName}: unsupported adaptive.architecture "${architecture}" (expected one of: ${SUPPORTED_ARCHITECTURES.join(', ')})`,
     );
   }
-  const graphOptions = { architecture };
+  const graphOptions = { architecture, adaptivePolicy, adaptationPolicyMode };
   const agentConfigForRow = {
     provider: adaptiveCfg.provider || 'mock',
     model: adaptiveCfg.model || 'mock',
@@ -129,11 +135,19 @@ export async function runAdaptiveEvaluation({
     totalScenarios,
     profileName,
     llmMode: llmMode(),
-    metadata: { profileNames: [profileName], scenarioSource, scenarioFilter, maxCostUsd, architecture },
+    metadata: {
+      profileNames: [profileName],
+      scenarioSource,
+      scenarioFilter,
+      maxCostUsd,
+      architecture,
+      adaptationPolicyMode,
+      adaptivePolicy,
+    },
   });
   if (verbose)
     console.log(
-      `[adaptive] runId=${run.id} scenarios=${scenarios.length} runsPerConfig=${runsPerConfig} architecture=${architecture} llmMode=${llmMode()}`,
+      `[adaptive] runId=${run.id} scenarios=${scenarios.length} runsPerConfig=${runsPerConfig} architecture=${architecture} policy=${adaptationPolicyMode} llmMode=${llmMode()}`,
     );
 
   // Budget tracker is bound when --max-cost is set. Mock runs ignore it.

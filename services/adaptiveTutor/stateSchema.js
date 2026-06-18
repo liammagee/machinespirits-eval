@@ -164,7 +164,31 @@ const revisionLedgerEntrySchema = z.object({
   promptDiffHead: z.string().default(''),
 });
 
-export { evidenceTypeSchema, evidenceEntrySchema, hypothesisStatusSchema, hypothesisSchema, revisionLedgerEntrySchema };
+// Adaptation-contract vertical slice (A17 / Plan 2.0). These channels are
+// intentionally permissive JSON containers because the runtime validators in
+// adaptationContract.js/actionPolicy.js/proofReleaseOwnershipGate.js own the
+// strict semantic checks. Keeping the StateSchema shape additive and loose
+// preserves all historical adaptive traces while letting the closed-loop graph
+// persist prospective contracts, pending interventions, and outcome records.
+const jsonObjectSchema = z.record(z.string(), z.unknown());
+const adaptationPolicyModeSchema = z
+  .enum(['legacy', 'contract', 'contract_gate', 'closed_loop', 'closed_loop_counterfactual'])
+  .default('legacy');
+const nullableJsonObjectSchema = jsonObjectSchema.nullable().default(null);
+const adaptationTraceEntrySchema = z.object({
+  type: z.string(),
+  turn: z.number().int().optional(),
+  payload: z.unknown().optional(),
+});
+
+export {
+  evidenceTypeSchema,
+  evidenceEntrySchema,
+  hypothesisStatusSchema,
+  hypothesisSchema,
+  revisionLedgerEntrySchema,
+  adaptationPolicyModeSchema,
+};
 
 export const initialLearnerProfile = () => learnerProfileSchema.parse({});
 export const initialTutorInternal = () => tutorInternalSchema.parse({});
@@ -233,5 +257,24 @@ export const AdaptiveTutorState = new StateSchema({
   revisionLedger: new ReducedValue(
     z.array(revisionLedgerEntrySchema).default(() => []),
     { reducer: evidenceLogReducer },
+  ),
+
+  // Plan 2.0 closed-loop adaptation contract channels. These are not read by
+  // legacy architectures; the `state_policy_closed_loop` graph writes them.
+  // They deliberately live beside evidenceLog/hypotheses rather than inside
+  // learnerProfile: contracts represent prospective policy commitments and
+  // intervention outcomes, not merely current learner-state guesses.
+  scenarioId: z.string().default(''),
+  adaptivePolicyConfig: jsonObjectSchema.default(() => ({})),
+  adaptationPolicyMode: adaptationPolicyModeSchema,
+  learnerStateBelief: nullableJsonObjectSchema,
+  selectedPedagogicalAction: nullableJsonObjectSchema,
+  candidatePedagogicalActions: z.array(jsonObjectSchema).default(() => []),
+  adaptationContract: nullableJsonObjectSchema,
+  pendingIntervention: nullableJsonObjectSchema,
+  interventionLedger: z.array(jsonObjectSchema).default(() => []),
+  adaptationTrace: new ReducedValue(
+    z.array(adaptationTraceEntrySchema).default(() => []),
+    { reducer: (prev, next) => prev.concat(next || []) },
   ),
 });

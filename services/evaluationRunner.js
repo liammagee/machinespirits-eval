@@ -250,6 +250,11 @@ export const EVAL_ONLY_PROFILES = [
   'cell_131_a16_A_egosuperego',
   // A16 (P3) §6.3.10 — F (floor) arm: recognition_only, byte-identical to cell_111 (new cell, NOT cell_111; protects A13 C1 provenance; named deviation, Appendix E)
   'cell_132_a16_F_recognition_only',
+  // Plan 2.0 — explicit adaptation contract / gate / closed-loop policy ablations
+  'cell_133_plan2_contract',
+  'cell_134_plan2_contract_gate',
+  'cell_135_plan2_closed_loop',
+  'cell_136_plan2_closed_loop_crosssuite',
 ];
 
 /**

@@ -4938,6 +4938,155 @@ profiles:
       counterfactual:
         enabled: false
 
+  # ===========================================================================
+  # Plan 2.0 — Genuine Adaptation Contract / Gate / Closed Loop (cells 133-136)
+  # ===========================================================================
+  # These profiles implement PLAN_2_0's explicit adaptation-control loop in
+  # services/adaptiveTutor/graph.js (`state_policy_closed_loop`). The policy is
+  # programmatic and prospective: estimate learner state, select a typed
+  # pedagogical action, validate the proof/release/ownership contract, realize
+  # the action, verify it, and optionally close the intervention on the next
+  # learner turn. Existing A13/A14/A16 cells remain unchanged.
+  cell_133_plan2_contract:
+    description: "Plan 2.0 ablation: typed learner-state belief + pedagogical action contract, no runtime gate, no intervention-outcome closure. Tests whether prospective policy records alone are sufficient."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_contract
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: contract
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: false
+
+  cell_134_plan2_contract_gate:
+    description: "Plan 2.0 ablation: typed adaptation contract plus proof/release/ownership runtime gate and one repair pass, without intervention-outcome closure."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_contract_gate
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: contract_gate
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: false
+
+  cell_135_plan2_closed_loop:
+    description: "Plan 2.0 treatment: typed adaptation contract + proof/release/ownership gate + intervention ledger with outcome closure on the adaptive trap suite."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_closed_loop
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: false
+
+  cell_136_plan2_closed_loop_crosssuite:
+    description: "Plan 2.0 cross-suite treatment: same closed-loop adaptation contract architecture as cell_135 on config/cross-suite-trap-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_closed_loop_crosssuite
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/cross-suite-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: false
+
   # A13 condition C2: standard ego/superego architecture (two-pass deliberation)
   # without externalised learner profile or constraint check. Matches the
   # project's standard ego/superego posture; revises every turn. Same scenarios
