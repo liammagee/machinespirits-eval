@@ -72,6 +72,9 @@ results/
 # Commit the manifest in config/poetics-calibration/runs/, not the bulk bundle.
 artifacts/poetics-runs/
 
+# Local Plan 2.0 reference package; keep the tracked closeout note instead.
+PLAN_2_0/genuine-adaptation-reference.zip
+
 # Poetics sidecar run artifacts. Keep source specs, summaries, notes, scripts,
 # and tests in Git; keep generated transcripts, deliberations, samples, scores,
 # and per-run keys local only.
