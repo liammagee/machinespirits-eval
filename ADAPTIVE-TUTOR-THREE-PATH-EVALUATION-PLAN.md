@@ -12,7 +12,10 @@ Status as of the first implementation pass:
 - Path 1 report artifacts were generated at `exports/dramatic-derivation/learner-object-outcomes/summary.json` and `exports/dramatic-derivation/learner-object-outcomes/report.md`.
 - Path 2 was run for the pre-declared Hethel pair under `exports/dramatic-derivation/ownership-transcript-quality-eval/`, scored with `claude/opus/max`.
 - Path 2 result: the judge slightly preferred `world015-transferdetector-fresh-s2-ownership-r1` over `world015-transferdetector-fresh-s2-transfer-r1` on transcript quality. Both runs already matched on proof success and durable ownership, so this is transcript-quality evidence only.
-- Path 3 was not triggered. The fresh first-pass ownership-detector runs both reached transformed durable ownership; the only `near_transfer` miss in the current Path 1 table is a mock replay, not a completed first-pass source artifact satisfying the replay trigger.
+- Path 3 now has a read-only trigger audit in `scripts/audit-derivation-ownership-replay-candidates.js`.
+- The broader Path 3 audit found one actionable historical gate-off source, `world015-transfergate-s2-ownership-r1`, but also found an existing ownership-transfer-gate replay from that source: `world015-transfergate-detector-mock-from-t20`. That replay preserved prefix integrity, grounded the proof, and still ended with partial ownership missing `near_transfer`.
+- The same audit found one already-gated first-pass failure, `world015-transfergate-s2-transfer-r1`, which is negative evidence for the gate rather than an actionable test of adding it.
+- No duplicate replay was launched from this audit. The existing replay already covers the available actionable source and did not clear the local gate.
 - `--ownership-transfer-gate` remains experimental and off by default.
 
 ## Path 1: Dual Outcome Reporting

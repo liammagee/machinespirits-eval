@@ -49,7 +49,28 @@ The judge rated both transcripts competent and non-formalist. The preference was
 
 ## Path 3: Targeted Replay Gate
 
-No replay was launched. The plan requires a completed first-pass run with grounded proof or available final assertion, incomplete ownership, exactly one missing ownership family, and complete `result.json` plus `diagnosis.json`. The current fresh first-pass detector runs both reached transformed durable ownership. The one `near_transfer` miss is a mock replay, so it is not a qualifying trigger.
+Added a read-only trigger audit:
+
+```bash
+node scripts/audit-derivation-ownership-replay-candidates.js \
+  --root exports/dramatic-derivation \
+  --out exports/dramatic-derivation/ownership-replay-candidate-audit
+```
+
+The audit scanned 589 completed artifacts with diagnoses. It found:
+
+| Category | Count |
+| --- | ---: |
+| first-pass ownership-instrumented artifacts | 5 |
+| Path 3 trigger candidates | 2 |
+| actionable gate-off candidates | 1 |
+| already-gated failures | 1 |
+
+The one actionable source is `world015-transfergate-s2-ownership-r1`: first-pass, non-mock, complete `result.json` plus `diagnosis.json`, grounded proof, final assertion available, incomplete ownership, exactly one missing family (`near_transfer`), and `--ownership-transfer-gate` off.
+
+However, this source already has a recorded gate replay: `world015-transfergate-detector-mock-from-t20`. That replay preserved prefix integrity and grounded the proof, but still ended with partial ownership missing `near_transfer`. Therefore a duplicate replay was not launched.
+
+The already-gated failure is `world015-transfergate-s2-transfer-r1`, which also ended with `near_transfer` missing despite the gate. That is negative evidence for the gate, not an actionable test of adding it.
 
 ## Commands And Tests
 
