@@ -664,6 +664,10 @@ function normalizePolicyConfig(config = {}) {
     controlWeight: config.controlWeight ?? config.control_weight,
     actionFitWeight: config.actionFitWeight ?? config.action_fit_weight,
     repetitionPenalty: config.repetitionPenalty ?? config.repetition_penalty,
+    sameActionPenalty: config.sameActionPenalty ?? config.same_action_penalty,
+    sameActionWindow: config.sameActionWindow ?? config.same_action_window,
+    sameActionScope: config.sameActionScope ?? config.same_action_scope,
+    realizationContext: config.realizationContext ?? config.realization_context,
     utilityTieEpsilon: config.utilityTieEpsilon ?? config.utility_tie_epsilon,
   };
 }
@@ -824,7 +828,13 @@ function makeValidateAdaptationContract(defaultMode, defaultPolicyConfig) {
 }
 
 async function realizeTutorUtteranceNode(state) {
-  const realization = realizeTutorUtterance({ selectedAction: state.selectedPedagogicalAction });
+  const config = normalizePolicyConfig(policyConfigFromState(state, {}));
+  const realization = realizeTutorUtterance({
+    selectedAction: state.selectedPedagogicalAction,
+    stateBelief: state.learnerStateBelief,
+    interventionLedger: state.interventionLedger || [],
+    config,
+  });
   const adaptationAction = state.selectedPedagogicalAction?.action_type || '';
   const policyAction = legacyPolicyActionForAdaptiveAction(adaptationAction);
   return {

@@ -5087,6 +5087,515 @@ profiles:
       counterfactual:
         enabled: false
 
+  # Plan 2.0 quality follow-up: same closed-loop graph as cell_135, with
+  # pre-registered policy-weight sweeps. These cells are judged by normal v2.2
+  # tutor/learner/dialogue rubrics, while scripts/analyze-adaptation-quality.js
+  # keeps the strategy-shift gate attached so quality cannot be bought by
+  # abandoning adaptation.
+  cell_137_plan2_quality_ownership:
+    description: "Plan 2.0 quality sweep: closed-loop policy biased toward learner ownership/release and lower tutor control on the adaptive trap suite."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_ownership
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 6
+        uncertainty_weight: 0.25
+        ownership_weight: 0.70
+        control_weight: 0.55
+        action_fit_weight: 0.55
+        repetition_penalty: 0.35
+        utility_tie_epsilon: 0.12
+      hyperparameters:
+        temperature: 0.55
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_138_plan2_quality_fit:
+    description: "Plan 2.0 quality sweep: closed-loop policy biased toward high state-action fit and exact trap-family realization on the adaptive trap suite."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_fit
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.20
+        ownership_weight: 0.35
+        control_weight: 0.35
+        action_fit_weight: 0.85
+        repetition_penalty: 0.40
+        utility_tie_epsilon: 0.02
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_139_plan2_quality_discriminating:
+    description: "Plan 2.0 quality sweep: closed-loop policy biased toward information gain and discriminating questions on the adaptive trap suite."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_discriminating
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 4
+        max_action_candidates: 6
+        uncertainty_weight: 0.70
+        ownership_weight: 0.35
+        control_weight: 0.35
+        action_fit_weight: 0.45
+        repetition_penalty: 0.40
+        utility_tie_epsilon: 0.10
+      hyperparameters:
+        temperature: 0.55
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_140_plan2_quality_ownership_crosssuite:
+    description: "Plan 2.0 quality sweep cross-suite sibling of cell_137 on config/cross-suite-trap-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_ownership_crosssuite
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/cross-suite-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 6
+        uncertainty_weight: 0.25
+        ownership_weight: 0.70
+        control_weight: 0.55
+        action_fit_weight: 0.55
+        repetition_penalty: 0.35
+        utility_tie_epsilon: 0.12
+      hyperparameters:
+        temperature: 0.55
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_141_plan2_quality_fit_crosssuite:
+    description: "Plan 2.0 quality sweep cross-suite sibling of cell_138 on config/cross-suite-trap-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_fit_crosssuite
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/cross-suite-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.20
+        ownership_weight: 0.35
+        control_weight: 0.35
+        action_fit_weight: 0.85
+        repetition_penalty: 0.40
+        utility_tie_epsilon: 0.02
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_142_plan2_quality_discriminating_crosssuite:
+    description: "Plan 2.0 quality sweep cross-suite sibling of cell_139 on config/cross-suite-trap-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_discriminating_crosssuite
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/cross-suite-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 4
+        max_action_candidates: 6
+        uncertainty_weight: 0.70
+        ownership_weight: 0.35
+        control_weight: 0.35
+        action_fit_weight: 0.45
+        repetition_penalty: 0.40
+        utility_tie_epsilon: 0.10
+      hyperparameters:
+        temperature: 0.55
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_143_plan2_quality_progressive:
+    description: "Plan 2.0 quality iteration: discriminating closed-loop policy plus a same-action recency penalty so the tutor progresses after learner evidence instead of repeating the same move."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_progressive
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 4
+        max_action_candidates: 6
+        uncertainty_weight: 0.70
+        ownership_weight: 0.35
+        control_weight: 0.35
+        action_fit_weight: 0.45
+        repetition_penalty: 0.40
+        same_action_penalty: 0.95
+        same_action_window: 3
+        utility_tie_epsilon: 0.04
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_144_plan2_quality_progressive_crosssuite:
+    description: "Plan 2.0 quality iteration cross-suite sibling of cell_143 on config/cross-suite-trap-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_progressive_crosssuite
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/cross-suite-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 4
+        max_action_candidates: 6
+        uncertainty_weight: 0.70
+        ownership_weight: 0.35
+        control_weight: 0.35
+        action_fit_weight: 0.45
+        repetition_penalty: 0.40
+        same_action_penalty: 0.95
+        same_action_window: 3
+        utility_tie_epsilon: 0.04
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_145_plan2_quality_varied:
+    description: "Plan 2.0 quality iteration: progressive closed-loop policy with strict any-recent same-action avoidance and answer-seeking withhold action preserved through the gate."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_varied
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 4
+        max_action_candidates: 6
+        uncertainty_weight: 0.70
+        ownership_weight: 0.35
+        control_weight: 0.35
+        action_fit_weight: 0.45
+        repetition_penalty: 0.40
+        same_action_penalty: 1.20
+        same_action_window: 3
+        same_action_scope: any_recent
+        utility_tie_epsilon: 0.03
+      hyperparameters:
+        temperature: 0.45
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_146_plan2_quality_varied_crosssuite:
+    description: "Plan 2.0 quality iteration cross-suite sibling of cell_145 on config/cross-suite-trap-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_varied_crosssuite
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/cross-suite-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 4
+        max_action_candidates: 6
+        uncertainty_weight: 0.70
+        ownership_weight: 0.35
+        control_weight: 0.35
+        action_fit_weight: 0.45
+        repetition_penalty: 0.40
+        same_action_penalty: 1.20
+        same_action_window: 3
+        same_action_scope: any_recent
+        utility_tie_epsilon: 0.03
+      hyperparameters:
+        temperature: 0.45
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_147_plan2_quality_contextual:
+    description: "Plan 2.0 quality iteration: baseline closed-loop selector with context-aware action realization for repeated or hypothesis-specific moves."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_contextual
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+        realization_context: true
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_148_plan2_quality_contextual_crosssuite:
+    description: "Plan 2.0 quality iteration cross-suite sibling of cell_147 on config/cross-suite-trap-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_contextual_crosssuite
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/cross-suite-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+        realization_context: true
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_149_plan2_quality_repeat_contextual:
+    description: "Plan 2.0 quality iteration: baseline closed-loop selector with context-aware realization only when the same action repeats."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_repeat_contextual
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+        realization_context: true
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_150_plan2_quality_repeat_contextual_crosssuite:
+    description: "Plan 2.0 quality iteration cross-suite sibling of cell_149 on config/cross-suite-trap-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_repeat_contextual_crosssuite
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/cross-suite-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+        realization_context: true
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
   # A13 condition C2: standard ego/superego architecture (two-pass deliberation)
   # without externalised learner profile or constraint check. Matches the
   # project's standard ego/superego posture; revises every turn. Same scenarios

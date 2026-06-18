@@ -140,6 +140,109 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const LOGS_DIR = path.resolve(__dirname, '..', 'logs', 'tutor-dialogues');
 const RUBRICS_DIR = path.resolve(__dirname, '..', 'config', 'rubrics');
 
+function isAdaptiveTraceLog(log) {
+  return Boolean(log?.schemaVersion >= 5 && log?.original && Array.isArray(log.original.dialogue));
+}
+
+function adaptiveTraceScenarioContext(trace, result) {
+  const initialLearner = trace?.scenario?.openingTurns?.find((turn) => turn?.role === 'learner')?.content || '';
+  const hidden = trace?.scenario?.hidden || {};
+  const expected = trace?.scenario?.expectedStrategyShift;
+  const expectedLabel = Array.isArray(expected) ? expected.join(', ') : expected || 'adaptive response';
+  const hiddenSummary = [hidden.actual_misconception, hidden.actual_sophistication && `sophistication: ${hidden.actual_sophistication}`]
+    .filter(Boolean)
+    .join('; ');
+  return {
+    id: result.scenarioId,
+    type: 'adaptive_trap',
+    name: result.scenarioName || trace?.scenario?.id || result.scenarioId,
+    description: hiddenSummary || `Adaptive trap scenario ${result.scenarioId}`,
+    topic: result.scenarioType || result.scenarioId,
+    learner_context: initialLearner,
+    expected_behavior: `The tutor should adapt to the learner signal and realize the expected strategy shift: ${expectedLabel}.`,
+    required_elements: [],
+    forbidden_elements: [],
+  };
+}
+
+function adaptiveTraceToDialogueLog(trace) {
+  const dialogue = trace?.original?.dialogue || [];
+  const initialLearner = trace?.scenario?.openingTurns?.find((turn) => turn?.role === 'learner')?.content || '';
+  const turnResults = [];
+  const conversationHistory = [];
+  const dialogueTrace = [];
+  let tutorIndex = 0;
+  let lastLearner = initialLearner;
+  let learnerAfterTutorIndex = 0;
+
+  for (const message of dialogue) {
+    if (message?.role === 'learner') {
+      lastLearner = message.content || '';
+      if (tutorIndex > 0) {
+        learnerAfterTutorIndex += 1;
+        conversationHistory.push({ learnerMessage: lastLearner });
+        dialogueTrace.push({
+          agent: 'learner',
+          action: 'turn_action',
+          turnIndex: learnerAfterTutorIndex,
+          contextSummary: lastLearner,
+          detail: 'adaptive external learner turn',
+        });
+      }
+      continue;
+    }
+    if (message?.role !== 'tutor') continue;
+    turnResults.push({
+      turnIndex: tutorIndex,
+      turnId: `adaptive-turn-${tutorIndex}`,
+      suggestions: [{ message: message.content || '' }],
+      learnerAction: null,
+      learnerMessage: tutorIndex === 0 ? null : lastLearner,
+      contentTurnId: `adaptive-turn-${tutorIndex}`,
+    });
+    tutorIndex += 1;
+  }
+
+  const publicTranscript = dialogue
+    .map((message) => {
+      if (message.role === 'learner') return `[Learner] ${message.content || ''}`;
+      if (message.role === 'tutor') return `[Tutor Ego] ${message.content || ''}`;
+      return null;
+    })
+    .filter(Boolean)
+    .join('\n');
+
+  return {
+    isMultiTurn: turnResults.length > 1,
+    turnResults,
+    dialogueTrace,
+    conversationHistory,
+    learnerContext: initialLearner,
+    learnerArchitecture: 'adaptive_externalised',
+    transcripts: {
+      public: publicTranscript,
+      full: publicTranscript,
+    },
+    adaptiveTrace: trace,
+  };
+}
+
+function resolveEvaluationScenarioAndDialogueLog(result) {
+  const standardScenario = getScenario(result.scenarioId);
+  let dialogueLog = null;
+  if (result.dialogueId) {
+    dialogueLog = evaluationStore.loadDialogueLog(result.dialogueId);
+  }
+  if (standardScenario) return { scenario: standardScenario, dialogueLog };
+  if (isAdaptiveTraceLog(dialogueLog)) {
+    return {
+      scenario: adaptiveTraceScenarioContext(dialogueLog, result),
+      dialogueLog: adaptiveTraceToDialogueLog(dialogueLog),
+    };
+  }
+  return { scenario: null, dialogueLog };
+}
+
 /**
  * Resolve versioned rubric file paths for --rubric-version.
  * @param {string} version - Rubric version (e.g. "2.2")
@@ -3218,7 +3321,8 @@ async function main() {
           const profileName = result.profileName || `${result.provider}/${result.model}`;
           const judgeModel = judgeModelLabel;
 
-          const scenario = getScenario(scenarioId);
+          const resolved = resolveEvaluationScenarioAndDialogueLog(result);
+          const scenario = resolved.scenario;
           if (!scenario) {
             console.log(`${tag} ${scenarioId} / ${profileName} ... SKIP (scenario not found)`);
             return null;
@@ -3226,7 +3330,7 @@ async function main() {
 
           // Load dialogue log
           const dialogueId = result.dialogueId;
-          const dialogueLog = evaluationStore.loadDialogueLog(dialogueId);
+          const dialogueLog = resolved.dialogueLog || evaluationStore.loadDialogueLog(dialogueId);
           if (!dialogueLog) {
             console.log(`${tag} ${scenarioId} / ${profileName} ... SKIP (dialogue log not found)`);
             return null;
@@ -4193,20 +4297,15 @@ async function main() {
           const _profileName = result.profileName || `${result.provider}/${result.model}`;
           const judgeModel = judgeModelLabel;
 
-          const scenario = getScenario(scenarioId);
+          const resolved = resolveEvaluationScenarioAndDialogueLog(result);
+          const scenario = resolved.scenario;
           if (!scenario) return;
 
           const dialogueId = result.dialogueId;
           if (!dialogueId) return;
 
-          const logPath = path.join(LOGS_DIR, `${dialogueId}.json`);
-          let dialogueLog;
-          try {
-            if (!fs.existsSync(logPath)) return;
-            dialogueLog = JSON.parse(fs.readFileSync(logPath, 'utf-8'));
-          } catch (e) {
-            return;
-          }
+          const dialogueLog = resolved.dialogueLog;
+          if (!dialogueLog) return;
 
           const dialogueTrace = dialogueLog?.dialogueTrace || [];
           const conversationHistory = (dialogueLog?.turnResults || []).map((t, idx) => ({

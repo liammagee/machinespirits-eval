@@ -63,6 +63,24 @@ test('gate allows task reanchor as a meaningful bounded opportunity', () => {
   assert.equal(result.allowed, true);
 });
 
+test('gate preserves answer withholding as a bounded learner-owned opportunity', () => {
+  const result = validateProofReleaseOwnershipGate({
+    stateBelief: stateBelief({
+      hypotheses: [{ id: 'answer_seeking', probability: 1, evidence: ['just tell me the answer'], disconfirming_evidence: [] }],
+      axes: {
+        proof: 0.25,
+        release: 0.25,
+        ownership: 0.2,
+        conceptual_mastery: 0.3,
+        metacognitive_accuracy: 0.35,
+        affective_readiness: 0.7,
+      },
+    }),
+    selectedAction: materialize('withhold_answer'),
+  });
+  assert.equal(result.allowed, true);
+});
+
 test('gate allows repeated affective acknowledgement when shutdown evidence renews', () => {
   const result = validateProofReleaseOwnershipGate({
     stateBelief: stateBelief({

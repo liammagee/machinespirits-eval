@@ -143,7 +143,8 @@ export function validateProofReleaseOwnershipGate({
     const hasOpportunity = /choice|strategy|prediction|evidence|next step|next move|task-aligned|task goal|justify|own words/iu.test(
       `${action.description || ''} ${action.rationale || ''} ${tutorText || ''}`,
     );
-    if (!hasOpportunity) {
+    const actionCarriesReleaseOpportunity = action.action_type === 'withhold_answer';
+    if (!hasOpportunity && !actionCarriesReleaseOpportunity) {
       violations.push(
         violation(
           VIOLATION_CODES.RELEASE_WITHOUT_MEANINGFUL_OPPORTUNITY,

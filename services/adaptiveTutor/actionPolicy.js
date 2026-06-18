@@ -17,6 +17,9 @@ export const DEFAULT_ADAPTIVE_POLICY_CONFIG = Object.freeze({
   controlWeight: 0.4,
   actionFitWeight: 0.5,
   repetitionPenalty: 0.5,
+  sameActionPenalty: 0,
+  sameActionWindow: 3,
+  sameActionScope: 'same_condition',
   utilityTieEpsilon: 0.05,
 });
 
@@ -735,10 +738,37 @@ function materialFailureCount(interventionLedger, actionType, hypothesisId) {
   return recentFailedActions(interventionLedger, hypothesisId).filter((record) => record.action_type === actionType).length;
 }
 
+function recentClosedActions(interventionLedger = [], limit = 3) {
+  const boundedLimit = Math.max(1, Number(limit) || 3);
+  return interventionLedger.filter((record) => record?.status === 'closed').slice(-boundedLimit);
+}
+
+function materiallySameLearnerCondition(record, stateBelief) {
+  const dominant = dominantHypothesis(stateBelief);
+  if (!dominant || dominant === 'unknown') return false;
+  const priorHypotheses = new Set(record?.hypothesis_ids || []);
+  if (!priorHypotheses.has(dominant)) return false;
+  const dominantProbability = Number(stateBelief?.hypotheses?.[0]?.probability || 0);
+  return dominantProbability >= 0.45;
+}
+
+export function actionRecencyPenalty(actionType, stateBelief, interventionLedger = [], config = {}) {
+  const penalty = Number(config.sameActionPenalty ?? DEFAULT_ADAPTIVE_POLICY_CONFIG.sameActionPenalty) || 0;
+  if (penalty <= 0) return 0;
+  const window = Number(config.sameActionWindow ?? DEFAULT_ADAPTIVE_POLICY_CONFIG.sameActionWindow) || 3;
+  const scope = config.sameActionScope ?? DEFAULT_ADAPTIVE_POLICY_CONFIG.sameActionScope;
+  const repeats = recentClosedActions(interventionLedger, window).filter(
+    (record) =>
+      record.action_type === actionType && (scope === 'any_recent' || materiallySameLearnerCondition(record, stateBelief)),
+  );
+  return repeats.length * penalty;
+}
+
 export function actionRepetitionPenalty(actionType, stateBelief, interventionLedger = [], config = {}) {
   const dominant = dominantHypothesis(stateBelief);
   const count = materialFailureCount(interventionLedger, actionType, dominant);
-  return count * (config.repetitionPenalty ?? DEFAULT_ADAPTIVE_POLICY_CONFIG.repetitionPenalty);
+  const failurePenalty = count * (config.repetitionPenalty ?? DEFAULT_ADAPTIVE_POLICY_CONFIG.repetitionPenalty);
+  return failurePenalty + actionRecencyPenalty(actionType, stateBelief, interventionLedger, config);
 }
 
 function buildCandidateTypes(stateBelief, interventionLedger = []) {
@@ -765,6 +795,7 @@ export function scoreCandidateAction(actionType, stateBelief, interventionLedger
   const fit = actionFitScore(def, stateBelief?.hypotheses || []);
   const uncertainty = stateBelief?.uncertainty?.needs_discrimination ? 1 : 0.25;
   const repetition = actionRepetitionPenalty(actionType, stateBelief, interventionLedger, merged);
+  const recency = actionRecencyPenalty(actionType, stateBelief, interventionLedger, merged);
   const preferredAction = dominantPreferredActionBonus(actionType, stateBelief);
   const mismatchRisk = Math.max(0, 0.45 - fit);
   const utility =
@@ -785,6 +816,7 @@ export function scoreCandidateAction(actionType, stateBelief, interventionLedger
     information_gain: def.default_information_gain,
     control_cost: def.default_control_cost,
     repetition_penalty: Number(repetition.toFixed(6)),
+    same_action_penalty: Number(recency.toFixed(6)),
     mismatch_risk: Number(mismatchRisk.toFixed(6)),
   };
 }

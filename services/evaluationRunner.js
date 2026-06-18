@@ -255,6 +255,20 @@ export const EVAL_ONLY_PROFILES = [
   'cell_134_plan2_contract_gate',
   'cell_135_plan2_closed_loop',
   'cell_136_plan2_closed_loop_crosssuite',
+  'cell_137_plan2_quality_ownership',
+  'cell_138_plan2_quality_fit',
+  'cell_139_plan2_quality_discriminating',
+  'cell_140_plan2_quality_ownership_crosssuite',
+  'cell_141_plan2_quality_fit_crosssuite',
+  'cell_142_plan2_quality_discriminating_crosssuite',
+  'cell_143_plan2_quality_progressive',
+  'cell_144_plan2_quality_progressive_crosssuite',
+  'cell_145_plan2_quality_varied',
+  'cell_146_plan2_quality_varied_crosssuite',
+  'cell_147_plan2_quality_contextual',
+  'cell_148_plan2_quality_contextual_crosssuite',
+  'cell_149_plan2_quality_repeat_contextual',
+  'cell_150_plan2_quality_repeat_contextual_crosssuite',
 ];
 
 /**

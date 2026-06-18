@@ -41,12 +41,110 @@ const TEMPLATES = Object.freeze({
     'I am not going to give the answer yet. Make one small attempt first: what move would you try, and why?',
 });
 
+const CONTEXTUAL_TEMPLATES = Object.freeze({
+  diagnose_with_discriminating_question: {
+    false_mastery:
+      "I need to test the 'makes sense' claim, not repeat the whole setup: what part can you defend with evidence, and what part are you only accepting because I framed it?",
+    low_confidence:
+      'Let’s separate confidence from content: what claim would you defend if correctness were not at stake, and where exactly would you want a check?',
+    missing_prerequisite:
+      'We have already separated the broad possibilities once. Name the smallest missing piece now: a concept, a relation, or a step you cannot justify yet?',
+    task_misread:
+      'Let’s make the task-reading issue explicit: what do you think the prompt is asking you to produce, and what phrase in it supports that?',
+    notation_overload:
+      'Let’s isolate notation rather than restart: which symbol or written move blocks you, and what role do you think it is playing?',
+    default:
+      'Let’s refine the diagnosis instead of restarting it: what changed after your last answer, and which uncertainty is still actually live?',
+  },
+  elicit_prediction: {
+    answer_seeking:
+      'Before any answer is supplied, make the smallest prediction you can: if your current route is right, what should the next step preserve?',
+    tutor_misread:
+      'Before I continue, predict what should stay fixed if I have now understood your question correctly.',
+    default:
+      'Do not make a fresh generic prediction; revise the last one: what would it preserve, and what would count against it?',
+  },
+  ask_strategy_choice: {
+    answer_seeking:
+      'I already asked for a choice and the answer-request came back. I will not supply the answer; choose one bounded test of your route and say why it is enough.',
+    low_confidence:
+      'Choose a move that tests confidence rather than replaces your plan: evidence check, task wording, or representation switch? Say why.',
+    default:
+      'Refine the choice rather than reopening all options: which one move follows from what you just learned, and why?',
+  },
+  contrast_models: {
+    boundary_case:
+      'Now make the boundary explicit: what does your model predict in this edge case, and what would the competing model predict differently?',
+    metaphor_overextension:
+      'Test the metaphor instead of repeating it: what would the mirror model predict, and what would break if recognition is selective uptake rather than full reflection?',
+    default:
+      'Use the contrast to move forward: what prediction separates your model from the competing one now?',
+  },
+  name_the_disagreement: {
+    metaphor_overextension:
+      'We have named the relation; now locate the exact disputed claim: does recognition require complete reflection, or only accountable uptake? What evidence would decide that?',
+    substantive_objection:
+      'State the disagreement as a testable relation, not a slogan: what claim is in dispute, and what evidence would force you to revise it?',
+    default:
+      'Do not rename the whole disagreement; sharpen it: which relation remains disputed after your last answer, and what would count as evidence?',
+  },
+  acknowledge_and_redirect: {
+    affective_shutdown:
+      'The shutdown is still the main signal. We will not restart the diagnosis: point to one word, symbol, or idea you can still hold onto.',
+    default:
+      'Let’s keep the load low and use what you just named: what is the next smallest part you can still work with?',
+  },
+  withhold_answer: {
+    answer_seeking:
+      'I am still not giving the answer. Make one bounded attempt first: choose a testable next move, and I will help you inspect it.',
+    default:
+      'I will keep the answer withheld for one more move: what small attempt can you make before we check it?',
+  },
+  repair_misrecognition: {
+    tutor_misread:
+      'I misread the target. Let’s repair that directly: restate the exact question you are asking, and name the relation I wrongly substituted for it.',
+    default:
+      'Let’s repair my reading before continuing: what question should I answer instead of the one I drifted toward?',
+  },
+  mirror_and_extend: {
+    sophistication_upgrade:
+      'That is the more advanced frame. Extend it one step: if your textual/interpretive distinction is right, what follows for the argument?',
+    default:
+      'Keep the advanced frame and push it one step further: what follows if we take your distinction seriously?',
+  },
+});
+
 function textForAction(actionType) {
   return TEMPLATES[actionType] || 'What is the next task-relevant move you can justify in your own words?';
 }
 
-export function realizeTutorUtterance({ selectedAction } = {}) {
-  const text = textForAction(selectedAction?.action_type);
+function dominantHypothesis(stateBelief) {
+  return stateBelief?.hypotheses?.[0]?.id || 'unknown';
+}
+
+function hasRecentSameAction(actionType, interventionLedger = []) {
+  return interventionLedger
+    .filter((record) => record?.status === 'closed')
+    .slice(-3)
+    .some((record) => record.action_type === actionType);
+}
+
+function contextualRealizationEnabled(config = {}) {
+  return config.realizationContext === true || config.realization_context === true;
+}
+
+function contextualTextForAction(actionType, stateBelief, interventionLedger = [], config = {}) {
+  if (!contextualRealizationEnabled(config)) return textForAction(actionType);
+  const variants = CONTEXTUAL_TEMPLATES[actionType];
+  if (!variants) return textForAction(actionType);
+  const dominant = dominantHypothesis(stateBelief);
+  const repeated = hasRecentSameAction(actionType, interventionLedger);
+  if (!repeated) return textForAction(actionType);
+  return variants[dominant] || variants.default || textForAction(actionType);
+}
+
+export function realizeTutorUtterance({ selectedAction, stateBelief, interventionLedger = [], config = {} } = {}) {
+  const text = contextualTextForAction(selectedAction?.action_type, stateBelief, interventionLedger, config);
   return {
     version: REALIZATION_VERIFIER_VERSION,
     action_type: selectedAction?.action_type || null,
@@ -66,11 +164,11 @@ function actionConsistent(actionType, text = '') {
   const lower = text.toLowerCase();
   switch (actionType) {
     case 'diagnose_with_discriminating_question':
-      return /\?/u.test(text) && /possibil|missing|notation|task|confidence/u.test(lower);
+      return /\?/u.test(text) && /possibil|missing|notation|task|confidence|diagnos|defend|evidence|uncertainty|symbol/u.test(lower);
     case 'request_evidence':
       return /evidence|justif|why|because|own words/u.test(lower) && /\?/u.test(text);
     case 'ask_strategy_choice':
-      return /choose|strategy|rather|next move/u.test(lower) && /\?/u.test(text);
+      return /choose|strategy|rather|next move|bounded test|one move/u.test(lower) && /\?/u.test(text);
     case 'elicit_prediction':
       return /predict|expect/u.test(lower) && /\?/u.test(text);
     case 'reanchor_goal':
@@ -86,13 +184,13 @@ function actionConsistent(actionType, text = '') {
     case 'name_the_disagreement':
       return /disagreement|dispute|relation|evidence/u.test(lower) && /\?/u.test(text);
     case 'acknowledge_and_redirect':
-      return /hear|shutdown|lower the load|small part|work from there/u.test(lower);
+      return /hear|shutdown|lower the load|small part|work from there|still the main signal|hold onto/u.test(lower);
     case 'repair_misrecognition':
       return /misread|asking about|not the one|corrected question/u.test(lower);
     case 'mirror_and_extend':
       return /advanced|mirror|extend|follows/u.test(lower) && /\?/u.test(text);
     case 'withhold_answer':
-      return /not going to give the answer|attempt first|what move/u.test(lower) && /\?/u.test(text);
+      return /not going to give the answer|answer withheld|not giving the answer|attempt first|bounded attempt|what move/u.test(lower) && /\?/u.test(text);
     default:
       return text.trim().length > 0;
   }

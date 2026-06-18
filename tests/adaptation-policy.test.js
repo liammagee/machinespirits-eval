@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+  actionRecencyPenalty,
   estimateLearnerStateBelief,
   legacyPolicyActionForAdaptiveAction,
   selectPedagogicalAction,
@@ -276,4 +277,112 @@ test('cross-suite working-memory overload lowers cognitive load', () => {
   assert.equal(belief.hypotheses[0].id, 'working_memory_overload');
   assert.equal(selection.selectedAction.action_type, 'lower_cognitive_load');
   assert.equal(legacyPolicyActionForAdaptiveAction(selection.selectedAction.action_type), 'lower_cognitive_load');
+});
+
+test('progressive config avoids repeating the same action under the same learner condition', () => {
+  const belief = estimateLearnerStateBelief({
+    dialogue: [
+      {
+        role: 'learner',
+        content:
+          'Yes that makes sense, thank you. I think it preserves the same structure, but I am not sure what evidence would actually test that.',
+      },
+    ],
+    turnIndex: 2,
+  });
+  const ledger = [
+    {
+      status: 'closed',
+      outcome: 'success',
+      action_type: 'diagnose_with_discriminating_question',
+      hypothesis_ids: ['false_mastery', 'approval_dependency'],
+    },
+  ];
+
+  const penalty = actionRecencyPenalty('diagnose_with_discriminating_question', belief, ledger, {
+    sameActionPenalty: 0.95,
+    sameActionWindow: 3,
+  });
+  const selection = selectPedagogicalAction({
+    stateBelief: belief,
+    interventionLedger: ledger,
+    mode: 'closed_loop',
+    config: { sameActionPenalty: 0.95, sameActionWindow: 3, utilityTieEpsilon: 0.04 },
+  });
+
+  assert.equal(belief.hypotheses[0].id, 'false_mastery');
+  assert.equal(penalty, 0.95);
+  assert.notEqual(selection.selectedAction.action_type, 'diagnose_with_discriminating_question');
+});
+
+test('same-action recency penalty clears after a material hypothesis change', () => {
+  const belief = estimateLearnerStateBelief({
+    dialogue: [
+      {
+        role: 'learner',
+        content:
+          "No, that's not what I was asking - my question was about whether mutual recognition can hold without prior trust.",
+      },
+    ],
+    turnIndex: 3,
+  });
+  const ledger = [
+    {
+      status: 'closed',
+      outcome: 'success',
+      action_type: 'diagnose_with_discriminating_question',
+      hypothesis_ids: ['false_mastery', 'approval_dependency'],
+    },
+  ];
+
+  const penalty = actionRecencyPenalty('diagnose_with_discriminating_question', belief, ledger, {
+    sameActionPenalty: 0.95,
+    sameActionWindow: 3,
+  });
+  const selection = selectPedagogicalAction({
+    stateBelief: belief,
+    interventionLedger: ledger,
+    mode: 'closed_loop',
+    config: { sameActionPenalty: 0.95, sameActionWindow: 3, utilityTieEpsilon: 0.04 },
+  });
+
+  assert.equal(belief.hypotheses[0].id, 'tutor_misread');
+  assert.equal(penalty, 0);
+  assert.equal(selection.selectedAction.action_type, 'repair_misrecognition');
+});
+
+test('strict varied config penalizes any recent same action after a hypothesis relabel', () => {
+  const belief = estimateLearnerStateBelief({
+    dialogue: [
+      {
+        role: 'learner',
+        content: 'Yes that makes sense, thank you. I think I am okay, but I am not sure if I am doing it right.',
+      },
+    ],
+    turnIndex: 2,
+  });
+  const ledger = [
+    {
+      status: 'closed',
+      outcome: 'success',
+      action_type: 'diagnose_with_discriminating_question',
+      hypothesis_ids: ['missing_prerequisite', 'low_confidence'],
+    },
+  ];
+
+  const penalty = actionRecencyPenalty('diagnose_with_discriminating_question', belief, ledger, {
+    sameActionPenalty: 1.2,
+    sameActionWindow: 3,
+    sameActionScope: 'any_recent',
+  });
+  const selection = selectPedagogicalAction({
+    stateBelief: belief,
+    interventionLedger: ledger,
+    mode: 'closed_loop',
+    config: { sameActionPenalty: 1.2, sameActionWindow: 3, sameActionScope: 'any_recent', utilityTieEpsilon: 0.03 },
+  });
+
+  assert.equal(belief.hypotheses[0].id, 'false_mastery');
+  assert.equal(penalty, 1.2);
+  assert.notEqual(selection.selectedAction.action_type, 'diagnose_with_discriminating_question');
 });
