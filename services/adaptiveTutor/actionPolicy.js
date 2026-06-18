@@ -102,7 +102,7 @@ const ACTIONS = [
       forbidden_evidence: ['mere agreement'],
     },
     forbidden_moves: ['supply_decisive_step'],
-    compatible_hypotheses: ['correct_alternative_model', 'task_misread'],
+    compatible_hypotheses: ['boundary_case', 'correct_alternative_model', 'task_misread'],
   },
   {
     action_type: 'fade_hint',
@@ -162,7 +162,7 @@ const ACTIONS = [
       forbidden_evidence: ['tutor-completed step'],
     },
     forbidden_moves: ['supply_decisive_step', 'replace_learner_plan'],
-    compatible_hypotheses: ['correct_alternative_model', 'procedure_without_rationale'],
+    compatible_hypotheses: ['boundary_case', 'correct_alternative_model', 'procedure_without_rationale'],
   },
   {
     action_type: 'reanchor_goal',
@@ -238,10 +238,32 @@ const HYPOTHESIS_ACTION_MAP = Object.freeze({
   task_misread: ['reanchor_goal', 'diagnose_with_discriminating_question', 'contrast_models'],
   notation_overload: ['minimal_hint', 'reanchor_goal', 'explain_principle'],
   answer_seeking: ['ask_strategy_choice', 'elicit_prediction', 'withhold_answer'],
+  boundary_case: ['contrast_models', 'challenge_without_telling', 'request_evidence'],
   correct_alternative_model: ['request_evidence', 'contrast_models', 'challenge_without_telling'],
   procedure_without_rationale: ['request_evidence', 'challenge_without_telling', 'elicit_prediction'],
   goal_drift: ['reanchor_goal', 'ask_strategy_choice'],
 });
+
+const LEGACY_POLICY_ACTION_BY_ADAPTATION_ACTION = Object.freeze({
+  diagnose_with_discriminating_question: 'ask_diagnostic_question',
+  elicit_prediction: 'request_elaboration',
+  request_evidence: 'request_elaboration',
+  ask_strategy_choice: 'withhold_answer',
+  contrast_models: 'scope_test',
+  fade_hint: 'provide_hint',
+  minimal_hint: 'provide_hint',
+  repair_overconfidence: 'pose_counterexample',
+  challenge_without_telling: 'pose_counterexample',
+  reanchor_goal: 'summarize_and_check',
+  summarize_and_release: 'summarize_and_check',
+  explain_principle: 'lower_cognitive_load',
+  model_worked_example: 'give_worked_example',
+});
+
+export function legacyPolicyActionForAdaptiveAction(actionType) {
+  if (!actionType) return '';
+  return LEGACY_POLICY_ACTION_BY_ADAPTATION_ACTION[actionType] || actionType;
+}
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
@@ -313,6 +335,7 @@ function weightFromText(text, interventionLedger = []) {
     task_misread: 0.14,
     notation_overload: 0.14,
     answer_seeking: 0.13,
+    boundary_case: 0.05,
     correct_alternative_model: 0.13,
   };
 
@@ -350,6 +373,22 @@ function weightFromText(text, interventionLedger = []) {
   }
   if (includesAny(lower, [/another way/u, /my model/u, /alternative/u, /counterexample/u, /different method/u, /different representation/u])) {
     weights.correct_alternative_model += 0.36;
+  }
+  if (
+    includesAny(lower, [
+      /boundary/u,
+      /limit[- ]?case/u,
+      /edge case/u,
+      /counterexample/u,
+      /breaks? down/u,
+      /master.?slave/u,
+      /asymmetric recognition/u,
+      /one-sided/u,
+      /case where/u,
+    ])
+  ) {
+    weights.boundary_case += 0.68;
+    weights.correct_alternative_model += 0.12;
   }
   if (includesAny(lower, [/because/u, /so that/u, /preserve/u, /invariant/u, /therefore/u])) {
     weights.correct_alternative_model += 0.05;
