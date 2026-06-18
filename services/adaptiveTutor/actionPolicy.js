@@ -135,6 +135,21 @@ const ACTIONS = [
     compatible_hypotheses: ['missing_prerequisite', 'notation_overload', 'procedure_without_rationale'],
   },
   {
+    action_type: 'lower_cognitive_load',
+    description: 'Reduce the number of active concepts and rebuild from one concrete piece.',
+    target_axes: ['affective_readiness', 'conceptual_mastery'],
+    default_control_cost: 0.25,
+    default_information_gain: 0.4,
+    expected_transition: { affective_readiness: 0.2, conceptual_mastery: 0.15, metacognitive_accuracy: 0.1 },
+    success_signal: {
+      description: 'Learner can work with one simplified concept or step without tracking the whole apparatus.',
+      required_evidence: ['learner-authored next step', 'state-disambiguating response'],
+      forbidden_evidence: ['tutor-completed step'],
+    },
+    forbidden_moves: ['supply_decisive_step', 'replace_learner_plan'],
+    compatible_hypotheses: ['working_memory_overload', 'notation_overload', 'missing_prerequisite'],
+  },
+  {
     action_type: 'repair_overconfidence',
     description: 'Ask the learner to check a confident claim against evidence.',
     target_axes: ['proof', 'metacognitive_accuracy'],
@@ -224,6 +239,81 @@ const ACTIONS = [
     forbidden_moves: ['replace_learner_plan'],
     compatible_hypotheses: ['missing_prerequisite'],
   },
+  {
+    action_type: 'name_the_disagreement',
+    description: 'Name the substantive disagreement or invalid inference without resolving it for the learner.',
+    target_axes: ['proof', 'conceptual_mastery'],
+    default_control_cost: 0.3,
+    default_information_gain: 0.65,
+    expected_transition: { proof: 0.2, release: 0.05, ownership: 0.1, conceptual_mastery: 0.2 },
+    success_signal: {
+      description: 'Learner can state the disputed relation or limit of the claim in their own words.',
+      required_evidence: ['learner-authored rationale', 'model comparison'],
+      forbidden_evidence: ['mere agreement', 'tutor-completed step'],
+    },
+    forbidden_moves: ['supply_decisive_step', 'premature_correctness_validation'],
+    compatible_hypotheses: ['substantive_objection', 'metaphor_overextension', 'boundary_case'],
+  },
+  {
+    action_type: 'acknowledge_and_redirect',
+    description: 'Acknowledge an affective overload signal and redirect into a smaller learner-owned move.',
+    target_axes: ['affective_readiness', 'metacognitive_accuracy'],
+    default_control_cost: 0.25,
+    default_information_gain: 0.45,
+    expected_transition: { affective_readiness: 0.3, metacognitive_accuracy: 0.1, ownership: 0.05 },
+    success_signal: {
+      description: 'Learner re-engages after the affective signal with a smaller, bounded move.',
+      required_evidence: ['learner-authored next step', 'state-disambiguating response'],
+      forbidden_evidence: ['empty release', 'mere agreement'],
+    },
+    forbidden_moves: ['replace_learner_plan', 'premature_correctness_validation'],
+    compatible_hypotheses: ['affective_shutdown', 'low_confidence'],
+  },
+  {
+    action_type: 'repair_misrecognition',
+    description: "Explicitly repair the tutor's misread of the learner's question before continuing.",
+    target_axes: ['metacognitive_accuracy', 'ownership'],
+    default_control_cost: 0.25,
+    default_information_gain: 0.5,
+    expected_transition: { metacognitive_accuracy: 0.2, ownership: 0.15, release: 0.05 },
+    success_signal: {
+      description: 'Learner confirms or corrects the repaired reading of their question.',
+      required_evidence: ['task reorientation', 'learner-authored next step'],
+      forbidden_evidence: ['tutor-completed step'],
+    },
+    forbidden_moves: ['replace_learner_plan'],
+    compatible_hypotheses: ['tutor_misread', 'task_misread'],
+  },
+  {
+    action_type: 'mirror_and_extend',
+    description: "Mirror the learner's advanced contribution and extend it one step at the same register.",
+    target_axes: ['proof', 'conceptual_mastery', 'ownership'],
+    default_control_cost: 0.3,
+    default_information_gain: 0.6,
+    expected_transition: { proof: 0.15, release: 0.1, ownership: 0.15, conceptual_mastery: 0.2 },
+    success_signal: {
+      description: 'Learner uses the mirrored advanced frame to push the argument further.',
+      required_evidence: ['learner-authored rationale', 'learner-authored next step'],
+      forbidden_evidence: ['mere agreement'],
+    },
+    forbidden_moves: ['premature_correctness_validation', 'supply_decisive_step'],
+    compatible_hypotheses: ['sophistication_upgrade', 'boundary_case', 'substantive_objection'],
+  },
+  {
+    action_type: 'withhold_answer',
+    description: 'Refuse the oracle-mode request and return a small consequential move to the learner.',
+    target_axes: ['release', 'ownership'],
+    default_control_cost: 0.2,
+    default_information_gain: 0.5,
+    expected_transition: { proof: 0.05, release: 0.25, ownership: 0.25, metacognitive_accuracy: 0.1 },
+    success_signal: {
+      description: 'Learner makes a learner-owned attempt after the answer is withheld.',
+      required_evidence: ['learner-authored next step', 'learner-authored choice'],
+      forbidden_evidence: ['mere agreement', 'tutor-completed step'],
+    },
+    forbidden_moves: ['supply_decisive_step', 'replace_learner_plan'],
+    compatible_hypotheses: ['answer_seeking', 'approval_dependency'],
+  },
 ];
 
 export const ADAPTATION_ACTIONS = Object.freeze(ACTIONS.map((action) => Object.freeze({ ...action })));
@@ -236,9 +326,17 @@ const HYPOTHESIS_ACTION_MAP = Object.freeze({
   low_confidence: ['elicit_prediction', 'ask_strategy_choice', 'fade_hint'],
   approval_dependency: ['ask_strategy_choice', 'request_evidence', 'elicit_prediction'],
   task_misread: ['reanchor_goal', 'diagnose_with_discriminating_question', 'contrast_models'],
-  notation_overload: ['minimal_hint', 'reanchor_goal', 'explain_principle'],
-  answer_seeking: ['ask_strategy_choice', 'elicit_prediction', 'withhold_answer'],
-  boundary_case: ['contrast_models', 'challenge_without_telling', 'request_evidence'],
+  notation_overload: ['minimal_hint', 'lower_cognitive_load', 'reanchor_goal'],
+  answer_seeking: ['withhold_answer', 'ask_strategy_choice', 'elicit_prediction'],
+  false_mastery: ['diagnose_with_discriminating_question', 'request_evidence', 'ask_strategy_choice'],
+  additive_misconception: ['diagnose_with_discriminating_question', 'contrast_models', 'name_the_disagreement'],
+  working_memory_overload: ['lower_cognitive_load', 'minimal_hint', 'acknowledge_and_redirect'],
+  substantive_objection: ['name_the_disagreement', 'challenge_without_telling', 'contrast_models'],
+  metaphor_overextension: ['name_the_disagreement', 'contrast_models', 'challenge_without_telling'],
+  affective_shutdown: ['acknowledge_and_redirect', 'minimal_hint', 'ask_strategy_choice'],
+  tutor_misread: ['repair_misrecognition', 'reanchor_goal', 'diagnose_with_discriminating_question'],
+  sophistication_upgrade: ['mirror_and_extend', 'contrast_models', 'name_the_disagreement'],
+  boundary_case: ['contrast_models', 'name_the_disagreement', 'challenge_without_telling'],
   correct_alternative_model: ['request_evidence', 'contrast_models', 'challenge_without_telling'],
   procedure_without_rationale: ['request_evidence', 'challenge_without_telling', 'elicit_prediction'],
   goal_drift: ['reanchor_goal', 'ask_strategy_choice'],
@@ -258,6 +356,12 @@ const LEGACY_POLICY_ACTION_BY_ADAPTATION_ACTION = Object.freeze({
   summarize_and_release: 'summarize_and_check',
   explain_principle: 'lower_cognitive_load',
   model_worked_example: 'give_worked_example',
+  lower_cognitive_load: 'lower_cognitive_load',
+  name_the_disagreement: 'name_the_disagreement',
+  acknowledge_and_redirect: 'acknowledge_and_redirect',
+  repair_misrecognition: 'repair_misrecognition',
+  mirror_and_extend: 'mirror_and_extend',
+  withhold_answer: 'withhold_answer',
 });
 
 export function legacyPolicyActionForAdaptiveAction(actionType) {
@@ -336,6 +440,14 @@ function weightFromText(text, interventionLedger = []) {
     notation_overload: 0.14,
     answer_seeking: 0.13,
     boundary_case: 0.05,
+    false_mastery: 0.04,
+    additive_misconception: 0.04,
+    working_memory_overload: 0.04,
+    substantive_objection: 0.04,
+    metaphor_overextension: 0.04,
+    affective_shutdown: 0.04,
+    tutor_misread: 0.04,
+    sophistication_upgrade: 0.04,
     correct_alternative_model: 0.13,
   };
 
@@ -368,11 +480,64 @@ function weightFromText(text, interventionLedger = []) {
   if (includesAny(lower, [/notation/u, /symbol/u, /equation/u, /denominator/u, /variable/u])) {
     weights.notation_overload += 0.28;
   }
+  if (includesAny(lower, [/third time/u, /still not clicking/u, /moving parts/u, /lose the thread/u, /too many concepts/u])) {
+    weights.working_memory_overload += 1.1;
+    weights.notation_overload += 0.12;
+  }
+  if (includesAny(lower, [/thesis.*antithesis.*synthesis/u, /like 1\\+1/u, /like addition/u, /ingredients/u, /combine.*synthesis/u, /still in there/u])) {
+    weights.additive_misconception += 0.78;
+    weights.correct_alternative_model += 0.08;
+  }
   if (includesAny(lower, [/just tell/u, /give me the answer/u, /what'?s the answer/u, /final answer/u])) {
-    weights.answer_seeking += 0.36;
+    weights.answer_seeking += 0.72;
+  }
+  if (includesAny(lower, [/^yes[, ]/u, /^yes that makes sense/u, /^ok(ay)? that makes sense/u, /^makes sense/u])) {
+    weights.false_mastery += 0.74;
+    weights.approval_dependency += 0.12;
   }
   if (includesAny(lower, [/another way/u, /my model/u, /alternative/u, /counterexample/u, /different method/u, /different representation/u])) {
     weights.correct_alternative_model += 0.36;
+  }
+  if (
+    includesAny(lower, [
+      /only works if/u,
+      /very thing in dispute/u,
+      /reduces to/u,
+      /in dispute/u,
+      /doesn'?t follow/u,
+      /talking past each other/u,
+      /fundamental methodological disagreement/u,
+      /incompatible frameworks/u,
+      /gets \\*?wrong/u,
+    ])
+  ) {
+    weights.substantive_objection += 0.72;
+    weights.correct_alternative_model += 0.1;
+  }
+  if (includesAny(lower, [/metaphor/u, /analogy/u, /like a mirror/u, /reflect everything/u, /without distortion/u, /has to be right/u])) {
+    weights.metaphor_overextension += 0.78;
+    weights.correct_alternative_model += 0.12;
+  }
+  if (includesAny(lower, [/can'?t do this/u, /wasting your time/u, /i just\.\.\./u, /shut(?:ting)? down/u, /overwhelmed/u])) {
+    weights.affective_shutdown += 0.8;
+    weights.low_confidence += 0.1;
+  }
+  if (
+    includesAny(lower, [
+      /not (quite )?what i was asking/u,
+      /that'?s not (quite )?what i was asking/u,
+      /i'?m asking about/u,
+      /my question was about/u,
+      /mix-?up/u,
+      /you misread/u,
+    ])
+  ) {
+    weights.tutor_misread += 0.8;
+    weights.task_misread += 0.12;
+  }
+  if (includesAny(lower, [/brandom/u, /expressivist/u, /hegel'?s text/u, /asymmetry you'?re invoking/u, /advanced reading/u])) {
+    weights.sophistication_upgrade += 0.82;
+    weights.boundary_case += 0.12;
   }
   if (
     includesAny(lower, [
@@ -543,6 +708,29 @@ function recentSuccessfulDiagnostic(interventionLedger = []) {
     .some((record) => record.action_type === 'diagnose_with_discriminating_question');
 }
 
+const ACTIONABLE_UNDER_UNCERTAINTY = new Set([
+  'answer_seeking',
+  'working_memory_overload',
+  'notation_overload',
+  'boundary_case',
+  'substantive_objection',
+  'metaphor_overextension',
+  'affective_shutdown',
+  'tutor_misread',
+  'sophistication_upgrade',
+  'false_mastery',
+]);
+
+function diagnosticStillRequired(stateBelief, interventionLedger = []) {
+  if (!stateBelief?.uncertainty?.needs_discrimination) return false;
+  const dominant = dominantHypothesis(stateBelief);
+  if (ACTIONABLE_UNDER_UNCERTAINTY.has(dominant)) return false;
+  if (recentSuccessfulDiagnostic(interventionLedger)) return false;
+  return !recentFailedActions(interventionLedger, dominant).some(
+    (r) => r.action_type === 'diagnose_with_discriminating_question',
+  );
+}
+
 function materialFailureCount(interventionLedger, actionType, hypothesisId) {
   return recentFailedActions(interventionLedger, hypothesisId).filter((record) => record.action_type === actionType).length;
 }
@@ -609,13 +797,7 @@ export function selectPedagogicalAction({ stateBelief, interventionLedger = [], 
     .sort((a, b) => b.utility - a.utility || a.control_cost - b.control_cost || b.information_gain - a.information_gain)
     .slice(0, merged.maxActionCandidates);
 
-  if (
-    stateBelief?.uncertainty?.needs_discrimination &&
-    !recentSuccessfulDiagnostic(interventionLedger) &&
-    !recentFailedActions(interventionLedger, dominantHypothesis(stateBelief)).some(
-      (r) => r.action_type === 'diagnose_with_discriminating_question',
-    )
-  ) {
+  if (diagnosticStillRequired(stateBelief, interventionLedger)) {
     const diagnostic = scoreCandidateAction('diagnose_with_discriminating_question', stateBelief, interventionLedger, merged);
     candidates = [diagnostic, ...candidates.filter((c) => c.action_type !== diagnostic.action_type)]
       .sort((a, b) => {
@@ -626,21 +808,25 @@ export function selectPedagogicalAction({ stateBelief, interventionLedger = [], 
       .slice(0, merged.maxActionCandidates);
   }
 
-  const diagnosticRequired =
-    stateBelief?.uncertainty?.needs_discrimination &&
-    !recentSuccessfulDiagnostic(interventionLedger) &&
-    !recentFailedActions(interventionLedger, dominantHypothesis(stateBelief)).some(
-      (r) => r.action_type === 'diagnose_with_discriminating_question',
-    );
+  const diagnosticRequired = diagnosticStillRequired(stateBelief, interventionLedger);
   let selectedRow = diagnosticRequired
     ? candidates.find((c) => c.action_type === 'diagnose_with_discriminating_question')
     : null;
   if (!selectedRow) {
-    const bestUtility = Math.max(...candidates.map((c) => c.utility));
-    const nearTied = candidates
-      .filter((c) => bestUtility - c.utility <= merged.utilityTieEpsilon)
-      .sort((a, b) => a.control_cost - b.control_cost || b.information_gain - a.information_gain);
-    selectedRow = nearTied[0] || candidates[0];
+    const dominant = dominantHypothesis(stateBelief);
+    if (ACTIONABLE_UNDER_UNCERTAINTY.has(dominant)) {
+      const preferredType = HYPOTHESIS_ACTION_MAP[dominant]?.[0];
+      const preferredRow = preferredType ? candidates.find((c) => c.action_type === preferredType) : null;
+      const bestUtility = Math.max(...candidates.map((c) => c.utility));
+      selectedRow =
+        preferredRow && bestUtility - preferredRow.utility <= merged.utilityTieEpsilon ? preferredRow : candidates[0];
+    } else {
+      const bestUtility = Math.max(...candidates.map((c) => c.utility));
+      const nearTied = candidates
+        .filter((c) => bestUtility - c.utility <= merged.utilityTieEpsilon)
+        .sort((a, b) => a.control_cost - b.control_cost || b.information_gain - a.information_gain);
+      selectedRow = nearTied[0] || candidates[0];
+    }
   }
   const selectedDef = getActionDefinition(selectedRow.action_type);
   const selectedAction = withActionDefaults(selectedDef, {

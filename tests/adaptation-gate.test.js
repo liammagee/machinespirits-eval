@@ -62,3 +62,36 @@ test('gate allows task reanchor as a meaningful bounded opportunity', () => {
   });
   assert.equal(result.allowed, true);
 });
+
+test('gate allows repeated affective acknowledgement when shutdown evidence renews', () => {
+  const result = validateProofReleaseOwnershipGate({
+    stateBelief: stateBelief({
+      learner_project: {
+        goal: 'compare two quantities',
+        current_plan: "I just... I can't do this. I don't get any of this and I'm wasting your time.",
+        commitment: 'uncommitted',
+        next_authorship_opportunity: 'name one small part still available',
+      },
+      hypotheses: [
+        {
+          id: 'affective_shutdown',
+          probability: 1,
+          evidence: ["I just... I can't do this."],
+          disconfirming_evidence: [],
+        },
+      ],
+    }),
+    selectedAction: materialize('acknowledge_and_redirect'),
+    interventionLedger: [
+      {
+        status: 'closed',
+        outcome: 'failure',
+        action_type: 'acknowledge_and_redirect',
+        hypothesis_ids: ['affective_shutdown'],
+        contract_id: 'prior-affective-repair',
+      },
+    ],
+  });
+
+  assert.equal(result.allowed, true);
+});

@@ -185,7 +185,17 @@ export function validateProofReleaseOwnershipGate({
   }
 
   const repeatFailures = latestFailures(interventionLedger, action.action_type, dominant);
-  if (repeatFailures.length > 0 && action.action_type !== 'diagnose_with_discriminating_question') {
+  const renewedAffectiveShutdown =
+    dominant === 'affective_shutdown' &&
+    action.action_type === 'acknowledge_and_redirect' &&
+    /\b(can'?t do this|wasting your time|i just\.\.\.|shut(?:ting)? down|overwhelmed)\b/iu.test(
+      stateBelief?.learner_project?.current_plan || '',
+    );
+  if (
+    repeatFailures.length > 0 &&
+    action.action_type !== 'diagnose_with_discriminating_question' &&
+    !renewedAffectiveShutdown
+  ) {
     violations.push(
       violation(
         VIOLATION_CODES.FAILED_ACTION_REPEATED_WITHOUT_NEW_RATIONALE,

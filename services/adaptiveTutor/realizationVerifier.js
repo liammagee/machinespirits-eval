@@ -15,6 +15,8 @@ const TEMPLATES = Object.freeze({
     'You have enough to take the next piece. I’ll give only a small cue: name the relation you want to preserve, then do the next step yourself.',
   minimal_hint:
     'Small hint only: look for the quantity or relation that has to stay unchanged. What does that let you do next?',
+  lower_cognitive_load:
+    'Let’s reduce the load to one piece. Ignore the whole apparatus for a moment: which single concept can you still track?',
   repair_overconfidence:
     'Before we accept that, test it against one piece of evidence. What would have to be true for your claim to hold?',
   challenge_without_telling:
@@ -27,6 +29,16 @@ const TEMPLATES = Object.freeze({
     'Here is the principle you need: the step is valid only when it preserves the relevant relation. Now apply that principle to this case in your own words.',
   model_worked_example:
     'I’ll model a nearby example, then you will transfer it. In the example, the key is to preserve the same relation at each step; now try the analogous move here.',
+  name_the_disagreement:
+    'Let’s name the disagreement before solving it: which relation is actually in dispute, and what would count as evidence for your reading?',
+  acknowledge_and_redirect:
+    'I hear the shutdown signal. Let’s lower the load: name just one small part you can still locate, and we will work from there.',
+  repair_misrecognition:
+    'I misread your question. You are asking about the other relation, not the one I answered; restate the corrected question in your words so we track it together.',
+  mirror_and_extend:
+    'That is a more advanced framing. Let me mirror it and extend one step: what follows if we take your distinction seriously?',
+  withhold_answer:
+    'I am not going to give the answer yet. Make one small attempt first: what move would you try, and why?',
 });
 
 function textForAction(actionType) {
@@ -66,9 +78,21 @@ function actionConsistent(actionType, text = '') {
     case 'minimal_hint':
     case 'fade_hint':
       return /hint|cue|small/u.test(lower);
+    case 'lower_cognitive_load':
+      return /reduce the load|one piece|single concept|whole apparatus/u.test(lower) && /\?/u.test(text);
     case 'explain_principle':
     case 'model_worked_example':
       return /principle|example|apply|transfer/u.test(lower);
+    case 'name_the_disagreement':
+      return /disagreement|dispute|relation|evidence/u.test(lower) && /\?/u.test(text);
+    case 'acknowledge_and_redirect':
+      return /hear|shutdown|lower the load|small part|work from there/u.test(lower);
+    case 'repair_misrecognition':
+      return /misread|asking about|not the one|corrected question/u.test(lower);
+    case 'mirror_and_extend':
+      return /advanced|mirror|extend|follows/u.test(lower) && /\?/u.test(text);
+    case 'withhold_answer':
+      return /not going to give the answer|attempt first|what move/u.test(lower) && /\?/u.test(text);
     default:
       return text.trim().length > 0;
   }
