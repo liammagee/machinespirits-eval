@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * One attended iteration of the phase-1 staging loop
- * (notes/dramatic-derivation-plan.md §3 step 3): run the drama with the
+ * (notes/2026-06-09-dramatic-derivation-plan.md §3 step 3): run the drama with the
  * LLM role bridges → programmatic diagnosis → readable transcript → artifacts.
  *
  * The loop's discipline:

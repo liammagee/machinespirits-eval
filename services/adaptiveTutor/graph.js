@@ -48,7 +48,7 @@
 //     learnerProfile, which the existing tutorEgoInitial prompt is now
 //     ToM-aware about. Tutor side only — bilateral learner extension
 //     in services/learnerTutorInteractionEngine.js is a separate
-//     deliverable per docs/explorations/claude/p2-bilateral-tom-pre-registration.md §3.
+//     deliverable per docs/explorations/claude/2026-05-05-p2-bilateral-tom-pre-registration.md §3.
 //
 //   bilateral_tom_named_patterns (cell_117 — additivity probe)
 //     Same topology as bilateral_tom. Differs only in the ego prompt:
@@ -163,7 +163,7 @@ export { SUPPORTED_ARCHITECTURES };
 // always set by the graph node, never via projection — see learnerProfileUpdate.
 //
 // Source-of-truth for which fields each cell exposes:
-// docs/explorations/claude/p2-followup-pre-registration.md §P2.2.
+// docs/explorations/claude/2026-05-10-p2-followup-pre-registration.md §P2.2.
 const PROFILE_PROJECTIONS = Object.freeze({
   state_policy_minimal_profile: ['confidence', 'lastEvidence'],
   state_policy_no_misconceptions: ['confidence', 'agencySignal', 'zpdEstimate', 'lastEvidence'],

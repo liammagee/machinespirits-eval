@@ -1,6 +1,6 @@
 /**
  * Phase-1 guarantees for world-001 + the LLM role bridges
- * (notes/dramatic-derivation-plan.md §3 steps 2–4):
+ * (notes/2026-06-09-dramatic-derivation-plan.md §3 steps 2–4):
  *
  *   - world-001 passes plotLint and its release pacing respects the
  *     anti-aporia window (the schedule cannot stall an ideal learner);

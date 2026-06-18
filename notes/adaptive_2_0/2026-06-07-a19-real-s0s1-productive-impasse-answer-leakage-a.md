@@ -29,7 +29,7 @@ claims without a later `recursive_full_no_policy_memory` rerun.
 - Surviving attempt-1 output:
   `exports/a19/real-attempt1/productive-impasse-answer-leakage-retry2/`.
 - Attempt-1 gate report:
-  `notes/adaptive_2_0/a19-attempt1-real-gate-report-productive-impasse.md`.
+  `notes/adaptive_2_0/2026-06-07-a19-attempt1-real-gate-report-productive-impasse.md`.
 
 The first pass was blocked by `device_specificity=0.62 < 0.7`. The first retry
 fixed device specificity but was blocked by

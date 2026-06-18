@@ -9,9 +9,9 @@ This document locks the question, conditions, primary endpoint, thresholds, stop
 
 Upstream sources (cite section, do not duplicate):
 
-- Strategy and phasing — `docs/explorations/claude/comprehensive-strategy.md` §"Phase 2 — Architectural primitive prototypes"
-- Gate B baseline + design re-frame — `docs/explorations/claude/a13-gate-b-results.md` §"Plain-language reading" and §"Implications for the plan"
-- Hegelian primitive specification — `docs/explorations/claude/comprehensive-strategy.md` §"Hegelian primitive — Bilateral mutual-recognition state machine"
+- Strategy and phasing — `docs/explorations/claude/2026-05-01-comprehensive-strategy.md` §"Phase 2 — Architectural primitive prototypes"
+- Gate B baseline + design re-frame — `docs/explorations/claude/2026-05-05-a13-gate-b-results.md` §"Plain-language reading" and §"Implications for the plan"
+- Hegelian primitive specification — `docs/explorations/claude/2026-05-01-comprehensive-strategy.md` §"Hegelian primitive — Bilateral mutual-recognition state machine"
 - ToM-accuracy methodology — FANToM (`docs/explorations/literature/pdfs/03-theory-of-mind/`) and Language Bottleneck Models pattern (paired text + JSON, full rewrite per turn)
 
 ---

@@ -5,7 +5,7 @@ argument-hint: <topic-and-questions> [--out <path>] [--areas <01,05,09>] [--dept
 allowed-tools: Bash, Read, Grep, Glob, Write, Agent
 ---
 
-Synthesize a literature review for the topic in `$ARGUMENTS`. Cross-reference findings against the project's current architectural targets (`docs/explorations/claude/comprehensive-strategy.md`) and substrate decisions (`docs/explorations/claude/agents/agent-framework-analysis.md`). Output a structured markdown report to `docs/explorations/literature/synthesis/`.
+Synthesize a literature review for the topic in `$ARGUMENTS`. Cross-reference findings against the project's current architectural targets (`docs/explorations/claude/2026-05-01-comprehensive-strategy.md`) and substrate decisions (`docs/explorations/claude/agents/2026-05-01-agent-framework-analysis.md`). Output a structured markdown report to `docs/explorations/literature/synthesis/`.
 
 The corpus is local: `docs/explorations/literature/pdfs/` (≈68 PDFs across 10 sub-areas).
 
@@ -56,8 +56,8 @@ find docs/explorations/literature/pdfs -name "*.pdf" | grep -i "<keyword>"
 ## Cross-reference targets (always include)
 
 Every synthesis must cross-check claims against:
-1. **`docs/explorations/claude/comprehensive-strategy.md`** — what architectural primitives the project is committing to. Flag literature that contradicts or strengthens the current plan.
-2. **`docs/explorations/claude/agents/agent-framework-analysis.md`** — substrate decisions (LangGraph/XState/LiteLLM/Inspect AI). Flag literature suggesting a different substrate would be better.
+1. **`docs/explorations/claude/2026-05-01-comprehensive-strategy.md`** — what architectural primitives the project is committing to. Flag literature that contradicts or strengthens the current plan.
+2. **`docs/explorations/claude/agents/2026-05-01-agent-framework-analysis.md`** — substrate decisions (LangGraph/XState/LiteLLM/Inspect AI). Flag literature suggesting a different substrate would be better.
 3. **`docs/research/paper-full-2.0.md`** — the canonical paper. Flag literature that bears on existing claims (especially §6 findings, §7 methodology).
 4. **CLAUDE.md** — project conventions. Don't propose changes that violate the bilateral-symmetry principle or the rubric-versioning discipline.
 
@@ -93,8 +93,8 @@ DEPTH: [quick|standard|deep]
 - deep: full read on listed top-5; abstracts only for others
 
 CROSS-REFERENCE — after reading the corpus, check claims against:
-- docs/explorations/claude/comprehensive-strategy.md (current architectural targets)
-- docs/explorations/claude/agents/agent-framework-analysis.md (substrate decisions)
+- docs/explorations/claude/2026-05-01-comprehensive-strategy.md (current architectural targets)
+- docs/explorations/claude/agents/2026-05-01-agent-framework-analysis.md (substrate decisions)
 - docs/research/paper-full-2.0.md (canonical paper claims)
 
 OUTPUT — return a markdown document with these sections (do NOT write the file; return the markdown as your final message):

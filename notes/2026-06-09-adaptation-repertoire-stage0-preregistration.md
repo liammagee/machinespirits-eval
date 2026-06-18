@@ -5,7 +5,7 @@ User signed off on the design ("Option A") this date. Edits after this line
 are field-name plumbing only; the gate (metric / thresholds / contrast /
 reads) below is not to be revised post-hoc.
 
-**Provenance.** Implements Track A, Stage 0 of `notes/adaptation-exploration-plan.md`
+**Provenance.** Implements Track A, Stage 0 of `notes/2026-06-09-adaptation-exploration-plan.md`
 (post-§6.10 reframe). Sibling-in-discipline to `scripts/adaptation2-stage0.py`
 (the §6.10 offline kill gate) and `scripts/learned-adaptation-policy-ope.py`
 (§6.9.8). Lands as **§6.11** of `docs/research/paper-full-2.0.md`, positive or

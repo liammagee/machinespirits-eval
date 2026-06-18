@@ -202,10 +202,10 @@ function remediationForCheck(check) {
     case 'multiturn-holistic-coverage':
       // Advisory after C7.2 (TODO.md): backfilling pre-2026-02-28 rows under
       // v2.2 would cross-contaminate v1.0/v2.0/v2.1 cells. The remediation
-      // path is disclosure, not backfill. See notes/major-bugs.md Bug 4.
+      // path is disclosure, not backfill. See notes/2026-06-03-major-bugs.md Bug 4.
       return [
         'Backfill is NOT recommended: affected rows predate the 2026-02-28 v2.2-rubric cutover; re-judging under v2.2 would cross-contaminate v1.0/v2.0/v2.1 cells (see CLAUDE.md).',
-        'Resolution path is disclosure: confirm `paper-disclosure-bug4` passes and `notes/major-bugs.md` accurately describes the partial backfill (~64 of ~1,898 rows, ~3 %).',
+        'Resolution path is disclosure: confirm `paper-disclosure-bug4` passes and `notes/2026-06-03-major-bugs.md` accurately describes the partial backfill (~64 of ~1,898 rows, ~3 %).',
         'If you genuinely need clean multi-turn last-turn scores, re-run the affected configurations on v2.2 — do not retro-score historical rows.',
       ];
 
@@ -213,7 +213,7 @@ function remediationForCheck(check) {
       // Advisory after C7.2: same rationale as multiturn-holistic-coverage.
       return [
         'Backfill is NOT recommended for the same reason as `multiturn-holistic-coverage` (rubric cross-contamination on pre-v2.2 rows).',
-        'Confirm Bug 4 disclosure in the paper and `notes/major-bugs.md` covers materially-different rows specifically; Paper 2.0 (`paper-full-2.0.md`) supersedes Paper 1.0 on clean v2.2 data.',
+        'Confirm Bug 4 disclosure in the paper and `notes/2026-06-03-major-bugs.md` covers materially-different rows specifically; Paper 2.0 (`paper-full-2.0.md`) supersedes Paper 1.0 on clean v2.2 data.',
       ];
 
     case 'paper-disclosure-bug1':
@@ -247,7 +247,7 @@ function remediationForCheck(check) {
     case 'bug-reports-major':
       return [
         'Resolve each underlying failed bug check first (especially Bug 4 multi-turn coverage/disclosure).',
-        'Keep `notes/major-bugs.md` aligned with current technical and paper status.',
+        'Keep `notes/2026-06-03-major-bugs.md` aligned with current technical and paper status.',
         'Re-run audit and confirm `bug-reports-major` transitions to pass.',
       ];
 
@@ -984,7 +984,7 @@ function checkMultiturnScoringAlignment(manifest, db, scopeRunIds) {
   // fixed going forward; the pre-2026-02-23 historical rows lack the
   // last-turn backfill, but completing it would cross-contaminate v1.0/v2.0/
   // v2.1 rows under the v2.2 rubric (CLAUDE.md anti-contamination rule).
-  // The disclosure path (paper-disclosure-bug4 + notes/major-bugs.md
+  // The disclosure path (paper-disclosure-bug4 + notes/2026-06-03-major-bugs.md
   // honesty) is the recognised remediation. These remain as advisory
   // warnings so the underlying numbers stay visible, but they no longer
   // gate Bug 4's resolution in `bug-reports-major`.
@@ -992,7 +992,7 @@ function checkMultiturnScoringAlignment(manifest, db, scopeRunIds) {
     record(
       'warn',
       'multiturn-holistic-coverage',
-      'Multi-suggestion rows lack last-turn backfill (advisory — pre-v2.2 historical artefact, intentionally not remediated; see notes/major-bugs.md Bug 4)',
+      'Multi-suggestion rows lack last-turn backfill (advisory — pre-v2.2 historical artefact, intentionally not remediated; see notes/2026-06-03-major-bugs.md Bug 4)',
       {
         rows_total: rows.length,
         holistic_present: holisticPresent,
@@ -1134,7 +1134,7 @@ function checkBugReportIssueState() {
   const resumeBugPath = path.join(NOTES_DIR, 'session-resume-override-bug-2026-02-23.md');
 
   if (!fs.existsSync(majorBugsPath)) {
-    record('warn', 'bug-reports-major', 'notes/major-bugs.md not found');
+    record('warn', 'bug-reports-major', 'notes/2026-06-03-major-bugs.md not found');
   } else {
     const bugCoverage = [
       {

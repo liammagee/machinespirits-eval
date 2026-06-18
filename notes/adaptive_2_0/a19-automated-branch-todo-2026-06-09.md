@@ -91,7 +91,7 @@ Option 1 was selected and implemented as A19 v0.9:
 zero-API materialized scaffold at `exports/a19/materialized-attempts-v09`.
 Its real attempt-1 gate blocked before S0/S1:
 `recursive_dyadic_update = 0.62 < 0.7`; report:
-`notes/adaptive_2_0/a19-attempt1-real-gate-report-strategy-reversal.md`.
+`notes/adaptive_2_0/2026-06-07-a19-attempt1-real-gate-report-strategy-reversal.md`.
 
 That made option 2 warranted. The existing-schema fallback was preregistered as
 `over_compliance_ethopoeia_copy_dependency` under `preserve_struggle`, with a
@@ -99,7 +99,7 @@ zero-API materialized scaffold at
 `exports/a19/materialized-attempts-v09-option2`. Its real attempt-1 gate also
 blocked before S0/S1: `device_specificity = 0.45`, recursive tutor-learning
 scores 0.5-0.6, checker `revise_again`; report:
-`notes/adaptive_2_0/a19-attempt1-real-gate-report-over-compliance-ethopoeia.md`.
+`notes/adaptive_2_0/2026-06-07-a19-attempt1-real-gate-report-over-compliance-ethopoeia.md`.
 
 The subsequent automated loops are closed in
 `notes/adaptive_2_0/a19-controlled-positive-search-2026-06-09.md`:

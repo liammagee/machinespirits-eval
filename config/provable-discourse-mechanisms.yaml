@@ -1685,7 +1685,7 @@ claims:
       min_occurrences: 0
     evidence:
       type: code_path
-      file: "notes/major-bugs.md"
+      file: "notes/2026-06-03-major-bugs.md"
       pattern: "Bug [0-9]|## Bug"
       min_matches: 5
     assertion:

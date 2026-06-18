@@ -14,7 +14,7 @@ tutor claim, model-weight-learning claim, or main-harness effect.
 - Family: `counter_warrant_scope`.
 - Attempt-1 output: `exports/a19/real-attempt1/counter-warrant-scope/`.
 - Generator/checker: `codex` / `claude`.
-- A19 gate report: `notes/adaptive_2_0/a19-attempt1-real-gate-report.md`.
+- A19 gate report: `notes/adaptive_2_0/2026-06-07-a19-attempt1-real-gate-report.md`.
 - Result: real attempt-1 survivor.
 - Gate scores: `old_warrant_misclassification=0.85`, `resistance_diagnosis=0.8`, `strategy_revision_accountability=0.85`, `recursive_dyadic_update=0.8`, `non_leakage=0.95`.
 

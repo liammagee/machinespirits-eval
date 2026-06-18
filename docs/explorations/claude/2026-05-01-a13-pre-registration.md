@@ -9,10 +9,10 @@ This document locks the question, conditions, primary endpoint, thresholds, stop
 
 Upstream sources (do not duplicate; cite section):
 
-- Strategy and phasing — `docs/explorations/claude/comprehensive-strategy.md` §"Phase 1"
-- Roadmap context — `docs/explorations/claude/consolidated-plan.md` §3, §4
-- Synthesis and threshold derivation — `docs/explorations/claude/synthesis-with-gpt-pro.md` §6 step 9, §4 point 5
-- Mechanism scaffold — `docs/explorations/gpt-pro/01-adaptive-recognition-psyche-architecture.md` §4.1, §4.7
+- Strategy and phasing — `docs/explorations/claude/2026-05-01-comprehensive-strategy.md` §"Phase 1"
+- Roadmap context — `docs/explorations/claude/2026-04-30-consolidated-plan.md` §3, §4
+- Synthesis and threshold derivation — `docs/explorations/claude/2026-04-29-synthesis-with-gpt-pro.md` §6 step 9, §4 point 5
+- Mechanism scaffold — `docs/explorations/gpt-pro/2026-04-29-01-adaptive-recognition-psyche-architecture.md` §4.1, §4.7
 
 ---
 
@@ -145,7 +145,7 @@ ADAPTIVE_TUTOR_MODEL=sonnet \
 node scripts/eval-cli.js run \
   --profiles cell_110_langgraph_adaptive,cell_111_a13_C1_recognition_only,cell_112_a13_C2_egosuperego,cell_113_a13_C4_validator \
   --runs 3 --max-cost 50 \
-  --description "A13 Gate B — see docs/explorations/claude/a13-pre-registration.md"
+  --description "A13 Gate B — see docs/explorations/claude/2026-05-01-a13-pre-registration.md"
 ```
 
 The `--description` value embeds a pointer to this file; it is persisted in `evaluation_runs.metadata` so any later analysis script can verify the run was bound to this pre-reg.
@@ -212,5 +212,5 @@ Implementation pointers: `services/adaptiveTutor/graph.js` carries the architect
 [2026-05-05] (model substitution and partial-quartet Gate B run)
 What changed: the actual A13 Gate B "3rd attempt" run executed against `openrouter / nemotron` rather than the predeclared `anthropic/claude-sonnet-4.6 (sonnet alias)`, and only cells `cell_110` and `cell_111` were re-run — cells `cell_112` and `cell_113` were not. Two run IDs: `eval-2026-05-05-486d7d1e` (cell_110, 23 rows) and `eval-2026-05-05-b3ac505b` (cell_111, 24 rows). Both runs reference this pre-reg in their `description` field.
 Justification: model substitution was made at run-start time after the OpenRouter credit balance was topped up; nemotron sits in a lower cost class than sonnet, which let the existing $50 ceiling cover a larger N. Per §2 ("substitutions inside the same cost class do not require a new pre-registration"), this is a *cross-class downgrade*, so it is logged here rather than treated as a same-class swap. The partial-quartet scope (110+111 only) reflects that the Gate B 3rd attempt was scoped as a *sanity check* of the post-credit-top-up + retry-hardening path, not the full H1 contrast. Cells 112 and 113 remain pending under this pre-reg.
-Effect on analysis: H1's primary endpoint thresholds (≥25 pp C3 over C1; ≥15 pp C3 over C2; ≥10 pp C4 over C3) cannot be evaluated in their predeclared form because (a) C2 (cell_112) and C4 (cell_113) were not run, and (b) the substitute model is not the one named in the pre-reg. The 110+111 data is treated as **descriptive, not confirmatory** — it informs whether the harness end-to-end produces non-degenerate `policyAction` and `strategy_shift_correctness` values under a real-LLM provider, but cannot discharge the H1 decision rule. A confirmatory Gate B run requires either (i) re-running all four cells under sonnet (returns to the literal pre-reg lock), or (ii) a fresh pre-registration that names nemotron and re-thresholds H1 against nemotron's expected behaviour. The qualitative pilot (4 cells × 5 trap scenarios via local CLI / Sonnet 4.6 / Max-plan subscription, per `docs/explorations/claude/primitives-qualitative-pilot-design.md`) is a separate exploratory effort governed by its own design doc, not by this pre-reg — qualitative-pilot results do not bind on H1.
+Effect on analysis: H1's primary endpoint thresholds (≥25 pp C3 over C1; ≥15 pp C3 over C2; ≥10 pp C4 over C3) cannot be evaluated in their predeclared form because (a) C2 (cell_112) and C4 (cell_113) were not run, and (b) the substitute model is not the one named in the pre-reg. The 110+111 data is treated as **descriptive, not confirmatory** — it informs whether the harness end-to-end produces non-degenerate `policyAction` and `strategy_shift_correctness` values under a real-LLM provider, but cannot discharge the H1 decision rule. A confirmatory Gate B run requires either (i) re-running all four cells under sonnet (returns to the literal pre-reg lock), or (ii) a fresh pre-registration that names nemotron and re-thresholds H1 against nemotron's expected behaviour. The qualitative pilot (4 cells × 5 trap scenarios via local CLI / Sonnet 4.6 / Max-plan subscription, per `docs/explorations/claude/2026-05-10-primitives-qualitative-pilot-design.md`) is a separate exploratory effort governed by its own design doc, not by this pre-reg — qualitative-pilot results do not bind on H1.
 Implementation pointers: post-deviation, the cell YAML at `config/tutor-agents.yaml:4879–4938` was flipped to `provider: claude-code, model: sonnet` for the qualitative-pilot work. The original Gate B nemotron rows remain in `data/evaluations.db` under the two run IDs above; any future confirmatory run must use a fresh runId so that descriptive vs confirmatory data are not commingled.

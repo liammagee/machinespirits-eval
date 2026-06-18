@@ -1,6 +1,6 @@
 /**
  * The drama engine: turn loop, role-scoped views, release ledger, slope
- * trajectory, failure taxonomy (notes/dramatic-derivation-plan.md §2–§3).
+ * trajectory, failure taxonomy (notes/2026-06-09-dramatic-derivation-plan.md §2–§3).
  *
  * Roles are injected async functions (mock now, LLM-backed later — same
  * seam as services/adaptiveTutor's mock/real split):

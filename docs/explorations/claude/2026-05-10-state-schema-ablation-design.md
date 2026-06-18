@@ -118,7 +118,7 @@ the followup memo §1).
   # Ablation: state_policy with minimal profile (confidence + lastEvidence only).
   # Tests how much strategy_shift_correctness survives when the structured
   # profile is stripped to its scalar core. See
-  # docs/explorations/claude/state-schema-ablation-design.md for hypotheses.
+  # docs/explorations/claude/2026-05-10-state-schema-ablation-design.md for hypotheses.
   cell_118_state_policy_minimal_profile:
     description: "State-schema ablation: state_policy with minimal profile (confidence + lastEvidence only). Strips misconceptions, agencySignal, zpdEstimate. Tests whether structured profile beyond confidence is doing real work (H1) or cosmetic (H2)."
     runner: adaptive

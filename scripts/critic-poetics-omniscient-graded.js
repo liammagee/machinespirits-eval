@@ -3,7 +3,7 @@
  * Graded omniscient critic — a 0–4 attainment scale companion to the binary
  * critic-poetics-omniscient.js (which it reuses for loaders/primitives, leaving
  * the binary path untouched). Where the binary scores discovered/not, this grades
- * the learner's FURTHEST point on the ladder in notes/poetics/oedipus-discovery-grade-rubric.md:
+ * the learner's FURTHEST point on the ladder in notes/poetics/2026-06-01-oedipus-discovery-grade-rubric.md:
  *   0 far · 1 dislodged · 2 GENUS · 3 species-partial · 4 species-full
  * plus by_reasoning and tutor_revealed flags. Purpose: separate near-misses (genus,
  * 2–3) from far-misses (0–1) — the resolution the binary collapses.
@@ -219,7 +219,7 @@ async function run(args) {
   const artifact = {
     generated: new Date().toISOString(),
     scorer: 'omniscient-critic-graded',
-    rubric: 'notes/poetics/oedipus-discovery-grade-rubric.md (0-4)',
+    rubric: 'notes/poetics/2026-06-01-oedipus-discovery-grade-rubric.md (0-4)',
     critic_source: args.mock ? 'mock' : 'api/openrouter',
     git_commit: gitRev,
     roots: args.roots.map((r) => path.relative(ROOT, r)),

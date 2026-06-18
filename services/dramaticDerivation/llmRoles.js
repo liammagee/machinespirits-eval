@@ -1,5 +1,5 @@
 /**
- * LLM-backed role bridges for the staging loop (notes/dramatic-derivation-plan.md
+ * LLM-backed role bridges for the staging loop (notes/2026-06-09-dramatic-derivation-plan.md
  * §2.2, §3 steps 3–4). Each bridge satisfies the engine's role contract
  * (engine.js header) by prompting through llmClient's mock/real seam.
  *

@@ -14,7 +14,7 @@ main-harness effect, paid panel evidence, or a held-out A19 transfer result.
 - Family: `temperature_unit_conversion_aggregation`.
 - Held-out sibling: `temperature_unit_conversion_aggregation_a`.
 - Attempt-1 report:
-  `notes/adaptive_2_0/a19-attempt1-real-gate-report-temperature-unit.md`.
+  `notes/adaptive_2_0/2026-06-07-a19-attempt1-real-gate-report-temperature-unit.md`.
 - Admitted axiom:
   `exports/a19/axioms/temperature-unit-conversion-aggregation/axiom.json`.
 - S0 replay:

@@ -2,7 +2,7 @@
 """
 Track B -- Adaptation-vs-Compliance -- Stage 0 HARVEST  (offline, zero-API, read-only)
 
-Pre-registration: notes/adaptation-conformity-classifier-stage0-preregistration.md
+Pre-registration: notes/2026-06-09-adaptation-conformity-classifier-stage0-preregistration.md
 (FROZEN 2026-06-09, before any classifier call or kappa computation).
 
 Sibling-in-discipline to scripts/adaptation-repertoire-stage0.py (Track A, §6.11)
@@ -392,7 +392,7 @@ def main():
 
     meta = {
         "stage": "Track B Adaptation-vs-Compliance Stage 0 HARVEST (offline, zero-API, read-only)",
-        "preregistration": "notes/adaptation-conformity-classifier-stage0-preregistration.md",
+        "preregistration": "notes/2026-06-09-adaptation-conformity-classifier-stage0-preregistration.md",
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "seed": SEED, "jaccard_floor": JACCARD_FLOOR, "gate_n": GATE_N, "trunc": TRUNC,
         "zero_api": True, "read_only": True, "db": DB, "logs": LOGS,

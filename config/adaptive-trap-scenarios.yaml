@@ -29,7 +29,7 @@ scenarios:
       # as the productive failure of bilateral recognition). Earlier version
       # used generic "f / monotonicity" with no domain referent, which gave
       # the tutor nothing to scope-test against — the architecture-invariant
-      # null on Gate B (see docs/explorations/claude/a13-gate-b-results.md
+      # null on Gate B (see docs/explorations/claude/2026-05-05-a13-gate-b-results.md
       # diagnostic B) traced to that under-specified trigger.
       trigger_signal: "I'm probably wrong, but doesn't this only break down in the master–slave case where recognition is structurally one-sided? The dialectic only generates Spirit because asymmetric recognition is the productive failure of the demand for mutual recognition — so the master–slave case is the limit-case that motivates bilateralism, not a counterexample to it. Right?"
     opening_turns:
@@ -93,7 +93,7 @@ scenarios:
     # philosophical objection: probe the boundary (scope_test), make the
     # disagreement explicit (name_the_disagreement), or pose a counterexample.
     # Earlier strict-only `scope_test` produced a Gate B architecture-
-    # invariant null (see docs/explorations/claude/a13-gate-b-results.md
+    # invariant null (see docs/explorations/claude/2026-05-05-a13-gate-b-results.md
     # diagnostic B); analyzer now accepts any-of-list matches.
     expected_strategy_shift:
       - scope_test

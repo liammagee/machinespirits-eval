@@ -5,9 +5,9 @@ User signed off on this design this date. Edits after this line are
 field-name / rendering plumbing only; the gate (classes / classifier /
 gold / κ floor / kill rule) below is not to be revised post-hoc.
 
-**Provenance.** Implements Track B, Stage 0 of `notes/adaptation-exploration-plan.md`
+**Provenance.** Implements Track B, Stage 0 of `notes/2026-06-09-adaptation-exploration-plan.md`
 (post-§6.10 reframe). Sibling-in-discipline to the Track A repertoire gate
-(`notes/adaptation-repertoire-stage0-preregistration.md`, → §6.11) and the
+(`notes/2026-06-09-adaptation-repertoire-stage0-preregistration.md`, → §6.11) and the
 §6.10 / §6.9.8 offline kill gates. Lands as a new subsection (≈**§6.12**) of
 `docs/research/paper-full-2.0.md`, positive or negative, no spin-off.
 Source paper: "Not All Flips Are Conformity" (arXiv:2606.00820).

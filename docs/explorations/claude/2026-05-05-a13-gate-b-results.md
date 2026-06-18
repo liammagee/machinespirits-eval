@@ -1,7 +1,7 @@
 # A13 Gate B — results memo
 
 **Date:** 2026-05-05
-**Pre-registration:** `docs/explorations/claude/a13-pre-registration.md`
+**Pre-registration:** `docs/explorations/claude/2026-05-01-a13-pre-registration.md`
 **Run IDs:** C3 = `eval-2026-05-05-486d7d1e` · C1 = `eval-2026-05-05-b3ac505b` · C2 = `eval-2026-05-05-e0e615bc` · C4 = `eval-2026-05-05-e58b7da1`
 **Total spend:** $12.55 / $50 ceiling · **persistence:** 94/96 rows (2.1% loss, all `resistance_to_insight_v1` JSON-parse failures, well under 5% leakage stop)
 

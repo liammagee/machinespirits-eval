@@ -6,7 +6,7 @@
  * GROUNDED set), contingent premises (released only through dramatic action),
  * the secret S, an optional mirror (the authored near-miss), proof paths (the
  * authored DAG — the plot skeleton), a release schedule, and slope
- * constraints. See notes/dramatic-derivation-plan.md §2.1.
+ * constraints. See notes/2026-06-09-dramatic-derivation-plan.md §2.1.
  *
  * `plotLint` is the pre-run leak/slope validation (frozen before any paid
  * run): release prefixes must not entail S before t_min, the full release

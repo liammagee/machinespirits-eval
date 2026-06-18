@@ -133,7 +133,7 @@ Falsifying outcomes:
   # per turn. Single-pass ego (no superego, no revision). Tests
   # whether composing "tutor view of learner" with "tutor-authored
   # self" outperforms either alone. See
-  # docs/explorations/claude/bilateral-tom-id-director-crossover-design.md
+  # docs/explorations/claude/2026-05-10-bilateral-tom-id-director-crossover-design.md
   # for hypotheses.
   cell_121_bilateral_tom_id_director_v1:
     description: "Crossover (Variant A): bilateral_tom learner state + id-director per-turn persona authoring + single-pass ego. Tests composition of two orthogonal externalisations on strategy_shift, charisma, and v2.2 tutor rubrics simultaneously."

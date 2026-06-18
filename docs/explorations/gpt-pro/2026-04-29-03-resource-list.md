@@ -39,8 +39,8 @@ For implementation, prefer resources that help answer one of four questions:
 These are the local files most relevant to planning the next phase.
 
 ```text
-docs/explorations/gpt-pro/01-adaptive-recognition-psyche-architecture.md
-docs/explorations/gpt-pro/02-codex-claude-code-action-plan.md
+docs/explorations/gpt-pro/2026-04-29-01-adaptive-recognition-psyche-architecture.md
+docs/explorations/gpt-pro/2026-04-29-02-codex-claude-code-action-plan.md
 docs/explorations/gpt-pro/TODO.md
 ```
 

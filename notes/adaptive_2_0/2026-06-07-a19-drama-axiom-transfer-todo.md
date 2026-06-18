@@ -121,7 +121,7 @@ normal recursive-full S0/S1 stability gates for any promoted candidate.
 - [x] Revisit `teaching_drama_learning_plan.html` and preserve its core guidance: public drama state, learner resistance as evidence, critic specialization, model-stratified policies, and human validation as later calibration rather than current evidence.
 - [x] Add `config/teaching-drama-axioms/a19-generalization-loops.yaml` as the offline loop registry with track-level success conditions, failure conditions, stop rules, and next actions.
 - [x] Add `scripts/run-a19-generalization-loop.js` to report the next lawful action for each track without generation, judging, retrieval, training, Paper 2.0 edits, or atlas projection.
-- [x] Add `notes/adaptive_2_0/a19-generalization-systemization-plan.md` with separate plans for candidate non-transfer repairs, adjudication packet infrastructure, and weaker/model-stratified S0 conditions.
+- [x] Add `notes/adaptive_2_0/2026-06-08-a19-generalization-systemization-plan.md` with separate plans for candidate non-transfer repairs, adjudication packet infrastructure, and weaker/model-stratified S0 conditions.
 - [x] Pre-register v0.6 after selecting exactly one non-collapsing repair candidate from the loop registry: `addressed_claim_withdrawal` / `claim_address_repair`.
 - [x] Materialize and attempt-1 screen the v0.6 `addressed_claim_withdrawal` family; result: real attempt-1 `revise_again` with `recursive_dyadic_update = 0.65 < 0.7`, so S0/S1 escalation stopped.
 - [x] Pre-register v0.7 `public_commitment_contradiction` / `commitment_ledger_repair`, induce one admitted axiom from a real attempt-1 survivor, and run recursive-full held-out S0/S1 screens.

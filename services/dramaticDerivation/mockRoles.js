@@ -1,6 +1,6 @@
 /**
  * Deterministic mock roles for the staging-loop plumbing (phase 1 step 1 of
- * notes/dramatic-derivation-plan.md §3). No model calls anywhere.
+ * notes/2026-06-09-dramatic-derivation-plan.md §3). No model calls anywhere.
  *
  * Director and tutor legitimately close over the world (they hold the plot
  * and the secret). The LEARNER factory takes no world argument at all — it

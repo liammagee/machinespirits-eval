@@ -43,7 +43,7 @@ function usage() {
     [--out-dir exports/a19/materialized-attempts]
     [--attempt1-dir family_id=exports/a19/real-attempt1/family]
     [--family family_id]
-    [--out notes/adaptive_2_0/a19-attempt1-fixture-gate-report.md]
+    [--out notes/adaptive_2_0/2026-06-07-a19-attempt1-fixture-gate-report.md]
     [--json]
 
 This is zero-API. It summarizes attempt-1 replay artifacts already on disk.`;

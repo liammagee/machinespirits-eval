@@ -122,14 +122,14 @@ Decision update (2026-06-09): option 1 was taken first. A19 v0.9 added
 `strategy_reversal_error_spotting` family. The zero-API materialized scaffold is
 `exports/a19/materialized-attempts-v09`. Its real attempt-1 gate blocked before
 S0/S1 with `recursive_dyadic_update = 0.62 < 0.7`; report:
-`notes/adaptive_2_0/a19-attempt1-real-gate-report-strategy-reversal.md`.
+`notes/adaptive_2_0/2026-06-07-a19-attempt1-real-gate-report-strategy-reversal.md`.
 
 That made option 2 warranted. The existing-schema fallback was preregistered as
 `over_compliance_ethopoeia_copy_dependency` under `preserve_struggle`; scaffold:
 `exports/a19/materialized-attempts-v09-option2`. Its real attempt-1 gate also
 blocked before S0/S1 (`device_specificity = 0.45`, recursive tutor-learning
 scores 0.5-0.6, checker `revise_again`); report:
-`notes/adaptive_2_0/a19-attempt1-real-gate-report-over-compliance-ethopoeia.md`.
+`notes/adaptive_2_0/2026-06-07-a19-attempt1-real-gate-report-over-compliance-ethopoeia.md`.
 No axiom was admitted from either path.
 
 Controlled-positive search update (2026-06-09): the purely automated branch then
@@ -258,15 +258,15 @@ The loop configuration is
 Current observed-result artifacts:
 
 - v0.6 attempt-1 report:
-  `notes/adaptive_2_0/a19-attempt1-real-gate-report-addressed-claim.md`
+  `notes/adaptive_2_0/2026-06-07-a19-attempt1-real-gate-report-addressed-claim.md`
 - v0.7 attempt-1 report:
-  `notes/adaptive_2_0/a19-attempt1-real-gate-report-public-commitment.md`
+  `notes/adaptive_2_0/2026-06-07-a19-attempt1-real-gate-report-public-commitment.md`
 - v0.7 held-out screen:
   `notes/adaptive_2_0/a19-v07-public-commitment-screen-2026-06-08.md`
 - v0.7 ambiguous adjudication packet:
   `exports/a19/adjudication-packets/public-commitment-contradiction-a.packet.json`
 - v0.8 attempt-1 report:
-  `notes/adaptive_2_0/a19-attempt1-real-gate-report-learner-standing.md`
+  `notes/adaptive_2_0/2026-06-07-a19-attempt1-real-gate-report-learner-standing.md`
 - v0.8 held-out screen:
   `notes/adaptive_2_0/a19-v08-learner-standing-screen-2026-06-08.md`
 - v0.8 ambiguous adjudication packet:

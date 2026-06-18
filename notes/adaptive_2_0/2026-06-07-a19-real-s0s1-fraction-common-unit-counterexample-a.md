@@ -14,7 +14,7 @@ main-harness effect, or a held-out A19 transfer result.
 - Family: `fraction_common_unit_counterexample`.
 - Held-out sibling: `fraction_common_unit_counterexample_a`.
 - Attempt-1 report:
-  `notes/adaptive_2_0/a19-attempt1-real-gate-report-fraction-common-unit.md`.
+  `notes/adaptive_2_0/2026-06-07-a19-attempt1-real-gate-report-fraction-common-unit.md`.
 - Admitted axiom:
   `exports/a19/axioms/fraction-common-unit-counterexample/axiom.json`.
 - S0 replay:

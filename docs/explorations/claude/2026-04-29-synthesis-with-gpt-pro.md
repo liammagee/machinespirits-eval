@@ -2,10 +2,10 @@
 
 **Date:** 2026-04-29 / 2026-04-30
 **Inputs:**
-- `docs/explorations/claude/breaking-the-adaptation-ceiling.md` (Claude, 5 strategies)
-- `docs/explorations/gpt-pro/01-adaptive-recognition-psyche-architecture.md` (gpt-pro, architectural spec)
-- `docs/explorations/gpt-pro/02-codex-claude-code-action-plan.md` (gpt-pro, implementation plan)
-- `docs/explorations/gpt-pro/03-resource-list.md` (gpt-pro, resources)
+- `docs/explorations/claude/2026-04-29-breaking-the-adaptation-ceiling.md` (Claude, 5 strategies)
+- `docs/explorations/gpt-pro/2026-04-29-01-adaptive-recognition-psyche-architecture.md` (gpt-pro, architectural spec)
+- `docs/explorations/gpt-pro/2026-04-29-02-codex-claude-code-action-plan.md` (gpt-pro, implementation plan)
+- `docs/explorations/gpt-pro/2026-04-29-03-resource-list.md` (gpt-pro, resources)
 - `docs/explorations/gpt-pro/TODO.md` (gpt-pro, phased checklist)
 
 **Status:** Strategy synthesis. Not a paper claim. Anything empirical referenced here must trace back to `docs/research/paper-full-2.0.md` per the project's authoring discipline.

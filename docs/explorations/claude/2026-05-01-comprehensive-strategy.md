@@ -2,7 +2,7 @@
 
 **Date drafted:** 2026-04-30
 **Approved & adjudicated:** 2026-05-01 — Ultraplan refinement of Phase 1 engineering detail merged; two flagged conflicts (LiteLLM placement, Gate B sample size) adjudicated. See Phase 1 §"Adjudicated decisions" subsection for the resolved positions.
-**Status:** Canonical strategy + execution roadmap. Supersedes the immediate-term portion of `docs/explorations/claude/consolidated-plan.md`; that document remains the canonical short-horizon execution roadmap and is updated in lockstep with this strategy.
+**Status:** Canonical strategy + execution roadmap. Supersedes the immediate-term portion of `docs/explorations/claude/2026-04-30-consolidated-plan.md`; that document remains the canonical short-horizon execution roadmap and is updated in lockstep with this strategy.
 **Provenance:** Drafted in plan mode at `~/.claude/plans/reactive-stargazing-neumann.md`.
 
 ---
@@ -15,7 +15,7 @@ The LangGraph adaptive cell (`cell_110_langgraph_adaptive`, shipped on `experime
 
 This strategy goes further. It turns the three theoretical lenses the project carries — Hegelian recognition, Freudian internal dialectic, Weberian charisma — from *prompt themes* into *architectural primitives* with measurable side-effects. It also commits to a different evaluation discipline: less brute-force ablation, more strategic single runs that look for qualitative differentiation, with the test harness scaling only after the architectural primitives have demonstrated signal.
 
-The literature corpus downloaded into `docs/explorations/literature/pdfs/` (verified locally — KT, ToM, agents, memory all present) provides the technical apparatus. The framework analysis (`docs/explorations/claude/agents/agent-framework-analysis.md`) provides the substrate decisions: stay LangGraph; hybridize with XState (FSM), LiteLLM (multi-provider + cost), Inspect AI (Python eval sidecar); lift small patterns from Generative Agents, Voyager, Letta, Burr, Claude Agent SDK. Nothing in this strategy re-litigates those decisions.
+The literature corpus downloaded into `docs/explorations/literature/pdfs/` (verified locally — KT, ToM, agents, memory all present) provides the technical apparatus. The framework analysis (`docs/explorations/claude/agents/2026-05-01-agent-framework-analysis.md`) provides the substrate decisions: stay LangGraph; hybridize with XState (FSM), LiteLLM (multi-provider + cost), Inspect AI (Python eval sidecar); lift small patterns from Generative Agents, Voyager, Letta, Burr, Claude Agent SDK. Nothing in this strategy re-litigates those decisions.
 
 What this strategy does *not* settle: cross-session adaptation (deferred to Phase 4); whether the philosophical framing carries empirical weight beyond conceptual organisation (testable by recognition-vs-neutral-framed contrast cells, queued for after Phase 3); the fate of the existing 90-cell sweep (treated as baseline contrast body, not deprecated).
 
@@ -31,7 +31,7 @@ Each insight is operationalised as a concrete component with its own state, inte
 
 **Existing scaffolding:** `services/learnerTutorInteractionEngine.js:1100–1227` runs the learner-side ego/superego/ego-revision loop today. The tutor side runs the same pattern via `tutor-core`. `services/adaptiveTutor/graph.js` has `tutorEgoInitial → tutorSuperegoReview → constraintCheck → tutorEgoRevision → tutorEmit` (verified by exploration).
 
-**Extension (Phase 3):** the Psyche-v2 stack from `docs/explorations/gpt-pro/01-adaptive-recognition-psyche-architecture.md` §5 — `realityAgent`, `idAgent`, `superegoAgent`, `otherEgoAgent`, `egoMediator`, `responseGenerator`, `workingThroughMemory` — added behind feature flag, gated on Phase 2 results. Each agent specializes against a specific failure mode (gpt-pro §5.1 table). The `idAgent` is acknowledged as Tree-of-Thoughts with Freudian framing (synthesis §5 critique #2); the framing remains as conceptual organisation, not a metaphysical claim.
+**Extension (Phase 3):** the Psyche-v2 stack from `docs/explorations/gpt-pro/2026-04-29-01-adaptive-recognition-psyche-architecture.md` §5 — `realityAgent`, `idAgent`, `superegoAgent`, `otherEgoAgent`, `egoMediator`, `responseGenerator`, `workingThroughMemory` — added behind feature flag, gated on Phase 2 results. Each agent specializes against a specific failure mode (gpt-pro §5.1 table). The `idAgent` is acknowledged as Tree-of-Thoughts with Freudian framing (synthesis §5 critique #2); the framing remains as conceptual organisation, not a metaphysical claim.
 
 **Strict non-leakage rule preserved.** Each new role gets a fixture in `services/adaptiveTutor/mockLLM.js` (which already follows a `callRole(role, payload)` contract — trivial to extend) and a JSON-schema + system-prompt in `realLLM.js`. Internal deliberation MUST NOT appear in learner-facing output. Leakage rate is one of the A14 stop conditions.
 
@@ -217,7 +217,7 @@ The current `ADAPTIVE_TUTOR_LLM=real` path has no budget. A misconfigured run wi
 
 #### 2. A13 pre-registration document
 
-NEW file: `docs/explorations/claude/a13-pre-registration.md`. Required by `consolidated-plan.md` §4 P0 #2 and synthesis §6 step 1. Locks question, conditions, primary endpoint, success thresholds, stop conditions, budget *before* the run, so the analysis can't be retrofitted. Pull predeclared content from existing sources rather than re-deriving:
+NEW file: `docs/explorations/claude/2026-05-01-a13-pre-registration.md`. Required by `consolidated-plan.md` §4 P0 #2 and synthesis §6 step 1. Locks question, conditions, primary endpoint, success thresholds, stop conditions, budget *before* the run, so the analysis can't be retrofitted. Pull predeclared content from existing sources rather than re-deriving:
 
 - **Question and design** — `synthesis-with-gpt-pro.md` §6 step 9 (the "C3/C4 improves strategy_shift_correctness ≥25 pp over C1, ≥15 pp over C2" thresholds).
 - **Conditions (C1/C2/C3/C4)** — `consolidated-plan.md` §4 P0 #5.
@@ -381,10 +381,10 @@ Listed for execution-time reference. Files marked NEW are created; others are ex
 - new `scripts/generate-adaptive-paper-delta.js` — Phase 3
 
 **Documentation:**
-- this file (`docs/explorations/claude/comprehensive-strategy.md`) — canonical strategy doc; provenance in header
-- new `docs/explorations/claude/a13-pre-registration.md` — Phase 1
-- new `docs/explorations/claude/p2-bilateral-tom-pre-registration.md`, `p3-charisma-pre-registration.md`, `p4-cikt-pre-registration.md`, `p5-combined-pre-registration.md` — created at the start of each pilot
-- update `docs/explorations/claude/consolidated-plan.md` — append a §3.5 referencing this strategy doc as the upstream architectural plan
+- this file (`docs/explorations/claude/2026-05-01-comprehensive-strategy.md`) — canonical strategy doc; provenance in header
+- new `docs/explorations/claude/2026-05-01-a13-pre-registration.md` — Phase 1
+- new `docs/explorations/claude/2026-05-05-p2-bilateral-tom-pre-registration.md`, `p3-charisma-pre-registration.md`, `p4-cikt-pre-registration.md`, `p5-combined-pre-registration.md` — created at the start of each pilot
+- update `docs/explorations/claude/2026-04-30-consolidated-plan.md` — append a §3.5 referencing this strategy doc as the upstream architectural plan
 
 **Eval sidecar (Phase 3, NEW directory):**
 - `eval-inspect/` — Python Inspect AI tasks for cross-validation
@@ -441,7 +441,7 @@ Listed for execution-time reference. Files marked NEW are created; others are ex
    ```
    Expect: per-profile breakdown with four rows; `strategy_shift_correctness` non-null where smoke hit a turn at `triggerTurn + 1`.
 
-5. **Pre-registration check:** `docs/explorations/claude/a13-pre-registration.md` referenced in run's `description` (so `evaluation_runs.metadata` JSON carries the pre-reg pointer). Pre-reg doc commits ≥48 hours before Gate B run (visible in git log).
+5. **Pre-registration check:** `docs/explorations/claude/2026-05-01-a13-pre-registration.md` referenced in run's `description` (so `evaluation_runs.metadata` JSON carries the pre-reg pointer). Pre-reg doc commits ≥48 hours before Gate B run (visible in git log).
 
 6. **24 dialogues per cell inspectable** via `node scripts/browse-transcripts.js`.
 
@@ -450,7 +450,7 @@ Listed for execution-time reference. Files marked NEW are created; others are ex
 node scripts/eval-cli.js run \
   --profiles cell_110_langgraph_adaptive,cell_111_a13_C1_recognition_only,cell_112_a13_C2_egosuperego,cell_113_a13_C4_validator \
   --runs 3 --max-cost 50 \
-  --description "A13 Gate B — see docs/explorations/claude/a13-pre-registration.md"
+  --description "A13 Gate B — see docs/explorations/claude/2026-05-01-a13-pre-registration.md"
 ```
 Frontier-class judge (Sonnet 4.6 default). Sample size `--runs 3` (adjudicated 2026-05-01: budget-conscious initial run, $50 ceiling; follow up with `--runs 8` if signal underpowered). Result interpretation is the next gate, not this strategy.
 
@@ -482,7 +482,7 @@ Update this section in-place as phases complete. (Initial state: only Phase 1 pr
   - [x] Adaptive scaffold shipped (consolidated-plan §1)
   - [x] `analyze-strategy-shift.js` shipped
   - [x] eval-cli regression unblocked
-  - [x] A13 pre-registration doc (`docs/explorations/claude/a13-pre-registration.md` — locked 2026-05-01; earliest run-start 2026-05-03)
+  - [x] A13 pre-registration doc (`docs/explorations/claude/2026-05-01-a13-pre-registration.md` — locked 2026-05-01; earliest run-start 2026-05-03)
   - [x] Cost ceiling (commit `aa2b64f` — `services/adaptiveTutor/budgetTracker.js` + `--max-cost` flag; 11 tests)
   - [x] Polished policy-action YAML (`config/adaptive-policy-actions.yaml` + loader in `services/adaptiveTutor/policyActions.js`; expanded menu wired into `realLLM.js` ego prompts; mock smoke green with file present and absent)
   - [x] Scenario completeness fields (commit `78f9fe8` — `failure_mode` + `success_criteria` on all 8 scenarios; pure addition; analyzer extension still P1)

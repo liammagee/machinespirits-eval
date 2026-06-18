@@ -2,7 +2,7 @@
 
 **Status:** exploration brief, 2026-06-09. Seeds the worktree branch
 `claude/adaptation-ecology`. Sibling to — and explicitly does **not** duplicate —
-`notes/adaptation-exploration-plan.md` (post-§6.10 reframe; Tracks A/B/C) or
+`notes/2026-06-09-adaptation-exploration-plan.md` (post-§6.10 reframe; Tracks A/B/C) or
 `ADAPTATION-PLAN-2.0.md` (§6.10, frozen). Any result lands as **≈§6.13** of
 `docs/research/paper-full-2.0.md` (single-paper discipline; positive or
 negative; §6.12 is reserved for Track B, currently in flight).
@@ -15,7 +15,7 @@ operational: this brief's single paid stage (G1) runs only after Track B has
 concluded (one attended paid thing at a time).
 
 **SUPERSEDED-IN-PART, 2026-06-09 (same day):** the active arc moved to
-`notes/dramatic-derivation-plan.md` (branch `claude/dramatic-derivation`).
+`notes/2026-06-09-dramatic-derivation-plan.md` (branch `claude/dramatic-derivation`).
 What carries forward there: §0's substrate finding, the same-weights theorem
 and its two exits (information / efficiency), the validity triple (success
 real / not recursion / flows through contingency), and the yoked logic of §4.
@@ -297,10 +297,10 @@ is learner-side only.
 
 ## 7. Pointers
 
-`notes/adaptation-exploration-plan.md` (Tracks A/B/C; §0 discipline) ·
+`notes/2026-06-09-adaptation-exploration-plan.md` (Tracks A/B/C; §0 discipline) ·
 `ADAPTATION-PLAN-2.0.md` (§6.10, frozen) · `docs/research/paper-full-2.0.md`
-§6.3.2, §6.7–§6.11 · `notes/adaptation-repertoire-stage0-preregistration.md` +
-`notes/adaptation-conformity-classifier-stage0-preregistration.md` (worktree;
+§6.3.2, §6.7–§6.11 · `notes/2026-06-09-adaptation-repertoire-stage0-preregistration.md` +
+`notes/2026-06-09-adaptation-conformity-classifier-stage0-preregistration.md` (worktree;
 the pre-registration house style) · pilot substrate:
 `services/pilotItemBank.js`, `config/pilot/fractions-items.yaml`,
 `routes/pilotRoutes.js`, `services/pilotStore.js`,

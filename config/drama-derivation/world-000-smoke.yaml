@@ -1,7 +1,7 @@
 # SMOKE-GRADE world for the dramatic-derivation harness (plumbing only).
 # This is NOT the phase-1 scenario — it exists so the engine, ledger, chainer,
 # slope monitor, and failure taxonomy can be exercised deterministically with
-# zero API calls (notes/dramatic-derivation-plan.md §3 step 1). The real
+# zero API calls (notes/2026-06-09-dramatic-derivation-plan.md §3 step 1). The real
 # world-001 gets authored (deeper DAG, real dramaturgy) and must pass both
 # leak screens before any paid run.
 #

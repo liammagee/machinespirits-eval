@@ -2,7 +2,7 @@
 
 **Date drafted:** 2026-05-05
 **Status:** Pre-pilot design doc, locked before any LLM call. Functions as qualitative-pilot pre-registration: locks cells, scenarios, diagnostic frame, and disqualification conditions so the analysis cannot be retrofitted to whatever the data shows.
-**Relationship to other planning docs:** Supersedes for the immediate term the Phase 1 Gate B portion of `docs/explorations/claude/comprehensive-strategy.md` and the A13 pre-registration in `docs/explorations/claude/a13-pre-registration.md`. Both are treated as deferred work pending this pilot's outcome. The existing Gate B data on cells 110–113 (nemotron via OpenRouter) is treated as pipeline-validation evidence only — not as a basis for empirical claims.
+**Relationship to other planning docs:** Supersedes for the immediate term the Phase 1 Gate B portion of `docs/explorations/claude/2026-05-01-comprehensive-strategy.md` and the A13 pre-registration in `docs/explorations/claude/2026-05-01-a13-pre-registration.md`. Both are treated as deferred work pending this pilot's outcome. The existing Gate B data on cells 110–113 (nemotron via OpenRouter) is treated as pipeline-validation evidence only — not as a basis for empirical claims.
 
 ---
 

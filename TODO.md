@@ -401,7 +401,7 @@ Then re-run with `--ego-model openrouter.gemini-flash`. N = 2 models × 2 cells 
 
 ### A14. Evidence-Bound Adaptive Controller (HIGH — design 2026-05-13; Stages 1-5 DONE; arc closed 2026-05-17, paper v3.0.82 §6.9.7)
 
-**Origin**: `docs/next-steps/next-steps-report.md` (May 2026 review of paper-full-2.0.md v3.0.74). The report's thesis is that genuine adaptation is not memory but *accountable action selection* — minimal typed learner state, quoted-evidence requirement, finite policy vocabulary, grounding validator, learner contestability. Substantial reuse from `services/adaptiveTutor/` (already has typed state, 14 policy actions, trap suite, counterfactual replay). Net-new mechanism: evidence ledger + hypothesis TTL + grounding validator.
+**Origin**: `docs/next-steps/2026-05-13-next-steps-report.md` (May 2026 review of paper-full-2.0.md v3.0.74). The report's thesis is that genuine adaptation is not memory but *accountable action selection* — minimal typed learner state, quoted-evidence requirement, finite policy vocabulary, grounding validator, learner contestability. Substantial reuse from `services/adaptiveTutor/` (already has typed state, 14 policy actions, trap suite, counterfactual replay). Net-new mechanism: evidence ledger + hypothesis TTL + grounding validator.
 
 **Scope discipline**: the report sketches 7 experiments / 10 paper revisions / 5 implementation phases. This entry implements the **MVP only** — the genuinely-novel mechanism, on the existing trap suite, with two new cells. Everything else is deferred (knowledge tracing, action-plan best-of-N, human tutor co-pilot, etc.) until the MVP either lands or doesn't.
 
@@ -579,7 +579,7 @@ Decisive contrast = **S1 vs S0** (byte-identical edit-rights channel; sole diffe
 
 **Implementation plan**:
 
-- [x] **A18.0 - Design note** (zero API). Create `notes/poetics/recursive-tutor-learning-benchmark.md` with the above claim boundary, scenario-family schema, stop rules, and success criteria. DONE 2026-06-05.
+- [x] **A18.0 - Design note** (zero API). Create `notes/poetics/2026-06-05-recursive-tutor-learning-benchmark.md` with the above claim boundary, scenario-family schema, stop rules, and success criteria. DONE 2026-06-05.
 - [x] **A18.1 - Scenario-family fixture** (zero API). Add a small config under `config/poetics-calibration/` or `config/recursive-tutor-learning/` with 3 pilot families and held-out siblings. DONE 2026-06-05: `config/recursive-tutor-learning/pilot-families.yaml`.
 - [x] **A18.2 - Replay harness extension** (zero/low API). Extend existing replay scripts to support `attempt1 -> failure_record -> policy_revision -> attempt2_heldout`, preserving separate public transcript and held-out deliberation artifacts. DONE 2026-06-05: `scripts/run-recursive-tutor-learning-benchmark.js` materializes attempt-chain fixtures and replay commands against the existing recursive tutor-learning gate.
 - [x] **A18.3 - Local gate** (cheap local critics first). Add a local scoring/report script that emits per-family status: `clean_survivor`, `revise_again`, `coherence_confound`, `leakage`, `organic_drift`, `no_headroom`. DONE 2026-06-05: `scripts/report-recursive-tutor-learning-local-gate.js`, exposed as `npm run poetics:recursive-tutor-gate`.
@@ -737,7 +737,7 @@ is green. Two unambiguous tooling bugs fixed in `4724297` (tables-script epoch d
 cross-run sums; 67 → 10 / 3 → 1 internal fails). Remaining items are Paper-1.0 prose/data
 reconciliation in a superseded paper; kept here as optional cleanup, prioritised cheap-first.
 
-- [x] **C7.1 — `notes/major-bugs.md` Bug-4 over-claim (CHEAPEST).** DONE 2026-05-13 (private-repo
+- [x] **C7.1 — `notes/2026-06-03-major-bugs.md` Bug-4 over-claim (CHEAPEST).** DONE 2026-05-13 (private-repo
   commit `97939426`). Rewrote Bug-4's Impact paragraph: code-fix-in-place going forward; ~64 of
   ~1,898 in-scope rows rescored as validation sample (~3 %); ~1,834 not planned for backfill due
   to v2.2 cross-contamination risk on pre-2026-02-28 rows; Paper 2.0 supersedes Paper 1.0 on clean

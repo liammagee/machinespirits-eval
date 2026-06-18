@@ -3,7 +3,7 @@
  * Guessability leak screen for dramatic-derivation worlds — assembles K_L
  * (the learner-visible curtain-rise context) from a world spec and runs the
  * EXISTING Oedipus S-underivability screen on it, unchanged
- * (notes/dramatic-derivation-plan.md §2.1 "Guessability (sampled, cheap)").
+ * (notes/2026-06-09-dramatic-derivation-plan.md §2.1 "Guessability (sampled, cheap)").
  *
  * K_L mirrors the engine's learnerView at turn 0 exactly: the public
  * question, the setting prose, and the world's rules (as their learner-facing

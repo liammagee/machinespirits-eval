@@ -119,8 +119,8 @@ paper already has an A19 subsection that can absorb it as a negative follow-up.
 - Loop and closeout:
   `config/teaching-drama-axioms/a19-generalization-loops.yaml`,
   `notes/adaptive_2_0/a19-controlled-positive-search-2026-06-09.md`,
-  `notes/adaptive_2_0/a19-generalization-systemization-plan.md`,
-  `notes/adaptive_2_0/a19-drama-axiom-transfer-todo.md`.
+  `notes/adaptive_2_0/2026-06-08-a19-generalization-systemization-plan.md`,
+  `notes/adaptive_2_0/2026-06-07-a19-drama-axiom-transfer-todo.md`.
 - Role-separated implementation:
   `scripts/run-a19-role-separated-eval.js`,
   `tests/a19RoleSeparatedEval.test.js`,

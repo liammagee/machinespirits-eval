@@ -1,6 +1,6 @@
 /**
  * Programmatic diagnosis + readable transcript for staging-loop iterations
- * (notes/dramatic-derivation-plan.md §3 step 3: "run → programmatic diagnosis
+ * (notes/2026-06-09-dramatic-derivation-plan.md §3 step 3: "run → programmatic diagnosis
  * (the §2.5 taxonomy) + a transcript read → revise the tutor's role-script").
  *
  * diagnose() computes everything the loop needs to decide WHAT failed —

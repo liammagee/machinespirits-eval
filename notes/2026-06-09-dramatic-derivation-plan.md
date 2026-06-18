@@ -2,7 +2,7 @@
 
 **Status:** exploration brief, 2026-06-09. Seeds the worktree branch
 `claude/dramatic-derivation` (worktree `../machinespirits-eval-derivation`).
-Supersedes-in-part `notes/adaptation-ecology-plan.md` (the validity layer —
+Supersedes-in-part `notes/2026-06-09-adaptation-ecology-plan.md` (the validity layer —
 the same-weights theorem, the triple contrast, the yoked logic — carries
 forward; the item-bank corrupted-prior instrument and the G0 *opacity* gate
 are parked, the latter deliberately **inverted** here). Sibling to
@@ -284,8 +284,8 @@ trajectory, checkSnapshot) · `services/ontology/turnPlanSampler.js` ·
 `.claude/skills/ms-replay-one-side` (yoked plumbing) ·
 `EVAL_DB_PATH`/`EVAL_LOGS_DIR` (hermetic).
 
-**Position docs:** `notes/adaptation-ecology-plan.md` (validity layer;
-superseded-in-part) · `notes/adaptation-exploration-plan.md` (Tracks A/B/C)
+**Position docs:** `notes/2026-06-09-adaptation-ecology-plan.md` (validity layer;
+superseded-in-part) · `notes/2026-06-09-adaptation-exploration-plan.md` (Tracks A/B/C)
 · `DRAMATIC-RECOGNITION-PLAN.md` · `docs/research/paper-full-2.0.md`
 §6.7–§6.12, §7.9 (A18 arc).
 

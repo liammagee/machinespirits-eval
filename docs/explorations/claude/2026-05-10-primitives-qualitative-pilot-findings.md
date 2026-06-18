@@ -1,8 +1,8 @@
 # Architectural Primitives — Qualitative Pilot, Diagnostic Read Findings
 
 **Date drafted:** 2026-05-06
-**Parent doc:** `docs/explorations/claude/primitives-qualitative-pilot-design.md` (especially §7 three-pass diagnostic frame)
-**Resume context:** `docs/explorations/claude/primitives-qualitative-pilot-followup.md`
+**Parent doc:** `docs/explorations/claude/2026-05-10-primitives-qualitative-pilot-design.md` (especially §7 three-pass diagnostic frame)
+**Resume context:** `docs/explorations/claude/2026-05-10-primitives-qualitative-pilot-followup.md`
 **Status:** In-progress diagnostic read of the 20 base pilot dialogues. Pass 1 (open narrative) being walked through scenario-by-scenario, then Pass 2 (apparatus questions per primitive), then Pass 3 (failure-mode tagging).
 
 ---

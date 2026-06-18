@@ -1,7 +1,7 @@
 # Post-pilot follow-up plan
 
 **Date drafted:** 2026-05-06
-**Parent doc:** `docs/explorations/claude/primitives-qualitative-pilot-design.md`
+**Parent doc:** `docs/explorations/claude/2026-05-10-primitives-qualitative-pilot-design.md`
 **Status:** Plan locked, ready to resume in a fresh Claude session.
 
 ---
@@ -29,7 +29,7 @@ The five trap scenarios used (per `config/adaptive-trap-scenarios.yaml`):
 
 ## Key findings to carry forward
 
-1. **A13 Gate B (2026-05-05) hard numbers** (`docs/explorations/claude/a13-gate-b-results.md`): LangGraph (cell_110) beats the paper architecture (cell_112) by **+17.4pp** on `strategy_shift_correctness`, but only beats the single-call recognition baseline (cell_111) by **+10.3pp** — well below the predeclared 25pp threshold. Validator (cell_113) regressed −6.1pp at +47% cost; deprecated. Per-scenario: LangGraph wins concentrate on `repair_after_misrecognition` and `answer_seeking_to_productive_struggle` (the cross-turn-state-dependent ones).
+1. **A13 Gate B (2026-05-05) hard numbers** (`docs/explorations/claude/2026-05-05-a13-gate-b-results.md`): LangGraph (cell_110) beats the paper architecture (cell_112) by **+17.4pp** on `strategy_shift_correctness`, but only beats the single-call recognition baseline (cell_111) by **+10.3pp** — well below the predeclared 25pp threshold. Validator (cell_113) regressed −6.1pp at +47% cost; deprecated. Per-scenario: LangGraph wins concentrate on `repair_after_misrecognition` and `answer_seeking_to_productive_struggle` (the cross-turn-state-dependent ones).
 
 2. ~~**Schema gap on cell_115**~~ **MISDIAGNOSED — retracted 2026-05-06.** This finding was a wrong-field-path error. `tutorInternal.hypothesizedLearnerState` does not exist in the state schema. The bilateral-ToM apparatus persists three fields on `learnerProfile`: `summaryText`, `hypothesizedLearnerPerceptionOfTutor` (sub-fields `jsonState` + `summaryText`), and `tomProbes` (sub-fields `belief_dist`, `belief_choice`, `answerability_list`, `infoaccess_list`). Direct audit of all 5 May 6 cell_115 traces confirms these fields are populated with substantial content per turn. Q4 in the findings doc passes cleanly. P2 work on cell_115 is not gated by any instrumentation closure. See `primitives-qualitative-pilot-findings.md` §0 caveat retracted, §2.1 Q4, and §4.2 for the revised reading.
 
@@ -37,7 +37,7 @@ The five trap scenarios used (per `config/adaptive-trap-scenarios.yaml`):
 
 4. **Cell_115 dialogue qualitative observation** (single dialogue, `eval-2026-05-06-ca4f4b27` × `repair_after_misrecognition_v1`): tutor catches the learner walking back what they granted at T0 (T1), distinguishes empirical-vs-ontological readings of "constitutive entanglement" (T2), names question-type disagreement explicitly (T3). All `policyAction = name_the_disagreement` for T1–T4 — a single-action lock that on cell_110 would read as stagnation, but here the *content* of "the disagreement" escalates across turns. The current strategy-shift analyzer doesn't capture refinement-within-action.
 
-5. **A13 pre-reg deviation** (`docs/explorations/claude/a13-pre-registration.md` 2026-05-05 entry): Gate B 3rd attempt actually used `openrouter/nemotron`, not predeclared `claude-sonnet-4.6`, and only ran cells 110+111 (not 112+113). The 110+111 contrast is descriptive, not H1-confirmatory.
+5. **A13 pre-reg deviation** (`docs/explorations/claude/2026-05-01-a13-pre-registration.md` 2026-05-05 entry): Gate B 3rd attempt actually used `openrouter/nemotron`, not predeclared `claude-sonnet-4.6`, and only ran cells 110+111 (not 112+113). The 110+111 contrast is descriptive, not H1-confirmatory.
 
 ---
 
@@ -61,7 +61,7 @@ Steps 4–5 are new this session. The rest is unchanged from the strategic excha
 
 ## Step #1 — Three-pass diagnostic read
 
-**Source rubric:** `docs/explorations/claude/primitives-qualitative-pilot-design.md` §7 — three passes:
+**Source rubric:** `docs/explorations/claude/2026-05-10-primitives-qualitative-pilot-design.md` §7 — three passes:
 
 - **Pass 1** (§7, lines 154–166): open narrative, phenomenological-primary read of each dialogue
 - **Pass 2** (§7, lines 167–192): apparatus questions per primitive (Hegelian / Freudian / Weberian)
@@ -84,7 +84,7 @@ WHERE run_id IN (
 
 For the adaptive cells (110, 111, 115), additional state lives in `logs/tutor-dialogues/<dialogue_id>.json` (per-turn `learnerProfile`, `tutorInternal`, `policyAction`, `counterfactual` branch). For cell_106, the per-turn id-construction envelope is in the `id_construction_trace` column directly.
 
-**Output:** a new section in `primitives-qualitative-pilot-design.md` titled `## Diagnostic read findings (2026-05-06)`, OR a new sibling file `docs/explorations/claude/primitives-qualitative-pilot-findings.md` if it gets long.
+**Output:** a new section in `primitives-qualitative-pilot-design.md` titled `## Diagnostic read findings (2026-05-06)`, OR a new sibling file `docs/explorations/claude/2026-05-10-primitives-qualitative-pilot-findings.md` if it gets long.
 
 **Specific framing the user added:** filter explicitly by which dialogues show troubled-student patterns (multi-turn provocations, oracle-seeking with topical drift, iterated misrecognition, affective shutdown spiral) vs. routine. Synthesis question: where does cell_110 / cell_115 differentially help over cell_111?
 
@@ -163,5 +163,5 @@ Defer detail until #1–#5 complete; informed by their outputs. Standing intent:
 ## Resume command (paste into fresh Claude session)
 
 ```
-Read docs/explorations/claude/primitives-qualitative-pilot-followup.md to load context, then start step #1: three-pass diagnostic read of the 20 pilot dialogues per primitives-qualitative-pilot-design.md §7. Begin by pulling dialogue text and per-turn traces for the 5 runIds, then walk through Pass 1 (open narrative) on each dialogue before moving to Pass 2 (apparatus questions per primitive). Output should append to primitives-qualitative-pilot-design.md as a new "Diagnostic read findings" section, OR start a sibling file primitives-qualitative-pilot-findings.md if it grows long.
+Read docs/explorations/claude/2026-05-10-primitives-qualitative-pilot-followup.md to load context, then start step #1: three-pass diagnostic read of the 20 pilot dialogues per primitives-qualitative-pilot-design.md §7. Begin by pulling dialogue text and per-turn traces for the 5 runIds, then walk through Pass 1 (open narrative) on each dialogue before moving to Pass 2 (apparatus questions per primitive). Output should append to primitives-qualitative-pilot-design.md as a new "Diagnostic read findings" section, OR start a sibling file primitives-qualitative-pilot-findings.md if it grows long.
 ```

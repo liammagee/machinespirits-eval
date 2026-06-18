@@ -7,15 +7,15 @@
 
 This document locks three experiments simultaneously. They share a substrate (the adaptive runner, sonnet via the claude-code CLI bridge, the policy-action enum) and they share an analytic family (variants on `strategy_shift_correctness`), so locking them as one document avoids the temptation to retro-couple their results post-hoc. A claim of the form "P2 wins on metric X but only because P3 also held" must be a planned secondary analysis, not a discovered one.
 
-The N=24 follow-up to A13 (see `docs/explorations/claude/a13-followup-N24-granular-results.md`) is the immediate upstream. Its main finding — bilateral_tom and recognition-only tie at 37.5% on strict label match but bilateral_tom leads by 8.3pp on family-match — is the falsifiable hypothesis the three experiments below test, in three different ways.
+The N=24 follow-up to A13 (see `docs/explorations/claude/2026-05-10-a13-followup-N24-granular-results.md`) is the immediate upstream. Its main finding — bilateral_tom and recognition-only tie at 37.5% on strict label match but bilateral_tom leads by 8.3pp on family-match — is the falsifiable hypothesis the three experiments below test, in three different ways.
 
 Upstream sources (do not duplicate; cite section):
-- A13 pre-reg: `docs/explorations/claude/a13-pre-registration.md`
-- A13 Gate B results: `docs/explorations/claude/a13-gate-b-results.md`
-- N=24 follow-up: `docs/explorations/claude/a13-followup-N24-granular-results.md`
+- A13 pre-reg: `docs/explorations/claude/2026-05-01-a13-pre-registration.md`
+- A13 Gate B results: `docs/explorations/claude/2026-05-05-a13-gate-b-results.md`
+- N=24 follow-up: `docs/explorations/claude/2026-05-10-a13-followup-N24-granular-results.md`
 - Within-family scenarios design: `config/adaptive-trap-scenarios-v2.yaml` (header)
-- Ablation design: `docs/explorations/claude/state-schema-ablation-design.md`
-- Crossover design: `docs/explorations/claude/bilateral-tom-id-director-crossover-design.md`
+- Ablation design: `docs/explorations/claude/2026-05-10-state-schema-ablation-design.md`
+- Crossover design: `docs/explorations/claude/2026-05-10-bilateral-tom-id-director-crossover-design.md`
 
 ---
 

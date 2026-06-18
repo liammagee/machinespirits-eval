@@ -1,6 +1,6 @@
 /**
  * Slope instrumentation — the dramaturgy made measurable
- * (notes/dramatic-derivation-plan.md §2.5).
+ * (notes/2026-06-09-dramatic-derivation-plan.md §2.5).
  *
  * D(t) = remaining derivation distance to the secret given the learner's
  * current GROUNDED facts: 0 if the closure already forces S, else the

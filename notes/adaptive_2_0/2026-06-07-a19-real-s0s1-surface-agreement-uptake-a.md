@@ -14,7 +14,7 @@ claim, or main-harness effect.
 
 - Family: `surface_agreement_uptake`.
 - Attempt-1 output: `exports/a19/real-attempt1/surface-agreement-uptake/`.
-- Attempt-1 gate report: `notes/adaptive_2_0/a19-attempt1-real-gate-report-surface-agreement.md`.
+- Attempt-1 gate report: `notes/adaptive_2_0/2026-06-07-a19-attempt1-real-gate-report-surface-agreement.md`.
 - Result: real attempt-1 survivor.
 - Admitted axiom: `exports/a19/axioms/surface-agreement-uptake/axiom.json`.
 - Axiom memory contract: `single_teaching_drama_axiom`; full replay `revision.json` bundles are not allowed as A19 S1 memory.
