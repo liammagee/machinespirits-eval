@@ -1607,6 +1607,10 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
       replays: listReplayBundles().length,
       proofRuns: derivationRuns.length,
       proofVerdicts,
+      // Newest proof-run mtime (listDerivationRuns sorts newest-first) — a second
+      // activity clock so the headline doesn't read idle when the file-based
+      // derivation arc is live but the DB scripts corpus has not had a new run.
+      proofLastMs: derivationRuns[0]?.mtimeMs || 0,
       recentRuns,
     };
     return res.type('html').send(renderDashboardHtml(stats));
@@ -4293,14 +4297,18 @@ function renderDashboardHtml(stats = {}) {
   };
   const pctScored = s.scripts ? Math.round((s.scored / s.scripts) * 100) : 0;
   const lastRunRel = recentRuns.length ? relTime(parseTs(recentRuns[0].createdAt)) : '—';
+  const lastProofRel = s.proofLastMs ? relTime(s.proofLastMs) : '—';
 
   // Status command-bar digest: a factual one-liner, not a fabricated liveness
   // claim (there is no cheap "a run is executing right now" signal). The dot and
   // the open-flags segment turn amber only when something actually needs you.
+  // Both corpora carry a clock: "last run" is the scored scripts DB; "last proof"
+  // is the file-based derivation loop — so a live arc never reads as idle.
   const statusSegs = [
     `${fmt(s.scripts)} scripts`,
     `${fmt(s.proofRuns)} proof runs`,
     `last run ${lastRunRel}`,
+    `last proof ${lastProofRel}`,
     `${pctScored}% scored`,
   ]
     .map((t) => `<span class="cr-status__seg">${t}</span>`)
@@ -4317,7 +4325,7 @@ function renderDashboardHtml(stats = {}) {
     `<div class="ops-row${warn ? ' is-warn' : ''}"><span class="ops-row__n">${n}</span><span class="ops-row__l">${label}</span></div>`;
   const opsHtml = [
     `<div class="ops-panel"><div class="ops-panel__h">corpus</div>${opsRow(fmt(s.scripts), 'scripts')}${opsRow(fmt(s.proofRuns), 'proof runs')}${opsRow(fmt(s.replays), 'replays')}</div>`,
-    `<div class="ops-panel"><div class="ops-panel__h">activity</div>${opsRow(fmt(s.runs), 'runs')}${opsRow(lastRunRel, 'last run')}${opsRow(fmt(disciplines.length), 'disciplines')}</div>`,
+    `<div class="ops-panel"><div class="ops-panel__h">activity</div>${opsRow(fmt(s.runs), 'runs')}${opsRow(lastRunRel, 'last run · scripts')}${opsRow(lastProofRel, 'last run · proofs')}${opsRow(fmt(disciplines.length), 'disciplines')}</div>`,
     `<div class="ops-panel"><div class="ops-panel__h">review</div>${opsRow(`${pctScored}%`, `scored · ${fmt(s.scored)}/${fmt(s.scripts)}`)}${opsRow(fmt(s.labels), `human labels · ${fmt(s.critics)} critics`)}${opsRow(fmt(s.openFlags), `open flag${s.openFlags === 1 ? '' : 's'}`, s.openFlags > 0)}</div>`,
   ].join('');
 
