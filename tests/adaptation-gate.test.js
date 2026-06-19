@@ -113,3 +113,42 @@ test('gate allows repeated affective acknowledgement when shutdown evidence rene
 
   assert.equal(result.allowed, true);
 });
+
+test('gate does not repair compatible actionable uncertainty back to diagnostic', () => {
+  const result = validateProofReleaseOwnershipGate({
+    stateBelief: stateBelief({
+      learner_project: {
+        goal: 'restart from one small available move',
+        current_plan: "I just... I can't do this. I don't get any of this and I'm wasting your time.",
+        commitment: 'uncommitted',
+        next_authorship_opportunity: 'name one small part still available',
+      },
+      hypotheses: [
+        {
+          id: 'affective_shutdown',
+          probability: 0.72,
+          evidence: ["I just... I can't do this."],
+          disconfirming_evidence: [],
+        },
+        {
+          id: 'low_confidence',
+          probability: 0.28,
+          evidence: ["I don't get any of this."],
+          disconfirming_evidence: [],
+        },
+      ],
+      uncertainty: {
+        entropy: 0.86,
+        needs_discrimination: true,
+        reason: 'Affective state is dominant but still mixed with low confidence.',
+      },
+    }),
+    selectedAction: materialize('acknowledge_and_redirect'),
+  });
+
+  assert.equal(result.allowed, true);
+  assert.equal(
+    result.violations.some((v) => v.code === VIOLATION_CODES.HIGH_CONFIDENCE_WITH_HIGH_UNCERTAINTY),
+    false,
+  );
+});

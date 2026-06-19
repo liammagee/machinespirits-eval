@@ -3,6 +3,7 @@ import test from 'node:test';
 import {
   actionRecencyPenalty,
   estimateLearnerStateBelief,
+  getActionDefinition,
   legacyPolicyActionForAdaptiveAction,
   selectPedagogicalAction,
 } from '../services/adaptiveTutor/actionPolicy.js';
@@ -14,6 +15,27 @@ test('uncertain first turn selects a diagnostic action', () => {
   });
   const selection = selectPedagogicalAction({ stateBelief: belief, interventionLedger: [], mode: 'closed_loop' });
   assert.equal(selection.selectedAction.action_type, 'diagnose_with_discriminating_question');
+});
+
+test('inconclusive diagnostic under same condition selects a different compatible action', () => {
+  const belief = estimateLearnerStateBelief({
+    dialogue: [{ role: 'learner', content: "I don't get why that works." }],
+    turnIndex: 1,
+  });
+  const ledger = [
+    {
+      status: 'closed',
+      outcome: 'inconclusive',
+      action_type: 'diagnose_with_discriminating_question',
+      hypothesis_ids: ['missing_prerequisite', 'low_confidence'],
+    },
+  ];
+  const selection = selectPedagogicalAction({ stateBelief: belief, interventionLedger: ledger, mode: 'closed_loop' });
+  const compatible = getActionDefinition(selection.selectedAction.action_type).compatible_hypotheses || [];
+
+  assert.equal(belief.uncertainty.needs_discrimination, true);
+  assert.equal(selection.selectedAction.action_type, 'minimal_hint');
+  assert.ok(belief.hypotheses.some((h) => compatible.includes(h.id)));
 });
 
 test('successful diagnostic evidence lets task misread select reanchor_goal', () => {
@@ -277,6 +299,23 @@ test('cross-suite working-memory overload lowers cognitive load', () => {
   assert.equal(belief.hypotheses[0].id, 'working_memory_overload');
   assert.equal(selection.selectedAction.action_type, 'lower_cognitive_load');
   assert.equal(legacyPolicyActionForAdaptiveAction(selection.selectedAction.action_type), 'lower_cognitive_load');
+});
+
+test('cross-suite activity avoidance stays in answer-withholding mode', () => {
+  const belief = estimateLearnerStateBelief({
+    dialogue: [
+      {
+        role: 'learner',
+        content:
+          "Look, I learn better by reading explanations than by doing exercises - that's just how my brain works. Just walk me through the answer to the recognition question and I'll absorb it from there.",
+      },
+    ],
+    turnIndex: 3,
+  });
+  const selection = selectPedagogicalAction({ stateBelief: belief, interventionLedger: [], mode: 'closed_loop' });
+
+  assert.equal(belief.hypotheses[0].id, 'answer_seeking');
+  assert.equal(selection.selectedAction.action_type, 'withhold_answer');
 });
 
 test('progressive config avoids repeating the same action under the same learner condition', () => {

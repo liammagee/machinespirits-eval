@@ -18,11 +18,14 @@ export function detectOutcomeEvidence(learnerTurn = '') {
   const choice = includesAny(lower, [/\bi would\b/u, /\bi'll\b/u, /\bi choose\b/u, /\bmy strategy\b/u, /\bnext i\b/u]);
   const prediction = includesAny(lower, [/\bi predict\b/u, /\bi expect\b/u, /\bwould happen\b/u, /\bwill happen\b/u]);
   const diagnostic = includesAny(lower, [
-    /prerequisite|basic idea|don'?t understand the concept|concept.*missing/u,
+    /prerequisite|basic idea|basic concept|underlying idea|don'?t understand the concept|concept.*missing/u,
     /not sure|low confidence|i think.*but/u,
     /approv|acceptable|is that right|before committing|waiting for/u,
-    /misread|asking for|task was/u,
+    /misread|asking for|task was|definition.*argument/u,
     /notation|symbols|equation|concrete example/u,
+    /third time|still not clicking|moving parts|lose the thread|too many concepts/u,
+    /only works if|in dispute|doesn'?t follow|talking past|methodological disagreement|incompatible frameworks/u,
+    /can'?t do this|wasting your time|i just\.\.\.|shut(?:ting)? down|overwhelmed/u,
     /just tell|answer/u,
     /another way|alternative|different model/u,
   ]);
@@ -32,6 +35,7 @@ export function detectOutcomeEvidence(learnerTurn = '') {
   const learnerRepair = includesAny(lower, [/i should change|that was wrong|repair|revise|instead i/u]);
   const transfer = includesAny(lower, [/new case|similar problem|transfer|same idea/u]);
   const tutorAdoption = includesAny(lower, [/as you said|your reason|using your explanation/u]);
+  const stateSignal = diagnostic || taskReorientation || modelComparison || selfCheck || learnerRepair;
 
   return {
     categories: {
@@ -42,14 +46,14 @@ export function detectOutcomeEvidence(learnerTurn = '') {
       'learner-authored repair': learnerRepair,
       'learner-authored application': rationale || transfer,
       'learner-authored transfer': transfer,
-      'state-disambiguating response': diagnostic,
+      'state-disambiguating response': stateSignal,
       'task reorientation': taskReorientation,
       'model comparison': modelComparison,
       'self-check': selfCheck,
       'mere agreement': mereAgreement,
       'verbatim adoption of tutor rationale': tutorAdoption,
       'tutor-completed step': false,
-      'empty release': !choice && !rationale && !prediction,
+      'empty release': !choice && !rationale && !prediction && !stateSignal,
       'premature tutor validation': false,
     },
     span: evidenceSpan(text),

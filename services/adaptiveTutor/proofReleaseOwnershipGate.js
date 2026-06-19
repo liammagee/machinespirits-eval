@@ -63,6 +63,34 @@ function isHighControlProofSupply(action) {
   return ['explain_principle', 'model_worked_example'].includes(action?.action_type) || Number(action?.control_cost || 0) >= 0.6;
 }
 
+const ACTIONABLE_UNDER_UNCERTAINTY = new Set([
+  'answer_seeking',
+  'working_memory_overload',
+  'notation_overload',
+  'boundary_case',
+  'substantive_objection',
+  'metaphor_overextension',
+  'affective_shutdown',
+  'tutor_misread',
+  'sophistication_upgrade',
+  'false_mastery',
+]);
+
+function actionCompatibleWithDominant(action, dominant) {
+  if (!action?.action_type || !dominant) return false;
+  try {
+    const def = getActionDefinition(action.action_type);
+    return (def.compatible_hypotheses || []).includes(dominant);
+  } catch {
+    return false;
+  }
+}
+
+function actionableUncertaintyCanProceed(stateBelief, action) {
+  const dominant = dominantHypothesis(stateBelief);
+  return ACTIONABLE_UNDER_UNCERTAINTY.has(dominant) && actionCompatibleWithDominant(action, dominant);
+}
+
 function lowerControlNearTie(selectedAction, candidateActions = [], epsilon) {
   const selected = candidateActions.find((c) => c.action_type === selectedAction.action_type);
   if (!selected) return null;
@@ -108,7 +136,11 @@ export function validateProofReleaseOwnershipGate({
     }
   }
 
-  if (stateBelief?.uncertainty?.needs_discrimination && stateBelief?.hypotheses?.[0]?.probability >= 0.65) {
+  if (
+    stateBelief?.uncertainty?.needs_discrimination &&
+    stateBelief?.hypotheses?.[0]?.probability >= 0.65 &&
+    !actionableUncertaintyCanProceed(stateBelief, action)
+  ) {
     violations.push(
       violation(
         VIOLATION_CODES.HIGH_CONFIDENCE_WITH_HIGH_UNCERTAINTY,

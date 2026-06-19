@@ -491,7 +491,17 @@ function weightFromText(text, interventionLedger = []) {
     weights.additive_misconception += 0.78;
     weights.correct_alternative_model += 0.08;
   }
-  if (includesAny(lower, [/just tell/u, /give me the answer/u, /what'?s the answer/u, /final answer/u])) {
+  if (
+    includesAny(lower, [
+      /just tell/u,
+      /give me (the )?answer/u,
+      /what'?s the answer/u,
+      /final answer/u,
+      /walk me through (the )?answer/u,
+      /just walk me through/u,
+      /answer to the/u,
+    ])
+  ) {
     weights.answer_seeking += 0.72;
   }
   if (includesAny(lower, [/^yes[, ]/u, /^yes that makes sense/u, /^ok(ay)? that makes sense/u, /^makes sense/u])) {
@@ -704,6 +714,13 @@ function recentFailedActions(interventionLedger = [], hypothesisId = null) {
     .slice(-5);
 }
 
+function recentNonSuccessActions(interventionLedger = [], hypothesisId = null) {
+  return interventionLedger
+    .filter((record) => record?.status === 'closed' && ['failure', 'inconclusive'].includes(record.outcome))
+    .filter((record) => !hypothesisId || (record.hypothesis_ids || []).includes(hypothesisId))
+    .slice(-5);
+}
+
 function recentSuccessfulDiagnostic(interventionLedger = []) {
   return interventionLedger
     .filter((record) => record?.status === 'closed' && record.outcome === 'success')
@@ -729,13 +746,10 @@ function diagnosticStillRequired(stateBelief, interventionLedger = []) {
   const dominant = dominantHypothesis(stateBelief);
   if (ACTIONABLE_UNDER_UNCERTAINTY.has(dominant)) return false;
   if (recentSuccessfulDiagnostic(interventionLedger)) return false;
+  if (recentDiagnosticNonSuccess(stateBelief, interventionLedger)) return false;
   return !recentFailedActions(interventionLedger, dominant).some(
     (r) => r.action_type === 'diagnose_with_discriminating_question',
   );
-}
-
-function materialFailureCount(interventionLedger, actionType, hypothesisId) {
-  return recentFailedActions(interventionLedger, hypothesisId).filter((record) => record.action_type === actionType).length;
 }
 
 function recentClosedActions(interventionLedger = [], limit = 3) {
@@ -747,9 +761,30 @@ function materiallySameLearnerCondition(record, stateBelief) {
   const dominant = dominantHypothesis(stateBelief);
   if (!dominant || dominant === 'unknown') return false;
   const priorHypotheses = new Set(record?.hypothesis_ids || []);
-  if (!priorHypotheses.has(dominant)) return false;
+  const hasCurrentOverlap = (stateBelief?.hypotheses || []).some(
+    (h) => priorHypotheses.has(h.id) && Number(h.probability || 0) >= 0.25,
+  );
+  if (!hasCurrentOverlap) return false;
   const dominantProbability = Number(stateBelief?.hypotheses?.[0]?.probability || 0);
-  return dominantProbability >= 0.45;
+  return dominantProbability >= 0.3 || stateBelief?.uncertainty?.needs_discrimination === true;
+}
+
+function recentDiagnosticNonSuccess(stateBelief, interventionLedger = []) {
+  return recentClosedActions(interventionLedger, 5).some(
+    (record) =>
+      record.action_type === 'diagnose_with_discriminating_question' &&
+      ['failure', 'inconclusive'].includes(record.outcome) &&
+      materiallySameLearnerCondition(record, stateBelief),
+  );
+}
+
+function materialNonSuccessCount(interventionLedger, actionType, stateBelief) {
+  const dominant = dominantHypothesis(stateBelief);
+  return recentNonSuccessActions(interventionLedger, dominant).filter((record) => {
+    if (record.action_type !== actionType) return false;
+    if (!materiallySameLearnerCondition(record, stateBelief)) return false;
+    return record.outcome === 'failure' || actionType === 'diagnose_with_discriminating_question';
+  }).length;
 }
 
 export function actionRecencyPenalty(actionType, stateBelief, interventionLedger = [], config = {}) {
@@ -765,8 +800,7 @@ export function actionRecencyPenalty(actionType, stateBelief, interventionLedger
 }
 
 export function actionRepetitionPenalty(actionType, stateBelief, interventionLedger = [], config = {}) {
-  const dominant = dominantHypothesis(stateBelief);
-  const count = materialFailureCount(interventionLedger, actionType, dominant);
+  const count = materialNonSuccessCount(interventionLedger, actionType, stateBelief);
   const failurePenalty = count * (config.repetitionPenalty ?? DEFAULT_ADAPTIVE_POLICY_CONFIG.repetitionPenalty);
   return failurePenalty + actionRecencyPenalty(actionType, stateBelief, interventionLedger, config);
 }
@@ -846,13 +880,26 @@ export function selectPedagogicalAction({ stateBelief, interventionLedger = [], 
     : null;
   if (!selectedRow) {
     const dominant = dominantHypothesis(stateBelief);
+    const preferredType = HYPOTHESIS_ACTION_MAP[dominant]?.[0];
+    const preferredRow = preferredType ? candidates.find((c) => c.action_type === preferredType) : null;
+    if (
+      recentDiagnosticNonSuccess(stateBelief, interventionLedger) &&
+      preferredRow &&
+      preferredRow.action_type !== 'diagnose_with_discriminating_question'
+    ) {
+      selectedRow = preferredRow;
+    }
     if (ACTIONABLE_UNDER_UNCERTAINTY.has(dominant)) {
-      const preferredType = HYPOTHESIS_ACTION_MAP[dominant]?.[0];
-      const preferredRow = preferredType ? candidates.find((c) => c.action_type === preferredType) : null;
       const bestUtility = Math.max(...candidates.map((c) => c.utility));
-      selectedRow =
-        preferredRow && bestUtility - preferredRow.utility <= merged.utilityTieEpsilon ? preferredRow : candidates[0];
-    } else {
+      if (!selectedRow) {
+        selectedRow =
+          preferredRow &&
+          (recentDiagnosticNonSuccess(stateBelief, interventionLedger) ||
+            bestUtility - preferredRow.utility <= merged.utilityTieEpsilon)
+            ? preferredRow
+            : candidates[0];
+      }
+    } else if (!selectedRow) {
       const bestUtility = Math.max(...candidates.map((c) => c.utility));
       const nearTied = candidates
         .filter((c) => bestUtility - c.utility <= merged.utilityTieEpsilon)
