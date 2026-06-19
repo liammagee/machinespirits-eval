@@ -1,0 +1,1640 @@
+meta:
+  schema_version: ms-curriculum-drama-v0.1
+  source_curriculum_id: ai_foundations_v1
+  source_curriculum_version: 1.0.0
+  source_schema_version: ms-curriculum-v0.1
+  mode: all
+  compiler: services/curriculum/curriculumCompiler.js
+  target: scripts/generate-pedagogical-dramas.js dramas[]
+  boundary: This is a generator control file, not evidence that the curriculum teaches. Unknown
+    curriculum_binding fields are held-out metadata for analysis.
+dramas:
+  - id: D_AF0_CURRICULUM
+    discipline: ai_foundations
+    topic: What representations and tools must I control before I can reason reliably about AI systems?
+    persona: confused_novice
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    pedagogical_approach: vygotsky_zpd_scaffolding
+    dialogue_approach: workshop_clinic
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    tutor_adaptation_policy: peripeteia
+    opening_speaker: learner
+    ending_speaker: learner
+    scenario_name: "ai_foundations_v1: AF0 Adaptive bridge: quantitative and programming readiness"
+    learner_start_state: "The learner is working on executable notebook and quantitative readiness trace. Likely
+      first misframing: Treating a variable name as the value itself. Immediate task: Compute an output from a
+      small function table. The scene should make the artifact answerable to Exact numeric checks, array-shape
+      validation, restricted Python unit tests, AST inspection for required constructs, and plot-property
+      checks."
+    learner_voice_constraint: The learner should expose the first framing in ordinary working speech before the
+      tutor corrects it. Keep the artifact visible in the dialogue.
+    intended_tutor_character: "Evidence-bearing adaptive tutor: separate diagnosis, action selection, artifact
+      verification, and outcome closure."
+    intended_lean: curriculum_drama
+    dramatic_shape: Treating a variable name as the value itself -> artifact-mediated test -> Compute an output
+      from a small function table
+    curriculum_binding:
+      curriculum_id: ai_foundations_v1
+      module_id: AF0
+      module_title: "Adaptive bridge: quantitative and programming readiness"
+      kc_ids:
+        - AF-B01
+        - AF-B02
+        - AF-B03
+        - AF-B04
+        - AF-B05
+        - AF-B06
+        - AF-B07
+      main_artifact: executable notebook and quantitative readiness trace
+      primary_verifier: unit tests and numeric checks
+      misconceptions:
+        - Treating a variable name as the value itself.
+        - Confusing row count with feature count.
+        - Reading correlation as causation.
+        - Believing a seed makes an experiment representative rather than repeatable.
+      world_adaptation_spec_id: W_AF0_CURRICULUM
+      world_adaptation_spec_version: ms-world-adaptation-v0.1
+      world_adaptation_spec_hash: sha256:16037f76c640fb98eed8e4aa3d58c559ac179d7f69bdf0f7d1e151bd01c110d8
+      world_locked_at_compile_time: true
+      world_public_constraints:
+        artifact: executable notebook and quantitative readiness trace
+        primary_verifier: unit tests and numeric checks
+        verifier_evidence:
+          - Exact numeric checks, array-shape validation, restricted Python unit tests, AST inspection for
+            required constructs, and plot-property checks
+          - >-
+            The learner completes one independent quantitative task, one independent code task, and one mixed
+            transfer task. Failure routes only the missing bridge components; the full bridge is not repeated.
+
+
+            ---
+        preferred_action_families:
+          - diagnose_with_discriminating_question
+          - request_evidence
+          - contrast_models
+          - ask_strategy_choice
+        disallowed_action_families:
+          - model_worked_example
+        success_observables:
+          - Learner identifies which part of "Compute an output from a small function table" is uncertain.
+          - Learner gives a reason that can be checked by Exact numeric checks, array-shape validation,
+            restricted Python unit tests, AST inspection for required constructs, and plot-property checks.
+          - Learner contrasts the misconception with an artifact-testable alternative.
+          - Learner chooses the next check for executable notebook and quantitative readiness trace.
+          - Learner makes a bounded attempt before receiving validation.
+        forbidden_public_moves:
+          - Do not expose curriculum misconception labels, answer keys, or verifier internals to the learner.
+          - Do not supply the decisive proof or artifact repair before the learner commits to a testable move.
+          - Do not replace the learner-authored artifact or plan with a tutor-authored finished answer.
+        boundary: Public-safe projection for drama generation; hidden misconception IDs and answer keys are not
+          included.
+    turn_plan:
+      - at:
+          turn: 1
+        role: director
+        moves:
+          - inject_revisit_cue
+        cue:
+          policy: reframe
+          anchor: misframing-candidate
+      - at:
+          turn: 3
+        role: tutor
+        when_trigger:
+          - pseudo_catharsis
+          - closure_pressure
+          - resistance
+          - misfit
+        moves:
+          - stock_take
+          - route_change
+          - action_gate
+        route_change:
+          from: Treating a variable name as the value itself
+          to: Compute an output from a small function table
+        forbid:
+          - hold
+      - at:
+          turn: 3
+        role: learner
+        moves:
+          - perform_device
+        forbid:
+          - pseudo_catharsis
+      - at:
+          turn: 5
+        role: tutor
+        moves:
+          - recognition_press
+  - id: D_AF1_CURRICULUM
+    discipline: ai_foundations
+    topic: What makes a problem an AI problem, and when is AI the wrong tool?
+    persona: focused_achiever
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    pedagogical_approach: socratic_elenchus
+    dialogue_approach: courtroom_cross_examination
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    tutor_adaptation_policy: peripeteia
+    opening_speaker: learner
+    ending_speaker: learner
+    scenario_name: "ai_foundations_v1: AF1 AI systems, tasks, and agents"
+    learner_start_state: "The learner is working on AI problem formulation card. Likely first misframing: “AI”
+      means human-like general intelligence. Immediate task: Classify several systems without relying on
+      marketing labels. The scene should make the artifact answerable to A JSON-schema-backed system
+      formulation checks required fields. Consistency rules detect contradictions such as claiming a fully
+      observable environment while omitting relevant state, or proposing supervised learning without labels.
+      An LLM reviewer may assess argument quality only after structural checks pass."
+    learner_voice_constraint: The learner should expose the first framing in ordinary working speech before the
+      tutor corrects it. Keep the artifact visible in the dialogue.
+    intended_tutor_character: "Evidence-bearing adaptive tutor: separate diagnosis, action selection, artifact
+      verification, and outcome closure."
+    intended_lean: curriculum_drama
+    dramatic_shape: “AI” means human-like general intelligence -> artifact-mediated test -> Classify several
+      systems without relying on marketing labels
+    curriculum_binding:
+      curriculum_id: ai_foundations_v1
+      module_id: AF1
+      module_title: AI systems, tasks, and agents
+      kc_ids:
+        - AF-101
+        - AF-102
+        - AF-103
+        - AF-104
+        - AF-105
+        - AF-106
+        - AF-107
+      main_artifact: AI problem formulation card
+      primary_verifier: schema and consistency rules
+      misconceptions:
+        - “AI” means human-like general intelligence.
+        - Any automation counts as machine learning.
+        - A model’s prediction is the same as a decision.
+        - More complex technology is automatically more appropriate.
+        - The objective supplied to the system is identical to the stakeholder’s true goal.
+      world_adaptation_spec_id: W_AF1_CURRICULUM
+      world_adaptation_spec_version: ms-world-adaptation-v0.1
+      world_adaptation_spec_hash: sha256:d0a271cce4f7abc1e4c5df53a521a55b028773944f14676d154da010d4ff09bd
+      world_locked_at_compile_time: true
+      world_public_constraints:
+        artifact: AI problem formulation card
+        primary_verifier: schema and consistency rules
+        verifier_evidence:
+          - A JSON-schema-backed system formulation checks required fields. Consistency rules detect
+            contradictions such as claiming a fully observable environment while omitting relevant state, or
+            proposing supervised learning without labels. An LLM reviewer may assess argument quality only
+            after structural checks pass
+          - >-
+            Given a new application, the learner chooses among rules, search, supervised learning, generative
+            AI, or no automation and defends the choice with an evidence plan.
+
+
+            ---
+        preferred_action_families:
+          - diagnose_with_discriminating_question
+          - reanchor_goal
+          - request_evidence
+          - ask_strategy_choice
+        disallowed_action_families:
+          - model_worked_example
+        success_observables:
+          - Learner identifies which part of "Classify several systems without relying on marketing labels" is
+            uncertain.
+          - Learner gives a reason that can be checked by A JSON-schema-backed system formulation checks
+            required fields. Consistency rules detect contradictions such as claiming a fully observable
+            environment while omitting relevant state, or proposing supervised learning without labels. An LLM
+            reviewer may assess argument quality only after structural checks pass.
+          - Learner contrasts the misconception with an artifact-testable alternative.
+          - Learner chooses the next check for AI problem formulation card.
+          - Learner makes a bounded attempt before receiving validation.
+        forbidden_public_moves:
+          - Do not expose curriculum misconception labels, answer keys, or verifier internals to the learner.
+          - Do not supply the decisive proof or artifact repair before the learner commits to a testable move.
+          - Do not replace the learner-authored artifact or plan with a tutor-authored finished answer.
+        boundary: Public-safe projection for drama generation; hidden misconception IDs and answer keys are not
+          included.
+    turn_plan:
+      - at:
+          turn: 1
+        role: director
+        moves:
+          - inject_revisit_cue
+        cue:
+          policy: reframe
+          anchor: misframing-candidate
+      - at:
+          turn: 3
+        role: tutor
+        when_trigger:
+          - pseudo_catharsis
+          - closure_pressure
+          - resistance
+          - misfit
+        moves:
+          - stock_take
+          - route_change
+          - action_gate
+        route_change:
+          from: “AI” means human-like general intelligence
+          to: Classify several systems without relying on marketing labels
+        forbid:
+          - hold
+      - at:
+          turn: 3
+        role: learner
+        moves:
+          - perform_device
+        forbid:
+          - pseudo_catharsis
+      - at:
+          turn: 5
+        role: tutor
+        moves:
+          - recognition_press
+  - id: D_AF2_CURRICULUM
+    discipline: ai_foundations
+    topic: How can an agent find a solution when the answer is not directly available?
+    persona: focused_achiever
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    pedagogical_approach: socratic_elenchus
+    dialogue_approach: socratic_short_exchange
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    tutor_adaptation_policy: peripeteia
+    opening_speaker: learner
+    ending_speaker: learner
+    scenario_name: "ai_foundations_v1: AF2 Search, heuristics, and planning"
+    learner_start_state: "The learner is working on state space, search trace, and heuristic. Likely first
+      misframing: Confusing the cheapest next edge with the cheapest complete path. Immediate task: Construct
+      a state representation for a puzzle or routing problem. The scene should make the artifact answerable to
+      A graph simulator validates legal transitions, frontier ordering, explored-set handling, path cost, node
+      expansions, and solution optimality. A heuristic checker exhaustively tests admissibility and
+      consistency for bounded graphs. Hidden graphs prevent memorization of public traces."
+    learner_voice_constraint: The learner should expose the first framing in ordinary working speech before the
+      tutor corrects it. Keep the artifact visible in the dialogue.
+    intended_tutor_character: "Evidence-bearing adaptive tutor: separate diagnosis, action selection, artifact
+      verification, and outcome closure."
+    intended_lean: curriculum_drama
+    dramatic_shape: Confusing the cheapest next edge with the cheapest complete path -> artifact-mediated test ->
+      Construct a state representation for a puzzle or routing problem
+    curriculum_binding:
+      curriculum_id: ai_foundations_v1
+      module_id: AF2
+      module_title: Search, heuristics, and planning
+      kc_ids:
+        - AF-201
+        - AF-202
+        - AF-203
+        - AF-204
+        - AF-205
+        - AF-206
+        - AF-207
+        - AF-208
+      main_artifact: state space, search trace, and heuristic
+      primary_verifier: graph/search simulator
+      misconceptions:
+        - Confusing the cheapest next edge with the cheapest complete path.
+        - Treating greedy search as optimal.
+        - Believing a larger heuristic is always better.
+        - Re-expanding states without recognizing duplicate-state handling.
+        - Defining states with insufficient information for valid transitions.
+      world_adaptation_spec_id: W_AF2_CURRICULUM
+      world_adaptation_spec_version: ms-world-adaptation-v0.1
+      world_adaptation_spec_hash: sha256:7a8ad29843415ad649eb2178cf260649f1e4c5668e8098ee558b757d1fddb281
+      world_locked_at_compile_time: true
+      world_public_constraints:
+        artifact: state space, search trace, and heuristic
+        primary_verifier: graph/search simulator
+        verifier_evidence:
+          - A graph simulator validates legal transitions, frontier ordering, explored-set handling, path
+            cost, node expansions, and solution optimality. A heuristic checker exhaustively tests
+            admissibility and consistency for bounded graphs. Hidden graphs prevent memorization of public
+            traces
+          - >-
+            Model a novel scheduling or path-planning problem, choose a search method, and explain what
+            property of the environment determines the choice.
+
+
+            ---
+        preferred_action_families:
+          - diagnose_with_discriminating_question
+          - request_evidence
+          - contrast_models
+          - ask_strategy_choice
+        disallowed_action_families:
+          - model_worked_example
+        success_observables:
+          - Learner identifies which part of "Construct a state representation for a puzzle or routing
+            problem" is uncertain.
+          - Learner gives a reason that can be checked by A graph simulator validates legal transitions,
+            frontier ordering, explored-set handling, path cost, node expansions, and solution optimality. A
+            heuristic checker exhaustively tests admissibility and consistency for bounded graphs. Hidden
+            graphs prevent memorization of public traces.
+          - Learner contrasts the misconception with an artifact-testable alternative.
+          - Learner chooses the next check for state space, search trace, and heuristic.
+          - Learner makes a bounded attempt before receiving validation.
+        forbidden_public_moves:
+          - Do not expose curriculum misconception labels, answer keys, or verifier internals to the learner.
+          - Do not supply the decisive proof or artifact repair before the learner commits to a testable move.
+          - Do not replace the learner-authored artifact or plan with a tutor-authored finished answer.
+        boundary: Public-safe projection for drama generation; hidden misconception IDs and answer keys are not
+          included.
+    turn_plan:
+      - at:
+          turn: 1
+        role: director
+        moves:
+          - inject_revisit_cue
+        cue:
+          policy: reframe
+          anchor: misframing-candidate
+      - at:
+          turn: 3
+        role: tutor
+        when_trigger:
+          - pseudo_catharsis
+          - closure_pressure
+          - resistance
+          - misfit
+        moves:
+          - stock_take
+          - route_change
+          - action_gate
+        route_change:
+          from: Confusing the cheapest next edge with the cheapest complete path
+          to: Construct a state representation for a puzzle or routing problem
+        forbid:
+          - hold
+      - at:
+          turn: 3
+        role: learner
+        moves:
+          - perform_device
+        forbid:
+          - pseudo_catharsis
+      - at:
+          turn: 5
+        role: tutor
+        moves:
+          - recognition_press
+  - id: D_AF3_CURRICULUM
+    discipline: ai_foundations
+    topic: How should an AI system update beliefs and make decisions when evidence is incomplete?
+    persona: confused_novice
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    pedagogical_approach: socratic_elenchus
+    dialogue_approach: socratic_short_exchange
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    tutor_adaptation_policy: peripeteia
+    opening_speaker: learner
+    ending_speaker: learner
+    scenario_name: "ai_foundations_v1: AF3 Probability, uncertainty, and evidence"
+    learner_start_state: "The learner is working on Bayesian evidence model. Likely first misframing: Prosecutor’s
+      fallacy or inverse probability confusion. Immediate task: Complete a probability table. The scene should
+      make the artifact answerable to Exact rational arithmetic where possible, tolerance-based floating-point
+      checks, symbolic-equivalence checks, and enumeration of probability tables. A decision checker verifies
+      that the selected action follows from the learner’s stated utilities and posterior."
+    learner_voice_constraint: The learner should expose the first framing in ordinary working speech before the
+      tutor corrects it. Keep the artifact visible in the dialogue.
+    intended_tutor_character: "Evidence-bearing adaptive tutor: separate diagnosis, action selection, artifact
+      verification, and outcome closure."
+    intended_lean: curriculum_drama
+    dramatic_shape: Prosecutor’s fallacy or inverse probability confusion -> artifact-mediated test -> Complete a
+      probability table
+    curriculum_binding:
+      curriculum_id: ai_foundations_v1
+      module_id: AF3
+      module_title: Probability, uncertainty, and evidence
+      kc_ids:
+        - AF-301
+        - AF-302
+        - AF-303
+        - AF-304
+        - AF-305
+        - AF-306
+        - AF-307
+      main_artifact: Bayesian evidence model
+      primary_verifier: exact and tolerance-based numeric checker
+      misconceptions:
+        - Prosecutor’s fallacy or inverse probability confusion.
+        - Ignoring the base rate.
+        - Treating two correlated observations as independent evidence.
+        - Interpreting 80% confidence as 80% accuracy without calibration evidence.
+        - Choosing the most probable state without considering decision costs.
+      world_adaptation_spec_id: W_AF3_CURRICULUM
+      world_adaptation_spec_version: ms-world-adaptation-v0.1
+      world_adaptation_spec_hash: sha256:3b13edffa9fc9443b95131fa5070aa50c084b4a36927cc44cc023f1332aa4a7f
+      world_locked_at_compile_time: true
+      world_public_constraints:
+        artifact: Bayesian evidence model
+        primary_verifier: exact and tolerance-based numeric checker
+        verifier_evidence:
+          - Exact rational arithmetic where possible, tolerance-based floating-point checks,
+            symbolic-equivalence checks, and enumeration of probability tables. A decision checker verifies
+            that the selected action follows from the learner’s stated utilities and posterior
+          - >-
+            Analyze a screening or anomaly-detection scenario with a changed base rate and explain why the
+            same test can yield a different posterior.
+
+
+            ---
+        preferred_action_families:
+          - diagnose_with_discriminating_question
+          - request_evidence
+          - contrast_models
+          - ask_strategy_choice
+        disallowed_action_families:
+          - model_worked_example
+        success_observables:
+          - Learner identifies which part of "Complete a probability table" is uncertain.
+          - Learner gives a reason that can be checked by Exact rational arithmetic where possible,
+            tolerance-based floating-point checks, symbolic-equivalence checks, and enumeration of probability
+            tables. A decision checker verifies that the selected action follows from the learner’s stated
+            utilities and posterior.
+          - Learner contrasts the misconception with an artifact-testable alternative.
+          - Learner chooses the next check for Bayesian evidence model.
+          - Learner makes a bounded attempt before receiving validation.
+        forbidden_public_moves:
+          - Do not expose curriculum misconception labels, answer keys, or verifier internals to the learner.
+          - Do not supply the decisive proof or artifact repair before the learner commits to a testable move.
+          - Do not replace the learner-authored artifact or plan with a tutor-authored finished answer.
+        boundary: Public-safe projection for drama generation; hidden misconception IDs and answer keys are not
+          included.
+    turn_plan:
+      - at:
+          turn: 1
+        role: director
+        moves:
+          - inject_revisit_cue
+        cue:
+          policy: reframe
+          anchor: misframing-candidate
+      - at:
+          turn: 3
+        role: tutor
+        when_trigger:
+          - pseudo_catharsis
+          - closure_pressure
+          - resistance
+          - misfit
+        moves:
+          - stock_take
+          - route_change
+          - action_gate
+        route_change:
+          from: Prosecutor’s fallacy or inverse probability confusion
+          to: Complete a probability table
+        forbid:
+          - hold
+      - at:
+          turn: 3
+        role: learner
+        moves:
+          - perform_device
+        forbid:
+          - pseudo_catharsis
+      - at:
+          turn: 5
+        role: tutor
+        moves:
+          - recognition_press
+  - id: D_AF4_CURRICULUM
+    discipline: ai_foundations
+    topic: What does a dataset actually measure, and what can a model legitimately learn from it?
+    persona: focused_achiever
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    pedagogical_approach: vygotsky_zpd_scaffolding
+    dialogue_approach: workshop_clinic
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    tutor_adaptation_policy: peripeteia
+    opening_speaker: learner
+    ending_speaker: learner
+    scenario_name: "ai_foundations_v1: AF4 Data, representation, and measurement"
+    learner_start_state: "The learner is working on data schema, split plan, and datasheet. Likely first
+      misframing: Assuming a column name proves construct validity. Immediate task: Repair a feature/label
+      schema. The scene should make the artifact answerable to Dataframe-schema checks, group and temporal
+      split validators, duplicate-entity detection, pipeline fit/transform inspection, leakage rules,
+      provenance-field validation, and deterministic statistics. A hidden dataset contains deliberately
+      planted leakage patterns."
+    learner_voice_constraint: The learner should expose the first framing in ordinary working speech before the
+      tutor corrects it. Keep the artifact visible in the dialogue.
+    intended_tutor_character: "Evidence-bearing adaptive tutor: separate diagnosis, action selection, artifact
+      verification, and outcome closure."
+    intended_lean: curriculum_drama
+    dramatic_shape: Assuming a column name proves construct validity -> artifact-mediated test -> Repair a
+      feature/label schema
+    curriculum_binding:
+      curriculum_id: ai_foundations_v1
+      module_id: AF4
+      module_title: Data, representation, and measurement
+      kc_ids:
+        - AF-401
+        - AF-402
+        - AF-403
+        - AF-404
+        - AF-405
+        - AF-406
+        - AF-407
+        - AF-408
+      main_artifact: data schema, split plan, and datasheet
+      primary_verifier: schema, leakage, and provenance checks
+      misconceptions:
+        - Assuming a column name proves construct validity.
+        - Randomly splitting time-dependent or person-level records.
+        - Fitting preprocessing on the entire dataset.
+        - Treating missing values as random without evidence.
+        - Assuming a large dataset is representative.
+      world_adaptation_spec_id: W_AF4_CURRICULUM
+      world_adaptation_spec_version: ms-world-adaptation-v0.1
+      world_adaptation_spec_hash: sha256:4b249056c6d96b3e3c93d4f56d4b246d00363e8037d44da86d7e951e310b826d
+      world_locked_at_compile_time: true
+      world_public_constraints:
+        artifact: data schema, split plan, and datasheet
+        primary_verifier: schema, leakage, and provenance checks
+        verifier_evidence:
+          - Dataframe-schema checks, group and temporal split validators, duplicate-entity detection, pipeline
+            fit/transform inspection, leakage rules, provenance-field validation, and deterministic
+            statistics. A hidden dataset contains deliberately planted leakage patterns
+          - >-
+            The learner receives a new dataset description and must determine whether a claimed target can be
+            measured, how to split the data, and what deployment population is unsupported.
+
+
+            ---
+        preferred_action_families:
+          - request_evidence
+          - contrast_models
+          - reanchor_goal
+          - repair_overconfidence
+        disallowed_action_families:
+          - model_worked_example
+        success_observables:
+          - Learner identifies which part of "Repair a feature/label schema" is uncertain.
+          - Learner gives a reason that can be checked by Dataframe-schema checks, group and temporal split
+            validators, duplicate-entity detection, pipeline fit/transform inspection, leakage rules,
+            provenance-field validation, and deterministic statistics. A hidden dataset contains deliberately
+            planted leakage patterns.
+          - Learner contrasts the misconception with an artifact-testable alternative.
+          - Learner chooses the next check for data schema, split plan, and datasheet.
+          - Learner makes a bounded attempt before receiving validation.
+        forbidden_public_moves:
+          - Do not expose curriculum misconception labels, answer keys, or verifier internals to the learner.
+          - Do not supply the decisive proof or artifact repair before the learner commits to a testable move.
+          - Do not replace the learner-authored artifact or plan with a tutor-authored finished answer.
+        boundary: Public-safe projection for drama generation; hidden misconception IDs and answer keys are not
+          included.
+    turn_plan:
+      - at:
+          turn: 1
+        role: director
+        moves:
+          - inject_revisit_cue
+        cue:
+          policy: reframe
+          anchor: misframing-candidate
+      - at:
+          turn: 3
+        role: tutor
+        when_trigger:
+          - pseudo_catharsis
+          - closure_pressure
+          - resistance
+          - misfit
+        moves:
+          - stock_take
+          - route_change
+          - action_gate
+        route_change:
+          from: Assuming a column name proves construct validity
+          to: Repair a feature/label schema
+        forbid:
+          - hold
+      - at:
+          turn: 3
+        role: learner
+        moves:
+          - perform_device
+        forbid:
+          - pseudo_catharsis
+      - at:
+          turn: 5
+        role: tutor
+        moves:
+          - recognition_press
+  - id: D_AF5_CURRICULUM
+    discipline: ai_foundations
+    topic: How does a model learn a mapping from examples, and what makes a comparison meaningful?
+    persona: focused_achiever
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    pedagogical_approach: bloom_cognitive_ladder
+    dialogue_approach: workshop_clinic
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    tutor_adaptation_policy: peripeteia
+    opening_speaker: learner
+    ending_speaker: learner
+    scenario_name: "ai_foundations_v1: AF5 Supervised learning and baselines"
+    learner_start_state: "The learner is working on reproducible baseline model. Likely first misframing: Treating
+      classification labels as inherently ordered. Immediate task: Frame a narrative problem as regression or
+      classification. The scene should make the artifact answerable to Hidden unit tests, fixed datasets,
+      expected prediction tolerances, pipeline inspection, parameter and seed checks, and reproducibility
+      re-runs. The system records whether the learner inspected test results before finalizing model choice."
+    learner_voice_constraint: The learner should expose the first framing in ordinary working speech before the
+      tutor corrects it. Keep the artifact visible in the dialogue.
+    intended_tutor_character: "Evidence-bearing adaptive tutor: separate diagnosis, action selection, artifact
+      verification, and outcome closure."
+    intended_lean: curriculum_drama
+    dramatic_shape: Treating classification labels as inherently ordered -> artifact-mediated test -> Frame a
+      narrative problem as regression or classification
+    curriculum_binding:
+      curriculum_id: ai_foundations_v1
+      module_id: AF5
+      module_title: Supervised learning and baselines
+      kc_ids:
+        - AF-501
+        - AF-502
+        - AF-503
+        - AF-504
+        - AF-505
+        - AF-506
+        - AF-507
+        - AF-508
+      main_artifact: reproducible baseline model
+      primary_verifier: hidden tests and fixed-data run harness
+      misconceptions:
+        - Treating classification labels as inherently ordered.
+        - Interpreting association coefficients causally.
+        - Choosing a complex model without beating a trivial baseline.
+        - Comparing models trained or tested on different data.
+        - Repeatedly tuning against the test set.
+      world_adaptation_spec_id: W_AF5_CURRICULUM
+      world_adaptation_spec_version: ms-world-adaptation-v0.1
+      world_adaptation_spec_hash: sha256:4ce407ea069d2573edbc35c0af3529915331a1dbab45423810e0dc253caf4cb8
+      world_locked_at_compile_time: true
+      world_public_constraints:
+        artifact: reproducible baseline model
+        primary_verifier: hidden tests and fixed-data run harness
+        verifier_evidence:
+          - Hidden unit tests, fixed datasets, expected prediction tolerances, pipeline inspection, parameter
+            and seed checks, and reproducibility re-runs. The system records whether the learner inspected
+            test results before finalizing model choice
+          - >-
+            On a fresh dataset, the learner builds two defensible baselines and one learned model, then states
+            what conclusion is justified before viewing the hidden audit result.
+
+
+            ---
+        preferred_action_families:
+          - request_evidence
+          - ask_strategy_choice
+          - repair_overconfidence
+          - minimal_hint
+        disallowed_action_families:
+          - model_worked_example
+        success_observables:
+          - Learner identifies which part of "Frame a narrative problem as regression or classification" is
+            uncertain.
+          - Learner gives a reason that can be checked by Hidden unit tests, fixed datasets, expected
+            prediction tolerances, pipeline inspection, parameter and seed checks, and reproducibility
+            re-runs. The system records whether the learner inspected test results before finalizing model
+            choice.
+          - Learner contrasts the misconception with an artifact-testable alternative.
+          - Learner chooses the next check for reproducible baseline model.
+          - Learner makes a bounded attempt before receiving validation.
+        forbidden_public_moves:
+          - Do not expose curriculum misconception labels, answer keys, or verifier internals to the learner.
+          - Do not supply the decisive proof or artifact repair before the learner commits to a testable move.
+          - Do not replace the learner-authored artifact or plan with a tutor-authored finished answer.
+        boundary: Public-safe projection for drama generation; hidden misconception IDs and answer keys are not
+          included.
+    turn_plan:
+      - at:
+          turn: 1
+        role: director
+        moves:
+          - inject_revisit_cue
+        cue:
+          policy: reframe
+          anchor: misframing-candidate
+      - at:
+          turn: 3
+        role: tutor
+        when_trigger:
+          - pseudo_catharsis
+          - closure_pressure
+          - resistance
+          - misfit
+        moves:
+          - stock_take
+          - route_change
+          - action_gate
+        route_change:
+          from: Treating classification labels as inherently ordered
+          to: Frame a narrative problem as regression or classification
+        forbid:
+          - hold
+      - at:
+          turn: 3
+        role: learner
+        moves:
+          - perform_device
+        forbid:
+          - pseudo_catharsis
+      - at:
+          turn: 5
+        role: tutor
+        moves:
+          - recognition_press
+  - id: D_AF6_CURRICULUM
+    discipline: ai_foundations
+    topic: What evidence supports a claim that a model will work beyond the data used to build it?
+    persona: adversarial_tester
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    pedagogical_approach: socratic_elenchus
+    dialogue_approach: courtroom_cross_examination
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    tutor_adaptation_policy: peripeteia
+    opening_speaker: learner
+    ending_speaker: learner
+    scenario_name: "ai_foundations_v1: AF6 Evaluation, generalization, calibration, and shift"
+    learner_start_state: "The learner is working on model audit and claim–evidence table. Likely first misframing:
+      “High accuracy means a good classifier.”. Immediate task: Derive metrics from counts rather than
+      memorized formulas. The scene should make the artifact answerable to A metric engine recomputes all
+      values from predictions. An evaluation linter traces data access and flags test-set reuse, group
+      leakage, preprocessing leakage, and incomparable model runs. Learning-curve tasks use parameterized
+      ground truth. Calibration checks compute bin statistics and proper scoring rules."
+    learner_voice_constraint: The learner should expose the first framing in ordinary working speech before the
+      tutor corrects it. Keep the artifact visible in the dialogue.
+    intended_tutor_character: "Evidence-bearing adaptive tutor: separate diagnosis, action selection, artifact
+      verification, and outcome closure."
+    intended_lean: curriculum_drama
+    dramatic_shape: “High accuracy means a good classifier.” -> artifact-mediated test -> Derive metrics from
+      counts rather than memorized formulas
+    curriculum_binding:
+      curriculum_id: ai_foundations_v1
+      module_id: AF6
+      module_title: Evaluation, generalization, calibration, and shift
+      kc_ids:
+        - AF-601
+        - AF-602
+        - AF-603
+        - AF-604
+        - AF-605
+        - AF-606
+        - AF-607
+        - AF-608
+        - AF-609
+        - AF-610
+        - AF-611
+      main_artifact: model audit and claim–evidence table
+      primary_verifier: metric engine and evaluation linter
+      misconceptions:
+        - “High accuracy means a good classifier.”
+        - Precision and recall are interchangeable.
+        - Cross-validation removes the need for a final test.
+        - A smaller training error means a better deployed model.
+        - Calibration and discrimination are the same property.
+        - Average performance guarantees acceptable subgroup performance.
+      world_adaptation_spec_id: W_AF6_CURRICULUM
+      world_adaptation_spec_version: ms-world-adaptation-v0.1
+      world_adaptation_spec_hash: sha256:b9e1a9bd0ddc74c4b6d51a8a0bd3a9abfcfe63786fe0d6aba551484c669df558
+      world_locked_at_compile_time: true
+      world_public_constraints:
+        artifact: model audit and claim–evidence table
+        primary_verifier: metric engine and evaluation linter
+        verifier_evidence:
+          - A metric engine recomputes all values from predictions. An evaluation linter traces data access
+            and flags test-set reuse, group leakage, preprocessing leakage, and incomparable model runs.
+            Learning-curve tasks use parameterized ground truth. Calibration checks compute bin statistics and
+            proper scoring rules
+          - >-
+            Audit a persuasive but invalid model-performance report. The learner must identify each
+            unsupported claim, reconstruct a valid evaluation, and predict which conclusions may change.
+
+
+            ---
+        preferred_action_families:
+          - repair_overconfidence
+          - request_evidence
+          - contrast_models
+          - challenge_without_telling
+        disallowed_action_families:
+          - model_worked_example
+        success_observables:
+          - Learner identifies which part of "Derive metrics from counts rather than memorized formulas" is
+            uncertain.
+          - Learner gives a reason that can be checked by A metric engine recomputes all values from
+            predictions. An evaluation linter traces data access and flags test-set reuse, group leakage,
+            preprocessing leakage, and incomparable model runs. Learning-curve tasks use parameterized ground
+            truth. Calibration checks compute bin statistics and proper scoring rules.
+          - Learner contrasts the misconception with an artifact-testable alternative.
+          - Learner chooses the next check for model audit and claim–evidence table.
+          - Learner makes a bounded attempt before receiving validation.
+        forbidden_public_moves:
+          - Do not expose curriculum misconception labels, answer keys, or verifier internals to the learner.
+          - Do not supply the decisive proof or artifact repair before the learner commits to a testable move.
+          - Do not replace the learner-authored artifact or plan with a tutor-authored finished answer.
+        boundary: Public-safe projection for drama generation; hidden misconception IDs and answer keys are not
+          included.
+    turn_plan:
+      - at:
+          turn: 1
+        role: director
+        moves:
+          - inject_revisit_cue
+        cue:
+          policy: reframe
+          anchor: misframing-candidate
+      - at:
+          turn: 3
+        role: tutor
+        when_trigger:
+          - pseudo_catharsis
+          - closure_pressure
+          - resistance
+          - misfit
+        moves:
+          - stock_take
+          - route_change
+          - action_gate
+        route_change:
+          from: “High accuracy means a good classifier.”
+          to: Derive metrics from counts rather than memorized formulas
+        forbid:
+          - hold
+      - at:
+          turn: 3
+        role: learner
+        moves:
+          - perform_device
+        forbid:
+          - pseudo_catharsis
+      - at:
+          turn: 5
+        role: tutor
+        moves:
+          - recognition_press
+  - id: D_AF7_CURRICULUM
+    discipline: ai_foundations
+    topic: How do neural networks transform inputs and adjust parameters, and why can training fail?
+    persona: confused_novice
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    pedagogical_approach: bloom_cognitive_ladder
+    dialogue_approach: workshop_clinic
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    tutor_adaptation_policy: peripeteia
+    opening_speaker: learner
+    ending_speaker: learner
+    scenario_name: "ai_foundations_v1: AF7 Optimization and neural networks"
+    learner_start_state: "The learner is working on forward pass, update trace, training diagnosis. Likely first
+      misframing: A neuron behaves like a biological neuron in a literal explanatory sense. Immediate task:
+      Compute a small forward pass. The scene should make the artifact answerable to Reference tensor
+      computations, shape inference, automatic differentiation comparisons, tolerance checks, hidden training
+      runs, and curve-classification rules. Learners may use a library, but must also complete small manual
+      traces."
+    learner_voice_constraint: The learner should expose the first framing in ordinary working speech before the
+      tutor corrects it. Keep the artifact visible in the dialogue.
+    intended_tutor_character: "Evidence-bearing adaptive tutor: separate diagnosis, action selection, artifact
+      verification, and outcome closure."
+    intended_lean: curriculum_drama
+    dramatic_shape: A neuron behaves like a biological neuron in a literal explanatory sense -> artifact-mediated
+      test -> Compute a small forward pass
+    curriculum_binding:
+      curriculum_id: ai_foundations_v1
+      module_id: AF7
+      module_title: Optimization and neural networks
+      kc_ids:
+        - AF-701
+        - AF-702
+        - AF-703
+        - AF-704
+        - AF-705
+        - AF-706
+        - AF-707
+        - AF-708
+        - AF-709
+      main_artifact: forward pass, update trace, training diagnosis
+      primary_verifier: tensor and gradient checks
+      misconceptions:
+        - A neuron behaves like a biological neuron in a literal explanatory sense.
+        - Gradient descent guarantees the global optimum.
+        - Lower training loss always means better generalization.
+        - More layers automatically improve performance.
+        - The loss function fully represents the real goal.
+      world_adaptation_spec_id: W_AF7_CURRICULUM
+      world_adaptation_spec_version: ms-world-adaptation-v0.1
+      world_adaptation_spec_hash: sha256:92a5f07aa844165d03df4db71fbf72eec94ff90629c8366acbfc38bedd2ae58b
+      world_locked_at_compile_time: true
+      world_public_constraints:
+        artifact: forward pass, update trace, training diagnosis
+        primary_verifier: tensor and gradient checks
+        verifier_evidence:
+          - Reference tensor computations, shape inference, automatic differentiation comparisons, tolerance
+            checks, hidden training runs, and curve-classification rules. Learners may use a library, but must
+            also complete small manual traces
+          - >-
+            Given two failed training runs, diagnose different causes and propose tests that would distinguish
+            optimization failure from data or evaluation failure.
+
+
+            ---
+        preferred_action_families:
+          - diagnose_with_discriminating_question
+          - request_evidence
+          - contrast_models
+          - ask_strategy_choice
+        disallowed_action_families:
+          - model_worked_example
+        success_observables:
+          - Learner identifies which part of "Compute a small forward pass" is uncertain.
+          - Learner gives a reason that can be checked by Reference tensor computations, shape inference,
+            automatic differentiation comparisons, tolerance checks, hidden training runs, and
+            curve-classification rules. Learners may use a library, but must also complete small manual
+            traces.
+          - Learner contrasts the misconception with an artifact-testable alternative.
+          - Learner chooses the next check for forward pass, update trace, training diagnosis.
+          - Learner makes a bounded attempt before receiving validation.
+        forbidden_public_moves:
+          - Do not expose curriculum misconception labels, answer keys, or verifier internals to the learner.
+          - Do not supply the decisive proof or artifact repair before the learner commits to a testable move.
+          - Do not replace the learner-authored artifact or plan with a tutor-authored finished answer.
+        boundary: Public-safe projection for drama generation; hidden misconception IDs and answer keys are not
+          included.
+    turn_plan:
+      - at:
+          turn: 1
+        role: director
+        moves:
+          - inject_revisit_cue
+        cue:
+          policy: reframe
+          anchor: misframing-candidate
+      - at:
+          turn: 3
+        role: tutor
+        when_trigger:
+          - pseudo_catharsis
+          - closure_pressure
+          - resistance
+          - misfit
+        moves:
+          - stock_take
+          - route_change
+          - action_gate
+        route_change:
+          from: A neuron behaves like a biological neuron in a literal explanatory sense
+          to: Compute a small forward pass
+        forbid:
+          - hold
+      - at:
+          turn: 3
+        role: learner
+        moves:
+          - perform_device
+        forbid:
+          - pseudo_catharsis
+      - at:
+          turn: 5
+        role: tutor
+        moves:
+          - recognition_press
+  - id: D_AF8_CURRICULUM
+    discipline: ai_foundations
+    topic: How can a model learn representations of tokens and use context to transform them?
+    persona: eager_explorer
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    pedagogical_approach: montessori_prepared_environment
+    dialogue_approach: workshop_clinic
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    tutor_adaptation_policy: peripeteia
+    opening_speaker: learner
+    ending_speaker: learner
+    scenario_name: "ai_foundations_v1: AF8 Embeddings, attention, and transformers"
+    learner_start_state: "The learner is working on embedding and attention trace. Likely first misframing: An
+      embedding stores a dictionary definition. Immediate task: Calculate cosine similarity for tiny vectors.
+      The scene should make the artifact answerable to Matrix and vector calculations, tokenization snapshots,
+      attention-weight recomputation, tensor-shape rules, and architecture graph checks. Explanations are
+      constrained to named components and causal links rather than judged as free prose alone."
+    learner_voice_constraint: The learner should expose the first framing in ordinary working speech before the
+      tutor corrects it. Keep the artifact visible in the dialogue.
+    intended_tutor_character: "Evidence-bearing adaptive tutor: separate diagnosis, action selection, artifact
+      verification, and outcome closure."
+    intended_lean: curriculum_drama
+    dramatic_shape: An embedding stores a dictionary definition -> artifact-mediated test -> Calculate cosine
+      similarity for tiny vectors
+    curriculum_binding:
+      curriculum_id: ai_foundations_v1
+      module_id: AF8
+      module_title: Embeddings, attention, and transformers
+      kc_ids:
+        - AF-801
+        - AF-802
+        - AF-803
+        - AF-804
+        - AF-805
+        - AF-806
+        - AF-807
+        - AF-808
+      main_artifact: embedding and attention trace
+      primary_verifier: matrix and architecture checker
+      misconceptions:
+        - An embedding stores a dictionary definition.
+        - Similar vectors prove semantic equivalence or truth.
+        - Attention weights are a complete explanation of model reasoning.
+        - A transformer reads text with human-like understanding.
+        - Token boundaries correspond reliably to words or concepts.
+      world_adaptation_spec_id: W_AF8_CURRICULUM
+      world_adaptation_spec_version: ms-world-adaptation-v0.1
+      world_adaptation_spec_hash: sha256:ec5ff3e6d99bf5d78a92adb0a24992834094cd520a062e9744c6a983331614b4
+      world_locked_at_compile_time: true
+      world_public_constraints:
+        artifact: embedding and attention trace
+        primary_verifier: matrix and architecture checker
+        verifier_evidence:
+          - Matrix and vector calculations, tokenization snapshots, attention-weight recomputation,
+            tensor-shape rules, and architecture graph checks. Explanations are constrained to named
+            components and causal links rather than judged as free prose alone
+          - >-
+            Analyze how a change in tokenization or context length affects a new input and distinguish a
+            representational failure from a factual-knowledge failure.
+
+
+            ---
+        preferred_action_families:
+          - diagnose_with_discriminating_question
+          - request_evidence
+          - contrast_models
+          - ask_strategy_choice
+        disallowed_action_families:
+          - model_worked_example
+        success_observables:
+          - Learner identifies which part of "Calculate cosine similarity for tiny vectors" is uncertain.
+          - Learner gives a reason that can be checked by Matrix and vector calculations, tokenization
+            snapshots, attention-weight recomputation, tensor-shape rules, and architecture graph checks.
+            Explanations are constrained to named components and causal links rather than judged as free prose
+            alone.
+          - Learner contrasts the misconception with an artifact-testable alternative.
+          - Learner chooses the next check for embedding and attention trace.
+          - Learner makes a bounded attempt before receiving validation.
+        forbidden_public_moves:
+          - Do not expose curriculum misconception labels, answer keys, or verifier internals to the learner.
+          - Do not supply the decisive proof or artifact repair before the learner commits to a testable move.
+          - Do not replace the learner-authored artifact or plan with a tutor-authored finished answer.
+        boundary: Public-safe projection for drama generation; hidden misconception IDs and answer keys are not
+          included.
+    turn_plan:
+      - at:
+          turn: 1
+        role: director
+        moves:
+          - inject_revisit_cue
+        cue:
+          policy: reframe
+          anchor: misframing-candidate
+      - at:
+          turn: 3
+        role: tutor
+        when_trigger:
+          - pseudo_catharsis
+          - closure_pressure
+          - resistance
+          - misfit
+        moves:
+          - stock_take
+          - route_change
+          - action_gate
+        route_change:
+          from: An embedding stores a dictionary definition
+          to: Calculate cosine similarity for tiny vectors
+        forbid:
+          - hold
+      - at:
+          turn: 3
+        role: learner
+        moves:
+          - perform_device
+        forbid:
+          - pseudo_catharsis
+      - at:
+          turn: 5
+        role: tutor
+        moves:
+          - recognition_press
+  - id: D_AF9_CURRICULUM
+    discipline: ai_foundations
+    topic: What does a generative model optimize, how does an LLM system produce an answer, and how should its
+      claims be tested?
+    persona: adversarial_tester
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    pedagogical_approach: hegelian_recognition
+    dialogue_approach: online_thread
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    tutor_adaptation_policy: peripeteia
+    opening_speaker: learner
+    ending_speaker: learner
+    scenario_name: "ai_foundations_v1: AF9 Generative AI, language models, tools, and agents"
+    learner_start_state: "The learner is working on bounded LLM system and evaluation plan. Likely first
+      misframing: A language model retrieves a stored sentence for every answer. Immediate task: Compute or
+      compare small next-token distributions. The scene should make the artifact answerable to Pipeline
+      contracts, document-ID provenance checks, retrieval recall tests, exact tool-call schemas, sandboxed
+      tool execution, prompt-injection test suites, citation-to-source entailment checks, and deterministic
+      fixtures. LLM judging is secondary and paired with reference evidence."
+    learner_voice_constraint: The learner should expose the first framing in ordinary working speech before the
+      tutor corrects it. Keep the artifact visible in the dialogue.
+    intended_tutor_character: "Evidence-bearing adaptive tutor: separate diagnosis, action selection, artifact
+      verification, and outcome closure."
+    intended_lean: curriculum_drama
+    dramatic_shape: A language model retrieves a stored sentence for every answer -> artifact-mediated test ->
+      Compute or compare small next-token distributions
+    curriculum_binding:
+      curriculum_id: ai_foundations_v1
+      module_id: AF9
+      module_title: Generative AI, language models, tools, and agents
+      kc_ids:
+        - AF-901
+        - AF-902
+        - AF-903
+        - AF-904
+        - AF-905
+        - AF-906
+        - AF-907
+        - AF-908
+        - AF-909
+      main_artifact: bounded LLM system and evaluation plan
+      primary_verifier: pipeline tests, provenance and attack suite
+      misconceptions:
+        - A language model retrieves a stored sentence for every answer.
+        - Lower temperature makes an answer true.
+        - Retrieval guarantees correctness.
+        - A citation proves the cited source supports the claim.
+        - Adding an agent loop necessarily improves capability.
+        - Fluent chain-of-thought is evidence that the system reasoned correctly.
+      world_adaptation_spec_id: W_AF9_CURRICULUM
+      world_adaptation_spec_version: ms-world-adaptation-v0.1
+      world_adaptation_spec_hash: sha256:72e987898ac868004a01c0009df8d5ecbc661438d3ebe15942915d8c6b8e8ba3
+      world_locked_at_compile_time: true
+      world_public_constraints:
+        artifact: bounded LLM system and evaluation plan
+        primary_verifier: pipeline tests, provenance and attack suite
+        verifier_evidence:
+          - Pipeline contracts, document-ID provenance checks, retrieval recall tests, exact tool-call
+            schemas, sandboxed tool execution, prompt-injection test suites, citation-to-source entailment
+            checks, and deterministic fixtures. LLM judging is secondary and paired with reference evidence
+          - >-
+            Given a new use case, design the least complex LLM architecture that could satisfy it, specify
+            fallback behavior, and create a held-out evaluation suite before implementation.
+
+
+            ---
+        preferred_action_families:
+          - diagnose_with_discriminating_question
+          - request_evidence
+          - contrast_models
+          - ask_strategy_choice
+        disallowed_action_families:
+          - model_worked_example
+        success_observables:
+          - Learner identifies which part of "Compute or compare small next-token distributions" is uncertain.
+          - Learner gives a reason that can be checked by Pipeline contracts, document-ID provenance checks,
+            retrieval recall tests, exact tool-call schemas, sandboxed tool execution, prompt-injection test
+            suites, citation-to-source entailment checks, and deterministic fixtures. LLM judging is secondary
+            and paired with reference evidence.
+          - Learner contrasts the misconception with an artifact-testable alternative.
+          - Learner chooses the next check for bounded LLM system and evaluation plan.
+          - Learner makes a bounded attempt before receiving validation.
+        forbidden_public_moves:
+          - Do not expose curriculum misconception labels, answer keys, or verifier internals to the learner.
+          - Do not supply the decisive proof or artifact repair before the learner commits to a testable move.
+          - Do not replace the learner-authored artifact or plan with a tutor-authored finished answer.
+        boundary: Public-safe projection for drama generation; hidden misconception IDs and answer keys are not
+          included.
+    turn_plan:
+      - at:
+          turn: 1
+        role: director
+        moves:
+          - inject_revisit_cue
+        cue:
+          policy: reframe
+          anchor: misframing-candidate
+      - at:
+          turn: 3
+        role: tutor
+        when_trigger:
+          - pseudo_catharsis
+          - closure_pressure
+          - resistance
+          - misfit
+        moves:
+          - stock_take
+          - route_change
+          - action_gate
+        route_change:
+          from: A language model retrieves a stored sentence for every answer
+          to: Compute or compare small next-token distributions
+        forbid:
+          - hold
+      - at:
+          turn: 3
+        role: learner
+        moves:
+          - perform_device
+        forbid:
+          - pseudo_catharsis
+      - at:
+          turn: 5
+        role: tutor
+        moves:
+          - recognition_press
+  - id: D_AF10_CURRICULUM
+    discipline: ai_foundations
+    topic: How can a system choose actions over time when actions change future evidence and outcomes?
+    persona: focused_achiever
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    pedagogical_approach: socratic_elenchus
+    dialogue_approach: workshop_clinic
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    tutor_adaptation_policy: peripeteia
+    opening_speaker: learner
+    ending_speaker: learner
+    scenario_name: "ai_foundations_v1: AF10 Sequential decisions, reinforcement learning, and adaptation"
+    learner_start_state: "The learner is working on policy model and counterfactual analysis. Likely first
+      misframing: Reward is equivalent to the true human goal. Immediate task: Translate a sequential scenario
+      into an MDP or contextual bandit. The scene should make the artifact answerable to Small MDP and bandit
+      simulators, policy rollouts, exact value calculations, reward-hacking test scenarios, action-support
+      checks, and counterfactual replay with known ground truth."
+    learner_voice_constraint: The learner should expose the first framing in ordinary working speech before the
+      tutor corrects it. Keep the artifact visible in the dialogue.
+    intended_tutor_character: "Evidence-bearing adaptive tutor: separate diagnosis, action selection, artifact
+      verification, and outcome closure."
+    intended_lean: curriculum_drama
+    dramatic_shape: Reward is equivalent to the true human goal -> artifact-mediated test -> Translate a
+      sequential scenario into an MDP or contextual bandit
+    curriculum_binding:
+      curriculum_id: ai_foundations_v1
+      module_id: AF10
+      module_title: Sequential decisions, reinforcement learning, and adaptation
+      kc_ids:
+        - AF-1001
+        - AF-1002
+        - AF-1003
+        - AF-1004
+        - AF-1005
+        - AF-1006
+        - AF-1007
+        - AF-1008
+        - AF-1009
+      main_artifact: policy model and counterfactual analysis
+      primary_verifier: MDP/bandit simulator
+      misconceptions:
+        - Reward is equivalent to the true human goal.
+        - More personalized policies are necessarily better.
+        - Correlation in logged actions reveals the effect of choosing a different action.
+        - The most likely hidden state should always determine the action.
+        - An adaptive policy has learned if it merely changes behavior.
+      world_adaptation_spec_id: W_AF10_CURRICULUM
+      world_adaptation_spec_version: ms-world-adaptation-v0.1
+      world_adaptation_spec_hash: sha256:780c744fda3d75c75f346a14f07e1f72bc796f2ca998c04c3fdf86dc7d8aa1a4
+      world_locked_at_compile_time: true
+      world_public_constraints:
+        artifact: policy model and counterfactual analysis
+        primary_verifier: MDP/bandit simulator
+        verifier_evidence:
+          - Small MDP and bandit simulators, policy rollouts, exact value calculations, reward-hacking test
+            scenarios, action-support checks, and counterfactual replay with known ground truth
+          - >-
+            Design a bounded adaptive policy for a new domain, specify observable outcomes, and explain what
+            evidence would be required before policy learning is justified.
+
+
+            ---
+        preferred_action_families:
+          - diagnose_with_discriminating_question
+          - request_evidence
+          - contrast_models
+          - ask_strategy_choice
+        disallowed_action_families:
+          - model_worked_example
+        success_observables:
+          - Learner identifies which part of "Translate a sequential scenario into an MDP or contextual
+            bandit" is uncertain.
+          - Learner gives a reason that can be checked by Small MDP and bandit simulators, policy rollouts,
+            exact value calculations, reward-hacking test scenarios, action-support checks, and counterfactual
+            replay with known ground truth.
+          - Learner contrasts the misconception with an artifact-testable alternative.
+          - Learner chooses the next check for policy model and counterfactual analysis.
+          - Learner makes a bounded attempt before receiving validation.
+        forbidden_public_moves:
+          - Do not expose curriculum misconception labels, answer keys, or verifier internals to the learner.
+          - Do not supply the decisive proof or artifact repair before the learner commits to a testable move.
+          - Do not replace the learner-authored artifact or plan with a tutor-authored finished answer.
+        boundary: Public-safe projection for drama generation; hidden misconception IDs and answer keys are not
+          included.
+    turn_plan:
+      - at:
+          turn: 1
+        role: director
+        moves:
+          - inject_revisit_cue
+        cue:
+          policy: reframe
+          anchor: misframing-candidate
+      - at:
+          turn: 3
+        role: tutor
+        when_trigger:
+          - pseudo_catharsis
+          - closure_pressure
+          - resistance
+          - misfit
+        moves:
+          - stock_take
+          - route_change
+          - action_gate
+        route_change:
+          from: Reward is equivalent to the true human goal
+          to: Translate a sequential scenario into an MDP or contextual bandit
+        forbid:
+          - hold
+      - at:
+          turn: 3
+        role: learner
+        moves:
+          - perform_device
+        forbid:
+          - pseudo_catharsis
+      - at:
+          turn: 5
+        role: tutor
+        moves:
+          - recognition_press
+  - id: D_AF11_CURRICULUM
+    discipline: ai_foundations
+    topic: What evidence, controls, and accountability are required before an AI system should be used?
+    persona: adversarial_tester
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    pedagogical_approach: hidden_curriculum
+    dialogue_approach: miller_social_reckoning
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    tutor_adaptation_policy: peripeteia
+    opening_speaker: learner
+    ending_speaker: learner
+    scenario_name: "ai_foundations_v1: AF11 Responsible AI, assurance, and governance"
+    learner_start_state: "The learner is working on risk register, model card, oversight plan. Likely first
+      misframing: Fairness is one universal metric. Immediate task: Build a stakeholder and harm map. The
+      scene should make the artifact answerable to Structured completeness checks, metric recomputation,
+      traceability from risk to test to threshold to action, prohibited contradiction rules, evidence-link
+      validation, and expert review. A high-quality document cannot pass if required claims lack referenced
+      evidence."
+    learner_voice_constraint: The learner should expose the first framing in ordinary working speech before the
+      tutor corrects it. Keep the artifact visible in the dialogue.
+    intended_tutor_character: "Evidence-bearing adaptive tutor: separate diagnosis, action selection, artifact
+      verification, and outcome closure."
+    intended_lean: curriculum_drama
+    dramatic_shape: Fairness is one universal metric -> artifact-mediated test -> Build a stakeholder and harm map
+    curriculum_binding:
+      curriculum_id: ai_foundations_v1
+      module_id: AF11
+      module_title: Responsible AI, assurance, and governance
+      kc_ids:
+        - AF-1101
+        - AF-1102
+        - AF-1103
+        - AF-1104
+        - AF-1105
+        - AF-1106
+        - AF-1107
+        - AF-1108
+        - AF-1109
+        - AF-1110
+      main_artifact: risk register, model card, oversight plan
+      primary_verifier: structured rubric plus evidence checks
+      misconceptions:
+        - Fairness is one universal metric.
+        - Removing a protected attribute removes discrimination.
+        - Explainability alone creates trustworthiness.
+        - Human oversight exists merely because a human is present.
+        - Documentation mitigates a risk without an operational control.
+        - Passing a benchmark establishes fitness for every use.
+      world_adaptation_spec_id: W_AF11_CURRICULUM
+      world_adaptation_spec_version: ms-world-adaptation-v0.1
+      world_adaptation_spec_hash: sha256:c498c31da4363ce1e65ffec3ca5babd47592bd27a1c807062f31b357fd60eeac
+      world_locked_at_compile_time: true
+      world_public_constraints:
+        artifact: risk register, model card, oversight plan
+        primary_verifier: structured rubric plus evidence checks
+        verifier_evidence:
+          - Structured completeness checks, metric recomputation, traceability from risk to test to threshold
+            to action, prohibited contradiction rules, evidence-link validation, and expert review. A
+            high-quality document cannot pass if required claims lack referenced evidence
+          - >-
+            Audit a model intended for a context different from its development setting and determine what
+            evidence must be collected before deployment.
+
+
+            ---
+        preferred_action_families:
+          - name_the_disagreement
+          - request_evidence
+          - withhold_answer
+          - challenge_without_telling
+        disallowed_action_families:
+          - model_worked_example
+        success_observables:
+          - Learner identifies which part of "Build a stakeholder and harm map" is uncertain.
+          - Learner gives a reason that can be checked by Structured completeness checks, metric
+            recomputation, traceability from risk to test to threshold to action, prohibited contradiction
+            rules, evidence-link validation, and expert review. A high-quality document cannot pass if
+            required claims lack referenced evidence.
+          - Learner contrasts the misconception with an artifact-testable alternative.
+          - Learner chooses the next check for risk register, model card, oversight plan.
+          - Learner makes a bounded attempt before receiving validation.
+        forbidden_public_moves:
+          - Do not expose curriculum misconception labels, answer keys, or verifier internals to the learner.
+          - Do not supply the decisive proof or artifact repair before the learner commits to a testable move.
+          - Do not replace the learner-authored artifact or plan with a tutor-authored finished answer.
+        boundary: Public-safe projection for drama generation; hidden misconception IDs and answer keys are not
+          included.
+    turn_plan:
+      - at:
+          turn: 1
+        role: director
+        moves:
+          - inject_revisit_cue
+        cue:
+          policy: reframe
+          anchor: misframing-candidate
+      - at:
+          turn: 3
+        role: tutor
+        when_trigger:
+          - pseudo_catharsis
+          - closure_pressure
+          - resistance
+          - misfit
+        moves:
+          - stock_take
+          - route_change
+          - action_gate
+        route_change:
+          from: Fairness is one universal metric
+          to: Build a stakeholder and harm map
+        forbid:
+          - hold
+      - at:
+          turn: 3
+        role: learner
+        moves:
+          - perform_device
+        forbid:
+          - pseudo_catharsis
+      - at:
+          turn: 5
+        role: tutor
+        moves:
+          - recognition_press
+  - id: D_AF12_CURRICULUM
+    discipline: ai_foundations
+    topic: Can I make a justified, reproducible, and appropriately limited AI-system claim?
+    persona: focused_achiever
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    pedagogical_approach: hegelian_recognition
+    dialogue_approach: workshop_clinic
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    tutor_adaptation_policy: peripeteia
+    opening_speaker: learner
+    ending_speaker: learner
+    scenario_name: "ai_foundations_v1: AF12 Capstone: build and audit a bounded AI system"
+    learner_start_state: "The learner is working on built and audited bounded AI system. Likely first misframing:
+      A successful capstone must recommend deployment. Immediate task: problem and stakeholder formulation;.
+      The scene should make the artifact answerable to Repository structure and manifest."
+    learner_voice_constraint: The learner should expose the first framing in ordinary working speech before the
+      tutor corrects it. Keep the artifact visible in the dialogue.
+    intended_tutor_character: "Evidence-bearing adaptive tutor: separate diagnosis, action selection, artifact
+      verification, and outcome closure."
+    intended_lean: curriculum_drama
+    dramatic_shape: A successful capstone must recommend deployment -> artifact-mediated test -> problem and
+      stakeholder formulation;
+    curriculum_binding:
+      curriculum_id: ai_foundations_v1
+      module_id: AF12
+      module_title: "Capstone: build and audit a bounded AI system"
+      kc_ids: []
+      main_artifact: built and audited bounded AI system
+      primary_verifier: integrated hidden test and expert review
+      misconceptions:
+        - A successful capstone must recommend deployment.
+        - Passing hidden tests is enough even when leakage, provenance, or risk evidence fails.
+        - A final model metric is the same as a justified system claim.
+        - Expert review can override failed deterministic correctness or reproducibility gates.
+      world_adaptation_spec_id: W_AF12_CURRICULUM
+      world_adaptation_spec_version: ms-world-adaptation-v0.1
+      world_adaptation_spec_hash: sha256:3ffe40be8a1b48e343cb90fac7d90665cc91f15cbe7b5e7c0e544484a8ac34c2
+      world_locked_at_compile_time: true
+      world_public_constraints:
+        artifact: built and audited bounded AI system
+        primary_verifier: integrated hidden test and expert review
+        verifier_evidence:
+          - Repository structure and manifest
+          - >-
+            Completion does not require a positive deployment recommendation. A rigorous conclusion that the
+            proposed system should not be deployed can be an excellent result when supported by evidence.
+
+
+            ---
+
+
+            # 9. Knowledge-component and mastery model
+        preferred_action_families:
+          - ask_strategy_choice
+          - request_evidence
+          - contrast_models
+          - observe_no_intervention
+        disallowed_action_families:
+          - model_worked_example
+        success_observables:
+          - Learner identifies which part of "problem and stakeholder formulation;" is uncertain.
+          - Learner gives a reason that can be checked by Repository structure and manifest.
+          - Learner contrasts the misconception with an artifact-testable alternative.
+          - Learner chooses the next check for built and audited bounded AI system.
+          - Learner makes a bounded attempt before receiving validation.
+        forbidden_public_moves:
+          - Do not expose curriculum misconception labels, answer keys, or verifier internals to the learner.
+          - Do not supply the decisive proof or artifact repair before the learner commits to a testable move.
+          - Do not replace the learner-authored artifact or plan with a tutor-authored finished answer.
+        boundary: Public-safe projection for drama generation; hidden misconception IDs and answer keys are not
+          included.
+    turn_plan:
+      - at:
+          turn: 1
+        role: director
+        moves:
+          - inject_revisit_cue
+        cue:
+          policy: reframe
+          anchor: misframing-candidate
+      - at:
+          turn: 3
+        role: tutor
+        when_trigger:
+          - pseudo_catharsis
+          - closure_pressure
+          - resistance
+          - misfit
+        moves:
+          - stock_take
+          - route_change
+          - action_gate
+        route_change:
+          from: A successful capstone must recommend deployment
+          to: problem and stakeholder formulation;
+        forbid:
+          - hold
+      - at:
+          turn: 3
+        role: learner
+        moves:
+          - perform_device
+        forbid:
+          - pseudo_catharsis
+      - at:
+          turn: 5
+        role: tutor
+        moves:
+          - recognition_press

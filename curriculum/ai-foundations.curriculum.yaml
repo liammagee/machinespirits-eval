@@ -1,0 +1,752 @@
+schema_version: ms-curriculum-v0.1
+id: ai_foundations_v1
+version: 1.0.0
+title: "AI Foundations: Curriculum and Technical Specification for an Evidence-Bearing Adaptive Tutor"
+status: Proposed curriculum, content architecture, and pilot plan
+date: 2026-06-19
+audience: Advanced secondary, early undergraduate, and adult technical beginners
+delivery: Adaptive self-study, tutor-supported course, or human-tutor copilot
+duration:
+  full_course: Approximately 90–105 learner hours
+  mvp: Approximately 24–30 learner hours
+prerequisites_text: Algebra, functions, basic probability, and introductory Python; an adaptive bridge is included
+source:
+  format: markdown
+  path: curriculum/ai-foundations-adaptive-tutor-curriculum.md
+standard_profile:
+  spine: 1EdTech CASE 1.1 inspired
+  note: Curriculum, modules, and knowledge components map to CASE documents/items/associations; verifier,
+    misconception, evidence, and drama fields are Machine Spirits extensions.
+  extensions:
+    - ms:evidence
+    - ms:verifier
+    - ms:misconception
+    - ms:drama_binding
+    - ms:world_adaptation
+modules:
+  - id: AF0
+    sequence: 0
+    title: "Adaptive bridge: quantitative and programming readiness"
+    hours: "6"
+    main_artifact: executable notebook and quantitative readiness trace
+    primary_verifier: unit tests and numeric checks
+    essential_question: What representations and tools must I control before I can reason reliably about AI systems?
+    knowledge_components:
+      - id: AF-B01
+        statement: Variables, functions, and input–output mappings
+      - id: AF-B02
+        statement: Vectors, matrices, indices, and shapes
+      - id: AF-B03
+        statement: Mean, variance, proportions, and weighted averages
+      - id: AF-B04
+        statement: Conditional probability notation
+      - id: AF-B05
+        statement: Python expressions, conditionals, loops, functions, and lists
+      - id: AF-B06
+        statement: Reading tables, plots, and simple error messages
+      - id: AF-B07
+        statement: "Reproducibility: seeds, deterministic runs, and recorded environments"
+    canonical_tasks:
+      - Compute an output from a small function table.
+      - Repair a shape mismatch in a vector operation.
+      - Interpret a distribution plot.
+      - Complete and test a short Python function.
+      - Explain why two unseeded runs differ.
+    verifiers:
+      - Exact numeric checks, array-shape validation, restricted Python unit tests, AST inspection for
+        required constructs, and plot-property checks.
+    misconception_signatures:
+      - Treating a variable name as the value itself.
+      - Confusing row count with feature count.
+      - Reading correlation as causation.
+      - Believing a seed makes an experiment representative rather than repeatable.
+    mastery_gate: >-
+      The learner completes one independent quantitative task, one independent code task, and one mixed
+      transfer task. Failure routes only the missing bridge components; the full bridge is not repeated.
+
+
+      ---
+    transfer_challenge: null
+  - id: AF1
+    sequence: 1
+    title: AI systems, tasks, and agents
+    hours: "6"
+    main_artifact: AI problem formulation card
+    primary_verifier: schema and consistency rules
+    essential_question: What makes a problem an AI problem, and when is AI the wrong tool?
+    knowledge_components:
+      - id: AF-101
+        statement: Distinguish AI, machine learning, deep learning, and generative AI
+      - id: AF-102
+        statement: Identify prediction, generation, perception, reasoning, planning, and control tasks
+      - id: AF-103
+        statement: Decompose an agent into observations, state, actions, objective, and environment
+      - id: AF-104
+        statement: Classify environments by observability, determinism, dynamics, continuity, and number of agents
+      - id: AF-105
+        statement: Specify a non-AI or rule-based baseline
+      - id: AF-106
+        statement: Identify stakeholders, decision rights, constraints, and unacceptable failures
+      - id: AF-107
+        statement: Separate model output from system decision and real-world outcome
+    canonical_tasks:
+      - Classify several systems without relying on marketing labels.
+      - Convert a narrative use case into a structured agent–environment model.
+      - Compare a deterministic rule baseline with a learned approach.
+      - Identify where a human decision occurs after model output.
+      - Reject an ill-posed AI proposal and specify what evidence or redesign would be required.
+    verifiers:
+      - A JSON-schema-backed system formulation checks required fields. Consistency rules detect
+        contradictions such as claiming a fully observable environment while omitting relevant state, or
+        proposing supervised learning without labels. An LLM reviewer may assess argument quality only after
+        structural checks pass.
+    misconception_signatures:
+      - “AI” means human-like general intelligence.
+      - Any automation counts as machine learning.
+      - A model’s prediction is the same as a decision.
+      - More complex technology is automatically more appropriate.
+      - The objective supplied to the system is identical to the stakeholder’s true goal.
+    mastery_gate: null
+    transfer_challenge: >-
+      Given a new application, the learner chooses among rules, search, supervised learning, generative AI, or
+      no automation and defends the choice with an evidence plan.
+
+
+      ---
+  - id: AF2
+    sequence: 2
+    title: Search, heuristics, and planning
+    hours: "7"
+    main_artifact: state space, search trace, and heuristic
+    primary_verifier: graph/search simulator
+    essential_question: How can an agent find a solution when the answer is not directly available?
+    knowledge_components:
+      - id: AF-201
+        statement: Define states, initial state, goals, operators, transitions, and costs
+      - id: AF-202
+        statement: Distinguish a state graph from a search tree
+      - id: AF-203
+        statement: Trace breadth-first, depth-first, and uniform-cost search
+      - id: AF-204
+        statement: Explain completeness, optimality, time, and space trade-offs
+      - id: AF-205
+        statement: Define and calculate a heuristic
+      - id: AF-206
+        statement: Test admissibility and consistency in small cases
+      - id: AF-207
+        statement: Trace greedy best-first and A* search
+      - id: AF-208
+        statement: Recognize combinatorial explosion and representation-induced difficulty
+    canonical_tasks:
+      - Construct a state representation for a puzzle or routing problem.
+      - Advance a frontier one expansion at a time.
+      - Diagnose why a search trace is invalid.
+      - Design two heuristics and compare their informativeness.
+      - Implement A* against a reference interface.
+    verifiers:
+      - A graph simulator validates legal transitions, frontier ordering, explored-set handling, path cost,
+        node expansions, and solution optimality. A heuristic checker exhaustively tests admissibility and
+        consistency for bounded graphs. Hidden graphs prevent memorization of public traces.
+    misconception_signatures:
+      - Confusing the cheapest next edge with the cheapest complete path.
+      - Treating greedy search as optimal.
+      - Believing a larger heuristic is always better.
+      - Re-expanding states without recognizing duplicate-state handling.
+      - Defining states with insufficient information for valid transitions.
+    mastery_gate: null
+    transfer_challenge: >-
+      Model a novel scheduling or path-planning problem, choose a search method, and explain what property of
+      the environment determines the choice.
+
+
+      ---
+  - id: AF3
+    sequence: 3
+    title: Probability, uncertainty, and evidence
+    hours: "7"
+    main_artifact: Bayesian evidence model
+    primary_verifier: exact and tolerance-based numeric checker
+    essential_question: How should an AI system update beliefs and make decisions when evidence is incomplete?
+    knowledge_components:
+      - id: AF-301
+        statement: Events, complements, unions, intersections, and conditional probability
+      - id: AF-302
+        statement: Base rates and likelihoods
+      - id: AF-303
+        statement: Bayes’ rule and posterior updating
+      - id: AF-304
+        statement: Independence and conditional independence
+      - id: AF-305
+        statement: Distinguish probability, confidence, frequency, and calibrated belief
+      - id: AF-306
+        statement: Expected value and simple expected utility
+      - id: AF-307
+        statement: Sensitivity to priors, evidence quality, and asymmetric costs
+    canonical_tasks:
+      - Complete a probability table.
+      - Convert rates to counts before applying Bayes’ rule.
+      - Update a posterior from evidence.
+      - Identify an invalid independence assumption.
+      - Choose a decision threshold under asymmetric costs.
+    verifiers:
+      - Exact rational arithmetic where possible, tolerance-based floating-point checks, symbolic-equivalence
+        checks, and enumeration of probability tables. A decision checker verifies that the selected action
+        follows from the learner’s stated utilities and posterior.
+    misconception_signatures:
+      - Prosecutor’s fallacy or inverse probability confusion.
+      - Ignoring the base rate.
+      - Treating two correlated observations as independent evidence.
+      - Interpreting 80% confidence as 80% accuracy without calibration evidence.
+      - Choosing the most probable state without considering decision costs.
+    mastery_gate: null
+    transfer_challenge: >-
+      Analyze a screening or anomaly-detection scenario with a changed base rate and explain why the same test
+      can yield a different posterior.
+
+
+      ---
+  - id: AF4
+    sequence: 4
+    title: Data, representation, and measurement
+    hours: "7"
+    main_artifact: data schema, split plan, and datasheet
+    primary_verifier: schema, leakage, and provenance checks
+    essential_question: What does a dataset actually measure, and what can a model legitimately learn from it?
+    knowledge_components:
+      - id: AF-401
+        statement: Examples, features, labels, targets, and units of analysis
+      - id: AF-402
+        statement: Construct validity and proxy measurement
+      - id: AF-403
+        statement: Sampling frame, target population, and selection bias
+      - id: AF-404
+        statement: Training, validation, test, and final audit partitions
+      - id: AF-405
+        statement: Data leakage, temporal leakage, identity leakage, and preprocessing leakage
+      - id: AF-406
+        statement: Missingness, imputation, encoding, and scaling
+      - id: AF-407
+        statement: Data provenance, licensing, consent, and documentation
+      - id: AF-408
+        statement: Dataset shift introduced by collection and deployment differences
+    canonical_tasks:
+      - Repair a feature/label schema.
+      - Identify the unit of analysis and duplicated entities.
+      - Choose a split strategy for temporal or grouped data.
+      - Detect leakage in a preprocessing pipeline.
+      - Compare imputation choices and their implications.
+      - Produce a concise dataset datasheet.
+    verifiers:
+      - Dataframe-schema checks, group and temporal split validators, duplicate-entity detection, pipeline
+        fit/transform inspection, leakage rules, provenance-field validation, and deterministic statistics. A
+        hidden dataset contains deliberately planted leakage patterns.
+    misconception_signatures:
+      - Assuming a column name proves construct validity.
+      - Randomly splitting time-dependent or person-level records.
+      - Fitting preprocessing on the entire dataset.
+      - Treating missing values as random without evidence.
+      - Assuming a large dataset is representative.
+    mastery_gate: null
+    transfer_challenge: >-
+      The learner receives a new dataset description and must determine whether a claimed target can be
+      measured, how to split the data, and what deployment population is unsupported.
+
+
+      ---
+  - id: AF5
+    sequence: 5
+    title: Supervised learning and baselines
+    hours: "9"
+    main_artifact: reproducible baseline model
+    primary_verifier: hidden tests and fixed-data run harness
+    essential_question: How does a model learn a mapping from examples, and what makes a comparison meaningful?
+    knowledge_components:
+      - id: AF-501
+        statement: Distinguish classification from regression
+      - id: AF-502
+        statement: Define input representation, target, hypothesis, and loss
+      - id: AF-503
+        statement: Fit and interpret a simple linear regression
+      - id: AF-504
+        statement: Interpret logistic-model scores as probabilities under stated conditions
+      - id: AF-505
+        statement: Trace a small decision tree
+      - id: AF-506
+        statement: Establish trivial, rule-based, and simple statistical baselines
+      - id: AF-507
+        statement: Train a reproducible model through a pipeline
+      - id: AF-508
+        statement: Compare model families without test-set tuning
+    canonical_tasks:
+      - Frame a narrative problem as regression or classification.
+      - Calculate predictions from a small linear model.
+      - Trace which leaf a decision-tree example reaches.
+      - Build a baseline and a simple model in Python.
+      - Explain what the fitted coefficients or splits do and do not establish.
+    verifiers:
+      - Hidden unit tests, fixed datasets, expected prediction tolerances, pipeline inspection, parameter and
+        seed checks, and reproducibility re-runs. The system records whether the learner inspected test
+        results before finalizing model choice.
+    misconception_signatures:
+      - Treating classification labels as inherently ordered.
+      - Interpreting association coefficients causally.
+      - Choosing a complex model without beating a trivial baseline.
+      - Comparing models trained or tested on different data.
+      - Repeatedly tuning against the test set.
+    mastery_gate: null
+    transfer_challenge: >-
+      On a fresh dataset, the learner builds two defensible baselines and one learned model, then states what
+      conclusion is justified before viewing the hidden audit result.
+
+
+      ---
+  - id: AF6
+    sequence: 6
+    title: Evaluation, generalization, calibration, and shift
+    hours: "9"
+    main_artifact: model audit and claim–evidence table
+    primary_verifier: metric engine and evaluation linter
+    essential_question: What evidence supports a claim that a model will work beyond the data used to build it?
+    knowledge_components:
+      - id: AF-601
+        statement: Construct and interpret a confusion matrix
+      - id: AF-602
+        statement: Accuracy, precision, recall, specificity, and F-score
+      - id: AF-603
+        statement: Threshold trade-offs and cost-sensitive decisions
+      - id: AF-604
+        statement: Train/validation/test separation and nested decisions
+      - id: AF-605
+        statement: Cross-validation and uncertainty in performance estimates
+      - id: AF-606
+        statement: Underfitting, overfitting, and learning curves
+      - id: AF-607
+        statement: Regularization and capacity control
+      - id: AF-608
+        statement: Probability calibration and calibration curves
+      - id: AF-609
+        statement: Subgroup evaluation and aggregation effects
+      - id: AF-610
+        statement: Covariate, label, concept, and operational shift
+      - id: AF-611
+        statement: Claim–evidence alignment and invalid performance reporting
+    canonical_tasks:
+      - Derive metrics from counts rather than memorized formulas.
+      - Choose a metric and threshold for a use context.
+      - Diagnose learning curves.
+      - Repair a cross-validation or hyperparameter-tuning design.
+      - Compare aggregate and subgroup performance.
+      - Evaluate the same model under a shifted distribution.
+      - Write a claim that matches the evidence rather than exceeding it.
+    verifiers:
+      - A metric engine recomputes all values from predictions. An evaluation linter traces data access and
+        flags test-set reuse, group leakage, preprocessing leakage, and incomparable model runs.
+        Learning-curve tasks use parameterized ground truth. Calibration checks compute bin statistics and
+        proper scoring rules.
+    misconception_signatures:
+      - “High accuracy means a good classifier.”
+      - Precision and recall are interchangeable.
+      - Cross-validation removes the need for a final test.
+      - A smaller training error means a better deployed model.
+      - Calibration and discrimination are the same property.
+      - Average performance guarantees acceptable subgroup performance.
+      - Historical test performance guarantees future performance.
+    mastery_gate: null
+    transfer_challenge: >-
+      Audit a persuasive but invalid model-performance report. The learner must identify each unsupported
+      claim, reconstruct a valid evaluation, and predict which conclusions may change.
+
+
+      ---
+  - id: AF7
+    sequence: 7
+    title: Optimization and neural networks
+    hours: "8"
+    main_artifact: forward pass, update trace, training diagnosis
+    primary_verifier: tensor and gradient checks
+    essential_question: How do neural networks transform inputs and adjust parameters, and why can training fail?
+    knowledge_components:
+      - id: AF-701
+        statement: Weighted sum, bias, activation, and layer composition
+      - id: AF-702
+        statement: Tensor shapes through a feed-forward network
+      - id: AF-703
+        statement: Loss as an optimization objective rather than a statement of social value
+      - id: AF-704
+        statement: Gradient and local sensitivity intuition
+      - id: AF-705
+        statement: Perform one simplified gradient-descent update
+      - id: AF-706
+        statement: Explain backpropagation as efficient gradient computation
+      - id: AF-707
+        statement: Capacity, regularization, initialization, and optimization failure
+      - id: AF-708
+        statement: Diagnose training and validation curves
+      - id: AF-709
+        statement: Distinguish learned representations from hand-engineered features
+    canonical_tasks:
+      - Compute a small forward pass.
+      - Correct a tensor-shape error.
+      - Compare activation functions in a bounded case.
+      - Calculate one parameter update.
+      - Diagnose vanishing progress, overfitting, or a data-pipeline defect from traces.
+      - Visualize a small learned representation.
+    verifiers:
+      - Reference tensor computations, shape inference, automatic differentiation comparisons, tolerance
+        checks, hidden training runs, and curve-classification rules. Learners may use a library, but must
+        also complete small manual traces.
+    misconception_signatures:
+      - A neuron behaves like a biological neuron in a literal explanatory sense.
+      - Gradient descent guarantees the global optimum.
+      - Lower training loss always means better generalization.
+      - More layers automatically improve performance.
+      - The loss function fully represents the real goal.
+    mastery_gate: null
+    transfer_challenge: >-
+      Given two failed training runs, diagnose different causes and propose tests that would distinguish
+      optimization failure from data or evaluation failure.
+
+
+      ---
+  - id: AF8
+    sequence: 8
+    title: Embeddings, attention, and transformers
+    hours: "8"
+    main_artifact: embedding and attention trace
+    primary_verifier: matrix and architecture checker
+    essential_question: How can a model learn representations of tokens and use context to transform them?
+    knowledge_components:
+      - id: AF-801
+        statement: Discrete symbols versus continuous learned representations
+      - id: AF-802
+        statement: Embedding lookup and similarity
+      - id: AF-803
+        statement: Tokenization and its consequences
+      - id: AF-804
+        statement: Query, key, value, score, normalization, and weighted combination
+      - id: AF-805
+        statement: Positional information
+      - id: AF-806
+        statement: Residual pathways and layer composition at a conceptual level
+      - id: AF-807
+        statement: Transformer block and sequence-to-sequence information flow
+      - id: AF-808
+        statement: Representation limitations, spurious similarity, and bias
+    canonical_tasks:
+      - Calculate cosine similarity for tiny vectors.
+      - Inspect alternative tokenizations and predict consequences.
+      - Compute a one-head attention example.
+      - Trace information through a simplified transformer block.
+      - Identify when an embedding analogy is unsupported.
+    verifiers:
+      - Matrix and vector calculations, tokenization snapshots, attention-weight recomputation, tensor-shape
+        rules, and architecture graph checks. Explanations are constrained to named components and causal
+        links rather than judged as free prose alone.
+    misconception_signatures:
+      - An embedding stores a dictionary definition.
+      - Similar vectors prove semantic equivalence or truth.
+      - Attention weights are a complete explanation of model reasoning.
+      - A transformer reads text with human-like understanding.
+      - Token boundaries correspond reliably to words or concepts.
+    mastery_gate: null
+    transfer_challenge: >-
+      Analyze how a change in tokenization or context length affects a new input and distinguish a
+      representational failure from a factual-knowledge failure.
+
+
+      ---
+  - id: AF9
+    sequence: 9
+    title: Generative AI, language models, tools, and agents
+    hours: "8"
+    main_artifact: bounded LLM system and evaluation plan
+    primary_verifier: pipeline tests, provenance and attack suite
+    essential_question: What does a generative model optimize, how does an LLM system produce an answer, and how
+      should its claims be tested?
+    knowledge_components:
+      - id: AF-901
+        statement: Next-token prediction and conditional generation
+      - id: AF-902
+        statement: "Decoding: greedy selection, temperature, top-k, and nucleus sampling"
+      - id: AF-903
+        statement: Pretraining, instruction tuning, and preference optimization at a high level
+      - id: AF-904
+        statement: Prompting, retrieval augmentation, fine-tuning, and tool use as distinct interventions
+      - id: AF-905
+        statement: Context limits, retrieval quality, grounding, and provenance
+      - id: AF-906
+        statement: Hallucination, abstention, and evidence verification
+      - id: AF-907
+        statement: Tool-calling and agent-loop failure modes
+      - id: AF-908
+        statement: Prompt injection, data exfiltration, and boundary controls
+      - id: AF-909
+        statement: Task-specific evaluation of generative systems
+    canonical_tasks:
+      - Compute or compare small next-token distributions.
+      - Predict how decoding changes output diversity.
+      - Select among prompting, retrieval, tools, or fine-tuning for a bounded requirement.
+      - Build a small retrieval-grounded assistant over approved documents.
+      - Design factuality, refusal, provenance, injection, and regression tests.
+      - Trace a multi-step agent failure to its control layer.
+    verifiers:
+      - Pipeline contracts, document-ID provenance checks, retrieval recall tests, exact tool-call schemas,
+        sandboxed tool execution, prompt-injection test suites, citation-to-source entailment checks, and
+        deterministic fixtures. LLM judging is secondary and paired with reference evidence.
+    misconception_signatures:
+      - A language model retrieves a stored sentence for every answer.
+      - Lower temperature makes an answer true.
+      - Retrieval guarantees correctness.
+      - A citation proves the cited source supports the claim.
+      - Adding an agent loop necessarily improves capability.
+      - Fluent chain-of-thought is evidence that the system reasoned correctly.
+    mastery_gate: null
+    transfer_challenge: >-
+      Given a new use case, design the least complex LLM architecture that could satisfy it, specify fallback
+      behavior, and create a held-out evaluation suite before implementation.
+
+
+      ---
+  - id: AF10
+    sequence: 10
+    title: Sequential decisions, reinforcement learning, and adaptation
+    hours: "7"
+    main_artifact: policy model and counterfactual analysis
+    primary_verifier: MDP/bandit simulator
+    essential_question: How can a system choose actions over time when actions change future evidence and outcomes?
+    knowledge_components:
+      - id: AF-1001
+        statement: States, observations, actions, transitions, rewards, and terminal conditions
+      - id: AF-1002
+        statement: Policy and value
+      - id: AF-1003
+        statement: Discounting and a simple Bellman update
+      - id: AF-1004
+        statement: Exploration versus exploitation
+      - id: AF-1005
+        statement: Multi-armed and contextual bandits
+      - id: AF-1006
+        statement: Reward misspecification and proxy gaming
+      - id: AF-1007
+        statement: Partial observability and belief states
+      - id: AF-1008
+        statement: Offline evaluation, support, and counterfactual limits
+      - id: AF-1009
+        statement: Adaptive tutoring as constrained sequential decision making
+    canonical_tasks:
+      - Translate a sequential scenario into an MDP or contextual bandit.
+      - Calculate a one-step value update.
+      - Compare exploration strategies in simulation.
+      - Identify a reward that invites a harmful shortcut.
+      - Explain why a hidden learner state requires a belief distribution.
+      - Determine when logged data cannot support a counterfactual policy claim.
+    verifiers:
+      - Small MDP and bandit simulators, policy rollouts, exact value calculations, reward-hacking test
+        scenarios, action-support checks, and counterfactual replay with known ground truth.
+    misconception_signatures:
+      - Reward is equivalent to the true human goal.
+      - More personalized policies are necessarily better.
+      - Correlation in logged actions reveals the effect of choosing a different action.
+      - The most likely hidden state should always determine the action.
+      - An adaptive policy has learned if it merely changes behavior.
+    mastery_gate: null
+    transfer_challenge: >-
+      Design a bounded adaptive policy for a new domain, specify observable outcomes, and explain what
+      evidence would be required before policy learning is justified.
+
+
+      ---
+  - id: AF11
+    sequence: 11
+    title: Responsible AI, assurance, and governance
+    hours: "8"
+    main_artifact: risk register, model card, oversight plan
+    primary_verifier: structured rubric plus evidence checks
+    essential_question: What evidence, controls, and accountability are required before an AI system should be used?
+    knowledge_components:
+      - id: AF-1101
+        statement: Human-centred purpose and stakeholder analysis
+      - id: AF-1102
+        statement: Intended use, out-of-scope use, and misuse
+      - id: AF-1103
+        statement: Harm pathways and risk severity–likelihood reasoning
+      - id: AF-1104
+        statement: Fairness definitions, subgroup metrics, and trade-offs
+      - id: AF-1105
+        statement: Privacy, data minimization, and access control
+      - id: AF-1106
+        statement: Robustness, adversarial behavior, security, and abuse cases
+      - id: AF-1107
+        statement: Transparency, explanation, provenance, and documentation
+      - id: AF-1108
+        statement: Human oversight, override, fallback, and escalation
+      - id: AF-1109
+        statement: Monitoring, incidents, drift, and retirement
+      - id: AF-1110
+        statement: Govern–map–measure–manage workflow
+    canonical_tasks:
+      - Build a stakeholder and harm map.
+      - Compare fairness metrics and identify incompatible goals.
+      - Write intended and excluded uses.
+      - Convert a risk into a measurable test and mitigation.
+      - Produce a model card and system card.
+      - Design human override and incident response.
+      - Audit whether evidence supports deployment.
+    verifiers:
+      - Structured completeness checks, metric recomputation, traceability from risk to test to threshold to
+        action, prohibited contradiction rules, evidence-link validation, and expert review. A high-quality
+        document cannot pass if required claims lack referenced evidence.
+    misconception_signatures:
+      - Fairness is one universal metric.
+      - Removing a protected attribute removes discrimination.
+      - Explainability alone creates trustworthiness.
+      - Human oversight exists merely because a human is present.
+      - Documentation mitigates a risk without an operational control.
+      - Passing a benchmark establishes fitness for every use.
+    mastery_gate: null
+    transfer_challenge: >-
+      Audit a model intended for a context different from its development setting and determine what evidence
+      must be collected before deployment.
+
+
+      ---
+  - id: AF12
+    sequence: 12
+    title: "Capstone: build and audit a bounded AI system"
+    hours: 12–18
+    main_artifact: built and audited bounded AI system
+    primary_verifier: integrated hidden test and expert review
+    essential_question: Can I make a justified, reproducible, and appropriately limited AI-system claim?
+    knowledge_components: []
+    canonical_tasks:
+      - problem and stakeholder formulation;
+      - a non-AI or trivial baseline;
+      - a documented and licensed dataset, or a justified synthetic dataset;
+      - a reproducible data pipeline;
+      - at least two model or policy alternatives;
+      - a predeclared evaluation plan;
+      - a held-out audit set not used for development;
+      - subgroup or slice analysis where meaningful;
+      - a shift, robustness, or adversarial test;
+      - a dataset datasheet and model/system card;
+      - human oversight, fallback, and monitoring plan;
+      - a final claim–evidence–limitation statement.
+    verifiers:
+      - Repository structure and manifest.
+      - Reproducible environment and seed behavior.
+      - Data schema and split integrity.
+      - Unit and integration tests.
+      - Baseline and model metrics recomputed from predictions.
+      - Hidden audit-set result.
+      - Leakage and provenance checks.
+      - Required risk-to-test traceability.
+      - Model card fields and evidence links.
+      - "Expert review: Problem suitability."
+      - "Expert review: Stakeholder reasoning."
+      - "Expert review: Interpretation of trade-offs."
+      - "Expert review: Appropriateness of claims."
+      - "Expert review: Quality of limitations and deployment recommendation. Expert review supplements
+        deterministic checks; it does not override a failed correctness, leakage, or reproducibility gate."
+    misconception_signatures:
+      - A successful capstone must recommend deployment.
+      - Passing hidden tests is enough even when leakage, provenance, or risk evidence fails.
+      - A final model metric is the same as a justified system claim.
+      - Expert review can override failed deterministic correctness or reproducibility gates.
+    mastery_gate: >-
+      Completion does not require a positive deployment recommendation. A rigorous conclusion that the
+      proposed system should not be deployed can be an excellent result when supported by evidence.
+
+
+      ---
+
+
+      # 9. Knowledge-component and mastery model
+    transfer_challenge: null
+associations:
+  - from: AF0
+    to: AF1
+    relation: prerequisite_of
+  - from: AF0
+    to: AF3
+    relation: prerequisite_of
+  - from: AF0
+    to: AF4
+    relation: prerequisite_of
+  - from: AF1
+    to: AF2
+    relation: prerequisite_of
+  - from: AF1
+    to: AF4
+    relation: prerequisite_of
+  - from: AF3
+    to: AF5
+    relation: prerequisite_of
+  - from: AF4
+    to: AF5
+    relation: prerequisite_of
+  - from: AF5
+    to: AF6
+    relation: prerequisite_of
+  - from: AF3
+    to: AF6
+    relation: prerequisite_of
+  - from: AF5
+    to: AF7
+    relation: prerequisite_of
+  - from: AF6
+    to: AF7
+    relation: prerequisite_of
+  - from: AF7
+    to: AF8
+    relation: prerequisite_of
+  - from: AF8
+    to: AF9
+    relation: prerequisite_of
+  - from: AF2
+    to: AF10
+    relation: prerequisite_of
+  - from: AF3
+    to: AF10
+    relation: prerequisite_of
+  - from: AF6
+    to: AF10
+    relation: prerequisite_of
+  - from: AF1
+    to: AF11
+    relation: prerequisite_of
+  - from: AF4
+    to: AF11
+    relation: prerequisite_of
+  - from: AF6
+    to: AF11
+    relation: prerequisite_of
+  - from: AF9
+    to: AF11
+    relation: prerequisite_of
+  - from: AF10
+    to: AF11
+    relation: prerequisite_of
+  - from: AF2
+    to: AF12
+    relation: prerequisite_of
+  - from: AF6
+    to: AF12
+    relation: prerequisite_of
+  - from: AF9
+    to: AF12
+    relation: prerequisite_of
+  - from: AF10
+    to: AF12
+    relation: prerequisite_of
+  - from: AF11
+    to: AF12
+    relation: prerequisite_of
+mvp:
+  module_ids:
+    - AF1
+    - AF4
+    - AF5
+    - AF6
+    - AF11
+    - AF12
+  focus: []

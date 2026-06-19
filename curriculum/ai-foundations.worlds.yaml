@@ -1,0 +1,1217 @@
+meta:
+  schema_version: ms-curriculum-worlds-v0.1
+  world_schema_version: ms-world-adaptation-v0.1
+  source_curriculum_id: ai_foundations_v1
+  source_curriculum_version: 1.0.0
+  source_schema_version: ms-curriculum-v0.1
+  mode: mvp
+  compiler: services/curriculum/curriculumCompiler.js
+  target: services/adaptiveTutor adaptivePolicyConfig.world_adaptation_spec
+  boundary: Compiled before dialogue as a locked policy constraint. It is not an evaluator and cannot by itself
+    prove learning success.
+world_adaptation_specs:
+  - id: W_AF1_CURRICULUM
+    version: ms-world-adaptation-v0.1
+    source_curriculum_id: ai_foundations_v1
+    source_curriculum_version: 1.0.0
+    module_id: AF1
+    module_title: AI systems, tasks, and agents
+    locked_at_compile_time: true
+    learner_state_evidence:
+      knowledge_components:
+        - kc_id: AF-101
+          statement: Distinguish AI, machine learning, deep learning, and generative AI
+          observable_evidence:
+            - Learner uses Distinguish AI, machine learning, deep learning, and generative AI while working on
+              AI problem formulation card.
+            - Learner connects the component to Classify several systems without relying on marketing labels.
+        - kc_id: AF-102
+          statement: Identify prediction, generation, perception, reasoning, planning, and control tasks
+          observable_evidence:
+            - Learner uses Identify prediction, generation, perception, reasoning, planning, and control tasks
+              while working on AI problem formulation card.
+            - Learner connects the component to Classify several systems without relying on marketing labels.
+        - kc_id: AF-103
+          statement: Decompose an agent into observations, state, actions, objective, and environment
+          observable_evidence:
+            - Learner uses Decompose an agent into observations, state, actions, objective, and environment
+              while working on AI problem formulation card.
+            - Learner connects the component to Classify several systems without relying on marketing labels.
+        - kc_id: AF-104
+          statement: Classify environments by observability, determinism, dynamics, continuity, and number of agents
+          observable_evidence:
+            - Learner uses Classify environments by observability, determinism, dynamics, continuity, and
+              number of agents while working on AI problem formulation card.
+            - Learner connects the component to Classify several systems without relying on marketing labels.
+        - kc_id: AF-105
+          statement: Specify a non-AI or rule-based baseline
+          observable_evidence:
+            - Learner uses Specify a non-AI or rule-based baseline while working on AI problem formulation
+              card.
+            - Learner connects the component to Classify several systems without relying on marketing labels.
+        - kc_id: AF-106
+          statement: Identify stakeholders, decision rights, constraints, and unacceptable failures
+          observable_evidence:
+            - Learner uses Identify stakeholders, decision rights, constraints, and unacceptable failures
+              while working on AI problem formulation card.
+            - Learner connects the component to Classify several systems without relying on marketing labels.
+        - kc_id: AF-107
+          statement: Separate model output from system decision and real-world outcome
+          observable_evidence:
+            - Learner uses Separate model output from system decision and real-world outcome while working on
+              AI problem formulation card.
+            - Learner connects the component to Classify several systems without relying on marketing labels.
+      misconception_signatures:
+        - id: AF1-MIS01
+          statement: “AI” means human-like general intelligence
+          likely_hypotheses:
+            - task_misread
+          observable_evidence:
+            - "Learner frames AI problem formulation card as: “AI” means human-like general intelligence."
+            - Learner resists or repairs the framing when asked for artifact-level evidence.
+        - id: AF1-MIS02
+          statement: Any automation counts as machine learning
+          likely_hypotheses:
+            - task_misread
+          observable_evidence:
+            - "Learner frames AI problem formulation card as: Any automation counts as machine learning."
+            - Learner resists or repairs the framing when asked for artifact-level evidence.
+        - id: AF1-MIS03
+          statement: A model’s prediction is the same as a decision
+          likely_hypotheses:
+            - task_misread
+          observable_evidence:
+            - "Learner frames AI problem formulation card as: A model’s prediction is the same as a decision."
+            - Learner resists or repairs the framing when asked for artifact-level evidence.
+        - id: AF1-MIS04
+          statement: More complex technology is automatically more appropriate
+          likely_hypotheses:
+            - false_mastery
+          observable_evidence:
+            - "Learner frames AI problem formulation card as: More complex technology is automatically more
+              appropriate."
+            - Learner resists or repairs the framing when asked for artifact-level evidence.
+        - id: AF1-MIS05
+          statement: The objective supplied to the system is identical to the stakeholder’s true goal
+          likely_hypotheses:
+            - correct_alternative_model
+          observable_evidence:
+            - "Learner frames AI problem formulation card as: The objective supplied to the system is
+              identical to the stakeholder’s true goal."
+            - Learner resists or repairs the framing when asked for artifact-level evidence.
+      verifier_signals:
+        - schema and consistency rules
+        - A JSON-schema-backed system formulation checks required fields. Consistency rules detect
+          contradictions such as claiming a fully observable environment while omitting relevant state, or
+          proposing supervised learning without labels. An LLM reviewer may assess argument quality only after
+          structural checks pass
+    action_policy:
+      allowed_action_families:
+        - diagnose_with_discriminating_question
+        - request_evidence
+        - ask_strategy_choice
+        - contrast_models
+        - minimal_hint
+        - challenge_without_telling
+        - reanchor_goal
+        - repair_overconfidence
+        - name_the_disagreement
+        - withhold_answer
+        - explain_principle
+      preferred_action_families:
+        - diagnose_with_discriminating_question
+        - reanchor_goal
+        - request_evidence
+        - ask_strategy_choice
+      disallowed_action_families:
+        - model_worked_example
+    expected_transitions:
+      - action_type: diagnose_with_discriminating_question
+        success_evidence:
+          - state-disambiguating response
+        failure_evidence:
+          - mere agreement
+          - undifferentiated help request
+        world_success_observables:
+          - Learner identifies which part of "Classify several systems without relying on marketing labels" is
+            uncertain.
+      - action_type: request_evidence
+        success_evidence:
+          - learner-authored rationale
+        failure_evidence:
+          - mere agreement
+          - verbatim adoption of tutor rationale
+        world_success_observables:
+          - Learner gives a reason that can be checked by A JSON-schema-backed system formulation checks
+            required fields. Consistency rules detect contradictions such as claiming a fully observable
+            environment while omitting relevant state, or proposing supervised learning without labels. An LLM
+            reviewer may assess argument quality only after structural checks pass.
+      - action_type: contrast_models
+        success_evidence:
+          - model comparison
+        failure_evidence:
+          - mere agreement
+        world_success_observables:
+          - Learner contrasts the misconception with an artifact-testable alternative.
+      - action_type: ask_strategy_choice
+        success_evidence:
+          - learner-authored choice
+        failure_evidence:
+          - empty release
+          - mere agreement
+        world_success_observables:
+          - Learner chooses the next check for AI problem formulation card.
+      - action_type: withhold_answer
+        success_evidence:
+          - learner-authored next step
+        failure_evidence:
+          - undifferentiated help request
+          - empty release
+        world_success_observables:
+          - Learner makes a bounded attempt before receiving validation.
+      - action_type: minimal_hint
+        success_evidence:
+          - learner-authored next step
+        failure_evidence:
+          - evidence of deeper gap
+          - undifferentiated help request
+        world_success_observables:
+          - Learner uses the hint to advance AI problem formulation card.
+    forbidden_moves:
+      - id: no_hidden_label_exposure
+        move: hidden_label_exposure
+        description: Do not expose curriculum misconception labels, answer keys, or verifier internals to the learner.
+      - id: no_premature_proof_supply
+        move: supply_decisive_step
+        description: Do not supply the decisive proof or artifact repair before the learner commits to a testable move.
+      - id: no_artifact_replacement
+        move: replace_learner_plan
+        description: Do not replace the learner-authored artifact or plan with a tutor-authored finished answer.
+    outcome_observability:
+      artifact: AI problem formulation card
+      primary_verifier: schema and consistency rules
+      verifier_evidence:
+        - A JSON-schema-backed system formulation checks required fields. Consistency rules detect
+          contradictions such as claiming a fully observable environment while omitting relevant state, or
+          proposing supervised learning without labels. An LLM reviewer may assess argument quality only after
+          structural checks pass
+        - >-
+          Given a new application, the learner chooses among rules, search, supervised learning, generative
+          AI, or no automation and defends the choice with an evidence plan.
+
+
+          ---
+      independent_outcome_required: true
+      spec_is_not_evaluator: true
+    spec_hash: sha256:d0a271cce4f7abc1e4c5df53a521a55b028773944f14676d154da010d4ff09bd
+  - id: W_AF4_CURRICULUM
+    version: ms-world-adaptation-v0.1
+    source_curriculum_id: ai_foundations_v1
+    source_curriculum_version: 1.0.0
+    module_id: AF4
+    module_title: Data, representation, and measurement
+    locked_at_compile_time: true
+    learner_state_evidence:
+      knowledge_components:
+        - kc_id: AF-401
+          statement: Examples, features, labels, targets, and units of analysis
+          observable_evidence:
+            - Learner uses Examples, features, labels, targets, and units of analysis while working on data
+              schema, split plan, and datasheet.
+            - Learner connects the component to Repair a feature/label schema.
+        - kc_id: AF-402
+          statement: Construct validity and proxy measurement
+          observable_evidence:
+            - Learner uses Construct validity and proxy measurement while working on data schema, split plan,
+              and datasheet.
+            - Learner connects the component to Repair a feature/label schema.
+        - kc_id: AF-403
+          statement: Sampling frame, target population, and selection bias
+          observable_evidence:
+            - Learner uses Sampling frame, target population, and selection bias while working on data schema,
+              split plan, and datasheet.
+            - Learner connects the component to Repair a feature/label schema.
+        - kc_id: AF-404
+          statement: Training, validation, test, and final audit partitions
+          observable_evidence:
+            - Learner uses Training, validation, test, and final audit partitions while working on data
+              schema, split plan, and datasheet.
+            - Learner connects the component to Repair a feature/label schema.
+        - kc_id: AF-405
+          statement: Data leakage, temporal leakage, identity leakage, and preprocessing leakage
+          observable_evidence:
+            - Learner uses Data leakage, temporal leakage, identity leakage, and preprocessing leakage while
+              working on data schema, split plan, and datasheet.
+            - Learner connects the component to Repair a feature/label schema.
+        - kc_id: AF-406
+          statement: Missingness, imputation, encoding, and scaling
+          observable_evidence:
+            - Learner uses Missingness, imputation, encoding, and scaling while working on data schema, split
+              plan, and datasheet.
+            - Learner connects the component to Repair a feature/label schema.
+        - kc_id: AF-407
+          statement: Data provenance, licensing, consent, and documentation
+          observable_evidence:
+            - Learner uses Data provenance, licensing, consent, and documentation while working on data
+              schema, split plan, and datasheet.
+            - Learner connects the component to Repair a feature/label schema.
+        - kc_id: AF-408
+          statement: Dataset shift introduced by collection and deployment differences
+          observable_evidence:
+            - Learner uses Dataset shift introduced by collection and deployment differences while working on
+              data schema, split plan, and datasheet.
+            - Learner connects the component to Repair a feature/label schema.
+      misconception_signatures:
+        - id: AF4-MIS01
+          statement: Assuming a column name proves construct validity
+          likely_hypotheses:
+            - false_mastery
+          observable_evidence:
+            - "Learner frames data schema, split plan, and datasheet as: Assuming a column name proves
+              construct validity."
+            - Learner resists or repairs the framing when asked for artifact-level evidence.
+        - id: AF4-MIS02
+          statement: Randomly splitting time-dependent or person-level records
+          likely_hypotheses:
+            - procedure_without_rationale
+          observable_evidence:
+            - "Learner frames data schema, split plan, and datasheet as: Randomly splitting time-dependent or
+              person-level records."
+            - Learner resists or repairs the framing when asked for artifact-level evidence.
+        - id: AF4-MIS03
+          statement: Fitting preprocessing on the entire dataset
+          likely_hypotheses:
+            - correct_alternative_model
+            - procedure_without_rationale
+          observable_evidence:
+            - "Learner frames data schema, split plan, and datasheet as: Fitting preprocessing on the entire
+              dataset."
+            - Learner resists or repairs the framing when asked for artifact-level evidence.
+        - id: AF4-MIS04
+          statement: Treating missing values as random without evidence
+          likely_hypotheses:
+            - correct_alternative_model
+            - procedure_without_rationale
+          observable_evidence:
+            - "Learner frames data schema, split plan, and datasheet as: Treating missing values as random
+              without evidence."
+            - Learner resists or repairs the framing when asked for artifact-level evidence.
+        - id: AF4-MIS05
+          statement: Assuming a large dataset is representative
+          likely_hypotheses:
+            - correct_alternative_model
+          observable_evidence:
+            - "Learner frames data schema, split plan, and datasheet as: Assuming a large dataset is
+              representative."
+            - Learner resists or repairs the framing when asked for artifact-level evidence.
+      verifier_signals:
+        - schema, leakage, and provenance checks
+        - Dataframe-schema checks, group and temporal split validators, duplicate-entity detection, pipeline
+          fit/transform inspection, leakage rules, provenance-field validation, and deterministic statistics.
+          A hidden dataset contains deliberately planted leakage patterns
+    action_policy:
+      allowed_action_families:
+        - diagnose_with_discriminating_question
+        - request_evidence
+        - ask_strategy_choice
+        - contrast_models
+        - minimal_hint
+        - challenge_without_telling
+        - reanchor_goal
+        - repair_overconfidence
+        - name_the_disagreement
+        - withhold_answer
+        - explain_principle
+      preferred_action_families:
+        - request_evidence
+        - contrast_models
+        - reanchor_goal
+        - repair_overconfidence
+      disallowed_action_families:
+        - model_worked_example
+    expected_transitions:
+      - action_type: diagnose_with_discriminating_question
+        success_evidence:
+          - state-disambiguating response
+        failure_evidence:
+          - mere agreement
+          - undifferentiated help request
+        world_success_observables:
+          - Learner identifies which part of "Repair a feature/label schema" is uncertain.
+      - action_type: request_evidence
+        success_evidence:
+          - learner-authored rationale
+        failure_evidence:
+          - mere agreement
+          - verbatim adoption of tutor rationale
+        world_success_observables:
+          - Learner gives a reason that can be checked by Dataframe-schema checks, group and temporal split
+            validators, duplicate-entity detection, pipeline fit/transform inspection, leakage rules,
+            provenance-field validation, and deterministic statistics. A hidden dataset contains deliberately
+            planted leakage patterns.
+      - action_type: contrast_models
+        success_evidence:
+          - model comparison
+        failure_evidence:
+          - mere agreement
+        world_success_observables:
+          - Learner contrasts the misconception with an artifact-testable alternative.
+      - action_type: ask_strategy_choice
+        success_evidence:
+          - learner-authored choice
+        failure_evidence:
+          - empty release
+          - mere agreement
+        world_success_observables:
+          - Learner chooses the next check for data schema, split plan, and datasheet.
+      - action_type: withhold_answer
+        success_evidence:
+          - learner-authored next step
+        failure_evidence:
+          - undifferentiated help request
+          - empty release
+        world_success_observables:
+          - Learner makes a bounded attempt before receiving validation.
+      - action_type: minimal_hint
+        success_evidence:
+          - learner-authored next step
+        failure_evidence:
+          - evidence of deeper gap
+          - undifferentiated help request
+        world_success_observables:
+          - Learner uses the hint to advance data schema, split plan, and datasheet.
+    forbidden_moves:
+      - id: no_hidden_label_exposure
+        move: hidden_label_exposure
+        description: Do not expose curriculum misconception labels, answer keys, or verifier internals to the learner.
+      - id: no_premature_proof_supply
+        move: supply_decisive_step
+        description: Do not supply the decisive proof or artifact repair before the learner commits to a testable move.
+      - id: no_artifact_replacement
+        move: replace_learner_plan
+        description: Do not replace the learner-authored artifact or plan with a tutor-authored finished answer.
+    outcome_observability:
+      artifact: data schema, split plan, and datasheet
+      primary_verifier: schema, leakage, and provenance checks
+      verifier_evidence:
+        - Dataframe-schema checks, group and temporal split validators, duplicate-entity detection, pipeline
+          fit/transform inspection, leakage rules, provenance-field validation, and deterministic statistics.
+          A hidden dataset contains deliberately planted leakage patterns
+        - >-
+          The learner receives a new dataset description and must determine whether a claimed target can be
+          measured, how to split the data, and what deployment population is unsupported.
+
+
+          ---
+      independent_outcome_required: true
+      spec_is_not_evaluator: true
+    spec_hash: sha256:4b249056c6d96b3e3c93d4f56d4b246d00363e8037d44da86d7e951e310b826d
+  - id: W_AF5_CURRICULUM
+    version: ms-world-adaptation-v0.1
+    source_curriculum_id: ai_foundations_v1
+    source_curriculum_version: 1.0.0
+    module_id: AF5
+    module_title: Supervised learning and baselines
+    locked_at_compile_time: true
+    learner_state_evidence:
+      knowledge_components:
+        - kc_id: AF-501
+          statement: Distinguish classification from regression
+          observable_evidence:
+            - Learner uses Distinguish classification from regression while working on reproducible baseline
+              model.
+            - Learner connects the component to Frame a narrative problem as regression or classification.
+        - kc_id: AF-502
+          statement: Define input representation, target, hypothesis, and loss
+          observable_evidence:
+            - Learner uses Define input representation, target, hypothesis, and loss while working on
+              reproducible baseline model.
+            - Learner connects the component to Frame a narrative problem as regression or classification.
+        - kc_id: AF-503
+          statement: Fit and interpret a simple linear regression
+          observable_evidence:
+            - Learner uses Fit and interpret a simple linear regression while working on reproducible baseline
+              model.
+            - Learner connects the component to Frame a narrative problem as regression or classification.
+        - kc_id: AF-504
+          statement: Interpret logistic-model scores as probabilities under stated conditions
+          observable_evidence:
+            - Learner uses Interpret logistic-model scores as probabilities under stated conditions while
+              working on reproducible baseline model.
+            - Learner connects the component to Frame a narrative problem as regression or classification.
+        - kc_id: AF-505
+          statement: Trace a small decision tree
+          observable_evidence:
+            - Learner uses Trace a small decision tree while working on reproducible baseline model.
+            - Learner connects the component to Frame a narrative problem as regression or classification.
+        - kc_id: AF-506
+          statement: Establish trivial, rule-based, and simple statistical baselines
+          observable_evidence:
+            - Learner uses Establish trivial, rule-based, and simple statistical baselines while working on
+              reproducible baseline model.
+            - Learner connects the component to Frame a narrative problem as regression or classification.
+        - kc_id: AF-507
+          statement: Train a reproducible model through a pipeline
+          observable_evidence:
+            - Learner uses Train a reproducible model through a pipeline while working on reproducible
+              baseline model.
+            - Learner connects the component to Frame a narrative problem as regression or classification.
+        - kc_id: AF-508
+          statement: Compare model families without test-set tuning
+          observable_evidence:
+            - Learner uses Compare model families without test-set tuning while working on reproducible
+              baseline model.
+            - Learner connects the component to Frame a narrative problem as regression or classification.
+      misconception_signatures:
+        - id: AF5-MIS01
+          statement: Treating classification labels as inherently ordered
+          likely_hypotheses:
+            - procedure_without_rationale
+          observable_evidence:
+            - "Learner frames reproducible baseline model as: Treating classification labels as inherently
+              ordered."
+            - Learner resists or repairs the framing when asked for artifact-level evidence.
+        - id: AF5-MIS02
+          statement: Interpreting association coefficients causally
+          likely_hypotheses:
+            - correct_alternative_model
+          observable_evidence:
+            - "Learner frames reproducible baseline model as: Interpreting association coefficients causally."
+            - Learner resists or repairs the framing when asked for artifact-level evidence.
+        - id: AF5-MIS03
+          statement: Choosing a complex model without beating a trivial baseline
+          likely_hypotheses:
+            - false_mastery
+          observable_evidence:
+            - "Learner frames reproducible baseline model as: Choosing a complex model without beating a
+              trivial baseline."
+            - Learner resists or repairs the framing when asked for artifact-level evidence.
+        - id: AF5-MIS04
+          statement: Comparing models trained or tested on different data
+          likely_hypotheses:
+            - task_misread
+          observable_evidence:
+            - "Learner frames reproducible baseline model as: Comparing models trained or tested on different
+              data."
+            - Learner resists or repairs the framing when asked for artifact-level evidence.
+        - id: AF5-MIS05
+          statement: Repeatedly tuning against the test set
+          likely_hypotheses:
+            - task_misread
+          observable_evidence:
+            - "Learner frames reproducible baseline model as: Repeatedly tuning against the test set."
+            - Learner resists or repairs the framing when asked for artifact-level evidence.
+      verifier_signals:
+        - hidden tests and fixed-data run harness
+        - Hidden unit tests, fixed datasets, expected prediction tolerances, pipeline inspection, parameter
+          and seed checks, and reproducibility re-runs. The system records whether the learner inspected test
+          results before finalizing model choice
+    action_policy:
+      allowed_action_families:
+        - diagnose_with_discriminating_question
+        - request_evidence
+        - ask_strategy_choice
+        - contrast_models
+        - minimal_hint
+        - challenge_without_telling
+        - reanchor_goal
+        - repair_overconfidence
+        - name_the_disagreement
+        - withhold_answer
+        - explain_principle
+      preferred_action_families:
+        - request_evidence
+        - ask_strategy_choice
+        - repair_overconfidence
+        - minimal_hint
+      disallowed_action_families:
+        - model_worked_example
+    expected_transitions:
+      - action_type: diagnose_with_discriminating_question
+        success_evidence:
+          - state-disambiguating response
+        failure_evidence:
+          - mere agreement
+          - undifferentiated help request
+        world_success_observables:
+          - Learner identifies which part of "Frame a narrative problem as regression or classification" is
+            uncertain.
+      - action_type: request_evidence
+        success_evidence:
+          - learner-authored rationale
+        failure_evidence:
+          - mere agreement
+          - verbatim adoption of tutor rationale
+        world_success_observables:
+          - Learner gives a reason that can be checked by Hidden unit tests, fixed datasets, expected
+            prediction tolerances, pipeline inspection, parameter and seed checks, and reproducibility
+            re-runs. The system records whether the learner inspected test results before finalizing model
+            choice.
+      - action_type: contrast_models
+        success_evidence:
+          - model comparison
+        failure_evidence:
+          - mere agreement
+        world_success_observables:
+          - Learner contrasts the misconception with an artifact-testable alternative.
+      - action_type: ask_strategy_choice
+        success_evidence:
+          - learner-authored choice
+        failure_evidence:
+          - empty release
+          - mere agreement
+        world_success_observables:
+          - Learner chooses the next check for reproducible baseline model.
+      - action_type: withhold_answer
+        success_evidence:
+          - learner-authored next step
+        failure_evidence:
+          - undifferentiated help request
+          - empty release
+        world_success_observables:
+          - Learner makes a bounded attempt before receiving validation.
+      - action_type: minimal_hint
+        success_evidence:
+          - learner-authored next step
+        failure_evidence:
+          - evidence of deeper gap
+          - undifferentiated help request
+        world_success_observables:
+          - Learner uses the hint to advance reproducible baseline model.
+    forbidden_moves:
+      - id: no_hidden_label_exposure
+        move: hidden_label_exposure
+        description: Do not expose curriculum misconception labels, answer keys, or verifier internals to the learner.
+      - id: no_premature_proof_supply
+        move: supply_decisive_step
+        description: Do not supply the decisive proof or artifact repair before the learner commits to a testable move.
+      - id: no_artifact_replacement
+        move: replace_learner_plan
+        description: Do not replace the learner-authored artifact or plan with a tutor-authored finished answer.
+    outcome_observability:
+      artifact: reproducible baseline model
+      primary_verifier: hidden tests and fixed-data run harness
+      verifier_evidence:
+        - Hidden unit tests, fixed datasets, expected prediction tolerances, pipeline inspection, parameter
+          and seed checks, and reproducibility re-runs. The system records whether the learner inspected test
+          results before finalizing model choice
+        - >-
+          On a fresh dataset, the learner builds two defensible baselines and one learned model, then states
+          what conclusion is justified before viewing the hidden audit result.
+
+
+          ---
+      independent_outcome_required: true
+      spec_is_not_evaluator: true
+    spec_hash: sha256:4ce407ea069d2573edbc35c0af3529915331a1dbab45423810e0dc253caf4cb8
+  - id: W_AF6_CURRICULUM
+    version: ms-world-adaptation-v0.1
+    source_curriculum_id: ai_foundations_v1
+    source_curriculum_version: 1.0.0
+    module_id: AF6
+    module_title: Evaluation, generalization, calibration, and shift
+    locked_at_compile_time: true
+    learner_state_evidence:
+      knowledge_components:
+        - kc_id: AF-601
+          statement: Construct and interpret a confusion matrix
+          observable_evidence:
+            - Learner uses Construct and interpret a confusion matrix while working on model audit and
+              claim–evidence table.
+            - Learner connects the component to Derive metrics from counts rather than memorized formulas.
+        - kc_id: AF-602
+          statement: Accuracy, precision, recall, specificity, and F-score
+          observable_evidence:
+            - Learner uses Accuracy, precision, recall, specificity, and F-score while working on model audit
+              and claim–evidence table.
+            - Learner connects the component to Derive metrics from counts rather than memorized formulas.
+        - kc_id: AF-603
+          statement: Threshold trade-offs and cost-sensitive decisions
+          observable_evidence:
+            - Learner uses Threshold trade-offs and cost-sensitive decisions while working on model audit and
+              claim–evidence table.
+            - Learner connects the component to Derive metrics from counts rather than memorized formulas.
+        - kc_id: AF-604
+          statement: Train/validation/test separation and nested decisions
+          observable_evidence:
+            - Learner uses Train/validation/test separation and nested decisions while working on model audit
+              and claim–evidence table.
+            - Learner connects the component to Derive metrics from counts rather than memorized formulas.
+        - kc_id: AF-605
+          statement: Cross-validation and uncertainty in performance estimates
+          observable_evidence:
+            - Learner uses Cross-validation and uncertainty in performance estimates while working on model
+              audit and claim–evidence table.
+            - Learner connects the component to Derive metrics from counts rather than memorized formulas.
+        - kc_id: AF-606
+          statement: Underfitting, overfitting, and learning curves
+          observable_evidence:
+            - Learner uses Underfitting, overfitting, and learning curves while working on model audit and
+              claim–evidence table.
+            - Learner connects the component to Derive metrics from counts rather than memorized formulas.
+        - kc_id: AF-607
+          statement: Regularization and capacity control
+          observable_evidence:
+            - Learner uses Regularization and capacity control while working on model audit and claim–evidence
+              table.
+            - Learner connects the component to Derive metrics from counts rather than memorized formulas.
+        - kc_id: AF-608
+          statement: Probability calibration and calibration curves
+          observable_evidence:
+            - Learner uses Probability calibration and calibration curves while working on model audit and
+              claim–evidence table.
+            - Learner connects the component to Derive metrics from counts rather than memorized formulas.
+        - kc_id: AF-609
+          statement: Subgroup evaluation and aggregation effects
+          observable_evidence:
+            - Learner uses Subgroup evaluation and aggregation effects while working on model audit and
+              claim–evidence table.
+            - Learner connects the component to Derive metrics from counts rather than memorized formulas.
+        - kc_id: AF-610
+          statement: Covariate, label, concept, and operational shift
+          observable_evidence:
+            - Learner uses Covariate, label, concept, and operational shift while working on model audit and
+              claim–evidence table.
+            - Learner connects the component to Derive metrics from counts rather than memorized formulas.
+        - kc_id: AF-611
+          statement: Claim–evidence alignment and invalid performance reporting
+          observable_evidence:
+            - Learner uses Claim–evidence alignment and invalid performance reporting while working on model
+              audit and claim–evidence table.
+            - Learner connects the component to Derive metrics from counts rather than memorized formulas.
+      misconception_signatures:
+        - id: AF6-MIS01
+          statement: “High accuracy means a good classifier.”
+          likely_hypotheses:
+            - false_mastery
+          observable_evidence:
+            - "Learner frames model audit and claim–evidence table as: “High accuracy means a good
+              classifier.”."
+            - Learner resists or repairs the framing when asked for artifact-level evidence.
+        - id: AF6-MIS02
+          statement: Precision and recall are interchangeable
+          likely_hypotheses:
+            - correct_alternative_model
+            - procedure_without_rationale
+          observable_evidence:
+            - "Learner frames model audit and claim–evidence table as: Precision and recall are
+              interchangeable."
+            - Learner resists or repairs the framing when asked for artifact-level evidence.
+        - id: AF6-MIS03
+          statement: Cross-validation removes the need for a final test
+          likely_hypotheses:
+            - correct_alternative_model
+            - procedure_without_rationale
+          observable_evidence:
+            - "Learner frames model audit and claim–evidence table as: Cross-validation removes the need for a
+              final test."
+            - Learner resists or repairs the framing when asked for artifact-level evidence.
+        - id: AF6-MIS04
+          statement: A smaller training error means a better deployed model
+          likely_hypotheses:
+            - task_misread
+          observable_evidence:
+            - "Learner frames model audit and claim–evidence table as: A smaller training error means a better
+              deployed model."
+            - Learner resists or repairs the framing when asked for artifact-level evidence.
+        - id: AF6-MIS05
+          statement: Calibration and discrimination are the same property
+          likely_hypotheses:
+            - correct_alternative_model
+            - procedure_without_rationale
+          observable_evidence:
+            - "Learner frames model audit and claim–evidence table as: Calibration and discrimination are the
+              same property."
+            - Learner resists or repairs the framing when asked for artifact-level evidence.
+        - id: AF6-MIS06
+          statement: Average performance guarantees acceptable subgroup performance
+          likely_hypotheses:
+            - correct_alternative_model
+            - procedure_without_rationale
+          observable_evidence:
+            - "Learner frames model audit and claim–evidence table as: Average performance guarantees
+              acceptable subgroup performance."
+            - Learner resists or repairs the framing when asked for artifact-level evidence.
+        - id: AF6-MIS07
+          statement: Historical test performance guarantees future performance
+          likely_hypotheses:
+            - correct_alternative_model
+            - procedure_without_rationale
+          observable_evidence:
+            - "Learner frames model audit and claim–evidence table as: Historical test performance guarantees
+              future performance."
+            - Learner resists or repairs the framing when asked for artifact-level evidence.
+      verifier_signals:
+        - metric engine and evaluation linter
+        - A metric engine recomputes all values from predictions. An evaluation linter traces data access and
+          flags test-set reuse, group leakage, preprocessing leakage, and incomparable model runs.
+          Learning-curve tasks use parameterized ground truth. Calibration checks compute bin statistics and
+          proper scoring rules
+    action_policy:
+      allowed_action_families:
+        - diagnose_with_discriminating_question
+        - request_evidence
+        - ask_strategy_choice
+        - contrast_models
+        - minimal_hint
+        - challenge_without_telling
+        - reanchor_goal
+        - repair_overconfidence
+        - name_the_disagreement
+        - withhold_answer
+        - explain_principle
+      preferred_action_families:
+        - repair_overconfidence
+        - request_evidence
+        - contrast_models
+        - challenge_without_telling
+      disallowed_action_families:
+        - model_worked_example
+    expected_transitions:
+      - action_type: diagnose_with_discriminating_question
+        success_evidence:
+          - state-disambiguating response
+        failure_evidence:
+          - mere agreement
+          - undifferentiated help request
+        world_success_observables:
+          - Learner identifies which part of "Derive metrics from counts rather than memorized formulas" is
+            uncertain.
+      - action_type: request_evidence
+        success_evidence:
+          - learner-authored rationale
+        failure_evidence:
+          - mere agreement
+          - verbatim adoption of tutor rationale
+        world_success_observables:
+          - Learner gives a reason that can be checked by A metric engine recomputes all values from
+            predictions. An evaluation linter traces data access and flags test-set reuse, group leakage,
+            preprocessing leakage, and incomparable model runs. Learning-curve tasks use parameterized ground
+            truth. Calibration checks compute bin statistics and proper scoring rules.
+      - action_type: contrast_models
+        success_evidence:
+          - model comparison
+        failure_evidence:
+          - mere agreement
+        world_success_observables:
+          - Learner contrasts the misconception with an artifact-testable alternative.
+      - action_type: ask_strategy_choice
+        success_evidence:
+          - learner-authored choice
+        failure_evidence:
+          - empty release
+          - mere agreement
+        world_success_observables:
+          - Learner chooses the next check for model audit and claim–evidence table.
+      - action_type: withhold_answer
+        success_evidence:
+          - learner-authored next step
+        failure_evidence:
+          - undifferentiated help request
+          - empty release
+        world_success_observables:
+          - Learner makes a bounded attempt before receiving validation.
+      - action_type: minimal_hint
+        success_evidence:
+          - learner-authored next step
+        failure_evidence:
+          - evidence of deeper gap
+          - undifferentiated help request
+        world_success_observables:
+          - Learner uses the hint to advance model audit and claim–evidence table.
+    forbidden_moves:
+      - id: no_hidden_label_exposure
+        move: hidden_label_exposure
+        description: Do not expose curriculum misconception labels, answer keys, or verifier internals to the learner.
+      - id: no_premature_proof_supply
+        move: supply_decisive_step
+        description: Do not supply the decisive proof or artifact repair before the learner commits to a testable move.
+      - id: no_artifact_replacement
+        move: replace_learner_plan
+        description: Do not replace the learner-authored artifact or plan with a tutor-authored finished answer.
+    outcome_observability:
+      artifact: model audit and claim–evidence table
+      primary_verifier: metric engine and evaluation linter
+      verifier_evidence:
+        - A metric engine recomputes all values from predictions. An evaluation linter traces data access and
+          flags test-set reuse, group leakage, preprocessing leakage, and incomparable model runs.
+          Learning-curve tasks use parameterized ground truth. Calibration checks compute bin statistics and
+          proper scoring rules
+        - >-
+          Audit a persuasive but invalid model-performance report. The learner must identify each unsupported
+          claim, reconstruct a valid evaluation, and predict which conclusions may change.
+
+
+          ---
+      independent_outcome_required: true
+      spec_is_not_evaluator: true
+    spec_hash: sha256:b9e1a9bd0ddc74c4b6d51a8a0bd3a9abfcfe63786fe0d6aba551484c669df558
+  - id: W_AF11_CURRICULUM
+    version: ms-world-adaptation-v0.1
+    source_curriculum_id: ai_foundations_v1
+    source_curriculum_version: 1.0.0
+    module_id: AF11
+    module_title: Responsible AI, assurance, and governance
+    locked_at_compile_time: true
+    learner_state_evidence:
+      knowledge_components:
+        - kc_id: AF-1101
+          statement: Human-centred purpose and stakeholder analysis
+          observable_evidence:
+            - Learner uses Human-centred purpose and stakeholder analysis while working on risk register,
+              model card, oversight plan.
+            - Learner connects the component to Build a stakeholder and harm map.
+        - kc_id: AF-1102
+          statement: Intended use, out-of-scope use, and misuse
+          observable_evidence:
+            - Learner uses Intended use, out-of-scope use, and misuse while working on risk register, model
+              card, oversight plan.
+            - Learner connects the component to Build a stakeholder and harm map.
+        - kc_id: AF-1103
+          statement: Harm pathways and risk severity–likelihood reasoning
+          observable_evidence:
+            - Learner uses Harm pathways and risk severity–likelihood reasoning while working on risk
+              register, model card, oversight plan.
+            - Learner connects the component to Build a stakeholder and harm map.
+        - kc_id: AF-1104
+          statement: Fairness definitions, subgroup metrics, and trade-offs
+          observable_evidence:
+            - Learner uses Fairness definitions, subgroup metrics, and trade-offs while working on risk
+              register, model card, oversight plan.
+            - Learner connects the component to Build a stakeholder and harm map.
+        - kc_id: AF-1105
+          statement: Privacy, data minimization, and access control
+          observable_evidence:
+            - Learner uses Privacy, data minimization, and access control while working on risk register,
+              model card, oversight plan.
+            - Learner connects the component to Build a stakeholder and harm map.
+        - kc_id: AF-1106
+          statement: Robustness, adversarial behavior, security, and abuse cases
+          observable_evidence:
+            - Learner uses Robustness, adversarial behavior, security, and abuse cases while working on risk
+              register, model card, oversight plan.
+            - Learner connects the component to Build a stakeholder and harm map.
+        - kc_id: AF-1107
+          statement: Transparency, explanation, provenance, and documentation
+          observable_evidence:
+            - Learner uses Transparency, explanation, provenance, and documentation while working on risk
+              register, model card, oversight plan.
+            - Learner connects the component to Build a stakeholder and harm map.
+        - kc_id: AF-1108
+          statement: Human oversight, override, fallback, and escalation
+          observable_evidence:
+            - Learner uses Human oversight, override, fallback, and escalation while working on risk register,
+              model card, oversight plan.
+            - Learner connects the component to Build a stakeholder and harm map.
+        - kc_id: AF-1109
+          statement: Monitoring, incidents, drift, and retirement
+          observable_evidence:
+            - Learner uses Monitoring, incidents, drift, and retirement while working on risk register, model
+              card, oversight plan.
+            - Learner connects the component to Build a stakeholder and harm map.
+        - kc_id: AF-1110
+          statement: Govern–map–measure–manage workflow
+          observable_evidence:
+            - Learner uses Govern–map–measure–manage workflow while working on risk register, model card,
+              oversight plan.
+            - Learner connects the component to Build a stakeholder and harm map.
+      misconception_signatures:
+        - id: AF11-MIS01
+          statement: Fairness is one universal metric
+          likely_hypotheses:
+            - task_misread
+            - procedure_without_rationale
+          observable_evidence:
+            - "Learner frames risk register, model card, oversight plan as: Fairness is one universal metric."
+            - Learner resists or repairs the framing when asked for artifact-level evidence.
+        - id: AF11-MIS02
+          statement: Removing a protected attribute removes discrimination
+          likely_hypotheses:
+            - correct_alternative_model
+            - procedure_without_rationale
+          observable_evidence:
+            - "Learner frames risk register, model card, oversight plan as: Removing a protected attribute
+              removes discrimination."
+            - Learner resists or repairs the framing when asked for artifact-level evidence.
+        - id: AF11-MIS03
+          statement: Explainability alone creates trustworthiness
+          likely_hypotheses:
+            - task_misread
+          observable_evidence:
+            - "Learner frames risk register, model card, oversight plan as: Explainability alone creates
+              trustworthiness."
+            - Learner resists or repairs the framing when asked for artifact-level evidence.
+        - id: AF11-MIS04
+          statement: Human oversight exists merely because a human is present
+          likely_hypotheses:
+            - correct_alternative_model
+          observable_evidence:
+            - "Learner frames risk register, model card, oversight plan as: Human oversight exists merely
+              because a human is present."
+            - Learner resists or repairs the framing when asked for artifact-level evidence.
+        - id: AF11-MIS05
+          statement: Documentation mitigates a risk without an operational control
+          likely_hypotheses:
+            - correct_alternative_model
+            - procedure_without_rationale
+          observable_evidence:
+            - "Learner frames risk register, model card, oversight plan as: Documentation mitigates a risk
+              without an operational control."
+            - Learner resists or repairs the framing when asked for artifact-level evidence.
+        - id: AF11-MIS06
+          statement: Passing a benchmark establishes fitness for every use
+          likely_hypotheses:
+            - correct_alternative_model
+            - procedure_without_rationale
+          observable_evidence:
+            - "Learner frames risk register, model card, oversight plan as: Passing a benchmark establishes
+              fitness for every use."
+            - Learner resists or repairs the framing when asked for artifact-level evidence.
+      verifier_signals:
+        - structured rubric plus evidence checks
+        - Structured completeness checks, metric recomputation, traceability from risk to test to threshold to
+          action, prohibited contradiction rules, evidence-link validation, and expert review. A high-quality
+          document cannot pass if required claims lack referenced evidence
+    action_policy:
+      allowed_action_families:
+        - diagnose_with_discriminating_question
+        - request_evidence
+        - ask_strategy_choice
+        - contrast_models
+        - minimal_hint
+        - challenge_without_telling
+        - reanchor_goal
+        - repair_overconfidence
+        - name_the_disagreement
+        - withhold_answer
+        - explain_principle
+      preferred_action_families:
+        - name_the_disagreement
+        - request_evidence
+        - withhold_answer
+        - challenge_without_telling
+      disallowed_action_families:
+        - model_worked_example
+    expected_transitions:
+      - action_type: diagnose_with_discriminating_question
+        success_evidence:
+          - state-disambiguating response
+        failure_evidence:
+          - mere agreement
+          - undifferentiated help request
+        world_success_observables:
+          - Learner identifies which part of "Build a stakeholder and harm map" is uncertain.
+      - action_type: request_evidence
+        success_evidence:
+          - learner-authored rationale
+        failure_evidence:
+          - mere agreement
+          - verbatim adoption of tutor rationale
+        world_success_observables:
+          - Learner gives a reason that can be checked by Structured completeness checks, metric
+            recomputation, traceability from risk to test to threshold to action, prohibited contradiction
+            rules, evidence-link validation, and expert review. A high-quality document cannot pass if
+            required claims lack referenced evidence.
+      - action_type: contrast_models
+        success_evidence:
+          - model comparison
+        failure_evidence:
+          - mere agreement
+        world_success_observables:
+          - Learner contrasts the misconception with an artifact-testable alternative.
+      - action_type: ask_strategy_choice
+        success_evidence:
+          - learner-authored choice
+        failure_evidence:
+          - empty release
+          - mere agreement
+        world_success_observables:
+          - Learner chooses the next check for risk register, model card, oversight plan.
+      - action_type: withhold_answer
+        success_evidence:
+          - learner-authored next step
+        failure_evidence:
+          - undifferentiated help request
+          - empty release
+        world_success_observables:
+          - Learner makes a bounded attempt before receiving validation.
+      - action_type: minimal_hint
+        success_evidence:
+          - learner-authored next step
+        failure_evidence:
+          - evidence of deeper gap
+          - undifferentiated help request
+        world_success_observables:
+          - Learner uses the hint to advance risk register, model card, oversight plan.
+    forbidden_moves:
+      - id: no_hidden_label_exposure
+        move: hidden_label_exposure
+        description: Do not expose curriculum misconception labels, answer keys, or verifier internals to the learner.
+      - id: no_premature_proof_supply
+        move: supply_decisive_step
+        description: Do not supply the decisive proof or artifact repair before the learner commits to a testable move.
+      - id: no_artifact_replacement
+        move: replace_learner_plan
+        description: Do not replace the learner-authored artifact or plan with a tutor-authored finished answer.
+    outcome_observability:
+      artifact: risk register, model card, oversight plan
+      primary_verifier: structured rubric plus evidence checks
+      verifier_evidence:
+        - Structured completeness checks, metric recomputation, traceability from risk to test to threshold to
+          action, prohibited contradiction rules, evidence-link validation, and expert review. A high-quality
+          document cannot pass if required claims lack referenced evidence
+        - >-
+          Audit a model intended for a context different from its development setting and determine what
+          evidence must be collected before deployment.
+
+
+          ---
+      independent_outcome_required: true
+      spec_is_not_evaluator: true
+    spec_hash: sha256:c498c31da4363ce1e65ffec3ca5babd47592bd27a1c807062f31b357fd60eeac
+  - id: W_AF12_CURRICULUM
+    version: ms-world-adaptation-v0.1
+    source_curriculum_id: ai_foundations_v1
+    source_curriculum_version: 1.0.0
+    module_id: AF12
+    module_title: "Capstone: build and audit a bounded AI system"
+    locked_at_compile_time: true
+    learner_state_evidence:
+      knowledge_components: []
+      misconception_signatures:
+        - id: AF12-MIS01
+          statement: A successful capstone must recommend deployment
+          likely_hypotheses:
+            - correct_alternative_model
+            - procedure_without_rationale
+          observable_evidence:
+            - "Learner frames built and audited bounded AI system as: A successful capstone must recommend
+              deployment."
+            - Learner resists or repairs the framing when asked for artifact-level evidence.
+        - id: AF12-MIS02
+          statement: Passing hidden tests is enough even when leakage, provenance, or risk evidence fails
+          likely_hypotheses:
+            - task_misread
+            - procedure_without_rationale
+          observable_evidence:
+            - "Learner frames built and audited bounded AI system as: Passing hidden tests is enough even when
+              leakage, provenance, or risk evidence fails."
+            - Learner resists or repairs the framing when asked for artifact-level evidence.
+        - id: AF12-MIS03
+          statement: A final model metric is the same as a justified system claim
+          likely_hypotheses:
+            - task_misread
+            - procedure_without_rationale
+          observable_evidence:
+            - "Learner frames built and audited bounded AI system as: A final model metric is the same as a
+              justified system claim."
+            - Learner resists or repairs the framing when asked for artifact-level evidence.
+        - id: AF12-MIS04
+          statement: Expert review can override failed deterministic correctness or reproducibility gates
+          likely_hypotheses:
+            - false_mastery
+            - task_misread
+          observable_evidence:
+            - "Learner frames built and audited bounded AI system as: Expert review can override failed
+              deterministic correctness or reproducibility gates."
+            - Learner resists or repairs the framing when asked for artifact-level evidence.
+      verifier_signals:
+        - integrated hidden test and expert review
+        - Repository structure and manifest
+        - Reproducible environment and seed behavior
+        - Data schema and split integrity
+    action_policy:
+      allowed_action_families:
+        - diagnose_with_discriminating_question
+        - request_evidence
+        - ask_strategy_choice
+        - contrast_models
+        - minimal_hint
+        - challenge_without_telling
+        - reanchor_goal
+        - repair_overconfidence
+        - name_the_disagreement
+        - withhold_answer
+        - explain_principle
+      preferred_action_families:
+        - ask_strategy_choice
+        - request_evidence
+        - contrast_models
+        - observe_no_intervention
+      disallowed_action_families:
+        - model_worked_example
+    expected_transitions:
+      - action_type: diagnose_with_discriminating_question
+        success_evidence:
+          - state-disambiguating response
+        failure_evidence:
+          - mere agreement
+          - undifferentiated help request
+        world_success_observables:
+          - Learner identifies which part of "problem and stakeholder formulation;" is uncertain.
+      - action_type: request_evidence
+        success_evidence:
+          - learner-authored rationale
+        failure_evidence:
+          - mere agreement
+          - verbatim adoption of tutor rationale
+        world_success_observables:
+          - Learner gives a reason that can be checked by Repository structure and manifest.
+      - action_type: contrast_models
+        success_evidence:
+          - model comparison
+        failure_evidence:
+          - mere agreement
+        world_success_observables:
+          - Learner contrasts the misconception with an artifact-testable alternative.
+      - action_type: ask_strategy_choice
+        success_evidence:
+          - learner-authored choice
+        failure_evidence:
+          - empty release
+          - mere agreement
+        world_success_observables:
+          - Learner chooses the next check for built and audited bounded AI system.
+      - action_type: withhold_answer
+        success_evidence:
+          - learner-authored next step
+        failure_evidence:
+          - undifferentiated help request
+          - empty release
+        world_success_observables:
+          - Learner makes a bounded attempt before receiving validation.
+      - action_type: minimal_hint
+        success_evidence:
+          - learner-authored next step
+        failure_evidence:
+          - evidence of deeper gap
+          - undifferentiated help request
+        world_success_observables:
+          - Learner uses the hint to advance built and audited bounded AI system.
+    forbidden_moves:
+      - id: no_hidden_label_exposure
+        move: hidden_label_exposure
+        description: Do not expose curriculum misconception labels, answer keys, or verifier internals to the learner.
+      - id: no_premature_proof_supply
+        move: supply_decisive_step
+        description: Do not supply the decisive proof or artifact repair before the learner commits to a testable move.
+      - id: no_artifact_replacement
+        move: replace_learner_plan
+        description: Do not replace the learner-authored artifact or plan with a tutor-authored finished answer.
+    outcome_observability:
+      artifact: built and audited bounded AI system
+      primary_verifier: integrated hidden test and expert review
+      verifier_evidence:
+        - Repository structure and manifest
+        - >-
+          Completion does not require a positive deployment recommendation. A rigorous conclusion that the
+          proposed system should not be deployed can be an excellent result when supported by evidence.
+
+
+          ---
+
+
+          # 9. Knowledge-component and mastery model
+      independent_outcome_required: true
+      spec_is_not_evaluator: true
+    spec_hash: sha256:3ffe40be8a1b48e343cb90fac7d90665cc91f15cbe7b5e7c0e544484a8ac34c2
