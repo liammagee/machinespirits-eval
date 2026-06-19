@@ -1,0 +1,184 @@
+# Plan 2.0 Stage 2 paired hidden-state generalization suite.
+#
+# Purpose: test whether the frozen Plan 2.0 policy is specific to the
+# learner-state evidence it receives, rather than merely avoiding literal
+# repeats. Scenarios are grouped into pairs. Divergent pairs share a similar
+# opening surface but surface different causal evidence at the trigger turn and
+# require different typed adaptation actions. Same-state controls vary wording
+# while requiring the same action, so divergence there counts as a false
+# positive.
+#
+# The adaptive runner ignores pair metadata; it is consumed by
+# scripts/analyze-adaptation-generalization.js. expected_strategy_shift remains
+# the legacy policy label used by analyze-strategy-shift.js. The additional
+# expected_adaptation_action field names the typed Plan 2.0 action selected
+# before realization.
+
+scenarios:
+  - id: gen_cf_missing_prerequisite_basic_concept
+    name: "Generalization pair A1: ambiguous confusion hides missing prerequisite"
+    scenario_type: generalization_pair_missing_prerequisite
+    pair_id: ambiguous_why_works
+    pair_variant: missing_prerequisite
+    pair_expectation: divergent_action
+    expected_adaptation_action: minimal_hint
+    hidden:
+      actual_misconception: "missing prerequisite concept: the learner lacks the base meaning of recognition and cannot yet test an argument about it"
+      actual_sophistication: novice
+      trigger_turn: 1
+      trigger_signal: "I do not know the basic concept yet; I need the underlying idea of recognition before I can test whether the argument works."
+    opening_turns:
+      - role: learner
+        content: "I do not get why recognition changes anything here."
+    max_turns: 3
+    expected_strategy_shift: provide_hint
+    success_criteria:
+      policy_match:
+        expected_adaptation_action_at_trigger_plus_one: minimal_hint
+
+  - id: gen_cf_substantive_objection_recognition_affirmation
+    name: "Generalization pair A2: ambiguous confusion hides substantive objection"
+    scenario_type: generalization_pair_substantive_objection
+    pair_id: ambiguous_why_works
+    pair_variant: substantive_objection
+    pair_expectation: divergent_action
+    expected_adaptation_action: name_the_disagreement
+    hidden:
+      actual_misconception: "no misconception: the learner is making a substantive objection that recognition has been reduced to affirmation"
+      actual_sophistication: advanced
+      trigger_turn: 1
+      trigger_signal: "I do not accept the assumption. The argument only works if recognition reduces to affirmation, which is exactly the point in dispute."
+    opening_turns:
+      - role: learner
+        content: "I do not get why recognition changes anything here."
+    max_turns: 3
+    expected_strategy_shift: name_the_disagreement
+    success_criteria:
+      policy_match:
+        expected_adaptation_action_at_trigger_plus_one: name_the_disagreement
+
+  - id: gen_cf_affective_shutdown_identity
+    name: "Generalization pair B1: repeated explanation request hides affective shutdown"
+    scenario_type: generalization_pair_affective_shutdown
+    pair_id: explain_more_overload_or_shutdown
+    pair_variant: affective_shutdown
+    pair_expectation: divergent_action
+    expected_adaptation_action: acknowledge_and_redirect
+    hidden:
+      actual_misconception: "affective shutdown: the learner converts difficulty into identity-level self-doubt"
+      actual_sophistication: novice
+      trigger_turn: 1
+      trigger_signal: "I just cannot do this. I have read it again and I am wasting your time."
+    opening_turns:
+      - role: learner
+        content: "Can you explain that one more time?"
+    max_turns: 3
+    expected_strategy_shift: acknowledge_and_redirect
+    success_criteria:
+      policy_match:
+        expected_adaptation_action_at_trigger_plus_one: acknowledge_and_redirect
+
+  - id: gen_cf_working_memory_overload_many_parts
+    name: "Generalization pair B2: repeated explanation request hides working-memory overload"
+    scenario_type: generalization_pair_working_memory_overload
+    pair_id: explain_more_overload_or_shutdown
+    pair_variant: working_memory_overload
+    pair_expectation: divergent_action
+    expected_adaptation_action: lower_cognitive_load
+    hidden:
+      actual_misconception: "working-memory overload: too many concepts are active at once, without identity-level shutdown"
+      actual_sophistication: novice
+      trigger_turn: 1
+      trigger_signal: "There are too many moving parts - recognition, negation, sublation, and dependence - and I lose the thread halfway through."
+    opening_turns:
+      - role: learner
+        content: "Can you explain that one more time?"
+    max_turns: 3
+    expected_strategy_shift: lower_cognitive_load
+    success_criteria:
+      policy_match:
+        expected_adaptation_action_at_trigger_plus_one: lower_cognitive_load
+
+  - id: gen_cf_answer_seeking_oracle_pull
+    name: "Generalization pair C1: quiz difficulty is answer seeking"
+    scenario_type: generalization_pair_answer_seeking
+    pair_id: stuck_on_quiz
+    pair_variant: answer_seeking
+    pair_expectation: divergent_action
+    expected_adaptation_action: withhold_answer
+    hidden:
+      actual_misconception: "answer seeking: the learner treats the tutor as an oracle and tries to bypass the activity"
+      actual_sophistication: intermediate
+      trigger_turn: 1
+      trigger_signal: "Just tell me the answer to the quiz and I will work backwards from there."
+    opening_turns:
+      - role: learner
+        content: "I am stuck on the recognition quiz."
+    max_turns: 3
+    expected_strategy_shift: withhold_answer
+    success_criteria:
+      policy_match:
+        expected_adaptation_action_at_trigger_plus_one: withhold_answer
+
+  - id: gen_cf_task_misread_definition_vs_argument
+    name: "Generalization pair C2: quiz difficulty is task misread"
+    scenario_type: generalization_pair_task_misread
+    pair_id: stuck_on_quiz
+    pair_variant: task_misread
+    pair_expectation: divergent_action
+    expected_adaptation_action: reanchor_goal
+    hidden:
+      actual_misconception: "task misread: the learner thought the quiz asks for a definition when it asks for an argument"
+      actual_sophistication: intermediate
+      trigger_turn: 1
+      trigger_signal: "I think I misread the task. I thought it asks for a definition of recognition, but it is asking me to make an argument."
+    opening_turns:
+      - role: learner
+        content: "I am stuck on the recognition quiz."
+    max_turns: 3
+    expected_strategy_shift: summarize_and_check
+    success_criteria:
+      policy_match:
+        expected_adaptation_action_at_trigger_plus_one: reanchor_goal
+
+  - id: gen_cf_misrecognition_trust_a
+    name: "Generalization control D1: misrecognition repair wording A"
+    scenario_type: generalization_control_misrecognition
+    pair_id: misrecognition_same_state_control
+    pair_variant: trust_question_a
+    pair_expectation: same_action
+    expected_adaptation_action: repair_misrecognition
+    hidden:
+      actual_misconception: "tutor misread: the learner is correcting what question was asked"
+      actual_sophistication: intermediate
+      trigger_turn: 1
+      trigger_signal: "No, that is not what I was asking. My question was whether mutual recognition can hold without prior trust."
+    opening_turns:
+      - role: learner
+        content: "Can recognition happen between people who do not trust each other yet?"
+    max_turns: 3
+    expected_strategy_shift: repair_misrecognition
+    success_criteria:
+      policy_match:
+        expected_adaptation_action_at_trigger_plus_one: repair_misrecognition
+
+  - id: gen_cf_misrecognition_trust_b
+    name: "Generalization control D2: misrecognition repair wording B"
+    scenario_type: generalization_control_misrecognition
+    pair_id: misrecognition_same_state_control
+    pair_variant: trust_question_b
+    pair_expectation: same_action
+    expected_adaptation_action: repair_misrecognition
+    hidden:
+      actual_misconception: "tutor misread: the learner is correcting what question was asked"
+      actual_sophistication: intermediate
+      trigger_turn: 1
+      trigger_signal: "I think there has been a mix-up. I am asking whether recognition can happen before trust, not about the trust mechanism."
+    opening_turns:
+      - role: learner
+        content: "Can recognition happen between people who do not trust each other yet?"
+    max_turns: 3
+    expected_strategy_shift: repair_misrecognition
+    success_criteria:
+      policy_match:
+        expected_adaptation_action_at_trigger_plus_one: repair_misrecognition

@@ -378,6 +378,8 @@ export const EVAL_ONLY_PROFILES = [
   'cell_148_plan2_quality_contextual_crosssuite',
   'cell_149_plan2_quality_repeat_contextual',
   'cell_150_plan2_quality_repeat_contextual_crosssuite',
+  'cell_151_plan2_pair_specificity_closed_loop',
+  'cell_152_plan2_pair_specificity_repeat_contextual',
 ];
 
 /**

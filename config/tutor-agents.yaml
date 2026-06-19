@@ -5596,6 +5596,77 @@ profiles:
       counterfactual:
         enabled: false
 
+  cell_151_plan2_pair_specificity_closed_loop:
+    description: "Plan 2.0 Stage 2 paired-suite baseline: same closed-loop adaptation contract architecture as cell_135 on config/adaptive-generalization-counterfactual-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_pair_specificity_closed_loop
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-generalization-counterfactual-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: false
+
+  cell_152_plan2_pair_specificity_repeat_contextual:
+    description: "Plan 2.0 Stage 2 paired-suite treatment: frozen cell_149 repeat-contextual policy on config/adaptive-generalization-counterfactual-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_pair_specificity_repeat_contextual
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-generalization-counterfactual-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+        realization_context: true
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
   # A13 condition C2: standard ego/superego architecture (two-pass deliberation)
   # without externalised learner profile or constraint check. Matches the
   # project's standard ego/superego posture; revises every turn. Same scenarios
