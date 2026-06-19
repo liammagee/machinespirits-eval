@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Research Roundup — 9 Jun–14 Jun 2026</title>
-  <!-- meta: date=2026-06-14 window=(2026-06-09,2026-06-14] arxiv=2606.11744,2606.08625,2606.04155,2606.04184,2606.11459,2606.09900,2605.07102 generator=deep-research/claude-sonnet-4-6 -->
+  <title>Research Roundup — 13 Jun – 14 Jun 2026</title>
   <style>
     body {
       font-family: Georgia, "Times New Roman", serif;
@@ -45,11 +44,12 @@
   </style>
 </head>
 <body>
+<!-- meta: date=2026-06-14 window=(2026-06-13,2026-06-14] arxiv=2605.07102,2606.04155,2606.04184,2606.08625,2606.09900,2606.11459 generator=deep-research/claude-sonnet-4-6 -->
 
-<h1>Research Roundup <small style="font-weight:normal;font-size:.85em">9 Jun – 14 Jun 2026</small></h1>
+<h1>Research Roundup <small style="font-weight:normal;font-size:.85em">13 Jun – 14 Jun 2026</small></h1>
 <p style="font-size:.9rem;color:#555;">
-  Six papers from arxiv (all <code>2606.xxxxx</code>, confirmed June 2026, window
-  (2026-06-09, 2026-06-14]) across pedagogy/tutoring, evaluation/rubrics, agent
+  Five papers from arxiv (all <code>2606.xxxxx</code>, confirmed June 2026, window
+  (2026-06-13, 2026-06-14]) across pedagogy/tutoring, evaluation/rubrics, agent
   architecture, and prompt engineering. One May near-miss (2605.07102) flagged for
   the poetics arc. Two papers (2606.04155, 2606.04184) were submitted June 4 but
   fell through the gap between prior notes — included here as first coverage.
@@ -60,35 +60,6 @@
 <!-- ─────────────────────────────────── -->
 <h2>Pedagogy &amp; Tutoring</h2>
 
-<div class="paper hot">
-  <h3>
-    Hey Chat, Can You Teach Me? Structuring Socratic Dialogue for Human Learning in the Wild
-    <span class="flag">UNBLOCK</span>
-  </h3>
-  <div class="meta">
-    Authors undisclosed in search results ·
-    arXiv 2606.11744 · June 10, 2026 ·
-    <a href="https://arxiv.org/abs/2606.11744">https://arxiv.org/abs/2606.11744</a>
-  </div>
-  <p>
-    Proposes separating tutoring into three distinct responsibilities — curriculum sequencing,
-    Socratic dialogue exchange, and student knowledge-state inference — each handled by a
-    dedicated module. A prerequisite knowledge graph treats subtopics as nodes with dependency
-    edges; a PPO-trained lightweight policy decides which node to teach next and how many
-    dialogue turns to spend on it; a separate LLM module conducts the actual Socratic exchange.
-    Outperforms frontier general-purpose models, education-tuned LLMs, and heuristic baselines
-    on both curriculum mastery rate and dialogue turns required.
-  </p>
-  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
-    <strong>Project relevance:</strong>
-    The three-responsibility decomposition is the cleanest articulation yet of the gap that
-    the adaptive runner (cells 110–113) is closing: the LangGraph state-policy handles
-    sequencing, while the tutor LLM handles guided-discovery exchanges. The PPO-optimized
-    node-scheduling policy is a direct upgrade path for the current state-policy's heuristic
-    transitions. The Socratic exchange framing also validates the project's guided-discovery
-    prompt design and the "withheld secret S" mechanic in <code>/ms-play-tutor</code>.
-  </p>
-</div>
 
 <div class="paper hot">
   <h3>

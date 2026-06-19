@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Research Roundup — 9 Jun–17 Jun 2026</title>
-  <!-- meta: date=2026-06-17 window=(2026-06-09,2026-06-17] arxiv=2606.11459,2606.13544,2606.14470,2606.15783,2606.04465,2606.04155 generator=deep-research/claude-sonnet-4-6 -->
+  <title>Research Roundup — 16 Jun – 17 Jun 2026</title>
   <style>
     body {
       font-family: Georgia, "Times New Roman", serif;
@@ -54,10 +53,11 @@
   </style>
 </head>
 <body>
+<!-- meta: date=2026-06-17 window=(2026-06-16,2026-06-17] arxiv=2606.04465,2606.13544,2606.14470,2606.15783 generator=deep-research/claude-sonnet-4-6 -->
 
-<h1>Research Roundup <small style="font-weight:normal;font-size:.85em">9 Jun – 17 Jun 2026</small></h1>
+<h1>Research Roundup <small style="font-weight:normal;font-size:.85em">16 Jun – 17 Jun 2026</small></h1>
 <p style="font-size:.9rem;color:#555;">
-  Six papers across prompt engineering, agent architecture, and dramaturgy/narrative.
+  Four papers across prompt engineering, agent architecture, and dramaturgy/narrative.
   Four confirmed in the June 9–17 window (arxiv IDs 2606.11xxx–2606.15xxx);
   two from early June (2606.04xxx) that slipped through the previous window gap and are
   included here as catch-ups rather than duplicates.
@@ -68,32 +68,6 @@
 <!-- ────────────────────────────────────── -->
 <h2>Prompt Engineering</h2>
 
-<div class="paper">
-  <h3>
-    APEX: Automated Prompt Engineering eXpert with Dynamic Data Selection
-    <span class="flag yellow">WATCH</span>
-  </h3>
-  <div class="meta">
-    Fei Wang, Si Si, Cho-Jui Hsieh, Inderjit S. Dhillon ·
-    arXiv 2606.11459 · June 9, 2026 ·
-    <a href="https://arxiv.org/abs/2606.11459">https://arxiv.org/abs/2606.11459</a>
-  </div>
-  <p>
-    Current prompt-evolution frameworks waste compute by treating the evaluation dataset as a
-    static benchmark — APEX instead stratifies examples dynamically into Easy / Hard / Mixed
-    tiers based on optimization lineage, focusing search on the Mixed tier where prompts are
-    actually improvable. Evaluated across AIME'25, ARC-AGI-1, GPQA, MBPP, and Sudoku, it
-    consistently outperforms the static-dataset baseline at equivalent compute budgets.
-  </p>
-  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
-    <strong>Project relevance:</strong>
-    The <code>prompt-lab</code> autotune subcommand runs prompt search against a fixed
-    scenario pool. APEX's data-stratification heuristic is a drop-in improvement: rather
-    than evaluating every candidate prompt against all scenarios, score candidates only on
-    scenarios where current prompts are mixed-quality (mid-range rubric score). This could
-    meaningfully cut the cost of the next ego-prompt sweep.
-  </p>
-</div>
 
 <div class="paper hot">
   <h3>
@@ -183,34 +157,6 @@
   </p>
 </div>
 
-<div class="paper hot">
-  <h3>
-    SocialCoach: Personalized Social Skill Learning with RL-based Agentic Tutoring and Practice
-    <span class="flag">UNBLOCK</span>
-  </h3>
-  <div class="meta">
-    (Authors not retrieved — arxiv 403 on fetch) ·
-    arXiv 2606.04155 · early June 2026 (gap catch-up) ·
-    <a href="https://arxiv.org/abs/2606.04155">https://arxiv.org/abs/2606.04155</a>
-  </div>
-  <p>
-    SocialCoach builds a pedagogically-grounded corpus from expert sources via multi-agent
-    pipeline, schedules adaptive practice using RL (policy optimised in a learner-simulation
-    environment to maximise long-term learning), and integrates immersive role-play with
-    causality-driven proficiency assessment. Deployed in production as EQoach; early user
-    data shows strong engagement and closes the knowing–doing gap.
-  </p>
-  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
-    <strong>Project relevance:</strong>
-    This is the closest published system to this project's full architecture: multi-agent
-    pipeline, learner-simulation environment, RL scheduling, immersive practice, gap
-    measurement. Two specific imports: (1) the <em>prescription → retrieval → adaptation</em>
-    scheduling loop is a clean formalisation of what cells 110–113's adaptive runner does
-    informally; (2) causality-driven proficiency assessment maps onto the
-    <code>learnerGrowthIndex</code> metric — their approach may sharpen the current
-    text-proxy measure.
-  </p>
-</div>
 
 <!-- ────────────────────────────────────── -->
 <h2>Dramaturgy / Narrative Ontology</h2>
@@ -249,8 +195,8 @@
 
 <footer>
   Generated 2026-06-17 by deep-research/claude-sonnet-4-6.
-  Window: (2026-06-09, 2026-06-17].
-  ArXiv IDs covered: 2606.11459, 2606.13544, 2606.14470, 2606.15783, 2606.04465, 2606.04155.
+  Window: (2026-06-16, 2026-06-17].
+  ArXiv IDs covered: 2606.13544, 2606.14470, 2606.15783, 2606.04465.
   Previous roundup: <a href="2026-06-09-research-roundup.html">2026-06-09</a>.
 </footer>
 </body>

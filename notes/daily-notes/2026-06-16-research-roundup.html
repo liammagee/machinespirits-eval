@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Research Roundup — 9 Jun–16 Jun 2026</title>
-  <!-- meta: date=2026-06-16 window=(2026-06-09,2026-06-16] arxiv=2606.11744,2606.11609,2606.13197,2606.13681 generator=deep-research/claude-sonnet-4-6 -->
+  <title>Research Roundup — 15 Jun – 16 Jun 2026</title>
   <style>
     body {
       font-family: Georgia, "Times New Roman", serif;
@@ -45,10 +44,11 @@
   </style>
 </head>
 <body>
+<!-- meta: date=2026-06-16 window=(2026-06-15,2026-06-16] arxiv=2606.08076,2606.10475,2606.11609,2606.13197,2606.13681 generator=deep-research/claude-sonnet-4-6 -->
 
-<h1>Research Roundup <small style="font-weight:normal;font-size:.85em">9 Jun – 16 Jun 2026</small></h1>
+<h1>Research Roundup <small style="font-weight:normal;font-size:.85em">15 Jun – 16 Jun 2026</small></h1>
 <p style="font-size:.9rem;color:#555;">
-  Four confirmed in-window papers (June 10–11) across agent architecture, pedagogy/prompt design,
+  Three confirmed in-window papers (June 10–11) across agent architecture, pedagogy/prompt design,
   and knowledge-model evolution, plus two borderline June 9 entries moved to the near-miss section.
   No strong strictly-new prompt-engineering technique papers this week; the closest recent contribution
   remains <a href="https://arxiv.org/abs/2603.09619">Context Engineering (2603.09619, Mar 2026)</a>.
@@ -59,34 +59,6 @@
 <!-- ────────────────────────────────────── -->
 <h2>Pedagogy &amp; Dialogue Architecture</h2>
 
-<div class="paper hot">
-  <h3>
-    Hey Chat, Can You Teach Me? Structuring Socratic Dialogue for Human Learning in the Wild
-    <span class="flag">UNBLOCK</span>
-  </h3>
-  <div class="meta">
-    Sidney Tio, Arunesh Sinha, Pradeep Varakantham ·
-    arXiv 2606.11744 · 10 Jun 2026 ·
-    <a href="https://arxiv.org/abs/2606.11744">https://arxiv.org/abs/2606.11744</a>
-  </div>
-  <p>
-    The paper diagnoses a core failure of frontier LLMs as tutors: they cannot simultaneously
-    sequence a curriculum, conduct Socratic dialogue, and infer a student's latent knowledge
-    state from that dialogue. The fix is decomposition — the system constructs a prerequisite
-    knowledge graph (subtopics as nodes, dependencies as edges) and frames tutoring as a
-    decision problem over which node to teach next and for how many dialogue turns.
-  </p>
-  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
-    <strong>Project relevance:</strong>
-    The prerequisite knowledge graph is a lightweight formalisation of the learner-state model
-    that currently lives implicitly in the <code>otherEgoProfiling</code> mechanism (cells 54–59).
-    More urgently, the paper's "three simultaneous demands" framing is a direct empirical
-    argument for the ego-superego split: if a single agent cannot curriculum-sequence +
-    Socratic-dialogue + knowledge-trace at once, separating Superego (pedagogical critique)
-    from Ego (response generation) is architecturally motivated, not just theoretically. This
-    strengthens the §6 rationale in <code>paper-full-2.0.md</code>.
-  </p>
-</div>
 
 <!-- ────────────────────────────────────── -->
 <h2>Agent Architecture &amp; Multi-Agent Deliberation</h2>
@@ -222,7 +194,7 @@
   The best active entry point remains
   <a href="https://arxiv.org/abs/2603.09619">Context Engineering (2603.09619)</a>.
   The closest adjacent work this week is the KG-CFR private-buffer architecture (2606.10475,
-  above) and the Socratic dialogue decomposition (2606.11744, above), both of which are
+  above) and the Socratic dialogue decomposition (2606.11744, first noted 2026-06-13), both of which are
   prompt-design-adjacent but primarily architectural.
 </p>
 
