@@ -889,8 +889,14 @@ function hasBlockingQualityWarnings(qualityWarnings = []) {
   return qualityWarnings.some((warning) => warning.severity !== 'info');
 }
 
+function keyCurriculumBindingForDrama(d) {
+  return d.curriculum_binding ? JSON.parse(JSON.stringify(d.curriculum_binding)) : null;
+}
+
 function keyItemFor(d, nTutor, nLearner, qualityWarnings = []) {
   const blocked = hasBlockingQualityWarnings(qualityWarnings);
+  const worldAdaptation = worldAdaptationBindingForDrama(d);
+  const rhetoricalDramaticPlan = rhetoricalDramaticPlanBindingForDrama(d);
   return {
     drama_id: d.id,
     discipline: d.discipline,
@@ -907,6 +913,9 @@ function keyItemFor(d, nTutor, nLearner, qualityWarnings = []) {
     intended_tutor_character: d.intended_tutor_character,
     intended_lean: d.intended_lean,
     dramatic_shape: d.dramatic_shape,
+    curriculum_binding: keyCurriculumBindingForDrama(d),
+    world_adaptation: worldAdaptation,
+    rhetorical_dramatic_plan: rhetoricalDramaticPlan,
     evaluation_role: d.evaluation_role || null,
     baseline_control_class: d.baseline_control_class || null,
     organic_reversal_risk: d.organic_reversal_risk || null,
@@ -2231,6 +2240,118 @@ function combineText(...parts) {
     .join(' ');
 }
 
+function compactList(items, max = 4) {
+  return (items || []).filter(Boolean).slice(0, max);
+}
+
+function worldAdaptationBindingForDrama(d) {
+  const binding = d?.curriculum_binding || {};
+  const specId = binding.world_adaptation_spec_id || binding.world_adaptation?.id || d?.world_adaptation_spec_id || null;
+  const specHash =
+    binding.world_adaptation_spec_hash || binding.world_adaptation?.spec_hash || d?.world_adaptation_spec_hash || null;
+  const constraints = binding.world_public_constraints || binding.world_adaptation?.public_constraints || null;
+  if (!specId && !specHash && !constraints) return null;
+  return {
+    source_curriculum_id: binding.curriculum_id || binding.source_curriculum_id || null,
+    module_id: binding.module_id || null,
+    module_title: binding.module_title || null,
+    spec_id: specId,
+    spec_version: binding.world_adaptation_spec_version || binding.world_adaptation?.version || null,
+    spec_hash: specHash,
+    locked_at_compile_time:
+      binding.world_locked_at_compile_time ?? binding.world_adaptation?.locked_at_compile_time ?? null,
+    public_constraints_present: Boolean(constraints),
+  };
+}
+
+function rhetoricalDramaticPlanBindingForDrama(d) {
+  const binding = d?.curriculum_binding || {};
+  const planId = binding.rhetorical_dramatic_plan_id || d?.rhetorical_dramatic_plan_id || null;
+  const planHash = binding.rhetorical_dramatic_plan_hash || d?.rhetorical_dramatic_plan_hash || null;
+  const constraints = binding.rhetorical_public_constraints || null;
+  if (!planId && !planHash && !constraints) return null;
+  return {
+    source_curriculum_id: binding.curriculum_id || binding.source_curriculum_id || null,
+    module_id: binding.module_id || null,
+    module_title: binding.module_title || null,
+    plan_id: planId,
+    plan_version: binding.rhetorical_dramatic_plan_version || null,
+    plan_hash: planHash,
+    public_constraints_present: Boolean(constraints),
+  };
+}
+
+function worldConstraintTextForDrama(d) {
+  const binding = d?.curriculum_binding || {};
+  const constraints = binding.world_public_constraints || {};
+  const rhetoricalConstraints = binding.rhetorical_public_constraints || {};
+  const artifact = constraints.artifact || binding.main_artifact || null;
+  const verifier = constraints.primary_verifier || binding.primary_verifier || null;
+  const verifierEvidence = compactList(constraints.verifier_evidence, 2);
+  const preferred = compactList(constraints.preferred_action_families, 6);
+  const disallowed = compactList(constraints.disallowed_action_families, 6);
+  const successObservables = compactList(constraints.success_observables, 4);
+  const forbidden = compactList(constraints.forbidden_public_moves, 4);
+  const rhetoricalForbidden = compactList(rhetoricalConstraints.forbidden_public_exposure, 6);
+  const lines = [];
+  if (artifact) lines.push(`Keep the learner-authored artifact in play: ${artifact}.`);
+  if (verifier) lines.push(`Make claims answerable to this verifier/evidence standard: ${verifier}.`);
+  if (verifierEvidence.length) lines.push(`Verifier evidence available to embody in scene furniture: ${verifierEvidence.join(' | ')}.`);
+  if (rhetoricalConstraints.public_task) lines.push(`Public task to stage: ${rhetoricalConstraints.public_task}.`);
+  if (rhetoricalConstraints.public_evidence_standard) {
+    lines.push(`Public evidence standard to preserve: ${rhetoricalConstraints.public_evidence_standard}.`);
+  }
+  if (rhetoricalConstraints.allowed_rhetorical_form) {
+    lines.push(`Allowed rhetorical posture: ${rhetoricalConstraints.allowed_rhetorical_form}.`);
+  }
+  if (rhetoricalConstraints.scene) lines.push(`Scene constraint: ${rhetoricalConstraints.scene}.`);
+  if (rhetoricalConstraints.action_gate) lines.push(`Learner action gate to seek: ${rhetoricalConstraints.action_gate}.`);
+  if (preferred.length) {
+    lines.push(
+      `Privately prefer these curriculum action families when choosing a tutor move; do not say the labels aloud: ${preferred.join(', ')}.`,
+    );
+  }
+  if (disallowed.length) {
+    lines.push(`Privately avoid these action families unless the drama spec explicitly overrides them: ${disallowed.join(', ')}.`);
+  }
+  if (successObservables.length) {
+    lines.push(`A useful learner movement should become observable as: ${successObservables.join(' | ')}.`);
+  }
+  if (forbidden.length) lines.push(`Forbidden public moves: ${forbidden.join(' | ')}.`);
+  if (rhetoricalForbidden.length) {
+    lines.push(`Forbidden public exposure categories: ${rhetoricalForbidden.join(' | ')}.`);
+  }
+  if (!lines.length) return '';
+  lines.push('Do not expose curriculum misconception IDs, spec IDs, spec hashes, answer keys, or hidden verifier internals in public speech.');
+  return lines.join(' ');
+}
+
+function withWorldAdaptationConstraints(plan, d) {
+  if (!plan) return plan;
+  const worldBinding = worldAdaptationBindingForDrama(d);
+  const rhetoricalBinding = rhetoricalDramaticPlanBindingForDrama(d);
+  const worldConstraintText = worldConstraintTextForDrama(d);
+  if (!worldBinding && !worldConstraintText) return plan;
+  const sideConstraints = { ...(plan.side_constraints || {}) };
+  if (worldConstraintText) {
+    sideConstraints.tutor = combineText(
+      sideConstraints.tutor,
+      `Curriculum-world constraint, private and public-safe: ${worldConstraintText}`,
+    );
+    sideConstraints.learner = combineText(
+      sideConstraints.learner,
+      'Curriculum-world learner constraint: keep replies grounded in the current artifact and evidence standard; resist or revise through observable evidence rather than polished hidden-label language.',
+    );
+  }
+  return {
+    ...plan,
+    ...(worldBinding ? { world_adaptation: worldBinding } : {}),
+    ...(rhetoricalBinding ? { rhetorical_dramatic_plan: rhetoricalBinding } : {}),
+    world_constraints_applied: Boolean(worldConstraintText),
+    side_constraints: sideConstraints,
+  };
+}
+
 function stageDirectionPolicyFor(d) {
   return d.stage_direction_policy || d._dialogueApproach?.stage_direction_policy || null;
 }
@@ -2809,14 +2930,17 @@ async function buildDirectorPlan(d, llmCall, args) {
     });
     return withTurnPlan(
       attachSecret(
-        withDirectorCueProvenance(
-          applyApproachDirectorOverrides(
-            d,
-            withTutorAdaptationPolicy(
-              withDirectorRevisitCue(merged, revisitPolicy, revisitAnchor),
-              d._tutorAdaptationPolicy || d.tutor_adaptation_policy || 'none',
+        withWorldAdaptationConstraints(
+          withDirectorCueProvenance(
+            applyApproachDirectorOverrides(
+              d,
+              withTutorAdaptationPolicy(
+                withDirectorRevisitCue(merged, revisitPolicy, revisitAnchor),
+                d._tutorAdaptationPolicy || d.tutor_adaptation_policy || 'none',
+              ),
             ),
           ),
+          d,
         ),
         d,
       ),
@@ -2830,14 +2954,17 @@ async function buildDirectorPlan(d, llmCall, args) {
     });
     return withTurnPlan(
       attachSecret(
-        withDirectorCueProvenance(
-          applyApproachDirectorOverrides(
-            d,
-            withTutorAdaptationPolicy(
-              withDirectorRevisitCue(merged, revisitPolicy, revisitAnchor),
-              d._tutorAdaptationPolicy || d.tutor_adaptation_policy || 'none',
+        withWorldAdaptationConstraints(
+          withDirectorCueProvenance(
+            applyApproachDirectorOverrides(
+              d,
+              withTutorAdaptationPolicy(
+                withDirectorRevisitCue(merged, revisitPolicy, revisitAnchor),
+                d._tutorAdaptationPolicy || d.tutor_adaptation_policy || 'none',
+              ),
             ),
           ),
+          d,
         ),
         d,
       ),
@@ -3178,6 +3305,8 @@ function writeGeneratedDramaArtifacts({
           model: generatorModelLabel(args),
           codex_reasoning_effort: CODEX_REASONING_EFFORT,
           writing_pad: runtime.writingPad,
+          world_adaptation: worldAdaptationBindingForDrama(d),
+          rhetorical_dramatic_plan: rhetoricalDramaticPlanBindingForDrama(d),
           transcript_artifacts: transcriptArtifacts,
           ...(pairedContinuation ? { paired_continuation: pairedContinuation } : {}),
         },
@@ -3865,6 +3994,8 @@ async function main() {
                 model: generatorModelLabel(args),
                 codex_reasoning_effort: CODEX_REASONING_EFFORT,
                 writing_pad: runtime.writingPad,
+                world_adaptation: worldAdaptationBindingForDrama(d),
+                rhetorical_dramatic_plan: rhetoricalDramaticPlanBindingForDrama(d),
                 transcript_artifacts: transcriptArtifacts,
               },
               directorPlan,
@@ -3988,6 +4119,7 @@ export {
   revoiceComplianceFailures,
   revoiceMatchStats,
   stageDirectionStyleFor,
+  withWorldAdaptationConstraints,
   withPairedDirectorRevisitCue,
   withTutorAdaptationPolicy,
 };

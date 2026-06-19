@@ -7,9 +7,14 @@ import yaml from 'yaml';
 import {
   compileCurriculumToWorldAdaptationSpec,
   computeWorldAdaptationSpecHash,
+  computeRhetoricalDramaticPlanHash,
   compileCurriculumToDramaSpec,
+  compileCurriculumToRhetoricalDramaticPlans,
+  dramaForRhetoricalDramaticPlan,
   parseAiFoundationsMarkdown,
+  rhetoricalDramaticPlanForModule,
   validateCanonicalCurriculum,
+  validateRhetoricalDramaticPlan,
   validateWorldAdaptationSpec,
 } from '../services/curriculum/curriculumCompiler.js';
 
@@ -132,6 +137,90 @@ test('world adaptation spec hashes are deterministic and content-sensitive', () 
   tampered.action_policy.preferred_action_families = ['request_evidence'];
   assert.notEqual(tampered.spec_hash, computeWorldAdaptationSpecHash(tampered));
   assert.throws(() => validateWorldAdaptationSpec(tampered), /spec_hash/u);
+});
+
+test('rhetorical dramatic plan compiler emits deterministic locked plans', () => {
+  const curriculum = loadCurriculum();
+  const first = compileCurriculumToRhetoricalDramaticPlans(curriculum);
+  const second = compileCurriculumToRhetoricalDramaticPlans(curriculum);
+
+  assert.equal(first.meta.schema_version, 'ms-rhetorical-dramatic-plans-v0.1');
+  assert.equal(first.rhetorical_dramatic_plans.length, 6);
+  assert.deepEqual(
+    first.rhetorical_dramatic_plans.map((plan) => plan.plan_hash),
+    second.rhetorical_dramatic_plans.map((plan) => plan.plan_hash),
+  );
+
+  const module6Plan = first.rhetorical_dramatic_plans.find((plan) => plan.module_id === 'AF6');
+  assert.ok(module6Plan, 'expected AF6 rhetorical dramatic plan');
+  assert.equal(module6Plan.source_world_adaptation_spec_id, 'W_AF6_CURRICULUM');
+  assert.match(module6Plan.source_world_adaptation_spec_hash, /^sha256:[a-f0-9]{64}$/u);
+  assert.equal(module6Plan.rhetoric.dialogue_approach, 'courtroom_cross_examination');
+  assert.equal(module6Plan.pacing.beat_pattern, 'stock_take_route_change_action_gate');
+  assert.equal(module6Plan.character.learner.persona, 'adversarial_tester');
+  assert.equal(validateRhetoricalDramaticPlan(module6Plan), true);
+
+  const tampered = clone(module6Plan);
+  tampered.rhetoric.dialogue_approach = 'workshop_comparison';
+  assert.notEqual(tampered.plan_hash, computeRhetoricalDramaticPlanHash(tampered));
+  assert.throws(() => validateRhetoricalDramaticPlan(tampered), /plan_hash/u);
+});
+
+test('rhetorical dramatic plan compilation requires the matching world spec', () => {
+  const curriculum = loadCurriculum();
+  const module6 = curriculum.modules.find((module) => module.id === 'AF6');
+  const worlds = compileCurriculumToWorldAdaptationSpec(curriculum);
+  const module1World = worlds.world_adaptation_specs.find((world) => world.module_id === 'AF1');
+
+  assert.throws(() => rhetoricalDramaticPlanForModule(module6, null), /without world_adaptation_spec/u);
+  assert.throws(
+    () => rhetoricalDramaticPlanForModule(module6, module1World),
+    /world_adaptation_spec for AF1/u,
+  );
+});
+
+test('AF6 lowers from the same world source into adaptive and dogmatic drama variants', () => {
+  const curriculum = loadCurriculum();
+  const spec = compileCurriculumToDramaSpec(curriculum, {
+    mode: 'mvp',
+    source: 'rhetorical_dramatic_plan',
+    arms: ['adaptive_curriculum_drama', 'dogmatic_routine_control'],
+  });
+  const module6Dramas = spec.dramas.filter((drama) => drama.curriculum_binding.module_id === 'AF6');
+
+  assert.equal(spec.meta.source, 'rhetorical_dramatic_plan');
+  assert.equal(module6Dramas.length, 2);
+  assert.deepEqual(
+    module6Dramas.map((drama) => drama.tutor_adaptation_policy).sort(),
+    ['peripeteia', 'routine'],
+  );
+  assert.equal(new Set(module6Dramas.map((drama) => drama.curriculum_binding.world_adaptation_spec_hash)).size, 1);
+  assert.equal(new Set(module6Dramas.map((drama) => drama.curriculum_binding.rhetorical_dramatic_plan_hash)).size, 2);
+
+  const dogmatic = module6Dramas.find((drama) => drama.tutor_adaptation_policy === 'routine');
+  assert.ok(dogmatic.turn_plan.some((entry) => entry.moves.includes('hold')));
+  assert.ok(dogmatic.turn_plan.some((entry) => entry.forbid?.includes('route_change')));
+
+  const publicConstraintsText = JSON.stringify(dogmatic.curriculum_binding.rhetorical_public_constraints);
+  assert.doesNotMatch(publicConstraintsText, /AF6-MIS\d+/u);
+  assert.doesNotMatch(publicConstraintsText, /W_AF6_CURRICULUM|RDP_AF6_CURRICULUM|sha256:/u);
+});
+
+test('rhetorical dramatic plan lowering preserves provenance without treating it as success evidence', () => {
+  const curriculum = loadCurriculum();
+  const plans = compileCurriculumToRhetoricalDramaticPlans(curriculum, {
+    mode: 'mvp',
+    arms: ['dogmatic_routine_control'],
+  });
+  const plan = plans.rhetorical_dramatic_plans.find((entry) => entry.module_id === 'AF6');
+  const drama = dramaForRhetoricalDramaticPlan(plan);
+
+  assert.equal(drama.curriculum_binding.rhetorical_dramatic_plan_id, plan.id);
+  assert.equal(drama.curriculum_binding.rhetorical_dramatic_plan_hash, plan.plan_hash);
+  assert.equal(drama.curriculum_binding.world_adaptation_spec_id, plan.source_world_adaptation_spec_id);
+  assert.equal(drama.curriculum_binding.world_adaptation_spec_hash, plan.source_world_adaptation_spec_hash);
+  assert.equal(drama.intended_lean, 'rhetorical_dramatic_curriculum_plan');
+  assert.match(plans.meta.boundary, /not an evaluator/u);
 });
 
 test('runnable world compilation requires verifier and misconception evidence', () => {

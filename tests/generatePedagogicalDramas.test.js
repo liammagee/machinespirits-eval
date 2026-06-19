@@ -22,6 +22,7 @@ import {
   stageDirectionStyleFor,
   withPairedDirectorRevisitCue,
   withTutorAdaptationPolicy,
+  withWorldAdaptationConstraints,
 } from '../scripts/generate-pedagogical-dramas.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -257,6 +258,76 @@ describe('generate-pedagogical-dramas', () => {
     assert.equal(item.baseline_control_class, 'organic_reversal');
     assert.equal(item.organic_reversal_risk, 'high');
     assert.match(item.baseline_control_note, /Socratic/);
+  });
+
+  it('preserves curriculum world binding and applies only public-safe world constraints', () => {
+    const drama = {
+      id: 'D_AF6_RESISTANT_DOGMATIC',
+      discipline: 'ai_foundations',
+      condition: 'recognition',
+      curriculum_binding: {
+        curriculum_id: 'ai_foundations_v1',
+        module_id: 'AF6',
+        module_title: 'Evaluation, generalization, calibration, and shift',
+        main_artifact: 'model audit and claim-evidence table',
+        primary_verifier: 'metric engine and evaluation linter',
+        world_adaptation_spec_id: 'W_AF6_CURRICULUM',
+        world_adaptation_spec_version: 'ms-world-adaptation-v0.1',
+        world_adaptation_spec_hash: 'sha256:b9e1a9bd0ddc74c4b6d51a8a0bd3a9abfcfe63786fe0d6aba551484c669df558',
+        world_locked_at_compile_time: true,
+        rhetorical_dramatic_plan_id: 'RDP_AF6_CURRICULUM_DOGMATIC',
+        rhetorical_dramatic_plan_version: 'ms-rhetorical-dramatic-plan-v0.1',
+        rhetorical_dramatic_plan_hash: 'sha256:6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b',
+        world_public_constraints: {
+          artifact: 'model audit and claim-evidence table',
+          primary_verifier: 'metric engine and evaluation linter',
+          preferred_action_families: ['request_evidence', 'contrast_models'],
+          disallowed_action_families: ['model_worked_example'],
+          success_observables: ['Learner gives a reason that can be checked by the metric engine.'],
+          forbidden_public_moves: ['Do not expose curriculum misconception labels.'],
+        },
+        rhetorical_public_constraints: {
+          artifact: 'model audit and claim-evidence table',
+          public_task: 'Write a bounded deployment claim.',
+          public_evidence_standard: 'metric engine and evaluation linter',
+          allowed_rhetorical_form: 'audit-table questioning without naming hidden labels',
+          scene: 'technical review room; visible object: audit table',
+          action_gate: 'Learner narrows the claim scope.',
+          forbidden_public_exposure: ['misconception ids', 'world adaptation spec ids and hashes'],
+        },
+      },
+    };
+
+    const item = keyItemFor(drama, 2, 3, []);
+    assert.equal(item.curriculum_binding.module_id, 'AF6');
+    assert.equal(item.curriculum_binding.rhetorical_dramatic_plan_id, 'RDP_AF6_CURRICULUM_DOGMATIC');
+    assert.equal(item.world_adaptation.spec_id, 'W_AF6_CURRICULUM');
+    assert.equal(item.world_adaptation.spec_hash, drama.curriculum_binding.world_adaptation_spec_hash);
+    assert.equal(item.world_adaptation.locked_at_compile_time, true);
+    assert.equal(item.world_adaptation.public_constraints_present, true);
+    assert.equal(item.rhetorical_dramatic_plan.plan_id, 'RDP_AF6_CURRICULUM_DOGMATIC');
+    assert.equal(item.rhetorical_dramatic_plan.plan_hash, drama.curriculum_binding.rhetorical_dramatic_plan_hash);
+    assert.equal(item.rhetorical_dramatic_plan.public_constraints_present, true);
+
+    const plan = withWorldAdaptationConstraints(
+      {
+        side_constraints: {
+          tutor: 'Use the submitted audit table.',
+          learner: 'Stay resistant.',
+        },
+      },
+      drama,
+    );
+    assert.equal(plan.world_constraints_applied, true);
+    assert.equal(plan.world_adaptation.spec_id, 'W_AF6_CURRICULUM');
+    assert.equal(plan.rhetorical_dramatic_plan.plan_id, 'RDP_AF6_CURRICULUM_DOGMATIC');
+    assert.match(plan.side_constraints.tutor, /model audit and claim-evidence table/u);
+    assert.match(plan.side_constraints.tutor, /request_evidence/u);
+    assert.match(plan.side_constraints.tutor, /audit-table questioning/u);
+    assert.doesNotMatch(plan.side_constraints.tutor, /W_AF6_CURRICULUM/u);
+    assert.doesNotMatch(plan.side_constraints.tutor, /RDP_AF6_CURRICULUM_DOGMATIC/u);
+    assert.doesNotMatch(plan.side_constraints.tutor, /sha256:/u);
+    assert.doesNotMatch(plan.side_constraints.learner, /W_AF6_CURRICULUM|RDP_AF6_CURRICULUM_DOGMATIC|sha256:/u);
   });
 
   it('keeps the classic adaptation target spec taxonomically separated', () => {
