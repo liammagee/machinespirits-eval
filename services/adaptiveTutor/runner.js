@@ -55,6 +55,7 @@ const baseInitialState = (scenario, graphOptions = {}) => {
     adaptationContract: null,
     pendingIntervention: null,
     interventionLedger: [],
+    adaptiveCompletion: null,
     adaptationTrace: [],
   };
 };

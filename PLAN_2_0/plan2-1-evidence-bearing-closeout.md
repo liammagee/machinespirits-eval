@@ -269,3 +269,110 @@ Stop condition for this loop: meaningful progression was reached without
 breaking previously passed mechanism suites. Further changes should be a
 separate diagnosis-driven pass focused on early completion / transcript length,
 then rerun the held-out suite and the same cross-suite and paired regressions.
+
+## Early-Completion Loop
+
+Loop start branch head: `cd0dd552`
+
+Diagnosis:
+
+- After the no-intervention realization fix, Opus still penalized rows where
+  the learner had already authored a next move and the tutor kept emitting
+  another no-intervention closure turn.
+- The failure was no longer generic fallback leakage. It was transcript-length
+  / completion handling: the graph kept cycling until `maxTurns`, even after a
+  successful `observe_no_intervention` contract had closed.
+
+Implementation:
+
+- added an explicit `adaptiveCompletion` state channel;
+- added a conditional route after `close_previous_intervention`, so the graph
+  can terminate only after the pending intervention is observed and written to
+  the ledger;
+- gated early completion behind
+  `early_completion_after_successful_no_intervention`;
+- enabled that flag only on
+  `cell_154_plan2_1_evidence_repeat_contextual`;
+- updated the mock no-intervention learner response to include both
+  learner-authored choice and learner-authored next-step evidence;
+- added a closed-loop test proving early completion closes the no-intervention
+  contract before termination.
+
+Fresh runs:
+
+| Cell | Run ID | Suite | Status |
+|---|---|---|---|
+| `cell_153_plan2_1_evidence_closed_loop` | `eval-2026-06-19-e8bea8ff` | Plan 2.1 evidence-bearing held-out | mock complete; Opus partial, stopped at session limit |
+| `cell_154_plan2_1_evidence_repeat_contextual` | `eval-2026-06-19-a19b2e8a` | Plan 2.1 evidence-bearing held-out | mock complete; Opus pending |
+| `cell_150_plan2_quality_repeat_contextual_crosssuite` | `eval-2026-06-19-743f6e70` | cross-suite traps | mock regression complete |
+| `cell_152_plan2_pair_specificity_repeat_contextual` | `eval-2026-06-19-a5f74a31` | paired counterfactual suite | mock regression complete |
+
+Ignored exports cited, not forced into Git:
+
+- `exports/plan2-1-early-completion-loop2-strategy-shift.json`
+- `exports/plan2-1-early-completion-loop2-pair-specificity.{json,md}`
+- `exports/plan2-1-early-completion-loop2-belief-calibration.{json,md}`
+- `exports/plan2-1-early-completion-loop2-outcome-closure.{json,md}`
+- `exports/plan2-1-early-completion-loop2-crosssuite-strategy-shift.json`
+- `exports/plan2-1-early-completion-loop2-paired-specificity.{json,md}`
+
+Mechanism results:
+
+| Check | `cell_153` | `cell_154` |
+|---|---:|---:|
+| Held-out scenario exact | 10/10 | 10/10 |
+| Held-out family match | 100.0% | 100.0% |
+| Held-out pair specificity | 4/4 | 4/4 |
+| Held-out belief top-1 | 10/10 | 10/10 |
+| Held-out outcome closure | 100.0% | 100.0% |
+| Held-out no-repeat after non-success | 100.0% | 100.0% |
+
+Regression results:
+
+| Suite | Profile | Result |
+|---|---|---:|
+| Cross-suite traps | `cell_150_plan2_quality_repeat_contextual_crosssuite` | 6/6 strict shift |
+| Paired counterfactual | `cell_152_plan2_pair_specificity_repeat_contextual` | 3/3 pair specificity; 0/1 false-positive divergence |
+
+Observed behavior:
+
+- `cell_154` shortened four no-intervention held-out rows from four tutor turns
+  to three tutor turns while preserving the trigger+1 adaptation move and the
+  closed intervention ledger.
+- `cell_153` stayed at four tutor turns on all ten held-out rows.
+
+Opus status:
+
+- Opus scored five baseline rows before the Claude CLI returned
+  "You've hit your session limit; resets 2pm (America/Chicago)."
+- Partial baseline means are not a result. At the interruption point,
+  `cell_153` had five Opus rows with tutor-last mean 62.0, tutor-holistic mean
+  61.0, learner mean 38.3, and dialogue mean 46.0.
+- `cell_154` has not yet been Opus-scored in this loop.
+
+Resume commands after the Opus reset:
+
+```bash
+node scripts/eval-cli.js evaluate eval-2026-06-19-e8bea8ff \
+  --judge-cli claude --model opus --skip-deliberation --parallelism 1 --verbose
+
+node scripts/eval-cli.js evaluate eval-2026-06-19-a19b2e8a \
+  --judge-cli claude --model opus --skip-deliberation --parallelism 1 --verbose
+
+node scripts/analyze-adaptation-quality.js \
+  --run-id eval-2026-06-19-e8bea8ff,eval-2026-06-19-a19b2e8a \
+  --judge-model claude-code/opus \
+  --baseline cell_153_plan2_1_evidence_closed_loop \
+  --out exports/plan2-1-early-completion-loop2-opus-quality.json \
+  --markdown exports/plan2-1-early-completion-loop2-opus-quality.md
+```
+
+Current interpretation:
+
+- The implementation is mechanism-positive and regression-clean, but the loop
+  does not yet have a complete Opus quality verdict.
+- If the resumed Opus pass shows `cell_154` improves quality, this would be a
+  stronger transcript-length/completion fix than another wording iteration.
+- If Opus turns negative, the failure family should be recorded as "early
+  completion removes judged pedagogical closure" and the change should be
+  reconsidered rather than tuned blindly.

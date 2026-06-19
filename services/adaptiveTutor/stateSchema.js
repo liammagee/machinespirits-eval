@@ -278,6 +278,7 @@ export const AdaptiveTutorState = new StateSchema({
   adaptationContract: nullableJsonObjectSchema,
   pendingIntervention: nullableJsonObjectSchema,
   interventionLedger: z.array(jsonObjectSchema).default(() => []),
+  adaptiveCompletion: nullableJsonObjectSchema,
   adaptationTrace: new ReducedValue(
     z.array(adaptationTraceEntrySchema).default(() => []),
     { reducer: (prev, next) => prev.concat(next || []) },

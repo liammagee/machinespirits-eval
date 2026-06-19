@@ -386,7 +386,7 @@ const fixtures = {
     const canUseScript = turn > Number(hidden?.triggerTurn ?? -1);
     if (canUseScript && actionType && scripted[actionType]) return scripted[actionType];
     if (canUseScript && actionType === 'observe_no_intervention') {
-      return 'I can continue with the next step in my own words because I already have a workable route.';
+      return 'I choose to continue with the next step in my own words because I already have a workable route.';
     }
     if (canUseScript && scripted[`turn_${turn}`]) return scripted[`turn_${turn}`];
     if (canUseScript && scripted.default) return scripted.default;

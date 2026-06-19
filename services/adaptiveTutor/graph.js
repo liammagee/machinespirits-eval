@@ -673,6 +673,9 @@ function normalizePolicyConfig(config = {}) {
     sameActionWindow: config.sameActionWindow ?? config.same_action_window,
     sameActionScope: config.sameActionScope ?? config.same_action_scope,
     realizationContext: config.realizationContext ?? config.realization_context,
+    earlyCompletionAfterSuccessfulNoIntervention:
+      config.earlyCompletionAfterSuccessfulNoIntervention ??
+      config.early_completion_after_successful_no_intervention,
     utilityTieEpsilon: config.utilityTieEpsilon ?? config.utility_tie_epsilon,
   };
 }
@@ -684,6 +687,26 @@ function traceEntry(type, state, payload = {}) {
     payload,
   };
 }
+
+function completionFromClosedIntervention(closedRecord, config = {}) {
+  const normalized = normalizePolicyConfig(config);
+  if (!normalized.earlyCompletionAfterSuccessfulNoIntervention) return null;
+  if (closedRecord?.status !== 'closed') return null;
+  if (closedRecord.action_type !== 'observe_no_intervention') return null;
+  if (closedRecord.outcome !== 'success') return null;
+  if (!(closedRecord.hypothesis_ids || []).includes('productive_progress')) return null;
+  return {
+    should_end: true,
+    reason: 'successful_no_intervention_after_productive_progress',
+    contract_id: closedRecord.contract_id || null,
+    action_type: closedRecord.action_type,
+    outcome: closedRecord.outcome,
+    closed_turn_index: closedRecord.closed_turn_index ?? null,
+  };
+}
+
+const routeAfterClosePrevious = (nextNode) => (state) =>
+  state.adaptiveCompletion?.should_end === true ? END : nextNode;
 
 function makeClosePreviousIntervention(defaultMode, defaultPolicyConfig) {
   return async function closePreviousIntervention(state) {
@@ -698,6 +721,7 @@ function makeClosePreviousIntervention(defaultMode, defaultPolicyConfig) {
     if (!LEDGER_ADAPTATION_MODES.has(mode) || !ledger.some((record) => record?.status === 'pending')) {
       return {
         ...base,
+        adaptiveCompletion: null,
         adaptationTrace: [traceEntry('close_previous_intervention_skipped', state, { mode })],
       };
     }
@@ -708,17 +732,21 @@ function makeClosePreviousIntervention(defaultMode, defaultPolicyConfig) {
       learnerTurn: learnerTurnText,
       turnIndex: state.turn,
     });
+    const completion = completionFromClosedIntervention(closed.closedRecord, config);
+    const closeTrace = traceEntry('close_previous_intervention', state, {
+      contract_id: closed.closedRecord?.contract_id || null,
+      outcome: closed.closedRecord?.outcome || null,
+      action_type: closed.closedRecord?.action_type || null,
+    });
+    const completionTrace = completion
+      ? [traceEntry('adaptive_completion', state, { reason: completion.reason, contract_id: completion.contract_id })]
+      : [];
     return {
       ...base,
       interventionLedger: closed.ledger,
       pendingIntervention: closed.pendingIntervention,
-      adaptationTrace: [
-        traceEntry('close_previous_intervention', state, {
-          contract_id: closed.closedRecord?.contract_id || null,
-          outcome: closed.closedRecord?.outcome || null,
-          action_type: closed.closedRecord?.action_type || null,
-        }),
-      ],
+      adaptiveCompletion: completion,
+      adaptationTrace: [closeTrace, ...completionTrace],
     };
   };
 }
@@ -1029,7 +1057,6 @@ export function buildGraph(options = {}) {
       .addNode('tutorEmit', tutorEmit)
       .addNode('learnerTurn', learnerTurn)
       .addEdge(START, 'close_previous_intervention')
-      .addEdge('close_previous_intervention', 'estimate_learner_state')
       .addEdge('estimate_learner_state', 'select_pedagogical_action')
       .addEdge('select_pedagogical_action', 'validate_adaptation_contract')
       .addEdge('validate_adaptation_contract', 'realize_tutor_utterance')
@@ -1037,6 +1064,10 @@ export function buildGraph(options = {}) {
       .addEdge('verify_realization', 'persist_pending_intervention')
       .addEdge('persist_pending_intervention', 'tutorEmit')
       .addEdge('tutorEmit', 'learnerTurn')
+      .addConditionalEdges('close_previous_intervention', routeAfterClosePrevious('estimate_learner_state'), [
+        'estimate_learner_state',
+        END,
+      ])
       .addConditionalEdges('learnerTurn', routeAfterLearner('close_previous_intervention'), [
         'close_previous_intervention',
         END,
