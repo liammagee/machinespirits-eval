@@ -3,7 +3,7 @@
 Date: 2026-06-19
 Branch head before this implementation: `258ea857`
 Initial evidence-suite commit: `8f4c98fc`
-Status: second implementation loop complete; provisional simulated mechanism evidence positive under mock
+Status: second implementation loop complete; provisional simulated mechanism evidence positive under mock; independent quality cross-check weakly positive but quality-limited
 
 ## Implemented
 
@@ -36,8 +36,8 @@ Evidence-bearing held-out suite, final repaired pass:
 
 | Cell | Run ID | Judge split |
 |---|---|---|
-| `cell_153_plan2_1_evidence_closed_loop` | `eval-2026-06-19-40e60405` | mock generation, no judge |
-| `cell_154_plan2_1_evidence_repeat_contextual` | `eval-2026-06-19-e580a334` | mock generation, no judge |
+| `cell_153_plan2_1_evidence_closed_loop` | `eval-2026-06-19-40e60405` | mock generation; Sonnet complete; Opus preserved-history partial/deduped |
+| `cell_154_plan2_1_evidence_repeat_contextual` | `eval-2026-06-19-e580a334` | mock generation; Sonnet complete; Opus preserved-history partial/deduped |
 
 Regression checks on previously passed suites after the repair:
 
@@ -57,6 +57,8 @@ Ignored exports were not forced into Git:
 - `exports/plan2-1-evidence-bearing-v3-pair-specificity.{json,md}`
 - `exports/plan2-1-evidence-bearing-v3-belief-calibration.{json,md}`
 - `exports/plan2-1-evidence-bearing-v3-outcome-closure.{json,md}`
+- `exports/plan2-1-evidence-bearing-v3-sonnet-quality.{json,md}`
+- `exports/plan2-1-evidence-bearing-v3-opus-quality.{json,md}`
 - `exports/plan2-1-regression-crosssuite-strategy-shift.json`
 - `exports/plan2-1-regression-paired-specificity.{json,md}`
 - `exports/plan2-1-regression-crosssuite-belief-calibration.{json,md}`
@@ -103,6 +105,31 @@ Action-family coverage on the held-out suite:
 | `cell_153_plan2_1_evidence_closed_loop` | 4 | diagnostic=10, scaffolding=16, agency_preservation=13, repair_affective=1 |
 | `cell_154_plan2_1_evidence_repeat_contextual` | 4 | diagnostic=10, scaffolding=16, agency_preservation=13, repair_affective=1 |
 
+Quality, exact `judge_model` filters:
+
+| Judge | Profile | N | Quality N | Strict shift | Quality composite | Delta vs `cell_153` | Tutor last | Tutor holistic | Learner | Dialogue |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Sonnet (`claude-code/sonnet`) | `cell_153_plan2_1_evidence_closed_loop` | 10 | 10 | 100.0% | 32.0 | 0.0 | 45.6 | 23.0 | 31.5 | 28.0 |
+| Sonnet (`claude-code/sonnet`) | `cell_154_plan2_1_evidence_repeat_contextual` | 10 | 10 | 100.0% | 33.8 | +1.7 | 47.0 | 27.8 | 30.3 | 30.0 |
+| Opus (`claude-code/opus`) | `cell_153_plan2_1_evidence_closed_loop` | 7 | 6 | 100.0% | 39.3 | 0.0 | 50.7 | 40.0 | 34.4 | 39.6 |
+| Opus (`claude-code/opus`) | `cell_154_plan2_1_evidence_repeat_contextual` | 7 | 6 | 100.0% | 41.5 | +2.2 | 44.5 | 38.2 | 36.0 | 37.9 |
+
+Quality interpretation:
+
+- Both Sonnet and Opus rank `cell_154_plan2_1_evidence_repeat_contextual`
+  above `cell_153_plan2_1_evidence_closed_loop`, so the repaired treatment is
+  weakly quality-positive under exact judge filters.
+- The absolute quality is low. Sonnet's composite is only 33.8 for the
+  treatment; Opus's partial composite is 41.5.
+- Opus is a robustness check, not the tuning target. Its preserved-history
+  rejudge deduplicated the ten Sonnet rows to seven unique dialogues per
+  profile and left one learner aggregate missing per profile after refusing a
+  malformed/repetitive learner-scoring prompt.
+- The dominant quality failure family is not state selection. It is final-turn
+  closure: after the learner gives evidence of progress, the tutor often repeats
+  a generic "next task-relevant move" prompt, and the mock learner regresses to
+  "Hmm, can you explain more?"
+
 ## Diagnosed Failure and Repair
 
 The first pass exposed the same failure in both frozen-policy cells:
@@ -140,15 +167,18 @@ pair-specificity in both cells.
 
 ## Claim
 
-This is provisional simulated mechanism evidence, not judge-rated tutoring
-quality evidence and not human-learning evidence. The Plan 2.1 instrumentation
+This is provisional simulated mechanism evidence with weak independent
+judge-quality support, not human-learning evidence. The Plan 2.1 instrumentation
 now supports explicit belief labels, action-specific mock closure, no
-intervention, pair specificity, and outcome evidence. Under this held-out mock
-suite, the repaired controller generalizes to productive progress, task
-misread, minimal hint after failed diagnosis, explanation after failed hint,
-affective shutdown, overload, answer seeking, and same-state controls.
+intervention, pair specificity, outcome evidence, and exact-filter quality
+reports. Under this held-out mock suite, the repaired controller generalizes to
+productive progress, task misread, minimal hint after failed diagnosis,
+explanation after failed hint, affective shutdown, overload, answer seeking, and
+same-state controls.
 
-The next step should move from mock mechanism evidence to independent quality
-evaluation on the repaired held-out suite, keeping Sonnet, Opus, and Codex
-judge histories separated by exact `judge_model` filters. Do not claim human
-learning, retention, transfer, or deployment readiness from this result.
+The quality result is bounded: `cell_154` edges `cell_153` under both Sonnet and
+Opus, but the absolute scores remain low and the Opus pass is partial/deduped.
+The next diagnosis-driven implementation should target final-turn closure after
+learner-owned progress, then rerun this held-out suite plus the cross-suite and
+paired regression checks. Do not claim human learning, retention, transfer, or
+deployment readiness from this result.
