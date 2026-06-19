@@ -1,0 +1,54 @@
+flowchart TB
+  subgraph stage["Dramatic derivation stage"]
+    world["Proof world: rules, background, secret, release schedule"]:::state
+    director["Director declares movement; does not speak in scene"]:::agent
+    tutor["Tutor drafts public teaching move plus metadata"]:::agent
+    learner["Learner adopts released facts, voices derivations, may assert S"]:::agent
+    checker["Mechanical checker: grounded anagnorisis only if S is forced"]:::score
+    world --> director
+    director --> tutor
+    tutor --> learner
+    learner --> checker
+    checker --> world
+  end
+
+  subgraph guards["Checkable conduct guards"]
+    hidden["Hidden pacing guard H: reads derivation distance and release solvency"]:::guard
+    visible["Visible pacing guard V: reads page-level uptake and visible drift"]:::guard
+    proofDebt["Proof-debt guard: restores decayed released premises that improve D"]:::guard
+    runtime["Runtime monitor: release adherence, leaks, overreach, aporia"]:::guard
+  end
+
+  world --> hidden
+  learner --> visible
+  learner --> proofDebt
+  tutor --> runtime
+  hidden --> tutor
+  visible --> tutor
+  proofDebt --> tutor
+  runtime --> checker
+
+  subgraph boundary["Boundary found by the research"]
+    linear["Linear coupled chain: page tracks proof distance"]:::case
+    fork["Forked AND-join: page can look complete while latent depth remains"]:::case
+    distractor["Linear distractor: visible drift to a true but wrong side finding"]:::case
+    linear --> both["V and H both pace well"]:::support
+    fork --> hOnly["H works; V fails"]:::mixed
+    distractor --> vOnly["V works; H fails"]:::mixed
+    both --> noUniversal["No universal single-channel guard"]:::caveat
+    hOnly --> noUniversal
+    vOnly --> noUniversal
+  end
+
+  proofDebt --> baseline["hidden + proofDebt becomes the reliability baseline for production derivation runs"]:::support
+  noUniversal --> selector["Selector route tests do not establish adaptive representation selection"]:::caveat
+  selector --> baseline
+
+  classDef state fill:#e0f2fe,stroke:#0369a1,color:#082f49,stroke-width:2px;
+  classDef agent fill:#dbeafe,stroke:#2563eb,color:#0f172a,stroke-width:2px;
+  classDef score fill:#ffe4e6,stroke:#be123c,color:#4c0519,stroke-width:2px;
+  classDef guard fill:#fef3c7,stroke:#d97706,color:#422006,stroke-width:2px;
+  classDef case fill:#f8fafc,stroke:#64748b,color:#0f172a,stroke-width:2px;
+  classDef support fill:#dcfce7,stroke:#16a34a,color:#052e16,stroke-width:2px;
+  classDef mixed fill:#fde68a,stroke:#b45309,color:#422006,stroke-width:2px;
+  classDef caveat fill:#fee2e2,stroke:#dc2626,color:#450a0a,stroke-width:2px;

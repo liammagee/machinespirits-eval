@@ -1326,6 +1326,114 @@
     }
   }
   /* poetics-arc-images:style:end */
+
+  .architecture-atlas {
+    margin: clamp(1.2rem, 2.4vw, 2.4rem) 0;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    padding: clamp(1rem, 2vw, 1.5rem) 0;
+  }
+  .architecture-atlas__header {
+    display: grid;
+    gap: 0.45rem;
+    margin-bottom: 1rem;
+  }
+  .architecture-atlas__kicker {
+    color: var(--brick-d);
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    margin: 0;
+    text-transform: uppercase;
+  }
+  .architecture-atlas__title {
+    font-family: "Fraunces", serif;
+    font-size: clamp(1.4rem, 2.7vw, 2.5rem);
+    line-height: 1.05;
+    margin: 0;
+  }
+  .architecture-atlas__lede {
+    color: var(--ink-3);
+    font-size: var(--s-body);
+    line-height: 1.55;
+    margin: 0;
+    max-width: 68ch;
+  }
+  .architecture-atlas__grid {
+    display: grid;
+    gap: 1rem;
+  }
+  .architecture-atlas__grid--two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .architecture-atlas__asset,
+  .architecture-atlas__frame {
+    margin: 0;
+  }
+  .architecture-atlas__asset img {
+    display: block;
+    width: 100%;
+    border: 1px solid var(--rule);
+    background: var(--paper-2);
+  }
+  .architecture-atlas__asset figcaption,
+  .architecture-atlas__frame figcaption {
+    color: var(--ink-3);
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    line-height: 1.5;
+    margin-top: 0.55rem;
+  }
+  .architecture-atlas__asset figcaption span,
+  .architecture-atlas__frame figcaption span {
+    color: var(--brick-d);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .architecture-atlas__frames {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 1rem;
+  }
+  .architecture-atlas__frame iframe {
+    display: block;
+    width: 100%;
+    height: min(52vw, 520px);
+    min-height: 360px;
+    border: 1px solid var(--rule);
+    background: var(--paper-2);
+  }
+  .architecture-atlas__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    margin-top: 1rem;
+  }
+  .architecture-atlas__link {
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    color: var(--ink-2);
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    padding: 0.45rem 0.7rem;
+    text-decoration: none;
+  }
+  .architecture-atlas__link:hover {
+    border-color: var(--brick);
+    color: var(--brick-d);
+  }
+  @media (max-width: 56rem) {
+    .architecture-atlas__grid--two,
+    .architecture-atlas__frames {
+      grid-template-columns: 1fr;
+    }
+    .architecture-atlas__frame iframe {
+      height: 420px;
+    }
+  }
 </style>
 </head>
 <body>
@@ -1383,6 +1491,7 @@
       <a href="#starting-point"><span class="toc__num">01</span><span>Starting point · Paper 2.0</span></a>
       <ul class="toc__sub">
         <li><a href="#starting-point">Calibration · Error correction · Adaptive null</a></li>
+        <li><a href="#architecture-diagram-atlas">Architecture atlas</a></li>
       </ul>
     </li>
     <li class="toc__item" data-target="arc">
@@ -1721,6 +1830,54 @@
   </div>
   </div>
   </div>
+
+  <aside class="architecture-atlas" id="architecture-diagram-atlas" aria-labelledby="architecture-diagram-atlas-title">
+    <div class="architecture-atlas__header">
+      <p class="architecture-atlas__kicker">Architecture atlas</p>
+      <h3 class="architecture-atlas__title" id="architecture-diagram-atlas-title">The mechanism story as a research apparatus</h3>
+      <p class="architecture-atlas__lede">These diagrams pin the paper's starting point before the dramatic branch begins: recognition calibrates tutor output, ego-superego critique is conditional error correction, and broad adaptation-rate gains did not appear. The later guard diagrams are included here because they show where this arc eventually relocated authority: from richer mental-state inference to checkable conduct governance.</p>
+    </div>
+
+    <div class="architecture-atlas__grid architecture-atlas__grid--two">
+      <figure class="architecture-atlas__asset">
+        <img src="architecture-diagrams/architecture-overview.svg" alt="Overview diagram showing recognition orientation, bilateral runtime, public-only scoring, supported mechanisms, adaptive-runner apparatus, conduct governance, and the no-universal-guard boundary." loading="lazy" decoding="async" />
+        <figcaption><span>Deterministic overview</span> Exact-label SVG summary of what the architecture does and does not claim.</figcaption>
+      </figure>
+      <figure class="architecture-atlas__asset">
+        <img src="architecture-diagrams/gpt-image-2-frontispiece.png" alt="Text-free conceptual frontispiece showing an AI tutoring research apparatus as a lab bench, inspection channel, stage, proof path, and human-study frontier." loading="lazy" decoding="async" />
+        <figcaption><span>GPT Image 2 frontispiece</span> Non-authoritative raster companion; the SVG and Mermaid diagrams carry the claims.</figcaption>
+      </figure>
+    </div>
+
+    <div class="architecture-atlas__frames" aria-label="Detailed architecture diagrams">
+      <figure class="architecture-atlas__frame">
+        <iframe src="architecture-diagrams/01-runtime-observability.html" title="Runtime observability diagram"></iframe>
+        <figcaption><span>Runtime observability</span> Bilateral tutor and learner traces, public-only scoring, and provenance.</figcaption>
+      </figure>
+      <figure class="architecture-atlas__frame">
+        <iframe src="architecture-diagrams/02-mechanism-findings.html" title="Mechanism findings diagram"></iframe>
+        <figcaption><span>Mechanism findings</span> Calibration, substitution, nulls, and interpretation boundaries.</figcaption>
+      </figure>
+      <figure class="architecture-atlas__frame">
+        <iframe src="architecture-diagrams/03-cell-runner-map.html" title="Cell runner map diagram"></iframe>
+        <figcaption><span>Cell runner map</span> Standard dialogue engine, trap adapter, adaptive runner, and derivation harness dispatch.</figcaption>
+      </figure>
+      <figure class="architecture-atlas__frame">
+        <iframe src="architecture-diagrams/04-conduct-governance-boundary.html" title="Conduct governance boundary diagram"></iframe>
+        <figcaption><span>Conduct governance boundary</span> Proof-world guards, proof debt, and why no single hidden or visible channel is universal.</figcaption>
+      </figure>
+    </div>
+
+    <nav class="architecture-atlas__links" aria-label="Architecture diagram source links">
+      <a class="architecture-atlas__link" href="architecture-diagrams/architecture-overview.html">Open overview page</a>
+      <a class="architecture-atlas__link" href="architecture-diagrams/README.md">Read diagram notes</a>
+      <a class="architecture-atlas__link" href="architecture-diagrams/gpt-image-2-frontispiece-prompt.md">Image prompt</a>
+      <a class="architecture-atlas__link" href="architecture-diagrams/01-runtime-observability.mmd">Mermaid source 01</a>
+      <a class="architecture-atlas__link" href="architecture-diagrams/02-mechanism-findings.mmd">Mermaid source 02</a>
+      <a class="architecture-atlas__link" href="architecture-diagrams/03-cell-runner-map.mmd">Mermaid source 03</a>
+      <a class="architecture-atlas__link" href="architecture-diagrams/04-conduct-governance-boundary.mmd">Mermaid source 04</a>
+    </nav>
+  </aside>
 
           <!-- poetics-arc-images:begin panel="01" section="starting-point" -->
           <figure class="arc-cartoon" data-arc-image-panel="01" data-arc-image-section="starting-point">
@@ -3612,14 +3769,14 @@
 /* ════════════════════════════════════════════════════════════════
    techne.js — shared behaviour for techne editorial docs.
 
-   Drop into any doc with  <script src="assets/techne.js"></script>
+   Drop into any doc with  <script src="assets/techne.js"><\/script>
    just before </body>. Every feature is GUARDED and opt-in: it
    activates only if its markup is present, so this file is safe to
    load on a doc that has no rail / TOC / beacon / charts / glossary.
 
    Doc-specific *content* stays in the doc as declarative JSON:
-     • chart data:   <script type="application/json" class="techne-chart" data-target="myChartId">{…}</script>
-     • gloss aliases: <script type="application/json" id="techne-gloss-aliases">{ "inline term": "glossary-key" }</script>
+     • chart data:   <script type="application/json" class="techne-chart" data-target="myChartId">{…}<\/script>
+     • gloss aliases: <script type="application/json" id="techne-gloss-aliases">{ "inline term": "glossary-key" }<\/script>
    ════════════════════════════════════════════════════════════════ */
 (function () {
   'use strict';
@@ -3838,7 +3995,7 @@
        Provide data per chart with:
          <script type="application/json" class="techne-chart" data-target="X">
            { "metrics": [{"label": "…"}], "arms": [{"key":"routine","values":[…],"denom":[…]}] }
-         </script>                                                                      */
+         <\/script>                                                                      */
     function renderGroupedChart(svgEl, data) {
       const W = 720,
         H = 280,

@@ -1,0 +1,43 @@
+flowchart TB
+  question["Research question: through what architecture-level mechanisms does recognition-oriented tutoring improve output?"]:::state
+
+  question --> m1["M1: prompt-level calibration"]:::mechanism
+  question --> m2["M2: architecture-level error correction"]:::mechanism
+  question --> m3["M3: interaction-level adaptive responsiveness"]:::mechanism
+
+  m1 --> m1Evidence["Recognition narrows output variance, lifts weak dimensions, and works without a superego"]:::support
+  m1Evidence --> m1Read["Supported: intersubjective orientation constrains the ego from the first turn"]:::read
+
+  m2 --> m2Base["Base prompt + superego: critic catches failures and improves output"]:::support
+  m2 --> m2Recog["Recognition + superego: marginal benefit collapses on strong models"]:::mixed
+  m2Base --> substitution["Universal substitution: calibration pre-empts errors the superego would catch"]:::read
+  m2Recog --> substitution
+  substitution --> residual["Residual architecture benefit is model-dependent, largest when the ego is weaker"]:::mixed
+
+  m3 --> slopes["Turn-by-turn slopes, deltas, trajectory curves, and learner-side slopes"]:::instrument
+  slopes --> null["Null at the fixed-rubric rate level: recognition raises levels, not rates"]:::null
+  null --> scope["Scope: this does not prove rich adaptation impossible; it bounds the measured slope proxy"]:::caveat
+
+  question --> extensions["Architectural extension arcs"]:::mechanism
+  extensions --> idDirector["Id-director charisma family: operationalizable, scenario-conditional"]:::mixed
+  extensions --> adaptiveRunner["Adaptive runner: trap apparatus works; rich state and ToM mostly do not pay"]:::mixed
+  extensions --> derivation["Dramatic derivation: conduct governance works through criterial guards"]:::support
+
+  adaptiveRunner --> apparatus["Durable contribution: apparatus, not richer learner-state machinery"]:::read
+  derivation --> boundary["No universal hidden or visible guard; proof-debt and world geometry matter"]:::caveat
+
+  m1Read --> human["Human learning outcomes remain open"]:::frontier
+  substitution --> human
+  scope --> human
+  apparatus --> human
+  boundary --> human
+
+  classDef state fill:#e0f2fe,stroke:#0369a1,color:#082f49,stroke-width:2px;
+  classDef mechanism fill:#dbeafe,stroke:#2563eb,color:#0f172a,stroke-width:2px;
+  classDef support fill:#dcfce7,stroke:#16a34a,color:#052e16,stroke-width:2px;
+  classDef mixed fill:#fef3c7,stroke:#d97706,color:#422006,stroke-width:2px;
+  classDef null fill:#fee2e2,stroke:#dc2626,color:#450a0a,stroke-width:2px;
+  classDef caveat fill:#f3f4f6,stroke:#6b7280,color:#111827,stroke-width:2px;
+  classDef read fill:#ede9fe,stroke:#7c3aed,color:#2e1065,stroke-width:2px;
+  classDef instrument fill:#fce7f3,stroke:#be185d,color:#500724,stroke-width:2px;
+  classDef frontier fill:#ecfccb,stroke:#65a30d,color:#1a2e05,stroke-width:2px;
