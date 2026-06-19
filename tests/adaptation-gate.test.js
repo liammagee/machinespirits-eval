@@ -55,6 +55,44 @@ test('gate blocks high-control proof supply while ownership is unresolved', () =
   assert.ok(result.violations.some((v) => v.code === VIOLATION_CODES.OWNERSHIP_WITH_TUTOR_SUPPLIED_PROOF));
 });
 
+test('gate permits explanation after a failed hint under a prerequisite gap', () => {
+  const result = validateProofReleaseOwnershipGate({
+    stateBelief: stateBelief({
+      learner_project: {
+        goal: 'apply the concept to a similar problem',
+        current_plan:
+          'The small hint is still not enough; I need the prerequisite idea before I can apply it to a similar problem.',
+        commitment: 'uncommitted',
+        next_authorship_opportunity: 'apply the explanation to a transfer case',
+      },
+      hypotheses: [
+        {
+          id: 'missing_prerequisite',
+          probability: 0.73,
+          evidence: ['need the prerequisite idea'],
+          disconfirming_evidence: [],
+        },
+      ],
+    }),
+    selectedAction: materialize('explain_principle'),
+    candidateActions: [
+      { action_type: 'ask_strategy_choice', utility: 0.59, control_cost: 0.15, information_gain: 0.55 },
+      { action_type: 'explain_principle', utility: 0.34, control_cost: 0.6, information_gain: 0.25 },
+    ],
+    interventionLedger: [
+      {
+        status: 'closed',
+        outcome: 'failure',
+        action_type: 'minimal_hint',
+        hypothesis_ids: ['missing_prerequisite', 'low_confidence'],
+        contract_id: 'prior-hint',
+      },
+    ],
+  });
+
+  assert.equal(result.allowed, true);
+});
+
 test('gate allows task reanchor as a meaningful bounded opportunity', () => {
   const result = validateProofReleaseOwnershipGate({
     stateBelief: stateBelief(),

@@ -38,6 +38,30 @@ test('inconclusive diagnostic under same condition selects a different compatibl
   assert.ok(belief.hypotheses.some((h) => compatible.includes(h.id)));
 });
 
+test('non-success minimal hint under high-confidence prerequisite gap escalates to explanation', () => {
+  const dialogue = [
+    {
+      role: 'learner',
+      content:
+        'The small hint is still not enough; I need the prerequisite idea before I can apply it to a similar problem.',
+    },
+  ];
+  const ledger = [
+    {
+      status: 'closed',
+      outcome: 'inconclusive',
+      action_type: 'minimal_hint',
+      hypothesis_ids: ['missing_prerequisite', 'low_confidence'],
+    },
+  ];
+  const belief = estimateLearnerStateBelief({ dialogue, interventionLedger: ledger, turnIndex: 2 });
+  const selection = selectPedagogicalAction({ stateBelief: belief, interventionLedger: ledger, mode: 'closed_loop' });
+
+  assert.equal(belief.hypotheses[0].id, 'missing_prerequisite');
+  assert.equal(selection.selectedAction.action_type, 'explain_principle');
+  assert.equal(legacyPolicyActionForAdaptiveAction(selection.selectedAction.action_type), 'lower_cognitive_load');
+});
+
 test('successful diagnostic evidence lets task misread select reanchor_goal', () => {
   const dialogue = [
     { role: 'learner', content: "I don't get why that works." },

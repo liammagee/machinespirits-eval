@@ -39,6 +39,14 @@ function latestFailures(interventionLedger = [], actionType, hypothesisId) {
     .slice(-3);
 }
 
+function latestNonSuccesses(interventionLedger = [], actionType, hypothesisId) {
+  return interventionLedger
+    .filter((record) => record?.status === 'closed' && ['failure', 'inconclusive'].includes(record.outcome))
+    .filter((record) => record.action_type === actionType)
+    .filter((record) => (record.hypothesis_ids || []).includes(hypothesisId))
+    .slice(-3);
+}
+
 function violation(code, message, details = {}) {
   return { code, message, details };
 }
@@ -61,6 +69,14 @@ function isReleaseTargeting(action) {
 
 function isHighControlProofSupply(action) {
   return ['explain_principle', 'model_worked_example'].includes(action?.action_type) || Number(action?.control_cost || 0) >= 0.6;
+}
+
+function isEscalationAfterFailedHint({ stateBelief, action, interventionLedger = [] }) {
+  const dominant = dominantHypothesis(stateBelief);
+  const confidence = Number(stateBelief?.hypotheses?.[0]?.probability || 0);
+  if (dominant !== 'missing_prerequisite' || confidence < 0.55) return false;
+  if (!['explain_principle', 'model_worked_example'].includes(action?.action_type)) return false;
+  return latestNonSuccesses(interventionLedger, 'minimal_hint', dominant).length > 0;
 }
 
 const ACTIONABLE_UNDER_UNCERTAINTY = new Set([
@@ -125,6 +141,7 @@ export function validateProofReleaseOwnershipGate({
 
   const axes = stateBelief?.axes || {};
   const dominant = dominantHypothesis(stateBelief);
+  const escalationAfterFailedHint = isEscalationAfterFailedHint({ stateBelief, action, interventionLedger });
 
   for (const h of stateBelief?.hypotheses || []) {
     if (h.probability >= 0.7 && (!Array.isArray(h.evidence) || h.evidence.length === 0)) {
@@ -161,7 +178,11 @@ export function validateProofReleaseOwnershipGate({
     repairs.push(repair('diagnose_with_discriminating_question', 'Use an action with an observable success criterion.'));
   }
 
-  if ((isOwnershipTargeting(action) || Number(axes.ownership || 0) < 0.45) && isHighControlProofSupply(action)) {
+  if (
+    !escalationAfterFailedHint &&
+    (isOwnershipTargeting(action) || Number(axes.ownership || 0) < 0.45) &&
+    isHighControlProofSupply(action)
+  ) {
     violations.push(
       violation(
         VIOLATION_CODES.OWNERSHIP_WITH_TUTOR_SUPPLIED_PROOF,
@@ -241,7 +262,7 @@ export function validateProofReleaseOwnershipGate({
   }
 
   const nearTie = lowerControlNearTie(action, candidateActions, merged.utilityTieEpsilon);
-  if (nearTie && isHighControlProofSupply(action)) {
+  if (nearTie && isHighControlProofSupply(action) && !escalationAfterFailedHint) {
     violations.push(
       violation(
         VIOLATION_CODES.CONTROL_COST_EXCEEDS_MINIMUM_SUFFICIENT_ACTION,

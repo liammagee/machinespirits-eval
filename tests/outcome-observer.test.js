@@ -63,6 +63,24 @@ test('minimal hint fails when learner reveals a deeper prerequisite gap', () => 
   assert.equal(result.evidence[0].categories['evidence of deeper gap'], true);
 });
 
+test('minimal hint fails when learner says the prerequisite idea is still missing', () => {
+  const result = observeInterventionOutcome({
+    pendingIntervention: {
+      action_type: 'minimal_hint',
+      success_signal: {
+        required_evidence: ['learner-authored next step'],
+        forbidden_evidence: ['tutor-completed step'],
+      },
+    },
+    learnerTurn:
+      'The small hint is still not enough; I need the prerequisite idea before I can apply it to a similar problem.',
+    turnIndex: 2,
+  });
+
+  assert.equal(result.outcome, 'failure');
+  assert.equal(result.evidence[0].categories['evidence of deeper gap'], true);
+});
+
 test('contrast action succeeds when learner asks a targeted boundary question', () => {
   const result = observeInterventionOutcome({
     pendingIntervention: {

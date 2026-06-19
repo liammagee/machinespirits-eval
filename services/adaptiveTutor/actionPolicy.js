@@ -1,4 +1,4 @@
-export const ADAPTATION_ACTION_REGISTRY_VERSION = 'adaptation-action-registry.v1.1';
+export const ADAPTATION_ACTION_REGISTRY_VERSION = 'adaptation-action-registry.v1.2';
 
 export const ADAPTIVE_POLICY_MODES = Object.freeze([
   'legacy',
@@ -746,6 +746,13 @@ function recentNonSuccessActions(interventionLedger = [], hypothesisId = null) {
     .slice(-5);
 }
 
+function recentNonSuccessHintForMissingPrerequisite(stateBelief, interventionLedger = []) {
+  const dominant = dominantHypothesis(stateBelief);
+  const confidence = Number(stateBelief?.hypotheses?.[0]?.probability || 0);
+  if (dominant !== 'missing_prerequisite' || confidence < 0.55) return false;
+  return recentNonSuccessActions(interventionLedger, dominant).some((record) => record.action_type === 'minimal_hint');
+}
+
 function recentSuccessfulDiagnostic(interventionLedger = []) {
   return interventionLedger
     .filter((record) => record?.status === 'closed' && record.outcome === 'success')
@@ -840,7 +847,7 @@ function buildCandidateTypes(stateBelief, interventionLedger = []) {
       if (ADAPTATION_ACTION_BY_TYPE[type]) types.add(type);
     }
   }
-  if (recentFailedActions(interventionLedger, dominant).length > 0) {
+  if (recentNonSuccessActions(interventionLedger, dominant).length > 0) {
     types.add('contrast_models');
     types.add('explain_principle');
   }
@@ -889,7 +896,9 @@ export function selectPedagogicalAction({ stateBelief, interventionLedger = [], 
     .sort((a, b) => b.utility - a.utility || a.control_cost - b.control_cost || b.information_gain - a.information_gain)
     .slice(0, merged.maxActionCandidates);
 
-  if (diagnosticStillRequired(stateBelief, interventionLedger)) {
+  const escalationRequired = recentNonSuccessHintForMissingPrerequisite(stateBelief, interventionLedger);
+
+  if (diagnosticStillRequired(stateBelief, interventionLedger) && !escalationRequired) {
     const diagnostic = scoreCandidateAction('diagnose_with_discriminating_question', stateBelief, interventionLedger, merged);
     candidates = [diagnostic, ...candidates.filter((c) => c.action_type !== diagnostic.action_type)]
       .sort((a, b) => {
@@ -900,10 +909,24 @@ export function selectPedagogicalAction({ stateBelief, interventionLedger = [], 
       .slice(0, merged.maxActionCandidates);
   }
 
-  const diagnosticRequired = diagnosticStillRequired(stateBelief, interventionLedger);
-  let selectedRow = diagnosticRequired
-    ? candidates.find((c) => c.action_type === 'diagnose_with_discriminating_question')
+  if (escalationRequired) {
+    const escalation = scoreCandidateAction('explain_principle', stateBelief, interventionLedger, merged);
+    candidates = [escalation, ...candidates.filter((c) => c.action_type !== escalation.action_type)].slice(
+      0,
+      merged.maxActionCandidates,
+    );
+  }
+
+  const diagnosticRequired = diagnosticStillRequired(stateBelief, interventionLedger) && !escalationRequired;
+  let selectedRow = escalationRequired
+    ? candidates.find((c) => c.action_type === 'explain_principle') ||
+      candidates.find((c) => c.action_type === 'model_worked_example')
     : null;
+  if (!selectedRow) {
+    selectedRow = diagnosticRequired
+      ? candidates.find((c) => c.action_type === 'diagnose_with_discriminating_question')
+      : null;
+  }
   if (!selectedRow) {
     const dominant = dominantHypothesis(stateBelief);
     const preferredType = HYPOTHESIS_ACTION_MAP[dominant]?.[0];
