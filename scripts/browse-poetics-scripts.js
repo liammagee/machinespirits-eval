@@ -49,6 +49,7 @@ import {
 import {
   startSession as liveStartSession,
   humanTurn as liveHumanTurn,
+  advanceTurn as liveAdvanceTurn,
   viewSession as liveViewSession,
   saveSession as liveSaveSession,
   endSession as liveEndSession,
@@ -1304,6 +1305,18 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
       return res.status(error.statusCode || 400).json({ error: error.message || String(error), code: error.code });
     }
   });
+  // Watch mode: advance ONE turn (both seats AI). The client polls this to drive the
+  // tempo, so a human watches an automated tutor↔learner scene play out turn by turn.
+  app.post('/api/compose/live/:id/advance', async (req, res) => {
+    try {
+      const body = req.body || {};
+      const deps = body.mock ? liveBuildMockDeps() : {};
+      const out = await liveAdvanceTurn(req.params.id, deps, { debug: !!body.showDeliberation });
+      return res.json(out);
+    } catch (error) {
+      return res.status(error.statusCode || 400).json({ error: error.message || String(error), code: error.code });
+    }
+  });
   app.get('/api/compose/live/:id', (req, res) => {
     try {
       const debug = req.query.debug === '1' || req.query.debug === 'true';
@@ -1381,6 +1394,19 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   });
   app.get('/ontology', (_req, res) => res.type('html').send(renderOntologyHtml()));
   app.get('/rubric', (_req, res) => res.type('html').send(renderRubricHtml()));
+  // Curriculum spine + its compiled drama/world artifacts (read-only). ?c=<base>
+  // selects among multiple curriculum/*.curriculum.yaml files (default: first).
+  app.get('/curriculum', (req, res) =>
+    res.type('html').send(renderCurriculumHtml(typeof req.query.c === 'string' ? req.query.c : '')),
+  );
+  app.get('/api/curriculum', (_req, res) => res.json({ curricula: listCurricula() }));
+  // The illustrated walk-through note (curriculum objects → worlds), served like
+  // /story-doc — a dated techne note whose assets/* resolve against /assets.
+  app.get('/curriculum/guide', (_req, res) => {
+    if (!fs.existsSync(CURRICULUM_GUIDE_NOTE))
+      return res.status(404).type('text').send('curriculum guide note not found');
+    res.type('html').sendFile(CURRICULUM_GUIDE_NOTE);
+  });
   app.get('/api/ontology', (req, res) => {
     try {
       const view = ['system', 'tutor', 'learner'].includes(req.query.view) ? req.query.view : 'system';
@@ -1932,6 +1958,12 @@ const NAV = [
   ['runs', '/runs', 'launch a run', 'Launch new runs — generative · replay · adversarial-CLI · online scoring'],
   ['ontology', '/ontology', 'ontology', 'The shared ontology — system, tutor &amp; learner lenses'],
   ['rubric', '/rubric', 'rubric', 'The poetics rubric — the 6 dramatic-form dimensions critics score against'],
+  [
+    'curriculum',
+    '/curriculum',
+    'curriculum',
+    'The curriculum spine — modules, knowledge components &amp; the prerequisite graph — and the drama seeds + adaptation worlds it compiles into',
+  ],
   ['replays', '/replays', 'replays', 'Counterfactual replays diffed against their originals'],
   [
     'derivation',
@@ -1987,7 +2019,7 @@ const NAV_PRIMARY = ['home', 'browse', 'derivation', 'replays', 'compose', 'runs
 // moss accent on its summary so the current location is still legible when closed.
 const NAV_GROUPS = [
   ['tools', ['tutor', 'pilot-admin']],
-  ['reference', ['ontology', 'rubric']],
+  ['reference', ['ontology', 'rubric', 'curriculum']],
   ['notes', ['summary', 'story', 'repertoire', 'board']],
 ];
 
@@ -2785,10 +2817,14 @@ function renderDerivationLogicVisualizer(logicProjection) {
     const cx = x + colW / 2;
     const activity = (turn.counts?.firedHyperedges || 0) + (turn.counts?.derivedUnvoiced || 0);
     if (activity > 0) {
-      svg.push(`<rect x="${x.toFixed(1)}" y="${top - 8}" width="${colW.toFixed(1)}" height="${H - top - 18}" class="logicviz__active"/>`);
+      svg.push(
+        `<rect x="${x.toFixed(1)}" y="${top - 8}" width="${colW.toFixed(1)}" height="${H - top - 18}" class="logicviz__active"/>`,
+      );
     }
     if (i % 2 === 0) {
-      svg.push(`<text x="${cx.toFixed(1)}" y="${H - 8}" text-anchor="middle" class="logicviz__tick">t${turn.turn}</text>`);
+      svg.push(
+        `<text x="${cx.toFixed(1)}" y="${H - 8}" text-anchor="middle" class="logicviz__tick">t${turn.turn}</text>`,
+      );
     }
 
     const rules = turn.counts?.firedHyperedges || 0;
@@ -2849,10 +2885,16 @@ held ${p.held}/${p.total} source premises${target?.missingSourcePremiseIds?.leng
     ? activeTurns
         .map((turn) => {
           const rules = (turn.firedHyperedges || [])
-            .map((edge) => `<li><code>${escapeHtml(edge.ruleId)}</code> → <code>${escapeHtml(shortFactLabel(edge.outputFact))}</code></li>`)
+            .map(
+              (edge) =>
+                `<li><code>${escapeHtml(edge.ruleId)}</code> → <code>${escapeHtml(shortFactLabel(edge.outputFact))}</code></li>`,
+            )
             .join('');
           const unvoiced = (turn.derivedUnvoiced || [])
-            .map((node) => `<li><code>${escapeHtml(shortFactLabel(node.fact))}</code>${node.rule ? ` via <code>${escapeHtml(node.rule)}</code>` : ''}</li>`)
+            .map(
+              (node) =>
+                `<li><code>${escapeHtml(shortFactLabel(node.fact))}</code>${node.rule ? ` via <code>${escapeHtml(node.rule)}</code>` : ''}</li>`,
+            )
             .join('');
           const secret = targetProgress(turn.secret);
           const mirror = targetProgress(turn.mirror);
@@ -5222,8 +5264,11 @@ ${MODETABS_CSS}
 .setup--min{ display:none; }
 .setup__head h2{ margin:0 0 4px; font:600 19px/1.2 Georgia,serif; color:var(--moss-deep); }
 .setup__lede{ margin:0; color:var(--ink-3); font-size:13px; max-width:62ch; }
-.seatpick{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.seatpick{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
 @media (max-width:560px){ .seatpick{ grid-template-columns:1fr; } }
+.watchbar{ display:flex; align-items:center; gap:10px; padding:4px 0; }
+.watchstat{ font-size:13px; color:var(--ink-3); }
+.watchstat b{ color:var(--ink); }
 .seat{ text-align:left; border:1px solid var(--rule); background:var(--paper-3); padding:13px 15px; cursor:pointer; display:flex; flex-direction:column; gap:2px; border-radius:8px; transition:border-color .12s,background .12s; }
 .seat:hover{ border-color:var(--moss); }
 .seat--on{ border-color:var(--moss-deep); background:var(--moss-soft); box-shadow:inset 3px 0 0 var(--moss-deep); }
@@ -5415,6 +5460,10 @@ ${modeTabsHtml('live')}
           <span class="seat__k">I play the</span><span class="seat__v">Tutor</span>
           <span class="seat__d">the AI is the learner — stage a recognition, test a persona</span>
         </button>
+        <button type="button" class="seat" id="seatWatch">
+          <span class="seat__k">just</span><span class="seat__v">Watch</span>
+          <span class="seat__d">both seats are AI — watch a tutor &amp; learner play it out</span>
+        </button>
       </div>
 
       <!-- Essentials: plain-language, always visible. The syllabus picker is
@@ -5475,9 +5524,15 @@ ${modeTabsHtml('live')}
     <div class="transcript" id="transcript" hidden></div>
 
     <form class="composer" id="composerForm" hidden onsubmit="return false">
-      <div class="composer__row">
+      <div class="composer__row" id="composerRow">
         <textarea id="composerInput" rows="1" placeholder="your line…"></textarea>
         <button type="button" class="btn primary" id="sendBtn">send</button>
+      </div>
+      <!-- Watch mode replaces the human input with tempo controls (both seats AI). -->
+      <div class="watchbar" id="watchBar" hidden>
+        <button type="button" class="btn primary" id="watchPlay">▶ play</button>
+        <button type="button" class="btn" id="watchStep">⏭ step</button>
+        <span class="watchstat" id="watchStat"></span>
       </div>
       <div class="composer__hint" id="composerHint"></div>
     </form>
@@ -5519,7 +5574,8 @@ function nl2br(s){ return esc(s).replace(/\\n/g, '<br>'); }
 function mdEmph(t){ return t.replace(/\\*\\*([^*]+)\\*\\*/g, '<strong>$1</strong>').replace(/(^|[^*])\\*([^*\\n]+)\\*/g, '$1<em>$2</em>'); }
 function mdInline(s){ var parts = esc(s).split('\`'); var out = ''; for (var i = 0; i < parts.length; i++){ out += (i % 2 === 1) ? ('<code>' + parts[i] + '</code>') : mdEmph(parts[i]); } return out.replace(/\\n/g, '<br>'); }
 var S = { id:null, mock:false, humanRole:'learner', aiRole:'tutor', status:'idle', nextSpeaker:null,
-  showMeta:false, showDelib:false, lastSession:null, namePrefilled:false, timer:null, tStart:0, readingRef:null };
+  showMeta:false, showDelib:false, lastSession:null, namePrefilled:false, timer:null, tStart:0, readingRef:null,
+  watch:false, playing:false, advancing:false };
 
 // View prefs persist across reloads (purely client-side display toggles).
 function getPref(k, dflt){ try { var v=localStorage.getItem(k); return v==null?dflt:(v==='1'); } catch(_e){ return dflt; } }
@@ -5571,13 +5627,17 @@ var SYL = null; // the syllabus picker controller (course→lesson); wired at lo
 ${SYLLABUS_CLIENT_JS}
 
 function pickSeat(role){
-  S.humanRole = role; S.aiRole = role==='learner' ? 'tutor' : 'learner';
+  S.humanRole = role; S.watch = role==='watch';
+  // In watch mode BOTH seats are AI (aiRole is meaningless → null).
+  S.aiRole = role==='learner' ? 'tutor' : role==='tutor' ? 'learner' : null;
   $('seatLearner').classList.toggle('seat--on', role==='learner');
   $('seatTutor').classList.toggle('seat--on', role==='tutor');
-  $('grpTutor').hidden = role!=='learner';
-  $('grpLearner').hidden = role!=='tutor';
-  // The syllabus grounds the AI tutor; hide it when the human plays tutor (AI=learner).
-  var sb = $('sylBox'); if(sb) sb.hidden = role!=='learner';
+  var sw=$('seatWatch'); if(sw) sw.classList.toggle('seat--on', role==='watch');
+  // Show a seat's dials whenever the AI holds it: the AI is the tutor for learner +
+  // watch, and the learner for tutor + watch. The syllabus grounds the AI tutor.
+  $('grpTutor').hidden = role==='tutor';
+  $('grpLearner').hidden = role==='learner';
+  var sb = $('sylBox'); if(sb) sb.hidden = role==='tutor';
 }
 function autoGrow(el){ if(!el) return; el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,180)+'px'; }
 
@@ -5637,7 +5697,7 @@ function hideReading(){ var p=$('readingPane'); if(p){ p.hidden = true; } var gr
 function renderSession(sess){
   S.lastSession = sess; stopThinkTimer();
   S.id = sess.id; S.status = sess.status; S.nextSpeaker = sess.nextSpeaker;
-  S.humanRole = sess.humanRole; S.aiRole = sess.aiRole;
+  S.humanRole = sess.humanRole; S.aiRole = sess.aiRole; S.watch = !!sess.watch;
   $('setup').classList.add('setup--min');
   $('transcript').hidden = false; $('liveside').hidden = false; $('composerForm').hidden = false;
   // Pre-fill the save box with a good timestamped default (once), leaving it editable
@@ -5657,26 +5717,40 @@ function renderSession(sess){
   var tok = (Number(sess.spend.inputTokens||0)+Number(sess.spend.outputTokens||0));
   $('spendUsd').textContent = '$'+Number(sess.spend.estimatedCostUsd||0).toFixed(4);
   $('spendTok').textContent = tok.toLocaleString()+' tokens · '+sess.turnCount+'/'+sess.maxTurns+' turns';
-  $('sceneMeta').innerHTML = 'you are the <b>'+esc(sess.humanRole)+'</b><br>AI is the <b>'+esc(sess.aiRole)+'</b><br>'
-    + (sess.aiRole==='tutor' ? ('cell <code>'+esc(sess.tutorCell)+'</code>'+cellWhyHtml(sess)) : ('persona <code>'+esc(sess.persona)+'</code>'))
-    + (sess.aiRole==='tutor' && sess.lectureRef ? ('<br>teaching <code>'+esc(sess.lectureRef)+'</code>') : '')
+  // In watch mode BOTH seats are AI, so surface both the tutor cell and the learner
+  // persona; otherwise show only the seat the AI holds.
+  var aiTutorSeat = (sess.aiRole==='tutor' || sess.watch), aiLearnerSeat = (sess.aiRole==='learner' || sess.watch);
+  $('sceneMeta').innerHTML = (sess.watch
+      ? 'watching — <b>AI tutor</b> ↔ <b>AI learner</b>'
+      : ('you are the <b>'+esc(sess.humanRole)+'</b><br>AI is the <b>'+esc(sess.aiRole)+'</b>'))
+    + (aiTutorSeat ? ('<br>cell <code>'+esc(sess.tutorCell)+'</code>'+cellWhyHtml(sess)) : '')
+    + (aiLearnerSeat ? ('<br>persona <code>'+esc(sess.persona)+'</code>') : '')
+    + (aiTutorSeat && sess.lectureRef ? ('<br>teaching <code>'+esc(sess.lectureRef)+'</code>') : '')
     + modelsLineHtml(sess)
-    + (sess.aiRole==='learner' && sess.learnerModel ? ('<br>learner model <code>'+esc(sess.learnerModel)+'</code>') : '')
-    + (sess.aiRole==='tutor' ? ('<br>concise <b>'+(sess.concise?'on':'off')+'</b>') : '')
+    + (aiLearnerSeat && sess.learnerModel ? ('<br>learner model <code>'+esc(sess.learnerModel)+'</code>') : '')
+    + (aiTutorSeat ? ('<br>concise <b>'+(sess.concise?'on':'off')+'</b>') : '')
     + (S.mock ? '<br><span class="metered--free">free preview</span>' : '');
   var done = sess.status!=='live';
-  var yours = sess.nextSpeaker===sess.humanRole && !done;
-  $('composerInput').disabled = !yours; $('sendBtn').disabled = !yours;
-  if(done){ $('composerHint').innerHTML = 'scene ended ('+esc(sess.stoppedReason||sess.status)+') — save it, or reload to start another'; }
-  else if(yours){ $('composerHint').innerHTML = '<kbd>Enter</kbd> send · <kbd>Shift</kbd>+<kbd>Enter</kbd> newline · you are the <b>'+esc(sess.humanRole)+'</b>'; setTimeout(function(){ $('composerInput').focus(); }, 0); }
-  else { $('composerHint').textContent = 'the '+sess.aiRole+' is thinking…'; }
+  if(sess.watch){
+    // No human seat: the watch bar drives tempo; the input row stays hidden.
+    $('composerRow').style.display='none'; $('watchBar').hidden=false;
+    $('composerInput').disabled=true; $('sendBtn').disabled=true;
+    renderWatchControls(done, sess.stoppedReason||sess.status);
+  } else {
+    $('composerRow').style.display=''; $('watchBar').hidden=true;
+    var yours = sess.nextSpeaker===sess.humanRole && !done;
+    $('composerInput').disabled = !yours; $('sendBtn').disabled = !yours;
+    if(done){ $('composerHint').innerHTML = 'scene ended ('+esc(sess.stoppedReason||sess.status)+') — save it, or reload to start another'; }
+    else if(yours){ $('composerHint').innerHTML = '<kbd>Enter</kbd> send · <kbd>Shift</kbd>+<kbd>Enter</kbd> newline · you are the <b>'+esc(sess.humanRole)+'</b>'; setTimeout(function(){ $('composerInput').focus(); }, 0); }
+    else { $('composerHint').textContent = 'the '+sess.aiRole+' is thinking…'; }
+  }
   // A scored session carries its verdict on the wire, so re-renders (polls, later
   // turns) keep showing it; an unscored render leaves the panel untouched so a
   // transient "scoring…" / error message isn't clobbered.
   if(sess.score) renderScore(sess.score);
   // Surface the lecture the tutor is teaching from, so the human learner can read
   // what they are being asked to recognise. Only the tutor seat carries a reading.
-  if(sess.aiRole==='tutor' && sess.lectureRef) loadReading(sess.lectureRef); else hideReading();
+  if((sess.aiRole==='tutor'||sess.watch) && sess.lectureRef) loadReading(sess.lectureRef); else hideReading();
   updateDelibCaveat();
 }
 function appendOptimistic(text){
@@ -5755,27 +5829,36 @@ function renderSceneLoading(aiOpens){
     ? ('<div class="line line--'+S.aiRole+' line--ghost"><div class="who">'+esc(whoLabel(S.aiRole,'ai'))
         +'</div><div class="bubble"><span class="composing">composing the opening line</span> <span class="dots"><i></i><i></i><i></i></span><span class="thinkclock">0.0s</span></div></div>')
     : '<div class="t-empty">setting the scene… <span class="dots"><i></i><i></i><i></i></span></div>';
-  $('sceneMeta').innerHTML = 'you are the <b>'+esc(S.humanRole)+'</b><br>AI is the <b>'+esc(S.aiRole)+'</b><br><span class="muted">setting the scene…</span>';
+  $('sceneMeta').innerHTML = (S.watch
+    ? 'watching — <b>AI tutor</b> ↔ <b>AI learner</b>'
+    : 'you are the <b>'+esc(S.humanRole)+'</b><br>AI is the <b>'+esc(S.aiRole)+'</b>')
+    + '<br><span class="muted">setting the scene…</span>';
   $('spendUsd').textContent='$0.0000'; $('spendTok').textContent='0 tokens';
   $('composerInput').disabled=true; $('sendBtn').disabled=true;
-  $('composerHint').textContent = aiOpens ? ('the '+S.aiRole+' is composing the opening line…') : 'setting the scene…';
+  $('composerHint').textContent = aiOpens
+    ? (S.watch ? 'composing the opening line…' : ('the '+S.aiRole+' is composing the opening line…'))
+    : 'setting the scene…';
   if(aiOpens) startThinkTimer();
 }
 async function begin(){
   $('setupErr').textContent=''; S.mock = $('f-mock').checked;
   // A lecture only grounds the AI when it plays the tutor; never send one for an
   // AI learner (the syllabus picker is hidden in that seat anyway).
+  // The AI holds the tutor seat for the learner + watch seats, and the learner seat
+  // for the tutor + watch seats — so send each side's config when the AI owns it.
+  var aiTutor = (S.aiRole==='tutor' || S.watch), aiLearner = (S.aiRole==='learner' || S.watch);
   var spec = { humanRole:S.humanRole, topic:$('f-topic').value, hamartia:$('f-hamartia').value,
     promptType:$('f-prompt').value, tutorArchitecture:$('f-tarch').value,
-    lectureRef:(S.aiRole==='tutor' ? ($('f-lecture')||{}).value : '')||'',
+    lectureRef:(aiTutor ? ($('f-lecture')||{}).value : '')||'',
     persona:$('f-persona').value, learnerArchitecture:$('f-larch').value,
-    learnerModel:(S.aiRole==='learner' ? ($('f-lmodel')||{}).value : '')||'',
+    learnerModel:(aiLearner ? ($('f-lmodel')||{}).value : '')||'',
     openingSpeaker:$('f-open').value, maxTurns:Number($('f-max').value)||16,
     concise:($('f-concise') ? $('f-concise').checked : true),
     showDeliberation:S.showDelib };
   $('beginBtn').disabled=true; $('beginBtn').textContent='setting the scene…';
-  renderSceneLoading(spec.openingSpeaker===S.aiRole);
-  try { var r = await postJson('/api/compose/live/start', { spec:spec, mock:S.mock }); renderSession(r.session); }
+  // In watch mode the opening is always an AI line; otherwise only an AI opening seat.
+  renderSceneLoading(S.watch || spec.openingSpeaker===S.aiRole);
+  try { var r = await postJson('/api/compose/live/start', { spec:spec, mock:S.mock }); renderSession(r.session); if(S.watch) startWatch(); }
   catch(e){ restoreSetup(); $('setupErr').textContent='could not start: '+(e.message||e); $('beginBtn').disabled=false; $('beginBtn').textContent='Begin the scene →'; }
 }
 async function send(){
@@ -5787,6 +5870,45 @@ async function send(){
     $('composerInput').value=''; autoGrow($('composerInput')); renderSession(r.session); }
   catch(e){ $('composerHint').innerHTML='<span class="metered">turn failed: '+esc(e.message||String(e))+'</span>'; await refresh(); }
 }
+
+// ── Watch mode (both seats AI) ───────────────────────────────────────────────
+// The human drives only the tempo. The play loop polls /advance, rendering each AI
+// turn with the same ghost/think animation the sit-in uses; pause stops the loop
+// without ending the scene; step advances exactly one turn while paused.
+function wsleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+var WATCH_DELAY = 650;
+function appendWatchGhost(role){
+  var t = $('transcript');
+  t.insertAdjacentHTML('beforeend',
+    '<div class="line line--'+role+' line--ghost"><div class="who">'+esc(whoLabel(role,'ai'))+'</div><div class="bubble"><span class="dots"><i></i><i></i><i></i></span><span class="thinkclock">0.0s</span></div></div>');
+  t.scrollTop = t.scrollHeight; startThinkTimer();
+}
+function renderWatchControls(done, reason){
+  var play=$('watchPlay'), step=$('watchStep'), stat=$('watchStat');
+  if(!play) return;
+  if(done){
+    S.playing=false; play.disabled=true; step.disabled=true; play.textContent='▶ play';
+    stat.innerHTML='scene ended ('+esc(reason||'')+') — score or save below'; $('composerHint').textContent='';
+    return;
+  }
+  play.disabled=false; step.disabled=S.playing; play.textContent = S.playing ? '⏸ pause' : '▶ play';
+  stat.innerHTML = S.playing ? ('the <b>'+esc(S.nextSpeaker||'')+'</b> is up…') : 'paused — ▶ play to watch it unfold, or ⏭ step one turn';
+  $('composerHint').textContent='';
+}
+async function advanceWatch(){
+  if(S.advancing || S.status!=='live') return;
+  S.advancing=true; appendWatchGhost(S.nextSpeaker);
+  try { var r = await postJson('/api/compose/live/'+S.id+'/advance', { mock:S.mock, showDeliberation:S.showDelib }); renderSession(r.session); }
+  catch(e){ S.playing=false; if($('watchStat')) $('watchStat').innerHTML='<span class="metered">advance failed: '+esc(e.message||String(e))+'</span>'; await refresh(); }
+  finally { S.advancing=false; }
+}
+async function watchLoop(){
+  while(S.playing && S.status==='live'){ await advanceWatch(); if(!S.playing || S.status!=='live') break; await wsleep(WATCH_DELAY); }
+  renderWatchControls(S.status!=='live', (S.lastSession||{}).stoppedReason);
+}
+function startWatch(){ if(S.status!=='live'){ renderWatchControls(true, (S.lastSession||{}).stoppedReason); return; } if(S.playing) return; S.playing=true; renderWatchControls(false); watchLoop(); }
+function toggleWatch(){ if(S.playing){ S.playing=false; renderWatchControls(false); } else { startWatch(); } }
+function stepWatch(){ if(S.playing || S.status!=='live') return; advanceWatch(); }
 async function save(){
   if(!S.id) return; $('saveRes').textContent='saving…';
   try { var r = await postJson('/api/compose/live/save', { id:S.id, filename:$('saveName').value.trim() });
@@ -5856,6 +5978,9 @@ async function onDelibToggle(){
 
 $('seatLearner').addEventListener('click', function(){ pickSeat('learner'); });
 $('seatTutor').addEventListener('click', function(){ pickSeat('tutor'); });
+$('seatWatch').addEventListener('click', function(){ pickSeat('watch'); });
+$('watchPlay').addEventListener('click', toggleWatch);
+$('watchStep').addEventListener('click', stepWatch);
 $('guideBtn').addEventListener('click', guide);
 $('g-desc').addEventListener('keydown', function(e){ if(e.key==='Enter' && (e.metaKey||e.ctrlKey)){ e.preventDefault(); guide(); } });
 $('beginBtn').addEventListener('click', begin);
@@ -6303,6 +6428,318 @@ ${railHtml({
 </body></html>`;
 }
 
+// ── Curriculum surface (GET /curriculum) ──────────────────────────────────────
+// Read-only window onto curriculum/<name>.curriculum.yaml and its compiled
+// siblings <name>.dramas.yaml / <name>.worlds.yaml (written by
+// services/curriculum/curriculumCompiler.js). The canonical curriculum is the
+// portable CASE-inspired graph — modules + knowledge components + prerequisite
+// associations; the compiled dramas are runnable drama-machine seeds; the
+// compiled worlds are the Plan 2.1 adaptive tutor's locked world_adaptation_specs.
+// Discovered live, so dropping a new curriculum/*.curriculum.yaml needs no edit.
+const CURRICULUM_DIR = path.resolve(ROOT, 'curriculum');
+const CURRICULUM_GUIDE_NOTE = path.resolve(ROOT, 'notes/poetics/2026-06-19-curriculum-world-adaptation-guide.html');
+
+function readYamlMaybe(p) {
+  try {
+    return YAML.parse(fs.readFileSync(p, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+// Discover every curriculum/<base>.curriculum.yaml and pair it with its compiled
+// drama + world siblings. Tolerates missing/malformed files (a curriculum with no
+// compiled artifacts still lists; a parse error surfaces as __error on that entry).
+function listCurricula() {
+  let files = [];
+  try {
+    files = fs.readdirSync(CURRICULUM_DIR).filter((f) => f.endsWith('.curriculum.yaml'));
+  } catch {
+    return [];
+  }
+  return files.sort().map((file) => {
+    const base = file.replace(/\.curriculum\.yaml$/, '');
+    try {
+      const curriculum = YAML.parse(fs.readFileSync(path.join(CURRICULUM_DIR, file), 'utf8'));
+      return {
+        base,
+        file,
+        curriculum,
+        dramas: readYamlMaybe(path.join(CURRICULUM_DIR, `${base}.dramas.yaml`)),
+        worlds: readYamlMaybe(path.join(CURRICULUM_DIR, `${base}.worlds.yaml`)),
+      };
+    } catch (err) {
+      return { base, file, __error: err.message };
+    }
+  });
+}
+
+// prereqsOf[moduleId] = [ids that must come before it], read off the association
+// graph (relation prerequisite_of: from is a prerequisite of to).
+function prereqMap(curriculum) {
+  const out = {};
+  for (const a of curriculum.associations || []) {
+    if (a && a.relation === 'prerequisite_of' && a.to) {
+      (out[a.to] = out[a.to] || []).push(a.from);
+    }
+  }
+  return out;
+}
+
+// Mirrors the inline theme-toggle every other scriptorium page carries (railHtml
+// renders the #themeToggle button; this wires it + restores the saved choice).
+const THEME_TOGGLE_SCRIPT = `<script>
+(function(){
+  var btn = document.getElementById('themeToggle');
+  try { if (localStorage.getItem('poetics-theme')==='dark') document.documentElement.setAttribute('data-theme','dark'); } catch (_e) {}
+  if (btn) btn.addEventListener('click', function(){
+    var dd = document.documentElement; var nx = dd.getAttribute('data-theme')==='dark' ? '' : 'dark';
+    if (nx) dd.setAttribute('data-theme','dark'); else dd.removeAttribute('data-theme');
+    try { localStorage.setItem('poetics-theme', nx); } catch (_e) {}
+  });
+})();
+</script>`;
+
+const CURRICULUM_CSS = `
+main{ max-width:1000px; margin:0 auto; padding:22px 22px 64px; }
+.blurb{ font-size:13px; color:var(--ink-3); border-left:3px solid var(--moss); background:var(--paper-4); padding:10px 14px; margin:0 0 18px; }
+.blurb a{ color:var(--moss-deep); }
+.blurb.err{ border-left-color:var(--brick); background:var(--brick-soft); }
+.picker{ display:flex; flex-wrap:wrap; gap:6px; margin:0 0 14px; }
+.pchip{ font:12px ui-monospace,monospace; padding:3px 9px; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-2); text-decoration:none; }
+.pchip.on{ color:var(--moss-deep); border-color:var(--moss); background:var(--moss-soft); }
+.ctitle{ font:600 24px/1.2 Georgia,serif; font-style:italic; color:var(--ink); margin:6px 0 4px; }
+.cstatus{ margin:0 0 12px; color:var(--ink-3); font-size:13px; }
+.meta{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px; }
+.meta .chip{ font:12px ui-monospace,monospace; padding:3px 9px; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-2); }
+.cards{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:0 0 22px; }
+.card{ border:1px solid var(--rule); background:var(--paper-4); padding:14px 16px; }
+.card__n{ font:600 28px Georgia,serif; color:var(--moss-deep); line-height:1; }
+.card__l{ font:600 11px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-3); margin-top:6px; }
+.card__s{ font-size:12px; color:var(--ink-3); margin-top:4px; }
+.card__s a{ color:var(--moss-deep); }
+.card__s code{ font-size:11px; }
+h2.sec-h{ font:600 12px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-3); margin:26px 0 8px; }
+.sec-h .sec-hint{ text-transform:none; letter-spacing:0; color:var(--ink-4); font-weight:400; margin-left:8px; }
+.sec-lede{ font-size:13px; color:var(--ink-3); margin:0 0 12px; max-width:760px; }
+.sec-lede a{ color:var(--moss-deep); }
+.mod{ border:1px solid var(--rule); background:var(--paper-4); margin-bottom:6px; }
+.mod summary{ display:flex; align-items:center; gap:10px; padding:9px 12px; cursor:pointer; list-style:none; }
+.mod summary::-webkit-details-marker{ display:none; }
+.mod .seq{ font:600 12px ui-monospace,monospace; color:var(--ink-4); width:20px; text-align:right; }
+.mod .mid{ font:600 12px ui-monospace,monospace; color:var(--moss-deep); }
+.mod .mtitle{ font:600 14px Georgia,serif; color:var(--ink); flex:1; }
+.mod .mkc{ font:11px ui-monospace,monospace; color:var(--ink-4); white-space:nowrap; }
+.mbadges{ display:flex; gap:4px; }
+.badge{ font:600 10px ui-monospace,monospace; padding:1px 6px; border-radius:9px; border:1px solid var(--rule); color:var(--ink-3); }
+.badge.mvp{ color:var(--ink-2); border-color:var(--ink-4); }
+.badge.drama{ color:var(--moss-deep); border-color:var(--moss); background:var(--moss-soft); }
+.badge.world{ color:var(--brick); border-color:var(--brick); }
+.mbody{ padding:4px 14px 14px; border-top:1px solid var(--rule-soft); }
+.eq{ font-style:italic; color:var(--ink); margin:10px 0; }
+.eqlabel{ font:600 10px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-4); font-style:normal; margin-right:6px; }
+.metaline{ font-size:13px; color:var(--ink-2); margin:6px 0; }
+.metaline a{ color:var(--moss-deep); }
+.mblk{ margin:12px 0; }
+.mblk h4{ font:600 10px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-4); margin:0 0 5px; }
+.mblk ul{ margin:0; padding-left:18px; font-size:13px; color:var(--ink-2); }
+.mblk ul li{ margin:2px 0; }
+.mblk ul.kc code{ color:var(--moss-deep); }
+.mblk.run{ border-top:1px solid var(--rule-soft); padding-top:10px; }
+.dtopic{ font-style:italic; color:var(--ink); margin:0 0 6px; }
+.runlink{ font:600 12px ui-monospace,monospace; color:var(--moss-deep); text-decoration:none; }
+.runlink:hover{ text-decoration:underline; }
+.arts{ display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:10px; }
+.art{ border:1px solid var(--rule); background:var(--paper-4); padding:10px 12px; }
+.art__h{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.art__h code{ font:600 12px ui-monospace,monospace; color:var(--moss-deep); }
+.tag{ font:10px ui-monospace,monospace; padding:1px 6px; border:1px solid var(--rule); color:var(--ink-3); border-radius:9px; }
+.tag.mono{ color:var(--ink-4); }
+.art__topic{ font-size:13px; color:var(--ink); margin:6px 0 4px; }
+.art__meta{ font:11px ui-monospace,monospace; color:var(--ink-4); margin:0; }
+code{ font-family:ui-monospace,monospace; }
+`;
+
+function renderCurriculumHtml(selectedBase = '') {
+  const e = escapeHtml;
+  const all = listCurricula();
+  if (!all.length) {
+    return `${pageHead({ title: 'curriculum · machine spirits', css: CURRICULUM_CSS })}
+<body>
+${railHtml({
+  active: 'curriculum',
+  brand: 'curriculum',
+  sub: 'the curriculum spine and its compiled dramas + worlds',
+  hint: orientBand(
+    'curriculum',
+    'no curriculum/*.curriculum.yaml found yet',
+    'reference; the make-and-read surfaces are on the rail above',
+  ),
+})}
+<main><div class="blurb">No curricula found under <code>curriculum/</code>. Author one (see <code>curriculum/CURRICULUM-FORMAT.md</code>) and compile it with <code>npm run curriculum:compile:drama</code> + <code>npm run curriculum:compile:worlds</code>.</div></main>
+${THEME_TOGGLE_SCRIPT}
+</body></html>`;
+  }
+  const picked = all.find((c) => c.base === selectedBase) || all[0];
+  const c = picked.curriculum || {};
+  const modules = Array.isArray(c.modules) ? c.modules : [];
+  const dramas = (picked.dramas && picked.dramas.dramas) || [];
+  const worlds = (picked.worlds && picked.worlds.world_adaptation_specs) || [];
+  const dramaByModule = new Map();
+  for (const d of dramas) {
+    const mid = d.curriculum_binding && d.curriculum_binding.module_id;
+    if (mid) dramaByModule.set(mid, d);
+  }
+  const worldByModule = new Map();
+  for (const w of worlds) if (w.module_id) worldByModule.set(w.module_id, w);
+  const prereqs = prereqMap(c);
+  const mvpIds = new Set((c.mvp && c.mvp.module_ids) || []);
+
+  // A picker only when more than one curriculum is on disk.
+  const picker =
+    all.length > 1
+      ? `<div class="picker">${all
+          .map(
+            (x) =>
+              `<a class="pchip${x.base === picked.base ? ' on' : ''}" href="/curriculum?c=${encodeURIComponent(x.base)}">${e(
+                (x.curriculum && x.curriculum.id) || x.base,
+              )}</a>`,
+          )
+          .join('')}</div>`
+      : '';
+
+  const dur = c.duration || {};
+  const sp = c.standard_profile || {};
+  const metaChips = [
+    c.id && `<span class="chip">${e(c.id)}</span>`,
+    c.version && `<span class="chip">v${e(c.version)}</span>`,
+    c.date && `<span class="chip">${e(c.date)}</span>`,
+    sp.spine && `<span class="chip" title="curriculum standard spine">${e(sp.spine)}</span>`,
+    dur.full_course && `<span class="chip">full: ${e(dur.full_course)}</span>`,
+    dur.mvp && `<span class="chip">mvp: ${e(dur.mvp)}</span>`,
+  ]
+    .filter(Boolean)
+    .join('');
+
+  // Compiled-artifact summary band — what exists, and where to act on it.
+  const summary = `<div class="cards">
+    <div class="card"><div class="card__n">${modules.length}</div><div class="card__l">modules</div><div class="card__s">curriculum spine</div></div>
+    <div class="card"><div class="card__n">${dramas.length}</div><div class="card__l">dramas compiled</div><div class="card__s">${picked.dramas ? `<a href="#dramas">drama seeds ↓</a>` : 'not compiled — <code>curriculum:compile:drama</code>'}</div></div>
+    <div class="card"><div class="card__n">${worlds.length}</div><div class="card__l">worlds compiled</div><div class="card__s">${picked.worlds ? `<a href="#worlds">adaptation specs ↓</a>` : 'not compiled — <code>curriculum:compile:worlds</code>'}</div></div>
+  </div>`;
+
+  const moduleRows = modules
+    .slice()
+    .sort((a, b) => (Number(a.sequence) || 0) - (Number(b.sequence) || 0))
+    .map((m) => {
+      const kcs = Array.isArray(m.knowledge_components) ? m.knowledge_components : [];
+      const misc = Array.isArray(m.misconception_signatures) ? m.misconception_signatures : [];
+      const tasks = Array.isArray(m.canonical_tasks) ? m.canonical_tasks : [];
+      const verifiers = Array.isArray(m.verifiers) ? m.verifiers : [];
+      const drama = dramaByModule.get(m.id);
+      const world = worldByModule.get(m.id);
+      const badges = [
+        mvpIds.has(m.id) ? `<span class="badge mvp" title="in the MVP subset">mvp</span>` : '',
+        drama ? `<span class="badge drama" title="compiled to a drama seed">drama</span>` : '',
+        world ? `<span class="badge world" title="compiled to a world_adaptation_spec">world</span>` : '',
+      ]
+        .filter(Boolean)
+        .join('');
+      const pre = (prereqs[m.id] || []).filter(Boolean);
+      const kcList = kcs.map((k) => `<li><code>${e(k.id || '')}</code> ${e(k.statement || '')}</li>`).join('');
+      const block = (title, items, mono = false) =>
+        items && items.length
+          ? `<div class="mblk"><h4>${title}</h4><ul class="${mono ? 'mono' : ''}">${items
+              .map((x) => `<li>${e(typeof x === 'string' ? x : JSON.stringify(x))}</li>`)
+              .join('')}</ul></div>`
+          : '';
+      return `<details class="mod" id="mod-${e(m.id)}">
+      <summary>
+        <span class="seq">${e(String(m.sequence ?? ''))}</span>
+        <span class="mid">${e(m.id || '')}</span>
+        <span class="mtitle">${e(m.title || '')}</span>
+        <span class="mbadges">${badges}</span>
+        <span class="mkc">${kcs.length} KC · ${misc.length} misc${m.hours ? ` · ${e(String(m.hours))}h` : ''}</span>
+      </summary>
+      <div class="mbody">
+        ${m.essential_question ? `<p class="eq"><span class="eqlabel">essential question</span> ${e(m.essential_question)}</p>` : ''}
+        ${m.main_artifact ? `<p class="metaline"><b>artifact</b> ${e(m.main_artifact)}${m.primary_verifier ? ` &nbsp;·&nbsp; <b>verifier</b> ${e(m.primary_verifier)}` : ''}</p>` : ''}
+        ${pre.length ? `<p class="metaline"><b>prerequisites</b> ${pre.map((p) => `<a href="#mod-${e(p)}">${e(p)}</a>`).join(', ')}</p>` : ''}
+        ${kcList ? `<div class="mblk"><h4>knowledge components</h4><ul class="kc">${kcList}</ul></div>` : ''}
+        ${block('canonical tasks', tasks)}
+        ${block('verifiers', verifiers)}
+        ${block('misconception signatures', misc)}
+        ${m.mastery_gate ? `<div class="mblk"><h4>mastery gate</h4><p>${e(typeof m.mastery_gate === 'string' ? m.mastery_gate : JSON.stringify(m.mastery_gate))}</p></div>` : ''}
+        ${m.transfer_challenge ? `<div class="mblk"><h4>transfer challenge</h4><p>${e(m.transfer_challenge)}</p></div>` : ''}
+        ${
+          drama
+            ? `<div class="mblk run"><h4>compiled drama</h4><p class="dtopic">${e(drama.topic || drama.id || '')}</p>
+               <a class="runlink" href="/runs?kind=pedagogical-drama&amp;spec=${encodeURIComponent(picked.base + '.dramas.yaml')}&amp;only=${encodeURIComponent(drama.id || '')}">▸ run this drama</a></div>`
+            : ''
+        }
+      </div>
+    </details>`;
+    })
+    .join('');
+
+  const dramaCards = dramas.length
+    ? dramas
+        .map((d) => {
+          const tp = Array.isArray(d.turn_plan) ? d.turn_plan.length : 0;
+          return `<div class="art"><div class="art__h"><code>${e(d.id || '')}</code>${
+            d.dramatic_shape ? `<span class="tag">${e(d.dramatic_shape)}</span>` : ''
+          }</div><p class="art__topic">${e(d.topic || '')}</p><p class="art__meta">${e(d.persona || '')}${
+            d.condition ? ` · ${e(d.condition)}` : ''
+          }${tp ? ` · ${tp}-turn plan` : ''}</p></div>`;
+        })
+        .join('')
+    : '';
+
+  const worldCards = worlds.length
+    ? worlds
+        .map((w) => {
+          const ap = w.action_policy || {};
+          const pref = (ap.preferred || ap.allowed || []).slice(0, 4).join(', ');
+          return `<div class="art"><div class="art__h"><code>${e(w.module_id || '')}</code>${
+            w.spec_hash
+              ? `<span class="tag mono" title="deterministic spec hash">${e(String(w.spec_hash).slice(0, 10))}</span>`
+              : ''
+          }</div><p class="art__topic">${e(w.module_title || '')}</p><p class="art__meta">${
+            pref ? `policy: ${e(pref)}` : 'locked adaptation contract'
+          }</p></div>`;
+        })
+        .join('')
+    : '';
+
+  return `${pageHead({ title: 'curriculum · machine spirits', css: CURRICULUM_CSS })}
+<body>
+${railHtml({
+  active: 'curriculum',
+  brand: 'curriculum',
+  sub: 'the curriculum spine and its compiled dramas + worlds',
+  hint: orientBand(
+    'curriculum',
+    'the CASE-style curriculum graph, and the drama seeds + adaptation worlds it compiles into',
+    'reference; the make-and-read surfaces are on the rail above',
+  ),
+})}
+<main>
+  <div class="blurb">A curriculum is the portable spine — modules, knowledge components, and a prerequisite graph — plus machine-checkable extensions (verifiers, misconception signatures). The compiler lowers it two ways: into <a href="#dramas">drama seeds</a> a generator can enact, and into <a href="#worlds">world specs</a> that constrain the <a href="/derivation">adaptive tutor</a>. New here? Read the <a href="/curriculum/guide">illustrated guide →</a> &nbsp;·&nbsp; format: <code>curriculum/CURRICULUM-FORMAT.md</code>.</div>
+  ${picker}
+  <h1 class="ctitle">${e(c.title || picked.base)}</h1>
+  ${c.status ? `<p class="cstatus">${e(c.status)}</p>` : ''}
+  <div class="meta">${metaChips}</div>
+  ${picked.__error ? `<div class="blurb err">could not parse ${e(picked.file)}: ${e(picked.__error)}</div>` : ''}
+  ${summary}
+  <h2 class="sec-h">Modules${modules.length ? ' · ' + modules.length : ''} <span class="sec-hint">click a row to expand</span></h2>
+  ${moduleRows || '<div class="blurb">no modules in this curriculum file</div>'}
+  ${dramaCards ? `<h2 class="sec-h" id="dramas">Compiled dramas · ${dramas.length}</h2><p class="sec-lede">Runnable drama-machine seeds — each binds back to a module + knowledge components. Enact one from a module above, or launch the whole spec from <a href="/runs?kind=pedagogical-drama&amp;spec=${encodeURIComponent(picked.base + '.dramas.yaml')}">launch a run ↗</a>.</p><div class="arts">${dramaCards}</div>` : ''}
+  ${worldCards ? `<h2 class="sec-h" id="worlds">Compiled worlds · ${worlds.length}</h2><p class="sec-lede">Locked <code>world_adaptation_spec</code> records — the Plan 2.1 bridge. Each fixes a module's learner-state evidence, allowed/preferred/disallowed action families, and expected transitions <em>before</em> dialogue, then constrains policy at run time. A world shapes affordances; it never proves learning by itself.</p><div class="arts">${worldCards}</div>` : ''}
+</main>
+${THEME_TOGGLE_SCRIPT}
+</body></html>`;
+}
+
 // ── Discursive replays (GET /replays) ─────────────────────────────────────────
 // A read-only diff viewer over exports/discursive-replays/<bundle>/. Each bundle is
 // a counterfactual-revision run: original public transcripts rewritten once, then
@@ -6623,6 +7060,30 @@ loadBundles();
 </html>`;
 }
 
+// The world + tutor-script catalogs the /runs derivation form offers — sourced
+// live from config/drama-derivation/ so a new world-*.yaml or tutor script needs
+// no code edit (mirrors the discipline filter's live-sourcing).
+function listDerivationWorldFiles() {
+  try {
+    return fs
+      .readdirSync(path.resolve(ROOT, 'config/drama-derivation'))
+      .filter((f) => /^world-.*\.ya?ml$/.test(f))
+      .sort();
+  } catch {
+    return [];
+  }
+}
+function listDerivationScriptFiles() {
+  try {
+    return fs
+      .readdirSync(path.resolve(ROOT, 'config/drama-derivation/tutor-scripts'))
+      .filter((f) => /\.md$/.test(f))
+      .sort();
+  } catch {
+    return [];
+  }
+}
+
 function renderRunsHtml() {
   return `${pageHead({
     title: 'Run launcher · poetics',
@@ -6731,6 +7192,8 @@ ${railHtml({
 <script>
 const KINDS = ${JSON.stringify(describeKinds())};
 const COST = ${JSON.stringify(COST_CLASSES)};
+const DERIV_WORLDS = ${JSON.stringify(listDerivationWorldFiles())};
+const DERIV_SCRIPTS = ${JSON.stringify(listDerivationScriptFiles())};
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const state = { kind:'replay', fields:[], plan:null, jobs:[], selJob:null };
@@ -6774,6 +7237,39 @@ const FORMS = {
       { name:'dryRun', label:'dry-run' },
       { name:'specOnly', label:'spec-only' },
       { name:'force', label:'force' },
+    ],
+  },
+  'pedagogical-drama': {
+    blurb: 'Enact a compiled curriculum drama spec (curriculum/<name>.dramas.yaml) through the batch generator. Leave "only" blank to run the whole spec, or pass one drama id. claude/codex/gemini route through the Max plan (quota); generator=api + an org/model slug is metered $.',
+    fields: [
+      { name:'spec', type:'text', label:'drama spec (required)', placeholder:'ai-foundations.dramas.yaml  (basename ⇒ curriculum/…)' },
+      { name:'only', type:'text', label:'only (optional)', placeholder:'one drama id e.g. D_AF6_… — blank runs all' },
+      { name:'generator', type:'select', label:'generator', options:['claude','codex','gemini','api'], def:'claude', help:'claude/codex/gemini = quota; api = metered when --model is an org/model slug' },
+      { name:'model', type:'text', label:'model (optional)', placeholder:'claude alias, or org/model for generator=api' },
+      { name:'maxTurns', type:'number', label:'max turns (optional)', placeholder:'default 6' },
+      { name:'outBase', type:'text', label:'output base (optional)', placeholder:'exports/curriculum-drama/<spec>' },
+    ],
+    checks: [
+      { name:'mock', label:'mock', def:true },
+      { name:'dryRun', label:'dry-run' },
+      { name:'force', label:'force' },
+      { name:'claudePersistentWorkers', label:'persistent Claude workers' },
+    ],
+  },
+  derivation: {
+    blurb: 'Enact a tutor script against a world as a proof-DAG drama — a fixed rule-checker decides grounded / impasse / disengagement. Mock backend is free; "real" targets OpenRouter (metered $). It streams live to /derivation/live and lands on /derivation when it closes.',
+    fields: [
+      { name:'world', type:'select', label:'world (required)', options: DERIV_WORLDS, def: DERIV_WORLDS[0] },
+      { name:'script', type:'select', label:'tutor script (required)', options: DERIV_SCRIPTS, def: DERIV_SCRIPTS[0] },
+      { name:'label', type:'text', label:'label (optional)', placeholder:'default <script>-<mode>-<timestamp>' },
+      { name:'recognition', type:'select', label:'recognition dial', options:['','0','1','2','3'], def:'', help:'tutor register dial; blank = leave at the world default' },
+      { name:'charisma', type:'select', label:'charisma dial', options:['','0','1','2','3'], def:'' },
+      { name:'dramaturgy', type:'select', label:'dramaturgy', options:['','free','frozen'], def:'', help:'frozen = the director cannot declare scene structure' },
+    ],
+    checks: [
+      { name:'superego', label:'superego (tutor self-watch)' },
+      { name:'stallWatch', label:'stall-watch (needs superego)' },
+      { name:'real', label:'real — METERED $' },
     ],
   },
   'adversarial-score': {
@@ -6943,13 +7439,16 @@ function renderJobs(){
     state.jobs.map(function(j){
       const stop = j.status==='running' ? '<button class="btn danger" data-stop="'+esc(j.id)+'" style="padding:3px 9px">stop</button>' : '';
       const exit = (j.status==='failed'||j.status==='error') ? ' <span class="tiny">('+(j.error?esc(j.error):'exit '+j.exitCode)+')</span>' : '';
+      // A derivation run streams to /derivation/live — surface the jump so launch
+      // and watch are one move (opens in a new tab so the launcher stays put).
+      const watch = j.kind==='derivation' ? '<a class="btn" href="/derivation/live" target="_blank" rel="noopener" style="padding:3px 9px" title="watch live derivation runs">watch live ↗</a> ' : '';
       return '<tr class="jobrow'+(j.id===state.selJob?' sel':'')+'" data-job="'+esc(j.id)+'">'+
         '<td><span class="st '+esc(j.status)+'">'+esc(j.status)+'</span>'+exit+'</td>'+
         '<td><span class="cost '+esc(j.costClass)+'">'+esc(j.costClass==='metered'?'metered $':j.costClass)+'</span></td>'+
         '<td>'+esc(j.label)+'</td>'+
         '<td class="tiny">'+esc(ago(j.startedAt))+' ago</td>'+
         '<td class="tiny">'+esc(j.pid||'—')+'</td>'+
-        '<td>'+stop+'</td></tr>';
+        '<td>'+watch+stop+'</td></tr>';
     }).join('')+'</tbody></table>';
   renderJobLog();
 }
@@ -6962,9 +7461,27 @@ function renderJobLog(){
     '<pre>'+esc(j.logTail || '(no output yet)')+'</pre>';
 }
 
+// Deep-link prefill: /runs?kind=<kind>&<field>=<value> selects the tab and fills
+// matching fields/checks (e.g. the curriculum page's "run this drama" links pass
+// kind=pedagogical-drama&spec=…&only=…). The mock checkbox keeps its default, so a
+// prefilled run still starts free until the operator explicitly opts into spend.
+function prefillKindFromUrl(){
+  try { const k=new URLSearchParams(location.search).get('kind'); if (k && FORMS[k]) state.kind=k; } catch(_e){}
+}
+function applyUrlValues(){
+  try {
+    const q=new URLSearchParams(location.search); const spec=FORMS[state.kind]; if(!spec) return; let touched=false;
+    spec.fields.forEach(function(f){ if(q.has(f.name)){ const el=$('f_'+f.name); if(el){ el.value=q.get(f.name); touched=true; } } });
+    spec.checks.forEach(function(c){ if(q.has(c.name)){ const el=$('f_'+c.name); if(el){ const v=q.get(c.name); el.checked=(v==='1'||v==='true'||v==='on'); touched=true; } } });
+    if(touched){ updateVisibility(); schedulePlan(); }
+  } catch(_e){}
+}
+
 // ── Wiring ──────────────────────────────────────────────────────────────────────
+prefillKindFromUrl();
 renderTabs();
 renderForm();
+applyUrlValues();
 $('tabs').addEventListener('click', function(e){ const b=e.target.closest('.tab'); if(!b) return; state.kind=b.getAttribute('data-kind'); renderTabs(); renderForm(); });
 $('form').addEventListener('input', function(){ updateVisibility(); schedulePlan(); });
 $('form').addEventListener('change', function(){ updateVisibility(); schedulePlan(); });
