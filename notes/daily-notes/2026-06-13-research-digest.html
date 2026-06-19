@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Digest — 6–13 Jun 2026</title>
+  <style>
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      line-height: 1.65;
+      color: #1a1a1a;
+      background: #fafaf8;
+    }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; margin-bottom: .2rem; color: #444; text-transform: uppercase;
+         letter-spacing: .06em; }
+    .paper {
+      border-left: 3px solid #aaa;
+      padding: .5rem 1rem;
+      margin: 1rem 0;
+      background: #fff;
+    }
+    .paper.hot { border-left-color: #c0392b; }
+    .paper h3 { margin: 0 0 .25rem; font-size: 1rem; }
+    .paper .meta { font-size: .82rem; color: #666; margin-bottom: .5rem; }
+    .paper p { margin: 0; font-size: .93rem; }
+    .flag {
+      display: inline-block;
+      background: #c0392b;
+      color: #fff;
+      font-size: .72rem;
+      font-weight: bold;
+      padding: .1rem .45rem;
+      border-radius: 3px;
+      margin-left: .5rem;
+      vertical-align: middle;
+    }
+    .flag.yellow { background: #d4a017; }
+    a { color: #1a5276; }
+    footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+  </style>
+</head>
+<body>
+
+<h1>Research Digest <small style="font-weight:normal;font-size:.85em">6–13 Jun 2026</small></h1>
+<p style="font-size:.9rem;color:#555;">
+  Seven papers across pedagogy/tutoring, prompt engineering, agent architecture, dramaturgy/roleplay,
+  and ontology. Strictly-this-week papers (confirmed 2606.1xxxx): two (one pedagogy, one reasoning survey).
+  Others are from May–early June 2026 and were not covered in the
+  <a href="2026-06-09-research-roundup.html">9 Jun roundup</a>.
+  Flags: <span class="flag">UNBLOCK</span> = could directly accelerate current work;
+  <span class="flag yellow">WATCH</span> = relevant background.
+</p>
+
+<!-- ────────────────────────────────────── -->
+<h2>Pedagogy &amp; Tutoring</h2>
+
+<div class="paper hot">
+  <h3>
+    Hey Chat, Can You Teach Me? Structuring Socratic Dialogue for Human Learning in the Wild
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Sidney Tio et al. ·
+    arXiv 2606.11744 · June 10, 2026 ·
+    <a href="https://arxiv.org/abs/2606.11744">https://arxiv.org/abs/2606.11744</a>
+  </div>
+  <p>
+    Addresses the gap between "chat with an LLM" and structured tutoring by building a
+    <em>prerequisite knowledge graph</em> (subtopics as nodes, dependencies as edges) and framing tutoring
+    as a graph-traversal planning problem — deciding which node to teach next and how many Socratic
+    dialogue turns to budget per node before moving on.
+    Frontier LLMs fail badly at this when prompted naively; the structured approach recovers
+    meaningful curriculum sequencing and student-state inference over extended sessions.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    This is the closest published analogue to the project's guided-discovery dialogue engine.
+    The prerequisite-graph framing maps directly onto the
+    <code>suggestion-scenarios.yaml</code> structure (each scenario = a node; the learner's
+    impasse = an unexplored dependency). The student-state inference mechanism is also a
+    structural match for the <code>otherEgoProfiling</code> cells (54–59): the "infer knowledge
+    state from dialogue" loop is exactly what bidirectional profiling is trying to operationalise.
+    The paper's failure analysis of unstructured LLM tutoring is directly relevant to the
+    human-learner pilot (§A1 of <code>TODO.md</code>) — recommend reading before finalising the
+    pilot protocol.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Prompt Engineering &amp; Reasoning</h2>
+
+<div class="paper">
+  <h3>
+    The Periodic Table of LLM Reasoning: A Structured Survey of Reasoning Paradigms, Methods, and Failure Modes
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Avinash Anand et al. (10 authors) ·
+    arXiv 2606.11470 · June 9, 2026 ·
+    <a href="https://arxiv.org/abs/2606.11470">https://arxiv.org/abs/2606.11470</a>
+  </div>
+  <p>
+    A structured taxonomy of 300+ reasoning papers organised like a periodic table: groups cover
+    chain-of-thought, multi-hop, mathematical, common-sense, visual, code, retrieval-augmented,
+    tool-augmented/agentic, and RL-based reasoning — each cell indexed by paradigm × method ×
+    failure mode.
+    Key finding: agentic and tool-augmented reasoning share failure modes (planning horizon collapse,
+    tool-noise sensitivity) that are distinct from pure CoT failures.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The taxonomy's "agentic reasoning" section (tool-augmented + RL) maps onto the adaptive runner
+    (cells 110–113); the failure-mode catalogue is a candidate diagnostic checklist for the
+    <code>analyze-strategy-shift.js</code> post-hoc analysis. The "retrieval-augmented" section
+    may surface prompt strategies for the recognition prompts not yet tried in the ablation suite
+    (cells 9–21). Low-effort read; high payoff as a reference frame.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Agent Architecture</h2>
+
+<div class="paper">
+  <h3>
+    Agent Planning Benchmark: A Diagnostic Framework for Planning Capabilities in LLM Agents
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    (Authors not confirmed in search results) ·
+    arXiv 2606.04874 · early June 2026 ·
+    <a href="https://arxiv.org/abs/2606.04874">https://arxiv.org/abs/2606.04874</a>
+  </div>
+  <p>
+    4,209 multimodal cases across 22 domains stress-test five planning settings:
+    holistic planning, feedback-conditioned step-wise planning, tool-noise robustness,
+    calibrated refusal (the agent should admit infeasibility), and inference-time refinement.
+    Systematic weaknesses emerge in long-horizon planning and tool-noise conditions across
+    all tested frontier models.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The adaptive runner (cells 110–113) is an LLM-based planner operating under the same
+    long-horizon + tool-noise failure modes identified here.
+    The "calibrated refusal" metric — does the agent know when the task is infeasible? —
+    is directly relevant to the trap-scenario suite (cells 110–125), where the ideal tutor
+    should recognise an unanswerable student impasse rather than confabulating.
+    The benchmark design (22 domains × 5 settings) could also inform the cross-suite design
+    (§6.8.7, cells 124–125).
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Dramaturgy / Roleplay</h2>
+
+<div class="paper">
+  <h3>
+    RPGAgent: Driving Coherent Story-to-Play Generation with an LLM-Based Multi-Agent System
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    (CHI 2026) ·
+    ACM DL 10.1145/3772318.3790326 · CHI 2026 (spring 2026) ·
+    <a href="https://dl.acm.org/doi/10.1145/3772318.3790326">https://dl.acm.org/doi/10.1145/3772318.3790326</a>
+  </div>
+  <p>
+    Specialised LLM agents (narrative, scene, mechanic) collaborate under the Elemental Tetrad
+    framework to turn a designer's story outline into coherent playable game content — exchanging
+    structured data to enforce consistency across narrative, visual, and gameplay layers.
+    A within-subjects study (N=18) shows RPGAgent outperforms GPT-assisted solo generation on
+    both user experience and creative satisfaction.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The specialised-agent-per-narrative-layer architecture is structurally analogous to the
+    <code>/ms-drama-machine</code> slot model (tutor / learner / audience / judge roles).
+    RPGAgent's consistency enforcement mechanism — agents exchange structured data rather than
+    free text — is a candidate technique for tightening the adaptation-recognition loop, where
+    the critic currently receives only free-form transcript prose. Also useful as a citation
+    anchor for the "multi-agent dramaturgy" framing in Paper 2.0 §.
+  </p>
+</div>
+
+<div class="paper">
+  <h3>
+    Narrative Theory-Driven LLM Methods for Automatic Story Generation and Understanding: A Survey
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    David Y. Liu, Aditya Joshi, Paul Dawson (University of New South Wales) ·
+    arXiv 2602.15851 · January 23, 2026 ·
+    <a href="https://arxiv.org/abs/2602.15851">https://arxiv.org/abs/2602.15851</a>
+  </div>
+  <p>
+    Maps classical narrative theories (Propp, Freytag, Labov, Genette, schema theory) onto
+    NLP pipeline components — dataset construction, prompting, fine-tuning, evaluation — and
+    surveys how LLMs engage each.
+    Key finding: LLMs make cross-disciplinary narrative integration easy but lack unified
+    benchmarks; critic-level evaluation (does the generated story conform to narrative theory?)
+    is the most open problem.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The "critic-level evaluation" gap is exactly the poetics arc's problem:
+    <code>config/evaluation-rubric-poetics.yaml</code> operationalises Aristotle's
+    peripeteia/anagnorisis as a scoring instrument, and this survey provides the scholarly
+    grounding for why that instrument is novel.
+    The Freytag/Labov narrative-arc taxonomies also offer alternative structural scaffolds
+    for the adaptation-recognition loop's iteration taxonomy.
+    Directly citable in Paper 2.0 §2 (related work) and §6.9 (poetics arc).
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Ontology / Knowledge Representation</h2>
+
+<div class="paper">
+  <h3>
+    Automatic Ontology Construction Using LLMs as an External Layer of Memory, Verification, and Planning
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    (Authors not confirmed in search results) ·
+    arXiv 2604.20795 · April 22, 2026 ·
+    <a href="https://arxiv.org/abs/2604.20795">https://arxiv.org/abs/2604.20795</a>
+  </div>
+  <p>
+    Uses an LLM trio — one for memory (maintaining a structured RDF/OWL knowledge graph),
+    one for verification (checking consistency of new assertions against existing axioms),
+    one for planning (deciding when to extend vs. revise the ontology) — to construct
+    and maintain a living domain ontology from unstructured text.
+    Demonstrated on engineering / safety-critical domains.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The memory/verification/planning triad is structurally isomorphic to the ego/superego/revision
+    loop: Ego ≈ memory (model of the learner), Superego ≈ verification (check against pedagogical
+    axioms), revision ≈ planning (decide whether to extend or revise the approach). This framing
+    offers formal vocabulary for cells 54–59 (<code>otherEgoProfiling</code>) and could anchor
+    a more precise description of the bilateral-ToM cells (115–123) in Paper 2.0 §6.8.5.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Notable near-misses (April–early June, not covered in prior digest)</h2>
+
+<ul style="font-size:.9rem;">
+  <li>
+    <strong>Beyond the AI Tutor: Social Learning with LLM Agents</strong>
+    (arXiv 2604.02677, April 3, 2026) —
+    Multi-party LLM configurations (tutor + LLM peers with different error types) outperform
+    single-tutor setups on unassisted test accuracy (N=315 math; N=247 creative writing).
+    Direct empirical case for the bilateral ego-superego learner over the unified scripted learner.
+    <a href="https://arxiv.org/abs/2604.02677">arxiv.org/abs/2604.02677</a>
+  </li>
+  <li>
+    <strong>Enhancing LLM Problem Solving via Tutor-Student Multi-Agent Interaction (PETITE)</strong>
+    (arXiv 2604.08931, April 10, 2026) —
+    Tutor-student multi-agent system inspired by developmental learning principles; tests whether
+    structured internal debate between a "student" and "tutor" LLM pushes the system beyond
+    single-model baselines on reasoning benchmarks.
+    <a href="https://arxiv.org/abs/2604.08931">arxiv.org/abs/2604.08931</a>
+  </li>
+  <li>
+    <strong>Plug-and-Play Dramaturge: Divide-and-Conquer Iterative Narrative Script Refinement
+    via Collaborative LLM Agents</strong>
+    (arXiv 2510.05188v3, updated 2026) —
+    Three-stage review (global → scene-level → hierarchical coordinated revision) produces
+    higher-quality long narratives than single-pass generation.
+    The coarse-to-fine revision cycle is a candidate improvement for the drama generator
+    (<code>scripts/drama-generator.js</code>): currently single-pass.
+    <a href="https://arxiv.org/abs/2510.05188">arxiv.org/abs/2510.05188</a>
+  </li>
+  <li>
+    <strong>Persuasive Machines: Large Language Models and the Art of Rhetoric</strong>
+    (AI &amp; Society, Springer, 2026) —
+    Philosophical analysis of how LLMs succeed at producing discourse that functions persuasively
+    regardless of truth value, examining the classical rhetorical dimensions (ethos/pathos/logos).
+    Background for the rhetoric angle of the recognition prompts and for the bilateral
+    transformation measurement's <em>persuasion vs. genuine belief revision</em> distinction.
+    <a href="https://link.springer.com/article/10.1007/s00146-026-03022-9">Springer Link</a>
+  </li>
+</ul>
+
+<footer>
+  Generated by Claude Code (claude-sonnet-4-6) · 2026-06-13 ·
+  Research harness: 12 parallel web searches, ~25 source extractions, cross-checked against
+  prior roundup (2026-06-09) to avoid duplicates ·
+  Repository: <code>liammagee/machinespirits-eval</code>
+</footer>
+
+</body>
+</html>
