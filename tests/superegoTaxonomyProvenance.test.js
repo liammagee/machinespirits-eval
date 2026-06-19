@@ -24,9 +24,8 @@ import { fileURLToPath } from 'node:url';
  *   paper source), not the paper corpus. Run with no --input and the script happily
  *   prints 53 pairs across 195 dialogues — plausible-looking, completely wrong, and
  *   with no warning. The real paper corpus is the 500-record / 56-dialogue file that
- *   lived UNTRACKED in the sibling machinespirits-eval repo and is now archived
- *   (byte-identical) at
- *   machinespirits-eval-private/data/superego-critiques-classified-paper-6.2-n500.jsonl.
+ *   is now tracked in this repo at
+ *   data/paper2/superego-critiques-classified-paper-6.2-n500.jsonl.
  *
  *   TRAP 2 — turnIndex-null pairing. Section 9 pairs rounds with
  *   `round2.find(r => r.turnIndex === r1.turnIndex) || round2[0]`. Every record has
@@ -36,7 +35,7 @@ import { fileURLToPath } from 'node:url';
  *   same-turn, and NOT a cartesian product. Deterministic and intended on this corpus,
  *   but it would change silently if a future corpus populated turnIndex.
  *
- * The three tests below: (1) lock every published §6.2.3/§6.2.5 number to the archived
+ * The three tests below: (1) lock every published §6.2.3/§6.2.5 number to the tracked
  * corpus and its sha256; (2) pin the turnIndex-null pairing rule hermetically; and
  * (3) assert the in-repo default corpus is NOT the paper source, so nobody re-walks
  * into Trap 1. Long-form notes: TODO.md §G4 and the paper-full-2.0.md v3.0.126
@@ -48,13 +47,12 @@ const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
 const SCRIPT = path.join(ROOT, 'scripts', 'analyze-superego-taxonomy.js');
 
-// The Paper §6.2 source corpus: 500 records / 56 dialogues, archived in the sibling
-// private repo. The sha256 is the integrity anchor cited inline in paper §6.2.3.
+// The Paper §6.2 source corpus: 500 records / 56 dialogues, tracked in-repo.
+// The sha256 is the integrity anchor cited inline in paper §6.2.3.
 const ARCHIVE = path.resolve(
   ROOT,
-  '..',
-  'machinespirits-eval-private',
   'data',
+  'paper2',
   'superego-critiques-classified-paper-6.2-n500.jsonl',
 );
 const ARCHIVE_SHA256 = 'f9ba2d92645decae74ddd80c78afeda34aa71af761c5064dd932468084f54329';

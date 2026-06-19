@@ -10,6 +10,11 @@ node_modules
 
 # Private research artifacts (symlinked from ../machinespirits-eval-private/)
 data
+!/data/
+/data/*
+!/data/paper2/
+/data/paper2/*
+!/data/paper2/superego-critiques-classified-paper-6.2-n500.jsonl
 logs
 logs.pre-symlink-backup-*/
 exports

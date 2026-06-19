@@ -8,6 +8,7 @@
  *
  * Usage:
  *   node scripts/analyze-superego-taxonomy.js [--input data/superego-critiques-classified.jsonl]
+ *   node scripts/analyze-superego-taxonomy.js --input data/paper2/superego-critiques-classified-paper-6.2-n500.jsonl
  *   node scripts/analyze-superego-taxonomy.js --json    # Machine-readable output
  */
 
@@ -25,7 +26,7 @@ const inputIdx = args.indexOf('--input');
 // fork data/superego-critiques-classified.jsonl is a different classification run
 // (300 records / 195 dialogues). The paper figures come from the 500-record /
 // 56-dialogue corpus archived at
-// machinespirits-eval-private/data/superego-critiques-classified-paper-6.2-n500.jsonl
+// data/paper2/superego-critiques-classified-paper-6.2-n500.jsonl
 // (sha256 f9ba2d92…) — pass it via --input. Guarded by tests/superegoTaxonomyProvenance.test.js.
 const inputPath = inputIdx !== -1 ? args[inputIdx + 1] : join(ROOT, 'data', 'superego-critiques-classified.jsonl');
 

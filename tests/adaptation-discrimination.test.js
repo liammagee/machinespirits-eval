@@ -6,14 +6,18 @@ import path from 'node:path';
 import test from 'node:test';
 
 test('deterministic adaptation policy evaluation separates closed loop from legacy', () => {
+  const root = path.resolve(import.meta.dirname, '..');
+  const suite = JSON.parse(
+    fs.readFileSync(path.join(root, 'config/adaptation-discrimination-scenarios.json'), 'utf8'),
+  );
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'adaptation-policy-eval-'));
   const out = path.join(tmp, 'report.json');
   execFileSync(process.execPath, ['scripts/evaluate-adaptation-policy.js', '--output', out], {
-    cwd: path.resolve(import.meta.dirname, '..'),
+    cwd: root,
     stdio: 'pipe',
   });
   const report = JSON.parse(fs.readFileSync(out, 'utf8'));
-  assert.equal(report.scenarioCount, 14);
+  assert.equal(report.scenarioCount, suite.scenarios.length);
   assert.ok(report.aggregates.closed_loop.strictJointSuccess > report.aggregates.legacy.strictJointSuccess);
   assert.ok(report.aggregates.closed_loop.stateTop1Accuracy > report.aggregates.legacy.stateTop1Accuracy);
   assert.ok(report.aggregates.closed_loop.counterfactualRegret < report.aggregates.legacy.counterfactualRegret);
