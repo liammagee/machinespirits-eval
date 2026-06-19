@@ -2,6 +2,42 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { realizeTutorUtterance, verifyRealization } from '../services/adaptiveTutor/realizationVerifier.js';
 
+test('observe no-intervention realizes as closure rather than a generic prompt', () => {
+  const selectedAction = { action_type: 'observe_no_intervention' };
+  const realized = realizeTutorUtterance({
+    selectedAction,
+    stateBelief: { hypotheses: [{ id: 'productive_progress', probability: 0.78 }] },
+    interventionLedger: [],
+    config: {},
+  });
+  const checks = verifyRealization({ tutorText: realized.text, selectedAction });
+
+  assert.match(realized.text, /won't add another hint/u);
+  assert.doesNotMatch(realized.text, /next task-relevant move/u);
+  assert.equal(checks.allowed, true);
+});
+
+test('contextual observe no-intervention stays out after repeated learner-owned progress', () => {
+  const selectedAction = { action_type: 'observe_no_intervention' };
+  const realized = realizeTutorUtterance({
+    selectedAction,
+    stateBelief: { hypotheses: [{ id: 'productive_progress', probability: 0.78 }] },
+    interventionLedger: [
+      {
+        status: 'closed',
+        action_type: 'observe_no_intervention',
+        outcome: 'success',
+        hypothesis_ids: ['productive_progress'],
+      },
+    ],
+    config: { realizationContext: true },
+  });
+  const checks = verifyRealization({ tutorText: realized.text, selectedAction });
+
+  assert.match(realized.text, /stay out for this step/u);
+  assert.equal(checks.allowed, true);
+});
+
 test('contextual realization refines repeated diagnostic under false mastery', () => {
   const selectedAction = { action_type: 'diagnose_with_discriminating_question' };
   const stateBelief = {

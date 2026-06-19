@@ -3,7 +3,7 @@
 Date: 2026-06-19
 Branch head before this implementation: `258ea857`
 Initial evidence-suite commit: `8f4c98fc`
-Status: second implementation loop complete; provisional simulated mechanism evidence positive under mock; independent quality cross-check weakly positive but quality-limited
+Status: third implementation loop complete; provisional simulated mechanism evidence positive under mock; Opus-only full quality pass positive but still quality-limited
 
 ## Implemented
 
@@ -182,3 +182,90 @@ The next diagnosis-driven implementation should target final-turn closure after
 learner-owned progress, then rerun this held-out suite plus the cross-suite and
 paired regression checks. Do not claim human learning, retention, transfer, or
 deployment readiness from this result.
+
+## Opus-Only Final-Turn Closure Loop
+
+Loop start branch head: `39bf8030`
+
+The prior repaired pass found a concrete quality failure family: when the
+selector chose `observe_no_intervention` after learner-owned progress, the
+realizer fell through to the generic fallback prompt, and the mock learner often
+regressed to "Hmm, can you explain more?" This was a realization and mock
+closure failure, not a state-selection failure.
+
+Implementation:
+
+- bumped `adaptation-realization-verifier` to `v1.1`;
+- added explicit and contextual `observe_no_intervention` realization
+  templates that refuse another hint and ask the learner to continue in their
+  own terms;
+- added realization-consistency checks for `observe_no_intervention`;
+- added an unscripted mock-learner continuation response for
+  `observe_no_intervention`;
+- added focused tests for no-intervention realization and mock continuation.
+
+Fresh Opus-only evaluation runs:
+
+| Cell | Run ID | Suite | Judge split |
+|---|---|---|---|
+| `cell_153_plan2_1_evidence_closed_loop` | `eval-2026-06-19-79b95960` | Plan 2.1 evidence-bearing held-out | mock generation; Opus complete |
+| `cell_154_plan2_1_evidence_repeat_contextual` | `eval-2026-06-19-6a354353` | Plan 2.1 evidence-bearing held-out | mock generation; Opus complete |
+| `cell_150_plan2_quality_repeat_contextual_crosssuite` | `eval-2026-06-19-5ad9bb14` | cross-suite traps | mock generation; mechanism regression |
+| `cell_152_plan2_pair_specificity_repeat_contextual` | `eval-2026-06-19-b0d98df5` | paired counterfactual suite | mock generation; mechanism regression |
+
+Ignored exports cited, not forced into Git:
+
+- `exports/plan2-1-finalturn-loop1-strategy-shift.json`
+- `exports/plan2-1-finalturn-loop1-pair-specificity.{json,md}`
+- `exports/plan2-1-finalturn-loop1-belief-calibration.{json,md}`
+- `exports/plan2-1-finalturn-loop1-outcome-closure.{json,md}`
+- `exports/plan2-1-finalturn-loop1-crosssuite-strategy-shift.json`
+- `exports/plan2-1-finalturn-loop1-paired-specificity.{json,md}`
+- `exports/plan2-1-finalturn-loop1-opus-quality.{json,md}`
+
+Mechanism results:
+
+| Check | `cell_153` | `cell_154` |
+|---|---:|---:|
+| Held-out strict shift | 10/10 | 10/10 |
+| Held-out family match | 10/10 | 10/10 |
+| Held-out repeated-action refinement | 6/6 | 6/6 |
+| Held-out pair specificity | 4/4 | 4/4 |
+| Held-out belief top-1 | 10/10 | 10/10 |
+| Held-out outcome closure | 30/30 | 30/30 |
+| Held-out no-repeat after non-success | 17/18 | 17/18 |
+
+Regression results:
+
+| Suite | Profile | Result |
+|---|---|---:|
+| Cross-suite traps | `cell_150_plan2_quality_repeat_contextual_crosssuite` | 6/6 strict shift |
+| Paired counterfactual | `cell_152_plan2_pair_specificity_repeat_contextual` | 3/3 pair specificity; 0/1 false-positive divergence |
+
+Opus quality, exact `judge_model = claude-code/opus`:
+
+| Profile | N | Quality N | Strict shift | Quality composite | Delta vs `cell_153` | Tutor last | Tutor holistic | Learner | Dialogue |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| `cell_153_plan2_1_evidence_closed_loop` | 10 | 10 | 100.0% | 51.1 | 0.0 | 59.0 | 57.6 | 35.2 | 52.6 |
+| `cell_154_plan2_1_evidence_repeat_contextual` | 10 | 10 | 100.0% | 54.8 | +3.6 | 68.5 | 61.5 | 36.3 | 52.7 |
+
+Interpretation:
+
+- The implementation loop produced meaningful progression under the user's
+  Opus-only evaluation constraint: `cell_154` remains the winner, the comparison
+  is complete at 10/10 rows per profile, and the treatment advantage increased
+  relative to the prior partial Opus pass.
+- The gain is concentrated in tutor last-turn and holistic quality. Learner and
+  dialogue aggregates remain nearly flat, so this does not yet show a strong
+  downstream learner-quality effect.
+- The remaining failure family is no longer generic fallback leakage. The weak
+  rows are productive-progress closures where a no-intervention turn may be
+  inherently low-value to an independent judge once the learner already owns the
+  next move. The next substantive move should test early completion after a
+  successful learner-owned `observe_no_intervention`, rather than adding more
+  prompt wording.
+
+Stop condition for this loop: meaningful progression was reached without
+breaking previously passed mechanism suites. Further changes should be a
+separate diagnosis-driven pass focused on early completion / transcript length,
+then rerun the held-out suite and the same cross-suite and paired regressions.

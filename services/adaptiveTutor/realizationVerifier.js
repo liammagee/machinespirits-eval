@@ -1,6 +1,8 @@
-export const REALIZATION_VERIFIER_VERSION = 'adaptation-realization-verifier.v1.0';
+export const REALIZATION_VERIFIER_VERSION = 'adaptation-realization-verifier.v1.1';
 
 const TEMPLATES = Object.freeze({
+  observe_no_intervention:
+    "You have already named a workable next move. I won't add another hint; carry out that move in your own words.",
   diagnose_with_discriminating_question:
     'I want to separate two possibilities before I help: what exactly feels missing here — the underlying idea, the notation, the task goal, or confidence that your own route is acceptable?',
   elicit_prediction:
@@ -42,6 +44,12 @@ const TEMPLATES = Object.freeze({
 });
 
 const CONTEXTUAL_TEMPLATES = Object.freeze({
+  observe_no_intervention: {
+    productive_progress:
+      'You have already chosen the route. I will stay out for this step; continue with that comparison in your own terms.',
+    default:
+      'You have a learner-owned next move on the table. I will not add another scaffold; continue with that move in your own terms.',
+  },
   diagnose_with_discriminating_question: {
     false_mastery:
       "I need to test the 'makes sense' claim, not repeat the whole setup: what part can you defend with evidence, and what part are you only accepting because I framed it?",
@@ -163,6 +171,8 @@ function decisiveStepEmbedded(text = '') {
 function actionConsistent(actionType, text = '') {
   const lower = text.toLowerCase();
   switch (actionType) {
+    case 'observe_no_intervention':
+      return /won'?t add|will not add|stay out|carry out|continue with/u.test(lower) && /own/u.test(lower);
     case 'diagnose_with_discriminating_question':
       return /\?/u.test(text) && /possibil|missing|notation|task|confidence|diagnos|defend|evidence|uncertainty|symbol/u.test(lower);
     case 'request_evidence':
