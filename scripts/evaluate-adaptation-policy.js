@@ -39,6 +39,7 @@ const GATED_MODES = new Set(['contract_gate', 'closed_loop', 'closed_loop_counte
 const CLOSED_MODES = new Set(['closed_loop', 'closed_loop_counterfactual']);
 
 const IDEAL_ACTIONS = Object.freeze({
+  productive_progress: ['observe_no_intervention', 'ask_strategy_choice', 'request_evidence'],
   missing_prerequisite: ['minimal_hint', 'request_evidence', 'ask_strategy_choice', 'model_worked_example', 'explain_principle'],
   low_confidence: ['elicit_prediction', 'ask_strategy_choice', 'fade_hint'],
   approval_dependency: ['ask_strategy_choice', 'request_evidence', 'elicit_prediction'],
@@ -123,6 +124,8 @@ function learnerResponse({ hiddenState, actionType, turnIndex }) {
       answer_seeking: 'I mostly want you to just tell me the answer instead of making the next choice myself.',
       correct_alternative_model:
         'I have another way: my model compares the same relation through a different representation.',
+      productive_progress:
+        'Next I would test the boundary case because the claim depends on whether the relation still holds there.',
     }[hiddenState];
   }
 
@@ -148,6 +151,8 @@ function learnerResponse({ hiddenState, actionType, turnIndex }) {
       'I choose to try the next step myself: my strategy is to make a small prediction before seeing the answer.',
     correct_alternative_model:
       'Because my alternative model preserves the same relation, I can justify that representation in my own words.',
+    productive_progress:
+      'I will keep going: next I would test the boundary case because that preserves the learner-owned route.',
   }[hiddenState];
 }
 

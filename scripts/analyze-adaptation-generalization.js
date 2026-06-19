@@ -22,6 +22,7 @@ const LOGS_DIR = path.join(process.env.EVAL_LOGS_DIR || path.join(REPO_ROOT, 'lo
 const DEFAULT_SCENARIO_FILE = 'config/adaptive-generalization-counterfactual-scenarios.yaml';
 
 const ADAPTATION_ACTION_FAMILIES = Object.freeze({
+  agency_preservation: ['observe_no_intervention'],
   diagnostic: ['diagnose_with_discriminating_question', 'request_evidence', 'elicit_prediction'],
   substantive_engagement: ['contrast_models', 'challenge_without_telling', 'name_the_disagreement', 'mirror_and_extend'],
   scaffolding: [

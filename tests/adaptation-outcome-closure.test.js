@@ -63,6 +63,8 @@ test('analyzeTraceOutcomeClosure counts complete contracts and observed closures
   assert.equal(result.completeContractN, 2);
   assert.equal(result.nonFinalPendingClosedN, 1);
   assert.equal(result.observableTransitionN, 1);
+  assert.equal(result.evidenceBearingOutcomeN, 1);
+  assert.equal(result.evidenceBearingSuccessN, 1);
   assert.equal(result.successN, 1);
 });
 
@@ -143,4 +145,76 @@ test('buildOutcomeClosureReport aggregates by profile', () => {
   assert.equal(profile.contractCompletenessRate, 1);
   assert.equal(profile.failureUpdateRate, 1);
   assert.equal(profile.noUnreasonedRepeatRate, 0);
+  assert.equal(profile.evidenceBearingOutcomeRate, 0);
+  assert.equal(profile.inconclusiveWithEvidenceRate, 1);
+});
+
+test('buildOutcomeClosureReport flags false success from mere agreement evidence', () => {
+  const rows = [
+    {
+      id: 1,
+      run_id: 'run',
+      profile_name: 'profile',
+      scenario_id: 'a',
+      trace: {
+        profileName: 'profile',
+        scenario: { id: 'a' },
+        original: {
+          perTurn: [turn(0, 'minimal_hint'), turn(1, 'minimal_hint')],
+          finalInterventionLedger: [
+            {
+              ...closed(0, 'minimal_hint', 'success'),
+              evidence: [{ quote: 'okay', categories: { 'mere agreement': true } }],
+            },
+            pending(1, 'minimal_hint'),
+          ],
+        },
+      },
+    },
+  ];
+
+  const report = buildOutcomeClosureReport(rows, { runIds: ['run'] });
+  const profile = report.profiles[0];
+
+  assert.equal(profile.evidenceBearingOutcomeRate, 1);
+  assert.equal(profile.falseSuccessFromAgreementN, 1);
+});
+
+test('buildOutcomeClosureReport can reobserve stored dialogue outcomes without mutating traces', () => {
+  const rows = [
+    {
+      id: 1,
+      run_id: 'run',
+      profile_name: 'profile',
+      scenario_id: 'a',
+      trace: {
+        profileName: 'profile',
+        scenario: { id: 'a' },
+        original: {
+          dialogue: [
+            { role: 'learner', content: "I don't get why that works." },
+            { role: 'tutor', content: 'What exactly feels missing?' },
+            { role: 'learner', content: 'Hmm, can you explain more?' },
+            { role: 'tutor', content: 'Small hint only.' },
+          ],
+          perTurn: [turn(0, 'diagnose_with_discriminating_question'), turn(1, 'minimal_hint')],
+          finalInterventionLedger: [
+            {
+              ...closed(0, 'diagnose_with_discriminating_question', 'inconclusive'),
+              evidence: [{ quote: 'Hmm, can you explain more?', categories: {} }],
+            },
+            pending(1, 'minimal_hint'),
+          ],
+        },
+      },
+    },
+  ];
+
+  const stored = buildOutcomeClosureReport(rows, { runIds: ['run'] }).profiles[0];
+  const reobserved = buildOutcomeClosureReport(rows, { runIds: ['run'], reobserve: true }).profiles[0];
+
+  assert.equal(stored.failureN, 0);
+  assert.equal(stored.inconclusiveN, 1);
+  assert.equal(reobserved.failureN, 1);
+  assert.equal(reobserved.inconclusiveN, 0);
 });

@@ -15,6 +15,8 @@
     { "id": "answer-seeking-1", "surface": "I don't get why that works.", "hiddenState": "answer_seeking", "evidenceNote": "Learner repeatedly redirects questions into requests for the answer." },
     { "id": "answer-seeking-2", "surface": "Can you just show me the next line?", "hiddenState": "answer_seeking", "evidenceNote": "Learner has enough information to attempt a move but seeks tutor completion." },
     { "id": "alternative-model-1", "surface": "I don't get why that works.", "hiddenState": "correct_alternative_model", "evidenceNote": "Learner has a different but valid conceptual model that has not been articulated." },
-    { "id": "alternative-model-2", "surface": "That isn't how I was thinking about it.", "hiddenState": "correct_alternative_model", "evidenceNote": "Learner's alternative representation is valid and should be elicited." }
+    { "id": "alternative-model-2", "surface": "That isn't how I was thinking about it.", "hiddenState": "correct_alternative_model", "evidenceNote": "Learner's alternative representation is valid and should be elicited." },
+    { "id": "productive-progress-1", "surface": "Next I would test the boundary case because the claim depends on whether recognition still holds under pressure.", "hiddenState": "productive_progress", "evidenceNote": "Learner is already authoring a productive next move; tutor should hold back rather than add content." },
+    { "id": "productive-progress-2", "surface": "My strategy is to compare the two cases first, then decide which relation stays invariant.", "hiddenState": "productive_progress", "evidenceNote": "Learner has a viable plan and needs protected authorship more than another tutor intervention." }
   ]
 }

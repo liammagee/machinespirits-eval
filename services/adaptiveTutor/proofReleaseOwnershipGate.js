@@ -64,6 +64,7 @@ function isHighControlProofSupply(action) {
 }
 
 const ACTIONABLE_UNDER_UNCERTAINTY = new Set([
+  'productive_progress',
   'answer_seeking',
   'working_memory_overload',
   'notation_overload',
@@ -175,7 +176,7 @@ export function validateProofReleaseOwnershipGate({
     const hasOpportunity = /choice|strategy|prediction|evidence|next step|next move|task-aligned|task goal|justify|own words/iu.test(
       `${action.description || ''} ${action.rationale || ''} ${tutorText || ''}`,
     );
-    const actionCarriesReleaseOpportunity = action.action_type === 'withhold_answer';
+    const actionCarriesReleaseOpportunity = action.action_type === 'withhold_answer' || action.action_type === 'observe_no_intervention';
     if (!hasOpportunity && !actionCarriesReleaseOpportunity) {
       violations.push(
         violation(

@@ -215,6 +215,40 @@ test('low-confidence "I just was not sure" phrasing does not masquerade as shutd
   assert.notEqual(belief.hypotheses[0].id, 'affective_shutdown');
 });
 
+test('learner-owned productive progress selects explicit no-intervention', () => {
+  const belief = estimateLearnerStateBelief({
+    dialogue: [
+      {
+        role: 'learner',
+        content:
+          'Next I would test the boundary case because the claim depends on whether recognition remains mutual under pressure.',
+      },
+    ],
+    turnIndex: 2,
+  });
+  const selection = selectPedagogicalAction({ stateBelief: belief, interventionLedger: [], mode: 'closed_loop' });
+
+  assert.equal(belief.hypotheses[0].id, 'productive_progress');
+  assert.equal(selection.selectedAction.action_type, 'observe_no_intervention');
+  assert.equal(legacyPolicyActionForAdaptiveAction(selection.selectedAction.action_type), 'summarize_and_check');
+});
+
+test('answer seeking still overrides no-intervention cues', () => {
+  const belief = estimateLearnerStateBelief({
+    dialogue: [
+      {
+        role: 'learner',
+        content: 'Just tell me the answer and I will work backwards from there because I need to finish.',
+      },
+    ],
+    turnIndex: 2,
+  });
+  const selection = selectPedagogicalAction({ stateBelief: belief, interventionLedger: [], mode: 'closed_loop' });
+
+  assert.equal(belief.hypotheses[0].id, 'answer_seeking');
+  assert.equal(selection.selectedAction.action_type, 'withhold_answer');
+});
+
 test('misrecognition cue with mix-up phrasing selects explicit repair', () => {
   const belief = estimateLearnerStateBelief({
     dialogue: [

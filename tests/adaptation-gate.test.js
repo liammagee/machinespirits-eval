@@ -81,6 +81,41 @@ test('gate preserves answer withholding as a bounded learner-owned opportunity',
   assert.equal(result.allowed, true);
 });
 
+test('gate allows no-intervention when learner already owns a productive next move', () => {
+  const result = validateProofReleaseOwnershipGate({
+    stateBelief: stateBelief({
+      learner_project: {
+        goal: 'compare two quantities',
+        current_plan: 'Next I would test the boundary case because the relation may fail there.',
+        commitment: 'tentative',
+        next_authorship_opportunity: 'continue the learner-authored next move',
+      },
+      hypotheses: [
+        {
+          id: 'productive_progress',
+          probability: 0.7,
+          evidence: ['Next I would test the boundary case'],
+          disconfirming_evidence: [],
+        },
+        {
+          id: 'boundary_case',
+          probability: 0.3,
+          evidence: ['boundary case'],
+          disconfirming_evidence: [],
+        },
+      ],
+      uncertainty: {
+        entropy: 0.88,
+        needs_discrimination: true,
+        reason: 'Learner is progressing while still near a boundary-case question.',
+      },
+    }),
+    selectedAction: materialize('observe_no_intervention'),
+  });
+
+  assert.equal(result.allowed, true);
+});
+
 test('gate allows repeated affective acknowledgement when shutdown evidence renews', () => {
   const result = validateProofReleaseOwnershipGate({
     stateBelief: stateBelief({

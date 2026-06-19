@@ -15,6 +15,7 @@ import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import Database from 'better-sqlite3';
 import { adaptationFamilyOf } from './analyze-adaptation-generalization.js';
+import { observeInterventionOutcome } from '../services/adaptiveTutor/outcomeObserver.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -34,7 +35,7 @@ function parseArgs(argv = process.argv.slice(2)) {
   const runIdArg = getOption(argv, 'run-id') || getOption(argv, 'run');
   if (!runIdArg) {
     throw new Error(
-      'Usage: node scripts/analyze-adaptation-outcome-closure.js --run-id <runId>[,<runId2>] [--profile <name>] [--judge-model <label>] [--out <path>] [--markdown <path>] [--json]',
+      'Usage: node scripts/analyze-adaptation-outcome-closure.js --run-id <runId>[,<runId2>] [--profile <name>] [--judge-model <label>] [--reobserve] [--out <path>] [--markdown <path>] [--json]',
     );
   }
   return {
@@ -46,6 +47,7 @@ function parseArgs(argv = process.argv.slice(2)) {
     judgeModel: getOption(argv, 'judge-model'),
     out: getOption(argv, 'out'),
     markdown: getOption(argv, 'markdown'),
+    reobserve: hasFlag(argv, 'reobserve'),
     json: hasFlag(argv, 'json'),
   };
 }
@@ -114,6 +116,18 @@ function hasObservedTransition(record) {
   );
 }
 
+function hasOutcomeEvidence(record) {
+  return Array.isArray(record?.evidence) && record.evidence.length > 0;
+}
+
+function hasEvidenceCategory(record, category) {
+  return (record?.evidence || []).some((entry) => entry?.categories?.[category] === true);
+}
+
+function evidenceBearingOutcome(record) {
+  return hasOutcomeEvidence(record) && ['success', 'failure'].includes(record?.outcome);
+}
+
 function overlap(a = [], b = []) {
   const left = new Set(a);
   return b.some((item) => left.has(item));
@@ -133,11 +147,46 @@ function countBy(values) {
   return out;
 }
 
-export function analyzeTraceOutcomeClosure(trace) {
+function learnerTurnAfterTutorTurn(trace, tutorTurnIndex) {
+  const dialogue = Array.isArray(trace?.original?.dialogue) ? trace.original.dialogue : [];
+  let tutorCount = -1;
+  for (let i = 0; i < dialogue.length; i += 1) {
+    if (dialogue[i]?.role !== 'tutor') continue;
+    tutorCount += 1;
+    if (tutorCount !== Number(tutorTurnIndex)) continue;
+    const nextLearner = dialogue.slice(i + 1).find((message) => message?.role === 'learner');
+    return nextLearner?.content || '';
+  }
+  return '';
+}
+
+function reobserveClosedLedger(trace, finalLedger = []) {
+  return finalLedger.map((record) => {
+    if (record?.status !== 'closed') return record;
+    const learnerTurn = learnerTurnAfterTutorTurn(trace, record.turn_index);
+    const observed = observeInterventionOutcome({
+      pendingIntervention: record,
+      learnerTurn,
+      turnIndex: record.closed_turn_index ?? Number(record.turn_index) + 1,
+    });
+    return {
+      ...record,
+      stored_outcome: record.outcome,
+      stored_evidence: record.evidence || [],
+      outcome: observed.outcome,
+      observed_transition: observed.observed_transition,
+      evidence: observed.evidence || [],
+      reobserved: true,
+    };
+  });
+}
+
+export function analyzeTraceOutcomeClosure(trace, options = {}) {
   const perTurn = Array.isArray(trace?.original?.perTurn) ? [...trace.original.perTurn].sort((a, b) => a.turn - b.turn) : [];
-  const finalLedger = Array.isArray(trace?.original?.finalInterventionLedger)
+  const storedFinalLedger = Array.isArray(trace?.original?.finalInterventionLedger)
     ? trace.original.finalInterventionLedger
     : [];
+  const finalLedger = options.reobserve ? reobserveClosedLedger(trace, storedFinalLedger) : storedFinalLedger;
   const actions = perTurn.map(actionFromTurn).filter(Boolean);
   const families = actions.map(adaptationFamilyOf).filter(Boolean);
   const closed = finalLedger.filter((record) => record?.status === 'closed');
@@ -146,6 +195,13 @@ export function analyzeTraceOutcomeClosure(trace) {
   const closedTurnSet = new Set(closed.map((record) => Number(record.turn_index)));
   const nonFinalPendingClosedN = nonFinalTurns.filter((turn) => closedTurnSet.has(turn)).length;
   const outcomeCounts = countBy(closed.map((record) => record.outcome || 'unknown'));
+  const evidenceBearingClosed = closed.filter(evidenceBearingOutcome);
+  const falseSuccessFromAgreement = closed.filter(
+    (record) => record?.outcome === 'success' && hasEvidenceCategory(record, 'mere agreement'),
+  );
+  const inconclusiveWithEvidence = closed.filter(
+    (record) => record?.outcome === 'inconclusive' && hasOutcomeEvidence(record),
+  );
 
   let nonSuccessRecords = 0;
   let policyUpdatedAfterNonSuccess = 0;
@@ -197,6 +253,11 @@ export function analyzeTraceOutcomeClosure(trace) {
     closedInterventionN: closed.length,
     pendingInterventionN: pending.length,
     observableTransitionN: closed.filter(hasObservedTransition).length,
+    evidenceBearingOutcomeN: evidenceBearingClosed.length,
+    evidenceBearingSuccessN: evidenceBearingClosed.filter((record) => record.outcome === 'success').length,
+    evidenceBearingFailureN: evidenceBearingClosed.filter((record) => record.outcome === 'failure').length,
+    inconclusiveWithEvidenceN: inconclusiveWithEvidence.length,
+    falseSuccessFromAgreementN: falseSuccessFromAgreement.length,
     outcomeCounts,
     successN: outcomeCounts.success || 0,
     failureN: outcomeCounts.failure || 0,
@@ -237,6 +298,11 @@ function profileAggregate(profileName, rows) {
   const nonFinalPendingClosedN = sum(rows, 'nonFinalPendingClosedN');
   const closedInterventionN = sum(rows, 'closedInterventionN');
   const observableTransitionN = sum(rows, 'observableTransitionN');
+  const evidenceBearingOutcomeN = sum(rows, 'evidenceBearingOutcomeN');
+  const evidenceBearingSuccessN = sum(rows, 'evidenceBearingSuccessN');
+  const evidenceBearingFailureN = sum(rows, 'evidenceBearingFailureN');
+  const inconclusiveWithEvidenceN = sum(rows, 'inconclusiveWithEvidenceN');
+  const falseSuccessFromAgreementN = sum(rows, 'falseSuccessFromAgreementN');
   const nonSuccessRecords = sum(rows, 'nonSuccessRecords');
   const policyUpdatedAfterNonSuccess = sum(rows, 'policyUpdatedAfterNonSuccess');
   const repeatedAfterNonSuccess = sum(rows, 'repeatedAfterNonSuccess');
@@ -254,6 +320,15 @@ function profileAggregate(profileName, rows) {
     closedInterventionN,
     observableTransitionN,
     predictedTransitionObservabilityRate: rate(observableTransitionN, closedInterventionN),
+    evidenceBearingOutcomeN,
+    evidenceBearingOutcomeRate: rate(evidenceBearingOutcomeN, closedInterventionN),
+    evidenceBearingSuccessN,
+    evidenceBearingSuccessRate: rate(evidenceBearingSuccessN, closedInterventionN),
+    evidenceBearingFailureN,
+    evidenceBearingFailureRate: rate(evidenceBearingFailureN, closedInterventionN),
+    inconclusiveWithEvidenceN,
+    inconclusiveWithEvidenceRate: rate(inconclusiveWithEvidenceN, closedInterventionN),
+    falseSuccessFromAgreementN,
     successN: sum(rows, 'successN'),
     failureN: sum(rows, 'failureN'),
     inconclusiveN: sum(rows, 'inconclusiveN'),
@@ -278,7 +353,7 @@ export function buildOutcomeClosureReport(rows, options = {}) {
   for (const row of rows) {
     const trace = row.trace || loadTrace(row.dialogue_id || row.dialogueId);
     if (!trace) continue;
-    const metrics = analyzeTraceOutcomeClosure(trace);
+    const metrics = analyzeTraceOutcomeClosure(trace, { reobserve: options.reobserve === true });
     scenarios.push({
       ...metrics,
       rowId: row.id ?? null,
@@ -300,6 +375,7 @@ export function buildOutcomeClosureReport(rows, options = {}) {
     options: {
       profile: options.profile || null,
       judgeModel: options.judgeModel || null,
+      reobserve: options.reobserve === true,
     },
     profiles,
     scenarios,
@@ -317,12 +393,13 @@ function renderMarkdown(report) {
   lines.push(`Generated: ${report.generatedAt}`);
   lines.push(`Run IDs: ${report.runIds.join(', ')}`);
   if (report.options.judgeModel) lines.push(`Judge model: ${report.options.judgeModel}`);
+  if (report.options.reobserve) lines.push('Closure mode: reobserved from stored dialogue text');
   lines.push('');
-  lines.push('| Profile | Contract complete | Intervention closure | Transition observable | Success | Failure | Inconclusive | Failure update | No repeat after non-success | Gate repaired | Families |');
-  lines.push('|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|');
+  lines.push('| Profile | Contract complete | Intervention closure | Transition observable | Observed success/failure | Success | Failure | Inconclusive | Inconclusive w/evidence | False success agreement | Failure update | No repeat after non-success | Gate repaired | Families |');
+  lines.push('|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|');
   for (const row of report.profiles) {
     lines.push(
-      `| ${row.profileName} | ${row.completeContractN}/${row.actionN} (${fmtPct(row.contractCompletenessRate)}) | ${row.nonFinalPendingClosedN}/${row.nonFinalPendingN} (${fmtPct(row.interventionClosureRate)}) | ${row.observableTransitionN}/${row.closedInterventionN} (${fmtPct(row.predictedTransitionObservabilityRate)}) | ${row.successN} | ${row.failureN} | ${row.inconclusiveN} | ${row.policyUpdatedAfterNonSuccess}/${row.nonSuccessRecords} (${fmtPct(row.failureUpdateRate)}) | ${row.nonSuccessRecords - row.repeatedAfterNonSuccess}/${row.nonSuccessRecords} (${fmtPct(row.noUnreasonedRepeatRate)}) | ${row.gateRepaired} | ${Object.entries(row.actionFamilyCounts)
+      `| ${row.profileName} | ${row.completeContractN}/${row.actionN} (${fmtPct(row.contractCompletenessRate)}) | ${row.nonFinalPendingClosedN}/${row.nonFinalPendingN} (${fmtPct(row.interventionClosureRate)}) | ${row.observableTransitionN}/${row.closedInterventionN} (${fmtPct(row.predictedTransitionObservabilityRate)}) | ${row.evidenceBearingOutcomeN}/${row.closedInterventionN} (${fmtPct(row.evidenceBearingOutcomeRate)}) | ${row.successN} | ${row.failureN} | ${row.inconclusiveN} | ${row.inconclusiveWithEvidenceN}/${row.closedInterventionN} (${fmtPct(row.inconclusiveWithEvidenceRate)}) | ${row.falseSuccessFromAgreementN} | ${row.policyUpdatedAfterNonSuccess}/${row.nonSuccessRecords} (${fmtPct(row.failureUpdateRate)}) | ${row.nonSuccessRecords - row.repeatedAfterNonSuccess}/${row.nonSuccessRecords} (${fmtPct(row.noUnreasonedRepeatRate)}) | ${row.gateRepaired} | ${Object.entries(row.actionFamilyCounts)
         .map(([family, count]) => `${family}=${count}`)
         .join(', ')} |`,
     );
@@ -334,11 +411,12 @@ function printSummary(report) {
   console.log('\nPlan 2.0 outcome-closure report');
   console.log(`  runIds=${report.runIds.join(',')}`);
   if (report.options.judgeModel) console.log(`  judgeModel=${report.options.judgeModel}`);
+  if (report.options.reobserve) console.log('  closureMode=reobserved');
   console.log('');
-  console.log('  profile                                      contract  closed  observable  succ fail inconc  fail-update  no-repeat  repairs');
+  console.log('  profile                                      contract  closed  observable  obs-outcome  succ fail inconc  fail-update  no-repeat  repairs');
   for (const row of report.profiles) {
     console.log(
-      `  ${row.profileName.padEnd(44)} ${fmtPct(row.contractCompletenessRate).padStart(8)} ${fmtPct(row.interventionClosureRate).padStart(7)} ${fmtPct(row.predictedTransitionObservabilityRate).padStart(10)} ${String(row.successN).padStart(4)} ${String(row.failureN).padStart(4)} ${String(row.inconclusiveN).padStart(6)} ${fmtPct(row.failureUpdateRate).padStart(12)} ${fmtPct(row.noUnreasonedRepeatRate).padStart(10)} ${String(row.gateRepaired).padStart(7)}`,
+      `  ${row.profileName.padEnd(44)} ${fmtPct(row.contractCompletenessRate).padStart(8)} ${fmtPct(row.interventionClosureRate).padStart(7)} ${fmtPct(row.predictedTransitionObservabilityRate).padStart(10)} ${fmtPct(row.evidenceBearingOutcomeRate).padStart(11)} ${String(row.successN).padStart(4)} ${String(row.failureN).padStart(4)} ${String(row.inconclusiveN).padStart(6)} ${fmtPct(row.failureUpdateRate).padStart(12)} ${fmtPct(row.noUnreasonedRepeatRate).padStart(10)} ${String(row.gateRepaired).padStart(7)}`,
     );
   }
 }

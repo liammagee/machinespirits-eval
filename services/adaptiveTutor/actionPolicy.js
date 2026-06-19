@@ -1,4 +1,4 @@
-export const ADAPTATION_ACTION_REGISTRY_VERSION = 'adaptation-action-registry.v1.0';
+export const ADAPTATION_ACTION_REGISTRY_VERSION = 'adaptation-action-registry.v1.1';
 
 export const ADAPTIVE_POLICY_MODES = Object.freeze([
   'legacy',
@@ -24,6 +24,21 @@ export const DEFAULT_ADAPTIVE_POLICY_CONFIG = Object.freeze({
 });
 
 const ACTIONS = [
+  {
+    action_type: 'observe_no_intervention',
+    description: 'Hold back from adding new content when the learner is already making productive, owned progress.',
+    target_axes: ['release', 'ownership'],
+    default_control_cost: 0.05,
+    default_information_gain: 0.25,
+    expected_transition: { proof: 0.05, release: 0.25, ownership: 0.25, metacognitive_accuracy: 0.05 },
+    success_signal: {
+      description: 'Learner continues with an independent next move rather than waiting for tutor completion.',
+      required_evidence: ['learner-authored next step', 'learner-authored choice'],
+      forbidden_evidence: ['mere agreement', 'empty release'],
+    },
+    forbidden_moves: ['supply_decisive_step', 'replace_learner_plan', 'premature_correctness_validation'],
+    compatible_hypotheses: ['productive_progress', 'low_confidence', 'approval_dependency'],
+  },
   {
     action_type: 'diagnose_with_discriminating_question',
     description: 'Ask a low-control question that distinguishes competing learner-state hypotheses.',
@@ -325,6 +340,7 @@ export const ADAPTATION_ACTION_BY_TYPE = Object.freeze(
 );
 
 const HYPOTHESIS_ACTION_MAP = Object.freeze({
+  productive_progress: ['observe_no_intervention', 'ask_strategy_choice', 'request_evidence'],
   missing_prerequisite: ['minimal_hint', 'explain_principle', 'model_worked_example'],
   low_confidence: ['elicit_prediction', 'ask_strategy_choice', 'fade_hint'],
   approval_dependency: ['ask_strategy_choice', 'request_evidence', 'elicit_prediction'],
@@ -346,6 +362,7 @@ const HYPOTHESIS_ACTION_MAP = Object.freeze({
 });
 
 const LEGACY_POLICY_ACTION_BY_ADAPTATION_ACTION = Object.freeze({
+  observe_no_intervention: 'summarize_and_check',
   diagnose_with_discriminating_question: 'ask_diagnostic_question',
   elicit_prediction: 'request_elaboration',
   request_evidence: 'request_elaboration',
@@ -436,6 +453,7 @@ function latestClosedRecords(interventionLedger = []) {
 function weightFromText(text, interventionLedger = []) {
   const lower = String(text || '').toLowerCase();
   const weights = {
+    productive_progress: 0.03,
     missing_prerequisite: 0.16,
     low_confidence: 0.16,
     approval_dependency: 0.14,
@@ -464,6 +482,13 @@ function weightFromText(text, interventionLedger = []) {
   }
   if (includesAny(lower, [/not sure/u, /maybe/u, /i think/u, /unsure/u])) {
     weights.low_confidence += 0.26;
+  }
+  if (includesAny(lower, [/\bi would\b/u, /\bi'?ll\b/u, /\bnext i\b/u, /\bmy strategy\b/u, /\bi choose\b/u, /\bi can try\b/u])) {
+    weights.productive_progress += 0.5;
+    weights.low_confidence += 0.04;
+  }
+  if (includesAny(lower, [/\bbecause\b/u, /\btherefore\b/u, /\bso that\b/u, /\binvariant\b/u, /\bdepends on\b/u])) {
+    weights.productive_progress += 0.36;
   }
   if (
     includesAny(lower, [
@@ -729,6 +754,7 @@ function recentSuccessfulDiagnostic(interventionLedger = []) {
 }
 
 const ACTIONABLE_UNDER_UNCERTAINTY = new Set([
+  'productive_progress',
   'answer_seeking',
   'working_memory_overload',
   'notation_overload',

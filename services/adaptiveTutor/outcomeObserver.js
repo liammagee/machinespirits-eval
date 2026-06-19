@@ -17,6 +17,32 @@ export function detectOutcomeEvidence(learnerTurn = '') {
   const rationale = includesAny(lower, [/\bbecause\b/u, /\bso that\b/u, /\btherefore\b/u, /\bpreserve/u, /\binvariant\b/u, /\bdepends on\b/u]);
   const choice = includesAny(lower, [/\bi would\b/u, /\bi'll\b/u, /\bi choose\b/u, /\bmy strategy\b/u, /\bnext i\b/u]);
   const prediction = includesAny(lower, [/\bi predict\b/u, /\bi expect\b/u, /\bwould happen\b/u, /\bwill happen\b/u]);
+  const undifferentiatedHelpRequest = includesAny(lower, [
+    /can you explain more/u,
+    /explain that one more time/u,
+    /could you explain/u,
+    /just explain/u,
+    /where do i start/u,
+    /what am i missing/u,
+  ]);
+  const evidenceOfDeeperGap = includesAny(lower, [
+    /do not know the basic concept/u,
+    /don'?t know the basic concept/u,
+    /need the underlying idea/u,
+    /don'?t even know where to start/u,
+    /genuinely can'?t see/u,
+    /can you explain more/u,
+    /explain it simply/u,
+  ]);
+  const targetedQuestion = includesAny(lower, [
+    /what about/u,
+    /case where/u,
+    /only works if/u,
+    /where'?s the gap/u,
+    /how is that different/u,
+    /what would count as/u,
+    /what changes if/u,
+  ]);
   const diagnostic = includesAny(lower, [
     /prerequisite|basic idea|basic concept|underlying idea|don'?t understand the concept|concept.*missing/u,
     /not sure|low confidence|i think.*but/u,
@@ -30,7 +56,7 @@ export function detectOutcomeEvidence(learnerTurn = '') {
     /another way|alternative|different model/u,
   ]);
   const taskReorientation = includesAny(lower, [/task asks|question asks|we need to|goal is/u]);
-  const modelComparison = includesAny(lower, [/model|method|alternative|compare|instead/u]);
+  const modelComparison = includesAny(lower, [/model|method|alternative|compare|instead|assume x|not-x|case where/u]);
   const selfCheck = includesAny(lower, [/check|recheck|test my|verify/u]);
   const learnerRepair = includesAny(lower, [/i should change|that was wrong|repair|revise|instead i/u]);
   const transfer = includesAny(lower, [/new case|similar problem|transfer|same idea/u]);
@@ -47,13 +73,16 @@ export function detectOutcomeEvidence(learnerTurn = '') {
       'learner-authored application': rationale || transfer,
       'learner-authored transfer': transfer,
       'state-disambiguating response': stateSignal,
+      'targeted question': targetedQuestion,
+      'evidence of deeper gap': evidenceOfDeeperGap,
+      'undifferentiated help request': undifferentiatedHelpRequest,
       'task reorientation': taskReorientation,
       'model comparison': modelComparison,
       'self-check': selfCheck,
       'mere agreement': mereAgreement,
       'verbatim adoption of tutor rationale': tutorAdoption,
       'tutor-completed step': false,
-      'empty release': !choice && !rationale && !prediction && !stateSignal,
+      'empty release': !choice && !rationale && !prediction && !stateSignal && !targetedQuestion,
       'premature tutor validation': false,
     },
     span: evidenceSpan(text),
@@ -110,9 +139,25 @@ export function observeInterventionOutcome({ pendingIntervention, learnerTurn, t
   let outcome = 'inconclusive';
   if (requiredOk && !forbiddenHit) outcome = 'success';
   if (forbiddenHit || evidence.categories['mere agreement']) outcome = 'failure';
-  if (pendingIntervention.action_type === 'diagnose_with_discriminating_question') {
+  const actionType = pendingIntervention.action_type;
+  if (actionType === 'diagnose_with_discriminating_question') {
     if (evidence.categories['state-disambiguating response']) outcome = 'success';
-    else if (evidence.categories['mere agreement']) outcome = 'failure';
+    else if (evidence.categories['mere agreement'] || evidence.categories['undifferentiated help request']) outcome = 'failure';
+  }
+  if (actionType === 'minimal_hint') {
+    if (evidence.categories['learner-authored next step'] && !forbiddenHit) outcome = 'success';
+    else if (evidence.categories['evidence of deeper gap'] || evidence.categories['undifferentiated help request']) outcome = 'failure';
+  }
+  if (['contrast_models', 'name_the_disagreement', 'challenge_without_telling'].includes(actionType)) {
+    if (evidence.categories['model comparison'] || evidence.categories['targeted question']) outcome = 'success';
+  }
+  if (actionType === 'acknowledge_and_redirect') {
+    if (evidence.categories['learner-authored next step'] || evidence.categories['state-disambiguating response']) outcome = 'success';
+    else if (evidence.categories['undifferentiated help request'] || evidence.categories['empty release']) outcome = 'failure';
+  }
+  if (actionType === 'withhold_answer') {
+    if (evidence.categories['learner-authored choice'] || evidence.categories['learner-authored next step']) outcome = 'success';
+    else if (evidence.categories['undifferentiated help request'] || evidence.categories['empty release']) outcome = 'failure';
   }
 
   return {
