@@ -367,6 +367,34 @@ node scripts/analyze-adaptation-quality.js \
   --markdown exports/plan2-1-early-completion-loop2-opus-quality.md
 ```
 
+Tentative Codex quality cross-check while awaiting Opus reset:
+
+| Cell | Run ID | Suite | Status |
+|---|---|---|---|
+| `cell_153_plan2_1_evidence_closed_loop` | `eval-2026-06-19-482a73f1` | Plan 2.1 evidence-bearing held-out | mock complete; Codex complete |
+| `cell_154_plan2_1_evidence_repeat_contextual` | `eval-2026-06-19-f21ac1ef` | Plan 2.1 evidence-bearing held-out | mock complete; Codex complete |
+
+Ignored export cited, not forced into Git:
+
+- `exports/plan2-1-early-completion-loop2-codex-quality.{json,md}`
+
+Codex quality, exact `judge_model = codex-cli/auto`:
+
+| Profile | N | Quality N | Strict shift | Quality composite | Delta vs `cell_153` | Tutor last | Tutor holistic | Learner | Dialogue |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| `cell_153_plan2_1_evidence_closed_loop` | 10 | 10 | 100.0% | 46.7 | 0.0 | 62.4 | 37.3 | 37.8 | 49.4 |
+| `cell_154_plan2_1_evidence_repeat_contextual` | 10 | 10 | 100.0% | 56.6 | +9.9 | 85.1 | 49.3 | 40.6 | 51.6 |
+
+Codex interpretation:
+
+- This is tentative, not a replacement for Opus.
+- Codex strongly supports the early-completion hypothesis: the treatment keeps
+  100% strict shift and improves the quality composite by +9.9 points.
+- The largest movement is tutor last-turn quality (+22.7), exactly where the
+  redundant no-intervention closure was being penalized.
+- Learner and dialogue also move positive, but modestly; this is still
+  simulated evidence only.
+
 Current interpretation:
 
 - The implementation is mechanism-positive and regression-clean, but the loop
