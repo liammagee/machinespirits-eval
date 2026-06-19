@@ -146,6 +146,7 @@ function parseArgs(argv) {
     pairedContinuationPolicies: null,
     pairedAdaptationArms: null,
     generationConcurrency: 1,
+    claudePersistentWorkers: false,
   };
   for (let i = 0; i < argv.length; i++) {
     const t = argv[i];
@@ -170,6 +171,7 @@ function parseArgs(argv) {
     else if (t === '--key') a.keyPath = path.resolve(argv[++i]);
     else if (t === '--writing-pad-dir') a.writingPadDir = path.resolve(argv[++i]);
     else if (t === '--role-map') a.roleMap = parseRoleMap(argv[++i]);
+    else if (t === '--claude-persistent-workers') a.claudePersistentWorkers = true;
     else if (t === '--director-mode') a.directorMode = argv[++i];
     else if (t === '--director-revisit-cue') a.directorRevisitPolicy = 'anchor';
     else if (t === '--director-revisit-policy') a.directorRevisitPolicy = argv[++i];
@@ -1311,6 +1313,21 @@ function withUsage(result, { provider, model, provenance }) {
 const CLAUDE_CLI_TIMEOUT_MS = Number(process.env.GEN_DRAMAS_CLAUDE_TIMEOUT_MS) || 360_000;
 const CLI_TRACE = process.env.GEN_DRAMAS_CLI_TRACE === '1';
 
+function claudeCliEnv() {
+  const env = { ...process.env };
+  delete env.CLAUDE_CODE;
+  delete env.CLAUDECODE;
+  // The run's --effort flag is the single source of truth for the reasoning tier.
+  // A parent session may export CLAUDE_CODE_EFFORT_LEVEL (e.g. =max); left in the
+  // child env it silently overrides --effort, so the run *records* xhigh but
+  // *executes* max — both a latency surprise and a provenance lie. Strip it so
+  // behaviour and provenance agree.
+  delete env.CLAUDE_CODE_EFFORT_LEVEL;
+  delete env.ANTHROPIC_API_KEY; // force subscription window, not metered API
+  delete env.ANTHROPIC_AUTH_TOKEN;
+  return env;
+}
+
 function callClaudeCli(systemPrompt, userPrompt, model, effort, role) {
   const start = Date.now();
   return new Promise((resolve, reject) => {
@@ -1322,18 +1339,7 @@ function callClaudeCli(systemPrompt, userPrompt, model, effort, role) {
     // default (preserves the original default-effort claude arm); pinned → recorded
     // in provenance below so the run carries its own reasoning setting.
     if (effort) args.push('--effort', effort);
-    const env = { ...process.env };
-    delete env.CLAUDE_CODE;
-    delete env.CLAUDECODE;
-    // The run's --effort flag is the single source of truth for the reasoning tier.
-    // A parent session may export CLAUDE_CODE_EFFORT_LEVEL (e.g. =max); left in the
-    // child env it silently overrides --effort, so the run *records* xhigh but
-    // *executes* max — both a latency surprise and a provenance lie. Strip it so
-    // behaviour and provenance agree.
-    delete env.CLAUDE_CODE_EFFORT_LEVEL;
-    delete env.ANTHROPIC_API_KEY; // force subscription window, not metered API
-    delete env.ANTHROPIC_AUTH_TOKEN;
-    const child = spawn('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], env });
+    const child = spawn('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], env: claudeCliEnv() });
     let out = '';
     let err = '';
     const to = setTimeout(() => {
@@ -1386,6 +1392,238 @@ function callClaudeCli(systemPrompt, userPrompt, model, effort, role) {
     child.stdin.write(userPrompt);
     child.stdin.end();
   });
+}
+
+function extractClaudeStreamText(event) {
+  if (!event) return '';
+  if (typeof event.result === 'string') return event.result;
+  const content = event.message?.content || event.content;
+  if (typeof content === 'string') return content;
+  if (!Array.isArray(content)) return '';
+  return content
+    .map((part) => {
+      if (!part) return '';
+      if (typeof part === 'string') return part;
+      if (part.type === 'text' && typeof part.text === 'string') return part.text;
+      return '';
+    })
+    .filter(Boolean)
+    .join('');
+}
+
+class ClaudeStreamWorker {
+  constructor({ systemPrompt, model, effort, role, key }) {
+    this.systemPrompt = systemPrompt;
+    this.model = model;
+    this.effort = effort;
+    this.role = role;
+    this.key = key;
+    this.child = null;
+    this.buffer = '';
+    this.stderr = '';
+    this.pending = null;
+    this.queue = Promise.resolve();
+    this.closed = false;
+  }
+
+  start() {
+    if (this.child) return;
+    const args = [
+      '-p',
+      '--input-format',
+      'stream-json',
+      '--output-format',
+      'stream-json',
+      '--system-prompt',
+      this.systemPrompt,
+      '--no-session-persistence',
+    ];
+    if (this.model) args.push('--model', this.model);
+    if (this.effort) args.push('--effort', this.effort);
+    this.child = spawn('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], env: claudeCliEnv() });
+    this.child.stdout.on('data', (chunk) => this.onStdout(chunk));
+    this.child.stderr.on('data', (chunk) => {
+      this.stderr += chunk;
+    });
+    this.child.on('error', (err) => this.failPending(err));
+    this.child.on('close', (code) => {
+      this.closed = true;
+      this.failPending(
+        new Error(this.stderr.trim() || `persistent claude worker exited ${code} (role=${this.role}, key=${this.key})`),
+      );
+    });
+    if (CLI_TRACE) console.error(`[gen-cli] persistent claude worker start role=${this.role} key=${this.key}`);
+  }
+
+  call(userPrompt, role) {
+    this.queue = this.queue.then(() => this.callOne(userPrompt, role));
+    return this.queue;
+  }
+
+  callOne(userPrompt, role) {
+    if (this.closed) throw new Error(`persistent claude worker is closed (role=${this.role}, key=${this.key})`);
+    this.start();
+    const start = Date.now();
+    return new Promise((resolve, reject) => {
+      const to = setTimeout(() => {
+        this.failPending(
+          new Error(`persistent claude worker timed out after ${CLAUDE_CLI_TIMEOUT_MS}ms (role=${role}, key=${this.key})`),
+        );
+      }, CLAUDE_CLI_TIMEOUT_MS);
+      this.pending = {
+        role,
+        userPrompt,
+        start,
+        output: '',
+        resolve: (content) => {
+          clearTimeout(to);
+          const latencyMs = Date.now() - start;
+          if (CLI_TRACE) {
+            console.error(`[gen-cli] persistent role=${role} ${latencyMs}ms ${content.length}b key=${this.key}`);
+          }
+          resolve({
+            content: String(content || '').trim(),
+            latencyMs,
+            provenance: buildCallProvenance({
+              agentRole: role,
+              backend: 'claude',
+              cli: 'claude-stream-json',
+              model: this.model || 'default',
+              reasoningEffort: this.effort || null,
+              systemPrompt: this.systemPrompt,
+              userPrompt,
+              latencyMs,
+              args: [
+                '-p',
+                '--input-format',
+                'stream-json',
+                '--output-format',
+                'stream-json',
+                '--system-prompt',
+                `<sha256:${sha256Short(this.systemPrompt)}>`,
+                '--no-session-persistence',
+                ...(this.model ? ['--model', this.model] : []),
+                ...(this.effort ? ['--effort', this.effort] : []),
+              ],
+            }),
+          });
+        },
+        reject: (err) => {
+          clearTimeout(to);
+          reject(err);
+        },
+      };
+      const payload = {
+        type: 'user',
+        message: {
+          role: 'user',
+          content: userPrompt,
+        },
+      };
+      this.child.stdin.write(`${JSON.stringify(payload)}\n`);
+    });
+  }
+
+  onStdout(chunk) {
+    this.buffer += chunk;
+    let idx;
+    while ((idx = this.buffer.indexOf('\n')) >= 0) {
+      const line = this.buffer.slice(0, idx).trim();
+      this.buffer = this.buffer.slice(idx + 1);
+      if (!line) continue;
+      let event;
+      try {
+        event = JSON.parse(line);
+      } catch (_) {
+        this.failPending(new Error(`invalid claude stream-json line: ${line.slice(0, 200)}`));
+        continue;
+      }
+      this.onEvent(event);
+    }
+  }
+
+  onEvent(event) {
+    if (event.type === 'assistant') {
+      const text = extractClaudeStreamText(event);
+      if (text && this.pending) this.pending.output += text;
+      return;
+    }
+    if (event.type === 'error' || event.is_error) {
+      this.failPending(new Error(event.message || event.error || JSON.stringify(event)));
+      return;
+    }
+    if (event.type !== 'result') return;
+    const text = extractClaudeStreamText(event) || this.pending?.output || '';
+    const pending = this.pending;
+    this.pending = null;
+    if (pending) pending.resolve(text);
+  }
+
+  failPending(err) {
+    const pending = this.pending;
+    this.pending = null;
+    if (pending) pending.reject(err);
+  }
+
+  close() {
+    if (!this.child || this.closed) return;
+    this.closed = true;
+    try {
+      this.child.stdin.end();
+    } catch (_) {
+      /* ignore */
+    }
+    try {
+      this.child.kill('SIGTERM');
+    } catch (_) {
+      /* ignore */
+    }
+  }
+}
+
+class ClaudePersistentPool {
+  constructor({ model, effort }) {
+    this.model = model;
+    this.effort = effort;
+    this.workers = new Map();
+    this.disabledReason = null;
+  }
+
+  workerKey(systemPrompt, role) {
+    return `${role || 'gen'}:${this.model || 'default'}:${this.effort || 'default'}:${sha256Short(systemPrompt)}`;
+  }
+
+  async call(systemPrompt, userPrompt, role) {
+    if (this.disabledReason) return callClaudeCli(systemPrompt, userPrompt, this.model, this.effort, role);
+    const key = this.workerKey(systemPrompt, role);
+    let worker = this.workers.get(key);
+    if (!worker) {
+      worker = new ClaudeStreamWorker({
+        systemPrompt,
+        model: this.model,
+        effort: this.effort,
+        role: role || 'gen',
+        key,
+      });
+      this.workers.set(key, worker);
+    }
+    try {
+      return await worker.call(userPrompt, role || 'gen');
+    } catch (err) {
+      worker.close();
+      this.workers.delete(key);
+      this.disabledReason = err?.message || String(err);
+      console.warn(
+        `[warn] persistent Claude worker failed; falling back to one-shot claude CLI for this run: ${this.disabledReason}`,
+      );
+      return callClaudeCli(systemPrompt, userPrompt, this.model, this.effort, role);
+    }
+  }
+
+  close() {
+    for (const worker of this.workers.values()) worker.close();
+    this.workers.clear();
+  }
 }
 
 // ── codex exec CLI bridge (mirrors score-poetics-calibration.js:callCodex) ───
@@ -1640,16 +1878,21 @@ async function callApiModel(systemPrompt, userPrompt, modelKey, role) {
 
 // runInteraction's llmCall contract: (model, systemPrompt, messages, opts) →
 // {content, usage}. We IGNORE the per-profile model and force claude-code.
-function makeClaudeLlmCall(modelAlias, effort) {
-  return async function claudeLlmCall(_model, systemPrompt, messages, opts = {}) {
+function makeClaudeLlmCall(modelAlias, effort, options = {}) {
+  const pool = options.persistentWorkers ? new ClaudePersistentPool({ model: modelAlias, effort }) : null;
+  const claudeLlmCall = async function claudeLlmCall(_model, systemPrompt, messages, opts = {}) {
     const userPrompt = (messages || []).map((m) => m.content).join('\n');
-    const result = await callClaudeCli(systemPrompt, userPrompt, modelAlias, effort, opts.agentRole || 'gen');
+    const result = pool
+      ? await pool.call(systemPrompt, userPrompt, opts.agentRole || 'gen')
+      : await callClaudeCli(systemPrompt, userPrompt, modelAlias, effort, opts.agentRole || 'gen');
     return withUsage(result, {
       provider: 'claude-code',
-      model: `claude/${modelAlias || 'default'}${effort ? `@${effort}` : ''}`,
+      model: `claude/${modelAlias || 'default'}${effort ? `@${effort}` : ''}${pool ? '#persistent-workers' : ''}`,
       provenance: result.provenance,
     });
   };
+  claudeLlmCall.close = () => pool?.close();
+  return claudeLlmCall;
 }
 
 // Same contract via codex exec. The per-profile model is ignored; system +
@@ -1781,12 +2024,22 @@ function resolveBackend(agentRole, roleMap, fallback) {
 // Router llmCall: dispatch each role to its resolved backend. Under --mock both
 // backends are the same stub, but the route decision is still computed + logged
 // (GEN_DRAMAS_CLI_TRACE=1) so routing can be smoke-tested for free.
-function makeRouterLlmCall({ roleMap, fallback, claudeModelAlias, claudeEffort, apiModelKey, mock }) {
-  const claudeBridge = mock ? makeMockLlmCall('claude') : makeClaudeLlmCall(claudeModelAlias, claudeEffort);
+function makeRouterLlmCall({
+  roleMap,
+  fallback,
+  claudeModelAlias,
+  claudeEffort,
+  apiModelKey,
+  mock,
+  claudePersistentWorkers = false,
+}) {
+  const claudeBridge = mock
+    ? makeMockLlmCall('claude')
+    : makeClaudeLlmCall(claudeModelAlias, claudeEffort, { persistentWorkers: claudePersistentWorkers });
   const codexBridge = mock ? makeMockLlmCall('codex') : makeCodexLlmCall();
   const geminiBridge = mock ? makeMockLlmCall('gemini') : makeGeminiLlmCall();
   const apiBridge = mock ? makeMockLlmCall('api') : makeApiLlmCall(apiModelKey);
-  return async function routerLlmCall(model, systemPrompt, messages, opts = {}) {
+  const routerLlmCall = async function routerLlmCall(model, systemPrompt, messages, opts = {}) {
     const backend = resolveBackend(opts.agentRole, roleMap, fallback);
     if (CLI_TRACE) console.error(`[gen-route] role=${opts.agentRole || '?'} → ${backend}`);
     const bridge =
@@ -1799,6 +2052,8 @@ function makeRouterLlmCall({ roleMap, fallback, claudeModelAlias, claudeEffort, 
             : claudeBridge;
     return bridge(model, systemPrompt, messages, opts);
   };
+  routerLlmCall.close = () => claudeBridge.close?.();
+  return routerLlmCall;
 }
 
 // ── teaching-drama director ─────────────────────────────────────────────────
@@ -2714,7 +2969,9 @@ function generatorModelLabel(args) {
   // to `${args.model}` (which defaults to 'opus'), so api/sonnet runs were recorded
   // — in the banner AND the key — as "opus". Name the real model explicitly.
   if (args.generator === 'api') return `api/${resolveApiModel(args.apiModel) || args.apiModel}`;
-  return `claude-cli/${args.model}${args.effort ? `@${args.effort}` : ''}`;
+  return `claude-cli/${args.model}${args.effort ? `@${args.effort}` : ''}${
+    args.claudePersistentWorkers ? '#persistent-workers' : ''
+  }`;
 }
 
 function formatHeldOutEntryContent(entry) {
@@ -2968,7 +3225,9 @@ function baseKeyObject({
     model: args.mock
       ? null
       : args.roleMap
-        ? `mixed (claude=${args.model}${args.effort ? `@${args.effort}` : ''}, codex=config-default@${CODEX_REASONING_EFFORT})`
+        ? `mixed (claude=${args.model}${args.effort ? `@${args.effort}` : ''}${
+            args.claudePersistentWorkers ? '#persistent-workers' : ''
+          }, codex=config-default@${CODEX_REASONING_EFFORT})`
         : generatorModelLabel(args),
     codex_reasoning_effort: CODEX_REASONING_EFFORT,
     writing_pad: runtime.writingPad,
@@ -3361,7 +3620,9 @@ async function main() {
           ? `REAL (agy/${GEMINI_MODEL})`
           : args.generator === 'api'
             ? `REAL (api/${resolveApiModel(args.apiModel) || args.apiModel} via OpenRouter, metered)`
-            : `REAL (claude CLI --model ${args.model}${args.effort ? ` --effort ${args.effort}` : ''}, Max-plan quota)`;
+            : `REAL (claude CLI --model ${args.model}${args.effort ? ` --effort ${args.effort}` : ''}${
+                args.claudePersistentWorkers ? ' · persistent workers' : ''
+              }, Max-plan quota)`;
   console.log(`\n══ Phase-2 de-confound generator — ${genLabel} ══`);
   console.log(
     `  generator: ${args.roleMap ? 'mixed' : args.generator} · dramas: ${order.length} · maxTurns: ${args.maxTurns} · ` +
@@ -3425,6 +3686,7 @@ async function main() {
         claudeEffort: args.effort,
         apiModelKey: args.apiModel,
         mock: args.mock,
+        claudePersistentWorkers: args.claudePersistentWorkers,
       })
     : args.mock
       ? makeMockLlmCall(args.generator)
@@ -3434,9 +3696,13 @@ async function main() {
           ? makeGeminiLlmCall()
           : args.generator === 'api'
             ? makeApiLlmCall(args.apiModel)
-            : makeClaudeLlmCall(args.model, args.effort);
+            : makeClaudeLlmCall(args.model, args.effort, { persistentWorkers: args.claudePersistentWorkers });
   if (args.pairedContinuationPolicies || args.pairedAdaptationArms) {
-    await generatePairedContinuations({ args, order, runtime, llmCall });
+    try {
+      await generatePairedContinuations({ args, order, runtime, llmCall });
+    } finally {
+      await llmCall.close?.();
+    }
     return;
   }
   const keyItems = {};
@@ -3623,6 +3889,8 @@ async function main() {
   } catch (err) {
     progress.stop();
     throw err;
+  } finally {
+    await llmCall.close?.();
   }
   for (const result of generatedResults) {
     if (result.keyItem) keyItems[result.tid] = result.keyItem;

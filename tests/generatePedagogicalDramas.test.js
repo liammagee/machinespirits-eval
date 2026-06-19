@@ -16,6 +16,7 @@ import {
   noCuePrematureClosureFailures,
   noCueReframeLeakageFailures,
   pairedBranchDefinitions,
+  parseArgs,
   qualityWarningsFor,
   reframeMatchStats,
   stageDirectionStyleFor,
@@ -48,6 +49,11 @@ function warningsForReframeLine({ tid, dramaId, anchor, learnerText }) {
 }
 
 describe('generate-pedagogical-dramas', () => {
+  it('parses opt-in persistent Claude workers without changing the default bridge', () => {
+    assert.equal(parseArgs([]).claudePersistentWorkers, false);
+    assert.equal(parseArgs(['--claude-persistent-workers']).claudePersistentWorkers, true);
+  });
+
   it('renders public speaker turns as quoted direct speech with square-bracket action asides', () => {
     assert.equal(
       formatPublicTurnText('TUTOR', '(points at the graph) Try line two.'),
