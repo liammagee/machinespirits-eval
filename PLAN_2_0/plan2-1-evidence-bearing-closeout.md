@@ -3,7 +3,7 @@
 Date: 2026-06-19
 Branch head before this implementation: `258ea857`
 Initial evidence-suite commit: `8f4c98fc`
-Status: third implementation loop complete; provisional simulated mechanism evidence positive under mock; Opus-only full quality pass positive but still quality-limited
+Status: early-completion loop complete; provisional simulated mechanism evidence positive under mock; Opus and tentative Codex quality passes positive but still quality-limited
 
 ## Implemented
 
@@ -302,8 +302,8 @@ Fresh runs:
 
 | Cell | Run ID | Suite | Status |
 |---|---|---|---|
-| `cell_153_plan2_1_evidence_closed_loop` | `eval-2026-06-19-e8bea8ff` | Plan 2.1 evidence-bearing held-out | mock complete; Opus partial, stopped at session limit |
-| `cell_154_plan2_1_evidence_repeat_contextual` | `eval-2026-06-19-a19b2e8a` | Plan 2.1 evidence-bearing held-out | mock complete; Opus pending |
+| `cell_153_plan2_1_evidence_closed_loop` | `eval-2026-06-19-e8bea8ff` | Plan 2.1 evidence-bearing held-out | mock complete; Opus complete |
+| `cell_154_plan2_1_evidence_repeat_contextual` | `eval-2026-06-19-a19b2e8a` | Plan 2.1 evidence-bearing held-out | mock complete; Opus complete |
 | `cell_150_plan2_quality_repeat_contextual_crosssuite` | `eval-2026-06-19-743f6e70` | cross-suite traps | mock regression complete |
 | `cell_152_plan2_pair_specificity_repeat_contextual` | `eval-2026-06-19-a5f74a31` | paired counterfactual suite | mock regression complete |
 
@@ -315,6 +315,7 @@ Ignored exports cited, not forced into Git:
 - `exports/plan2-1-early-completion-loop2-outcome-closure.{json,md}`
 - `exports/plan2-1-early-completion-loop2-crosssuite-strategy-shift.json`
 - `exports/plan2-1-early-completion-loop2-paired-specificity.{json,md}`
+- `exports/plan2-1-early-completion-loop2-opus-quality.{json,md}`
 
 Mechanism results:
 
@@ -341,31 +342,24 @@ Observed behavior:
   closed intervention ledger.
 - `cell_153` stayed at four tutor turns on all ten held-out rows.
 
-Opus status:
+Opus quality, exact `judge_model = claude-code/opus`:
 
-- Opus scored five baseline rows before the Claude CLI returned
-  "You've hit your session limit; resets 2pm (America/Chicago)."
-- Partial baseline means are not a result. At the interruption point,
-  `cell_153` had five Opus rows with tutor-last mean 62.0, tutor-holistic mean
-  61.0, learner mean 38.3, and dialogue mean 46.0.
-- `cell_154` has not yet been Opus-scored in this loop.
+| Profile | N | Quality N | Strict shift | Quality composite | Delta vs `cell_153` | Tutor last | Tutor holistic | Learner | Dialogue |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| `cell_153_plan2_1_evidence_closed_loop` | 10 | 10 | 100.0% | 51.5 | 0.0 | 62.0 | 61.4 | 35.2 | 47.2 |
+| `cell_154_plan2_1_evidence_repeat_contextual` | 10 | 10 | 100.0% | 63.2 | +11.7 | 83.3 | 70.8 | 39.7 | 58.9 |
 
-Resume commands after the Opus reset:
+Opus interpretation:
 
-```bash
-node scripts/eval-cli.js evaluate eval-2026-06-19-e8bea8ff \
-  --judge-cli claude --model opus --skip-deliberation --parallelism 1 --verbose
-
-node scripts/eval-cli.js evaluate eval-2026-06-19-a19b2e8a \
-  --judge-cli claude --model opus --skip-deliberation --parallelism 1 --verbose
-
-node scripts/analyze-adaptation-quality.js \
-  --run-id eval-2026-06-19-e8bea8ff,eval-2026-06-19-a19b2e8a \
-  --judge-model claude-code/opus \
-  --baseline cell_153_plan2_1_evidence_closed_loop \
-  --out exports/plan2-1-early-completion-loop2-opus-quality.json \
-  --markdown exports/plan2-1-early-completion-loop2-opus-quality.md
-```
+- The resumed Opus pass completes the quality verdict for this loop.
+- `cell_154` preserves 100% strict shift and improves the quality composite by
+  +11.7 points over `cell_153`.
+- The largest movement is tutor last-turn quality (+21.3), matching the
+  diagnosis that the previous residual failure was redundant closure after the
+  learner already owned a workable next move.
+- Learner and dialogue quality also move positive, but the absolute learner
+  mean remains low; this is simulated transcript-quality evidence, not a human
+  learning claim.
 
 Tentative Codex quality cross-check while awaiting Opus reset:
 
@@ -397,10 +391,10 @@ Codex interpretation:
 
 Current interpretation:
 
-- The implementation is mechanism-positive and regression-clean, but the loop
-  does not yet have a complete Opus quality verdict.
-- If the resumed Opus pass shows `cell_154` improves quality, this would be a
-  stronger transcript-length/completion fix than another wording iteration.
-- If Opus turns negative, the failure family should be recorded as "early
-  completion removes judged pedagogical closure" and the change should be
-  reconsidered rather than tuned blindly.
+- The implementation is mechanism-positive, regression-clean, and now
+  Opus-positive under an exact judge filter.
+- This is stronger evidence for a transcript-length/completion fix than for
+  another prompt-wording iteration: the treatment removes redundant closure,
+  preserves the adaptation ledger, and improves Opus-judged quality.
+- The remaining limits are important: evidence is simulated, mock-learner based,
+  and quality-limited by weak absolute learner scores on several rows.
