@@ -225,6 +225,11 @@ export const AdaptiveTutorState = new StateSchema({
     actualSophistication: z.enum(['novice', 'intermediate', 'advanced']).default('intermediate'),
     triggerTurn: z.number().int().default(-1),
     triggerSignal: z.string().default(''),
+    // Optional mock-only response script used by held-out mechanism suites.
+    // Real learner generation ignores this field; the runner keeps it inside
+    // hiddenLearnerState so persisted traces fully describe deterministic
+    // mock closure behavior.
+    scriptedResponses: z.record(z.string(), z.string()).default(() => ({})),
   }),
 
   turn: z.number().int().default(0),

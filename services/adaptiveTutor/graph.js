@@ -631,6 +631,11 @@ async function learnerTurn(state) {
     tutorLastMessage,
     hidden: state.hiddenLearnerState,
     turn: state.turn,
+    actionType:
+      state.tutorInternal?.adaptationAction ||
+      state.selectedPedagogicalAction?.action_type ||
+      state.tutorInternal?.policyAction ||
+      '',
   });
   return { dialogue: [{ role: 'learner', content: text }], turn: state.turn + 1 };
 }

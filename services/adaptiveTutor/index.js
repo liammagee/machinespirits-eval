@@ -61,6 +61,7 @@ function toRunnerScenario(yamlScenario, runIndex) {
       actualSophistication: yamlScenario.hidden?.actual_sophistication || 'intermediate',
       triggerTurn: yamlScenario.hidden?.trigger_turn ?? 1,
       triggerSignal: yamlScenario.hidden?.trigger_signal || '',
+      scriptedResponses: yamlScenario.hidden?.scripted_responses || yamlScenario.scripted_responses || {},
     },
     openingTurns: yamlScenario.opening_turns || [{ role: 'learner', content: yamlScenario.opening || 'Hi.' }],
     maxTurns: yamlScenario.max_turns ?? 4,

@@ -380,8 +380,13 @@ const fixtures = {
     return { newSystemPrompt, detectedFrustrationSignal: signal, correctiveDirective: directive };
   },
 
-  learnerTurn: ({ tutorLastMessage, hidden, turn }) => {
+  learnerTurn: ({ tutorLastMessage, hidden, turn, actionType }) => {
     if (turn === hidden.triggerTurn) return hidden.triggerSignal || 'I have a different read on that.';
+    const scripted = hidden?.scriptedResponses || {};
+    const canUseScript = turn > Number(hidden?.triggerTurn ?? -1);
+    if (canUseScript && actionType && scripted[actionType]) return scripted[actionType];
+    if (canUseScript && scripted[`turn_${turn}`]) return scripted[`turn_${turn}`];
+    if (canUseScript && scripted.default) return scripted.default;
     if (/ask you something/i.test(tutorLastMessage || '')) return 'OK, let me try.';
     if (hidden.actualSophistication === 'advanced')
       return 'But that only works if we assume X — what about the case where not-X?';

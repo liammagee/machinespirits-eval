@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import test from 'node:test';
+import yaml from 'yaml';
 import {
   buildBeliefCalibrationReport,
   inferExpectedHypothesis,
@@ -104,3 +106,15 @@ test('buildBeliefCalibrationReport aggregates profile calibration metrics', () =
   assert.equal(profile.unsupportedHighConfidenceN, 0);
 });
 
+test('Plan 2.1 evidence-bearing suite declares belief labels and mock closure scripts', () => {
+  const doc = yaml.parse(fs.readFileSync('config/adaptive-plan2-1-evidence-bearing-scenarios.yaml', 'utf8'));
+  const scenarios = doc.scenarios || [];
+
+  assert.equal(scenarios.length, 10);
+  for (const scenario of scenarios) {
+    assert.ok(scenario.expected_belief_hypothesis, scenario.id);
+    assert.ok(scenario.expected_adaptation_action, scenario.id);
+    assert.ok(Number(scenario.max_turns) >= 4, scenario.id);
+    assert.equal(scenario.hidden?.scripted_responses?.[scenario.expected_adaptation_action] != null, true, scenario.id);
+  }
+});
