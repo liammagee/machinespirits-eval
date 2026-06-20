@@ -14,6 +14,7 @@ import {
   intrusiveStageDirectionFailures,
   keyItemFor,
   loadApproachDatabases,
+  makeCallTelemetryRecorder,
   noCuePrematureClosureFailures,
   noCueReframeLeakageFailures,
   pairedBranchDefinitions,
@@ -25,9 +26,11 @@ import {
   selectFirstLessonDrama,
   stageDirectionStyleFor,
   withAffectiveAdaptationPolicy,
+  withControlEndingPolicy,
   withPairedDirectorRevisitCue,
   withTutorAdaptationPolicy,
   withWorldAdaptationConstraints,
+  writeCallTelemetryArtifacts,
   writePartialTurnArtifacts,
 } from '../scripts/generate-pedagogical-dramas.js';
 
@@ -59,6 +62,66 @@ describe('generate-pedagogical-dramas', () => {
   it('parses opt-in persistent Claude workers without changing the default bridge', () => {
     assert.equal(parseArgs([]).claudePersistentWorkers, false);
     assert.equal(parseArgs(['--claude-persistent-workers']).claudePersistentWorkers, true);
+  });
+
+  it('parses control-ending and call-telemetry output paths', () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'drama-gen-telemetry-args-'));
+    const jsonPath = path.join(tmp, 'calls.json');
+    const csvPath = path.join(tmp, 'calls.csv');
+    const args = parseArgs([
+      '--control-ending',
+      'hold',
+      '--call-telemetry-json',
+      jsonPath,
+      '--call-telemetry-csv',
+      csvPath,
+    ]);
+
+    assert.equal(args.controlEndingPolicy, 'hold');
+    assert.equal(args.traceCalls, true);
+    assert.equal(args.callTelemetryJsonPath, jsonPath);
+    assert.equal(args.callTelemetryCsvPath, csvPath);
+    assert.throws(() => parseArgs(['--control-ending', 'breakthrough']), /default\|hold/);
+  });
+
+  it('persists call telemetry as json and csv without prompt contents', () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'drama-gen-call-telemetry-'));
+    const jsonPath = path.join(tmp, 'call-telemetry.json');
+    const csvPath = path.join(tmp, 'call-telemetry.csv');
+    const recorder = makeCallTelemetryRecorder({ enabled: true, jsonPath, csvPath });
+
+    recorder.record({
+      startedAt: Date.parse('2026-06-20T00:00:00.000Z'),
+      finishedAt: Date.parse('2026-06-20T00:00:01.250Z'),
+      requestedModel: 'haiku',
+      systemPrompt: 'secret system prompt that must not be written',
+      userPrompt: 'secret user prompt that must not be written',
+      opts: { agentRole: 'learner_ego' },
+      response: {
+        content: 'public output',
+        provider: 'claude',
+        model: 'haiku',
+        latencyMs: 1250,
+        provenance: {
+          backend: 'claude',
+          cli: 'claude-stream-json',
+          model: 'haiku',
+          reasoningEffort: 'low',
+          agentRole: 'learner_ego',
+          worker: { persistent: true, key: 'worker-key', reused: false, created: true },
+        },
+      },
+    });
+
+    const payload = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+    const csv = fs.readFileSync(csvPath, 'utf8');
+    assert.equal(payload.summary.count, 1);
+    assert.equal(payload.records[0].role, 'learner_ego');
+    assert.equal(payload.records[0].prompt_chars.system, 'secret system prompt that must not be written'.length);
+    assert.equal(payload.records[0].worker.created, true);
+    assert.doesNotMatch(JSON.stringify(payload), /secret system prompt/);
+    assert.doesNotMatch(csv, /secret user prompt/);
+    assert.match(csv, /learner_ego/);
   });
 
   it('parses first-lesson and affective adaptation options', () => {
@@ -670,6 +733,9 @@ describe('generate-pedagogical-dramas', () => {
     assert.match(plan.tutor_adaptation_contract, /superego should name the failed habit/);
     assert.match(plan.tutor_adaptation_contract, /mechanism-quality risk/);
     assert.match(plan.tutor_adaptation_contract, /ego must adjudicate that critique and enact the route change/);
+    assert.match(plan.tutor_adaptation_contract, /old route, prior route, same route, or current check/);
+    assert.match(plan.tutor_adaptation_contract, /no longer settles, is not enough, cannot decide, or has stopped working/);
+    assert.match(plan.tutor_adaptation_contract, /new route, new device, changed standard/);
     assert.match(
       plan.tutor_adaptation_contract,
       /object, counterexample, interruption, social consequence, representation, or affective register/,
@@ -677,10 +743,50 @@ describe('generate-pedagogical-dramas', () => {
     assert.match(plan.tutor_adaptation_contract, /stock-taking contrast plus a new device/);
     assert.match(plan.tutor_adaptation_contract, /earned learner reorientation/);
     assert.match(plan.tutor_adaptation_contract, /Cheerful informality is only one possible register/);
-    assert.match(plan.side_constraints.tutor, /what stopped working, and what new device/);
+    assert.match(plan.side_constraints.tutor, /what old route no longer settles or cannot decide/);
+    assert.match(plan.side_constraints.tutor, /what new device, gate, criterion, standard, counterexample/);
+    assert.match(plan.side_constraints.tutor, /blind scorer can quote both/);
     assert.match(plan.side_constraints.tutor, /device is fitted to the exact pressure/);
     assert.equal(plan.peripeteia_ending_shape, 'learner actional performance followed by earned learner reorientation');
     assert.equal(plan.ending_speaker, 'learner');
+  });
+
+  it('adds hold endings only to non-adaptive control arms', () => {
+    const routinePlan = withControlEndingPolicy(
+      {
+        tutor_adaptation_policy: 'routine',
+        ending_speaker: 'learner',
+        side_constraints: { tutor: 'Use the table.', learner: 'Stay local.' },
+        interventions: [
+          { cue_kind: 'learner_revisit_earlier_wording' },
+          { cue_kind: 'learner_reversal_pressure' },
+          { cue_kind: 'ordinary_scene' },
+        ],
+      },
+      'hold',
+      { _tutorAdaptationPolicy: 'routine' },
+    );
+
+    assert.equal(routinePlan.control_ending_policy, 'hold');
+    assert.equal(routinePlan.control_ending_applied, true);
+    assert.equal(routinePlan.ending_speaker, 'learner');
+    assert.match(routinePlan.side_constraints.tutor, /Control-ending hold/);
+    assert.match(routinePlan.side_constraints.learner, /do not volunteer a full re-reading/);
+    assert.deepEqual(
+      routinePlan.interventions.map((cue) => cue.cue_kind),
+      ['ordinary_scene'],
+    );
+
+    const adaptivePlan = withControlEndingPolicy(
+      withTutorAdaptationPolicy({ interventions: [] }, 'peripeteia'),
+      'hold',
+      { _tutorAdaptationPolicy: 'peripeteia' },
+    );
+
+    assert.equal(adaptivePlan.control_ending_policy, 'hold');
+    assert.equal(adaptivePlan.control_ending_applied, false);
+    assert.equal(adaptivePlan.peripeteia_ending_shape, 'learner actional performance followed by earned learner reorientation');
+    assert.ok(adaptivePlan.interventions.some((cue) => cue.cue_kind === 'learner_reversal_pressure'));
   });
 
   it('adds a procedural-sensitive affective adaptation layer to director plans', () => {

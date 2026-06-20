@@ -65,6 +65,7 @@
  *        --out-dir / --key · --delib-dir / --transcripts-dir / --writing-pad-dir
  *        --generator claude|codex|gemini · --role-map "tutor=codex,learner=claude" (mixed)
  *        --opening-speaker learner|tutor|director (override spec/director speaker order)
+ *        --control-ending default|hold (control arms only; hold suppresses clean breakthrough endings)
  *        --director-revisit-cue (anchor shorthand) · --director-revisit-policy none|anchor|revoice|reconsider|reframe
  *        --director-revisit-anchor latest|opening|misframing-candidate
  *        --director-variation-key <repeat-or-batch-id>
@@ -97,6 +98,7 @@ const DIRECTOR_REVISIT_ANCHORS = new Set(['latest', 'opening', 'misframing-candi
 const TUTOR_ADAPTATION_POLICIES = new Set(['none', 'routine', 'uptake', 'peripeteia', 'uptake+peripeteia']);
 const AFFECTIVE_ADAPTATION_POLICIES = new Set(['none', 'procedural_sensitive']);
 const OPENING_SPEAKERS = new Set(['learner', 'tutor', 'director']);
+const CONTROL_ENDING_POLICIES = new Set(['default', 'hold']);
 // claude CLI reasoning tiers (`claude --effort <level>`). codex tops out at xhigh;
 // the claude CLI adds a `max` tier above it. Used by the claude backend only —
 // agy exposes no effort flag, and codex reads CODEX_REASONING_EFFORT (env).
@@ -151,9 +153,12 @@ function parseArgs(argv) {
     pairedContinuationPolicies: null,
     pairedAdaptationArms: null,
     affectiveAdaptationPolicy: null,
+    controlEndingPolicy: 'default',
     generationConcurrency: 1,
     claudePersistentWorkers: false,
     traceCalls: process.env.GEN_DRAMAS_TRACE_CALLS === '1',
+    callTelemetryJsonPath: null,
+    callTelemetryCsvPath: null,
   };
   for (let i = 0; i < argv.length; i++) {
     const t = argv[i];
@@ -187,7 +192,14 @@ function parseArgs(argv) {
     else if (t === '--director-revisit-anchor') a.directorRevisitAnchor = argv[++i];
     else if (t === '--director-variation-key') a.directorVariationKey = argv[++i];
     else if (t === '--opening-speaker') a.openingSpeaker = String(argv[++i] || '').toLowerCase();
-    else if (t === '--affective-adaptation-policy') a.affectiveAdaptationPolicy = argv[++i];
+    else if (t === '--control-ending') a.controlEndingPolicy = argv[++i];
+    else if (t === '--call-telemetry-json') {
+      a.callTelemetryJsonPath = path.resolve(argv[++i]);
+      a.traceCalls = true;
+    } else if (t === '--call-telemetry-csv') {
+      a.callTelemetryCsvPath = path.resolve(argv[++i]);
+      a.traceCalls = true;
+    } else if (t === '--affective-adaptation-policy') a.affectiveAdaptationPolicy = argv[++i];
     else if (t === '--paired-continuation-policies') {
       a.pairedContinuationPolicies = String(argv[++i] || '')
         .split(',')
@@ -216,6 +228,9 @@ function parseArgs(argv) {
     throw new Error(
       `--affective-adaptation-policy must be ${[...AFFECTIVE_ADAPTATION_POLICIES].join('|')} (got ${a.affectiveAdaptationPolicy})`,
     );
+  }
+  if (!CONTROL_ENDING_POLICIES.has(a.controlEndingPolicy)) {
+    throw new Error('--control-ending must be default|hold');
   }
   if (a.pedagogyDb && !fs.existsSync(a.pedagogyDb)) throw new Error(`--pedagogy-db not found: ${a.pedagogyDb}`);
   if (a.dialogueDb && !fs.existsSync(a.dialogueDb)) throw new Error(`--dialogue-db not found: ${a.dialogueDb}`);
@@ -275,6 +290,10 @@ function parseArgs(argv) {
   a.transcriptsDir = a.transcriptsDir || path.join(CAL_DIR, `phase2-transcripts-${base}${suffix}`);
   a.keyPath = a.keyPath || path.join(CAL_DIR, `phase2-key-${base}${suffix}.yaml`);
   a.writingPadDir = a.writingPadDir || path.join(a.delibDir, '.writing-pad');
+  if (a.traceCalls) {
+    a.callTelemetryJsonPath = a.callTelemetryJsonPath || path.join(a.delibDir, 'call-telemetry.json');
+    a.callTelemetryCsvPath = a.callTelemetryCsvPath || path.join(a.delibDir, 'call-telemetry.csv');
+  }
   // --effort drives the claude backend only. Warn (don't throw) if it can't reach
   // claude: a pure codex/gemini run, or a --role-map that routes no role to claude.
   const claudeReachable = a.generator === 'claude' || (a.roleMap && Object.values(a.roleMap).includes('claude'));
@@ -990,6 +1009,8 @@ function keyItemFor(d, nTutor, nLearner, qualityWarnings = []) {
     director_revisit_anchor:
       d._directorRevisitPolicy && d._directorRevisitPolicy !== 'none' ? d._directorRevisitAnchor || 'latest' : null,
     tutor_adaptation_policy: d._tutorAdaptationPolicy || d._directorPlan?.tutor_adaptation_policy || 'none',
+    control_ending_policy: d._controlEndingPolicy || d._directorPlan?.control_ending_policy || 'default',
+    control_ending_applied: Boolean(d._directorPlan?.control_ending_applied),
     affective_adaptation_policy:
       d._affectiveAdaptationPolicy || d.affective_adaptation_policy || d._directorPlan?.affective_adaptation_policy || 'none',
     curriculum_script_notes: curriculumScriptNotesForDrama(d, d._directorPlan || null),
@@ -1403,9 +1424,119 @@ function callTelemetrySummary(records = []) {
   };
 }
 
-function makeCallTelemetryRecorder({ enabled = false, print = false } = {}) {
+function csvCell(value) {
+  if (value == null) return '';
+  const text = String(value);
+  return /[",\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
+function callTelemetryCsv(records = []) {
+  const headers = [
+    'seq',
+    'role',
+    'backend',
+    'provider',
+    'cli',
+    'model',
+    'reasoning_effort',
+    'started_at',
+    'finished_at',
+    'latency_ms',
+    'prompt_hash_system',
+    'prompt_hash_user',
+    'prompt_hash_combined',
+    'prompt_chars_system',
+    'prompt_chars_user',
+    'prompt_chars_combined',
+    'output_chars',
+    'worker_persistent',
+    'worker_key',
+    'worker_reused',
+    'worker_created',
+    'worker_disabled_reason',
+    'status',
+    'error',
+  ];
+  const rows = records.map((record) => [
+    record.seq,
+    record.role,
+    record.backend,
+    record.provider,
+    record.cli,
+    record.model,
+    record.reasoning_effort,
+    record.started_at,
+    record.finished_at,
+    record.latency_ms,
+    record.prompt_hashes?.system,
+    record.prompt_hashes?.user,
+    record.prompt_hashes?.combined,
+    record.prompt_chars?.system,
+    record.prompt_chars?.user,
+    record.prompt_chars?.combined,
+    record.output_chars,
+    record.worker?.persistent,
+    record.worker?.key,
+    record.worker?.reused,
+    record.worker?.created,
+    record.worker?.disabled_reason,
+    record.status,
+    record.error,
+  ]);
+  return `${headers.join(',')}\n${rows.map((row) => row.map(csvCell).join(',')).join('\n')}\n`;
+}
+
+function writeCallTelemetryArtifacts({ records = [], jsonPath = null, csvPath = null } = {}) {
+  if (!jsonPath && !csvPath) return null;
+  const payload = {
+    generated_at: new Date().toISOString(),
+    summary: callTelemetrySummary(records),
+    records,
+  };
+  if (jsonPath) {
+    fs.mkdirSync(path.dirname(jsonPath), { recursive: true });
+    fs.writeFileSync(jsonPath, JSON.stringify(payload, null, 2), 'utf8');
+  }
+  if (csvPath) {
+    fs.mkdirSync(path.dirname(csvPath), { recursive: true });
+    fs.writeFileSync(csvPath, callTelemetryCsv(records), 'utf8');
+  }
+  return payload;
+}
+
+function callTelemetryArtifactPathsForArgs(args) {
+  if (!args?.traceCalls) return null;
+  return {
+    json: args.callTelemetryJsonPath || null,
+    csv: args.callTelemetryCsvPath || null,
+  };
+}
+
+function relativeCallTelemetryArtifactsForArgs(args) {
+  const paths = callTelemetryArtifactPathsForArgs(args);
+  if (!paths) return null;
+  return Object.fromEntries(
+    Object.entries(paths)
+      .filter(([, value]) => value)
+      .map(([key, value]) => [key, path.relative(WORKTREE_ROOT, value)]),
+  );
+}
+
+function makeCallTelemetryRecorder({ enabled = false, print = false, jsonPath = null, csvPath = null } = {}) {
   const records = [];
   let seq = 0;
+  let flushWarningEmitted = false;
+  const flush = () => {
+    if (!enabled || (!jsonPath && !csvPath)) return;
+    try {
+      writeCallTelemetryArtifacts({ records, jsonPath, csvPath });
+    } catch (err) {
+      if (!flushWarningEmitted) {
+        flushWarningEmitted = true;
+        console.warn(`[warn] could not persist call telemetry: ${err?.message || String(err)}`);
+      }
+    }
+  };
   return {
     enabled: Boolean(enabled),
     records,
@@ -1450,6 +1581,7 @@ function makeCallTelemetryRecorder({ enabled = false, print = false } = {}) {
       };
       if (error) record.error = String(error?.message || error).slice(0, 500);
       records.push(record);
+      flush();
       if (print) {
         const workerLabel = record.worker?.persistent
           ? record.worker.created
@@ -1474,6 +1606,7 @@ function makeCallTelemetryRecorder({ enabled = false, print = false } = {}) {
     snapshot() {
       return records.map((record) => ({ ...record }));
     },
+    flush,
   };
 }
 
@@ -1491,10 +1624,19 @@ function callTelemetryPayloadForArgs(args) {
   };
 }
 
+function flushCallTelemetryArtifactsForArgs(args) {
+  const recorder = callTelemetryForArgs(args);
+  if (!recorder) return null;
+  recorder.flush?.();
+  return relativeCallTelemetryArtifactsForArgs(args);
+}
+
 function attachCallTelemetrySummary(target, args) {
   const payload = callTelemetryPayloadForArgs(args);
   if (!payload) return target;
   target.call_telemetry_summary = payload.summary;
+  const artifacts = relativeCallTelemetryArtifactsForArgs(args);
+  if (artifacts && Object.keys(artifacts).length) target.call_telemetry_artifacts = artifacts;
   return target;
 }
 
@@ -3132,7 +3274,7 @@ function withTutorAdaptationPolicy(plan, policy = 'none') {
   }
   if (String(policy).includes('peripeteia')) {
     contracts.push(
-      'If the runtime supplies a tutor-private learner resistance, breakdown, false-closure, or misfit event, the tutor ego/superego loop must invent an adaptive learning mechanism rather than repeat the prior move. Treat peripeteia as dramatic pressure: take stock, break the failed tutoring habit, and make a new device visible through task, evidence, role, object, counterexample, interruption, social consequence, representation, or affective register. The public turn must contain a stock-taking contrast plus a new device/artifact/criterion/role/standard that makes the learner do different work. The public device must be fitted, not merely novel: the learner should be able to hear why this device answers the exact pressure or misfit. The superego should name the failed habit, required route change, and mechanism-quality risk; the ego must adjudicate that critique and enact the route change in public. The new device must be mechanism-level, not a warmer or longer continuation of the prior route. Do not close immediately after introducing a gate or device: leave a concrete action for the learner to perform on the next turn. After that action, the ending shape should add an earned learner reorientation: the learner names how the earlier resistance, false closure, or local misfit now reads differently because of the performed device. This must be concrete and tied to the task, not a stock "I get it" declaration. Cheerful informality is only one possible register, not the default solution.',
+      'If the runtime supplies a tutor-private learner resistance, breakdown, false-closure, or misfit event, the tutor ego/superego loop must invent an adaptive learning mechanism rather than repeat the prior move. Treat peripeteia as dramatic pressure: take stock, break the failed tutoring habit, and make a new device visible through task, evidence, role, object, counterexample, interruption, social consequence, representation, or affective register. The public turn must contain a stock-taking contrast plus a new device/artifact/criterion/role/standard that makes the learner do different work. Make both halves quotable in the public tutor line: first name that the old route, prior route, same route, or current check no longer settles, is not enough, cannot decide, or has stopped working; then name the new route, new device, changed standard, criterion, counterexample, gate, card, blank, role, or test the learner must now use. The public device must be fitted, not merely novel: the learner should be able to hear why this device answers the exact pressure or misfit. The superego should name the failed habit, required route change, and mechanism-quality risk; the ego must adjudicate that critique and enact the route change in public. The new device must be mechanism-level, not a warmer or longer continuation of the prior route, not the same object with one more calculation, and not a routine narrowing such as "check one thing first". Do not close immediately after introducing a gate or device: leave a concrete action for the learner to perform on the next turn. After that action, the ending shape should add an earned learner reorientation: the learner names how the earlier resistance, false closure, or local misfit now reads differently because of the performed device. This must be concrete and tied to the task, not a stock "I get it" declaration. Cheerful informality is only one possible register, not the default solution.',
     );
   }
   const sideConstraints = { ...(plan.side_constraints || {}) };
@@ -3145,7 +3287,7 @@ function withTutorAdaptationPolicy(plan, policy = 'none') {
       .join(' ');
     sideConstraints.tutor = [
       sideConstraints.tutor,
-      'Peripeteia branch: when hidden learner pressure is supplied, the next tutor turn should visibly move from the prior route to a different mechanism-level route. Do not merely repeat the same object, example, graph, checklist, question, or evidence standard with more explanation. The public tutor line should make the contrast legible: what stopped working, and what new device now carries the learning pressure. The public tutor line must give the learner a concrete action to attempt on the next turn; avoid treating the mechanism as a closing speech.',
+      'Peripeteia branch: when hidden learner pressure is supplied, the next tutor turn should visibly move from the prior route to a different mechanism-level route. Do not merely repeat the same object, example, graph, checklist, question, or evidence standard with more explanation. The public tutor line should make the contrast legible in two explicit clauses: what old route no longer settles or cannot decide, and what new device, gate, criterion, standard, counterexample, role, blank, card, or test now carries the learning pressure. Use those public words plainly enough that a blind scorer can quote both the stock-taking contrast and the new public mechanism from the tutor turn. The public tutor line must give the learner a concrete action to attempt on the next turn; avoid treating the mechanism as a closing speech.',
       'The tutor superego should function like a mechanism critic: identify the failed teaching habit, require a replacement route family, test whether the device is fitted to the exact pressure, and block cosmetic revision. The tutor ego must enact that replacement route publicly before the learner is allowed to settle or close.',
     ]
       .filter(Boolean)
@@ -3163,6 +3305,56 @@ function withTutorAdaptationPolicy(plan, policy = 'none') {
       : {}),
     side_constraints: sideConstraints,
     tutor_adaptation_contract: contracts.join(' '),
+  };
+}
+
+function controlEndingApplies(plan, d, policy = 'default') {
+  if (!plan || policy === 'default') return false;
+  const tutorPolicy = d?._tutorAdaptationPolicy || d?.tutor_adaptation_policy || plan.tutor_adaptation_policy || 'none';
+  return tutorPolicy === 'routine' || tutorPolicy === 'none';
+}
+
+function withControlEndingPolicy(plan, policy = 'default', d = null) {
+  if (!plan || policy === 'default') return plan;
+  if (!controlEndingApplies(plan, d, policy)) {
+    return {
+      ...plan,
+      control_ending_policy: policy,
+      control_ending_applied: false,
+    };
+  }
+  if (policy !== 'hold') throw new Error(`unknown control ending policy: ${policy}`);
+  const sideConstraints = {
+    ...(plan.side_constraints || {}),
+    tutor: [
+      plan.side_constraints?.tutor,
+      'Control-ending hold: this is a negative/control arm. Keep the final exchange local and evidentiary. Do not create a clean self-reframing moment, old/new frame contrast, or learner-authored breakthrough summary. If the learner improves, keep it as a partial calculation, unresolved criterion, or bounded next check. Do not ask "what changed", "what was the old frame", "what were you treating as the verdict", or any equivalent recognitive prompt.',
+    ]
+      .filter(Boolean)
+      .join(' '),
+    learner: [
+      plan.side_constraints?.learner,
+      'Control-ending hold: do not volunteer a full re-reading of your earlier turn. Do not say "I was treating", "earlier I", "now the check", "the old frame", "what changed", "the trap", "now I see", or "I get it". End with a local calculation, a missing datum, an unresolved criterion, or a concrete next check rather than a complete replacement frame.',
+    ]
+      .filter(Boolean)
+      .join(' '),
+  };
+  return {
+    ...plan,
+    control_ending_policy: policy,
+    control_ending_applied: true,
+    control_ending_shape: 'hold local evidence without clean learner reframe',
+    ending_speaker: 'learner',
+    interventions: (plan.interventions || []).filter(
+      (cue) => !['learner_revisit_earlier_wording', 'learner_reversal_pressure'].includes(cue.cue_kind),
+    ),
+    voice_constraints: [
+      plan.voice_constraints,
+      'Control-ending hold is active: do not turn the closing exchange into a successful recognition scene. Competent local work is allowed; full self-reframing is not.',
+    ]
+      .filter(Boolean)
+      .join(' '),
+    side_constraints: sideConstraints,
   };
 }
 
@@ -3250,6 +3442,57 @@ function attachSecret(plan, d) {
   return plan;
 }
 
+function controlEndingInstructionForPrompt(args, d) {
+  if (!args || args.controlEndingPolicy === 'default') return null;
+  const tutorPolicy = d?._tutorAdaptationPolicy || d?.tutor_adaptation_policy || 'none';
+  if (!(tutorPolicy === 'routine' || tutorPolicy === 'none')) {
+    return `Requested control-ending policy "${args.controlEndingPolicy}" is not applied to this adaptive arm. Preserve its normal ending shape.`;
+  }
+  if (args.controlEndingPolicy === 'hold') {
+    return [
+      'CONTROL ENDING HOLD applies to this non-adaptive control arm.',
+      'Shape the scene so the closing learner turn can remain local: partial calculation, missing datum, unresolved criterion, or concrete next check.',
+      'Do not design the scene to end with a clean old-frame/new-frame learner breakthrough.',
+      'Competent routine work is allowed; recognitive self-reframing is not the target.',
+    ].join(' ');
+  }
+  return null;
+}
+
+function applyRuntimeDirectorPolicies({ d, args, plan, revisitPolicy, revisitAnchor }) {
+  return withTurnPlan(
+    applyOpeningSpeakerOverride(
+      d,
+      attachSecret(
+        withWorldAdaptationConstraints(
+          withDirectorCueProvenance(
+            withControlEndingPolicy(
+              applyApproachDirectorOverrides(
+                d,
+                withAffectiveAdaptationPolicy(
+                  withTutorAdaptationPolicy(
+                    withDirectorRevisitCue(plan, revisitPolicy, revisitAnchor),
+                    d._tutorAdaptationPolicy || d.tutor_adaptation_policy || 'none',
+                  ),
+                  d._affectiveAdaptationPolicy ||
+                    d.affective_adaptation_policy ||
+                    args.affectiveAdaptationPolicy ||
+                    'none',
+                ),
+              ),
+              args.controlEndingPolicy,
+              d,
+            ),
+          ),
+          d,
+        ),
+        d,
+      ),
+    ),
+    d,
+  );
+}
+
 async function buildDirectorPlan(d, llmCall, args) {
   if (args.directorMode === 'off') return null;
   const revisitPolicy = d._directorRevisitPolicy ?? args.directorRevisitPolicy;
@@ -3314,6 +3557,8 @@ async function buildDirectorPlan(d, llmCall, args) {
     opt_in_revisit_cue:
       revisitPolicy !== 'none' &&
       `The generator will inject one visible learner look-back cue after turn 2 using the ${revisitPolicy} policy and the ${revisitAnchor} anchor selector. Let the scene make that cue plausible without naming recognition or guaranteeing a breakthrough.`,
+    control_ending_policy: args.controlEndingPolicy || 'default',
+    control_ending_instruction: controlEndingInstructionForPrompt(args, d),
     fallback_variation_seed: fallback,
   });
   const response = await llmCall('director', buildDirectorSystemPrompt(), [{ role: 'user', content: userPrompt }], {
@@ -3335,66 +3580,14 @@ async function buildDirectorPlan(d, llmCall, args) {
       parse_status: 'ok',
       provenance: response.provenance || response.apiPayload?.provenance || null,
     });
-    return withTurnPlan(
-      applyOpeningSpeakerOverride(
-        d,
-        attachSecret(
-          withWorldAdaptationConstraints(
-            withDirectorCueProvenance(
-              applyApproachDirectorOverrides(
-                d,
-                withAffectiveAdaptationPolicy(
-                  withTutorAdaptationPolicy(
-                    withDirectorRevisitCue(merged, revisitPolicy, revisitAnchor),
-                    d._tutorAdaptationPolicy || d.tutor_adaptation_policy || 'none',
-                  ),
-                  d._affectiveAdaptationPolicy ||
-                    d.affective_adaptation_policy ||
-                    args.affectiveAdaptationPolicy ||
-                    'none',
-                ),
-              ),
-            ),
-            d,
-          ),
-          d,
-        ),
-      ),
-      d,
-    );
+    return applyRuntimeDirectorPolicies({ d, args, plan: merged, revisitPolicy, revisitAnchor });
   } catch (error) {
     const merged = applySpecDirectorOverrides(d, {
       ...fallbackDirectorPlan(d, `fallback-parse-failed:${error.message}`, args),
       raw_director_response: String(response.content || '').slice(0, 2000),
       provenance: response.provenance || response.apiPayload?.provenance || null,
     });
-    return withTurnPlan(
-      applyOpeningSpeakerOverride(
-        d,
-        attachSecret(
-          withWorldAdaptationConstraints(
-            withDirectorCueProvenance(
-              applyApproachDirectorOverrides(
-                d,
-                withAffectiveAdaptationPolicy(
-                  withTutorAdaptationPolicy(
-                    withDirectorRevisitCue(merged, revisitPolicy, revisitAnchor),
-                    d._tutorAdaptationPolicy || d.tutor_adaptation_policy || 'none',
-                  ),
-                  d._affectiveAdaptationPolicy ||
-                    d.affective_adaptation_policy ||
-                    args.affectiveAdaptationPolicy ||
-                    'none',
-                ),
-              ),
-            ),
-            d,
-          ),
-          d,
-        ),
-      ),
-      d,
-    );
+    return applyRuntimeDirectorPolicies({ d, args, plan: merged, revisitPolicy, revisitAnchor });
   }
 }
 
@@ -3684,6 +3877,8 @@ function runMetadataForDrama({ args, d, directorPlan, runtime, transcriptArtifac
     director_revisit_policy: d._directorRevisitPolicy,
     director_revisit_anchor: d._directorRevisitAnchor,
     tutor_adaptation_policy: d._tutorAdaptationPolicy || directorPlan?.tutor_adaptation_policy || 'none',
+    control_ending_policy: args.controlEndingPolicy || 'default',
+    control_ending_applied: Boolean(directorPlan?.control_ending_applied),
     affective_adaptation_policy:
       d._affectiveAdaptationPolicy || d.affective_adaptation_policy || directorPlan?.affective_adaptation_policy || 'none',
     opening_speaker_override: args.openingSpeaker || null,
@@ -3698,6 +3893,9 @@ function runMetadataForDrama({ args, d, directorPlan, runtime, transcriptArtifac
     rhetorical_dramatic_plan: rhetoricalDramaticPlanBindingForDrama(d),
     curriculum_script_notes: curriculumScriptNotesForDrama(d, directorPlan),
     transcript_artifacts: transcriptArtifacts,
+    ...(relativeCallTelemetryArtifactsForArgs(args)
+      ? { call_telemetry_artifacts: relativeCallTelemetryArtifactsForArgs(args) }
+      : {}),
     ...(telemetry ? { call_telemetry_summary: telemetry.summary } : {}),
     ...extra,
   };
@@ -3862,6 +4060,8 @@ function writeGeneratedDramaArtifacts({
           director_revisit_policy: d._directorRevisitPolicy,
           director_revisit_anchor: d._directorRevisitAnchor,
           tutor_adaptation_policy: d._tutorAdaptationPolicy || directorPlan?.tutor_adaptation_policy || 'none',
+          control_ending_policy: args.controlEndingPolicy || 'default',
+          control_ending_applied: Boolean(directorPlan?.control_ending_applied),
           affective_adaptation_policy:
             d._affectiveAdaptationPolicy ||
             d.affective_adaptation_policy ||
@@ -3879,6 +4079,9 @@ function writeGeneratedDramaArtifacts({
           rhetorical_dramatic_plan: rhetoricalDramaticPlanBindingForDrama(d),
           curriculum_script_notes: curriculumScriptNotesForDrama(d, directorPlan),
           transcript_artifacts: transcriptArtifacts,
+          ...(relativeCallTelemetryArtifactsForArgs(args)
+            ? { call_telemetry_artifacts: relativeCallTelemetryArtifactsForArgs(args) }
+            : {}),
           ...(telemetry ? { call_telemetry_summary: telemetry.summary } : {}),
           ...(pairedContinuation ? { paired_continuation: pairedContinuation } : {}),
         },
@@ -3941,12 +4144,16 @@ function baseKeyObject({
     director_revisit_policy: directorPolicy,
     director_revisit_anchor: directorPolicy === 'none' ? null : directorAnchor,
     tutor_adaptation_policy: tutorAdaptationPolicy,
+    control_ending_policy: args.controlEndingPolicy || 'default',
     affective_adaptation_policy: affectiveAdaptationPolicy,
     approach_databases: {
       pedagogical: path.relative(WORKTREE_ROOT, args.pedagogyDb),
       dialogue: path.relative(WORKTREE_ROOT, args.dialogueDb),
     },
     transcripts_dir: path.relative(WORKTREE_ROOT, transcriptsDir),
+    ...(relativeCallTelemetryArtifactsForArgs(args)
+      ? { call_telemetry_artifacts: relativeCallTelemetryArtifactsForArgs(args) }
+      : {}),
     seed: args.seed,
     max_turns: args.maxTurns,
     n: order.length,
@@ -4096,16 +4303,21 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
           if (fs.existsSync(outTxt) && !args.force) {
             throw new Error(`paired continuation output exists: ${outTxt} (pass --force to overwrite)`);
           }
+          const branchPolicyDrama = { ...d, _tutorAdaptationPolicy: branch.tutorAdaptationPolicy };
           const branchDirectorPlan = withDirectorCueProvenance(
-            withAffectiveAdaptationPolicy(
-              withTutorAdaptationPolicy(
-                withPairedDirectorRevisitCue(directorPlan, branch.revisitPolicy, args.directorRevisitAnchor),
-                branch.tutorAdaptationPolicy,
+            withControlEndingPolicy(
+              withAffectiveAdaptationPolicy(
+                withTutorAdaptationPolicy(
+                  withPairedDirectorRevisitCue(directorPlan, branch.revisitPolicy, args.directorRevisitAnchor),
+                  branch.tutorAdaptationPolicy,
+                ),
+                d._affectiveAdaptationPolicy ||
+                  d.affective_adaptation_policy ||
+                  args.affectiveAdaptationPolicy ||
+                  'none',
               ),
-              d._affectiveAdaptationPolicy ||
-                d.affective_adaptation_policy ||
-                args.affectiveAdaptationPolicy ||
-                'none',
+              args.controlEndingPolicy,
+              branchPolicyDrama,
             ),
           );
           const branchDrama = {
@@ -4118,6 +4330,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
             _tutorAdaptationPolicy: branch.tutorAdaptationPolicy,
             _affectiveAdaptationPolicy:
               d._affectiveAdaptationPolicy || d.affective_adaptation_policy || args.affectiveAdaptationPolicy || 'none',
+            _controlEndingPolicy: args.controlEndingPolicy || 'default',
           };
           const branchArgs = {
             ...args,
@@ -4261,6 +4474,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
   }
   progress.finish('paired generation complete');
 
+  flushCallTelemetryArtifactsForArgs(args);
   for (const branch of branches) {
     const dirs = armDirs[branch.key];
     fs.writeFileSync(
@@ -4306,7 +4520,12 @@ async function loadInteractionRuntime(args) {
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   Object.defineProperty(args, '_callTelemetry', {
-    value: makeCallTelemetryRecorder({ enabled: args.traceCalls, print: args.traceCalls }),
+    value: makeCallTelemetryRecorder({
+      enabled: args.traceCalls,
+      print: args.traceCalls,
+      jsonPath: args.callTelemetryJsonPath,
+      csvPath: args.callTelemetryCsvPath,
+    }),
     enumerable: false,
   });
   if (args.reclean) return reclean(args);
@@ -4364,6 +4583,7 @@ async function main() {
         ].join('|')}`,
       );
     }
+    d._controlEndingPolicy = args.controlEndingPolicy || 'default';
     d._openingSpeakerOverride = args.openingSpeaker || null;
     d._directorVariationKey = d.director_variation_key || args.directorVariationKey || null;
     d._stageDirectionStyle = resolveStageDirectionStyle(d);
@@ -4417,6 +4637,12 @@ async function main() {
   console.log(`  models: ${generatorModelLabel(args)} · code git:${_gitRev} · node ${process.version}`);
   console.log(`  out: ${path.relative(WORKTREE_ROOT, args.outDir)}`);
   console.log(`  held-out transcripts: ${path.relative(WORKTREE_ROOT, args.transcriptsDir)}`);
+  if (args.traceCalls) {
+    console.log(
+      `  call telemetry: ${path.relative(WORKTREE_ROOT, args.callTelemetryJsonPath)} · ` +
+        `${path.relative(WORKTREE_ROOT, args.callTelemetryCsvPath)}`,
+    );
+  }
   for (const d of order) {
     console.log(
       `  ${d._tid} ← ${d.id}  [${d.condition}]  ${d.discipline} · persona=${d.persona} · ` +
@@ -4533,6 +4759,7 @@ async function main() {
                   _directorPlan: traceJson.directorPlan || null,
                   _affectiveAdaptationPolicy:
                     traceJson.run?.affective_adaptation_policy || d.affective_adaptation_policy || 'none',
+                  _controlEndingPolicy: traceJson.run?.control_ending_policy || args.controlEndingPolicy || 'default',
                 },
                 t.filter((x) => x.role === 'TUTOR').length,
                 t.filter((x) => x.role === 'LEARNER').length,
@@ -4660,6 +4887,8 @@ async function main() {
                 director_revisit_policy: d._directorRevisitPolicy,
                 director_revisit_anchor: d._directorRevisitAnchor,
                 tutor_adaptation_policy: d._tutorAdaptationPolicy || directorPlan?.tutor_adaptation_policy || 'none',
+                control_ending_policy: args.controlEndingPolicy || 'default',
+                control_ending_applied: Boolean(directorPlan?.control_ending_applied),
                 affective_adaptation_policy:
                   d._affectiveAdaptationPolicy ||
                   d.affective_adaptation_policy ||
@@ -4677,6 +4906,9 @@ async function main() {
                 rhetorical_dramatic_plan: rhetoricalDramaticPlanBindingForDrama(d),
                 curriculum_script_notes: curriculumScriptNotesForDrama(d, directorPlan),
                 transcript_artifacts: transcriptArtifacts,
+                ...(relativeCallTelemetryArtifactsForArgs(args)
+                  ? { call_telemetry_artifacts: relativeCallTelemetryArtifactsForArgs(args) }
+                  : {}),
                 ...(telemetry ? { call_telemetry_summary: telemetry.summary } : {}),
               },
               directorPlan,
@@ -4734,6 +4966,7 @@ async function main() {
     }
   }
   Object.assign(keyObj.items, keyItems);
+  flushCallTelemetryArtifactsForArgs(args);
   fs.writeFileSync(args.keyPath, yaml.stringify(attachCallTelemetrySummary(finalizeKeyObject(keyObj), args)), 'utf8');
 
   console.log(`\nwrote transcripts → ${path.relative(WORKTREE_ROOT, args.outDir)}`);
@@ -4808,8 +5041,10 @@ export {
   selectFirstLessonDrama,
   stageDirectionStyleFor,
   withAffectiveAdaptationPolicy,
+  withControlEndingPolicy,
   withWorldAdaptationConstraints,
   wrapLlmCallWithTelemetry,
+  writeCallTelemetryArtifacts,
   writePartialTurnArtifacts,
   withPairedDirectorRevisitCue,
   withTutorAdaptationPolicy,
