@@ -19,7 +19,7 @@ jobs:
   email:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
           fetch-depth: 0
@@ -44,9 +44,10 @@ jobs:
           echo "subject=${subject:-New research roundup}" >> "$GITHUB_OUTPUT"
           echo "Will email: $file"
 
+      # action-send-mail pinned to a commit SHA (supply-chain hardening); comment tracks the tag.
       - name: Email it
         if: steps.find.outputs.skip != 'true'
-        uses: dawidd6/action-send-mail@v3
+        uses: dawidd6/action-send-mail@42942bc2f8fba4e611b459a018967a6a7c78c68c # v17
         with:
           server_address: ${{ secrets.MAIL_SERVER }}
           server_port: 465
