@@ -14,7 +14,11 @@
 import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import interactionEngine from '../services/learnerTutorInteractionEngine.js';
-import { buildLearnerReversalEvent, runInteraction } from '../services/learnerTutorInteractionEngine.js';
+import {
+  buildLearnerReversalEvent,
+  buildTutorAffectiveAdaptationContext,
+  runInteraction,
+} from '../services/learnerTutorInteractionEngine.js';
 const { INTERACTION_OUTCOMES } = interactionEngine;
 
 // ---------------------------------------------------------------------------
@@ -142,6 +146,47 @@ describe('runInteraction (multi-turn)', () => {
     // With maxTurns=1: initial learner (turn 0) + 1 tutor + 1 learner = 3 turns max
     const tutorTurns = result.turns.filter((t) => t.phase === 'tutor');
     assert.ok(tutorTurns.length <= 1, `expected ≤1 tutor turn with maxTurns=1, got ${tutorTurns.length}`);
+  });
+
+  it('emits onTurn after each appended public turn with the current trace prefix', async () => {
+    const seen = [];
+    const result = await runInteraction(
+      {
+        learnerId: 'test-learner-on-turn',
+        personaId: 'eager_novice',
+        tutorProfile: 'budget',
+        topic: MINIMAL_SCENARIO.topic,
+        scenario: MINIMAL_SCENARIO,
+      },
+      stubLlm,
+      {
+        maxTurns: 1,
+        learnerProfile: 'unified',
+        onTurn: ({ turn, trace }) => {
+          seen.push({
+            phase: turn.phase,
+            turnNumber: turn.turnNumber,
+            traceLength: trace.turns.length,
+            sameTurn: trace.turns.at(-1) === turn,
+          });
+        },
+      },
+    );
+
+    assert.deepEqual(
+      seen.map((turn) => turn.phase),
+      ['learner', 'tutor', 'learner'],
+    );
+    assert.deepEqual(
+      seen.map((turn) => turn.turnNumber),
+      [0, 1, 1],
+    );
+    assert.deepEqual(
+      seen.map((turn) => turn.traceLength),
+      [1, 2, 3],
+    );
+    assert.ok(seen.every((turn) => turn.sameTurn), 'each callback sees the latest appended turn');
+    assert.equal(result.turns.length, seen.length);
   });
 
   it('accumulates token metrics across turns', async () => {
@@ -478,6 +523,108 @@ describe('runInteraction (multi-turn)', () => {
     assert.ok(
       tutorAdjudicationPrompts.some((prompt) => /affective register/.test(prompt)),
       'tutor ego adjudication should allow register shift as an adaptive mechanism',
+    );
+  });
+
+  it('builds affective adaptation context from procedural route changes', () => {
+    const context = buildTutorAffectiveAdaptationContext({
+      policy: 'procedural_sensitive',
+      contract: 'Track stance separately from procedure.',
+      routeChange: { from: 'single metric', to: 'claim-evidence audit gate' },
+      learnerReversalEvent: { triggerType: 'resistance' },
+    });
+
+    assert.match(context, /whether or not a procedural route change/u);
+    assert.match(context, /single metric -> claim-evidence audit gate/u);
+    assert.match(context, /stricter evidence gate = respectful firmness/u);
+    assert.match(context, /Current learner pressure cue: resistance/u);
+  });
+
+  it('passes affective adaptation into tutor prompts without requiring procedural adaptation', async () => {
+    const calls = [];
+    async function llmCall(model, systemPrompt, messages, options = {}) {
+      calls.push({ model, systemPrompt, messages, options });
+      const user = messages?.[0]?.content || '';
+      if (options.agentRole === 'learner_superego') {
+        return { content: 'Stay defensive but do not invent a breakthrough.', usage: {} };
+      }
+      if (options.agentRole === 'learner_ego' && /opening message/.test(user)) {
+        return { content: 'FINAL:\nI trust the headline score because the table says 94%.', usage: {} };
+      }
+      if (options.agentRole === 'learner_ego' && /Produce your final response/.test(user)) {
+        return { content: 'FINAL:\nFine, but I still think the score should be enough.', usage: {} };
+      }
+      if (options.agentRole === 'learner_ego') {
+        return { content: 'I trust the headline score because the table says 94%.', usage: {} };
+      }
+      if (options.agentRole === 'tutor_superego') {
+        return {
+          content:
+            'FEEDBACK: The draft keeps the evidence gate.\nAFFECT_CHECK: PARTIAL - it has not named the status pressure.\nREQUIRED_REWRITE: keep the same evidence standard but use respectful firmness.\nKEEP_OR_CHANGE: revise lightly',
+          usage: {},
+        };
+      }
+      if (options.agentRole === 'tutor_ego' && /Your initial tutor response was/.test(systemPrompt)) {
+        return {
+          content:
+            'PRIVATE_DECISION: revise lightly; AFFECTIVE_STANCE: defensiveness -> respectful firmness.\nFINAL:\nKeep the claim on the table. Before I sign off, point to the one row that makes the 94% usable beyond this sample.',
+          usage: {},
+        };
+      }
+      if (options.agentRole === 'tutor_ego') {
+        return { content: 'Point to the row that makes the 94% usable beyond this sample.', usage: {} };
+      }
+      return { content: 'stub', usage: {} };
+    }
+
+    const directorPlan = {
+      opening_speaker: 'learner',
+      tutor_adaptation_policy: 'none',
+      affective_adaptation_policy: 'procedural_sensitive',
+      affective_adaptation_contract: 'Track learner stance separately from procedural route changes.',
+    };
+
+    const result = await runInteraction(
+      {
+        learnerId: 'test-learner-affect',
+        personaId: 'resistant_learner',
+        tutorProfile: 'recognition',
+        topic: 'AI model evaluation',
+        scenario: {
+          name: 'Affective adaptation test',
+          learnerStartState: 'The learner treats a headline metric as sufficient.',
+          directorPlan,
+        },
+      },
+      llmCall,
+      {
+        maxTurns: 1,
+        forceMaxTurns: true,
+        observeInternals: true,
+        learnerProfile: 'ego_superego',
+        directorPlan,
+      },
+    );
+
+    const tutorTurn = result.turns.find((turn) => turn.phase === 'tutor');
+    assert.ok(tutorTurn, 'expected a tutor turn');
+    assert.equal(tutorTurn.learnerReversalEventUsed, null);
+    assert.match(tutorTurn.externalMessage, /Before I sign off/u);
+
+    const tutorPrompts = calls
+      .filter((call) => call.options.agentRole === 'tutor_ego' || call.options.agentRole === 'tutor_superego')
+      .map((call) => call.systemPrompt)
+      .join('\n');
+    assert.match(tutorPrompts, /Tutor-private affective adaptation layer/u);
+    assert.match(tutorPrompts, /AFFECT_CHECK/u);
+    assert.match(tutorPrompts, /AFFECTIVE_STANCE/u);
+    assert.doesNotMatch(tutorPrompts, /Because a peripeteia event is present/u);
+    const tutorSuperegoPrompts = calls
+      .filter((call) => call.options.agentRole === 'tutor_superego')
+      .map((call) => call.systemPrompt);
+    assert.ok(
+      tutorSuperegoPrompts.every((prompt) => !/PERIPETEIA_CHECK/.test(prompt)),
+      'affective-only turn should not request a peripeteia check',
     );
   });
 

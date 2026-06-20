@@ -9,6 +9,7 @@ import yaml from 'yaml';
 import { prefixThroughTutorTurn, renderTurns } from '../scripts/extract-poetics-prefix-baselines.js';
 import {
   attachApproaches,
+  curriculumScriptNotesForDrama,
   formatPublicTurnText,
   intrusiveStageDirectionFailures,
   keyItemFor,
@@ -19,10 +20,15 @@ import {
   parseArgs,
   qualityWarningsFor,
   reframeMatchStats,
+  renderHeldOutTranscript,
+  renderTranscript,
+  selectFirstLessonDrama,
   stageDirectionStyleFor,
+  withAffectiveAdaptationPolicy,
   withPairedDirectorRevisitCue,
   withTutorAdaptationPolicy,
   withWorldAdaptationConstraints,
+  writePartialTurnArtifacts,
 } from '../scripts/generate-pedagogical-dramas.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -55,6 +61,94 @@ describe('generate-pedagogical-dramas', () => {
     assert.equal(parseArgs(['--claude-persistent-workers']).claudePersistentWorkers, true);
   });
 
+  it('parses first-lesson and affective adaptation options', () => {
+    const args = parseArgs(['--first-lesson', '--affective-adaptation-policy', 'procedural_sensitive']);
+    assert.equal(args.firstLesson, true);
+    assert.equal(args.affectiveAdaptationPolicy, 'procedural_sensitive');
+    assert.throws(() => parseArgs(['--first-lesson', '--only', 'D_AF11']), /either --only or --first-lesson/);
+    assert.throws(() => parseArgs(['--affective-adaptation-policy', 'warmth_only']), /procedural_sensitive/);
+  });
+
+  it('selects the earliest AI Foundations lesson in a drama spec', () => {
+    const first = selectFirstLessonDrama([
+      { id: 'D_AF11_CURRICULUM_ADAPTIVE', curriculum_binding: { module_id: 'AF11' } },
+      { id: 'D_AF1_CURRICULUM_ADAPTIVE', curriculum_binding: { module_id: 'AF1' } },
+      { id: 'D_AF6_CURRICULUM_ADAPTIVE', curriculum_binding: { module_id: 'AF6' } },
+    ]);
+
+    assert.equal(first.curriculum_binding.module_id, 'AF1');
+  });
+
+  it('writes turn-level partial artifacts without creating final transcript names', () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ms-partial-turn-'));
+    try {
+      const args = {
+        outDir: path.join(tmp, 'samples'),
+        delibDir: path.join(tmp, 'delib'),
+        transcriptsDir: path.join(tmp, 'transcripts'),
+        roleMap: null,
+        generator: 'claude',
+        directorMode: 'scene',
+        model: 'sonnet',
+        effort: null,
+        apiModel: 'sonnet',
+        claudePersistentWorkers: true,
+      };
+      const d = {
+        _tid: 'T99',
+        id: 'drama_partial_test',
+        _directorRevisitPolicy: 'none',
+        _directorRevisitAnchor: null,
+        _tutorAdaptationPolicy: 'none',
+        _directorVariationKey: null,
+      };
+      const turn = {
+        turnNumber: 0,
+        phase: 'learner',
+        externalMessage: 'I only trust the headline score.',
+        internalDeliberation: [{ stage: 'ego', content: 'The learner clings to a single metric.' }],
+        timestamp: '2026-06-20T00:00:00.000Z',
+      };
+      const trace = {
+        turns: [turn],
+        metrics: { turnCount: 0 },
+        writingPadSnapshots: { learner: {}, tutor: {} },
+      };
+
+      const artifacts = writePartialTurnArtifacts({
+        args,
+        d,
+        trace,
+        directorPlan: { tutor_adaptation_policy: 'constraint_layer' },
+        runtime: { writingPad: { mode: 'test' } },
+        turn,
+      });
+
+      assert.equal(fs.existsSync(path.join(args.outDir, '_partial', 'T99.txt')), true);
+      assert.equal(fs.existsSync(path.join(args.transcriptsDir, '_partial', 'T99.public.txt')), true);
+      assert.equal(fs.existsSync(path.join(args.transcriptsDir, '_partial', 'T99.full.md')), true);
+      assert.equal(fs.existsSync(path.join(args.transcriptsDir, '_partial', 'T99.stage.md')), true);
+      assert.equal(fs.existsSync(path.join(args.transcriptsDir, '_partial', 'T99.tutor.md')), true);
+      assert.equal(fs.existsSync(path.join(args.transcriptsDir, '_partial', 'T99.learner.md')), true);
+      assert.equal(fs.existsSync(path.join(args.delibDir, '_partial', 'T99.json')), true);
+      assert.equal(fs.existsSync(path.join(args.outDir, 'T99.txt')), false);
+      assert.equal(fs.existsSync(path.join(args.transcriptsDir, 'T99.public.txt')), false);
+      assert.equal(fs.existsSync(path.join(args.delibDir, 'T99.json')), false);
+
+      const partialTrace = JSON.parse(fs.readFileSync(path.join(args.delibDir, '_partial', 'T99.json'), 'utf8'));
+      assert.equal(partialTrace.partial, true);
+      assert.equal(partialTrace.quality_status, 'running');
+      assert.equal(partialTrace.last_flushed_turn.phase, 'learner');
+      assert.equal(partialTrace.run.status, 'running');
+      assert.equal(partialTrace.run.partial, true);
+      assert.ok(partialTrace.run.model.includes('#persistent-workers'));
+      assert.match(artifacts.sample, /_partial\/T99\.txt$/);
+      assert.match(artifacts.transcripts.public, /_partial\/T99\.public\.txt$/);
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
+  });
+
   it('renders public speaker turns as quoted direct speech with square-bracket action asides', () => {
     assert.equal(
       formatPublicTurnText('TUTOR', '(points at the graph) Try line two.'),
@@ -66,6 +160,106 @@ describe('generate-pedagogical-dramas', () => {
       '"Now I see the header is a field."',
     );
     assert.equal(formatPublicTurnText('STAGE', 'A timer clicks.'), '[A timer clicks.]');
+  });
+
+  it('collapses adjacent public stage notes into one consolidated block', () => {
+    const transcript = renderTranscript([
+      { role: 'STAGE', text: 'REVIEW SESSION — ARTIFACT DESK. The officer has the register open.' },
+      { role: 'STAGE', text: 'Setting: A model governance checkpoint room.' },
+      { role: 'STAGE', text: 'Relationship: Compliance review officer and practitioner.' },
+      { role: 'LEARNER', text: 'I think one fairness metric covers it.' },
+    ]);
+
+    assert.equal(
+      transcript,
+      [
+        'STAGE: [REVIEW SESSION — ARTIFACT DESK. The officer has the register open. Setting: A model governance checkpoint room. Relationship: Compliance review officer and practitioner.]',
+        '',
+        'LEARNER: "I think one fairness metric covers it."',
+        '',
+      ].join('\n'),
+    );
+  });
+
+  it('renders expanded public scene preamble as one stage block', () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ms-render-light-dialog-'));
+    try {
+      const transcriptPath = path.join(tmp, 'T05.public.txt');
+      const fullPath = path.join(tmp, 'T05.full.md');
+      const keyPath = path.join(tmp, 'key.yaml');
+      const outPath = path.join(tmp, 'dialog.html');
+      const publicOutPath = path.join(tmp, 'T05.public-expanded.txt');
+
+      fs.writeFileSync(
+        transcriptPath,
+        [
+          'STAGE: [REVIEW SESSION — ARTIFACT DESK. The officer has the register open.]',
+          '',
+          'LEARNER: "One fairness metric covers it."',
+          '',
+        ].join('\n'),
+        'utf8',
+      );
+      fs.writeFileSync(
+        fullPath,
+        [
+          '## Director Scene Card',
+          '',
+          '```yaml',
+          'scene_opening: REVIEW SESSION — ARTIFACT DESK. The officer has the register open.',
+          'scene_setting: A model governance checkpoint room.',
+          'relationship: Compliance review officer and practitioner.',
+          'stakes: The model card cannot advance without evidence.',
+          'register: Clipped, audit-precise questioning.',
+          'locale: British-adjacent formal institutional English.',
+          '```',
+          '',
+        ].join('\n'),
+        'utf8',
+      );
+      fs.writeFileSync(
+        keyPath,
+        yaml.stringify({
+          mode: 'real-claude-code',
+          items: {
+            T05: {
+              tid: 'T05',
+              drama_id: 'drama_test',
+              persona: 'adversarial_tester',
+              dramatic_shape: 'risk register, model card, oversight plan -> evidence map',
+              intended_tutor_character: 'Tutor: evidence_gatekeeper; press_for_scope_and_evidence.',
+            },
+          },
+        }),
+        'utf8',
+      );
+
+      execFileSync(
+        process.execPath,
+        [
+          'scripts/render-light-drama-dialog-html.js',
+          '--transcript',
+          transcriptPath,
+          '--full',
+          fullPath,
+          '--key',
+          keyPath,
+          '--out',
+          outPath,
+          '--public-out',
+          publicOutPath,
+        ],
+        { cwd: ROOT, stdio: 'pipe' },
+      );
+
+      const expanded = fs.readFileSync(publicOutPath, 'utf8');
+      assert.equal((expanded.match(/^STAGE:/gm) || []).length, 1);
+      assert.match(expanded, /^STAGE: \[REVIEW SESSION — ARTIFACT DESK\./);
+      assert.match(expanded, /Setting: A model governance checkpoint room\./);
+      assert.match(expanded, /\n\nLEARNER: "One fairness metric covers it\."/);
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
   });
 
   it('does not flag internal-process leak for text stripped before the public transcript (FIX 3)', () => {
@@ -328,6 +522,46 @@ describe('generate-pedagogical-dramas', () => {
     assert.doesNotMatch(plan.side_constraints.tutor, /RDP_AF6_CURRICULUM_DOGMATIC/u);
     assert.doesNotMatch(plan.side_constraints.tutor, /sha256:/u);
     assert.doesNotMatch(plan.side_constraints.learner, /W_AF6_CURRICULUM|RDP_AF6_CURRICULUM_DOGMATIC|sha256:/u);
+
+    const notes = curriculumScriptNotesForDrama(
+      {
+        ...drama,
+        topic: 'Bound the deployment claim.',
+        scenario_name: 'AI Foundations AF6',
+        learner_start_state: 'The learner trusts a single held-out accuracy score.',
+        intended_tutor_character: 'Evidence gatekeeper',
+        dramatic_shape: 'claim -> audit gate',
+        tutor_adaptation_policy: 'peripeteia',
+        affective_adaptation_policy: 'procedural_sensitive',
+        turn_plan: [
+          {
+            at: { turn: 2 },
+            role: 'tutor',
+            moves: ['stock_take', 'route_change', 'action_gate'],
+            route_change: { from: 'single metric', to: 'evidence table' },
+          },
+        ],
+      },
+      plan,
+    );
+    assert.equal(notes.curriculum.lesson_objective, 'Write a bounded deployment claim.');
+    assert.equal(notes.curriculum.learner_artifact, 'model audit and claim-evidence table');
+    assert.equal(notes.world_contract.spec_hash, drama.curriculum_binding.world_adaptation_spec_hash);
+    assert.equal(notes.rhetoric.allowed_public_form, 'audit-table questioning without naming hidden labels');
+    assert.equal(notes.script_lowering.affective_adaptation_policy, 'procedural_sensitive');
+    assert.deepEqual(notes.script_lowering.turn_plan_summary[0].moves, ['stock_take', 'route_change', 'action_gate']);
+
+    const full = renderHeldOutTranscript(
+      {
+        run: { curriculum_script_notes: notes },
+        directorPlan: plan,
+        turns: [],
+      },
+      { tid: 'T06', dramaId: drama.id, mode: 'full' },
+    );
+    assert.match(full, /Curriculum -> Rhetoric -> Script Notes/u);
+    assert.match(full, /lesson_objective/u);
+    assert.match(full, /Write a bounded deployment claim/u);
   });
 
   it('keeps the classic adaptation target spec taxonomically separated', () => {
@@ -439,6 +673,24 @@ describe('generate-pedagogical-dramas', () => {
     assert.match(plan.side_constraints.tutor, /device is fitted to the exact pressure/);
     assert.equal(plan.peripeteia_ending_shape, 'learner actional performance followed by earned learner reorientation');
     assert.equal(plan.ending_speaker, 'learner');
+  });
+
+  it('adds a procedural-sensitive affective adaptation layer to director plans', () => {
+    const plan = withAffectiveAdaptationPolicy(
+      {
+        side_constraints: {
+          tutor: 'Use the visible object.',
+          learner: 'Remain defensive.',
+        },
+      },
+      'procedural_sensitive',
+    );
+
+    assert.equal(plan.affective_adaptation_policy, 'procedural_sensitive');
+    assert.match(plan.affective_adaptation_contract, /whether or not a procedural route change occurs/u);
+    assert.match(plan.side_constraints.tutor, /face-saving, defensiveness/u);
+    assert.match(plan.side_constraints.tutor, /stricter evidence gate/u);
+    assert.match(plan.side_constraints.learner, /brittle compliance/u);
   });
 
   it('flags explicit public self-reframing in no-cue branches', () => {

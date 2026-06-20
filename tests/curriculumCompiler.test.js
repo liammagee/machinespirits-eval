@@ -66,6 +66,7 @@ test('curriculum drama compiler emits runnable drama seeds with curriculum bindi
   const module6Drama = spec.dramas.find((drama) => drama.curriculum_binding.module_id === 'AF6');
   assert.ok(module6Drama, 'expected AF6 drama');
   assert.equal(module6Drama.tutor_adaptation_policy, 'peripeteia');
+  assert.equal(module6Drama.affective_adaptation_policy, 'procedural_sensitive');
   assert.equal(module6Drama.director_revisit_policy, 'reframe');
   assert.equal(module6Drama.curriculum_binding.curriculum_id, 'ai_foundations_v1');
   assert.ok(module6Drama.curriculum_binding.kc_ids.includes('AF-611'));
@@ -194,6 +195,10 @@ test('AF6 lowers from the same world source into adaptive and dogmatic drama var
     module6Dramas.map((drama) => drama.tutor_adaptation_policy).sort(),
     ['peripeteia', 'routine'],
   );
+  assert.deepEqual(
+    [...new Set(module6Dramas.map((drama) => drama.affective_adaptation_policy))],
+    ['procedural_sensitive'],
+  );
   assert.equal(new Set(module6Dramas.map((drama) => drama.curriculum_binding.world_adaptation_spec_hash)).size, 1);
   assert.equal(new Set(module6Dramas.map((drama) => drama.curriculum_binding.rhetorical_dramatic_plan_hash)).size, 2);
 
@@ -220,6 +225,7 @@ test('rhetorical dramatic plan lowering preserves provenance without treating it
   assert.equal(drama.curriculum_binding.world_adaptation_spec_id, plan.source_world_adaptation_spec_id);
   assert.equal(drama.curriculum_binding.world_adaptation_spec_hash, plan.source_world_adaptation_spec_hash);
   assert.equal(drama.intended_lean, 'rhetorical_dramatic_curriculum_plan');
+  assert.equal(drama.affective_adaptation_policy, 'procedural_sensitive');
   assert.match(plans.meta.boundary, /not an evaluator/u);
 });
 

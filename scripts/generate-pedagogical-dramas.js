@@ -94,6 +94,7 @@ const DIALOGUE_APPROACHES_DB = path.join(CAL_DIR, 'dialogue-approaches.yaml');
 const DIRECTOR_REVISIT_POLICIES = new Set(['none', 'anchor', 'revoice', 'reconsider', 'reframe']);
 const DIRECTOR_REVISIT_ANCHORS = new Set(['latest', 'opening', 'misframing-candidate']);
 const TUTOR_ADAPTATION_POLICIES = new Set(['none', 'routine', 'uptake', 'peripeteia', 'uptake+peripeteia']);
+const AFFECTIVE_ADAPTATION_POLICIES = new Set(['none', 'procedural_sensitive']);
 // claude CLI reasoning tiers (`claude --effort <level>`). codex tops out at xhigh;
 // the claude CLI adds a `max` tier above it. Used by the claude backend only —
 // agy exposes no effort flag, and codex reads CODEX_REASONING_EFFORT (env).
@@ -133,6 +134,7 @@ function parseArgs(argv) {
     force: false,
     reclean: false,
     only: null,
+    firstLesson: false,
     outDir: null,
     delibDir: null,
     transcriptsDir: null,
@@ -145,6 +147,7 @@ function parseArgs(argv) {
     directorVariationKey: null,
     pairedContinuationPolicies: null,
     pairedAdaptationArms: null,
+    affectiveAdaptationPolicy: null,
     generationConcurrency: 1,
     claudePersistentWorkers: false,
   };
@@ -154,6 +157,7 @@ function parseArgs(argv) {
     else if (t === '--dry-run') a.dryRun = true;
     else if (t === '--force') a.force = true;
     else if (t === '--reclean') a.reclean = true;
+    else if (t === '--first-lesson') a.firstLesson = true;
     else if (t === '--seed') a.seed = parseInt(argv[++i], 10);
     else if (t === '--max-turns') a.maxTurns = parseInt(argv[++i], 10);
     else if (t === '--model') a.model = argv[++i];
@@ -177,6 +181,7 @@ function parseArgs(argv) {
     else if (t === '--director-revisit-policy') a.directorRevisitPolicy = argv[++i];
     else if (t === '--director-revisit-anchor') a.directorRevisitAnchor = argv[++i];
     else if (t === '--director-variation-key') a.directorVariationKey = argv[++i];
+    else if (t === '--affective-adaptation-policy') a.affectiveAdaptationPolicy = argv[++i];
     else if (t === '--paired-continuation-policies') {
       a.pairedContinuationPolicies = String(argv[++i] || '')
         .split(',')
@@ -197,8 +202,14 @@ function parseArgs(argv) {
   if (a.effort && !CLAUDE_EFFORT_LEVELS.has(a.effort))
     throw new Error(`--effort must be low|medium|high|xhigh|max (got ${a.effort})`);
   if (!Number.isInteger(a.tidStart) || a.tidStart < 0) throw new Error('--tid-start must be a non-negative integer');
+  if (a.only && a.firstLesson) throw new Error('use either --only or --first-lesson, not both');
   if (!Number.isInteger(a.generationConcurrency) || a.generationConcurrency < 1) {
     throw new Error('--generation-concurrency must be a positive integer');
+  }
+  if (a.affectiveAdaptationPolicy && !AFFECTIVE_ADAPTATION_POLICIES.has(a.affectiveAdaptationPolicy)) {
+    throw new Error(
+      `--affective-adaptation-policy must be ${[...AFFECTIVE_ADAPTATION_POLICIES].join('|')} (got ${a.affectiveAdaptationPolicy})`,
+    );
   }
   if (a.pedagogyDb && !fs.existsSync(a.pedagogyDb)) throw new Error(`--pedagogy-db not found: ${a.pedagogyDb}`);
   if (a.dialogueDb && !fs.existsSync(a.dialogueDb)) throw new Error(`--dialogue-db not found: ${a.dialogueDb}`);
@@ -446,16 +457,43 @@ function formatPublicTurnText(role, text) {
   return asides ? `${asides}\n\n${directSpeech}` : directSpeech;
 }
 
+function formatConsolidatedStageText(texts) {
+  const clean = texts
+    .map((text) =>
+      String(text || '')
+        .replace(/[[\]]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim(),
+    )
+    .filter(Boolean)
+    .map((text) => (/[.?!]$/u.test(text) ? text : `${text}.`))
+    .join(' ');
+  return clean ? `[${clean}]` : '';
+}
+
 function renderTranscript(turns, removedSink) {
-  return (
-    turns
-      .map((t) => {
-        const { text, removed } = stripStageDirections(neutralize(t.text));
-        if (removedSink && removed.length) removed.forEach((r) => removedSink.push({ role: t.role, note: r }));
-        return `${t.role}: ${formatPublicTurnText(t.role, text)}`;
-      })
-      .join('\n\n') + '\n'
-  );
+  const blocks = [];
+  let pendingStageTexts = [];
+  const flushStage = () => {
+    if (!pendingStageTexts.length) return;
+    const stageText = formatConsolidatedStageText(pendingStageTexts);
+    if (stageText) blocks.push(`STAGE: ${stageText}`);
+    pendingStageTexts = [];
+  };
+
+  for (const t of turns) {
+    const role = String(t.role || '').toUpperCase();
+    const { text, removed } = stripStageDirections(neutralize(t.text));
+    if (removedSink && removed.length) removed.forEach((r) => removedSink.push({ role, note: r }));
+    if (role === 'STAGE') {
+      pendingStageTexts.push(text);
+      continue;
+    }
+    flushStage();
+    blocks.push(`${role}: ${formatPublicTurnText(role, text)}`);
+  }
+  flushStage();
+  return `${blocks.join('\n\n')}\n`;
 }
 
 function publicReaderContextText(plan) {
@@ -929,6 +967,9 @@ function keyItemFor(d, nTutor, nLearner, qualityWarnings = []) {
     director_revisit_anchor:
       d._directorRevisitPolicy && d._directorRevisitPolicy !== 'none' ? d._directorRevisitAnchor || 'latest' : null,
     tutor_adaptation_policy: d._tutorAdaptationPolicy || d._directorPlan?.tutor_adaptation_policy || 'none',
+    affective_adaptation_policy:
+      d._affectiveAdaptationPolicy || d.affective_adaptation_policy || d._directorPlan?.affective_adaptation_policy || 'none',
+    curriculum_script_notes: curriculumScriptNotesForDrama(d, d._directorPlan || null),
     opening_speaker: d._directorPlan?.opening_speaker || null,
     ending_speaker: d._directorPlan?.ending_speaker || null,
     quality_status: blocked ? 'review_before_scoring' : 'ok',
@@ -2244,6 +2285,19 @@ function compactList(items, max = 4) {
   return (items || []).filter(Boolean).slice(0, max);
 }
 
+function moduleOrdinalForDrama(d, fallback = Number.MAX_SAFE_INTEGER) {
+  const raw = d?.curriculum_binding?.module_id || d?.module_id || d?.id || '';
+  const match = String(raw).match(/\bAF(\d+)\b/u);
+  return match ? Number(match[1]) : fallback;
+}
+
+function selectFirstLessonDrama(dramas = []) {
+  if (!Array.isArray(dramas) || !dramas.length) return null;
+  return dramas
+    .map((drama, index) => ({ drama, index, moduleOrdinal: moduleOrdinalForDrama(drama, index) }))
+    .sort((a, b) => a.moduleOrdinal - b.moduleOrdinal || a.index - b.index)[0].drama;
+}
+
 function worldAdaptationBindingForDrama(d) {
   const binding = d?.curriculum_binding || {};
   const specId = binding.world_adaptation_spec_id || binding.world_adaptation?.id || d?.world_adaptation_spec_id || null;
@@ -2279,6 +2333,105 @@ function rhetoricalDramaticPlanBindingForDrama(d) {
     plan_hash: planHash,
     public_constraints_present: Boolean(constraints),
   };
+}
+
+function turnPlanSummaryForNotes(turnPlan = []) {
+  return compactList(Array.isArray(turnPlan) ? turnPlan : [], 8).map((entry) => ({
+    at: entry.at || null,
+    role: entry.role || null,
+    moves: compactList(entry.moves, 8),
+    route_change: entry.route_change || null,
+    forbid: compactList(entry.forbid, 8),
+    when_trigger: compactList(entry.when_trigger, 8),
+  }));
+}
+
+function curriculumScriptNotesForDrama(d, directorPlan = null) {
+  const binding = d?.curriculum_binding || {};
+  const worldConstraints = binding.world_public_constraints || {};
+  const rhetoricalConstraints = binding.rhetorical_public_constraints || {};
+  const turnPlan = Array.isArray(d?.turn_plan) ? d.turn_plan : directorPlan?.turn_plan || [];
+  const affectivePolicy =
+    d?._affectiveAdaptationPolicy || d?.affective_adaptation_policy || directorPlan?.affective_adaptation_policy || 'none';
+  const tutorPolicy = d?._tutorAdaptationPolicy || d?.tutor_adaptation_policy || directorPlan?.tutor_adaptation_policy || 'none';
+  if (
+    !binding.curriculum_id &&
+    !binding.module_id &&
+    !rhetoricalConstraints.public_task &&
+    !worldConstraints.artifact &&
+    !turnPlan.length
+  ) {
+    return null;
+  }
+  return {
+    boundary:
+      'Held-out explanatory notes. Use for provenance and diagnosis; do not expose these labels, hashes, or hidden curriculum terms in public dialogue.',
+    curriculum: {
+      curriculum_id: binding.curriculum_id || null,
+      module_id: binding.module_id || null,
+      module_title: binding.module_title || null,
+      lesson_objective: rhetoricalConstraints.public_task || d?.topic || null,
+      learner_artifact: rhetoricalConstraints.artifact || worldConstraints.artifact || binding.main_artifact || null,
+      evidence_standard:
+        rhetoricalConstraints.public_evidence_standard ||
+        worldConstraints.primary_verifier ||
+        binding.primary_verifier ||
+        null,
+      knowledge_component_ids: compactList(binding.kc_ids, 12),
+      misconception_pressure: compactList(binding.misconceptions, 6),
+    },
+    world_contract: {
+      spec_id: binding.world_adaptation_spec_id || d?.world_adaptation_spec_id || null,
+      spec_hash: binding.world_adaptation_spec_hash || d?.world_adaptation_spec_hash || null,
+      locked_at_compile_time: binding.world_locked_at_compile_time ?? null,
+      preferred_action_families: compactList(worldConstraints.preferred_action_families, 8),
+      disallowed_action_families: compactList(worldConstraints.disallowed_action_families, 8),
+      success_observables: compactList(worldConstraints.success_observables, 6),
+      forbidden_public_moves: compactList(worldConstraints.forbidden_public_moves, 6),
+    },
+    rhetoric: {
+      plan_id: binding.rhetorical_dramatic_plan_id || d?.rhetorical_dramatic_plan_id || null,
+      plan_hash: binding.rhetorical_dramatic_plan_hash || d?.rhetorical_dramatic_plan_hash || null,
+      allowed_public_form: rhetoricalConstraints.allowed_rhetorical_form || null,
+      scene: rhetoricalConstraints.scene || directorPlan?.scene_setting || null,
+      action_gate: rhetoricalConstraints.action_gate || null,
+      forbidden_public_exposure: compactList(rhetoricalConstraints.forbidden_public_exposure, 8),
+    },
+    script_lowering: {
+      scenario_name: d?.scenario_name || null,
+      learner_start_state: d?.learner_start_state || null,
+      intended_tutor_character: d?.intended_tutor_character || null,
+      dramatic_shape: d?.dramatic_shape || null,
+      tutor_adaptation_policy: tutorPolicy,
+      affective_adaptation_policy: affectivePolicy,
+      turn_plan_summary: turnPlanSummaryForNotes(turnPlan),
+    },
+  };
+}
+
+function curriculumScriptNotesForTrace(trace, keyItem = null) {
+  if (trace?.run?.curriculum_script_notes) return trace.run.curriculum_script_notes;
+  const d = {
+    id: keyItem?.drama_id || trace?.drama_id || trace?.dramaId || null,
+    discipline: keyItem?.discipline || null,
+    condition: keyItem?.condition || null,
+    topic: trace?.topic || null,
+    scenario_name: keyItem?.scenario_name || null,
+    learner_start_state: keyItem?.learner_start_state || null,
+    intended_tutor_character: keyItem?.intended_tutor_character || null,
+    dramatic_shape: keyItem?.dramatic_shape || null,
+    tutor_adaptation_policy: keyItem?.tutor_adaptation_policy || trace?.run?.tutor_adaptation_policy || 'none',
+    affective_adaptation_policy:
+      keyItem?.affective_adaptation_policy || trace?.run?.affective_adaptation_policy || 'none',
+    curriculum_binding: keyItem?.curriculum_binding || {},
+    turn_plan: trace?.directorPlan?.turn_plan || [],
+  };
+  const notes = curriculumScriptNotesForDrama(d, trace?.directorPlan || null);
+  if (notes) {
+    notes.boundary =
+      'Held-out explanatory notes reconstructed from the trace/key. Use for provenance and diagnosis; do not expose these labels, hashes, or hidden curriculum terms in public dialogue.';
+  }
+  return notes;
 }
 
 function worldConstraintTextForDrama(d) {
@@ -2799,6 +2952,42 @@ function withTutorAdaptationPolicy(plan, policy = 'none') {
   };
 }
 
+function affectiveAdaptationContract(policy = 'none') {
+  if (policy === 'none') return '';
+  if (policy !== 'procedural_sensitive') {
+    throw new Error(`unknown affective adaptation policy: ${policy}`);
+  }
+  return [
+    'Affective adaptation layer: run this whether or not a procedural route change occurs.',
+    'Privately infer the learner pressure at stake: face-saving, defensiveness, shame risk, status threat, fatigue, anxiety, overconfidence, or brittle compliance.',
+    'If the tutor makes a procedural change, fit the affective stance to that change: a stricter evidence gate needs respectful firmness and status protection; a new object or representation needs cognitive-load relief; a role/status shift needs explicit ownership boundaries; an action gate needs lowered social risk for an incomplete try.',
+    'If no procedural change occurs, still adapt affect through pacing, address, directness, silence, formality, accountability, or status protection.',
+    'Do not substitute warmth for evidence, lower the evidence standard, expose hidden labels, or solve the artifact for the learner.',
+  ].join(' ');
+}
+
+function withAffectiveAdaptationPolicy(plan, policy = 'none') {
+  if (!plan) return plan;
+  if (!AFFECTIVE_ADAPTATION_POLICIES.has(policy)) throw new Error(`unknown affective adaptation policy: ${policy}`);
+  if (policy === 'none') return { ...plan, affective_adaptation_policy: 'none' };
+  const contract = affectiveAdaptationContract(policy);
+  const sideConstraints = { ...(plan.side_constraints || {}) };
+  sideConstraints.tutor = combineText(
+    sideConstraints.tutor,
+    `${contract} The tutor's private review should name the affective stance and how it fits the current procedural move, if any.`,
+  );
+  sideConstraints.learner = combineText(
+    sideConstraints.learner,
+    'Affective-response constraint: let resistance, defensiveness, fatigue, status concern, or brittle compliance remain visible when it is plausible; do not convert every affective adjustment into immediate agreement.',
+  );
+  return {
+    ...plan,
+    affective_adaptation_policy: policy,
+    affective_adaptation_contract: contract,
+    side_constraints: sideConstraints,
+  };
+}
+
 function extractJsonObject(text) {
   const raw = String(text || '').trim();
   if (!raw) return null;
@@ -2934,9 +3123,15 @@ async function buildDirectorPlan(d, llmCall, args) {
           withDirectorCueProvenance(
             applyApproachDirectorOverrides(
               d,
-              withTutorAdaptationPolicy(
-                withDirectorRevisitCue(merged, revisitPolicy, revisitAnchor),
-                d._tutorAdaptationPolicy || d.tutor_adaptation_policy || 'none',
+              withAffectiveAdaptationPolicy(
+                withTutorAdaptationPolicy(
+                  withDirectorRevisitCue(merged, revisitPolicy, revisitAnchor),
+                  d._tutorAdaptationPolicy || d.tutor_adaptation_policy || 'none',
+                ),
+                d._affectiveAdaptationPolicy ||
+                  d.affective_adaptation_policy ||
+                  args.affectiveAdaptationPolicy ||
+                  'none',
               ),
             ),
           ),
@@ -2958,9 +3153,15 @@ async function buildDirectorPlan(d, llmCall, args) {
           withDirectorCueProvenance(
             applyApproachDirectorOverrides(
               d,
-              withTutorAdaptationPolicy(
-                withDirectorRevisitCue(merged, revisitPolicy, revisitAnchor),
-                d._tutorAdaptationPolicy || d.tutor_adaptation_policy || 'none',
+              withAffectiveAdaptationPolicy(
+                withTutorAdaptationPolicy(
+                  withDirectorRevisitCue(merged, revisitPolicy, revisitAnchor),
+                  d._tutorAdaptationPolicy || d.tutor_adaptation_policy || 'none',
+                ),
+                d._affectiveAdaptationPolicy ||
+                  d.affective_adaptation_policy ||
+                  args.affectiveAdaptationPolicy ||
+                  'none',
               ),
             ),
           ),
@@ -3001,6 +3202,13 @@ function reclean(args) {
   for (const f of jsons) {
     const tid = f.replace(/\.json$/, '');
     const trace = JSON.parse(fs.readFileSync(path.join(args.delibDir, f), 'utf8'));
+    const keyItem = keyObj?.items?.[tid] || null;
+    trace.run = trace.run || {};
+    if (!trace.run.affective_adaptation_policy && keyItem?.affective_adaptation_policy) {
+      trace.run.affective_adaptation_policy = keyItem.affective_adaptation_policy;
+    }
+    trace.run.curriculum_script_notes =
+      trace.run.curriculum_script_notes || curriculumScriptNotesForTrace(trace, keyItem);
     const turns = externalTurns(trace, { restoreLeakedEgo: true });
     const removed = [];
     const publicTranscript = renderTranscript(turns, removed);
@@ -3027,6 +3235,10 @@ function reclean(args) {
     if (keyObj?.items?.[tid]) {
       keyObj.items[tid].quality_status = trace.quality_status;
       keyObj.items[tid].quality_warnings = qualityWarnings;
+      keyObj.items[tid].affective_adaptation_policy =
+        keyObj.items[tid].affective_adaptation_policy || trace.run.affective_adaptation_policy || 'none';
+      keyObj.items[tid].curriculum_script_notes =
+        keyObj.items[tid].curriculum_script_notes || trace.run.curriculum_script_notes || null;
     }
     warnings.push(...qualityWarnings.map(formatQualityWarning));
     if (removed.length) {
@@ -3133,6 +3345,8 @@ function formatSuperegoInnerAddress(text) {
     [/\bPUBLIC_ACTION_GATE:\s*/gi, 'Public action gate: '],
     [/\bMECHANISM_QUALITY_CHECK:\s*/gi, 'Mechanism quality check: '],
     [/\bREGISTER_CHECK:\s*/gi, 'Register check: '],
+    [/\bAFFECT_CHECK:\s*/gi, 'Affective stance check: '],
+    [/\bAFFECTIVE_STANCE:\s*/gi, 'Affective stance: '],
     [/\bThe Ego is\b/g, 'You are'],
     [/\bthe Ego is\b/g, 'you are'],
     [/\bThe Ego was\b/g, 'You were'],
@@ -3171,6 +3385,16 @@ function renderHeldOutTranscript(trace, { tid, dramaId, mode }) {
     lines.push('```yaml');
     lines.push(yaml.stringify(trace.directorPlan).trim());
     lines.push('```', '');
+  }
+
+  if (mode === 'full') {
+    const notes = trace.run?.curriculum_script_notes || curriculumScriptNotesForTrace(trace);
+    if (notes) {
+      lines.push('## Curriculum -> Rhetoric -> Script Notes', '');
+      lines.push('```yaml');
+      lines.push(yaml.stringify(notes).trim());
+      lines.push('```', '');
+    }
   }
 
   if (mode === 'full') {
@@ -3224,6 +3448,112 @@ function writeHeldOutTranscripts({ args, tid, dramaId, trace, publicTranscript }
   fs.writeFileSync(artifacts.tutor, renderHeldOutTranscript(trace, { tid, dramaId, mode: 'tutor' }), 'utf8');
   fs.writeFileSync(artifacts.learner, renderHeldOutTranscript(trace, { tid, dramaId, mode: 'learner' }), 'utf8');
   return Object.fromEntries(Object.entries(artifacts).map(([k, v]) => [k, path.relative(WORKTREE_ROOT, v)]));
+}
+
+function runMetadataForDrama({ args, d, directorPlan, runtime, transcriptArtifacts, extra = {} }) {
+  return {
+    generator: args.roleMap ? 'mixed' : args.generator,
+    role_map: args.roleMap || null,
+    director_mode: args.directorMode,
+    director_revisit_cue: d._directorRevisitPolicy !== 'none',
+    director_revisit_policy: d._directorRevisitPolicy,
+    director_revisit_anchor: d._directorRevisitAnchor,
+    tutor_adaptation_policy: d._tutorAdaptationPolicy || directorPlan?.tutor_adaptation_policy || 'none',
+    affective_adaptation_policy:
+      d._affectiveAdaptationPolicy || d.affective_adaptation_policy || directorPlan?.affective_adaptation_policy || 'none',
+    director_variation_key: d._directorVariationKey || null,
+    stage_direction_style: stageDirectionStyleFor(d)?.id || null,
+    model: generatorModelLabel(args),
+    codex_reasoning_effort: CODEX_REASONING_EFFORT,
+    writing_pad: runtime.writingPad,
+    world_adaptation: worldAdaptationBindingForDrama(d),
+    rhetorical_dramatic_plan: rhetoricalDramaticPlanBindingForDrama(d),
+    curriculum_script_notes: curriculumScriptNotesForDrama(d, directorPlan),
+    transcript_artifacts: transcriptArtifacts,
+    ...extra,
+  };
+}
+
+function writePartialTurnArtifacts({ args, d, trace, directorPlan, runtime, turn }) {
+  const partialArgs = {
+    ...args,
+    outDir: path.join(args.outDir, '_partial'),
+    delibDir: path.join(args.delibDir, '_partial'),
+    transcriptsDir: path.join(args.transcriptsDir, '_partial'),
+  };
+  fs.mkdirSync(partialArgs.outDir, { recursive: true });
+  fs.mkdirSync(partialArgs.delibDir, { recursive: true });
+  const removedNotes = [];
+  const publicTranscript = renderTranscript(externalTurns(trace), removedNotes);
+  const outTxt = path.join(partialArgs.outDir, `${d._tid}.txt`);
+  fs.writeFileSync(outTxt, publicTranscript, 'utf8');
+  trace.run = {
+    ...(trace.run || {}),
+    affective_adaptation_policy:
+      d._affectiveAdaptationPolicy || d.affective_adaptation_policy || directorPlan?.affective_adaptation_policy || 'none',
+    curriculum_script_notes: trace.run?.curriculum_script_notes || curriculumScriptNotesForDrama(d, directorPlan),
+  };
+  const transcriptArtifacts = writeHeldOutTranscripts({
+    args: partialArgs,
+    tid: d._tid,
+    dramaId: d.id,
+    trace,
+    publicTranscript,
+  });
+  const payload = {
+    tid: d._tid,
+    drama_id: d.id,
+    partial: true,
+    flushed_at: new Date().toISOString(),
+    last_flushed_turn: turn
+      ? {
+          turnNumber: turn.turnNumber ?? null,
+          phase: turn.phase || null,
+          timestamp: turn.timestamp || null,
+        }
+      : null,
+    run: runMetadataForDrama({
+      args,
+      d,
+      directorPlan,
+      runtime,
+      transcriptArtifacts,
+      extra: {
+        partial: true,
+        status: 'running',
+      },
+    }),
+    directorPlan,
+    turns: trace.turns,
+    metrics: trace.metrics,
+    writingPadSnapshots: trace.writingPadSnapshots,
+    quality_status: 'running',
+    quality_warnings: [],
+    stripped_stage_directions: removedNotes,
+  };
+  fs.writeFileSync(path.join(partialArgs.delibDir, `${d._tid}.json`), JSON.stringify(payload, null, 2), 'utf8');
+  return {
+    sample: path.relative(WORKTREE_ROOT, outTxt),
+    transcripts: transcriptArtifacts,
+    deliberation: path.relative(WORKTREE_ROOT, path.join(partialArgs.delibDir, `${d._tid}.json`)),
+  };
+}
+
+function createPartialTurnFlusher({ args, d, directorPlan, runtime, progress, progressKey = d._tid }) {
+  return ({ turn, trace }) => {
+    try {
+      const artifacts = writePartialTurnArtifacts({ args, d, trace, directorPlan, runtime, turn });
+      const phase = turn?.phase || 'turn';
+      const turnNumber = turn?.turnNumber ?? '?';
+      progress?.note?.(`${progressKey} partial flush ${phase} ${turnNumber} -> ${artifacts.sample}`);
+    } catch (err) {
+      console.warn(
+        `[warn] ${progressKey} partial flush failed after ${turn?.phase || 'turn'} ${turn?.turnNumber ?? '?'}: ${
+          err?.message || String(err)
+        }`,
+      );
+    }
+  };
 }
 
 function prepareWritingPad(args) {
@@ -3300,6 +3630,11 @@ function writeGeneratedDramaArtifacts({
           director_revisit_policy: d._directorRevisitPolicy,
           director_revisit_anchor: d._directorRevisitAnchor,
           tutor_adaptation_policy: d._tutorAdaptationPolicy || directorPlan?.tutor_adaptation_policy || 'none',
+          affective_adaptation_policy:
+            d._affectiveAdaptationPolicy ||
+            d.affective_adaptation_policy ||
+            directorPlan?.affective_adaptation_policy ||
+            'none',
           director_variation_key: d._directorVariationKey || null,
           stage_direction_style: stageDirectionStyleFor(d)?.id || null,
           model: generatorModelLabel(args),
@@ -3307,6 +3642,7 @@ function writeGeneratedDramaArtifacts({
           writing_pad: runtime.writingPad,
           world_adaptation: worldAdaptationBindingForDrama(d),
           rhetorical_dramatic_plan: rhetoricalDramaticPlanBindingForDrama(d),
+          curriculum_script_notes: curriculumScriptNotesForDrama(d, directorPlan),
           transcript_artifacts: transcriptArtifacts,
           ...(pairedContinuation ? { paired_continuation: pairedContinuation } : {}),
         },
@@ -3330,6 +3666,7 @@ function baseKeyObject({
   directorPolicy,
   directorAnchor,
   tutorAdaptationPolicy = 'none',
+  affectiveAdaptationPolicy = args.affectiveAdaptationPolicy || 'none',
   transcriptsDir,
   order,
   paired = null,
@@ -3366,6 +3703,7 @@ function baseKeyObject({
     director_revisit_policy: directorPolicy,
     director_revisit_anchor: directorPolicy === 'none' ? null : directorAnchor,
     tutor_adaptation_policy: tutorAdaptationPolicy,
+    affective_adaptation_policy: affectiveAdaptationPolicy,
     approach_databases: {
       pedagogical: path.relative(WORKTREE_ROOT, args.pedagogyDb),
       dialogue: path.relative(WORKTREE_ROOT, args.dialogueDb),
@@ -3499,6 +3837,14 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
                 maxTurns ? turnCount / maxTurns : 0,
                 `${d._tid} prefix · ${phase} ${turnCount}/${maxTurns}`,
               ),
+            onTurn: createPartialTurnFlusher({
+              args,
+              d: prefixDrama,
+              directorPlan,
+              runtime,
+              progress,
+              progressKey: `${d._tid}:prefix`,
+            }),
           },
         );
         const resumeTrace = tracePrefixThroughTutorTurn(prefixTrace, 2);
@@ -3513,9 +3859,15 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
             throw new Error(`paired continuation output exists: ${outTxt} (pass --force to overwrite)`);
           }
           const branchDirectorPlan = withDirectorCueProvenance(
-            withTutorAdaptationPolicy(
-              withPairedDirectorRevisitCue(directorPlan, branch.revisitPolicy, args.directorRevisitAnchor),
-              branch.tutorAdaptationPolicy,
+            withAffectiveAdaptationPolicy(
+              withTutorAdaptationPolicy(
+                withPairedDirectorRevisitCue(directorPlan, branch.revisitPolicy, args.directorRevisitAnchor),
+                branch.tutorAdaptationPolicy,
+              ),
+              d._affectiveAdaptationPolicy ||
+                d.affective_adaptation_policy ||
+                args.affectiveAdaptationPolicy ||
+                'none',
             ),
           );
           const branchDrama = {
@@ -3526,6 +3878,14 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
             _directorRevisitPolicy: branch.revisitPolicy,
             _directorRevisitAnchor: branch.revisitPolicy === 'none' ? null : args.directorRevisitAnchor,
             _tutorAdaptationPolicy: branch.tutorAdaptationPolicy,
+            _affectiveAdaptationPolicy:
+              d._affectiveAdaptationPolicy || d.affective_adaptation_policy || args.affectiveAdaptationPolicy || 'none',
+          };
+          const branchArgs = {
+            ...args,
+            outDir: dirs.outDir,
+            delibDir: dirs.delibDir,
+            transcriptsDir: dirs.transcriptsDir,
           };
           progress.note(`${d._tid} ${branch.key} starting`);
           console.log(`    ${branch.key} → continuing from prefix ${prefixHash} …`);
@@ -3556,6 +3916,14 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
                   maxTurns ? turnCount / maxTurns : 0,
                   `${d._tid} ${branch.key} · ${phase} ${turnCount}/${maxTurns}`,
                 ),
+              onTurn: createPartialTurnFlusher({
+                args: branchArgs,
+                d: branchDrama,
+                directorPlan: branchDirectorPlan,
+                runtime,
+                progress,
+                progressKey: `${d._tid}:${branch.key}`,
+              }),
             },
           );
           const turns = externalTurns(trace);
@@ -3592,6 +3960,13 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
               'utf8',
             );
           }
+          trace.run = {
+            ...(trace.run || {}),
+            affective_adaptation_policy:
+              branchDrama._affectiveAdaptationPolicy || branchDirectorPlan?.affective_adaptation_policy || 'none',
+            curriculum_script_notes:
+              trace.run?.curriculum_script_notes || curriculumScriptNotesForDrama(branchDrama, branchDirectorPlan),
+          };
           const transcriptArtifacts = writeHeldOutTranscripts({
             args: { ...args, transcriptsDir: dirs.transcriptsDir },
             tid: d._tid,
@@ -3606,6 +3981,8 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
             branch_policy: branch.key,
             director_revisit_policy: branch.revisitPolicy,
             tutor_adaptation_policy: branch.tutorAdaptationPolicy,
+            affective_adaptation_policy:
+              branchDrama._affectiveAdaptationPolicy || branchDirectorPlan?.affective_adaptation_policy || 'none',
           };
           writeGeneratedDramaArtifacts({
             args,
@@ -3691,8 +4068,14 @@ async function main() {
   const spec = yaml.parse(fs.readFileSync(args.spec, 'utf8'));
   const dramas = spec.dramas || [];
   if (dramas.length === 0) throw new Error('no dramas in spec');
+  let selectedDramas = dramas;
+  if (args.firstLesson) {
+    const first = selectFirstLessonDrama(dramas);
+    if (!first) throw new Error('--first-lesson matched no dramas');
+    selectedDramas = [first];
+  }
   const approachDatabases = loadApproachDatabases(args);
-  dramas.forEach((d) => attachApproaches(d, approachDatabases));
+  selectedDramas.forEach((d) => attachApproaches(d, approachDatabases));
 
   // Seeded T-id assignment over the FULL spec FIRST, so the neutral id encodes
   // neither condition nor spec order. --tid-start offsets the numbering so a
@@ -3700,7 +4083,7 @@ async function main() {
   // the Fisher–Yates shuffle remapping the already-landed ids — the shuffle is
   // NOT stable under a set-size change.
   const rng = mulberry32(args.seed);
-  let order = shuffled(dramas, rng);
+  let order = shuffled(selectedDramas, rng);
   const width = Math.max(2, String(args.tidStart + order.length).length);
   order.forEach((d, i) => (d._tid = `T${String(i + 1 + args.tidStart).padStart(width, '0')}`));
 
@@ -3725,6 +4108,14 @@ async function main() {
     if (!TUTOR_ADAPTATION_POLICIES.has(d._tutorAdaptationPolicy)) {
       throw new Error(
         `drama ${d.id || '<unknown>'} tutor_adaptation_policy must be ${[...TUTOR_ADAPTATION_POLICIES].join('|')}`,
+      );
+    }
+    d._affectiveAdaptationPolicy = args.affectiveAdaptationPolicy || d.affective_adaptation_policy || 'none';
+    if (!AFFECTIVE_ADAPTATION_POLICIES.has(d._affectiveAdaptationPolicy)) {
+      throw new Error(
+        `drama ${d.id || '<unknown>'} affective_adaptation_policy must be ${[
+          ...AFFECTIVE_ADAPTATION_POLICIES,
+        ].join('|')}`,
       );
     }
     d._directorVariationKey = d.director_variation_key || args.directorVariationKey || null;
@@ -3756,7 +4147,9 @@ async function main() {
   console.log(
     `  generator: ${args.roleMap ? 'mixed' : args.generator} · dramas: ${order.length} · maxTurns: ${args.maxTurns} · ` +
       `seed: ${args.seed}${args.tidStart ? ` · tid-start: ${args.tidStart}` : ''} · director: ${args.directorMode}` +
-      `${revisitSummary.cue ? ` + revisit-${revisitSummary.policy}/${revisitSummary.anchor}` : ''}`,
+      `${args.firstLesson ? ' · first-lesson' : ''}` +
+      `${revisitSummary.cue ? ` + revisit-${revisitSummary.policy}/${revisitSummary.anchor}` : ''}` +
+      `${args.affectiveAdaptationPolicy ? ` · affect=${args.affectiveAdaptationPolicy}` : ''}`,
   );
   // Explicit model + code-version provenance. The genLabel/key historically said
   // "claude --model opus" for every run because args.model defaults to 'opus';
@@ -3780,7 +4173,8 @@ async function main() {
       `  ${d._tid} ← ${d.id}  [${d.condition}]  ${d.discipline} · persona=${d.persona} · ` +
         `tutor=${d.tutor_profile} · learner=${d.learner_profile}` +
         `${d._pedagogicalApproach || d._dialogueApproach ? ` · approach=${[d._pedagogicalApproach?.id, d._dialogueApproach?.id].filter(Boolean).join('+')}` : ''}` +
-        `${d._stageDirectionStyle ? ` · stage=${d._stageDirectionStyle.id}` : ''}`,
+        `${d._stageDirectionStyle ? ` · stage=${d._stageDirectionStyle.id}` : ''}` +
+        `${d._affectiveAdaptationPolicy && d._affectiveAdaptationPolicy !== 'none' ? ` · affect=${d._affectiveAdaptationPolicy}` : ''}`,
     );
   }
 
@@ -3860,6 +4254,11 @@ async function main() {
           if (fs.existsSync(tracePath)) {
             try {
               const traceJson = JSON.parse(fs.readFileSync(tracePath, 'utf8'));
+              traceJson.run = traceJson.run || {};
+              traceJson.run.affective_adaptation_policy =
+                traceJson.run.affective_adaptation_policy || d.affective_adaptation_policy || 'none';
+              traceJson.run.curriculum_script_notes =
+                traceJson.run.curriculum_script_notes || curriculumScriptNotesForDrama(d, traceJson.directorPlan || null);
               const t = externalTurns(traceJson, { restoreLeakedEgo: true });
               writeHeldOutTranscripts({
                 args,
@@ -3882,6 +4281,8 @@ async function main() {
                     d._stageDirectionStyle ||
                     null,
                   _directorPlan: traceJson.directorPlan || null,
+                  _affectiveAdaptationPolicy:
+                    traceJson.run?.affective_adaptation_policy || d.affective_adaptation_policy || 'none',
                 },
                 t.filter((x) => x.role === 'TUTOR').length,
                 t.filter((x) => x.role === 'LEARNER').length,
@@ -3940,6 +4341,13 @@ async function main() {
                 maxTurns ? turnCount / maxTurns : 0,
                 `${d._tid} · ${phase} ${turnCount}/${maxTurns}`,
               ),
+            onTurn: createPartialTurnFlusher({
+              args,
+              d,
+              directorPlan,
+              runtime,
+              progress,
+            }),
           },
         );
 
@@ -3967,6 +4375,15 @@ async function main() {
             'utf8',
           );
         }
+        trace.run = {
+          ...(trace.run || {}),
+          affective_adaptation_policy:
+            d._affectiveAdaptationPolicy ||
+            d.affective_adaptation_policy ||
+            directorPlan?.affective_adaptation_policy ||
+            'none',
+          curriculum_script_notes: trace.run?.curriculum_script_notes || curriculumScriptNotesForDrama(d, directorPlan),
+        };
         const transcriptArtifacts = writeHeldOutTranscripts({
           args,
           tid: d._tid,
@@ -3989,6 +4406,11 @@ async function main() {
                 director_revisit_policy: d._directorRevisitPolicy,
                 director_revisit_anchor: d._directorRevisitAnchor,
                 tutor_adaptation_policy: d._tutorAdaptationPolicy || directorPlan?.tutor_adaptation_policy || 'none',
+                affective_adaptation_policy:
+                  d._affectiveAdaptationPolicy ||
+                  d.affective_adaptation_policy ||
+                  directorPlan?.affective_adaptation_policy ||
+                  'none',
                 director_variation_key: d._directorVariationKey || null,
                 stage_direction_style: stageDirectionStyleFor(d)?.id || null,
                 model: generatorModelLabel(args),
@@ -3996,6 +4418,7 @@ async function main() {
                 writing_pad: runtime.writingPad,
                 world_adaptation: worldAdaptationBindingForDrama(d),
                 rhetorical_dramatic_plan: rhetoricalDramaticPlanBindingForDrama(d),
+                curriculum_script_notes: curriculumScriptNotesForDrama(d, directorPlan),
                 transcript_artifacts: transcriptArtifacts,
               },
               directorPlan,
@@ -4103,6 +4526,7 @@ if (path.resolve(process.argv[1] || '') === __filename) {
 
 export {
   attachApproaches,
+  curriculumScriptNotesForDrama,
   formatPublicTurnText,
   intrusiveStageDirectionFailures,
   keyItemFor,
@@ -4115,11 +4539,16 @@ export {
   qualityWarningsFor,
   reframeComplianceFailures,
   reframeMatchStats,
+  renderHeldOutTranscript,
+  renderTranscript,
   resolveApiModel,
   revoiceComplianceFailures,
   revoiceMatchStats,
+  selectFirstLessonDrama,
   stageDirectionStyleFor,
+  withAffectiveAdaptationPolicy,
   withWorldAdaptationConstraints,
+  writePartialTurnArtifacts,
   withPairedDirectorRevisitCue,
   withTutorAdaptationPolicy,
 };

@@ -893,6 +893,45 @@ function buildTutorAdaptationContext({
     .join('\n\n');
 }
 
+function buildTutorAffectiveAdaptationContext({
+  policy = 'none',
+  contract = '',
+  routeChange = null,
+  learnerReversalEvent = null,
+} = {}) {
+  if (!policy || policy === 'none') return '';
+  const lines = [
+    'Tutor-private affective adaptation layer:',
+    `- Policy: ${policy}.`,
+    contract
+      ? `- Contract: ${contract}`
+      : '- Contract: adapt tone, pacing, address, and status pressure without changing the evidence standard or solving the artifact for the learner.',
+    '- This layer runs whether or not a procedural route change has occurred.',
+    '- Privately name the learner pressure at stake: face-saving, defensiveness, shame risk, status threat, fatigue, anxiety, overconfidence, or brittle compliance.',
+  ];
+  if (routeChange && (routeChange.from || routeChange.to)) {
+    const from = routeChange.from || 'the current route';
+    const to = routeChange.to || 'a new route';
+    lines.push(
+      `- Current procedural change: ${from} -> ${to}. Choose an affective stance that fits this change, not a generic warmth move.`,
+    );
+    lines.push(
+      '- Route-sensitive stance guide: stricter evidence gate = respectful firmness plus status protection; new object/representation = cognitive-load relief; role/status shift = explicit ownership boundaries; action gate = lower the social risk of an incomplete try.',
+    );
+  } else {
+    lines.push(
+      '- No explicit procedural route change is available on this turn; adapt affect through pacing, address, directness, silence, formality, accountability, or status protection while preserving the task route.',
+    );
+  }
+  if (learnerReversalEvent?.triggerType) {
+    lines.push(`- Current learner pressure cue: ${learnerReversalEvent.triggerType}.`);
+  }
+  lines.push(
+    '- Do not substitute warmth for evidence, lower the evidence standard, expose hidden labels, or provide the finished proof/artifact.',
+  );
+  return lines.join('\n');
+}
+
 function buildLearnerActionalResponseContext({ tutorResponse = null, directorPlan = null } = {}) {
   // Prefer the per-turn effective policy the tutor actually ran under (a turn_plan
   // can make a turn peripeteia even when the global policy is 'none'); fall back to
@@ -1168,6 +1207,7 @@ export async function runInteraction(config, llmCall, options = {}) {
     observeInternals = true,
     forceMaxTurns = false,
     onProgress = null,
+    onTurn = null,
     // One-side replay (scripts/replay-one-side.js): when provided, the tutor's
     // turns are REPLAYED verbatim from a source transcript instead of generated,
     // so only the learner regenerates against a frozen tutor + (caller-supplied)
@@ -1212,6 +1252,28 @@ export async function runInteraction(config, llmCall, options = {}) {
       tutor: { before: null, after: null },
     },
     directorPlan,
+  };
+  // Best-effort live turn hook. Callers use this for partial transcript flushing
+  // during long worker-launched runs; observer failures must not poison dialogue.
+  const emitTurn = async (turn) => {
+    if (typeof onTurn !== 'function' || !turn) return;
+    try {
+      await onTurn({
+        turn,
+        trace: interactionTrace,
+        turnCount: turn.turnNumber,
+        maxTurns,
+      });
+    } catch {
+      /* live observers are best-effort */
+    }
+  };
+  const recordDirectorCueAndEmit = async (turnNumber, cue) => {
+    const before = interactionTrace.turns.length;
+    recordDirectorCue(interactionTrace, turnNumber, cue);
+    for (const turn of interactionTrace.turns.slice(before)) {
+      await emitTurn(turn);
+    }
   };
 
   // Get persona and profile configuration
@@ -1268,9 +1330,10 @@ export async function runInteraction(config, llmCall, options = {}) {
       learnerReversalEvent: openingLearnerReversalEvent,
       timestamp: new Date().toISOString(),
     });
+    await emitTurn(interactionTrace.turns.at(-1));
   } else {
     if (openingSpeaker === 'director') {
-      recordDirectorCue(interactionTrace, 0, {
+      await recordDirectorCueAndEmit(0, {
         timing: 'scene_opening',
         instruction: directorPlan?.scene_opening || directorPlan?.scene_setting || 'The director sets the scene.',
         reasoning: directorPlan?.director_note || '',
@@ -1295,7 +1358,7 @@ export async function runInteraction(config, llmCall, options = {}) {
 
   const runLearnerPhase = async (phaseTurnCount, tutorResponse) => {
     const learnerDirectorCue = directorCueFor(directorPlan, phaseTurnCount, 'before_learner', conversationHistory);
-    recordDirectorCue(interactionTrace, phaseTurnCount, learnerDirectorCue);
+    await recordDirectorCueAndEmit(phaseTurnCount, learnerDirectorCue);
     const learnerProfileContext = [
       buildDirectorContext(directorPlan, learnerDirectorCue, 'learner'),
       buildLearnerActionalResponseContext({ tutorResponse, directorPlan }),
@@ -1346,6 +1409,7 @@ export async function runInteraction(config, llmCall, options = {}) {
       learnerReversalEvent,
       timestamp: new Date().toISOString(),
     });
+    await emitTurn(interactionTrace.turns.at(-1));
 
     await updateLearnerWritingPad(learnerId, sessionId, learnerResponse, tutorResponse, topic);
     interactionTrace.outcomes.push(...detectTurnOutcomes(learnerResponse, tutorResponse));
@@ -1373,7 +1437,7 @@ export async function runInteraction(config, llmCall, options = {}) {
 
     // ================ TUTOR TURN ================
     const tutorDirectorCue = directorCueFor(directorPlan, turnCount, 'before_tutor');
-    recordDirectorCue(interactionTrace, turnCount, tutorDirectorCue);
+    await recordDirectorCueAndEmit(turnCount, tutorDirectorCue);
     const tutorTurnPlan = resolveTutorTurnPlan(directorPlan, turnCount);
     const tutorAdaptationPolicy = tutorTurnPlan?.policy || directorPlan?.tutor_adaptation_policy || 'none';
     const pressurePolicyActive =
@@ -1381,6 +1445,7 @@ export async function runInteraction(config, llmCall, options = {}) {
     latestLearnerReversalEvent = selectLearnerReversalEvent(pendingLearnerReversalEvents);
     const tutorPrivateState = {
       tutorAdaptationPolicy,
+      affectiveAdaptationPolicy: directorPlan?.affective_adaptation_policy || 'none',
       learnerReframeEvent: policyIncludes(tutorAdaptationPolicy, 'uptake') ? latestLearnerReframeEvent || null : null,
       learnerReversalEvent: pressurePolicyActive
         ? gateReversalEventByTrigger(latestLearnerReversalEvent || null, tutorTurnPlan?.whenTrigger)
@@ -1443,6 +1508,7 @@ export async function runInteraction(config, llmCall, options = {}) {
       learnerReversalEventCandidatesUsed: tutorResponse.learnerReversalEventCandidatesUsed || [],
       timestamp: new Date().toISOString(),
     });
+    await emitTurn(interactionTrace.turns.at(-1));
 
     emitProgress('tutor', turnCount);
 
@@ -1475,7 +1541,7 @@ export async function runInteraction(config, llmCall, options = {}) {
       instruction: directorPlan.closing_move || 'A final tutor line closes the scene.',
       reasoning: 'Director requested a tutor closing beat.',
     };
-    recordDirectorCue(interactionTrace, turnCount + 1, closingCue);
+    await recordDirectorCueAndEmit(turnCount + 1, closingCue);
     const tutorTurnPlan = resolveTutorTurnPlan(directorPlan, turnCount + 1);
     const tutorAdaptationPolicy = tutorTurnPlan?.policy || directorPlan?.tutor_adaptation_policy || 'none';
     const pressurePolicyActive =
@@ -1483,6 +1549,7 @@ export async function runInteraction(config, llmCall, options = {}) {
     latestLearnerReversalEvent = selectLearnerReversalEvent(pendingLearnerReversalEvents);
     const tutorPrivateState = {
       tutorAdaptationPolicy,
+      affectiveAdaptationPolicy: directorPlan?.affective_adaptation_policy || 'none',
       learnerReframeEvent: policyIncludes(tutorAdaptationPolicy, 'uptake') ? latestLearnerReframeEvent || null : null,
       learnerReversalEvent: pressurePolicyActive
         ? gateReversalEventByTrigger(latestLearnerReversalEvent || null, tutorTurnPlan?.whenTrigger)
@@ -1527,8 +1594,9 @@ export async function runInteraction(config, llmCall, options = {}) {
       timestamp: new Date().toISOString(),
       directorClosing: true,
     });
+    await emitTurn(interactionTrace.turns.at(-1));
   } else if (directorPlan?.ending_speaker === 'director' && interactionTrace.turns.at(-1)?.phase !== 'director') {
-    recordDirectorCue(interactionTrace, turnCount + 1, {
+    await recordDirectorCueAndEmit(turnCount + 1, {
       timing: 'scene_close',
       instruction:
         directorPlan.closing_move || directorPlan.director_closing || 'The room settles on the final exchange.',
@@ -1861,6 +1929,15 @@ async function runTutorTurn(
     routeChange: tutorPrivateState?.turnPlanRouteChange || null,
     forbid: tutorPrivateState?.turnPlanForbid || null,
   });
+  const affectiveAdaptationPolicy =
+    tutorPrivateState?.affectiveAdaptationPolicy || directorPlan?.affective_adaptation_policy || 'none';
+  const affectiveAdaptationActive = affectiveAdaptationPolicy && affectiveAdaptationPolicy !== 'none';
+  const affectiveAdaptationContext = buildTutorAffectiveAdaptationContext({
+    policy: affectiveAdaptationPolicy,
+    contract: directorPlan?.affective_adaptation_contract || '',
+    routeChange: tutorPrivateState?.turnPlanRouteChange || null,
+    learnerReversalEvent,
+  });
 
   // Tutor internal deliberation
   const internalDeliberation = [];
@@ -1877,7 +1954,7 @@ Recent conversation:
 ${conversationContext}
 
 ${directorContext ? `${directorContext}\n` : ''}
-${secretContext ? `${secretContext}\n` : ''}${tutorAdaptationContext ? `${tutorAdaptationContext}\n` : ''}
+${secretContext ? `${secretContext}\n` : ''}${tutorAdaptationContext ? `${tutorAdaptationContext}\n` : ''}${affectiveAdaptationContext ? `${affectiveAdaptationContext}\n` : ''}
 
 The learner just said:
 "${learnerMessage}"
@@ -1889,6 +1966,7 @@ Draft your INITIAL response as a tutor. Consider:
 ${learnerReframeEvent ? '4. How should your strategy change now that the learner has revised an earlier frame?' : ''}
 ${peripeteiaControl && learnerReversalEvent ? '4. What adaptive learning mechanism is needed now that the learner is resisting, stuck, or falsely closing?' : ''}
 ${routineControl && learnerReversalEvent ? '4. How can you continue the same routine teaching route without making a mechanism-level reversal?' : ''}
+${affectiveAdaptationActive ? '4. What affective pressure is visible, and what stance fits the current procedural move without lowering the evidence standard?' : ''}
 
 ${routineControl ? 'Keep the affective register already established unless ordinary politeness requires a small adjustment. Do not use register change as the adaptive mechanism in this routine-control branch.' : 'Choose the affective register that serves learning pressure. Warmth may help, but so may restraint, formality, silence, briskness, or public accountability. Do not use cheeriness or informality to soften away the conceptual resistance.'} Don't be condescending. Build on their words.
 
@@ -1930,7 +2008,7 @@ Recent conversation:
 ${conversationContext}
 
 ${directorContext ? `${directorContext}\n` : ''}
-${secretContext ? `${secretContext}\n` : ''}${tutorAdaptationContext ? `${tutorAdaptationContext}\n` : ''}
+${secretContext ? `${secretContext}\n` : ''}${tutorAdaptationContext ? `${tutorAdaptationContext}\n` : ''}${affectiveAdaptationContext ? `${affectiveAdaptationContext}\n` : ''}
 
 The learner said:
 "${learnerMessage}"
@@ -1951,6 +2029,7 @@ ${peripeteiaControl && learnerReversalEvent ? '8. Tutor habit/register: Does the
 ${peripeteiaControl && learnerReversalEvent ? '9. Learner action gate: Does the draft require the learner to act through the new device before closure, or does it let the scene end with explanation or reassurance?' : ''}
 ${peripeteiaControl && learnerReversalEvent ? '10. Mechanism quality: Is the new public device precise, fitted to the learner pressure, and usable by the learner now, or merely decorative novelty?' : ''}
 ${routineControl && learnerReversalEvent ? '5. Routine-control fidelity: Does the draft preserve the established route instead of inventing a new role, object, representation, evidence standard, task type, social pressure, or register?' : ''}
+${affectiveAdaptationActive ? 'Affective adaptation: Does the draft adapt tone, pacing, status pressure, address, or directness to the learner affect without lowering the evidence standard or solving the task?' : ''}
 
 Do NOT write the tutor's replacement response. You are advisory, not the public speaker.
 Comment on the draft and name what should be kept, questioned, or changed.
@@ -1969,7 +2048,8 @@ ${peripeteiaControl && learnerReversalEvent ? 'PUBLIC_ACTION_GATE: [the exact ac
 ${peripeteiaControl && learnerReversalEvent ? 'MECHANISM_QUALITY_CHECK: [PASS|PARTIAL|FAIL - is the new device specific, fitted to the pressure, and usable by the learner now rather than decorative, over-directed, or same-route?]' : ''}
 ${peripeteiaControl && learnerReversalEvent ? 'REGISTER_CHECK: [PASS|PARTIAL|FAIL - does the affective register serve the mechanism, or should it become warmer, cooler, more formal, quieter, more direct, or more accountable?]' : ''}
 ${routineControl && learnerReversalEvent ? 'ROUTINE_CHECK: [does the draft maintain the prior route without a mechanism-level reversal?]' : ''}
-${learnerReframeEvent || (peripeteiaControl && learnerReversalEvent) ? 'REQUIRED_REWRITE: [if any adaptation check is PARTIAL or FAIL, name the required public mechanism change; otherwise "none"]' : ''}
+${affectiveAdaptationActive ? 'AFFECT_CHECK: [PASS|PARTIAL|FAIL - name the learner pressure, the affective stance chosen, and how it fits the current procedural move or preserves the route]' : ''}
+${learnerReframeEvent || (peripeteiaControl && learnerReversalEvent) || affectiveAdaptationActive ? 'REQUIRED_REWRITE: [if any adaptation check is PARTIAL or FAIL, name the required public mechanism or affective stance change; otherwise "none"]' : ''}
 KEEP_OR_CHANGE: [keep as-is | revise lightly | revise substantially, with reasons]`;
 
     const superegoModel = superegoConfig.model || tutorModel;
@@ -2004,7 +2084,7 @@ Recent conversation:
 ${conversationContext}
 
 ${directorContext ? `${directorContext}\n` : ''}
-${secretContext ? `${secretContext}\n` : ''}${tutorAdaptationContext ? `${tutorAdaptationContext}\n` : ''}
+${secretContext ? `${secretContext}\n` : ''}${tutorAdaptationContext ? `${tutorAdaptationContext}\n` : ''}${affectiveAdaptationContext ? `${affectiveAdaptationContext}\n` : ''}
 
 The learner just said:
 "${learnerMessage}"
@@ -2017,13 +2097,14 @@ Internal teaching review feedback:
 
 You are the same tutor persona who wrote the initial response. The internal review does not draft public speech; it only comments on your suggestion.
 Adjudicate the feedback: keep the initial response if it is better, revise lightly if needed, or revise substantially if the critique reveals a real problem.
-Superego authority rule: if the review marks UPTAKE_CHECK, PERIPETEIA_CHECK, PUBLIC_DEVICE_CHECK, MECHANISM_QUALITY_CHECK, or REGISTER_CHECK as PARTIAL or FAIL, if MECHANISM_ROUTE says no real route change, or if PUBLIC_ACTION_GATE is missing, treat that critique as blocking for this turn. Do not keep the initial draft and do not make only a cosmetic edit; revise substantially unless the draft already contains visible public evidence that directly defeats the critique. If you override a blocking critique, your PRIVATE_DECISION must name the public evidence that justifies overriding it.
+Superego authority rule: if the review marks UPTAKE_CHECK, PERIPETEIA_CHECK, PUBLIC_DEVICE_CHECK, MECHANISM_QUALITY_CHECK, REGISTER_CHECK, or AFFECT_CHECK as PARTIAL or FAIL, if MECHANISM_ROUTE says no real route change, or if PUBLIC_ACTION_GATE is missing, treat that critique as blocking for this turn. Do not keep the initial draft and do not make only a cosmetic edit; revise substantially unless the draft already contains visible public evidence that directly defeats the critique. If you override a blocking critique, your PRIVATE_DECISION must name the public evidence that justifies overriding it.
 ${learnerReframeEvent ? 'Because a learner reframe event is present, your final answer must make one tutor adaptation move legible: contrast the old and new frames, change the task/question, update the evidence standard, or hand the replacement frame back to the learner for testing. Choose the move that best fits the scene; do not simply praise the insight and proceed.' : ''}
 ${peripeteiaControl && learnerReversalEvent ? 'Because a peripeteia event is present, your final answer must make an adaptive learning mechanism legible: take stock of the learner pressure, stop repeating the prior move, and switch route, task, evidence standard, role, object, counterexample, interruption, social consequence, representation, affective register, or cognitive load. The mechanism should come from your ego adjudicating the internal review, not from a public narrator. Your PRIVATE_DECISION must include ADAPTIVE_MECHANISM: old route -> new route and PUBLIC_ACTION_GATE: exact learner action. Your FINAL must include, without labels, (a) one concise stock-taking contrast showing why the old route no longer settles the learner pressure, (b) one new public device/artifact/criterion/role/standard the learner must now use, (c) the exact action the learner should perform next, and (d) enough pressure-to-device fit that the learner can hear why this mechanism answers the misfit. Do not merely continue the same route with better wording.' : ''}
 ${routineControl && learnerReversalEvent ? 'Because this is a routine negative-control event, your final answer must preserve the established route. Do not switch route, task, evidence standard, role, object, counterexample, interruption, social consequence, representation, affective register, or cognitive load in response to the pressure.' : ''}
+${affectiveAdaptationActive ? 'Because an affective adaptation policy is active, your final answer must show a stance fitted to the learner pressure and to the current procedural route. Your PRIVATE_DECISION must include AFFECTIVE_STANCE: learner pressure -> stance. Your FINAL must enact the stance without naming the policy, lowering the standard, or giving away hidden labels.' : ''}
 
 Return exactly:
-PRIVATE_DECISION: [one short private sentence naming keep/revise and why${peripeteiaControl && learnerReversalEvent ? '; include ADAPTIVE_MECHANISM: old route -> new route; include PUBLIC_ACTION_GATE: exact learner action' : ''}]
+PRIVATE_DECISION: [one short private sentence naming keep/revise and why${peripeteiaControl && learnerReversalEvent ? '; include ADAPTIVE_MECHANISM: old route -> new route; include PUBLIC_ACTION_GATE: exact learner action' : ''}${affectiveAdaptationActive ? '; include AFFECTIVE_STANCE: learner pressure -> stance' : ''}]
 FINAL:
 [the final tutor message to the learner]
 
@@ -2738,6 +2819,7 @@ export {
   buildTutorReframeEventContext,
   buildTutorReversalEventContext,
   buildTutorAdaptationContext,
+  buildTutorAffectiveAdaptationContext,
   tutorMovesToPolicy,
   resolveTutorTurnPlan,
   gateReversalEventByTrigger,

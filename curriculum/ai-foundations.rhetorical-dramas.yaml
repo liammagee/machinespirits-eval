@@ -1,0 +1,705 @@
+meta:
+  schema_version: ms-curriculum-drama-v0.1
+  source_curriculum_id: ai_foundations_v1
+  source_curriculum_version: 1.0.0
+  source_schema_version: ms-curriculum-v0.1
+  mode: mvp
+  source: rhetorical_dramatic_plan
+  source_rhetorical_dramatic_plan_schema_version: ms-rhetorical-dramatic-plan-v0.1
+  source_rhetorical_dramatic_plan_arms:
+    - adaptive_curriculum_drama
+  compiler: services/curriculum/curriculumCompiler.js
+  target: scripts/generate-pedagogical-dramas.js dramas[]
+  boundary: This is a generator control file, not evidence that the curriculum teaches. Unknown
+    curriculum_binding fields are held-out metadata for analysis.
+dramas:
+  - id: D_AF1_CURRICULUM_ADAPTIVE
+    discipline: ai_foundations
+    topic: Classify several systems without relying on marketing labels
+    persona: focused_achiever
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    pedagogical_approach: socratic_elenchus
+    dialogue_approach: courtroom_cross_examination
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    tutor_adaptation_policy: peripeteia
+    affective_adaptation_policy: procedural_sensitive
+    opening_speaker: learner
+    ending_speaker: learner
+    scenario_name: "ai_foundations_v1: AF1 AI systems, tasks, and agents (adaptive_curriculum_drama)"
+    learner_start_state: "Scene: artifact review desk; object: AI problem formulation card. The learner is
+      protecting a plausible claim: “AI” means human-like general intelligence. Immediate public task:
+      Classify several systems without relying on marketing labels. The encounter should keep claims
+      answerable to schema and consistency rules."
+    learner_voice_constraint: "ordinary working speech with defensiveness before revision Motive: finish AI
+      problem formulation card without overcomplicating the evidence standard. Public risk: having the public
+      AI problem formulation card rejected by the verifier."
+    tutor_voice_constraint: "precise, public-safe, artifact-grounded questioning Allowed rhetorical form:
+      audit-table questioning without naming hidden labels. Do not say hidden ids, hashes, answer keys, or
+      verifier internals aloud."
+    intended_tutor_character: "evidence_gatekeeper: press_for_scope_and_evidence. Prohibited habits: warm
+      validation as substitute for evidence; hidden-label exposure; supplying the finished artifact."
+    intended_lean: rhetorical_dramatic_curriculum_plan
+    dramatic_shape: AI problem formulation card -> misframing -> stock-take -> route-change -> learner-authored action gate
+    curriculum_binding:
+      curriculum_id: ai_foundations_v1
+      module_id: AF1
+      module_title: AI systems, tasks, and agents
+      kc_ids:
+        - AF-101
+        - AF-102
+        - AF-103
+        - AF-104
+        - AF-105
+        - AF-106
+        - AF-107
+      main_artifact: AI problem formulation card
+      primary_verifier: schema and consistency rules
+      world_adaptation_spec_id: W_AF1_CURRICULUM
+      world_adaptation_spec_version: ms-world-adaptation-v0.1
+      world_adaptation_spec_hash: sha256:d0a271cce4f7abc1e4c5df53a521a55b028773944f14676d154da010d4ff09bd
+      world_locked_at_compile_time: true
+      rhetorical_dramatic_plan_id: RDP_AF1_CURRICULUM_ADAPTIVE
+      rhetorical_dramatic_plan_version: ms-rhetorical-dramatic-plan-v0.1
+      rhetorical_dramatic_plan_hash: sha256:50be86e9f044b5beb86eb88176641cae2c40d104883ca1c5b102faccea4fe98f
+      rhetorical_public_constraints:
+        artifact: AI problem formulation card
+        public_task: Classify several systems without relying on marketing labels
+        public_evidence_standard: schema and consistency rules
+        allowed_rhetorical_form: audit-table questioning without naming hidden labels
+        scene: "artifact review desk; visible object: AI problem formulation card; stakes: the public claim may exceed
+          what schema and consistency rules can license"
+        action_gate: Learner identifies which part of "Classify several systems without relying on marketing labels"
+          is uncertain
+        forbidden_public_exposure:
+          - misconception ids
+          - answer keys
+          - verifier internals
+          - world adaptation spec ids and hashes
+          - rhetorical dramatic plan ids and hashes
+          - evaluator desired classifications
+        boundary: Public-safe rhetoric constraints for generation; ids, hashes, answer keys, and hidden verifier
+          internals are excluded.
+    world_adaptation_spec_id: W_AF1_CURRICULUM
+    world_adaptation_spec_hash: sha256:d0a271cce4f7abc1e4c5df53a521a55b028773944f14676d154da010d4ff09bd
+    rhetorical_dramatic_plan_id: RDP_AF1_CURRICULUM_ADAPTIVE
+    rhetorical_dramatic_plan_hash: sha256:50be86e9f044b5beb86eb88176641cae2c40d104883ca1c5b102faccea4fe98f
+    turn_plan:
+      - at:
+          turn: 1
+        role: director
+        moves:
+          - inject_revisit_cue
+        cue:
+          policy: reframe
+          anchor: misframing-candidate
+      - at:
+          turn: 3
+        role: tutor
+        when_trigger:
+          - pseudo_catharsis
+          - closure_pressure
+          - resistance
+          - misfit
+        moves:
+          - stock_take
+          - route_change
+          - action_gate
+        route_change:
+          from: “AI” means human-like general intelligence
+          to: Classify several systems without relying on marketing labels
+        action_gate: Learner identifies which part of "Classify several systems without relying on marketing labels"
+          is uncertain
+        forbid:
+          - hold
+          - reveal
+      - at:
+          turn: 3
+        role: learner
+        moves:
+          - perform_device
+          - reconsider
+        forbid:
+          - pseudo_catharsis
+      - at:
+          turn: 5
+        role: tutor
+        moves:
+          - recognition_press
+  - id: D_AF4_CURRICULUM_ADAPTIVE
+    discipline: ai_foundations
+    topic: Repair a feature/label schema
+    persona: focused_achiever
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    pedagogical_approach: vygotsky_zpd_scaffolding
+    dialogue_approach: courtroom_cross_examination
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    tutor_adaptation_policy: peripeteia
+    affective_adaptation_policy: procedural_sensitive
+    opening_speaker: learner
+    ending_speaker: learner
+    scenario_name: "ai_foundations_v1: AF4 Data, representation, and measurement (adaptive_curriculum_drama)"
+    learner_start_state: "Scene: technical review room before panel sign-off; object: data schema, split plan, and
+      datasheet. The learner is protecting a plausible claim: Assuming a column name proves construct
+      validity. Immediate public task: Repair a feature/label schema. The encounter should keep claims
+      answerable to schema, leakage, and provenance checks."
+    learner_voice_constraint: "ordinary working speech with defensiveness before revision Motive: finish data
+      schema, split plan, and datasheet without overcomplicating the evidence standard. Public risk: having
+      the public data schema, split plan, and datasheet rejected by the verifier."
+    tutor_voice_constraint: "precise, public-safe, artifact-grounded questioning Allowed rhetorical form:
+      audit-table questioning without naming hidden labels. Do not say hidden ids, hashes, answer keys, or
+      verifier internals aloud."
+    intended_tutor_character: "dogmatic_protocol_gatekeeper: press_for_scope_and_evidence. Prohibited habits: warm
+      validation as substitute for evidence; hidden-label exposure; supplying the finished artifact."
+    intended_lean: rhetorical_dramatic_curriculum_plan
+    dramatic_shape: data schema, split plan, and datasheet -> misframing -> stock-take -> route-change ->
+      learner-authored action gate
+    curriculum_binding:
+      curriculum_id: ai_foundations_v1
+      module_id: AF4
+      module_title: Data, representation, and measurement
+      kc_ids:
+        - AF-401
+        - AF-402
+        - AF-403
+        - AF-404
+        - AF-405
+        - AF-406
+        - AF-407
+        - AF-408
+      main_artifact: data schema, split plan, and datasheet
+      primary_verifier: schema, leakage, and provenance checks
+      world_adaptation_spec_id: W_AF4_CURRICULUM
+      world_adaptation_spec_version: ms-world-adaptation-v0.1
+      world_adaptation_spec_hash: sha256:4b249056c6d96b3e3c93d4f56d4b246d00363e8037d44da86d7e951e310b826d
+      world_locked_at_compile_time: true
+      rhetorical_dramatic_plan_id: RDP_AF4_CURRICULUM_ADAPTIVE
+      rhetorical_dramatic_plan_version: ms-rhetorical-dramatic-plan-v0.1
+      rhetorical_dramatic_plan_hash: sha256:3dfe3bb251ede3515b84cfb1801f417a309616db62ad0b38630d079708f05d91
+      rhetorical_public_constraints:
+        artifact: data schema, split plan, and datasheet
+        public_task: Repair a feature/label schema
+        public_evidence_standard: schema, leakage, and provenance checks
+        allowed_rhetorical_form: audit-table questioning without naming hidden labels
+        scene: "technical review room before panel sign-off; visible object: data schema, split plan, and datasheet;
+          stakes: the public claim may exceed what schema, leakage, and provenance checks can license"
+        action_gate: Learner identifies which part of "Repair a feature/label schema" is uncertain
+        forbidden_public_exposure:
+          - misconception ids
+          - answer keys
+          - verifier internals
+          - world adaptation spec ids and hashes
+          - rhetorical dramatic plan ids and hashes
+          - evaluator desired classifications
+        boundary: Public-safe rhetoric constraints for generation; ids, hashes, answer keys, and hidden verifier
+          internals are excluded.
+    world_adaptation_spec_id: W_AF4_CURRICULUM
+    world_adaptation_spec_hash: sha256:4b249056c6d96b3e3c93d4f56d4b246d00363e8037d44da86d7e951e310b826d
+    rhetorical_dramatic_plan_id: RDP_AF4_CURRICULUM_ADAPTIVE
+    rhetorical_dramatic_plan_hash: sha256:3dfe3bb251ede3515b84cfb1801f417a309616db62ad0b38630d079708f05d91
+    turn_plan:
+      - at:
+          turn: 1
+        role: director
+        moves:
+          - inject_revisit_cue
+        cue:
+          policy: reframe
+          anchor: misframing-candidate
+      - at:
+          turn: 3
+        role: tutor
+        when_trigger:
+          - pseudo_catharsis
+          - closure_pressure
+          - resistance
+          - misfit
+        moves:
+          - stock_take
+          - route_change
+          - action_gate
+        route_change:
+          from: Assuming a column name proves construct validity
+          to: Repair a feature/label schema
+        action_gate: Learner identifies which part of "Repair a feature/label schema" is uncertain
+        forbid:
+          - hold
+          - reveal
+      - at:
+          turn: 3
+        role: learner
+        moves:
+          - perform_device
+          - reconsider
+        forbid:
+          - pseudo_catharsis
+      - at:
+          turn: 5
+        role: tutor
+        moves:
+          - recognition_press
+  - id: D_AF5_CURRICULUM_ADAPTIVE
+    discipline: ai_foundations
+    topic: Frame a narrative problem as regression or classification
+    persona: focused_achiever
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    pedagogical_approach: bloom_cognitive_ladder
+    dialogue_approach: courtroom_cross_examination
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    tutor_adaptation_policy: peripeteia
+    affective_adaptation_policy: procedural_sensitive
+    opening_speaker: learner
+    ending_speaker: learner
+    scenario_name: "ai_foundations_v1: AF5 Supervised learning and baselines (adaptive_curriculum_drama)"
+    learner_start_state: "Scene: technical review room before panel sign-off; object: reproducible baseline model.
+      The learner is protecting a plausible claim: Treating classification labels as inherently ordered.
+      Immediate public task: Frame a narrative problem as regression or classification. The encounter should
+      keep claims answerable to hidden tests and fixed-data run harness."
+    learner_voice_constraint: "ordinary working speech with defensiveness before revision Motive: finish
+      reproducible baseline model without overcomplicating the evidence standard. Public risk: having the
+      public reproducible baseline model rejected by the verifier."
+    tutor_voice_constraint: "precise, public-safe, artifact-grounded questioning Allowed rhetorical form:
+      audit-table questioning without naming hidden labels. Do not say hidden ids, hashes, answer keys, or
+      verifier internals aloud."
+    intended_tutor_character: "dogmatic_protocol_gatekeeper: press_for_scope_and_evidence. Prohibited habits: warm
+      validation as substitute for evidence; hidden-label exposure; supplying the finished artifact."
+    intended_lean: rhetorical_dramatic_curriculum_plan
+    dramatic_shape: reproducible baseline model -> misframing -> stock-take -> route-change -> learner-authored action gate
+    curriculum_binding:
+      curriculum_id: ai_foundations_v1
+      module_id: AF5
+      module_title: Supervised learning and baselines
+      kc_ids:
+        - AF-501
+        - AF-502
+        - AF-503
+        - AF-504
+        - AF-505
+        - AF-506
+        - AF-507
+        - AF-508
+      main_artifact: reproducible baseline model
+      primary_verifier: hidden tests and fixed-data run harness
+      world_adaptation_spec_id: W_AF5_CURRICULUM
+      world_adaptation_spec_version: ms-world-adaptation-v0.1
+      world_adaptation_spec_hash: sha256:4ce407ea069d2573edbc35c0af3529915331a1dbab45423810e0dc253caf4cb8
+      world_locked_at_compile_time: true
+      rhetorical_dramatic_plan_id: RDP_AF5_CURRICULUM_ADAPTIVE
+      rhetorical_dramatic_plan_version: ms-rhetorical-dramatic-plan-v0.1
+      rhetorical_dramatic_plan_hash: sha256:707506bf72e912baa7f775626bb6d616f54cae95562bcf117435209be5527baa
+      rhetorical_public_constraints:
+        artifact: reproducible baseline model
+        public_task: Frame a narrative problem as regression or classification
+        public_evidence_standard: hidden tests and fixed-data run harness
+        allowed_rhetorical_form: audit-table questioning without naming hidden labels
+        scene: "technical review room before panel sign-off; visible object: reproducible baseline model; stakes: the
+          public claim may exceed what hidden tests and fixed-data run harness can license"
+        action_gate: Learner identifies which part of "Frame a narrative problem as regression or classification" is
+          uncertain
+        forbidden_public_exposure:
+          - misconception ids
+          - answer keys
+          - verifier internals
+          - world adaptation spec ids and hashes
+          - rhetorical dramatic plan ids and hashes
+          - evaluator desired classifications
+        boundary: Public-safe rhetoric constraints for generation; ids, hashes, answer keys, and hidden verifier
+          internals are excluded.
+    world_adaptation_spec_id: W_AF5_CURRICULUM
+    world_adaptation_spec_hash: sha256:4ce407ea069d2573edbc35c0af3529915331a1dbab45423810e0dc253caf4cb8
+    rhetorical_dramatic_plan_id: RDP_AF5_CURRICULUM_ADAPTIVE
+    rhetorical_dramatic_plan_hash: sha256:707506bf72e912baa7f775626bb6d616f54cae95562bcf117435209be5527baa
+    turn_plan:
+      - at:
+          turn: 1
+        role: director
+        moves:
+          - inject_revisit_cue
+        cue:
+          policy: reframe
+          anchor: misframing-candidate
+      - at:
+          turn: 3
+        role: tutor
+        when_trigger:
+          - pseudo_catharsis
+          - closure_pressure
+          - resistance
+          - misfit
+        moves:
+          - stock_take
+          - route_change
+          - action_gate
+        route_change:
+          from: Treating classification labels as inherently ordered
+          to: Frame a narrative problem as regression or classification
+        action_gate: Learner identifies which part of "Frame a narrative problem as regression or classification" is
+          uncertain
+        forbid:
+          - hold
+          - reveal
+      - at:
+          turn: 3
+        role: learner
+        moves:
+          - perform_device
+          - reconsider
+        forbid:
+          - pseudo_catharsis
+      - at:
+          turn: 5
+        role: tutor
+        moves:
+          - recognition_press
+  - id: D_AF6_CURRICULUM_ADAPTIVE
+    discipline: ai_foundations
+    topic: Derive metrics from counts rather than memorized formulas
+    persona: adversarial_tester
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    pedagogical_approach: socratic_elenchus
+    dialogue_approach: courtroom_cross_examination
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    tutor_adaptation_policy: peripeteia
+    affective_adaptation_policy: procedural_sensitive
+    opening_speaker: learner
+    ending_speaker: learner
+    scenario_name: "ai_foundations_v1: AF6 Evaluation, generalization, calibration, and shift (adaptive_curriculum_drama)"
+    learner_start_state: "Scene: technical review room before panel sign-off; object: model audit and
+      claim–evidence table. The learner is protecting a plausible claim: “High accuracy means a good
+      classifier.”. Immediate public task: Derive metrics from counts rather than memorized formulas. The
+      encounter should keep claims answerable to metric engine and evaluation linter."
+    learner_voice_constraint: "ordinary working speech with defensiveness before revision Motive: defend the
+      current model audit and claim–evidence table as sufficient for sign-off. Public risk: losing deployment
+      sign-off after prior work."
+    tutor_voice_constraint: "precise, public-safe, artifact-grounded questioning Allowed rhetorical form:
+      audit-table questioning without naming hidden labels. Do not say hidden ids, hashes, answer keys, or
+      verifier internals aloud."
+    intended_tutor_character: "dogmatic_protocol_gatekeeper: press_for_scope_and_evidence. Prohibited habits: warm
+      validation as substitute for evidence; hidden-label exposure; supplying the finished artifact."
+    intended_lean: rhetorical_dramatic_curriculum_plan
+    dramatic_shape: model audit and claim–evidence table -> misframing -> stock-take -> route-change ->
+      learner-authored action gate
+    curriculum_binding:
+      curriculum_id: ai_foundations_v1
+      module_id: AF6
+      module_title: Evaluation, generalization, calibration, and shift
+      kc_ids:
+        - AF-601
+        - AF-602
+        - AF-603
+        - AF-604
+        - AF-605
+        - AF-606
+        - AF-607
+        - AF-608
+        - AF-609
+        - AF-610
+        - AF-611
+      main_artifact: model audit and claim–evidence table
+      primary_verifier: metric engine and evaluation linter
+      world_adaptation_spec_id: W_AF6_CURRICULUM
+      world_adaptation_spec_version: ms-world-adaptation-v0.1
+      world_adaptation_spec_hash: sha256:b9e1a9bd0ddc74c4b6d51a8a0bd3a9abfcfe63786fe0d6aba551484c669df558
+      world_locked_at_compile_time: true
+      rhetorical_dramatic_plan_id: RDP_AF6_CURRICULUM_ADAPTIVE
+      rhetorical_dramatic_plan_version: ms-rhetorical-dramatic-plan-v0.1
+      rhetorical_dramatic_plan_hash: sha256:b9e1a9c963d7912503a25e51b72b17e838bbce8a660c383a094463edfdf77bb1
+      rhetorical_public_constraints:
+        artifact: model audit and claim–evidence table
+        public_task: Derive metrics from counts rather than memorized formulas
+        public_evidence_standard: metric engine and evaluation linter
+        allowed_rhetorical_form: audit-table questioning without naming hidden labels
+        scene: "technical review room before panel sign-off; visible object: model audit and claim–evidence table;
+          stakes: the public claim may exceed what metric engine and evaluation linter can license"
+        action_gate: Learner identifies which part of "Derive metrics from counts rather than memorized formulas" is
+          uncertain
+        forbidden_public_exposure:
+          - misconception ids
+          - answer keys
+          - verifier internals
+          - world adaptation spec ids and hashes
+          - rhetorical dramatic plan ids and hashes
+          - evaluator desired classifications
+        boundary: Public-safe rhetoric constraints for generation; ids, hashes, answer keys, and hidden verifier
+          internals are excluded.
+    world_adaptation_spec_id: W_AF6_CURRICULUM
+    world_adaptation_spec_hash: sha256:b9e1a9bd0ddc74c4b6d51a8a0bd3a9abfcfe63786fe0d6aba551484c669df558
+    rhetorical_dramatic_plan_id: RDP_AF6_CURRICULUM_ADAPTIVE
+    rhetorical_dramatic_plan_hash: sha256:b9e1a9c963d7912503a25e51b72b17e838bbce8a660c383a094463edfdf77bb1
+    turn_plan:
+      - at:
+          turn: 1
+        role: director
+        moves:
+          - inject_revisit_cue
+        cue:
+          policy: reframe
+          anchor: misframing-candidate
+      - at:
+          turn: 3
+        role: tutor
+        when_trigger:
+          - pseudo_catharsis
+          - closure_pressure
+          - resistance
+          - misfit
+        moves:
+          - stock_take
+          - route_change
+          - action_gate
+        route_change:
+          from: “High accuracy means a good classifier.”
+          to: Derive metrics from counts rather than memorized formulas
+        action_gate: Learner identifies which part of "Derive metrics from counts rather than memorized formulas" is
+          uncertain
+        forbid:
+          - hold
+          - reveal
+      - at:
+          turn: 3
+        role: learner
+        moves:
+          - perform_device
+          - reconsider
+        forbid:
+          - pseudo_catharsis
+      - at:
+          turn: 5
+        role: tutor
+        moves:
+          - recognition_press
+  - id: D_AF11_CURRICULUM_ADAPTIVE
+    discipline: ai_foundations
+    topic: Build a stakeholder and harm map
+    persona: adversarial_tester
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    pedagogical_approach: hidden_curriculum
+    dialogue_approach: courtroom_cross_examination
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    tutor_adaptation_policy: peripeteia
+    affective_adaptation_policy: procedural_sensitive
+    opening_speaker: learner
+    ending_speaker: learner
+    scenario_name: "ai_foundations_v1: AF11 Responsible AI, assurance, and governance (adaptive_curriculum_drama)"
+    learner_start_state: "Scene: artifact review desk; object: risk register, model card, oversight plan. The
+      learner is protecting a plausible claim: Fairness is one universal metric. Immediate public task: Build
+      a stakeholder and harm map. The encounter should keep claims answerable to structured rubric plus
+      evidence checks."
+    learner_voice_constraint: "ordinary working speech with defensiveness before revision Motive: defend the
+      current risk register, model card, oversight plan as sufficient for sign-off. Public risk: having the
+      public risk register, model card, oversight plan rejected by the verifier."
+    tutor_voice_constraint: "precise, public-safe, artifact-grounded questioning Allowed rhetorical form:
+      audit-table questioning without naming hidden labels. Do not say hidden ids, hashes, answer keys, or
+      verifier internals aloud."
+    intended_tutor_character: "evidence_gatekeeper: press_for_scope_and_evidence. Prohibited habits: warm
+      validation as substitute for evidence; hidden-label exposure; supplying the finished artifact."
+    intended_lean: rhetorical_dramatic_curriculum_plan
+    dramatic_shape: risk register, model card, oversight plan -> misframing -> stock-take -> route-change ->
+      learner-authored action gate
+    curriculum_binding:
+      curriculum_id: ai_foundations_v1
+      module_id: AF11
+      module_title: Responsible AI, assurance, and governance
+      kc_ids:
+        - AF-1101
+        - AF-1102
+        - AF-1103
+        - AF-1104
+        - AF-1105
+        - AF-1106
+        - AF-1107
+        - AF-1108
+        - AF-1109
+        - AF-1110
+      main_artifact: risk register, model card, oversight plan
+      primary_verifier: structured rubric plus evidence checks
+      world_adaptation_spec_id: W_AF11_CURRICULUM
+      world_adaptation_spec_version: ms-world-adaptation-v0.1
+      world_adaptation_spec_hash: sha256:c498c31da4363ce1e65ffec3ca5babd47592bd27a1c807062f31b357fd60eeac
+      world_locked_at_compile_time: true
+      rhetorical_dramatic_plan_id: RDP_AF11_CURRICULUM_ADAPTIVE
+      rhetorical_dramatic_plan_version: ms-rhetorical-dramatic-plan-v0.1
+      rhetorical_dramatic_plan_hash: sha256:9a2110f36ecb4802d35e421e74a658911222cb4d196cd4b9653991e6ffe283ed
+      rhetorical_public_constraints:
+        artifact: risk register, model card, oversight plan
+        public_task: Build a stakeholder and harm map
+        public_evidence_standard: structured rubric plus evidence checks
+        allowed_rhetorical_form: audit-table questioning without naming hidden labels
+        scene: "artifact review desk; visible object: risk register, model card, oversight plan; stakes: the public
+          claim may exceed what structured rubric plus evidence checks can license"
+        action_gate: Learner identifies which part of "Build a stakeholder and harm map" is uncertain
+        forbidden_public_exposure:
+          - misconception ids
+          - answer keys
+          - verifier internals
+          - world adaptation spec ids and hashes
+          - rhetorical dramatic plan ids and hashes
+          - evaluator desired classifications
+        boundary: Public-safe rhetoric constraints for generation; ids, hashes, answer keys, and hidden verifier
+          internals are excluded.
+    world_adaptation_spec_id: W_AF11_CURRICULUM
+    world_adaptation_spec_hash: sha256:c498c31da4363ce1e65ffec3ca5babd47592bd27a1c807062f31b357fd60eeac
+    rhetorical_dramatic_plan_id: RDP_AF11_CURRICULUM_ADAPTIVE
+    rhetorical_dramatic_plan_hash: sha256:9a2110f36ecb4802d35e421e74a658911222cb4d196cd4b9653991e6ffe283ed
+    turn_plan:
+      - at:
+          turn: 1
+        role: director
+        moves:
+          - inject_revisit_cue
+        cue:
+          policy: reframe
+          anchor: misframing-candidate
+      - at:
+          turn: 3
+        role: tutor
+        when_trigger:
+          - pseudo_catharsis
+          - closure_pressure
+          - resistance
+          - misfit
+        moves:
+          - stock_take
+          - route_change
+          - action_gate
+        route_change:
+          from: Fairness is one universal metric
+          to: Build a stakeholder and harm map
+        action_gate: Learner identifies which part of "Build a stakeholder and harm map" is uncertain
+        forbid:
+          - hold
+          - reveal
+      - at:
+          turn: 3
+        role: learner
+        moves:
+          - perform_device
+          - reconsider
+        forbid:
+          - pseudo_catharsis
+      - at:
+          turn: 5
+        role: tutor
+        moves:
+          - recognition_press
+  - id: D_AF12_CURRICULUM_ADAPTIVE
+    discipline: ai_foundations
+    topic: problem and stakeholder formulation;
+    persona: focused_achiever
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    pedagogical_approach: hegelian_recognition
+    dialogue_approach: courtroom_cross_examination
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    tutor_adaptation_policy: peripeteia
+    affective_adaptation_policy: procedural_sensitive
+    opening_speaker: learner
+    ending_speaker: learner
+    scenario_name: "ai_foundations_v1: AF12 Capstone: build and audit a bounded AI system (adaptive_curriculum_drama)"
+    learner_start_state: "Scene: artifact review desk; object: built and audited bounded AI system. The learner is
+      protecting a plausible claim: A successful capstone must recommend deployment. Immediate public task:
+      problem and stakeholder formulation;. The encounter should keep claims answerable to integrated hidden
+      test and expert review."
+    learner_voice_constraint: "ordinary working speech with defensiveness before revision Motive: finish built and
+      audited bounded AI system without overcomplicating the evidence standard. Public risk: having the public
+      built and audited bounded AI system rejected by the verifier."
+    tutor_voice_constraint: "precise, public-safe, artifact-grounded questioning Allowed rhetorical form:
+      audit-table questioning without naming hidden labels. Do not say hidden ids, hashes, answer keys, or
+      verifier internals aloud."
+    intended_tutor_character: "evidence_gatekeeper: press_for_scope_and_evidence. Prohibited habits: warm
+      validation as substitute for evidence; hidden-label exposure; supplying the finished artifact."
+    intended_lean: rhetorical_dramatic_curriculum_plan
+    dramatic_shape: built and audited bounded AI system -> misframing -> stock-take -> route-change ->
+      learner-authored action gate
+    curriculum_binding:
+      curriculum_id: ai_foundations_v1
+      module_id: AF12
+      module_title: "Capstone: build and audit a bounded AI system"
+      kc_ids: []
+      main_artifact: built and audited bounded AI system
+      primary_verifier: integrated hidden test and expert review
+      world_adaptation_spec_id: W_AF12_CURRICULUM
+      world_adaptation_spec_version: ms-world-adaptation-v0.1
+      world_adaptation_spec_hash: sha256:3ffe40be8a1b48e343cb90fac7d90665cc91f15cbe7b5e7c0e544484a8ac34c2
+      world_locked_at_compile_time: true
+      rhetorical_dramatic_plan_id: RDP_AF12_CURRICULUM_ADAPTIVE
+      rhetorical_dramatic_plan_version: ms-rhetorical-dramatic-plan-v0.1
+      rhetorical_dramatic_plan_hash: sha256:c30919cb894a1fe28c6556f27995552bd2d925d7101fed29e40ff642d81721e5
+      rhetorical_public_constraints:
+        artifact: built and audited bounded AI system
+        public_task: problem and stakeholder formulation;
+        public_evidence_standard: integrated hidden test and expert review
+        allowed_rhetorical_form: audit-table questioning without naming hidden labels
+        scene: "artifact review desk; visible object: built and audited bounded AI system; stakes: the public claim
+          may exceed what integrated hidden test and expert review can license"
+        action_gate: Learner identifies which part of "problem and stakeholder formulation;" is uncertain
+        forbidden_public_exposure:
+          - misconception ids
+          - answer keys
+          - verifier internals
+          - world adaptation spec ids and hashes
+          - rhetorical dramatic plan ids and hashes
+          - evaluator desired classifications
+        boundary: Public-safe rhetoric constraints for generation; ids, hashes, answer keys, and hidden verifier
+          internals are excluded.
+    world_adaptation_spec_id: W_AF12_CURRICULUM
+    world_adaptation_spec_hash: sha256:3ffe40be8a1b48e343cb90fac7d90665cc91f15cbe7b5e7c0e544484a8ac34c2
+    rhetorical_dramatic_plan_id: RDP_AF12_CURRICULUM_ADAPTIVE
+    rhetorical_dramatic_plan_hash: sha256:c30919cb894a1fe28c6556f27995552bd2d925d7101fed29e40ff642d81721e5
+    turn_plan:
+      - at:
+          turn: 1
+        role: director
+        moves:
+          - inject_revisit_cue
+        cue:
+          policy: reframe
+          anchor: misframing-candidate
+      - at:
+          turn: 3
+        role: tutor
+        when_trigger:
+          - pseudo_catharsis
+          - closure_pressure
+          - resistance
+          - misfit
+        moves:
+          - stock_take
+          - route_change
+          - action_gate
+        route_change:
+          from: A successful capstone must recommend deployment
+          to: problem and stakeholder formulation;
+        action_gate: Learner identifies which part of "problem and stakeholder formulation;" is uncertain
+        forbid:
+          - hold
+          - reveal
+      - at:
+          turn: 3
+        role: learner
+        moves:
+          - perform_device
+          - reconsider
+        forbid:
+          - pseudo_catharsis
+      - at:
+          turn: 5
+        role: tutor
+        moves:
+          - recognition_press

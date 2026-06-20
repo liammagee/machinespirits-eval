@@ -11,16 +11,20 @@ const ROOT = path.resolve(path.dirname(__filename), '..');
 function parseArgs(argv) {
   const args = {
     transcript: null,
+    full: null,
     key: null,
     out: null,
+    publicOut: null,
     title: 'Light Drama Dialog',
   };
 
   for (let i = 0; i < argv.length; i++) {
     const token = argv[i];
     if (token === '--transcript') args.transcript = path.resolve(argv[++i]);
+    else if (token === '--full') args.full = path.resolve(argv[++i]);
     else if (token === '--key') args.key = path.resolve(argv[++i]);
     else if (token === '--out') args.out = path.resolve(argv[++i]);
+    else if (token === '--public-out') args.publicOut = path.resolve(argv[++i]);
     else if (token === '--title') args.title = argv[++i];
     else throw new Error(`unknown arg: ${token}`);
   }
@@ -52,6 +56,70 @@ function slug(value) {
 function readKey(keyPath) {
   if (!keyPath || !fs.existsSync(keyPath)) return null;
   return yaml.parse(fs.readFileSync(keyPath, 'utf8')) || null;
+}
+
+function readDirectorSceneCard(fullPath) {
+  if (!fullPath || !fs.existsSync(fullPath)) return null;
+  const text = fs.readFileSync(fullPath, 'utf8');
+  const match = text.match(/## Director Scene Card\s*```yaml\s*([\s\S]*?)\s*```/u);
+  if (!match) return null;
+  try {
+    return yaml.parse(match[1]) || null;
+  } catch (_err) {
+    return null;
+  }
+}
+
+function cleanPublicText(value) {
+  return String(value ?? '')
+    .replace(/\s+/g, ' ')
+    .replace(/\bW_[A-Z0-9_]+\b/g, '')
+    .replace(/\bsha256:[a-f0-9]{16,}\b/gi, '')
+    .replace(/\b[A-Z0-9]+-MIS-[A-Z0-9_-]+\b/gi, '')
+    .trim();
+}
+
+function stripBracketAside(value) {
+  return cleanPublicText(value).replace(/^\[(.*)\]$/u, '$1').trim();
+}
+
+function personaLabel(value) {
+  return cleanPublicText(value)
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function learnerTraitLine({ item, sceneCard }) {
+  const parts = [];
+  if (item?.persona) parts.push(personaLabel(item.persona));
+  const register = cleanPublicText(sceneCard?.register);
+  const learnerMode = register.match(/learner'?s mode is ([^;.]+)/iu)?.[1];
+  if (learnerMode) parts.push(cleanPublicText(learnerMode));
+  const openingShape = cleanPublicText(item?.dramatic_shape).split('->')[0]?.trim();
+  if (openingShape) parts.push(`initial stance: ${openingShape}`);
+  return parts.length
+    ? `Learner: ${parts.join('; ')}.`
+    : null;
+}
+
+function characterText(value) {
+  return cleanPublicText(value).replace(/^([^:]{1,80}):\s*/u, '$1; ');
+}
+
+function buildScenePreamble({ item, sceneCard }) {
+  if (!sceneCard && !item) return null;
+  const rows = [
+    ['Opening', stripBracketAside(sceneCard?.scene_opening)],
+    ['Setting', cleanPublicText(sceneCard?.scene_setting)],
+    ['Relationship', cleanPublicText(sceneCard?.relationship)],
+    ['Stakes', cleanPublicText(sceneCard?.stakes)],
+    ['Tutor', characterText(item?.intended_tutor_character)],
+    ['Learner', learnerTraitLine({ item, sceneCard })?.replace(/^Learner:\s*/u, '')],
+    ['Register', cleanPublicText(sceneCard?.register)],
+    ['Locale', cleanPublicText(sceneCard?.locale)],
+  ].filter(([, value]) => value);
+  if (!rows.length) return null;
+  return { rows };
 }
 
 function parseTranscript(text) {
@@ -112,7 +180,48 @@ function renderTurns(turns) {
     .join('');
 }
 
-function renderHtml({ title, transcriptPath, keyPath, key, item, turns }) {
+function renderScenePreamble(preamble) {
+  if (!preamble?.rows?.length) return '';
+  const sceneRows = preamble.rows
+    .map(
+      ([label, value]) => `
+        <div class="scene-row">
+          <dt>${escapeHtml(label)}</dt>
+          <dd>${escapeHtml(value)}</dd>
+        </div>`,
+    )
+    .join('');
+  return `
+        <section class="scene-panel" aria-label="Scene preamble">
+          <h2>Scene</h2>
+          <dl>${sceneRows}</dl>
+        </section>`;
+}
+
+function formatStageBlock(values) {
+  const text = values
+    .map((value) => cleanPublicText(value).replace(/[[\]]/g, '').trim())
+    .filter(Boolean)
+    .map((value) => (/[.?!]$/u.test(value) ? value : `${value}.`))
+    .join(' ');
+  return text ? `STAGE: [${text}]` : '';
+}
+
+function renderExpandedPublicTranscript({ transcript, turns, preamble }) {
+  if (!preamble?.rows?.length) return transcript;
+  const stageLine = formatStageBlock(
+    preamble.rows.map(([label, value]) => (label === 'Opening' ? value : `${label}: ${value}`)),
+  );
+  const firstStage = turns[0]?.role === 'stage' ? stripBracketAside(turns[0].text) : null;
+  const opening = preamble.rows.find(([label]) => label === 'Opening')?.[1] || null;
+  const body =
+    firstStage && opening && cleanPublicText(firstStage) === cleanPublicText(opening)
+      ? transcript.replace(/^STAGE:\s*\[[^\]]+\]\s*\n+/u, '')
+      : transcript;
+  return `${stageLine}\n\n${body.trim()}\n`;
+}
+
+function renderHtml({ title, transcriptPath, keyPath, key, item, turns, preamble }) {
   const metaRows = renderMetaRows([
     ['Mode', key?.mode],
     ['Diagnostic', key?.diagnostic_only ? 'yes' : null],
@@ -121,6 +230,7 @@ function renderHtml({ title, transcriptPath, keyPath, key, item, turns }) {
     ['Discipline', item?.discipline],
     ['Condition', item?.condition],
     ['Tutor policy', item?.tutor_adaptation_policy || key?.tutor_adaptation_policy],
+    ['Affective policy', item?.affective_adaptation_policy || key?.affective_adaptation_policy],
     ['Persona', item?.persona],
     ['Tutor profile', item?.tutor_profile],
     ['Learner profile', item?.learner_profile],
@@ -278,9 +388,31 @@ dd {
   margin: 0;
   overflow-wrap: anywhere;
 }
-.warning {
+    .warning {
   color: var(--muted);
   font-size: .95rem;
+}
+.scene-panel {
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 20px 0;
+  margin-bottom: 18px;
+}
+.scene-panel h2 {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font: 800 12px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.scene-panel dl {
+  display: grid;
+  gap: 12px;
+}
+.scene-row {
+  display: grid;
+  grid-template-columns: 118px minmax(0, 1fr);
+  gap: 20px;
 }
 @media (max-width: 820px) {
   .grid { grid-template-columns: 1fr; }
@@ -294,6 +426,11 @@ dd {
     grid-column: 1 / -1;
     text-align: left;
   }
+  .scene-panel dl,
+  .scene-row {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
 }
 </style>
 </head>
@@ -305,8 +442,11 @@ dd {
       <p class="lede">${escapeHtml(item?.dramatic_shape || 'Public transcript rendered from a light drama run.')}</p>
     </header>
     <div class="grid">
-      <section class="dialog" aria-label="Dialog transcript">
-        ${renderTurns(turns)}
+      <section aria-label="Dialog transcript">
+        ${renderScenePreamble(preamble)}
+        <div class="dialog">
+          ${renderTurns(turns)}
+        </div>
       </section>
       <aside aria-label="Run metadata">
         <section class="panel">
@@ -335,9 +475,16 @@ function main() {
   const transcript = fs.readFileSync(args.transcript, 'utf8');
   const key = readKey(args.key);
   const item = itemFromKey(key);
+  const sceneCard = readDirectorSceneCard(args.full);
+  const preamble = buildScenePreamble({ item, sceneCard });
   const turns = parseTranscript(transcript);
 
   if (!turns.length) throw new Error(`no transcript turns parsed from ${args.transcript}`);
+
+  if (args.publicOut) {
+    fs.mkdirSync(path.dirname(args.publicOut), { recursive: true });
+    fs.writeFileSync(args.publicOut, renderExpandedPublicTranscript({ transcript, turns, preamble }), 'utf8');
+  }
 
   fs.mkdirSync(path.dirname(args.out), { recursive: true });
   fs.writeFileSync(
@@ -349,9 +496,11 @@ function main() {
       key,
       item,
       turns,
+      preamble,
     }),
   );
   console.log(`wrote ${rel(args.out)} (${turns.length} turn blocks)`);
+  if (args.publicOut) console.log(`wrote ${rel(args.publicOut)} (expanded public transcript)`);
 }
 
 main();
