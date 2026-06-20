@@ -169,6 +169,67 @@ async function callCodex(prompt) {
   return { parsed: extractJsonEnvelope(stdout), rawStdout: stdout };
 }
 
+// ─────────────────────────────────────── claude-code CLI call (Max-plan subscription)
+// For judge models labelled `claude-code/<alias>` (e.g. claude-code/sonnet) we route
+// through the `claude` CLI instead of `codex` — codex on a ChatGPT account rejects
+// claude-code models. Mirrors services/adaptiveTutor/realLLM.js: drop the API-key env
+// vars so the CLI uses the Max-plan subscription window (not a metered endpoint), and
+// pass a replacement --system-prompt so output-style additions (e.g. the "★ Insight"
+// block) cannot corrupt the JSON envelope.
+const CLAUDE_JUDGE_SYSTEM =
+  'You are a strict evaluator. Respond with ONLY the requested JSON object — no preamble, no commentary, no markdown fences.';
+const CLAUDE_JUDGE_TIMEOUT_MS = 300_000;
+
+async function callClaudeCode(prompt) {
+  const cliModel = ARGS.model.replace(/^claude-code\//u, '');
+  const args = ['-p', '-', '--output-format', 'text', '--system-prompt', CLAUDE_JUDGE_SYSTEM];
+  if (cliModel) args.push('--model', cliModel);
+  const env = { ...process.env };
+  delete env.CLAUDE_CODE;
+  delete env.CLAUDECODE;
+  delete env.ANTHROPIC_API_KEY;
+  delete env.ANTHROPIC_AUTH_TOKEN;
+
+  const stdout = await new Promise((resolve, reject) => {
+    const child = spawn('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], env });
+    let out = '';
+    let err = '';
+    const timer = setTimeout(() => {
+      try {
+        child.kill('SIGKILL');
+      } catch (_) {
+        /* already gone */
+      }
+      reject(new Error(`claude CLI timed out after ${CLAUDE_JUDGE_TIMEOUT_MS}ms`));
+    }, CLAUDE_JUDGE_TIMEOUT_MS);
+    child.stdout.on('data', (d) => {
+      out += d;
+    });
+    child.stderr.on('data', (d) => {
+      err += d;
+    });
+    child.on('error', (e) => {
+      clearTimeout(timer);
+      reject(e);
+    });
+    child.on('close', (code) => {
+      clearTimeout(timer);
+      if (code !== 0) reject(new Error(err || out || `claude CLI exited with code ${code}`));
+      else resolve(out);
+    });
+    child.stdin.write(prompt);
+    child.stdin.end();
+  });
+
+  return { parsed: extractJsonEnvelope(stdout), rawStdout: stdout };
+}
+
+// Route claude-code/* judge models through the claude CLI; everything else via codex.
+const JUDGE_VIA_CLAUDE_CODE = (ARGS.model || '').startsWith('claude-code/');
+async function callJudge(prompt) {
+  return JUDGE_VIA_CLAUDE_CODE ? callClaudeCode(prompt) : callCodex(prompt);
+}
+
 // ─────────────────────────────────────── persistence
 const updateStmt = db.prepare(`
   UPDATE evaluation_results SET
@@ -214,7 +275,7 @@ async function main() {
   );
   console.log('');
 
-  const modelLabel = ARGS.model ? `codex-cli.${ARGS.model}` : 'codex-cli.default';
+  const modelLabel = JUDGE_VIA_CLAUDE_CODE ? ARGS.model : ARGS.model ? `codex-cli.${ARGS.model}` : 'codex-cli.default';
   let processed = 0;
   let skipped = 0;
   let errors = 0;
@@ -243,7 +304,7 @@ async function main() {
     }
     try {
       const t0 = Date.now();
-      const { parsed, rawStdout } = await callCodex(prompt);
+      const { parsed, rawStdout } = await callJudge(prompt);
       const dt = Date.now() - t0;
       persistScores(row.id, parsed, modelLabel);
       const s = parsed.scores || {};
