@@ -52,6 +52,7 @@
  * quota-interrupted run resumes by re-running.
  *
  * Usage:
+ *   node scripts/generate-pedagogical-dramas.js --help           # print CLI reference, no validation/work
  *   node scripts/generate-pedagogical-dramas.js --dry-run        # plan only, no LLM, no writes
  *   node scripts/generate-pedagogical-dramas.js --mock           # full pipeline, stub LLM, *-mock dirs (free)
  *   node scripts/generate-pedagogical-dramas.js                  # REAL claude-code CLI (attended, paid quota)
@@ -123,8 +124,80 @@ const PAIRED_ADAPTATION_ARMS = {
 
 // ── args ─────────────────────────────────────────────────────────────────────
 
+function usage() {
+  return `Usage:
+  node scripts/generate-pedagogical-dramas.js [options]
+
+Common examples:
+  node scripts/generate-pedagogical-dramas.js --dry-run
+  node scripts/generate-pedagogical-dramas.js --mock --first-lesson
+  node scripts/generate-pedagogical-dramas.js --generator codex --first-lesson --trace-calls
+  node scripts/generate-pedagogical-dramas.js --generator api --api-model glm5_2 --first-lesson
+  node scripts/generate-pedagogical-dramas.js \\
+    --generator codex \\
+    --role-map "director=codex,tutor_ego=api:glm5_2,tutor_superego=codex,learner=codex"
+
+Selection:
+  --spec FILE                         Drama YAML spec
+  --first-lesson                      Select earliest AI Foundations lesson in the spec
+  --only ID[,ID...]                   Generate selected drama IDs or T IDs
+  --seed N                            T-id shuffle seed (default: 20260520)
+  --tid-start N                       Offset generated T IDs
+  --max-turns N                       Tutor turns per drama (default: 6)
+
+Backends and routing:
+  --generator claude|codex|gemini|api Default backend for every role
+  --model ALIAS                       Claude CLI model alias (default: opus)
+  --effort low|medium|high|xhigh|max  Claude CLI reasoning effort
+  --api-model ALIAS_OR_SLUG           OpenRouter alias/slug for API calls
+  --role-map MAP                      Route roles independently. Keys: director, tutor, learner,
+                                      tutor_ego, tutor_superego, learner_ego, learner_superego, default.
+                                      Values: claude, codex, gemini, api, api:<alias-or-slug>,
+                                      openrouter:<alias-or-slug>.
+
+Director and adaptation:
+  --director-mode off|scene
+  --director-revisit-cue
+  --director-revisit-policy none|anchor|revoice|reconsider|reframe
+  --director-revisit-anchor latest|opening|misframing-candidate
+  --director-variation-key KEY
+  --opening-speaker learner|tutor|director
+  --affective-adaptation-policy none|procedural_sensitive
+  --control-ending default|hold
+
+Paired runs:
+  --paired-continuation-policies none,revoice,reconsider,reframe
+  --paired-adaptation-arms routine,none,reframe-only,tutor-uptake-only,reframe+tutor-uptake,peripeteia-only,reframe+peripeteia,socratic,reveal
+
+Output paths:
+  --out-dir DIR
+  --delib-dir DIR
+  --transcripts-dir DIR
+  --key FILE
+  --writing-pad-dir DIR
+
+Operational flags:
+  -h, --help                          Print this help and exit
+  --dry-run                           Print generation plan only; no writes, no LLM calls
+  --mock                              Use deterministic stub LLMs
+  --force                             Overwrite selected/generated outputs
+  --reclean                           Reclean existing transcripts without generation
+  --trace-calls                       Record per-call telemetry
+  --call-telemetry-json FILE
+  --call-telemetry-csv FILE
+  --claude-persistent-workers         Reuse persistent Claude worker processes
+  --generation-concurrency N          Independent dramas to generate concurrently (default: 1)
+
+Environment:
+  CODEX_REASONING_EFFORT              Codex reasoning effort (default: xhigh)
+  CODEX_MODEL                         Codex model override
+  GEN_DRAMAS_TRACE_CALLS=1            Enable call telemetry by default
+`;
+}
+
 function parseArgs(argv) {
   const a = {
+    help: false,
     seed: 20260520,
     maxTurns: 6,
     model: 'opus',
@@ -162,6 +235,10 @@ function parseArgs(argv) {
     callTelemetryJsonPath: null,
     callTelemetryCsvPath: null,
   };
+  if (argv.some((token) => token === '--help' || token === '-h')) {
+    a.help = true;
+    return a;
+  }
   for (let i = 0; i < argv.length; i++) {
     const t = argv[i];
     if (t === '--mock') a.mock = true;
@@ -213,8 +290,9 @@ function parseArgs(argv) {
         .map((arm) => arm.trim())
         .filter(Boolean);
     } else if (t === '--generation-concurrency') a.generationConcurrency = parseInt(argv[++i], 10);
-    else throw new Error(`unknown arg: ${t}`);
+    else throw new Error(`unknown arg: ${t}\n\n${usage()}`);
   }
+  if (a.help) return a;
   if (!Number.isInteger(a.seed)) throw new Error('--seed must be an integer');
   if (!Number.isInteger(a.maxTurns) || a.maxTurns < 1) throw new Error('--max-turns must be a positive integer');
   if (!['claude', 'codex', 'gemini', 'api'].includes(a.generator))
@@ -4739,6 +4817,10 @@ async function loadInteractionRuntime(args) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
+  if (args.help) {
+    process.stdout.write(`${usage()}\n`);
+    return;
+  }
   Object.defineProperty(args, '_callTelemetry', {
     value: makeCallTelemetryRecorder({
       enabled: args.traceCalls,
@@ -5264,6 +5346,7 @@ export {
   revoiceMatchStats,
   selectFirstLessonDrama,
   stageDirectionStyleFor,
+  usage,
   withAffectiveAdaptationPolicy,
   withControlEndingPolicy,
   withWorldAdaptationConstraints,

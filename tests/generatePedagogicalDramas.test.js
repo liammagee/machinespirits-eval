@@ -28,6 +28,7 @@ import {
   resolveRoleRoute,
   selectFirstLessonDrama,
   stageDirectionStyleFor,
+  usage,
   withAffectiveAdaptationPolicy,
   withControlEndingPolicy,
   withPairedDirectorRevisitCue,
@@ -63,6 +64,22 @@ function warningsForReframeLine({ tid, dramaId, anchor, learnerText }) {
 }
 
 describe('generate-pedagogical-dramas', () => {
+  it('prints CLI help without validating generation inputs', () => {
+    assert.equal(parseArgs(['--help']).help, true);
+    assert.equal(parseArgs(['-h', '--role-map', 'not-a-valid-map']).help, true);
+    assert.match(usage(), /Usage:\n  node scripts\/generate-pedagogical-dramas\.js \[options\]/);
+    assert.match(usage(), /--role-map MAP/);
+    assert.match(usage(), /api:<alias-or-slug>/);
+
+    const output = execFileSync('node', ['scripts/generate-pedagogical-dramas.js', '--help'], {
+      cwd: ROOT,
+      encoding: 'utf8',
+    });
+    assert.match(output, /--first-lesson/);
+    assert.match(output, /--generation-concurrency N/);
+    assert.doesNotMatch(output, /dramas spec not found/);
+  });
+
   it('parses opt-in persistent Claude workers without changing the default bridge', () => {
     assert.equal(parseArgs([]).claudePersistentWorkers, false);
     assert.equal(parseArgs(['--claude-persistent-workers']).claudePersistentWorkers, true);
