@@ -92,12 +92,40 @@ Each compiled spec contains:
 
 The world spec is not an evaluator. It can shape action affordances and record expected observables, but it must not be used by itself to prove learning success. Independent outcome and quality analyses remain required.
 
+## Rhetorical Dramatic Plan Contract
+
+`scripts/compile-curriculum-to-rhetorical-dramatic-plans.js` lowers the canonical curriculum into
+`rhetorical_dramatic_plans` (validated + content-hashed via `computeRhetoricalDramaticPlanHash`). This is the
+rhetorical lineage: each plan binds a module to a world spec and a rhetorical-dramatic shape, and
+`compile-curriculum-to-drama.js --from-rhetorical-plans` projects those plans into the runnable `dramas:` spec
+(`curriculum/ai-foundations.rhetorical-dramas.yaml`) instead of compiling drama seeds straight from the
+curriculum. Compiled drama ids are `D_AF<N>_CURRICULUM` (curriculum source) or `D_AF<N>_CURRICULUM_ADAPTIVE`
+(rhetorical-plan source).
+
 ## Current Commands
 
 ```bash
+# 1. markdown source -> canonical curriculum object (add --check to validate only)
 npm run curriculum:convert:ai-foundations
-npm run curriculum:compile:drama
-npm run curriculum:compile:drama -- --mvp --out curriculum/ai-foundations.mvp-dramas.yaml
+
+# 2. canonical -> locked world specs (--check validates hashes; --all for every module, default --mvp)
 npm run curriculum:compile:worlds
 npm run curriculum:compile:worlds -- --check
+
+# 3. canonical -> rhetorical-dramatic plans (--mvp default | --all | --arms a,b | --check)
+npm run curriculum:compile:rhetorical-dramatic-plans
+
+# 4a. canonical -> drama seeds
+npm run curriculum:compile:drama
+npm run curriculum:compile:drama -- --mvp --out curriculum/ai-foundations.mvp-dramas.yaml
+
+# 4b. rhetorical plans -> drama spec (the suite the live light-drama loop runs)
+npm run curriculum:compile:drama -- --mvp --from-rhetorical-plans \
+  --out curriculum/ai-foundations.rhetorical-dramas.yaml
+
+# 5. render a generated transcript to an HTML dialog (see scripts/render-light-drama-dialog-html.js for flags)
+npm run drama:render -- --transcript <run>/transcripts/<id>.json --out exports/<id>.html
 ```
+
+Generation itself (`scripts/generate-pedagogical-dramas.js`) follows a dry-run -> mock -> attended-real cost
+ladder; the `/ms-curriculum-drama` skill drives the whole chain.
