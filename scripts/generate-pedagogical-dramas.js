@@ -161,6 +161,8 @@ Director and adaptation:
   --director-revisit-policy none|anchor|revoice|reconsider|reframe
   --director-revisit-anchor latest|opening|misframing-candidate
   --director-variation-key KEY
+  --director-plan-cache DIR           Reuse cached director plans by content hash (skips the ~90-150s director call on rerun)
+  --reuse-director-plan FILE          Force a saved raw director response for the drama (single-drama use)
   --opening-speaker learner|tutor|director
   --affective-adaptation-policy none|procedural_sensitive
   --control-ending default|hold
@@ -234,6 +236,8 @@ function parseArgs(argv) {
     traceCalls: process.env.GEN_DRAMAS_TRACE_CALLS === '1',
     callTelemetryJsonPath: null,
     callTelemetryCsvPath: null,
+    directorPlanCache: null,
+    reuseDirectorPlan: null,
   };
   if (argv.some((token) => token === '--help' || token === '-h')) {
     a.help = true;
@@ -270,6 +274,8 @@ function parseArgs(argv) {
     else if (t === '--director-revisit-policy') a.directorRevisitPolicy = argv[++i];
     else if (t === '--director-revisit-anchor') a.directorRevisitAnchor = argv[++i];
     else if (t === '--director-variation-key') a.directorVariationKey = argv[++i];
+    else if (t === '--director-plan-cache') a.directorPlanCache = path.resolve(argv[++i]);
+    else if (t === '--reuse-director-plan') a.reuseDirectorPlan = path.resolve(argv[++i]);
     else if (t === '--opening-speaker') a.openingSpeaker = String(argv[++i] || '').toLowerCase();
     else if (t === '--control-ending') a.controlEndingPolicy = argv[++i];
     else if (t === '--call-telemetry-json') {
@@ -1099,6 +1105,7 @@ function keyItemFor(d, nTutor, nLearner, qualityWarnings = []) {
     curriculum_script_notes: curriculumScriptNotesForDrama(d, d._directorPlan || null),
     opening_speaker: d._directorPlan?.opening_speaker || null,
     ending_speaker: d._directorPlan?.ending_speaker || null,
+    director_plan_cache: d._directorPlan?.director_plan_cache || 'off',
     quality_status: blocked ? 'review_before_scoring' : 'ok',
     quality_warnings: qualityWarnings,
   };
@@ -3787,6 +3794,44 @@ function applyRuntimeDirectorPolicies({ d, args, plan, revisitPolicy, revisitAnc
   );
 }
 
+// ── Slice 6: director-plan cache ─────────────────────────────────────────────
+// The director call is the single most expensive call in a scene (~90-150s) and
+// is a pure function of (drama, generator, model, effort, director system prompt,
+// director user prompt). On a rerun after a cue/runtime patch, the director's
+// RAW response can be replayed and the deterministic post-processing
+// (applySpecDirectorOverrides + applyRuntimeDirectorPolicies) re-applied fresh,
+// so a downstream policy change is still honoured. Caching the raw response —
+// not the merged plan — keeps that re-application live. Off by default.
+function directorPlanCacheKey({ d, args, systemPrompt, userPrompt }) {
+  return sha256Short(
+    JSON.stringify({
+      v: 'director-plan-cache-v1',
+      drama: d.id,
+      generator: args.generator,
+      model: args.model || null,
+      effort: args.effort || null,
+      system: sha256Short(systemPrompt),
+      user: sha256Short(userPrompt),
+    }),
+  );
+}
+
+function readDirectorPlanRaw(file) {
+  try {
+    const text = fs.readFileSync(file, 'utf8');
+    // Accept either a cache envelope {raw_content} or a bare director JSON/string.
+    try {
+      const parsed = JSON.parse(text);
+      if (parsed && typeof parsed.raw_content === 'string') return parsed.raw_content;
+      return text;
+    } catch (_) {
+      return text;
+    }
+  } catch (_) {
+    return null;
+  }
+}
+
 async function buildDirectorPlan(d, llmCall, args) {
   if (args.directorMode === 'off') return null;
   const revisitPolicy = d._directorRevisitPolicy ?? args.directorRevisitPolicy;
@@ -3855,11 +3900,49 @@ async function buildDirectorPlan(d, llmCall, args) {
     control_ending_instruction: controlEndingInstructionForPrompt(args, d),
     fallback_variation_seed: fallback,
   });
-  const response = await llmCall('director', buildDirectorSystemPrompt(), [{ role: 'user', content: userPrompt }], {
-    temperature: 0.85,
-    maxTokens: 900,
-    agentRole: 'director',
-  });
+  const directorSystemPrompt = buildDirectorSystemPrompt();
+  let directorPlanCacheStatus = 'off';
+  let directorPlanCacheFile = null;
+  let cachedDirectorRaw = null;
+  if (args.reuseDirectorPlan) {
+    cachedDirectorRaw = readDirectorPlanRaw(args.reuseDirectorPlan);
+    directorPlanCacheStatus = cachedDirectorRaw != null ? 'reuse-file' : 'reuse-file-missing';
+  } else if (args.directorPlanCache) {
+    const key = directorPlanCacheKey({ d, args, systemPrompt: directorSystemPrompt, userPrompt });
+    directorPlanCacheFile = path.join(args.directorPlanCache, `${key}.json`);
+    if (fs.existsSync(directorPlanCacheFile)) {
+      cachedDirectorRaw = readDirectorPlanRaw(directorPlanCacheFile);
+      directorPlanCacheStatus = cachedDirectorRaw != null ? 'hit' : 'miss';
+    } else {
+      directorPlanCacheStatus = 'miss';
+    }
+  }
+  let response;
+  if (cachedDirectorRaw != null) {
+    response = { content: cachedDirectorRaw, provenance: { agentRole: 'director', director_plan_cached: true } };
+  } else {
+    response = await llmCall('director', directorSystemPrompt, [{ role: 'user', content: userPrompt }], {
+      temperature: 0.85,
+      maxTokens: 900,
+      agentRole: 'director',
+    });
+    if (directorPlanCacheFile) {
+      try {
+        fs.mkdirSync(path.dirname(directorPlanCacheFile), { recursive: true });
+        fs.writeFileSync(
+          directorPlanCacheFile,
+          JSON.stringify(
+            { drama_id: d.id, generated_at: new Date().toISOString(), raw_content: String(response.content || '') },
+            null,
+            2,
+          ),
+          'utf8',
+        );
+      } catch (err) {
+        console.warn(`[warn] could not write director-plan cache: ${err?.message || String(err)}`);
+      }
+    }
+  }
   try {
     const parsed = extractJsonObject(response.content);
     if (!parsed) throw new Error('no JSON object');
@@ -3872,6 +3955,7 @@ async function buildDirectorPlan(d, llmCall, args) {
           ? parsed.interventions
           : fallback.interventions,
       parse_status: 'ok',
+      director_plan_cache: directorPlanCacheStatus,
       provenance: response.provenance || response.apiPayload?.provenance || null,
     });
     return applyRuntimeDirectorPolicies({ d, args, plan: merged, revisitPolicy, revisitAnchor });
@@ -3879,6 +3963,7 @@ async function buildDirectorPlan(d, llmCall, args) {
     const merged = applySpecDirectorOverrides(d, {
       ...fallbackDirectorPlan(d, `fallback-parse-failed:${error.message}`, args),
       raw_director_response: String(response.content || '').slice(0, 2000),
+      director_plan_cache: directorPlanCacheStatus,
       provenance: response.provenance || response.apiPayload?.provenance || null,
     });
     return applyRuntimeDirectorPolicies({ d, args, plan: merged, revisitPolicy, revisitAnchor });
