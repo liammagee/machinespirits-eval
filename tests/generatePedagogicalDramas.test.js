@@ -1195,6 +1195,21 @@ describe('generate-pedagogical-dramas', () => {
     );
   });
 
+  it('accepts pressure plus now-the-check phrasing from curriculum governance reframes', () => {
+    const warnings = warningsForReframeLine({
+      tid: 'T945B',
+      dramaId: 'D945B',
+      anchor: 'The single fairness metric holds across them.',
+      learnerText:
+        '"The single fairness metric holds across them" — I was treating the document set as the system boundary, and the old check was whether the submission perimeter carried scope by implication. That was the pressure: implication is not a named entry. Now the check is whether the register, the model card, or the oversight plan contains an entry that names the system the equivalence claim governs.',
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
   it('accepts has-not-vanished phrasing as a replacement framing', () => {
     const warnings = warningsForReframeLine({
       tid: 'T946',
