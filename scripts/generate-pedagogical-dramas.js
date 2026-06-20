@@ -64,6 +64,7 @@
  *          backend only — codex uses CODEX_REASONING_EFFORT, agy has no effort knob)
  *        --out-dir / --key · --delib-dir / --transcripts-dir / --writing-pad-dir
  *        --generator claude|codex|gemini · --role-map "tutor=codex,learner=claude" (mixed)
+ *        --opening-speaker learner|tutor|director (override spec/director speaker order)
  *        --director-revisit-cue (anchor shorthand) · --director-revisit-policy none|anchor|revoice|reconsider|reframe
  *        --director-revisit-anchor latest|opening|misframing-candidate
  *        --director-variation-key <repeat-or-batch-id>
@@ -95,6 +96,7 @@ const DIRECTOR_REVISIT_POLICIES = new Set(['none', 'anchor', 'revoice', 'reconsi
 const DIRECTOR_REVISIT_ANCHORS = new Set(['latest', 'opening', 'misframing-candidate']);
 const TUTOR_ADAPTATION_POLICIES = new Set(['none', 'routine', 'uptake', 'peripeteia', 'uptake+peripeteia']);
 const AFFECTIVE_ADAPTATION_POLICIES = new Set(['none', 'procedural_sensitive']);
+const OPENING_SPEAKERS = new Set(['learner', 'tutor', 'director']);
 // claude CLI reasoning tiers (`claude --effort <level>`). codex tops out at xhigh;
 // the claude CLI adds a `max` tier above it. Used by the claude backend only —
 // agy exposes no effort flag, and codex reads CODEX_REASONING_EFFORT (env).
@@ -145,6 +147,7 @@ function parseArgs(argv) {
     directorRevisitPolicy: 'none',
     directorRevisitAnchor: 'latest',
     directorVariationKey: null,
+    openingSpeaker: null,
     pairedContinuationPolicies: null,
     pairedAdaptationArms: null,
     affectiveAdaptationPolicy: null,
@@ -181,6 +184,7 @@ function parseArgs(argv) {
     else if (t === '--director-revisit-policy') a.directorRevisitPolicy = argv[++i];
     else if (t === '--director-revisit-anchor') a.directorRevisitAnchor = argv[++i];
     else if (t === '--director-variation-key') a.directorVariationKey = argv[++i];
+    else if (t === '--opening-speaker') a.openingSpeaker = String(argv[++i] || '').toLowerCase();
     else if (t === '--affective-adaptation-policy') a.affectiveAdaptationPolicy = argv[++i];
     else if (t === '--paired-continuation-policies') {
       a.pairedContinuationPolicies = String(argv[++i] || '')
@@ -214,6 +218,9 @@ function parseArgs(argv) {
   if (a.pedagogyDb && !fs.existsSync(a.pedagogyDb)) throw new Error(`--pedagogy-db not found: ${a.pedagogyDb}`);
   if (a.dialogueDb && !fs.existsSync(a.dialogueDb)) throw new Error(`--dialogue-db not found: ${a.dialogueDb}`);
   if (!['off', 'scene'].includes(a.directorMode)) throw new Error('--director-mode must be off|scene');
+  if (a.openingSpeaker && !OPENING_SPEAKERS.has(a.openingSpeaker)) {
+    throw new Error('--opening-speaker must be learner|tutor|director');
+  }
   if (!DIRECTOR_REVISIT_POLICIES.has(a.directorRevisitPolicy))
     throw new Error('--director-revisit-policy must be none|anchor|revoice|reconsider|reframe');
   if (!DIRECTOR_REVISIT_ANCHORS.has(a.directorRevisitAnchor))
@@ -963,6 +970,7 @@ function keyItemFor(d, nTutor, nLearner, qualityWarnings = []) {
     n_tutor_turns: nTutor,
     n_learner_turns: nLearner,
     director_mode: d._directorMode || null,
+    opening_speaker_override: d._openingSpeakerOverride || null,
     director_variation_key: d._directorVariationKey || null,
     director_revisit_cue: Boolean(d._directorRevisitPolicy && d._directorRevisitPolicy !== 'none'),
     director_revisit_policy: d._directorRevisitPolicy || 'none',
@@ -2611,7 +2619,9 @@ function applyApproachDirectorOverrides(d, plan) {
       learner: combineText(plan.side_constraints?.learner, pedagogy?.learner_prompt, dialogue?.learner_constraint),
     },
   };
-  if (dialogue?.opening_speaker && !d.opening_speaker) next.opening_speaker = dialogue.opening_speaker;
+  if (dialogue?.opening_speaker && !d.opening_speaker && !d._openingSpeakerOverride) {
+    next.opening_speaker = dialogue.opening_speaker;
+  }
   if (dialogue?.ending_speaker && !d.ending_speaker) next.ending_speaker = dialogue.ending_speaker;
 
   if (stagePolicy === 'none' || stagePolicy === 'none_except_required_cue') {
@@ -2626,6 +2636,11 @@ function applyApproachDirectorOverrides(d, plan) {
     next.interventions = [...ordinary.slice(0, 1), ...revisit];
   }
   return next;
+}
+
+function applyOpeningSpeakerOverride(d, plan) {
+  if (!plan || !d?._openingSpeakerOverride) return plan;
+  return { ...plan, opening_speaker: d._openingSpeakerOverride };
 }
 
 function variationOffset(key = '') {
@@ -2663,7 +2678,8 @@ function fallbackDirectorPlan(d, reason = 'fallback', args = {}) {
     scene_opening: stageOpeningForStyle(d, setting, stageStyle, stagePolicy),
     relationship: d.relationship || 'a tutor and learner who do not yet share a stable register',
     stakes: d.stakes || d.learner_start_state || d.topic,
-    opening_speaker: d.opening_speaker || dialogue?.opening_speaker || (opensWithTutor ? 'tutor' : 'learner'),
+    opening_speaker:
+      d._openingSpeakerOverride || d.opening_speaker || dialogue?.opening_speaker || (opensWithTutor ? 'tutor' : 'learner'),
     ending_speaker: d.ending_speaker || dialogue?.ending_speaker || (endsWithTutor ? 'tutor' : 'learner'),
     locale: d.locale || voice.locale,
     register: d.register || dialogue?.turn_shape || voice.register,
@@ -2720,7 +2736,9 @@ function applySpecDirectorOverrides(d, plan) {
   return {
     ...plan,
     ...(d.public_reader_context ? { public_reader_context: d.public_reader_context } : {}),
-    ...(d.opening_speaker ? { opening_speaker: d.opening_speaker } : {}),
+    ...(d.opening_speaker || d._openingSpeakerOverride
+      ? { opening_speaker: d._openingSpeakerOverride || d.opening_speaker }
+      : {}),
     ...(d.ending_speaker ? { ending_speaker: d.ending_speaker } : {}),
     side_constraints: sideConstraints,
   };
@@ -3086,6 +3104,10 @@ async function buildDirectorPlan(d, llmCall, args) {
       d._pedagogicalApproach || d._dialogueApproach
         ? 'Use the selected pedagogical and dialogue approaches as directorial source material for scene ecology, tutor constraints, learner constraints, speaker order, turn length, and stage-direction policy. Do not name these approach IDs in public speech.'
         : null,
+    opening_speaker_override: args.openingSpeaker || null,
+    speaker_order_instruction: args.openingSpeaker
+      ? `The run configuration requires opening_speaker=${args.openingSpeaker}. Make the scene plausible for that first speaker.`
+      : null,
     director_variation_key: variationKey,
     forbidden_failure_modes: [
       'every turn in first/second person',
@@ -3120,26 +3142,29 @@ async function buildDirectorPlan(d, llmCall, args) {
       provenance: response.provenance || response.apiPayload?.provenance || null,
     });
     return withTurnPlan(
-      attachSecret(
-        withWorldAdaptationConstraints(
-          withDirectorCueProvenance(
-            applyApproachDirectorOverrides(
-              d,
-              withAffectiveAdaptationPolicy(
-                withTutorAdaptationPolicy(
-                  withDirectorRevisitCue(merged, revisitPolicy, revisitAnchor),
-                  d._tutorAdaptationPolicy || d.tutor_adaptation_policy || 'none',
+      applyOpeningSpeakerOverride(
+        d,
+        attachSecret(
+          withWorldAdaptationConstraints(
+            withDirectorCueProvenance(
+              applyApproachDirectorOverrides(
+                d,
+                withAffectiveAdaptationPolicy(
+                  withTutorAdaptationPolicy(
+                    withDirectorRevisitCue(merged, revisitPolicy, revisitAnchor),
+                    d._tutorAdaptationPolicy || d.tutor_adaptation_policy || 'none',
+                  ),
+                  d._affectiveAdaptationPolicy ||
+                    d.affective_adaptation_policy ||
+                    args.affectiveAdaptationPolicy ||
+                    'none',
                 ),
-                d._affectiveAdaptationPolicy ||
-                  d.affective_adaptation_policy ||
-                  args.affectiveAdaptationPolicy ||
-                  'none',
               ),
             ),
+            d,
           ),
           d,
         ),
-        d,
       ),
       d,
     );
@@ -3150,26 +3175,29 @@ async function buildDirectorPlan(d, llmCall, args) {
       provenance: response.provenance || response.apiPayload?.provenance || null,
     });
     return withTurnPlan(
-      attachSecret(
-        withWorldAdaptationConstraints(
-          withDirectorCueProvenance(
-            applyApproachDirectorOverrides(
-              d,
-              withAffectiveAdaptationPolicy(
-                withTutorAdaptationPolicy(
-                  withDirectorRevisitCue(merged, revisitPolicy, revisitAnchor),
-                  d._tutorAdaptationPolicy || d.tutor_adaptation_policy || 'none',
+      applyOpeningSpeakerOverride(
+        d,
+        attachSecret(
+          withWorldAdaptationConstraints(
+            withDirectorCueProvenance(
+              applyApproachDirectorOverrides(
+                d,
+                withAffectiveAdaptationPolicy(
+                  withTutorAdaptationPolicy(
+                    withDirectorRevisitCue(merged, revisitPolicy, revisitAnchor),
+                    d._tutorAdaptationPolicy || d.tutor_adaptation_policy || 'none',
+                  ),
+                  d._affectiveAdaptationPolicy ||
+                    d.affective_adaptation_policy ||
+                    args.affectiveAdaptationPolicy ||
+                    'none',
                 ),
-                d._affectiveAdaptationPolicy ||
-                  d.affective_adaptation_policy ||
-                  args.affectiveAdaptationPolicy ||
-                  'none',
               ),
             ),
+            d,
           ),
           d,
         ),
-        d,
       ),
       d,
     );
@@ -3463,6 +3491,9 @@ function runMetadataForDrama({ args, d, directorPlan, runtime, transcriptArtifac
     tutor_adaptation_policy: d._tutorAdaptationPolicy || directorPlan?.tutor_adaptation_policy || 'none',
     affective_adaptation_policy:
       d._affectiveAdaptationPolicy || d.affective_adaptation_policy || directorPlan?.affective_adaptation_policy || 'none',
+    opening_speaker_override: args.openingSpeaker || null,
+    opening_speaker: directorPlan?.opening_speaker || null,
+    ending_speaker: directorPlan?.ending_speaker || null,
     director_variation_key: d._directorVariationKey || null,
     stage_direction_style: stageDirectionStyleFor(d)?.id || null,
     model: generatorModelLabel(args),
@@ -3637,6 +3668,9 @@ function writeGeneratedDramaArtifacts({
             d.affective_adaptation_policy ||
             directorPlan?.affective_adaptation_policy ||
             'none',
+          opening_speaker_override: args.openingSpeaker || null,
+          opening_speaker: directorPlan?.opening_speaker || null,
+          ending_speaker: directorPlan?.ending_speaker || null,
           director_variation_key: d._directorVariationKey || null,
           stage_direction_style: stageDirectionStyleFor(d)?.id || null,
           model: generatorModelLabel(args),
@@ -3700,6 +3734,7 @@ function baseKeyObject({
     codex_reasoning_effort: CODEX_REASONING_EFFORT,
     writing_pad: runtime.writingPad,
     director_mode: args.directorMode,
+    opening_speaker_override: args.openingSpeaker || null,
     director_variation_key: args.directorVariationKey || null,
     director_revisit_cue: directorPolicy !== 'none',
     director_revisit_policy: directorPolicy,
@@ -4120,6 +4155,7 @@ async function main() {
         ].join('|')}`,
       );
     }
+    d._openingSpeakerOverride = args.openingSpeaker || null;
     d._directorVariationKey = d.director_variation_key || args.directorVariationKey || null;
     d._stageDirectionStyle = resolveStageDirectionStyle(d);
   }
@@ -4150,6 +4186,7 @@ async function main() {
     `  generator: ${args.roleMap ? 'mixed' : args.generator} · dramas: ${order.length} · maxTurns: ${args.maxTurns} · ` +
       `seed: ${args.seed}${args.tidStart ? ` · tid-start: ${args.tidStart}` : ''} · director: ${args.directorMode}` +
       `${args.firstLesson ? ' · first-lesson' : ''}` +
+      `${args.openingSpeaker ? ` · opens=${args.openingSpeaker}` : ''}` +
       `${revisitSummary.cue ? ` + revisit-${revisitSummary.policy}/${revisitSummary.anchor}` : ''}` +
       `${args.affectiveAdaptationPolicy ? ` · affect=${args.affectiveAdaptationPolicy}` : ''}`,
   );
@@ -4379,6 +4416,9 @@ async function main() {
         }
         trace.run = {
           ...(trace.run || {}),
+          opening_speaker_override: args.openingSpeaker || null,
+          opening_speaker: directorPlan?.opening_speaker || null,
+          ending_speaker: directorPlan?.ending_speaker || null,
           affective_adaptation_policy:
             d._affectiveAdaptationPolicy ||
             d.affective_adaptation_policy ||
@@ -4413,6 +4453,9 @@ async function main() {
                   d.affective_adaptation_policy ||
                   directorPlan?.affective_adaptation_policy ||
                   'none',
+                opening_speaker_override: args.openingSpeaker || null,
+                opening_speaker: directorPlan?.opening_speaker || null,
+                ending_speaker: directorPlan?.ending_speaker || null,
                 director_variation_key: d._directorVariationKey || null,
                 stage_direction_style: stageDirectionStyleFor(d)?.id || null,
                 model: generatorModelLabel(args),

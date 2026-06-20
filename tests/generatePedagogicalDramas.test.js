@@ -62,11 +62,19 @@ describe('generate-pedagogical-dramas', () => {
   });
 
   it('parses first-lesson and affective adaptation options', () => {
-    const args = parseArgs(['--first-lesson', '--affective-adaptation-policy', 'procedural_sensitive']);
+    const args = parseArgs([
+      '--first-lesson',
+      '--affective-adaptation-policy',
+      'procedural_sensitive',
+      '--opening-speaker',
+      'tutor',
+    ]);
     assert.equal(args.firstLesson, true);
     assert.equal(args.affectiveAdaptationPolicy, 'procedural_sensitive');
+    assert.equal(args.openingSpeaker, 'tutor');
     assert.throws(() => parseArgs(['--first-lesson', '--only', 'D_AF11']), /either --only or --first-lesson/);
     assert.throws(() => parseArgs(['--affective-adaptation-policy', 'warmth_only']), /procedural_sensitive/);
+    assert.throws(() => parseArgs(['--opening-speaker', 'peer']), /learner\|tutor\|director/);
   });
 
   it('selects the earliest AI Foundations lesson in a drama spec', () => {
@@ -2735,6 +2743,53 @@ describe('generate-pedagogical-dramas', () => {
       trace.directorPlan.side_constraints.learner,
       /opening public line must own the decimal-check misconception/i,
     );
+  });
+
+  it('overrides the drama opening speaker from the CLI', () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'drama-gen-opening-speaker-'));
+    const sampleDir = path.join(tmp, 'sample');
+    const delibDir = path.join(tmp, 'delib');
+    const transcriptsDir = path.join(tmp, 'transcripts');
+    const keyPath = path.join(tmp, 'key.yaml');
+
+    execFileSync(
+      process.execPath,
+      [
+        'scripts/generate-pedagogical-dramas.js',
+        '--mock',
+        '--spec',
+        'config/poetics-calibration/phase2-dramas-v2.yaml',
+        '--only',
+        'D1',
+        '--max-turns',
+        '2',
+        '--opening-speaker',
+        'tutor',
+        '--out-dir',
+        sampleDir,
+        '--delib-dir',
+        delibDir,
+        '--transcripts-dir',
+        transcriptsDir,
+        '--key',
+        keyPath,
+        '--force',
+      ],
+      { cwd: ROOT, stdio: 'pipe', env: { ...process.env, GEN_DRAMAS_CLI_TRACE: '0' } },
+    );
+
+    const traceFile = fs.readdirSync(delibDir).find((file) => /^T\d+\.json$/.test(file));
+    const trace = JSON.parse(fs.readFileSync(path.join(delibDir, traceFile), 'utf8'));
+    const key = yaml.parse(fs.readFileSync(keyPath, 'utf8'));
+    const tid = traceFile.replace(/\.json$/, '');
+
+    assert.equal(trace.directorPlan.opening_speaker, 'tutor');
+    assert.equal(trace.run.opening_speaker_override, 'tutor');
+    assert.equal(trace.run.opening_speaker, 'tutor');
+    assert.equal(trace.turns.find((turn) => turn.phase === 'tutor' || turn.phase === 'learner')?.phase, 'tutor');
+    assert.equal(key.opening_speaker_override, 'tutor');
+    assert.equal(key.items[tid].opening_speaker_override, 'tutor');
+    assert.equal(key.items[tid].opening_speaker, 'tutor');
   });
 
   it('replaces shared revisit cues with the paired branch policy', () => {
