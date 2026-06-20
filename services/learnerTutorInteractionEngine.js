@@ -26,6 +26,44 @@ import { analyzePseudoCatharsis } from './pseudoCatharsisDetector.js';
 
 const DEFAULT_MAX_TURNS = 10;
 const API_PAYLOAD_MAX_CHARS = Number.parseInt(process.env.EVAL_CAPTURE_API_PAYLOAD_MAX_CHARS || '120000', 10);
+const STATIC_DYNAMIC_PROMPT_SPLIT_TAIL = `Prompt-split runtime contract: the next user message may contain dynamic scene, memory, policy, review, and turn-specific context for this call. Treat that context as binding for the task, but do not quote or expose hidden labels, director notes, private review text, answer keys, or policy names in public speech unless they are explicitly presented as public speech.`;
+
+function staticDynamicPromptSplitEnabled() {
+  for (const name of ['DRAMA_STATIC_DYNAMIC_PROMPTS', 'MS_STATIC_DYNAMIC_PROMPTS']) {
+    const value = process.env[name];
+    if (value != null && ['0', 'false', 'off', 'no'].includes(String(value).toLowerCase())) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function withPromptSplitStaticTail(systemPrompt) {
+  const base = String(systemPrompt || '').trim();
+  return `${base || 'You are a careful tutoring dialogue agent.'}\n\n${STATIC_DYNAMIC_PROMPT_SPLIT_TAIL}`;
+}
+
+function buildDynamicUserPrompt(dynamicContext, taskPrompt) {
+  const sections = [];
+  const dynamic = String(dynamicContext || '').trim();
+  const task = String(taskPrompt || '').trim();
+  if (dynamic) sections.push(`DYNAMIC CONTEXT FOR THIS CALL:\n${dynamic}`);
+  if (task) sections.push(`TASK:\n${task}`);
+  return sections.join('\n\n') || task || dynamic || 'Continue the dialogue.';
+}
+
+function buildPromptCall({ staticSystemPrompt, dynamicContext, taskPrompt, fallbackSystemPrompt, fallbackUserPrompt }) {
+  if (!staticDynamicPromptSplitEnabled()) {
+    return {
+      systemPrompt: fallbackSystemPrompt,
+      userPrompt: fallbackUserPrompt,
+    };
+  }
+  return {
+    systemPrompt: withPromptSplitStaticTail(staticSystemPrompt),
+    userPrompt: buildDynamicUserPrompt(dynamicContext, taskPrompt),
+  };
+}
 
 function clipPayloadText(text, limit = API_PAYLOAD_MAX_CHARS) {
   if (text == null) return null;
@@ -1678,15 +1716,21 @@ ${
 }`;
     }
 
-    const prompt = buildLearnerPrompt(agentConfig, persona, roleContext, directorPlan?._secret);
+    const promptCall = buildLearnerPromptCall(
+      agentConfig,
+      persona,
+      roleContext,
+      role === 'superego' ? "Critique the EGO's initial reaction." : 'Generate your internal voice.',
+      directorPlan?._secret,
+    );
 
     const response = await llmCall(
       agentConfig.model,
-      prompt,
+      promptCall.systemPrompt,
       [
         {
           role: 'user',
-          content: role === 'superego' ? "Critique the EGO's initial reaction." : 'Generate your internal voice.',
+          content: promptCall.userPrompt,
         },
       ],
       {
@@ -1747,11 +1791,17 @@ The message should feel authentic - not too polished, showing real confusion or 
 Keep it 1-3 sentences. Do NOT include internal thoughts or meta-commentary. If any nonspoken action aside is needed, put it in square brackets.`;
     }
 
-    const revisionSystemPrompt = buildLearnerPrompt(egoConfig, persona, revisionContext, directorPlan?._secret);
+    const revisionPromptCall = buildLearnerPromptCall(
+      egoConfig,
+      persona,
+      revisionContext,
+      "Generate the learner's opening message.",
+      directorPlan?._secret,
+    );
     const externalResponse = await llmCall(
       egoConfig.model,
-      revisionSystemPrompt,
-      [{ role: 'user', content: "Generate the learner's opening message." }],
+      revisionPromptCall.systemPrompt,
+      [{ role: 'user', content: revisionPromptCall.userPrompt }],
       {
         temperature: getRequiredTemperature(egoConfig, 'ego'),
         maxTokens: getRequiredMaxTokens(egoConfig, 'ego'),
@@ -1785,10 +1835,21 @@ Lightly adapt this opening to feel natural given the internal deliberation, but 
 The adapted message should be 1-3 sentences and maintain the original meaning.
 Do NOT include internal thoughts or meta-commentary. If any nonspoken action aside is needed, put it in square brackets.`;
 
+    const adaptPromptCall = staticDynamicPromptSplitEnabled()
+      ? buildLearnerPromptCall(
+          lastConfig,
+          persona,
+          adaptPrompt,
+          "Generate the learner's opening message.",
+          directorPlan?._secret,
+          { guardContext: false },
+        )
+      : { systemPrompt: adaptPrompt, userPrompt: "Generate the learner's opening message." };
+
     const adaptResponse = await llmCall(
       lastConfig.model,
-      adaptPrompt,
-      [{ role: 'user', content: "Generate the learner's opening message." }],
+      adaptPromptCall.systemPrompt,
+      [{ role: 'user', content: adaptPromptCall.userPrompt }],
       {
         temperature: getRequiredTemperature(lastConfig, 'unified_learner'),
         maxTokens: getRequiredMaxTokens(lastConfig, 'unified_learner'),
@@ -1820,13 +1881,20 @@ Do NOT include internal thoughts or meta-commentary. If any nonspoken action asi
 /**
  * Build learner prompt with agent config and persona
  */
-function buildLearnerPrompt(agentConfig, persona, additionalContext, secret = null, { guardContext = true } = {}) {
+function buildLearnerStaticPrompt(agentConfig, persona, secret = null) {
   let staticPrompt = agentConfig.prompt || '';
 
   // Add persona context
   if (persona.prompt_modifier) {
     staticPrompt += `\n\n${persona.prompt_modifier}`;
   }
+
+  assertSecretAbsent(secret, staticPrompt, 'buildLearnerPrompt');
+  return staticPrompt;
+}
+
+function buildLearnerPrompt(agentConfig, persona, additionalContext, secret = null, { guardContext = true } = {}) {
+  const staticPrompt = buildLearnerStaticPrompt(agentConfig, persona, secret);
 
   // Add additional context
   let prompt = staticPrompt;
@@ -1845,8 +1913,34 @@ function buildLearnerPrompt(agentConfig, persona, additionalContext, secret = nu
   // false positive. Whether the tutor bald-reveals S in dialogue is the
   // reveal-detector's post-hoc job, not a generation-time crash. Inert when no
   // secret is set.
-  assertSecretAbsent(secret, guardContext ? prompt : staticPrompt, 'buildLearnerPrompt');
+  if (guardContext) {
+    assertSecretAbsent(secret, prompt, 'buildLearnerPrompt');
+  }
   return prompt;
+}
+
+function buildLearnerPromptCall(
+  agentConfig,
+  persona,
+  additionalContext,
+  userPrompt,
+  secret = null,
+  { guardContext = true } = {},
+) {
+  if (!staticDynamicPromptSplitEnabled()) {
+    return {
+      systemPrompt: buildLearnerPrompt(agentConfig, persona, additionalContext, secret, { guardContext }),
+      userPrompt,
+    };
+  }
+  const staticPrompt = buildLearnerStaticPrompt(agentConfig, persona, secret);
+  if (guardContext) {
+    assertSecretAbsent(secret, `${staticPrompt}\n\n${additionalContext || ''}`, 'buildLearnerPrompt');
+  }
+  return {
+    systemPrompt: withPromptSplitStaticTail(staticPrompt),
+    userPrompt: buildDynamicUserPrompt(additionalContext, userPrompt),
+  };
 }
 
 // ============================================================================
@@ -1946,9 +2040,8 @@ async function runTutorTurn(
   const internalDeliberation = [];
 
   // ===== T.EGO: Draft initial response =====
-  const egoPrompt = `${egoConfig?.prompt || 'You are a thoughtful AI tutor.'}
-
-Your accumulated knowledge about this learner:
+  const tutorEgoStaticPrompt = egoConfig?.prompt || 'You are a thoughtful AI tutor.';
+  const tutorSharedDynamicContext = `Your accumulated knowledge about this learner:
 ${tutorMemory || 'This is a new learner - no prior history.'}
 
 Topic: ${topic}
@@ -1957,9 +2050,9 @@ Recent conversation:
 ${conversationContext}
 
 ${directorContext ? `${directorContext}\n` : ''}
-${secretContext ? `${secretContext}\n` : ''}${tutorAdaptationContext ? `${tutorAdaptationContext}\n` : ''}${affectiveAdaptationContext ? `${affectiveAdaptationContext}\n` : ''}
+${secretContext ? `${secretContext}\n` : ''}${tutorAdaptationContext ? `${tutorAdaptationContext}\n` : ''}${affectiveAdaptationContext ? `${affectiveAdaptationContext}\n` : ''}`;
 
-The learner just said:
+  const egoTaskPrompt = `The learner just said:
 "${learnerMessage}"
 
 Draft your INITIAL response as a tutor. Consider:
@@ -1974,10 +2067,18 @@ ${affectiveAdaptationActive ? '4. What affective pressure is visible, and what s
 ${routineControl ? 'Keep the affective register already established unless ordinary politeness requires a small adjustment. Do not use register change as the adaptive mechanism in this routine-control branch.' : 'Choose the affective register that serves learning pressure. Warmth may help, but so may restraint, formality, silence, briskness, or public accountability. Do not use cheeriness or informality to soften away the conceptual resistance.'} Don't be condescending. Build on their words.
 
 Provide ONLY your draft response text (it will be reviewed by your pedagogical critic). The draft must be direct public tutor speech. If you include a nonspoken action aside, put it in square brackets.`;
+  const egoPrompt = `${tutorEgoStaticPrompt}\n\n${tutorSharedDynamicContext}\n\n${egoTaskPrompt}`;
+  const egoPromptCall = buildPromptCall({
+    staticSystemPrompt: tutorEgoStaticPrompt,
+    dynamicContext: tutorSharedDynamicContext,
+    taskPrompt: egoTaskPrompt,
+    fallbackSystemPrompt: egoPrompt,
+    fallbackUserPrompt: learnerMessage,
+  });
 
   const tutorModel = egoConfig?.model || tutorConfig.getProviderConfig('openrouter')?.default_model;
 
-  const egoResponse = await llmCall(tutorModel, egoPrompt, [{ role: 'user', content: learnerMessage }], {
+  const egoResponse = await llmCall(tutorModel, egoPromptCall.systemPrompt, [{ role: 'user', content: egoPromptCall.userPrompt }], {
     temperature: getRequiredTemperature(egoConfig, 'tutor_ego'),
     maxTokens: getRequiredMaxTokens(egoConfig, 'tutor_ego'),
     agentRole: 'tutor_ego',
@@ -2000,7 +2101,9 @@ Provide ONLY your draft response text (it will be reviewed by your pedagogical c
   let externalMessage = egoDraft;
 
   if (superegoConfig) {
-    const superegoPrompt = `${superegoConfig?.prompt || 'You are a pedagogical critic reviewing tutor responses.'}
+    const tutorSuperegoStaticPrompt =
+      superegoConfig?.prompt || 'You are a pedagogical critic reviewing tutor responses.';
+    const superegoPrompt = `${tutorSuperegoStaticPrompt}
 
 Context about the learner:
 ${tutorMemory || 'New learner - no prior history.'}
@@ -2054,14 +2157,26 @@ ${routineControl && learnerReversalEvent ? 'ROUTINE_CHECK: [does the draft maint
 ${affectiveAdaptationActive ? 'AFFECT_CHECK: [PASS|PARTIAL|FAIL - name the learner pressure, the affective stance chosen, and how it fits the current procedural move or preserves the route]' : ''}
 ${learnerReframeEvent || (peripeteiaControl && learnerReversalEvent) || affectiveAdaptationActive ? 'REQUIRED_REWRITE: [if any adaptation check is PARTIAL or FAIL, name the required public mechanism or affective stance change; otherwise "none"]' : ''}
 KEEP_OR_CHANGE: [keep as-is | revise lightly | revise substantially, with reasons]`;
+    const superegoPromptCall = buildPromptCall({
+      staticSystemPrompt: tutorSuperegoStaticPrompt,
+      dynamicContext: superegoPrompt.slice(tutorSuperegoStaticPrompt.length).trim(),
+      taskPrompt: '',
+      fallbackSystemPrompt: superegoPrompt,
+      fallbackUserPrompt: egoDraft,
+    });
 
     const superegoModel = superegoConfig.model || tutorModel;
 
-    const superegoResponse = await llmCall(superegoModel, superegoPrompt, [{ role: 'user', content: egoDraft }], {
-      temperature: getRequiredTemperature(superegoConfig, 'tutor_superego'),
-      maxTokens: getRequiredMaxTokens(superegoConfig, 'tutor_superego'),
-      agentRole: 'tutor_superego',
-    });
+    const superegoResponse = await llmCall(
+      superegoModel,
+      superegoPromptCall.systemPrompt,
+      [{ role: 'user', content: superegoPromptCall.userPrompt }],
+      {
+        temperature: getRequiredTemperature(superegoConfig, 'tutor_superego'),
+        maxTokens: getRequiredMaxTokens(superegoConfig, 'tutor_superego'),
+        agentRole: 'tutor_superego',
+      },
+    );
 
     trace.metrics.tutorInputTokens += superegoResponse.usage?.inputTokens || 0;
     trace.metrics.tutorOutputTokens += superegoResponse.usage?.outputTokens || 0;
@@ -2076,7 +2191,7 @@ KEEP_OR_CHANGE: [keep as-is | revise lightly | revise substantially, with reason
       ),
     );
 
-    const egoAdjudicationPrompt = `${egoConfig?.prompt || 'You are a thoughtful AI tutor.'}
+    const egoAdjudicationPrompt = `${tutorEgoStaticPrompt}
 
 Your accumulated knowledge about this learner:
 ${tutorMemory || 'This is a new learner - no prior history.'}
@@ -2112,12 +2227,24 @@ FINAL:
 [the final tutor message to the learner]
 
 The FINAL section must contain only public tutor speech. Do not mention the Ego, Superego, director, scene card, critique, draft, or review process in FINAL. If you include a nonspoken action aside, put it in square brackets.`;
-
-    const egoFinalResponse = await llmCall(tutorModel, egoAdjudicationPrompt, [{ role: 'user', content: egoDraft }], {
-      temperature: getRequiredTemperature(egoConfig, 'tutor_ego'),
-      maxTokens: getRequiredMaxTokens(egoConfig, 'tutor_ego'),
-      agentRole: 'tutor_ego',
+    const egoAdjudicationPromptCall = buildPromptCall({
+      staticSystemPrompt: tutorEgoStaticPrompt,
+      dynamicContext: egoAdjudicationPrompt.slice(tutorEgoStaticPrompt.length).trim(),
+      taskPrompt: '',
+      fallbackSystemPrompt: egoAdjudicationPrompt,
+      fallbackUserPrompt: egoDraft,
     });
+
+    const egoFinalResponse = await llmCall(
+      tutorModel,
+      egoAdjudicationPromptCall.systemPrompt,
+      [{ role: 'user', content: egoAdjudicationPromptCall.userPrompt }],
+      {
+        temperature: getRequiredTemperature(egoConfig, 'tutor_ego'),
+        maxTokens: getRequiredMaxTokens(egoConfig, 'tutor_ego'),
+        agentRole: 'tutor_ego',
+      },
+    );
 
     trace.metrics.tutorInputTokens += egoFinalResponse.usage?.inputTokens || 0;
     trace.metrics.tutorOutputTokens += egoFinalResponse.usage?.outputTokens || 0;
@@ -2624,12 +2751,19 @@ export async function generateLearnerResponse(options) {
       egoContext += `\n\n${profileContext}`;
     }
     egoContext += `\n\nGenerate your initial internal reaction as the learner's ego. Keep hidden reasoning private and put only the learner's actual wording in your final answer. If any nonspoken action aside is needed, put it in square brackets.`;
-    const egoSystemPrompt = buildLearnerPrompt(egoConfig, persona, egoContext, secret, { guardContext: false });
+    const egoPromptCall = buildLearnerPromptCall(
+      egoConfig,
+      persona,
+      egoContext,
+      "React to the tutor's message.",
+      secret,
+      { guardContext: false },
+    );
 
     const egoInitialResponse = await callLLM(
       egoConfig,
-      egoSystemPrompt,
-      "React to the tutor's message.",
+      egoPromptCall.systemPrompt,
+      egoPromptCall.userPrompt,
       'learner_ego',
       useMessageChains ? learnerExternalHistory : null,
     );
@@ -2666,14 +2800,14 @@ export async function generateLearnerResponse(options) {
       superegoContext += `\n\n${profileContext}`;
     }
     superegoContext += `\n\nReview the learner's response. Is it accurate? What's being missed? What should be reconsidered?\n\nDo NOT draft the learner's replacement message. Comment on the initial response only.`;
-    const superegoSystemPrompt = buildLearnerPrompt(superegoConfig, persona, superegoContext, secret, {
+    const superegoPromptCall = buildLearnerPromptCall(superegoConfig, persona, superegoContext, "Critique the EGO's reaction.", secret, {
       guardContext: false,
     });
 
     const superegoResponse = await callLLM(
       superegoConfig,
-      superegoSystemPrompt,
-      "Critique the EGO's reaction.",
+      superegoPromptCall.systemPrompt,
+      superegoPromptCall.userPrompt,
       'learner_superego',
     );
     const superegoEntry = makeDeliberationEntry('superego', superegoResponse, superegoConfig, { stage: 'critique' });
@@ -2699,9 +2833,16 @@ export async function generateLearnerResponse(options) {
       egoRevisionContext += `\n\n${profileContext}`;
     }
     egoRevisionContext += `\n\nYou are the same learner persona who made the initial suggestion. Adjudicate the feedback: keep your initial response if it is better, revise lightly if needed, or revise substantially if the review reveals a real problem.\n\nReturn exactly:\nPRIVATE_DECISION: [one short private sentence naming keep/revise and why]\nFINAL:\n[what the learner would say out loud to the tutor, 1-4 sentences]\n\nThe FINAL section must contain only public learner speech. Do NOT include internal thoughts, meta-commentary, references to any review process, or <think> blocks in FINAL. If any nonspoken action aside is needed, put it in square brackets.`;
-    const egoRevisionSystemPrompt = buildLearnerPrompt(egoConfig, persona, egoRevisionContext, secret, {
-      guardContext: false,
-    });
+    const egoRevisionPromptCall = buildLearnerPromptCall(
+      egoConfig,
+      persona,
+      egoRevisionContext,
+      'Produce your final response to the tutor.',
+      secret,
+      {
+        guardContext: false,
+      },
+    );
 
     // Build combined history for ego revision: external + ego internal + superego feedback
     let egoRevisionMsgHistory = null;
@@ -2718,8 +2859,8 @@ export async function generateLearnerResponse(options) {
 
     const egoFinalResponse = await callLLM(
       egoConfig,
-      egoRevisionSystemPrompt,
-      'Produce your final response to the tutor.',
+      egoRevisionPromptCall.systemPrompt,
+      egoRevisionPromptCall.userPrompt,
       'learner_ego',
       egoRevisionMsgHistory,
     );
@@ -2767,8 +2908,20 @@ export async function generateLearnerResponse(options) {
           ? '\n\nRespond with ONLY what the learner would actually say out loud next to the tutor (1-4 sentences). Do NOT include internal monologue, tags, meta-commentary, or <think> blocks. If any nonspoken action aside is needed, put it in square brackets.'
           : "\n\nGenerate your internal reaction as this dimension of the learner's experience.";
 
-      const systemPrompt = buildLearnerPrompt(agentConfig, persona, roleContext, secret, { guardContext: false });
-      const response = await callLLM(agentConfig, systemPrompt, "React to the tutor's message.", `learner_${role}`);
+      const promptCall = buildLearnerPromptCall(
+        agentConfig,
+        persona,
+        roleContext,
+        "React to the tutor's message.",
+        secret,
+        { guardContext: false },
+      );
+      const response = await callLLM(
+        agentConfig,
+        promptCall.systemPrompt,
+        promptCall.userPrompt,
+        `learner_${role}`,
+      );
 
       internalDeliberation.push(makeDeliberationEntry(role, response, agentConfig));
       tokenUsage.inputTokens += response.usage?.inputTokens || 0;

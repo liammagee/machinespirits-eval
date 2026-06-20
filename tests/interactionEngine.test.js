@@ -47,6 +47,16 @@ function createStubLlmCall() {
   return stubLlmCall;
 }
 
+function promptSurface(callOrSystemPrompt, messages = []) {
+  if (typeof callOrSystemPrompt === 'object' && callOrSystemPrompt) {
+    return promptSurface(callOrSystemPrompt.systemPrompt, callOrSystemPrompt.messages);
+  }
+  return [
+    callOrSystemPrompt || '',
+    ...(messages || []).map((message) => message?.content || ''),
+  ].join('\n\n');
+}
+
 // ---------------------------------------------------------------------------
 // Minimal scenario fixture — mirrors interaction-eval-scenarios.yaml shape
 // ---------------------------------------------------------------------------
@@ -319,7 +329,7 @@ describe('runInteraction (multi-turn)', () => {
           usage: {},
         };
       }
-      if (options.agentRole === 'tutor_ego' && /Your initial tutor response was/.test(systemPrompt)) {
+      if (options.agentRole === 'tutor_ego' && /Your initial tutor response was/.test(promptSurface(systemPrompt, messages))) {
         return {
           content:
             'PRIVATE_DECISION: revise to test the learner reframe.\nFINAL:\nUse that new frame: let the equation, not the decimal, carry the proof. What would the equation need to show first?',
@@ -379,7 +389,7 @@ describe('runInteraction (multi-turn)', () => {
 
     const tutorSuperegoPrompts = calls
       .filter((call) => call.options.agentRole === 'tutor_superego')
-      .map((call) => call.systemPrompt);
+      .map((call) => promptSurface(call));
     assert.ok(
       tutorSuperegoPrompts.some((prompt) => /Tutor-private learner reframe event/.test(prompt)),
       'tutor superego should see private reframe state',
@@ -391,9 +401,9 @@ describe('runInteraction (multi-turn)', () => {
 
     const tutorAdjudicationPrompts = calls
       .filter(
-        (call) => call.options.agentRole === 'tutor_ego' && /Your initial tutor response was/.test(call.systemPrompt),
+        (call) => call.options.agentRole === 'tutor_ego' && /Your initial tutor response was/.test(promptSurface(call)),
       )
-      .map((call) => call.systemPrompt);
+      .map((call) => promptSurface(call));
     assert.ok(
       tutorAdjudicationPrompts.some((prompt) => /must make one tutor adaptation move legible/.test(prompt)),
       'tutor ego adjudication should choose an uptake move',
@@ -427,7 +437,7 @@ describe('runInteraction (multi-turn)', () => {
           usage: {},
         };
       }
-      if (options.agentRole === 'tutor_ego' && /Your initial tutor response was/.test(systemPrompt)) {
+      if (options.agentRole === 'tutor_ego' && /Your initial tutor response was/.test(promptSurface(systemPrompt, messages))) {
         return {
           content:
             'PRIVATE_DECISION: revise because the learner is resisting the route.\nFINAL:\nLet us back up and try a different route: draw the string first, then test what force remains.',
@@ -477,7 +487,7 @@ describe('runInteraction (multi-turn)', () => {
 
     const tutorSuperegoPrompts = calls
       .filter((call) => call.options.agentRole === 'tutor_superego')
-      .map((call) => call.systemPrompt);
+      .map((call) => promptSurface(call));
     assert.ok(
       tutorSuperegoPrompts.some((prompt) => /Tutor-private peripeteia event/.test(prompt)),
       'tutor superego should see private peripeteia state',
@@ -517,9 +527,9 @@ describe('runInteraction (multi-turn)', () => {
 
     const tutorAdjudicationPrompts = calls
       .filter(
-        (call) => call.options.agentRole === 'tutor_ego' && /Your initial tutor response was/.test(call.systemPrompt),
+        (call) => call.options.agentRole === 'tutor_ego' && /Your initial tutor response was/.test(promptSurface(call)),
       )
-      .map((call) => call.systemPrompt);
+      .map((call) => promptSurface(call));
     assert.ok(
       tutorAdjudicationPrompts.some((prompt) => /adaptive learning mechanism legible/.test(prompt)),
       'tutor ego adjudication should force the adaptive mechanism after internal review',
@@ -586,7 +596,7 @@ describe('runInteraction (multi-turn)', () => {
           usage: {},
         };
       }
-      if (options.agentRole === 'tutor_ego' && /Your initial tutor response was/.test(systemPrompt)) {
+      if (options.agentRole === 'tutor_ego' && /Your initial tutor response was/.test(promptSurface(systemPrompt, messages))) {
         return {
           content:
             'PRIVATE_DECISION: revise lightly; AFFECTIVE_STANCE: defensiveness -> respectful firmness.\nFINAL:\nKeep the claim on the table. Before I sign off, point to the one row that makes the 94% usable beyond this sample.',
@@ -635,7 +645,7 @@ describe('runInteraction (multi-turn)', () => {
 
     const tutorPrompts = calls
       .filter((call) => call.options.agentRole === 'tutor_ego' || call.options.agentRole === 'tutor_superego')
-      .map((call) => call.systemPrompt)
+      .map((call) => promptSurface(call))
       .join('\n');
     assert.match(tutorPrompts, /Tutor-private affective adaptation layer/u);
     assert.match(tutorPrompts, /AFFECT_CHECK/u);
@@ -643,7 +653,7 @@ describe('runInteraction (multi-turn)', () => {
     assert.doesNotMatch(tutorPrompts, /Because a peripeteia event is present/u);
     const tutorSuperegoPrompts = calls
       .filter((call) => call.options.agentRole === 'tutor_superego')
-      .map((call) => call.systemPrompt);
+      .map((call) => promptSurface(call));
     assert.ok(
       tutorSuperegoPrompts.every((prompt) => !/PERIPETEIA_CHECK/.test(prompt)),
       'affective-only turn should not request a peripeteia check',
@@ -677,7 +687,7 @@ describe('runInteraction (multi-turn)', () => {
           usage: {},
         };
       }
-      if (options.agentRole === 'tutor_ego' && /Your initial tutor response was/.test(systemPrompt)) {
+      if (options.agentRole === 'tutor_ego' && /Your initial tutor response was/.test(promptSurface(systemPrompt, messages))) {
         return {
           content:
             'PRIVATE_DECISION: keep the routine branch on the same route.\nFINAL:\nKeep using the same list. Write the force name, then answer the next worksheet item.',
@@ -723,7 +733,7 @@ describe('runInteraction (multi-turn)', () => {
 
     const tutorSuperegoPrompts = calls
       .filter((call) => call.options.agentRole === 'tutor_superego')
-      .map((call) => call.systemPrompt);
+      .map((call) => promptSurface(call));
     assert.ok(
       tutorSuperegoPrompts.some((prompt) => /Tutor-private routine-control event/.test(prompt)),
       'routine superego should see pressure as a negative-control event',

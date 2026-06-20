@@ -884,7 +884,9 @@ describe('learner output sanitization', () => {
     assert.ok(!serializedPrompts.includes('private critique'));
   });
 
-  it('keeps director context in the learner ego adjudication prompt', async () => {
+  it('can opt out of prompt splitting and keep director context in the learner ego adjudication prompt', async () => {
+    const previous = process.env.DRAMA_STATIC_DYNAMIC_PROMPTS;
+    process.env.DRAMA_STATIC_DYNAMIC_PROMPTS = '0';
     const llmCalls = [];
     const replies = [
       { content: 'I said the decimal settled it.' },
@@ -896,19 +898,68 @@ describe('learner output sanitization', () => {
     ];
     let callIndex = 0;
 
-    await generateLearnerResponse({
-      tutorMessage: 'Square the fraction.',
-      topic: 'Irrationality of sqrt(2)',
-      learnerProfile: 'ego_superego',
-      personaId: 'eager_novice',
-      profileContext: 'Current director cue: keep the public reframe sequence visible.',
-      llmCall: async (model, systemPrompt, messages, opts) => {
-        llmCalls.push({ model, systemPrompt, messages, opts });
-        return { ...replies[callIndex++], usage: { inputTokens: 10, outputTokens: 5 } };
-      },
-    });
+    try {
+      await generateLearnerResponse({
+        tutorMessage: 'Square the fraction.',
+        topic: 'Irrationality of sqrt(2)',
+        learnerProfile: 'ego_superego',
+        personaId: 'eager_novice',
+        profileContext: 'Current director cue: keep the public reframe sequence visible.',
+        llmCall: async (model, systemPrompt, messages, opts) => {
+          llmCalls.push({ model, systemPrompt, messages, opts });
+          return { ...replies[callIndex++], usage: { inputTokens: 10, outputTokens: 5 } };
+        },
+      });
+    } finally {
+      if (previous === undefined) {
+        delete process.env.DRAMA_STATIC_DYNAMIC_PROMPTS;
+      } else {
+        process.env.DRAMA_STATIC_DYNAMIC_PROMPTS = previous;
+      }
+    }
 
     assert.match(llmCalls[2].systemPrompt, /Current director cue: keep the public reframe sequence visible\./);
+  });
+
+  it('splits static learner role prompts from dynamic director context by default', async () => {
+    const previous = process.env.DRAMA_STATIC_DYNAMIC_PROMPTS;
+    delete process.env.DRAMA_STATIC_DYNAMIC_PROMPTS;
+    const llmCalls = [];
+    const replies = [
+      { content: 'I said the decimal settled it.' },
+      { content: 'Keep the learner public and concrete.' },
+      {
+        content:
+          'FINAL:\nI said the decimal settled it. The framing problem is that I made evidence do proof work.',
+      },
+    ];
+    let callIndex = 0;
+
+    try {
+      await generateLearnerResponse({
+        tutorMessage: 'Square the fraction.',
+        topic: 'Irrationality of sqrt(2)',
+        learnerProfile: 'ego_superego',
+        personaId: 'eager_novice',
+        profileContext: 'Current director cue: keep the public reframe sequence visible.',
+        llmCall: async (model, systemPrompt, messages, opts) => {
+          llmCalls.push({ model, systemPrompt, messages, opts });
+          return { ...replies[callIndex++], usage: { inputTokens: 10, outputTokens: 5 } };
+        },
+      });
+    } finally {
+      if (previous === undefined) {
+        delete process.env.DRAMA_STATIC_DYNAMIC_PROMPTS;
+      } else {
+        process.env.DRAMA_STATIC_DYNAMIC_PROMPTS = previous;
+      }
+    }
+
+    assert.equal(llmCalls[0].opts.agentRole, 'learner_ego');
+    assert.equal(llmCalls[2].opts.agentRole, 'learner_ego');
+    assert.equal(llmCalls[0].systemPrompt, llmCalls[2].systemPrompt);
+    assert.doesNotMatch(llmCalls[2].systemPrompt, /Current director cue/);
+    assert.match(llmCalls[2].messages[0].content, /Current director cue: keep the public reframe sequence visible\./);
   });
 });
 
