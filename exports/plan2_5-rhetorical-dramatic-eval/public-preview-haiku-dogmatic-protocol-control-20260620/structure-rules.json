@@ -1,0 +1,298 @@
+{
+  "generated": "2026-06-20T23:23:57.038Z",
+  "critic": "rules",
+  "sampleDir": "exports/plan2_5-rhetorical-dramatic-eval/public-preview-haiku-dogmatic-protocol-control-20260620/sample",
+  "keyPath": "exports/plan2_5-rhetorical-dramatic-eval/public-preview-haiku-dogmatic-protocol-control-20260620/key.yaml",
+  "summary": {
+    "total": 5,
+    "rulePass": 2,
+    "modelPass": null,
+    "overallPass": 2,
+    "failed": [
+      "T01",
+      "T03",
+      "T05"
+    ]
+  },
+  "items": [
+    {
+      "id": "T01",
+      "dramaId": "D_AF6_PLAN25_RDP_ADAPTIVE",
+      "sampleFile": "exports/plan2_5-rhetorical-dramatic-eval/public-preview-haiku-dogmatic-protocol-control-20260620/sample/T01.txt",
+      "dialogueApproach": "courtroom_cross_examination",
+      "tutorAdaptationPolicy": "peripeteia",
+      "rule": {
+        "pass": false,
+        "violations": [
+          "peripeteia_arm_without_earned_reorientation"
+        ],
+        "warnings": [
+          "peripeteia_arm_without_detected_tutor_mechanism"
+        ],
+        "counts": {
+          "tutor": 3,
+          "learner": 4,
+          "stage": 1
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 1,
+          "trigger_type": "breakdown",
+          "pressure_turn_number": 4,
+          "tutor_pre_turn": 3,
+          "tutor_post_turn": null,
+          "tutor_strategy_before": "evidence_check",
+          "tutor_strategy_after": null,
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 35,
+          "learner_outcome_after_reversal": "unknown",
+          "min_pressure_turn_number": null,
+          "paired_prefix_through": null,
+          "evidence": "pressure learner: \"I see what you mean. From the table: 120 TP, 30 FN for the minority. That's 80% recall. So the overall accuracy is 92% and beats the 85% baseline—Gate A passes. But minority recal"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": [],
+          "missing_peripeteia_reorientation": [
+            "LEARNER1: \"The accuracy is 92%. We've validated this on test data. The audit table is complete. I think we're ready for sign-off.\"",
+            "LEARNER2: \"The majority is 85%, minority is 15%. There are some false negatives, but 92% is still strong. That should be enough to move forward.\"",
+            "LEARNER3: \"You'd get 85% by default. Our 92% beats that, so the model is better than the null.\"",
+            "LEARNER4: \"I see what you mean. From the table: 120 TP, 30 FN for the minority. That's 80% recall. So the overall accuracy is 92% and beats the 85% baseline—Gate A passes. But minority recal"
+          ]
+        }
+      },
+      "model": null,
+      "pass": false
+    },
+    {
+      "id": "T02",
+      "dramaId": "D_AF6_PLAN25_RDP_NO_CUE",
+      "sampleFile": "exports/plan2_5-rhetorical-dramatic-eval/public-preview-haiku-dogmatic-protocol-control-20260620/sample/T02.txt",
+      "dialogueApproach": "courtroom_cross_examination",
+      "tutorAdaptationPolicy": "none",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 3,
+          "learner": 4,
+          "stage": 1
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.55,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 4,
+          "tutor_pre_turn": 3,
+          "tutor_post_turn": null,
+          "tutor_strategy_before": "mechanism_explanation",
+          "tutor_strategy_after": null,
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 23.8,
+          "learner_outcome_after_reversal": "unknown",
+          "min_pressure_turn_number": null,
+          "paired_prefix_through": null,
+          "evidence": "pressure learner: \"The overall number should be sufficient. But now you're making me wonder if I should double-check those counts before sign-off.\""
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": [],
+          "missing_peripeteia_reorientation": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T03",
+      "dramaId": "D_AF6_PLAN25_MISMATCH_AF1_RDP",
+      "sampleFile": "exports/plan2_5-rhetorical-dramatic-eval/public-preview-haiku-dogmatic-protocol-control-20260620/sample/T03.txt",
+      "dialogueApproach": "courtroom_cross_examination",
+      "tutorAdaptationPolicy": "peripeteia",
+      "rule": {
+        "pass": false,
+        "violations": [
+          "peripeteia_arm_without_earned_reorientation"
+        ],
+        "warnings": [
+          "peripeteia_arm_without_detected_tutor_mechanism"
+        ],
+        "counts": {
+          "tutor": 4,
+          "learner": 5,
+          "stage": 1
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.7,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 5,
+          "tutor_pre_turn": 4,
+          "tutor_post_turn": null,
+          "tutor_strategy_before": "evidence_check",
+          "tutor_strategy_after": null,
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 27.5,
+          "learner_outcome_after_reversal": "unknown",
+          "min_pressure_turn_number": null,
+          "paired_prefix_through": null,
+          "evidence": "pressure learner: \"I keep coming back to the ninety-four percent. That's the number I have from the test data. So on the Evidence Source field I put: test set accuracy is ninety-four percent. On the"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": [],
+          "missing_peripeteia_reorientation": [
+            "LEARNER1: \"I've calculated the accuracy: ninety-four percent correct on the test set. That shows the classifier works. High accuracy means it's a good classifier.\"",
+            "LEARNER2: \"Five thousand held-out test examples. We run the model on each one and count how many predictions match the true labels. That's where the ninety-four percent comes from.\"",
+            "LEARNER3: \"No, missing disease is worse. But the accuracy of ninety-four percent includes both cases, so it covers the overall performance.\"",
+            "LEARNER4: \"The threshold is zero-point-five probability. And the rationale is that ninety-four percent accuracy is high enough. That's what accuracy means—the system is right most of the tim",
+            "LEARNER5: \"I keep coming back to the ninety-four percent. That's the number I have from the test data. So on the Evidence Source field I put: test set accuracy is ninety-four percent. On the"
+          ]
+        }
+      },
+      "model": null,
+      "pass": false
+    },
+    {
+      "id": "T04",
+      "dramaId": "D_AF6_PLAN25_RDP_DOGMATIC",
+      "sampleFile": "exports/plan2_5-rhetorical-dramatic-eval/public-preview-haiku-dogmatic-protocol-control-20260620/sample/T04.txt",
+      "dialogueApproach": "courtroom_cross_examination",
+      "tutorAdaptationPolicy": "routine",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 3,
+          "learner": 4,
+          "stage": 1
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.55,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 4,
+          "tutor_pre_turn": 3,
+          "tutor_post_turn": null,
+          "tutor_strategy_before": "role_or_interruption",
+          "tutor_strategy_after": null,
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 23.8,
+          "learner_outcome_after_reversal": "unknown",
+          "min_pressure_turn_number": null,
+          "paired_prefix_through": null,
+          "evidence": "pressure learner: \"I understand, but the metric itself is correct. The accuracy really is 0.94.\""
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": [],
+          "missing_peripeteia_reorientation": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T05",
+      "dramaId": "D_AF6_PLAN25_GENERIC_DIRECT",
+      "sampleFile": "exports/plan2_5-rhetorical-dramatic-eval/public-preview-haiku-dogmatic-protocol-control-20260620/sample/T05.txt",
+      "dialogueApproach": "courtroom_cross_examination",
+      "tutorAdaptationPolicy": "peripeteia",
+      "rule": {
+        "pass": false,
+        "violations": [
+          "peripeteia_arm_without_earned_reorientation"
+        ],
+        "warnings": [
+          "peripeteia_arm_without_detected_tutor_mechanism"
+        ],
+        "counts": {
+          "tutor": 4,
+          "learner": 5,
+          "stage": 1
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.9,
+          "trigger_type": "breakdown",
+          "pressure_turn_number": 5,
+          "tutor_pre_turn": 4,
+          "tutor_post_turn": null,
+          "tutor_strategy_before": "evidence_check",
+          "tutor_strategy_after": null,
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 32.5,
+          "learner_outcome_after_reversal": "unknown",
+          "min_pressure_turn_number": null,
+          "paired_prefix_through": null,
+          "evidence": "pressure learner: \"I need evidence about whether the model works on data that hasn't arrived yet, but I don't know what that would look like.\""
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": [],
+          "missing_peripeteia_reorientation": [
+            "LEARNER1: \"I think we're good here. 94.7% accuracy is pretty high, so this shows the model is a good classifier.\"",
+            "LEARNER2: \"From the counts. 947 correct out of 1000, so that's 94.7% accuracy.\"",
+            "LEARNER3: \"From the test set. We held it back from training, so it's new to the model.\"",
+            "LEARNER4: \"It's historical data. We collected it a while ago. So it's past data, not future data. And my claim is about the model working on future data.\"",
+            "LEARNER5: \"I need evidence about whether the model works on data that hasn't arrived yet, but I don't know what that would look like.\""
+          ]
+        }
+      },
+      "model": null,
+      "pass": false
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+STAGE: Technical review room, model audit table on screen showing 94% overall accuracy, panel chairs ready for sign-off decision
+
+LEARNER: "The accuracy is 94%, which is well above baseline. We should sign off on deployment."
+
+TUTOR: "In the audit table, I see overall accuracy and then rows with counts. How do you use those count rows?"
+
+LEARNER: "Those are just the raw numbers. The accuracy metric is what we need for the deployment decision."
+
+TUTOR: "Does that 94% tell you how well the model performs on the smaller class in your data?"
+
+LEARNER: "It's the overall metric. If the smaller class was performing poorly, it would bring down the overall percentage."
+
+TUTOR: "So the class-specific counts in the table — do you use them to verify that claim, or is the overall number sufficient?"
+
+LEARNER: "The overall number should be sufficient. But now you're making me wonder if I should double-check those counts before sign-off."

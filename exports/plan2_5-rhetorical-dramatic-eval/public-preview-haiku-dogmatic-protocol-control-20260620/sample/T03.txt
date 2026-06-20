@@ -1,0 +1,19 @@
+STAGE: A technical review room. An AI problem formulation card lies on the desk—a form with printed fields including "System Type", "Input/Output", "Decision Boundary", "Evidence Source", "Classification Rationale". The learner is preparing responses for a panel review.
+
+LEARNER: "I've calculated the accuracy: ninety-four percent correct on the test set. That shows the classifier works. High accuracy means it's a good classifier."
+
+TUTOR: "The card asks for Evidence Source. Where do you get that ninety-four percent measurement?"
+
+LEARNER: "Five thousand held-out test examples. We run the model on each one and count how many predictions match the true labels. That's where the ninety-four percent comes from."
+
+TUTOR: "The System Type field says this classifies patients for disease screening. When the model is wrong, are both kinds of errors equally costly?"
+
+LEARNER: "No, missing disease is worse. But the accuracy of ninety-four percent includes both cases, so it covers the overall performance."
+
+TUTOR: "The Decision Boundary field asks what threshold you use. And the Classification Rationale asks: why is ninety-four percent the right evidence that this system should be deployed?"
+
+LEARNER: "The threshold is zero-point-five probability. And the rationale is that ninety-four percent accuracy is high enough. That's what accuracy means—the system is right most of the time."
+
+TUTOR: "But if missing disease is worse than a false alarm, what does the card ask you to show about those two cases separately?"
+
+LEARNER: "I keep coming back to the ninety-four percent. That's the number I have from the test data. So on the Evidence Source field I put: test set accuracy is ninety-four percent. On the Classification Rationale I put: high accuracy indicates reliable classification. But I'm not sure what else the card is asking for. Is the evidence source supposed to be different?"

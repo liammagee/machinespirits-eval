@@ -1,0 +1,154 @@
+{
+  "generated_at": "2026-06-20T23:14:10.188Z",
+  "model": "haiku",
+  "source_spec": "exports/plan2_5-rhetorical-dramatic-eval/af6-comparison-dramas.yaml",
+  "rows": [
+    {
+      "tid": "T01",
+      "drama_id": "D_AF6_PLAN25_RDP_ADAPTIVE",
+      "condition": "adaptive_peripeteia_variant",
+      "attempt": 1,
+      "latency_ms": 42707,
+      "prompt_chars": 4323,
+      "output_chars": 1647,
+      "validation_errors": []
+    },
+    {
+      "tid": "T02",
+      "drama_id": "D_AF6_PLAN25_RDP_NO_CUE",
+      "condition": "world_rhetorical_plan_no_cue",
+      "attempt": 1,
+      "latency_ms": 30334,
+      "prompt_chars": 4932,
+      "output_chars": 1482,
+      "validation_errors": [
+        "no_cue_recognition_leak"
+      ]
+    },
+    {
+      "tid": "T02",
+      "drama_id": "D_AF6_PLAN25_RDP_NO_CUE",
+      "condition": "world_rhetorical_plan_no_cue",
+      "attempt": 2,
+      "latency_ms": 60545,
+      "prompt_chars": 5058,
+      "output_chars": 937,
+      "validation_errors": []
+    },
+    {
+      "tid": "T03",
+      "drama_id": "D_AF6_PLAN25_MISMATCH_AF1_RDP",
+      "condition": "mismatched_rhetorical_dramatic_plan",
+      "attempt": 1,
+      "latency_ms": 38639,
+      "prompt_chars": 5785,
+      "output_chars": 1679,
+      "validation_errors": [
+        "wrong_tutor_turn_count_4",
+        "wrong_learner_turn_count_5",
+        "mismatch_metric_repair_leak"
+      ]
+    },
+    {
+      "tid": "T03",
+      "drama_id": "D_AF6_PLAN25_MISMATCH_AF1_RDP",
+      "condition": "mismatched_rhetorical_dramatic_plan",
+      "attempt": 2,
+      "latency_ms": 31597,
+      "prompt_chars": 5969,
+      "output_chars": 1879,
+      "validation_errors": [
+        "wrong_tutor_turn_count_4",
+        "wrong_learner_turn_count_5"
+      ]
+    },
+    {
+      "tid": "T03",
+      "drama_id": "D_AF6_PLAN25_MISMATCH_AF1_RDP",
+      "condition": "mismatched_rhetorical_dramatic_plan",
+      "attempt": 3,
+      "latency_ms": 70230,
+      "prompt_chars": 5940,
+      "output_chars": 1541,
+      "validation_errors": [
+        "wrong_tutor_turn_count_2",
+        "wrong_learner_turn_count_3",
+        "mismatch_metric_repair_leak"
+      ]
+    },
+    {
+      "tid": "T03",
+      "drama_id": "D_AF6_PLAN25_MISMATCH_AF1_RDP",
+      "condition": "mismatched_rhetorical_dramatic_plan",
+      "attempt": 4,
+      "latency_ms": 68734,
+      "prompt_chars": 5969,
+      "output_chars": 1895,
+      "validation_errors": [
+        "wrong_tutor_turn_count_4",
+        "wrong_learner_turn_count_5"
+      ]
+    },
+    {
+      "tid": "T04",
+      "drama_id": "D_AF6_PLAN25_RDP_DOGMATIC",
+      "condition": "dogmatic_routine_control",
+      "attempt": 1,
+      "latency_ms": 56846,
+      "prompt_chars": 5246,
+      "output_chars": 1388,
+      "validation_errors": []
+    },
+    {
+      "tid": "T05",
+      "drama_id": "D_AF6_PLAN25_GENERIC_DIRECT",
+      "condition": "generic_curriculum_drama",
+      "attempt": 1,
+      "latency_ms": 45764,
+      "prompt_chars": 4143,
+      "output_chars": 1674,
+      "validation_errors": [
+        "generic_metric_repair_leak"
+      ]
+    },
+    {
+      "tid": "T05",
+      "drama_id": "D_AF6_PLAN25_GENERIC_DIRECT",
+      "condition": "generic_curriculum_drama",
+      "attempt": 2,
+      "latency_ms": 30378,
+      "prompt_chars": 4272,
+      "output_chars": 1665,
+      "validation_errors": [
+        "wrong_tutor_turn_count_5",
+        "wrong_learner_turn_count_6",
+        "generic_metric_repair_leak"
+      ]
+    },
+    {
+      "tid": "T05",
+      "drama_id": "D_AF6_PLAN25_GENERIC_DIRECT",
+      "condition": "generic_curriculum_drama",
+      "attempt": 3,
+      "latency_ms": 51786,
+      "prompt_chars": 4326,
+      "output_chars": 1830,
+      "validation_errors": [
+        "generic_metric_repair_leak"
+      ]
+    },
+    {
+      "tid": "T05",
+      "drama_id": "D_AF6_PLAN25_GENERIC_DIRECT",
+      "condition": "generic_curriculum_drama",
+      "attempt": 4,
+      "latency_ms": 47066,
+      "prompt_chars": 4272,
+      "output_chars": 1380,
+      "validation_errors": [
+        "wrong_tutor_turn_count_4",
+        "wrong_learner_turn_count_5"
+      ]
+    }
+  ]
+}
