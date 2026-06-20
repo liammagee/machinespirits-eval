@@ -23,6 +23,8 @@ import {
   reframeMatchStats,
   renderHeldOutTranscript,
   renderTranscript,
+  resolveApiModel,
+  resolveRoleRoute,
   selectFirstLessonDrama,
   stageDirectionStyleFor,
   withAffectiveAdaptationPolicy,
@@ -62,6 +64,28 @@ describe('generate-pedagogical-dramas', () => {
   it('parses opt-in persistent Claude workers without changing the default bridge', () => {
     assert.equal(parseArgs([]).claudePersistentWorkers, false);
     assert.equal(parseArgs(['--claude-persistent-workers']).claudePersistentWorkers, true);
+  });
+
+  it('parses API-backed role-map routes with provider aliases and slugs', () => {
+    const args = parseArgs([
+      '--role-map',
+      'director=codex,tutor_ego=api:glm5_2,tutor_superego=codex,learner=api:z-ai/glm-5.2',
+    ]);
+
+    assert.deepEqual(args.roleMap, {
+      director: 'codex',
+      tutor_ego: 'api:glm5_2',
+      tutor_superego: 'codex',
+      learner: 'api:z-ai/glm-5.2',
+    });
+    assert.equal(resolveApiModel('glm5_2'), 'z-ai/glm-5.2');
+    assert.equal(resolveApiModel('openrouter.glm5_2'), 'z-ai/glm-5.2');
+    assert.equal(resolveRoleRoute('tutor_ego', args.roleMap, 'codex', 'sonnet').apiModelKey, 'glm5_2');
+    assert.equal(resolveRoleRoute('learner_superego', args.roleMap, 'codex', 'sonnet').apiModelKey, 'z-ai/glm-5.2');
+    assert.equal(resolveRoleRoute('director', args.roleMap, 'codex', 'sonnet').backend, 'codex');
+
+    assert.throws(() => parseArgs(['--role-map', 'tutor_ego=api:not-a-known-alias']), /not a known OpenRouter alias/);
+    assert.throws(() => parseArgs(['--role-map', 'tutor_ego=codex:z-ai/glm-5.2']), /only include a model suffix/);
   });
 
   it('parses control-ending and call-telemetry output paths', () => {
@@ -734,7 +758,10 @@ describe('generate-pedagogical-dramas', () => {
     assert.match(plan.tutor_adaptation_contract, /mechanism-quality risk/);
     assert.match(plan.tutor_adaptation_contract, /ego must adjudicate that critique and enact the route change/);
     assert.match(plan.tutor_adaptation_contract, /old route, prior route, same route, or current check/);
-    assert.match(plan.tutor_adaptation_contract, /no longer settles, is not enough, cannot decide, or has stopped working/);
+    assert.match(
+      plan.tutor_adaptation_contract,
+      /no longer settles, is not enough, cannot decide, or has stopped working/,
+    );
     assert.match(plan.tutor_adaptation_contract, /new route, new device, changed standard/);
     assert.match(
       plan.tutor_adaptation_contract,
@@ -785,7 +812,10 @@ describe('generate-pedagogical-dramas', () => {
 
     assert.equal(adaptivePlan.control_ending_policy, 'hold');
     assert.equal(adaptivePlan.control_ending_applied, false);
-    assert.equal(adaptivePlan.peripeteia_ending_shape, 'learner actional performance followed by earned learner reorientation');
+    assert.equal(
+      adaptivePlan.peripeteia_ending_shape,
+      'learner actional performance followed by earned learner reorientation',
+    );
     assert.ok(adaptivePlan.interventions.some((cue) => cue.cue_kind === 'learner_reversal_pressure'));
   });
 

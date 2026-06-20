@@ -63,7 +63,9 @@
  *        --effort low|medium|high|xhigh|max (claude CLI reasoning tier; claude
  *          backend only — codex uses CODEX_REASONING_EFFORT, agy has no effort knob)
  *        --out-dir / --key · --delib-dir / --transcripts-dir / --writing-pad-dir
- *        --generator claude|codex|gemini · --role-map "tutor=codex,learner=claude" (mixed)
+ *        --generator claude|codex|gemini|api · --api-model <OpenRouter alias/slug>
+ *        --role-map "tutor=codex,learner=claude" (mixed)
+ *        --role-map "tutor_ego=api:glm5_2,tutor_superego=codex,learner=codex"
  *        --opening-speaker learner|tutor|director (override spec/director speaker order)
  *        --control-ending default|hold (control arms only; hold suppresses clean breakthrough endings)
  *        --director-revisit-cue (anchor shorthand) · --director-revisit-policy none|anchor|revoice|reconsider|reframe
@@ -296,7 +298,7 @@ function parseArgs(argv) {
   }
   // --effort drives the claude backend only. Warn (don't throw) if it can't reach
   // claude: a pure codex/gemini run, or a --role-map that routes no role to claude.
-  const claudeReachable = a.generator === 'claude' || (a.roleMap && Object.values(a.roleMap).includes('claude'));
+  const claudeReachable = a.generator === 'claude' || roleMapUsesBackend(a.roleMap, 'claude');
   if (a.effort && !claudeReachable) {
     console.warn(
       `[warn] --effort ${a.effort} only affects the claude backend; generator=${a.generator} ignores it ` +
@@ -1012,7 +1014,10 @@ function keyItemFor(d, nTutor, nLearner, qualityWarnings = []) {
     control_ending_policy: d._controlEndingPolicy || d._directorPlan?.control_ending_policy || 'default',
     control_ending_applied: Boolean(d._directorPlan?.control_ending_applied),
     affective_adaptation_policy:
-      d._affectiveAdaptationPolicy || d.affective_adaptation_policy || d._directorPlan?.affective_adaptation_policy || 'none',
+      d._affectiveAdaptationPolicy ||
+      d.affective_adaptation_policy ||
+      d._directorPlan?.affective_adaptation_policy ||
+      'none',
     curriculum_script_notes: curriculumScriptNotesForDrama(d, d._directorPlan || null),
     opening_speaker: d._directorPlan?.opening_speaker || null,
     ending_speaker: d._directorPlan?.ending_speaker || null,
@@ -1567,7 +1572,16 @@ function makeCallTelemetryRecorder({ enabled = false, print = false, jsonPath = 
   return {
     enabled: Boolean(enabled),
     records,
-    record({ startedAt, finishedAt, requestedModel, systemPrompt, userPrompt, opts = {}, response = null, error = null }) {
+    record({
+      startedAt,
+      finishedAt,
+      requestedModel,
+      systemPrompt,
+      userPrompt,
+      opts = {},
+      response = null,
+      error = null,
+    }) {
       if (!enabled) return null;
       const provenance = response?.provenance || response?.apiPayload?.provenance || {};
       const promptHashes = provenance.promptHashes || {
@@ -1873,7 +1887,9 @@ class ClaudeStreamWorker {
     return new Promise((resolve, reject) => {
       const to = setTimeout(() => {
         this.failPending(
-          new Error(`persistent claude worker timed out after ${CLAUDE_CLI_TIMEOUT_MS}ms (role=${role}, key=${this.key})`),
+          new Error(
+            `persistent claude worker timed out after ${CLAUDE_CLI_TIMEOUT_MS}ms (role=${role}, key=${this.key})`,
+          ),
         );
       }, CLAUDE_CLI_TIMEOUT_MS);
       this.pending = {
@@ -2250,9 +2266,24 @@ const GEN_API_TEMPERATURE = Number(process.env.GEN_API_TEMPERATURE ?? 1.0);
 const GEN_API_MAX_TOKENS = Number(process.env.GEN_API_MAX_TOKENS || 8192);
 const GEN_API_TIMEOUT_MS = Number(process.env.GEN_API_TIMEOUT_MS || 300000);
 const GEN_API_RETRIES = Number(process.env.GEN_API_RETRIES || 2);
+let _openRouterModelAliases = null;
+
+function openRouterModelAliases() {
+  if (_openRouterModelAliases) return _openRouterModelAliases;
+  try {
+    const providers = yaml.parse(fs.readFileSync(path.join(WORKTREE_ROOT, 'config', 'providers.yaml'), 'utf8'));
+    _openRouterModelAliases = providers?.providers?.openrouter?.models || {};
+  } catch {
+    _openRouterModelAliases = {};
+  }
+  return _openRouterModelAliases;
+}
 
 function resolveApiModel(modelKey) {
-  return GEN_API_MODELS[modelKey] || (String(modelKey).includes('/') ? modelKey : null);
+  const key = String(modelKey || '').trim();
+  if (!key) return null;
+  const alias = key.startsWith('openrouter.') ? key.slice('openrouter.'.length) : key;
+  return GEN_API_MODELS[key] || openRouterModelAliases()[alias] || (key.includes('/') ? key : null);
 }
 
 function isRetryableApiGeneratorError(error) {
@@ -2469,6 +2500,38 @@ const ROLE_ALIASES = {
 };
 const ROLE_NAMES = ['director', 'tutor_ego', 'tutor_superego', 'learner_ego', 'learner_superego'];
 const ROLE_MAP_KEYS = new Set(['tutor', 'learner', 'default', ...ROLE_NAMES]);
+const ROLE_MAP_BACKENDS = new Set(['claude', 'codex', 'gemini', 'api', 'openrouter']);
+
+function parseRoleRouteValue(value, label = 'role-map value') {
+  const raw = String(value || '').trim();
+  const splitAt = raw.indexOf(':');
+  const backendRaw = (splitAt >= 0 ? raw.slice(0, splitAt) : raw).trim();
+  const backend = backendRaw === 'openrouter' ? 'api' : backendRaw;
+  const apiModelKey = splitAt >= 0 ? raw.slice(splitAt + 1).trim() : null;
+  if (!ROLE_MAP_BACKENDS.has(backendRaw)) {
+    throw new Error(`${label} must be claude|codex|gemini|api[:model]|openrouter[:model] (got "${raw}")`);
+  }
+  if (apiModelKey != null && !apiModelKey) {
+    throw new Error(`${label} has an empty API model suffix (got "${raw}")`);
+  }
+  if (apiModelKey && backend !== 'api') {
+    throw new Error(`${label} can only include a model suffix for api/openrouter routes (got "${raw}")`);
+  }
+  if (apiModelKey && !resolveApiModel(apiModelKey)) {
+    throw new Error(`${label} API model "${apiModelKey}" is not a known OpenRouter alias and is not a full model slug`);
+  }
+  return { backend, apiModelKey, raw };
+}
+
+function canonicalRoleRouteValue(value) {
+  const route = parseRoleRouteValue(value);
+  if (route.backend === 'api' && route.apiModelKey) return `api:${route.apiModelKey}`;
+  return route.backend;
+}
+
+function roleMapUsesBackend(roleMap, backend) {
+  return Object.values(roleMap || {}).some((value) => parseRoleRouteValue(value).backend === backend);
+}
 
 function parseRoleMap(str) {
   const map = {};
@@ -2483,25 +2546,47 @@ function parseRoleMap(str) {
     const v = pair.slice(eq + 1).trim();
     if (!ROLE_MAP_KEYS.has(k))
       throw new Error(`--role-map key "${rawKey}" not one of: ${[...ROLE_MAP_KEYS].join(', ')}`);
-    if (v !== 'claude' && v !== 'codex')
-      throw new Error(`--role-map value for "${k}" must be claude|codex (got "${v}")`);
-    map[k] = v;
+    map[k] = canonicalRoleRouteValue(v);
   }
   if (Object.keys(map).length === 0) throw new Error('--role-map is empty');
   return map;
 }
 
-function resolveBackend(agentRole, roleMap, fallback) {
-  if (agentRole && roleMap[agentRole]) return roleMap[agentRole]; // exact role
+function resolveRoleRoute(agentRole, roleMap, fallback, defaultApiModelKey = null) {
+  let rawRoute = null;
+  if (agentRole && roleMap?.[agentRole]) rawRoute = roleMap[agentRole]; // exact role
   const side =
     agentRole && agentRole.startsWith('tutor')
       ? 'tutor'
       : agentRole && agentRole.startsWith('learner')
         ? 'learner'
         : null;
-  if (side && roleMap[side]) return roleMap[side]; // tutor|learner side
-  if (roleMap.default) return roleMap.default; // explicit default
-  return fallback; // --generator
+  if (!rawRoute && side && roleMap?.[side]) rawRoute = roleMap[side]; // tutor|learner side
+  if (!rawRoute && roleMap?.default) rawRoute = roleMap.default; // explicit default
+  if (!rawRoute) rawRoute = fallback; // --generator
+  const route = parseRoleRouteValue(rawRoute || fallback || 'claude');
+  return {
+    ...route,
+    apiModelKey: route.backend === 'api' ? route.apiModelKey || defaultApiModelKey : null,
+  };
+}
+
+function resolveBackend(agentRole, roleMap, fallback) {
+  return resolveRoleRoute(agentRole, roleMap, fallback).backend;
+}
+
+function formatRoleRoute(route) {
+  if (route.backend !== 'api') return route.backend;
+  return `api:${resolveApiModel(route.apiModelKey) || route.apiModelKey}`;
+}
+
+function roleMapModelLabel(args) {
+  if (!args.roleMap) return generatorModelLabel(args);
+  const entries = ROLE_NAMES.map((role) => {
+    const route = resolveRoleRoute(role, args.roleMap, args.generator, args.apiModel);
+    return `${role}=${formatRoleRoute(route)}`;
+  });
+  return `mixed (${entries.join(', ')})`;
 }
 
 // Router llmCall: dispatch each role to its resolved backend. Under --mock both
@@ -2521,17 +2606,25 @@ function makeRouterLlmCall({
     : makeClaudeLlmCall(claudeModelAlias, claudeEffort, { persistentWorkers: claudePersistentWorkers });
   const codexBridge = mock ? makeMockLlmCall('codex') : makeCodexLlmCall();
   const geminiBridge = mock ? makeMockLlmCall('gemini') : makeGeminiLlmCall();
-  const apiBridge = mock ? makeMockLlmCall('api') : makeApiLlmCall(apiModelKey);
+  const apiBridges = new Map();
+  const getApiBridge = (modelKey) => {
+    const key = modelKey || apiModelKey;
+    if (!apiBridges.has(key)) {
+      apiBridges.set(key, mock ? makeMockLlmCall(`api:${key}`) : makeApiLlmCall(key));
+    }
+    return apiBridges.get(key);
+  };
   const routerLlmCall = async function routerLlmCall(model, systemPrompt, messages, opts = {}) {
-    const backend = resolveBackend(opts.agentRole, roleMap, fallback);
-    if (CLI_TRACE) console.error(`[gen-route] role=${opts.agentRole || '?'} → ${backend}`);
+    const route = resolveRoleRoute(opts.agentRole, roleMap, fallback, apiModelKey);
+    const backend = route.backend;
+    if (CLI_TRACE) console.error(`[gen-route] role=${opts.agentRole || '?'} → ${formatRoleRoute(route)}`);
     const bridge =
       backend === 'codex'
         ? codexBridge
         : backend === 'gemini'
           ? geminiBridge
           : backend === 'api'
-            ? apiBridge
+            ? getApiBridge(route.apiModelKey)
             : claudeBridge;
     return bridge(model, systemPrompt, messages, opts);
   };
@@ -2733,7 +2826,8 @@ function selectFirstLessonDrama(dramas = []) {
 
 function worldAdaptationBindingForDrama(d) {
   const binding = d?.curriculum_binding || {};
-  const specId = binding.world_adaptation_spec_id || binding.world_adaptation?.id || d?.world_adaptation_spec_id || null;
+  const specId =
+    binding.world_adaptation_spec_id || binding.world_adaptation?.id || d?.world_adaptation_spec_id || null;
   const specHash =
     binding.world_adaptation_spec_hash || binding.world_adaptation?.spec_hash || d?.world_adaptation_spec_hash || null;
   const constraints = binding.world_public_constraints || binding.world_adaptation?.public_constraints || null;
@@ -2785,8 +2879,12 @@ function curriculumScriptNotesForDrama(d, directorPlan = null) {
   const rhetoricalConstraints = binding.rhetorical_public_constraints || {};
   const turnPlan = Array.isArray(d?.turn_plan) ? d.turn_plan : directorPlan?.turn_plan || [];
   const affectivePolicy =
-    d?._affectiveAdaptationPolicy || d?.affective_adaptation_policy || directorPlan?.affective_adaptation_policy || 'none';
-  const tutorPolicy = d?._tutorAdaptationPolicy || d?.tutor_adaptation_policy || directorPlan?.tutor_adaptation_policy || 'none';
+    d?._affectiveAdaptationPolicy ||
+    d?.affective_adaptation_policy ||
+    directorPlan?.affective_adaptation_policy ||
+    'none';
+  const tutorPolicy =
+    d?._tutorAdaptationPolicy || d?.tutor_adaptation_policy || directorPlan?.tutor_adaptation_policy || 'none';
   if (
     !binding.curriculum_id &&
     !binding.module_id &&
@@ -2882,7 +2980,8 @@ function worldConstraintTextForDrama(d) {
   const lines = [];
   if (artifact) lines.push(`Keep the learner-authored artifact in play: ${artifact}.`);
   if (verifier) lines.push(`Make claims answerable to this verifier/evidence standard: ${verifier}.`);
-  if (verifierEvidence.length) lines.push(`Verifier evidence available to embody in scene furniture: ${verifierEvidence.join(' | ')}.`);
+  if (verifierEvidence.length)
+    lines.push(`Verifier evidence available to embody in scene furniture: ${verifierEvidence.join(' | ')}.`);
   if (rhetoricalConstraints.public_task) lines.push(`Public task to stage: ${rhetoricalConstraints.public_task}.`);
   if (rhetoricalConstraints.public_evidence_standard) {
     lines.push(`Public evidence standard to preserve: ${rhetoricalConstraints.public_evidence_standard}.`);
@@ -2891,14 +2990,17 @@ function worldConstraintTextForDrama(d) {
     lines.push(`Allowed rhetorical posture: ${rhetoricalConstraints.allowed_rhetorical_form}.`);
   }
   if (rhetoricalConstraints.scene) lines.push(`Scene constraint: ${rhetoricalConstraints.scene}.`);
-  if (rhetoricalConstraints.action_gate) lines.push(`Learner action gate to seek: ${rhetoricalConstraints.action_gate}.`);
+  if (rhetoricalConstraints.action_gate)
+    lines.push(`Learner action gate to seek: ${rhetoricalConstraints.action_gate}.`);
   if (preferred.length) {
     lines.push(
       `Privately prefer these curriculum action families when choosing a tutor move; do not say the labels aloud: ${preferred.join(', ')}.`,
     );
   }
   if (disallowed.length) {
-    lines.push(`Privately avoid these action families unless the drama spec explicitly overrides them: ${disallowed.join(', ')}.`);
+    lines.push(
+      `Privately avoid these action families unless the drama spec explicitly overrides them: ${disallowed.join(', ')}.`,
+    );
   }
   if (successObservables.length) {
     lines.push(`A useful learner movement should become observable as: ${successObservables.join(' | ')}.`);
@@ -2908,7 +3010,9 @@ function worldConstraintTextForDrama(d) {
     lines.push(`Forbidden public exposure categories: ${rhetoricalForbidden.join(' | ')}.`);
   }
   if (!lines.length) return '';
-  lines.push('Do not expose curriculum misconception IDs, spec IDs, spec hashes, answer keys, or hidden verifier internals in public speech.');
+  lines.push(
+    'Do not expose curriculum misconception IDs, spec IDs, spec hashes, answer keys, or hidden verifier internals in public speech.',
+  );
   return lines.join(' ');
 }
 
@@ -3102,7 +3206,10 @@ function fallbackDirectorPlan(d, reason = 'fallback', args = {}) {
     relationship: d.relationship || 'a tutor and learner who do not yet share a stable register',
     stakes: d.stakes || d.learner_start_state || d.topic,
     opening_speaker:
-      d._openingSpeakerOverride || d.opening_speaker || dialogue?.opening_speaker || (opensWithTutor ? 'tutor' : 'learner'),
+      d._openingSpeakerOverride ||
+      d.opening_speaker ||
+      dialogue?.opening_speaker ||
+      (opensWithTutor ? 'tutor' : 'learner'),
     ending_speaker: d.ending_speaker || dialogue?.ending_speaker || (endsWithTutor ? 'tutor' : 'learner'),
     locale: d.locale || voice.locale,
     register: d.register || dialogue?.turn_shape || voice.register,
@@ -3967,7 +4074,10 @@ function runMetadataForDrama({ args, d, directorPlan, runtime, transcriptArtifac
     control_ending_policy: args.controlEndingPolicy || 'default',
     control_ending_applied: Boolean(directorPlan?.control_ending_applied),
     affective_adaptation_policy:
-      d._affectiveAdaptationPolicy || d.affective_adaptation_policy || directorPlan?.affective_adaptation_policy || 'none',
+      d._affectiveAdaptationPolicy ||
+      d.affective_adaptation_policy ||
+      directorPlan?.affective_adaptation_policy ||
+      'none',
     opening_speaker_override: args.openingSpeaker || null,
     opening_speaker: directorPlan?.opening_speaker || null,
     ending_speaker: directorPlan?.ending_speaker || null,
@@ -4005,7 +4115,10 @@ function writePartialTurnArtifacts({ args, d, trace, directorPlan, runtime, turn
   trace.run = {
     ...(trace.run || {}),
     affective_adaptation_policy:
-      d._affectiveAdaptationPolicy || d.affective_adaptation_policy || directorPlan?.affective_adaptation_policy || 'none',
+      d._affectiveAdaptationPolicy ||
+      d.affective_adaptation_policy ||
+      directorPlan?.affective_adaptation_policy ||
+      'none',
     curriculum_script_notes: trace.run?.curriculum_script_notes || curriculumScriptNotesForDrama(d, directorPlan),
   };
   const transcriptArtifacts = writeHeldOutTranscripts({
@@ -4215,13 +4328,7 @@ function baseKeyObject({
             : args.generator === 'gemini'
               ? 'real-gemini'
               : 'real-claude-code',
-    model: args.mock
-      ? null
-      : args.roleMap
-        ? `mixed (claude=${args.model}${args.effort ? `@${args.effort}` : ''}${
-            args.claudePersistentWorkers ? '#persistent-workers' : ''
-          }, codex=config-default@${CODEX_REASONING_EFFORT})`
-        : generatorModelLabel(args),
+    model: args.mock ? null : args.roleMap ? roleMapModelLabel(args) : generatorModelLabel(args),
     codex_reasoning_effort: CODEX_REASONING_EFFORT,
     writing_pad: runtime.writingPad,
     director_mode: args.directorMode,
@@ -4665,9 +4772,9 @@ async function main() {
     d._affectiveAdaptationPolicy = args.affectiveAdaptationPolicy || d.affective_adaptation_policy || 'none';
     if (!AFFECTIVE_ADAPTATION_POLICIES.has(d._affectiveAdaptationPolicy)) {
       throw new Error(
-        `drama ${d.id || '<unknown>'} affective_adaptation_policy must be ${[
-          ...AFFECTIVE_ADAPTATION_POLICIES,
-        ].join('|')}`,
+        `drama ${d.id || '<unknown>'} affective_adaptation_policy must be ${[...AFFECTIVE_ADAPTATION_POLICIES].join(
+          '|',
+        )}`,
       );
     }
     d._controlEndingPolicy = args.controlEndingPolicy || 'default';
@@ -4821,7 +4928,8 @@ async function main() {
               traceJson.run.affective_adaptation_policy =
                 traceJson.run.affective_adaptation_policy || d.affective_adaptation_policy || 'none';
               traceJson.run.curriculum_script_notes =
-                traceJson.run.curriculum_script_notes || curriculumScriptNotesForDrama(d, traceJson.directorPlan || null);
+                traceJson.run.curriculum_script_notes ||
+                curriculumScriptNotesForDrama(d, traceJson.directorPlan || null);
               const t = externalTurns(traceJson, { restoreLeakedEgo: true });
               writeHeldOutTranscripts({
                 args,
@@ -4986,7 +5094,7 @@ async function main() {
                 ending_speaker: directorPlan?.ending_speaker || null,
                 director_variation_key: d._directorVariationKey || null,
                 stage_direction_style: stageDirectionStyleFor(d)?.id || null,
-                model: generatorModelLabel(args),
+                model: args.roleMap ? roleMapModelLabel(args) : generatorModelLabel(args),
                 codex_reasoning_effort: CODEX_REASONING_EFFORT,
                 writing_pad: runtime.writingPad,
                 world_adaptation: worldAdaptationBindingForDrama(d),
@@ -5070,14 +5178,17 @@ async function main() {
     // Mixed authorship has no single arms-length critic: whichever model authored
     // ANY role can't be a clean generator≠critic judge of the whole transcript.
     // Exact backend set = whatever each of the 5 roles actually resolves to.
+    const resolvedRoutes = ROLE_NAMES.map((role) =>
+      formatRoleRoute(resolveRoleRoute(role, args.roleMap, args.generator, args.apiModel)),
+    );
+    const routeSet = new Set(resolvedRoutes);
     const backends = new Set(ROLE_NAMES.map((r) => resolveBackend(r, args.roleMap, args.generator)));
-    const both = backends.has('claude') && backends.has('codex');
     console.log(
-      `\nnext (MIXED authorship — generator≠critic does NOT hold cleanly: ${[...backends].join('+')} each authored ≥1 role):\n` +
-        (both
-          ? `  no fully arms-length automated critic exists for a claude+codex drama; choose the critic deliberately\n` +
-            `  (e.g. an OpenRouter model neither side used: --model gpt), and lean on the human labeller as primary:\n`
-          : `  judge with the model that authored NO role here:\n`) +
+      `\nnext (MIXED authorship — generator≠critic does NOT hold cleanly: ${[...routeSet].join('+')} each authored ≥1 role):\n` +
+        `  choose a critic that authored NO role here; if an OpenRouter/API role used a model family, do not reuse that family as critic.\n` +
+        (backends.has('claude') && backends.has('codex')
+          ? `  for claude+codex mixes, prefer an OpenRouter model neither side used (for example --model gpt only when GPT did not author a role), and lean on the human labeller as primary:\n`
+          : `  judge with a non-authoring model and treat the human labeller as primary:\n`) +
         `  node scripts/score-poetics-phase2.js --model <critic> --sample-dir ${rel} --key ${keyRel} --out exports/poetics-phase2-mixed-<critic>.json\n` +
         `  node scripts/label-poetics-phase2.js --sample-dir ${rel} --labeller liam   # human triangulation (not a gate)`,
     );
@@ -5123,6 +5234,7 @@ export {
   renderHeldOutTranscript,
   renderTranscript,
   resolveApiModel,
+  resolveRoleRoute,
   revoiceComplianceFailures,
   revoiceMatchStats,
   selectFirstLessonDrama,
