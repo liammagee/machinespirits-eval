@@ -1229,6 +1229,73 @@ const INTERACTION_OUTCOMES = {
  * @param {string} config.tutorProfile - Tutor profile name
  * @param {string} config.topic - Topic to discuss
  * @param {Object} config.scenario - Scenario configuration
+/**
+ * Slice 7: redact any hidden-provenance tokens that could ride into a public-facing
+ * context string (defense-in-depth; the ledger is built only from public turns).
+ */
+function scrubLedgerLeaks(text) {
+  return String(text || '')
+    .replace(/sha256:[0-9a-f]+/gi, '[redacted-hash]')
+    .replace(/\b(secret|answer[_-]?key|misconception[_-]?id|misconception_signature)\s*[:=]\s*\S+/gi, '$1: [redacted]');
+}
+
+function ledgerOneLine(text, max = 200) {
+  return String(text || '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, max);
+}
+
+/**
+ * Slice 7: a deterministic, public-safe state ledger derived ONLY from public
+ * turns (definitionally public) plus the presence of public reframe/reversal
+ * events. It carries earlier learner commitments forward so they survive once
+ * they fall outside the recent-turn window, without re-sending the whole
+ * transcript. Never reads hidden ids, hashes, secrets, or answer keys.
+ */
+function buildPublicStateLedger(history, { recentTurns = 4, renderContent = (c) => c } = {}) {
+  const turns = (Array.isArray(history) ? history : []).map((m, idx) => ({ ...m, turn: idx + 1 }));
+  const isLearner = (m) => m.role === 'learner' || m.role === 'user';
+  const recentCount = Math.max(1, recentTurns);
+  const older = turns.slice(0, Math.max(0, turns.length - recentCount));
+  const commitments = older
+    .filter(isLearner)
+    .map((m) => `  - [turn ${m.turn}] ${ledgerOneLine(renderContent(m.content))}`);
+  const pressureTurn = [...turns].reverse().find((m) => m.learnerReframeEvent || m.learnerReversalEvent);
+  const pressure = pressureTurn
+    ? `a learner reframe/reversal is in play (around turn ${pressureTurn.turn})`
+    : 'none surfaced yet';
+  const lines = [
+    'STATE LEDGER — carried-forward public-safe summary (does not replace the recent turns below):',
+    'public_commitments (earlier learner statements still in force):',
+    ...(commitments.length ? commitments : ['  - (none beyond the recent turns)']),
+    `open_pressure: ${pressure}`,
+    'evidence_standard: keep every claim answerable to the scene’s stated evidence; do not lower the bar.',
+    'forbidden_public_moves: no hidden-label or answer-key exposure; do not solve the artifact for the learner; no premature closure.',
+  ];
+  return scrubLedgerLeaks(lines.join('\n'));
+}
+
+/**
+ * Slice 7: assemble the "Recent conversation" context under the selected mode.
+ *  - last-six (default): the prior behaviour (last six public turns verbatim).
+ *  - full-public: the full public transcript (diagnostic / control only).
+ *  - ledger-recent: a compact state ledger + the last `recentTurns` turns verbatim.
+ */
+function buildConversationContext(history, { contextMode = 'last-six', recentTurns = 4, renderContent = (c) => c } = {}) {
+  const turns = Array.isArray(history) ? history : [];
+  const render = (list) => list.map((m) => `${m.role.toUpperCase()}: ${renderContent(m.content)}`).join('\n\n');
+  if (contextMode === 'full-public') return render(turns);
+  if (contextMode === 'ledger-recent') {
+    const ledger = buildPublicStateLedger(turns, { recentTurns, renderContent });
+    const recent = render(turns.slice(-Math.max(1, recentTurns)));
+    return `${ledger}\n\nMost recent turns:\n${recent}`;
+  }
+  // default: last-six
+  return render(turns.slice(-6));
+}
+
+/**
  * @param {Function} llmCall - Async function to call LLM
  * @param {Object} options - Additional options
  */
@@ -1346,6 +1413,7 @@ export async function runInteraction(config, llmCall, options = {}) {
       llmCall,
       interactionTrace,
       directorPlan,
+      options.dramaFidelity,
     );
 
     openingLearnerReversalEvent = buildLearnerReversalEvent({
@@ -1417,6 +1485,9 @@ export async function runInteraction(config, llmCall, options = {}) {
       memoryContext: learnerWritingPad.buildNarrativeSummary(learnerId, sessionId),
       trace: interactionTrace,
       profileContext: learnerProfileContext,
+      dramaFidelity: options.dramaFidelity,
+      contextMode: options.contextMode,
+      recentTurns: options.recentTurns,
     });
     const learnerReframeEvent = buildLearnerReframeEvent({
       learnerMessage: learnerResponse.externalMessage,
@@ -1525,6 +1596,13 @@ export async function runInteraction(config, llmCall, options = {}) {
             directorPlan,
             tutorDirectorCue,
             tutorPrivateState,
+            {
+              tutorEgoPromptOverride: options.tutorEgoPromptOverride,
+              tutorSuperegoPromptOverride: options.tutorSuperegoPromptOverride,
+              dramaFidelity: options.dramaFidelity,
+              contextMode: options.contextMode,
+              recentTurns: options.recentTurns,
+            },
           );
     latestLearnerReframeEvent = null;
     if (tutorResponse.learnerReversalEventUsed) {
@@ -1612,6 +1690,13 @@ export async function runInteraction(config, llmCall, options = {}) {
       directorPlan,
       closingCue,
       tutorPrivateState,
+      {
+        tutorEgoPromptOverride: options.tutorEgoPromptOverride,
+        tutorSuperegoPromptOverride: options.tutorSuperegoPromptOverride,
+        dramaFidelity: options.dramaFidelity,
+        contextMode: options.contextMode,
+        recentTurns: options.recentTurns,
+      },
     );
     latestLearnerReframeEvent = null;
     if (tutorResponse.learnerReversalEventUsed) {
@@ -1674,14 +1759,18 @@ async function generateInitialLearnerMessage(
   llmCall,
   trace,
   directorPlan = null,
+  dramaFidelity = 'full',
 ) {
   // Get agent roles from profile (not architecture)
   const agentRoles = learnerConfig.getProfileAgentRoles(profile.name);
   const internalDeliberation = [];
 
   // Run internal deliberation for each agent in the profile
-  // For ego/superego pattern: superego sees and critiques ego's initial response
+  // For ego/superego pattern: superego sees and critiques ego's initial response.
+  // Slice 5: under public-only fidelity the superego is skipped, so only the ego
+  // runs; the multi-agent adjudication below then no-ops (deliberation length < 2).
   for (const role of agentRoles) {
+    if (dramaFidelity === 'public-only' && role === 'superego') continue;
     const agentConfig = learnerConfig.getAgentConfig(role, profile.name);
     if (!agentConfig) continue;
 
@@ -1962,11 +2051,16 @@ async function runTutorTurn(
   directorPlan = null,
   directorCue = null,
   tutorPrivateState = {},
+  tutorPromptOverrides = {},
 ) {
   // Get tutor configuration from profile
   const _profile = tutorConfig.getActiveProfile(tutorProfileName);
   const egoConfig = tutorConfig.getAgentConfig('ego', tutorProfileName);
   const superegoConfig = tutorConfig.getAgentConfig('superego', tutorProfileName);
+  // Slice 5: public-only fidelity drops the superego critique + ego adjudication,
+  // collapsing the tutor turn to a single ego call (a cheap structural screen).
+  // This reuses the engine's existing no-superego path, so the trace stays valid.
+  const tutorPublicOnly = tutorPromptOverrides.dramaFidelity === 'public-only';
 
   // Cell 101/102: id-director architecture. The id authors a fresh ego
   // system prompt each turn; the ego executes once. Dispatch to the id
@@ -1999,11 +2093,11 @@ async function runTutorTurn(
   // Get tutor memory for this learner
   const tutorMemory = tutorWritingPad.buildNarrativeSummary(learnerId, sessionId);
 
-  // Build conversation context
-  const conversationContext = history
-    .slice(-6)
-    .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
-    .join('\n\n');
+  // Build conversation context (Slice 7: mode-aware — last-six default)
+  const conversationContext = buildConversationContext(history, {
+    contextMode: tutorPromptOverrides.contextMode,
+    recentTurns: tutorPromptOverrides.recentTurns,
+  });
   const directorContext = buildDirectorContext(directorPlan, directorCue, 'tutor');
   const tutorAdaptationPolicy =
     tutorPrivateState?.tutorAdaptationPolicy || directorPlan?.tutor_adaptation_policy || 'none';
@@ -2040,7 +2134,8 @@ async function runTutorTurn(
   const internalDeliberation = [];
 
   // ===== T.EGO: Draft initial response =====
-  const tutorEgoStaticPrompt = egoConfig?.prompt || 'You are a thoughtful AI tutor.';
+  const tutorEgoStaticPrompt =
+    tutorPromptOverrides.tutorEgoPromptOverride || egoConfig?.prompt || 'You are a thoughtful AI tutor.';
   const tutorSharedDynamicContext = `Your accumulated knowledge about this learner:
 ${tutorMemory || 'This is a new learner - no prior history.'}
 
@@ -2100,9 +2195,11 @@ Provide ONLY your draft response text (it will be reviewed by your pedagogical c
   // ===== T.SUPEREGO: Critique only (skip when superego is null) =====
   let externalMessage = egoDraft;
 
-  if (superegoConfig) {
+  if (superegoConfig && !tutorPublicOnly) {
     const tutorSuperegoStaticPrompt =
-      superegoConfig?.prompt || 'You are a pedagogical critic reviewing tutor responses.';
+      tutorPromptOverrides.tutorSuperegoPromptOverride ||
+      superegoConfig?.prompt ||
+      'You are a pedagogical critic reviewing tutor responses.';
     const superegoPrompt = `${tutorSuperegoStaticPrompt}
 
 Context about the learner:
@@ -2655,6 +2752,9 @@ export async function generateLearnerResponse(options) {
     trace = null,
     secret = null,
     conversationMode = 'single-prompt', // 'messages' for multi-turn message chains
+    dramaFidelity = 'full', // Slice 5: 'public-only' drops learner superego + revision
+    contextMode = 'last-six', // Slice 7: 'ledger-recent' | 'full-public'
+    recentTurns = 4, // Slice 7: verbatim window under ledger-recent / full-public
   } = options;
 
   // Resolve model overrides. Priority: specific (ego/superego) > general (modelOverride) > YAML default
@@ -2727,11 +2827,12 @@ export async function generateLearnerResponse(options) {
   const internalDeliberation = [];
   const tokenUsage = { inputTokens: 0, outputTokens: 0, apiCalls: 0 };
 
-  // Build conversation context string from history
-  const conversationContext = conversationHistory
-    .slice(-6)
-    .map((m) => `${m.role.toUpperCase()}: ${extractExternalSection(m.content)}`)
-    .join('\n\n');
+  // Build conversation context string from history (Slice 7: mode-aware — last-six default)
+  const conversationContext = buildConversationContext(conversationHistory, {
+    contextMode,
+    recentTurns,
+    renderContent: extractExternalSection,
+  });
   const visibleTutorMessage = extractExternalSection(tutorMessage);
 
   // Psychodynamic flow: Ego proposes → Superego comments → the same Ego adjudicates.
@@ -2789,8 +2890,9 @@ export async function generateLearnerResponse(options) {
       trace.metrics.learnerOutputTokens += egoInitialResponse.usage?.outputTokens || 0;
     }
 
-    // === STEP 2: Superego critique ===
-    const superegoConfig = applyOverride(learnerConfig.getAgentConfig('superego', profile.name), 'superego');
+    // === STEP 2: Superego critique === (skipped under public-only fidelity: ego-only)
+    if (dramaFidelity !== 'public-only') {
+      const superegoConfig = applyOverride(learnerConfig.getAgentConfig('superego', profile.name), 'superego');
     let superegoContext = `Topic: ${topic}`;
     if (memoryContext) {
       superegoContext += `\n\nYour memory and state:\n${memoryContext}`;
@@ -2889,6 +2991,7 @@ export async function generateLearnerResponse(options) {
       console.log(`│ EGO REVISION (FINAL): ${egoFinalResponse.content.substring(0, 200)}...`);
       console.log('└─────────────────────────────────────────────────────────────\n');
     }
+    } // end if (dramaFidelity !== 'public-only')
   } else {
     // Single-agent (unified) flow — run each role sequentially as before
     for (const role of agentRoles) {
@@ -2961,6 +3064,8 @@ export async function generateLearnerResponse(options) {
 
 // Named exports for pure helper functions (used in unit tests)
 export {
+  buildConversationContext,
+  buildPublicStateLedger,
   detectEmotionalState,
   detectUnderstandingLevel,
   detectTutorStrategy,

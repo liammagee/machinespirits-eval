@@ -161,6 +161,8 @@ Director and adaptation:
   --director-revisit-policy none|anchor|revoice|reconsider|reframe
   --director-revisit-anchor latest|opening|misframing-candidate
   --director-variation-key KEY
+  --director-plan-cache DIR           Reuse cached director plans by content hash (skips the ~90-150s director call on rerun)
+  --reuse-director-plan FILE          Force a saved raw director response for the drama (single-drama use)
   --opening-speaker learner|tutor|director
   --affective-adaptation-policy none|procedural_sensitive
   --control-ending default|hold
@@ -185,6 +187,11 @@ Operational flags:
   --trace-calls                       Record per-call telemetry
   --call-telemetry-json FILE
   --call-telemetry-csv FILE
+  --role-max-tokens SPEC              Per-role output budgets, e.g. "tutor_superego=700,learner_superego=500" or "preset" (off by default; API hard-cap, CLI terse-directive)
+  --drama-compact-prompts             Use compact drama tutor prompts (~2k vs ~20k chars); off by default
+  --drama-fidelity MODE               full (default) | compact (compact prompts) | public-only (ego-only, no deliberation — cheap structural screen)
+  --context-mode MODE                 last-six (default) | ledger-recent (state ledger + recent turns) | full-public (full transcript, diagnostic)
+  --recent-turns N                    Verbatim recent-turn window under ledger-recent/full-public (default 4)
   --claude-persistent-workers         Reuse persistent Claude worker processes
   --generation-concurrency N          Independent dramas to generate concurrently (default: 1)
 
@@ -234,6 +241,13 @@ function parseArgs(argv) {
     traceCalls: process.env.GEN_DRAMAS_TRACE_CALLS === '1',
     callTelemetryJsonPath: null,
     callTelemetryCsvPath: null,
+    directorPlanCache: null,
+    reuseDirectorPlan: null,
+    roleMaxTokens: null,
+    dramaCompactPrompts: false,
+    dramaFidelity: 'full',
+    contextMode: 'last-six',
+    recentTurns: 4,
   };
   if (argv.some((token) => token === '--help' || token === '-h')) {
     a.help = true;
@@ -270,6 +284,13 @@ function parseArgs(argv) {
     else if (t === '--director-revisit-policy') a.directorRevisitPolicy = argv[++i];
     else if (t === '--director-revisit-anchor') a.directorRevisitAnchor = argv[++i];
     else if (t === '--director-variation-key') a.directorVariationKey = argv[++i];
+    else if (t === '--director-plan-cache') a.directorPlanCache = path.resolve(argv[++i]);
+    else if (t === '--reuse-director-plan') a.reuseDirectorPlan = path.resolve(argv[++i]);
+    else if (t === '--role-max-tokens') a.roleMaxTokens = parseRoleMaxTokens(argv[++i]);
+    else if (t === '--drama-compact-prompts') a.dramaCompactPrompts = true;
+    else if (t === '--drama-fidelity') a.dramaFidelity = String(argv[++i] || '').toLowerCase();
+    else if (t === '--context-mode') a.contextMode = String(argv[++i] || '').toLowerCase();
+    else if (t === '--recent-turns') a.recentTurns = parseInt(argv[++i], 10);
     else if (t === '--opening-speaker') a.openingSpeaker = String(argv[++i] || '').toLowerCase();
     else if (t === '--control-ending') a.controlEndingPolicy = argv[++i];
     else if (t === '--call-telemetry-json') {
@@ -311,6 +332,18 @@ function parseArgs(argv) {
   }
   if (!CONTROL_ENDING_POLICIES.has(a.controlEndingPolicy)) {
     throw new Error('--control-ending must be default|hold');
+  }
+  if (!['full', 'compact', 'public-only'].includes(a.dramaFidelity)) {
+    throw new Error(`--drama-fidelity must be full|compact|public-only (got ${a.dramaFidelity})`);
+  }
+  // compact + public-only run on the compact drama prompts; full uses the full
+  // recognition prompts. Coupling here keeps fidelity the single knob.
+  if (a.dramaFidelity === 'compact' || a.dramaFidelity === 'public-only') a.dramaCompactPrompts = true;
+  if (!['last-six', 'ledger-recent', 'full-public'].includes(a.contextMode)) {
+    throw new Error(`--context-mode must be last-six|ledger-recent|full-public (got ${a.contextMode})`);
+  }
+  if (!Number.isInteger(a.recentTurns) || a.recentTurns < 1) {
+    throw new Error('--recent-turns must be a positive integer');
   }
   if (a.pedagogyDb && !fs.existsSync(a.pedagogyDb)) throw new Error(`--pedagogy-db not found: ${a.pedagogyDb}`);
   if (a.dialogueDb && !fs.existsSync(a.dialogueDb)) throw new Error(`--dialogue-db not found: ${a.dialogueDb}`);
@@ -1099,6 +1132,7 @@ function keyItemFor(d, nTutor, nLearner, qualityWarnings = []) {
     curriculum_script_notes: curriculumScriptNotesForDrama(d, d._directorPlan || null),
     opening_speaker: d._directorPlan?.opening_speaker || null,
     ending_speaker: d._directorPlan?.ending_speaker || null,
+    director_plan_cache: d._directorPlan?.director_plan_cache || 'off',
     quality_status: blocked ? 'review_before_scoring' : 'ok',
     quality_warnings: qualityWarnings,
   };
@@ -1568,6 +1602,7 @@ function callTelemetryCsv(records = []) {
     'prompt_chars_user',
     'prompt_chars_combined',
     'output_chars',
+    'role_max_tokens',
     'input_tokens',
     'output_tokens',
     'total_tokens',
@@ -1598,6 +1633,7 @@ function callTelemetryCsv(records = []) {
     record.prompt_chars?.user,
     record.prompt_chars?.combined,
     record.output_chars,
+    record.role_max_tokens,
     record.usage?.input_tokens,
     record.usage?.output_tokens,
     record.usage?.total_tokens,
@@ -1707,6 +1743,7 @@ function makeCallTelemetryRecorder({ enabled = false, print = false, jsonPath = 
         prompt_hashes: promptHashes,
         prompt_chars: promptChars,
         output_chars: String(response?.content || '').length,
+        role_max_tokens: opts.roleMaxTokensRequested ?? null,
         usage: {
           input_tokens: usage.inputTokens,
           output_tokens: usage.outputTokens,
@@ -1783,6 +1820,97 @@ function attachCallTelemetrySummary(target, args) {
   const artifacts = relativeCallTelemetryArtifactsForArgs(args);
   if (artifacts && Object.keys(artifacts).length) target.call_telemetry_artifacts = artifacts;
   return target;
+}
+
+// ── Slice 3: per-role output budgets ─────────────────────────────────────────
+// Off by default. When --role-max-tokens supplies a budget for a role, the API
+// backend receives it as a hard max_tokens; the claude/codex/gemini CLI backends
+// have no max_tokens flag, so the budget becomes a static per-role "be terse"
+// directive appended to the system prompt (a soft cap that preserves persistent-
+// worker reuse, since the directive is identical for every call of that role).
+// The doc's conservative defaults, available via `--role-max-tokens preset`.
+const ROLE_OUTPUT_BUDGET_PRESET = {
+  director: 3500,
+  tutor_ego: 800,
+  tutor_superego: 800,
+  learner_ego: 700,
+  learner_superego: 600,
+};
+
+function parseRoleMaxTokens(str) {
+  const raw = String(str || '').trim();
+  if (!raw) return null;
+  if (raw === 'preset' || raw === 'default') return { ...ROLE_OUTPUT_BUDGET_PRESET };
+  const out = {};
+  for (const pair of raw.split(',')) {
+    const segment = pair.trim();
+    if (!segment) continue;
+    const [role, value] = segment.split('=').map((s) => s.trim());
+    const budget = parseInt(value, 10);
+    if (!role || !Number.isInteger(budget) || budget <= 0) {
+      throw new Error(`--role-max-tokens: expected role=N pairs (or "preset"); got "${segment}"`);
+    }
+    out[role] = budget;
+  }
+  return Object.keys(out).length ? out : null;
+}
+
+function roleOutputBudgetDirective(budget) {
+  const chars = budget * 4; // rough tokens→characters
+  return (
+    `\n\nOUTPUT BUDGET: keep your entire reply within about ${budget} tokens (~${chars} characters). ` +
+    'Be terse and cut padding. Preserve any required structure (a pass/fail/revise verdict, a single ' +
+    'public line, required JSON fields); do not drop required content to save space.'
+  );
+}
+
+// Wrap the base llmCall so a budgeted role gets max_tokens (API) plus a terse
+// directive (all backends). Placed INSIDE the telemetry wrapper so telemetry
+// records the role prompt size without the directive, and reads the requested
+// budget back off the (by-reference) opts object.
+function wrapLlmCallWithRoleBudgets(llmCall, budgets) {
+  if (!budgets || !Object.keys(budgets).length) return llmCall;
+  const budgeted = async function budgetedLlmCall(model, systemPrompt, messages, opts = {}) {
+    const role = opts.agentRole || 'gen';
+    const budget = budgets[role];
+    if (!budget) return llmCall(model, systemPrompt, messages, opts);
+    opts.roleMaxTokensRequested = budget;
+    const sys = `${systemPrompt || ''}${roleOutputBudgetDirective(budget)}`;
+    return llmCall(model, sys, messages, { ...opts, maxTokens: budget });
+  };
+  budgeted.close = () => llmCall.close?.();
+  return budgeted;
+}
+
+// ── Slice 4: compact drama-specific tutor prompts ────────────────────────────
+// Off by default. With --drama-compact-prompts the tutor ego/superego static
+// system prompts (the ~20k-char recognition prompts, the dominant per-call input
+// cost) are replaced with compact drama-lane prompts that keep the recognition
+// stance + safety rails but drop the suggestion-JSON schema, Writing-Pad memory
+// mechanics, and curriculum-navigation affordances the drama runtime never uses.
+// Returned as runInteraction options the engine reads; {} when disabled, so the
+// default path is byte-identical.
+// runInteraction options carrying the drama-lane runtime knobs: the fidelity
+// mode (Slice 5) and, when compact prompts are active (Slice 4), the tutor
+// prompt overrides. Spread into each runInteraction options object. The fidelity
+// is always present; the prompt overrides only when --drama-compact-prompts /
+// a compact fidelity is set, so the full default path is unchanged.
+let _compactDramaPromptOverrides;
+function dramaTurnOptionsForArgs(args) {
+  const out = {
+    dramaFidelity: args?.dramaFidelity || 'full',
+    contextMode: args?.contextMode || 'last-six',
+    recentTurns: args?.recentTurns || 4,
+  };
+  if (!args?.dramaCompactPrompts) return out;
+  if (!_compactDramaPromptOverrides) {
+    const dir = path.join(WORKTREE_ROOT, 'prompts', 'drama');
+    _compactDramaPromptOverrides = {
+      tutorEgoPromptOverride: fs.readFileSync(path.join(dir, 'tutor-ego-compact.md'), 'utf8'),
+      tutorSuperegoPromptOverride: fs.readFileSync(path.join(dir, 'tutor-superego-compact.md'), 'utf8'),
+    };
+  }
+  return { ...out, ..._compactDramaPromptOverrides };
 }
 
 function wrapLlmCallWithTelemetry(llmCall, recorder) {
@@ -2398,7 +2526,7 @@ async function sleep(ms) {
   await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function callApiModelOnce(systemPrompt, userPrompt, modelKey, role) {
+async function callApiModelOnce(systemPrompt, userPrompt, modelKey, role, maxTokens = GEN_API_MAX_TOKENS) {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error('OPENROUTER_API_KEY not set (required for --generator api)');
   const model = resolveApiModel(modelKey);
@@ -2415,7 +2543,7 @@ async function callApiModelOnce(systemPrompt, userPrompt, modelKey, role) {
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({
         model,
-        max_tokens: GEN_API_MAX_TOKENS,
+        max_tokens: maxTokens || GEN_API_MAX_TOKENS,
         temperature: GEN_API_TEMPERATURE,
         include_reasoning: false,
         messages: [
@@ -2469,11 +2597,11 @@ async function callApiModelOnce(systemPrompt, userPrompt, modelKey, role) {
   }
 }
 
-async function callApiModel(systemPrompt, userPrompt, modelKey, role) {
+async function callApiModel(systemPrompt, userPrompt, modelKey, role, maxTokens = GEN_API_MAX_TOKENS) {
   let lastError = null;
   for (let attempt = 0; attempt <= GEN_API_RETRIES; attempt += 1) {
     try {
-      return await callApiModelOnce(systemPrompt, userPrompt, modelKey, role);
+      return await callApiModelOnce(systemPrompt, userPrompt, modelKey, role, maxTokens);
     } catch (err) {
       lastError = err;
       if (attempt >= GEN_API_RETRIES || !isRetryableApiGeneratorError(err)) throw err;
@@ -2542,7 +2670,13 @@ function makeGeminiLlmCall() {
 function makeApiLlmCall(modelKey) {
   return async function apiLlmCall(_model, systemPrompt, messages, opts = {}) {
     const userPrompt = (messages || []).map((m) => m.content).join('\n');
-    const result = await callApiModel(systemPrompt, userPrompt, modelKey, opts.agentRole || 'gen');
+    const result = await callApiModel(
+      systemPrompt,
+      userPrompt,
+      modelKey,
+      opts.agentRole || 'gen',
+      opts.maxTokens || GEN_API_MAX_TOKENS,
+    );
     return withUsage(result, {
       provider: 'openrouter',
       model: `api/${modelKey}`,
@@ -3787,6 +3921,44 @@ function applyRuntimeDirectorPolicies({ d, args, plan, revisitPolicy, revisitAnc
   );
 }
 
+// ── Slice 6: director-plan cache ─────────────────────────────────────────────
+// The director call is the single most expensive call in a scene (~90-150s) and
+// is a pure function of (drama, generator, model, effort, director system prompt,
+// director user prompt). On a rerun after a cue/runtime patch, the director's
+// RAW response can be replayed and the deterministic post-processing
+// (applySpecDirectorOverrides + applyRuntimeDirectorPolicies) re-applied fresh,
+// so a downstream policy change is still honoured. Caching the raw response —
+// not the merged plan — keeps that re-application live. Off by default.
+function directorPlanCacheKey({ d, args, systemPrompt, userPrompt }) {
+  return sha256Short(
+    JSON.stringify({
+      v: 'director-plan-cache-v1',
+      drama: d.id,
+      generator: args.generator,
+      model: args.model || null,
+      effort: args.effort || null,
+      system: sha256Short(systemPrompt),
+      user: sha256Short(userPrompt),
+    }),
+  );
+}
+
+function readDirectorPlanRaw(file) {
+  try {
+    const text = fs.readFileSync(file, 'utf8');
+    // Accept either a cache envelope {raw_content} or a bare director JSON/string.
+    try {
+      const parsed = JSON.parse(text);
+      if (parsed && typeof parsed.raw_content === 'string') return parsed.raw_content;
+      return text;
+    } catch (_) {
+      return text;
+    }
+  } catch (_) {
+    return null;
+  }
+}
+
 async function buildDirectorPlan(d, llmCall, args) {
   if (args.directorMode === 'off') return null;
   const revisitPolicy = d._directorRevisitPolicy ?? args.directorRevisitPolicy;
@@ -3855,11 +4027,49 @@ async function buildDirectorPlan(d, llmCall, args) {
     control_ending_instruction: controlEndingInstructionForPrompt(args, d),
     fallback_variation_seed: fallback,
   });
-  const response = await llmCall('director', buildDirectorSystemPrompt(), [{ role: 'user', content: userPrompt }], {
-    temperature: 0.85,
-    maxTokens: 900,
-    agentRole: 'director',
-  });
+  const directorSystemPrompt = buildDirectorSystemPrompt();
+  let directorPlanCacheStatus = 'off';
+  let directorPlanCacheFile = null;
+  let cachedDirectorRaw = null;
+  if (args.reuseDirectorPlan) {
+    cachedDirectorRaw = readDirectorPlanRaw(args.reuseDirectorPlan);
+    directorPlanCacheStatus = cachedDirectorRaw != null ? 'reuse-file' : 'reuse-file-missing';
+  } else if (args.directorPlanCache) {
+    const key = directorPlanCacheKey({ d, args, systemPrompt: directorSystemPrompt, userPrompt });
+    directorPlanCacheFile = path.join(args.directorPlanCache, `${key}.json`);
+    if (fs.existsSync(directorPlanCacheFile)) {
+      cachedDirectorRaw = readDirectorPlanRaw(directorPlanCacheFile);
+      directorPlanCacheStatus = cachedDirectorRaw != null ? 'hit' : 'miss';
+    } else {
+      directorPlanCacheStatus = 'miss';
+    }
+  }
+  let response;
+  if (cachedDirectorRaw != null) {
+    response = { content: cachedDirectorRaw, provenance: { agentRole: 'director', director_plan_cached: true } };
+  } else {
+    response = await llmCall('director', directorSystemPrompt, [{ role: 'user', content: userPrompt }], {
+      temperature: 0.85,
+      maxTokens: 900,
+      agentRole: 'director',
+    });
+    if (directorPlanCacheFile) {
+      try {
+        fs.mkdirSync(path.dirname(directorPlanCacheFile), { recursive: true });
+        fs.writeFileSync(
+          directorPlanCacheFile,
+          JSON.stringify(
+            { drama_id: d.id, generated_at: new Date().toISOString(), raw_content: String(response.content || '') },
+            null,
+            2,
+          ),
+          'utf8',
+        );
+      } catch (err) {
+        console.warn(`[warn] could not write director-plan cache: ${err?.message || String(err)}`);
+      }
+    }
+  }
   try {
     const parsed = extractJsonObject(response.content);
     if (!parsed) throw new Error('no JSON object');
@@ -3872,6 +4082,7 @@ async function buildDirectorPlan(d, llmCall, args) {
           ? parsed.interventions
           : fallback.interventions,
       parse_status: 'ok',
+      director_plan_cache: directorPlanCacheStatus,
       provenance: response.provenance || response.apiPayload?.provenance || null,
     });
     return applyRuntimeDirectorPolicies({ d, args, plan: merged, revisitPolicy, revisitAnchor });
@@ -3879,6 +4090,7 @@ async function buildDirectorPlan(d, llmCall, args) {
     const merged = applySpecDirectorOverrides(d, {
       ...fallbackDirectorPlan(d, `fallback-parse-failed:${error.message}`, args),
       raw_director_response: String(response.content || '').slice(0, 2000),
+      director_plan_cache: directorPlanCacheStatus,
       provenance: response.provenance || response.apiPayload?.provenance || null,
     });
     return applyRuntimeDirectorPolicies({ d, args, plan: merged, revisitPolicy, revisitAnchor });
@@ -4569,6 +4781,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
           },
           llmCall,
           {
+            ...dramaTurnOptionsForArgs(args),
             maxTurns: 2,
             observeInternals: true,
             learnerProfile: d.learner_profile,
@@ -4657,6 +4870,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
               observeInternals: true,
               learnerProfile: d.learner_profile,
               forceMaxTurns: true,
+              ...dramaTurnOptionsForArgs(args),
               directorPlan: branchDirectorPlan,
               resumeTrace,
               onProgress: ({ phase, turnCount, maxTurns }) =>
@@ -4997,7 +5211,10 @@ async function main() {
           : args.generator === 'api'
             ? makeApiLlmCall(args.apiModel)
             : makeClaudeLlmCall(args.model, args.effort, { persistentWorkers: args.claudePersistentWorkers });
-  const llmCall = wrapLlmCallWithTelemetry(baseLlmCall, args._callTelemetry);
+  const llmCall = wrapLlmCallWithTelemetry(
+    wrapLlmCallWithRoleBudgets(baseLlmCall, args.roleMaxTokens),
+    args._callTelemetry,
+  );
   if (args.pairedContinuationPolicies || args.pairedAdaptationArms) {
     try {
       await generatePairedContinuations({ args, order, runtime, llmCall });
@@ -5114,6 +5331,7 @@ async function main() {
             observeInternals: true,
             learnerProfile: d.learner_profile,
             forceMaxTurns: true,
+            ...dramaTurnOptionsForArgs(args),
             directorPlan,
             onProgress: ({ phase, turnCount, maxTurns }) =>
               progress.update(
