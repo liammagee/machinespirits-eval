@@ -33,7 +33,7 @@ The same inspection also showed:
 
 ## Diagnosis
 
-The bottleneck has five parts.
+The bottleneck has six parts.
 
 1. The run is many serial LLM calls, not one Sonnet generation.
 
@@ -54,6 +54,10 @@ The bottleneck has five parts.
 5. Progress reporting is too coarse.
 
    Partial transcript flushing happens only after public turns. Director calls and internal ego-superego deliberation are invisible, so long periods of real work look like stalls.
+
+6. Output length is not bounded by role.
+
+   The most expensive review roles, especially tutor superego, can produce long critiques even when the runtime only needs a compact pass/fail/revise signal. Per-role output caps will not reduce repeated input context, but they should reduce output-token cost and long-tail latency while preserving the current full-fidelity input contract.
 
 ## Plan Of Record
 
@@ -110,7 +114,33 @@ Acceptance criteria:
 - Worker reuse is visible in telemetry.
 - Public transcript and quality warnings remain comparable to the current path.
 
-### Slice 3: Add Compact Drama-Specific Tutor Prompts
+### Slice 3: Add Per-Role Output Token Budgets
+
+Add explicit role-specific `max_tokens` budgets for the light-drama generator, with conservative defaults and CLI/env overrides.
+
+Initial candidate budgets:
+
+- `director`: keep generous initially, approximately `2500-4000` output tokens, because the director plan sets the full scene contract.
+- `tutor_ego`: approximately `500-900` output tokens, enough for private decision plus concise public tutor speech.
+- `tutor_superego`: approximately `500-900` output tokens, with a strict checklist/rewrite instruction rather than essay critique.
+- `learner_ego`: approximately `400-800` output tokens, enough for private decision plus short public learner speech.
+- `learner_superego`: approximately `300-700` output tokens, enough to name missed pressure and revision need.
+
+Implementation options:
+
+- Add a role budget map in `scripts/generate-pedagogical-dramas.js`.
+- Thread role budgets into the generator bridge so CLI/API backends receive the relevant cap.
+- Record requested and effective role token caps in call telemetry and held-out keys.
+- Allow overrides such as `--role-max-tokens tutor_superego=700,learner_superego=500` or an equivalent env var for quick probes.
+
+Acceptance criteria:
+
+- Telemetry records role max-token caps per call.
+- Superego calls show lower output-token counts without hidden-label leakage or stock fallback.
+- Quality gate remains clean on the same AF1/AF11 comparison cases.
+- The result is treated as latency-tail control, not as a replacement for input-context compression.
+
+### Slice 4: Add Compact Drama-Specific Tutor Prompts
 
 Create drama-specific tutor prompts instead of reusing the full suggestion/navigation tutor prompts.
 
@@ -141,7 +171,7 @@ Acceptance criteria:
 - Tutor calls stop carrying suggestion/navigation sections.
 - Existing standard evaluation tutor prompts are untouched.
 
-### Slice 4: Add A Preview Fidelity Mode
+### Slice 5: Add A Preview Fidelity Mode
 
 Add a generator option for cheap structural screens before full-fidelity paid runs.
 
@@ -158,7 +188,7 @@ Acceptance criteria:
 - Full mode remains available for final artifacts.
 - Key files record the fidelity mode.
 
-### Slice 5: Cache Or Reuse Director Plans
+### Slice 6: Cache Or Reuse Director Plans
 
 Avoid regenerating the director plan when rerunning the same drama with the same spec, seed, model, and director policy.
 
@@ -179,14 +209,16 @@ Use a narrow validation ladder:
 
 1. Run a mock or no-LLM unit test for prompt routing and telemetry fields.
 2. Run one short Sonnet preview on AF11 and compare call counts and prompt sizes.
-3. Run one compact full-fidelity AF11 sample and compare quality warnings against the current full path.
-4. Only then rerun paid full samples for scoring.
+3. Run one token-capped full-fidelity AF1/AF11 sample and compare output tokens, latency, and quality warnings against the uncapped split baseline.
+4. Run one compact full-fidelity AF11 sample and compare quality warnings against the current full path.
+5. Only then rerun paid full samples for scoring.
 
 Success metrics:
 
 - First public turn latency is reduced.
 - Per-turn latency is attributable to specific roles.
 - Prompt character counts are materially reduced.
+- Output token counts and long-tail review latencies are materially reduced for capped roles.
 - Persistent worker reuse increases.
 - No hidden labels, spec hashes, answer keys, or evaluator internals leak into public transcript text.
 
