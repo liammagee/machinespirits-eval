@@ -2249,12 +2249,27 @@ const GEN_API_MODELS = {
 const GEN_API_TEMPERATURE = Number(process.env.GEN_API_TEMPERATURE ?? 1.0);
 const GEN_API_MAX_TOKENS = Number(process.env.GEN_API_MAX_TOKENS || 8192);
 const GEN_API_TIMEOUT_MS = Number(process.env.GEN_API_TIMEOUT_MS || 300000);
+const GEN_API_RETRIES = Number(process.env.GEN_API_RETRIES || 2);
 
 function resolveApiModel(modelKey) {
   return GEN_API_MODELS[modelKey] || (String(modelKey).includes('/') ? modelKey : null);
 }
 
-async function callApiModel(systemPrompt, userPrompt, modelKey, role) {
+function isRetryableApiGeneratorError(error) {
+  const message = String(error?.message || error);
+  return (
+    /\b(?:429|408|500|502|503|504)\b/.test(message) ||
+    /invalid JSON|empty response|returned no content|fetch failed|network|terminated|ECONNRESET|ETIMEDOUT|AbortError/i.test(
+      message,
+    )
+  );
+}
+
+async function sleep(ms) {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function callApiModelOnce(systemPrompt, userPrompt, modelKey, role) {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error('OPENROUTER_API_KEY not set (required for --generator api)');
   const model = resolveApiModel(modelKey);
@@ -2281,11 +2296,19 @@ async function callApiModel(systemPrompt, userPrompt, modelKey, role) {
       }),
       signal: controller.signal,
     });
+    const bodyText = await res.text();
     if (!res.ok) {
-      const body = await res.text();
-      throw new Error(`OpenRouter ${res.status} (role=${role}): ${body.slice(0, 200)}`);
+      throw new Error(`OpenRouter ${res.status} (role=${role}, model=${model}): ${bodyText.slice(0, 200)}`);
     }
-    const data = await res.json();
+    if (!bodyText.trim()) {
+      throw new Error(`OpenRouter empty response body (role=${role}, model=${model})`);
+    }
+    let data;
+    try {
+      data = JSON.parse(bodyText);
+    } catch (err) {
+      throw new Error(`OpenRouter invalid JSON (role=${role}, model=${model}): ${err.message}`);
+    }
     const content = data.choices?.[0]?.message?.content;
     if (!content) throw new Error(`OpenRouter returned no content (role=${role})`);
     const latencyMs = Date.now() - started;
@@ -2315,6 +2338,25 @@ async function callApiModel(systemPrompt, userPrompt, modelKey, role) {
   } finally {
     clearTimeout(timer);
   }
+}
+
+async function callApiModel(systemPrompt, userPrompt, modelKey, role) {
+  let lastError = null;
+  for (let attempt = 0; attempt <= GEN_API_RETRIES; attempt += 1) {
+    try {
+      return await callApiModelOnce(systemPrompt, userPrompt, modelKey, role);
+    } catch (err) {
+      lastError = err;
+      if (attempt >= GEN_API_RETRIES || !isRetryableApiGeneratorError(err)) throw err;
+      const delayMs = 1000 * (attempt + 1);
+      console.warn(
+        `[warn] OpenRouter api generator retry ${attempt + 1}/${GEN_API_RETRIES} ` +
+          `(role=${role}, model=${resolveApiModel(modelKey) || modelKey}): ${err.message}`,
+      );
+      await sleep(delayMs);
+    }
+  }
+  throw lastError;
 }
 
 // runInteraction's llmCall contract: (model, systemPrompt, messages, opts) →
