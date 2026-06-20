@@ -1394,9 +1394,18 @@ function buildCallProvenance({
 }
 
 function withUsage(result, { provider, model, provenance }) {
+  const usage = result.usage || {};
+  const inputTokens = usage.inputTokens ?? usage.prompt_tokens ?? usage.input_tokens ?? 0;
+  const outputTokens = usage.outputTokens ?? usage.completion_tokens ?? usage.output_tokens ?? 0;
+  const totalTokens = usage.totalTokens ?? usage.total_tokens ?? inputTokens + outputTokens;
   return {
     content: result.content,
-    usage: { inputTokens: 0, outputTokens: 0 },
+    usage: {
+      inputTokens,
+      outputTokens,
+      totalTokens,
+      cost: usage.cost ?? 0,
+    },
     provider,
     model,
     latencyMs: result.latencyMs,
@@ -1410,15 +1419,25 @@ function callTelemetrySummary(records = []) {
   const byRole = {};
   const byBackend = {};
   let totalLatencyMs = 0;
+  let totalInputTokens = 0;
+  let totalOutputTokens = 0;
+  let totalCost = 0;
   for (const record of records) {
     byRole[record.role || 'unknown'] = (byRole[record.role || 'unknown'] || 0) + 1;
     byBackend[record.backend || 'unknown'] = (byBackend[record.backend || 'unknown'] || 0) + 1;
     totalLatencyMs += record.latency_ms || 0;
+    totalInputTokens += record.usage?.input_tokens || 0;
+    totalOutputTokens += record.usage?.output_tokens || 0;
+    totalCost += record.usage?.cost || 0;
   }
   return {
     enabled: true,
     count: records.length,
     total_latency_ms: totalLatencyMs,
+    total_input_tokens: totalInputTokens,
+    total_output_tokens: totalOutputTokens,
+    total_tokens: totalInputTokens + totalOutputTokens,
+    total_cost_usd: totalCost,
     by_role: byRole,
     by_backend: byBackend,
   };
@@ -1449,6 +1468,10 @@ function callTelemetryCsv(records = []) {
     'prompt_chars_user',
     'prompt_chars_combined',
     'output_chars',
+    'input_tokens',
+    'output_tokens',
+    'total_tokens',
+    'cost_usd',
     'worker_persistent',
     'worker_key',
     'worker_reused',
@@ -1475,6 +1498,10 @@ function callTelemetryCsv(records = []) {
     record.prompt_chars?.user,
     record.prompt_chars?.combined,
     record.output_chars,
+    record.usage?.input_tokens,
+    record.usage?.output_tokens,
+    record.usage?.total_tokens,
+    record.usage?.cost,
     record.worker?.persistent,
     record.worker?.key,
     record.worker?.reused,
@@ -1554,6 +1581,10 @@ function makeCallTelemetryRecorder({ enabled = false, print = false, jsonPath = 
         combined: String(`${systemPrompt || ''}\n\n---\n\n${userPrompt || ''}`).length,
       };
       const worker = provenance.worker || null;
+      const usage = response?.usage || {};
+      const inputTokens = usage.inputTokens ?? usage.prompt_tokens ?? usage.input_tokens ?? 0;
+      const outputTokens = usage.outputTokens ?? usage.completion_tokens ?? usage.output_tokens ?? 0;
+      const totalTokens = usage.totalTokens ?? usage.total_tokens ?? inputTokens + outputTokens;
       const record = {
         seq: ++seq,
         role: opts.agentRole || provenance.agentRole || 'gen',
@@ -1568,6 +1599,12 @@ function makeCallTelemetryRecorder({ enabled = false, print = false, jsonPath = 
         prompt_hashes: promptHashes,
         prompt_chars: promptChars,
         output_chars: String(response?.content || '').length,
+        usage: {
+          input_tokens: inputTokens,
+          output_tokens: outputTokens,
+          total_tokens: totalTokens,
+          cost: usage.cost ?? 0,
+        },
         worker: worker
           ? {
               persistent: Boolean(worker.persistent),
@@ -2252,9 +2289,17 @@ async function callApiModel(systemPrompt, userPrompt, modelKey, role) {
     const content = data.choices?.[0]?.message?.content;
     if (!content) throw new Error(`OpenRouter returned no content (role=${role})`);
     const latencyMs = Date.now() - started;
+    const inputTokens = data.usage?.prompt_tokens ?? data.usage?.input_tokens ?? 0;
+    const outputTokens = data.usage?.completion_tokens ?? data.usage?.output_tokens ?? 0;
     return {
       content,
       latencyMs,
+      usage: {
+        inputTokens,
+        outputTokens,
+        totalTokens: data.usage?.total_tokens ?? inputTokens + outputTokens,
+        cost: data.usage?.cost ?? data.total_cost ?? 0,
+      },
       provenance: buildCallProvenance({
         agentRole: role,
         backend: 'api',
