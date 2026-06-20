@@ -1327,6 +1327,49 @@ describe('generate-pedagogical-dramas', () => {
     );
   });
 
+  it('does not double-count a requested reframe downgrade as a standalone revoice failure', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T953',
+      dramaId: 'D953',
+      traceTurns: [
+        {
+          phase: 'director',
+          turnNumber: 2,
+          directorCue: {
+            requestedRevisitPolicy: 'reframe',
+            revisitPolicy: 'reconsider',
+            reframeAnchorGate: 'downgraded_to_reconsider_ineligible_anchor',
+            revisitAnchor: 'misframing-candidate',
+            anchorQuote: 'The next step is probably just to copy the table.',
+          },
+        },
+      ],
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'An earlier learner line returns to the table: "The next step is probably just to copy the table." ' +
+            'The pause holds while the learner decides whether that wording still stands, needs narrowing, or needs replacing.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text: 'I need the next case first.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'revoice_cue_not_revoiced'),
+      false,
+    );
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_downgraded'),
+      true,
+    );
+  });
+
   it('accepts a chart-leaning sentence as an ordinary named framing problem', () => {
     const warnings = warningsForReframeLine({
       tid: 'T951',

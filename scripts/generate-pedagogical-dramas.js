@@ -669,19 +669,29 @@ function revoiceMatchStats(anchor, learnerText) {
   };
 }
 
-function revoiceComplianceFailures(turns) {
+function requestedReframeStageTurnNumbers(traceTurns = []) {
+  return new Set(
+    (traceTurns || [])
+      .filter((turn) => turn?.phase === 'director' && turn?.directorCue?.requestedRevisitPolicy === 'reframe')
+      .map((turn, idx) => turn.turnNumber ?? idx + 1),
+  );
+}
+
+function revoiceComplianceFailures(turns, { ignoredStageTurnNumbers = new Set() } = {}) {
   const failures = [];
   for (let i = 0; i < turns.length; i++) {
     const cue = turns[i];
     if (cue.role !== 'STAGE' || !isRevoiceOrReconsiderCueText(cue.text)) {
       continue;
     }
+    const stageTurnNumber = cue.turnNumber ?? i + 1;
+    if (ignoredStageTurnNumbers.has(stageTurnNumber)) continue;
     const anchor = extractRevisitAnchor(cue.text);
     const learner = turns.slice(i + 1).find((turn) => turn.role !== 'STAGE');
     const stats = revoiceMatchStats(anchor, learner?.role === 'LEARNER' ? learner.text : '');
     if (anchor && learner?.role === 'LEARNER' && stats.compliant) continue;
     failures.push({
-      stage_turn_number: cue.turnNumber ?? i + 1,
+      stage_turn_number: stageTurnNumber,
       learner_turn_number: learner?.turnNumber ?? null,
       reason: !anchor
         ? 'missing_anchor'
@@ -1214,7 +1224,10 @@ function qualityWarningsFor({
       recommended_action: 'regenerate_or_exclude_before_scoring',
     });
   }
-  const revoiceFailures = revoiceComplianceFailures(turns);
+  const downgradedReframes = reframeDowngradeFailures(traceTurns, turns);
+  const revoiceFailures = revoiceComplianceFailures(turns, {
+    ignoredStageTurnNumbers: requestedReframeStageTurnNumbers(traceTurns),
+  });
   if (revoiceFailures.length) {
     warnings.push({
       code: 'revoice_cue_not_revoiced',
@@ -1236,7 +1249,6 @@ function qualityWarningsFor({
       recommended_action: 'regenerate_or_exclude_before_scoring',
     });
   }
-  const downgradedReframes = reframeDowngradeFailures(traceTurns, turns);
   if (downgradedReframes.length) {
     warnings.push({
       code: 'reframe_cue_downgraded',

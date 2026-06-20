@@ -168,6 +168,29 @@ describe('buildAnchoredRevisitCue', () => {
     assert.match(cue.instruction, /old frame hid/i);
   });
 
+  it('keeps reframe for curriculum-style general-intelligence overreach', () => {
+    const cue = buildAnchoredRevisitCue(
+      {
+        cue_kind: 'learner_revisit_earlier_wording',
+        revisit_policy: 'reframe',
+        revisit_anchor: 'misframing-candidate',
+        instruction: 'A prior learner line is played back.',
+      },
+      [
+        {
+          role: 'learner',
+          content:
+            'The classification is straightforward — AI, properly understood, refers to systems exhibiting general intelligence, which means most of what the industry labels as AI does not qualify.',
+        },
+      ],
+    );
+
+    assert.equal(cue.revisit_policy, 'reframe');
+    assert.equal(cue.anchor_strong_misframing, true);
+    assert.equal(cue.reframe_anchor_gate, 'eligible');
+    assert.match(cue.instruction, /old frame hid/i);
+  });
+
   it('prefers an eligible misframing anchor when a later learner line is procedural', () => {
     const cue = buildAnchoredRevisitCue(
       {
