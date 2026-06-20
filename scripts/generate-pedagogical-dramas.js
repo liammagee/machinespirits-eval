@@ -153,6 +153,7 @@ function parseArgs(argv) {
     affectiveAdaptationPolicy: null,
     generationConcurrency: 1,
     claudePersistentWorkers: false,
+    traceCalls: process.env.GEN_DRAMAS_TRACE_CALLS === '1',
   };
   for (let i = 0; i < argv.length; i++) {
     const t = argv[i];
@@ -179,6 +180,7 @@ function parseArgs(argv) {
     else if (t === '--writing-pad-dir') a.writingPadDir = path.resolve(argv[++i]);
     else if (t === '--role-map') a.roleMap = parseRoleMap(argv[++i]);
     else if (t === '--claude-persistent-workers') a.claudePersistentWorkers = true;
+    else if (t === '--trace-calls') a.traceCalls = true;
     else if (t === '--director-mode') a.directorMode = argv[++i];
     else if (t === '--director-revisit-cue') a.directorRevisitPolicy = 'anchor';
     else if (t === '--director-revisit-policy') a.directorRevisitPolicy = argv[++i];
@@ -1348,6 +1350,11 @@ function buildCallProvenance({
       user: sha256Short(userPrompt),
       combined: sha256Short(`${systemPrompt}\n\n---\n\n${userPrompt}`),
     },
+    promptCharCounts: {
+      system: String(systemPrompt || '').length,
+      user: String(userPrompt || '').length,
+      combined: String(`${systemPrompt || ''}\n\n---\n\n${userPrompt || ''}`).length,
+    },
     args,
   };
 }
@@ -1363,6 +1370,153 @@ function withUsage(result, { provider, model, provenance }) {
     provenance,
     apiPayload: { provenance },
   };
+}
+
+function callTelemetrySummary(records = []) {
+  const byRole = {};
+  const byBackend = {};
+  let totalLatencyMs = 0;
+  for (const record of records) {
+    byRole[record.role || 'unknown'] = (byRole[record.role || 'unknown'] || 0) + 1;
+    byBackend[record.backend || 'unknown'] = (byBackend[record.backend || 'unknown'] || 0) + 1;
+    totalLatencyMs += record.latency_ms || 0;
+  }
+  return {
+    enabled: true,
+    count: records.length,
+    total_latency_ms: totalLatencyMs,
+    by_role: byRole,
+    by_backend: byBackend,
+  };
+}
+
+function makeCallTelemetryRecorder({ enabled = false, print = false } = {}) {
+  const records = [];
+  let seq = 0;
+  return {
+    enabled: Boolean(enabled),
+    records,
+    record({ startedAt, finishedAt, requestedModel, systemPrompt, userPrompt, opts = {}, response = null, error = null }) {
+      if (!enabled) return null;
+      const provenance = response?.provenance || response?.apiPayload?.provenance || {};
+      const promptHashes = provenance.promptHashes || {
+        system: sha256Short(systemPrompt),
+        user: sha256Short(userPrompt),
+        combined: sha256Short(`${systemPrompt || ''}\n\n---\n\n${userPrompt || ''}`),
+      };
+      const promptChars = provenance.promptCharCounts || {
+        system: String(systemPrompt || '').length,
+        user: String(userPrompt || '').length,
+        combined: String(`${systemPrompt || ''}\n\n---\n\n${userPrompt || ''}`).length,
+      };
+      const worker = provenance.worker || null;
+      const record = {
+        seq: ++seq,
+        role: opts.agentRole || provenance.agentRole || 'gen',
+        backend: provenance.backend || response?.provider || null,
+        provider: response?.provider || null,
+        cli: provenance.cli || null,
+        model: response?.model || provenance.model || requestedModel || null,
+        reasoning_effort: provenance.reasoningEffort || null,
+        started_at: new Date(startedAt).toISOString(),
+        finished_at: new Date(finishedAt).toISOString(),
+        latency_ms: response?.latencyMs ?? provenance.latencyMs ?? finishedAt - startedAt,
+        prompt_hashes: promptHashes,
+        prompt_chars: promptChars,
+        output_chars: String(response?.content || '').length,
+        worker: worker
+          ? {
+              persistent: Boolean(worker.persistent),
+              key: worker.key || null,
+              reused: Boolean(worker.reused),
+              created: Boolean(worker.created),
+              disabled_reason: worker.disabledReason || null,
+            }
+          : null,
+        status: error ? 'error' : 'ok',
+      };
+      if (error) record.error = String(error?.message || error).slice(0, 500);
+      records.push(record);
+      if (print) {
+        const workerLabel = record.worker?.persistent
+          ? record.worker.created
+            ? ' worker=new'
+            : record.worker.reused
+              ? ' worker=reused'
+              : ' worker=persistent'
+          : record.worker?.disabled_reason
+            ? ' worker=fallback'
+            : '';
+        console.error(
+          `[gen-calls] #${record.seq} ${record.role} ${record.backend || '?'} ${record.model || '?'} ` +
+            `${record.latency_ms}ms sys=${record.prompt_chars.system} user=${record.prompt_chars.user} ` +
+            `out=${record.output_chars}${workerLabel}`,
+        );
+      }
+      return record;
+    },
+    summary() {
+      return callTelemetrySummary(records);
+    },
+    snapshot() {
+      return records.map((record) => ({ ...record }));
+    },
+  };
+}
+
+function callTelemetryForArgs(args) {
+  const recorder = args?._callTelemetry;
+  return recorder?.enabled ? recorder : null;
+}
+
+function callTelemetryPayloadForArgs(args) {
+  const recorder = callTelemetryForArgs(args);
+  if (!recorder) return null;
+  return {
+    summary: recorder.summary(),
+    records: recorder.snapshot(),
+  };
+}
+
+function attachCallTelemetrySummary(target, args) {
+  const payload = callTelemetryPayloadForArgs(args);
+  if (!payload) return target;
+  target.call_telemetry_summary = payload.summary;
+  return target;
+}
+
+function wrapLlmCallWithTelemetry(llmCall, recorder) {
+  if (!recorder?.enabled) return llmCall;
+  const telemetryLlmCall = async function telemetryLlmCall(model, systemPrompt, messages, opts = {}) {
+    const startedAt = Date.now();
+    const userPrompt = (messages || []).map((m) => m.content).join('\n');
+    try {
+      const response = await llmCall(model, systemPrompt, messages, opts);
+      recorder.record({
+        startedAt,
+        finishedAt: Date.now(),
+        requestedModel: model,
+        systemPrompt,
+        userPrompt,
+        opts,
+        response,
+      });
+      return response;
+    } catch (error) {
+      recorder.record({
+        startedAt,
+        finishedAt: Date.now(),
+        requestedModel: model,
+        systemPrompt,
+        userPrompt,
+        opts,
+        error,
+      });
+      throw error;
+    }
+  };
+  telemetryLlmCall.close = () => llmCall.close?.();
+  return telemetryLlmCall;
 }
 
 // ── claude-code CLI bridge (lifted from realLLM.js:callClaudeCli) ────────────
@@ -1654,8 +1808,19 @@ class ClaudePersistentPool {
   }
 
   async call(systemPrompt, userPrompt, role) {
-    if (this.disabledReason) return callClaudeCli(systemPrompt, userPrompt, this.model, this.effort, role);
+    if (this.disabledReason) {
+      const result = await callClaudeCli(systemPrompt, userPrompt, this.model, this.effort, role);
+      result.provenance.worker = {
+        persistent: false,
+        key: null,
+        reused: false,
+        created: false,
+        disabledReason: this.disabledReason,
+      };
+      return result;
+    }
     const key = this.workerKey(systemPrompt, role);
+    const existed = this.workers.has(key);
     let worker = this.workers.get(key);
     if (!worker) {
       worker = new ClaudeStreamWorker({
@@ -1668,7 +1833,15 @@ class ClaudePersistentPool {
       this.workers.set(key, worker);
     }
     try {
-      return await worker.call(userPrompt, role || 'gen');
+      const result = await worker.call(userPrompt, role || 'gen');
+      result.provenance.worker = {
+        persistent: true,
+        key,
+        reused: existed,
+        created: !existed,
+        disabledReason: null,
+      };
+      return result;
     } catch (err) {
       worker.close();
       this.workers.delete(key);
@@ -1676,7 +1849,15 @@ class ClaudePersistentPool {
       console.warn(
         `[warn] persistent Claude worker failed; falling back to one-shot claude CLI for this run: ${this.disabledReason}`,
       );
-      return callClaudeCli(systemPrompt, userPrompt, this.model, this.effort, role);
+      const result = await callClaudeCli(systemPrompt, userPrompt, this.model, this.effort, role);
+      result.provenance.worker = {
+        persistent: false,
+        key,
+        reused: false,
+        created: false,
+        disabledReason: this.disabledReason,
+      };
+      return result;
     }
   }
 
@@ -3481,6 +3662,7 @@ function writeHeldOutTranscripts({ args, tid, dramaId, trace, publicTranscript }
 }
 
 function runMetadataForDrama({ args, d, directorPlan, runtime, transcriptArtifacts, extra = {} }) {
+  const telemetry = callTelemetryPayloadForArgs(args);
   return {
     generator: args.roleMap ? 'mixed' : args.generator,
     role_map: args.roleMap || null,
@@ -3503,6 +3685,7 @@ function runMetadataForDrama({ args, d, directorPlan, runtime, transcriptArtifac
     rhetorical_dramatic_plan: rhetoricalDramaticPlanBindingForDrama(d),
     curriculum_script_notes: curriculumScriptNotesForDrama(d, directorPlan),
     transcript_artifacts: transcriptArtifacts,
+    ...(telemetry ? { call_telemetry_summary: telemetry.summary } : {}),
     ...extra,
   };
 }
@@ -3520,6 +3703,7 @@ function writePartialTurnArtifacts({ args, d, trace, directorPlan, runtime, turn
   const publicTranscript = renderTranscript(externalTurns(trace), removedNotes);
   const outTxt = path.join(partialArgs.outDir, `${d._tid}.txt`);
   fs.writeFileSync(outTxt, publicTranscript, 'utf8');
+  const telemetry = callTelemetryPayloadForArgs(args);
   trace.run = {
     ...(trace.run || {}),
     affective_adaptation_policy:
@@ -3560,6 +3744,7 @@ function writePartialTurnArtifacts({ args, d, trace, directorPlan, runtime, turn
     turns: trace.turns,
     metrics: trace.metrics,
     writingPadSnapshots: trace.writingPadSnapshots,
+    ...(telemetry ? { call_telemetry: telemetry } : {}),
     quality_status: 'running',
     quality_warnings: [],
     stripped_stage_directions: removedNotes,
@@ -3649,6 +3834,7 @@ function writeGeneratedDramaArtifacts({
   transcriptArtifacts,
   pairedContinuation = null,
 }) {
+  const telemetry = callTelemetryPayloadForArgs(args);
   fs.writeFileSync(
     path.join(dirs.delibDir, `${d._tid}.json`),
     JSON.stringify(
@@ -3680,12 +3866,14 @@ function writeGeneratedDramaArtifacts({
           rhetorical_dramatic_plan: rhetoricalDramaticPlanBindingForDrama(d),
           curriculum_script_notes: curriculumScriptNotesForDrama(d, directorPlan),
           transcript_artifacts: transcriptArtifacts,
+          ...(telemetry ? { call_telemetry_summary: telemetry.summary } : {}),
           ...(pairedContinuation ? { paired_continuation: pairedContinuation } : {}),
         },
         directorPlan,
         turns: trace.turns,
         metrics: trace.metrics,
         writingPadSnapshots: trace.writingPadSnapshots,
+        ...(telemetry ? { call_telemetry: telemetry } : {}),
         quality_status: hasBlockingQualityWarnings(qualityWarnings) ? 'review_before_scoring' : 'ok',
         quality_warnings: qualityWarnings,
       },
@@ -4062,7 +4250,11 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
 
   for (const branch of branches) {
     const dirs = armDirs[branch.key];
-    fs.writeFileSync(dirs.keyPath, yaml.stringify(finalizeKeyObject(armKeys[branch.key])), 'utf8');
+    fs.writeFileSync(
+      dirs.keyPath,
+      yaml.stringify(attachCallTelemetrySummary(finalizeKeyObject(armKeys[branch.key]), args)),
+      'utf8',
+    );
     console.log(`\n${branch.key}:`);
     console.log(`  samples → ${path.relative(WORKTREE_ROOT, dirs.outDir)}`);
     console.log(`  key     → ${path.relative(WORKTREE_ROOT, dirs.keyPath)}`);
@@ -4100,6 +4292,10 @@ async function loadInteractionRuntime(args) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
+  Object.defineProperty(args, '_callTelemetry', {
+    value: makeCallTelemetryRecorder({ enabled: args.traceCalls, print: args.traceCalls }),
+    enumerable: false,
+  });
   if (args.reclean) return reclean(args);
   if (!fs.existsSync(args.spec)) throw new Error(`dramas spec not found: ${args.spec}`);
   const spec = yaml.parse(fs.readFileSync(args.spec, 'utf8'));
@@ -4188,7 +4384,8 @@ async function main() {
       `${args.firstLesson ? ' · first-lesson' : ''}` +
       `${args.openingSpeaker ? ` · opens=${args.openingSpeaker}` : ''}` +
       `${revisitSummary.cue ? ` + revisit-${revisitSummary.policy}/${revisitSummary.anchor}` : ''}` +
-      `${args.affectiveAdaptationPolicy ? ` · affect=${args.affectiveAdaptationPolicy}` : ''}`,
+      `${args.affectiveAdaptationPolicy ? ` · affect=${args.affectiveAdaptationPolicy}` : ''}` +
+      `${args.traceCalls ? ' · trace-calls' : ''}`,
   );
   // Explicit model + code-version provenance. The genLabel/key historically said
   // "claude --model opus" for every run because args.model defaults to 'opus';
@@ -4240,7 +4437,7 @@ async function main() {
 
   const runtime = await loadInteractionRuntime(args);
 
-  const llmCall = args.roleMap
+  const baseLlmCall = args.roleMap
     ? makeRouterLlmCall({
         roleMap: args.roleMap,
         fallback: args.generator,
@@ -4259,6 +4456,7 @@ async function main() {
           : args.generator === 'api'
             ? makeApiLlmCall(args.apiModel)
             : makeClaudeLlmCall(args.model, args.effort, { persistentWorkers: args.claudePersistentWorkers });
+  const llmCall = wrapLlmCallWithTelemetry(baseLlmCall, args._callTelemetry);
   if (args.pairedContinuationPolicies || args.pairedAdaptationArms) {
     try {
       await generatePairedContinuations({ args, order, runtime, llmCall });
@@ -4433,6 +4631,7 @@ async function main() {
           trace,
           publicTranscript,
         });
+        const telemetry = callTelemetryPayloadForArgs(args);
         // HELD OUT — full trace incl. internal deliberation; never shown to critic/labeller.
         fs.writeFileSync(
           path.join(args.delibDir, `${d._tid}.json`),
@@ -4465,11 +4664,13 @@ async function main() {
                 rhetorical_dramatic_plan: rhetoricalDramaticPlanBindingForDrama(d),
                 curriculum_script_notes: curriculumScriptNotesForDrama(d, directorPlan),
                 transcript_artifacts: transcriptArtifacts,
+                ...(telemetry ? { call_telemetry_summary: telemetry.summary } : {}),
               },
               directorPlan,
               turns: trace.turns,
               metrics: trace.metrics,
               writingPadSnapshots: trace.writingPadSnapshots,
+              ...(telemetry ? { call_telemetry: telemetry } : {}),
               quality_status: hasBlockingQualityWarnings(qualityWarnings) ? 'review_before_scoring' : 'ok',
               quality_warnings: qualityWarnings,
             },
@@ -4520,7 +4721,7 @@ async function main() {
     }
   }
   Object.assign(keyObj.items, keyItems);
-  fs.writeFileSync(args.keyPath, yaml.stringify(finalizeKeyObject(keyObj)), 'utf8');
+  fs.writeFileSync(args.keyPath, yaml.stringify(attachCallTelemetrySummary(finalizeKeyObject(keyObj), args)), 'utf8');
 
   console.log(`\nwrote transcripts → ${path.relative(WORKTREE_ROOT, args.outDir)}`);
   console.log(`wrote held-out deliberation → ${path.relative(WORKTREE_ROOT, args.delibDir)}`);
@@ -4571,11 +4772,13 @@ if (path.resolve(process.argv[1] || '') === __filename) {
 
 export {
   attachApproaches,
+  callTelemetrySummary,
   curriculumScriptNotesForDrama,
   formatPublicTurnText,
   intrusiveStageDirectionFailures,
   keyItemFor,
   loadApproachDatabases,
+  makeCallTelemetryRecorder,
   makeRouterLlmCall,
   noCuePrematureClosureFailures,
   noCueReframeLeakageFailures,
@@ -4593,6 +4796,7 @@ export {
   stageDirectionStyleFor,
   withAffectiveAdaptationPolicy,
   withWorldAdaptationConstraints,
+  wrapLlmCallWithTelemetry,
   writePartialTurnArtifacts,
   withPairedDirectorRevisitCue,
   withTutorAdaptationPolicy,
