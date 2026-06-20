@@ -1,0 +1,59 @@
+name: Email research roundup
+
+# Emails you a daily research-roundup note when its PR opens, so you can read
+# the digest in your inbox instead of going to GitHub. Inert until the three
+# repository secrets exist: MAIL_SERVER, MAIL_USERNAME, MAIL_PASSWORD.
+# See notes/daily-notes/README.md for the roundup convention.
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review]
+    paths:
+      - 'notes/daily-notes/*-research-roundup.html'
+  workflow_dispatch:        # run by hand from the Actions tab to test (emails the most recent roundup)
+
+permissions:
+  contents: read
+
+jobs:
+  email:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+          fetch-depth: 0
+
+      - name: Locate the roundup
+        id: find
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            file=$(git diff --name-only --diff-filter=A \
+              "${{ github.event.pull_request.base.sha }}" \
+              "${{ github.event.pull_request.head.sha }}" \
+              -- 'notes/daily-notes/*-research-roundup.html' | head -1)
+          else
+            file=$(ls notes/daily-notes/*-research-roundup.html 2>/dev/null | sort | tail -1)
+          fi
+          if [ -z "$file" ]; then
+            echo "No roundup added; nothing to email."
+            echo "skip=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          subject=$(grep -oE '<title>[^<]*</title>' "$file" | sed -E 's#</?title>##g' | head -1)
+          echo "file=$file" >> "$GITHUB_OUTPUT"
+          echo "subject=${subject:-New research roundup}" >> "$GITHUB_OUTPUT"
+          echo "Will email: $file"
+
+      - name: Email it
+        if: steps.find.outputs.skip != 'true'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.MAIL_SERVER }}
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          from: Research Roundup <${{ secrets.MAIL_USERNAME }}>
+          to: ${{ secrets.MAIL_USERNAME }}
+          subject: ${{ steps.find.outputs.subject }}
+          html_body: file://${{ steps.find.outputs.file }}
