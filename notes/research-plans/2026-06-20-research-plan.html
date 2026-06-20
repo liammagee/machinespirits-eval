@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Plan — review of 9–18 Jun 2026 roundups</title>
+  <style>
+    body { font-family: Georgia, "Times New Roman", serif; max-width: 900px; margin: 2rem auto;
+           padding: 0 1.5rem; line-height: 1.65; color: #1a1a1a; background: #fafaf8; }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; color: #444; text-transform: uppercase; letter-spacing: .06em; }
+    .item { border-left: 3px solid #aaa; padding: .5rem 1rem; margin: 1rem 0; background: #fff; }
+    .item.p1 { border-left-color: #c0392b; } .item.p2 { border-left-color: #1a5276; } .item.p3 { border-left-color: #1e8449; }
+    .item h3 { margin: 0 0 .35rem; font-size: 1.02rem; }
+    .item .row { font-size: .9rem; margin: .25rem 0; }
+    .k { font-weight: bold; color: #555; }
+    .cost { display:inline-block; font-size:.74rem; font-weight:bold; padding:.1rem .45rem; border-radius:3px; background:#1e8449; color:#fff; }
+    table { border-collapse: collapse; font-size: .9rem; margin: .5rem 0; }
+    th, td { border: 1px solid #ccc; padding: .25rem .6rem; text-align: left; }
+    .intro-note { font-size: .9rem; color: #555; background: #f0f0ea; border: 1px solid #ddd;
+                  padding: .6rem 1rem; border-radius: 3px; margin-bottom: 1rem; }
+    .brake { background: #fbeee6; border: 1px solid #e0c0a0; padding: .6rem 1rem; border-radius: 3px; }
+    a { color: #1a5276; } footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+  </style>
+</head>
+<body>
+<!-- meta: date=2026-06-20 reviews=2026-06-09,2026-06-11,2026-06-12,2026-06-13,2026-06-14,2026-06-15,2026-06-16,2026-06-17,2026-06-18 generator=ms-research-review -->
+
+<h1>Research Plan <small style="font-weight:normal;font-size:.85em">review of the 9–18 Jun 2026 roundups</small></h1>
+
+<div class="intro-note">
+  <strong>Review → plan</strong> over 41 papers across 8 daily roundups. The field clustered hard on this
+  project's themes this fortnight: ego/superego &amp; self-correction (3), rubric &amp; pedagogy evaluation (5),
+  narrative / "right-time" character arcs (6), with multi-agent debate failure modes, agent memory, prompt
+  optimization, and theory-of-mind adjacent. Three items below are worth acting on; the rest is named backlog.
+  <strong>Implement and evaluate are human-gated</strong> (see the brake).
+</div>
+
+<h2>The plan</h2>
+
+<div class="item p1">
+  <h3>P1 · Position against "Geist in the Machine" (2603.10450) — RESOLVED</h3>
+  <div class="row"><span class="k">Finding:</span> this is <em>our own paper</em> — <code>docs/research/paper-full-2.0.md</code>
+    is titled "Geist in the Machine," and the Drama Machine deliberation is <code>@magee2024drama</code> / <code>@magee2026geist</code>.
+    The roundup surfaced our own work as if external.</div>
+  <div class="row"><span class="k">Do:</span> no paper change needed (citation already present). Harden the daily roundup
+    routine to exclude the author's own work so self-citations stop appearing. <span class="cost">done / read-only</span></div>
+</div>
+
+<div class="item p2">
+  <h3>P2 · Validate the core thesis with "The Self-Correction Illusion" (2606.05976)</h3>
+  <div class="row"><span class="k">Why:</span> their controlled result — relabeling a byte-identical claim from the model's
+    own <code>&lt;thought&gt;</code> to an <em>external</em> role lifts correction 23–93pp — is a mechanistic account of why a
+    separate superego beats self-reflection (and why adversarial ≫ advisory).</div>
+  <div class="row"><span class="k">Do:</span> cite as external support in the superego §; re-analyze existing logs for the same
+    externalization gap (<code>scripts/analyze-correction-source.sh</code>).</div>
+  <div class="row"><span class="k">Evaluate (preliminary, read-only):</span> tutor score, single-agent (self-revision) vs
+    multi-agent (external superego), rubric v2.2, judge claude-code/sonnet:</div>
+  <table>
+    <tr><th>prompt</th><th>single (self)</th><th>multi (external superego)</th><th>lift</th></tr>
+    <tr><td>base</td><td>28.1 (n=810)</td><td>50.9 (n=780)</td><td><strong>+22.8</strong></td></tr>
+    <tr><td>recognition</td><td>57.9 (n=502)</td><td>60.7 (n=743)</td><td><strong>+2.9</strong></td></tr>
+  </table>
+  <div class="row">The external-critic lift is large on bare prompts and nearly vanishes under recognition — recognition
+    substitutes for the external critic. That interaction is something 2606.05976 doesn't have. <span class="cost">existing data; not yet paper-ready</span></div>
+</div>
+
+<div class="item p3">
+  <h3>P3 · Quality-type the flips with "Not All Flips Are Conformity" (2606.00820)</h3>
+  <div class="row"><span class="k">Why:</span> they split agent answer-flips into spontaneous instability / stance-induced
+    conformity (bad) / reasoning-induced persuasion (good). Our <code>adaptation_index</code> / <code>incorporation_rate</code>
+    count flips without typing them.</div>
+  <div class="row"><span class="k">Do:</span> classify each ego→superego revision in existing logs into the three types, then
+    correlate type with rubric gain — is the tutor's adaptation the <em>good</em> kind?</div>
+  <div class="row"><span class="k">Evaluate:</span> new analysis over existing dialogue logs + correlation with tutor scores; folds into the adaptation §. <span class="cost">existing data</span></div>
+</div>
+
+<h2>Backlog (named, not started)</h2>
+<ul style="font-size:.92rem;">
+  <li><strong>Rubric cross-walk</strong> vs KMP-Bench / MathTutorBench (2603.02775, 2606.16206, 2606.08625) — external validation of v2.2's teach-vs-solve split.</li>
+  <li><strong>ArcANE "right-time" lens</strong> (2606.05553) for §6.13's timing work (held-finale, pacing-guard).</li>
+  <li><strong>Confident-Liar judge calibration</strong> (2606.10296) — only if judges expose log-probs (likely not → probably drop).</li>
+  <li><strong>GroupToM-Bench</strong> (2606.04184) as a frame for the ToM-redundancy nulls.</li>
+</ul>
+
+<h2>The brake</h2>
+<div class="brake">
+  P1–P3 are read-only / existing-data — no paid eval runs, no quota spend, and nothing lands in the paper without sign-off.
+  Backlog items needing fresh paid runs (re-scoring samples, running cells) are the user's to authorize, given the
+  pre-registration / single-paper discipline.
+</div>
+
+<footer>Generated by <code>ms-research-review</code> from the 9–18 Jun 2026 daily roundups · reviewed by a human before any implementation.</footer>
+</body>
+</html>
