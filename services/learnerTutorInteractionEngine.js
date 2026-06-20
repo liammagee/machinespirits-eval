@@ -122,7 +122,7 @@ function buildDirectorContext(plan, cue = null, side = null) {
     const revisitPolicy = cue?.revisit_policy || plan.revisit_cue_policy;
     if (revisitPolicy === 'reframe') {
       lines.push(
-        '- Reframe-cue rule: if the current cue quotes earlier learner wording, fill the three public parts in the learner voice: revoice the wording, say what the old frame hid or made too simple, then state a replacement frame, test, question, or standard. Internal review may tune the voice but must not delete those three public parts. The learner may still resist or stay uncertain; do not fake a breakthrough.',
+        '- Reframe-cue rule: if the current cue quotes earlier learner wording, begin the next public reply by directly revoicing that wording in the learner voice. Do not answer the new case first. Then say what the old frame hid or made too simple, then state a replacement frame, test, question, or standard before applying any new artifact. Internal review may tune the voice but must not delete or reorder those three public parts. The learner may still resist or stay uncertain; do not fake a breakthrough.',
       );
     } else if (revisitPolicy === 'reconsider') {
       lines.push(
@@ -348,7 +348,7 @@ function buildAnchoredRevisitCue(cue, conversationHistory) {
     instruction:
       `An earlier learner line returns to the table: "${anchor.text}" ` +
       (policy === 'reframe'
-        ? 'The pause holds on a three-slot reframe card: earlier wording / what that old frame hid / replacement frame. The learner fills all three slots in public speech, without needing to sound certain.'
+        ? 'The pause holds on a three-slot reframe card: earlier wording / what that old frame hid / replacement frame. The learner\'s next public reply starts by revoicing that wording, then names what it hid, then states the replacement frame or check before applying the new artifact or case. The learner may stay uncertain.'
         : policy === 'reconsider'
           ? 'The pause holds while the learner decides whether that wording still stands, needs narrowing, or needs replacing.'
           : policy === 'revoice'

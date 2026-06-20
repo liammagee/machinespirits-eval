@@ -15,6 +15,7 @@ import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import interactionEngine from '../services/learnerTutorInteractionEngine.js';
 import {
+  buildAnchoredRevisitCue,
   buildLearnerReversalEvent,
   buildTutorAffectiveAdaptationContext,
   runInteraction,
@@ -72,6 +73,27 @@ const MINIMAL_SCENARIO = {
 // ---------------------------------------------------------------------------
 
 describe('runInteraction (multi-turn)', () => {
+  it('anchors reframe cues with an ordered public revoice before new casework', () => {
+    const anchoredCue = buildAnchoredRevisitCue(
+      {
+        cue_kind: 'learner_revisit_earlier_wording',
+        revisit_policy: 'reframe',
+        revisit_anchor: 'opening',
+        instruction: 'An earlier learner line returns to the table.',
+      },
+      [
+        {
+          role: 'learner',
+          content: 'I was treating the audit table as the whole answer.',
+        },
+      ],
+    );
+
+    assert.equal(anchoredCue.revisit_policy, 'reframe');
+    assert.match(anchoredCue.instruction, /next public reply starts by revoicing that wording/i);
+    assert.match(anchoredCue.instruction, /before applying the new artifact or case/i);
+  });
+
   it('treats director learner-pressure cues as reversal events even when wording is understated', () => {
     const event = buildLearnerReversalEvent({
       learnerMessage: 'I can put the label there.',

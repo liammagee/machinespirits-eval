@@ -2739,7 +2739,7 @@ function withDirectorRevisitCue(plan, policy, anchorPolicy) {
   if (!plan || !policy || policy === 'none') return plan;
   const cueText =
     policy === 'reframe'
-      ? 'An earlier learner line will return as a visible object in the scene: a three-slot reframe card labelled "earlier wording / what that old frame hid / replacement frame." Keep the cue brief and diegetic; the learner response fills all three slots in public speech without needing to sound certain.'
+      ? 'An earlier learner line will return as a visible object in the scene: a three-slot reframe card labelled "earlier wording / what that old frame hid / replacement frame." Keep the cue brief and diegetic. The learner\'s next public reply must start by revoicing the returned wording, then name what the old frame hid, then state the replacement frame/check before applying any new artifact or case. The learner may stay uncertain; do not turn the cue into a tidy breakthrough.'
       : policy === 'reconsider'
         ? 'An earlier learner line will return as a visible object in the scene. Keep the cue brief and diegetic; the learner response should decide whether that wording still stands, needs narrowing, or needs replacing.'
         : policy === 'revoice'
@@ -2747,7 +2747,7 @@ function withDirectorRevisitCue(plan, policy, anchorPolicy) {
           : 'An earlier learner line will return as a visible object in the scene. Keep the cue brief and diegetic; the learner response should answer what that wording now misses, keeps, or changes.';
   const cueReasoning =
     policy === 'reframe'
-      ? 'Opt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech.'
+      ? 'Opt-in reframe mirror: the learner must start with the earlier line, expose the framing problem, and state the replacement frame/check in public speech before new casework.'
       : policy === 'reconsider'
         ? 'Opt-in reconsideration mirror: the learner must make a public judgment about earlier wording without being forced to replace it.'
         : policy === 'revoice'

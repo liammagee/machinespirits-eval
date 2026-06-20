@@ -2759,7 +2759,9 @@ describe('generate-pedagogical-dramas', () => {
     assert.equal(revisitCues[0].revisit_policy, 'reframe');
     assert.equal(revisitCues[0].revisit_anchor, 'misframing-candidate');
     assert.match(revisitCues[0].instruction, /visible object in the scene/i);
-    assert.doesNotMatch(revisitCues[0].instruction, /\bmust\b/i);
+    assert.match(revisitCues[0].instruction, /next public reply must start by revoicing/i);
+    assert.match(revisitCues[0].instruction, /before applying any new artifact or case/i);
+    assert.match(revisitCues[0].reasoning, /before new casework/i);
   });
 
   it('forks paired continuation arms from one fixed prefix', () => {
