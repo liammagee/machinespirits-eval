@@ -1346,6 +1346,7 @@ export async function runInteraction(config, llmCall, options = {}) {
       llmCall,
       interactionTrace,
       directorPlan,
+      options.dramaFidelity,
     );
 
     openingLearnerReversalEvent = buildLearnerReversalEvent({
@@ -1417,6 +1418,7 @@ export async function runInteraction(config, llmCall, options = {}) {
       memoryContext: learnerWritingPad.buildNarrativeSummary(learnerId, sessionId),
       trace: interactionTrace,
       profileContext: learnerProfileContext,
+      dramaFidelity: options.dramaFidelity,
     });
     const learnerReframeEvent = buildLearnerReframeEvent({
       learnerMessage: learnerResponse.externalMessage,
@@ -1528,6 +1530,7 @@ export async function runInteraction(config, llmCall, options = {}) {
             {
               tutorEgoPromptOverride: options.tutorEgoPromptOverride,
               tutorSuperegoPromptOverride: options.tutorSuperegoPromptOverride,
+              dramaFidelity: options.dramaFidelity,
             },
           );
     latestLearnerReframeEvent = null;
@@ -1619,6 +1622,7 @@ export async function runInteraction(config, llmCall, options = {}) {
       {
         tutorEgoPromptOverride: options.tutorEgoPromptOverride,
         tutorSuperegoPromptOverride: options.tutorSuperegoPromptOverride,
+        dramaFidelity: options.dramaFidelity,
       },
     );
     latestLearnerReframeEvent = null;
@@ -1682,14 +1686,18 @@ async function generateInitialLearnerMessage(
   llmCall,
   trace,
   directorPlan = null,
+  dramaFidelity = 'full',
 ) {
   // Get agent roles from profile (not architecture)
   const agentRoles = learnerConfig.getProfileAgentRoles(profile.name);
   const internalDeliberation = [];
 
   // Run internal deliberation for each agent in the profile
-  // For ego/superego pattern: superego sees and critiques ego's initial response
+  // For ego/superego pattern: superego sees and critiques ego's initial response.
+  // Slice 5: under public-only fidelity the superego is skipped, so only the ego
+  // runs; the multi-agent adjudication below then no-ops (deliberation length < 2).
   for (const role of agentRoles) {
+    if (dramaFidelity === 'public-only' && role === 'superego') continue;
     const agentConfig = learnerConfig.getAgentConfig(role, profile.name);
     if (!agentConfig) continue;
 
@@ -1976,6 +1984,10 @@ async function runTutorTurn(
   const _profile = tutorConfig.getActiveProfile(tutorProfileName);
   const egoConfig = tutorConfig.getAgentConfig('ego', tutorProfileName);
   const superegoConfig = tutorConfig.getAgentConfig('superego', tutorProfileName);
+  // Slice 5: public-only fidelity drops the superego critique + ego adjudication,
+  // collapsing the tutor turn to a single ego call (a cheap structural screen).
+  // This reuses the engine's existing no-superego path, so the trace stays valid.
+  const tutorPublicOnly = tutorPromptOverrides.dramaFidelity === 'public-only';
 
   // Cell 101/102: id-director architecture. The id authors a fresh ego
   // system prompt each turn; the ego executes once. Dispatch to the id
@@ -2110,7 +2122,7 @@ Provide ONLY your draft response text (it will be reviewed by your pedagogical c
   // ===== T.SUPEREGO: Critique only (skip when superego is null) =====
   let externalMessage = egoDraft;
 
-  if (superegoConfig) {
+  if (superegoConfig && !tutorPublicOnly) {
     const tutorSuperegoStaticPrompt =
       tutorPromptOverrides.tutorSuperegoPromptOverride ||
       superegoConfig?.prompt ||
@@ -2667,6 +2679,7 @@ export async function generateLearnerResponse(options) {
     trace = null,
     secret = null,
     conversationMode = 'single-prompt', // 'messages' for multi-turn message chains
+    dramaFidelity = 'full', // Slice 5: 'public-only' drops learner superego + revision
   } = options;
 
   // Resolve model overrides. Priority: specific (ego/superego) > general (modelOverride) > YAML default
@@ -2801,8 +2814,9 @@ export async function generateLearnerResponse(options) {
       trace.metrics.learnerOutputTokens += egoInitialResponse.usage?.outputTokens || 0;
     }
 
-    // === STEP 2: Superego critique ===
-    const superegoConfig = applyOverride(learnerConfig.getAgentConfig('superego', profile.name), 'superego');
+    // === STEP 2: Superego critique === (skipped under public-only fidelity: ego-only)
+    if (dramaFidelity !== 'public-only') {
+      const superegoConfig = applyOverride(learnerConfig.getAgentConfig('superego', profile.name), 'superego');
     let superegoContext = `Topic: ${topic}`;
     if (memoryContext) {
       superegoContext += `\n\nYour memory and state:\n${memoryContext}`;
@@ -2901,6 +2915,7 @@ export async function generateLearnerResponse(options) {
       console.log(`│ EGO REVISION (FINAL): ${egoFinalResponse.content.substring(0, 200)}...`);
       console.log('└─────────────────────────────────────────────────────────────\n');
     }
+    } // end if (dramaFidelity !== 'public-only')
   } else {
     // Single-agent (unified) flow — run each role sequentially as before
     for (const role of agentRoles) {

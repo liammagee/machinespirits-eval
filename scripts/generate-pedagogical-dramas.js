@@ -188,6 +188,8 @@ Operational flags:
   --call-telemetry-json FILE
   --call-telemetry-csv FILE
   --role-max-tokens SPEC              Per-role output budgets, e.g. "tutor_superego=700,learner_superego=500" or "preset" (off by default; API hard-cap, CLI terse-directive)
+  --drama-compact-prompts             Use compact drama tutor prompts (~2k vs ~20k chars); off by default
+  --drama-fidelity MODE               full (default) | compact (compact prompts) | public-only (ego-only, no deliberation — cheap structural screen)
   --claude-persistent-workers         Reuse persistent Claude worker processes
   --generation-concurrency N          Independent dramas to generate concurrently (default: 1)
 
@@ -241,6 +243,7 @@ function parseArgs(argv) {
     reuseDirectorPlan: null,
     roleMaxTokens: null,
     dramaCompactPrompts: false,
+    dramaFidelity: 'full',
   };
   if (argv.some((token) => token === '--help' || token === '-h')) {
     a.help = true;
@@ -281,6 +284,7 @@ function parseArgs(argv) {
     else if (t === '--reuse-director-plan') a.reuseDirectorPlan = path.resolve(argv[++i]);
     else if (t === '--role-max-tokens') a.roleMaxTokens = parseRoleMaxTokens(argv[++i]);
     else if (t === '--drama-compact-prompts') a.dramaCompactPrompts = true;
+    else if (t === '--drama-fidelity') a.dramaFidelity = String(argv[++i] || '').toLowerCase();
     else if (t === '--opening-speaker') a.openingSpeaker = String(argv[++i] || '').toLowerCase();
     else if (t === '--control-ending') a.controlEndingPolicy = argv[++i];
     else if (t === '--call-telemetry-json') {
@@ -323,6 +327,12 @@ function parseArgs(argv) {
   if (!CONTROL_ENDING_POLICIES.has(a.controlEndingPolicy)) {
     throw new Error('--control-ending must be default|hold');
   }
+  if (!['full', 'compact', 'public-only'].includes(a.dramaFidelity)) {
+    throw new Error(`--drama-fidelity must be full|compact|public-only (got ${a.dramaFidelity})`);
+  }
+  // compact + public-only run on the compact drama prompts; full uses the full
+  // recognition prompts. Coupling here keeps fidelity the single knob.
+  if (a.dramaFidelity === 'compact' || a.dramaFidelity === 'public-only') a.dramaCompactPrompts = true;
   if (a.pedagogyDb && !fs.existsSync(a.pedagogyDb)) throw new Error(`--pedagogy-db not found: ${a.pedagogyDb}`);
   if (a.dialogueDb && !fs.existsSync(a.dialogueDb)) throw new Error(`--dialogue-db not found: ${a.dialogueDb}`);
   if (!['off', 'scene'].includes(a.directorMode)) throw new Error('--director-mode must be off|scene');
@@ -1868,16 +1878,23 @@ function wrapLlmCallWithRoleBudgets(llmCall, budgets) {
 // mechanics, and curriculum-navigation affordances the drama runtime never uses.
 // Returned as runInteraction options the engine reads; {} when disabled, so the
 // default path is byte-identical.
+// runInteraction options carrying the drama-lane runtime knobs: the fidelity
+// mode (Slice 5) and, when compact prompts are active (Slice 4), the tutor
+// prompt overrides. Spread into each runInteraction options object. The fidelity
+// is always present; the prompt overrides only when --drama-compact-prompts /
+// a compact fidelity is set, so the full default path is unchanged.
 let _compactDramaPromptOverrides;
-function compactDramaPromptOverridesForArgs(args) {
-  if (!args?.dramaCompactPrompts) return {};
-  if (_compactDramaPromptOverrides) return _compactDramaPromptOverrides;
-  const dir = path.join(WORKTREE_ROOT, 'prompts', 'drama');
-  _compactDramaPromptOverrides = {
-    tutorEgoPromptOverride: fs.readFileSync(path.join(dir, 'tutor-ego-compact.md'), 'utf8'),
-    tutorSuperegoPromptOverride: fs.readFileSync(path.join(dir, 'tutor-superego-compact.md'), 'utf8'),
-  };
-  return _compactDramaPromptOverrides;
+function dramaTurnOptionsForArgs(args) {
+  const out = { dramaFidelity: args?.dramaFidelity || 'full' };
+  if (!args?.dramaCompactPrompts) return out;
+  if (!_compactDramaPromptOverrides) {
+    const dir = path.join(WORKTREE_ROOT, 'prompts', 'drama');
+    _compactDramaPromptOverrides = {
+      tutorEgoPromptOverride: fs.readFileSync(path.join(dir, 'tutor-ego-compact.md'), 'utf8'),
+      tutorSuperegoPromptOverride: fs.readFileSync(path.join(dir, 'tutor-superego-compact.md'), 'utf8'),
+    };
+  }
+  return { ...out, ..._compactDramaPromptOverrides };
 }
 
 function wrapLlmCallWithTelemetry(llmCall, recorder) {
@@ -4748,7 +4765,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
           },
           llmCall,
           {
-            ...compactDramaPromptOverridesForArgs(args),
+            ...dramaTurnOptionsForArgs(args),
             maxTurns: 2,
             observeInternals: true,
             learnerProfile: d.learner_profile,
@@ -4837,7 +4854,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
               observeInternals: true,
               learnerProfile: d.learner_profile,
               forceMaxTurns: true,
-              ...compactDramaPromptOverridesForArgs(args),
+              ...dramaTurnOptionsForArgs(args),
               directorPlan: branchDirectorPlan,
               resumeTrace,
               onProgress: ({ phase, turnCount, maxTurns }) =>
@@ -5298,7 +5315,7 @@ async function main() {
             observeInternals: true,
             learnerProfile: d.learner_profile,
             forceMaxTurns: true,
-            ...compactDramaPromptOverridesForArgs(args),
+            ...dramaTurnOptionsForArgs(args),
             directorPlan,
             onProgress: ({ phase, turnCount, maxTurns }) =>
               progress.update(
