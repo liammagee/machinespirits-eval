@@ -5667,6 +5667,157 @@ profiles:
       counterfactual:
         enabled: false
 
+  # ---- M0 / §1.3 baseline-validation ablations (clones of cell_150/cell_152) ----
+  # cell_155/156: outcome-closure OFF (policy.mode contract_gate keeps gate + repair +
+  # realization_context, drops intervention-outcome closure). cell_157/158: state-scramble
+  # placebo (policy.state_scramble permutes the belief before selection). Run paired against
+  # frozen treatments cell_150 (cross) / cell_152 (paired). See PLAN_2_0/M0-BASELINE-VALIDATION-RUNBOOK.md.
+  cell_155_plan2_closureoff_crosssuite:
+    description: "M0 §1.3 ablation: cell_150 cross-suite treatment with outcome closure OFF (policy.mode contract_gate, keeps gate+repair+realization_context). Isolates closure on config/cross-suite-trap-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_closureoff_crosssuite
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/cross-suite-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: contract_gate
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+        realization_context: true
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_156_plan2_closureoff_paired:
+    description: "M0 §1.3 ablation: cell_152 paired treatment with outcome closure OFF (policy.mode contract_gate). Isolates closure on config/adaptive-generalization-counterfactual-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_closureoff_paired
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-generalization-counterfactual-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: contract_gate
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+        realization_context: true
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_157_plan2_statescramble_crosssuite:
+    description: "M0 §1.3 ablation (placebo): cell_150 cross-suite treatment with policy.state_scramble true — the learner-state belief is deterministically permuted before selection. If strategy shift survives, the policy is not keying on learner state. config/cross-suite-trap-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_statescramble_crosssuite
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/cross-suite-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+        realization_context: true
+        state_scramble: true
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_158_plan2_statescramble_paired:
+    description: "M0 §1.3 ablation (placebo): cell_152 paired treatment with policy.state_scramble true. config/adaptive-generalization-counterfactual-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_statescramble_paired
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-generalization-counterfactual-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+        realization_context: true
+        state_scramble: true
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
   cell_153_plan2_1_evidence_closed_loop:
     description: "Plan 2.1 evidence-bearing held-out baseline: frozen closed-loop adaptation contract policy on config/adaptive-plan2-1-evidence-bearing-scenarios.yaml."
     runner: adaptive

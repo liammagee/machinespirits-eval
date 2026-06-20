@@ -747,6 +747,46 @@ export function estimateLearnerStateBelief({
   };
 }
 
+// Deterministic placebo for the state-scramble ablation (policy.state_scramble). Permute a
+// belief so it no longer corresponds to the learner — reassign the probability mass to the
+// wrong hypothesis ids (keeping dominant = highest, so the distribution shape and entropy are
+// unchanged) and rotate the axis values across axis keys. The result stays schema-valid
+// (same value multisets), so validateLearnerStateBelief still passes. If strategy shift
+// survives a scrambled state, the policy is not actually keying on learner state.
+// Deterministic in `seed` (turn index) for replay.
+export function scrambleLearnerStateBelief(belief, seed = 0) {
+  if (!belief) return belief;
+  const rotateLeft = (arr, by) => arr.map((_, i) => arr[(i + by) % arr.length]);
+
+  const hypotheses = Array.isArray(belief.hypotheses) ? belief.hypotheses.map((h) => ({ ...h })) : [];
+  if (hypotheses.length > 1) {
+    const by = Math.abs(Math.trunc(seed)) % hypotheses.length || 1;
+    const rotated = rotateLeft(
+      hypotheses.map((h) => h.probability),
+      by,
+    );
+    hypotheses.forEach((h, i) => {
+      h.probability = rotated[i];
+    });
+    hypotheses.sort((a, b) => (b.probability ?? 0) - (a.probability ?? 0));
+  }
+
+  const axes = { ...(belief.axes || {}) };
+  const axisKeys = Object.keys(axes);
+  if (axisKeys.length > 1) {
+    const by = Math.abs(Math.trunc(seed)) % axisKeys.length || 1;
+    const rotated = rotateLeft(
+      axisKeys.map((k) => axes[k]),
+      by,
+    );
+    axisKeys.forEach((k, i) => {
+      axes[k] = rotated[i];
+    });
+  }
+
+  return { ...belief, hypotheses, axes };
+}
+
 export function getActionDefinition(actionType) {
   const action = ADAPTATION_ACTION_BY_TYPE[actionType];
   if (!action) throw new Error(`adaptive actionPolicy: unknown action type ${JSON.stringify(actionType)}`);

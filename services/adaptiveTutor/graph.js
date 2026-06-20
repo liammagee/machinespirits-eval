@@ -82,6 +82,7 @@ import {
   applyWorldAdaptationToAction,
   estimateLearnerStateBelief,
   legacyPolicyActionForAdaptiveAction,
+  scrambleLearnerStateBelief,
   selectPedagogicalAction,
   summarizeWorldAdaptationSpec,
 } from './actionPolicy.js';
@@ -678,9 +679,9 @@ function normalizePolicyConfig(config = {}) {
     worldAdaptationWeight: config.worldAdaptationWeight ?? config.world_adaptation_weight,
     realizationContext: config.realizationContext ?? config.realization_context,
     earlyCompletionAfterSuccessfulNoIntervention:
-      config.earlyCompletionAfterSuccessfulNoIntervention ??
-      config.early_completion_after_successful_no_intervention,
+      config.earlyCompletionAfterSuccessfulNoIntervention ?? config.early_completion_after_successful_no_intervention,
     utilityTieEpsilon: config.utilityTieEpsilon ?? config.utility_tie_epsilon,
+    stateScramble: config.stateScramble ?? config.state_scramble,
   };
 }
 
@@ -759,12 +760,15 @@ function makeEstimateLearnerState(defaultMode, defaultPolicyConfig) {
   return async function estimateLearnerState(state) {
     const mode = policyModeFromState(state, defaultMode);
     const config = normalizePolicyConfig(policyConfigFromState(state, defaultPolicyConfig));
-    const stateBelief = estimateLearnerStateBelief({
+    let stateBelief = estimateLearnerStateBelief({
       dialogue: state.dialogue,
       interventionLedger: state.interventionLedger || [],
       turnIndex: state.turn,
       maxHypotheses: config.maxHypotheses,
     });
+    // state-scramble ablation placebo: decouple the belief from the learner so the rest of
+    // the pipeline (selection, gate, contract) operates on a state that no longer matches.
+    if (config.stateScramble) stateBelief = scrambleLearnerStateBelief(stateBelief, state.turn);
     return {
       adaptationPolicyMode: mode,
       learnerStateBelief: stateBelief,
@@ -772,6 +776,7 @@ function makeEstimateLearnerState(defaultMode, defaultPolicyConfig) {
         traceEntry('estimate_learner_state', state, {
           top_hypothesis: stateBelief.hypotheses?.[0]?.id || null,
           needs_discrimination: stateBelief.uncertainty?.needs_discrimination === true,
+          state_scramble: config.stateScramble === true,
         }),
       ],
     };

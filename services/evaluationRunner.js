@@ -380,6 +380,10 @@ export const EVAL_ONLY_PROFILES = [
   'cell_150_plan2_quality_repeat_contextual_crosssuite',
   'cell_151_plan2_pair_specificity_closed_loop',
   'cell_152_plan2_pair_specificity_repeat_contextual',
+  'cell_155_plan2_closureoff_crosssuite',
+  'cell_156_plan2_closureoff_paired',
+  'cell_157_plan2_statescramble_crosssuite',
+  'cell_158_plan2_statescramble_paired',
   'cell_153_plan2_1_evidence_closed_loop',
   'cell_154_plan2_1_evidence_repeat_contextual',
 ];
@@ -1015,7 +1019,10 @@ function coerceCliJudgeJsonPayload(parsed) {
   );
   if (scoredObject) return scoredObject;
 
-  const joinedText = parsed.filter((item) => typeof item === 'string').join('\n').trim();
+  const joinedText = parsed
+    .filter((item) => typeof item === 'string')
+    .join('\n')
+    .trim();
   if (joinedText) {
     return parseCliJudgeJsonResponse(joinedText);
   }
@@ -6187,7 +6194,7 @@ export async function rejudgeRun(runId, options = {}) {
       try {
         const resolved = resolveRejudgeScenarioAndDialogueLog(result);
         const fullScenario = resolved.scenario;
-        let dialogueLog = resolved.dialogueLog;
+        const dialogueLog = resolved.dialogueLog;
         if (!fullScenario) {
           throw new Error(`Scenario not found: ${result.scenarioId}`);
         }

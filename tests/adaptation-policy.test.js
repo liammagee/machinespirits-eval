@@ -6,8 +6,10 @@ import {
   estimateLearnerStateBelief,
   getActionDefinition,
   legacyPolicyActionForAdaptiveAction,
+  scrambleLearnerStateBelief,
   selectPedagogicalAction,
 } from '../services/adaptiveTutor/actionPolicy.js';
+import { validateLearnerStateBelief } from '../services/adaptiveTutor/adaptationContract.js';
 import { observeInterventionOutcome } from '../services/adaptiveTutor/outcomeObserver.js';
 import { WORLD_SPEC } from './fixtures/world-adaptation-spec.js';
 
@@ -569,4 +571,63 @@ test('assertWorldAdaptationSpecUsable accepts specs whose families all resolve',
   assert.doesNotThrow(() => assertWorldAdaptationSpecUsable(WORLD_SPEC));
   assert.doesNotThrow(() => assertWorldAdaptationSpecUsable(null));
   assert.doesNotThrow(() => assertWorldAdaptationSpecUsable({ id: 'W_NO_POLICY', spec_hash: 'sha256:test' }));
+});
+
+function discriminativeBelief(turnIndex = 2) {
+  return {
+    version: '1.0',
+    turn_index: turnIndex,
+    learner_project: {
+      goal: 'make a task-relevant next move',
+      current_plan: 'unknown',
+      commitment: 'tentative',
+      next_authorship_opportunity: 'choose a next move',
+    },
+    hypotheses: [
+      { id: 'prerequisite_gap', probability: 0.6, evidence: ['ev a'], disconfirming_evidence: [] },
+      { id: 'cognitive_overload', probability: 0.3, evidence: ['ev b'], disconfirming_evidence: [] },
+      { id: 'affective_shutdown', probability: 0.1, evidence: ['ev c'], disconfirming_evidence: [] },
+    ],
+    axes: {
+      proof: 0.2,
+      release: 0.3,
+      ownership: 0.25,
+      conceptual_mastery: 0.4,
+      metacognitive_accuracy: 0.35,
+      affective_readiness: 0.7,
+    },
+    uncertainty: { entropy: 0.5, needs_discrimination: false, reason: 'separated' },
+  };
+}
+
+test('scrambleLearnerStateBelief is deterministic and stays schema-valid', () => {
+  const belief = discriminativeBelief(2);
+  const a = scrambleLearnerStateBelief(belief, 2);
+  const b = scrambleLearnerStateBelief(belief, 2);
+  assert.deepEqual(a, b); // replayable in counterfactual / re-run
+  assert.doesNotThrow(() => validateLearnerStateBelief(a)); // probs still sum to 1, axes bounded
+  assert.doesNotThrow(() => validateLearnerStateBelief(belief)); // sanity: the fixture is valid
+});
+
+test('scrambleLearnerStateBelief decouples the dominant hypothesis from the learner (placebo)', () => {
+  const belief = discriminativeBelief(2);
+  const scrambled = scrambleLearnerStateBelief(belief, 2);
+  // The probability distribution (as a multiset) is preserved...
+  assert.deepEqual(
+    scrambled.hypotheses.map((h) => h.probability).sort((x, y) => x - y),
+    [0.1, 0.3, 0.6],
+  );
+  // ...but the dominant hypothesis id is now the wrong one (mass reassigned).
+  assert.notEqual(scrambled.hypotheses[0].id, belief.hypotheses[0].id);
+  // Axis values are rotated across keys, so at least one axis no longer matches the learner.
+  const moved = Object.keys(belief.axes).some((k) => scrambled.axes[k] !== belief.axes[k]);
+  assert.ok(moved, 'scramble must permute axis values across keys');
+});
+
+test('scrambleLearnerStateBelief leaves a single-hypothesis belief valid', () => {
+  const belief = discriminativeBelief(1);
+  belief.hypotheses = [{ id: 'task_misread', probability: 1, evidence: ['ev'], disconfirming_evidence: [] }];
+  const scrambled = scrambleLearnerStateBelief(belief, 1);
+  assert.doesNotThrow(() => validateLearnerStateBelief(scrambled));
+  assert.equal(scrambled.hypotheses[0].probability, 1); // nothing to rotate with one hypothesis
 });
