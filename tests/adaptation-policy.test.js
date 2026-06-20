@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   actionRecencyPenalty,
+  assertWorldAdaptationSpecActionsResolvable,
   estimateLearnerStateBelief,
   getActionDefinition,
   legacyPolicyActionForAdaptiveAction,
@@ -524,7 +525,9 @@ test('world adaptation spec constrains candidate actions and annotates selected 
 
   assert.equal(belief.uncertainty.needs_discrimination, true);
   assert.equal(selection.selectedAction.action_type, 'request_evidence');
-  assert.ok(selection.candidateActions.every((candidate) => candidate.action_type !== 'diagnose_with_discriminating_question'));
+  assert.ok(
+    selection.candidateActions.every((candidate) => candidate.action_type !== 'diagnose_with_discriminating_question'),
+  );
   assert.deepEqual(selection.worldAdaptationSpec, {
     id: 'W_AF6_CURRICULUM',
     version: 'ms-world-adaptation-v0.1',
@@ -559,4 +562,28 @@ test('world adaptation spec does not count as success evidence by itself', () =>
 
   assert.equal(outcome.outcome, 'failure');
   assert.equal(outcome.required_evidence_satisfied, false);
+});
+
+test('assertWorldAdaptationSpecActionsResolvable rejects a misspelled disallowed family', () => {
+  // Without validation this typo is silently dropped, emptying the disallowed set and
+  // letting the would-be-forbidden action through (fail open). It must throw instead.
+  const typoSpec = {
+    id: 'W_TYPO',
+    action_policy: { disallowed_action_families: ['model_worked_exmaple'] },
+  };
+  assert.throws(() => assertWorldAdaptationSpecActionsResolvable(typoSpec), /unrecognized action families/u);
+});
+
+test('assertWorldAdaptationSpecActionsResolvable rejects a misspelled allowed family', () => {
+  const typoSpec = {
+    id: 'W_TYPO',
+    action_policy: { allowed_action_families: ['requst_evidence'] },
+  };
+  assert.throws(() => assertWorldAdaptationSpecActionsResolvable(typoSpec), /requst_evidence/u);
+});
+
+test('assertWorldAdaptationSpecActionsResolvable accepts specs whose families all resolve', () => {
+  assert.doesNotThrow(() => assertWorldAdaptationSpecActionsResolvable(WORLD_SPEC));
+  assert.doesNotThrow(() => assertWorldAdaptationSpecActionsResolvable(null));
+  assert.doesNotThrow(() => assertWorldAdaptationSpecActionsResolvable({ id: 'W_NO_POLICY' }));
 });

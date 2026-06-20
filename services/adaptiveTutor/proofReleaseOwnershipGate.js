@@ -69,7 +69,10 @@ function isReleaseTargeting(action) {
 }
 
 function isHighControlProofSupply(action) {
-  return ['explain_principle', 'model_worked_example'].includes(action?.action_type) || Number(action?.control_cost || 0) >= 0.6;
+  return (
+    ['explain_principle', 'model_worked_example'].includes(action?.action_type) ||
+    Number(action?.control_cost || 0) >= 0.6
+  );
 }
 
 function isEscalationAfterFailedHint({ stateBelief, action, interventionLedger = [] }) {
@@ -176,7 +179,9 @@ export function validateProofReleaseOwnershipGate({
         },
       ),
     );
-    repairs.push(repair(worldRepairAction(worldSpec), 'Use an action family permitted by the locked world adaptation spec.'));
+    repairs.push(
+      repair(worldRepairAction(worldSpec), 'Use an action family permitted by the locked world adaptation spec.'),
+    );
   }
 
   const axes = stateBelief?.axes || {};
@@ -190,7 +195,9 @@ export function validateProofReleaseOwnershipGate({
           hypothesis_id: h.id,
         }),
       );
-      repairs.push(repair('diagnose_with_discriminating_question', 'Gather evidence before treating the state as known.'));
+      repairs.push(
+        repair('diagnose_with_discriminating_question', 'Gather evidence before treating the state as known.'),
+      );
     }
   }
 
@@ -215,7 +222,9 @@ export function validateProofReleaseOwnershipGate({
         `${action.action_type} lacks an observable learner-state success signal.`,
       ),
     );
-    repairs.push(repair('diagnose_with_discriminating_question', 'Use an action with an observable success criterion.'));
+    repairs.push(
+      repair('diagnose_with_discriminating_question', 'Use an action with an observable success criterion.'),
+    );
   }
 
   if (
@@ -234,10 +243,12 @@ export function validateProofReleaseOwnershipGate({
   }
 
   if (isReleaseTargeting(action) && action.action_type !== 'diagnose_with_discriminating_question') {
-    const hasOpportunity = /choice|strategy|prediction|evidence|next step|next move|task-aligned|task goal|justify|own words/iu.test(
-      `${action.description || ''} ${action.rationale || ''} ${tutorText || ''}`,
-    );
-    const actionCarriesReleaseOpportunity = action.action_type === 'withhold_answer' || action.action_type === 'observe_no_intervention';
+    const hasOpportunity =
+      /choice|strategy|prediction|evidence|next step|next move|task-aligned|task goal|justify|own words/iu.test(
+        `${action.description || ''} ${action.rationale || ''} ${tutorText || ''}`,
+      );
+    const actionCarriesReleaseOpportunity =
+      action.action_type === 'withhold_answer' || action.action_type === 'observe_no_intervention';
     if (!hasOpportunity && !actionCarriesReleaseOpportunity) {
       violations.push(
         violation(
@@ -298,7 +309,12 @@ export function validateProofReleaseOwnershipGate({
         { failures: repeatFailures.map((r) => r.contract_id) },
       ),
     );
-    repairs.push(repair('diagnose_with_discriminating_question', 'Change conditions or gather discriminating evidence before repeating.'));
+    repairs.push(
+      repair(
+        'diagnose_with_discriminating_question',
+        'Change conditions or gather discriminating evidence before repeating.',
+      ),
+    );
   }
 
   const nearTie = lowerControlNearTie(action, candidateActions, merged.utilityTieEpsilon);
@@ -310,7 +326,9 @@ export function validateProofReleaseOwnershipGate({
         { selected_control_cost: action.control_cost, alternative_control_cost: nearTie.control_cost },
       ),
     );
-    repairs.push(repair(nearTie.action_type, 'Minimum-sufficient-intervention tie-breaker prefers the lower-control action.'));
+    repairs.push(
+      repair(nearTie.action_type, 'Minimum-sufficient-intervention tie-breaker prefers the lower-control action.'),
+    );
   }
 
   // ACTION_TARGET_MISMATCH is deliberately conservative: only fire when no
@@ -319,9 +337,32 @@ export function validateProofReleaseOwnershipGate({
   const positiveTarget = (action.target_axes || []).some((axis) => Number(action.expected_transition?.[axis] || 0) > 0);
   if (!positiveTarget && action.action_type !== 'diagnose_with_discriminating_question') {
     violations.push(
-      violation(VIOLATION_CODES.ACTION_TARGET_MISMATCH, 'Action target axes are not supported by expected transition gains.'),
+      violation(
+        VIOLATION_CODES.ACTION_TARGET_MISMATCH,
+        'Action target axes are not supported by expected transition gains.',
+      ),
     );
-    repairs.push(repair('diagnose_with_discriminating_question', 'Select an action whose target axes match its predicted transition.'));
+    repairs.push(
+      repair(
+        'diagnose_with_discriminating_question',
+        'Select an action whose target axes match its predicted transition.',
+      ),
+    );
+  }
+
+  // Locked-world-spec invariant guard. Most checks above push a hardcoded repair target
+  // (diagnose_with_discriminating_question / request_evidence / ask_strategy_choice, or a
+  // near-tie alternative) that is never filtered against the world spec. Because
+  // repairActionFromGate takes repairs[0] and the validate node applies it with only one
+  // re-validation pass, an unfiltered repair can finalize a world-DISALLOWED action and
+  // break the guarantee this gate exists to enforce. Substitute the spec-permitted
+  // fallback for any disallowed repair so no repair path can leak a forbidden move.
+  if (worldSpec) {
+    for (const r of repairs) {
+      if (r.replace_action_with && !actionPermittedByWorldSpec(r.replace_action_with, worldSpec)) {
+        r.replace_action_with = worldRepairAction(worldSpec);
+      }
+    }
   }
 
   return {

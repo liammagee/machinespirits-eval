@@ -14,7 +14,7 @@ import { fileURLToPath } from 'url';
 import yaml from 'yaml';
 import { runScenario, runScenarioWithCounterfactual } from './runner.js';
 import { llmMode } from './llm.js';
-import { summarizeWorldAdaptationSpec } from './actionPolicy.js';
+import { assertWorldAdaptationSpecActionsResolvable, summarizeWorldAdaptationSpec } from './actionPolicy.js';
 import { createAdaptiveRun, persistScenarioWithCounterfactual, persistScenarioRun } from './persistence.js';
 import { createBudgetTracker } from './budgetTracker.js';
 import {
@@ -243,19 +243,28 @@ export async function runAdaptiveEvaluation({
           scenario_type: yamlScenario.scenario_type || yamlScenario.id,
           expected_strategy_shift: yamlScenario.expected_strategy_shift ?? null,
         };
-        const worldAdaptationSpec =
-          resolveWorldAdaptationSpec(yamlScenario, worldAdaptationSpecs) ||
-          adaptivePolicy.world_adaptation_spec ||
-          adaptivePolicy.worldAdaptationSpec ||
-          null;
-        const scenarioAdaptivePolicy = {
-          ...adaptivePolicy,
-          ...(worldAdaptationSpec ? { world_adaptation_spec: worldAdaptationSpec } : {}),
-        };
-        const scenarioGraphOptions = { ...graphOptionsBase, adaptivePolicy: scenarioAdaptivePolicy };
-        const scenarioWorldSummary = summarizeWorldAdaptationSpec(worldAdaptationSpec);
-        if (scenarioWorldSummary) scenarioConfig.world_adaptation_spec = scenarioWorldSummary;
         try {
+          // World-spec resolution must stay inside the per-scenario try:
+          // resolveWorldAdaptationSpec throws when a world_adaptation_spec_id /
+          // world_id / curriculum_module_id matches no loaded spec. Outside this try,
+          // that throw escapes the catch-less outer try and skips run finalization,
+          // leaving the run stuck at status='running'. Inside, a bad reference degrades
+          // to a logged per-scenario skip and the run still finalizes.
+          const worldAdaptationSpec =
+            resolveWorldAdaptationSpec(yamlScenario, worldAdaptationSpecs) ||
+            adaptivePolicy.world_adaptation_spec ||
+            adaptivePolicy.worldAdaptationSpec ||
+            null;
+          // Fail loud on a misspelled action family rather than running with a silently
+          // disabled (fail-open) lock; caught below as a per-scenario skip.
+          assertWorldAdaptationSpecActionsResolvable(worldAdaptationSpec);
+          const scenarioAdaptivePolicy = {
+            ...adaptivePolicy,
+            ...(worldAdaptationSpec ? { world_adaptation_spec: worldAdaptationSpec } : {}),
+          };
+          const scenarioGraphOptions = { ...graphOptionsBase, adaptivePolicy: scenarioAdaptivePolicy };
+          const scenarioWorldSummary = summarizeWorldAdaptationSpec(worldAdaptationSpec);
+          if (scenarioWorldSummary) scenarioConfig.world_adaptation_spec = scenarioWorldSummary;
           // Snapshot before / delta after lets us write per-scenario tokens
           // and cost into the row while keeping the run-wide accumulator
           // (which enforces --max-cost) intact.

@@ -230,7 +230,8 @@ const ACTIONS = [
   },
   {
     action_type: 'explain_principle',
-    description: 'Supply conceptual material after lower-control moves are insufficient or prerequisite evidence is strong.',
+    description:
+      'Supply conceptual material after lower-control moves are insufficient or prerequisite evidence is strong.',
     target_axes: ['proof', 'conceptual_mastery'],
     default_control_cost: 0.6,
     default_information_gain: 0.25,
@@ -484,7 +485,16 @@ function weightFromText(text, interventionLedger = []) {
   if (includesAny(lower, [/not sure/u, /maybe/u, /i think/u, /unsure/u])) {
     weights.low_confidence += 0.26;
   }
-  if (includesAny(lower, [/\bi would\b/u, /\bi'?ll\b/u, /\bnext i\b/u, /\bmy strategy\b/u, /\bi choose\b/u, /\bi can try\b/u])) {
+  if (
+    includesAny(lower, [
+      /\bi would\b/u,
+      /\bi'?ll\b/u,
+      /\bnext i\b/u,
+      /\bmy strategy\b/u,
+      /\bi choose\b/u,
+      /\bi can try\b/u,
+    ])
+  ) {
     weights.productive_progress += 0.5;
     weights.low_confidence += 0.04;
   }
@@ -509,11 +519,28 @@ function weightFromText(text, interventionLedger = []) {
   if (includesAny(lower, [/notation/u, /symbol/u, /equation/u, /denominator/u, /variable/u])) {
     weights.notation_overload += 0.28;
   }
-  if (includesAny(lower, [/third time/u, /still not clicking/u, /moving parts/u, /lose the thread/u, /too many concepts/u])) {
+  if (
+    includesAny(lower, [
+      /third time/u,
+      /still not clicking/u,
+      /moving parts/u,
+      /lose the thread/u,
+      /too many concepts/u,
+    ])
+  ) {
     weights.working_memory_overload += 1.1;
     weights.notation_overload += 0.12;
   }
-  if (includesAny(lower, [/thesis.*antithesis.*synthesis/u, /like 1\\+1/u, /like addition/u, /ingredients/u, /combine.*synthesis/u, /still in there/u])) {
+  if (
+    includesAny(lower, [
+      /thesis.*antithesis.*synthesis/u,
+      /like 1\\+1/u,
+      /like addition/u,
+      /ingredients/u,
+      /combine.*synthesis/u,
+      /still in there/u,
+    ])
+  ) {
     weights.additive_misconception += 0.78;
     weights.correct_alternative_model += 0.08;
   }
@@ -534,7 +561,16 @@ function weightFromText(text, interventionLedger = []) {
     weights.false_mastery += 0.74;
     weights.approval_dependency += 0.12;
   }
-  if (includesAny(lower, [/another way/u, /my model/u, /alternative/u, /counterexample/u, /different method/u, /different representation/u])) {
+  if (
+    includesAny(lower, [
+      /another way/u,
+      /my model/u,
+      /alternative/u,
+      /counterexample/u,
+      /different method/u,
+      /different representation/u,
+    ])
+  ) {
     weights.correct_alternative_model += 0.36;
   }
   if (
@@ -553,11 +589,28 @@ function weightFromText(text, interventionLedger = []) {
     weights.substantive_objection += 0.72;
     weights.correct_alternative_model += 0.1;
   }
-  if (includesAny(lower, [/metaphor/u, /analogy/u, /like a mirror/u, /reflect everything/u, /without distortion/u, /has to be right/u])) {
+  if (
+    includesAny(lower, [
+      /metaphor/u,
+      /analogy/u,
+      /like a mirror/u,
+      /reflect everything/u,
+      /without distortion/u,
+      /has to be right/u,
+    ])
+  ) {
     weights.metaphor_overextension += 0.78;
     weights.correct_alternative_model += 0.12;
   }
-  if (includesAny(lower, [/can'?t do this/u, /wasting your time/u, /i just\.\.\./u, /shut(?:ting)? down/u, /overwhelmed/u])) {
+  if (
+    includesAny(lower, [
+      /can'?t do this/u,
+      /wasting your time/u,
+      /i just\.\.\./u,
+      /shut(?:ting)? down/u,
+      /overwhelmed/u,
+    ])
+  ) {
     weights.affective_shutdown += 0.8;
     weights.low_confidence += 0.1;
   }
@@ -574,7 +627,15 @@ function weightFromText(text, interventionLedger = []) {
     weights.tutor_misread += 0.8;
     weights.task_misread += 0.12;
   }
-  if (includesAny(lower, [/brandom/u, /expressivist/u, /hegel'?s text/u, /asymmetry you'?re invoking/u, /advanced reading/u])) {
+  if (
+    includesAny(lower, [
+      /brandom/u,
+      /expressivist/u,
+      /hegel'?s text/u,
+      /asymmetry you'?re invoking/u,
+      /advanced reading/u,
+    ])
+  ) {
     weights.sophistication_upgrade += 0.82;
     weights.boundary_case += 0.12;
   }
@@ -646,7 +707,12 @@ function actionsImpliedByHypotheses(hypotheses) {
   return hypotheses.map((h) => (HYPOTHESIS_ACTION_MAP[h.id] || ['diagnose_with_discriminating_question'])[0]);
 }
 
-export function estimateLearnerStateBelief({ dialogue = [], interventionLedger = [], turnIndex = 0, maxHypotheses = 3 } = {}) {
+export function estimateLearnerStateBelief({
+  dialogue = [],
+  interventionLedger = [],
+  turnIndex = 0,
+  maxHypotheses = 3,
+} = {}) {
   const learnerText = lastDialogueText(dialogue, 'learner');
   const weights = weightFromText(learnerText, interventionLedger);
   const hypotheses = normalizeWeights(weights, maxHypotheses).map((h) => ({
@@ -706,7 +772,9 @@ function withActionDefaults(action, overrides = {}) {
 }
 
 function uniqueStrings(items = []) {
-  return [...new Set((items || []).filter((item) => typeof item === 'string' && item.trim()).map((item) => item.trim()))];
+  return [
+    ...new Set((items || []).filter((item) => typeof item === 'string' && item.trim()).map((item) => item.trim())),
+  ];
 }
 
 export function normalizeWorldAdaptationSpec(config = {}) {
@@ -740,6 +808,33 @@ function worldActionSets(spec) {
     preferred: new Set(worldActionList(spec, 'preferred_action_families', ['preferred_actions'])),
     disallowed: new Set(worldActionList(spec, 'disallowed_action_families', ['disallowed_actions'])),
   };
+}
+
+// A world spec's action families are a hash-bearing lock. worldActionList silently
+// drops any family string that is not a registered action type, and actionPermittedByWorldSpec
+// reads an empty allowed set as "no constraint" — so a single typo turns the lock into a
+// no-op that fails OPEN (a disallowed action becomes permitted) with no error. Call this at
+// spec adoption so a misspelled family is a loud failure, not a silently disabled lock.
+export function assertWorldAdaptationSpecActionsResolvable(spec) {
+  if (!spec) return;
+  const policy = spec.action_policy || {};
+  const unknown = [];
+  for (const [key, alias] of [
+    ['allowed_action_families', 'allowed_actions'],
+    ['preferred_action_families', 'preferred_actions'],
+    ['disallowed_action_families', 'disallowed_actions'],
+  ]) {
+    const values = Array.isArray(policy[key]) ? policy[key] : Array.isArray(policy[alias]) ? policy[alias] : [];
+    for (const actionType of values) {
+      if (!ADAPTATION_ACTION_BY_TYPE[actionType]) unknown.push(`${key}: ${actionType}`);
+    }
+  }
+  if (unknown.length > 0) {
+    throw new Error(
+      `world adaptation spec ${spec.id || 'unknown'} references unrecognized action families [${unknown.join('; ')}]. ` +
+        `A misspelled family is silently dropped and disables the lock; fix the spec or register the action type.`,
+    );
+  }
 }
 
 export function actionPermittedByWorldSpec(actionType, spec) {
@@ -949,7 +1044,8 @@ export function actionRecencyPenalty(actionType, stateBelief, interventionLedger
   const scope = config.sameActionScope ?? DEFAULT_ADAPTIVE_POLICY_CONFIG.sameActionScope;
   const repeats = recentClosedActions(interventionLedger, window).filter(
     (record) =>
-      record.action_type === actionType && (scope === 'any_recent' || materiallySameLearnerCondition(record, stateBelief)),
+      record.action_type === actionType &&
+      (scope === 'any_recent' || materiallySameLearnerCondition(record, stateBelief)),
   );
   return repeats.length * penalty;
 }
@@ -1015,7 +1111,12 @@ export function scoreCandidateAction(actionType, stateBelief, interventionLedger
   };
 }
 
-export function selectPedagogicalAction({ stateBelief, interventionLedger = [], mode = 'closed_loop', config = {} } = {}) {
+export function selectPedagogicalAction({
+  stateBelief,
+  interventionLedger = [],
+  mode = 'closed_loop',
+  config = {},
+} = {}) {
   const merged = { ...DEFAULT_ADAPTIVE_POLICY_CONFIG, ...config, mode };
   const worldSpec = normalizeWorldAdaptationSpec(merged);
   const candidateTypes = applyWorldActionConstraints(
@@ -1037,7 +1138,12 @@ export function selectPedagogicalAction({ stateBelief, interventionLedger = [], 
     !escalationRequired &&
     actionPermittedByWorldSpec('diagnose_with_discriminating_question', worldSpec)
   ) {
-    const diagnostic = scoreCandidateAction('diagnose_with_discriminating_question', stateBelief, interventionLedger, merged);
+    const diagnostic = scoreCandidateAction(
+      'diagnose_with_discriminating_question',
+      stateBelief,
+      interventionLedger,
+      merged,
+    );
     candidates = [diagnostic, ...candidates.filter((c) => c.action_type !== diagnostic.action_type)]
       .sort((a, b) => {
         if (a.action_type === 'diagnose_with_discriminating_question') return -1;

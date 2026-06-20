@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { getActionDefinition, selectPedagogicalAction } from '../services/adaptiveTutor/actionPolicy.js';
 import {
+  actionPermittedByWorldSpec,
+  getActionDefinition,
+  selectPedagogicalAction,
+} from '../services/adaptiveTutor/actionPolicy.js';
+import {
+  repairActionFromGate,
   validateProofReleaseOwnershipGate,
   VIOLATION_CODES,
 } from '../services/adaptiveTutor/proofReleaseOwnershipGate.js';
@@ -104,7 +109,9 @@ test('gate allows task reanchor as a meaningful bounded opportunity', () => {
 test('gate preserves answer withholding as a bounded learner-owned opportunity', () => {
   const result = validateProofReleaseOwnershipGate({
     stateBelief: stateBelief({
-      hypotheses: [{ id: 'answer_seeking', probability: 1, evidence: ['just tell me the answer'], disconfirming_evidence: [] }],
+      hypotheses: [
+        { id: 'answer_seeking', probability: 1, evidence: ['just tell me the answer'], disconfirming_evidence: [] },
+      ],
       axes: {
         proof: 0.25,
         release: 0.25,
@@ -246,4 +253,47 @@ test('gate blocks actions disallowed by locked world adaptation spec', () => {
   assert.equal(result.allowed, false);
   assert.ok(result.violations.some((v) => v.code === VIOLATION_CODES.WORLD_ACTION_DISALLOWED));
   assert.equal(result.repairs[0].replace_action_with, 'request_evidence');
+});
+
+test('gate repair never proposes a world-disallowed action (locked-spec invariant holds through the repair path)', () => {
+  // diagnose_with_discriminating_question is the hardcoded repair target for several
+  // non-world gate checks. Lock it out so the leak branch is exercised: a world-PERMITTED
+  // selected action trips a non-world violation whose hardcoded repair the spec forbids.
+  const worldSpec = {
+    id: 'W_TEST_LOCKED',
+    spec_hash: 'sha256:test',
+    action_policy: {
+      disallowed_action_families: ['diagnose_with_discriminating_question'],
+    },
+  };
+  const selected = materialize('explain_principle');
+
+  const result = validateProofReleaseOwnershipGate({
+    // High-confidence hypothesis with no evidence -> STATE_HYPOTHESIS_UNGROUNDED, whose
+    // repair is the now-disallowed diagnose action and is pushed before any world repair.
+    stateBelief: stateBelief({
+      hypotheses: [{ id: 'task_misread', probability: 0.9, evidence: [], disconfirming_evidence: [] }],
+    }),
+    selectedAction: selected,
+    config: { world_adaptation_spec: worldSpec },
+  });
+
+  // Confirm we are on the leak branch: a non-world check fired on a world-permitted action.
+  assert.ok(actionPermittedByWorldSpec(selected.action_type, worldSpec));
+  assert.ok(result.violations.some((v) => v.code === VIOLATION_CODES.STATE_HYPOTHESIS_UNGROUNDED));
+
+  // Invariant: no proposed repair may name a world-disallowed action, and the action
+  // repairActionFromGate would finalize must be permitted by the locked spec.
+  for (const r of result.repairs) {
+    assert.ok(
+      actionPermittedByWorldSpec(r.replace_action_with, worldSpec),
+      `repair ${r.replace_action_with} must be permitted by the locked world spec`,
+    );
+  }
+  const repaired = repairActionFromGate(selected, result);
+  assert.ok(
+    actionPermittedByWorldSpec(repaired.action_type, worldSpec),
+    `finalized repair ${repaired.action_type} must be permitted by the locked world spec`,
+  );
+  assert.notEqual(repaired.action_type, 'diagnose_with_discriminating_question');
 });
