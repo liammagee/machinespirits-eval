@@ -1203,6 +1203,21 @@ describe('generate-pedagogical-dramas', () => {
     );
   });
 
+  it('accepts now-the-check-is colon phrasing as a replacement framing', () => {
+    const warnings = warningsForReframeLine({
+      tid: 'T945C',
+      dramaId: 'D945C',
+      anchor: 'General human-like cognitive capacity is still the criterion I stand on.',
+      learnerText:
+        'General human-like cognitive capacity — that was the filing. I was treating broad range and human-comparable as if the words themselves carried thresholds they did not. Now the check is: breadth floor at roughly six distinct cognitive domains, level floor at median adult performance.',
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
   it('accepts pressure plus now-the-check phrasing from curriculum governance reframes', () => {
     const warnings = warningsForReframeLine({
       tid: 'T945B',

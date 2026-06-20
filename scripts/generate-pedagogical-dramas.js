@@ -837,6 +837,7 @@ function replacesEarlierFraming(text) {
     /\b(?:question|test)\s+is\s+not\b[\s\S]{0,120}\bbut\s+(?:whether|if)\b/i,
     /\bnow\s+the\s+question\s+is\s+whether\b/i,
     /\bnow\s+the\s+(?:check|test|standard)\s+is\s+(?:whether|if|to|that|where|how|what)\b/i,
+    /\bnow\s+the\s+(?:check|test|standard)\s+is\s*:/i,
     /\b(?:breaks?|interrupts?)\s+the\s+simple\s+story\b/i,
     /\bwrite\s+this\s+as\b/i,
     /\b(?:result|claim|summary|importance)\b[\s\S]{0,90}\bdepends on\b/i,
