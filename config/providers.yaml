@@ -27,6 +27,7 @@ providers:
       haiku: claude-haiku-4-5
       sonnet: claude-sonnet-4-6
       opus: claude-opus-4-6
+      opus-4-8: claude-opus-4-8
       sonnet-4-5: claude-sonnet-4-5
       sonnet-4-6: claude-sonnet-4-6
 
@@ -37,6 +38,7 @@ providers:
     models:
       mini: gpt-5-mini
       standard: gpt-5.2
+      gpt_5_2: gpt-5.5
 
   openrouter:
     api_key_env: OPENROUTER_API_KEY
@@ -46,17 +48,23 @@ providers:
     models:
       # Budget-friendly options
       nemotron: nvidia/nemotron-3-nano-30b-a3b
-      # nemotron: nvidia/nemotron-3-nano-30b-a3b:free
+      nemotron-ultra: nvidia/nemotron-3-ultra-550b-a55b:free
       glm47: z-ai/glm-4.7
       glm5: z-ai/glm-5
+      glm5_2: z-ai/glm-5.2
       kimi-k2: moonshotai/kimi-k2-thinking
       "kimi-k2.5": moonshotai/kimi-k2.5
+      kimi-latest: ~moonshotai/kimi-latest
       deepseek: deepseek/deepseek-v3.2
+      deepseek-v4-pro: deepseek/deepseek-v4-pro
+      deepseek-v4-flash: deepseek/deepseek-v4-flash
       minimax: minimax/minimax-m2.5
+      minimax_m3: minimax/minimax-m3
       haiku: anthropic/claude-haiku-4.5
       gpt-oss: openai/gpt-oss-120b
       qwen3.5-plus: qwen/qwen3.5-plus-02-15
       qwen3.5: qwen/qwen3.5-397b-a17b
+      qwen3_7_plus: qwen/qwen3.7-plus
       gemini-flash: google/gemini-3-flash-preview
       gemini-flash-3.1: google/gemini-3.1-flash-lite-preview
       # Mid-tier options
