@@ -240,6 +240,7 @@ function parseArgs(argv) {
     directorPlanCache: null,
     reuseDirectorPlan: null,
     roleMaxTokens: null,
+    dramaCompactPrompts: false,
   };
   if (argv.some((token) => token === '--help' || token === '-h')) {
     a.help = true;
@@ -279,6 +280,7 @@ function parseArgs(argv) {
     else if (t === '--director-plan-cache') a.directorPlanCache = path.resolve(argv[++i]);
     else if (t === '--reuse-director-plan') a.reuseDirectorPlan = path.resolve(argv[++i]);
     else if (t === '--role-max-tokens') a.roleMaxTokens = parseRoleMaxTokens(argv[++i]);
+    else if (t === '--drama-compact-prompts') a.dramaCompactPrompts = true;
     else if (t === '--opening-speaker') a.openingSpeaker = String(argv[++i] || '').toLowerCase();
     else if (t === '--control-ending') a.controlEndingPolicy = argv[++i];
     else if (t === '--call-telemetry-json') {
@@ -1856,6 +1858,26 @@ function wrapLlmCallWithRoleBudgets(llmCall, budgets) {
   };
   budgeted.close = () => llmCall.close?.();
   return budgeted;
+}
+
+// ── Slice 4: compact drama-specific tutor prompts ────────────────────────────
+// Off by default. With --drama-compact-prompts the tutor ego/superego static
+// system prompts (the ~20k-char recognition prompts, the dominant per-call input
+// cost) are replaced with compact drama-lane prompts that keep the recognition
+// stance + safety rails but drop the suggestion-JSON schema, Writing-Pad memory
+// mechanics, and curriculum-navigation affordances the drama runtime never uses.
+// Returned as runInteraction options the engine reads; {} when disabled, so the
+// default path is byte-identical.
+let _compactDramaPromptOverrides;
+function compactDramaPromptOverridesForArgs(args) {
+  if (!args?.dramaCompactPrompts) return {};
+  if (_compactDramaPromptOverrides) return _compactDramaPromptOverrides;
+  const dir = path.join(WORKTREE_ROOT, 'prompts', 'drama');
+  _compactDramaPromptOverrides = {
+    tutorEgoPromptOverride: fs.readFileSync(path.join(dir, 'tutor-ego-compact.md'), 'utf8'),
+    tutorSuperegoPromptOverride: fs.readFileSync(path.join(dir, 'tutor-superego-compact.md'), 'utf8'),
+  };
+  return _compactDramaPromptOverrides;
 }
 
 function wrapLlmCallWithTelemetry(llmCall, recorder) {
@@ -4726,6 +4748,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
           },
           llmCall,
           {
+            ...compactDramaPromptOverridesForArgs(args),
             maxTurns: 2,
             observeInternals: true,
             learnerProfile: d.learner_profile,
@@ -4814,6 +4837,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
               observeInternals: true,
               learnerProfile: d.learner_profile,
               forceMaxTurns: true,
+              ...compactDramaPromptOverridesForArgs(args),
               directorPlan: branchDirectorPlan,
               resumeTrace,
               onProgress: ({ phase, turnCount, maxTurns }) =>
@@ -5274,6 +5298,7 @@ async function main() {
             observeInternals: true,
             learnerProfile: d.learner_profile,
             forceMaxTurns: true,
+            ...compactDramaPromptOverridesForArgs(args),
             directorPlan,
             onProgress: ({ phase, turnCount, maxTurns }) =>
               progress.update(

@@ -1525,6 +1525,10 @@ export async function runInteraction(config, llmCall, options = {}) {
             directorPlan,
             tutorDirectorCue,
             tutorPrivateState,
+            {
+              tutorEgoPromptOverride: options.tutorEgoPromptOverride,
+              tutorSuperegoPromptOverride: options.tutorSuperegoPromptOverride,
+            },
           );
     latestLearnerReframeEvent = null;
     if (tutorResponse.learnerReversalEventUsed) {
@@ -1612,6 +1616,10 @@ export async function runInteraction(config, llmCall, options = {}) {
       directorPlan,
       closingCue,
       tutorPrivateState,
+      {
+        tutorEgoPromptOverride: options.tutorEgoPromptOverride,
+        tutorSuperegoPromptOverride: options.tutorSuperegoPromptOverride,
+      },
     );
     latestLearnerReframeEvent = null;
     if (tutorResponse.learnerReversalEventUsed) {
@@ -1962,6 +1970,7 @@ async function runTutorTurn(
   directorPlan = null,
   directorCue = null,
   tutorPrivateState = {},
+  tutorPromptOverrides = {},
 ) {
   // Get tutor configuration from profile
   const _profile = tutorConfig.getActiveProfile(tutorProfileName);
@@ -2040,7 +2049,8 @@ async function runTutorTurn(
   const internalDeliberation = [];
 
   // ===== T.EGO: Draft initial response =====
-  const tutorEgoStaticPrompt = egoConfig?.prompt || 'You are a thoughtful AI tutor.';
+  const tutorEgoStaticPrompt =
+    tutorPromptOverrides.tutorEgoPromptOverride || egoConfig?.prompt || 'You are a thoughtful AI tutor.';
   const tutorSharedDynamicContext = `Your accumulated knowledge about this learner:
 ${tutorMemory || 'This is a new learner - no prior history.'}
 
@@ -2102,7 +2112,9 @@ Provide ONLY your draft response text (it will be reviewed by your pedagogical c
 
   if (superegoConfig) {
     const tutorSuperegoStaticPrompt =
-      superegoConfig?.prompt || 'You are a pedagogical critic reviewing tutor responses.';
+      tutorPromptOverrides.tutorSuperegoPromptOverride ||
+      superegoConfig?.prompt ||
+      'You are a pedagogical critic reviewing tutor responses.';
     const superegoPrompt = `${tutorSuperegoStaticPrompt}
 
 Context about the learner:
