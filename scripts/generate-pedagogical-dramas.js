@@ -190,6 +190,8 @@ Operational flags:
   --role-max-tokens SPEC              Per-role output budgets, e.g. "tutor_superego=700,learner_superego=500" or "preset" (off by default; API hard-cap, CLI terse-directive)
   --drama-compact-prompts             Use compact drama tutor prompts (~2k vs ~20k chars); off by default
   --drama-fidelity MODE               full (default) | compact (compact prompts) | public-only (ego-only, no deliberation — cheap structural screen)
+  --context-mode MODE                 last-six (default) | ledger-recent (state ledger + recent turns) | full-public (full transcript, diagnostic)
+  --recent-turns N                    Verbatim recent-turn window under ledger-recent/full-public (default 4)
   --claude-persistent-workers         Reuse persistent Claude worker processes
   --generation-concurrency N          Independent dramas to generate concurrently (default: 1)
 
@@ -244,6 +246,8 @@ function parseArgs(argv) {
     roleMaxTokens: null,
     dramaCompactPrompts: false,
     dramaFidelity: 'full',
+    contextMode: 'last-six',
+    recentTurns: 4,
   };
   if (argv.some((token) => token === '--help' || token === '-h')) {
     a.help = true;
@@ -285,6 +289,8 @@ function parseArgs(argv) {
     else if (t === '--role-max-tokens') a.roleMaxTokens = parseRoleMaxTokens(argv[++i]);
     else if (t === '--drama-compact-prompts') a.dramaCompactPrompts = true;
     else if (t === '--drama-fidelity') a.dramaFidelity = String(argv[++i] || '').toLowerCase();
+    else if (t === '--context-mode') a.contextMode = String(argv[++i] || '').toLowerCase();
+    else if (t === '--recent-turns') a.recentTurns = parseInt(argv[++i], 10);
     else if (t === '--opening-speaker') a.openingSpeaker = String(argv[++i] || '').toLowerCase();
     else if (t === '--control-ending') a.controlEndingPolicy = argv[++i];
     else if (t === '--call-telemetry-json') {
@@ -333,6 +339,12 @@ function parseArgs(argv) {
   // compact + public-only run on the compact drama prompts; full uses the full
   // recognition prompts. Coupling here keeps fidelity the single knob.
   if (a.dramaFidelity === 'compact' || a.dramaFidelity === 'public-only') a.dramaCompactPrompts = true;
+  if (!['last-six', 'ledger-recent', 'full-public'].includes(a.contextMode)) {
+    throw new Error(`--context-mode must be last-six|ledger-recent|full-public (got ${a.contextMode})`);
+  }
+  if (!Number.isInteger(a.recentTurns) || a.recentTurns < 1) {
+    throw new Error('--recent-turns must be a positive integer');
+  }
   if (a.pedagogyDb && !fs.existsSync(a.pedagogyDb)) throw new Error(`--pedagogy-db not found: ${a.pedagogyDb}`);
   if (a.dialogueDb && !fs.existsSync(a.dialogueDb)) throw new Error(`--dialogue-db not found: ${a.dialogueDb}`);
   if (!['off', 'scene'].includes(a.directorMode)) throw new Error('--director-mode must be off|scene');
@@ -1885,7 +1897,11 @@ function wrapLlmCallWithRoleBudgets(llmCall, budgets) {
 // a compact fidelity is set, so the full default path is unchanged.
 let _compactDramaPromptOverrides;
 function dramaTurnOptionsForArgs(args) {
-  const out = { dramaFidelity: args?.dramaFidelity || 'full' };
+  const out = {
+    dramaFidelity: args?.dramaFidelity || 'full',
+    contextMode: args?.contextMode || 'last-six',
+    recentTurns: args?.recentTurns || 4,
+  };
   if (!args?.dramaCompactPrompts) return out;
   if (!_compactDramaPromptOverrides) {
     const dir = path.join(WORKTREE_ROOT, 'prompts', 'drama');
