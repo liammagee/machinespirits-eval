@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Roundup — 9 Jun – 11 Jun 2026</title>
+  <style>
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      line-height: 1.65;
+      color: #1a1a1a;
+      background: #fafaf8;
+    }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; margin-bottom: .2rem; color: #444; text-transform: uppercase;
+         letter-spacing: .06em; }
+    .paper {
+      border-left: 3px solid #aaa;
+      padding: .5rem 1rem;
+      margin: 1rem 0;
+      background: #fff;
+    }
+    .paper.hot { border-left-color: #c0392b; }
+    .paper h3 { margin: 0 0 .25rem; font-size: 1rem; }
+    .paper .meta { font-size: .82rem; color: #666; margin-bottom: .5rem; }
+    .paper p { margin: 0; font-size: .93rem; }
+    .flag {
+      display: inline-block;
+      background: #c0392b;
+      color: #fff;
+      font-size: .72rem;
+      font-weight: bold;
+      padding: .1rem .45rem;
+      border-radius: 3px;
+      margin-left: .5rem;
+      vertical-align: middle;
+    }
+    .flag.yellow { background: #d4a017; }
+    a { color: #1a5276; }
+    footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+    .intro-note { font-size: .9rem; color: #555; background: #f0f0ea; border: 1px solid #ddd;
+                  padding: .6rem 1rem; border-radius: 3px; margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+<!-- meta: date=2026-06-11 window=(2026-06-09,2026-06-11] arxiv=2603.09890,2604.14128,2604.20795,2604.23090,2605.29675,2606.01584,2606.04037,2606.05961,2606.06448,2606.08878 generator=deep-research/claude-sonnet-4-6 -->
+
+<h1>Research Roundup <small style="font-weight:normal;font-size:.85em">9 Jun – 11 Jun 2026</small></h1>
+
+<div class="intro-note">
+  <strong>Scope note:</strong> The previous roundup (9 Jun) covered papers 2606.00820–2606.05553.
+  This issue picks up newly appeared <code>2606.06xxx</code>–<code>2606.09xxx</code> papers
+  plus three high-relevance items from May–June 2026 that were missed last issue.
+  One near-miss section covers April 2026 papers still worth reading before the next
+  paper-authoring sprint.
+  Flags: <span class="flag">UNBLOCK</span> = could directly accelerate current work;
+  <span class="flag yellow">WATCH</span> = relevant background.
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Agent Architecture &amp; Memory</h2>
+
+<div class="paper hot">
+  <h3>
+    PerspectiveGap: A Benchmark for Multi-Agent Orchestration Prompting
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    (Authors not confirmed in search results) ·
+    arXiv 2606.08878 · June 7, 2026 ·
+    <a href="https://arxiv.org/abs/2606.08878">https://arxiv.org/abs/2606.08878</a>
+  </div>
+  <p>
+    PerspectiveGap tests 27 commercial models on 110 orchestration-prompting scenarios
+    spanning 10 multi-agent topologies; average pass rate is only 14.9% (GPT-5.5: 62%,
+    Claude Opus 4.7 notably weak despite strong coding scores).
+    The core finding: writing prompts that correctly assign <em>perspective</em>
+    (what each sub-agent needs to know, vs. what it must not see) is a distinct capability
+    under-proxied by general benchmarks.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The "Prompt Economy" principle (loop-centred orchestrations that minimise role/engineering overhead)
+    is a direct frame for auditing the ego-superego cells: does the superego prompt contain
+    only what the superego needs, or is there bleed-through of ego-level context?
+    The benchmark's leakage metric — GPT-5.5 49.1% vs. average 246.5% — is a
+    concrete diagnostic the project could apply to <code>prompts/tutor-superego*.md</code>
+    to test whether superego prompts inadvertently expose ego-level reasoning.
+    Could unblock the superego ablation work (cells 93–100).
+  </p>
+</div>
+
+<div class="paper">
+  <h3>
+    Agent Memory: Characterization and System Implications of Stateful Long-Horizon Workloads
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Yasmine Omri, Ziyu Gan, Zachary Broveak, Robin Geens, Zexue He, Alex Pentland,
+    Marian Verhelst, Tsachy Weissman, Thierry Tambe ·
+    arXiv 2606.06448 · June 4, 2026 ·
+    <a href="https://arxiv.org/abs/2606.06448">https://arxiv.org/abs/2606.06448</a>
+  </div>
+  <p>
+    The first systems-level taxonomy of agent memory, classifying existing architectures
+    along four axes: storage medium (parametric / external KV / vector / structured),
+    retrieval mechanism (flat / LLM-mediated / graph traversal / agentic control),
+    update strategy, and scope (session / cross-session / world model).
+    Identifies "stateful long-horizon workloads" as a distinct systems problem requiring
+    new profiling methodology.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    Maps cleanly onto the adaptive runner's state schema (cells 110–113):
+    the <code>stateSchema.js</code> design straddles "flat retrieval" and "agentic control"
+    in the paper's taxonomy, which may explain the latency and cost behaviour seen
+    in smoke runs.
+    The update-strategy axis is directly applicable to the <code>otherEgoProfiling</code>
+    mechanism (cells 54–59): the paper provides vocabulary to distinguish
+    append-only profiling from summarization-with-loss.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Prompt Engineering &amp; Context Architecture</h2>
+
+<div class="paper hot">
+  <h3>
+    From Prompts to Context: An Ontology-Driven Framework for Human-Generative AI Collaboration
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Ngọc Luyện Lê, Marie-Hélène Abel, Bertrand Laforge ·
+    arXiv 2605.29675 · May 28, 2026 · also in <em>Information Systems Frontiers</em> (Springer) ·
+    <a href="https://arxiv.org/abs/2605.29675">https://arxiv.org/abs/2605.29675</a>
+  </div>
+  <p>
+    Introduces the Contextual Collaboration AI Ontology (CCAI), an OWL vocabulary that models
+    tasks, agent roles, resources, and constraints as machine-interpretable entities.
+    Populated CCAI instances are combined with SPARQL-based retrieval to turn otherwise
+    ephemeral prompt-response pairs into structured, queryable collaboration traces.
+    Addresses the provenance gap: after a dialogue, it is usually impossible to reconstruct
+    who did what, with which resource, under which constraint.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    This is a near-exact formal treatment of what <code>services/evalSignature.js</code>
+    does informally via <code>config_hash</code> / <code>dialogue_content_hash</code>
+    / <code>prompt_content_hash</code>.
+    CCAI could serve as a reference ontology for formalising the eval pipeline's provenance
+    columns — and as a vocabulary for describing the ego/superego role split in Paper 2.0's
+    architecture section.
+    The SPARQL-query model also suggests a path toward querying the evaluation DB
+    with ontology-grounded filters rather than raw SQL (relevant to <code>/ms-query-db</code>).
+  </p>
+</div>
+
+<div class="paper">
+  <h3>
+    Influencing LLM Multi-Agent Dialogue via Policy-Parameterized Prompts
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Hongbo Bo, Jingyu Hu, Weiru Liu (University of Bristol) ·
+    arXiv 2603.09890 · March 10, 2026 ·
+    <a href="https://arxiv.org/abs/2603.09890">https://arxiv.org/abs/2603.09890</a>
+  </div>
+  <p>
+    Treats prompts as first-class <em>actions</em> in a state-action policy:
+    a five-component prompt constructor (role, goal, context, constraints, output format)
+    reads the current dialogue state and dynamically instantiates the next prompt
+    without any model fine-tuning.
+    Dialogue quality is evaluated on five behavioural indicators: responsiveness,
+    rebuttal, evidence usage, non-repetition, and stance shift.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The five-indicator set (responsiveness, rebuttal, evidence use, non-repetition,
+    stance shift) is more behaviourally specific than the dialogue quality rubric's
+    current dimensions and could extend <code>config/evaluation-rubric-dialogue.yaml</code>
+    with process-level metrics.
+    The state-action prompt policy is structurally equivalent to the adaptive runner's
+    <code>policyActions.js</code> — reading this paper is useful background before the
+    next iteration of the A13 cells (111–113).
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Ontology / Knowledge Representation</h2>
+
+<div class="paper">
+  <h3>
+    Toward Pre-Deployment Assurance for Enterprise AI Agents: Ontology-Grounded Simulation
+    and Trust Certification
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Thanh Luong Tuan (Golden Gate University), Abhijit Sanyal (Novartis) ·
+    arXiv 2606.04037 · June 3, 2026 ·
+    <a href="https://arxiv.org/abs/2606.04037">https://arxiv.org/abs/2606.04037</a>
+  </div>
+  <p>
+    Proposes an Agent Operational Envelope (AOE) ontology formalising certification space
+    across permissions, domain constraints, safety properties, governance rules, and
+    autonomy levels.
+    An automated pipeline derives regulatory, operational, and adversarial test scenarios
+    from the AOE; a resulting Trust Certificate carries machine-verifiable graduated verdicts
+    (Approved / Conditional / Rejected).
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The AOE's five certification dimensions map structurally onto the poetics rubric
+    (<code>config/evaluation-rubric-poetics.yaml</code>): each of the six Aristotle-derived
+    dimensions could be formalised as an ontology class with associated SHACL shapes,
+    enabling automated rubric validation and provenance-checked certification of
+    tutor quality.
+    The "adversarial scenario generation" component is also directly applicable to
+    the trap-scenario suite (cells 110–125), where scenario design is currently manual.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Rhetoric &amp; Persuasion</h2>
+
+<div class="paper">
+  <h3>
+    Political Persuasion and Endorsement in Large Language Models
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Alessia Antelmi, Alessia Galdeman, Lucio La Cava, Arianna Pera, Giovanni Da San Martino ·
+    arXiv 2606.05961 · June 5, 2026 ·
+    <a href="https://arxiv.org/abs/2606.05961">https://arxiv.org/abs/2606.05961</a>
+  </div>
+  <p>
+    Tests six LLMs (diverse geographic origins) on real-world media content annotated with
+    persuasion techniques, measuring endorsement via five-point Likert scale.
+    Without political conditioning, LLMs generally do not endorse persuasive messages —
+    but partisan persona prompting significantly modulates endorsement, with large
+    model-level variance.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The recognition-theoretic tutor prompts are, in effect, persona prompts that may bias
+    the tutor toward endorsing certain learning moves.
+    This paper provides a controlled methodology for testing whether the recognition framing
+    inflates positive assessments in the ego's self-evaluation — a confound not currently
+    controlled for in the rubric v2.2 design.
+    Also relevant to the placebo cells (15–18): the placebo condition removes
+    Hegelian theory but retains "best-practice" framing that may itself be a subtle
+    persona prompt.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Pedagogy &amp; Tutoring Agents</h2>
+
+<div class="paper">
+  <h3>
+    Identifying High-Confidence Social Biases in LLMs for Trustworthy Conversational
+    Tutoring Agents
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Aitor Arronte Alvarez, Naiyi Xie Fincham (University of Hawaii at Manoa) ·
+    arXiv 2606.01584 · June 1, 2026 ·
+    <a href="https://arxiv.org/abs/2606.01584">https://arxiv.org/abs/2606.01584</a>
+  </div>
+  <p>
+    Evaluates LLMs in authentic student–tutor language-learning conversations,
+    finding that bias detection is substantially harder in conversational tutoring contexts
+    than in standard benchmarks, and that current SOTA models are overconfident in
+    incorrect bias assessments — they fail to flag stereotypical bias while expressing
+    high confidence.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The judge model in the evaluation pipeline (Claude Sonnet / Opus) faces the same
+    overconfidence risk: when the tutor response contains subtle recognition-theory cues,
+    the judge may be systematically over-generous.
+    The paper's bias-detection methodology (regenerating dialogues while preserving
+    linguistic structure, then testing judge responses) is a direct template for
+    a new <code>eval-cli.js calibrate</code> sub-command that stress-tests the judge
+    against bias-injected transcripts.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Notable near-misses (April–May 2026, not in previous roundups)</h2>
+
+<ul style="font-size:.9rem;">
+  <li style="margin-bottom:.8rem;">
+    <strong>Rhetorical Questions in LLM Representations: A Linear Probing Study</strong>
+    (arXiv 2604.14128, Apr 15 2026 — Louie Hong Yao, Vishesh Anand, Yuan Zhuang, Tianyu Jiang) —
+    Rhetorical signals are linearly separable from information-seeking questions in LLM
+    activations, AUROC ~0.7–0.8 cross-dataset; last-token representations are most stable.
+    Could ground <code>analyze-recognition-lexicon.js</code> in a mechanistic account:
+    the recognition lexicon may be detectable as a distinct activation cluster, not just
+    a surface-frequency count.
+    <a href="https://arxiv.org/abs/2604.14128">arxiv.org/abs/2604.14128</a>
+  </li>
+  <li style="margin-bottom:.8rem;">
+    <strong>Automatic Ontology Construction Using LLMs as an External Layer of Memory,
+    Verification, and Planning</strong>
+    (arXiv 2604.20795, Apr 22 2026 — Pavel Salovskii et al., Partenit.io) —
+    Automated pipeline: entity recognition → relation extraction → triple generation →
+    SHACL/OWL validation → continuous graph update, applied to heterogeneous sources
+    including dialogue logs.
+    Directly relevant to formalising the poetics rubric as an OWL ontology whose
+    instances are individual transcripts; SHACL shapes would automate the
+    <code>poetics:audit</code> cross-critic consistency check.
+    <a href="https://arxiv.org/abs/2604.20795">arxiv.org/abs/2604.20795</a>
+  </li>
+  <li>
+    <strong>Towards Automated Ontology Generation from Unstructured Text: A Multi-Agent LLM Approach</strong>
+    (arXiv 2604.23090, Apr 2026) —
+    Multi-agent pipeline (planner / extractor / validator agents) for ontology construction
+    from free text; companion to 2604.20795 with emphasis on the agent-decomposition angle.
+    <a href="https://arxiv.org/abs/2604.23090">arxiv.org/abs/2604.23090</a>
+  </li>
+</ul>
+
+<!-- ────────────────────────────────────── -->
+<h2>Dramaturgy / Roleplay — no new papers this window</h2>
+
+<p style="font-size:.9rem;color:#666;">
+  No new <code>2606.xxx</code> papers on dramaturgy, narrative arc, or roleplay were
+  identified this window.
+  The frontier remains the papers covered in previous roundups:
+  ArcANE (2606.05553) for phase-conditioned character arc probing, and
+  OPEN-THEATRE (2509.16713, Sep 2025) for episodic drama scaffolding.
+  The Transactional Analysis ego-states paper
+  (<a href="https://arxiv.org/abs/2512.17060">2512.17060</a>, Dec 2025 — Zamojska &amp; Chudziak)
+  remains the closest published peer architecture to the ego-superego design and should
+  appear in Paper 2.0's related-work section.
+</p>
+
+<footer>
+  Generated by Claude Code (claude-sonnet-4-6) · 2026-06-11 ·
+  Search harness: 14 parallel search queries across 5 topic areas, detail searches on 9 candidate papers ·
+  Repository: <code>liammagee/machinespirits-eval</code>
+</footer>
+
+</body>
+</html>

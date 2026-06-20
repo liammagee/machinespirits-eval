@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Roundup — 15 Jun – 16 Jun 2026</title>
+  <style>
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      line-height: 1.65;
+      color: #1a1a1a;
+      background: #fafaf8;
+    }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; margin-bottom: .2rem; color: #444; text-transform: uppercase;
+         letter-spacing: .06em; }
+    .paper {
+      border-left: 3px solid #aaa;
+      padding: .5rem 1rem;
+      margin: 1rem 0;
+      background: #fff;
+    }
+    .paper.hot { border-left-color: #c0392b; }
+    .paper h3 { margin: 0 0 .25rem; font-size: 1rem; }
+    .paper .meta { font-size: .82rem; color: #666; margin-bottom: .5rem; }
+    .paper p { margin: 0; font-size: .93rem; }
+    .flag {
+      display: inline-block;
+      background: #c0392b;
+      color: #fff;
+      font-size: .72rem;
+      font-weight: bold;
+      padding: .1rem .45rem;
+      border-radius: 3px;
+      margin-left: .5rem;
+      vertical-align: middle;
+    }
+    .flag.yellow { background: #d4a017; }
+    a { color: #1a5276; }
+    footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+  </style>
+</head>
+<body>
+<!-- meta: date=2026-06-16 window=(2026-06-15,2026-06-16] arxiv=2606.08076,2606.10475,2606.11609,2606.13197,2606.13681 generator=deep-research/claude-sonnet-4-6 -->
+
+<h1>Research Roundup <small style="font-weight:normal;font-size:.85em">15 Jun – 16 Jun 2026</small></h1>
+<p style="font-size:.9rem;color:#555;">
+  Three confirmed in-window papers (June 10–11) across agent architecture, pedagogy/prompt design,
+  and knowledge-model evolution, plus two borderline June 9 entries moved to the near-miss section.
+  No strong strictly-new prompt-engineering technique papers this week; the closest recent contribution
+  remains <a href="https://arxiv.org/abs/2603.09619">Context Engineering (2603.09619, Mar 2026)</a>.
+  Flags: <span class="flag">UNBLOCK</span> = could directly accelerate current work;
+  <span class="flag yellow">WATCH</span> = relevant background.
+</p>
+
+<!-- ────────────────────────────────────── -->
+<h2>Pedagogy &amp; Dialogue Architecture</h2>
+
+
+<!-- ────────────────────────────────────── -->
+<h2>Agent Architecture &amp; Multi-Agent Deliberation</h2>
+
+<div class="paper">
+  <h3>
+    ARMOR-MAD: Adaptive Routing for Heterogeneous Multi-Agent Debate in Large Language Model Reasoning
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Fuqiang Niu, Bowen Zhang ·
+    arXiv 2606.13197 · 11 Jun 2026 ·
+    <a href="https://arxiv.org/abs/2606.13197v1">https://arxiv.org/abs/2606.13197v1</a>
+  </div>
+  <p>
+    ARMOR-MAD combines three routing mechanisms: Pre-debate Agreement Routing (PAR) decides
+    whether a Round-0 multi-agent agreement already renders debate unnecessary; Early Agreement
+    Stopping Evaluator (EASE) halts ongoing debate the moment agents converge; and Semantic
+    Outlier Detection (SOD) down-weights abnormal final answers during aggregation.
+    Fixed debate pipelines are replaced by a dynamic topology that skips deliberation when it
+    adds no value.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The PAR + EASE logic maps directly onto the superego-bypass question: cells with a
+    configured superego currently run a full ego↔superego exchange every turn regardless of
+    convergence. ARMOR-MAD's pre-debate agreement check is a concrete, publishable mechanism
+    for skipping that exchange when the ego's Round-0 output already satisfies the superego's
+    criteria — reducing token cost for cells 3–4, 7–8, 22–33, 82–83, 86–89. Also relevant to
+    the adaptive runner's state-policy graph (cells 110–113), which currently has no early-exit
+    condition on debate convergence.
+  </p>
+</div>
+
+<div class="paper">
+  <h3>
+    Multi-Agent Reasoning with Adaptive Worker Allocation for Stance Detection
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Meysam Sabbaghan, Arman Zareian Jahromi, Doina Caragea ·
+    arXiv 2606.11609 · 10 Jun 2026 ·
+    <a href="https://arxiv.org/abs/2606.11609">https://arxiv.org/abs/2606.11609</a>
+  </div>
+  <p>
+    Applied to stance detection (identifying an author's implicit or rhetorically framed position
+    toward a target), the paper shifts multi-agent aggregation from label-level voting to
+    reasoning-level synthesis: workers generate structured rationales, and a coordinator
+    synthesises those rationales rather than simply tallying predicted labels.
+    Dynamic worker allocation concentrates compute on ambiguous or high-complexity cases.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    Reasoning-level synthesis over rationales — rather than score averaging — is a direct
+    design pattern for the multi-critic poetics panel
+    (<code>config/evaluation-rubric-poetics.yaml</code>).
+    The project's critic disagreement finding (weighted κ ≈ 0.04) might be partly explained by
+    label-level aggregation; this paper's approach of synthesising the underlying reasoning
+    could be tested as an alternative aggregation step for <code>poetics:audit</code>.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Ontology &amp; Knowledge Model Evolution</h2>
+
+<div class="paper">
+  <h3>
+    EvoArena: Tracking Memory Evolution for Robust LLM Agents in Dynamic Environments
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Jundong Xu, Qingchuan Li, Jiaying Wu, Yihuai Lan, Shuyue Stella Li, Huichi Zhou,
+    Bowen Jiang, Lei Wang, Jun Wang, Anh Tuan Luu, Caiming Xiong, Hae Won Park,
+    Bryan Hooi, Zhiyuan Hu ·
+    arXiv 2606.13681 · 11 Jun 2026 ·
+    <a href="https://arxiv.org/abs/2606.13681v1">https://arxiv.org/abs/2606.13681v1</a>
+    | <a href="https://github.com/Aiden0526/EvoArena">GitHub: EvoArena</a>
+  </div>
+  <p>
+    EvoArena benchmarks LLM agents against progressive environment updates across terminal,
+    software, and social domains. The companion contribution, EvoMem, is a patch-based memory
+    paradigm that records memory evolution as structured update histories rather than snapshots,
+    enabling agents to reason about environmental change through the delta between memory states.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    EvoMem's patch-based memory is a concrete alternative to the flat per-turn
+    <code>adaptationIndex</code>: rather than computing a scalar delta between consecutive
+    ego outputs, the agent maintains a structured history of changes to its learner model.
+    This could sharpen the <code>otherEgoProfiling</code> mechanism (cells 54–59) and the
+    bilateral transformation indices, and provides a benchmark suite to test whether
+    ego-superego deliberation genuinely produces durable profile updates versus transient
+    adjustments that revert by the next turn.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Near-Misses (June 9 — borderline window)</h2>
+
+<ul style="font-size:.9rem;">
+  <li>
+    <strong>Decoupling Thought from Speech: Knowledge-Grounded Counterfactual Reasoning for Resilient Multi-Agent Argumentation</strong>
+    (arXiv 2606.10475, Jakub Masłowski &amp; Jarosław A. Chudziak, Warsaw University of Technology, submitted 9 Jun 2026) —
+    Introduces KG-CFR, a dual-stage architecture that enforces a strict separation between a private,
+    retrieval-augmented planning buffer and a public execution layer to prevent identity drift,
+    argument repetition, and role collapse under sustained perturbations.
+    <em>Project relevance:</em> The private buffer / public speech split is an explicit
+    engineering realisation of the ego-superego boundary — and a solution to the problem the
+    project has flagged as "insight-action gap" (Finding 11, <code>analyze-insight-action-gap.js</code>).
+    The counterfactual reasoning component also maps onto the adaptive runner's
+    counterfactual replay in cells 110–113.
+    <a href="https://arxiv.org/abs/2606.10475">arxiv.org/abs/2606.10475</a>
+  </li>
+  <li>
+    <strong>"I understand your perspective": LLM Persuasion and Sycophancy through the Lens of Communicative Action Theory</strong>
+    (arXiv 2606.08076, Esra Dönmez &amp; Agnieszka Falenska, ACL 2025 Findings — arxiv preprint June 2026) —
+    Maps LLM-generated counter-arguments from the persuasive subreddit ChangeMyView onto Habermas'
+    illocutionary intent dimensions (conveying knowledge / building trust / signalling similarity)
+    and finds that LLMs convey illocutionary intent more strongly than humans, with sycophantic
+    alignment closely tracking opinion change.
+    <em>Project relevance:</em> The illocutionary intent taxonomy is the missing rhetorical
+    dimension in the dialogue quality rubric (v2.2 currently lacks a rhetoric axis);
+    Habermasian communicative action is a philosophically coherent complement to the existing
+    Hegelian recognition frame. Worth integrating into a future rubric v2.3.
+    <a href="https://arxiv.org/abs/2606.08076">arxiv.org/abs/2606.08076</a>
+    | <a href="https://aclanthology.org/2025.findings-acl.793/">ACL Anthology</a>
+  </li>
+</ul>
+
+<h2>Prompt Engineering — No New Papers This Week</h2>
+<p style="font-size:.9rem;color:#555;">
+  No genuinely novel prompt-engineering technique papers were found in the June 10–16 window.
+  The best active entry point remains
+  <a href="https://arxiv.org/abs/2603.09619">Context Engineering (2603.09619)</a>.
+  The closest adjacent work this week is the KG-CFR private-buffer architecture (2606.10475,
+  above) and the Socratic dialogue decomposition (2606.11744, first noted 2026-06-13), both of which are
+  prompt-design-adjacent but primarily architectural.
+</p>
+
+<h2>Dramaturgy / Roleplay — No New Papers This Week</h2>
+<p style="font-size:.9rem;color:#555;">
+  No arxiv papers on character arc, peripeteia/anagnorisis, or dramatic recognition appeared
+  strictly within this window beyond ArcANE (2606.05553, already covered 2026-06-09).
+  The drama-machine and poetics pipeline are currently ahead of the published literature
+  in this area.
+</p>
+
+<footer>
+  Generated by Claude Code (claude-sonnet-4-6) · 2026-06-16 ·
+  Deep-research harness: 5 parallel search angles, adversarial date-verification pass,
+  6 WebFetch attempts (arxiv 403 → redirected to search-based verification) ·
+  Repository: <code>liammagee/machinespirits-eval</code>
+</footer>
+
+</body>
+</html>

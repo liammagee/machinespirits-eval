@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Roundup — 13 Jun – 14 Jun 2026</title>
+  <style>
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      line-height: 1.65;
+      color: #1a1a1a;
+      background: #fafaf8;
+    }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; margin-bottom: .2rem; color: #444; text-transform: uppercase;
+         letter-spacing: .06em; }
+    .paper {
+      border-left: 3px solid #aaa;
+      padding: .5rem 1rem;
+      margin: 1rem 0;
+      background: #fff;
+    }
+    .paper.hot { border-left-color: #c0392b; }
+    .paper h3 { margin: 0 0 .25rem; font-size: 1rem; }
+    .paper .meta { font-size: .82rem; color: #666; margin-bottom: .5rem; }
+    .paper p { margin: 0; font-size: .93rem; }
+    .flag {
+      display: inline-block;
+      background: #c0392b;
+      color: #fff;
+      font-size: .72rem;
+      font-weight: bold;
+      padding: .1rem .45rem;
+      border-radius: 3px;
+      margin-left: .5rem;
+      vertical-align: middle;
+    }
+    .flag.yellow { background: #d4a017; }
+    a { color: #1a5276; }
+    footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+  </style>
+</head>
+<body>
+<!-- meta: date=2026-06-14 window=(2026-06-13,2026-06-14] arxiv=2605.07102,2606.04155,2606.04184,2606.08625,2606.09900,2606.11459 generator=deep-research/claude-sonnet-4-6 -->
+
+<h1>Research Roundup <small style="font-weight:normal;font-size:.85em">13 Jun – 14 Jun 2026</small></h1>
+<p style="font-size:.9rem;color:#555;">
+  Five papers from arxiv (all <code>2606.xxxxx</code>, confirmed June 2026, window
+  (2026-06-13, 2026-06-14]) across pedagogy/tutoring, evaluation/rubrics, agent
+  architecture, and prompt engineering. One May near-miss (2605.07102) flagged for
+  the poetics arc. Two papers (2606.04155, 2606.04184) were submitted June 4 but
+  fell through the gap between prior notes — included here as first coverage.
+  Flags: <span class="flag">UNBLOCK</span> = could directly accelerate current work;
+  <span class="flag yellow">WATCH</span> = relevant background.
+</p>
+
+<!-- ─────────────────────────────────── -->
+<h2>Pedagogy &amp; Tutoring</h2>
+
+
+<div class="paper hot">
+  <h3>
+    SocialCoach: Personalized Social Skill Learning with RL-based Agentic Tutoring and Practice
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    [Authors per arxiv page] ·
+    arXiv 2606.04155 · June 4, 2026 (first coverage in this note) ·
+    <a href="https://arxiv.org/abs/2606.04155">https://arxiv.org/abs/2606.04155</a>
+  </div>
+  <p>
+    SocialCoach is a full-stack LLM-powered agentic tutoring system for social skill
+    development that addresses the <em>knowing-doing gap</em> — when a learner understands
+    a concept but cannot act on it. The system integrates: (1) immersive, goal-driven
+    practice scenarios; (2) causality-driven proficiency assessment that goes beyond surface
+    correctness; and (3) knowledge-grounded reflective tutoring with an adaptive scheduling
+    module (prescription → retrieval → adaptation) whose policy is optimised in a learner
+    simulation environment via RL. Deployed in the EQoach product; judge-rated tutoring
+    quality exceeds baselines.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The "knowing-doing gap" is the same phenomenon tracked by
+    <code>analyze-insight-action-gap.js</code> (Finding 11 / D3): tutor rhetoric that
+    recognises the learner's position without changing the learner's behaviour.
+    SocialCoach's prescription-retrieval-adaptation loop is structurally identical to the
+    adaptive runner's trap-trigger → policy-action → counterfactual-replay cycle.
+    The causality-driven proficiency assessment is a methodological precedent for upgrading
+    the <code>learnerGrowthIndex</code> from text-surface proxies to causal attribution.
+  </p>
+</div>
+
+<!-- ─────────────────────────────────── -->
+<h2>Evaluation &amp; Rubrics</h2>
+
+<div class="paper hot">
+  <h3>
+    From Holistic Evaluation to Structured Criteria: Rubrics Across the Evolving LLM Landscape
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Hao Chen et al. ·
+    arXiv 2606.08625 · June 7, 2026 ·
+    <a href="https://arxiv.org/abs/2606.08625">https://arxiv.org/abs/2606.08625</a>
+    | <a href="https://github.com/AI9Stars/LLM-Rubrics-Survey">GitHub: AI9Stars/LLM-Rubrics-Survey</a>
+  </div>
+  <p>
+    A systematic survey that repositions the <em>rubric</em> as the unifying evaluation
+    primitive across LLM assessment, RLHF, and safety alignment — framing rubrics as a
+    dynamic institutional response to successive paradigm shifts in language model capability.
+    Organises existing rubric designs by construction strategy (manual, LLM-generated,
+    optimised), examines their use in training vs. evaluation contexts, and maps failure
+    modes (dimensionality collapse, judge gaming, cross-task generalization).
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The project now maintains three independent rubric families (v2.2 tutor, charisma v1.0,
+    poetics v1.0). This survey is the first comprehensive map of the design space and
+    failure-mode taxonomy for that kind of multi-rubric architecture. The
+    "dimensionality collapse" finding — rubrics that nominally have many dimensions but
+    practically converge to one — is a direct audit target for the 8-dimension v2.2 rubric
+    and the 6-dimension poetics rubric. Also surfaces methodological priors for the
+    <code>calibrate-rubric.js</code> workflow.
+  </p>
+</div>
+
+<!-- ─────────────────────────────────── -->
+<h2>Agent Architecture &amp; Social Cognition</h2>
+
+<div class="paper">
+  <h3>
+    GroupToM-Bench: Benchmarking Group Theory of Mind and Nonlinear Social Emergence in MLLMs
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    [Authors per arxiv page] ·
+    arXiv 2606.04184 · June 4, 2026 (first coverage in this note) ·
+    <a href="https://arxiv.org/abs/2606.04184">https://arxiv.org/abs/2606.04184</a>
+  </div>
+  <p>
+    First multimodal benchmark for <em>group-level</em> Theory of Mind, built around a
+    three-tier causal chain: micro-level BDI states (belief, desire, intention) → meso-level
+    group tension and structural constraints → macro-level outcome prediction. A seven-level
+    audit framework assesses from individual attribution (levels 1–3) to nonlinear social
+    emergence that cannot be recovered by summing individual intentions (levels 4–7).
+    Current frontier MLLMs fail comprehensively at levels 4–7.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The bilateral ToM cells (115–123, P2.1) measure exactly this kind of cross-agent
+    mind-reading. GroupToM-Bench provides a vocabulary (BDI × group tension × structural
+    constraint) and a benchmarking methodology that could sharpen the P2.1 state-schema
+    (§6.8.5–.6) beyond the current binary pass/fail on trap-scenario recognition.
+    The "nonlinear emergence" finding — that group-level outcomes are irreducible to summed
+    individual ToM — is also a theoretical grounding for the
+    <code>bilateralTransformationIndex</code> as something genuinely distinct from the sum
+    of <code>adaptationIndex + learnerGrowthIndex</code>.
+  </p>
+</div>
+
+<div class="paper">
+  <h3>
+    Less Context, More Accuracy: A Bi-Temporal Memory Engine for LLM Agents
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    [Authors per arxiv page] ·
+    arXiv 2606.09900 · June 10, 2026 ·
+    <a href="https://arxiv.org/abs/2606.09900">https://arxiv.org/abs/2606.09900</a>
+  </div>
+  <p>
+    Proposes a bi-temporal memory layer for LLM agents that tracks (a) <em>when a fact
+    was true</em> and (b) <em>when the agent learned it</em> — the gap between these
+    is the source of distractor accumulation when replaying full history into a prompt.
+    Shows that lean bi-temporal retrieval consistently outperforms full-history replay,
+    with the accuracy gap widening as session length grows.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The ego generates each turn by replaying the entire dialogue context into the prompt.
+    For long multi-turn cells (messages-mode: 80–92, adaptive: 110–113), this replay
+    accumulates "distractor" turns that the ego must filter. Bi-temporal memory is a
+    candidate architecture for the ego's context management and could complement the
+    existing <code>Agent Memory</code> characterization work (2606.06448, covered June 8).
+  </p>
+</div>
+
+<!-- ─────────────────────────────────── -->
+<h2>Prompt Engineering</h2>
+
+<div class="paper">
+  <h3>
+    APEX: Automated Prompt Engineering eXpert with Dynamic Data Selection
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Fei Wang, Si Si, Cho-Jui Hsieh, Inderjit S. Dhillon (Google / UCLA) ·
+    arXiv 2606.11459 · June 9, 2026 ·
+    <a href="https://arxiv.org/abs/2606.11459">https://arxiv.org/abs/2606.11459</a>
+  </div>
+  <p>
+    Addresses the data-efficiency bottleneck in evolutionary automatic prompt optimisation:
+    current methods treat the development dataset as a static benchmark and waste compute
+    on "easy" examples the current prompt already handles correctly. APEX dynamically
+    stratifies examples into Easy / Hard / Mixed tiers based on the optimisation lineage
+    and focuses the evolutionary search on the Mixed tier — cases where the prompt
+    sometimes succeeds, indicating the most leverage.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The <code>prompt-lab autotune</code> workflow optimises tutor/learner prompts against
+    a fixed evaluation set. APEX's Mixed-tier prioritisation directly maps onto the
+    near-miss class of evaluation outputs — scenarios where the ego almost succeeds
+    and where additional prompt signal would be highest-yield. A natural candidate for
+    the next autotune cycle once the poetics arc rubric is stable.
+  </p>
+</div>
+
+<!-- ─────────────────────────────────── -->
+<h2>Near-miss (May 2026 — first coverage)</h2>
+
+<ul style="font-size:.9rem;">
+  <li>
+    <strong>SAGE: Hierarchical LLM-Based Literary Evaluation through Ontology-Grounded
+    Interpretive Dimensions</strong>
+    — Tianyu Wang &amp; Nianjun Zhou · arXiv 2605.07102 · May 8, 2026 ·
+    <a href="https://arxiv.org/abs/2605.07102">arxiv.org/abs/2605.07102</a>.
+    Decomposes literary quality into three ontology-grounded interpretive layers —
+    cultural representation, emotional-psychological depth, existential-philosophical
+    sophistication — assessed via structured LLM evaluation with multi-round reflection.
+    Validated on 100 short stories (canonical, pulp, LLM-generated); cross-layer
+    correlations 0.649–0.683 confirm empirically distinct quality facets.
+    <em>Project relevance:</em> The three-layer ontology is a direct methodological
+    precedent for <code>config/evaluation-rubric-poetics.yaml</code>'s 6-dimension
+    structure. SAGE's "measurement-grade reliability" claim on ontology-grounded LLM
+    evaluation is the benchmark the poetics arc needs to meet; the cross-layer
+    correlation methodology is the right tool for the rubric dimension-collapse audit
+    flagged by 2606.08625 above.
+  </li>
+</ul>
+
+<footer>
+  Generated by Claude Code (claude-sonnet-4-6) · 2026-06-14 ·
+  Deep-research harness: 8 parallel search angles, 14+ source extractions, dedup against
+  2026-06-08 and 2026-06-09 notes ·
+  Repository: <code>liammagee/machinespirits-eval</code>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,85 @@
+name: Email research notes
+
+# Emails you each daily research-roundup AND weekly research-plan note when its PR
+# opens, with an action bar linking to the PR so you can review/merge from your
+# inbox. Inert until the three repo secrets exist: MAIL_SERVER, MAIL_USERNAME,
+# MAIL_PASSWORD. See notes/daily-notes/README.md for the roundup convention.
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review]
+    paths:
+      - 'notes/daily-notes/*-research-roundup.html'
+      - 'notes/research-plans/*-research-plan.html'
+  workflow_dispatch:        # run by hand from the Actions tab to test (emails the most recent note)
+
+permissions:
+  contents: read
+
+jobs:
+  email:
+    runs-on: ubuntu-latest
+    # Passed via env (not inline ${{ }}) to keep untrusted values out of the shell.
+    env:
+      EVENT: ${{ github.event_name }}
+      PR_URL: ${{ github.event.pull_request.html_url }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+          fetch-depth: 0
+
+      - name: Build the email
+        id: build
+        run: |
+          if [ "$EVENT" = "pull_request" ]; then
+            file=$(git diff --name-only --diff-filter=A \
+              "${{ github.event.pull_request.base.sha }}" \
+              "${{ github.event.pull_request.head.sha }}" \
+              -- 'notes/daily-notes/*-research-roundup.html' 'notes/research-plans/*-research-plan.html' | head -1)
+          else
+            file=$(ls notes/daily-notes/*-research-roundup.html notes/research-plans/*-research-plan.html 2>/dev/null | sort | tail -1)
+          fi
+          if [ -z "$file" ]; then
+            echo "No roundup added; nothing to email."
+            echo "skip=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+
+          subject=$(grep -oE '<title>[^<]*</title>' "$file" | sed -E 's#</?title>##g' | head -1)
+
+          # Label depends on whether this is a daily roundup or a weekly plan.
+          case "$file" in
+            *research-plan*) label="Weekly research plan"; tail="pick items to implement, or close to skip.";;
+            *)               label="Daily research roundup"; tail="merge to keep it in the timeline, or close to skip. Each paper links to arXiv below.";;
+          esac
+
+          # Action bar prepended to the email so you can act from the inbox.
+          if [ "$EVENT" = "pull_request" ]; then
+            bar="<div style=\"font-family:Arial,Helvetica,sans-serif;background:#1a5276;color:#fff;padding:14px 18px;margin:0 0 18px;border-radius:6px;line-height:1.55;\"><strong>${label}</strong> &middot; PR #${PR_NUMBER}<br><a href=\"${PR_URL}\" style=\"color:#fff;font-weight:bold;\">Review &amp; merge on GitHub &rarr;</a> &nbsp;&middot;&nbsp; <span style=\"opacity:.85;\">${tail}</span></div>"
+          else
+            bar="<div style=\"font-family:Arial,Helvetica,sans-serif;background:#555;color:#fff;padding:14px 18px;margin:0 0 18px;border-radius:6px;\"><strong>Manual test run</strong> &middot; <a href=\"https://github.com/${REPO}/blob/main/${file}\" style=\"color:#fff;font-weight:bold;\">view on GitHub &rarr;</a></div>"
+          fi
+
+          # Insert the bar as the first element inside <body>; keep the original note intact.
+          awk -v hdr="$bar" 'BEGIN{ins=0} {print} /<body/ && !ins {print hdr; ins=1}' "$file" > email-body.html
+
+          echo "file=$file" >> "$GITHUB_OUTPUT"
+          echo "subject=${subject:-New research roundup}" >> "$GITHUB_OUTPUT"
+          echo "Will email: $file"
+
+      # action-send-mail pinned to a commit SHA (supply-chain hardening); comment tracks the tag.
+      - name: Email it
+        if: steps.build.outputs.skip != 'true'
+        uses: dawidd6/action-send-mail@42942bc2f8fba4e611b459a018967a6a7c78c68c # v17
+        with:
+          server_address: ${{ secrets.MAIL_SERVER }}
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          from: Research Roundup <${{ secrets.MAIL_USERNAME }}>
+          to: ${{ secrets.MAIL_USERNAME }}
+          subject: ${{ steps.build.outputs.subject }}
+          html_body: file://email-body.html

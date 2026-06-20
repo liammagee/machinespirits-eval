@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Roundup — 16 Jun – 17 Jun 2026</title>
+  <style>
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      line-height: 1.65;
+      color: #1a1a1a;
+      background: #fafaf8;
+    }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; margin-bottom: .2rem; color: #444; text-transform: uppercase;
+         letter-spacing: .06em; }
+    .paper {
+      border-left: 3px solid #aaa;
+      padding: .5rem 1rem;
+      margin: 1rem 0;
+      background: #fff;
+    }
+    .paper.hot { border-left-color: #c0392b; }
+    .paper h3 { margin: 0 0 .25rem; font-size: 1rem; }
+    .paper .meta { font-size: .82rem; color: #666; margin-bottom: .5rem; }
+    .paper p { margin: 0; font-size: .93rem; }
+    .flag {
+      display: inline-block;
+      background: #c0392b;
+      color: #fff;
+      font-size: .72rem;
+      font-weight: bold;
+      padding: .1rem .45rem;
+      border-radius: 3px;
+      margin-left: .5rem;
+      vertical-align: middle;
+    }
+    .flag.yellow { background: #d4a017; }
+    .gap-note {
+      background: #f5f0e8;
+      border: 1px solid #d4a017;
+      border-radius: 4px;
+      padding: .4rem .8rem;
+      font-size: .83rem;
+      color: #7a5c00;
+      margin-bottom: 1rem;
+    }
+    a { color: #1a5276; }
+    footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+  </style>
+</head>
+<body>
+<!-- meta: date=2026-06-17 window=(2026-06-16,2026-06-17] arxiv=2606.04465,2606.13544,2606.14470,2606.15783 generator=deep-research/claude-sonnet-4-6 -->
+
+<h1>Research Roundup <small style="font-weight:normal;font-size:.85em">16 Jun – 17 Jun 2026</small></h1>
+<p style="font-size:.9rem;color:#555;">
+  Four papers across prompt engineering, agent architecture, and dramaturgy/narrative.
+  Four confirmed in the June 9–17 window (arxiv IDs 2606.11xxx–2606.15xxx);
+  two from early June (2606.04xxx) that slipped through the previous window gap and are
+  included here as catch-ups rather than duplicates.
+  Flags: <span class="flag">UNBLOCK</span> = could directly accelerate current work;
+  <span class="flag yellow">WATCH</span> = relevant background.
+</p>
+
+<!-- ────────────────────────────────────── -->
+<h2>Prompt Engineering</h2>
+
+
+<div class="paper hot">
+  <h3>
+    SePO: Self-Evolving Prompt Agent for System Prompt Optimization
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    (Authors not retrieved — arxiv 403 on fetch) ·
+    arXiv 2606.04465 · early June 2026 (gap catch-up) ·
+    <a href="https://arxiv.org/abs/2606.04465">https://arxiv.org/abs/2606.04465</a>
+  </div>
+  <p>
+    Existing prompt-agent systems hand-craft and freeze the prompt agent's own system prompt
+    while optimizing task-agent prompts. SePO folds the meta-prompt into the search space:
+    a single agent refines both task-agent prompts <em>and</em> its own system prompt via
+    open-ended evolutionary search over an archive of stepping-stone candidates. Pre-training
+    on a multi-task pool is followed by target-task fine-tuning; gains are shown across math
+    (AIME'25), abstract reasoning (ARC-AGI-1), and code generation (MBPP).
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The ego's system prompt in cells 1–8 is currently hand-tuned and frozen at run time.
+    SePO's self-referential design suggests a viable path to <em>jointly</em> optimising the
+    ego prompt and the superego's critique instructions — which is exactly the lever the
+    DRAMATIC-RECOGNITION-PLAN.md §3.2 calls for but leaves unspecified. Worth piloting on
+    a single cell pair (e.g., cells 3/4) before the next large factorial run.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Agent Architecture &amp; Memory</h2>
+
+<div class="paper">
+  <h3>
+    GitOfThoughts: Version-Controlled Reasoning and Agent Memory You Can Replay, Diff, and Merge
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    (Authors not retrieved — arxiv 403 on fetch) ·
+    arXiv 2606.14470 · ~June 12, 2026 ·
+    <a href="https://arxiv.org/abs/2606.14470">https://arxiv.org/abs/2606.14470</a>
+  </div>
+  <p>
+    LLM reasoning chains evaporate with the context window; GitOfThoughts stores an agent's
+    reasoning tree as a git repository — every scored thought is a commit, scores are git
+    notes, outcomes are tags, and retrieval is <code>git log</code> over the agent's own
+    history. Surprisingly, across five memory substrates (none, markdown, vector, graph, git)
+    and two benchmarks, richer memory does <em>not</em> improve accuracy on novel problems,
+    though it greatly aids auditability and cross-agent merge.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The adaptive runner (cells 110–113) already stores a per-turn state trace; the
+    <code>id_construction_trace</code> column holds the id-director arc. GitOfThoughts'
+    null result on accuracy is itself a finding worth noting in §6.8 (adaptive cells don't
+    benefit from richer memory) — but the <em>auditability</em> angle maps onto
+    <code>/ms-replay-one-side</code>'s counterfactual replay need: a git-diff of two
+    reasoning branches is a natural representation of the learner-variance vs.
+    structural-cap question.
+  </p>
+</div>
+
+<div class="paper">
+  <h3>
+    Adaptive Turn-Taking for Real-time Multi-Party Voice Agents
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    (Amazon AGI / IIT Kharagpur) ·
+    arXiv 2606.13544 · June 11, 2026 ·
+    <a href="https://arxiv.org/abs/2606.13544">https://arxiv.org/abs/2606.13544</a>
+  </div>
+  <p>
+    ModeratorLM conditions a speech-LLM's turn-taking policy on an explicitly assigned
+    moderator role. Combined with chain-of-thought reasoning over conversational context,
+    it improves turn-taking precision &gt;40% and recall &gt;70% versus non-role-conditioned
+    baselines on real meeting data, with a synthetic dataset (RolePlayConv) released for
+    the community.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The multi-turn cells currently implement a strict alternating-turn protocol regardless
+    of content. ModeratorLM's role-conditioned turn policy is a conceptually clean extension
+    for cells where the tutor should <em>hold the floor</em> mid-Socratic-exchange rather
+    than cede to the learner. Low-priority now but directly applicable if the pilot moves
+    to voice/real-time modality (see <code>TODO.md</code> §D).
+  </p>
+</div>
+
+
+<!-- ────────────────────────────────────── -->
+<h2>Dramaturgy / Narrative Ontology</h2>
+
+<div class="paper">
+  <h3>
+    Modeling Narrative Structures via Pseudonymization and Multi-View Sentence Alignment
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Tai Tran Tan, An Dinh Thien (University of Information Technology, Ho Chi Minh City) ·
+    arXiv 2606.15783 · June 14, 2026 ·
+    <a href="https://arxiv.org/abs/2606.15783">https://arxiv.org/abs/2606.15783</a>
+    | SemEval-2026 Task 4 system paper ·
+    <a href="https://github.com/dinhthienan33/SemEval2026-Task4-ttda7">GitHub</a>
+  </div>
+  <p>
+    SemEval-2026 Task 4 benchmarks narrative story <em>similarity</em>: two stories are
+    similar if they share abstract theme, course of action, and outcome, regardless of
+    surface form. This paper's Track B solution learns a multi-view encoder (three separate
+    projection heads for theme, plot, outcome) with self-supervised cross-view alignment,
+    outperforming single-view baselines across all three narrative dimensions.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The poetics pipeline currently scores each transcript on a single holistic rubric
+    (<code>evaluation-rubric-poetics.yaml</code>). The SemEval Task 4 decomposition
+    (theme / course-of-action / outcome) is nearly isomorphic to the three-act dramatic
+    structure the rubric tries to capture. The multi-view alignment approach could provide
+    a more principled way to compare transcripts from different cells on each dramatic
+    dimension independently — a direct route to the inter-cell narrative-distance metric
+    the poetics arc needs but currently lacks. The SemEval dataset itself (released with
+    the task) may also serve as a synthetic training corpus for the critic model.
+  </p>
+</div>
+
+<footer>
+  Generated 2026-06-17 by deep-research/claude-sonnet-4-6.
+  Window: (2026-06-16, 2026-06-17].
+  ArXiv IDs covered: 2606.13544, 2606.14470, 2606.15783, 2606.04465.
+  Previous roundup: <a href="2026-06-09-research-roundup.html">2026-06-09</a>.
+</footer>
+</body>
+</html>
