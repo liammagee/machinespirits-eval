@@ -203,6 +203,57 @@ Acceptance criteria:
 - Rerunning AF11 after a cue/runtime patch can skip the 80-90 second director call.
 - The key records whether the director plan was generated or reused.
 
+### Slice 7: Add A Validated State Ledger Context Mode
+
+The current interaction engine sends the last six public turns verbatim into tutor and learner ego/superego calls. That is a reasonable short-run baseline, but it can drop important early commitments once they fall outside the recent window. Add an optional context mode that keeps a compact state ledger plus a shorter recent-turn window.
+
+Proposed modes:
+
+- `last-six`: current behavior; last six public turns plus writing-pad summaries and current dynamic policy context.
+- `ledger-recent`: deterministic state ledger plus the last two to four public turns verbatim.
+- `full-public`: diagnostic mode; full public transcript, never hidden deliberation, for quality/control comparisons only.
+
+The ledger must be event-derived, not a loose generated recap. Build it from public turns, director plan state, world/curriculum public constraints, learner reframe/reversal events, and writing-pad summaries where already available. Each ledger item should carry source turn references when possible.
+
+Initial ledger fields:
+
+- `public_commitments`: claims, artifact entries, and verbal commitments the learner has made publicly.
+- `current_artifact_state`: what public artifact is being worked on and what remains incomplete.
+- `open_pressure`: visible misconception pressure, resistance, pseudo-closure, or unresolved evidence gap in public-safe language.
+- `route_history`: prior tutor route, current route, and any required route-change constraint.
+- `action_gate`: the next learner-authored action the curriculum/world path is trying to elicit.
+- `affective_state`: visible learner pressure and the stance the tutor should preserve or adapt.
+- `forbidden_public_moves`: public-safe forbidden moves such as hidden-label exposure, answer-key leakage, over-helping, premature proof supply, or solving the artifact.
+- `evidence_standard`: the verifier/evidence standard the scene should keep claims answerable to.
+
+Context assembly under `ledger-recent`:
+
+- static role/system prompt
+- state ledger
+- last `N` public turns verbatim, defaulting to four
+- current tutor/learner message
+- role-local writing-pad summary
+- current director/world/adaptation context
+- current ego draft or superego feedback where applicable
+
+Do not expose the other side's hidden deliberation. Do not put hidden curriculum IDs, spec hashes, answer keys, or evaluator labels into the ledger. The ledger may point to public-safe curriculum concepts and visible artifact state, but hidden provenance remains held out.
+
+Implementation options:
+
+- Add `--context-mode last-six|ledger-recent|full-public`.
+- Add `--recent-turns N` for `ledger-recent` and `full-public` diagnostics.
+- Record context mode, recent-turn count, ledger character count, and ledger source-turn ids in call telemetry.
+- Persist the ledger snapshot in held-out deliberation traces, not in public transcripts.
+
+Acceptance criteria:
+
+- Unit tests show the current `last-six` prompt surface remains unchanged by default.
+- Leak tests reject ledgers containing hidden IDs, spec hashes, answer keys, or evaluator labels.
+- A long synthetic fixture keeps a turn-1 learner commitment available after it falls outside the last-six window.
+- A scrambled or mismatched ledger changes policy pressure but is not counted as success evidence.
+- AF1 and AF11 comparison runs report prompt size, latency, cost, and quality warnings for `last-six` vs `ledger-recent`.
+- `ledger-recent` does not introduce new hidden-label leaks, public self-review leaks, or route-change quality regressions before it can become the default.
+
 ## Validation Plan
 
 Use a narrow validation ladder:
@@ -211,7 +262,8 @@ Use a narrow validation ladder:
 2. Run one short Sonnet preview on AF11 and compare call counts and prompt sizes.
 3. Run one token-capped full-fidelity AF1/AF11 sample and compare output tokens, latency, and quality warnings against the uncapped split baseline.
 4. Run one compact full-fidelity AF11 sample and compare quality warnings against the current full path.
-5. Only then rerun paid full samples for scoring.
+5. Run a context-mode ablation on AF1/AF11: `last-six` vs `ledger-recent` vs `full-public` diagnostic, holding seed, model routing, max turns, opening speaker, and director policy fixed.
+6. Only then rerun paid full samples for scoring.
 
 Success metrics:
 
@@ -220,6 +272,7 @@ Success metrics:
 - Prompt character counts are materially reduced.
 - Output token counts and long-tail review latencies are materially reduced for capped roles.
 - Persistent worker reuse increases.
+- Earlier public commitments remain available after they fall outside the recent-turn window.
 - No hidden labels, spec hashes, answer keys, or evaluator internals leak into public transcript text.
 
 ## Non-Goals
@@ -228,6 +281,7 @@ Success metrics:
 - Do not change the curriculum/world contract semantics in this performance slice.
 - Do not treat compact drama output as final quality evidence until compared against full-fidelity output.
 - Do not optimize by weakening hidden-label safety or curriculum evidence constraints.
+- Do not replace public-turn evidence with an unchecked model-generated summary.
 
 ## Suggested Next Move
 
