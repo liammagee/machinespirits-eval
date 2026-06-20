@@ -1,3 +1,6 @@
-Created: `notes/poetics/images/dramatic-recognition-arc-08.png`
+Created and verified as a real PNG:
 
-Verified as a real PNG: `1586 x 992`, RGB, non-interlaced.
+[notes/poetics/images/dramatic-recognition-arc-08.png](/Users/lmagee/Dev/machinespirits/machinespirits-eval-derivation/notes/poetics/images/dramatic-recognition-arc-08.png)
+
+Validation: `PNG RGB 1586x992`. No HTML edits.
+
