@@ -9,6 +9,7 @@ import yaml from 'yaml';
 import { prefixThroughTutorTurn, renderTurns } from '../scripts/extract-poetics-prefix-baselines.js';
 import {
   attachApproaches,
+  ClaudePersistentPool,
   curriculumScriptNotesForDrama,
   formatPublicTurnText,
   intrusiveStageDirectionFailures,
@@ -31,6 +32,7 @@ import {
   withControlEndingPolicy,
   withPairedDirectorRevisitCue,
   withTutorAdaptationPolicy,
+  withUsage,
   withWorldAdaptationConstraints,
   writeCallTelemetryArtifacts,
   writePartialTurnArtifacts,
@@ -80,12 +82,24 @@ describe('generate-pedagogical-dramas', () => {
     });
     assert.equal(resolveApiModel('glm5_2'), 'z-ai/glm-5.2');
     assert.equal(resolveApiModel('openrouter.glm5_2'), 'z-ai/glm-5.2');
-    assert.equal(resolveRoleRoute('tutor_ego', args.roleMap, 'codex', 'sonnet').apiModelKey, 'glm5_2');
-    assert.equal(resolveRoleRoute('learner_superego', args.roleMap, 'codex', 'sonnet').apiModelKey, 'z-ai/glm-5.2');
+    assert.equal(
+      resolveRoleRoute('tutor_ego', args.roleMap, 'codex', 'sonnet').apiModelKey,
+      'glm5_2',
+    );
+    assert.equal(
+      resolveRoleRoute('learner_superego', args.roleMap, 'codex', 'sonnet').apiModelKey,
+      'z-ai/glm-5.2',
+    );
     assert.equal(resolveRoleRoute('director', args.roleMap, 'codex', 'sonnet').backend, 'codex');
 
-    assert.throws(() => parseArgs(['--role-map', 'tutor_ego=api:not-a-known-alias']), /not a known OpenRouter alias/);
-    assert.throws(() => parseArgs(['--role-map', 'tutor_ego=codex:z-ai/glm-5.2']), /only include a model suffix/);
+    assert.throws(
+      () => parseArgs(['--role-map', 'tutor_ego=api:not-a-known-alias']),
+      /not a known OpenRouter alias/,
+    );
+    assert.throws(
+      () => parseArgs(['--role-map', 'tutor_ego=codex:z-ai/glm-5.2']),
+      /only include a model suffix/,
+    );
   });
 
   it('parses control-ending and call-telemetry output paths', () => {
@@ -146,6 +160,141 @@ describe('generate-pedagogical-dramas', () => {
     assert.doesNotMatch(JSON.stringify(payload), /secret system prompt/);
     assert.doesNotMatch(csv, /secret user prompt/);
     assert.match(csv, /learner_ego/);
+  });
+
+  it('computes worker reuse/create flags in the persistent pool (same prompt reuses, new prompt creates)', async () => {
+    const createdKeys = [];
+    const makeFakeWorker = (opts) => ({
+      opts,
+      call: async (_userPrompt, role) => ({
+        content: `fake ${role} reply`,
+        latencyMs: 3,
+        provenance: { backend: 'claude', agentRole: role },
+      }),
+      close() {},
+    });
+    const pool = new ClaudePersistentPool({
+      model: 'sonnet',
+      effort: 'low',
+      createWorker: (opts) => {
+        createdKeys.push(opts.key);
+        return makeFakeWorker(opts);
+      },
+    });
+
+    const first = await pool.call('STATIC-SYS-A', 'turn-1 dynamic', 'tutor_ego');
+    const second = await pool.call('STATIC-SYS-A', 'turn-2 dynamic', 'tutor_ego'); // same static prompt → reuse
+    const third = await pool.call('STATIC-SYS-B', 'turn-3 dynamic', 'tutor_ego'); // new static prompt → new worker
+
+    // The pool COMPUTES these flags (existed-before-insert), as opposed to the
+    // caller supplying them — the behavioral coverage the prior telemetry test lacked.
+    assert.deepEqual([first.provenance.worker.created, first.provenance.worker.reused], [true, false]);
+    assert.deepEqual([second.provenance.worker.created, second.provenance.worker.reused], [false, true]);
+    assert.deepEqual([third.provenance.worker.created, third.provenance.worker.reused], [true, false]);
+
+    // Worker key is role:model:effort:hash(systemPrompt): stable across the same
+    // static prompt, distinct when it changes — the reuse the prompt-split exists to enable.
+    assert.equal(first.provenance.worker.key, second.provenance.worker.key);
+    assert.notEqual(first.provenance.worker.key, third.provenance.worker.key);
+    assert.equal(createdKeys.length, 2);
+  });
+
+  it('records token/cost telemetry as null when a backend reports no usage, numeric when it does', () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'drama-gen-usage-telemetry-'));
+    const jsonPath = path.join(tmp, 'calls.json');
+    const csvPath = path.join(tmp, 'calls.csv');
+    const recorder = makeCallTelemetryRecorder({ enabled: true });
+
+    // Claude bridge resolves WITHOUT a usage block (the CLI does not echo usage on a
+    // Max-plan subscription window) → unavailable, recorded as null, NOT a real 0.
+    const claudeRecord = recorder.record({
+      startedAt: Date.parse('2026-06-20T00:00:00.000Z'),
+      finishedAt: Date.parse('2026-06-20T00:00:01.000Z'),
+      requestedModel: 'sonnet',
+      systemPrompt: 'sys',
+      userPrompt: 'user',
+      opts: { agentRole: 'tutor_ego' },
+      response: {
+        content: 'public line',
+        provider: 'claude-code',
+        model: 'claude/sonnet',
+        latencyMs: 1000,
+        provenance: { backend: 'claude' },
+      },
+    });
+    assert.deepEqual(claudeRecord.usage, {
+      input_tokens: null,
+      output_tokens: null,
+      total_tokens: null,
+      cost: null,
+    });
+
+    // OpenRouter api bridge returns a real usage block → numeric.
+    const apiRecord = recorder.record({
+      startedAt: Date.parse('2026-06-20T00:00:01.000Z'),
+      finishedAt: Date.parse('2026-06-20T00:00:02.000Z'),
+      requestedModel: 'api/sonnet',
+      systemPrompt: 'sys',
+      userPrompt: 'user',
+      opts: { agentRole: 'tutor_ego' },
+      response: {
+        content: 'public line',
+        provider: 'openrouter',
+        model: 'api/sonnet',
+        latencyMs: 1000,
+        usage: { inputTokens: 120, outputTokens: 40, totalTokens: 160, cost: 0.002 },
+        provenance: { backend: 'api' },
+      },
+    });
+    assert.deepEqual(apiRecord.usage, {
+      input_tokens: 120,
+      output_tokens: 40,
+      total_tokens: 160,
+      cost: 0.002,
+    });
+
+    // The CSV must render unavailable usage as BLANK cells (so a reader cannot mistake
+    // it for a zero-token / zero-cost call), and real usage as numbers.
+    writeCallTelemetryArtifacts({ records: recorder.snapshot(), jsonPath, csvPath });
+    const rows = fs.readFileSync(csvPath, 'utf8').trim().split('\n');
+    const header = rows[0].split(',');
+    const iInput = header.indexOf('input_tokens');
+    const iCost = header.indexOf('cost_usd');
+    const claudeCells = rows[1].split(',');
+    const apiCells = rows[2].split(',');
+    assert.equal(claudeCells[iInput], ''); // blank, not '0'
+    assert.equal(claudeCells[iCost], '');
+    assert.equal(apiCells[iInput], '120');
+    assert.equal(apiCells[iCost], '0.002');
+
+    // Totals treat unavailable as 0 (no NaN) while real usage still sums.
+    const payload = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+    assert.equal(payload.summary.total_input_tokens, 120);
+    assert.equal(payload.summary.total_cost_usd, 0.002);
+  });
+
+  it('withUsage marks usage unavailable (null) for bridges that return no usage block', () => {
+    const provenance = { backend: 'claude', agentRole: 'tutor_ego', promptHashes: { combined: 'abc123' } };
+    const claudeWrapped = withUsage(
+      { content: 'x', latencyMs: 1, provenance },
+      { provider: 'claude-code', model: 'claude/sonnet', provenance },
+    );
+    assert.equal(claudeWrapped.usage.inputTokens, null);
+    assert.equal(claudeWrapped.usage.cost, null);
+
+    const apiProvenance = { backend: 'api', agentRole: 'tutor_ego', promptHashes: { combined: 'def456' } };
+    const apiWrapped = withUsage(
+      {
+        content: 'x',
+        latencyMs: 1,
+        usage: { inputTokens: 10, outputTokens: 5, cost: 0.001 },
+        provenance: apiProvenance,
+      },
+      { provider: 'openrouter', model: 'api/sonnet', provenance: apiProvenance },
+    );
+    assert.equal(apiWrapped.usage.inputTokens, 10);
+    assert.equal(apiWrapped.usage.totalTokens, 15); // derived from input+output when total absent
+    assert.equal(apiWrapped.usage.cost, 0.001);
   });
 
   it('parses first-lesson and affective adaptation options', () => {

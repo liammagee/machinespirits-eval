@@ -1398,19 +1398,36 @@ function buildCallProvenance({
   };
 }
 
+// Normalize a raw provider usage block to canonical camelCase fields. When a
+// backend reports NO usage at all — e.g. the claude CLI on a Max-plan
+// subscription window, which does not echo token counts (see
+// services/adaptiveTutor/realLLM.js) — the fields are null ("unavailable"),
+// which is deliberately distinct from a real 0. Telemetry renders null as a
+// blank cell so a reader cannot mistake "no usage reported" for "a zero-token /
+// zero-cost call". Backends that do report (OpenRouter) yield numeric fields.
+function normalizeUsage(rawUsage) {
+  const usage = rawUsage || {};
+  const input = usage.inputTokens ?? usage.prompt_tokens ?? usage.input_tokens;
+  const output = usage.outputTokens ?? usage.completion_tokens ?? usage.output_tokens;
+  const total = usage.totalTokens ?? usage.total_tokens;
+  const cost = usage.cost;
+  if (input == null && output == null && total == null && cost == null) {
+    return { inputTokens: null, outputTokens: null, totalTokens: null, cost: null };
+  }
+  const inputTokens = input ?? 0;
+  const outputTokens = output ?? 0;
+  return {
+    inputTokens,
+    outputTokens,
+    totalTokens: total ?? inputTokens + outputTokens,
+    cost: cost ?? 0,
+  };
+}
+
 function withUsage(result, { provider, model, provenance }) {
-  const usage = result.usage || {};
-  const inputTokens = usage.inputTokens ?? usage.prompt_tokens ?? usage.input_tokens ?? 0;
-  const outputTokens = usage.outputTokens ?? usage.completion_tokens ?? usage.output_tokens ?? 0;
-  const totalTokens = usage.totalTokens ?? usage.total_tokens ?? inputTokens + outputTokens;
   return {
     content: result.content,
-    usage: {
-      inputTokens,
-      outputTokens,
-      totalTokens,
-      cost: usage.cost ?? 0,
-    },
+    usage: normalizeUsage(result.usage),
     provider,
     model,
     latencyMs: result.latencyMs,
@@ -1595,10 +1612,9 @@ function makeCallTelemetryRecorder({ enabled = false, print = false, jsonPath = 
         combined: String(`${systemPrompt || ''}\n\n---\n\n${userPrompt || ''}`).length,
       };
       const worker = provenance.worker || null;
-      const usage = response?.usage || {};
-      const inputTokens = usage.inputTokens ?? usage.prompt_tokens ?? usage.input_tokens ?? 0;
-      const outputTokens = usage.outputTokens ?? usage.completion_tokens ?? usage.output_tokens ?? 0;
-      const totalTokens = usage.totalTokens ?? usage.total_tokens ?? inputTokens + outputTokens;
+      // null token/cost fields mean "backend reported no usage" (e.g. claude CLI
+      // on a subscription window), kept distinct from a real 0 — see normalizeUsage.
+      const usage = normalizeUsage(response?.usage);
       const record = {
         seq: ++seq,
         role: opts.agentRole || provenance.agentRole || 'gen',
@@ -1614,10 +1630,10 @@ function makeCallTelemetryRecorder({ enabled = false, print = false, jsonPath = 
         prompt_chars: promptChars,
         output_chars: String(response?.content || '').length,
         usage: {
-          input_tokens: inputTokens,
-          output_tokens: outputTokens,
-          total_tokens: totalTokens,
-          cost: usage.cost ?? 0,
+          input_tokens: usage.inputTokens,
+          output_tokens: usage.outputTokens,
+          total_tokens: usage.totalTokens,
+          cost: usage.cost,
         },
         worker: worker
           ? {
@@ -2004,11 +2020,15 @@ class ClaudeStreamWorker {
 }
 
 class ClaudePersistentPool {
-  constructor({ model, effort }) {
+  constructor({ model, effort, createWorker } = {}) {
     this.model = model;
     this.effort = effort;
     this.workers = new Map();
     this.disabledReason = null;
+    // Worker factory, injectable for tests so the reuse/create bookkeeping can be
+    // exercised without spawning a real claude child process. Production callers
+    // omit it and get the default streaming worker — behavior is unchanged.
+    this.createWorker = createWorker || ((opts) => new ClaudeStreamWorker(opts));
   }
 
   workerKey(systemPrompt, role) {
@@ -2031,7 +2051,7 @@ class ClaudePersistentPool {
     const existed = this.workers.has(key);
     let worker = this.workers.get(key);
     if (!worker) {
-      worker = new ClaudeStreamWorker({
+      worker = this.createWorker({
         systemPrompt,
         model: this.model,
         effort: this.effort,
@@ -2518,7 +2538,9 @@ function parseRoleRouteValue(value, label = 'role-map value') {
     throw new Error(`${label} can only include a model suffix for api/openrouter routes (got "${raw}")`);
   }
   if (apiModelKey && !resolveApiModel(apiModelKey)) {
-    throw new Error(`${label} API model "${apiModelKey}" is not a known OpenRouter alias and is not a full model slug`);
+    throw new Error(
+      `${label} API model "${apiModelKey}" is not a known OpenRouter alias and is not a full model slug`,
+    );
   }
   return { backend, apiModelKey, raw };
 }
@@ -4328,7 +4350,11 @@ function baseKeyObject({
             : args.generator === 'gemini'
               ? 'real-gemini'
               : 'real-claude-code',
-    model: args.mock ? null : args.roleMap ? roleMapModelLabel(args) : generatorModelLabel(args),
+    model: args.mock
+      ? null
+      : args.roleMap
+        ? roleMapModelLabel(args)
+        : generatorModelLabel(args),
     codex_reasoning_effort: CODEX_REASONING_EFFORT,
     writing_pad: runtime.writingPad,
     director_mode: args.directorMode,
@@ -5093,8 +5119,8 @@ async function main() {
                 opening_speaker: directorPlan?.opening_speaker || null,
                 ending_speaker: directorPlan?.ending_speaker || null,
                 director_variation_key: d._directorVariationKey || null,
-                stage_direction_style: stageDirectionStyleFor(d)?.id || null,
-                model: args.roleMap ? roleMapModelLabel(args) : generatorModelLabel(args),
+    stage_direction_style: stageDirectionStyleFor(d)?.id || null,
+    model: args.roleMap ? roleMapModelLabel(args) : generatorModelLabel(args),
                 codex_reasoning_effort: CODEX_REASONING_EFFORT,
                 writing_pad: runtime.writingPad,
                 world_adaptation: worldAdaptationBindingForDrama(d),
@@ -5178,9 +5204,7 @@ async function main() {
     // Mixed authorship has no single arms-length critic: whichever model authored
     // ANY role can't be a clean generator≠critic judge of the whole transcript.
     // Exact backend set = whatever each of the 5 roles actually resolves to.
-    const resolvedRoutes = ROLE_NAMES.map((role) =>
-      formatRoleRoute(resolveRoleRoute(role, args.roleMap, args.generator, args.apiModel)),
-    );
+    const resolvedRoutes = ROLE_NAMES.map((role) => formatRoleRoute(resolveRoleRoute(role, args.roleMap, args.generator, args.apiModel)));
     const routeSet = new Set(resolvedRoutes);
     const backends = new Set(ROLE_NAMES.map((r) => resolveBackend(r, args.roleMap, args.generator)));
     console.log(
@@ -5217,6 +5241,7 @@ if (path.resolve(process.argv[1] || '') === __filename) {
 export {
   attachApproaches,
   callTelemetrySummary,
+  ClaudePersistentPool,
   curriculumScriptNotesForDrama,
   formatPublicTurnText,
   intrusiveStageDirectionFailures,
@@ -5247,4 +5272,5 @@ export {
   writePartialTurnArtifacts,
   withPairedDirectorRevisitCue,
   withTutorAdaptationPolicy,
+  withUsage,
 };

@@ -51,10 +51,7 @@ function promptSurface(callOrSystemPrompt, messages = []) {
   if (typeof callOrSystemPrompt === 'object' && callOrSystemPrompt) {
     return promptSurface(callOrSystemPrompt.systemPrompt, callOrSystemPrompt.messages);
   }
-  return [
-    callOrSystemPrompt || '',
-    ...(messages || []).map((message) => message?.content || ''),
-  ].join('\n\n');
+  return [callOrSystemPrompt || '', ...(messages || []).map((message) => message?.content || '')].join('\n\n');
 }
 
 // ---------------------------------------------------------------------------
@@ -217,7 +214,10 @@ describe('runInteraction (multi-turn)', () => {
       seen.map((turn) => turn.traceLength),
       [1, 2, 3],
     );
-    assert.ok(seen.every((turn) => turn.sameTurn), 'each callback sees the latest appended turn');
+    assert.ok(
+      seen.every((turn) => turn.sameTurn),
+      'each callback sees the latest appended turn',
+    );
     assert.equal(result.turns.length, seen.length);
   });
 
@@ -329,7 +329,10 @@ describe('runInteraction (multi-turn)', () => {
           usage: {},
         };
       }
-      if (options.agentRole === 'tutor_ego' && /Your initial tutor response was/.test(promptSurface(systemPrompt, messages))) {
+      if (
+        options.agentRole === 'tutor_ego' &&
+        /Your initial tutor response was/.test(promptSurface(systemPrompt, messages))
+      ) {
         return {
           content:
             'PRIVATE_DECISION: revise to test the learner reframe.\nFINAL:\nUse that new frame: let the equation, not the decimal, carry the proof. What would the equation need to show first?',
@@ -410,6 +413,91 @@ describe('runInteraction (multi-turn)', () => {
     );
   });
 
+  it('keeps the tutor ego/superego system prompt static and routes dynamic context to the user message', async () => {
+    // Mirror of the learner-side guard in learnerTutorInteractionEngine.test.js: under
+    // the default prompt split, the persistent-worker system prompt per role must be
+    // byte-stable (so role:model:effort:hash(systemPrompt) reuses a worker across turns),
+    // with turn-specific context in the user message. The existing tutor tests read
+    // through promptSurface() (system+user merged), so they cannot catch a regression
+    // that folds dynamic context back into the system prompt — this test pins placement.
+    const previous = process.env.DRAMA_STATIC_DYNAMIC_PROMPTS;
+    delete process.env.DRAMA_STATIC_DYNAMIC_PROMPTS; // default: split on
+
+    const calls = [];
+    async function llmCall(model, systemPrompt, messages, options = {}) {
+      calls.push({ model, systemPrompt, messages, options });
+      const user = messages?.[0]?.content || '';
+      if (options.agentRole === 'learner_superego') {
+        return { content: 'Keep the question genuine.', usage: {} };
+      }
+      if (options.agentRole === 'learner_ego') {
+        return { content: 'FINAL:\nI think I follow so far.', usage: {} };
+      }
+      if (options.agentRole === 'tutor_superego') {
+        return { content: 'FEEDBACK: Reasonable draft.\nKEEP_OR_CHANGE: keep as-is', usage: {} };
+      }
+      if (options.agentRole === 'tutor_ego' && /Your initial tutor response was/.test(user)) {
+        return { content: 'PRIVATE_DECISION: keep.\nFINAL:\nLet us check the next step together.', usage: {} };
+      }
+      if (options.agentRole === 'tutor_ego') {
+        return { content: 'Let us check the next step together.', usage: {} };
+      }
+      return { content: 'stub', usage: {} };
+    }
+
+    try {
+      await runInteraction(
+        {
+          learnerId: 'test-tutor-prompt-split',
+          personaId: 'eager_novice',
+          tutorProfile: 'recognition',
+          topic: 'Irrationality proof',
+          scenario: { name: 'Tutor prompt-split test', learnerStartState: 'The learner is unsure.' },
+        },
+        llmCall,
+        { maxTurns: 2, forceMaxTurns: true, observeInternals: true, learnerProfile: 'ego_superego' },
+      );
+    } finally {
+      if (previous === undefined) {
+        delete process.env.DRAMA_STATIC_DYNAMIC_PROMPTS;
+      } else {
+        process.env.DRAMA_STATIC_DYNAMIC_PROMPTS = previous;
+      }
+    }
+
+    const tutorEgoCalls = calls.filter((c) => c.options.agentRole === 'tutor_ego');
+    const tutorSuperegoCalls = calls.filter((c) => c.options.agentRole === 'tutor_superego');
+    assert.ok(tutorEgoCalls.length >= 2, 'expected initial + adjudication tutor_ego calls');
+    assert.ok(tutorSuperegoCalls.length >= 1, 'expected a tutor_superego call');
+
+    // (1) Worker-key stability: every same-role tutor system prompt is byte-identical.
+    // A regression that re-embeds dynamic context in the system prompt breaks this —
+    // the exact Slice-2 worker-reuse failure the promptSurface()-based tests miss.
+    assert.equal(
+      new Set(tutorEgoCalls.map((c) => c.systemPrompt)).size,
+      1,
+      'all tutor_ego system prompts must be byte-identical under split mode',
+    );
+    assert.equal(
+      new Set(tutorSuperegoCalls.map((c) => c.systemPrompt)).size,
+      1,
+      'all tutor_superego system prompts must be byte-identical under split mode',
+    );
+
+    // (2) Placement: turn-specific content is in the user message, not the system prompt.
+    const adjudication = tutorEgoCalls.find((c) => /Your initial tutor response was/.test(c.messages[0].content));
+    assert.ok(adjudication, 'expected a tutor_ego adjudication call carrying the draft in its user message');
+    assert.doesNotMatch(adjudication.systemPrompt, /Your initial tutor response was/);
+
+    const superego = tutorSuperegoCalls[0];
+    assert.match(superego.messages[0].content, /The tutor's DRAFT response/);
+    assert.doesNotMatch(superego.systemPrompt, /The tutor's DRAFT response/);
+
+    // (3) Split mode is genuinely active (static tail present), so the assertions above
+    // are testing the split path rather than passing vacuously in fallback mode.
+    assert.match(adjudication.systemPrompt, /Prompt-split runtime contract/);
+  });
+
   it('passes learner reversal pressure into the tutor ego/superego peripeteia prompt', async () => {
     const calls = [];
     async function llmCall(model, systemPrompt, messages, options = {}) {
@@ -437,7 +525,10 @@ describe('runInteraction (multi-turn)', () => {
           usage: {},
         };
       }
-      if (options.agentRole === 'tutor_ego' && /Your initial tutor response was/.test(promptSurface(systemPrompt, messages))) {
+      if (
+        options.agentRole === 'tutor_ego' &&
+        /Your initial tutor response was/.test(promptSurface(systemPrompt, messages))
+      ) {
         return {
           content:
             'PRIVATE_DECISION: revise because the learner is resisting the route.\nFINAL:\nLet us back up and try a different route: draw the string first, then test what force remains.',
@@ -596,7 +687,10 @@ describe('runInteraction (multi-turn)', () => {
           usage: {},
         };
       }
-      if (options.agentRole === 'tutor_ego' && /Your initial tutor response was/.test(promptSurface(systemPrompt, messages))) {
+      if (
+        options.agentRole === 'tutor_ego' &&
+        /Your initial tutor response was/.test(promptSurface(systemPrompt, messages))
+      ) {
         return {
           content:
             'PRIVATE_DECISION: revise lightly; AFFECTIVE_STANCE: defensiveness -> respectful firmness.\nFINAL:\nKeep the claim on the table. Before I sign off, point to the one row that makes the 94% usable beyond this sample.',
@@ -687,7 +781,10 @@ describe('runInteraction (multi-turn)', () => {
           usage: {},
         };
       }
-      if (options.agentRole === 'tutor_ego' && /Your initial tutor response was/.test(promptSurface(systemPrompt, messages))) {
+      if (
+        options.agentRole === 'tutor_ego' &&
+        /Your initial tutor response was/.test(promptSurface(systemPrompt, messages))
+      ) {
         return {
           content:
             'PRIVATE_DECISION: keep the routine branch on the same route.\nFINAL:\nKeep using the same list. Write the force name, then answer the next worksheet item.',
