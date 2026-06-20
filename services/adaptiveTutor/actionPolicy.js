@@ -794,7 +794,7 @@ export function summarizeWorldAdaptationSpec(spec) {
   };
 }
 
-function worldActionList(spec, key, aliases = []) {
+export function worldActionList(spec, key, aliases = []) {
   const policy = spec?.action_policy || {};
   const values = Array.isArray(policy[key])
     ? policy[key]
@@ -810,13 +810,17 @@ function worldActionSets(spec) {
   };
 }
 
-// A world spec's action families are a hash-bearing lock. worldActionList silently
-// drops any family string that is not a registered action type, and actionPermittedByWorldSpec
-// reads an empty allowed set as "no constraint" — so a single typo turns the lock into a
-// no-op that fails OPEN (a disallowed action becomes permitted) with no error. Call this at
-// spec adoption so a misspelled family is a loud failure, not a silently disabled lock.
-export function assertWorldAdaptationSpecActionsResolvable(spec) {
+// A world spec, once adopted, is a hash-bearing lock. createAdaptationContract requires a
+// present spec to carry id + spec_hash, and worldActionList silently drops any family
+// string that is not a registered action type — so a single typo empties the lock and
+// fails OPEN (a disallowed action becomes permitted). Both failures otherwise surface only
+// deep in the per-turn contract node (and only under architectures that wire it). Call this
+// at spec adoption so a malformed spec is a clear, early error rather than a silently
+// disabled lock or an opaque per-turn throw.
+export function assertWorldAdaptationSpecUsable(spec) {
   if (!spec) return;
+  if (!spec.id) throw new Error('world adaptation spec is missing a required id.');
+  if (!spec.spec_hash) throw new Error(`world adaptation spec ${spec.id} is missing a required spec_hash.`);
   const policy = spec.action_policy || {};
   const unknown = [];
   for (const [key, alias] of [
@@ -831,7 +835,7 @@ export function assertWorldAdaptationSpecActionsResolvable(spec) {
   }
   if (unknown.length > 0) {
     throw new Error(
-      `world adaptation spec ${spec.id || 'unknown'} references unrecognized action families [${unknown.join('; ')}]. ` +
+      `world adaptation spec ${spec.id} references unrecognized action families [${unknown.join('; ')}]. ` +
         `A misspelled family is silently dropped and disables the lock; fix the spec or register the action type.`,
     );
   }

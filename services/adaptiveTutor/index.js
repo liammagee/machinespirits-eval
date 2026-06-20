@@ -14,7 +14,7 @@ import { fileURLToPath } from 'url';
 import yaml from 'yaml';
 import { runScenario, runScenarioWithCounterfactual } from './runner.js';
 import { llmMode } from './llm.js';
-import { assertWorldAdaptationSpecActionsResolvable, summarizeWorldAdaptationSpec } from './actionPolicy.js';
+import { assertWorldAdaptationSpecUsable, summarizeWorldAdaptationSpec } from './actionPolicy.js';
 import { createAdaptiveRun, persistScenarioWithCounterfactual, persistScenarioRun } from './persistence.js';
 import { createBudgetTracker } from './budgetTracker.js';
 import {
@@ -257,7 +257,7 @@ export async function runAdaptiveEvaluation({
             null;
           // Fail loud on a misspelled action family rather than running with a silently
           // disabled (fail-open) lock; caught below as a per-scenario skip.
-          assertWorldAdaptationSpecActionsResolvable(worldAdaptationSpec);
+          assertWorldAdaptationSpecUsable(worldAdaptationSpec);
           const scenarioAdaptivePolicy = {
             ...adaptivePolicy,
             ...(worldAdaptationSpec ? { world_adaptation_spec: worldAdaptationSpec } : {}),

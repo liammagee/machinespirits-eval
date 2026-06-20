@@ -1,31 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { runScenario } from '../services/adaptiveTutor/runner.js';
-
-const WORLD_SPEC = {
-  id: 'W_AF6_CURRICULUM',
-  version: 'ms-world-adaptation-v0.1',
-  source_curriculum_id: 'ai_foundations_v1',
-  module_id: 'AF6',
-  spec_hash: 'sha256:test',
-  action_policy: {
-    allowed_action_families: ['request_evidence'],
-    preferred_action_families: ['request_evidence'],
-    disallowed_action_families: ['diagnose_with_discriminating_question', 'model_worked_example'],
-  },
-  expected_transitions: [
-    {
-      action_type: 'request_evidence',
-      success_evidence: ['learner-authored rationale'],
-      failure_evidence: ['mere agreement'],
-      world_success_observables: ['Learner checks the metric claim against the audit table.'],
-    },
-  ],
-  forbidden_moves: [
-    { id: 'no_hidden_label_exposure', move: 'hidden_label_exposure' },
-    { id: 'no_premature_proof_supply', move: 'supply_decisive_step' },
-  ],
-};
+import { WORLD_SPEC } from './fixtures/world-adaptation-spec.js';
 
 test('state_policy_closed_loop emits contracts and closes non-final interventions', async () => {
   process.env.ADAPTIVE_TUTOR_LLM = 'mock';

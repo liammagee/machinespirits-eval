@@ -1,4 +1,9 @@
-import { actionPermittedByWorldSpec, getActionDefinition, normalizeWorldAdaptationSpec } from './actionPolicy.js';
+import {
+  actionPermittedByWorldSpec,
+  getActionDefinition,
+  normalizeWorldAdaptationSpec,
+  worldActionList,
+} from './actionPolicy.js';
 
 export const PROOF_RELEASE_OWNERSHIP_GATE_VERSION = 'proof-release-ownership-gate.v1.0';
 
@@ -122,21 +127,10 @@ function lowerControlNearTie(selectedAction, candidateActions = [], epsilon) {
     .sort((a, b) => a.control_cost - b.control_cost || b.information_gain - a.information_gain)[0];
 }
 
-function worldPolicyActionList(spec, key) {
-  return (spec?.action_policy?.[key] || []).filter((actionType) => {
-    try {
-      getActionDefinition(actionType);
-      return true;
-    } catch {
-      return false;
-    }
-  });
-}
-
 function worldRepairAction(spec) {
   for (const actionType of [
-    ...worldPolicyActionList(spec, 'preferred_action_families'),
-    ...worldPolicyActionList(spec, 'allowed_action_families'),
+    ...worldActionList(spec, 'preferred_action_families'),
+    ...worldActionList(spec, 'allowed_action_families'),
     'diagnose_with_discriminating_question',
     'request_evidence',
   ]) {

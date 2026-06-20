@@ -2,38 +2,14 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   actionRecencyPenalty,
-  assertWorldAdaptationSpecActionsResolvable,
+  assertWorldAdaptationSpecUsable,
   estimateLearnerStateBelief,
   getActionDefinition,
   legacyPolicyActionForAdaptiveAction,
   selectPedagogicalAction,
 } from '../services/adaptiveTutor/actionPolicy.js';
 import { observeInterventionOutcome } from '../services/adaptiveTutor/outcomeObserver.js';
-
-const WORLD_SPEC = {
-  id: 'W_AF6_CURRICULUM',
-  version: 'ms-world-adaptation-v0.1',
-  source_curriculum_id: 'ai_foundations_v1',
-  module_id: 'AF6',
-  spec_hash: 'sha256:test',
-  action_policy: {
-    allowed_action_families: ['request_evidence'],
-    preferred_action_families: ['request_evidence'],
-    disallowed_action_families: ['diagnose_with_discriminating_question', 'model_worked_example'],
-  },
-  expected_transitions: [
-    {
-      action_type: 'request_evidence',
-      success_evidence: ['learner-authored rationale'],
-      failure_evidence: ['mere agreement'],
-      world_success_observables: ['Learner checks the model-performance claim against the metric table.'],
-    },
-  ],
-  forbidden_moves: [
-    { id: 'no_hidden_label_exposure', move: 'hidden_label_exposure' },
-    { id: 'no_premature_proof_supply', move: 'supply_decisive_step' },
-  ],
-};
+import { WORLD_SPEC } from './fixtures/world-adaptation-spec.js';
 
 test('uncertain first turn selects a diagnostic action', () => {
   const belief = estimateLearnerStateBelief({
@@ -564,26 +540,33 @@ test('world adaptation spec does not count as success evidence by itself', () =>
   assert.equal(outcome.required_evidence_satisfied, false);
 });
 
-test('assertWorldAdaptationSpecActionsResolvable rejects a misspelled disallowed family', () => {
+test('assertWorldAdaptationSpecUsable rejects a misspelled disallowed family', () => {
   // Without validation this typo is silently dropped, emptying the disallowed set and
   // letting the would-be-forbidden action through (fail open). It must throw instead.
   const typoSpec = {
     id: 'W_TYPO',
+    spec_hash: 'sha256:test',
     action_policy: { disallowed_action_families: ['model_worked_exmaple'] },
   };
-  assert.throws(() => assertWorldAdaptationSpecActionsResolvable(typoSpec), /unrecognized action families/u);
+  assert.throws(() => assertWorldAdaptationSpecUsable(typoSpec), /unrecognized action families/u);
 });
 
-test('assertWorldAdaptationSpecActionsResolvable rejects a misspelled allowed family', () => {
+test('assertWorldAdaptationSpecUsable rejects a misspelled allowed family', () => {
   const typoSpec = {
     id: 'W_TYPO',
+    spec_hash: 'sha256:test',
     action_policy: { allowed_action_families: ['requst_evidence'] },
   };
-  assert.throws(() => assertWorldAdaptationSpecActionsResolvable(typoSpec), /requst_evidence/u);
+  assert.throws(() => assertWorldAdaptationSpecUsable(typoSpec), /requst_evidence/u);
 });
 
-test('assertWorldAdaptationSpecActionsResolvable accepts specs whose families all resolve', () => {
-  assert.doesNotThrow(() => assertWorldAdaptationSpecActionsResolvable(WORLD_SPEC));
-  assert.doesNotThrow(() => assertWorldAdaptationSpecActionsResolvable(null));
-  assert.doesNotThrow(() => assertWorldAdaptationSpecActionsResolvable({ id: 'W_NO_POLICY' }));
+test('assertWorldAdaptationSpecUsable rejects an adopted spec missing id or spec_hash', () => {
+  assert.throws(() => assertWorldAdaptationSpecUsable({ spec_hash: 'sha256:test' }), /missing a required id/u);
+  assert.throws(() => assertWorldAdaptationSpecUsable({ id: 'W_NO_HASH' }), /missing a required spec_hash/u);
+});
+
+test('assertWorldAdaptationSpecUsable accepts specs whose families all resolve', () => {
+  assert.doesNotThrow(() => assertWorldAdaptationSpecUsable(WORLD_SPEC));
+  assert.doesNotThrow(() => assertWorldAdaptationSpecUsable(null));
+  assert.doesNotThrow(() => assertWorldAdaptationSpecUsable({ id: 'W_NO_POLICY', spec_hash: 'sha256:test' }));
 });
