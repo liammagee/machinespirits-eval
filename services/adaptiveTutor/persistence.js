@@ -14,6 +14,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createHash } from 'crypto';
+import { summarizeWorldAdaptationSpec } from './actionPolicy.js';
 import * as evaluationStore from '../evaluationStore.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -165,6 +166,11 @@ function buildTraceJson({
   llmMode,
   profileName,
 }) {
+  const originalWorldSpec = summarizeWorldAdaptationSpec(
+    runResult.final.adaptivePolicyConfig?.world_adaptation_spec ||
+      runResult.final.adaptivePolicyConfig?.worldAdaptationSpec ||
+      null,
+  );
   const trace = {
     // schemaVersion 2 (A14 Stage 1) adds finalEvidenceLog + finalHypotheses to
     // each branch. schemaVersion 3 (A14 Stage 5 prep) adds per-turn
@@ -176,7 +182,10 @@ function buildTraceJson({
     // stay readable — analyzers default them to [] when absent.
     // schemaVersion 5 (Plan 2.0) adds adaptation contracts, selected actions,
     // pending/closed intervention ledgers, and adaptationTrace entries.
-    schemaVersion: 5,
+    // schemaVersion 6 (Plan 2.4) adds locked curriculum/world adaptation spec
+    // identity and hash. The spec can constrain policy; it is not a success
+    // evaluator.
+    schemaVersion: 6,
     profileName,
     scenario: {
       id: scenario.id,
@@ -185,6 +194,7 @@ function buildTraceJson({
       maxTurns: scenario.maxTurns,
       expectedStrategyShift: scenarioConfig?.expected_strategy_shift ?? null,
       scenarioType: scenarioConfig?.scenario_type ?? null,
+      worldAdaptationSpec: scenarioConfig?.world_adaptation_spec || originalWorldSpec,
     },
     llmMode,
     original: {
@@ -201,12 +211,18 @@ function buildTraceJson({
       finalPendingIntervention: runResult.final.pendingIntervention ?? null,
       finalInterventionLedger: runResult.final.interventionLedger ?? [],
       finalAdaptationTrace: runResult.final.adaptationTrace ?? [],
+      finalWorldAdaptationSpec: originalWorldSpec,
       constraintViolations: runResult.final.constraintViolations,
       perTurn: extractTurnTrace(runResult.history),
     },
     counterfactual: null,
   };
   if (counterfactualResult) {
+    const counterfactualWorldSpec = summarizeWorldAdaptationSpec(
+      counterfactualResult.final.adaptivePolicyConfig?.world_adaptation_spec ||
+        counterfactualResult.final.adaptivePolicyConfig?.worldAdaptationSpec ||
+        null,
+    );
     trace.counterfactual = {
       perturbation,
       dialogue: counterfactualResult.final.dialogue,
@@ -222,6 +238,7 @@ function buildTraceJson({
       finalPendingIntervention: counterfactualResult.final.pendingIntervention ?? null,
       finalInterventionLedger: counterfactualResult.final.interventionLedger ?? [],
       finalAdaptationTrace: counterfactualResult.final.adaptationTrace ?? [],
+      finalWorldAdaptationSpec: counterfactualWorldSpec,
       constraintViolations: counterfactualResult.final.constraintViolations,
       perTurn: extractTurnTrace(counterfactualResult.history),
     };

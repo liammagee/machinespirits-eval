@@ -14,6 +14,7 @@ import { fileURLToPath } from 'url';
 import yaml from 'yaml';
 import { runScenario, runScenarioWithCounterfactual } from './runner.js';
 import { llmMode } from './llm.js';
+import { summarizeWorldAdaptationSpec } from './actionPolicy.js';
 import { createAdaptiveRun, persistScenarioWithCounterfactual, persistScenarioRun } from './persistence.js';
 import { createBudgetTracker } from './budgetTracker.js';
 import {
@@ -36,6 +37,24 @@ function loadScenarios(scenarioSource) {
   const raw = yaml.parse(fs.readFileSync(abs, 'utf-8'));
   const list = Array.isArray(raw?.scenarios) ? raw.scenarios : Array.isArray(raw) ? raw : [];
   if (list.length === 0) throw new Error(`no scenarios in ${abs}`);
+  return list;
+}
+
+function loadWorldAdaptationSpecs(specSource) {
+  if (!specSource) return [];
+  const abs = path.isAbsolute(specSource) ? specSource : path.join(REPO_ROOT, specSource);
+  if (!fs.existsSync(abs)) {
+    throw new Error(`world adaptation spec source not found: ${abs}`);
+  }
+  const raw = yaml.parse(fs.readFileSync(abs, 'utf-8'));
+  const list = Array.isArray(raw?.world_adaptation_specs)
+    ? raw.world_adaptation_specs
+    : Array.isArray(raw?.worlds)
+      ? raw.worlds
+      : Array.isArray(raw)
+        ? raw
+        : [];
+  if (list.length === 0) throw new Error(`no world adaptation specs in ${abs}`);
   return list;
 }
 
@@ -66,6 +85,33 @@ function toRunnerScenario(yamlScenario, runIndex) {
     openingTurns: yamlScenario.opening_turns || [{ role: 'learner', content: yamlScenario.opening || 'Hi.' }],
     maxTurns: yamlScenario.max_turns ?? 4,
   };
+}
+
+function resolveWorldAdaptationSpec(yamlScenario, worldSpecs = []) {
+  if (yamlScenario.world_adaptation_spec) return yamlScenario.world_adaptation_spec;
+  const specId =
+    yamlScenario.world_adaptation_spec_id ||
+    yamlScenario.world_adaptation_id ||
+    yamlScenario.world_id ||
+    yamlScenario.curriculum_binding?.world_adaptation_spec_id ||
+    null;
+  const moduleId =
+    yamlScenario.curriculum_module_id ||
+    yamlScenario.curriculum?.module_id ||
+    yamlScenario.curriculum_binding?.module_id ||
+    null;
+
+  if (specId) {
+    const found = worldSpecs.find((spec) => spec.id === specId);
+    if (!found) throw new Error(`scenario ${yamlScenario.id}: no world adaptation spec id ${specId}`);
+    return found;
+  }
+  if (moduleId) {
+    const found = worldSpecs.find((spec) => spec.module_id === moduleId);
+    if (!found) throw new Error(`scenario ${yamlScenario.id}: no world adaptation spec for module ${moduleId}`);
+    return found;
+  }
+  return null;
 }
 
 function buildPerturbation(yamlScenario) {
@@ -112,6 +158,13 @@ export async function runAdaptiveEvaluation({
     ...(adaptiveCfg.policy || {}),
     ...(adaptiveCfg.adaptive_policy || {}),
   };
+  const worldAdaptationSource =
+    adaptiveCfg.world_adaptation_source ||
+    adaptiveCfg.worldAdaptationSource ||
+    adaptivePolicy.world_adaptation_source ||
+    adaptivePolicy.worldAdaptationSource ||
+    null;
+  const worldAdaptationSpecs = loadWorldAdaptationSpecs(worldAdaptationSource);
   const adaptationPolicyMode = process.env.ADAPTIVE_POLICY_MODE || adaptivePolicy.mode || 'legacy';
   // Architecture switches the graph topology. Defaults to 'state_policy' so
   // legacy cell_110 configs (which don't carry an architecture key) keep their
@@ -123,7 +176,7 @@ export async function runAdaptiveEvaluation({
       `profile ${profileName}: unsupported adaptive.architecture "${architecture}" (expected one of: ${SUPPORTED_ARCHITECTURES.join(', ')})`,
     );
   }
-  const graphOptions = { architecture, adaptivePolicy, adaptationPolicyMode };
+  const graphOptionsBase = { architecture, adaptationPolicyMode };
   const agentConfigForRow = {
     provider: adaptiveCfg.provider || 'mock',
     model: adaptiveCfg.model || 'mock',
@@ -144,6 +197,7 @@ export async function runAdaptiveEvaluation({
       architecture,
       adaptationPolicyMode,
       adaptivePolicy,
+      worldAdaptationSource,
     },
   });
   if (verbose)
@@ -189,13 +243,29 @@ export async function runAdaptiveEvaluation({
           scenario_type: yamlScenario.scenario_type || yamlScenario.id,
           expected_strategy_shift: yamlScenario.expected_strategy_shift ?? null,
         };
+        const worldAdaptationSpec =
+          resolveWorldAdaptationSpec(yamlScenario, worldAdaptationSpecs) ||
+          adaptivePolicy.world_adaptation_spec ||
+          adaptivePolicy.worldAdaptationSpec ||
+          null;
+        const scenarioAdaptivePolicy = {
+          ...adaptivePolicy,
+          ...(worldAdaptationSpec ? { world_adaptation_spec: worldAdaptationSpec } : {}),
+        };
+        const scenarioGraphOptions = { ...graphOptionsBase, adaptivePolicy: scenarioAdaptivePolicy };
+        const scenarioWorldSummary = summarizeWorldAdaptationSpec(worldAdaptationSpec);
+        if (scenarioWorldSummary) scenarioConfig.world_adaptation_spec = scenarioWorldSummary;
         try {
           // Snapshot before / delta after lets us write per-scenario tokens
           // and cost into the row while keeping the run-wide accumulator
           // (which enforces --max-cost) intact.
           const snap = tracker?.snapshot();
           if (counterfactualEnabled && yamlScenario.counterfactual) {
-            const result = await runScenarioWithCounterfactual(scenario, buildPerturbation(yamlScenario), graphOptions);
+            const result = await runScenarioWithCounterfactual(
+              scenario,
+              buildPerturbation(yamlScenario),
+              scenarioGraphOptions,
+            );
             const usage = tracker?.delta(snap);
             const out = persistScenarioWithCounterfactual({
               runId: run.id,
@@ -209,7 +279,7 @@ export async function runAdaptiveEvaluation({
             });
             persisted.push(out);
           } else {
-            const result = await runScenario(scenario, graphOptions);
+            const result = await runScenario(scenario, scenarioGraphOptions);
             const usage = tracker?.delta(snap);
             const out = persistScenarioRun({
               runId: run.id,

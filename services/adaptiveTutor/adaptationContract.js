@@ -112,6 +112,7 @@ export function createAdaptationContract({
   gateResult = { allowed: true, violations: [], repairs: [] },
   realizationChecks = { action_consistent: null, forbidden_move_detected: null },
   policyMode = 'closed_loop',
+  worldAdaptationSpec = null,
 } = {}) {
   const normalized = {
     schema: ADAPTATION_CONTRACT_SCHEMA,
@@ -125,6 +126,7 @@ export function createAdaptationContract({
     candidate_actions: clone(candidateActions),
     gate_result: clone(validateGateResult(gateResult)),
     realization_checks: clone(realizationChecks),
+    world_adaptation_spec: worldAdaptationSpec ? clone(worldAdaptationSpec) : null,
   };
   return validateAdaptationContract(normalized);
 }
@@ -142,6 +144,15 @@ export function validateAdaptationContract(contract) {
   validatePedagogicalAction(contract.selected_action);
   validateGateResult(contract.gate_result);
   requireObject(contract.realization_checks || {}, 'realization_checks');
+  if (contract.world_adaptation_spec != null) {
+    requireObject(contract.world_adaptation_spec, 'world_adaptation_spec');
+    if (!contract.world_adaptation_spec.id) {
+      throw new Error('adaptationContract: world_adaptation_spec.id is required when present');
+    }
+    if (!contract.world_adaptation_spec.spec_hash) {
+      throw new Error('adaptationContract: world_adaptation_spec.spec_hash is required when present');
+    }
+  }
   if (!Array.isArray(contract.candidate_actions)) {
     throw new Error('adaptationContract: candidate_actions must be an array');
   }

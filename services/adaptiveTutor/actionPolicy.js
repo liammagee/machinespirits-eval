@@ -16,6 +16,7 @@ export const DEFAULT_ADAPTIVE_POLICY_CONFIG = Object.freeze({
   ownershipWeight: 0.3,
   controlWeight: 0.4,
   actionFitWeight: 0.5,
+  worldAdaptationWeight: 0.45,
   repetitionPenalty: 0.5,
   sameActionPenalty: 0,
   sameActionWindow: 3,
@@ -704,6 +705,127 @@ function withActionDefaults(action, overrides = {}) {
   };
 }
 
+function uniqueStrings(items = []) {
+  return [...new Set((items || []).filter((item) => typeof item === 'string' && item.trim()).map((item) => item.trim()))];
+}
+
+export function normalizeWorldAdaptationSpec(config = {}) {
+  const spec = config.worldAdaptationSpec || config.world_adaptation_spec || null;
+  if (!spec || typeof spec !== 'object') return null;
+  return spec;
+}
+
+export function summarizeWorldAdaptationSpec(spec) {
+  if (!spec) return null;
+  return {
+    id: spec.id || null,
+    version: spec.version || null,
+    source_curriculum_id: spec.source_curriculum_id || null,
+    module_id: spec.module_id || null,
+    spec_hash: spec.spec_hash || null,
+  };
+}
+
+function worldActionList(spec, key, aliases = []) {
+  const policy = spec?.action_policy || {};
+  const values = Array.isArray(policy[key])
+    ? policy[key]
+    : aliases.map((alias) => policy[alias]).find((entry) => Array.isArray(entry)) || [];
+  return uniqueStrings(values).filter((actionType) => ADAPTATION_ACTION_BY_TYPE[actionType]);
+}
+
+function worldActionSets(spec) {
+  return {
+    allowed: new Set(worldActionList(spec, 'allowed_action_families', ['allowed_actions'])),
+    preferred: new Set(worldActionList(spec, 'preferred_action_families', ['preferred_actions'])),
+    disallowed: new Set(worldActionList(spec, 'disallowed_action_families', ['disallowed_actions'])),
+  };
+}
+
+export function actionPermittedByWorldSpec(actionType, spec) {
+  if (!spec) return true;
+  const { allowed, disallowed } = worldActionSets(spec);
+  if (disallowed.has(actionType)) return false;
+  if (allowed.size > 0 && !allowed.has(actionType)) return false;
+  return true;
+}
+
+function applyWorldActionConstraints(candidateTypes, config = {}) {
+  const spec = normalizeWorldAdaptationSpec(config);
+  if (!spec) return uniqueStrings(candidateTypes);
+  const { allowed, preferred, disallowed } = worldActionSets(spec);
+  const withPreferred = uniqueStrings([
+    ...[...preferred].filter((actionType) => ADAPTATION_ACTION_BY_TYPE[actionType]),
+    ...candidateTypes,
+  ]);
+  let constrained = withPreferred.filter((actionType) => !disallowed.has(actionType));
+  if (allowed.size > 0) constrained = constrained.filter((actionType) => allowed.has(actionType));
+  if (constrained.length > 0) return constrained;
+
+  const permittedPreferred = [...preferred].filter((actionType) => actionPermittedByWorldSpec(actionType, spec));
+  if (permittedPreferred.length > 0) return permittedPreferred;
+  return ADAPTATION_ACTIONS.map((action) => action.action_type).filter((actionType) =>
+    actionPermittedByWorldSpec(actionType, spec),
+  );
+}
+
+function worldExpectedTransitionForAction(spec, actionType) {
+  const transitions = spec?.expected_transitions;
+  if (Array.isArray(transitions)) return transitions.find((entry) => entry?.action_type === actionType) || null;
+  if (transitions && typeof transitions === 'object') return transitions[actionType] || null;
+  return null;
+}
+
+function worldForbiddenMoves(spec) {
+  return uniqueStrings(
+    (spec?.forbidden_moves || []).flatMap((entry) => {
+      if (typeof entry === 'string') return [entry];
+      if (!entry || typeof entry !== 'object') return [];
+      return [entry.move, entry.id].filter(Boolean);
+    }),
+  );
+}
+
+function worldPreferenceBonus(actionType, spec, config = {}) {
+  if (!spec) return 0;
+  const { allowed, preferred, disallowed } = worldActionSets(spec);
+  if (disallowed.has(actionType)) return -999;
+  if (allowed.size > 0 && !allowed.has(actionType)) return -999;
+  const weight = Number(config.worldAdaptationWeight ?? config.world_adaptation_weight ?? 0.45);
+  if (preferred.has(actionType)) return weight;
+  if (allowed.has(actionType)) return Math.min(0.08, weight * 0.2);
+  return 0;
+}
+
+export function applyWorldAdaptationToAction(action, config = {}) {
+  const spec = normalizeWorldAdaptationSpec(config);
+  if (!action || !spec) return action;
+  const transition = worldExpectedTransitionForAction(spec, action.action_type);
+  const required = uniqueStrings([
+    ...(action.success_signal?.required_evidence || []),
+    ...(transition?.success_evidence || []),
+  ]);
+  const forbiddenEvidence = uniqueStrings([
+    ...(action.success_signal?.forbidden_evidence || []),
+    ...(transition?.failure_evidence || []),
+  ]);
+  const forbiddenMoves = uniqueStrings([...(action.forbidden_moves || []), ...worldForbiddenMoves(spec)]);
+  return {
+    ...action,
+    rationale: `${action.rationale} World adaptation spec ${spec.id || 'unknown'} constrains this move for module ${
+      spec.module_id || 'unknown'
+    }.`,
+    success_signal: {
+      ...(action.success_signal || {}),
+      required_evidence: required,
+      forbidden_evidence: forbiddenEvidence,
+      world_success_observables: uniqueStrings(transition?.world_success_observables || []),
+    },
+    forbidden_moves: forbiddenMoves,
+    world_adaptation: summarizeWorldAdaptationSpec(spec),
+  };
+}
+
 function dominantHypothesis(stateBelief) {
   return stateBelief?.hypotheses?.[0]?.id || 'unknown';
 }
@@ -858,16 +980,19 @@ function buildCandidateTypes(stateBelief, interventionLedger = []) {
 
 export function scoreCandidateAction(actionType, stateBelief, interventionLedger = [], config = {}) {
   const merged = { ...DEFAULT_ADAPTIVE_POLICY_CONFIG, ...config };
+  const worldSpec = normalizeWorldAdaptationSpec(merged);
   const def = getActionDefinition(actionType);
   const fit = actionFitScore(def, stateBelief?.hypotheses || []);
   const uncertainty = stateBelief?.uncertainty?.needs_discrimination ? 1 : 0.25;
   const repetition = actionRepetitionPenalty(actionType, stateBelief, interventionLedger, merged);
   const recency = actionRecencyPenalty(actionType, stateBelief, interventionLedger, merged);
   const preferredAction = dominantPreferredActionBonus(actionType, stateBelief);
+  const worldBonus = worldPreferenceBonus(actionType, worldSpec, merged);
   const mismatchRisk = Math.max(0, 0.45 - fit);
   const utility =
     expectedStateGain(def) +
     preferredAction +
+    worldBonus +
     merged.actionFitWeight * fit +
     merged.uncertaintyWeight * uncertainty * def.default_information_gain +
     merged.ownershipWeight * ownershipGain(def) -
@@ -885,12 +1010,21 @@ export function scoreCandidateAction(actionType, stateBelief, interventionLedger
     repetition_penalty: Number(repetition.toFixed(6)),
     same_action_penalty: Number(recency.toFixed(6)),
     mismatch_risk: Number(mismatchRisk.toFixed(6)),
+    world_adaptation_bonus: Number(worldBonus.toFixed(6)),
+    world_adaptation: summarizeWorldAdaptationSpec(worldSpec),
   };
 }
 
 export function selectPedagogicalAction({ stateBelief, interventionLedger = [], mode = 'closed_loop', config = {} } = {}) {
   const merged = { ...DEFAULT_ADAPTIVE_POLICY_CONFIG, ...config, mode };
-  const candidateTypes = buildCandidateTypes(stateBelief, interventionLedger).slice(0, ADAPTATION_ACTIONS.length);
+  const worldSpec = normalizeWorldAdaptationSpec(merged);
+  const candidateTypes = applyWorldActionConstraints(
+    buildCandidateTypes(stateBelief, interventionLedger),
+    merged,
+  ).slice(0, ADAPTATION_ACTIONS.length);
+  if (candidateTypes.length === 0) {
+    throw new Error('adaptive actionPolicy: world adaptation spec disallowed every candidate action');
+  }
   let candidates = candidateTypes
     .map((type) => scoreCandidateAction(type, stateBelief, interventionLedger, merged))
     .sort((a, b) => b.utility - a.utility || a.control_cost - b.control_cost || b.information_gain - a.information_gain)
@@ -898,7 +1032,11 @@ export function selectPedagogicalAction({ stateBelief, interventionLedger = [], 
 
   const escalationRequired = recentNonSuccessHintForMissingPrerequisite(stateBelief, interventionLedger);
 
-  if (diagnosticStillRequired(stateBelief, interventionLedger) && !escalationRequired) {
+  if (
+    diagnosticStillRequired(stateBelief, interventionLedger) &&
+    !escalationRequired &&
+    actionPermittedByWorldSpec('diagnose_with_discriminating_question', worldSpec)
+  ) {
     const diagnostic = scoreCandidateAction('diagnose_with_discriminating_question', stateBelief, interventionLedger, merged);
     candidates = [diagnostic, ...candidates.filter((c) => c.action_type !== diagnostic.action_type)]
       .sort((a, b) => {
@@ -909,7 +1047,7 @@ export function selectPedagogicalAction({ stateBelief, interventionLedger = [], 
       .slice(0, merged.maxActionCandidates);
   }
 
-  if (escalationRequired) {
+  if (escalationRequired && actionPermittedByWorldSpec('explain_principle', worldSpec)) {
     const escalation = scoreCandidateAction('explain_principle', stateBelief, interventionLedger, merged);
     candidates = [escalation, ...candidates.filter((c) => c.action_type !== escalation.action_type)].slice(
       0,
@@ -917,7 +1055,10 @@ export function selectPedagogicalAction({ stateBelief, interventionLedger = [], 
     );
   }
 
-  const diagnosticRequired = diagnosticStillRequired(stateBelief, interventionLedger) && !escalationRequired;
+  const diagnosticRequired =
+    diagnosticStillRequired(stateBelief, interventionLedger) &&
+    !escalationRequired &&
+    actionPermittedByWorldSpec('diagnose_with_discriminating_question', worldSpec);
   let selectedRow = escalationRequired
     ? candidates.find((c) => c.action_type === 'explain_principle') ||
       candidates.find((c) => c.action_type === 'model_worked_example')
@@ -957,16 +1098,20 @@ export function selectPedagogicalAction({ stateBelief, interventionLedger = [], 
     }
   }
   const selectedDef = getActionDefinition(selectedRow.action_type);
-  const selectedAction = withActionDefaults(selectedDef, {
-    id: `action-turn-${stateBelief?.turn_index ?? 0}`,
-    rationale: `Dominant hypothesis ${dominantHypothesis(stateBelief)}; utility ${selectedRow.utility}; fit ${selectedRow.state_action_fit}.`,
-  });
+  const selectedAction = applyWorldAdaptationToAction(
+    withActionDefaults(selectedDef, {
+      id: `action-turn-${stateBelief?.turn_index ?? 0}`,
+      rationale: `Dominant hypothesis ${dominantHypothesis(stateBelief)}; utility ${selectedRow.utility}; fit ${selectedRow.state_action_fit}.`,
+    }),
+    merged,
+  );
 
   return {
     mode,
     selectedAction,
     candidateActions: candidates,
     registryVersion: ADAPTATION_ACTION_REGISTRY_VERSION,
+    worldAdaptationSpec: summarizeWorldAdaptationSpec(worldSpec),
   };
 }
 

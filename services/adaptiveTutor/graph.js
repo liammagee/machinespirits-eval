@@ -79,9 +79,11 @@ import { AdaptiveTutorState } from './stateSchema.js';
 import { callRole } from './llm.js';
 import { createAdaptationContract, updateContractRealizationChecks } from './adaptationContract.js';
 import {
+  applyWorldAdaptationToAction,
   estimateLearnerStateBelief,
   legacyPolicyActionForAdaptiveAction,
   selectPedagogicalAction,
+  summarizeWorldAdaptationSpec,
 } from './actionPolicy.js';
 import { validateProofReleaseOwnershipGate, repairActionFromGate } from './proofReleaseOwnershipGate.js';
 import { appendPendingIntervention, closePendingIntervention } from './interventionLedger.js';
@@ -672,6 +674,8 @@ function normalizePolicyConfig(config = {}) {
     sameActionPenalty: config.sameActionPenalty ?? config.same_action_penalty,
     sameActionWindow: config.sameActionWindow ?? config.same_action_window,
     sameActionScope: config.sameActionScope ?? config.same_action_scope,
+    worldAdaptationSpec: config.worldAdaptationSpec ?? config.world_adaptation_spec,
+    worldAdaptationWeight: config.worldAdaptationWeight ?? config.world_adaptation_weight,
     realizationContext: config.realizationContext ?? config.realization_context,
     earlyCompletionAfterSuccessfulNoIntervention:
       config.earlyCompletionAfterSuccessfulNoIntervention ??
@@ -792,6 +796,7 @@ function makeSelectPedagogicalAction(defaultMode, defaultPolicyConfig) {
           mode,
           action_type: policy.selectedAction.action_type,
           candidate_actions: policy.candidateActions.map((c) => c.action_type),
+          world_adaptation_spec: policy.worldAdaptationSpec,
         }),
       ],
     };
@@ -818,7 +823,7 @@ function makeValidateAdaptationContract(defaultMode, defaultPolicyConfig) {
         const repaired = repairActionFromGate(selectedAction, gateResult);
         if (repaired?.action_type && repaired.action_type !== selectedAction?.action_type) {
           repairedFrom = selectedAction?.action_type || null;
-          selectedAction = repaired;
+          selectedAction = applyWorldAdaptationToAction(repaired, config);
           gateResult = validateProofReleaseOwnershipGate({
             stateBelief: state.learnerStateBelief,
             selectedAction,
@@ -840,6 +845,7 @@ function makeValidateAdaptationContract(defaultMode, defaultPolicyConfig) {
       gateResult,
       realizationChecks: { action_consistent: null, forbidden_move_detected: null },
       policyMode: mode,
+      worldAdaptationSpec: summarizeWorldAdaptationSpec(config.worldAdaptationSpec),
     });
 
     return {
@@ -854,6 +860,7 @@ function makeValidateAdaptationContract(defaultMode, defaultPolicyConfig) {
           gate_allowed: gateResult.allowed,
           gate_violations: gateResult.violations.map((v) => v.code),
           repaired_from: repairedFrom,
+          world_adaptation_spec: contract.world_adaptation_spec,
         }),
       ],
     };

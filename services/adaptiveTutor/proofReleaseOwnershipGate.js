@@ -1,4 +1,4 @@
-import { getActionDefinition } from './actionPolicy.js';
+import { actionPermittedByWorldSpec, getActionDefinition, normalizeWorldAdaptationSpec } from './actionPolicy.js';
 
 export const PROOF_RELEASE_OWNERSHIP_GATE_VERSION = 'proof-release-ownership-gate.v1.0';
 
@@ -16,6 +16,7 @@ export const VIOLATION_CODES = Object.freeze({
   STATE_HYPOTHESIS_UNGROUNDED: 'STATE_HYPOTHESIS_UNGROUNDED',
   HIGH_CONFIDENCE_WITH_HIGH_UNCERTAINTY: 'HIGH_CONFIDENCE_WITH_HIGH_UNCERTAINTY',
   REALIZATION_ACTION_MISMATCH: 'REALIZATION_ACTION_MISMATCH',
+  WORLD_ACTION_DISALLOWED: 'WORLD_ACTION_DISALLOWED',
 });
 
 const DEFAULT_GATE_CONFIG = Object.freeze({
@@ -118,6 +119,29 @@ function lowerControlNearTie(selectedAction, candidateActions = [], epsilon) {
     .sort((a, b) => a.control_cost - b.control_cost || b.information_gain - a.information_gain)[0];
 }
 
+function worldPolicyActionList(spec, key) {
+  return (spec?.action_policy?.[key] || []).filter((actionType) => {
+    try {
+      getActionDefinition(actionType);
+      return true;
+    } catch {
+      return false;
+    }
+  });
+}
+
+function worldRepairAction(spec) {
+  for (const actionType of [
+    ...worldPolicyActionList(spec, 'preferred_action_families'),
+    ...worldPolicyActionList(spec, 'allowed_action_families'),
+    'diagnose_with_discriminating_question',
+    'request_evidence',
+  ]) {
+    if (actionPermittedByWorldSpec(actionType, spec)) return actionType;
+  }
+  return 'diagnose_with_discriminating_question';
+}
+
 export function validateProofReleaseOwnershipGate({
   stateBelief,
   selectedAction,
@@ -127,6 +151,7 @@ export function validateProofReleaseOwnershipGate({
   config = {},
 } = {}) {
   const merged = { ...DEFAULT_GATE_CONFIG, ...config };
+  const worldSpec = normalizeWorldAdaptationSpec(merged);
   const violations = [];
   const repairs = [];
   const action = selectedAction ? clone(selectedAction) : null;
@@ -137,6 +162,21 @@ export function validateProofReleaseOwnershipGate({
       violations: [violation(VIOLATION_CODES.ACTION_PRECONDITION_UNMET, 'No selected action was supplied.')],
       repairs: [repair('diagnose_with_discriminating_question', 'Select a low-control diagnostic action first.')],
     };
+  }
+
+  if (worldSpec && !actionPermittedByWorldSpec(action.action_type, worldSpec)) {
+    violations.push(
+      violation(
+        VIOLATION_CODES.WORLD_ACTION_DISALLOWED,
+        `${action.action_type} is disallowed by locked world adaptation spec ${worldSpec.id || 'unknown'}.`,
+        {
+          action_type: action.action_type,
+          world_adaptation_spec_id: worldSpec.id || null,
+          world_adaptation_spec_hash: worldSpec.spec_hash || null,
+        },
+      ),
+    );
+    repairs.push(repair(worldRepairAction(worldSpec), 'Use an action family permitted by the locked world adaptation spec.'));
   }
 
   const axes = stateBelief?.axes || {};

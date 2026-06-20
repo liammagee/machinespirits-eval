@@ -7,6 +7,32 @@ import {
   legacyPolicyActionForAdaptiveAction,
   selectPedagogicalAction,
 } from '../services/adaptiveTutor/actionPolicy.js';
+import { observeInterventionOutcome } from '../services/adaptiveTutor/outcomeObserver.js';
+
+const WORLD_SPEC = {
+  id: 'W_AF6_CURRICULUM',
+  version: 'ms-world-adaptation-v0.1',
+  source_curriculum_id: 'ai_foundations_v1',
+  module_id: 'AF6',
+  spec_hash: 'sha256:test',
+  action_policy: {
+    allowed_action_families: ['request_evidence'],
+    preferred_action_families: ['request_evidence'],
+    disallowed_action_families: ['diagnose_with_discriminating_question', 'model_worked_example'],
+  },
+  expected_transitions: [
+    {
+      action_type: 'request_evidence',
+      success_evidence: ['learner-authored rationale'],
+      failure_evidence: ['mere agreement'],
+      world_success_observables: ['Learner checks the model-performance claim against the metric table.'],
+    },
+  ],
+  forbidden_moves: [
+    { id: 'no_hidden_label_exposure', move: 'hidden_label_exposure' },
+    { id: 'no_premature_proof_supply', move: 'supply_decisive_step' },
+  ],
+};
 
 test('uncertain first turn selects a diagnostic action', () => {
   const belief = estimateLearnerStateBelief({
@@ -482,4 +508,55 @@ test('strict varied config penalizes any recent same action after a hypothesis r
   assert.equal(belief.hypotheses[0].id, 'false_mastery');
   assert.equal(penalty, 1.2);
   assert.notEqual(selection.selectedAction.action_type, 'diagnose_with_discriminating_question');
+});
+
+test('world adaptation spec constrains candidate actions and annotates selected action', () => {
+  const belief = estimateLearnerStateBelief({
+    dialogue: [{ role: 'learner', content: "I don't get why that works." }],
+    turnIndex: 0,
+  });
+  const selection = selectPedagogicalAction({
+    stateBelief: belief,
+    interventionLedger: [],
+    mode: 'closed_loop',
+    config: { world_adaptation_spec: WORLD_SPEC },
+  });
+
+  assert.equal(belief.uncertainty.needs_discrimination, true);
+  assert.equal(selection.selectedAction.action_type, 'request_evidence');
+  assert.ok(selection.candidateActions.every((candidate) => candidate.action_type !== 'diagnose_with_discriminating_question'));
+  assert.deepEqual(selection.worldAdaptationSpec, {
+    id: 'W_AF6_CURRICULUM',
+    version: 'ms-world-adaptation-v0.1',
+    source_curriculum_id: 'ai_foundations_v1',
+    module_id: 'AF6',
+    spec_hash: 'sha256:test',
+  });
+  assert.ok(selection.selectedAction.success_signal.required_evidence.includes('learner-authored rationale'));
+  assert.ok(selection.selectedAction.forbidden_moves.includes('hidden_label_exposure'));
+});
+
+test('world adaptation spec does not count as success evidence by itself', () => {
+  const belief = estimateLearnerStateBelief({
+    dialogue: [{ role: 'learner', content: "I don't get why that works." }],
+    turnIndex: 0,
+  });
+  const selection = selectPedagogicalAction({
+    stateBelief: belief,
+    interventionLedger: [],
+    mode: 'closed_loop',
+    config: { world_adaptation_spec: WORLD_SPEC },
+  });
+
+  const outcome = observeInterventionOutcome({
+    pendingIntervention: {
+      action_type: selection.selectedAction.action_type,
+      success_signal: selection.selectedAction.success_signal,
+    },
+    learnerTurn: 'Yes.',
+    turnIndex: 1,
+  });
+
+  assert.equal(outcome.outcome, 'failure');
+  assert.equal(outcome.required_evidence_satisfied, false);
 });

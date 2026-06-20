@@ -225,3 +225,25 @@ test('gate does not repair compatible actionable uncertainty back to diagnostic'
     false,
   );
 });
+
+test('gate blocks actions disallowed by locked world adaptation spec', () => {
+  const result = validateProofReleaseOwnershipGate({
+    stateBelief: stateBelief(),
+    selectedAction: materialize('model_worked_example'),
+    config: {
+      world_adaptation_spec: {
+        id: 'W_AF6_CURRICULUM',
+        spec_hash: 'sha256:test',
+        action_policy: {
+          allowed_action_families: ['request_evidence', 'ask_strategy_choice'],
+          preferred_action_families: ['request_evidence'],
+          disallowed_action_families: ['model_worked_example'],
+        },
+      },
+    },
+  });
+
+  assert.equal(result.allowed, false);
+  assert.ok(result.violations.some((v) => v.code === VIOLATION_CODES.WORLD_ACTION_DISALLOWED));
+  assert.equal(result.repairs[0].replace_action_with, 'request_evidence');
+});
