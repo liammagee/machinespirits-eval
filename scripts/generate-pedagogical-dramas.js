@@ -187,6 +187,7 @@ Operational flags:
   --trace-calls                       Record per-call telemetry
   --call-telemetry-json FILE
   --call-telemetry-csv FILE
+  --role-max-tokens SPEC              Per-role output budgets, e.g. "tutor_superego=700,learner_superego=500" or "preset" (off by default; API hard-cap, CLI terse-directive)
   --claude-persistent-workers         Reuse persistent Claude worker processes
   --generation-concurrency N          Independent dramas to generate concurrently (default: 1)
 
@@ -238,6 +239,7 @@ function parseArgs(argv) {
     callTelemetryCsvPath: null,
     directorPlanCache: null,
     reuseDirectorPlan: null,
+    roleMaxTokens: null,
   };
   if (argv.some((token) => token === '--help' || token === '-h')) {
     a.help = true;
@@ -276,6 +278,7 @@ function parseArgs(argv) {
     else if (t === '--director-variation-key') a.directorVariationKey = argv[++i];
     else if (t === '--director-plan-cache') a.directorPlanCache = path.resolve(argv[++i]);
     else if (t === '--reuse-director-plan') a.reuseDirectorPlan = path.resolve(argv[++i]);
+    else if (t === '--role-max-tokens') a.roleMaxTokens = parseRoleMaxTokens(argv[++i]);
     else if (t === '--opening-speaker') a.openingSpeaker = String(argv[++i] || '').toLowerCase();
     else if (t === '--control-ending') a.controlEndingPolicy = argv[++i];
     else if (t === '--call-telemetry-json') {
@@ -1575,6 +1578,7 @@ function callTelemetryCsv(records = []) {
     'prompt_chars_user',
     'prompt_chars_combined',
     'output_chars',
+    'role_max_tokens',
     'input_tokens',
     'output_tokens',
     'total_tokens',
@@ -1605,6 +1609,7 @@ function callTelemetryCsv(records = []) {
     record.prompt_chars?.user,
     record.prompt_chars?.combined,
     record.output_chars,
+    record.role_max_tokens,
     record.usage?.input_tokens,
     record.usage?.output_tokens,
     record.usage?.total_tokens,
@@ -1714,6 +1719,7 @@ function makeCallTelemetryRecorder({ enabled = false, print = false, jsonPath = 
         prompt_hashes: promptHashes,
         prompt_chars: promptChars,
         output_chars: String(response?.content || '').length,
+        role_max_tokens: opts.roleMaxTokensRequested ?? null,
         usage: {
           input_tokens: usage.inputTokens,
           output_tokens: usage.outputTokens,
@@ -1790,6 +1796,66 @@ function attachCallTelemetrySummary(target, args) {
   const artifacts = relativeCallTelemetryArtifactsForArgs(args);
   if (artifacts && Object.keys(artifacts).length) target.call_telemetry_artifacts = artifacts;
   return target;
+}
+
+// ── Slice 3: per-role output budgets ─────────────────────────────────────────
+// Off by default. When --role-max-tokens supplies a budget for a role, the API
+// backend receives it as a hard max_tokens; the claude/codex/gemini CLI backends
+// have no max_tokens flag, so the budget becomes a static per-role "be terse"
+// directive appended to the system prompt (a soft cap that preserves persistent-
+// worker reuse, since the directive is identical for every call of that role).
+// The doc's conservative defaults, available via `--role-max-tokens preset`.
+const ROLE_OUTPUT_BUDGET_PRESET = {
+  director: 3500,
+  tutor_ego: 800,
+  tutor_superego: 800,
+  learner_ego: 700,
+  learner_superego: 600,
+};
+
+function parseRoleMaxTokens(str) {
+  const raw = String(str || '').trim();
+  if (!raw) return null;
+  if (raw === 'preset' || raw === 'default') return { ...ROLE_OUTPUT_BUDGET_PRESET };
+  const out = {};
+  for (const pair of raw.split(',')) {
+    const segment = pair.trim();
+    if (!segment) continue;
+    const [role, value] = segment.split('=').map((s) => s.trim());
+    const budget = parseInt(value, 10);
+    if (!role || !Number.isInteger(budget) || budget <= 0) {
+      throw new Error(`--role-max-tokens: expected role=N pairs (or "preset"); got "${segment}"`);
+    }
+    out[role] = budget;
+  }
+  return Object.keys(out).length ? out : null;
+}
+
+function roleOutputBudgetDirective(budget) {
+  const chars = budget * 4; // rough tokens→characters
+  return (
+    `\n\nOUTPUT BUDGET: keep your entire reply within about ${budget} tokens (~${chars} characters). ` +
+    'Be terse and cut padding. Preserve any required structure (a pass/fail/revise verdict, a single ' +
+    'public line, required JSON fields); do not drop required content to save space.'
+  );
+}
+
+// Wrap the base llmCall so a budgeted role gets max_tokens (API) plus a terse
+// directive (all backends). Placed INSIDE the telemetry wrapper so telemetry
+// records the role prompt size without the directive, and reads the requested
+// budget back off the (by-reference) opts object.
+function wrapLlmCallWithRoleBudgets(llmCall, budgets) {
+  if (!budgets || !Object.keys(budgets).length) return llmCall;
+  const budgeted = async function budgetedLlmCall(model, systemPrompt, messages, opts = {}) {
+    const role = opts.agentRole || 'gen';
+    const budget = budgets[role];
+    if (!budget) return llmCall(model, systemPrompt, messages, opts);
+    opts.roleMaxTokensRequested = budget;
+    const sys = `${systemPrompt || ''}${roleOutputBudgetDirective(budget)}`;
+    return llmCall(model, sys, messages, { ...opts, maxTokens: budget });
+  };
+  budgeted.close = () => llmCall.close?.();
+  return budgeted;
 }
 
 function wrapLlmCallWithTelemetry(llmCall, recorder) {
@@ -2405,7 +2471,7 @@ async function sleep(ms) {
   await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function callApiModelOnce(systemPrompt, userPrompt, modelKey, role) {
+async function callApiModelOnce(systemPrompt, userPrompt, modelKey, role, maxTokens = GEN_API_MAX_TOKENS) {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error('OPENROUTER_API_KEY not set (required for --generator api)');
   const model = resolveApiModel(modelKey);
@@ -2422,7 +2488,7 @@ async function callApiModelOnce(systemPrompt, userPrompt, modelKey, role) {
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({
         model,
-        max_tokens: GEN_API_MAX_TOKENS,
+        max_tokens: maxTokens || GEN_API_MAX_TOKENS,
         temperature: GEN_API_TEMPERATURE,
         include_reasoning: false,
         messages: [
@@ -2476,11 +2542,11 @@ async function callApiModelOnce(systemPrompt, userPrompt, modelKey, role) {
   }
 }
 
-async function callApiModel(systemPrompt, userPrompt, modelKey, role) {
+async function callApiModel(systemPrompt, userPrompt, modelKey, role, maxTokens = GEN_API_MAX_TOKENS) {
   let lastError = null;
   for (let attempt = 0; attempt <= GEN_API_RETRIES; attempt += 1) {
     try {
-      return await callApiModelOnce(systemPrompt, userPrompt, modelKey, role);
+      return await callApiModelOnce(systemPrompt, userPrompt, modelKey, role, maxTokens);
     } catch (err) {
       lastError = err;
       if (attempt >= GEN_API_RETRIES || !isRetryableApiGeneratorError(err)) throw err;
@@ -2549,7 +2615,13 @@ function makeGeminiLlmCall() {
 function makeApiLlmCall(modelKey) {
   return async function apiLlmCall(_model, systemPrompt, messages, opts = {}) {
     const userPrompt = (messages || []).map((m) => m.content).join('\n');
-    const result = await callApiModel(systemPrompt, userPrompt, modelKey, opts.agentRole || 'gen');
+    const result = await callApiModel(
+      systemPrompt,
+      userPrompt,
+      modelKey,
+      opts.agentRole || 'gen',
+      opts.maxTokens || GEN_API_MAX_TOKENS,
+    );
     return withUsage(result, {
       provider: 'openrouter',
       model: `api/${modelKey}`,
@@ -5082,7 +5154,10 @@ async function main() {
           : args.generator === 'api'
             ? makeApiLlmCall(args.apiModel)
             : makeClaudeLlmCall(args.model, args.effort, { persistentWorkers: args.claudePersistentWorkers });
-  const llmCall = wrapLlmCallWithTelemetry(baseLlmCall, args._callTelemetry);
+  const llmCall = wrapLlmCallWithTelemetry(
+    wrapLlmCallWithRoleBudgets(baseLlmCall, args.roleMaxTokens),
+    args._callTelemetry,
+  );
   if (args.pairedContinuationPolicies || args.pairedAdaptationArms) {
     try {
       await generatePairedContinuations({ args, order, runtime, llmCall });
