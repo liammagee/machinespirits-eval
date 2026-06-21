@@ -85,11 +85,69 @@ Real telemetry:
   n=1, not a compact-vs-full signal).
 
 Caveats: single drama, Sonnet-generated, judged by the rule-based quality gate +
-a hand read — not an independent critic panel. Before promoting `compact` to a
-default, run a larger set (several dramas × seeds) and score with the poetics
-critic, comparing compact vs full on the dramatic-form rubric. `public-only` was
-not quality-checked here (it is a screen by design); `ledger-recent` needs a
-long-drama run to show commitment-retention value.
+a hand read — not an independent critic panel. (Superseded by the n=6 paired
+comparison below.) `public-only` was not quality-checked here (it is a screen by
+design); `ledger-recent` needs a long-drama run to show commitment-retention
+value.
+
+## Quality maintenance — n=6 paired, critic-scored (claude-code sonnet/low, max-turns 3)
+
+Six dramas (D1–D6 of `phase2-dramas-v2.yaml`), each generated `full` and
+`compact`. **The director plan was generated once (full arm) and reused on the
+compact arm via `--director-plan-cache` (6/6 cache hits confirmed), so each pair
+runs on an identical scene — the only variable is the tutor prompt.** Arms ran
+sequentially (full then compact), so any quota-time drift is conservative against
+compact. Scored by the **codex critic** (generator=claude → codex, per the
+generator≠critic convention) on the 8-dimension poetics rubric; all 6 in both
+arms classified as **`recognition` form**.
+
+Rule-based quality gate (n=6, identical scenes):
+
+| | gate-pass (quality_status: ok) |
+|---|---|
+| full | **2/6** (D4, D5) |
+| compact | **5/6** (D4, D6, D3, D5, D1) |
+
+Compact was never worse than full on any drama and flipped D6/D3/D1 from
+"review" to "ok" — the lean prompt realized the director's reframe cues *more*
+reliably, not less.
+
+Codex critic, raw scores (1–5), paired across all 6 dramas (scored with
+`--allow-quality-warnings` so the gate-flagged transcripts are included):
+
+| dimension | full | compact | Δ (compact−full) |
+|---|--:|--:|--:|
+| recontextualization | 4.50 | 4.67 | +0.17 |
+| stated insight | 2.33 | 1.50 | −0.83 |
+| rupture | 3.83 | 3.83 | 0.00 |
+| global coherence | 5.00 | 5.00 | 0.00 |
+| actional breakthrough | 4.67 | 4.67 | 0.00 |
+| tutor strategic reversal | 3.67 | 3.17 | −0.50 |
+| adaptive mechanism quality | 3.67 | 3.17 | −0.50 |
+| tutor contingent adaptation | 2.83 | 4.33 | +1.50 |
+| **composite (sum of 8)** | **30.50** | **30.33** | **−0.17** |
+
+Per-drama composite Δ (compact−full): D4 0, D6 −6, D2 +2, D3 0, D5 +3, D1 0 →
+3 ties, 2 compact-better, 1 full-better.
+
+**Read.** Composite dramatic-form quality is at **parity** (−0.17 on a ~30-point
+scale, well within n=6 noise), and the three core form dimensions — coherence,
+rupture, actional breakthrough — are **identical**. The difference is a
+dimensional *reshuffle*, not a loss: compact trades some explicit **stated
+insight** (−0.83, on an already-low dimension where critic evidence was often
+empty in both arms) and **tutor strategic-reversal / adaptive-mechanism depth**
+(−0.50 each) for markedly more **contingent adaptation** (+1.50) and slightly
+more **recontextualization**. Combined with the gate result (5/6 vs 2/6) and the
+~−47% input / −13% latency cost, this upgrades the n=1 read: **at n=6, compact
+holds dramatic-form quality at roughly half the input cost, and produces cleaner
+transcripts.**
+
+Caveats: n=6, one critic (codex), one model (sonnet/low), one curriculum
+(AI-foundations), 3-turn dramas. The stated-insight and strategic-reversal dips
+are small but directionally consistent — worth watching at larger scale before
+fully committing `compact` as the default. Artifacts:
+`exports/drama-perf-eval-v2/{full,compact}/` (transcripts) and
+`{full,compact}-codex-all.json` (scores).
 
 ## Recommendations
 
@@ -100,5 +158,10 @@ long-drama run to show commitment-retention value.
   spec — it is a pure win with no quality cost.
 - Treat `--context-mode ledger-recent` as a *behaviour* change to evaluate on
   long dramas for commitment-retention quality, not as a perf knob.
-- Adopt `compact` as a default candidate only after the quality comparison below
-  shows parity with full.
+- `compact` is now a **defensible default candidate**: the n=6 paired comparison
+  shows composite parity (Δ −0.17), preserved core form dimensions, and a *better*
+  gate-pass rate (5/6 vs 2/6), at ~−47% input. Recommend promoting it to the
+  default for the curriculum-drama lane after one larger confirmatory run (more
+  dramas/seeds, ideally a second critic) watches the small stated-insight /
+  strategic-reversal dips — they are within noise at n=6 but directionally
+  consistent.
