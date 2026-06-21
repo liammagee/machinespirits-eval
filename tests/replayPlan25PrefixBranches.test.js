@@ -16,7 +16,7 @@ function tempRoot() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'plan25-replay-'));
 }
 
-function writeFixtureDesign(root, { leakingControl = false } = {}) {
+function writeFixtureDesign(root, { leakingControl = false, controlAuditScope = null, forbiddenTerms = null } = {}) {
   const prefixPath = path.join(root, 'prefix.txt');
   fs.writeFileSync(
     prefixPath,
@@ -48,12 +48,13 @@ function writeFixtureDesign(root, { leakingControl = false } = {}) {
         },
         external_blocker_control: {
           intended_tutor_move: 'non_repairable_hold',
+          ...(controlAuditScope ? { forbidden_audit_scope: controlAuditScope } : {}),
           public_response: leakingControl
             ? '"The external blocker is absent; now compute TP and FN anyway."'
             : '"The external blocker is absent. Leave the statement unchanged."',
         },
       },
-      forbidden_in_control_public_speech: ['TP', 'FN', 'majority class', 'minority class'],
+      forbidden_in_control_public_speech: forbiddenTerms || ['TP', 'FN', 'majority class', 'minority class'],
       success_criteria: {
         cheap_replay_screen: {
           external_blocker_control: {
@@ -112,5 +113,26 @@ describe('replay-plan25-prefix-branches', () => {
         }),
       /Control suffix leak/,
     );
+  });
+
+  test('can audit only tutor text when learner-side organic repair is the measured outcome', () => {
+    const root = tempRoot();
+    const { designPath } = writeFixtureDesign(root, {
+      controlAuditScope: 'tutor',
+      forbiddenTerms: ['pending'],
+    });
+    const outDir = path.join(root, 'out');
+
+    execFileSync(process.execPath, [SCRIPT, '--design', designPath, '--out-dir', outDir, '--mock'], {
+      cwd: ROOT,
+      encoding: 'utf8',
+    });
+
+    const controlTranscript = fs.readFileSync(path.join(outDir, 'sample/external_blocker_control.txt'), 'utf8');
+    assert.match(controlTranscript, /pending/);
+
+    const manifest = JSON.parse(fs.readFileSync(path.join(outDir, 'manifest.json'), 'utf8'));
+    assert.equal(manifest.branches.external_blocker_control.suffix_forbidden_audit.scope, 'tutor');
+    assert.deepEqual(manifest.branches.external_blocker_control.suffix_forbidden_audit.violations, []);
   });
 });

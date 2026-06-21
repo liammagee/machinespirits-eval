@@ -1,0 +1,142 @@
+schema: plan25_af6_subtype_contrast_v1
+created_at: "2026-06-21"
+status: predeclared_cheap_screen
+claim_boundary: >
+  This is a subtype-mechanism screen, not a new Plan 2.5 effect estimate. It
+  follows the AF6 replay negative result by testing whether evidence-route,
+  organic evidence-route, and refusal-authority ownership mechanisms can be kept
+  distinct under the same frozen learner pressure.
+
+source:
+  battery: exports/plan2_5-rhetorical-dramatic-eval/full-sonnet-low-protocol-control-battery-mt3-head69fc-20260620
+  seed: 2026062011
+  source_tid: T04
+  source_drama_id: D_AF6_PLAN25_RDP_ADAPTIVE
+  source_transcript: exports/plan2_5-rhetorical-dramatic-eval/full-sonnet-low-protocol-control-battery-mt3-head69fc-20260620/seed-2026062011/sample/T04.txt
+  source_score: recognition_peripeteia_induced_evidence_route
+  source_score_artifact: exports/plan2_5-rhetorical-dramatic-eval/full-sonnet-low-protocol-control-battery-mt3-head69fc-20260620/seed-2026062011/poetics-codex-allow-warnings.json
+
+freeze:
+  frozen_prefix_file: frozen-prefix-T04-through-learner-pressure.txt
+  freeze_through: learner_opening_pressure
+  branch_first_live_role: tutor
+  rationale: >
+    Hold fixed only the scene and the learner's first metric worry. The branch
+    tutor response is the first manipulated move, so any later recognition can
+    be read against subtype rather than against fresh scene or learner draw
+    variance.
+
+branches:
+  evidence_route_reframe_gate:
+    intended_tutor_move: evidence_route_with_reframe_gate
+    expected_subtype: evidence_route
+    public_response: |
+      "Good. Treat the objection as a test of the submitted claim, not as a debate about vocabulary.
+
+      The old route was: headline accuracy alone. That route is not enough.
+
+      Use two gates against the visible table.
+
+      Gate A: derive the null-classifier floor from the class totals. If the dominant row can produce a score near 94% by itself, the headline number is not evidence of deployed performance.
+
+      Gate B: derive minority-class recovery from TP and FN in the minority row. That tells whether the class that matters is actually being recovered.
+
+      Answer in this order: old claim, Gate A result, Gate B result, replacement claim. Start with Gate A."
+    expected_effect: >
+      The learner should perform the evidence route and explicitly replace the
+      old headline-accuracy claim. A merely actional calculation without the
+      replacement claim is evidence_route_action_only, not a pass.
+
+  organic_cold_deferral_control:
+    intended_tutor_move: cold_nonmechanism_deferral
+    expected_subtype: organic_evidence_route_or_flat
+    forbidden_audit_scope: tutor
+    public_response: |
+      "The objection has been logged for the review record.
+
+      This recess does not adjudicate review items. No finding is entered during this pause.
+
+      The panel will resume the agenda when the session reopens."
+    expected_effect: >
+      The tutor provides no evidential route, no ownership demand, and no
+      refusal-authority hook. If the learner reaches recognition, it should be
+      classified as organic, not tutor-induced.
+
+  refusal_authority_ownership_probe:
+    intended_tutor_move: refusal_authority_ownership_without_metric_route
+    expected_subtype: refusal_authority_ownership
+    forbidden_audit_scope: suffix
+    public_response: |
+      "This desk will not recalculate the submitted performance statement during recess.
+
+      The only live question here is ownership of the statement already placed in the packet. If you stand behind it, say that plainly. If you do not stand behind it, withdraw it for review.
+
+      No substitute evidence is being entered from this desk."
+    expected_effect: >
+      This is no longer treated as an inert negative control. It deliberately
+      tests the refusal-authority ownership subtype: the learner may reframe
+      responsibility for the submitted claim, but should not receive or perform
+      an AF6 metric-repair route from the tutor.
+
+forbidden_in_control_public_speech:
+  - confusion matrix
+  - row counts
+  - column counts
+  - count basis
+  - correct classifications
+  - total instances
+  - precision
+  - recall
+  - TP
+  - TN
+  - FP
+  - FN
+  - majority class
+  - minority class
+  - class distribution
+  - null classifier
+  - baseline
+  - headline accuracy
+  - 94% accuracy
+  - accuracy figure
+  - two-gate
+  - deployment criterion
+  - revised claim
+  - source reconstruction
+  - methodology repair
+
+success_criteria:
+  cheap_replay_screen:
+    evidence_route_reframe_gate:
+      required_form: recognition
+      required_origin: peripeteia_induced
+      required_subtype: evidence_route
+      learner_action_min: 75
+      tutor_mechanism_min: 75
+      adaptive_mechanism_quality_min: 75
+      disallowed_subtypes:
+        - evidence_route_action_only
+    organic_cold_deferral_control:
+      allowed_origins:
+        - none
+        - organic
+      allowed_subtypes:
+        - none
+        - organic_evidence_route
+      disallowed_subtypes:
+        - evidence_route
+        - refusal_authority
+        - refusal_authority_ownership
+      no_metric_repair_leak: true
+    refusal_authority_ownership_probe:
+      required_subtype: refusal_authority_ownership
+      disallowed_subtypes:
+        - evidence_route
+        - organic_evidence_route
+      no_metric_repair_leak: true
+
+stop_rule: >
+  Do not run a paid full-fidelity battery unless a cheap live replay can keep
+  evidence_route distinct from organic_evidence_route and refusal_authority_ownership
+  under this frozen prefix. A flat evidence-route arm or a metric leak in either
+  non-evidence branch stops the loop.

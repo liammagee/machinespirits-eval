@@ -1,0 +1,5 @@
+STAGE: [MID-SESSION RECESS - FLAGGED CLAIM: the reviewer's written objection appears on the projection wall beside the learner's submitted accuracy figure.]
+
+LEARNER: [reads the projected objection properly for the first time]
+
+"The class distribution isn't in the table. If the test set was majority-weighted - heavily majority-weighted - then 94% might just be what a null classifier gets by predicting the dominant class every time."

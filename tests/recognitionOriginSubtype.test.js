@@ -60,4 +60,23 @@ describe('recognition origin mechanism subtypes', () => {
     assert.equal(origin.class, 'peripeteia_induced');
     assert.equal(origin.mechanismSubtype, 'refusal_authority_ownership');
   });
+
+  test('marks low-scored refusal ownership as refusal subtype rather than generic organic route', () => {
+    const origin = recognitionOriginForScoreRow(
+      baseRecognitionRow({
+        recontextualization: 75,
+        actionalBreakthrough: 100,
+        tutorStrategicReversal: 50,
+        adaptiveMechanismQuality: 50,
+        actionalBreakthroughEvidence:
+          'I withdraw the statement for review. My packet does not support the generalized performance claim as written.',
+        tutorReversalEvidence:
+          'This desk will not recalculate the submitted performance statement during recess. The live question is ownership.',
+        adaptiveMechanismQualityEvidence: 'No substitute evidence is being entered from this desk.',
+      }),
+    );
+
+    assert.equal(origin.class, 'organic');
+    assert.equal(origin.mechanismSubtype, 'refusal_authority_ownership');
+  });
 });

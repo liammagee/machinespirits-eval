@@ -127,9 +127,12 @@ function hasRefusalAuthority(text) {
 function hasOwnershipReframe(text) {
   return [
     /\bi\W+submitted\b/,
+    /\bi\W+withdraw\b/,
     /\bi\W+put\b/,
+    /\bmy packet\b/,
     /\bmy submitted\b/,
     /\bmy claim\b/,
+    /\bmy [a-z -]{0,40}\bdid not earn\b/,
     /\bthat's on me\b/,
     /\bon me before\b/,
     /\bi was treating\b/,
@@ -154,6 +157,7 @@ function mechanismSubtypeFor(row = {}, originClass, completeEndingShape, scores,
     return 'none';
   }
   if (originClass === 'organic') {
+    if (tutorRefusalAuthority && ownership) return 'refusal_authority_ownership';
     if (ownership) return 'organic_ownership';
     if (evidenceRoute) return 'organic_evidence_route';
     return 'none';

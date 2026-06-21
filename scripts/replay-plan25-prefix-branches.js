@@ -235,6 +235,20 @@ function inferControlBranchKeys(design) {
   return keys;
 }
 
+function forbiddenAuditScope(branch = {}) {
+  const scope = branch.forbidden_audit_scope || branch.forbiddenAuditScope || 'suffix';
+  if (!['suffix', 'tutor', 'learner'].includes(scope)) {
+    throw new Error(`Invalid forbidden_audit_scope "${scope}". Use suffix, tutor, or learner.`);
+  }
+  return scope;
+}
+
+function auditTextForScope(scope, suffixTurns) {
+  if (scope === 'tutor') return renderTranscript(suffixTurns.filter((turn) => turn.role === 'TUTOR'));
+  if (scope === 'learner') return renderTranscript(suffixTurns.filter((turn) => turn.role === 'LEARNER'));
+  return renderTranscript(suffixTurns);
+}
+
 function mockLearnerContinuation(branchKey, branch) {
   const key = String(branchKey || '').toLowerCase();
   const move = String(branch?.intended_tutor_move || '').toLowerCase();
@@ -294,6 +308,10 @@ function learnerBridgeModel(modelRef) {
   return null;
 }
 
+function learnerModelOverrideForEngine(modelRef) {
+  return learnerBridgeModel(modelRef) ? null : modelRef;
+}
+
 function liveLearnerLlmCall(opts) {
   const modelKey = learnerBridgeModel(opts.learnerModel);
   if (!modelKey) return null;
@@ -337,7 +355,7 @@ async function liveLearnerContinuation({ branch, design, opts, prefixTurns, sour
     conversationHistory: prefixConversationHistory(prefixTurns),
     learnerProfile,
     personaId,
-    modelOverride: opts.learnerModel,
+    modelOverride: learnerModelOverrideForEngine(opts.learnerModel),
     llmCall: liveLearnerLlmCall(opts),
     profileContext: liveLearnerProfileContext({ prefixTurns, sourceItem }),
     trace,
@@ -508,7 +526,8 @@ async function main() {
     const learnerTracePath = path.join(opts.outDir, 'learner-traces', `${branchKey}.json`);
     if (continuation.trace) fs.writeFileSync(learnerTracePath, JSON.stringify(continuation.trace, null, 2), 'utf8');
 
-    const suffixText = renderTranscript(suffixTurns);
+    const auditScope = forbiddenAuditScope(branch);
+    const suffixText = auditTextForScope(auditScope, suffixTurns);
     const forbidden = controlBranchKeys.has(branchKey) ? forbiddenMatches(suffixText, forbiddenTerms) : [];
     if (forbidden.length && !opts.allowForbiddenSuffix) {
       throw new Error(
@@ -536,6 +555,7 @@ async function main() {
       },
       suffix_forbidden_audit: {
         applied: controlBranchKeys.has(branchKey),
+        scope: auditScope,
         forbidden_terms: forbiddenTerms,
         violations: forbidden,
       },
