@@ -192,6 +192,7 @@ Operational flags:
   --drama-fidelity MODE               compact (DEFAULT: compact prompts) | full (original full recognition prompts) | public-only (ego-only, cheap screen)
   --context-mode MODE                 last-six (default) | ledger-recent (state ledger + recent turns) | full-public (full transcript, diagnostic)
   --recent-turns N                    Verbatim recent-turn window under ledger-recent/full-public (default 4)
+  --phatic-rate P                     0..1 (default 0): on low-stakes turns, probability of a reflexive ego-only turn (skips superego), for realistic backchannels
   --claude-persistent-workers         Reuse persistent Claude worker processes
   --generation-concurrency N          Independent dramas to generate concurrently (default: 1)
 
@@ -252,6 +253,7 @@ function parseArgs(argv) {
     dramaFidelity: 'compact',
     contextMode: 'last-six',
     recentTurns: 4,
+    phaticRate: 0,
   };
   if (argv.some((token) => token === '--help' || token === '-h')) {
     a.help = true;
@@ -295,6 +297,7 @@ function parseArgs(argv) {
     else if (t === '--drama-fidelity') a.dramaFidelity = String(argv[++i] || '').toLowerCase();
     else if (t === '--context-mode') a.contextMode = String(argv[++i] || '').toLowerCase();
     else if (t === '--recent-turns') a.recentTurns = parseInt(argv[++i], 10);
+    else if (t === '--phatic-rate') a.phaticRate = Number(argv[++i]);
     else if (t === '--opening-speaker') a.openingSpeaker = String(argv[++i] || '').toLowerCase();
     else if (t === '--control-ending') a.controlEndingPolicy = argv[++i];
     else if (t === '--call-telemetry-json') {
@@ -349,6 +352,9 @@ function parseArgs(argv) {
   }
   if (!Number.isInteger(a.recentTurns) || a.recentTurns < 1) {
     throw new Error('--recent-turns must be a positive integer');
+  }
+  if (!Number.isFinite(a.phaticRate) || a.phaticRate < 0 || a.phaticRate > 1) {
+    throw new Error('--phatic-rate must be a number in [0,1]');
   }
   if (a.pedagogyDb && !fs.existsSync(a.pedagogyDb)) throw new Error(`--pedagogy-db not found: ${a.pedagogyDb}`);
   if (a.dialogueDb && !fs.existsSync(a.dialogueDb)) throw new Error(`--dialogue-db not found: ${a.dialogueDb}`);
@@ -1906,6 +1912,7 @@ function dramaTurnOptionsForArgs(args) {
     dramaFidelity: args?.dramaFidelity || 'full',
     contextMode: args?.contextMode || 'last-six',
     recentTurns: args?.recentTurns || 4,
+    phaticRate: args?.phaticRate || 0,
   };
   if (!args?.dramaCompactPrompts) return out;
   if (!_compactDramaPromptOverrides) {
