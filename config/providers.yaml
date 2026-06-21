@@ -48,7 +48,7 @@ providers:
     models:
       # Budget-friendly options
       nemotron: nvidia/nemotron-3-nano-30b-a3b
-      nemotron-ultra: nvidia/nemotron-3-ultra-550b-a55b:free
+      nemotron-ultra: nvidia/nemotron-3-ultra-550b-a55b
       glm47: z-ai/glm-4.7
       glm5: z-ai/glm-5
       glm5_2: z-ai/glm-5.2
