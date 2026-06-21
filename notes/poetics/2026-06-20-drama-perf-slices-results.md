@@ -184,8 +184,18 @@ matters most. Artifacts: `{full,compact}-gemini.json`, `{full,compact}-gpt.json`
   before full-fidelity paid runs" step.
 - Use `--director-plan-cache` whenever iterating on cues/runtime against a fixed
   spec — it is a pure win with no quality cost.
-- Treat `--context-mode ledger-recent` as a *behaviour* change to evaluate on
-  long dramas for commitment-retention quality, not as a perf knob.
+- **`--context-mode ledger-recent` — evaluated, verdict: inert at realistic
+  lengths.** Paired last-six vs ledger-recent, 3 dramas at max-turns 8, compact
+  prompts, scenes fixed via director-cache (3/3 hits), codex-scored. Result: no
+  robust effect — coherence 5.0=5.0 and recon 4.33=4.33 identical; composite +1.67
+  for ledger but all on the floor-level statedInsight dimension (noise at n=3); the
+  early-learner→late-tutor callback metric was null in both arms; and a transcript
+  read showed both arms reframing cleanly from the same early commitment with no
+  retention difference. This is *structural*: at ≤8 turns last-six already holds
+  ~the whole transcript, so ledger-recent is information-equivalent. Its benefit
+  can only appear once a dialogue outgrows the 6-turn window (>10 turns). Keep it
+  **opt-in for long-form dialogue**; do not default it. (Artifacts:
+  `exports/drama-perf-eval-ledger/`.)
 - The compact-default decision rests on: n=6 codex parity (Δ −0.17) + better
   gate-pass (5/6 vs 2/6) + −47% input, with the independent-critic de-confound
   showing only a small depth edge for full (−3.7%). If a larger run (more
