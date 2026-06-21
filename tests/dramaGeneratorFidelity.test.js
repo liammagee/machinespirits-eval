@@ -48,7 +48,7 @@ describe('generate-pedagogical-dramas fidelity ladder (Slice 5)', () => {
   it('public-only drops every superego call on both tutor and learner sides', () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'fidelity-'));
     try {
-      const full = roleCounts(tmp, 'full', []);
+      const full = roleCounts(tmp, 'full', ['--drama-fidelity', 'full']);
       const publicOnly = roleCounts(tmp, 'public', ['--drama-fidelity', 'public-only']);
       // full runs the superego on both sides; public-only must run none
       assert.ok(full.tutor_superego > 0, 'full should run a tutor superego');

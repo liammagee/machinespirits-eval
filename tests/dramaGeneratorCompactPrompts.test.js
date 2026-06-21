@@ -47,7 +47,8 @@ describe('generate-pedagogical-dramas compact tutor prompts (Slice 4)', () => {
   it('shrinks the tutor system prompts by an order of magnitude under the flag', () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'compact-prompt-'));
     try {
-      const full = tutorSystemPromptSizes(tmp, 'full', []);
+      // compact is the default now, so the full baseline must be requested explicitly
+      const full = tutorSystemPromptSizes(tmp, 'full', ['--drama-fidelity', 'full']);
       const compact = tutorSystemPromptSizes(tmp, 'compact', ['--drama-compact-prompts']);
       assert.ok(full.tutor_ego > 15000, `expected full ego prompt > 15k, got ${full.tutor_ego}`);
       assert.ok(compact.tutor_ego < 5000, `expected compact ego prompt < 5k, got ${compact.tutor_ego}`);

@@ -142,26 +142,51 @@ more **recontextualization**. Combined with the gate result (5/6 vs 2/6) and the
 holds dramatic-form quality at roughly half the input cost, and produces cleaner
 transcripts.**
 
-Caveats: n=6, one critic (codex), one model (sonnet/low), one curriculum
-(AI-foundations), 3-turn dramas. The stated-insight and strategic-reversal dips
-are small but directionally consistent — worth watching at larger scale before
-fully committing `compact` as the default. Artifacts:
-`exports/drama-perf-eval-v2/{full,compact}/` (transcripts) and
+Caveats: n=6, one model (sonnet/low), one curriculum (AI-foundations), 3-turn
+dramas. Artifacts: `exports/drama-perf-eval-v2/{full,compact}/` (transcripts) and
 `{full,compact}-codex-all.json` (scores).
+
+### Cross-critic de-confound (same transcripts, independent critic)
+
+The n=6 transcripts were re-scored by an **independent-family critic** — Gemini
+3.1 Pro (codex is itself a GPT model, so GPT-via-OpenRouter is *not* independent;
+it's reported below only as a same-family replication).
+
+| critic | full | compact | Δ (compact−full) | per-drama c/t/f |
+|---|--:|--:|--:|--:|
+| codex (GPT-family, primary) | 30.50 | 30.33 | −0.17 (parity) | 2/3/1 |
+| **gemini (independent)** | 22.67 | 21.83 | **−0.83 (−3.7%)** | 2/0/**4** |
+| gpt (GPT-family ≈ codex) | 26.83 | 29.50 | +2.67 | 4/1/1 |
+
+The independent critic is much stricter (absolute scores ~1–3; classifies 2/6 as
+"flat" — but the *same* 2 in both arms, so the form classification is arm-invariant
+even for the strict critic) and lands a **small, consistent edge for full** (4/6
+dramas), concentrated in the depth dimensions: rupture −0.33, actional-breakthrough
+−0.33, adaptive-mechanism −0.33; coherence and strategic-reversal tie. This agrees
+with codex's own per-dimension read (compact trades tutor-depth for contingent
+adaptation); the critics disagree only on whether the trade nets to zero (codex:
+yes; gemini: not quite).
+
+**Verdict:** not "parity" — the quality difference is *small* (within ~4% under
+the strictest critic) and its *sign is critic-dependent*. Compact is within a few
+percent of full by every critic, at −47% input; the independent critic sees it as
+marginally thinner on depth. Good enough to default for the cost-sensitive
+generation lane; `--drama-fidelity full` stays available where maximum depth
+matters most. Artifacts: `{full,compact}-gemini.json`, `{full,compact}-gpt.json`.
 
 ## Recommendations
 
-- Keep `full` / `last-six` as the default (unchanged), as instructed.
-- Use `--drama-fidelity public-only` (or `compact`) for the plan's "cheap
-  structural screen before full-fidelity paid runs" step.
+- **`compact` is now the DEFAULT drama fidelity** (the generator's `dramaFidelity`
+  defaults to `compact`); `--drama-fidelity full` restores the original full
+  recognition prompts for maximum-depth final artifacts. `last-six` stays the
+  context-mode default.
+- Use `--drama-fidelity public-only` for the plan's "cheap structural screen
+  before full-fidelity paid runs" step.
 - Use `--director-plan-cache` whenever iterating on cues/runtime against a fixed
   spec — it is a pure win with no quality cost.
 - Treat `--context-mode ledger-recent` as a *behaviour* change to evaluate on
   long dramas for commitment-retention quality, not as a perf knob.
-- `compact` is now a **defensible default candidate**: the n=6 paired comparison
-  shows composite parity (Δ −0.17), preserved core form dimensions, and a *better*
-  gate-pass rate (5/6 vs 2/6), at ~−47% input. Recommend promoting it to the
-  default for the curriculum-drama lane after one larger confirmatory run (more
-  dramas/seeds, ideally a second critic) watches the small stated-insight /
-  strategic-reversal dips — they are within noise at n=6 but directionally
-  consistent.
+- The compact-default decision rests on: n=6 codex parity (Δ −0.17) + better
+  gate-pass (5/6 vs 2/6) + −47% input, with the independent-critic de-confound
+  showing only a small depth edge for full (−3.7%). If a larger run (more
+  dramas/seeds) shows the depth gap widening, revert with a one-line default flip.

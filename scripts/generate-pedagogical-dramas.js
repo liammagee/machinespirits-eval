@@ -189,7 +189,7 @@ Operational flags:
   --call-telemetry-csv FILE
   --role-max-tokens SPEC              Per-role output budgets, e.g. "tutor_superego=700,learner_superego=500" or "preset" (off by default; API hard-cap, CLI terse-directive)
   --drama-compact-prompts             Use compact drama tutor prompts (~2k vs ~20k chars); off by default
-  --drama-fidelity MODE               full (default) | compact (compact prompts) | public-only (ego-only, no deliberation — cheap structural screen)
+  --drama-fidelity MODE               compact (DEFAULT: compact prompts) | full (original full recognition prompts) | public-only (ego-only, cheap screen)
   --context-mode MODE                 last-six (default) | ledger-recent (state ledger + recent turns) | full-public (full transcript, diagnostic)
   --recent-turns N                    Verbatim recent-turn window under ledger-recent/full-public (default 4)
   --claude-persistent-workers         Reuse persistent Claude worker processes
@@ -245,7 +245,11 @@ function parseArgs(argv) {
     reuseDirectorPlan: null,
     roleMaxTokens: null,
     dramaCompactPrompts: false,
-    dramaFidelity: 'full',
+    // Default drama fidelity is `compact` (compact tutor prompts + full
+    // deliberation) as of the n=6 critic-scored comparison showing composite
+    // parity with `full` at ~half the input. Pass `--drama-fidelity full` to
+    // restore the original full-recognition-prompt behaviour.
+    dramaFidelity: 'compact',
     contextMode: 'last-six',
     recentTurns: 4,
   };
@@ -338,7 +342,8 @@ function parseArgs(argv) {
   }
   // compact + public-only run on the compact drama prompts; full uses the full
   // recognition prompts. Coupling here keeps fidelity the single knob.
-  if (a.dramaFidelity === 'compact' || a.dramaFidelity === 'public-only') a.dramaCompactPrompts = true;
+  // Any fidelity other than `full` uses the compact tutor prompts (compact is the default).
+  if (a.dramaFidelity !== 'full') a.dramaCompactPrompts = true;
   if (!['last-six', 'ledger-recent', 'full-public'].includes(a.contextMode)) {
     throw new Error(`--context-mode must be last-six|ledger-recent|full-public (got ${a.contextMode})`);
   }
@@ -2750,9 +2755,7 @@ function parseRoleRouteValue(value, label = 'role-map value') {
     throw new Error(`${label} can only include a model suffix for api/openrouter routes (got "${raw}")`);
   }
   if (apiModelKey && !resolveApiModel(apiModelKey)) {
-    throw new Error(
-      `${label} API model "${apiModelKey}" is not a known OpenRouter alias and is not a full model slug`,
-    );
+    throw new Error(`${label} API model "${apiModelKey}" is not a known OpenRouter alias and is not a full model slug`);
   }
   return { backend, apiModelKey, raw };
 }
@@ -4640,11 +4643,7 @@ function baseKeyObject({
             : args.generator === 'gemini'
               ? 'real-gemini'
               : 'real-claude-code',
-    model: args.mock
-      ? null
-      : args.roleMap
-        ? roleMapModelLabel(args)
-        : generatorModelLabel(args),
+    model: args.mock ? null : args.roleMap ? roleMapModelLabel(args) : generatorModelLabel(args),
     codex_reasoning_effort: CODEX_REASONING_EFFORT,
     writing_pad: runtime.writingPad,
     director_mode: args.directorMode,
@@ -5419,8 +5418,8 @@ async function main() {
                 opening_speaker: directorPlan?.opening_speaker || null,
                 ending_speaker: directorPlan?.ending_speaker || null,
                 director_variation_key: d._directorVariationKey || null,
-    stage_direction_style: stageDirectionStyleFor(d)?.id || null,
-    model: args.roleMap ? roleMapModelLabel(args) : generatorModelLabel(args),
+                stage_direction_style: stageDirectionStyleFor(d)?.id || null,
+                model: args.roleMap ? roleMapModelLabel(args) : generatorModelLabel(args),
                 codex_reasoning_effort: CODEX_REASONING_EFFORT,
                 writing_pad: runtime.writingPad,
                 world_adaptation: worldAdaptationBindingForDrama(d),
@@ -5504,7 +5503,9 @@ async function main() {
     // Mixed authorship has no single arms-length critic: whichever model authored
     // ANY role can't be a clean generator≠critic judge of the whole transcript.
     // Exact backend set = whatever each of the 5 roles actually resolves to.
-    const resolvedRoutes = ROLE_NAMES.map((role) => formatRoleRoute(resolveRoleRoute(role, args.roleMap, args.generator, args.apiModel)));
+    const resolvedRoutes = ROLE_NAMES.map((role) =>
+      formatRoleRoute(resolveRoleRoute(role, args.roleMap, args.generator, args.apiModel)),
+    );
     const routeSet = new Set(resolvedRoutes);
     const backends = new Set(ROLE_NAMES.map((r) => resolveBackend(r, args.roleMap, args.generator)));
     console.log(
