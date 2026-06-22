@@ -1,0 +1,23 @@
+---
+id: from-holistic-evaluation-to-structured-criteria-rubrics-acro
+title: "From Holistic Evaluation to Structured Criteria: Rubrics Across the
+  Evolving LLM Landscape"
+status: triaged
+type: research
+priority: P2
+owner: unassigned
+source: daily-routine
+created: 2026-06-22
+updated: 2026-06-22
+verification: Paper read; a one-line note records whether it changes our rubric,
+  prompts, architecture or eval design; this item is then closed or spawns a
+  concrete task.
+links:
+  notes: notes/daily-notes/2026-06-14-research-roundup.html
+---
+
+arXiv:2606.08625 [UNBLOCK] — surfaced by the daily routine (2026-06-14-research-roundup.html).
+
+The project now maintains three independent rubric families (v2.2 tutor, charisma v1.0, poetics v1.0). This survey is the first comprehensive map of the design space and failure-mode taxonomy for that kind of multi-rubric architecture. The "dimensionality collapse" finding — rubrics that nominally have many dimensions but practically converge to one — is a direct audit target for the 8-dimension v2.2 rubric and the 6-dimension poetics rubric. Also surfaces methodological priors for the calibrate-rubric.js workflow.
+
+Triage: promote to a research item (link the paper §) or drop with a reason.

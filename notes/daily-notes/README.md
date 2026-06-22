@@ -57,6 +57,18 @@ looked?" unanswerable.
 5. **The folder is the index.** Sorted by filename date, windows tile the
    timeline with no gaps or overlaps. No separate index file to keep in sync.
 
+## Auto-drop into the workplan board
+
+Each roundup also feeds the project board automatically. When a roundup PR opens,
+`.github/workflows/workplan-ingest.yml` runs `node scripts/workplan.js ingest
+--daily`, which parses every `<div class="paper">` entry and drops its **Project
+relevance** note into `workplan/inbox/` as one capture per paper (file
+`workplan/inbox/<date>-arxiv-<id>.md`, the paper's flag carried in the body). It
+is **deduped by arXiv id** — the same key this folder dedupes on — so overlapping
+windows and re-runs never double-capture. The captures are committed to the
+roundup's own PR branch, so they merge with the roundup. Triage them with
+`node scripts/workplan.js list` (see `workplan/README.md`).
+
 ## Why markdown here, HTML for the notes
 
 The roundups themselves are HTML against the shared techne framework (they are
