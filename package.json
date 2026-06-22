@@ -205,7 +205,10 @@
     "a19r:model-screen": "node scripts/a19r-mini-drama.js model-screen",
     "a19r:codebook-validate": "node scripts/a19r-mini-drama.js codebook-validate",
     "a19r:qa": "node scripts/a19r-mini-drama.js qa",
-    "a19r:report": "node scripts/a19r-mini-drama.js report"
+    "a19r:report": "node scripts/a19r-mini-drama.js report",
+    "desktop:dev": "electron desktop/main.js",
+    "desktop:smoke": "MS_DESKTOP_SMOKE=1 electron desktop/main.js",
+    "desktop:rebuild": "electron-rebuild -f"
   },
   "keywords": [
     "evaluation",
@@ -248,7 +251,9 @@
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.3.0",
-    "prettier": "^3.8.1"
+    "prettier": "^3.8.1",
+    "electron": "^33.0.0",
+    "@electron/rebuild": "^3.6.0"
   },
   "engines": {
     "node": ">=20.0.0"
