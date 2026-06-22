@@ -48,3 +48,36 @@ renders in a `BrowserWindow`; writable data lands in `userData`, not the repo.
 graceful job-child cleanup under real load (Phase 2), credential storage (Phase 3),
 the `buildPoeticsApp` extraction + route-parity CI guard (Phase 1/5). The spike imports
 the *already-exported* factory, so no refactor was needed to get here.
+
+---
+
+## Phase 1 (landed)
+
+Phase 1 turns the spike into a structured shell and adds the sync guard:
+
+- **`appFactory.mjs`** — the single `buildDesktopApp({ smoke })` constructor. Production
+  returns *exactly* the web poetics app (`createPoeticsBrowserApp`); smoke mode wraps it
+  with the `/__smoke/*` probe routes. (No `buildPoeticsApp` extraction was needed — the web
+  server already exports the factory; `buildDesktopApp` is the desktop's single seam onto it.)
+- **`routeParity.js` + `tests/desktopRouteParity.test.js`** — the **stays-in-sync guard**:
+  asserts the desktop's production route table equals the web app's, and that no `/__smoke`
+  route ships in production. A future desktop-only route fork fails this test.
+- **`paths.js`** — central resolution of writable dirs (DB, logs, exports) into `userData`
+  via `EVAL_DB_PATH` / `EVAL_LOGS_DIR` / `EVAL_EXPORTS_DIR`, plus `MS_APP_ROOT`. `main.js`
+  calls `app.setName('Machine Spirits')` so the data dir is named, not the generic `Electron`.
+- **`EVAL_EXPORTS_DIR` seam** — added to `services/poetics/jobRunner.js` (behaviour-preserving:
+  defaults to `<repo>/exports` when unset) so the desktop's job logs land in `userData`.
+
+Run the parity guard (in this Electron-ABI worktree, via Electron's Node):
+
+```bash
+EVAL_DB_PATH=$(mktemp -d)/t.db EVAL_LOGS_DIR=$(mktemp -d) \
+  ELECTRON_RUN_AS_NODE=1 ./node_modules/.bin/electron --test tests/desktopRouteParity.test.js
+```
+
+In CI (fresh checkout, Node ABI) it runs under the normal `node --test` suite.
+
+**Deferred to later phases (documented, not done):** fully relocating *spawned-job artifact*
+outputs (drama-generator `outBase`, etc.) — these write `exports/...` relative to the child's
+cwd and need per-script `EVAL_EXPORTS_DIR` awareness; first-run "import existing DB" picker
+(Phase 3 dialog work); packaged-mode resource resolution via `MS_APP_ROOT` (Phase 4 asar).

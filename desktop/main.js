@@ -1,50 +1,37 @@
 // desktop/main.js
 //
-// Electron MAIN process for the Phase-0 equivalence spike.
+// Electron MAIN process.
 //
-// What it proves (see ELECTRON-DESKTOP-APP-PLAN.md §15, Phase 0):
-//   1. The existing Express app boots inside Electron's runtime, with native
-//      modules (better-sqlite3, node-pty) rebuilt for Electron's ABI.
-//   2. main forks the server in a utilityProcess, awaits a port handshake, and
-//      points a BrowserWindow at http://127.0.0.1:<ephemeral-port>.
-//   3. Writable data (SQLite DB + logs) is relocated into app.getPath('userData')
-//      via the EVAL_DB_PATH / EVAL_LOGS_DIR seams — nothing writes to the repo.
-//   4. SSE streams and the real UI render over loopback.
+// Architecture (see ELECTRON-DESKTOP-APP-PLAN.md): the renderer is the unchanged
+// web UI. main relocates writable data into userData, forks the existing Express
+// app in a utilityProcess on an ephemeral loopback port, awaits a port
+// handshake, and points a BrowserWindow at it. External links open in the system
+// browser; in-app navigation is confined to the loopback origin.
 //
-// Two modes:
-//   • `npm run desktop:dev`   → opens a visible window at the home route.
-//   • `npm run desktop:smoke` → runs an automated check battery, prints a
-//                               PASS/FAIL report, and exits 0/1 (no GUI needed).
+// Modes:
+//   • `npm run desktop:dev`   → visible window at the home route.
+//   • `npm run desktop:smoke` → headless PASS/FAIL battery, exits 0/1.
+//   • `MS_DESKTOP_SHOTS=1 …`  → capture PNGs of the surfaces, then exit.
 
 import { app, BrowserWindow, utilityProcess, shell } from 'electron';
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { resolvePaths, serverEnv } from './paths.js';
+
+// Set the app identity BEFORE any getPath('userData') call so the writable data
+// dir is "Machine Spirits", not Electron's generic default.
+app.setName('Machine Spirits');
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
 const SERVER_ENTRY = path.join(__dirname, 'server-entry.mjs');
 
 const SMOKE = process.env.MS_DESKTOP_SMOKE === '1';
+const SHOTS = process.env.MS_DESKTOP_SHOTS === '1';
 const HOME_ROUTE = process.env.MS_HOME || '/browse'; // poetics scriptorium home
 
 let serverChild = null;
-
-// --- Writable-data relocation: the seam that lets a packaged app run cleanly ---
-// (Phase 1 will extend this to exports/ + resource root; the spike does DB+logs.)
-function resolveServerEnv() {
-  const userData = app.getPath('userData');
-  const dataDir = path.join(userData, 'data');
-  const logsDir = path.join(userData, 'logs');
-  fs.mkdirSync(dataDir, { recursive: true });
-  fs.mkdirSync(logsDir, { recursive: true });
-  return {
-    ...process.env,
-    EVAL_DB_PATH: process.env.EVAL_DB_PATH || path.join(dataDir, 'evaluations.db'),
-    EVAL_LOGS_DIR: process.env.EVAL_LOGS_DIR || logsDir,
-    MS_APP_ROOT: REPO_ROOT,
-  };
-}
 
 // --- Fork the server child and await its { type:'listening', port } handshake ---
 function startServer(env) {
@@ -66,7 +53,6 @@ function startServer(env) {
         reject(new Error(`server fatal at "${msg.stage}":\n${msg.error}`));
       }
     });
-
     child.on('exit', (code) => {
       clearTimeout(timeout);
       reject(new Error(`server process exited early (code ${code})`));
@@ -76,12 +62,13 @@ function startServer(env) {
 
 function stopServer() {
   if (!serverChild) return;
+  const child = serverChild;
+  serverChild = null;
   try {
-    serverChild.postMessage({ type: 'shutdown' });
+    child.postMessage({ type: 'shutdown' });
   } catch {
     /* ignore */
   }
-  const child = serverChild;
   setTimeout(() => {
     try {
       child?.kill();
@@ -89,10 +76,9 @@ function stopServer() {
       /* ignore */
     }
   }, 1500);
-  serverChild = null;
 }
 
-// --- Smoke helpers -----------------------------------------------------------
+// --- Smoke / shots helpers ---------------------------------------------------
 async function httpGet(base, p) {
   const res = await fetch(base + p);
   const text = await res.text();
@@ -190,88 +176,45 @@ async function runSmoke(base, native) {
   return results;
 }
 
-// --- App lifecycle -----------------------------------------------------------
-app.whenReady().then(async () => {
-  const env = resolveServerEnv();
-
-  let info;
-  try {
-    info = await startServer(env);
-  } catch (err) {
-    console.error('\n[spike] SERVER FAILED TO BOOT:\n' + (err.stack || err.message) + '\n');
-    if (SMOKE) {
-      app.exit(1);
-    }
-    return;
-  }
-
-  const base = `http://127.0.0.1:${info.port}`;
-  console.log(`[spike] server listening at ${base}  (DB: ${env.EVAL_DB_PATH})`);
-
-  // --- Screenshot mode: capture the real surfaces offscreen to PNG artifacts. ---
-  if (process.env.MS_DESKTOP_SHOTS === '1') {
-    const outDir = path.join(__dirname, 'spike-shots');
-    fs.mkdirSync(outDir, { recursive: true });
-    const surfaces = [
-      ['browse', '/browse'],
-      ['chat', '/chat/'],
-      ['pilot', '/pilot/'],
-      ['compose', '/compose'],
-    ];
-    const win = new BrowserWindow({
-      width: 1440,
-      height: 920,
-      show: false,
-      paintWhenInitiallyHidden: true,
-      webPreferences: {
-        contextIsolation: true,
-        nodeIntegration: false,
-        backgroundThrottling: false,
-      },
-    });
-    for (const [name, route] of surfaces) {
-      try {
-        await withTimeout(win.loadURL(base + route), 12_000, `load ${route}`);
-        await new Promise((r) => setTimeout(r, 900)); // let fonts + Alpine paint
-        const img = await win.webContents.capturePage();
-        const file = path.join(outDir, `${name}.png`);
-        fs.writeFileSync(file, img.toPNG());
-        const { width, height } = img.getSize();
-        console.log(`[spike] shot: ${file} (${width}x${height})`);
-      } catch (e) {
-        console.log(`[spike] shot FAILED ${route}: ${String(e?.message || e)}`);
-      }
-    }
-    win.destroy();
-    stopServer();
-    app.exit(0);
-    return;
-  }
-
-  if (SMOKE) {
-    const results = await runSmoke(base, info.native || {});
-    const pass = results.filter((r) => r.ok).length;
-    const total = results.length;
-    console.log('\n==================== PHASE 0 SPIKE SMOKE ====================');
-    for (const r of results) {
-      console.log(`  ${r.ok ? 'PASS' : 'FAIL'}  ${r.name}${r.info ? `\n          ↳ ${r.info}` : ''}`);
-    }
-    console.log('------------------------------------------------------------');
-    console.log(`  ${pass}/${total} checks passed`);
-    console.log('============================================================\n');
-    stopServer();
-    app.exit(pass === total ? 0 : 1);
-    return;
-  }
-
-  // --- Dev mode: open a visible window at the home route. ---
+async function captureShots(base) {
+  const outDir = path.join(__dirname, 'spike-shots');
+  fs.mkdirSync(outDir, { recursive: true });
+  const surfaces = [
+    ['browse', '/browse'],
+    ['chat', '/chat/'],
+    ['pilot', '/pilot/'],
+    ['compose', '/compose'],
+  ];
   const win = new BrowserWindow({
     width: 1440,
     height: 920,
-    title: 'Machine Spirits — Desktop (Phase 0 spike)',
+    show: false,
+    paintWhenInitiallyHidden: true,
+    webPreferences: { contextIsolation: true, nodeIntegration: false, backgroundThrottling: false },
+  });
+  for (const [name, route] of surfaces) {
+    try {
+      await withTimeout(win.loadURL(base + route), 12_000, `load ${route}`);
+      await new Promise((r) => setTimeout(r, 900)); // let fonts + Alpine paint
+      const img = await win.webContents.capturePage();
+      const file = path.join(outDir, `${name}.png`);
+      fs.writeFileSync(file, img.toPNG());
+      const { width, height } = img.getSize();
+      console.log(`[shots] ${file} (${width}x${height})`);
+    } catch (e) {
+      console.log(`[shots] FAILED ${route}: ${String(e?.message || e)}`);
+    }
+  }
+  win.destroy();
+}
+
+function openWindow(base) {
+  const win = new BrowserWindow({
+    width: 1440,
+    height: 920,
+    title: 'Machine Spirits — Desktop',
     webPreferences: { contextIsolation: true, nodeIntegration: false },
   });
-
   // External links → system browser; keep in-app navigation on loopback only.
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (!url.startsWith(base)) {
@@ -286,12 +229,61 @@ app.whenReady().then(async () => {
       shell.openExternal(url);
     }
   });
+  return win.loadURL(base + HOME_ROUTE).then(() => win);
+}
 
-  await win.loadURL(base + HOME_ROUTE);
+// --- App lifecycle -----------------------------------------------------------
+app.whenReady().then(async () => {
+  const paths = resolvePaths(app, REPO_ROOT);
+  const env = serverEnv(paths);
+
+  let info;
+  try {
+    info = await startServer(env);
+  } catch (err) {
+    console.error('\n[desktop] SERVER FAILED TO BOOT:\n' + (err.stack || err.message) + '\n');
+    if (SMOKE || SHOTS) app.exit(1);
+    return;
+  }
+
+  const base = `http://127.0.0.1:${info.port}`;
+  console.log(`[desktop] server listening at ${base}`);
+  console.log(`[desktop] userData: ${paths.userData}`);
+  console.log(`[desktop] db: ${paths.dbPath}`);
+
+  if (SHOTS) {
+    await captureShots(base);
+    stopServer();
+    app.exit(0);
+    return;
+  }
+
+  if (SMOKE) {
+    const results = await runSmoke(base, info.native || {});
+    const pass = results.filter((r) => r.ok).length;
+    const total = results.length;
+    console.log('\n==================== DESKTOP SMOKE ====================');
+    for (const r of results) {
+      console.log(`  ${r.ok ? 'PASS' : 'FAIL'}  ${r.name}${r.info ? `\n          ↳ ${r.info}` : ''}`);
+    }
+    console.log('------------------------------------------------------');
+    console.log(`  ${pass}/${total} checks passed`);
+    console.log('======================================================\n');
+    stopServer();
+    app.exit(pass === total ? 0 : 1);
+    return;
+  }
+
+  await openWindow(base);
 });
 
 app.on('before-quit', stopServer);
 app.on('window-all-closed', () => {
   stopServer();
   if (process.platform !== 'darwin') app.quit();
+});
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows().length === 0) {
+    // (dev convenience) re-open is handled by relaunching; spike keeps it simple.
+  }
 });
