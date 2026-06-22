@@ -1,9 +1,17 @@
 ---
+id: measuring-whether-llm-tutors-teach-or-solve-a-diagnostic-for
 title: "Measuring Whether LLM Tutors Teach or Solve: A Diagnostic for
   Educational Impact"
+status: triaged
+type: research
+priority: P2
+owner: unassigned
 source: daily-routine
 created: 2026-06-22
-suggested_type: research
+updated: 2026-06-22
+verification: Paper read; a one-line note records whether it changes our rubric,
+  prompts, architecture or eval design; this item is then closed or spawns a
+  concrete task.
 links:
   notes: notes/daily-notes/2026-06-18-research-roundup.html
 ---

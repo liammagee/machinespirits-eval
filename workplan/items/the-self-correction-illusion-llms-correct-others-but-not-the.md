@@ -1,8 +1,16 @@
 ---
+id: the-self-correction-illusion-llms-correct-others-but-not-the
 title: "The Self-Correction Illusion: LLMs Correct Others but Not Themselves"
+status: triaged
+type: research
+priority: P2
+owner: unassigned
 source: daily-routine
 created: 2026-06-22
-suggested_type: research
+updated: 2026-06-22
+verification: Paper read; a one-line note records whether it changes our rubric,
+  prompts, architecture or eval design; this item is then closed or spawns a
+  concrete task.
 links:
   notes: notes/daily-notes/2026-06-12-research-roundup.html
 ---

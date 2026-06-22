@@ -1,11 +1,18 @@
 ---
+id: adapt-the-argument-uniqueness-metric-as-a-tutor-response-col
 title: Adapt the argument-uniqueness metric as a tutor-response-collapse diagnostic
+status: triaged
+type: research
+priority: P3
+owner: unassigned
 source: daily-routine
 created: 2026-06-22
-suggested_type: research
+updated: 2026-06-22
+verification: Decide whether a tutor-response-collapse diagnostic is distinct
+  from §6.11; if yes spec a script, if no close as covered.
 links:
   notes: notes/daily-notes/2026-06-09-research-roundup.html
-  paper: "§6.11"
+  paper: §6.11
 ---
 
 Argument Collapse (arXiv:2606.01736) finds LLM-written debate reuses only ~3.4%

@@ -1,19 +1,80 @@
 {
-  "generated": "2026-06-22T14:40:59.492Z",
+  "generated": "2026-06-22T14:47:28.779Z",
   "counts": {
-    "total": 5,
+    "total": 26,
     "byStatus": {
+      "triaged": 23,
       "blocked": 1,
-      "done": 2,
-      "triaged": 2
+      "done": 2
     },
     "byType": {
-      "experiment": 1,
-      "infra": 3,
-      "research": 1
+      "research": 17,
+      "experiment": 2,
+      "infra": 5,
+      "paper": 2
     }
   },
   "items": [
+    {
+      "id": "g5-h2-per-session-slope-p-0-032-is-a-wrong-p-value",
+      "title": "G5. § H2 per-session slope p=0.032 is a wrong p-value",
+      "status": "triaged",
+      "type": "paper",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "todo",
+      "created": "2026-06-22",
+      "updated": "2026-06-22",
+      "verification": "The per-session slope p-value is recomputed correctly; the paper text is fixed and provable-discourse re-checks the claim.",
+      "links": {
+        "notes": "TODO.md"
+      }
+    },
+    {
+      "id": "a-model-of-multi-turn-human-persuadability-using-probabilist",
+      "title": "A Model of Multi-turn Human Persuadability Using Probabilistic Belief Tracing",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-22",
+      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-09-research-roundup.html"
+      }
+    },
+    {
+      "id": "a17-one-side-replay-replication-across-scenes",
+      "title": "A17. One-Side Replay Replication Across Scenes",
+      "status": "triaged",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "todo",
+      "created": "2026-06-22",
+      "updated": "2026-06-22",
+      "verification": "Replication across scenes run; results in exports/; the one-side-replay claim updated or closed in the paper.",
+      "links": {
+        "notes": "TODO.md"
+      }
+    },
+    {
+      "id": "arcane-do-role-playing-language-agents-stay-in-character-at",
+      "title": "ArcANE: Do Role-Playing Language Agents Stay in Character at the Right Time?",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-22",
+      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-09-research-roundup.html"
+      }
+    },
     {
       "id": "consolidate-logs-db-private-archive",
       "title": "Consolidate dialogue logs + DB into the private archive repo",
@@ -34,6 +95,186 @@
         "logs",
         "archive"
       ]
+    },
+    {
+      "id": "d5-rubric-v3-0-pca-informed-consolidation",
+      "title": "D5. Rubric v3.0 PCA-Informed Consolidation",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "todo",
+      "created": "2026-06-22",
+      "updated": "2026-06-22",
+      "verification": "Rubric v3.0 PCA-informed consolidation drafted in config/rubrics/v3.0/; calibration run; decision recorded in the paper or shelved with a reason.",
+      "links": {
+        "notes": "TODO.md"
+      }
+    },
+    {
+      "id": "environment-grounded-automated-prompt-optimization-for-llm-g",
+      "title": "Environment-Grounded Automated Prompt Optimization for LLM Game Agents",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-22",
+      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-18-research-roundup.html"
+      }
+    },
+    {
+      "id": "from-holistic-evaluation-to-structured-criteria-rubrics-acro",
+      "title": "From Holistic Evaluation to Structured Criteria: Rubrics Across the Evolving LLM Landscape",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-22",
+      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-14-research-roundup.html"
+      }
+    },
+    {
+      "id": "from-prompts-to-context-an-ontology-driven-framework-for-hum",
+      "title": "From Prompts to Context: An Ontology-Driven Framework for Human-Generative AI Collaboration",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-22",
+      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-11-research-roundup.html"
+      }
+    },
+    {
+      "id": "from-solver-to-tutor-evaluating-the-pedagogical-intelligence",
+      "title": "From Solver to Tutor: Evaluating the Pedagogical Intelligence of LLMs with KMP-Bench",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-22",
+      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-15-research-roundup.html"
+      }
+    },
+    {
+      "id": "g2-6-4-recognition-effect-sizes-reproducible-once-the-column",
+      "title": "G2. §6.4 recognition effect sizes — reproducible once the column/judge/run are stated",
+      "status": "triaged",
+      "type": "paper",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "todo",
+      "created": "2026-06-22",
+      "updated": "2026-06-22",
+      "verification": "§6.4 recognition effect sizes reproduce from the DB via a script; numbers match the paper or the paper is corrected.",
+      "links": {
+        "notes": "TODO.md"
+      }
+    },
+    {
+      "id": "geist-in-the-machine-simulating-recognition-and-inner-dialog",
+      "title": "Geist in the Machine: Simulating Recognition and Inner Dialogue in AI-Mediated Teaching and Research",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-22",
+      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-15-research-roundup.html"
+      }
+    },
+    {
+      "id": "measuring-whether-llm-tutors-teach-or-solve-a-diagnostic-for",
+      "title": "Measuring Whether LLM Tutors Teach or Solve: A Diagnostic for Educational Impact",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-22",
+      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-18-research-roundup.html"
+      }
+    },
+    {
+      "id": "not-all-flips-are-conformity-decomposing-stance-convergence",
+      "title": "Not All Flips Are Conformity: Decomposing Stance Convergence in Multi-Agent LLM Debate",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-22",
+      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-09-research-roundup.html"
+      }
+    },
+    {
+      "id": "perspectivegap-a-benchmark-for-multi-agent-orchestration-pro",
+      "title": "PerspectiveGap: A Benchmark for Multi-Agent Orchestration Prompting",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-22",
+      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-11-research-roundup.html"
+      }
+    },
+    {
+      "id": "sepo-self-evolving-prompt-agent-for-system-prompt-optimizati",
+      "title": "SePO: Self-Evolving Prompt Agent for System Prompt Optimization",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-22",
+      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-17-research-roundup.html"
+      }
+    },
+    {
+      "id": "socialcoach-personalized-social-skill-learning-with-rl-based",
+      "title": "SocialCoach: Personalized Social Skill Learning with RL-based Agentic Tutoring and Practice",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-22",
+      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-14-research-roundup.html"
+      }
     },
     {
       "id": "socratic-structured-tutoring-readings",
@@ -57,6 +298,82 @@
         "socratic",
         "pilot"
       ]
+    },
+    {
+      "id": "the-confident-liar-diagnosing-multi-agent-debate-with-log-pr",
+      "title": "The Confident Liar: Diagnosing Multi-Agent Debate with Log-Probabilities and LLM-as-Judge",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-22",
+      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-12-research-roundup.html"
+      }
+    },
+    {
+      "id": "the-self-correction-illusion-llms-correct-others-but-not-the",
+      "title": "The Self-Correction Illusion: LLMs Correct Others but Not Themselves",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-22",
+      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-12-research-roundup.html"
+      }
+    },
+    {
+      "id": "adapt-the-argument-uniqueness-metric-as-a-tutor-response-col",
+      "title": "Adapt the argument-uniqueness metric as a tutor-response-collapse diagnostic",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P3",
+      "owner": "unassigned",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-22",
+      "verification": "Decide whether a tutor-response-collapse diagnostic is distinct from §6.11; if yes spec a script, if no close as covered.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-09-research-roundup.html",
+        "paper": "§6.11"
+      }
+    },
+    {
+      "id": "b7-split-structural-critic-peripeteia-rule-into-earned-vs-na",
+      "title": "B7. Split structural-critic peripeteia rule into earned vs named reorientation",
+      "status": "triaged",
+      "type": "infra",
+      "priority": "P3",
+      "owner": "unassigned",
+      "source": "todo",
+      "created": "2026-06-22",
+      "updated": "2026-06-22",
+      "verification": "Change implemented; covered by a passing test; lint clean.",
+      "links": {
+        "notes": "TODO.md"
+      }
+    },
+    {
+      "id": "b8-lower-recognitionorigin-js-tutoradaptivemechanism-cut-or",
+      "title": "B8. Lower `recognitionOrigin.js` `tutorAdaptiveMechanism` CUT or recalibrate critic panel",
+      "status": "triaged",
+      "type": "infra",
+      "priority": "P3",
+      "owner": "unassigned",
+      "source": "todo",
+      "created": "2026-06-22",
+      "updated": "2026-06-22",
+      "verification": "Change implemented; covered by a passing test; lint clean.",
+      "links": {
+        "notes": "TODO.md"
+      }
     },
     {
       "id": "a1-human-learner-validation",

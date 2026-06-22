@@ -58,7 +58,8 @@ function slugify(s) {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .replace(/-{2,}/g, '-')
-    .slice(0, 60);
+    .slice(0, 60)
+    .replace(/-+$/, ''); // truncation at 60 can re-introduce a trailing hyphen
 }
 function fail(msg) {
   console.error(`workplan: ${msg}`);
