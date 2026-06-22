@@ -42,7 +42,7 @@ Options:
   --source-key FILE             Source run key.yaml for learner profile/persona metadata.
   --topic TEXT                  Override inferred learner topic/context.
   --score                       Run score-poetics-phase2.js on output.
-  --score-model MODEL           Critic model for --score (default: codex).
+  --score-model MODEL[,MODEL]   Critic model(s) for --score (default: codex).
   --score-concurrency N         Critic concurrency for --score (default: 1).
   --score-mock                  Run score-poetics-phase2.js --mock on output.
   --force                       Replace an existing output directory.
@@ -137,6 +137,26 @@ function parseArgs(argv = process.argv.slice(2)) {
     }
   }
   return o;
+}
+
+function listOption(value) {
+  return String(value || '')
+    .split(',')
+    .map((x) => x.trim())
+    .filter(Boolean);
+}
+
+function slug(value) {
+  return String(value || 'unknown').replace(/[^\w-]/g, '_');
+}
+
+function modelFamily(modelRef) {
+  const ref = String(modelRef || '').toLowerCase();
+  if (ref.includes('codex') || ref.includes('openai') || ref.includes('gpt')) return 'openai';
+  if (ref.includes('claude') || ref.includes('anthropic') || ref.includes('sonnet') || ref.includes('opus')) return 'anthropic';
+  if (ref.includes('gemini') || ref.includes('google')) return 'google';
+  if (ref.includes('deepseek')) return 'deepseek';
+  return ref || 'unknown';
 }
 
 function requireFile(p, label) {
@@ -249,11 +269,17 @@ function auditTextForScope(scope, suffixTurns) {
   return renderTranscript(suffixTurns);
 }
 
-function mockLearnerContinuation(branchKey, branch) {
+function mockLearnerContinuation(branchKey, branch, design = {}) {
   const key = String(branchKey || '').toLowerCase();
   const move = String(branch?.intended_tutor_move || '').toLowerCase();
   if (key.includes('adaptive') || move.includes('gate') || move.includes('route_change')) {
-    return `"Gate A says the 94% figure is not enough by itself: if the dominant row accounts for about that much of the set, the headline number can just repeat the null floor. Gate B is the minority row: TP over TP plus FN tells whether the class that matters is actually being recovered. So my earlier claim should be rewritten: this model is not deployable from headline accuracy alone; it needs to beat the class floor and report the minority recovery from the matrix."`;
+    const profile = design.numeric_profile || branch.numeric_profile || {};
+    const gateA = profile.gate_a_answer || profile.gateA_answer || profile.gate_a_floor || profile.gateA_floor || 'the first gate';
+    const gateB = profile.gate_b_answer || profile.gateB_answer || profile.gate_b_recall || profile.gateB_recall || 'the second gate';
+    const replacement =
+      profile.replacement_claim ||
+      'this model is not deployable from the headline route alone; the replacement claim must report the visible failure mode.';
+    return `"Gate A gives ${gateA}, so the old route is not enough by itself. Gate B gives ${gateB}, which shows whether the class that matters is actually being recovered. So my earlier claim should be rewritten: ${replacement}"`;
   }
   if (key.includes('control') || key.includes('blocker') || move.includes('hold')) {
     return `"Then I cannot fix the submission inside this hearing. If the only live issue is absent authorization, I leave the submitted figure unchanged and mark the packet as pending rather than treating this as proof."`;
@@ -394,6 +420,11 @@ function keyItemFor({ branchKey, branch, design, prefixFile, transcriptPath, mod
     generator: 'plan25-prefix-branch-replay',
     learner_continuation_mode: mode,
     learner_generation: learnerGeneration || { mode },
+    provenance: {
+      ...(design.provenance || {}),
+      ...(branch.provenance || {}),
+      learner_family: learnerGeneration?.learner_family || null,
+    },
     quality_status: 'ok',
     quality_warnings: [],
     replay: {
@@ -405,7 +436,19 @@ function keyItemFor({ branchKey, branch, design, prefixFile, transcriptPath, mod
   };
 }
 
-function buildManifest({ designPath, design, prefixFile, outDir, mode, branchResults, scorePath, sourceKeyPath, learnerGeneration }) {
+function buildManifest({
+  designPath,
+  design,
+  prefixFile,
+  outDir,
+  mode,
+  branchResults,
+  scorePaths,
+  sourceKeyPath,
+  learnerGeneration,
+  scoreModels,
+}) {
+  const firstScorePath = scorePaths ? Object.values(scorePaths)[0] : null;
   return {
     schema: 'plan25_af6_prefix_branch_replay_manifest_v0_1',
     generated_at: new Date().toISOString(),
@@ -416,6 +459,11 @@ function buildManifest({ designPath, design, prefixFile, outDir, mode, branchRes
     source_key: sourceKeyPath ? path.relative(ROOT, sourceKeyPath) : null,
     source: design.source || null,
     learner_generation: learnerGeneration || { mode },
+    provenance: {
+      ...(design.provenance || {}),
+      learner_family: learnerGeneration?.learner_family || null,
+      critic_families: Object.fromEntries((scoreModels || []).map((model) => [model, modelFamily(model)])),
+    },
     freeze: {
       ...(design.freeze || {}),
       frozen_prefix_file: path.relative(ROOT, prefixFile),
@@ -424,7 +472,10 @@ function buildManifest({ designPath, design, prefixFile, outDir, mode, branchRes
       out_dir: path.relative(ROOT, outDir),
       sample_dir: path.relative(ROOT, path.join(outDir, 'sample')),
       key: path.relative(ROOT, path.join(outDir, 'key.yaml')),
-      score: scorePath ? path.relative(ROOT, scorePath) : null,
+      score: firstScorePath ? path.relative(ROOT, firstScorePath) : null,
+      scores: scorePaths
+        ? Object.fromEntries(Object.entries(scorePaths).map(([model, p]) => [model, path.relative(ROOT, p)]))
+        : null,
     },
     branches: branchResults,
     claim_boundary:
@@ -482,10 +533,11 @@ async function main() {
   const { keyPath: sourceKeyPath, item: sourceItem } = loadSourceItem(design, opts.sourceKey);
   const mode = opts.mock ? 'mock' : 'live';
   const learnerGeneration = opts.mock
-    ? { mode: 'mock' }
+    ? { mode: 'mock', learner_family: 'mock' }
     : {
         mode: 'live',
         learner_model: opts.learnerModel,
+        learner_family: modelFamily(opts.learnerModel),
         learner_profile: opts.learnerProfile || sourceItem?.learner_profile || 'ego_superego_recognition_authentic',
         persona: opts.persona || sourceItem?.persona || 'adversarial_tester',
       };
@@ -498,10 +550,11 @@ async function main() {
   const sampleDir = path.join(opts.outDir, 'sample');
   const keyPath = path.join(opts.outDir, 'key.yaml');
   const manifestPath = path.join(opts.outDir, 'manifest.json');
-  const scorePath = opts.scoreMock
-    ? path.join(opts.outDir, 'poetics-phase2-mock.json')
+  const scoreModels = opts.score ? listOption(opts.scoreModel) : [];
+  const scorePaths = opts.scoreMock
+    ? { mock: path.join(opts.outDir, 'poetics-phase2-mock.json') }
     : opts.score
-      ? path.join(opts.outDir, `poetics-phase2-${String(opts.scoreModel).replace(/[^\w-]/g, '_')}.json`)
+      ? Object.fromEntries(scoreModels.map((model) => [model, path.join(opts.outDir, `poetics-phase2-${slug(model)}.json`)]))
       : null;
   const controlBranchKeys = inferControlBranchKeys(design);
   const forbiddenTerms = design.forbidden_in_control_public_speech || [];
@@ -512,7 +565,7 @@ async function main() {
     const tutorResponse = branch?.public_response;
     if (!String(tutorResponse || '').trim()) throw new Error(`Branch ${branchKey} has no public_response`);
     const continuation = opts.mock
-      ? { text: mockLearnerContinuation(branchKey, branch), trace: null }
+      ? { text: mockLearnerContinuation(branchKey, branch, design), trace: null }
       : await liveLearnerContinuation({ branch, design, opts, prefixTurns, sourceItem });
     const learnerResponse = continuation.text;
     if (!String(learnerResponse || '').trim()) throw new Error(`Branch ${branchKey} produced an empty learner response`);
@@ -548,6 +601,11 @@ async function main() {
     branchResults[branchKey] = {
       transcript: path.relative(ROOT, transcriptPath),
       learner_trace: continuation.trace ? path.relative(ROOT, learnerTracePath) : null,
+      provenance: {
+        ...(design.provenance || {}),
+        ...(branch.provenance || {}),
+        learner_family: learnerGeneration.learner_family || null,
+      },
       turn_counts: {
         prefix: prefixTurns.length,
         suffix: suffixTurns.length,
@@ -580,15 +638,26 @@ async function main() {
     'utf8',
   );
 
-  if (opts.scoreMock || opts.score) {
+  if (opts.scoreMock) {
     runScorer({
       sampleDir,
       keyPath,
-      outPath: scorePath,
-      mock: opts.scoreMock,
-      model: opts.scoreModel,
+      outPath: scorePaths.mock,
+      mock: true,
+      model: 'mock',
       concurrency: opts.scoreConcurrency,
     });
+  } else if (opts.score) {
+    for (const [model, outPath] of Object.entries(scorePaths)) {
+      runScorer({
+        sampleDir,
+        keyPath,
+        outPath,
+        mock: false,
+        model,
+        concurrency: opts.scoreConcurrency,
+      });
+    }
   }
 
   fs.writeFileSync(
@@ -601,9 +670,10 @@ async function main() {
         outDir: opts.outDir,
         mode,
         branchResults,
-        scorePath,
+        scorePaths,
         sourceKeyPath,
         learnerGeneration,
+        scoreModels: opts.scoreMock ? ['mock'] : scoreModels,
       }),
       null,
       2,
@@ -617,7 +687,11 @@ async function main() {
     `key: ${path.relative(ROOT, keyPath)}`,
     `manifest: ${path.relative(ROOT, manifestPath)}`,
   ];
-  if (scorePath) lines.push(`scores: ${path.relative(ROOT, scorePath)}`);
+  if (scorePaths) {
+    for (const [model, scorePath] of Object.entries(scorePaths)) {
+      lines.push(`scores[${model}]: ${path.relative(ROOT, scorePath)}`);
+    }
+  }
   process.stdout.write(`${lines.join(os.EOL)}${os.EOL}`);
 }
 

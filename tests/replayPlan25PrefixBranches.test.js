@@ -85,7 +85,7 @@ describe('replay-plan25-prefix-branches', () => {
     const controlTranscript = fs.readFileSync(path.join(outDir, 'sample/external_blocker_control.txt'), 'utf8');
     assert.match(adaptiveTranscript, /TUTOR:/);
     assert.match(adaptiveTranscript, /LEARNER:/);
-    assert.match(adaptiveTranscript, /Gate A says/);
+    assert.match(adaptiveTranscript, /Gate A gives/);
     assert.match(controlTranscript, /Leave the statement unchanged/);
     assert.doesNotMatch(controlTranscript.split('TUTOR:')[1], /\bTP\b|\bFN\b/);
 
