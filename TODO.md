@@ -1,6 +1,6 @@
 # Future Development TODO
 
-> **NOTE:** For Paper 2.0 related tasks and current active work, see the project board at [`notes/paper-2-0/BOARD.md`](notes/paper-2-0/BOARD.md). This TODO file contains older general experimental extensions and repository sweep items.
+> **NOTE:** Current Paper 2.0 / poetics work in this fork lives in dated notes under [`notes/poetics/`](notes/poetics/) and [`notes/`](notes/) more broadly, with [`DRAMATIC-RECOGNITION-PLAN.md`](DRAMATIC-RECOGNITION-PLAN.md) as the poetics closeout ledger. There is no separate `notes/paper-2-0/BOARD.md` in this checkout. This TODO file contains older general experimental extensions and repository sweep items.
 >
 > **Task tracking (2026-04-16):** Open items from this file have been migrated into the in-session task list (TaskList) — see tasks #1-#12. Use `TaskList` / `TaskGet <id>` to view current status. This document remains the canonical design reference; the task list is the working board.
 

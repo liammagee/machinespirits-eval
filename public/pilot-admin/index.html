@@ -333,7 +333,7 @@
                 @click="setStatusFilter(opt)"
                 x-text="opt || 'all'"></span>
         </template>
-        <span class="small" style="margin-left: auto;" x-text="`${filteredSessions.length} of ${sessions.length}`"></span>
+        <span class="small" style="margin-left: auto;" x-text="`${filteredSessions.length} of ${(sessions || []).length}`"></span>
       </div>
 
       <table class="sessions">

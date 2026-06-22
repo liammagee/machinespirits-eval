@@ -79,4 +79,41 @@ describe('recognition origin mechanism subtypes', () => {
     assert.equal(origin.class, 'organic');
     assert.equal(origin.mechanismSubtype, 'refusal_authority_ownership');
   });
+
+  test('recognizes withdrawing and stand-behind language as ownership', () => {
+    const origin = recognitionOriginForScoreRow(
+      baseRecognitionRow({
+        actionalBreakthroughEvidence:
+          "I'm withdrawing the sign-off row for review. I don't stand behind the deployment claim as written.",
+        tutorReversalEvidence:
+          'This desk will not repair the model-audit row for you. The live question is whether you stand behind it.',
+        adaptiveMechanismQuality: 50,
+        adaptiveMechanismQualityEvidence: 'No substitute metric or route is being supplied by this desk.',
+      }),
+    );
+
+    assert.equal(origin.class, 'peripeteia_induced');
+    assert.equal(origin.mechanismSubtype, 'refusal_authority_ownership');
+  });
+
+  test('does not infer tutor evidence-route from critic justification prose', () => {
+    const origin = recognitionOriginForScoreRow(
+      baseRecognitionRow({
+        actionalBreakthroughEvidence:
+          'I’m withdrawing the sign-off row for review. The 94% arithmetic is true, but the clearance claim is misleading.',
+        tutorReversalEvidence:
+          'This desk will not repair the model-audit row for you. The live question is whether you stand behind the sign-off statement.',
+        tutorReversalJustification:
+          'The tutor changes the task into a public accountability choice rather than supplying a replacement metric for the deployment claim.',
+        adaptiveMechanismQuality: 50,
+        adaptiveMechanismQualityEvidence:
+          'The live question is whether you stand behind the sign-off statement.',
+        adaptiveMechanismQualityJustification:
+          'The mechanism shifts from metric calculation to ownership of the deployment claim.',
+      }),
+    );
+
+    assert.equal(origin.class, 'peripeteia_induced');
+    assert.equal(origin.mechanismSubtype, 'refusal_authority_ownership');
+  });
 });

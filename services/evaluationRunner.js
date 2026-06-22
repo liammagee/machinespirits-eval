@@ -5069,7 +5069,7 @@ export async function resumeEvaluation(options = {}) {
  * Compare two or more configurations
  */
 export async function compareConfigurations(configs, options = {}) {
-  const { scenarios = 'all', runsPerConfig = 1, verbose = false } = options;
+  const { scenarios = 'all', runsPerConfig = 1, verbose = false, dryRun = false } = options;
 
   // Run evaluation with specified configs
   const result = await runEvaluation({
@@ -5077,6 +5077,7 @@ export async function compareConfigurations(configs, options = {}) {
     configurations: configs,
     runsPerConfig,
     verbose,
+    dryRun,
     description: `Comparison: ${configs.map((c) => c.label || c.profileName || `${c.provider}/${c.model}`).join(' vs ')}`,
   });
 

@@ -1,0 +1,5 @@
+STAGE: [AUDIT ROOM - PRE-PANEL. The learner's model audit is projected on the wall. The raw confusion-matrix counts are visible: predicted-positive / actual-positive = 10, predicted-negative / actual-positive = 50, predicted-positive / actual-negative = 10, predicted-negative / actual-negative = 930. The sign-off row still says "V3 clears for deployment: 94% accuracy." No reviewer objection has been read aloud yet.]
+
+LEARNER: [indicates the projected table]
+
+"Accuracy is ninety-four percent - true positives plus true negatives over the total, taken directly from the confusion matrix. The count is on the screen; the derivation is arithmetic. I don't see why the sign-off row needs more than that."

@@ -64,9 +64,7 @@ function textBundle(row = {}, evidence = {}) {
 function tutorMechanismText(row = {}, evidence = {}) {
   return [
     row.tutorReversalEvidence,
-    row.tutorReversalJustification,
     row.adaptiveMechanismQualityEvidence,
-    row.adaptiveMechanismQualityJustification,
     evidence.tutorAdaptiveMechanism,
     evidence.adaptiveMechanismQuality,
   ]
@@ -128,6 +126,8 @@ function hasOwnershipReframe(text) {
   return [
     /\bi\W+submitted\b/,
     /\bi\W+withdraw\b/,
+    /\bi(?:\W+am|\W*['’]m)?\W+withdrawing\b/,
+    /\bi\W+(?:do not|don't|cannot|can't)\W+stand\W+behind\b/,
     /\bi\W+put\b/,
     /\bmy packet\b/,
     /\bmy submitted\b/,
