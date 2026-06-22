@@ -1,24 +1,42 @@
 // tests/desktopRouteParity.test.js
 //
-// The "stays in sync" guard. Asserts that the desktop's PRODUCTION app serves
-// exactly the same route table as the canonical web poetics app, and that it
-// ships no /__smoke probe routes. If a future change forks the desktop's routes
-// (mounts a subset, adds desktop-only endpoints, etc.) this fails instead of
-// silently drifting.
+// The "stays in sync" guard. Asserts the desktop's PRODUCTION app serves exactly
+// the same route table as the canonical web poetics app, and ships no /__smoke
+// probe routes. A future change that forks the desktop's routes fails here.
 //
-// Run in CI with plain `node --test` (fresh checkout = Node ABI). In a worktree
-// whose native modules were rebuilt for Electron, run it via Electron's Node:
-//   EVAL_DB_PATH=$(mktemp -d)/t.db EVAL_LOGS_DIR=$(mktemp -d) \
-//   ELECTRON_RUN_AS_NODE=1 ./node_modules/.bin/electron --test tests/desktopRouteParity.test.js
+// Self-hermetic: relocates every writable store into a temp dir BEFORE importing
+// the app, so it never touches the real DB/logs — safe under `npm test` and CI.
+// In CI (fresh checkout = Node ABI) it runs under plain `node --test`. In an
+// Electron-ABI worktree, run it via `npm run desktop:test` (Electron's Node).
 
-import { test } from 'node:test';
+import { test, before } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildDesktopApp } from '../desktop/appFactory.mjs';
-import { createPoeticsBrowserApp } from '../scripts/browse-poetics-scripts.js';
-import { diffRoutes, routeFingerprint } from '../desktop/routeParity.js';
+import os from 'node:os';
+import path from 'node:path';
+import fs from 'node:fs';
 
-const dbPath = process.env.EVAL_DB_PATH; // hermetic temp DB supplied by the runner
+const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ms-parity-'));
+for (const [k, v] of [
+  ['EVAL_DB_PATH', path.join(tmp, 'evaluations.db')],
+  ['EVAL_LOGS_DIR', path.join(tmp, 'logs')],
+  ['EVAL_EXPORTS_DIR', path.join(tmp, 'exports')],
+  ['AUTH_DB_PATH', path.join(tmp, 'lms.sqlite')],
+  ['EVAL_WRITING_PAD_DIR', path.join(tmp, 'writing-pads')],
+  ['TUTOR_CORE_LOG_DIR', path.join(tmp, 'tutor-core-logs')],
+]) {
+  process.env[k] = process.env[k] || v;
+}
+fs.mkdirSync(path.join(tmp, 'logs'), { recursive: true });
+
 const HOST = '127.0.0.1';
+const DB = () => process.env.EVAL_DB_PATH;
+let buildDesktopApp, createPoeticsBrowserApp, diffRoutes, routeFingerprint;
+
+before(async () => {
+  ({ buildDesktopApp } = await import('../desktop/appFactory.mjs'));
+  ({ createPoeticsBrowserApp } = await import('../scripts/browse-poetics-scripts.js'));
+  ({ diffRoutes, routeFingerprint } = await import('../desktop/routeParity.js'));
+});
 
 function closeApp(app) {
   try {
@@ -29,8 +47,8 @@ function closeApp(app) {
 }
 
 test('desktop production app == web poetics app (route parity)', () => {
-  const web = createPoeticsBrowserApp({ dbPath, host: HOST });
-  const desktop = buildDesktopApp({ smoke: false, dbPath, host: HOST });
+  const web = createPoeticsBrowserApp({ dbPath: DB(), host: HOST });
+  const desktop = buildDesktopApp({ smoke: false, dbPath: DB(), host: HOST });
   try {
     const fp = routeFingerprint(desktop);
     assert.ok(fp.length > 10, `expected a populated route table, got ${fp.length} layers`);
@@ -46,10 +64,12 @@ test('desktop production app == web poetics app (route parity)', () => {
 });
 
 test('production build ships no /__smoke probe routes', () => {
-  const desktop = buildDesktopApp({ smoke: false, dbPath, host: HOST });
+  const desktop = buildDesktopApp({ smoke: false, dbPath: DB(), host: HOST });
   try {
-    const fp = routeFingerprint(desktop);
-    assert.ok(!fp.some((x) => x.includes('__smoke')), 'production app must not expose /__smoke probe routes');
+    assert.ok(
+      !routeFingerprint(desktop).some((x) => x.includes('__smoke')),
+      'production app must not expose /__smoke probe routes',
+    );
   } finally {
     closeApp(desktop);
   }
