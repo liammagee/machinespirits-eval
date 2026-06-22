@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import fs from 'fs';
 import os from 'os';
@@ -17,9 +18,36 @@ import {
   inferRecognitionFromProfileName,
   linearRegression,
   pearsonCorrelation,
+  runProvableDiscourseAudit,
   topologicalSort,
   verifyTurnIdsForRow,
 } from '../services/provableDiscourse.js';
+
+function makeProvableFixture(specOverrides = {}) {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'provable-discourse-'));
+  const dbPath = path.join(tmpDir, 'evaluations.db');
+  new Database(dbPath).close();
+  fs.writeFileSync(path.join(tmpDir, 'manifest.json'), JSON.stringify({ totals: { expected_scored: 123 } }, null, 2));
+  fs.writeFileSync(path.join(tmpDir, 'paper-full.md'), 'Legacy-only proof phrase. Shared claim phrase.');
+  fs.writeFileSync(path.join(tmpDir, 'paper-full-2.0.md'), 'Paper 2 only proof phrase. Shared claim phrase.');
+
+  const spec = {
+    version: 1,
+    paper_path: 'paper-full.md',
+    paper2_path: 'paper-full-2.0.md',
+    manifest_path: 'manifest.json',
+    db_path: 'evaluations.db',
+    snapshot_path: 'snapshot.json',
+    claims: [],
+    ...specOverrides,
+  };
+  fs.writeFileSync(path.join(tmpDir, 'spec.yaml'), JSON.stringify(spec, null, 2));
+  return { tmpDir, dbPath, specPath: 'spec.yaml', absoluteSpecPath: path.join(tmpDir, 'spec.yaml') };
+}
+
+function claimById(report, id) {
+  return report.claims.find((claim) => claim.id === id);
+}
 
 test('inferRecognitionFromProfileName classifies canonical names', () => {
   assert.equal(inferRecognitionFromProfileName('cell_5_recog_single_unified'), true);
@@ -106,6 +134,143 @@ test('evaluateSymmetryRule handles both_abs_lte and abs_gap_gte', () => {
 test('cohensD returns expected direction', () => {
   const d = cohensD([10, 11, 12, 13], [1, 2, 3, 4]);
   assert.ok(d > 0);
+});
+
+test('Paper 2.0 audit mode uses the Paper 2.0 manuscript as the statement source', () => {
+  const { tmpDir, specPath } = makeProvableFixture({
+    claims: [
+      {
+        id: 'paper2.present',
+        description: 'Paper 2 statement exists',
+        statement: { pattern: 'Paper 2 only proof phrase', flags: 'i', min_occurrences: 1 },
+        evidence: { type: 'manifest_total', field: 'expected_scored' },
+        assertion: { op: 'eq', expected: 123 },
+      },
+      {
+        id: 'legacy.only',
+        description: 'Legacy-only text must not satisfy Paper 2 mode',
+        statement: { pattern: 'Legacy-only proof phrase', flags: 'i', min_occurrences: 1 },
+        evidence: { type: 'manifest_total', field: 'expected_scored' },
+        assertion: { op: 'eq', expected: 123 },
+      },
+    ],
+  });
+
+  try {
+    const report = runProvableDiscourseAudit({ rootDir: tmpDir, specPath, epoch: '2.0', smokeMode: true });
+    assert.equal(report.paper_path, 'paper-full-2.0.md');
+    assert.deepEqual(report.paper_paths, ['paper-full-2.0.md']);
+    assert.equal(report.paper_source_mode, 'paper2_primary');
+    assert.equal(claimById(report, 'paper2.present').status, 'pass');
+    assert.equal(claimById(report, 'legacy.only').status, 'fail');
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test('theoretical claims are registered without empirical snapshot debt', () => {
+  const { tmpDir, specPath } = makeProvableFixture({
+    claims: [
+      {
+        id: 'paper2.theoretical',
+        description: 'Theory claim registration',
+        statement: { pattern: 'Paper 2 only proof phrase', flags: 'i', min_occurrences: 1 },
+        evidence: {
+          type: 'theoretical',
+          derivation: 'Derived from a local argument, not directly from DB evidence.',
+          cross_refs: [],
+        },
+        assertion: { op: 'theoretical', expected: 'registered theoretical claim' },
+      },
+    ],
+  });
+
+  try {
+    const report = runProvableDiscourseAudit({ rootDir: tmpDir, specPath, epoch: '2.0' });
+    const claim = claimById(report, 'paper2.theoretical');
+    assert.equal(claim.status, 'pass');
+    assert.equal(claim.details.proof_status, 'theoretical_registration');
+    assert.equal(claim.details.snapshot_required, false);
+    assert.equal(report.summary.warn, 0);
+    assert.equal(fs.existsSync(path.join(tmpDir, 'snapshot.json')), false);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test('empirical claims require and accept a reviewed snapshot baseline', () => {
+  const { tmpDir, specPath } = makeProvableFixture({
+    claims: [
+      {
+        id: 'paper2.empirical',
+        description: 'Empirical claim requires a baseline',
+        statement: { pattern: 'Paper 2 only proof phrase', flags: 'i', min_occurrences: 1 },
+        evidence: { type: 'manifest_total', field: 'expected_scored' },
+        assertion: { op: 'eq', expected: 123 },
+      },
+    ],
+  });
+
+  try {
+    const firstReport = runProvableDiscourseAudit({ rootDir: tmpDir, specPath, epoch: '2.0' });
+    assert.equal(claimById(firstReport, 'paper2.empirical').status, 'warn');
+    assert.match(claimById(firstReport, 'paper2.empirical').messages.join('\n'), /No snapshot baseline/);
+
+    const refreshReport = runProvableDiscourseAudit({
+      rootDir: tmpDir,
+      specPath,
+      epoch: '2.0',
+      refreshSnapshot: true,
+    });
+    assert.equal(refreshReport.summary.warn, 0);
+    assert.equal(fs.existsSync(path.join(tmpDir, 'snapshot.json')), true);
+
+    const finalReport = runProvableDiscourseAudit({ rootDir: tmpDir, specPath, epoch: '2.0' });
+    assert.equal(claimById(finalReport, 'paper2.empirical').status, 'pass');
+    assert.equal(finalReport.summary.warn, 0);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test('validate-provable-discourse JSON mode emits parseable stdout without the epoch banner', () => {
+  const { tmpDir, absoluteSpecPath } = makeProvableFixture({
+    claims: [
+      {
+        id: 'paper2.cli',
+        description: 'CLI JSON claim',
+        statement: { pattern: 'Paper 2 only proof phrase', flags: 'i', min_occurrences: 1 },
+        evidence: {
+          type: 'theoretical',
+          derivation: 'CLI smoke claim.',
+          cross_refs: [],
+        },
+        assertion: { op: 'theoretical', expected: 'registered theoretical claim' },
+      },
+    ],
+  });
+  const spec = JSON.parse(fs.readFileSync(absoluteSpecPath, 'utf8'));
+  Object.assign(spec, {
+    paper_path: path.join(tmpDir, 'paper-full.md'),
+    paper2_path: path.join(tmpDir, 'paper-full-2.0.md'),
+    manifest_path: path.join(tmpDir, 'manifest.json'),
+    db_path: path.join(tmpDir, 'evaluations.db'),
+    snapshot_path: path.join(tmpDir, 'snapshot.json'),
+  });
+  fs.writeFileSync(absoluteSpecPath, JSON.stringify(spec, null, 2));
+
+  try {
+    const stdout = execFileSync(
+      process.execPath,
+      ['scripts/validate-provable-discourse.js', '--spec', absoluteSpecPath, '--epoch', '2.0', '--json'],
+      { cwd: process.cwd(), encoding: 'utf8' },
+    );
+    assert.equal(stdout.trimStart().startsWith('{'), true);
+    const report = JSON.parse(stdout);
+    assert.equal(report.paper_source_mode, 'paper2_primary');
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
 });
 
 // ── linearRegression tests ─────────────────────────────────────
