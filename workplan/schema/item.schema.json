@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://machinespirits/workplan/item.schema.json",
+  "title": "Workplan item frontmatter",
+  "description": "Schema for the YAML frontmatter of a workplan/items/<slug>.md file. The CLI (scripts/workplan.js validate) checks every item against this.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "status",
+    "type",
+    "priority",
+    "owner",
+    "source",
+    "created",
+    "updated",
+    "verification"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "kebab-case slug, must equal the filename without .md"
+    },
+    "title": { "type": "string", "minLength": 1 },
+    "status": {
+      "enum": ["inbox", "triaged", "active", "blocked", "review", "done", "archived", "dropped"]
+    },
+    "type": {
+      "enum": ["experiment", "infra", "maintenance", "research", "paper", "content", "ops"]
+    },
+    "priority": { "enum": ["P0", "P1", "P2", "P3"] },
+    "owner": { "enum": ["human", "claude", "codex", "gemini", "unassigned"] },
+    "source": { "enum": ["todo", "daily-routine", "manual", "review", "paper"] },
+    "created": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+    "updated": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+    "verification": {
+      "type": "string",
+      "minLength": 1,
+      "description": "one line: the check that flips this item to done"
+    },
+    "branch": { "type": "string" },
+    "blocked_by": { "type": "string" },
+    "claim_status": {
+      "enum": ["settled", "scope-bound", "exploratory", "killed", "speculative", "methods", "planned", "future"],
+      "description": "atlas claim-status grammar; for research/paper items that yield a claim"
+    },
+    "links": {
+      "type": "object",
+      "additionalProperties": { "type": ["string", "array"] },
+      "properties": {
+        "paper": { "type": ["string", "array"] },
+        "notes": { "type": ["string", "array"] },
+        "exports": { "type": ["string", "array"] },
+        "runs": { "type": ["string", "array"] },
+        "prs": { "type": ["string", "array"] },
+        "atlas": { "type": ["string", "array"] },
+        "items": { "type": ["string", "array"] }
+      }
+    },
+    "tags": { "type": "array", "items": { "type": "string" } }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "blocked" } } },
+      "then": { "required": ["blocked_by"] }
+    }
+  ]
+}

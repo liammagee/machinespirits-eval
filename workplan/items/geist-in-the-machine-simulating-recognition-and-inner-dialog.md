@@ -1,0 +1,23 @@
+---
+id: geist-in-the-machine-simulating-recognition-and-inner-dialog
+title: "Geist in the Machine: Simulating Recognition and Inner Dialogue in
+  AI-Mediated Teaching and Research"
+status: triaged
+type: research
+priority: P2
+owner: unassigned
+source: daily-routine
+created: 2026-06-22
+updated: 2026-06-22
+verification: Paper read; a one-line note records whether it changes our rubric,
+  prompts, architecture or eval design; this item is then closed or spawns a
+  concrete task.
+links:
+  notes: notes/daily-notes/2026-06-15-research-roundup.html
+---
+
+arXiv:2603.10450 [UNBLOCK] — surfaced by the daily routine (2026-06-15-research-roundup.html).
+
+This paper describes the exact architecture at the core of this project — ego/superego dialogue engine, recognition theory grounding, drama-machine framing. Critical action item: verify whether this is an earlier publication from the same group (in which case it belongs in the paper's related-work or methods citation) or independent external work (in which case it is the strongest external validation of the architecture to date). Either way it should appear in docs/research/paper-full-2.0.md §2 or §3.
+
+Triage: promote to a research item (link the paper §) or drop with a reason.
