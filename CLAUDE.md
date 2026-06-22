@@ -4,6 +4,14 @@
 
 This is `machinespirits-eval-dramatic` — a fork of `machinespirits-eval` specialised for the **Dramatic Recognition / Poetics** arc (sanctioned 2026-05-19). Master plan: `DRAMATIC-RECOGNITION-PLAN.md`. The full eval-factorial machinery below (cells 1–125, ego-superego, adaptive runner, rubrics v2.2) is inherited unchanged; the *active* work lives in the poetics pipeline and lands as a new § of `docs/research/paper-full-2.0.md`. Sibling agent docs at repo root: `AGENTS.md` (Codex), `GEMINI.md`.
 
+## Desktop app (Electron)
+
+There is an Electron desktop app that is the **exact equivalent of the web UX and stays in sync by construction** — it embeds the unchanged Express stack and loads the web UI over loopback, so there is ONE UI codebase. It lives under `desktop/` on branch `claude/electron-desktop-app` (worktree `../machinespirits-eval-electron`).
+
+**To change the UX (web AND desktop), edit the web stack** — `public/**`, the route renderers in `scripts/browse-poetics-scripts.js`, `routes/**`, `services/**`, or the shared mounter `services/evalSurfaces.js`. The desktop updates automatically; **never fork UI into `desktop/`.** Full rules + file map: `desktop/ARCHITECTURE.md`. Run/build/use docs: `desktop/README.md`.
+
+The sync contract is enforced by tests — `npm run desktop:test` (Electron's Node in that worktree), or the same tests under `npm test` on the Node ABI in CI: route-parity (desktop serves exactly the web route table), no UI files in `desktop/`, one-way dependency (`services/`/`routes/`/`public/` never import `desktop/`). If you add a new **writable** store anywhere in the stack, give it an env override and relocate it in `desktop/paths.js`, else the packaged read-only/asar app crashes at boot (currently relocated: `EVAL_DB_PATH`, `EVAL_LOGS_DIR`, `EVAL_EXPORTS_DIR`, `AUTH_DB_PATH`, `EVAL_WRITING_PAD_DIR`, `TUTOR_CORE_LOG_DIR`). Native modules (`better-sqlite3`, `node-pty`) are rebuilt for Electron's ABI by `npm run desktop:rebuild`, so plain `node`/`npm test` won't load them in that worktree — use a fresh checkout for the Node-ABI suite.
+
 ## Core Architecture
 
 ### Tutor-core (in-housed)

@@ -1,6 +1,6 @@
 # Electron Desktop App — Technical Specification & Plan
 
-**Status:** Draft for review
+**Status:** Phases 0–6 implemented on `claude/electron-desktop-app` — see `desktop/README.md` (run/build/use) and `desktop/ARCHITECTURE.md` (sync contract). Remaining Phase 6 items (Developer-ID notarization, auto-update, Windows/Linux) are account-/infra-gated and documented as a recipe in `desktop/README.md`.
 **Date:** 2026-06-22
 **Branch:** `claude/electron-desktop-app`
 **Worktree:** `/Users/lmagee/Dev/machinespirits/machinespirits-eval-electron`
