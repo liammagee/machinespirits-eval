@@ -209,7 +209,7 @@
     "desktop:dev": "electron desktop/main.js",
     "desktop:smoke": "MS_DESKTOP_SMOKE=1 electron desktop/main.js",
     "desktop:rebuild": "electron-rebuild -f",
-    "desktop:test": "EVAL_DB_PATH=$(mktemp -d)/t.db EVAL_LOGS_DIR=$(mktemp -d) EVAL_EXPORTS_DIR=$(mktemp -d) ELECTRON_RUN_AS_NODE=1 electron --test --test-force-exit tests/desktopRouteParity.test.js"
+    "desktop:test": "EVAL_DB_PATH=$(mktemp -d)/t.db EVAL_LOGS_DIR=$(mktemp -d) EVAL_EXPORTS_DIR=$(mktemp -d) ELECTRON_RUN_AS_NODE=1 electron --test --test-force-exit tests/desktop*.test.js"
   },
   "keywords": [
     "evaluation",

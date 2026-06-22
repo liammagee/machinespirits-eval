@@ -58,15 +58,31 @@ server.on('error', (err) => {
 // Graceful shutdown on request from main: close the SQLite handle (which lives
 // on the poetics app's locals, whether or not we wrapped it for smoke), stop the
 // server, then exit.
-process.parentPort?.on('message', (e) => {
+process.parentPort?.on('message', async (e) => {
   const data = e?.data ?? e;
-  if (data?.type === 'shutdown') {
-    try {
-      (app.locals.poeticsApp || app).locals?.db?.close?.();
-    } catch {
-      /* ignore */
+  if (data?.type !== 'shutdown') return;
+
+  // Stop any in-flight jobRunner child processes so none outlive the app.
+  try {
+    const jobRunner = await import('../services/poetics/jobRunner.js');
+    for (const job of jobRunner.listJobs?.() || []) {
+      if (job?.status === 'running') {
+        try {
+          jobRunner.stopJob?.(job.id);
+        } catch {
+          /* ignore */
+        }
+      }
     }
-    server.close(() => process.exit(0));
-    setTimeout(() => process.exit(0), 1500).unref?.();
+  } catch {
+    /* jobRunner not loaded — nothing to stop */
   }
+
+  try {
+    (app.locals.poeticsApp || app).locals?.db?.close?.();
+  } catch {
+    /* ignore */
+  }
+  server.close(() => process.exit(0));
+  setTimeout(() => process.exit(0), 1500).unref?.();
 });

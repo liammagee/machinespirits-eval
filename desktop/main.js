@@ -1,26 +1,25 @@
 // desktop/main.js
 //
-// Electron MAIN process.
+// Electron MAIN process — the native shell around the unchanged web stack.
 //
-// Architecture (see ELECTRON-DESKTOP-APP-PLAN.md): the renderer is the unchanged
-// web UI. main relocates writable data into userData, forks the existing Express
-// app in a utilityProcess on an ephemeral loopback port, awaits a port
-// handshake, and points a BrowserWindow at it. External links open in the system
-// browser; in-app navigation is confined to the loopback origin.
+// The renderer is the existing web UI, loaded over loopback from the embedded
+// Express app (forked into a utilityProcess). main owns: writable-data
+// relocation, the server handshake, the application menu, window-state, a
+// content-security policy, navigation confinement (external links → system
+// browser), single-instance, and graceful shutdown.
 //
-// Modes:
-//   • `npm run desktop:dev`   → visible window at the home route.
-//   • `npm run desktop:smoke` → headless PASS/FAIL battery, exits 0/1.
-//   • `MS_DESKTOP_SHOTS=1 …`  → capture PNGs of the surfaces, then exit.
+// Modes: `npm run desktop:dev` (window) · `desktop:smoke` (headless battery) ·
+// `MS_DESKTOP_SHOTS=1` (screenshot capture).
 
-import { app, BrowserWindow, utilityProcess, shell } from 'electron';
+import { app, BrowserWindow, utilityProcess, shell, Menu, session } from 'electron';
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { resolvePaths, serverEnv } from './paths.js';
+import { buildMenuTemplate } from './menu.js';
+import { loadWindowState, saveWindowState } from './windowState.js';
+import { buildCSP, shouldOpenExternally } from './security.js';
 
-// Set the app identity BEFORE any getPath('userData') call so the writable data
-// dir is "Machine Spirits", not Electron's generic default.
 app.setName('Machine Spirits');
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -29,21 +28,38 @@ const SERVER_ENTRY = path.join(__dirname, 'server-entry.mjs');
 
 const SMOKE = process.env.MS_DESKTOP_SMOKE === '1';
 const SHOTS = process.env.MS_DESKTOP_SHOTS === '1';
-const HOME_ROUTE = process.env.MS_HOME || '/browse'; // poetics scriptorium home
+const HEADLESS = SMOKE || SHOTS;
+const HOME_ROUTE = process.env.MS_HOME || '/browse';
+const DEFAULT_BOUNDS = { width: 1440, height: 920 };
 
 let serverChild = null;
+let mainWin = null;
+let mainBase = null;
 
-// --- Fork the server child and await its { type:'listening', port } handshake ---
+// --- Single-instance (one process guards the SQLite file) --------------------
+let hasLock = true;
+if (!HEADLESS) {
+  hasLock = app.requestSingleInstanceLock();
+  if (!hasLock) {
+    app.quit();
+  } else {
+    app.on('second-instance', () => {
+      if (mainWin) {
+        if (mainWin.isMinimized()) mainWin.restore();
+        mainWin.focus();
+      }
+    });
+  }
+}
+
+// --- Server child handshake --------------------------------------------------
 function startServer(env) {
   return new Promise((resolve, reject) => {
     const child = utilityProcess.fork(SERVER_ENTRY, [], { env, stdio: 'pipe' });
     serverChild = child;
-
     const timeout = setTimeout(() => reject(new Error('server boot timed out after 30s')), 30_000);
-
     child.stdout?.on('data', (d) => process.stdout.write(`[server] ${d}`));
     child.stderr?.on('data', (d) => process.stderr.write(`[server] ${d}`));
-
     child.on('message', (msg) => {
       if (msg?.type === 'listening') {
         clearTimeout(timeout);
@@ -78,11 +94,83 @@ function stopServer() {
   }, 1500);
 }
 
-// --- Smoke / shots helpers ---------------------------------------------------
+// --- Session hardening: CSP for every loopback document ----------------------
+function installSessionHardening() {
+  if (process.env.MS_DESKTOP_NO_CSP === '1') return;
+  const csp = buildCSP();
+  session.defaultSession.webRequest.onHeadersReceived((details, cb) => {
+    cb({ responseHeaders: { ...details.responseHeaders, 'Content-Security-Policy': [csp] } });
+  });
+}
+
+// --- Inline splash + error pages (data: URLs, not forked surfaces) -----------
+const splashDataUrl = () =>
+  'data:text/html,' +
+  encodeURIComponent(
+    `<!doctype html><meta charset=utf8><body style="margin:0;display:grid;place-items:center;height:100vh;font:16px -apple-system,system-ui,sans-serif;background:#f4f1ea;color:#33312e"><div style="text-align:center"><div style="font-size:20px;letter-spacing:.02em">Machine Spirits</div><div style="margin-top:10px;opacity:.6">Starting the local server…</div></div></body>`,
+  );
+
+const errorDataUrl = (msg) =>
+  'data:text/html,' +
+  encodeURIComponent(
+    `<!doctype html><meta charset=utf8><body style="margin:0;padding:40px;font:14px -apple-system,system-ui,sans-serif;background:#f4f1ea;color:#33312e"><h2>Could not start the local server</h2><pre style="white-space:pre-wrap;background:#fff;border:1px solid #ddd;padding:16px;border-radius:8px;overflow:auto">${String(msg).replace(/[<&]/g, (c) => (c === '<' ? '&lt;' : '&amp;'))}</pre><p style="opacity:.7">If native modules are stale, run <code>npm run desktop:rebuild</code> in the worktree.</p></body>`,
+  );
+
+// --- Window ------------------------------------------------------------------
+function createMainWindow(paths) {
+  const stateFile = path.join(paths.userData, 'window-state.json');
+  const { bounds, isMaximized } = loadWindowState(stateFile, DEFAULT_BOUNDS);
+
+  const win = new BrowserWindow({
+    ...bounds,
+    minWidth: 900,
+    minHeight: 600,
+    title: 'Machine Spirits',
+    backgroundColor: '#f4f1ea',
+    webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true },
+  });
+  if (isMaximized) win.maximize();
+
+  // External links → system browser; in-app navigation stays on loopback.
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    if (mainBase && shouldOpenExternally(url, mainBase)) {
+      shell.openExternal(url);
+      return { action: 'deny' };
+    }
+    return { action: 'allow' };
+  });
+  win.webContents.on('will-navigate', (event, url) => {
+    if (mainBase && shouldOpenExternally(url, mainBase)) {
+      event.preventDefault();
+      shell.openExternal(url);
+    }
+  });
+
+  win.on('close', () => {
+    try {
+      saveWindowState(stateFile, win.getNormalBounds(), win.isMaximized());
+    } catch {
+      /* ignore */
+    }
+  });
+
+  win.loadURL(splashDataUrl());
+  mainWin = win;
+  return win;
+}
+
+function buildAppMenu() {
+  const actions = {
+    openDataFolder: () => shell.openPath(app.getPath('userData')),
+    goHome: () => mainWin && mainBase && mainWin.loadURL(mainBase + HOME_ROUTE),
+  };
+  Menu.setApplicationMenu(Menu.buildFromTemplate(buildMenuTemplate({ actions, appName: 'Machine Spirits' })));
+}
+
+// --- Headless helpers (smoke / shots) ----------------------------------------
 async function httpGet(base, p) {
   const res = await fetch(base + p);
-  const text = await res.text();
-  return { status: res.status, text };
+  return { status: res.status, text: await res.text() };
 }
 
 async function checkSse(base) {
@@ -120,6 +208,34 @@ async function withTimeout(promise, ms, label) {
   }
 }
 
+// Load the key surfaces in a hidden window and watch for CSP violations — proves
+// the CSP we inject does not break the real pages.
+async function checkRenderAndCsp(base) {
+  const violations = [];
+  const win = new BrowserWindow({
+    show: false,
+    webPreferences: { contextIsolation: true, nodeIntegration: false },
+  });
+  win.webContents.on('console-message', (_e, _level, message) => {
+    if (/content security policy|refused to (load|execute|apply|connect|run)/i.test(message)) {
+      violations.push(message);
+    }
+  });
+  let lastTitle = '';
+  try {
+    for (const route of ['/browse', '/compose', '/chat/']) {
+      await withTimeout(win.loadURL(base + route), 12_000, `load ${route}`);
+      await new Promise((r) => setTimeout(r, 400));
+      lastTitle = await win.webContents.executeJavaScript('document.title');
+    }
+    return { rendered: true, title: lastTitle, violations };
+  } catch (e) {
+    return { rendered: false, title: String(e?.message || e), violations };
+  } finally {
+    win.destroy();
+  }
+}
+
 async function runSmoke(base, native) {
   const results = [];
   const rec = (name, ok, info) => results.push({ name, ok, info });
@@ -135,14 +251,10 @@ async function runSmoke(base, native) {
   );
 
   const chat = await httpGet(base, '/chat/');
-  rec(
-    'GET /chat/  (static UI surface via mountEvalSurfaces)',
-    chat.status === 200 && /<\/html>/i.test(chat.text),
-    `status=${chat.status}`,
-  );
+  rec('GET /chat/  (static UI surface)', chat.status === 200 && /<\/html>/i.test(chat.text), `status=${chat.status}`);
 
   const runs = await httpGet(base, '/api/eval/runs');
-  rec('GET /api/eval/runs  (SQLite query via better-sqlite3)', runs.status === 200, `status=${runs.status}`);
+  rec('GET /api/eval/runs  (SQLite query)', runs.status === 200, `status=${runs.status}`);
 
   let sseOk = false;
   try {
@@ -155,23 +267,17 @@ async function runSmoke(base, native) {
   rec('native: better-sqlite3', String(native.betterSqlite3).startsWith('loaded'), native.betterSqlite3);
   rec('native: node-pty', String(native.nodePty).startsWith('loaded'), native.nodePty);
 
-  // Renderer proof: load the home route in a hidden BrowserWindow.
-  let rendererOk = false;
-  let rendererInfo = '';
-  try {
-    const win = new BrowserWindow({
-      show: false,
-      webPreferences: { contextIsolation: true, nodeIntegration: false },
-    });
-    await withTimeout(win.loadURL(base + HOME_ROUTE), 10_000, 'renderer load');
-    const title = await win.webContents.executeJavaScript('document.title');
-    rendererOk = true;
-    rendererInfo = `loaded ${HOME_ROUTE}, document.title=${JSON.stringify(title)}`;
-    win.destroy();
-  } catch (e) {
-    rendererInfo = String(e?.message || e);
-  }
-  rec('renderer  loadURL(home) in BrowserWindow', rendererOk, rendererInfo);
+  const rc = await checkRenderAndCsp(base);
+  rec(
+    'renderer  loads browse/compose/chat',
+    rc.rendered,
+    rc.rendered ? `document.title=${JSON.stringify(rc.title)}` : rc.title,
+  );
+  rec(
+    'CSP  no violations on those surfaces',
+    rc.violations.length === 0,
+    rc.violations.length ? rc.violations.slice(0, 3).join(' | ') : 'clean',
+  );
 
   return results;
 }
@@ -195,12 +301,11 @@ async function captureShots(base) {
   for (const [name, route] of surfaces) {
     try {
       await withTimeout(win.loadURL(base + route), 12_000, `load ${route}`);
-      await new Promise((r) => setTimeout(r, 900)); // let fonts + Alpine paint
+      await new Promise((r) => setTimeout(r, 900));
       const img = await win.webContents.capturePage();
-      const file = path.join(outDir, `${name}.png`);
-      fs.writeFileSync(file, img.toPNG());
+      fs.writeFileSync(path.join(outDir, `${name}.png`), img.toPNG());
       const { width, height } = img.getSize();
-      console.log(`[shots] ${file} (${width}x${height})`);
+      console.log(`[shots] ${name}.png (${width}x${height})`);
     } catch (e) {
       console.log(`[shots] FAILED ${route}: ${String(e?.message || e)}`);
     }
@@ -208,82 +313,73 @@ async function captureShots(base) {
   win.destroy();
 }
 
-function openWindow(base) {
-  const win = new BrowserWindow({
-    width: 1440,
-    height: 920,
-    title: 'Machine Spirits — Desktop',
-    webPreferences: { contextIsolation: true, nodeIntegration: false },
-  });
-  // External links → system browser; keep in-app navigation on loopback only.
-  win.webContents.setWindowOpenHandler(({ url }) => {
-    if (!url.startsWith(base)) {
-      shell.openExternal(url);
-      return { action: 'deny' };
+// --- Lifecycle ---------------------------------------------------------------
+if (hasLock) {
+  app.whenReady().then(async () => {
+    installSessionHardening();
+
+    const paths = resolvePaths(app, REPO_ROOT);
+    const env = serverEnv(paths);
+
+    if (HEADLESS) {
+      let info;
+      try {
+        info = await startServer(env);
+      } catch (err) {
+        console.error('\n[desktop] SERVER FAILED TO BOOT:\n' + (err.stack || err.message) + '\n');
+        app.exit(1);
+        return;
+      }
+      const base = `http://127.0.0.1:${info.port}`;
+      console.log(`[desktop] server listening at ${base}`);
+      console.log(`[desktop] userData: ${paths.userData}`);
+
+      if (SHOTS) {
+        await captureShots(base);
+        stopServer();
+        app.exit(0);
+        return;
+      }
+
+      const results = await runSmoke(base, info.native || {});
+      const pass = results.filter((r) => r.ok).length;
+      console.log('\n==================== DESKTOP SMOKE ====================');
+      for (const r of results) {
+        console.log(`  ${r.ok ? 'PASS' : 'FAIL'}  ${r.name}${r.info ? `\n          ↳ ${r.info}` : ''}`);
+      }
+      console.log('------------------------------------------------------');
+      console.log(`  ${pass}/${results.length} checks passed`);
+      console.log('======================================================\n');
+      stopServer();
+      app.exit(pass === results.length ? 0 : 1);
+      return;
     }
-    return { action: 'allow' };
-  });
-  win.webContents.on('will-navigate', (event, url) => {
-    if (!url.startsWith(base)) {
-      event.preventDefault();
-      shell.openExternal(url);
+
+    // --- Normal (windowed) mode: window-first with a splash, then load app. ---
+    buildAppMenu();
+    const win = createMainWindow(paths);
+    try {
+      const info = await startServer(env);
+      mainBase = `http://127.0.0.1:${info.port}`;
+      console.log(`[desktop] server listening at ${mainBase}`);
+      console.log(`[desktop] userData: ${paths.userData}`);
+      await win.loadURL(mainBase + HOME_ROUTE);
+    } catch (err) {
+      console.error('[desktop] server failed:', err.message);
+      win.loadURL(errorDataUrl(err.stack || err.message));
     }
   });
-  return win.loadURL(base + HOME_ROUTE).then(() => win);
+
+  app.on('before-quit', stopServer);
+  app.on('window-all-closed', () => {
+    stopServer();
+    if (process.platform !== 'darwin') app.quit();
+  });
+  app.on('activate', () => {
+    if (!HEADLESS && BrowserWindow.getAllWindows().length === 0 && mainBase) {
+      const paths = resolvePaths(app, REPO_ROOT);
+      const win = createMainWindow(paths);
+      win.loadURL(mainBase + HOME_ROUTE);
+    }
+  });
 }
-
-// --- App lifecycle -----------------------------------------------------------
-app.whenReady().then(async () => {
-  const paths = resolvePaths(app, REPO_ROOT);
-  const env = serverEnv(paths);
-
-  let info;
-  try {
-    info = await startServer(env);
-  } catch (err) {
-    console.error('\n[desktop] SERVER FAILED TO BOOT:\n' + (err.stack || err.message) + '\n');
-    if (SMOKE || SHOTS) app.exit(1);
-    return;
-  }
-
-  const base = `http://127.0.0.1:${info.port}`;
-  console.log(`[desktop] server listening at ${base}`);
-  console.log(`[desktop] userData: ${paths.userData}`);
-  console.log(`[desktop] db: ${paths.dbPath}`);
-
-  if (SHOTS) {
-    await captureShots(base);
-    stopServer();
-    app.exit(0);
-    return;
-  }
-
-  if (SMOKE) {
-    const results = await runSmoke(base, info.native || {});
-    const pass = results.filter((r) => r.ok).length;
-    const total = results.length;
-    console.log('\n==================== DESKTOP SMOKE ====================');
-    for (const r of results) {
-      console.log(`  ${r.ok ? 'PASS' : 'FAIL'}  ${r.name}${r.info ? `\n          ↳ ${r.info}` : ''}`);
-    }
-    console.log('------------------------------------------------------');
-    console.log(`  ${pass}/${total} checks passed`);
-    console.log('======================================================\n');
-    stopServer();
-    app.exit(pass === total ? 0 : 1);
-    return;
-  }
-
-  await openWindow(base);
-});
-
-app.on('before-quit', stopServer);
-app.on('window-all-closed', () => {
-  stopServer();
-  if (process.platform !== 'darwin') app.quit();
-});
-app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
-    // (dev convenience) re-open is handled by relaunching; spike keeps it simple.
-  }
-});
