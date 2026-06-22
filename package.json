@@ -211,7 +211,8 @@
     "desktop:rebuild": "electron-rebuild -f",
     "desktop:test": "EVAL_DB_PATH=$(mktemp -d)/t.db EVAL_LOGS_DIR=$(mktemp -d) EVAL_EXPORTS_DIR=$(mktemp -d) ELECTRON_RUN_AS_NODE=1 electron --test --test-force-exit tests/desktop*.test.js",
     "desktop:pack": "electron-builder --dir",
-    "desktop:dist": "electron-builder --mac dmg"
+    "desktop:dist": "electron-builder --mac dmg",
+    "desktop:brand-dev": "plutil -replace CFBundleName -string Scriptorium node_modules/electron/dist/Electron.app/Contents/Info.plist && plutil -replace CFBundleDisplayName -string Scriptorium node_modules/electron/dist/Electron.app/Contents/Info.plist && echo 'Dev Electron binary renamed to Scriptorium (macOS only; reverts on npm install — re-run as needed).'"
   },
   "keywords": [
     "evaluation",

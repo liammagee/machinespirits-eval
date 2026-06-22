@@ -1,4 +1,4 @@
-# Machine Spirits — Desktop app
+# Scriptorium — desktop app
 
 A native desktop wrapper around the Machine Spirits web UX. It runs the entire
 stack locally (the poetics scriptorium, tutor playground, eval API, human-learner
@@ -57,7 +57,7 @@ background process on an ephemeral loopback port; you never manage a port.
   file is deleted. (Keys already in your shell environment are used as-is and win
   over stored ones.) **File → Clear Stored API Keys** removes them.
 - **Your data.** Everything writable lives in
-  `~/Library/Application Support/Machine Spirits/` — the SQLite DB
+  `~/Library/Application Support/Scriptorium/` — the SQLite DB
   (`data/evaluations.db`), logs, exports, writing-pad DBs, and the encrypted keys.
   Nothing is written into the app bundle or the repo. **File → Open Data Folder**
   opens it. To fully uninstall, delete the app and that folder.
@@ -102,14 +102,26 @@ background process on an ephemeral loopback port; you never manage a port.
   restore plain-Node use here: `npm rebuild better-sqlite3 node-pty`.
 - **A metered feature says it has no API key.** Set keys via **File → Set Up API
   Keys…** and restart, or launch from a shell that already exports them.
+- **The dev menu-bar / dock name shows "Electron".** That's the stock Electron
+  binary's bundle name. The packaged app (`Scriptorium.app`) always shows
+  "Scriptorium"; for the dev build, run `npm run desktop:brand-dev` once to rename it
+  (macOS only; reverts on `npm install`). The window title bar, dock icon, and About
+  panel show "Scriptorium" either way.
+
+## App name & icon
+
+The app is named **Scriptorium** (`productName` in `electron-builder.yml`,
+`app.setName` in `desktop/main.js`). The icon source is `desktop/icon.svg`; regenerate
+the raster + `.icns` with `./node_modules/.bin/electron desktop/make-icon.mjs` followed
+by the `sips`/`iconutil` steps (the dev dock icon is set live via `app.dock.setIcon`).
 
 ---
 
 ## Building a distributable
 
 ```bash
-npm run desktop:pack    # → dist-desktop/mac-*/Machine Spirits.app   (run locally)
-npm run desktop:dist    # → dist-desktop/Machine Spirits-<ver>.dmg   (installer)
+npm run desktop:pack    # → dist-desktop/mac-*/Scriptorium.app   (run locally)
+npm run desktop:dist    # → dist-desktop/Scriptorium-<ver>.dmg   (installer)
 ```
 
 The build packs the app into an asar with `better-sqlite3` + `node-pty` unpacked,

@@ -14,7 +14,7 @@
 // Env switches: MS_HOME (home route), MS_DESKTOP_NO_CSP=1 (disable CSP),
 // MS_DESKTOP_TOKEN=1 (enable the per-launch loopback auth token).
 
-import { app, BrowserWindow, utilityProcess, shell, Menu, session, dialog, safeStorage } from 'electron';
+import { app, BrowserWindow, utilityProcess, shell, Menu, session, dialog, safeStorage, nativeImage } from 'electron';
 import path from 'node:path';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
@@ -25,7 +25,7 @@ import { loadWindowState, saveWindowState } from './windowState.js';
 import { buildCSP, shouldOpenExternally, loopbackAuthHeaders, basicAuthHeader } from './security.js';
 import { createCredentialStore } from './credentials.js';
 
-app.setName('Machine Spirits');
+app.setName('Scriptorium');
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -158,7 +158,7 @@ const authHeaders = () => (authToken ? { Authorization: basicAuthHeader(authToke
 const splashDataUrl = () =>
   'data:text/html,' +
   encodeURIComponent(
-    `<!doctype html><meta charset=utf8><body style="margin:0;display:grid;place-items:center;height:100vh;font:16px -apple-system,system-ui,sans-serif;background:#f4f1ea;color:#33312e"><div style="text-align:center"><div style="font-size:20px;letter-spacing:.02em">Machine Spirits</div><div style="margin-top:10px;opacity:.6">Starting the local server…</div></div></body>`,
+    `<!doctype html><meta charset=utf8><body style="margin:0;display:grid;place-items:center;height:100vh;font:16px -apple-system,system-ui,sans-serif;background:#f4f1ea;color:#33312e"><div style="text-align:center"><div style="font-size:20px;letter-spacing:.02em">Scriptorium</div><div style="margin-top:10px;opacity:.6">Starting the local server…</div></div></body>`,
   );
 
 const errorDataUrl = (msg) =>
@@ -176,11 +176,16 @@ function createMainWindow(paths) {
     ...bounds,
     minWidth: 900,
     minHeight: 600,
-    title: 'Machine Spirits',
+    title: 'Scriptorium',
+    icon: path.join(__dirname, 'icon.png'),
     backgroundColor: '#f4f1ea',
     webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true },
   });
   if (isMaximized) win.maximize();
+
+  // Keep the title bar fixed to the app name (don't let the page <title> override it).
+  win.setTitle('Scriptorium');
+  win.on('page-title-updated', (e) => e.preventDefault());
 
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (loopbackBase && shouldOpenExternally(url, loopbackBase)) {
@@ -215,7 +220,7 @@ function setupKeys() {
     type: 'info',
     title: 'Set Up API Keys',
     message: 'Add your API keys to the file that just opened.',
-    detail: `Edit ${p}, save it, then restart Machine Spirits. On the next launch the keys are encrypted into your OS keychain and the plaintext file is deleted.`,
+    detail: `Edit ${p}, save it, then restart Scriptorium. On the next launch the keys are encrypted into your OS keychain and the plaintext file is deleted.`,
     buttons: ['OK'],
   });
 }
@@ -242,7 +247,7 @@ function buildAppMenu() {
     setupKeys,
     clearKeys,
   };
-  Menu.setApplicationMenu(Menu.buildFromTemplate(buildMenuTemplate({ actions, appName: 'Machine Spirits' })));
+  Menu.setApplicationMenu(Menu.buildFromTemplate(buildMenuTemplate({ actions, appName: 'Scriptorium' })));
 }
 
 // --- Headless helpers (smoke / shots) ----------------------------------------
@@ -394,6 +399,14 @@ async function captureShots(base) {
 if (hasLock) {
   app.whenReady().then(async () => {
     installSession();
+    if (process.platform === 'darwin') {
+      app.setAboutPanelOptions({ applicationName: 'Scriptorium', applicationVersion: app.getVersion() });
+      try {
+        app.dock?.setIcon(nativeImage.createFromPath(path.join(__dirname, 'icon.png')));
+      } catch {
+        /* dock icon is best-effort */
+      }
+    }
 
     const paths = resolvePaths(app, REPO_ROOT);
     credStore = createCredentialStore({ safeStorage, dir: paths.userData });

@@ -12,8 +12,8 @@
 #     from inside the asar via Electron's fs shim; writable data is relocated to
 #     userData by desktop/paths.js, so nothing writes into the bundle.
 
-appId: org.machinespirits.desktop
-productName: Machine Spirits
+appId: org.machinespirits.scriptorium
+productName: Scriptorium
 copyright: © Machine Spirits
 
 # Override the Electron entry point in the packaged app only.
@@ -47,5 +47,6 @@ files:
 
 mac:
   category: public.app-category.developer-tools
+  icon: desktop/icon.icns
   target:
     - target: dir # fast, unpacked .app for verification; `desktop:dist` adds dmg
