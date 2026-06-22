@@ -5,18 +5,7 @@
   "description": "Schema for the YAML frontmatter of a workplan/items/<slug>.md file. The CLI (scripts/workplan.js validate) checks every item against this.",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "id",
-    "title",
-    "status",
-    "type",
-    "priority",
-    "owner",
-    "source",
-    "created",
-    "updated",
-    "verification"
-  ],
+  "required": ["id", "title", "status", "type", "priority", "owner", "source", "created", "updated", "verification"],
   "properties": {
     "id": {
       "type": "string",
