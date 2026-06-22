@@ -38,6 +38,7 @@ npm-debug.log*
 # Build output
 dist/
 build/
+dist-desktop/
 
 # IDE
 .idea/

@@ -1,0 +1,51 @@
+# electron-builder configuration for the Machine Spirits desktop app.
+#
+# The desktop app embeds the existing Express stack and loads the web UI over
+# loopback (see ELECTRON-DESKTOP-APP-PLAN.md). Packaging notes:
+#   - extraMetadata.main overrides the entry to desktop/main.js ONLY in the
+#     packaged app — the repo's package.json `main` (index.js, the library entry)
+#     is untouched, so the web/lib build is unaffected.
+#   - Native modules are unpacked from the asar so their .node binaries load at
+#     runtime; everything else is packed. (better-sqlite3 also cannot open a DB
+#     inside an asar — but the DB lives in userData, so that's a non-issue.)
+#   - Read-only resources (config/, public/, docs/, prompts/, content) are read
+#     from inside the asar via Electron's fs shim; writable data is relocated to
+#     userData by desktop/paths.js, so nothing writes into the bundle.
+
+appId: org.machinespirits.desktop
+productName: Machine Spirits
+copyright: © Machine Spirits
+
+# Override the Electron entry point in the packaged app only.
+extraMetadata:
+  main: desktop/main.js
+
+asar: true
+asarUnpack:
+  - node_modules/better-sqlite3/**
+  - node_modules/node-pty/**
+
+directories:
+  output: dist-desktop
+  buildResources: build
+
+# Start from everything, then drop what the app never needs at runtime
+# (writable dirs are recreated in userData; tests + large research artifacts
+# are not shipped).
+files:
+  - "**/*"
+  - "!dist-desktop/**"
+  - "!tests/**"
+  - "!data/**"
+  - "!logs/**"
+  - "!exports/**"
+  - "!docs/research/**"
+  - "!notes/**"
+  - "!**/.git/**"
+  - "!**/*.map"
+  - "!**/*.test.js"
+
+mac:
+  category: public.app-category.developer-tools
+  target:
+    - target: dir # fast, unpacked .app for verification; `desktop:dist` adds dmg
