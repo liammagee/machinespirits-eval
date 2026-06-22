@@ -5,20 +5,25 @@
 // The renderer is the existing web UI, loaded over loopback from the embedded
 // Express app (forked into a utilityProcess). main owns: writable-data
 // relocation, the server handshake, the application menu, window-state, a
-// content-security policy, navigation confinement (external links → system
-// browser), single-instance, and graceful shutdown.
+// content-security policy, navigation confinement, single-instance, OS-keychain
+// API-key storage, an optional loopback auth token, and graceful shutdown.
 //
 // Modes: `npm run desktop:dev` (window) · `desktop:smoke` (headless battery) ·
 // `MS_DESKTOP_SHOTS=1` (screenshot capture).
+//
+// Env switches: MS_HOME (home route), MS_DESKTOP_NO_CSP=1 (disable CSP),
+// MS_DESKTOP_TOKEN=1 (enable the per-launch loopback auth token).
 
-import { app, BrowserWindow, utilityProcess, shell, Menu, session } from 'electron';
+import { app, BrowserWindow, utilityProcess, shell, Menu, session, dialog, safeStorage } from 'electron';
 import path from 'node:path';
 import fs from 'node:fs';
+import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { resolvePaths, serverEnv } from './paths.js';
 import { buildMenuTemplate } from './menu.js';
 import { loadWindowState, saveWindowState } from './windowState.js';
-import { buildCSP, shouldOpenExternally } from './security.js';
+import { buildCSP, shouldOpenExternally, loopbackAuthHeaders, basicAuthHeader } from './security.js';
+import { createCredentialStore } from './credentials.js';
 
 app.setName('Machine Spirits');
 
@@ -32,9 +37,18 @@ const HEADLESS = SMOKE || SHOTS;
 const HOME_ROUTE = process.env.MS_HOME || '/browse';
 const DEFAULT_BOUNDS = { width: 1440, height: 920 };
 
+// Per-launch loopback token (opt-in). Fences other local processes off the
+// metered API: the server enforces these creds, the renderer's requests carry
+// them (injected only for the loopback origin), nobody else has them.
+const authToken =
+  process.env.MS_DESKTOP_TOKEN === '1'
+    ? { user: 'desktop-' + crypto.randomBytes(4).toString('hex'), pass: crypto.randomBytes(24).toString('hex') }
+    : null;
+
 let serverChild = null;
 let mainWin = null;
-let mainBase = null;
+let loopbackBase = null;
+let credStore = null;
 
 // --- Single-instance (one process guards the SQLite file) --------------------
 let hasLock = true;
@@ -53,6 +67,22 @@ if (!HEADLESS) {
 }
 
 // --- Server child handshake --------------------------------------------------
+function buildServerEnv(paths) {
+  const env = serverEnv(paths);
+  // Fill in API keys from the OS keychain WITHOUT overriding shell-provided ones.
+  try {
+    const stored = credStore?.get() || {};
+    for (const [k, v] of Object.entries(stored)) if (v && !process.env[k]) env[k] = v;
+  } catch {
+    /* no stored creds */
+  }
+  if (authToken) {
+    env.MS_AUTH_USER = authToken.user;
+    env.MS_AUTH_PASS = authToken.pass;
+  }
+  return env;
+}
+
 function startServer(env) {
   return new Promise((resolve, reject) => {
     const child = utilityProcess.fork(SERVER_ENTRY, [], { env, stdio: 'pipe' });
@@ -94,14 +124,35 @@ function stopServer() {
   }, 1500);
 }
 
-// --- Session hardening: CSP for every loopback document ----------------------
-function installSessionHardening() {
-  if (process.env.MS_DESKTOP_NO_CSP === '1') return;
-  const csp = buildCSP();
-  session.defaultSession.webRequest.onHeadersReceived((details, cb) => {
-    cb({ responseHeaders: { ...details.responseHeaders, 'Content-Security-Policy': [csp] } });
+// --- Session hardening: CSP, loopback-token injection, native save dialog -----
+function installSession() {
+  const ses = session.defaultSession;
+
+  if (process.env.MS_DESKTOP_NO_CSP !== '1') {
+    const csp = buildCSP();
+    ses.webRequest.onHeadersReceived((details, cb) => {
+      cb({ responseHeaders: { ...details.responseHeaders, 'Content-Security-Policy': [csp] } });
+    });
+  }
+
+  if (authToken) {
+    ses.webRequest.onBeforeSendHeaders((details, cb) => {
+      const extra = loopbackAuthHeaders(authToken, details.url, loopbackBase);
+      cb({ requestHeaders: { ...details.requestHeaders, ...extra } });
+    });
+  }
+
+  // Native save dialog for any in-app download (export artifacts, TTS audio…).
+  ses.on('will-download', (_e, item) => {
+    try {
+      item.setSaveDialogOptions({ defaultPath: path.join(app.getPath('downloads'), item.getFilename()) });
+    } catch {
+      /* older Electron: falls back to default download behaviour */
+    }
   });
 }
+
+const authHeaders = () => (authToken ? { Authorization: basicAuthHeader(authToken.user, authToken.pass) } : {});
 
 // --- Inline splash + error pages (data: URLs, not forked surfaces) -----------
 const splashDataUrl = () =>
@@ -131,21 +182,19 @@ function createMainWindow(paths) {
   });
   if (isMaximized) win.maximize();
 
-  // External links → system browser; in-app navigation stays on loopback.
   win.webContents.setWindowOpenHandler(({ url }) => {
-    if (mainBase && shouldOpenExternally(url, mainBase)) {
+    if (loopbackBase && shouldOpenExternally(url, loopbackBase)) {
       shell.openExternal(url);
       return { action: 'deny' };
     }
     return { action: 'allow' };
   });
   win.webContents.on('will-navigate', (event, url) => {
-    if (mainBase && shouldOpenExternally(url, mainBase)) {
+    if (loopbackBase && shouldOpenExternally(url, loopbackBase)) {
       event.preventDefault();
       shell.openExternal(url);
     }
   });
-
   win.on('close', () => {
     try {
       saveWindowState(stateFile, win.getNormalBounds(), win.isMaximized());
@@ -159,17 +208,46 @@ function createMainWindow(paths) {
   return win;
 }
 
+function setupKeys() {
+  const p = credStore.ensureTemplate();
+  shell.openPath(p);
+  dialog.showMessageBox({
+    type: 'info',
+    title: 'Set Up API Keys',
+    message: 'Add your API keys to the file that just opened.',
+    detail: `Edit ${p}, save it, then restart Machine Spirits. On the next launch the keys are encrypted into your OS keychain and the plaintext file is deleted.`,
+    buttons: ['OK'],
+  });
+}
+
+function clearKeys() {
+  const choice = dialog.showMessageBoxSync({
+    type: 'warning',
+    buttons: ['Cancel', 'Clear'],
+    defaultId: 0,
+    cancelId: 0,
+    message: 'Clear stored API keys?',
+    detail: 'This removes the encrypted keys from this app. You can add them again later.',
+  });
+  if (choice === 1) {
+    credStore.clear();
+    dialog.showMessageBox({ message: 'Stored API keys cleared. Restart to apply.', buttons: ['OK'] });
+  }
+}
+
 function buildAppMenu() {
   const actions = {
     openDataFolder: () => shell.openPath(app.getPath('userData')),
-    goHome: () => mainWin && mainBase && mainWin.loadURL(mainBase + HOME_ROUTE),
+    goHome: () => mainWin && loopbackBase && mainWin.loadURL(loopbackBase + HOME_ROUTE),
+    setupKeys,
+    clearKeys,
   };
   Menu.setApplicationMenu(Menu.buildFromTemplate(buildMenuTemplate({ actions, appName: 'Machine Spirits' })));
 }
 
 // --- Headless helpers (smoke / shots) ----------------------------------------
 async function httpGet(base, p) {
-  const res = await fetch(base + p);
+  const res = await fetch(base + p, { headers: authHeaders() });
   return { status: res.status, text: await res.text() };
 }
 
@@ -177,7 +255,7 @@ async function checkSse(base) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 4000);
   try {
-    const res = await fetch(base + '/__smoke/sse', { signal: ctrl.signal });
+    const res = await fetch(base + '/__smoke/sse', { signal: ctrl.signal, headers: authHeaders() });
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
     let buf = '';
@@ -208,8 +286,6 @@ async function withTimeout(promise, ms, label) {
   }
 }
 
-// Load the key surfaces in a hidden window and watch for CSP violations — proves
-// the CSP we inject does not break the real pages.
 async function checkRenderAndCsp(base) {
   const violations = [];
   const win = new BrowserWindow({
@@ -217,9 +293,7 @@ async function checkRenderAndCsp(base) {
     webPreferences: { contextIsolation: true, nodeIntegration: false },
   });
   win.webContents.on('console-message', (_e, _level, message) => {
-    if (/content security policy|refused to (load|execute|apply|connect|run)/i.test(message)) {
-      violations.push(message);
-    }
+    if (/content security policy|refused to (load|execute|apply|connect|run)/i.test(message)) violations.push(message);
   });
   let lastTitle = '';
   try {
@@ -228,7 +302,7 @@ async function checkRenderAndCsp(base) {
       await new Promise((r) => setTimeout(r, 400));
       lastTitle = await win.webContents.executeJavaScript('document.title');
     }
-    return { rendered: true, title: lastTitle, violations };
+    return { rendered: !!lastTitle, title: lastTitle, violations };
   } catch (e) {
     return { rendered: false, title: String(e?.message || e), violations };
   } finally {
@@ -279,6 +353,9 @@ async function runSmoke(base, native) {
     rc.violations.length ? rc.violations.slice(0, 3).join(' | ') : 'clean',
   );
 
+  // Informational (always passes): reports whether the loopback token is active.
+  rec('auth: loopback token', true, authToken ? 'ON (per-launch creds enforced)' : 'OFF (loopback-only)');
+
   return results;
 }
 
@@ -316,10 +393,11 @@ async function captureShots(base) {
 // --- Lifecycle ---------------------------------------------------------------
 if (hasLock) {
   app.whenReady().then(async () => {
-    installSessionHardening();
+    installSession();
 
     const paths = resolvePaths(app, REPO_ROOT);
-    const env = serverEnv(paths);
+    credStore = createCredentialStore({ safeStorage, dir: paths.userData });
+    const env = buildServerEnv(paths);
 
     if (HEADLESS) {
       let info;
@@ -330,18 +408,18 @@ if (hasLock) {
         app.exit(1);
         return;
       }
-      const base = `http://127.0.0.1:${info.port}`;
-      console.log(`[desktop] server listening at ${base}`);
+      loopbackBase = `http://127.0.0.1:${info.port}`;
+      console.log(`[desktop] server listening at ${loopbackBase}`);
       console.log(`[desktop] userData: ${paths.userData}`);
 
       if (SHOTS) {
-        await captureShots(base);
+        await captureShots(loopbackBase);
         stopServer();
         app.exit(0);
         return;
       }
 
-      const results = await runSmoke(base, info.native || {});
+      const results = await runSmoke(loopbackBase, info.native || {});
       const pass = results.filter((r) => r.ok).length;
       console.log('\n==================== DESKTOP SMOKE ====================');
       for (const r of results) {
@@ -360,10 +438,10 @@ if (hasLock) {
     const win = createMainWindow(paths);
     try {
       const info = await startServer(env);
-      mainBase = `http://127.0.0.1:${info.port}`;
-      console.log(`[desktop] server listening at ${mainBase}`);
+      loopbackBase = `http://127.0.0.1:${info.port}`;
+      console.log(`[desktop] server listening at ${loopbackBase}`);
       console.log(`[desktop] userData: ${paths.userData}`);
-      await win.loadURL(mainBase + HOME_ROUTE);
+      await win.loadURL(loopbackBase + HOME_ROUTE);
     } catch (err) {
       console.error('[desktop] server failed:', err.message);
       win.loadURL(errorDataUrl(err.stack || err.message));
@@ -376,10 +454,10 @@ if (hasLock) {
     if (process.platform !== 'darwin') app.quit();
   });
   app.on('activate', () => {
-    if (!HEADLESS && BrowserWindow.getAllWindows().length === 0 && mainBase) {
+    if (!HEADLESS && BrowserWindow.getAllWindows().length === 0 && loopbackBase) {
       const paths = resolvePaths(app, REPO_ROOT);
       const win = createMainWindow(paths);
-      win.loadURL(mainBase + HOME_ROUTE);
+      win.loadURL(loopbackBase + HOME_ROUTE);
     }
   });
 }

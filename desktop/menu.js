@@ -10,6 +10,7 @@ export function buildMenuTemplate({ actions = {}, platform = process.platform, a
   const customItems = [];
   if (actions.openDataFolder) customItems.push({ label: 'Open Data Folder', click: actions.openDataFolder });
   if (actions.setupKeys) customItems.push({ label: 'Set Up API Keys…', click: actions.setupKeys });
+  if (actions.clearKeys) customItems.push({ label: 'Clear Stored API Keys', click: actions.clearKeys });
 
   const template = [];
 

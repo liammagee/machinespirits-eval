@@ -1,7 +1,13 @@
 // tests/desktopSecurity.test.js — pure, runs under plain `node --test`.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { isLoopbackUrl, shouldOpenExternally, buildCSP, basicAuthHeader } from '../desktop/security.js';
+import {
+  isLoopbackUrl,
+  shouldOpenExternally,
+  buildCSP,
+  basicAuthHeader,
+  loopbackAuthHeaders,
+} from '../desktop/security.js';
 
 const base = 'http://127.0.0.1:50000';
 
@@ -32,4 +38,14 @@ test('buildCSP allows the UI origins and locks the rest', () => {
 
 test('basicAuthHeader encodes user:pass', () => {
   assert.equal(basicAuthHeader('u', 'p'), 'Basic ' + Buffer.from('u:p').toString('base64'));
+});
+
+test('loopbackAuthHeaders attaches the token only to the loopback origin', () => {
+  const token = { user: 'desktop', pass: 'secret' };
+  assert.deepEqual(loopbackAuthHeaders(null, base + '/x', base), {}); // no token → nothing
+  assert.deepEqual(loopbackAuthHeaders(token, 'https://fonts.gstatic.com/x', base), {}); // never leak to CDNs
+  assert.equal(
+    loopbackAuthHeaders(token, base + '/api/eval/runs', base).Authorization,
+    basicAuthHeader('desktop', 'secret'),
+  );
 });

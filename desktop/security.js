@@ -43,3 +43,14 @@ export function buildCSP() {
 export function basicAuthHeader(user, pass) {
   return 'Basic ' + Buffer.from(`${user}:${pass}`).toString('base64');
 }
+
+/**
+ * Headers to attach to a request so it carries the per-launch loopback token —
+ * but ONLY for our own loopback origin, never leaking the token to a CDN or any
+ * other destination. Returns {} when no token is configured.
+ */
+export function loopbackAuthHeaders(token, url, base) {
+  if (!token) return {};
+  if (typeof url === 'string' && base && !url.startsWith(base)) return {};
+  return { Authorization: basicAuthHeader(token.user, token.pass) };
+}
