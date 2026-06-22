@@ -1,0 +1,220 @@
+{
+  "schema": "dramatic-derivation.ownership-transfer-detector-audit.v1",
+  "generatedAt": "2026-06-17T22:48:00Z",
+  "boundary": [
+    "saved transcript re-score is detector audit only",
+    "episode replay is prefix/prompt wiring evidence only",
+    "fresh paid comparison is first-pass/no-reroll evidence",
+    "do not promote runtime transfer gate without a concrete late near_transfer failure gate"
+  ],
+  "detectorChange": {
+    "nearTransferRequiresTransportedDistinction": true,
+    "ordinaryLikeRejected": true,
+    "differentFileRequiresLineStructure": true,
+    "structuralOwnWordsAccepted": true,
+    "earlyEchoDoesNotCancelLaterOwnedRestatement": true
+  },
+  "tests": [
+    {
+      "command": "node --test tests/dramaticDerivationObjectOwnership.test.js",
+      "status": "passed"
+    },
+    {
+      "command": "node --test tests/dramaticDerivationLearnerTransformation.test.js",
+      "status": "passed"
+    },
+    {
+      "command": "npm test",
+      "status": "passed",
+      "result": "3883 passing, 1 skipped, 0 failed"
+    }
+  ],
+  "savedTranscriptAudit": [
+    {
+      "label": "world015-hard-s0-drift-r1",
+      "runDir": "exports/dramatic-derivation/harder-learner-ladder-eval/runs/world015-hard-s0-drift-r1",
+      "ownershipTransferGate": false,
+      "verdict": "grounded_anagnorisis",
+      "turnsPlayed": 21,
+      "firstForcedTurn": 20,
+      "assertedGroundedTurn": 21,
+      "forcedToAssertedGap": 1,
+      "finalStatus": "partial_ownership",
+      "finalComplete": false,
+      "missingFamilies": [
+        "near_transfer"
+      ],
+      "firstNearTransferTurn": null,
+      "durabilityStatus": "not_transformed",
+      "durable": false
+    },
+    {
+      "label": "world015-hard-s1-static-cast-r1",
+      "runDir": "exports/dramatic-derivation/harder-learner-ladder-eval/runs/world015-hard-s1-static-cast-r1",
+      "ownershipTransferGate": false,
+      "verdict": "grounded_anagnorisis",
+      "turnsPlayed": 23,
+      "firstForcedTurn": 20,
+      "assertedGroundedTurn": 23,
+      "forcedToAssertedGap": 3,
+      "finalStatus": "partial_ownership",
+      "finalComplete": false,
+      "missingFamilies": [
+        "near_transfer"
+      ],
+      "firstNearTransferTurn": null,
+      "durabilityStatus": "not_transformed",
+      "durable": false
+    },
+    {
+      "label": "world015-hard-s2-reinvention-r1",
+      "runDir": "exports/dramatic-derivation/harder-learner-ladder-eval/runs/world015-hard-s2-reinvention-r1",
+      "ownershipTransferGate": false,
+      "verdict": "grounded_anagnorisis",
+      "turnsPlayed": 20,
+      "firstForcedTurn": 20,
+      "assertedGroundedTurn": 20,
+      "forcedToAssertedGap": 0,
+      "finalStatus": "partial_ownership",
+      "finalComplete": false,
+      "missingFamilies": [
+        "near_transfer"
+      ],
+      "firstNearTransferTurn": null,
+      "durabilityStatus": "not_transformed",
+      "durable": false
+    },
+    {
+      "label": "world015-hard-s2-ownership-r1",
+      "runDir": "exports/dramatic-derivation/harder-learner-ladder-eval/runs/world015-hard-s2-ownership-r1",
+      "ownershipTransferGate": false,
+      "verdict": "grounded_anagnorisis",
+      "turnsPlayed": 20,
+      "firstForcedTurn": 20,
+      "assertedGroundedTurn": 20,
+      "forcedToAssertedGap": 0,
+      "finalStatus": "partial_ownership",
+      "finalComplete": false,
+      "missingFamilies": [
+        "near_transfer"
+      ],
+      "firstNearTransferTurn": null,
+      "durabilityStatus": "not_transformed",
+      "durable": false
+    },
+    {
+      "label": "world015-transfergate-s2-ownership-r1",
+      "runDir": "exports/dramatic-derivation/ownership-transfer-gate-eval/runs/world015-transfergate-s2-ownership-r1",
+      "ownershipTransferGate": false,
+      "verdict": "grounded_anagnorisis",
+      "turnsPlayed": 20,
+      "firstForcedTurn": 20,
+      "assertedGroundedTurn": 20,
+      "forcedToAssertedGap": 0,
+      "finalStatus": "partial_ownership",
+      "finalComplete": false,
+      "missingFamilies": [
+        "near_transfer"
+      ],
+      "firstNearTransferTurn": null,
+      "durabilityStatus": "not_transformed",
+      "durable": false
+    },
+    {
+      "label": "world015-transfergate-s2-transfer-r1",
+      "runDir": "exports/dramatic-derivation/ownership-transfer-gate-eval/runs/world015-transfergate-s2-transfer-r1",
+      "ownershipTransferGate": true,
+      "verdict": "grounded_anagnorisis",
+      "turnsPlayed": 22,
+      "firstForcedTurn": 20,
+      "assertedGroundedTurn": 22,
+      "forcedToAssertedGap": 2,
+      "finalStatus": "transformed",
+      "finalComplete": true,
+      "missingFamilies": [],
+      "firstNearTransferTurn": 22,
+      "durabilityStatus": "single_point_transformation",
+      "durable": false
+    }
+  ],
+  "replayGates": [
+    {
+      "label": "world015-transfergate-detector-replay-from-t23",
+      "source": "exports/dramatic-derivation/ownership-transfer-gate-eval/runs/world015-transfergate-s2-transfer-r1",
+      "prefixTurns": 22,
+      "window": 1,
+      "verdict": "grounded_anagnorisis",
+      "turnsPlayed": 22,
+      "firstForcedTurn": 20,
+      "assertedGroundedTurn": 22,
+      "finalStatus": null,
+      "finalComplete": null,
+      "finalMissingFamilies": [],
+      "durabilityStatus": null,
+      "prefixIntegrityOk": true,
+      "note": "prefix integrity only; no live suffix turn so learnerTransformationPost was not recomputed"
+    },
+    {
+      "label": "world015-transfergate-detector-mock-from-t20",
+      "source": "exports/dramatic-derivation/ownership-transfer-gate-eval/runs/world015-transfergate-s2-ownership-r1",
+      "prefixTurns": 19,
+      "window": 3,
+      "verdict": "grounded_anagnorisis",
+      "turnsPlayed": 20,
+      "firstForcedTurn": 20,
+      "assertedGroundedTurn": 20,
+      "finalStatus": "partial_ownership",
+      "finalComplete": false,
+      "finalMissingFamilies": [
+        "near_transfer"
+      ],
+      "durabilityStatus": "not_transformed",
+      "prefixIntegrityOk": true,
+      "note": "mock suffix asserted immediately and did not produce near_transfer; wiring check only"
+    }
+  ],
+  "freshPaidComparison": [
+    {
+      "label": "world015-transferdetector-fresh-s2-ownership-r1",
+      "ownershipTransferGate": false,
+      "verdict": "grounded_anagnorisis",
+      "turnsPlayed": 21,
+      "firstForcedTurn": 20,
+      "assertedGroundedTurn": 21,
+      "forcedToAssertedGap": 1,
+      "finalStatus": "transformed",
+      "finalComplete": true,
+      "finalMissingFamilies": [],
+      "firstCompleteTurn": 5,
+      "durabilityStatus": "durable_transformation",
+      "durable": true,
+      "releaseChallengeCount": 6,
+      "inputAuditOk": true,
+      "nonLeakAuditOk": true
+    },
+    {
+      "label": "world015-transferdetector-fresh-s2-transfer-r1",
+      "ownershipTransferGate": true,
+      "verdict": "grounded_anagnorisis",
+      "turnsPlayed": 21,
+      "firstForcedTurn": 20,
+      "assertedGroundedTurn": 21,
+      "forcedToAssertedGap": 1,
+      "finalStatus": "transformed",
+      "finalComplete": true,
+      "finalMissingFamilies": [],
+      "firstCompleteTurn": 7,
+      "durabilityStatus": "durable_transformation",
+      "durable": true,
+      "releaseChallengeCount": 5,
+      "inputAuditOk": true,
+      "nonLeakAuditOk": true
+    }
+  ],
+  "interpretation": {
+    "detectorPatch": "useful and retained",
+    "ownershipTransferGate": "not promoted",
+    "reason": "fresh first-pass comparison grounded both arms at identical proof timing; ungated ownership arm reached durable transformation earlier",
+    "nextStep": "keep gate as narrow experimental/debug flag for late final-assertion cases where only near_transfer is missing"
+  }
+}

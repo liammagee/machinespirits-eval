@@ -1,0 +1,22 @@
+{
+  "scores": {
+    "pedagogical_arc": {
+      "score": 4,
+      "reasoning": "Strong cumulative arc built as a dependency chain: the opening fixes direction ('don't write a name yet; what would show whose hand brought it down?', T1), and each turn adds one load-bearing link — where it broke (crown, T4) → why (green mortar/struck centering, T9) → what mark connects it (prop-mark/crowsfoot, T11-13) → whose timber (Caudle yard, T17) → whose hand (Oswin via toll book, T20-21). The turns could not be reordered without breaking the logic, and the 'liability vs. causation' distinction is carried coherently throughout. Short of 5 because of a mid-dialogue plateau (T14-16 circle 'mark shown, yard not shown yet' for three turns before the timber-reeve evidence lands) and the learner's repeated re-closing of the same two Reyner lines."
+    },
+    "adaptive_trajectory": {
+      "score": 3,
+      "reasoning": "Real but largely consistent adaptation. The tutor responds to learner signals — reining in over-reach when the learner leaps ahead ('Slow down one joint', T5; 'not one leap', T18; 'two steps, not one leap', T20) and developing a stable validate-and-redirect move for the learner's anxiety about Reyner ('I'm not throwing Reyner's bond away', T8; 'I see the two closed lines, and I'm not dismissing either', T14). There is a discernible early-exploratory ('what kind of detail would actually show...', T1) to late-synthetic ('what act has been shown without leaning on Reyner's bond at all?', T21) shift. But the core instrument — Socratic narrowing plus a shown/not-shown ledger — is essentially unchanged from T1 to T21; adjustments are in pacing and validation rather than a substantive strategy change, matching the level-3 description."
+    },
+    "pedagogical_closure": {
+      "score": 4,
+      "reasoning": "Excellent consolidation. The final exchange (T21) explicitly recapitulates the whole chain — Oswin as the sole Caudle carrier joined to the struck-centering finding — and names what is load-bearing versus not ('No bond, no builder's surety required: the arch drew its own line from the broken bed back to a carter's name'), cleanly resolving the liability-vs-causation question opened in T1. Short of 5 because closure here is resolution-of-task rather than forward-looking: the conclusion is reached and the reasoning is named, but there is no explicit statement of residual gaps or next steps for the learner's continued development beyond the answered question."
+    }
+  },
+  "overall_score": 66,
+  "summary": "A tightly constructed evidentiary-reasoning dialogue with a genuinely cumulative pedagogical arc and strong final consolidation, conducted entirely in plain in-world language (no formalism leakage). The dominant strength is progressive scaffolding along a strict dependency chain; the main limits are a repetitive mid-dialogue plateau (T14-16) and a tutor method that stays methodologically consistent rather than substantively re-strategizing, which caps the adaptive-trajectory score.",
+  "caveats": [
+    "Adaptive_trajectory has a defensible case for 4 on the exploratory-to-synthetic shift, but is held at 3 because the underlying Socratic shown/not-shown method is stable throughout.",
+    "Closure is scored as task-resolution; the rubric's 'clear next steps / named remaining gaps' element is only weakly present, appropriate to a derivation reaching a grounded conclusion."
+  ]
+}

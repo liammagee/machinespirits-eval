@@ -1,0 +1,170 @@
+{
+  "schema": "dramatic-derivation.learner-object-outcomes.v0",
+  "generatedAt": "2026-06-18T00:49:04.120Z",
+  "boundary": [
+    "post-run analysis only",
+    "does not change proof control",
+    "ownership-transfer-gate remains experimental and off by default"
+  ],
+  "counts": {
+    "total": 4,
+    "proof_and_ownership_grounded": 2,
+    "proof_grounded_ownership_partial": 1,
+    "proof_failed": 0,
+    "not_instrumented": 1
+  },
+  "runs": [
+    {
+      "ref": "world015-transferdetector-fresh-s2-ownership-r1",
+      "resultFile": "exports/dramatic-derivation/ownership-transfer-detector-audit/fresh-runs/world015-transferdetector-fresh-s2-ownership-r1/result.json",
+      "worldId": "world_015_hethel_public_reversal",
+      "verdict": "grounded_anagnorisis",
+      "turnsPlayed": 21,
+      "finalD": 0,
+      "firstForcedTurn": 20,
+      "assertedGroundedTurn": 21,
+      "forcedToAssertedGap": 1,
+      "outcome": "proof_and_ownership_grounded",
+      "ownership": {
+        "turn": 21,
+        "status": "transformed",
+        "complete": true,
+        "ownershipLevel": "durable",
+        "ownershipScore": 6,
+        "passedFamilies": [
+          "own_words",
+          "use_in_path",
+          "discriminate_wrong_route",
+          "near_transfer",
+          "recover_after_break",
+          "purpose_link"
+        ],
+        "missingFamilies": [],
+        "finalAssertionAvailable": true,
+        "lateOwnershipCheck": false
+      },
+      "durability": {
+        "status": "durable_transformation",
+        "durable": true,
+        "firstCompleteTurn": 5,
+        "finalStatus": "transformed",
+        "finalComplete": true,
+        "releaseChallengeCount": 6,
+        "survivedAllReleaseChallenges": true
+      },
+      "leakAudit": {
+        "inputAuditOk": true,
+        "nonLeakAuditOk": true,
+        "ok": true
+      }
+    },
+    {
+      "ref": "world015-transferdetector-fresh-s2-transfer-r1",
+      "resultFile": "exports/dramatic-derivation/ownership-transfer-detector-audit/fresh-runs/world015-transferdetector-fresh-s2-transfer-r1/result.json",
+      "worldId": "world_015_hethel_public_reversal",
+      "verdict": "grounded_anagnorisis",
+      "turnsPlayed": 21,
+      "finalD": 0,
+      "firstForcedTurn": 20,
+      "assertedGroundedTurn": 21,
+      "forcedToAssertedGap": 1,
+      "outcome": "proof_and_ownership_grounded",
+      "ownership": {
+        "turn": 21,
+        "status": "transformed",
+        "complete": true,
+        "ownershipLevel": "durable",
+        "ownershipScore": 6,
+        "passedFamilies": [
+          "own_words",
+          "use_in_path",
+          "discriminate_wrong_route",
+          "near_transfer",
+          "recover_after_break",
+          "purpose_link"
+        ],
+        "missingFamilies": [],
+        "finalAssertionAvailable": true,
+        "lateOwnershipCheck": false
+      },
+      "durability": {
+        "status": "durable_transformation",
+        "durable": true,
+        "firstCompleteTurn": 7,
+        "finalStatus": "transformed",
+        "finalComplete": true,
+        "releaseChallengeCount": 5,
+        "survivedAllReleaseChallenges": true
+      },
+      "leakAudit": {
+        "inputAuditOk": true,
+        "nonLeakAuditOk": true,
+        "ok": true
+      }
+    },
+    {
+      "ref": "world015-transfergate-detector-mock-from-t20",
+      "resultFile": "exports/dramatic-derivation/ownership-transfer-detector-audit/episodes/world015-transfergate-detector-mock-from-t20/result.json",
+      "worldId": "world_015_hethel_public_reversal",
+      "verdict": "grounded_anagnorisis",
+      "turnsPlayed": 20,
+      "finalD": 0,
+      "firstForcedTurn": 20,
+      "assertedGroundedTurn": 20,
+      "forcedToAssertedGap": 0,
+      "outcome": "proof_grounded_ownership_partial",
+      "ownership": {
+        "turn": 20,
+        "status": "partial_ownership",
+        "complete": false,
+        "ownershipLevel": "operational",
+        "ownershipScore": 5,
+        "passedFamilies": [
+          "own_words",
+          "use_in_path",
+          "discriminate_wrong_route",
+          "recover_after_break",
+          "purpose_link"
+        ],
+        "missingFamilies": [
+          "near_transfer"
+        ],
+        "finalAssertionAvailable": true,
+        "lateOwnershipCheck": false
+      },
+      "durability": {
+        "status": "not_transformed",
+        "durable": false,
+        "firstCompleteTurn": null,
+        "finalStatus": "partial_ownership",
+        "finalComplete": false,
+        "releaseChallengeCount": 0,
+        "survivedAllReleaseChallenges": false
+      },
+      "leakAudit": {
+        "inputAuditOk": true,
+        "nonLeakAuditOk": true,
+        "ok": true
+      }
+    },
+    {
+      "ref": "world015-transfergate-detector-replay-from-t23",
+      "resultFile": "exports/dramatic-derivation/ownership-transfer-detector-audit/episodes/world015-transfergate-detector-replay-from-t23/result.json",
+      "worldId": "world_015_hethel_public_reversal",
+      "verdict": "grounded_anagnorisis",
+      "turnsPlayed": 22,
+      "finalD": 0,
+      "firstForcedTurn": 20,
+      "assertedGroundedTurn": 22,
+      "forcedToAssertedGap": 2,
+      "outcome": "not_instrumented",
+      "ownership": null,
+      "durability": null,
+      "leakAudit": {
+        "inputAuditOk": null,
+        "nonLeakAuditOk": null,
+        "ok": null
+      }
+    }
+  ]
+}

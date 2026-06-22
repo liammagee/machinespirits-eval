@@ -1,0 +1,23 @@
+{
+  "scores": {
+    "pedagogical_arc": {
+      "score": 5,
+      "reasoning": "The opening (T1) poses the governing distinction — 'a name people expect, or a reason the span actually came down' — and every later turn extends it along one cumulative chain: ownership (T2-3) → crown/failure-location (T4-5) → building control (T6-7) → liability-vs-cause (T8) → green mortar as cause (T9) → 'what each piece licenses' restraint (T10-15) → crowsfoot to Caudle yard (T16-17) → yard-to-hand gap (T18-19) → Oswin (T20). The repeated cause/liability separation is re-applied to fresh evidence each time rather than circled, and the turns could not be reordered without collapse. Purposeful and cumulative."
+    },
+    "adaptive_trajectory": {
+      "score": 4,
+      "reasoning": "There is a real strategic shift: early turns work to break the learner's conflation of liability with cause (T2-8); once the learner recognizes the split ('I had them written as one in the draft,' T10) the tutor pivots to restraining the learner's eagerness to leap to a name ('leave the folder closed,' 'keep it narrow,' 'boxed off,' T10-19). Mutual recognition deepens, made explicit at T20 ('your earlier split is what makes this fair'). Held short of 5 because the tutor enters directive rather than exploratory (T1), the core Socratic move ('what can you write from this alone') stays constant, and much forward motion is paced by staged evidence reveals rather than learner-inferred adjustment."
+    },
+    "pedagogical_closure": {
+      "score": 4,
+      "reasoning": "Strong consolidation at T20: the learner recapitulates the full chain unprompted ('the crowsfoot traces to the centering, the centering traces to Caudle's yard, and the yard traces to Oswin's cart') and states the central distinction cleanly ('the bond stays Reyner's separate matter — but the fall is Oswin's pull'). Gaps were explicitly named throughout ('that name is still waiting,' 'the second line stays open') and the final gap is closed. Short of 5 because the dialogue resolves on the recognition without articulating explicit next steps or what follows once the name is fixed."
+    }
+  },
+  "overall_score": 85,
+  "summary": "A tightly built derivation drama: the tutor leads the learner from the town's obvious blame (Reyner, by seal and bond) to the actual agent of the fall (Oswin) through a clean inferential chain, while consistently holding physical cause apart from liability. The public discourse is naturalistic and free of formalism, and pedagogical craft is high — an excellent cumulative arc (5), genuine if method-stable adaptation with deepening recognition (4), and strong consolidation at close (4).",
+  "caveats": [
+    "Scored on public discourse only; the deterministic proof/derivation gate (grounded_anagnorisis, D=0) is evaluated separately and not credited here.",
+    "The LLM learner does much of the explicit recapitulation; scores credit the tutor's framing, line-holding, and restraint rather than the learner's verbalization.",
+    "Adaptive trajectory is partly evidence-paced (staged file reveals) rather than purely learner-driven, which caps it below 5."
+  ]
+}

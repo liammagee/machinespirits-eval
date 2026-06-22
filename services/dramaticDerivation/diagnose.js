@@ -1,6 +1,6 @@
 /**
  * Programmatic diagnosis + readable transcript for staging-loop iterations
- * (notes/dramatic-derivation-plan.md §3 step 3: "run → programmatic diagnosis
+ * (notes/2026-06-09-dramatic-derivation-plan.md §3 step 3: "run → programmatic diagnosis
  * (the §2.5 taxonomy) + a transcript read → revise the tutor's role-script").
  *
  * diagnose() computes everything the loop needs to decide WHAT failed —
@@ -18,12 +18,20 @@
 
 import { derivationDistance } from './slope.js';
 import { factKey } from './chainer.js';
+import { buildWorldIR } from './guardCompiler.js';
+import { describePublicRegister } from './llmRoles.js';
+
+export const LOGIC_PROJECTION_REPORT_SCHEMA = 'dramatic-derivation.logic-projection-report.v0';
 
 function countSentences(text) {
   return (text || '')
     .split(/[.!?…]+/)
     .map((s) => s.trim())
     .filter(Boolean).length;
+}
+
+function publicStageLine(line) {
+  return line.role !== 'director' || line.meta?.release || line.meta?.phase?.name;
 }
 
 /**
@@ -62,6 +70,38 @@ export function releaseAdherence(world, ledger, turnsPlayed = Infinity) {
     deviations: rows.filter((r) => !['on_cue', 'missed', 'unreached'].includes(r.status)),
     missed: rows.filter((r) => r.status === 'missed'),
     unscheduled,
+  };
+}
+
+/**
+ * C2 (release authority) — the per-turn decision series the tutor bridge
+ * recorded: what was claimable, what was claimed, what played, at what offset
+ * from the authored cue, and for what declared reason. Under the dial a
+ * late/early release is STRATEGY, not a staging failure — releaseAdherence
+ * above still reports against the authored calendar, so read the two
+ * together. Null on every arm without the dial (no tutor line carries a
+ * decision record); `held` counts include force-plays at the hold limit
+ * (offset = +latitude), which `forced`/`overridden` separate out.
+ */
+export function releaseDeviations(result) {
+  const rows = (result.transcript || []).filter((l) => l.role === 'tutor' && l.meta?.releaseDecision);
+  if (!rows.length) return null;
+  const decisions = rows.map((l) => ({ turn: l.turn, ...l.meta.releaseDecision }));
+  const played = decisions.filter((d) => d.played);
+  const offsets = played.filter((d) => typeof d.offset === 'number');
+  return {
+    turnsWithWindow: decisions.filter((d) => d.windowSize > 0).length,
+    played: played.length,
+    onSchedule: offsets.filter((d) => d.offset === 0).length,
+    early: offsets.filter((d) => d.offset < 0).length,
+    held: offsets.filter((d) => d.offset > 0).length,
+    forced: decisions.filter((d) => Boolean(d.forced)).length,
+    overridden: decisions.filter((d) => d.overridden).length,
+    invalidClaims: decisions.filter((d) => d.invalidClaim).length,
+    reasons: played
+      .filter((d) => d.reason)
+      .map((d) => ({ turn: d.turn, premise: d.played, offset: d.offset, reason: d.reason })),
+    decisions,
   };
 }
 
@@ -379,6 +419,797 @@ export function learnerInference(result) {
   };
 }
 
+/**
+ * Decay-condition panel block (null when the run had no decay condition, so
+ * the OFF-state diagnosis object is byte-identical to the pre-corruption
+ * shape). Everything is derived from the engine's corruption ledger except
+ * `unrepairedAtEnd`, which reads the engine's own end-state field — the two
+ * agree by construction, and the end-state is the authority.
+ *
+ * `degradedTurnIntegral` is the headline burden number: turns × premises the
+ * learner's board spent degraded (unrepaired slips accrue until the run ends).
+ * `dReversals` counts turns where D(t) ROSE — the signature of decay knocking
+ * out a premise the proof path needed.
+ */
+export function corruptionReport(result) {
+  const c = result.corruption;
+  if (!c) return null;
+  const ledger = c.ledger || [];
+  const timeline = [];
+  // A mutate slip opens TWO debts that close independently and in either
+  // order: the deletion (closed by a `repair` row — tutor re-stage or
+  // re-adoption) and the false belief (closed by a `retract_false` row —
+  // the learner striking the misremembered form). The deletion debt is
+  // premise-keyed (a premise cannot re-decay while still down, so a repeat
+  // decay re-points at the newest row). The false-belief debt must match by
+  // FORM, not premise: false forms outlive repairs, so a premise can
+  // re-mutate while an earlier false form still stands, and the two forms
+  // coexist on the learner's board until each is struck by its own retract.
+  const openRepairByPremise = new Map();
+  const openFalseRows = []; // mutate rows with an unstruck false form, decay order
+  for (const e of ledger) {
+    if (e.type === 'decay') {
+      const row = {
+        premiseId: e.premiseId,
+        fact: e.fact,
+        mode: e.mode === 'mutate' ? 'mutate' : 'delete',
+        falseForm: e.falseForm || null,
+        decayTurn: e.turn,
+        retractTurn: null,
+        repairTurn: null,
+        via: null,
+      };
+      timeline.push(row);
+      openRepairByPremise.set(e.premiseId, row);
+      if (row.mode === 'mutate') openFalseRows.push(row);
+    } else if (e.type === 'retract_false') {
+      const key = factKey(e.falseForm || []);
+      const idx = openFalseRows.findIndex((row) => factKey(row.falseForm || []) === key);
+      if (idx >= 0) {
+        openFalseRows[idx].retractTurn = e.turn;
+        openFalseRows.splice(idx, 1);
+      }
+    } else if (e.type === 'repair') {
+      const open = openRepairByPremise.get(e.premiseId);
+      if (open) {
+        open.repairTurn = e.turn;
+        open.via = e.via;
+        openRepairByPremise.delete(e.premiseId);
+      }
+    }
+  }
+  const repairs = ledger.filter((e) => e.type === 'repair');
+  const latencies = timeline.filter((t) => t.repairTurn !== null).map((t) => t.repairTurn - t.decayTurn);
+  let dReversals = 0;
+  for (let i = 1; i < result.trajectory.length; i += 1) {
+    if (result.trajectory[i].D > result.trajectory[i - 1].D) dReversals += 1;
+  }
+  const mutations = timeline.filter((t) => t.mode === 'mutate');
+  // C5: a confrontation can be what exposes a false form — the learner reads
+  // the exhibit back and the misremembered line falls. Window {0, +1}: the
+  // tutor speaks before the learner, so the read-back lands the same turn,
+  // but the strike may take until the learner's next line. Rows are annotated
+  // only on arms where a confront was actually spoken, so the OFF-state
+  // report shape is unchanged.
+  const confrontTurnsByPremise = new Map();
+  for (const line of result.transcript || []) {
+    if (line.role !== 'tutor') continue;
+    const intent = String(line.meta?.move?.intent || '')
+      .toLowerCase()
+      .trim();
+    const target = line.meta?.move?.targetPremise;
+    if (intent !== 'confront' || !target) continue;
+    if (!confrontTurnsByPremise.has(target)) confrontTurnsByPremise.set(target, []);
+    confrontTurnsByPremise.get(target).push(line.turn);
+  }
+  if (confrontTurnsByPremise.size) {
+    for (const row of mutations) {
+      row.confrontPrompted =
+        row.retractTurn !== null &&
+        (confrontTurnsByPremise.get(row.premiseId) || []).some(
+          (t) => row.retractTurn - t === 0 || row.retractTurn - t === 1,
+        );
+    }
+  }
+  // F(t) rides the trajectory rows in corruption runs (engine: theoryFidelity).
+  const fCurve = result.trajectory.filter((p) => typeof p.F === 'number').map((p) => p.F);
+  return {
+    config: c.config,
+    decayEvents: timeline.length,
+    repairs: {
+      total: repairs.length,
+      byTutor: repairs.filter((e) => e.via === 'tutor').length,
+      byReadoption: repairs.filter((e) => e.via === 'readoption').length,
+    },
+    meanRepairLatency: latencies.length
+      ? +(latencies.reduce((sum, l) => sum + l, 0) / latencies.length).toFixed(2)
+      : null,
+    unrepairedAtEnd: (c.decayedAtEnd || []).length,
+    degradedTurnIntegral: timeline.reduce((sum, t) => sum + ((t.repairTurn ?? result.turnsPlayed) - t.decayTurn), 0),
+    dReversals,
+    mutations: {
+      total: mutations.length,
+      retracted: mutations.filter((t) => t.retractTurn !== null).length,
+      // A completed REVISE: false form struck AND true premise back on the board.
+      revised: mutations.filter((t) => t.retractTurn !== null && t.repairTurn !== null).length,
+      falseBeliefsAtEnd: mutations.filter((t) => t.retractTurn === null).length,
+      ...(confrontTurnsByPremise.size
+        ? { confrontPromptedRetractions: mutations.filter((t) => t.confrontPrompted).length }
+        : {}),
+    },
+    fidelity: fCurve.length
+      ? { final: +fCurve[fCurve.length - 1].toFixed(3), min: +Math.min(...fCurve).toFixed(3) }
+      : null,
+    timeline,
+  };
+}
+
+/**
+ * C5 (confrontation obligation) — the conduct-rule audit, recomputed from the
+ * SPOKEN record exactly as the superego's recorded arithmetic computes it
+ * from the draft: a tutor move onto an exhibit staged on an earlier turn,
+ * with any intent but "confront", is covered only by a confrontation of that
+ * exhibit standing since its last staging; a covered re-entry spends the
+ * license. Also collects the watcher's re-entry fires (did the spoken move
+ * become the confrontation?) and, under decay, whether each confrontation
+ * tested a real absence (target down at the moment of the demand). Null
+ * unless the arm ran the dial — no deliberation row carries re-entry
+ * arithmetic and no move declares confront.
+ */
+export function confrontReport(result) {
+  const transcript = result.transcript || [];
+  const tutorLines = transcript.filter((l) => l.role === 'tutor');
+  const norm = (v) =>
+    String(v || '')
+      .toLowerCase()
+      .trim();
+  const armOn = tutorLines.some(
+    (l) => l.meta?.deliberation?.reentry !== undefined || ['confront', 'restore'].includes(norm(l.meta?.move?.intent)),
+  );
+  if (!armOn) return null;
+  const releaseTurnByPremise = new Map((result.ledger || []).map((e) => [e.premiseId, e.turn]));
+  // Decayed-at check: corruption ledger rows are pushed in chronological
+  // order within the run loop, so array order resolves same-turn sequencing
+  // (a decay lands before the tutor's move on that turn; a tutor repair
+  // lands on the move's own turn).
+  const corruptionRows = result.corruption?.ledger || null;
+  // beforeMove: state at the moment the tutor speaks — same-turn decay rows
+  // land before the move, but a same-turn repair IS the move (via tutor) or
+  // follows it (learner re-adoption), so it must not erase the evidence.
+  const decayedAt = (premiseId, turn, { beforeMove = false } = {}) => {
+    if (!corruptionRows) return null;
+    let down = false;
+    for (const e of corruptionRows) {
+      if (e.turn > turn) break;
+      if (e.premiseId !== premiseId) continue;
+      if (beforeMove && e.turn === turn && e.type === 'repair') continue;
+      if (e.type === 'decay') down = true;
+      else if (e.type === 'repair') down = false;
+    }
+    return down;
+  };
+  const confrontations = [];
+  const reentries = [];
+  const restores = [];
+  // §12 (repair clause): a tutor repair row on the move's own turn — the
+  // post-hoc audit may read the slip ledger (ground truth) that no in-run
+  // role held; a restore that repaired nothing was a false or stale claim.
+  const repairedAt = (premiseId, turn) =>
+    corruptionRows
+      ? corruptionRows.some(
+          (e) => e.type === 'repair' && e.premiseId === premiseId && e.turn === turn && e.via === 'tutor',
+        )
+      : null;
+  const stateByTarget = new Map(); // target -> { lastStagedTurn, confrontedAt }
+  for (const l of tutorLines) {
+    const target = l.meta?.move?.targetPremise || null;
+    if (!target) continue;
+    const intent = norm(l.meta.move.intent);
+    const releaseTurn = releaseTurnByPremise.get(target);
+    if (releaseTurn === undefined || releaseTurn >= l.turn) continue; // not yet staged-earlier
+    const st = stateByTarget.get(target) || { lastStagedTurn: releaseTurn, confrontedAt: null };
+    if (intent === 'confront') {
+      confrontations.push({ turn: l.turn, target, targetDecayed: decayedAt(target, l.turn) });
+      st.confrontedAt = l.turn;
+    } else if (intent === 'restore') {
+      // The repair-clause bucket: licensed by the learner's report, not by a
+      // confrontation — never counted covered/uncovered. It re-stages all the
+      // same, so any standing license is spent.
+      restores.push({
+        turn: l.turn,
+        target,
+        targetDecayed: decayedAt(target, l.turn, { beforeMove: true }),
+        repaired: repairedAt(target, l.turn),
+      });
+      st.lastStagedTurn = l.turn;
+    } else {
+      const covered = st.confrontedAt !== null && st.confrontedAt > st.lastStagedTurn;
+      reentries.push({ turn: l.turn, target, intent, covered, confrontTurn: covered ? st.confrontedAt : null });
+      st.lastStagedTurn = l.turn; // a re-entry re-stages; any license is spent
+    }
+    stateByTarget.set(target, st);
+  }
+  // The watcher's re-entry fires and whether the spoken move became the
+  // confrontation (the within-turn break — stall-watcher P2's analogue),
+  // plus the detector audit: a fire whose own recorded arithmetic says
+  // not-due is a mismatch; due-without-fire may be priority (rut first)
+  // or restraint, so it is counted, not judged.
+  const fires = tutorLines
+    .filter((l) => l.meta?.deliberation?.jurisdiction === 'unconfronted_reentry')
+    .map((l) => ({
+      turn: l.turn,
+      target: l.meta.deliberation.reentry?.target ?? null,
+      convertedToConfront: norm(l.meta.move?.intent) === 'confront',
+      dueByRecord: Boolean(l.meta.deliberation.reentry?.due),
+      // §12: a fire on a "restore" draft is the watcher rejecting the claimed
+      // license — not mechanically due (the record cannot judge the learner's
+      // line), so it must not count against the detector audit.
+      onRestoreClaim: Boolean(l.meta.deliberation.reentry?.restoreClaim),
+      onProofDebtClaim: Boolean(l.meta.deliberation.reentry?.proofDebtClaim),
+    }));
+  return {
+    confrontations,
+    reentries: {
+      total: reentries.length,
+      covered: reentries.filter((r) => r.covered).length,
+      uncovered: reentries.filter((r) => !r.covered),
+    },
+    ...(restores.length ? { restores } : {}),
+    superego: {
+      reentryFires: fires.length,
+      convertedToConfront: fires.filter((f) => f.convertedToConfront).length,
+      firesWithoutDue: fires.filter((f) => !f.dueByRecord && !f.onRestoreClaim && !f.onProofDebtClaim).length,
+      restoreClaimFires: fires.filter((f) => f.onRestoreClaim).length,
+      proofDebtClaimFires: fires.filter((f) => f.onProofDebtClaim).length,
+      draftsDueByRecord: tutorLines.filter((l) => l.meta?.deliberation?.reentry?.due).length,
+      fires,
+    },
+  };
+}
+
+export function proofDebtGuardReport(result) {
+  const detections = result.proofDebt || [];
+  const actions = (result.transcript || [])
+    .filter((l) => l.role === 'tutor' && l.meta?.proofDebt)
+    .map((l) => ({
+      turn: l.turn,
+      target: l.meta.proofDebt.target || null,
+      debtCount: l.meta.proofDebt.debtCount || 0,
+      forced: Boolean(l.meta.proofDebt.forced),
+      stage: l.meta.proofDebt.stage || null,
+      moveIntent: l.meta.move?.intent || null,
+    }));
+  if (!detections.length && !actions.length) return null;
+  const repairs = result.corruption?.ledger || [];
+  const actionRows = actions.map((a) => ({
+    ...a,
+    repaired: repairs.some(
+      (e) => e.type === 'repair' && e.via === 'tutor' && e.turn === a.turn && e.premiseId === a.target,
+    ),
+  }));
+  const targets = [...new Set(actionRows.map((a) => a.target).filter(Boolean))];
+  return {
+    detectedTurns: detections.length,
+    debtsDetected: detections.reduce((sum, row) => sum + (row.debts || []).length, 0),
+    actionTurns: actionRows.length,
+    forcedMoves: actionRows.filter((a) => a.forced).length,
+    restoredMoves: actionRows.filter((a) => String(a.moveIntent).toLowerCase() === 'restore').length,
+    repairedTargets: actionRows.filter((a) => a.repaired).length,
+    targets,
+    detections,
+    actions: actionRows,
+  };
+}
+
+export function conductPolicyReport(result) {
+  const rows = (result.transcript || [])
+    .filter((l) => l.role === 'tutor' && l.meta?.conductPolicy)
+    .map((l) => ({
+      turn: l.turn,
+      active: Boolean(l.meta.conductPolicy.active),
+      selectedMoveFamily: l.meta.conductPolicy.selectedMoveFamily || null,
+      reasonCode: l.meta.conductPolicy.reasonCode || null,
+      targetPremise: l.meta.conductPolicy.targetPremise || null,
+      triggerType: l.meta.conductPolicy.triggerType || null,
+      realizedMove: l.meta.conductPolicy.realizedMove || l.meta.move || null,
+      realizedRelease: l.meta.conductPolicy.realizedRelease || l.meta.release || null,
+      loggingOnly: l.meta.conductPolicy.loggingOnly === true,
+      enforcementEnabled: l.meta.conductPolicy.enforcement?.enabled === true,
+      enforcementApplied: l.meta.conductPolicy.enforcement?.applied === true,
+      enforcementChanged: l.meta.conductPolicy.enforcement?.changed === true,
+      enforcementReason: l.meta.conductPolicy.enforcement?.reason || null,
+      preEnforcementOk:
+        l.meta.conductPolicy.preEnforcementCompliance?.checked === true
+          ? l.meta.conductPolicy.preEnforcementCompliance?.ok === true
+          : null,
+      postEnforcementOk:
+        l.meta.conductPolicy.enforcement?.enabled === true &&
+        l.meta.conductPolicy.generatorCompliance?.checked === true
+          ? l.meta.conductPolicy.generatorCompliance?.ok === true
+          : null,
+      complianceChecked: l.meta.conductPolicy.generatorCompliance?.checked === true,
+      complianceOk:
+        l.meta.conductPolicy.generatorCompliance?.checked === true
+          ? l.meta.conductPolicy.generatorCompliance?.ok === true
+          : null,
+      complianceFailures: l.meta.conductPolicy.generatorCompliance?.failures || [],
+    }));
+  if (!rows.length) return null;
+  const counts = (field) => {
+    const out = {};
+    for (const row of rows) {
+      const key = row[field] || '(none)';
+      out[key] = (out[key] || 0) + 1;
+    }
+    return out;
+  };
+  const active = rows.filter((row) => row.active);
+  const checked = rows.filter((row) => row.complianceChecked);
+  const passed = checked.filter((row) => row.complianceOk === true);
+  const failed = checked.filter((row) => row.complianceOk === false);
+  const enforcementRows = rows.filter((row) => row.enforcementEnabled);
+  const enforcementApplied = enforcementRows.filter((row) => row.enforcementApplied);
+  const enforcementChanged = enforcementRows.filter((row) => row.enforcementChanged);
+  return {
+    schema: 'dramatic-derivation.conduct-policy-report.v0',
+    loggedTurns: rows.length,
+    activeTurns: active.length,
+    inactiveTurns: rows.length - active.length,
+    moveFamilies: counts('selectedMoveFamily'),
+    reasonCodes: counts('reasonCode'),
+    loggingOnly: rows.every((row) => row.loggingOnly),
+    complianceChecked: rows.some((row) => row.complianceChecked),
+    compliance: {
+      checked: checked.length,
+      passed: passed.length,
+      failed: failed.length,
+      unchecked: rows.length - checked.length,
+      failures: failed.map((row) => ({
+        turn: row.turn,
+        selectedMoveFamily: row.selectedMoveFamily,
+        reasonCode: row.reasonCode,
+        targetPremise: row.targetPremise,
+        realizedMove: row.realizedMove,
+        realizedRelease: row.realizedRelease,
+        failures: row.complianceFailures,
+      })),
+    },
+    enforcement: {
+      enabledTurns: enforcementRows.length,
+      applied: enforcementApplied.length,
+      changed: enforcementChanged.length,
+      alreadyCompliant: enforcementRows.filter((row) => row.enforcementReason === 'already_compliant').length,
+      skipped: enforcementRows.filter((row) => !row.enforcementApplied).length,
+      postFailed: enforcementRows.filter((row) => row.postEnforcementOk === false).length,
+      changes: enforcementApplied.map((row) => ({
+        turn: row.turn,
+        selectedMoveFamily: row.selectedMoveFamily,
+        reasonCode: row.reasonCode,
+        reason: row.enforcementReason,
+        preOk: row.preEnforcementOk,
+        postOk: row.postEnforcementOk,
+      })),
+    },
+    decisions: rows,
+  };
+}
+
+/**
+ * Reconstructing-tutor accuracy (stage v2 adapt-ON arm): per turn, the
+ * tutor's committed theory of the learner's store against the harness-truth
+ * snapshot the engine recorded beside it. `held` scores as Jaccard overlap;
+ * `missing`/`mistaken` score as detection — of the gaps and false beliefs
+ * that actually existed, how many did the tutor name? Arm-internal color
+ * only: the OFF arm has no theory channel, so nothing here may cross arms.
+ */
+export function reconstructionReport(result) {
+  const rows = result.reconstruction;
+  if (!rows || !rows.length) return null;
+  const rate = (n, d) => (d ? +(n / d).toFixed(3) : null);
+  const setOf = (xs) => new Set((xs || []).map(String));
+  const jaccard = (a, b) => {
+    if (!a.size && !b.size) return 1;
+    let inter = 0;
+    for (const x of a) if (b.has(x)) inter += 1;
+    return inter / (a.size + b.size - inter);
+  };
+  const perTurn = rows.map((row) => {
+    const believedMissing = setOf(row.believed?.believed_missing);
+    const believedMistaken = setOf(row.believed?.believed_mistaken);
+    const truthMissing = setOf(row.truth?.missing);
+    const truthMistaken = setOf(row.truth?.mistaken);
+    return {
+      turn: row.turn,
+      heldJaccard: +jaccard(setOf(row.believed?.believed_held), setOf(row.truth?.held)).toFixed(3),
+      missingActual: truthMissing.size,
+      missingCaught: [...truthMissing].filter((id) => believedMissing.has(id)).length,
+      mistakenActual: truthMistaken.size,
+      mistakenCaught: [...truthMistaken].filter((id) => believedMistaken.has(id)).length,
+    };
+  });
+  const sum = (sel) => perTurn.reduce((acc, r) => acc + sel(r), 0);
+  return {
+    turns: perTurn.length,
+    meanHeldJaccard: +(sum((r) => r.heldJaccard) / perTurn.length).toFixed(3),
+    missing: {
+      actual: sum((r) => r.missingActual),
+      caught: sum((r) => r.missingCaught),
+      rate: rate(
+        sum((r) => r.missingCaught),
+        sum((r) => r.missingActual),
+      ),
+    },
+    mistaken: {
+      actual: sum((r) => r.mistakenActual),
+      caught: sum((r) => r.mistakenCaught),
+      rate: rate(
+        sum((r) => r.mistakenCaught),
+        sum((r) => r.mistakenActual),
+      ),
+    },
+    perTurn,
+  };
+}
+
+/**
+ * C1 act-plot discipline (plan §5–6): per committed plot, harness-checkable
+ * form and conduct measures — was the plot disciplined (withhold + friction
+ * both present, the non-boilerplate shape), which exhibits do its clauses
+ * name, and were the named hold exhibits actually staged within the plotted
+ * act's span? Audits report the watcher's verdict mix. Arm-internal color
+ * (the OFF arm has no plot channel); cross-arm endpoints stay the
+ * harness-ledgered dramatic instruments.
+ */
+export function plotReport(result, world = null) {
+  const block = result.plot;
+  if (!block || (!block.plots?.length && !block.audits?.length)) return null;
+  const plots = block.plots || [];
+  const audits = block.audits || [];
+  // Premise-id extraction is substring matching over the known id vocabulary
+  // (world ledger when given, else the ids the run actually staged) — plot
+  // clauses are free prose, so naming is the checkable part.
+  const knownIds = world?.premiseById
+    ? [...world.premiseById.keys()]
+    : [...new Set((result.ledger || []).map((l) => l.premiseId))];
+  const idsIn = (text) => knownIds.filter((id) => String(text || '').includes(id));
+  const actSpan = new Map((result.acts || []).map((a) => [a.act, a.turns]));
+  const stagedIn = (act) => {
+    const span = actSpan.get(act);
+    if (!span) return new Set();
+    return new Set((result.ledger || []).filter((l) => l.turn >= span[0] && l.turn <= span[1]).map((l) => l.premiseId));
+  };
+  const perPlot = plots.map((p) => {
+    const staged = stagedIn(p.act);
+    const holdNamed = [...new Set((p.holdByEnd || []).flatMap((c) => idsIn(c)))];
+    const withholdNamed = idsIn(p.withhold);
+    const clauseCount = (p.holdByEnd || []).length + (p.withhold ? 1 : 0) + (p.friction ? 1 : 0) + (p.fallback ? 1 : 0);
+    return {
+      act: p.act,
+      turn: p.turn,
+      clauseCount,
+      hasWithhold: Boolean(p.withhold),
+      hasFriction: Boolean(p.friction),
+      holdNamed,
+      holdStagedInAct: holdNamed.filter((id) => staged.has(id)),
+      withholdNamed,
+      withholdPlayedInAct: withholdNamed.filter((id) => staged.has(id)),
+    };
+  });
+  const verdictMix = { kept: 0, justified_deviation: 0, drift: 0, unscored: 0 };
+  const perActAudit = audits.map((a) => {
+    const mix = { kept: 0, justified_deviation: 0, drift: 0, unscored: 0 };
+    for (const c of a.clauses || []) {
+      const v = Object.hasOwn(mix, c.verdict) ? c.verdict : 'unscored';
+      mix[v] += 1;
+      verdictMix[v] += 1;
+    }
+    return { act: a.act, turn: a.turn, final: Boolean(a.final), clauses: (a.clauses || []).length, mix };
+  });
+  const sum = (sel) => perPlot.reduce((acc, r) => acc + sel(r), 0);
+  return {
+    plots: {
+      count: perPlot.length,
+      disciplined: perPlot.filter((r) => r.hasWithhold && r.hasFriction).length,
+      meanClauses: perPlot.length ? +(sum((r) => r.clauseCount) / perPlot.length).toFixed(2) : null,
+      perAct: perPlot,
+    },
+    audits: {
+      count: perActAudit.length,
+      finalIncluded: perActAudit.some((a) => a.final),
+      verdictMix,
+      perAct: perActAudit,
+    },
+    crossCheck: {
+      holdNamed: sum((r) => r.holdNamed.length),
+      holdStagedInAct: sum((r) => r.holdStagedInAct.length),
+      withholdNamed: sum((r) => r.withholdNamed.length),
+      withholdPlayedInAct: sum((r) => r.withholdPlayedInAct.length),
+    },
+    // Two-layer planning: present only when the run carried a throughline —
+    // plot-only arms keep the exact C1 report shape.
+    ...(block.throughlines?.length
+      ? {
+          throughline: (() => {
+            const rows = block.throughlines;
+            const byTrigger = { opening: 0, recommit: 0, audit_bound: 0, voluntary: 0 };
+            for (const r of rows) {
+              if (Object.hasOwn(byTrigger, r.trigger)) byTrigger[r.trigger] += 1;
+            }
+            const arcMix = { on_arc: 0, off_arc: 0, unscored: 0 };
+            let arcCount = 0;
+            for (const a of audits) {
+              if (!a.arc) continue;
+              arcCount += 1;
+              arcMix[Object.hasOwn(arcMix, a.arc.verdict) ? a.arc.verdict : 'unscored'] += 1;
+            }
+            const finalRow = audits.find((a) => a.final && a.throughlineAudit?.length) || null;
+            const finalMix = finalRow ? { kept: 0, justified_deviation: 0, drift: 0, unscored: 0 } : null;
+            if (finalRow) {
+              for (const c of finalRow.throughlineAudit) {
+                finalMix[Object.hasOwn(finalMix, c.verdict) ? c.verdict : 'unscored'] += 1;
+              }
+            }
+            return {
+              count: rows.length,
+              byTrigger,
+              disciplined: rows.filter((r) => (r.arc || []).length && r.holdToEnd && r.risk && r.salvage).length,
+              arcs: { count: arcCount, mix: arcMix },
+              finalReckoning: finalRow ? { clauses: finalRow.throughlineAudit.length, mix: finalMix } : null,
+            };
+          })(),
+        }
+      : {}),
+  };
+}
+
+function compactLogicFactNode(node) {
+  return {
+    factKey: node.factKey,
+    fact: node.fact,
+    predicate: node.predicate,
+    roles: node.roles || [],
+    rule: node.proof?.rule || null,
+    sourcePremiseIds: node.sourcePremiseIds || [],
+    proofCritical: Boolean(node.proofCritical),
+  };
+}
+
+function targetLogicSummary(staticNode, runtimeNode, snapshot) {
+  if (!staticNode) return null;
+  const sourcePremiseIds = staticNode.sourcePremiseIds || staticNode.premiseIds || [];
+  const grounded = new Set(snapshot.groundedPremiseIds || []);
+  const released = new Set(snapshot.releasedPremiseIds || []);
+  const decayed = new Set(snapshot.decayedPremiseIds || []);
+  return {
+    factKey: staticNode.factKey,
+    fact: staticNode.fact,
+    derived: Boolean(runtimeNode),
+    grounded: Boolean(runtimeNode?.grounded),
+    voiced: Boolean(runtimeNode?.voiced),
+    sourcePremiseIds,
+    heldSourcePremiseIds: sourcePremiseIds.filter((id) => grounded.has(id)),
+    missingSourcePremiseIds: sourcePremiseIds.filter((id) => !grounded.has(id)),
+    unreleasedSourcePremiseIds: sourcePremiseIds.filter((id) => !released.has(id)),
+    decayedSourcePremiseIds: sourcePremiseIds.filter((id) => decayed.has(id)),
+  };
+}
+
+export function logicProjectionReport(result, world) {
+  if (!Array.isArray(result.logicSnapshots) || !result.logicSnapshots.length) return null;
+  const worldIR = buildWorldIR(world);
+  const staticNodeByKey = new Map(worldIR.logic.factNodes.map((node) => [node.factKey, node]));
+  const proofCriticalIds = new Set(worldIR.logic.indexes.proofCriticalPremiseIds || []);
+  const secretKey = worldIR.logic.indexes.secretFactKey;
+  const mirrorKey = worldIR.logic.indexes.mirrorFactKey;
+
+  const turns = result.logicSnapshots.map((snapshot) => {
+    const nodes = snapshot.projection?.factNodes || [];
+    const nodeByKey = new Map(nodes.map((node) => [node.factKey, node]));
+    const derivedUnvoiced = nodes
+      .filter(
+        (node) =>
+          node.derived &&
+          !node.voiced &&
+          !(node.roles || []).includes('secret') &&
+          !(node.roles || []).includes('mirror'),
+      )
+      .map(compactLogicFactNode);
+    const firedHyperedges = (snapshot.projection?.ruleHyperedges || []).map((edge) => {
+      const output = nodeByKey.get(edge.outputFactKey) || staticNodeByKey.get(edge.outputFactKey) || null;
+      return {
+        ruleId: edge.ruleId,
+        inputFactKeys: edge.inputFactKeys,
+        outputFactKey: edge.outputFactKey,
+        outputFact: output?.fact || null,
+        outputPredicate: output?.predicate || null,
+      };
+    });
+
+    return {
+      turn: snapshot.turn,
+      trajectoryD: snapshot.trajectoryD,
+      boardD: snapshot.boardD,
+      postTurnDDelta: snapshot.boardD - snapshot.trajectoryD,
+      counts: {
+        ...(snapshot.projection?.counts || {}),
+        firedHyperedges: firedHyperedges.length,
+        derivedUnvoiced: derivedUnvoiced.length,
+      },
+      secret: targetLogicSummary(staticNodeByKey.get(secretKey), nodeByKey.get(secretKey), snapshot),
+      mirror: targetLogicSummary(staticNodeByKey.get(mirrorKey), nodeByKey.get(mirrorKey), snapshot),
+      decayedProofCriticalSources: (snapshot.decayedPremiseIds || []).filter((id) => proofCriticalIds.has(id)),
+      derivedUnvoiced,
+      firedHyperedges,
+    };
+  });
+
+  return {
+    schema: LOGIC_PROJECTION_REPORT_SCHEMA,
+    worldIRSchema: worldIR.logic.schema,
+    turns,
+    summary: {
+      turns: turns.length,
+      derivedUnvoicedPeak: Math.max(0, ...turns.map((row) => row.counts.derivedUnvoiced || 0)),
+      firedHyperedgesPeak: Math.max(0, ...turns.map((row) => row.counts.firedHyperedges || 0)),
+      secretDerivedTurns: turns.filter((row) => row.secret?.derived).map((row) => row.turn),
+      mirrorDerivedTurns: turns.filter((row) => row.mirror?.derived).map((row) => row.turn),
+      decayedProofCriticalTurns: turns
+        .filter((row) => row.decayedProofCriticalSources.length)
+        .map((row) => ({ turn: row.turn, premises: row.decayedProofCriticalSources })),
+    },
+  };
+}
+
+export function sceneReport(result) {
+  const scenes = result.scenes || [];
+  if (!scenes.length) return null;
+  const statusMix = {};
+  const exchangeTypes = {};
+  const tempoBeats = {};
+  const cognitiveTempo = {};
+  const recognitionNeed = { byLevel: {}, peakDebt: 0, sources: {} };
+  const phaticRecognition = { total: 0, byRole: {}, byType: {} };
+  let exchanges = 0;
+  let phatic = 0;
+  for (const line of result.transcript || []) {
+    for (const signal of line.meta?.phaticRecognition || []) {
+      phaticRecognition.total += 1;
+      phaticRecognition.byRole[signal.role] = (phaticRecognition.byRole[signal.role] || 0) + 1;
+      phaticRecognition.byType[signal.type] = (phaticRecognition.byType[signal.type] || 0) + 1;
+    }
+    const need = line.role === 'learner' ? line.meta?.scene?.recognitionNeed : null;
+    if (need?.level) {
+      recognitionNeed.byLevel[need.level] = (recognitionNeed.byLevel[need.level] || 0) + 1;
+      recognitionNeed.peakDebt = Math.max(recognitionNeed.peakDebt, Number(need.debt) || 0);
+      for (const source of need.sources || []) {
+        recognitionNeed.sources[source] = (recognitionNeed.sources[source] || 0) + 1;
+      }
+    }
+  }
+  for (const scene of scenes) {
+    statusMix[scene.status] = (statusMix[scene.status] || 0) + 1;
+    for (const exchange of scene.exchanges || []) {
+      exchanges += 1;
+      exchangeTypes[exchange.type] = (exchangeTypes[exchange.type] || 0) + 1;
+      if (exchange.tempo) tempoBeats[exchange.tempo] = (tempoBeats[exchange.tempo] || 0) + 1;
+      if (exchange.cognitiveTempo?.mode) {
+        cognitiveTempo[exchange.cognitiveTempo.mode] = (cognitiveTempo[exchange.cognitiveTempo.mode] || 0) + 1;
+      }
+      if (exchange.type === 'phatic_ack') phatic += 1;
+    }
+  }
+  return {
+    schema: 'dramatic-derivation.scene-report.v0',
+    count: scenes.length,
+    exchanges,
+    avgExchanges: scenes.length ? +(exchanges / scenes.length).toFixed(2) : 0,
+    phatic,
+    phaticShare: exchanges ? +(phatic / exchanges).toFixed(3) : 0,
+    statusMix,
+    exchangeTypes,
+    tempoBeats,
+    cognitiveTempo,
+    recognitionNeed,
+    phaticRecognition,
+    driftGuardScenes: scenes.filter((scene) => scene.status === 'drift_guard').map((scene) => scene.index),
+    scenes: scenes.map((scene) => ({
+      index: scene.index,
+      turns: [scene.startTurn, scene.endTurn],
+      status: scene.status,
+      closeReason: scene.closeReason,
+      goal: scene.goal,
+      targetPremise: scene.targetPremise,
+      exchanges: (scene.exchanges || []).map((exchange) => ({
+        turn: exchange.turn,
+        type: exchange.type,
+        tempo: exchange.tempo || null,
+        cognitiveTempo: exchange.cognitiveTempo || null,
+        phaticRecognition: exchange.phaticRecognition || [],
+        dDelta: exchange.dDelta,
+        boardDelta: exchange.boardDelta,
+      })),
+    })),
+  };
+}
+
+function didacticModeReport(result) {
+  const rows = result.didacticMode || [];
+  if (!rows.length) return null;
+  const modes = {};
+  const signals = {};
+  const trajectoryByTurn = new Map((result.trajectory || []).map((point) => [point.turn, point]));
+  const releaseTurns = new Set((result.ledger || []).map((entry) => entry.turn));
+  const repairTurns = new Set((result.events || []).filter((event) => event.type === 'repair').map((event) => event.turn));
+  const proofAdvanced = (turn) => {
+    const current = trajectoryByTurn.get(turn);
+    const previous = trajectoryByTurn.get(turn - 1);
+    return (
+      releaseTurns.has(turn) ||
+      repairTurns.has(turn) ||
+      (current && previous && Number.isFinite(current.D) && Number.isFinite(previous.D) && current.D < previous.D)
+    );
+  };
+  const neutralStreaks = new Map();
+  const budgetViolations = [];
+  for (const row of rows) {
+    if (row.recommendedMode) modes[row.recommendedMode] = (modes[row.recommendedMode] || 0) + 1;
+    if (row.learningSignal) signals[row.learningSignal] = (signals[row.learningSignal] || 0) + 1;
+    const key = `${row.currentObject || 'current-object'}:${row.recommendedMode || 'mode'}`;
+    const neutral = !proofAdvanced(row.turn);
+    const nextStreak = neutral ? (neutralStreaks.get(key) || 0) + 1 : 0;
+    neutralStreaks.set(key, nextStreak);
+    const max = row.opportunityCost?.maxProofNeutralTurns;
+    if (Number.isFinite(max) && nextStreak > max) {
+      budgetViolations.push({
+        turn: row.turn,
+        act: row.act || null,
+        currentObject: row.currentObject || null,
+        recommendedMode: row.recommendedMode,
+        proofNeutralStreak: nextStreak,
+        maxProofNeutralTurns: max,
+        failureAction: row.opportunityCost?.failureAction || null,
+      });
+    }
+  }
+  const actFallbacks = (result.acts || [])
+    .filter((act) => act.didacticFallback)
+    .map((act) => ({
+      act: act.act,
+      turns: act.turns,
+      sourceTurn: act.didacticFallback.sourceTurn,
+      learningSignal: act.didacticFallback.learningSignal,
+      recommendedMode: act.didacticFallback.recommendedMode,
+      currentObject: act.didacticFallback.currentObject || null,
+    }));
+  return {
+    schema: 'dramatic-derivation.didactic-mode-report.v0',
+    turns: rows.length,
+    modes,
+    signals,
+    auditClean: rows.every((row) => row.inputAuditOk !== false && row.nonLeakAuditOk !== false),
+    opportunityBudget: {
+      rowsWithBudget: rows.filter((row) => row.opportunityCost).length,
+      violations: budgetViolations,
+    },
+    actFallbacks,
+    rows: rows.map((row) => ({
+      turn: row.turn,
+      act: row.act || null,
+      learningSignal: row.learningSignal,
+      recommendedMode: row.recommendedMode,
+      scope: row.scope,
+      currentObject: row.currentObject,
+      exitCondition: row.exitCondition,
+      ...(row.opportunityCost
+        ? {
+            maxProofNeutralTurns: row.opportunityCost.maxProofNeutralTurns,
+            failureAction: row.opportunityCost.failureAction,
+          }
+        : {}),
+    })),
+  };
+}
+
 export function diagnose(result, world) {
   const eventsByType = {};
   for (const event of result.events) {
@@ -387,6 +1218,7 @@ export function diagnose(result, world) {
   const firstReleaseTurn = result.ledger.length ? result.ledger[0].turn : null;
   const perRole = {};
   for (const line of result.transcript) {
+    if (line.meta?.prologue) continue;
     const stats = (perRole[line.role] ||= { turns: 0, sentences: 0, maxSentences: 0, words: 0 });
     const n = countSentences(line.text);
     stats.turns += 1;
@@ -403,6 +1235,16 @@ export function diagnose(result, world) {
 
   const segments = stagingSegments(result, world);
   const movements = segments.filter((s) => s.source === 'director');
+  // P1 dial reporters — null (and the diagnosis keys absent) off their arms.
+  const releaseDeviationsReport = releaseDeviations(result);
+  const confrontation = confrontReport(result);
+  const proofDebt = proofDebtGuardReport(result);
+  const conductPolicy = conductPolicyReport(result);
+  const logicProjection = logicProjectionReport(result, world);
+  const scenes = sceneReport(result);
+  const didacticModes = didacticModeReport(result);
+  // C1 dial reporter — same contract: null off the plot arm.
+  const plotRpt = plotReport(result, world);
   const tutorNotes = result.transcript
     .filter((line) => line.role === 'director' && line.meta?.tutorNote)
     .map((line) => ({ turn: line.turn, text: line.meta.tutorNote }));
@@ -447,6 +1289,26 @@ export function diagnose(result, world) {
     learnerInference: learnerInference(result),
     dialogueDiscipline: perRole,
     proofExtracted: Boolean(result.proof),
+    ...(result.stagePrologue ? { stagePrologue: result.stagePrologue } : {}),
+    ...(result.corruption ? { corruption: corruptionReport(result) } : {}),
+    // Stage v2 (acts mode / adapt-ON arm); absent keys keep the OFF-state
+    // diagnosis object byte-identical to its pre-v2 shape.
+    ...(result.acts ? { acts: result.acts } : {}),
+    ...(result.reconstruction ? { reconstruction: reconstructionReport(result) } : {}),
+    // P1 dials (C2 release authority / C5 confrontation); both reporters
+    // return null on arms without their dial, so the keys stay absent.
+    ...(releaseDeviationsReport ? { releaseDeviations: releaseDeviationsReport } : {}),
+    ...(confrontation ? { confrontation } : {}),
+    ...(proofDebt ? { proofDebt } : {}),
+    ...(conductPolicy ? { conductPolicyReport: conductPolicy } : {}),
+    ...(logicProjection ? { logicProjection } : {}),
+    ...(result.directorCadence ? { directorCadence: result.directorCadence } : {}),
+    ...(result.publicRegister ? { publicRegister: result.publicRegister } : {}),
+    ...(result.publicRegisters ? { publicRegisters: result.publicRegisters } : {}),
+    ...(scenes ? { scenes } : {}),
+    ...(didacticModes ? { didacticModeReport: didacticModes } : {}),
+    // C1 (act-plot dial): absent off the arm.
+    ...(plotRpt ? { plot: plotRpt } : {}),
   };
 }
 
@@ -515,10 +1377,23 @@ export function renderTranscript(result, world, { title = null, diagnosis = null
   );
   lines.push('```');
 
+  if (result.stagePrologue) {
+    lines.push('');
+    lines.push("## Director's opening notes");
+    lines.push(`*${result.stagePrologue.stageNotes}*`);
+    lines.push('');
+    lines.push(`- **Tutor:** ${result.stagePrologue.tutorCharacter}`);
+    lines.push(`- **Learner:** ${result.stagePrologue.learnerCharacter}`);
+    if (result.stagePrologue.registerNote) {
+      lines.push(`- **Register:** ${result.stagePrologue.registerNote}`);
+    }
+  }
+
   let currentSegment = null;
   const segmentFor = (turn) => segments.find((s) => turn >= s.turns[0] && turn <= s.turns[1]) || null;
   const byTurn = new Map();
   for (const line of result.transcript) {
+    if (line.meta?.prologue) continue;
     if (!byTurn.has(line.turn)) byTurn.set(line.turn, []);
     byTurn.get(line.turn).push(line);
   }
@@ -526,6 +1401,12 @@ export function renderTranscript(result, world, { title = null, diagnosis = null
   for (const event of result.events) {
     if (!eventsByTurn.has(event.turn)) eventsByTurn.set(event.turn, []);
     eventsByTurn.get(event.turn).push(event);
+  }
+  const sceneByTurn = new Map();
+  for (const scene of result.scenes || []) {
+    for (const exchange of scene.exchanges || []) {
+      sceneByTurn.set(exchange.turn, { scene, exchange });
+    }
   }
 
   for (const [turn, turnLines] of [...byTurn.entries()].sort((a, b) => a[0] - b[0])) {
@@ -539,9 +1420,21 @@ export function renderTranscript(result, world, { title = null, diagnosis = null
       if (segment.intent) lines.push(`*${segment.intent}*`);
     }
     lines.push('');
-    lines.push(`### Turn ${turn}`);
+    const sceneInfo = sceneByTurn.get(turn);
+    lines.push(
+      sceneInfo
+        ? `### Scene ${sceneInfo.scene.index}, exchange ${sceneInfo.exchange.ordinal} — Turn ${turn}`
+        : `### Turn ${turn}`,
+    );
+    if (sceneInfo && sceneInfo.exchange.ordinal === 1) {
+      lines.push(`*Scene goal: ${sceneInfo.scene.goal}*`);
+    }
+    if (sceneInfo?.exchange?.tempo) {
+      lines.push(`*Tempo: ${sceneInfo.exchange.tempo.replace(/_/g, ' ')}*`);
+    }
     for (const line of turnLines) {
       if (line.role === 'director') {
+        if (!publicStageLine(line)) continue;
         lines.push(`*${(line.text || '').trim()}*`);
         if (line.meta?.release) lines.push(`  — *releases \`${line.meta.release}\`*`);
         if (line.meta?.phase) {
@@ -550,6 +1443,7 @@ export function renderTranscript(result, world, { title = null, diagnosis = null
           );
         }
         if (line.meta?.tutorNote) lines.push(`  — *note to the tutor: "${line.meta.tutorNote}"*`);
+        if (line.meta?.act === 'end') lines.push('  — *calls the act closed*');
       } else if (line.role === 'tutor') {
         lines.push(`**Tutor:** ${(line.text || '').trim()}`);
         const move = line.meta?.move;
@@ -566,6 +1460,17 @@ export function renderTranscript(result, world, { title = null, diagnosis = null
           const jurisdiction = delib.jurisdiction ? ` [${delib.jurisdiction.replace(/_/g, ' ')}]` : '';
           lines.push(`  — *the second voice${jurisdiction}: "${delib.note}"${changed}*`);
         }
+        const theory = line.meta?.theory;
+        if (theory) {
+          lines.push(
+            `  — *theory of the learner: ${(theory.believed_held || []).length} held · ${(theory.believed_missing || []).length} missing · ${(theory.believed_mistaken || []).length} mistaken*`,
+          );
+        }
+        if (line.meta?.phaticRecognition?.length) {
+          lines.push(
+            `  — phatic recognition: ${line.meta.phaticRecognition.map((s) => s.type.replace(/_/g, ' ')).join(', ')}`,
+          );
+        }
       } else if (line.role === 'learner') {
         lines.push(`**Learner:** ${(line.text || '').trim()}`);
         const meta = line.meta || {};
@@ -576,6 +1481,11 @@ export function renderTranscript(result, world, { title = null, diagnosis = null
         if (voicedHere.length) bits.push(`derives ${voicedHere.map((o) => `\`${o.fact.join(' ')}\``).join(', ')}`);
         if (meta.hypothesis) bits.push(`hypothesis: ${meta.hypothesis}`);
         if (meta.asserts) bits.push(`**asserts \`${meta.asserts.join(' ')}\`**`);
+        if (meta.exchange?.type) bits.push(`exchange: ${meta.exchange.type.replace(/_/g, ' ')}`);
+        if (meta.exchange?.cognitiveTempo?.mode)
+          bits.push(`cognitive tempo: ${meta.exchange.cognitiveTempo.mode.replace(/_/g, ' ')}`);
+        if (meta.phaticRecognition?.length)
+          bits.push(`phatic recognition: ${meta.phaticRecognition.map((s) => s.type.replace(/_/g, ' ')).join(', ')}`);
         if (bits.length) lines.push(`  — ${bits.join(' · ')}`);
       }
     }
@@ -590,7 +1500,7 @@ export function renderTranscript(result, world, { title = null, diagnosis = null
     lines.push('```');
     lines.push(renderProof(result.proof));
     lines.push('```');
-    const prose = renderProofProse(result.proof, world);
+    const prose = renderProofProse(result.proof, world, { ledger: result.ledger });
     if (prose) {
       lines.push('');
       lines.push(prose);
@@ -650,8 +1560,84 @@ export function renderEvalPanel(diagnosis) {
     if (ra.unscheduled.length) bits.push(`${ra.unscheduled.length} unscheduled`);
     lines.push(`- **releases** ${bits.join(' · ')}`);
   }
+  const cr = d.corruption;
+  if (cr) {
+    lines.push(
+      `- **decay** ${cr.decayEvents} slip${cr.decayEvents === 1 ? '' : 's'} (seed ${cr.config.seed} · rate ${cr.config.rate} · grace ${cr.config.graceTurns}) · repaired ${cr.repairs.total} (tutor ${cr.repairs.byTutor}, re-adoption ${cr.repairs.byReadoption})${
+        cr.meanRepairLatency !== null ? ` · mean repair latency ${cr.meanRepairLatency} turns` : ''
+      } · unrepaired at end ${cr.unrepairedAtEnd} · degraded-turn integral ${cr.degradedTurnIntegral} · D reversals ${cr.dReversals}`,
+    );
+    if (cr.mutations?.total) {
+      lines.push(
+        `- **mutations** ${cr.mutations.total} of the slips misremembered (false belief staged) · false form struck ${cr.mutations.retracted} · fully revised (struck + restored) ${cr.mutations.revised} · false beliefs held to the end ${cr.mutations.falseBeliefsAtEnd}`,
+      );
+    }
+    if (cr.fidelity) {
+      lines.push(`- **theory fidelity** F ${cr.fidelity.final} at end · min ${cr.fidelity.min}`);
+    }
+    if (cr.timeline.length) {
+      const rows = cr.timeline.map((t) => {
+        const head = `${t.premiseId || t.fact.join(' ')} t${t.decayTurn}`;
+        const repair =
+          t.repairTurn !== null
+            ? `→t${t.repairTurn} (${t.via === 'tutor' ? 'tutor' : 're-adoption'})`
+            : ' (never repaired)';
+        if (t.mode !== 'mutate') return `${head}${repair}`;
+        const strike = t.retractTurn !== null ? `false form struck t${t.retractTurn}` : 'false belief held to the end';
+        return `${head} misremembered as "${(t.falseForm || []).join(' ')}"${repair}; ${strike}`;
+      });
+      lines.push(`  - ${rows.join(' · ')}`);
+    }
+  }
+  const pd = d.proofDebt;
+  if (pd) {
+    lines.push(
+      `- **proof debt** detected on ${pd.detectedTurns} turn${pd.detectedTurns === 1 ? '' : 's'} (${pd.debtsDetected} debt${pd.debtsDetected === 1 ? '' : 's'}) · restore actions ${pd.actionTurns} (guard-forced ${pd.forcedMoves}, repaired ${pd.repairedTargets})${pd.targets.length ? ` — ${pd.targets.join(' · ')}` : ''}`,
+    );
+  }
+  const cp = d.conductPolicyReport;
+  if (cp) {
+    const active = cp.activeTurns;
+    const families = Object.entries(cp.moveFamilies || {})
+      .filter(([family]) => family !== '(none)')
+      .map(([family, count]) => `${family}×${count}`);
+    lines.push(
+      `- **conduct policy** logged ${cp.loggedTurns} tutor turn${cp.loggedTurns === 1 ? '' : 's'} · active ${active} · ${
+        families.length ? families.join(' · ') : 'no active move-family trigger'
+      } · compliance ${
+        cp.complianceChecked
+          ? `${cp.compliance.passed}/${cp.compliance.checked} pass${cp.compliance.failed ? `, ${cp.compliance.failed} fail` : ''}`
+          : 'not checked'
+      }${
+        cp.enforcement?.enabledTurns
+          ? ` · enforcement applied ${cp.enforcement.applied}/${cp.enforcement.enabledTurns}${cp.enforcement.postFailed ? `, post-fail ${cp.enforcement.postFailed}` : ''}`
+          : ''
+      }`,
+    );
+  }
+  const lp = d.logicProjection?.summary;
+  if (lp) {
+    lines.push(
+      `- **logic projection** ${lp.turns} turn snapshot${lp.turns === 1 ? '' : 's'} · derived-unvoiced peak ${lp.derivedUnvoicedPeak} · fired hyperedges peak ${lp.firedHyperedgesPeak}`,
+    );
+  }
   const events = Object.entries(d.eventsByType || {});
   lines.push(`- **events** ${events.length ? events.map(([k, v]) => `${k}×${v}`).join(' · ') : 'none'}`);
+  if (d.publicRegister && d.publicRegister !== 'default') {
+    lines.push(`- **style** public register ${describePublicRegister(d.publicRegister)}`);
+    if (d.publicRegisters?.length) {
+      if (d.publicRegisters.length === 1) {
+        lines.push(`  - sampled register: ${d.publicRegisters[0].register}`);
+      } else {
+        lines.push(
+          `  - sampled sequence: ${d.publicRegisters.map((row) => `t${row.turn} ${row.register}`).join(' · ')}`,
+        );
+      }
+    }
+  }
+  if (d.stagePrologue) {
+    lines.push('- **prologue** director opening notes and tutor/learner character sketches present');
+  }
   if (d.staging) {
     const movements = d.staging.movements.length;
     const notes = d.staging.tutorNotes.length;
@@ -662,6 +1648,113 @@ export function renderEvalPanel(diagnosis) {
           : "no movements declared (author's sketch held)"
       }${notes ? ` · ${notes} note${notes === 1 ? '' : 's'} to the tutor` : ''}`,
     );
+  }
+  if (d.acts && d.acts.length) {
+    const closedBy = { director: 0, harness_max: 0, run_end: 0 };
+    for (const a of d.acts) closedBy[a.endedBy] = (closedBy[a.endedBy] || 0) + 1;
+    const rows = d.acts.map((a) => `Act ${a.act} t${a.turns[0]}–${a.turns[1]} (${a.endedBy.replace(/_/g, ' ')})`);
+    lines.push(
+      `- **acts** ${d.acts.length} played · closed by the director ${closedBy.director} · at max length ${closedBy.harness_max} · at run end ${closedBy.run_end} — ${rows.join(' · ')}`,
+    );
+  }
+  const sc = d.scenes;
+  if (sc) {
+    const status = Object.entries(sc.statusMix)
+      .map(([k, v]) => `${k.replace(/_/g, ' ')} ${v}`)
+      .join(' · ');
+    const exchanges = Object.entries(sc.exchangeTypes)
+      .map(([k, v]) => `${k.replace(/_/g, ' ')} ${v}`)
+      .join(' · ');
+    const tempos = Object.entries(sc.tempoBeats || {})
+      .map(([k, v]) => `${k.replace(/_/g, ' ')} ${v}`)
+      .join(' · ');
+    const cognitiveTempo = Object.entries(sc.cognitiveTempo || {})
+      .map(([k, v]) => `${k.replace(/_/g, ' ')} ${v}`)
+      .join(' · ');
+    const recognitionNeed = Object.entries(sc.recognitionNeed?.sources || {})
+      .map(([k, v]) => `${k.replace(/_/g, ' ')} ${v}`)
+      .join(' · ');
+    const phaticRecognition = Object.entries(sc.phaticRecognition?.byType || {})
+      .map(([k, v]) => `${k.replace(/_/g, ' ')} ${v}`)
+      .join(' · ');
+    lines.push(
+      `- **scenes** ${sc.count} scene${sc.count === 1 ? '' : 's'} · ${sc.exchanges} exchange${sc.exchanges === 1 ? '' : 's'} (${sc.avgExchanges} avg) · phatic ${sc.phatic}/${sc.exchanges} (${Math.round(sc.phaticShare * 100)}%)${d.directorCadence ? ` · director ${d.directorCadence}` : ''} · statuses ${status || 'none'}`,
+    );
+    if (exchanges) lines.push(`  - exchanges: ${exchanges}`);
+    if (tempos) lines.push(`  - tempo: ${tempos}`);
+    if (cognitiveTempo) lines.push(`  - cognitive tempo: ${cognitiveTempo}`);
+    if (sc.recognitionNeed?.peakDebt)
+      lines.push(`  - recognition need: peak ${sc.recognitionNeed.peakDebt.toFixed(2)}${recognitionNeed ? ` · ${recognitionNeed}` : ''}`);
+    if (sc.phaticRecognition?.total) lines.push(`  - phatic recognition: ${phaticRecognition}`);
+    if (sc.driftGuardScenes.length) lines.push(`  - drift guard scenes: ${sc.driftGuardScenes.join(', ')}`);
+  }
+  const rc = d.reconstruction;
+  if (rc) {
+    const det = (b) => `${b.caught}/${b.actual}${b.rate !== null ? ` (${Math.round(b.rate * 100)}%)` : ''}`;
+    lines.push(
+      `- **reconstruction** ${rc.turns} theory commits · held-set overlap ${rc.meanHeldJaccard} mean Jaccard · gaps caught ${det(rc.missing)} · false beliefs caught ${det(rc.mistaken)}`,
+    );
+  }
+  const pl = d.plot;
+  if (pl) {
+    const vm = pl.audits.verdictMix;
+    lines.push(
+      `- **plot** ${pl.plots.count} committed · withhold+friction on ${pl.plots.disciplined}/${pl.plots.count} · ${pl.plots.meanClauses ?? '—'} clauses avg · audits ${pl.audits.count}${
+        pl.audits.finalIncluded ? ' (incl. final act)' : ''
+      }: kept ${vm.kept} / justified ${vm.justified_deviation} / drift ${vm.drift}${
+        vm.unscored ? ` / unscored ${vm.unscored}` : ''
+      } · hold-named exhibits staged in act ${pl.crossCheck.holdStagedInAct}/${pl.crossCheck.holdNamed}`,
+    );
+    const tl = pl.throughline;
+    if (tl) {
+      const fr = tl.finalReckoning;
+      lines.push(
+        `- **throughline** ${tl.count} commit${tl.count === 1 ? '' : 's'} (opening ${tl.byTrigger.opening} · recommit ${tl.byTrigger.recommit} · audit-bound ${tl.byTrigger.audit_bound} · voluntary ${tl.byTrigger.voluntary}) · all four clauses on ${tl.disciplined}/${tl.count} · arc verdicts ${tl.arcs.count}: on ${tl.arcs.mix.on_arc} / off ${tl.arcs.mix.off_arc}${
+          tl.arcs.mix.unscored ? ` / unscored ${tl.arcs.mix.unscored}` : ''
+        } · run-end reckoning ${
+          fr
+            ? `${fr.clauses} clauses: kept ${fr.mix.kept} / justified ${fr.mix.justified_deviation} / drift ${fr.mix.drift}${fr.mix.unscored ? ` / unscored ${fr.mix.unscored}` : ''}`
+            : 'absent'
+        }`,
+      );
+    }
+  }
+  const rd = d.releaseDeviations;
+  if (rd) {
+    lines.push(
+      `- **release authority** ${rd.played} played: ${rd.onSchedule} on schedule · ${rd.held} held · ${rd.early} early · forced at hold limit ${rd.forced} · overridden ${rd.overridden} · invalid claims ${rd.invalidClaims}`,
+    );
+    for (const r of rd.reasons) {
+      if (r.offset) {
+        lines.push(`  - ${r.premise} ${r.offset > 0 ? `+${r.offset}` : r.offset} (t${r.turn}): "${r.reason}"`);
+      }
+    }
+  }
+  const cf = d.confrontation;
+  if (cf) {
+    const absences = cf.confrontations.filter((c) => c.targetDecayed === true).length;
+    const knowsDecay = cf.confrontations.some((c) => c.targetDecayed !== null);
+    lines.push(
+      `- **confrontation** ${cf.confrontations.length} demanded${
+        knowsDecay ? ` (${absences} against a slipped exhibit)` : ''
+      } · re-entries ${cf.reentries.total}: covered ${cf.reentries.covered}, uncovered ${cf.reentries.uncovered.length} · watcher fires ${cf.superego.reentryFires} (became the confrontation ${cf.superego.convertedToConfront}) · fires without recorded due ${cf.superego.firesWithoutDue}`,
+    );
+    if (cf.reentries.uncovered.length) {
+      lines.push(
+        `  - uncovered: ${cf.reentries.uncovered.map((r) => `${r.target} t${r.turn} (${r.intent || 'no intent'})`).join(' · ')}`,
+      );
+    }
+    if (cf.restores) {
+      const repaired = cf.restores.filter((r) => r.repaired === true).length;
+      const knowsRepair = cf.restores.some((r) => r.repaired !== null);
+      lines.push(
+        `  - **repair clause** restores ${cf.restores.length}${
+          knowsRepair ? ` (${repaired} repaired a real slip)` : ''
+        } · watcher fires on restore claims ${cf.superego.restoreClaimFires}: ${cf.restores
+          .map((r) => `${r.target} t${r.turn}`)
+          .join(' · ')}`,
+      );
+    }
   }
   if (d.dials && (d.dials.recognition || d.dials.charisma)) {
     lines.push(`- **dials** recognition ${d.dials.recognition || 0}/3 · charisma ${d.dials.charisma || 0}/3`);
@@ -770,9 +1863,24 @@ function humanizeRuleName(ruleId) {
  * tree — no model anywhere. `world` is optional; without it facts render as
  * humanized phrases and rules by their bare names.
  */
-export function renderProofProse(proof, world = null) {
+export function renderProofProse(proof, world = null, { ledger = null } = {}) {
   if (!proof) return '';
-  const premiseByKey = new Map((world?.premises || []).map((p) => [factKey(p.fact), p]));
+  // Twin disambiguation: several exhibits can assert the SAME fact (two
+  // witnesses to one event). A factKey->premise map collides on those twins,
+  // and `new Map(...)` silently keeps whichever twin is LAST in the world
+  // file — so the prose could cite an exhibit that was never staged this run.
+  // Resolve by preferring the premise actually RELEASED (from the ledger),
+  // with a deterministic first-in-file fallback for facts never individually
+  // released (background, or an unreleased twin).
+  const premiseById = new Map((world?.premises || []).map((p) => [p.id, p]));
+  const premiseByKey = new Map();
+  for (const p of world?.premises || []) {
+    if (!premiseByKey.has(factKey(p.fact))) premiseByKey.set(factKey(p.fact), p);
+  }
+  for (const row of ledger || []) {
+    const staged = premiseById.get(row.premiseId);
+    if (staged) premiseByKey.set(factKey(staged.fact), staged);
+  }
   const backgroundKeys = new Set((world?.background || []).map((f) => factKey(f)));
   const ruleById = new Map((world?.rules || []).map((r) => [r.id, r]));
 

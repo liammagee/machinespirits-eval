@@ -177,6 +177,121 @@ function buildGenerate(params) {
   return { argv, costClass, label, costNote };
 }
 
+const DRAMA_GENERATORS = ['claude', 'codex', 'gemini', 'api'];
+
+// Enact a compiled curriculum drama spec (curriculum/<name>.dramas.yaml) through
+// generate-pedagogical-dramas.js — the SAME batch generator the curriculum
+// compiler targets. --only picks one drama; omit it to run the whole spec. A bare
+// spec basename resolves under curriculum/; a slashed path is taken relative to
+// the repo root. Generator claude/codex/gemini route through the Max plan (quota);
+// only generator=api with an OpenRouter slug is metered $.
+function buildPedagogicalDrama(params) {
+  const mock = bool(params.mock);
+  const dryRun = bool(params.dryRun);
+  const force = bool(params.force);
+  const generator = enumValue(params, 'generator', DRAMA_GENERATORS, 'claude');
+  const model = optString(params, 'model');
+  const only = optString(params, 'only');
+  const maxTurns = optPosInt(params, 'maxTurns');
+  const claudePersistentWorkers = bool(params.claudePersistentWorkers);
+
+  const spec = reqString(params, 'spec');
+  if (spec.includes('..') || !/^[\w.\-/]+$/.test(spec)) throw new Error('spec has invalid characters');
+  if (!spec.endsWith('.yaml') && !spec.endsWith('.yml')) throw new Error('spec must be a .yaml file');
+  // No leading slash, and a slashed path must stay repo-relative (the guard above
+  // already blocks ".."). A bare basename is a compiled spec under curriculum/.
+  if (spec.startsWith('/')) throw new Error('spec must be a repo-relative path');
+  const specPath = spec.includes('/') ? spec : `curriculum/${spec}`;
+
+  const argv = ['--spec', specPath];
+  if (only) argv.push('--only', only);
+  argv.push('--generator', generator);
+  if (model) argv.push('--model', model);
+  if (maxTurns) argv.push('--max-turns', String(maxTurns));
+
+  // The generator otherwise defaults its out/transcripts/delib/key dirs INTO the
+  // config/poetics-calibration/phase2-* tree (its native home). A UI-launched
+  // curriculum run must never land there, so pin all four under one dedicated base
+  // — exports/curriculum-drama/<specBase> by default, or an operator override.
+  const specBase = (specPath.split('/').pop() || 'curriculum').replace(/\.dramas\.ya?ml$|\.ya?ml$/, '');
+  const outBase = optString(params, 'outBase') || `exports/curriculum-drama/${specBase}`;
+  if (outBase.includes('..') || outBase.startsWith('/')) throw new Error('outBase must be a repo-relative path');
+  argv.push('--out-dir', `${outBase}/samples`);
+  argv.push('--transcripts-dir', `${outBase}/transcripts`);
+  argv.push('--delib-dir', `${outBase}/deliberations`);
+  argv.push('--key', `${outBase}/key.yaml`);
+
+  if (mock) argv.push('--mock');
+  if (dryRun) argv.push('--dry-run');
+  if (force) argv.push('--force');
+  if (claudePersistentWorkers) argv.push('--claude-persistent-workers');
+
+  const free = mock || dryRun;
+  let costClass;
+  if (free) costClass = COST_CLASSES.FREE;
+  else if (generator === 'api' && looksMetered(model)) costClass = COST_CLASSES.METERED;
+  else costClass = COST_CLASSES.QUOTA;
+
+  const label = `pedagogical-drama · ${only || 'all'} · gen=${generator}${mock ? ' · mock' : ''}${dryRun ? ' · dry-run' : ''}`;
+  const costNote = free
+    ? 'Mock / dry-run — no spend.'
+    : costClass === COST_CLASSES.METERED
+      ? `generator=api + --model "${model}" is an OpenRouter slug — REAL metered spend.`
+      : `Generator "${generator}" routes through the CLI/Max plan (quota drain, no per-call $).`;
+  return { argv, costClass, label, costNote };
+}
+
+// Launch a proof-DAG derivation run (scripts/run-derivation-loop.js) — a tutor
+// script enacted against a world, rule-checked into grounded / impasse /
+// disengagement. The loop writes live.json under exports/dramatic-derivation/loop/
+// <label>, so a launched run STREAMS to /derivation/live and lands on /derivation
+// when it closes. Mock backend is zero-cost; --real targets OpenRouter
+// (default gemini-flash) = metered $. The full experimental flag surface stays on
+// the CLI — this exposes the core dials (world × script + register + superego).
+const DERIVATION_CONFIG_REL = 'config/drama-derivation';
+
+function buildDerivation(params) {
+  const real = bool(params.real);
+  const superego = bool(params.superego);
+  const stallWatch = bool(params.stallWatch);
+
+  const world = reqString(params, 'world');
+  if (world.includes('..') || !/^[\w.-]+\.ya?ml$/.test(world)) throw new Error('world must be a world-*.yaml basename');
+  const script = reqString(params, 'script');
+  if (script.includes('..') || !/^[\w.-]+\.md$/.test(script))
+    throw new Error('script must be a tutor-script .md basename');
+  const worldRel = `${DERIVATION_CONFIG_REL}/${world}`;
+  const scriptRel = `${DERIVATION_CONFIG_REL}/tutor-scripts/${script}`;
+  if (!fs.existsSync(path.join(ROOT_DIR, worldRel))) throw new Error(`world not found: ${world}`);
+  if (!fs.existsSync(path.join(ROOT_DIR, scriptRel))) throw new Error(`tutor script not found: ${script}`);
+
+  const argv = ['--world', worldRel, '--script', scriptRel];
+  const label = optString(params, 'label');
+  if (label) {
+    if (!/^[\w.-]+$/.test(label)) throw new Error('label has invalid characters');
+    argv.push('--label', label);
+  }
+  const recognition = enumValue(params, 'recognition', ['0', '1', '2', '3'], null);
+  if (recognition != null) argv.push('--recognition', recognition);
+  const charisma = enumValue(params, 'charisma', ['0', '1', '2', '3'], null);
+  if (charisma != null) argv.push('--charisma', charisma);
+  const dramaturgy = enumValue(params, 'dramaturgy', ['free', 'frozen'], null);
+  if (dramaturgy) argv.push('--dramaturgy', dramaturgy);
+  if (superego) argv.push('--superego');
+  if (stallWatch) {
+    if (!superego) throw new Error('stall-watch requires superego');
+    argv.push('--stall-watch');
+  }
+  if (real) argv.push('--real');
+
+  const costClass = real ? COST_CLASSES.METERED : COST_CLASSES.FREE;
+  const label2 = `derivation · ${world.replace(/\.ya?ml$/, '')} × ${script.replace(/\.md$/, '')}${real ? ' · REAL' : ' · mock'}`;
+  const costNote = real
+    ? 'Real run — OpenRouter metered spend (default gemini-flash; DERIVATION_MODEL overrides). Streams live to /derivation/live.'
+    : 'Mock backend — zero cost. Streams live to /derivation/live; lands on /derivation when it closes.';
+  return { argv, costClass, label: label2, costNote };
+}
+
 const STRUCTURE_CRITICS = ['rules', 'codex', 'claude', 'claude-code'];
 
 function buildAdversarialScore(params) {
@@ -252,6 +367,18 @@ export const JOB_KINDS = Object.freeze({
     script: 'scripts/drama-generator.js',
     title: 'Generate — pedagogical drama',
     build: buildGenerate,
+  },
+  'pedagogical-drama': {
+    kind: 'pedagogical-drama',
+    script: 'scripts/generate-pedagogical-dramas.js',
+    title: 'Curriculum drama — enact a compiled spec',
+    build: buildPedagogicalDrama,
+  },
+  derivation: {
+    kind: 'derivation',
+    script: 'scripts/run-derivation-loop.js',
+    title: 'Derivation — proof-DAG drama (watch live)',
+    build: buildDerivation,
   },
   'adversarial-score': {
     kind: 'adversarial-score',

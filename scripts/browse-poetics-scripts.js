@@ -49,6 +49,7 @@ import {
 import {
   startSession as liveStartSession,
   humanTurn as liveHumanTurn,
+  advanceTurn as liveAdvanceTurn,
   viewSession as liveViewSession,
   saveSession as liveSaveSession,
   endSession as liveEndSession,
@@ -416,6 +417,31 @@ function listRuns(db) {
     .all();
 }
 
+// Per-run recontextualization series — one value per scored script, oldest →
+// newest — for the dashboard feed's inline sparklines. recontextualization is
+// the headline dramatic-form dimension (the one the Signal histograms lead
+// with), so a feed row's spark shows the shape of that run's recohering at a
+// glance. One query for all the given run ids; returns Map<runId, number[]>.
+function runScoreSeries(db, runIds) {
+  const ids = (Array.isArray(runIds) ? runIds : []).filter(Boolean);
+  if (!ids.length) return new Map();
+  const placeholders = ids.map(() => '?').join(',');
+  const rows = db
+    .prepare(
+      `SELECT i.run_id AS runId, s.recontextualization AS rc
+       FROM poetics_items i JOIN poetics_scores s ON s.item_id = i.id
+       WHERE i.run_id IN (${placeholders}) AND s.recontextualization IS NOT NULL
+       ORDER BY s.created_at ASC, s.id ASC`,
+    )
+    .all(...ids);
+  const map = new Map();
+  for (const row of rows) {
+    if (!map.has(row.runId)) map.set(row.runId, []);
+    map.get(row.runId).push(row.rc);
+  }
+  return map;
+}
+
 // Distinct, non-empty disciplines present in poetics_items, for the browser's
 // discipline filter dropdown (sourced live so new disciplines need no code edit).
 function distinctDisciplines(db) {
@@ -448,6 +474,32 @@ function corpusStats(db) {
          GROUP BY discipline ORDER BY n DESC, name`,
       )
       .all(),
+    // The LLM critic's dramatic-form verdict on each scored script
+    // (recognition / flat / trap). Counted per critic-verdict row, NOT per
+    // script — an item scored by several critics contributes several rows.
+    formClass: db
+      .prepare(
+        `SELECT COALESCE(form_class, '(unclassified)') AS name, COUNT(*) AS n
+         FROM poetics_scores GROUP BY form_class ORDER BY n DESC`,
+      )
+      .all(),
+    // Where the corpus lands on each dramatic-form dimension. The rubric is a
+    // 0–100 scale quantized to five levels {0,25,50,75,100}; one GROUP BY per
+    // dimension returns [{lv, n}], binned into a fixed 5-bar histogram at
+    // render time. Dimension names are a hardcoded allowlist (not user input).
+    scoreDist: (() => {
+      const dims = ['recontextualization', 'stated_insight', 'rupture', 'global_coherence'];
+      const out = {};
+      for (const d of dims) {
+        out[d] = db
+          .prepare(
+            `SELECT CAST(${d} AS INTEGER) AS lv, COUNT(*) AS n
+             FROM poetics_scores WHERE ${d} IS NOT NULL GROUP BY lv ORDER BY lv`,
+          )
+          .all();
+      }
+      return out;
+    })(),
   };
 }
 
@@ -1048,6 +1100,46 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   app.get('/favicon.ico', (_req, res) => res.status(204).end());
   app.get('/api/runs', (_req, res) => res.json({ runs: listRuns(db), disciplines: distinctDisciplines(db) }));
   app.get('/api/stats', (_req, res) => res.json({ ...corpusStats(db), replays: listReplayBundles().length }));
+  app.get('/api/derivation/live', (_req, res) => {
+    res.json({ runs: listDerivationLiveRuns({ includeComplete: true }) });
+  });
+  app.get('/api/derivation/live/:label', (req, res) => {
+    const live = readDerivationLive(req.params.label);
+    if (!live) return res.status(404).json({ error: 'live derivation run not found' });
+    return res.json({ run: live });
+  });
+  app.get('/api/derivation/live/:label/events', (req, res) => {
+    const label = req.params.label;
+    const dir = derivationLoopRunDir(label);
+    const livePath = dir ? path.join(dir, 'live.json') : null;
+    if (!livePath || !fs.existsSync(livePath)) return res.status(404).json({ error: 'live derivation run not found' });
+    res.set({
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-store, no-transform',
+      Connection: 'keep-alive',
+    });
+    res.flushHeaders?.();
+    let lastMtime = 0;
+    const send = () => {
+      try {
+        const stat = fs.statSync(livePath);
+        if (stat.mtimeMs === lastMtime) return;
+        lastMtime = stat.mtimeMs;
+        const live = readDerivationLive(label);
+        if (!live) return;
+        res.write(`event: update\ndata: ${JSON.stringify(live)}\n\n`);
+      } catch {
+        res.write(`event: error\ndata: ${JSON.stringify({ error: 'live derivation run disappeared' })}\n\n`);
+      }
+    };
+    send();
+    const timer = setInterval(send, 1000);
+    const keepalive = setInterval(() => res.write(': keepalive\n\n'), 15000);
+    req.on('close', () => {
+      clearInterval(timer);
+      clearInterval(keepalive);
+    });
+  });
   app.get('/api/items', (req, res) => {
     const runIds = String(req.query.runIds || '')
       .split(',')
@@ -1213,6 +1305,18 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
       return res.status(error.statusCode || 400).json({ error: error.message || String(error), code: error.code });
     }
   });
+  // Watch mode: advance ONE turn (both seats AI). The client polls this to drive the
+  // tempo, so a human watches an automated tutor↔learner scene play out turn by turn.
+  app.post('/api/compose/live/:id/advance', async (req, res) => {
+    try {
+      const body = req.body || {};
+      const deps = body.mock ? liveBuildMockDeps() : {};
+      const out = await liveAdvanceTurn(req.params.id, deps, { debug: !!body.showDeliberation });
+      return res.json(out);
+    } catch (error) {
+      return res.status(error.statusCode || 400).json({ error: error.message || String(error), code: error.code });
+    }
+  });
   app.get('/api/compose/live/:id', (req, res) => {
     try {
       const debug = req.query.debug === '1' || req.query.debug === 'true';
@@ -1290,6 +1394,19 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   });
   app.get('/ontology', (_req, res) => res.type('html').send(renderOntologyHtml()));
   app.get('/rubric', (_req, res) => res.type('html').send(renderRubricHtml()));
+  // Curriculum spine + its compiled drama/world artifacts (read-only). ?c=<base>
+  // selects among multiple curriculum/*.curriculum.yaml files (default: first).
+  app.get('/curriculum', (req, res) =>
+    res.type('html').send(renderCurriculumHtml(typeof req.query.c === 'string' ? req.query.c : '')),
+  );
+  app.get('/api/curriculum', (_req, res) => res.json({ curricula: listCurricula() }));
+  // The illustrated walk-through note (curriculum objects → worlds), served like
+  // /story-doc — a dated techne note whose assets/* resolve against /assets.
+  app.get('/curriculum/guide', (_req, res) => {
+    if (!fs.existsSync(CURRICULUM_GUIDE_NOTE))
+      return res.status(404).type('text').send('curriculum guide note not found');
+    res.type('html').sendFile(CURRICULUM_GUIDE_NOTE);
+  });
   app.get('/api/ontology', (req, res) => {
     try {
       const view = ['system', 'tutor', 'learner'].includes(req.query.view) ? req.query.view : 'system';
@@ -1376,6 +1493,11 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
         sub: 'the story so far — a dated, provisional narrative of the adaptation arc',
         src: '/story-doc',
         title: 'The story so far · the adaptation arc',
+        hint: orientBand(
+          'story so far',
+          'a dated, provisional lab-notebook narrative of the adaptation arc',
+          'project notes; the working surfaces are on the rail above',
+        ),
       }),
     ),
   );
@@ -1398,6 +1520,11 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
         sub: 'three instruments, one repertoire — measurement grain & a repertoire of controlled adaptive mechanisms',
         src: '/repertoire-doc',
         title: 'Controlled adaptation repertoire · machine spirits',
+        hint: orientBand(
+          'repertoire',
+          'what the three measurement instruments caught, and the adaptive mechanisms the wins might become',
+          'project notes; the working surfaces are on the rail above',
+        ),
       }),
     ),
   );
@@ -1419,9 +1546,13 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
     res.type('html').sendFile(notePath);
   });
   app.get('/derivation', (_req, res) => res.type('html').send(renderDerivationIndexHtml(listDerivationRuns())));
+  app.get('/derivation/live', (_req, res) =>
+    res.type('html').send(renderDerivationLiveIndexHtml(listDerivationLiveRuns({ includeComplete: true }))),
+  );
   app.get('/derivation/:label', (req, res) => {
     const run = readDerivationRun(req.params.label);
     if (!run) return res.status(404).type('text').send('derivation run not found');
+    if (run.liveOnly) return res.type('html').send(renderDerivationLiveRunHtml(run.live));
     res.type('html').send(renderDerivationRunHtml(run));
   });
   app.get('/browse', (_req, res) => res.type('html').send(renderBrowserHtml()));
@@ -1441,7 +1572,33 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
       const qs = new URLSearchParams(req.query).toString();
       return res.redirect(302, '/browse' + (qs ? '?' + qs : ''));
     }
-    const stats = { ...corpusStats(db), replays: listReplayBundles().length };
+    const derivationRuns = listDerivationRuns();
+    // The deterministic rule-checker's verdict on each proof run (grounded /
+    // disengagement / aporia). Tallied here from the diagnoses already loaded —
+    // NOT a quality score, just the outcome the checker decided.
+    const proofVerdicts = {};
+    for (const r of derivationRuns) {
+      const v = r?.diagnosis?.verdict || '(none)';
+      proofVerdicts[v] = (proofVerdicts[v] || 0) + 1;
+    }
+    const recentRuns = listRuns(db).slice(0, 6);
+    // Attach each feed row's recontextualization series for its inline sparkline.
+    const seriesMap = runScoreSeries(
+      db,
+      recentRuns.map((r) => r.id),
+    );
+    for (const r of recentRuns) r.spark = seriesMap.get(r.id) || [];
+    const stats = {
+      ...corpusStats(db),
+      replays: listReplayBundles().length,
+      proofRuns: derivationRuns.length,
+      proofVerdicts,
+      // Newest proof-run mtime (listDerivationRuns sorts newest-first) — a second
+      // activity clock so the headline doesn't read idle when the file-based
+      // derivation arc is live but the DB scripts corpus has not had a new run.
+      proofLastMs: derivationRuns[0]?.mtimeMs || 0,
+      recentRuns,
+    };
     return res.type('html').send(renderDashboardHtml(stats));
   });
   return app;
@@ -1776,17 +1933,33 @@ function mdLectureToHtml(md) {
 // (reached by a study link), and must not leak researcher chrome to subjects.
 const NAV = [
   ['home', '/', 'home', 'Dashboard — overview, live stats &amp; guided first steps'],
-  ['browse', '/browse', 'browse', 'Browse generated scripts, full traces, critic scores &amp; labels'],
-  ['compose', '/compose/live', 'compose', 'Sit in on a tutoring scene turn by turn — or switch to batch-spec mode'],
-  ['runs', '/runs', 'runs', 'Launch runs — generative · replay · adversarial-CLI · online scoring'],
+  [
+    'browse',
+    '/browse',
+    'scripts',
+    'Generated drama scripts scored by LLM critics — full traces, scores &amp; human labels',
+  ],
+  [
+    'compose',
+    '/compose/live',
+    'compose a scene',
+    'Sit in on a tutoring scene turn by turn — or switch to batch-spec mode to assemble a full spec',
+  ],
+  ['runs', '/runs', 'launch a run', 'Launch new runs — generative · replay · adversarial-CLI · online scoring'],
   ['ontology', '/ontology', 'ontology', 'The shared ontology — system, tutor &amp; learner lenses'],
   ['rubric', '/rubric', 'rubric', 'The poetics rubric — the 6 dramatic-form dimensions critics score against'],
+  [
+    'curriculum',
+    '/curriculum',
+    'curriculum',
+    'The curriculum spine — modules, knowledge components &amp; the prerequisite graph — and the drama seeds + adaptation worlds it compiles into',
+  ],
   ['replays', '/replays', 'replays', 'Counterfactual replays diffed against their originals'],
   [
     'derivation',
     '/derivation',
-    'derivation',
-    'Dramatic-derivation staging loop — run transcripts, D-curves &amp; checker verdicts',
+    'proof runs',
+    'Tutoring runs where the tutor must lead the learner to a hidden answer by inference — a fixed rule-checker (not an AI judge, not a quality score) decides whether they got there: grounded / impasse / disengaged',
   ],
   [
     'summary',
@@ -1826,16 +1999,27 @@ const NAV = [
     'Pilot operator console — session monitoring, recruitment toggle &amp; run launching (admin token-gated)',
   ],
 ];
-// Shown flat, left-to-right: the everyday action surfaces.
-const NAV_PRIMARY = ['home', 'browse', 'compose', 'runs'];
+// Shown flat, left-to-right: the three reading surfaces (scripts = critic-graded
+// generation corpus at /browse; proof runs = rule-checked staging loop at
+// /derivation; replays = counterfactual diffs) then the two make-something actions
+// (compose a scene, launch a run).
+const NAV_PRIMARY = ['home', 'browse', 'derivation', 'replays', 'compose', 'runs'];
 // Folded into labelled dropdowns, in order: the reference surfaces, then the
 // dated/durable techne notes. A group whose member is the active page shows a
 // moss accent on its summary so the current location is still legible when closed.
 const NAV_GROUPS = [
-  ['tools', ['tutor', 'adjudicate', 'pilot-admin']],
-  ['reference', ['ontology', 'rubric', 'replays', 'derivation']],
+  ['tools', ['tutor', 'pilot-admin']],
+  ['reference', ['ontology', 'rubric', 'curriculum']],
   ['notes', ['summary', 'story', 'repertoire', 'board']],
 ];
+
+// A per-page orientation band (the `hint` slot of railHtml): "<b>here</b> — what",
+// then a pointer back to the working surfaces. Mirrors the corpus-distinction bands
+// on /browse, /derivation and /runs so every page tells a first-time visitor where
+// they are and how to get back to the things you read and make.
+function orientBand(here, what, tail = 'the working surfaces are on the rail above') {
+  return `<span><b>${here}</b> — ${what}</span><span class="navhint__sep">·</span><span>${tail}</span>`;
+}
 
 // Single source of truth for the top-nav markup + the specimen ground every page
 // shares: a spinning brick mark, the prussian MMXXVI stamp, and the warm Klee-drift
@@ -1847,7 +2031,7 @@ const NAV_GROUPS = [
 // one place that puts the ground on all of them. `extra` (e.g. /browse's live DB
 // beacon) sits to the LEFT of the nav links so the menu + theme-toggle cluster stays
 // identical on every page, beacon or not.
-function railHtml({ active = '', brand = 'machine spirits', sub = '', extra = '', bare = false } = {}) {
+function railHtml({ active = '', brand = 'machine spirits', sub = '', extra = '', hint = '', bare = false } = {}) {
   const byKey = Object.fromEntries(NAV.map((n) => [n[0], n]));
   const link = (key) => {
     const n = byKey[key];
@@ -1903,6 +2087,12 @@ function railHtml({ active = '', brand = 'machine spirits', sub = '', extra = ''
 .rail__pop{ position:absolute; top:calc(100% + 7px); right:0; min-width:190px; display:flex; flex-direction:column; gap:3px; padding:7px; background:color-mix(in srgb, var(--paper) 96%, transparent); border:1px solid var(--rule); border-radius:9px; box-shadow:0 10px 30px rgba(28,22,16,.18); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); z-index:40; }
 .rail__pop .rail__btn{ border-color:transparent; justify-content:flex-start; width:100%; }
 .rail__pop .rail__btn:hover{ border-color:var(--rule); background:var(--paper-3); }
+/* orientation band — a per-page "what this is / where its siblings are" note, rendered just under the rail */
+.navhint{ display:flex; flex-wrap:wrap; align-items:baseline; gap:.35em .9em; padding:.5em clamp(.8rem,2vw,1.2rem); border-bottom:1px solid var(--rule-soft); background:color-mix(in srgb, var(--paper) 70%, transparent); font-family:"JetBrains Mono","SFMono-Regular",Consolas,monospace; font-size:11px; letter-spacing:.03em; line-height:1.5; color:var(--ink-3); }
+.navhint b{ color:var(--ink-2); font-weight:600; }
+.navhint a{ color:var(--moss-deep); text-decoration:none; border-bottom:1px solid color-mix(in srgb, var(--moss) 42%, transparent); white-space:nowrap; }
+.navhint a:hover{ border-bottom-color:var(--moss); }
+.navhint .navhint__sep{ color:var(--ink-4); }
 ${
   bare
     ? ''
@@ -1941,7 +2131,8 @@ ${
     }
     <span class="rail__stamp" aria-hidden="true"><span class="rail__stamp-glyph">◎</span>MMXXVI</span>
   </div>
-</header>${
+</header>
+${hint ? `<div class="navhint" role="note">${hint}</div>` : ''}${
     bare
       ? ''
       : `
@@ -2127,6 +2318,32 @@ ${
 // alongside the auth posture in the header note.
 const DERIVATION_LOOP_DIR = path.resolve(ROOT, 'exports/dramatic-derivation/loop');
 const DERIVATION_LABEL_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/; // path-traversal guard
+const DERIVATION_LIVE_STALE_MS = 20 * 60 * 1000;
+
+function safeJsonForScript(value) {
+  return JSON.stringify(value)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+}
+
+function readJsonFile(file) {
+  return JSON.parse(fs.readFileSync(file, 'utf8'));
+}
+
+function derivationLoopRunDir(label) {
+  if (!DERIVATION_LABEL_RE.test(label)) return null;
+  const dir = path.join(DERIVATION_LOOP_DIR, label);
+  return dir.startsWith(`${DERIVATION_LOOP_DIR}${path.sep}`) ? dir : null;
+}
+
+function derivationLiveStatus(live, mtimeMs = 0) {
+  const status = live?.status || 'running';
+  if (status !== 'running' && status !== 'finalizing') return status;
+  return Date.now() - mtimeMs > DERIVATION_LIVE_STALE_MS ? 'stale' : status;
+}
 
 function listDerivationRuns() {
   if (!fs.existsSync(DERIVATION_LOOP_DIR)) return [];
@@ -2148,16 +2365,51 @@ function listDerivationRuns() {
   return runs.sort((a, b) => b.mtimeMs - a.mtimeMs);
 }
 
+function readDerivationLive(label) {
+  const dir = derivationLoopRunDir(label);
+  if (!dir) return null;
+  const livePath = path.join(dir, 'live.json');
+  try {
+    const stat = fs.statSync(livePath);
+    const live = readJsonFile(livePath);
+    return {
+      ...live,
+      label: live.label || label,
+      mtimeMs: stat.mtimeMs,
+      ageMs: Date.now() - stat.mtimeMs,
+      effectiveStatus: derivationLiveStatus(live, stat.mtimeMs),
+      completeAvailable:
+        fs.existsSync(path.join(dir, 'diagnosis.json')) && fs.existsSync(path.join(dir, 'result.json')),
+    };
+  } catch {
+    return null;
+  }
+}
+
+function listDerivationLiveRuns({ includeComplete = false } = {}) {
+  if (!fs.existsSync(DERIVATION_LOOP_DIR)) return [];
+  const runs = [];
+  for (const name of fs.readdirSync(DERIVATION_LOOP_DIR)) {
+    if (!DERIVATION_LABEL_RE.test(name)) continue;
+    const live = readDerivationLive(name);
+    if (!live) continue;
+    if (!includeComplete && live.effectiveStatus === 'complete') continue;
+    runs.push(live);
+  }
+  return runs.sort((a, b) => b.mtimeMs - a.mtimeMs);
+}
+
 function readDerivationRun(label) {
-  if (!DERIVATION_LABEL_RE.test(label)) return null;
-  const dir = path.join(DERIVATION_LOOP_DIR, label);
+  const dir = derivationLoopRunDir(label);
+  if (!dir) return null;
   let diagnosis;
   let result;
   try {
-    diagnosis = JSON.parse(fs.readFileSync(path.join(dir, 'diagnosis.json'), 'utf8'));
-    result = JSON.parse(fs.readFileSync(path.join(dir, 'result.json'), 'utf8'));
+    diagnosis = readJsonFile(path.join(dir, 'diagnosis.json'));
+    result = readJsonFile(path.join(dir, 'result.json'));
   } catch {
-    return null;
+    const live = readDerivationLive(label);
+    return live ? { label, live, liveOnly: true } : null;
   }
   let world = null;
   try {
@@ -2171,7 +2423,7 @@ function readDerivationRun(label) {
   } catch {
     /* no notice yet — the page shows the backfill hint */
   }
-  return { label, diagnosis, result, world, commentary };
+  return { label, diagnosis, result, world, commentary, live: readDerivationLive(label) };
 }
 
 // Backend chips tolerate both ledger formats: per-role ({mode, roles:{...}},
@@ -2186,6 +2438,35 @@ function derivationBackendChips(backend = {}) {
     chips.push(`all roles ${backend.provider}/${backend.model || '(cli default)'}`);
   }
   return chips;
+}
+
+// Compact backend cell for the runs index: group the roles by the model that
+// played them, so a typical run (three tutor-side roles on one model, learner
+// on another) reads as two lines instead of four near-identical ones. The
+// "(cli default)" suffix is dropped — it carries no signal in a dense table.
+function derivationBackendCell(backend = {}) {
+  const short = (provider, model) => (model && model !== '(cli default)' ? `${provider}/${model}` : provider);
+  let pairs;
+  if (backend.roles) {
+    pairs = Object.entries(backend.roles).map(([role, t]) => [role, short(t.provider, t.model)]);
+  } else if (backend.provider) {
+    return escapeHtml(short(backend.provider, backend.model));
+  } else {
+    return '—';
+  }
+  const byModel = new Map();
+  for (const [role, model] of pairs) {
+    if (!byModel.has(model)) byModel.set(model, []);
+    byModel.get(model).push(role);
+  }
+  return [...byModel.entries()]
+    .map(
+      ([model, roles]) =>
+        `<span class="bk"><span class="bk__m">${escapeHtml(model)}</span> <span class="bk__r">${escapeHtml(
+          roles.join(', '),
+        )}</span></span>`,
+    )
+    .join('');
 }
 
 const DERIVATION_SUCCESS_EVENTS = new Set(['forced', 'grounded_anagnorisis']);
@@ -2476,6 +2757,154 @@ function derivationSlopeCaption(slope) {
   return `<p class="slopecap">slope ${overall === null || overall === undefined ? '—' : overall.toFixed(2)} D/turn overall (D ${slope.d0}→${slope.dFinal})${perAct ? ` · per movement: ${perAct}` : ''} — D counts the premises still missing for the nearest proof of the secret; ▲ marks evidence entering the room.</p>`;
 }
 
+function shortFactLabel(fact) {
+  if (!Array.isArray(fact) || !fact.length) return '—';
+  return fact.join(' ');
+}
+
+function targetProgress(target) {
+  const total = target?.sourcePremiseIds?.length || 0;
+  const held = target?.heldSourcePremiseIds?.length || 0;
+  const decayed = target?.decayedSourcePremiseIds?.length || 0;
+  return { total, held, decayed, pct: total ? held / total : target?.derived ? 1 : 0 };
+}
+
+function renderDerivationLogicVisualizer(logicProjection) {
+  const turns = logicProjection?.turns || [];
+  if (!turns.length) {
+    return '<p class="notice-missing">No logic projection snapshots are present for this run. New loop artifacts include them automatically.</p>';
+  }
+
+  const W = 940;
+  const labelW = 92;
+  const right = 12;
+  const top = 20;
+  const rowH = 34;
+  const gap = 8;
+  const rows = [
+    { key: 'rules', label: 'rules fired' },
+    { key: 'unvoiced', label: 'unvoiced' },
+    { key: 'secret', label: 'secret path' },
+    { key: 'mirror', label: 'mirror path' },
+  ];
+  const H = top + rows.length * rowH + (rows.length - 1) * gap + 36;
+  const colW = (W - labelW - right) / Math.max(turns.length, 1);
+  const maxRules = Math.max(1, ...turns.map((t) => t.counts?.firedHyperedges || 0));
+  const maxUnvoiced = Math.max(1, ...turns.map((t) => t.counts?.derivedUnvoiced || 0));
+  const yFor = (i) => top + i * (rowH + gap);
+  const svg = [];
+
+  rows.forEach((row, i) => {
+    const y = yFor(i);
+    svg.push(
+      `<text x="8" y="${y + rowH / 2 + 4}" class="logicviz__label">${escapeHtml(row.label)}</text>`,
+      `<line x1="${labelW}" y1="${y + rowH}" x2="${W - right}" y2="${y + rowH}" class="logicviz__rule"/>`,
+    );
+  });
+
+  turns.forEach((turn, i) => {
+    const x = labelW + i * colW;
+    const cx = x + colW / 2;
+    const activity = (turn.counts?.firedHyperedges || 0) + (turn.counts?.derivedUnvoiced || 0);
+    if (activity > 0) {
+      svg.push(
+        `<rect x="${x.toFixed(1)}" y="${top - 8}" width="${colW.toFixed(1)}" height="${H - top - 18}" class="logicviz__active"/>`,
+      );
+    }
+    if (i % 2 === 0) {
+      svg.push(
+        `<text x="${cx.toFixed(1)}" y="${H - 8}" text-anchor="middle" class="logicviz__tick">t${turn.turn}</text>`,
+      );
+    }
+
+    const rules = turn.counts?.firedHyperedges || 0;
+    const ruleH = rules ? Math.max(3, (rules / maxRules) * (rowH - 8)) : 0;
+    const rulesTitle = (turn.firedHyperedges || [])
+      .map((edge) => `${edge.ruleId} → ${shortFactLabel(edge.outputFact)}`)
+      .join('\n');
+    svg.push(
+      `<rect x="${(x + 3).toFixed(1)}" y="${(yFor(0) + rowH - ruleH).toFixed(1)}" width="${Math.max(2, colW - 6).toFixed(1)}" height="${ruleH.toFixed(1)}" class="logicviz__bar logicviz__bar--rules"><title>${escapeHtml(rulesTitle || `turn ${turn.turn}: no rule hyperedges fired`)}</title></rect>`,
+    );
+
+    const unvoiced = turn.counts?.derivedUnvoiced || 0;
+    const unvoicedH = unvoiced ? Math.max(3, (unvoiced / maxUnvoiced) * (rowH - 8)) : 0;
+    const unvoicedTitle = (turn.derivedUnvoiced || [])
+      .map((node) => `${shortFactLabel(node.fact)} (${node.rule || 'rule?'})`)
+      .join('\n');
+    svg.push(
+      `<rect x="${(x + 3).toFixed(1)}" y="${(yFor(1) + rowH - unvoicedH).toFixed(1)}" width="${Math.max(2, colW - 6).toFixed(1)}" height="${unvoicedH.toFixed(1)}" class="logicviz__bar logicviz__bar--unvoiced"><title>${escapeHtml(unvoicedTitle || `turn ${turn.turn}: no derived-unvoiced facts`)}</title></rect>`,
+    );
+
+    for (const [rowIndex, targetKey] of [
+      [2, 'secret'],
+      [3, 'mirror'],
+    ]) {
+      const target = turn[targetKey];
+      const p = targetProgress(target);
+      const y = yFor(rowIndex);
+      const w = Math.max(2, colW - 6);
+      const fill = Math.max(0, Math.min(1, p.pct)) * w;
+      const title = `${targetKey} ${target?.derived ? 'derived' : 'not derived'} at turn ${turn.turn}
+held ${p.held}/${p.total} source premises${target?.missingSourcePremiseIds?.length ? `; missing ${target.missingSourcePremiseIds.join(', ')}` : ''}${target?.decayedSourcePremiseIds?.length ? `; decayed ${target.decayedSourcePremiseIds.join(', ')}` : ''}`;
+      svg.push(
+        `<rect x="${(x + 3).toFixed(1)}" y="${(y + 8).toFixed(1)}" width="${w.toFixed(1)}" height="${(rowH - 16).toFixed(1)}" class="logicviz__path"><title>${escapeHtml(title)}</title></rect>`,
+        `<rect x="${(x + 3).toFixed(1)}" y="${(y + 8).toFixed(1)}" width="${fill.toFixed(1)}" height="${(rowH - 16).toFixed(1)}" class="logicviz__pathfill logicviz__pathfill--${targetKey}"><title>${escapeHtml(title)}</title></rect>`,
+      );
+      if (p.decayed) {
+        svg.push(
+          `<text x="${cx.toFixed(1)}" y="${(y + rowH - 5).toFixed(1)}" text-anchor="middle" class="logicviz__decay">×<title>${escapeHtml(title)}</title></text>`,
+        );
+      }
+      if (target?.derived) {
+        svg.push(
+          `<text x="${cx.toFixed(1)}" y="${(y + 20).toFixed(1)}" text-anchor="middle" class="logicviz__derived">●<title>${escapeHtml(title)}</title></text>`,
+        );
+      }
+    }
+  });
+
+  const activeTurns = turns.filter(
+    (t) =>
+      (t.firedHyperedges || []).length ||
+      (t.derivedUnvoiced || []).length ||
+      t.secret?.derived ||
+      t.mirror?.derived ||
+      (t.decayedProofCriticalSources || []).length,
+  );
+  const details = activeTurns.length
+    ? activeTurns
+        .map((turn) => {
+          const rules = (turn.firedHyperedges || [])
+            .map(
+              (edge) =>
+                `<li><code>${escapeHtml(edge.ruleId)}</code> → <code>${escapeHtml(shortFactLabel(edge.outputFact))}</code></li>`,
+            )
+            .join('');
+          const unvoiced = (turn.derivedUnvoiced || [])
+            .map(
+              (node) =>
+                `<li><code>${escapeHtml(shortFactLabel(node.fact))}</code>${node.rule ? ` via <code>${escapeHtml(node.rule)}</code>` : ''}</li>`,
+            )
+            .join('');
+          const secret = targetProgress(turn.secret);
+          const mirror = targetProgress(turn.mirror);
+          return `<details class="logicturn"><summary><span class="mono">t${turn.turn}</span> rules ${turn.counts?.firedHyperedges || 0} · unvoiced ${turn.counts?.derivedUnvoiced || 0} · secret ${secret.held}/${secret.total}${turn.secret?.derived ? ' forced' : ''} · mirror ${mirror.held}/${mirror.total}${turn.mirror?.derived ? ' derived' : ''}</summary>
+<div class="logicturn__grid">
+<div><strong>rules fired</strong>${rules ? `<ul>${rules}</ul>` : '<p class="mono">none</p>'}</div>
+<div><strong>derived but unvoiced</strong>${unvoiced ? `<ul>${unvoiced}</ul>` : '<p class="mono">none</p>'}</div>
+<div><strong>path status</strong><p class="mono">secret held ${secret.held}/${secret.total}${turn.secret?.decayedSourcePremiseIds?.length ? ` · decayed ${escapeHtml(turn.secret.decayedSourcePremiseIds.join(', '))}` : ''}<br>mirror held ${mirror.held}/${mirror.total}${turn.mirror?.decayedSourcePremiseIds?.length ? ` · decayed ${escapeHtml(turn.mirror.decayedSourcePremiseIds.join(', '))}` : ''}</p></div>
+</div></details>`;
+        })
+        .join('\n')
+    : '<p class="mono">No derived facts or target-path changes were recorded.</p>';
+
+  return `<div class="logicviz">
+<svg viewBox="0 0 ${W} ${H}" class="logicviz__svg" role="img" aria-label="Logic projection by turn: fired rules, unvoiced derived facts, secret path, and mirror path">${svg.join('')}</svg>
+<p class="slopecap">The logic view is harness-only: it renders the learner board closure from <code>WorldIR.logic</code>. Bar height shows rule firings and unvoiced derivations; path fill shows how many source premises for the secret or mirror are held; ● means the target fact is derived; × marks decayed proof-critical source material.</p>
+<div class="logicviz__details">${details}</div>
+</div>`;
+}
+
 const DERIVATION_CSS = `
 .wrap{max-width:1020px;margin:0 auto;padding:18px var(--margin) 80px}
 .wrap h1{font-family:Fraunces,serif;font-weight:600;font-size:var(--s-4);margin:.3em 0 .15em}
@@ -2484,6 +2913,25 @@ const DERIVATION_CSS = `
 .chip{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);border:1px solid var(--rule);border-radius:4px;padding:2px 8px;background:var(--paper-4)}
 .chip--ok{background:var(--moss-soft);border-color:var(--moss);color:var(--moss-deep)}
 .chip--bad{background:var(--brick-soft);border-color:var(--brick);color:var(--brick-d)}
+.chip--live{background:var(--ochre-soft);border-color:var(--ochre);color:var(--ochre-d)}
+.live-panel{border:1px solid var(--rule-soft);border-radius:8px;background:var(--paper-4);padding:12px 14px;margin:12px 0 22px}
+.live-panel__head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.live-panel__head h2{font-family:Fraunces,serif;font-size:var(--s-2);font-weight:600;margin:0}
+.live-panel__meta{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);color:var(--ink-3)}
+.live-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px;margin-top:10px}
+.live-link{display:block;border:1px solid var(--rule-soft);border-radius:6px;background:var(--paper);padding:9px 10px;text-decoration:none;color:var(--ink)}
+.live-link:hover{border-color:var(--ochre);background:var(--ochre-soft)}
+.live-link b{display:block;font-family:"JetBrains Mono",monospace;font-size:var(--s-0);overflow-wrap:anywhere}
+.live-link span{display:block;margin-top:3px;font-family:"JetBrains Mono",monospace;font-size:var(--s-0);color:var(--ink-3)}
+.live-progress{height:8px;background:var(--paper-2);border:1px solid var(--rule-soft);border-radius:999px;overflow:hidden;margin:10px 0 6px}
+.live-progress i{display:block;height:100%;background:var(--ochre);width:0}
+.live-status{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0}
+.live-turns{margin-top:14px}
+.live-turn{border:1px solid var(--rule-soft);border-radius:7px;background:var(--paper-4);padding:10px 12px;margin:10px 0}
+.live-turn__top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-family:"JetBrains Mono",monospace;font-size:var(--s-0);color:var(--ink-3);margin-bottom:5px}
+.live-turn__stats{display:flex;flex-wrap:wrap;gap:5px}
+.live-pill{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);border:1px solid var(--rule-soft);border-radius:4px;padding:1px 6px;background:var(--paper-2);color:var(--ink-2)}
+.live-empty{font-family:"JetBrains Mono",monospace;color:var(--ink-3);background:var(--paper-2);border:1px dashed var(--rule);border-radius:8px;padding:18px;text-align:center}
 .tts-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:14px 0 18px;padding:9px 10px;border:1px solid var(--rule-soft);border-radius:6px;background:var(--paper-4)}
 .tts-toolbar--compact{margin:4px 0 8px}
 .tts-control,.tts-btn{border:1px solid var(--rule);background:var(--paper);color:var(--moss-deep);cursor:pointer;font-family:"JetBrains Mono",monospace;text-transform:uppercase}
@@ -2556,10 +3004,515 @@ svg.arc{display:block;width:100%;height:auto;margin:6px 0 2px;background:var(--p
 .arc__star{fill:var(--brick-d);font-size:16px;cursor:default}
 .slopecap{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);color:var(--ink-3);margin:4px 0 0}
 .notice-missing{color:var(--ink-3);font-style:italic}
+.logicviz{margin:8px 0 20px}
+.logicviz__svg{display:block;width:100%;height:auto;margin:6px 0 4px;background:var(--paper-4);border:1px solid var(--rule-soft);border-radius:6px}
+.logicviz__label,.logicviz__tick{font-family:"JetBrains Mono",monospace;font-size:10px;fill:var(--ink-3)}
+.logicviz__label{fill:var(--ink-2)}
+.logicviz__rule{stroke:var(--rule-soft);stroke-width:1}
+.logicviz__active{fill:var(--ochre-soft);fill-opacity:.38}
+.logicviz__bar{rx:2}
+.logicviz__bar--rules{fill:var(--moss-deep)}
+.logicviz__bar--unvoiced{fill:var(--brick)}
+.logicviz__path{fill:var(--paper-2);stroke:var(--rule);stroke-width:1}
+.logicviz__pathfill{opacity:.75}
+.logicviz__pathfill--secret{fill:var(--indigo)}
+.logicviz__pathfill--mirror{fill:var(--ochre)}
+.logicviz__decay{font-family:"JetBrains Mono",monospace;font-size:16px;fill:var(--brick-d)}
+.logicviz__derived{font-family:"JetBrains Mono",monospace;font-size:13px;fill:var(--paper)}
+.logicviz__details{margin-top:10px}
+.logicturn{border:1px solid var(--rule-soft);border-radius:6px;background:var(--paper-4);margin:7px 0;padding:7px 10px}
+.logicturn summary{cursor:pointer;color:var(--ink-2)}
+.logicturn__grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:8px}
+.logicturn__grid strong{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;letter-spacing:.04em;color:var(--ink-3)}
+.logicturn__grid ul{margin:.35em 0 0 1.15em;padding:0}
+.logicturn__grid li{margin:.2em 0;line-height:1.35}
+@media (max-width:760px){.logicturn__grid{grid-template-columns:1fr}.logicviz__svg{min-width:760px}.logicviz{overflow-x:auto}}
+/* ── derivation index: scoreboard · toolbar · readability panel · win flags ── */
+.wrap--wide{max-width:1180px}
+.idx-scoreboard{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 14px}
+.idx-tally{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);border:1px solid var(--rule);border-radius:5px;padding:3px 10px;background:var(--paper-4);color:var(--ink-2)}
+.idx-tally b{color:var(--ink);font-size:var(--s-1)}
+.idx-tally--win{background:var(--ochre-soft);border-color:var(--ochre);color:var(--ochre-d)}
+.idx-tally--win b{color:var(--ochre-d)}
+.idx-tools{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 18px;padding:10px 12px;border:1px solid var(--rule-soft);border-radius:8px;background:var(--paper-4)}
+.idx-search{flex:1 1 220px;min-width:160px;font-family:"JetBrains Mono",monospace;font-size:var(--s-0);padding:6px 10px;border:1px solid var(--rule);border-radius:5px;background:var(--paper);color:var(--ink)}
+.idx-search:focus{outline:2px solid color-mix(in srgb,var(--ochre) 55%,transparent);outline-offset:1px;border-color:var(--ochre)}
+.idx-seg{display:inline-flex;border:1px solid var(--rule);border-radius:5px;overflow:hidden}
+.idx-seg button{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;letter-spacing:.05em;padding:5px 11px;border:0;border-right:1px solid var(--rule);background:var(--paper);color:var(--ink-3);cursor:pointer;transition:background .12s var(--ease),color .12s var(--ease)}
+.idx-seg button:last-child{border-right:0}
+.idx-seg button:hover{color:var(--ink)}
+.idx-seg button.is-on{background:var(--ochre-soft);color:var(--ochre-d)}
+.idx-check,.idx-sort{display:inline-flex;align-items:center;gap:6px;font-family:"JetBrains Mono",monospace;font-size:var(--s-0);color:var(--ink-3)}
+.idx-sort select{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);padding:5px 8px;border:1px solid var(--rule);border-radius:5px;background:var(--paper);color:var(--ink)}
+.idx-count{margin-left:auto;font-family:"JetBrains Mono",monospace;font-size:var(--s-0);color:var(--ink-3)}
+.idx-flatcount{margin:0 0 6px}
+.idx-empty{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);color:var(--ink-3);background:var(--paper-2);border:1px dashed var(--rule);border-radius:8px;padding:18px;text-align:center;margin:6px 0 24px}
+.idx-panel{background:var(--paper-2);border:1px solid var(--rule-soft);border-radius:8px;padding:2px 12px;margin:6px 0 24px;overflow-x:auto}
+/* runs table: fixed columns (colgroup-driven) + tokens that wrap inside cells */
+table.idx--runs{table-layout:fixed}
+table.idx--runs td{overflow-wrap:anywhere}
+table.idx--runs th,table.idx--runs td{padding-left:8px;padding-right:8px}
+/* headers stay whole-word (no mid-word breaks) and crisp/dark, not pale */
+table.idx--runs thead th{vertical-align:bottom;white-space:normal;overflow-wrap:normal;word-break:normal;font-size:0.68rem;letter-spacing:.03em;line-height:1.22;color:var(--ink-2);border-bottom:1px solid var(--rule)}
+table.idx--runs tbody tr.idx-row td{border-bottom:0;padding-bottom:4px}
+/* full-width summary caption row beneath each run */
+.idx-sum td{padding:2px 12px 12px 16px;border-bottom:1px solid var(--rule-soft)}
+.idx-sum .run-summary{display:block;margin:0;max-width:84ch;font-family:"Source Serif 4",Georgia,serif;font-size:var(--s-1);color:var(--ink-2);line-height:1.5}
+tr.idx-sum--win{box-shadow:inset 3px 0 0 var(--ochre);background:color-mix(in srgb,var(--ochre-soft) 32%,transparent)}
+tr.idx-sum--win.is-alt{background:color-mix(in srgb,var(--ochre-soft) 52%,transparent)}
+/* compressed backend cell: model + the roles that used it */
+.bk{display:block}
+.bk__m{color:var(--ink-2)}
+.bk__r{color:var(--ink-3)}
+table.idx tbody tr.idx-row{transition:background .12s var(--ease)}
+table.idx tbody tr.is-alt{background:color-mix(in srgb,var(--linen) 15%,transparent)}
+table.idx tbody tr.idx-row:hover{background:var(--paper-4)}
+tr.idx-row--win{box-shadow:inset 3px 0 0 var(--ochre);background:color-mix(in srgb,var(--ochre-soft) 32%,transparent)}
+tr.idx-row--win.is-alt{background:color-mix(in srgb,var(--ochre-soft) 52%,transparent)}
+tr.idx-row--win:hover{background:color-mix(in srgb,var(--ochre-soft) 62%,transparent)}
+.run-name{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);font-weight:600}
+.run-summary{display:block;margin-top:3px;font-family:"Source Serif 4",Georgia,serif;font-size:var(--s-0);color:var(--ink-3);line-height:1.42;max-width:48ch;white-space:normal}
+/* outcome badge: one distinct treatment per verdict, with a leading status dot */
+.vchip{display:inline-flex;align-items:center;gap:5px;font-family:"JetBrains Mono",monospace;font-size:var(--s-0);font-weight:600;border:1px solid var(--rule);border-radius:5px;padding:2px 9px 2px 7px;white-space:nowrap}
+.vchip::before{content:"";flex:0 0 auto;width:6px;height:6px;border-radius:50%;background:currentColor}
+.vchip--grounded{background:var(--ochre-soft);border-color:var(--ochre);color:var(--ochre-d)}
+.vchip--disengaged{background:color-mix(in srgb,var(--ink-3) 14%,var(--paper));border-color:var(--ink-4);color:var(--ink-2)}
+.vchip--impasse{background:var(--brick-soft);border-color:var(--brick);color:var(--brick-d)}
+.dvscore{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);color:var(--ink-2)}
+.dvscore--win{color:var(--ochre-d);font-weight:600}
+.dvscore__bar{display:inline-block;width:34px;height:6px;border-radius:3px;background:var(--paper-3);border:1px solid var(--rule-soft);vertical-align:middle;margin-left:6px;overflow:hidden}
+.dvscore__bar i{display:block;height:100%;background:var(--ochre)}
+.winflag{margin-left:5px}
+.when{white-space:nowrap;line-height:1.32}
+.when__t{color:var(--ink-3)}
+@media (max-width:760px){.idx-sum{display:none}}
 `;
 
+// The three verdicts the deterministic checker emits, in plain words. The win
+// is grounded_anagnorisis (the learner reached the secret and its proof closed);
+// the other two are the failure taxonomy.
+const DERIVATION_VERDICT_LABEL = {
+  grounded_anagnorisis: 'grounded',
+  disengagement: 'disengaged',
+  aporia: 'impasse',
+};
+// Each verdict gets its own badge treatment so the two failure modes
+// (disengaged vs impasse) no longer collapse into one undifferentiated red.
+const DERIVATION_VERDICT_CLASS = {
+  grounded_anagnorisis: 'vchip--grounded',
+  disengagement: 'vchip--disengaged',
+  aporia: 'vchip--impasse',
+};
+
+// One plain-language sentence per run, leading with the outcome — for readers
+// who don't carry the jargon. Deterministic facts only (no judge): the verdict,
+// how far the proof got (D counts the premises still missing; d0 is the full
+// set, so d0−dFinal is how many were established), and how the scheduled
+// evidence reveals landed.
+function derivationPlainSummary(d) {
+  const slope = d.learningSlope || {};
+  const d0 = typeof slope.d0 === 'number' ? slope.d0 : null;
+  const dFinal = typeof slope.dFinal === 'number' ? slope.dFinal : null;
+  const grounded = d0 !== null && dFinal !== null ? d0 - dFinal : null;
+  const steps = grounded !== null ? `${grounded} of ${d0} proof step${d0 === 1 ? '' : 's'} established` : null;
+  const adherence = d.releaseAdherence || {};
+  const devs = adherence.deviations?.length || 0;
+  const cues =
+    typeof adherence.onCue === 'number'
+      ? `${adherence.onCue} planned reveal${adherence.onCue === 1 ? '' : 's'} on cue${devs ? `, ${devs} off-schedule` : ''}`
+      : null;
+  const turn = d.turnsPlayed ?? '?';
+  let lead;
+  if (d.verdict === 'grounded_anagnorisis') {
+    lead = `The learner reached the hidden answer at turn ${d.assertedGroundedTurn ?? turn} and the proof closed`;
+  } else if (d.verdict === 'disengagement') {
+    lead = `The learner disengaged at turn ${turn}, before the proof closed`;
+  } else if (d.verdict === 'aporia') {
+    lead = `The dialogue reached an impasse at turn ${turn} with no way forward`;
+  } else {
+    lead = `Run ended at turn ${turn}`;
+  }
+  const tail = [steps, cues].filter(Boolean).join('; ');
+  return tail ? `${lead} — ${tail}.` : `${lead}.`;
+}
+
+// The deterministic "score": proof steps established (d0−dFinal) out of d0, with
+// a 🏁 + completion bar when the proof actually closed (dFinal 0 = a win). Not a
+// judge's rating — it reads straight off the D-curve. Returns the cell HTML plus
+// the integer value the client uses to sort by "most proof steps".
+function derivationScoreCell(d) {
+  const slope = d.learningSlope || {};
+  const d0 = typeof slope.d0 === 'number' ? slope.d0 : null;
+  const dFinal = typeof slope.dFinal === 'number' ? slope.dFinal : null;
+  if (d0 === null || dFinal === null || d0 <= 0) {
+    return { html: '<span class="dvscore">—</span>', value: -1 };
+  }
+  const grounded = d0 - dFinal;
+  const pct = Math.max(0, Math.min(100, Math.round((grounded / d0) * 100)));
+  const win = dFinal === 0;
+  const flag = win ? ' <span class="winflag" title="proof closed">🏁</span>' : '';
+  const html = `<span class="dvscore${win ? ' dvscore--win' : ''}" title="${grounded} of ${d0} proof steps established">${grounded}/${d0}${flag}<span class="dvscore__bar"><i style="width:${pct}%"></i></span></span>`;
+  return { html, value: grounded };
+}
+
+// When the run finished, from the diagnosis artifact's mtime (no wall-clock
+// stamp is written into the run). Compact two lines — "Jun 12, 2026" over the
+// HH:MM — with the full ISO timestamp on hover; value is the epoch ms the client
+// sorts on.
+const DERIVATION_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function derivationWhenCell(mtimeMs) {
+  if (!mtimeMs) return { html: '<span class="mono">—</span>', value: 0 };
+  const dt = new Date(mtimeMs);
+  const pad = (n) => String(n).padStart(2, '0');
+  const date = `${DERIVATION_MONTHS[dt.getMonth()]} ${dt.getDate()}, ${dt.getFullYear()}`;
+  const time = `${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+  const html = `<span class="when" title="${escapeHtml(dt.toISOString())}">${date}<br><span class="when__t">${time}</span></span>`;
+  return { html, value: mtimeMs };
+}
+
+// Client wiring for the index: live search, outcome filter, real-only toggle,
+// and sort — all in-page over the rows already rendered (no fetch). Each section
+// (experimental group) sorts and zebra-stripes independently; a group with no
+// matching rows hides itself, and the toolbar shows a live shown/grounded count.
+const DERIVATION_INDEX_CLIENT = `<script>
+(function () {
+  var root = document.querySelector('[data-derivation-index]');
+  if (!root) return;
+  var search = root.querySelector('.idx-search');
+  var seg = [].slice.call(root.querySelectorAll('.idx-seg button'));
+  var realChk = root.querySelector('.idx-real');
+  var sortSel = root.querySelector('.idx-sortsel');
+  var countEl = root.querySelector('[data-idx-count]');
+  var emptyEl = root.querySelector('[data-idx-empty]');
+  var sections = [].slice.call(root.querySelectorAll('.idx-group'));
+  var verdict = 'all';
+  var WIN = 'grounded_anagnorisis';
+  function num(v) { var n = parseFloat(v); return isNaN(n) ? 0 : n; }
+  function rowsOf(sec) { return [].slice.call(sec.querySelectorAll('tr.idx-row')); }
+  function matches(tr) {
+    var q = (search && search.value || '').trim().toLowerCase();
+    if (q && (tr.dataset.label || '').indexOf(q) < 0) return false;
+    if (verdict !== 'all' && tr.dataset.verdict !== verdict) return false;
+    if (realChk && realChk.checked && tr.dataset.mode !== 'real') return false;
+    return true;
+  }
+  function compare(key, a, b) {
+    var ord = num(a.dataset.ord) - num(b.dataset.ord);
+    if (key === 'wins') {
+      var aw = a.dataset.verdict === WIN ? 0 : 1;
+      var bw = b.dataset.verdict === WIN ? 0 : 1;
+      return (aw - bw) || ord;
+    }
+    if (key === 'score') return (num(b.dataset.score) - num(a.dataset.score)) || ord;
+    if (key === 'turns') return (num(a.dataset.turns) - num(b.dataset.turns)) || ord;
+    if (key === 'cost') return (num(b.dataset.cost) - num(a.dataset.cost)) || ord;
+    if (key === 'label') {
+      var an = a.dataset.name || '', bn = b.dataset.name || '';
+      return an < bn ? -1 : an > bn ? 1 : 0;
+    }
+    return ord;
+  }
+  // Order the GROUP sections for the current key, using each section's best
+  // visible run — so the whole page reorders, not just rows within a group.
+  // (Without this, sorting only shuffles rows inside each of the ~20 condition
+  // groups and the page looks unchanged.) Ties fall back to recency (min ord).
+  function compareSection(key, a, b) {
+    if (key === 'wins') return (b.wins - a.wins) || (a.ord - b.ord);
+    if (key === 'score') return (b.score - a.score) || (a.ord - b.ord);
+    if (key === 'turns') return (a.turns - b.turns) || (a.ord - b.ord);
+    if (key === 'cost') return (b.cost - a.cost) || (a.ord - b.ord);
+    if (key === 'label') return a.group < b.group ? -1 : a.group > b.group ? 1 : 0;
+    return a.ord - b.ord;
+  }
+  // Each run renders as two rows: the data row (.idx-row) and a full-width
+  // summary caption row (.idx-sum) right after it. Stash the caption on its
+  // data row so sort/filter/striping move and hide them together as one unit.
+  sections.forEach(function (sec) {
+    rowsOf(sec).forEach(function (tr) {
+      var nx = tr.nextElementSibling;
+      tr.sumRow = nx && nx.classList && nx.classList.contains('idx-sum') ? nx : null;
+    });
+  });
+  function apply() {
+    var key = sortSel ? sortSel.value : 'recent';
+    var shown = 0, wins = 0;
+    var stats = sections.map(function (sec) {
+      var tbody = sec.querySelector('tbody');
+      var rows = rowsOf(sec);
+      rows.sort(function (a, b) { return compare(key, a, b); });
+      rows.forEach(function (tr) { tbody.appendChild(tr); if (tr.sumRow) tbody.appendChild(tr.sumRow); });
+      var visible = 0, secWins = 0, alt = false;
+      var agg = { ord: Infinity, wins: 0, score: -1, turns: Infinity, cost: -1, group: sec.getAttribute('data-group') || '' };
+      rows.forEach(function (tr) {
+        var ok = matches(tr);
+        tr.hidden = !ok;
+        tr.classList.remove('is-alt');
+        if (tr.sumRow) { tr.sumRow.hidden = !ok; tr.sumRow.classList.remove('is-alt'); }
+        if (!ok) return;
+        visible += 1; shown += 1;
+        if (alt) { tr.classList.add('is-alt'); if (tr.sumRow) tr.sumRow.classList.add('is-alt'); }
+        alt = !alt;
+        agg.ord = Math.min(agg.ord, num(tr.dataset.ord));
+        agg.score = Math.max(agg.score, num(tr.dataset.score));
+        agg.turns = Math.min(agg.turns, num(tr.dataset.turns));
+        agg.cost = Math.max(agg.cost, num(tr.dataset.cost));
+        if (tr.dataset.verdict === WIN) { wins += 1; secWins += 1; agg.wins += 1; }
+      });
+      sec.hidden = visible === 0;
+      var counter = sec.querySelector('[data-sec-count]');
+      if (counter) counter.textContent = visible + (visible === 1 ? ' run' : ' runs') + (secWins ? ' \\u00b7 ' + secWins + ' grounded' : '');
+      return agg;
+    });
+    if (sections.length > 1 && sections[0].parentNode) {
+      var parent = sections[0].parentNode;
+      stats
+        .map(function (agg, i) { return { agg: agg, sec: sections[i] }; })
+        .sort(function (a, b) { return compareSection(key, a.agg, b.agg); })
+        .forEach(function (s) { parent.appendChild(s.sec); });
+    }
+    if (emptyEl) emptyEl.hidden = shown !== 0;
+    if (countEl) countEl.textContent = shown + ' shown \\u00b7 ' + wins + ' grounded';
+  }
+  if (search) search.addEventListener('input', apply);
+  if (realChk) realChk.addEventListener('change', apply);
+  if (sortSel) sortSel.addEventListener('change', apply);
+  seg.forEach(function (b) {
+    b.addEventListener('click', function () {
+      verdict = b.dataset.verdict;
+      seg.forEach(function (x) {
+        var on = x === b;
+        x.classList.toggle('is-on', on);
+        x.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+      apply();
+    });
+  });
+  // Seed the outcome filter from ?verdict= so the dashboard Signal chart can
+  // deep-link into one outcome (e.g. /derivation?verdict=aporia). Only a value
+  // matching one of the toggle buttons is honoured; anything else stays 'all'.
+  try {
+    var qv = new URL(window.location.href).searchParams.get('verdict');
+    var match = qv && seg.filter(function (b) { return b.dataset.verdict === qv; })[0];
+    if (match) {
+      verdict = qv;
+      seg.forEach(function (x) {
+        var on = x === match;
+        x.classList.toggle('is-on', on);
+        x.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+    }
+  } catch (_e) {
+    /* malformed URL — leave the filter at 'all' */
+  }
+  apply();
+})();
+</script>`;
+
+function liveStatusChip(live) {
+  const status = live.effectiveStatus || live.status || 'running';
+  const cls =
+    status === 'complete' ? 'chip--ok' : status === 'failed' || status === 'stale' ? 'chip--bad' : 'chip--live';
+  return `<span class="chip ${cls}">${escapeHtml(status)}</span>`;
+}
+
+function publicDerivationLine(line) {
+  return line.role !== 'director' || line.meta?.release || line.meta?.phase?.name;
+}
+
+function liveProgress(live) {
+  const turnCap = Number(live.turnCap || 0);
+  const turns = Array.isArray(live.turns) ? live.turns.length : 0;
+  const pct = turnCap ? Math.max(0, Math.min(100, Math.round((turns / turnCap) * 100))) : 0;
+  return { turns, turnCap, pct };
+}
+
+function renderDerivationLivePanel(liveRuns) {
+  const runs = (liveRuns || []).filter((run) => run.effectiveStatus !== 'complete');
+  if (!runs.length) return '';
+  const items = runs
+    .slice(0, 8)
+    .map((run) => {
+      const p = liveProgress(run);
+      const latest = run.latest ? `t${run.latest.turn} D=${run.latest.D}` : 'awaiting first turn';
+      return `<a class="live-link" href="/derivation/${encodeURIComponent(run.label)}">
+<b>${escapeHtml(run.label)}</b>
+<span>${escapeHtml(run.effectiveStatus || run.status || 'running')} · ${escapeHtml(latest)} · ${p.turns}/${p.turnCap || '?'} turns</span>
+</a>`;
+    })
+    .join('\n');
+  return `<section class="live-panel" aria-label="Live derivation runs">
+<div class="live-panel__head">
+<h2>Live runs</h2>
+<a class="mono" href="/derivation/live">all live artifacts</a>
+</div>
+<div class="live-list">${items}</div>
+</section>`;
+}
+
+function renderDerivationLiveIndexHtml(runs) {
+  const body = runs.length
+    ? `<div class="live-list">${runs
+        .map((run) => {
+          const p = liveProgress(run);
+          const latest = run.latest ? `t${run.latest.turn} D=${run.latest.D}` : 'awaiting first turn';
+          const when = derivationWhenCell(run.mtimeMs);
+          return `<a class="live-link" href="/derivation/${encodeURIComponent(run.label)}">
+<b>${escapeHtml(run.label)}</b>
+<span>${liveStatusChip(run)} ${escapeHtml(latest)} · ${p.turns}/${p.turnCap || '?'} turns · updated ${when.html}</span>
+</a>`;
+        })
+        .join('\n')}</div>`
+    : '<p class="live-empty">No live derivation artifacts found.</p>';
+  return `${pageHead({ title: 'Live derivation runs · machine spirits', css: DERIVATION_CSS })}
+<body>
+${railHtml({
+  active: 'derivation',
+  sub: 'live proof runs',
+  hint: '<span><b>live proof runs</b> — read-only progress artifacts from run-derivation-loop.js</span><span class="navhint__sep">·</span><span>finished runs are under <a href="/derivation">proof runs</a></span>',
+})}
+<main class="wrap wrap--wide">
+<p class="mono" style="margin-top:14px"><a href="/derivation">← proof runs</a></p>
+<h1>Live proof runs</h1>
+<p class="lede">These rows read <span class="mono">live.json</span> artifacts under <span class="mono">exports/dramatic-derivation/loop/</span>. They do not attach to running processes or start paid work.</p>
+${body}
+</main>
+</body></html>`;
+}
+
+function renderDerivationLiveRunClient(initial) {
+  return `<script>
+(function () {
+  var state = ${safeJsonForScript(initial)};
+  var root = document.querySelector('[data-live-run]');
+  if (!root) return;
+  var label = root.getAttribute('data-label') || (state && state.label) || '';
+  var fallbackTimer = null;
+  function esc(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+  function statusClass(status) {
+    if (status === 'complete') return 'chip--ok';
+    if (status === 'failed' || status === 'stale') return 'chip--bad';
+    return 'chip--live';
+  }
+  function roleLabel(role) {
+    if (role === 'tutor') return 'Tutor';
+    if (role === 'learner') return 'Learner';
+    if (role === 'stage') return 'Stage';
+    if (role === 'director') return 'Director';
+    return role || 'Role';
+  }
+  function lineHtml(line) {
+    var role = line.role || '';
+    var cls = role === 'tutor' ? 'line--tutor' : role === 'learner' ? 'line--learner' : (role === 'director' || role === 'stage') ? 'line--director' : '';
+    var out = '<div class="line ' + cls + '"><span class="who">' + esc(roleLabel(role)) + ':</span> ' + esc(line.text || '') + '</div>';
+    var delib = line.meta && line.meta.deliberation;
+    if (delib && delib.note) out += '<div class="tmeta">- second voice: ' + esc(delib.note) + '</div>';
+    return out;
+  }
+  function turnHtml(turn) {
+    var stats = [
+      'D=' + esc(turn.D),
+      turn.forced ? 'forced' : '',
+      turn.released && turn.released.length ? 'release ' + turn.released.map(esc).join(', ') : '',
+      turn.adopted ? '+' + turn.adopted + ' adopted' : '',
+      turn.retracted ? '-' + turn.retracted + ' retracted' : '',
+      turn.derived ? '+' + turn.derived + ' voiced' : '',
+      turn.overreached ? turn.overreached + ' overreach' : '',
+      turn.intervened ? 'superego' : '',
+      turn.asserted ? 'asserts' : '',
+      turn.decayedNow && turn.decayedNow.length ? 'decay ' + turn.decayedNow.map(esc).join(', ') : '',
+      turn.repairedNow && turn.repairedNow.length ? 'repair ' + turn.repairedNow.map(esc).join(', ') : '',
+      turn.endedBy ? 'ends ' + esc(turn.endedBy) : ''
+    ].filter(Boolean).map(function (x) { return '<span class="live-pill">' + x + '</span>'; }).join('');
+    var phase = turn.phase && turn.phase.name ? '<span class="live-pill">' + esc(turn.phase.name) + '</span>' : '';
+    var events = (turn.events || []).map(function (event) {
+      return '<span class="flag flag--bad">flag ' + esc(event.type) + (event.detail ? ' - ' + esc(event.detail) : '') + '</span>';
+    }).join('');
+    var lines = (turn.lines || []).map(lineHtml).join('');
+    return '<section class="live-turn"><div class="live-turn__top"><span>turn ' + esc(turn.turn) + '</span><span class="live-turn__stats">' + phase + stats + '</span></div>' + lines + events + '</section>';
+  }
+  function render(live) {
+    var turns = live && Array.isArray(live.turns) ? live.turns : [];
+    var turnCap = Number(live && live.turnCap || 0);
+    var pct = turnCap ? Math.max(0, Math.min(100, Math.round((turns.length / turnCap) * 100))) : 0;
+    var status = (live && (live.effectiveStatus || live.status)) || 'running';
+    var latest = live && live.latest ? 'latest t' + live.latest.turn + ' D=' + live.latest.D : 'awaiting first turn';
+    var doneLink = live && live.completeAvailable ? '<a class="mono" href="/derivation/' + encodeURIComponent(label) + '">open finished artifact</a>' : '';
+    root.innerHTML =
+      '<div class="live-status"><span class="chip ' + statusClass(status) + '">' + esc(status) + '</span>' +
+      '<span class="chip">world ' + esc(live && live.worldId || '?') + '</span>' +
+      '<span class="chip">' + esc(latest) + '</span>' +
+      '<span class="chip">updated ' + esc(live && live.updatedAt || '?') + '</span>' +
+      doneLink + '</div>' +
+      '<div class="live-progress" aria-label="turn progress"><i style="width:' + pct + '%"></i></div>' +
+      '<p class="live-panel__meta">' + turns.length + '/' + (turnCap || '?') + ' turns recorded from ' + esc(live && live.scriptPath || '?') + '</p>' +
+      '<div class="live-turns">' + (turns.length ? turns.map(turnHtml).join('') : '<p class="live-empty">Waiting for the first completed turn.</p>') + '</div>';
+  }
+  async function poll() {
+    try {
+      var res = await fetch('/api/derivation/live/' + encodeURIComponent(label), { cache: 'no-store' });
+      if (!res.ok) return;
+      var json = await res.json();
+      state = json.run;
+      render(state);
+    } catch (_e) {}
+  }
+  function startPolling() {
+    if (fallbackTimer) return;
+    fallbackTimer = setInterval(poll, 1500);
+  }
+  render(state);
+  if (window.EventSource) {
+    var es = new EventSource('/api/derivation/live/' + encodeURIComponent(label) + '/events');
+    es.addEventListener('update', function (event) {
+      state = JSON.parse(event.data);
+      render(state);
+      if (state.effectiveStatus === 'complete' || state.effectiveStatus === 'failed') es.close();
+    });
+    es.onerror = function () {
+      es.close();
+      startPolling();
+    };
+  } else {
+    startPolling();
+  }
+})();
+</script>`;
+}
+
+function renderDerivationLiveRunHtml(live) {
+  return `${pageHead({ title: `${live.label} · live derivation`, css: DERIVATION_CSS })}
+<body>
+${railHtml({
+  active: 'derivation',
+  sub: `live proof run — ${live.label}`,
+  hint: `<span><b>live proof run</b> — ${escapeHtml(live.label)}</span><span class="navhint__sep">·</span><span>back to <a href="/derivation/live">live runs</a> or <a href="/derivation">finished proof runs</a></span>`,
+})}
+<main class="wrap">
+<p class="mono" style="margin-top:14px"><a href="/derivation/live">← live runs</a></p>
+<h1>${escapeHtml(live.worldTitle || live.worldId || live.label)}</h1>
+<p class="lede mono">${escapeHtml(live.label)} · ${escapeHtml(live.backend?.mode || '?')} · live artifact ${escapeHtml(live.worldPath || '?')}</p>
+<section class="live-panel" data-live-run data-label="${escapeHtml(live.label)}">
+<p class="live-empty">Loading live run...</p>
+</section>
+</main>
+${renderDerivationLiveRunClient(live)}
+</body></html>`;
+}
+
 function renderDerivationIndexHtml(runs) {
-  const rowHtml = ({ label, diagnosis: d, hasNotice }) => {
+  // Stable "most recent" ordering: the list arrives mtime-sorted, so the index
+  // here is what the client sorts back to when it resets to recency.
+  runs.forEach((run, i) => {
+    run.ord = i;
+  });
+  const rowHtml = ({ label, diagnosis: d, hasNotice, ord, mtimeMs }) => {
     const events = Object.entries(d.eventsByType || {})
       .map(([k, v]) => {
         const txt = `${escapeHtml(k)}×${v}`;
@@ -2567,6 +3520,11 @@ function renderDerivationIndexHtml(runs) {
       })
       .join(', ');
     const verdictOk = d.verdict === 'grounded_anagnorisis';
+    const verdictLabel = DERIVATION_VERDICT_LABEL[d.verdict] || d.verdict || '?';
+    const verdictClass = DERIVATION_VERDICT_CLASS[d.verdict] || 'vchip--disengaged';
+    const score = derivationScoreCell(d);
+    const when = derivationWhenCell(mtimeMs);
+    const summary = derivationPlainSummary(d);
     const adherence = d.releaseAdherence || {};
     const sg = d.tutorFigures?.superego;
     const staging = [
@@ -2583,24 +3541,40 @@ function renderDerivationIndexHtml(runs) {
         ? ` <span title="counsel folded in from ${escapeHtml(d.criticFeedback.source)}" style="color:var(--moss-deep)">⟲</span>`
         : '',
     ].join('');
-    return `<tr>
-<td><a href="/derivation/${encodeURIComponent(label)}">${escapeHtml(label)}</a>${marks}</td>
-<td><span class="chip ${verdictOk ? 'chip--ok' : 'chip--bad'}">${escapeHtml(d.verdict || '?')}</span></td>
+    // data-* attributes drive client-side search / filter / sort.
+    const haystack = escapeHtml(`${label} ${summary}`.toLowerCase());
+    return `<tr class="idx-row${verdictOk ? ' idx-row--win' : ''}" data-ord="${ord}" data-name="${escapeHtml(
+      label.toLowerCase(),
+    )}" data-label="${haystack}" data-verdict="${escapeHtml(d.verdict || '?')}" data-mode="${escapeHtml(
+      d.backend?.mode || '?',
+    )}" data-score="${score.value}" data-turns="${d.turnsPlayed ?? 0}" data-cost="${d.usage?.costUSD ?? 0}" data-mtime="${when.value}">
+<td><a class="run-name" href="/derivation/${encodeURIComponent(label)}">${escapeHtml(label)}</a>${marks}</td>
+<td><span class="vchip ${verdictClass}">${escapeHtml(verdictLabel)}</span></td>
+<td>${score.html}</td>
 <td class="mono">${d.firstForcedTurn ?? '—'} → ${d.assertedGroundedTurn ?? '—'}</td>
 <td class="mono">${d.turnsPlayed ?? '?'}/${d.turnCap ?? '?'}</td>
 <td class="mono">${events || '—'}</td>
 <td class="mono">${adherence.onCue ?? '—'} on cue${adherence.deviations?.length ? `, <span style="color:var(--brick-d)">${adherence.deviations.length} dev</span>` : ''}</td>
 <td class="mono">${staging}</td>
-<td class="mono">${derivationBackendChips(d.backend).slice(1).map(escapeHtml).join('<br>') || '—'}</td>
+<td class="mono">${derivationBackendCell(d.backend)}</td>
 <td class="mono">${d.elapsedMs ? `${(d.elapsedMs / 1000).toFixed(0)}s` : '—'} · $${(d.usage?.costUSD ?? 0).toFixed(2)}</td>
-</tr>`;
+<td class="mono">${when.html}</td>
+</tr>
+<tr class="idx-sum${verdictOk ? ' idx-sum--win' : ''}"><td colspan="11"><span class="run-summary">${escapeHtml(summary)}</span></td></tr>`;
   };
   const tableFor = (rs) =>
-    `<table class="idx"><thead><tr><th>run</th><th>verdict</th><th>forced → asserted</th><th>turns</th><th>events</th><th>releases</th><th>dramaturgy</th><th>backend</th><th>wall · cost</th></tr></thead><tbody>${rs.map(rowHtml).join('\n')}</tbody></table>`;
+    `<div class="idx-panel"><table class="idx idx--runs"><colgroup><col style="width:10%"><col style="width:12%"><col style="width:9%"><col style="width:7%"><col style="width:6%"><col style="width:11%"><col style="width:7%"><col style="width:9%"><col style="width:11%"><col style="width:7%"><col style="width:11%"></colgroup><thead><tr><th>run</th><th>outcome</th><th>proof</th><th>forced → asserted</th><th>turns</th><th>events</th><th>releases</th><th>dramaturgy</th><th>backend</th><th>wall · cost</th><th>when</th></tr></thead><tbody>${rs
+      .map(rowHtml)
+      .join('\n')}</tbody></table></div>`;
+  const winCount = (rs) => rs.filter((r) => r.diagnosis.verdict === 'grounded_anagnorisis').length;
+  const countText = (rs) => {
+    const w = winCount(rs);
+    return `${rs.length} run${rs.length === 1 ? '' : 's'}${w ? ` · ${w} grounded` : ''}`;
+  };
   // Experimental-condition grouping (diagnosis.group, set by --group or the
   // backfill script): one section per group, ordered by each group's most
-  // recent run (the list arrives mtime-sorted). All-ungrouped keeps the flat
-  // single table.
+  // recent run (the list arrives mtime-sorted). All-ungrouped keeps a single
+  // flat section. Each section is its own client-sortable unit.
   const grouped = new Map();
   for (const run of runs) {
     const key = run.diagnosis.group || '(ungrouped)';
@@ -2611,21 +3585,78 @@ function renderDerivationIndexHtml(runs) {
   const body = !runs.length
     ? '<p>No runs found. Run <span class="mono">npm run derivation:loop</span> first.</p>'
     : flat
-      ? tableFor(runs)
+      ? `<section class="idx-group" data-group="(all)"><p class="mono idx-flatcount" style="color:var(--ink-3)" data-sec-count>${countText(
+          runs,
+        )}</p>${tableFor(runs)}</section>`
       : [...grouped.entries()]
           .map(
             ([g, rs]) =>
-              `<h2 class="sect">${escapeHtml(g)} <span class="mono" style="color:var(--ink-3);font-weight:normal">(${rs.length} run${rs.length === 1 ? '' : 's'})</span></h2>\n${tableFor(rs)}`,
+              `<section class="idx-group" data-group="${escapeHtml(g)}"><h2 class="sect">${escapeHtml(
+                g,
+              )} <span class="mono" style="color:var(--ink-3);font-weight:normal" data-sec-count>${countText(
+                rs,
+              )}</span></h2>${tableFor(rs)}</section>`,
           )
           .join('\n');
+  // Top-line scoreboard — wins vs the two failure modes, across every run on
+  // disk (not just what the filters currently show; the client updates a live
+  // "shown" tally in the toolbar instead).
+  const tally = { grounded_anagnorisis: 0, disengagement: 0, aporia: 0, other: 0 };
+  for (const run of runs) {
+    const v = run.diagnosis.verdict;
+    if (v in tally) tally[v] += 1;
+    else tally.other += 1;
+  }
+  const scoreboard = runs.length
+    ? `<div class="idx-scoreboard">
+<span class="idx-tally idx-tally--win"><b>${tally.grounded_anagnorisis}</b> grounded</span>
+<span class="idx-tally"><b>${tally.disengagement}</b> disengaged</span>
+<span class="idx-tally"><b>${tally.aporia}</b> impasse</span>
+${tally.other ? `<span class="idx-tally"><b>${tally.other}</b> other</span>` : ''}
+<span class="idx-tally"><b>${runs.length}</b> runs total</span>
+</div>`
+    : '';
+  const toolbar = runs.length
+    ? `<div class="idx-tools" role="search">
+<input type="search" class="idx-search" placeholder="search runs by name or summary…" aria-label="Search runs by name or summary">
+<div class="idx-seg" role="group" aria-label="Filter by outcome">
+<button type="button" data-verdict="all" class="is-on" aria-pressed="true">all</button>
+<button type="button" data-verdict="grounded_anagnorisis" aria-pressed="false">wins</button>
+<button type="button" data-verdict="disengagement" aria-pressed="false">disengaged</button>
+<button type="button" data-verdict="aporia" aria-pressed="false">impasse</button>
+</div>
+<label class="idx-check"><input type="checkbox" class="idx-real"> real only</label>
+<label class="idx-sort">sort
+<select class="idx-sortsel" aria-label="Sort runs">
+<option value="recent">most recent</option>
+<option value="wins">wins first</option>
+<option value="score">most proof steps</option>
+<option value="turns">fewest turns</option>
+<option value="cost">highest cost</option>
+<option value="label">name A–Z</option>
+</select>
+</label>
+<span class="idx-count" data-idx-count></span>
+</div>`
+    : '';
   return `${pageHead({ title: 'Derivation runs · machine spirits', css: DERIVATION_CSS })}
 <body>
-${railHtml({ active: 'derivation', sub: 'dramatic-derivation staging loop — checker-verdict transcripts, no judge anywhere' })}
-<main class="wrap">
-<h1>Dramatic derivation — staging-loop runs</h1>
-<p class="lede">One row per attended iteration of <span class="mono">npm run derivation:loop</span>, grouped by experimental condition (<span class="mono">--group</span>). The verdict is the deterministic checker's (forced grounded anagnorisis vs the failure taxonomy) — no LLM judge. Artifacts live under <span class="mono">exports/dramatic-derivation/loop/</span>.</p>
+${railHtml({
+  active: 'derivation',
+  sub: 'proof runs — a fixed rule-checker decides each outcome, no AI judge anywhere',
+  hint: '<span><b>proof runs</b> — a fixed rule-checker (not an AI judge, not a quality score) decides whether the learner reached the hidden answer</span><span class="navhint__sep">·</span><span>for generated drama graded by AI critics, see <a href="/browse">scripts</a></span>',
+})}
+<main class="wrap wrap--wide" data-derivation-index>
+<h1>Proof runs — did the learner reach the hidden answer?</h1>
+<p class="lede">Each row is one tutoring run. The tutor has to lead the learner to a hidden conclusion purely by inference, and a fixed rule-checker — not an AI judge — decides the outcome: a run is <strong>grounded</strong> when the learner reaches the hidden conclusion and its proof closes; otherwise it ends in an <strong>impasse</strong> or the learner <strong>disengages</strong>. Runs are grouped by experimental condition (the <span class="mono">--group</span> flag); artifacts live under <span class="mono">exports/dramatic-derivation/loop/</span>.</p>
+${renderDerivationLivePanel(listDerivationLiveRuns())}
+${scoreboard}
+${toolbar}
+${runs.length ? '<p class="idx-empty" data-idx-empty hidden>No runs match your search or filters.</p>' : ''}
+${runs.length ? '<details class="idx-legend"><summary class="mono" style="cursor:pointer;color:var(--ink-3);font-size:12px">what the columns mean</summary><p class="mono" style="color:var(--ink-3);font-size:11px;line-height:1.6;margin:.4em 0 .8em">proof = how many of the required reasoning steps the learner established · forced → asserted = the turn the hidden fact had to be handed to the learner vs the turn the learner stated it themselves · events = per-turn flags from the rule-checker (plot move, repair, decay, act end…) · releases = planned fact-reveals that landed on cue vs off-schedule (dev) · dramaturgy = director-declared scene moves</p></details>' : ''}
 ${body}
 </main>
+${DERIVATION_INDEX_CLIENT}
 </body></html>`;
 }
 
@@ -2662,6 +3693,7 @@ function renderDerivationRunHtml({ label, diagnosis, result, world, commentary }
         const rawText = (line.text || '').trim();
         const text = escapeHtml(rawText);
         if (line.role === 'director') {
+          if (!publicDerivationLine(line)) return '';
           const dbits = [];
           if (line.meta?.phase?.name)
             dbits.push(
@@ -2673,7 +3705,7 @@ function renderDerivationRunHtml({ label, diagnosis, result, world, commentary }
             dbits.push(
               `<div class="tmeta">— releases <span class="release">${escapeHtml(line.meta.release)}</span></div>`,
             );
-          return `<div class="line line--director tts-fragment"${ttsDataAttrs('director', rawText, 'Director')}>${rawText ? ttsPlayButton('director') : ''}${text}</div>${dbits.join('')}`;
+          return `<div class="line line--director tts-fragment"${ttsDataAttrs('stage', rawText, 'Stage')}>${rawText ? ttsPlayButton('stage') : ''}${text}</div>${dbits.join('')}`;
         }
         if (line.role === 'tutor') {
           const move = line.meta?.move;
@@ -2757,7 +3789,11 @@ function renderDerivationRunHtml({ label, diagnosis, result, world, commentary }
 
   return `${pageHead({ title: `${label} · derivation`, css: DERIVATION_CSS })}
 <body>
-${railHtml({ active: 'derivation', sub: `staging-loop run — ${label}` })}
+${railHtml({
+  active: 'derivation',
+  sub: `proof run — ${label}`,
+  hint: `<span><b>one proof run</b> — ${escapeHtml(label)}</span><span class="navhint__sep">·</span><span>back to all <a href="/derivation">proof runs</a>, or read generated drama in <a href="/browse">scripts</a></span>`,
+})}
 <main class="wrap">
 <p class="mono" style="margin-top:14px"><a href="/derivation">← all runs</a></p>
 <h1>${escapeHtml(world?.title || result.worldId || label)}</h1>
@@ -2779,12 +3815,14 @@ ${renderDerivationArcSvg({
   result,
 })}
 ${derivationSlopeCaption(diagnosis.learningSlope || null)}
+<h2 class="sect">Logic projection — board closure by turn</h2>
+${renderDerivationLogicVisualizer(diagnosis.logicProjection || null)}
 <h2 class="sect">Dialogue discipline</h2>
 <table class="idx"><thead><tr><th>role</th><th>turns</th><th>avg sentences</th><th>avg words</th></tr></thead><tbody>${discipline}</tbody></table>
 ${blocks.join('\n')}
 ${
   result.proof
-    ? `<h2 class="sect">The extracted proof (what did the forcing)</h2><pre class="panel">${escapeHtml(renderDerivationProof(result.proof))}</pre><div class="mdblock">${derivationMdToHtml(renderDerivationProofProse(result.proof, world))}</div>`
+    ? `<h2 class="sect">The extracted proof (what did the forcing)</h2><pre class="panel">${escapeHtml(renderDerivationProof(result.proof))}</pre><div class="mdblock">${derivationMdToHtml(renderDerivationProofProse(result.proof, world, { ledger: result.ledger }))}</div>`
     : ''
 }
 <h2 class="sect">Instrument panel (programmatic eval — no judge)</h2>
@@ -2795,14 +3833,15 @@ ${TRANSCRIPT_TTS_CLIENT}
 </body></html>`;
 }
 
-function framedNoteHtml({ active, sub, src, title, frameTitle, brand = 'machine spirits' }) {
+function framedNoteHtml({ active, sub, src, title, frameTitle, hint = '', brand = 'machine spirits' }) {
   const css = `html,body{height:100%}
 body{display:flex;flex-direction:column;overflow:hidden}
 .rail{flex:0 0 auto}
+.navhint{flex:0 0 auto}
 .summaryframe{flex:1 1 auto;width:100%;border:0;display:block;background:var(--paper)}`;
   return `${pageHead({ title, css })}
 <body>
-${railHtml({ active, brand, sub })}
+${railHtml({ active, brand, sub, hint })}
 <iframe id="summaryFrame" class="summaryframe" src="${src}" title="${frameTitle || title}"></iframe>
 <script>
 (function () {
@@ -2839,6 +3878,11 @@ function summaryWrapperHtml() {
     src: '/arc',
     title: 'Summary · the dramatic-recognition arc',
     frameTitle: 'From Paper 2.0 to dramatic recognition — the synthesis note',
+    hint: orientBand(
+      'summary',
+      'the durable synthesis note tracing the whole dramatic-recognition arc',
+      'project writing; the working surfaces are on the rail above',
+    ),
   });
 }
 
@@ -3109,6 +4153,84 @@ function ttsPlayButton(label = 'fragment') {
   return `<button type="button" class="tts-btn" data-tts-play title="Play ${escapeHtml(label)}" aria-label="Play ${escapeHtml(label)}">play</button>`;
 }
 
+// ── Dashboard mini-charts (server-rendered, palette-themed) ───────────────────
+// Pure functions returning HTML/CSS bar charts — no client JS, no chart library.
+// Every bar maps directly to a DB count, so the picture cannot drift from the
+// number it claims to show. Colours are CSS custom-property references so the
+// same category reads consistently across the light/dark themes.
+const fmtCount = (n) => Number(n || 0).toLocaleString('en-US');
+
+// A proportional stacked bar + legend from [{label, n, color, href?}]. Percentages
+// are of the summed n, so callers pass exactly the segments they want totalled
+// (e.g. the three classified form-classes, excluding nulls). A segment carrying an
+// `href` renders as a link (both the bar slice and its legend entry) so the chart
+// doubles as navigation into that slice; an anchor is keyboard-focusable for free,
+// and the bar slice — which has no text of its own — gets an aria-label.
+function splitBarHtml(segments, { ariaLabel = 'distribution' } = {}) {
+  const list = Array.isArray(segments) ? segments : [];
+  const total = list.reduce((sum, x) => sum + (x.n || 0), 0) || 1;
+  const pct = (n) => (n / total) * 100;
+  const bar = list
+    .filter((x) => x.n > 0)
+    .map((x) => {
+      const style = `width:${pct(x.n).toFixed(2)}%;background:${x.color}`;
+      const title = `${escapeHtml(x.label)} ${fmtCount(x.n)} (${Math.round(pct(x.n))}%)`;
+      return x.href
+        ? `<a class="vbar__seg vbar__seg--link" href="${escapeHtml(x.href)}" style="${style}" title="${title}" aria-label="${title}"></a>`
+        : `<span class="vbar__seg" style="${style}" title="${title}"></span>`;
+    })
+    .join('');
+  const legend = list
+    .map((x) => {
+      const inner =
+        `<span class="leg__dot" style="background:${x.color}"></span>` +
+        `${escapeHtml(x.label)} <b>${fmtCount(x.n)}</b> <span class="leg__pct">${Math.round(pct(x.n))}%</span>`;
+      return x.href
+        ? `<a class="leg leg--link" href="${escapeHtml(x.href)}">${inner}</a>`
+        : `<span class="leg">${inner}</span>`;
+    })
+    .join('');
+  return `<div class="vbar" role="img" aria-label="${escapeHtml(ariaLabel)}">${bar}</div><div class="legs">${legend}</div>`;
+}
+
+// A 5-bar mini-histogram for one 0–100 quantized dramatic-form dimension.
+// `levels` is [{lv, n}] (any subset of {0,25,50,75,100}); bars are rendered at
+// all five fixed bins so dimensions stay visually comparable, with the
+// count-weighted mean printed beneath.
+function histHtml(label, levels) {
+  const BINS = [0, 25, 50, 75, 100];
+  const byLv = new Map((Array.isArray(levels) ? levels : []).map((x) => [Number(x.lv), x.n]));
+  const counts = BINS.map((b) => byLv.get(b) || 0);
+  const max = Math.max(1, ...counts);
+  const totalN = counts.reduce((sum, n) => sum + n, 0) || 1;
+  const avg = Math.round(BINS.reduce((sum, b, i) => sum + b * counts[i], 0) / totalN);
+  const bars = BINS.map(
+    (b, i) =>
+      `<span class="hbar" style="height:${Math.max(2, (counts[i] / max) * 100).toFixed(1)}%"` +
+      ` title="${b}: ${fmtCount(counts[i])}"></span>`,
+  ).join('');
+  return (
+    `<div class="hist"><div class="hist__bars">${bars}</div>` +
+    `<div class="hist__l">${escapeHtml(label)}</div><div class="hist__avg">avg ${avg}</div></div>`
+  );
+}
+
+// An inline sparkline for one run's per-script score series (0–100 each). One
+// thin bar per scored script, oldest → newest; a 0 reads as a baseline gap so a
+// weak script shows as a dip. Every value is rendered (no cap), so the glyph
+// stays a faithful one-bar-per-script picture; the exact dimension, count and
+// mean ride along in the title for hover. Empty series → a muted placeholder.
+function sparkBarHtml(values, { dimension = 'recontextualization' } = {}) {
+  const list = (Array.isArray(values) ? values : []).filter((v) => Number.isFinite(v));
+  if (!list.length) return '<span class="spark spark--empty" aria-hidden="true"></span>';
+  const bars = list
+    .map((v) => `<span class="spark__b" style="height:${Math.max(0, Math.min(100, v)).toFixed(0)}%"></span>`)
+    .join('');
+  const avg = Math.round(list.reduce((sum, v) => sum + v, 0) / list.length);
+  const title = `${dimension} across ${fmtCount(list.length)} scored script${list.length === 1 ? '' : 's'} · avg ${avg}`;
+  return `<span class="spark" role="img" aria-label="${escapeHtml(title)}" title="${escapeHtml(title)}">${bars}</span>`;
+}
+
 // ── Dashboard front door (GET /) ──────────────────────────────────────────────
 // The app's introduction + onboarding. Renders live corpus stats server-side
 // (no fetch flash, works JS-off), a first-visit recognition banner, a five-rung
@@ -3125,11 +4247,13 @@ function renderDashboardHtml(stats = {}) {
     labels: 0,
     openFlags: 0,
     replays: 0,
+    proofRuns: 0,
     disciplines: [],
     ...stats,
   };
   const fmt = (n) => Number(n || 0).toLocaleString('en-US');
   const disciplines = s.disciplines || [];
+  const recentRuns = Array.isArray(stats.recentRuns) ? stats.recentRuns : [];
   const disciplineChips = disciplines.length
     ? disciplines
         .map((d) => {
@@ -3140,21 +4264,125 @@ function renderDashboardHtml(stats = {}) {
         .join('')
     : '<span class="muted">no disciplines tagged yet — generate a run to populate the corpus</span>';
 
-  const statCell = (n, label) =>
-    `<div class="stat"><div class="stat__n">${fmt(n)}</div><div class="stat__l">${label}</div></div>`;
-  const statStrip = [
-    statCell(s.scripts, 'scripts'),
-    statCell(s.runs, 'runs'),
-    statCell(disciplines.length, 'disciplines'),
-    statCell(s.scores, 'critic scores'),
-    statCell(s.critics, 'critics'),
-    statCell(s.replays, 'replays'),
-  ].join('');
-  const statSub =
-    `${fmt(s.scored)} of ${fmt(s.scripts)} scripts scored · ${fmt(s.labels)} human labels · ` +
+  // SQLite CURRENT_TIMESTAMP is UTC and space-separated ("2026-06-05 16:20:01");
+  // parse as UTC, then render a coarse "Xh ago" against the server clock (this is
+  // a live server render, so Date.now() is fine here — unlike workflow scripts).
+  const parseTs = (str) => {
+    if (!str) return null;
+    const ms = Date.parse(String(str).replace(' ', 'T') + 'Z');
+    return Number.isFinite(ms) ? ms : null;
+  };
+  const relTime = (ms) => {
+    if (!ms) return '—';
+    const sec = Math.round((Date.now() - ms) / 1000);
+    if (sec < 0) return 'just now';
+    if (sec < 60) return `${sec}s ago`;
+    if (sec < 3600) return `${Math.round(sec / 60)}m ago`;
+    if (sec < 86400) return `${Math.round(sec / 3600)}h ago`;
+    return `${Math.round(sec / 86400)}d ago`;
+  };
+  const pctScored = s.scripts ? Math.round((s.scored / s.scripts) * 100) : 0;
+  const lastRunRel = recentRuns.length ? relTime(parseTs(recentRuns[0].createdAt)) : '—';
+  const lastProofRel = s.proofLastMs ? relTime(s.proofLastMs) : '—';
+
+  // Status command-bar digest: a factual one-liner, not a fabricated liveness
+  // claim (there is no cheap "a run is executing right now" signal). The dot and
+  // the open-flags segment turn amber only when something actually needs you.
+  // Both corpora carry a clock: "last run" is the scored scripts DB; "last proof"
+  // is the file-based derivation loop — so a live arc never reads as idle.
+  const statusSegs = [
+    `${fmt(s.scripts)} scripts`,
+    `${fmt(s.proofRuns)} proof runs`,
+    `last run ${lastRunRel}`,
+    `last proof ${lastProofRel}`,
+    `${pctScored}% scored`,
+  ]
+    .map((t) => `<span class="cr-status__seg">${t}</span>`)
+    .join('');
+  const statusLine =
+    statusSegs +
     (s.openFlags
-      ? `<strong class="flag">${fmt(s.openFlags)} open review flag${s.openFlags === 1 ? '' : 's'}</strong>`
-      : '0 open review flags');
+      ? `<span class="cr-status__seg is-warn">${fmt(s.openFlags)} open flag${s.openFlags === 1 ? '' : 's'}</span>`
+      : '');
+
+  // Three instrument panels — same numbers as the old flat strip, regrouped as
+  // gauges: what exists (corpus) · what's moving (activity) · what needs review.
+  const opsRow = (n, label, warn = false) =>
+    `<div class="ops-row${warn ? ' is-warn' : ''}"><span class="ops-row__n">${n}</span><span class="ops-row__l">${label}</span></div>`;
+  const opsHtml = [
+    `<div class="ops-panel"><div class="ops-panel__h">corpus</div>${opsRow(fmt(s.scripts), 'scripts')}${opsRow(fmt(s.proofRuns), 'proof runs')}${opsRow(fmt(s.replays), 'replays')}</div>`,
+    `<div class="ops-panel"><div class="ops-panel__h">activity</div>${opsRow(fmt(s.runs), 'runs')}${opsRow(lastRunRel, 'last run · scripts')}${opsRow(lastProofRel, 'last run · proofs')}${opsRow(fmt(disciplines.length), 'disciplines')}</div>`,
+    `<div class="ops-panel"><div class="ops-panel__h">review</div>${opsRow(`${pctScored}%`, `scored · ${fmt(s.scored)}/${fmt(s.scripts)}`)}${opsRow(fmt(s.labels), `human labels · ${fmt(s.critics)} critics`)}${opsRow(fmt(s.openFlags), `open flag${s.openFlags === 1 ? '' : 's'}`, s.openFlags > 0)}</div>`,
+  ].join('');
+
+  // Recent-runs monitoring feed — the genuinely "control room" piece, drawn from
+  // the same per-run query the run list uses (newest-first, with live counts).
+  const feedHtml = recentRuns.length
+    ? recentRuns
+        .map(
+          (r) =>
+            `<a class="feed-row" href="/browse?runId=${encodeURIComponent(r.id)}"><span class="feed-row__dot${
+              r.reviewFlagCount ? ' is-warn' : ''
+            }"></span><span class="feed-row__id">${escapeHtml(String(r.id))}</span><span class="feed-row__m">${fmt(
+              r.itemCount,
+            )} scripts · ${fmt(r.scoreCount)} scored${
+              r.reviewFlagCount ? ` · ${fmt(r.reviewFlagCount)} flag${r.reviewFlagCount === 1 ? '' : 's'}` : ''
+            }</span>${sparkBarHtml(r.spark)}<span class="feed-row__t">${relTime(parseTs(r.createdAt))}</span></a>`,
+        )
+        .join('')
+    : '<div class="feed-empty">no runs yet — launch one to populate the corpus</div>';
+
+  // ── Corpus-signal charts ────────────────────────────────────────────────────
+  // Two verdict splits side by side — the LLM critic's dramatic-form class on
+  // scored scripts vs the deterministic rule-checker's outcome on proof runs —
+  // then where the script scores land on each dramatic-form dimension. Each
+  // headline % is of the bar's own total (classified verdicts / decided runs).
+  // Each form-class segment deep-links into /browse pre-filtered to that class
+  // (the browse client seeds its form filter from ?form=); recognition/flat/trap
+  // are exactly the formSelect option values, so the link lands on a live filter.
+  const fcMap = new Map((Array.isArray(s.formClass) ? s.formClass : []).map((r) => [r.name, r.n]));
+  const fcSegments = [
+    { label: 'recognition', n: fcMap.get('recognition') || 0, color: 'var(--moss)', href: '/browse?form=recognition' },
+    { label: 'flat', n: fcMap.get('flat') || 0, color: 'var(--ink-4)', href: '/browse?form=flat' },
+    { label: 'trap', n: fcMap.get('trap') || 0, color: 'var(--brick)', href: '/browse?form=trap' },
+  ];
+  const fcClassified = fcSegments.reduce((sum, x) => sum + x.n, 0);
+  const fcUnclassified = fcMap.get('(unclassified)') || 0;
+  const fcRecogPct = fcClassified ? Math.round((fcSegments[0].n / fcClassified) * 100) : 0;
+
+  const PV_META = {
+    grounded_anagnorisis: { label: 'grounded', color: 'var(--moss)' },
+    disengagement: { label: 'disengagement', color: 'var(--ink-4)' },
+    aporia: { label: 'aporia', color: 'var(--brick)' },
+  };
+  // Each verdict segment deep-links into /derivation pre-filtered to that outcome
+  // (its index client seeds the outcome toggle from ?verdict=). Only the three
+  // verdicts the index recognises get a link; any unknown key stays a plain span.
+  const proofVerdicts = s.proofVerdicts && typeof s.proofVerdicts === 'object' ? s.proofVerdicts : {};
+  const pvSegments = Object.entries(proofVerdicts)
+    .filter(([k]) => k !== '(none)')
+    .map(([k, n]) => ({
+      label: PV_META[k]?.label || k.replace(/_/g, ' '),
+      n,
+      color: PV_META[k]?.color || 'var(--ochre)',
+      ...(PV_META[k] ? { href: '/derivation?verdict=' + encodeURIComponent(k) } : {}),
+    }))
+    .sort((a, b) => b.n - a.n);
+  const pvTotal = pvSegments.reduce((sum, x) => sum + x.n, 0);
+  const pvGroundedPct = pvTotal ? Math.round(((proofVerdicts.grounded_anagnorisis || 0) / pvTotal) * 100) : 0;
+
+  const scoreDist = s.scoreDist && typeof s.scoreDist === 'object' ? s.scoreDist : {};
+  const DIST_DIMS = [
+    ['recontextualization', 'recontextualization'],
+    ['stated_insight', 'stated insight'],
+    ['rupture', 'rupture'],
+    ['global_coherence', 'global coherence'],
+  ];
+  const distHtml = DIST_DIMS.map(([key, label]) => histHtml(label, scoreDist[key] || [])).join('');
+  const distTotal = DIST_DIMS.reduce(
+    (sum, [key]) => sum + (scoreDist[key] || []).reduce((a, x) => a + (x.n || 0), 0),
+    0,
+  );
 
   const RUNGS = [
     [
@@ -3162,31 +4390,38 @@ function renderDashboardHtml(stats = {}) {
       'Read a finished drama',
       'Open the browser and read one generated script end to end — a tutoring dialogue staged as a short play, turn by turn.',
       '/browse',
-      'browse',
+      'scripts',
     ],
     [
       2,
+      'See the other corpus — proof runs',
+      'Open the proof runs: the same kind of tutoring dialogue, but here the tutor must lead the learner to a hidden answer by inference, and a fixed rule-checker — not an AI critic — decides whether they truly got there.',
+      '/derivation',
+      'proof runs',
+    ],
+    [
+      3,
       'Learn the shared vocabulary',
       'Open the ontology to see the terms the whole system reasons in — moves, agencies, recognition — through system, tutor &amp; learner lenses.',
       '/ontology',
       'ontology',
     ],
     [
-      3,
-      'Compose your own spec',
-      'Assemble a drama-machine spec in the composer; it validates live against the ontology as you build the turn plan.',
-      '/compose',
-      'compose',
-    ],
-    [
       4,
-      'Stage a run',
-      'Launch a generation from the runs console — free/mock by default, with every cost class shown before you ever commit a paid call.',
-      '/runs',
-      'runs',
+      'Compose a scene',
+      'Sit in on a live tutoring scene and play one seat turn by turn — or switch to batch mode to assemble a full spec, validated live against the ontology as you build the turn plan.',
+      '/compose/live',
+      'compose a scene',
     ],
     [
       5,
+      'Launch a run',
+      'Launch a generation from the runs console — free/mock by default, with every cost class shown before you ever commit a paid call.',
+      '/runs',
+      'launch a run',
+    ],
+    [
+      6,
       'Read a recognition',
       'Open a counterfactual replay diffed against its original — where a single changed move reshapes the drama.',
       '/replays',
@@ -3205,99 +4440,91 @@ function renderDashboardHtml(stats = {}) {
       </div>`,
   ).join('');
 
-  const ACTS = [
+  // The five working surfaces — the rail's primary row, minus home. Three
+  // collections of finished tutoring dialogue (scripts, proof runs, replays) and
+  // the two tools that make more. Grouping them here, matched and adjacent, mirrors
+  // the rail. The pair most often confused — scripts vs proof runs — sit side by
+  // side, with what decides each outcome (an AI critic vs a fixed rule-checker)
+  // stated in the card tag.
+  const SURFACES = [
     [
-      'act--moss',
-      'Understand',
-      [
-        [
-          'Browse scripts',
-          'Every generated drama with its full trace, critic scores &amp; human labels — filter by run, discipline or free text.',
-          '/browse',
-          'open browser',
-        ],
-        [
-          'Ontology atlas',
-          'The shared TBox the system reasons in, projected into system, tutor &amp; learner lenses with the raw rules per module.',
-          '/ontology',
-          'open atlas',
-        ],
-      ],
+      'surf--corpus',
+      'graded by an AI critic',
+      'scripts',
+      'Tutoring dialogues staged as short plays. An AI critic grades each one on dramatic form (was a reversal of understanding earned?). Filter by run, discipline or free text.',
+      '/browse',
     ],
     [
-      'act--ochre',
-      'Create',
-      [
-        [
-          'Drama composer',
-          'Assemble an Aristotelian spec — mythos, ethos, turn plan — validated live against the poetics ontology as you go.',
-          '/compose',
-          'open composer',
-        ],
-        [
-          'Runs console',
-          'Launch generative · replay · adversarial-CLI · online-scoring runs, with cost classes shown and a dry-run default.',
-          '/runs',
-          'open console',
-        ],
-      ],
+      'surf--corpus',
+      'checked by a fixed rule',
+      'proof runs',
+      'Tutoring runs where the tutor must lead the learner to a hidden answer by inference. A fixed rule-checker — not an AI judge, not a quality score — decides whether the learner genuinely got there. (The project calls these derivation runs.)',
+      '/derivation',
     ],
     [
-      'act--indigo',
-      'Recognize',
-      [
-        [
-          'Replays',
-          'Counterfactual revisions diffed against their originals — see where one changed move reshapes the recognition.',
-          '/replays',
-          'open replays',
-        ],
-        [
-          'Derivation runs',
-          'The staging loop where recognition must be earned by inference: D(t) descent curves, director-declared movements, release adherence — every verdict computed by the checker, no judge anywhere.',
-          '/derivation',
-          'open the runs',
-        ],
-        [
-          'Summary',
-          'The synthesis note tracing the whole dramatic-recognition arc, from the paper through to this scriptorium.',
-          '/summary',
-          'read the summary',
-        ],
-        [
-          'Adaptation — story so far',
-          'A dated lab-notebook narrative of every path tried toward making the tutor adapt — what works, what is a null, and what is still live. Provisional by design.',
-          '/story',
-          'read the story so far',
-        ],
-        [
-          'Three instruments — one repertoire',
-          'The ontology memory model, the small-rhetoric scorers &amp; the dramatic-form rubric — what each measured by grain, and how to exploit the few wins into controlled adaptive mechanisms. With a gallery of failed &amp; minimally-succeeded adaptation.',
-          '/repertoire',
-          'read the analysis',
-        ],
-        [
-          'The development board',
-          'A read-only rendering of TODO.md: every tracked item as a filterable status × theme grid. The 8 open items in detail, the 40 closed &amp; ruled-out items archived. Originates no claims — the source stays in TODO.md.',
-          '/board',
-          'open the board',
-        ],
-      ],
+      'surf--corpus',
+      'one move changed',
+      'replays',
+      'A finished script re-run with a single move altered, then diffed against the original — so you can see how one change reshapes where recognition does or does not cohere.',
+      '/replays',
+    ],
+    [
+      'surf--make',
+      'make · a scene',
+      'compose a scene',
+      'Sit in on a live tutoring scene and play one seat turn by turn — or switch to batch mode to assemble a full spec, validated live against the poetics ontology.',
+      '/compose/live',
+    ],
+    [
+      'surf--make',
+      'make · a run',
+      'launch a run',
+      'Spawn runs — generative · replay · adversarial-CLI · online-scoring. Free/mock by default; cost shown before any paid call.',
+      '/runs',
     ],
   ];
-  const actsHtml = ACTS.map(
-    ([cls, name, cards]) => `
-      <section class="act ${cls}">
-        <h3 class="act__h">${name}</h3>
-        <div class="act__cards">
-          ${cards
-            .map(
-              ([t, d, href, cta]) =>
-                `<a class="card" href="${href}"><div class="card__t">${t}</div><div class="card__d">${d}</div><div class="card__cta">${cta} →</div></a>`,
-            )
-            .join('')}
-        </div>
-      </section>`,
+  const surfacesHtml = SURFACES.map(
+    ([cls, kind, name, desc, href]) => `
+      <a class="surf ${cls}" href="${href}">
+        <div class="surf__k">${kind}</div>
+        <div class="surf__t">${name}</div>
+        <div class="surf__d">${desc}</div>
+        <div class="surf__go">open →</div>
+      </a>`,
+  ).join('');
+
+  // Everything that isn't a working surface: reference material and the project's
+  // own writing. Lighter weight than the surfaces above — read at leisure.
+  const REFS = [
+    [
+      'Ontology atlas',
+      'The shared TBox the system reasons in, projected into system, tutor &amp; learner lenses with the raw rules per module.',
+      '/ontology',
+    ],
+    [
+      'Summary',
+      'The synthesis note tracing the whole dramatic-recognition arc, from the paper through to this scriptorium.',
+      '/summary',
+    ],
+    [
+      'Adaptation — story so far',
+      'A dated lab-notebook narrative of every path tried toward making the tutor adapt: what works, what is a null, what is still live. Provisional by design.',
+      '/story',
+    ],
+    [
+      'Three instruments — one repertoire',
+      'The ontology memory model, the small-rhetoric scorers &amp; the dramatic-form rubric — what each measured by grain, and how the few wins might become adaptive mechanisms.',
+      '/repertoire',
+    ],
+    [
+      'The development board',
+      'A read-only rendering of TODO.md: every tracked item as a filterable status × theme grid. Originates no claims — the source stays in TODO.md.',
+      '/board',
+    ],
+  ];
+  const refsHtml = REFS.map(
+    ([t, d, href]) =>
+      `<a class="card" href="${href}"><div class="card__t">${t}</div><div class="card__d">${d}</div><div class="card__cta">open →</div></a>`,
   ).join('');
 
   return `${pageHead({
@@ -3309,21 +4536,93 @@ function renderDashboardHtml(stats = {}) {
 .welcome h2{ margin:7px 0 6px; font:italic 22px/1.2 "Fraunces","Source Serif 4",Georgia,serif; font-variation-settings:"SOFT" 50,"WONK" 1,"opsz" 72; color:var(--ink); }
 .welcome p{ margin:0; color:var(--ink-2); max-width:66ch; }
 .welcome__btns{ display:flex; gap:10px; margin-top:13px; flex-wrap:wrap; }
-.hero{ padding:40px 0 10px; }
-.hero__k{ font:600 11px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.1em; color:var(--ink-4); }
-.hero h1{ margin:10px 0 12px; font:italic 40px/1.05 "Fraunces","Source Serif 4",Georgia,serif; font-variation-settings:"SOFT" 50,"WONK" 1,"opsz" 96; letter-spacing:-.015em; color:var(--ink); }
-.hero p{ margin:0 0 20px; font-size:16px; color:var(--ink-2); max-width:70ch; }
-.hero__cta{ display:flex; gap:12px; flex-wrap:wrap; }
+.cr-head{ margin:18px 0 0; border:1px solid var(--rule); background:var(--paper-4); border-top:3px solid var(--moss-deep); padding:20px 22px 18px; }
+.cr-head__top{ display:flex; align-items:flex-start; justify-content:space-between; gap:18px 24px; flex-wrap:wrap; }
+.cr-head__k{ font:600 11px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.12em; color:var(--ink-4); }
+.cr-head h1{ margin:9px 0 4px; font:italic 34px/1.04 "Fraunces","Source Serif 4",Georgia,serif; font-variation-settings:"SOFT" 50,"WONK" 1,"opsz" 96; letter-spacing:-.015em; color:var(--ink); }
+.cr-head__tag{ font:13px/1.3 ui-monospace,monospace; color:var(--ink-3); }
+.cr-status{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; font:11px/1.4 ui-monospace,monospace; color:var(--ink-3); border:1px solid var(--rule); background:var(--paper-3); padding:8px 12px; }
+.cr-status__dot{ flex:none; width:8px; height:8px; border-radius:50%; background:var(--moss); box-shadow:0 0 0 3px var(--rule-soft); }
+.cr-status__dot.is-warn{ background:var(--brick); box-shadow:0 0 0 3px var(--ochre-soft); }
+.cr-status__seg{ white-space:nowrap; }
+.cr-status__seg + .cr-status__seg{ padding-left:10px; border-left:1px solid var(--rule); }
+.cr-status__seg.is-warn{ color:var(--brick-d); font-weight:600; }
+.cr-head__lede{ margin:14px 0 0; font-size:14px; line-height:1.55; color:var(--ink-2); max-width:80ch; }
+.cr-head__lede a{ color:var(--moss-deep); text-decoration:none; white-space:nowrap; }
+.cr-head__lede a:hover{ text-decoration:underline; }
+.cr-cmd{ display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
+.cmd{ display:inline-flex; align-items:center; gap:8px; text-decoration:none; font:600 13px ui-monospace,monospace; border:1px solid var(--rule); background:var(--paper); color:var(--ink); padding:11px 16px; transition:border-color .15s ease, background .15s ease; }
+.cmd:hover{ border-color:var(--ink-3); }
+.cmd__i{ font-size:13px; color:var(--ink-4); }
+.cmd--go{ background:var(--moss-deep); border-color:var(--moss-deep); color:var(--paper); }
+.cmd--go .cmd__i{ color:var(--paper); }
+.cmd--go:hover{ background:var(--moss); border-color:var(--moss); }
+@media(max-width:600px){ .cr-head h1{ font-size:28px; } .cmd{ flex:1 1 auto; justify-content:center; } }
 .btn{ display:inline-flex; align-items:center; gap:7px; font:13px ui-monospace,monospace; text-decoration:none; cursor:pointer; border:1px solid var(--rule); background:var(--paper-4); color:var(--ink); padding:9px 15px; }
 .btn.primary{ background:var(--moss-deep); color:var(--paper); border-color:var(--moss-deep); }
 .btn.ghost{ background:transparent; }
-.stats{ display:grid; grid-template-columns:repeat(6,1fr); gap:1px; background:var(--rule); border:1px solid var(--rule); margin:30px 0 8px; }
-@media(max-width:760px){ .stats{ grid-template-columns:repeat(3,1fr); } .hero h1{ font-size:32px; } }
-.stat{ background:var(--paper-4); padding:16px 14px; }
-.stat__n{ font:600 26px/1 Georgia,serif; color:var(--moss-deep); }
-.stat__l{ font:11px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-4); margin-top:8px; }
-.stats__sub{ font:12px/1.6 ui-monospace,monospace; color:var(--ink-4); margin:0 0 30px; }
-.stats__sub .flag{ color:var(--brick-d); }
+.ops{ display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--rule); border:1px solid var(--rule); }
+@media(max-width:760px){ .ops{ grid-template-columns:1fr; } }
+.ops-panel{ background:var(--paper-4); padding:14px 16px; }
+.ops-panel__h{ font:600 10px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.1em; color:var(--ink-4); margin-bottom:10px; }
+.ops-row{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding:6px 0; }
+.ops-row + .ops-row{ border-top:1px solid var(--rule-soft); }
+.ops-row__n{ font:600 20px/1 Georgia,serif; color:var(--moss-deep); white-space:nowrap; }
+.ops-row__l{ font:11px/1.3 ui-monospace,monospace; color:var(--ink-4); text-align:right; }
+.ops-row.is-warn .ops-row__n{ color:var(--brick-d); }
+.feed{ margin-top:18px; border:1px solid var(--rule); background:var(--paper-4); }
+.feed__h{ display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border-bottom:1px solid var(--rule); font:600 10px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.09em; color:var(--ink-4); }
+.feed__h a{ text-transform:none; letter-spacing:0; font-weight:400; color:var(--moss-deep); text-decoration:none; }
+.feed__h a:hover{ text-decoration:underline; }
+.feed-row{ display:flex; align-items:center; gap:12px; padding:9px 14px; text-decoration:none; }
+.feed-row + .feed-row{ border-top:1px solid var(--rule-soft); }
+.feed-row:hover{ background:var(--paper-3); }
+.feed-row__dot{ flex:none; width:7px; height:7px; border-radius:50%; background:var(--moss); }
+.feed-row__dot.is-warn{ background:var(--brick); }
+.feed-row__id{ flex:none; max-width:34ch; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font:600 12px ui-monospace,monospace; color:var(--ink); }
+.feed-row__m{ flex:1; font:11px ui-monospace,monospace; color:var(--ink-4); }
+.feed-row__t{ flex:none; font:11px ui-monospace,monospace; color:var(--ink-4); }
+.feed-empty{ padding:16px 14px; font:italic 12px ui-monospace,monospace; color:var(--ink-4); }
+.spark{ flex:none; display:flex; align-items:flex-end; gap:1px; width:88px; height:20px; }
+.spark__b{ flex:1 1 0; min-width:0; background:var(--moss); opacity:.7; border-radius:1px 1px 0 0; }
+.feed-row:hover .spark__b{ opacity:.9; }
+.spark--empty{ flex:none; width:88px; height:20px; }
+@media(max-width:600px){ .spark,.spark--empty{ display:none; } }
+.sig{ display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+.sig-card{ border:1px solid var(--rule); background:var(--paper-4); padding:14px 16px; }
+.sig-card__top{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:11px; }
+.sig-card__k{ font:600 10px/1.3 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-4); }
+.sig-card__big{ font:600 26px/1 -apple-system,system-ui,sans-serif; color:var(--moss-deep); white-space:nowrap; }
+.sig-card__pct{ font-size:15px; color:var(--ink-4); }
+.sig-card__lbl{ font:600 11px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-3); margin-left:3px; }
+.sig-card__foot{ margin-top:10px; font:11px ui-monospace,monospace; color:var(--ink-4); }
+.sig-card__none{ color:var(--ink-4); }
+.sig-empty{ margin-top:2px; padding:10px 0 2px; font:italic 12px/1.5 ui-monospace,monospace; color:var(--ink-4); }
+.vbar{ display:flex; height:18px; border-radius:3px; overflow:hidden; background:var(--rule-soft); }
+.vbar__seg{ height:100%; }
+.vbar__seg + .vbar__seg{ box-shadow:inset 1px 0 0 var(--paper-4); }
+.vbar__seg--link{ display:block; text-decoration:none; transition:filter .12s var(--ease); }
+.vbar__seg--link:hover{ filter:brightness(1.12) saturate(1.08); }
+.vbar__seg--link:focus-visible{ outline:2px solid var(--ochre-d); outline-offset:2px; }
+.legs{ display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:9px; }
+.leg{ display:inline-flex; align-items:center; gap:6px; font:12px ui-monospace,monospace; color:var(--ink-3); }
+.leg--link{ text-decoration:none; cursor:pointer; border-radius:3px; transition:color .12s var(--ease); }
+.leg--link:hover{ color:var(--ink); }
+.leg--link:hover .leg__dot{ box-shadow:0 0 0 2px var(--ochre-soft); }
+.leg--link:focus-visible{ outline:2px solid var(--ochre-d); outline-offset:2px; }
+.leg__dot{ flex:none; width:9px; height:9px; border-radius:2px; }
+.leg b{ color:var(--ink); font-weight:600; }
+.leg__pct{ color:var(--ink-4); }
+.dist{ margin-top:12px; border:1px solid var(--rule); background:var(--paper-4); padding:14px 16px; }
+.dist__h{ font:600 10px/1.3 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-4); margin-bottom:14px; }
+.dist__grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.hist{ display:flex; flex-direction:column; align-items:center; }
+.hist__bars{ display:flex; align-items:flex-end; justify-content:center; gap:3px; height:54px; width:100%; padding:0 4px; }
+.hbar{ flex:1; max-width:14px; background:var(--moss); border-radius:2px 2px 0 0; opacity:.85; }
+.hist__l{ margin-top:7px; font:11px/1.3 ui-monospace,monospace; color:var(--ink-3); text-align:center; }
+.hist__avg{ margin-top:2px; font:10px ui-monospace,monospace; color:var(--ink-4); }
+@media(max-width:760px){ .sig{ grid-template-columns:1fr; } }
+@media(max-width:520px){ .dist__grid{ grid-template-columns:repeat(2,1fr); } }
 .chips__lead{ font:13px/1.5 ui-monospace,monospace; color:var(--ink-3); margin:0 0 10px; }
 .chips{ display:flex; flex-wrap:wrap; gap:8px; margin:0 0 8px; }
 .chip{ display:inline-flex; align-items:center; gap:8px; text-decoration:none; border:1px solid var(--rule); background:var(--paper-4); color:var(--ink-2); padding:5px 11px; font:12px ui-monospace,monospace; }
@@ -3354,14 +4653,22 @@ h2.section{ font:600 13px/1 ui-monospace,monospace; text-transform:uppercase; le
 .rung__desc{ color:var(--ink-3); font-size:13px; margin-top:3px; max-width:74ch; }
 .rung__go{ flex:none; align-self:center; text-decoration:none; font:12px ui-monospace,monospace; border:1px solid var(--rule); background:var(--paper-4); color:var(--ink-2); padding:7px 12px; }
 .rung__go:hover{ border-color:var(--moss); color:var(--moss-deep); }
-.acts{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
-@media(max-width:820px){ .acts{ grid-template-columns:1fr; } }
-.act{ border:1px solid var(--rule); background:var(--paper-3); border-top:3px solid var(--ink-4); }
-.act--moss{ border-top-color:var(--moss); }
-.act--ochre{ border-top-color:var(--ochre); }
-.act--indigo{ border-top-color:var(--indigo); }
-.act__h{ margin:0; padding:12px 14px 4px; font:italic 18px "Fraunces","Source Serif 4",Georgia,serif; font-variation-settings:"SOFT" 50,"opsz" 48; color:var(--ink); }
-.act__cards{ padding:6px 12px 13px; display:flex; flex-direction:column; gap:8px; }
+.surfaces{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+@media(max-width:900px){ .surfaces{ grid-template-columns:repeat(2,1fr); } }
+@media(max-width:520px){ .surfaces{ grid-template-columns:1fr; } }
+.surf{ display:flex; flex-direction:column; text-decoration:none; border:1px solid var(--rule); background:var(--paper-4); border-top:3px solid var(--ink-4); padding:13px 13px 12px; transition:border-color .15s ease; }
+.surf:hover{ border-color:var(--ink-3); }
+.surf--corpus{ border-top-color:var(--moss); }
+.surf--make{ border-top-color:var(--ochre); }
+.surf__k{ font:600 10px/1.3 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.07em; color:var(--ink-4); }
+.surf__t{ font:600 16px/1.1 "JetBrains Mono",ui-monospace,monospace; color:var(--ink); margin:7px 0 0; }
+.surf__d{ color:var(--ink-3); font-size:12px; line-height:1.5; margin:6px 0 0; flex:1; }
+.surf__go{ font:11px ui-monospace,monospace; color:var(--moss-deep); margin-top:10px; }
+.surf--make .surf__go{ color:var(--ochre-d); }
+.surf--corpus:hover{ border-color:var(--moss); }
+.surf--make:hover{ border-color:var(--ochre); }
+.refs{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+@media(max-width:820px){ .refs{ grid-template-columns:1fr; } }
 .card{ display:block; text-decoration:none; border:1px solid var(--rule); background:var(--paper-4); padding:11px 12px; }
 .card:hover{ border-color:var(--ink-3); }
 .card__t{ font:600 13px/1.3 -apple-system,system-ui,sans-serif; color:var(--ink); }
@@ -3374,6 +4681,14 @@ h2.section{ font:600 13px/1 ui-monospace,monospace; text-transform:uppercase; le
 .reflect li{ color:var(--ink-2); font-size:13px; max-width:80ch; padding-left:14px; border-left:2px solid var(--rule); }
 .reflect li b{ color:var(--moss-deep); }
 .muted{ color:var(--ink-4); font-style:italic; }
+details.tour{ margin-top:30px; border:1px solid var(--rule); background:var(--paper-3); }
+.tour__sum{ display:flex; align-items:center; gap:14px; padding:12px 16px; cursor:pointer; list-style:none; }
+.tour__sum::-webkit-details-marker{ display:none; }
+.tour__lead{ font:13px ui-monospace,monospace; color:var(--ink-3); }
+.tour__lead b{ color:var(--moss-deep); }
+.tour__chev{ flex:none; font-size:12px; color:var(--ink-4); transition:transform .2s ease; }
+details.tour[open] .tour__chev{ transform:rotate(180deg); }
+.tour .ladder{ border:0; border-top:1px solid var(--rule); background:transparent; }
 .foot{ margin-top:32px; color:var(--ink-4); font:11px ui-monospace,monospace; }
 `,
   })}
@@ -3384,55 +4699,123 @@ ${railHtml({ active: 'home', brand: 'machine spirits', sub: 'a drama-machine for
   <div class="welcome" id="welcome" hidden>
     <div class="welcome__k">new here · welcome</div>
     <h2>First time at the scriptorium?</h2>
-    <p>This is a research instrument that stages tutoring dialogues as <em>drama</em> and reads them the way a literary critic would — for dramatic form, not for what is in anyone's head. You don't need to know the codebase. The five-step tour below walks the whole surface; take it at your own pace.</p>
+    <p>This is a research instrument that stages tutoring dialogues as <em>drama</em> and reads them the way a literary critic would — for dramatic form, not for what is in anyone's head. You don't need to know the codebase. The six-step tour below walks the whole surface; take it at your own pace.</p>
     <div class="welcome__btns">
       <button class="btn primary" id="welcomeBegin" type="button">begin the tour ↓</button>
       <button class="btn ghost" id="welcomeDismiss" type="button">I'll explore on my own</button>
     </div>
   </div>
 
-  <header class="hero">
-    <div class="hero__k">machine spirits · poetics scriptorium</div>
-    <h1>Tutoring, staged as drama.</h1>
-    <p>Generate tutoring dialogues that turn on a <em>peripeteia</em> — a reversal of understanding — score them as a literary critic would on dramatic form, and study where recognition does and doesn't cohere. Browse what's been made, compose something new, or replay a single changed move.</p>
-    <div class="hero__cta">
-      <a class="btn primary" href="/browse">Read a script →</a>
-      <a class="btn ghost" href="/compose">Compose one →</a>
+  <header class="cr-head">
+    <div class="cr-head__top">
+      <div class="cr-head__id">
+        <div class="cr-head__k">machine spirits · poetics</div>
+        <h1>Eval control room</h1>
+        <div class="cr-head__tag">Tutoring, staged as drama.</div>
+      </div>
+      <div class="cr-status" role="status" aria-label="corpus status">
+        <span class="cr-status__dot${s.openFlags ? ' is-warn' : ''}" aria-hidden="true"></span>
+        ${statusLine}
+      </div>
+    </div>
+    <p class="cr-head__lede">Generate tutoring dialogues that hinge on a reversal of understanding, score them on dramatic form, then study where recognition coheres. Launch and watch runs here; read, compose and inspect from the consoles below. <a href="#why">Why it's built this way ↓</a></p>
+    <div class="cr-cmd">
+      <a class="cmd cmd--go" href="/runs"><span class="cmd__i" aria-hidden="true">▸</span> Launch a run</a>
+      <a class="cmd" href="/compose/live"><span class="cmd__i" aria-hidden="true">✎</span> Compose a scene</a>
+      <a class="cmd" href="/browse"><span class="cmd__i" aria-hidden="true">⊞</span> Browse scripts</a>
+      <a class="cmd" href="/derivation"><span class="cmd__i" aria-hidden="true">⌗</span> Proof runs</a>
     </div>
   </header>
 
-  <div class="stats">${statStrip}</div>
-  <p class="stats__sub">${statSub}</p>
+  <h2 class="section">Operations</h2>
+  <p class="section__sub">Live counts across the corpus, the run activity, and what's waiting on review. The flag light turns amber when something needs you.</p>
+  <div class="ops">${opsHtml}</div>
+
+  <h2 class="section">Signal</h2>
+  <p class="section__sub">What the two corpora hold, read straight from the database. An AI critic sorts each scored script's dramatic form into recognition, flat, or trap; a fixed rule-checker sorts each proof run into grounded, disengagement, or aporia — the same three-way shape, two different ways of scoring. Below that, where the script scores land on each dramatic-form dimension.</p>
+  <div class="sig">
+    <div class="sig-card">
+      <div class="sig-card__top">
+        <span class="sig-card__k">scripts · critic verdict</span>
+        <span class="sig-card__big">${
+          fcClassified
+            ? `${fcRecogPct}<span class="sig-card__pct">%</span> <span class="sig-card__lbl">recognition</span>`
+            : '<span class="sig-card__none">—</span>'
+        }</span>
+      </div>
+      ${
+        fcClassified
+          ? splitBarHtml(fcSegments, { ariaLabel: 'critic form-class split: recognition, flat, trap' }) +
+            `<div class="sig-card__foot">${fmt(fcClassified)} critic verdict${fcClassified === 1 ? '' : 's'}${fcUnclassified ? ` · ${fmt(fcUnclassified)} unclassified` : ''}</div>`
+          : '<div class="sig-empty">no scored scripts yet — an AI critic sorts each script into recognition, flat, or trap once it has graded the corpus</div>'
+      }
+    </div>
+    <div class="sig-card">
+      <div class="sig-card__top">
+        <span class="sig-card__k">proof runs · rule-checker verdict</span>
+        <span class="sig-card__big">${
+          pvTotal
+            ? `${pvGroundedPct}<span class="sig-card__pct">%</span> <span class="sig-card__lbl">grounded</span>`
+            : '<span class="sig-card__none">—</span>'
+        }</span>
+      </div>
+      ${
+        pvTotal
+          ? splitBarHtml(pvSegments, { ariaLabel: 'proof-run verdict split: grounded, disengagement, aporia' }) +
+            `<div class="sig-card__foot">${fmt(pvTotal)} proof run${pvTotal === 1 ? '' : 's'} · a checker outcome, not a quality score</div>`
+          : '<div class="sig-empty">no proof runs yet — a fixed rule-checker decides each outcome once a run lands</div>'
+      }
+    </div>
+  </div>
+  <div class="dist">
+    <div class="dist__h">script scores · where the corpus lands on each dramatic-form dimension (0–100)</div>
+    ${
+      distTotal
+        ? `<div class="dist__grid">${distHtml}</div>`
+        : '<div class="sig-empty">no scored scripts yet — dimension scores appear here once the corpus has been graded</div>'
+    }
+  </div>
+
+  <div class="feed">
+    <div class="feed__h"><span>recent runs</span><a href="/browse">all runs →</a></div>
+    ${feedHtml}
+  </div>
 
   <p class="chips__lead">The corpus spans ${disciplines.length} field${disciplines.length === 1 ? '' : 's'} — jump straight into one:</p>
   <div class="chips">${disciplineChips}</div>
 
-  <h2 class="section">Start here · a five-step tour</h2>
-  <p class="section__sub">Each step assumes only the one before it. Tick what you already know; your progress is remembered on this device.</p>
-  <div class="ladder" id="ladder">
-    <div class="ladder__head">
-      <div class="prog"><div class="prog__fill" id="progFill"></div></div>
+  <details class="tour" id="tourDetails">
+    <summary class="tour__sum">
+      <span class="tour__lead">new here? <b>a six-step tour</b> of the whole surface</span>
+      <span class="prog" aria-hidden="true"><span class="prog__fill" id="progFill"></span></span>
       <span class="prog__label" id="progLabel">not started</span>
-      <a class="ladder__reset" id="resetTour" href="#">reset</a>
+      <span class="tour__chev" aria-hidden="true">▾</span>
+    </summary>
+    <div class="ladder" id="ladder">
+      <div class="ladder__head"><a class="ladder__reset" id="resetTour" href="#">reset progress</a></div>
+      ${rungsHtml}
     </div>
-    ${rungsHtml}
-  </div>
+  </details>
 
-  <h2 class="section">Everything, in three acts</h2>
-  <p class="section__sub">The scriptorium falls into the shape it studies: understand the material, create something new, recognize what changed.</p>
-  <div class="acts">${actsHtml}</div>
+  <h2 class="section">Consoles</h2>
+  <p class="section__sub">The five working consoles in the top rail — three collections of finished tutoring dialogue (graded by an AI critic, checked by a fixed rule-checker, or diffed one move at a time) and the two that make more. Everything else is reference &amp; reading, below.</p>
+  <div class="surfaces">${surfacesHtml}</div>
 
-  <div class="reflect">
-    <div class="reflect__k">applying our own lessons</div>
+  <h2 class="section">Reference &amp; reading</h2>
+  <p class="section__sub">Background, analysis, and the project's own notes — read at your leisure.</p>
+  <div class="refs">${refsHtml}</div>
+
+  <div class="reflect" id="why">
+    <div class="reflect__k">why the site is built this way</div>
     <h3>This scriptorium is built from the pedagogy it studies.</h3>
     <ul>
       <li><b>Recognition.</b> It greets a first-time visitor and names where they are before instructing — the mutual recognition the tutor is asked to extend the learner.</li>
       <li><b>Scaffolding.</b> The tour is a zone-of-proximal-development ladder: one rung at a time, you set the pace, and you can mark what you already command.</li>
-      <li><b>Dramatic form.</b> The features group into three acts — understand, create, recognize — the arc of an <em>anagnorisis</em>, the same shape the critic looks for in a script.</li>
+      <li><b>Dramatic form.</b> The six-step tour traces an <em>anagnorisis</em> — read the material, make something new, recognize what changed — the same shape the critic looks for in a script.</li>
     </ul>
   </div>
 
-  <p class="foot">machine spirits · poetics — localhost scriptorium · read-only dashboard</p>
+  <p class="foot">machine spirits · poetics — localhost control room · read-only</p>
 </div>
 <script>
 (function(){
@@ -3451,11 +4834,11 @@ ${railHtml({ active: 'home', brand: 'machine spirits', sub: 'a drama-machine for
   if (banner && !welcomed) banner.hidden = false;
   function dismissWelcome(){ if (banner) banner.hidden = true; try { localStorage.setItem('poetics-welcomed','1'); } catch (_e) {} }
   var wd = $('welcomeDismiss'); if (wd) wd.addEventListener('click', dismissWelcome);
-  var wb = $('welcomeBegin'); if (wb) wb.addEventListener('click', function(){ dismissWelcome(); var l = $('ladder'); if (l) l.scrollIntoView({ behavior:'smooth', block:'start' }); });
+  var wb = $('welcomeBegin'); if (wb) wb.addEventListener('click', function(){ dismissWelcome(); var d = $('tourDetails'); if (d) d.open = true; var l = d || $('ladder'); if (l) l.scrollIntoView({ behavior:'smooth', block:'start' }); });
 
-  var TOTAL = 5;
-  function isDone(n){ try { return localStorage.getItem('poetics-rung-'+n)==='1'; } catch (_e) { return false; } }
-  function setDone(n, v){ try { localStorage.setItem('poetics-rung-'+n, v ? '1' : '0'); } catch (_e) {} }
+  var TOTAL = 6;
+  function isDone(n){ try { return localStorage.getItem('poetics-rung-v2-'+n)==='1'; } catch (_e) { return false; } }
+  function setDone(n, v){ try { localStorage.setItem('poetics-rung-v2-'+n, v ? '1' : '0'); } catch (_e) {} }
   function paint(){
     var count = 0, next = 0;
     for (var i = 1; i <= TOTAL; i++){
@@ -3549,7 +4932,12 @@ ${MODETABS_CSS}
 `,
   })}
 <body>
-${railHtml({ active: 'compose', brand: 'drama composer', sub: 'assemble a drama-machine spec · validated live against the poetics ontology' })}
+${railHtml({
+  active: 'compose',
+  brand: 'drama composer',
+  sub: 'assemble a drama-machine spec · validated live against the poetics ontology',
+  hint: '<span><b>compose · spec mode</b> — assemble a full drama-machine spec, validated live against the ontology</span><span class="navhint__sep">·</span><span>or <a href="/compose/live">sit in on a live scene</a></span>',
+})}
 ${modeTabsHtml('spec')}
 <div class="compose">
   <form class="cform" id="cform" onsubmit="return false">
@@ -3870,8 +5258,11 @@ ${MODETABS_CSS}
 .setup--min{ display:none; }
 .setup__head h2{ margin:0 0 4px; font:600 19px/1.2 Georgia,serif; color:var(--moss-deep); }
 .setup__lede{ margin:0; color:var(--ink-3); font-size:13px; max-width:62ch; }
-.seatpick{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.seatpick{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
 @media (max-width:560px){ .seatpick{ grid-template-columns:1fr; } }
+.watchbar{ display:flex; align-items:center; gap:10px; padding:4px 0; }
+.watchstat{ font-size:13px; color:var(--ink-3); }
+.watchstat b{ color:var(--ink); }
 .seat{ text-align:left; border:1px solid var(--rule); background:var(--paper-3); padding:13px 15px; cursor:pointer; display:flex; flex-direction:column; gap:2px; border-radius:8px; transition:border-color .12s,background .12s; }
 .seat:hover{ border-color:var(--moss); }
 .seat--on{ border-color:var(--moss-deep); background:var(--moss-soft); box-shadow:inset 3px 0 0 var(--moss-deep); }
@@ -4023,6 +5414,7 @@ ${railHtml({
   active: 'compose',
   brand: 'live compose',
   sub: 'sit in · you play one seat, the AI plays the other, turn by turn',
+  hint: '<span><b>compose a scene</b> — sit in and play one seat of a live tutoring scene, or switch to batch-spec mode</span><span class="navhint__sep">·</span><span>then <a href="/runs">launch a run</a> to generate at scale, or read finished ones in <a href="/browse">scripts</a></span>',
 })}
 ${modeTabsHtml('live')}
 <div class="live" id="liveGrid">
@@ -4061,6 +5453,10 @@ ${modeTabsHtml('live')}
         <button type="button" class="seat" id="seatTutor">
           <span class="seat__k">I play the</span><span class="seat__v">Tutor</span>
           <span class="seat__d">the AI is the learner — stage a recognition, test a persona</span>
+        </button>
+        <button type="button" class="seat" id="seatWatch">
+          <span class="seat__k">just</span><span class="seat__v">Watch</span>
+          <span class="seat__d">both seats are AI — watch a tutor &amp; learner play it out</span>
         </button>
       </div>
 
@@ -4122,9 +5518,15 @@ ${modeTabsHtml('live')}
     <div class="transcript" id="transcript" hidden></div>
 
     <form class="composer" id="composerForm" hidden onsubmit="return false">
-      <div class="composer__row">
+      <div class="composer__row" id="composerRow">
         <textarea id="composerInput" rows="1" placeholder="your line…"></textarea>
         <button type="button" class="btn primary" id="sendBtn">send</button>
+      </div>
+      <!-- Watch mode replaces the human input with tempo controls (both seats AI). -->
+      <div class="watchbar" id="watchBar" hidden>
+        <button type="button" class="btn primary" id="watchPlay">▶ play</button>
+        <button type="button" class="btn" id="watchStep">⏭ step</button>
+        <span class="watchstat" id="watchStat"></span>
       </div>
       <div class="composer__hint" id="composerHint"></div>
     </form>
@@ -4166,7 +5568,8 @@ function nl2br(s){ return esc(s).replace(/\\n/g, '<br>'); }
 function mdEmph(t){ return t.replace(/\\*\\*([^*]+)\\*\\*/g, '<strong>$1</strong>').replace(/(^|[^*])\\*([^*\\n]+)\\*/g, '$1<em>$2</em>'); }
 function mdInline(s){ var parts = esc(s).split('\`'); var out = ''; for (var i = 0; i < parts.length; i++){ out += (i % 2 === 1) ? ('<code>' + parts[i] + '</code>') : mdEmph(parts[i]); } return out.replace(/\\n/g, '<br>'); }
 var S = { id:null, mock:false, humanRole:'learner', aiRole:'tutor', status:'idle', nextSpeaker:null,
-  showMeta:false, showDelib:false, lastSession:null, namePrefilled:false, timer:null, tStart:0, readingRef:null };
+  showMeta:false, showDelib:false, lastSession:null, namePrefilled:false, timer:null, tStart:0, readingRef:null,
+  watch:false, playing:false, advancing:false };
 
 // View prefs persist across reloads (purely client-side display toggles).
 function getPref(k, dflt){ try { var v=localStorage.getItem(k); return v==null?dflt:(v==='1'); } catch(_e){ return dflt; } }
@@ -4218,13 +5621,17 @@ var SYL = null; // the syllabus picker controller (course→lesson); wired at lo
 ${SYLLABUS_CLIENT_JS}
 
 function pickSeat(role){
-  S.humanRole = role; S.aiRole = role==='learner' ? 'tutor' : 'learner';
+  S.humanRole = role; S.watch = role==='watch';
+  // In watch mode BOTH seats are AI (aiRole is meaningless → null).
+  S.aiRole = role==='learner' ? 'tutor' : role==='tutor' ? 'learner' : null;
   $('seatLearner').classList.toggle('seat--on', role==='learner');
   $('seatTutor').classList.toggle('seat--on', role==='tutor');
-  $('grpTutor').hidden = role!=='learner';
-  $('grpLearner').hidden = role!=='tutor';
-  // The syllabus grounds the AI tutor; hide it when the human plays tutor (AI=learner).
-  var sb = $('sylBox'); if(sb) sb.hidden = role!=='learner';
+  var sw=$('seatWatch'); if(sw) sw.classList.toggle('seat--on', role==='watch');
+  // Show a seat's dials whenever the AI holds it: the AI is the tutor for learner +
+  // watch, and the learner for tutor + watch. The syllabus grounds the AI tutor.
+  $('grpTutor').hidden = role==='tutor';
+  $('grpLearner').hidden = role==='learner';
+  var sb = $('sylBox'); if(sb) sb.hidden = role==='tutor';
 }
 function autoGrow(el){ if(!el) return; el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,180)+'px'; }
 
@@ -4284,7 +5691,7 @@ function hideReading(){ var p=$('readingPane'); if(p){ p.hidden = true; } var gr
 function renderSession(sess){
   S.lastSession = sess; stopThinkTimer();
   S.id = sess.id; S.status = sess.status; S.nextSpeaker = sess.nextSpeaker;
-  S.humanRole = sess.humanRole; S.aiRole = sess.aiRole;
+  S.humanRole = sess.humanRole; S.aiRole = sess.aiRole; S.watch = !!sess.watch;
   $('setup').classList.add('setup--min');
   $('transcript').hidden = false; $('liveside').hidden = false; $('composerForm').hidden = false;
   // Pre-fill the save box with a good timestamped default (once), leaving it editable
@@ -4304,26 +5711,40 @@ function renderSession(sess){
   var tok = (Number(sess.spend.inputTokens||0)+Number(sess.spend.outputTokens||0));
   $('spendUsd').textContent = '$'+Number(sess.spend.estimatedCostUsd||0).toFixed(4);
   $('spendTok').textContent = tok.toLocaleString()+' tokens · '+sess.turnCount+'/'+sess.maxTurns+' turns';
-  $('sceneMeta').innerHTML = 'you are the <b>'+esc(sess.humanRole)+'</b><br>AI is the <b>'+esc(sess.aiRole)+'</b><br>'
-    + (sess.aiRole==='tutor' ? ('cell <code>'+esc(sess.tutorCell)+'</code>'+cellWhyHtml(sess)) : ('persona <code>'+esc(sess.persona)+'</code>'))
-    + (sess.aiRole==='tutor' && sess.lectureRef ? ('<br>teaching <code>'+esc(sess.lectureRef)+'</code>') : '')
+  // In watch mode BOTH seats are AI, so surface both the tutor cell and the learner
+  // persona; otherwise show only the seat the AI holds.
+  var aiTutorSeat = (sess.aiRole==='tutor' || sess.watch), aiLearnerSeat = (sess.aiRole==='learner' || sess.watch);
+  $('sceneMeta').innerHTML = (sess.watch
+      ? 'watching — <b>AI tutor</b> ↔ <b>AI learner</b>'
+      : ('you are the <b>'+esc(sess.humanRole)+'</b><br>AI is the <b>'+esc(sess.aiRole)+'</b>'))
+    + (aiTutorSeat ? ('<br>cell <code>'+esc(sess.tutorCell)+'</code>'+cellWhyHtml(sess)) : '')
+    + (aiLearnerSeat ? ('<br>persona <code>'+esc(sess.persona)+'</code>') : '')
+    + (aiTutorSeat && sess.lectureRef ? ('<br>teaching <code>'+esc(sess.lectureRef)+'</code>') : '')
     + modelsLineHtml(sess)
-    + (sess.aiRole==='learner' && sess.learnerModel ? ('<br>learner model <code>'+esc(sess.learnerModel)+'</code>') : '')
-    + (sess.aiRole==='tutor' ? ('<br>concise <b>'+(sess.concise?'on':'off')+'</b>') : '')
+    + (aiLearnerSeat && sess.learnerModel ? ('<br>learner model <code>'+esc(sess.learnerModel)+'</code>') : '')
+    + (aiTutorSeat ? ('<br>concise <b>'+(sess.concise?'on':'off')+'</b>') : '')
     + (S.mock ? '<br><span class="metered--free">free preview</span>' : '');
   var done = sess.status!=='live';
-  var yours = sess.nextSpeaker===sess.humanRole && !done;
-  $('composerInput').disabled = !yours; $('sendBtn').disabled = !yours;
-  if(done){ $('composerHint').innerHTML = 'scene ended ('+esc(sess.stoppedReason||sess.status)+') — save it, or reload to start another'; }
-  else if(yours){ $('composerHint').innerHTML = '<kbd>Enter</kbd> send · <kbd>Shift</kbd>+<kbd>Enter</kbd> newline · you are the <b>'+esc(sess.humanRole)+'</b>'; setTimeout(function(){ $('composerInput').focus(); }, 0); }
-  else { $('composerHint').textContent = 'the '+sess.aiRole+' is thinking…'; }
+  if(sess.watch){
+    // No human seat: the watch bar drives tempo; the input row stays hidden.
+    $('composerRow').style.display='none'; $('watchBar').hidden=false;
+    $('composerInput').disabled=true; $('sendBtn').disabled=true;
+    renderWatchControls(done, sess.stoppedReason||sess.status);
+  } else {
+    $('composerRow').style.display=''; $('watchBar').hidden=true;
+    var yours = sess.nextSpeaker===sess.humanRole && !done;
+    $('composerInput').disabled = !yours; $('sendBtn').disabled = !yours;
+    if(done){ $('composerHint').innerHTML = 'scene ended ('+esc(sess.stoppedReason||sess.status)+') — save it, or reload to start another'; }
+    else if(yours){ $('composerHint').innerHTML = '<kbd>Enter</kbd> send · <kbd>Shift</kbd>+<kbd>Enter</kbd> newline · you are the <b>'+esc(sess.humanRole)+'</b>'; setTimeout(function(){ $('composerInput').focus(); }, 0); }
+    else { $('composerHint').textContent = 'the '+sess.aiRole+' is thinking…'; }
+  }
   // A scored session carries its verdict on the wire, so re-renders (polls, later
   // turns) keep showing it; an unscored render leaves the panel untouched so a
   // transient "scoring…" / error message isn't clobbered.
   if(sess.score) renderScore(sess.score);
   // Surface the lecture the tutor is teaching from, so the human learner can read
   // what they are being asked to recognise. Only the tutor seat carries a reading.
-  if(sess.aiRole==='tutor' && sess.lectureRef) loadReading(sess.lectureRef); else hideReading();
+  if((sess.aiRole==='tutor'||sess.watch) && sess.lectureRef) loadReading(sess.lectureRef); else hideReading();
   updateDelibCaveat();
 }
 function appendOptimistic(text){
@@ -4402,27 +5823,36 @@ function renderSceneLoading(aiOpens){
     ? ('<div class="line line--'+S.aiRole+' line--ghost"><div class="who">'+esc(whoLabel(S.aiRole,'ai'))
         +'</div><div class="bubble"><span class="composing">composing the opening line</span> <span class="dots"><i></i><i></i><i></i></span><span class="thinkclock">0.0s</span></div></div>')
     : '<div class="t-empty">setting the scene… <span class="dots"><i></i><i></i><i></i></span></div>';
-  $('sceneMeta').innerHTML = 'you are the <b>'+esc(S.humanRole)+'</b><br>AI is the <b>'+esc(S.aiRole)+'</b><br><span class="muted">setting the scene…</span>';
+  $('sceneMeta').innerHTML = (S.watch
+    ? 'watching — <b>AI tutor</b> ↔ <b>AI learner</b>'
+    : 'you are the <b>'+esc(S.humanRole)+'</b><br>AI is the <b>'+esc(S.aiRole)+'</b>')
+    + '<br><span class="muted">setting the scene…</span>';
   $('spendUsd').textContent='$0.0000'; $('spendTok').textContent='0 tokens';
   $('composerInput').disabled=true; $('sendBtn').disabled=true;
-  $('composerHint').textContent = aiOpens ? ('the '+S.aiRole+' is composing the opening line…') : 'setting the scene…';
+  $('composerHint').textContent = aiOpens
+    ? (S.watch ? 'composing the opening line…' : ('the '+S.aiRole+' is composing the opening line…'))
+    : 'setting the scene…';
   if(aiOpens) startThinkTimer();
 }
 async function begin(){
   $('setupErr').textContent=''; S.mock = $('f-mock').checked;
   // A lecture only grounds the AI when it plays the tutor; never send one for an
   // AI learner (the syllabus picker is hidden in that seat anyway).
+  // The AI holds the tutor seat for the learner + watch seats, and the learner seat
+  // for the tutor + watch seats — so send each side's config when the AI owns it.
+  var aiTutor = (S.aiRole==='tutor' || S.watch), aiLearner = (S.aiRole==='learner' || S.watch);
   var spec = { humanRole:S.humanRole, topic:$('f-topic').value, hamartia:$('f-hamartia').value,
     promptType:$('f-prompt').value, tutorArchitecture:$('f-tarch').value,
-    lectureRef:(S.aiRole==='tutor' ? ($('f-lecture')||{}).value : '')||'',
+    lectureRef:(aiTutor ? ($('f-lecture')||{}).value : '')||'',
     persona:$('f-persona').value, learnerArchitecture:$('f-larch').value,
-    learnerModel:(S.aiRole==='learner' ? ($('f-lmodel')||{}).value : '')||'',
+    learnerModel:(aiLearner ? ($('f-lmodel')||{}).value : '')||'',
     openingSpeaker:$('f-open').value, maxTurns:Number($('f-max').value)||16,
     concise:($('f-concise') ? $('f-concise').checked : true),
     showDeliberation:S.showDelib };
   $('beginBtn').disabled=true; $('beginBtn').textContent='setting the scene…';
-  renderSceneLoading(spec.openingSpeaker===S.aiRole);
-  try { var r = await postJson('/api/compose/live/start', { spec:spec, mock:S.mock }); renderSession(r.session); }
+  // In watch mode the opening is always an AI line; otherwise only an AI opening seat.
+  renderSceneLoading(S.watch || spec.openingSpeaker===S.aiRole);
+  try { var r = await postJson('/api/compose/live/start', { spec:spec, mock:S.mock }); renderSession(r.session); if(S.watch) startWatch(); }
   catch(e){ restoreSetup(); $('setupErr').textContent='could not start: '+(e.message||e); $('beginBtn').disabled=false; $('beginBtn').textContent='Begin the scene →'; }
 }
 async function send(){
@@ -4434,6 +5864,45 @@ async function send(){
     $('composerInput').value=''; autoGrow($('composerInput')); renderSession(r.session); }
   catch(e){ $('composerHint').innerHTML='<span class="metered">turn failed: '+esc(e.message||String(e))+'</span>'; await refresh(); }
 }
+
+// ── Watch mode (both seats AI) ───────────────────────────────────────────────
+// The human drives only the tempo. The play loop polls /advance, rendering each AI
+// turn with the same ghost/think animation the sit-in uses; pause stops the loop
+// without ending the scene; step advances exactly one turn while paused.
+function wsleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+var WATCH_DELAY = 650;
+function appendWatchGhost(role){
+  var t = $('transcript');
+  t.insertAdjacentHTML('beforeend',
+    '<div class="line line--'+role+' line--ghost"><div class="who">'+esc(whoLabel(role,'ai'))+'</div><div class="bubble"><span class="dots"><i></i><i></i><i></i></span><span class="thinkclock">0.0s</span></div></div>');
+  t.scrollTop = t.scrollHeight; startThinkTimer();
+}
+function renderWatchControls(done, reason){
+  var play=$('watchPlay'), step=$('watchStep'), stat=$('watchStat');
+  if(!play) return;
+  if(done){
+    S.playing=false; play.disabled=true; step.disabled=true; play.textContent='▶ play';
+    stat.innerHTML='scene ended ('+esc(reason||'')+') — score or save below'; $('composerHint').textContent='';
+    return;
+  }
+  play.disabled=false; step.disabled=S.playing; play.textContent = S.playing ? '⏸ pause' : '▶ play';
+  stat.innerHTML = S.playing ? ('the <b>'+esc(S.nextSpeaker||'')+'</b> is up…') : 'paused — ▶ play to watch it unfold, or ⏭ step one turn';
+  $('composerHint').textContent='';
+}
+async function advanceWatch(){
+  if(S.advancing || S.status!=='live') return;
+  S.advancing=true; appendWatchGhost(S.nextSpeaker);
+  try { var r = await postJson('/api/compose/live/'+S.id+'/advance', { mock:S.mock, showDeliberation:S.showDelib }); renderSession(r.session); }
+  catch(e){ S.playing=false; if($('watchStat')) $('watchStat').innerHTML='<span class="metered">advance failed: '+esc(e.message||String(e))+'</span>'; await refresh(); }
+  finally { S.advancing=false; }
+}
+async function watchLoop(){
+  while(S.playing && S.status==='live'){ await advanceWatch(); if(!S.playing || S.status!=='live') break; await wsleep(WATCH_DELAY); }
+  renderWatchControls(S.status!=='live', (S.lastSession||{}).stoppedReason);
+}
+function startWatch(){ if(S.status!=='live'){ renderWatchControls(true, (S.lastSession||{}).stoppedReason); return; } if(S.playing) return; S.playing=true; renderWatchControls(false); watchLoop(); }
+function toggleWatch(){ if(S.playing){ S.playing=false; renderWatchControls(false); } else { startWatch(); } }
+function stepWatch(){ if(S.playing || S.status!=='live') return; advanceWatch(); }
 async function save(){
   if(!S.id) return; $('saveRes').textContent='saving…';
   try { var r = await postJson('/api/compose/live/save', { id:S.id, filename:$('saveName').value.trim() });
@@ -4503,6 +5972,9 @@ async function onDelibToggle(){
 
 $('seatLearner').addEventListener('click', function(){ pickSeat('learner'); });
 $('seatTutor').addEventListener('click', function(){ pickSeat('tutor'); });
+$('seatWatch').addEventListener('click', function(){ pickSeat('watch'); });
+$('watchPlay').addEventListener('click', toggleWatch);
+$('watchStep').addEventListener('click', stepWatch);
 $('guideBtn').addEventListener('click', guide);
 $('g-desc').addEventListener('keydown', function(e){ if(e.key==='Enter' && (e.metaKey||e.ctrlKey)){ e.preventDefault(); guide(); } });
 $('beginBtn').addEventListener('click', begin);
@@ -4633,7 +6105,16 @@ button.chip{ font:12px ui-monospace,monospace; cursor:default; }
 `,
   })}
 <body>
-${railHtml({ active: 'ontology', brand: 'ontology atlas', sub: 'the shared TBox · system-wide, and the tutor &amp; learner role projections' })}
+${railHtml({
+  active: 'ontology',
+  brand: 'ontology atlas',
+  sub: 'the shared TBox · system-wide, and the tutor &amp; learner role projections',
+  hint: orientBand(
+    'ontology',
+    'the shared vocabulary the whole system reasons in — moves, agencies, recognition',
+    'reference; the make-and-read surfaces are on the rail above',
+  ),
+})}
 <div class="controls">
   <div class="lenses" id="lenses">
     <button class="lens active" data-view="system">system-wide</button>
@@ -4912,7 +6393,16 @@ main{ max-width:1100px; margin:0 auto; padding:22px 22px 64px; }
 `,
   })}
 <body>
-${railHtml({ active: 'board', brand: 'development board', sub: 'the workplan (items + inbox) as a status × type grid' })}
+${railHtml({
+  active: 'board',
+  brand: 'development board',
+  sub: 'the workplan (items + inbox) as a status × type grid',
+  hint: orientBand(
+    'board',
+    'the live workplan — every tracked item by status, generated from workplan/items/',
+    'project board; the working surfaces are on the rail above',
+  ),
+})}
 <main>
   ${err}
   <div class="blurb">The live development board — a read-only render of <code>workplan/</code> (${gen}). Source of truth is <code>workplan/items/</code>; regenerate with <code>npm run wp:render</code>. The historical 2026-06-06 snapshot is at <a href="/board-doc">/board-doc</a> · API: <a href="/api/workplan">/api/workplan</a>.</div>
@@ -5005,7 +6495,16 @@ h2.sec-h{ font:600 12px/1 ui-monospace,monospace; text-transform:uppercase; lett
 `,
   })}
 <body>
-${railHtml({ active: 'rubric', brand: 'poetics rubric', sub: 'the 6 dramatic-form dimensions critics score against' })}
+${railHtml({
+  active: 'rubric',
+  brand: 'poetics rubric',
+  sub: 'the 6 dramatic-form dimensions critics score against',
+  hint: orientBand(
+    'rubric',
+    'the six dramatic-form dimensions an AI critic scores each script against',
+    'reference; the make-and-read surfaces are on the rail above',
+  ),
+})}
 <main>
   ${errBanner}
   <div class="blurb">Whole-transcript rubric for <em>dramatic form</em> — it classifies the shape of the dialogue (reversal, recognition, surprise-yet-inevitability), <strong>not</strong> what is in anyone's head. Each browse <a href="/browse">scores</a> row is a critic applying these dimensions; the vocabulary they formalise lives in the <a href="/ontology">ontology atlas</a>.</div>
@@ -5030,6 +6529,318 @@ ${railHtml({ active: 'rubric', brand: 'poetics rubric', sub: 'the 6 dramatic-for
   });
 })();
 </script>
+</body></html>`;
+}
+
+// ── Curriculum surface (GET /curriculum) ──────────────────────────────────────
+// Read-only window onto curriculum/<name>.curriculum.yaml and its compiled
+// siblings <name>.dramas.yaml / <name>.worlds.yaml (written by
+// services/curriculum/curriculumCompiler.js). The canonical curriculum is the
+// portable CASE-inspired graph — modules + knowledge components + prerequisite
+// associations; the compiled dramas are runnable drama-machine seeds; the
+// compiled worlds are the Plan 2.1 adaptive tutor's locked world_adaptation_specs.
+// Discovered live, so dropping a new curriculum/*.curriculum.yaml needs no edit.
+const CURRICULUM_DIR = path.resolve(ROOT, 'curriculum');
+const CURRICULUM_GUIDE_NOTE = path.resolve(ROOT, 'notes/poetics/2026-06-19-curriculum-world-adaptation-guide.html');
+
+function readYamlMaybe(p) {
+  try {
+    return YAML.parse(fs.readFileSync(p, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+// Discover every curriculum/<base>.curriculum.yaml and pair it with its compiled
+// drama + world siblings. Tolerates missing/malformed files (a curriculum with no
+// compiled artifacts still lists; a parse error surfaces as __error on that entry).
+function listCurricula() {
+  let files = [];
+  try {
+    files = fs.readdirSync(CURRICULUM_DIR).filter((f) => f.endsWith('.curriculum.yaml'));
+  } catch {
+    return [];
+  }
+  return files.sort().map((file) => {
+    const base = file.replace(/\.curriculum\.yaml$/, '');
+    try {
+      const curriculum = YAML.parse(fs.readFileSync(path.join(CURRICULUM_DIR, file), 'utf8'));
+      return {
+        base,
+        file,
+        curriculum,
+        dramas: readYamlMaybe(path.join(CURRICULUM_DIR, `${base}.dramas.yaml`)),
+        worlds: readYamlMaybe(path.join(CURRICULUM_DIR, `${base}.worlds.yaml`)),
+      };
+    } catch (err) {
+      return { base, file, __error: err.message };
+    }
+  });
+}
+
+// prereqsOf[moduleId] = [ids that must come before it], read off the association
+// graph (relation prerequisite_of: from is a prerequisite of to).
+function prereqMap(curriculum) {
+  const out = {};
+  for (const a of curriculum.associations || []) {
+    if (a && a.relation === 'prerequisite_of' && a.to) {
+      (out[a.to] = out[a.to] || []).push(a.from);
+    }
+  }
+  return out;
+}
+
+// Mirrors the inline theme-toggle every other scriptorium page carries (railHtml
+// renders the #themeToggle button; this wires it + restores the saved choice).
+const THEME_TOGGLE_SCRIPT = `<script>
+(function(){
+  var btn = document.getElementById('themeToggle');
+  try { if (localStorage.getItem('poetics-theme')==='dark') document.documentElement.setAttribute('data-theme','dark'); } catch (_e) {}
+  if (btn) btn.addEventListener('click', function(){
+    var dd = document.documentElement; var nx = dd.getAttribute('data-theme')==='dark' ? '' : 'dark';
+    if (nx) dd.setAttribute('data-theme','dark'); else dd.removeAttribute('data-theme');
+    try { localStorage.setItem('poetics-theme', nx); } catch (_e) {}
+  });
+})();
+</script>`;
+
+const CURRICULUM_CSS = `
+main{ max-width:1000px; margin:0 auto; padding:22px 22px 64px; }
+.blurb{ font-size:13px; color:var(--ink-3); border-left:3px solid var(--moss); background:var(--paper-4); padding:10px 14px; margin:0 0 18px; }
+.blurb a{ color:var(--moss-deep); }
+.blurb.err{ border-left-color:var(--brick); background:var(--brick-soft); }
+.picker{ display:flex; flex-wrap:wrap; gap:6px; margin:0 0 14px; }
+.pchip{ font:12px ui-monospace,monospace; padding:3px 9px; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-2); text-decoration:none; }
+.pchip.on{ color:var(--moss-deep); border-color:var(--moss); background:var(--moss-soft); }
+.ctitle{ font:600 24px/1.2 Georgia,serif; font-style:italic; color:var(--ink); margin:6px 0 4px; }
+.cstatus{ margin:0 0 12px; color:var(--ink-3); font-size:13px; }
+.meta{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px; }
+.meta .chip{ font:12px ui-monospace,monospace; padding:3px 9px; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-2); }
+.cards{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:0 0 22px; }
+.card{ border:1px solid var(--rule); background:var(--paper-4); padding:14px 16px; }
+.card__n{ font:600 28px Georgia,serif; color:var(--moss-deep); line-height:1; }
+.card__l{ font:600 11px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-3); margin-top:6px; }
+.card__s{ font-size:12px; color:var(--ink-3); margin-top:4px; }
+.card__s a{ color:var(--moss-deep); }
+.card__s code{ font-size:11px; }
+h2.sec-h{ font:600 12px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-3); margin:26px 0 8px; }
+.sec-h .sec-hint{ text-transform:none; letter-spacing:0; color:var(--ink-4); font-weight:400; margin-left:8px; }
+.sec-lede{ font-size:13px; color:var(--ink-3); margin:0 0 12px; max-width:760px; }
+.sec-lede a{ color:var(--moss-deep); }
+.mod{ border:1px solid var(--rule); background:var(--paper-4); margin-bottom:6px; }
+.mod summary{ display:flex; align-items:center; gap:10px; padding:9px 12px; cursor:pointer; list-style:none; }
+.mod summary::-webkit-details-marker{ display:none; }
+.mod .seq{ font:600 12px ui-monospace,monospace; color:var(--ink-4); width:20px; text-align:right; }
+.mod .mid{ font:600 12px ui-monospace,monospace; color:var(--moss-deep); }
+.mod .mtitle{ font:600 14px Georgia,serif; color:var(--ink); flex:1; }
+.mod .mkc{ font:11px ui-monospace,monospace; color:var(--ink-4); white-space:nowrap; }
+.mbadges{ display:flex; gap:4px; }
+.badge{ font:600 10px ui-monospace,monospace; padding:1px 6px; border-radius:9px; border:1px solid var(--rule); color:var(--ink-3); }
+.badge.mvp{ color:var(--ink-2); border-color:var(--ink-4); }
+.badge.drama{ color:var(--moss-deep); border-color:var(--moss); background:var(--moss-soft); }
+.badge.world{ color:var(--brick); border-color:var(--brick); }
+.mbody{ padding:4px 14px 14px; border-top:1px solid var(--rule-soft); }
+.eq{ font-style:italic; color:var(--ink); margin:10px 0; }
+.eqlabel{ font:600 10px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-4); font-style:normal; margin-right:6px; }
+.metaline{ font-size:13px; color:var(--ink-2); margin:6px 0; }
+.metaline a{ color:var(--moss-deep); }
+.mblk{ margin:12px 0; }
+.mblk h4{ font:600 10px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-4); margin:0 0 5px; }
+.mblk ul{ margin:0; padding-left:18px; font-size:13px; color:var(--ink-2); }
+.mblk ul li{ margin:2px 0; }
+.mblk ul.kc code{ color:var(--moss-deep); }
+.mblk.run{ border-top:1px solid var(--rule-soft); padding-top:10px; }
+.dtopic{ font-style:italic; color:var(--ink); margin:0 0 6px; }
+.runlink{ font:600 12px ui-monospace,monospace; color:var(--moss-deep); text-decoration:none; }
+.runlink:hover{ text-decoration:underline; }
+.arts{ display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:10px; }
+.art{ border:1px solid var(--rule); background:var(--paper-4); padding:10px 12px; }
+.art__h{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.art__h code{ font:600 12px ui-monospace,monospace; color:var(--moss-deep); }
+.tag{ font:10px ui-monospace,monospace; padding:1px 6px; border:1px solid var(--rule); color:var(--ink-3); border-radius:9px; }
+.tag.mono{ color:var(--ink-4); }
+.art__topic{ font-size:13px; color:var(--ink); margin:6px 0 4px; }
+.art__meta{ font:11px ui-monospace,monospace; color:var(--ink-4); margin:0; }
+code{ font-family:ui-monospace,monospace; }
+`;
+
+function renderCurriculumHtml(selectedBase = '') {
+  const e = escapeHtml;
+  const all = listCurricula();
+  if (!all.length) {
+    return `${pageHead({ title: 'curriculum · machine spirits', css: CURRICULUM_CSS })}
+<body>
+${railHtml({
+  active: 'curriculum',
+  brand: 'curriculum',
+  sub: 'the curriculum spine and its compiled dramas + worlds',
+  hint: orientBand(
+    'curriculum',
+    'no curriculum/*.curriculum.yaml found yet',
+    'reference; the make-and-read surfaces are on the rail above',
+  ),
+})}
+<main><div class="blurb">No curricula found under <code>curriculum/</code>. Author one (see <code>curriculum/CURRICULUM-FORMAT.md</code>) and compile it with <code>npm run curriculum:compile:drama</code> + <code>npm run curriculum:compile:worlds</code>.</div></main>
+${THEME_TOGGLE_SCRIPT}
+</body></html>`;
+  }
+  const picked = all.find((c) => c.base === selectedBase) || all[0];
+  const c = picked.curriculum || {};
+  const modules = Array.isArray(c.modules) ? c.modules : [];
+  const dramas = (picked.dramas && picked.dramas.dramas) || [];
+  const worlds = (picked.worlds && picked.worlds.world_adaptation_specs) || [];
+  const dramaByModule = new Map();
+  for (const d of dramas) {
+    const mid = d.curriculum_binding && d.curriculum_binding.module_id;
+    if (mid) dramaByModule.set(mid, d);
+  }
+  const worldByModule = new Map();
+  for (const w of worlds) if (w.module_id) worldByModule.set(w.module_id, w);
+  const prereqs = prereqMap(c);
+  const mvpIds = new Set((c.mvp && c.mvp.module_ids) || []);
+
+  // A picker only when more than one curriculum is on disk.
+  const picker =
+    all.length > 1
+      ? `<div class="picker">${all
+          .map(
+            (x) =>
+              `<a class="pchip${x.base === picked.base ? ' on' : ''}" href="/curriculum?c=${encodeURIComponent(x.base)}">${e(
+                (x.curriculum && x.curriculum.id) || x.base,
+              )}</a>`,
+          )
+          .join('')}</div>`
+      : '';
+
+  const dur = c.duration || {};
+  const sp = c.standard_profile || {};
+  const metaChips = [
+    c.id && `<span class="chip">${e(c.id)}</span>`,
+    c.version && `<span class="chip">v${e(c.version)}</span>`,
+    c.date && `<span class="chip">${e(c.date)}</span>`,
+    sp.spine && `<span class="chip" title="curriculum standard spine">${e(sp.spine)}</span>`,
+    dur.full_course && `<span class="chip">full: ${e(dur.full_course)}</span>`,
+    dur.mvp && `<span class="chip">mvp: ${e(dur.mvp)}</span>`,
+  ]
+    .filter(Boolean)
+    .join('');
+
+  // Compiled-artifact summary band — what exists, and where to act on it.
+  const summary = `<div class="cards">
+    <div class="card"><div class="card__n">${modules.length}</div><div class="card__l">modules</div><div class="card__s">curriculum spine</div></div>
+    <div class="card"><div class="card__n">${dramas.length}</div><div class="card__l">dramas compiled</div><div class="card__s">${picked.dramas ? `<a href="#dramas">drama seeds ↓</a>` : 'not compiled — <code>curriculum:compile:drama</code>'}</div></div>
+    <div class="card"><div class="card__n">${worlds.length}</div><div class="card__l">worlds compiled</div><div class="card__s">${picked.worlds ? `<a href="#worlds">adaptation specs ↓</a>` : 'not compiled — <code>curriculum:compile:worlds</code>'}</div></div>
+  </div>`;
+
+  const moduleRows = modules
+    .slice()
+    .sort((a, b) => (Number(a.sequence) || 0) - (Number(b.sequence) || 0))
+    .map((m) => {
+      const kcs = Array.isArray(m.knowledge_components) ? m.knowledge_components : [];
+      const misc = Array.isArray(m.misconception_signatures) ? m.misconception_signatures : [];
+      const tasks = Array.isArray(m.canonical_tasks) ? m.canonical_tasks : [];
+      const verifiers = Array.isArray(m.verifiers) ? m.verifiers : [];
+      const drama = dramaByModule.get(m.id);
+      const world = worldByModule.get(m.id);
+      const badges = [
+        mvpIds.has(m.id) ? `<span class="badge mvp" title="in the MVP subset">mvp</span>` : '',
+        drama ? `<span class="badge drama" title="compiled to a drama seed">drama</span>` : '',
+        world ? `<span class="badge world" title="compiled to a world_adaptation_spec">world</span>` : '',
+      ]
+        .filter(Boolean)
+        .join('');
+      const pre = (prereqs[m.id] || []).filter(Boolean);
+      const kcList = kcs.map((k) => `<li><code>${e(k.id || '')}</code> ${e(k.statement || '')}</li>`).join('');
+      const block = (title, items, mono = false) =>
+        items && items.length
+          ? `<div class="mblk"><h4>${title}</h4><ul class="${mono ? 'mono' : ''}">${items
+              .map((x) => `<li>${e(typeof x === 'string' ? x : JSON.stringify(x))}</li>`)
+              .join('')}</ul></div>`
+          : '';
+      return `<details class="mod" id="mod-${e(m.id)}">
+      <summary>
+        <span class="seq">${e(String(m.sequence ?? ''))}</span>
+        <span class="mid">${e(m.id || '')}</span>
+        <span class="mtitle">${e(m.title || '')}</span>
+        <span class="mbadges">${badges}</span>
+        <span class="mkc">${kcs.length} KC · ${misc.length} misc${m.hours ? ` · ${e(String(m.hours))}h` : ''}</span>
+      </summary>
+      <div class="mbody">
+        ${m.essential_question ? `<p class="eq"><span class="eqlabel">essential question</span> ${e(m.essential_question)}</p>` : ''}
+        ${m.main_artifact ? `<p class="metaline"><b>artifact</b> ${e(m.main_artifact)}${m.primary_verifier ? ` &nbsp;·&nbsp; <b>verifier</b> ${e(m.primary_verifier)}` : ''}</p>` : ''}
+        ${pre.length ? `<p class="metaline"><b>prerequisites</b> ${pre.map((p) => `<a href="#mod-${e(p)}">${e(p)}</a>`).join(', ')}</p>` : ''}
+        ${kcList ? `<div class="mblk"><h4>knowledge components</h4><ul class="kc">${kcList}</ul></div>` : ''}
+        ${block('canonical tasks', tasks)}
+        ${block('verifiers', verifiers)}
+        ${block('misconception signatures', misc)}
+        ${m.mastery_gate ? `<div class="mblk"><h4>mastery gate</h4><p>${e(typeof m.mastery_gate === 'string' ? m.mastery_gate : JSON.stringify(m.mastery_gate))}</p></div>` : ''}
+        ${m.transfer_challenge ? `<div class="mblk"><h4>transfer challenge</h4><p>${e(m.transfer_challenge)}</p></div>` : ''}
+        ${
+          drama
+            ? `<div class="mblk run"><h4>compiled drama</h4><p class="dtopic">${e(drama.topic || drama.id || '')}</p>
+               <a class="runlink" href="/runs?kind=pedagogical-drama&amp;spec=${encodeURIComponent(picked.base + '.dramas.yaml')}&amp;only=${encodeURIComponent(drama.id || '')}">▸ run this drama</a></div>`
+            : ''
+        }
+      </div>
+    </details>`;
+    })
+    .join('');
+
+  const dramaCards = dramas.length
+    ? dramas
+        .map((d) => {
+          const tp = Array.isArray(d.turn_plan) ? d.turn_plan.length : 0;
+          return `<div class="art"><div class="art__h"><code>${e(d.id || '')}</code>${
+            d.dramatic_shape ? `<span class="tag">${e(d.dramatic_shape)}</span>` : ''
+          }</div><p class="art__topic">${e(d.topic || '')}</p><p class="art__meta">${e(d.persona || '')}${
+            d.condition ? ` · ${e(d.condition)}` : ''
+          }${tp ? ` · ${tp}-turn plan` : ''}</p></div>`;
+        })
+        .join('')
+    : '';
+
+  const worldCards = worlds.length
+    ? worlds
+        .map((w) => {
+          const ap = w.action_policy || {};
+          const pref = (ap.preferred || ap.allowed || []).slice(0, 4).join(', ');
+          return `<div class="art"><div class="art__h"><code>${e(w.module_id || '')}</code>${
+            w.spec_hash
+              ? `<span class="tag mono" title="deterministic spec hash">${e(String(w.spec_hash).slice(0, 10))}</span>`
+              : ''
+          }</div><p class="art__topic">${e(w.module_title || '')}</p><p class="art__meta">${
+            pref ? `policy: ${e(pref)}` : 'locked adaptation contract'
+          }</p></div>`;
+        })
+        .join('')
+    : '';
+
+  return `${pageHead({ title: 'curriculum · machine spirits', css: CURRICULUM_CSS })}
+<body>
+${railHtml({
+  active: 'curriculum',
+  brand: 'curriculum',
+  sub: 'the curriculum spine and its compiled dramas + worlds',
+  hint: orientBand(
+    'curriculum',
+    'the CASE-style curriculum graph, and the drama seeds + adaptation worlds it compiles into',
+    'reference; the make-and-read surfaces are on the rail above',
+  ),
+})}
+<main>
+  <div class="blurb">A curriculum is the portable spine — modules, knowledge components, and a prerequisite graph — plus machine-checkable extensions (verifiers, misconception signatures). The compiler lowers it two ways: into <a href="#dramas">drama seeds</a> a generator can enact, and into <a href="#worlds">world specs</a> that constrain the <a href="/derivation">adaptive tutor</a>. New here? Read the <a href="/curriculum/guide">illustrated guide →</a> &nbsp;·&nbsp; format: <code>curriculum/CURRICULUM-FORMAT.md</code>.</div>
+  ${picker}
+  <h1 class="ctitle">${e(c.title || picked.base)}</h1>
+  ${c.status ? `<p class="cstatus">${e(c.status)}</p>` : ''}
+  <div class="meta">${metaChips}</div>
+  ${picked.__error ? `<div class="blurb err">could not parse ${e(picked.file)}: ${e(picked.__error)}</div>` : ''}
+  ${summary}
+  <h2 class="sec-h">Modules${modules.length ? ' · ' + modules.length : ''} <span class="sec-hint">click a row to expand</span></h2>
+  ${moduleRows || '<div class="blurb">no modules in this curriculum file</div>'}
+  ${dramaCards ? `<h2 class="sec-h" id="dramas">Compiled dramas · ${dramas.length}</h2><p class="sec-lede">Runnable drama-machine seeds — each binds back to a module + knowledge components. Enact one from a module above, or launch the whole spec from <a href="/runs?kind=pedagogical-drama&amp;spec=${encodeURIComponent(picked.base + '.dramas.yaml')}">launch a run ↗</a>.</p><div class="arts">${dramaCards}</div>` : ''}
+  ${worldCards ? `<h2 class="sec-h" id="worlds">Compiled worlds · ${worlds.length}</h2><p class="sec-lede">Locked <code>world_adaptation_spec</code> records — the Plan 2.1 bridge. Each fixes a module's learner-state evidence, allowed/preferred/disallowed action families, and expected transitions <em>before</em> dialogue, then constrains policy at run time. A world shapes affordances; it never proves learning by itself.</p><div class="arts">${worldCards}</div>` : ''}
+</main>
+${THEME_TOGGLE_SCRIPT}
 </body></html>`;
 }
 
@@ -5118,7 +6929,12 @@ section.sec{ border:1px solid var(--rule); background:var(--paper-4); margin-bot
 `,
   })}
 <body>
-${railHtml({ active: 'replays', brand: 'discursive replays', sub: 'counterfactual revisions of public transcripts · diffed against the originals &amp; locally gated' })}
+${railHtml({
+  active: 'replays',
+  brand: 'discursive replays',
+  sub: 'counterfactual revisions of public transcripts · diffed against the originals &amp; locally gated',
+  hint: '<span><b>replays</b> — a finished script re-run with one move changed, diffed against the original</span><span class="navhint__sep">·</span><span>see also <a href="/browse">scripts</a> &amp; <a href="/derivation">proof runs</a></span>',
+})}
 <div class="controls">
   <label>bundle <select id="bundleSel"></select></label>
   <span class="meta" id="bundleMeta"></span>
@@ -5348,6 +7164,30 @@ loadBundles();
 </html>`;
 }
 
+// The world + tutor-script catalogs the /runs derivation form offers — sourced
+// live from config/drama-derivation/ so a new world-*.yaml or tutor script needs
+// no code edit (mirrors the discipline filter's live-sourcing).
+function listDerivationWorldFiles() {
+  try {
+    return fs
+      .readdirSync(path.resolve(ROOT, 'config/drama-derivation'))
+      .filter((f) => /^world-.*\.ya?ml$/.test(f))
+      .sort();
+  } catch {
+    return [];
+  }
+}
+function listDerivationScriptFiles() {
+  try {
+    return fs
+      .readdirSync(path.resolve(ROOT, 'config/drama-derivation/tutor-scripts'))
+      .filter((f) => /\.md$/.test(f))
+      .sort();
+  } catch {
+    return [];
+  }
+}
+
 function renderRunsHtml() {
   return `${pageHead({
     title: 'Run launcher · poetics',
@@ -5417,7 +7257,12 @@ function renderRunsHtml() {
 `,
   })}
 <body>
-${railHtml({ active: 'runs', brand: 'run launcher', sub: 'spawn generative · replay · adversarial-CLI · online-score runs — localhost only, no auth (deferred)' })}
+${railHtml({
+  active: 'runs',
+  brand: 'run launcher',
+  sub: 'spawn generative · replay · adversarial-CLI · online-score runs — localhost only, no auth (deferred)',
+  hint: '<span><b>launch</b> — spawn new runs</span><span class="navhint__sep">·</span><span>to explore finished ones, see <a href="/browse">scripts</a> or <a href="/derivation">proof runs</a></span>',
+})}
 <div class="controls">
   <div class="tabs" id="tabs"></div>
   <div class="spacer"></div>
@@ -5451,6 +7296,8 @@ ${railHtml({ active: 'runs', brand: 'run launcher', sub: 'spawn generative · re
 <script>
 const KINDS = ${JSON.stringify(describeKinds())};
 const COST = ${JSON.stringify(COST_CLASSES)};
+const DERIV_WORLDS = ${JSON.stringify(listDerivationWorldFiles())};
+const DERIV_SCRIPTS = ${JSON.stringify(listDerivationScriptFiles())};
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const state = { kind:'replay', fields:[], plan:null, jobs:[], selJob:null };
@@ -5494,6 +7341,39 @@ const FORMS = {
       { name:'dryRun', label:'dry-run' },
       { name:'specOnly', label:'spec-only' },
       { name:'force', label:'force' },
+    ],
+  },
+  'pedagogical-drama': {
+    blurb: 'Enact a compiled curriculum drama spec (curriculum/<name>.dramas.yaml) through the batch generator. Leave "only" blank to run the whole spec, or pass one drama id. claude/codex/gemini route through the Max plan (quota); generator=api + an org/model slug is metered $.',
+    fields: [
+      { name:'spec', type:'text', label:'drama spec (required)', placeholder:'ai-foundations.dramas.yaml  (basename ⇒ curriculum/…)' },
+      { name:'only', type:'text', label:'only (optional)', placeholder:'one drama id e.g. D_AF6_… — blank runs all' },
+      { name:'generator', type:'select', label:'generator', options:['claude','codex','gemini','api'], def:'claude', help:'claude/codex/gemini = quota; api = metered when --model is an org/model slug' },
+      { name:'model', type:'text', label:'model (optional)', placeholder:'claude alias, or org/model for generator=api' },
+      { name:'maxTurns', type:'number', label:'max turns (optional)', placeholder:'default 6' },
+      { name:'outBase', type:'text', label:'output base (optional)', placeholder:'exports/curriculum-drama/<spec>' },
+    ],
+    checks: [
+      { name:'mock', label:'mock', def:true },
+      { name:'dryRun', label:'dry-run' },
+      { name:'force', label:'force' },
+      { name:'claudePersistentWorkers', label:'persistent Claude workers' },
+    ],
+  },
+  derivation: {
+    blurb: 'Enact a tutor script against a world as a proof-DAG drama — a fixed rule-checker decides grounded / impasse / disengagement. Mock backend is free; "real" targets OpenRouter (metered $). It streams live to /derivation/live and lands on /derivation when it closes.',
+    fields: [
+      { name:'world', type:'select', label:'world (required)', options: DERIV_WORLDS, def: DERIV_WORLDS[0] },
+      { name:'script', type:'select', label:'tutor script (required)', options: DERIV_SCRIPTS, def: DERIV_SCRIPTS[0] },
+      { name:'label', type:'text', label:'label (optional)', placeholder:'default <script>-<mode>-<timestamp>' },
+      { name:'recognition', type:'select', label:'recognition dial', options:['','0','1','2','3'], def:'', help:'tutor register dial; blank = leave at the world default' },
+      { name:'charisma', type:'select', label:'charisma dial', options:['','0','1','2','3'], def:'' },
+      { name:'dramaturgy', type:'select', label:'dramaturgy', options:['','free','frozen'], def:'', help:'frozen = the director cannot declare scene structure' },
+    ],
+    checks: [
+      { name:'superego', label:'superego (tutor self-watch)' },
+      { name:'stallWatch', label:'stall-watch (needs superego)' },
+      { name:'real', label:'real — METERED $' },
     ],
   },
   'adversarial-score': {
@@ -5663,13 +7543,16 @@ function renderJobs(){
     state.jobs.map(function(j){
       const stop = j.status==='running' ? '<button class="btn danger" data-stop="'+esc(j.id)+'" style="padding:3px 9px">stop</button>' : '';
       const exit = (j.status==='failed'||j.status==='error') ? ' <span class="tiny">('+(j.error?esc(j.error):'exit '+j.exitCode)+')</span>' : '';
+      // A derivation run streams to /derivation/live — surface the jump so launch
+      // and watch are one move (opens in a new tab so the launcher stays put).
+      const watch = j.kind==='derivation' ? '<a class="btn" href="/derivation/live" target="_blank" rel="noopener" style="padding:3px 9px" title="watch live derivation runs">watch live ↗</a> ' : '';
       return '<tr class="jobrow'+(j.id===state.selJob?' sel':'')+'" data-job="'+esc(j.id)+'">'+
         '<td><span class="st '+esc(j.status)+'">'+esc(j.status)+'</span>'+exit+'</td>'+
         '<td><span class="cost '+esc(j.costClass)+'">'+esc(j.costClass==='metered'?'metered $':j.costClass)+'</span></td>'+
         '<td>'+esc(j.label)+'</td>'+
         '<td class="tiny">'+esc(ago(j.startedAt))+' ago</td>'+
         '<td class="tiny">'+esc(j.pid||'—')+'</td>'+
-        '<td>'+stop+'</td></tr>';
+        '<td>'+watch+stop+'</td></tr>';
     }).join('')+'</tbody></table>';
   renderJobLog();
 }
@@ -5682,9 +7565,27 @@ function renderJobLog(){
     '<pre>'+esc(j.logTail || '(no output yet)')+'</pre>';
 }
 
+// Deep-link prefill: /runs?kind=<kind>&<field>=<value> selects the tab and fills
+// matching fields/checks (e.g. the curriculum page's "run this drama" links pass
+// kind=pedagogical-drama&spec=…&only=…). The mock checkbox keeps its default, so a
+// prefilled run still starts free until the operator explicitly opts into spend.
+function prefillKindFromUrl(){
+  try { const k=new URLSearchParams(location.search).get('kind'); if (k && FORMS[k]) state.kind=k; } catch(_e){}
+}
+function applyUrlValues(){
+  try {
+    const q=new URLSearchParams(location.search); const spec=FORMS[state.kind]; if(!spec) return; let touched=false;
+    spec.fields.forEach(function(f){ if(q.has(f.name)){ const el=$('f_'+f.name); if(el){ el.value=q.get(f.name); touched=true; } } });
+    spec.checks.forEach(function(c){ if(q.has(c.name)){ const el=$('f_'+c.name); if(el){ const v=q.get(c.name); el.checked=(v==='1'||v==='true'||v==='on'); touched=true; } } });
+    if(touched){ updateVisibility(); schedulePlan(); }
+  } catch(_e){}
+}
+
 // ── Wiring ──────────────────────────────────────────────────────────────────────
+prefillKindFromUrl();
 renderTabs();
 renderForm();
+applyUrlValues();
 $('tabs').addEventListener('click', function(e){ const b=e.target.closest('.tab'); if(!b) return; state.kind=b.getAttribute('data-kind'); renderTabs(); renderForm(); });
 $('form').addEventListener('input', function(){ updateVisibility(); schedulePlan(); });
 $('form').addEventListener('change', function(){ updateVisibility(); schedulePlan(); });
@@ -6577,6 +8478,7 @@ ${railHtml({
   sub: 'sidecar browser · public scripts, full traces, critic scores, labels as perspective',
   extra:
     '<span class="rail__beacon" id="railBeacon" data-state="checking" title="Sidecar database connection"><span class="rail__dot"></span><span id="railBeaconText">checking</span></span>',
+  hint: '<span><b>scripts</b> — tutoring dialogues graded by an AI critic on dramatic form</span><span class="navhint__sep">·</span><span>for runs where a fixed rule-checker (not an AI critic) decides whether the learner reached a hidden answer, see <a href="/derivation">proof runs</a></span>',
 })}
 <div id="app" class="app">
   <aside class="sidebar">
@@ -7242,6 +9144,11 @@ async function init() {
   state.initialItemId = url.searchParams.get('itemId') || url.searchParams.get('id') || '';
   const requestedTab = url.searchParams.get('tab') || url.searchParams.get('view') || '';
   if (['preview', 'sample', 'full', 'scores', 'meta'].includes(requestedTab)) state.tab = requestedTab;
+  // Seed the critic-form filter from ?form= so the dashboard Signal chart can
+  // deep-link straight into one form-class (e.g. /browse?form=recognition).
+  // loadItems() reads formSelect.value, so set the control before the first load.
+  const requestedForm = url.searchParams.get('form') || '';
+  if (['recognition', 'trap', 'flat'].includes(requestedForm) && el('formSelect')) el('formSelect').value = requestedForm;
   document.body.classList.toggle('blind', state.blind);
   if (state.blind) {
     el('appTitle').textContent = 'Poetics Human Scoring';
@@ -7332,6 +9239,7 @@ export {
   parseTranscriptPreview,
   renderBrowserHtml,
   renderDashboardHtml,
+  renderDerivationLogicVisualizer,
   renderOntologyHtml,
   renderRubricHtml,
   saveBrowserLabel,

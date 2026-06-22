@@ -33,7 +33,7 @@
  *   node scripts/analyze-strategy-shift.js --run-id <runId>
  *   node scripts/analyze-strategy-shift.js --run-id <runId>,<runId2>,...   # combine multiple runs
  *   node scripts/analyze-strategy-shift.js --run-id <runId> --out exports/a13-strategy-shift.json
- *   node scripts/analyze-strategy-shift.js --run-id <runId> --profile cell_110_langgraph_adaptive
+ *   node scripts/analyze-strategy-shift.js --run-id <runId> --profile cell_110_langgraph_adaptive --judge-model claude-code/sonnet
  */
 
 import fs from 'fs';
@@ -55,11 +55,12 @@ const getOption = (name) => {
 
 const runIdArg = getOption('run-id') || getOption('run');
 const profileFilter = getOption('profile');
+const judgeModelFilter = getOption('judge-model');
 const outPath = getOption('out');
 
 if (!runIdArg) {
   console.error(
-    'Usage: node scripts/analyze-strategy-shift.js --run-id <runId>[,<runId2>,...] [--profile <name>] [--out <path>]',
+    'Usage: node scripts/analyze-strategy-shift.js --run-id <runId>[,<runId2>,...] [--profile <name>] [--judge-model <label>] [--out <path>]',
   );
   process.exit(2);
 }
@@ -73,17 +74,23 @@ const runId = runIds.length === 1 ? runIds[0] : runIds.join(',');
 const db = new Database(DB_PATH, { readonly: true });
 
 const placeholders = runIds.map(() => '?').join(',');
-let query = `SELECT id, run_id, scenario_id, scenario_type, scenario_name, profile_name, dialogue_id FROM evaluation_results WHERE run_id IN (${placeholders})`;
+let query = `SELECT id, run_id, scenario_id, scenario_type, scenario_name, profile_name, dialogue_id, judge_model FROM evaluation_results WHERE run_id IN (${placeholders})`;
 const params = [...runIds];
 if (profileFilter) {
   query += ' AND profile_name = ?';
   params.push(profileFilter);
 }
+if (judgeModelFilter) {
+  query += ' AND judge_model = ?';
+  params.push(judgeModelFilter);
+}
 const rows = db.prepare(query).all(...params);
 db.close();
 
 if (rows.length === 0) {
-  console.error(`No rows found for runId(s)=${runIds.join(',')}${profileFilter ? `, profile=${profileFilter}` : ''}`);
+  console.error(
+    `No rows found for runId(s)=${runIds.join(',')}${profileFilter ? `, profile=${profileFilter}` : ''}${judgeModelFilter ? `, judgeModel=${judgeModelFilter}` : ''}`,
+  );
   process.exit(1);
 }
 
@@ -414,6 +421,7 @@ const report = {
   runId,
   runIds,
   profileFilter: profileFilter || null,
+  judgeModelFilter: judgeModelFilter || null,
   totalScenarios: perScenario.length,
   errors: perScenario.filter((r) => r.error).length,
   byProfile,

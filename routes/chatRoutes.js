@@ -618,6 +618,7 @@ router.post('/learner-turn', async (req, res) => {
     topic = 'general conversation',
     personaId = 'eager_novice',
     useClaudeCli = false,
+    dryRun = false,
   } = req.body || {};
 
   if (!cellName) return res.status(400).json({ error: 'cellName is required' });
@@ -625,16 +626,20 @@ router.post('/learner-turn', async (req, res) => {
   const profile = evalConfigLoader.loadTutorAgents()?.profiles?.[cellName];
   if (!profile) return res.status(404).json({ error: `cell "${cellName}" not found` });
 
+  const learnerProfileName = profile.learner_architecture || 'unified';
+  const lastTutor = [...history].reverse().find((h) => h.role === 'tutor');
+  const tutorMessage = lastTutor?.content || `Let's begin a conversation about ${topic}. What's on your mind?`;
+
+  if (dryRun === true) {
+    return res.json(buildDryRunLearnerTurn({ learnerProfileName, personaId, topic, tutorMessage }));
+  }
+
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!useClaudeCli && !apiKey) {
     return res.status(503).json({
       error: 'OPENROUTER_API_KEY is not set — either enable the Claude CLI toggle or set the key.',
     });
   }
-
-  const learnerProfileName = profile.learner_architecture || 'unified';
-  const lastTutor = [...history].reverse().find((h) => h.role === 'tutor');
-  const tutorMessage = lastTutor?.content || `Let's begin a conversation about ${topic}. What's on your mind?`;
 
   // Build an llmCall adapter the engine expects: (modelRef, systemPrompt, messages, options)
   // When useClaudeCli is true, every call is routed through the local `claude` CLI
@@ -777,6 +782,128 @@ function normalizeLearnerDeliberation(entries) {
   });
 }
 
+function dryRunMetrics(model = 'dry-run') {
+  return {
+    model,
+    provider: 'dry-run',
+    latencyMs: 0,
+    inputTokens: 0,
+    outputTokens: 0,
+  };
+}
+
+function buildDryRunLearnerTurn({ learnerProfileName, personaId, topic, tutorMessage }) {
+  const dynamicLearner = String(learnerProfileName || '').startsWith('ego_superego');
+  const message = `(dry run) I can answer from a learner stance: I heard the tutor ask about ${topic}, and I would try a tentative explanation before checking it.`;
+  const rawDeliberation = dynamicLearner
+    ? [
+        {
+          role: 'ego_initial',
+          content: `(dry run) Initial learner reaction to: ${tutorMessage}`,
+          metrics: dryRunMetrics('dry-run/learner-ego'),
+        },
+        {
+          role: 'superego',
+          content: '(dry run) Check whether the learner is merely agreeing or naming what remains unclear.',
+          metrics: dryRunMetrics('dry-run/learner-superego'),
+        },
+        {
+          role: 'ego_revision',
+          content: message,
+          metrics: dryRunMetrics('dry-run/learner-ego-revision'),
+        },
+      ]
+    : [
+        {
+          role: 'unified',
+          content: message,
+          metrics: dryRunMetrics('dry-run/unified-learner'),
+        },
+      ];
+  const deliberation = normalizeLearnerDeliberation(rawDeliberation);
+  return {
+    message,
+    deliberation,
+    emotionalState: 'curious',
+    understandingLevel: dynamicLearner ? 'revising' : 'initial',
+    suggestsEnding: false,
+    learnerProfile: learnerProfileName,
+    personaId,
+    dryRun: true,
+    totals: {
+      inputTokens: 0,
+      outputTokens: 0,
+      latencyMs: 0,
+    },
+  };
+}
+
+function buildDryRunTutorTurn({ profile, learnerMessage, topic }) {
+  const promptType = profile.factors?.prompt_type || null;
+  const recognitionMode = !!profile.recognition_mode;
+  const egoDraft = `(dry run) I hear the learner saying: "${learnerMessage}". For ${topic}, I would answer with a short worked example and then ask the learner to make the next move.`;
+  const deliberation = [
+    {
+      role: 'ego',
+      label: 'Ego — initial draft',
+      content: egoDraft,
+      model: 'dry-run/tutor-ego',
+      provider: 'dry-run',
+      temperature: 0,
+      latencyMs: 0,
+      inputTokens: 0,
+      outputTokens: 0,
+    },
+  ];
+  let finalMessage = egoDraft;
+  let wasRevised = false;
+
+  if (profile.superego) {
+    const critique = [
+      'CRITIQUE: (dry run) Keep the response concrete and avoid over-explaining before the learner acts.',
+      'IMPROVED: (dry run) Let us test your idea with one small example. What would happen first, and what evidence would tell you that move is right?',
+    ].join('\n');
+    finalMessage = '(dry run) Let us test your idea with one small example. What would happen first, and what evidence would tell you that move is right?';
+    wasRevised = true;
+    deliberation.push(
+      {
+        role: 'superego',
+        label: 'Superego — critique',
+        content: critique,
+        model: 'dry-run/tutor-superego',
+        provider: 'dry-run',
+        temperature: 0,
+        latencyMs: 0,
+        inputTokens: 0,
+        outputTokens: 0,
+      },
+      {
+        role: 'ego_revision',
+        label: 'Ego revision — adopts superego edits',
+        content: finalMessage,
+        derivedFrom: 'superego IMPROVED section',
+      },
+    );
+  }
+
+  return {
+    finalMessage,
+    wasRevised,
+    deliberation,
+    architecture: {
+      hasSuperego: !!profile.superego,
+      promptType,
+      recognitionMode,
+    },
+    dryRun: true,
+    totals: {
+      inputTokens: 0,
+      outputTokens: 0,
+      latencyMs: 0,
+    },
+  };
+}
+
 router.post('/turn', async (req, res) => {
   // learnerMessage is only read; the others are mutated by the pilot-mode
   // override block below (cellName, lectureRef, history, topic, useClaudeCli).
@@ -787,6 +914,7 @@ router.post('/turn', async (req, res) => {
     topic = 'general conversation',
     lectureRef = null,
     useClaudeCli = false,
+    dryRun = false,
   } = req.body || {};
   const sessionId = req.body?.sessionId || null;
 
@@ -834,6 +962,19 @@ router.post('/turn', async (req, res) => {
   const profile = data?.profiles?.[cellName];
   if (!profile) return res.status(404).json({ error: `cell "${cellName}" not found` });
   if (!profile.ego) return res.status(400).json({ error: `cell "${cellName}" has no ego config` });
+
+  if (dryRun === true) {
+    if (pilotSession) {
+      return res.status(400).json({ error: 'dryRun is not allowed for pilot sessions' });
+    }
+    return res.json(
+      buildDryRunTutorTurn({
+        profile,
+        learnerMessage: String(learnerMessage),
+        topic: String(topic),
+      }),
+    );
+  }
 
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!useClaudeCli && !apiKey) {

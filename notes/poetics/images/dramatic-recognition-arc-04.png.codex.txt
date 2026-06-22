@@ -1,5 +1,2 @@
-Created and verified PNG:
+Created and verified: [dramatic-recognition-arc-04.png](/Users/lmagee/Dev/machinespirits/machinespirits-eval-derivation/notes/poetics/images/dramatic-recognition-arc-04.png) (`1586x992` PNG). No HTML edits made.
 
-`notes/poetics/images/dramatic-recognition-arc-04.png`
-
-It is a real PNG at `1586 x 992`, matching the existing arc panel proportions.

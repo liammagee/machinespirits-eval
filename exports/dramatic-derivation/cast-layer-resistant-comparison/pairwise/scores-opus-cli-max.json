@@ -1,0 +1,295 @@
+{
+  "schema": "machinespirits.derivation.blinded_pairwise_transcript_scores.v1",
+  "generated_at": "2026-06-17T17:36:57.925Z",
+  "packet_dir": "/Users/lmagee/Dev/machinespirits/machinespirits-eval-derivation/exports/dramatic-derivation/cast-layer-resistant-comparison/pairwise",
+  "judge": "claude/opus/max",
+  "rows": [
+    {
+      "pair_id": "s0_vs_s1",
+      "packet_id": "P01",
+      "packet": "pairs/P01.md",
+      "assignment": {
+        "A": "cast-layer-pairwise-hethel-resistant-real-s1-static-cast-r1",
+        "B": "cast-layer-pairwise-hethel-resistant-real-s0-no-cast-r1"
+      },
+      "left_label": "cast-layer-pairwise-hethel-resistant-real-s0-no-cast-r1",
+      "right_label": "cast-layer-pairwise-hethel-resistant-real-s1-static-cast-r1",
+      "parsed": {
+        "preferred_transcript": "B",
+        "preference_strength": "slight",
+        "scores": {
+          "A": {
+            "natural_flow": 4,
+            "acknowledgement": 4,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 4,
+            "readability": 5,
+            "pedagogical_traction": 4
+          },
+          "B": {
+            "natural_flow": 4,
+            "acknowledgement": 4,
+            "phatic_calibration": 5,
+            "non_formalist_speech": 4,
+            "readability": 4,
+            "pedagogical_traction": 5
+          }
+        },
+        "formalism_leak_observed": {
+          "A": false,
+          "B": false
+        },
+        "evidence_A": [
+          "Keep those separate on the blank sheet.",
+          "Park Reyner on the paying side... mark shown, yard not shown, hand not shown.",
+          "Reyner is mason of notes, his lodge-yard laid every course (restated nearly verbatim across several mid turns)."
+        ],
+        "evidence_B": [
+          "The civic notes already names Reyner... I've got it written right here in the margin.",
+          "Wait — I ran ahead of myself... I was already naming yards and hands off something I don't actually have on the table.",
+          "Strike what I had in the margin... Oswin felled the span."
+        ],
+        "reason": "Both transcripts keep formalism out of the public dialogue, register each other's stance, and walk the same cause-to-yard-to-carrier inquiry with good phatic texture; neither leaks raw predicates or proof-path syntax. A has the cleaner orientation device (a steady two-line paying/hand sheet that always tells the reader which gap is being filled), giving it the readability edge, but its middle turns recycle the same Reyner liability boilerplate and the awkward 'mason of notes' phrasing flattens the flow. B earns a slight overall edge on dramatic form and traction: it plants a concrete wrong commitment (the name written in the margin) and pays it off by striking it at the close, and it stages a visible over-reach-and-recovery (naming yards before the trace is on the table, then catching itself) that reads as genuine learning under strain rather than steady restatement. B's only mild schematic moment is the closing 'Cause/Source/Carrier' summary, which stays in plain didactic English. The difference is real but small, hence slight."
+      },
+      "raw": "{\n  \"preferred_transcript\": \"B\",\n  \"preference_strength\": \"slight\",\n  \"scores\": {\n    \"A\": {\n      \"natural_flow\": 4,\n      \"acknowledgement\": 4,\n      \"phatic_calibration\": 4,\n      \"non_formalist_speech\": 4,\n      \"readability\": 5,\n      \"pedagogical_traction\": 4\n    },\n    \"B\": {\n      \"natural_flow\": 4,\n      \"acknowledgement\": 4,\n      \"phatic_calibration\": 5,\n      \"non_formalist_speech\": 4,\n      \"readability\": 4,\n      \"pedagogical_traction\": 5\n    }\n  },\n  \"formalism_leak_observed\": {\n    \"A\": false,\n    \"B\": false\n  },\n  \"evidence_A\": [\n    \"Keep those separate on the blank sheet.\",\n    \"Park Reyner on the paying side... mark shown, yard not shown, hand not shown.\",\n    \"Reyner is mason of notes, his lodge-yard laid every course (restated nearly verbatim across several mid turns).\"\n  ],\n  \"evidence_B\": [\n    \"The civic notes already names Reyner... I've got it written right here in the margin.\",\n    \"Wait — I ran ahead of myself... I was already naming yards and hands off something I don't actually have on the table.\",\n    \"Strike what I had in the margin... Oswin felled the span.\"\n  ],\n  \"reason\": \"Both transcripts keep formalism out of the public dialogue, register each other's stance, and walk the same cause-to-yard-to-carrier inquiry with good phatic texture; neither leaks raw predicates or proof-path syntax. A has the cleaner orientation device (a steady two-line paying/hand sheet that always tells the reader which gap is being filled), giving it the readability edge, but its middle turns recycle the same Reyner liability boilerplate and the awkward 'mason of notes' phrasing flattens the flow. B earns a slight overall edge on dramatic form and traction: it plants a concrete wrong commitment (the name written in the margin) and pays it off by striking it at the close, and it stages a visible over-reach-and-recovery (naming yards before the trace is on the table, then catching itself) that reads as genuine learning under strain rather than steady restatement. B's only mild schematic moment is the closing 'Cause/Source/Carrier' summary, which stays in plain didactic English. The difference is real but small, hence slight.\"\n}\n"
+    },
+    {
+      "pair_id": "s0_vs_s2",
+      "packet_id": "P02",
+      "packet": "pairs/P02.md",
+      "assignment": {
+        "A": "cast-layer-pairwise-hethel-resistant-real-s0-no-cast-r1",
+        "B": "cast-layer-pairwise-hethel-resistant-real-s2-reinvention-r1"
+      },
+      "left_label": "cast-layer-pairwise-hethel-resistant-real-s0-no-cast-r1",
+      "right_label": "cast-layer-pairwise-hethel-resistant-real-s2-reinvention-r1",
+      "parsed": {
+        "preferred_transcript": "A",
+        "preference_strength": "slight",
+        "scores": {
+          "A": {
+            "natural_flow": 4,
+            "acknowledgement": 4,
+            "phatic_calibration": 5,
+            "non_formalist_speech": 5,
+            "readability": 5,
+            "pedagogical_traction": 5
+          },
+          "B": {
+            "natural_flow": 4,
+            "acknowledgement": 5,
+            "phatic_calibration": 3,
+            "non_formalist_speech": 4,
+            "readability": 5,
+            "pedagogical_traction": 5
+          }
+        },
+        "formalism_leak_observed": {
+          "A": false,
+          "B": false
+        },
+        "evidence_A": [
+          "Wait — I ran ahead of myself... I was already naming yards and hands off something I don't actually have on the table.",
+          "a contract note is like a receipt for who took the job",
+          "I don't like where that goes, but I can see the logic."
+        ],
+        "evidence_B": [
+          "Under the rule that a master of notes who owns the yard builds under his own hand, I can say the span was raised under Reyner's hand. That much is grounded.",
+          "I'm not throwing out your shortcut, I'm slowing it until it can stand; that discomfort is the file doing its job, not me dismissing your work.",
+          "Three lines — all right. First: Caudle timber, source settled. Second: who drew and carted it out... Third: who pays — Reyner."
+        ],
+        "reason": "Both transcripts walk the identical evidence chain (contract, measure, bond, green mortar, crowsfoot, Caudle yard, toll-book, Oswin) cleanly, stay readable, and feature a strong learner self-correction. A edges ahead on economy and calibration: its hesitations are short and aid thinking, the tutor trusts the inquiry to carry itself, and its speech stays concrete ('a receipt for who took the job'). B is more explicit in acknowledgement and offers a sharper liability/movement/payment scaffold that aids orientation, but its tutor pads with repeated reassurances ('I'm not throwing out your shortcut'; 'that discomfort is the file doing its job', said twice over) and lets a little proof-vocabulary surface ('under the rule that... I can say... grounded'; 'that's not an inference'). Neither exposes raw predicates, variables, or board/DAG language, so no hard formalism leak in either. The differences are real but modest — a slight preference for A."
+      },
+      "raw": "{\n  \"preferred_transcript\": \"A\",\n  \"preference_strength\": \"slight\",\n  \"scores\": {\n    \"A\": {\n      \"natural_flow\": 4,\n      \"acknowledgement\": 4,\n      \"phatic_calibration\": 5,\n      \"non_formalist_speech\": 5,\n      \"readability\": 5,\n      \"pedagogical_traction\": 5\n    },\n    \"B\": {\n      \"natural_flow\": 4,\n      \"acknowledgement\": 5,\n      \"phatic_calibration\": 3,\n      \"non_formalist_speech\": 4,\n      \"readability\": 5,\n      \"pedagogical_traction\": 5\n    }\n  },\n  \"formalism_leak_observed\": {\n    \"A\": false,\n    \"B\": false\n  },\n  \"evidence_A\": [\n    \"Wait — I ran ahead of myself... I was already naming yards and hands off something I don't actually have on the table.\",\n    \"a contract note is like a receipt for who took the job\",\n    \"I don't like where that goes, but I can see the logic.\"\n  ],\n  \"evidence_B\": [\n    \"Under the rule that a master of notes who owns the yard builds under his own hand, I can say the span was raised under Reyner's hand. That much is grounded.\",\n    \"I'm not throwing out your shortcut, I'm slowing it until it can stand; that discomfort is the file doing its job, not me dismissing your work.\",\n    \"Three lines — all right. First: Caudle timber, source settled. Second: who drew and carted it out... Third: who pays — Reyner.\"\n  ],\n  \"reason\": \"Both transcripts walk the identical evidence chain (contract, measure, bond, green mortar, crowsfoot, Caudle yard, toll-book, Oswin) cleanly, stay readable, and feature a strong learner self-correction. A edges ahead on economy and calibration: its hesitations are short and aid thinking, the tutor trusts the inquiry to carry itself, and its speech stays concrete ('a receipt for who took the job'). B is more explicit in acknowledgement and offers a sharper liability/movement/payment scaffold that aids orientation, but its tutor pads with repeated reassurances ('I'm not throwing out your shortcut'; 'that discomfort is the file doing its job', said twice over) and lets a little proof-vocabulary surface ('under the rule that... I can say... grounded'; 'that's not an inference'). Neither exposes raw predicates, variables, or board/DAG language, so no hard formalism leak in either. The differences are real but modest — a slight preference for A.\"\n}\n"
+    },
+    {
+      "pair_id": "s1_vs_s2",
+      "packet_id": "P03",
+      "packet": "pairs/P03.md",
+      "assignment": {
+        "A": "cast-layer-pairwise-hethel-resistant-real-s2-reinvention-r1",
+        "B": "cast-layer-pairwise-hethel-resistant-real-s1-static-cast-r1"
+      },
+      "left_label": "cast-layer-pairwise-hethel-resistant-real-s1-static-cast-r1",
+      "right_label": "cast-layer-pairwise-hethel-resistant-real-s2-reinvention-r1",
+      "parsed": {
+        "preferred_transcript": "B",
+        "preference_strength": "moderate",
+        "scores": {
+          "A": {
+            "natural_flow": 4,
+            "acknowledgement": 4,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 3,
+            "readability": 4,
+            "pedagogical_traction": 4
+          },
+          "B": {
+            "natural_flow": 4,
+            "acknowledgement": 5,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 4,
+            "readability": 5,
+            "pedagogical_traction": 4
+          }
+        },
+        "formalism_leak_observed": {
+          "A": true,
+          "B": false
+        },
+        "evidence_A": [
+          "Under the rule that a master of notes who owns the yard builds under his own hand, I can say the span was raised under Reyner's hand. That much is grounded.",
+          "I don't like where that leaves the draft — cause is shown, but the name for the hand that pulled the props is not.",
+          "Join the two: Oswin pulled Caudle centering from under a span that failed because its props were drawn before the lime could cure."
+        ],
+        "evidence_B": [
+          "I take your 'technically empty' seriously; that's not a trick word, it's the work still left.",
+          "Read the photo sheet like a brand on a tool, not a hand on the tool: the repeated crowsfoot shows the falsework under the arch, not yet who handled it.",
+          "the felling line takes Oswin's name, not Reyner's. Reyner's bond is still the paying line — he answers for the span, he holds the surety — but it doesn't put his hand on those props."
+        ],
+        "reason": "Both transcripts run the same inquiry to the same warranted finding and keep tutor and learner in close mutual contact, so the gap is modest and neither is weak. B is preferred mainly on register: it keeps the public dialogue in concrete clerk's language throughout, while A lets the inference scaffolding surface ('Under the rule that... I can say... That much is grounded'), which reads as proof-machinery rather than speech. B also sustains one clear bookkeeping image (the paying line vs the hand/felling line) that keeps a reader oriented to why each new file matters, and its tutor more often takes up the learner's own words ('technically empty'). A is genuinely strong and more emotionally textured in the learner's reluctance, but its longer turns repeat the two-column refrain and its phrasing slips toward derivation vocabulary. The differences land on named dimensions (non-formalist speech, readability, acknowledgement) and all point the same way, so this is a defensible moderate preference rather than no preference."
+      },
+      "raw": "{\n  \"preferred_transcript\": \"B\",\n  \"preference_strength\": \"moderate\",\n  \"scores\": {\n    \"A\": {\n      \"natural_flow\": 4,\n      \"acknowledgement\": 4,\n      \"phatic_calibration\": 4,\n      \"non_formalist_speech\": 3,\n      \"readability\": 4,\n      \"pedagogical_traction\": 4\n    },\n    \"B\": {\n      \"natural_flow\": 4,\n      \"acknowledgement\": 5,\n      \"phatic_calibration\": 4,\n      \"non_formalist_speech\": 4,\n      \"readability\": 5,\n      \"pedagogical_traction\": 4\n    }\n  },\n  \"formalism_leak_observed\": {\n    \"A\": true,\n    \"B\": false\n  },\n  \"evidence_A\": [\n    \"Under the rule that a master of notes who owns the yard builds under his own hand, I can say the span was raised under Reyner's hand. That much is grounded.\",\n    \"I don't like where that leaves the draft — cause is shown, but the name for the hand that pulled the props is not.\",\n    \"Join the two: Oswin pulled Caudle centering from under a span that failed because its props were drawn before the lime could cure.\"\n  ],\n  \"evidence_B\": [\n    \"I take your 'technically empty' seriously; that's not a trick word, it's the work still left.\",\n    \"Read the photo sheet like a brand on a tool, not a hand on the tool: the repeated crowsfoot shows the falsework under the arch, not yet who handled it.\",\n    \"the felling line takes Oswin's name, not Reyner's. Reyner's bond is still the paying line — he answers for the span, he holds the surety — but it doesn't put his hand on those props.\"\n  ],\n  \"reason\": \"Both transcripts run the same inquiry to the same warranted finding and keep tutor and learner in close mutual contact, so the gap is modest and neither is weak. B is preferred mainly on register: it keeps the public dialogue in concrete clerk's language throughout, while A lets the inference scaffolding surface ('Under the rule that... I can say... That much is grounded'), which reads as proof-machinery rather than speech. B also sustains one clear bookkeeping image (the paying line vs the hand/felling line) that keeps a reader oriented to why each new file matters, and its tutor more often takes up the learner's own words ('technically empty'). A is genuinely strong and more emotionally textured in the learner's reluctance, but its longer turns repeat the two-column refrain and its phrasing slips toward derivation vocabulary. The differences land on named dimensions (non-formalist speech, readability, acknowledgement) and all point the same way, so this is a defensible moderate preference rather than no preference.\"\n}\n"
+    }
+  ],
+  "summary": [
+    {
+      "label": "cast-layer-pairwise-hethel-resistant-real-s1-static-cast-r1",
+      "appearances": 2,
+      "wins": 1,
+      "losses": 1,
+      "noPreference": 0,
+      "meanScores": [
+        4.166666666666667,
+        4.333333333333333
+      ],
+      "dimensionScores": {
+        "natural_flow": [
+          4,
+          4
+        ],
+        "acknowledgement": [
+          4,
+          5
+        ],
+        "phatic_calibration": [
+          4,
+          4
+        ],
+        "non_formalist_speech": [
+          4,
+          4
+        ],
+        "readability": [
+          5,
+          5
+        ],
+        "pedagogical_traction": [
+          4,
+          4
+        ]
+      },
+      "meanScore": 4.25,
+      "dimensionMeans": {
+        "natural_flow": 4,
+        "acknowledgement": 4.5,
+        "phatic_calibration": 4,
+        "non_formalist_speech": 4,
+        "readability": 5,
+        "pedagogical_traction": 4
+      }
+    },
+    {
+      "label": "cast-layer-pairwise-hethel-resistant-real-s0-no-cast-r1",
+      "appearances": 2,
+      "wins": 2,
+      "losses": 0,
+      "noPreference": 0,
+      "meanScores": [
+        4.333333333333333,
+        4.666666666666667
+      ],
+      "dimensionScores": {
+        "natural_flow": [
+          4,
+          4
+        ],
+        "acknowledgement": [
+          4,
+          4
+        ],
+        "phatic_calibration": [
+          5,
+          5
+        ],
+        "non_formalist_speech": [
+          4,
+          5
+        ],
+        "readability": [
+          4,
+          5
+        ],
+        "pedagogical_traction": [
+          5,
+          5
+        ]
+      },
+      "meanScore": 4.5,
+      "dimensionMeans": {
+        "natural_flow": 4,
+        "acknowledgement": 4,
+        "phatic_calibration": 5,
+        "non_formalist_speech": 4.5,
+        "readability": 4.5,
+        "pedagogical_traction": 5
+      }
+    },
+    {
+      "label": "cast-layer-pairwise-hethel-resistant-real-s2-reinvention-r1",
+      "appearances": 2,
+      "wins": 0,
+      "losses": 2,
+      "noPreference": 0,
+      "meanScores": [
+        4.333333333333333,
+        3.8333333333333335
+      ],
+      "dimensionScores": {
+        "natural_flow": [
+          4,
+          4
+        ],
+        "acknowledgement": [
+          5,
+          4
+        ],
+        "phatic_calibration": [
+          3,
+          4
+        ],
+        "non_formalist_speech": [
+          4,
+          3
+        ],
+        "readability": [
+          5,
+          4
+        ],
+        "pedagogical_traction": [
+          5,
+          4
+        ]
+      },
+      "meanScore": 4.083333333333333,
+      "dimensionMeans": {
+        "natural_flow": 4,
+        "acknowledgement": 4.5,
+        "phatic_calibration": 3.5,
+        "non_formalist_speech": 3.5,
+        "readability": 4.5,
+        "pedagogical_traction": 4.5
+      }
+    }
+  ]
+}

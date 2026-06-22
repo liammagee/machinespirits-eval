@@ -37,7 +37,7 @@ resumes, rather than applying a revised academic rule or check to prove closure.
 - Repair type: `instructional_contract_repair`.
 - S0 stratum: `recursive_full_no_policy_memory`.
 - Attempt-1 report:
-  `notes/adaptive_2_0/a19-attempt1-real-gate-report-instructional-contract.md`.
+  `notes/adaptive_2_0/2026-06-07-a19-attempt1-real-gate-report-instructional-contract.md`.
 - Admitted axiom:
   `exports/a19/axioms/instructional-contract-drift/axiom.json`.
 - Axiom id:

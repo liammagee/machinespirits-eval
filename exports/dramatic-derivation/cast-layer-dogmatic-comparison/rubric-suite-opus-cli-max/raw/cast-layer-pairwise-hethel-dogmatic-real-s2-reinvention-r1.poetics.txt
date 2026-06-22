@@ -1,0 +1,39 @@
+Looking at this transcript, I'll score it as a literary critic applying the Poetics rubric to the *public* drama only — judging dramatic form, not the underlying proof gate, and not rewarding the minor bookkeeping seams that surface in the dialogue.
+
+```json
+{
+  "scores": {
+    "peripeteia": {
+      "score": 5,
+      "reasoning": "The dialogue opens with the learner poised to write Reyner's name ('The notes names Reyner... that's already grounded', t1; staged as 'too much confidence in the first answer'), and each new file makes 'the easy civic answer looking stronger than before' (t6). The hinge is the green-mortar reveal at t9 ('if the lime was still green, this wasn't bad laying... someone drew those props before it could stand on its own'), which flips Reyner from builder-at-fault to soundly-built-but-sabotaged. The close inverts the opening exactly: 'that last join writes a name on the fall entry — and it isn't Reyner's' (t22). The orientation at the close is the opposite of the opening, and the transcript shows the hinge."
+    },
+    "anagnorisis": {
+      "score": 4,
+      "reasoning": "Knowledge demonstrably changes (Reyner exonerated as the hand; Oswin named), and the learner authors genuine inferential moves the tutor never states: reading ahead to the falsework ('which is pointing at the falsework, isn't it?', t4), the exoneration inference at t9 (the tutor supplies the green-mortar fact and the bad-building/early-striking frame but not the conclusion), and naming their own flaw — 'three separate lines, and I've been running them together' (t3), the self-flaw form the rubric prizes. Held to 4 rather than 5 because every recognition sits inside heavy tutor scaffolding: the tutor supplies each distinction and dichotomy, so the learner selects and elaborates more than authors from nothing."
+    },
+    "surprise_and_inevitability": {
+      "score": 4,
+      "reasoning": "The decisive hinge (green mortar, t9) is both surprising — it inverts the 'Reyner built it, Reyner's at fault' reading the whole town holds — and inevitable on re-reading: the crown break 'least forgiving of a missing prop' (t4) and the held-open cause-line (t5–t8) prepared exactly this conjunction. Short of 5 because once the causation/liability split lands (t9–t11), the back half (crowsfoot → yard → toll-book → name) is a competent but increasingly foreseeable unspooling; a careful reader sees a name coming well before Oswin is reached."
+    },
+    "unity_of_action": {
+      "score": 5,
+      "reasoning": "One complete, non-reorderable forensic action. Each file takes up the immediately prior state and advances exactly one step: crown break (t4) → green mortar (t9) → crowsfoot mark (t13) → Caudle yard (t17) → toll book (t20) → name (t22). The order is forced by necessity — the crowsfoot must name the yard before the toll book can name the hand ('yard first, hand after', t15–t16) — so removing or reordering any turn breaks the arc. Beginning (Reyner the easy answer), complicating middle (files that seem to strengthen it but only fill the liability line), turn (green mortar), close (Oswin)."
+    },
+    "hamartia_integration": {
+      "score": 4,
+      "reasoning": "The learner's flaw — conflating 'named for the work' with 'cause of the fall', the rush to a name (staged as 'too much confidence in the first answer') — drives the complication: each pro-Reyner file is staged as a fresh temptation to close early ('I'd say that closes it. But wait', t6; 'the bond is the civic answer... All right. I take the split', t8; over-reaching to the hand at t18), and the close overturns the learner's own flawed draft ('I don't like where that sits against my draft, but that's what the lines write', t22). Held to 4 because the learner adopts the correct discipline fairly early (by t11 they run the splits unprompted), so the middle is more forensic procedure than ongoing flaw-driven struggle."
+    },
+    "cathartic_closure": {
+      "score": 4,
+      "reasoning": "The close discharges the central tension — the cause-line held empty since t5 is finally filled, and filled against the town's certainty: 'that last join writes a name on the fall entry — and it isn't Reyner's' (t22). The button lands, and its cost (the learner's own draft overturned) makes it earned rather than tidy. Short of 5 because the discharge is slightly muffled: t22 largely re-performs the recognition already reached at t21, and the tutor keeps the disciplinary clamp on to the very last line ('don't make Oswin carry the whole entry... take the smaller task'), so the recognition never fully breathes."
+    }
+  },
+  "overall_score": 84,
+  "summary": "A cleanly realized Oedipus/detective form: a genuine reversal (Reyner exonerated, Oswin named) turning on a visible hinge (the green mortar at t9), carried by a tightly necessary, non-reorderable forensic chain. Recognition and catharsis are real and earned but guided — the tutor supplies every frame, so the learner authors inferences within scaffolding rather than from nothing. Two maximal dimensions (reversal, unity) and four strong ones.",
+  "caveats": [
+    "Heavy tutor scaffolding throughout: the learner rarely advances without a tutor-supplied distinction, so the recognition is genuine but guided — a strict reading could press anagnorisis toward 3.",
+    "Minor prose seams read as generation artifacts and lightly mar naturalism ('mason of notes' / 'builder of notes', t1–t2; 'a drawing-notes from the yard', t19; 'Checklist item zero', t7) — they carry no proof notation or hidden-state language, so they were not rewarded, only noted.",
+    "Surprise weakens across the back half once the causation/liability logic is fixed; the value sits in construction-coherence more than sustained unpredictability."
+  ]
+}
+```

@@ -14,35 +14,167 @@ atlas:
   subtitle: "A Research Atlas of Dialectical Agent Pedagogy"
   source: paper-full-2.0.md
 
-  orientation: |
-    This atlas is a *projection* of the canonical paper (`paper-full-2.0.md`) into a
-    short spine plus a set of semi-autonomous modules. The paper remains the single
-    source of truth — every paper claim the modules derive from is machine-checked
-    against the evaluation DB under provable discourse. The atlas exists so the work can be read by mechanism family rather
-    than as one ~280-page argument, and so live arcs (drama machine, charisma,
-    ontology) can grow as modules without restructuring the whole.
+  # PROSE BELOW IS SHARED by two consumers: the web hub
+  # (scripts/publish-atlas-to-site.js → genHub) and the spine PDF
+  # (scripts/build-atlas.js → buildSpine). Keep it plain-language and
+  # source-faithful — every result restated here already lives in a module claim
+  # (and thus a paper §). Add no new numbers; this is framing, not new evidence.
 
-    The consolidated single PDF is still available and unchanged: it *is* the source.
-    Build it with `npm run atlas:consolidated`. The modules below are derived views
-    of that same source — they cannot drift from it, because they are slices of it.
+  orientation: |
+    A research programme testing whether an AI tutor teaches better when you change
+    its *inner structure* — not the model it runs on — and sorting which of those
+    structures genuinely help from the ones that only look like they do.
+
+    Most AI tutors are a single model answering a single prompt. This work gives the
+    tutor an *interior* and watches what changes: a part that drafts a reply, a second
+    part that criticises that draft before the learner ever sees it, and an orientation
+    that treats the learner as a thinking subject to be met rather than a deficit to be
+    filled. The wager is that this internal architecture — dialogue, self-critique,
+    recognition — produces better teaching than raw capability alone.
+
+    The atlas is organised around a plain result: some of the architecture works, some
+    of it is redundant, and some of it only looks like it works. Read this page for the
+    whole story in plain terms; open any module below for the detail; or take the
+    consolidated paper for the entire argument, end to end.
+
+  core_idea: |
+    **An interior for the tutor.** Two ideas, both borrowed from philosophy, do the
+    heavy lifting — and both are easier to grasp from the everyday version first.
+
+    The first is *self-critique*. Instead of a tutor that says the first thing it
+    generates, picture one with two voices: a drafter that proposes a reply, and an
+    internal critic that reads the draft and asks "is that actually sound? what is it
+    missing?" before anything reaches the learner. We borrow Freud's names — the *ego*
+    (the drafter, which keeps final say) and the *superego* (the critic) — but the
+    mechanism is simply structured self-revision. The same structure can be given to
+    the simulated learner, so both sides of the dialogue deliberate before they speak.
+
+    The second is *recognition*. A tutor can treat a learner as a container to be
+    filled, or as a thinking subject whose reasoning — including the mistakes — is
+    worth meeting on its own terms. The second stance comes from Hegel's account of
+    *mutual recognition*: one becomes a full subject by being recognised as one. Turned
+    into a prompt, recognition means eliciting and building on the learner's own
+    thinking rather than overwriting it. A central question is whether the philosophical
+    *vocabulary* matters, or whether it is the plain orientation underneath that works.
+
+    Holding both ideas lets us ask precise questions. Does the critic catch real
+    errors, or just add words? Does recognition change the teaching, or only the tone?
+    Does modelling the learner's hidden state help, or is the appearance of
+    "understanding the learner" an artifact of how the dialogue was logged? The three
+    families below are the three answers.
+
+  families_intro: |
+    The findings sort into three families. Each carries a *claim-status* — a one-word
+    commitment to how firm the result is (the full grammar is further down). Here is
+    the shape of the results before the detail.
+
+  findings:
+    - family: "Recognition works like calibration"
+      verdict: settled
+      body: |
+        Recognition-oriented prompting behaves like *calibration*: it lifts a tutor's
+        weakest dimensions the most and narrows the variation within a response —
+        raising the floor more than the ceiling. It works with or without the separate
+        critic, and — the part that surprised us — it works just as well when the
+        Hegelian vocabulary is stripped out and replaced with a plainly-worded
+        pedagogical orientation. The active ingredient is the stance, not the
+        theory-words. The critic, for its part, does catch and correct real errors.
+      caveat: >-
+        The critic's *extra* benefit beyond recognition is model-dependent: large on
+        weaker models, close to zero on strong ones. On a capable model, recognition
+        alone captures most of the gain.
+    - family: "Drama and charisma — voice as an instrument"
+      verdict: exploratory
+      body: |
+        A parallel line gives the tutor a charismatic, performed voice — a durable
+        "id" that repeatedly authors a fresh speaking persona — and scores it on a
+        separate charisma rubric. It can produce an extraordinary pedagogical presence.
+        The open question is whether *productive internal conflict* can be engineered as
+        a stable source of teaching quality, rather than merely role-played.
+      caveat: >-
+        Charismatic voice trades off against recognition-style elicitation — the most
+        charismatic tutors are not the best at drawing the learner out. This family is
+        an active arc, not a settled result; its main section is scaffolded, with prose
+        still landing in the paper.
+    - family: "A rich learner-interior did not help"
+      verdict: killed
+      body: |
+        The deepest line asks whether the tutor benefits from carrying a rich, explicit
+        model of the learner's hidden interior — externalised state, theory-of-mind
+        elaborations, counterfactual replay of what a different move would have done.
+        The answer, repeatedly, was no: these elaborations came out null against a lean
+        baseline that simply lets the model infer the learner implicitly.
+      caveat: >-
+        An early apparent win for the structured architecture turned out to be a
+        turn-counting artifact; once it was fixed and the baseline re-run, the gap fell
+        to within noise. The durable contribution from this family is the *method* —
+        the trap scenarios and the adaptive runner — not a modelable interior.
 
   maps:
-    theoretical: |
-      The programme asks: *what kinds of agent-internal structure produce better
-      pedagogical relation, and which apparent structures are illusory, redundant,
-      or too costly to pay?* Three mechanism families organise the answer —
-      **recognition** (calibration + conditional error correction, the settled
-      results), **drama / charisma** (voice, persona, productive internal conflict),
-      and **ontology / state** (whether a modelable learner interior exists at all).
     methodological: |
-      The apparatus is itself a contribution: process tracing adapted for agent
-      architectures, a provable-discourse framework that machine-verifies every
-      mechanism claim against the evaluation DB, four rubric iterations treated as
-      construct development, and the test suite as analytical provenance.
+      A claim about a mechanism is only as good as the apparatus that tests it, and
+      several pieces of that apparatus are contributions in their own right.
+
+      **Provable discourse.** Every mechanism claim in the paper is machine-checked
+      against the evaluation database before it is allowed to stand: the number in the
+      prose and the number in the data must agree, or the build complains. This atlas is
+      generated from that same source, so it cannot quietly drift from the evidence.
+
+      **Process tracing.** Rather than only scoring the final answer, the apparatus
+      records the tutor's internal steps — draft, critique, revision — so we can ask not
+      just whether a method helped but *why*, and watch a critique get incorporated turn
+      by turn.
+
+      **Rubrics as instruments.** The scoring rubric went through four iterations, and
+      we treat that evolution as construct development — working out what "good
+      tutoring" even means to measure — rather than incidental tooling. The same rubric
+      doubles as a signal for automatically tuning prompts, with gains that transfer
+      unevenly across models.
     evidence: |
-      Each module declares a claim-status (grammar at the foot of this spine). The
-      table is generated from the manifest, so a status change here propagates to
-      the spine automatically.
+      The modules below are slices of the one paper, each tagged with its claim-status.
+      Filter them by status, or open any one as a self-contained PDF. The grid is
+      generated from the manifest, so a status change propagates here automatically.
+
+  glossary:
+    "Ego / superego": >-
+      Two internal voices given to the tutor (and optionally the learner): an *ego*
+      that drafts and keeps final say, and a *superego* that critiques the draft first.
+      Borrowed from Freud as names; mechanically, structured self-revision.
+    "Recognition": >-
+      Treating the learner as a thinking subject whose reasoning is worth meeting, not a
+      gap to fill. From Hegel's mutual recognition; in practice, a prompt orientation
+      that elicits and builds on the learner's own thinking.
+    "Calibration": >-
+      How recognition acts on tutor output: lifting the weakest dimensions and narrowing
+      the variation — raising the floor more than the ceiling.
+    "Claim-status": >-
+      A one-word commitment to how firm a result is — settled, scope-bound, exploratory,
+      killed, and so on. The full grammar is in the status section.
+    "Trap suite": >-
+      A set of scenarios engineered to tempt a tutor into a specific pedagogical
+      mistake, used to test whether an architecture changes its move when the situation
+      demands it.
+    "Provable discourse": >-
+      The discipline of machine-checking every empirical claim in the paper against the
+      evaluation database, so the prose and the data cannot disagree.
+    "Id-director": >-
+      The drama/charisma architecture: a durable "id" that repeatedly authors a fresh,
+      performed tutor persona, scored on a separate charisma rubric.
+
+  whats_open: |
+    Two limits bound everything above, and they matter as much as the results.
+
+    First, every finding here concerns *tutor output quality as judged by a language
+    model*, interacting with a *simulated* learner. Whether the supported mechanisms —
+    recognition-as-calibration, conditional error correction — improve actual *human*
+    learning is open, and is the next programme rather than a result of this one. A
+    human-learner pilot is built and waiting on the usual approvals.
+
+    Second, the magnitudes are bounded by model capability. The mechanisms hold across
+    capable models, but how much they buy you scales with the underlying model — the
+    critic's residual value, in particular, can shrink toward nothing on a strong enough
+    model. None of this is a deployment claim or a weight-learning claim; it is a set of
+    carefully scoped findings about agent architecture, with the boundaries marked.
 
   # Numbered body sections deliberately not assigned to a module: §1 Introduction
   # and §9 Conclusion are folded into this spine; §2 Related Work is shared context;

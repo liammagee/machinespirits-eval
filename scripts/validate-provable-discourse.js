@@ -247,7 +247,9 @@ function main() {
   const useColor = !jsonMode && !noColor && (forceColor || Boolean(process.stdout.isTTY));
   const specPath = getArgValue(args, '--spec') || 'config/provable-discourse.yaml';
   const epoch = parseEpochArg(process.argv);
-  printEpochBanner(epoch);
+  if (!jsonMode && !graphMode) {
+    printEpochBanner(epoch);
+  }
 
   const report = runProvableDiscourseAudit({
     rootDir: ROOT,
@@ -288,6 +290,12 @@ function main() {
   } else {
     console.log(paint('Provable Discourse Audit', useColor, ANSI.bold));
     console.log(`spec=${report.spec_path} paper=${report.paper_path}`);
+    if (Array.isArray(report.paper_paths) && report.paper_paths.length > 1) {
+      console.log(`paper_sources=${report.paper_paths.join(',')}`);
+    }
+    if (report.paper_source_mode) {
+      console.log(`paper_source_mode=${report.paper_source_mode}`);
+    }
     if (report.snapshot_written) {
       console.log(`snapshot_updated=${report.snapshot_written}`);
     }

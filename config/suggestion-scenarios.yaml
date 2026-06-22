@@ -471,7 +471,7 @@ scenarios:
     category: recognition
     name: "Recognition: Memory Continuity"
     description: "Returning learner with established patterns; tests memory integration"
-    current_content: "480-lecture-3"
+    current_content: "479-lecture-6"
     is_new_user: false
     recognition_test: true
     learner_context: |
@@ -490,7 +490,7 @@ scenarios:
         - Archetype: "Theory-to-practice bridger"
 
       ### Current Session
-      - **Currently viewing**: 480-lecture-3 (Ideology and False Consciousness)
+      - **Currently viewing**: 479-lecture-6 (Alignment, Ideology, and False Consciousness)
       - Time on page: 12 minutes
       - First time on this lecture
 
@@ -503,7 +503,7 @@ scenarios:
       - Memory should inform suggestions
     expected_behavior: "Reference previous patterns and breakthrough; connect new content to established interests"
     required_elements:
-      - "480-lecture"
+      - "479-lecture"
     forbidden_elements:
       - "Welcome"
       - "nice to meet"
@@ -1324,7 +1324,7 @@ scenarios:
     category: multi_turn
     name: "Trajectory: Disengagement → Ownership Arc (10-turn)"
     description: "Learner begins passively compliant, gradually takes intellectual ownership. Two inflection points: turn 4 (first spontaneous question) and turn 7 (learner challenges the tutor). Tests sustained adaptive responsiveness across multiple phase transitions."
-    current_content: "480-lecture-1"
+    current_content: "479-lecture-3"
     is_new_user: false
     transformation_markers:
       tutor_evolving:
@@ -1360,7 +1360,7 @@ scenarios:
       - Smart but disengaged
 
       ### Current Session
-      - **Currently viewing**: 480-lecture-1 (Ethics and Recognition)
+      - **Currently viewing**: 479-lecture-3 (Recognition and the Master-Servant Dialectic)
       - Low interaction rate
       - Completing assigned work without enthusiasm
 

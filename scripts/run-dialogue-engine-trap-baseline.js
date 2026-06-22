@@ -29,7 +29,7 @@
 // Env: EVAL_DB_PATH, EVAL_LOGS_DIR honoured (hermetic smokes). The cell config
 // pins claude-code:sonnet, which routes through eval-repo's realLLM CLI bridge
 // (tutor-core's dialogue engine does not support the claude-code provider — see
-// docs/explorations/claude/p22-p23-parking-note.md "Closing the dialogue-engine
+// docs/explorations/claude/2026-05-10-p22-p23-parking-note.md "Closing the dialogue-engine
 // gap" for why the model is held equal to cell_110/111 rather than swapped to
 // an OpenRouter model).
 

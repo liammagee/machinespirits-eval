@@ -43,6 +43,10 @@ import path from 'path';
 
 const router = Router();
 
+function isRunNotFound(error) {
+  return /Run not found/i.test(error?.message || '');
+}
+
 // Resolve tutor-core on first request
 router.use(async (req, res, next) => {
   if (req.path.startsWith('/codex')) {
@@ -550,6 +554,7 @@ router.post('/quick', async (req, res) => {
       profile = 'budget',
       scenario = 'new_user_first_visit',
       skipRubric = false,
+      dryRun = false,
       judgeOverride = null,
       provider,
       model,
@@ -582,6 +587,7 @@ router.post('/quick', async (req, res) => {
         scenarios: [scenario],
         scenarioNames: [scenarioName],
         judgeOverride: judgeOverride || undefined,
+        dryRun,
         ...(provider && { provider }),
         ...(model && { model }),
         ...(egoModel && { egoModel }),
@@ -592,6 +598,7 @@ router.post('/quick', async (req, res) => {
     const result = await evaluationRunner.quickTest(config, {
       scenarioId: scenario,
       skipRubricEval: skipRubric,
+      dryRun,
       verbose: false,
       judgeOverride,
       superegoStrategy,
@@ -821,7 +828,14 @@ router.get('/stream/quick', async (req, res) => {
  */
 router.post('/run', async (req, res) => {
   try {
-    const { profiles = ['budget'], scenarios = 'all', runsPerConfig = 1, skipRubric = false, description } = req.body;
+    const {
+      profiles = ['budget'],
+      scenarios = 'all',
+      runsPerConfig = 1,
+      skipRubric = false,
+      dryRun = false,
+      description,
+    } = req.body;
 
     // Build configurations from profiles
     const configurations = profiles.map((p) => ({ profileName: p, label: p }));
@@ -831,6 +845,7 @@ router.post('/run', async (req, res) => {
       configurations,
       runsPerConfig,
       skipRubricEval: skipRubric,
+      dryRun,
       description,
       verbose: false,
     });
@@ -861,7 +876,7 @@ router.post('/run', async (req, res) => {
  */
 router.post('/compare', async (req, res) => {
   try {
-    const { profiles, scenarios = 'all', runsPerConfig = 1 } = req.body;
+    const { profiles, scenarios = 'all', runsPerConfig = 1, dryRun = false } = req.body;
 
     if (!profiles || profiles.length < 2) {
       return res.status(400).json({ error: 'At least 2 profiles required for comparison' });
@@ -872,6 +887,7 @@ router.post('/compare', async (req, res) => {
     const result = await evaluationRunner.compareConfigurations(configs, {
       scenarios,
       runsPerConfig,
+      dryRun,
       verbose: false,
     });
 
@@ -902,7 +918,7 @@ router.post('/compare', async (req, res) => {
 router.post('/matrix', async (req, res) => {
   try {
     let { profiles = [] } = req.body;
-    const { scenarios = 'all', skipRubric = false } = req.body;
+    const { scenarios = 'all', skipRubric = false, dryRun = false } = req.body;
 
     // Default profiles if none specified
     const allProfiles = tutorConfigLoader.listProfiles();
@@ -936,6 +952,7 @@ router.post('/matrix', async (req, res) => {
         scenarios: scenariosToRun.map((s) => s.id),
         scenarioNames: scenariosToRun.map((s) => s.name),
         skipRubric,
+        dryRun,
       },
     });
 
@@ -955,6 +972,7 @@ router.post('/matrix', async (req, res) => {
             scenarioId: scenario.id,
             verbose: false,
             skipRubricEval: skipRubric,
+            dryRun,
             debug: false,
           });
 
@@ -1905,6 +1923,9 @@ router.get('/runs/:runId', (req, res) => {
       scenarioNames,
     });
   } catch (error) {
+    if (isRunNotFound(error)) {
+      return res.status(404).json({ error: 'Run not found', code: 'run_not_found', details: error.message });
+    }
     console.error('[EvalRoutes] Get run error:', error);
     res.status(500).json({ error: 'Failed to get run results', details: error.message });
   }
@@ -1925,6 +1946,9 @@ router.get('/runs/:runId/report', (req, res) => {
       res.json({ success: true, report });
     }
   } catch (error) {
+    if (isRunNotFound(error)) {
+      return res.status(404).json({ error: 'Run not found', code: 'run_not_found', details: error.message });
+    }
     console.error('[EvalRoutes] Get report error:', error);
     res.status(500).json({ error: 'Failed to generate report', details: error.message });
   }
@@ -2188,7 +2212,7 @@ router.get('/prompts/:name', (req, res) => {
  */
 router.post('/prompts/recommend', async (req, res) => {
   try {
-    const { runId, profile, scenarios = 'all' } = req.body;
+    const { runId, profile, scenarios = 'all', dryRun = false } = req.body;
 
     let results = [];
     let profileName = profile || 'unknown';
@@ -2213,6 +2237,7 @@ router.post('/prompts/recommend', async (req, res) => {
             scenarioId: scenario.id,
             verbose: false,
             skipRubricEval: false, // Need rubric for recommendations
+            dryRun,
           });
           results.push(result);
         } catch (e) {
@@ -2231,6 +2256,7 @@ router.post('/prompts/recommend', async (req, res) => {
     const recommendations = await promptRecommendationService.generateRecommendations({
       results,
       profileName,
+      dryRun,
     });
 
     res.json({
@@ -2238,6 +2264,7 @@ router.post('/prompts/recommend', async (req, res) => {
       ...recommendations,
       // Explicitly note this is read-only
       readOnly: true,
+      dryRun,
       note: 'Recommendations are for review only. Use CLI to apply changes.',
     });
   } catch (error) {

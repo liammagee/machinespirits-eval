@@ -269,7 +269,7 @@ Every mechanism prediction MUST state:
 
 **Source materials:**
 - `notes/paper-2-0/section-7-apparatus-as-method.md` (**primary draft**)
-- `notes/major-bugs.md` (9 corrections narrative)
+- `notes/2026-06-03-major-bugs.md` (9 corrections narrative)
 - `scripts/validate-provable-discourse.js` (provable discourse)
 - `tests/` directory (test suite as analytical provenance)
 
@@ -290,7 +290,7 @@ Every mechanism prediction MUST state:
 
 **Traceability checks:**
 - N-counts for provable discourse must be current (run validator)
-- Bug descriptions must match `notes/major-bugs.md`
+- Bug descriptions must match `notes/2026-06-03-major-bugs.md`
 - Test count must match actual `npm test` output
 
 ---
@@ -300,7 +300,7 @@ Every mechanism prediction MUST state:
 **Source materials:**
 - `docs/research/paper-full.md` §8
 - `notes/paper-2-0/strategy.md` (Model transience, synthetic learners)
-- `notes/major-bugs.md` (known issues)
+- `notes/2026-06-03-major-bugs.md` (known issues)
 
 **Key limitations to address:**
 1. Synthetic learners → mechanisms traced in tutor, not learner

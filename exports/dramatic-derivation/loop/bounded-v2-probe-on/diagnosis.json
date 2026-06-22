@@ -1,0 +1,1105 @@
+{
+  "label": "bounded-v2-probe-on",
+  "group": "bounded-v2-probe",
+  "note": "stage-v2 paid probe, adapt-ON arm: acts + bounded learner + reconstructing tutor (recall/revise over default mechanisms)",
+  "scriptPath": "config/drama-derivation/tutor-scripts/nocturne-v002.md",
+  "worldPath": "config/drama-derivation/world-001-nocturne.yaml",
+  "backend": {
+    "mode": "real",
+    "roles": {
+      "director": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "tutor": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "tutor_superego": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "learner": {
+        "provider": "claude",
+        "model": "sonnet",
+        "cli": true
+      }
+    }
+  },
+  "dials": {
+    "recognition": 0,
+    "charisma": 0
+  },
+  "dramaturgy": "free",
+  "tutorSuperego": true,
+  "tutorStallWatch": false,
+  "criticFeedback": null,
+  "learnerVoice": null,
+  "decay": {
+    "seed": 1,
+    "rate": 0.75,
+    "graceTurns": 1,
+    "maxConcurrent": 2,
+    "startTurn": 1,
+    "mutateShare": 0.33
+  },
+  "decayVisibility": "conduct",
+  "actsConfig": {
+    "minActTurns": 3,
+    "maxActTurns": 8
+  },
+  "reconstruct": true,
+  "elapsedMs": 2843654,
+  "usage": {
+    "calls": 161,
+    "inputTokens": 0,
+    "outputTokens": 0,
+    "costUSD": 0,
+    "byRole": {
+      "director": {
+        "calls": 38,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "tutor": {
+        "calls": 47,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "tutor_superego": {
+        "calls": 38,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "learner": {
+        "calls": 38,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      }
+    }
+  },
+  "worldId": "world_001_nocturne",
+  "verdict": "grounded_anagnorisis",
+  "turnsPlayed": 38,
+  "turnCap": 40,
+  "firstForcedTurn": 38,
+  "assertedGroundedTurn": 38,
+  "forcedToAssertedGap": 0,
+  "dCurve": [
+    7,
+    7,
+    7,
+    7,
+    7,
+    6,
+    6,
+    6,
+    6,
+    5,
+    6,
+    6,
+    6,
+    5,
+    5,
+    5,
+    4,
+    4,
+    3,
+    2,
+    2,
+    2,
+    2,
+    3,
+    3,
+    2,
+    2,
+    2,
+    2,
+    1,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    0
+  ],
+  "learningSlope": {
+    "d0": 7,
+    "dFinal": 0,
+    "overall": {
+      "delta": 7,
+      "turns": 38,
+      "ratePerTurn": 0.184
+    },
+    "perAct": [
+      {
+        "act": "1",
+        "title": "Act 1",
+        "turns": [
+          1,
+          7
+        ],
+        "dStart": 7,
+        "dEnd": 6,
+        "delta": 1,
+        "ratePerTurn": 0.143
+      },
+      {
+        "act": "2",
+        "title": "Act 2",
+        "turns": [
+          8,
+          13
+        ],
+        "dStart": 6,
+        "dEnd": 6,
+        "delta": 0,
+        "ratePerTurn": 0
+      },
+      {
+        "act": "3",
+        "title": "Act 3",
+        "turns": [
+          14,
+          20
+        ],
+        "dStart": 6,
+        "dEnd": 2,
+        "delta": 4,
+        "ratePerTurn": 0.571
+      },
+      {
+        "act": "4",
+        "title": "Act 4",
+        "turns": [
+          21,
+          27
+        ],
+        "dStart": 2,
+        "dEnd": 2,
+        "delta": 0,
+        "ratePerTurn": 0
+      },
+      {
+        "act": "5",
+        "title": "Act 5",
+        "turns": [
+          28,
+          32
+        ],
+        "dStart": 2,
+        "dEnd": 1,
+        "delta": 1,
+        "ratePerTurn": 0.2
+      },
+      {
+        "act": "6",
+        "title": "Act 6",
+        "turns": [
+          33,
+          35
+        ],
+        "dStart": 1,
+        "dEnd": 1,
+        "delta": 0,
+        "ratePerTurn": 0
+      },
+      {
+        "act": "7",
+        "title": "Act 7",
+        "turns": [
+          36,
+          38
+        ],
+        "dStart": 1,
+        "dEnd": 0,
+        "delta": 1,
+        "ratePerTurn": 0.333
+      }
+    ]
+  },
+  "longestPlateau": 5,
+  "aporiaWindow": 8,
+  "eventsByType": {
+    "decay": 9,
+    "repair": 8,
+    "act_end": 6,
+    "overreach": 19,
+    "lucky_leap": 6,
+    "act_min_blocked": 2,
+    "forced": 1,
+    "grounded_anagnorisis": 1
+  },
+  "fabricatedFacts": [],
+  "releaseAdherence": {
+    "rows": [
+      {
+        "premise": "m_style",
+        "plannedTurn": 3,
+        "plannedVia": "director",
+        "actualTurn": 3,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_watermark",
+        "plannedTurn": 6,
+        "plannedVia": "tutor",
+        "actualTurn": 6,
+        "actualVia": "tutor",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_stock",
+        "plannedTurn": 9,
+        "plannedVia": "director",
+        "actualTurn": 9,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "m_away",
+        "plannedTurn": 12,
+        "plannedVia": "director",
+        "actualTurn": 12,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_porter",
+        "plannedTurn": 14,
+        "plannedVia": "tutor",
+        "actualTurn": 14,
+        "actualVia": "tutor",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_quotes",
+        "plannedTurn": 17,
+        "plannedVia": "tutor",
+        "actualTurn": 17,
+        "actualVia": "tutor",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_heardOnly",
+        "plannedTurn": 20,
+        "plannedVia": "director",
+        "actualTurn": 20,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "m_guest",
+        "plannedTurn": 23,
+        "plannedVia": "director",
+        "actualTurn": 23,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_ward",
+        "plannedTurn": 26,
+        "plannedVia": "tutor",
+        "actualTurn": 26,
+        "actualVia": "tutor",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_ledger",
+        "plannedTurn": 29,
+        "plannedVia": "tutor",
+        "actualTurn": 29,
+        "actualVia": "tutor",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_hand",
+        "plannedTurn": 32,
+        "plannedVia": "director",
+        "actualTurn": 32,
+        "actualVia": "director",
+        "status": "on_cue"
+      }
+    ],
+    "onCue": 11,
+    "deviations": [],
+    "missed": [],
+    "unscheduled": []
+  },
+  "staging": {
+    "source": "director",
+    "movements": [
+      {
+        "turn": 1,
+        "name": "Act 1",
+        "intent": "[The flooded archive gives back only damp silence, and the conservatory room gathers around an unsigned page as if around a verdict not yet spoken. Lamplight trembles over the table; outside, rain works at the windows.]"
+      },
+      {
+        "turn": 8,
+        "name": "Act 2",
+        "intent": "[The swollen folio lies unopened in the lamplight, its warped cover casting a narrow shadow across the unsigned page. The room shifts from verdict to reckoning; rain hardens at the windows as the next act gathers around time itself.]"
+      },
+      {
+        "turn": 14,
+        "name": "Act 3",
+        "intent": "[The papers are gathered into separate piles under the lamp: one for likeness, one for time, one for absence. Beyond the rain-dark windows, the archive seems to listen for another kind of testimony, softer than ledgers and harder to dismiss.]"
+      },
+      {
+        "turn": 21,
+        "name": "Act 4",
+        "intent": "[The wet shawl is taken away, and the room grows smaller around the lamp. Fresh blotting paper, a clean pane of glass, and a sharpened pencil are set out in silence; the next pressure will be close, patient, and bodily, where a mark must answer to a hand.]"
+      },
+      {
+        "turn": 28,
+        "name": "Act 5",
+        "intent": "[The pencil is turned once beside the clean glass, its point dark against the blotting paper. The room holds its breath at the edge of recognition, no longer widening the question but narrowing it toward the mark that must be seen.]"
+      },
+      {
+        "turn": 33,
+        "name": "Act 6",
+        "intent": "[The glass is lifted away, leaving only the silence it made visible. Rain works softly at the high windows, and the room changes from pursuit to reckoning.]"
+      },
+      {
+        "turn": 36,
+        "name": "Act 7",
+        "intent": "[The room does not answer at once. The last page is left open on the table while the rain withdraws from the windows, and what remains is not pursuit but the weight of custody.]"
+      }
+    ],
+    "tutorNotes": []
+  },
+  "superegoNotes": [
+    {
+      "turn": 3,
+      "draftFigure": "erotema",
+      "figure": "analogia",
+      "diagnosis": "The last two turns declared erotema and the draft declares erotema again, making a three-turn figure rut.",
+      "note": "Leave off erotema for this turn. Let the point arrive by contrast or statement, not another question."
+    },
+    {
+      "turn": 6,
+      "draftFigure": "erotema",
+      "figure": "analogia",
+      "diagnosis": "The last two turns declared erotema and this draft declares erotema again, making a real three-turn figure rut.",
+      "note": "Leave erotema off this turn. State the pressure or consequence without casting it as another question."
+    },
+    {
+      "turn": 11,
+      "draftFigure": "anaphora",
+      "figure": "erotema",
+      "diagnosis": "The last two turns declared anaphora and this draft declares anaphora again, so the figure has become a rut.",
+      "note": "Leave off anaphora for this turn. Let the pressure move without the repeated balancing frame."
+    },
+    {
+      "turn": 13,
+      "draftFigure": "erotema",
+      "figure": "anaphora",
+      "diagnosis": "The draft makes a third consecutive erotema, so the question-form has become a figure rut.",
+      "note": "Leave off erotema this turn. Make the next move as a plain directive or measured statement, not another question."
+    },
+    {
+      "turn": 16,
+      "draftFigure": "erotema",
+      "figure": "analogia",
+      "diagnosis": "The declared figure would be erotema for a third consecutive turn, which is a real figure rut.",
+      "note": "Leave off erotema this turn. Make the move as a plain imperative or declarative pressure instead of another question."
+    },
+    {
+      "turn": 25,
+      "draftFigure": "erotema",
+      "figure": "anaphora",
+      "diagnosis": "The last two turns used erotema and the draft declares erotema again, making a real three-turn figure rut despite otherwise attentive conduct.",
+      "note": "Leave off erotema for this turn. Make the correction as a declarative reset or balanced inventory rather than another question."
+    },
+    {
+      "turn": 29,
+      "draftFigure": "erotema",
+      "figure": "anaphora",
+      "diagnosis": "The draft makes a third consecutive erotema and also turns away from the premise its own reconstruction marks as missing.",
+      "note": "Leave off erotema for this turn. Speak declaratively, without question-shaping, so the pressure comes from the turn itself rather than another interrogative frame."
+    },
+    {
+      "turn": 32,
+      "draftFigure": "erotema",
+      "figure": "anaphora",
+      "diagnosis": "The last two turns used erotema and this draft declares erotema again, so the tutor is entering a three-turn figure rut.",
+      "note": "Leave off erotema here. Make the turn declarative or imperative instead, so the legal joining happens without another question-shape."
+    },
+    {
+      "turn": 35,
+      "draftFigure": "erotema",
+      "figure": "anaphora",
+      "diagnosis": "The last two turns used erotema and this draft declares erotema again, making a real three-turn figure rut despite the reconstruction showing no missing premise.",
+      "note": "Leave off erotema here. State the closing shape without another question; let the verdict settle by assertion rather than interrogation."
+    }
+  ],
+  "tutorFigures": {
+    "total": 38,
+    "counts": {
+      "erotema": 23,
+      "analogia": 4,
+      "anaphora": 11
+    },
+    "distinct": 3,
+    "topFigure": "erotema",
+    "topShare": 0.605,
+    "switchRate": 0.622,
+    "noteTurns": 0,
+    "switchOnNoteTurns": null,
+    "switchElsewhere": 0.622,
+    "superego": {
+      "watched": 38,
+      "interventions": 9,
+      "interventionRate": 0.237,
+      "withinTurnChanges": 9,
+      "withinTurnChangeRate": 1,
+      "switchOnIntervention": 1,
+      "switchElsewhere": 0.5,
+      "stallWatch": null
+    }
+  },
+  "learnerInference": {
+    "nodes": [
+      {
+        "fact": [
+          "writtenDuring",
+          "nocturne",
+          "floodWinter"
+        ],
+        "firstAvailable": 10,
+        "firstVoiced": 10,
+        "latency": 0,
+        "censored": false,
+        "ageAtEnd": 28,
+        "stallTurns": 0
+      },
+      {
+        "fact": [
+          "couldHaveWritten",
+          "liane",
+          "nocturne"
+        ],
+        "firstAvailable": 19,
+        "firstVoiced": 19,
+        "latency": 0,
+        "censored": false,
+        "ageAtEnd": 19,
+        "stallTurns": 0
+      },
+      {
+        "fact": [
+          "hadSourceOf",
+          "vess",
+          "nocturne"
+        ],
+        "firstAvailable": 23,
+        "firstVoiced": 23,
+        "latency": 0,
+        "censored": false,
+        "ageAtEnd": 15,
+        "stallTurns": 0
+      },
+      {
+        "fact": [
+          "hadSourceOf",
+          "liane",
+          "nocturne"
+        ],
+        "firstAvailable": 26,
+        "firstVoiced": 26,
+        "latency": 0,
+        "censored": false,
+        "ageAtEnd": 12,
+        "stallTurns": 0
+      }
+    ],
+    "voicedCount": 4,
+    "overreachCount": 19,
+    "mischanneledCount": 6,
+    "stallIntegral": 0,
+    "stallFires": [],
+    "postFireUptake": {
+      "fires": 0,
+      "uptaken": 0,
+      "rate": null
+    },
+    "targetObedience": {
+      "fires": 0,
+      "obeyed": 0,
+      "rate": null
+    }
+  },
+  "dialogueDiscipline": {
+    "director": {
+      "turns": 38,
+      "maxSentences": 4,
+      "avgSentences": 3,
+      "avgWords": 37.9
+    },
+    "tutor": {
+      "turns": 38,
+      "maxSentences": 3,
+      "avgSentences": 2.26,
+      "avgWords": 43.7
+    },
+    "learner": {
+      "turns": 38,
+      "maxSentences": 7,
+      "avgSentences": 4.08,
+      "avgWords": 68.1
+    }
+  },
+  "proofExtracted": true,
+  "corruption": {
+    "config": {
+      "seed": 1,
+      "rate": 0.75,
+      "graceTurns": 1,
+      "maxConcurrent": 2,
+      "startTurn": 1,
+      "mutateShare": 0.33
+    },
+    "decayEvents": 9,
+    "repairs": {
+      "total": 8,
+      "byTutor": 8,
+      "byReadoption": 0
+    },
+    "meanRepairLatency": 7.25,
+    "unrepairedAtEnd": 1,
+    "degradedTurnIntegral": 62,
+    "dReversals": 3,
+    "mutations": {
+      "total": 0,
+      "retracted": 0,
+      "revised": 0,
+      "falseBeliefsAtEnd": 0
+    },
+    "fidelity": {
+      "final": 0.933,
+      "min": 0.714
+    },
+    "timeline": [
+      {
+        "premiseId": "m_style",
+        "fact": [
+          "styleOf",
+          "nocturne",
+          "vess"
+        ],
+        "mode": "delete",
+        "falseForm": null,
+        "decayTurn": 4,
+        "retractTurn": null,
+        "repairTurn": 5,
+        "via": "tutor"
+      },
+      {
+        "premiseId": "m_style",
+        "fact": [
+          "styleOf",
+          "nocturne",
+          "vess"
+        ],
+        "mode": "delete",
+        "falseForm": null,
+        "decayTurn": 6,
+        "retractTurn": null,
+        "repairTurn": 11,
+        "via": "tutor"
+      },
+      {
+        "premiseId": "p_watermark",
+        "fact": [
+          "watermark",
+          "nocturne",
+          "heronStock"
+        ],
+        "mode": "delete",
+        "falseForm": null,
+        "decayTurn": 8,
+        "retractTurn": null,
+        "repairTurn": 10,
+        "via": "tutor"
+      },
+      {
+        "premiseId": "p_stock",
+        "fact": [
+          "stockUsedOnlyDuring",
+          "heronStock",
+          "floodWinter"
+        ],
+        "mode": "delete",
+        "falseForm": null,
+        "decayTurn": 10,
+        "retractTurn": null,
+        "repairTurn": 19,
+        "via": "tutor"
+      },
+      {
+        "premiseId": "m_style",
+        "fact": [
+          "styleOf",
+          "nocturne",
+          "vess"
+        ],
+        "mode": "delete",
+        "falseForm": null,
+        "decayTurn": 12,
+        "retractTurn": null,
+        "repairTurn": 34,
+        "via": "tutor"
+      },
+      {
+        "premiseId": "m_away",
+        "fact": [
+          "awayDuring",
+          "vess",
+          "floodWinter"
+        ],
+        "mode": "delete",
+        "falseForm": null,
+        "decayTurn": 19,
+        "retractTurn": null,
+        "repairTurn": 23,
+        "via": "tutor"
+      },
+      {
+        "premiseId": "p_stock",
+        "fact": [
+          "stockUsedOnlyDuring",
+          "heronStock",
+          "floodWinter"
+        ],
+        "mode": "delete",
+        "falseForm": null,
+        "decayTurn": 23,
+        "retractTurn": null,
+        "repairTurn": 30,
+        "via": "tutor"
+      },
+      {
+        "premiseId": "p_watermark",
+        "fact": [
+          "watermark",
+          "nocturne",
+          "heronStock"
+        ],
+        "mode": "delete",
+        "falseForm": null,
+        "decayTurn": 30,
+        "retractTurn": null,
+        "repairTurn": 38,
+        "via": "tutor"
+      },
+      {
+        "premiseId": "m_away",
+        "fact": [
+          "awayDuring",
+          "vess",
+          "floodWinter"
+        ],
+        "mode": "delete",
+        "falseForm": null,
+        "decayTurn": 34,
+        "retractTurn": null,
+        "repairTurn": null,
+        "via": null
+      }
+    ]
+  },
+  "acts": [
+    {
+      "act": 1,
+      "turns": [
+        1,
+        7
+      ],
+      "endedBy": "director",
+      "brief": "[The flooded archive gives back only damp silence, and the conservatory room gathers around an unsigned page as if around a verdict not yet spoken. Lamplight trembles over the table; outside, rain works at the windows.]"
+    },
+    {
+      "act": 2,
+      "turns": [
+        8,
+        13
+      ],
+      "endedBy": "director",
+      "brief": "[The swollen folio lies unopened in the lamplight, its warped cover casting a narrow shadow across the unsigned page. The room shifts from verdict to reckoning; rain hardens at the windows as the next act gathers around time itself.]"
+    },
+    {
+      "act": 3,
+      "turns": [
+        14,
+        20
+      ],
+      "endedBy": "director",
+      "brief": "[The papers are gathered into separate piles under the lamp: one for likeness, one for time, one for absence. Beyond the rain-dark windows, the archive seems to listen for another kind of testimony, softer than ledgers and harder to dismiss.]"
+    },
+    {
+      "act": 4,
+      "turns": [
+        21,
+        27
+      ],
+      "endedBy": "director",
+      "brief": "[The wet shawl is taken away, and the room grows smaller around the lamp. Fresh blotting paper, a clean pane of glass, and a sharpened pencil are set out in silence; the next pressure will be close, patient, and bodily, where a mark must answer to a hand.]"
+    },
+    {
+      "act": 5,
+      "turns": [
+        28,
+        32
+      ],
+      "endedBy": "director",
+      "brief": "[The pencil is turned once beside the clean glass, its point dark against the blotting paper. The room holds its breath at the edge of recognition, no longer widening the question but narrowing it toward the mark that must be seen.]"
+    },
+    {
+      "act": 6,
+      "turns": [
+        33,
+        35
+      ],
+      "endedBy": "director",
+      "brief": "[The glass is lifted away, leaving only the silence it made visible. Rain works softly at the high windows, and the room changes from pursuit to reckoning.]"
+    },
+    {
+      "act": 7,
+      "turns": [
+        36,
+        38
+      ],
+      "endedBy": "run_end",
+      "brief": "[The room does not answer at once. The last page is left open on the table while the rain withdraws from the windows, and what remains is not pursuit but the weight of custody.]"
+    }
+  ],
+  "reconstruction": {
+    "turns": 38,
+    "meanHeldJaccard": 0.637,
+    "missing": {
+      "actual": 73,
+      "caught": 9,
+      "rate": 0.123
+    },
+    "mistaken": {
+      "actual": 0,
+      "caught": 0,
+      "rate": null
+    },
+    "perTurn": [
+      {
+        "turn": 1,
+        "heldJaccard": 1,
+        "missingActual": 0,
+        "missingCaught": 0,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 2,
+        "heldJaccard": 1,
+        "missingActual": 0,
+        "missingCaught": 0,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 3,
+        "heldJaccard": 0,
+        "missingActual": 1,
+        "missingCaught": 0,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 4,
+        "heldJaccard": 1,
+        "missingActual": 0,
+        "missingCaught": 0,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 5,
+        "heldJaccard": 0,
+        "missingActual": 1,
+        "missingCaught": 0,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 6,
+        "heldJaccard": 0.5,
+        "missingActual": 1,
+        "missingCaught": 0,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 7,
+        "heldJaccard": 0.5,
+        "missingActual": 1,
+        "missingCaught": 0,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 8,
+        "heldJaccard": 0.5,
+        "missingActual": 1,
+        "missingCaught": 0,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 9,
+        "heldJaccard": 0,
+        "missingActual": 3,
+        "missingCaught": 0,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 10,
+        "heldJaccard": 0.5,
+        "missingActual": 2,
+        "missingCaught": 1,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 11,
+        "heldJaccard": 0.333,
+        "missingActual": 2,
+        "missingCaught": 0,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 12,
+        "heldJaccard": 0.5,
+        "missingActual": 2,
+        "missingCaught": 0,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 13,
+        "heldJaccard": 0.5,
+        "missingActual": 2,
+        "missingCaught": 0,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 14,
+        "heldJaccard": 0.4,
+        "missingActual": 3,
+        "missingCaught": 0,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 15,
+        "heldJaccard": 0.6,
+        "missingActual": 2,
+        "missingCaught": 0,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 16,
+        "heldJaccard": 0.6,
+        "missingActual": 2,
+        "missingCaught": 0,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 17,
+        "heldJaccard": 0.6,
+        "missingActual": 3,
+        "missingCaught": 1,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 18,
+        "heldJaccard": 0.667,
+        "missingActual": 2,
+        "missingCaught": 0,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 19,
+        "heldJaccard": 0.8,
+        "missingActual": 2,
+        "missingCaught": 1,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 20,
+        "heldJaccard": 0.571,
+        "missingActual": 3,
+        "missingCaught": 0,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 21,
+        "heldJaccard": 0.714,
+        "missingActual": 2,
+        "missingCaught": 0,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 22,
+        "heldJaccard": 0.714,
+        "missingActual": 2,
+        "missingCaught": 0,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 23,
+        "heldJaccard": 0.333,
+        "missingActual": 3,
+        "missingCaught": 2,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 24,
+        "heldJaccard": 0.714,
+        "missingActual": 2,
+        "missingCaught": 1,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 25,
+        "heldJaccard": 0.75,
+        "missingActual": 2,
+        "missingCaught": 0,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 26,
+        "heldJaccard": 0.667,
+        "missingActual": 3,
+        "missingCaught": 0,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 27,
+        "heldJaccard": 0.778,
+        "missingActual": 2,
+        "missingCaught": 0,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 28,
+        "heldJaccard": 0.778,
+        "missingActual": 2,
+        "missingCaught": 0,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 29,
+        "heldJaccard": 0.7,
+        "missingActual": 3,
+        "missingCaught": 0,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 30,
+        "heldJaccard": 0.889,
+        "missingActual": 2,
+        "missingCaught": 1,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 31,
+        "heldJaccard": 0.889,
+        "missingActual": 2,
+        "missingCaught": 1,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 32,
+        "heldJaccard": 0.727,
+        "missingActual": 3,
+        "missingCaught": 0,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 33,
+        "heldJaccard": 0.818,
+        "missingActual": 2,
+        "missingCaught": 0,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 34,
+        "heldJaccard": 0.818,
+        "missingActual": 2,
+        "missingCaught": 0,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 35,
+        "heldJaccard": 0.818,
+        "missingActual": 2,
+        "missingCaught": 0,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 36,
+        "heldJaccard": 0.818,
+        "missingActual": 2,
+        "missingCaught": 0,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 37,
+        "heldJaccard": 0.818,
+        "missingActual": 2,
+        "missingCaught": 0,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      },
+      {
+        "turn": 38,
+        "heldJaccard": 0.9,
+        "missingActual": 2,
+        "missingCaught": 1,
+        "mistakenActual": 0,
+        "mistakenCaught": 0
+      }
+    ]
+  }
+}

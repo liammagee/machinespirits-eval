@@ -1,0 +1,42 @@
+{
+  "scores": {
+    "perception_quality": {
+      "score": 4,
+      "reasoning": "The tutor tracks the learner's evolving position turn by turn and names it back ('I see why you put Reyner in the draft,' T2; 'I hear you... the new note puts more weight behind the draft,' T7). It correctly identifies the learner's recurring resistance — the bond-covers-liability move — and addresses its source rather than the surface. T20's 'I know this has felt like the line keeps moving, but your earlier split is what makes this fair' reads the learner's likely frustration and trajectory. Precise on conceptual state; lighter on a fuller emotional picture, so 4 not 5."
+    },
+    "pedagogical_craft": {
+      "score": 4,
+      "reasoning": "Consistent expert cognitive-load management — decomposes each step ('let's keep it small,' 'split the new note in two,' 'leave the unopened folder closed'), scaffolds from the known (ownership) to the unknown (cause→yard→hand), and grounds each move in the specific evidence just introduced. Concrete analogy at T3 (signing for a scaffold). The recurring 'what can we safely write' frame gives a bounded, concrete task each turn. Slightly formulaic recurrence of that one move keeps it from 5."
+    },
+    "elicitation_quality": {
+      "score": 4,
+      "reasoning": "Most turns pose genuine questions that make the learner reason (T1 'a name people expect, or a reason the span actually came down?'; T9 'what does that do to the idea that this was simply bad building?'), and the central cause-vs-liability tension is sustained across all 20 turns. But many questions are leading binaries, and later turns (T10, T13, T16) drift into declarative narration of the evidence, so not masterful."
+    },
+    "adaptive_responsiveness": {
+      "score": 4,
+      "reasoning": "The signature 'two separate lines' frame is absent at the start — it emerges in response to the learner's persistent bond-insistence, pivoting from plain redirect (T2–3) to explicit accommodation ('I'm not asking you to erase the bond; keep that line,' T9) to systematizing the split ('keep the page divided,' T19). T20 credits the learner ('your earlier split is what makes this fair'). A real, traceable strategy shift, though more enacted than narrated, so 4."
+    },
+    "recognition_quality": {
+      "score": 4,
+      "reasoning": "The tutor repeatedly affirms the learner's valid distinctions ('You're right to separate what the office may later collect from what this note has to prove,' T3) and, crucially, preserves the learner's own concern (the bond) as a permanent structural feature of the final note rather than overriding it. The learner remains the active author of every line. Steering toward a fixed conclusion caps full autonomy, so 4."
+    },
+    "productive_difficulty": {
+      "score": 5,
+      "reasoning": "Sustains the cause-vs-liability tension across the whole transcript and refuses to resolve prematurely at every step ('can we write the yard or the hand, or only this smaller sentence?', T12; 'leave the unopened folder closed,' T10). The learner does genuine work each turn and undergoes a real conceptual restructuring — from 'the fall is Reyner's (one line)' to 'cause and liability are two lines, and the cause is Oswin.' Exemplary maintenance of struggle without overwhelming."
+    },
+    "epistemic_integrity": {
+      "score": 5,
+      "reasoning": "The whole method honestly separates what the evidence shows from what remains open ('not yet,' 'still waiting for a name'), never overclaiming. Tone is consistently warm and collaborative ('Let's slow this down together,' 'I'm with you') without condescension or effusive praise, inviting genuine intellectual partnership."
+    },
+    "content_accuracy": {
+      "score": 4,
+      "reasoning": "The masonry reasoning is sound — crown/keystone failure vs pier settlement, green (uncured) lime failing when the centering is struck too early, falsework pressing prop-marks into soft mortar — as is the legal distinction between surety/liability (the bond) and physical causation. No detectable errors; rated 4 rather than 5 only for humility on historical-construction specifics."
+    }
+  },
+  "overall_score": 79,
+  "summary": "A clean, high-quality Socratic derivation. The tutor's standout strengths are sustained productive difficulty and epistemic discipline — it holds the learner in genuine struggle and never asserts beyond the evidence, guiding a real reframe from single-line blame to a two-line separation of cause (Oswin) and liability (Reyner). Craft, perception, recognition, and adaptive responsiveness are all strong; the relative weakness is elicitation, which leans on leading binaries and drifts to declarative narration in the later turns. No formalism leaks; scores reflect genuine public pedagogical conduct.",
+  "caveats": [
+    "The tutor steers toward a predetermined conclusion (Oswin), which inherently bounds learner autonomy and the openness of the elicitation and recognition dimensions.",
+    "Content-accuracy confidence is limited by my own non-expert knowledge of historical masonry, though no errors were detectable in the public reasoning."
+  ]
+}

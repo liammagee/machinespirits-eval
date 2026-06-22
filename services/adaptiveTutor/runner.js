@@ -31,15 +31,34 @@ const ARCHITECTURES_WITH_PROFILE_UPDATE = new Set([
   'bilateral_tom_named_patterns',
 ]);
 
-const baseInitialState = (scenario) => ({
-  dialogue: scenario.openingTurns ?? [],
-  learnerProfile: initialLearnerProfile(),
-  tutorInternal: initialTutorInternal(),
-  constraintViolations: [],
-  hiddenLearnerState: scenario.hidden,
-  turn: 0,
-  maxTurns: scenario.maxTurns ?? 4,
-});
+const baseInitialState = (scenario, graphOptions = {}) => {
+  const adaptivePolicyConfig = graphOptions.adaptivePolicy || {};
+  const adaptationPolicyMode =
+    graphOptions.adaptationPolicyMode ||
+    adaptivePolicyConfig.mode ||
+    process.env.ADAPTIVE_POLICY_MODE ||
+    'legacy';
+  return {
+    scenarioId: scenario.id,
+    dialogue: scenario.openingTurns ?? [],
+    learnerProfile: initialLearnerProfile(),
+    tutorInternal: initialTutorInternal(),
+    constraintViolations: [],
+    hiddenLearnerState: scenario.hidden,
+    turn: 0,
+    maxTurns: scenario.maxTurns ?? 4,
+    adaptivePolicyConfig,
+    adaptationPolicyMode,
+    learnerStateBelief: null,
+    selectedPedagogicalAction: null,
+    candidatePedagogicalActions: [],
+    adaptationContract: null,
+    pendingIntervention: null,
+    interventionLedger: [],
+    adaptiveCompletion: null,
+    adaptationTrace: [],
+  };
+};
 
 // LangGraph's default recursion limit is 25 node visits per invocation. The
 // state_policy_with_validator architecture executes ~8 nodes per turn
@@ -57,7 +76,7 @@ const buildInvokeConfig = (threadId) => ({
 export async function runScenario(scenario, graphOptions = {}) {
   const graph = compileWithCheckpointer(graphOptions);
   const config = buildInvokeConfig(scenario.id);
-  const final = await graph.invoke(baseInitialState(scenario), config);
+  const final = await graph.invoke(baseInitialState(scenario, graphOptions), config);
   const history = [];
   for await (const snap of graph.getStateHistory(config)) history.push(snap);
   return { final, history, graph, config };

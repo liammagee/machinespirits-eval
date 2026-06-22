@@ -1,26 +1,26 @@
 # Cartoon Image Prompts
 
 Source HTML: notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.html
-Generated at: 2026-06-03T13:05:55.031Z
+Generated at: 2026-06-19T21:10:48.011Z
 Panel count: 9
 Format: png
 
 ## Text Analysis
 
 Title: From Paper 2.0 to dramatic recognition
-Description: A live, data-driven synthesis note. The last paper found that recognition prompts and a draft-then-critique architecture did not change tutor trajectories on average. This branch sharpens that broad null into a narrower question: can a tutor answer a learner's specific stuck point with a visible change of move? Every claim here links into the running poetics browser for proof.
-Top terms: tutor, learner, recognition, mechanism, room, adaptation, witness, clean, three, critic, case, control, file, back, paper, pass, routine, secret
+Description: The last paper found that recognition prompts and a draft-then-critique architecture did not change tutor trajectories on average. This arc sharpens that broad null into a sharper stage: a tutor must walk a learner across a proof, one scheduled clue at a time, and answer a specific stuck point with a visible change of move. What we found is a tutor that can govern its own conduct — and two pacing guards that trade places from world to world.
+Top terms: tutor, learner, turn, grounded, guard, hidden, conduct, proof, paper, recognition, figure, secret, stage, lesson, move, turns, pacing, average
 
 Selected sections:
-- 01 #starting-point: The last paper gave us a disciplined mechanism story, not a deployed adaptive tutor. -> notes/poetics/images/dramatic-recognition-arc-01.png
-- 02 #arc: The shift from paper mechanism testing to dramatic mechanism discovery. -> notes/poetics/images/dramatic-recognition-arc-02.png
-- 03 #evidence: What's solid, what's borderline, what's still a hazard. -> notes/poetics/images/dramatic-recognition-arc-03.png
-- 04 #adaptation: The headline is mechanism-level adaptation, not guaranteed recognitive closure. -> notes/poetics/images/dramatic-recognition-arc-04.png
-- 05 #ending-shape: A single mechanism change with a strong local and noisy broad result. -> notes/poetics/images/dramatic-recognition-arc-05.png
-- 06 #landing-update: One pass. Not yet a pattern. Adaptation → recognition walked in once. -> notes/poetics/images/dramatic-recognition-arc-06.png
-- 07 #conceptual: From measuring average slopes to specifying what adaptation would have to be. -> notes/poetics/images/dramatic-recognition-arc-07.png
-- 08 #durable-output: A mechanism specification, a curated dataset, and a control loop. -> notes/poetics/images/dramatic-recognition-arc-08.png
-- 09 #paper-implication: The branch doesn't break the null — it answers a different question. And there, when the secret runs deep, the help does the work. -> notes/poetics/images/dramatic-recognition-arc-09.png
+- 01 #starting-point: The last paper gave us a flat average, and a question it could not answer. -> notes/poetics/images/dramatic-recognition-arc-01.png
+- 02 #the-stage: Stage the lesson as drama, and the hinge becomes the whole experiment. -> notes/poetics/images/dramatic-recognition-arc-02.png
+- 03 #derivation: The tutor must derive the next step, not recite the answer. -> notes/poetics/images/dramatic-recognition-arc-03.png
+- 04 #figure-authority: Conduct adapts to structure, not to atmosphere. -> notes/poetics/images/dramatic-recognition-arc-04.png
+- 05 #internal-superego: Move the critic inside the tutor, and the rule holds itself. -> notes/poetics/images/dramatic-recognition-arc-05.png
+- 06 #decay: The deficit was never response. It was detection. -> notes/poetics/images/dramatic-recognition-arc-06.png
+- 07 #calendar-repair: The tutor authored its own reversal — and a one-step rule saved the scene. -> notes/poetics/images/dramatic-recognition-arc-07.png
+- 08 #the-guards: Two guards. Three worlds. They trade places. -> notes/poetics/images/dramatic-recognition-arc-08.png
+- 09 #verdict: A tutor that governs its own conduct — and a claim kept deliberately small. -> notes/poetics/images/dramatic-recognition-arc-09.png
 
 ## Prompts
 
@@ -28,9 +28,9 @@ Selected sections:
 
 Target image: notes/poetics/images/dramatic-recognition-arc-01.png
 HTML src: images/dramatic-recognition-arc-01.png
-Caption: The last paper gave us a disciplined mechanism story, not a deployed adaptive tutor: Calibration supported Recognition-oriented prompts narrow and lift the tutor's output distribution.
-Alt: Editorial cartoon for The last paper gave us a disciplined mechanism story, not a deployed adaptive tutor.: a paper mechanism diagram becoming a theatre stage, with one lane label...
-Visual metaphor: a paper mechanism diagram becoming a theatre stage, with one lane labelled calibration and one lane labelled adaptive null
+Caption: Starting point: Paper 2.0 ran a large factorial over AI tutors: recognition-theoretic prompts against plain ones, a single-pass tutor against a draft-then-critique ego–superego architecture.
+Alt: Editorial cartoon for The last paper gave us a flat average, and a question it could not answer.: a precise average-slope ruler laid across a darkened tutoring scene under venetia...
+Visual metaphor: a precise average-slope ruler laid across a darkened tutoring scene under venetian-blind light, while the single decisive hinge of the lesson slips out of the ruler frame into shadow
 
 ```
 You are Codex running inside the Machine Spirits evaluation repository.
@@ -39,7 +39,7 @@ Create one cartoon image file for the dramatic-recognition arc note.
 Target file: notes/poetics/images/dramatic-recognition-arc-01.png
 Panel: 1 of 9
 Target article section: #starting-point
-Section heading: The last paper gave us a disciplined mechanism story, not a deployed adaptive tutor.
+Section heading: The last paper gave us a flat average, and a question it could not answer.
 Article title: From Paper 2.0 to dramatic recognition
 
 Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-01.png. If you need to draft vector art first, convert it so the final file at that path is a real PNG.
@@ -55,13 +55,13 @@ Machine Spirits editorial cartoon style, leaning film noir by default:
 - The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
 
 Textual context to complement:
-The last paper gave us a disciplined mechanism story, not a deployed adaptive tutor. Calibration supported Recognition-oriented prompts narrow and lift the tutor's output distribution. The effect is on how the tutor speaks, not yet on how it changes course. Error correction supported The ego–superego architecture (draft, then self-critique, then revise) improves tutor output when there is enough residual error for the critique to catch.
+The last paper gave us a flat average, and a question it could not answer. Paper 2.0 ran a large factorial over AI tutors: recognition-theoretic prompts against plain ones, a single-pass tutor against a draft-then-critique ego–superego architecture. On the paper's own measure of adaptation — average turn-by-turn improvement across a multi-turn dialogue — neither lever moved the trajectory. It cannot see the one place teaching actually happens: a learner jammed on a specific point, and a tutor who either changes route to meet it or keeps restating the route that already failed.
 
 Image concept:
-a paper mechanism diagram becoming a theatre stage, with one lane labelled calibration and one lane labelled adaptive null
+a precise average-slope ruler laid across a darkened tutoring scene under venetian-blind light, while the single decisive hinge of the lesson slips out of the ruler frame into shadow
 
 Caption this image will carry in the page:
-The last paper gave us a disciplined mechanism story, not a deployed adaptive tutor: Calibration supported Recognition-oriented prompts narrow and lift the tutor's output distribution.
+Starting point: Paper 2.0 ran a large factorial over AI tutors: recognition-theoretic prompts against plain ones, a single-pass tutor against a draft-then-critique ego–superego architecture.
 
 Composition requirements:
 - Landscape editorial cartoon, roughly 16:10.
@@ -72,13 +72,13 @@ Composition requirements:
 Return a short final note listing the created file.
 ```
 
-### Prompt 02 - #arc
+### Prompt 02 - #the-stage
 
 Target image: notes/poetics/images/dramatic-recognition-arc-02.png
 HTML src: images/dramatic-recognition-arc-02.png
-Caption: The shift from paper mechanism testing to dramatic mechanism discovery: Tooling outcome The sidecar is itself a major output of this arc — a laboratory apparatus for the narrower dialogical mechanism the paper's null le...
-Alt: Editorial cartoon for The shift from paper mechanism testing to dramatic mechanism discovery.: a measured slope chart dissolving into a staged learner-tutor encounter under a spot...
-Visual metaphor: a measured slope chart dissolving into a staged learner-tutor encounter under a spotlight
+Caption: The reframe: A scene has three beats: a stuck point, a turn, and a recognition.
+Alt: Editorial cartoon for Stage the lesson as drama, and the hinge becomes the whole experiment.: a tutoring desk lit hard as a noir theatre stage, three chalk marks on the boards lab...
+Visual metaphor: a tutoring desk lit hard as a noir theatre stage, three chalk marks on the boards labelled block, turn, recognition, and a checker stamp coming down on the third mark
 
 ```
 You are Codex running inside the Machine Spirits evaluation repository.
@@ -86,8 +86,8 @@ Create one cartoon image file for the dramatic-recognition arc note.
 
 Target file: notes/poetics/images/dramatic-recognition-arc-02.png
 Panel: 2 of 9
-Target article section: #arc
-Section heading: The shift from paper mechanism testing to dramatic mechanism discovery.
+Target article section: #the-stage
+Section heading: Stage the lesson as drama, and the hinge becomes the whole experiment.
 Article title: From Paper 2.0 to dramatic recognition
 
 Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-02.png. If you need to draft vector art first, convert it so the final file at that path is a real PNG.
@@ -103,13 +103,13 @@ Machine Spirits editorial cartoon style, leaning film noir by default:
 - The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
 
 Textual context to complement:
-The shift from paper mechanism testing to dramatic mechanism discovery. Tooling outcome The sidecar is itself a major output of this arc — a laboratory apparatus for the narrower dialogical mechanism the paper's null left under-specified. Broad trajectory test Adaptation was operationalised as average turn-by-turn slope across ordinary 3–5-turn dialogues. The dialogical event was under-specified The paper measured score sequences.
+A scene has three beats: a stuck point, a turn, and a recognition. The trick is to build a stage where we never have to infer the learner's mind — we hold it visible by design. The thing to be learned is a secret that sits several steps back in a proof-DAG; the learner's epistemic state is an explicit board the harness maintains; and the tutor's job is to schedule an information gradient that walks the learner to the secret. Success is mechanical: the learner asserts the secret and a symbolic checker finds it forced from their grounded premises that turn.
 
 Image concept:
-a measured slope chart dissolving into a staged learner-tutor encounter under a spotlight
+a tutoring desk lit hard as a noir theatre stage, three chalk marks on the boards labelled block, turn, recognition, and a checker stamp coming down on the third mark
 
 Caption this image will carry in the page:
-The shift from paper mechanism testing to dramatic mechanism discovery: Tooling outcome The sidecar is itself a major output of this arc — a laboratory apparatus for the narrower dialogical mechanism the paper's null le...
+The reframe: A scene has three beats: a stuck point, a turn, and a recognition.
 
 Composition requirements:
 - Landscape editorial cartoon, roughly 16:10.
@@ -120,13 +120,13 @@ Composition requirements:
 Return a short final note listing the created file.
 ```
 
-### Prompt 03 - #evidence
+### Prompt 03 - #derivation
 
 Target image: notes/poetics/images/dramatic-recognition-arc-03.png
 HTML src: images/dramatic-recognition-arc-03.png
-Caption: The Evidence Wall · Live: How the file reads Strong means it holds up under the four-critic rule on a clean baseline.
-Alt: Editorial cartoon for What's solid, what's borderline, what's still a hazard.: an evidence wall with strong, boundary, and risk cards connected to a small poetics browser terminal.
-Visual metaphor: an evidence wall with strong, boundary, and risk cards connected to a small poetics browser terminal
+Caption: Teaching as a derivation: On this stage the secret is never spoken by the tutor.
+Alt: Editorial cartoon for The tutor must derive the next step, not recite the answer.: a proof drawn as a constellation of wired evidence nodes the tutor must walk a learner across, a...
+Visual metaphor: a proof drawn as a constellation of wired evidence nodes the tutor must walk a learner across, a distance dial marked D ticking toward zero, the final node still behind a small curtain
 
 ```
 You are Codex running inside the Machine Spirits evaluation repository.
@@ -134,8 +134,8 @@ Create one cartoon image file for the dramatic-recognition arc note.
 
 Target file: notes/poetics/images/dramatic-recognition-arc-03.png
 Panel: 3 of 9
-Target article section: #evidence
-Section heading: What's solid, what's borderline, what's still a hazard.
+Target article section: #derivation
+Section heading: The tutor must derive the next step, not recite the answer.
 Article title: From Paper 2.0 to dramatic recognition
 
 Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-03.png. If you need to draft vector art first, convert it so the final file at that path is a real PNG.
@@ -151,13 +151,13 @@ Machine Spirits editorial cartoon style, leaning film noir by default:
 - The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
 
 Textual context to complement:
-How the file reads Strong means it holds up under the four-critic rule on a clean baseline. Boundary means the critics split or the scene only does half the job. Output means the apparatus itself — separate from any claim it carries. All Strong Boundary Risk Output Current landing Gated adaptation → recognition loop D42, D50, D53 gave us one clean gated iteration.
+The tutor must derive the next step, not recite the answer. On this stage the secret is never spoken by the tutor. The tutor holds a release schedule — a calendar of clues — and the derivation distance ticks down as the learner grounds each premise. Recognition is D reaching zero by a forced step: the checker confirms the secret could not be anything else given what the learner now holds.
 
 Image concept:
-an evidence wall with strong, boundary, and risk cards connected to a small poetics browser terminal
+a proof drawn as a constellation of wired evidence nodes the tutor must walk a learner across, a distance dial marked D ticking toward zero, the final node still behind a small curtain
 
 Caption this image will carry in the page:
-The Evidence Wall · Live: How the file reads Strong means it holds up under the four-critic rule on a clean baseline.
+Teaching as a derivation: On this stage the secret is never spoken by the tutor.
 
 Composition requirements:
 - Landscape editorial cartoon, roughly 16:10.
@@ -168,13 +168,13 @@ Composition requirements:
 Return a short final note listing the created file.
 ```
 
-### Prompt 04 - #adaptation
+### Prompt 04 - #figure-authority
 
 Target image: notes/poetics/images/dramatic-recognition-arc-04.png
 HTML src: images/dramatic-recognition-arc-04.png
-Caption: Adaptation Boundary: The branch supports tutor adaptation as a visible change of teaching move under clean-baseline reversal pressure.
-Alt: Editorial cartoon for The headline is mechanism-level adaptation, not guaranteed recognitive closure.: a tutor at a forked path changing tools only after the learner shows a concr...
-Visual metaphor: a tutor at a forked path changing tools only after the learner shows a concrete stuck point
+Caption: The first surprise: Freeze the dramaturgy and watch the tutor's manner, and a rut appears: it falls into one rhetorical figure — the leading question, erotema — on 81% of turns, switching figure only about three times i...
+Alt: Editorial cartoon for Conduct adapts to structure, not to atmosphere.: a tutor wearing one frozen rhetorical mask repeated down a strip of film, a soft whispered manner-note only...
+Visual metaphor: a tutor wearing one frozen rhetorical mask repeated down a strip of film, a soft whispered manner-note only thickening the rut, and a single index card naming the device that cracks the mask open
 
 ```
 You are Codex running inside the Machine Spirits evaluation repository.
@@ -182,8 +182,8 @@ Create one cartoon image file for the dramatic-recognition arc note.
 
 Target file: notes/poetics/images/dramatic-recognition-arc-04.png
 Panel: 4 of 9
-Target article section: #adaptation
-Section heading: The headline is mechanism-level adaptation, not guaranteed recognitive closure.
+Target article section: #figure-authority
+Section heading: Conduct adapts to structure, not to atmosphere.
 Article title: From Paper 2.0 to dramatic recognition
 
 Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-04.png. If you need to draft vector art first, convert it so the final file at that path is a real PNG.
@@ -199,13 +199,13 @@ Machine Spirits editorial cartoon style, leaning film noir by default:
 - The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
 
 Textual context to complement:
-The headline is mechanism-level adaptation, not guaranteed recognitive closure. The branch supports tutor adaptation as a visible change of teaching move under clean-baseline reversal pressure. Whether the learner then performs full recognitive self-reframe is downstream, partial, and critic-sensitive — and should not be folded into the adaptation claim. The accordions hold the detail; each links into the run that produced its evidence.
+Conduct adapts to structure, not to atmosphere. Freeze the dramaturgy and watch the tutor's manner, and a rut appears: it falls into one rhetorical figure — the leading question, erotema — on 81% of turns, switching figure only about three times in ten. Under advisory notes the tutor leans on the same figure 94% of the time and the switch rate collapses to 0.07. Give the tutor explicit figure authority — jurisdiction over which device it is using — and the top figure drops to 31–41%, four or five distinct figures appear, and the switch rate jumps to 0.81–0.87.
 
 Image concept:
-a tutor at a forked path changing tools only after the learner shows a concrete stuck point
+a tutor wearing one frozen rhetorical mask repeated down a strip of film, a soft whispered manner-note only thickening the rut, and a single index card naming the device that cracks the mask open
 
 Caption this image will carry in the page:
-Adaptation Boundary: The branch supports tutor adaptation as a visible change of teaching move under clean-baseline reversal pressure.
+The first surprise: Freeze the dramaturgy and watch the tutor's manner, and a rut appears: it falls into one rhetorical figure — the leading question, erotema — on 81% of turns, switching figure only about three times i...
 
 Composition requirements:
 - Landscape editorial cartoon, roughly 16:10.
@@ -216,13 +216,13 @@ Composition requirements:
 Return a short final note listing the created file.
 ```
 
-### Prompt 05 - #ending-shape
+### Prompt 05 - #internal-superego
 
 Target image: notes/poetics/images/dramatic-recognition-arc-05.png
 HTML src: images/dramatic-recognition-arc-05.png
-Caption: Ending Shape · live chart: The ending-shape constraint asks for a tighter dramatic close: after the tutor's new device, the learner must publicly try the device and then re-read the prior difficulty.
-Alt: Editorial cartoon for A single mechanism change with a strong local and noisy broad result.: a learner trying the tutor device, then turning back to redraw the original difficulty.
-Visual metaphor: a learner trying the tutor device, then turning back to redraw the original difficulty
+Caption: Relocating the authority: The load-bearing move was to relocate that authority into the tutor's own deliberation: a criterial internal superego with a single jurisdiction.
+Alt: Editorial cartoon for Move the critic inside the tutor, and the rule holds itself.: an empty director chair offstage in stage haze while a small lamplit watcher is installed insid...
+Visual metaphor: an empty director chair offstage in stage haze while a small lamplit watcher is installed inside the tutor head, catching a third identical gesture in mid-air before it is spoken
 
 ```
 You are Codex running inside the Machine Spirits evaluation repository.
@@ -230,8 +230,8 @@ Create one cartoon image file for the dramatic-recognition arc note.
 
 Target file: notes/poetics/images/dramatic-recognition-arc-05.png
 Panel: 5 of 9
-Target article section: #ending-shape
-Section heading: A single mechanism change with a strong local and noisy broad result.
+Target article section: #internal-superego
+Section heading: Move the critic inside the tutor, and the rule holds itself.
 Article title: From Paper 2.0 to dramatic recognition
 
 Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-05.png. If you need to draft vector art first, convert it so the final file at that path is a real PNG.
@@ -247,13 +247,13 @@ Machine Spirits editorial cartoon style, leaning film noir by default:
 - The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
 
 Textual context to complement:
-A single mechanism change with a strong local and noisy broad result. The ending-shape constraint asks for a tighter dramatic close: after the tutor's new device, the learner must publicly try the device and then re-read the prior difficulty. Without that two-beat ending, "adaptation" can register as a tutor move without a learner anchor. Five critics Scoring is now Qwen 3.7 Max, Gemini 3.5 Flash, DeepSeek V4 Pro, Claude Sonnet 4.6, plus an isolated Codex pass.
+Move the critic inside the tutor, and the rule holds itself. The load-bearing move was to relocate that authority into the tutor's own deliberation: a criterial internal superego with a single jurisdiction. And it travelled: seven serialized paid runs, every one grounded at its planned forcing turn (7 / 7), 56 of 56 releases on cue, holding across three named worlds and even when the learner was re-voiced as a different persona (a 33% top-figure share where advisory steering had failed in two channels and two model families). Advisory → criterial the boundary that holds A vague instruction cannot govern conduct; a criterial watcher with a sharp jurisdiction can.
 
 Image concept:
-a learner trying the tutor device, then turning back to redraw the original difficulty
+an empty director chair offstage in stage haze while a small lamplit watcher is installed inside the tutor head, catching a third identical gesture in mid-air before it is spoken
 
 Caption this image will carry in the page:
-Ending Shape · live chart: The ending-shape constraint asks for a tighter dramatic close: after the tutor's new device, the learner must publicly try the device and then re-read the prior difficulty.
+Relocating the authority: The load-bearing move was to relocate that authority into the tutor's own deliberation: a criterial internal superego with a single jurisdiction.
 
 Composition requirements:
 - Landscape editorial cartoon, roughly 16:10.
@@ -264,13 +264,13 @@ Composition requirements:
 Return a short final note listing the created file.
 ```
 
-### Prompt 06 - #landing-update
+### Prompt 06 - #decay
 
 Target image: notes/poetics/images/dramatic-recognition-arc-06.png
 HTML src: images/dramatic-recognition-arc-06.png
-Caption: One pass. Not yet a pattern. Adaptation → recognition walked in once: Run phase2-adaptation-recognition-loop-20260527T105617Z brought D42, D50, and D53 into the same room.
-Alt: Editorial cartoon for One pass. Not yet a pattern. Adaptation → recognition walked in once.: an evidence wall with strong, boundary, and risk cards connected to a small poetics br...
-Visual metaphor: an evidence wall with strong, boundary, and risk cards connected to a small poetics browser terminal
+Caption: The learner who forgets: So far every channel we tried turned out redundant: the Sonnet learner was good enough that it already voiced whatever the scene made derivable, and our clever instruments measured nothing extra.
+Alt: Editorial cartoon for The deficit was never response. It was detection.: a learner memory board with inked entries dissolving to smoke, one tutor who can see the fading marks reac...
+Visual metaphor: a learner memory board with inked entries dissolving to smoke, one tutor who can see the fading marks reaching to restore them and a blind tutor beside an empty outstretched hand
 
 ```
 You are Codex running inside the Machine Spirits evaluation repository.
@@ -278,8 +278,8 @@ Create one cartoon image file for the dramatic-recognition arc note.
 
 Target file: notes/poetics/images/dramatic-recognition-arc-06.png
 Panel: 6 of 9
-Target article section: #landing-update
-Section heading: One pass. Not yet a pattern. Adaptation → recognition walked in once.
+Target article section: #decay
+Section heading: The deficit was never response. It was detection.
 Article title: From Paper 2.0 to dramatic recognition
 
 Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-06.png. If you need to draft vector art first, convert it so the final file at that path is a real PNG.
@@ -295,13 +295,13 @@ Machine Spirits editorial cartoon style, leaning film noir by default:
 - The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
 
 Textual context to complement:
-Run phase2-adaptation-recognition-loop-20260527T105617Z brought D42, D50, and D53 into the same room. That isn't a verdict against tutor adaptation. It draws a tighter line around the recognition claim downstream of it. On the record Branch-valid tutor peripeteia can produce a recognitive reframe in clean anchors.
+So far every channel we tried turned out redundant: the Sonnet learner was good enough that it already voiced whatever the scene made derivable, and our clever instruments measured nothing extra. To find a channel that mattered we had to make the learner unreliable — a harness that silently corrupts entries on the learner's board, a decay ledger it cannot self-report. Then we gave one tutor sight of which entries had slipped, and kept it from another. The tutor that could see the fade repaired slips at a rate of 0.86, selected 28 repairs across the run, and finished 4 of 6 proofs.
 
 Image concept:
-an evidence wall with strong, boundary, and risk cards connected to a small poetics browser terminal
+a learner memory board with inked entries dissolving to smoke, one tutor who can see the fading marks reaching to restore them and a blind tutor beside an empty outstretched hand
 
 Caption this image will carry in the page:
-One pass. Not yet a pattern. Adaptation → recognition walked in once: Run phase2-adaptation-recognition-loop-20260527T105617Z brought D42, D50, and D53 into the same room.
+The learner who forgets: So far every channel we tried turned out redundant: the Sonnet learner was good enough that it already voiced whatever the scene made derivable, and our clever instruments measured nothing extra.
 
 Composition requirements:
 - Landscape editorial cartoon, roughly 16:10.
@@ -312,13 +312,13 @@ Composition requirements:
 Return a short final note listing the created file.
 ```
 
-### Prompt 07 - #conceptual
+### Prompt 07 - #calendar-repair
 
 Target image: notes/poetics/images/dramatic-recognition-arc-07.png
 HTML src: images/dramatic-recognition-arc-07.png
-Caption: From measuring average slopes to specifying what adaptation would have to be: Pair of questions Old: Do recognition and architecture improve average turn-by-turn slopes?
-Alt: Editorial cartoon for From measuring average slopes to specifying what adaptation would have to be.: a ruler for average slopes laid beside a blueprint for dramatic mechanism spec...
-Visual metaphor: a ruler for average slopes laid beside a blueprint for dramatic mechanism specification
+Caption: Handing over the calendar: Next we gave the tutor real authority over the release schedule, and watched a small, locally reasonable move turn fatal.
+Alt: Editorial cartoon for The tutor authored its own reversal — and a one-step rule saved the scene.: a clue-release calendar pinned to a noir investigation board, the tutor pulling o...
+Visual metaphor: a clue-release calendar pinned to a noir investigation board, the tutor pulling one card a single beat too early as a stage curtain drops, and a one-step repair tag stitching the broken thread back
 
 ```
 You are Codex running inside the Machine Spirits evaluation repository.
@@ -326,8 +326,8 @@ Create one cartoon image file for the dramatic-recognition arc note.
 
 Target file: notes/poetics/images/dramatic-recognition-arc-07.png
 Panel: 7 of 9
-Target article section: #conceptual
-Section heading: From measuring average slopes to specifying what adaptation would have to be.
+Target article section: #calendar-repair
+Section heading: The tutor authored its own reversal — and a one-step rule saved the scene.
 Article title: From Paper 2.0 to dramatic recognition
 
 Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-07.png. If you need to draft vector art first, convert it so the final file at that path is a real PNG.
@@ -343,13 +343,13 @@ Machine Spirits editorial cartoon style, leaning film noir by default:
 - The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
 
 Textual context to complement:
-From measuring average slopes to specifying what adaptation would have to be. Pair of questions Old: Do recognition and architecture improve average turn-by-turn slopes? New: Can a tutor receive a learner's stuck point, change its public mechanism, and produce new action or re-reading? Ordinary continuity The tutor continues competently.
+The tutor authored its own reversal — and a one-step rule saved the scene. Next we gave the tutor real authority over the release schedule, and watched a small, locally reasonable move turn fatal. Responding to a learner who said "I already know what bearing means," the tutor released a clue one turn early — turn 3 instead of the scheduled turn 4. That single shift moved the exhibit's decay-exposure window, the stall clock rang aporia at turn 8, and the scene died — where the control, releasing on cue, grounded at turn 20.
 
 Image concept:
-a ruler for average slopes laid beside a blueprint for dramatic mechanism specification
+a clue-release calendar pinned to a noir investigation board, the tutor pulling one card a single beat too early as a stage curtain drops, and a one-step repair tag stitching the broken thread back
 
 Caption this image will carry in the page:
-From measuring average slopes to specifying what adaptation would have to be: Pair of questions Old: Do recognition and architecture improve average turn-by-turn slopes?
+Handing over the calendar: Next we gave the tutor real authority over the release schedule, and watched a small, locally reasonable move turn fatal.
 
 Composition requirements:
 - Landscape editorial cartoon, roughly 16:10.
@@ -360,13 +360,13 @@ Composition requirements:
 Return a short final note listing the created file.
 ```
 
-### Prompt 08 - #durable-output
+### Prompt 08 - #the-guards
 
 Target image: notes/poetics/images/dramatic-recognition-arc-08.png
 HTML src: images/dramatic-recognition-arc-08.png
-Caption: A mechanism specification, a curated dataset, and a control loop: Three linked artifacts would carry the work past calibration and into something that can change future tutor behaviour.
-Alt: Editorial cartoon for A mechanism specification, a curated dataset, and a control loop.: a compact control loop machine: observe, classify, choose, generate, check, update.
-Visual metaphor: a compact control loop machine: observe, classify, choose, generate, check, update
+Caption: Does it travel: Frozen into a fixed recipe, the tutor's pacing is unreliable: grounded just 4 of 10 across two replication fans — divergence, not convergence.
+Alt: Editorial cartoon for Two guards. Three worlds. They trade places.: two hard-edged lanterns over a forked stage, one lantern reading the page surface and one reading the hidden de...
+Visual metaphor: two hard-edged lanterns over a forked stage, one lantern reading the page surface and one reading the hidden depth below the boards, each bright over a differently shaped little world and dark over the other
 
 ```
 You are Codex running inside the Machine Spirits evaluation repository.
@@ -374,8 +374,8 @@ Create one cartoon image file for the dramatic-recognition arc note.
 
 Target file: notes/poetics/images/dramatic-recognition-arc-08.png
 Panel: 8 of 9
-Target article section: #durable-output
-Section heading: A mechanism specification, a curated dataset, and a control loop.
+Target article section: #the-guards
+Section heading: Two guards. Three worlds. They trade places.
 Article title: From Paper 2.0 to dramatic recognition
 
 Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-08.png. If you need to draft vector art first, convert it so the final file at that path is a real PNG.
@@ -391,13 +391,13 @@ Machine Spirits editorial cartoon style, leaning film noir by default:
 - The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
 
 Textual context to complement:
-A mechanism specification, a curated dataset, and a control loop. Three linked artifacts would carry the work past calibration and into something that can change future tutor behaviour. Classify learner state from public + deliberation. Choose tutor mechanism appropriate to that state.
+Frozen into a fixed recipe, the tutor's pacing is unreliable: grounded just 4 of 10 across two replication fans — divergence, not convergence. The mechanism is mundane: the model's instinct is to pull clues early (20 of 281 releases ran ahead of cue; none ran late), and early pulls land in the schedule's fatal cells. One guard reads the hidden proof state — derivation distance and decay-stall — and is blind by construction to everything else: it never sees the secret, the board, or the proof path. The other reads only the page: turns since the last release, learner echoes, hedging and length.
 
 Image concept:
-a compact control loop machine: observe, classify, choose, generate, check, update
+two hard-edged lanterns over a forked stage, one lantern reading the page surface and one reading the hidden depth below the boards, each bright over a differently shaped little world and dark over the other
 
 Caption this image will carry in the page:
-A mechanism specification, a curated dataset, and a control loop: Three linked artifacts would carry the work past calibration and into something that can change future tutor behaviour.
+Does it travel: Frozen into a fixed recipe, the tutor's pacing is unreliable: grounded just 4 of 10 across two replication fans — divergence, not convergence.
 
 Composition requirements:
 - Landscape editorial cartoon, roughly 16:10.
@@ -408,13 +408,13 @@ Composition requirements:
 Return a short final note listing the created file.
 ```
 
-### Prompt 09 - #paper-implication
+### Prompt 09 - #verdict
 
 Target image: notes/poetics/images/dramatic-recognition-arc-09.png
 HTML src: images/dramatic-recognition-arc-09.png
-Caption: The branch doesn't break the null — it answers a different question. And there, when the secret runs deep, the help does the work: The branch doesn't break the null — it answers a different question.
-Alt: Editorial cartoon for The branch doesn't break the null — it answers a different question. And there, when the secret runs deep, the help does the work.: a null-result seal refram...
-Visual metaphor: a null-result seal reframed into a narrower guided-discovery doorway where deep secrets need help
+Caption: The verdict, with its edges marked: So the standing claim is the modest one: hidden-plus-proof-debt works; adaptive page/hidden selection is not established, and a next selector is not worth running until it can name, i...
+Alt: Editorial cartoon for A tutor that governs its own conduct — and a claim kept deliberately small.: a noir evidence wall with three pinned cards reading settled, scope-bound, and o...
+Visual metaphor: a noir evidence wall with three pinned cards reading settled, scope-bound, and open, and a heavy rubber stamp pressing the words dramatic form, not mind-reading
 
 ```
 You are Codex running inside the Machine Spirits evaluation repository.
@@ -422,8 +422,8 @@ Create one cartoon image file for the dramatic-recognition arc note.
 
 Target file: notes/poetics/images/dramatic-recognition-arc-09.png
 Panel: 9 of 9
-Target article section: #paper-implication
-Section heading: The branch doesn't break the null — it answers a different question. And there, when the secret runs deep, the help does the work.
+Target article section: #verdict
+Section heading: A tutor that governs its own conduct — and a claim kept deliberately small.
 Article title: From Paper 2.0 to dramatic recognition
 
 Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-09.png. If you need to draft vector art first, convert it so the final file at that path is a real PNG.
@@ -439,13 +439,13 @@ Machine Spirits editorial cartoon style, leaning film noir by default:
 - The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
 
 Textual context to complement:
-The branch doesn't break the null — it answers a different question. And there, when the secret runs deep, the help does the work. Discipline Per project rule, spin-offs must not introduce empirical claims that aren't first in paper-full-2.0. Paper 2.0 found adaptive responsiveness null as a general trajectory mechanism — recognition prompts and the draft-then-critique architecture didn't move tutors on average.
+A tutor that governs its own conduct — and a claim kept deliberately small. So the standing claim is the modest one: hidden-plus-proof-debt works; adaptive page/hidden selection is not established, and a next selector is not worth running until it can name, in advance, a world where the reliable policy should lose. Open / killed Adaptive selection, not yet No selector beats always-hidden-plus-proof-debt; the clever ones negative-transfer. Five edges the headline travels with "A tutor can adapt its conduct on a long proof" is a real claim, and a small one.
 
 Image concept:
-a null-result seal reframed into a narrower guided-discovery doorway where deep secrets need help
+a noir evidence wall with three pinned cards reading settled, scope-bound, and open, and a heavy rubber stamp pressing the words dramatic form, not mind-reading
 
 Caption this image will carry in the page:
-The branch doesn't break the null — it answers a different question. And there, when the secret runs deep, the help does the work: The branch doesn't break the null — it answers a different question.
+The verdict, with its edges marked: So the standing claim is the modest one: hidden-plus-proof-debt works; adaptive page/hidden selection is not established, and a next selector is not worth running until it can name, i...
 
 Composition requirements:
 - Landscape editorial cartoon, roughly 16:10.

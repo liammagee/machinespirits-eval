@@ -155,7 +155,7 @@ export function buildCriticPrompt({ result, diagnosis, world = null, label = nul
 
   const panel = renderEvalPanel(diagnosis).replace(/^## .*\n+/, '');
   const proofProse = result.proof
-    ? renderProofProse(result.proof, world)
+    ? renderProofProse(result.proof, world, { ledger: result.ledger })
     : '(no proof extracted — the drama did not resolve into a grounded assertion)';
 
   const user = [

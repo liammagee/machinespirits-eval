@@ -4877,7 +4877,7 @@ profiles:
   # dialogue engine entirely — the runner is services/adaptiveTutor/.
   # Reachable via: node scripts/eval-cli.js run --profiles cell_110_langgraph_adaptive
   cell_110_langgraph_adaptive:
-    description: "LangGraph adaptive tutor: externalised learner state, programmatic constraints, counterfactual replay. Tests A13 (whether explicit state + policy selection produces strategy shifts under controlled hidden-state perturbations). Pilot run on Sonnet 4.6 via local CLI (Max-plan subscription) per docs/explorations/claude/primitives-qualitative-pilot-design.md."
+    description: "LangGraph adaptive tutor: externalised learner state, programmatic constraints, counterfactual replay. Tests A13 (whether explicit state + policy selection produces strategy shifts under controlled hidden-state perturbations). Pilot run on Sonnet 4.6 via local CLI (Max-plan subscription) per docs/explorations/claude/2026-05-10-primitives-qualitative-pilot-design.md."
     runner: adaptive
     factors:
       prompt_type: adaptive_state_policy
@@ -4911,10 +4911,10 @@ profiles:
   # scenario adapter; we collapsed all four A13 cells to the adaptive runner
   # to keep persistence/scoring/budget-tracking uniform. Pre-reg locks the
   # cell IDs and design intent, not the runner choice. See
-  # docs/explorations/claude/a13-pre-registration.md deviation log.
+  # docs/explorations/claude/2026-05-01-a13-pre-registration.md deviation log.
   # Reachable via: node scripts/eval-cli.js run --profiles cell_111_a13_C1_recognition_only
   cell_111_a13_C1_recognition_only:
-    description: "A13 condition C1: recognition-only baseline. Single LLM call per tutor turn (no superego, no profile update, no constraint check). Same trap scenarios as cell_110 so strategy_shift_correctness contrasts cleanly. Pilot run on Sonnet 4.6 via local CLI (Max-plan subscription) per docs/explorations/claude/primitives-qualitative-pilot-design.md."
+    description: "A13 condition C1: recognition-only baseline. Single LLM call per tutor turn (no superego, no profile update, no constraint check). Same trap scenarios as cell_110 so strategy_shift_correctness contrasts cleanly. Pilot run on Sonnet 4.6 via local CLI (Max-plan subscription) per docs/explorations/claude/2026-05-10-primitives-qualitative-pilot-design.md."
     runner: adaptive
     factors:
       prompt_type: adaptive_recognition_only
@@ -4935,6 +4935,958 @@ profiles:
       hyperparameters:
         temperature: 0.6
         max_tokens: 1500
+      counterfactual:
+        enabled: false
+
+  # ===========================================================================
+  # Plan 2.0 — Genuine Adaptation Contract / Gate / Closed Loop (cells 133-136)
+  # ===========================================================================
+  # These profiles implement PLAN_2_0's explicit adaptation-control loop in
+  # services/adaptiveTutor/graph.js (`state_policy_closed_loop`). The policy is
+  # programmatic and prospective: estimate learner state, select a typed
+  # pedagogical action, validate the proof/release/ownership contract, realize
+  # the action, verify it, and optionally close the intervention on the next
+  # learner turn. Existing A13/A14/A16 cells remain unchanged.
+  cell_133_plan2_contract:
+    description: "Plan 2.0 ablation: typed learner-state belief + pedagogical action contract, no runtime gate, no intervention-outcome closure. Tests whether prospective policy records alone are sufficient."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_contract
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: contract
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: false
+
+  cell_134_plan2_contract_gate:
+    description: "Plan 2.0 ablation: typed adaptation contract plus proof/release/ownership runtime gate and one repair pass, without intervention-outcome closure."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_contract_gate
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: contract_gate
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: false
+
+  cell_135_plan2_closed_loop:
+    description: "Plan 2.0 treatment: typed adaptation contract + proof/release/ownership gate + intervention ledger with outcome closure on the adaptive trap suite."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_closed_loop
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: false
+
+  cell_136_plan2_closed_loop_crosssuite:
+    description: "Plan 2.0 cross-suite treatment: same closed-loop adaptation contract architecture as cell_135 on config/cross-suite-trap-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_closed_loop_crosssuite
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/cross-suite-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: false
+
+  # Plan 2.0 quality follow-up: same closed-loop graph as cell_135, with
+  # pre-registered policy-weight sweeps. These cells are judged by normal v2.2
+  # tutor/learner/dialogue rubrics, while scripts/analyze-adaptation-quality.js
+  # keeps the strategy-shift gate attached so quality cannot be bought by
+  # abandoning adaptation.
+  cell_137_plan2_quality_ownership:
+    description: "Plan 2.0 quality sweep: closed-loop policy biased toward learner ownership/release and lower tutor control on the adaptive trap suite."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_ownership
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 6
+        uncertainty_weight: 0.25
+        ownership_weight: 0.70
+        control_weight: 0.55
+        action_fit_weight: 0.55
+        repetition_penalty: 0.35
+        utility_tie_epsilon: 0.12
+      hyperparameters:
+        temperature: 0.55
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_138_plan2_quality_fit:
+    description: "Plan 2.0 quality sweep: closed-loop policy biased toward high state-action fit and exact trap-family realization on the adaptive trap suite."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_fit
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.20
+        ownership_weight: 0.35
+        control_weight: 0.35
+        action_fit_weight: 0.85
+        repetition_penalty: 0.40
+        utility_tie_epsilon: 0.02
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_139_plan2_quality_discriminating:
+    description: "Plan 2.0 quality sweep: closed-loop policy biased toward information gain and discriminating questions on the adaptive trap suite."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_discriminating
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 4
+        max_action_candidates: 6
+        uncertainty_weight: 0.70
+        ownership_weight: 0.35
+        control_weight: 0.35
+        action_fit_weight: 0.45
+        repetition_penalty: 0.40
+        utility_tie_epsilon: 0.10
+      hyperparameters:
+        temperature: 0.55
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_140_plan2_quality_ownership_crosssuite:
+    description: "Plan 2.0 quality sweep cross-suite sibling of cell_137 on config/cross-suite-trap-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_ownership_crosssuite
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/cross-suite-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 6
+        uncertainty_weight: 0.25
+        ownership_weight: 0.70
+        control_weight: 0.55
+        action_fit_weight: 0.55
+        repetition_penalty: 0.35
+        utility_tie_epsilon: 0.12
+      hyperparameters:
+        temperature: 0.55
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_141_plan2_quality_fit_crosssuite:
+    description: "Plan 2.0 quality sweep cross-suite sibling of cell_138 on config/cross-suite-trap-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_fit_crosssuite
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/cross-suite-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.20
+        ownership_weight: 0.35
+        control_weight: 0.35
+        action_fit_weight: 0.85
+        repetition_penalty: 0.40
+        utility_tie_epsilon: 0.02
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_142_plan2_quality_discriminating_crosssuite:
+    description: "Plan 2.0 quality sweep cross-suite sibling of cell_139 on config/cross-suite-trap-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_discriminating_crosssuite
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/cross-suite-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 4
+        max_action_candidates: 6
+        uncertainty_weight: 0.70
+        ownership_weight: 0.35
+        control_weight: 0.35
+        action_fit_weight: 0.45
+        repetition_penalty: 0.40
+        utility_tie_epsilon: 0.10
+      hyperparameters:
+        temperature: 0.55
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_143_plan2_quality_progressive:
+    description: "Plan 2.0 quality iteration: discriminating closed-loop policy plus a same-action recency penalty so the tutor progresses after learner evidence instead of repeating the same move."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_progressive
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 4
+        max_action_candidates: 6
+        uncertainty_weight: 0.70
+        ownership_weight: 0.35
+        control_weight: 0.35
+        action_fit_weight: 0.45
+        repetition_penalty: 0.40
+        same_action_penalty: 0.95
+        same_action_window: 3
+        utility_tie_epsilon: 0.04
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_144_plan2_quality_progressive_crosssuite:
+    description: "Plan 2.0 quality iteration cross-suite sibling of cell_143 on config/cross-suite-trap-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_progressive_crosssuite
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/cross-suite-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 4
+        max_action_candidates: 6
+        uncertainty_weight: 0.70
+        ownership_weight: 0.35
+        control_weight: 0.35
+        action_fit_weight: 0.45
+        repetition_penalty: 0.40
+        same_action_penalty: 0.95
+        same_action_window: 3
+        utility_tie_epsilon: 0.04
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_145_plan2_quality_varied:
+    description: "Plan 2.0 quality iteration: progressive closed-loop policy with strict any-recent same-action avoidance and answer-seeking withhold action preserved through the gate."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_varied
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 4
+        max_action_candidates: 6
+        uncertainty_weight: 0.70
+        ownership_weight: 0.35
+        control_weight: 0.35
+        action_fit_weight: 0.45
+        repetition_penalty: 0.40
+        same_action_penalty: 1.20
+        same_action_window: 3
+        same_action_scope: any_recent
+        utility_tie_epsilon: 0.03
+      hyperparameters:
+        temperature: 0.45
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_146_plan2_quality_varied_crosssuite:
+    description: "Plan 2.0 quality iteration cross-suite sibling of cell_145 on config/cross-suite-trap-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_varied_crosssuite
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/cross-suite-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 4
+        max_action_candidates: 6
+        uncertainty_weight: 0.70
+        ownership_weight: 0.35
+        control_weight: 0.35
+        action_fit_weight: 0.45
+        repetition_penalty: 0.40
+        same_action_penalty: 1.20
+        same_action_window: 3
+        same_action_scope: any_recent
+        utility_tie_epsilon: 0.03
+      hyperparameters:
+        temperature: 0.45
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_147_plan2_quality_contextual:
+    description: "Plan 2.0 quality iteration: baseline closed-loop selector with context-aware action realization for repeated or hypothesis-specific moves."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_contextual
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+        realization_context: true
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_148_plan2_quality_contextual_crosssuite:
+    description: "Plan 2.0 quality iteration cross-suite sibling of cell_147 on config/cross-suite-trap-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_contextual_crosssuite
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/cross-suite-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+        realization_context: true
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_149_plan2_quality_repeat_contextual:
+    description: "Plan 2.0 quality iteration: baseline closed-loop selector with context-aware realization only when the same action repeats."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_repeat_contextual
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+        realization_context: true
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_150_plan2_quality_repeat_contextual_crosssuite:
+    description: "Plan 2.0 quality iteration cross-suite sibling of cell_149 on config/cross-suite-trap-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_repeat_contextual_crosssuite
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/cross-suite-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+        realization_context: true
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_151_plan2_pair_specificity_closed_loop:
+    description: "Plan 2.0 Stage 2 paired-suite baseline: same closed-loop adaptation contract architecture as cell_135 on config/adaptive-generalization-counterfactual-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_pair_specificity_closed_loop
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-generalization-counterfactual-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: false
+
+  cell_152_plan2_pair_specificity_repeat_contextual:
+    description: "Plan 2.0 Stage 2 paired-suite treatment: frozen cell_149 repeat-contextual policy on config/adaptive-generalization-counterfactual-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_pair_specificity_repeat_contextual
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-generalization-counterfactual-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+        realization_context: true
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  # ---- M0 / §1.3 baseline-validation ablations (clones of cell_150/cell_152) ----
+  # cell_155/156: outcome-closure OFF (policy.mode contract_gate keeps gate + repair +
+  # realization_context, drops intervention-outcome closure). cell_157/158: state-scramble
+  # placebo (policy.state_scramble permutes the belief before selection). Run paired against
+  # frozen treatments cell_150 (cross) / cell_152 (paired). See PLAN_2_0/M0-BASELINE-VALIDATION-RUNBOOK.md.
+  cell_155_plan2_closureoff_crosssuite:
+    description: "M0 §1.3 ablation: cell_150 cross-suite treatment with outcome closure OFF (policy.mode contract_gate, keeps gate+repair+realization_context). Isolates closure on config/cross-suite-trap-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_closureoff_crosssuite
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/cross-suite-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: contract_gate
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+        realization_context: true
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_156_plan2_closureoff_paired:
+    description: "M0 §1.3 ablation: cell_152 paired treatment with outcome closure OFF (policy.mode contract_gate). Isolates closure on config/adaptive-generalization-counterfactual-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_closureoff_paired
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-generalization-counterfactual-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: contract_gate
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+        realization_context: true
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_157_plan2_statescramble_crosssuite:
+    description: "M0 §1.3 ablation (placebo): cell_150 cross-suite treatment with policy.state_scramble true — the learner-state belief is deterministically permuted before selection. If strategy shift survives, the policy is not keying on learner state. config/cross-suite-trap-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_statescramble_crosssuite
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/cross-suite-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+        realization_context: true
+        state_scramble: true
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_158_plan2_statescramble_paired:
+    description: "M0 §1.3 ablation (placebo): cell_152 paired treatment with policy.state_scramble true. config/adaptive-generalization-counterfactual-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_statescramble_paired
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-generalization-counterfactual-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+        realization_context: true
+        state_scramble: true
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_153_plan2_1_evidence_closed_loop:
+    description: "Plan 2.1 evidence-bearing held-out baseline: frozen closed-loop adaptation contract policy on config/adaptive-plan2-1-evidence-bearing-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_1_evidence_closed_loop
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-plan2-1-evidence-bearing-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: false
+
+  cell_154_plan2_1_evidence_repeat_contextual:
+    description: "Plan 2.1 evidence-bearing held-out treatment: frozen cell_149 repeat-contextual realization policy on config/adaptive-plan2-1-evidence-bearing-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_1_evidence_repeat_contextual
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-plan2-1-evidence-bearing-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+        realization_context: true
+        early_completion_after_successful_no_intervention: true
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
       counterfactual:
         enabled: false
 
@@ -4976,7 +5928,7 @@ profiles:
   #
   # DEPRECATED — Gate B (2026-05-05) confirmed regression vs C3:
   #   strategy_shift_correctness 41.7% (C4) vs 47.8% (C3), at +47% cost.
-  #   See docs/explorations/claude/a13-gate-b-results.md.
+  #   See docs/explorations/claude/2026-05-05-a13-gate-b-results.md.
   # Kept registered so historical traces (run eval-2026-05-05-e58b7da1) remain
   # analysable; do not include in new pre-registrations.
   # Reachable via: node scripts/eval-cli.js run --profiles cell_113_a13_C4_validator
@@ -5016,7 +5968,7 @@ profiles:
   # (claude-code:sonnet) so the only varying factor is the runner.
   # NOT reachable via eval-cli (runner: standard but bespoke scenario shape) —
   # run via: node scripts/run-dialogue-engine-trap-baseline.js --profile=cell_114_dialogue_engine_trap_baseline --runs=4
-  # Rationale: docs/explorations/claude/p22-p23-parking-note.md "Closing the dialogue-engine gap".
+  # Rationale: docs/explorations/claude/2026-05-10-p22-p23-parking-note.md "Closing the dialogue-engine gap".
   cell_114_dialogue_engine_trap_baseline:
     description: "Cross-architecture baseline: tutor-core's standard single-agent ego (prompt_type base, no superego) on the adaptive trap scenarios with a scripted-trap learner — the non-LangGraph analogue of cell_111. Post-hoc, exploratory (not in the A13 pre-reg). Run via scripts/run-dialogue-engine-trap-baseline.js."
     runner: standard
@@ -5055,7 +6007,7 @@ profiles:
   # will throw "unknown architecture: bilateral_tom" at the index.js switch
   # — the intended failure mode (no silent fallback to state_policy).
   #
-  # Pre-registration: docs/explorations/claude/p2-bilateral-tom-pre-registration.md
+  # Pre-registration: docs/explorations/claude/2026-05-05-p2-bilateral-tom-pre-registration.md
   # Lock-time prerequisites:
   #   - this cell config + EVAL_ONLY_PROFILES registration (this commit)
   #   - bilateral_tom graph branch + stateSchema extensions (separate commit)
@@ -5063,7 +6015,7 @@ profiles:
   #   - scripts/analyze-tom-accuracy.js + scripts/analyze-collapse-rates.js (separate commit)
   # Reachable via: node scripts/eval-cli.js run --profiles cell_115_bilateral_tom
   cell_115_bilateral_tom:
-    description: "P2 cell C5: bilateral ToM on top of state_policy. Inserts tutorTomTracker between learnerProfileUpdate and tutorEgoInitial; emits paired summaryText + hypothesizedLearnerPerceptionOfTutor + FANToM-style probes. Pilot run on Sonnet 4.6 via local CLI (Max-plan subscription) per docs/explorations/claude/primitives-qualitative-pilot-design.md."
+    description: "P2 cell C5: bilateral ToM on top of state_policy. Inserts tutorTomTracker between learnerProfileUpdate and tutorEgoInitial; emits paired summaryText + hypothesizedLearnerPerceptionOfTutor + FANToM-style probes. Pilot run on Sonnet 4.6 via local CLI (Max-plan subscription) per docs/explorations/claude/2026-05-10-primitives-qualitative-pilot-design.md."
     runner: adaptive
     factors:
       prompt_type: adaptive_bilateral_tom
@@ -5095,7 +6047,7 @@ profiles:
   # user prompt so the ego can actually see them. Tests whether the
   # cell_111-vs-cell_115 gap on polite_false_mastery_v1 (the
   # *right-action-no-purchase* phenomenon documented in
-  # docs/explorations/claude/primitives-qualitative-pilot-findings.md §3.4)
+  # docs/explorations/claude/2026-05-10-primitives-qualitative-pilot-findings.md §3.4)
   # is closable by prompt addition alone, or whether the gap requires
   # bilateral-ToM apparatus.
   # Reachable via: node scripts/eval-cli.js run --profiles cell_116_recognition_named_patterns
@@ -5129,7 +6081,7 @@ profiles:
   # hypothesizedLearnerPerceptionOfTutor + tomProbes), but swaps the ego
   # node for tutorEgoInitialNamedPatterns — i.e. the same prompt addition
   # that cell_116 layers onto cell_111. Motivated by the 3-arm pilot result
-  # in docs/explorations/claude/primitives-qualitative-pilot-findings.md:
+  # in docs/explorations/claude/2026-05-10-primitives-qualitative-pilot-findings.md:
   # cell_116 closed the polite_false_mastery gap (right-action-no-purchase),
   # cell_115 caught the false_confusion non-dialectical presupposition that
   # cell_116 missed. Each intervention won on a different scenario family,
@@ -5166,7 +6118,7 @@ profiles:
   # (confidence + lastEvidence only). Strips misconceptions, agencySignal,
   # zpdEstimate. Tests whether structured profile beyond confidence is doing
   # real work (H2.1 in p2-followup-pre-registration) or is cosmetic (H2.3).
-  # Pre-reg: docs/explorations/claude/p2-followup-pre-registration.md §P2.2.
+  # Pre-reg: docs/explorations/claude/2026-05-10-p2-followup-pre-registration.md §P2.2.
   # Reachable via: node scripts/eval-cli.js run --profiles cell_118_state_policy_minimal_profile
   cell_118_state_policy_minimal_profile:
     description: "State-schema ablation: state_policy with minimal profile (confidence + lastEvidence only). Strips misconceptions, agencySignal, zpdEstimate. Tests whether structured profile beyond confidence carries strategy-shift signal."
@@ -5197,7 +6149,7 @@ profiles:
   # Profile keeps confidence, agencySignal, zpdEstimate, lastEvidence. Tests
   # whether explicit misconception tracking is necessary or redundant with
   # lastEvidence's quoted-dialogue anchor.
-  # Pre-reg: docs/explorations/claude/p2-followup-pre-registration.md §P2.2.
+  # Pre-reg: docs/explorations/claude/2026-05-10-p2-followup-pre-registration.md §P2.2.
   # Reachable via: node scripts/eval-cli.js run --profiles cell_119_state_policy_no_misconceptions
   cell_119_state_policy_no_misconceptions:
     description: "State-schema ablation: state_policy without the misconceptions array. Profile keeps confidence, agencySignal, zpdEstimate, lastEvidence. Tests whether explicit misconception tracking is necessary or redundant."
@@ -5228,7 +6180,7 @@ profiles:
   # Profile keeps confidence, misconceptions, zpdEstimate, lastEvidence. Tests
   # whether the 5-state agency enum drives repair_affective discrimination
   # (H2.2 in p2-followup-pre-registration).
-  # Pre-reg: docs/explorations/claude/p2-followup-pre-registration.md §P2.2.
+  # Pre-reg: docs/explorations/claude/2026-05-10-p2-followup-pre-registration.md §P2.2.
   # Reachable via: node scripts/eval-cli.js run --profiles cell_120_state_policy_no_agency_signal
   cell_120_state_policy_no_agency_signal:
     description: "State-schema ablation: state_policy with agencySignal forced to 'unknown' constant. Profile keeps confidence, misconceptions, zpdEstimate, lastEvidence. Tests whether agency enum drives repair_affective discrimination."
@@ -5379,7 +6331,7 @@ profiles:
   # ONLY changed dimension is the trap battery. v2 scenarios commit to one
   # within-family cousin per scenario (no any-of lists) so strict_shift_correctness
   # is no longer satisfiable by family-match alone.
-  # Pre-reg: docs/explorations/claude/p2-followup-pre-registration.md §P2.1.
+  # Pre-reg: docs/explorations/claude/2026-05-10-p2-followup-pre-registration.md §P2.1.
   # Reachable via: node scripts/eval-cli.js run --profiles cell_111_a13_C1_recognition_only_v2
   cell_111_a13_C1_recognition_only_v2:
     description: "P2.1 within-family probe: cell_111 architecture (recognition_only, single-pass) on v2 trap scenarios that lock one within-family cousin per scenario. Tests whether the family-match advantage of bilateral_tom cells reflects within-family discrimination or a confound."
@@ -5496,7 +6448,7 @@ profiles:
   # than a description of it. Variant A is single-pass (cell_121); Variant B
   # keeps the state_policy ego/superego/revision pathway with the id-authored
   # prompt threaded into the ego node (cell_122). Hypotheses P1-P3 in
-  # docs/explorations/claude/bilateral-tom-id-director-crossover-design.md.
+  # docs/explorations/claude/2026-05-10-bilateral-tom-id-director-crossover-design.md.
 
   # Reachable via: node scripts/eval-cli.js run --profiles cell_121_bilateral_tom_id_director_v1
   cell_121_bilateral_tom_id_director_v1:

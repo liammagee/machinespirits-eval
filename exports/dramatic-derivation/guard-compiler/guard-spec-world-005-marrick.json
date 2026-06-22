@@ -1,0 +1,292 @@
+{
+  "schema": "dramatic-derivation.guard-compiler.v0.guard-spec",
+  "compiler": {
+    "version": "p1a-replay-slice",
+    "mode": "static_replay_first",
+    "onlineLlmGuardAuthoring": false
+  },
+  "world": {
+    "id": "world_005_marrick",
+    "title": "The Light Shillings"
+  },
+  "guards": {
+    "hidden_pacing": {
+      "objective": "avoid_tempo_starvation",
+      "inputs": [
+        "proof_distance",
+        "release_ledger",
+        "release_calendar",
+        "aporia_window"
+      ],
+      "forbiddenTutorView": [
+        "proof_distance",
+        "proof_path",
+        "secret",
+        "D_arithmetic"
+      ],
+      "releaseLatitude": 2,
+      "actions": [
+        "hold_release",
+        "license_release"
+      ],
+      "releaseCorridors": [
+        {
+          "premise": "p_alloy",
+          "scheduledTurn": 4,
+          "licensedTurns": [
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "safeTurns": [
+            3,
+            4,
+            5,
+            6
+          ],
+          "unsafeTurns": [
+            {
+              "turn": 2,
+              "verdict": "aporia",
+              "endTurn": 7
+            }
+          ],
+          "referenceLedger": [
+            {
+              "turn": 2,
+              "premiseId": "m_caster"
+            }
+          ]
+        },
+        {
+          "premise": "p_crucible",
+          "scheduledTurn": 8,
+          "licensedTurns": [
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "safeTurns": [
+            6,
+            7,
+            8,
+            9
+          ],
+          "unsafeTurns": [
+            {
+              "turn": 10,
+              "verdict": "aporia",
+              "endTurn": 9
+            }
+          ],
+          "referenceLedger": [
+            {
+              "turn": 2,
+              "premiseId": "m_caster"
+            },
+            {
+              "turn": 4,
+              "premiseId": "p_alloy"
+            },
+            {
+              "turn": 6,
+              "premiseId": "m_graver"
+            }
+          ]
+        },
+        {
+          "premise": "p_flaw",
+          "scheduledTurn": 14,
+          "licensedTurns": [
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "safeTurns": [
+            13,
+            14,
+            15
+          ],
+          "unsafeTurns": [
+            {
+              "turn": 12,
+              "verdict": "disengagement",
+              "endTurn": 17
+            },
+            {
+              "turn": 16,
+              "verdict": "aporia",
+              "endTurn": 15
+            }
+          ],
+          "referenceLedger": [
+            {
+              "turn": 2,
+              "premiseId": "m_caster"
+            },
+            {
+              "turn": 4,
+              "premiseId": "p_alloy"
+            },
+            {
+              "turn": 6,
+              "premiseId": "m_graver"
+            },
+            {
+              "turn": 8,
+              "premiseId": "p_crucible"
+            },
+            {
+              "turn": 10,
+              "premiseId": "p_caster"
+            },
+            {
+              "turn": 12,
+              "premiseId": "m_caught"
+            }
+          ]
+        },
+        {
+          "premise": "p_graver",
+          "scheduledTurn": 18,
+          "licensedTurns": [
+            16,
+            17,
+            18,
+            19,
+            20
+          ],
+          "safeTurns": [
+            17,
+            18,
+            19
+          ],
+          "unsafeTurns": [
+            {
+              "turn": 16,
+              "verdict": "disengagement",
+              "endTurn": 21
+            },
+            {
+              "turn": 20,
+              "verdict": "disengagement",
+              "endTurn": 19
+            }
+          ],
+          "referenceLedger": [
+            {
+              "turn": 2,
+              "premiseId": "m_caster"
+            },
+            {
+              "turn": 4,
+              "premiseId": "p_alloy"
+            },
+            {
+              "turn": 6,
+              "premiseId": "m_graver"
+            },
+            {
+              "turn": 8,
+              "premiseId": "p_crucible"
+            },
+            {
+              "turn": 10,
+              "premiseId": "p_caster"
+            },
+            {
+              "turn": 12,
+              "premiseId": "m_caught"
+            },
+            {
+              "turn": 14,
+              "premiseId": "p_flaw"
+            }
+          ]
+        }
+      ]
+    },
+    "proof_debt": {
+      "objective": "repair_released_critical_premises_that_decay",
+      "trigger": {
+        "released": true,
+        "proofCritical": true,
+        "absentOrCorrupted": true,
+        "restoreLowersD": true
+      },
+      "exposeToTutor": [
+        "premiseId",
+        "surface",
+        "sinceTurn"
+      ],
+      "forbid": [
+        "raw_board",
+        "corruption_ledger",
+        "proof_path",
+        "secret",
+        "D_arithmetic"
+      ],
+      "actions": [
+        "restore_before_new_work"
+      ]
+    },
+    "visible_projection": {
+      "candidate": true,
+      "status": "uncertified_topology_risk",
+      "statusReason": "secret proof has disjoint top-level branches; local visible uptake can falsely imply global readiness",
+      "inputs": [
+        "release_ledger",
+        "transcript_surface",
+        "prior_exhibit_surface"
+      ],
+      "forbiddenInputs": [
+        "proof_distance",
+        "proof_path",
+        "secret",
+        "raw_board",
+        "corruption_ledger"
+      ],
+      "features": [
+        "turns_since_release",
+        "learner_echo_of_current_exhibit",
+        "hedging_or_gap_markers",
+        "content_length_trend",
+        "branch_coverage_surface_markers"
+      ],
+      "thresholds": {
+        "echoThreshold": 0.34,
+        "staleCap": 3,
+        "hedgeRise": 0.5,
+        "lenDrop": -3,
+        "windowSize": 2
+      },
+      "validation": {
+        "compareToHiddenReference": true,
+        "failClosedToHidden": true,
+        "catastrophicFalseReleaseAllowed": false
+      }
+    }
+  },
+  "auditSuite": {
+    "nonLeak": [
+      "no proof-distance arithmetic in tutor-visible text",
+      "secret predicate never supplied to tutor",
+      "raw learner board never supplied to tutor",
+      "proof path never supplied to tutor",
+      "corruption ledger never supplied to tutor",
+      "proof-debt tutor view limited to premiseId/surface/sinceTurn",
+      "positive control proves hidden harness ledger carries arithmetic absent from tutor view"
+    ],
+    "replay": [
+      "detector-split report over archived arms",
+      "hidden-vs-visible agreement report where visible projection is proposed",
+      "played-release solvency audit by guard state"
+    ]
+  }
+}

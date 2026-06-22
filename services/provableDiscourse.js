@@ -2180,6 +2180,41 @@ function loadClaimInventory(inventoryPath) {
   }
 }
 
+function relativePath(baseDir, filePath) {
+  return filePath ? path.relative(baseDir, filePath) : null;
+}
+
+function buildPaperSources(baseDir, spec, epoch) {
+  const legacyPaperPath = resolvePath(baseDir, spec.paper_path);
+  const paper2Path = spec.paper2_path ? resolvePath(baseDir, spec.paper2_path) : null;
+  const paper2Available = paper2Path && fs.existsSync(paper2Path);
+  const sources = [];
+  let mode = 'legacy_primary';
+
+  if (epoch === '2.0' && paper2Available) {
+    sources.push(paper2Path);
+    mode = 'paper2_primary';
+  } else if (epoch === 'all') {
+    sources.push(legacyPaperPath);
+    if (paper2Available && paper2Path !== legacyPaperPath) sources.push(paper2Path);
+    mode = paper2Available ? 'combined_all' : 'legacy_primary';
+  } else {
+    sources.push(legacyPaperPath);
+    if (epoch === '2.0') mode = 'paper2_missing_legacy_fallback';
+  }
+
+  return {
+    sources,
+    mode,
+    legacyPaperPath,
+    paper2Path: paper2Available ? paper2Path : null,
+  };
+}
+
+function isTheoreticalClaim(claim) {
+  return claim?.evidence?.type === 'theoretical' || claim?.assertion?.op === 'theoretical';
+}
+
 function loadClaimsFromImportPath(importPath) {
   if (!importPath || !fs.existsSync(importPath)) return { claims: [], symmetry_rules: [] };
   const ext = path.extname(importPath).toLowerCase();
@@ -2404,18 +2439,14 @@ export function runProvableDiscourseAudit({
     .map((importPath) => resolvePath(baseDir, importPath))
     .map((resolvedPath) => loadClaimsFromImportPath(resolvedPath));
 
-  const resolvedPaperPath = resolvePath(baseDir, spec.paper_path);
-  const resolvedPaper2Path = spec.paper2_path ? resolvePath(baseDir, spec.paper2_path) : null;
+  const paperSources = buildPaperSources(baseDir, spec, epoch);
   const resolvedManifestPath = resolvePath(baseDir, spec.manifest_path);
   const resolvedDbPath = resolvePath(baseDir, spec.db_path);
   const resolvedAuditPath = resolvePath(baseDir, spec.audit_report_path);
   const resolvedSnapshotPath = resolvePath(baseDir, spec.snapshot_path);
   const resolvedInventoryPath = resolvePath(baseDir, spec.inventory_path);
 
-  let paperText = fs.readFileSync(resolvedPaperPath, 'utf8');
-  if (resolvedPaper2Path && fs.existsSync(resolvedPaper2Path)) {
-    paperText += '\n' + fs.readFileSync(resolvedPaper2Path, 'utf8');
-  }
+  const paperText = paperSources.sources.map((sourcePath) => fs.readFileSync(sourcePath, 'utf8')).join('\n');
   const manifest = JSON.parse(fs.readFileSync(resolvedManifestPath, 'utf8'));
   const auditChecks = parseAuditChecks(resolvedAuditPath);
   const inventory = loadClaimInventory(resolvedInventoryPath);
@@ -2426,7 +2457,11 @@ export function runProvableDiscourseAudit({
   const report = {
     started_at: now,
     spec_path: path.relative(baseDir, resolvedSpecPath),
-    paper_path: path.relative(baseDir, resolvedPaperPath),
+    paper_path: relativePath(baseDir, paperSources.sources[0]),
+    paper_paths: paperSources.sources.map((sourcePath) => relativePath(baseDir, sourcePath)),
+    paper_source_mode: paperSources.mode,
+    legacy_paper_path: relativePath(baseDir, paperSources.legacyPaperPath),
+    paper2_path: relativePath(baseDir, paperSources.paper2Path),
     manifest_path: path.relative(baseDir, resolvedManifestPath),
     db_path: path.relative(baseDir, resolvedDbPath),
     audit_report_path: resolvedAuditPath ? path.relative(baseDir, resolvedAuditPath) : null,
@@ -2558,23 +2593,28 @@ export function runProvableDiscourseAudit({
             }
           }
 
-          const previousSnapshot = snapshot?.claims?.[claim.id];
-          const currentFingerprint = stableSerialize(evidence.fingerprint || {});
-          if (refreshSnapshot) {
-            snapshot.claims[claim.id] = {
-              updated_at: now,
-              fingerprint: evidence.fingerprint || {},
-              actual_value: evidence.value,
-            };
-          } else if (previousSnapshot) {
-            const previousFingerprint = stableSerialize(previousSnapshot.fingerprint || {});
-            if (currentFingerprint !== previousFingerprint) {
-              result.status = mergeStatus(result.status, 'warn');
-              result.messages.push('Underlying evidence fingerprint changed since last snapshot (stale-claim risk)');
-            }
+          if (isTheoreticalClaim(claim)) {
+            result.details.proof_status = 'theoretical_registration';
+            result.details.snapshot_required = false;
           } else {
-            result.status = mergeStatus(result.status, 'warn');
-            result.messages.push('No snapshot baseline for this claim (run with --refresh-snapshot)');
+            const previousSnapshot = snapshot?.claims?.[claim.id];
+            const currentFingerprint = stableSerialize(evidence.fingerprint || {});
+            if (refreshSnapshot) {
+              snapshot.claims[claim.id] = {
+                updated_at: now,
+                fingerprint: evidence.fingerprint || {},
+                actual_value: evidence.value,
+              };
+            } else if (previousSnapshot) {
+              const previousFingerprint = stableSerialize(previousSnapshot.fingerprint || {});
+              if (currentFingerprint !== previousFingerprint) {
+                result.status = mergeStatus(result.status, 'warn');
+                result.messages.push('Underlying evidence fingerprint changed since last snapshot (stale-claim risk)');
+              }
+            } else {
+              result.status = mergeStatus(result.status, 'warn');
+              result.messages.push('No snapshot baseline for this claim (run with --refresh-snapshot)');
+            }
           }
         } catch (error) {
           result.status = mergeStatus(result.status, 'fail');

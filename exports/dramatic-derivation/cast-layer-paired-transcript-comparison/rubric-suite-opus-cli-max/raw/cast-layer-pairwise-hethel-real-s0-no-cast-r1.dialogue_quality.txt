@@ -1,0 +1,35 @@
+{
+  "scores": {
+    "pedagogical_progression": {
+      "score": 4,
+      "reasoning": "Clear surface-to-deep arc: the town's blame-Reyner assumption (T1) → place of failure / crown break (T4) → cause / green mortar struck early (T9) → track / repeated crowsfoot (T13) → Caudle yard (T17) → named hand, Oswin (T22). Each staged reveal opens a genuinely new inferential step. Held to 4 by a real plateau at T10–T12, which restate the same 'cause settled / hand blank / Reyner liable-not-culpable' content three times before new evidence arrives."
+    },
+    "dialogical_responsiveness": {
+      "score": 4,
+      "reasoning": "Tight turn-coupling: the learner absorbs the tutor's 'slow that last line down' and confines itself to the photo sheet (T14), and the tutor catches and reins in the learner's over-reach on the morning-after prop-haul (T20→T21). Both consistently engage the other's specific words. Capped at 4 by the tutor's formulaic scaffolding frame ('smaller job', 'one small step', 'what does it add and what does it still not add'), which recurs as scripted form even where the content is responsive."
+    },
+    "knowledge_co_construction": {
+      "score": 4,
+      "reasoning": "More than guided transmission: the learner supplies unprompted inferences the tutor did not state — green-arch-at-the-crown failure behavior (T4) and 'one source, not a mix of yards' from the uniform crowsfoot (T14) — and assembles the closing synthesis itself (T21–T22). Not a 5 because the finding is plainly tutor-steered toward a pre-determined chain and the decisive facts are handed in by the staged file reveals rather than produced jointly by the two parties."
+    },
+    "productive_tension_management": {
+      "score": 4,
+      "reasoning": "The drama's engine is the managed temptation to leap from Reyner's name and bond to blame; the tutor repeatedly holds the learner at an un-earned gap (T5, T7, T10, T12) and the learner itself resists the 'suggestive' morning-after haul (T20). Handled generatively throughout. Short of 5 because there is no genuine inter-party disagreement, confusion, or impasse-breakthrough — the tension is a single, smoothly-paced withholding rather than an explored struggle."
+    },
+    "transformation_evidence": {
+      "score": 4,
+      "reasoning": "Clear learner evolution: from only being able to sort 'shown' vs 'assumed' (T1) to making independent inferences and self-policing over-reach (T14, T20) and landing a grounded recognition (T22). Held to 4 because the learner's disciplined framing is constant from the first turn and the tutor does not change at all — what evolves is the state of the case more than either party's stance."
+    },
+    "interactional_coherence": {
+      "score": 5,
+      "reasoning": "Exemplary arc: opening (separate shown from assumed), staged development (place → cause → track → yard → hand), and resolution that lands exactly the finding the opening set up (T22). No dropped threads or tangents; every turn connects explicitly to the prior turn and to its staged reveal, and the closing sentence is deliberately completed across the T22 turn boundary."
+    }
+  },
+  "overall_score": 78,
+  "summary": "A strong, highly coherent Socratic derivation-drama with a clean surface-to-recognition arc that culminates in a well-earned anagnorisis (Oswin brought the span down). Consistently responsive and genuinely co-constructive in places — the learner's unprompted 'one-source' and green-arch inferences — with the town's rush-to-blame temptation managed as the engine of the method. Held below the top band by formulaic tutor scaffolding, a mid-dialogue plateau (T10–T12), a tutor-steered pre-determined target that limits true co-construction and inter-party tension, and a minor public-formalism leak.",
+  "caveats": [
+    "Public-discourse leak: the learner invokes 'Rule 7' by its identifier in T8 and T9 — exactly the kind of private rule-ID the instructions say not to reward. The run summary's regex reported 0 leaks but missed this. Minor (2 of 22 turns) and the closing maxim is verbalized naturally in T22 ('who pulls a green arch's props, that hand felled it'), but it slightly dents the naturalness of the public exchange.",
+    "The encounter is an engineered derivation with a known target, so 'co-construction' and 'tension' are partly staged by the file-reveal sequence rather than emergent; scored on what the public page shows.",
+    "Transformation is one-directional — the learner evolves, the tutor is static by design."
+  ]
+}

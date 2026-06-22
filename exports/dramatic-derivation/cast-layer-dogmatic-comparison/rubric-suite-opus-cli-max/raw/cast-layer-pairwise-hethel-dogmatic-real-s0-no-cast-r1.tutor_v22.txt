@@ -1,0 +1,43 @@
+{
+  "scores": {
+    "perception_quality": {
+      "score": 4,
+      "reasoning": "Tutor tracks the learner's specific recurring habit — collapsing liability, cause, and the acting hand onto Reyner's name — and names it at the right moment ('You said the cause is settled but the name isn't lifted from your draft', T13; 'I hear that pull toward the draft', T16), building on accumulated understanding across turns. Held below 5 because the perception centers almost entirely on that one pattern rather than a fuller read of the learner's state."
+    },
+    "pedagogical_craft": {
+      "score": 5,
+      "reasoning": "Exemplary decomposition: the tutor repeatedly shrinks a tangled inference chain into one discriminable step ('Make this smaller', T14; 'Split the next line in two', T18; 'one job at a time', T20), each anchored to specific evidence (green crown bed, crowsfoot, toll book), managing cognitive load by isolating a single inference at a time and giving a clear next move each turn."
+    },
+    "elicitation_quality": {
+      "score": 5,
+      "reasoning": "Nearly every turn is a genuine reasoning prompt — 'what has that measure fixed for us, and what has it still not answered?' (T4); 'what did this new detail just change about the case you were ready to close?' (T9). The learner constructs every inference and reaches the final name himself; the few declarative turns consolidate then re-open tension rather than lecturing."
+    },
+    "adaptive_responsiveness": {
+      "score": 4,
+      "reasoning": "Strategy demonstrably shifts: open evidence-examination (T1–T9) gives way to active containment once the learner's over-reach is clear ('make it smaller', 'don't name anyone', 'keep the lines separate', T14–T19), explicitly cued at T16 ('that's exactly the pressure to slow down'). Below 5 because the underlying question-loop stays fixed and the meta-acknowledgment of the shift is implicit."
+    },
+    "recognition_quality": {
+      "score": 4,
+      "reasoning": "Treats the learner's liability reasoning as valid rather than wrong — relocates it instead of overriding ('Reyner may answer for the fall', T10), distinguishes the learner's two 'routes' respectfully (T7), and preserves the learner's autonomy to name the culprit himself at T20. Capped at 4 by tightly tutor/stage-controlled evidence flow and a somewhat formulaic stance."
+    },
+    "productive_difficulty": {
+      "score": 5,
+      "reasoning": "The whole sequence sustains the gap between liability, cause, and the unnamed hand, refusing premature closure ('the blank stays empty until the file shows who actually moved that timber', T18; the room 'sits with the cause separated from the hand', T11). The learner must do genuine intellectual work at every step right up to the recognition."
+    },
+    "epistemic_integrity": {
+      "score": 4,
+      "reasoning": "Scrupulous about what each datum does and does not establish ('That settles the cause, not the hand', T12; ownership 'firms up the bond, not the cause', T6), with a patient, partnering tone. Slightly formulaic affirmations ('Good', 'Right') and a restrained, examinerly register keep the warmth functional rather than rich."
+    },
+    "content_accuracy": {
+      "score": 5,
+      "reasoning": "The masonry/arch reasoning is sound and nuanced — green (uncured) lime, centering struck too soon, the crown/keystone as the least-forgiving joint, prop-heads printing the soffit — with no factual errors; the location → cause → agency logic is valid throughout."
+    }
+  },
+  "overall_score": 88,
+  "summary": "A tightly scaffolded derivation drama in which the tutor leads the learner from a fixed 'it's Reyner' conviction to the genuine culprit (Oswin) by relentlessly separating liability from cause from the acting hand. Standout strengths in scaffolding, elicitation, and sustained productive difficulty; the subject-facing dimensions are strong but capped by a formulaic method and tutor-controlled evidence flow.",
+  "caveats": [
+    "Scored on public discourse only; the deterministic proof/derivation gate (D=0, grounded_anagnorisis) is reported separately and not credited here.",
+    "Zero public formalism leaks were present, so no penalty was applied for private-notation bleed — but no formalism was rewarded either.",
+    "The 'Dogmatic Examiner' framing places the dogmatic pressure on the room/town's premature closure, not the tutor; the tutor consistently resists it, and I scored the tutor's conduct, not the room's."
+  ]
+}

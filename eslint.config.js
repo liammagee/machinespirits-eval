@@ -39,6 +39,9 @@ export default [
   {
     // tutor-core/ is vendored (in-housed from @machinespirits/tutor-core, see
     // TUTOR-CORE-INHOUSING.md) — keep it under its own upstream lint rules, not the eval repo's.
+    // *.workflow.js are Workflow-tool scripts: they use top-level await/return and injected
+    // globals (agent/phase/pipeline/args), valid in the Workflow runtime but not parseable as
+    // plain modules — exclude them rather than lint them under app rules.
     ignores: [
       'node_modules/',
       'tutor-core/',
@@ -49,6 +52,7 @@ export default [
       'content/',
       '.test-tmp/',
       '.venv/',
+      '**/*.workflow.js',
     ],
   },
 ];

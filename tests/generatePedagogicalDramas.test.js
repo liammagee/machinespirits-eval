@@ -9,18 +9,34 @@ import yaml from 'yaml';
 import { prefixThroughTutorTurn, renderTurns } from '../scripts/extract-poetics-prefix-baselines.js';
 import {
   attachApproaches,
+  ClaudePersistentPool,
+  curriculumScriptNotesForDrama,
   formatPublicTurnText,
   intrusiveStageDirectionFailures,
   keyItemFor,
   loadApproachDatabases,
+  makeCallTelemetryRecorder,
   noCuePrematureClosureFailures,
   noCueReframeLeakageFailures,
   pairedBranchDefinitions,
+  parseArgs,
   qualityWarningsFor,
   reframeMatchStats,
+  renderHeldOutTranscript,
+  renderTranscript,
+  resolveApiModel,
+  resolveRoleRoute,
+  selectFirstLessonDrama,
   stageDirectionStyleFor,
+  usage,
+  withAffectiveAdaptationPolicy,
+  withControlEndingPolicy,
   withPairedDirectorRevisitCue,
   withTutorAdaptationPolicy,
+  withUsage,
+  withWorldAdaptationConstraints,
+  writeCallTelemetryArtifacts,
+  writePartialTurnArtifacts,
 } from '../scripts/generate-pedagogical-dramas.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -48,6 +64,352 @@ function warningsForReframeLine({ tid, dramaId, anchor, learnerText }) {
 }
 
 describe('generate-pedagogical-dramas', () => {
+  it('prints CLI help without validating generation inputs', () => {
+    assert.equal(parseArgs(['--help']).help, true);
+    assert.equal(parseArgs(['-h', '--role-map', 'not-a-valid-map']).help, true);
+    assert.match(usage(), /Usage:\n  node scripts\/generate-pedagogical-dramas\.js \[options\]/);
+    assert.match(usage(), /--role-map MAP/);
+    assert.match(usage(), /api:<alias-or-slug>/);
+
+    const output = execFileSync('node', ['scripts/generate-pedagogical-dramas.js', '--help'], {
+      cwd: ROOT,
+      encoding: 'utf8',
+    });
+    assert.match(output, /--first-lesson/);
+    assert.match(output, /--generation-concurrency N/);
+    assert.doesNotMatch(output, /dramas spec not found/);
+  });
+
+  it('parses opt-in persistent Claude workers without changing the default bridge', () => {
+    assert.equal(parseArgs([]).claudePersistentWorkers, false);
+    assert.equal(parseArgs(['--claude-persistent-workers']).claudePersistentWorkers, true);
+  });
+
+  it('parses API-backed role-map routes with provider aliases and slugs', () => {
+    const args = parseArgs([
+      '--role-map',
+      'director=codex,tutor_ego=api:glm5_2,tutor_superego=codex,learner=api:z-ai/glm-5.2',
+    ]);
+
+    assert.deepEqual(args.roleMap, {
+      director: 'codex',
+      tutor_ego: 'api:glm5_2',
+      tutor_superego: 'codex',
+      learner: 'api:z-ai/glm-5.2',
+    });
+    assert.equal(resolveApiModel('glm5_2'), 'z-ai/glm-5.2');
+    assert.equal(resolveApiModel('openrouter.glm5_2'), 'z-ai/glm-5.2');
+    assert.equal(
+      resolveRoleRoute('tutor_ego', args.roleMap, 'codex', 'sonnet').apiModelKey,
+      'glm5_2',
+    );
+    assert.equal(
+      resolveRoleRoute('learner_superego', args.roleMap, 'codex', 'sonnet').apiModelKey,
+      'z-ai/glm-5.2',
+    );
+    assert.equal(resolveRoleRoute('director', args.roleMap, 'codex', 'sonnet').backend, 'codex');
+
+    assert.throws(
+      () => parseArgs(['--role-map', 'tutor_ego=api:not-a-known-alias']),
+      /not a known OpenRouter alias/,
+    );
+    assert.throws(
+      () => parseArgs(['--role-map', 'tutor_ego=codex:z-ai/glm-5.2']),
+      /only include a model suffix/,
+    );
+  });
+
+  it('parses control-ending and call-telemetry output paths', () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'drama-gen-telemetry-args-'));
+    const jsonPath = path.join(tmp, 'calls.json');
+    const csvPath = path.join(tmp, 'calls.csv');
+    const args = parseArgs([
+      '--control-ending',
+      'hold',
+      '--call-telemetry-json',
+      jsonPath,
+      '--call-telemetry-csv',
+      csvPath,
+    ]);
+
+    assert.equal(args.controlEndingPolicy, 'hold');
+    assert.equal(args.traceCalls, true);
+    assert.equal(args.callTelemetryJsonPath, jsonPath);
+    assert.equal(args.callTelemetryCsvPath, csvPath);
+    assert.throws(() => parseArgs(['--control-ending', 'breakthrough']), /default\|hold/);
+  });
+
+  it('persists call telemetry as json and csv without prompt contents', () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'drama-gen-call-telemetry-'));
+    const jsonPath = path.join(tmp, 'call-telemetry.json');
+    const csvPath = path.join(tmp, 'call-telemetry.csv');
+    const recorder = makeCallTelemetryRecorder({ enabled: true, jsonPath, csvPath });
+
+    recorder.record({
+      startedAt: Date.parse('2026-06-20T00:00:00.000Z'),
+      finishedAt: Date.parse('2026-06-20T00:00:01.250Z'),
+      requestedModel: 'haiku',
+      systemPrompt: 'secret system prompt that must not be written',
+      userPrompt: 'secret user prompt that must not be written',
+      opts: { agentRole: 'learner_ego' },
+      response: {
+        content: 'public output',
+        provider: 'claude',
+        model: 'haiku',
+        latencyMs: 1250,
+        provenance: {
+          backend: 'claude',
+          cli: 'claude-stream-json',
+          model: 'haiku',
+          reasoningEffort: 'low',
+          agentRole: 'learner_ego',
+          worker: { persistent: true, key: 'worker-key', reused: false, created: true },
+        },
+      },
+    });
+
+    const payload = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+    const csv = fs.readFileSync(csvPath, 'utf8');
+    assert.equal(payload.summary.count, 1);
+    assert.equal(payload.records[0].role, 'learner_ego');
+    assert.equal(payload.records[0].prompt_chars.system, 'secret system prompt that must not be written'.length);
+    assert.equal(payload.records[0].worker.created, true);
+    assert.doesNotMatch(JSON.stringify(payload), /secret system prompt/);
+    assert.doesNotMatch(csv, /secret user prompt/);
+    assert.match(csv, /learner_ego/);
+  });
+
+  it('computes worker reuse/create flags in the persistent pool (same prompt reuses, new prompt creates)', async () => {
+    const createdKeys = [];
+    const makeFakeWorker = (opts) => ({
+      opts,
+      call: async (_userPrompt, role) => ({
+        content: `fake ${role} reply`,
+        latencyMs: 3,
+        provenance: { backend: 'claude', agentRole: role },
+      }),
+      close() {},
+    });
+    const pool = new ClaudePersistentPool({
+      model: 'sonnet',
+      effort: 'low',
+      createWorker: (opts) => {
+        createdKeys.push(opts.key);
+        return makeFakeWorker(opts);
+      },
+    });
+
+    const first = await pool.call('STATIC-SYS-A', 'turn-1 dynamic', 'tutor_ego');
+    const second = await pool.call('STATIC-SYS-A', 'turn-2 dynamic', 'tutor_ego'); // same static prompt → reuse
+    const third = await pool.call('STATIC-SYS-B', 'turn-3 dynamic', 'tutor_ego'); // new static prompt → new worker
+
+    // The pool COMPUTES these flags (existed-before-insert), as opposed to the
+    // caller supplying them — the behavioral coverage the prior telemetry test lacked.
+    assert.deepEqual([first.provenance.worker.created, first.provenance.worker.reused], [true, false]);
+    assert.deepEqual([second.provenance.worker.created, second.provenance.worker.reused], [false, true]);
+    assert.deepEqual([third.provenance.worker.created, third.provenance.worker.reused], [true, false]);
+
+    // Worker key is role:model:effort:hash(systemPrompt): stable across the same
+    // static prompt, distinct when it changes — the reuse the prompt-split exists to enable.
+    assert.equal(first.provenance.worker.key, second.provenance.worker.key);
+    assert.notEqual(first.provenance.worker.key, third.provenance.worker.key);
+    assert.equal(createdKeys.length, 2);
+  });
+
+  it('records token/cost telemetry as null when a backend reports no usage, numeric when it does', () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'drama-gen-usage-telemetry-'));
+    const jsonPath = path.join(tmp, 'calls.json');
+    const csvPath = path.join(tmp, 'calls.csv');
+    const recorder = makeCallTelemetryRecorder({ enabled: true });
+
+    // Claude bridge resolves WITHOUT a usage block (the CLI does not echo usage on a
+    // Max-plan subscription window) → unavailable, recorded as null, NOT a real 0.
+    const claudeRecord = recorder.record({
+      startedAt: Date.parse('2026-06-20T00:00:00.000Z'),
+      finishedAt: Date.parse('2026-06-20T00:00:01.000Z'),
+      requestedModel: 'sonnet',
+      systemPrompt: 'sys',
+      userPrompt: 'user',
+      opts: { agentRole: 'tutor_ego' },
+      response: {
+        content: 'public line',
+        provider: 'claude-code',
+        model: 'claude/sonnet',
+        latencyMs: 1000,
+        provenance: { backend: 'claude' },
+      },
+    });
+    assert.deepEqual(claudeRecord.usage, {
+      input_tokens: null,
+      output_tokens: null,
+      total_tokens: null,
+      cost: null,
+    });
+
+    // OpenRouter api bridge returns a real usage block → numeric.
+    const apiRecord = recorder.record({
+      startedAt: Date.parse('2026-06-20T00:00:01.000Z'),
+      finishedAt: Date.parse('2026-06-20T00:00:02.000Z'),
+      requestedModel: 'api/sonnet',
+      systemPrompt: 'sys',
+      userPrompt: 'user',
+      opts: { agentRole: 'tutor_ego' },
+      response: {
+        content: 'public line',
+        provider: 'openrouter',
+        model: 'api/sonnet',
+        latencyMs: 1000,
+        usage: { inputTokens: 120, outputTokens: 40, totalTokens: 160, cost: 0.002 },
+        provenance: { backend: 'api' },
+      },
+    });
+    assert.deepEqual(apiRecord.usage, {
+      input_tokens: 120,
+      output_tokens: 40,
+      total_tokens: 160,
+      cost: 0.002,
+    });
+
+    // The CSV must render unavailable usage as BLANK cells (so a reader cannot mistake
+    // it for a zero-token / zero-cost call), and real usage as numbers.
+    writeCallTelemetryArtifacts({ records: recorder.snapshot(), jsonPath, csvPath });
+    const rows = fs.readFileSync(csvPath, 'utf8').trim().split('\n');
+    const header = rows[0].split(',');
+    const iInput = header.indexOf('input_tokens');
+    const iCost = header.indexOf('cost_usd');
+    const claudeCells = rows[1].split(',');
+    const apiCells = rows[2].split(',');
+    assert.equal(claudeCells[iInput], ''); // blank, not '0'
+    assert.equal(claudeCells[iCost], '');
+    assert.equal(apiCells[iInput], '120');
+    assert.equal(apiCells[iCost], '0.002');
+
+    // Totals treat unavailable as 0 (no NaN) while real usage still sums.
+    const payload = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+    assert.equal(payload.summary.total_input_tokens, 120);
+    assert.equal(payload.summary.total_cost_usd, 0.002);
+  });
+
+  it('withUsage marks usage unavailable (null) for bridges that return no usage block', () => {
+    const provenance = { backend: 'claude', agentRole: 'tutor_ego', promptHashes: { combined: 'abc123' } };
+    const claudeWrapped = withUsage(
+      { content: 'x', latencyMs: 1, provenance },
+      { provider: 'claude-code', model: 'claude/sonnet', provenance },
+    );
+    assert.equal(claudeWrapped.usage.inputTokens, null);
+    assert.equal(claudeWrapped.usage.cost, null);
+
+    const apiProvenance = { backend: 'api', agentRole: 'tutor_ego', promptHashes: { combined: 'def456' } };
+    const apiWrapped = withUsage(
+      {
+        content: 'x',
+        latencyMs: 1,
+        usage: { inputTokens: 10, outputTokens: 5, cost: 0.001 },
+        provenance: apiProvenance,
+      },
+      { provider: 'openrouter', model: 'api/sonnet', provenance: apiProvenance },
+    );
+    assert.equal(apiWrapped.usage.inputTokens, 10);
+    assert.equal(apiWrapped.usage.totalTokens, 15); // derived from input+output when total absent
+    assert.equal(apiWrapped.usage.cost, 0.001);
+  });
+
+  it('parses first-lesson and affective adaptation options', () => {
+    const args = parseArgs([
+      '--first-lesson',
+      '--affective-adaptation-policy',
+      'procedural_sensitive',
+      '--opening-speaker',
+      'tutor',
+    ]);
+    assert.equal(args.firstLesson, true);
+    assert.equal(args.affectiveAdaptationPolicy, 'procedural_sensitive');
+    assert.equal(args.openingSpeaker, 'tutor');
+    assert.throws(() => parseArgs(['--first-lesson', '--only', 'D_AF11']), /either --only or --first-lesson/);
+    assert.throws(() => parseArgs(['--affective-adaptation-policy', 'warmth_only']), /procedural_sensitive/);
+    assert.throws(() => parseArgs(['--opening-speaker', 'peer']), /learner\|tutor\|director/);
+  });
+
+  it('selects the earliest AI Foundations lesson in a drama spec', () => {
+    const first = selectFirstLessonDrama([
+      { id: 'D_AF11_CURRICULUM_ADAPTIVE', curriculum_binding: { module_id: 'AF11' } },
+      { id: 'D_AF1_CURRICULUM_ADAPTIVE', curriculum_binding: { module_id: 'AF1' } },
+      { id: 'D_AF6_CURRICULUM_ADAPTIVE', curriculum_binding: { module_id: 'AF6' } },
+    ]);
+
+    assert.equal(first.curriculum_binding.module_id, 'AF1');
+  });
+
+  it('writes turn-level partial artifacts without creating final transcript names', () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ms-partial-turn-'));
+    try {
+      const args = {
+        outDir: path.join(tmp, 'samples'),
+        delibDir: path.join(tmp, 'delib'),
+        transcriptsDir: path.join(tmp, 'transcripts'),
+        roleMap: null,
+        generator: 'claude',
+        directorMode: 'scene',
+        model: 'sonnet',
+        effort: null,
+        apiModel: 'sonnet',
+        claudePersistentWorkers: true,
+      };
+      const d = {
+        _tid: 'T99',
+        id: 'drama_partial_test',
+        _directorRevisitPolicy: 'none',
+        _directorRevisitAnchor: null,
+        _tutorAdaptationPolicy: 'none',
+        _directorVariationKey: null,
+      };
+      const turn = {
+        turnNumber: 0,
+        phase: 'learner',
+        externalMessage: 'I only trust the headline score.',
+        internalDeliberation: [{ stage: 'ego', content: 'The learner clings to a single metric.' }],
+        timestamp: '2026-06-20T00:00:00.000Z',
+      };
+      const trace = {
+        turns: [turn],
+        metrics: { turnCount: 0 },
+        writingPadSnapshots: { learner: {}, tutor: {} },
+      };
+
+      const artifacts = writePartialTurnArtifacts({
+        args,
+        d,
+        trace,
+        directorPlan: { tutor_adaptation_policy: 'constraint_layer' },
+        runtime: { writingPad: { mode: 'test' } },
+        turn,
+      });
+
+      assert.equal(fs.existsSync(path.join(args.outDir, '_partial', 'T99.txt')), true);
+      assert.equal(fs.existsSync(path.join(args.transcriptsDir, '_partial', 'T99.public.txt')), true);
+      assert.equal(fs.existsSync(path.join(args.transcriptsDir, '_partial', 'T99.full.md')), true);
+      assert.equal(fs.existsSync(path.join(args.transcriptsDir, '_partial', 'T99.stage.md')), true);
+      assert.equal(fs.existsSync(path.join(args.transcriptsDir, '_partial', 'T99.tutor.md')), true);
+      assert.equal(fs.existsSync(path.join(args.transcriptsDir, '_partial', 'T99.learner.md')), true);
+      assert.equal(fs.existsSync(path.join(args.delibDir, '_partial', 'T99.json')), true);
+      assert.equal(fs.existsSync(path.join(args.outDir, 'T99.txt')), false);
+      assert.equal(fs.existsSync(path.join(args.transcriptsDir, 'T99.public.txt')), false);
+      assert.equal(fs.existsSync(path.join(args.delibDir, 'T99.json')), false);
+
+      const partialTrace = JSON.parse(fs.readFileSync(path.join(args.delibDir, '_partial', 'T99.json'), 'utf8'));
+      assert.equal(partialTrace.partial, true);
+      assert.equal(partialTrace.quality_status, 'running');
+      assert.equal(partialTrace.last_flushed_turn.phase, 'learner');
+      assert.equal(partialTrace.run.status, 'running');
+      assert.equal(partialTrace.run.partial, true);
+      assert.ok(partialTrace.run.model.includes('#persistent-workers'));
+      assert.match(artifacts.sample, /_partial\/T99\.txt$/);
+      assert.match(artifacts.transcripts.public, /_partial\/T99\.public\.txt$/);
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
+  });
+
   it('renders public speaker turns as quoted direct speech with square-bracket action asides', () => {
     assert.equal(
       formatPublicTurnText('TUTOR', '(points at the graph) Try line two.'),
@@ -59,6 +421,106 @@ describe('generate-pedagogical-dramas', () => {
       '"Now I see the header is a field."',
     );
     assert.equal(formatPublicTurnText('STAGE', 'A timer clicks.'), '[A timer clicks.]');
+  });
+
+  it('collapses adjacent public stage notes into one consolidated block', () => {
+    const transcript = renderTranscript([
+      { role: 'STAGE', text: 'REVIEW SESSION — ARTIFACT DESK. The officer has the register open.' },
+      { role: 'STAGE', text: 'Setting: A model governance checkpoint room.' },
+      { role: 'STAGE', text: 'Relationship: Compliance review officer and practitioner.' },
+      { role: 'LEARNER', text: 'I think one fairness metric covers it.' },
+    ]);
+
+    assert.equal(
+      transcript,
+      [
+        'STAGE: [REVIEW SESSION — ARTIFACT DESK. The officer has the register open. Setting: A model governance checkpoint room. Relationship: Compliance review officer and practitioner.]',
+        '',
+        'LEARNER: "I think one fairness metric covers it."',
+        '',
+      ].join('\n'),
+    );
+  });
+
+  it('renders expanded public scene preamble as one stage block', () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ms-render-light-dialog-'));
+    try {
+      const transcriptPath = path.join(tmp, 'T05.public.txt');
+      const fullPath = path.join(tmp, 'T05.full.md');
+      const keyPath = path.join(tmp, 'key.yaml');
+      const outPath = path.join(tmp, 'dialog.html');
+      const publicOutPath = path.join(tmp, 'T05.public-expanded.txt');
+
+      fs.writeFileSync(
+        transcriptPath,
+        [
+          'STAGE: [REVIEW SESSION — ARTIFACT DESK. The officer has the register open.]',
+          '',
+          'LEARNER: "One fairness metric covers it."',
+          '',
+        ].join('\n'),
+        'utf8',
+      );
+      fs.writeFileSync(
+        fullPath,
+        [
+          '## Director Scene Card',
+          '',
+          '```yaml',
+          'scene_opening: REVIEW SESSION — ARTIFACT DESK. The officer has the register open.',
+          'scene_setting: A model governance checkpoint room.',
+          'relationship: Compliance review officer and practitioner.',
+          'stakes: The model card cannot advance without evidence.',
+          'register: Clipped, audit-precise questioning.',
+          'locale: British-adjacent formal institutional English.',
+          '```',
+          '',
+        ].join('\n'),
+        'utf8',
+      );
+      fs.writeFileSync(
+        keyPath,
+        yaml.stringify({
+          mode: 'real-claude-code',
+          items: {
+            T05: {
+              tid: 'T05',
+              drama_id: 'drama_test',
+              persona: 'adversarial_tester',
+              dramatic_shape: 'risk register, model card, oversight plan -> evidence map',
+              intended_tutor_character: 'Tutor: evidence_gatekeeper; press_for_scope_and_evidence.',
+            },
+          },
+        }),
+        'utf8',
+      );
+
+      execFileSync(
+        process.execPath,
+        [
+          'scripts/render-light-drama-dialog-html.js',
+          '--transcript',
+          transcriptPath,
+          '--full',
+          fullPath,
+          '--key',
+          keyPath,
+          '--out',
+          outPath,
+          '--public-out',
+          publicOutPath,
+        ],
+        { cwd: ROOT, stdio: 'pipe' },
+      );
+
+      const expanded = fs.readFileSync(publicOutPath, 'utf8');
+      assert.equal((expanded.match(/^STAGE:/gm) || []).length, 1);
+      assert.match(expanded, /^STAGE: \[REVIEW SESSION — ARTIFACT DESK\./);
+      assert.match(expanded, /Setting: A model governance checkpoint room\./);
+      assert.match(expanded, /\n\nLEARNER: "One fairness metric covers it\."/);
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
   });
 
   it('does not flag internal-process leak for text stripped before the public transcript (FIX 3)', () => {
@@ -253,6 +715,116 @@ describe('generate-pedagogical-dramas', () => {
     assert.match(item.baseline_control_note, /Socratic/);
   });
 
+  it('preserves curriculum world binding and applies only public-safe world constraints', () => {
+    const drama = {
+      id: 'D_AF6_RESISTANT_DOGMATIC',
+      discipline: 'ai_foundations',
+      condition: 'recognition',
+      curriculum_binding: {
+        curriculum_id: 'ai_foundations_v1',
+        module_id: 'AF6',
+        module_title: 'Evaluation, generalization, calibration, and shift',
+        main_artifact: 'model audit and claim-evidence table',
+        primary_verifier: 'metric engine and evaluation linter',
+        world_adaptation_spec_id: 'W_AF6_CURRICULUM',
+        world_adaptation_spec_version: 'ms-world-adaptation-v0.1',
+        world_adaptation_spec_hash: 'sha256:b9e1a9bd0ddc74c4b6d51a8a0bd3a9abfcfe63786fe0d6aba551484c669df558',
+        world_locked_at_compile_time: true,
+        rhetorical_dramatic_plan_id: 'RDP_AF6_CURRICULUM_DOGMATIC',
+        rhetorical_dramatic_plan_version: 'ms-rhetorical-dramatic-plan-v0.1',
+        rhetorical_dramatic_plan_hash: 'sha256:6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b',
+        world_public_constraints: {
+          artifact: 'model audit and claim-evidence table',
+          primary_verifier: 'metric engine and evaluation linter',
+          preferred_action_families: ['request_evidence', 'contrast_models'],
+          disallowed_action_families: ['model_worked_example'],
+          success_observables: ['Learner gives a reason that can be checked by the metric engine.'],
+          forbidden_public_moves: ['Do not expose curriculum misconception labels.'],
+        },
+        rhetorical_public_constraints: {
+          artifact: 'model audit and claim-evidence table',
+          public_task: 'Write a bounded deployment claim.',
+          public_evidence_standard: 'metric engine and evaluation linter',
+          allowed_rhetorical_form: 'audit-table questioning without naming hidden labels',
+          scene: 'technical review room; visible object: audit table',
+          action_gate: 'Learner narrows the claim scope.',
+          forbidden_public_exposure: ['misconception ids', 'world adaptation spec ids and hashes'],
+        },
+      },
+    };
+
+    const item = keyItemFor(drama, 2, 3, []);
+    assert.equal(item.curriculum_binding.module_id, 'AF6');
+    assert.equal(item.curriculum_binding.rhetorical_dramatic_plan_id, 'RDP_AF6_CURRICULUM_DOGMATIC');
+    assert.equal(item.world_adaptation.spec_id, 'W_AF6_CURRICULUM');
+    assert.equal(item.world_adaptation.spec_hash, drama.curriculum_binding.world_adaptation_spec_hash);
+    assert.equal(item.world_adaptation.locked_at_compile_time, true);
+    assert.equal(item.world_adaptation.public_constraints_present, true);
+    assert.equal(item.rhetorical_dramatic_plan.plan_id, 'RDP_AF6_CURRICULUM_DOGMATIC');
+    assert.equal(item.rhetorical_dramatic_plan.plan_hash, drama.curriculum_binding.rhetorical_dramatic_plan_hash);
+    assert.equal(item.rhetorical_dramatic_plan.public_constraints_present, true);
+
+    const plan = withWorldAdaptationConstraints(
+      {
+        side_constraints: {
+          tutor: 'Use the submitted audit table.',
+          learner: 'Stay resistant.',
+        },
+      },
+      drama,
+    );
+    assert.equal(plan.world_constraints_applied, true);
+    assert.equal(plan.world_adaptation.spec_id, 'W_AF6_CURRICULUM');
+    assert.equal(plan.rhetorical_dramatic_plan.plan_id, 'RDP_AF6_CURRICULUM_DOGMATIC');
+    assert.match(plan.side_constraints.tutor, /model audit and claim-evidence table/u);
+    assert.match(plan.side_constraints.tutor, /request_evidence/u);
+    assert.match(plan.side_constraints.tutor, /audit-table questioning/u);
+    assert.doesNotMatch(plan.side_constraints.tutor, /W_AF6_CURRICULUM/u);
+    assert.doesNotMatch(plan.side_constraints.tutor, /RDP_AF6_CURRICULUM_DOGMATIC/u);
+    assert.doesNotMatch(plan.side_constraints.tutor, /sha256:/u);
+    assert.doesNotMatch(plan.side_constraints.learner, /W_AF6_CURRICULUM|RDP_AF6_CURRICULUM_DOGMATIC|sha256:/u);
+
+    const notes = curriculumScriptNotesForDrama(
+      {
+        ...drama,
+        topic: 'Bound the deployment claim.',
+        scenario_name: 'AI Foundations AF6',
+        learner_start_state: 'The learner trusts a single held-out accuracy score.',
+        intended_tutor_character: 'Evidence gatekeeper',
+        dramatic_shape: 'claim -> audit gate',
+        tutor_adaptation_policy: 'peripeteia',
+        affective_adaptation_policy: 'procedural_sensitive',
+        turn_plan: [
+          {
+            at: { turn: 2 },
+            role: 'tutor',
+            moves: ['stock_take', 'route_change', 'action_gate'],
+            route_change: { from: 'single metric', to: 'evidence table' },
+          },
+        ],
+      },
+      plan,
+    );
+    assert.equal(notes.curriculum.lesson_objective, 'Write a bounded deployment claim.');
+    assert.equal(notes.curriculum.learner_artifact, 'model audit and claim-evidence table');
+    assert.equal(notes.world_contract.spec_hash, drama.curriculum_binding.world_adaptation_spec_hash);
+    assert.equal(notes.rhetoric.allowed_public_form, 'audit-table questioning without naming hidden labels');
+    assert.equal(notes.script_lowering.affective_adaptation_policy, 'procedural_sensitive');
+    assert.deepEqual(notes.script_lowering.turn_plan_summary[0].moves, ['stock_take', 'route_change', 'action_gate']);
+
+    const full = renderHeldOutTranscript(
+      {
+        run: { curriculum_script_notes: notes },
+        directorPlan: plan,
+        turns: [],
+      },
+      { tid: 'T06', dramaId: drama.id, mode: 'full' },
+    );
+    assert.match(full, /Curriculum -> Rhetoric -> Script Notes/u);
+    assert.match(full, /lesson_objective/u);
+    assert.match(full, /Write a bounded deployment claim/u);
+  });
+
   it('keeps the classic adaptation target spec taxonomically separated', () => {
     const spec = yaml.parse(
       fs.readFileSync(path.join(ROOT, 'config/poetics-calibration/phase2-classic-drama-adaptation-v1.yaml'), 'utf8'),
@@ -351,6 +923,12 @@ describe('generate-pedagogical-dramas', () => {
     assert.match(plan.tutor_adaptation_contract, /superego should name the failed habit/);
     assert.match(plan.tutor_adaptation_contract, /mechanism-quality risk/);
     assert.match(plan.tutor_adaptation_contract, /ego must adjudicate that critique and enact the route change/);
+    assert.match(plan.tutor_adaptation_contract, /old route, prior route, same route, or current check/);
+    assert.match(
+      plan.tutor_adaptation_contract,
+      /no longer settles, is not enough, cannot decide, or has stopped working/,
+    );
+    assert.match(plan.tutor_adaptation_contract, /new route, new device, changed standard/);
     assert.match(
       plan.tutor_adaptation_contract,
       /object, counterexample, interruption, social consequence, representation, or affective register/,
@@ -358,10 +936,71 @@ describe('generate-pedagogical-dramas', () => {
     assert.match(plan.tutor_adaptation_contract, /stock-taking contrast plus a new device/);
     assert.match(plan.tutor_adaptation_contract, /earned learner reorientation/);
     assert.match(plan.tutor_adaptation_contract, /Cheerful informality is only one possible register/);
-    assert.match(plan.side_constraints.tutor, /what stopped working, and what new device/);
+    assert.match(plan.side_constraints.tutor, /what old route no longer settles or cannot decide/);
+    assert.match(plan.side_constraints.tutor, /what new device, gate, criterion, standard, counterexample/);
+    assert.match(plan.side_constraints.tutor, /blind scorer can quote both/);
     assert.match(plan.side_constraints.tutor, /device is fitted to the exact pressure/);
     assert.equal(plan.peripeteia_ending_shape, 'learner actional performance followed by earned learner reorientation');
     assert.equal(plan.ending_speaker, 'learner');
+  });
+
+  it('adds hold endings only to non-adaptive control arms', () => {
+    const routinePlan = withControlEndingPolicy(
+      {
+        tutor_adaptation_policy: 'routine',
+        ending_speaker: 'learner',
+        side_constraints: { tutor: 'Use the table.', learner: 'Stay local.' },
+        interventions: [
+          { cue_kind: 'learner_revisit_earlier_wording' },
+          { cue_kind: 'learner_reversal_pressure' },
+          { cue_kind: 'ordinary_scene' },
+        ],
+      },
+      'hold',
+      { _tutorAdaptationPolicy: 'routine' },
+    );
+
+    assert.equal(routinePlan.control_ending_policy, 'hold');
+    assert.equal(routinePlan.control_ending_applied, true);
+    assert.equal(routinePlan.ending_speaker, 'learner');
+    assert.match(routinePlan.side_constraints.tutor, /Control-ending hold/);
+    assert.match(routinePlan.side_constraints.learner, /do not volunteer a full re-reading/);
+    assert.deepEqual(
+      routinePlan.interventions.map((cue) => cue.cue_kind),
+      ['ordinary_scene'],
+    );
+
+    const adaptivePlan = withControlEndingPolicy(
+      withTutorAdaptationPolicy({ interventions: [] }, 'peripeteia'),
+      'hold',
+      { _tutorAdaptationPolicy: 'peripeteia' },
+    );
+
+    assert.equal(adaptivePlan.control_ending_policy, 'hold');
+    assert.equal(adaptivePlan.control_ending_applied, false);
+    assert.equal(
+      adaptivePlan.peripeteia_ending_shape,
+      'learner actional performance followed by earned learner reorientation',
+    );
+    assert.ok(adaptivePlan.interventions.some((cue) => cue.cue_kind === 'learner_reversal_pressure'));
+  });
+
+  it('adds a procedural-sensitive affective adaptation layer to director plans', () => {
+    const plan = withAffectiveAdaptationPolicy(
+      {
+        side_constraints: {
+          tutor: 'Use the visible object.',
+          learner: 'Remain defensive.',
+        },
+      },
+      'procedural_sensitive',
+    );
+
+    assert.equal(plan.affective_adaptation_policy, 'procedural_sensitive');
+    assert.match(plan.affective_adaptation_contract, /whether or not a procedural route change occurs/u);
+    assert.match(plan.side_constraints.tutor, /face-saving, defensiveness/u);
+    assert.match(plan.side_constraints.tutor, /stricter evidence gate/u);
+    assert.match(plan.side_constraints.learner, /brittle compliance/u);
   });
 
   it('flags explicit public self-reframing in no-cue branches', () => {
@@ -866,6 +1505,36 @@ describe('generate-pedagogical-dramas', () => {
     );
   });
 
+  it('accepts now-the-check-is colon phrasing as a replacement framing', () => {
+    const warnings = warningsForReframeLine({
+      tid: 'T945C',
+      dramaId: 'D945C',
+      anchor: 'General human-like cognitive capacity is still the criterion I stand on.',
+      learnerText:
+        'General human-like cognitive capacity — that was the filing. I was treating broad range and human-comparable as if the words themselves carried thresholds they did not. Now the check is: breadth floor at roughly six distinct cognitive domains, level floor at median adult performance.',
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts pressure plus now-the-check phrasing from curriculum governance reframes', () => {
+    const warnings = warningsForReframeLine({
+      tid: 'T945B',
+      dramaId: 'D945B',
+      anchor: 'The single fairness metric holds across them.',
+      learnerText:
+        '"The single fairness metric holds across them" — I was treating the document set as the system boundary, and the old check was whether the submission perimeter carried scope by implication. That was the pressure: implication is not a named entry. Now the check is whether the register, the model card, or the oversight plan contains an entry that names the system the equivalence claim governs.',
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
   it('accepts has-not-vanished phrasing as a replacement framing', () => {
     const warnings = warningsForReframeLine({
       tid: 'T946',
@@ -972,6 +1641,49 @@ describe('generate-pedagogical-dramas', () => {
     assert.equal(
       warnings.some((entry) => entry.code === 'reframe_cue_downgraded'),
       false,
+    );
+  });
+
+  it('does not double-count a requested reframe downgrade as a standalone revoice failure', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T953',
+      dramaId: 'D953',
+      traceTurns: [
+        {
+          phase: 'director',
+          turnNumber: 2,
+          directorCue: {
+            requestedRevisitPolicy: 'reframe',
+            revisitPolicy: 'reconsider',
+            reframeAnchorGate: 'downgraded_to_reconsider_ineligible_anchor',
+            revisitAnchor: 'misframing-candidate',
+            anchorQuote: 'The next step is probably just to copy the table.',
+          },
+        },
+      ],
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'An earlier learner line returns to the table: "The next step is probably just to copy the table." ' +
+            'The pause holds while the learner decides whether that wording still stands, needs narrowing, or needs replacing.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text: 'I need the next case first.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'revoice_cue_not_revoiced'),
+      false,
+    );
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_downgraded'),
+      true,
     );
   });
 
@@ -2393,6 +3105,53 @@ describe('generate-pedagogical-dramas', () => {
     );
   });
 
+  it('overrides the drama opening speaker from the CLI', () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'drama-gen-opening-speaker-'));
+    const sampleDir = path.join(tmp, 'sample');
+    const delibDir = path.join(tmp, 'delib');
+    const transcriptsDir = path.join(tmp, 'transcripts');
+    const keyPath = path.join(tmp, 'key.yaml');
+
+    execFileSync(
+      process.execPath,
+      [
+        'scripts/generate-pedagogical-dramas.js',
+        '--mock',
+        '--spec',
+        'config/poetics-calibration/phase2-dramas-v2.yaml',
+        '--only',
+        'D1',
+        '--max-turns',
+        '2',
+        '--opening-speaker',
+        'tutor',
+        '--out-dir',
+        sampleDir,
+        '--delib-dir',
+        delibDir,
+        '--transcripts-dir',
+        transcriptsDir,
+        '--key',
+        keyPath,
+        '--force',
+      ],
+      { cwd: ROOT, stdio: 'pipe', env: { ...process.env, GEN_DRAMAS_CLI_TRACE: '0' } },
+    );
+
+    const traceFile = fs.readdirSync(delibDir).find((file) => /^T\d+\.json$/.test(file));
+    const trace = JSON.parse(fs.readFileSync(path.join(delibDir, traceFile), 'utf8'));
+    const key = yaml.parse(fs.readFileSync(keyPath, 'utf8'));
+    const tid = traceFile.replace(/\.json$/, '');
+
+    assert.equal(trace.directorPlan.opening_speaker, 'tutor');
+    assert.equal(trace.run.opening_speaker_override, 'tutor');
+    assert.equal(trace.run.opening_speaker, 'tutor');
+    assert.equal(trace.turns.find((turn) => turn.phase === 'tutor' || turn.phase === 'learner')?.phase, 'tutor');
+    assert.equal(key.opening_speaker_override, 'tutor');
+    assert.equal(key.items[tid].opening_speaker_override, 'tutor');
+    assert.equal(key.items[tid].opening_speaker, 'tutor');
+  });
+
   it('replaces shared revisit cues with the paired branch policy', () => {
     const sharedPlan = {
       revisit_cue: 'learner_revisit_earlier_wording',
@@ -2430,7 +3189,9 @@ describe('generate-pedagogical-dramas', () => {
     assert.equal(revisitCues[0].revisit_policy, 'reframe');
     assert.equal(revisitCues[0].revisit_anchor, 'misframing-candidate');
     assert.match(revisitCues[0].instruction, /visible object in the scene/i);
-    assert.doesNotMatch(revisitCues[0].instruction, /\bmust\b/i);
+    assert.match(revisitCues[0].instruction, /next public reply must start by revoicing/i);
+    assert.match(revisitCues[0].instruction, /before applying any new artifact or case/i);
+    assert.match(revisitCues[0].reasoning, /before new casework/i);
   });
 
   it('forks paired continuation arms from one fixed prefix', () => {

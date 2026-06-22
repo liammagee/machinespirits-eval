@@ -1,0 +1,19 @@
+{
+  "label": "decay-probe-real-003-wit",
+  "source": {
+    "label": "withercombe-v001-real-sw-on-t1",
+    "dir": "exports/dramatic-derivation/loop/withercombe-v001-real-sw-on-t1"
+  },
+  "fromTurn": 12,
+  "window": 4,
+  "maxTurns": 15,
+  "overrides": [
+    "decay"
+  ],
+  "prefixIntegrity": {
+    "ok": true,
+    "mismatches": [],
+    "expectedDivergence": false
+  },
+  "windowExhausted": true
+}

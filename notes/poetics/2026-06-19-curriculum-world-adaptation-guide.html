@@ -1,0 +1,420 @@
+<!doctype html>
+<!--
+  Techne doc. The .html is the source. Shared design lives in
+  notes/poetics/assets/techne.css; shared behaviour in assets/techne.js.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<title>Curriculum Objects to Worlds</title>
+<meta name="description" content="How a curriculum object compiles into a locked world adaptation spec and a light teaching drama run." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Source+Serif+4:opsz,wght@8..60,200..900&family=JetBrains+Mono:wght@300..700&display=swap" />
+<link rel="stylesheet" href="assets/techne.css" />
+</head>
+
+<body>
+
+<header class="rail" id="rail">
+  <div class="rail__inner">
+    <span class="rail__title">Curriculum -> world -> light drama</span>
+    <span class="rail__dot" aria-hidden="true"></span>
+    <nav class="rail__nav" aria-label="Section navigation">
+      <a href="#map">Map</a>
+      <a href="#curriculum-object">Curriculum object</a>
+      <a href="#world-compile">World compile</a>
+      <a href="#runtime-hook">Runtime hook</a>
+      <a href="#light-drama">Light drama</a>
+      <a href="#checks">Checks</a>
+    </nav>
+    <div class="rail__actions">
+      <button class="rail__btn" id="themeToggle" type="button">Dark</button>
+    </div>
+  </div>
+  <div class="rail__progress" id="railProgress"></div>
+</header>
+
+<main>
+
+  <section class="hero">
+    <div class="hero__rune"><span>§</span> Curriculum compiler note · updated 2026-06-19</div>
+    <h1 class="hero__h1">Curriculum Objects <span class="em">Become Worlds</span></h1>
+    <p class="hero__subtitle">
+      A practical path from an authored curriculum graph to a locked adaptive-world contract, then to a light
+      teaching drama run.
+    </p>
+    <div class="hero__lede">
+      <div>
+        <p>
+          The curriculum object is the stable source of truth. The world adaptation spec is the locked runtime
+          contract. The drama file is the lightweight enactment layer. Keep those three artifacts separate and the
+          system can plan, teach, and inspect without turning a generated rubric into its own evidence.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div class="shell">
+
+    <section class="s" id="map">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">01<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Artifact map</p>
+          <h2 class="s__h">There are three layers, and each has a different job.</h2>
+
+          <div class="claim">
+            <span class="claim__no">a.</span>
+            <h3 class="claim__h">Curriculum object <span class="chip chip--moss">source</span></h3>
+            <div class="claim__body">
+              <p>
+                <code>curriculum/ai-foundations.curriculum.yaml</code> is the CASE-inspired course graph:
+                modules, knowledge components, tasks, verifiers, misconception signatures, prerequisites,
+                and delivery metadata.
+              </p>
+            </div>
+          </div>
+
+          <div class="claim">
+            <span class="claim__no">b.</span>
+            <h3 class="claim__h">World adaptation spec <span class="chip chip--ochre">contract</span></h3>
+            <div class="claim__body">
+              <p>
+                <code>curriculum/ai-foundations.worlds.yaml</code> contains locked <code>world_adaptation_spec</code>
+                records. Each spec gives the adaptive tutor local evidence, permitted action families, expected
+                transitions, forbidden moves, and outcome observability for one curriculum module.
+              </p>
+            </div>
+          </div>
+
+          <div class="claim">
+            <span class="claim__no">c.</span>
+            <h3 class="claim__h">Drama spec <span class="chip chip--brick">enactment</span></h3>
+            <div class="claim__body">
+              <p>
+                <code>curriculum/ai-foundations.mvp-dramas.yaml</code> turns curriculum modules into teachable
+                scenes for <code>scripts/generate-pedagogical-dramas.js</code>. This is where a tutor, learner,
+                director, persona, and turn plan become a transcript.
+              </p>
+            </div>
+          </div>
+
+          <div class="callout">
+            <strong>Boundary.</strong> The world spec can constrain and annotate action. It is not the evaluator.
+            Success still comes from learner turns, verifier evidence, transcript quality, or an independent judge.
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">Rule</span> Compile first, then run. Do not let a live
+            dialogue invent its own world contract.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="curriculum-object">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">02<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Build the object</p>
+          <h2 class="s__h">A curriculum object is a graph plus machine-checkable extensions.</h2>
+
+          <p>
+            The portable spine is close to 1EdTech CASE: a curriculum document, module items, knowledge-component
+            items, and associations. Machine Spirits adds fields that adaptive teaching needs: canonical tasks,
+            verifiers, misconception signatures, mastery gates, transfer challenges, and drama/world bindings.
+          </p>
+
+          <div class="spec-box">
+<pre><code>schema_version: ms-curriculum-v0.1
+id: ai_foundations_v1
+version: 1.0.0
+standard_profile:
+  spine: 1EdTech CASE 1.1 inspired
+  extensions:
+    - ms:evidence
+    - ms:verifier
+    - ms:misconception
+    - ms:drama_binding
+    - ms:world_adaptation
+modules:
+  - id: AF6
+    title: Evaluation, generalization, calibration, and shift
+    main_artifact: model audit and claim-evidence table
+    primary_verifier: metric engine and evaluation linter
+    knowledge_components:
+      - id: AF-601
+        statement: Construct and interpret a confusion matrix
+    canonical_tasks:
+      - Derive metrics from counts rather than memorized formulas
+    verifiers:
+      - A metric engine recomputes all values from predictions...
+    misconception_signatures:
+      - High accuracy means a good classifier</code></pre>
+          </div>
+
+          <p>
+            To regenerate the AI Foundations object from the markdown source:
+          </p>
+
+          <div class="spec-box">
+<pre><code>npm run curriculum:convert:ai-foundations</code></pre>
+          </div>
+
+          <p>
+            A runnable module must have verifier evidence and misconception evidence. If either is absent, the
+            world compiler should fail rather than create an underspecified runtime contract.
+          </p>
+        </div>
+        <div class="mr">
+          <p class="note note--ochre"><span class="note__lbl">AF12</span> The capstone uses non-standard prose, so
+            the parser canonicalizes capstone deliverables into tasks, verifiers, and misconception signatures.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="world-compile">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">03<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Compile the world</p>
+          <h2 class="s__h">The world spec is the module's locked adaptation contract.</h2>
+
+          <p>
+            The world compiler lowers each selected module into one <code>world_adaptation_spec</code>. Its hash is
+            deterministic and content-sensitive, so a trace can later prove which world contract governed the run.
+          </p>
+
+          <div class="spec-box">
+<pre><code>npm run curriculum:compile:worlds
+npm run curriculum:compile:worlds -- --check</code></pre>
+          </div>
+
+          <div class="spec-box">
+<pre><code>world_adaptation_specs:
+  - id: W_AF6_CURRICULUM
+    version: ms-world-adaptation-v0.1
+    source_curriculum_id: ai_foundations_v1
+    module_id: AF6
+    locked_at_compile_time: true
+    spec_hash: sha256:...
+    learner_state_evidence:
+      knowledge_components: [...]
+      misconception_signatures: [...]
+      verifier_signals: [...]
+    action_policy:
+      allowed_action_families:
+        - diagnose_with_discriminating_question
+        - request_evidence
+        - contrast_models
+      preferred_action_families:
+        - repair_overconfidence
+        - request_evidence
+      disallowed_action_families:
+        - model_worked_example
+    expected_transitions:
+      - action_type: request_evidence
+        success_evidence:
+          - learner-authored rationale
+        failure_evidence:
+          - mere agreement
+    forbidden_moves:
+      - id: no_hidden_label_exposure
+        move: hidden_label_exposure
+    outcome_observability:
+      artifact: model audit and claim-evidence table
+      primary_verifier: metric engine and evaluation linter
+      independent_outcome_required: true
+      spec_is_not_evaluator: true</code></pre>
+          </div>
+
+          <p>
+            The compiler currently defaults to the MVP slice: AF1, AF4, AF5, AF6, AF11, and AF12. Use
+            <code>--all</code> only when every module is ready for runtime constraints.
+          </p>
+        </div>
+        <div class="mr">
+          <p class="note note--ink"><span class="note__lbl">Hash</span> The trace stores the spec id and hash, not
+            a floating prompt description.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="runtime-hook">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">04<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Operational semantics</p>
+          <h2 class="s__h">Inside the adaptive tutor, the world constrains action, not truth.</h2>
+
+          <p>
+            The Plan 2.1 closed loop already estimates learner state, selects a finite action, validates an
+            adaptation contract, realizes a tutor utterance, observes the learner's next turn, and closes the
+            intervention ledger. The world spec enters as <code>adaptivePolicyConfig.world_adaptation_spec</code>.
+          </p>
+
+          <div class="timeline">
+            <div><strong>1. Estimate state</strong><span>Belief over learner hypotheses from observable dialogue.</span></div>
+            <div><strong>2. Select action</strong><span>Allowed/preferred/disallowed world action families filter and rank candidates.</span></div>
+            <div><strong>3. Validate contract</strong><span>The gate rejects disallowed world actions and hidden-label/proof-supply shortcuts.</span></div>
+            <div><strong>4. Realize utterance</strong><span>Tutor-visible text receives the action, not the hidden curriculum answer key.</span></div>
+            <div><strong>5. Observe outcome</strong><span>Success requires learner evidence; the world spec alone does not satisfy it.</span></div>
+          </div>
+
+          <p>
+            A profile or scenario can resolve a world spec from the generated file:
+          </p>
+
+          <div class="spec-box">
+<pre><code>runner: adaptive
+scenario_source: config/my-curriculum-scenarios.yaml
+adaptive:
+  architecture: state_policy_closed_loop
+  world_adaptation_source: curriculum/ai-foundations.worlds.yaml
+  policy:
+    mode: closed_loop</code></pre>
+          </div>
+
+          <p>
+            Then each scenario chooses the world by id or by curriculum module:
+          </p>
+
+          <div class="spec-box">
+<pre><code>scenarios:
+  - id: af6_metric_claim_light
+    curriculum_module_id: AF6
+    opening: I think high accuracy is enough to say the classifier is good.
+    max_turns: 3</code></pre>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">No leak</span> Misconception signatures are runtime
+            evidence categories, not learner-facing labels.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="light-drama">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">05<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Light run</p>
+          <h2 class="s__h">A light drama run uses the drama spec for enactment and the world spec for adaptation constraints.</h2>
+
+          <p>
+            First compile the MVP drama file. This creates teachable scenes from the same curriculum object and
+            carries each runnable module's locked world spec id/hash plus a public-safe constraint projection into
+            <code>curriculum_binding</code>.
+          </p>
+
+          <div class="spec-box">
+<pre><code>npm run curriculum:compile:drama -- --mvp --out curriculum/ai-foundations.mvp-dramas.yaml</code></pre>
+          </div>
+
+          <p>
+            Then dry-run one curriculum drama. This checks routing, shuffling, persona, and turn-plan shape without
+            writing files or calling an LLM.
+          </p>
+
+          <div class="spec-box">
+<pre><code>node scripts/generate-pedagogical-dramas.js \
+  --dry-run \
+  --spec curriculum/ai-foundations.mvp-dramas.yaml \
+  --only D_AF6_CURRICULUM \
+  --max-turns 2</code></pre>
+          </div>
+
+          <p>
+            For a free transcript artifact, run the mock path into ignored exports. This is the first operational
+            smoke after the dry-run.
+          </p>
+
+          <div class="spec-box">
+<pre><code>node scripts/generate-pedagogical-dramas.js \
+  --mock \
+  --force \
+  --spec curriculum/ai-foundations.mvp-dramas.yaml \
+  --only D_AF6_CURRICULUM \
+  --max-turns 2 \
+  --out-dir exports/curriculum-light-drama/sample \
+  --transcripts-dir exports/curriculum-light-drama/transcripts \
+  --delib-dir exports/curriculum-light-drama/deliberation \
+  --writing-pad-dir exports/curriculum-light-drama/writing-pad \
+  --key exports/curriculum-light-drama/key.yaml</code></pre>
+          </div>
+
+          <p>
+            The held-out key and trace now preserve <code>world_adaptation.spec_id</code> and
+            <code>world_adaptation.spec_hash</code>. The generator injects only the public-safe artifact,
+            verifier, action-policy, success-observable, and forbidden-move projection into private tutor/learner
+            constraints; hidden misconception IDs, answer keys, and hashes stay out of public transcript text.
+          </p>
+        </div>
+        <div class="mr">
+          <p class="note note--ochre"><span class="note__lbl">Cost posture</span> Use <code>--dry-run</code> first,
+            <code>--mock</code> second, and only then an attended real generator.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="checks">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">06<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Acceptance checks</p>
+          <h2 class="s__h">A curriculum-world-drama slice is only ready when these checks pass.</h2>
+
+          <div class="ev-grid">
+            <article class="ev-card" data-status="done" data-tags="curriculum">
+              <h3>Canonical parse</h3>
+              <p>The curriculum object validates and includes module tasks, verifiers, and misconception signatures.</p>
+            </article>
+            <article class="ev-card" data-status="done" data-tags="world">
+              <h3>World hash</h3>
+              <p>Every compiled world spec has a deterministic <code>spec_hash</code> and fails validation if edited.</p>
+            </article>
+            <article class="ev-card" data-status="done" data-tags="policy">
+              <h3>Policy constraint</h3>
+              <p>The adaptive selector respects allowed, preferred, and disallowed action families.</p>
+            </article>
+            <article class="ev-card" data-status="done" data-tags="gate">
+              <h3>Gate fallback</h3>
+              <p>The proof/release gate rejects a disallowed world action even if supplied manually.</p>
+            </article>
+            <article class="ev-card" data-status="done" data-tags="drama">
+              <h3>Light drama dry-run</h3>
+              <p>The generated MVP drama spec can plan a one-drama dry-run with no writes and no LLM call.</p>
+            </article>
+            <article class="ev-card" data-status="pending" data-tags="adaptive">
+              <h3>Adaptive smoke</h3>
+              <p>A small AF6 adaptive scenario should run in mock mode with <code>world_adaptation_source</code>.</p>
+            </article>
+          </div>
+
+          <p class="pq">
+            The working invariant is simple: curriculum chooses the world, the world constrains the action, and the
+            learner's next move supplies or fails the evidence.
+            <cite>Plan 2.4 boundary</cite>
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <footer class="colophon">
+    <p>
+      <span class="label">Colophon</span> &nbsp; Source:
+      <code>notes/poetics/2026-06-19-curriculum-world-adaptation-guide.html</code>.
+      Compiler: <code>services/curriculum/curriculumCompiler.js</code>.
+      Design: <code>assets/techne.css</code>. Behaviour: <code>assets/techne.js</code>.
+    </p>
+  </footer>
+
+</main>
+
+<script src="assets/techne.js"></script>
+</body>
+</html>

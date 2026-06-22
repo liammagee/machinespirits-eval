@@ -1,0 +1,171 @@
+# WORLD-009 - the RAVENSMARK held-out V-positive probe (selector v2, Step 5,
+# 2026-06-14). This world is deliberately small and diagnostic. The learner can
+# derive a complete public finding against the mirror figure - Corvin is
+# answerable for the gate-pass - but that finding is a DEAD predicate. The
+# question asks whose hand signed the pass, and the true proof turns on the
+# material seal impression.
+#
+# Selector expectation:
+# - no independent top-level secret join: the secret root is a unary rule;
+# - no shared proof-critical source pressure under decay: only one top branch;
+# - fewer than four proof-critical source premises: p_mark, p_registry;
+# - mirror/dead-predicate decoy present: answerableFor(gatePass, corvin).
+#
+# Therefore selector v2 should route VISIBLE under decay by
+# mirror_dead_predicate_visible. If always-H still wins here, the v2 visible
+# route has no held-out support.
+
+id: world_009_ravensmark
+title: The Ravensmark Pass
+
+discipline: "Borough seal inquiry (gate records and warrants)"
+
+question: "Whose hand signed the Leadenhall gate-pass that opened the river gate at dusk?"
+question_pattern: [signedBy, gatePass, "?x"]
+
+setting: >-
+  The Leadenhall river gate opened at dusk for a cart that should have waited
+  until morning, and the town's missing coffer went out under that cart's tilt.
+  The council has its answer ready: Corvin, the gate-steward, kept the gate and
+  answered for every pass that crossed it. You are the junior clerk of the seal
+  table, set to read the warrant book before the aldermen turn a ready suspicion
+  into a sentence. The table trusts its rules of evidence, and nothing else.
+
+learner_voice: >-
+  The junior clerk of the seal table: careful with rolls and ribbons, but young
+  enough to confuse office with hand; eager to satisfy the aldermen, wary of
+  seeming too slow, and learning to ask what the seal itself proves before
+  writing the name everyone expects.
+
+secret:
+  fact: [signedBy, gatePass, elian]
+  surface: "The pass was signed by Elian, whose private dusk-seal pressed the warrant."
+
+mirror:
+  fact: [signedBy, gatePass, corvin]
+
+rules:
+  - id: R1_scope
+    gloss: >-
+      The pass-law asks for a hand on a seal, not merely an officer in charge:
+      if a pass carries a named seal-mark, then the material seal is the point
+      at issue.
+    if:
+      - [sealMarkOf, "?pass", "?seal"]
+    then:
+      - [materialSealAtIssue, "?pass", "?seal"]
+  - id: R2_hand
+    gloss: >-
+      A material seal points to its holder: if the seal at issue on a pass is a
+      seal held by one hand, then that hand pressed the pass.
+    if:
+      - [materialSealAtIssue, "?pass", "?seal"]
+      - [sealHeldBy, "?seal", "?x"]
+    then:
+      - [pressedSealFor, "?pass", "?x"]
+  - id: R3_signature
+    gloss: >-
+      For a sealed gate-pass, the signature belongs to the hand that pressed
+      the operative seal. The scribe may write the letters; the seal signs the
+      warrant.
+    if:
+      - [pressedSealFor, "?pass", "?x"]
+    then:
+      - [signedBy, "?pass", "?x"]
+  - id: R4_answerable
+    gloss: >-
+      A steward with custody of the gate and the gate-key answers for a pass
+      that opens it. Answerability names who must account; it does not name the
+      hand that signed.
+    if:
+      - [stewardOf, "?pass", "?x"]
+      - [keepsKeyTo, "?x", "?gate"]
+    then:
+      - [answerableFor, "?pass", "?x"]
+
+premises:
+  - id: p_clause
+    fact: [warrantRequires, gatePass, sealPress]
+    surface: >-
+      The old pass-law is read beside the wax: for a river-gate warrant, the operative
+      act is the seal-press, not the clerk's fair copy and not the steward's
+      custody. The table must ask what seal was pressed.
+  - id: p_mark
+    fact: [sealMarkOf, gatePass, duskSeal]
+    surface: >-
+      Hold the pass to the slant light: under the red wax is a second, older
+      impression, the little dusk-seal used after curfew - a raven's notch under
+      the wing, pressed before the public ribbon was laid across it.
+  - id: p_registry
+    fact: [sealHeldBy, duskSeal, elian]
+    surface: >-
+      The private-seal register has one entry for the dusk-seal: Elian, night
+      notary of the lower quay, drew it for curfew warrants and returned it
+      chipped at the raven's wing the morning after the coffer left town.
+  - id: m_steward
+    fact: [stewardOf, gatePass, corvin]
+    surface: >-
+      Corvin was steward of the gate-pass roll that week. Every warrant for
+      Leadenhall crossed his table before it crossed the gate.
+  - id: m_key
+    fact: [keepsKeyTo, corvin, leadenhallGate]
+    surface: >-
+      And the gate-key hung from Corvin's belt: no cart passed the river gate
+      after dusk unless his office accounted for it in the morning book.
+
+background:
+  - [openedAt, leadenhallGate, dusk]
+  - [missingFrom, townCoffer, sealChest]
+  - [inquiryInto, aldermen, gatePass]
+
+incompatible:
+  - [[signedBy, gatePass, elian], [signedBy, gatePass, corvin]]
+
+proof_paths:
+  - premises: [p_mark, p_registry]
+
+release_schedule:
+  - { turn: 2, premise: m_steward, via: director }
+  - { turn: 4, premise: p_mark, via: tutor }
+  - { turn: 6, premise: m_key, via: director }
+  - { turn: 8, premise: p_clause, via: tutor }
+  - { turn: 15, premise: p_registry, via: tutor }
+
+dramaturgy:
+  acts:
+    - act: I
+      title: The Steward's Table
+      turns: [1, 5]
+      intent: >-
+        The aldermen's ready case is office: Corvin had the pass-roll, and the
+        young clerk is tempted to equate custody with signature. Against that,
+        the wax itself lands: a private dusk-seal sits under the public ribbon.
+    - act: II
+      title: The Accountable Man
+      turns: [6, 11]
+      intent: >-
+        Corvin's key completes a true but dead finding: he is answerable for
+        the pass. The pass-law then names why that answer is not enough: this
+        inquiry asks for the hand in the seal-press, not the officer with the
+        key.
+    - act: III
+      title: The Chipped Wing
+      turns: [12, 17]
+      intent: >-
+        The private-seal register assigns the dusk-seal to one hand, with the
+        same chipped raven's wing. From turn 14 on the authored calendar - and
+        earlier if the page is already ready - the learner's own board can force
+        the finding, if they keep answerability distinct from signature.
+    - act: IV
+      title: The Seal Signs
+      turns: [18, 24]
+      intent: >-
+        The remaining turns are recognition: the clerk must say whose hand
+        signed the pass and show why Corvin's accountability, true as it is,
+        answers a different predicate.
+
+slope:
+  t_min: 10
+  aporia_window: 12
+
+turn_cap: 24

@@ -1,6 +1,6 @@
 <!--
   Tutor role-script v001 for world_001_nocturne — THE ITERATION TARGET
-  (notes/dramatic-derivation-plan.md §3 step 3). The staging loop revises
+  (notes/2026-06-09-dramatic-derivation-plan.md §3 step 3). The staging loop revises
   ONLY this file between iterations; world, director, checker, and slope
   constraints stay frozen. Interpolated verbatim into the tutor bridge's
   system prompt (services/dramaticDerivation/llmRoles.js).

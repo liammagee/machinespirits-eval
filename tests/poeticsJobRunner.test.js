@@ -217,10 +217,101 @@ test('planJob: unknown kind throws', () => {
   assert.throws(() => planJob({ kind: 'nope', params: {} }), /unknown job kind/u);
 });
 
-test('describeKinds lists all four whitelisted kinds', () => {
+test('describeKinds lists all whitelisted kinds', () => {
   const kinds = describeKinds().map((k) => k.kind);
-  assert.deepEqual(kinds.sort(), ['adversarial-score', 'generate', 'online-score', 'replay']);
-  assert.equal(Object.keys(JOB_KINDS).length, 4);
+  assert.deepEqual(kinds.sort(), [
+    'adversarial-score',
+    'derivation',
+    'generate',
+    'online-score',
+    'pedagogical-drama',
+    'replay',
+  ]);
+  assert.equal(Object.keys(JOB_KINDS).length, 6);
+});
+
+// ── planJob: derivation (proof-DAG drama via run-derivation-loop.js) ───────────
+
+test('derivation: mock backend is free, --real is metered, and dirs target the loop', () => {
+  const mock = planJob({ kind: 'derivation', params: { world: 'world-000-smoke.yaml', script: 'nocturne-v001.md' } });
+  assert.equal(mock.costClass, COST_CLASSES.FREE);
+  assert.match(mock.script, /run-derivation-loop\.js$/u);
+  assert.ok(mock.argv.includes('config/drama-derivation/world-000-smoke.yaml'));
+  assert.ok(mock.argv.includes('config/drama-derivation/tutor-scripts/nocturne-v001.md'));
+
+  const real = planJob({
+    kind: 'derivation',
+    params: { world: 'world-000-smoke.yaml', script: 'nocturne-v001.md', real: true },
+  });
+  assert.equal(real.costClass, COST_CLASSES.METERED);
+  assert.ok(real.argv.includes('--real'));
+});
+
+test('derivation: stall-watch requires superego; unknown world/script rejected', () => {
+  assert.throws(
+    () =>
+      planJob({
+        kind: 'derivation',
+        params: { world: 'world-000-smoke.yaml', script: 'nocturne-v001.md', stallWatch: true },
+      }),
+    /stall-watch requires superego/u,
+  );
+  assert.throws(
+    () => planJob({ kind: 'derivation', params: { world: 'does-not-exist.yaml', script: 'nocturne-v001.md' } }),
+    /world not found/u,
+  );
+  assert.throws(
+    () => planJob({ kind: 'derivation', params: { world: 'world-000-smoke.yaml', script: 'nope.md' } }),
+    /tutor script not found/u,
+  );
+});
+
+// ── planJob: pedagogical-drama (compiled curriculum drama spec) ────────────────
+
+test('pedagogical-drama: mock is free and dirs are isolated under exports/curriculum-drama', () => {
+  const plan = planJob({
+    kind: 'pedagogical-drama',
+    params: { spec: 'ai-foundations.dramas.yaml', only: 'D_AF6_X', mock: true },
+  });
+  assert.equal(plan.costClass, COST_CLASSES.FREE);
+  assert.match(plan.script, /generate-pedagogical-dramas\.js$/u);
+  // A bare basename resolves under curriculum/, and every output dir is pinned
+  // under exports/curriculum-drama/<base> — never the phase2 calibration tree.
+  assert.ok(plan.argv.includes('curriculum/ai-foundations.dramas.yaml'));
+  assert.ok(plan.argv.includes('exports/curriculum-drama/ai-foundations/samples'));
+  assert.ok(!plan.command.includes('poetics-calibration'));
+});
+
+test('pedagogical-drama: claude generator is quota; api + org/model slug is metered', () => {
+  const quota = planJob({ kind: 'pedagogical-drama', params: { spec: 'x.dramas.yaml', generator: 'claude' } });
+  assert.equal(quota.costClass, COST_CLASSES.QUOTA);
+  const metered = planJob({
+    kind: 'pedagogical-drama',
+    params: { spec: 'x.dramas.yaml', generator: 'api', model: 'anthropic/claude-sonnet-4.6' },
+  });
+  assert.equal(metered.costClass, COST_CLASSES.METERED);
+});
+
+test('pedagogical-drama: can opt into persistent Claude workers', () => {
+  const plan = planJob({
+    kind: 'pedagogical-drama',
+    params: { spec: 'x.dramas.yaml', generator: 'claude', claudePersistentWorkers: true },
+  });
+  assert.ok(plan.argv.includes('--claude-persistent-workers'));
+  assert.match(plan.command, /--claude-persistent-workers/u);
+});
+
+test('pedagogical-drama: rejects traversal, non-yaml, and absolute outBase', () => {
+  assert.throws(
+    () => planJob({ kind: 'pedagogical-drama', params: { spec: '../secrets.yaml' } }),
+    /invalid characters/u,
+  );
+  assert.throws(() => planJob({ kind: 'pedagogical-drama', params: { spec: 'notes.txt' } }), /must be a \.yaml/u);
+  assert.throws(
+    () => planJob({ kind: 'pedagogical-drama', params: { spec: 'ok.yaml', outBase: '/etc' } }),
+    /repo-relative/u,
+  );
+  assert.throws(() => planJob({ kind: 'pedagogical-drama', params: {} }), /spec is required/u);
 });
 
 // ── launchJob lifecycle ──────────────────────────────────────────────────────────

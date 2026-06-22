@@ -58,6 +58,115 @@ const LOGS_DIR = path.join(EVAL_ROOT, 'logs', 'tutor-dialogues');
 const TRANSCRIPTS_DIR = path.join(EVAL_ROOT, 'logs', 'transcripts');
 const CHECKPOINTS_DIR = path.join(EVAL_ROOT, 'logs', 'checkpoints');
 
+function isAdaptiveTraceLog(log) {
+  return Boolean(log?.schemaVersion >= 5 && log?.original && Array.isArray(log.original.dialogue));
+}
+
+function adaptiveTraceScenarioContext(trace, result) {
+  const initialLearner = trace?.scenario?.openingTurns?.find((turn) => turn?.role === 'learner')?.content || '';
+  const hidden = trace?.scenario?.hidden || {};
+  const expected = trace?.scenario?.expectedStrategyShift;
+  const expectedLabel = Array.isArray(expected) ? expected.join(', ') : expected || 'adaptive response';
+  const hiddenSummary = [
+    hidden.actual_misconception,
+    hidden.actual_sophistication && `sophistication: ${hidden.actual_sophistication}`,
+  ]
+    .filter(Boolean)
+    .join('; ');
+  return {
+    id: result.scenarioId,
+    type: 'adaptive_trap',
+    name: result.scenarioName || trace?.scenario?.id || result.scenarioId,
+    description: hiddenSummary || `Adaptive trap scenario ${result.scenarioId}`,
+    topic: result.scenarioType || result.scenarioId,
+    learner_context: initialLearner,
+    expected_behavior: `The tutor should adapt to the learner signal and realize the expected strategy shift: ${expectedLabel}.`,
+    required_elements: [],
+    forbidden_elements: [],
+  };
+}
+
+function adaptiveTraceToDialogueLog(trace) {
+  const dialogue = trace?.original?.dialogue || [];
+  const initialLearner = trace?.scenario?.openingTurns?.find((turn) => turn?.role === 'learner')?.content || '';
+  const turnResults = [];
+  const conversationHistory = [];
+  const dialogueTrace = [];
+  let tutorIndex = 0;
+  let lastLearner = initialLearner;
+  let learnerAfterTutorIndex = 0;
+
+  for (const message of dialogue) {
+    if (message?.role === 'learner') {
+      lastLearner = message.content || '';
+      if (tutorIndex > 0) {
+        learnerAfterTutorIndex += 1;
+        conversationHistory.push({ learnerMessage: lastLearner });
+        dialogueTrace.push({
+          agent: 'learner',
+          action: 'turn_action',
+          turnIndex: learnerAfterTutorIndex,
+          contextSummary: lastLearner,
+          detail: 'adaptive external learner turn',
+        });
+      }
+      continue;
+    }
+    if (message?.role !== 'tutor') continue;
+    turnResults.push({
+      turnIndex: tutorIndex,
+      turnId: `adaptive-turn-${tutorIndex}`,
+      suggestions: [{ message: message.content || '' }],
+      learnerAction: null,
+      learnerMessage: tutorIndex === 0 ? null : lastLearner,
+      contentTurnId: `adaptive-turn-${tutorIndex}`,
+    });
+    tutorIndex += 1;
+  }
+
+  const publicTranscript = dialogue
+    .map((message) => {
+      if (message.role === 'learner') return `[Learner] ${message.content || ''}`;
+      if (message.role === 'tutor') return `[Tutor Ego] ${message.content || ''}`;
+      return null;
+    })
+    .filter(Boolean)
+    .join('\n');
+
+  return {
+    isMultiTurn: turnResults.length > 1,
+    turnResults,
+    dialogueTrace,
+    conversationHistory,
+    learnerContext: initialLearner,
+    learnerArchitecture: 'adaptive_externalised',
+    transcripts: {
+      public: publicTranscript,
+      full: publicTranscript,
+    },
+    adaptiveTrace: trace,
+  };
+}
+
+function resolveRejudgeScenarioAndDialogueLog(result, preloadedDialogueLog = null) {
+  const standardScenario = evalConfigLoader.getScenario(result.scenarioId);
+  const dialogueLog = preloadedDialogueLog || evaluationStore.loadDialogueLog(result.dialogueId);
+  if (standardScenario) return { scenario: standardScenario, dialogueLog };
+  if (dialogueLog?.adaptiveTrace) {
+    return {
+      scenario: adaptiveTraceScenarioContext(dialogueLog.adaptiveTrace, result),
+      dialogueLog,
+    };
+  }
+  if (isAdaptiveTraceLog(dialogueLog)) {
+    return {
+      scenario: adaptiveTraceScenarioContext(dialogueLog, result),
+      dialogueLog: adaptiveTraceToDialogueLog(dialogueLog),
+    };
+  }
+  return { scenario: null, dialogueLog };
+}
+
 // Redirect tutor-core logs to this repo's logs/ directory (if available)
 import('../tutor-core/index.js')
   .then((mod) => {
@@ -250,6 +359,33 @@ export const EVAL_ONLY_PROFILES = [
   'cell_131_a16_A_egosuperego',
   // A16 (P3) §6.3.10 — F (floor) arm: recognition_only, byte-identical to cell_111 (new cell, NOT cell_111; protects A13 C1 provenance; named deviation, Appendix E)
   'cell_132_a16_F_recognition_only',
+  // Plan 2.0 — explicit adaptation contract / gate / closed-loop policy ablations
+  'cell_133_plan2_contract',
+  'cell_134_plan2_contract_gate',
+  'cell_135_plan2_closed_loop',
+  'cell_136_plan2_closed_loop_crosssuite',
+  'cell_137_plan2_quality_ownership',
+  'cell_138_plan2_quality_fit',
+  'cell_139_plan2_quality_discriminating',
+  'cell_140_plan2_quality_ownership_crosssuite',
+  'cell_141_plan2_quality_fit_crosssuite',
+  'cell_142_plan2_quality_discriminating_crosssuite',
+  'cell_143_plan2_quality_progressive',
+  'cell_144_plan2_quality_progressive_crosssuite',
+  'cell_145_plan2_quality_varied',
+  'cell_146_plan2_quality_varied_crosssuite',
+  'cell_147_plan2_quality_contextual',
+  'cell_148_plan2_quality_contextual_crosssuite',
+  'cell_149_plan2_quality_repeat_contextual',
+  'cell_150_plan2_quality_repeat_contextual_crosssuite',
+  'cell_151_plan2_pair_specificity_closed_loop',
+  'cell_152_plan2_pair_specificity_repeat_contextual',
+  'cell_155_plan2_closureoff_crosssuite',
+  'cell_156_plan2_closureoff_paired',
+  'cell_157_plan2_statescramble_crosssuite',
+  'cell_158_plan2_statescramble_paired',
+  'cell_153_plan2_1_evidence_closed_loop',
+  'cell_154_plan2_1_evidence_repeat_contextual',
 ];
 
 /**
@@ -853,13 +989,13 @@ function parseCliJudgeJsonResponse(text) {
   const errors = [];
   for (const candidate of [...candidates].reverse()) {
     try {
-      return JSON.parse(candidate);
+      return coerceCliJudgeJsonPayload(JSON.parse(candidate));
     } catch (error) {
       errors.push(`JSON.parse: ${error.message}`);
     }
 
     try {
-      return JSON.parse(jsonrepair(candidate));
+      return coerceCliJudgeJsonPayload(JSON.parse(jsonrepair(candidate)));
     } catch (error) {
       errors.push(`jsonrepair: ${error.message}`);
     }
@@ -869,6 +1005,29 @@ function parseCliJudgeJsonResponse(text) {
   throw new Error(
     `Could not parse CLI judge response as JSON. Tried ${candidates.length} candidate(s). ${errors[errors.length - 1] || ''} Raw preview: ${preview}`,
   );
+}
+
+function coerceCliJudgeJsonPayload(parsed) {
+  if (!Array.isArray(parsed)) return parsed;
+
+  const scoredObject = parsed.find(
+    (item) =>
+      item &&
+      typeof item === 'object' &&
+      !Array.isArray(item) &&
+      (item.scores || item.turns || item.overall_score != null || item.overallScore != null),
+  );
+  if (scoredObject) return scoredObject;
+
+  const joinedText = parsed
+    .filter((item) => typeof item === 'string')
+    .join('\n')
+    .trim();
+  if (joinedText) {
+    return parseCliJudgeJsonResponse(joinedText);
+  }
+
+  return parsed;
 }
 
 function extractCliJudgeOverallScore(parsed) {
@@ -4910,7 +5069,7 @@ export async function resumeEvaluation(options = {}) {
  * Compare two or more configurations
  */
 export async function compareConfigurations(configs, options = {}) {
-  const { scenarios = 'all', runsPerConfig = 1, verbose = false } = options;
+  const { scenarios = 'all', runsPerConfig = 1, verbose = false, dryRun = false } = options;
 
   // Run evaluation with specified configs
   const result = await runEvaluation({
@@ -4918,6 +5077,7 @@ export async function compareConfigurations(configs, options = {}) {
     configurations: configs,
     runsPerConfig,
     verbose,
+    dryRun,
     description: `Comparison: ${configs.map((c) => c.label || c.profileName || `${c.provider}/${c.model}`).join(' vs ')}`,
   });
 
@@ -5272,6 +5432,11 @@ function extractLearnerTurnsFromTrace(trace, isMultiAgent, conversationHistory) 
 async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
   const { judgeCli, judgeModel, effectiveCliJudgeModel, judgeOverrideObj, log, skipLearner, skipDeliberation } = opts;
 
+  const resolved = resolveRejudgeScenarioAndDialogueLog(result, dialogueLog);
+  const fullScenario = resolved.scenario;
+  dialogueLog = resolved.dialogueLog || dialogueLog;
+  if (!fullScenario) return;
+
   const turnResults = dialogueLog.turnResults || [];
   const dialogueTrace = dialogueLog.dialogueTrace || [];
   const totalTurns = turnResults.length;
@@ -5279,9 +5444,6 @@ async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
   const profileName = result.profileName || `${result.provider}/${result.model}`;
 
   if (totalTurns === 0) return;
-
-  const fullScenario = evalConfigLoader.getScenario(scenarioId);
-  if (!fullScenario) return;
 
   // ── Shared judge call helper (returns parsed JSON) ──
   async function callJudge(prompt) {
@@ -6031,7 +6193,9 @@ export async function rejudgeRun(runId, options = {}) {
       const result = items[i];
 
       try {
-        const fullScenario = evalConfigLoader.getScenario(result.scenarioId);
+        const resolved = resolveRejudgeScenarioAndDialogueLog(result);
+        const fullScenario = resolved.scenario;
+        const dialogueLog = resolved.dialogueLog;
         if (!fullScenario) {
           throw new Error(`Scenario not found: ${result.scenarioId}`);
         }
@@ -6043,28 +6207,17 @@ export async function rejudgeRun(runId, options = {}) {
 
         // Load dialogue context for multi-turn results
         let dialogueContext = null;
-        let dialogueLog = null;
-        if (result.dialogueId) {
-          const logPath = path.join(LOGS_DIR, `${result.dialogueId}.json`);
-          try {
-            if (fs.existsSync(logPath)) {
-              dialogueLog = JSON.parse(fs.readFileSync(logPath, 'utf-8'));
-              if (dialogueLog.isMultiTurn && dialogueLog.dialogueTrace?.length > 0) {
-                dialogueContext = {
-                  consolidatedTrace: dialogueLog.dialogueTrace,
-                  conversationHistory: (dialogueLog.turnResults || []).map((t, ti) => ({
-                    turnIndex: ti,
-                    turnId: t.turnId,
-                    suggestion: t.suggestions?.[0],
-                    learnerAction: t.learnerAction,
-                    learnerMessage: t.learnerMessage,
-                  })),
-                };
-              }
-            }
-          } catch (e) {
-            log(`  Warning: could not load dialogue log for ${result.dialogueId}: ${e.message}`);
-          }
+        if (dialogueLog?.isMultiTurn && dialogueLog.dialogueTrace?.length > 0) {
+          dialogueContext = {
+            consolidatedTrace: dialogueLog.dialogueTrace,
+            conversationHistory: (dialogueLog.turnResults || []).map((t, ti) => ({
+              turnIndex: ti,
+              turnId: t.turnId,
+              suggestion: t.suggestions?.[0],
+              learnerAction: t.learnerAction,
+              learnerMessage: t.learnerMessage,
+            })),
+          };
         }
 
         const scenarioContext = {

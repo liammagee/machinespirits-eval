@@ -1,0 +1,149 @@
+{
+  "strategy": {
+    "name": "hybrid-scs-x-p50",
+    "description": "Round-2 hybrid: stall-clock tutor x p50-notice learner (tutor from T, learner from L, fresh roles per run)."
+  },
+  "grid": {
+    "rates": [
+      0.15,
+      0.3,
+      0.5,
+      0.75,
+      1
+    ],
+    "graces": [
+      0,
+      1,
+      2
+    ],
+    "maxConcurrents": [
+      1,
+      2,
+      4
+    ],
+    "startTurns": [
+      1,
+      4
+    ],
+    "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "worlds": [
+      "000-smoke",
+      "001-nocturne",
+      "002-lantern",
+      "003-bitterwell",
+      "004-withercombe"
+    ]
+  },
+  "runs": 2250,
+  "successes": 2150,
+  "successRate": 0.956,
+  "scheduleViolations": 0,
+  "byWorld": [
+    {
+      "world": "000-smoke",
+      "runs": 450,
+      "successRate": 0.958
+    },
+    {
+      "world": "001-nocturne",
+      "runs": 450,
+      "successRate": 0.978
+    },
+    {
+      "world": "002-lantern",
+      "runs": 450,
+      "successRate": 0.958
+    },
+    {
+      "world": "003-bitterwell",
+      "runs": 450,
+      "successRate": 0.96
+    },
+    {
+      "world": "004-withercombe",
+      "runs": 450,
+      "successRate": 0.924
+    }
+  ],
+  "byRate": [
+    {
+      "rate": 0.15,
+      "successRate": 0.991
+    },
+    {
+      "rate": 0.3,
+      "successRate": 0.962
+    },
+    {
+      "rate": 0.5,
+      "successRate": 0.973
+    },
+    {
+      "rate": 0.75,
+      "successRate": 0.927
+    },
+    {
+      "rate": 1,
+      "successRate": 0.924
+    }
+  ],
+  "rateGraceMatrix": {
+    "rates": [
+      0.15,
+      0.3,
+      0.5,
+      0.75,
+      1
+    ],
+    "graces": [
+      0,
+      1,
+      2
+    ],
+    "successRate": [
+      [
+        0.98,
+        0.993,
+        1
+      ],
+      [
+        0.96,
+        0.927,
+        1
+      ],
+      [
+        0.987,
+        0.96,
+        0.973
+      ],
+      [
+        0.933,
+        0.927,
+        0.92
+      ],
+      [
+        0.92,
+        0.947,
+        0.907
+      ]
+    ]
+  },
+  "failureModes": {
+    "aporia": 39,
+    "disengagement": 50,
+    "cap_reached": 11
+  },
+  "strongestFullySurvived": {
+    "rate": 1,
+    "grace": 0,
+    "maxConcurrent": 1,
+    "startTurn": 1
+  },
+  "elapsedMs": 4304
+}

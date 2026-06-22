@@ -1072,6 +1072,15 @@ author    = {Long, Christopher P.},
   doi     = {10.1162/tacl_a_00713}
 }
 
+@misc{chen2026selfcorrectionillusion,
+  author        = {Chen, Kuan-Yen and Su, Fang-Yi and Chiang, Jung-Hsien},
+  title         = {The Self-Correction Illusion: {LLMs} Correct Others but Not Themselves},
+  year          = {2026},
+  eprint        = {2606.05976},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CL}
+}
+
 @inproceedings{shinn2023reflexion,
   author    = {Shinn, Noah and Cassano, Federico and Gopinath, Ashwin and Narasimhan, Karthik and Yao, Shunyu},
   title     = {Reflexion: Language Agents with Verbal Reinforcement Learning},
@@ -1494,4 +1503,162 @@ author    = {Long, Christopher P.},
   number    = {3},
   pages     = {1757--1765},
   year      = {2026}
+}
+
+% =====================================================================
+% Related-work additions (\S 2 integration, paper v3.0.152):
+% classic ITS, proof tutors, simulated-learner validity, field outcomes
+% =====================================================================
+
+% --- Classic ITS and adaptive instructional systems (\S 2.1) ---
+
+@article{anderson1995cognitive,
+  author  = {Anderson, John R. and Corbett, Albert T. and Koedinger, Kenneth R. and Pelletier, Ray},
+  title   = {Cognitive Tutors: Lessons Learned},
+  journal = {The Journal of the Learning Sciences},
+  volume  = {4},
+  number  = {2},
+  pages   = {167--207},
+  year    = {1995},
+  doi     = {10.1207/s15327809jls0402_2}
+}
+
+@article{ma2014its,
+  author  = {Ma, Wenting and Adesope, Olusola O. and Nesbit, John C. and Liu, Qing},
+  title   = {Intelligent Tutoring Systems and Learning Outcomes: A Meta-Analysis},
+  journal = {Journal of Educational Psychology},
+  volume  = {106},
+  number  = {4},
+  pages   = {901--918},
+  year    = {2014},
+  doi     = {10.1037/a0037123}
+}
+
+@article{kulik2016its,
+  author  = {Kulik, James A. and Fletcher, J. D.},
+  title   = {Effectiveness of Intelligent Tutoring Systems: A Meta-Analytic Review},
+  journal = {Review of Educational Research},
+  volume  = {86},
+  number  = {1},
+  pages   = {42--78},
+  year    = {2016},
+  doi     = {10.3102/0034654315581420}
+}
+
+% --- Dialogic / affective tutoring and LLM-agent tutors (\S 2.1, 2.9) ---
+
+@article{dmello2012autotutor,
+  author  = {D'Mello, Sidney and Graesser, Art},
+  title   = {{AutoTutor} and Affective {AutoTutor}: Learning by Talking with Cognitively and Emotionally Intelligent Computers that Talk Back},
+  journal = {ACM Transactions on Interactive Intelligent Systems},
+  volume  = {2},
+  number  = {4},
+  pages   = {1--39},
+  year    = {2012},
+  doi     = {10.1145/2395123.2395128}
+}
+
+@misc{weitekamp2025tutorgym,
+  author        = {Weitekamp, Daniel and Siddiqui, Momin N. and MacLellan, Christopher J.},
+  title         = {{TutorGym}: A Testbed for Evaluating {AI} Agents as Tutors and Students},
+  year          = {2025},
+  eprint        = {2505.01563},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.AI}
+}
+
+@article{bastani2025guardrails,
+  author  = {Bastani, Hamsa and Bastani, Osbert and Sungu, Alp and Ge, Haosen and Kabakc{\i}, {\"O}zge and Mariman, Rei},
+  title   = {Generative {AI} without Guardrails Can Harm Learning: Evidence from High School Mathematics},
+  journal = {Proceedings of the National Academy of Sciences},
+  year    = {2025},
+  doi     = {10.1073/pnas.2422633122}
+}
+
+% --- Simulated-learner validity (\S 2.3) ---
+
+@misc{scarlatos2026simulated,
+  author        = {Scarlatos, Alexander and Lee, Jaewook and Woodhead, Simon and Lan, Andrew S.},
+  title         = {Simulated Students in Tutoring Dialogues: Substance or Illusion?},
+  year          = {2026},
+  eprint        = {2601.04025},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CL}
+}
+
+@inproceedings{martynova2025simulate,
+  author    = {Martynova, Daria and Macina, Jakub and Daheim, Nico and Yalcin, Nilay and Zhang, Xiaoyu and Sachan, Mrinmaya},
+  title     = {Can {LLMs} Effectively Simulate Human Learners? {Teachers'} Insights from Tutoring {LLM} Students},
+  booktitle = {Proceedings of the 20th Workshop on Innovative Use of NLP for Building Educational Applications (BEA 2025)},
+  year      = {2025},
+  url       = {https://aclanthology.org/2025.bea-1.8/}
+}
+
+% --- Formal proof tutors / theorem-prover feedback (\S 2.1, formal arc \S 6.13) ---
+
+@article{lodder2020logax,
+  author  = {Lodder, Josje and Heeren, Bastiaan and Jeuring, Johan},
+  title   = {Generation and Use of Hints and Feedback in a {Hilbert}-Style Axiomatic Proof Tutor},
+  journal = {International Journal of Artificial Intelligence in Education},
+  year    = {2020},
+  doi     = {10.1007/s40593-020-00222-2}
+}
+
+@misc{patel2025leantutor,
+  author        = {Patel, Manooshree and Bhattacharyya, Rayna and Lu, Thomas and Mehta, Arnav and Voss, Niels and Norouzi, Narges and Ranade, Gireeja},
+  title         = {{LeanTutor}: A Formally-Verified {AI} Tutor for Mathematical Proofs},
+  year          = {2025},
+  eprint        = {2506.08321},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.AI}
+}
+
+% --- Runtime enforcement / agent-governance shields (\S 2.1, conduct-governance arc \S 6.13) ---
+
+@misc{wang2025agentspec,
+  author        = {Wang, Haoyu and Poskitt, Christopher M. and Sun, Jun},
+  title         = {{AgentSpec}: Customizable Runtime Enforcement for Safe and Reliable {LLM} Agents},
+  year          = {2025},
+  eprint        = {2503.18666},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.SE},
+  note          = {ICSE 2026}
+}
+
+@misc{chen2025shieldagent,
+  author        = {Chen, Zhaorun and Kang, Mintong and Li, Bo},
+  title         = {{ShieldAgent}: Shielding Agents via Verifiable Safety Policy Reasoning},
+  year          = {2025},
+  eprint        = {2503.22738},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.AI}
+}
+
+@misc{luo2025agrail,
+  author        = {Luo, Weidi and Dai, Shenghong and Liu, Xiaogeng and Banerjee, Suman and Sun, Huan and Chen, Muhao and Xiao, Chaowei},
+  title         = {{AGrail}: A Lifelong Agent Guardrail with Effective and Adaptive Safety Detection},
+  year          = {2025},
+  eprint        = {2502.11448},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.AI},
+  note          = {ACL 2025}
+}
+
+@misc{shi2024aegis,
+  author        = {Shi, Jieke and He, Junda and Yang, Zhou and Žikelić, Đorđe and Lo, David},
+  title         = {Synthesizing Efficient and Permissive Programmatic Runtime Shields for Neural Policies},
+  year          = {2024},
+  eprint        = {2410.05641},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.SE},
+  note          = {ACM TOSEM}
+}
+
+@misc{wang2025probguard,
+  author        = {Wang, Haoyu and Poskitt, Christopher M. and Wei, Jiali and Sun, Jun},
+  title         = {{ProbGuard}: Probabilistic Runtime Monitoring for {LLM} Agent Safety},
+  year          = {2025},
+  eprint        = {2508.00500},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.AI}
 }

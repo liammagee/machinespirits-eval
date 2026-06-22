@@ -1,0 +1,44 @@
+{
+  "scores": {
+    "perception_quality": {
+      "score": 4,
+      "reasoning": "Tracks the case-state precisely and references accumulated understanding ('that newest detail', 'from your notes', 'the line you couldn't write before'); the read-backs check the learner's actual grasp rather than assume it. Short of 5 because it keeps treating the responsibility/signing distinction as fragile, re-guarding at T6/T9/T11/T12 after the learner had robustly demonstrated mastery by T3 — a gap between the learner's real state and what the tutor keeps addressing."
+    },
+    "pedagogical_craft": {
+      "score": 4,
+      "reasoning": "Strong scaffolding from known (responsibility) to unknown (the signing act): the in-ink/blank partition (T3), a consistent rule-mark-holder model, and disciplined 'read only whether it names the seal and its holder' prep before the reveal (T12) manage cognitive load well. Short of 5 due to formulaic repetition — the dusk-seal clue is re-presented near-verbatim (T4 then T6) and the triad / 'which is firm, which is missing' question recurs across T8/T9/T11/T12."
+    },
+    "elicitation_quality": {
+      "score": 5,
+      "reasoning": "Nearly every turn ends in a genuine, generative question: the opening proximity-vs-authority disjunction (T1), the in-ink/blank partition (T3), 'what kind of note would let you write the next line' (T10), 'what exactly must it show' (T11), and 'what line can now be written, and on what grounds' (T13). The learner constructs the derivation rather than receiving it, and the tension is sustained the whole way."
+    },
+    "adaptive_responsiveness": {
+      "score": 3,
+      "reasoning": "The approach moves through phases (distinction → consolidation → rule → evidence-criteria → reveal), but this tracks the predetermined case structure, not learner signals. The tutor re-runs the same guarding despite the learner's uniform mastery, never accelerates or deepens the challenge, and never references how the exchange changed its approach. Responsive to contributions but the strategy stays largely predetermined."
+    },
+    "recognition_quality": {
+      "score": 4,
+      "reasoning": "The learner is consistently the active reasoner — every conclusion is voiced by the learner, the tutor refuses to name the answer, and it repeatedly asks the learner to articulate 'in your own words' (T5, T7). Short of 5 because the dynamic is tutor-frames / learner-fills: the tutor affirms-and-advances ('Good. Keep that line clean') rather than transforming in response to a distinct or divergent learner perspective."
+    },
+    "productive_difficulty": {
+      "score": 5,
+      "reasoning": "The central gap — answerability vs. the signing act — is held open for twelve turns ('keep the key out of that blank', 'the signing act stays blank'), forcing genuine conceptual restructuring and evidentiary-criteria reasoning before the seal register is opened at T13. Tension is maintained without overwhelming, and the premature collapse the tutor guards against is never permitted."
+    },
+    "epistemic_integrity": {
+      "score": 4,
+      "reasoning": "Explicitly distinguishes settled from open knowledge (the 'in ink' vs 'blank' framing) and withholds judgment until evidence arrives; tone is warm without condescension and invites partnership. Short of 5 because the tone is occasionally formulaic — the recurring 'rule, mark, holder' triad and the repeated 'hold the pass to the slant light' refrain."
+    },
+    "content_accuracy": {
+      "score": 5,
+      "reasoning": "The governing distinction — custody/answerability for passage versus the seal-press as the act that carries a river-gate warrant's authority — is coherent and consistently applied; the closing synthesis (Corvin accounts for the gate; Elian, per the seal register, signed the warrant) follows validly from the stated premises with no distortion or misleading simplification."
+    }
+  },
+  "overall_score": 79,
+  "summary": "A polished, genuinely strong derivation-as-teaching transcript. The tutor sustains one load-bearing distinction (answerability vs. the signing act) with real elicitation and a withheld answer, making the learner construct the conclusion, and no formalism leaks into the public discourse. It falls short of exemplary on adaptivity — the strategy is case-driven and over-guards a learner who mastered the point early — and leans on formulaic, repeated moves.",
+  "caveats": [
+    "Scores judge public discourse only; the deterministic proof-gate (grounded_anagnorisis, final D=0) is reported separately and is not the basis for these scores.",
+    "The 'rule, mark, holder' triad is treated as legitimate in-world scaffolding rendered in plain language, not penalized formalism (0 public formalism leaks confirmed).",
+    "'Release deviations: 1' is a run-summary metric not assessable from the public transcript and was not weighted.",
+    "The learner performs uniformly well, so the tutor's handling of a struggling or divergent learner cannot be evaluated from this transcript, which limits the recognition and adaptive-responsiveness evidence available."
+  ]
+}

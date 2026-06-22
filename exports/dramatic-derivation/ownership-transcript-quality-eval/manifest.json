@@ -1,0 +1,13 @@
+{
+  "schema": "machinespirits.derivation.blinded_pairwise_transcript_eval.v1",
+  "generated_at": "2026-06-18T00:45:25.127Z",
+  "pair_count": 1,
+  "pairs": [
+    {
+      "pair_id": "heth15-transfergate-fresh",
+      "packet_id": "P01",
+      "packet": "pairs/P01.md",
+      "rubric": "rubric.md"
+    }
+  ]
+}

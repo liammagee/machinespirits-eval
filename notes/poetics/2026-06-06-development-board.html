@@ -10,6 +10,11 @@
   provenance live in TODO.md, the cited paper §, or the linked export/note.
   NOTE: A16 is shown by its true current status (closed null) — the TODO.md A16
   header is stale (reads "P2 next"); flagged for a source update.
+  REV 2026-06-19: A15 closed null on 2026-06-06 (the same day this snapshot was
+  taken, which missed it) — corrected here to closed, dropping the open count
+  8 → 7. The §6.13 dramatic-derivation arc and the Plan 2.x work that landed
+  since are NOT TODO.md A/B/C/D items, so they do not appear on this board; see
+  the dated Update section after §03.
 -->
 <html lang="en">
 <head>
@@ -17,7 +22,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="color-scheme" content="light dark" />
 <title>The development board · machine spirits</title>
-<meta name="description" content="A navigable, filterable snapshot of TODO.md — what's open, what's closed with a result, and what was ruled out by decision. Forty-eight items across six themes; eight still open." />
+<meta name="description" content="A navigable, filterable snapshot of TODO.md — what's open, what's closed with a result, and what was ruled out by decision. Forty-eight items across six themes; seven still open." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Source+Serif+4:opsz,wght@8..60,200..900&family=JetBrains+Mono:wght@300..700&display=swap" />
@@ -34,6 +39,7 @@
       <a href="#read">How to read it</a>
       <a href="#live">Live now</a>
       <a href="#board">The full board</a>
+      <a href="#update">Update</a>
       <a href="#glossary">Glossary</a>
     </nav>
     <div class="rail__actions">
@@ -46,9 +52,9 @@
 <main>
 
   <section class="hero">
-    <div class="hero__rune"><span>§</span> Development board · snapshot 2026-06-06</div>
+    <div class="hero__rune"><span>§</span> Development board · snapshot 2026-06-06 · rev. 2026-06-19</div>
     <h1 class="hero__h1">The board: <span class="em">open, closed, ruled out</span>.</h1>
-    <p class="hero__subtitle">A navigable view of <code>TODO.md</code> — the repo's long-horizon experimental and infrastructure list. Forty-eight items across six themes. Eight are still open; the rest are closed with a result or ruled out by decision.</p>
+    <p class="hero__subtitle">A navigable view of <code>TODO.md</code> — the repo's long-horizon experimental and infrastructure list. Forty-eight items across six themes. Seven are still open; the rest are closed with a result or ruled out by decision.</p>
     <div class="hero__lede">
       <div>
         <p>Most of this board is <em>finished</em>. That is the point of keeping it visible: a closed experiment with a null result is not a dead entry, it is a fence — it tells you which move not to make again. The few <strong>open</strong> items are where the work actually is.</p>
@@ -94,7 +100,7 @@
         </div>
         <div class="mr">
           <p class="note note--moss"><span class="note__lbl">Why keep the closed ones</span> Thirty-six of forty-eight entries are closed. The settled nulls are the most reusable part — they are the map of moves that don't pay.</p>
-          <p class="note note--ink"><span class="note__lbl">Other board</span> Paper-2.0 day-to-day work has its own list at <code>notes/paper-2-0/BOARD.md</code>; this file is the older long-horizon arc. The two don't overlap.</p>
+          <p class="note note--ink"><span class="note__lbl">Other notes</span> Paper-2.0 / poetics work now lives as dated notes under <code>notes/poetics/</code> and <code>notes/</code>; there is no separate <code>notes/paper-2-0/BOARD.md</code> in this fork. This file is the older long-horizon arc.</p>
           <p class="note note--ochre"><span class="note__lbl">Snapshot caveat</span> Generated 2026-06-06. One known drift: <code>TODO.md</code>'s A16 header still reads "P2 next" — A16 has in fact closed null. Shown here by its true status.</p>
         </div>
       </div>
@@ -105,9 +111,9 @@
       <div class="diag">
         <div class="ml"><h2 class="s__num">02<span class="glyph">·</span></h2></div>
         <div class="body">
-          <p class="s__kicker">The eight open items</p>
+          <p class="s__kicker">The seven open items</p>
           <h2 class="s__h">What's live now.</h2>
-          <p>Eight of forty-eight items are open. Two are in motion, two are gated on an external dependency or approval, and four are research deferred to a future paper. Everything else on the board is settled.</p>
+          <p>Seven of forty-eight items are open. Two are in motion, one is gated on an external dependency or approval, and four are research deferred to a future paper. Everything else on the board is settled.</p>
 
           <p class="s__kicker" style="margin-top:1.6rem">In motion</p>
 
@@ -137,14 +143,6 @@
             </div>
           </div>
 
-          <div class="claim">
-            <span class="claim__no">A15</span>
-            <h3 class="claim__h">Cross-dialogue retrieval-augmented adaptation <span class="chip chip--ink">design · gated on A14</span></h3>
-            <div class="claim__body">
-              <p>A persistent cache of <code>(learner-state → policy-action → outcome)</code> tuples across dialogues, retrieved and injected at policy-selection time — no weight updates. It attacks the time-scale A14 explicitly does not: a tutor at turn 5 with a new learner can retrieve 4-turn priors from similar past learners. <strong>Gated on A14</strong> so the cache keys reuse A14's typed, validated state rather than ad-hoc text features. A complement, not a substitute; lands as a paper § if run.</p>
-            </div>
-          </div>
-
           <p class="s__kicker" style="margin-top:1.6rem">Research — deferred to a future paper</p>
           <p>Four research items are designed and partly done, but parked: they are either Paper&nbsp;3.0 infrastructure or separate-paper scope, and the cross-version-contamination rule forbids retro-scoring under a newer rubric anyway.</p>
           <ul>
@@ -156,7 +154,7 @@
         </div>
         <div class="mr">
           <p class="note note--brick"><span class="note__lbl">The one CRITICAL</span> A1 is the only critical-priority open item — and it is gated on approvals, not engineering. The code has been ready since 2026-04-25.</p>
-          <p class="note note--ochre"><span class="note__lbl">Quota discipline</span> A17, A15, and any A18 panel are paid Max-plan runs that share one quota window — run sequentially when arms feed a between-arm contrast.</p>
+          <p class="note note--ochre"><span class="note__lbl">Quota discipline</span> A17 and any A18 panel are paid Max-plan runs that share one quota window — run sequentially when arms feed a between-arm contrast.</p>
           <p class="note note--moss"><span class="note__lbl">Graduation</span> When an open item earns a result it moves to <code>paper-full-2.0.md</code> and turns <span class="chip chip--moss">closed</span> here — it doesn't accumulate prose on this board.</p>
         </div>
       </div>
@@ -269,10 +267,10 @@
               <p>Stages 1–5 done; arc closed (paper §6.9.7). Apparatus-positive but graded-outcome weak — the typed evidence-binding machinery works, the learning payoff is thin.</p>
             </article>
 
-            <article class="ev-card" data-status="risk" data-tags="open experiments">
-              <span class="chip chip--brick"><span class="chip__dot"></span> A15 · open</span>
+            <article class="ev-card" data-status="strong" data-tags="closed experiments">
+              <span class="chip chip--moss"><span class="chip__dot"></span> A15 · closed · null</span>
               <h3>Cross-dialogue retrieval adaptation</h3>
-              <p>Design sketch: a cross-dialogue cache of state→action→outcome tuples retrieved at policy time. Attacks the multi-turn slope A14 can't. Gated on A14's typed keys.</p>
+              <p>Offline k-NN retrieval kill-gate run <strong>null</strong> on the transfer-valid channel (on-policy-agreement 0.3125, below both baselines) — the same shape as the parametric lever. Folded into paper §6.9.8 (v3.0.128). Do not build the live cell.</p>
             </article>
 
             <article class="ev-card" data-status="strong" data-tags="closed experiments">
@@ -481,9 +479,39 @@
           </div>
         </div>
         <div class="mr">
-          <p class="note note--moss"><span class="note__lbl">Count</span> 48 items · <strong>8 open</strong> · 36 closed · 4 ruled out. Of the eight open, exactly one is CRITICAL (A1) and one is the active arc (A18).</p>
+          <p class="note note--moss"><span class="note__lbl">Count</span> 48 items · <strong>7 open</strong> · 37 closed · 4 ruled out. Of the seven open, exactly one is CRITICAL (A1) and one is the active arc (A18).</p>
           <p class="note note--ink"><span class="note__lbl">Source</span> Each card digests one <code>TODO.md</code> entry. The file is the canonical record; this is a view. Empirical numbers trace to the cited paper § or export.</p>
           <p class="note note--ochre"><span class="note__lbl">Reading the nulls</span> A3, A4, A12, A16 are closed <em>nulls</em>. They are shown green (closed) because a settled null is a result — it fences off a move.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 — Update 2026-06-19 -->
+    <section class="s" id="update">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">04<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Since this snapshot — work that isn't on this board</p>
+          <h2 class="s__h">What moved after 2026-06-06.</h2>
+          <p>This board mirrors <code>TODO.md</code>, whose A/B/C/D/E/F items have not changed status since the snapshot (beyond the A15 closure corrected above). But the project's most active recent work is <em>not</em> tracked as TODO items — it lives in the paper and the dated <code>notes/poetics/</code> files. Two threads, both folded into <code>paper-full-2.0.md</code> (now v3.0.164):</p>
+          <div class="claim">
+            <span class="claim__no">§6.13</span>
+            <h3 class="claim__h">The dramatic-derivation arc — can the tutor govern its own conduct? <span class="chip chip--moss">closed, bounded</span></h3>
+            <div class="claim__body">
+              <p>Adaptation relocated from <em>reading interiors</em> (the §6.8–6.12 nulls) to <em>governing conduct</em> on a constructed stage: a tutoring drama whose plot is the proof-DAG of a contingent secret, with mechanical "grounded anagnorisis" verdicts. Authority moved into the tutor's own superego (§6.13.4, v3.0.135); a one-step repair clause grounded the first dialled-up arm (§6.13.9); a conduct-blind proof-debt guard moved the failure class (§6.13.10). The boundary work then showed the pacing lift is <strong>scheduling discipline, not latent proof-state</strong> — a page-only guard grounds 5/5 on a linear chain (§6.13.11, v3.0.149) — but its sufficiency is <strong>geometry-conditional</strong>: on a forked AND-join world only the hidden guard works (§6.13.12), on a linear-spine decoy world only the page-only guard works (§6.13.13). No single channel is geometry-universal (§6.13.14); the durable baseline is hidden + proof-debt, and adaptive channel selection is <strong>not</strong> established (§6.13.15). Day-to-day notes: the dated <a href="/story">story</a> and the <code>notes/poetics/</code> dramatic-derivation files.</p>
+            </div>
+          </div>
+          <div class="claim">
+            <span class="claim__no">§6.12</span>
+            <h3 class="claim__h">Adaptation Plan 2.0 / 2.1 — localized simulated strategy governance <span class="chip chip--moss">bounded positive</span></h3>
+            <div class="claim__body">
+              <p>The "concealed-interior" plan the <a href="/story">story</a> left as a standing ask has run, as a post-hoc, simulated, LLM-judged line (explicitly not a pre-registered replacement; no human-learning claim). A closed-loop contract preserves 8/8 strict shift and wins quality (§6.12.1); frozen-policy transfer holds cross-suite 6/6 (§6.12.2); and "Plan 2.1 Early Completion" — adding an adaptive-completion channel so the graph stops emitting redundant no-intervention closures — gives the strongest bounded positive in the line: 10/10 strict shift, quality 63.2 vs 51.5, tutor last-turn 83.3 vs 62.0 (§6.12.3, v3.0.163). It does not overturn the §6.3 trajectory-slope null.</p>
+            </div>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">Why not on the board</span> These are paper sections and dated lab notes, not long-horizon TODO items. The board stays a faithful mirror of <code>TODO.md</code>; the paper is the source of truth for every number above.</p>
+          <p class="note note--ochre"><span class="note__lbl">Scope</span> Both threads are <em>bounded</em> — single-stack attribution, formal (not mentalistic) verdicts, geometry-conditional guards, simulated learners. The throughline holds: what helps is whatever signal the conduct can act on, not richer inference about the learner.</p>
         </div>
       </div>
     </section>

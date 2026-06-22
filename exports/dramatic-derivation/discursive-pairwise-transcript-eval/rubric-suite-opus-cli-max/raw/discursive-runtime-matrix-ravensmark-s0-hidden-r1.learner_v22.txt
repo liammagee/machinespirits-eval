@@ -1,0 +1,31 @@
+{
+  "scores": {
+    "engagement_quality": {
+      "score": 4,
+      "reasoning": "Consistently constructive (ICAP): turn 1 resists the easy 'Corvin kept the gate' answer and draws its own office-vs-signing-hand distinction; turn 9 sharpens 'keeper' to the sole hand that actually pressed the seal rather than someone holding a stamp in a drawer; it self-explains and predicts what the folio must supply. Short of interactive/5 because after turn 1 it rarely redirects the tutor and leans heavily on tutor-supplied framings ('counting-house not a signing hand,' 'law, mark, holder')."
+    },
+    "learner_authenticity": {
+      "score": 3,
+      "reasoning": "The scrupulous-magistrate persona is consistent and the resistance is plausible, but the voice carries pervasive artificial balance ('I grant it… but', 'I do not dispute it… but') and a uniformly polished register, with essentially no authentic confusion or struggle — it reasons flawlessly from turn 1. Reads as a literary character performing forensic reasoning rather than a genuine student working through a misunderstanding."
+    },
+    "revision_signals": {
+      "score": 2,
+      "reasoning": "Movement is almost entirely additive: the turn-1 framework (officer-in-charge ≠ hand that pressed the seal) is held unchanged through turn 13 and only filled in as evidence arrives. There is no 'I was wrong'/restructuring and the learner never overturns a prior position. Processing is rich (well above mere agreement), but genuine revision is absent."
+    },
+    "conceptual_progression": {
+      "score": 4,
+      "reasoning": "Clear cumulative arc: the learner builds and repeatedly references a multi-part frame — the mark (raven's-notch seal, turn 4), the law (seal-press is the operative act, turn 7), and the pending keeper — explicitly tracking 'two parts settled, one still waiting' across turns 10-12 and joining all three at turn 13. Short of 5 because the frame is substantially tutor-scaffolded and turns 8-12 are consolidation/holding rather than new development."
+    },
+    "metacognitive_awareness": {
+      "score": 4,
+      "reasoning": "Explicitly and consistently monitors its own inferential state in public language — 'we have the seal but not the signer' (t5), 'I have law and mark, but no hand to write' (t7) — and acts strategically by naming exactly what evidence is still missing (t1 request to bring the pass; sustained identification of the unnamed keeper). Short of 5 because it tracks evidentiary sufficiency rather than its own comprehension and never surfaces genuine confusion about its understanding."
+    }
+  },
+  "overall_score": 59,
+  "summary": "A disciplined, cumulative forensic reasoner: it holds a sound distinction from turn 1, tracks what is settled versus still owed, and lands the conclusion cleanly. Strong on engagement and conceptual progression, but it never revises a position and shows no authentic confusion or struggle — precisely the learning/student qualities this rubric prizes — so it sits modestly above the midpoint.",
+  "caveats": [
+    "Much of the learner's apparent sophistication is adopted from tutor-supplied framings and metaphors ('counting-house not a signing hand', 'law, mark, holder', 'the hand the warrant leaves behind'), which inflates surface engagement and progression.",
+    "Authenticity and metacognition are judged against a drama-character (magistrate) persona rather than a typical confused student; the rubric's confusion/struggle anchors are largely inapplicable here, which caps both dimensions.",
+    "Scored on public discourse only; the deterministic proof gate (verdict grounded_anagnorisis, final gap 0) was not credited, and the transcript carried no public formalism leaks to penalize."
+  ]
+}

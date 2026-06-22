@@ -1,0 +1,35 @@
+{
+  "scores": {
+    "pedagogical_progression": {
+      "score": 4,
+      "reasoning": "Clear forward spine from surface to depth: contract/name (t1-2) → where it broke, the crown (t4) → why, green mortar = struck centering (t9) → what mark connects a yard, the crowsfoot (t11-13) → which yard, Caudle (t17) → which hand, Oswin (t20-21). New conceptual territory opens repeatedly. Held back from 5 by a redundant middle stretch (t11-16) where the learner re-closes the same two 'Reyner' lines almost verbatim while the inquiry only intermittently advances."
+    },
+    "dialogical_responsiveness": {
+      "score": 4,
+      "reasoning": "Strong mutual uptake: the tutor consistently grips the learner's exact prior move and paces it ('Slow down one joint' t5; 'Don't jump from Caudle to a person yet' t18; 'two steps, not one leap' t20), and the learner adjusts each time. Capped at 4 by the tutor's recurring scripted scaffold (shown/not-shown, 'one line closed, one open') and by the learner's habit of re-stating settled Reyner material the tutor did not ask for, which the tutor must gently manage (t14)."
+    },
+    "knowledge_co_construction": {
+      "score": 4,
+      "reasoning": "The learner does real interpretive labor — inferring struck-centering from a crown break (t4), recognizing the soffit prop-mark as the needed thread (t11-12), and assembling the final join himself (t21: 'the arch drew its own line from the broken bed back to a carter's name'). But every load-bearing fact is tutor-supplied via staged evidence (crown location, green mortar, crowsfoot=Caudle, Oswin=sole carter), so several key beats are transfers, not joint discovery; collaborative but tutor-controlled."
+    },
+    "productive_tension_management": {
+      "score": 4,
+      "reasoning": "The founding tension — the seductive shortcut (Reyner's bond = guilt) versus the earned derivation of the actual hand — is held open productively across all 21 turns and is the engine of the whole inquiry; the tutor repeatedly validates the bond yet refuses to let it close the case ('I'm not throwing Reyner's bond away' t8), paying off in the bond-free finale (t21). Not a 5 because there is little genuine confusion or resistance: the learner concedes immediately each time ('I take your point' t1, 'I was running those two together' t2), so micro-tensions are smoothly redirected rather than wrestled with."
+    },
+    "transformation_evidence": {
+      "score": 5,
+      "reasoning": "Unambiguous, observable shift in the learner. Opens conflating liability with culpability ('Reyner's bond is right there... isn't that already the notes?' t1); closes reasoning in a genuinely different mode and explicitly overturning that opening stance ('No bond, no builder's surety required... the arch drew its own line from the broken bed back to a carter's name' t21). The learner re-articulates the liability≠act distinction unprompted across the dialogue, showing the change is internalized, not just stated at the end."
+    },
+    "interactional_coherence": {
+      "score": 5,
+      "reasoning": "Exemplary arc: opening question ('don't write a name yet — what shows the hand?' t1), escalating evidentiary development (file → warden's measure → photo → timber-reeve → toll-book), and a clean resolution that derives Oswin while explicitly excluding the bond. Each turn connects directly to the prior state; the staging makes the exchange purposeful. The recurring Reyner thread is deliberately kept separate as a 'closed line' and resolved in the finale rather than abandoned, so coherence holds throughout."
+    }
+  },
+  "overall_score": 81,
+  "summary": "A well-formed derivation drama with an exemplary investigative arc and clear learner transformation from contract-shortcut thinking to earned physical derivation of the culpable hand. Responsiveness, collaboration, and tension-handling are genuinely strong but operate within a firmly tutor-led inquiry in which the learner concedes readily and all evidence is supplied from above, and a redundant middle stretch (repeated re-closing of the Reyner lines) flattens progression. Scores 4s on the four interaction dimensions and 5s on transformation and coherence.",
+  "caveats": [
+    "Scored on public discourse only; the formal proof/derivation gate is excluded by design. The in-world 'lines/boxes/columns' bookkeeping was read as legitimate dramatic rendering (regex leaks = 0) — neither penalized nor rewarded as formalism.",
+    "This is a strongly tutor-led guided inquiry: the destination (Oswin) and all evidence are tutor-controlled and the learner rarely resists, which caps co-construction and tension-management at 4 despite a genuinely generative founding tension.",
+    "The learner's verbatim re-closing of the two Reyner lines across t11-16 is redundant and mildly non-responsive; it depresses progression and responsiveness without breaking the overall arc."
+  ]
+}

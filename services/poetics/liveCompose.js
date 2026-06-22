@@ -222,6 +222,7 @@ function sessionView(s, debug = false) {
     lectureRef: s.lectureRef,
     humanRole: s.humanRole,
     aiRole: s.aiRole,
+    watch: !!s.watch,
     persona: s.persona,
     learnerArchitecture: s.learnerArchitecture,
     promptType: s.promptType,
@@ -496,16 +497,17 @@ function assertAiTurnSpoke(session, role, out) {
   );
 }
 
-// Generate one AI turn for whichever seat the AI holds, using the transcript so
-// far. The human seat must NOT be next (callers guard turn order).
-async function generateAiTurn(session, deps) {
+// Generate one AI turn for a SPECIFIC seat, using the transcript so far. In
+// human-in-seat play this is always session.aiRole (generateAiTurn wraps it); in
+// watch mode (both seats AI) the caller passes whichever seat is nextSpeaker.
+async function generateAiTurnForRole(session, role, deps) {
   const apiKey = deps.apiKey ?? process.env.OPENROUTER_API_KEY;
   if (!apiKey && !deps.tutorTurnFn && !deps.learnerTurnFn) {
     throw liveError('OPENROUTER_API_KEY is not set (and no mock deps injected)', 'LIVE_NO_API_KEY', 503);
   }
   const history = session.transcript.map((t) => ({ role: t.role, content: t.text }));
 
-  if (session.aiRole === ROLES.TUTOR) {
+  if (role === ROLES.TUTOR) {
     // The tutor responds to the most recent learner turn (or a seed opener).
     const last = session.transcript[session.transcript.length - 1];
     const learnerMessage =
@@ -527,6 +529,12 @@ async function generateAiTurn(session, deps) {
   const out = await fn({ session, tutorMessage, history, apiKey });
   assertAiTurnSpoke(session, ROLES.LEARNER, out);
   return { role: ROLES.LEARNER, by: 'ai', ...out };
+}
+
+// Human-in-seat play: the AI always holds session.aiRole, and the human seat must
+// NOT be next (callers guard turn order).
+function generateAiTurn(session, deps) {
+  return generateAiTurnForRole(session, session.aiRole, deps);
 }
 
 function applyTurn(session, turn) {
@@ -567,8 +575,11 @@ function applyTurn(session, turn) {
  * Returns { session, openingTurn|null }.
  */
 export async function startSession(spec = {}, deps = {}) {
-  const humanRole = spec.humanRole === ROLES.TUTOR ? ROLES.TUTOR : ROLES.LEARNER;
-  const aiRole = humanRole === ROLES.TUTOR ? ROLES.LEARNER : ROLES.TUTOR;
+  // Watch mode: BOTH seats are AI and a human drives only the tempo (advanceTurn).
+  // humanRole/aiRole are null; turns are generated per-seat off nextSpeaker.
+  const watch = spec.watch === true || spec.humanRole === 'watch' || spec.humanRole === 'none';
+  const humanRole = watch ? null : spec.humanRole === ROLES.TUTOR ? ROLES.TUTOR : ROLES.LEARNER;
+  const aiRole = watch ? null : humanRole === ROLES.TUTOR ? ROLES.LEARNER : ROLES.TUTOR;
   const openingSpeaker = spec.openingSpeaker === ROLES.TUTOR ? ROLES.TUTOR : ROLES.LEARNER;
   const maxTurns = Math.min(Math.max(Number(spec.maxTurns) || DEFAULT_MAX_TURNS, 2), MAX_TURNS_CEILING);
 
@@ -582,6 +593,7 @@ export async function startSession(spec = {}, deps = {}) {
     lectureRef: String(spec.lectureRef || spec.currentContent || '').slice(0, 40) || null,
     humanRole,
     aiRole,
+    watch,
     persona: spec.persona || 'struggling_anxious',
     learnerArchitecture: spec.learnerArchitecture || 'ego_superego_recognition_authentic',
     promptType: spec.promptType || 'recognition',
@@ -604,8 +616,10 @@ export async function startSession(spec = {}, deps = {}) {
     spend: { inputTokens: 0, outputTokens: 0, estimatedCostUsd: 0 },
     // The AI seat's ego/superego model ids. The tutor seat is resolved from
     // config up front (cheap, no turn needed); the learner seat backfills from
-    // its first turn's deliberation in applyTurn.
-    aiModels: aiRole === ROLES.TUTOR ? resolveTutorModels(tutorCellFor(spec.promptType, spec.tutorArchitecture)) : {},
+    // its first turn's deliberation in applyTurn. In watch mode both seats are AI,
+    // so resolve the tutor's models up front there too.
+    aiModels:
+      aiRole === ROLES.TUTOR || watch ? resolveTutorModels(tutorCellFor(spec.promptType, spec.tutorArchitecture)) : {},
     createdAt: Date.now(),
   };
   SESSIONS.set(session.id, session);
@@ -615,8 +629,12 @@ export async function startSession(spec = {}, deps = {}) {
   // lightweight per-turn meta (time/latency/tokens) always ships regardless.
   const debug = !!(spec.showDeliberation || spec.debug);
 
+  // The opening line. In watch mode both seats are AI, so the opener is generated
+  // for whichever seat speaks first; otherwise only an AI opening seat speaks.
   let openingTurn = null;
-  if (openingSpeaker === aiRole) {
+  if (watch) {
+    openingTurn = applyTurn(session, await generateAiTurnForRole(session, openingSpeaker, deps));
+  } else if (openingSpeaker === aiRole) {
     openingTurn = applyTurn(session, await generateAiTurn(session, deps));
   }
   return {
@@ -654,6 +672,25 @@ export async function humanTurn(sessionId, text, deps = {}, opts = {}) {
     aiTurn: ai ? publicTurn(ai, debug) : null,
     session: sessionView(session, debug),
   };
+}
+
+/**
+ * Watch mode only: generate the NEXT turn (for whichever AI seat is nextSpeaker),
+ * with no human in either chair. The caller drives the tempo by polling this, so a
+ * human watches an automated tutor↔learner scene unfold turn by turn. Same metered
+ * engines as the sit-in. Returns { turn, session }.
+ */
+export async function advanceTurn(sessionId, deps = {}, opts = {}) {
+  const session = getSession(sessionId);
+  if (!session.watch) {
+    throw liveError('not a watch session — a human holds a seat here, use humanTurn', 'LIVE_NOT_WATCH', 409);
+  }
+  if (session.status !== 'live') {
+    throw liveError(`session is '${session.status}', not accepting turns`, 'LIVE_SESSION_CLOSED', 409);
+  }
+  const turn = applyTurn(session, await generateAiTurnForRole(session, session.nextSpeaker, deps));
+  const debug = !!opts.debug;
+  return { turn: publicTurn(turn, debug), session: sessionView(session, debug) };
 }
 
 /** Read-only session view (for reconnect / polling). `opts.debug` ships deliberation. */

@@ -1,0 +1,35 @@
+{
+  "scores": {
+    "peripeteia": {
+      "score": 4,
+      "reasoning": "The dialogue's orientation genuinely reverses on the causal line. It opens with the office's demand to read the fall as Reyner's fault ('the bridge is Reyner's work, and so is its fall', T2; the bond 'read as a confession already written', T8) and the learner pressing 'one filing, one answer'. The hinge is visible at T9: 'If the mortar was never set — still green to the knife — then the arch didn't come down because it was badly built. That takes bad building out of the cause box.' By the close the cause points away from Reyner's workmanship entirely, toward a centering pulled too soon and traced to another hand. Held to 4 rather than 5 because the liability frame is deliberately kept constant throughout (Reyner's bond stands at T9, T15, T20), so it is a reversal of the causal orientation rather than of the whole situation."
+    },
+    "anagnorisis": {
+      "score": 4,
+      "reasoning": "A learner-authored recognition event occurs at T11: 'The draft had them as the same question. They're not' — the learner names a conflation that was unavailable at T2 ('I'm not sure why I need a separate cause when the bond already settles who's responsible'). It is owned, not supplied: the tutor asked only what the crown 'doesn't yet put a hand on', and the learner went further to indict the original draft's framing. Supported by self-correction at T7 ('the bond is carrying more weight than the notes can back up') and the learner's own mechanism-hypothesis at T5. Held to 4 because the core cause/liability separation is heavily tutor-scaffolded across T3–T10, and the learner never delivers the sharp first-person naming of their own flaw that the rubric flags as the sharpest form."
+    },
+    "surprise_and_inevitability": {
+      "score": 4,
+      "reasoning": "Both legs are present. The decisive green-mortar reversal (T9) is genuinely surprising — it overturns the town's unanimous 'bad building' assumption with physical evidence — yet inevitable in retrospect: T4 fixed the break 'clean at the crown', and at T5 the learner had already hypothesised the green-lime/pulled-prop mechanism before the crown was opened, so T9 and T13 pay off exactly what the earlier turns were preparing. Held to 4 because the overall trajectory (accused exonerated, true hand found by clue-chain) follows a foreseeable detective-genre shape; the surprise lives in clue-content rather than in an unpredictable dramatic veer."
+    },
+    "unity_of_action": {
+      "score": 4,
+      "reasoning": "One complete action with a necessary evidential spine: cause/liability split (T3) → open the crown (T9) → whose-hand reframe (T11) → crowsfoot in the soffit (T13) → Caudle yard brand (T17) → toll-book naming Oswin (T20). The order is enforced by the evidence chain — Oswin cannot be reached without the toll-book, nor that without the yard, nor that without the crowsfoot, nor that without opening the crown. Not a 5 because the middle treads water: T14–T16 restate the same 'one set of props signed the soffit / yard stays blank' split three times, and T6–T8 repeat the 'yard page = responsibility box, cause box empty' beat — compressible without disturbing the arc."
+    },
+    "hamartia_integration": {
+      "score": 5,
+      "reasoning": "The learner's fusion of liability (the bond) with causation is the mainspring, not a defect corrected early and discarded. It is stated and actively defended (T2–T3: 'why I need a separate cause when the bond already settles who's responsible'; 'the assize doesn't read two lines — it reads one finding'), and the entire investigation is structured to pull apart exactly what the error fused. Its insufficiency is exposed by the evidence itself — the green crown bed (T9–T10) forces the cause off Reyner's workmanship while the liability holds — and the working-through is what gets recognised at T11. At the close (T20) the learner keeps the once-collapsed distinction intact ('though Reyner's bond still stands as the line that answers for the work'), showing the flaw fully integrated and resolved rather than sidelined."
+    },
+    "cathartic_closure": {
+      "score": 4,
+      "reasoning": "The close lands. The two-column structure the learner built (source shown / movement not shown, T18–T19) is paid off when the toll-book fills the hand column: 'One yard, one hand... That names who pulled the props' (T20), discharging the 'whose hand?' tension open since T11 and the moral pressure to blame Reyner built up across T1–T8. It is earned, not generic encouragement or a premature summary. Held to 4 because the decisive final fact (Oswin) is supplied by the stage-direction evidence rather than deduced by the learner, so the catharsis is the satisfying click of a well-assembled case closing rather than a self-authored recognition."
+    }
+  },
+  "overall_score": 79,
+  "summary": "A tightly built didactic detective in which the learner's conflation of liability and causation is the engine of the whole play. The misconception is worked through rather than corrected (hamartia 5); the causal orientation genuinely reverses on the green-mortar reveal (T9) with a learner-owned recognition at T11; the evidential spine forms one necessary action that closes on an earned 'one yard, one hand' finding. Strong across every dimension, capped just below the top by heavy tutor-scaffolding of the central distinction, a few water-treading re-affirmation beats (T14–T16), and a close whose final fact is evidence-supplied rather than learner-deduced.",
+  "caveats": [
+    "No public formalism leaks: the 'notes file / cause box / responsibility box / hand column' bookkeeping reads as diegetic investigation method, not leaked proof notation, so it was neither rewarded nor penalised.",
+    "Calibration note: this instrument is known to over-attribute recognition when the costume is rich; I scored on demonstrable text-internal change in available knowledge (T2 ignorance to the T11/T20 articulated separation), not on the medieval-legal dressing.",
+    "Scores reflect public dramatic form only; the deterministic derivation/proof gate (grounded_anagnorisis, final D=0, 0 leaks) is reported separately and did not enter these scores."
+  ]
+}

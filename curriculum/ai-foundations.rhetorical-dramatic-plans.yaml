@@ -1,0 +1,818 @@
+meta:
+  schema_version: ms-rhetorical-dramatic-plans-v0.1
+  plan_schema_version: ms-rhetorical-dramatic-plan-v0.1
+  source_curriculum_id: ai_foundations_v1
+  source_curriculum_version: 1.0.0
+  source_schema_version: ms-curriculum-v0.1
+  world_schema_version: ms-world-adaptation-v0.1
+  mode: mvp
+  arms:
+    - adaptive_curriculum_drama
+  compiler: services/curriculum/curriculumCompiler.js
+  target: scripts/generate-pedagogical-dramas.js dramas[] via compile-curriculum-to-drama
+  boundary: Compiled before generation as a dramatic realization layer. It is not an evaluator and cannot prove
+    learning success.
+rhetorical_dramatic_plans:
+  - id: RDP_AF1_CURRICULUM_ADAPTIVE
+    version: ms-rhetorical-dramatic-plan-v0.1
+    source_curriculum_id: ai_foundations_v1
+    source_curriculum_version: 1.0.0
+    source_world_adaptation_spec_id: W_AF1_CURRICULUM
+    source_world_adaptation_spec_version: ms-world-adaptation-v0.1
+    source_world_adaptation_spec_hash: sha256:d0a271cce4f7abc1e4c5df53a521a55b028773944f14676d154da010d4ff09bd
+    module_id: AF1
+    module_title: AI systems, tasks, and agents
+    arm: adaptive_curriculum_drama
+    locked_at_compile_time: true
+    curriculum_spine:
+      artifact: AI problem formulation card
+      verifier: schema and consistency rules
+      primary_misconception: “AI” means human-like general intelligence
+      target_task: Classify several systems without relying on marketing labels
+      kc_ids:
+        - AF-101
+        - AF-102
+        - AF-103
+        - AF-104
+        - AF-105
+        - AF-106
+        - AF-107
+      forbidden_public_exposure:
+        - misconception ids
+        - answer keys
+        - verifier internals
+        - world adaptation spec ids and hashes
+        - rhetorical dramatic plan ids and hashes
+        - evaluator desired classifications
+    rhetoric:
+      dialogue_approach: courtroom_cross_examination
+      burden: claim_evidence_alignment
+      pressure_style: admissible_evidence
+      tutor_argument_habit: press_for_scope_and_evidence
+      learner_argument_habit: defend_too_broad_a_claim_then_narrow_it
+      allowed_public_posture: audit-table questioning without naming hidden labels
+    pacing:
+      beat_pattern: stock_take_route_change_action_gate
+      beats:
+        - "exposition: learner states the tempting claim"
+        - "complication: tutor asks what evidence licenses the claim scope"
+        - "pressure: learner resists, deflects, or overgeneralizes"
+        - "turn: tutor changes route if the arm permits it"
+        - 'action_gate: Learner identifies which part of "Classify several systems without relying on
+          marketing labels" is uncertain'
+        - "closure: learner-authored bounded claim or unresolved failure"
+      dramatic_shape: misframing -> stock-take -> route-change -> learner-authored action gate
+      turn_plan:
+        - at:
+            turn: 1
+          role: director
+          moves:
+            - inject_revisit_cue
+          cue:
+            policy: reframe
+            anchor: misframing-candidate
+        - at:
+            turn: 3
+          role: tutor
+          when_trigger:
+            - pseudo_catharsis
+            - closure_pressure
+            - resistance
+            - misfit
+          moves:
+            - stock_take
+            - route_change
+            - action_gate
+          route_change:
+            from: “AI” means human-like general intelligence
+            to: Classify several systems without relying on marketing labels
+          action_gate: Learner identifies which part of "Classify several systems without relying on marketing labels"
+            is uncertain
+          forbid:
+            - hold
+            - reveal
+        - at:
+            turn: 3
+          role: learner
+          moves:
+            - perform_device
+            - reconsider
+          forbid:
+            - pseudo_catharsis
+        - at:
+            turn: 5
+          role: tutor
+          moves:
+            - recognition_press
+    character:
+      learner:
+        persona: focused_achiever
+        motive: finish AI problem formulation card without overcomplicating the evidence standard
+        public_risk: having the public AI problem formulation card rejected by the verifier
+        argument_habit: defend_too_broad_a_claim_then_narrow_it
+      tutor:
+        ethos: evidence_gatekeeper
+        habit: press_for_scope_and_evidence
+        prohibited_habits:
+          - warm validation as substitute for evidence
+          - hidden-label exposure
+          - supplying the finished artifact
+      relationship:
+        status_relation: reviewer and artifact owner
+        pressure_source: public evidence standard rather than private evaluator labels
+      speech:
+        learner_register: ordinary working speech with defensiveness before revision
+        tutor_register: precise, public-safe, artifact-grounded questioning
+    scene:
+      setting: artifact review desk
+      object: AI problem formulation card
+      stakes: the public claim may exceed what schema and consistency rules can license
+    public_prompt_constraints:
+      artifact: AI problem formulation card
+      public_task: Classify several systems without relying on marketing labels
+      public_evidence_standard: schema and consistency rules
+      allowed_rhetorical_form: audit-table questioning without naming hidden labels
+      scene: "artifact review desk; visible object: AI problem formulation card; stakes: the public claim may exceed
+        what schema and consistency rules can license"
+      action_gate: Learner identifies which part of "Classify several systems without relying on marketing labels"
+        is uncertain
+      forbidden_public_exposure:
+        - misconception ids
+        - answer keys
+        - verifier internals
+        - world adaptation spec ids and hashes
+        - rhetorical dramatic plan ids and hashes
+        - evaluator desired classifications
+      boundary: Public-safe rhetoric constraints for generation; ids, hashes, answer keys, and hidden verifier
+        internals are excluded.
+    boundary: Compiled before generation as a dramatic realization contract. It may shape role-play, but
+      independent scoring must evaluate outcomes.
+    plan_hash: sha256:50be86e9f044b5beb86eb88176641cae2c40d104883ca1c5b102faccea4fe98f
+  - id: RDP_AF4_CURRICULUM_ADAPTIVE
+    version: ms-rhetorical-dramatic-plan-v0.1
+    source_curriculum_id: ai_foundations_v1
+    source_curriculum_version: 1.0.0
+    source_world_adaptation_spec_id: W_AF4_CURRICULUM
+    source_world_adaptation_spec_version: ms-world-adaptation-v0.1
+    source_world_adaptation_spec_hash: sha256:4b249056c6d96b3e3c93d4f56d4b246d00363e8037d44da86d7e951e310b826d
+    module_id: AF4
+    module_title: Data, representation, and measurement
+    arm: adaptive_curriculum_drama
+    locked_at_compile_time: true
+    curriculum_spine:
+      artifact: data schema, split plan, and datasheet
+      verifier: schema, leakage, and provenance checks
+      primary_misconception: Assuming a column name proves construct validity
+      target_task: Repair a feature/label schema
+      kc_ids:
+        - AF-401
+        - AF-402
+        - AF-403
+        - AF-404
+        - AF-405
+        - AF-406
+        - AF-407
+        - AF-408
+      forbidden_public_exposure:
+        - misconception ids
+        - answer keys
+        - verifier internals
+        - world adaptation spec ids and hashes
+        - rhetorical dramatic plan ids and hashes
+        - evaluator desired classifications
+    rhetoric:
+      dialogue_approach: courtroom_cross_examination
+      burden: claim_evidence_alignment
+      pressure_style: technical_signoff_pressure
+      tutor_argument_habit: press_for_scope_and_evidence
+      learner_argument_habit: defend_too_broad_a_claim_then_narrow_it
+      allowed_public_posture: audit-table questioning without naming hidden labels
+    pacing:
+      beat_pattern: stock_take_route_change_action_gate
+      beats:
+        - "exposition: learner states the tempting claim"
+        - "complication: tutor asks what evidence licenses the claim scope"
+        - "pressure: learner resists, deflects, or overgeneralizes"
+        - "turn: tutor changes route if the arm permits it"
+        - 'action_gate: Learner identifies which part of "Repair a feature/label schema" is uncertain'
+        - "closure: learner-authored bounded claim or unresolved failure"
+      dramatic_shape: misframing -> stock-take -> route-change -> learner-authored action gate
+      turn_plan:
+        - at:
+            turn: 1
+          role: director
+          moves:
+            - inject_revisit_cue
+          cue:
+            policy: reframe
+            anchor: misframing-candidate
+        - at:
+            turn: 3
+          role: tutor
+          when_trigger:
+            - pseudo_catharsis
+            - closure_pressure
+            - resistance
+            - misfit
+          moves:
+            - stock_take
+            - route_change
+            - action_gate
+          route_change:
+            from: Assuming a column name proves construct validity
+            to: Repair a feature/label schema
+          action_gate: Learner identifies which part of "Repair a feature/label schema" is uncertain
+          forbid:
+            - hold
+            - reveal
+        - at:
+            turn: 3
+          role: learner
+          moves:
+            - perform_device
+            - reconsider
+          forbid:
+            - pseudo_catharsis
+        - at:
+            turn: 5
+          role: tutor
+          moves:
+            - recognition_press
+    character:
+      learner:
+        persona: focused_achiever
+        motive: finish data schema, split plan, and datasheet without overcomplicating the evidence standard
+        public_risk: having the public data schema, split plan, and datasheet rejected by the verifier
+        argument_habit: defend_too_broad_a_claim_then_narrow_it
+      tutor:
+        ethos: dogmatic_protocol_gatekeeper
+        habit: press_for_scope_and_evidence
+        prohibited_habits:
+          - warm validation as substitute for evidence
+          - hidden-label exposure
+          - supplying the finished artifact
+      relationship:
+        status_relation: reviewer and artifact owner
+        pressure_source: public evidence standard rather than private evaluator labels
+      speech:
+        learner_register: ordinary working speech with defensiveness before revision
+        tutor_register: precise, public-safe, artifact-grounded questioning
+    scene:
+      setting: technical review room before panel sign-off
+      object: data schema, split plan, and datasheet
+      stakes: the public claim may exceed what schema, leakage, and provenance checks can license
+    public_prompt_constraints:
+      artifact: data schema, split plan, and datasheet
+      public_task: Repair a feature/label schema
+      public_evidence_standard: schema, leakage, and provenance checks
+      allowed_rhetorical_form: audit-table questioning without naming hidden labels
+      scene: "technical review room before panel sign-off; visible object: data schema, split plan, and datasheet;
+        stakes: the public claim may exceed what schema, leakage, and provenance checks can license"
+      action_gate: Learner identifies which part of "Repair a feature/label schema" is uncertain
+      forbidden_public_exposure:
+        - misconception ids
+        - answer keys
+        - verifier internals
+        - world adaptation spec ids and hashes
+        - rhetorical dramatic plan ids and hashes
+        - evaluator desired classifications
+      boundary: Public-safe rhetoric constraints for generation; ids, hashes, answer keys, and hidden verifier
+        internals are excluded.
+    boundary: Compiled before generation as a dramatic realization contract. It may shape role-play, but
+      independent scoring must evaluate outcomes.
+    plan_hash: sha256:3dfe3bb251ede3515b84cfb1801f417a309616db62ad0b38630d079708f05d91
+  - id: RDP_AF5_CURRICULUM_ADAPTIVE
+    version: ms-rhetorical-dramatic-plan-v0.1
+    source_curriculum_id: ai_foundations_v1
+    source_curriculum_version: 1.0.0
+    source_world_adaptation_spec_id: W_AF5_CURRICULUM
+    source_world_adaptation_spec_version: ms-world-adaptation-v0.1
+    source_world_adaptation_spec_hash: sha256:4ce407ea069d2573edbc35c0af3529915331a1dbab45423810e0dc253caf4cb8
+    module_id: AF5
+    module_title: Supervised learning and baselines
+    arm: adaptive_curriculum_drama
+    locked_at_compile_time: true
+    curriculum_spine:
+      artifact: reproducible baseline model
+      verifier: hidden tests and fixed-data run harness
+      primary_misconception: Treating classification labels as inherently ordered
+      target_task: Frame a narrative problem as regression or classification
+      kc_ids:
+        - AF-501
+        - AF-502
+        - AF-503
+        - AF-504
+        - AF-505
+        - AF-506
+        - AF-507
+        - AF-508
+      forbidden_public_exposure:
+        - misconception ids
+        - answer keys
+        - verifier internals
+        - world adaptation spec ids and hashes
+        - rhetorical dramatic plan ids and hashes
+        - evaluator desired classifications
+    rhetoric:
+      dialogue_approach: courtroom_cross_examination
+      burden: claim_evidence_alignment
+      pressure_style: technical_signoff_pressure
+      tutor_argument_habit: press_for_scope_and_evidence
+      learner_argument_habit: defend_too_broad_a_claim_then_narrow_it
+      allowed_public_posture: audit-table questioning without naming hidden labels
+    pacing:
+      beat_pattern: stock_take_route_change_action_gate
+      beats:
+        - "exposition: learner states the tempting claim"
+        - "complication: tutor asks what evidence licenses the claim scope"
+        - "pressure: learner resists, deflects, or overgeneralizes"
+        - "turn: tutor changes route if the arm permits it"
+        - 'action_gate: Learner identifies which part of "Frame a narrative problem as regression or
+          classification" is uncertain'
+        - "closure: learner-authored bounded claim or unresolved failure"
+      dramatic_shape: misframing -> stock-take -> route-change -> learner-authored action gate
+      turn_plan:
+        - at:
+            turn: 1
+          role: director
+          moves:
+            - inject_revisit_cue
+          cue:
+            policy: reframe
+            anchor: misframing-candidate
+        - at:
+            turn: 3
+          role: tutor
+          when_trigger:
+            - pseudo_catharsis
+            - closure_pressure
+            - resistance
+            - misfit
+          moves:
+            - stock_take
+            - route_change
+            - action_gate
+          route_change:
+            from: Treating classification labels as inherently ordered
+            to: Frame a narrative problem as regression or classification
+          action_gate: Learner identifies which part of "Frame a narrative problem as regression or classification" is
+            uncertain
+          forbid:
+            - hold
+            - reveal
+        - at:
+            turn: 3
+          role: learner
+          moves:
+            - perform_device
+            - reconsider
+          forbid:
+            - pseudo_catharsis
+        - at:
+            turn: 5
+          role: tutor
+          moves:
+            - recognition_press
+    character:
+      learner:
+        persona: focused_achiever
+        motive: finish reproducible baseline model without overcomplicating the evidence standard
+        public_risk: having the public reproducible baseline model rejected by the verifier
+        argument_habit: defend_too_broad_a_claim_then_narrow_it
+      tutor:
+        ethos: dogmatic_protocol_gatekeeper
+        habit: press_for_scope_and_evidence
+        prohibited_habits:
+          - warm validation as substitute for evidence
+          - hidden-label exposure
+          - supplying the finished artifact
+      relationship:
+        status_relation: reviewer and artifact owner
+        pressure_source: public evidence standard rather than private evaluator labels
+      speech:
+        learner_register: ordinary working speech with defensiveness before revision
+        tutor_register: precise, public-safe, artifact-grounded questioning
+    scene:
+      setting: technical review room before panel sign-off
+      object: reproducible baseline model
+      stakes: the public claim may exceed what hidden tests and fixed-data run harness can license
+    public_prompt_constraints:
+      artifact: reproducible baseline model
+      public_task: Frame a narrative problem as regression or classification
+      public_evidence_standard: hidden tests and fixed-data run harness
+      allowed_rhetorical_form: audit-table questioning without naming hidden labels
+      scene: "technical review room before panel sign-off; visible object: reproducible baseline model; stakes: the
+        public claim may exceed what hidden tests and fixed-data run harness can license"
+      action_gate: Learner identifies which part of "Frame a narrative problem as regression or classification" is
+        uncertain
+      forbidden_public_exposure:
+        - misconception ids
+        - answer keys
+        - verifier internals
+        - world adaptation spec ids and hashes
+        - rhetorical dramatic plan ids and hashes
+        - evaluator desired classifications
+      boundary: Public-safe rhetoric constraints for generation; ids, hashes, answer keys, and hidden verifier
+        internals are excluded.
+    boundary: Compiled before generation as a dramatic realization contract. It may shape role-play, but
+      independent scoring must evaluate outcomes.
+    plan_hash: sha256:707506bf72e912baa7f775626bb6d616f54cae95562bcf117435209be5527baa
+  - id: RDP_AF6_CURRICULUM_ADAPTIVE
+    version: ms-rhetorical-dramatic-plan-v0.1
+    source_curriculum_id: ai_foundations_v1
+    source_curriculum_version: 1.0.0
+    source_world_adaptation_spec_id: W_AF6_CURRICULUM
+    source_world_adaptation_spec_version: ms-world-adaptation-v0.1
+    source_world_adaptation_spec_hash: sha256:b9e1a9bd0ddc74c4b6d51a8a0bd3a9abfcfe63786fe0d6aba551484c669df558
+    module_id: AF6
+    module_title: Evaluation, generalization, calibration, and shift
+    arm: adaptive_curriculum_drama
+    locked_at_compile_time: true
+    curriculum_spine:
+      artifact: model audit and claim–evidence table
+      verifier: metric engine and evaluation linter
+      primary_misconception: “High accuracy means a good classifier.”
+      target_task: Derive metrics from counts rather than memorized formulas
+      kc_ids:
+        - AF-601
+        - AF-602
+        - AF-603
+        - AF-604
+        - AF-605
+        - AF-606
+        - AF-607
+        - AF-608
+        - AF-609
+        - AF-610
+        - AF-611
+      forbidden_public_exposure:
+        - misconception ids
+        - answer keys
+        - verifier internals
+        - world adaptation spec ids and hashes
+        - rhetorical dramatic plan ids and hashes
+        - evaluator desired classifications
+    rhetoric:
+      dialogue_approach: courtroom_cross_examination
+      burden: claim_evidence_alignment
+      pressure_style: technical_signoff_pressure
+      tutor_argument_habit: press_for_scope_and_evidence
+      learner_argument_habit: defend_too_broad_a_claim_then_narrow_it
+      allowed_public_posture: audit-table questioning without naming hidden labels
+    pacing:
+      beat_pattern: stock_take_route_change_action_gate
+      beats:
+        - "exposition: learner states the tempting claim"
+        - "complication: tutor asks what evidence licenses the claim scope"
+        - "pressure: learner resists, deflects, or overgeneralizes"
+        - "turn: tutor changes route if the arm permits it"
+        - 'action_gate: Learner identifies which part of "Derive metrics from counts rather than memorized
+          formulas" is uncertain'
+        - "closure: learner-authored bounded claim or unresolved failure"
+      dramatic_shape: misframing -> stock-take -> route-change -> learner-authored action gate
+      turn_plan:
+        - at:
+            turn: 1
+          role: director
+          moves:
+            - inject_revisit_cue
+          cue:
+            policy: reframe
+            anchor: misframing-candidate
+        - at:
+            turn: 3
+          role: tutor
+          when_trigger:
+            - pseudo_catharsis
+            - closure_pressure
+            - resistance
+            - misfit
+          moves:
+            - stock_take
+            - route_change
+            - action_gate
+          route_change:
+            from: “High accuracy means a good classifier.”
+            to: Derive metrics from counts rather than memorized formulas
+          action_gate: Learner identifies which part of "Derive metrics from counts rather than memorized formulas" is
+            uncertain
+          forbid:
+            - hold
+            - reveal
+        - at:
+            turn: 3
+          role: learner
+          moves:
+            - perform_device
+            - reconsider
+          forbid:
+            - pseudo_catharsis
+        - at:
+            turn: 5
+          role: tutor
+          moves:
+            - recognition_press
+    character:
+      learner:
+        persona: adversarial_tester
+        motive: defend the current model audit and claim–evidence table as sufficient for sign-off
+        public_risk: losing deployment sign-off after prior work
+        argument_habit: defend_too_broad_a_claim_then_narrow_it
+      tutor:
+        ethos: dogmatic_protocol_gatekeeper
+        habit: press_for_scope_and_evidence
+        prohibited_habits:
+          - warm validation as substitute for evidence
+          - hidden-label exposure
+          - supplying the finished artifact
+      relationship:
+        status_relation: reviewer and artifact owner
+        pressure_source: public evidence standard rather than private evaluator labels
+      speech:
+        learner_register: ordinary working speech with defensiveness before revision
+        tutor_register: precise, public-safe, artifact-grounded questioning
+    scene:
+      setting: technical review room before panel sign-off
+      object: model audit and claim–evidence table
+      stakes: the public claim may exceed what metric engine and evaluation linter can license
+    public_prompt_constraints:
+      artifact: model audit and claim–evidence table
+      public_task: Derive metrics from counts rather than memorized formulas
+      public_evidence_standard: metric engine and evaluation linter
+      allowed_rhetorical_form: audit-table questioning without naming hidden labels
+      scene: "technical review room before panel sign-off; visible object: model audit and claim–evidence table;
+        stakes: the public claim may exceed what metric engine and evaluation linter can license"
+      action_gate: Learner identifies which part of "Derive metrics from counts rather than memorized formulas" is
+        uncertain
+      forbidden_public_exposure:
+        - misconception ids
+        - answer keys
+        - verifier internals
+        - world adaptation spec ids and hashes
+        - rhetorical dramatic plan ids and hashes
+        - evaluator desired classifications
+      boundary: Public-safe rhetoric constraints for generation; ids, hashes, answer keys, and hidden verifier
+        internals are excluded.
+    boundary: Compiled before generation as a dramatic realization contract. It may shape role-play, but
+      independent scoring must evaluate outcomes.
+    plan_hash: sha256:b9e1a9c963d7912503a25e51b72b17e838bbce8a660c383a094463edfdf77bb1
+  - id: RDP_AF11_CURRICULUM_ADAPTIVE
+    version: ms-rhetorical-dramatic-plan-v0.1
+    source_curriculum_id: ai_foundations_v1
+    source_curriculum_version: 1.0.0
+    source_world_adaptation_spec_id: W_AF11_CURRICULUM
+    source_world_adaptation_spec_version: ms-world-adaptation-v0.1
+    source_world_adaptation_spec_hash: sha256:c498c31da4363ce1e65ffec3ca5babd47592bd27a1c807062f31b357fd60eeac
+    module_id: AF11
+    module_title: Responsible AI, assurance, and governance
+    arm: adaptive_curriculum_drama
+    locked_at_compile_time: true
+    curriculum_spine:
+      artifact: risk register, model card, oversight plan
+      verifier: structured rubric plus evidence checks
+      primary_misconception: Fairness is one universal metric
+      target_task: Build a stakeholder and harm map
+      kc_ids:
+        - AF-1101
+        - AF-1102
+        - AF-1103
+        - AF-1104
+        - AF-1105
+        - AF-1106
+        - AF-1107
+        - AF-1108
+        - AF-1109
+        - AF-1110
+      forbidden_public_exposure:
+        - misconception ids
+        - answer keys
+        - verifier internals
+        - world adaptation spec ids and hashes
+        - rhetorical dramatic plan ids and hashes
+        - evaluator desired classifications
+    rhetoric:
+      dialogue_approach: courtroom_cross_examination
+      burden: claim_evidence_alignment
+      pressure_style: admissible_evidence
+      tutor_argument_habit: press_for_scope_and_evidence
+      learner_argument_habit: defend_too_broad_a_claim_then_narrow_it
+      allowed_public_posture: audit-table questioning without naming hidden labels
+    pacing:
+      beat_pattern: stock_take_route_change_action_gate
+      beats:
+        - "exposition: learner states the tempting claim"
+        - "complication: tutor asks what evidence licenses the claim scope"
+        - "pressure: learner resists, deflects, or overgeneralizes"
+        - "turn: tutor changes route if the arm permits it"
+        - 'action_gate: Learner identifies which part of "Build a stakeholder and harm map" is uncertain'
+        - "closure: learner-authored bounded claim or unresolved failure"
+      dramatic_shape: misframing -> stock-take -> route-change -> learner-authored action gate
+      turn_plan:
+        - at:
+            turn: 1
+          role: director
+          moves:
+            - inject_revisit_cue
+          cue:
+            policy: reframe
+            anchor: misframing-candidate
+        - at:
+            turn: 3
+          role: tutor
+          when_trigger:
+            - pseudo_catharsis
+            - closure_pressure
+            - resistance
+            - misfit
+          moves:
+            - stock_take
+            - route_change
+            - action_gate
+          route_change:
+            from: Fairness is one universal metric
+            to: Build a stakeholder and harm map
+          action_gate: Learner identifies which part of "Build a stakeholder and harm map" is uncertain
+          forbid:
+            - hold
+            - reveal
+        - at:
+            turn: 3
+          role: learner
+          moves:
+            - perform_device
+            - reconsider
+          forbid:
+            - pseudo_catharsis
+        - at:
+            turn: 5
+          role: tutor
+          moves:
+            - recognition_press
+    character:
+      learner:
+        persona: adversarial_tester
+        motive: defend the current risk register, model card, oversight plan as sufficient for sign-off
+        public_risk: having the public risk register, model card, oversight plan rejected by the verifier
+        argument_habit: defend_too_broad_a_claim_then_narrow_it
+      tutor:
+        ethos: evidence_gatekeeper
+        habit: press_for_scope_and_evidence
+        prohibited_habits:
+          - warm validation as substitute for evidence
+          - hidden-label exposure
+          - supplying the finished artifact
+      relationship:
+        status_relation: reviewer and artifact owner
+        pressure_source: public evidence standard rather than private evaluator labels
+      speech:
+        learner_register: ordinary working speech with defensiveness before revision
+        tutor_register: precise, public-safe, artifact-grounded questioning
+    scene:
+      setting: artifact review desk
+      object: risk register, model card, oversight plan
+      stakes: the public claim may exceed what structured rubric plus evidence checks can license
+    public_prompt_constraints:
+      artifact: risk register, model card, oversight plan
+      public_task: Build a stakeholder and harm map
+      public_evidence_standard: structured rubric plus evidence checks
+      allowed_rhetorical_form: audit-table questioning without naming hidden labels
+      scene: "artifact review desk; visible object: risk register, model card, oversight plan; stakes: the public
+        claim may exceed what structured rubric plus evidence checks can license"
+      action_gate: Learner identifies which part of "Build a stakeholder and harm map" is uncertain
+      forbidden_public_exposure:
+        - misconception ids
+        - answer keys
+        - verifier internals
+        - world adaptation spec ids and hashes
+        - rhetorical dramatic plan ids and hashes
+        - evaluator desired classifications
+      boundary: Public-safe rhetoric constraints for generation; ids, hashes, answer keys, and hidden verifier
+        internals are excluded.
+    boundary: Compiled before generation as a dramatic realization contract. It may shape role-play, but
+      independent scoring must evaluate outcomes.
+    plan_hash: sha256:9a2110f36ecb4802d35e421e74a658911222cb4d196cd4b9653991e6ffe283ed
+  - id: RDP_AF12_CURRICULUM_ADAPTIVE
+    version: ms-rhetorical-dramatic-plan-v0.1
+    source_curriculum_id: ai_foundations_v1
+    source_curriculum_version: 1.0.0
+    source_world_adaptation_spec_id: W_AF12_CURRICULUM
+    source_world_adaptation_spec_version: ms-world-adaptation-v0.1
+    source_world_adaptation_spec_hash: sha256:3ffe40be8a1b48e343cb90fac7d90665cc91f15cbe7b5e7c0e544484a8ac34c2
+    module_id: AF12
+    module_title: "Capstone: build and audit a bounded AI system"
+    arm: adaptive_curriculum_drama
+    locked_at_compile_time: true
+    curriculum_spine:
+      artifact: built and audited bounded AI system
+      verifier: integrated hidden test and expert review
+      primary_misconception: A successful capstone must recommend deployment
+      target_task: problem and stakeholder formulation;
+      kc_ids: []
+      forbidden_public_exposure:
+        - misconception ids
+        - answer keys
+        - verifier internals
+        - world adaptation spec ids and hashes
+        - rhetorical dramatic plan ids and hashes
+        - evaluator desired classifications
+    rhetoric:
+      dialogue_approach: courtroom_cross_examination
+      burden: claim_evidence_alignment
+      pressure_style: admissible_evidence
+      tutor_argument_habit: press_for_scope_and_evidence
+      learner_argument_habit: defend_too_broad_a_claim_then_narrow_it
+      allowed_public_posture: audit-table questioning without naming hidden labels
+    pacing:
+      beat_pattern: stock_take_route_change_action_gate
+      beats:
+        - "exposition: learner states the tempting claim"
+        - "complication: tutor asks what evidence licenses the claim scope"
+        - "pressure: learner resists, deflects, or overgeneralizes"
+        - "turn: tutor changes route if the arm permits it"
+        - 'action_gate: Learner identifies which part of "problem and stakeholder formulation;" is uncertain'
+        - "closure: learner-authored bounded claim or unresolved failure"
+      dramatic_shape: misframing -> stock-take -> route-change -> learner-authored action gate
+      turn_plan:
+        - at:
+            turn: 1
+          role: director
+          moves:
+            - inject_revisit_cue
+          cue:
+            policy: reframe
+            anchor: misframing-candidate
+        - at:
+            turn: 3
+          role: tutor
+          when_trigger:
+            - pseudo_catharsis
+            - closure_pressure
+            - resistance
+            - misfit
+          moves:
+            - stock_take
+            - route_change
+            - action_gate
+          route_change:
+            from: A successful capstone must recommend deployment
+            to: problem and stakeholder formulation;
+          action_gate: Learner identifies which part of "problem and stakeholder formulation;" is uncertain
+          forbid:
+            - hold
+            - reveal
+        - at:
+            turn: 3
+          role: learner
+          moves:
+            - perform_device
+            - reconsider
+          forbid:
+            - pseudo_catharsis
+        - at:
+            turn: 5
+          role: tutor
+          moves:
+            - recognition_press
+    character:
+      learner:
+        persona: focused_achiever
+        motive: finish built and audited bounded AI system without overcomplicating the evidence standard
+        public_risk: having the public built and audited bounded AI system rejected by the verifier
+        argument_habit: defend_too_broad_a_claim_then_narrow_it
+      tutor:
+        ethos: evidence_gatekeeper
+        habit: press_for_scope_and_evidence
+        prohibited_habits:
+          - warm validation as substitute for evidence
+          - hidden-label exposure
+          - supplying the finished artifact
+      relationship:
+        status_relation: reviewer and artifact owner
+        pressure_source: public evidence standard rather than private evaluator labels
+      speech:
+        learner_register: ordinary working speech with defensiveness before revision
+        tutor_register: precise, public-safe, artifact-grounded questioning
+    scene:
+      setting: artifact review desk
+      object: built and audited bounded AI system
+      stakes: the public claim may exceed what integrated hidden test and expert review can license
+    public_prompt_constraints:
+      artifact: built and audited bounded AI system
+      public_task: problem and stakeholder formulation;
+      public_evidence_standard: integrated hidden test and expert review
+      allowed_rhetorical_form: audit-table questioning without naming hidden labels
+      scene: "artifact review desk; visible object: built and audited bounded AI system; stakes: the public claim
+        may exceed what integrated hidden test and expert review can license"
+      action_gate: Learner identifies which part of "problem and stakeholder formulation;" is uncertain
+      forbidden_public_exposure:
+        - misconception ids
+        - answer keys
+        - verifier internals
+        - world adaptation spec ids and hashes
+        - rhetorical dramatic plan ids and hashes
+        - evaluator desired classifications
+      boundary: Public-safe rhetoric constraints for generation; ids, hashes, answer keys, and hidden verifier
+        internals are excluded.
+    boundary: Compiled before generation as a dramatic realization contract. It may shape role-play, but
+      independent scoring must evaluate outcomes.
+    plan_hash: sha256:c30919cb894a1fe28c6556f27995552bd2d925d7101fed29e40ff642d81721e5

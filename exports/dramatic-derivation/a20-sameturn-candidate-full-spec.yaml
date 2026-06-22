@@ -1,0 +1,37 @@
+base:
+  mode: real
+  flags:
+    superego: true
+    acts: '{"minActTurns":3,"maxActTurns":8}'
+    confront: true
+    repair-clause: true
+    release-authority: true
+    plot: true
+    throughline: true
+    critic-feedback: off
+    critic: off
+    logic-projection: true
+    decay: '{"rate":0.75,"graceTurns":1,"maxConcurrent":2,"startTurn":1,"mutateShare":1,"seed":1,"pool":"staged"}'
+    proof-debt-guard: true
+    pacing-guard: true
+    same-turn-assertion-affordance: true
+arms:
+  - label: a20-sameturn-withercombe-r1
+    world: config/drama-derivation/world-004-withercombe.yaml
+    script: config/drama-derivation/tutor-scripts/withercombe-v001.md
+  - label: a20-sameturn-fengate-r1
+    world: config/drama-derivation/world-007-fengate.yaml
+    script: config/drama-derivation/tutor-scripts/fengate-v001.md
+  - label: a20-sameturn-hethel-r1
+    world: config/drama-derivation/world-006-hethel.yaml
+    script: config/drama-derivation/tutor-scripts/hethel-v001.md
+  - label: a20-sameturn-ravensmark-r1
+    world: config/drama-derivation/world-009-ravensmark.yaml
+    script: config/drama-derivation/tutor-scripts/ravensmark-v001.md
+  - label: a20-sameturn-lantern-r1
+    world: config/drama-derivation/world-002-lantern.yaml
+    script: config/drama-derivation/tutor-scripts/lantern-v001.md
+  - label: a20-sameturn-marrick-r1
+    world: config/drama-derivation/world-005-marrick.yaml
+    script: config/drama-derivation/tutor-scripts/marrick-v001.md
+concurrency: 3

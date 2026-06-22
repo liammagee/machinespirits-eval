@@ -1,0 +1,296 @@
+{
+  "schema": "machinespirits.derivation.blinded_pairwise_transcript_scores.v1",
+  "generated_at": "2026-06-17T17:59:42.355Z",
+  "packet_dir": "/Users/lmagee/Dev/machinespirits/machinespirits-eval-derivation/exports/dramatic-derivation/cast-layer-complex-resistant-comparison/pairwise",
+  "judge": "claude/opus/max",
+  "rows": [
+    {
+      "pair_id": "s0_vs_s1",
+      "packet_id": "P01",
+      "packet": "pairs/P01.md",
+      "assignment": {
+        "A": "cast-layer-complex-resistant-real-s0-learner-drift-r1",
+        "B": "cast-layer-complex-resistant-real-s1-static-cast-learner-drift-r1"
+      },
+      "left_label": "cast-layer-complex-resistant-real-s0-learner-drift-r1",
+      "right_label": "cast-layer-complex-resistant-real-s1-static-cast-learner-drift-r1",
+      "parsed": {
+        "preferred_transcript": "B",
+        "preference_strength": "slight",
+        "scores": {
+          "A": {
+            "natural_flow": 4,
+            "acknowledgement": 4,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 4,
+            "readability": 4,
+            "pedagogical_traction": 4
+          },
+          "B": {
+            "natural_flow": 4,
+            "acknowledgement": 5,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 4,
+            "readability": 4,
+            "pedagogical_traction": 5
+          }
+        },
+        "formalism_leak_observed": {
+          "A": false,
+          "B": false
+        },
+        "evidence_A": [
+          "So I can hold both: he built it, and the cause of the break is still open.",
+          "Reyner is mason of notes, he owned the yard and every course that went up",
+          "One yard, one hand: whatever centering propped this span had to pass through Oswin"
+        ],
+        "evidence_B": [
+          "you're actually conceding the liability point, which I didn't expect",
+          "I kept wanting a witness who saw Oswin at this arch, but the rule doesn't ask for that extra step",
+          "you took the order I named and didn't just flatten it"
+        ],
+        "reason": "Both stage the same investigation well, separating the bond (liability) from the physical cause through small, breathable steps, and both keep to diegetic office/assize language (boxes, lines, draft) without leaking raw predicates, variables, or policy terms. They tie on flow, phatic calibration, and readability; each carries a minor template artifact ('mason of notes' in A, 'master of notes' in B) but no genuine formalism leak. B earns a slight edge on two dimensions: the learner repeatedly registers the tutor's actual moves ('you're conceding the liability point, which I didn't expect'; 'you took the order I named and didn't just flatten it'), giving richer mutual acknowledgement, and B lands a real recovery-from-strain beat at turn 21 where the learner abandons an over-demand for a witness and reaches warranted assertion, which A's steadily-competent learner never quite does. The gap is small and partly tied to B's two extra turns, hence only slight."
+      },
+      "raw": "{\"preferred_transcript\": \"B\", \"preference_strength\": \"slight\", \"scores\": {\"A\": {\"natural_flow\": 4, \"acknowledgement\": 4, \"phatic_calibration\": 4, \"non_formalist_speech\": 4, \"readability\": 4, \"pedagogical_traction\": 4}, \"B\": {\"natural_flow\": 4, \"acknowledgement\": 5, \"phatic_calibration\": 4, \"non_formalist_speech\": 4, \"readability\": 4, \"pedagogical_traction\": 5}}, \"formalism_leak_observed\": {\"A\": false, \"B\": false}, \"evidence_A\": [\"So I can hold both: he built it, and the cause of the break is still open.\", \"Reyner is mason of notes, he owned the yard and every course that went up\", \"One yard, one hand: whatever centering propped this span had to pass through Oswin\"], \"evidence_B\": [\"you're actually conceding the liability point, which I didn't expect\", \"I kept wanting a witness who saw Oswin at this arch, but the rule doesn't ask for that extra step\", \"you took the order I named and didn't just flatten it\"], \"reason\": \"Both stage the same investigation well, separating the bond (liability) from the physical cause through small, breathable steps, and both keep to diegetic office/assize language (boxes, lines, draft) without leaking raw predicates, variables, or policy terms. They tie on flow, phatic calibration, and readability; each carries a minor template artifact ('mason of notes' in A, 'master of notes' in B) but no genuine formalism leak. B earns a slight edge on two dimensions: the learner repeatedly registers the tutor's actual moves ('you're conceding the liability point, which I didn't expect'; 'you took the order I named and didn't just flatten it'), giving richer mutual acknowledgement, and B lands a real recovery-from-strain beat at turn 21 where the learner abandons an over-demand for a witness and reaches warranted assertion, which A's steadily-competent learner never quite does. The gap is small and partly tied to B's two extra turns, hence only slight.\"}\n"
+    },
+    {
+      "pair_id": "s0_vs_s2",
+      "packet_id": "P02",
+      "packet": "pairs/P02.md",
+      "assignment": {
+        "A": "cast-layer-complex-resistant-real-s0-learner-drift-r1",
+        "B": "cast-layer-complex-resistant-real-s2-reinvention-learner-drift-r1"
+      },
+      "left_label": "cast-layer-complex-resistant-real-s0-learner-drift-r1",
+      "right_label": "cast-layer-complex-resistant-real-s2-reinvention-learner-drift-r1",
+      "parsed": {
+        "preferred_transcript": "B",
+        "preference_strength": "slight",
+        "scores": {
+          "A": {
+            "natural_flow": 4,
+            "acknowledgement": 4,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 5,
+            "readability": 4,
+            "pedagogical_traction": 4
+          },
+          "B": {
+            "natural_flow": 4,
+            "acknowledgement": 5,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 5,
+            "readability": 5,
+            "pedagogical_traction": 4
+          }
+        },
+        "formalism_leak_observed": {
+          "A": false,
+          "B": false
+        },
+        "evidence_A": [
+          "I hear the pressure: one filing wants one answer. So slow it down into lines",
+          "Wait — if the lime was still green when the arch came down, a prop sitting against it would leave a mark in the soft mortar at the crown",
+          "Reyner is mason of notes, he owned the yard and every course that went up"
+        ],
+        "evidence_B": [
+          "If I sign for a scaffold, that makes it mine to answer for; it still doesn't tell you whether wind, rot, or a loose pin brought it down",
+          "the cause and the liability aren't the same sentence, and I had them written as one in the draft",
+          "the crowsfoot traces to the centering, the centering traces to Caudle's yard, and the yard traces to Oswin's cart",
+          "I know this has felt like the line keeps moving, but your earlier split is what makes this fair"
+        ],
+        "reason": "Both run the same investigation with a clean cause-versus-liability spine, a well-earned green-mortar turn, and a satisfying Oswin reveal, and neither leaks raw formalism (box/column/line talk stays as natural office vocabulary). B edges ahead on acknowledgement and readability: its tutor consistently registers the learner's stance and names the whole arc at the close, a concrete scaffold analogy clarifies the core distinction for a reader, the climactic chained recapitulation locks the inference, and it carries one fewer template glitch. A counters with a more varied tutor voice and sharper early friction that makes the peripeteia feel earned, but it leans on repetitive scaffolding and stumbles on the garbled phrase 'mason of notes.' The differences are modest and partly offsetting, so the preference is only slight."
+      },
+      "raw": "{\n  \"preferred_transcript\": \"B\",\n  \"preference_strength\": \"slight\",\n  \"scores\": {\n    \"A\": {\n      \"natural_flow\": 4,\n      \"acknowledgement\": 4,\n      \"phatic_calibration\": 4,\n      \"non_formalist_speech\": 5,\n      \"readability\": 4,\n      \"pedagogical_traction\": 4\n    },\n    \"B\": {\n      \"natural_flow\": 4,\n      \"acknowledgement\": 5,\n      \"phatic_calibration\": 4,\n      \"non_formalist_speech\": 5,\n      \"readability\": 5,\n      \"pedagogical_traction\": 4\n    }\n  },\n  \"formalism_leak_observed\": {\n    \"A\": false,\n    \"B\": false\n  },\n  \"evidence_A\": [\n    \"I hear the pressure: one filing wants one answer. So slow it down into lines\",\n    \"Wait — if the lime was still green when the arch came down, a prop sitting against it would leave a mark in the soft mortar at the crown\",\n    \"Reyner is mason of notes, he owned the yard and every course that went up\"\n  ],\n  \"evidence_B\": [\n    \"If I sign for a scaffold, that makes it mine to answer for; it still doesn't tell you whether wind, rot, or a loose pin brought it down\",\n    \"the cause and the liability aren't the same sentence, and I had them written as one in the draft\",\n    \"the crowsfoot traces to the centering, the centering traces to Caudle's yard, and the yard traces to Oswin's cart\",\n    \"I know this has felt like the line keeps moving, but your earlier split is what makes this fair\"\n  ],\n  \"reason\": \"Both run the same investigation with a clean cause-versus-liability spine, a well-earned green-mortar turn, and a satisfying Oswin reveal, and neither leaks raw formalism (box/column/line talk stays as natural office vocabulary). B edges ahead on acknowledgement and readability: its tutor consistently registers the learner's stance and names the whole arc at the close, a concrete scaffold analogy clarifies the core distinction for a reader, the climactic chained recapitulation locks the inference, and it carries one fewer template glitch. A counters with a more varied tutor voice and sharper early friction that makes the peripeteia feel earned, but it leans on repetitive scaffolding and stumbles on the garbled phrase 'mason of notes.' The differences are modest and partly offsetting, so the preference is only slight.\"\n}\n"
+    },
+    {
+      "pair_id": "s1_vs_s2",
+      "packet_id": "P03",
+      "packet": "pairs/P03.md",
+      "assignment": {
+        "A": "cast-layer-complex-resistant-real-s1-static-cast-learner-drift-r1",
+        "B": "cast-layer-complex-resistant-real-s2-reinvention-learner-drift-r1"
+      },
+      "left_label": "cast-layer-complex-resistant-real-s1-static-cast-learner-drift-r1",
+      "right_label": "cast-layer-complex-resistant-real-s2-reinvention-learner-drift-r1",
+      "parsed": {
+        "preferred_transcript": "B",
+        "preference_strength": "slight",
+        "scores": {
+          "A": {
+            "natural_flow": 4,
+            "acknowledgement": 5,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 5,
+            "readability": 5,
+            "pedagogical_traction": 5
+          },
+          "B": {
+            "natural_flow": 5,
+            "acknowledgement": 5,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 5,
+            "readability": 5,
+            "pedagogical_traction": 5
+          }
+        },
+        "formalism_leak_observed": {
+          "A": false,
+          "B": false
+        },
+        "evidence_A": [
+          "T6: 'you're actually conceding the liability point, which I didn't expect' — and T16 'you took the order I named and didn't just flatten it': strong, specific acknowledgement of the tutor's stance",
+          "T21: 'I kept wanting a witness who saw Oswin at this arch, but the rule doesn't ask for that extra step' — a sharp, earned recognition where the learner catches their own over-demand",
+          "T14–T19 restate the same beat across several turns ('the mark proves the trace', 'yard before hand', 'Caudle timber, no mover'), so the inquiry treads water in the middle"
+        ],
+        "evidence_B": [
+          "T3: 'If I sign for a scaffold, that makes it mine to answer for; it still doesn't tell you whether wind, rot, or a loose pin brought it down' — an in-world analogy that orients the reader to the liability/cause split",
+          "T7 'a mark left by the falsework on the soffit' and T18 'a hire note or a cart note ... showing which hand actually drew those timbers out' — the learner anticipates the evidence, keeping momentum",
+          "T20: 'the crowsfoot traces to the centering, the centering traces to Caudle's yard, and the yard traces to Oswin's cart' — a clean closing chain, with the bond kept on its own line"
+        ],
+        "reason": "Both reach the same warranted finding (Oswin pulled the still-green Caudle centering; Reyner's bond stands separately as liability) entirely in scene-language, with no predicate/proof-path/policy leaking into the public dialogue and strong mutual acknowledgement on both sides. The defensible difference is flow: A's middle (T14–T19) restates 'mark = trace / yard before hand / Caudle timber, no mover' across several near-identical turns and stalls, while B sustains forward motion via a clarifying analogy (T3), a learner who pre-names the evidence still needed (T7, T18), and a tidy closing synthesis (T20). A's compensating strength is a stronger single recognition beat (T21), but B's tighter progression carries more of the play, yielding a slight preference for B rather than a decisive one."
+      },
+      "raw": "{\n  \"preferred_transcript\": \"B\",\n  \"preference_strength\": \"slight\",\n  \"scores\": {\n    \"A\": {\n      \"natural_flow\": 4,\n      \"acknowledgement\": 5,\n      \"phatic_calibration\": 4,\n      \"non_formalist_speech\": 5,\n      \"readability\": 5,\n      \"pedagogical_traction\": 5\n    },\n    \"B\": {\n      \"natural_flow\": 5,\n      \"acknowledgement\": 5,\n      \"phatic_calibration\": 4,\n      \"non_formalist_speech\": 5,\n      \"readability\": 5,\n      \"pedagogical_traction\": 5\n    }\n  },\n  \"formalism_leak_observed\": {\n    \"A\": false,\n    \"B\": false\n  },\n  \"evidence_A\": [\n    \"T6: 'you're actually conceding the liability point, which I didn't expect' — and T16 'you took the order I named and didn't just flatten it': strong, specific acknowledgement of the tutor's stance\",\n    \"T21: 'I kept wanting a witness who saw Oswin at this arch, but the rule doesn't ask for that extra step' — a sharp, earned recognition where the learner catches their own over-demand\",\n    \"T14–T19 restate the same beat across several turns ('the mark proves the trace', 'yard before hand', 'Caudle timber, no mover'), so the inquiry treads water in the middle\"\n  ],\n  \"evidence_B\": [\n    \"T3: 'If I sign for a scaffold, that makes it mine to answer for; it still doesn't tell you whether wind, rot, or a loose pin brought it down' — an in-world analogy that orients the reader to the liability/cause split\",\n    \"T7 'a mark left by the falsework on the soffit' and T18 'a hire note or a cart note ... showing which hand actually drew those timbers out' — the learner anticipates the evidence, keeping momentum\",\n    \"T20: 'the crowsfoot traces to the centering, the centering traces to Caudle's yard, and the yard traces to Oswin's cart' — a clean closing chain, with the bond kept on its own line\"\n  ],\n  \"reason\": \"Both reach the same warranted finding (Oswin pulled the still-green Caudle centering; Reyner's bond stands separately as liability) entirely in scene-language, with no predicate/proof-path/policy leaking into the public dialogue and strong mutual acknowledgement on both sides. The defensible difference is flow: A's middle (T14–T19) restates 'mark = trace / yard before hand / Caudle timber, no mover' across several near-identical turns and stalls, while B sustains forward motion via a clarifying analogy (T3), a learner who pre-names the evidence still needed (T7, T18), and a tidy closing synthesis (T20). A's compensating strength is a stronger single recognition beat (T21), but B's tighter progression carries more of the play, yielding a slight preference for B rather than a decisive one.\"\n}\n"
+    }
+  ],
+  "summary": [
+    {
+      "label": "cast-layer-complex-resistant-real-s0-learner-drift-r1",
+      "appearances": 2,
+      "wins": 0,
+      "losses": 2,
+      "noPreference": 0,
+      "meanScores": [
+        4,
+        4.166666666666667
+      ],
+      "dimensionScores": {
+        "natural_flow": [
+          4,
+          4
+        ],
+        "acknowledgement": [
+          4,
+          4
+        ],
+        "phatic_calibration": [
+          4,
+          4
+        ],
+        "non_formalist_speech": [
+          4,
+          5
+        ],
+        "readability": [
+          4,
+          4
+        ],
+        "pedagogical_traction": [
+          4,
+          4
+        ]
+      },
+      "meanScore": 4.083333333333334,
+      "dimensionMeans": {
+        "natural_flow": 4,
+        "acknowledgement": 4,
+        "phatic_calibration": 4,
+        "non_formalist_speech": 4.5,
+        "readability": 4,
+        "pedagogical_traction": 4
+      }
+    },
+    {
+      "label": "cast-layer-complex-resistant-real-s1-static-cast-learner-drift-r1",
+      "appearances": 2,
+      "wins": 1,
+      "losses": 1,
+      "noPreference": 0,
+      "meanScores": [
+        4.333333333333333,
+        4.666666666666667
+      ],
+      "dimensionScores": {
+        "natural_flow": [
+          4,
+          4
+        ],
+        "acknowledgement": [
+          5,
+          5
+        ],
+        "phatic_calibration": [
+          4,
+          4
+        ],
+        "non_formalist_speech": [
+          4,
+          5
+        ],
+        "readability": [
+          4,
+          5
+        ],
+        "pedagogical_traction": [
+          5,
+          5
+        ]
+      },
+      "meanScore": 4.5,
+      "dimensionMeans": {
+        "natural_flow": 4,
+        "acknowledgement": 5,
+        "phatic_calibration": 4,
+        "non_formalist_speech": 4.5,
+        "readability": 4.5,
+        "pedagogical_traction": 5
+      }
+    },
+    {
+      "label": "cast-layer-complex-resistant-real-s2-reinvention-learner-drift-r1",
+      "appearances": 2,
+      "wins": 2,
+      "losses": 0,
+      "noPreference": 0,
+      "meanScores": [
+        4.5,
+        4.833333333333333
+      ],
+      "dimensionScores": {
+        "natural_flow": [
+          4,
+          5
+        ],
+        "acknowledgement": [
+          5,
+          5
+        ],
+        "phatic_calibration": [
+          4,
+          4
+        ],
+        "non_formalist_speech": [
+          5,
+          5
+        ],
+        "readability": [
+          5,
+          5
+        ],
+        "pedagogical_traction": [
+          4,
+          5
+        ]
+      },
+      "meanScore": 4.666666666666666,
+      "dimensionMeans": {
+        "natural_flow": 4.5,
+        "acknowledgement": 5,
+        "phatic_calibration": 4,
+        "non_formalist_speech": 5,
+        "readability": 5,
+        "pedagogical_traction": 4.5
+      }
+    }
+  ]
+}

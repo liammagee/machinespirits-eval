@@ -35,7 +35,7 @@
           },
           {
             "type": "command",
-            "command": "DIR=\"${CLAUDE_PROJECT_DIR:-.}\"; f=$(jq -r '.tool_input.file_path // empty'); case \"$f\" in *paper-full-2.0.md|*paper-short-2.0.md) cd \"$DIR\" 2>/dev/null || exit 0; echo \"Paper edited; running paper:provable-discourse:smoke (warn-only) ...\" >&2; out=$(npm run --silent paper:provable-discourse:smoke 2>&1); rc=$?; if [ $rc -ne 0 ]; then echo \"WARNING: paper:provable-discourse:smoke FAILED -- new/changed claim may be missing from the inventory. Run 'npm run paper:provable-discourse' for the full report.\" >&2; echo \"$out\" | tail -30 >&2; fi ;; esac; exit 0"
+            "command": "DIR=\"${CLAUDE_PROJECT_DIR:-.}\"; f=$(jq -r '.tool_input.file_path // empty'); case \"$f\" in *paper-full-2.0.md|*paper-short-2.0.md) cd \"$DIR\" 2>/dev/null || exit 0; echo \"Paper edited; running paper:provable-discourse (full, DB-backed, warn-only, ~30s) ...\" >&2; out=$(npm run --silent paper:provable-discourse 2>&1); sum=$(echo \"$out\" | grep -E '^Summary:' | head -1); echo \"${sum:-paper:provable-discourse produced no summary (DB missing?)}\" >&2; fails=$(echo \"$sum\" | sed -n 's/.*, *\\([0-9][0-9]*\\) fail.*/\\1/p'); if [ \"${fails:-0}\" -gt 0 ] 2>/dev/null; then echo \"WARNING: paper:provable-discourse reported $fails FAIL(s) -- a tracked claim number may have drifted from the snapshot. Run 'npm run paper:provable-discourse' for detail.\" >&2; echo \"$out\" | tail -40 >&2; fi ;; esac; exit 0"
           }
         ]
       }

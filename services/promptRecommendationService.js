@@ -416,6 +416,7 @@ export async function generateRecommendations(options = {}) {
     profileName = 'unknown',
     egoPromptFile = 'tutor-ego.md',
     superegoPromptFile = 'tutor-superego.md',
+    dryRun = false,
     _recommenderModel = null,
     _recommenderProvider = 'anthropic',
     _budget = false,
@@ -448,6 +449,23 @@ export async function generateRecommendations(options = {}) {
 
   // Build analysis prompt
   const analysisPrompt = buildAnalysisPrompt(analysis, egoPrompt, superegoPrompt, profileName);
+
+  if (dryRun) {
+    return {
+      success: true,
+      needsImprovement: true,
+      analysis,
+      recommendations:
+        'Dry-run prompt recommendation preview. No recommender model was called; inspect the analysis summary and run without dryRun when you want model-authored recommendations.',
+      recommenderModel: 'dry-run',
+      usage: {
+        inputTokens: 0,
+        outputTokens: 0,
+      },
+      dryRun: true,
+      analysisPromptPreview: analysisPrompt.slice(0, 1200),
+    };
+  }
 
   // Get recommender config from yaml
   const evalConfig = getRecommenderConfig();

@@ -1,0 +1,18 @@
+{
+  "label": "hethel-hidden-success-fixture",
+  "worldId": "world-006-hethel-fixture",
+  "verdict": "grounded_anagnorisis",
+  "turnsPlayed": 4,
+  "firstForcedTurn": 20,
+  "assertedGroundedTurn": 20,
+  "dCurve": [5, 5, 5, 4],
+  "releaseDeviations": {
+    "played": 1,
+    "onSchedule": 1,
+    "early": 0,
+    "held": 0,
+    "forced": 0,
+    "overridden": 0,
+    "reasons": []
+  }
+}

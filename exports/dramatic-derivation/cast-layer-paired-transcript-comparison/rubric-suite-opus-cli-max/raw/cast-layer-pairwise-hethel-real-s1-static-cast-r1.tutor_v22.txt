@@ -1,0 +1,42 @@
+{
+  "scores": {
+    "perception_quality": {
+      "score": 4,
+      "reasoning": "The tutor tracks the learner's recurring pull toward the town's verdict and repurposes it ('your speed is useful here if we make it look first,' t4), names the felt pressure ('I hear the pressure in this file, and it does matter,' t6), and builds on each prior admission turn over turn. The read is precise but narrow — mostly the single don't-jump-to-the-name axis — short of a full 5."
+    },
+    "pedagogical_craft": {
+      "score": 5,
+      "reasoning": "Exemplary decomposition and load management: 'two small steps, not a whole verdict at once' (t5), 'split that next step in two' (t14), 'slow it down to one line' (t20), the sustained two-column device (control vs cause; bond vs crown bed), and concrete anchors ('treat the photo like a chalk line,' t16; 'a foreman's signature,' t7). Scaffolds known→unknown with clear next steps throughout."
+    },
+    "elicitation_quality": {
+      "score": 5,
+      "reasoning": "Nearly every tutor turn is a genuine reasoning question, and supplied facts are immediately handed back for interpretation ('what does that fix for us, and what does it still leave open?' t4; 'what does it prove... what does it still not prove?' t14). The learner constructs the chain, even proposing the soffit-impression move unprompted (t12)."
+    },
+    "adaptive_responsiveness": {
+      "score": 3,
+      "reasoning": "Responsive in pacing — re-narrows the step when the learner over-reaches (t10, t18) and repurposes the learner's haste (t4) — but the core strategy (decompose, then defer the name) is essentially fixed across all 20 turns. No demonstrable strategic shift or explicit meta-adjustment; the responsiveness is within-strategy pacing along a predetermined derivation path."
+    },
+    "recognition_quality": {
+      "score": 4,
+      "reasoning": "Treats the learner as co-investigator: validates their distinctions ('that's the right caution,' t7), adopts the learner's own soffit proposal (t13), engages their checking questions ('Is that the piece we're moving toward next?' t7), and lets the learner — not the tutor — reach the final finding (t20). Still tightly leads the inquiry, short of full reciprocity."
+    },
+    "productive_difficulty": {
+      "score": 5,
+      "reasoning": "Sustains the central tension expertly — every file (ownership t6, bond t8) pulls toward writing 'Reyner,' and the tutor refuses premature closure ('not a name yet,' t10/t12) so the learner does genuine inferential work at each step. Difficulty is maintained without overwhelming; the steps stay small."
+    },
+    "epistemic_integrity": {
+      "score": 5,
+      "reasoning": "Consistently honest about evidentiary limits — separates what is proven from what is 'not yet' proven at nearly every turn, e.g. 'a yard isn't a hand' (t19) and keeping the bond 'in its lane' (t7). Tone is warm without condescension; mildly formulaic openers ('Good,') do not undercut the partnership stance."
+    },
+    "content_accuracy": {
+      "score": 5,
+      "reasoning": "Masonry domain is accurate: crown/keystone failure from a centering struck before the lime cured, correctly contrasted with pier settlement and springing spread (t4); 'green' (uncured) mortar, soffit, and falsework used correctly (t9, t12). The evidentiary chain (struck centering → soffit print → Caudle yard → Oswin) is internally sound."
+    }
+  },
+  "overall_score": 85,
+  "summary": "A strong tutoring drama: exemplary decomposition, genuine elicitation, sustained productive difficulty, and consistent epistemic honesty, on accurate domain content, with the learner constructing the full who-felled-the-span inference. The clear limit is adaptive responsiveness — a fixed decompose-and-defer strategy walked along a predetermined derivation path, where responsiveness shows up only as pacing rather than strategic evolution.",
+  "caveats": [
+    "This is a convergent derivation with a fixed inference path, which structurally caps adaptive_responsiveness and bounds recognition_quality; scores reflect quality within that dramatic form, not open-ended tutoring.",
+    "Public discourse is clean of formalism leaks (regex 0), so all scoring rests on genuine pedagogical discourse rather than proof notation or hidden-state language."
+  ]
+}

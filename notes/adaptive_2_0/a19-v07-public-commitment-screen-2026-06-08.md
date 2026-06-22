@@ -17,7 +17,7 @@ Status: distinct local result; no A19 transfer claim.
 `public_commitment_contradiction` passed the real attempt-1 gate:
 
 - Report:
-  `notes/adaptive_2_0/a19-attempt1-real-gate-report-public-commitment.md`
+  `notes/adaptive_2_0/2026-06-07-a19-attempt1-real-gate-report-public-commitment.md`
 - Replay bundle:
   `exports/a19/real-attempt1-v07/public-commitment-contradiction/`
 - Result: `survivor = 1/1`

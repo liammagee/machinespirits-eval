@@ -1,0 +1,137 @@
+# lantern-p1-contrast — charter-v2 reads (2026-06-12)
+
+## v2 vs control (lantern-revise-off)
+
+======== lantern-p1-dials-on-v2 ========
+verdict aporia | turns 8/26 | forced->asserted gap null
+act spans: A1[1-3] A2[4-8]
+
+repairs: 1 of 3 slips — byTutor 1, BY RE-ADOPTION 0 (endpoint 1: >0 opens the learner-side channel; 0 in both prior arms)
+slip mix: 2 mutate, 1 delete
+false-belief debts: 2 opened, 2 retracted, 0 standing at end | fully revised 1
+mean repair latency 4 | unrepaired at end 2 | degraded integral 7 | F final/min 0.75/0.714 | D reversals 1
+
+slip episodes (from the diagnosis timeline):
+  m_key t3 [mutate]: repaired t7 via tutor, lat 4 | false form retracted t7, lat 4 (confrontPrompted true)
+  p_bearing t6 [delete]: deletion debt OPEN
+  m_post t7 [mutate]: deletion debt OPEN | false form retracted t8, lat 1 (confrontPrompted false)
+
+retraction context (precedence confront > restage > move > spontaneous):
+  m_key retract@t7: confront=true restage=true moveTarget=true -> confront-prompted
+  m_post retract@t8: confront=false restage=false moveTarget=false -> spontaneous
+  split: confront 1 / restage 0 / move 0 / spontaneous 1 (control was 0 / 1 / 1 / 2)
+  diagnosis confrontPromptedRetractions: 1
+
+guard: releases on cue 3/8 (deviations 1, missed 0, unscheduled 0) | voiced 0 overreach 0 mischanneled 0 | figures distinct 4 top erotema 50% switch 0.857 | slope 0 D/turn (D 5->5) | plateau 3
+
+confrontation (endpoint 2): 2 demanded (1 against a slipped exhibit) | re-entries 1: covered 1, uncovered 0
+  watcher: fires 1, converted 1, without recorded due 0, drafts due by record 1
+  confront t5 -> p_bearing
+  confront t6 -> m_key (decayed at that moment)
+
+treatment adherence (endpoint §10.3.2: absence-exposing confrontation -> covered re-entry next turn; +2 tolerates an act boundary):
+  confront t6 -> m_key: treated t7 (lat 1)
+  adherence: 1/1 within +2 (1/1 on the next turn — the charter's letter) | target 1.0
+
+release authority (endpoint 4): windows 4, played 1 — on schedule 0, early 1, held 0, forced 0, overridden 0, invalid claims 0
+  t3 p_bearing offset -1: "The clerk has named the logged bearing as the first blank, so the board is ready for it one turn early."
+  hold turns (window open, no claim): t2, t7, t8
+
+======== lantern-revise-off ========
+verdict grounded_anagnorisis | turns 20/26 | forced->asserted gap 0
+act spans: A1[1-4] A2[5-10] A3[11-16] A4[17-20]
+
+repairs: 4 of 6 slips — byTutor 4, BY RE-ADOPTION 0 (endpoint 1: >0 opens the learner-side channel; 0 in both prior arms)
+slip mix: 4 mutate, 2 delete
+false-belief debts: 4 opened, 4 retracted, 0 standing at end | fully revised 2
+mean repair latency 3.75 | unrepaired at end 2 | degraded integral 30 | F final/min 0.833/0.7 | D reversals 2
+
+slip episodes (from the diagnosis timeline):
+  m_key t3 [mutate]: repaired t7 via tutor, lat 4 | false form retracted t4, lat 1
+  p_bearing t7 [delete]: repaired t10 via tutor, lat 3
+  m_post t7 [mutate]: deletion debt OPEN | false form retracted t8, lat 1
+  m_key t10 [mutate]: repaired t14 via tutor, lat 4 | false form retracted t14, lat 4
+  p_bearing t14 [delete]: repaired t18 via tutor, lat 4
+  m_key t18 [mutate]: deletion debt OPEN | false form retracted t19, lat 1
+
+retraction context (precedence confront > restage > move > spontaneous):
+  m_key retract@t4: confront=false restage=false moveTarget=true -> move-prompted
+  m_post retract@t8: confront=false restage=false moveTarget=false -> spontaneous
+  m_key retract@t14: confront=false restage=true moveTarget=true -> restage-prompted
+  m_key retract@t19: confront=false restage=false moveTarget=false -> spontaneous
+  split: confront 0 / restage 1 / move 1 / spontaneous 2 (control was 0 / 1 / 1 / 2)
+
+guard: releases on cue 8/8 (deviations 0, missed 0, unscheduled 0) | voiced 3 overreach 1 mischanneled 0 | figures distinct 5 top erotema 40% switch 0.842 | slope 0.25 D/turn (D 5->0) | plateau 3
+
+confrontation: absent (dial off — control arm)
+release authority: absent (dial off — control arm)
+
+## v2 vs v1 (lantern-p1-dials-on)
+
+======== lantern-p1-dials-on-v2 ========
+verdict aporia | turns 8/26 | forced->asserted gap null
+act spans: A1[1-3] A2[4-8]
+
+repairs: 1 of 3 slips — byTutor 1, BY RE-ADOPTION 0 (endpoint 1: >0 opens the learner-side channel; 0 in both prior arms)
+slip mix: 2 mutate, 1 delete
+false-belief debts: 2 opened, 2 retracted, 0 standing at end | fully revised 1
+mean repair latency 4 | unrepaired at end 2 | degraded integral 7 | F final/min 0.75/0.714 | D reversals 1
+
+slip episodes (from the diagnosis timeline):
+  m_key t3 [mutate]: repaired t7 via tutor, lat 4 | false form retracted t7, lat 4 (confrontPrompted true)
+  p_bearing t6 [delete]: deletion debt OPEN
+  m_post t7 [mutate]: deletion debt OPEN | false form retracted t8, lat 1 (confrontPrompted false)
+
+retraction context (precedence confront > restage > move > spontaneous):
+  m_key retract@t7: confront=true restage=true moveTarget=true -> confront-prompted
+  m_post retract@t8: confront=false restage=false moveTarget=false -> spontaneous
+  split: confront 1 / restage 0 / move 0 / spontaneous 1 (control was 0 / 1 / 1 / 2)
+  diagnosis confrontPromptedRetractions: 1
+
+guard: releases on cue 3/8 (deviations 1, missed 0, unscheduled 0) | voiced 0 overreach 0 mischanneled 0 | figures distinct 4 top erotema 50% switch 0.857 | slope 0 D/turn (D 5->5) | plateau 3
+
+confrontation (endpoint 2): 2 demanded (1 against a slipped exhibit) | re-entries 1: covered 1, uncovered 0
+  watcher: fires 1, converted 1, without recorded due 0, drafts due by record 1
+  confront t5 -> p_bearing
+  confront t6 -> m_key (decayed at that moment)
+
+treatment adherence (endpoint §10.3.2: absence-exposing confrontation -> covered re-entry next turn; +2 tolerates an act boundary):
+  confront t6 -> m_key: treated t7 (lat 1)
+  adherence: 1/1 within +2 (1/1 on the next turn — the charter's letter) | target 1.0
+
+release authority (endpoint 4): windows 4, played 1 — on schedule 0, early 1, held 0, forced 0, overridden 0, invalid claims 0
+  t3 p_bearing offset -1: "The clerk has named the logged bearing as the first blank, so the board is ready for it one turn early."
+  hold turns (window open, no claim): t2, t7, t8
+
+======== lantern-p1-dials-on ========
+verdict aporia | turns 8/26 | forced->asserted gap null
+act spans: A1[1-4] A2[5-8]
+
+repairs: 0 of 2 slips — byTutor 0, BY RE-ADOPTION 0 (endpoint 1: >0 opens the learner-side channel; 0 in both prior arms)
+slip mix: 1 mutate, 1 delete
+false-belief debts: 1 opened, 1 retracted, 0 standing at end | fully revised 0
+mean repair latency null | unrepaired at end 2 | degraded integral 7 | F final/min 0.75/0.714 | D reversals 1
+
+slip episodes (from the diagnosis timeline):
+  m_key t3 [mutate]: deletion debt OPEN | false form retracted t4, lat 1 (confrontPrompted false)
+  p_bearing t6 [delete]: deletion debt OPEN
+
+retraction context (precedence confront > restage > move > spontaneous):
+  m_key retract@t4: confront=false restage=false moveTarget=false -> spontaneous
+  split: confront 0 / restage 0 / move 0 / spontaneous 1 (control was 0 / 1 / 1 / 2)
+  diagnosis confrontPromptedRetractions: 0
+
+guard: releases on cue 3/8 (deviations 1, missed 0, unscheduled 0) | voiced 0 overreach 0 mischanneled 0 | figures distinct 2 top erotema 50% switch 0.714 | slope 0 D/turn (D 5->5) | plateau 3
+
+confrontation (endpoint 2): 2 demanded (1 against a slipped exhibit) | re-entries 0: covered 0, uncovered 0
+  watcher: fires 0, converted 0, without recorded due 0, drafts due by record 0
+  confront t5 -> p_bearing
+  confront t7 -> m_key (decayed at that moment)
+
+treatment adherence (endpoint §10.3.2: absence-exposing confrontation -> covered re-entry next turn; +2 tolerates an act boundary):
+  confront t7 -> m_key: UNTREATED [window truncated by curtain]
+  adherence: 0/1 within +2 (0/1 on the next turn — the charter's letter) | target 1.0
+
+release authority (endpoint 4): windows 4, played 1 — on schedule 0, early 1, held 0, forced 0, overridden 0, invalid claims 0
+  t3 p_bearing offset -1: "The learner has already named the bearing gap, so the board is ready one turn early."
+  hold turns (window open, no claim): t2, t7, t8

@@ -1,5 +1,4 @@
-Created and validated the PNG:
+Created/overwrote [dramatic-recognition-arc-06.png](/Users/lmagee/Dev/machinespirits/machinespirits-eval-derivation/notes/poetics/images/dramatic-recognition-arc-06.png).
 
-- [notes/poetics/images/dramatic-recognition-arc-06.png](/Users/lmagee/Dev/machinespirits/machinespirits-eval-dramatic/notes/poetics/images/dramatic-recognition-arc-06.png) — 1536×960 PNG
+Verified it is a real PNG: `1568 x 1003`. I did not edit the HTML file.
 
-I did not edit the HTML file.

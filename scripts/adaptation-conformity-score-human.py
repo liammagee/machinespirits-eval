@@ -9,7 +9,7 @@ and recomputes κ against the GPT-5.2 predictions
 (`exports/adaptation-conformity-gate-pred.jsonl`).
 
 This is the human-anchor step of the frozen pre-reg
-(`notes/adaptation-conformity-classifier-stage0-preregistration.md`): the gate
+(`notes/2026-06-09-adaptation-conformity-classifier-stage0-preregistration.md`): the gate
 verdict is κ(classifier, HUMAN gold) ≥ 0.60. Pass iff unweighted Cohen's κ ≥
 0.60 (the nominal-correct, stricter operationalisation of the frozen "weighted
 κ ≥ 0.60"); quadratic-weighted κ reported alongside for completeness only.

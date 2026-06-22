@@ -44,7 +44,7 @@ node scripts/score-replays.js exports/replay-<id>-<run>-<arm> \
 
 ## 4. Read the distribution (the whole point)
 
-On the 0–4 ladder (`notes/poetics/oedipus-discovery-grade-rubric.md`):
+On the 0–4 ladder (`notes/poetics/2026-06-01-oedipus-discovery-grade-rubric.md`):
 - **Tight cluster / unanimous band** (e.g. all ~2) → the frozen scene **caps** the learner there; the near-miss is **structural** (the scene didn't supply the decisive evidence).
 - **Wide / bimodal** (some 2, some 4) → a **learner draw** the scene only sometimes resolves; the cap isn't structural.
 

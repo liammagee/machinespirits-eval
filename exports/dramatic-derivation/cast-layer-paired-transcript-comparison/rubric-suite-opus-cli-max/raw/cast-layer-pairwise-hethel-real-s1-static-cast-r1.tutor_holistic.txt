@@ -1,0 +1,23 @@
+{
+  "scores": {
+    "pedagogical_arc": {
+      "score": 4,
+      "reasoning": "Clear cumulative arc. It opens by fixing the controlling distinction (what has been shown vs the town's pre-written verdict), then builds a single chain link by link: who built it (Reyner) → where it broke (crown/keystone) → why (green mortar = struck centering, not bad building) → what trace ties props to a person (the crowsfoot print) → which yard (Caudle) → which hand (Oswin). The recurring 'two columns / two clean lines' device scaffolds progressively and each major turn extends the prior. Short of masterful only because turns 14-16 circle on one holding point (the crowsfoot trace 'stops at the mark until identified') rather than extending it."
+    },
+    "adaptive_trajectory": {
+      "score": 4,
+      "reasoning": "A genuine learner-keyed trajectory. Early turns are open and exploratory; at Turn 4 the tutor explicitly registers the learner's tendency ('your speed is useful here if we make it look first'), and from Turn 5 on progressively tightens the frame against the learner's pull toward the verdict — 'two small steps,' 'keep it in its lane,' 'keep this narrow,' a 'chalk line on the table,' 'slow it down to one line.' The strategy visibly lands at Turn 19, where the learner self-corrects ('I was jumping past the first step'). Short of 5 because the underlying method stays constant throughout; the adaptation is escalating calibration to this specific learner rather than a substantively new strategy."
+    },
+    "pedagogical_closure": {
+      "score": 4,
+      "reasoning": "Ends cleanly on the intended terminus with the learner explicitly consolidating the whole chain (struck centering → Caudle timber → Oswin's hand → 'Oswin felled it'); the learner plainly knows what was established and how the links connect, which exceeds a generic summary. Short of excellent because no residual gaps are named and no next steps are offered, the transferable method-lesson (resist the pre-written verdict, follow only what is shown) is never consolidated, and the dialogue ends on the learner's final inferential leap without the tutor validating that 'drew and carted falsework' truly equals 'pulled the centering early / felled it.'"
+    }
+  },
+  "overall_score": 75,
+  "summary": "A well-formed dramatic-pedagogical trajectory, scored purely on public discourse quality: a clean opening distinction, a single progressively-built evidentiary chain, learner-keyed tightening of the scaffolding with a visible payoff at Turn 19, and a coherent consolidating finish. It falls short of masterful on each axis for specific, nameable reasons — mid-dialogue repetition (14-16), adaptation that is calibration rather than transformation, and a terminus-only closure without named gaps or next steps. The public dialogue reads as natural inquiry drama with no formalism, rule/premise IDs, or hidden-state language to penalize.",
+  "caveats": [
+    "The final turn ends on the learner asserting 'Oswin felled it' without the tutor consolidating or checking that last inference — an ironic echo of the very leaping the dialogue spent 19 turns training against, and a mild closure weakness.",
+    "Closure consolidates the answer but not the transferable method; no next steps or explicitly named residual gaps.",
+    "Scored on public discourse only; the deterministic proof/grounding verdict (grounded_anagnorisis, Final D 0) was deliberately not used as a basis for credit."
+  ]
+}
