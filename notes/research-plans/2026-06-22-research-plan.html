@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Plan — review of 9–18 Jun 2026 roundups (22 Jun)</title>
+  <style>
+    body { font-family: Georgia, "Times New Roman", serif; max-width: 900px; margin: 2rem auto;
+           padding: 0 1.5rem; line-height: 1.65; color: #1a1a1a; background: #fafaf8; }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; color: #444; text-transform: uppercase; letter-spacing: .06em; }
+    .item { border-left: 3px solid #aaa; padding: .5rem 1rem; margin: 1rem 0; background: #fff; }
+    .item.p1 { border-left-color: #c0392b; } .item.p2 { border-left-color: #1a5276; } .item.p3 { border-left-color: #1e8449; }
+    .item h3 { margin: 0 0 .35rem; font-size: 1.02rem; }
+    .item .row { font-size: .9rem; margin: .25rem 0; }
+    .k { font-weight: bold; color: #555; }
+    .cost { display:inline-block; font-size:.74rem; font-weight:bold; padding:.1rem .45rem; border-radius:3px; background:#1e8449; color:#fff; }
+    .cost.warn { background:#d4a017; }
+    table { border-collapse: collapse; font-size: .9rem; margin: .5rem 0; }
+    th, td { border: 1px solid #ccc; padding: .25rem .6rem; text-align: left; }
+    .intro-note { font-size: .9rem; color: #555; background: #f0f0ea; border: 1px solid #ddd;
+                  padding: .6rem 1rem; border-radius: 3px; margin-bottom: 1rem; }
+    .brake { background: #fbeee6; border: 1px solid #e0c0a0; padding: .6rem 1rem; border-radius: 3px; }
+    .corpus-note { font-size: .84rem; color: #666; background: #f5f5f0; border: 1px solid #ddd;
+                   padding: .5rem .9rem; border-radius: 3px; margin-bottom: 1rem; }
+    a { color: #1a5276; } footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+  </style>
+</head>
+<body>
+<!-- meta: date=2026-06-22 reviews=2026-06-09,2026-06-11,2026-06-12,2026-06-13,2026-06-14,2026-06-15,2026-06-16,2026-06-17,2026-06-18 generator=ms-research-review -->
+
+<h1>Research Plan <small style="font-weight:normal;font-size:.85em">review of the 9–18 Jun 2026 roundups (22 Jun update)</small></h1>
+
+<div class="corpus-note">
+  <strong>Corpus note:</strong> No new daily roundups have been published since 18 Jun. This plan re-synthesises
+  the same 9 roundups as the <a href="2026-06-20-research-plan.html">20 Jun plan</a> — approximately 55 distinct
+  papers across 9 daily issues — but with two weeks' additional perspective and with items from the later
+  roundups (14–18 Jun) now brought forward into priority. The self-citation flag on <strong>2603.10450</strong>
+  ("Geist in the Machine") was already resolved in the 20 Jun plan (it is the project's own paper) and is
+  excluded here. P2 and P3 from the 20 Jun plan remain un-implemented (correct, per the brake); they appear
+  in the backlog below. The three new items below focus on work that was either absent from or underweighted
+  in the 20 Jun plan.
+</div>
+
+<div class="intro-note">
+  <strong>Review → plan</strong> across ~55 papers in 9 daily roundups. Three thematic clusters dominate:
+  (1) external-correction architecture is now independently validated by three papers (2606.05976, 2606.00820,
+  2606.10296); (2) the teach-vs-solve gap is now benchmarked (2606.16206, 2603.02775) and points directly
+  at a rubric dimensionality audit (2606.08625); (3) the poetics critic κ ≈ 0.04 failure has a concrete
+  candidate fix in reasoning-level synthesis (2606.11609). Three items below; the brake is in force.
+</div>
+
+<h2>The plan</h2>
+
+<div class="item p1">
+  <h3>P1 · Write the architecture-validation paragraph citing 2606.05976, then audit role-label symmetry</h3>
+  <div class="row"><span class="k">Papers:</span>
+    <a href="https://arxiv.org/abs/2606.05976">2606.05976</a> (Self-Correction Illusion),
+    <a href="https://arxiv.org/abs/2606.00820">2606.00820</a> (Not All Flips Are Conformity),
+    <a href="https://arxiv.org/abs/2606.10296">2606.10296</a> (Confident Liar)
+  </div>
+  <div class="row"><span class="k">Why now:</span>
+    The 20 Jun plan showed the externalization-lift data in a table (base: +22.8 pp, recog: +2.9 pp from
+    existing multi-agent vs single-agent cells). That data is now paper-ready; 2606.05976 provides the
+    mechanistic account needed to make the §3 architecture claim defensible as a <em>design choice</em>,
+    not a hypothesis. 2606.00820 supplies the flip-typing vocabulary (instability / conformity / persuasion)
+    and 2606.10296 warns that high-confidence outputs can be high-scoring but wrong — both are cite-level
+    additions to the same paragraph.
+  </div>
+  <div class="row"><span class="k">Do:</span>
+    Write one paragraph in <code>docs/research/paper-full-2.0.md</code> §3 (architecture) citing 2606.05976
+    as empirical grounding for the external-superego design; note the role-label taxonomy (thought →
+    user → tool → system-memory) and identify which label the project's ego output appears under when
+    the superego sees it. Cross-check <code>prompts/tutor-superego*.md</code> to confirm the ego output
+    is presented as a <em>tool</em> or <em>user</em> message, not reflected back in a
+    <code>&lt;thought&gt;</code> tag. If the label is wrong, flag it as a prompt-fix candidate (separate PR).
+    Also run <code>scripts/analyze-dialogue-trace.js</code> (or grep existing log files) to spot any
+    <code>agent: "user"</code> labels that should read <code>agent: "tutor"</code> per the CLAUDE.md
+    symmetry rule — the Self-Correction Illusion result adds urgency to that known issue.
+  </div>
+  <div class="row"><span class="k">Evaluate:</span>
+    Read-only audit. Reuse the existing-data table from the 20 Jun plan; no new eval run needed.
+    The paragraph lands in §3 with the table cross-referenced to §6.3 results.
+    <span class="cost">existing data — paper-authoring only</span>
+  </div>
+</div>
+
+<div class="item p2">
+  <h3>P2 · Rubric dimensionality audit: run <code>calibrate-rubric.js</code> and cross-walk against KMP-Bench / 2606.16206</h3>
+  <div class="row"><span class="k">Papers:</span>
+    <a href="https://arxiv.org/abs/2606.08625">2606.08625</a> (rubric survey — dimensionality collapse warning),
+    <a href="https://arxiv.org/abs/2606.16206">2606.16206</a> (teach-or-solve gap, MathTutorBench, <em>r</em> = 0.42),
+    <a href="https://arxiv.org/abs/2603.02775">2603.02775</a> (KMP-Bench: 6 pedagogical dimensions)
+  </div>
+  <div class="row"><span class="k">Why now:</span>
+    2606.08625 maps the failure modes of multi-dimension rubrics — <em>dimensionality collapse</em>
+    (nominally-many dimensions that converge in practice to one) is their primary warning. The project
+    now carries <em>three</em> independent rubric families (v2.2 tutor 8-dim, charisma v1.0 8-dim,
+    poetics v1.0 6-dim). 2606.16206 independently confirms that the teach-vs-solve split matters
+    (the central design choice in v2.2) and benchmarks it against MathTutorBench; their solve/teach
+    correlation of <em>r</em> = 0.42 is the external number to anchor the §5.4 rubric-consistency
+    discussion. KMP-Bench (2603.02775) offers 6 named pedagogical dimensions (Challenge, Explanation,
+    Modelling, Practice, Questioning, Feedback) that can be used as an external validity lens on v2.2's
+    8 dimensions.
+  </div>
+  <div class="row"><span class="k">Do:</span>
+    Run <code>node scripts/calibrate-rubric.js</code> on existing scored runs to extract inter-dimension
+    Pearson correlations for the v2.2 8-dimension tutor rubric and the 6-dimension poetics rubric.
+    Flag any dimension-pair with |<em>r</em>| &gt; 0.85 as a collapse candidate. Then manually
+    map v2.2's 8 dimensions against KMP-Bench's 6 and note which v2.2 dimensions have no KMP-Bench
+    analogue (those are the project-specific additions, needing their own internal-validity defence).
+    Write findings into <code>docs/research/paper-full-2.0.md</code> §5.4 (rubric consistency) with
+    the collapse-candidate table and the KMP crosswalk. If any dimension consistently correlates &gt; 0.85
+    with another, flag it as a candidate for merging in a hypothetical v2.3 (a human decision, not to
+    implement now).
+  </div>
+  <div class="row"><span class="k">Evaluate:</span>
+    Existing data — run <code>calibrate-rubric.js</code> (pure computation, no API calls) on the
+    existing <code>data/evaluations.db</code>. Metric: inter-dimension Pearson matrix; collapse
+    threshold |<em>r</em>| &gt; 0.85. Target: confirm that <code>content_accuracy</code> does not
+    collapse into the scaffolding dimensions (as 2606.16206 predicts it should not if the split is real).
+    <span class="cost">existing data — no paid eval</span>
+  </div>
+</div>
+
+<div class="item p3">
+  <h3>P3 · Pilot reasoning-synthesis aggregation for the poetics critic panel (κ ≈ 0.04 fix candidate)</h3>
+  <div class="row"><span class="k">Papers:</span>
+    <a href="https://arxiv.org/abs/2606.11609">2606.11609</a> (reasoning-level synthesis for multi-agent stance detection),
+    <a href="https://arxiv.org/abs/2606.15783">2606.15783</a> (SemEval Task 4: multi-view narrative similarity)
+  </div>
+  <div class="row"><span class="k">Why now:</span>
+    The poetics arc phase-2 finding — weighted κ ≈ 0.04 vs ≥ 0.60 target — was treated as a failure
+    of the <em>instrument</em> (the rubric classifies dramatic form, not mind-reading). But 2606.11609
+    shows that label-level aggregation of rationale-producing critics is systematically worse than
+    synthesising their <em>reasoning traces</em> through a coordinator step. Our critics already output
+    free-text reasoning (<code>scores_with_reasoning</code>); we may be aggregating at the label level
+    (<code>poetics:audit</code> computes κ on scores) when we should synthesise the rationales first.
+    2606.15783's multi-view encoder (separate heads for theme, plot, outcome) maps almost exactly onto
+    the three-act dramatic structure and could provide a more principled per-dimension comparison
+    framework for the inter-critic audit.
+  </div>
+  <div class="row"><span class="k">Do:</span>
+    Pull three existing critic outputs for a sample of ≥ 10 transcripts from
+    <code>exports/phase2-classic-drama-*</code>. For each transcript, extract the reasoning prose from
+    <code>scores_with_reasoning</code> alongside the numeric scores. Run a coordinator prompt that reads
+    all three critics' reasoning traces and synthesises a consensus label (separate from each critic's
+    individual label). Compute κ under both aggregation strategies (label-average vs reasoning-synthesis)
+    and compare. Log results in a new note <code>notes/poetics/2026-06-22-critic-aggregation-pilot.md</code>.
+    If κ improves materially (&gt; 0.20), draft the mechanism change for <code>poetics:audit</code>
+    as a separate PR proposal (human to authorize the code change).
+  </div>
+  <div class="row"><span class="k">Evaluate:</span>
+    Existing <code>exports/phase2-classic-drama-*</code> data — no new generation needed if
+    <code>scores_with_reasoning</code> was captured. The coordinator synthesis step requires one
+    API call per transcript-batch (small, ~10 transcripts × 1 call). Metric: weighted κ under
+    reasoning-synthesis vs label-average; secondary metric: variance in synthetic consensus score.
+    <span class="cost warn">~10 API calls (coordinator synthesis); otherwise existing data</span>
+  </div>
+</div>
+
+<h2>Theme map (all ~55 papers)</h2>
+<table>
+  <tr><th>Theme</th><th>Key papers</th><th>Project hook</th></tr>
+  <tr>
+    <td>External correction &gt; self-reflection</td>
+    <td>2606.05976, 2606.00820, 2606.10296, 2606.10307</td>
+    <td>§3 architecture; multi-agent vs single-agent cells 1–8</td>
+  </tr>
+  <tr>
+    <td>Teach-vs-solve gap &amp; rubric validity</td>
+    <td>2606.16206, 2603.02775, 2606.08625</td>
+    <td>§5.4 rubric consistency; <code>calibrate-rubric.js</code></td>
+  </tr>
+  <tr>
+    <td>Poetics / dramatic form</td>
+    <td>2606.05553, 2602.15851, 2606.15783, 2606.14411</td>
+    <td><code>evaluation-rubric-poetics.yaml</code>; §6.9</td>
+  </tr>
+  <tr>
+    <td>Prompt optimization (joint ego-superego)</td>
+    <td>2606.04465 (SePO), 2606.17838, 2606.11459 (APEX)</td>
+    <td><code>npm run prompt-lab -- autotune</code>; cells 93–100</td>
+  </tr>
+  <tr>
+    <td>Knowing-doing gap / Socratic pedagogy</td>
+    <td>2606.04155 (SocialCoach), 2606.11744</td>
+    <td><code>analyze-insight-action-gap.js</code>; §6.15; pilot §A1</td>
+  </tr>
+  <tr>
+    <td>Multi-agent debate routing / cost</td>
+    <td>2606.13197 (ARMOR-MAD), 2606.01828 (DySCo)</td>
+    <td>Superego-bypass for converged cells 3–4, 7–8, 22–33</td>
+  </tr>
+  <tr>
+    <td>Theory of Mind / bilateral transformation</td>
+    <td>2606.04184 (GroupToM-Bench), 2606.05330 (PersuasionTrace)</td>
+    <td>§6.8.5 P2.1 bilateral ToM; <code>bilateralTransformationIndex</code></td>
+  </tr>
+  <tr>
+    <td>Agent memory / state evolution</td>
+    <td>2606.06448, 2606.06090, 2606.09900, 2606.13681</td>
+    <td>Adaptive runner state schema (cells 110–113); <code>otherEgoProfiling</code></td>
+  </tr>
+</table>
+
+<h2>Backlog — carried forward from 20 Jun plan (still open)</h2>
+<ul style="font-size:.92rem;">
+  <li>
+    <strong>Quality-type the ego-revision flips</strong> (2606.00820) — classify each ego→superego
+    revision in existing logs as instability / conformity / persuasion, then correlate type with rubric
+    gain. Was P3 in the 20 Jun plan; still no-cost existing-data work.
+  </li>
+  <li>
+    <strong>ArcANE phase-conditioned scoring scaffold</strong> (2606.05553) — adapt the arc-phase
+    segmentation methodology as a scoring supplement for
+    <code>config/evaluation-rubric-poetics.yaml</code> (phase-transition scores vs per-dimension scores).
+    Was backlog in 20 Jun plan.
+  </li>
+  <li>
+    <strong>SePO joint ego-superego prompt optimisation</strong> (2606.04465) — pilot on cell pair 3/4
+    before the next large factorial run. New from Jun 17 roundup; needs paid runs (human to authorize).
+  </li>
+  <li>
+    <strong>Habermasian rhetoric axis for dialogue rubric</strong> (2606.08076) —
+    illocutionary intent (conveying knowledge / building trust / signalling similarity) as a
+    missing dimension in v2.2. New from Jun 16 roundup; would require a rubric PR.
+  </li>
+  <li>
+    <strong>KG-CFR private-buffer / public-speech split</strong> (2606.10475) — engineering model
+    for the insight-action gap (Finding 11); new from Jun 16 roundup.
+  </li>
+</ul>
+
+<h2>The brake</h2>
+<div class="brake">
+  P1–P2 are read-only / existing-data. P3 requires ~10 small coordinator API calls (flagged).
+  No eval cells are run, no rubric versions are changed, nothing lands in the paper without sign-off.
+  SePO (backlog) needs paid runs — human decision. The pre-registration / single-paper discipline
+  (<code>CLAUDE.md</code> → "Paper Authoring Discipline") is in force.
+</div>
+
+<footer>Generated by <code>ms-research-review</code> from the 9–18 Jun 2026 daily roundups (second pass, 22 Jun) · reviewed by a human before any implementation.</footer>
+</body>
+</html>
