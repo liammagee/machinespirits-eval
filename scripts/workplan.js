@@ -253,6 +253,7 @@ function cmdAdd(argv) {
   fs.writeFileSync(file, serializeDoc(fm, 'Context. Link out for detail; do not copy.\n'));
   console.log(`created → ${rel(file)}`);
   if (!f.verification) console.log('  ! set a real `verification` before this can reach done');
+  autoRender(f);
 }
 
 function cmdTriage(argv) {
@@ -284,6 +285,7 @@ function cmdTriage(argv) {
   fs.rmSync(inboxFile);
   console.log(`triaged → ${rel(target)} (removed ${rel(inboxFile)})`);
   if (!f.verification) console.log('  ! set a real `verification` (and priority/owner) before this can reach done');
+  autoRender(f);
 }
 
 function cmdSet(argv) {
@@ -304,6 +306,7 @@ function cmdSet(argv) {
   }
   fs.writeFileSync(file, serializeDoc(fm, body));
   console.log(`updated ${id}: ${field}=${value || '(unchanged)'} updated=${fm.updated}`);
+  autoRender(f);
 }
 
 function cmdValidate() {
@@ -322,7 +325,7 @@ function cmdValidate() {
   if (bad) process.exit(1);
 }
 
-function cmdRender() {
+function renderBoard() {
   const p = paths();
   const items = loadItems().map((i) => i.fm);
   const counts = { total: items.length, byStatus: {}, byType: {} };
@@ -368,7 +371,22 @@ function cmdRender() {
   }
   lines.push('');
   fs.writeFileSync(p.boardMd, lines.join('\n'));
-  console.log(`rendered ${rel(p.boardMd)} + ${rel(p.boardJson)} (${counts.total} items)`);
+  return counts;
+}
+
+function cmdRender() {
+  const c = renderBoard();
+  const p = paths();
+  console.log(`rendered ${rel(p.boardMd)} + ${rel(p.boardJson)} (${c.total} items)`);
+}
+
+// Mutating commands (add/triage/set) call this so BOARD.md + board.json — and the
+// dashboard that reads board.json — never drift from items/. Pass --no-render to
+// skip it in batch scripts.
+function autoRender(f) {
+  if (f && f['no-render']) return;
+  const c = renderBoard();
+  console.log(`  board refreshed (${c.total} items)`);
 }
 
 // ---- ingest ----------------------------------------------------------------
@@ -570,7 +588,7 @@ const USAGE = `workplan — the project working board (see workplan/README.md)
   triage <inbox-file> [--type T --priority P --owner O --verification "…"]
   set <id> <field> <value> [--owner O --branch B]
   validate
-  render
+  render          (add/triage/set auto-render BOARD.md + board.json; --no-render to skip)
   ingest [--todo] [--daily]`;
 
 function main() {

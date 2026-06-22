@@ -106,8 +106,9 @@ Everyone reads this README first, then:
 
 1. **Agents (Claude Code, Codex, Gemini).** Read `items/` + `playbook/`. Create
    and edit item files directly — they're plain markdown. Set `owner` to
-   yourself and `branch` when you pick one up. Re-run `workplan render` after
-   changes. Follow the playbook; if you deviate, say so in the item log.
+   yourself and `branch` when you pick one up. The CLI (`add`/`triage`/`set`)
+   auto-renders the views; only run `workplan render` after hand-editing item
+   files. Follow the playbook; if you deviate, say so in the item log.
 
 2. **CLI (`scripts/workplan.js`).** The programmatic surface:
    `list`, `show <id>`, `add`, `triage <inbox-file>`, `set <id> <field> <value>`,
