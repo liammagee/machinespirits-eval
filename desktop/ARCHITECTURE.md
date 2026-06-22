@@ -81,6 +81,12 @@ in the same commit, with a comment explaining why — never silently.
   enumerates the exact external origins the UI uses (Google Fonts, jsDelivr). If the
   UI adds a new CDN, add it here, or that resource is blocked. The smoke's
   "CSP no violations" check catches breakage.
+- **Native "Go" menu — `desktop/menu.js` + `desktop/main.js`.** The desktop menu
+  bar's Go submenu is built from the SAME nav source as the in-page rail: main
+  fetches `/_nav.html` (railHtml's bare mode, generated from the `NAV` array in
+  `scripts/browse-poetics-scripts.js`), `parseNavHtml()` turns it into items, and
+  `buildMenuTemplate({ navItems })` renders them. Add a destination to `NAV` and it
+  shows up in BOTH the rail (web + desktop) and the native menu — one definition.
 
 ## File map
 

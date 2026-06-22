@@ -20,7 +20,7 @@ import fs from 'node:fs';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { resolvePaths, serverEnv } from './paths.js';
-import { buildMenuTemplate } from './menu.js';
+import { buildMenuTemplate, parseNavHtml } from './menu.js';
 import { loadWindowState, saveWindowState } from './windowState.js';
 import { buildCSP, shouldOpenExternally, loopbackAuthHeaders, basicAuthHeader } from './security.js';
 import { createCredentialStore } from './credentials.js';
@@ -240,14 +240,28 @@ function clearKeys() {
   }
 }
 
-function buildAppMenu() {
+function buildAppMenu(navItems = []) {
   const actions = {
     openDataFolder: () => shell.openPath(app.getPath('userData')),
     goHome: () => mainWin && loopbackBase && mainWin.loadURL(loopbackBase + HOME_ROUTE),
+    navigate: (route) => mainWin && loopbackBase && mainWin.loadURL(loopbackBase + route),
     setupKeys,
     clearKeys,
   };
-  Menu.setApplicationMenu(Menu.buildFromTemplate(buildMenuTemplate({ actions, appName: 'Scriptorium' })));
+  Menu.setApplicationMenu(Menu.buildFromTemplate(buildMenuTemplate({ actions, appName: 'Scriptorium', navItems })));
+}
+
+// Derive the native "Go" menu from the SAME nav source as the in-page rail
+// (/_nav.html is railHtml's bare mode, generated from the NAV array). One
+// definition → both menus, no duplicate list.
+async function fetchNavItems(base) {
+  try {
+    const res = await fetch(base + '/_nav.html', { headers: authHeaders() });
+    if (!res.ok) return [];
+    return parseNavHtml(await res.text());
+  } catch {
+    return [];
+  }
 }
 
 // --- Headless helpers (smoke / shots) ----------------------------------------
@@ -455,6 +469,8 @@ if (hasLock) {
       console.log(`[desktop] server listening at ${loopbackBase}`);
       console.log(`[desktop] userData: ${paths.userData}`);
       await win.loadURL(loopbackBase + HOME_ROUTE);
+      // Rebuild the menu with a native "Go" menu mirroring the shared rail.
+      buildAppMenu(await fetchNavItems(loopbackBase));
     } catch (err) {
       console.error('[desktop] server failed:', err.message);
       win.loadURL(errorDataUrl(err.stack || err.message));

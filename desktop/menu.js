@@ -1,10 +1,48 @@
 // desktop/menu.js
 //
 // Pure application-menu template builder (no electron import). main passes the
-// returned template to Menu.buildFromTemplate. Custom items appear only when a
-// handler for them is supplied, so the same builder serves every phase.
+// returned template to Menu.buildFromTemplate.
+//
+// The native "Go" menu mirrors the SAME nav source as the in-page rail: main
+// fetches /_nav.html (railHtml's bare mode, generated from the NAV array in
+// scripts/browse-poetics-scripts.js), parses it with parseNavHtml() here, and
+// passes the result as `navItems`. One definition (NAV) → both the web rail and
+// the desktop menu bar, kept in sync with no duplicate list.
 
-export function buildMenuTemplate({ actions = {}, platform = process.platform, appName = 'Machine Spirits' } = {}) {
+function titleCase(s) {
+  return String(s)
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
+}
+
+/** Parse the shared rail markup (/_nav.html) into [{ route, label }]. */
+export function parseNavHtml(html) {
+  const items = [];
+  const seen = new Set();
+  const re = /<a\b[^>]*href="(\/[^"#?]*)"[^>]*>([\s\S]*?)<\/a>/gi;
+  let m;
+  while ((m = re.exec(String(html)))) {
+    const route = m[1];
+    if (route.startsWith('/api') || route.startsWith('/_') || route.startsWith('/components')) continue;
+    const label = m[2]
+      .replace(/<[^>]*>/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (!label || seen.has(route)) continue;
+    seen.add(route);
+    items.push({ route, label });
+  }
+  return items;
+}
+
+export function buildMenuTemplate({
+  actions = {},
+  platform = process.platform,
+  appName = 'Scriptorium',
+  navItems = [],
+} = {}) {
   const isMac = platform === 'darwin';
 
   const customItems = [];
@@ -70,6 +108,18 @@ export function buildMenuTemplate({ actions = {}, platform = process.platform, a
     { role: 'togglefullscreen' },
   );
   template.push({ label: 'View', submenu: viewSubmenu });
+
+  // "Go" — navigate the window to any rail destination (mirrors the web nav).
+  if (Array.isArray(navItems) && navItems.length && actions.navigate) {
+    template.push({
+      label: 'Go',
+      submenu: navItems.map((it, i) => ({
+        label: titleCase(it.label),
+        accelerator: i < 9 ? `CmdOrCtrl+${i + 1}` : undefined,
+        click: () => actions.navigate(it.route),
+      })),
+    });
+  }
 
   template.push({
     label: 'Window',
