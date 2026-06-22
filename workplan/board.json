@@ -1,0 +1,129 @@
+{
+  "generated": "2026-06-22T14:40:59.492Z",
+  "counts": {
+    "total": 5,
+    "byStatus": {
+      "blocked": 1,
+      "done": 2,
+      "triaged": 2
+    },
+    "byType": {
+      "experiment": 1,
+      "infra": 3,
+      "research": 1
+    }
+  },
+  "items": [
+    {
+      "id": "consolidate-logs-db-private-archive",
+      "title": "Consolidate dialogue logs + DB into the private archive repo",
+      "status": "triaged",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-06-22",
+      "updated": "2026-06-22",
+      "verification": "Dialogue logs are co-located with the DB under the private archive; npm run provenance:validate finds the logs; the dramatic fork's sibling-path log_dir stopgap is removed.",
+      "links": {
+        "items": "build-workplan-tooling"
+      },
+      "tags": [
+        "infra",
+        "provenance",
+        "logs",
+        "archive"
+      ]
+    },
+    {
+      "id": "socratic-structured-tutoring-readings",
+      "title": "Assess structured-Socratic tutoring papers for the A1 pilot design",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-22",
+      "verification": "Each paper read; a short note in notes/ records whether its design (knowledge-graph sequencing, student-state inference, withhold-and-derive) should change the A1 pilot instrument; the decision is logged on the a1-human-learner-validation item.",
+      "claim_status": "future",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-13-research-roundup.html",
+        "paper": "§2.1",
+        "items": "a1-human-learner-validation"
+      },
+      "tags": [
+        "reading",
+        "socratic",
+        "pilot"
+      ]
+    },
+    {
+      "id": "a1-human-learner-validation",
+      "title": "Human-learner validation pilot (real learning gains)",
+      "status": "blocked",
+      "type": "experiment",
+      "priority": "P0",
+      "owner": "human",
+      "source": "todo",
+      "created": "2026-06-22",
+      "updated": "2026-06-22",
+      "verification": "Phased N≈90 pilot runs end-to-end across 3 arms; pre/post MCQ + immediate transfer + coded free-text explanation + 1-week retention scored; the tutor-quality → learning-gains path is estimated (or shown null) in exports/.",
+      "blocked_by": "IRB approval + real consent text + real item content (content/legal track, not engineering)",
+      "claim_status": "future",
+      "links": {
+        "paper": "§8.1, §9",
+        "notes": "notes/design-a1-human-learner-pilot.md",
+        "items": "socratic-structured-tutoring-readings"
+      },
+      "tags": [
+        "pilot",
+        "human-learner",
+        "critical"
+      ]
+    },
+    {
+      "id": "build-workplan-tooling",
+      "title": "Build the workplan executable layer (CLI, ingester, dashboard panel, test)",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-06-22",
+      "updated": "2026-06-22",
+      "branch": "claude/derivation-fast-iteration",
+      "verification": "scripts/workplan.js list/show/add/triage/set/validate/render/ingest all run green; tests/workplan.test.js passes under npm run test:hermetic; board.json renders a panel in the scriptorium (:3466); npm run wp:* wired in package.json.",
+      "links": {
+        "notes": "workplan/README.md"
+      },
+      "tags": [
+        "workplan",
+        "tooling",
+        "meta"
+      ]
+    },
+    {
+      "id": "auto-drop-daily-routine",
+      "title": "Auto-drop daily-routine actions into the workplan inbox",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-06-22",
+      "updated": "2026-06-22",
+      "branch": "claude/derivation-fast-iteration",
+      "verification": ".github/workflows/workplan-ingest.yml runs `wp:ingest --daily` on a research-roundup PR and commits per-paper captures (deduped by arXiv id) to the PR branch; ingestDaily parses <div class=\"paper\"> entries; the historical backfill produced 40 captures locally; workplan.js is lint-clean and wp:test is green.",
+      "links": {
+        "items": "build-workplan-tooling",
+        "notes": "notes/daily-notes/README.md"
+      },
+      "tags": [
+        "workplan",
+        "ci",
+        "daily-routine"
+      ]
+    }
+  ]
+}
