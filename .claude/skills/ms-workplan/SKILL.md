@@ -39,9 +39,10 @@ playbook is in `workplan/playbook/`.
   ```bash
   node scripts/workplan.js ingest    # TODO.md open items + notes/daily-notes actions -> inbox/
   ```
-- **after any change** regenerate the views and validate:
+- **`add`/`triage`/`set` auto-render** `BOARD.md` + `board.json` (the dashboard
+  reads `board.json`), so you rarely call `render` directly:
   ```bash
-  node scripts/workplan.js render    # rebuild BOARD.md + board.json
+  node scripts/workplan.js render    # only needed after hand-editing item files
   node scripts/workplan.js validate  # frontmatter vs schema/item.schema.json
   ```
 
