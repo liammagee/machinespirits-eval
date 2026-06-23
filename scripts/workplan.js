@@ -222,7 +222,7 @@ function cmdShow(argv) {
 // Create a new item in items/ (the non-inbox path of `add`). Shared by the CLI and
 // the dashboard's add endpoint. Returns the new frontmatter (including the slug id).
 export function addItem(
-  { title, type, priority, owner, source, status, verification, body } = {},
+  { title, type, priority, owner, source, status, verification, body, depends_on, milestone } = {},
   { render = true } = {},
 ) {
   if (!title || !String(title).trim()) throw new Error('title is required');
@@ -244,6 +244,8 @@ export function addItem(
     updated: today(),
     verification: verification || 'TODO: state how completion is checked',
   };
+  if (Array.isArray(depends_on) && depends_on.length) fm.depends_on = depends_on;
+  if (milestone) fm.milestone = milestone;
   fs.writeFileSync(
     path.join(p.items, `${id}.md`),
     serializeDoc(fm, body || 'Context. Link out for detail; do not copy.\n'),
@@ -370,12 +372,35 @@ export function updateItem(id, fields, { render = true } = {}) {
     (fm) => {
       for (const [k, v] of Object.entries(fields || {})) {
         if (v === undefined) continue;
-        if (v === '' || v === null) delete fm[k];
+        if (v === '' || v === null || (Array.isArray(v) && v.length === 0)) delete fm[k];
         else fm[k] = v;
       }
     },
     render,
   );
+}
+
+// Validate a proposed depends_on for an item against the current set (keyed by id):
+// each dependency must exist, no self-dependency, and no cycle. Returns an error
+// string, or null when valid. Pure — used by the board endpoints + unit-tested.
+export function validateDependencies(itemsById, id, deps) {
+  if (deps == null) return null;
+  if (!Array.isArray(deps)) return 'depends_on must be a list of item ids';
+  for (const d of deps) {
+    if (typeof d !== 'string' || !d) return 'each dependency must be an item id';
+    if (d === id) return 'an item cannot depend on itself';
+    if (!itemsById[d]) return `unknown dependency: ${d}`;
+  }
+  const reaches = (start, target, seen) => {
+    if (start === target) return true;
+    if (seen.has(start)) return false;
+    seen.add(start);
+    return ((itemsById[start] && itemsById[start].depends_on) || []).some((nd) => reaches(nd, target, seen));
+  };
+  for (const d of deps) {
+    if (reaches(d, id, new Set())) return `dependency cycle via ${d}`;
+  }
+  return null;
 }
 
 function cmdSet(argv) {

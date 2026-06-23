@@ -29,6 +29,7 @@ import {
   updateItem,
   addItem,
   deleteItem,
+  validateDependencies,
   LIFECYCLE as WORKPLAN_STATUSES,
   TYPES as WP_TYPES,
   PRIORITIES as WP_PRIORITIES,
@@ -1594,6 +1595,11 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
     if (!b.title || !String(b.title).trim()) return res.status(400).json({ error: 'title is required' });
     const bad = invalidWorkplanFields(b);
     if (bad) return res.status(400).json({ error: bad });
+    if (b.depends_on !== undefined) {
+      const byId = Object.fromEntries((readWorkplanBoard().items || []).map((i) => [i.id, i]));
+      const depErr = validateDependencies(byId, '', b.depends_on);
+      if (depErr) return res.status(400).json({ error: depErr });
+    }
     try {
       const fm = addItem({
         title: b.title,
@@ -1602,6 +1608,8 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
         owner: b.owner,
         status: b.status,
         verification: b.verification,
+        depends_on: b.depends_on,
+        milestone: b.milestone,
         body: b.body,
       });
       return res.json({ ok: true, id: fm.id, status: fm.status });
@@ -1617,6 +1625,11 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
       return res.status(400).json({ error: 'title cannot be empty' });
     const bad = invalidWorkplanFields(b);
     if (bad) return res.status(400).json({ error: bad });
+    if (b.depends_on !== undefined) {
+      const byId = Object.fromEntries((readWorkplanBoard().items || []).map((i) => [i.id, i]));
+      const depErr = validateDependencies(byId, String(b.id), b.depends_on);
+      if (depErr) return res.status(400).json({ error: depErr });
+    }
     try {
       const fm = updateItem(String(b.id), {
         title: b.title,
@@ -1626,6 +1639,8 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
         status: b.status,
         verification: b.verification,
         blocked_by: b.blocked_by,
+        depends_on: b.depends_on,
+        milestone: b.milestone,
       });
       return res.json({ ok: true, id: fm.id, status: fm.status });
     } catch (err) {
@@ -6450,6 +6465,7 @@ function renderWorkplanBoardHtml() {
   const e = escapeHtml;
   const LIFE = ['triaged', 'active', 'blocked', 'review', 'done', 'archived', 'dropped', 'inbox'];
   const items = board.items || [];
+  const byId = Object.fromEntries(items.map((i) => [i.id, i]));
   const types = [...new Set(items.map((i) => i.type).filter(Boolean))].sort();
   // Always show the working lanes (even when empty) so cards can be dropped into
   // them; plus any other status that currently has items.
@@ -6473,10 +6489,19 @@ function renderWorkplanBoardHtml() {
             .map((t) => `<span class="t">${e(t)}</span>`)
             .join('');
           const blk = it.blocked_by ? `<div class="blk">⟂ ${e(it.blocked_by)}</div>` : '';
+          const deps = Array.isArray(it.depends_on) ? it.depends_on : [];
+          const unmet = deps.filter((d) => (byId[d] ? byId[d].status : '') !== 'done');
+          const dep = deps.length
+            ? `<div class="dep${unmet.length ? ' dep--wait' : ''}" title="${e(deps.join(', '))}">⛓ ${
+                unmet.length
+                  ? 'waiting on ' + unmet.map(e).join(', ')
+                  : deps.length + (deps.length > 1 ? ' deps met' : ' dep met')
+              }</div>`
+            : '';
           return `<article class="card" draggable="true" data-id="${e(it.id || '')}" data-status="${e(status)}" data-type="${e(it.type || '')}">
         <div class="card__h"><span class="pri pri--${e(it.priority || '')}">${e(it.priority || '')}</span><span class="id">${e(it.id || '')}</span></div>
         <div class="ttl">${e(it.title || '')}</div>
-        <div class="tags">${tags}</div>${blk}
+        <div class="tags">${tags}</div>${blk}${dep}
       </article>`;
         })
         .join('');
@@ -6510,6 +6535,8 @@ main{ max-width:1100px; margin:0 auto; padding:22px 22px 64px; }
 .ttl{ font:14px Georgia,serif; color:var(--ink); margin-bottom:6px; }
 .tags{ display:flex; flex-wrap:wrap; gap:4px; } .tags .t{ font:11px ui-monospace,monospace; color:var(--ink-3); background:var(--paper-2); border:1px solid var(--rule-soft); padding:0 6px; }
 .blk{ font-size:11px; color:var(--brick); margin-top:5px; }
+.dep{ font:11px ui-monospace,monospace; color:var(--ink-3); margin-top:5px; }
+.dep--wait{ color:var(--brick); }
 .card{ cursor:grab; }
 .card:active{ cursor:grabbing; }
 .card--dragging{ opacity:.45; }
@@ -6569,6 +6596,7 @@ ${railHtml({
     </div>
     <label class="wpm__l">Verification<textarea class="wpm__in" id="wpm-verif" rows="2"></textarea></label>
     <label class="wpm__l">Blocked by<input class="wpm__in" id="wpm-blocked" type="text" autocomplete="off" /></label>
+    <label class="wpm__l">Depends on (⌘/Ctrl-click for several)<select class="wpm__in" id="wpm-deps" multiple size="5"></select></label>
     <div class="wpm__err" id="wpm-err"></div>
     <div class="wpm__actions">
       <button type="button" class="wpm__btn wpm__del" id="wpm-del" hidden>Delete</button>
@@ -6668,6 +6696,16 @@ ${railHtml({
       fillSel($('wpm-owner'), W.owners, item.owner || 'unassigned');
       $('wpm-verif').value = item.verification || '';
       $('wpm-blocked').value = item.blocked_by || '';
+      var depsSel = $('wpm-deps');
+      depsSel.innerHTML = '';
+      (W.items || []).forEach(function (other) {
+        if (other.id === item.id) return;
+        var o = document.createElement('option');
+        o.value = other.id;
+        o.textContent = other.id;
+        if ((item.depends_on || []).indexOf(other.id) >= 0) o.selected = true;
+        depsSel.appendChild(o);
+      });
       $('wpm-del').hidden = mode !== 'edit';
       $('wpm-err').textContent = '';
       $('wpm-save').disabled = false;
@@ -6714,6 +6752,9 @@ ${railHtml({
         owner: $('wpm-owner').value,
         verification: $('wpm-verif').value.trim(),
         blocked_by: $('wpm-blocked').value.trim(),
+        depends_on: [].slice.call($('wpm-deps').selectedOptions).map(function (o) {
+          return o.value;
+        }),
       };
       if (!payload.title) { $('wpm-err').textContent = 'Title is required.'; return; }
       post(m.dataset.mode === 'edit' ? '/api/workplan/update' : '/api/workplan/add', payload);

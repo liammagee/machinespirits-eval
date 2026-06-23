@@ -30,9 +30,10 @@ Body.
 `,
 );
 
-let setItemField, updateItem, addItem, deleteItem, LIFECYCLE;
+let setItemField, updateItem, addItem, deleteItem, validateDependencies, LIFECYCLE;
 before(async () => {
-  ({ setItemField, updateItem, addItem, deleteItem, LIFECYCLE } = await import('../scripts/workplan.js'));
+  ({ setItemField, updateItem, addItem, deleteItem, validateDependencies, LIFECYCLE } =
+    await import('../scripts/workplan.js'));
 });
 
 test('LIFECYCLE includes the board drag-target lanes', () => {
@@ -95,4 +96,23 @@ test('deleteItem removes the file + drops it from board.json; throws if missing'
   const board = JSON.parse(fs.readFileSync(path.join(dir, 'board.json'), 'utf8'));
   assert.ok(!board.items.some((i) => i.id === td.id));
   assert.throws(() => deleteItem(td.id), /no item/);
+});
+
+test('validateDependencies flags missing, self, and cycles; allows valid', () => {
+  const byId = { a: { id: 'a', depends_on: ['b'] }, b: { id: 'b' }, c: { id: 'c' } };
+  assert.equal(validateDependencies(byId, 'c', ['a', 'b']), null);
+  assert.equal(validateDependencies(byId, 'c', []), null);
+  assert.equal(validateDependencies(byId, 'c', null), null);
+  assert.match(validateDependencies(byId, 'c', ['nope']), /unknown dependency/);
+  assert.match(validateDependencies(byId, 'a', ['a']), /itself/);
+  assert.match(validateDependencies(byId, 'b', ['a']), /cycle/); // a→b already, so b→a cycles
+});
+
+test('addItem + updateItem persist depends_on; empty array clears it', () => {
+  const dep = addItem({ title: 'Dep Target Item' });
+  const main = addItem({ title: 'Main Dependent Task', depends_on: [dep.id] });
+  assert.deepEqual(main.depends_on, [dep.id]);
+  assert.match(fs.readFileSync(path.join(dir, 'items', main.id + '.md'), 'utf8'), /depends_on/);
+  updateItem(main.id, { depends_on: [] });
+  assert.doesNotMatch(fs.readFileSync(path.join(dir, 'items', main.id + '.md'), 'utf8'), /depends_on/);
 });
