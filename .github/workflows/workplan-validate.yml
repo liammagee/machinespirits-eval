@@ -42,4 +42,3 @@ jobs:
       - name: PR links back to workplan
         if: github.event_name == 'pull_request'
         run: npm run wp:pr-link
-
