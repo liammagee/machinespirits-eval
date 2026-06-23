@@ -1,13 +1,12 @@
 {
-  "generated": "2026-06-23T16:09:49.345Z",
+  "generated": "2026-06-23T16:27:13.223Z",
   "counts": {
     "total": 42,
     "byStatus": {
       "triaged": 21,
       "blocked": 1,
       "dropped": 2,
-      "done": 17,
-      "active": 1
+      "done": 18
     },
     "byType": {
       "research": 23,
@@ -408,22 +407,6 @@
         "taxonomy",
         "orientation-family"
       ]
-    },
-    {
-      "id": "the-self-correction-illusion-llms-correct-others-but-not-the",
-      "title": "The Self-Correction Illusion: LLMs Correct Others but Not Themselves",
-      "status": "active",
-      "type": "research",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-23",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-12-research-roundup.html"
-      },
-      "branch": "codex/self-correction-illusion"
     },
     {
       "id": "a1-human-learner-validation",
@@ -851,6 +834,31 @@
         "paper-positioning",
         "self-citation",
         "roundup"
+      ]
+    },
+    {
+      "id": "the-self-correction-illusion-llms-correct-others-but-not-the",
+      "title": "The Self-Correction Illusion: LLMs Correct Others but Not Themselves",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-23",
+      "verification": "Paper 2.0 §6.1.3 already cites @chen2026selfcorrectionillusion and records the bounded cross-judge result; reproduction path is scripts/analyze-correction-source.sh.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-12-research-roundup.html",
+        "paper": "docs/research/paper-full-2.0.md",
+        "atlas": "docs/research/references.bib",
+        "scripts": "scripts/analyze-correction-source.sh"
+      },
+      "branch": "codex/self-correction-illusion",
+      "tags": [
+        "superego",
+        "self-correction",
+        "paper-positioning"
       ]
     },
     {
