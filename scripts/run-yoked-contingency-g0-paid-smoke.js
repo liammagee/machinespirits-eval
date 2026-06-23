@@ -127,21 +127,21 @@ Options:
   return args;
 }
 
-function mean(xs) {
+export function mean(xs) {
   return xs.length ? xs.reduce((sum, x) => sum + x, 0) / xs.length : 0;
 }
 
-function fmt(x, digits = 3) {
+export function fmt(x, digits = 3) {
   return Number.isFinite(x) ? x.toFixed(digits) : 'n/a';
 }
 
-function canonicalBackend(key) {
+export function canonicalBackend(key) {
   if (key === 'claude') return 'claude-code';
   if (key === 'dry-run') return 'mock';
   return key;
 }
 
-function parseJsonResponse(content) {
+export function parseJsonResponse(content) {
   if (typeof content === 'object' && content !== null) return content;
   const raw = String(content || '').trim();
   const parseCandidate = (candidate) => {
@@ -354,7 +354,7 @@ async function callClaudeCode(prompt) {
   });
 }
 
-async function callBackend(prompt, backend) {
+export async function callBackend(prompt, backend) {
   const key = canonicalBackend(backend);
   if (key === 'codex') return await callCodex(prompt);
   if (key === 'claude-code') return await callClaudeCode(prompt);
@@ -408,7 +408,7 @@ async function classifyProse({ sessionId, proseTurns, classifier, callCounter })
   };
 }
 
-function createCallCounter(maxCalls) {
+export function createCallCounter(maxCalls) {
   const counts = { total: 0, learner_prose: 0, prose_classifier: 0 };
   return {
     counts,
