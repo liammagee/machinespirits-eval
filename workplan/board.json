@@ -1,12 +1,13 @@
 {
-  "generated": "2026-06-23T16:08:02.850Z",
+  "generated": "2026-06-23T16:09:49.345Z",
   "counts": {
     "total": 42,
     "byStatus": {
-      "triaged": 22,
+      "triaged": 21,
       "blocked": 1,
       "dropped": 2,
-      "done": 17
+      "done": 17,
+      "active": 1
     },
     "byType": {
       "research": 23,
@@ -269,21 +270,6 @@
       }
     },
     {
-      "id": "the-self-correction-illusion-llms-correct-others-but-not-the",
-      "title": "The Self-Correction Illusion: LLMs Correct Others but Not Themselves",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-12-research-roundup.html"
-      }
-    },
-    {
       "id": "adapt-the-argument-uniqueness-metric-as-a-tutor-response-col",
       "title": "Adapt the argument-uniqueness metric as a tutor-response-collapse diagnostic",
       "status": "triaged",
@@ -422,6 +408,22 @@
         "taxonomy",
         "orientation-family"
       ]
+    },
+    {
+      "id": "the-self-correction-illusion-llms-correct-others-but-not-the",
+      "title": "The Self-Correction Illusion: LLMs Correct Others but Not Themselves",
+      "status": "active",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-23",
+      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-12-research-roundup.html"
+      },
+      "branch": "codex/self-correction-illusion"
     },
     {
       "id": "a1-human-learner-validation",
