@@ -24,6 +24,7 @@ import { ORIGIN_CLASSES, originCounts, recognitionOriginForScoreRow } from './li
 import { validateTurnPlan } from '../services/ontology/reasoningOntology.js';
 import { sampleTurnPlan, agenciesForArchitecture } from '../services/ontology/turnPlanSampler.js';
 import { buildOntologyView, ALL_MODULES, DEFAULT_MODULES } from '../services/ontology/ontologyView.js';
+import { setItemField, LIFECYCLE as WORKPLAN_STATUSES } from './workplan.js';
 import {
   listReplayBundles,
   readReplayBundle,
@@ -1540,6 +1541,24 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   // /summary + the paper; workplan/items/ is the source of truth.
   app.get('/board', (_req, res) => res.type('html').send(renderWorkplanBoardHtml()));
   app.get('/api/workplan', (_req, res) => res.json(readWorkplanBoard()));
+  // Drag-and-drop from /board: move an item to a new lane (status). Writes the
+  // item file + re-renders board.json via the shared workplan setItemField(). In a
+  // read-only context (e.g. a packaged app whose workplan/ is inside the asar) the
+  // write throws and we return 500 so the UI can revert.
+  app.post('/api/workplan/move', (req, res) => {
+    const { id, status } = req.body || {};
+    if (!id || !status) return res.status(400).json({ error: 'id and status are required' });
+    if (!WORKPLAN_STATUSES.includes(status)) {
+      return res.status(400).json({ error: `invalid status: ${status}` });
+    }
+    try {
+      const fm = setItemField(String(id), 'status', String(status));
+      return res.json({ ok: true, id: fm.id, status: fm.status, updated: fm.updated });
+    } catch (err) {
+      const code = /no item/.test(err.message) ? 404 : 500;
+      return res.status(code).json({ error: err.message });
+    }
+  });
   app.get('/board-doc', (_req, res) => {
     const notePath = path.resolve(ROOT, 'notes/poetics/2026-06-06-development-board.html');
     if (!fs.existsSync(notePath)) return res.status(404).type('text').send('development-board note not found');
@@ -6343,7 +6362,10 @@ function renderWorkplanBoardHtml() {
   const LIFE = ['triaged', 'active', 'blocked', 'review', 'done', 'archived', 'dropped', 'inbox'];
   const items = board.items || [];
   const types = [...new Set(items.map((i) => i.type).filter(Boolean))].sort();
-  const sections = LIFE.filter((s) => items.some((i) => i.status === s))
+  // Always show the working lanes (even when empty) so cards can be dropped into
+  // them; plus any other status that currently has items.
+  const DEFAULT_LANES = ['triaged', 'active', 'blocked', 'review', 'done'];
+  const sections = LIFE.filter((s) => DEFAULT_LANES.includes(s) || items.some((i) => i.status === s))
     .map((status) => {
       const group = items.filter((i) => i.status === status);
       const cards = group
@@ -6353,14 +6375,14 @@ function renderWorkplanBoardHtml() {
             .map((t) => `<span class="t">${e(t)}</span>`)
             .join('');
           const blk = it.blocked_by ? `<div class="blk">⟂ ${e(it.blocked_by)}</div>` : '';
-          return `<article class="card" data-type="${e(it.type || '')}">
+          return `<article class="card" draggable="true" data-id="${e(it.id || '')}" data-status="${e(status)}" data-type="${e(it.type || '')}">
         <div class="card__h"><span class="pri pri--${e(it.priority || '')}">${e(it.priority || '')}</span><span class="id">${e(it.id || '')}</span></div>
         <div class="ttl">${e(it.title || '')}</div>
         <div class="tags">${tags}</div>${blk}
       </article>`;
         })
         .join('');
-      return `<section class="col"><h2 class="col__h">${e(status)} <span class="n">${group.length}</span></h2>${cards}</section>`;
+      return `<section class="col" data-status="${e(status)}"><h2 class="col__h">${e(status)} <span class="n">${group.length}</span></h2>${cards}</section>`;
     })
     .join('');
   const chips = ['all', ...types]
@@ -6390,6 +6412,11 @@ main{ max-width:1100px; margin:0 auto; padding:22px 22px 64px; }
 .ttl{ font:14px Georgia,serif; color:var(--ink); margin-bottom:6px; }
 .tags{ display:flex; flex-wrap:wrap; gap:4px; } .tags .t{ font:11px ui-monospace,monospace; color:var(--ink-3); background:var(--paper-2); border:1px solid var(--rule-soft); padding:0 6px; }
 .blk{ font-size:11px; color:var(--brick); margin-top:5px; }
+.card{ cursor:grab; }
+.card:active{ cursor:grabbing; }
+.card--dragging{ opacity:.45; }
+.col{ min-height:64px; border-radius:5px; transition:background .12s var(--ease,ease), outline-color .12s var(--ease,ease); }
+.col--over{ outline:2px dashed var(--moss); outline-offset:4px; background:var(--moss-soft); }
 `,
   })}
 <body>
@@ -6405,7 +6432,7 @@ ${railHtml({
 })}
 <main>
   ${err}
-  <div class="blurb">The live development board — a read-only render of <code>workplan/</code> (${gen}). Source of truth is <code>workplan/items/</code>; regenerate with <code>npm run wp:render</code>. The historical 2026-06-06 snapshot is at <a href="/board-doc">/board-doc</a> · API: <a href="/api/workplan">/api/workplan</a>.</div>
+  <div class="blurb">The live development board, rendered from <code>workplan/</code> (${gen}). <b>Drag a card between lanes</b> to change its status — it writes to <code>workplan/items/</code> and re-renders. Source of truth is <code>workplan/items/</code>. The historical 2026-06-06 snapshot is at <a href="/board-doc">/board-doc</a> · API: <a href="/api/workplan">/api/workplan</a>.</div>
   <div class="bar">${chips}</div>
   <div class="cols">${sections}</div>
 </main>
@@ -6427,6 +6454,49 @@ ${railHtml({
     });
   });
 })();
+  // Drag a card to another lane → POST the new status; move optimistically, revert
+  // (reload) on failure. Mirrors the \`wp set <id> status <lane>\` CLI write.
+  (function () {
+    var dragId = null;
+    function setCount(col) {
+      var n = col.querySelectorAll('.card').length;
+      var el = col.querySelector('.col__h .n');
+      if (el) el.textContent = n;
+    }
+    [].slice.call(document.querySelectorAll('.card')).forEach(function (card) {
+      card.addEventListener('dragstart', function (e) {
+        dragId = card.getAttribute('data-id');
+        card.classList.add('card--dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        try { e.dataTransfer.setData('text/plain', dragId); } catch (_) {}
+      });
+      card.addEventListener('dragend', function () { card.classList.remove('card--dragging'); });
+    });
+    [].slice.call(document.querySelectorAll('.col')).forEach(function (col) {
+      col.addEventListener('dragover', function (e) { e.preventDefault(); col.classList.add('col--over'); });
+      col.addEventListener('dragleave', function () { col.classList.remove('col--over'); });
+      col.addEventListener('drop', function (e) {
+        e.preventDefault();
+        col.classList.remove('col--over');
+        var status = col.getAttribute('data-status');
+        if (!dragId || !status) return;
+        var sel = (window.CSS && CSS.escape) ? CSS.escape(dragId) : dragId;
+        var card = document.querySelector('.card[data-id="' + sel + '"]');
+        if (!card) return;
+        var from = card.closest('.col');
+        if (from === col) return;
+        col.appendChild(card);
+        card.setAttribute('data-status', status);
+        setCount(col); if (from) setCount(from);
+        fetch('/api/workplan/move', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: dragId, status: status }),
+        }).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); })
+          .catch(function () { alert('Could not save the status change — reloading.'); location.reload(); });
+      });
+    });
+  })();
 </script>
 </body>
 </html>`;

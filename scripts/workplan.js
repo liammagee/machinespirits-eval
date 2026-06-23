@@ -28,7 +28,7 @@ import YAML from 'yaml';
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
 
-const LIFECYCLE = ['inbox', 'triaged', 'active', 'blocked', 'review', 'done', 'archived', 'dropped'];
+export const LIFECYCLE = ['inbox', 'triaged', 'active', 'blocked', 'review', 'done', 'archived', 'dropped'];
 const PRIORITY_ORDER = { P0: 0, P1: 1, P2: 2, P3: 3 };
 
 // ---- paths (lazy, env-overridable) ----------------------------------------
@@ -288,23 +288,37 @@ function cmdTriage(argv) {
   autoRender(f);
 }
 
+// Set a single frontmatter field on an item and (by default) re-render the board.
+// Shared by the `set` CLI command and the dashboard's drag-and-drop endpoint, so
+// both go through one validated write path. Throws on a missing item.
+export function setItemField(id, field, value, { owner, branch, render = true } = {}) {
+  const p = paths();
+  const file = path.join(p.items, `${id}.md`);
+  if (!fs.existsSync(file)) throw new Error(`no item: ${id}`);
+  const { fm, body } = parseDoc(fs.readFileSync(file, 'utf8'));
+  if (value !== undefined && value !== '') fm[field] = value;
+  if (owner) fm.owner = owner;
+  if (branch) fm.branch = branch;
+  fm.updated = today();
+  fs.writeFileSync(file, serializeDoc(fm, body));
+  if (render) renderBoard();
+  return fm;
+}
+
 function cmdSet(argv) {
   const f = flags(argv);
   const [id, field, ...rest] = f._;
   if (!id || !field) fail('usage: set <id> <field> <value> [--owner O] [--branch B]');
   const value = rest.join(' ');
-  const p = paths();
-  const file = path.join(p.items, `${id}.md`);
-  if (!fs.existsSync(file)) fail(`no item: ${id}`);
-  const { fm, body } = parseDoc(fs.readFileSync(file, 'utf8'));
-  if (value !== '') fm[field] = value;
-  if (f.owner) fm.owner = f.owner;
-  if (f.branch) fm.branch = f.branch;
-  fm.updated = today();
+  let fm;
+  try {
+    fm = setItemField(id, field, value, { owner: f.owner, branch: f.branch, render: false });
+  } catch (e) {
+    fail(e.message);
+  }
   if (fm.status === 'blocked' && !fm.blocked_by) {
     console.log('  ! status is blocked but blocked_by is empty — set it: set ' + id + ' blocked_by "…"');
   }
-  fs.writeFileSync(file, serializeDoc(fm, body));
   console.log(`updated ${id}: ${field}=${value || '(unchanged)'} updated=${fm.updated}`);
   autoRender(f);
 }
@@ -325,7 +339,7 @@ function cmdValidate() {
   if (bad) process.exit(1);
 }
 
-function renderBoard() {
+export function renderBoard() {
   const p = paths();
   const items = loadItems().map((i) => i.fm);
   const counts = { total: items.length, byStatus: {}, byType: {} };
@@ -621,4 +635,8 @@ function main() {
   }
 }
 
-main();
+// Only auto-run as a CLI; stay importable (the dashboard imports setItemField +
+// renderBoard) without executing a command.
+if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
+  main();
+}
