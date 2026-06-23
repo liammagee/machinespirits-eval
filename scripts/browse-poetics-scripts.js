@@ -30,11 +30,15 @@ import {
   addItem,
   deleteItem,
   validateDependencies,
+  loadMilestones,
+  upsertMilestone,
+  deleteMilestone,
   LIFECYCLE as WORKPLAN_STATUSES,
   TYPES as WP_TYPES,
   PRIORITIES as WP_PRIORITIES,
   OWNERS as WP_OWNERS,
 } from './workplan.js';
+import { githubActivity, githubUrl } from '../services/githubInfo.js';
 import {
   listReplayBundles,
   readReplayBundle,
@@ -1660,6 +1664,46 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
       return res.status(code).json({ error: err.message });
     }
   });
+  // ---- milestones (workplan/milestones.yaml) + GitHub activity --------------
+  app.get('/api/milestones', (_req, res) => res.json({ milestones: loadMilestones() }));
+  app.post('/api/milestones', (req, res) => {
+    const b = req.body || {};
+    if (!b.title || !String(b.title).trim()) return res.status(400).json({ error: 'title is required' });
+    if (b.status && !['planned', 'active', 'done'].includes(b.status))
+      return res.status(400).json({ error: `invalid status: ${b.status}` });
+    if (b.target && !/^\d{4}-\d{2}-\d{2}$/.test(b.target))
+      return res.status(400).json({ error: 'target must be YYYY-MM-DD' });
+    const ms = { title: String(b.title).trim() };
+    if (b.id) ms.id = String(b.id);
+    for (const k of ['target', 'status', 'description', 'tag']) if (b[k] !== undefined && b[k] !== '') ms[k] = b[k];
+    try {
+      return res.json({ ok: true, milestone: upsertMilestone(ms) });
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+  app.post('/api/milestones/delete', (req, res) => {
+    const id = req.body && req.body.id;
+    if (!id) return res.status(400).json({ error: 'id is required' });
+    try {
+      deleteMilestone(String(id));
+      return res.json({ ok: true, id: String(id) });
+    } catch (err) {
+      const code = /no milestone/.test(err.message) ? 404 : 500;
+      return res.status(code).json({ error: err.message });
+    }
+  });
+  app.get('/api/github/activity', async (_req, res) => res.json(await githubActivity()));
+  app.get('/timeline', async (_req, res) => {
+    try {
+      res.type('html').send(renderTimelineHtml(await gatherTimelineData()));
+    } catch (err) {
+      res
+        .status(500)
+        .type('text')
+        .send('timeline error: ' + err.message);
+    }
+  });
   app.get('/board-doc', (_req, res) => {
     const notePath = path.resolve(ROOT, 'notes/poetics/2026-06-06-development-board.html');
     if (!fs.existsSync(notePath)) return res.status(404).type('text').send('development-board note not found');
@@ -2084,6 +2128,12 @@ const NAV = [
     'The live development board — the workplan (items + inbox) as a filterable status × type grid: what is open, active, blocked, done or ruled out',
   ],
   [
+    'timeline',
+    '/timeline',
+    'timeline',
+    'Project timeline — milestones with target dates &amp; progress, task dependencies, and live GitHub activity (commits, tags, releases, PRs)',
+  ],
+  [
     'tutor',
     '/chat',
     'tutor',
@@ -2106,7 +2156,7 @@ const NAV = [
 // generation corpus at /browse; proof runs = rule-checked staging loop at
 // /derivation; replays = counterfactual diffs) then the two make-something actions
 // (compose a scene, launch a run).
-const NAV_PRIMARY = ['home', 'browse', 'derivation', 'replays', 'compose', 'runs', 'board'];
+const NAV_PRIMARY = ['home', 'browse', 'derivation', 'replays', 'compose', 'runs', 'board', 'timeline'];
 // Folded into labelled dropdowns, in order: the reference surfaces, then the
 // dated/durable techne notes. A group whose member is the active page shows a
 // moss accent on its summary so the current location is still legible when closed.
@@ -6475,6 +6525,7 @@ function renderWorkplanBoardHtml() {
   const wpData = JSON.stringify({
     items,
     statuses: DEFAULT_LANES,
+    milestones: loadMilestones(),
     types: WP_TYPES,
     priorities: WP_PRIORITIES,
     owners: WP_OWNERS,
@@ -6596,6 +6647,7 @@ ${railHtml({
     </div>
     <label class="wpm__l">Verification<textarea class="wpm__in" id="wpm-verif" rows="2"></textarea></label>
     <label class="wpm__l">Blocked by<input class="wpm__in" id="wpm-blocked" type="text" autocomplete="off" /></label>
+    <label class="wpm__l">Milestone<select class="wpm__in" id="wpm-ms"></select></label>
     <label class="wpm__l">Depends on (⌘/Ctrl-click for several)<select class="wpm__in" id="wpm-deps" multiple size="5"></select></label>
     <div class="wpm__err" id="wpm-err"></div>
     <div class="wpm__actions">
@@ -6706,6 +6758,19 @@ ${railHtml({
         if ((item.depends_on || []).indexOf(other.id) >= 0) o.selected = true;
         depsSel.appendChild(o);
       });
+      var msSel = $('wpm-ms');
+      msSel.innerHTML = '';
+      var none = document.createElement('option');
+      none.value = '';
+      none.textContent = '(none)';
+      msSel.appendChild(none);
+      (W.milestones || []).forEach(function (mm) {
+        var o = document.createElement('option');
+        o.value = mm.id;
+        o.textContent = mm.title || mm.id;
+        if (item.milestone === mm.id) o.selected = true;
+        msSel.appendChild(o);
+      });
       $('wpm-del').hidden = mode !== 'edit';
       $('wpm-err').textContent = '';
       $('wpm-save').disabled = false;
@@ -6755,6 +6820,7 @@ ${railHtml({
         depends_on: [].slice.call($('wpm-deps').selectedOptions).map(function (o) {
           return o.value;
         }),
+        milestone: $('wpm-ms').value,
       };
       if (!payload.title) { $('wpm-err').textContent = 'Title is required.'; return; }
       post(m.dataset.mode === 'edit' ? '/api/workplan/update' : '/api/workplan/add', payload);
@@ -6767,6 +6833,228 @@ ${railHtml({
     });
   })();
 </script>
+</body>
+</html>`;
+}
+
+// ---- project timeline (/timeline) -----------------------------------------
+const TIMELINE_CSS = `
+main{ max-width:1180px; margin:0 auto; padding:22px 22px 64px; }
+.blurb{ font-size:13px; color:var(--ink-3); border-left:3px solid var(--moss); background:var(--paper-4); padding:10px 14px; margin:0 0 16px; }
+.blurb a{ color:var(--moss-deep); } .blurb code{ font:12px ui-monospace,monospace; }
+.chip{ font:12px ui-monospace,monospace; padding:3px 10px; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-2); cursor:pointer; border-radius:5px; }
+.tl-grid{ display:grid; grid-template-columns:minmax(0,1fr) 320px; gap:22px; align-items:start; }
+@media (max-width:840px){ .tl-grid{ grid-template-columns:1fr; } }
+.ms{ border:1px solid var(--rule); border-left:3px solid var(--moss); background:var(--paper-4); border-radius:6px; padding:12px 14px; margin-bottom:14px; position:relative; }
+.ms__h{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.ms__title{ font:600 15px Georgia,serif; color:var(--ink); margin:0; }
+.ms__status{ font:10px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; padding:1px 7px; border:1px solid var(--rule); border-radius:10px; color:var(--ink-3); }
+.ms__status--active{ color:var(--moss-deep); border-color:var(--moss); background:var(--moss-soft); }
+.ms__status--done{ color:var(--prussian); border-color:var(--prussian); }
+.ms__status--planned{ color:var(--ink-3); }
+.ms__target{ font:12px ui-monospace,monospace; color:var(--ink-3); }
+.ms__sp{ flex:1; }
+.ms__edit{ font:11px ui-monospace,monospace; color:var(--ink-3); background:transparent; border:1px solid var(--rule); border-radius:4px; padding:2px 8px; cursor:pointer; }
+.ms__edit:hover{ color:var(--moss-deep); border-color:var(--moss); }
+.ms__desc{ font-size:12px; color:var(--ink-3); margin:6px 0; } .ms__desc a{ color:var(--moss-deep); }
+.ms__bar{ height:6px; background:var(--paper-2); border:1px solid var(--rule-soft); border-radius:4px; overflow:hidden; margin:8px 0 4px; }
+.ms__fill{ height:100%; background:var(--moss); }
+.ms__meta{ font:11px ui-monospace,monospace; color:var(--ink-4); margin-bottom:6px; }
+.tl-items{ list-style:none; margin:0; padding:0; }
+.tl-item{ font-size:13px; color:var(--ink-2); padding:3px 0; border-top:1px solid var(--rule-soft); }
+.tl-item a{ color:var(--moss-deep); } .tl-id{ font:11px ui-monospace,monospace; color:var(--ink-4); }
+.tl-st{ font:10px ui-monospace,monospace; text-transform:uppercase; padding:0 5px; border:1px solid var(--rule-soft); border-radius:3px; color:var(--ink-3); }
+.tl-st--done{ color:var(--prussian); border-color:var(--prussian); } .tl-st--blocked{ color:var(--brick); border-color:var(--brick); } .tl-st--active{ color:var(--moss-deep); border-color:var(--moss); }
+.tl-empty{ font-size:12px; color:var(--ink-4); font-style:italic; padding:4px 0; }
+.tl-note{ font-size:12px; color:var(--ink-3); margin-top:10px; } .tl-note a{ color:var(--moss-deep); }
+.tl-panel{ border:1px solid var(--rule); background:var(--paper-4); border-radius:6px; padding:12px 14px; position:sticky; top:60px; }
+.tl-panel h4{ margin:0 0 6px; font:600 13px Georgia,serif; } .tl-panel h4 a{ color:var(--moss-deep); }
+.tl-panel h5{ margin:12px 0 4px; font:10px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-4); }
+.tl-list{ list-style:none; margin:0; padding:0; } .tl-list li{ font-size:12px; color:var(--ink-2); padding:3px 0; border-top:1px solid var(--rule-soft); line-height:1.4; }
+.tl-list a{ color:var(--moss-deep); font-family:ui-monospace,monospace; } .tl-when{ color:var(--ink-4); font-size:11px; } .tl-draft{ color:var(--ink-4); font-size:10px; border:1px solid var(--rule-soft); padding:0 4px; border-radius:3px; }
+.msm{ position:fixed; inset:0; z-index:60; display:flex; align-items:center; justify-content:center; } .msm[hidden]{ display:none; }
+.msm__back{ position:absolute; inset:0; background:rgba(28,22,16,.38); }
+.msm__panel{ position:relative; width:min(480px,92vw); background:var(--paper); border:1px solid var(--rule); border-radius:10px; box-shadow:0 24px 60px rgba(28,22,16,.28); padding:18px 20px; display:flex; flex-direction:column; gap:10px; }
+.msm__h{ font:600 15px Georgia,serif; margin:0 0 4px; }
+.msm__l{ display:flex; flex-direction:column; gap:4px; font:11px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-3); }
+.msm__row{ display:flex; gap:12px; } .msm__row .msm__l{ flex:1; }
+.msm__in{ font:13px Georgia,serif; color:var(--ink); background:var(--paper-4); border:1px solid var(--rule); border-radius:5px; padding:6px 8px; text-transform:none; letter-spacing:0; width:100%; box-sizing:border-box; }
+.msm__err{ color:var(--brick); font:12px ui-monospace,monospace; min-height:14px; }
+.msm__actions{ display:flex; align-items:center; gap:8px; } .msm__sp{ flex:1; }
+.msm__btn{ font:12px ui-monospace,monospace; padding:6px 14px; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-2); cursor:pointer; border-radius:5px; }
+.msm__save{ color:var(--moss-deep); border-color:var(--moss); background:var(--moss-soft); } .msm__del{ color:var(--brick); border-color:var(--brick); }
+`;
+
+const TIMELINE_MODAL = `<div class="msm" id="msm" hidden>
+  <div class="msm__back" data-msclose></div>
+  <form class="msm__panel" id="msm-form" role="dialog" aria-modal="true" aria-labelledby="msm-h">
+    <h3 class="msm__h" id="msm-h">New milestone</h3>
+    <label class="msm__l">Title<input class="msm__in" id="msm-title" type="text" autocomplete="off" /></label>
+    <div class="msm__row">
+      <label class="msm__l">Target date<input class="msm__in" id="msm-target" type="date" /></label>
+      <label class="msm__l">Status<select class="msm__in" id="msm-status"><option>planned</option><option>active</option><option>done</option></select></label>
+    </div>
+    <label class="msm__l">Git tag (optional)<input class="msm__in" id="msm-tag" type="text" autocomplete="off" placeholder="e.g. v0.6.0" /></label>
+    <label class="msm__l">Description<textarea class="msm__in" id="msm-desc" rows="2"></textarea></label>
+    <div class="msm__err" id="msm-err"></div>
+    <div class="msm__actions">
+      <button type="button" class="msm__btn msm__del" id="msm-del" hidden>Delete</button>
+      <span class="msm__sp"></span>
+      <button type="button" class="msm__btn" data-msclose>Cancel</button>
+      <button type="submit" class="msm__btn msm__save">Save</button>
+    </div>
+  </form>
+</div>`;
+
+const TIMELINE_JS = `
+(function () {
+  var MS = (window.__MS && window.__MS.milestones) || [];
+  var m = document.getElementById('msm');
+  if (!m) return;
+  var $ = function (id) { return document.getElementById(id); };
+  function open(ms) {
+    ms = ms || {};
+    m.dataset.id = ms.id || '';
+    $('msm-h').textContent = ms.id ? 'Edit milestone' : 'New milestone';
+    $('msm-title').value = ms.title || '';
+    $('msm-target').value = ms.target || '';
+    $('msm-status').value = ms.status || 'planned';
+    $('msm-tag').value = ms.tag || '';
+    $('msm-desc').value = ms.description || '';
+    $('msm-del').hidden = !ms.id;
+    $('msm-err').textContent = '';
+    m.hidden = false;
+    setTimeout(function () { $('msm-title').focus(); }, 0);
+  }
+  function close() { m.hidden = true; }
+  function post(url, payload) {
+    return fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+      .then(function (r) { if (r.ok) { location.reload(); return; } return r.json().then(function (j) { throw new Error(j.error || ('HTTP ' + r.status)); }); })
+      .catch(function (err) { $('msm-err').textContent = String((err && err.message) || err); });
+  }
+  var nb = $('ms-new');
+  if (nb) nb.addEventListener('click', function () { open({}); });
+  [].slice.call(document.querySelectorAll('.ms__edit')).forEach(function (b) {
+    b.addEventListener('click', function () { var id = b.getAttribute('data-id'); open(MS.filter(function (x) { return x.id === id; })[0] || { id: id }); });
+  });
+  [].slice.call(m.querySelectorAll('[data-msclose]')).forEach(function (el) { el.addEventListener('click', close); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !m.hidden) close(); });
+  $('msm-form').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var p = { id: m.dataset.id, title: $('msm-title').value.trim(), target: $('msm-target').value.trim(), status: $('msm-status').value, tag: $('msm-tag').value.trim(), description: $('msm-desc').value.trim() };
+    if (!p.title) { $('msm-err').textContent = 'Title is required.'; return; }
+    post('/api/milestones', p);
+  });
+  $('msm-del').addEventListener('click', function () { var id = m.dataset.id; if (!id) return; if (!confirm('Delete milestone ' + id + '?')) return; post('/api/milestones/delete', { id: id }); });
+})();
+`;
+
+async function gatherTimelineData() {
+  const board = readWorkplanBoard();
+  let github;
+  try {
+    github = await githubActivity();
+  } catch (err) {
+    github = {
+      slug: null,
+      commits: [],
+      tags: [],
+      releases: [],
+      prs: [],
+      milestones: [],
+      errors: [String((err && err.message) || err)],
+    };
+  }
+  return { items: board.items || [], milestones: loadMilestones(), github, generated: board.generated };
+}
+
+function renderTimelineHtml({ items = [], milestones = [], github = {}, generated = null } = {}) {
+  const e = escapeHtml;
+  const slug = github.slug || null;
+  const ghLink = (kind, ref, text) => {
+    const u = ref ? githubUrl(slug, kind, ref) : null;
+    return u ? `<a href="${e(u)}" target="_blank" rel="noopener">${e(text || ref)}</a>` : e(text || ref || '');
+  };
+  const fmtDate = (iso) => (iso ? String(iso).slice(0, 10) : '');
+  const byMs = {};
+  const unscheduled = [];
+  for (const it of items) {
+    if (it.milestone && milestones.some((m) => m.id === it.milestone))
+      (byMs[it.milestone] = byMs[it.milestone] || []).push(it);
+    else unscheduled.push(it);
+  }
+  const ORDER = { active: 0, planned: 1, done: 2 };
+  const msSorted = milestones
+    .slice()
+    .sort(
+      (a, b) =>
+        String(a.target || '9999').localeCompare(String(b.target || '9999')) ||
+        (ORDER[a.status] ?? 1) - (ORDER[b.status] ?? 1),
+    );
+  const msCards = msSorted.length
+    ? msSorted
+        .map((m) => {
+          const its = byMs[m.id] || [];
+          const done = its.filter((i) => i.status === 'done').length;
+          const pct = its.length ? Math.round((done / its.length) * 100) : 0;
+          const rows = its.length
+            ? its
+                .map((i) => {
+                  const branch = i.branch ? ' · ' + ghLink('branch', i.branch, '⎇ ' + i.branch) : '';
+                  return `<li class="tl-item"><span class="tl-st tl-st--${e(i.status)}">${e(i.status)}</span> <span class="tl-id">${e(i.id)}</span> ${e(i.title || '')}${branch}</li>`;
+                })
+                .join('')
+            : '<li class="tl-empty">no items yet — assign some on the board</li>';
+          const tag = m.tag ? ` · shipped ${ghLink('tag', m.tag, m.tag)}` : '';
+          const desc =
+            m.description || tag ? `<div class="ms__desc">${m.description ? e(m.description) : ''}${tag}</div>` : '';
+          return `<section class="ms" data-id="${e(m.id)}"><div class="ms__h"><h3 class="ms__title">${e(m.title)}</h3><span class="ms__status ms__status--${e(m.status || 'planned')}">${e(m.status || 'planned')}</span><span class="ms__target">${m.target ? '🏁 ' + e(m.target) : 'no target'}</span><span class="ms__sp"></span><button class="ms__edit" data-id="${e(m.id)}">edit</button></div>${desc}<div class="ms__bar"><div class="ms__fill" style="width:${pct}%"></div></div><div class="ms__meta">${done}/${its.length} done · ${pct}%</div><ul class="tl-items">${rows}</ul></section>`;
+        })
+        .join('')
+    : '<div class="tl-empty">No milestones yet — add one to start the timeline.</div>';
+  const repoHeader = slug
+    ? `<a href="https://github.com/${e(slug.owner)}/${e(slug.repo)}" target="_blank" rel="noopener">${e(slug.owner)}/${e(slug.repo)}</a>`
+    : 'no GitHub remote';
+  const prRows =
+    (github.prs || [])
+      .slice(0, 12)
+      .map(
+        (p) =>
+          `<li>↪ ${ghLink('pr', String(p.number), '#' + p.number)} ${e(p.title)} ${p.draft ? '<span class="tl-draft">draft</span>' : ''} <span class="tl-when">${fmtDate(p.date)}</span></li>`,
+      )
+      .join('') || '<li class="tl-empty">none open</li>';
+  const relSrc = (github.releases || []).length
+    ? (github.releases || [])
+        .slice(0, 8)
+        .map(
+          (x) =>
+            `<li>🏷 ${ghLink('release', x.tag, x.name || x.tag)} <span class="tl-when">${fmtDate(x.date)}</span></li>`,
+        )
+    : (github.tags || []).slice(0, 8).map((t) => `<li>🏷 ${ghLink('tag', t.name, t.name)}</li>`);
+  const relRows = relSrc.join('') || '<li class="tl-empty">none</li>';
+  const commitRows =
+    (github.commits || [])
+      .slice(0, 12)
+      .map(
+        (c) =>
+          `<li>● ${ghLink('commit', c.sha, c.short)} ${e(c.message)} <span class="tl-when">${fmtDate(c.date)}</span></li>`,
+      )
+      .join('') || '<li class="tl-empty">none</li>';
+  const ghErr =
+    github.errors && github.errors.length ? `<div class="tl-note">GitHub: ${e(github.errors.join('; '))}</div>` : '';
+  return `${pageHead({ title: 'project timeline · machine spirits', css: TIMELINE_CSS })}
+<body>
+${railHtml({ active: 'timeline', brand: 'project timeline', sub: 'milestones, dependencies & live GitHub activity', hint: orientBand('timeline', 'milestones with target dates + progress, linked to GitHub', 'edit items + deps on the board') })}
+<main>
+  <div class="blurb">Milestones from <code>workplan/milestones.yaml</code> (items reference them via <code>milestone:</code>), with live GitHub activity for ${repoHeader}.${generated ? ' Board generated ' + e(generated) + '.' : ''} <button class="chip" id="ms-new">+ new milestone</button></div>
+  <div class="tl-grid">
+    <div class="tl-left">${msCards}${unscheduled.length ? `<div class="tl-note">${unscheduled.length} item${unscheduled.length > 1 ? 's' : ''} not assigned to a milestone — assign on the <a href="/board">board</a>.</div>` : ''}</div>
+    <aside class="tl-right"><div class="tl-panel"><h4>GitHub · ${repoHeader}</h4>${ghErr}<h5>Open PRs</h5><ul class="tl-list">${prRows}</ul><h5>Releases / tags</h5><ul class="tl-list">${relRows}</ul><h5>Recent commits</h5><ul class="tl-list">${commitRows}</ul></div></aside>
+  </div>
+</main>
+${TIMELINE_MODAL}
+<script>window.__MS = ${JSON.stringify({ milestones }).replace(/</g, '\\u003c')};</script>
+<script>${TIMELINE_JS}</script>
 </body>
 </html>`;
 }

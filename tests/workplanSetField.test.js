@@ -31,9 +31,11 @@ Body.
 );
 
 let setItemField, updateItem, addItem, deleteItem, validateDependencies, LIFECYCLE;
+let loadMilestones, upsertMilestone, deleteMilestone;
 before(async () => {
-  ({ setItemField, updateItem, addItem, deleteItem, validateDependencies, LIFECYCLE } =
-    await import('../scripts/workplan.js'));
+  const wp = await import('../scripts/workplan.js');
+  ({ setItemField, updateItem, addItem, deleteItem, validateDependencies, LIFECYCLE } = wp);
+  ({ loadMilestones, upsertMilestone, deleteMilestone } = wp);
 });
 
 test('LIFECYCLE includes the board drag-target lanes', () => {
@@ -115,4 +117,21 @@ test('addItem + updateItem persist depends_on; empty array clears it', () => {
   assert.match(fs.readFileSync(path.join(dir, 'items', main.id + '.md'), 'utf8'), /depends_on/);
   updateItem(main.id, { depends_on: [] });
   assert.doesNotMatch(fs.readFileSync(path.join(dir, 'items', main.id + '.md'), 'utf8'), /depends_on/);
+});
+
+test('milestones: upsert (create + update), load, delete', () => {
+  assert.deepEqual(loadMilestones(), []);
+  const a = upsertMilestone({ title: 'First Milestone', target: '2026-07-01', status: 'active' });
+  assert.match(a.id, /^[a-z0-9-]+$/);
+  assert.equal(loadMilestones().length, 1);
+  const a2 = upsertMilestone({ id: a.id, title: 'First Milestone', status: 'done' });
+  assert.equal(a2.status, 'done');
+  assert.equal(a2.target, '2026-07-01'); // merge preserved the existing field
+  assert.equal(loadMilestones().length, 1); // updated, not duplicated
+  upsertMilestone({ title: 'Second Milestone' });
+  assert.equal(loadMilestones().length, 2);
+  deleteMilestone(a.id);
+  assert.equal(loadMilestones().length, 1);
+  assert.throws(() => deleteMilestone('nope'), /no milestone/);
+  assert.throws(() => upsertMilestone({ title: '' }), /title is required/);
 });

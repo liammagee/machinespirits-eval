@@ -1,0 +1,21 @@
+# workplan/milestones.yaml — project milestones for the board timeline (/timeline).
+# Items reference a milestone via their `milestone: <id>` frontmatter field.
+# Fields: id (kebab slug), title, target (YYYY-MM-DD), status (planned | active |
+#   done), description (optional), tag (optional git tag that marks it shipped).
+# Manage from the /timeline page, or edit this file directly.
+milestones:
+  - id: desktop-app
+    title: Desktop app (Scriptorium)
+    target: 2026-06-30
+    status: active
+    description: Electron desktop shell mirroring the web UX, kept in sync by construction.
+  - id: board-pm
+    title: Project-management board
+    target: 2026-07-15
+    status: active
+    description: Kanban CRUD, task dependencies, milestones, timeline, and GitHub links.
+  - id: distribution
+    title: Distribution & auto-update
+    target: 2026-08-15
+    status: planned
+    description: Developer-ID notarization, electron-updater, and Windows/Linux targets.

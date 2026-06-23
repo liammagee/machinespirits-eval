@@ -264,6 +264,43 @@ export function deleteItem(id, { render = true } = {}) {
   return { id };
 }
 
+// ---- milestones (workplan/milestones.yaml) ---------------------------------
+function milestonesPath() {
+  return path.join(paths().dir, 'milestones.yaml');
+}
+export function loadMilestones() {
+  const f = milestonesPath();
+  if (!fs.existsSync(f)) return [];
+  try {
+    const d = YAML.parse(fs.readFileSync(f, 'utf8'));
+    return Array.isArray(d && d.milestones) ? d.milestones : [];
+  } catch {
+    return [];
+  }
+}
+function saveMilestones(list) {
+  fs.writeFileSync(milestonesPath(), YAML.stringify({ milestones: list }));
+}
+// Create or update a milestone (keyed by id; slug of title when absent). Returns it.
+export function upsertMilestone(ms) {
+  if (!ms || !ms.title || !String(ms.title).trim()) throw new Error('milestone title is required');
+  const list = loadMilestones();
+  const id = ms.id || slugify(ms.title);
+  const i = list.findIndex((m) => m.id === id);
+  const merged = { ...(i >= 0 ? list[i] : {}), ...ms, id, title: String(ms.title).trim() };
+  if (i >= 0) list[i] = merged;
+  else list.push(merged);
+  saveMilestones(list);
+  return merged;
+}
+export function deleteMilestone(id) {
+  const list = loadMilestones();
+  const next = list.filter((m) => m.id !== id);
+  if (next.length === list.length) throw new Error(`no milestone: ${id}`);
+  saveMilestones(next);
+  return { id };
+}
+
 function cmdAdd(argv) {
   const f = flags(argv);
   if (!f.title) fail('usage: add [--inbox] --title "…" [--type T] [--priority P] [--owner O] [--source S]');
