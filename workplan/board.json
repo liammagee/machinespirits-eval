@@ -1,14 +1,15 @@
 {
-  "generated": "2026-06-23T06:06:54.257Z",
+  "generated": "2026-06-23T14:49:59.007Z",
   "counts": {
-    "total": 34,
+    "total": 40,
     "byStatus": {
-      "triaged": 22,
+      "triaged": 24,
       "blocked": 1,
-      "done": 11
+      "dropped": 2,
+      "done": 13
     },
     "byType": {
-      "research": 17,
+      "research": 23,
       "experiment": 2,
       "infra": 8,
       "paper": 2,
@@ -43,8 +44,16 @@
       "updated": "2026-06-22",
       "verification": "Replication across scenes run; results in exports/; the one-side-replay claim updated or closed in the paper.",
       "links": {
-        "notes": "TODO.md"
-      }
+        "notes": "TODO.md#A17",
+        "paper": "§7.9",
+        "exports": "exports/replay-d5-run3-socratic/"
+      },
+      "claim_status": "exploratory",
+      "tags": [
+        "replay",
+        "poetics",
+        "learner-variance"
+      ]
     },
     {
       "id": "arcane-do-role-playing-language-agents-stay-in-character-at",
@@ -62,24 +71,33 @@
       }
     },
     {
-      "id": "consolidate-logs-db-private-archive",
-      "title": "Consolidate dialogue logs + DB into the private archive repo",
+      "id": "d1-mechanistic-feature-ols-and-multiturn-replication",
+      "title": "D1. Mechanistic feature OLS and multi-turn replication",
       "status": "triaged",
-      "type": "infra",
+      "type": "research",
       "priority": "P2",
       "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Dialogue logs are co-located with the DB under the private archive; npm run provenance:validate finds the logs; the dramatic fork's sibling-path log_dir stopgap is removed.",
+      "source": "todo",
+      "created": "2026-06-23",
+      "updated": "2026-06-23",
+      "verification": "Pass 6 multi-feature OLS and Pass 7 multi-turn replication both produce exports; the D1 paper-integration note is updated or the follow-up is explicitly shelved.",
+      "claim_status": "planned",
       "links": {
-        "items": "build-workplan-tooling"
+        "notes": [
+          "TODO.md#D1",
+          "notes/d1-paper-integration.md"
+        ],
+        "exports": [
+          "exports/d1-structural-features.md",
+          "exports/d1-structural-features-v2.md",
+          "exports/d1-structural-features-v3.md"
+        ],
+        "paper": "§8.2"
       },
       "tags": [
-        "infra",
-        "provenance",
-        "logs",
-        "archive"
+        "d1",
+        "mechanism",
+        "structural-features"
       ]
     },
     {
@@ -94,8 +112,18 @@
       "updated": "2026-06-22",
       "verification": "Rubric v3.0 PCA-informed consolidation drafted in config/rubrics/v3.0/; calibration run; decision recorded in the paper or shelved with a reason.",
       "links": {
-        "notes": "TODO.md"
-      }
+        "notes": [
+          "TODO.md#D5",
+          "notes/design-d5-rubric-v3-pca-consolidation.md"
+        ],
+        "paper": "§8.6"
+      },
+      "claim_status": "planned",
+      "tags": [
+        "rubric",
+        "pca",
+        "methods"
+      ]
     },
     {
       "id": "environment-grounded-automated-prompt-optimization-for-llm-g",
@@ -155,21 +183,6 @@
       "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
       "links": {
         "notes": "notes/daily-notes/2026-06-15-research-roundup.html"
-      }
-    },
-    {
-      "id": "g2-6-4-recognition-effect-sizes-reproducible-once-the-column",
-      "title": "G2. §6.4 recognition effect sizes — reproducible once the column/judge/run are stated",
-      "status": "triaged",
-      "type": "paper",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "todo",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "§6.4 recognition effect sizes reproduce from the DB via a script; numbers match the paper or the paper is corrected.",
-      "links": {
-        "notes": "TODO.md"
       }
     },
     {
@@ -332,21 +345,6 @@
       }
     },
     {
-      "id": "b7-split-structural-critic-peripeteia-rule-into-earned-vs-na",
-      "title": "B7. Split structural-critic peripeteia rule into earned vs named reorientation",
-      "status": "triaged",
-      "type": "infra",
-      "priority": "P3",
-      "owner": "unassigned",
-      "source": "todo",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Change implemented; covered by a passing test; lint clean.",
-      "links": {
-        "notes": "TODO.md"
-      }
-    },
-    {
       "id": "b8-lower-recognitionorigin-js-tutoradaptivemechanism-cut-or",
       "title": "B8. Lower `recognitionOrigin.js` `tutorAdaptiveMechanism` CUT or recalibrate critic panel",
       "status": "triaged",
@@ -355,11 +353,120 @@
       "owner": "unassigned",
       "source": "todo",
       "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Change implemented; covered by a passing test; lint clean.",
+      "updated": "2026-06-23",
+      "verification": "Future gated-arc rerun, if any, uses a pre-registered CUT/panel composition; no paid generation is run solely to repair a scorer-side classifier issue.",
       "links": {
-        "notes": "TODO.md"
-      }
+        "notes": "TODO.md#B8",
+        "exports": [
+          "exports/recognition-origin-cut-sweep.md",
+          "exports/recognition-origin-panel-recompose.md"
+        ],
+        "paper": "§7.9"
+      },
+      "claim_status": "planned",
+      "tags": [
+        "poetics",
+        "scorer-calibration",
+        "gated-rerun"
+      ]
+    },
+    {
+      "id": "d2-cross-application-role-reframed-study",
+      "title": "D2. True cross-application role-reframed study",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P3",
+      "owner": "unassigned",
+      "source": "todo",
+      "created": "2026-06-23",
+      "updated": "2026-06-23",
+      "verification": "Decide whether Path 2 remains separate-paper scope; if pursued, resolve therapy include/exclude, author role-reframed prompts/content/rubrics, and produce a run report with paper-placement boundaries.",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "TODO.md#D2",
+          "notes/design-d2-path2-cross-application.md"
+        ],
+        "paper": "§8.2"
+      },
+      "tags": [
+        "d2",
+        "cross-application",
+        "separate-study"
+      ]
+    },
+    {
+      "id": "d3-insight-action-gap-heavy-bridge-followups",
+      "title": "D3. Insight-action gap heavy bridge follow-ups",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P3",
+      "owner": "unassigned",
+      "source": "todo",
+      "created": "2026-06-23",
+      "updated": "2026-06-23",
+      "verification": "Either run a pre-registered Bridge 3b/4/5 follow-up with exports and paper-boundary text, or close the follow-up as too expensive for the expected marginal mechanism information.",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "TODO.md#D3",
+          "notes/design-d3-architectural-bridges.md"
+        ],
+        "paper": "§6.3.9"
+      },
+      "tags": [
+        "d3",
+        "insight-action-gap",
+        "bridge"
+      ]
+    },
+    {
+      "id": "d4-disposition-gradient-architecture-matched-sel-replication",
+      "title": "D4. Architecture-matched SEL disposition-gradient replication",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P3",
+      "owner": "unassigned",
+      "source": "todo",
+      "created": "2026-06-23",
+      "updated": "2026-06-23",
+      "verification": "Decide whether the cells 40-45 × SEL clean replication is worth the cost; if run, report the architecture-scope result, otherwise close as out-of-scope for the current paper.",
+      "claim_status": "future",
+      "links": {
+        "notes": "TODO.md#D4",
+        "exports": "exports/d4-disposition-gradient.md",
+        "paper": "§6.6.8"
+      },
+      "tags": [
+        "d4",
+        "disposition",
+        "sel"
+      ]
+    },
+    {
+      "id": "d6-orientation-family-taxonomy-extensions",
+      "title": "D6. Orientation-family taxonomy extensions",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P3",
+      "owner": "unassigned",
+      "source": "todo",
+      "created": "2026-06-23",
+      "updated": "2026-06-23",
+      "verification": "Decide whether cognitivist-only, pure Socratic, radical constructivist, culturally responsive, or Freirean variants are needed; if yes, add cells/prompts/tests and report results, otherwise close as deferred.",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "TODO.md#D6",
+          "docs/pedagogical-taxonomy.md"
+        ],
+        "paper": "§7.9"
+      },
+      "tags": [
+        "d6",
+        "taxonomy",
+        "orientation-family"
+      ]
     },
     {
       "id": "a1-human-learner-validation",
@@ -642,6 +749,98 @@
         "workplan",
         "ci",
         "daily-routine"
+      ]
+    },
+    {
+      "id": "consolidate-logs-db-private-archive",
+      "title": "Consolidate dialogue logs + DB into the private archive repo",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-06-22",
+      "updated": "2026-06-23",
+      "verification": "Dialogue logs are co-located with the DB under the private archive; npm run provenance:validate finds the logs; the dramatic fork's sibling-path log_dir stopgap is removed.",
+      "links": {
+        "items": "build-workplan-tooling"
+      },
+      "tags": [
+        "infra",
+        "provenance",
+        "logs",
+        "archive"
+      ]
+    },
+    {
+      "id": "g2-6-4-recognition-effect-sizes-reproducible-once-the-column",
+      "title": "G2. §6.4 recognition effect sizes — reproducible once the column/judge/run are stated",
+      "status": "done",
+      "type": "paper",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "todo",
+      "created": "2026-06-22",
+      "updated": "2026-06-23",
+      "verification": "TODO's G-arc status records G2 closed; the paper now names the tutor_overall_score/Sonnet/run-bound basis for the effect-size claim and the optional analyzer is not a live blocker.",
+      "links": {
+        "notes": [
+          "TODO.md#G2",
+          "notes/status/2026-06-21-repository-todo-status-audit.md"
+        ],
+        "paper": "§6.4"
+      },
+      "claim_status": "settled",
+      "tags": [
+        "paper",
+        "provenance",
+        "claim-audit"
+      ]
+    },
+    {
+      "id": "a18-38-teacher-as-learner-ml-fine-tuning-ladder",
+      "title": "A18.38 Teacher-as-learner ML/fine-tuning ladder",
+      "status": "dropped",
+      "type": "research",
+      "priority": "P3",
+      "owner": "unassigned",
+      "source": "todo",
+      "created": "2026-06-23",
+      "updated": "2026-06-23",
+      "verification": "Captured as not greenlit; no weight-update or further widening work proceeds unless a new trusted signal changes the A18/A15 decision basis and a fresh item is opened.",
+      "claim_status": "killed",
+      "links": {
+        "notes": [
+          "TODO.md#A18",
+          "notes/poetics/2026-06-06-teacher-as-learner-reframe-ml-ladder.md"
+        ],
+        "paper": "§7.9"
+      },
+      "tags": [
+        "a18",
+        "fine-tuning",
+        "not-greenlit"
+      ]
+    },
+    {
+      "id": "b7-split-structural-critic-peripeteia-rule-into-earned-vs-na",
+      "title": "B7. Split structural-critic peripeteia rule into earned vs named reorientation",
+      "status": "dropped",
+      "type": "infra",
+      "priority": "P3",
+      "owner": "unassigned",
+      "source": "todo",
+      "created": "2026-06-22",
+      "updated": "2026-06-23",
+      "verification": "Dropped because the 2026-05-28 prompt-side surgery made earned and named reorientation co-occur reliably; no critic split is needed unless that evidence changes.",
+      "links": {
+        "notes": "TODO.md#B7"
+      },
+      "claim_status": "killed",
+      "tags": [
+        "poetics",
+        "critic",
+        "dropped"
       ]
     }
   ]

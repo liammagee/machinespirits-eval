@@ -806,10 +806,10 @@ claims:
       min_occurrences: 0
     evidence:
       type: provenance_check
-      # Dialogue logs are git-archived in the private sibling repo. As of the
-      # 2026-06-07 log consolidation this fork's logs/ is a gitignored symlink
-      # -> ../machinespirits-eval-private/logs (mirroring the original repo), so
-      # the repo-relative default resolves to the canonical archive. (TODO C7.5.)
+      # Dialogue logs are git-archived in machinespirits-eval-private. The repo's
+      # logs/ is a gitignored symlink → ~/.machinespirits-data/logs →
+      # machinespirits-eval-private/logs (C7.5 resolved 2026-06-23), giving a
+      # single canonical data root at ~/.machinespirits-data alongside the DB.
       log_dir: logs/tutor-dialogues
       checks:
         - dialogue_hash_match

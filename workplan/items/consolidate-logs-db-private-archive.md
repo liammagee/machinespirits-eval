@@ -1,20 +1,23 @@
 ---
 id: consolidate-logs-db-private-archive
 title: Consolidate dialogue logs + DB into the private archive repo
-status: triaged
+status: done
 type: infra
 priority: P2
 owner: unassigned
 source: manual
 created: 2026-06-22
-updated: 2026-06-22
-verification: >-
-  Dialogue logs are co-located with the DB under the private archive;
-  npm run provenance:validate finds the logs; the dramatic fork's sibling-path
-  log_dir stopgap is removed.
+updated: 2026-06-23
+verification: Dialogue logs are co-located with the DB under the private
+  archive; npm run provenance:validate finds the logs; the dramatic fork's
+  sibling-path log_dir stopgap is removed.
 links:
   items: build-workplan-tooling
-tags: [infra, provenance, logs, archive]
+tags:
+  - infra
+  - provenance
+  - logs
+  - archive
 ---
 
 Standing infra task. The DB is already canonical at `~/.machinespirits-data`, but
