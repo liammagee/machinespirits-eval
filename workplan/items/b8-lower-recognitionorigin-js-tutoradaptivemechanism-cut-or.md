@@ -8,10 +8,21 @@ priority: P3
 owner: unassigned
 source: todo
 created: 2026-06-22
-updated: 2026-06-22
-verification: Change implemented; covered by a passing test; lint clean.
+updated: 2026-06-23
+verification: Future gated-arc rerun, if any, uses a pre-registered CUT/panel
+  composition; no paid generation is run solely to repair a scorer-side
+  classifier issue.
 links:
-  notes: TODO.md
+  notes: TODO.md#B8
+  exports:
+    - exports/recognition-origin-cut-sweep.md
+    - exports/recognition-origin-panel-recompose.md
+  paper: §7.9
+claim_status: planned
+tags:
+  - poetics
+  - scorer-calibration
+  - gated-rerun
 ---
 
-Open item from TODO §B8. Read the section there for detail; triage to decide if it's still live.
+TODO §B8's analytical work is complete. What remains is operational discipline: do not rerun the gated arc under an improvised scorer setting. Decide and freeze the critic panel/CUT before generation.

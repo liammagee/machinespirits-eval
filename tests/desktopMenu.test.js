@@ -1,7 +1,12 @@
 // tests/desktopMenu.test.js — pure, runs under plain `node --test`.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { buildMenuTemplate, parseNavHtml } from '../desktop/menu.js';
+
+const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const labels = (t) => t.map((m) => m.label).filter(Boolean);
 
@@ -47,6 +52,15 @@ test('parseNavHtml extracts rail destinations (incl. home + multi-segment), drop
   assert.deepEqual(routes, ['/', '/browse', '/compose/live', '/board']); // deduped, /api + /_ dropped, order preserved
   assert.equal(items.find((i) => i.route === '/board').label, 'board');
   assert.equal(items.find((i) => i.route === '/compose/live').label, 'compose a scene');
+});
+
+test('shared rail source exposes board in the visible review group', () => {
+  const source = fs.readFileSync(path.join(REPO, 'scripts', 'browse-poetics-scripts.js'), 'utf8');
+  assert.match(
+    source,
+    /\['review',\s*\[\s*'board',\s*'timeline',\s*'adjudicate'\s*\]\]/,
+    'desktop/web rail groups must keep board visible under Review',
+  );
 });
 
 test('navItems produce a Go menu (title-cased, Cmd+1 on the first) only with a navigate action', () => {

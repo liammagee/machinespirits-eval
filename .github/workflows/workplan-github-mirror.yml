@@ -1,0 +1,55 @@
+name: Workplan GitHub mirror
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: 'Create/update GitHub issues instead of dry-running'
+        required: true
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+      statuses:
+        description: 'Comma-separated item statuses to mirror'
+        required: true
+        default: 'active,blocked'
+      close_stale:
+        description: 'Close mirrored issues whose items left the selected statuses'
+        required: true
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install yaml
+        run: npm install --no-save yaml
+
+      - name: Mirror workplan items to GitHub Issues
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          args=(--status "${{ inputs.statuses }}")
+          if [[ "${{ inputs.apply }}" == "true" ]]; then
+            args+=(--apply)
+          fi
+          if [[ "${{ inputs.close_stale }}" == "true" ]]; then
+            args+=(--close-stale)
+          fi
+          node scripts/workplan-github-mirror.js "${args[@]}"

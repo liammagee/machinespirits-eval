@@ -2162,6 +2162,7 @@ const NAV_PRIMARY = ['home', 'browse', 'derivation', 'replays', 'compose', 'runs
 // dated/durable techne notes. A group whose member is the active page shows a
 // moss accent on its summary so the current location is still legible when closed.
 const NAV_GROUPS = [
+  ['review', ['board', 'timeline', 'adjudicate']],
   ['tools', ['tutor', 'pilot-admin']],
   ['reference', ['ontology', 'rubric', 'curriculum']],
   ['notes', ['summary', 'story', 'repertoire']],
