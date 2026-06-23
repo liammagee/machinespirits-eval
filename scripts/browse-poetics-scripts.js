@@ -10574,16 +10574,16 @@ pre {
 .vt-btn + .vt-btn { border-left: none; }
 .vt-btn.active { background: var(--moss-deep); color: var(--paper); border-color: var(--moss-deep); }
 .swimlane {
-  max-width: 70rem;
+  max-width: 80rem;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 4px;
 }
 .swim-head {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
+  grid-template-columns: 1fr 44px 1fr;
+  gap: 14px;
   position: sticky;
   top: 0;
   z-index: 1;
@@ -10598,16 +10598,33 @@ pre {
   border-bottom: 2px solid var(--rule);
 }
 .swim-label.tutor { color: var(--moss-deep); border-bottom-color: var(--moss-deep); }
-.swim-label.learner { color: var(--ochre-d); border-bottom-color: var(--ochre-d); }
+.swim-label.learner { color: var(--ochre-d); border-bottom-color: var(--ochre-d); text-align: right; }
+.swim-label.spine { border-bottom: 0; }
 .swim-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-  align-items: start;
+  grid-template-columns: 1fr 44px 1fr;
+  gap: 14px;
+  align-items: stretch;
 }
-.swim-row.span { grid-template-columns: 1fr; }
-.swim-row .lane { min-width: 0; }
-.swim-row.span .scene-card { max-width: 48rem; margin: 0 auto; opacity: 0.92; }
+.swim-row .lane { min-width: 0; align-self: start; }
+.swim-row .lane.empty { border: 0; }
+/* center time-spine: a continuous rule with a numbered bead at each spoken turn */
+.swim-spine { position: relative; min-height: 30px; }
+.swim-spine::before { content: ""; position: absolute; left: 50%; top: -4px; bottom: -4px; width: 2px; transform: translateX(-50%); background: var(--rule); }
+.swim-bead {
+  position: relative; z-index: 1; display: block; width: 24px; height: 24px;
+  margin: 4px auto 0; border-radius: 50%; background: var(--paper);
+  border: 1.5px solid var(--rule); color: var(--ink-3);
+  font: 600 10px/22px "JetBrains Mono", monospace; text-align: center;
+}
+.swim-row[data-side="tutor"] .swim-bead { border-color: var(--moss); color: var(--moss-deep); }
+.swim-row[data-side="learner"] .swim-bead { border-color: var(--ochre); color: var(--ochre-d); }
+/* inner voice (ego / superego) — a dashed aside tucked under its speaker's lane */
+.swim-aside .scene-card { border-style: dashed; background: transparent; font-size: 0.94em; opacity: 0.92; }
+.swim-row--aside { margin-top: -2px; }
+/* stage / director — a centered italic interlude spanning the full width */
+.swim-interlude { grid-template-columns: 1fr; justify-items: center; padding: 3px 0; }
+.swim-interlude .scene-card { max-width: 46rem; font-style: italic; opacity: 0.9; background: transparent; border-style: dashed; }
 .swimlane .scene-card { margin: 0; }
 .scene-card {
   border: 1px solid var(--rule);
@@ -11177,14 +11194,44 @@ function renderSwimlane(blocks, fallbackText) {
   if (!blocks || blocks.length === 0) {
     return '<pre>' + esc(fallbackText || 'No public sample found.') + '</pre>';
   }
-  const rows = blocks.map((block) => {
-    const type = block.type || 'other';
-    const card = sceneCardHtml(block);
-    if (type === 'tutor') return '<div class="swim-row"><div class="lane">' + card + '</div><div class="lane empty" aria-hidden="true"></div></div>';
-    if (type === 'learner') return '<div class="swim-row"><div class="lane empty" aria-hidden="true"></div><div class="lane">' + card + '</div></div>';
-    return '<div class="swim-row span">' + card + '</div>';
-  }).join('');
-  return '<div class="swimlane"><div class="swim-head"><span class="swim-label tutor">tutor</span><span class="swim-label learner">learner</span></div>' + rows + '</div>';
+  const empty = '<div class="lane empty" aria-hidden="true"></div>';
+  let beat = 0;
+  const rows = blocks
+    .map((block) => {
+      const type = block.type || 'other';
+      const card = sceneCardHtml(block);
+      // Spoken protagonist turns: a card in their lane + a numbered bead on the spine.
+      if (type === 'tutor' || type === 'learner') {
+        beat += 1;
+        const lane = '<div class="lane">' + card + '</div>';
+        const spine = '<div class="swim-spine"><span class="swim-bead">' + beat + '</span></div>';
+        return (
+          '<div class="swim-row" data-side="' + type + '">' +
+          (type === 'tutor' ? lane : empty) + spine + (type === 'learner' ? lane : empty) +
+          '</div>'
+        );
+      }
+      // Inner voice (ego / superego): a dashed aside under whichever protagonist owns it.
+      if (type === 'internal') {
+        const side = String(block.speaker || '').toUpperCase().indexOf('LEARNER') >= 0 ? 'learner' : 'tutor';
+        const aside = '<div class="lane swim-aside">' + card + '</div>';
+        return (
+          '<div class="swim-row swim-row--aside" data-side="' + side + '">' +
+          (side === 'tutor' ? aside : empty) + '<div class="swim-spine"></div>' + (side === 'learner' ? aside : empty) +
+          '</div>'
+        );
+      }
+      // Stage direction / director / chorus: a centered interlude spanning the width.
+      return '<div class="swim-row swim-interlude">' + card + '</div>';
+    })
+    .join('');
+  return (
+    '<div class="swimlane"><div class="swim-head">' +
+    '<span class="swim-label tutor">tutor</span>' +
+    '<span class="swim-label spine" aria-hidden="true"></span>' +
+    '<span class="swim-label learner">learner</span>' +
+    '</div>' + rows + '</div>'
+  );
 }
 function renderScriptView(blocks, fallbackText) {
   const mode = state.previewMode === 'swimlane' ? 'swimlane' : 'script';
