@@ -4695,7 +4695,18 @@ ${railHtml({ active, brand, sub, hint })}
 (function () {
   try { if (localStorage.getItem('poetics-theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); } catch (_e) {}
   var f = document.getElementById('summaryFrame');
-  function syncFrame() { try { f.contentDocument.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme') || ''); } catch (_e) {} }
+  // Mirror BOTH the theme and the skin into the framed techne note so it shares
+  // the dashboard's design backbone (the note's techne.css carries the same
+  // tokens + the stark overrides).
+  function syncFrame() {
+    try {
+      var de = document.documentElement;
+      var fd = f.contentDocument.documentElement;
+      fd.setAttribute('data-theme', de.getAttribute('data-theme') || '');
+      if (de.getAttribute('data-skin')) fd.setAttribute('data-skin', de.getAttribute('data-skin'));
+      else fd.removeAttribute('data-skin');
+    } catch (_e) {}
+  }
   f.addEventListener('load', function () {
     try {
       var doc = f.contentDocument;
@@ -4706,6 +4717,13 @@ ${railHtml({ active, brand, sub, hint })}
     } catch (_e) {}
     syncFrame();
   });
+  // Live-propagate any skin/theme change (from the tweaks panel) into the iframe.
+  try {
+    new MutationObserver(syncFrame).observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme', 'data-skin'],
+    });
+  } catch (_e) {}
   var t = document.getElementById('themeToggle');
   if (t) t.addEventListener('click', function () {
     var d = document.documentElement, nx = d.getAttribute('data-theme') === 'dark' ? '' : 'dark';
