@@ -66,4 +66,9 @@ test('navItems produce a Go menu (title-cased, Cmd+1 on the first) only with a n
     ['Home', 'Board', 'Compose A Scene'],
   );
   assert.equal(go.submenu[0].accelerator, 'CmdOrCtrl+1');
+  assert.equal(
+    go.submenu.find((i) => i.label === 'Board').accelerator,
+    'CmdOrCtrl+B',
+    'Board should get the dedicated ⌘B shortcut',
+  );
 });

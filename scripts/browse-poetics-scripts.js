@@ -2003,14 +2003,14 @@ const NAV = [
 // generation corpus at /browse; proof runs = rule-checked staging loop at
 // /derivation; replays = counterfactual diffs) then the two make-something actions
 // (compose a scene, launch a run).
-const NAV_PRIMARY = ['home', 'browse', 'derivation', 'replays', 'compose', 'runs'];
+const NAV_PRIMARY = ['home', 'browse', 'derivation', 'replays', 'compose', 'runs', 'board'];
 // Folded into labelled dropdowns, in order: the reference surfaces, then the
 // dated/durable techne notes. A group whose member is the active page shows a
 // moss accent on its summary so the current location is still legible when closed.
 const NAV_GROUPS = [
   ['tools', ['tutor', 'pilot-admin']],
   ['reference', ['ontology', 'rubric', 'curriculum']],
-  ['notes', ['summary', 'story', 'repertoire', 'board']],
+  ['notes', ['summary', 'story', 'repertoire']],
 ];
 
 // A per-page orientation band (the `hint` slot of railHtml): "<b>here</b> — what",

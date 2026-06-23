@@ -115,7 +115,8 @@ export function buildMenuTemplate({
       label: 'Go',
       submenu: navItems.map((it, i) => ({
         label: titleCase(it.label),
-        accelerator: i < 9 ? `CmdOrCtrl+${i + 1}` : undefined,
+        // Board gets a dedicated, position-independent shortcut; the rest take ⌘1–⌘9.
+        accelerator: it.route === '/board' ? 'CmdOrCtrl+B' : i < 9 ? `CmdOrCtrl+${i + 1}` : undefined,
         click: () => actions.navigate(it.route),
       })),
     });

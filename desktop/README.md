@@ -50,8 +50,9 @@ background process on an ephemeral loopback port; you never manage a port.
   and `/compose/live` (authoring + live sit-in), `/ontology`, `/rubric`, `/runs`,
   `/board`, `/derivation`, the tutor playground (`/chat`), the participant pilot
   (`/pilot`), and A19 adjudication (`/adjudication`). Navigate via the in-page nav
-  rail, the native **Go** menu (every rail destination, ⌘1–⌘9 for the first nine —
-  e.g. **Go → Board**), or **View → Home** (⇧⌘H).
+  rail (**Board** is a primary, always-visible item), the native **Go** menu
+  (⌘1–⌘9 for the first nine destinations, plus a dedicated **⌘B** for Board), or
+  **View → Home** (⇧⌘H).
 - **API keys.** **File → Set Up API Keys…** writes a `keys.env` template and opens
   it. Add your provider keys (e.g. `OPENROUTER_API_KEY=…`), save, and restart. On the
   next launch the keys are encrypted into your **macOS keychain** and the plaintext
