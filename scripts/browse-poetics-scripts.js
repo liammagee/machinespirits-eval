@@ -1718,10 +1718,15 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
     const notePath = path.resolve(ROOT, 'notes/poetics/2026-06-06-development-board.html');
     if (!fs.existsSync(notePath)) return res.status(404).type('text').send('development-board note not found');
     // The static note has no nav rail, so without this it is a dead end. Inject a
-    // fixed "back to the live board" link at serve time (source file untouched).
+    // prominent top bar at serve time (source file untouched) so reviewers can get
+    // back to the live board or the dashboard — and know this copy is read-only.
     let html = fs.readFileSync(notePath, 'utf8');
     const back =
-      '<a href="/board" title="Back to the live board" style="position:fixed;top:12px;left:12px;z-index:99999;font:12px ui-monospace,SFMono-Regular,monospace;background:#f4efe0;border:1px solid #cbbb98;color:#3a342b;padding:6px 12px;border-radius:6px;text-decoration:none;box-shadow:0 2px 10px rgba(28,22,16,.18)">← live board</a>';
+      '<div style="position:fixed;top:0;left:0;right:0;z-index:99999;display:flex;gap:12px;align-items:center;font:13px/1 ui-monospace,SFMono-Regular,monospace;background:#3a342b;color:#f4efe0;padding:9px 16px;box-shadow:0 2px 12px rgba(28,22,16,.3)">' +
+      '<span style="opacity:.72">archived board snapshot · 2026-06-06 — read-only</span>' +
+      '<a href="/board" title="Back to the live, editable board" style="margin-left:auto;color:#3a342b;background:#f4efe0;border:1px solid #cbbb98;padding:5px 12px;border-radius:6px;text-decoration:none">← live board</a>' +
+      '<a href="/" title="Back to the dashboard" style="color:#f4efe0;border:1px solid #cbbb98;padding:5px 12px;border-radius:6px;text-decoration:none">dashboard</a>' +
+      '</div><div aria-hidden="true" style="height:42px"></div>';
     html = /<body[^>]*>/i.test(html) ? html.replace(/(<body[^>]*>)/i, `$1${back}`) : back + html;
     res.type('html').send(html);
   });
@@ -1746,14 +1751,9 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   // and AFTER /docs/research (line ~864, { index:false }) so the paper subtree
   // keeps precedence over the broader /docs mount here; BEFORE the catch-all '/'.
   mountEvalSurfaces(app, { root: ROOT });
-  app.get('/', (req, res) => {
-    // Deep links from before the browser moved to /browse (e.g. /?runId=…,
-    // /?itemId=…) still arrive at /. Preserve them by forwarding the query.
-    const keys = Object.keys(req.query || {});
-    if (keys.length) {
-      const qs = new URLSearchParams(req.query).toString();
-      return res.redirect(302, '/browse' + (qs ? '?' + qs : ''));
-    }
+  // Stats digest shared by the redesigned home (/) and the classic dashboard
+  // (/classic) — pure reads, so both landings show identical live numbers.
+  const dashboardStats = () => {
     const derivationRuns = listDerivationRuns();
     // The deterministic rule-checker's verdict on each proof run (grounded /
     // disengagement / aporia). Tallied here from the diagnoses already loaded —
@@ -1770,7 +1770,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
       recentRuns.map((r) => r.id),
     );
     for (const r of recentRuns) r.spark = seriesMap.get(r.id) || [];
-    const stats = {
+    return {
       ...corpusStats(db),
       replays: listReplayBundles().length,
       proofRuns: derivationRuns.length,
@@ -1781,7 +1781,29 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
       proofLastMs: derivationRuns[0]?.mtimeMs || 0,
       recentRuns,
     };
-    return res.type('html').send(renderDashboardHtml(stats));
+  };
+  app.get('/', (req, res) => {
+    // Deep links from before the browser moved to /browse (e.g. /?runId=…,
+    // /?itemId=…) still arrive at /. Preserve them by forwarding the query.
+    const keys = Object.keys(req.query || {});
+    if (keys.length) {
+      const qs = new URLSearchParams(req.query).toString();
+      return res.redirect(302, '/browse' + (qs ? '?' + qs : ''));
+    }
+    return res.type('html').send(renderScriptoriumHome(dashboardStats()));
+  });
+  // Transitional during the UX redesign: the previous control-room dashboard,
+  // preserved so nothing is lost and the new home can be compared against it.
+  app.get('/classic', (req, res) => {
+    // A prominent in-flow banner (the rail "home" link alone read as a dead end to
+    // reviewers) makes the way back to the redesigned home unmistakable.
+    const banner =
+      '<div style="margin:14px 0 0;border:1px solid var(--rule);border-left:3px solid var(--brick);background:var(--paper-4);padding:11px 16px;font:12px/1.5 ui-monospace,monospace;color:var(--ink-2);display:flex;gap:12px;align-items:center;flex-wrap:wrap">' +
+      '<span><b>Classic dashboard</b> — the pre-redesign control room, kept for comparison.</span>' +
+      '<a href="/" style="margin-left:auto;color:var(--moss-deep);text-decoration:none;border:1px solid var(--moss);background:var(--moss-soft);padding:5px 12px;border-radius:6px;white-space:nowrap">← back to the new Scriptorium</a>' +
+      '</div>';
+    const html = renderDashboardHtml(dashboardStats()).replace('<div class="wrap">', '<div class="wrap">' + banner);
+    return res.type('html').send(html);
   });
   return app;
 }
@@ -2232,7 +2254,9 @@ function commandPaletteData(active = '') {
     ['Proof-DAG derivation', '/runs?kind=derivation', 'launch a deterministic proof run'],
     ['Online score dry run', '/runs?kind=online-score&dryRun=1', 'plan scorer backfill before spend'],
     ['Curriculum drama mock', '/runs?kind=pedagogical-drama&mock=1', 'enact compiled curriculum drama specs'],
-  ].forEach(([title, href, subtitle]) => add({ type: 'run', title, subtitle, href, keywords: ['job center', 'launch'] }));
+  ].forEach(([title, href, subtitle]) =>
+    add({ type: 'run', title, subtitle, href, keywords: ['job center', 'launch'] }),
+  );
 
   [
     ['Flagged scripts', '/browse?queue=flagged', 'review queue of scripts flagged for human attention'],
@@ -2245,7 +2269,9 @@ function commandPaletteData(active = '') {
     ['Disengaged proof runs', '/derivation?verdict=disengagement', 'rule-checker disengagements'],
     ['Scriptorium board items', '/board?tag=scriptorium', 'workplan items tagged scriptorium'],
     ['Evidence board items', '/board?tag=evidence', 'workplan items tagged evidence'],
-  ].forEach(([title, href, subtitle]) => add({ type: 'view', title, subtitle, href, keywords: ['saved view', 'permalink'] }));
+  ].forEach(([title, href, subtitle]) =>
+    add({ type: 'view', title, subtitle, href, keywords: ['saved view', 'permalink'] }),
+  );
 
   try {
     for (const run of listDerivationRuns().slice(0, 8)) {
@@ -4571,6 +4597,233 @@ ${css}
 </head>`;
 }
 
+// ──────────────────────────────────────────────────────────────────────────
+// Shared page shell (UX redesign seam). A page that adopts it stops hand-writing
+// its own <body>…</body> and supplies only `body`. The head (BASE_CSS + tokens),
+// the rail, and the closing tags all come from here — reusing the same primitives
+// (pageHead, railHtml) so shell chrome is identical to a hand-written page.
+function renderShell({ title, active = '', sub = '', hint = '', css = '', body = '', script = '' } = {}) {
+  return `${pageHead({ title, css })}
+<body>
+${railHtml({ active, sub, hint })}
+${body}
+${script ? `<script>\n${script}\n</script>\n` : ''}</body>
+</html>`;
+}
+
+// The redesigned home: every surface regrouped into a three-act dramatic
+// structure (I make · II read & judge · III keep). Live numbers come from the
+// same stats the classic dashboard reads; only the arrangement changes.
+function renderScriptoriumHome(stats = {}) {
+  const s = { scripts: 0, scored: 0, openFlags: 0, replays: 0, proofRuns: 0, ...stats };
+  const fmt = (n) => Number(n || 0).toLocaleString('en-US');
+  const pctScored = s.scripts ? Math.round((s.scored / s.scripts) * 100) : 0;
+
+  const ACTS = [
+    {
+      folio: 'I',
+      acc: 'var(--moss)',
+      kicker: 'make',
+      title: 'The Scriptorium',
+      gloss: 'Where dialogues are written, cast, and staged.',
+      cards: [
+        [
+          'The Desk',
+          '/compose',
+          'compose',
+          'Assemble a drama spec — matter, form, cast, audience — validated live against the ontology.',
+        ],
+        [
+          'The Rehearsal Seat',
+          '/compose/live',
+          'sit in',
+          'Sit in on a tutoring scene turn by turn, as the learner or as the audience.',
+        ],
+        [
+          'The Players',
+          '/chat',
+          'play',
+          'Drive the tutor and watch the ego &amp; superego deliberate before each line.',
+        ],
+        ['Staging', '/runs', 'stage', 'Call the players: launch a generation run, free or metered, and watch the log.'],
+      ],
+    },
+    {
+      folio: 'II',
+      acc: 'var(--brick)',
+      kicker: 'read &amp; judge',
+      title: 'The Reading Room',
+      gloss: 'Where finished scripts are read and judged for dramatic form.',
+      cards: [
+        [
+          'The Shelves',
+          '/browse',
+          'read',
+          'The whole corpus — every scored script, filterable by arm, discipline, and verdict.',
+        ],
+        [
+          'The Proofs',
+          '/derivation',
+          'prove',
+          'Runs where the tutor must lead to a hidden answer; a fixed rule decides grounded or not.',
+        ],
+        [
+          'Variant Leaves',
+          '/replays',
+          'vary',
+          'One move altered, then diffed against the original — how a change reshapes recognition.',
+        ],
+        [
+          'The Critic&#39;s Bench',
+          '/rubric',
+          'judge',
+          'The six dramatic-form dimensions — peripeteia, anagnorisis, hamartia — every critic scores.',
+        ],
+        [
+          'The Margins',
+          '/adjudication',
+          'gloss',
+          'Blinded human glosses: A19 adjudication forms and review flags on the corpus.',
+        ],
+        [
+          'The Pilot',
+          '/pilot-admin',
+          'observe',
+          'Operator desk for the human-learner study — sessions, conditions, autoplay.',
+        ],
+      ],
+    },
+    {
+      folio: 'III',
+      acc: 'var(--ochre-d)',
+      kicker: 'keep',
+      title: 'The Daybook',
+      gloss: 'The workshop&#39;s own record — plan, lexicon, and notes.',
+      cards: [
+        ['The Board', '/board', 'track', 'The workplan as a live status × type board — drag, depend, and milestone.'],
+        [
+          'The Calendar',
+          '/timeline',
+          'plan',
+          'Milestones, dependency graph, and live GitHub activity in one timeline.',
+        ],
+        [
+          'The Lexicon',
+          '/ontology',
+          'define',
+          'The shared reasoning ontology, viewed by system, tutor, or learner lens.',
+        ],
+        [
+          'The Curriculum',
+          '/curriculum',
+          'teach',
+          'The teaching spine that compiles into drama seeds and adaptation worlds.',
+        ],
+        [
+          'The Hall',
+          '/summary',
+          'recount',
+          'Lab notes and the synthesis arc — summary, story, repertoire, explainers.',
+        ],
+      ],
+    },
+  ];
+
+  const actsHtml = ACTS.map(
+    (a) => `
+  <section class="sc-act" style="--acc:${a.acc}">
+    <div class="sc-actHead">
+      <div class="sc-folio">${a.folio}</div>
+      <div><div class="sc-actK">${a.kicker}</div><div class="sc-actT">${a.title}</div><div class="sc-actG">${a.gloss}</div></div>
+    </div>
+    <div class="sc-grid">
+      ${a.cards
+        .map(
+          ([t, href, verb, d]) =>
+            `<a class="sc-card" href="${href}"><div class="t">${t}</div><div class="d">${d}</div><div class="r"><span class="route">${href}</span><span class="verb">${verb}</span></div></a>`,
+        )
+        .join('\n      ')}
+    </div>
+  </section>`,
+  ).join('\n');
+
+  const body = `<div class="sc-wrap">
+  <div class="sc-mast">
+    <div class="sc-seal">S</div>
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:baseline;gap:11px;flex-wrap:wrap">
+        <span class="sc-word">Scriptorium</span>
+        <span class="sc-glyph">◐</span>
+        <span class="sc-tag">Tutoring, staged as drama.</span>
+      </div>
+      <div class="sc-kick">machine spirits · poetics scriptorium · mmxxvi</div>
+    </div>
+  </div>
+  <div class="sc-shape">
+    <span>opening</span><span class="d">———</span>
+    <span>complication</span><span class="d">———</span>
+    <span style="color:var(--brick)">the turn</span><span class="d">———</span>
+    <span style="color:var(--ochre-d)">recognition</span><span class="d">———</span>
+    <span>close</span>
+    <span style="margin-left:auto;text-transform:none;letter-spacing:.03em;opacity:.8">the shape a critic reads</span>
+  </div>
+  <div class="sc-pulse">
+    <a class="sc-stat" href="/browse"><div class="n">${fmt(s.scripts)}</div><span class="l">scripts</span></a>
+    <a class="sc-stat" href="/derivation"><div class="n">${fmt(s.proofRuns)}</div><span class="l">proof runs</span></a>
+    <a class="sc-stat" href="/replays"><div class="n">${fmt(s.replays)}</div><span class="l">replays</span></a>
+    <a class="sc-stat" href="/browse"><div class="n">${pctScored}%</div><span class="l">scored</span></a>
+    <a class="sc-stat" href="/browse"><div class="n"${s.openFlags ? ' style="color:var(--brick)"' : ''}>${fmt(s.openFlags)}</div><span class="l">open flag${s.openFlags === 1 ? '' : 's'}</span></a>
+  </div>
+  ${actsHtml}
+  <div class="sc-foot">
+    <span>Read for dramatic form — not for what is in anyone&#39;s head.</span>
+    <span><a href="/classic">classic dashboard</a></span>
+  </div>
+</div>`;
+
+  const css = `
+.sc-wrap{ max-width:1080px; margin:0 auto; padding:14px 22px 64px; position:relative; }
+.sc-mast{ display:flex; align-items:center; gap:15px; padding-top:8px; }
+.sc-seal{ width:48px; height:48px; flex:none; background:var(--paper-3); border:1px solid var(--linen); border-radius:13px; display:grid; place-items:center; font:600 29px/1 "Fraunces",Georgia,serif; color:var(--ink); }
+.sc-word{ font:600 32px/1 "Fraunces","Source Serif 4",Georgia,serif; font-variation-settings:"opsz" 96,"SOFT" 40; letter-spacing:-.015em; color:var(--ink); }
+.sc-glyph{ color:var(--brick); font-size:17px; }
+.sc-tag{ font:italic 16px/1.2 "Fraunces",Georgia,serif; color:var(--ink-3); }
+.sc-kick{ font:11px/1 ui-monospace,monospace; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-4); margin-top:6px; }
+.sc-shape{ display:flex; align-items:center; gap:9px; flex-wrap:wrap; margin-top:20px; font:11px/1 ui-monospace,monospace; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); padding:11px 0; }
+.sc-shape .d{ opacity:.35; }
+.sc-pulse{ display:grid; grid-template-columns:repeat(5,1fr); gap:14px; margin:24px 0 32px; }
+.sc-stat{ text-decoration:none; color:inherit; }
+.sc-stat .n{ font:600 30px/1 "Fraunces",Georgia,serif; color:var(--ink); }
+.sc-stat .l{ font:11px/1 ui-monospace,monospace; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); margin-top:7px; display:block; }
+.sc-act{ margin-bottom:32px; }
+.sc-actHead{ display:flex; align-items:flex-start; gap:18px; margin-bottom:14px; }
+.sc-folio{ font:600 46px/.78 "Fraunces",Georgia,serif; color:var(--acc); width:46px; flex:none; }
+.sc-actK{ font:600 11px/1 ui-monospace,monospace; letter-spacing:.14em; text-transform:uppercase; color:var(--acc); }
+.sc-actT{ font:600 24px/1.05 "Fraunces","Source Serif 4",Georgia,serif; margin:3px 0 1px; color:var(--ink); }
+.sc-actG{ font-size:13.5px; color:var(--ink-3); }
+.sc-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(248px,1fr)); gap:13px; }
+.sc-card{ background:var(--paper-3); border:1px solid var(--rule); border-radius:11px; padding:14px 16px 15px; text-decoration:none; color:inherit; display:block; transition:border-color .18s ease, transform .18s ease, background .18s ease; }
+.sc-card:hover{ border-color:var(--acc); transform:translateY(-2px); background:var(--paper-4); }
+.sc-card .t{ font:600 18px/1.12 "Fraunces","Source Serif 4",Georgia,serif; color:var(--ink); }
+.sc-card .d{ font-size:13.5px; color:var(--ink-3); line-height:1.5; margin-top:6px; }
+.sc-card .r{ font:11px/1 ui-monospace,monospace; letter-spacing:.03em; margin-top:11px; display:flex; justify-content:space-between; align-items:center; }
+.sc-card .r .route{ color:var(--acc); }
+.sc-card .r .verb{ color:var(--ink-4); }
+.sc-foot{ display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--rule); padding-top:13px; font:11px/1 ui-monospace,monospace; letter-spacing:.04em; color:var(--ink-3); }
+.sc-foot a{ color:var(--moss-deep); text-decoration:none; }
+.sc-foot a:hover{ text-decoration:underline; }
+@media (max-width:720px){ .sc-pulse{ grid-template-columns:repeat(2,1fr); } }
+`;
+
+  return renderShell({
+    title: 'machine spirits · poetics scriptorium',
+    active: 'home',
+    sub: 'a drama-machine for tutoring — generate · score · recognize',
+    css,
+    body,
+  });
+}
+
 const TRANSCRIPT_TTS_CLIENT = `<script>
 (function () {
   if (window.TranscriptTts) return;
@@ -5147,7 +5400,12 @@ function renderDashboardHtml(stats = {}) {
   const ROLES = [
     ['Reader', 'Inspect scripts, proof runs, and replays before launching anything.', '/browse', 'Read evidence'],
     ['Builder', 'Compose a scene or start from a safe mock generation path.', '/compose/live', 'Compose'],
-    ['Reviewer', 'Find flags, labels, disagreement cases, and adjudication surfaces.', '/browse?queue=flagged', 'Review flags'],
+    [
+      'Reviewer',
+      'Find flags, labels, disagreement cases, and adjudication surfaces.',
+      '/browse?queue=flagged',
+      'Review flags',
+    ],
     ['Operator', 'Launch jobs, watch cost class, and inspect local job output.', '/runs', 'Launch'],
     ['Researcher', 'Open ontology, rubric, paper notes, timeline, and the workplan.', '/board', 'Open workplan'],
   ];
@@ -5250,12 +5508,21 @@ function renderDashboardHtml(stats = {}) {
   const roadRank = { active: 0, triaged: 1, blocked: 2, review: 3, done: 4, archived: 5, dropped: 6 };
   const uxItems = boardItems
     .filter((it) => String(it.id || '').startsWith('scriptorium-') && (it.tags || []).includes('ux'))
-    .sort((a, b) => (roadRank[a.status] ?? 9) - (roadRank[b.status] ?? 9) || String(a.priority).localeCompare(String(b.priority)) || String(a.title).localeCompare(String(b.title)));
-  const uxCounts = uxItems.reduce((acc, it) => {
-    const key = it.status === 'done' ? 'done' : it.status === 'review' ? 'review' : it.status === 'active' ? 'active' : 'open';
-    acc[key] = (acc[key] || 0) + 1;
-    return acc;
-  }, { open: 0, active: 0, review: 0, done: 0 });
+    .sort(
+      (a, b) =>
+        (roadRank[a.status] ?? 9) - (roadRank[b.status] ?? 9) ||
+        String(a.priority).localeCompare(String(b.priority)) ||
+        String(a.title).localeCompare(String(b.title)),
+    );
+  const uxCounts = uxItems.reduce(
+    (acc, it) => {
+      const key =
+        it.status === 'done' ? 'done' : it.status === 'review' ? 'review' : it.status === 'active' ? 'active' : 'open';
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    },
+    { open: 0, active: 0, review: 0, done: 0 },
+  );
   const roadmapHtml = board.__error
     ? `<div class="road-empty">${escapeHtml(board.__error)}</div>`
     : uxItems.length
@@ -7199,7 +7466,9 @@ function renderWorkplanBoardHtml() {
     ...new Set(
       items
         .flatMap((i) => (Array.isArray(i.tags) ? i.tags : []))
-        .filter((t) => ['scriptorium', 'ux', 'review', 'jobs', 'evidence', 'navigation', 'dashboard', 'static-surfaces'].includes(t)),
+        .filter((t) =>
+          ['scriptorium', 'ux', 'review', 'jobs', 'evidence', 'navigation', 'dashboard', 'static-surfaces'].includes(t),
+        ),
     ),
   ].sort();
   // Always show the working lanes (even when empty) so cards can be dropped into
@@ -7235,6 +7504,7 @@ function renderWorkplanBoardHtml() {
               }</div>`
             : '';
           return `<article class="card" draggable="true" data-id="${e(it.id || '')}" data-status="${e(status)}" data-type="${e(it.type || '')}" data-tags="${e((it.tags || []).join(' '))}">
+        <div class="card__act"><button type="button" class="card__btn" data-act="edit" data-id="${e(it.id || '')}" title="Edit item" aria-label="Edit item" draggable="false">✎</button><button type="button" class="card__btn card__btn--del" data-act="del" data-id="${e(it.id || '')}" title="Delete item" aria-label="Delete item" draggable="false">🗑</button></div>
         <div class="card__h"><span class="pri pri--${e(it.priority || '')}">${e(it.priority || '')}</span><span class="id">${e(it.id || '')}</span></div>
         <div class="ttl">${e(it.title || '')}</div>
         <div class="tags">${tags}</div>${blk}${dep}
@@ -7247,7 +7517,9 @@ function renderWorkplanBoardHtml() {
   const chips = [
     '<button class="chip on" data-filter="all" data-filter-kind="all">all</button>',
     ...types.map((t) => `<button class="chip" data-filter="${e(t)}" data-filter-kind="type">${e(t)}</button>`),
-    ...tagFilters.map((t) => `<button class="chip chip--tag" data-filter="${e(t)}" data-filter-kind="tag">#${e(t)}</button>`),
+    ...tagFilters.map(
+      (t) => `<button class="chip chip--tag" data-filter="${e(t)}" data-filter-kind="tag">#${e(t)}</button>`,
+    ),
   ].join('');
   const err = board.__error
     ? `<div class="blurb" style="border-left-color:var(--brick);background:var(--brick-soft)">${e(board.__error)}</div>`
@@ -7277,10 +7549,16 @@ main{ max-width:1100px; margin:0 auto; padding:22px 22px 64px; }
 .blk{ font-size:11px; color:var(--brick); margin-top:5px; }
 .dep{ font:11px ui-monospace,monospace; color:var(--ink-3); margin-top:5px; }
 .dep--wait{ color:var(--brick); }
-.card{ cursor:grab; }
+.card{ cursor:grab; position:relative; }
 .card.is-target{ outline:2px solid var(--moss); outline-offset:3px; box-shadow:0 0 0 6px color-mix(in srgb,var(--moss-soft) 70%,transparent); }
 .card:active{ cursor:grabbing; }
 .card--dragging{ opacity:.45; }
+.card__act{ position:absolute; top:6px; right:6px; display:flex; gap:3px; opacity:0; transition:opacity .12s ease; }
+.card:hover .card__act, .card:focus-within .card__act{ opacity:1; }
+.card__btn{ font:12px/1 ui-monospace,monospace; width:22px; height:22px; display:grid; place-items:center; padding:0; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-3); border-radius:5px; cursor:pointer; }
+.card__btn:hover{ border-color:var(--ink-3); color:var(--ink); }
+.card__btn--del:hover{ border-color:var(--brick); color:var(--brick); background:var(--brick-soft); }
+@media (hover:none){ .card__act{ opacity:1; } }
 .col{ min-height:64px; border-radius:5px; transition:background .12s var(--ease,ease), outline-color .12s var(--ease,ease); }
 .col--over{ outline:2px dashed var(--moss); outline-offset:4px; background:var(--moss-soft); }
 .col__h{ display:flex; align-items:center; gap:6px; }
@@ -7317,7 +7595,7 @@ ${railHtml({
 })}
 <main>
 	  ${err}
-	  <div class="blurb">The live development board, rendered from <code>workplan/</code> (${gen}). <b>Drag a card between lanes</b> to change its status — it writes to <code>workplan/items/</code> and re-renders. Source of truth is <code>workplan/items/</code>. The historical 2026-06-06 snapshot is at <a href="/board-doc">/board-doc</a> · API: <a href="/api/workplan">/api/workplan</a>.</div>
+	  <div class="blurb">The live development board, rendered from <code>workplan/</code> (${gen}). <b>Click a card to edit · drag between lanes to move · <span style="font-weight:700">+</span> to add · delete from the editor</b> — every change writes to <code>workplan/items/</code> and re-renders. Source of truth is <code>workplan/items/</code>. The historical 2026-06-06 snapshot is at <a href="/board-doc">/board-doc</a> · API: <a href="/api/workplan">/api/workplan</a>.</div>
 	  <div class="board-tools">
 	    <button type="button" class="wpm__btn" id="wp-refresh">Refresh from disk</button>
 	    <span class="board-tools__status" id="wp-refresh-status" aria-live="polite"></span>
@@ -7435,6 +7713,12 @@ ${railHtml({
     }
     [].slice.call(document.querySelectorAll('.card')).forEach(function (card) {
       card.addEventListener('dragstart', function (e) {
+        // A drag begun on the per-card edit/delete buttons must not move the card —
+        // let the button's own click handler run instead.
+        if (e.target && e.target.closest && e.target.closest('.card__act')) {
+          e.preventDefault();
+          return;
+        }
         dragId = card.getAttribute('data-id');
         card.classList.add('card--dragging');
         e.dataTransfer.effectAllowed = 'move';
@@ -7548,6 +7832,22 @@ ${railHtml({
       card.addEventListener('click', function () {
         if (Date.now() - lastDrag < 250) return;
         var id = card.getAttribute('data-id');
+        var item = (W.items || []).filter(function (i) { return i.id === id; })[0] || { id: id };
+        open('edit', item);
+      });
+    });
+    // Per-card edit/delete controls (visible on hover). stopPropagation keeps the
+    // card's own click-to-edit from double-firing; delete reuses the same confirm
+    // + POST as the editor's Delete button.
+    [].slice.call(document.querySelectorAll('.card__btn')).forEach(function (btn) {
+      btn.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        var id = btn.getAttribute('data-id');
+        if (btn.getAttribute('data-act') === 'del') {
+          if (!confirm('Delete this item? Removes workplan/items/' + id + '.md')) return;
+          post('/api/workplan/delete', { id: id });
+          return;
+        }
         var item = (W.items || []).filter(function (i) { return i.id === id; })[0] || { id: id };
         open('edit', item);
       });
