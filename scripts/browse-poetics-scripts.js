@@ -1770,11 +1770,23 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
       recentRuns.map((r) => r.id),
     );
     for (const r of recentRuns) r.spark = seriesMap.get(r.id) || [];
+    // Workplan status tally for the home's "keep" widget. Cheap read; soft-fails
+    // to an empty board so a workplan glitch never takes the dashboard down.
+    const boardCounts = {};
+    try {
+      for (const it of readWorkplanBoard().items || []) {
+        const st = it.status || 'inbox';
+        boardCounts[st] = (boardCounts[st] || 0) + 1;
+      }
+    } catch (_e) {
+      /* board unreadable — leave boardCounts empty */
+    }
     return {
       ...corpusStats(db),
       replays: listReplayBundles().length,
       proofRuns: derivationRuns.length,
       proofVerdicts,
+      boardCounts,
       // Newest proof-run mtime (listDerivationRuns sorts newest-first) — a second
       // activity clock so the headline doesn't read idle when the file-based
       // derivation arc is live but the DB scripts corpus has not had a new run.
@@ -2186,26 +2198,24 @@ const NAV = [
     'Pilot operator console — session monitoring, recruitment toggle &amp; run launching (admin token-gated)',
   ],
 ];
-// Shown flat, left-to-right: the three reading surfaces (scripts = critic-graded
-// generation corpus at /browse; proof runs = rule-checked staging loop at
-// /derivation; replays = counterfactual diffs) then the two make-something actions
-// (compose a scene, launch a run).
-const NAV_PRIMARY = ['home', 'browse', 'derivation', 'replays', 'compose', 'runs'];
-// Folded into labelled dropdowns, in order: the reference surfaces, then the
-// dated/durable techne notes. A group whose member is the active page shows a
-// moss accent on its summary so the current location is still legible when closed.
+// The rail mirrors the home's three acts. `home` stays the one flat link (the
+// brand wordmark is not itself a link); everything else folds into three
+// dropdowns — I·make, II·read & judge, III·keep — in the same order, and with
+// the same membership, as renderScriptoriumHome's cards.
+const NAV_PRIMARY = ['home'];
+// A closed group whose member is the active page keeps a moss accent on its
+// summary (see railHtml), so the current location stays legible when collapsed.
 const NAV_GROUPS = [
-  ['review', ['board', 'timeline', 'adjudicate']],
-  ['tools', ['tutor', 'pilot-admin']],
-  ['reference', ['ontology', 'rubric', 'curriculum']],
-  ['notes', ['summary', 'story', 'repertoire']],
+  ['make', ['compose', 'runs', 'tutor']],
+  ['read &amp; judge', ['browse', 'derivation', 'replays', 'rubric', 'adjudicate', 'pilot-admin']],
+  ['keep', ['board', 'timeline', 'ontology', 'curriculum', 'summary', 'story', 'repertoire']],
 ];
+// Same three acts for the mobile drawer; `home` is rendered as a flat link above
+// these groups in railHtml.
 const NAV_DRAWER_GROUPS = [
-  ['Observe', ['home', 'browse', 'derivation', 'replays']],
-  ['Create', ['compose', 'runs']],
-  ['Review', ['board', 'timeline', 'adjudicate']],
-  ['Reference', ['ontology', 'rubric', 'curriculum', 'summary', 'story', 'repertoire', 'timeline']],
-  ['Admin', ['tutor', 'pilot-admin']],
+  ['Make', ['compose', 'runs', 'tutor']],
+  ['Read &amp; judge', ['browse', 'derivation', 'replays', 'rubric', 'adjudicate', 'pilot-admin']],
+  ['Keep', ['board', 'timeline', 'ontology', 'curriculum', 'summary', 'story', 'repertoire']],
 ];
 
 // A per-page orientation band (the `hint` slot of railHtml): "<b>here</b> — what",
@@ -2504,6 +2514,7 @@ ${
         <summary class="rail__btn" aria-label="Open Scriptorium navigation menu">menu</summary>
         <nav class="rail__drawer" aria-label="Scriptorium navigation">
           <div class="rail__drawer-title"><b>Scriptorium</b><span>${currentLabel}</span></div>
+          <div class="rail__drawer-group">${link('home', 'rail__drawer-link')}</div>
           ${drawerGroups}
         </nav>
       </details>
@@ -4611,13 +4622,171 @@ ${script ? `<script>\n${script}\n</script>\n` : ''}</body>
 </html>`;
 }
 
+// "The workshop at a glance" — six live-data SVG widgets on the home that convey
+// activity across the three acts: make (recent runs), read & judge (corpus read,
+// critic verdicts, proof outcomes, disciplines), keep (workplan). Server-rendered
+// SVG, animated with pure CSS (no client JS), themed via the palette tokens, and
+// reusing the same verdict/discipline mappings as the classic dashboard.
+function renderActivityBand(s = {}) {
+  const fmt = (n) => Number(n || 0).toLocaleString('en-US');
+  const esc = (x) => escapeHtml(String(x == null ? '' : x));
+  const pctScored = s.scripts ? Math.round((s.scored / s.scripts) * 100) : 0;
+
+  // radial gauge — r=60 so circumference ≈ 377 (matches the @keyframes start).
+  const ring = (pct) => {
+    const off = (377 * (1 - Math.max(0, Math.min(100, pct)) / 100)).toFixed(1);
+    return `<svg class="scw-ring" viewBox="0 0 144 144" role="img" aria-label="${pct} percent of the corpus scored">
+        <circle class="scw-ring__trk" cx="72" cy="72" r="60"/>
+        <circle class="scw-ring__val" cx="72" cy="72" r="60" stroke-dasharray="377" stroke-dashoffset="${off}" transform="rotate(-90 72 72)"/>
+        <text class="scw-ring__pct" x="72" y="66" text-anchor="middle" dominant-baseline="central">${pct}%</text>
+        <text class="scw-ring__sub" x="72" y="90" text-anchor="middle" dominant-baseline="central">scored</text>
+      </svg>`;
+  };
+
+  // horizontal stacked bar + legend; each segment optionally deep-links.
+  const segBar = (segments) => {
+    const segs = (segments || []).filter((x) => (x.n || 0) > 0);
+    const total = segs.reduce((a, x) => a + x.n, 0);
+    if (!total) return `<div class="scw-seg scw-seg--empty" aria-hidden="true"></div><div class="scw-leg"></div>`;
+    const fills = segs
+      .map((x) => {
+        const w = ((x.n / total) * 100).toFixed(2);
+        const t = `${x.label}: ${fmt(x.n)} · ${Math.round((x.n / total) * 100)}%`;
+        const fill = `<span class="scw-seg__fill" style="background:${x.color}"></span>`;
+        return x.href
+          ? `<a class="scw-seg__cell" style="flex:0 0 ${w}%" href="${x.href}" title="${esc(t)}" aria-label="${esc(t)}">${fill}</a>`
+          : `<span class="scw-seg__cell" style="flex:0 0 ${w}%" title="${esc(t)}">${fill}</span>`;
+      })
+      .join('');
+    const leg = segs
+      .map(
+        (x) =>
+          `<span class="scw-leg__i"><i style="background:${x.color}"></i>${esc(x.label)}&nbsp;<b>${fmt(x.n)}</b></span>`,
+      )
+      .join('');
+    return `<div class="scw-seg">${fills}</div><div class="scw-leg">${leg}</div>`;
+  };
+
+  // top-N horizontal bars, optionally linked.
+  const bars = (items, hrefFn) => {
+    const list = (Array.isArray(items) ? items : []).slice(0, 6);
+    if (!list.length) return `<div class="scw-empty">no disciplines tagged yet</div>`;
+    const max = Math.max(...list.map((d) => d.n), 1);
+    return (
+      `<div class="scw-bars">` +
+      list
+        .map((d) => {
+          const w = ((d.n / max) * 100).toFixed(1);
+          const name = esc(String(d.name).replace(/_/g, ' '));
+          const inner = `<span class="scw-bar__l" title="${name}">${name}</span><span class="scw-bar__trk"><span class="scw-bar__fill" style="width:${w}%"></span></span><span class="scw-bar__n">${fmt(d.n)}</span>`;
+          return hrefFn ? `<a class="scw-bar" href="${hrefFn(d)}">${inner}</a>` : `<div class="scw-bar">${inner}</div>`;
+        })
+        .join('') +
+      `</div>`
+    );
+  };
+
+  // sparkline of a run's recontextualization series (0–100), with an area fill.
+  const spark = (values) => {
+    const w = 116;
+    const h = 28;
+    const list = (Array.isArray(values) ? values : []).filter((v) => Number.isFinite(v));
+    if (list.length < 2) return `<span class="scw-spark--empty" aria-hidden="true"></span>`;
+    const n = list.length;
+    const pts = list.map((v, i) => [(i / (n - 1)) * w, h - 3 - (Math.max(0, Math.min(100, v)) / 100) * (h - 6)]);
+    const line = pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join(' ');
+    const area = `M0 ${h} ` + pts.map(([x, y]) => `L${x.toFixed(1)} ${y.toFixed(1)}`).join(' ') + ` L${w} ${h} Z`;
+    const [lx, ly] = pts[n - 1];
+    const avg = Math.round(list.reduce((a, v) => a + v, 0) / n);
+    return `<svg class="scw-spark" viewBox="0 0 ${w} ${h}" role="img" aria-label="recontextualization across ${n} scored scripts, average ${avg}"><path class="scw-spark__a" d="${area}"/><path class="scw-spark__l" d="${line}"/><circle class="scw-spark__d" cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="2.2"/></svg>`;
+  };
+
+  // ---- segment data (same mappings as the classic dashboard) ----
+  const fcMap = new Map((Array.isArray(s.formClass) ? s.formClass : []).map((r) => [r.name, r.n]));
+  const fcSeg = [
+    { label: 'recognition', n: fcMap.get('recognition') || 0, color: 'var(--moss)', href: '/browse?form=recognition' },
+    { label: 'flat', n: fcMap.get('flat') || 0, color: 'var(--ink-4)', href: '/browse?form=flat' },
+    { label: 'trap', n: fcMap.get('trap') || 0, color: 'var(--brick)', href: '/browse?form=trap' },
+  ];
+  const fcTotal = fcSeg.reduce((a, x) => a + x.n, 0);
+  const fcRecog = fcTotal ? Math.round((fcSeg[0].n / fcTotal) * 100) : 0;
+
+  const PV = {
+    grounded_anagnorisis: { label: 'grounded', color: 'var(--moss)' },
+    disengagement: { label: 'disengagement', color: 'var(--ink-4)' },
+    aporia: { label: 'aporia', color: 'var(--brick)' },
+  };
+  const pv = s.proofVerdicts && typeof s.proofVerdicts === 'object' ? s.proofVerdicts : {};
+  const pvSeg = Object.entries(pv)
+    .filter(([k]) => k !== '(none)')
+    .map(([k, n]) => ({
+      label: PV[k]?.label || k.replace(/_/g, ' '),
+      n,
+      color: PV[k]?.color || 'var(--ochre)',
+      ...(PV[k] ? { href: '/derivation?verdict=' + encodeURIComponent(k) } : {}),
+    }))
+    .sort((a, b) => b.n - a.n);
+  const pvTotal = pvSeg.reduce((a, x) => a + x.n, 0);
+
+  const BST = {
+    active: 'var(--moss)',
+    review: 'var(--ochre)',
+    blocked: 'var(--brick)',
+    triaged: 'var(--ink-4)',
+    done: 'var(--moss-deep)',
+  };
+  const bc = s.boardCounts && typeof s.boardCounts === 'object' ? s.boardCounts : {};
+  const bSeg = ['active', 'review', 'blocked', 'triaged', 'done']
+    .filter((k) => bc[k])
+    .map((k) => ({ label: k, n: bc[k], color: BST[k], href: '/board' }));
+  const bOpen = (bc.active || 0) + (bc.review || 0) + (bc.blocked || 0) + (bc.triaged || 0);
+
+  const runs = Array.isArray(s.recentRuns) ? s.recentRuns : [];
+  const recent = runs.length
+    ? `<div class="scw-feed">` +
+      runs
+        .slice(0, 6)
+        .map(
+          (r) =>
+            `<a class="scw-feed__row" href="/browse?runId=${encodeURIComponent(r.id)}" title="${esc(r.id)}"><span class="scw-feed__dot${r.reviewFlagCount ? ' is-warn' : ''}"></span><span class="scw-feed__id">${esc(r.id)}</span>${spark(r.spark)}<span class="scw-feed__n">${fmt(r.scoreCount)}/${fmt(r.itemCount)}</span></a>`,
+        )
+        .join('') +
+      `</div>`
+    : `<div class="scw-empty">no runs yet — launch one to populate the corpus</div>`;
+
+  const widget = (acc, kicker, bodyHtml, capHtml, stretch) =>
+    `<div class="scw" style="--acc:${acc}"><div class="scw__k">${kicker}</div><div class="scw__body${stretch ? ' scw__body--stretch' : ''}">${bodyHtml}</div>${capHtml ? `<div class="scw__cap">${capHtml}</div>` : ''}</div>`;
+
+  return `<section class="sc-band">
+  <div class="sc-band__head">
+    <h2 class="sc-band__h">The workshop at a glance</h2>
+    <div class="sc-band__sum">${fmt(s.scripts)} scripts · ${fmt(s.proofRuns)} proof runs · ${fmt(s.replays)} replays${s.openFlags ? ` · <span class="is-warn">${fmt(s.openFlags)} open flag${s.openFlags === 1 ? '' : 's'}</span>` : ''}</div>
+  </div>
+  <div class="scw-grid">
+    ${widget('var(--moss)', 'read &amp; judge · corpus read', ring(pctScored), `${fmt(s.scored)} of ${fmt(s.scripts)} scripts read by a critic`, false)}
+    ${widget('var(--moss)', 'read &amp; judge · critic verdicts', segBar(fcSeg), fcTotal ? `${fcRecog}% earned recognition · ${fmt(fcTotal)} verdicts` : 'no critic verdicts yet', true)}
+    ${widget('var(--brick)', 'read &amp; judge · proof outcomes', segBar(pvSeg), pvTotal ? `${fmt(pvTotal)} runs decided by the rule-checker` : 'no proof runs decided yet', true)}
+    ${widget(
+      'var(--moss)',
+      'overall · corpus by discipline',
+      bars(s.disciplines, (d) => '/browse?discipline=' + encodeURIComponent(d.name)),
+      'top disciplines — click to filter the shelves',
+      true,
+    )}
+    ${widget('var(--ochre-d)', 'make · recent runs', recent, 'the last six generation runs, newest first', true)}
+    ${widget('var(--ochre-d)', 'keep · workplan', segBar(bSeg), bSeg.length ? `${fmt(bOpen)} open item${bOpen === 1 ? '' : 's'} on the board` : 'board is empty', true)}
+  </div>
+</section>`;
+}
+
 // The redesigned home: every surface regrouped into a three-act dramatic
 // structure (I make · II read & judge · III keep). Live numbers come from the
 // same stats the classic dashboard reads; only the arrangement changes.
 function renderScriptoriumHome(stats = {}) {
+  // The whole at-a-glance band (live numbers, charts) is delegated to
+  // renderActivityBand(s); this function owns only the masthead, the three-act
+  // card grid, and the footer — so no number-formatting lives here anymore.
   const s = { scripts: 0, scored: 0, openFlags: 0, replays: 0, proofRuns: 0, ...stats };
-  const fmt = (n) => Number(n || 0).toLocaleString('en-US');
-  const pctScored = s.scripts ? Math.round((s.scored / s.scripts) * 100) : 0;
 
   const ACTS = [
     {
@@ -4767,13 +4936,7 @@ function renderScriptoriumHome(stats = {}) {
     <span>close</span>
     <span style="margin-left:auto;text-transform:none;letter-spacing:.03em;opacity:.8">the shape a critic reads</span>
   </div>
-  <div class="sc-pulse">
-    <a class="sc-stat" href="/browse"><div class="n">${fmt(s.scripts)}</div><span class="l">scripts</span></a>
-    <a class="sc-stat" href="/derivation"><div class="n">${fmt(s.proofRuns)}</div><span class="l">proof runs</span></a>
-    <a class="sc-stat" href="/replays"><div class="n">${fmt(s.replays)}</div><span class="l">replays</span></a>
-    <a class="sc-stat" href="/browse"><div class="n">${pctScored}%</div><span class="l">scored</span></a>
-    <a class="sc-stat" href="/browse"><div class="n"${s.openFlags ? ' style="color:var(--brick)"' : ''}>${fmt(s.openFlags)}</div><span class="l">open flag${s.openFlags === 1 ? '' : 's'}</span></a>
-  </div>
+  ${renderActivityBand(s)}
   ${actsHtml}
   <div class="sc-foot">
     <span>Read for dramatic form — not for what is in anyone&#39;s head.</span>
@@ -4791,10 +4954,56 @@ function renderScriptoriumHome(stats = {}) {
 .sc-kick{ font:11px/1 ui-monospace,monospace; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-4); margin-top:6px; }
 .sc-shape{ display:flex; align-items:center; gap:9px; flex-wrap:wrap; margin-top:20px; font:11px/1 ui-monospace,monospace; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); padding:11px 0; }
 .sc-shape .d{ opacity:.35; }
-.sc-pulse{ display:grid; grid-template-columns:repeat(5,1fr); gap:14px; margin:24px 0 32px; }
-.sc-stat{ text-decoration:none; color:inherit; }
-.sc-stat .n{ font:600 30px/1 "Fraunces",Georgia,serif; color:var(--ink); }
-.sc-stat .l{ font:11px/1 ui-monospace,monospace; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); margin-top:7px; display:block; }
+.sc-band{ margin:26px 0 30px; }
+.sc-band__head{ display:flex; align-items:baseline; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:14px; }
+.sc-band__h{ font:600 18px/1 "Fraunces","Source Serif 4",Georgia,serif; color:var(--ink); margin:0; }
+.sc-band__sum{ font:11px/1.4 ui-monospace,monospace; letter-spacing:.04em; color:var(--ink-3); }
+.sc-band__sum .is-warn{ color:var(--brick); }
+.scw-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(288px,1fr)); gap:13px; }
+.scw{ background:var(--paper-3); border:1px solid var(--rule); border-top:2px solid var(--acc); border-radius:11px; padding:13px 15px 14px; display:flex; flex-direction:column; min-height:152px; animation:scwIn .5s var(--ease,ease) both; }
+.scw__k{ font:600 10px/1 ui-monospace,monospace; letter-spacing:.13em; text-transform:uppercase; color:var(--acc); margin-bottom:12px; }
+.scw__body{ flex:1; display:flex; align-items:center; justify-content:center; }
+.scw__body--stretch{ flex-direction:column; align-items:stretch; justify-content:flex-start; }
+.scw__cap{ font:11px/1.45 ui-monospace,monospace; letter-spacing:.02em; color:var(--ink-3); margin-top:12px; }
+@keyframes scwIn{ from{ opacity:0; transform:translateY(8px); } }
+.scw-ring{ width:128px; height:128px; }
+.scw-ring__trk{ fill:none; stroke:var(--rule); stroke-width:11; }
+.scw-ring__val{ fill:none; stroke:var(--moss); stroke-width:11; stroke-linecap:round; animation:scwRing 1.2s var(--ease,ease) both; }
+@keyframes scwRing{ from{ stroke-dashoffset:377; } }
+.scw-ring__pct{ font:600 30px/1 "Fraunces",Georgia,serif; fill:var(--ink); }
+.scw-ring__sub{ font:600 9px/1 ui-monospace,monospace; letter-spacing:.16em; text-transform:uppercase; fill:var(--ink-4); }
+.scw-seg{ display:flex; width:100%; height:15px; border-radius:8px; overflow:hidden; background:var(--rule); animation:scwWipe .9s var(--ease,ease) both; }
+.scw-seg__cell{ display:flex; min-width:2px; }
+.scw-seg__cell:hover{ filter:brightness(1.07); }
+.scw-seg__fill{ flex:1; }
+@keyframes scwWipe{ from{ clip-path:inset(0 100% 0 0); } }
+.scw-leg{ display:flex; flex-wrap:wrap; gap:5px 12px; margin-top:11px; }
+.scw-leg__i{ display:inline-flex; align-items:center; gap:5px; font:11px/1 ui-monospace,monospace; color:var(--ink-3); }
+.scw-leg__i i{ width:9px; height:9px; border-radius:2px; flex:none; }
+.scw-leg__i b{ color:var(--ink-2); font-weight:600; }
+.scw-bars{ width:100%; display:grid; gap:7px; }
+.scw-bar{ display:grid; grid-template-columns:minmax(54px,84px) 1fr auto; align-items:center; gap:9px; text-decoration:none; color:inherit; }
+.scw-bar__l{ font:11px/1.2 ui-monospace,monospace; color:var(--ink-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.scw-bar__trk{ height:9px; background:var(--rule); border-radius:5px; overflow:hidden; }
+.scw-bar__fill{ display:block; height:100%; background:var(--moss); border-radius:5px; transform-origin:left; animation:scwBar .9s var(--ease,ease) both; }
+@keyframes scwBar{ from{ transform:scaleX(0); } }
+.scw-bar__n{ font:11px/1 ui-monospace,monospace; color:var(--ink-3); }
+.scw-bar:hover .scw-bar__fill{ background:var(--moss-deep); }
+.scw-bar:hover .scw-bar__l{ color:var(--ink); }
+.scw-feed{ width:100%; display:grid; gap:2px; }
+.scw-feed__row{ display:grid; grid-template-columns:auto minmax(0,1fr) auto auto; align-items:center; gap:8px; padding:4px 6px; border-radius:6px; text-decoration:none; color:inherit; }
+.scw-feed__row:hover{ background:var(--paper-4); }
+.scw-feed__dot{ width:7px; height:7px; border-radius:50%; background:var(--moss); flex:none; }
+.scw-feed__dot.is-warn{ background:var(--brick); }
+.scw-feed__id{ font:11px/1.2 ui-monospace,monospace; color:var(--ink-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.scw-feed__n{ font:10px/1 ui-monospace,monospace; color:var(--ink-4); }
+.scw-spark{ width:90px; height:auto; display:block; }
+.scw-spark--empty{ display:inline-block; width:90px; height:1px; background:var(--rule); }
+.scw-spark__a{ fill:var(--moss-soft); opacity:.5; }
+.scw-spark__l{ fill:none; stroke:var(--moss); stroke-width:1.6; stroke-linejoin:round; stroke-linecap:round; }
+.scw-spark__d{ fill:var(--brick); }
+.scw-empty{ font:11px/1.5 ui-monospace,monospace; color:var(--ink-4); text-align:center; margin:auto; }
+@media (prefers-reduced-motion:reduce){ .scw,.scw-seg,.scw-ring__val,.scw-bar__fill{ animation:none; } }
 .sc-act{ margin-bottom:32px; }
 .sc-actHead{ display:flex; align-items:flex-start; gap:18px; margin-bottom:14px; }
 .sc-folio{ font:600 46px/.78 "Fraunces",Georgia,serif; color:var(--acc); width:46px; flex:none; }
@@ -4812,7 +5021,7 @@ function renderScriptoriumHome(stats = {}) {
 .sc-foot{ display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--rule); padding-top:13px; font:11px/1 ui-monospace,monospace; letter-spacing:.04em; color:var(--ink-3); }
 .sc-foot a{ color:var(--moss-deep); text-decoration:none; }
 .sc-foot a:hover{ text-decoration:underline; }
-@media (max-width:720px){ .sc-pulse{ grid-template-columns:repeat(2,1fr); } }
+@media (max-width:560px){ .scw-grid{ grid-template-columns:1fr; } }
 `;
 
   return renderShell({
