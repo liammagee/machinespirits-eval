@@ -1,18 +1,19 @@
 {
-  "generated": "2026-06-23T17:04:22.734Z",
+  "generated": "2026-06-23T17:14:03.148Z",
   "counts": {
-    "total": 43,
+    "total": 46,
     "byStatus": {
-      "triaged": 21,
+      "triaged": 24,
       "blocked": 1,
       "dropped": 2,
       "done": 19
     },
     "byType": {
       "research": 24,
-      "experiment": 2,
+      "experiment": 3,
+      "content": 1,
       "infra": 9,
-      "paper": 2,
+      "paper": 3,
       "ops": 6
     }
   },
@@ -69,6 +70,34 @@
       "links": {
         "notes": "notes/daily-notes/2026-06-09-research-roundup.html"
       }
+    },
+    {
+      "id": "audit-dramatic-metaphor-role-vocabulary",
+      "title": "Audit dramatic metaphor and rename director role toward author",
+      "status": "triaged",
+      "type": "content",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-06-23",
+      "updated": "2026-06-23",
+      "verification": "Dramatic-machine docs, derivation notes, config names, UI labels, and any runtime-facing role names use a coherent metaphor set; the director/author distinction is either renamed safely or documented with a compatibility path.",
+      "links": {
+        "notes": [
+          "notes/poetics/drama-machine/SPEC.md",
+          "notes/poetics/drama-machine/TAXONOMY.md",
+          "notes/poetics/2026-06-09-free-dramaturgy-and-register-dials.md",
+          "notes/2026-06-09-dramatic-derivation-plan.md"
+        ],
+        "items": "refresh-weber-id-charisma-recognition-thread"
+      },
+      "tags": [
+        "poetics",
+        "dramatic-derivation",
+        "terminology",
+        "author",
+        "director"
+      ]
     },
     {
       "id": "d5-rubric-v3-0-pca-informed-consolidation",
@@ -184,6 +213,62 @@
       "links": {
         "notes": "notes/daily-notes/2026-06-11-research-roundup.html"
       }
+    },
+    {
+      "id": "refresh-weber-id-charisma-recognition-thread",
+      "title": "Refresh Weber/id-charisma thread around being recognized",
+      "status": "triaged",
+      "type": "paper",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-06-23",
+      "updated": "2026-06-23",
+      "verification": "Paper/notes pass clarifies whether the Weber id-charisma thread changes Paper 2.0 framing, a future experiment, or only a bounded note; the result explicitly distinguishes Hegelian mutual recognition from Weberian being-recognized-as-authoritative.",
+      "claim_status": "planned",
+      "links": {
+        "paper": "docs/research/paper-full-2.0.md#67-id-director-charisma-family",
+        "notes": [
+          "docs/cell-100-charisma-full-n-update.md",
+          "docs/cell-100-followups.md",
+          "notes/2026-06-09-adaptation-exploration-plan.md",
+          "notes/poetics/2026-06-09-free-dramaturgy-and-register-dials.md",
+          "notes/rhetoric/2026-06-08-deep-research-report-2.md"
+        ]
+      },
+      "tags": [
+        "id-director",
+        "charisma",
+        "weber",
+        "recognition",
+        "paper-framing"
+      ]
+    },
+    {
+      "id": "review-ego-superego-internal-history-window",
+      "title": "Review configurable ego/superego internal history windows",
+      "status": "triaged",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-06-23",
+      "updated": "2026-06-23",
+      "verification": "Current same-turn history behavior is covered by tests; a configurable history-window design is either implemented and smoke-tested with a bounded comparison, or explicitly rejected with rationale.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": "notes/2026-06-23-ego-superego-history-window-review.md",
+        "code": [
+          "tutor-core/services/tutorDialogueEngine.js",
+          "tutor-core/services/dialecticalEngine.js"
+        ]
+      },
+      "tags": [
+        "ego-superego",
+        "message-history",
+        "prompt-assembly",
+        "mechanism-test"
+      ]
     },
     {
       "id": "sepo-self-evolving-prompt-agent-for-system-prompt-optimizati",
