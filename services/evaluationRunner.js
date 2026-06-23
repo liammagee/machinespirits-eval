@@ -535,6 +535,7 @@ function computeConfigHash(resolvedConfig) {
     learnerModelOverride: resolvedConfig.learnerModelOverride || null,
     disableSuperego: resolvedConfig.disableSuperego || false,
     conversationMode: resolvedConfig.conversationMode || null,
+    internalHistory: resolvedConfig.internalHistory || null,
   };
   return createHash('sha256').update(JSON.stringify(snapshot)).digest('hex');
 }
@@ -683,6 +684,9 @@ function resolveConfigModels(config) {
     }
     if (rawProfile?.conversation_mode) {
       resolved.conversationMode = rawProfile.conversation_mode;
+    }
+    if (rawProfile?.internal_history) {
+      resolved.internalHistory = rawProfile.internal_history;
     }
     // Per-profile learner model override (YAML `learner.model`); CLI --learner-model takes priority
     if (rawProfile?.learner?.model && !config.learnerModelOverride) {
@@ -1851,6 +1855,7 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
     dryRun = false,
     captureApiPayloads = process.env.EVAL_CAPTURE_API_PAYLOADS !== 'false',
     conversationMode = 'single-prompt', // 'messages' for multi-turn message chains
+    internalHistory = null, // Optional bounded ego/superego history as chat-style messages
     showMessages = false, // true for truncated, 'full' for untruncated API message display
   } = options;
 
@@ -1947,6 +1952,7 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
               disableSuperego: resolvedConfig.disableSuperego || false,
               profileName: resolvedConfig.profileName,
               hyperparameters: resolvedConfig.hyperparameters || {},
+              superegoHyperparameters: resolvedConfig.superegoHyperparameters || null,
               trace: true,
               superegoStrategy,
               outputSize,
@@ -1958,6 +1964,7 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
               dialecticalNegotiation, // Phase 2: AI-powered dialectical struggle
               behavioralOverrides, // Quantitative params from superego self-reflection
               conversationMode, // 'messages' for multi-turn message chains
+              internalHistory, // Optional internal ego/superego message transcript
             });
             // Re-throw 429 errors so retryWithBackoff can handle them
             if (
@@ -3392,6 +3399,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   const otherEgoBidirectional = rawProfile?.other_ego_profiling?.bidirectional ?? false;
   const strategyPlanningEnabled = rawProfile?.other_ego_profiling?.strategy_planning ?? false;
   const conversationMode = rawProfile?.conversation_mode ?? 'single-prompt';
+  const internalHistory = rawProfile?.internal_history ?? null;
 
   // In messages mode, ALL learners are LLM-generated (unified uses single-agent path,
   // ego_superego uses deliberation chain). In single-prompt mode, only ego_superego
@@ -3413,6 +3421,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     dialecticalNegotiation,
     dryRun,
     conversationMode,
+    internalHistory,
     showMessages,
   };
   let sessionEvolution = cs?.sessionEvolution ?? null;

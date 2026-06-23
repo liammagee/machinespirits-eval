@@ -1,7 +1,7 @@
 ---
 id: implement-messages-style-internal-history-probe
 title: Implement messages-style ego/superego history probe
-status: active
+status: review
 type: experiment
 priority: P2
 owner: codex
@@ -18,7 +18,11 @@ links:
   items: review-ego-superego-internal-history-window
   code:
     - tutor-core/services/tutorDialogueEngine.js
-    - config/tutor-agents.yaml
+    - tutor-core/services/tutorApiService.js
+    - services/evaluationRunner.js
+    - scripts/probe-internal-history-messages.js
+    - scripts/compare-internal-history-quality.js
+    - tests/internalHistoryMessages.test.js
 tags:
   - ego-superego
   - messages-api
@@ -34,3 +38,25 @@ Acceptance:
 - Preserve current defaults and historical comparability.
 - Add focused tests that prove message arrays differ only when the option is enabled.
 - Run a small comparison with a limited output/token budget and report token/latency/convergence/revision differences.
+
+Progress:
+
+- Implemented opt-in `internalHistory` / `internal_history` support on branch `codex/internal-history-messages`; default behavior remains disabled.
+- Added bounded unified same-turn ego/superego history as chat-style messages with `surface: messages`, `scope: unified_exchange`, `window`, and `max_chars_per_message`.
+- Added pass-through for superego hyperparameter caps so small probes can limit all internal calls, not only initial ego generation.
+- Added focused tests in `tests/internalHistoryMessages.test.js`.
+- Ran `node scripts/probe-internal-history-messages.js` with mocked OpenRouter responses, `maxRounds: 1`, ego and superego `max_tokens: 256`, `window: 1`, and `max_chars_per_message: 600`.
+- Mock probe result: treatment added 1,092 prompt chars, approx. 275 prompt tokens, and 1,016 chars of internal-history messages versus baseline. First ego call was unchanged; superego review received the ego draft as a message; ego revision received `system,user,assistant,user`.
+- Added `node scripts/probe-internal-history-messages.js --real` for the same capped provider comparison.
+- Memory note added: OpenRouter key is available by loading `/Users/lmagee/Dev/machinespirits/machinespirits-eval/.env` with dotenv.
+- Real `fast` / Nemotron run at 768 output tokens was noisy: both arms hit ego JSON retries, so the result is not a clean internal-history comparison.
+- Real `openrouter.gpt-mini` run at 768 output tokens was clean: baseline success with 3 API calls, 24.9s, 9,484 provider input tokens, cost 0.0050954; treatment success with 3 API calls, 26.0s, 9,934 provider input tokens, cost 0.0036751. Captured treatment overhead was +2,000 prompt chars / approx. +500 prompt tokens.
+- Added `scripts/compare-internal-history-quality.js` for repeated paired runs capturing parse warnings, success, quality proxy, revision/convergence, latency, tokens, and cost.
+- Real 3-pair `openrouter.gpt-mini` quality/stability run: both arms parse-clean and 100% successful; initial quality proxy tied at 93.3, with treatment getting 1/3 first-pass approvals. Manual inspection showed the proxy missed unsupported specifics.
+- Tightened the quality proxy to penalize invalid `x:y` identifiers and unsupported fine-grained specifics. Second real 3-pair run: both arms still parse-clean and 100% successful; stricter quality proxy baseline 83.3 vs treatment 95.0, but both arms still showed some unsupported specifics on manual inspection. Treatment added about 493 captured prompt tokens and about 1,923 internal-history chars on average.
+- Expanded `scripts/compare-internal-history-quality.js` to cover three scenarios (`recognition_retry`, `fractions_frustration`, `gradient_pacing`) and blind A/B judges (`openrouter.haiku`, `openrouter.gpt`).
+- Real 6-pair / 12-judge comparison artifact: `exports/internal-history-quality/2026-06-23T20-18-21-502Z-real.json`.
+- Multi-scenario result: both arms parse-clean and 100% successful; treatment won 8/12 blind judge comparisons, baseline won 2/12, and 2/12 were ties. Treatment first-pass approval was 4/6 vs baseline 1/6; average API calls dropped 2.83 -> 2.67. Judge-noted unsupported specifics dropped from 17 baseline flags to 7 treatment flags.
+- Caveat: judge numeric quality scores were not scale-stable, so the reliable judge signal is winner/non-loss plus unsupported-specific counts. The script prompt and decision rule were tightened after the run.
+
+Decision: do not enable by default and do not treat as a general performance fix. Keep as an opt-in quality/convergence probe for bounded same-turn ego/superego loops, especially struggle/pacing cases, under `window: 1` and a small `max_chars_per_message` cap.

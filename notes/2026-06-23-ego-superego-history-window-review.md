@@ -61,3 +61,163 @@ measured against latency/token/convergence outcomes as well as quality.
 Primary comparison: hold prompt text, model, learner, scenarios, and max rounds fixed; vary only the internal-history window. Measure parse failure rate, convergence, superego approval/rejection pattern, revision magnitude, tutor quality, and whether the change reduces generic revision loops or instead causes overfitting/compliance.
 
 Boundary: do not reinterpret historical runs. Existing logs remain artifacts of the old prompt assembly.
+
+## First implementation probe
+
+Branch: `codex/internal-history-messages`.
+
+Implemented as an opt-in `internalHistory` / `internal_history` option. Defaults remain disabled. The first supported surface is:
+
+```yaml
+internal_history:
+  enabled: true
+  surface: messages
+  scope: unified_exchange
+  window: 1
+  max_chars_per_message: 600
+```
+
+Small mocked probe, no paid API calls:
+
+```bash
+node scripts/probe-internal-history-messages.js
+```
+
+The same script supports a real, capped provider comparison when `OPENROUTER_API_KEY` is available:
+
+```bash
+node scripts/probe-internal-history-messages.js --real
+```
+
+Probe conditions:
+
+- Core tutor profile: `fast`
+- `maxRounds: 1`
+- ego output cap: `max_tokens: 256`
+- superego output cap: `max_tokens: 256`
+- internal history window: `1`
+- internal history cap: `600` chars/message
+
+Observed prompt-shape delta in the mock run:
+
+- Baseline prompt total: 43,768 chars, approx. 10,943 prompt tokens.
+- Internal-history prompt total: 44,860 chars, approx. 11,218 prompt tokens.
+- Added context: 1,092 chars, approx. 275 prompt tokens, all from 1,016 chars of internal-history messages.
+- The first ego call is unchanged. The first superego review receives the ego draft as an internal user message. The ego revision receives `system,user,assistant,user` messages carrying the bounded ego/superego exchange.
+
+Interpretation: this is cheap enough to justify a small real comparison, but it is not a free performance win. It spends extra input context in exchange for a cleaner conversational representation of the internal deliberation. The next real test should look for fewer repeated revision loops, fewer parse/revision failures, and better final tutor quality per token.
+
+Initial real-run status: not run from the bare shell because `OPENROUTER_API_KEY` was missing.
+
+Update: `OPENROUTER_API_KEY` is available by loading `/Users/lmagee/Dev/machinespirits/machinespirits-eval/.env` with dotenv.
+
+Real comparison, cheap model:
+
+```bash
+PROBE_EGO_MAX_TOKENS=768 PROBE_SUPEREGO_MAX_TOKENS=768 \
+DOTENV_CONFIG_PATH=/Users/lmagee/Dev/machinespirits/machinespirits-eval/.env \
+node -r dotenv/config scripts/probe-internal-history-messages.js --real
+```
+
+Result: the `fast` / Nemotron probe was noisy. Both arms had ego JSON-format retries; the baseline eventually succeeded with 3 API calls, while treatment reached internal-history messages only after additional captured retry calls. Treatment showed much larger captured prompt shape (+34,701 chars / approx. +8,678 prompt tokens), but that is dominated by retry noise rather than a clean internal-history effect.
+
+Real comparison, cleaner model override:
+
+```bash
+PROBE_MODEL=openrouter.gpt-mini \
+PROBE_EGO_MAX_TOKENS=768 PROBE_SUPEREGO_MAX_TOKENS=768 \
+DOTENV_CONFIG_PATH=/Users/lmagee/Dev/machinespirits/machinespirits-eval/.env \
+node -r dotenv/config scripts/probe-internal-history-messages.js --real
+```
+
+Result:
+
+- Baseline: success, 3 API calls, 24.9s, 9,484 provider input tokens, 1,679 output tokens, cost 0.0050954.
+- Treatment: success, 3 API calls, 26.0s, 9,934 provider input tokens, 1,503 output tokens, cost 0.0036751.
+- Captured prompt-shape delta: +2,000 chars, approx. +500 prompt tokens, 1,938 chars of internal-history messages.
+
+Interpretation: the cleaner single-run comparison does not support internal-history messages as a performance fix. It adds input context and slightly increases latency. The lower treatment cost in this one run came from fewer output tokens, not from a cheaper prompt path, so it should not be treated as robust. If pursued further, evaluate quality-per-token or convergence/revision quality, not raw speed.
+
+## Quality / Stability / Revision Comparison
+
+Added a repeated paired comparison:
+
+```bash
+PROBE_RUNS=3 \
+PROBE_MODEL=openrouter.gpt-mini \
+PROBE_EGO_MAX_TOKENS=768 \
+PROBE_SUPEREGO_MAX_TOKENS=768 \
+DOTENV_CONFIG_PATH=/Users/lmagee/Dev/machinespirits/machinespirits-eval/.env \
+node -r dotenv/config scripts/compare-internal-history-quality.js --real
+```
+
+Artifacts:
+
+- `exports/internal-history-quality/2026-06-23T18-33-21-419Z-real.json`
+- `exports/internal-history-quality/2026-06-23T18-35-59-691Z-real.json`
+
+The first 3-pair run used the initial quality proxy:
+
+- Parse stability: both arms were clean, 0 parse warnings, 100% success.
+- Quality proxy: tied at 93.3 average.
+- Revision/convergence: baseline revised in 3/3; treatment revised in 2/3 and got 1/3 first-pass superego approvals.
+- Cost/latency: treatment was lower on average, but the difference was driven by the single first-pass approval, not a stable prompt-efficiency effect.
+
+Manual inspection showed the initial quality proxy missed unsupported specifics such as invented quiz IDs, subsections, timestamps, and vignette/probe details. The scorer was tightened to penalize invalid `x:y` identifiers and unsupported fine-grained specifics. The second 3-pair run used that stricter proxy:
+
+- Parse stability: both arms clean again, 0 parse warnings, 100% success.
+- Quality proxy: baseline 83.3, treatment 95.0; paired average delta +11.7.
+- Revision/convergence: both arms revised in 3/3; neither arm got a first-pass final approval.
+- Prompt budget: treatment added about 493 captured prompt tokens and about 1,923 internal-history chars on average.
+- Provider tokens/cost: treatment added about 451 input tokens, 40 output tokens, and 0.000192 cost on average.
+- Latency: treatment averaged about 1.9s lower in this small run, but this is not strong enough to call a speed improvement.
+
+Interpretation: internal-history messages did not hurt parse stability in the `gpt-mini` runs. There is weak evidence that they may help the revision loop produce fewer unsupported specifics under the stricter proxy, but manual spot-check still found unsupported specifics in both arms. This is not a performance fix. If retained, it should be evaluated as a quality-per-token tradeoff with a stronger quality judge and more scenarios.
+
+## Additional Judges / Scenario Probe
+
+Expanded `scripts/compare-internal-history-quality.js` to run three scenarios and blind paired judging:
+
+```bash
+PROBE_RUNS=2 \
+PROBE_JUDGES=openrouter.haiku,openrouter.gpt \
+PROBE_MODEL=openrouter.gpt-mini \
+PROBE_EGO_MAX_TOKENS=768 \
+PROBE_SUPEREGO_MAX_TOKENS=768 \
+PROBE_JUDGE_MAX_TOKENS=700 \
+DOTENV_CONFIG_PATH=/Users/lmagee/Dev/machinespirits/machinespirits-eval/.env \
+node -r dotenv/config scripts/compare-internal-history-quality.js --real
+```
+
+Artifact:
+
+- `exports/internal-history-quality/2026-06-23T20-18-21-502Z-real.json`
+
+Design:
+
+- Generation: `openrouter.gpt-mini`, profile `fast`, `maxRounds: 1`, ego/superego capped at 768 tokens.
+- Treatment: `internalHistory.surface: messages`, `scope: unified_exchange`, `window: 1`, `max_chars_per_message: 600`.
+- Scenarios: recognition/compliance retry, fraction-equivalence frustration, and gradient-descent pacing under over-advancement pressure.
+- Judges: blind A/B comparisons by `openrouter.haiku` and `openrouter.gpt`.
+
+Results:
+
+- Parse stability: both arms had 100% success and 0 parse warnings across 6 paired comparisons.
+- Blind judge preference: treatment won 8/12 comparisons, baseline won 2/12, and 2/12 were ties; treatment non-loss rate was 10/12.
+- Scenario pattern:
+  - Recognition retry: treatment 2 wins, baseline 1, tie 1; heuristic delta +15; treatment added about 499 input tokens.
+  - Fraction frustration: treatment 2 wins, baseline 1, tie 1; heuristic delta +3.5; treatment avoided revision in both runs and averaged lower input tokens because it got first-pass approvals.
+  - Gradient pacing: treatment won 4/4 judge comparisons; heuristic delta -2.5, but judges preferred the treatment's pacing and lower hallucination risk.
+- Revision/convergence: baseline got first-pass final approval in 1/6 runs; treatment got first-pass final approval in 4/6 runs. Average API calls dropped from 2.83 to 2.67.
+- Token/cost: average provider input delta was -200 tokens and average cost delta was -0.000416 per paired run, but this came from fewer/lighter revision loops. When the number of calls is the same, internal-history messages still add roughly 500 input tokens.
+- Hallucinated specifics noted by judges: baseline 17 unsupported-specific flags vs treatment 7.
+- Total run cost: about 0.0833 USD, including 0.0387 USD dialogue generation and 0.0446 USD judging.
+
+Caveat: judge numeric quality scores were not scale-stable; at least one judge mixed 0-10 and 0-100 scoring despite the JSON field names. Treat the winner/non-loss tallies and unsupported-specifics counts as the reliable judge signal. The script prompt and decision rule were tightened afterward to request 0-100 scores explicitly and gate on blind winner tallies.
+
+Decision:
+
+- Do not enable this by default from this evidence. The sample is intentionally small, and the mechanism is still another context consumer.
+- Keep it as an opt-in quality/convergence option for cases with a same-turn ego/superego revision loop, especially struggle/pacing cases where the superego critique can make the final ego call more grounded or avoid a revision call.
+- Do not describe it as a general performance fix. It can reduce latency/tokens only when it improves first-pass approval or shortens the revision output; otherwise it adds context.
+- Revisit only if a larger registered run preserves the pattern: parse stability non-worse, treatment non-loss rate >= 75% across independent judges, no scenario family where baseline clearly wins, and added input tokens stay bounded under the configured history cap.

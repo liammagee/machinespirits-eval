@@ -85,6 +85,7 @@ export async function generateSuggestions(context, config = {}) {
     superegoModel = null, // Override superego model for benchmarking
     disableSuperego = false, // Explicitly disable superego even if profile has one configured
     hyperparameters = {},
+    superegoHyperparameters = null,
     promptId = 'default',
     profileName = null,
     useDialogue = null,
@@ -99,6 +100,7 @@ export async function generateSuggestions(context, config = {}) {
     onStream = null, // Streaming callback for token-by-token progress
     conversationMode = 'single-prompt', // 'messages' for multi-turn message chains
     messageHistory = null, // External conversation chain (array of {role, content})
+    internalHistory = null, // Optional bounded ego/superego history as chat-style messages
   } = config;
 
   const startTime = Date.now();
@@ -135,6 +137,7 @@ export async function generateSuggestions(context, config = {}) {
         superegoModel, // Override superego model for benchmarking
         disableSuperego, // Explicitly disable superego even if profile has one configured
         hyperparameters, // Override hyperparameters (e.g., max_tokens for reasoning models)
+        superegoHyperparameters, // Override superego hyperparameters for bounded probes
         maxRounds: effectiveMaxRounds,
         superegoStrategy, // Pass through superego intervention strategy
         outputSize, // compact, normal, expanded - affects response verbosity
@@ -145,6 +148,7 @@ export async function generateSuggestions(context, config = {}) {
         onStream, // Streaming callback for token-by-token progress
         conversationMode, // 'messages' for multi-turn message chains
         messageHistory: messageHistory || context.messageHistory || null, // External conversation chain
+        internalHistory, // Optional internal ego/superego message transcript
         // Enable trace for transcript/expand mode to ensure complete logging
         trace: trace || dialogueEngine.isTranscriptMode() || dialogueEngine.isExpandMode(),
       }
