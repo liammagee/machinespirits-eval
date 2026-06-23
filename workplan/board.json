@@ -1,19 +1,19 @@
 {
-  "generated": "2026-06-23T14:49:59.007Z",
+  "generated": "2026-06-23T15:21:44.542Z",
   "counts": {
-    "total": 40,
+    "total": 41,
     "byStatus": {
       "triaged": 24,
       "blocked": 1,
       "dropped": 2,
-      "done": 13
+      "done": 14
     },
     "byType": {
       "research": 23,
       "experiment": 2,
       "infra": 8,
       "paper": 2,
-      "ops": 5
+      "ops": 6
     }
   },
   "items": [
@@ -795,6 +795,32 @@
         "paper",
         "provenance",
         "claim-audit"
+      ]
+    },
+    {
+      "id": "workplan-governance-checks-and-github-mirror",
+      "title": "Workplan governance checks and GitHub mirror",
+      "status": "done",
+      "type": "ops",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-23",
+      "updated": "2026-06-23",
+      "branch": "codex/ops-board-items",
+      "verification": "`npm run wp:check`, `npm run wp:test`, GitHub mirror dry-run, and `/board` Scriptorium smoke all passed before the branch was merged to main.",
+      "links": {
+        "items": [
+          "build-workplan-tooling",
+          "auto-drop-daily-routine"
+        ],
+        "notes": "workplan/README.md"
+      },
+      "tags": [
+        "workplan",
+        "ci",
+        "github",
+        "governance"
       ]
     },
     {
