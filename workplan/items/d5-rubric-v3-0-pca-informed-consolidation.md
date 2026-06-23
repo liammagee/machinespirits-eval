@@ -12,7 +12,15 @@ verification: Rubric v3.0 PCA-informed consolidation drafted in
   config/rubrics/v3.0/; calibration run; decision recorded in the paper or
   shelved with a reason.
 links:
-  notes: TODO.md
+  notes:
+    - TODO.md#D5
+    - notes/design-d5-rubric-v3-pca-consolidation.md
+  paper: §8.6
+claim_status: planned
+tags:
+  - rubric
+  - pca
+  - methods
 ---
 
-Open item from TODO §D5. Read the section there for detail; triage to decide if it's still live.
+TODO §D5 is a decision item, not a current-paper blocker: choose either empirical consolidation, a discriminant-validity demonstration, or shelving the v3.0 rubric work.

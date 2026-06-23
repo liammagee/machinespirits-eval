@@ -1,11 +1,12 @@
 <!doctype html>
 <!--
-  The development board. A techne rendering of TODO.md (the .html IS the source;
-  no build step). Design: assets/techne.css. Behaviour: assets/techne.js.
-  Genre: a navigable snapshot of the repo's long-horizon task board (TODO.md) as
-  of the dated stamp below. TODO.md remains the canonical design reference; this
-  page is a read-only, filterable view of it — what is open, what is closed with a
-  result, and what was ruled out by decision. It originates no empirical claims;
+  Archived development-board snapshot. A techne rendering of TODO.md as it stood
+  on the dated stamp below (the .html IS the source; no build step). Design:
+  assets/techne.css. Behaviour: assets/techne.js.
+  Current todo source of truth is workplan/items/ with generated views at
+  workplan/BOARD.md and workplan/board.json. This page is a historical,
+  read-only, filterable view of the older TODO archive — what was open, what was
+  closed with a result, and what was ruled out by decision. It originates no empirical claims;
   every result shown is a one-line digest of a TODO item whose detail and
   provenance live in TODO.md, the cited paper §, or the linked export/note.
   NOTE: A16 is shown by its true current status (closed null) — the TODO.md A16
@@ -22,7 +23,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="color-scheme" content="light dark" />
 <title>The development board · machine spirits</title>
-<meta name="description" content="A navigable, filterable snapshot of TODO.md — what's open, what's closed with a result, and what was ruled out by decision. Forty-eight items across six themes; seven still open." />
+<meta name="description" content="Archived navigable snapshot of TODO.md; current todos live in workplan/BOARD.md generated from workplan/items/." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Source+Serif+4:opsz,wght@8..60,200..900&family=JetBrains+Mono:wght@300..700&display=swap" />
@@ -54,11 +55,11 @@
   <section class="hero">
     <div class="hero__rune"><span>§</span> Development board · snapshot 2026-06-06 · rev. 2026-06-19</div>
     <h1 class="hero__h1">The board: <span class="em">open, closed, ruled out</span>.</h1>
-    <p class="hero__subtitle">A navigable view of <code>TODO.md</code> — the repo's long-horizon experimental and infrastructure list. Forty-eight items across six themes. Seven are still open; the rest are closed with a result or ruled out by decision.</p>
+    <p class="hero__subtitle">An archived navigable view of the older <code>TODO.md</code> roadmap. Current live todos now live in <code>workplan/items/</code>, with the generated board at <code>workplan/BOARD.md</code>.</p>
     <div class="hero__lede">
       <div>
         <p>Most of this board is <em>finished</em>. That is the point of keeping it visible: a closed experiment with a null result is not a dead entry, it is a fence — it tells you which move not to make again. The few <strong>open</strong> items are where the work actually is.</p>
-        <p>This is a read-only rendering of <code>TODO.md</code>; that file stays the canonical design reference. Here every item is a card you can filter by status or by theme. The companion notebooks cut the same material two other ways: the <a href="/story">story so far</a> is the chronology of the active adaptation arc, and <a href="/repertoire">three instruments</a> analyses what each measurement instrument actually found.</p>
+        <p>This is a read-only rendering of the archived <code>TODO.md</code> roadmap. It is no longer the working board. For current status, use <code>workplan/BOARD.md</code>; for edits, change <code>workplan/items/</code> and regenerate the board.</p>
       </div>
     </div>
   </section>
@@ -100,7 +101,7 @@
         </div>
         <div class="mr">
           <p class="note note--moss"><span class="note__lbl">Why keep the closed ones</span> Thirty-six of forty-eight entries are closed. The settled nulls are the most reusable part — they are the map of moves that don't pay.</p>
-          <p class="note note--ink"><span class="note__lbl">Other notes</span> Paper-2.0 / poetics work now lives as dated notes under <code>notes/poetics/</code> and <code>notes/</code>; there is no separate <code>notes/paper-2-0/BOARD.md</code> in this fork. This file is the older long-horizon arc.</p>
+          <p class="note note--ink"><span class="note__lbl">Current board</span> The single live todo board is <code>workplan/BOARD.md</code>, generated from <code>workplan/items/</code>. This file is only an older long-horizon snapshot.</p>
           <p class="note note--ochre"><span class="note__lbl">Snapshot caveat</span> Generated 2026-06-06. One known drift: <code>TODO.md</code>'s A16 header still reads "P2 next" — A16 has in fact closed null. Shown here by its true status.</p>
         </div>
       </div>
@@ -480,7 +481,7 @@
         </div>
         <div class="mr">
           <p class="note note--moss"><span class="note__lbl">Count</span> 48 items · <strong>7 open</strong> · 37 closed · 4 ruled out. Of the seven open, exactly one is CRITICAL (A1) and one is the active arc (A18).</p>
-          <p class="note note--ink"><span class="note__lbl">Source</span> Each card digests one <code>TODO.md</code> entry. The file is the canonical record; this is a view. Empirical numbers trace to the cited paper § or export.</p>
+          <p class="note note--ink"><span class="note__lbl">Source</span> Each card digests one archived <code>TODO.md</code> entry. The current working record is <code>workplan/BOARD.md</code> generated from <code>workplan/items/</code>. Empirical numbers trace to the cited paper § or export.</p>
           <p class="note note--ochre"><span class="note__lbl">Reading the nulls</span> A3, A4, A12, A16 are closed <em>nulls</em>. They are shown green (closed) because a settled null is a result — it fences off a move.</p>
         </div>
       </div>
@@ -493,7 +494,7 @@
         <div class="body">
           <p class="s__kicker">Since this snapshot — work that isn't on this board</p>
           <h2 class="s__h">What moved after 2026-06-06.</h2>
-          <p>This board mirrors <code>TODO.md</code>, whose A/B/C/D/E/F items have not changed status since the snapshot (beyond the A15 closure corrected above). But the project's most active recent work is <em>not</em> tracked as TODO items — it lives in the paper and the dated <code>notes/poetics/</code> files. Two threads, both folded into <code>paper-full-2.0.md</code> (now v3.0.164):</p>
+          <p>This archived board mirrors the old <code>TODO.md</code> snapshot, whose A/B/C/D/E/F items later moved into the workplan. The project's live work is now tracked in <code>workplan/items/</code>; paper and poetics notes remain provenance and rationale. Two threads, both folded into <code>paper-full-2.0.md</code> (now v3.0.164):</p>
           <div class="claim">
             <span class="claim__no">§6.13</span>
             <h3 class="claim__h">The dramatic-derivation arc — can the tutor govern its own conduct? <span class="chip chip--moss">closed, bounded</span></h3>
@@ -510,7 +511,7 @@
           </div>
         </div>
         <div class="mr">
-          <p class="note note--moss"><span class="note__lbl">Why not on the board</span> These are paper sections and dated lab notes, not long-horizon TODO items. The board stays a faithful mirror of <code>TODO.md</code>; the paper is the source of truth for every number above.</p>
+          <p class="note note--moss"><span class="note__lbl">Why not on this snapshot</span> These are paper sections and dated lab notes, not entries in the archived TODO snapshot. Current todo tracking belongs in <code>workplan/items/</code>; the paper is the source of truth for every number above.</p>
           <p class="note note--ochre"><span class="note__lbl">Scope</span> Both threads are <em>bounded</em> — single-stack attribution, formal (not mentalistic) verdicts, geometry-conditional guards, simulated learners. The throughline holds: what helps is whatever signal the conduct can act on, not richer inference about the learner.</p>
         </div>
       </div>
@@ -564,7 +565,7 @@
   </div><!-- /shell -->
 
   <footer class="colophon">
-    <p><span class="label">Colophon</span> &nbsp; A read-only rendering of <code>TODO.md</code>, dated 2026-06-06. The source file is the canonical design reference; this view originates no claims, and every result digests one TODO entry whose detail lives in <code>docs/research/paper-full-2.0.md</code>, the cited §, or the linked export. Companion notebooks: the <a href="/story">story so far</a> and <a href="/repertoire">three instruments</a>. Typeset in Fraunces, Source Serif 4, JetBrains Mono. Design: <code>assets/techne.css</code>. Behaviour: <code>assets/techne.js</code>.</p>
+    <p><span class="label">Colophon</span> &nbsp; A read-only archived rendering of <code>TODO.md</code>, dated 2026-06-06. Current todo truth lives in <code>workplan/items/</code> and the generated <code>workplan/BOARD.md</code>. This view originates no claims, and every result digests one TODO entry whose detail lives in <code>docs/research/paper-full-2.0.md</code>, the cited §, or the linked export. Companion notebooks: the <a href="/story">story so far</a> and <a href="/repertoire">three instruments</a>. Typeset in Fraunces, Source Serif 4, JetBrains Mono. Design: <code>assets/techne.css</code>. Behaviour: <code>assets/techne.js</code>.</p>
   </footer>
 
 </main>
