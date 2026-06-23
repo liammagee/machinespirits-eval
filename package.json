@@ -91,6 +91,7 @@
     "mermaid:html": "node scripts/render-mermaid-html.js",
     "drama:generate": "node scripts/drama-generator.js",
     "drama:render": "node scripts/render-light-drama-dialog-html.js",
+    "drama:showcase": "node scripts/build-drama-showcase.js",
     "derivation:smoke": "node scripts/run-derivation-smoke.js",
     "derivation:test": "node --test tests/dramaticDerivation.test.js tests/dramaticDerivationPhase1.test.js tests/dramaticDerivationCritic.test.js tests/dramaticDerivationCorruption.test.js tests/dramaticDerivationReplay.test.js",
     "derivation:lint": "node scripts/lint-derivation-world.js",
