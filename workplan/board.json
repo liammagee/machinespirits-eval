@@ -1,17 +1,17 @@
 {
-  "generated": "2026-06-23T15:36:20.823Z",
+  "generated": "2026-06-23T16:08:02.850Z",
   "counts": {
-    "total": 41,
+    "total": 42,
     "byStatus": {
-      "triaged": 23,
+      "triaged": 22,
       "blocked": 1,
       "dropped": 2,
-      "done": 15
+      "done": 17
     },
     "byType": {
       "research": 23,
       "experiment": 2,
-      "infra": 8,
+      "infra": 9,
       "paper": 2,
       "ops": 6
     }
@@ -143,21 +143,6 @@
     {
       "id": "from-solver-to-tutor-evaluating-the-pedagogical-intelligence",
       "title": "From Solver to Tutor: Evaluating the Pedagogical Intelligence of LLMs with KMP-Bench",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-15-research-roundup.html"
-      }
-    },
-    {
-      "id": "geist-in-the-machine-simulating-recognition-and-inner-dialog",
-      "title": "Geist in the Machine: Simulating Recognition and Inner Dialogue in AI-Mediated Teaching and Research",
       "status": "triaged",
       "type": "research",
       "priority": "P2",
@@ -788,6 +773,32 @@
       ]
     },
     {
+      "id": "daily-roundup-self-work-exclusion",
+      "title": "Exclude own papers from daily research roundup captures",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-06-23",
+      "updated": "2026-06-23",
+      "verification": "scripts/workplan.js ingest --daily skips arXiv 2603.10450 via a regression fixture; npm run wp:test and npm run wp:check pass.",
+      "links": {
+        "notes": [
+          "notes/research-plans/2026-06-20-research-plan.html",
+          "notes/daily-notes/2026-06-15-research-roundup.html"
+        ],
+        "items": "geist-in-the-machine-simulating-recognition-and-inner-dialog",
+        "arxiv": "https://arxiv.org/abs/2603.10450"
+      },
+      "tags": [
+        "daily-routine",
+        "self-citation",
+        "workplan-ingest"
+      ],
+      "branch": "codex/geist-positioning"
+    },
+    {
       "id": "g2-6-4-recognition-effect-sizes-reproducible-once-the-column",
       "title": "G2. §6.4 recognition effect sizes — reproducible once the column/judge/run are stated",
       "status": "done",
@@ -810,6 +821,34 @@
         "paper",
         "provenance",
         "claim-audit"
+      ]
+    },
+    {
+      "id": "geist-in-the-machine-simulating-recognition-and-inner-dialog",
+      "title": "Geist in the Machine: Simulating Recognition and Inner Dialogue in AI-Mediated Teaching and Research",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-23",
+      "verification": "Confirmed arXiv 2603.10450 is authored by Liam Magee; Paper 2.0 already cites the companion study via @magee2026geist, so no manuscript edit is required.",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-06-15-research-roundup.html",
+          "notes/research-plans/2026-06-20-research-plan.html"
+        ],
+        "paper": "docs/research/paper-full-2.0.md",
+        "atlas": "docs/research/references.bib",
+        "arxiv": "https://arxiv.org/abs/2603.10450",
+        "items": "daily-roundup-self-work-exclusion"
+      },
+      "branch": "codex/geist-positioning",
+      "tags": [
+        "paper-positioning",
+        "self-citation",
+        "roundup"
       ]
     },
     {

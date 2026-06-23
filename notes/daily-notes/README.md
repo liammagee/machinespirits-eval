@@ -31,7 +31,7 @@ looked?" unanswerable.
 
 2. **Non-overlapping windows (delta rule).** Each roundup covers
    `(previous roundup's end, today]`. Windows **tile**: no gaps, no overlaps.
-   State the window in a machine-readable header comment (rule 4).
+   State the window in a machine-readable header comment (rule 5).
 
 3. **Dedup by arxiv ID (hard rule).** No arxiv ID appears in two roundups.
    Before publishing, compute the IDs already covered in the last 30 days and
@@ -47,14 +47,20 @@ looked?" unanswerable.
    the new note **as a back-reference** ("revisits 2606.xxxxx, first noted
    YYYY-MM-DD"), not as a fresh entry.
 
-4. **Machine-readable header.** First line inside `<body>` (or an HTML comment
+4. **Exclude our own work as external work.** Roundups may mention Liam Magee /
+   Machine Spirits papers only as back-references or project provenance, not as
+   fresh external-work entries or workplan captures. The ingest path also skips
+   known self-work IDs such as `2603.10450` and entries whose author/project text
+   identifies them as our own.
+
+5. **Machine-readable header.** First line inside `<body>` (or an HTML comment
    in `<head>`) carries the provenance the rules above depend on:
 
    ```html
    <!-- meta: date=2026-06-09 window=(2026-06-08,2026-06-09] arxiv=2606.00820,2606.01736,... generator=deep-research/claude-sonnet-4-6 -->
    ```
 
-5. **The folder is the index.** Sorted by filename date, windows tile the
+6. **The folder is the index.** Sorted by filename date, windows tile the
    timeline with no gaps or overlaps. No separate index file to keep in sync.
 
 ## Auto-drop into the workplan board
@@ -64,8 +70,9 @@ Each roundup also feeds the project board automatically. When a roundup PR opens
 --daily`, which parses every `<div class="paper">` entry and drops its **Project
 relevance** note into `workplan/inbox/` as one capture per paper (file
 `workplan/inbox/<date>-arxiv-<id>.md`, the paper's flag carried in the body). It
-is **deduped by arXiv id** — the same key this folder dedupes on — so overlapping
-windows and re-runs never double-capture. The captures are committed to the
+is **deduped by arXiv id** and filtered for self-work before capture — the same
+keys this folder uses — so overlapping windows, re-runs, and self-citation
+back-references never double-capture. The captures are committed to the
 roundup's own PR branch, so they merge with the roundup. Triage them with
 `node scripts/workplan.js list` (see `workplan/README.md`).
 
