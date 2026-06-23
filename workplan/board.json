@@ -1,12 +1,13 @@
 {
-  "generated": "2026-06-23T16:27:13.223Z",
+  "generated": "2026-06-23T16:56:21.650Z",
   "counts": {
     "total": 42,
     "byStatus": {
-      "triaged": 21,
+      "triaged": 20,
       "blocked": 1,
       "dropped": 2,
-      "done": 18
+      "done": 18,
+      "active": 1
     },
     "byType": {
       "research": 23,
@@ -168,21 +169,6 @@
       "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
       "links": {
         "notes": "notes/daily-notes/2026-06-18-research-roundup.html"
-      }
-    },
-    {
-      "id": "not-all-flips-are-conformity-decomposing-stance-convergence",
-      "title": "Not All Flips Are Conformity: Decomposing Stance Convergence in Multi-Agent LLM Debate",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-09-research-roundup.html"
       }
     },
     {
@@ -407,6 +393,22 @@
         "taxonomy",
         "orientation-family"
       ]
+    },
+    {
+      "id": "not-all-flips-are-conformity-decomposing-stance-convergence",
+      "title": "Not All Flips Are Conformity: Decomposing Stance Convergence in Multi-Agent LLM Debate",
+      "status": "active",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-23",
+      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-09-research-roundup.html"
+      },
+      "branch": "codex/not-all-flips-conformity"
     },
     {
       "id": "a1-human-learner-validation",

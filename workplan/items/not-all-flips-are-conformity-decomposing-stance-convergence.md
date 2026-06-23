@@ -2,18 +2,19 @@
 id: not-all-flips-are-conformity-decomposing-stance-convergence
 title: "Not All Flips Are Conformity: Decomposing Stance Convergence in
   Multi-Agent LLM Debate"
-status: triaged
+status: active
 type: research
 priority: P2
-owner: unassigned
+owner: codex
 source: daily-routine
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-06-23
 verification: Paper read; a one-line note records whether it changes our rubric,
   prompts, architecture or eval design; this item is then closed or spawns a
   concrete task.
 links:
   notes: notes/daily-notes/2026-06-09-research-roundup.html
+branch: codex/not-all-flips-conformity
 ---
 
 arXiv:2606.00820 [UNBLOCK] — surfaced by the daily routine (2026-06-09-research-roundup.html).
