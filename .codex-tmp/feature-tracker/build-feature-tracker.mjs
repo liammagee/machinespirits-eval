@@ -1,11 +1,14 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { SpreadsheetFile, Workbook } from '@oai/artifact-tool';
 
-const ROOT = '/Users/lmagee/Dev/machinespirits/machinespirits-eval-derivation';
+const HERE = path.dirname(fileURLToPath(import.meta.url));
+const ROOT = path.resolve(HERE, '..', '..');
 const outputDir = path.join(ROOT, 'outputs', 'feature-user-story-tracker');
 const outputPath = path.join(outputDir, 'feature-user-story-tracker.xlsx');
-const today = '2026-06-22';
+const today = process.env.FEATURE_TRACKER_DATE || '2026-06-23';
+const smokeDate = process.env.FEATURE_TRACKER_SMOKE_DATE || '2026-06-22';
 
 const columns = [
   'Story ID',
@@ -889,9 +892,121 @@ const rows = [
     '',
     '',
   ],
+  [
+    'US-055',
+    'Scriptorium UX QA',
+    'UX smoke safety net',
+    'As a maintainer, I want a no-spend Scriptorium UX smoke command so responsive and accessibility regressions are caught before shell work ships.',
+    'The command probes the core dashboard surfaces at desktop and mobile sizes for HTTP render, console errors, horizontal overflow, duplicate landmarks, unlabeled controls, touch-target risks, and emits a report with screenshots.',
+    'workplan/items/scriptorium-ux-safety-net.md; notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md',
+    'Tracked workplan item',
+    'Not tested',
+    'Implement and run the planned no-spend Scriptorium UX smoke gate; expected first baseline can fail before fixes.',
+    '',
+    '',
+    'P0',
+    'codex',
+    'Active board item on claude/electron-desktop-app.',
+  ],
+  [
+    'US-056',
+    'Scriptorium Shell',
+    'Responsive shell and navigation',
+    'As a dashboard user, I want one responsive Scriptorium shell with clear navigation, current context, and readable layouts so every surface feels like one coherent application.',
+    'The shell provides stable nav, breadcrumbs/context, mobile drawer behavior, keyboard-visible focus, consistent rail/header treatment, and no horizontal overflow across the dashboard routes.',
+    'workplan/items/scriptorium-responsive-shell-navigation.md; notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md',
+    'Tracked workplan item',
+    'Not tested',
+    'Run the Scriptorium UX smoke gate across desktop and mobile plus focused browser checks on navigation and shell state.',
+    '',
+    '',
+    'P0',
+    'unassigned',
+    '',
+  ],
+  [
+    'US-057',
+    'Scriptorium Control Room',
+    'First-run data health and onboarding',
+    'As an operator, I want the dashboard home page to explain what is ready, what data is missing, and what action to take next so first-run use does not require repo memory.',
+    'Home/readiness views show server health, data availability, empty-state recovery paths, project board status, and next actions without needing CLI archaeology.',
+    'workplan/items/scriptorium-control-room-first-run.md; notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md',
+    'Tracked workplan item',
+    'Not tested',
+    'Run no-data and normal-data browser smoke cases, then verify empty states and recovery links.',
+    '',
+    '',
+    'P0',
+    'unassigned',
+    '',
+  ],
+  [
+    'US-058',
+    'Scriptorium Evidence',
+    'Scripts, proof, and replay workbenches',
+    'As a researcher, I want browse, proof, replay, ontology, and transcript surfaces organized as evidence workbenches so I can inspect artifacts without guessing routes.',
+    'Evidence surfaces expose filters, provenance, empty states, artifact links, route-specific actions, and stable comparison/replay affordances in a shared interaction pattern.',
+    'workplan/items/scriptorium-evidence-workbenches.md; notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md',
+    'Tracked workplan item',
+    'Not tested',
+    'Run evidence-surface browser smoke and inspect browse/derivation/replay/ontology affordances with representative local artifacts.',
+    '',
+    '',
+    'P1',
+    'unassigned',
+    '',
+  ],
+  [
+    'US-059',
+    'Scriptorium Creation',
+    'Compose, launch, and job monitor flows',
+    'As a creator, I want compose/live-compose/generation flows to make cost class, validation, launch state, and job progress explicit so I can safely create artifacts.',
+    'Creation surfaces distinguish no-spend from paid actions, validate inputs before launch, expose job state and recovery, and keep generated outputs linked back to board/workbench context.',
+    'workplan/items/scriptorium-creation-flows.md; notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md',
+    'Tracked workplan item',
+    'Not tested',
+    'Run no-spend compose/live-compose smoke, then verify validation, disabled states, job status, and artifact links.',
+    '',
+    '',
+    'P1',
+    'unassigned',
+    '',
+  ],
+  [
+    'US-060',
+    'Scriptorium Review',
+    'Review queue and workplan loop',
+    'As a maintainer, I want dashboard review surfaces and the workplan board to form one loop so issues discovered in Scriptorium can become tracked work without duplication.',
+    'Review and board pages surface active/triaged/blocked work, show linked evidence, preserve item ownership/verification, and offer clear handoff paths back to CLI/item files.',
+    'workplan/items/scriptorium-review-workplan-loop.md; notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md; workplan/README.md',
+    'Tracked workplan item',
+    'Not tested',
+    'Run workplan validation plus dashboard board/review browser smoke and verify linked evidence is reachable.',
+    '',
+    '',
+    'P1',
+    'unassigned',
+    '',
+  ],
+  [
+    'US-061',
+    'Scriptorium Static/Desktop',
+    'Static tools and desktop UX parity',
+    'As a desktop user, I want static explanatory tools and the Electron wrapper to preserve the same UX quality as the web dashboard so local desktop use is not a second-class path.',
+    'Static tools and desktop embeds keep shared styling, predictable navigation, readable layouts, asset integrity, and desktop-specific store/path behavior in sync with the web stack.',
+    'workplan/items/scriptorium-static-tools-desktop-quality.md; notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md; desktop/ARCHITECTURE.md',
+    'Tracked workplan item',
+    'Not tested',
+    'Run static-page visual smoke plus npm run desktop:test after UX changes touch shared routes/assets.',
+    '',
+    '',
+    'P2',
+    'unassigned',
+    '',
+  ],
 ];
 
-const statusValues = ['Implemented - needs behavior test', 'Tested - pass', 'Tested - defects found', 'Fix in progress', 'Fixed - needs retest', 'Blocked', 'Out of scope / parked'];
+const statusValues = ['Tracked workplan item', 'Implemented - needs behavior test', 'Tested - pass', 'Tested - defects found', 'Fix in progress', 'Fixed - needs retest', 'Blocked', 'Out of scope / parked'];
 const testValues = ['Not tested', 'Smoke passed', 'Behavior passed', 'Defect found', 'Blocked', 'Retest passed'];
 const priorityValues = ['P0', 'P1', 'P2', 'P3'];
 
@@ -908,7 +1023,7 @@ await fs.mkdir(outputDir, { recursive: true });
 let smokeSummary = null;
 let smokeResults = [];
 try {
-  const smokePath = path.join(outputDir, `test-results-${today}.json`);
+  const smokePath = path.join(outputDir, `test-results-${smokeDate}.json`);
   const parsed = JSON.parse(await fs.readFile(smokePath, 'utf8'));
   smokeSummary = parsed.summary || null;
   smokeResults = Array.isArray(parsed.results) ? parsed.results : [];
@@ -1004,7 +1119,108 @@ const defectRetestRows = [
   ],
 ];
 
-const testingRows = [...smokeTestingRows, ...defectRetestRows];
+const plannedTestingRows = [
+  [
+    'PLAN-001',
+    'US-055',
+    'Scriptorium UX smoke safety net',
+    'Implement the no-spend smoke gate and run it against desktop/mobile core dashboard routes.',
+    'Report lists route availability, console/page errors, overflow, landmark, label, and touch-target findings with screenshots.',
+    'Planned from active workplan item; not executed yet.',
+    'Not run',
+    '',
+    'N/A',
+    'Not retested',
+    'workplan/items/scriptorium-ux-safety-net.md',
+    today,
+  ],
+  [
+    'PLAN-002',
+    'US-056',
+    'Responsive shell and navigation',
+    'Run the smoke gate and focused browser checks on shell nav, breadcrumbs/current context, keyboard focus, and mobile drawer behavior.',
+    'No horizontal overflow; current location is clear; focus and mobile navigation are usable.',
+    'Planned from Scriptorium UX roadmap.',
+    'Not run',
+    '',
+    'N/A',
+    'Not retested',
+    'workplan/items/scriptorium-responsive-shell-navigation.md',
+    today,
+  ],
+  [
+    'PLAN-003',
+    'US-057',
+    'Control room first-run readiness',
+    'Exercise home/readiness pages with normal and intentionally sparse local data.',
+    'The UI names missing data, next actions, and safe recovery paths without relying on route memory.',
+    'Planned from Scriptorium UX roadmap.',
+    'Not run',
+    '',
+    'N/A',
+    'Not retested',
+    'workplan/items/scriptorium-control-room-first-run.md',
+    today,
+  ],
+  [
+    'PLAN-004',
+    'US-058',
+    'Evidence workbench routes',
+    'Run browser smoke on browse, derivation, replay, ontology/proof, and transcript evidence surfaces with local artifacts.',
+    'Each workbench exposes filters, provenance, empty states, and artifact links consistently.',
+    'Planned from Scriptorium UX roadmap.',
+    'Not run',
+    '',
+    'N/A',
+    'Not retested',
+    'workplan/items/scriptorium-evidence-workbenches.md',
+    today,
+  ],
+  [
+    'PLAN-005',
+    'US-059',
+    'Creation flow launch safety',
+    'Run no-spend compose/live-compose checks and inspect validation, disabled states, cost labels, job state, and output links.',
+    'Creation flows make cost class and launch state explicit before any paid/model-backed action.',
+    'Planned from Scriptorium UX roadmap.',
+    'Not run',
+    '',
+    'N/A',
+    'Not retested',
+    'workplan/items/scriptorium-creation-flows.md',
+    today,
+  ],
+  [
+    'PLAN-006',
+    'US-060',
+    'Review queue to workplan loop',
+    'Validate workplan data, load board/review surfaces, and verify linked evidence/verification fields remain reachable.',
+    'Board/review views reflect item status, ownership, verification, and links without duplicating source-of-truth item content.',
+    'Planned from Scriptorium UX roadmap.',
+    'Not run',
+    '',
+    'N/A',
+    'Not retested',
+    'workplan/items/scriptorium-review-workplan-loop.md',
+    today,
+  ],
+  [
+    'PLAN-007',
+    'US-061',
+    'Static and desktop UX parity',
+    'Run static-page visual smoke and npm run desktop:test after shared UX changes.',
+    'Static tools and Electron keep shared styling, asset integrity, navigation, and writable-store behavior aligned with web routes.',
+    'Planned from Scriptorium UX roadmap.',
+    'Not run',
+    '',
+    'N/A',
+    'Not retested',
+    'workplan/items/scriptorium-static-tools-desktop-quality.md',
+    today,
+  ],
+];
+
+const testingRows = [...smokeTestingRows, ...defectRetestRows, ...plannedTestingRows];
 
 const workbook = Workbook.create();
 const stories = workbook.worksheets.add('Feature Stories');
@@ -1112,11 +1328,12 @@ summary.getRange('A1').format = {
   fill: '#1F4E5F',
   font: { bold: true, color: '#FFFFFF', size: 16 },
 };
-summary.getRange('A3:B14').values = [
+summary.getRange('A3:B15').values = [
   ['Generated', today],
   ['Canonical workbook path', outputPath],
-  ['Source scope', 'Routes, public UIs, package scripts, README, CLAUDE/AGENTS guidance'],
+  ['Source scope', 'Routes, public UIs, package scripts, workplan items, README, CLAUDE/AGENTS guidance'],
   ['Total stories', rows.length],
+  ['Tracked workplan item', null],
   ['Implemented - needs behavior test', null],
   ['Tested - pass', null],
   ['Defects found', null],
@@ -1126,10 +1343,11 @@ summary.getRange('A3:B14').values = [
   ['Smoke failed', smokeSummary?.failed || 0],
   ['Smoke blocked', smokeSummary?.blocked || 0],
 ];
-summary.getRange('B7').formulas = [[`=COUNTIF('Feature Stories'!G2:G${rows.length + 1},"Implemented - needs behavior test")`]];
-summary.getRange('B8').formulas = [[`=COUNTIF('Feature Stories'!G2:G${rows.length + 1},"Tested - pass")`]];
-summary.getRange('B9').formulas = [[`=COUNTIF('Feature Stories'!G2:G${rows.length + 1},"Tested - defects found")`]];
-summary.getRange('B10').formulas = [[`=COUNTIF('Feature Stories'!G2:G${rows.length + 1},"Blocked")`]];
+summary.getRange('B7').formulas = [[`=COUNTIF('Feature Stories'!G2:G${rows.length + 1},"Tracked workplan item")`]];
+summary.getRange('B8').formulas = [[`=COUNTIF('Feature Stories'!G2:G${rows.length + 1},"Implemented - needs behavior test")`]];
+summary.getRange('B9').formulas = [[`=COUNTIF('Feature Stories'!G2:G${rows.length + 1},"Tested - pass")`]];
+summary.getRange('B10').formulas = [[`=COUNTIF('Feature Stories'!G2:G${rows.length + 1},"Tested - defects found")`]];
+summary.getRange('B11').formulas = [[`=COUNTIF('Feature Stories'!G2:G${rows.length + 1},"Blocked")`]];
 summary.getRange('D3:E8').values = [
   ['Priority', 'Count'],
   ['P0', null],
@@ -1141,12 +1359,12 @@ summary.getRange('D3:E8').values = [
 summary.getRange('E4').formulas = [[`=COUNTIF('Feature Stories'!L2:L${rows.length + 1},D4)`]];
 summary.getRange('E4:E7').fillDown();
 summary.getRange('E8').formulas = [[`=COUNTBLANK('Feature Stories'!L2:L${rows.length + 1})`]];
-summary.getRange('A3:B14').format = {
+summary.getRange('A3:B15').format = {
   font: { name: 'Aptos', size: 10 },
   wrapText: true,
   borders: { preset: 'outside', style: 'thin', color: '#A8B6BE' },
 };
-summary.getRange('A3:A14').format = { fill: '#EAF1F4', font: { bold: true } };
+summary.getRange('A3:A15').format = { fill: '#EAF1F4', font: { bold: true } };
 summary.getRange('D3:E8').format = {
   font: { name: 'Aptos', size: 10 },
   borders: { preset: 'outside', style: 'thin', color: '#A8B6BE' },
@@ -1162,7 +1380,8 @@ for (const [col, width] of [
 }
 
 defs.getRange('A1:D1').values = [['Type', 'Value', 'Meaning', 'Next Action']];
-defs.getRange('A2:D16').values = [
+defs.getRange('A2:D17').values = [
+  ['Current Status', 'Tracked workplan item', 'Work is captured in workplan/items with verification criteria, but implementation or behavior testing has not yet been completed.', 'Implement the linked workplan item, then run/update behavior tests.'],
   ['Current Status', 'Implemented - needs behavior test', 'Code surface exists and expected behavior was derived from evidence, but no current behavior test has been run in this goal.', 'Run the test method and update Test Status.'],
   ['Current Status', 'Tested - pass', 'Behavior was tested and matched expected behavior.', 'Keep evidence link/command in Testing Log.'],
   ['Current Status', 'Tested - defects found', 'Behavior was tested and an error or UX issue was observed.', 'Log defect, fix, and retest.'],
@@ -1179,12 +1398,12 @@ defs.getRange('A2:D16').values = [
   ['Priority', 'P1', 'Important research/operator workflow.', 'Test after P0.'],
   ['Priority', 'P2/P3', 'Reference, static, or lower-risk surface.', 'Batch smoke tests.'],
 ];
-defs.tables.add('A1:D16', true, 'StatusDefinitions');
+defs.tables.add('A1:D17', true, 'StatusDefinitions');
 defs.getRange('A1:D1').format = {
   fill: '#1F4E5F',
   font: { bold: true, color: '#FFFFFF' },
 };
-defs.getRange('A1:D16').format = {
+defs.getRange('A1:D17').format = {
   font: { name: 'Aptos', size: 10 },
   wrapText: true,
   verticalAlignment: 'Top',
@@ -1198,15 +1417,51 @@ for (const [col, width] of [
   setWidth(defs, col, width);
 }
 
-const inspectStories = await workbook.inspect({
-  kind: 'table',
-  range: 'Feature Stories!A1:N8',
-  include: 'values,formulas',
-  tableMaxRows: 8,
-  tableMaxCols: 14,
-  maxChars: 5000,
-});
-console.log(inspectStories.ndjson);
+const inspectSections = [];
+for (const inspectRequest of [
+  {
+    kind: 'workbook,sheet,table',
+    tableMaxRows: 6,
+    tableMaxCols: 8,
+    tableMaxCellChars: 80,
+    maxChars: 10000,
+  },
+  {
+    kind: 'table',
+    range: `Feature Stories!A1:N${rows.length + 1}`,
+    include: 'values,formulas',
+    tableMaxRows: rows.length + 1,
+    tableMaxCols: 14,
+    maxChars: 200000,
+  },
+  {
+    kind: 'table',
+    range: `Testing Log!A1:L${testingRows.length + 1}`,
+    include: 'values,formulas',
+    tableMaxRows: testingRows.length + 1,
+    tableMaxCols: 12,
+    maxChars: 180000,
+  },
+  {
+    kind: 'table',
+    range: 'Coverage Summary!A1:E15',
+    include: 'values,formulas',
+    tableMaxRows: 15,
+    tableMaxCols: 5,
+    maxChars: 20000,
+  },
+  {
+    kind: 'table',
+    range: 'Status Definitions!A1:D17',
+    include: 'values,formulas',
+    tableMaxRows: 17,
+    tableMaxCols: 4,
+    maxChars: 20000,
+  },
+]) {
+  const inspection = await workbook.inspect(inspectRequest);
+  if (inspection.ndjson.trim()) inspectSections.push(inspection.ndjson.trim());
+}
 
 const errors = await workbook.inspect({
   kind: 'match',
@@ -1214,11 +1469,20 @@ const errors = await workbook.inspect({
   options: { useRegex: true, maxResults: 100 },
   summary: 'final formula error scan',
 });
-console.log(errors.ndjson);
+if (errors.ndjson.trim()) inspectSections.push(errors.ndjson.trim());
+await fs.writeFile(path.join(outputDir, 'feature-user-story-tracker.xlsx.inspect.ndjson'), `${inspectSections.join('\n')}\n`);
 
-const preview = await workbook.render({ sheetName: 'Feature Stories', range: 'A1:N16', scale: 1, format: 'png' });
-await fs.writeFile(path.join(outputDir, 'feature-stories-preview.png'), new Uint8Array(await preview.arrayBuffer()));
+for (const spec of [
+  ['Feature Stories', `A50:N${rows.length + 1}`, 'feature-stories-preview.png'],
+  ['Testing Log', `A${Math.max(1, testingRows.length - 12)}:L${testingRows.length + 1}`, 'testing-log-preview.png'],
+  ['Coverage Summary', 'A1:H15', 'coverage-summary-preview.png'],
+  ['Status Definitions', 'A1:D17', 'status-definitions-preview.png'],
+]) {
+  const [sheetName, range, fileName] = spec;
+  const preview = await workbook.render({ sheetName, range, scale: 1, format: 'png' });
+  await fs.writeFile(path.join(outputDir, fileName), new Uint8Array(await preview.arrayBuffer()));
+}
 
 const xlsx = await SpreadsheetFile.exportXlsx(workbook);
 await xlsx.save(outputPath);
-console.log(outputPath);
+console.log(JSON.stringify({ outputPath, stories: rows.length, testingRows: testingRows.length, smokeDate, generated: today }));

@@ -1,14 +1,16 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 
-const ROOT = '/Users/lmagee/Dev/machinespirits/machinespirits-eval-derivation';
+const HERE = path.dirname(fileURLToPath(import.meta.url));
+const ROOT = process.env.FEATURE_TRACKER_ROOT || path.resolve(HERE, '..', '..');
 const BASE_URL = process.env.BASE_URL || 'http://127.0.0.1:3811';
 const ADMIN_TOKEN = process.env.PILOT_ADMIN_TOKEN || 'codex-smoke';
+const today = process.env.FEATURE_TRACKER_DATE || new Date().toISOString().slice(0, 10);
 const outDir = path.join(ROOT, 'outputs', 'feature-user-story-tracker');
-const outPath = path.join(outDir, 'test-results-2026-06-22.json');
-const today = '2026-06-22';
+const outPath = path.join(outDir, `test-results-${today}.json`);
 const chromePath = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 
 const results = [];
