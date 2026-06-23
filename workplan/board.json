@@ -1,11 +1,11 @@
 {
-  "generated": "2026-06-23T02:07:28.619Z",
+  "generated": "2026-06-23T05:48:00.423Z",
   "counts": {
     "total": 33,
     "byStatus": {
-      "triaged": 29,
+      "triaged": 28,
       "blocked": 1,
-      "done": 2,
+      "done": 3,
       "active": 1
     },
     "byType": {
@@ -88,21 +88,6 @@
         "navigation",
         "mobile"
       ]
-    },
-    {
-      "id": "g5-h2-per-session-slope-p-0-032-is-a-wrong-p-value",
-      "title": "G5. § H2 per-session slope p=0.032 is a wrong p-value",
-      "status": "triaged",
-      "type": "paper",
-      "priority": "P1",
-      "owner": "unassigned",
-      "source": "todo",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "The per-session slope p-value is recomputed correctly; the paper text is fixed and provable-discourse re-checks the claim.",
-      "links": {
-        "notes": "TODO.md"
-      }
     },
     {
       "id": "scriptorium-evidence-workbenches",
@@ -589,6 +574,21 @@
         "tooling",
         "meta"
       ]
+    },
+    {
+      "id": "g5-h2-per-session-slope-p-0-032-is-a-wrong-p-value",
+      "title": "G5. § H2 per-session slope p=0.032 is a wrong p-value",
+      "status": "done",
+      "type": "paper",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "todo",
+      "created": "2026-06-22",
+      "updated": "2026-06-23",
+      "verification": "The per-session slope p-value is recomputed correctly; the paper text is fixed and provable-discourse re-checks the claim.",
+      "links": {
+        "notes": "TODO.md"
+      }
     },
     {
       "id": "auto-drop-daily-routine",
