@@ -71,6 +71,15 @@ import {
   getLectureContent as liveGetLectureContent,
   LIVE_VOCAB,
 } from '../services/poetics/liveCompose.js';
+import {
+  DRAMA_FUNCTIONAL_COMPONENTS,
+  DRAMA_FUNCTIONAL_COMPONENT_ORDER,
+  DRAMA_PARAMETER_COMPONENTS,
+  DRAMA_PARAMETER_COMPONENT_ORDER,
+  RUN_PARAM_COMPONENT_BY_NAME,
+  RUN_PARAM_FUNCTIONAL_COMPONENT_BY_NAME,
+  buildComposerVocab,
+} from '../services/poetics/dramaParameters.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
@@ -1213,6 +1222,17 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
       return res.status(error.statusCode || 500).json({ error: error.message || String(error) });
     }
   });
+  app.get('/api/drama-parameters', (_req, res) =>
+    res.json({
+      components: DRAMA_PARAMETER_COMPONENTS,
+      componentOrder: DRAMA_PARAMETER_COMPONENT_ORDER,
+      functionalComponents: DRAMA_FUNCTIONAL_COMPONENTS,
+      functionalComponentOrder: DRAMA_FUNCTIONAL_COMPONENT_ORDER,
+      runFieldComponents: RUN_PARAM_COMPONENT_BY_NAME,
+      runFieldFunctionalComponents: RUN_PARAM_FUNCTIONAL_COMPONENT_BY_NAME,
+      composerVocab: COMPOSER_VOCAB,
+    }),
+  );
   app.get('/compose', (_req, res) => res.type('html').send(renderComposeHtml()));
   // Standalone nav fragment so the static tool surfaces (/chat, /adjudication,
   // /pilot-admin) can fetch + inject the SAME rail the rendered pages carry.
@@ -1701,70 +1721,9 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
 // the poetics ontology live (POST /api/compose/validate), and writes a
 // .drama.yaml (POST /api/compose/write). The same headless work the
 // /ms-drama-machine skill does, with human visibility.
-const COMPOSER_VOCAB = Object.freeze({
-  forms: [
-    'peripeteia',
-    'anagnorisis',
-    'catharsis',
-    'surprise_inevitability',
-    'unity_of_action',
-    'hamartia_integration',
-  ],
-  promptTypes: ['recognition', 'base', 'placebo', 'naive', 'dialectical_suspicious', 'matched_recognition'],
-  tutorArch: ['ego_superego', 'ego_only', 'id_director'],
-  superego: ['suspicious', 'standard', 'adversary', 'advocate', 'strict', 'coupling'],
-  // Sourced from the live engine so the sit-in form, its CLI, and the LLM guide
-  // can't drift (see liveCompose.LIVE_VOCAB).
-  personas: LIVE_VOCAB.personas,
-  learnerArch: LIVE_VOCAB.learnerArch,
-  continuationPolicy: ['none', 'anchor', 'revoice', 'reconsider', 'reframe'],
-  adaptationPolicy: [
-    'none',
-    'routine',
-    'uptake',
-    'peripeteia',
-    'uptake+peripeteia',
-    'socratic_discovery',
-    'reveal_secret',
-  ],
-  speakers: ['learner', 'tutor', 'director'],
-  stagePolicy: ['sparse', 'none', 'none_except_required_cue', 'short', 'interventionist', 'rich'],
-  stageStyle: [
-    'object_business',
-    'bare_transcript',
-    'scene_heading',
-    'ambient_pressure',
-    'placard_caption',
-    'thread_metadata',
-    'choric_margin',
-    'rich_scene_work',
-  ],
-  grading: ['graded', 'binary'],
-  blinding: ['arm-blind', 'omniscient', 'fully-blind'],
-  roles: ['tutor', 'learner', 'director'],
-  movesByRole: {
-    tutor: [
-      'stock_take',
-      'route_change',
-      'action_gate',
-      'uptake',
-      'meter',
-      'recognition_press',
-      'withhold',
-      'reveal',
-      'register_shift',
-      'status_shift',
-      'foreshadow',
-    ],
-    learner: ['revoice', 'reconsider', 'reframe', 'perform_device', 'voice_misfit', 'genuine_anagnorisis', 'aporia'],
-    director: ['inject_revisit_cue', 'inject_reversal_pressure', 'scene_interruption'],
-  },
-  // Moves/triggers the ontology flags as contraindicating a form — selectable so
-  // the live validator visibly fires (hold ⊣ peripeteia, pseudo_catharsis ⊣ catharsis).
-  antiPatterns: ['hold', 'pseudo_catharsis'],
-  castSuggest: ['llm:api:sonnet', 'llm:claude:opus', 'llm:codex', 'llm:gemini', 'human', 'mock'],
-  panelSuggest: ['gpt', 'deepseek-v4-pro', 'qwen3.7-max', 'gemini-3.5-flash'],
-});
+// Sourced from services/poetics/dramaParameters.js so spec compose, live compose,
+// and run launch all speak the same small component vocabulary.
+const COMPOSER_VOCAB = buildComposerVocab(LIVE_VOCAB);
 
 // Recursively drop null / '' / empty arrays / empty objects so the emitted YAML is clean.
 function pruneEmpty(value) {
@@ -1917,6 +1876,44 @@ const composeFormChecks = (selected) =>
         }> ${escapeHtml(f)}</label>`,
     )
     .join('');
+
+const PARAM_COMPONENT_BY_ID = new Map(DRAMA_PARAMETER_COMPONENTS.map((component) => [component.id, component]));
+const FUNCTIONAL_COMPONENT_BY_ID = new Map(DRAMA_FUNCTIONAL_COMPONENTS.map((component) => [component.id, component]));
+
+function parameterComponent(id) {
+  return PARAM_COMPONENT_BY_ID.get(id) || PARAM_COMPONENT_BY_ID.get('runtime');
+}
+
+function functionalComponent(id) {
+  return FUNCTIONAL_COMPONENT_BY_ID.get(id) || FUNCTIONAL_COMPONENT_BY_ID.get('run_orchestration');
+}
+
+function parameterComponentHeading(id, fallback = id) {
+  const component = parameterComponent(id);
+  return `${escapeHtml(component.label || fallback)} <span class="cmp-k">${escapeHtml(component.shortLabel || id)}</span>`;
+}
+
+function parameterComponentStrip(ids = DRAMA_PARAMETER_COMPONENT_ORDER) {
+  return `<div class="cmp-strip" aria-label="Drama-machine parameter components">${ids
+    .map((id) => {
+      const c = parameterComponent(id);
+      return `<span class="cmp-chip" title="${escapeHtml(c.summary || '')}"><b>${escapeHtml(
+        c.shortLabel || c.id,
+      )}</b><span>${escapeHtml(c.label || c.id)}</span></span>`;
+    })
+    .join('')}</div>`;
+}
+
+function functionalComponentStrip(ids = DRAMA_FUNCTIONAL_COMPONENT_ORDER) {
+  return `<div class="cmp-strip cmp-strip--functional" aria-label="Drama-machine functional components">${ids
+    .map((id) => {
+      const c = functionalComponent(id);
+      return `<span class="cmp-chip cmp-chip--functional" title="${escapeHtml(c.summary || '')}"><b>${escapeHtml(
+        c.shortLabel || c.id,
+      )}</b><span>${escapeHtml(c.label || c.id)}</span></span>`;
+    })
+    .join('')}</div>`;
+}
 
 function escapeHtml(value) {
   return String(value ?? '').replace(
@@ -4970,6 +4967,10 @@ function renderComposeHtml() {
 @media (max-width:900px){ .compose{ grid-template-columns:1fr; } }
 .cform{ padding:18px 20px; display:flex; flex-direction:column; gap:16px; max-height:calc(100vh - 52px); overflow:auto; }
 .cside{ position:sticky; top:52px; padding:16px 16px; display:flex; flex-direction:column; gap:14px; border-left:1px solid var(--rule); max-height:calc(100vh - 52px); overflow:auto; background:var(--paper-3); }
+.cmp-strip{ display:flex; flex-wrap:wrap; gap:6px; padding:10px 20px 0; }
+.cmp-chip{ display:inline-flex; align-items:baseline; gap:6px; border:1px solid var(--rule); background:var(--paper-4); color:var(--ink-3); border-radius:999px; padding:4px 9px; font:10.5px ui-monospace,monospace; }
+.cmp-chip b{ color:var(--moss-deep); text-transform:uppercase; letter-spacing:.06em; }
+.cmp-k{ float:right; color:var(--ink-4); font-weight:400; text-transform:uppercase; letter-spacing:.05em; font-size:10px; }
 .sec{ border:1px solid var(--rule); background:var(--paper-4); }
 .sec > h3{ margin:0; padding:9px 12px; font:600 12px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-2); background:var(--paper-2); border-bottom:1px solid var(--rule); }
 details.sec > summary{ margin:0; padding:9px 12px; font:600 12px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-2); background:var(--paper-2); border-bottom:1px solid var(--rule); cursor:pointer; list-style:none; display:flex; align-items:center; gap:8px; user-select:none; }
@@ -5030,11 +5031,14 @@ ${railHtml({
   hint: '<span><b>compose · spec mode</b> — assemble a full drama-machine spec, validated live against the ontology</span><span class="navhint__sep">·</span><span>or <a href="/compose/live">sit in on a live scene</a></span>',
 })}
 ${modeTabsHtml('spec')}
+${functionalComponentStrip()}
 <div class="compose">
   <form class="cform" id="cform" onsubmit="return false">
-    <section class="sec"><h3>Drama · mythos / melos</h3><div class="body">
+    <section class="sec" data-component="runtime"><h3>${parameterComponentHeading('runtime')}</h3><div class="body">
       <label class="fld">id<input type="text" id="d-id" value="D_LOG_PERIPETEIA_1"></label>
       <label class="fld">max_turns<input type="number" id="d-maxturns" min="1" value="7"></label>
+    </div></section>
+    <section class="sec" data-component="matter"><h3>${parameterComponentHeading('matter')}</h3><div class="body">
       ${composeSyllabusPicker({
         courseId: 'd-course',
         lessonId: 'd-lecture',
@@ -5043,29 +5047,27 @@ ${modeTabsHtml('spec')}
       })}
       <label class="fld wide">topic<input type="text" id="d-topic" value="logarithms as the inverse of exponentiation"></label>
       <label class="fld wide">hamartia <span class="muted">— the misconception that drives the plot</span><input type="text" id="d-hamartia" placeholder="the specific wrong idea the learner keeps reaching for"></label>
+    </div></section>
+    <section class="sec" data-component="form"><h3>${parameterComponentHeading('form')}</h3><div class="body">
       <label class="fld">continuation_policy<select id="d-cont">${composeOptions(V.continuationPolicy, 'reframe')}</select></label>
       <label class="fld">tutor_adaptation_policy<select id="d-adapt">${composeOptions(V.adaptationPolicy, 'peripeteia')}</select></label>
       <div class="fld wide"><span>targets — dramatic forms to bias toward</span><div class="checks">${composeFormChecks(['peripeteia', 'catharsis'])}</div></div>
     </div></section>
-    <section class="sec"><h3>Tutor · ethos</h3><div class="body">
+    <section class="sec" data-component="agents"><h3>${parameterComponentHeading('agents')}</h3><div class="body">
       <label class="fld">prompt_type<select id="t-prompt">${composeOptions(V.promptTypes, 'recognition')}</select></label>
       <label class="fld">architecture<select id="t-arch">${composeOptions(V.tutorArch, 'ego_superego')}</select></label>
       <label class="fld">superego_disposition<select id="t-superego">${composeOptions(V.superego, 'suspicious')}</select></label>
       <label class="chk" style="align-self:end"><input type="checkbox" id="t-recog" checked> recognition_mode</label>
-    </div></section>
-    <section class="sec"><h3>Learner · ethos</h3><div class="body">
       <label class="fld">persona<select id="l-persona">${composeOptions(V.personas, 'struggling_anxious')}</select></label>
       <label class="fld">architecture<select id="l-arch">${composeOptions(V.learnerArch, 'ego_superego_recognition_authentic')}</select></label>
       <label class="fld">superego_disposition<input type="text" id="l-superego" value="recognition_authentic"></label>
       <label class="fld wide">start_state<textarea id="l-start">wants the rule memorised before the quiz; mistrusts 'inverse' as hand-waving</textarea></label>
     </div></section>
     <div class="advnote">advanced · sensible defaults already set — open only what you want to shape</div>
-    <details class="sec"><summary>Thought &amp; diction · dianoia / lexis<span class="opt">socratic · aristotelian reversal</span></summary><div class="body">
+    <details class="sec" data-component="scene"><summary>${parameterComponentHeading('scene')}<span class="opt">socratic · aristotelian reversal</span></summary><div class="body">
       <label class="fld">pedagogical_approach<input type="text" id="d-pedagogical" value="socratic_elenchus"></label>
       <label class="fld">dialogue_approach<input type="text" id="d-dialogue" value="aristotelian_reversal"></label>
       <label class="fld wide">voice.register<input type="text" id="v-register" value="plain; the learner a little defensive"></label>
-    </div></details>
-    <details class="sec"><summary>Spectacle · opsis<span class="opt">library booth · before the quiz</span></summary><div class="body">
       <label class="fld wide">scene.setting<input type="text" id="s-setting" value="a library tutoring booth, the evening before a quiz"></label>
       <label class="fld">relationship<input type="text" id="s-relationship" value="a paid tutor and a resentful teenager"></label>
       <label class="fld">stakes<input type="text" id="s-stakes" value="the quiz is tomorrow morning"></label>
@@ -5075,7 +5077,7 @@ ${modeTabsHtml('spec')}
       <label class="fld">stage_direction_policy<select id="s-stagepolicy">${composeOptions(V.stagePolicy, 'short')}</select></label>
       <label class="fld">stage_direction_style<select id="s-stagestyle">${composeOptions(V.stageStyle, 'object_business')}</select></label>
     </div></details>
-    <details class="sec"><summary>Cast · who plays each role<span class="opt">sonnet cast · gpt critic</span></summary><div class="body">
+    <details class="sec" data-component="cast"><summary>${parameterComponentHeading('cast')}<span class="opt">sonnet cast · gpt critic</span></summary><div class="body">
       <label class="fld">director<input type="text" id="c-director" list="castList" value="llm:api:sonnet"></label>
       <label class="fld">tutor<input type="text" id="c-tutor" list="castList" value="llm:api:sonnet"></label>
       <label class="fld">learner<input type="text" id="c-learner" list="castList" value="llm:api:sonnet"></label>
@@ -5083,14 +5085,14 @@ ${modeTabsHtml('spec')}
       <label class="fld">default_backend<input type="text" id="c-backend" value="api"></label>
       <div class="muted" style="grid-column:1/-1">grammar: <code>human</code> · <code>llm:&lt;backend&gt;:&lt;model&gt;</code> · <code>mock</code> — backends claude · codex · gemini · api</div>
     </div></details>
-    <details class="sec"><summary>Audience · critic config<span class="opt">4-judge panel · 3-of-4</span></summary><div class="body">
+    <details class="sec" data-component="audience"><summary>${parameterComponentHeading('audience')}<span class="opt">4-judge panel · 3-of-4</span></summary><div class="body">
       <label class="fld wide">panel — comma-separated judge models<input type="text" id="a-panel" list="panelList" value="gpt, deepseek-v4-pro, qwen3.7-max, gemini-3.5-flash"></label>
       <label class="fld">consensus<input type="text" id="a-consensus" value="3-of-4"></label>
       <label class="fld">grading<select id="a-grading">${composeOptions(V.grading, 'graded')}</select></label>
       <label class="fld">blinding<select id="a-blinding">${composeOptions(V.blinding, 'arm-blind')}</select></label>
       <label class="fld">rubric<input type="text" id="a-rubric" value="poetics-v1.0"></label>
     </div></details>
-    <details class="sec"><summary>Turn plan · per-turn adaptation moves<span class="opt"><span id="turnPlanCount">4 turns</span> · live-validated</span></summary><div class="body one">
+    <details class="sec" data-component="form"><summary>Turn plan <span class="cmp-k">form</span><span class="opt"><span id="turnPlanCount">4 turns</span> · live-validated</span></summary><div class="body one">
       <div id="turnPlan"></div>
       <div class="addbar"><button type="button" class="btn" id="addTurn">+ add turn</button><button type="button" class="btn" id="suggestTurn" title="Sample a valid turn from the ontology, conditioned on the tutor architecture (alter-egos)">✨ suggest a turn</button><span class="muted">⚠ anti-pattern moves are checked against the turn's target form by the ontology, live.</span></div>
     </div></details>
@@ -5349,6 +5351,9 @@ ${MODETABS_CSS}
 .setup--min{ display:none; }
 .setup__head h2{ margin:0 0 4px; font:600 19px/1.2 Georgia,serif; color:var(--moss-deep); }
 .setup__lede{ margin:0; color:var(--ink-3); font-size:13px; max-width:62ch; }
+.cmp-strip{ display:flex; flex-wrap:wrap; gap:6px; padding:0; }
+.cmp-chip{ display:inline-flex; align-items:baseline; gap:6px; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-3); border-radius:999px; padding:4px 9px; font:10.5px ui-monospace,monospace; }
+.cmp-chip b{ color:var(--moss-deep); text-transform:uppercase; letter-spacing:.06em; }
 .seatpick{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
 @media (max-width:560px){ .seatpick{ grid-template-columns:1fr; } }
 .watchbar{ display:flex; align-items:center; gap:10px; padding:4px 0; }
@@ -5534,6 +5539,7 @@ ${modeTabsHtml('live')}
       </div>
 
       <div class="setup__or"><span>or set the dials yourself</span></div>
+      ${functionalComponentStrip(['recognition', 'superego_critic', 'adaptation', 'cast_layer', 'audience_critic'])}
 
       <!-- Seat: the one choice everyone makes -->
       <div class="seatpick">
@@ -7503,7 +7509,12 @@ function renderRunsHtml() {
 .field.check{ display:flex; align-items:center; gap:7px; }
 .field.check > label{ margin:0; color:var(--ink-2); font-size:12px; }
 .field .help{ display:block; font:10px ui-monospace,monospace; color:var(--ink-4); margin-top:2px; }
-.checks{ display:flex; flex-wrap:wrap; gap:8px 16px; margin:6px 0 12px; }
+.param-group{ border:1px solid var(--rule); background:var(--paper-4); margin:0 0 12px; }
+.param-group__h{ display:flex; align-items:baseline; gap:8px; padding:6px 9px; background:var(--paper-2); border-bottom:1px solid var(--rule); font:600 10px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-2); }
+.param-group__h span{ margin-left:auto; color:var(--ink-4); font-weight:400; text-transform:none; letter-spacing:0; font-size:10px; }
+.param-group__b{ padding:9px 9px 3px; }
+.param-group__b--checks{ display:flex; flex-wrap:wrap; gap:8px 16px; padding-bottom:9px; }
+.checks{ margin:6px 0 12px; }
 .checks .field.check{ margin:0; }
 .review{ border:1px solid var(--rule); background:var(--paper-4); margin-top:6px; }
 .review__h{ font:600 11px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-2); background:var(--paper-2); border-bottom:1px solid var(--rule); padding:7px 10px; display:flex; align-items:center; gap:8px; }
@@ -7590,6 +7601,9 @@ const KINDS = ${JSON.stringify(describeKinds())};
 const COST = ${JSON.stringify(COST_CLASSES)};
 const DERIV_WORLDS = ${JSON.stringify(listDerivationWorldFiles())};
 const DERIV_SCRIPTS = ${JSON.stringify(listDerivationScriptFiles())};
+const FUNCTIONAL_COMPONENTS = ${JSON.stringify(DRAMA_FUNCTIONAL_COMPONENTS)};
+const FUNCTIONAL_COMPONENT_ORDER = ${JSON.stringify(DRAMA_FUNCTIONAL_COMPONENT_ORDER)};
+const RUN_FIELD_FUNCTIONS = ${JSON.stringify(RUN_PARAM_FUNCTIONAL_COMPONENT_BY_NAME)};
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const state = { kind:'replay', fields:[], plan:null, jobs:[], selJob:null };
@@ -7727,14 +7741,39 @@ function checkHtml(c){
   return '<div class="field check"><input type="checkbox" id="'+id+'" name="'+esc(c.name)+'"'+(c.def?' checked':'')+'><label for="'+id+'">'+esc(c.label)+'</label></div>';
 }
 
+function componentForControl(ctrl){
+  return ctrl.functionalComponent || RUN_FIELD_FUNCTIONS[ctrl.name] || 'run_orchestration';
+}
+
+function componentMeta(id){
+  for (let i=0; i<FUNCTIONAL_COMPONENTS.length; i++) if (FUNCTIONAL_COMPONENTS[i].id===id) return FUNCTIONAL_COMPONENTS[i];
+  return { id:id, label:id, shortLabel:id, summary:'' };
+}
+
+function groupedControlsHtml(controls, render, checks){
+  const groups = {};
+  controls.forEach(function(ctrl){
+    const id = componentForControl(ctrl);
+    if (!groups[id]) groups[id] = [];
+    groups[id].push(ctrl);
+  });
+  return FUNCTIONAL_COMPONENT_ORDER.filter(function(id){ return groups[id] && groups[id].length; }).map(function(id){
+    const c = componentMeta(id);
+    return '<section class="param-group" data-component="'+esc(id)+'">'+
+      '<div class="param-group__h">'+esc(c.label)+'<span>'+esc(c.shortLabel || id)+'</span></div>'+
+      '<div class="param-group__b'+(checks?' param-group__b--checks':'')+'">'+groups[id].map(render).join('')+'</div>'+
+      '</section>';
+  }).join('');
+}
+
 function renderForm(){
   const spec = FORMS[state.kind];
   state.fields = spec.fields;
   const meta = KINDS.find(function(k){ return k.kind===state.kind; }) || {};
   $('kindTitle').textContent = meta.title || state.kind;
   $('kindBlurb').textContent = spec.blurb;
-  $('form').innerHTML = spec.fields.map(fieldHtml).join('');
-  $('checks').innerHTML = spec.checks.map(checkHtml).join('');
+  $('form').innerHTML = groupedControlsHtml(spec.fields, fieldHtml, false);
+  $('checks').innerHTML = groupedControlsHtml(spec.checks, checkHtml, true);
   updateVisibility();
   schedulePlan();
 }
