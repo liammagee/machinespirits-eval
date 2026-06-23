@@ -5,8 +5,9 @@
  * rail from railHtml(). The folded-in static surfaces (/chat, /adjudication,
  * /pilot-admin) are plain files served by services/evalSurfaces.js, so they
  * can't call railHtml() — instead they fetch it from the /_nav.html endpoint
- * (railHtml's `bare` mode: rail markup + .rail* CSS only, no shader canvas, no
- * x-ray overlay, no grid/theme toggles, no enhancer scripts) and prepend it.
+ * (railHtml's `bare` mode: rail markup + .rail* CSS, the command palette, but no
+ * shader canvas, x-ray overlay, grid/theme toggles, or dashboard display scripts)
+ * and prepend it.
  *
  * railHtml() stays the single source of nav truth — there is no second copy of
  * the nav markup or styling here. Each host page satisfies the rail's token
@@ -60,7 +61,24 @@
         });
       }
 
+      frag.querySelectorAll('script').forEach(function (scriptEl) {
+        scriptEl.setAttribute('data-rail-script', '1');
+      });
       document.body.insertBefore(frag, document.body.firstChild);
+
+      // Scripts inserted from a <template> fragment do not execute by default.
+      // Recreate the rail-owned executable scripts after insertion; JSON data
+      // blocks stay inert and remain readable by the executable initializer.
+      document.querySelectorAll('script[data-rail-script]').forEach(function (oldScript) {
+        const type = (oldScript.getAttribute('type') || '').toLowerCase();
+        if (type && type !== 'text/javascript' && type !== 'application/javascript') return;
+        const next = document.createElement('script');
+        Array.prototype.slice.call(oldScript.attributes).forEach(function (attr) {
+          if (attr.name !== 'data-rail-script') next.setAttribute(attr.name, attr.value);
+        });
+        next.textContent = oldScript.textContent;
+        oldScript.replaceWith(next);
+      });
     })
     .catch(function () {});
 })();

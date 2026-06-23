@@ -1,7 +1,7 @@
 ---
 id: scriptorium-ux-safety-net
 title: Scriptorium UX safety net and smoke report
-status: active
+status: done
 type: infra
 priority: P0
 owner: codex
@@ -19,7 +19,7 @@ tags:
   - ux
   - qa
   - dashboard
-branch: claude/electron-desktop-app
+branch: codex/ux-enhancements
 ---
 
 Context: the UX audit found the app functionally healthy but missing a regression
@@ -28,11 +28,11 @@ rewired, so current mobile/accessibility failures can be captured and then drive
 to green.
 
 Acceptance criteria:
-- [ ] Add an npm script such as `scriptorium:ux-smoke` or equivalent.
-- [ ] Probe `/`, `/browse`, `/derivation`, `/compose/live`, `/runs`, `/board`,
+- [x] Add an npm script such as `scriptorium:ux-smoke` or equivalent.
+- [x] Probe `/`, `/browse`, `/derivation`, `/compose/live`, `/runs`, `/board`,
       `/chat/`, `/adjudication/`, and `/pilot-admin/` without paid calls.
-- [ ] Check desktop and 390x844 mobile viewports.
-- [ ] Fail on horizontal overflow, top-level console errors, unlabeled core form
+- [x] Check desktop and 390x844 mobile viewports.
+- [x] Fail on horizontal overflow, top-level console errors, unlabeled core form
       controls, and missing accessible names on primary actions.
-- [ ] Emit a small report under `outputs/` with screenshot paths and route
+- [x] Emit a small report under `outputs/` with screenshot paths and route
       findings.

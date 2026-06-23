@@ -1,94 +1,21 @@
 {
-  "generated": "2026-06-23T02:07:28.619Z",
+  "generated": "2026-06-23T05:55:26.945Z",
   "counts": {
-    "total": 33,
+    "total": 34,
     "byStatus": {
-      "triaged": 29,
+      "triaged": 23,
       "blocked": 1,
-      "done": 2,
-      "active": 1
+      "done": 10
     },
     "byType": {
       "research": 17,
       "experiment": 2,
       "infra": 8,
       "paper": 2,
-      "ops": 4
+      "ops": 5
     }
   },
   "items": [
-    {
-      "id": "scriptorium-control-room-first-run",
-      "title": "Scriptorium control-room front door and first-run data health",
-      "status": "triaged",
-      "type": "ops",
-      "priority": "P0",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-06-23",
-      "updated": "2026-06-23",
-      "verification": "The dashboard front door clearly identifies Scriptorium, shows role-based next actions, distinguishes DB-backed script corpus from file-backed proof runs, and gives a no-spend path out of an empty script corpus.",
-      "links": {
-        "notes": "notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md",
-        "items": [
-          "scriptorium-ux-safety-net",
-          "scriptorium-responsive-shell-navigation"
-        ]
-      },
-      "tags": [
-        "scriptorium",
-        "ux",
-        "onboarding",
-        "data-health"
-      ]
-    },
-    {
-      "id": "scriptorium-creation-flows",
-      "title": "Scriptorium creation flows for compose, launch, and job monitoring",
-      "status": "triaged",
-      "type": "ops",
-      "priority": "P0",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-06-23",
-      "updated": "2026-06-23",
-      "verification": "Mock generation, mock derivation, replay dry-run, and score dry-run are launchable from guided UI flows with visible cost class, command preview, validation checklist, and job records.",
-      "links": {
-        "notes": "notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md",
-        "items": [
-          "scriptorium-ux-safety-net",
-          "scriptorium-responsive-shell-navigation"
-        ]
-      },
-      "tags": [
-        "scriptorium",
-        "ux",
-        "jobs",
-        "launcher"
-      ]
-    },
-    {
-      "id": "scriptorium-responsive-shell-navigation",
-      "title": "Scriptorium responsive shell and navigation model",
-      "status": "triaged",
-      "type": "infra",
-      "priority": "P0",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-06-23",
-      "updated": "2026-06-23",
-      "verification": "Core Scriptorium and injected static routes have no horizontal overflow at 390x844 or 768x1024, the mobile shell uses a compact app bar/drawer, and route parity/browser tests still pass.",
-      "links": {
-        "notes": "notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md",
-        "items": "scriptorium-ux-safety-net"
-      },
-      "tags": [
-        "scriptorium",
-        "ux",
-        "navigation",
-        "mobile"
-      ]
-    },
     {
       "id": "g5-h2-per-session-slope-p-0-032-is-a-wrong-p-value",
       "title": "G5. § H2 per-session slope p=0.032 is a wrong p-value",
@@ -103,80 +30,6 @@
       "links": {
         "notes": "TODO.md"
       }
-    },
-    {
-      "id": "scriptorium-evidence-workbenches",
-      "title": "Scriptorium evidence workbenches for scripts, proof runs, and replays",
-      "status": "triaged",
-      "type": "ops",
-      "priority": "P1",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-06-23",
-      "updated": "2026-06-23",
-      "verification": "A reviewer can find, inspect, compare, flag, and label scripts/proof runs/replays from first-class evidence workbench views without route guessing.",
-      "links": {
-        "notes": "notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md",
-        "items": [
-          "scriptorium-ux-safety-net",
-          "scriptorium-control-room-first-run"
-        ]
-      },
-      "tags": [
-        "scriptorium",
-        "ux",
-        "evidence",
-        "review"
-      ]
-    },
-    {
-      "id": "scriptorium-review-workplan-loop",
-      "title": "Scriptorium review queue and workplan loop",
-      "status": "triaged",
-      "type": "ops",
-      "priority": "P1",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-06-23",
-      "updated": "2026-06-23",
-      "verification": "A flagged case can be found, reviewed, connected to a workplan item, and resolved through the existing workplan source-of-truth workflow without creating a second board.",
-      "links": {
-        "notes": "notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md",
-        "items": [
-          "scriptorium-evidence-workbenches"
-        ]
-      },
-      "tags": [
-        "scriptorium",
-        "ux",
-        "workplan",
-        "review"
-      ]
-    },
-    {
-      "id": "scriptorium-static-tools-desktop-quality",
-      "title": "Scriptorium static-tool and desktop quality pass",
-      "status": "triaged",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-06-23",
-      "updated": "2026-06-23",
-      "verification": "Chat, adjudication, pilot-admin, and Electron desktop parity pass the same shell, responsive, accessibility, and no-console gates as the server-rendered Scriptorium routes.",
-      "links": {
-        "notes": "notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md",
-        "items": [
-          "scriptorium-responsive-shell-navigation",
-          "scriptorium-ux-safety-net"
-        ]
-      },
-      "tags": [
-        "scriptorium",
-        "ux",
-        "desktop",
-        "static-surfaces"
-      ]
     },
     {
       "id": "a-model-of-multi-turn-human-persuadability-using-probabilist",
@@ -524,28 +377,6 @@
       }
     },
     {
-      "id": "scriptorium-ux-safety-net",
-      "title": "Scriptorium UX safety net and smoke report",
-      "status": "active",
-      "type": "infra",
-      "priority": "P0",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-06-23",
-      "updated": "2026-06-23",
-      "verification": "A no-spend Scriptorium UX smoke command checks core routes at desktop and mobile widths for HTTP render, console errors, horizontal overflow, unlabeled controls, duplicate landmarks, touch-target risks, and emits a compact report/screenshots.",
-      "links": {
-        "notes": "notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md"
-      },
-      "tags": [
-        "scriptorium",
-        "ux",
-        "qa",
-        "dashboard"
-      ],
-      "branch": "claude/electron-desktop-app"
-    },
-    {
       "id": "a1-human-learner-validation",
       "title": "Human-learner validation pilot (real learning gains)",
       "status": "blocked",
@@ -570,6 +401,103 @@
       ]
     },
     {
+      "id": "scriptorium-control-room-first-run",
+      "title": "Scriptorium control-room front door and first-run data health",
+      "status": "done",
+      "type": "ops",
+      "priority": "P0",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-23",
+      "updated": "2026-06-23",
+      "verification": "The dashboard front door clearly identifies Scriptorium, shows role-based next actions, distinguishes DB-backed script corpus from file-backed proof runs, and gives a no-spend path out of an empty script corpus.",
+      "links": {
+        "notes": "notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md",
+        "items": [
+          "scriptorium-ux-safety-net",
+          "scriptorium-responsive-shell-navigation"
+        ]
+      },
+      "tags": [
+        "scriptorium",
+        "ux",
+        "onboarding",
+        "data-health"
+      ],
+      "branch": "codex/ux-enhancements"
+    },
+    {
+      "id": "scriptorium-creation-flows",
+      "title": "Scriptorium creation flows for compose, launch, and job monitoring",
+      "status": "done",
+      "type": "ops",
+      "priority": "P0",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-23",
+      "updated": "2026-06-23",
+      "verification": "Mock generation, mock derivation, replay dry-run, and score dry-run are launchable from guided UI flows with visible cost class, command preview, validation checklist, and job records.",
+      "links": {
+        "notes": "notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md",
+        "items": [
+          "scriptorium-ux-safety-net",
+          "scriptorium-responsive-shell-navigation"
+        ]
+      },
+      "tags": [
+        "scriptorium",
+        "ux",
+        "jobs",
+        "launcher"
+      ],
+      "branch": "codex/ux-enhancements"
+    },
+    {
+      "id": "scriptorium-responsive-shell-navigation",
+      "title": "Scriptorium responsive shell and navigation model",
+      "status": "done",
+      "type": "infra",
+      "priority": "P0",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-23",
+      "updated": "2026-06-23",
+      "verification": "Core Scriptorium and injected static routes have no horizontal overflow at 390x844 or 768x1024, the mobile shell uses a compact app bar/drawer, and route parity/browser tests still pass.",
+      "links": {
+        "notes": "notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md",
+        "items": "scriptorium-ux-safety-net"
+      },
+      "tags": [
+        "scriptorium",
+        "ux",
+        "navigation",
+        "mobile"
+      ],
+      "branch": "codex/ux-enhancements"
+    },
+    {
+      "id": "scriptorium-ux-safety-net",
+      "title": "Scriptorium UX safety net and smoke report",
+      "status": "done",
+      "type": "infra",
+      "priority": "P0",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-23",
+      "updated": "2026-06-23",
+      "verification": "A no-spend Scriptorium UX smoke command checks core routes at desktop and mobile widths for HTTP render, console errors, horizontal overflow, unlabeled controls, duplicate landmarks, touch-target risks, and emits a compact report/screenshots.",
+      "links": {
+        "notes": "notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md"
+      },
+      "tags": [
+        "scriptorium",
+        "ux",
+        "qa",
+        "dashboard"
+      ],
+      "branch": "codex/ux-enhancements"
+    },
+    {
       "id": "build-workplan-tooling",
       "title": "Build the workplan executable layer (CLI, ingester, dashboard panel, test)",
       "status": "done",
@@ -589,6 +517,110 @@
         "tooling",
         "meta"
       ]
+    },
+    {
+      "id": "scriptorium-evidence-workbenches",
+      "title": "Scriptorium evidence workbenches for scripts, proof runs, and replays",
+      "status": "done",
+      "type": "ops",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-23",
+      "updated": "2026-06-23",
+      "verification": "A reviewer can find, inspect, compare, flag, and label scripts/proof runs/replays from first-class evidence workbench views without route guessing.",
+      "links": {
+        "notes": "notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md",
+        "items": [
+          "scriptorium-ux-safety-net",
+          "scriptorium-control-room-first-run"
+        ]
+      },
+      "tags": [
+        "scriptorium",
+        "ux",
+        "evidence",
+        "review"
+      ],
+      "branch": "codex/ux-enhancements"
+    },
+    {
+      "id": "scriptorium-p2-best-of-breed-cockpit-features",
+      "title": "Scriptorium P2 best-of-breed cockpit features",
+      "status": "done",
+      "type": "ops",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-23",
+      "updated": "2026-06-23",
+      "verification": "Command palette, job-center links, evidence graph, comparison workbench permalinks, and saved-view restoration pass targeted tests plus the Scriptorium UX smoke.",
+      "links": {
+        "notes": "notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md",
+        "items": [
+          "scriptorium-creation-flows",
+          "scriptorium-evidence-workbenches",
+          "scriptorium-review-workplan-loop"
+        ]
+      },
+      "tags": [
+        "scriptorium",
+        "ux",
+        "cockpit",
+        "evidence"
+      ],
+      "branch": "codex/ux-enhancements"
+    },
+    {
+      "id": "scriptorium-review-workplan-loop",
+      "title": "Scriptorium review queue and workplan loop",
+      "status": "done",
+      "type": "ops",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-23",
+      "updated": "2026-06-23",
+      "verification": "A flagged case can be found, reviewed, connected to a workplan item, and resolved through the existing workplan source-of-truth workflow without creating a second board.",
+      "links": {
+        "notes": "notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md",
+        "items": [
+          "scriptorium-evidence-workbenches"
+        ]
+      },
+      "tags": [
+        "scriptorium",
+        "ux",
+        "workplan",
+        "review"
+      ],
+      "branch": "codex/ux-enhancements"
+    },
+    {
+      "id": "scriptorium-static-tools-desktop-quality",
+      "title": "Scriptorium static-tool and desktop quality pass",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-23",
+      "updated": "2026-06-23",
+      "verification": "Chat, adjudication, pilot-admin, and Electron desktop parity pass the same shell, responsive, accessibility, and no-console gates as the server-rendered Scriptorium routes.",
+      "links": {
+        "notes": "notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md",
+        "items": [
+          "scriptorium-responsive-shell-navigation",
+          "scriptorium-ux-safety-net"
+        ]
+      },
+      "tags": [
+        "scriptorium",
+        "ux",
+        "desktop",
+        "static-surfaces"
+      ],
+      "branch": "codex/ux-enhancements"
     },
     {
       "id": "auto-drop-daily-routine",

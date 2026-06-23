@@ -403,13 +403,84 @@ export function describeKinds() {
   return Object.values(JOB_KINDS).map(({ kind, title, script }) => ({ kind, title, script }));
 }
 
+function cloneParams(params) {
+  return JSON.parse(JSON.stringify(params || {}));
+}
+
+function resultLinks(kind, params = {}) {
+  const q = (pairs) => {
+    const qs = new URLSearchParams();
+    Object.entries(pairs).forEach(([k, v]) => {
+      if (v != null && v !== '') qs.set(k, v);
+    });
+    const s = qs.toString();
+    return s ? `?${s}` : '';
+  };
+  if (kind === 'derivation') {
+    const links = [
+      { label: 'watch live', href: '/derivation/live' },
+      { label: 'open proof runs', href: '/derivation' },
+    ];
+    if (params.label) links.push({ label: 'open target run', href: `/derivation/${encodeURIComponent(params.label)}` });
+    return links;
+  }
+  if (kind === 'replay') return [{ label: 'open replays', href: '/replays' }];
+  if (kind === 'generate') return [{ label: 'open scripts', href: '/browse' }];
+  if (kind === 'pedagogical-drama') {
+    return [
+      { label: 'open curriculum', href: '/curriculum' },
+      { label: 'open scripts', href: '/browse' },
+    ];
+  }
+  if (kind === 'adversarial-score') return [{ label: 'open scores', href: '/browse?tab=scores' }];
+  if (kind === 'online-score') {
+    return [{ label: 'open scored scripts', href: `/browse${q({ runId: params.mode === 'run' ? params.runId : '', tab: 'scores' })}` }];
+  }
+  return [];
+}
+
+function planChecks(plan, params = {}) {
+  const costState =
+    plan.costClass === COST_CLASSES.FREE ? 'ok' : plan.costClass === COST_CLASSES.METERED ? 'danger' : 'warn';
+  return [
+    {
+      label: 'Whitelisted script',
+      state: 'ok',
+      detail: plan.script,
+    },
+    {
+      label: 'Argument builder',
+      state: 'ok',
+      detail: `${plan.argv.length} argv element${plan.argv.length === 1 ? '' : 's'} built without shell interpolation`,
+    },
+    {
+      label: 'Cost gate',
+      state: costState,
+      detail:
+        plan.costClass === COST_CLASSES.FREE
+          ? 'free/mock/dry-run path'
+          : plan.costClass === COST_CLASSES.METERED
+            ? 'typed RUN confirmation required before launch'
+            : 'quota route; serialized with other non-free jobs',
+    },
+    {
+      label: 'Result surface',
+      state: resultLinks(plan.kind, params).length ? 'ok' : 'warn',
+      detail: resultLinks(plan.kind, params)
+        .map((l) => l.label)
+        .join(', ') || 'no dedicated result route',
+    },
+  ];
+}
+
 // planJob resolves params → argv + cost class WITHOUT spawning. The UI calls
 // this for the confirm screen so the exact command is shown before anything runs.
 export function planJob({ kind, params }) {
   const spec = JOB_KINDS[kind];
   if (!spec) throw new Error(`unknown job kind: ${kind}`);
   const built = spec.build(params || {});
-  return {
+  const cleanParams = cloneParams(params);
+  const plan = {
     kind,
     script: spec.script,
     title: spec.title,
@@ -418,6 +489,12 @@ export function planJob({ kind, params }) {
     label: built.label,
     costNote: built.costNote,
     command: `node ${spec.script} ${built.argv.join(' ')}`,
+  };
+  return {
+    ...plan,
+    params: cleanParams,
+    checks: planChecks(plan, cleanParams),
+    links: resultLinks(kind, cleanParams),
   };
 }
 
@@ -447,6 +524,9 @@ function publicJob(job) {
     status: job.status,
     command: job.command,
     argv: job.argv,
+    params: cloneParams(job.params),
+    checks: job.checks || [],
+    links: job.links || resultLinks(job.kind, job.params || {}),
     pid: job.pid,
     exitCode: job.exitCode,
     signal: job.signal || null,
@@ -511,6 +591,9 @@ export function launchJob({ kind, params }, deps = {}) {
     costClass: plan.costClass,
     costNote: plan.costNote,
     argv: plan.argv,
+    params: cloneParams(params),
+    checks: plan.checks,
+    links: plan.links,
     command: plan.command,
     script: plan.script,
     status: 'running',

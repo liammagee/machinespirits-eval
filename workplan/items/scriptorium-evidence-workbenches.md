@@ -1,14 +1,16 @@
 ---
 id: scriptorium-evidence-workbenches
 title: Scriptorium evidence workbenches for scripts, proof runs, and replays
-status: triaged
+status: done
 type: ops
 priority: P1
-owner: unassigned
+owner: codex
 source: manual
 created: 2026-06-23
 updated: 2026-06-23
-verification: A reviewer can find, inspect, compare, flag, and label scripts/proof runs/replays from first-class evidence workbench views without route guessing.
+verification: A reviewer can find, inspect, compare, flag, and label
+  scripts/proof runs/replays from first-class evidence workbench views without
+  route guessing.
 links:
   notes: notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md
   items:
@@ -19,6 +21,7 @@ tags:
   - ux
   - evidence
   - review
+branch: codex/ux-enhancements
 ---
 
 Context: `/browse` and `/derivation` expose rich data, but the workbench loop is
@@ -26,10 +29,10 @@ still fragmented. Replays are present as a route but not yet promoted to the
 same level as scripts and proof runs.
 
 Acceptance criteria:
-- [ ] Add saved views and active filter chips to `/browse`.
-- [ ] Add compare mode for scripts and replay/original pairs.
-- [ ] Give `/derivation` group summaries, collapsible groups, and selected-run
+- [x] Add saved views and active filter chips to `/browse`.
+- [x] Add compare mode for scripts and replay/original pairs.
+- [x] Give `/derivation` group summaries, collapsible groups, and selected-run
       comparison.
-- [ ] Promote `/replays` into a first-class evidence comparison surface.
-- [ ] Make all filters visibly labeled and URL-permalinkable.
-- [ ] Keep proof-run checker outcomes clearly separate from AI quality scores.
+- [x] Promote `/replays` into a first-class evidence comparison surface.
+- [x] Make all filters visibly labeled and URL-permalinkable.
+- [x] Keep proof-run checker outcomes clearly separate from AI quality scores.

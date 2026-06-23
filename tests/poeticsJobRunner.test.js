@@ -70,6 +70,14 @@ test('replay: mock+item is free and emits --mock --item-id', () => {
   assert.match(plan.command, /^node scripts\/replay-discursive-transcript\.js /u);
 });
 
+test('planJob: exposes checklist, result links, and cloned params for the UI', () => {
+  const plan = planJob({ kind: 'online-score', params: { mode: 'run', runId: 'R9', dryRun: true } });
+  assert.equal(plan.params.runId, 'R9');
+  assert.ok(plan.checks.some((c) => c.label === 'Whitelisted script' && c.state === 'ok'));
+  assert.ok(plan.checks.some((c) => c.label === 'Cost gate' && c.detail.includes('free')));
+  assert.deepEqual(plan.links, [{ label: 'open scored scripts', href: '/browse?runId=R9&tab=scores' }]);
+});
+
 test('replay: codex generator + adversarial checker is quota', () => {
   const plan = planJob({
     kind: 'replay',
@@ -321,6 +329,8 @@ test('launchJob: free job spawns and close→done', () => {
   const pub = launchJob({ kind: 'replay', params: { mock: true, mode: 'item', itemId: 'x' } }, testDeps(spawn));
   assert.equal(pub.status, 'running');
   assert.equal(pub.pid, 4242);
+  assert.equal(pub.params.itemId, 'x');
+  assert.ok(pub.links.some((l) => l.href === '/replays'));
   // spawned node <scriptPath> --mock --item-id x  (argv array, no shell string)
   assert.equal(calls.length, 1);
   assert.match(calls[0].argv[0], /replay-discursive-transcript\.js$/u);

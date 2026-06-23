@@ -544,6 +544,18 @@ TUTOR: Try the second case.`);
     assert.doesNotMatch(html, /recognitionOriginForScoreRow\(s\)/);
   });
 
+  it('ships the global command palette and evidence permalink wiring', () => {
+    const html = renderBrowserHtml();
+    assert.match(html, /id="cmdPalette"/);
+    assert.match(html, /data-palette-open/);
+    assert.match(html, /Generate mock script/);
+    assert.match(html, /Scriptorium board items/);
+    assert.match(html, /function renderBrowseEvidenceGraph/);
+    assert.match(html, /\/board\?tag=evidence/);
+    assert.match(html, /\/replays\?item=/);
+    assert.match(html, /compareId/);
+  });
+
   it('builds ending-shape diagnostics from role-symmetric score rows', () => {
     const diagnostics = endingShapeDiagnosticsForScores([
       {
@@ -728,13 +740,20 @@ describe('dashboard front door', () => {
   it('renders onboarding scaffolding, live stats and discipline deep-links', () =>
     withDb((db) => {
       const html = renderDashboardHtml({ ...corpusStats(db), replays: 0 });
-      // control-room header + reflexive pedagogy note
-      assert.match(html, /Eval control room/);
+      // Scriptorium header + reflexive pedagogy note
+      assert.match(html, /Scriptorium control room/);
       assert.match(html, /Tutoring, staged as drama\./);
       assert.match(html, /why the site is built this way/);
-      // status readout + command bar + the three operations panels
+      // status readout + command bar + role cards + data health + operations panels
       assert.match(html, /class="cr-status"/);
       assert.match(html, /class="cr-cmd"/);
+      for (const verb of ['Read evidence', 'Compose', 'Launch', 'Review flags', 'Open workplan']) {
+        assert.match(html, new RegExp(`${verb}<`));
+      }
+      for (const role of ['Reader', 'Builder', 'Reviewer', 'Operator', 'Researcher']) {
+        assert.match(html, new RegExp(`class="role-card__role">${role}<`));
+      }
+      assert.match(html, /class="health"/);
       assert.match(html, /class="ops"/);
       for (const panel of ['corpus', 'activity', 'review']) {
         assert.match(html, new RegExp(`class="ops-panel__h">${panel}<`));
