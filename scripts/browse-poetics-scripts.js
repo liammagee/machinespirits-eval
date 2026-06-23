@@ -24,7 +24,16 @@ import { ORIGIN_CLASSES, originCounts, recognitionOriginForScoreRow } from './li
 import { validateTurnPlan } from '../services/ontology/reasoningOntology.js';
 import { sampleTurnPlan, agenciesForArchitecture } from '../services/ontology/turnPlanSampler.js';
 import { buildOntologyView, ALL_MODULES, DEFAULT_MODULES } from '../services/ontology/ontologyView.js';
-import { setItemField, LIFECYCLE as WORKPLAN_STATUSES } from './workplan.js';
+import {
+  setItemField,
+  updateItem,
+  addItem,
+  deleteItem,
+  LIFECYCLE as WORKPLAN_STATUSES,
+  TYPES as WP_TYPES,
+  PRIORITIES as WP_PRIORITIES,
+  OWNERS as WP_OWNERS,
+} from './workplan.js';
 import {
   listReplayBundles,
   readReplayBundle,
@@ -1559,10 +1568,73 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
       return res.status(code).json({ error: err.message });
     }
   });
+  // Create a new board item.
+  app.post('/api/workplan/add', (req, res) => {
+    const b = req.body || {};
+    if (!b.title || !String(b.title).trim()) return res.status(400).json({ error: 'title is required' });
+    const bad = invalidWorkplanFields(b);
+    if (bad) return res.status(400).json({ error: bad });
+    try {
+      const fm = addItem({
+        title: b.title,
+        type: b.type,
+        priority: b.priority,
+        owner: b.owner,
+        status: b.status,
+        verification: b.verification,
+        body: b.body,
+      });
+      return res.json({ ok: true, id: fm.id, status: fm.status });
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+  // Edit an existing item's fields (empty value clears an optional field).
+  app.post('/api/workplan/update', (req, res) => {
+    const b = req.body || {};
+    if (!b.id) return res.status(400).json({ error: 'id is required' });
+    if (b.title !== undefined && !String(b.title).trim())
+      return res.status(400).json({ error: 'title cannot be empty' });
+    const bad = invalidWorkplanFields(b);
+    if (bad) return res.status(400).json({ error: bad });
+    try {
+      const fm = updateItem(String(b.id), {
+        title: b.title,
+        type: b.type,
+        priority: b.priority,
+        owner: b.owner,
+        status: b.status,
+        verification: b.verification,
+        blocked_by: b.blocked_by,
+      });
+      return res.json({ ok: true, id: fm.id, status: fm.status });
+    } catch (err) {
+      const code = /no item/.test(err.message) ? 404 : 500;
+      return res.status(code).json({ error: err.message });
+    }
+  });
+  // Delete an item.
+  app.post('/api/workplan/delete', (req, res) => {
+    const id = req.body && req.body.id;
+    if (!id) return res.status(400).json({ error: 'id is required' });
+    try {
+      deleteItem(String(id));
+      return res.json({ ok: true, id: String(id) });
+    } catch (err) {
+      const code = /no item/.test(err.message) ? 404 : 500;
+      return res.status(code).json({ error: err.message });
+    }
+  });
   app.get('/board-doc', (_req, res) => {
     const notePath = path.resolve(ROOT, 'notes/poetics/2026-06-06-development-board.html');
     if (!fs.existsSync(notePath)) return res.status(404).type('text').send('development-board note not found');
-    res.type('html').sendFile(notePath);
+    // The static note has no nav rail, so without this it is a dead end. Inject a
+    // fixed "back to the live board" link at serve time (source file untouched).
+    let html = fs.readFileSync(notePath, 'utf8');
+    const back =
+      '<a href="/board" title="Back to the live board" style="position:fixed;top:12px;left:12px;z-index:99999;font:12px ui-monospace,SFMono-Regular,monospace;background:#f4efe0;border:1px solid #cbbb98;color:#3a342b;padding:6px 12px;border-radius:6px;text-decoration:none;box-shadow:0 2px 10px rgba(28,22,16,.18)">← live board</a>';
+    html = /<body[^>]*>/i.test(html) ? html.replace(/(<body[^>]*>)/i, `$1${back}`) : back + html;
+    res.type('html').send(html);
   });
   app.get('/derivation', (_req, res) => res.type('html').send(renderDerivationIndexHtml(listDerivationRuns())));
   app.get('/derivation/live', (_req, res) =>
@@ -6356,6 +6428,17 @@ function readWorkplanBoard() {
   }
 }
 
+// Validate the enum-constrained fields of a workplan add/update payload (only the
+// fields that are present). Returns an error string, or null when all are valid.
+function invalidWorkplanFields(b) {
+  if (b.status !== undefined && !WORKPLAN_STATUSES.includes(b.status)) return `invalid status: ${b.status}`;
+  if (b.type !== undefined && b.type !== '' && !WP_TYPES.includes(b.type)) return `invalid type: ${b.type}`;
+  if (b.priority !== undefined && b.priority !== '' && !WP_PRIORITIES.includes(b.priority))
+    return `invalid priority: ${b.priority}`;
+  if (b.owner !== undefined && b.owner !== '' && !WP_OWNERS.includes(b.owner)) return `invalid owner: ${b.owner}`;
+  return null;
+}
+
 function renderWorkplanBoardHtml() {
   const board = readWorkplanBoard();
   const e = escapeHtml;
@@ -6365,6 +6448,15 @@ function renderWorkplanBoardHtml() {
   // Always show the working lanes (even when empty) so cards can be dropped into
   // them; plus any other status that currently has items.
   const DEFAULT_LANES = ['triaged', 'active', 'blocked', 'review', 'done'];
+  // Data for the add/edit modal: items + the enum option lists. Escape `<` so the
+  // JSON cannot break out of the <script> tag it is embedded in.
+  const wpData = JSON.stringify({
+    items,
+    statuses: DEFAULT_LANES,
+    types: WP_TYPES,
+    priorities: WP_PRIORITIES,
+    owners: WP_OWNERS,
+  }).replace(/</g, '\\u003c');
   const sections = LIFE.filter((s) => DEFAULT_LANES.includes(s) || items.some((i) => i.status === s))
     .map((status) => {
       const group = items.filter((i) => i.status === status);
@@ -6382,7 +6474,7 @@ function renderWorkplanBoardHtml() {
       </article>`;
         })
         .join('');
-      return `<section class="col" data-status="${e(status)}"><h2 class="col__h">${e(status)} <span class="n">${group.length}</span></h2>${cards}</section>`;
+      return `<section class="col" data-status="${e(status)}"><h2 class="col__h">${e(status)} <span class="n">${group.length}</span><button class="col__add" data-status="${e(status)}" title="Add an item to ${e(status)}" aria-label="Add an item to ${e(status)}">+</button></h2>${cards}</section>`;
     })
     .join('');
   const chips = ['all', ...types]
@@ -6417,6 +6509,24 @@ main{ max-width:1100px; margin:0 auto; padding:22px 22px 64px; }
 .card--dragging{ opacity:.45; }
 .col{ min-height:64px; border-radius:5px; transition:background .12s var(--ease,ease), outline-color .12s var(--ease,ease); }
 .col--over{ outline:2px dashed var(--moss); outline-offset:4px; background:var(--moss-soft); }
+.col__h{ display:flex; align-items:center; gap:6px; }
+.col__add{ margin-left:auto; width:20px; height:20px; display:inline-flex; align-items:center; justify-content:center; font:600 14px/1 ui-monospace,monospace; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-3); cursor:pointer; border-radius:4px; }
+.col__add:hover{ color:var(--moss-deep); border-color:var(--moss); }
+.wpm{ position:fixed; inset:0; z-index:60; display:flex; align-items:center; justify-content:center; }
+.wpm[hidden]{ display:none; }
+.wpm__back{ position:absolute; inset:0; background:rgba(28,22,16,.38); }
+.wpm__panel{ position:relative; width:min(520px,92vw); max-height:88vh; overflow:auto; background:var(--paper); border:1px solid var(--rule); border-radius:10px; box-shadow:0 24px 60px rgba(28,22,16,.28); padding:18px 20px; display:flex; flex-direction:column; gap:10px; }
+.wpm__h{ font:600 15px Georgia,serif; color:var(--ink); margin:0 0 4px; }
+.wpm__l{ display:flex; flex-direction:column; gap:4px; font:11px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-3); }
+.wpm__row{ display:flex; gap:12px; } .wpm__row .wpm__l{ flex:1; }
+.wpm__in{ font:13px Georgia,serif; color:var(--ink); background:var(--paper-4); border:1px solid var(--rule); border-radius:5px; padding:6px 8px; text-transform:none; letter-spacing:0; width:100%; box-sizing:border-box; }
+.wpm__in:focus{ outline:2px solid var(--moss); outline-offset:1px; }
+.wpm__err{ color:var(--brick); font:12px ui-monospace,monospace; min-height:14px; }
+.wpm__actions{ display:flex; align-items:center; gap:8px; margin-top:4px; }
+.wpm__spacer{ flex:1; }
+.wpm__btn{ font:12px ui-monospace,monospace; padding:6px 14px; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-2); cursor:pointer; border-radius:5px; }
+.wpm__save{ color:var(--moss-deep); border-color:var(--moss); background:var(--moss-soft); }
+.wpm__del{ color:var(--brick); border-color:var(--brick); }
 `,
   })}
 <body>
@@ -6436,6 +6546,34 @@ ${railHtml({
   <div class="bar">${chips}</div>
   <div class="cols">${sections}</div>
 </main>
+
+<div class="wpm" id="wpm" hidden>
+  <div class="wpm__back" data-wpclose></div>
+  <form class="wpm__panel" id="wpm-form" role="dialog" aria-modal="true" aria-labelledby="wpm-h">
+    <h3 class="wpm__h" id="wpm-h">New item</h3>
+    <input type="hidden" id="wpm-id" />
+    <label class="wpm__l">Title<input class="wpm__in" id="wpm-title" type="text" autocomplete="off" /></label>
+    <div class="wpm__row">
+      <label class="wpm__l">Status<select class="wpm__in" id="wpm-status"></select></label>
+      <label class="wpm__l">Type<select class="wpm__in" id="wpm-type"></select></label>
+    </div>
+    <div class="wpm__row">
+      <label class="wpm__l">Priority<select class="wpm__in" id="wpm-priority"></select></label>
+      <label class="wpm__l">Owner<select class="wpm__in" id="wpm-owner"></select></label>
+    </div>
+    <label class="wpm__l">Verification<textarea class="wpm__in" id="wpm-verif" rows="2"></textarea></label>
+    <label class="wpm__l">Blocked by<input class="wpm__in" id="wpm-blocked" type="text" autocomplete="off" /></label>
+    <div class="wpm__err" id="wpm-err"></div>
+    <div class="wpm__actions">
+      <button type="button" class="wpm__btn wpm__del" id="wpm-del" hidden>Delete</button>
+      <span class="wpm__spacer"></span>
+      <button type="button" class="wpm__btn" data-wpclose>Cancel</button>
+      <button type="submit" class="wpm__btn wpm__save" id="wpm-save">Save</button>
+    </div>
+  </form>
+</div>
+
+<script>window.__WP = ${wpData};</script>
 <script>
 (function () {
   var chips = [].slice.call(document.querySelectorAll('.chip'));
@@ -6495,6 +6633,90 @@ ${railHtml({
         }).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); })
           .catch(function () { alert('Could not save the status change — reloading.'); location.reload(); });
       });
+    });
+  })();
+  // Add / edit / delete via the modal. Card click → edit; lane "+" → add. Saves POST
+  // to /api/workplan/{add,update,delete} and reload on success.
+  (function () {
+    var W = window.__WP || { items: [], statuses: [], types: [], priorities: [], owners: [] };
+    var m = document.getElementById('wpm');
+    if (!m) return;
+    var $ = function (id) { return document.getElementById(id); };
+    var lastDrag = 0;
+    function fillSel(sel, opts, val) {
+      var list = (opts || []).slice();
+      if (val && list.indexOf(val) < 0) list.unshift(val);
+      sel.innerHTML = list.map(function (o) {
+        return '<option' + (o === val ? ' selected' : '') + '>' + o + '</option>';
+      }).join('');
+    }
+    function open(mode, item) {
+      item = item || {};
+      m.dataset.mode = mode;
+      $('wpm-h').textContent = mode === 'edit' ? 'Edit item' : 'New item';
+      $('wpm-id').value = item.id || '';
+      $('wpm-title').value = item.title || '';
+      fillSel($('wpm-status'), W.statuses, item.status || W.statuses[0]);
+      fillSel($('wpm-type'), W.types, item.type || 'maintenance');
+      fillSel($('wpm-priority'), W.priorities, item.priority || 'P2');
+      fillSel($('wpm-owner'), W.owners, item.owner || 'unassigned');
+      $('wpm-verif').value = item.verification || '';
+      $('wpm-blocked').value = item.blocked_by || '';
+      $('wpm-del').hidden = mode !== 'edit';
+      $('wpm-err').textContent = '';
+      $('wpm-save').disabled = false;
+      m.hidden = false;
+      setTimeout(function () { $('wpm-title').focus(); }, 0);
+    }
+    function close() { m.hidden = true; }
+    function post(url, payload) {
+      $('wpm-save').disabled = true;
+      return fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      }).then(function (r) {
+        if (r.ok) { location.reload(); return; }
+        return r.json().then(function (j) { throw new Error(j.error || ('HTTP ' + r.status)); });
+      }).catch(function (err) {
+        $('wpm-save').disabled = false;
+        $('wpm-err').textContent = String((err && err.message) || err);
+      });
+    }
+    [].slice.call(m.querySelectorAll('[data-wpclose]')).forEach(function (el) { el.addEventListener('click', close); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !m.hidden) close(); });
+    [].slice.call(document.querySelectorAll('.col__add')).forEach(function (b) {
+      b.addEventListener('click', function (ev) { ev.stopPropagation(); open('add', { status: b.getAttribute('data-status') }); });
+    });
+    [].slice.call(document.querySelectorAll('.card')).forEach(function (card) {
+      card.addEventListener('dragend', function () { lastDrag = Date.now(); });
+      card.addEventListener('click', function () {
+        if (Date.now() - lastDrag < 250) return;
+        var id = card.getAttribute('data-id');
+        var item = (W.items || []).filter(function (i) { return i.id === id; })[0] || { id: id };
+        open('edit', item);
+      });
+    });
+    $('wpm-form').addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var payload = {
+        id: $('wpm-id').value,
+        title: $('wpm-title').value.trim(),
+        status: $('wpm-status').value,
+        type: $('wpm-type').value,
+        priority: $('wpm-priority').value,
+        owner: $('wpm-owner').value,
+        verification: $('wpm-verif').value.trim(),
+        blocked_by: $('wpm-blocked').value.trim(),
+      };
+      if (!payload.title) { $('wpm-err').textContent = 'Title is required.'; return; }
+      post(m.dataset.mode === 'edit' ? '/api/workplan/update' : '/api/workplan/add', payload);
+    });
+    $('wpm-del').addEventListener('click', function () {
+      var id = $('wpm-id').value;
+      if (!id) return;
+      if (!confirm('Delete this item? Removes workplan/items/' + id + '.md')) return;
+      post('/api/workplan/delete', { id: id });
     });
   })();
 </script>

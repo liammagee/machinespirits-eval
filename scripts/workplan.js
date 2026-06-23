@@ -29,6 +29,11 @@ const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
 
 export const LIFECYCLE = ['inbox', 'triaged', 'active', 'blocked', 'review', 'done', 'archived', 'dropped'];
+// Mirror workplan/schema/item.schema.json enums (kept here for the dashboard's
+// forms + endpoint validation). Keep in sync with the schema.
+export const TYPES = ['experiment', 'infra', 'maintenance', 'research', 'paper', 'content', 'ops'];
+export const PRIORITIES = ['P0', 'P1', 'P2', 'P3'];
+export const OWNERS = ['human', 'claude', 'codex', 'gemini', 'unassigned'];
 const PRIORITY_ORDER = { P0: 0, P1: 1, P2: 2, P3: 3 };
 
 // ---- paths (lazy, env-overridable) ----------------------------------------
@@ -214,14 +219,56 @@ function cmdShow(argv) {
   console.log(fs.readFileSync(file, 'utf8'));
 }
 
+// Create a new item in items/ (the non-inbox path of `add`). Shared by the CLI and
+// the dashboard's add endpoint. Returns the new frontmatter (including the slug id).
+export function addItem(
+  { title, type, priority, owner, source, status, verification, body } = {},
+  { render = true } = {},
+) {
+  if (!title || !String(title).trim()) throw new Error('title is required');
+  const p = paths();
+  ensureDir(p.items);
+  const slug = slugify(title);
+  let id = slug;
+  let n = 2;
+  while (fs.existsSync(path.join(p.items, `${id}.md`))) id = `${slug}-${n++}`;
+  const fm = {
+    id,
+    title: String(title).trim(),
+    status: status || 'triaged',
+    type: type || 'maintenance',
+    priority: priority || 'P2',
+    owner: owner || 'unassigned',
+    source: source || 'manual',
+    created: today(),
+    updated: today(),
+    verification: verification || 'TODO: state how completion is checked',
+  };
+  fs.writeFileSync(
+    path.join(p.items, `${id}.md`),
+    serializeDoc(fm, body || 'Context. Link out for detail; do not copy.\n'),
+  );
+  if (render) renderBoard();
+  return fm;
+}
+
+// Delete an item from items/. Shared by the dashboard's delete endpoint.
+export function deleteItem(id, { render = true } = {}) {
+  const p = paths();
+  const file = path.join(p.items, `${id}.md`);
+  if (!fs.existsSync(file)) throw new Error(`no item: ${id}`);
+  fs.rmSync(file);
+  if (render) renderBoard();
+  return { id };
+}
+
 function cmdAdd(argv) {
   const f = flags(argv);
   if (!f.title) fail('usage: add [--inbox] --title "…" [--type T] [--priority P] [--owner O] [--source S]');
   const p = paths();
-  const slug = slugify(f.title);
   if (f.inbox) {
     ensureDir(p.inbox);
-    const file = path.join(p.inbox, `${today()}-${slug}.md`);
+    const file = path.join(p.inbox, `${today()}-${slugify(f.title)}.md`);
     if (fs.existsSync(file)) fail(`inbox file exists: ${rel(file)}`);
     const fm = {
       title: f.title,
@@ -233,25 +280,23 @@ function cmdAdd(argv) {
     console.log(`captured → ${rel(file)}  (triage it into items/ when ready)`);
     return;
   }
-  ensureDir(p.items);
-  let id = slug;
-  let n = 2;
-  while (fs.existsSync(path.join(p.items, `${id}.md`))) id = `${slug}-${n++}`;
-  const fm = {
-    id,
-    title: f.title,
-    status: 'triaged',
-    type: f.type || 'maintenance',
-    priority: f.priority || 'P2',
-    owner: f.owner || 'unassigned',
-    source: f.source || 'manual',
-    created: today(),
-    updated: today(),
-    verification: f.verification || 'TODO: state how completion is checked',
-  };
-  const file = path.join(p.items, `${id}.md`);
-  fs.writeFileSync(file, serializeDoc(fm, 'Context. Link out for detail; do not copy.\n'));
-  console.log(`created → ${rel(file)}`);
+  let fm;
+  try {
+    fm = addItem(
+      {
+        title: f.title,
+        type: f.type,
+        priority: f.priority,
+        owner: f.owner,
+        source: f.source,
+        verification: f.verification,
+      },
+      { render: false },
+    );
+  } catch (e) {
+    fail(e.message);
+  }
+  console.log(`created → ${rel(path.join(p.items, `${fm.id}.md`))}`);
   if (!f.verification) console.log('  ! set a real `verification` before this can reach done');
   autoRender(f);
 }
@@ -288,21 +333,49 @@ function cmdTriage(argv) {
   autoRender(f);
 }
 
-// Set a single frontmatter field on an item and (by default) re-render the board.
-// Shared by the `set` CLI command and the dashboard's drag-and-drop endpoint, so
-// both go through one validated write path. Throws on a missing item.
-export function setItemField(id, field, value, { owner, branch, render = true } = {}) {
+// Shared write core: read an item, mutate its frontmatter, stamp `updated`, write,
+// and (by default) re-render the board. The CLI `set`, drag-and-drop, and the
+// board's edit form all funnel through this so items/, board.json, and the
+// dashboard never disagree. Throws on a missing item.
+function writeItem(id, mutate, render) {
   const p = paths();
   const file = path.join(p.items, `${id}.md`);
   if (!fs.existsSync(file)) throw new Error(`no item: ${id}`);
   const { fm, body } = parseDoc(fs.readFileSync(file, 'utf8'));
-  if (value !== undefined && value !== '') fm[field] = value;
-  if (owner) fm.owner = owner;
-  if (branch) fm.branch = branch;
+  mutate(fm);
   fm.updated = today();
   fs.writeFileSync(file, serializeDoc(fm, body));
   if (render) renderBoard();
   return fm;
+}
+
+// Set one field (empty value = leave unchanged). Used by `set` + drag-and-drop.
+export function setItemField(id, field, value, { owner, branch, render = true } = {}) {
+  return writeItem(
+    id,
+    (fm) => {
+      if (value !== undefined && value !== '') fm[field] = value;
+      if (owner) fm.owner = owner;
+      if (branch) fm.branch = branch;
+    },
+    render,
+  );
+}
+
+// Set several fields at once (empty/null = clear the field). Used by the board's
+// edit form; callers validate that required fields are non-empty first.
+export function updateItem(id, fields, { render = true } = {}) {
+  return writeItem(
+    id,
+    (fm) => {
+      for (const [k, v] of Object.entries(fields || {})) {
+        if (v === undefined) continue;
+        if (v === '' || v === null) delete fm[k];
+        else fm[k] = v;
+      }
+    },
+    render,
+  );
 }
 
 function cmdSet(argv) {

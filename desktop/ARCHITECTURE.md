@@ -87,12 +87,15 @@ in the same commit, with a comment explaining why — never silently.
   `scripts/browse-poetics-scripts.js`), `parseNavHtml()` turns it into items, and
   `buildMenuTemplate({ navItems })` renders them. Add a destination to `NAV` and it
   shows up in BOTH the rail (web + desktop) and the native menu — one definition.
-- **Board drag-and-drop — `POST /api/workplan/move`.** `/board` makes cards
-  draggable; a drop POSTs `{id,status}` to a route that calls the workplan's exported
-  `setItemField()` (`scripts/workplan.js`), which writes the item file + re-renders
-  `board.json`. The CLI (`wp set …`) and the dashboard share that one write path.
-  Writes need `workplan/` on disk, so editing works in dev + the browser dev server;
-  a packaged app (workplan/ inside the asar) returns 500 and the UI reverts.
+- **Board CRUD — `POST /api/workplan/{move,add,update,delete}`.** `/board` is an
+  editable kanban: drag = move (status), card click = edit, lane "+" = add, editor
+  Delete = delete. The routes call the workplan's exported `setItemField` /
+  `updateItem` / `addItem` / `deleteItem` (`scripts/workplan.js`), which write the
+  item file + re-render `board.json` — the CLI (`wp …`) and the dashboard share that
+  one write path. Writes need `workplan/` on disk, so editing works in dev + the
+  browser dev server; a packaged app (workplan/ in the asar) returns 500 and the UI
+  reverts. The historical `/board-doc` note (a static file with no rail) gets a fixed
+  "← live board" link injected at serve time so it is no longer a dead end.
 
 ## File map
 

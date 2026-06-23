@@ -30,9 +30,9 @@ Body.
 `,
 );
 
-let setItemField, LIFECYCLE;
+let setItemField, updateItem, addItem, deleteItem, LIFECYCLE;
 before(async () => {
-  ({ setItemField, LIFECYCLE } = await import('../scripts/workplan.js'));
+  ({ setItemField, updateItem, addItem, deleteItem, LIFECYCLE } = await import('../scripts/workplan.js'));
 });
 
 test('LIFECYCLE includes the board drag-target lanes', () => {
@@ -56,4 +56,43 @@ test('setItemField changes status, bumps updated, and re-renders board.json', ()
 
 test('setItemField throws on a missing item', () => {
   assert.throws(() => setItemField('does-not-exist', 'status', 'done'), /no item/);
+});
+
+test('addItem creates an item (slug id + defaults) and adds it to board.json', () => {
+  const fm = addItem({ title: 'A Brand New Task', type: 'infra', priority: 'P1', status: 'active' });
+  assert.match(fm.id, /^[a-z0-9-]+$/);
+  assert.equal(fm.status, 'active');
+  assert.equal(fm.type, 'infra');
+  assert.ok(fs.existsSync(path.join(dir, 'items', fm.id + '.md')));
+  const board = JSON.parse(fs.readFileSync(path.join(dir, 'board.json'), 'utf8'));
+  assert.ok(board.items.some((i) => i.id === fm.id && i.status === 'active'));
+});
+
+test('addItem dedups the id on a title collision, and requires a title', () => {
+  const a = addItem({ title: 'Dup Title Xyz' });
+  const b = addItem({ title: 'Dup Title Xyz' });
+  assert.equal(b.id, a.id + '-2');
+  assert.throws(() => addItem({ title: '' }), /title is required/);
+});
+
+test('updateItem sets several fields and clears an emptied optional field', () => {
+  const ed = addItem({ title: 'Editable Item', status: 'blocked' });
+  updateItem(ed.id, { title: 'Edited title', priority: 'P0', blocked_by: 'something' });
+  let onDisk = fs.readFileSync(path.join(dir, 'items', ed.id + '.md'), 'utf8');
+  assert.match(onDisk, /title: Edited title/);
+  assert.match(onDisk, /priority: P0/);
+  assert.match(onDisk, /blocked_by: something/);
+  updateItem(ed.id, { blocked_by: '' }); // empty clears the optional field
+  onDisk = fs.readFileSync(path.join(dir, 'items', ed.id + '.md'), 'utf8');
+  assert.doesNotMatch(onDisk, /blocked_by:/);
+});
+
+test('deleteItem removes the file + drops it from board.json; throws if missing', () => {
+  const td = addItem({ title: 'To Delete Soon' });
+  assert.ok(fs.existsSync(path.join(dir, 'items', td.id + '.md')));
+  deleteItem(td.id);
+  assert.ok(!fs.existsSync(path.join(dir, 'items', td.id + '.md')));
+  const board = JSON.parse(fs.readFileSync(path.join(dir, 'board.json'), 'utf8'));
+  assert.ok(!board.items.some((i) => i.id === td.id));
+  assert.throws(() => deleteItem(td.id), /no item/);
 });

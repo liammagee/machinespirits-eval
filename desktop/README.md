@@ -53,10 +53,11 @@ background process on an ephemeral loopback port; you never manage a port.
   rail (**Board** is a primary, always-visible item), the native **Go** menu
   (⌘1–⌘9 for the first nine destinations, plus a dedicated **⌘B** for Board), or
   **View → Home** (⇧⌘H).
-- **The board.** `/board` is a live kanban of the workplan — **drag a card between
-  lanes** to change its status (it writes to `workplan/items/` and re-renders).
-  Editing needs the repo on disk, so it works in dev and the browser dev server; a
-  packaged app's bundled board is read-only (the drop reverts).
+- **The board.** `/board` is a live, editable kanban of the workplan: **drag a card
+  between lanes** to change its status, **click a card to edit** it, the lane **+** to
+  **add** an item, and **Delete** in the editor to remove one. Every write goes to
+  `workplan/items/` and re-renders. Editing needs the repo on disk (dev + the browser
+  dev server); a packaged app's bundled board is read-only (writes revert).
 - **API keys.** **File → Set Up API Keys…** writes a `keys.env` template and opens
   it. Add your provider keys (e.g. `OPENROUTER_API_KEY=…`), save, and restart. On the
   next launch the keys are encrypted into your **macOS keychain** and the plaintext
