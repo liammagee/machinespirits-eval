@@ -1,19 +1,19 @@
 {
-  "generated": "2026-06-23T14:49:59.007Z",
+  "generated": "2026-06-23T17:04:22.734Z",
   "counts": {
-    "total": 40,
+    "total": 43,
     "byStatus": {
-      "triaged": 24,
+      "triaged": 21,
       "blocked": 1,
       "dropped": 2,
-      "done": 13
+      "done": 19
     },
     "byType": {
-      "research": 23,
+      "research": 24,
       "experiment": 2,
-      "infra": 8,
+      "infra": 9,
       "paper": 2,
-      "ops": 5
+      "ops": 6
     }
   },
   "items": [
@@ -69,36 +69,6 @@
       "links": {
         "notes": "notes/daily-notes/2026-06-09-research-roundup.html"
       }
-    },
-    {
-      "id": "d1-mechanistic-feature-ols-and-multiturn-replication",
-      "title": "D1. Mechanistic feature OLS and multi-turn replication",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "todo",
-      "created": "2026-06-23",
-      "updated": "2026-06-23",
-      "verification": "Pass 6 multi-feature OLS and Pass 7 multi-turn replication both produce exports; the D1 paper-integration note is updated or the follow-up is explicitly shelved.",
-      "claim_status": "planned",
-      "links": {
-        "notes": [
-          "TODO.md#D1",
-          "notes/d1-paper-integration.md"
-        ],
-        "exports": [
-          "exports/d1-structural-features.md",
-          "exports/d1-structural-features-v2.md",
-          "exports/d1-structural-features-v3.md"
-        ],
-        "paper": "§8.2"
-      },
-      "tags": [
-        "d1",
-        "mechanism",
-        "structural-features"
-      ]
     },
     {
       "id": "d5-rubric-v3-0-pca-informed-consolidation",
@@ -186,21 +156,6 @@
       }
     },
     {
-      "id": "geist-in-the-machine-simulating-recognition-and-inner-dialog",
-      "title": "Geist in the Machine: Simulating Recognition and Inner Dialogue in AI-Mediated Teaching and Research",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-15-research-roundup.html"
-      }
-    },
-    {
       "id": "measuring-whether-llm-tutors-teach-or-solve-a-diagnostic-for",
       "title": "Measuring Whether LLM Tutors Teach or Solve: A Diagnostic for Educational Impact",
       "status": "triaged",
@@ -213,21 +168,6 @@
       "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
       "links": {
         "notes": "notes/daily-notes/2026-06-18-research-roundup.html"
-      }
-    },
-    {
-      "id": "not-all-flips-are-conformity-decomposing-stance-convergence",
-      "title": "Not All Flips Are Conformity: Decomposing Stance Convergence in Multi-Agent LLM Debate",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-09-research-roundup.html"
       }
     },
     {
@@ -301,21 +241,6 @@
     {
       "id": "the-confident-liar-diagnosing-multi-agent-debate-with-log-pr",
       "title": "The Confident Liar: Diagnosing Multi-Agent Debate with Log-Probabilities and LLM-as-Judge",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-12-research-roundup.html"
-      }
-    },
-    {
-      "id": "the-self-correction-illusion-llms-correct-others-but-not-the",
-      "title": "The Self-Correction Illusion: LLMs Correct Others but Not Themselves",
       "status": "triaged",
       "type": "research",
       "priority": "P2",
@@ -466,6 +391,37 @@
         "d6",
         "taxonomy",
         "orientation-family"
+      ]
+    },
+    {
+      "id": "revisit-adaptation-conformity-human-anchor",
+      "title": "Revisit adaptation-conformity human anchor and artifact availability",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P3",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-06-23",
+      "updated": "2026-06-23",
+      "verification": "Adaptation-conformity gate artifacts are either recovered/linked or their archive location is documented; any reopened human comparison uses a planned non-rushed annotation protocol before changing Paper 2.0 claims.",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "notes/2026-06-09-adaptation-conformity-classifier-stage0-preregistration.md",
+          "notes/daily-notes/2026-06-09-research-roundup.html"
+        ],
+        "paper": "docs/research/paper-full-2.0.md",
+        "scripts": [
+          "scripts/adaptation-conformity-harvest.py",
+          "scripts/adaptation-conformity-classifier.py",
+          "scripts/adaptation-conformity-score-human.py"
+        ],
+        "items": "not-all-flips-are-conformity-decomposing-stance-convergence"
+      },
+      "tags": [
+        "human-anchor",
+        "artifact-recovery",
+        "conformity"
       ]
     },
     {
@@ -773,6 +729,77 @@
       ]
     },
     {
+      "id": "d1-mechanistic-feature-ols-and-multiturn-replication",
+      "title": "D1. Mechanistic feature OLS and multi-turn replication",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "todo",
+      "created": "2026-06-23",
+      "updated": "2026-06-23",
+      "verification": "Reran D1 Pass 6 OLS, Pass 7 multi-turn scope replication, and cross-judge checks; exports and notes/d1-paper-integration.md are present.",
+      "branch": "codex/d1-mechanistic-feature-ols",
+      "claim_status": "settled",
+      "links": {
+        "notes": [
+          "TODO.md#D1",
+          "notes/d1-paper-integration.md"
+        ],
+        "exports": [
+          "exports/d1-structural-features.md",
+          "exports/d1-structural-features-v2.md",
+          "exports/d1-structural-features-v3.md",
+          "exports/d1-cross-judge-replication.md",
+          "exports/d1-multifeature-ols.md",
+          "exports/d1-ends-question-replication.md"
+        ],
+        "paper": "docs/research/paper-full-2.0.md §7.10.1",
+        "atlas": "recognition-calibration",
+        "runs": [
+          "eval-2026-04-24-e9a785c0",
+          "eval-2026-04-23-42e7acbe",
+          "eval-2026-04-17-c92ad6c7",
+          "eval-2026-04-17-6766015b",
+          "eval-2026-02-20-0fbca69e",
+          "eval-2026-03-01-aea2abfb"
+        ]
+      },
+      "tags": [
+        "d1",
+        "mechanism",
+        "structural-features",
+        "ols",
+        "multi-turn"
+      ]
+    },
+    {
+      "id": "daily-roundup-self-work-exclusion",
+      "title": "Exclude own papers from daily research roundup captures",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-06-23",
+      "updated": "2026-06-23",
+      "verification": "scripts/workplan.js ingest --daily skips arXiv 2603.10450 via a regression fixture; npm run wp:test and npm run wp:check pass.",
+      "links": {
+        "notes": [
+          "notes/research-plans/2026-06-20-research-plan.html",
+          "notes/daily-notes/2026-06-15-research-roundup.html"
+        ],
+        "items": "geist-in-the-machine-simulating-recognition-and-inner-dialog",
+        "arxiv": "https://arxiv.org/abs/2603.10450"
+      },
+      "tags": [
+        "daily-routine",
+        "self-citation",
+        "workplan-ingest"
+      ],
+      "branch": "codex/geist-positioning"
+    },
+    {
       "id": "g2-6-4-recognition-effect-sizes-reproducible-once-the-column",
       "title": "G2. §6.4 recognition effect sizes — reproducible once the column/judge/run are stated",
       "status": "done",
@@ -795,6 +822,117 @@
         "paper",
         "provenance",
         "claim-audit"
+      ]
+    },
+    {
+      "id": "geist-in-the-machine-simulating-recognition-and-inner-dialog",
+      "title": "Geist in the Machine: Simulating Recognition and Inner Dialogue in AI-Mediated Teaching and Research",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-23",
+      "verification": "Confirmed arXiv 2603.10450 is authored by Liam Magee; Paper 2.0 already cites the companion study via @magee2026geist, so no manuscript edit is required.",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-06-15-research-roundup.html",
+          "notes/research-plans/2026-06-20-research-plan.html"
+        ],
+        "paper": "docs/research/paper-full-2.0.md",
+        "atlas": "docs/research/references.bib",
+        "arxiv": "https://arxiv.org/abs/2603.10450",
+        "items": "daily-roundup-self-work-exclusion"
+      },
+      "branch": "codex/geist-positioning",
+      "tags": [
+        "paper-positioning",
+        "self-citation",
+        "roundup"
+      ]
+    },
+    {
+      "id": "not-all-flips-are-conformity-decomposing-stance-convergence",
+      "title": "Not All Flips Are Conformity: Decomposing Stance Convergence in Multi-Agent LLM Debate",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-23",
+      "verification": "Paper 2.0 §6.12 already folds this in as a killed Stage 0 measurement gate; adaptation-conformity scripts compile, while missing local exports and the rushed human anchor are tracked by the follow-up item.",
+      "claim_status": "killed",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-06-09-research-roundup.html",
+          "notes/2026-06-09-adaptation-conformity-classifier-stage0-preregistration.md"
+        ],
+        "paper": "docs/research/paper-full-2.0.md",
+        "scripts": [
+          "scripts/adaptation-conformity-harvest.py",
+          "scripts/adaptation-conformity-classifier.py",
+          "scripts/adaptation-conformity-score-human.py"
+        ],
+        "items": "revisit-adaptation-conformity-human-anchor"
+      },
+      "branch": "codex/not-all-flips-conformity",
+      "tags": [
+        "adaptation-null",
+        "conformity",
+        "superego"
+      ]
+    },
+    {
+      "id": "the-self-correction-illusion-llms-correct-others-but-not-the",
+      "title": "The Self-Correction Illusion: LLMs Correct Others but Not Themselves",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-23",
+      "verification": "Paper 2.0 §6.1.3 already cites @chen2026selfcorrectionillusion and records the bounded cross-judge result; reproduction path is scripts/analyze-correction-source.sh.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-12-research-roundup.html",
+        "paper": "docs/research/paper-full-2.0.md",
+        "atlas": "docs/research/references.bib",
+        "scripts": "scripts/analyze-correction-source.sh"
+      },
+      "branch": "codex/self-correction-illusion",
+      "tags": [
+        "superego",
+        "self-correction",
+        "paper-positioning"
+      ]
+    },
+    {
+      "id": "workplan-governance-checks-and-github-mirror",
+      "title": "Workplan governance checks and GitHub mirror",
+      "status": "done",
+      "type": "ops",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-23",
+      "updated": "2026-06-23",
+      "branch": "codex/ops-board-items",
+      "verification": "`npm run wp:check`, `npm run wp:test`, GitHub mirror dry-run, and `/board` Scriptorium smoke all passed before the branch was merged to main.",
+      "links": {
+        "items": [
+          "build-workplan-tooling",
+          "auto-drop-daily-routine"
+        ],
+        "notes": "workplan/README.md"
+      },
+      "tags": [
+        "workplan",
+        "ci",
+        "github",
+        "governance"
       ]
     },
     {

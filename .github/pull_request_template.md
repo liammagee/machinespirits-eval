@@ -8,5 +8,3 @@
 - [ ] Ran `npm run wp:check` if `workplan/items/` changed
 
 ## Verification
-
-

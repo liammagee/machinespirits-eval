@@ -142,7 +142,9 @@ Everyone reads this README first, then:
 3. **Skill (`/ms-workplan`).** The conversational entry. Routes a request
    ("what's active?", "capture this", "what's blocked on budget?") to the right
    CLI command and explains the conventions. Definition:
-   `.claude/skills/ms-workplan/SKILL.md`.
+   `.claude/skills/ms-workplan/SKILL.md`, mirrored to
+   `.agents/skills/ms-workplan/SKILL.md` and `.codex/skills/ms-workplan/SKILL.md`
+   by `npm run skills:sync` (`config/agent-skill-sync.json` is the mirror list).
 
 4. **Routines (daily research roundup).** Each paper's "Project relevance" note
    is dropped into `inbox/` as `<date>-arxiv-<id>.md`, de-duped by arXiv id the

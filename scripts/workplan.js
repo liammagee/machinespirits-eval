@@ -36,6 +36,8 @@ export const TYPES = ['experiment', 'infra', 'maintenance', 'research', 'paper',
 export const PRIORITIES = ['P0', 'P1', 'P2', 'P3'];
 export const OWNERS = ['human', 'claude', 'codex', 'gemini', 'unassigned'];
 const PRIORITY_ORDER = { P0: 0, P1: 1, P2: 2, P3: 3 };
+const SELF_WORK_ARXIV_IDS = new Set(['2603.10450']);
+const SELF_WORK_PATTERNS = [/\bLiam\s+Magee\b/i, /\bMachine\s+Spirits\b/i];
 
 // ---- paths (lazy, env-overridable) ----------------------------------------
 function paths() {
@@ -713,9 +715,16 @@ function parseRoundupEntries(html) {
       title: strip(h3 ? h3[1] : ''),
       flag: flagM ? strip(flagM[1]) : '',
       relevance: strip(relM ? relM[1] : ''),
+      text: strip(part),
     });
   }
   return entries;
+}
+
+function isSelfWorkEntry(entry) {
+  if (SELF_WORK_ARXIV_IDS.has(entry.id)) return true;
+  const haystack = [entry.title, entry.relevance, entry.text].filter(Boolean).join('\n');
+  return SELF_WORK_PATTERNS.some((pattern) => pattern.test(haystack));
 }
 
 function ingestDaily() {
@@ -735,6 +744,7 @@ function ingestDaily() {
   let scanned = 0,
     wrote = 0,
     dup = 0,
+    self = 0,
     fallback = 0;
   for (const f of files) {
     const html = fs.readFileSync(path.join(p.dailyNotes, f), 'utf8');
@@ -765,6 +775,10 @@ function ingestDaily() {
     }
     for (const en of entries) {
       scanned++;
+      if (isSelfWorkEntry(en)) {
+        self++;
+        continue;
+      }
       if (trackedIds.has(en.id) || seen.has(en.id)) {
         dup++;
         continue;
@@ -793,7 +807,7 @@ function ingestDaily() {
     }
   }
   console.log(
-    `ingest --daily: ${files.length} roundups, ${scanned} paper entries (${dup} dup arxiv-id skipped${fallback ? `, ${fallback} fallback` : ''}) → wrote ${wrote} inbox captures`,
+    `ingest --daily: ${files.length} roundups, ${scanned} paper entries (${dup} dup arxiv-id skipped${self ? `, ${self} self-work skipped` : ''}${fallback ? `, ${fallback} fallback` : ''}) → wrote ${wrote} inbox captures`,
   );
 }
 

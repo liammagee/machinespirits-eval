@@ -42,6 +42,11 @@ function writeItem(dir, id, fm) {
     .join('\n');
   fs.writeFileSync(path.join(dir, 'items', `${id}.md`), `---\n${y}\n---\n\nbody\n`);
 }
+function makeDailyNotes(dir) {
+  const daily = path.join(dir, 'daily-notes');
+  fs.mkdirSync(daily, { recursive: true });
+  return daily;
+}
 
 const GOOD = {
   id: 'sample-good',
@@ -132,6 +137,37 @@ test('check passes only when generated board files match items', () => {
   assert.equal(stale.status, 1);
   assert.match(stale.stdout, /board\.json.*stale/);
   assert.match(stale.stdout, /BOARD\.md.*stale/);
+});
+
+test('ingest --daily skips self-work captures by arxiv id', () => {
+  const dir = makeBoard();
+  const daily = makeDailyNotes(dir);
+  fs.writeFileSync(
+    path.join(daily, '2026-06-15-research-roundup.html'),
+    `<!doctype html>
+<body>
+<div class="paper hot">
+  <h3>Geist in the Machine: Simulating Recognition and Inner Dialogue <span class="flag">UNBLOCK</span></h3>
+  <div class="meta">Authors not retrieved - arXiv 2603.10450 - <a href="https://arxiv.org/abs/2603.10450">link</a></div>
+  <p><strong>Project relevance:</strong> This is our own paper and should not become an external-work capture.</p>
+</div>
+<div class="paper hot">
+  <h3>The Self-Correction Illusion <span class="flag">UNBLOCK</span></h3>
+  <div class="meta">Kuan-Yen Chen et al. - arXiv 2606.05976 - <a href="https://arxiv.org/abs/2606.05976">link</a></div>
+  <p><strong>Project relevance:</strong> External support for the ego-superego correction mechanism.</p>
+</div>
+</body>`,
+  );
+  const r = run(dir, ['ingest', '--daily'], { DAILY_NOTES_DIR: daily });
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /1 self-work skipped/);
+  assert.match(r.stdout, /wrote 1 inbox captures/);
+  const inboxFiles = fs.readdirSync(path.join(dir, 'inbox')).filter((f) => f.endsWith('.md'));
+  assert.equal(inboxFiles.length, 1);
+  assert.match(inboxFiles[0], /2606\.05976/);
+  const body = fs.readFileSync(path.join(dir, 'inbox', inboxFiles[0]), 'utf8');
+  assert.match(body, /The Self-Correction Illusion/);
+  assert.doesNotMatch(body, /2603\.10450/);
 });
 
 test('PR link check accepts known item ids and explicit N/A', () => {
