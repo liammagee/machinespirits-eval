@@ -2494,11 +2494,70 @@ body.xray-on .xray-overlay{ opacity:1; }
   .cmdp__go{ display:none; }
   .navhint{ font-size:10.5px; padding:.55rem .75rem; }
 }
+#tweaksToggle[aria-expanded="true"]{ color:var(--moss-deep); border-color:var(--moss); background:var(--moss-soft); }
+.tweaks{ position:fixed; inset:0; z-index:95; }
+.tweaks[hidden]{ display:none; }
+.tweaks__back{ position:absolute; inset:0; background:rgba(24,19,16,.42); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); }
+.tweaks__panel{ position:absolute; top:0; right:0; bottom:0; width:min(340px,100vw); display:flex; flex-direction:column; background:color-mix(in srgb,var(--paper) 97%,transparent); border-left:1px solid var(--rule); box-shadow:-18px 0 50px rgba(28,22,16,.26); overflow:auto; padding:16px; font-family:"JetBrains Mono","SFMono-Regular",Consolas,monospace; }
+.tweaks__head{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding-bottom:14px; border-bottom:1px solid var(--rule); }
+.tweaks__head b{ display:block; font:italic 20px/1.1 "Fraunces","Source Serif 4",Georgia,serif; text-transform:none; letter-spacing:0; color:var(--ink); }
+.tweaks__head span{ font-size:10px; letter-spacing:.06em; color:var(--ink-4); text-transform:uppercase; }
+.tweaks__x{ flex:0 0 auto; width:30px; height:30px; border:1px solid var(--rule); background:transparent; color:var(--ink-3); cursor:pointer; border-radius:6px; }
+.tweaks__x:hover{ color:var(--ink); border-color:var(--ink-3); }
+.tweaks__grp{ padding:16px 0; border-bottom:1px solid var(--rule-soft); }
+.tweaks__k{ font:700 10px/1 "JetBrains Mono",monospace; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-4); margin-bottom:10px; }
+.tweaks__seg{ display:flex; border:1px solid var(--rule); border-radius:8px; overflow:hidden; }
+.tweaks__opt{ flex:1; min-height:38px; border:0; border-right:1px solid var(--rule); background:transparent; color:var(--ink-3); font:600 12px "JetBrains Mono",monospace; letter-spacing:.04em; cursor:pointer; transition:background .15s var(--ease,ease),color .15s var(--ease,ease); }
+.tweaks__opt:last-child{ border-right:0; }
+.tweaks__opt:hover{ color:var(--ink); background:var(--paper-3); }
+.tweaks__opt[aria-pressed="true"]{ background:var(--moss-soft); color:var(--moss-deep); }
+.tweaks__btn{ width:100%; min-height:40px; justify-content:center; }
+.tweaks__hint{ font-size:10.5px; line-height:1.5; color:var(--ink-4); margin-top:9px; text-transform:none; letter-spacing:.01em; }
+@media (prefers-reduced-motion:no-preference){ .tweaks__panel{ animation:tweaksIn .22s var(--ease,ease); } @keyframes tweaksIn{ from{ transform:translateX(20px); opacity:.3; } } }
+/* ---- backdrops (tweaks): field shader · fauna canvas · Bauhaus shapes · none ---- */
+#fauna-overlay{ position:fixed; inset:0; z-index:-3; pointer-events:none; display:none; }
+#fauna-overlay canvas{ display:block; width:100vw; height:100vh; }
+.shapes-layer{ position:fixed; inset:0; z-index:-3; pointer-events:none; overflow:hidden; display:none; }
+.shp{ position:absolute; opacity:.5; }
+[data-theme="dark"] .shapes-layer, [data-skin="stark"] .shapes-layer{ opacity:.92; }
+.shp-block{ background:var(--ink); } .shp-block-red{ background:var(--brick); } .shp-block-white{ background:var(--paper-2); border:1px solid var(--rule); }
+.shp-outline{ border:2px solid var(--ink); opacity:.16; } .shp-outline-red{ border:3px solid var(--brick); opacity:.4; }
+.shp-circle-outline{ border:2px solid var(--ink); border-radius:50%; opacity:.18; }
+.shp-line{ height:2px; background:var(--ink); opacity:.3; } .shp-line-red{ height:3px; background:var(--brick); } .shp-line-thin{ height:1px; background:var(--ink); opacity:.22; }
+.shp-dot-red{ background:var(--brick); border-radius:50%; }
+.shp-cross{ width:60px; height:60px; }
+.shp-cross::before, .shp-cross::after{ content:""; position:absolute; background:var(--ink); }
+.shp-cross::before{ left:50%; top:0; width:2px; height:100%; transform:translateX(-50%); }
+.shp-cross::after{ top:50%; left:0; height:2px; width:100%; transform:translateY(-50%); }
+.shp-cross-red::before, .shp-cross-red::after{ background:var(--brick); }
+@media (prefers-reduced-motion:no-preference){ .shp-outline, .shp-circle-outline, .shp-outline-red{ animation:shpDrift 32s ease-in-out infinite alternate; } @keyframes shpDrift{ to{ transform:translateY(-18px) rotate(6deg); } } }
+[data-backdrop="fauna"] #fauna-overlay{ display:block; }
+[data-backdrop="shapes"] .shapes-layer{ display:block; }
+[data-backdrop="fauna"] #field, [data-backdrop="shapes"] #field, [data-backdrop="none"] #field{ display:none; }
+.tweaks__seg--4 .tweaks__opt{ font-size:11px; padding:0 2px; letter-spacing:.02em; }
 </style>
 ${
   bare
     ? ''
-    : `<canvas id="field" aria-hidden="true" style="position:fixed;inset:0;width:100vw;height:100vh;z-index:-3;opacity:.5;pointer-events:none"></canvas>
+    : `<script>(function(){try{var d=document.documentElement;if(localStorage.getItem('poetics-theme')==='dark')d.setAttribute('data-theme','dark');var sk=localStorage.getItem('poetics-skin');if(sk===null)sk='stark';if(sk==='stark')d.setAttribute('data-skin','stark');d.setAttribute('data-backdrop',localStorage.getItem('poetics-backdrop')||'field');}catch(_e){}})();</script>
+<canvas id="field" aria-hidden="true" style="position:fixed;inset:0;width:100vw;height:100vh;z-index:-3;opacity:.5;pointer-events:none"></canvas>
+<div id="fauna-overlay" aria-hidden="true"><canvas id="fauna-canvas"></canvas></div>
+<div class="shapes-layer" id="shapesLayer" aria-hidden="true">
+  <div class="shp shp-outline" style="width:300px;height:300px;top:30%;left:6%"></div>
+  <div class="shp shp-outline-red" style="width:160px;height:160px;top:64%;right:15%"></div>
+  <div class="shp shp-circle-outline" style="width:180px;height:180px;top:42%;right:27%"></div>
+  <div class="shp shp-block-red" style="width:88px;height:88px;top:55%;right:4%"></div>
+  <div class="shp shp-line" style="width:420px;top:16%;left:13%;transform:rotate(-24deg)"></div>
+  <div class="shp shp-line-red" style="width:300px;top:47%;right:5%;transform:rotate(28deg)"></div>
+  <div class="shp shp-line-thin" style="width:520px;top:77%;left:2%;transform:rotate(-9deg)"></div>
+  <div class="shp shp-cross" style="top:14%;right:33%"></div>
+  <div class="shp shp-cross shp-cross-red" style="top:72%;left:29%"></div>
+  <div class="shp shp-block" style="width:24px;height:24px;top:40%;left:46%;transform:rotate(45deg)"></div>
+  <div class="shp shp-block-red" style="width:16px;height:16px;top:25%;right:41%"></div>
+  <div class="shp shp-dot-red" style="width:26px;height:26px;top:32%;left:25%"></div>
+  <div class="shp shp-block-white" style="width:36px;height:36px;top:60%;left:37%"></div>
+  <div class="shp shp-block" style="width:30px;height:30px;top:83%;left:55%;transform:rotate(30deg)"></div>
+</div>
 <div class="xray-overlay" id="xrayOverlay" aria-hidden="true"><div class="xray-overlay__grid" id="xrayGrid"></div></div>`
 }
 <header class="rail">
@@ -2533,13 +2592,53 @@ ${
     ${
       bare
         ? ''
-        : `<div class="rail__cluster" aria-label="Display controls"><button class="rail__btn" id="gridToggle" type="button" aria-pressed="false" title="grid — toggle the 60-column layout overlay (alignment aid)">grid</button>
-    <button class="rail__btn" id="themeToggle" type="button" aria-label="Toggle light or dark theme">theme</button></div>`
+        : `<div class="rail__cluster" aria-label="Display controls"><button class="rail__btn" id="tweaksToggle" type="button" aria-expanded="false" aria-controls="tweaksPanel" title="Tweaks — skin, theme &amp; layout (A/B)">tweaks</button></div>`
     }
     <span class="rail__stamp" aria-hidden="true"><span class="rail__stamp-glyph">◎</span>MMXXVI</span>
   </div>
 </header>
 ${hint ? `<div class="navhint" role="note">${hint}</div>` : ''}
+${
+  bare
+    ? ''
+    : `<div class="tweaks" id="tweaksPanel" hidden>
+  <div class="tweaks__back" data-tweaks-close></div>
+  <aside class="tweaks__panel" role="dialog" aria-modal="true" aria-label="Tweaks">
+    <div class="tweaks__head">
+      <div><b>Tweaks</b><span>A/B the look — saved on this device</span></div>
+      <button class="tweaks__x" type="button" data-tweaks-close aria-label="Close tweaks">✕</button>
+    </div>
+    <div class="tweaks__grp">
+      <div class="tweaks__k">skin</div>
+      <div class="tweaks__seg" role="group" aria-label="Skin">
+        <button class="tweaks__opt" type="button" data-skin-set="" aria-pressed="false">Parchment</button>
+        <button class="tweaks__opt" type="button" data-skin-set="stark" aria-pressed="true">Stark</button>
+      </div>
+      <div class="tweaks__hint">The parchment manuscript, or the machinespirits.org black · white · red.</div>
+    </div>
+    <div class="tweaks__grp">
+      <div class="tweaks__k">backdrop</div>
+      <div class="tweaks__seg tweaks__seg--4" role="group" aria-label="Backdrop">
+        <button class="tweaks__opt" type="button" data-backdrop-set="field" aria-pressed="true">Field</button>
+        <button class="tweaks__opt" type="button" data-backdrop-set="fauna" aria-pressed="false">Fauna</button>
+        <button class="tweaks__opt" type="button" data-backdrop-set="shapes" aria-pressed="false">Shapes</button>
+        <button class="tweaks__opt" type="button" data-backdrop-set="none" aria-pressed="false">None</button>
+      </div>
+      <div class="tweaks__hint">Field = drifting pigment shader · Fauna = roaming line-creatures · Shapes = Bauhaus blocks (best with Stark).</div>
+    </div>
+    <div class="tweaks__grp">
+      <div class="tweaks__k">mode</div>
+      <button class="rail__btn tweaks__btn" id="themeToggle" type="button" aria-label="Toggle light or dark theme">light / dark</button>
+      <div class="tweaks__hint">Flip light or dark within the current skin.</div>
+    </div>
+    <div class="tweaks__grp">
+      <div class="tweaks__k">layout</div>
+      <button class="rail__btn tweaks__btn" id="gridToggle" type="button" aria-pressed="false" title="toggle the 60-column layout overlay">grid overlay</button>
+      <div class="tweaks__hint">Show the 60-column alignment grid (a builder aid).</div>
+    </div>
+  </aside>
+</div>`
+}
 <div class="cmdp" id="cmdPalette" hidden>
   <div class="cmdp__back" data-palette-close></div>
   <div class="cmdp__panel" role="dialog" aria-modal="true" aria-labelledby="cmdpTitle">
@@ -2801,6 +2900,86 @@ ${hint ? `<div class="navhint" role="note">${hint}</div>` : ''}
     apply(on);
     try { sessionStorage.setItem('poetics-grid', on ? 'on' : ''); } catch (_e) {}
   });
+})();
+// Tweaks panel: open/close + the skin (parchment/stark) A/B. Theme and grid live
+// inside the panel but keep their own handlers (bound by id, found wherever the
+// button sits). data-skin is applied early at the top of the rail to avoid a
+// flash; here we only wire the toggles and reflect current state.
+(function () {
+  var panel = document.getElementById('tweaksPanel');
+  var open = document.getElementById('tweaksToggle');
+  if (!panel || !open) return;
+  function show(on) {
+    panel.hidden = !on;
+    open.setAttribute('aria-expanded', on ? 'true' : 'false');
+  }
+  open.addEventListener('click', function () { show(panel.hidden); });
+  [].slice.call(panel.querySelectorAll('[data-tweaks-close]')).forEach(function (el) {
+    el.addEventListener('click', function () { show(false); });
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !panel.hidden) show(false); });
+  var skinBtns = [].slice.call(panel.querySelectorAll('[data-skin-set]'));
+  function paintSkin() {
+    var cur = document.documentElement.getAttribute('data-skin') || '';
+    skinBtns.forEach(function (b) {
+      b.setAttribute('aria-pressed', (b.getAttribute('data-skin-set') || '') === cur ? 'true' : 'false');
+    });
+  }
+  skinBtns.forEach(function (b) {
+    b.addEventListener('click', function () {
+      var v = b.getAttribute('data-skin-set') || '';
+      if (v) document.documentElement.setAttribute('data-skin', v);
+      else document.documentElement.removeAttribute('data-skin');
+      try { localStorage.setItem('poetics-skin', v); } catch (_e) {}
+      paintSkin();
+    });
+  });
+  paintSkin();
+})();
+// Backdrop selector: field (Klee shader) | fauna (canvas creatures) | shapes
+// (Bauhaus blocks) | none. data-backdrop is set early at the top of the rail so
+// the layer shows without a flash; fauna's ~1k-line canvas script is lazy-loaded
+// from /components only when chosen, and paused when switched away.
+(function () {
+  var panel = document.getElementById('tweaksPanel');
+  var fauna = null;
+  function ensureFauna() {
+    function init() {
+      try {
+        if (!fauna && typeof FaunaOverlay !== 'undefined') fauna = new FaunaOverlay('fauna-canvas', { opacity: [0.1, 0.22] });
+        if (fauna && fauna.start && (!fauna.isActive || !fauna.isActive())) fauna.start();
+      } catch (_e) {}
+    }
+    if (typeof FaunaOverlay !== 'undefined') { init(); return; }
+    var sc = document.createElement('script');
+    sc.src = '/components/fauna-overlay.js';
+    sc.onload = init;
+    document.head.appendChild(sc);
+  }
+  function apply(v) {
+    document.documentElement.setAttribute('data-backdrop', v);
+    if (v === 'fauna') ensureFauna();
+    else if (fauna && fauna.stop) { try { fauna.stop(); } catch (_e) {} }
+  }
+  if ((document.documentElement.getAttribute('data-backdrop') || 'field') === 'fauna') ensureFauna();
+  if (panel) {
+    var btns = [].slice.call(panel.querySelectorAll('[data-backdrop-set]'));
+    function paint() {
+      var c = document.documentElement.getAttribute('data-backdrop') || 'field';
+      btns.forEach(function (b) {
+        b.setAttribute('aria-pressed', (b.getAttribute('data-backdrop-set') || 'field') === c ? 'true' : 'false');
+      });
+    }
+    btns.forEach(function (b) {
+      b.addEventListener('click', function () {
+        var v = b.getAttribute('data-backdrop-set') || 'field';
+        apply(v);
+        try { localStorage.setItem('poetics-backdrop', v); } catch (_e) {}
+        paint();
+      });
+    });
+    paint();
+  }
 })();
 </script>`
   }`;
@@ -4570,6 +4749,15 @@ function summaryWrapperHtml() {
 const BASE_CSS = `@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Source+Serif+4:opsz,wght@8..60,200..900&family=JetBrains+Mono:wght@300..700&display=swap");
 :root{ color-scheme: light dark; --paper:#F1E9D8; --paper-2:#E9DFC7; --paper-3:#EFE4CC; --paper-4:#F7EFDD; --ink:#181310; --ink-2:#3A2F27; --ink-3:#6A5C50; --ink-4:#695B47; --linen:#D8C7A9; --moss:#56683A; --moss-deep:#3A4824; --moss-soft:#E3E6CE; --brick:#A53E2E; --brick-d:#7C2C1F; --brick-soft:#F3DDD6; --ochre:#C08A3E; --ochre-d:#835A1B; --ochre-soft:#F5E6C2; --indigo:#2A4F6B; --indigo-soft:#DCE6EE; --prussian:#2A4F6B; --sun:#E4B644; --red-mark:#D62828; --rule:rgba(28,22,16,.18); --rule-soft:rgba(28,22,16,.10); --ease:cubic-bezier(.22,.61,.36,1); --cols:60; --gutter:clamp(3px,0.32vw,8px); --margin:clamp(12px,1.8vw,34px); --lead:1.5; --lead-tight:1.05; --s-0:clamp(0.70rem,0.66rem + 0.14vw,0.78rem); --s-1:clamp(0.82rem,0.78rem + 0.18vw,0.94rem); --s-2:clamp(0.95rem,0.88rem + 0.32vw,1.14rem); --s-3:clamp(1.18rem,1.02rem + 0.74vw,1.62rem); --s-4:clamp(1.65rem,1.28rem + 1.72vw,2.60rem); --s-5:clamp(2.40rem,1.60rem + 3.80vw,4.80rem); --bg:var(--paper); --panel:var(--paper-4); --muted:var(--ink-3); --line:var(--rule); --accent:var(--moss-deep); --accent-soft:var(--moss-soft); --warn:var(--ochre-d); --trap:var(--brick-d); --flat:var(--ink-3); }
 [data-theme="dark"]{ --paper:#14100C; --paper-2:#1B1612; --paper-3:#1F1A14; --paper-4:#221C16; --ink:#F4EEDD; --ink-2:#E0D8C3; --ink-3:#B9AD96; --ink-4:#8C7E6A; --linen:#3A322A; --moss:#8DA868; --moss-deep:#B5CD92; --moss-soft:#2C3520; --brick:#E36953; --brick-d:#F08A75; --brick-soft:#3A1C16; --ochre:#E6B265; --ochre-d:#F3CB88; --ochre-soft:#3A2C12; --indigo:#7FA6CC; --indigo-soft:#1B2A38; --prussian:#7FA6CC; --sun:#E4B644; --red-mark:#E8584B; --rule:rgba(244,238,221,.18); --rule-soft:rgba(244,238,221,.08); }
+/* Stark skin (A/B): the machinespirits.org black · white · red. Same token names,
+   so the whole UI — rail, cards, activity-band SVG — re-skins by flipping data-skin.
+   Semantic accents collapse to a grayscale + one hot red: moss(good)→ink-strong,
+   ochre(neutral)→grey, brick(risk/trap)→red. */
+[data-skin="stark"]{ --paper:#FFFFFF; --paper-2:#F4F4F5; --paper-3:#FAFAFA; --paper-4:#FFFFFF; --ink:#0A0A0A; --ink-2:#262626; --ink-3:#525252; --ink-4:#8A8A8A; --linen:#D4D4D8; --moss:#171717; --moss-deep:#000000; --moss-soft:#ECECEC; --brick:#E63946; --brick-d:#C1121F; --brick-soft:#FBE3E5; --ochre:#737373; --ochre-d:#525252; --ochre-soft:#EDEDED; --indigo:#404040; --indigo-soft:#EDEDED; --prussian:#404040; --sun:#E63946; --red-mark:#E63946; --rule:rgba(10,10,10,.16); --rule-soft:rgba(10,10,10,.07); }
+[data-skin="stark"][data-theme="dark"]{ --paper:#0A0A0B; --paper-2:#141416; --paper-3:#161618; --paper-4:#1C1C1F; --ink:#FAFAFA; --ink-2:#E4E4E7; --ink-3:#A1A1AA; --ink-4:#6F6F76; --linen:#2A2A2E; --moss:#F5F5F5; --moss-deep:#FFFFFF; --moss-soft:rgba(250,250,250,.12); --brick:#E63946; --brick-d:#F4606C; --brick-soft:rgba(230,57,70,.18); --ochre:#A1A1AA; --ochre-d:#C4C4CC; --ochre-soft:rgba(161,161,170,.16); --indigo:#C4C4CC; --indigo-soft:rgba(196,196,204,.14); --prussian:#C4C4CC; --sun:#E63946; --red-mark:#E63946; --rule:rgba(250,250,250,.16); --rule-soft:rgba(250,250,250,.08); }
+/* Stark is flat — drop the parchment grain + the Klee-drift shader. */
+[data-skin="stark"] #field{ display:none; }
+[data-skin="stark"] body::before, [data-skin="stark"] body::after{ display:none; }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;max-width:100%;overflow-x:hidden}
 html{ background:var(--paper); -webkit-text-size-adjust:100%; }
@@ -4614,10 +4802,15 @@ ${css}
 // the rail, and the closing tags all come from here — reusing the same primitives
 // (pageHead, railHtml) so shell chrome is identical to a hand-written page.
 function renderShell({ title, active = '', sub = '', hint = '', css = '', body = '', script = '' } = {}) {
+  // Shell pages wire the tweaks panel's light/dark toggle here (the rail owns skin
+  // + grid + open/close; theme is the one control the bespoke pages each wire for
+  // themselves, so shell pages need their own single binding — no double-toggle).
+  const themeScript = `(function(){var t=document.getElementById('themeToggle');if(!t)return;t.addEventListener('click',function(){var d=document.documentElement,nx=d.getAttribute('data-theme')==='dark'?'':'dark';if(nx)d.setAttribute('data-theme','dark');else d.removeAttribute('data-theme');try{localStorage.setItem('poetics-theme',nx);}catch(_e){}});})();`;
   return `${pageHead({ title, css })}
 <body>
 ${railHtml({ active, sub, hint })}
 ${body}
+<script>${themeScript}</script>
 ${script ? `<script>\n${script}\n</script>\n` : ''}</body>
 </html>`;
 }
@@ -4936,6 +5129,12 @@ function renderScriptoriumHome(stats = {}) {
     <span>close</span>
     <span style="margin-left:auto;text-transform:none;letter-spacing:.03em;opacity:.8">the shape a critic reads</span>
   </div>
+  <section class="sc-primer">
+    <div class="sc-primer__k">new here?</div>
+    <h2 class="sc-primer__h">The Scriptorium, in brief</h2>
+    <p>A research instrument that <b>stages AI-tutoring dialogues as short plays</b> and reads them the way a literary critic would — looking for a genuine <i>turn</i> (a reversal) and a moment of <i>recognition</i>. You <b>make</b> dialogues, <b>read &amp; judge</b> them, and <b>keep</b> the record — the three acts below.</p>
+    <p class="sc-primer__note">It scores dramatic <em>form</em> — earned recognition versus flat, competent exposition — so a verdict is about the script on the page, never a claim about what is in a real learner's head.</p>
+  </section>
   ${renderActivityBand(s)}
   ${actsHtml}
   <div class="sc-foot">
@@ -5021,13 +5220,20 @@ function renderScriptoriumHome(stats = {}) {
 .sc-foot{ display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--rule); padding-top:13px; font:11px/1 ui-monospace,monospace; letter-spacing:.04em; color:var(--ink-3); }
 .sc-foot a{ color:var(--moss-deep); text-decoration:none; }
 .sc-foot a:hover{ text-decoration:underline; }
+.sc-primer{ margin:22px 0 0; border:1px solid var(--rule); background:var(--paper-4); padding:16px 20px; border-radius:10px; }
+.sc-primer__k{ font:600 10px/1 ui-monospace,monospace; letter-spacing:.16em; text-transform:uppercase; color:var(--brick); margin-bottom:7px; }
+.sc-primer__h{ font:600 19px/1.2 "Fraunces","Source Serif 4",Georgia,serif; color:var(--ink); margin:0 0 8px; }
+.sc-primer p{ margin:0; font-size:14px; line-height:1.6; color:var(--ink-2); max-width:80ch; }
+.sc-primer p + p{ margin-top:8px; }
+.sc-primer b{ color:var(--ink); font-weight:600; }
+.sc-primer__note{ font-size:12.5px; color:var(--ink-3); }
 @media (max-width:560px){ .scw-grid{ grid-template-columns:1fr; } }
 `;
 
   return renderShell({
     title: 'machine spirits · poetics scriptorium',
     active: 'home',
-    sub: 'a drama-machine for tutoring — generate · score · recognize',
+    sub: 'learning (to live) with machines',
     css,
     body,
   });
@@ -5967,7 +6173,7 @@ details.tour[open] .tour__chev{ transform:rotate(180deg); }
 `,
   })}
 <body>
-${railHtml({ active: 'home', brand: 'machine spirits', sub: 'a drama-machine for tutoring — generate · score · recognize' })}
+${railHtml({ active: 'home', brand: 'machine spirits', sub: 'learning (to live) with machines' })}
 <div class="wrap">
 
   <div class="welcome" id="welcome" hidden>

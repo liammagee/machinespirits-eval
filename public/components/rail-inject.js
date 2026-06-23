@@ -21,6 +21,18 @@
  *                   chrome already carries a brand mark, e.g. /chat)
  */
 (function () {
+  // Pick up the dashboard's persisted skin + theme so the injected rail (and any
+  // token-driven chrome) matches what was chosen on the server-rendered pages.
+  // Skin defaults to stark when never set, mirroring the rail's early-apply.
+  try {
+    const de = document.documentElement;
+    if (localStorage.getItem('poetics-theme') === 'dark') de.setAttribute('data-theme', 'dark');
+    let sk = localStorage.getItem('poetics-skin');
+    if (sk === null) sk = 'stark';
+    if (sk === 'stark') de.setAttribute('data-skin', 'stark');
+  } catch (_e) {
+    /* localStorage blocked — fall through to defaults */
+  }
   // Capture the script's data-* synchronously — document.currentScript is null
   // by the time the fetch().then() callbacks run.
   const script = document.currentScript;
