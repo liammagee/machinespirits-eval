@@ -54,10 +54,15 @@ background process on an ephemeral loopback port; you never manage a port.
   (⌘1–⌘9 for the first nine destinations, plus a dedicated **⌘B** for Board), or
   **View → Home** (⇧⌘H).
 - **The board.** `/board` is a live, editable kanban of the workplan: **drag a card
-  between lanes** to change its status, **click a card to edit** it, the lane **+** to
-  **add** an item, and **Delete** in the editor to remove one. Every write goes to
+  between lanes** to change its status, **click a card to edit** it (including its
+  **milestone** and **dependencies**), the lane **+** to **add** an item, and
+  **Delete** to remove one. Cards flag unmet dependencies. Every write goes to
   `workplan/items/` and re-renders. Editing needs the repo on disk (dev + the browser
   dev server); a packaged app's bundled board is read-only (writes revert).
+- **The timeline.** `/timeline` shows project **milestones** (from
+  `workplan/milestones.yaml`) with target dates and progress, alongside a live
+  **GitHub** panel — open PRs, releases/tags, and recent commits for the `origin`
+  repo (via the `gh` CLI) — with items linking to their branch on GitHub.
 - **API keys.** **File → Set Up API Keys…** writes a `keys.env` template and opens
   it. Add your provider keys (e.g. `OPENROUTER_API_KEY=…`), save, and restart. On the
   next launch the keys are encrypted into your **macOS keychain** and the plaintext

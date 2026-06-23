@@ -96,9 +96,29 @@ Full machine schema in `schema/item.schema.json`. The fields:
 | `claim_status` | no | atlas grammar: `settled`/`scope-bound`/`exploratory`/`killed`/`speculative`/`methods`/`planned`/`future` | for research/paper items that yield a claim |
 | `links` | no | map: `paper`, `notes`, `exports`, `runs`, `prs`, `atlas`, `items` | cross-links, never copies |
 | `tags` | no | list | free, for filtering |
+| `depends_on` | no | list of item ids | shown on the board; flagged until each dep is `done`; cycles rejected |
+| `milestone` | no | milestone id (see `milestones.yaml`) | groups the item under a timeline milestone |
 
 The body is free markdown: context, acceptance criteria, and a running log
 (date-stamped lines). Keep it short — link out for detail.
+
+## Web UI — editable board + timeline
+
+The board renders as a live web UI (the same surface in the browser dev server and
+the Scriptorium desktop app), backed by the **same write path as the CLI**:
+
+- **`/board`** — a kanban by status. Drag a card between lanes to change its status;
+  click a card to edit every field (including **milestone** and **depends on**); the
+  lane **+** adds an item; **Delete** removes one. Writes land in `items/` and
+  re-render `board.json`.
+- **`/timeline`** — milestones from `milestones.yaml` (id, title, target date, status,
+  optional git `tag`) with a progress bar over each milestone's items, plus a live
+  **GitHub** panel (open PRs, releases/tags, recent commits) for the `origin` repo via
+  the `gh` CLI. Items link to their `branch` on GitHub; add/edit milestones inline.
+
+`milestones.yaml` is the source of truth for milestones (manage from `/timeline` or by
+hand). All web writes need the repo on disk — a packaged desktop app's board is
+read-only.
 
 ## The five surfaces (the contract)
 

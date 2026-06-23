@@ -96,6 +96,14 @@ in the same commit, with a comment explaining why — never silently.
   browser dev server; a packaged app (workplan/ in the asar) returns 500 and the UI
   reverts. The historical `/board-doc` note (a static file with no rail) gets a fixed
   "← live board" link injected at serve time so it is no longer a dead end.
+- **Timeline + GitHub — `/timeline`, `services/githubInfo.js`.** Milestones live in
+  `workplan/milestones.yaml` (workplan.js `loadMilestones`/`upsertMilestone`/
+  `deleteMilestone`; items reference one via `milestone:`). `services/githubInfo.js`
+  resolves the `origin` repo, builds branch/commit/tag/PR links (pure, tested), and
+  pulls live activity via the `gh` CLI (cached 60s, fails soft). `/timeline` joins
+  milestones + items + that activity; `/api/{milestones,github/activity}` back it.
+  Dependencies (`depends_on`, cycle-checked by `validateDependencies`) render as card
+  badges on `/board`. New repo data source? Add it to `githubInfo.js`, not the route.
 
 ## File map
 
