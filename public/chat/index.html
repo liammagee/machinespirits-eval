@@ -63,7 +63,7 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; height: 100%; }
+html, body { margin: 0; padding: 0; height: 100%; max-width: 100%; overflow-x: hidden; }
 html { -webkit-text-size-adjust: 100%; background: var(--paper); }
 body {
   background: transparent;
@@ -1917,6 +1917,212 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
   outline-offset: 2px;
 }
 
+@media (max-width: 860px) {
+  :root {
+    --margin: 12px;
+    --gutter: 4px;
+  }
+  body {
+    overflow: hidden;
+    letter-spacing: 0;
+  }
+  .app,
+  .chrome,
+  .cover-pretext,
+  main.split,
+  aside.config,
+  section.dialogue {
+    max-width: 100vw;
+  }
+  .chrome {
+    padding-block: 0.55rem;
+  }
+  .chrome__nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 10px;
+    align-items: center;
+    padding-inline: var(--margin);
+  }
+  .mark,
+  .chapters,
+  .stamp,
+  .chrome__nav > .cli-btn,
+  .chrome__nav > .xray-btn:not(.cli-btn) {
+    grid-column: auto;
+  }
+  .mark {
+    flex: 1 1 100%;
+  }
+  .chapters {
+    flex: 1 1 100%;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 12px;
+    padding-bottom: 3px;
+  }
+  .chapters a,
+  .xray-btn,
+  .curriculum-drawer > summary,
+  .advanced > summary,
+  .compare > summary,
+  details.trace > summary {
+    min-height: 40px;
+    align-items: center;
+  }
+  .xray-btn {
+    display: inline-flex;
+  }
+  .stamp,
+  .ruler {
+    display: none;
+  }
+  .cover-pretext {
+    grid-template-columns: 1fr;
+    gap: 3px;
+    padding-inline: var(--margin);
+  }
+  .cover-pretext__sig,
+  .cover-pretext__tag,
+  .cover-pretext__rule,
+  .cover-pretext__body,
+  .cover-pretext__cta {
+    grid-column: auto;
+    text-align: left;
+  }
+  .cover-pretext__rule {
+    display: none;
+  }
+  main.split {
+    grid-template-columns: 1fr;
+    row-gap: 12px;
+    overflow: hidden;
+  }
+  aside.config {
+    grid-column: auto;
+    max-height: 45vh;
+    border-right: 0;
+    border-bottom: 1px solid color-mix(in oklab, var(--ink) 16%, transparent);
+    padding-right: 0;
+  }
+  section.dialogue {
+    grid-column: auto;
+    padding-left: 0;
+  }
+  .fg-head {
+    flex-wrap: wrap;
+    padding-right: 0;
+  }
+  .fg-head__hint {
+    flex-basis: 100%;
+    max-width: none;
+    white-space: normal;
+  }
+  .chips {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .chip,
+  .lec-row,
+  .mode__btn,
+  .persona-chip,
+  .step-control__btn,
+  .composer button,
+  .topic__input,
+  .advanced__search,
+  .compare__pick select {
+    min-height: 40px;
+  }
+  .chip,
+  .lec-row,
+  .mode__btn,
+  .persona-chip,
+  .step-control__btn,
+  .composer button {
+    display: flex;
+    align-items: center;
+  }
+  .chip {
+    display: grid;
+    grid-template-columns: 1em 1fr;
+  }
+  .mode {
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+  .mode__toggle {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+  }
+  .mode__btn {
+    justify-content: center;
+    text-align: center;
+    padding: 8px 6px;
+  }
+  .mode__meta {
+    flex-basis: 100%;
+  }
+  .persona-strip {
+    padding-bottom: 6px;
+  }
+  .step-control {
+    grid-template-columns: 1fr;
+    row-gap: 8px;
+  }
+  .step-control__btn {
+    justify-content: center;
+    min-width: 0;
+  }
+  .composer__pretext {
+    flex-wrap: wrap;
+  }
+  .composer form {
+    grid-template-columns: 1fr;
+    row-gap: 8px;
+    padding-inline: 0;
+  }
+  .composer textarea {
+    width: 100%;
+    min-width: 0;
+  }
+  .composer button {
+    justify-content: center;
+    width: 100%;
+  }
+  .learner-quote,
+  .learner-body,
+  .err {
+    width: 100%;
+    max-width: 100%;
+  }
+  .learner-body__head,
+  .plate--tutor figcaption,
+  .plate__apparatus,
+  .spec-row,
+  .compare__row,
+  .charisma__scores {
+    grid-template-columns: 1fr;
+  }
+  .spec-row {
+    gap: 4px;
+  }
+  .reg {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .chips {
+    grid-template-columns: 1fr;
+  }
+  .pigments,
+  .charisma__scores {
+    flex-direction: column;
+    display: flex;
+  }
+}
+
 /* reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
@@ -1992,13 +2198,13 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       <div class="config__body">
 
         <div class="topic">
-          <label class="topic__lbl">
+          <label class="topic__lbl" for="chat-topic">
             Topic
             <template x-if="lectureRef">
               <span class="topic__curriculum-pill" title="curriculum attached">◦ <em x-text="lectureRef"></em> <button type="button" class="topic__clear" @click="clearCurriculum()">×</button></span>
             </template>
           </label>
-          <input type="text" class="topic__input" x-model="topic" placeholder="e.g. Hegel's concept of recognition — a line is a dot that went for a walk" />
+          <input id="chat-topic" type="text" class="topic__input" x-model="topic" placeholder="e.g. Hegel's concept of recognition — a line is a dot that went for a walk" />
           <details class="curriculum-drawer" x-ref="curriculumDrawer">
             <summary>
               <span class="chev">▸</span>
@@ -2201,7 +2407,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         <details class="advanced">
           <summary>all cells · <span style="color: var(--ink-3); font-weight: 400;">advanced browser</span></summary>
           <div class="advanced__body">
-            <input type="text" class="advanced__search" x-model="cellFilter" placeholder="filter by name, prompt-type, or description…" />
+            <input type="text" class="advanced__search" x-model="cellFilter" aria-label="Filter cells" placeholder="filter by name, prompt-type, or description…" />
             <template x-for="cell in filteredCells" :key="cell.name">
               <div class="cell-row" :class="{'is-active': resolved?.name === cell.name}" @click="pickCellDirectly(cell)"
                    :title="orientationTooltip(cell.orientation) + (cell.description ? '\n\n' + cell.description : '')">
@@ -2642,6 +2848,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
             <form @submit.prevent="send">
               <span class="composer__prompt">learner :~ $</span>
               <textarea
+                aria-label="Learner message"
                 x-model="input"
                 @keydown.enter.prevent="$event.shiftKey ? input += '\n' : send()"
                 :disabled="pending"
@@ -2724,6 +2931,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
             <form @submit.prevent="sendAsTeacher">
               <span class="composer__prompt">teacher :~ $</span>
               <textarea
+                aria-label="Teacher message"
                 x-model="input"
                 @keydown.enter.prevent="$event.shiftKey ? input += '\n' : sendAsTeacher()"
                 :disabled="pending"

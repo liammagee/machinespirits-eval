@@ -1243,9 +1243,8 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   // /pilot-admin) can fetch + inject the SAME rail the rendered pages carry.
   // railHtml() is the single source of nav truth; `bare: true` drops the bits
   // that belong only to a dashboard-rendered page (the shader canvas, the x-ray
-  // overlay, the grid/theme toggles, and the three enhancer scripts) so the
-  // fragment carries only the rail + its own .rail* CSS — no host-page CSS bleed
-  // and no duplicate #field/#xrayGrid ids. See public/components/rail-inject.js.
+  // overlay, the grid/theme toggles, and the display-control scripts), while the
+  // command palette stays global. See public/components/rail-inject.js.
   app.get('/_nav.html', (req, res) =>
     res.type('html').send(railHtml({ active: String((req.query && req.query.active) || ''), bare: true })),
   );
@@ -1715,7 +1714,9 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
     html = /<body[^>]*>/i.test(html) ? html.replace(/(<body[^>]*>)/i, `$1${back}`) : back + html;
     res.type('html').send(html);
   });
-  app.get('/derivation', (_req, res) => res.type('html').send(renderDerivationIndexHtml(listDerivationRuns())));
+  app.get('/derivation', (req, res) =>
+    res.type('html').send(renderDerivationIndexHtml(listDerivationRuns(), req.query || {})),
+  );
   app.get('/derivation/live', (_req, res) =>
     res.type('html').send(renderDerivationLiveIndexHtml(listDerivationLiveRuns({ includeComplete: true }))),
   );
@@ -2156,7 +2157,7 @@ const NAV = [
 // generation corpus at /browse; proof runs = rule-checked staging loop at
 // /derivation; replays = counterfactual diffs) then the two make-something actions
 // (compose a scene, launch a run).
-const NAV_PRIMARY = ['home', 'browse', 'derivation', 'replays', 'compose', 'runs', 'board', 'timeline'];
+const NAV_PRIMARY = ['home', 'browse', 'derivation', 'replays', 'compose', 'runs'];
 // Folded into labelled dropdowns, in order: the reference surfaces, then the
 // dated/durable techne notes. A group whose member is the active page shows a
 // moss accent on its summary so the current location is still legible when closed.
@@ -2165,6 +2166,13 @@ const NAV_GROUPS = [
   ['reference', ['ontology', 'rubric', 'curriculum']],
   ['notes', ['summary', 'story', 'repertoire']],
 ];
+const NAV_DRAWER_GROUPS = [
+  ['Observe', ['home', 'browse', 'derivation', 'replays']],
+  ['Create', ['compose', 'runs']],
+  ['Review', ['board', 'timeline', 'adjudicate']],
+  ['Reference', ['ontology', 'rubric', 'curriculum', 'summary', 'story', 'repertoire', 'timeline']],
+  ['Admin', ['tutor', 'pilot-admin']],
+];
 
 // A per-page orientation band (the `hint` slot of railHtml): "<b>here</b> — what",
 // then a pointer back to the working surfaces. Mirrors the corpus-distinction bands
@@ -2172,6 +2180,120 @@ const NAV_GROUPS = [
 // they are and how to get back to the things you read and make.
 function orientBand(here, what, tail = 'the working surfaces are on the rail above') {
   return `<span><b>${here}</b> — ${what}</span><span class="navhint__sep">·</span><span>${tail}</span>`;
+}
+
+function navPlainText(value) {
+  return String(value ?? '')
+    .replace(/&amp;/g, '&')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/<[^>]*>/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function commandPaletteData(active = '') {
+  const commands = [];
+  const add = ({ type, title, subtitle = '', href, keywords = [] }) => {
+    if (!href || !title) return;
+    commands.push({
+      type: navPlainText(type),
+      title: navPlainText(title),
+      subtitle: navPlainText(subtitle),
+      href,
+      keywords: keywords.map(navPlainText).filter(Boolean),
+    });
+  };
+
+  for (const [key, href, label, title] of NAV) {
+    add({
+      type: 'route',
+      title: label,
+      subtitle: title,
+      href,
+      keywords: [key, active === key ? 'current' : '', 'navigation'],
+    });
+  }
+
+  [
+    ['Generate mock script', '/runs?kind=generate&mock=1', 'free default script generation'],
+    ['Replay dry run', '/runs?kind=replay&mock=1&dryRun=1', 'counterfactual rewrite with mock generator'],
+    ['Proof-DAG derivation', '/runs?kind=derivation', 'launch a deterministic proof run'],
+    ['Online score dry run', '/runs?kind=online-score&dryRun=1', 'plan scorer backfill before spend'],
+    ['Curriculum drama mock', '/runs?kind=pedagogical-drama&mock=1', 'enact compiled curriculum drama specs'],
+  ].forEach(([title, href, subtitle]) => add({ type: 'run', title, subtitle, href, keywords: ['job center', 'launch'] }));
+
+  [
+    ['Flagged scripts', '/browse?queue=flagged', 'review queue of scripts flagged for human attention'],
+    ['Unlabelled scripts', '/browse?unlabelled=1', 'public scripts without a saved human label'],
+    ['Recognition scripts', '/browse?form=recognition', 'critic-form saved view'],
+    ['Trap scripts', '/browse?form=trap', 'critic-form saved view'],
+    ['Flat scripts', '/browse?form=flat', 'critic-form saved view'],
+    ['Grounded proof runs', '/derivation?verdict=grounded_anagnorisis', 'rule-checker wins'],
+    ['Impasse proof runs', '/derivation?verdict=aporia', 'rule-checker impasses'],
+    ['Disengaged proof runs', '/derivation?verdict=disengagement', 'rule-checker disengagements'],
+    ['Scriptorium board items', '/board?tag=scriptorium', 'workplan items tagged scriptorium'],
+    ['Evidence board items', '/board?tag=evidence', 'workplan items tagged evidence'],
+  ].forEach(([title, href, subtitle]) => add({ type: 'view', title, subtitle, href, keywords: ['saved view', 'permalink'] }));
+
+  try {
+    for (const run of listDerivationRuns().slice(0, 8)) {
+      const d = run.diagnosis || {};
+      add({
+        type: 'proof run',
+        title: run.label,
+        subtitle: `${DERIVATION_VERDICT_LABEL[d.verdict] || d.verdict || 'unknown'} · ${derivationPlainSummary(d)}`,
+        href: `/derivation/${encodeURIComponent(run.label)}`,
+        keywords: ['recent artifact', d.verdict || '', d.group || '', d.backend?.mode || ''],
+      });
+    }
+  } catch {
+    /* palette recents are optional */
+  }
+
+  try {
+    for (const bundle of listReplayBundles().slice(0, 6)) {
+      add({
+        type: 'replay bundle',
+        title: bundle.name,
+        subtitle: `${bundle.generator || '?'} -> ${bundle.checker || 'none'} · ${bundle.count ?? '?'} item(s)`,
+        href: `/replays?bundle=${encodeURIComponent(bundle.name)}`,
+        keywords: ['recent artifact', 'counterfactual', 'diff'],
+      });
+    }
+  } catch {
+    /* palette recents are optional */
+  }
+
+  try {
+    const statusRank = { active: 0, review: 1, blocked: 2, triaged: 3, done: 4 };
+    const items = (readWorkplanBoard().items || [])
+      .filter(
+        (item) =>
+          ['active', 'review', 'blocked', 'triaged'].includes(item.status) ||
+          String(item.id || '').startsWith('scriptorium-') ||
+          (Array.isArray(item.tags) && item.tags.includes('scriptorium')),
+      )
+      .sort(
+        (a, b) =>
+          (statusRank[a.status] ?? 9) - (statusRank[b.status] ?? 9) ||
+          String(a.priority || '').localeCompare(String(b.priority || '')) ||
+          String(a.id || '').localeCompare(String(b.id || '')),
+      )
+      .slice(0, 18);
+    for (const item of items) {
+      add({
+        type: 'workplan',
+        title: item.title || item.id,
+        subtitle: `${item.status || '?'} · ${item.priority || '?'} · ${item.id || ''}`,
+        href: `/board?item=${encodeURIComponent(item.id || '')}`,
+        keywords: [item.id || '', item.type || '', item.owner || '', ...(item.tags || [])],
+      });
+    }
+  } catch {
+    /* board may not be rendered yet */
+  }
+
+  return commands;
 }
 
 // Single source of truth for the top-nav markup + the specimen ground every page
@@ -2186,7 +2308,10 @@ function orientBand(here, what, tail = 'the working surfaces are on the rail abo
 // identical on every page, beacon or not.
 function railHtml({ active = '', brand = 'machine spirits', sub = '', extra = '', hint = '', bare = false } = {}) {
   const byKey = Object.fromEntries(NAV.map((n) => [n[0], n]));
-  const link = (key) => {
+  const current = byKey[active] || byKey.home;
+  const currentLabel = current ? current[2] : 'current surface';
+  const paletteJson = safeJsonForScript(commandPaletteData(active));
+  const link = (key, extraClass = '') => {
     const n = byKey[key];
     if (!n) return '';
     const [, href, label, title] = n;
@@ -2194,7 +2319,7 @@ function railHtml({ active = '', brand = 'machine spirits', sub = '', extra = ''
     const attrs = on
       ? ' aria-current="page" style="color:var(--moss-deep);border-color:var(--moss);background:var(--moss-soft)"'
       : '';
-    return `<a class="rail__btn" href="${href}" title="${title}"${attrs}>${label}</a>`;
+    return `<a class="rail__btn${extraClass ? ` ${extraClass}` : ''}" href="${href}" title="${title}"${attrs}>${label}</a>`;
   };
   const primary = NAV_PRIMARY.map(link).join('\n    ');
   const groups = NAV_GROUPS.map(([label, keys]) => {
@@ -2205,6 +2330,13 @@ function railHtml({ active = '', brand = 'machine spirits', sub = '', extra = ''
     return `<details class="rail__menu"><summary class="rail__btn"${onAttrs}>${label}</summary><div class="rail__pop">
       ${items}
     </div></details>`;
+  }).join('\n    ');
+  const drawerGroups = NAV_DRAWER_GROUPS.map(([label, keys]) => {
+    const items = keys.map((key) => link(key, 'rail__drawer-link')).join('\n      ');
+    return `<section class="rail__drawer-group" aria-label="${label}">
+      <div class="rail__drawer-heading">${label}</div>
+      ${items}
+    </section>`;
   }).join('\n    ');
   // railHtml owns BOTH the rail markup and its styling. The full rule set rides
   // inline here (like the canvas below), emitted as the first node in the body so
@@ -2222,8 +2354,32 @@ function railHtml({ active = '', brand = 'machine spirits', sub = '', extra = ''
 @keyframes railspin{ to{ transform:rotate(360deg); } }
 .rail__stamp{ flex:0 0 auto; display:inline-flex; align-items:center; gap:.4em; color:var(--ink-3); letter-spacing:.18em; }
 .rail__stamp-glyph{ color:var(--prussian); }
-.rail__btn{ display:inline-flex; align-items:center; gap:.45em; border:1px solid var(--rule); background:transparent; color:var(--ink-3); font:inherit; padding:.32em .8em; cursor:pointer; text-decoration:none; flex:0 0 auto; transition:color .15s var(--ease), border-color .15s var(--ease); }
+.rail__desktop-nav,.rail__cluster{ display:flex; align-items:center; gap:.55em; min-width:0; }
+.rail__desktop-nav{ flex:0 1 auto; }
+.rail__cluster{ flex:0 0 auto; }
+.rail__extra{ display:inline-flex; flex:0 0 auto; }
+.rail__btn{ min-height:32px; display:inline-flex; align-items:center; justify-content:center; gap:.45em; border:1px solid var(--rule); background:transparent; color:var(--ink-3); font:inherit; padding:.32em .8em; cursor:pointer; text-decoration:none; flex:0 0 auto; transition:color .15s var(--ease), border-color .15s var(--ease), background .15s var(--ease); }
 .rail__btn:hover{ color:var(--ink); border-color:var(--ink-3); }
+.rail__mobile{ display:none; }
+.cmdp{ position:fixed; inset:0; z-index:90; display:flex; align-items:flex-start; justify-content:center; padding:10vh 16px 24px; font-family:"JetBrains Mono","SFMono-Regular",Consolas,monospace; }
+.cmdp[hidden]{ display:none; }
+.cmdp__back{ position:absolute; inset:0; background:rgba(24,19,16,.42); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); }
+.cmdp__panel{ position:relative; width:min(760px,96vw); max-height:min(76vh,720px); display:flex; flex-direction:column; background:color-mix(in srgb, var(--paper) 97%, transparent); border:1px solid var(--rule); border-radius:8px; box-shadow:0 24px 70px rgba(28,22,16,.32); overflow:hidden; }
+.cmdp__head{ padding:14px; border-bottom:1px solid var(--rule); background:var(--paper-4); }
+.cmdp__title{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin:0 0 9px; }
+.cmdp__title b{ font:italic 19px/1.1 "Fraunces","Source Serif 4",Georgia,serif; color:var(--ink); text-transform:none; letter-spacing:0; }
+.cmdp__title span{ font-size:10px; color:var(--ink-4); text-transform:uppercase; letter-spacing:.1em; }
+.cmdp__input{ width:100%; min-height:44px; box-sizing:border-box; border:1px solid var(--rule); background:var(--paper); color:var(--ink); padding:8px 11px; font:13px "JetBrains Mono","SFMono-Regular",Consolas,monospace; letter-spacing:0; }
+.cmdp__input:focus{ outline:2px solid color-mix(in srgb,var(--moss) 65%,transparent); outline-offset:1px; border-color:var(--moss); }
+.cmdp__list{ overflow:auto; padding:7px; display:grid; gap:3px; }
+.cmdp__row{ width:100%; text-align:left; display:grid; grid-template-columns:minmax(82px,.18fr) 1fr auto; gap:10px; align-items:center; border:1px solid transparent; background:transparent; color:var(--ink-2); padding:8px 10px; cursor:pointer; font:12px/1.35 "JetBrains Mono","SFMono-Regular",Consolas,monospace; }
+.cmdp__row:hover,.cmdp__row.is-active{ border-color:var(--moss); background:var(--moss-soft); }
+.cmdp__type{ color:var(--ink-4); text-transform:uppercase; letter-spacing:.08em; font-size:10px; }
+.cmdp__main{ min-width:0; }
+.cmdp__name{ color:var(--ink); font-weight:700; overflow-wrap:anywhere; }
+.cmdp__sub{ color:var(--ink-3); font-size:11px; margin-top:2px; overflow-wrap:anywhere; }
+.cmdp__go{ color:var(--moss-deep); font-size:10px; text-transform:uppercase; letter-spacing:.08em; }
+.cmdp__empty{ padding:20px; color:var(--ink-4); font-style:italic; }
 /* live-status beacon — only rendered on pages that pass it via railHtml's \`extra\` slot (e.g. /browse) */
 .rail__beacon{ display:inline-flex; align-items:center; gap:.55em; padding:.3em .75em; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-3); flex:0 0 auto; }
 .rail__beacon[data-state="live"]{ color:var(--moss-deep); border-color:color-mix(in srgb, var(--moss) 55%, var(--rule)); }
@@ -2240,6 +2396,23 @@ function railHtml({ active = '', brand = 'machine spirits', sub = '', extra = ''
 .rail__pop{ position:absolute; top:calc(100% + 7px); right:0; min-width:190px; display:flex; flex-direction:column; gap:3px; padding:7px; background:color-mix(in srgb, var(--paper) 96%, transparent); border:1px solid var(--rule); border-radius:9px; box-shadow:0 10px 30px rgba(28,22,16,.18); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); z-index:40; }
 .rail__pop .rail__btn{ border-color:transparent; justify-content:flex-start; width:100%; }
 .rail__pop .rail__btn:hover{ border-color:var(--rule); background:var(--paper-3); }
+.rail__mobile-title{ min-width:0; display:flex; flex-direction:column; gap:1px; }
+.rail__mobile-brand{ font-family:"Fraunces","Source Serif 4",Georgia,serif; font-style:italic; font-size:17px; line-height:1.1; letter-spacing:0; text-transform:none; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.rail__mobile-current{ font-size:10px; line-height:1.2; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-4); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.rail__mobile-command{ min-height:44px; padding-inline:12px; }
+.rail__mobile-menu{ position:relative; flex:0 0 auto; }
+.rail__mobile-menu>summary{ list-style:none; }
+.rail__mobile-menu>summary::-webkit-details-marker{ display:none; }
+.rail__mobile-menu[open]::before{ content:""; position:fixed; inset:0; z-index:48; background:rgba(24,19,16,.34); backdrop-filter:blur(2px); -webkit-backdrop-filter:blur(2px); }
+.rail__mobile-menu[open]>summary{ position:relative; z-index:51; color:var(--ink); border-color:var(--moss); background:var(--moss-soft); }
+.rail__drawer{ position:fixed; z-index:50; top:10px; right:10px; width:min(340px, calc(100vw - 20px)); max-height:calc(100vh - 20px); overflow:auto; padding:14px; background:color-mix(in srgb, var(--paper) 97%, transparent); border:1px solid var(--rule); box-shadow:0 20px 60px rgba(28,22,16,.26); }
+.rail__drawer-title{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding:2px 2px 12px; border-bottom:1px solid var(--rule); }
+.rail__drawer-title b{ font:italic 20px/1.1 "Fraunces","Source Serif 4",Georgia,serif; text-transform:none; letter-spacing:0; color:var(--ink); }
+.rail__drawer-title span{ font-size:10px; letter-spacing:.08em; color:var(--ink-4); }
+.rail__drawer-group{ display:grid; gap:5px; padding:12px 0 0; }
+.rail__drawer-heading{ font:700 10px/1 "JetBrains Mono","SFMono-Regular",Consolas,monospace; text-transform:uppercase; letter-spacing:.12em; color:var(--ink-4); }
+.rail__drawer-link{ width:100%; min-height:42px; justify-content:flex-start; padding:.72em .9em; border-color:var(--rule); background:var(--paper-4); letter-spacing:.08em; }
+.rail__drawer-link:hover{ background:var(--paper-3); border-color:var(--moss); color:var(--moss-deep); }
 /* orientation band — a per-page "what this is / where its siblings are" note, rendered just under the rail */
 .navhint{ display:flex; flex-wrap:wrap; align-items:baseline; gap:.35em .9em; padding:.5em clamp(.8rem,2vw,1.2rem); border-bottom:1px solid var(--rule-soft); background:color-mix(in srgb, var(--paper) 70%, transparent); font-family:"JetBrains Mono","SFMono-Regular",Consolas,monospace; font-size:11px; letter-spacing:.03em; line-height:1.5; color:var(--ink-3); }
 .navhint b{ color:var(--ink-2); font-weight:600; }
@@ -2257,10 +2430,21 @@ body.xray-on .xray-overlay{ opacity:1; }
 .xray-overlay__col[data-i="30"]{ outline-color:color-mix(in oklab, var(--prussian,#2A4F6B) 55%, transparent); }
 #gridToggle[aria-pressed="true"]{ color:var(--moss-deep); border-color:var(--moss); background:var(--moss-soft); }`
 }
+@media (max-width:1500px) and (min-width:861px){
+  .rail__sub,.rail__stamp{ display:none; }
+  .rail__inner{ gap:.55em; }
+  .rail__btn{ padding:.32em .66em; letter-spacing:.12em; }
+}
 @media (max-width:860px){
-  .rail__brand{ font-size:14px; }
-  .rail__inner{ gap:.6em; padding:.45em .8em; }
-  .rail__sub{ display:none; }
+  .rail{ position:sticky; top:0; }
+  .rail__inner{ min-height:56px; gap:.55rem; padding:0 .75rem; width:100%; }
+  .rail__glyph,.rail__brand,.rail__sub,.rail__stamp,.rail__desktop-nav,.rail__cluster,.rail__extra{ display:none; }
+  .rail__mobile{ display:grid; grid-template-columns:minmax(0,1fr) auto auto auto; align-items:center; gap:8px; width:100%; min-width:0; }
+  .rail__btn{ min-height:44px; padding:.58em .9em; letter-spacing:.08em; }
+  .cmdp{ padding-top:7vh; }
+  .cmdp__row{ grid-template-columns:1fr; gap:3px; }
+  .cmdp__go{ display:none; }
+  .navhint{ font-size:10.5px; padding:.55rem .75rem; }
 }
 </style>
 ${
@@ -2271,21 +2455,145 @@ ${
 }
 <header class="rail">
   <div class="rail__inner">
+    <div class="rail__mobile">
+      <div class="rail__mobile-title">
+        <span class="rail__mobile-brand">${brand}</span>
+        <span class="rail__mobile-current">${currentLabel}</span>
+      </div>
+      <button class="rail__btn rail__mobile-command" type="button" data-palette-open title="Open command palette">search</button>
+      <a class="rail__btn rail__mobile-command" href="/runs" title="Open the run launcher">launch</a>
+      <details class="rail__mobile-menu">
+        <summary class="rail__btn" aria-label="Open Scriptorium navigation menu">menu</summary>
+        <nav class="rail__drawer" aria-label="Scriptorium navigation">
+          <div class="rail__drawer-title"><b>Scriptorium</b><span>${currentLabel}</span></div>
+          ${drawerGroups}
+        </nav>
+      </details>
+    </div>
     <span class="rail__glyph" aria-hidden="true">◐</span>
     <span class="rail__brand">${brand}</span>
     <span class="rail__sub">${sub}</span>
-    ${extra}${primary}
-    ${groups}
+    ${extra ? `<span class="rail__extra">${extra}</span>` : ''}
+    <nav class="rail__desktop-nav" aria-label="Primary Scriptorium navigation">
+      ${primary}
+    </nav>
+    <div class="rail__cluster" aria-label="Secondary Scriptorium navigation">
+      ${groups}
+      <button class="rail__btn" type="button" data-palette-open title="Open command palette (Cmd/Ctrl+K)">search</button>
+    </div>
     ${
       bare
         ? ''
-        : `<button class="rail__btn" id="gridToggle" type="button" aria-pressed="false" title="grid — toggle the 60-column layout overlay (alignment aid)">grid</button>
-    <button class="rail__btn" id="themeToggle" type="button">theme</button>`
+        : `<div class="rail__cluster" aria-label="Display controls"><button class="rail__btn" id="gridToggle" type="button" aria-pressed="false" title="grid — toggle the 60-column layout overlay (alignment aid)">grid</button>
+    <button class="rail__btn" id="themeToggle" type="button" aria-label="Toggle light or dark theme">theme</button></div>`
     }
     <span class="rail__stamp" aria-hidden="true"><span class="rail__stamp-glyph">◎</span>MMXXVI</span>
   </div>
 </header>
-${hint ? `<div class="navhint" role="note">${hint}</div>` : ''}${
+${hint ? `<div class="navhint" role="note">${hint}</div>` : ''}
+<div class="cmdp" id="cmdPalette" hidden>
+  <div class="cmdp__back" data-palette-close></div>
+  <div class="cmdp__panel" role="dialog" aria-modal="true" aria-labelledby="cmdpTitle">
+    <div class="cmdp__head">
+      <div class="cmdp__title"><b id="cmdpTitle">Command palette</b><span>Cmd/Ctrl+K</span></div>
+      <input class="cmdp__input" id="cmdpInput" type="search" autocomplete="off" placeholder="Jump to routes, runs, saved views, artifacts, workplan items">
+    </div>
+    <div class="cmdp__list" id="cmdpList" role="listbox"></div>
+  </div>
+</div>
+<script type="application/json" id="cmdPaletteData">${paletteJson}</script>
+<script>
+(function () {
+  var root = document.getElementById('cmdPalette');
+  var input = document.getElementById('cmdpInput');
+  var list = document.getElementById('cmdpList');
+  var dataNode = document.getElementById('cmdPaletteData');
+  if (!root || !input || !list || !dataNode) return;
+  var commands = [];
+  try { commands = JSON.parse(dataNode.textContent || '[]') || []; } catch (_e) {}
+  var shown = [];
+  var active = 0;
+  function textOf(cmd) {
+    return [cmd.type, cmd.title, cmd.subtitle].concat(cmd.keywords || []).join(' ').toLowerCase();
+  }
+  function score(cmd, q) {
+    if (!q) return 1;
+    var hay = textOf(cmd);
+    var parts = q.split(/\\s+/).filter(Boolean);
+    for (var i = 0; i < parts.length; i++) {
+      if (hay.indexOf(parts[i]) < 0) return 0;
+    }
+    var title = String(cmd.title || '').toLowerCase();
+    return title.indexOf(q) === 0 ? 4 : hay.indexOf(q) >= 0 ? 2 : 1;
+  }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+    });
+  }
+  function render() {
+    var q = input.value.trim().toLowerCase();
+    shown = commands
+      .map(function (cmd, i) { return { cmd: cmd, i: i, s: score(cmd, q) }; })
+      .filter(function (x) { return x.s > 0; })
+      .sort(function (a, b) { return (b.s - a.s) || (a.i - b.i); })
+      .slice(0, 18)
+      .map(function (x) { return x.cmd; });
+    if (active >= shown.length) active = Math.max(0, shown.length - 1);
+    if (!shown.length) {
+      list.innerHTML = '<div class="cmdp__empty">No matching commands.</div>';
+      return;
+    }
+    list.innerHTML = shown.map(function (cmd, i) {
+      return '<button class="cmdp__row' + (i === active ? ' is-active' : '') + '" type="button" role="option" aria-selected="' + (i === active ? 'true' : 'false') + '" data-i="' + i + '">' +
+        '<span class="cmdp__type">' + esc(cmd.type || 'open') + '</span>' +
+        '<span class="cmdp__main"><span class="cmdp__name">' + esc(cmd.title || cmd.href) + '</span>' +
+        (cmd.subtitle ? '<span class="cmdp__sub">' + esc(cmd.subtitle) + '</span>' : '') + '</span>' +
+        '<span class="cmdp__go">open</span>' +
+      '</button>';
+    }).join('');
+  }
+  function openPalette() {
+    root.hidden = false;
+    active = 0;
+    render();
+    setTimeout(function () { input.focus(); input.select(); }, 0);
+  }
+  function closePalette() {
+    root.hidden = true;
+    input.value = '';
+  }
+  function go() {
+    var cmd = shown[active];
+    if (cmd && cmd.href) window.location.href = cmd.href;
+  }
+  [].slice.call(document.querySelectorAll('[data-palette-open]')).forEach(function (button) {
+    button.addEventListener('click', openPalette);
+  });
+  root.addEventListener('click', function (e) {
+    if (e.target.closest('[data-palette-close]')) closePalette();
+    var row = e.target.closest('.cmdp__row');
+    if (row) {
+      active = Number(row.getAttribute('data-i')) || 0;
+      go();
+    }
+  });
+  input.addEventListener('input', function () { active = 0; render(); });
+  document.addEventListener('keydown', function (e) {
+    var key = String(e.key || '').toLowerCase();
+    if ((e.metaKey || e.ctrlKey) && key === 'k') {
+      e.preventDefault();
+      openPalette();
+      return;
+    }
+    if (root.hidden) return;
+    if (e.key === 'Escape') { e.preventDefault(); closePalette(); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); active = Math.min(active + 1, Math.max(0, shown.length - 1)); render(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); active = Math.max(active - 1, 0); render(); }
+    else if (e.key === 'Enter') { e.preventDefault(); go(); }
+  });
+})();
+</script>${
     bare
       ? ''
       : `
@@ -3085,6 +3393,12 @@ const DERIVATION_CSS = `
 .live-turn__stats{display:flex;flex-wrap:wrap;gap:5px}
 .live-pill{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);border:1px solid var(--rule-soft);border-radius:4px;padding:1px 6px;background:var(--paper-2);color:var(--ink-2)}
 .live-empty{font-family:"JetBrains Mono",monospace;color:var(--ink-3);background:var(--paper-2);border:1px dashed var(--rule);border-radius:8px;padding:18px;text-align:center}
+.egraph{border:1px solid var(--rule);border-radius:8px;background:var(--paper-4);padding:12px 14px;margin:12px 0 18px}
+.egraph__h{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--ink-4);margin-bottom:9px}
+.egraph__links{display:flex;flex-wrap:wrap;gap:6px}
+.egraph__links a{min-height:32px;display:inline-flex;align-items:center;border:1px solid var(--rule);border-radius:4px;background:var(--paper-3);color:var(--moss-deep);padding:3px 9px;text-decoration:none;font-family:"JetBrains Mono",monospace;font-size:var(--s-0)}
+.egraph__links a:hover{border-color:var(--moss);background:var(--moss-soft)}
+.egraph__meta{margin-top:8px;color:var(--ink-3);font-family:"JetBrains Mono",monospace;font-size:var(--s-0)}
 .tts-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:14px 0 18px;padding:9px 10px;border:1px solid var(--rule-soft);border-radius:6px;background:var(--paper-4)}
 .tts-toolbar--compact{margin:4px 0 8px}
 .tts-control,.tts-btn{border:1px solid var(--rule);background:var(--paper);color:var(--moss-deep);cursor:pointer;font-family:"JetBrains Mono",monospace;text-transform:uppercase}
@@ -3188,19 +3502,39 @@ svg.arc{display:block;width:100%;height:auto;margin:6px 0 2px;background:var(--p
 .idx-tally--win{background:var(--ochre-soft);border-color:var(--ochre);color:var(--ochre-d)}
 .idx-tally--win b{color:var(--ochre-d)}
 .idx-tools{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 18px;padding:10px 12px;border:1px solid var(--rule-soft);border-radius:8px;background:var(--paper-4)}
-.idx-search{flex:1 1 220px;min-width:160px;font-family:"JetBrains Mono",monospace;font-size:var(--s-0);padding:6px 10px;border:1px solid var(--rule);border-radius:5px;background:var(--paper);color:var(--ink)}
+.idx-search{flex:1 1 220px;min-width:160px;min-height:40px;font-family:"JetBrains Mono",monospace;font-size:var(--s-0);padding:6px 10px;border:1px solid var(--rule);border-radius:5px;background:var(--paper);color:var(--ink)}
 .idx-search:focus{outline:2px solid color-mix(in srgb,var(--ochre) 55%,transparent);outline-offset:1px;border-color:var(--ochre)}
 .idx-seg{display:inline-flex;border:1px solid var(--rule);border-radius:5px;overflow:hidden}
-.idx-seg button{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;letter-spacing:.05em;padding:5px 11px;border:0;border-right:1px solid var(--rule);background:var(--paper);color:var(--ink-3);cursor:pointer;transition:background .12s var(--ease),color .12s var(--ease)}
+.idx-seg button{min-height:40px;font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;letter-spacing:.05em;padding:5px 11px;border:0;border-right:1px solid var(--rule);background:var(--paper);color:var(--ink-3);cursor:pointer;transition:background .12s var(--ease),color .12s var(--ease)}
 .idx-seg button:last-child{border-right:0}
 .idx-seg button:hover{color:var(--ink)}
 .idx-seg button.is-on{background:var(--ochre-soft);color:var(--ochre-d)}
 .idx-check,.idx-sort{display:inline-flex;align-items:center;gap:6px;font-family:"JetBrains Mono",monospace;font-size:var(--s-0);color:var(--ink-3)}
-.idx-sort select{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);padding:5px 8px;border:1px solid var(--rule);border-radius:5px;background:var(--paper);color:var(--ink)}
+.idx-sort select{min-height:40px;font-family:"JetBrains Mono",monospace;font-size:var(--s-0);padding:5px 8px;border:1px solid var(--rule);border-radius:5px;background:var(--paper);color:var(--ink)}
 .idx-count{margin-left:auto;font-family:"JetBrains Mono",monospace;font-size:var(--s-0);color:var(--ink-3)}
 .idx-flatcount{margin:0 0 6px}
 .idx-empty{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);color:var(--ink-3);background:var(--paper-2);border:1px dashed var(--rule);border-radius:8px;padding:18px;text-align:center;margin:6px 0 24px}
 .idx-panel{background:var(--paper-2);border:1px solid var(--rule-soft);border-radius:8px;padding:2px 12px;margin:6px 0 24px;overflow-x:auto}
+.idx-group>summary{min-height:40px;display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none}
+.idx-group>summary::-webkit-details-marker{display:none}
+.idx-group-card{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:8px 0 10px}
+.idx-gm{border:1px solid var(--rule-soft);background:var(--paper-4);border-radius:6px;padding:9px 10px;font-family:"JetBrains Mono",monospace;font-size:var(--s-0);color:var(--ink-3)}
+.idx-gm b{display:block;color:var(--ink);font-size:var(--s-1);margin-bottom:2px}
+.idx-gm a{color:var(--moss-deep);text-decoration:none;overflow-wrap:anywhere}
+.idx-gm a:hover{text-decoration:underline}
+.dcompare{border:1px solid var(--rule);border-radius:8px;background:var(--paper-4);padding:12px 14px;margin:0 0 18px}
+.dcompare__head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.dcompare__head h2{font-family:Fraunces,serif;font-size:var(--s-2);font-weight:600;margin:0;color:var(--ink)}
+.dcompare__head a{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);color:var(--moss-deep)}
+.dcompare__grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.dcompare__card{border:1px solid var(--rule-soft);border-radius:7px;background:var(--paper);padding:10px 12px;min-width:0}
+.dcompare__title{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);font-weight:700;overflow-wrap:anywhere;margin-bottom:7px}
+.dcompare__meta{display:flex;flex-wrap:wrap;gap:6px;margin:7px 0}
+.dcompare__line{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);color:var(--ink-3);line-height:1.5}
+.dcompare__summary{font-family:"Source Serif 4",Georgia,serif;font-size:var(--s-1);line-height:1.5;color:var(--ink-2);margin-top:8px}
+@media(max-width:860px){.idx-group-card{grid-template-columns:1fr 1fr}}
+@media(max-width:860px){.dcompare__grid{grid-template-columns:1fr}}
+@media(max-width:520px){.idx-group-card{grid-template-columns:1fr}}
 /* runs table: fixed columns (colgroup-driven) + tokens that wrap inside cells */
 table.idx--runs{table-layout:fixed}
 table.idx--runs td{overflow-wrap:anywhere}
@@ -3223,6 +3557,7 @@ table.idx tbody tr.idx-row:hover{background:var(--paper-4)}
 tr.idx-row--win{box-shadow:inset 3px 0 0 var(--ochre);background:color-mix(in srgb,var(--ochre-soft) 32%,transparent)}
 tr.idx-row--win.is-alt{background:color-mix(in srgb,var(--ochre-soft) 52%,transparent)}
 tr.idx-row--win:hover{background:color-mix(in srgb,var(--ochre-soft) 62%,transparent)}
+.idx-legend summary{min-height:40px;display:flex;align-items:center}
 .run-name{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);font-weight:600}
 .run-summary{display:block;margin-top:3px;font-family:"Source Serif 4",Georgia,serif;font-size:var(--s-0);color:var(--ink-3);line-height:1.42;max-width:48ch;white-space:normal}
 /* outcome badge: one distinct treatment per verdict, with a leading status dot */
@@ -3659,7 +3994,98 @@ ${renderDerivationLiveRunClient(live)}
 </body></html>`;
 }
 
-function renderDerivationIndexHtml(runs) {
+function derivationCompareLabels(query = {}) {
+  const labels = [];
+  const add = (value) => {
+    if (Array.isArray(value)) {
+      value.forEach(add);
+      return;
+    }
+    String(value || '')
+      .split(',')
+      .map((v) => v.trim())
+      .filter(Boolean)
+      .forEach((v) => labels.push(v));
+  };
+  add(query.compare);
+  add(query.left);
+  add(query.right);
+  return [...new Set(labels)];
+}
+
+function renderDerivationComparePanel(runs, query = {}) {
+  const byLabel = new Map(runs.map((r) => [r.label, r]));
+  const picked = derivationCompareLabels(query)
+    .map((label) => byLabel.get(label))
+    .filter(Boolean);
+  if (picked.length === 1) {
+    const first = picked[0];
+    const sameGroup = runs.filter(
+      (r) => r.label !== first.label && (r.diagnosis.group || '') === (first.diagnosis.group || ''),
+    );
+    const opposite =
+      sameGroup.find((r) => r.diagnosis.verdict !== first.diagnosis.verdict) ||
+      runs.find((r) => r.label !== first.label && r.diagnosis.verdict !== first.diagnosis.verdict) ||
+      runs.find((r) => r.label !== first.label);
+    if (opposite) picked.push(opposite);
+  }
+  if (picked.length < 2) return '';
+  const pair = picked.slice(0, 2);
+  const href = `/derivation?compare=${pair.map((r) => encodeURIComponent(r.label)).join(',')}`;
+  const eventText = (d) =>
+    Object.entries(d.eventsByType || {})
+      .sort((a, b) => Number(b[1] || 0) - Number(a[1] || 0))
+      .slice(0, 5)
+      .map(([event, count]) => `${event}×${count}`)
+      .join(', ') || 'no events';
+  const card = (run) => {
+    const d = run.diagnosis || {};
+    const verdictClass = DERIVATION_VERDICT_CLASS[d.verdict] || 'vchip--disengaged';
+    const verdictLabel = DERIVATION_VERDICT_LABEL[d.verdict] || d.verdict || '?';
+    const score = derivationScoreCell(d).html;
+    const adherence = d.releaseAdherence || {};
+    return `<article class="dcompare__card">
+      <div class="dcompare__title"><a href="/derivation/${encodeURIComponent(run.label)}">${escapeHtml(run.label)}</a></div>
+      <div class="dcompare__meta"><span class="vchip ${verdictClass}">${escapeHtml(verdictLabel)}</span>${score}</div>
+      <div class="dcompare__line">group ${escapeHtml(d.group || '(ungrouped)')} · backend ${derivationBackendCell(d.backend)}</div>
+      <div class="dcompare__line">turns ${escapeHtml(d.turnsPlayed ?? '?')}/${escapeHtml(d.turnCap ?? '?')} · forced ${escapeHtml(d.firstForcedTurn ?? '—')} → asserted ${escapeHtml(d.assertedGroundedTurn ?? '—')}</div>
+      <div class="dcompare__line">releases ${escapeHtml(adherence.onCue ?? '—')} on cue · ${(adherence.deviations || []).length} dev · ${(adherence.missed || []).length} missed</div>
+      <div class="dcompare__line">events ${escapeHtml(eventText(d))}</div>
+      <div class="dcompare__summary">${escapeHtml(derivationPlainSummary(d))}</div>
+    </article>`;
+  };
+  return `<section class="dcompare" id="compare">
+    <div class="dcompare__head"><h2>Proof-run comparison</h2><a href="${escapeHtml(href)}">permalink</a></div>
+    <div class="dcompare__grid">${pair.map(card).join('')}</div>
+  </section>`;
+}
+
+function renderDerivationEvidenceGraph({ label, diagnosis }) {
+  const encLabel = encodeURIComponent(label);
+  const scriptFile = diagnosis.scriptPath ? path.basename(diagnosis.scriptPath) : '';
+  const worldFile = diagnosis.worldPath ? path.basename(diagnosis.worldPath) : '';
+  const runHref =
+    '/runs?kind=derivation' +
+    (worldFile ? `&world=${encodeURIComponent(worldFile)}` : '') +
+    (scriptFile ? `&script=${encodeURIComponent(scriptFile)}` : '');
+  const links = [
+    ['run permalink', `/derivation/${encLabel}`],
+    ['compare this run', `/derivation?compare=${encLabel}`],
+    ['same outcome', `/derivation?verdict=${encodeURIComponent(diagnosis.verdict || '')}`],
+    ['rerun in launcher', runHref],
+    ['proof runs index', '/derivation'],
+    ['replays', '/replays'],
+    ['scripts', '/browse'],
+    ['workplan evidence', '/board?tag=evidence'],
+  ];
+  return `<div class="egraph"><div class="egraph__h">evidence graph</div><div class="egraph__links">${links
+    .map(([labelText, href]) => `<a href="${escapeHtml(href)}">${escapeHtml(labelText)}</a>`)
+    .join('')}</div><div class="egraph__meta">verdict ${escapeHtml(
+    diagnosis.verdict || '?',
+  )} · world ${escapeHtml(worldFile || '?')} · script ${escapeHtml(scriptFile || '?')}</div></div>`;
+}
+
+function renderDerivationIndexHtml(runs, query = {}) {
   // Stable "most recent" ordering: the list arrives mtime-sorted, so the index
   // here is what the client sorts back to when it resets to recency.
   runs.forEach((run, i) => {
@@ -3719,6 +4145,44 @@ function renderDerivationIndexHtml(runs) {
     `<div class="idx-panel"><table class="idx idx--runs"><colgroup><col style="width:10%"><col style="width:12%"><col style="width:9%"><col style="width:7%"><col style="width:6%"><col style="width:11%"><col style="width:7%"><col style="width:9%"><col style="width:11%"><col style="width:7%"><col style="width:11%"></colgroup><thead><tr><th>run</th><th>outcome</th><th>proof</th><th>forced → asserted</th><th>turns</th><th>events</th><th>releases</th><th>dramaturgy</th><th>backend</th><th>wall · cost</th><th>when</th></tr></thead><tbody>${rs
       .map(rowHtml)
       .join('\n')}</tbody></table></div>`;
+  const median = (values) => {
+    const nums = values.filter((v) => Number.isFinite(v)).sort((a, b) => a - b);
+    if (!nums.length) return null;
+    return nums[Math.floor(nums.length / 2)];
+  };
+  const groupSummary = (rs) => {
+    const wins = rs.filter((r) => r.diagnosis.verdict === 'grounded_anagnorisis');
+    const failures = rs.filter((r) => r.diagnosis.verdict !== 'grounded_anagnorisis');
+    const best = wins[0] || rs[0];
+    const worst =
+      failures.find((r) => r.diagnosis.verdict === 'aporia') ||
+      failures.find((r) => r.diagnosis.verdict === 'disengagement') ||
+      failures[0];
+    const real = rs.filter((r) => r.diagnosis.backend?.mode === 'real').length;
+    const turns = median(rs.map((r) => Number(r.diagnosis.turnsPlayed)));
+    const eventCounts = new Map();
+    for (const r of rs) {
+      for (const [event, count] of Object.entries(r.diagnosis.eventsByType || {})) {
+        eventCounts.set(event, (eventCounts.get(event) || 0) + Number(count || 0));
+      }
+    }
+    const commonEvents = [...eventCounts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([event, count]) => `${event}×${count}`)
+      .join(', ');
+    const compare =
+      best && worst
+        ? `<a href="/derivation?compare=${encodeURIComponent(best.label)},${encodeURIComponent(worst.label)}">best vs failure</a>`
+        : 'best vs failure';
+    return `<div class="idx-group-card">
+      <div class="idx-gm"><b>${wins.length}/${rs.length}</b> grounded runs</div>
+      <div class="idx-gm"><b>${turns ?? '—'}</b> median turns</div>
+      <div class="idx-gm"><b>${real}/${rs.length - real}</b> real/mock split</div>
+      <div class="idx-gm"><b>${escapeHtml(commonEvents || '—')}</b> common events</div>
+      <div class="idx-gm"><b>compare</b>${compare}${best ? ` · <a href="/derivation/${encodeURIComponent(best.label)}">best</a>` : ''}${worst ? ` · <a href="/derivation/${encodeURIComponent(worst.label)}">failure</a>` : ''}</div>
+    </div>`;
+  };
   const winCount = (rs) => rs.filter((r) => r.diagnosis.verdict === 'grounded_anagnorisis').length;
   const countText = (rs) => {
     const w = winCount(rs);
@@ -3740,15 +4204,15 @@ function renderDerivationIndexHtml(runs) {
     : flat
       ? `<section class="idx-group" data-group="(all)"><p class="mono idx-flatcount" style="color:var(--ink-3)" data-sec-count>${countText(
           runs,
-        )}</p>${tableFor(runs)}</section>`
+        )}</p>${groupSummary(runs)}${tableFor(runs)}</section>`
       : [...grouped.entries()]
           .map(
             ([g, rs]) =>
-              `<section class="idx-group" data-group="${escapeHtml(g)}"><h2 class="sect">${escapeHtml(
+              `<details class="idx-group" data-group="${escapeHtml(g)}" open><summary><h2 class="sect">${escapeHtml(
                 g,
               )} <span class="mono" style="color:var(--ink-3);font-weight:normal" data-sec-count>${countText(
                 rs,
-              )}</span></h2>${tableFor(rs)}</section>`,
+              )}</span></h2></summary>${groupSummary(rs)}${tableFor(rs)}</details>`,
           )
           .join('\n');
   // Top-line scoreboard — wins vs the two failure modes, across every run on
@@ -3792,6 +4256,7 @@ ${tally.other ? `<span class="idx-tally"><b>${tally.other}</b> other</span>` : '
 <span class="idx-count" data-idx-count></span>
 </div>`
     : '';
+  const comparePanel = renderDerivationComparePanel(runs, query);
   return `${pageHead({ title: 'Derivation runs · machine spirits', css: DERIVATION_CSS })}
 <body>
 ${railHtml({
@@ -3805,6 +4270,7 @@ ${railHtml({
 ${renderDerivationLivePanel(listDerivationLiveRuns())}
 ${scoreboard}
 ${toolbar}
+${comparePanel}
 ${runs.length ? '<p class="idx-empty" data-idx-empty hidden>No runs match your search or filters.</p>' : ''}
 ${runs.length ? '<details class="idx-legend"><summary class="mono" style="cursor:pointer;color:var(--ink-3);font-size:12px">what the columns mean</summary><p class="mono" style="color:var(--ink-3);font-size:11px;line-height:1.6;margin:.4em 0 .8em">proof = how many of the required reasoning steps the learner established · forced → asserted = the turn the hidden fact had to be handed to the learner vs the turn the learner stated it themselves · events = per-turn flags from the rule-checker (plot move, repair, decay, act end…) · releases = planned fact-reveals that landed on cue vs off-schedule (dev) · dramaturgy = director-declared scene moves</p></details>' : ''}
 ${body}
@@ -3952,6 +4418,7 @@ ${railHtml({
 <h1>${escapeHtml(world?.title || result.worldId || label)}</h1>
 <p class="lede mono">${escapeHtml(label)} · script ${escapeHtml(diagnosis.scriptPath || '?')}${diagnosis.note ? ` · ${escapeHtml(diagnosis.note)}` : ''}</p>
 <div class="chips">${chips}</div>
+${renderDerivationEvidenceGraph({ label, diagnosis })}
 ${transcriptTtsToolbarHtml({ fullLabel: 'Play full transcript', includeLabel: 'include tutor superego' })}
 ${
   commentary
@@ -4055,7 +4522,7 @@ const BASE_CSS = `@import url("https://fonts.googleapis.com/css2?family=Fraunces
 :root{ color-scheme: light dark; --paper:#F1E9D8; --paper-2:#E9DFC7; --paper-3:#EFE4CC; --paper-4:#F7EFDD; --ink:#181310; --ink-2:#3A2F27; --ink-3:#6A5C50; --ink-4:#695B47; --linen:#D8C7A9; --moss:#56683A; --moss-deep:#3A4824; --moss-soft:#E3E6CE; --brick:#A53E2E; --brick-d:#7C2C1F; --brick-soft:#F3DDD6; --ochre:#C08A3E; --ochre-d:#835A1B; --ochre-soft:#F5E6C2; --indigo:#2A4F6B; --indigo-soft:#DCE6EE; --prussian:#2A4F6B; --sun:#E4B644; --red-mark:#D62828; --rule:rgba(28,22,16,.18); --rule-soft:rgba(28,22,16,.10); --ease:cubic-bezier(.22,.61,.36,1); --cols:60; --gutter:clamp(3px,0.32vw,8px); --margin:clamp(12px,1.8vw,34px); --lead:1.5; --lead-tight:1.05; --s-0:clamp(0.70rem,0.66rem + 0.14vw,0.78rem); --s-1:clamp(0.82rem,0.78rem + 0.18vw,0.94rem); --s-2:clamp(0.95rem,0.88rem + 0.32vw,1.14rem); --s-3:clamp(1.18rem,1.02rem + 0.74vw,1.62rem); --s-4:clamp(1.65rem,1.28rem + 1.72vw,2.60rem); --s-5:clamp(2.40rem,1.60rem + 3.80vw,4.80rem); --bg:var(--paper); --panel:var(--paper-4); --muted:var(--ink-3); --line:var(--rule); --accent:var(--moss-deep); --accent-soft:var(--moss-soft); --warn:var(--ochre-d); --trap:var(--brick-d); --flat:var(--ink-3); }
 [data-theme="dark"]{ --paper:#14100C; --paper-2:#1B1612; --paper-3:#1F1A14; --paper-4:#221C16; --ink:#F4EEDD; --ink-2:#E0D8C3; --ink-3:#B9AD96; --ink-4:#8C7E6A; --linen:#3A322A; --moss:#8DA868; --moss-deep:#B5CD92; --moss-soft:#2C3520; --brick:#E36953; --brick-d:#F08A75; --brick-soft:#3A1C16; --ochre:#E6B265; --ochre-d:#F3CB88; --ochre-soft:#3A2C12; --indigo:#7FA6CC; --indigo-soft:#1B2A38; --prussian:#7FA6CC; --sun:#E4B644; --red-mark:#E8584B; --rule:rgba(244,238,221,.18); --rule-soft:rgba(244,238,221,.08); }
 *{box-sizing:border-box}
-html,body{margin:0;padding:0}
+html,body{margin:0;padding:0;max-width:100%;overflow-x:hidden}
 html{ background:var(--paper); -webkit-text-size-adjust:100%; }
 body{ background:transparent; color:var(--ink-2); font-family:"Source Serif 4","Iowan Old Style",Georgia,serif; font-optical-sizing:auto; font-size:var(--s-1); line-height:var(--lead); letter-spacing:.003em; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; position:relative; min-height:100vh; }
 /* warm "specimen" ground — a vignette + two faint pigment glows (ported from /chat's klee-aged paper) */
@@ -4468,6 +4935,78 @@ function renderDashboardHtml(stats = {}) {
     `<div class="ops-panel"><div class="ops-panel__h">review</div>${opsRow(`${pctScored}%`, `scored · ${fmt(s.scored)}/${fmt(s.scripts)}`)}${opsRow(fmt(s.labels), `human labels · ${fmt(s.critics)} critics`)}${opsRow(fmt(s.openFlags), `open flag${s.openFlags === 1 ? '' : 's'}`, s.openFlags > 0)}</div>`,
   ].join('');
 
+  const healthRows = [
+    {
+      k: 'Script DB',
+      v: s.scripts ? `${fmt(s.scripts)} script${s.scripts === 1 ? '' : 's'}` : 'empty',
+      d: s.scripts ? 'poetics_items is populated' : 'poetics_items has no rows yet',
+      warn: !s.scripts,
+      href: '/browse',
+    },
+    {
+      k: 'Proof artifacts',
+      v: s.proofRuns ? `${fmt(s.proofRuns)} run${s.proofRuns === 1 ? '' : 's'}` : 'none',
+      d: s.proofRuns ? 'exports/dramatic-derivation/loop is populated' : 'no diagnosis artifacts discovered',
+      warn: !s.proofRuns,
+      href: '/derivation',
+    },
+    {
+      k: 'Review queue',
+      v: s.openFlags ? `${fmt(s.openFlags)} open` : 'clear',
+      d: s.openFlags ? 'human review flags need attention' : 'no unresolved review flags',
+      warn: !!s.openFlags,
+      href: '/browse?queue=flagged',
+    },
+    {
+      k: 'Job center',
+      v: 'local',
+      d: 'runs launched here stay on localhost with cost class shown first',
+      warn: false,
+      href: '/runs',
+    },
+  ];
+  const healthHtml = healthRows
+    .map(
+      (row) => `<a class="health-card${row.warn ? ' is-warn' : ''}" href="${row.href}">
+        <span class="health-card__k">${row.k}</span>
+        <span class="health-card__v">${row.v}</span>
+        <span class="health-card__d">${row.d}</span>
+      </a>`,
+    )
+    .join('');
+
+  const firstRunHtml = s.scripts
+    ? ''
+    : `<section class="first-run" aria-labelledby="firstRunTitle">
+      <div class="first-run__copy">
+        <div class="first-run__k">first-run state</div>
+        <h2 id="firstRunTitle">The script database is empty; proof artifacts are ${s.proofRuns ? 'already present' : 'not present yet'}.</h2>
+        <p>The script browser reads DB-backed rows from <code>poetics_items</code>. The proof-run index reads file artifacts from <code>exports/dramatic-derivation/loop</code>. Start with a free path, or inspect proof runs now.</p>
+      </div>
+      <div class="setup-actions" aria-label="First-run actions">
+        <a class="setup-action setup-action--go" href="/runs?kind=generate&amp;mock=1&amp;dryRun=1">
+          <span class="setup-action__t">Generate mock script</span>
+          <span class="setup-action__d">free · opens the launcher with mock generation selected</span>
+          <code>node scripts/drama-generator.js --non-interactive --mock</code>
+        </a>
+        <a class="setup-action" href="/runs?kind=generate&amp;mock=1&amp;specOnly=1">
+          <span class="setup-action__t">Use sample fixture</span>
+          <span class="setup-action__d">free · write a starter spec before generating</span>
+          <code>node scripts/drama-generator.js --non-interactive --mock --spec-only</code>
+        </a>
+        <a class="setup-action" href="/browse">
+          <span class="setup-action__t">Ingest existing artifacts</span>
+          <span class="setup-action__d">local DB write · no model calls</span>
+          <code>npm run poetics:ingest</code>
+        </a>
+        <a class="setup-action" href="/derivation">
+          <span class="setup-action__t">Open proof runs instead</span>
+          <span class="setup-action__d">read-only · file-backed proof corpus</span>
+          <code>/derivation</code>
+        </a>
+      </div>
+    </section>`;
+
   // Recent-runs monitoring feed — the genuinely "control room" piece, drawn from
   // the same per-run query the run list uses (newest-first, with live counts).
   const feedHtml = recentRuns.length
@@ -4593,6 +5132,21 @@ function renderDashboardHtml(stats = {}) {
       </div>`,
   ).join('');
 
+  const ROLES = [
+    ['Reader', 'Inspect scripts, proof runs, and replays before launching anything.', '/browse', 'Read evidence'],
+    ['Builder', 'Compose a scene or start from a safe mock generation path.', '/compose/live', 'Compose'],
+    ['Reviewer', 'Find flags, labels, disagreement cases, and adjudication surfaces.', '/browse?queue=flagged', 'Review flags'],
+    ['Operator', 'Launch jobs, watch cost class, and inspect local job output.', '/runs', 'Launch'],
+    ['Researcher', 'Open ontology, rubric, paper notes, timeline, and the workplan.', '/board', 'Open workplan'],
+  ];
+  const rolesHtml = ROLES.map(
+    ([role, desc, href, action]) => `<a class="role-card" href="${href}">
+      <span class="role-card__role">${role}</span>
+      <span class="role-card__desc">${desc}</span>
+      <span class="role-card__action">${action} →</span>
+    </a>`,
+  ).join('');
+
   // The five working surfaces — the rail's primary row, minus home. Three
   // collections of finished tutoring dialogue (scripts, proof runs, replays) and
   // the two tools that make more. Grouping them here, matched and adjacent, mirrors
@@ -4679,6 +5233,30 @@ function renderDashboardHtml(stats = {}) {
     ([t, d, href]) =>
       `<a class="card" href="${href}"><div class="card__t">${t}</div><div class="card__d">${d}</div><div class="card__cta">open →</div></a>`,
   ).join('');
+  const board = readWorkplanBoard();
+  const boardItems = Array.isArray(board.items) ? board.items : [];
+  const roadRank = { active: 0, triaged: 1, blocked: 2, review: 3, done: 4, archived: 5, dropped: 6 };
+  const uxItems = boardItems
+    .filter((it) => String(it.id || '').startsWith('scriptorium-') && (it.tags || []).includes('ux'))
+    .sort((a, b) => (roadRank[a.status] ?? 9) - (roadRank[b.status] ?? 9) || String(a.priority).localeCompare(String(b.priority)) || String(a.title).localeCompare(String(b.title)));
+  const uxCounts = uxItems.reduce((acc, it) => {
+    const key = it.status === 'done' ? 'done' : it.status === 'review' ? 'review' : it.status === 'active' ? 'active' : 'open';
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, { open: 0, active: 0, review: 0, done: 0 });
+  const roadmapHtml = board.__error
+    ? `<div class="road-empty">${escapeHtml(board.__error)}</div>`
+    : uxItems.length
+      ? uxItems
+          .map(
+            (it) => `<a class="road-card road-card--${escapeHtml(it.status || 'triaged')}" href="/board">
+              <span class="road-card__top"><span class="road-card__pri">${escapeHtml(it.priority || '')}</span><span class="road-card__status">${escapeHtml(it.status || '')}</span></span>
+              <span class="road-card__title">${escapeHtml(it.title || it.id || '')}</span>
+              <span class="road-card__verify">${escapeHtml(it.verification || '')}</span>
+            </a>`,
+          )
+          .join('')
+      : '<div class="road-empty">No Scriptorium UX workplan items in board.json.</div>';
 
   return `${pageHead({
     title: 'machine spirits · poetics scriptorium',
@@ -4704,14 +5282,45 @@ function renderDashboardHtml(stats = {}) {
 .cr-head__lede a{ color:var(--moss-deep); text-decoration:none; white-space:nowrap; }
 .cr-head__lede a:hover{ text-decoration:underline; }
 .cr-cmd{ display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
-.cmd{ display:inline-flex; align-items:center; gap:8px; text-decoration:none; font:600 13px ui-monospace,monospace; border:1px solid var(--rule); background:var(--paper); color:var(--ink); padding:11px 16px; transition:border-color .15s ease, background .15s ease; }
+.cmd{ display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:40px; text-decoration:none; font:600 13px ui-monospace,monospace; border:1px solid var(--rule); background:var(--paper); color:var(--ink); padding:11px 16px; transition:border-color .15s ease, background .15s ease; }
 .cmd:hover{ border-color:var(--ink-3); }
 .cmd__i{ font-size:13px; color:var(--ink-4); }
 .cmd--go{ background:var(--moss-deep); border-color:var(--moss-deep); color:var(--paper); }
 .cmd--go .cmd__i{ color:var(--paper); }
 .cmd--go:hover{ background:var(--moss); border-color:var(--moss); }
 @media(max-width:600px){ .cr-head h1{ font-size:28px; } .cmd{ flex:1 1 auto; justify-content:center; } }
-.btn{ display:inline-flex; align-items:center; gap:7px; font:13px ui-monospace,monospace; text-decoration:none; cursor:pointer; border:1px solid var(--rule); background:var(--paper-4); color:var(--ink); padding:9px 15px; }
+.roles{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; margin-top:18px; }
+.role-card{ display:flex; flex-direction:column; gap:7px; min-height:132px; text-decoration:none; border:1px solid var(--rule); border-top:3px solid var(--moss); background:var(--paper-4); color:var(--ink-2); padding:13px 14px; }
+.role-card:hover{ border-color:var(--moss); }
+.role-card__role{ font:700 11px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.1em; color:var(--moss-deep); }
+.role-card__desc{ flex:1; font-size:12.5px; line-height:1.45; color:var(--ink-3); }
+.role-card__action{ font:12px ui-monospace,monospace; color:var(--ink); }
+@media(max-width:920px){ .roles{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:540px){ .roles{ grid-template-columns:1fr; } .role-card{ min-height:0; } }
+.health{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
+.health-card{ display:flex; flex-direction:column; gap:5px; min-width:0; text-decoration:none; border:1px solid var(--rule); background:var(--paper-4); padding:12px 13px; color:var(--ink-2); }
+.health-card:hover{ border-color:var(--moss); }
+.health-card.is-warn{ border-color:color-mix(in srgb, var(--ochre) 55%, var(--rule)); background:color-mix(in srgb, var(--ochre-soft) 45%, var(--paper-4)); }
+.health-card__k{ font:700 10px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.09em; color:var(--ink-4); }
+.health-card__v{ font:600 18px/1.1 -apple-system,system-ui,sans-serif; color:var(--ink); }
+.health-card__d{ font:11px/1.4 ui-monospace,monospace; color:var(--ink-4); }
+@media(max-width:760px){ .health{ grid-template-columns:1fr; } }
+.first-run{ display:grid; grid-template-columns:minmax(0,.95fr) minmax(0,1.35fr); gap:1px; border:1px solid var(--rule); background:var(--rule); margin-top:20px; }
+.first-run__copy,.setup-actions{ background:var(--paper-4); }
+.first-run__copy{ padding:18px 20px; }
+.first-run__k{ font:700 10px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.12em; color:var(--brick-d); }
+.first-run h2{ margin:8px 0 8px; font:italic 23px/1.15 "Fraunces","Source Serif 4",Georgia,serif; color:var(--ink); }
+.first-run p{ margin:0; color:var(--ink-3); font-size:13px; line-height:1.55; }
+.setup-actions{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1px; background:var(--rule); }
+.setup-action{ display:flex; flex-direction:column; gap:6px; min-width:0; text-decoration:none; background:var(--paper-4); color:var(--ink-2); padding:13px 14px; }
+.setup-action:hover{ background:var(--paper-3); }
+.setup-action--go{ background:var(--moss-soft); }
+.setup-action__t{ font:700 12px/1.25 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink); }
+.setup-action__d{ font:12px/1.35 -apple-system,system-ui,sans-serif; color:var(--ink-3); }
+.setup-action code{ font-size:10.5px; color:var(--moss-deep); overflow-wrap:anywhere; }
+@media(max-width:820px){ .first-run{ grid-template-columns:1fr; } }
+@media(max-width:560px){ .setup-actions{ grid-template-columns:1fr; } }
+.btn{ display:inline-flex; align-items:center; justify-content:center; gap:7px; min-height:40px; font:13px ui-monospace,monospace; text-decoration:none; cursor:pointer; border:1px solid var(--rule); background:var(--paper-4); color:var(--ink); padding:9px 15px; }
 .btn.primary{ background:var(--moss-deep); color:var(--paper); border-color:var(--moss-deep); }
 .btn.ghost{ background:transparent; }
 .ops{ display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--rule); border:1px solid var(--rule); }
@@ -4723,6 +5332,30 @@ function renderDashboardHtml(stats = {}) {
 .ops-row__n{ font:600 20px/1 Georgia,serif; color:var(--moss-deep); white-space:nowrap; }
 .ops-row__l{ font:11px/1.3 ui-monospace,monospace; color:var(--ink-4); text-align:right; }
 .ops-row.is-warn .ops-row__n{ color:var(--brick-d); }
+.review-loop{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin-top:12px; }
+.review-step{ min-height:128px; display:flex; flex-direction:column; gap:7px; text-decoration:none; color:var(--ink-2); border:1px solid var(--rule); background:var(--paper-4); padding:12px 13px; }
+.review-step:hover{ border-color:var(--moss); }
+.review-step__k{ font:700 10px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.09em; color:var(--ink-4); }
+.review-step__t{ font:600 13px/1.25 ui-monospace,monospace; color:var(--ink); }
+.review-step__d{ flex:1; font:12px/1.4 -apple-system,system-ui,sans-serif; color:var(--ink-3); }
+.review-step__go{ font:11px ui-monospace,monospace; color:var(--moss-deep); }
+.roadmap{ border:1px solid var(--rule); background:var(--paper-4); margin-top:12px; }
+.roadmap__head{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 14px; border-bottom:1px solid var(--rule); }
+.roadmap__title{ font:700 10px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.09em; color:var(--ink-4); }
+.roadmap__counts{ display:flex; flex-wrap:wrap; gap:6px; font:11px ui-monospace,monospace; color:var(--ink-4); }
+.roadmap__counts span{ border:1px solid var(--rule-soft); background:var(--paper-3); padding:2px 7px; }
+.roadmap__grid{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1px; background:var(--rule); }
+.road-card{ min-height:122px; display:flex; flex-direction:column; gap:7px; text-decoration:none; background:var(--paper-4); color:var(--ink-2); padding:11px 12px; border-top:3px solid var(--ink-4); }
+.road-card:hover{ background:var(--paper-3); }
+.road-card--active{ border-top-color:var(--ochre); }
+.road-card--review{ border-top-color:var(--moss); }
+.road-card--done{ border-top-color:var(--ink-4); opacity:.78; }
+.road-card__top{ display:flex; align-items:center; justify-content:space-between; gap:8px; font:10px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-4); }
+.road-card__pri{ color:var(--moss-deep); font-weight:700; }
+.road-card__title{ font:600 13px/1.3 -apple-system,system-ui,sans-serif; color:var(--ink); }
+.road-card__verify{ font:11px/1.35 ui-monospace,monospace; color:var(--ink-4); }
+.road-empty{ padding:16px 14px; font:italic 12px ui-monospace,monospace; color:var(--ink-4); }
+@media(max-width:820px){ .review-loop,.roadmap__grid{ grid-template-columns:1fr; } }
 .feed{ margin-top:18px; border:1px solid var(--rule); background:var(--paper-4); }
 .feed__h{ display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border-bottom:1px solid var(--rule); font:600 10px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.09em; color:var(--ink-4); }
 .feed__h a{ text-transform:none; letter-spacing:0; font-weight:400; color:var(--moss-deep); text-decoration:none; }
@@ -4792,7 +5425,7 @@ h2.section{ font:600 13px/1 ui-monospace,monospace; text-transform:uppercase; le
 .ladder__reset:hover{ color:var(--brick-d); border-color:var(--brick); }
 .rung{ display:flex; align-items:flex-start; gap:14px; padding:14px 16px; border-bottom:1px solid var(--rule-soft); }
 .rung:last-child{ border-bottom:0; }
-.rung__check{ flex:none; width:30px; height:30px; border-radius:50%; border:1px solid var(--rule); background:var(--paper); color:var(--ink-3); cursor:pointer; display:grid; place-items:center; font:600 13px ui-monospace,monospace; padding:0; }
+.rung__check{ flex:none; width:40px; height:40px; border-radius:50%; border:1px solid var(--rule); background:var(--paper); color:var(--ink-3); cursor:pointer; display:grid; place-items:center; font:600 13px ui-monospace,monospace; padding:0; }
 .rung__tick{ display:none; font-size:15px; }
 .rung--done .rung__check{ background:var(--moss); border-color:var(--moss-deep); color:#fff; }
 [data-theme="dark"] .rung--done .rung__check{ color:var(--paper); }
@@ -4804,7 +5437,7 @@ h2.section{ font:600 13px/1 ui-monospace,monospace; text-transform:uppercase; le
 .rung__body{ flex:1; }
 .rung__title{ font:600 14px/1.3 -apple-system,system-ui,sans-serif; color:var(--ink); }
 .rung__desc{ color:var(--ink-3); font-size:13px; margin-top:3px; max-width:74ch; }
-.rung__go{ flex:none; align-self:center; text-decoration:none; font:12px ui-monospace,monospace; border:1px solid var(--rule); background:var(--paper-4); color:var(--ink-2); padding:7px 12px; }
+.rung__go{ flex:none; align-self:center; min-height:40px; display:inline-flex; align-items:center; text-decoration:none; font:12px ui-monospace,monospace; border:1px solid var(--rule); background:var(--paper-4); color:var(--ink-2); padding:7px 12px; }
 .rung__go:hover{ border-color:var(--moss); color:var(--moss-deep); }
 .surfaces{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
 @media(max-width:900px){ .surfaces{ grid-template-columns:repeat(2,1fr); } }
@@ -4863,7 +5496,7 @@ ${railHtml({ active: 'home', brand: 'machine spirits', sub: 'a drama-machine for
     <div class="cr-head__top">
       <div class="cr-head__id">
         <div class="cr-head__k">machine spirits · poetics</div>
-        <h1>Eval control room</h1>
+        <h1>Scriptorium control room</h1>
         <div class="cr-head__tag">Tutoring, staged as drama.</div>
       </div>
       <div class="cr-status" role="status" aria-label="corpus status">
@@ -4871,18 +5504,42 @@ ${railHtml({ active: 'home', brand: 'machine spirits', sub: 'a drama-machine for
         ${statusLine}
       </div>
     </div>
-    <p class="cr-head__lede">Generate tutoring dialogues that hinge on a reversal of understanding, score them on dramatic form, then study where recognition coheres. Launch and watch runs here; read, compose and inspect from the consoles below. <a href="#why">Why it's built this way ↓</a></p>
+    <p class="cr-head__lede">Choose a role, then move through the loop: read current evidence, compose or launch a new scene, review flags, and connect findings back to the workplan and paper trail. <a href="#why">Why it's built this way ↓</a></p>
     <div class="cr-cmd">
-      <a class="cmd cmd--go" href="/runs"><span class="cmd__i" aria-hidden="true">▸</span> Launch a run</a>
-      <a class="cmd" href="/compose/live"><span class="cmd__i" aria-hidden="true">✎</span> Compose a scene</a>
-      <a class="cmd" href="/browse"><span class="cmd__i" aria-hidden="true">⊞</span> Browse scripts</a>
-      <a class="cmd" href="/derivation"><span class="cmd__i" aria-hidden="true">⌗</span> Proof runs</a>
+      <a class="cmd cmd--go" href="/browse"><span class="cmd__i" aria-hidden="true">⊞</span> Read evidence</a>
+      <a class="cmd" href="/compose/live"><span class="cmd__i" aria-hidden="true">✎</span> Compose</a>
+      <a class="cmd" href="/runs"><span class="cmd__i" aria-hidden="true">▸</span> Launch</a>
+      <a class="cmd" href="/browse?queue=flagged"><span class="cmd__i" aria-hidden="true">!</span> Review flags</a>
+      <a class="cmd" href="/board"><span class="cmd__i" aria-hidden="true">□</span> Open workplan</a>
     </div>
   </header>
 
+  <div class="roles" aria-label="Role-based entry points">${rolesHtml}</div>
+  ${firstRunHtml}
+
   <h2 class="section">Operations</h2>
   <p class="section__sub">Live counts across the corpus, the run activity, and what's waiting on review. The flag light turns amber when something needs you.</p>
+  <div class="health" aria-label="Data source health">${healthHtml}</div>
+  <div style="height:12px"></div>
   <div class="ops">${opsHtml}</div>
+
+  <h2 class="section">Review Loop</h2>
+  <p class="section__sub">The evidence loop stays anchored in the generated workplan: find the case, label or adjudicate it, then move the related item through <code>workplan/items/</code> on the live board.</p>
+  <div class="review-loop" aria-label="Review workflow entry points">
+    <a class="review-step" href="/browse?queue=flagged"><span class="review-step__k">1 · evidence</span><span class="review-step__t">${fmt(s.openFlags)} open flag${s.openFlags === 1 ? '' : 's'}</span><span class="review-step__d">Open flagged scripts with critic context, labels, and the public transcript.</span><span class="review-step__go">review flags →</span></a>
+    <a class="review-step" href="/browse?mode=label&amp;queue=flagged"><span class="review-step__k">2 · blind label</span><span class="review-step__t">${fmt(s.labels)} human labels</span><span class="review-step__d">Label cases without critic scores or held-out keys visible.</span><span class="review-step__go">start labelling →</span></a>
+    <a class="review-step" href="/adjudication/"><span class="review-step__k">3 · adjudicate</span><span class="review-step__t">resolve disagreements</span><span class="review-step__d">Use the adjudication surface when labels or critics disagree.</span><span class="review-step__go">open adjudication →</span></a>
+    <a class="review-step" href="/board"><span class="review-step__k">4 · workplan</span><span class="review-step__t">source of truth</span><span class="review-step__d">Move the related Scriptorium item through the board; notes, exports, and paper links stay attached to items.</span><span class="review-step__go">open board →</span></a>
+  </div>
+  <div class="roadmap" aria-labelledby="roadmapTitle">
+    <div class="roadmap__head">
+      <div class="roadmap__title" id="roadmapTitle">Scriptorium UX roadmap · from board.json</div>
+      <div class="roadmap__counts" aria-label="Scriptorium UX workplan counts">
+        <span>open ${fmt(uxCounts.open)}</span><span>active ${fmt(uxCounts.active)}</span><span>review ${fmt(uxCounts.review)}</span><span>done ${fmt(uxCounts.done)}</span>
+      </div>
+    </div>
+    <div class="roadmap__grid">${roadmapHtml}</div>
+  </div>
 
   <h2 class="section">Signal</h2>
   <p class="section__sub">What the two corpora hold, read straight from the database. An AI critic sorts each scored script's dramatic form into recognition, flat, or trap; a fixed rule-checker sorts each proof run into grounded, disengagement, or aporia — the same three-way shape, two different ways of scoring. Below that, where the script scores land on each dramatic-form dimension.</p>
@@ -5381,7 +6038,8 @@ function modeTabsHtml(active) {
 const MODETABS_CSS = `.modetabs{ display:flex; gap:3px; padding:9px 18px 0; background:var(--paper-3); border-bottom:1px solid var(--rule); }
 .modetab{ font:12px ui-monospace,monospace; text-decoration:none; color:var(--ink-3); padding:7px 14px; border:1px solid var(--rule); border-bottom:none; background:var(--paper-2); border-radius:7px 7px 0 0; }
 .modetab:hover{ color:var(--ink); }
-.modetab.on{ color:var(--moss-deep); background:var(--paper-4); font-weight:600; position:relative; top:1px; }`;
+.modetab.on{ color:var(--moss-deep); background:var(--paper-4); font-weight:600; position:relative; top:1px; }
+@media(max-width:540px){ .modetabs{ overflow-x:auto; padding-inline:10px; } .modetab{ white-space:nowrap; min-height:40px; display:inline-flex; align-items:center; } }`;
 
 // ── Live "sit-in" compose (GET /compose/live) ─────────────────────────────────
 // A real-time chat where the human takes one chair (tutor or learner) and the AI
@@ -5411,6 +6069,7 @@ ${MODETABS_CSS}
   .live--reading .liveside{ order:3; }
 }
 .stage{ display:flex; flex-direction:column; min-height:calc(100vh - 95px); padding:18px 20px; }
+.sr-only{ position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important; overflow:hidden!important; clip:rect(0,0,0,0)!important; white-space:nowrap!important; border:0!important; }
 /* setup card */
 .setup{ border:1px solid var(--rule); background:var(--paper-4); padding:18px; display:flex; flex-direction:column; gap:16px; }
 .setup--min{ display:none; }
@@ -5440,10 +6099,10 @@ ${MODETABS_CSS}
 .syl-cap b{ color:var(--moss-deep); }
 label.fld{ display:flex; flex-direction:column; gap:4px; font:11px ui-monospace,monospace; color:var(--ink-3); text-transform:uppercase; letter-spacing:.04em; }
 label.fld.wide{ grid-column:1 / -1; }
-input[type=text],input[type=number],select{ width:100%; font:13px ui-monospace,monospace; color:var(--ink); background:var(--paper); border:1px solid var(--rule); padding:6px 8px; border-radius:5px; }
+input[type=text],input[type=number],select{ width:100%; min-height:40px; font:13px ui-monospace,monospace; color:var(--ink); background:var(--paper); border:1px solid var(--rule); padding:8px 10px; border-radius:5px; }
 .dry{ display:inline-flex; align-items:center; gap:7px; font:12px ui-monospace,monospace; color:var(--ink-2); cursor:pointer; }
 .setup__go{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
-.btn{ font:12px ui-monospace,monospace; border:1px solid var(--rule); background:var(--paper-4); color:var(--ink); padding:8px 14px; cursor:pointer; border-radius:6px; }
+.btn{ min-height:40px; font:12px ui-monospace,monospace; border:1px solid var(--rule); background:var(--paper-4); color:var(--ink); padding:8px 14px; cursor:pointer; border-radius:6px; }
 .btn:disabled{ opacity:.5; cursor:default; }
 .btn.primary{ background:var(--moss-deep); color:var(--paper); border-color:var(--moss-deep); font-weight:600; }
 .metered{ font:11px ui-monospace,monospace; color:var(--brick-d); }
@@ -5517,7 +6176,7 @@ input[type=text],input[type=number],select{ width:100%; font:13px ui-monospace,m
 .guide__head h2{ margin:0 0 5px; font:600 21px/1.15 Georgia,serif; color:var(--moss-deep); }
 .guide__head h2 .spark{ font-style:normal; }
 .guide__lede{ margin:0; color:var(--ink-2); font-size:13.5px; line-height:1.5; max-width:66ch; }
-.guide__row textarea{ width:100%; font:14.5px/1.55 -apple-system,system-ui,sans-serif; color:var(--ink); background:var(--paper); border:1px solid var(--rule); border-radius:9px; padding:11px 13px; min-height:3.6rem; max-height:220px; resize:vertical; }
+.guide__row textarea{ width:100%; font:14.5px/1.55 -apple-system,system-ui,sans-serif; color:var(--ink); background:var(--paper); border:1px solid var(--rule); border-radius:9px; padding:11px 13px; min-height:4rem; max-height:220px; resize:vertical; }
 .guide__row textarea:focus{ outline:2px solid var(--moss); outline-offset:-1px; }
 .guide__go{ display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
 .guide__out{ font-size:13px; line-height:1.6; color:var(--ink-2); border-left:3px solid var(--moss-deep); background:var(--paper-4); padding:9px 13px; border-radius:0 7px 7px 0; }
@@ -5594,6 +6253,7 @@ ${modeTabsHtml('live')}
           <p class="guide__lede">Say what you want to explore in plain language — who you'd like to play, what's being taught, what should go wrong — and the guide sets the machine up for you. Everything it picks lands in the dials below, ready to tweak. No vocabulary required.</p>
         </div>
         <div class="guide__row">
+          <label class="sr-only" for="g-desc">Describe the tutoring scene to compose</label>
           <textarea id="g-desc" rows="2" placeholder="e.g. I want to play a nervous student who keeps splitting log(a+b) into log a + log b, and have the AI tutor push me toward a real click of understanding."></textarea>
         </div>
         <div class="guide__go">
@@ -5608,15 +6268,15 @@ ${modeTabsHtml('live')}
 
       <!-- Seat: the one choice everyone makes -->
       <div class="seatpick">
-        <button type="button" class="seat seat--on" id="seatLearner">
+        <button type="button" class="seat seat--on" id="seatLearner" aria-label="I play the learner">
           <span class="seat__k">I play the</span><span class="seat__v">Learner</span>
           <span class="seat__d">the AI is the tutor — probe how it teaches under pressure</span>
         </button>
-        <button type="button" class="seat" id="seatTutor">
+        <button type="button" class="seat" id="seatTutor" aria-label="I play the tutor">
           <span class="seat__k">I play the</span><span class="seat__v">Tutor</span>
           <span class="seat__d">the AI is the learner — stage a recognition, test a persona</span>
         </button>
-        <button type="button" class="seat" id="seatWatch">
+        <button type="button" class="seat" id="seatWatch" aria-label="Watch both seats">
           <span class="seat__k">just</span><span class="seat__v">Watch</span>
           <span class="seat__d">both seats are AI — watch a tutor &amp; learner play it out</span>
         </button>
@@ -5681,6 +6341,7 @@ ${modeTabsHtml('live')}
 
     <form class="composer" id="composerForm" hidden onsubmit="return false">
       <div class="composer__row" id="composerRow">
+        <label class="sr-only" for="composerInput">Your scene line</label>
         <textarea id="composerInput" rows="1" placeholder="your line…"></textarea>
         <button type="button" class="btn primary" id="sendBtn">send</button>
       </div>
@@ -5710,6 +6371,7 @@ ${modeTabsHtml('live')}
       <div class="scoreres" id="scoreRes"></div>
     </div></div>
     <div class="lpanel"><div class="lpanel__h">save transcript</div><div class="lpanel__b lpanel__b--col">
+      <label class="sr-only" for="saveName">Transcript filename</label>
       <input id="saveName" type="text" placeholder="filename (auto-named if blank)">
       <button type="button" class="btn" id="saveBtn">Save to exports/</button>
       <div class="saveres" id="saveRes"></div>
@@ -6517,6 +7179,13 @@ function renderWorkplanBoardHtml() {
   const items = board.items || [];
   const byId = Object.fromEntries(items.map((i) => [i.id, i]));
   const types = [...new Set(items.map((i) => i.type).filter(Boolean))].sort();
+  const tagFilters = [
+    ...new Set(
+      items
+        .flatMap((i) => (Array.isArray(i.tags) ? i.tags : []))
+        .filter((t) => ['scriptorium', 'ux', 'review', 'jobs', 'evidence', 'navigation', 'dashboard', 'static-surfaces'].includes(t)),
+    ),
+  ].sort();
   // Always show the working lanes (even when empty) so cards can be dropped into
   // them; plus any other status that currently has items.
   const DEFAULT_LANES = ['triaged', 'active', 'blocked', 'review', 'done'];
@@ -6549,7 +7218,7 @@ function renderWorkplanBoardHtml() {
                   : deps.length + (deps.length > 1 ? ' deps met' : ' dep met')
               }</div>`
             : '';
-          return `<article class="card" draggable="true" data-id="${e(it.id || '')}" data-status="${e(status)}" data-type="${e(it.type || '')}">
+          return `<article class="card" draggable="true" data-id="${e(it.id || '')}" data-status="${e(status)}" data-type="${e(it.type || '')}" data-tags="${e((it.tags || []).join(' '))}">
         <div class="card__h"><span class="pri pri--${e(it.priority || '')}">${e(it.priority || '')}</span><span class="id">${e(it.id || '')}</span></div>
         <div class="ttl">${e(it.title || '')}</div>
         <div class="tags">${tags}</div>${blk}${dep}
@@ -6559,9 +7228,11 @@ function renderWorkplanBoardHtml() {
       return `<section class="col" data-status="${e(status)}"><h2 class="col__h">${e(status)} <span class="n">${group.length}</span><button class="col__add" data-status="${e(status)}" title="Add an item to ${e(status)}" aria-label="Add an item to ${e(status)}">+</button></h2>${cards}</section>`;
     })
     .join('');
-  const chips = ['all', ...types]
-    .map((t) => `<button class="chip${t === 'all' ? ' on' : ''}" data-filter="${e(t)}">${e(t)}</button>`)
-    .join('');
+  const chips = [
+    '<button class="chip on" data-filter="all" data-filter-kind="all">all</button>',
+    ...types.map((t) => `<button class="chip" data-filter="${e(t)}" data-filter-kind="type">${e(t)}</button>`),
+    ...tagFilters.map((t) => `<button class="chip chip--tag" data-filter="${e(t)}" data-filter-kind="tag">#${e(t)}</button>`),
+  ].join('');
   const err = board.__error
     ? `<div class="blurb" style="border-left-color:var(--brick);background:var(--brick-soft)">${e(board.__error)}</div>`
     : '';
@@ -6573,7 +7244,7 @@ main{ max-width:1100px; margin:0 auto; padding:22px 22px 64px; }
 .blurb{ font-size:13px; color:var(--ink-3); border-left:3px solid var(--moss); background:var(--paper-4); padding:10px 14px; margin:0 0 16px; }
 .blurb a{ color:var(--moss-deep); } .blurb code{ font:12px ui-monospace,monospace; }
 .bar{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-bottom:16px; }
-.chip{ font:12px ui-monospace,monospace; padding:3px 10px; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-2); cursor:pointer; }
+.chip{ min-height:40px; display:inline-flex; align-items:center; font:12px ui-monospace,monospace; padding:3px 10px; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-2); cursor:pointer; }
 .chip.on{ color:var(--moss-deep); border-color:var(--moss); background:var(--moss-soft); }
 .cols{ display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; align-items:start; }
 .col__h{ font:600 12px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-3); margin:0 0 10px; border-bottom:1px solid var(--rule); padding-bottom:6px; }
@@ -6589,12 +7260,13 @@ main{ max-width:1100px; margin:0 auto; padding:22px 22px 64px; }
 .dep{ font:11px ui-monospace,monospace; color:var(--ink-3); margin-top:5px; }
 .dep--wait{ color:var(--brick); }
 .card{ cursor:grab; }
+.card.is-target{ outline:2px solid var(--moss); outline-offset:3px; box-shadow:0 0 0 6px color-mix(in srgb,var(--moss-soft) 70%,transparent); }
 .card:active{ cursor:grabbing; }
 .card--dragging{ opacity:.45; }
 .col{ min-height:64px; border-radius:5px; transition:background .12s var(--ease,ease), outline-color .12s var(--ease,ease); }
 .col--over{ outline:2px dashed var(--moss); outline-offset:4px; background:var(--moss-soft); }
 .col__h{ display:flex; align-items:center; gap:6px; }
-.col__add{ margin-left:auto; width:20px; height:20px; display:inline-flex; align-items:center; justify-content:center; font:600 14px/1 ui-monospace,monospace; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-3); cursor:pointer; border-radius:4px; }
+.col__add{ margin-left:auto; width:40px; height:40px; display:inline-flex; align-items:center; justify-content:center; font:600 14px/1 ui-monospace,monospace; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-3); cursor:pointer; border-radius:4px; }
 .col__add:hover{ color:var(--moss-deep); border-color:var(--moss); }
 .wpm{ position:fixed; inset:0; z-index:60; display:flex; align-items:center; justify-content:center; }
 .wpm[hidden]{ display:none; }
@@ -6608,7 +7280,7 @@ main{ max-width:1100px; margin:0 auto; padding:22px 22px 64px; }
 .wpm__err{ color:var(--brick); font:12px ui-monospace,monospace; min-height:14px; }
 .wpm__actions{ display:flex; align-items:center; gap:8px; margin-top:4px; }
 .wpm__spacer{ flex:1; }
-.wpm__btn{ font:12px ui-monospace,monospace; padding:6px 14px; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-2); cursor:pointer; border-radius:5px; }
+.wpm__btn{ min-height:40px; font:12px ui-monospace,monospace; padding:6px 14px; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-2); cursor:pointer; border-radius:5px; }
 .wpm__save{ color:var(--moss-deep); border-color:var(--moss); background:var(--moss-soft); }
 .wpm__del{ color:var(--brick); border-color:var(--brick); }
 `,
@@ -6663,20 +7335,56 @@ ${railHtml({
 <script>
 (function () {
   var chips = [].slice.call(document.querySelectorAll('.chip'));
-  chips.forEach(function (c) {
-    c.addEventListener('click', function () {
+  function applyChip(c, sync) {
+      if (!c) return;
       chips.forEach(function (x) { x.classList.remove('on'); });
       c.classList.add('on');
       var f = c.getAttribute('data-filter');
+      var kind = c.getAttribute('data-filter-kind') || 'type';
       [].slice.call(document.querySelectorAll('.card')).forEach(function (card) {
-        card.style.display = f === 'all' || card.getAttribute('data-type') === f ? '' : 'none';
+        var tags = ' ' + (card.getAttribute('data-tags') || '') + ' ';
+        var show = f === 'all' || (kind === 'type' && card.getAttribute('data-type') === f) || (kind === 'tag' && tags.indexOf(' ' + f + ' ') >= 0);
+        card.style.display = show ? '' : 'none';
       });
       [].slice.call(document.querySelectorAll('.col')).forEach(function (col) {
         var any = [].slice.call(col.querySelectorAll('.card')).some(function (card) { return card.style.display !== 'none'; });
         col.style.display = any ? '' : 'none';
       });
-    });
+      if (sync) {
+        try {
+          var u = new URL(window.location.href);
+          ['tag', 'type'].forEach(function (key) { u.searchParams.delete(key); });
+          if (f !== 'all') u.searchParams.set(kind === 'tag' ? 'tag' : 'type', f);
+          window.history.replaceState({}, '', u.toString());
+        } catch (_e) {}
+      }
+  }
+  function cssEsc(value) {
+    return window.CSS && CSS.escape ? CSS.escape(value) : String(value).replace(/"/g, '\\"');
+  }
+  function highlightItem(id) {
+    if (!id) return;
+    var card = document.querySelector('.card[data-id="' + cssEsc(id) + '"]');
+    if (!card) return;
+    card.classList.add('is-target');
+    card.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+  chips.forEach(function (c) {
+    c.addEventListener('click', function () { applyChip(c, true); });
   });
+  try {
+    var q = new URL(window.location.href).searchParams;
+    var targetTag = q.get('tag');
+    var targetType = q.get('type');
+    var targetItem = q.get('item') || q.get('id');
+    var selector = targetTag
+      ? '.chip[data-filter-kind="tag"][data-filter="' + cssEsc(targetTag) + '"]'
+      : targetType
+        ? '.chip[data-filter-kind="type"][data-filter="' + cssEsc(targetType) + '"]'
+        : '';
+    if (selector) applyChip(document.querySelector(selector), false);
+    if (targetItem) setTimeout(function () { highlightItem(targetItem); }, 80);
+  } catch (_e) {}
 })();
   // Drag a card to another lane → POST the new status; move optimistically, revert
   // (reload) on failure. Mirrors the \`wp set <id> status <lane>\` CLI write.
@@ -7485,7 +8193,17 @@ function renderReplaysHtml() {
     css: `
 .controls{ position:sticky; top:51px; z-index:9; display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px; padding:9px 18px; background:var(--paper-2); border-bottom:1px solid var(--rule); }
 .controls label{ font:12px ui-monospace,monospace; color:var(--ink-3); display:inline-flex; align-items:center; gap:6px; }
-.controls select{ font:12px ui-monospace,monospace; background:var(--paper-4); color:var(--ink); border:1px solid var(--rule); padding:4px 8px; }
+.controls select{ min-height:40px; font:12px ui-monospace,monospace; background:var(--paper-4); color:var(--ink); border:1px solid var(--rule); padding:7px 10px; }
+.workbench{ display:grid; grid-template-columns:1.1fr repeat(3,minmax(0,.7fr)); gap:1px; background:var(--rule); border-bottom:1px solid var(--rule); }
+.workbench__intro,.workbench__card{ background:var(--paper-4); padding:12px 16px; }
+.workbench__k{ font:700 10px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.09em; color:var(--ink-4); }
+.workbench h1{ margin:6px 0 3px; font:italic 20px/1.15 Georgia,serif; color:var(--moss-deep); }
+.workbench p{ margin:0; font-size:12.5px; line-height:1.45; color:var(--ink-3); }
+.workbench__card{ text-decoration:none; color:var(--ink-2); display:flex; flex-direction:column; gap:6px; min-height:112px; }
+.workbench__card:hover{ background:var(--paper-3); }
+.workbench__t{ font:700 11px/1.25 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink); }
+.workbench__d{ flex:1; font:12px/1.4 -apple-system,system-ui,sans-serif; color:var(--ink-3); }
+.workbench__go{ font:11px ui-monospace,monospace; color:var(--moss-deep); }
 .meta{ font:11px ui-monospace,monospace; color:var(--ink-4); display:inline-flex; gap:8px; flex-wrap:wrap; align-items:center; }
 .boundary{ font:11px ui-monospace,monospace; color:var(--moss-deep); border:1px dashed var(--moss); background:var(--moss-soft); padding:2px 8px; }
 .spacer{ flex:1; }
@@ -7496,7 +8214,7 @@ function renderReplaysHtml() {
 .bk.b-rejected{ color:var(--brick-d); border-color:var(--brick); background:var(--brick-soft); }
 .bk.b-dry_run{ color:var(--indigo); border-color:var(--indigo); background:var(--indigo-soft); }
 .bk.b-unchecked,.bk.b-disabled,.bk.b-unknown{ color:var(--ink-4); }
-.layout{ display:grid; grid-template-columns: 340px 1fr; height: calc(100vh - 93px); }
+.layout{ display:grid; grid-template-columns: 340px 1fr; height: calc(100vh - 210px); min-height:460px; }
 .list{ border-right:1px solid var(--rule); overflow:auto; background:var(--paper-3); }
 .detail{ overflow:auto; padding:16px 22px; max-width:1000px; }
 .item{ display:block; width:100%; text-align:left; border:0; border-bottom:1px solid var(--rule-soft); border-left:3px solid var(--ink-4); background:transparent; color:var(--ink); cursor:pointer; padding:9px 12px; font:inherit; }
@@ -7518,6 +8236,12 @@ section.sec{ border:1px solid var(--rule); background:var(--paper-4); margin-bot
 .sec > h3{ margin:0; padding:8px 12px; font:600 12px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-2); background:var(--paper-2); border-bottom:1px solid var(--rule); display:flex; gap:8px; align-items:baseline; }
 .sec > h3 .h-note{ font-weight:400; text-transform:none; letter-spacing:0; color:var(--ink-4); }
 .sec > .body{ padding:12px; }
+.egraph{ border:1px solid var(--rule); background:var(--paper-4); margin:0 0 16px; padding:12px; }
+.egraph__h{ font:700 10px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.09em; color:var(--ink-4); margin-bottom:9px; }
+.egraph__links{ display:flex; flex-wrap:wrap; gap:6px; }
+.egraph__links a{ min-height:32px; display:inline-flex; align-items:center; border:1px solid var(--rule); background:var(--paper-3); color:var(--moss-deep); padding:3px 9px; text-decoration:none; font:11px ui-monospace,monospace; }
+.egraph__links a:hover{ border-color:var(--moss); background:var(--moss-soft); }
+.egraph__meta{ margin-top:8px; color:var(--ink-4); font:11px ui-monospace,monospace; }
 .diff{ font:12px/1.55 ui-monospace,monospace; border:1px solid var(--rule); overflow:auto; }
 .drow{ display:flex; white-space:pre-wrap; }
 .drow .g{ flex:0 0 86px; text-align:right; padding:0 8px; color:var(--ink-4); background:var(--paper-3); border-right:1px solid var(--rule-soft); user-select:none; }
@@ -7553,6 +8277,18 @@ section.sec{ border:1px solid var(--rule); background:var(--paper-4); margin-bot
 .risk.high{ color:var(--brick-d); border-color:var(--brick); background:var(--brick-soft); }
 .muted{ color:var(--ink-4); font-style:italic; }
 .loading{ color:var(--ink-4); font-style:italic; padding:24px; }
+@media(max-width:840px){
+  .controls{ position:static; align-items:stretch; }
+  .controls label{ width:100%; flex-direction:column; align-items:flex-start; }
+  .controls select{ width:100%; }
+  .workbench{ grid-template-columns:1fr; }
+  .workbench__card{ min-height:0; }
+  .layout{ grid-template-columns:1fr; height:auto; min-height:0; }
+  .list{ border-right:0; border-bottom:1px solid var(--rule); max-height:42vh; }
+  .detail{ max-width:none; padding:14px 14px 40px; overflow:visible; }
+  .kv{ grid-template-columns:1fr; }
+  .drow .g{ flex-basis:62px; }
+}
 `,
   })}
 <body>
@@ -7562,6 +8298,16 @@ ${railHtml({
   sub: 'counterfactual revisions of public transcripts · diffed against the originals &amp; locally gated',
   hint: '<span><b>replays</b> — a finished script re-run with one move changed, diffed against the original</span><span class="navhint__sep">·</span><span>see also <a href="/browse">scripts</a> &amp; <a href="/derivation">proof runs</a></span>',
 })}
+<section class="workbench" aria-labelledby="replayWorkTitle">
+  <div class="workbench__intro">
+    <div class="workbench__k">evidence workbench</div>
+    <h1 id="replayWorkTitle">Replay/original comparison</h1>
+    <p>Read one counterfactual rewrite against its original, then inspect local gate verdicts and hidden-state provenance before promoting any claim.</p>
+  </div>
+  <a class="workbench__card" href="/runs?kind=replay&amp;mock=1&amp;dryRun=1"><span class="workbench__t">make a replay</span><span class="workbench__d">Open the launcher with a free mock/dry-run replay path selected.</span><span class="workbench__go">launch replay →</span></a>
+  <a class="workbench__card" href="/browse?queue=flagged"><span class="workbench__t">source cases</span><span class="workbench__d">Find flagged scripts that might deserve a counterfactual pass.</span><span class="workbench__go">open flags →</span></a>
+  <a class="workbench__card" href="/board?tag=evidence"><span class="workbench__t">connect work</span><span class="workbench__d">Move replay follow-up through the generated workplan, not a parallel tracker.</span><span class="workbench__go">open board →</span></a>
+</section>
 <div class="controls">
   <label>bundle <select id="bundleSel"></select></label>
   <span class="meta" id="bundleMeta"></span>
@@ -7576,7 +8322,14 @@ ${railHtml({
 const GATE_BUCKETS = ${JSON.stringify(GATE_BUCKETS)};
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const state = { bundle:null, item:null, items:[] };
+const initialParams = new URLSearchParams(location.search);
+const state = {
+  bundle:null,
+  item:null,
+  items:[],
+  requestedBundle: initialParams.get('bundle') || '',
+  requestedItem: initialParams.get('item') || initialParams.get('itemId') || '',
+};
 
 function fmtBuckets(buckets){
   return GATE_BUCKETS.filter(function(b){ return (buckets[b]||0) > 0; })
@@ -7599,7 +8352,8 @@ async function loadBundles(){
       const n = b.count!=null?b.count:'?';
       return '<option value="'+esc(b.name)+'">'+esc(b.name)+'  ('+esc(b.generator||'?')+'→'+esc(b.checker||'none')+', '+n+')</option>';
     }).join('');
-    state.bundle = d.bundles[0].name;
+    const requested = state.requestedBundle && d.bundles.filter(function(b){ return b.name === state.requestedBundle; })[0];
+    state.bundle = (requested || d.bundles[0]).name;
     sel.value = state.bundle;
     loadBundle(state.bundle);
   } catch (e){ $('list').innerHTML='<div class="loading">error: '+esc(e.message)+'</div>'; }
@@ -7620,7 +8374,12 @@ async function loadBundle(name){
       (d.nextStageRule?' <span title="local gate next-stage rule">→ '+esc(d.nextStageRule)+'</span>':'');
     $('counts').textContent = state.items.length + ' item(s)';
     renderList();
-    if (state.items.length) selectItem(state.items[0].itemId);
+    if (state.items.length) {
+      const wanted = state.requestedItem && state.items.filter(function(it){ return it.itemId === state.requestedItem; })[0];
+      const next = (wanted || state.items[0]).itemId;
+      state.requestedItem = '';
+      selectItem(next);
+    }
   } catch (e){ $('list').innerHTML='<div class="loading">error: '+esc(e.message)+'</div>'; }
 }
 
@@ -7640,6 +8399,15 @@ function renderList(){
 }
 function shortId(id){ const p = String(id).split(':'); return p.length>1 ? p.slice(1).join(':') : id; }
 
+function syncReplayUrl(){
+  try {
+    const u = new URL(window.location.href);
+    if (state.bundle) u.searchParams.set('bundle', state.bundle);
+    if (state.item) u.searchParams.set('item', state.item);
+    window.history.replaceState({}, '', u.toString());
+  } catch (_e) {}
+}
+
 async function selectItem(itemId){
   state.item = itemId; renderList();
   $('detail').innerHTML = '<div class="loading">loading…</div>';
@@ -7648,6 +8416,7 @@ async function selectItem(itemId){
     const d = await res.json();
     if (!res.ok) throw new Error(d.error || res.statusText);
     renderDetail(d);
+    syncReplayUrl();
   } catch (e){ $('detail').innerHTML='<div class="loading">error: '+esc(e.message)+'</div>'; }
 }
 
@@ -7733,6 +8502,23 @@ function hiddenStateHtml(ledger){
   }).join('');
 }
 
+function evidenceGraphHtml(d){
+  const encItem = encodeURIComponent(d.itemId || '');
+  const encBundle = encodeURIComponent(state.bundle || '');
+  const links = [
+    ['replay permalink', '/replays?bundle='+encBundle+'&item='+encItem],
+    ['source script', '/browse?itemId='+encItem],
+    ['make replay', '/runs?kind=replay&mode=item&itemId='+encItem+'&mock=1&dryRun=1'],
+    ['flagged scripts', '/browse?queue=flagged'],
+    ['evidence board', '/board?tag=evidence'],
+    ['launcher jobs', '/runs?kind=replay'],
+  ];
+  if (d.runId) links.splice(2, 0, ['run slice', '/browse?runId='+encodeURIComponent(d.runId)]);
+  return '<div class="egraph"><div class="egraph__h">evidence graph</div><div class="egraph__links">' +
+    links.map(function(pair){ return '<a href="'+esc(pair[1])+'">'+esc(pair[0])+'</a>'; }).join('') +
+    '</div><div class="egraph__meta">bundle '+esc(state.bundle || '?')+' · item '+esc(shortId(d.itemId || '?'))+' · bucket '+esc(d.bucket || '?')+'</div></div>';
+}
+
 function renderDetail(d){
   let html = '<div class="dh">'+esc(shortId(d.itemId))+'</div>';
   html += '<div class="dsub">'+
@@ -7743,6 +8529,7 @@ function renderDetail(d){
     (d.runId?'<span>run '+esc(d.runId)+'</span>':'')+
     (d.source?'<span>'+esc(d.source)+'</span>':'')+
   '</div>';
+  html += evidenceGraphHtml(d);
 
   // Diff
   const st = d.diffStats||{};
@@ -7826,7 +8613,18 @@ function renderRunsHtml() {
 .tab.sel{ color:var(--ink); background:var(--paper); border-bottom-color:var(--paper); font-weight:600; }
 .safety{ font:11px ui-monospace,monospace; color:var(--ochre-d); border:1px dashed var(--ochre); background:var(--ochre-soft); padding:2px 8px; }
 .spacer{ flex:1; }
-.layout{ display:grid; grid-template-columns: minmax(380px, 460px) 1fr; height: calc(100vh - 93px); }
+.goalbar{ padding:16px 18px; border-bottom:1px solid var(--rule); background:var(--paper-3); }
+.goalbar__head{ display:flex; align-items:baseline; justify-content:space-between; gap:16px; margin-bottom:10px; }
+.goalbar__k{ font:700 10px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.1em; color:var(--ink-4); }
+.goalbar__hint{ font:11px/1.35 ui-monospace,monospace; color:var(--ink-4); text-align:right; }
+.goals{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; }
+.goal-card{ min-height:116px; text-align:left; border:1px solid var(--rule); border-top:3px solid var(--moss); background:var(--paper-4); color:var(--ink-2); padding:12px 13px; cursor:pointer; display:flex; flex-direction:column; gap:7px; }
+.goal-card:hover{ border-color:var(--moss); }
+.goal-card.is-active{ border-color:var(--moss-deep); background:var(--moss-soft); }
+.goal-card__t{ font:700 12px/1.25 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.07em; color:var(--ink); }
+.goal-card__d{ flex:1; font:12px/1.4 -apple-system,system-ui,sans-serif; color:var(--ink-3); }
+.goal-card__c{ font:10.5px ui-monospace,monospace; color:var(--moss-deep); }
+.layout{ display:grid; grid-template-columns: minmax(380px, 460px) 1fr; min-height: calc(100vh - 220px); }
 .formcol{ border-right:1px solid var(--rule); overflow:auto; background:var(--paper-3); padding:16px 18px; }
 .jobscol{ overflow:auto; padding:16px 20px; max-width:1100px; }
 .kind-title{ font-family:Georgia,serif; font-style:italic; font-size:17px; color:var(--moss-deep); margin:0 0 2px; }
@@ -7834,7 +8632,7 @@ function renderRunsHtml() {
 .field{ margin-bottom:11px; }
 .field.hidden{ display:none; }
 .field > label{ display:block; font:11px ui-monospace,monospace; color:var(--ink-3); margin-bottom:3px; }
-.field input[type=text],.field input[type=number],.field select{ width:100%; font:12px ui-monospace,monospace; background:var(--paper-4); color:var(--ink); border:1px solid var(--rule); padding:5px 8px; }
+.field input[type=text],.field input[type=number],.field select{ width:100%; min-height:40px; font:12px ui-monospace,monospace; background:var(--paper-4); color:var(--ink); border:1px solid var(--rule); padding:8px 10px; }
 .field.check{ display:flex; align-items:center; gap:7px; }
 .field.check > label{ margin:0; color:var(--ink-2); font-size:12px; }
 .field .help{ display:block; font:10px ui-monospace,monospace; color:var(--ink-4); margin-top:2px; }
@@ -7855,10 +8653,18 @@ function renderRunsHtml() {
 .cost.bad{ color:var(--brick-d); border-color:var(--brick); }
 .costnote{ font:11px/1.45 ui-monospace,monospace; color:var(--ink-3); margin:8px 0; }
 .costnote.metered{ color:var(--brick-d); font-weight:600; }
+.checklist{ list-style:none; margin:8px 0 10px; padding:0; display:grid; gap:5px; }
+.plan-check{ display:grid; grid-template-columns:18px 1fr; gap:7px; align-items:start; font:11px/1.35 ui-monospace,monospace; color:var(--ink-3); }
+.plan-check__mark{ width:14px; height:14px; margin-top:1px; display:inline-flex; align-items:center; justify-content:center; border:1px solid var(--rule); border-radius:50%; font-size:9px; color:var(--ink-4); background:var(--paper-2); }
+.plan-check__label{ color:var(--ink-2); font-weight:600; }
+.plan-check__detail{ color:var(--ink-4); }
+.plan-check.ok .plan-check__mark{ color:#fff; background:var(--moss); border-color:var(--moss-deep); }
+.plan-check.warn .plan-check__mark{ color:var(--ochre-d); border-color:var(--ochre); background:var(--ochre-soft); }
+.plan-check.danger .plan-check__mark{ color:#fff; border-color:var(--brick-d); background:var(--brick); }
 .cmd{ font:11px/1.5 ui-monospace,monospace; background:var(--paper-2); border:1px solid var(--rule-soft); padding:7px 9px; white-space:pre-wrap; word-break:break-all; color:var(--ink-2); margin:0 0 10px; }
 .confirm{ margin:8px 0; }
-.confirm input{ width:100%; font:12px ui-monospace,monospace; background:var(--paper); color:var(--brick-d); border:1px solid var(--brick); padding:5px 8px; }
-.btn{ font:12px ui-monospace,monospace; color:var(--ink); border:1px solid var(--ink-3); padding:7px 14px; background:var(--paper-4); cursor:pointer; }
+.confirm input{ width:100%; min-height:40px; font:12px ui-monospace,monospace; background:var(--paper); color:var(--brick-d); border:1px solid var(--brick); padding:8px 10px; }
+.btn{ min-height:40px; font:12px ui-monospace,monospace; color:var(--ink); border:1px solid var(--ink-3); padding:7px 14px; background:var(--paper-4); cursor:pointer; }
 .btn:hover{ border-color:var(--ink); }
 .btn.go{ color:#fff; background:var(--moss); border-color:var(--moss-deep); }
 .btn.warn{ color:#fff; background:var(--ochre-d); border-color:var(--ochre-d); }
@@ -7873,6 +8679,10 @@ function renderRunsHtml() {
 .jobrow{ cursor:pointer; }
 .jobrow:hover{ background:var(--paper-4); }
 .jobrow.sel{ background:var(--paper-4); }
+.job-actions{ display:flex; flex-wrap:wrap; justify-content:flex-end; gap:5px; }
+.job-actions .btn{ min-height:32px; padding:3px 9px; }
+.job-link{ min-height:32px; display:inline-flex; align-items:center; font:12px ui-monospace,monospace; color:var(--moss-deep); border:1px solid var(--rule); background:var(--paper-4); padding:3px 9px; text-decoration:none; }
+.job-link:hover{ border-color:var(--moss); background:var(--moss-soft); }
 .st{ display:inline-flex; align-items:center; gap:6px; }
 .st::before{ content:''; width:8px; height:8px; border-radius:50%; background:var(--ink-4); }
 .st.running::before{ background:var(--ochre); animation: pulse 1.1s ease-in-out infinite; }
@@ -7886,6 +8696,8 @@ function renderRunsHtml() {
 .muted{ color:var(--ink-4); font-style:italic; }
 .loading{ color:var(--ink-4); font-style:italic; padding:18px 0; }
 .tiny{ font:10px ui-monospace,monospace; color:var(--ink-4); }
+@media(max-width:980px){ .goals{ grid-template-columns:repeat(2,minmax(0,1fr)); } .layout{ grid-template-columns:1fr; } .formcol{ border-right:0; border-bottom:1px solid var(--rule); } }
+@media(max-width:560px){ .controls{ position:static; } .goalbar__head{ flex-direction:column; align-items:flex-start; } .goalbar__hint{ text-align:left; } .goals{ grid-template-columns:1fr; } .tabs{ overflow-x:auto; } .tab{ min-height:40px; white-space:nowrap; } }
 `,
   })}
 <body>
@@ -7895,6 +8707,22 @@ ${railHtml({
   sub: 'spawn generative · replay · adversarial-CLI · online-score runs — localhost only, no auth (deferred)',
   hint: '<span><b>launch</b> — spawn new runs</span><span class="navhint__sep">·</span><span>to explore finished ones, see <a href="/browse">scripts</a> or <a href="/derivation">proof runs</a></span>',
 })}
+<section class="goalbar" aria-labelledby="launchGoalsTitle">
+  <div class="goalbar__head">
+    <div>
+      <div class="goalbar__k">goal-first launcher</div>
+      <h1 id="launchGoalsTitle" class="kind-title" style="margin-top:5px">What are you trying to do?</h1>
+    </div>
+    <div class="goalbar__hint">Pick a goal for safe defaults. The advanced command builder remains below.</div>
+  </div>
+  <div class="goals" id="goalCards" aria-label="Run goals">
+    <button class="goal-card" type="button" data-kind="generate"><span class="goal-card__t">Generate a new script</span><span class="goal-card__d">Create a fresh pedagogical drama transcript. Mock stays free by default.</span><span class="goal-card__c">free default</span></button>
+    <button class="goal-card" type="button" data-kind="replay"><span class="goal-card__t">Replay a script</span><span class="goal-card__d">Run a bounded counterfactual rewrite against an existing transcript.</span><span class="goal-card__c">mock / quota</span></button>
+    <button class="goal-card" type="button" data-kind="derivation"><span class="goal-card__t">Run a proof-DAG derivation</span><span class="goal-card__d">Enact a tutor script against a world and stream to live proof runs.</span><span class="goal-card__c">mock default</span></button>
+    <button class="goal-card" type="button" data-kind="online-score"><span class="goal-card__t">Score existing artifacts</span><span class="goal-card__d">Backfill scorer output for a batch root or run, with dry-run first.</span><span class="goal-card__c">dry-run default</span></button>
+    <button class="goal-card" type="button" data-kind="pedagogical-drama"><span class="goal-card__t">Run curriculum drama</span><span class="goal-card__d">Enact compiled curriculum drama specs through the batch generator.</span><span class="goal-card__c">mock default</span></button>
+  </div>
+</section>
 <div class="controls">
   <div class="tabs" id="tabs"></div>
   <div class="spacer"></div>
@@ -7910,6 +8738,7 @@ ${railHtml({
       <div class="review__h">review &amp; launch <span class="cost bad" id="costBadge">—</span></div>
       <div class="review__b">
         <div class="costnote" id="costNote"></div>
+        <ul class="checklist" id="checklist" aria-label="Validation checklist"></ul>
         <pre class="cmd" id="cmd">—</pre>
         <div class="confirm" id="confirmRow" style="display:none">
           <input type="text" id="confirmInput" placeholder="type RUN to authorise metered spend">
@@ -8048,6 +8877,18 @@ function renderTabs(){
   $('tabs').innerHTML = KINDS.map(function(k){
     return '<button class="tab'+(k.kind===state.kind?' sel':'')+'" data-kind="'+esc(k.kind)+'" title="'+esc(k.script)+'">'+esc(k.title.split(' — ')[0])+'</button>';
   }).join('');
+  renderGoals();
+}
+
+function renderGoals(){
+  const root = $('goalCards');
+  if (!root) return;
+  root.querySelectorAll('.goal-card').forEach(function(button){
+    const on = button.getAttribute('data-kind') === state.kind;
+    button.classList.toggle('is-active', on);
+    if (on) button.setAttribute('aria-current', 'true');
+    else button.removeAttribute('aria-current');
+  });
 }
 
 function fieldHtml(f){
@@ -8146,6 +8987,7 @@ function showPlanError(msg){
   state.plan = null;
   $('costBadge').className = 'cost bad'; $('costBadge').textContent = 'invalid';
   $('costNote').textContent = ''; $('cmd').textContent = '—';
+  $('checklist').innerHTML = '';
   $('confirmRow').style.display='none';
   $('formErr').textContent = msg;
   const btn = $('launchBtn'); btn.disabled = true; btn.className='btn'; btn.textContent='launch';
@@ -8158,6 +9000,11 @@ function renderReview(plan){
   $('costBadge').textContent = cc==='metered' ? 'metered $' : cc;
   $('costNote').className = 'costnote'+(cc==='metered'?' metered':'');
   $('costNote').textContent = plan.costNote || '';
+  $('checklist').innerHTML = (plan.checks || []).map(function(c){
+    const state = c.state || (c.ok ? 'ok' : 'warn');
+    const mark = state === 'ok' ? '✓' : state === 'danger' ? '!' : '!';
+    return '<li class="plan-check '+esc(state)+'"><span class="plan-check__mark" aria-hidden="true">'+mark+'</span><span><span class="plan-check__label">'+esc(c.label || '')+'</span><br><span class="plan-check__detail">'+esc(c.detail || '')+'</span></span></li>';
+  }).join('');
   $('cmd').textContent = plan.command;
   const btn = $('launchBtn');
   if (cc==='metered'){
@@ -8201,18 +9048,19 @@ function renderJobs(){
   if (!state.jobs.length){ $('jobs').innerHTML='<div class="loading">no jobs yet — launch one on the left.</div>'; $('joblog').innerHTML=''; return; }
   $('jobs').innerHTML = '<table class="tbl"><thead><tr><th>status</th><th>cost</th><th>label</th><th>started</th><th>pid</th><th></th></tr></thead><tbody>'+
     state.jobs.map(function(j){
-      const stop = j.status==='running' ? '<button class="btn danger" data-stop="'+esc(j.id)+'" style="padding:3px 9px">stop</button>' : '';
+      const stop = j.status==='running' ? '<button class="btn danger" data-stop="'+esc(j.id)+'">stop</button>' : '';
+      const retry = j.status!=='running' && j.params ? '<button class="btn" data-retry="'+esc(j.id)+'">retry</button>' : '';
       const exit = (j.status==='failed'||j.status==='error') ? ' <span class="tiny">('+(j.error?esc(j.error):'exit '+j.exitCode)+')</span>' : '';
-      // A derivation run streams to /derivation/live — surface the jump so launch
-      // and watch are one move (opens in a new tab so the launcher stays put).
-      const watch = j.kind==='derivation' ? '<a class="btn" href="/derivation/live" target="_blank" rel="noopener" style="padding:3px 9px" title="watch live derivation runs">watch live ↗</a> ' : '';
+      const links = (j.links || []).map(function(l){
+        return '<a class="job-link" href="'+esc(l.href || '#')+'" target="_blank" rel="noopener">'+esc(l.label || 'open')+' ↗</a>';
+      }).join('');
       return '<tr class="jobrow'+(j.id===state.selJob?' sel':'')+'" data-job="'+esc(j.id)+'">'+
         '<td><span class="st '+esc(j.status)+'">'+esc(j.status)+'</span>'+exit+'</td>'+
         '<td><span class="cost '+esc(j.costClass)+'">'+esc(j.costClass==='metered'?'metered $':j.costClass)+'</span></td>'+
         '<td>'+esc(j.label)+'</td>'+
         '<td class="tiny">'+esc(ago(j.startedAt))+' ago</td>'+
         '<td class="tiny">'+esc(j.pid||'—')+'</td>'+
-        '<td>'+watch+stop+'</td></tr>';
+        '<td><div class="job-actions">'+links+retry+stop+'</div></td></tr>';
     }).join('')+'</tbody></table>';
   renderJobLog();
 }
@@ -8241,18 +9089,52 @@ function applyUrlValues(){
   } catch(_e){}
 }
 
+function fillFormFromParams(params){
+  const spec = FORMS[state.kind]; if (!spec) return;
+  const p = params || {};
+  spec.fields.forEach(function(f){
+    const control = $('f_'+f.name);
+    if (!control) return;
+    if (Object.prototype.hasOwnProperty.call(p, f.name)) control.value = p[f.name];
+    else control.value = f.def || '';
+  });
+  spec.checks.forEach(function(c){
+    const control = $('f_'+c.name);
+    if (control) control.checked = !!p[c.name];
+  });
+  updateVisibility();
+  refreshPlan();
+}
+
 // ── Wiring ──────────────────────────────────────────────────────────────────────
 prefillKindFromUrl();
 renderTabs();
 renderForm();
 applyUrlValues();
 $('tabs').addEventListener('click', function(e){ const b=e.target.closest('.tab'); if(!b) return; state.kind=b.getAttribute('data-kind'); renderTabs(); renderForm(); });
+$('goalCards').addEventListener('click', function(e){ const b=e.target.closest('.goal-card'); if(!b) return; state.kind=b.getAttribute('data-kind'); renderTabs(); renderForm(); document.querySelector('.formcol').scrollIntoView({ block:'start', behavior:'smooth' }); });
 $('form').addEventListener('input', function(){ updateVisibility(); schedulePlan(); });
 $('form').addEventListener('change', function(){ updateVisibility(); schedulePlan(); });
 $('checks').addEventListener('change', schedulePlan);
 $('confirmInput').addEventListener('input', function(){ if (state.plan) renderReview(state.plan); });
 $('launchBtn').addEventListener('click', launch);
 $('jobs').addEventListener('click', function(e){
+  const link = e.target.closest('.job-link');
+  if (link){ e.stopPropagation(); return; }
+  const retry = e.target.closest('[data-retry]');
+  if (retry){
+    e.stopPropagation();
+    const job = state.jobs.find(function(x){ return x.id === retry.getAttribute('data-retry'); });
+    if (!job || !FORMS[job.kind]) return;
+    state.kind = job.kind;
+    state.selJob = job.id;
+    renderTabs();
+    renderForm();
+    fillFormFromParams(job.params || {});
+    renderJobs();
+    document.querySelector('.formcol').scrollIntoView({ block:'start', behavior:'smooth' });
+    return;
+  }
   const stop = e.target.closest('[data-stop]');
   if (stop){ e.stopPropagation(); fetch('/api/jobs/'+encodeURIComponent(stop.getAttribute('data-stop'))+'/stop',{method:'POST'}).then(refreshJobs); return; }
   const row = e.target.closest('[data-job]'); if (row){ state.selJob = row.getAttribute('data-job'); renderJobs(); }
@@ -8344,7 +9226,7 @@ function renderBrowserHtml() {
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; }
+html, body { margin: 0; padding: 0; max-width:100%; overflow-x:hidden; }
 html { background: var(--paper); -webkit-text-size-adjust: 100%; }
 
 body {
@@ -8436,13 +9318,25 @@ h1 {
   padding: 14px 20px 16px;
   border-bottom: 1px solid var(--rule);
 }
+.filter-field {
+  display: grid;
+  gap: 5px;
+}
+.filter-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  line-height: 1.2;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+}
 .filters select, .filters input {
   width: 100%;
   border: 1px solid var(--rule);
   background: var(--paper-4);
   color: var(--ink);
-  min-height: 32px;
-  padding: 6px 9px;
+  min-height: 40px;
+  padding: 8px 10px;
   font-family: "JetBrains Mono", monospace;
   font-size: 12px;
   letter-spacing: 0.04em;
@@ -8458,6 +9352,53 @@ h1 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
+}
+.saved-views {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 12px 20px 0;
+}
+.view-chip,
+.filter-chip {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--rule);
+  background: var(--paper-4);
+  color: var(--ink-2);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 6px 10px;
+}
+.view-chip:hover,
+.filter-chip:hover {
+  border-color: var(--moss);
+  color: var(--moss-deep);
+}
+.view-chip.is-active {
+  background: var(--moss-soft);
+  border-color: var(--moss);
+  color: var(--moss-deep);
+}
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 20px 12px;
+  border-bottom: 1px solid var(--rule);
+}
+.filter-chip {
+  min-height: 40px;
+  font-size: 10.5px;
+  padding: 3px 8px;
+}
+.filter-chip b {
+  color: var(--ink);
 }
 
 /* ═══════ item list ═══════ */
@@ -8663,6 +9604,45 @@ h1 {
   transition: color .12s var(--ease), border-color .12s var(--ease);
 }
 .preview-link:hover { color: var(--brick); border-color: var(--brick); }
+.egraph {
+  max-width: 70rem;
+  margin: 0 auto 16px;
+  border: 1px solid var(--rule);
+  background: var(--paper-4);
+  padding: 12px 14px;
+}
+.egraph__h {
+  font: 700 10px/1 "JetBrains Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-4);
+  margin-bottom: 9px;
+}
+.egraph__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.egraph__links a {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--rule);
+  background: var(--paper-3);
+  color: var(--moss-deep);
+  padding: 3px 9px;
+  text-decoration: none;
+  font: 11px "JetBrains Mono", monospace;
+}
+.egraph__links a:hover {
+  border-color: var(--moss);
+  background: var(--moss-soft);
+}
+.egraph__meta {
+  margin-top: 8px;
+  color: var(--ink-4);
+  font: 11px "JetBrains Mono", monospace;
+}
 
 .tts-toolbar {
   max-width: 70rem;
@@ -8738,6 +9718,71 @@ pre {
   margin: 0 auto;
   display: grid;
   gap: 14px;
+}
+.compare-tools {
+  max-width: 76rem;
+  margin: 0 auto 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px 14px;
+  flex-wrap: wrap;
+}
+.compare-tools label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font: 11px "JetBrains Mono", monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.compare-tools select {
+  min-height: 40px;
+  min-width: min(520px, 72vw);
+  border: 1px solid var(--rule);
+  background: var(--paper-4);
+  color: var(--ink);
+  padding: 7px 10px;
+  font: 12px "JetBrains Mono", monospace;
+}
+.compare-note {
+  font: 12px/1.45 "Source Serif 4", Georgia, serif;
+  color: var(--ink-3);
+  margin-left: auto;
+  max-width: 32ch;
+}
+.compare-grid {
+  max-width: 76rem;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.compare-card {
+  min-width: 0;
+  border: 1px solid var(--rule);
+  background: var(--paper-4);
+}
+.compare-card__h {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper-2);
+}
+.compare-card__t {
+  font: 600 12px/1.3 "JetBrains Mono", monospace;
+  color: var(--ink);
+  word-break: break-all;
+}
+.compare-card__m {
+  margin-top: 4px;
+  font: 11px/1.35 "JetBrains Mono", monospace;
+  color: var(--ink-4);
+}
+.compare-card__b {
+  padding: 12px;
+}
+.compare-card .script-preview {
+  max-width: none;
 }
 .view-toggle {
   display: flex;
@@ -9015,7 +10060,7 @@ tbody th {
 .empty__lead strong { color: var(--moss-deep); font-weight: 600; }
 .empty__help { font-style: italic; margin: 0 0 16px; color: var(--ink-3); }
 .empty__actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; font-style: normal; font-family: inherit; }
-.empty__btn { display: inline-block; padding: 7px 14px; border: 1px solid var(--rule); border-radius: 7px; background: var(--paper-3); color: var(--ink-2); font-size: 13px; cursor: pointer; text-decoration: none; }
+.empty__btn { display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 7px 14px; border: 1px solid var(--rule); border-radius: 7px; background: var(--paper-3); color: var(--ink-2); font-size: 13px; cursor: pointer; text-decoration: none; }
 .empty__btn:hover { border-color: var(--moss); color: var(--moss-deep); }
 .empty__btn--go { background: var(--moss-soft); border-color: var(--moss); color: var(--moss-deep); }
 
@@ -9023,7 +10068,8 @@ tbody th {
 .blind .score-only,
 .blind .tab[data-tab="full"],
 .blind .tab[data-tab="scores"],
-.blind .tab[data-tab="meta"] {
+.blind .tab[data-tab="meta"],
+.blind .tab[data-tab="compare"] {
   display: none;
 }
 
@@ -9125,9 +10171,13 @@ tbody th {
   .app { grid-template-columns: 1fr; grid-template-rows: 46vh 54vh; }
   .sidebar { border-right: 0; border-bottom: 1px solid var(--rule); }
   .label-fields { grid-template-columns: 1fr; }
+  .filter-row { grid-template-columns: 1fr; }
   /* rail responsive rules live in rail-extra's own @media query (single source) */
   .detail-title h2 { font-size: 20px; }
   .pane { padding: 18px 18px 28px; }
+  .tabs { overflow-x:auto; }
+  .compare-grid { grid-template-columns: 1fr; }
+  .compare-tools select { min-width: 100%; }
 }
 </style>
 </head>
@@ -9147,25 +10197,34 @@ ${railHtml({
       <div id="appSub" class="sub">Generated public scripts, full traces, critic scores, and labels-as-perspective.</div>
     </div>
     <div class="filters">
-      <select id="runSelect" aria-label="Select run"></select>
-      <input id="searchInput" placeholder="Search id · drama · discipline · condition · arm · critic form (recognition/trap/flat)">
-      <select id="disciplineSelect" aria-label="Filter by discipline"><option value="">all disciplines</option></select>
-      <input id="labellerInput" class="blind-only" placeholder="Labeller id">
-      <div class="filter-row score-only">
-        <select id="roleSelect" aria-label="Filter by role">
-          <option value="">all roles</option>
-          <option value="target">target</option>
-          <option value="flat_control">flat controls</option>
-          <option value="boundary_trap_control">boundary traps</option>
-          <option value="hard_trap_control">hard traps</option>
-        </select>
-        <select id="formSelect" aria-label="Filter by critic form">
-          <option value="">all forms</option>
-          <option value="recognition">recognition</option>
-          <option value="trap">trap</option>
-          <option value="flat">flat</option>
-        </select>
+      <div class="saved-views" id="savedViews" aria-label="Saved script views">
+        <button class="view-chip" type="button" data-view="all">all scripts</button>
+        <button class="view-chip" type="button" data-view="flagged">flagged</button>
+        <button class="view-chip" type="button" data-view="unlabelled">unlabelled</button>
+        <button class="view-chip" type="button" data-view="recognition">recognition</button>
+        <button class="view-chip" type="button" data-view="trap">trap</button>
+        <button class="view-chip" type="button" data-view="flat">flat</button>
       </div>
+      <label class="filter-field" for="runSelect"><span class="filter-label">Run</span><select id="runSelect"></select></label>
+      <label class="filter-field" for="searchInput"><span class="filter-label">Search</span><input id="searchInput" placeholder="id · drama · discipline · condition · arm · critic form (recognition/trap/flat)"></label>
+      <label class="filter-field" for="disciplineSelect"><span class="filter-label">Discipline</span><select id="disciplineSelect"><option value="">all disciplines</option></select></label>
+      <label class="filter-field blind-only" for="labellerInput"><span class="filter-label">Labeller id</span><input id="labellerInput" placeholder="codex"></label>
+      <div class="filter-row score-only">
+        <label class="filter-field" for="roleSelect"><span class="filter-label">Role</span><select id="roleSelect">
+            <option value="">all roles</option>
+            <option value="target">target</option>
+            <option value="flat_control">flat controls</option>
+            <option value="boundary_trap_control">boundary traps</option>
+            <option value="hard_trap_control">hard traps</option>
+          </select></label>
+        <label class="filter-field" for="formSelect"><span class="filter-label">Critic form</span><select id="formSelect">
+            <option value="">all forms</option>
+            <option value="recognition">recognition</option>
+            <option value="trap">trap</option>
+            <option value="flat">flat</option>
+          </select></label>
+      </div>
+      <div class="active-filters" id="activeFilters" hidden></div>
     </div>
     <div id="items" class="items"></div>
   </aside>
@@ -9181,6 +10240,7 @@ ${railHtml({
       <button class="tab" data-tab="sample">Raw Public</button>
       <button class="tab" data-tab="full">Full</button>
       <button class="tab" data-tab="scores">Scores</button>
+      <button class="tab" data-tab="compare">Compare</button>
       <button class="tab" data-tab="meta">Meta</button>
     </div>
     <div id="pane" class="pane"><div class="empty">No script selected.</div></div>
@@ -9198,6 +10258,9 @@ const state = {
   blind: false,
   labeller: '',
   selectedLabel: null,
+  compareTarget: '',
+  compareDetail: null,
+  initialCompareTarget: '',
   queue: '',
   runIds: [],
   unlabelled: false,
@@ -9276,6 +10339,29 @@ function previewHref(item) {
   return '/browse?' + params.toString();
 }
 
+function renderBrowseEvidenceGraph(detail) {
+  const item = detail?.item || {};
+  if (!item.id) return '';
+  const encItem = encodeURIComponent(item.id);
+  const activeFlags = (detail.reviewFlags || []).filter((flag) => !flag.resolved_at).length;
+  const labelCount = (detail.labels || []).length;
+  const scoreCount = (detail.scores || []).length;
+  const links = [
+    ['script permalink', previewHref(item)],
+    ['compare view', previewHref(item) + '&tab=compare' + (state.compareTarget ? '&compareId=' + encodeURIComponent(state.compareTarget) : '')],
+    ['make replay', '/runs?kind=replay&mode=item&itemId=' + encItem + '&mock=1&dryRun=1'],
+    ['find replays', '/replays?item=' + encItem],
+    ['flagged queue', '/browse?queue=flagged'],
+    ['workplan evidence', '/board?tag=evidence'],
+    ['rubric', '/rubric'],
+    ['ontology', '/ontology'],
+  ];
+  if (item.runId) links.splice(1, 0, ['run slice', '/browse?runId=' + encodeURIComponent(item.runId)]);
+  return '<div class="egraph"><div class="egraph__h">evidence graph</div><div class="egraph__links">' +
+    links.map(([label, href]) => '<a href="' + esc(href) + '">' + esc(label) + '</a>').join('') +
+    '</div><div class="egraph__meta">scores ' + esc(scoreCount) + ' · labels ' + esc(labelCount) + ' · active flags ' + esc(activeFlags) + ' · item ' + esc(item.id) + '</div></div>';
+}
+
 function ttsClean(s) {
   return String(s || '').replace(/\\s+/g, ' ').trim();
 }
@@ -9337,6 +10423,82 @@ function renderScriptView(blocks, fallbackText) {
     '</div>';
   const body = mode === 'swimlane' ? renderSwimlane(blocks, fallbackText) : renderTranscriptPreview(blocks, fallbackText);
   return renderTtsToolbar() + toggle + body;
+}
+
+function defaultCompareTarget() {
+  if (!state.selected || state.items.length < 2) return '';
+  if (state.compareTarget && state.compareTarget !== state.selected && state.items.some((item) => item.id === state.compareTarget)) {
+    return state.compareTarget;
+  }
+  const index = state.items.findIndex((item) => item.id === state.selected);
+  const next = state.items[index + 1] || state.items[index - 1] || state.items.find((item) => item.id !== state.selected);
+  return next ? next.id : '';
+}
+
+function compareControlsHtml(targetId) {
+  const options = state.items
+    .filter((item) => item.id !== state.selected)
+    .slice(0, 120)
+    .map((item) => {
+      const label = (item.tid || item.id) + (item.arm ? ' · ' + item.arm : '') + (item.discipline ? ' · ' + item.discipline : '');
+      return '<option value="' + esc(item.id) + '"' + (item.id === targetId ? ' selected' : '') + '>' + esc(label) + '</option>';
+    })
+    .join('');
+  return '<div class="compare-tools">' +
+    '<label for="compareTarget">Compare selected script with<select id="compareTarget">' + options + '</select></label>' +
+    '<div class="compare-note">The list follows the current filters, so comparison stays inside the active review slice.</div>' +
+    '</div>';
+}
+
+function compareCardHtml(detail, label) {
+  if (!detail) return '<div class="compare-card"><div class="compare-card__b"><div class="loading">loading comparison target…</div></div></div>';
+  const item = detail.item || {};
+  const meta = [label, item.runId, item.arm, item.discipline, item.conditionName].filter(Boolean).join(' / ');
+  return '<section class="compare-card">' +
+    '<div class="compare-card__h"><div class="compare-card__t">' + esc(item.tid || item.id || 'script') + '</div><div class="compare-card__m">' + esc(meta) + '</div></div>' +
+    '<div class="compare-card__b">' + renderTranscriptPreview(detail.samplePreview, detail.sampleText || 'No public sample found.') + '</div>' +
+    '</section>';
+}
+
+function wireCompareTarget() {
+  const select = el('compareTarget');
+  if (!select) return;
+  select.addEventListener('change', () => {
+    state.compareTarget = select.value;
+    state.compareDetail = null;
+    syncBrowseUrl();
+    renderComparePane();
+  });
+}
+
+function renderComparePane() {
+  const pane = el('pane');
+  const targetId = defaultCompareTarget();
+  if (!targetId) {
+    pane.innerHTML = '<div class="empty">No comparison target in the current filtered list. Clear filters or select another run slice.</div>';
+    return;
+  }
+  state.compareTarget = targetId;
+  syncBrowseUrl();
+  const targetReady = state.compareDetail && state.compareDetail.item && state.compareDetail.item.id === targetId;
+  pane.innerHTML =
+    compareControlsHtml(targetId) +
+    '<div class="compare-grid">' +
+    compareCardHtml(state.detail, 'selected') +
+    compareCardHtml(targetReady ? state.compareDetail : null, 'comparison') +
+    '</div>';
+  wireCompareTarget();
+  if (!targetReady) {
+    getJson('/api/item?id=' + encodeURIComponent(targetId))
+      .then((detail) => {
+        state.compareDetail = detail;
+        if (state.tab === 'compare' && state.compareTarget === targetId) renderComparePane();
+      })
+      .catch((err) => {
+        pane.innerHTML = compareControlsHtml(targetId) + '<div class="empty">Could not load comparison target: ' + esc(err.message) + '</div>';
+        wireCompareTarget();
+      });
+  }
 }
 
 function renderAdaptationSidecar(adaptation) {
@@ -9453,12 +10615,92 @@ function activeFilterSummary() {
   const run = get('runSelect');
   const role = get('roleSelect');
   const form = get('formSelect');
+  if (state.queue) parts.push('queue <strong>' + esc(state.queue) + '</strong>');
+  if (state.unlabelled) parts.push('<strong>unlabelled</strong>');
   if (disc) parts.push('discipline <strong>' + esc(disc) + '</strong>');
   if (q) parts.push('search <strong>&ldquo;' + esc(q) + '&rdquo;</strong>');
   if (run) parts.push('run <strong>' + esc(run) + '</strong>');
   if (role) parts.push('role <strong>' + esc(role) + '</strong>');
   if (form) parts.push('form <strong>' + esc(form) + '</strong>');
   return parts;
+}
+
+function syncBrowseUrl() {
+  try {
+    const url = new URL(window.location.href);
+    ['runId', 'q', 'queue', 'unlabelled', 'discipline', 'role', 'form', 'itemId', 'id', 'compareId'].forEach((key) =>
+      url.searchParams.delete(key),
+    );
+    if (state.runIds.length) url.searchParams.set('runIds', state.runIds.join(','));
+    else if (el('runSelect') && el('runSelect').value) url.searchParams.set('runId', el('runSelect').value);
+    if (el('searchInput') && el('searchInput').value) url.searchParams.set('q', el('searchInput').value);
+    if (state.queue) url.searchParams.set('queue', state.queue);
+    if (state.unlabelled) url.searchParams.set('unlabelled', '1');
+    if (el('disciplineSelect') && el('disciplineSelect').value) url.searchParams.set('discipline', el('disciplineSelect').value);
+    if (!state.blind && el('roleSelect') && el('roleSelect').value) url.searchParams.set('role', el('roleSelect').value);
+    if (!state.blind && el('formSelect') && el('formSelect').value) url.searchParams.set('form', el('formSelect').value);
+    if (state.tab && state.tab !== 'preview') url.searchParams.set('tab', state.tab);
+    else url.searchParams.delete('tab');
+    if (state.tab === 'compare' && state.compareTarget) url.searchParams.set('compareId', state.compareTarget);
+    window.history.replaceState({}, '', url.toString());
+  } catch (_e) {
+    // URL sync is a convenience; filtering still works without it.
+  }
+}
+
+function currentSavedView() {
+  const form = el('formSelect') ? el('formSelect').value : '';
+  if (state.queue === 'flagged' || state.queue === 'review') return 'flagged';
+  if (state.unlabelled) return 'unlabelled';
+  if (['recognition', 'trap', 'flat'].includes(form)) return form;
+  return 'all';
+}
+
+function renderSavedViewsAndFilters() {
+  const views = el('savedViews');
+  if (views) {
+    const on = currentSavedView();
+    views.querySelectorAll('.view-chip').forEach((button) => {
+      const active = button.dataset.view === on;
+      button.classList.toggle('is-active', active);
+      if (active) button.setAttribute('aria-current', 'true');
+      else button.removeAttribute('aria-current');
+    });
+  }
+  const chips = [];
+  const add = (key, label, value) => {
+    if (value) chips.push('<button class="filter-chip" type="button" data-clear="' + esc(key) + '">' + esc(label) + ': <b>' + esc(value) + '</b> ×</button>');
+  };
+  add('queue', 'queue', state.queue);
+  if (state.unlabelled) chips.push('<button class="filter-chip" type="button" data-clear="unlabelled"><b>unlabelled</b> ×</button>');
+  add('runSelect', 'run', el('runSelect') && el('runSelect').value);
+  add('disciplineSelect', 'discipline', el('disciplineSelect') && el('disciplineSelect').value);
+  add('roleSelect', 'role', !state.blind && el('roleSelect') && el('roleSelect').value);
+  add('formSelect', 'form', !state.blind && el('formSelect') && el('formSelect').value);
+  add('searchInput', 'search', el('searchInput') && el('searchInput').value);
+  const root = el('activeFilters');
+  if (!root) return;
+  root.hidden = chips.length === 0;
+  root.innerHTML = chips.join('');
+}
+
+function applySavedView(view) {
+  state.queue = '';
+  state.unlabelled = false;
+  if (el('formSelect')) el('formSelect').value = '';
+  if (view === 'flagged') state.queue = 'flagged';
+  else if (view === 'unlabelled') state.unlabelled = true;
+  else if (['recognition', 'trap', 'flat'].includes(view) && el('formSelect')) el('formSelect').value = view;
+  state.selected = null;
+  loadItems();
+}
+
+function clearBrowseFilter(key) {
+  if (key === 'queue') state.queue = '';
+  else if (key === 'unlabelled') state.unlabelled = false;
+  else if (el(key)) el(key).value = '';
+  state.selected = null;
+  loadItems();
 }
 
 function renderEmptyState() {
@@ -9469,19 +10711,23 @@ function renderEmptyState() {
     : 'No scripts in the corpus yet.';
   const help = hasFilters
     ? 'Loosen a filter, or generate a transcript for this slice.'
-    : 'Generate the first drama transcript to populate the scriptorium.';
+    : 'The browser is backed by poetics_items. Generate a free mock transcript, ingest existing artifacts, or inspect the file-backed proof runs instead.';
   return '<div class="empty empty--scaffold">' +
     '<p class="empty__lead">' + lead + '</p>' +
     '<p class="empty__help">' + help + '</p>' +
     '<div class="empty__actions">' +
     (hasFilters ? '<button type="button" id="clearFilters" class="empty__btn">Clear filters</button>' : '') +
-    '<a class="empty__btn empty__btn--go" href="/compose">Generate a script &rarr;</a>' +
+    '<a class="empty__btn empty__btn--go" href="/compose/live">Compose free preview &rarr;</a>' +
+    '<a class="empty__btn" href="/runs?kind=generate&amp;mock=1">Mock generation &rarr;</a>' +
+    '<a class="empty__btn" href="/derivation">Open proof runs &rarr;</a>' +
     '</div></div>';
 }
 
 function clearBrowseFilters() {
   ['disciplineSelect', 'runSelect', 'roleSelect', 'formSelect'].forEach((id) => { const e = el(id); if (e) e.value = ''; });
   if (el('searchInput')) el('searchInput').value = '';
+  state.queue = '';
+  state.unlabelled = false;
   state.selected = null;
   loadItems();
 }
@@ -9590,7 +10836,7 @@ function renderPane() {
     pane.innerHTML = renderScriptView(detail.samplePreview, detail.sampleText) + renderLabelPanel(current);
     wireLabelPanel();
   } else if (state.tab === 'preview') {
-    pane.innerHTML = renderOriginDiagnostics(detail) + renderEndingShapeDiagnostics(detail) + renderScriptView(detail.samplePreview, detail.sampleText);
+    pane.innerHTML = renderBrowseEvidenceGraph(detail) + renderOriginDiagnostics(detail) + renderEndingShapeDiagnostics(detail) + renderScriptView(detail.samplePreview, detail.sampleText);
   } else if (state.tab === 'sample') {
     pane.innerHTML = '<pre>' + esc(detail.sampleText || 'No public sample found.') + '</pre>';
   } else if (state.tab === 'full') {
@@ -9598,7 +10844,8 @@ function renderPane() {
   } else if (state.tab === 'scores') {
     const adaptation = detail.tutorAdaptation;
     const adaptationHtml = renderAdaptationSidecar(adaptation);
-    pane.innerHTML = renderConsensusPanel(detail.consensus) +
+    pane.innerHTML = renderBrowseEvidenceGraph(detail) +
+      renderConsensusPanel(detail.consensus) +
       renderOriginDiagnostics(detail) +
       renderEndingShapeDiagnostics(detail) +
       '<div class="score-note"><strong>LLM critic scores.</strong> Each row is one critic model judging the same public transcript. Learner self-reframe is the existing recontextualization axis. Actional breakthrough is separate: did the learner perform a new device or criterion even without narrating self-reframe? Peripeteia tutor adaptation asks whether the tutor visibly changed mechanism after pressure. Adaptive mechanism quality asks whether that new public device is fitted and usable, not just different. Recognition-contingent uptake is a secondary closure axis after a learner reframe. New axes show n/a for older scorer artifacts. <span class="score-xref">Each axis is defined in the <a href="/rubric">poetics rubric &rarr;</a>; the dramatic-form vocabulary lives in the <a href="/ontology">ontology atlas &rarr;</a>.</span></div>' +
@@ -9625,8 +10872,11 @@ function renderPane() {
           '</td><td class="evidence-cell">' + esc(evidence) + '</td></tr>';
       }).join('') +
       '</tbody></table>' + adaptationHtml;
+  } else if (state.tab === 'compare') {
+    renderComparePane();
   } else {
     pane.innerHTML =
+      renderBrowseEvidenceGraph(detail) +
       '<pre>' +
       esc(
         JSON.stringify(
@@ -9720,6 +10970,8 @@ async function loadItems() {
   }
   const data = await getJson('/api/items?' + params.toString());
   state.items = data.items;
+  renderSavedViewsAndFilters();
+  syncBrowseUrl();
   renderItems();
   if (state.initialItemId) {
     const itemId = state.initialItemId;
@@ -9733,6 +10985,9 @@ async function loadItems() {
 async function selectItem(id) {
   state.selected = id;
   state.selectedLabel = null;
+  state.compareTarget = state.initialCompareTarget && state.initialCompareTarget !== id ? state.initialCompareTarget : '';
+  state.initialCompareTarget = '';
+  state.compareDetail = null;
   const params = new URLSearchParams({ id });
   if (state.blind) {
     params.set('blind', '1');
@@ -9802,13 +11057,17 @@ async function init() {
     .filter(Boolean);
   state.unlabelled = url.searchParams.get('unlabelled') === '1';
   state.initialItemId = url.searchParams.get('itemId') || url.searchParams.get('id') || '';
+  state.initialCompareTarget = url.searchParams.get('compareId') || '';
   const requestedTab = url.searchParams.get('tab') || url.searchParams.get('view') || '';
-  if (['preview', 'sample', 'full', 'scores', 'meta'].includes(requestedTab)) state.tab = requestedTab;
+  if (['preview', 'sample', 'full', 'scores', 'compare', 'meta'].includes(requestedTab)) state.tab = requestedTab;
   // Seed the critic-form filter from ?form= so the dashboard Signal chart can
   // deep-link straight into one form-class (e.g. /browse?form=recognition).
   // loadItems() reads formSelect.value, so set the control before the first load.
   const requestedForm = url.searchParams.get('form') || '';
   if (['recognition', 'trap', 'flat'].includes(requestedForm) && el('formSelect')) el('formSelect').value = requestedForm;
+  if (url.searchParams.get('q') && el('searchInput')) el('searchInput').value = url.searchParams.get('q');
+  if (url.searchParams.get('discipline') && el('disciplineSelect')) el('disciplineSelect').value = url.searchParams.get('discipline');
+  if (url.searchParams.get('role') && el('roleSelect')) el('roleSelect').value = url.searchParams.get('role');
   document.body.classList.toggle('blind', state.blind);
   if (state.blind) {
     el('appTitle').textContent = 'Poetics Human Scoring';
@@ -9822,7 +11081,8 @@ async function init() {
     el('searchInput').placeholder = 'Filter by neutral script id';
     el('labellerInput').value = state.labeller;
   } else {
-    el('labellerInput').style.display = 'none';
+    const labellerField = el('labellerInput') && el('labellerInput').closest('.filter-field');
+    if (labellerField) labellerField.style.display = 'none';
     if (state.queue === 'adaptation-failures') {
       el('appSub').textContent = 'Adaptive-arm debugging queue: cases where consensus, quality gates, or tutor-adaptation sidecars flag a weak public mechanism shift.';
     }
@@ -9832,6 +11092,16 @@ async function init() {
   if (runId && !state.runIds.length) el('runSelect').value = runId;
   document.querySelectorAll('.tab').forEach((tab) => tab.classList.toggle('active', tab.dataset.tab === state.tab));
   await loadItems();
+  el('savedViews').addEventListener('click', (event) => {
+    const button = event.target.closest('.view-chip');
+    if (!button) return;
+    applySavedView(button.dataset.view || 'all');
+  });
+  el('activeFilters').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-clear]');
+    if (!button) return;
+    clearBrowseFilter(button.dataset.clear);
+  });
   ['runSelect', 'roleSelect', 'formSelect', 'disciplineSelect'].forEach((id) => el(id).addEventListener('change', () => { state.selected = null; loadItems(); }));
   el('labellerInput').addEventListener('input', () => { state.labeller = el('labellerInput').value.replace(/[^\\w-]/g, ''); if (state.selected) selectItem(state.selected); });
   el('searchInput').addEventListener('input', () => { clearTimeout(window.__q); window.__q = setTimeout(() => { state.selected = null; loadItems(); }, 160); });
@@ -9839,6 +11109,7 @@ async function init() {
     state.tab = tab.dataset.tab;
     document.querySelectorAll('.tab').forEach((t) => t.classList.toggle('active', t === tab));
     renderPane();
+    syncBrowseUrl();
   }));
   el('pane').addEventListener('click', (e) => {
     const btn = e.target.closest('.vt-btn');
