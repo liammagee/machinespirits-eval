@@ -6465,6 +6465,7 @@ ${railHtml({
   hint: '<span><b>compose · spec mode</b> — assemble a full drama-machine spec, validated live against the ontology</span><span class="navhint__sep">·</span><span>or <a href="/compose/live">sit in on a live scene</a></span>',
 })}
 ${modeTabsHtml('spec')}
+${parameterComponentStrip()}
 ${functionalComponentStrip()}
 <div class="compose">
   <form class="cform" id="cform" onsubmit="return false">
