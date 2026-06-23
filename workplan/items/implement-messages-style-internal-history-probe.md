@@ -58,5 +58,10 @@ Progress:
 - Real 6-pair / 12-judge comparison artifact: `exports/internal-history-quality/2026-06-23T20-18-21-502Z-real.json`.
 - Multi-scenario result: both arms parse-clean and 100% successful; treatment won 8/12 blind judge comparisons, baseline won 2/12, and 2/12 were ties. Treatment first-pass approval was 4/6 vs baseline 1/6; average API calls dropped 2.83 -> 2.67. Judge-noted unsupported specifics dropped from 17 baseline flags to 7 treatment flags.
 - Caveat: judge numeric quality scores were not scale-stable, so the reliable judge signal is winner/non-loss plus unsupported-specific counts. The script prompt and decision rule were tightened after the run.
+- Committed the implementation and initial evaluation slice as `ae72e4f8` (`Add internal history messages probe`).
+- Ran a larger real battery after that commit: 10 repetitions across three scenarios, `openrouter.gpt-mini` generation, blind judges `openrouter.gpt` and `openrouter.haiku`. Per user note, these aliases map to the Codex/GPT and Claude/Haiku judge families (`openai/gpt-5.2` and `anthropic/claude-haiku-4.5`).
+- Large-run artifact: `exports/internal-history-quality/2026-06-23T21-11-48-342Z-real.json`.
+- Large-run result: both arms parse-clean and 100% successful; treatment won 29/60 blind judge comparisons, baseline won 25/60, and 6/60 were ties. Treatment non-loss was 58.3%, below the 75% gate. Heuristic quality delta was only +0.63, below the +5 gate. Treatment first-pass approval improved from 30% to 60%, but average API calls were unchanged at 2.77.
+- Scenario pattern: fraction frustration was the only scenario at the non-loss gate (75%) while staying token/latency neutral; recognition was mixed (55% non-loss); gradient pacing was negative (45% non-loss and +1,435 average input tokens).
 
-Decision: do not enable by default and do not treat as a general performance fix. Keep as an opt-in quality/convergence probe for bounded same-turn ego/superego loops, especially struggle/pacing cases, under `window: 1` and a small `max_chars_per_message` cap.
+Decision: do not enable by default and do not treat as generally worthwhile under the current config. Keep only as an opt-in instrumentation/probe switch unless a sharper scenario-targeting rule or different internal-history assembly policy clears the judge/non-loss gates in a larger run.

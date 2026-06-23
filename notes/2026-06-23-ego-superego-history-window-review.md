@@ -221,3 +221,62 @@ Decision:
 - Keep it as an opt-in quality/convergence option for cases with a same-turn ego/superego revision loop, especially struggle/pacing cases where the superego critique can make the final ego call more grounded or avoid a revision call.
 - Do not describe it as a general performance fix. It can reduce latency/tokens only when it improves first-pass approval or shortens the revision output; otherwise it adds context.
 - Revisit only if a larger registered run preserves the pattern: parse stability non-worse, treatment non-loss rate >= 75% across independent judges, no scenario family where baseline clearly wins, and added input tokens stay bounded under the configured history cap.
+
+## Large Run
+
+Commit before run: `ae72e4f8` (`Add internal history messages probe`).
+
+The larger battery uses the same three probe scenarios and the same `openrouter.gpt-mini` generation model, but increases to 10 repetitions per scenario. Per user note, treat the judge aliases as model-family mappings rather than unrelated judges:
+
+- `openrouter.gpt` resolves to `openai/gpt-5.2` (Codex/GPT-family judge).
+- `openrouter.haiku` resolves to `anthropic/claude-haiku-4.5` (Claude/Haiku-family judge).
+
+Command:
+
+```bash
+PROBE_RUNS=10 \
+PROBE_JUDGES=openrouter.gpt,openrouter.haiku \
+PROBE_MODEL=openrouter.gpt-mini \
+PROBE_EGO_MAX_TOKENS=768 \
+PROBE_SUPEREGO_MAX_TOKENS=768 \
+PROBE_JUDGE_MAX_TOKENS=700 \
+DOTENV_CONFIG_PATH=/Users/lmagee/Dev/machinespirits/machinespirits-eval/.env \
+node -r dotenv/config scripts/compare-internal-history-quality.js --real
+```
+
+Artifact:
+
+- `exports/internal-history-quality/2026-06-23T21-11-48-342Z-real.json`
+
+Overall result:
+
+- Size: 30 paired comparisons, 60 blind judge comparisons.
+- Parse stability: both arms stayed parse-clean, with 100% success and 0 parse warnings.
+- Blind judge preference: treatment 29 wins, baseline 25 wins, 6 ties.
+- Treatment non-loss rate: 58.3%, below the 75% opt-in/default gate.
+- Treatment win rate: 48.3%, below the 60% judge-positive gate.
+- Heuristic quality delta: +0.63 points, below the +5 heuristic-positive gate.
+- Final approval rate: baseline 30%, treatment 60%.
+- Average API calls: unchanged at 2.77 calls per run.
+- Token/latency delta: treatment added about 393 input tokens and 1.01s latency on average.
+- Cost delta: treatment averaged -0.000062 USD per paired run, driven by lower output tokens rather than less prompt context.
+- Judge-noted unsupported specifics: baseline 74 flags, treatment 47 flags.
+- Total cost: about 0.4232 USD, including 0.1907 USD dialogue generation and 0.2325 USD judging.
+
+Judge-family split:
+
+- `openrouter.gpt` / GPT-family: treatment 11 wins, baseline 13 wins, 6 ties; non-loss 56.7%.
+- `openrouter.haiku` / Claude-family: treatment 18 wins, baseline 12 wins, 0 ties; non-loss 60.0%.
+
+Scenario split:
+
+- Recognition retry: treatment 11 wins, baseline 9; non-loss 55%; heuristic delta +4; latency/input tokens slightly lower for treatment.
+- Fraction frustration: treatment 10 wins, baseline 5, ties 5; non-loss 75%; heuristic delta -2.6; latency lower and token cost roughly flat.
+- Gradient pacing: treatment 8 wins, baseline 11, tie 1; non-loss 45%; heuristic delta +0.5; treatment added about 1,435 input tokens and 5.1s latency.
+
+Large-run decision:
+
+- Do not enable by default.
+- Do not treat as generally worthwhile under the current config. The larger run does not reproduce the small-run judge advantage strongly enough.
+- The only condition worth revisiting is narrow and scenario-specific: fraction-style frustration/remediation cases may benefit from the history surface because they reached the non-loss threshold while staying token/latency neutral. Recognition is mixed, and gradient/pacing is a clear caution case under this prompt shape.
+- The implementation can remain useful as an opt-in instrumentation/probe switch, but the evidence does not justify adding this to standard cells without a sharper targeting rule or a different internal-history assembly policy.
