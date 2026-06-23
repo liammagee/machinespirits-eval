@@ -9996,6 +9996,32 @@ function renderBrowserHtml() {
   --rule-soft:   rgba(244, 238, 221, 0.08);
 }
 
+/* Stark skin (A/B) — joins /browse to the shared design backbone. The rail's
+   early-apply sets data-skin on <html>; /browse owns its tokens, so overriding
+   them here re-skins it in lockstep with the rest. Legacy aliases (--bg/--good
+   /--accent…) are var()-derived, so they follow automatically. A full structural
+   port onto renderShell/pageHead was declined deliberately: /browse intentionally
+   skips BASE_CSS to avoid its global body/shader rules, and the consistency goal
+   (re-skinning) is met here via the token contract — the actual design backbone. */
+:root[data-skin="stark"] {
+  --paper:#FFFFFF; --paper-2:#F4F4F5; --paper-3:#FAFAFA; --paper-4:#FFFFFF;
+  --ink:#0A0A0A; --ink-2:#262626; --ink-3:#525252; --ink-4:#8A8A8A;
+  --linen:#D4D4D8; --moss:#171717; --moss-deep:#000000; --moss-soft:#ECECEC;
+  --brick:#E63946; --brick-d:#C1121F; --brick-soft:#FBE3E5;
+  --ochre:#737373; --ochre-d:#525252; --ochre-soft:#EDEDED;
+  --indigo:#404040; --indigo-soft:#EDEDED;
+  --rule:rgba(10,10,10,0.16); --rule-soft:rgba(10,10,10,0.07);
+}
+:root[data-skin="stark"][data-theme="dark"] {
+  --paper:#0A0A0B; --paper-2:#141416; --paper-3:#161618; --paper-4:#1C1C1F;
+  --ink:#FAFAFA; --ink-2:#E4E4E7; --ink-3:#A1A1AA; --ink-4:#6F6F76;
+  --linen:#2A2A2E; --moss:#F5F5F5; --moss-deep:#FFFFFF; --moss-soft:rgba(250,250,250,0.12);
+  --brick:#E63946; --brick-d:#F4606C; --brick-soft:rgba(230,57,70,0.18);
+  --ochre:#A1A1AA; --ochre-d:#C4C4CC; --ochre-soft:rgba(161,161,170,0.16);
+  --indigo:#C4C4CC; --indigo-soft:rgba(196,196,204,0.14);
+  --rule:rgba(250,250,250,0.16); --rule-soft:rgba(250,250,250,0.08);
+}
+
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; max-width:100%; overflow-x:hidden; }
 html { background: var(--paper); -webkit-text-size-adjust: 100%; }
