@@ -1,16 +1,17 @@
 {
-  "generated": "2026-06-23T17:14:03.148Z",
+  "generated": "2026-06-23T17:24:41.504Z",
   "counts": {
-    "total": 46,
+    "total": 47,
     "byStatus": {
       "triaged": 24,
       "blocked": 1,
       "dropped": 2,
-      "done": 19
+      "done": 19,
+      "active": 1
     },
     "byType": {
       "research": 24,
-      "experiment": 3,
+      "experiment": 4,
       "content": 1,
       "infra": 9,
       "paper": 3,
@@ -507,6 +508,34 @@
         "human-anchor",
         "artifact-recovery",
         "conformity"
+      ]
+    },
+    {
+      "id": "implement-messages-style-internal-history-probe",
+      "title": "Implement messages-style ego/superego history probe",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-23",
+      "updated": "2026-06-23",
+      "verification": "Opt-in messages-style internal-history config is implemented with defaults unchanged; mock/hermetic tests pass; a small token-limited comparison reports latency/tokens/convergence/revision behavior before any wider run.",
+      "claim_status": "exploratory",
+      "branch": "codex/internal-history-messages",
+      "links": {
+        "notes": "notes/2026-06-23-ego-superego-history-window-review.md",
+        "items": "review-ego-superego-internal-history-window",
+        "code": [
+          "tutor-core/services/tutorDialogueEngine.js",
+          "config/tutor-agents.yaml"
+        ]
+      },
+      "tags": [
+        "ego-superego",
+        "messages-api",
+        "performance",
+        "token-budget"
       ]
     },
     {

@@ -31,6 +31,33 @@ Candidate dimensions:
 - `internal_history_roles: ego_only | superego_only | unified_exchange`
 - `internal_history_surface: serialized_prompt | chat_messages`
 
+## Messages-style option
+
+The option worth testing is not "more text in the prompt" in general, but a
+messages-style API surface for internal deliberation. That means preserving prior
+same-turn ego/superego moves as alternating chat messages, rather than embedding
+all of them inside one large user prompt.
+
+Candidate config:
+
+```yaml
+internal_history:
+  enabled: false
+  surface: messages      # prompt | messages
+  window: 1              # 0 | 1 | 2 | all
+  scope: unified_exchange # role_local | unified_exchange
+  max_chars_per_message: 1200
+```
+
+Expected upside: the model may track commitments and revisions better when the
+deliberation is represented as dialogue. This could reduce repeated feedback,
+failed convergence, and verbose restatement loops.
+
+Risk: chat history may increase prompt tokens, amplify anchoring/compliance, or
+blur ego/superego role boundaries because the API sees only `user` and
+`assistant` roles. The first pass should therefore be opt-in, token-limited, and
+measured against latency/token/convergence outcomes as well as quality.
+
 Primary comparison: hold prompt text, model, learner, scenarios, and max rounds fixed; vary only the internal-history window. Measure parse failure rate, convergence, superego approval/rejection pattern, revision magnitude, tutor quality, and whether the change reduces generic revision loops or instead causes overfitting/compliance.
 
 Boundary: do not reinterpret historical runs. Existing logs remain artifacts of the old prompt assembly.
