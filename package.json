@@ -250,14 +250,15 @@
     "zod": "^4.4.1"
   },
   "devDependencies": {
+    "@electron/rebuild": "^3.6.0",
     "@eslint/js": "^9.39.2",
     "@types/node": "22.14.0",
+    "electron": "^33.0.0",
+    "electron-builder": "^26.15.3",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.3.0",
-    "prettier": "^3.8.1",
-    "electron": "^33.0.0",
-    "@electron/rebuild": "^3.6.0"
+    "prettier": "^3.8.1"
   },
   "engines": {
     "node": ">=20.0.0"
