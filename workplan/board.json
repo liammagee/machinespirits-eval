@@ -1,16 +1,15 @@
 {
-  "generated": "2026-06-23T16:56:21.650Z",
+  "generated": "2026-06-23T17:04:22.734Z",
   "counts": {
-    "total": 42,
+    "total": 43,
     "byStatus": {
-      "triaged": 20,
+      "triaged": 21,
       "blocked": 1,
       "dropped": 2,
-      "done": 18,
-      "active": 1
+      "done": 19
     },
     "byType": {
-      "research": 23,
+      "research": 24,
       "experiment": 2,
       "infra": 9,
       "paper": 2,
@@ -395,20 +394,35 @@
       ]
     },
     {
-      "id": "not-all-flips-are-conformity-decomposing-stance-convergence",
-      "title": "Not All Flips Are Conformity: Decomposing Stance Convergence in Multi-Agent LLM Debate",
-      "status": "active",
+      "id": "revisit-adaptation-conformity-human-anchor",
+      "title": "Revisit adaptation-conformity human anchor and artifact availability",
+      "status": "triaged",
       "type": "research",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "daily-routine",
-      "created": "2026-06-22",
+      "priority": "P3",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-06-23",
       "updated": "2026-06-23",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
+      "verification": "Adaptation-conformity gate artifacts are either recovered/linked or their archive location is documented; any reopened human comparison uses a planned non-rushed annotation protocol before changing Paper 2.0 claims.",
+      "claim_status": "future",
       "links": {
-        "notes": "notes/daily-notes/2026-06-09-research-roundup.html"
+        "notes": [
+          "notes/2026-06-09-adaptation-conformity-classifier-stage0-preregistration.md",
+          "notes/daily-notes/2026-06-09-research-roundup.html"
+        ],
+        "paper": "docs/research/paper-full-2.0.md",
+        "scripts": [
+          "scripts/adaptation-conformity-harvest.py",
+          "scripts/adaptation-conformity-classifier.py",
+          "scripts/adaptation-conformity-score-human.py"
+        ],
+        "items": "not-all-flips-are-conformity-decomposing-stance-convergence"
       },
-      "branch": "codex/not-all-flips-conformity"
+      "tags": [
+        "human-anchor",
+        "artifact-recovery",
+        "conformity"
+      ]
     },
     {
       "id": "a1-human-learner-validation",
@@ -836,6 +850,38 @@
         "paper-positioning",
         "self-citation",
         "roundup"
+      ]
+    },
+    {
+      "id": "not-all-flips-are-conformity-decomposing-stance-convergence",
+      "title": "Not All Flips Are Conformity: Decomposing Stance Convergence in Multi-Agent LLM Debate",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-23",
+      "verification": "Paper 2.0 §6.12 already folds this in as a killed Stage 0 measurement gate; adaptation-conformity scripts compile, while missing local exports and the rushed human anchor are tracked by the follow-up item.",
+      "claim_status": "killed",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-06-09-research-roundup.html",
+          "notes/2026-06-09-adaptation-conformity-classifier-stage0-preregistration.md"
+        ],
+        "paper": "docs/research/paper-full-2.0.md",
+        "scripts": [
+          "scripts/adaptation-conformity-harvest.py",
+          "scripts/adaptation-conformity-classifier.py",
+          "scripts/adaptation-conformity-score-human.py"
+        ],
+        "items": "revisit-adaptation-conformity-human-anchor"
+      },
+      "branch": "codex/not-all-flips-conformity",
+      "tags": [
+        "adaptation-null",
+        "conformity",
+        "superego"
       ]
     },
     {
