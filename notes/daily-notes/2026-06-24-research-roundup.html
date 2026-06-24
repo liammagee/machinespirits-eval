@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Roundup — 18 Jun – 24 Jun 2026</title>
+  <style>
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      line-height: 1.65;
+      color: #1a1a1a;
+      background: #fafaf8;
+    }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; margin-bottom: .2rem; color: #444; text-transform: uppercase;
+         letter-spacing: .06em; }
+    .paper {
+      border-left: 3px solid #aaa;
+      padding: .5rem 1rem;
+      margin: 1rem 0;
+      background: #fff;
+    }
+    .paper.hot { border-left-color: #c0392b; }
+    .paper h3 { margin: 0 0 .25rem; font-size: 1rem; }
+    .paper .meta { font-size: .82rem; color: #666; margin-bottom: .5rem; }
+    .paper p { margin: 0; font-size: .93rem; }
+    .flag {
+      display: inline-block;
+      background: #c0392b;
+      color: #fff;
+      font-size: .72rem;
+      font-weight: bold;
+      padding: .1rem .45rem;
+      border-radius: 3px;
+      margin-left: .5rem;
+      vertical-align: middle;
+    }
+    .flag.yellow { background: #d4a017; }
+    a { color: #1a5276; }
+    blockquote {
+      margin: .6rem 0;
+      padding: .4rem .8rem;
+      background: #f5f5f0;
+      border-left: 3px solid #ccc;
+      font-size: .88rem;
+      line-height: 1.6;
+    }
+    footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+  </style>
+</head>
+<body>
+<!-- meta: date=2026-06-24 window=(2026-06-18,2026-06-24] arxiv=2606.20138,2606.19911,2606.21228 generator=research-roundup-routine -->
+
+<h1>Research Roundup <small style="font-weight:normal;font-size:.85em">18 Jun – 24 Jun 2026</small></h1>
+
+<p style="font-size:.9rem;color:#555;">
+  Three papers from the June 18–24 window across prompt engineering and agent architecture.
+  Rhetoric and ontology were quiet this week — no new in-window papers in those topic areas
+  after deduplication (closest candidates fall just outside the window or were already covered).
+  Flags: <span class="flag">UNBLOCK</span> = could directly accelerate current work;
+  <span class="flag yellow">WATCH</span> = relevant background.
+</p>
+
+<!-- ────────────────────────────────────── -->
+<h2>Prompt Engineering</h2>
+
+<div class="paper hot">
+  <h3>
+    Learning to Prompt: Improving Student Engagement with Adaptive LLM-based High-School Tutoring
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Po-Chin Chang, Nicholas Hogan, Aske Plaat ·
+    arXiv 2606.20138 · June 18, 2026 ·
+    <a href="https://arxiv.org/abs/2606.20138">https://arxiv.org/abs/2606.20138</a>
+  </div>
+  <p>
+    Proposes a subject-aware prompt router trained via RL on simulation then deployed in an A/B study
+    with 359 real high-school students across 656 conversations; the router switches between analytical
+    and scaffolding strategies by extracting 14 pedagogical features from live transcripts, cutting
+    average interaction length ~3 turns with no pedagogical-quality loss. The key contribution is
+    sim-to-real transfer: simulated pedagogical scoring reliably predicts live student engagement gains.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The 14-feature vocabulary provides a tractable label set for the per-turn decisions the
+    ego/superego split makes implicitly — a natural handle for the
+    <code>npm run prompt-lab -- autotune</code> pipeline and for annotating the
+    <code>tutor_deliberation_*</code> traces. The sim-to-real finding also validates the evaluation
+    methodology: if simulated learner agents (cells 1–125) produce meaningful engagement signals,
+    those signals should transfer to the forthcoming human-learner pilot
+    (<code>services/pilotStore.js</code>, workplan §A1). Could sharpen the §6.3 discussion with an
+    external reference point for what "adaptive prompting" looks like in a deployed system.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Agent Architecture</h2>
+
+<div class="paper hot">
+  <h3>
+    Multi-Agent Transactive Memory
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    To Eun Kim, Xuhong He, Dishank Jain ·
+    arXiv 2606.19911 · June 18, 2026 ·
+    <a href="https://arxiv.org/abs/2606.19911">https://arxiv.org/abs/2606.19911</a>
+  </div>
+  <p>
+    Formalises population-level trajectory sharing between LLM agents by analogy with transactive
+    memory in cognitive science: producer agents contribute interaction traces to a shared store;
+    consumer agents retrieve and reuse them, avoiding re-discovery of known solutions.
+    Extends RAG from individual context windows to an inter-agent knowledge commons, with
+    efficiency gains across tool-use benchmarks.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The ego-superego critique traces already persist across runs to <code>data/evaluations.db</code>
+    (the <code>tutor_deliberation_*</code> / <code>learner_deliberation_*</code> column families);
+    MATM provides a principled framework for letting a population of tutor-cell runs treat those
+    traces as a shared pedagogical memory — each new cell implicitly aware of what prior cells learned.
+    The transactive-memory framing also maps onto Hegelian intersubjectivity — distributed
+    recognition, knowledge constituted between agents rather than held individually — which could
+    motivate a new §6.x discussion of what the cross-cell dialogue archive actually represents.
+  </p>
+</div>
+
+<div class="paper">
+  <h3>
+    Sakana Fugu Technical Report: Training Scaffold-Aware Orchestrator LLMs
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Sakana AI ·
+    arXiv 2606.21228 · June 2026 ·
+    <a href="https://arxiv.org/abs/2606.21228">https://arxiv.org/abs/2606.21228</a>
+  </div>
+  <p>
+    Fugu orchestrator models are <em>trained</em> — not prompted — to dynamically compose and
+    coordinate specialist LLM agents for a given task, achieving state-of-the-art results on
+    SWE-Bench Pro, Terminal Bench, and LiveCodeBench. The headline finding is that
+    scaffold-awareness must be learned into the orchestrator's weights, not injected at inference
+    time by prompt.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    Challenges the assumption that prompt-level superego instructions reliably steer ego behaviour.
+    Fugu's trained orchestrator is the "what if the superego were fine-tuned rather than prompted?"
+    counterfactual, most relevant to cells 13–14 (hardwired superego rules), cell 21 (dynamic
+    prompt rewriting via Writing Pad), and the adaptive runner (cells 110–113), which already
+    moves in this direction by externalising learner-state policy into programmatic constraints.
+    Watch for implications on the current rubric v2.2 scoring of superego revision quality.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Quiet this week: Rhetoric &amp; Ontology</h2>
+
+<p style="font-size:.9rem;">
+  No new papers in the June 18–24 window passed deduplication for <strong>computational
+  rhetoric / argumentation</strong> — the closest candidates (2606.08076 on communicative action
+  theory; 2605.29675 on ontology-driven human-AI collaboration) fall outside the window or
+  were already covered in prior notes.
+  <strong>Ontology / knowledge representation</strong> was similarly quiet; the LLMs+Graphs survey
+  thread (2606.11560, noted 2026-06-18) remains the most active entry in that lane.
+  Both topic areas are worth re-checking in next week's window.
+</p>
+
+<!-- ────────────────────────────────────── -->
+<h2>🎭 Drama of the day</h2>
+
+<div class="paper" data-drama="public-preview-haiku-dogmatic-protocol-control-20260620:af6-comparison-haiku:default:T01">
+  <h3>Sign-Off Deferred: A Learner's 92% Meets the Minority Class</h3>
+  <div class="meta">adaptive_peripeteia_variant · model haiku · 2026-06-20</div>
+  <blockquote>
+    STAGE: A technical review room. A table holds a model audit showing test-set breakdown by class, row counts for true positives and false negatives, and overall accuracy. Two people sit a…<br>
+    LEARNER: The accuracy is 92%. We've validated this on test data. The audit table is complete. I think we're ready for sign-off.<br>
+    TUTOR: I see 92% overall. Let me ground it in the audit table itself. What does the breakdown show—majority class versus minority?<br>
+    LEARNER: The majority is 85%, minority is 15%. There are some false negatives, but 92% is still strong. That should be enough to move forward.
+  </blockquote>
+  <p><a href="https://machinespirits.org/poetics/browse?itemId=public-preview-haiku-dogmatic-protocol-control-20260620%3Aaf6-comparison-haiku%3Adefault%3AT01">open the full drama →</a> &middot; <code>public-preview-haiku-dogmatic-protocol-control-20260620:af6-comparison-haiku:default:T01</code></p>
+</div>
+
+<footer>
+  Generated by Claude Code (claude-sonnet-4-6) · 2026-06-24 ·
+  Deep-research harness: 5 parallel search angles, 15+ source verifications ·
+  Window: (2026-06-18, 2026-06-24] · Prior covered IDs excluded per README dedup rule ·
+  Repository: <code>liammagee/machinespirits-eval</code>
+</footer>
+
+</body>
+</html>
