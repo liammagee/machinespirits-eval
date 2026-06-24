@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-23T17:24:41.504Z",
+  "generated": "2026-06-23T20:20:09.578Z",
   "counts": {
     "total": 47,
     "byStatus": {
@@ -7,7 +7,7 @@
       "blocked": 1,
       "dropped": 2,
       "done": 19,
-      "active": 1
+      "review": 1
     },
     "byType": {
       "research": 24,
@@ -511,34 +511,6 @@
       ]
     },
     {
-      "id": "implement-messages-style-internal-history-probe",
-      "title": "Implement messages-style ego/superego history probe",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-06-23",
-      "updated": "2026-06-23",
-      "verification": "Opt-in messages-style internal-history config is implemented with defaults unchanged; mock/hermetic tests pass; a small token-limited comparison reports latency/tokens/convergence/revision behavior before any wider run.",
-      "claim_status": "exploratory",
-      "branch": "codex/internal-history-messages",
-      "links": {
-        "notes": "notes/2026-06-23-ego-superego-history-window-review.md",
-        "items": "review-ego-superego-internal-history-window",
-        "code": [
-          "tutor-core/services/tutorDialogueEngine.js",
-          "config/tutor-agents.yaml"
-        ]
-      },
-      "tags": [
-        "ego-superego",
-        "messages-api",
-        "performance",
-        "token-budget"
-      ]
-    },
-    {
       "id": "a1-human-learner-validation",
       "title": "Human-learner validation pilot (real learning gains)",
       "status": "blocked",
@@ -560,6 +532,38 @@
         "pilot",
         "human-learner",
         "critical"
+      ]
+    },
+    {
+      "id": "implement-messages-style-internal-history-probe",
+      "title": "Implement messages-style ego/superego history probe",
+      "status": "review",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-23",
+      "updated": "2026-06-23",
+      "verification": "Opt-in messages-style internal-history config is implemented with defaults unchanged; mock/hermetic tests pass; a small token-limited comparison reports latency/tokens/convergence/revision behavior before any wider run.",
+      "claim_status": "exploratory",
+      "branch": "codex/internal-history-messages",
+      "links": {
+        "notes": "notes/2026-06-23-ego-superego-history-window-review.md",
+        "items": "review-ego-superego-internal-history-window",
+        "code": [
+          "tutor-core/services/tutorDialogueEngine.js",
+          "tutor-core/services/tutorApiService.js",
+          "services/evaluationRunner.js",
+          "scripts/probe-internal-history-messages.js",
+          "scripts/compare-internal-history-quality.js",
+          "tests/internalHistoryMessages.test.js"
+        ]
+      },
+      "tags": [
+        "ego-superego",
+        "messages-api",
+        "performance",
+        "token-budget"
       ]
     },
     {
