@@ -55,6 +55,10 @@ const DEFAULTS = {
   outMd: path.join(ROOT, 'exports', 'yoked-contingency-g0-paid-smoke.md'),
 };
 
+export const CLAUDE_CODE_MODEL = process.env.CLAUDE_CODE_MODEL || 'haiku';
+export const CLAUDE_CODE_EFFORT = process.env.CLAUDE_CODE_EFFORT || 'low';
+export const CLAUDE_CODE_TIMEOUT_MS = Number(process.env.CLAUDE_CODE_TIMEOUT_MS || 420_000);
+
 export const PROSE_PROTOCOLS = {
   'open-rationale': 'Allows the learner to mention local confusion or intuition; known to leak arithmetic rationale in the first paid smoke.',
   'visible-affect': 'Learner visible prose is affective or epistemic only; item behavior carries the diagnostic signal.',
@@ -323,7 +327,22 @@ async function callClaudeCode(prompt) {
     const env = { ...process.env };
     delete env.ANTHROPIC_API_KEY;
     delete env.ANTHROPIC_AUTH_TOKEN;
-    const child = spawn('claude', ['-p', '-', '--output-format', 'text'], {
+    const args = [
+      '-p',
+      '-',
+      '--output-format',
+      'text',
+      '--no-session-persistence',
+      '--effort',
+      CLAUDE_CODE_EFFORT,
+      '--tools',
+      '',
+      '--safe-mode',
+      '--system-prompt',
+      'You are a compact JSON-only responder. Do not use tools. Return only the requested answer.',
+    ];
+    if (CLAUDE_CODE_MODEL) args.push('--model', CLAUDE_CODE_MODEL);
+    const child = spawn('claude', args, {
       cwd: ROOT,
       stdio: ['pipe', 'pipe', 'pipe'],
       env,
@@ -332,8 +351,8 @@ async function callClaudeCode(prompt) {
     let err = '';
     const timeout = setTimeout(() => {
       child.kill('SIGKILL');
-      reject(new Error('claude CLI timed out after 180s'));
-    }, 180_000);
+      reject(new Error(`claude CLI timed out after ${Math.round(CLAUDE_CODE_TIMEOUT_MS / 1000)}s`));
+    }, CLAUDE_CODE_TIMEOUT_MS);
     child.stdout.on('data', (d) => {
       out += d;
     });
