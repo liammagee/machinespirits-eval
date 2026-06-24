@@ -1,12 +1,11 @@
 {
-  "generated": "2026-06-24T05:14:12.871Z",
+  "generated": "2026-06-24T10:00:01.765Z",
   "counts": {
     "total": 47,
     "byStatus": {
-      "done": 42,
+      "done": 43,
       "blocked": 2,
-      "dropped": 2,
-      "review": 1
+      "dropped": 2
     },
     "byType": {
       "research": 24,
@@ -73,39 +72,6 @@
         "learner-variance"
       ],
       "milestone": "poetics-followups"
-    },
-    {
-      "id": "implement-messages-style-internal-history-probe",
-      "title": "Implement messages-style ego/superego history probe",
-      "status": "review",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-06-23",
-      "updated": "2026-06-24",
-      "verification": "Opt-in messages-style internal-history config is implemented with defaults unchanged; mock/hermetic tests pass; a small token-limited comparison reports latency/tokens/convergence/revision behavior before any wider run.",
-      "claim_status": "exploratory",
-      "branch": "codex/internal-history-messages",
-      "links": {
-        "notes": "notes/2026-06-23-ego-superego-history-window-review.md",
-        "items": "review-ego-superego-internal-history-window",
-        "code": [
-          "tutor-core/services/tutorDialogueEngine.js",
-          "tutor-core/services/tutorApiService.js",
-          "services/evaluationRunner.js",
-          "scripts/probe-internal-history-messages.js",
-          "scripts/compare-internal-history-quality.js",
-          "tests/internalHistoryMessages.test.js"
-        ]
-      },
-      "tags": [
-        "ego-superego",
-        "messages-api",
-        "performance",
-        "token-budget"
-      ],
-      "milestone": "paper-2-evidence-cleanup"
     },
     {
       "id": "scriptorium-control-room-first-run",
@@ -692,6 +658,39 @@
         "roundup"
       ],
       "milestone": "poetics-followups"
+    },
+    {
+      "id": "implement-messages-style-internal-history-probe",
+      "title": "Implement messages-style ego/superego history probe",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-23",
+      "updated": "2026-06-24",
+      "verification": "Opt-in messages-style internal-history config is implemented with defaults unchanged; mock/hermetic tests pass; a small token-limited comparison reports latency/tokens/convergence/revision behavior before any wider run.",
+      "claim_status": "exploratory",
+      "branch": "codex/internal-history-messages",
+      "links": {
+        "notes": "notes/2026-06-23-ego-superego-history-window-review.md",
+        "items": "review-ego-superego-internal-history-window",
+        "code": [
+          "tutor-core/services/tutorDialogueEngine.js",
+          "tutor-core/services/tutorApiService.js",
+          "services/evaluationRunner.js",
+          "scripts/probe-internal-history-messages.js",
+          "scripts/compare-internal-history-quality.js",
+          "tests/internalHistoryMessages.test.js"
+        ]
+      },
+      "tags": [
+        "ego-superego",
+        "messages-api",
+        "performance",
+        "token-budget"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
     },
     {
       "id": "measuring-whether-llm-tutors-teach-or-solve-a-diagnostic-for",
