@@ -1,14 +1,14 @@
 {
-  "generated": "2026-06-24T14:51:34.151Z",
+  "generated": "2026-06-24T17:32:35.754Z",
   "counts": {
-    "total": 48,
+    "total": 49,
     "byStatus": {
-      "done": 44,
+      "done": 45,
       "blocked": 2,
       "dropped": 2
     },
     "byType": {
-      "research": 24,
+      "research": 25,
       "experiment": 4,
       "content": 1,
       "infra": 9,
@@ -479,6 +479,50 @@
       "milestone": "paper-2-evidence-cleanup"
     },
     {
+      "id": "d2-d6-followup-arc",
+      "title": "D2-D6 follow-up arc: transfer, bridges, replication, rubric, taxonomy",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-24",
+      "updated": "2026-06-24",
+      "branch": "codex/d2-d6-followups",
+      "verification": "Completion audit records D5/D6 as locally complete and D2/D3/D4 as fully gated for future empirical work; workplan render/check/test and git diff check pass.",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "notes/d2-d6-followup-arc-plan.md",
+          "notes/d5-measurement-gate-for-d2-d6.md",
+          "notes/d6-orientation-family-matrix.md",
+          "notes/d2-cross-application-role-reframed-gate.md",
+          "notes/d4-sel-disposition-gradient-gate.md",
+          "notes/d3-heavy-bridge-followup-gate.md",
+          "notes/d2-d6-completion-audit.md"
+        ],
+        "paper": [
+          "docs/research/paper-full-2.0.md sections 6.3.9, 6.6.7, 6.6.8, 7.9, 8.2, 8.6"
+        ],
+        "items": [
+          "d2-cross-application-role-reframed-study",
+          "d3-insight-action-gap-heavy-bridge-followups",
+          "d4-disposition-gradient-architecture-matched-sel-replication",
+          "d5-rubric-v3-0-pca-informed-consolidation",
+          "d6-orientation-family-taxonomy-extensions"
+        ]
+      },
+      "tags": [
+        "d2",
+        "d3",
+        "d4",
+        "d5",
+        "d6",
+        "followup",
+        "paper-3"
+      ]
+    },
+    {
       "id": "d5-rubric-v3-0-pca-informed-consolidation",
       "title": "D5. Rubric v3.0 PCA-Informed Consolidation",
       "status": "done",
@@ -493,7 +537,8 @@
       "links": {
         "notes": [
           "TODO.md#D5",
-          "notes/design-d5-rubric-v3-pca-consolidation.md"
+          "notes/design-d5-rubric-v3-pca-consolidation.md",
+          "notes/d5-measurement-gate-for-d2-d6.md"
         ],
         "paper": "§8.6"
       },
@@ -1039,12 +1084,13 @@
       "source": "todo",
       "created": "2026-06-23",
       "updated": "2026-06-24",
-      "verification": "Decision logged: Path 2 remains separate-study/future scope; no current-paper prompt/content/rubric authoring is required.",
+      "verification": "Decision and 2026-06-24 gate logged: Path 2 remains separate-study/future scope until role-native prompts, content, rubric, fresh cell IDs, and budget/safety gates are opened.",
       "claim_status": "future",
       "links": {
         "notes": [
           "TODO.md#D2",
-          "notes/design-d2-path2-cross-application.md"
+          "notes/design-d2-path2-cross-application.md",
+          "notes/d2-cross-application-role-reframed-gate.md"
         ],
         "paper": "§8.2"
       },
@@ -1066,12 +1112,13 @@
       "source": "todo",
       "created": "2026-06-23",
       "updated": "2026-06-24",
-      "verification": "Decision logged: heavy bridge follow-ups are deferred; no paid run is justified for the current marginal mechanism information.",
+      "verification": "Decision and 2026-06-24 gate logged: heavy bridge follow-ups require a frozen endpoint independent of the optimized metric before any paid escalation.",
       "claim_status": "future",
       "links": {
         "notes": [
           "TODO.md#D3",
-          "notes/design-d3-architectural-bridges.md"
+          "notes/design-d3-architectural-bridges.md",
+          "notes/d3-heavy-bridge-followup-gate.md"
         ],
         "paper": "§6.3.9"
       },
@@ -1093,11 +1140,13 @@
       "source": "todo",
       "created": "2026-06-23",
       "updated": "2026-06-24",
-      "verification": "Decision logged: the cells 40-45 × SEL replication is optional future work, not current-paper debt.",
+      "verification": "Decision and 2026-06-24 DB inventory logged: cells 40-45 on the exact SEL scenario set have zero existing rows, so the clean replication requires a new paid run.",
       "claim_status": "future",
       "links": {
-        "notes": "TODO.md#D4",
-        "exports": "exports/d4-disposition-gradient.md",
+        "notes": [
+          "TODO.md#D4",
+          "notes/d4-sel-disposition-gradient-gate.md"
+        ],
         "paper": "§6.6.8"
       },
       "tags": [
@@ -1123,7 +1172,8 @@
       "links": {
         "notes": [
           "TODO.md#D6",
-          "docs/pedagogical-taxonomy.md"
+          "docs/pedagogical-taxonomy.md",
+          "notes/d6-orientation-family-matrix.md"
         ],
         "paper": "§7.9"
       },
