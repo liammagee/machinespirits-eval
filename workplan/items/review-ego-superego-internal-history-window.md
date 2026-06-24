@@ -1,19 +1,21 @@
 ---
 id: review-ego-superego-internal-history-window
 title: Review configurable ego/superego internal history windows
-status: triaged
+status: done
 type: experiment
 priority: P2
-owner: unassigned
+owner: codex
 source: manual
 created: 2026-06-23
 updated: 2026-06-24
-verification: Current same-turn history behavior is covered by tests; a
-  configurable history-window design is either implemented and smoke-tested with
-  a bounded comparison, or explicitly rejected with rationale.
-claim_status: exploratory
+verification: Closeout audit completed; no-spend tests cover default opt-out,
+  explicit opt-in message history, and Phase-2 prompt-only behavior; result is
+  retained as opt-in instrumentation only, not a default or Paper 2.0 finding.
+claim_status: killed
+branch: codex/internal-history-closeout
 links:
   notes: notes/2026-06-23-ego-superego-history-window-review.md
+  items: implement-messages-style-internal-history-probe
   code:
     - tutor-core/services/tutorDialogueEngine.js
     - tutor-core/services/dialecticalEngine.js
@@ -36,3 +38,9 @@ Acceptance:
 - If implemented, keep default behavior unchanged and add mock/hermetic coverage proving only configured cells receive the additional messages.
 - Run or queue a bounded comparison that holds model/scenarios/max rounds fixed and varies only the history window.
 - Report parse failures, convergence, rejection/approval pattern, revision magnitude, tutor quality, and whether the effect looks like better deliberation or merely more compliance.
+
+Closeout:
+
+- 2026-06-24: Audited the merged opt-in implementation, focused tests, probe scripts, linked implementation card, and review note. The branch-local evidence supports a negative/limited conclusion: bounded internal-history messages are parse-stable and sometimes improve first-pass approval, but they do not produce robust cross-judge quality gains and add context when call counts are unchanged.
+- 2026-06-24: Kept default behavior unchanged and retained the feature only as opt-in instrumentation/probe surface. Do not enable by default, do not register as a standard cell from this evidence, and do not fold into the main Paper 2.0 findings.
+- 2026-06-24: Added no-spend test coverage for the explicit opt-in gate and the Phase-2 dialectical engine prompt-only boundary.
