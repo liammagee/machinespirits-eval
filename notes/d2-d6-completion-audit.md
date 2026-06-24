@@ -2,18 +2,19 @@
 
 Date: 2026-06-24
 Branch: `codex/d2-d6-followups`
-Status: completion audit for the D2-D6 follow-up arc.
+Status: updated completion audit for the D2-D6 follow-up arc after D4 execution.
 
 ## Outcome
 
-The D2-D6 arc is complete at the current no-paid scope. D5 and D6 are completed
-as local research-design decisions. D2, D4, and D3 are fully gated for future
-empirical work: the repo now records exactly what would unblock them and why no
-current branch work should spend on them.
+The D2-D6 arc is complete for this branch. D5 and D6 are completed as local
+research-design decisions. D2 and D3 remain fully gated for future empirical
+work: the repo records exactly what would unblock them and why no current branch
+work should spend on them. D4 moved from gated to executed after user approval:
+the architecture-matched SEL replication is now a scope-bound empirical result.
 
-This does not claim that the future empirical studies have been run. It closes
-the current objective by converting each item from a loose future idea into a
-completed local decision or an explicit external gate.
+This closes the current objective by converting each item from a loose future
+idea into a completed local decision, an explicit external gate, or in D4's
+case a completed replication result folded into Paper 2.0.
 
 ## Status table
 
@@ -22,7 +23,7 @@ completed local decision or an explicit external gate.
 | D5 | Complete locally | `notes/d5-measurement-gate-for-d2-d6.md` freezes v2.2 as the comparable scoring epoch and parks v3.0 as separate future methods work. |
 | D6 | Complete locally | `notes/d6-orientation-family-matrix.md` freezes the family matrix and forbids treating architecture variants as pedagogical families. |
 | D2 | Fully gated for future empirical implementation | `notes/d2-cross-application-role-reframed-gate.md` records the missing original Path 2 note, excludes therapy by default, separates role from orientation, requires fresh cell IDs, and freezes the pass threshold. |
-| D4 | Fully gated for future empirical implementation | `notes/d4-sel-disposition-gradient-gate.md` records that the current DB has zero cells 40-45 rows on the exact SEL scenario set, so the clean replication requires a new paid run. |
+| D4 | Completed empirical replication; scope-bound | `notes/d4-sel-disposition-gradient-gate.md` and `exports/d4-sel-disposition-gradient-eval-2026-06-24-250c6251.md` record run `eval-2026-06-24-250c6251`: 144/144 successful rows and Sonnet-scored first turns. Recognition improves all three SEL disposition families, but the monotone gradient does not replicate. |
 | D3 | Fully gated for future empirical implementation | `notes/d3-heavy-bridge-followup-gate.md` records that Bridge 3b/4/5 require an endpoint independent of the optimized metric before any paid escalation. |
 
 ## Blockers and unblocks
@@ -44,15 +45,18 @@ budget, and optional therapy safety/IRB decision.
 
 ### D4
 
-Blocked for empirical execution by missing data:
+Executed after approval:
 
-- production DB inventory found no rows for cells 40-45 on the exact eight SEL
-  scenarios in `content-test-sel/scenarios-sel.yaml`;
-- existing SEL disposition evidence covers cells 22-27 only.
+- production DB run `eval-2026-06-24-250c6251` covers cells 40-45 on the exact
+  eight SEL scenarios in `content-test-sel/scenarios-sel.yaml`;
+- 144/144 generations succeeded and 144/144 first turns are scored under
+  `claude-code/sonnet`;
+- verdict is scope-bound: suspicious +17.1 ($d = 1.03$), adversary +7.3
+  ($d = 0.52$), advocate +15.4 ($d = 0.92$).
 
-Unblock: approve and run the 144-row cells 40-45 x SEL replication with the
-primary ordering and interpretation rules frozen in
-`notes/d4-sel-disposition-gradient-gate.md`.
+Closeout: report and paper update are complete. No further D4 paid run is
+needed for this branch unless a later cross-judge sensitivity pass is explicitly
+opened as a new item.
 
 ### D3
 
@@ -78,7 +82,7 @@ npm run wp:test
 git diff --check
 ```
 
-Production DB inventory for D4 used:
+Original production DB inventory for D4 used:
 
 ```bash
 sqlite3 /Users/lmagee/.machinespirits-data/evaluations.db \
@@ -105,4 +109,6 @@ sqlite3 /Users/lmagee/.machinespirits-data/evaluations.db \
    GROUP BY profile_name;"
 ```
 
-The query returned no rows.
+The query returned no rows before the paid run. The completed run now supplies
+the missing cells 40-45 x SEL evidence; see
+`exports/d4-sel-disposition-gradient-eval-2026-06-24-250c6251.md`.

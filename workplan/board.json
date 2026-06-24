@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-24T17:32:35.754Z",
+  "generated": "2026-06-24T20:56:09.923Z",
   "counts": {
     "total": 49,
     "byStatus": {
@@ -489,8 +489,8 @@
       "created": "2026-06-24",
       "updated": "2026-06-24",
       "branch": "codex/d2-d6-followups",
-      "verification": "Completion audit records D5/D6 as locally complete and D2/D3/D4 as fully gated for future empirical work; workplan render/check/test and git diff check pass.",
-      "claim_status": "future",
+      "verification": "Completion audit records D5/D6 as locally complete, D2/D3 as gated for future empirical work, and D4 as a completed scope-bound replication; workplan render/check/test and git diff check pass.",
+      "claim_status": "scope-bound",
       "links": {
         "notes": [
           "notes/d2-d6-followup-arc-plan.md",
@@ -1140,14 +1140,20 @@
       "source": "todo",
       "created": "2026-06-23",
       "updated": "2026-06-24",
-      "verification": "Decision and 2026-06-24 DB inventory logged: cells 40-45 on the exact SEL scenario set have zero existing rows, so the clean replication requires a new paid run.",
-      "claim_status": "future",
+      "verification": "DB audit shows eval-2026-06-24-250c6251 has 144/144 successful rows and 144/144 Sonnet-scored first turns; report and Paper 2.0 §6.6.8 record the scope-bound verdict.",
+      "claim_status": "scope-bound",
       "links": {
         "notes": [
           "TODO.md#D4",
           "notes/d4-sel-disposition-gradient-gate.md"
         ],
-        "paper": "§6.6.8"
+        "paper": "§6.6.8",
+        "exports": [
+          "exports/d4-sel-disposition-gradient-eval-2026-06-24-250c6251.md"
+        ],
+        "runs": [
+          "eval-2026-06-24-250c6251"
+        ]
       },
       "tags": [
         "d4",
@@ -1155,7 +1161,7 @@
         "sel"
       ],
       "milestone": "paper-2-evidence-cleanup",
-      "branch": "codex/workplan-board-triage"
+      "branch": "codex/d2-d6-followups"
     },
     {
       "id": "d6-orientation-family-taxonomy-extensions",

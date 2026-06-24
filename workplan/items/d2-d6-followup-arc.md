@@ -9,8 +9,8 @@ source: manual
 created: 2026-06-24
 updated: 2026-06-24
 branch: codex/d2-d6-followups
-verification: Completion audit records D5/D6 as locally complete and D2/D3/D4 as fully gated for future empirical work; workplan render/check/test and git diff check pass.
-claim_status: future
+verification: Completion audit records D5/D6 as locally complete, D2/D3 as gated for future empirical work, and D4 as a completed scope-bound replication; workplan render/check/test and git diff check pass.
+claim_status: scope-bound
 links:
   notes:
     - notes/d2-d6-followup-arc-plan.md
@@ -75,12 +75,13 @@ orientation kept as separate axes, fresh cell IDs required because the old
 98-105 range is now occupied, and a frozen primary rubric before any run. Next
 slice: D4 SEL/disposition-gradient replication gate.
 
-2026-06-24 Codex: Completed the D4 gate in
-`notes/d4-sel-disposition-gradient-gate.md`. Decision: the linked export is
-absent here and production DB inventory shows zero cells 40-45 rows on the exact
-SEL scenario set, so the clean architecture-matched SEL replication requires a
-new paid run. Existing SEL evidence covers cells 22-27 only. Next slice: D3
-heavy bridge follow-up gate.
+2026-06-24 Codex: Completed the D4 paid replication in
+`notes/d4-sel-disposition-gradient-gate.md` after user approval. Run
+`eval-2026-06-24-250c6251` covers cells 40-45 on the exact SEL scenario set,
+3 runs each, 144/144 generated and first-turn scored. Decision: broad
+recognition benefit survives across SEL disposition families, but the monotone
+suspicious > adversary > advocate gradient is scope-bound. Next slice: D3 heavy
+bridge follow-up gate.
 
 2026-06-24 Codex: Completed the D3 gate in
 `notes/d3-heavy-bridge-followup-gate.md`. Decision: Bridge 3b/4/5 remain future
@@ -89,6 +90,7 @@ freeze an endpoint independent of the metric it optimizes before paid work.
 
 2026-06-24 Codex: Closed the umbrella arc with
 `notes/d2-d6-completion-audit.md`. D5 and D6 are complete at local no-paid
-scope. D2, D4, and D3 are fully gated for future empirical implementation, with
-their unblocks recorded. This is not a new Paper 2.0 claim; it is the research
-program boundary for later work.
+scope; D2 and D3 remain fully gated for future empirical implementation; D4 is
+now a completed scope-bound Paper 2.0 result. The arc's contribution is a mixed
+external-validity boundary: one direct replication result plus remaining gated
+future designs.
