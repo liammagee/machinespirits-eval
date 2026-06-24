@@ -29,12 +29,9 @@ export const FAMILY_DESCRIPTIONS = {
     'Treats fraction operations as direct operations on both numerator and denominator, or overgeneralizes same-denominator procedures.',
   magnitude_denominator_bias:
     'Compares fractions by treating larger denominator numbers as larger amounts, or misses that denominator size changes piece size.',
-  equivalence_scaling:
-    'Misses equivalent-fraction scaling or proportional resizing of numerator and denominator.',
-  fraction_of_quantity:
-    'Struggles to apply a fraction to a whole-number quantity or set size.',
-  part_whole_mapping:
-    'Confuses the parts counted, total parts, or the whole being partitioned.',
+  equivalence_scaling: 'Misses equivalent-fraction scaling or proportional resizing of numerator and denominator.',
+  fraction_of_quantity: 'Struggles to apply a fraction to a whole-number quantity or set size.',
+  part_whole_mapping: 'Confuses the parts counted, total parts, or the whole being partitioned.',
 };
 
 export const DEFAULT_SESSION_SPECS = [
@@ -60,8 +57,10 @@ export const CLAUDE_CODE_EFFORT = process.env.CLAUDE_CODE_EFFORT || 'low';
 export const CLAUDE_CODE_TIMEOUT_MS = Number(process.env.CLAUDE_CODE_TIMEOUT_MS || 420_000);
 
 export const PROSE_PROTOCOLS = {
-  'open-rationale': 'Allows the learner to mention local confusion or intuition; known to leak arithmetic rationale in the first paid smoke.',
-  'visible-affect': 'Learner visible prose is affective or epistemic only; item behavior carries the diagnostic signal.',
+  'open-rationale':
+    'Allows the learner to mention local confusion or intuition; known to leak arithmetic rationale in the first paid smoke.',
+  'visible-affect':
+    'Learner visible prose is affective or epistemic only; item behavior carries the diagnostic signal.',
 };
 
 export const PREREGISTRATION_BY_PROTOCOL = {
@@ -70,8 +69,14 @@ export const PREREGISTRATION_BY_PROTOCOL = {
 };
 
 export const REASONING_LEAK_PATTERNS = [
-  { label: 'numerator_denominator_language', pattern: /\b(?:numerator|denominator|top number|bottom number|top and bottom)\b/i },
-  { label: 'operation_language', pattern: /\b(?:add(?:ed|ing)?|subtract(?:ed|ing)?|multiply(?:ied|ing)?|divide(?:d|ing)?)\b/i },
+  {
+    label: 'numerator_denominator_language',
+    pattern: /\b(?:numerator|denominator|top number|bottom number|top and bottom)\b/i,
+  },
+  {
+    label: 'operation_language',
+    pattern: /\b(?:add(?:ed|ing)?|subtract(?:ed|ing)?|multiply(?:ied|ing)?|divide(?:d|ing)?)\b/i,
+  },
   { label: 'magnitude_comparison_language', pattern: /\b(?:larger|smaller|bigger|less than|greater than)\b/i },
   { label: 'equivalence_language', pattern: /\b(?:equivalent|same as|match(?:es|ed|ing)?|scale(?:d|s|ing)?)\b/i },
   { label: 'part_whole_language', pattern: /\b(?:slices?|pieces?|parts?|whole|left over|left)\b/i },
@@ -168,10 +173,12 @@ export function parseJsonResponse(content) {
 }
 
 function selectedChoice(item, response) {
-  return item.choices.find((choice) => String(choice.value) === String(response.response_value)) || {
-    value: response.response_value,
-    label: String(response.response_value),
-  };
+  return (
+    item.choices.find((choice) => String(choice.value) === String(response.response_value)) || {
+      value: response.response_value,
+      label: String(response.response_value),
+    }
+  );
 }
 
 function formatChoices(item) {
@@ -490,8 +497,12 @@ async function runSession({ spec, items, backend, classifier, proseProtocol, ite
     callCounter,
   });
   const proseRecovered = proseClassification.active_families;
-  const proseRecall = activeFamilies.length ? setOverlap(proseRecovered, activeFamilies).length / activeFamilies.length : 0;
-  const prosePrecision = proseRecovered.length ? setOverlap(proseRecovered, activeFamilies).length / proseRecovered.length : 0;
+  const proseRecall = activeFamilies.length
+    ? setOverlap(proseRecovered, activeFamilies).length / activeFamilies.length
+    : 0;
+  const prosePrecision = proseRecovered.length
+    ? setOverlap(proseRecovered, activeFamilies).length / proseRecovered.length
+    : 0;
   const labelHits = directFamilyLabelHits(proseTurns);
   const rationaleHits = reasoningLeakHits(proseTurns);
 
@@ -619,9 +630,7 @@ export function renderG0PaidSmokeReport(result) {
         ', ',
       )} | ${row.proseRecoveredActiveFamilies.join(', ') || 'none'} | ${fmt(row.proseRecall)} | ${
         row.directFamilyLabelHits.join(', ') || 'none'
-      } | ${
-        row.reasoningLeakHits.join(', ') || 'none'
-      } |`,
+      } | ${row.reasoningLeakHits.join(', ') || 'none'} |`,
     );
   }
   lines.push('');
@@ -659,7 +668,9 @@ async function main() {
     console.log(`wrote ${args.outJson}`);
     console.log(`wrote ${args.outMd}`);
   }
-  console.log(`${result.status}: behaviorExact=${result.summary.behaviorExactSessions}/${result.summary.sessionCount} meanProseRecall=${fmt(result.summary.meanProseRecall)} calls=${result.summary.modelCalls.total}`);
+  console.log(
+    `${result.status}: behaviorExact=${result.summary.behaviorExactSessions}/${result.summary.sessionCount} meanProseRecall=${fmt(result.summary.meanProseRecall)} calls=${result.summary.modelCalls.total}`,
+  );
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

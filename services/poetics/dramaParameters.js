@@ -43,7 +43,8 @@ export const DRAMA_PARAMETER_COMPONENTS = deepFreeze([
     id: 'cast',
     label: 'Cast',
     shortLabel: 'cast',
-    summary: 'Which human, LLM backend, model, or mock plays each role; cast.director is the scene-author/staging compatibility key.',
+    summary:
+      'Which human, LLM backend, model, or mock plays each role; cast.director is the scene-author/staging compatibility key.',
   },
   {
     id: 'audience',

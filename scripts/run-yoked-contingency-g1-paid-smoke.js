@@ -84,24 +84,29 @@ Options:
     }
   }
   if (!Number.isInteger(args.sessions) || args.sessions < 1) throw new Error('--sessions must be a positive integer');
-  if (!Number.isInteger(args.planTurns) || args.planTurns < 1) throw new Error('--plan-turns must be a positive integer');
+  if (!Number.isInteger(args.planTurns) || args.planTurns < 1)
+    throw new Error('--plan-turns must be a positive integer');
   if (!Number.isInteger(args.maxCalls) || args.maxCalls < 1) throw new Error('--max-calls must be a positive integer');
   if (!Number.isFinite(args.minDiagnosisDelta)) throw new Error('--min-diagnosis-delta must be numeric');
   return args;
 }
 
 function selectedChoice(item, response) {
-  return item.choices.find((choice) => String(choice.value) === String(response.response_value)) || {
-    value: response.response_value,
-    label: String(response.response_value),
-  };
+  return (
+    item.choices.find((choice) => String(choice.value) === String(response.response_value)) || {
+      value: response.response_value,
+      label: String(response.response_value),
+    }
+  );
 }
 
 function correctChoice(item) {
-  return item.choices.find((choice) => String(choice.value) === String(item.correct)) || {
-    value: item.correct,
-    label: String(item.correct),
-  };
+  return (
+    item.choices.find((choice) => String(choice.value) === String(item.correct)) || {
+      value: item.correct,
+      label: String(item.correct),
+    }
+  );
 }
 
 function visibleAffectForResponse(response) {
@@ -247,7 +252,11 @@ function armSourceSpec(spec, arm) {
     return { sourceSeed: spec.sameSeedSource, sourceLearnerId: `${spec.sessionId}-same-peer`, responsive: false };
   }
   if (arm === 'different_seed_yoked') {
-    return { sourceSeed: spec.differentSeedSource, sourceLearnerId: `${spec.sessionId}-different-peer`, responsive: false };
+    return {
+      sourceSeed: spec.differentSeedSource,
+      sourceLearnerId: `${spec.sessionId}-different-peer`,
+      responsive: false,
+    };
   }
   throw new Error(`unknown arm: ${arm}`);
 }
@@ -351,7 +360,11 @@ export async function runG1PaidSmoke({
   for (let i = 0; i < sessions; i++) {
     const base = sessionSpecs[i % sessionSpecs.length];
     const repeat = Math.floor(i / sessionSpecs.length) + 1;
-    selectedSpecs.push({ ...base, sessionId: repeat === 1 ? base.sessionId : `${base.sessionId.replace(/-\\d+$/, '')}-${String(repeat).padStart(2, '0')}` });
+    selectedSpecs.push({
+      ...base,
+      sessionId:
+        repeat === 1 ? base.sessionId : `${base.sessionId.replace(/-\\d+$/, '')}-${String(repeat).padStart(2, '0')}`,
+    });
   }
   const callCounter = createCallCounter(maxCalls);
   const sessionRows = [];
@@ -383,7 +396,9 @@ export async function runG1PaidSmoke({
   const differentSeedActiveTargets = mean(armsByLabel.different_seed_yoked.map((row) => row.targetActiveTargets));
   const delta1 = Number((meanGainByArm.contingent - meanGainByArm.same_seed_yoked).toFixed(3));
   const delta2 = Number((meanGainByArm.same_seed_yoked - meanGainByArm.different_seed_yoked).toFixed(3));
-  const invalidPlanCount = flatArms.filter((row) => row.invalidTargetFamilies.length > 0 || !row.planLengthValid).length;
+  const invalidPlanCount = flatArms.filter(
+    (row) => row.invalidTargetFamilies.length > 0 || !row.planLengthValid,
+  ).length;
   const sourceBehaviorExactCount = flatArms.filter((row) => row.sourceBehaviorExact).length;
   const sameGreaterSessionCount = sessionRows.filter((session) => {
     const byArm = Object.fromEntries(session.arms.map((arm) => [arm.arm, arm]));
@@ -402,12 +417,14 @@ export async function runG1PaidSmoke({
     schema: 'yoked_contingency_g1_paid_smoke_v0_1',
     generatedAt: new Date().toISOString(),
     status: pass ? 'pass_g1_paid_smoke' : 'fail_g1_paid_smoke',
-    boundary: sessionRows.length >= 9
-      ? 'scaled paid-quota G1 follow-up; not a full battery and not a paper claim'
-      : 'bounded paid-quota G1 smoke; not a full battery and not a paper claim',
-    preregistration: sessionRows.length >= 9
-      ? 'PLAN_2_0/yoked-contingency-g1-scaled-preregistration.md'
-      : 'PLAN_2_0/yoked-contingency-g1-paid-smoke-preregistration.md',
+    boundary:
+      sessionRows.length >= 9
+        ? 'scaled paid-quota G1 follow-up; not a full battery and not a paper claim'
+        : 'bounded paid-quota G1 smoke; not a full battery and not a paper claim',
+    preregistration:
+      sessionRows.length >= 9
+        ? 'PLAN_2_0/yoked-contingency-g1-scaled-preregistration.md'
+        : 'PLAN_2_0/yoked-contingency-g1-paid-smoke-preregistration.md',
     backend: canonicalBackend(backend),
     visibleProseProtocol: 'visible-affect',
     sessions: sessionRows,
@@ -451,15 +468,21 @@ export function renderG1PaidSmokeReport(result) {
   lines.push('## Primary contrasts');
   lines.push('');
   lines.push(`- Δ1 responsiveness/coherence = ${fmt(result.summary.delta1_responsiveness)}`);
-  lines.push(`- Δ2 diagnosis = ${fmt(result.summary.delta2_diagnosis)} (threshold >= ${fmt(result.thresholds.minDiagnosisDelta)})`);
+  lines.push(
+    `- Δ2 diagnosis = ${fmt(result.summary.delta2_diagnosis)} (threshold >= ${fmt(result.thresholds.minDiagnosisDelta)})`,
+  );
   lines.push('');
   lines.push('## Validity checks');
   lines.push('');
-  lines.push(`- Source behavior exact: ${result.summary.sourceBehaviorExactCount}/${result.thresholds.requiredSourceBehaviorExactCount}`);
+  lines.push(
+    `- Source behavior exact: ${result.summary.sourceBehaviorExactCount}/${result.thresholds.requiredSourceBehaviorExactCount}`,
+  );
   lines.push(`- Invalid or short plans: ${result.summary.invalidPlanCount}`);
   lines.push(`- Same-seed active targets: ${fmt(result.summary.sameSeedActiveTargets)}`);
   lines.push(`- Different-seed active targets: ${fmt(result.summary.differentSeedActiveTargets)}`);
-  lines.push(`- Sessions where same-seed gain > different-seed gain: ${result.summary.sameGreaterSessionCount}/${result.summary.sessionCount}`);
+  lines.push(
+    `- Sessions where same-seed gain > different-seed gain: ${result.summary.sameGreaterSessionCount}/${result.summary.sessionCount}`,
+  );
   lines.push('');
   lines.push('## Mean gains');
   lines.push('');
