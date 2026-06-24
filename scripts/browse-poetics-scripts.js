@@ -1804,6 +1804,8 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
     }
     return res.type('html').send(renderScriptoriumHome(dashboardStats()));
   });
+  // Act II landing — the three report types and how they differ (who judges).
+  app.get('/read', (_req, res) => res.type('html').send(renderReadJudgeHub(dashboardStats())));
   // Transitional during the UX redesign: the previous control-room dashboard,
   // preserved so nothing is lost and the new home can be compared against it.
   app.get('/classic', (req, res) => {
@@ -2127,6 +2129,12 @@ function mdLectureToHtml(md) {
 const NAV = [
   ['home', '/', 'home', 'Dashboard — overview, live stats &amp; guided first steps'],
   [
+    'read',
+    '/read',
+    'the reading room',
+    'Read &amp; judge — the three report types (scripts · proof runs · replays) and how they differ',
+  ],
+  [
     'browse',
     '/browse',
     'scripts',
@@ -2207,14 +2215,14 @@ const NAV_PRIMARY = ['home'];
 // summary (see railHtml), so the current location stays legible when collapsed.
 const NAV_GROUPS = [
   ['make', ['compose', 'runs', 'tutor']],
-  ['read &amp; judge', ['browse', 'derivation', 'replays', 'rubric', 'adjudicate', 'pilot-admin']],
+  ['read &amp; judge', ['read', 'browse', 'derivation', 'replays', 'rubric', 'adjudicate', 'pilot-admin']],
   ['keep', ['board', 'timeline', 'ontology', 'curriculum', 'summary', 'story', 'repertoire']],
 ];
 // Same three acts for the mobile drawer; `home` is rendered as a flat link above
 // these groups in railHtml.
 const NAV_DRAWER_GROUPS = [
   ['Make', ['compose', 'runs', 'tutor']],
-  ['Read &amp; judge', ['browse', 'derivation', 'replays', 'rubric', 'adjudicate', 'pilot-admin']],
+  ['Read &amp; judge', ['read', 'browse', 'derivation', 'replays', 'rubric', 'adjudicate', 'pilot-admin']],
   ['Keep', ['board', 'timeline', 'ontology', 'curriculum', 'summary', 'story', 'repertoire']],
 ];
 
@@ -4993,6 +5001,119 @@ function renderActivityBand(s = {}) {
 // The redesigned home: every surface regrouped into a three-act dramatic
 // structure (I make · II read & judge · III keep). Live numbers come from the
 // same stats the classic dashboard reads; only the arrangement changes.
+// The "read & judge" hub (/read): the landing for act II. Its job is to make the
+// three report types legible BEFORE you open one — the thing they differ on is who
+// does the judging (AI critic / fixed rule-checker / diff), not the subject. The
+// supporting surfaces (rubric, adjudication, pilot) are grouped separately as the
+// apparatus behind the judging. Counts come from the same dashboardStats() the home
+// uses; the poetic names are kept but paired with plain function.
+function renderReadJudgeHub(stats = {}) {
+  const s = { scripts: 0, scored: 0, openFlags: 0, replays: 0, proofRuns: 0, ...stats };
+  const e = escapeHtml;
+  const n = (x) => Number(x || 0).toLocaleString('en-US');
+  const reports = [
+    {
+      acc: 'var(--indigo)',
+      soft: 'var(--indigo-soft)',
+      deep: 'var(--indigo)',
+      name: 'Scripts',
+      alias: 'The Shelves',
+      href: '/browse',
+      judge: 'an AI critic',
+      what: 'Tutoring dialogues staged as short plays, scored on <b>dramatic form</b> — a genuine turn (peripeteia) and a moment of recognition (anagnorisis).',
+      row: 'a row = one <b>scored script</b> · filter by arm, discipline, verdict',
+      count: `${n(s.scripts)} scripts · ${n(s.scored)} read`,
+    },
+    {
+      acc: 'var(--moss)',
+      soft: 'var(--moss-soft)',
+      deep: 'var(--moss-deep)',
+      name: 'Proof runs',
+      alias: 'The Proofs',
+      href: '/derivation',
+      judge: 'a fixed rule-checker',
+      what: 'Runs where the tutor must lead the learner to a <b>hidden answer</b> by inference. A deterministic rule — not an AI, not a quality score — decides the outcome.',
+      row: 'a row = one <b>run</b>: grounded · impasse · disengaged',
+      count: `${n(s.proofRuns)} runs`,
+    },
+    {
+      acc: 'var(--ochre-d)',
+      soft: 'var(--ochre-soft)',
+      deep: 'var(--ochre-d)',
+      name: 'Replays',
+      alias: 'Variant Leaves',
+      href: '/replays',
+      judge: 'a diff vs the original',
+      what: 'Take one dialogue, <b>alter a single move</b>, re-run it, and diff against the original — to see how one change reshapes recognition.',
+      row: 'a row = one <b>counterfactual bundle</b>: generator → checker',
+      count: `${n(s.replays)} bundles`,
+    },
+  ];
+  const apparatus = [
+    ['Rubric', 'The Critic&#39;s Bench', '/rubric', 'The 6 dramatic-form dimensions the critic scores against.'],
+    ['Adjudication', 'The Margins', '/adjudication', 'Blinded human glosses cross-checking the critic.'],
+    ['Pilot', 'The Pilot', '/pilot-admin', 'Operator desk for the human-learner study.'],
+  ];
+  const reportCards = reports
+    .map(
+      (r) => `
+    <a class="rjh-card" href="${r.href}" style="--acc:${r.acc}">
+      <div class="rjh-top"><span class="rjh-name">${e(r.name)}</span><span class="rjh-alias">“${e(r.alias)}”</span><span class="rjh-pill" style="background:${r.soft};color:${r.deep}">judged by ${e(r.judge)}</span></div>
+      <div class="rjh-what">${r.what}</div>
+      <div class="rjh-foot"><span class="rjh-row">${r.row}</span><span class="rjh-count">${e(r.count)}</span></div>
+      <div class="rjh-go"><span class="rjh-route">${e(r.href)}</span><span>open →</span></div>
+    </a>`,
+    )
+    .join('');
+  const apparatusCards = apparatus
+    .map(
+      ([name, alias, href, gloss]) => `
+    <a class="rjh-scard" href="${href}"><div class="rjh-sname">${name} <span>· ${alias}</span></div><div class="rjh-sgloss">${e(gloss)}</div></a>`,
+    )
+    .join('');
+  const css = `
+main.rjh{ max-width:880px; margin:0 auto; padding:24px 22px 64px; }
+.rjh-lead{ font-size:15px; color:var(--ink-2); line-height:1.6; margin:0 0 20px; border-left:3px solid var(--moss); padding-left:14px; }
+.rjh-lead b{ color:var(--ink); font-weight:600; }
+.rjh-reports{ display:flex; flex-direction:column; gap:12px; }
+.rjh-card{ display:block; border:1px solid var(--rule); border-left:3px solid var(--acc); background:var(--paper-4); border-radius:0 8px 8px 0; padding:14px 16px; text-decoration:none; color:inherit; transition:border-color .15s var(--ease), background .15s var(--ease); }
+.rjh-card:hover{ border-color:var(--acc); background:var(--paper-3); }
+.rjh-top{ display:flex; align-items:baseline; gap:9px; flex-wrap:wrap; }
+.rjh-name{ font:600 17px Georgia,serif; color:var(--ink); }
+.rjh-alias{ font:italic 13px Georgia,serif; color:var(--ink-4); }
+.rjh-pill{ margin-left:auto; font:10px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.05em; padding:2px 9px; border-radius:11px; white-space:nowrap; }
+.rjh-what{ font-size:13px; color:var(--ink-2); line-height:1.55; margin:7px 0 8px; } .rjh-what b{ color:var(--ink); font-weight:600; }
+.rjh-foot{ display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; font:11px ui-monospace,monospace; color:var(--ink-3); }
+.rjh-count{ color:var(--ink-4); white-space:nowrap; }
+.rjh-go{ display:flex; justify-content:space-between; margin-top:9px; padding-top:8px; border-top:1px solid var(--rule-soft); font:10px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--moss-deep); }
+.rjh-route{ color:var(--ink-4); }
+.rjh-divlbl{ font:10px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.1em; color:var(--ink-4); margin:24px 0 10px; }
+.rjh-sup{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px; }
+.rjh-scard{ border:1px solid var(--rule); background:var(--paper-4); border-radius:7px; padding:11px 13px; text-decoration:none; color:inherit; transition:border-color .15s var(--ease); }
+.rjh-scard:hover{ border-color:var(--ink-3); }
+.rjh-sname{ font:600 13px Georgia,serif; color:var(--ink); } .rjh-sname span{ font-weight:400; font-style:italic; color:var(--ink-4); }
+.rjh-sgloss{ font-size:12px; color:var(--ink-3); line-height:1.5; margin-top:4px; }
+`;
+  const body = `<main class="rjh">
+  <p class="rjh-lead">The corpus is read <b>three ways</b>. What separates them is not the subject — it is <b>who does the judging</b>.</p>
+  <div class="rjh-reports">${reportCards}</div>
+  <div class="rjh-divlbl">the apparatus behind the judging</div>
+  <div class="rjh-sup">${apparatusCards}</div>
+</main>`;
+  return renderShell({
+    title: 'read &amp; judge · machine spirits',
+    active: 'read',
+    sub: 'the three report types — and how they differ',
+    hint: orientBand(
+      'the reading room',
+      'three ways the corpus is read, by who judges',
+      'pick a report type below, or a working surface on the rail',
+    ),
+    css,
+    body,
+  });
+}
+
 function renderScriptoriumHome(stats = {}) {
   // The whole at-a-glance band (live numbers, charts) is delegated to
   // renderActivityBand(s); this function owns only the masthead, the three-act
