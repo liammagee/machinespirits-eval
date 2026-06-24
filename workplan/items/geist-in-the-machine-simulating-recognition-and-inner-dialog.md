@@ -8,8 +8,10 @@ priority: P2
 owner: codex
 source: daily-routine
 created: 2026-06-22
-updated: 2026-06-23
-verification: Confirmed arXiv 2603.10450 is authored by Liam Magee; Paper 2.0 already cites the companion study via @magee2026geist, so no manuscript edit is required.
+updated: 2026-06-24
+verification: Confirmed arXiv 2603.10450 is authored by Liam Magee; Paper 2.0
+  already cites the companion study via @magee2026geist, so no manuscript edit
+  is required.
 links:
   notes:
     - notes/daily-notes/2026-06-15-research-roundup.html
@@ -23,6 +25,7 @@ tags:
   - paper-positioning
   - self-citation
   - roundup
+milestone: poetics-followups
 ---
 
 arXiv:2603.10450 [UNBLOCK] — surfaced by the daily routine (2026-06-15-research-roundup.html).

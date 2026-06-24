@@ -7,7 +7,7 @@ priority: P2
 owner: unassigned
 source: todo
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-06-24
 verification: Rubric v3.0 PCA-informed consolidation drafted in
   config/rubrics/v3.0/; calibration run; decision recorded in the paper or
   shelved with a reason.
@@ -21,6 +21,7 @@ tags:
   - rubric
   - pca
   - methods
+milestone: paper-2-evidence-cleanup
 ---
 
 TODO §D5 is a decision item, not a current-paper blocker: choose either empirical consolidation, a discriminant-validity demonstration, or shelving the v3.0 rubric work.

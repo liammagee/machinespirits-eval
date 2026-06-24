@@ -7,7 +7,7 @@ priority: P2
 owner: codex
 source: todo
 created: 2026-06-23
-updated: 2026-06-23
+updated: 2026-06-24
 verification: Reran D1 Pass 6 OLS, Pass 7 multi-turn scope replication, and
   cross-judge checks; exports and notes/d1-paper-integration.md are present.
 branch: codex/d1-mechanistic-feature-ols
@@ -38,6 +38,7 @@ tags:
   - structural-features
   - ols
   - multi-turn
+milestone: paper-2-evidence-cleanup
 ---
 
 TODO §D1 left two concrete analysis passes open after the five-pass sequence: multi-feature OLS over the regex and embedding features, and a multi-turn replication. Both are now closed in the narrower paper-integrated form recorded in `notes/d1-paper-integration.md`: Pass 6 shows the ends-with-question partial coefficient survives multivariate control in the two intersubjective cells, and Pass 7 shows the surface feature is single-turn-specific and reverses sign in multi-turn final-turn contexts. The richer learner-echo / prior-turn acknowledgement trace analysis is not claimed here because this checkout does not contain the dialogue logs needed for that feature family.

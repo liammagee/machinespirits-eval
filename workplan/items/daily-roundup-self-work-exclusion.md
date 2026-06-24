@@ -7,8 +7,9 @@ priority: P2
 owner: codex
 source: review
 created: 2026-06-23
-updated: 2026-06-23
-verification: scripts/workplan.js ingest --daily skips arXiv 2603.10450 via a regression fixture; npm run wp:test and npm run wp:check pass.
+updated: 2026-06-24
+verification: scripts/workplan.js ingest --daily skips arXiv 2603.10450 via a
+  regression fixture; npm run wp:test and npm run wp:check pass.
 links:
   notes:
     - notes/research-plans/2026-06-20-research-plan.html
@@ -20,6 +21,7 @@ tags:
   - self-citation
   - workplan-ingest
 branch: codex/geist-positioning
+milestone: board-pm
 ---
 
 The Geist positioning card confirmed that arXiv 2603.10450 is Liam Magee's own paper, not an external validation target. The remaining issue is upstream hygiene: the daily roundup should not present own or companion papers as external unblockers.

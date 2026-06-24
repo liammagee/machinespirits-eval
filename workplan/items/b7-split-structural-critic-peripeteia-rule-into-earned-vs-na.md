@@ -7,7 +7,7 @@ priority: P3
 owner: unassigned
 source: todo
 created: 2026-06-22
-updated: 2026-06-23
+updated: 2026-06-24
 verification: Dropped because the 2026-05-28 prompt-side surgery made earned and
   named reorientation co-occur reliably; no critic split is needed unless that
   evidence changes.
@@ -18,6 +18,7 @@ tags:
   - poetics
   - critic
   - dropped
+milestone: poetics-followups
 ---
 
 TODO §B7 is retained as traceability, not live implementation work. The rerun after prompt-side surgery made the rule split non-load-bearing.

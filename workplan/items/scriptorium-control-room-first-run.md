@@ -7,7 +7,7 @@ priority: P0
 owner: codex
 source: manual
 created: 2026-06-23
-updated: 2026-06-23
+updated: 2026-06-24
 verification: The dashboard front door clearly identifies Scriptorium, shows
   role-based next actions, distinguishes DB-backed script corpus from
   file-backed proof runs, and gives a no-spend path out of an empty script
@@ -23,6 +23,7 @@ tags:
   - onboarding
   - data-health
 branch: codex/ux-enhancements
+milestone: desktop-app
 ---
 
 Context: this checkout has an empty `poetics_*` script corpus but 59 proof-run

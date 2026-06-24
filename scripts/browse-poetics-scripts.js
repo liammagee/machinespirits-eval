@@ -7895,6 +7895,29 @@ function renderWorkplanBoardHtml() {
   const LIFE = ['triaged', 'active', 'blocked', 'review', 'done', 'archived', 'dropped', 'inbox'];
   const items = board.items || [];
   const byId = Object.fromEntries(items.map((i) => [i.id, i]));
+  const milestones = loadMilestones();
+  const milestoneById = Object.fromEntries(milestones.map((m) => [m.id, m]));
+  const completeStatuses = new Set(['done', 'archived']);
+  const openStatuses = new Set(['triaged', 'active', 'blocked', 'review', 'inbox']);
+  const milestoneStats = milestones
+    .map((m) => {
+      const assigned = items.filter((i) => i.milestone === m.id);
+      const done = assigned.filter((i) => completeStatuses.has(i.status)).length;
+      const open = assigned.filter((i) => openStatuses.has(i.status)).length;
+      return {
+        ...m,
+        assigned,
+        done,
+        open,
+        pct: assigned.length ? Math.round((done / assigned.length) * 100) : 0,
+      };
+    })
+    .sort(
+      (a, b) =>
+        String(a.target || '9999').localeCompare(String(b.target || '9999')) ||
+        String(a.title || a.id).localeCompare(String(b.title || b.id)),
+    );
+  const unscheduled = items.filter((i) => !i.milestone || !milestoneById[i.milestone]);
   const types = [...new Set(items.map((i) => i.type).filter(Boolean))].sort();
   const tagFilters = [
     ...new Set(
@@ -7913,17 +7936,35 @@ function renderWorkplanBoardHtml() {
   const wpData = JSON.stringify({
     items,
     statuses: DEFAULT_LANES,
-    milestones: loadMilestones(),
+    milestones,
     types: WP_TYPES,
     priorities: WP_PRIORITIES,
     owners: WP_OWNERS,
   }).replace(/</g, '\\u003c');
+  const milestoneTrack = milestoneStats.length
+    ? `<div class="ms-track" aria-label="Milestone progress">
+      ${milestoneStats
+        .map(
+          (m) => `<button type="button" class="ms-mini" data-filter="${e(m.id)}" data-filter-kind="milestone" title="Filter to ${e(m.title || m.id)}">
+            <span class="ms-mini__top"><span class="ms-mini__title">${e(m.title || m.id)}</span><span class="ms-mini__date">${m.target ? e(m.target) : 'no target'}</span></span>
+            <span class="ms-mini__bar"><span style="width:${m.pct}%"></span></span>
+            <span class="ms-mini__meta">${m.done}/${m.assigned.length} done · ${m.open} open</span>
+          </button>`,
+        )
+        .join('')}
+      <button type="button" class="ms-mini ms-mini--unscheduled" data-filter="__none" data-filter-kind="milestone" title="Filter to items without a milestone">
+        <span class="ms-mini__top"><span class="ms-mini__title">Unscheduled</span><span class="ms-mini__date">${unscheduled.length}</span></span>
+        <span class="ms-mini__bar"><span style="width:0%"></span></span>
+        <span class="ms-mini__meta">${unscheduled.length} item${unscheduled.length === 1 ? '' : 's'}</span>
+      </button>
+    </div>`
+    : '';
   const sections = LIFE.filter((s) => DEFAULT_LANES.includes(s) || items.some((i) => i.status === s))
     .map((status) => {
       const group = items.filter((i) => i.status === status);
       const cards = group
         .map((it) => {
-          const tags = [it.type, it.owner, it.claim_status]
+          const tags = [it.type, it.owner, it.claim_status, it.milestone ? `ms:${it.milestone}` : null]
             .filter(Boolean)
             .map((t) => `<span class="t">${e(t)}</span>`)
             .join('');
@@ -7937,7 +7978,7 @@ function renderWorkplanBoardHtml() {
                   : deps.length + (deps.length > 1 ? ' deps met' : ' dep met')
               }</div>`
             : '';
-          return `<article class="card" draggable="true" data-id="${e(it.id || '')}" data-status="${e(status)}" data-type="${e(it.type || '')}" data-tags="${e((it.tags || []).join(' '))}">
+          return `<article class="card" draggable="true" data-id="${e(it.id || '')}" data-status="${e(status)}" data-type="${e(it.type || '')}" data-milestone="${e(it.milestone || '')}" data-tags="${e((it.tags || []).join(' '))}">
         <div class="card__act"><button type="button" class="card__btn" data-act="edit" data-id="${e(it.id || '')}" title="Edit item" aria-label="Edit item" draggable="false">✎</button><button type="button" class="card__btn card__btn--del" data-act="del" data-id="${e(it.id || '')}" title="Delete item" aria-label="Delete item" draggable="false">🗑</button></div>
         <div class="card__h"><span class="pri pri--${e(it.priority || '')}">${e(it.priority || '')}</span><span class="id">${e(it.id || '')}</span></div>
         <div class="ttl">${e(it.title || '')}</div>
@@ -7945,7 +7986,7 @@ function renderWorkplanBoardHtml() {
       </article>`;
         })
         .join('');
-      return `<section class="col" data-status="${e(status)}"><h2 class="col__h">${e(status)} <span class="n">${group.length}</span><button class="col__add" data-status="${e(status)}" title="Add an item to ${e(status)}" aria-label="Add an item to ${e(status)}">+</button></h2>${cards}</section>`;
+      return `<section class="col" data-status="${e(status)}"><h2 class="col__h"><button type="button" class="col__toggle" data-status="${e(status)}" title="Collapse ${e(status)}" aria-label="Collapse ${e(status)}" aria-expanded="true">▾</button><span class="col__title">${e(status)}</span> <span class="n">${group.length}</span><button class="col__add" data-status="${e(status)}" title="Add an item to ${e(status)}" aria-label="Add an item to ${e(status)}">+</button></h2>${cards}</section>`;
     })
     .join('');
   const chips = [
@@ -7967,9 +8008,20 @@ main{ max-width:1100px; margin:0 auto; padding:22px 22px 64px; }
 	.blurb a{ color:var(--moss-deep); } .blurb code{ font:12px ui-monospace,monospace; }
 	.board-tools{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:-4px 0 16px; }
 	.board-tools__status{ font:12px ui-monospace,monospace; color:var(--ink-4); min-height:16px; }
+	.board-tools__link{ text-decoration:none; display:inline-flex; align-items:center; }
 	.bar{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-bottom:16px; }
 	.chip{ min-height:40px; display:inline-flex; align-items:center; font:12px ui-monospace,monospace; padding:3px 10px; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-2); cursor:pointer; }
-.chip.on{ color:var(--moss-deep); border-color:var(--moss); background:var(--moss-soft); }
+	.chip.on,.ms-mini.on{ color:var(--moss-deep); border-color:var(--moss); background:var(--moss-soft); }
+.ms-track{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:10px; margin:0 0 16px; }
+.ms-mini{ min-height:86px; display:flex; flex-direction:column; gap:7px; text-align:left; border:1px solid var(--rule); border-left:3px solid var(--moss); background:var(--paper-4); color:var(--ink-2); border-radius:6px; padding:9px 11px; cursor:pointer; }
+.ms-mini:hover{ border-color:var(--moss); }
+.ms-mini--unscheduled{ border-left-color:var(--ink-4); }
+.ms-mini__top{ display:flex; gap:8px; align-items:flex-start; justify-content:space-between; }
+.ms-mini__title{ font:600 13px Georgia,serif; color:var(--ink); }
+.ms-mini__date{ font:11px ui-monospace,monospace; color:var(--ink-4); white-space:nowrap; }
+.ms-mini__bar{ display:block; height:6px; background:var(--paper-2); border:1px solid var(--rule-soft); border-radius:4px; overflow:hidden; }
+.ms-mini__bar span{ display:block; height:100%; background:var(--moss); }
+.ms-mini__meta{ font:11px ui-monospace,monospace; color:var(--ink-4); }
 .cols{ display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; align-items:start; }
 .col__h{ font:600 12px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-3); margin:0 0 10px; border-bottom:1px solid var(--rule); padding-bottom:6px; }
 .col__h .n{ color:var(--ink-4); }
@@ -7993,9 +8045,15 @@ main{ max-width:1100px; margin:0 auto; padding:22px 22px 64px; }
 .card__btn:hover{ border-color:var(--ink-3); color:var(--ink); }
 .card__btn--del:hover{ border-color:var(--brick); color:var(--brick); background:var(--brick-soft); }
 @media (hover:none){ .card__act{ opacity:1; } }
+@media (max-width:860px){ .card__act{ position:static; opacity:1; justify-content:flex-end; margin:-1px 0 6px; } .card__btn{ width:40px; height:40px; } }
 .col{ min-height:64px; border-radius:5px; transition:background .12s var(--ease,ease), outline-color .12s var(--ease,ease); }
 .col--over{ outline:2px dashed var(--moss); outline-offset:4px; background:var(--moss-soft); }
+.col.is-collapsed{ min-height:0; }
+.col.is-collapsed .card{ display:none!important; }
 .col__h{ display:flex; align-items:center; gap:6px; }
+.col__toggle{ width:40px; height:40px; display:inline-flex; align-items:center; justify-content:center; font:600 13px/1 ui-monospace,monospace; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-3); cursor:pointer; border-radius:4px; flex:0 0 auto; }
+.col__toggle:hover{ color:var(--moss-deep); border-color:var(--moss); }
+.col__title{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .col__add{ margin-left:auto; width:40px; height:40px; display:inline-flex; align-items:center; justify-content:center; font:600 14px/1 ui-monospace,monospace; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-3); cursor:pointer; border-radius:4px; }
 .col__add:hover{ color:var(--moss-deep); border-color:var(--moss); }
 .wpm{ position:fixed; inset:0; z-index:60; display:flex; align-items:center; justify-content:center; }
@@ -8032,8 +8090,12 @@ ${railHtml({
 	  <div class="blurb">The live development board, rendered from <code>workplan/</code> (${gen}). <b>Click a card to edit · drag between lanes to move · <span style="font-weight:700">+</span> to add · delete from the editor</b> — every change writes to <code>workplan/items/</code> and re-renders. Source of truth is <code>workplan/items/</code>. The historical 2026-06-06 snapshot is at <a href="/board-doc">/board-doc</a> · API: <a href="/api/workplan">/api/workplan</a>.</div>
 	  <div class="board-tools">
 	    <button type="button" class="wpm__btn" id="wp-refresh">Refresh from disk</button>
+	    <button type="button" class="wpm__btn" id="wp-expand-all">Expand all</button>
+	    <button type="button" class="wpm__btn" id="wp-collapse-settled">Collapse settled</button>
+	    <a class="wpm__btn board-tools__link" href="/timeline">Timeline</a>
 	    <span class="board-tools__status" id="wp-refresh-status" aria-live="polite"></span>
 	  </div>
+	  ${milestoneTrack}
 	  <div class="bar">${chips}</div>
 	  <div class="cols">${sections}</div>
 </main>
@@ -8069,7 +8131,7 @@ ${railHtml({
 <script>window.__WP = ${wpData};</script>
 <script>
 (function () {
-	  var chips = [].slice.call(document.querySelectorAll('.chip'));
+	  var chips = [].slice.call(document.querySelectorAll('.chip, .ms-mini'));
 	  var refreshBtn = document.getElementById('wp-refresh');
 	  var refreshStatus = document.getElementById('wp-refresh-status');
 	  if (refreshBtn) {
@@ -8093,7 +8155,8 @@ ${railHtml({
       var kind = c.getAttribute('data-filter-kind') || 'type';
       [].slice.call(document.querySelectorAll('.card')).forEach(function (card) {
         var tags = ' ' + (card.getAttribute('data-tags') || '') + ' ';
-        var show = f === 'all' || (kind === 'type' && card.getAttribute('data-type') === f) || (kind === 'tag' && tags.indexOf(' ' + f + ' ') >= 0);
+        var ms = card.getAttribute('data-milestone') || '';
+        var show = f === 'all' || (kind === 'type' && card.getAttribute('data-type') === f) || (kind === 'tag' && tags.indexOf(' ' + f + ' ') >= 0) || (kind === 'milestone' && (f === '__none' ? !ms : ms === f));
         card.style.display = show ? '' : 'none';
       });
       [].slice.call(document.querySelectorAll('.col')).forEach(function (col) {
@@ -8103,8 +8166,12 @@ ${railHtml({
       if (sync) {
         try {
           var u = new URL(window.location.href);
-          ['tag', 'type'].forEach(function (key) { u.searchParams.delete(key); });
-          if (f !== 'all') u.searchParams.set(kind === 'tag' ? 'tag' : 'type', f);
+          ['tag', 'type', 'milestone', 'unscheduled'].forEach(function (key) { u.searchParams.delete(key); });
+          if (f !== 'all') {
+            if (kind === 'tag') u.searchParams.set('tag', f);
+            else if (kind === 'milestone' && f === '__none') u.searchParams.set('unscheduled', '1');
+            else u.searchParams.set(kind === 'milestone' ? 'milestone' : 'type', f);
+          }
           window.history.replaceState({}, '', u.toString());
         } catch (_e) {}
       }
@@ -8126,16 +8193,73 @@ ${railHtml({
     var q = new URL(window.location.href).searchParams;
     var targetTag = q.get('tag');
     var targetType = q.get('type');
+    var targetMilestone = q.get('milestone');
+    var targetUnscheduled = q.get('unscheduled');
     var targetItem = q.get('item') || q.get('id');
     var selector = targetTag
       ? '.chip[data-filter-kind="tag"][data-filter="' + cssEsc(targetTag) + '"]'
       : targetType
         ? '.chip[data-filter-kind="type"][data-filter="' + cssEsc(targetType) + '"]'
-        : '';
+        : targetMilestone
+          ? '.ms-mini[data-filter-kind="milestone"][data-filter="' + cssEsc(targetMilestone) + '"]'
+          : targetUnscheduled
+            ? '.ms-mini[data-filter-kind="milestone"][data-filter="__none"]'
+            : '';
     if (selector) applyChip(document.querySelector(selector), false);
     if (targetItem) setTimeout(function () { highlightItem(targetItem); }, 80);
   } catch (_e) {}
 })();
+  // Persist lane collapse state in the browser. This only changes presentation;
+  // item status and generated board data stay untouched.
+  (function () {
+    var key = 'machinespirits.workplan.collapsedLanes.v1';
+    function read() {
+      try { return JSON.parse(localStorage.getItem(key) || '{}') || {}; } catch (_e) { return {}; }
+    }
+    function write(state) {
+      try { localStorage.setItem(key, JSON.stringify(state)); } catch (_e) {}
+    }
+    function apply(col, collapsed) {
+      if (!col) return;
+      var status = col.getAttribute('data-status') || '';
+      var btn = col.querySelector('.col__toggle');
+      col.classList.toggle('is-collapsed', !!collapsed);
+      if (btn) {
+        btn.textContent = collapsed ? '▸' : '▾';
+        btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        btn.setAttribute('aria-label', (collapsed ? 'Expand ' : 'Collapse ') + status);
+        btn.setAttribute('title', (collapsed ? 'Expand ' : 'Collapse ') + status);
+      }
+    }
+    var state = read();
+    [].slice.call(document.querySelectorAll('.col')).forEach(function (col) {
+      var status = col.getAttribute('data-status') || '';
+      apply(col, !!state[status]);
+      var btn = col.querySelector('.col__toggle');
+      if (btn) btn.addEventListener('click', function () {
+        var next = !col.classList.contains('is-collapsed');
+        state[status] = next;
+        if (!next) delete state[status];
+        write(state);
+        apply(col, next);
+      });
+    });
+    var expand = document.getElementById('wp-expand-all');
+    if (expand) expand.addEventListener('click', function () {
+      state = {};
+      write(state);
+      [].slice.call(document.querySelectorAll('.col')).forEach(function (col) { apply(col, false); });
+    });
+    var collapse = document.getElementById('wp-collapse-settled');
+    if (collapse) collapse.addEventListener('click', function () {
+      ['done', 'archived', 'dropped'].forEach(function (status) { state[status] = true; });
+      write(state);
+      [].slice.call(document.querySelectorAll('.col')).forEach(function (col) {
+        apply(col, !!state[col.getAttribute('data-status') || '']);
+      });
+    });
+    window.__WP_COLLAPSE = { apply: apply, read: read, write: write };
+  })();
   // Drag a card to another lane → POST the new status; move optimistically, revert
   // (reload) on failure. Mirrors the \`wp set <id> status <lane>\` CLI write.
   (function () {
@@ -8173,6 +8297,12 @@ ${railHtml({
         if (!card) return;
         var from = card.closest('.col');
         if (from === col) return;
+        if (window.__WP_COLLAPSE) {
+          var st = window.__WP_COLLAPSE.read();
+          delete st[status];
+          window.__WP_COLLAPSE.write(st);
+          window.__WP_COLLAPSE.apply(col, false);
+        }
         col.appendChild(card);
         card.setAttribute('data-status', status);
         setCount(col); if (from) setCount(from);
@@ -8322,7 +8452,7 @@ const TIMELINE_CSS = `
 main{ max-width:1180px; margin:0 auto; padding:22px 22px 64px; }
 .blurb{ font-size:13px; color:var(--ink-3); border-left:3px solid var(--moss); background:var(--paper-4); padding:10px 14px; margin:0 0 16px; }
 .blurb a{ color:var(--moss-deep); } .blurb code{ font:12px ui-monospace,monospace; }
-.chip{ font:12px ui-monospace,monospace; padding:3px 10px; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-2); cursor:pointer; border-radius:5px; }
+.chip{ min-height:40px; display:inline-flex; align-items:center; font:12px ui-monospace,monospace; padding:3px 10px; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-2); cursor:pointer; border-radius:5px; }
 .tl-grid{ display:grid; grid-template-columns:minmax(0,1fr) 320px; gap:22px; align-items:start; }
 @media (max-width:840px){ .tl-grid{ grid-template-columns:1fr; } }
 .ms{ border:1px solid var(--rule); border-left:3px solid var(--moss); background:var(--paper-4); border-radius:6px; padding:12px 14px; margin-bottom:14px; position:relative; }
@@ -8334,7 +8464,7 @@ main{ max-width:1180px; margin:0 auto; padding:22px 22px 64px; }
 .ms__status--planned{ color:var(--ink-3); }
 .ms__target{ font:12px ui-monospace,monospace; color:var(--ink-3); }
 .ms__sp{ flex:1; }
-.ms__edit{ font:11px ui-monospace,monospace; color:var(--ink-3); background:transparent; border:1px solid var(--rule); border-radius:4px; padding:2px 8px; cursor:pointer; }
+.ms__edit{ min-height:40px; min-width:44px; font:11px ui-monospace,monospace; color:var(--ink-3); background:transparent; border:1px solid var(--rule); border-radius:4px; padding:2px 8px; cursor:pointer; }
 .ms__edit:hover{ color:var(--moss-deep); border-color:var(--moss); }
 .ms__desc{ font-size:12px; color:var(--ink-3); margin:6px 0; } .ms__desc a{ color:var(--moss-deep); }
 .ms__bar{ height:6px; background:var(--paper-2); border:1px solid var(--rule-soft); border-radius:4px; overflow:hidden; margin:8px 0 4px; }

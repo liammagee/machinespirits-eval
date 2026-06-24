@@ -7,7 +7,7 @@ priority: P2
 owner: unassigned
 source: manual
 created: 2026-06-23
-updated: 2026-06-23
+updated: 2026-06-24
 verification: Dramatic-machine docs, derivation notes, config names, UI labels,
   and any runtime-facing role names use a coherent metaphor set; the
   director/author distinction is either renamed safely or documented with a
@@ -25,6 +25,7 @@ tags:
   - terminology
   - author
   - director
+milestone: poetics-followups
 ---
 
 Capture a semantics fix before it gets normalized: the current `director` role often names what is really an authorial voice addressed *to* the director, not the director as an in-world or production-side role. The likely target is to rename this surface toward `author` / `authorial_voice`, while preserving compatibility for existing traces, exports, configs, and UI routes.

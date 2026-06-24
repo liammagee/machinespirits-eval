@@ -7,8 +7,10 @@ priority: P2
 owner: codex
 source: daily-routine
 created: 2026-06-22
-updated: 2026-06-23
-verification: Paper 2.0 §6.1.3 already cites @chen2026selfcorrectionillusion and records the bounded cross-judge result; reproduction path is scripts/analyze-correction-source.sh.
+updated: 2026-06-24
+verification: Paper 2.0 §6.1.3 already cites @chen2026selfcorrectionillusion and
+  records the bounded cross-judge result; reproduction path is
+  scripts/analyze-correction-source.sh.
 claim_status: scope-bound
 links:
   notes: notes/daily-notes/2026-06-12-research-roundup.html
@@ -20,6 +22,7 @@ tags:
   - superego
   - self-correction
   - paper-positioning
+milestone: paper-2-evidence-cleanup
 ---
 
 arXiv:2606.05976 [UNBLOCK] — surfaced by the daily routine (2026-06-12-research-roundup.html).
