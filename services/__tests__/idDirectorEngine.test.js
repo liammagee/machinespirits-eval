@@ -22,6 +22,7 @@ import assert from 'node:assert/strict';
 
 import {
   parseIdConstruction,
+  parseAgencyReturnVerification,
   extractPreviousPersona,
   runIdDirectedTurn,
   __setDeps,
@@ -75,6 +76,43 @@ describe('parseIdConstruction', () => {
     const result = parseIdConstruction('');
     assert.equal(result.parse_status, 'fallback');
     assert.equal(result.parse_failure_reason, 'empty_or_non_string_response');
+  });
+});
+
+describe('parseAgencyReturnVerification', () => {
+  test('parses a passing agency-return verifier envelope', () => {
+    const raw = JSON.stringify({
+      passes: true,
+      move_type: 'resay',
+      reason: 'The response asks the learner to restate the idea in their own words.',
+      repaired_response: '',
+    });
+    const result = parseAgencyReturnVerification(raw);
+    assert.equal(result.parse_status, 'ok');
+    assert.equal(result.passes, true);
+    assert.equal(result.move_type, 'resay');
+    assert.equal(result.repaired_response, '');
+  });
+
+  test('parses a failing verifier envelope with a repaired response', () => {
+    const raw = JSON.stringify({
+      passes: false,
+      move_type: 'missing',
+      reason: 'The response asks only whether the learner wants to continue.',
+      repaired_response: 'Keep the image, then put it in your own sentence and tell me where it breaks.',
+    });
+    const result = parseAgencyReturnVerification(raw);
+    assert.equal(result.parse_status, 'ok');
+    assert.equal(result.passes, false);
+    assert.equal(result.move_type, 'missing');
+    assert.match(result.repaired_response, /your own sentence/);
+  });
+
+  test('falls back open when failed verification omits a repair', () => {
+    const result = parseAgencyReturnVerification('{"passes": false, "move_type": "missing"}');
+    assert.equal(result.parse_status, 'fallback');
+    assert.equal(result.passes, true);
+    assert.match(result.parse_failure_reason, /missing_repaired_response/);
   });
 });
 
@@ -346,6 +384,110 @@ describe('runIdDirectedTurn', () => {
     const idCall = llmCallSpy.mock.calls[0];
     assert.match(idCall.arguments[2][0].content, /<recognition_desire>\s*true/);
     assert.match(idCall.arguments[2][0].content, /<agency_return>\s*true/);
+  });
+
+  test('agency_return_verifier repairs missing handback before returning', async () => {
+    fakeProfile.factors = {
+      recognition_desire: true,
+      agency_return: true,
+      agency_return_verifier: true,
+    };
+    queuedResponses.push(
+      {
+        content: JSON.stringify({
+          generated_prompt: 'Agency-return persona authored. Make the admired phrase answerable. ' + 'A '.repeat(60),
+          persona_delta: 'from guide to verifier-backed handback',
+        }),
+        usage: { inputTokens: 10, outputTokens: 20 },
+      },
+      {
+        content: 'That phrase matters because it makes recognition feel alive. Stay with it.',
+        usage: { inputTokens: 30, outputTokens: 40 },
+      },
+      {
+        content: JSON.stringify({
+          passes: false,
+          move_type: 'missing',
+          reason: 'The draft does not ask the learner to test, restate, or anchor the phrase.',
+          repaired_response:
+            'That phrase matters because it makes recognition feel alive. Now test it against the lecture: what single detail would prove the phrase is doing real work rather than just sounding good?',
+        }),
+        usage: { inputTokens: 50, outputTokens: 60 },
+      },
+    );
+
+    const result = await runIdDirectedTurn({
+      learnerId: 'l',
+      sessionId: 's',
+      learnerMessage: 'that phrase helped, but I am not sure I own it yet',
+      history: [],
+      tutorProfileName: 'cell_161_test',
+      topic: 'Lecture 3 on recognition',
+      llmCall: llmCallSpy,
+      trace,
+    });
+
+    assert.equal(llmCallSpy.mock.callCount(), 3, 'id call, ego call, verifier call');
+    const verifierCall = llmCallSpy.mock.calls[2];
+    assert.equal(verifierCall.arguments[3].agentRole, 'agency_return_verifier');
+    assert.match(verifierCall.arguments[1], /agency-return verifier/);
+    assert.match(result.externalMessage, /test it against the lecture/);
+    assert.equal(result.agencyReturnVerification.passes, false);
+    assert.equal(result.agencyReturnRepaired, true);
+    assert.equal(result.internalDeliberation[2].role, 'agency_return_verifier');
+    assert.equal(trace.metrics.tutorInputTokens, 90);
+    assert.equal(trace.metrics.tutorOutputTokens, 120);
+  });
+
+  test('agency_return_verifier retries empty verifier output', async () => {
+    fakeProfile.factors = {
+      recognition_desire: true,
+      agency_return: true,
+      agency_return_verifier: true,
+    };
+    queuedResponses.push(
+      {
+        content: JSON.stringify({
+          generated_prompt: 'Agency-return persona authored. Make the claim answerable. ' + 'A '.repeat(60),
+          persona_delta: 'STABLE',
+        }),
+        usage: { inputTokens: 10, outputTokens: 20 },
+      },
+      {
+        content: 'This claim has heat. Let it stand for a second.',
+        usage: { inputTokens: 30, outputTokens: 40 },
+      },
+      { content: '', usage: { inputTokens: 50, outputTokens: 60 } },
+      {
+        content: JSON.stringify({
+          passes: false,
+          move_type: 'missing',
+          reason: 'The draft has no test, restatement, or anchor.',
+          repaired_response: 'This claim has heat. Now test it against one passage and tell me where it fails.',
+        }),
+        usage: { inputTokens: 70, outputTokens: 80 },
+      },
+    );
+
+    const result = await runIdDirectedTurn({
+      learnerId: 'l',
+      sessionId: 's',
+      learnerMessage: 'that phrase helped',
+      history: [],
+      tutorProfileName: 'cell_161_test',
+      topic: 'Lecture 3 on recognition',
+      llmCall: llmCallSpy,
+      trace,
+    });
+
+    assert.equal(llmCallSpy.mock.callCount(), 4, 'id, ego, empty verifier, verifier retry');
+    assert.equal(llmCallSpy.mock.calls[3].arguments[3].agentRole, 'agency_return_verifier_retry');
+    assert.match(llmCallSpy.mock.calls[3].arguments[2][0].content, /Return only the required JSON object/);
+    assert.match(result.externalMessage, /test it against one passage/);
+    assert.equal(result.agencyReturnVerification.retried, true);
+    assert.equal(result.agencyReturnRepaired, true);
+    assert.equal(trace.metrics.tutorInputTokens, 160);
+    assert.equal(trace.metrics.tutorOutputTokens, 200);
   });
 
   test('empty ego output retries with learner-facing output reminder', async () => {

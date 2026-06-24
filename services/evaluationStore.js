@@ -717,6 +717,7 @@ export function storeResult(runId, result) {
       learner_prompt_version,
       prompt_content_hash,
       learner_id,
+      id_construction_trace,
       created_at
     ) VALUES (
       ?, ?, ?, ?,
@@ -735,6 +736,7 @@ export function storeResult(runId, result) {
       ?,
       ?,
       ?, ?, ?, ?,
+      ?,
       ?,
       ?
     )
@@ -794,6 +796,7 @@ export function storeResult(runId, result) {
     result.learnerPromptVersion || null,
     result.promptContentHash || null,
     result.learnerId || null,
+    result.idConstructionTrace == null ? null : JSON.stringify(result.idConstructionTrace),
     new Date().toISOString(),
   );
 
@@ -2031,6 +2034,7 @@ function parseResultRow(row) {
     tutorSuperegoPromptVersion: row.tutor_superego_prompt_version || null,
     learnerPromptVersion: row.learner_prompt_version || null,
     promptContentHash: row.prompt_content_hash || null,
+    idConstructionTrace: row.id_construction_trace ? JSON.parse(row.id_construction_trace) : null,
   };
 }
 

@@ -138,6 +138,27 @@ const MIN_GENERATED_PROMPT_CHARS = 100;
 const EGO_EMPTY_RETRY_SUFFIX =
   'Return only the tutor response the learner should see, as plain text. ' +
   'Do not explain your reasoning, describe the prompt, or output JSON.';
+const AGENCY_RETURN_VERIFIER_MAX_TOKENS = 4000;
+const AGENCY_RETURN_VERIFIER_RETRY_SUFFIX =
+  'Return only the required JSON object now. Do not include analysis, headings, markdown, or prose outside the JSON.';
+const AGENCY_RETURN_VERIFIER_PROMPT = `You are an agency-return verifier for a charismatic tutor.
+
+Read the learner message, curriculum context, and drafted tutor response. Decide whether the response contains at least one concrete agency-return move:
+- "test": asks the learner to test the tutor's claim, image, or phrase against a passage, case, objection, or example.
+- "resay": asks the learner to restate, translate, flatten, reject, or correct the idea in their own words.
+- "anchor": ties an admired phrase or tutor claim to a named content feature, then asks the learner to decide whether that anchor supports it.
+
+Do not reward generic follow-up questions, requests for admiration, requests to continue, vague "does that make sense" checks, or purely rhetorical endings.
+
+Return exactly one JSON object:
+{
+  "passes": true | false,
+  "move_type": "test" | "resay" | "anchor" | "missing",
+  "reason": "one short sentence",
+  "repaired_response": ""
+}
+
+If passes is false, repaired_response must be a complete learner-facing tutor response. Preserve the original response's best content and voice, but add exactly one agency-return move. Do not add meta-commentary. If passes is true, repaired_response must be an empty string.`;
 
 function getRequiredTemperature(config, configName) {
   const t = config?.hyperparameters?.temperature;
@@ -165,6 +186,38 @@ function buildConversationContext(history) {
 
 function buildEgoRetryPrompt(learnerMessage) {
   return `${learnerMessage}\n\n${EGO_EMPTY_RETRY_SUFFIX}`;
+}
+
+function buildAgencyReturnVerifierUserMessage({ learnerMessage, curriculumContext, tutorResponse }) {
+  return [
+    '<current_learner_message>',
+    learnerMessage || '',
+    '</current_learner_message>',
+    '',
+    '<curriculum_context>',
+    curriculumContext || '(no curriculum context provided)',
+    '</curriculum_context>',
+    '',
+    '<draft_tutor_response>',
+    tutorResponse || '',
+    '</draft_tutor_response>',
+  ].join('\n');
+}
+
+function buildAgencyReturnVerifierRetryUserMessage(userMessage) {
+  return `${userMessage}\n\n${AGENCY_RETURN_VERIFIER_RETRY_SUFFIX}`;
+}
+
+function fallbackAgencyReturnVerification(reason, rawText = '') {
+  return {
+    passes: true,
+    move_type: 'unknown',
+    reason: `Verifier parse failed (${reason}); leaving response unchanged.`,
+    repaired_response: '',
+    parse_status: 'fallback',
+    parse_failure_reason: reason,
+    raw_head: rawText ? rawText.slice(0, 200) : '',
+  };
 }
 
 function buildIdUserMessage({
@@ -393,6 +446,75 @@ export function parseIdConstruction(rawText) {
   };
 }
 
+export function parseAgencyReturnVerification(rawText) {
+  if (!rawText || typeof rawText !== 'string') {
+    return fallbackAgencyReturnVerification('empty_or_non_string_response', String(rawText || ''));
+  }
+
+  let text = rawText.trim();
+  const openFence = text.match(/^```(?:json)?\s*/);
+  if (openFence) {
+    text = text.slice(openFence[0].length);
+    const closeFence = text.lastIndexOf('```');
+    if (closeFence !== -1) text = text.slice(0, closeFence).trim();
+  }
+
+  const firstBrace = text.indexOf('{');
+  const lastBrace = text.lastIndexOf('}');
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    text = text.slice(firstBrace, lastBrace + 1);
+  } else if (firstBrace !== -1) {
+    text = text.slice(firstBrace);
+  }
+
+  let parsed;
+  let usedRepair = false;
+  try {
+    parsed = JSON.parse(text);
+  } catch (firstErr) {
+    try {
+      const repaired = jsonrepair(text);
+      parsed = JSON.parse(repaired);
+      usedRepair = true;
+    } catch (repairErr) {
+      return fallbackAgencyReturnVerification(
+        `json_parse_error: ${firstErr.message} (jsonrepair also failed: ${repairErr.message})`,
+        rawText,
+      );
+    }
+  }
+
+  const passes = parsed?.passes === true;
+  const moveType = ['test', 'resay', 'anchor', 'missing'].includes(parsed?.move_type)
+    ? parsed.move_type
+    : passes
+      ? 'test'
+      : 'missing';
+  const repairedResponse = typeof parsed?.repaired_response === 'string' ? parsed.repaired_response.trim() : '';
+
+  if (!passes && !repairedResponse) {
+    return fallbackAgencyReturnVerification('missing_repaired_response_for_failed_verification', rawText);
+  }
+
+  return {
+    passes,
+    move_type: moveType,
+    reason: typeof parsed?.reason === 'string' ? parsed.reason : '',
+    repaired_response: passes ? '' : repairedResponse,
+    parse_status: usedRepair ? 'ok_via_jsonrepair' : 'ok',
+  };
+}
+
+function applyAgencyReturnVerification(tutorResponse, verification) {
+  if (!verification || verification.passes) {
+    return { message: tutorResponse, repaired: false };
+  }
+  if (verification.repaired_response) {
+    return { message: verification.repaired_response, repaired: true };
+  }
+  return { message: tutorResponse, repaired: false };
+}
+
 export function extractPreviousPersona(trace) {
   if (!trace || !Array.isArray(trace.turns) || trace.turns.length === 0) {
     return 'FIRST_TURN';
@@ -454,6 +576,23 @@ function buildEgoDeliberationEntry(egoResponse, egoConfig, renderedSystemPrompt)
   };
 }
 
+function buildAgencyReturnVerifierDeliberationEntry(verifierResponse, idConfig, verification) {
+  return {
+    role: 'agency_return_verifier',
+    content: verifierResponse?.content || '',
+    metrics: {
+      model: verifierResponse?.model || idConfig?.model || null,
+      provider: verifierResponse?.provider || idConfig?.provider || null,
+      latencyMs: verifierResponse?.latencyMs ?? null,
+      inputTokens: verifierResponse?.usage?.inputTokens ?? 0,
+      outputTokens: verifierResponse?.usage?.outputTokens ?? 0,
+      generationId: verifierResponse?.generationId || null,
+    },
+    verification,
+    apiPayload: verifierResponse?.apiPayload || null,
+  };
+}
+
 /**
  * Run a single id-directed tutor turn.
  *
@@ -489,6 +628,8 @@ export async function runIdDirectedTurn({
   const recognitionMode = profile?.recognition_mode === true;
   const recognitionDesire = profile?.factors?.recognition_desire === true || profile?.recognition_desire === true;
   const agencyReturn = profile?.factors?.agency_return === true || profile?.agency_return === true;
+  const agencyReturnVerifier =
+    profile?.factors?.agency_return_verifier === true || profile?.agency_return_verifier === true;
   const tutorMemory = _deps.tutorWritingPad.buildNarrativeSummary(learnerId, sessionId);
   const conversationContext = buildConversationContext(history);
   const previousPersona = extractPreviousPersona(trace);
@@ -571,12 +712,78 @@ export async function runIdDirectedTurn({
     externalMessage = "Let me try that again — could you say a little more about what you're working through?";
   }
 
+  let agencyVerification = null;
+  let agencyRepaired = false;
+  if (agencyReturnVerifier) {
+    const verifierUserMessage = buildAgencyReturnVerifierUserMessage({
+      learnerMessage,
+      curriculumContext: topic,
+      tutorResponse: externalMessage,
+    });
+    let verifierResponse = await llmCall(
+      idModel,
+      AGENCY_RETURN_VERIFIER_PROMPT,
+      [
+        {
+          role: 'user',
+          content: verifierUserMessage,
+        },
+      ],
+      {
+        temperature: 0.2,
+        maxTokens: AGENCY_RETURN_VERIFIER_MAX_TOKENS,
+        agentRole: 'agency_return_verifier',
+      },
+    );
+    if (trace?.metrics) {
+      trace.metrics.tutorInputTokens =
+        (trace.metrics.tutorInputTokens || 0) + (verifierResponse?.usage?.inputTokens || 0);
+      trace.metrics.tutorOutputTokens =
+        (trace.metrics.tutorOutputTokens || 0) + (verifierResponse?.usage?.outputTokens || 0);
+    }
+    let verifierRetried = false;
+    if (!(verifierResponse?.content || '').trim()) {
+      verifierRetried = true;
+      verifierResponse = await llmCall(
+        idModel,
+        AGENCY_RETURN_VERIFIER_PROMPT,
+        [
+          {
+            role: 'user',
+            content: buildAgencyReturnVerifierRetryUserMessage(verifierUserMessage),
+          },
+        ],
+        {
+          temperature: 0.2,
+          maxTokens: AGENCY_RETURN_VERIFIER_MAX_TOKENS,
+          agentRole: 'agency_return_verifier_retry',
+        },
+      );
+      if (trace?.metrics) {
+        trace.metrics.tutorInputTokens =
+          (trace.metrics.tutorInputTokens || 0) + (verifierResponse?.usage?.inputTokens || 0);
+        trace.metrics.tutorOutputTokens =
+          (trace.metrics.tutorOutputTokens || 0) + (verifierResponse?.usage?.outputTokens || 0);
+      }
+    }
+    agencyVerification = parseAgencyReturnVerification(verifierResponse?.content || '');
+    agencyVerification.retried = verifierRetried;
+    const verified = applyAgencyReturnVerification(externalMessage, agencyVerification);
+    externalMessage = verified.message;
+    agencyRepaired = verified.repaired;
+    internalDeliberation.push(
+      buildAgencyReturnVerifierDeliberationEntry(verifierResponse, idConfig, agencyVerification),
+    );
+  }
+
   return {
     externalMessage,
     rawResponse: egoResponse?.content || '',
     internalDeliberation,
     strategy: 'id_directed',
     suggestsEnding: false,
+    agencyReturnVerification: agencyVerification,
+    agencyReturnRepaired: agencyRepaired,
   };
 }
 
@@ -891,6 +1098,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   const recognitionMode = evalCellProfile.recognition_mode === true;
   const recognitionDesire = evalCellProfile.factors?.recognition_desire === true;
   const agencyReturn = evalCellProfile.factors?.agency_return === true;
+  const agencyReturnVerifier = evalCellProfile.factors?.agency_return_verifier === true;
   const useRegisterClassifier = evalCellProfile.factors?.register_classifier === true;
   const idTuning = typeof evalCellProfile.factors?.id_tuning === 'string' ? evalCellProfile.factors.id_tuning : null;
   const witnessExemplars = evalCellProfile.factors?.witness_exemplars === true;
@@ -1056,6 +1264,57 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
     };
   }
 
+  let agencyVerification = null;
+  let agencyRepaired = false;
+  if (agencyReturnVerifier) {
+    const verifierAgentConfig = {
+      ...idAgentConfig,
+      hyperparameters: { temperature: 0.2, max_tokens: AGENCY_RETURN_VERIFIER_MAX_TOKENS },
+    };
+    const verifierUserMessage = buildAgencyReturnVerifierUserMessage({
+      learnerMessage,
+      curriculumContext,
+      tutorResponse: externalMessage,
+    });
+    let verifierResponse = await callAIWithCliBridge(
+      verifierAgentConfig,
+      AGENCY_RETURN_VERIFIER_PROMPT,
+      verifierUserMessage,
+      'agency_return_verifier',
+      {},
+    );
+    totalInputTokens += verifierResponse?.inputTokens || 0;
+    totalOutputTokens += verifierResponse?.outputTokens || 0;
+    totalCost += verifierResponse?.cost || 0;
+    apiCalls += 1;
+    let verifierRetried = false;
+    if (!(verifierResponse?.text || '').trim()) {
+      verifierRetried = true;
+      verifierResponse = await callAIWithCliBridge(
+        verifierAgentConfig,
+        AGENCY_RETURN_VERIFIER_PROMPT,
+        buildAgencyReturnVerifierRetryUserMessage(verifierUserMessage),
+        'agency_return_verifier_retry',
+        {},
+      );
+      totalInputTokens += verifierResponse?.inputTokens || 0;
+      totalOutputTokens += verifierResponse?.outputTokens || 0;
+      totalCost += verifierResponse?.cost || 0;
+      apiCalls += 1;
+    }
+    agencyVerification = parseAgencyReturnVerification(verifierResponse?.text || '');
+    agencyVerification.retried = verifierRetried;
+    agencyVerification.metrics = {
+      provider: idCell.provider,
+      model: idCell.resolvedModel || idCell.model,
+      inputTokens: verifierResponse?.inputTokens || 0,
+      outputTokens: verifierResponse?.outputTokens || 0,
+    };
+    const verified = applyAgencyReturnVerification(externalMessage, agencyVerification);
+    externalMessage = verified.message;
+    agencyRepaired = verified.repaired;
+  }
+
   // ── Build a dialogue trace mirroring the existing convention so downstream
   //    analysers (turnComparisonAnalyzer, dialogueTraceAnalyzer) recognise it.
   const trace = [
@@ -1094,6 +1353,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
         reasoning: construction.reasoning,
         recognition_desire: recognitionDesire,
         agency_return: agencyReturn,
+        agency_return_verifier: agencyReturnVerifier,
         generated_prompt_head: egoSystemPrompt.slice(0, 320),
         parse_status: construction.parse_status,
       }),
@@ -1120,6 +1380,23 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
     },
   );
 
+  if (agencyVerification) {
+    trace.push({
+      agent: 'agency_return_verifier',
+      action: agencyRepaired ? 'repair' : 'verify',
+      detail: JSON.stringify({
+        passes: agencyVerification.passes,
+        move_type: agencyVerification.move_type,
+        reason: agencyVerification.reason,
+        parse_status: agencyVerification.parse_status,
+        retried: agencyVerification.retried === true,
+        repaired: agencyRepaired,
+      }),
+      metrics: agencyVerification.metrics || null,
+      timestamp: new Date().toISOString(),
+    });
+  }
+
   return {
     success: true,
     suggestions: [{ message: externalMessage }],
@@ -1136,6 +1413,9 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       apiCalls,
       totalCost,
       egoRetried,
+      agencyReturnVerified: agencyVerification?.passes === true,
+      agencyReturnRepaired: agencyRepaired,
+      agencyReturnVerification: agencyVerification,
       idConstruction: construction, // bonus: surface for trace logging downstream
     },
     dialogueTrace: trace,

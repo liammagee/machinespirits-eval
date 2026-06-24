@@ -4964,6 +4964,52 @@ profiles:
         temperature: 0.5
         max_tokens: 16000
 
+  # ─── Cell 161: Id-Director agency return with runtime verification ──────────
+  # One-factor extension of cell_160. After the ego drafts the learner-facing
+  # response, the id model verifies that a concrete agency-return move is
+  # present ("test it", "re-say it", or "anchor it"). If missing, the verifier
+  # repairs the response once before it is returned to the learner.
+  #
+  # Suggested comparison:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js run \
+  #     --profiles cell_160_id_director_charisma_agency_return,cell_161_id_director_charisma_agency_return_verified \
+  #     --runs 1 --use-rubric
+  cell_161_id_director_charisma_agency_return_verified:
+    description: "Id-Director (cell 161): cell 160 + agency_return_verifier factor. Adds a runtime verifier/repair pass that checks whether the ego actually performs an agency-return move before the response reaches the learner."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
   # ===========================================================================
   # ADAPTIVE-STATE CELL (LangGraph)
   # ===========================================================================

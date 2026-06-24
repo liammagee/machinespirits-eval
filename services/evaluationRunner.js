@@ -328,6 +328,7 @@ export const EVAL_ONLY_PROFILES = [
   'cell_109_id_director_charisma_tuned_exemplars',
   'cell_159_id_director_charisma_desire',
   'cell_160_id_director_charisma_agency_return',
+  'cell_161_id_director_charisma_agency_return_verified',
   'cell_110_langgraph_adaptive',
   'cell_111_a13_C1_recognition_only',
   'cell_112_a13_C2_egosuperego',
@@ -3083,6 +3084,29 @@ async function generatePhase1Reflection({ contextStr, learnerMessage, modelAlias
  * single-turn, with accumulated conversation context between turns.
  * This eliminates the separate multiTurnRunner orchestration.
  */
+function buildIdConstructionTraceFromTurnResults(turnResults = []) {
+  const idTurns = [];
+
+  for (const turn of turnResults) {
+    if (!turn?.idConstruction && !turn?.agencyReturnVerification) continue;
+
+    const record = {
+      turn: Number.isInteger(turn.turnIndex) ? turn.turnIndex : idTurns.length,
+      construction: turn.idConstruction || null,
+      tutorText: turn.suggestion?.message || turn.suggestion?.text || null,
+    };
+
+    if (turn.agencyReturnVerification) {
+      record.agencyReturnVerification = turn.agencyReturnVerification;
+      record.agencyReturnRepaired = turn.agencyReturnRepaired === true;
+    }
+
+    idTurns.push(record);
+  }
+
+  return idTurns.length > 0 ? idTurns : null;
+}
+
 async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   const {
     skipRubricEval = false,
@@ -3774,6 +3798,9 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       learnerEmotionalState: turnDef?._learnerEmotionalState || null,
       learnerMessageGenerated: !!turnDef?._learnerDeliberation,
       learnerOriginalMessage: turnDef?._originalMessage || null,
+      idConstruction: genResult.metadata?.idConstruction || null,
+      agencyReturnVerification: genResult.metadata?.agencyReturnVerification || null,
+      agencyReturnRepaired: genResult.metadata?.agencyReturnRepaired === true,
       scores: flattenNumericScores(rubricResult?.scores),
       scoresWithReasoning:
         rubricResult?.scores && Object.keys(rubricResult.scores).length > 0 ? rubricResult.scores : null,
@@ -4559,6 +4586,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     dialogueId,
     dialogueRounds: turnResults.length,
     deliberationRounds: totalDeliberationRounds,
+    idConstructionTrace: buildIdConstructionTraceFromTurnResults(turnResults),
     scores: Object.keys(aggregateDimensions).length > 0 ? aggregateDimensions : null,
     scoresWithReasoning:
       Object.keys(aggregateDimensions).length > 0
