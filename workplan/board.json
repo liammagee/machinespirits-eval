@@ -1,14 +1,15 @@
 {
-  "generated": "2026-06-24T16:31:29.701Z",
+  "generated": "2026-06-24T17:29:52.237Z",
   "counts": {
-    "total": 48,
+    "total": 49,
     "byStatus": {
       "done": 45,
       "blocked": 1,
-      "dropped": 2
+      "dropped": 2,
+      "triaged": 1
     },
     "byType": {
-      "research": 24,
+      "research": 25,
       "experiment": 4,
       "content": 1,
       "infra": 9,
@@ -17,6 +18,28 @@
     }
   },
   "items": [
+    {
+      "id": "grouptom-bench-benchmarking-group-theory-of-mind-nonlinear",
+      "title": "GroupToM-Bench: Benchmarking Group Theory of Mind and Nonlinear Social Emergence",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P3",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-06-24",
+      "updated": "2026-06-24",
+      "verification": "Cross-walk written into §6.8.5–.6 (or an exports/ note) deciding citation-only vs re-analysis, with a one-line claim_status; no paid runs.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-14-research-roundup.html",
+        "plan": "notes/research-plans/2026-06-20-research-plan.html",
+        "paper": "docs/research/paper-full-2.0.md"
+      },
+      "tags": [
+        "theory-of-mind",
+        "paper-positioning"
+      ],
+      "claim_status": "future"
+    },
     {
       "id": "a1-human-learner-validation",
       "title": "Human-learner validation pilot (real learning gains)",
