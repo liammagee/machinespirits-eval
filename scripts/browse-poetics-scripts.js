@@ -10854,6 +10854,12 @@ h1 {
   color: var(--ink-4);
   font: 11px "JetBrains Mono", monospace;
 }
+summary.egraph__h { cursor: pointer; display: flex; align-items: center; gap: 8px; margin-bottom: 0; list-style: none; }
+summary.egraph__h::-webkit-details-marker { display: none; }
+summary.egraph__h::before { content: "\\25B8"; color: var(--ink-4); transition: transform .15s var(--ease); }
+details.egraph[open] summary.egraph__h::before { transform: rotate(90deg); }
+details.egraph[open] .egraph__links { margin-top: 10px; }
+.egraph__hint { font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--ink-4); }
 
 .tts-toolbar {
   max-width: 70rem;
@@ -11418,6 +11424,7 @@ ${railHtml({
     '<span class="rail__beacon" id="railBeacon" data-state="checking" title="Sidecar database connection"><span class="rail__dot"></span><span id="railBeaconText">checking</span></span>',
   hint: '<span><b>scripts</b> — tutoring dialogues graded by an AI critic on dramatic form</span><span class="navhint__sep">·</span><span>for runs where a fixed rule-checker (not an AI critic) decides whether the learner reached a hidden answer, see <a href="/derivation">proof runs</a></span>',
 })}
+${reportTypeBand('/browse')}
 <div id="app" class="app">
   <aside class="sidebar">
     <div class="mast">
@@ -11585,9 +11592,9 @@ function renderBrowseEvidenceGraph(detail) {
     ['ontology', '/ontology'],
   ];
   if (item.runId) links.splice(1, 0, ['run slice', '/browse?runId=' + encodeURIComponent(item.runId)]);
-  return '<div class="egraph"><div class="egraph__h">evidence graph</div><div class="egraph__links">' +
+  return '<details class="egraph"><summary class="egraph__h">evidence graph <span class="egraph__hint">' + esc(scoreCount) + ' scores · ' + esc(labelCount) + ' labels · ' + esc(activeFlags) + ' flags</span></summary><div class="egraph__links">' +
     links.map(([label, href]) => '<a href="' + esc(href) + '">' + esc(label) + '</a>').join('') +
-    '</div><div class="egraph__meta">scores ' + esc(scoreCount) + ' · labels ' + esc(labelCount) + ' · active flags ' + esc(activeFlags) + ' · item ' + esc(item.id) + '</div></div>';
+    '</div><div class="egraph__meta">item ' + esc(item.id) + '</div></details>';
 }
 
 function ttsClean(s) {
