@@ -3680,8 +3680,23 @@ const DERIVATION_CSS = `
 .learnerdag table{border-collapse:collapse;width:100%;font-size:var(--s-0)}
 .learnerdag th,.learnerdag td{border-bottom:1px solid var(--rule-soft);padding:5px 7px;text-align:left;vertical-align:top}
 .learnerdag th{font-family:"JetBrains Mono",monospace;color:var(--ink-3);text-transform:uppercase}
+.vocab{border:1px solid var(--rule);border-radius:8px;background:var(--paper-4);padding:11px 13px;margin:12px 0 20px}
+.vocab>summary{cursor:pointer;list-style:none;display:flex;align-items:baseline;justify-content:space-between;gap:12px;font-family:"JetBrains Mono",monospace;font-size:var(--s-0);font-weight:700;text-transform:uppercase;color:var(--ink-4)}
+.vocab>summary::-webkit-details-marker{display:none}
+.vocab__hint{font-family:"Source Serif 4",Georgia,serif;font-size:var(--s-0);font-weight:400;text-transform:none;color:var(--ink-3)}
+.vocab__intro{max-width:78ch;color:var(--ink-2);line-height:1.45;margin:9px 0 10px}
+.vocab__grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.vocab__group{border:1px solid var(--rule-soft);border-radius:6px;background:var(--paper);padding:9px 10px}
+.vocab__group h3{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;color:var(--ink-4);margin:0 0 6px}
+.vocab__group p{margin:0 0 7px;color:var(--ink-3);line-height:1.4}
+.vocab__tokens{display:flex;flex-wrap:wrap;gap:5px}
+.vocab__token{font-family:"JetBrains Mono",monospace;font-size:.78rem;border:1px solid var(--rule-soft);border-radius:4px;background:var(--paper-2);color:var(--ink-2);padding:2px 6px;overflow-wrap:anywhere}
+.vocab__token--public{background:var(--moss-soft);border-color:var(--moss);color:var(--moss-deep)}
+.vocab__token--warn{background:var(--brick-soft);border-color:var(--brick);color:var(--brick-d)}
+.vocab__token--private{background:var(--ochre-soft);border-color:var(--ochre);color:var(--ochre-d)}
 @media(max-width:860px){.learnerdag__grid{grid-template-columns:1fr}}
 @media(max-width:860px){.proofdag__grid{grid-template-columns:1fr}}
+@media(max-width:860px){.vocab__grid{grid-template-columns:1fr}.vocab>summary{display:block}.vocab__hint{display:block;margin-top:3px}}
 .tts-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:14px 0 18px;padding:9px 10px;border:1px solid var(--rule-soft);border-radius:6px;background:var(--paper-4)}
 .tts-toolbar--compact{margin:4px 0 8px}
 .tts-control,.tts-btn{border:1px solid var(--rule);background:var(--paper);color:var(--moss-deep);cursor:pointer;font-family:"JetBrains Mono",monospace;text-transform:uppercase}
@@ -4356,6 +4371,7 @@ function renderDerivationEvidenceGraph({ label, diagnosis }) {
     ['compare this run', `/derivation?compare=${encLabel}`],
     ['same outcome', `/derivation?verdict=${encodeURIComponent(diagnosis.verdict || '')}`],
     ['rerun in launcher', runHref],
+    ['controlled vocabulary', '#controlled-vocabulary'],
     ['proof runs index', '/derivation'],
     ['replays', '/replays'],
     ['scripts', '/browse'],
@@ -4515,7 +4531,204 @@ function renderDerivationLearnerDagHtml(learnerDag, learnerDagAssessment) {
       }; first secret entailed: ${learnerDagAssessment.firstSecretEntailedTurn ?? 'n/a'}</p>
     </aside>
   </div>
-</section>`;
+	</section>`;
+}
+
+function renderVocabularyTokens(tokens, modifier = '') {
+  return tokens
+    .map(
+      (token) =>
+        `<span class="vocab__token${modifier ? ` vocab__token--${modifier}` : ''}">${escapeHtml(token)}</span>`,
+    )
+    .join('');
+}
+
+function renderDerivationControlledVocabularyHtml({ open = false } = {}) {
+  const groups = [
+    {
+      title: 'public speech',
+      note: 'Words the roles may say aloud in the scene. The default register uses exhibits and records; modern register uses details and notes.',
+      tokens: [
+        'exhibit',
+        'exhibits',
+        'record',
+        'house rule',
+        'case',
+        'detail',
+        'details',
+        'notes',
+        'rule',
+        'reasoning',
+        'missing part',
+        'shown',
+        'still missing',
+      ],
+      modifier: 'public',
+    },
+    {
+      title: 'not public speech',
+      note: 'Harness words that stay in diagnostics, prompts, or JSON bookkeeping. Public dialogue translates them into scene language.',
+      tokens: [
+        'premise',
+        'predicate',
+        'conjunct',
+        'board',
+        'proof distance',
+        'fact array',
+        'variable name',
+        'rule ID',
+        'premise ID',
+        'JSON field',
+      ],
+      modifier: 'warn',
+    },
+    {
+      title: 'world schema',
+      note: 'Authored world slots: content changes per scenario, while the learner contract stays fixed.',
+      tokens: [
+        'world',
+        'question',
+        'question_pattern',
+        'secret',
+        'mirror',
+        'rules',
+        'premises',
+        'background',
+        'incompatible',
+        'proof_paths',
+        'release_schedule',
+        'dramaturgy',
+        'acts',
+        'slope',
+        't_min',
+        'aporia_window',
+        'turn_cap',
+      ],
+    },
+    {
+      title: 'learner contract',
+      note: 'Private response protocol. The learner owns the answer only when its visible record entails it.',
+      tokens: [
+        'dialogue',
+        'adopt_indices',
+        'retract_indices',
+        'derive_indices',
+        'hypothesis',
+        'exchange_type',
+        'asserts_answer',
+        'substantive',
+        'phatic_ack',
+        'confusion',
+        'repair_request',
+        'resistance',
+        'assertion',
+      ],
+      modifier: 'private',
+    },
+    {
+      title: 'DAG layers',
+      note: 'The authored DAG is the target structure; the learner DAG is reconstructed from learner-visible conduct; the tutor model is redacted and advisory.',
+      tokens: [
+        'authored proof DAG',
+        'learner DAG',
+        'learner proof sketch',
+        'private proxy proof sketch',
+        'proxy-DAG pacing',
+        'tutor learner-DAG model',
+        'fact',
+        'rule_application',
+        'hypothesis',
+        'grounded',
+        'voiced_derived',
+        'unsupported_assertion',
+        'inference',
+      ],
+    },
+    {
+      title: 'assessment states',
+      note: 'Machine-readable proof status. These diagnose where closure is blocked without giving the learner hidden proof paths.',
+      tokens: [
+        'available',
+        'unavailable',
+        'unscheduled',
+        'unreleased',
+        'released_but_not_held',
+        'grounded_asserted_secret',
+        'mirror_assertion_after_entailment',
+        'assertion_gap',
+        'premature_assertion',
+        'release_or_pacing_gap',
+        'learner_integration_gap',
+        'inference_gap',
+        'complete',
+        'prompt_assertion',
+        'repair_uptake',
+        'release_evidence',
+        'hold_until_evidence_due',
+        'prompt_intermediate_inference',
+        'continue',
+      ],
+    },
+    {
+      title: 'outcomes',
+      note: 'Public labels are short; internal verdicts preserve the exact checker taxonomy.',
+      tokens: [
+        'grounded',
+        'disengaged',
+        'impasse',
+        'grounded_anagnorisis',
+        'unstaged_recognition',
+        'lucky_leap_only',
+        'mirror',
+        'leak',
+        'aporia',
+        'disengagement',
+        'cap_reached',
+      ],
+    },
+    {
+      title: 'tutor conduct',
+      note: 'Rhetorical and conduct vocabulary is advisory. It shapes how the tutor asks, repairs, or releases; it does not authorize hidden evidence.',
+      tokens: [
+        'erotema',
+        'analogia',
+        'exemplum',
+        'anaphora',
+        'aposiopesis',
+        'orient',
+        'release',
+        'repair',
+        'restore',
+        'consolidate',
+        'confront',
+        'test',
+        'counter_mirror',
+        'stage_recognition',
+        'repair_dependency',
+        'ask_diagnostic',
+        'ask_scope_test',
+        'consolidate_subproof',
+        'release_next_evidence',
+        'block_assertion',
+        'invite_final_assertion',
+        'repair_recognition_rupture',
+      ],
+    },
+  ];
+  const body = groups
+    .map(
+      (group) => `<section class="vocab__group">
+    <h3>${escapeHtml(group.title)}</h3>
+    <p>${escapeHtml(group.note)}</p>
+    <div class="vocab__tokens">${renderVocabularyTokens(group.tokens, group.modifier || '')}</div>
+  </section>`,
+    )
+    .join('');
+  return `<details class="vocab" id="controlled-vocabulary"${open ? ' open' : ''}>
+  <summary>Controlled vocabulary <span class="vocab__hint">public speech, private protocol, DAG diagnostics, outcomes, tutor conduct</span></summary>
+  <p class="vocab__intro">The app keeps scenario content separate from the stable learner contract. Public dialogue uses ordinary scene terms; private JSON and diagnostics use the formal vocabulary below.</p>
+  <div class="vocab__grid">${body}</div>
+</details>`;
 }
 
 function renderDerivationIndexHtml(runs, query = {}) {
@@ -4697,10 +4910,11 @@ ${railHtml({
   sub: 'proof runs — a fixed rule-checker decides each outcome, no AI judge anywhere',
   hint: '<span><b>proof runs</b> — a fixed rule-checker (not an AI judge, not a quality score) decides whether the learner reached the hidden answer</span><span class="navhint__sep">·</span><span>for generated drama graded by AI critics, see <a href="/browse">scripts</a></span>',
 })}
-<main class="wrap wrap--wide" data-derivation-index>
-<h1>Proof runs — did the learner reach the hidden answer?</h1>
-<p class="lede">Each row is one tutoring run. The tutor has to lead the learner to a hidden conclusion purely by inference, and a fixed rule-checker — not an AI judge — decides the outcome: a run is <strong>grounded</strong> when the learner reaches the hidden conclusion and its proof closes; otherwise it ends in an <strong>impasse</strong> or the learner <strong>disengages</strong>. Runs are grouped by experimental condition (the <span class="mono">--group</span> flag); artifacts live under <span class="mono">exports/dramatic-derivation/loop/</span>.</p>
-${renderDerivationLivePanel(listDerivationLiveRuns())}
+	<main class="wrap wrap--wide" data-derivation-index>
+	<h1>Proof runs — did the learner reach the hidden answer?</h1>
+	<p class="lede">Each row is one tutoring run. The tutor has to lead the learner to a hidden conclusion purely by inference, and a fixed rule-checker — not an AI judge — decides the outcome: a run is <strong>grounded</strong> when the learner reaches the hidden conclusion and its proof closes; otherwise it ends in an <strong>impasse</strong> or the learner <strong>disengages</strong>. Runs are grouped by experimental condition (the <span class="mono">--group</span> flag); artifacts live under <span class="mono">exports/dramatic-derivation/loop/</span>.</p>
+	${renderDerivationControlledVocabularyHtml()}
+	${renderDerivationLivePanel(listDerivationLiveRuns())}
 ${scoreboard}
 ${toolbar}
 ${comparePanel}
@@ -4850,9 +5064,10 @@ ${railHtml({
 <p class="mono" style="margin-top:14px"><a href="/derivation">← all runs</a></p>
 <h1>${escapeHtml(world?.title || result.worldId || label)}</h1>
 <p class="lede mono">${escapeHtml(label)} · script ${escapeHtml(diagnosis.scriptPath || '?')}${diagnosis.note ? ` · ${escapeHtml(diagnosis.note)}` : ''}</p>
-<div class="chips">${chips}</div>
-${renderDerivationEvidenceGraph({ label, diagnosis })}
-${renderDerivationProofDagHtml(assessment?.dagProfile || null)}
+	<div class="chips">${chips}</div>
+	${renderDerivationEvidenceGraph({ label, diagnosis })}
+	${renderDerivationControlledVocabularyHtml({ open: true })}
+	${renderDerivationProofDagHtml(assessment?.dagProfile || null)}
 ${renderDerivationLearnerDagHtml(assessment?.learnerDag || null, assessment?.learnerDagAssessment || null)}
 ${transcriptTtsToolbarHtml({ fullLabel: 'Play full transcript', includeLabel: 'include tutor superego' })}
 ${
