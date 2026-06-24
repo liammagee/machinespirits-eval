@@ -11,11 +11,13 @@ updated: 2026-06-24
 verification: Replication across scenes run; results in exports/; the
   one-side-replay claim updated or closed in the paper.
 branch: codex/a17-replay-replication
-blocked_by: OPENROUTER_API_KEY is not available in this worktree's shell or
-  dotenv-loaded environment, so the approved API generation/scoring gate cannot
-  start.
+blocked_by: D_OED5 `d5-run1` failed the required QA gate because the `none`
+  control was unanimously classified as metered; a clean replacement D5 scene
+  requires additional paid approval beyond the exact minimum run already used.
 links:
-  notes: TODO.md#A17
+  notes:
+    - TODO.md#A17
+    - notes/poetics/2026-06-24-a17-replay-replication-qa-stop.md
   paper: §7.9
   exports: exports/a17-one-side-replay-replication/
 claim_status: exploratory
@@ -145,3 +147,17 @@ attempt created only ignored partial directories and writing-pad SQLite files
 under `exports/a17-one-side-replay-replication/`; those were removed so the
 next retry starts clean. To resume, provide the key through `.env` or the shell
 environment, then rerun the exact commands above.
+
+2026-06-24 Codex: Credential blocker resolved by using
+`DOTENV_CONFIG_PATH=/Users/lmagee/Dev/machinespirits/machinespirits-eval/.env node -r dotenv/config ...`.
+The approved paid retry generated D_OED5 `d5-run1` with all three arms and
+persisted `director-{none,socratic,reveal}.json`, but the required QA gate
+quarantined the scene: `none` failed T1 as `CONTROL_CONTAMINATED` with unanimous
+metered votes (`withheld:0 metered:4 stated:0`), while `socratic` and `reveal`
+passed. Stopped before D_OED4 generation, original graded scoring, learner
+replays, and replay scoring because scoring a quarantined scene would violate
+the recorded gate. Durable note:
+`notes/poetics/2026-06-24-a17-replay-replication-qa-stop.md`. No §7.9 paper
+claim update is warranted; the existing one-scene caveat remains. To continue
+A17 empirically, explicitly approve one replacement D5 scene generation before
+rerunning QA and the remaining minimum pipeline.
