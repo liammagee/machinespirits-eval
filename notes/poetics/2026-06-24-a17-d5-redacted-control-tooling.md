@@ -41,6 +41,19 @@ Covered by unit tests before any paid gate:
 - `services/__tests__/learnerTutorInteractionEngine.test.js` asserts that the
   `withhold` move lowers to the `withhold_secret` policy.
 
+Additional no-spend preflight:
+
+- Confirmed `/Users/lmagee/Dev/machinespirits/machinespirits-eval/.env` exists
+  and loads `OPENROUTER_API_KEY` without printing the key.
+- Confirmed `exports/a17-one-side-replay-replication/d5-redacted-control-run4/`
+  and its expected child roots were clear.
+- Ran the exact run4 generator command with `--dry-run`; it selected D_OED5 as
+  `T01`, resolved `api/anthropic/claude-sonnet-4.6 via OpenRouter`, wrote
+  nothing, and made no LLM call.
+- Generated a temporary mock D5 `none` root and ran
+  `scripts/qa-oedipus-arms.js --mock --arms none`; QA passed T1 in mock mode and
+  the trace recorded `tutor_adaptation_policy: withhold_secret`.
+
 ## Next paid gate, if approved
 
 Generate only the D5 control candidate, then run T1 QA on `none` only:

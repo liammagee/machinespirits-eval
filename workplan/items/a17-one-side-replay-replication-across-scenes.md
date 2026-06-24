@@ -208,3 +208,12 @@ vocabulary. Durable note:
 `notes/poetics/2026-06-24-a17-d5-redacted-control-tooling.md`. A17 remains
 blocked on fresh explicit approval for the paid D5 redacted-control gate before
 any further generation, QA, grading, or replay.
+
+2026-06-24 Codex: Completed the no-spend paid-gate preflight for the redacted
+control path. Verified the shared `.env` file exists and loads
+`OPENROUTER_API_KEY` without printing the key; verified
+`exports/a17-one-side-replay-replication/d5-redacted-control-run4/` is clear;
+ran the exact run4 generator command with `--dry-run`; and ran a temporary mock
+D5 `none` generation plus `qa-oedipus-arms.js --mock --arms none`, which passed
+T1 and recorded `tutor_adaptation_policy: withhold_secret`. The only remaining
+known blocker is fresh explicit approval for the paid D5 redacted-control gate.
