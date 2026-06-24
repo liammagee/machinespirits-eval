@@ -11,9 +11,12 @@ updated: 2026-06-24
 verification: Replication across scenes run; results in exports/; the
   one-side-replay claim updated or closed in the paper.
 branch: codex/a17-replay-replication
-blocked_by: Redacted D5 `none`-control tooling is implemented locally, but the
-  next admissibility step is an explicit paid D5 control gate under
-  `withhold_secret`; no further generation/QA should run without fresh approval.
+blocked_by: >-
+  Redacted D5 run4 reached 3-of-4 withheld T1 consensus, but the
+  generated `none` scene has a blocking `no_cue_reframe_leakage` quality
+  warning (`review_before_scoring`). Stop before scoring/replay pending a human
+  decision: regenerate with a new paid variation key or close A17 as a methods
+  finding.
 links:
   notes:
     - TODO.md#A17
@@ -21,6 +24,7 @@ links:
     - notes/poetics/2026-06-24-a17-d5-run2-qa-stop.md
     - notes/poetics/2026-06-24-a17-d5-control-gate-run3-qa-stop.md
     - notes/poetics/2026-06-24-a17-d5-redacted-control-tooling.md
+    - notes/poetics/2026-06-24-a17-d5-redacted-control-run4-gate.md
   paper: §7.9
   exports: exports/a17-one-side-replay-replication/
 claim_status: exploratory
@@ -226,3 +230,21 @@ command includes `--approve-paid` and the environment includes
 `A17_PAID_GATE_APPROVED=YES`. Validated syntax, dry-run, mock generator+QA, and
 the paid-mode refusal path. The approval-time command is now:
 `A17_PAID_GATE_APPROVED=YES npm run poetics:a17-redacted-control-gate -- --approve-paid`.
+
+2026-06-24 Codex: User approved the explicit paid redacted-control gate and it
+ran under `exports/a17-one-side-replay-replication/d5-redacted-control-run4/`
+using the guarded command above. The T1 tutor-control QA gate passed:
+`withheld_ok`, detail `tutor withheld (3/4)`, `allPass: true`. However,
+`key-none.yaml` also recorded `quality_status: review_before_scoring`,
+`quality_warning_count: 1`, and `quality_blocking_warning_count: 1` for
+`no_cue_reframe_leakage`, with recommended action
+`regenerate_no_cue_arm_or_move_item_to_boundary_suite_before_scoring`.
+Interpretation: the redacted control fixed tutor leakage, but this candidate is
+still quarantined before scoring/replay because the learner independently
+self-reframed in the no-cue branch. Stopped before D5 `socratic`/`reveal`, D4,
+grading, replays, or paper updates. Durable note:
+`notes/poetics/2026-06-24-a17-d5-redacted-control-run4-gate.md`. Also tightened
+`scripts/run-a17-redacted-control-gate.js` so future generated controls fail
+before QA if they carry blocking quality warnings. A17 remains unanswered
+pending a human decision to approve a fresh paid redacted-control variation or
+close the item as a methods finding.

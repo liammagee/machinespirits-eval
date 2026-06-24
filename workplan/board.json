@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-24T05:36:26.848Z",
+  "generated": "2026-06-24T09:56:22.114Z",
   "counts": {
     "total": 47,
     "byStatus": {
@@ -55,14 +55,15 @@
       "updated": "2026-06-24",
       "verification": "Replication across scenes run; results in exports/; the one-side-replay claim updated or closed in the paper.",
       "branch": "codex/a17-replay-replication",
-      "blocked_by": "Redacted D5 `none`-control tooling is implemented locally, but the next admissibility step is an explicit paid D5 control gate under `withhold_secret`; no further generation/QA should run without fresh approval.",
+      "blocked_by": "Redacted D5 run4 reached 3-of-4 withheld T1 consensus, but the generated `none` scene has a blocking `no_cue_reframe_leakage` quality warning (`review_before_scoring`). Stop before scoring/replay pending a human decision: regenerate with a new paid variation key or close A17 as a methods finding.",
       "links": {
         "notes": [
           "TODO.md#A17",
           "notes/poetics/2026-06-24-a17-replay-replication-qa-stop.md",
           "notes/poetics/2026-06-24-a17-d5-run2-qa-stop.md",
           "notes/poetics/2026-06-24-a17-d5-control-gate-run3-qa-stop.md",
-          "notes/poetics/2026-06-24-a17-d5-redacted-control-tooling.md"
+          "notes/poetics/2026-06-24-a17-d5-redacted-control-tooling.md",
+          "notes/poetics/2026-06-24-a17-d5-redacted-control-run4-gate.md"
         ],
         "paper": "§7.9",
         "exports": "exports/a17-one-side-replay-replication/"

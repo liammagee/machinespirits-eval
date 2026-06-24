@@ -193,6 +193,20 @@ function verifyGeneratedControl(args) {
   if (trace.run?.tutor_adaptation_policy !== 'withhold_secret') {
     throw new Error(`trace did not record withhold_secret: ${trace.run?.tutor_adaptation_policy}`);
   }
+  const keyItem = key.items?.T01 || {};
+  const blockingWarningCount = Number(key.quality_blocking_warning_count || 0);
+  const qualityStatus = keyItem.quality_status || trace.quality_status || 'unknown';
+  const warnings = Array.isArray(keyItem.quality_warnings)
+    ? keyItem.quality_warnings
+    : Array.isArray(trace.quality_warnings)
+      ? trace.quality_warnings
+      : [];
+  if (blockingWarningCount > 0 || qualityStatus === 'review_before_scoring') {
+    const codes = [...new Set(warnings.map((warning) => warning?.code).filter(Boolean))].join(', ') || 'unknown';
+    throw new Error(
+      `generated control is quality-gated before scoring: status=${qualityStatus}, blocking=${blockingWarningCount}, codes=${codes}`,
+    );
+  }
 }
 
 function summarizeQa(args) {
