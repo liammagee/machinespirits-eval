@@ -15,6 +15,7 @@
 
 import path from 'node:path';
 import fs from 'node:fs';
+import os from 'node:os';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
@@ -30,18 +31,42 @@ import * as defaultTutorWritingPad from './memory/tutorWritingPad.js';
 // `claude-code` as a provider; bridging here keeps cell_106 (id-director +
 // CLI) working without a tutor-core release.
 const CLAUDE_CLI_TIMEOUT_MS = 180_000;
+const CODEX_CLI_TIMEOUT_MS = 300_000;
+const CLI_PROVIDERS = new Set(['claude-code', 'codex']);
 
-async function callClaudeCli({ systemPrompt, userPrompt, model, role, messageHistory }) {
-  // System prompt goes via --system-prompt (replaces the CLI's default,
-  // suppressing ambient output-style additions like the "★ Insight" block
-  // the explanatory style appends after responses). User content + inlined
-  // multi-turn history goes to stdin.
+function isCliProvider(provider) {
+  return CLI_PROVIDERS.has(provider);
+}
+
+function cliAwareProviderConfig(provider, providerConfig) {
+  if (!isCliProvider(provider)) return providerConfig;
+  return {
+    ...(providerConfig || {}),
+    isConfigured: true,
+    apiKey: '',
+  };
+}
+
+function isProviderConfigured(provider, providerConfig) {
+  return isCliProvider(provider) || Boolean(providerConfig?.isConfigured);
+}
+
+function buildCliUserText(userPrompt, messageHistory) {
   let userText = '';
   if (Array.isArray(messageHistory) && messageHistory.length > 0) {
     const transcript = messageHistory.map((m) => `${m.role || 'user'}: ${m.content || ''}`).join('\n\n');
     userText += `Conversation so far:\n${transcript}\n\n`;
   }
   userText += `Latest message:\n${userPrompt}`;
+  return userText;
+}
+
+async function callClaudeCli({ systemPrompt, userPrompt, model, role, messageHistory }) {
+  // System prompt goes via --system-prompt (replaces the CLI's default,
+  // suppressing ambient output-style additions like the "★ Insight" block
+  // the explanatory style appends after responses). User content + inlined
+  // multi-turn history goes to stdin.
+  const userText = buildCliUserText(userPrompt, messageHistory);
   const start = Date.now();
   return await new Promise((resolve, reject) => {
     const args = ['-p', '-', '--output-format', 'text', '--system-prompt', systemPrompt];
@@ -93,12 +118,100 @@ async function callClaudeCli({ systemPrompt, userPrompt, model, role, messageHis
   });
 }
 
+async function callCodexCli({ systemPrompt, userPrompt, model, role, messageHistory }) {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ms-id-director-codex-'));
+  const outFile = path.join(tmpDir, 'last-message.txt');
+  const start = Date.now();
+  const prompt = [
+    'System prompt for this tutor role:',
+    systemPrompt,
+    '',
+    'User input for this turn:',
+    buildCliUserText(userPrompt, messageHistory),
+  ].join('\n');
+
+  try {
+    return await new Promise((resolve, reject) => {
+      const args = [
+        'exec',
+        '--skip-git-repo-check',
+        '--ephemeral',
+        '--ignore-user-config',
+        '-s',
+        'read-only',
+        '-C',
+        tmpDir,
+        '--color',
+        'never',
+        '-c',
+        `model_reasoning_effort="${process.env.CODEX_REASONING_EFFORT || 'xhigh'}"`,
+      ];
+      if (model && model !== 'auto') args.push('-m', model);
+      args.push('-o', outFile, '-');
+
+      const child = spawn('codex', args, { stdio: ['pipe', 'pipe', 'pipe'], cwd: tmpDir });
+      let err = '';
+      const cliTimeout = setTimeout(() => {
+        try {
+          child.kill('SIGKILL');
+        } catch (_) {
+          /* already gone */
+        }
+        reject(new Error(`codex CLI timed out after ${CODEX_CLI_TIMEOUT_MS}ms (role=${role})`));
+      }, CODEX_CLI_TIMEOUT_MS);
+      child.stderr.on('data', (d) => {
+        err += d;
+      });
+      child.stdout.on('data', () => {});
+      child.on('error', (e) => {
+        clearTimeout(cliTimeout);
+        reject(e);
+      });
+      child.on('close', (code) => {
+        clearTimeout(cliTimeout);
+        if (code !== 0) {
+          reject(new Error(err.trim() || `codex CLI exited with code ${code} (role=${role})`));
+          return;
+        }
+
+        const text = fs.existsSync(outFile) ? fs.readFileSync(outFile, 'utf8').trim() : '';
+        if (!text) {
+          reject(new Error(`codex CLI produced no output message (role=${role})`));
+          return;
+        }
+        resolve({
+          text,
+          model: model || 'codex-cli',
+          provider: 'codex',
+          latencyMs: Date.now() - start,
+          inputTokens: 0,
+          outputTokens: 0,
+          cost: 0,
+        });
+      });
+      child.stdin.write(prompt);
+      child.stdin.end();
+    });
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+}
+
 // Drop-in wrapper that routes claude-code through the local CLI and everything
 // else through tutor-core's metered callAI. Same return shape as
 // tutorDialogueEngine.callAI so call sites swap in unchanged.
 async function callAIWithCliBridge(agentConfig, systemPrompt, userPrompt, role, opts = {}) {
   if (agentConfig?.provider === 'claude-code') {
     return await callClaudeCli({
+      systemPrompt,
+      userPrompt,
+      model: agentConfig.model,
+      role,
+      messageHistory: opts?.messageHistory,
+    });
+  }
+  if (agentConfig?.provider === 'codex') {
+    return await callCodexCli({
       systemPrompt,
       userPrompt,
       model: agentConfig.model,
@@ -1239,7 +1352,10 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       );
     } else {
       const classifierProvider = idCell.classifier_provider || idCell.provider;
-      const classifierProviderConfig = _deps.tutorConfig.getProviderConfig(classifierProvider);
+      const classifierProviderConfig = cliAwareProviderConfig(
+        classifierProvider,
+        _deps.tutorConfig.getProviderConfig(classifierProvider),
+      );
       const classifierConfig = {
         provider: classifierProvider,
         providerConfig: classifierProviderConfig,
@@ -1293,8 +1409,11 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   // tutor-core's getAgentConfig assembles this for registered profiles; we
   // assemble it manually here because cell 101/102 aren't in tutor-core's
   // registry.
-  const idProviderConfig = _deps.tutorConfig.getProviderConfig(idCell.provider);
-  if (!idProviderConfig?.isConfigured) {
+  const idProviderConfig = cliAwareProviderConfig(
+    idCell.provider,
+    _deps.tutorConfig.getProviderConfig(idCell.provider),
+  );
+  if (!isProviderConfigured(idCell.provider, idProviderConfig)) {
     return {
       success: false,
       error: `Provider ${idCell.provider} not configured (missing API key) — id agent`,
@@ -1328,8 +1447,11 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
 
   // ── Step 2: ego executes against the constructed prompt ──
   const egoSystemPrompt = construction.generated_prompt;
-  const egoProviderConfig = _deps.tutorConfig.getProviderConfig(egoCell.provider);
-  if (!egoProviderConfig?.isConfigured) {
+  const egoProviderConfig = cliAwareProviderConfig(
+    egoCell.provider,
+    _deps.tutorConfig.getProviderConfig(egoCell.provider),
+  );
+  if (!isProviderConfigured(egoCell.provider, egoProviderConfig)) {
     return {
       success: false,
       error: `Provider ${egoCell.provider} not configured (missing API key) — ego agent`,
