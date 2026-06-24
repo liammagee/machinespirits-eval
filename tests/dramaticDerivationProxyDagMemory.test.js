@@ -116,9 +116,19 @@ test('runDrama supplies opt-in learner memory and tutor/director pacing views', 
 });
 
 test('learner proxy-DAG A/B planner pairs control and treatment with the treatment flags only', () => {
-  const opts = parseProxyDagABArgs(['--world', 'w.yaml', '--script', 's.md', '--label-prefix', 'ab1', '--dry-run']);
+  const opts = parseProxyDagABArgs([
+    '--world',
+    'w.yaml',
+    '--script',
+    's.md',
+    '--label-prefix',
+    'ab1',
+    '--include-gated-proxy',
+    '--dry-run',
+  ]);
   assert.equal(opts.world, 'w.yaml');
   assert.equal(opts.script, 's.md');
+  assert.equal(opts.includeGatedProxy, true);
   assert.equal(opts.dryRun, true);
 
   const plan = planLearnerProxyDagAB({ world: 'w.yaml', script: 's.md', labelPrefix: 'ab1' });
@@ -127,4 +137,19 @@ test('learner proxy-DAG A/B planner pairs control and treatment with the treatme
   assert.ok(!plan.commands[0].args.includes('--proxy-dag-pacing'));
   assert.ok(plan.commands[1].args.includes('--learner-proxy-dag'));
   assert.ok(plan.commands[1].args.includes('--proxy-dag-pacing'));
+});
+
+test('learner proxy-DAG A/B planner can add an explicit gated proxy arm', () => {
+  const plan = planLearnerProxyDagAB({
+    world: 'w.yaml',
+    script: 's.md',
+    labelPrefix: 'ab1',
+    includeGatedProxy: true,
+  });
+
+  assert.deepEqual(plan.labels, ['ab1-control', 'ab1-proxy', 'ab1-proxy-gated']);
+  assert.equal(plan.commands[2].arm, 'proxy-gated');
+  assert.ok(plan.commands[2].args.includes('--learner-proxy-dag'));
+  assert.ok(plan.commands[2].args.includes('--proxy-dag-pacing'));
+  assert.ok(plan.commands[2].args.includes('--same-turn-assertion-affordance'));
 });

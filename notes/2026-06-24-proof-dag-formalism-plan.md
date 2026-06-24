@@ -167,6 +167,56 @@ behavioral policy, so the first local A/B verifies plumbing and artifact shape
 rather than estimating a behavioral effect. A real LLM A/B is the meaningful
 next measurement.
 
+## Real A/B Closeout
+
+Real Lantern A/B run, 2026-06-24:
+
+- Control label: `lantern-proxy-dag-real-20260624-control`.
+- Proxy label: `lantern-proxy-dag-real-20260624-proxy`.
+- Report:
+  `exports/dramatic-derivation/learner-proxy-dag-ab/lantern-proxy-dag-real-20260624/report.md`.
+
+Result:
+
+- Both arms reached `grounded_anagnorisis` in 20 turns.
+- Both arms had complete authored-path coverage, final secret entailed, and
+  grounded assertion at turn 20.
+- Both arms also produced one premature `lucky_leap` at turn 17, immediately
+  after `p_key` but before `p_skiff`.
+- The proxy arm recorded 40 proxy-DAG pacing rows: 30
+  `hold_until_evidence_due` and 10 `repair_uptake`.
+
+Interpretation:
+
+- The learner proxy DAG works as a leak-safe, human-readable memory and
+  inspection surface.
+- Proxy memory plus advisory pacing does not by itself change the learner's
+  assertion policy. The learner can still infer "key-holder equals lighter"
+  before the presence premise lands.
+- The missing mechanism is assertion discipline over the learner-visible
+  closure, not a richer authored-DAG leak to the learner.
+
+Gated follow-up:
+
+- Label: `lantern-proxy-dag-gated-real-20260624`.
+- Flags: `--learner-proxy-dag --proxy-dag-pacing
+  --same-turn-assertion-affordance`.
+- Three-run report:
+  `exports/dramatic-derivation/learner-proxy-dag-ab/lantern-proxy-dag-real-20260624-with-gate/report.md`.
+- Outcome: `grounded_anagnorisis` in 20 turns, no `lucky_leap`, no release
+  deviations, and assertion only at turn 20 after `p_skiff` made the secret
+  learner-visible and entailed.
+
+Operational conclusion:
+
+- Keep the learner proxy DAG as the learner's own public-record memory.
+- Treat final-answer assertions as gated by the learner-visible closure when
+  the proxy DAG is part of the treatment.
+- Future proxy-DAG behavioral runs should include the explicit gated arm via
+  `scripts/run-learner-proxy-dag-ab.js --include-gated-proxy`, while the
+  two-arm control/proxy comparison should remain available for isolating the
+  effect of memory/pacing alone.
+
 ## References
 
 - TPTP derivations: https://tptp.org/UserDocs/QuickGuide/Derivations.html

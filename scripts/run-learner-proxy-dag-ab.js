@@ -17,10 +17,11 @@ function usage() {
     [--script config/drama-derivation/tutor-scripts/nocturne-v001.md] \\
     [--out exports/dramatic-derivation/loop] \\
     [--report-dir exports/dramatic-derivation/learner-proxy-dag-ab] \\
-    [--label-prefix proxy-dag-ab-<timestamp>] [--real] [--dry-run]
+    [--label-prefix proxy-dag-ab-<timestamp>] [--real] [--include-gated-proxy] [--dry-run]
 
 Runs the same world/script twice: control, then --learner-proxy-dag + --proxy-dag-pacing.
-Then writes the learner-DAG batch diagnostic for the two labels.`;
+With --include-gated-proxy, also runs proxy DAG + proxy pacing + same-turn assertion affordance.
+Then writes the learner-DAG batch diagnostic for the selected labels.`;
 }
 
 function timestamp() {
@@ -50,6 +51,7 @@ export function parseProxyDagABArgs(argv = []) {
     reportDir: arg(argv, 'report-dir', DEFAULT_REPORT_DIR),
     labelPrefix: arg(argv, 'label-prefix', `proxy-dag-ab-${timestamp()}`),
     real: flag(argv, 'real'),
+    includeGatedProxy: flag(argv, 'include-gated-proxy'),
     dryRun: flag(argv, 'dry-run'),
   };
 }
@@ -61,9 +63,11 @@ export function planLearnerProxyDagAB({
   reportDir = DEFAULT_REPORT_DIR,
   labelPrefix = `proxy-dag-ab-${timestamp()}`,
   real = false,
+  includeGatedProxy = false,
 } = {}) {
   const controlLabel = `${labelPrefix}-control`;
   const proxyLabel = `${labelPrefix}-proxy`;
+  const gatedProxyLabel = `${labelPrefix}-proxy-gated`;
   const common = [
     'scripts/run-derivation-loop.js',
     '--world',
@@ -76,7 +80,7 @@ export function planLearnerProxyDagAB({
     'off',
     ...(real ? ['--real'] : []),
   ];
-  return {
+  const plan = {
     runDir: resolveRepoPath(out),
     reportDir: path.join(resolveRepoPath(reportDir), labelPrefix),
     labels: [controlLabel, proxyLabel],
@@ -101,6 +105,24 @@ export function planLearnerProxyDagAB({
       },
     ],
   };
+  if (includeGatedProxy) {
+    plan.labels.push(gatedProxyLabel);
+    plan.commands.push({
+      arm: 'proxy-gated',
+      label: gatedProxyLabel,
+      args: [
+        ...common,
+        '--label',
+        gatedProxyLabel,
+        '--note',
+        'learner proxy-DAG treatment with assertion grounding gate',
+        '--learner-proxy-dag',
+        '--proxy-dag-pacing',
+        '--same-turn-assertion-affordance',
+      ],
+    });
+  }
+  return plan;
 }
 
 export function runLearnerProxyDagAB(plan, { dryRun = false } = {}) {
