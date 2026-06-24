@@ -1718,10 +1718,15 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
     const notePath = path.resolve(ROOT, 'notes/poetics/2026-06-06-development-board.html');
     if (!fs.existsSync(notePath)) return res.status(404).type('text').send('development-board note not found');
     // The static note has no nav rail, so without this it is a dead end. Inject a
-    // fixed "back to the live board" link at serve time (source file untouched).
+    // prominent top bar at serve time (source file untouched) so reviewers can get
+    // back to the live board or the dashboard — and know this copy is read-only.
     let html = fs.readFileSync(notePath, 'utf8');
     const back =
-      '<a href="/board" title="Back to the live board" style="position:fixed;top:12px;left:12px;z-index:99999;font:12px ui-monospace,SFMono-Regular,monospace;background:#f4efe0;border:1px solid #cbbb98;color:#3a342b;padding:6px 12px;border-radius:6px;text-decoration:none;box-shadow:0 2px 10px rgba(28,22,16,.18)">← live board</a>';
+      '<div style="position:fixed;top:0;left:0;right:0;z-index:99999;display:flex;gap:12px;align-items:center;font:13px/1 ui-monospace,SFMono-Regular,monospace;background:#3a342b;color:#f4efe0;padding:9px 16px;box-shadow:0 2px 12px rgba(28,22,16,.3)">' +
+      '<span style="opacity:.72">archived board snapshot · 2026-06-06 — read-only</span>' +
+      '<a href="/board" title="Back to the live, editable board" style="margin-left:auto;color:#3a342b;background:#f4efe0;border:1px solid #cbbb98;padding:5px 12px;border-radius:6px;text-decoration:none">← live board</a>' +
+      '<a href="/" title="Back to the dashboard" style="color:#f4efe0;border:1px solid #cbbb98;padding:5px 12px;border-radius:6px;text-decoration:none">dashboard</a>' +
+      '</div><div aria-hidden="true" style="height:42px"></div>';
     html = /<body[^>]*>/i.test(html) ? html.replace(/(<body[^>]*>)/i, `$1${back}`) : back + html;
     res.type('html').send(html);
   });
@@ -1746,14 +1751,9 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   // and AFTER /docs/research (line ~864, { index:false }) so the paper subtree
   // keeps precedence over the broader /docs mount here; BEFORE the catch-all '/'.
   mountEvalSurfaces(app, { root: ROOT });
-  app.get('/', (req, res) => {
-    // Deep links from before the browser moved to /browse (e.g. /?runId=…,
-    // /?itemId=…) still arrive at /. Preserve them by forwarding the query.
-    const keys = Object.keys(req.query || {});
-    if (keys.length) {
-      const qs = new URLSearchParams(req.query).toString();
-      return res.redirect(302, '/browse' + (qs ? '?' + qs : ''));
-    }
+  // Stats digest shared by the redesigned home (/) and the classic dashboard
+  // (/classic) — pure reads, so both landings show identical live numbers.
+  const dashboardStats = () => {
     const derivationRuns = listDerivationRuns();
     // The deterministic rule-checker's verdict on each proof run (grounded /
     // disengagement / aporia). Tallied here from the diagnoses already loaded —
@@ -1770,18 +1770,52 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
       recentRuns.map((r) => r.id),
     );
     for (const r of recentRuns) r.spark = seriesMap.get(r.id) || [];
-    const stats = {
+    // Workplan status tally for the home's "keep" widget. Cheap read; soft-fails
+    // to an empty board so a workplan glitch never takes the dashboard down.
+    const boardCounts = {};
+    try {
+      for (const it of readWorkplanBoard().items || []) {
+        const st = it.status || 'inbox';
+        boardCounts[st] = (boardCounts[st] || 0) + 1;
+      }
+    } catch (_e) {
+      /* board unreadable — leave boardCounts empty */
+    }
+    return {
       ...corpusStats(db),
       replays: listReplayBundles().length,
       proofRuns: derivationRuns.length,
       proofVerdicts,
+      boardCounts,
       // Newest proof-run mtime (listDerivationRuns sorts newest-first) — a second
       // activity clock so the headline doesn't read idle when the file-based
       // derivation arc is live but the DB scripts corpus has not had a new run.
       proofLastMs: derivationRuns[0]?.mtimeMs || 0,
       recentRuns,
     };
-    return res.type('html').send(renderDashboardHtml(stats));
+  };
+  app.get('/', (req, res) => {
+    // Deep links from before the browser moved to /browse (e.g. /?runId=…,
+    // /?itemId=…) still arrive at /. Preserve them by forwarding the query.
+    const keys = Object.keys(req.query || {});
+    if (keys.length) {
+      const qs = new URLSearchParams(req.query).toString();
+      return res.redirect(302, '/browse' + (qs ? '?' + qs : ''));
+    }
+    return res.type('html').send(renderScriptoriumHome(dashboardStats()));
+  });
+  // Transitional during the UX redesign: the previous control-room dashboard,
+  // preserved so nothing is lost and the new home can be compared against it.
+  app.get('/classic', (req, res) => {
+    // A prominent in-flow banner (the rail "home" link alone read as a dead end to
+    // reviewers) makes the way back to the redesigned home unmistakable.
+    const banner =
+      '<div style="margin:14px 0 0;border:1px solid var(--rule);border-left:3px solid var(--brick);background:var(--paper-4);padding:11px 16px;font:12px/1.5 ui-monospace,monospace;color:var(--ink-2);display:flex;gap:12px;align-items:center;flex-wrap:wrap">' +
+      '<span><b>Classic dashboard</b> — the pre-redesign control room, kept for comparison.</span>' +
+      '<a href="/" style="margin-left:auto;color:var(--moss-deep);text-decoration:none;border:1px solid var(--moss);background:var(--moss-soft);padding:5px 12px;border-radius:6px;white-space:nowrap">← back to the new Scriptorium</a>' +
+      '</div>';
+    const html = renderDashboardHtml(dashboardStats()).replace('<div class="wrap">', '<div class="wrap">' + banner);
+    return res.type('html').send(html);
   });
   return app;
 }
@@ -2164,26 +2198,24 @@ const NAV = [
     'Pilot operator console — session monitoring, recruitment toggle &amp; run launching (admin token-gated)',
   ],
 ];
-// Shown flat, left-to-right: the three reading surfaces (scripts = critic-graded
-// generation corpus at /browse; proof runs = rule-checked staging loop at
-// /derivation; replays = counterfactual diffs) then the two make-something actions
-// (compose a scene, launch a run).
-const NAV_PRIMARY = ['home', 'browse', 'derivation', 'replays', 'compose', 'runs'];
-// Folded into labelled dropdowns, in order: the reference surfaces, then the
-// dated/durable techne notes. A group whose member is the active page shows a
-// moss accent on its summary so the current location is still legible when closed.
+// The rail mirrors the home's three acts. `home` stays the one flat link (the
+// brand wordmark is not itself a link); everything else folds into three
+// dropdowns — I·make, II·read & judge, III·keep — in the same order, and with
+// the same membership, as renderScriptoriumHome's cards.
+const NAV_PRIMARY = ['home'];
+// A closed group whose member is the active page keeps a moss accent on its
+// summary (see railHtml), so the current location stays legible when collapsed.
 const NAV_GROUPS = [
-  ['review', ['board', 'timeline', 'adjudicate']],
-  ['tools', ['tutor', 'pilot-admin']],
-  ['reference', ['ontology', 'rubric', 'curriculum']],
-  ['notes', ['summary', 'story', 'repertoire']],
+  ['make', ['compose', 'runs', 'tutor']],
+  ['read &amp; judge', ['browse', 'derivation', 'replays', 'rubric', 'adjudicate', 'pilot-admin']],
+  ['keep', ['board', 'timeline', 'ontology', 'curriculum', 'summary', 'story', 'repertoire']],
 ];
+// Same three acts for the mobile drawer; `home` is rendered as a flat link above
+// these groups in railHtml.
 const NAV_DRAWER_GROUPS = [
-  ['Observe', ['home', 'browse', 'derivation', 'replays']],
-  ['Create', ['compose', 'runs']],
-  ['Review', ['board', 'timeline', 'adjudicate']],
-  ['Reference', ['ontology', 'rubric', 'curriculum', 'summary', 'story', 'repertoire', 'timeline']],
-  ['Admin', ['tutor', 'pilot-admin']],
+  ['Make', ['compose', 'runs', 'tutor']],
+  ['Read &amp; judge', ['browse', 'derivation', 'replays', 'rubric', 'adjudicate', 'pilot-admin']],
+  ['Keep', ['board', 'timeline', 'ontology', 'curriculum', 'summary', 'story', 'repertoire']],
 ];
 
 // A per-page orientation band (the `hint` slot of railHtml): "<b>here</b> — what",
@@ -2232,7 +2264,9 @@ function commandPaletteData(active = '') {
     ['Proof-DAG derivation', '/runs?kind=derivation', 'launch a deterministic proof run'],
     ['Online score dry run', '/runs?kind=online-score&dryRun=1', 'plan scorer backfill before spend'],
     ['Curriculum drama mock', '/runs?kind=pedagogical-drama&mock=1', 'enact compiled curriculum drama specs'],
-  ].forEach(([title, href, subtitle]) => add({ type: 'run', title, subtitle, href, keywords: ['job center', 'launch'] }));
+  ].forEach(([title, href, subtitle]) =>
+    add({ type: 'run', title, subtitle, href, keywords: ['job center', 'launch'] }),
+  );
 
   [
     ['Flagged scripts', '/browse?queue=flagged', 'review queue of scripts flagged for human attention'],
@@ -2245,7 +2279,9 @@ function commandPaletteData(active = '') {
     ['Disengaged proof runs', '/derivation?verdict=disengagement', 'rule-checker disengagements'],
     ['Scriptorium board items', '/board?tag=scriptorium', 'workplan items tagged scriptorium'],
     ['Evidence board items', '/board?tag=evidence', 'workplan items tagged evidence'],
-  ].forEach(([title, href, subtitle]) => add({ type: 'view', title, subtitle, href, keywords: ['saved view', 'permalink'] }));
+  ].forEach(([title, href, subtitle]) =>
+    add({ type: 'view', title, subtitle, href, keywords: ['saved view', 'permalink'] }),
+  );
 
   try {
     for (const run of listDerivationRuns().slice(0, 8)) {
@@ -2458,11 +2494,70 @@ body.xray-on .xray-overlay{ opacity:1; }
   .cmdp__go{ display:none; }
   .navhint{ font-size:10.5px; padding:.55rem .75rem; }
 }
+#tweaksToggle[aria-expanded="true"]{ color:var(--moss-deep); border-color:var(--moss); background:var(--moss-soft); }
+.tweaks{ position:fixed; inset:0; z-index:95; }
+.tweaks[hidden]{ display:none; }
+.tweaks__back{ position:absolute; inset:0; background:rgba(24,19,16,.42); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); }
+.tweaks__panel{ position:absolute; top:0; right:0; bottom:0; width:min(340px,100vw); display:flex; flex-direction:column; background:color-mix(in srgb,var(--paper) 97%,transparent); border-left:1px solid var(--rule); box-shadow:-18px 0 50px rgba(28,22,16,.26); overflow:auto; padding:16px; font-family:"JetBrains Mono","SFMono-Regular",Consolas,monospace; }
+.tweaks__head{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding-bottom:14px; border-bottom:1px solid var(--rule); }
+.tweaks__head b{ display:block; font:italic 20px/1.1 "Fraunces","Source Serif 4",Georgia,serif; text-transform:none; letter-spacing:0; color:var(--ink); }
+.tweaks__head span{ font-size:10px; letter-spacing:.06em; color:var(--ink-4); text-transform:uppercase; }
+.tweaks__x{ flex:0 0 auto; width:30px; height:30px; border:1px solid var(--rule); background:transparent; color:var(--ink-3); cursor:pointer; border-radius:6px; }
+.tweaks__x:hover{ color:var(--ink); border-color:var(--ink-3); }
+.tweaks__grp{ padding:16px 0; border-bottom:1px solid var(--rule-soft); }
+.tweaks__k{ font:700 10px/1 "JetBrains Mono",monospace; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-4); margin-bottom:10px; }
+.tweaks__seg{ display:flex; border:1px solid var(--rule); border-radius:8px; overflow:hidden; }
+.tweaks__opt{ flex:1; min-height:38px; border:0; border-right:1px solid var(--rule); background:transparent; color:var(--ink-3); font:600 12px "JetBrains Mono",monospace; letter-spacing:.04em; cursor:pointer; transition:background .15s var(--ease,ease),color .15s var(--ease,ease); }
+.tweaks__opt:last-child{ border-right:0; }
+.tweaks__opt:hover{ color:var(--ink); background:var(--paper-3); }
+.tweaks__opt[aria-pressed="true"]{ background:var(--moss-soft); color:var(--moss-deep); }
+.tweaks__btn{ width:100%; min-height:40px; justify-content:center; }
+.tweaks__hint{ font-size:10.5px; line-height:1.5; color:var(--ink-4); margin-top:9px; text-transform:none; letter-spacing:.01em; }
+@media (prefers-reduced-motion:no-preference){ .tweaks__panel{ animation:tweaksIn .22s var(--ease,ease); } @keyframes tweaksIn{ from{ transform:translateX(20px); opacity:.3; } } }
+/* ---- backdrops (tweaks): field shader · fauna canvas · Bauhaus shapes · none ---- */
+#fauna-overlay{ position:fixed; inset:0; z-index:-3; pointer-events:none; display:none; }
+#fauna-overlay canvas{ display:block; width:100vw; height:100vh; }
+.shapes-layer{ position:fixed; inset:0; z-index:-3; pointer-events:none; overflow:hidden; display:none; }
+.shp{ position:absolute; opacity:.5; }
+[data-theme="dark"] .shapes-layer, [data-skin="stark"] .shapes-layer{ opacity:.92; }
+.shp-block{ background:var(--ink); } .shp-block-red{ background:var(--brick); } .shp-block-white{ background:var(--paper-2); border:1px solid var(--rule); }
+.shp-outline{ border:2px solid var(--ink); opacity:.16; } .shp-outline-red{ border:3px solid var(--brick); opacity:.4; }
+.shp-circle-outline{ border:2px solid var(--ink); border-radius:50%; opacity:.18; }
+.shp-line{ height:2px; background:var(--ink); opacity:.3; } .shp-line-red{ height:3px; background:var(--brick); } .shp-line-thin{ height:1px; background:var(--ink); opacity:.22; }
+.shp-dot-red{ background:var(--brick); border-radius:50%; }
+.shp-cross{ width:60px; height:60px; }
+.shp-cross::before, .shp-cross::after{ content:""; position:absolute; background:var(--ink); }
+.shp-cross::before{ left:50%; top:0; width:2px; height:100%; transform:translateX(-50%); }
+.shp-cross::after{ top:50%; left:0; height:2px; width:100%; transform:translateY(-50%); }
+.shp-cross-red::before, .shp-cross-red::after{ background:var(--brick); }
+@media (prefers-reduced-motion:no-preference){ .shp-outline, .shp-circle-outline, .shp-outline-red{ animation:shpDrift 32s ease-in-out infinite alternate; } @keyframes shpDrift{ to{ transform:translateY(-18px) rotate(6deg); } } }
+[data-backdrop="fauna"] #fauna-overlay{ display:block; }
+[data-backdrop="shapes"] .shapes-layer{ display:block; }
+[data-backdrop="fauna"] #field, [data-backdrop="shapes"] #field, [data-backdrop="none"] #field{ display:none; }
+.tweaks__seg--4 .tweaks__opt{ font-size:11px; padding:0 2px; letter-spacing:.02em; }
 </style>
 ${
   bare
     ? ''
-    : `<canvas id="field" aria-hidden="true" style="position:fixed;inset:0;width:100vw;height:100vh;z-index:-3;opacity:.5;pointer-events:none"></canvas>
+    : `<script>(function(){try{var d=document.documentElement;if(localStorage.getItem('poetics-theme')==='dark')d.setAttribute('data-theme','dark');var sk=localStorage.getItem('poetics-skin');if(sk===null)sk='stark';if(sk==='stark')d.setAttribute('data-skin','stark');d.setAttribute('data-backdrop',localStorage.getItem('poetics-backdrop')||'field');}catch(_e){}})();</script>
+<canvas id="field" aria-hidden="true" style="position:fixed;inset:0;width:100vw;height:100vh;z-index:-3;opacity:.5;pointer-events:none"></canvas>
+<div id="fauna-overlay" aria-hidden="true"><canvas id="fauna-canvas"></canvas></div>
+<div class="shapes-layer" id="shapesLayer" aria-hidden="true">
+  <div class="shp shp-outline" style="width:300px;height:300px;top:30%;left:6%"></div>
+  <div class="shp shp-outline-red" style="width:160px;height:160px;top:64%;right:15%"></div>
+  <div class="shp shp-circle-outline" style="width:180px;height:180px;top:42%;right:27%"></div>
+  <div class="shp shp-block-red" style="width:88px;height:88px;top:55%;right:4%"></div>
+  <div class="shp shp-line" style="width:420px;top:16%;left:13%;transform:rotate(-24deg)"></div>
+  <div class="shp shp-line-red" style="width:300px;top:47%;right:5%;transform:rotate(28deg)"></div>
+  <div class="shp shp-line-thin" style="width:520px;top:77%;left:2%;transform:rotate(-9deg)"></div>
+  <div class="shp shp-cross" style="top:14%;right:33%"></div>
+  <div class="shp shp-cross shp-cross-red" style="top:72%;left:29%"></div>
+  <div class="shp shp-block" style="width:24px;height:24px;top:40%;left:46%;transform:rotate(45deg)"></div>
+  <div class="shp shp-block-red" style="width:16px;height:16px;top:25%;right:41%"></div>
+  <div class="shp shp-dot-red" style="width:26px;height:26px;top:32%;left:25%"></div>
+  <div class="shp shp-block-white" style="width:36px;height:36px;top:60%;left:37%"></div>
+  <div class="shp shp-block" style="width:30px;height:30px;top:83%;left:55%;transform:rotate(30deg)"></div>
+</div>
 <div class="xray-overlay" id="xrayOverlay" aria-hidden="true"><div class="xray-overlay__grid" id="xrayGrid"></div></div>`
 }
 <header class="rail">
@@ -2478,6 +2573,7 @@ ${
         <summary class="rail__btn" aria-label="Open Scriptorium navigation menu">menu</summary>
         <nav class="rail__drawer" aria-label="Scriptorium navigation">
           <div class="rail__drawer-title"><b>Scriptorium</b><span>${currentLabel}</span></div>
+          <div class="rail__drawer-group">${link('home', 'rail__drawer-link')}</div>
           ${drawerGroups}
         </nav>
       </details>
@@ -2496,13 +2592,53 @@ ${
     ${
       bare
         ? ''
-        : `<div class="rail__cluster" aria-label="Display controls"><button class="rail__btn" id="gridToggle" type="button" aria-pressed="false" title="grid — toggle the 60-column layout overlay (alignment aid)">grid</button>
-    <button class="rail__btn" id="themeToggle" type="button" aria-label="Toggle light or dark theme">theme</button></div>`
+        : `<div class="rail__cluster" aria-label="Display controls"><button class="rail__btn" id="tweaksToggle" type="button" aria-expanded="false" aria-controls="tweaksPanel" title="Tweaks — skin, theme &amp; layout (A/B)">tweaks</button></div>`
     }
     <span class="rail__stamp" aria-hidden="true"><span class="rail__stamp-glyph">◎</span>MMXXVI</span>
   </div>
 </header>
 ${hint ? `<div class="navhint" role="note">${hint}</div>` : ''}
+${
+  bare
+    ? ''
+    : `<div class="tweaks" id="tweaksPanel" hidden>
+  <div class="tweaks__back" data-tweaks-close></div>
+  <aside class="tweaks__panel" role="dialog" aria-modal="true" aria-label="Tweaks">
+    <div class="tweaks__head">
+      <div><b>Tweaks</b><span>A/B the look — saved on this device</span></div>
+      <button class="tweaks__x" type="button" data-tweaks-close aria-label="Close tweaks">✕</button>
+    </div>
+    <div class="tweaks__grp">
+      <div class="tweaks__k">skin</div>
+      <div class="tweaks__seg" role="group" aria-label="Skin">
+        <button class="tweaks__opt" type="button" data-skin-set="" aria-pressed="false">Parchment</button>
+        <button class="tweaks__opt" type="button" data-skin-set="stark" aria-pressed="true">Stark</button>
+      </div>
+      <div class="tweaks__hint">The parchment manuscript, or the machinespirits.org black · white · red.</div>
+    </div>
+    <div class="tweaks__grp">
+      <div class="tweaks__k">backdrop</div>
+      <div class="tweaks__seg tweaks__seg--4" role="group" aria-label="Backdrop">
+        <button class="tweaks__opt" type="button" data-backdrop-set="field" aria-pressed="true">Field</button>
+        <button class="tweaks__opt" type="button" data-backdrop-set="fauna" aria-pressed="false">Fauna</button>
+        <button class="tweaks__opt" type="button" data-backdrop-set="shapes" aria-pressed="false">Shapes</button>
+        <button class="tweaks__opt" type="button" data-backdrop-set="none" aria-pressed="false">None</button>
+      </div>
+      <div class="tweaks__hint">Field = drifting pigment shader · Fauna = roaming line-creatures · Shapes = Bauhaus blocks (best with Stark).</div>
+    </div>
+    <div class="tweaks__grp">
+      <div class="tweaks__k">mode</div>
+      <button class="rail__btn tweaks__btn" id="themeToggle" type="button" aria-label="Toggle light or dark theme">light / dark</button>
+      <div class="tweaks__hint">Flip light or dark within the current skin.</div>
+    </div>
+    <div class="tweaks__grp">
+      <div class="tweaks__k">layout</div>
+      <button class="rail__btn tweaks__btn" id="gridToggle" type="button" aria-pressed="false" title="toggle the 60-column layout overlay">grid overlay</button>
+      <div class="tweaks__hint">Show the 60-column alignment grid (a builder aid).</div>
+    </div>
+  </aside>
+</div>`
+}
 <div class="cmdp" id="cmdPalette" hidden>
   <div class="cmdp__back" data-palette-close></div>
   <div class="cmdp__panel" role="dialog" aria-modal="true" aria-labelledby="cmdpTitle">
@@ -2764,6 +2900,86 @@ ${hint ? `<div class="navhint" role="note">${hint}</div>` : ''}
     apply(on);
     try { sessionStorage.setItem('poetics-grid', on ? 'on' : ''); } catch (_e) {}
   });
+})();
+// Tweaks panel: open/close + the skin (parchment/stark) A/B. Theme and grid live
+// inside the panel but keep their own handlers (bound by id, found wherever the
+// button sits). data-skin is applied early at the top of the rail to avoid a
+// flash; here we only wire the toggles and reflect current state.
+(function () {
+  var panel = document.getElementById('tweaksPanel');
+  var open = document.getElementById('tweaksToggle');
+  if (!panel || !open) return;
+  function show(on) {
+    panel.hidden = !on;
+    open.setAttribute('aria-expanded', on ? 'true' : 'false');
+  }
+  open.addEventListener('click', function () { show(panel.hidden); });
+  [].slice.call(panel.querySelectorAll('[data-tweaks-close]')).forEach(function (el) {
+    el.addEventListener('click', function () { show(false); });
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !panel.hidden) show(false); });
+  var skinBtns = [].slice.call(panel.querySelectorAll('[data-skin-set]'));
+  function paintSkin() {
+    var cur = document.documentElement.getAttribute('data-skin') || '';
+    skinBtns.forEach(function (b) {
+      b.setAttribute('aria-pressed', (b.getAttribute('data-skin-set') || '') === cur ? 'true' : 'false');
+    });
+  }
+  skinBtns.forEach(function (b) {
+    b.addEventListener('click', function () {
+      var v = b.getAttribute('data-skin-set') || '';
+      if (v) document.documentElement.setAttribute('data-skin', v);
+      else document.documentElement.removeAttribute('data-skin');
+      try { localStorage.setItem('poetics-skin', v); } catch (_e) {}
+      paintSkin();
+    });
+  });
+  paintSkin();
+})();
+// Backdrop selector: field (Klee shader) | fauna (canvas creatures) | shapes
+// (Bauhaus blocks) | none. data-backdrop is set early at the top of the rail so
+// the layer shows without a flash; fauna's ~1k-line canvas script is lazy-loaded
+// from /components only when chosen, and paused when switched away.
+(function () {
+  var panel = document.getElementById('tweaksPanel');
+  var fauna = null;
+  function ensureFauna() {
+    function init() {
+      try {
+        if (!fauna && typeof FaunaOverlay !== 'undefined') fauna = new FaunaOverlay('fauna-canvas', { opacity: [0.1, 0.22] });
+        if (fauna && fauna.start && (!fauna.isActive || !fauna.isActive())) fauna.start();
+      } catch (_e) {}
+    }
+    if (typeof FaunaOverlay !== 'undefined') { init(); return; }
+    var sc = document.createElement('script');
+    sc.src = '/components/fauna-overlay.js';
+    sc.onload = init;
+    document.head.appendChild(sc);
+  }
+  function apply(v) {
+    document.documentElement.setAttribute('data-backdrop', v);
+    if (v === 'fauna') ensureFauna();
+    else if (fauna && fauna.stop) { try { fauna.stop(); } catch (_e) {} }
+  }
+  if ((document.documentElement.getAttribute('data-backdrop') || 'field') === 'fauna') ensureFauna();
+  if (panel) {
+    var btns = [].slice.call(panel.querySelectorAll('[data-backdrop-set]'));
+    function paint() {
+      var c = document.documentElement.getAttribute('data-backdrop') || 'field';
+      btns.forEach(function (b) {
+        b.setAttribute('aria-pressed', (b.getAttribute('data-backdrop-set') || 'field') === c ? 'true' : 'false');
+      });
+    }
+    btns.forEach(function (b) {
+      b.addEventListener('click', function () {
+        var v = b.getAttribute('data-backdrop-set') || 'field';
+        apply(v);
+        try { localStorage.setItem('poetics-backdrop', v); } catch (_e) {}
+        paint();
+      });
+    });
+    paint();
+  }
 })();
 </script>`
   }`;
@@ -4479,7 +4695,18 @@ ${railHtml({ active, brand, sub, hint })}
 (function () {
   try { if (localStorage.getItem('poetics-theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); } catch (_e) {}
   var f = document.getElementById('summaryFrame');
-  function syncFrame() { try { f.contentDocument.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme') || ''); } catch (_e) {} }
+  // Mirror BOTH the theme and the skin into the framed techne note so it shares
+  // the dashboard's design backbone (the note's techne.css carries the same
+  // tokens + the stark overrides).
+  function syncFrame() {
+    try {
+      var de = document.documentElement;
+      var fd = f.contentDocument.documentElement;
+      fd.setAttribute('data-theme', de.getAttribute('data-theme') || '');
+      if (de.getAttribute('data-skin')) fd.setAttribute('data-skin', de.getAttribute('data-skin'));
+      else fd.removeAttribute('data-skin');
+    } catch (_e) {}
+  }
   f.addEventListener('load', function () {
     try {
       var doc = f.contentDocument;
@@ -4490,6 +4717,13 @@ ${railHtml({ active, brand, sub, hint })}
     } catch (_e) {}
     syncFrame();
   });
+  // Live-propagate any skin/theme change (from the tweaks panel) into the iframe.
+  try {
+    new MutationObserver(syncFrame).observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme', 'data-skin'],
+    });
+  } catch (_e) {}
   var t = document.getElementById('themeToggle');
   if (t) t.addEventListener('click', function () {
     var d = document.documentElement, nx = d.getAttribute('data-theme') === 'dark' ? '' : 'dark';
@@ -4533,6 +4767,15 @@ function summaryWrapperHtml() {
 const BASE_CSS = `@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Source+Serif+4:opsz,wght@8..60,200..900&family=JetBrains+Mono:wght@300..700&display=swap");
 :root{ color-scheme: light dark; --paper:#F1E9D8; --paper-2:#E9DFC7; --paper-3:#EFE4CC; --paper-4:#F7EFDD; --ink:#181310; --ink-2:#3A2F27; --ink-3:#6A5C50; --ink-4:#695B47; --linen:#D8C7A9; --moss:#56683A; --moss-deep:#3A4824; --moss-soft:#E3E6CE; --brick:#A53E2E; --brick-d:#7C2C1F; --brick-soft:#F3DDD6; --ochre:#C08A3E; --ochre-d:#835A1B; --ochre-soft:#F5E6C2; --indigo:#2A4F6B; --indigo-soft:#DCE6EE; --prussian:#2A4F6B; --sun:#E4B644; --red-mark:#D62828; --rule:rgba(28,22,16,.18); --rule-soft:rgba(28,22,16,.10); --ease:cubic-bezier(.22,.61,.36,1); --cols:60; --gutter:clamp(3px,0.32vw,8px); --margin:clamp(12px,1.8vw,34px); --lead:1.5; --lead-tight:1.05; --s-0:clamp(0.70rem,0.66rem + 0.14vw,0.78rem); --s-1:clamp(0.82rem,0.78rem + 0.18vw,0.94rem); --s-2:clamp(0.95rem,0.88rem + 0.32vw,1.14rem); --s-3:clamp(1.18rem,1.02rem + 0.74vw,1.62rem); --s-4:clamp(1.65rem,1.28rem + 1.72vw,2.60rem); --s-5:clamp(2.40rem,1.60rem + 3.80vw,4.80rem); --bg:var(--paper); --panel:var(--paper-4); --muted:var(--ink-3); --line:var(--rule); --accent:var(--moss-deep); --accent-soft:var(--moss-soft); --warn:var(--ochre-d); --trap:var(--brick-d); --flat:var(--ink-3); }
 [data-theme="dark"]{ --paper:#14100C; --paper-2:#1B1612; --paper-3:#1F1A14; --paper-4:#221C16; --ink:#F4EEDD; --ink-2:#E0D8C3; --ink-3:#B9AD96; --ink-4:#8C7E6A; --linen:#3A322A; --moss:#8DA868; --moss-deep:#B5CD92; --moss-soft:#2C3520; --brick:#E36953; --brick-d:#F08A75; --brick-soft:#3A1C16; --ochre:#E6B265; --ochre-d:#F3CB88; --ochre-soft:#3A2C12; --indigo:#7FA6CC; --indigo-soft:#1B2A38; --prussian:#7FA6CC; --sun:#E4B644; --red-mark:#E8584B; --rule:rgba(244,238,221,.18); --rule-soft:rgba(244,238,221,.08); }
+/* Stark skin (A/B): the machinespirits.org black · white · red. Same token names,
+   so the whole UI — rail, cards, activity-band SVG — re-skins by flipping data-skin.
+   Semantic accents collapse to a grayscale + one hot red: moss(good)→ink-strong,
+   ochre(neutral)→grey, brick(risk/trap)→red. */
+[data-skin="stark"]{ --paper:#FFFFFF; --paper-2:#F4F4F5; --paper-3:#FAFAFA; --paper-4:#FFFFFF; --ink:#0A0A0A; --ink-2:#262626; --ink-3:#525252; --ink-4:#8A8A8A; --linen:#D4D4D8; --moss:#171717; --moss-deep:#000000; --moss-soft:#ECECEC; --brick:#E63946; --brick-d:#C1121F; --brick-soft:#FBE3E5; --ochre:#737373; --ochre-d:#525252; --ochre-soft:#EDEDED; --indigo:#404040; --indigo-soft:#EDEDED; --prussian:#404040; --sun:#E63946; --red-mark:#E63946; --rule:rgba(10,10,10,.16); --rule-soft:rgba(10,10,10,.07); }
+[data-skin="stark"][data-theme="dark"]{ --paper:#0A0A0B; --paper-2:#141416; --paper-3:#161618; --paper-4:#1C1C1F; --ink:#FAFAFA; --ink-2:#E4E4E7; --ink-3:#A1A1AA; --ink-4:#6F6F76; --linen:#2A2A2E; --moss:#F5F5F5; --moss-deep:#FFFFFF; --moss-soft:rgba(250,250,250,.12); --brick:#E63946; --brick-d:#F4606C; --brick-soft:rgba(230,57,70,.18); --ochre:#A1A1AA; --ochre-d:#C4C4CC; --ochre-soft:rgba(161,161,170,.16); --indigo:#C4C4CC; --indigo-soft:rgba(196,196,204,.14); --prussian:#C4C4CC; --sun:#E63946; --red-mark:#E63946; --rule:rgba(250,250,250,.16); --rule-soft:rgba(250,250,250,.08); }
+/* Stark is flat — drop the parchment grain + the Klee-drift shader. */
+[data-skin="stark"] #field{ display:none; }
+[data-skin="stark"] body::before, [data-skin="stark"] body::after{ display:none; }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;max-width:100%;overflow-x:hidden}
 html{ background:var(--paper); -webkit-text-size-adjust:100%; }
@@ -4569,6 +4812,449 @@ ${BASE_CSS}
 ${css}
 </style>
 </head>`;
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Shared page shell (UX redesign seam). A page that adopts it stops hand-writing
+// its own <body>…</body> and supplies only `body`. The head (BASE_CSS + tokens),
+// the rail, and the closing tags all come from here — reusing the same primitives
+// (pageHead, railHtml) so shell chrome is identical to a hand-written page.
+function renderShell({ title, active = '', sub = '', hint = '', css = '', body = '', script = '' } = {}) {
+  // Shell pages wire the tweaks panel's light/dark toggle here (the rail owns skin
+  // + grid + open/close; theme is the one control the bespoke pages each wire for
+  // themselves, so shell pages need their own single binding — no double-toggle).
+  const themeScript = `(function(){var t=document.getElementById('themeToggle');if(!t)return;t.addEventListener('click',function(){var d=document.documentElement,nx=d.getAttribute('data-theme')==='dark'?'':'dark';if(nx)d.setAttribute('data-theme','dark');else d.removeAttribute('data-theme');try{localStorage.setItem('poetics-theme',nx);}catch(_e){}});})();`;
+  return `${pageHead({ title, css })}
+<body>
+${railHtml({ active, sub, hint })}
+${body}
+<script>${themeScript}</script>
+${script ? `<script>\n${script}\n</script>\n` : ''}</body>
+</html>`;
+}
+
+// "The workshop at a glance" — six live-data SVG widgets on the home that convey
+// activity across the three acts: make (recent runs), read & judge (corpus read,
+// critic verdicts, proof outcomes, disciplines), keep (workplan). Server-rendered
+// SVG, animated with pure CSS (no client JS), themed via the palette tokens, and
+// reusing the same verdict/discipline mappings as the classic dashboard.
+function renderActivityBand(s = {}) {
+  const fmt = (n) => Number(n || 0).toLocaleString('en-US');
+  const esc = (x) => escapeHtml(String(x == null ? '' : x));
+  const pctScored = s.scripts ? Math.round((s.scored / s.scripts) * 100) : 0;
+
+  // radial gauge — r=60 so circumference ≈ 377 (matches the @keyframes start).
+  const ring = (pct) => {
+    const off = (377 * (1 - Math.max(0, Math.min(100, pct)) / 100)).toFixed(1);
+    return `<svg class="scw-ring" viewBox="0 0 144 144" role="img" aria-label="${pct} percent of the corpus scored">
+        <circle class="scw-ring__trk" cx="72" cy="72" r="60"/>
+        <circle class="scw-ring__val" cx="72" cy="72" r="60" stroke-dasharray="377" stroke-dashoffset="${off}" transform="rotate(-90 72 72)"/>
+        <text class="scw-ring__pct" x="72" y="66" text-anchor="middle" dominant-baseline="central">${pct}%</text>
+        <text class="scw-ring__sub" x="72" y="90" text-anchor="middle" dominant-baseline="central">scored</text>
+      </svg>`;
+  };
+
+  // horizontal stacked bar + legend; each segment optionally deep-links.
+  const segBar = (segments) => {
+    const segs = (segments || []).filter((x) => (x.n || 0) > 0);
+    const total = segs.reduce((a, x) => a + x.n, 0);
+    if (!total) return `<div class="scw-seg scw-seg--empty" aria-hidden="true"></div><div class="scw-leg"></div>`;
+    const fills = segs
+      .map((x) => {
+        const w = ((x.n / total) * 100).toFixed(2);
+        const t = `${x.label}: ${fmt(x.n)} · ${Math.round((x.n / total) * 100)}%`;
+        const fill = `<span class="scw-seg__fill" style="background:${x.color}"></span>`;
+        return x.href
+          ? `<a class="scw-seg__cell" style="flex:0 0 ${w}%" href="${x.href}" title="${esc(t)}" aria-label="${esc(t)}">${fill}</a>`
+          : `<span class="scw-seg__cell" style="flex:0 0 ${w}%" title="${esc(t)}">${fill}</span>`;
+      })
+      .join('');
+    const leg = segs
+      .map(
+        (x) =>
+          `<span class="scw-leg__i"><i style="background:${x.color}"></i>${esc(x.label)}&nbsp;<b>${fmt(x.n)}</b></span>`,
+      )
+      .join('');
+    return `<div class="scw-seg">${fills}</div><div class="scw-leg">${leg}</div>`;
+  };
+
+  // top-N horizontal bars, optionally linked.
+  const bars = (items, hrefFn) => {
+    const list = (Array.isArray(items) ? items : []).slice(0, 6);
+    if (!list.length) return `<div class="scw-empty">no disciplines tagged yet</div>`;
+    const max = Math.max(...list.map((d) => d.n), 1);
+    return (
+      `<div class="scw-bars">` +
+      list
+        .map((d) => {
+          const w = ((d.n / max) * 100).toFixed(1);
+          const name = esc(String(d.name).replace(/_/g, ' '));
+          const inner = `<span class="scw-bar__l" title="${name}">${name}</span><span class="scw-bar__trk"><span class="scw-bar__fill" style="width:${w}%"></span></span><span class="scw-bar__n">${fmt(d.n)}</span>`;
+          return hrefFn ? `<a class="scw-bar" href="${hrefFn(d)}">${inner}</a>` : `<div class="scw-bar">${inner}</div>`;
+        })
+        .join('') +
+      `</div>`
+    );
+  };
+
+  // sparkline of a run's recontextualization series (0–100), with an area fill.
+  const spark = (values) => {
+    const w = 116;
+    const h = 28;
+    const list = (Array.isArray(values) ? values : []).filter((v) => Number.isFinite(v));
+    if (list.length < 2) return `<span class="scw-spark--empty" aria-hidden="true"></span>`;
+    const n = list.length;
+    const pts = list.map((v, i) => [(i / (n - 1)) * w, h - 3 - (Math.max(0, Math.min(100, v)) / 100) * (h - 6)]);
+    const line = pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join(' ');
+    const area = `M0 ${h} ` + pts.map(([x, y]) => `L${x.toFixed(1)} ${y.toFixed(1)}`).join(' ') + ` L${w} ${h} Z`;
+    const [lx, ly] = pts[n - 1];
+    const avg = Math.round(list.reduce((a, v) => a + v, 0) / n);
+    return `<svg class="scw-spark" viewBox="0 0 ${w} ${h}" role="img" aria-label="recontextualization across ${n} scored scripts, average ${avg}"><path class="scw-spark__a" d="${area}"/><path class="scw-spark__l" d="${line}"/><circle class="scw-spark__d" cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="2.2"/></svg>`;
+  };
+
+  // ---- segment data (same mappings as the classic dashboard) ----
+  const fcMap = new Map((Array.isArray(s.formClass) ? s.formClass : []).map((r) => [r.name, r.n]));
+  const fcSeg = [
+    { label: 'recognition', n: fcMap.get('recognition') || 0, color: 'var(--moss)', href: '/browse?form=recognition' },
+    { label: 'flat', n: fcMap.get('flat') || 0, color: 'var(--ink-4)', href: '/browse?form=flat' },
+    { label: 'trap', n: fcMap.get('trap') || 0, color: 'var(--brick)', href: '/browse?form=trap' },
+  ];
+  const fcTotal = fcSeg.reduce((a, x) => a + x.n, 0);
+  const fcRecog = fcTotal ? Math.round((fcSeg[0].n / fcTotal) * 100) : 0;
+
+  const PV = {
+    grounded_anagnorisis: { label: 'grounded', color: 'var(--moss)' },
+    disengagement: { label: 'disengagement', color: 'var(--ink-4)' },
+    aporia: { label: 'aporia', color: 'var(--brick)' },
+  };
+  const pv = s.proofVerdicts && typeof s.proofVerdicts === 'object' ? s.proofVerdicts : {};
+  const pvSeg = Object.entries(pv)
+    .filter(([k]) => k !== '(none)')
+    .map(([k, n]) => ({
+      label: PV[k]?.label || k.replace(/_/g, ' '),
+      n,
+      color: PV[k]?.color || 'var(--ochre)',
+      ...(PV[k] ? { href: '/derivation?verdict=' + encodeURIComponent(k) } : {}),
+    }))
+    .sort((a, b) => b.n - a.n);
+  const pvTotal = pvSeg.reduce((a, x) => a + x.n, 0);
+
+  const BST = {
+    active: 'var(--moss)',
+    review: 'var(--ochre)',
+    blocked: 'var(--brick)',
+    triaged: 'var(--ink-4)',
+    done: 'var(--moss-deep)',
+  };
+  const bc = s.boardCounts && typeof s.boardCounts === 'object' ? s.boardCounts : {};
+  const bSeg = ['active', 'review', 'blocked', 'triaged', 'done']
+    .filter((k) => bc[k])
+    .map((k) => ({ label: k, n: bc[k], color: BST[k], href: '/board' }));
+  const bOpen = (bc.active || 0) + (bc.review || 0) + (bc.blocked || 0) + (bc.triaged || 0);
+
+  const runs = Array.isArray(s.recentRuns) ? s.recentRuns : [];
+  const recent = runs.length
+    ? `<div class="scw-feed">` +
+      runs
+        .slice(0, 6)
+        .map(
+          (r) =>
+            `<a class="scw-feed__row" href="/browse?runId=${encodeURIComponent(r.id)}" title="${esc(r.id)}"><span class="scw-feed__dot${r.reviewFlagCount ? ' is-warn' : ''}"></span><span class="scw-feed__id">${esc(r.id)}</span>${spark(r.spark)}<span class="scw-feed__n">${fmt(r.scoreCount)}/${fmt(r.itemCount)}</span></a>`,
+        )
+        .join('') +
+      `</div>`
+    : `<div class="scw-empty">no runs yet — launch one to populate the corpus</div>`;
+
+  const widget = (acc, kicker, bodyHtml, capHtml, stretch) =>
+    `<div class="scw" style="--acc:${acc}"><div class="scw__k">${kicker}</div><div class="scw__body${stretch ? ' scw__body--stretch' : ''}">${bodyHtml}</div>${capHtml ? `<div class="scw__cap">${capHtml}</div>` : ''}</div>`;
+
+  return `<section class="sc-band">
+  <div class="sc-band__head">
+    <h2 class="sc-band__h">The workshop at a glance</h2>
+    <div class="sc-band__sum">${fmt(s.scripts)} scripts · ${fmt(s.proofRuns)} proof runs · ${fmt(s.replays)} replays${s.openFlags ? ` · <span class="is-warn">${fmt(s.openFlags)} open flag${s.openFlags === 1 ? '' : 's'}</span>` : ''}</div>
+  </div>
+  <div class="scw-grid">
+    ${widget('var(--moss)', 'read &amp; judge · corpus read', ring(pctScored), `${fmt(s.scored)} of ${fmt(s.scripts)} scripts read by a critic`, false)}
+    ${widget('var(--moss)', 'read &amp; judge · critic verdicts', segBar(fcSeg), fcTotal ? `${fcRecog}% earned recognition · ${fmt(fcTotal)} verdicts` : 'no critic verdicts yet', true)}
+    ${widget('var(--brick)', 'read &amp; judge · proof outcomes', segBar(pvSeg), pvTotal ? `${fmt(pvTotal)} runs decided by the rule-checker` : 'no proof runs decided yet', true)}
+    ${widget(
+      'var(--moss)',
+      'overall · corpus by discipline',
+      bars(s.disciplines, (d) => '/browse?discipline=' + encodeURIComponent(d.name)),
+      'top disciplines — click to filter the shelves',
+      true,
+    )}
+    ${widget('var(--ochre-d)', 'make · recent runs', recent, 'the last six generation runs, newest first', true)}
+    ${widget('var(--ochre-d)', 'keep · workplan', segBar(bSeg), bSeg.length ? `${fmt(bOpen)} open item${bOpen === 1 ? '' : 's'} on the board` : 'board is empty', true)}
+  </div>
+</section>`;
+}
+
+// The redesigned home: every surface regrouped into a three-act dramatic
+// structure (I make · II read & judge · III keep). Live numbers come from the
+// same stats the classic dashboard reads; only the arrangement changes.
+function renderScriptoriumHome(stats = {}) {
+  // The whole at-a-glance band (live numbers, charts) is delegated to
+  // renderActivityBand(s); this function owns only the masthead, the three-act
+  // card grid, and the footer — so no number-formatting lives here anymore.
+  const s = { scripts: 0, scored: 0, openFlags: 0, replays: 0, proofRuns: 0, ...stats };
+
+  const ACTS = [
+    {
+      folio: 'I',
+      acc: 'var(--moss)',
+      kicker: 'make',
+      title: 'The Scriptorium',
+      gloss: 'Where dialogues are written, cast, and staged.',
+      cards: [
+        [
+          'The Desk',
+          '/compose',
+          'compose',
+          'Assemble a drama spec — matter, form, cast, audience — validated live against the ontology.',
+        ],
+        [
+          'The Rehearsal Seat',
+          '/compose/live',
+          'sit in',
+          'Sit in on a tutoring scene turn by turn, as the learner or as the audience.',
+        ],
+        [
+          'The Players',
+          '/chat',
+          'play',
+          'Drive the tutor and watch the ego &amp; superego deliberate before each line.',
+        ],
+        ['Staging', '/runs', 'stage', 'Call the players: launch a generation run, free or metered, and watch the log.'],
+      ],
+    },
+    {
+      folio: 'II',
+      acc: 'var(--brick)',
+      kicker: 'read &amp; judge',
+      title: 'The Reading Room',
+      gloss: 'Where finished scripts are read and judged for dramatic form.',
+      cards: [
+        [
+          'The Shelves',
+          '/browse',
+          'read',
+          'The whole corpus — every scored script, filterable by arm, discipline, and verdict.',
+        ],
+        [
+          'The Proofs',
+          '/derivation',
+          'prove',
+          'Runs where the tutor must lead to a hidden answer; a fixed rule decides grounded or not.',
+        ],
+        [
+          'Variant Leaves',
+          '/replays',
+          'vary',
+          'One move altered, then diffed against the original — how a change reshapes recognition.',
+        ],
+        [
+          'The Critic&#39;s Bench',
+          '/rubric',
+          'judge',
+          'The six dramatic-form dimensions — peripeteia, anagnorisis, hamartia — every critic scores.',
+        ],
+        [
+          'The Margins',
+          '/adjudication',
+          'gloss',
+          'Blinded human glosses: A19 adjudication forms and review flags on the corpus.',
+        ],
+        [
+          'The Pilot',
+          '/pilot-admin',
+          'observe',
+          'Operator desk for the human-learner study — sessions, conditions, autoplay.',
+        ],
+      ],
+    },
+    {
+      folio: 'III',
+      acc: 'var(--ochre-d)',
+      kicker: 'keep',
+      title: 'The Daybook',
+      gloss: 'The workshop&#39;s own record — plan, lexicon, and notes.',
+      cards: [
+        ['The Board', '/board', 'track', 'The workplan as a live status × type board — drag, depend, and milestone.'],
+        [
+          'The Calendar',
+          '/timeline',
+          'plan',
+          'Milestones, dependency graph, and live GitHub activity in one timeline.',
+        ],
+        [
+          'The Lexicon',
+          '/ontology',
+          'define',
+          'The shared reasoning ontology, viewed by system, tutor, or learner lens.',
+        ],
+        [
+          'The Curriculum',
+          '/curriculum',
+          'teach',
+          'The teaching spine that compiles into drama seeds and adaptation worlds.',
+        ],
+        [
+          'The Hall',
+          '/summary',
+          'recount',
+          'Lab notes and the synthesis arc — summary, story, repertoire, explainers.',
+        ],
+      ],
+    },
+  ];
+
+  const actsHtml = ACTS.map(
+    (a) => `
+  <section class="sc-act" style="--acc:${a.acc}">
+    <div class="sc-actHead">
+      <div class="sc-folio">${a.folio}</div>
+      <div><div class="sc-actK">${a.kicker}</div><div class="sc-actT">${a.title}</div><div class="sc-actG">${a.gloss}</div></div>
+    </div>
+    <div class="sc-grid">
+      ${a.cards
+        .map(
+          ([t, href, verb, d]) =>
+            `<a class="sc-card" href="${href}"><div class="t">${t}</div><div class="d">${d}</div><div class="r"><span class="route">${href}</span><span class="verb">${verb}</span></div></a>`,
+        )
+        .join('\n      ')}
+    </div>
+  </section>`,
+  ).join('\n');
+
+  const body = `<div class="sc-wrap">
+  <div class="sc-mast">
+    <div class="sc-seal">S</div>
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:baseline;gap:11px;flex-wrap:wrap">
+        <span class="sc-word">Scriptorium</span>
+        <span class="sc-glyph">◐</span>
+        <span class="sc-tag">Tutoring, staged as drama.</span>
+      </div>
+      <div class="sc-kick">machine spirits · poetics scriptorium · mmxxvi</div>
+    </div>
+  </div>
+  <div class="sc-shape">
+    <span>opening</span><span class="d">———</span>
+    <span>complication</span><span class="d">———</span>
+    <span style="color:var(--brick)">the turn</span><span class="d">———</span>
+    <span style="color:var(--ochre-d)">recognition</span><span class="d">———</span>
+    <span>close</span>
+    <span style="margin-left:auto;text-transform:none;letter-spacing:.03em;opacity:.8">the shape a critic reads</span>
+  </div>
+  <section class="sc-primer">
+    <div class="sc-primer__k">new here?</div>
+    <h2 class="sc-primer__h">The Scriptorium, in brief</h2>
+    <p>A research instrument that <b>stages AI-tutoring dialogues as short plays</b> and reads them the way a literary critic would — looking for a genuine <i>turn</i> (a reversal) and a moment of <i>recognition</i>. You <b>make</b> dialogues, <b>read &amp; judge</b> them, and <b>keep</b> the record — the three acts below.</p>
+    <p class="sc-primer__note">It scores dramatic <em>form</em> — earned recognition versus flat, competent exposition — so a verdict is about the script on the page, never a claim about what is in a real learner's head.</p>
+  </section>
+  ${renderActivityBand(s)}
+  ${actsHtml}
+  <div class="sc-foot">
+    <span>Read for dramatic form — not for what is in anyone&#39;s head.</span>
+    <span><a href="/classic">classic dashboard</a></span>
+  </div>
+</div>`;
+
+  const css = `
+.sc-wrap{ max-width:1080px; margin:0 auto; padding:14px 22px 64px; position:relative; }
+.sc-mast{ display:flex; align-items:center; gap:15px; padding-top:8px; }
+.sc-seal{ width:48px; height:48px; flex:none; background:var(--paper-3); border:1px solid var(--linen); border-radius:13px; display:grid; place-items:center; font:600 29px/1 "Fraunces",Georgia,serif; color:var(--ink); }
+.sc-word{ font:600 32px/1 "Fraunces","Source Serif 4",Georgia,serif; font-variation-settings:"opsz" 96,"SOFT" 40; letter-spacing:-.015em; color:var(--ink); }
+.sc-glyph{ color:var(--brick); font-size:17px; }
+.sc-tag{ font:italic 16px/1.2 "Fraunces",Georgia,serif; color:var(--ink-3); }
+.sc-kick{ font:11px/1 ui-monospace,monospace; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-4); margin-top:6px; }
+.sc-shape{ display:flex; align-items:center; gap:9px; flex-wrap:wrap; margin-top:20px; font:11px/1 ui-monospace,monospace; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); padding:11px 0; }
+.sc-shape .d{ opacity:.35; }
+.sc-band{ margin:26px 0 30px; }
+.sc-band__head{ display:flex; align-items:baseline; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:14px; }
+.sc-band__h{ font:600 18px/1 "Fraunces","Source Serif 4",Georgia,serif; color:var(--ink); margin:0; }
+.sc-band__sum{ font:11px/1.4 ui-monospace,monospace; letter-spacing:.04em; color:var(--ink-3); }
+.sc-band__sum .is-warn{ color:var(--brick); }
+.scw-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(288px,1fr)); gap:13px; }
+.scw{ background:var(--paper-3); border:1px solid var(--rule); border-top:2px solid var(--acc); border-radius:11px; padding:13px 15px 14px; display:flex; flex-direction:column; min-height:152px; animation:scwIn .5s var(--ease,ease) both; }
+.scw__k{ font:600 10px/1 ui-monospace,monospace; letter-spacing:.13em; text-transform:uppercase; color:var(--acc); margin-bottom:12px; }
+.scw__body{ flex:1; display:flex; align-items:center; justify-content:center; }
+.scw__body--stretch{ flex-direction:column; align-items:stretch; justify-content:flex-start; }
+.scw__cap{ font:11px/1.45 ui-monospace,monospace; letter-spacing:.02em; color:var(--ink-3); margin-top:12px; }
+@keyframes scwIn{ from{ opacity:0; transform:translateY(8px); } }
+.scw-ring{ width:128px; height:128px; }
+.scw-ring__trk{ fill:none; stroke:var(--rule); stroke-width:11; }
+.scw-ring__val{ fill:none; stroke:var(--moss); stroke-width:11; stroke-linecap:round; animation:scwRing 1.2s var(--ease,ease) both; }
+@keyframes scwRing{ from{ stroke-dashoffset:377; } }
+.scw-ring__pct{ font:600 30px/1 "Fraunces",Georgia,serif; fill:var(--ink); }
+.scw-ring__sub{ font:600 9px/1 ui-monospace,monospace; letter-spacing:.16em; text-transform:uppercase; fill:var(--ink-4); }
+.scw-seg{ display:flex; width:100%; height:15px; border-radius:8px; overflow:hidden; background:var(--rule); animation:scwWipe .9s var(--ease,ease) both; }
+.scw-seg__cell{ display:flex; min-width:2px; }
+.scw-seg__cell:hover{ filter:brightness(1.07); }
+.scw-seg__fill{ flex:1; }
+@keyframes scwWipe{ from{ clip-path:inset(0 100% 0 0); } }
+.scw-leg{ display:flex; flex-wrap:wrap; gap:5px 12px; margin-top:11px; }
+.scw-leg__i{ display:inline-flex; align-items:center; gap:5px; font:11px/1 ui-monospace,monospace; color:var(--ink-3); }
+.scw-leg__i i{ width:9px; height:9px; border-radius:2px; flex:none; }
+.scw-leg__i b{ color:var(--ink-2); font-weight:600; }
+.scw-bars{ width:100%; display:grid; gap:7px; }
+.scw-bar{ display:grid; grid-template-columns:minmax(54px,84px) 1fr auto; align-items:center; gap:9px; text-decoration:none; color:inherit; }
+.scw-bar__l{ font:11px/1.2 ui-monospace,monospace; color:var(--ink-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.scw-bar__trk{ height:9px; background:var(--rule); border-radius:5px; overflow:hidden; }
+.scw-bar__fill{ display:block; height:100%; background:var(--moss); border-radius:5px; transform-origin:left; animation:scwBar .9s var(--ease,ease) both; }
+@keyframes scwBar{ from{ transform:scaleX(0); } }
+.scw-bar__n{ font:11px/1 ui-monospace,monospace; color:var(--ink-3); }
+.scw-bar:hover .scw-bar__fill{ background:var(--moss-deep); }
+.scw-bar:hover .scw-bar__l{ color:var(--ink); }
+.scw-feed{ width:100%; display:grid; gap:2px; }
+.scw-feed__row{ display:grid; grid-template-columns:auto minmax(0,1fr) auto auto; align-items:center; gap:8px; padding:4px 6px; border-radius:6px; text-decoration:none; color:inherit; }
+.scw-feed__row:hover{ background:var(--paper-4); }
+.scw-feed__dot{ width:7px; height:7px; border-radius:50%; background:var(--moss); flex:none; }
+.scw-feed__dot.is-warn{ background:var(--brick); }
+.scw-feed__id{ font:11px/1.2 ui-monospace,monospace; color:var(--ink-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.scw-feed__n{ font:10px/1 ui-monospace,monospace; color:var(--ink-4); }
+.scw-spark{ width:90px; height:auto; display:block; }
+.scw-spark--empty{ display:inline-block; width:90px; height:1px; background:var(--rule); }
+.scw-spark__a{ fill:var(--moss-soft); opacity:.5; }
+.scw-spark__l{ fill:none; stroke:var(--moss); stroke-width:1.6; stroke-linejoin:round; stroke-linecap:round; }
+.scw-spark__d{ fill:var(--brick); }
+.scw-empty{ font:11px/1.5 ui-monospace,monospace; color:var(--ink-4); text-align:center; margin:auto; }
+@media (prefers-reduced-motion:reduce){ .scw,.scw-seg,.scw-ring__val,.scw-bar__fill{ animation:none; } }
+.sc-act{ margin-bottom:32px; }
+.sc-actHead{ display:flex; align-items:flex-start; gap:18px; margin-bottom:14px; }
+.sc-folio{ font:600 46px/.78 "Fraunces",Georgia,serif; color:var(--acc); width:46px; flex:none; }
+.sc-actK{ font:600 11px/1 ui-monospace,monospace; letter-spacing:.14em; text-transform:uppercase; color:var(--acc); }
+.sc-actT{ font:600 24px/1.05 "Fraunces","Source Serif 4",Georgia,serif; margin:3px 0 1px; color:var(--ink); }
+.sc-actG{ font-size:13.5px; color:var(--ink-3); }
+.sc-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(248px,1fr)); gap:13px; }
+.sc-card{ background:var(--paper-3); border:1px solid var(--rule); border-radius:11px; padding:14px 16px 15px; text-decoration:none; color:inherit; display:block; transition:border-color .18s ease, transform .18s ease, background .18s ease; }
+.sc-card:hover{ border-color:var(--acc); transform:translateY(-2px); background:var(--paper-4); }
+.sc-card .t{ font:600 18px/1.12 "Fraunces","Source Serif 4",Georgia,serif; color:var(--ink); }
+.sc-card .d{ font-size:13.5px; color:var(--ink-3); line-height:1.5; margin-top:6px; }
+.sc-card .r{ font:11px/1 ui-monospace,monospace; letter-spacing:.03em; margin-top:11px; display:flex; justify-content:space-between; align-items:center; }
+.sc-card .r .route{ color:var(--acc); }
+.sc-card .r .verb{ color:var(--ink-4); }
+.sc-foot{ display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--rule); padding-top:13px; font:11px/1 ui-monospace,monospace; letter-spacing:.04em; color:var(--ink-3); }
+.sc-foot a{ color:var(--moss-deep); text-decoration:none; }
+.sc-foot a:hover{ text-decoration:underline; }
+.sc-primer{ margin:22px 0 0; border:1px solid var(--rule); background:var(--paper-4); padding:16px 20px; border-radius:10px; }
+.sc-primer__k{ font:600 10px/1 ui-monospace,monospace; letter-spacing:.16em; text-transform:uppercase; color:var(--brick); margin-bottom:7px; }
+.sc-primer__h{ font:600 19px/1.2 "Fraunces","Source Serif 4",Georgia,serif; color:var(--ink); margin:0 0 8px; }
+.sc-primer p{ margin:0; font-size:14px; line-height:1.6; color:var(--ink-2); max-width:80ch; }
+.sc-primer p + p{ margin-top:8px; }
+.sc-primer b{ color:var(--ink); font-weight:600; }
+.sc-primer__note{ font-size:12.5px; color:var(--ink-3); }
+@media (max-width:560px){ .scw-grid{ grid-template-columns:1fr; } }
+`;
+
+  return renderShell({
+    title: 'machine spirits · poetics scriptorium',
+    active: 'home',
+    sub: 'learning (to live) with machines',
+    css,
+    body,
+  });
 }
 
 const TRANSCRIPT_TTS_CLIENT = `<script>
@@ -5147,7 +5833,12 @@ function renderDashboardHtml(stats = {}) {
   const ROLES = [
     ['Reader', 'Inspect scripts, proof runs, and replays before launching anything.', '/browse', 'Read evidence'],
     ['Builder', 'Compose a scene or start from a safe mock generation path.', '/compose/live', 'Compose'],
-    ['Reviewer', 'Find flags, labels, disagreement cases, and adjudication surfaces.', '/browse?queue=flagged', 'Review flags'],
+    [
+      'Reviewer',
+      'Find flags, labels, disagreement cases, and adjudication surfaces.',
+      '/browse?queue=flagged',
+      'Review flags',
+    ],
     ['Operator', 'Launch jobs, watch cost class, and inspect local job output.', '/runs', 'Launch'],
     ['Researcher', 'Open ontology, rubric, paper notes, timeline, and the workplan.', '/board', 'Open workplan'],
   ];
@@ -5250,12 +5941,21 @@ function renderDashboardHtml(stats = {}) {
   const roadRank = { active: 0, triaged: 1, blocked: 2, review: 3, done: 4, archived: 5, dropped: 6 };
   const uxItems = boardItems
     .filter((it) => String(it.id || '').startsWith('scriptorium-') && (it.tags || []).includes('ux'))
-    .sort((a, b) => (roadRank[a.status] ?? 9) - (roadRank[b.status] ?? 9) || String(a.priority).localeCompare(String(b.priority)) || String(a.title).localeCompare(String(b.title)));
-  const uxCounts = uxItems.reduce((acc, it) => {
-    const key = it.status === 'done' ? 'done' : it.status === 'review' ? 'review' : it.status === 'active' ? 'active' : 'open';
-    acc[key] = (acc[key] || 0) + 1;
-    return acc;
-  }, { open: 0, active: 0, review: 0, done: 0 });
+    .sort(
+      (a, b) =>
+        (roadRank[a.status] ?? 9) - (roadRank[b.status] ?? 9) ||
+        String(a.priority).localeCompare(String(b.priority)) ||
+        String(a.title).localeCompare(String(b.title)),
+    );
+  const uxCounts = uxItems.reduce(
+    (acc, it) => {
+      const key =
+        it.status === 'done' ? 'done' : it.status === 'review' ? 'review' : it.status === 'active' ? 'active' : 'open';
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    },
+    { open: 0, active: 0, review: 0, done: 0 },
+  );
   const roadmapHtml = board.__error
     ? `<div class="road-empty">${escapeHtml(board.__error)}</div>`
     : uxItems.length
@@ -5491,7 +6191,7 @@ details.tour[open] .tour__chev{ transform:rotate(180deg); }
 `,
   })}
 <body>
-${railHtml({ active: 'home', brand: 'machine spirits', sub: 'a drama-machine for tutoring — generate · score · recognize' })}
+${railHtml({ active: 'home', brand: 'machine spirits', sub: 'learning (to live) with machines' })}
 <div class="wrap">
 
   <div class="welcome" id="welcome" hidden>
@@ -5765,6 +6465,7 @@ ${railHtml({
   hint: '<span><b>compose · spec mode</b> — assemble a full drama-machine spec, validated live against the ontology</span><span class="navhint__sep">·</span><span>or <a href="/compose/live">sit in on a live scene</a></span>',
 })}
 ${modeTabsHtml('spec')}
+${parameterComponentStrip()}
 ${functionalComponentStrip()}
 <div class="compose">
   <form class="cform" id="cform" onsubmit="return false">
@@ -7199,7 +7900,9 @@ function renderWorkplanBoardHtml() {
     ...new Set(
       items
         .flatMap((i) => (Array.isArray(i.tags) ? i.tags : []))
-        .filter((t) => ['scriptorium', 'ux', 'review', 'jobs', 'evidence', 'navigation', 'dashboard', 'static-surfaces'].includes(t)),
+        .filter((t) =>
+          ['scriptorium', 'ux', 'review', 'jobs', 'evidence', 'navigation', 'dashboard', 'static-surfaces'].includes(t),
+        ),
     ),
   ].sort();
   // Always show the working lanes (even when empty) so cards can be dropped into
@@ -7235,6 +7938,7 @@ function renderWorkplanBoardHtml() {
               }</div>`
             : '';
           return `<article class="card" draggable="true" data-id="${e(it.id || '')}" data-status="${e(status)}" data-type="${e(it.type || '')}" data-tags="${e((it.tags || []).join(' '))}">
+        <div class="card__act"><button type="button" class="card__btn" data-act="edit" data-id="${e(it.id || '')}" title="Edit item" aria-label="Edit item" draggable="false">✎</button><button type="button" class="card__btn card__btn--del" data-act="del" data-id="${e(it.id || '')}" title="Delete item" aria-label="Delete item" draggable="false">🗑</button></div>
         <div class="card__h"><span class="pri pri--${e(it.priority || '')}">${e(it.priority || '')}</span><span class="id">${e(it.id || '')}</span></div>
         <div class="ttl">${e(it.title || '')}</div>
         <div class="tags">${tags}</div>${blk}${dep}
@@ -7247,7 +7951,9 @@ function renderWorkplanBoardHtml() {
   const chips = [
     '<button class="chip on" data-filter="all" data-filter-kind="all">all</button>',
     ...types.map((t) => `<button class="chip" data-filter="${e(t)}" data-filter-kind="type">${e(t)}</button>`),
-    ...tagFilters.map((t) => `<button class="chip chip--tag" data-filter="${e(t)}" data-filter-kind="tag">#${e(t)}</button>`),
+    ...tagFilters.map(
+      (t) => `<button class="chip chip--tag" data-filter="${e(t)}" data-filter-kind="tag">#${e(t)}</button>`,
+    ),
   ].join('');
   const err = board.__error
     ? `<div class="blurb" style="border-left-color:var(--brick);background:var(--brick-soft)">${e(board.__error)}</div>`
@@ -7277,10 +7983,16 @@ main{ max-width:1100px; margin:0 auto; padding:22px 22px 64px; }
 .blk{ font-size:11px; color:var(--brick); margin-top:5px; }
 .dep{ font:11px ui-monospace,monospace; color:var(--ink-3); margin-top:5px; }
 .dep--wait{ color:var(--brick); }
-.card{ cursor:grab; }
+.card{ cursor:grab; position:relative; }
 .card.is-target{ outline:2px solid var(--moss); outline-offset:3px; box-shadow:0 0 0 6px color-mix(in srgb,var(--moss-soft) 70%,transparent); }
 .card:active{ cursor:grabbing; }
 .card--dragging{ opacity:.45; }
+.card__act{ position:absolute; top:6px; right:6px; display:flex; gap:3px; opacity:0; transition:opacity .12s ease; }
+.card:hover .card__act, .card:focus-within .card__act{ opacity:1; }
+.card__btn{ font:12px/1 ui-monospace,monospace; width:22px; height:22px; display:grid; place-items:center; padding:0; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-3); border-radius:5px; cursor:pointer; }
+.card__btn:hover{ border-color:var(--ink-3); color:var(--ink); }
+.card__btn--del:hover{ border-color:var(--brick); color:var(--brick); background:var(--brick-soft); }
+@media (hover:none){ .card__act{ opacity:1; } }
 .col{ min-height:64px; border-radius:5px; transition:background .12s var(--ease,ease), outline-color .12s var(--ease,ease); }
 .col--over{ outline:2px dashed var(--moss); outline-offset:4px; background:var(--moss-soft); }
 .col__h{ display:flex; align-items:center; gap:6px; }
@@ -7317,7 +8029,7 @@ ${railHtml({
 })}
 <main>
 	  ${err}
-	  <div class="blurb">The live development board, rendered from <code>workplan/</code> (${gen}). <b>Drag a card between lanes</b> to change its status — it writes to <code>workplan/items/</code> and re-renders. Source of truth is <code>workplan/items/</code>. The historical 2026-06-06 snapshot is at <a href="/board-doc">/board-doc</a> · API: <a href="/api/workplan">/api/workplan</a>.</div>
+	  <div class="blurb">The live development board, rendered from <code>workplan/</code> (${gen}). <b>Click a card to edit · drag between lanes to move · <span style="font-weight:700">+</span> to add · delete from the editor</b> — every change writes to <code>workplan/items/</code> and re-renders. Source of truth is <code>workplan/items/</code>. The historical 2026-06-06 snapshot is at <a href="/board-doc">/board-doc</a> · API: <a href="/api/workplan">/api/workplan</a>.</div>
 	  <div class="board-tools">
 	    <button type="button" class="wpm__btn" id="wp-refresh">Refresh from disk</button>
 	    <span class="board-tools__status" id="wp-refresh-status" aria-live="polite"></span>
@@ -7435,6 +8147,12 @@ ${railHtml({
     }
     [].slice.call(document.querySelectorAll('.card')).forEach(function (card) {
       card.addEventListener('dragstart', function (e) {
+        // A drag begun on the per-card edit/delete buttons must not move the card —
+        // let the button's own click handler run instead.
+        if (e.target && e.target.closest && e.target.closest('.card__act')) {
+          e.preventDefault();
+          return;
+        }
         dragId = card.getAttribute('data-id');
         card.classList.add('card--dragging');
         e.dataTransfer.effectAllowed = 'move';
@@ -7548,6 +8266,22 @@ ${railHtml({
       card.addEventListener('click', function () {
         if (Date.now() - lastDrag < 250) return;
         var id = card.getAttribute('data-id');
+        var item = (W.items || []).filter(function (i) { return i.id === id; })[0] || { id: id };
+        open('edit', item);
+      });
+    });
+    // Per-card edit/delete controls (visible on hover). stopPropagation keeps the
+    // card's own click-to-edit from double-firing; delete reuses the same confirm
+    // + POST as the editor's Delete button.
+    [].slice.call(document.querySelectorAll('.card__btn')).forEach(function (btn) {
+      btn.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        var id = btn.getAttribute('data-id');
+        if (btn.getAttribute('data-act') === 'del') {
+          if (!confirm('Delete this item? Removes workplan/items/' + id + '.md')) return;
+          post('/api/workplan/delete', { id: id });
+          return;
+        }
         var item = (W.items || []).filter(function (i) { return i.id === id; })[0] || { id: id };
         open('edit', item);
       });
@@ -9263,6 +9997,32 @@ function renderBrowserHtml() {
   --rule-soft:   rgba(244, 238, 221, 0.08);
 }
 
+/* Stark skin (A/B) — joins /browse to the shared design backbone. The rail's
+   early-apply sets data-skin on <html>; /browse owns its tokens, so overriding
+   them here re-skins it in lockstep with the rest. Legacy aliases (--bg/--good
+   /--accent…) are var()-derived, so they follow automatically. A full structural
+   port onto renderShell/pageHead was declined deliberately: /browse intentionally
+   skips BASE_CSS to avoid its global body/shader rules, and the consistency goal
+   (re-skinning) is met here via the token contract — the actual design backbone. */
+:root[data-skin="stark"] {
+  --paper:#FFFFFF; --paper-2:#F4F4F5; --paper-3:#FAFAFA; --paper-4:#FFFFFF;
+  --ink:#0A0A0A; --ink-2:#262626; --ink-3:#525252; --ink-4:#8A8A8A;
+  --linen:#D4D4D8; --moss:#171717; --moss-deep:#000000; --moss-soft:#ECECEC;
+  --brick:#E63946; --brick-d:#C1121F; --brick-soft:#FBE3E5;
+  --ochre:#737373; --ochre-d:#525252; --ochre-soft:#EDEDED;
+  --indigo:#404040; --indigo-soft:#EDEDED;
+  --rule:rgba(10,10,10,0.16); --rule-soft:rgba(10,10,10,0.07);
+}
+:root[data-skin="stark"][data-theme="dark"] {
+  --paper:#0A0A0B; --paper-2:#141416; --paper-3:#161618; --paper-4:#1C1C1F;
+  --ink:#FAFAFA; --ink-2:#E4E4E7; --ink-3:#A1A1AA; --ink-4:#6F6F76;
+  --linen:#2A2A2E; --moss:#F5F5F5; --moss-deep:#FFFFFF; --moss-soft:rgba(250,250,250,0.12);
+  --brick:#E63946; --brick-d:#F4606C; --brick-soft:rgba(230,57,70,0.18);
+  --ochre:#A1A1AA; --ochre-d:#C4C4CC; --ochre-soft:rgba(161,161,170,0.16);
+  --indigo:#C4C4CC; --indigo-soft:rgba(196,196,204,0.14);
+  --rule:rgba(250,250,250,0.16); --rule-soft:rgba(250,250,250,0.08);
+}
+
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; max-width:100%; overflow-x:hidden; }
 html { background: var(--paper); -webkit-text-size-adjust: 100%; }
@@ -9841,16 +10601,16 @@ pre {
 .vt-btn + .vt-btn { border-left: none; }
 .vt-btn.active { background: var(--moss-deep); color: var(--paper); border-color: var(--moss-deep); }
 .swimlane {
-  max-width: 70rem;
+  max-width: 80rem;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 4px;
 }
 .swim-head {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
+  grid-template-columns: 1fr 44px 1fr;
+  gap: 14px;
   position: sticky;
   top: 0;
   z-index: 1;
@@ -9865,16 +10625,33 @@ pre {
   border-bottom: 2px solid var(--rule);
 }
 .swim-label.tutor { color: var(--moss-deep); border-bottom-color: var(--moss-deep); }
-.swim-label.learner { color: var(--ochre-d); border-bottom-color: var(--ochre-d); }
+.swim-label.learner { color: var(--ochre-d); border-bottom-color: var(--ochre-d); text-align: right; }
+.swim-label.spine { border-bottom: 0; }
 .swim-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-  align-items: start;
+  grid-template-columns: 1fr 44px 1fr;
+  gap: 14px;
+  align-items: stretch;
 }
-.swim-row.span { grid-template-columns: 1fr; }
-.swim-row .lane { min-width: 0; }
-.swim-row.span .scene-card { max-width: 48rem; margin: 0 auto; opacity: 0.92; }
+.swim-row .lane { min-width: 0; align-self: start; }
+.swim-row .lane.empty { border: 0; }
+/* center time-spine: a continuous rule with a numbered bead at each spoken turn */
+.swim-spine { position: relative; min-height: 30px; }
+.swim-spine::before { content: ""; position: absolute; left: 50%; top: -4px; bottom: -4px; width: 2px; transform: translateX(-50%); background: var(--rule); }
+.swim-bead {
+  position: relative; z-index: 1; display: block; width: 24px; height: 24px;
+  margin: 4px auto 0; border-radius: 50%; background: var(--paper);
+  border: 1.5px solid var(--rule); color: var(--ink-3);
+  font: 600 10px/22px "JetBrains Mono", monospace; text-align: center;
+}
+.swim-row[data-side="tutor"] .swim-bead { border-color: var(--moss); color: var(--moss-deep); }
+.swim-row[data-side="learner"] .swim-bead { border-color: var(--ochre); color: var(--ochre-d); }
+/* inner voice (ego / superego) — a dashed aside tucked under its speaker's lane */
+.swim-aside .scene-card { border-style: dashed; background: transparent; font-size: 0.94em; opacity: 0.92; }
+.swim-row--aside { margin-top: -2px; }
+/* stage / director — a centered italic interlude spanning the full width */
+.swim-interlude { grid-template-columns: 1fr; justify-items: center; padding: 3px 0; }
+.swim-interlude .scene-card { max-width: 46rem; font-style: italic; opacity: 0.9; background: transparent; border-style: dashed; }
 .swimlane .scene-card { margin: 0; }
 .scene-card {
   border: 1px solid var(--rule);
@@ -10444,14 +11221,44 @@ function renderSwimlane(blocks, fallbackText) {
   if (!blocks || blocks.length === 0) {
     return '<pre>' + esc(fallbackText || 'No public sample found.') + '</pre>';
   }
-  const rows = blocks.map((block) => {
-    const type = block.type || 'other';
-    const card = sceneCardHtml(block);
-    if (type === 'tutor') return '<div class="swim-row"><div class="lane">' + card + '</div><div class="lane empty" aria-hidden="true"></div></div>';
-    if (type === 'learner') return '<div class="swim-row"><div class="lane empty" aria-hidden="true"></div><div class="lane">' + card + '</div></div>';
-    return '<div class="swim-row span">' + card + '</div>';
-  }).join('');
-  return '<div class="swimlane"><div class="swim-head"><span class="swim-label tutor">tutor</span><span class="swim-label learner">learner</span></div>' + rows + '</div>';
+  const empty = '<div class="lane empty" aria-hidden="true"></div>';
+  let beat = 0;
+  const rows = blocks
+    .map((block) => {
+      const type = block.type || 'other';
+      const card = sceneCardHtml(block);
+      // Spoken protagonist turns: a card in their lane + a numbered bead on the spine.
+      if (type === 'tutor' || type === 'learner') {
+        beat += 1;
+        const lane = '<div class="lane">' + card + '</div>';
+        const spine = '<div class="swim-spine"><span class="swim-bead">' + beat + '</span></div>';
+        return (
+          '<div class="swim-row" data-side="' + type + '">' +
+          (type === 'tutor' ? lane : empty) + spine + (type === 'learner' ? lane : empty) +
+          '</div>'
+        );
+      }
+      // Inner voice (ego / superego): a dashed aside under whichever protagonist owns it.
+      if (type === 'internal') {
+        const side = String(block.speaker || '').toUpperCase().indexOf('LEARNER') >= 0 ? 'learner' : 'tutor';
+        const aside = '<div class="lane swim-aside">' + card + '</div>';
+        return (
+          '<div class="swim-row swim-row--aside" data-side="' + side + '">' +
+          (side === 'tutor' ? aside : empty) + '<div class="swim-spine"></div>' + (side === 'learner' ? aside : empty) +
+          '</div>'
+        );
+      }
+      // Stage direction / director / chorus: a centered interlude spanning the width.
+      return '<div class="swim-row swim-interlude">' + card + '</div>';
+    })
+    .join('');
+  return (
+    '<div class="swimlane"><div class="swim-head">' +
+    '<span class="swim-label tutor">tutor</span>' +
+    '<span class="swim-label spine" aria-hidden="true"></span>' +
+    '<span class="swim-label learner">learner</span>' +
+    '</div>' + rows + '</div>'
+  );
 }
 function renderScriptView(blocks, fallbackText) {
   const mode = state.previewMode === 'swimlane' ? 'swimlane' : 'script';

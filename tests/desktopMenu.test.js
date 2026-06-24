@@ -54,12 +54,14 @@ test('parseNavHtml extracts rail destinations (incl. home + multi-segment), drop
   assert.equal(items.find((i) => i.route === '/compose/live').label, 'compose a scene');
 });
 
-test('shared rail source exposes board in the visible review group', () => {
+test('shared rail source exposes board in a visible nav group', () => {
   const source = fs.readFileSync(path.join(REPO, 'scripts', 'browse-poetics-scripts.js'), 'utf8');
+  // The three-act rail regroup (make / read & judge / keep) moved board into the
+  // "keep" group; the invariant is only that board stays visible in a rail group.
   assert.match(
     source,
-    /\['review',\s*\[\s*'board',\s*'timeline',\s*'adjudicate'\s*\]\]/,
-    'desktop/web rail groups must keep board visible under Review',
+    /\['keep',\s*\[[^\]]*'board'[^\]]*\]\]/,
+    'desktop/web rail groups must keep board visible (now under Keep)',
   );
 });
 
