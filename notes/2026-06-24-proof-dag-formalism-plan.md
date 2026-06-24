@@ -1,7 +1,7 @@
 # Proof DAG Formalism Plan
 
 Date: 2026-06-24
-Status: draft design plan
+Status: implementation plan, partially landed on `codex/proof-dag-assessment`
 
 ## Purpose
 
@@ -125,6 +125,42 @@ Core graph-alignment metrics:
 5. Optionally add a PROV-style export later for provenance/audit tooling.
 6. Avoid importing SAT/SMT formats directly unless the project needs external
    checker interoperability; use their authority/checkability pattern instead.
+
+## Implementation Update
+
+Landed in the proof-DAG assessment branch:
+
+- Authored DAG profile renders the world-spec proof paths and now carries a
+  bipartite hypergraph representation: fact nodes, rule-application nodes, and
+  typed input/output edges.
+- Learner DAG remains learner-visible: it is reconstructed from board facts,
+  voiced derivations, hypotheses, and assertions, not from authored
+  `proof_paths`.
+- Learner DAG snapshots now represent voiced/asserted inferences as explicit
+  rule-application nodes instead of only collapsed inference edges.
+- Per-run learner assessment now owns the graph-alignment bottleneck class and
+  missing-premise buckets.
+- Batch diagnostics consume the canonical per-run assessment and write local
+  reports over existing derivation runs.
+
+## Operative Follow-On Steps
+
+These are not part of the external assessment layer, but they are the next
+behavioral experiment if the learner proxy DAG should affect play:
+
+1. Add a leak-safe learner proxy-DAG memory payload to the learner view: grounded
+   facts, learner-voiced derived facts, hypotheses, and candidate conclusions
+   already derivable from the learner board. Never include authored proof paths,
+   unreleased premises, secret labels, or missing-premise ids from the authored
+   DAG.
+2. Add a proxy-DAG-aware pacing signal for the director/tutor: if the learner is
+   stalled and the best-path gap is unreleased, stage/release evidence; if the
+   gap is released-but-not-held, repair uptake; if the secret is entailed but
+   not asserted, prompt assertion.
+3. Run an A/B against the same worlds and scripts: current learner versus
+   proxy-DAG-memory learner, scored by best-path coverage, secret-entailment
+   rate, asserted-secret rate, proof-gate pass rate, and bottleneck
+   distribution.
 
 ## References
 

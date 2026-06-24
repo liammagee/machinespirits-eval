@@ -16,7 +16,7 @@ function smokeWorld() {
   return loadWorld(path.join(ROOT, 'config/drama-derivation/world-000-smoke.yaml'));
 }
 
-test('buildLearnerDagSnapshot captures learner-owned proof nodes and inference edges', () => {
+test('buildLearnerDagSnapshot captures learner-owned proof nodes and rule applications', () => {
   const world = smokeWorld();
   const p1 = world.premiseById.get('p1').fact;
   const p2 = world.premiseById.get('p2').fact;
@@ -38,8 +38,11 @@ test('buildLearnerDagSnapshot captures learner-owned proof nodes and inference e
   assert.equal(snapshot.secretEntailed, true);
   assert.deepEqual(snapshot.heldPremiseIds, ['p1', 'p2', 'p3']);
   assert.ok(snapshot.nodes.some((node) => node.factText === 'heir(marin)' && node.statuses.includes('asserted')));
-  assert.ok(snapshot.edges.some((edge) => edge.rule === 'R1_lineage'));
-  assert.ok(snapshot.edges.some((edge) => edge.rule === 'R2_succession'));
+  assert.equal(snapshot.metrics.ruleApplicationCount, 2);
+  assert.ok(snapshot.nodes.some((node) => node.kind === 'rule_application' && node.rule === 'R1_lineage'));
+  assert.ok(snapshot.nodes.some((node) => node.kind === 'rule_application' && node.rule === 'R2_succession'));
+  assert.ok(snapshot.edges.some((edge) => edge.kind === 'input' && edge.rule === 'R1_lineage'));
+  assert.ok(snapshot.edges.some((edge) => edge.kind === 'output' && edge.rule === 'R2_succession'));
 });
 
 test('buildLearnerDagFromResult assesses coverage against authored paths without exposing them to the learner', () => {
@@ -90,6 +93,8 @@ test('buildLearnerDagFromResult assesses coverage against authored paths without
   assert.deepEqual(dag.assessment.completePathIds, ['path_1']);
   assert.equal(dag.assessment.firstCompletePathTurn, 8);
   assert.equal(dag.assessment.assertedSecret, true);
+  assert.equal(dag.assessment.bottleneck, 'grounded_asserted_secret');
+  assert.deepEqual(dag.assessment.missingPremises, []);
 });
 
 test('buildLearnerDag reports incomplete learner graphs as partial path coverage', () => {
@@ -113,5 +118,9 @@ test('buildLearnerDag reports incomplete learner graphs as partial path coverage
 
   assert.equal(dag.assessment.bestPathCoverage, 0.667);
   assert.deepEqual(dag.assessment.missingOnBestPath, ['p3']);
+  assert.deepEqual(dag.assessment.missingPremises, [
+    { premiseId: 'p3', bucket: 'unreleased', releaseTurn: 8, releaseVia: 'tutor' },
+  ]);
+  assert.equal(dag.assessment.bottleneck, 'release_or_pacing_gap');
   assert.equal(dag.assessment.finalSecretEntailed, false);
 });

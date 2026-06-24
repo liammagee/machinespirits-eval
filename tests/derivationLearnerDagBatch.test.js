@@ -103,6 +103,7 @@ test('analyzeLearnerDagBatch writes aggregate summary and report', () => {
   assert.equal(summary.aggregate.assertedSecretRate, 0.5);
   assert.equal(summary.aggregate.bottleneckCounts.grounded_asserted_secret, 1);
   assert.equal(summary.aggregate.bottleneckCounts.release_or_pacing_gap, 1);
+  assert.equal(summary.aggregate.missingPremiseCounts.find((row) => row.premiseId === 'p2').buckets.unreleased, 1);
   assert.ok(fs.existsSync(path.join(outDir, 'summary.json')));
   const report = fs.readFileSync(path.join(outDir, 'report.md'), 'utf8');
   assert.match(report, /Learner DAG Batch Diagnostic/u);

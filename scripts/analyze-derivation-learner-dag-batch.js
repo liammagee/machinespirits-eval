@@ -107,62 +107,6 @@ function pct(count, total) {
   return total ? Number((count / total).toFixed(3)) : null;
 }
 
-function releaseByPremise(dagProfile) {
-  const releases = new Map();
-  for (const release of dagProfile?.releases || []) {
-    releases.set(release.premiseId, release);
-  }
-  return releases;
-}
-
-function classifyMissingPremise({ premiseId, dagProfile, finalTurn }) {
-  const release = releaseByPremise(dagProfile).get(premiseId);
-  if (!release) {
-    return { premiseId, bucket: 'unscheduled', releaseTurn: null, releaseVia: null };
-  }
-  if (Number.isFinite(finalTurn) && release.turn > finalTurn) {
-    return {
-      premiseId,
-      bucket: 'not_released_before_end',
-      releaseTurn: release.turn,
-      releaseVia: release.via,
-    };
-  }
-  return {
-    premiseId,
-    bucket: 'available_not_held',
-    releaseTurn: release.turn,
-    releaseVia: release.via,
-  };
-}
-
-function classifyBottleneck({ learnerDagAssessment, dagProfile, result, diagnosis }) {
-  if (!learnerDagAssessment || learnerDagAssessment.status !== 'available') {
-    return { bucket: 'unavailable', missing: [] };
-  }
-  const finalTurn = learnerDagAssessment.finalTurn ?? result.turnsPlayed ?? diagnosis.turnsPlayed ?? null;
-  const missing = (learnerDagAssessment.missingOnBestPath || []).map((premiseId) =>
-    classifyMissingPremise({ premiseId, dagProfile, finalTurn }),
-  );
-  if (learnerDagAssessment.finalSecretEntailed) {
-    if (learnerDagAssessment.assertedSecret) return { bucket: 'grounded_asserted_secret', missing };
-    if (learnerDagAssessment.assertedMirror) return { bucket: 'mirror_assertion_after_entailment', missing };
-    return { bucket: 'assertion_gap', missing };
-  }
-  if (
-    learnerDagAssessment.assertedSecret ||
-    learnerDagAssessment.assertedMirror ||
-    learnerDagAssessment.unsupportedAssertionCount > 0
-  ) {
-    return { bucket: 'premature_or_unsupported_assertion', missing };
-  }
-  if (missing.some((row) => row.bucket === 'not_released_before_end' || row.bucket === 'unscheduled')) {
-    return { bucket: 'release_or_pacing_gap', missing };
-  }
-  if (missing.length) return { bucket: 'learner_integration_gap', missing };
-  return { bucket: 'inference_gap', missing };
-}
-
 function loadWorldForRun({ result, diagnosis }) {
   const worldPath = diagnosis.worldPath || result.worldPath || null;
   if (!worldPath) {
@@ -179,12 +123,6 @@ function rowForLabel(runDir, label) {
   const world = loadWorldForRun({ result, diagnosis });
   const assessment = buildDerivationAssessment({ label, live, result, diagnosis, world });
   const learner = assessment.learnerDagAssessment;
-  const bottleneck = classifyBottleneck({
-    learnerDagAssessment: learner,
-    dagProfile: assessment.dagProfile,
-    result,
-    diagnosis,
-  });
   return {
     label,
     sourceDir: path.relative(ROOT, dir),
@@ -203,11 +141,11 @@ function rowForLabel(runDir, label) {
     firstCompletePathTurn: learner?.firstCompletePathTurn ?? null,
     firstSecretEntailedTurn: learner?.firstSecretEntailedTurn ?? null,
     missingOnBestPath: learner?.missingOnBestPath || [],
-    missingPremises: bottleneck.missing,
+    missingPremises: learner?.missingPremises || [],
     unsupportedAssertionCount: learner?.unsupportedAssertionCount ?? null,
     voicedDerivedCount: learner?.voicedDerivedCount ?? null,
     hypothesisCount: learner?.hypothesisCount ?? null,
-    bottleneck: bottleneck.bucket,
+    bottleneck: learner?.bottleneck || 'unavailable',
   };
 }
 

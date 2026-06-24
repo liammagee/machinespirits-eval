@@ -61,6 +61,59 @@ function addUnique(array, value, keyFn) {
   array.push(value);
 }
 
+function ruleApplicationId(rule, inputFactKeys, outputFactKey) {
+  return `ruleapp:${rule}:${inputFactKeys.join('+')}=>${outputFactKey}`;
+}
+
+function releaseByPremise(world) {
+  const releases = new Map();
+  for (const release of world?.releaseSchedule || []) {
+    releases.set(release.premise, release);
+  }
+  return releases;
+}
+
+function classifyMissingPremise({ premiseId, releases, finalTurn }) {
+  const release = releases.get(premiseId);
+  if (!release) {
+    return { premiseId, bucket: 'unscheduled', releaseTurn: null, releaseVia: null };
+  }
+  if (Number.isFinite(finalTurn) && release.turn > finalTurn) {
+    return {
+      premiseId,
+      bucket: 'unreleased',
+      releaseTurn: release.turn,
+      releaseVia: release.via,
+    };
+  }
+  return {
+    premiseId,
+    bucket: 'released_but_not_held',
+    releaseTurn: release.turn,
+    releaseVia: release.via,
+  };
+}
+
+function classifyBottleneck({
+  finalSecretEntailed,
+  assertedSecret,
+  assertedMirror,
+  unsupportedAssertionCount,
+  missingPremises,
+}) {
+  if (finalSecretEntailed) {
+    if (assertedSecret) return 'grounded_asserted_secret';
+    if (assertedMirror) return 'mirror_assertion_after_entailment';
+    return 'assertion_gap';
+  }
+  if (assertedSecret || assertedMirror || unsupportedAssertionCount > 0) return 'premature_assertion';
+  if (missingPremises.some((row) => row.bucket === 'unreleased' || row.bucket === 'unscheduled')) {
+    return 'release_or_pacing_gap';
+  }
+  if (missingPremises.length) return 'learner_integration_gap';
+  return 'inference_gap';
+}
+
 function normalizeVoiced(voiced = []) {
   return voiced
     .map((entry) => ({
@@ -116,6 +169,23 @@ export function buildLearnerDagSnapshot(
     else nodes.push(next);
   };
 
+  const upsertRuleApplication = (proof, outputKey) => {
+    const id = ruleApplicationId(proof.rule, proof.premises, outputKey);
+    const current = nodes.find((node) => node.id === id);
+    const next = {
+      id,
+      kind: 'rule_application',
+      rule: proof.rule,
+      inputFactKeys: [...proof.premises],
+      outputFactKey: outputKey,
+      label: proof.rule,
+      statuses: ['inference'],
+    };
+    if (current) Object.assign(current, next);
+    else nodes.push(next);
+    return id;
+  };
+
   const includeFact = (key, status = 'supporting_derived') => {
     const fact = cl.facts.get(key);
     if (!fact) return;
@@ -132,14 +202,28 @@ export function buildLearnerDagSnapshot(
     const proof = cl.proofs.get(key);
     if (!proof) return;
     for (const premiseKey of proof.premises) includeFact(premiseKey, 'supporting');
+    const applicationId = upsertRuleApplication(proof, key);
+    for (const premiseKey of proof.premises) {
+      addUnique(
+        edges,
+        {
+          id: `edge:${premiseKey}->${applicationId}`,
+          from: `fact:${premiseKey}`,
+          to: applicationId,
+          rule: proof.rule,
+          kind: 'input',
+        },
+        (edge) => edge.id,
+      );
+    }
     addUnique(
       edges,
       {
-        id: `edge:${proof.rule}:${proof.premises.join('+')}=>${key}`,
-        from: [...proof.premises],
-        to: key,
+        id: `edge:${applicationId}->${key}`,
+        from: applicationId,
+        to: `fact:${key}`,
         rule: proof.rule,
-        kind: 'inference',
+        kind: 'output',
       },
       (edge) => edge.id,
     );
@@ -192,6 +276,7 @@ export function buildLearnerDagSnapshot(
       voicedDerivedCount: nodes.filter((node) => node.statuses?.includes('voiced_derived')).length,
       hypothesisCount: scopedHypotheses.length,
       unsupportedAssertionCount: nodes.filter((node) => node.statuses?.includes('unsupported_assertion')).length,
+      ruleApplicationCount: nodes.filter((node) => node.kind === 'rule_application').length,
     },
   };
 }
@@ -232,6 +317,13 @@ export function assessLearnerDag(world, learnerDag = {}) {
   const secretKey = factKey(world.secret.fact);
   const mirrorKey = world.mirror ? factKey(world.mirror.fact) : null;
   const assertedKey = final.asserted ? factKey(final.asserted) : null;
+  const assertedSecret = assertedKey === secretKey;
+  const assertedMirror = Boolean(mirrorKey && assertedKey === mirrorKey);
+  const finalSecretEntailed = Boolean(final.secretEntailed);
+  const missingPremises = bestPath.missingPremiseIds.map((premiseId) =>
+    classifyMissingPremise({ premiseId, releases: releaseByPremise(world), finalTurn: final.turn }),
+  );
+  const unsupportedAssertionCount = final.metrics?.unsupportedAssertionCount || 0;
   return {
     schema: 'machinespirits.derivation.learner-dag-assessment.v1',
     status: 'available',
@@ -242,14 +334,26 @@ export function assessLearnerDag(world, learnerDag = {}) {
     bestPathCoverage: bestPath.coverage,
     completePathIds: pathCoverage.filter((row) => row.complete).map((row) => row.id),
     missingOnBestPath: bestPath.missingPremiseIds,
+    missingPremises,
+    missingPremiseBuckets: missingPremises.reduce((acc, row) => {
+      acc[row.bucket] = (acc[row.bucket] || 0) + 1;
+      return acc;
+    }, {}),
     firstCompletePathTurn,
     firstSecretEntailedTurn,
-    finalSecretEntailed: Boolean(final.secretEntailed),
-    assertedSecret: assertedKey === secretKey,
-    assertedMirror: Boolean(mirrorKey && assertedKey === mirrorKey),
-    unsupportedAssertionCount: final.metrics?.unsupportedAssertionCount || 0,
+    finalSecretEntailed,
+    assertedSecret,
+    assertedMirror,
+    unsupportedAssertionCount,
     voicedDerivedCount: final.metrics?.voicedDerivedCount || 0,
     hypothesisCount: final.metrics?.hypothesisCount || 0,
+    bottleneck: classifyBottleneck({
+      finalSecretEntailed,
+      assertedSecret,
+      assertedMirror,
+      unsupportedAssertionCount,
+      missingPremises,
+    }),
     interpretation:
       'The learner DAG is reconstructed from learner-visible board actions and voiced derivations. It is assessed after the run against the authored DAG; it does not grant the learner access to proof_paths.',
   };

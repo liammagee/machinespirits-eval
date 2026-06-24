@@ -4426,6 +4426,7 @@ function renderDerivationProofDagHtml(profile) {
     ${metric('paths', profile.metrics.pathCount)}
     ${metric('premises', `${profile.metrics.scheduledProofPremiseCount}/${profile.metrics.uniqueProofPremiseCount} scheduled`)}
     ${metric('rules', profile.metrics.ruleCount)}
+    ${metric('rule apps', profile.metrics.ruleApplicationCount)}
     ${metric('earliest complete', profile.metrics.earliestCompleteTurn == null ? 'n/a' : `t${profile.metrics.earliestCompleteTurn}`)}
     ${metric('t_min', profile.metrics.tMin)}
     ${metric('cap', profile.metrics.turnCap)}
@@ -4473,6 +4474,14 @@ function renderDerivationLearnerDagHtml(learnerDag, learnerDagAssessment) {
         )}%</td><td>${escapeHtml(row.missingPremiseIds.length ? row.missingPremiseIds.join(', ') : 'none')}</td></tr>`,
     )
     .join('');
+  const missingRows = (learnerDagAssessment.missingPremises || [])
+    .map(
+      (row) =>
+        `<tr><td>${escapeHtml(row.premiseId)}</td><td>${escapeHtml(row.bucket)}</td><td class="mono">${escapeHtml(
+          row.releaseTurn == null ? 'n/a' : `t${row.releaseTurn}`,
+        )}</td></tr>`,
+    )
+    .join('');
   return `<section class="learnerdag" id="learner-proof-dag">
   <div class="learnerdag__k">learner DAG</div>
   <h2>Learner proof sketch</h2>
@@ -4485,6 +4494,7 @@ function renderDerivationLearnerDagHtml(learnerDag, learnerDagAssessment) {
     ${metric('secret entailed', learnerDagAssessment.finalSecretEntailed)}
     ${metric('asserted secret', learnerDagAssessment.assertedSecret)}
     ${metric('asserted mirror', learnerDagAssessment.assertedMirror)}
+    ${metric('bottleneck', learnerDagAssessment.bottleneck || 'n/a')}
     ${metric('turns', learnerDag.turns?.length || 0)}
   </div>
   <div class="learnerdag__grid">
@@ -4495,6 +4505,11 @@ function renderDerivationLearnerDagHtml(learnerDag, learnerDagAssessment) {
     <aside class="learnerdag__panel">
       <h3>authored-path coverage</h3>
       <table><thead><tr><th>path</th><th>covered</th><th>missing</th></tr></thead><tbody>${pathRows}</tbody></table>
+      ${
+        missingRows
+          ? `<h3 style="margin-top:12px">missing-premise buckets</h3><table><thead><tr><th>premise</th><th>bucket</th><th>release</th></tr></thead><tbody>${missingRows}</tbody></table>`
+          : ''
+      }
       <p class="mono" style="color:var(--ink-3);margin:8px 0 0">first complete path: ${
         learnerDagAssessment.firstCompletePathTurn ?? 'n/a'
       }; first secret entailed: ${learnerDagAssessment.firstSecretEntailedTurn ?? 'n/a'}</p>

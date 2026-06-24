@@ -1,4 +1,5 @@
-import { buildLearnerDagFromResult } from './learnerDag.js';
+import { assessLearnerDag, buildLearnerDagFromResult } from './learnerDag.js';
+import { closure, factKey } from './chainer.js';
 
 const PUBLIC_ROLES = new Set(['stage', 'director', 'tutor', 'learner']);
 
@@ -53,6 +54,74 @@ function premiseProfile(id, world, releases) {
   };
 }
 
+function ruleApplicationId(rule, inputFactKeys, outputFactKey) {
+  return `ruleapp:${rule}:${inputFactKeys.join('+')}=>${outputFactKey}`;
+}
+
+function authoredProofHypergraph(world) {
+  const premiseIdsByFact = new Map();
+  for (const premise of world.premises || []) {
+    const key = factKey(premise.fact);
+    const ids = premiseIdsByFact.get(key) || [];
+    ids.push(premise.id);
+    premiseIdsByFact.set(key, ids);
+  }
+  const backgroundKeys = new Set((world.background || []).map(factKey));
+  const fullBase = [...(world.background || []), ...(world.premises || []).map((premise) => premise.fact)];
+  const cl = closure(fullBase, world.rules || []);
+  const facts = [...cl.facts.entries()]
+    .map(([key, fact]) => {
+      const premiseIds = premiseIdsByFact.get(key) || [];
+      return {
+        id: `fact:${key}`,
+        key,
+        kind: 'fact',
+        fact,
+        factText: formatFact(fact),
+        source: backgroundKeys.has(key) ? 'background' : premiseIds.length ? 'premise' : 'derived',
+        premiseIds,
+        premiseId: premiseIds[0] || null,
+      };
+    })
+    .sort((a, b) => a.id.localeCompare(b.id));
+  const ruleApplications = [];
+  const edges = [];
+  for (const [outputFactKey, proof] of cl.proofs.entries()) {
+    if (!proof) continue;
+    const applicationId = ruleApplicationId(proof.rule, proof.premises, outputFactKey);
+    ruleApplications.push({
+      id: applicationId,
+      kind: 'rule_application',
+      rule: proof.rule,
+      inputFactKeys: [...proof.premises],
+      outputFactKey,
+      outputFactText: formatFact(cl.facts.get(outputFactKey)),
+      inputFactTexts: proof.premises.map((key) => formatFact(cl.facts.get(key))),
+    });
+    for (const premiseKey of proof.premises) {
+      edges.push({
+        id: `edge:${premiseKey}->${applicationId}`,
+        from: `fact:${premiseKey}`,
+        to: applicationId,
+        kind: 'input',
+        rule: proof.rule,
+      });
+    }
+    edges.push({
+      id: `edge:${applicationId}->${outputFactKey}`,
+      from: applicationId,
+      to: `fact:${outputFactKey}`,
+      kind: 'output',
+      rule: proof.rule,
+    });
+  }
+  return {
+    facts,
+    ruleApplications: ruleApplications.sort((a, b) => a.id.localeCompare(b.id)),
+    edges: edges.sort((a, b) => a.id.localeCompare(b.id)),
+  };
+}
+
 function pathName(path, index) {
   return path.id || path.name || path.label || `path_${index + 1}`;
 }
@@ -78,6 +147,7 @@ function pathProfile(path, index, world, releases) {
 export function profileProofDag(world) {
   if (!world) return null;
   const releases = releaseMap(world);
+  const hypergraph = authoredProofHypergraph(world);
   const paths = (world.proofPaths || []).map((path, index) => pathProfile(path, index, world, releases));
   const proofPremiseIds = new Set(paths.flatMap((path) => path.premiseIds));
   const scheduledProofPremiseIds = [...proofPremiseIds].filter((id) => releases.has(id));
@@ -111,6 +181,8 @@ export function profileProofDag(world) {
     uniqueProofPremiseCount: proofPremiseIds.size,
     scheduledProofPremiseCount: scheduledProofPremiseIds.length,
     ruleCount: (world.rules || []).length,
+    ruleApplicationCount: hypergraph.ruleApplications.length,
+    factCount: hypergraph.facts.length,
     releaseCount: (world.releaseSchedule || []).length,
     shortestPathPremises: paths.length ? Math.min(...paths.map((path) => path.premiseCount)) : 0,
     longestPathPremises: paths.length ? Math.max(...paths.map((path) => path.premiseCount)) : 0,
@@ -131,6 +203,9 @@ export function profileProofDag(world) {
     secret,
     mirror,
     metrics,
+    facts: hypergraph.facts,
+    ruleApplications: hypergraph.ruleApplications,
+    edges: hypergraph.edges,
     paths,
     releases: releasedRows,
     rules: (world.rules || []).map(ruleProfile),
@@ -264,6 +339,7 @@ export function renderHumanDagMarkdown(profile) {
     `- Unique proof premises: ${profile.metrics.uniqueProofPremiseCount}`,
     `- Scheduled proof premises: ${profile.metrics.scheduledProofPremiseCount}`,
     `- Rules: ${profile.metrics.ruleCount}`,
+    `- Rule applications: ${profile.metrics.ruleApplicationCount}`,
     `- Earliest complete path turn: ${profile.metrics.earliestCompleteTurn ?? 'n/a'}`,
     '',
     '## Authored Proof Paths',
@@ -282,12 +358,17 @@ export function renderHumanDagMarkdown(profile) {
   for (const rule of profile.rules) {
     lines.push(`- ${rule.id}: ${rule.gloss || `${rule.if.join(' + ')} -> ${rule.then.join(', ')}`}`);
   }
+  lines.push('', '## Rule Applications', '');
+  for (const application of profile.ruleApplications || []) {
+    lines.push(`- ${application.rule}: ${application.inputFactTexts.join(' + ')} -> ${application.outputFactText}`);
+  }
   lines.push('');
   return `${lines.join('\n')}`;
 }
 
 export function buildDerivationAssessment({ label = null, live = {}, result = {}, diagnosis = {}, world = null } = {}) {
-  const learnerDag = result.learnerDag || buildLearnerDagFromResult(world, result);
+  const learnerDagBase = result.learnerDag || buildLearnerDagFromResult(world, result);
+  const learnerDag = learnerDagBase ? { ...learnerDagBase, assessment: assessLearnerDag(world, learnerDagBase) } : null;
   return {
     schema: 'machinespirits.derivation.assessment.v1',
     label,

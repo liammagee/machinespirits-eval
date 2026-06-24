@@ -508,6 +508,12 @@ function appendLearnerDagReport(lines, learnerDagAssessment) {
     lines.push('Learner DAG: not available for this artifact.', '');
     return;
   }
+  const missingPremises = learnerDagAssessment.missingPremises || [];
+  const missingDetail = missingPremises.length
+    ? missingPremises
+        .map((row) => `${row.premiseId}:${row.bucket}${row.releaseTurn ? `@t${row.releaseTurn}` : ''}`)
+        .join(', ')
+    : 'none';
   lines.push(
     `Learner DAG: source \`${learnerDagAssessment.source}\`; best authored-path coverage ${Math.round(
       learnerDagAssessment.bestPathCoverage * 100,
@@ -520,6 +526,7 @@ function appendLearnerDagReport(lines, learnerDagAssessment) {
     }; missing on best path: ${
       learnerDagAssessment.missingOnBestPath?.length ? learnerDagAssessment.missingOnBestPath.join(', ') : 'none'
     }.`,
+    `- Bottleneck: ${learnerDagAssessment.bottleneck || 'n/a'}; missing premise buckets: ${missingDetail}.`,
     '',
   );
 }

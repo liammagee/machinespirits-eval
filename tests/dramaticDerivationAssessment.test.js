@@ -22,11 +22,17 @@ test('profileProofDag renders a readable authored DAG from a world spec', () => 
   assert.equal(profile.metrics.uniqueProofPremiseCount, 3);
   assert.equal(profile.metrics.scheduledProofPremiseCount, 3);
   assert.equal(profile.metrics.earliestCompleteTurn, 8);
+  assert.equal(profile.metrics.factCount, 8);
+  assert.equal(profile.metrics.ruleApplicationCount, 3);
+  assert.ok(profile.facts.some((node) => node.kind === 'fact' && node.factText === 'heir(marin)'));
+  assert.ok(profile.ruleApplications.some((node) => node.rule === 'R2_succession'));
+  assert.ok(profile.edges.some((edge) => edge.kind === 'input' && edge.rule === 'R1_lineage'));
   assert.match(profile.summary, /1 authored proof path/u);
   assert.match(profile.paths[0].premises[0].surface, /Marin/u);
 
   const markdown = renderHumanDagMarkdown(profile);
   assert.match(markdown, /Authored Proof Paths/u);
+  assert.match(markdown, /Rule Applications/u);
   assert.match(markdown, /p3 \(turn 8 via tutor\)/u);
 });
 
