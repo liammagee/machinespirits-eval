@@ -181,6 +181,8 @@ Director and adaptation:
 Paired runs:
   --paired-continuation-policies none,revoice,reconsider,reframe
   --paired-adaptation-arms routine,none,reframe-only,tutor-uptake-only,reframe+tutor-uptake,peripeteia-only,reframe+peripeteia,socratic,reveal
+  --paired-prefix-trace FILE          Reuse a saved trace as the fixed prefix through tutor turn 2
+  --paired-prefix-source-branch NAME  Label for the source branch (default: none)
 
 Output paths:
   --out-dir DIR
@@ -246,6 +248,8 @@ function parseArgs(argv) {
     openingSpeaker: null,
     pairedContinuationPolicies: null,
     pairedAdaptationArms: null,
+    pairedPrefixTrace: null,
+    pairedPrefixSourceBranch: 'none',
     affectiveAdaptationPolicy: null,
     controlEndingPolicy: 'default',
     generationConcurrency: 1,
@@ -328,6 +332,10 @@ function parseArgs(argv) {
         .split(',')
         .map((arm) => arm.trim())
         .filter(Boolean);
+    } else if (t === '--paired-prefix-trace') {
+      a.pairedPrefixTrace = path.resolve(argv[++i]);
+    } else if (t === '--paired-prefix-source-branch') {
+      a.pairedPrefixSourceBranch = String(argv[++i] || '').trim() || 'none';
     } else if (t === '--generation-concurrency') a.generationConcurrency = parseInt(argv[++i], 10);
     else throw new Error(`unknown arg: ${t}\n\n${usage()}`);
   }
@@ -385,6 +393,12 @@ function parseArgs(argv) {
         throw new Error('--paired-continuation-policies must use none|anchor|revoice|reconsider|reframe');
       }
     }
+  }
+  if (a.pairedPrefixTrace && !fs.existsSync(a.pairedPrefixTrace)) {
+    throw new Error(`--paired-prefix-trace not found: ${a.pairedPrefixTrace}`);
+  }
+  if (a.pairedPrefixTrace && !a.pairedAdaptationArms && !a.pairedContinuationPolicies) {
+    throw new Error('--paired-prefix-trace requires --paired-adaptation-arms or --paired-continuation-policies');
   }
   if (a.pairedAdaptationArms) {
     if (!a.pairedAdaptationArms.length) throw new Error('--paired-adaptation-arms needs at least one arm');
@@ -4749,8 +4763,17 @@ function effectiveBranchTutorAdaptationPolicyForOrder(branch, order = []) {
 }
 
 async function generatePairedContinuations({ args, order, runtime, llmCall }) {
+  if (args.pairedPrefixTrace && order.length !== 1) {
+    throw new Error('--paired-prefix-trace currently supports exactly one selected drama');
+  }
   const branches = pairedBranchDefinitions(args);
   const branchKeys = branches.map((branch) => branch.key);
+  const pairedPrefixSource = args.pairedPrefixTrace
+    ? {
+        prefix_source_trace: path.relative(WORKTREE_ROOT, args.pairedPrefixTrace),
+        prefix_source_branch: args.pairedPrefixSourceBranch || 'none',
+      }
+    : {};
   const progress = createProgressReporter({
     label: 'generation',
     total: order.length * (branches.length + 1),
@@ -4772,6 +4795,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
           prefix_through: 'tutor_turn_2',
           branch_policies: branchKeys,
           branches,
+          ...pairedPrefixSource,
         },
       }),
     ]),
@@ -4796,52 +4820,71 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
         d._directorVariationKey = d.director_variation_key || args.directorVariationKey || null;
         const itemWarnings = [];
         const itemEntries = {};
-        progress.note(`${d._tid} (${d.id}) shared prefix starting`);
-        console.log(`\n  ${d._tid} (${d.id}) — generating shared prefix …`);
-        const prefixDrama = {
-          ...d,
-          _directorRevisitPolicy: 'none',
-          _directorRevisitAnchor: null,
-          _tutorAdaptationPolicy: dramaHasOedipusSecret(d) ? 'withhold_secret' : 'none',
-        };
-        const directorPlan = await buildDirectorPlan(prefixDrama, llmCall, args);
-        const prefixTrace = await runtime.runInteraction(
-          {
-            learnerId: branchId('prefix', d.id, 'none'),
-            personaId: d.persona,
-            tutorProfile: d.tutor_profile,
-            topic: d.topic,
-            scenario: { name: d.scenario_name, learnerStartState: d.learner_start_state, directorPlan },
-            sessionId: branchId('prefix-session', d.id, 'none'),
-          },
-          llmCall,
-          {
-            ...dramaTurnOptionsForArgs(args),
-            maxTurns: 2,
-            observeInternals: true,
-            learnerProfile: d.learner_profile,
-            forceMaxTurns: true,
-            directorPlan,
-            onProgress: ({ phase, turnCount, maxTurns }) =>
-              progress.update(
-                `${d._tid}:prefix`,
-                maxTurns ? turnCount / maxTurns : 0,
-                `${d._tid} prefix · ${phase} ${turnCount}/${maxTurns}`,
-              ),
-            onTurn: createPartialTurnFlusher({
-              args,
-              d: prefixDrama,
+        let directorPlan;
+        let resumeTrace;
+        if (args.pairedPrefixTrace) {
+          progress.note(`${d._tid} (${d.id}) shared prefix loading`);
+          console.log(`\n  ${d._tid} (${d.id}) — loading shared prefix from ${path.relative(WORKTREE_ROOT, args.pairedPrefixTrace)} …`);
+          const sourceTrace = JSON.parse(fs.readFileSync(args.pairedPrefixTrace, 'utf8'));
+          if (sourceTrace.drama_id && sourceTrace.drama_id !== d.id) {
+            throw new Error(`prefix trace drama_id ${sourceTrace.drama_id} does not match selected drama ${d.id}`);
+          }
+          if (sourceTrace.tid && sourceTrace.tid !== d._tid) {
+            throw new Error(`prefix trace tid ${sourceTrace.tid} does not match selected T id ${d._tid}`);
+          }
+          if (!sourceTrace.directorPlan) {
+            throw new Error(`prefix trace has no directorPlan: ${args.pairedPrefixTrace}`);
+          }
+          directorPlan = sourceTrace.directorPlan;
+          resumeTrace = tracePrefixThroughTutorTurn(sourceTrace, 2);
+        } else {
+          progress.note(`${d._tid} (${d.id}) shared prefix starting`);
+          console.log(`\n  ${d._tid} (${d.id}) — generating shared prefix …`);
+          const prefixDrama = {
+            ...d,
+            _directorRevisitPolicy: 'none',
+            _directorRevisitAnchor: null,
+            _tutorAdaptationPolicy: dramaHasOedipusSecret(d) ? 'withhold_secret' : 'none',
+          };
+          directorPlan = await buildDirectorPlan(prefixDrama, llmCall, args);
+          const prefixTrace = await runtime.runInteraction(
+            {
+              learnerId: branchId('prefix', d.id, 'none'),
+              personaId: d.persona,
+              tutorProfile: d.tutor_profile,
+              topic: d.topic,
+              scenario: { name: d.scenario_name, learnerStartState: d.learner_start_state, directorPlan },
+              sessionId: branchId('prefix-session', d.id, 'none'),
+            },
+            llmCall,
+            {
+              ...dramaTurnOptionsForArgs(args),
+              maxTurns: 2,
+              observeInternals: true,
+              learnerProfile: d.learner_profile,
+              forceMaxTurns: true,
               directorPlan,
-              runtime,
-              progress,
-              progressKey: `${d._tid}:prefix`,
-            }),
-          },
-        );
-        const resumeTrace = tracePrefixThroughTutorTurn(prefixTrace, 2);
+              onProgress: ({ phase, turnCount, maxTurns }) =>
+                progress.update(
+                  `${d._tid}:prefix`,
+                  maxTurns ? turnCount / maxTurns : 0,
+                  `${d._tid} prefix · ${phase} ${turnCount}/${maxTurns}`,
+                ),
+              onTurn: createPartialTurnFlusher({
+                args,
+                d: prefixDrama,
+                directorPlan,
+                runtime,
+                progress,
+                progressKey: `${d._tid}:prefix`,
+              }),
+            },
+          );
+          resumeTrace = tracePrefixThroughTutorTurn(prefixTrace, 2);
+        }
         const prefixTurns = externalTurns(resumeTrace);
         const prefixHash = sha256Short(renderTranscript(prefixTurns));
-        progress.step(`${d._tid} prefix ready ${prefixHash}`, 1, `${d._tid}:prefix`);
+        progress.step(`${d._tid} prefix ${args.pairedPrefixTrace ? 'loaded' : 'ready'} ${prefixHash}`, 1, `${d._tid}:prefix`);
 
         for (const branch of branches) {
           const branchTutorAdaptationPolicy = effectiveBranchTutorAdaptationPolicy(branch, d);
@@ -4982,6 +5025,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
             tutor_adaptation_policy: branchTutorAdaptationPolicy,
             affective_adaptation_policy:
               branchDrama._affectiveAdaptationPolicy || branchDirectorPlan?.affective_adaptation_policy || 'none',
+            ...pairedPrefixSource,
           };
           writeGeneratedDramaArtifacts({
             args,

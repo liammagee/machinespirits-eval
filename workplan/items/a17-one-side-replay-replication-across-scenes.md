@@ -12,11 +12,10 @@ verification: Replication across scenes run; results in exports/; the
   one-side-replay claim updated or closed in the paper.
 branch: codex/a17-replay-replication
 blocked_by: >-
-  Redacted D5 run5 passed the local no-cue quality screen and T1 withheld QA,
-  clearing the D5 `none` control gate. A17 is now blocked on the next explicit
-  paid/tooling decision: generate matching D5 `socratic`/`reveal` branches
-  from run5's saved prefix, or redraw a full three-arm D5 scene, then proceed
-  to D4, grading, and replays.
+  D5 is now cleared: run5 and run6 are complete admissible three-arm D5 roots.
+  A17 is blocked on the next explicit paid pipeline step: generate an
+  admissible D4 root, then run original graded scoring, learner-side replay,
+  and replay scoring before any §7.9 paper update.
 links:
   notes:
     - TODO.md#A17
@@ -26,6 +25,7 @@ links:
     - notes/poetics/2026-06-24-a17-d5-redacted-control-tooling.md
     - notes/poetics/2026-06-24-a17-d5-redacted-control-run4-gate.md
     - notes/poetics/2026-06-24-a17-d5-redacted-control-run5-rescue.md
+    - notes/poetics/2026-06-24-a17-d5-matched-branches-and-redraw.md
   paper: §7.9
   exports: exports/a17-one-side-replay-replication/
 claim_status: exploratory
@@ -264,3 +264,20 @@ constraint: the current paired-continuation generator does not append missing
 branches from a saved prefix, so completing D5 from run5 requires either a
 small continuation helper for matching `socratic`/`reveal` branches or an
 explicitly approved fresh full three-arm D5 redraw under the cheap-screen guard.
+
+2026-06-24 Codex: User approved both D5 completion paths. Added
+`--paired-prefix-trace` / `--paired-prefix-source-branch` support to
+`scripts/generate-pedagogical-dramas.js` and packaged it as
+`scripts/run-a17-matched-d5-branches.js` with package alias
+`npm run poetics:a17-matched-d5-branches -- ...`. Dry-run and mock source+branch
+smoke passed before paid use. Then generated matching `socratic`/`reveal`
+branches from run5's saved prefix hash `593d1653b453b399`; branch QA passed
+with `socratic` T2 `metered_ok` (`3/4`) and `reveal` T3 `stated_ok` (`4/4`).
+Also ran a fresh cheap-screened D5 redraw under
+`exports/a17-one-side-replay-replication/d5-redacted-full-redraw-run6/`: `none`
+passed local quality and T1 `withheld_ok` (`4/4`), then matched
+`socratic`/`reveal` branches from prefix hash `94dfdce7443db570`; branch QA
+passed with both positive arms `4/4`. Durable note:
+`notes/poetics/2026-06-24-a17-d5-matched-branches-and-redraw.md`. D5 is now
+cleared for A17; remaining paid work is D4 generation plus original grading,
+learner-side replay, replay scoring, and then a §7.9 update or closeout.
