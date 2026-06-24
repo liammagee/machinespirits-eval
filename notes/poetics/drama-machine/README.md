@@ -8,6 +8,19 @@ A structural model + spec + skill for assembling **pedagogical dramas** — tuto
 
 **Status:** design v0.1 (2026-06-02). Serves `DRAMATIC-RECOGNITION-PLAN.md`. **Makes no empirical claims** — those live only in `docs/research/paper-full-2.0.md`. This is tooling + a model, not a result.
 
+## Terminology policy
+
+The serialized role key remains `director` for compatibility with CLI flags,
+YAML specs, traces, cached plans, and historical artifacts. Conceptually, this
+role is the **scene author / staging director**: it authors scene ecology,
+speaker order, public stage material, and scheduled cues, but it is not the
+tutor, learner, critic, or a claim that the runtime has a single human author.
+
+Use `scene author / director` in human-facing labels when helpful. Do not rename
+existing artifacts, `--director-*` flags, `cast.director`, `role: director`,
+`via: director`, or the separate `id_director` / id-director charisma
+architecture without a dedicated compatibility migration.
+
 ---
 
 ## What's here

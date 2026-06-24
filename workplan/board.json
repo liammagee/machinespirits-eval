@@ -1,11 +1,11 @@
 {
-  "generated": "2026-06-24T01:42:58.693Z",
+  "generated": "2026-06-24T02:14:49.176Z",
   "counts": {
     "total": 47,
     "byStatus": {
-      "done": 39,
+      "done": 40,
       "blocked": 1,
-      "triaged": 4,
+      "triaged": 3,
       "dropped": 2,
       "review": 1
     },
@@ -40,35 +40,6 @@
         "replay",
         "poetics",
         "learner-variance"
-      ],
-      "milestone": "poetics-followups"
-    },
-    {
-      "id": "audit-dramatic-metaphor-role-vocabulary",
-      "title": "Audit dramatic metaphor and rename director role toward author",
-      "status": "triaged",
-      "type": "content",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-06-23",
-      "updated": "2026-06-24",
-      "verification": "Dramatic-machine docs, derivation notes, config names, UI labels, and any runtime-facing role names use a coherent metaphor set; the director/author distinction is either renamed safely or documented with a compatibility path.",
-      "links": {
-        "notes": [
-          "notes/poetics/drama-machine/SPEC.md",
-          "notes/poetics/drama-machine/TAXONOMY.md",
-          "notes/poetics/2026-06-09-free-dramaturgy-and-register-dials.md",
-          "notes/2026-06-09-dramatic-derivation-plan.md"
-        ],
-        "items": "refresh-weber-id-charisma-recognition-thread"
-      },
-      "tags": [
-        "poetics",
-        "dramatic-derivation",
-        "terminology",
-        "author",
-        "director"
       ],
       "milestone": "poetics-followups"
     },
@@ -465,6 +436,37 @@
       "milestone": "poetics-followups",
       "branch": "codex/workplan-board-triage",
       "claim_status": "future"
+    },
+    {
+      "id": "audit-dramatic-metaphor-role-vocabulary",
+      "title": "Audit dramatic metaphor and rename director role toward author",
+      "status": "done",
+      "type": "content",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-23",
+      "updated": "2026-06-24",
+      "verification": "Dramatic-machine docs, derivation notes, config names, UI labels, and any runtime-facing role names use a coherent metaphor set; the director/author distinction is either renamed safely or documented with a compatibility path.",
+      "branch": "codex/dramatic-vocabulary-audit",
+      "links": {
+        "notes": [
+          "notes/poetics/drama-machine/SPEC.md",
+          "notes/poetics/drama-machine/TAXONOMY.md",
+          "notes/poetics/drama-machine/DIRECTOR-TERMINOLOGY-AUDIT.md",
+          "notes/poetics/2026-06-09-free-dramaturgy-and-register-dials.md",
+          "notes/2026-06-09-dramatic-derivation-plan.md"
+        ],
+        "items": "refresh-weber-id-charisma-recognition-thread"
+      },
+      "tags": [
+        "poetics",
+        "dramatic-derivation",
+        "terminology",
+        "author",
+        "director"
+      ],
+      "milestone": "poetics-followups"
     },
     {
       "id": "auto-drop-daily-routine",
