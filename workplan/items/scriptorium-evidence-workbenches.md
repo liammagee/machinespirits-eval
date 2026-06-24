@@ -7,7 +7,7 @@ priority: P1
 owner: codex
 source: manual
 created: 2026-06-23
-updated: 2026-06-23
+updated: 2026-06-24
 verification: A reviewer can find, inspect, compare, flag, and label
   scripts/proof runs/replays from first-class evidence workbench views without
   route guessing.
@@ -22,6 +22,7 @@ tags:
   - evidence
   - review
 branch: codex/ux-enhancements
+milestone: desktop-app
 ---
 
 Context: `/browse` and `/derivation` expose rich data, but the workbench loop is

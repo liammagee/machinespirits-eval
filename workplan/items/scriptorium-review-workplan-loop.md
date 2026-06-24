@@ -7,7 +7,7 @@ priority: P1
 owner: codex
 source: manual
 created: 2026-06-23
-updated: 2026-06-23
+updated: 2026-06-24
 verification: A flagged case can be found, reviewed, connected to a workplan
   item, and resolved through the existing workplan source-of-truth workflow
   without creating a second board.
@@ -21,6 +21,7 @@ tags:
   - workplan
   - review
 branch: codex/ux-enhancements
+milestone: board-pm
 ---
 
 Context: the workplan now has a structured board and the Scriptorium reads

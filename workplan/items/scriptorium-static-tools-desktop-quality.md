@@ -7,7 +7,7 @@ priority: P1
 owner: codex
 source: manual
 created: 2026-06-23
-updated: 2026-06-23
+updated: 2026-06-24
 verification: Chat, adjudication, pilot-admin, and Electron desktop parity pass
   the same shell, responsive, accessibility, and no-console gates as the
   server-rendered Scriptorium routes.
@@ -22,6 +22,7 @@ tags:
   - desktop
   - static-surfaces
 branch: codex/ux-enhancements
+milestone: desktop-app
 ---
 
 Context: folded-in static tools use the shared rail through `rail-inject.js`, but

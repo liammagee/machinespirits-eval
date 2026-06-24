@@ -7,7 +7,7 @@ priority: P2
 owner: unassigned
 source: todo
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-06-24
 verification: Replication across scenes run; results in exports/; the
   one-side-replay claim updated or closed in the paper.
 links:
@@ -19,6 +19,7 @@ tags:
   - replay
   - poetics
   - learner-variance
+milestone: poetics-followups
 ---
 
 TODO §A17 asks whether the D_OED5 run3 verdict generalizes across scenes now that per-run director plans are persisted.

@@ -7,7 +7,7 @@ priority: P2
 owner: codex
 source: manual
 created: 2026-06-23
-updated: 2026-06-23
+updated: 2026-06-24
 verification: Opt-in messages-style internal-history config is implemented with
   defaults unchanged; mock/hermetic tests pass; a small token-limited comparison
   reports latency/tokens/convergence/revision behavior before any wider run.
@@ -28,6 +28,7 @@ tags:
   - messages-api
   - performance
   - token-budget
+milestone: paper-2-evidence-cleanup
 ---
 
 Implement the smallest useful messages-style internal-history probe. The default path must remain behaviorally unchanged. The experimental path should let a cell include a bounded same-turn ego/superego exchange as chat-style `user` / `assistant` messages, with a small `max_chars_per_message` cap so the first evaluation can inspect whether performance improves or merely spends more context.

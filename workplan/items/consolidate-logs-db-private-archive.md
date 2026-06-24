@@ -7,7 +7,7 @@ priority: P2
 owner: unassigned
 source: manual
 created: 2026-06-22
-updated: 2026-06-23
+updated: 2026-06-24
 verification: Dialogue logs are co-located with the DB under the private
   archive; npm run provenance:validate finds the logs; the dramatic fork's
   sibling-path log_dir stopgap is removed.
@@ -18,6 +18,7 @@ tags:
   - provenance
   - logs
   - archive
+milestone: paper-2-evidence-cleanup
 ---
 
 Standing infra task. The DB is already canonical at `~/.machinespirits-data`, but

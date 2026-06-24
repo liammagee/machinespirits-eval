@@ -7,7 +7,7 @@ priority: P0
 owner: codex
 source: manual
 created: 2026-06-23
-updated: 2026-06-23
+updated: 2026-06-24
 verification: A no-spend Scriptorium UX smoke command checks core routes at
   desktop and mobile widths for HTTP render, console errors, horizontal
   overflow, unlabeled controls, duplicate landmarks, touch-target risks, and
@@ -20,6 +20,7 @@ tags:
   - qa
   - dashboard
 branch: codex/ux-enhancements
+milestone: desktop-app
 ---
 
 Context: the UX audit found the app functionally healthy but missing a regression

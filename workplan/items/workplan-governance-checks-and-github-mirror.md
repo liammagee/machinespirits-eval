@@ -7,10 +7,10 @@ priority: P2
 owner: codex
 source: manual
 created: 2026-06-23
-updated: 2026-06-23
+updated: 2026-06-24
 branch: codex/ops-board-items
-verification: "`npm run wp:check`, `npm run wp:test`, GitHub mirror dry-run,
-  and `/board` Scriptorium smoke all passed before the branch was merged to main."
+verification: "`npm run wp:check`, `npm run wp:test`, GitHub mirror dry-run, and
+  `/board` Scriptorium smoke all passed before the branch was merged to main."
 links:
   items:
     - build-workplan-tooling
@@ -21,6 +21,7 @@ tags:
   - ci
   - github
   - governance
+milestone: board-pm
 ---
 
 This closes the governance slice that made `workplan/items/` harder to drift

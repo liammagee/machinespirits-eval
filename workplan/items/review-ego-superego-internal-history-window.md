@@ -7,10 +7,10 @@ priority: P2
 owner: unassigned
 source: manual
 created: 2026-06-23
-updated: 2026-06-23
+updated: 2026-06-24
 verification: Current same-turn history behavior is covered by tests; a
-  configurable history-window design is either implemented and smoke-tested
-  with a bounded comparison, or explicitly rejected with rationale.
+  configurable history-window design is either implemented and smoke-tested with
+  a bounded comparison, or explicitly rejected with rationale.
 claim_status: exploratory
 links:
   notes: notes/2026-06-23-ego-superego-history-window-review.md
@@ -22,6 +22,7 @@ tags:
   - message-history
   - prompt-assembly
   - mechanism-test
+milestone: paper-2-evidence-cleanup
 ---
 
 Confirm and review the prompt-assembly boundary for same-turn ego/superego deliberation. Current behavior is mixed: `single-prompt` mode does not carry internal deliberation as chat history; `messages` mode carries limited per-role in-turn chains, but not a configurable unified ego/superego transcript; the Phase-2 dialectical engine records traces but does not feed them forward as chat-message history.

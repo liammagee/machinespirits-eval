@@ -1,12 +1,12 @@
 {
-  "generated": "2026-06-23T20:20:09.578Z",
+  "generated": "2026-06-24T01:42:58.693Z",
   "counts": {
     "total": 47,
     "byStatus": {
-      "triaged": 24,
+      "done": 39,
       "blocked": 1,
+      "triaged": 4,
       "dropped": 2,
-      "done": 19,
       "review": 1
     },
     "byType": {
@@ -20,21 +20,6 @@
   },
   "items": [
     {
-      "id": "a-model-of-multi-turn-human-persuadability-using-probabilist",
-      "title": "A Model of Multi-turn Human Persuadability Using Probabilistic Belief Tracing",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-09-research-roundup.html"
-      }
-    },
-    {
       "id": "a17-one-side-replay-replication-across-scenes",
       "title": "A17. One-Side Replay Replication Across Scenes",
       "status": "triaged",
@@ -43,7 +28,7 @@
       "owner": "unassigned",
       "source": "todo",
       "created": "2026-06-22",
-      "updated": "2026-06-22",
+      "updated": "2026-06-24",
       "verification": "Replication across scenes run; results in exports/; the one-side-replay claim updated or closed in the paper.",
       "links": {
         "notes": "TODO.md#A17",
@@ -55,22 +40,8 @@
         "replay",
         "poetics",
         "learner-variance"
-      ]
-    },
-    {
-      "id": "arcane-do-role-playing-language-agents-stay-in-character-at",
-      "title": "ArcANE: Do Role-Playing Language Agents Stay in Character at the Right Time?",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-09-research-roundup.html"
-      }
+      ],
+      "milestone": "poetics-followups"
     },
     {
       "id": "audit-dramatic-metaphor-role-vocabulary",
@@ -81,7 +52,7 @@
       "owner": "unassigned",
       "source": "manual",
       "created": "2026-06-23",
-      "updated": "2026-06-23",
+      "updated": "2026-06-24",
       "verification": "Dramatic-machine docs, derivation notes, config names, UI labels, and any runtime-facing role names use a coherent metaphor set; the director/author distinction is either renamed safely or documented with a compatibility path.",
       "links": {
         "notes": [
@@ -98,7 +69,8 @@
         "terminology",
         "author",
         "director"
-      ]
+      ],
+      "milestone": "poetics-followups"
     },
     {
       "id": "d5-rubric-v3-0-pca-informed-consolidation",
@@ -109,7 +81,7 @@
       "owner": "unassigned",
       "source": "todo",
       "created": "2026-06-22",
-      "updated": "2026-06-22",
+      "updated": "2026-06-24",
       "verification": "Rubric v3.0 PCA-informed consolidation drafted in config/rubrics/v3.0/; calibration run; decision recorded in the paper or shelved with a reason.",
       "links": {
         "notes": [
@@ -123,127 +95,8 @@
         "rubric",
         "pca",
         "methods"
-      ]
-    },
-    {
-      "id": "environment-grounded-automated-prompt-optimization-for-llm-g",
-      "title": "Environment-Grounded Automated Prompt Optimization for LLM Game Agents",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-18-research-roundup.html"
-      }
-    },
-    {
-      "id": "from-holistic-evaluation-to-structured-criteria-rubrics-acro",
-      "title": "From Holistic Evaluation to Structured Criteria: Rubrics Across the Evolving LLM Landscape",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-14-research-roundup.html"
-      }
-    },
-    {
-      "id": "from-prompts-to-context-an-ontology-driven-framework-for-hum",
-      "title": "From Prompts to Context: An Ontology-Driven Framework for Human-Generative AI Collaboration",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-11-research-roundup.html"
-      }
-    },
-    {
-      "id": "from-solver-to-tutor-evaluating-the-pedagogical-intelligence",
-      "title": "From Solver to Tutor: Evaluating the Pedagogical Intelligence of LLMs with KMP-Bench",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-15-research-roundup.html"
-      }
-    },
-    {
-      "id": "measuring-whether-llm-tutors-teach-or-solve-a-diagnostic-for",
-      "title": "Measuring Whether LLM Tutors Teach or Solve: A Diagnostic for Educational Impact",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-18-research-roundup.html"
-      }
-    },
-    {
-      "id": "perspectivegap-a-benchmark-for-multi-agent-orchestration-pro",
-      "title": "PerspectiveGap: A Benchmark for Multi-Agent Orchestration Prompting",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-11-research-roundup.html"
-      }
-    },
-    {
-      "id": "refresh-weber-id-charisma-recognition-thread",
-      "title": "Refresh Weber/id-charisma thread around being recognized",
-      "status": "triaged",
-      "type": "paper",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-06-23",
-      "updated": "2026-06-23",
-      "verification": "Paper/notes pass clarifies whether the Weber id-charisma thread changes Paper 2.0 framing, a future experiment, or only a bounded note; the result explicitly distinguishes Hegelian mutual recognition from Weberian being-recognized-as-authoritative.",
-      "claim_status": "planned",
-      "links": {
-        "paper": "docs/research/paper-full-2.0.md#67-id-director-charisma-family",
-        "notes": [
-          "docs/cell-100-charisma-full-n-update.md",
-          "docs/cell-100-followups.md",
-          "notes/2026-06-09-adaptation-exploration-plan.md",
-          "notes/poetics/2026-06-09-free-dramaturgy-and-register-dials.md",
-          "notes/rhetoric/2026-06-08-deep-research-report-2.md"
-        ]
-      },
-      "tags": [
-        "id-director",
-        "charisma",
-        "weber",
-        "recognition",
-        "paper-framing"
-      ]
+      ],
+      "milestone": "paper-2-evidence-cleanup"
     },
     {
       "id": "review-ego-superego-internal-history-window",
@@ -254,7 +107,7 @@
       "owner": "unassigned",
       "source": "manual",
       "created": "2026-06-23",
-      "updated": "2026-06-23",
+      "updated": "2026-06-24",
       "verification": "Current same-turn history behavior is covered by tests; a configurable history-window design is either implemented and smoke-tested with a bounded comparison, or explicitly rejected with rationale.",
       "claim_status": "exploratory",
       "links": {
@@ -269,246 +122,8 @@
         "message-history",
         "prompt-assembly",
         "mechanism-test"
-      ]
-    },
-    {
-      "id": "sepo-self-evolving-prompt-agent-for-system-prompt-optimizati",
-      "title": "SePO: Self-Evolving Prompt Agent for System Prompt Optimization",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-17-research-roundup.html"
-      }
-    },
-    {
-      "id": "socialcoach-personalized-social-skill-learning-with-rl-based",
-      "title": "SocialCoach: Personalized Social Skill Learning with RL-based Agentic Tutoring and Practice",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-14-research-roundup.html"
-      }
-    },
-    {
-      "id": "socratic-structured-tutoring-readings",
-      "title": "Assess structured-Socratic tutoring papers for the A1 pilot design",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Each paper read; a short note in notes/ records whether its design (knowledge-graph sequencing, student-state inference, withhold-and-derive) should change the A1 pilot instrument; the decision is logged on the a1-human-learner-validation item.",
-      "claim_status": "future",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-13-research-roundup.html",
-        "paper": "§2.1",
-        "items": "a1-human-learner-validation"
-      },
-      "tags": [
-        "reading",
-        "socratic",
-        "pilot"
-      ]
-    },
-    {
-      "id": "the-confident-liar-diagnosing-multi-agent-debate-with-log-pr",
-      "title": "The Confident Liar: Diagnosing Multi-Agent Debate with Log-Probabilities and LLM-as-Judge",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-12-research-roundup.html"
-      }
-    },
-    {
-      "id": "adapt-the-argument-uniqueness-metric-as-a-tutor-response-col",
-      "title": "Adapt the argument-uniqueness metric as a tutor-response-collapse diagnostic",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P3",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Decide whether a tutor-response-collapse diagnostic is distinct from §6.11; if yes spec a script, if no close as covered.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-09-research-roundup.html",
-        "paper": "§6.11"
-      }
-    },
-    {
-      "id": "b8-lower-recognitionorigin-js-tutoradaptivemechanism-cut-or",
-      "title": "B8. Lower `recognitionOrigin.js` `tutorAdaptiveMechanism` CUT or recalibrate critic panel",
-      "status": "triaged",
-      "type": "infra",
-      "priority": "P3",
-      "owner": "unassigned",
-      "source": "todo",
-      "created": "2026-06-22",
-      "updated": "2026-06-23",
-      "verification": "Future gated-arc rerun, if any, uses a pre-registered CUT/panel composition; no paid generation is run solely to repair a scorer-side classifier issue.",
-      "links": {
-        "notes": "TODO.md#B8",
-        "exports": [
-          "exports/recognition-origin-cut-sweep.md",
-          "exports/recognition-origin-panel-recompose.md"
-        ],
-        "paper": "§7.9"
-      },
-      "claim_status": "planned",
-      "tags": [
-        "poetics",
-        "scorer-calibration",
-        "gated-rerun"
-      ]
-    },
-    {
-      "id": "d2-cross-application-role-reframed-study",
-      "title": "D2. True cross-application role-reframed study",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P3",
-      "owner": "unassigned",
-      "source": "todo",
-      "created": "2026-06-23",
-      "updated": "2026-06-23",
-      "verification": "Decide whether Path 2 remains separate-paper scope; if pursued, resolve therapy include/exclude, author role-reframed prompts/content/rubrics, and produce a run report with paper-placement boundaries.",
-      "claim_status": "future",
-      "links": {
-        "notes": [
-          "TODO.md#D2",
-          "notes/design-d2-path2-cross-application.md"
-        ],
-        "paper": "§8.2"
-      },
-      "tags": [
-        "d2",
-        "cross-application",
-        "separate-study"
-      ]
-    },
-    {
-      "id": "d3-insight-action-gap-heavy-bridge-followups",
-      "title": "D3. Insight-action gap heavy bridge follow-ups",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P3",
-      "owner": "unassigned",
-      "source": "todo",
-      "created": "2026-06-23",
-      "updated": "2026-06-23",
-      "verification": "Either run a pre-registered Bridge 3b/4/5 follow-up with exports and paper-boundary text, or close the follow-up as too expensive for the expected marginal mechanism information.",
-      "claim_status": "future",
-      "links": {
-        "notes": [
-          "TODO.md#D3",
-          "notes/design-d3-architectural-bridges.md"
-        ],
-        "paper": "§6.3.9"
-      },
-      "tags": [
-        "d3",
-        "insight-action-gap",
-        "bridge"
-      ]
-    },
-    {
-      "id": "d4-disposition-gradient-architecture-matched-sel-replication",
-      "title": "D4. Architecture-matched SEL disposition-gradient replication",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P3",
-      "owner": "unassigned",
-      "source": "todo",
-      "created": "2026-06-23",
-      "updated": "2026-06-23",
-      "verification": "Decide whether the cells 40-45 × SEL clean replication is worth the cost; if run, report the architecture-scope result, otherwise close as out-of-scope for the current paper.",
-      "claim_status": "future",
-      "links": {
-        "notes": "TODO.md#D4",
-        "exports": "exports/d4-disposition-gradient.md",
-        "paper": "§6.6.8"
-      },
-      "tags": [
-        "d4",
-        "disposition",
-        "sel"
-      ]
-    },
-    {
-      "id": "d6-orientation-family-taxonomy-extensions",
-      "title": "D6. Orientation-family taxonomy extensions",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P3",
-      "owner": "unassigned",
-      "source": "todo",
-      "created": "2026-06-23",
-      "updated": "2026-06-23",
-      "verification": "Decide whether cognitivist-only, pure Socratic, radical constructivist, culturally responsive, or Freirean variants are needed; if yes, add cells/prompts/tests and report results, otherwise close as deferred.",
-      "claim_status": "future",
-      "links": {
-        "notes": [
-          "TODO.md#D6",
-          "docs/pedagogical-taxonomy.md"
-        ],
-        "paper": "§7.9"
-      },
-      "tags": [
-        "d6",
-        "taxonomy",
-        "orientation-family"
-      ]
-    },
-    {
-      "id": "revisit-adaptation-conformity-human-anchor",
-      "title": "Revisit adaptation-conformity human anchor and artifact availability",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P3",
-      "owner": "unassigned",
-      "source": "review",
-      "created": "2026-06-23",
-      "updated": "2026-06-23",
-      "verification": "Adaptation-conformity gate artifacts are either recovered/linked or their archive location is documented; any reopened human comparison uses a planned non-rushed annotation protocol before changing Paper 2.0 claims.",
-      "claim_status": "future",
-      "links": {
-        "notes": [
-          "notes/2026-06-09-adaptation-conformity-classifier-stage0-preregistration.md",
-          "notes/daily-notes/2026-06-09-research-roundup.html"
-        ],
-        "paper": "docs/research/paper-full-2.0.md",
-        "scripts": [
-          "scripts/adaptation-conformity-harvest.py",
-          "scripts/adaptation-conformity-classifier.py",
-          "scripts/adaptation-conformity-score-human.py"
-        ],
-        "items": "not-all-flips-are-conformity-decomposing-stance-convergence"
-      },
-      "tags": [
-        "human-anchor",
-        "artifact-recovery",
-        "conformity"
-      ]
+      ],
+      "milestone": "paper-2-evidence-cleanup"
     },
     {
       "id": "a1-human-learner-validation",
@@ -519,7 +134,7 @@
       "owner": "human",
       "source": "todo",
       "created": "2026-06-22",
-      "updated": "2026-06-22",
+      "updated": "2026-06-24",
       "verification": "Phased N≈90 pilot runs end-to-end across 3 arms; pre/post MCQ + immediate transfer + coded free-text explanation + 1-week retention scored; the tutor-quality → learning-gains path is estimated (or shown null) in exports/.",
       "blocked_by": "IRB approval + real consent text + real item content (content/legal track, not engineering)",
       "claim_status": "future",
@@ -532,7 +147,8 @@
         "pilot",
         "human-learner",
         "critical"
-      ]
+      ],
+      "milestone": "human-pilot-prep"
     },
     {
       "id": "implement-messages-style-internal-history-probe",
@@ -543,7 +159,7 @@
       "owner": "codex",
       "source": "manual",
       "created": "2026-06-23",
-      "updated": "2026-06-23",
+      "updated": "2026-06-24",
       "verification": "Opt-in messages-style internal-history config is implemented with defaults unchanged; mock/hermetic tests pass; a small token-limited comparison reports latency/tokens/convergence/revision behavior before any wider run.",
       "claim_status": "exploratory",
       "branch": "codex/internal-history-messages",
@@ -564,7 +180,8 @@
         "messages-api",
         "performance",
         "token-budget"
-      ]
+      ],
+      "milestone": "paper-2-evidence-cleanup"
     },
     {
       "id": "scriptorium-control-room-first-run",
@@ -575,7 +192,7 @@
       "owner": "codex",
       "source": "manual",
       "created": "2026-06-23",
-      "updated": "2026-06-23",
+      "updated": "2026-06-24",
       "verification": "The dashboard front door clearly identifies Scriptorium, shows role-based next actions, distinguishes DB-backed script corpus from file-backed proof runs, and gives a no-spend path out of an empty script corpus.",
       "links": {
         "notes": "notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md",
@@ -590,7 +207,8 @@
         "onboarding",
         "data-health"
       ],
-      "branch": "codex/ux-enhancements"
+      "branch": "codex/ux-enhancements",
+      "milestone": "desktop-app"
     },
     {
       "id": "scriptorium-creation-flows",
@@ -601,7 +219,7 @@
       "owner": "codex",
       "source": "manual",
       "created": "2026-06-23",
-      "updated": "2026-06-23",
+      "updated": "2026-06-24",
       "verification": "Mock generation, mock derivation, replay dry-run, and score dry-run are launchable from guided UI flows with visible cost class, command preview, validation checklist, and job records.",
       "links": {
         "notes": "notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md",
@@ -616,7 +234,8 @@
         "jobs",
         "launcher"
       ],
-      "branch": "codex/ux-enhancements"
+      "branch": "codex/ux-enhancements",
+      "milestone": "desktop-app"
     },
     {
       "id": "scriptorium-responsive-shell-navigation",
@@ -627,7 +246,7 @@
       "owner": "codex",
       "source": "manual",
       "created": "2026-06-23",
-      "updated": "2026-06-23",
+      "updated": "2026-06-24",
       "verification": "Core Scriptorium and injected static routes have no horizontal overflow at 390x844 or 768x1024, the mobile shell uses a compact app bar/drawer, and route parity/browser tests still pass.",
       "links": {
         "notes": "notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md",
@@ -639,7 +258,8 @@
         "navigation",
         "mobile"
       ],
-      "branch": "codex/ux-enhancements"
+      "branch": "codex/ux-enhancements",
+      "milestone": "desktop-app"
     },
     {
       "id": "scriptorium-ux-safety-net",
@@ -650,7 +270,7 @@
       "owner": "codex",
       "source": "manual",
       "created": "2026-06-23",
-      "updated": "2026-06-23",
+      "updated": "2026-06-24",
       "verification": "A no-spend Scriptorium UX smoke command checks core routes at desktop and mobile widths for HTTP render, console errors, horizontal overflow, unlabeled controls, duplicate landmarks, touch-target risks, and emits a compact report/screenshots.",
       "links": {
         "notes": "notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md"
@@ -661,7 +281,8 @@
         "qa",
         "dashboard"
       ],
-      "branch": "codex/ux-enhancements"
+      "branch": "codex/ux-enhancements",
+      "milestone": "desktop-app"
     },
     {
       "id": "build-workplan-tooling",
@@ -672,7 +293,7 @@
       "owner": "claude",
       "source": "manual",
       "created": "2026-06-22",
-      "updated": "2026-06-22",
+      "updated": "2026-06-24",
       "branch": "claude/derivation-fast-iteration",
       "verification": "scripts/workplan.js list/show/add/triage/set/validate/render/ingest all run green; tests/workplan.test.js passes under npm run test:hermetic; board.json renders a panel in the scriptorium (:3466); npm run wp:* wired in package.json.",
       "links": {
@@ -682,7 +303,8 @@
         "workplan",
         "tooling",
         "meta"
-      ]
+      ],
+      "milestone": "board-pm"
     },
     {
       "id": "g5-h2-per-session-slope-p-0-032-is-a-wrong-p-value",
@@ -693,11 +315,12 @@
       "owner": "unassigned",
       "source": "todo",
       "created": "2026-06-22",
-      "updated": "2026-06-23",
+      "updated": "2026-06-24",
       "verification": "The per-session slope p-value is recomputed correctly; the paper text is fixed and provable-discourse re-checks the claim.",
       "links": {
         "notes": "TODO.md"
-      }
+      },
+      "milestone": "paper-2-evidence-cleanup"
     },
     {
       "id": "scriptorium-evidence-workbenches",
@@ -708,7 +331,7 @@
       "owner": "codex",
       "source": "manual",
       "created": "2026-06-23",
-      "updated": "2026-06-23",
+      "updated": "2026-06-24",
       "verification": "A reviewer can find, inspect, compare, flag, and label scripts/proof runs/replays from first-class evidence workbench views without route guessing.",
       "links": {
         "notes": "notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md",
@@ -723,7 +346,8 @@
         "evidence",
         "review"
       ],
-      "branch": "codex/ux-enhancements"
+      "branch": "codex/ux-enhancements",
+      "milestone": "desktop-app"
     },
     {
       "id": "scriptorium-p2-best-of-breed-cockpit-features",
@@ -734,7 +358,7 @@
       "owner": "codex",
       "source": "manual",
       "created": "2026-06-23",
-      "updated": "2026-06-23",
+      "updated": "2026-06-24",
       "verification": "Command palette, job-center links, evidence graph, comparison workbench permalinks, and saved-view restoration pass targeted tests plus the Scriptorium UX smoke.",
       "links": {
         "notes": "notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md",
@@ -750,7 +374,8 @@
         "cockpit",
         "evidence"
       ],
-      "branch": "codex/ux-enhancements"
+      "branch": "codex/ux-enhancements",
+      "milestone": "desktop-app"
     },
     {
       "id": "scriptorium-review-workplan-loop",
@@ -761,7 +386,7 @@
       "owner": "codex",
       "source": "manual",
       "created": "2026-06-23",
-      "updated": "2026-06-23",
+      "updated": "2026-06-24",
       "verification": "A flagged case can be found, reviewed, connected to a workplan item, and resolved through the existing workplan source-of-truth workflow without creating a second board.",
       "links": {
         "notes": "notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md",
@@ -775,7 +400,8 @@
         "workplan",
         "review"
       ],
-      "branch": "codex/ux-enhancements"
+      "branch": "codex/ux-enhancements",
+      "milestone": "board-pm"
     },
     {
       "id": "scriptorium-static-tools-desktop-quality",
@@ -786,7 +412,7 @@
       "owner": "codex",
       "source": "manual",
       "created": "2026-06-23",
-      "updated": "2026-06-23",
+      "updated": "2026-06-24",
       "verification": "Chat, adjudication, pilot-admin, and Electron desktop parity pass the same shell, responsive, accessibility, and no-console gates as the server-rendered Scriptorium routes.",
       "links": {
         "notes": "notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md",
@@ -801,7 +427,44 @@
         "desktop",
         "static-surfaces"
       ],
-      "branch": "codex/ux-enhancements"
+      "branch": "codex/ux-enhancements",
+      "milestone": "desktop-app"
+    },
+    {
+      "id": "a-model-of-multi-turn-human-persuadability-using-probabilist",
+      "title": "A Model of Multi-turn Human Persuadability Using Probabilistic Belief Tracing",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "ArXiv source record and roundup note reviewed; decision appended; no immediate code or paper change required.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-09-research-roundup.html"
+      },
+      "milestone": "human-pilot-prep",
+      "branch": "codex/workplan-board-triage",
+      "claim_status": "future"
+    },
+    {
+      "id": "arcane-do-role-playing-language-agents-stay-in-character-at",
+      "title": "ArcANE: Do Role-Playing Language Agents Stay in Character at the Right Time?",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "ArXiv source record and roundup note reviewed; decision appended; no immediate poetics-rubric change required.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-09-research-roundup.html"
+      },
+      "milestone": "poetics-followups",
+      "branch": "codex/workplan-board-triage",
+      "claim_status": "future"
     },
     {
       "id": "auto-drop-daily-routine",
@@ -812,7 +475,7 @@
       "owner": "claude",
       "source": "manual",
       "created": "2026-06-22",
-      "updated": "2026-06-22",
+      "updated": "2026-06-24",
       "branch": "claude/derivation-fast-iteration",
       "verification": ".github/workflows/workplan-ingest.yml runs `wp:ingest --daily` on a research-roundup PR and commits per-paper captures (deduped by arXiv id) to the PR branch; ingestDaily parses <div class=\"paper\"> entries; the historical backfill produced 40 captures locally; workplan.js is lint-clean and wp:test is green.",
       "links": {
@@ -823,7 +486,8 @@
         "workplan",
         "ci",
         "daily-routine"
-      ]
+      ],
+      "milestone": "board-pm"
     },
     {
       "id": "consolidate-logs-db-private-archive",
@@ -834,7 +498,7 @@
       "owner": "unassigned",
       "source": "manual",
       "created": "2026-06-22",
-      "updated": "2026-06-23",
+      "updated": "2026-06-24",
       "verification": "Dialogue logs are co-located with the DB under the private archive; npm run provenance:validate finds the logs; the dramatic fork's sibling-path log_dir stopgap is removed.",
       "links": {
         "items": "build-workplan-tooling"
@@ -844,7 +508,8 @@
         "provenance",
         "logs",
         "archive"
-      ]
+      ],
+      "milestone": "paper-2-evidence-cleanup"
     },
     {
       "id": "d1-mechanistic-feature-ols-and-multiturn-replication",
@@ -855,7 +520,7 @@
       "owner": "codex",
       "source": "todo",
       "created": "2026-06-23",
-      "updated": "2026-06-23",
+      "updated": "2026-06-24",
       "verification": "Reran D1 Pass 6 OLS, Pass 7 multi-turn scope replication, and cross-judge checks; exports and notes/d1-paper-integration.md are present.",
       "branch": "codex/d1-mechanistic-feature-ols",
       "claim_status": "settled",
@@ -889,7 +554,8 @@
         "structural-features",
         "ols",
         "multi-turn"
-      ]
+      ],
+      "milestone": "paper-2-evidence-cleanup"
     },
     {
       "id": "daily-roundup-self-work-exclusion",
@@ -900,7 +566,7 @@
       "owner": "codex",
       "source": "review",
       "created": "2026-06-23",
-      "updated": "2026-06-23",
+      "updated": "2026-06-24",
       "verification": "scripts/workplan.js ingest --daily skips arXiv 2603.10450 via a regression fixture; npm run wp:test and npm run wp:check pass.",
       "links": {
         "notes": [
@@ -915,7 +581,80 @@
         "self-citation",
         "workplan-ingest"
       ],
-      "branch": "codex/geist-positioning"
+      "branch": "codex/geist-positioning",
+      "milestone": "board-pm"
+    },
+    {
+      "id": "environment-grounded-automated-prompt-optimization-for-llm-g",
+      "title": "Environment-Grounded Automated Prompt Optimization for LLM Game Agents",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "ArXiv source record and roundup note reviewed; decision appended; no prompt-lab/autotune task spawned.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-18-research-roundup.html"
+      },
+      "milestone": "literature-triage",
+      "branch": "codex/workplan-board-triage",
+      "claim_status": "future"
+    },
+    {
+      "id": "from-holistic-evaluation-to-structured-criteria-rubrics-acro",
+      "title": "From Holistic Evaluation to Structured Criteria: Rubrics Across the Evolving LLM Landscape",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "ArXiv source record and roundup note reviewed; decision appended; methodological relevance routed to D5 rather than a standalone task.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-14-research-roundup.html"
+      },
+      "milestone": "literature-triage",
+      "branch": "codex/workplan-board-triage",
+      "claim_status": "methods"
+    },
+    {
+      "id": "from-prompts-to-context-an-ontology-driven-framework-for-hum",
+      "title": "From Prompts to Context: An Ontology-Driven Framework for Human-Generative AI Collaboration",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "ArXiv source record and roundup note reviewed; decision appended; no provenance-ontology implementation task spawned.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-11-research-roundup.html"
+      },
+      "milestone": "literature-triage",
+      "branch": "codex/workplan-board-triage",
+      "claim_status": "methods"
+    },
+    {
+      "id": "from-solver-to-tutor-evaluating-the-pedagogical-intelligence",
+      "title": "From Solver to Tutor: Evaluating the Pedagogical Intelligence of LLMs with KMP-Bench",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "ArXiv source record and roundup note reviewed; decision appended; A1/pilot relevance noted without spawning a benchmark-port task.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-15-research-roundup.html"
+      },
+      "milestone": "human-pilot-prep",
+      "branch": "codex/workplan-board-triage",
+      "claim_status": "future"
     },
     {
       "id": "g2-6-4-recognition-effect-sizes-reproducible-once-the-column",
@@ -926,7 +665,7 @@
       "owner": "unassigned",
       "source": "todo",
       "created": "2026-06-22",
-      "updated": "2026-06-23",
+      "updated": "2026-06-24",
       "verification": "TODO's G-arc status records G2 closed; the paper now names the tutor_overall_score/Sonnet/run-bound basis for the effect-size claim and the optional analyzer is not a live blocker.",
       "links": {
         "notes": [
@@ -940,7 +679,8 @@
         "paper",
         "provenance",
         "claim-audit"
-      ]
+      ],
+      "milestone": "paper-2-evidence-cleanup"
     },
     {
       "id": "geist-in-the-machine-simulating-recognition-and-inner-dialog",
@@ -951,7 +691,7 @@
       "owner": "codex",
       "source": "daily-routine",
       "created": "2026-06-22",
-      "updated": "2026-06-23",
+      "updated": "2026-06-24",
       "verification": "Confirmed arXiv 2603.10450 is authored by Liam Magee; Paper 2.0 already cites the companion study via @magee2026geist, so no manuscript edit is required.",
       "links": {
         "notes": [
@@ -968,7 +708,26 @@
         "paper-positioning",
         "self-citation",
         "roundup"
-      ]
+      ],
+      "milestone": "poetics-followups"
+    },
+    {
+      "id": "measuring-whether-llm-tutors-teach-or-solve-a-diagnostic-for",
+      "title": "Measuring Whether LLM Tutors Teach or Solve: A Diagnostic for Educational Impact",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "ArXiv source record and roundup note reviewed; decision appended; no immediate MathTutorBench cross-validation task spawned.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-18-research-roundup.html"
+      },
+      "milestone": "human-pilot-prep",
+      "branch": "codex/workplan-board-triage",
+      "claim_status": "methods"
     },
     {
       "id": "not-all-flips-are-conformity-decomposing-stance-convergence",
@@ -979,7 +738,7 @@
       "owner": "codex",
       "source": "daily-routine",
       "created": "2026-06-22",
-      "updated": "2026-06-23",
+      "updated": "2026-06-24",
       "verification": "Paper 2.0 §6.12 already folds this in as a killed Stage 0 measurement gate; adaptation-conformity scripts compile, while missing local exports and the rushed human anchor are tracked by the follow-up item.",
       "claim_status": "killed",
       "links": {
@@ -1000,7 +759,138 @@
         "adaptation-null",
         "conformity",
         "superego"
-      ]
+      ],
+      "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "perspectivegap-a-benchmark-for-multi-agent-orchestration-pro",
+      "title": "PerspectiveGap: A Benchmark for Multi-Agent Orchestration Prompting",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "ArXiv source record and roundup note reviewed; decision appended; no superego prompt-leakage audit spawned.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-11-research-roundup.html"
+      },
+      "milestone": "literature-triage",
+      "branch": "codex/workplan-board-triage",
+      "claim_status": "future"
+    },
+    {
+      "id": "refresh-weber-id-charisma-recognition-thread",
+      "title": "Refresh Weber/id-charisma thread around being recognized",
+      "status": "done",
+      "type": "paper",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-23",
+      "updated": "2026-06-24",
+      "verification": "Bounded note clarifies the Weber/Hegel distinction; no Paper 2.0 edit needed; learner uptake remains future human/learner-instrument scope.",
+      "claim_status": "scope-bound",
+      "links": {
+        "paper": "docs/research/paper-full-2.0.md#67-id-director-charisma-family",
+        "notes": [
+          "docs/cell-100-charisma-full-n-update.md",
+          "docs/cell-100-followups.md",
+          "notes/2026-06-09-adaptation-exploration-plan.md",
+          "notes/poetics/2026-06-09-free-dramaturgy-and-register-dials.md",
+          "notes/rhetoric/2026-06-08-deep-research-report-2.md",
+          "notes/2026-06-24-weber-id-charisma-recognition-thread.md"
+        ]
+      },
+      "tags": [
+        "id-director",
+        "charisma",
+        "weber",
+        "recognition",
+        "paper-framing"
+      ],
+      "milestone": "paper-2-evidence-cleanup",
+      "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "sepo-self-evolving-prompt-agent-for-system-prompt-optimizati",
+      "title": "SePO: Self-Evolving Prompt Agent for System Prompt Optimization",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "ArXiv source record and roundup note reviewed; decision appended; no prompt-optimization pilot spawned.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-17-research-roundup.html"
+      },
+      "milestone": "literature-triage",
+      "branch": "codex/workplan-board-triage",
+      "claim_status": "future"
+    },
+    {
+      "id": "socialcoach-personalized-social-skill-learning-with-rl-based",
+      "title": "SocialCoach: Personalized Social Skill Learning with RL-based Agentic Tutoring and Practice",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "ArXiv source record and roundup note reviewed; decision appended; no learner-growth metric refactor spawned.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-14-research-roundup.html"
+      },
+      "milestone": "human-pilot-prep",
+      "branch": "codex/workplan-board-triage",
+      "claim_status": "future"
+    },
+    {
+      "id": "socratic-structured-tutoring-readings",
+      "title": "Assess structured-Socratic tutoring papers for the A1 pilot design",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "Three arXiv source records reviewed; decision logged here and on A1; no pilot instrument change is required before the existing content/legal gates clear.",
+      "claim_status": "future",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-13-research-roundup.html",
+        "paper": "§2.1",
+        "items": "a1-human-learner-validation"
+      },
+      "tags": [
+        "reading",
+        "socratic",
+        "pilot"
+      ],
+      "milestone": "human-pilot-prep",
+      "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "the-confident-liar-diagnosing-multi-agent-debate-with-log-pr",
+      "title": "The Confident Liar: Diagnosing Multi-Agent Debate with Log-Probabilities and LLM-as-Judge",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "ArXiv source record and roundup note reviewed; decision appended; no log-probability instrumentation task spawned.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-12-research-roundup.html"
+      },
+      "milestone": "literature-triage",
+      "branch": "codex/workplan-board-triage",
+      "claim_status": "methods"
     },
     {
       "id": "the-self-correction-illusion-llms-correct-others-but-not-the",
@@ -1011,7 +901,7 @@
       "owner": "codex",
       "source": "daily-routine",
       "created": "2026-06-22",
-      "updated": "2026-06-23",
+      "updated": "2026-06-24",
       "verification": "Paper 2.0 §6.1.3 already cites @chen2026selfcorrectionillusion and records the bounded cross-judge result; reproduction path is scripts/analyze-correction-source.sh.",
       "claim_status": "scope-bound",
       "links": {
@@ -1025,7 +915,8 @@
         "superego",
         "self-correction",
         "paper-positioning"
-      ]
+      ],
+      "milestone": "paper-2-evidence-cleanup"
     },
     {
       "id": "workplan-governance-checks-and-github-mirror",
@@ -1036,7 +927,7 @@
       "owner": "codex",
       "source": "manual",
       "created": "2026-06-23",
-      "updated": "2026-06-23",
+      "updated": "2026-06-24",
       "branch": "codex/ops-board-items",
       "verification": "`npm run wp:check`, `npm run wp:test`, GitHub mirror dry-run, and `/board` Scriptorium smoke all passed before the branch was merged to main.",
       "links": {
@@ -1051,7 +942,194 @@
         "ci",
         "github",
         "governance"
-      ]
+      ],
+      "milestone": "board-pm"
+    },
+    {
+      "id": "adapt-the-argument-uniqueness-metric-as-a-tutor-response-col",
+      "title": "Adapt the argument-uniqueness metric as a tutor-response-collapse diagnostic",
+      "status": "done",
+      "type": "research",
+      "priority": "P3",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "Decision logged: no separate tutor-response-collapse diagnostic for the current paper; §6.11 remains the active repertoire-collapse surface.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-09-research-roundup.html",
+        "paper": "§6.11"
+      },
+      "milestone": "paper-2-evidence-cleanup",
+      "branch": "codex/workplan-board-triage",
+      "claim_status": "future"
+    },
+    {
+      "id": "b8-lower-recognitionorigin-js-tutoradaptivemechanism-cut-or",
+      "title": "B8. Lower `recognitionOrigin.js` `tutorAdaptiveMechanism` CUT or recalibrate critic panel",
+      "status": "done",
+      "type": "infra",
+      "priority": "P3",
+      "owner": "codex",
+      "source": "todo",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "Decision logged: any future gated arc must pre-register the CUT/panel composition; no paid generation is approved solely to repair a scorer-side classifier issue.",
+      "links": {
+        "notes": "TODO.md#B8",
+        "exports": [
+          "exports/recognition-origin-cut-sweep.md",
+          "exports/recognition-origin-panel-recompose.md"
+        ],
+        "paper": "§7.9"
+      },
+      "claim_status": "planned",
+      "tags": [
+        "poetics",
+        "scorer-calibration",
+        "gated-rerun"
+      ],
+      "milestone": "poetics-followups",
+      "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "d2-cross-application-role-reframed-study",
+      "title": "D2. True cross-application role-reframed study",
+      "status": "done",
+      "type": "research",
+      "priority": "P3",
+      "owner": "codex",
+      "source": "todo",
+      "created": "2026-06-23",
+      "updated": "2026-06-24",
+      "verification": "Decision logged: Path 2 remains separate-study/future scope; no current-paper prompt/content/rubric authoring is required.",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "TODO.md#D2",
+          "notes/design-d2-path2-cross-application.md"
+        ],
+        "paper": "§8.2"
+      },
+      "tags": [
+        "d2",
+        "cross-application",
+        "separate-study"
+      ],
+      "milestone": "paper-2-evidence-cleanup",
+      "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "d3-insight-action-gap-heavy-bridge-followups",
+      "title": "D3. Insight-action gap heavy bridge follow-ups",
+      "status": "done",
+      "type": "research",
+      "priority": "P3",
+      "owner": "codex",
+      "source": "todo",
+      "created": "2026-06-23",
+      "updated": "2026-06-24",
+      "verification": "Decision logged: heavy bridge follow-ups are deferred; no paid run is justified for the current marginal mechanism information.",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "TODO.md#D3",
+          "notes/design-d3-architectural-bridges.md"
+        ],
+        "paper": "§6.3.9"
+      },
+      "tags": [
+        "d3",
+        "insight-action-gap",
+        "bridge"
+      ],
+      "milestone": "paper-2-evidence-cleanup",
+      "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "d4-disposition-gradient-architecture-matched-sel-replication",
+      "title": "D4. Architecture-matched SEL disposition-gradient replication",
+      "status": "done",
+      "type": "research",
+      "priority": "P3",
+      "owner": "codex",
+      "source": "todo",
+      "created": "2026-06-23",
+      "updated": "2026-06-24",
+      "verification": "Decision logged: the cells 40-45 × SEL replication is optional future work, not current-paper debt.",
+      "claim_status": "future",
+      "links": {
+        "notes": "TODO.md#D4",
+        "exports": "exports/d4-disposition-gradient.md",
+        "paper": "§6.6.8"
+      },
+      "tags": [
+        "d4",
+        "disposition",
+        "sel"
+      ],
+      "milestone": "paper-2-evidence-cleanup",
+      "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "d6-orientation-family-taxonomy-extensions",
+      "title": "D6. Orientation-family taxonomy extensions",
+      "status": "done",
+      "type": "research",
+      "priority": "P3",
+      "owner": "codex",
+      "source": "todo",
+      "created": "2026-06-23",
+      "updated": "2026-06-24",
+      "verification": "Decision logged: orientation-family extensions remain future scope; no new cells/prompts/tests are needed for the current board pass.",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "TODO.md#D6",
+          "docs/pedagogical-taxonomy.md"
+        ],
+        "paper": "§7.9"
+      },
+      "tags": [
+        "d6",
+        "taxonomy",
+        "orientation-family"
+      ],
+      "milestone": "paper-2-evidence-cleanup",
+      "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "revisit-adaptation-conformity-human-anchor",
+      "title": "Revisit adaptation-conformity human anchor and artifact availability",
+      "status": "done",
+      "type": "research",
+      "priority": "P3",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-06-23",
+      "updated": "2026-06-24",
+      "verification": "Decision logged: no paper claim changes without recovered artifacts and a deliberate human-annotation protocol; current pass only records the future gate.",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "notes/2026-06-09-adaptation-conformity-classifier-stage0-preregistration.md",
+          "notes/daily-notes/2026-06-09-research-roundup.html"
+        ],
+        "paper": "docs/research/paper-full-2.0.md",
+        "scripts": [
+          "scripts/adaptation-conformity-harvest.py",
+          "scripts/adaptation-conformity-classifier.py",
+          "scripts/adaptation-conformity-score-human.py"
+        ],
+        "items": "not-all-flips-are-conformity-decomposing-stance-convergence"
+      },
+      "tags": [
+        "human-anchor",
+        "artifact-recovery",
+        "conformity"
+      ],
+      "milestone": "paper-2-evidence-cleanup",
+      "branch": "codex/workplan-board-triage"
     },
     {
       "id": "a18-38-teacher-as-learner-ml-fine-tuning-ladder",
@@ -1062,7 +1140,7 @@
       "owner": "unassigned",
       "source": "todo",
       "created": "2026-06-23",
-      "updated": "2026-06-23",
+      "updated": "2026-06-24",
       "verification": "Captured as not greenlit; no weight-update or further widening work proceeds unless a new trusted signal changes the A18/A15 decision basis and a fresh item is opened.",
       "claim_status": "killed",
       "links": {
@@ -1076,7 +1154,8 @@
         "a18",
         "fine-tuning",
         "not-greenlit"
-      ]
+      ],
+      "milestone": "poetics-followups"
     },
     {
       "id": "b7-split-structural-critic-peripeteia-rule-into-earned-vs-na",
@@ -1087,7 +1166,7 @@
       "owner": "unassigned",
       "source": "todo",
       "created": "2026-06-22",
-      "updated": "2026-06-23",
+      "updated": "2026-06-24",
       "verification": "Dropped because the 2026-05-28 prompt-side surgery made earned and named reorientation co-occur reliably; no critic split is needed unless that evidence changes.",
       "links": {
         "notes": "TODO.md#B7"
@@ -1097,7 +1176,8 @@
         "poetics",
         "critic",
         "dropped"
-      ]
+      ],
+      "milestone": "poetics-followups"
     }
   ]
 }

@@ -8,7 +8,7 @@ priority: P2
 owner: codex
 source: daily-routine
 created: 2026-06-22
-updated: 2026-06-23
+updated: 2026-06-24
 verification: Paper 2.0 §6.12 already folds this in as a killed Stage 0
   measurement gate; adaptation-conformity scripts compile, while missing local
   exports and the rushed human anchor are tracked by the follow-up item.
@@ -28,6 +28,7 @@ tags:
   - adaptation-null
   - conformity
   - superego
+milestone: paper-2-evidence-cleanup
 ---
 
 arXiv:2606.00820 [UNBLOCK] — surfaced by the daily routine (2026-06-09-research-roundup.html).
