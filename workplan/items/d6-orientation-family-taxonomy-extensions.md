@@ -15,6 +15,7 @@ links:
   notes:
     - TODO.md#D6
     - docs/pedagogical-taxonomy.md
+    - notes/d6-orientation-family-matrix.md
   paper: §7.9
 tags:
   - d6
@@ -27,3 +28,8 @@ branch: codex/workplan-board-triage
 TODO §D6's frontend consumption work appears implemented in the chat UI and tests. The remaining live-ish thread is whether the taxonomy needs additional orientation families; this card keeps that as a future research decision.
 
 2026-06-24 Codex: Closed as current-board cleanup. The remaining taxonomy extensions are future research-design choices, while the implemented frontend/taxonomy consumption work is already handled elsewhere.
+
+2026-06-24 Codex: Follow-up arc matrix recorded in
+`notes/d6-orientation-family-matrix.md`. No new orientation families are opened
+for this arc; future work must first show axis separation, matched authoring,
+machine metadata, evaluation role, and scoring/judge plan.

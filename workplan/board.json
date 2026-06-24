@@ -1,14 +1,14 @@
 {
-  "generated": "2026-06-24T19:14:17.929Z",
+  "generated": "2026-06-24T22:57:20.569Z",
   "counts": {
-    "total": 49,
+    "total": 50,
     "byStatus": {
-      "done": 46,
+      "done": 47,
       "blocked": 1,
       "dropped": 2
     },
     "byType": {
-      "research": 25,
+      "research": 26,
       "experiment": 4,
       "content": 1,
       "infra": 9,
@@ -483,6 +483,86 @@
       "milestone": "paper-2-evidence-cleanup"
     },
     {
+      "id": "d2-cross-application-role-reframed-study",
+      "title": "D2. True cross-application role-reframed study",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "todo",
+      "created": "2026-06-23",
+      "updated": "2026-06-24",
+      "verification": "D2 sidecar generated 36 rows, scored 108 three-judge observations, analyzed exports/d2-role-transfer-v1-scored.jsonl, and folded the scope-bound result into docs/research/paper-full-2.0.md §6.6.7.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": [
+          "TODO.md#D2",
+          "notes/design-d2-path2-cross-application.md",
+          "notes/d2-cross-application-role-reframed-gate.md",
+          "notes/d2-role-transfer-scaffold.md"
+        ],
+        "paper": "docs/research/paper-full-2.0.md §6.6.7",
+        "exports": [
+          "exports/d2-role-transfer-v1-report.md"
+        ],
+        "runs": [
+          "d2_role_transfer_v1-real-2026-06-24T22:30:10.460Z"
+        ]
+      },
+      "tags": [
+        "d2",
+        "cross-application",
+        "separate-study"
+      ],
+      "milestone": "paper-2-evidence-cleanup",
+      "branch": "codex/d2-d6-followups"
+    },
+    {
+      "id": "d2-d6-followup-arc",
+      "title": "D2-D6 follow-up arc: transfer, bridges, replication, rubric, taxonomy",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-24",
+      "updated": "2026-06-24",
+      "branch": "codex/d2-d6-followups",
+      "verification": "Completion audit records D5/D6 as locally complete, D2 and D4 as completed scope-bound empirical results, and D3 as gated for future empirical work; workplan render/check/test and git diff check pass.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": [
+          "notes/d2-d6-followup-arc-plan.md",
+          "notes/d5-measurement-gate-for-d2-d6.md",
+          "notes/d6-orientation-family-matrix.md",
+          "notes/d2-cross-application-role-reframed-gate.md",
+          "notes/d2-role-transfer-scaffold.md",
+          "notes/d4-sel-disposition-gradient-gate.md",
+          "notes/d3-heavy-bridge-followup-gate.md",
+          "notes/d2-d6-completion-audit.md"
+        ],
+        "paper": [
+          "docs/research/paper-full-2.0.md sections 6.3.9, 6.6.7, 6.6.8, 7.9, 8.2, 8.6"
+        ],
+        "items": [
+          "d2-cross-application-role-reframed-study",
+          "d3-insight-action-gap-heavy-bridge-followups",
+          "d4-disposition-gradient-architecture-matched-sel-replication",
+          "d5-rubric-v3-0-pca-informed-consolidation",
+          "d6-orientation-family-taxonomy-extensions"
+        ]
+      },
+      "tags": [
+        "d2",
+        "d3",
+        "d4",
+        "d5",
+        "d6",
+        "followup",
+        "paper-3"
+      ]
+    },
+    {
       "id": "d5-rubric-v3-0-pca-informed-consolidation",
       "title": "D5. Rubric v3.0 PCA-Informed Consolidation",
       "status": "done",
@@ -497,7 +577,8 @@
       "links": {
         "notes": [
           "TODO.md#D5",
-          "notes/design-d5-rubric-v3-pca-consolidation.md"
+          "notes/design-d5-rubric-v3-pca-consolidation.md",
+          "notes/d5-measurement-gate-for-d2-d6.md"
         ],
         "paper": "§8.6"
       },
@@ -1034,33 +1115,6 @@
       "branch": "codex/workplan-board-triage"
     },
     {
-      "id": "d2-cross-application-role-reframed-study",
-      "title": "D2. True cross-application role-reframed study",
-      "status": "done",
-      "type": "research",
-      "priority": "P3",
-      "owner": "codex",
-      "source": "todo",
-      "created": "2026-06-23",
-      "updated": "2026-06-24",
-      "verification": "Decision logged: Path 2 remains separate-study/future scope; no current-paper prompt/content/rubric authoring is required.",
-      "claim_status": "future",
-      "links": {
-        "notes": [
-          "TODO.md#D2",
-          "notes/design-d2-path2-cross-application.md"
-        ],
-        "paper": "§8.2"
-      },
-      "tags": [
-        "d2",
-        "cross-application",
-        "separate-study"
-      ],
-      "milestone": "paper-2-evidence-cleanup",
-      "branch": "codex/workplan-board-triage"
-    },
-    {
       "id": "d3-insight-action-gap-heavy-bridge-followups",
       "title": "D3. Insight-action gap heavy bridge follow-ups",
       "status": "done",
@@ -1070,12 +1124,14 @@
       "source": "todo",
       "created": "2026-06-23",
       "updated": "2026-06-24",
-      "verification": "Decision logged: heavy bridge follow-ups are deferred; no paid run is justified for the current marginal mechanism information.",
+      "verification": "Decision and 2026-06-24 gate logged: heavy bridge follow-ups require a frozen endpoint independent of the optimized metric before any paid escalation.",
       "claim_status": "future",
       "links": {
         "notes": [
           "TODO.md#D3",
-          "notes/design-d3-architectural-bridges.md"
+          "notes/design-d3-architectural-bridges.md",
+          "notes/d3-heavy-bridge-followup-gate.md",
+          "notes/d3-independent-endpoint-and-fixture-explainer.md"
         ],
         "paper": "§6.3.9"
       },
@@ -1097,12 +1153,20 @@
       "source": "todo",
       "created": "2026-06-23",
       "updated": "2026-06-24",
-      "verification": "Decision logged: the cells 40-45 × SEL replication is optional future work, not current-paper debt.",
-      "claim_status": "future",
+      "verification": "DB audit shows eval-2026-06-24-250c6251 has 144/144 successful rows and 144/144 Sonnet-scored first turns; report and Paper 2.0 §6.6.8 record the scope-bound verdict.",
+      "claim_status": "scope-bound",
       "links": {
-        "notes": "TODO.md#D4",
-        "exports": "exports/d4-disposition-gradient.md",
-        "paper": "§6.6.8"
+        "notes": [
+          "TODO.md#D4",
+          "notes/d4-sel-disposition-gradient-gate.md"
+        ],
+        "paper": "§6.6.8",
+        "exports": [
+          "exports/d4-sel-disposition-gradient-eval-2026-06-24-250c6251.md"
+        ],
+        "runs": [
+          "eval-2026-06-24-250c6251"
+        ]
       },
       "tags": [
         "d4",
@@ -1110,7 +1174,7 @@
         "sel"
       ],
       "milestone": "paper-2-evidence-cleanup",
-      "branch": "codex/workplan-board-triage"
+      "branch": "codex/d2-d6-followups"
     },
     {
       "id": "d6-orientation-family-taxonomy-extensions",
@@ -1127,7 +1191,8 @@
       "links": {
         "notes": [
           "TODO.md#D6",
-          "docs/pedagogical-taxonomy.md"
+          "docs/pedagogical-taxonomy.md",
+          "notes/d6-orientation-family-matrix.md"
         ],
         "paper": "§7.9"
       },
