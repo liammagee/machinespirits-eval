@@ -1,14 +1,14 @@
 {
-  "generated": "2026-06-24T22:57:20.569Z",
+  "generated": "2026-06-24T23:16:47.368Z",
   "counts": {
-    "total": 50,
+    "total": 51,
     "byStatus": {
-      "done": 47,
+      "done": 48,
       "blocked": 1,
       "dropped": 2
     },
     "byType": {
-      "research": 26,
+      "research": 27,
       "experiment": 4,
       "content": 1,
       "infra": 9,
@@ -872,6 +872,34 @@
       "milestone": "literature-triage",
       "branch": "codex/workplan-board-triage",
       "claim_status": "future"
+    },
+    {
+      "id": "proof-dag-dramatic-derivation-assessment",
+      "title": "Proof-DAG dramatic-derivation formalism and external learner-DAG assessment",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-24",
+      "updated": "2026-06-24",
+      "verification": "Proof-DAG / dramatic-derivation arc merged to main on codex/proof-dag-assessment: services/dramaticDerivation/{learnerDag, proxyDagMemory,assessment,conceptSchema}.js plus the derivationLearnerDag / dramaticDerivation test suite are green, and the learner-proxy-DAG A/B is closed out.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": [
+          "notes/2026-06-24-proof-dag-formalism-plan.md"
+        ],
+        "prs": [
+          "codex/proof-dag-assessment"
+        ]
+      },
+      "tags": [
+        "proof-dag",
+        "dramatic-derivation",
+        "learner-dag",
+        "assessment"
+      ],
+      "milestone": "poetics-followups"
     },
     {
       "id": "refresh-weber-id-charisma-recognition-thread",
