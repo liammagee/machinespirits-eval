@@ -99,4 +99,4 @@ future designs.
 2026-06-24 Codex: Reopened D2 after user request and created the true
 role-transfer sidecar scaffold. The scaffold validates and includes mock-only
 analysis plumbing, but the empirical D2 run remains blocked on configured
-provider credentials/budget plus the required three-judge scoring sequence.
+paid-run approval plus the required three-judge scoring sequence.

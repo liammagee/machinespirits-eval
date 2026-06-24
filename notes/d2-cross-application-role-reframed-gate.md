@@ -2,7 +2,7 @@
 
 Date: 2026-06-24
 Branch: `codex/d2-d6-followups`
-Status: gate reconstructed; 2026-06-24 sidecar scaffold now created, empirical run still blocked on provider credentials and paid three-judge execution.
+Status: gate reconstructed; 2026-06-24 sidecar scaffold now created, local `.env` loaded via dotenv, empirical run pending explicit paid-run approval.
 
 ## Source status
 
@@ -125,7 +125,7 @@ node scripts/run-d2-role-transfer.js mock --out exports/d2-role-transfer-mock.js
 node scripts/run-d2-role-transfer.js analyze --in exports/d2-role-transfer-mock.jsonl --out exports/d2-role-transfer-mock-report.md
 ```
 
-Real run sequence, once API keys and budget are available, is recorded in
+Real run sequence, once the paid run is approved, is recorded in
 `notes/d2-role-transfer-scaffold.md`.
 
 ## Stop condition for D2
@@ -143,5 +143,5 @@ D2 scaffold is resolved for this branch when the branch records:
 
 That scaffold condition is now met by this note plus
 `notes/d2-role-transfer-scaffold.md`. The empirical D2 study itself remains
-blocked until provider credentials, budget, and three-judge scoring are
-available.
+unrun until the paid generation plus three-judge scoring sequence is explicitly
+approved.

@@ -11,9 +11,9 @@ updated: 2026-06-24
 verification: "D2 sidecar scaffold validates with
   scripts/run-d2-role-transfer.js validate; empirical completion requires real
   generation plus three-judge scoring and analysis."
-blocked_by: "Provider API keys/budget are not configured in this environment;
-  run the commands in notes/d2-role-transfer-scaffold.md when credentials are
-  available."
+blocked_by: "Paid generation plus three-judge scoring has not been launched;
+  run the commands in notes/d2-role-transfer-scaffold.md after explicit paid-run
+  approval."
 claim_status: planned
 links:
   notes:
@@ -44,5 +44,5 @@ review.
 scaffold: `config/d2-role-transfer.yaml`,
 `config/evaluation-rubric-d2-role-transfer.yaml`, six `prompts/d2/*.md` files,
 and `scripts/run-d2-role-transfer.js`. No-cost validation and mock analysis pass.
-The empirical study is still blocked because this environment has no provider
-API keys configured for the real generation plus three-judge scoring sequence.
+The empirical study is still blocked because the paid real generation plus
+three-judge scoring sequence has not been explicitly launched.

@@ -2,7 +2,7 @@
 
 Date: 2026-06-24
 Branch: `codex/d2-d6-followups`
-Status: implementation scaffold created; empirical run not executed in this environment.
+Status: implementation scaffold created; `.env` copied from the main worktree and loaded via dotenv; empirical run not launched yet.
 
 ## What Changed
 
@@ -46,8 +46,11 @@ sidecar can validate, generate row-shaped output, and analyze scored rows.
 
 ## Real Run Command
 
-This environment has no provider API keys configured, so the empirical run was
-not launched. Once keys and budget are available, run:
+The worktree now has a local `.env` copied from the main checkout and
+`scripts/run-d2-role-transfer.js` loads it via dotenv before provider calls.
+The empirical run was not launched in this step because it is a paid
+generation-plus-three-judge sequence. Once the paid run is explicitly approved,
+run:
 
 ```bash
 node scripts/run-d2-role-transfer.js generate \

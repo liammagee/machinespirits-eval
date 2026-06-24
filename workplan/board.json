@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-24T22:20:20.537Z",
+  "generated": "2026-06-24T22:25:30.873Z",
   "counts": {
     "total": 49,
     "byStatus": {
@@ -84,7 +84,7 @@
       "created": "2026-06-23",
       "updated": "2026-06-24",
       "verification": "D2 sidecar scaffold validates with scripts/run-d2-role-transfer.js validate; empirical completion requires real generation plus three-judge scoring and analysis.",
-      "blocked_by": "Provider API keys/budget are not configured in this environment; run the commands in notes/d2-role-transfer-scaffold.md when credentials are available.",
+      "blocked_by": "Paid generation plus three-judge scoring has not been launched; run the commands in notes/d2-role-transfer-scaffold.md after explicit paid-run approval.",
       "claim_status": "planned",
       "links": {
         "notes": [

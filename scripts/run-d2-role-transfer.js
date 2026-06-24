@@ -5,14 +5,16 @@ import path from 'path';
 import { execFileSync } from 'child_process';
 import { createHash } from 'crypto';
 import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
 import YAML from 'yaml';
 import { jsonrepair } from 'jsonrepair';
-import { unifiedAIProvider } from '../tutor-core/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
 const DEFAULT_CONFIG = 'config/d2-role-transfer.yaml';
 const DEFAULT_RUBRIC = 'config/evaluation-rubric-d2-role-transfer.yaml';
+
+dotenv.config({ path: path.join(ROOT, '.env'), quiet: true });
 
 function usage() {
   return `D2 role-transfer sidecar
@@ -195,6 +197,7 @@ ${scenario.expected_behavior}`;
 }
 
 async function callModel({ provider, model, temperature, maxTokens, systemPrompt, userPrompt }) {
+  const { unifiedAIProvider } = await import('../tutor-core/index.js');
   const response = await unifiedAIProvider.call({
     provider,
     model,
