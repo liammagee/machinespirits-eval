@@ -3685,6 +3685,11 @@ const DERIVATION_CSS = `
 .vocab>summary::-webkit-details-marker{display:none}
 .vocab__hint{font-family:"Source Serif 4",Georgia,serif;font-size:var(--s-0);font-weight:400;text-transform:none;color:var(--ink-3)}
 .vocab__intro{max-width:78ch;color:var(--ink-2);line-height:1.45;margin:9px 0 10px}
+.vocab__layers{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:10px 0 12px}
+.vocab__layer{border:1px solid var(--rule);border-radius:6px;background:var(--paper);padding:9px 10px;min-width:0}
+.vocab__layer h3{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;color:var(--ink);margin:0 0 5px}
+.vocab__layer p{margin:0 0 7px;color:var(--ink-3);line-height:1.4}
+.vocab__layer .vocab__tokens{gap:4px}
 .vocab__grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .vocab__group{border:1px solid var(--rule-soft);border-radius:6px;background:var(--paper);padding:9px 10px}
 .vocab__group h3{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;color:var(--ink-4);margin:0 0 6px}
@@ -3696,7 +3701,8 @@ const DERIVATION_CSS = `
 .vocab__token--private{background:var(--ochre-soft);border-color:var(--ochre);color:var(--ochre-d)}
 @media(max-width:860px){.learnerdag__grid{grid-template-columns:1fr}}
 @media(max-width:860px){.proofdag__grid{grid-template-columns:1fr}}
-@media(max-width:860px){.vocab__grid{grid-template-columns:1fr}.vocab>summary{display:block}.vocab__hint{display:block;margin-top:3px}}
+@media(max-width:860px){.vocab__grid{grid-template-columns:1fr}.vocab__layers{grid-template-columns:1fr 1fr}.vocab>summary{display:block}.vocab__hint{display:block;margin-top:3px}}
+@media(max-width:520px){.vocab__layers{grid-template-columns:1fr}}
 .tts-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:14px 0 18px;padding:9px 10px;border:1px solid var(--rule-soft);border-radius:6px;background:var(--paper-4)}
 .tts-toolbar--compact{margin:4px 0 8px}
 .tts-control,.tts-btn{border:1px solid var(--rule);background:var(--paper);color:var(--moss-deep);cursor:pointer;font-family:"JetBrains Mono",monospace;text-transform:uppercase}
@@ -4544,6 +4550,91 @@ function renderVocabularyTokens(tokens, modifier = '') {
 }
 
 function renderDerivationControlledVocabularyHtml({ open = false } = {}) {
+  const layers = [
+    {
+      title: 'Drama',
+      note: "What is staged and when; the run's plot surface.",
+      tokens: [
+        'world',
+        'run',
+        'turn',
+        'act',
+        'movement',
+        'scene',
+        'director',
+        'tutor',
+        'learner',
+        'release',
+        'staging',
+        'secret',
+        'mirror',
+        'anagnorisis',
+        'aporia',
+      ],
+    },
+    {
+      title: 'Figures / rhetoric',
+      note: 'How the tutor speaks without changing proof authority.',
+      tokens: [
+        'erotema',
+        'analogia',
+        'exemplum',
+        'anaphora',
+        'aposiopesis',
+        'orient',
+        'release',
+        'repair',
+        'restore',
+        'consolidate',
+        'confront',
+        'test',
+        'counter_mirror',
+        'stage_recognition',
+        'stance',
+      ],
+    },
+    {
+      title: 'Logic',
+      note: 'What is entailed by the learner-visible record.',
+      tokens: [
+        'authored proof DAG',
+        'learner DAG',
+        'fact',
+        'rule_application',
+        'proof_paths',
+        'question_pattern',
+        'closure',
+        'entails',
+        'grounded',
+        'voiced_derived',
+        'unsupported_assertion',
+        'missing',
+        'bottleneck',
+        'assertion_gap',
+      ],
+    },
+    {
+      title: 'Pedagogy',
+      note: 'How the system manages learner ownership and tutor response.',
+      tokens: [
+        'learner contract',
+        'adopt',
+        'retract',
+        'derive',
+        'hypothesize',
+        'assert',
+        'proxy-DAG pacing',
+        'repair_uptake',
+        'prompt_assertion',
+        'invite_final_assertion',
+        'block_assertion',
+        'repair_dependency',
+        'ask_diagnostic',
+        'consolidate_subproof',
+        'public speech',
+      ],
+    },
+  ];
   const groups = [
     {
       title: 'public speech',
@@ -4724,9 +4815,19 @@ function renderDerivationControlledVocabularyHtml({ open = false } = {}) {
   </section>`,
     )
     .join('');
+  const layerBody = layers
+    .map(
+      (layer) => `<section class="vocab__layer">
+    <h3>${escapeHtml(layer.title)}</h3>
+    <p>${escapeHtml(layer.note)}</p>
+    <div class="vocab__tokens">${renderVocabularyTokens(layer.tokens)}</div>
+  </section>`,
+    )
+    .join('');
   return `<details class="vocab" id="controlled-vocabulary"${open ? ' open' : ''}>
-  <summary>Controlled vocabulary <span class="vocab__hint">public speech, private protocol, DAG diagnostics, outcomes, tutor conduct</span></summary>
-  <p class="vocab__intro">The app keeps scenario content separate from the stable learner contract. Public dialogue uses ordinary scene terms; private JSON and diagnostics use the formal vocabulary below.</p>
+  <summary>Controlled vocabulary <span class="vocab__hint">drama, rhetoric, logic, pedagogy</span></summary>
+  <p class="vocab__intro">The app keeps scenario content separate from the stable learner contract. The first row shows the four layers; the detailed grid below names the app-level tokens.</p>
+  <div class="vocab__layers">${layerBody}</div>
   <div class="vocab__grid">${body}</div>
 </details>`;
 }
