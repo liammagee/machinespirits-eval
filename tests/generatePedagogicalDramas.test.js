@@ -658,7 +658,12 @@ describe('generate-pedagogical-dramas', () => {
         tutorAdaptationPolicy: 'none',
         secretTutorAdaptationPolicy: 'withhold_secret',
       },
-      { key: 'reframe-only', revisitPolicy: 'reframe', tutorAdaptationPolicy: 'none', secretTutorAdaptationPolicy: null },
+      {
+        key: 'reframe-only',
+        revisitPolicy: 'reframe',
+        tutorAdaptationPolicy: 'none',
+        secretTutorAdaptationPolicy: null,
+      },
       {
         key: 'tutor-uptake-only',
         revisitPolicy: 'none',
@@ -694,9 +699,7 @@ describe('generate-pedagogical-dramas', () => {
       'withhold_secret',
     );
     assert.equal(
-      effectiveBranchTutorAdaptationPolicyForOrder(noneBranch, [
-        { id: 'D_OED5', secret: { fact: 'hidden S' } },
-      ]),
+      effectiveBranchTutorAdaptationPolicyForOrder(noneBranch, [{ id: 'D_OED5', secret: { fact: 'hidden S' } }]),
       'withhold_secret',
     );
   });
