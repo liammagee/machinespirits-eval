@@ -1,11 +1,11 @@
 {
-  "generated": "2026-06-24T01:42:58.693Z",
+  "generated": "2026-06-24T02:14:30.962Z",
   "counts": {
     "total": 47,
     "byStatus": {
-      "done": 39,
+      "done": 40,
       "blocked": 1,
-      "triaged": 4,
+      "triaged": 3,
       "dropped": 2,
       "review": 1
     },
@@ -71,32 +71,6 @@
         "director"
       ],
       "milestone": "poetics-followups"
-    },
-    {
-      "id": "d5-rubric-v3-0-pca-informed-consolidation",
-      "title": "D5. Rubric v3.0 PCA-Informed Consolidation",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "todo",
-      "created": "2026-06-22",
-      "updated": "2026-06-24",
-      "verification": "Rubric v3.0 PCA-informed consolidation drafted in config/rubrics/v3.0/; calibration run; decision recorded in the paper or shelved with a reason.",
-      "links": {
-        "notes": [
-          "TODO.md#D5",
-          "notes/design-d5-rubric-v3-pca-consolidation.md"
-        ],
-        "paper": "§8.6"
-      },
-      "claim_status": "planned",
-      "tags": [
-        "rubric",
-        "pca",
-        "methods"
-      ],
-      "milestone": "paper-2-evidence-cleanup"
     },
     {
       "id": "review-ego-superego-internal-history-window",
@@ -554,6 +528,33 @@
         "structural-features",
         "ols",
         "multi-turn"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "d5-rubric-v3-0-pca-informed-consolidation",
+      "title": "D5. Rubric v3.0 PCA-Informed Consolidation",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "todo",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "Missing D5 note recovered; 2026-06-24 decision addendum shelves v3.0 implementation for future Paper 3.0/methods work.",
+      "branch": "codex/d5-rubric-v3-decision",
+      "links": {
+        "notes": [
+          "TODO.md#D5",
+          "notes/design-d5-rubric-v3-pca-consolidation.md"
+        ],
+        "paper": "§8.6"
+      },
+      "claim_status": "future",
+      "tags": [
+        "rubric",
+        "pca",
+        "methods"
       ],
       "milestone": "paper-2-evidence-cleanup"
     },
