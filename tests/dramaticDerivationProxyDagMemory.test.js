@@ -13,10 +13,16 @@ import {
   makeMockTutor,
   PROXY_DAG_PACING_SCHEMA,
   runDrama,
+  buildTutorLearnerDagModel,
+  TUTOR_LEARNER_DAG_MODEL_SCHEMA,
 } from '../services/dramaticDerivation/index.js';
 import { parseProxyDagABArgs, planLearnerProxyDagAB } from '../scripts/run-learner-proxy-dag-ab.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+}
 
 function smokeWorld() {
   return loadWorld(path.join(ROOT, 'config/drama-derivation/world-000-smoke.yaml'));
@@ -81,10 +87,62 @@ test('proxy-DAG pacing recommends evidence release when the learner stalls befor
   assert.equal(signal.missingPremises[0].premiseId, 'p3');
 });
 
+test('tutor learner-DAG model redacts authored proof identifiers while preserving learner record', () => {
+  const world = smokeWorld();
+  const surfaces = surfaceMap(world);
+  const p1 = world.premiseById.get('p1').fact;
+  const p2 = world.premiseById.get('p2').fact;
+  const p3 = world.premiseById.get('p3').fact;
+  const proxyDagMemory = buildLearnerProxyDagMemory({
+    turn: 8,
+    questionPattern: world.questionPattern,
+    rules: world.rules,
+    groundedFacts: [p1, p2],
+    voiced: [],
+    hypotheses: [{ turn: 7, text: 'Marin may be the answer, but I need the mark.' }],
+    factSurface: (fact) => surfaces.get(factKey(fact)) || fact.join(' '),
+  });
+  const model = buildTutorLearnerDagModel({
+    turn: 8,
+    role: 'tutor',
+    proxyDagMemory,
+    assessment: {
+      status: 'available',
+      bestPathId: 'path_1',
+      bestPathCoverage: 0.667,
+      finalSecretEntailed: false,
+      assertedSecret: false,
+      assertedMirror: false,
+      unsupportedAssertionCount: 0,
+      voicedDerivedCount: 0,
+      hypothesisCount: 1,
+      bottleneck: 'release_or_pacing_gap',
+      missingPremises: [{ premiseId: 'p3', bucket: 'unreleased', releaseTurn: 8, releaseVia: 'tutor' }],
+      missingPremiseBuckets: { unreleased: 1 },
+    },
+  });
+
+  assert.equal(model.schema, TUTOR_LEARNER_DAG_MODEL_SCHEMA);
+  assert.equal(model.publicOnly, true);
+  assert.equal(model.advisoryOnly, true);
+  assert.equal(model.audit.authoredProofPathsIncluded, false);
+  assert.equal(model.audit.missingPremiseIdsIncluded, false);
+  assert.equal(model.assessment.missingPremiseCount, 1);
+  assert.deepEqual(model.assessment.missingPremiseBuckets, { unreleased: 1 });
+  assert.ok(model.learnerRecord.grounded.some((row) => row.surface === surfaces.get(factKey(p1))));
+  assert.ok(model.learnerRecord.hypotheses.some((row) => row.text.includes('need the mark')));
+  assert.equal(model.learnerRecord.answerCandidates.length, 0);
+
+  const serialized = JSON.stringify(model);
+  assert.doesNotMatch(serialized, /\bp1\b|\bp2\b|\bp3\b|path_1|R1_lineage|R2_succession/u);
+  assert.doesNotMatch(serialized, new RegExp(escapeRegExp(surfaces.get(factKey(p3))), 'u'));
+});
+
 test('runDrama supplies opt-in learner memory and tutor/director pacing views', async () => {
   const world = smokeWorld();
   const learnerMemories = [];
   const pacingSignals = [];
+  const tutorModels = [];
   const learner = makeMockLearner();
   const tutor = makeMockTutor(world);
 
@@ -94,6 +152,7 @@ test('runDrama supplies opt-in learner memory and tutor/director pacing views', 
       director: makeMockDirector(world),
       tutor: async (view) => {
         if (view.proxyDagPacing) pacingSignals.push(view.proxyDagPacing);
+        if (view.tutorLearnerDagModel) tutorModels.push(view.tutorLearnerDagModel);
         return tutor(view);
       },
       learner: async (view) => {
@@ -105,6 +164,7 @@ test('runDrama supplies opt-in learner memory and tutor/director pacing views', 
       maxTurns: 3,
       learnerProxyDag: true,
       proxyDagPacing: true,
+      tutorLearnerDag: true,
     },
   });
 
@@ -112,7 +172,11 @@ test('runDrama supplies opt-in learner memory and tutor/director pacing views', 
   assert.ok(learnerMemories.every((memory) => memory.publicOnly));
   assert.ok(pacingSignals.length >= 1);
   assert.equal(pacingSignals[0].schema, PROXY_DAG_PACING_SCHEMA);
+  assert.ok(tutorModels.length >= 1);
+  assert.ok(tutorModels.every((model) => model.schema === TUTOR_LEARNER_DAG_MODEL_SCHEMA));
+  assert.ok(tutorModels.every((model) => model.audit.missingPremiseIdsIncluded === false));
   assert.ok(result.proxyDagPacing.length >= pacingSignals.length);
+  assert.ok(result.tutorLearnerDagModel.length >= tutorModels.length);
 });
 
 test('learner proxy-DAG A/B planner pairs control and treatment with the treatment flags only', () => {

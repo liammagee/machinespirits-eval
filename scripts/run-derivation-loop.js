@@ -816,6 +816,7 @@ async function main() {
   const ownershipTransferGate = flag('ownership-transfer-gate');
   const learnerProxyDag = flag('learner-proxy-dag');
   const proxyDagPacing = flag('proxy-dag-pacing');
+  const tutorLearnerDag = flag('tutor-learner-dag');
   if (castReinvention && !castLayer) {
     console.error('--cast-reinvention requires --cast-layer');
     process.exit(1);
@@ -949,6 +950,7 @@ async function main() {
       ownershipTransferGate,
       learnerProxyDag,
       proxyDagPacing,
+      tutorLearnerDag,
     },
   });
   live.start();
@@ -1128,6 +1130,9 @@ async function main() {
   if (proxyDagPacing) {
     console.log('tutor   PROXY DAG PACING ON — external learner-DAG assessment advises pacing; no release authority');
   }
+  if (tutorLearnerDag) {
+    console.log('tutor   LEARNER DAG MODEL ON — redacted reconstruction of the learner-owned proof sketch');
+  }
   if (decay) {
     console.log(
       `decay   seed ${decay.seed} · rate ${decay.rate} · grace ${decay.graceTurns} · maxConcurrent ${decay.maxConcurrent} · from turn ${decay.startTurn}${decay.mutateShare ? ` · mutateShare ${decay.mutateShare} (slips may misremember, not just vanish)` : ''}${decay.pool === 'staged' ? ' · pool STAGED (false forms confuse only met-on-stage names)' : ''}`,
@@ -1257,6 +1262,7 @@ async function main() {
         logicProjection: true,
         learnerProxyDag,
         proxyDagPacing,
+        tutorLearnerDag,
         directorCadence,
         stagePrologue,
         publicRegister,
@@ -1354,6 +1360,7 @@ async function main() {
     ownershipTransferGate,
     learnerProxyDag,
     proxyDagPacing,
+    tutorLearnerDag,
     elapsedMs,
     usage,
     ...diagnose(result, world),

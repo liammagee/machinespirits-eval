@@ -140,9 +140,11 @@ export {
 } from './learnerDag.js';
 export {
   buildLearnerProxyDagMemory,
+  buildTutorLearnerDagModel,
   deriveProxyDagPacingSignal,
   LEARNER_PROXY_DAG_MEMORY_SCHEMA,
   PROXY_DAG_PACING_SCHEMA,
+  TUTOR_LEARNER_DAG_MODEL_SCHEMA,
 } from './proxyDagMemory.js';
 export {
   normalizeSceneConfig,

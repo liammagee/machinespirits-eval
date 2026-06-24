@@ -85,7 +85,7 @@ import { buildWorldIR, projectWorldIRLogic } from './guardCompiler.js';
 import { deriveLearnerTransformationState, summarizeLearnerTransformationDurability } from './learnerTransformation.js';
 import { buildLearnerDag, buildLearnerDagSnapshot } from './learnerDag.js';
 import { proofDebtReport, tutorProofDebtView } from './proofDebt.js';
-import { buildLearnerProxyDagMemory, deriveProxyDagPacingSignal } from './proxyDagMemory.js';
+import { buildLearnerProxyDagMemory, buildTutorLearnerDagModel, deriveProxyDagPacingSignal } from './proxyDagMemory.js';
 import {
   classifyLearnerExchange,
   applyRecognitionNeedPolicy,
@@ -255,6 +255,7 @@ export async function runDrama({ world, roles, options = {} }) {
     stopOnLeak: true,
     learnerProxyDag: false,
     proxyDagPacing: false,
+    tutorLearnerDag: false,
     recognitionGrace: 3,
     maxTurns: Infinity, // episode replay (replay.js) stops the loop early; world.turnCap still bounds it
     ...options,
@@ -312,6 +313,7 @@ export async function runDrama({ world, roles, options = {} }) {
   const learnerTransformationRows = []; // public-only ownership proof states, if the roles layer emits them
   const learnerTransformationPostRows = []; // post-learner public ownership proof snapshots
   const proxyDagPacingRows = []; // harness-only advisory assessment rows, if enabled
+  const tutorLearnerDagRows = []; // redacted tutor-side model of learner DAG state, if enabled
   let sceneState = null;
   const ledger = []; // {turn, premiseId, via}
   const releasedKeys = new Set();
@@ -594,6 +596,43 @@ export async function runDrama({ world, roles, options = {} }) {
     });
   };
 
+  const currentTutorLearnerDagModel = (turn, roleName) => {
+    const grounded = learnerBoardFacts();
+    const voiced = voicedLedger.map((entry) => ({ ...entry }));
+    const snapshot = buildLearnerDagSnapshot(world, {
+      turn,
+      boardFacts: grounded,
+      validFacts: validGroundedFacts(),
+      voiced,
+      hypotheses,
+      ledger,
+      source: 'engine_tutor_learner_dag_model',
+    });
+    const learnerDag = buildLearnerDag([snapshot], world);
+    const surfaceFacts = [
+      ...world.background,
+      ...visibleToLearner([...releasedFacts]),
+      ...grounded,
+      ...voiced.map((entry) => entry.fact),
+    ];
+    const factSurfaces = learnerFactSurfaces(surfaceFacts);
+    const proxyDagMemory = buildLearnerProxyDagMemory({
+      turn,
+      questionPattern: world.questionPattern,
+      rules: world.rules,
+      groundedFacts: grounded,
+      voiced,
+      hypotheses,
+      factSurface: (fact) => factSurfaces[factKey(fact)] || learnerSurfaceForFact(fact),
+    });
+    return buildTutorLearnerDagModel({
+      turn,
+      role: roleName,
+      proxyDagMemory,
+      assessment: learnerDag.assessment,
+    });
+  };
+
   const openSceneForTurn = (turn, reason = 'opening') => {
     if (!sceneConfig || sceneState) return null;
     const dNow = derivationDistance(world, validGroundedFacts());
@@ -810,6 +849,8 @@ export async function runDrama({ world, roles, options = {} }) {
       opts.proxyDagPacing && (roleName === 'director' || (roleName === 'tutor' && !actState))
         ? currentProxyDagPacing(turn, roleName)
         : null;
+    const tutorLearnerDagModel =
+      opts.tutorLearnerDag && roleName === 'tutor' && !actState ? currentTutorLearnerDagModel(turn, roleName) : null;
     const conductTriggerOverride =
       roleName === 'tutor' && (conductPolicyActive || conductPolicyEnforceActive)
         ? conductTriggerOverrides.find((trigger) => Number(trigger?.turn) === turn) || null
@@ -831,6 +872,7 @@ export async function runDrama({ world, roles, options = {} }) {
       ...(stagePrologue ? { stagePrologue } : {}),
       publicRegister: publicRegisterForTurn,
       ...(proxyDagPacing ? { proxyDagPacing } : {}),
+      ...(tutorLearnerDagModel ? { tutorLearnerDagModel } : {}),
       ...(conductEntitlement ? { conductEntitlement } : {}),
       ...(conductTriggerOverride ? { conductTriggerOverride } : {}),
       ...(proofDebt
@@ -1000,6 +1042,7 @@ export async function runDrama({ world, roles, options = {} }) {
     // --- tutor ---
     const tutorView = omniscientView(turn, 'tutor');
     if (tutorView.proxyDagPacing) proxyDagPacingRows.push({ ...tutorView.proxyDagPacing });
+    if (tutorView.tutorLearnerDagModel) tutorLearnerDagRows.push({ ...tutorView.tutorLearnerDagModel });
     const debtAudit = proofDebtGuardActive ? currentProofDebt(turn) : null;
     if (debtAudit?.active) {
       proofDebtRows.push({
@@ -1622,6 +1665,7 @@ export async function runDrama({ world, roles, options = {} }) {
           }
         : {}),
       publicRegister: publicRegisterForTurn,
+      tutorLearnerDagModel: tutorView.tutorLearnerDagModel || null,
       proxyDagPacing: tutorView.proxyDagPacing || directorView.proxyDagPacing || null,
       endedBy,
     });
@@ -1727,6 +1771,7 @@ export async function runDrama({ world, roles, options = {} }) {
     ...(learnerTransformationRows.length ? { learnerTransformation: learnerTransformationRows } : {}),
     ...(learnerTransformationPostRows.length ? { learnerTransformationPost: learnerTransformationPostRows } : {}),
     ...(learnerTransformationDurability ? { learnerTransformationDurability } : {}),
+    ...(tutorLearnerDagRows.length ? { tutorLearnerDagModel: tutorLearnerDagRows } : {}),
     ...(proxyDagPacingRows.length ? { proxyDagPacing: proxyDagPacingRows } : {}),
     ...(logicSnapshots.length ? { logicSnapshots } : {}),
     ...(corruption

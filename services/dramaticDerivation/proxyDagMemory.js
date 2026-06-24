@@ -2,6 +2,7 @@ import { closure, factKey, matchPattern } from './chainer.js';
 
 export const LEARNER_PROXY_DAG_MEMORY_SCHEMA = 'machinespirits.derivation.learner-proxy-dag-memory.v1';
 export const PROXY_DAG_PACING_SCHEMA = 'machinespirits.derivation.proxy-dag-pacing.v1';
+export const TUTOR_LEARNER_DAG_MODEL_SCHEMA = 'machinespirits.derivation.tutor-learner-dag-model.v1';
 
 function text(value) {
   return String(value ?? '')
@@ -118,6 +119,72 @@ export function buildLearnerProxyDagMemory({
     ruleIdsIncluded: false,
   };
   return memory;
+}
+
+function rowsFromMemory(memory, key) {
+  return Array.isArray(memory?.[key]) ? memory[key].map((row) => ({ ...row })) : [];
+}
+
+function redactedMissingBuckets(assessment = {}) {
+  const explicit = assessment?.missingPremiseBuckets;
+  if (explicit && typeof explicit === 'object' && !Array.isArray(explicit)) return { ...explicit };
+  const counts = {};
+  for (const row of assessment?.missingPremises || []) {
+    const bucket = row?.bucket || 'unknown';
+    counts[bucket] = (counts[bucket] || 0) + 1;
+  }
+  return counts;
+}
+
+export function buildTutorLearnerDagModel({ turn, role = 'tutor', proxyDagMemory = null, assessment = null } = {}) {
+  const missingPremiseBuckets = redactedMissingBuckets(assessment);
+  const missingPremiseCount = Object.values(missingPremiseBuckets).reduce((sum, count) => sum + Number(count || 0), 0);
+  const model = {
+    schema: TUTOR_LEARNER_DAG_MODEL_SCHEMA,
+    publicOnly: true,
+    advisoryOnly: true,
+    turn: Number.isFinite(turn) ? turn : null,
+    role,
+    learnerRecord: {
+      grounded: rowsFromMemory(proxyDagMemory, 'grounded'),
+      voicedDerived: rowsFromMemory(proxyDagMemory, 'voicedDerived'),
+      hypotheses: rowsFromMemory(proxyDagMemory, 'hypotheses'),
+      candidateConclusions: rowsFromMemory(proxyDagMemory, 'candidateConclusions'),
+      answerCandidates: rowsFromMemory(proxyDagMemory, 'answerCandidates'),
+    },
+    assessment: {
+      status: assessment?.status || 'unavailable',
+      bestPathCoverage: assessment?.bestPathCoverage ?? null,
+      finalSecretEntailed: assessment?.finalSecretEntailed === true,
+      assertedSecret: assessment?.assertedSecret === true,
+      assertedMirror: assessment?.assertedMirror === true,
+      unsupportedAssertionCount: Number(assessment?.unsupportedAssertionCount || 0),
+      voicedDerivedCount: Number(assessment?.voicedDerivedCount || 0),
+      hypothesisCount: Number(assessment?.hypothesisCount || 0),
+      bottleneck: assessment?.bottleneck || 'unavailable',
+      missingPremiseCount,
+      missingPremiseBuckets,
+    },
+  };
+  model.metrics = {
+    groundedCount: model.learnerRecord.grounded.length,
+    voicedDerivedCount: model.learnerRecord.voicedDerived.length,
+    hypothesisCount: model.learnerRecord.hypotheses.length,
+    candidateConclusionCount: model.learnerRecord.candidateConclusions.length,
+    answerCandidateCount: model.learnerRecord.answerCandidates.length,
+    missingPremiseCount,
+  };
+  model.audit = {
+    authoredProofPathsIncluded: false,
+    authoredPathIdsIncluded: false,
+    authoredMissingPremiseIdsIncluded: false,
+    unreleasedPremiseIdsIncluded: false,
+    missingPremiseIdsIncluded: false,
+    factArraysIncluded: false,
+    ruleIdsIncluded: false,
+    releaseScheduleIncluded: false,
+  };
+  return model;
 }
 
 function nextReleaseSummary(nextScheduledRelease) {

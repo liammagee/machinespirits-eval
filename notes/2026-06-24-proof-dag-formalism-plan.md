@@ -217,6 +217,36 @@ Operational conclusion:
   two-arm control/proxy comparison should remain available for isolating the
   effect of memory/pacing alone.
 
+## Tutor Learner-DAG Model Test
+
+Follow-up test, 2026-06-24:
+
+- Label: `lantern-tutor-learner-dag-real-20260624`.
+- Flags: `--learner-proxy-dag --proxy-dag-pacing --tutor-learner-dag
+  --same-turn-assertion-affordance`.
+
+Result:
+
+- The run reached `grounded_anagnorisis` in 20 turns.
+- It had no `lucky_leap`, no release deviations, no missed releases, and no
+  unscheduled releases.
+- Cost was about `$0.1017` for 60 real calls.
+- The result artifact contains 20 `tutorLearnerDagModel` rows.
+- At turn 17, after the key premise entered the arc but before the presence
+  premise landed, the tutor-side model reported coverage `0.6`, no answer
+  candidate, no final entailment, and missing proof material by bucket only.
+
+Interpretation:
+
+- The tutor can receive a reconstructed model of the learner-owned DAG without
+  receiving authored proof paths, path ids, rule ids, fact arrays, release
+  schedule, or missing-premise ids.
+- This model is useful as a teaching instrument: it tells the tutor what the
+  learner currently owns and where the learner is short, while preserving the
+  authored DAG as the external authority.
+- The behavioral safeguard remains the assertion gate. The tutor model did not
+  replace the learner's own proxy DAG or the mechanical proof gate.
+
 ## References
 
 - TPTP derivations: https://tptp.org/UserDocs/QuickGuide/Derivations.html
