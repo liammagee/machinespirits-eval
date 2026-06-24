@@ -135,6 +135,9 @@ const FALLBACK_GENERATED_PROMPT =
   'question that asks the learner to take a position rather than seek more information.';
 
 const MIN_GENERATED_PROMPT_CHARS = 100;
+const EGO_EMPTY_RETRY_SUFFIX =
+  'Return only the tutor response the learner should see, as plain text. ' +
+  'Do not explain your reasoning, describe the prompt, or output JSON.';
 
 function getRequiredTemperature(config, configName) {
   const t = config?.hyperparameters?.temperature;
@@ -160,6 +163,10 @@ function buildConversationContext(history) {
     .join('\n\n');
 }
 
+function buildEgoRetryPrompt(learnerMessage) {
+  return `${learnerMessage}\n\n${EGO_EMPTY_RETRY_SUFFIX}`;
+}
+
 function buildIdUserMessage({
   conversationContext,
   learnerMessage,
@@ -167,6 +174,7 @@ function buildIdUserMessage({
   tutorMemory,
   previousPersona,
   recognitionMode,
+  recognitionDesire = false,
   learnerRegister = null,
 }) {
   const lines = [
@@ -192,6 +200,10 @@ function buildIdUserMessage({
     '<recognition_mode>',
     recognitionMode ? 'true' : 'false',
     '</recognition_mode>',
+    '',
+    '<recognition_desire>',
+    recognitionDesire ? 'true' : 'false',
+    '</recognition_desire>',
   ];
   if (learnerRegister && typeof learnerRegister === 'object') {
     lines.push('', '<learner_register>', JSON.stringify(learnerRegister, null, 2), '</learner_register>');
@@ -470,6 +482,7 @@ export async function runIdDirectedTurn({
   }
 
   const recognitionMode = profile?.recognition_mode === true;
+  const recognitionDesire = profile?.factors?.recognition_desire === true || profile?.recognition_desire === true;
   const tutorMemory = _deps.tutorWritingPad.buildNarrativeSummary(learnerId, sessionId);
   const conversationContext = buildConversationContext(history);
   const previousPersona = extractPreviousPersona(trace);
@@ -481,6 +494,7 @@ export async function runIdDirectedTurn({
     tutorMemory,
     previousPersona,
     recognitionMode,
+    recognitionDesire,
   });
 
   const idStaticPrompt = idConfig?.prompt || '';
@@ -507,7 +521,7 @@ export async function runIdDirectedTurn({
 
   const egoSystemPrompt = construction.generated_prompt;
   const egoModel = egoConfig?.model || _deps.tutorConfig.getProviderConfig?.('openrouter')?.default_model;
-  const egoResponse = await llmCall(egoModel, egoSystemPrompt, [{ role: 'user', content: learnerMessage }], {
+  let egoResponse = await llmCall(egoModel, egoSystemPrompt, [{ role: 'user', content: learnerMessage }], {
     temperature: getRequiredTemperature(egoConfig, 'tutor_ego'),
     maxTokens: getRequiredMaxTokens(egoConfig, 'tutor_ego'),
     agentRole: 'tutor_ego',
@@ -518,11 +532,35 @@ export async function runIdDirectedTurn({
     trace.metrics.tutorOutputTokens = (trace.metrics.tutorOutputTokens || 0) + (egoResponse?.usage?.outputTokens || 0);
   }
 
+  let egoRetried = false;
+  if (!(egoResponse?.content || '').trim()) {
+    console.warn('[IdDirector] Empty ego output, retrying with learner-facing output reminder.');
+    egoRetried = true;
+    egoResponse = await llmCall(
+      egoModel,
+      egoSystemPrompt,
+      [{ role: 'user', content: buildEgoRetryPrompt(learnerMessage) }],
+      {
+        temperature: getRequiredTemperature(egoConfig, 'tutor_ego'),
+        maxTokens: getRequiredMaxTokens(egoConfig, 'tutor_ego'),
+        agentRole: 'tutor_ego_retry',
+      },
+    );
+    if (trace?.metrics) {
+      trace.metrics.tutorInputTokens = (trace.metrics.tutorInputTokens || 0) + (egoResponse?.usage?.inputTokens || 0);
+      trace.metrics.tutorOutputTokens =
+        (trace.metrics.tutorOutputTokens || 0) + (egoResponse?.usage?.outputTokens || 0);
+    }
+  }
+
   internalDeliberation.push(buildEgoDeliberationEntry(egoResponse, egoConfig, egoSystemPrompt));
+  if (egoRetried) {
+    internalDeliberation[internalDeliberation.length - 1].retry_reason = 'empty_ego_output';
+  }
 
   let externalMessage = (egoResponse?.content || '').trim();
   if (!externalMessage) {
-    console.warn('[IdDirector] Empty ego output, using fallback message.');
+    console.warn('[IdDirector] Empty ego output after retry, using fallback message.');
     externalMessage = "Let me try that again — could you say a little more about what you're working through?";
   }
 
@@ -730,6 +768,7 @@ function buildIdRunnerUserMessage({
   curriculumContext,
   previousPersona,
   recognitionMode,
+  recognitionDesire = false,
   learnerRegister = null,
   idTuning = null,
   witnessExemplars = false,
@@ -754,6 +793,10 @@ function buildIdRunnerUserMessage({
     '<recognition_mode>',
     recognitionMode ? 'true' : 'false',
     '</recognition_mode>',
+    '',
+    '<recognition_desire>',
+    recognitionDesire ? 'true' : 'false',
+    '</recognition_desire>',
   ];
   if (learnerRegister && typeof learnerRegister === 'object' && learnerRegister.register !== 'unknown') {
     const { register, confidence, evidence, shift_from_previous } = learnerRegister;
@@ -834,6 +877,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   }
 
   const recognitionMode = evalCellProfile.recognition_mode === true;
+  const recognitionDesire = evalCellProfile.factors?.recognition_desire === true;
   const useRegisterClassifier = evalCellProfile.factors?.register_classifier === true;
   const idTuning = typeof evalCellProfile.factors?.id_tuning === 'string' ? evalCellProfile.factors.id_tuning : null;
   const witnessExemplars = evalCellProfile.factors?.witness_exemplars === true;
@@ -887,6 +931,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
     curriculumContext,
     previousPersona,
     recognitionMode,
+    recognitionDesire,
     learnerRegister,
     idTuning,
     witnessExemplars,
@@ -959,7 +1004,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   // For multi-turn cells, pass messageHistory so the ego sees the conversation
   // context. The ego's *system prompt* is the id's authored prompt; the user
   // turn is the most recent learner message.
-  const egoResponse = await callAIWithCliBridge(egoAgentConfig, egoSystemPrompt, learnerMessage, 'tutor_ego', {
+  let egoResponse = await callAIWithCliBridge(egoAgentConfig, egoSystemPrompt, learnerMessage, 'tutor_ego', {
     messageHistory: messageHistory.length > 0 ? messageHistory : null,
   });
   totalInputTokens += egoResponse?.inputTokens || 0;
@@ -967,7 +1012,27 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   totalCost += egoResponse?.cost || 0;
   apiCalls += 1;
 
-  const externalMessage = (egoResponse?.text || '').trim();
+  let egoRetried = false;
+  let externalMessage = (egoResponse?.text || '').trim();
+  if (!externalMessage) {
+    console.warn('[idDirectorEngine.runnerAdapter] Empty ego output, retrying with learner-facing output reminder.');
+    egoRetried = true;
+    egoResponse = await callAIWithCliBridge(
+      egoAgentConfig,
+      egoSystemPrompt,
+      buildEgoRetryPrompt(learnerMessage),
+      'tutor_ego_retry',
+      {
+        messageHistory: messageHistory.length > 0 ? messageHistory : null,
+      },
+    );
+    totalInputTokens += egoResponse?.inputTokens || 0;
+    totalOutputTokens += egoResponse?.outputTokens || 0;
+    totalCost += egoResponse?.cost || 0;
+    apiCalls += 1;
+    externalMessage = (egoResponse?.text || '').trim();
+  }
+
   if (!externalMessage) {
     return {
       success: false,
@@ -1013,6 +1078,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
         persona_delta: construction.persona_delta,
         stage_directions: construction.stage_directions,
         reasoning: construction.reasoning,
+        recognition_desire: recognitionDesire,
         generated_prompt_head: egoSystemPrompt.slice(0, 320),
         parse_status: construction.parse_status,
       }),
@@ -1028,6 +1094,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       agent: 'ego',
       action: 'execute',
       detail: `(generated_prompt: ${egoSystemPrompt.length} chars)`,
+      retry_reason: egoRetried ? 'empty_ego_output' : null,
       metrics: {
         provider: egoCell.provider,
         model: egoCell.resolvedModel || egoCell.model,
@@ -1053,6 +1120,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       converged: true,
       apiCalls,
       totalCost,
+      egoRetried,
       idConstruction: construction, // bonus: surface for trace logging downstream
     },
     dialogueTrace: trace,

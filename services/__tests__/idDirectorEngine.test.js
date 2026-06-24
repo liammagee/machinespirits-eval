@@ -288,6 +288,71 @@ describe('runIdDirectedTurn', () => {
     assert.match(idCall.arguments[2][0].content, /<recognition_mode>\s*true/);
   });
 
+  test('recognition_desire factor flows from profile into id user message', async () => {
+    fakeProfile.factors = { recognition_desire: true };
+    queuedResponses.push(
+      {
+        content: JSON.stringify({
+          generated_prompt: 'Desire-for-recognition persona authored. ' + 'A '.repeat(60),
+          persona_delta: 'from neutral to recognition-seeking',
+        }),
+        usage: { inputTokens: 0, outputTokens: 0 },
+      },
+      { content: 'ego output', usage: { inputTokens: 0, outputTokens: 0 } },
+    );
+
+    await runIdDirectedTurn({
+      learnerId: 'l',
+      sessionId: 's',
+      learnerMessage: 'why should I trust you?',
+      history: [],
+      tutorProfileName: 'cell_159_test',
+      topic: 't',
+      llmCall: llmCallSpy,
+      trace,
+    });
+
+    const idCall = llmCallSpy.mock.calls[0];
+    assert.match(idCall.arguments[2][0].content, /<recognition_desire>\s*true/);
+  });
+
+  test('empty ego output retries with learner-facing output reminder', async () => {
+    queuedResponses.push(
+      {
+        content: JSON.stringify({
+          generated_prompt: 'You are plain and accountable. Make one checkable claim. ' + 'A '.repeat(60),
+          persona_delta: 'from ornate to plain',
+        }),
+        usage: { inputTokens: 10, outputTokens: 20 },
+      },
+      { content: '', usage: { inputTokens: 30, outputTokens: 40 } },
+      {
+        content: 'Here is the plain claim: recognition has to survive your test.',
+        usage: { inputTokens: 50, outputTokens: 60 },
+      },
+    );
+
+    const result = await runIdDirectedTurn({
+      learnerId: 'l',
+      sessionId: 's',
+      learnerMessage: 'say it plainly',
+      history: [],
+      tutorProfileName: 'cell_159_test',
+      topic: 't',
+      llmCall: llmCallSpy,
+      trace,
+    });
+
+    assert.equal(llmCallSpy.mock.callCount(), 3, 'id call, empty ego call, retry ego call');
+    const retryCall = llmCallSpy.mock.calls[2];
+    assert.equal(retryCall.arguments[3].agentRole, 'tutor_ego_retry');
+    assert.match(retryCall.arguments[2][0].content, /Return only the tutor response/);
+    assert.match(result.externalMessage, /recognition has to survive/);
+    assert.equal(result.internalDeliberation[1].retry_reason, 'empty_ego_output');
+    assert.equal(trace.metrics.tutorInputTokens, 90);
+    assert.equal(trace.metrics.tutorOutputTokens, 120);
+  });
+
   test('previous persona is extracted from a populated trace', async () => {
     trace.turns = [
       {

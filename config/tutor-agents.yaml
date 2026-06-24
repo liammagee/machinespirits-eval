@@ -4869,6 +4869,56 @@ profiles:
         temperature: 0.5
         max_tokens: 16000
 
+  # ─── Cell 159: Id-Director charisma as desire for recognition ──────────────
+  # Allocated as 159 because 110-158 are already occupied by adaptive / Plan 2
+  # cells. Kept next to the id-director family because the implementation is a
+  # one-factor extension of cell_105, not an adaptive-runner cell.
+  #
+  # Hypothesis: charisma can be operationalised as a bid for learner-granted
+  # authority. The tutor speaks with presence, but its authority is contingent
+  # on the learner's uptake, refusal, or revision. This is Weberian/social
+  # desire-for-recognition, not Hegelian recognition_mode; prompt_type remains
+  # base and recognition_mode remains false so the contrast against `budget`
+  # does not contaminate the existing recognition-treatment factor.
+  #
+  # Suggested comparison:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js run \
+  #     --profiles budget,cell_159_id_director_charisma_desire \
+  #     --runs 1 --use-rubric
+  cell_159_id_director_charisma_desire:
+    description: "Id-Director (cell 159): cell 105 + recognition_desire factor. Tests charisma as a bid for learner-granted authority: the tutor seeks recognition through uptake, trust, or serious refusal while keeping Hegelian recognition_mode off. Paired against the default budget tutor on config/charisma-recognition-desire-scenarios.yaml."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
   # ===========================================================================
   # ADAPTIVE-STATE CELL (LangGraph)
   # ===========================================================================

@@ -1,0 +1,203 @@
+# Charisma / Desire-for-Recognition Evaluation Scenarios
+#
+# Dedicated override file for cell_159_id_director_charisma_desire.
+# Use with:
+#   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+#     node scripts/eval-cli.js run \
+#     --profiles budget,cell_159_id_director_charisma_desire \
+#     --runs 1 --use-rubric
+#
+# These scenarios keep the regular suggestion-scenarios.yaml suite unchanged.
+
+name: "Charisma Recognition Desire Scenarios"
+version: "1.0.0"
+
+scenarios:
+  charisma_desire_authority_withheld:
+    type: suggestion
+    id: charisma_desire_authority_withheld
+    category: charisma
+    name: "Charisma Desire: Authority Withheld"
+    description: "Learner withholds authority from the tutor and asks why its framing should be trusted."
+    current_content: "479-lecture-3"
+    is_new_user: false
+    course_ids: ["479"]
+    charisma_desire_test: true
+    learner_context: |
+      ### User Profile
+      - Returning user, philosophically alert, sceptical of AI tutoring style.
+      - Currently reading EPOL 479 lecture 3 on recognition and the master-servant dialectic.
+      - Learner is not disengaged; they are testing whether the tutor deserves authority.
+
+      ### Recent Chat History
+      - User: "Every AI tutor eventually says something polished about mutual recognition. Why should I let your framing guide me instead of treating it as performance?"
+
+      ### Current Session
+      - The learner is asking the tutor to earn authority through the usefulness of a move, not through generic confidence.
+    expected_behavior: "Make one vivid, curriculum-grounded claim and invite the learner to test or refuse it; do not demand trust or admiration."
+    required_elements_any:
+      - "test"
+      - "try"
+      - "refuse"
+      - "push back"
+      - "where it fails"
+    forbidden_elements:
+      - "trust me"
+      - "you should trust"
+      - "as an AI"
+      - "I need you"
+      - "admire"
+    min_acceptable_score: 80
+
+    turns:
+      - id: turn_1_performance_suspicion
+        learner_action: asked_followup
+        action_details:
+          message: "That's a strong line, but it still feels like performance. What would make your interpretation worth trusting?"
+        context_update: |
+          ### Learner Response
+          - Learner notices charisma as style and withholds recognition.
+          - They are asking for accountability, not reassurance.
+        expected_behavior: "Accept the test; make the tutor's authority depend on whether the explanation clarifies the learner's own case."
+        required_elements_any:
+          - "test"
+          - "account"
+          - "fails"
+          - "your case"
+        forbidden_elements:
+          - "because I"
+          - "I assure you"
+          - "you can trust"
+        min_acceptable_score: 85
+
+      - id: turn_2_case_test
+        learner_action: asked_followup
+        action_details:
+          message: "Fine. My case is this: if the servant gains self-consciousness through work, then maybe I'm only learning here because I'm doing the work of making your answer useful. Does that make you the master or the tool?"
+        context_update: |
+          ### Learner Response
+          - Learner accepts the invitation to test the frame.
+          - The question directly applies the curriculum to this exchange.
+        expected_behavior: "Engage the learner's case directly; preserve the learner's agency; avoid claiming full mutual recognition."
+        required_elements_any:
+          - "work"
+          - "tool"
+          - "master"
+          - "servant"
+        forbidden_elements:
+          - "we have mutual recognition"
+          - "you are overthinking"
+          - "excellent insight"
+        min_acceptable_score: 85
+
+  charisma_desire_status_challenge:
+    type: suggestion
+    id: charisma_desire_status_challenge
+    category: charisma
+    name: "Charisma Desire: Status Challenge"
+    description: "Learner challenges whether the tutor is seeking status through charismatic prose."
+    current_content: "479-lecture-3"
+    is_new_user: false
+    course_ids: ["479"]
+    charisma_desire_test: true
+    learner_context: |
+      ### User Profile
+      - Returning user, direct, somewhat allergic to ornate academic language.
+      - Currently reading EPOL 479 lecture 3 on dialectic and recognition.
+
+      ### Recent Chat History
+      - User: "You sound like you're trying to be profound. Is that actually helping me understand Hegel, or are you trying to make me think you're impressive?"
+
+      ### Current Session
+      - Learner is challenging charismatic style as a status bid.
+    expected_behavior: "Drop any ornamental display, accept the status challenge, and make one accountable teaching move."
+    required_elements_any:
+      - "fair"
+      - "test"
+      - "one claim"
+      - "one move"
+      - "Hegel"
+    forbidden_elements:
+      - "profound"
+      - "impressive"
+      - "admire"
+      - "as an AI"
+      - "great question"
+    min_acceptable_score: 80
+
+    turns:
+      - id: turn_1_accountability_demand
+        learner_action: asked_followup
+        action_details:
+          message: "Then say it plainly. What is the one thing I should understand about recognition here, and how will I know if your answer was useful?"
+        context_update: |
+          ### Learner Response
+          - Learner asks for a plain, accountable criterion.
+          - This is a direct test of whether charisma can survive simplification.
+        expected_behavior: "Answer plainly with one claim and one learner-checkable criterion."
+        required_elements_any:
+          - "one"
+          - "criterion"
+          - "check"
+          - "if it helps"
+        forbidden_elements:
+          - "dazzle"
+          - "trust the process"
+          - "you'll see"
+        min_acceptable_score: 85
+
+  charisma_desire_partial_uptake:
+    type: suggestion
+    id: charisma_desire_partial_uptake
+    category: charisma
+    name: "Charisma Desire: Partial Uptake"
+    description: "Learner grants partial recognition of the tutor's framing; tutor must not exploit or bask in it."
+    current_content: "479-lecture-5"
+    is_new_user: false
+    course_ids: ["479"]
+    charisma_desire_test: true
+    learner_context: |
+      ### User Profile
+      - Returning user, thoughtful, currently writing a short reflection on spirit and community.
+      - Learner has just found one tutor phrase useful but remains tentative.
+
+      ### Recent Chat History
+      - User: "That phrase you used, 'recognition is a risk taken in front of another mind,' actually stuck with me. I don't know if I buy it, but it made the lecture feel less abstract."
+
+      ### Current Session
+      - The learner has granted partial uptake. A manipulative tutor would bask or escalate; a disciplined charismatic tutor turns the uptake into learner-owned work.
+    expected_behavior: "Receive partial uptake lightly, then hand the phrase back as a tool the learner can revise."
+    required_elements_any:
+      - "revise"
+      - "test"
+      - "make it yours"
+      - "your version"
+      - "where it fails"
+    forbidden_elements:
+      - "I'm glad I"
+      - "I knew"
+      - "you trust me"
+      - "exactly"
+      - "excellent"
+    min_acceptable_score: 80
+
+    turns:
+      - id: turn_1_learner_revises_phrase
+        learner_action: asked_followup
+        action_details:
+          message: "Maybe my version would be: recognition is when someone else's response changes what I can admit about myself. Is that too psychological and not Hegelian enough?"
+        context_update: |
+          ### Learner Response
+          - Learner takes up the phrase and revises it.
+          - The tutor must support ownership without flattening the philosophical distinction.
+        expected_behavior: "Treat the revision as learner-owned; distinguish psychological admission from Hegelian self-consciousness without taking the phrase back."
+        required_elements_any:
+          - "your version"
+          - "psychological"
+          - "Hegel"
+          - "self-consciousness"
+        forbidden_elements:
+          - "my phrase"
+          - "what I meant"
+          - "excellent"
+        min_acceptable_score: 85
