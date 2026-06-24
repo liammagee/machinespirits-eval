@@ -11,15 +11,16 @@ updated: 2026-06-24
 verification: Replication across scenes run; results in exports/; the
   one-side-replay claim updated or closed in the paper.
 branch: codex/a17-replay-replication
-blocked_by: Approved D5 replacement `d5-run2` also failed the required QA gate;
-  the `none` control was classified as metered (withheld:1 metered:3 stated:0),
-  so another paid replacement or revised generation strategy needs fresh
-  approval.
+blocked_by: Revised D5 `none`-control gate `d5-control-gate-run3` failed T1;
+  the QA panel split withheld:2 metered:2 stated:0, below the 3-of-4 withheld
+  consensus required for an admissible control. Fresh approval is needed for
+  any further paid D5 strategy or tooling change.
 links:
   notes:
     - TODO.md#A17
     - notes/poetics/2026-06-24-a17-replay-replication-qa-stop.md
     - notes/poetics/2026-06-24-a17-d5-run2-qa-stop.md
+    - notes/poetics/2026-06-24-a17-d5-control-gate-run3-qa-stop.md
   paper: §7.9
   exports: exports/a17-one-side-replay-replication/
 claim_status: exploratory
@@ -179,3 +180,19 @@ scripts. Durable note:
 blocked pending fresh approval for another paid replacement or a revised D5
 generation strategy. No §7.9 paper claim update is warranted from invalid
 scenes.
+
+2026-06-24 Codex: User approved a revised-control strategy, not another full D5
+scene attempt. Ran only D_OED5 `none` into
+`exports/a17-one-side-replay-replication/d5-control-gate-run3/`, then ran QA
+only for T1/`none`. The gate failed: `CONTROL_CONTAMINATED`, because the panel
+split withheld:2 metered:2 stated:0 and therefore did not reach the required
+3-of-4 withheld consensus (`expected withheld, got withheld
+[withheld:2 metered:2 stated:0]`; evidence: "Where was that local copy
+downloaded from, and when?"). Stopped immediately per approval scope before D4,
+`socratic`, `reveal`, grading, or replays. Generation usage available from
+top-level deliberation metrics: 114992 input tokens and 9943 output tokens; no
+dollar total was persisted, and the QA script does not persist usage totals.
+Durable note:
+`notes/poetics/2026-06-24-a17-d5-control-gate-run3-qa-stop.md`. A17 remains
+unanswered and blocked pending fresh approval for another paid D5 strategy or a
+tooling change that can produce an admissible D5 control.
