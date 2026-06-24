@@ -63,5 +63,8 @@ Progress:
 - Large-run artifact: `exports/internal-history-quality/2026-06-23T21-11-48-342Z-real.json`.
 - Large-run result: both arms parse-clean and 100% successful; treatment won 29/60 blind judge comparisons, baseline won 25/60, and 6/60 were ties. Treatment non-loss was 58.3%, below the 75% gate. Heuristic quality delta was only +0.63, below the +5 gate. Treatment first-pass approval improved from 30% to 60%, but average API calls were unchanged at 2.77.
 - Scenario pattern: fraction frustration was the only scenario at the non-loss gate (75%) while staying token/latency neutral; recognition was mixed (55% non-loss); gradient pacing was negative (45% non-loss and +1,435 average input tokens).
+- Rejudged the 30-pair large-run artifact with `agy` CLI and `openrouter.glm5_2` (`z-ai/glm-5.2`) without regenerating dialogues. Artifact: `exports/internal-history-quality/2026-06-23T23-46-04-679Z-rejudge-agy-glm52.json`.
+- Rejudge result: 59/60 parsed; treatment won 30, baseline won 17, ties 12; treatment non-loss was 71.2%, still below the 75% gate. Combined with the prior `gpt`/`haiku` panel, treatment non-loss was 64.7% across 119 parsed comparisons.
+- Paper decision: do not fold into the main Paper 2.0 claims. If referenced, treat as an ancillary negative/future-work probe: parse-stable and sometimes improves first-pass approval, but not robust across judge families or scenarios.
 
 Decision: do not enable by default and do not treat as generally worthwhile under the current config. Keep only as an opt-in instrumentation/probe switch unless a sharper scenario-targeting rule or different internal-history assembly policy clears the judge/non-loss gates in a larger run.

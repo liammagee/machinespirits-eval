@@ -280,3 +280,53 @@ Large-run decision:
 - Do not treat as generally worthwhile under the current config. The larger run does not reproduce the small-run judge advantage strongly enough.
 - The only condition worth revisiting is narrow and scenario-specific: fraction-style frustration/remediation cases may benefit from the history surface because they reached the non-loss threshold while staying token/latency neutral. Recognition is mixed, and gradient/pacing is a clear caution case under this prompt shape.
 - The implementation can remain useful as an opt-in instrumentation/probe switch, but the evidence does not justify adding this to standard cells without a sharper targeting rule or a different internal-history assembly policy.
+
+## Rejudge: agy CLI + OpenRouter GLM 5.2
+
+Before merge, rejudged the 30-pair large-run artifact without regenerating dialogues.
+
+Source artifact:
+
+- `exports/internal-history-quality/2026-06-23T21-11-48-342Z-real.json`
+
+Rejudge artifact:
+
+- `exports/internal-history-quality/2026-06-23T23-46-04-679Z-rejudge-agy-glm52.json`
+
+Judges:
+
+- `agy` CLI default model.
+- `openrouter.glm5_2`, resolving to `z-ai/glm-5.2`.
+
+Overall rejudge result:
+
+- Parsed comparisons: 59/60; one GLM response was truncated/unterminated JSON in `fractions_frustration` iteration 3.
+- Blind judge preference: treatment 30 wins, baseline 17 wins, 12 ties.
+- Treatment win rate: 50.8%.
+- Treatment non-loss rate: 71.2%, still below the 75% gate.
+- Average treatment score delta: +4.81.
+- Rejudge cost: about 0.0619 USD, all from the GLM OpenRouter calls.
+
+Judge split:
+
+- `agy`: treatment 15 wins, baseline 10 wins, 5 ties; non-loss 66.7%.
+- `openrouter.glm5_2`: treatment 15 wins, baseline 7 wins, 7 ties; non-loss 75.9%, but one parse error.
+
+Scenario split:
+
+- Recognition retry: treatment 11 wins, baseline 4, 5 ties; non-loss 80.0%.
+- Fraction frustration: treatment 6 wins, baseline 7, 6 ties; non-loss 63.2%; one parse error.
+- Gradient pacing: treatment 13 wins, baseline 6, 1 tie; non-loss 70.0%.
+
+Combined across the prior `gpt`/`haiku` panel and this `agy`/GLM panel:
+
+- Parsed comparisons: 119.
+- Treatment wins: 59; baseline wins: 42; ties: 18.
+- Treatment win rate: 49.6%.
+- Treatment non-loss rate: 64.7%.
+
+Merge/paper interpretation:
+
+- The rejudge weakens the earlier scenario-specific story rather than clarifying it. It flips gradient/pacing more positive than the `gpt`/`haiku` panel, but makes fraction frustration negative. That cross-judge instability is the key result.
+- Do not report this as a main Paper 2.0 finding. It is a small branch-local probe with synthetic scenarios, one-off prompt assembly, ignored artifacts, and judge disagreement.
+- If mentioned at all, keep it as an ancillary negative result or future-work note: exposing bounded same-turn ego/superego history as chat messages is parse-stable and sometimes improves first-pass approval, but does not produce robust cross-judge quality gains under the tested conditions.
