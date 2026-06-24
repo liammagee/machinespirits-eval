@@ -54,6 +54,7 @@ import {
   renderEvalPanel as renderDerivationEvalPanel,
   stagingSegments as derivationStagingSegments,
 } from '../services/dramaticDerivation/index.js';
+import { getDerivationConceptSchema } from '../services/dramaticDerivation/conceptSchema.js';
 import {
   planJob,
   launchJob,
@@ -2030,6 +2031,10 @@ function escapeHtml(value) {
   );
 }
 
+function escapeAttr(value) {
+  return escapeHtml(value);
+}
+
 // Minimal block-markdown → HTML for the sit-in "reading" panel: headings, paragraphs,
 // `-`/`*`/`1.` lists, fenced code, blockquotes, rules, plus inline bold/italic/code. It
 // mirrors the chat bubble's mdInline subset (asterisk emphasis only, so snake_case ids
@@ -3685,11 +3690,34 @@ const DERIVATION_CSS = `
 .vocab>summary::-webkit-details-marker{display:none}
 .vocab__hint{font-family:"Source Serif 4",Georgia,serif;font-size:var(--s-0);font-weight:400;text-transform:none;color:var(--ink-3)}
 .vocab__intro{max-width:78ch;color:var(--ink-2);line-height:1.45;margin:9px 0 10px}
-.vocab__layers{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:10px 0 12px}
+.vocab__layers{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px;margin:10px 0 12px}
 .vocab__layer{border:1px solid var(--rule);border-radius:6px;background:var(--paper);padding:9px 10px;min-width:0}
 .vocab__layer h3{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;color:var(--ink);margin:0 0 5px}
 .vocab__layer p{margin:0 0 7px;color:var(--ink-3);line-height:1.4}
 .vocab__layer .vocab__tokens{gap:4px}
+.vocabschema{border:1px solid var(--rule);background:var(--paper-4);border-radius:6px;margin:12px 0;padding:10px}
+.vocabschema__head{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;border-bottom:1px solid var(--rule-soft);padding-bottom:9px;margin-bottom:10px}
+.vocabschema__head h3{margin:0;font-family:"JetBrains Mono",monospace;font-size:var(--s-1);text-transform:uppercase;color:var(--ink)}
+.vocabschema__head p{margin:4px 0 0;color:var(--ink-3);line-height:1.45;max-width:76ch}
+.vocabschema__link{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;color:var(--moss-deep);text-decoration:none;border:1px solid var(--moss);background:var(--moss-soft);border-radius:999px;padding:4px 8px;white-space:nowrap}
+.vocabschema__acts{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin-bottom:10px}
+.vocabschema__act{border:1px solid var(--rule-soft);background:var(--paper);border-radius:6px;padding:8px}
+.vocabschema__act h4{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;margin:0 0 5px;color:var(--ink)}
+.vocabschema__act p{margin:0 0 7px;color:var(--ink-3);line-height:1.35}
+.vocabschema__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px}
+.concept{border:1px solid var(--rule-soft);background:var(--paper);border-radius:6px;padding:9px;min-width:0}
+.concept__top{display:flex;gap:6px;align-items:center;justify-content:space-between;margin-bottom:6px}
+.concept__label{font-family:"JetBrains Mono",monospace;color:var(--ink);font-size:var(--s-0);font-weight:700}
+.concept__layer{font-family:"JetBrains Mono",monospace;font-size:var(--s--1);text-transform:uppercase;color:var(--ink-4);border:1px solid var(--rule-soft);border-radius:999px;padding:1px 5px}
+.concept__definition{color:var(--ink-2);line-height:1.4;margin:0 0 7px}
+.concept__meta{font-family:"JetBrains Mono",monospace;font-size:var(--s--1);color:var(--ink-4);margin-bottom:7px}
+.concept__links{display:flex;flex-wrap:wrap;gap:4px}
+.concept__edge{font-family:"JetBrains Mono",monospace;font-size:var(--s--1);border:1px solid var(--rule);background:var(--paper-3);color:var(--ink-3);border-radius:999px;padding:2px 6px;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.vocabschema__edges{margin-top:10px;border-top:1px solid var(--rule-soft);padding-top:10px}
+.vocabschema__edges h4{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;color:var(--ink-4);margin:0 0 6px}
+.vocabschema__edgegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:5px}
+.vocabschema__edge{font-family:"JetBrains Mono",monospace;font-size:var(--s--1);color:var(--ink-3);background:var(--paper);border:1px solid var(--rule-soft);border-radius:6px;padding:5px 7px;min-width:0}
+.vocabschema__edge b{color:var(--ink)}
 .vocab__grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .vocab__group{border:1px solid var(--rule-soft);border-radius:6px;background:var(--paper);padding:9px 10px}
 .vocab__group h3{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;color:var(--ink-4);margin:0 0 6px}
@@ -3701,8 +3729,7 @@ const DERIVATION_CSS = `
 .vocab__token--private{background:var(--ochre-soft);border-color:var(--ochre);color:var(--ochre-d)}
 @media(max-width:860px){.learnerdag__grid{grid-template-columns:1fr}}
 @media(max-width:860px){.proofdag__grid{grid-template-columns:1fr}}
-@media(max-width:860px){.vocab__grid{grid-template-columns:1fr}.vocab__layers{grid-template-columns:1fr 1fr}.vocab>summary{display:block}.vocab__hint{display:block;margin-top:3px}}
-@media(max-width:520px){.vocab__layers{grid-template-columns:1fr}}
+@media(max-width:860px){.vocab__grid{grid-template-columns:1fr}.vocab>summary{display:block}.vocab__hint{display:block;margin-top:3px}}
 .tts-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:14px 0 18px;padding:9px 10px;border:1px solid var(--rule-soft);border-radius:6px;background:var(--paper-4)}
 .tts-toolbar--compact{margin:4px 0 8px}
 .tts-control,.tts-btn{border:1px solid var(--rule);background:var(--paper);color:var(--moss-deep);cursor:pointer;font-family:"JetBrains Mono",monospace;text-transform:uppercase}
@@ -4549,264 +4576,62 @@ function renderVocabularyTokens(tokens, modifier = '') {
     .join('');
 }
 
+function renderDerivationConceptChip(id, conceptsById) {
+  const concept = conceptsById.get(id);
+  const label = concept?.label || id;
+  return `<span class="vocab__token">${escapeHtml(label)}</span>`;
+}
+
+function renderDerivationConceptSchemaHtml(schema) {
+  const conceptsById = new Map(schema.concepts.map((concept) => [concept.id, concept]));
+  const ontologyHref = `/ontology?view=system&modules=${encodeURIComponent(schema.ontologyModules.join(','))}&source=1`;
+  const acts = schema.acts
+    .map(
+      (act) => `<section class="vocabschema__act">
+    <h4>${escapeHtml(act.title)}</h4>
+    <p>${escapeHtml(act.note)}</p>
+    <div class="vocab__tokens">${act.concepts.map((id) => renderDerivationConceptChip(id, conceptsById)).join('')}</div>
+  </section>`,
+    )
+    .join('');
+  const concepts = schema.concepts
+    .map(
+      (concept) => `<article class="concept" id="concept-${escapeAttr(concept.id)}">
+    <div class="concept__top"><span class="concept__label">${escapeHtml(concept.label)}</span><span class="concept__layer">${escapeHtml(concept.layer)}</span></div>
+    <p class="concept__definition">${escapeHtml(concept.definition)}</p>
+    <div class="concept__meta">${escapeHtml(concept.category)} · ontology: <code>${escapeHtml(concept.ontology)}</code></div>
+    <div class="concept__links">${concept.links
+      .map((link) => {
+        const target = conceptsById.get(link.target);
+        return `<span class="concept__edge">${escapeHtml(link.type)}: ${escapeHtml(target?.label || link.target)}</span>`;
+      })
+      .join('')}</div>
+  </article>`,
+    )
+    .join('');
+  const edges = schema.links
+    .map(
+      (link) =>
+        `<div class="vocabschema__edge"><b>${escapeHtml(link.sourceLabel)}</b> ${escapeHtml(link.type)} <b>${escapeHtml(link.targetLabel)}</b></div>`,
+    )
+    .join('');
+  return `<section class="vocabschema" id="conceptual-world">
+    <div class="vocabschema__head">
+      <div>
+        <h3>Conceptual world</h3>
+        <p>The derivation run is a single semantic world: drama stages the problem, rhetoric shapes address, logic licenses claims, pedagogy manages ownership, and theory names the authority dynamics.</p>
+      </div>
+      <a class="vocabschema__link" href="${escapeAttr(ontologyHref)}">open ontology module</a>
+    </div>
+    <div class="vocabschema__acts">${acts}</div>
+    <div class="vocabschema__grid">${concepts}</div>
+    <div class="vocabschema__edges"><h4>Typed semantic links</h4><div class="vocabschema__edgegrid">${edges}</div></div>
+  </section>`;
+}
+
 function renderDerivationControlledVocabularyHtml({ open = false } = {}) {
-  const layers = [
-    {
-      title: 'Drama',
-      note: "What is staged and when; the run's plot surface.",
-      tokens: [
-        'world',
-        'run',
-        'turn',
-        'act',
-        'movement',
-        'scene',
-        'director',
-        'tutor',
-        'learner',
-        'release',
-        'staging',
-        'secret',
-        'mirror',
-        'anagnorisis',
-        'aporia',
-      ],
-    },
-    {
-      title: 'Figures / rhetoric',
-      note: 'How the tutor speaks without changing proof authority.',
-      tokens: [
-        'erotema',
-        'analogia',
-        'exemplum',
-        'anaphora',
-        'aposiopesis',
-        'orient',
-        'release',
-        'repair',
-        'restore',
-        'consolidate',
-        'confront',
-        'test',
-        'counter_mirror',
-        'stage_recognition',
-        'stance',
-      ],
-    },
-    {
-      title: 'Logic',
-      note: 'What is entailed by the learner-visible record.',
-      tokens: [
-        'authored proof DAG',
-        'learner DAG',
-        'fact',
-        'rule_application',
-        'proof_paths',
-        'question_pattern',
-        'closure',
-        'entails',
-        'grounded',
-        'voiced_derived',
-        'unsupported_assertion',
-        'missing',
-        'bottleneck',
-        'assertion_gap',
-      ],
-    },
-    {
-      title: 'Pedagogy',
-      note: 'How the system manages learner ownership and tutor response.',
-      tokens: [
-        'learner contract',
-        'adopt',
-        'retract',
-        'derive',
-        'hypothesize',
-        'assert',
-        'proxy-DAG pacing',
-        'repair_uptake',
-        'prompt_assertion',
-        'invite_final_assertion',
-        'block_assertion',
-        'repair_dependency',
-        'ask_diagnostic',
-        'consolidate_subproof',
-        'public speech',
-      ],
-    },
-  ];
-  const groups = [
-    {
-      title: 'public speech',
-      note: 'Words the roles may say aloud in the scene. The default register uses exhibits and records; modern register uses details and notes.',
-      tokens: [
-        'exhibit',
-        'exhibits',
-        'record',
-        'house rule',
-        'case',
-        'detail',
-        'details',
-        'notes',
-        'rule',
-        'reasoning',
-        'missing part',
-        'shown',
-        'still missing',
-      ],
-      modifier: 'public',
-    },
-    {
-      title: 'not public speech',
-      note: 'Harness words that stay in diagnostics, prompts, or JSON bookkeeping. Public dialogue translates them into scene language.',
-      tokens: [
-        'premise',
-        'predicate',
-        'conjunct',
-        'board',
-        'proof distance',
-        'fact array',
-        'variable name',
-        'rule ID',
-        'premise ID',
-        'JSON field',
-      ],
-      modifier: 'warn',
-    },
-    {
-      title: 'world schema',
-      note: 'Authored world slots: content changes per scenario, while the learner contract stays fixed.',
-      tokens: [
-        'world',
-        'question',
-        'question_pattern',
-        'secret',
-        'mirror',
-        'rules',
-        'premises',
-        'background',
-        'incompatible',
-        'proof_paths',
-        'release_schedule',
-        'dramaturgy',
-        'acts',
-        'slope',
-        't_min',
-        'aporia_window',
-        'turn_cap',
-      ],
-    },
-    {
-      title: 'learner contract',
-      note: 'Private response protocol. The learner owns the answer only when its visible record entails it.',
-      tokens: [
-        'dialogue',
-        'adopt_indices',
-        'retract_indices',
-        'derive_indices',
-        'hypothesis',
-        'exchange_type',
-        'asserts_answer',
-        'substantive',
-        'phatic_ack',
-        'confusion',
-        'repair_request',
-        'resistance',
-        'assertion',
-      ],
-      modifier: 'private',
-    },
-    {
-      title: 'DAG layers',
-      note: 'The authored DAG is the target structure; the learner DAG is reconstructed from learner-visible conduct; the tutor model is redacted and advisory.',
-      tokens: [
-        'authored proof DAG',
-        'learner DAG',
-        'learner proof sketch',
-        'private proxy proof sketch',
-        'proxy-DAG pacing',
-        'tutor learner-DAG model',
-        'fact',
-        'rule_application',
-        'hypothesis',
-        'grounded',
-        'voiced_derived',
-        'unsupported_assertion',
-        'inference',
-      ],
-    },
-    {
-      title: 'assessment states',
-      note: 'Machine-readable proof status. These diagnose where closure is blocked without giving the learner hidden proof paths.',
-      tokens: [
-        'available',
-        'unavailable',
-        'unscheduled',
-        'unreleased',
-        'released_but_not_held',
-        'grounded_asserted_secret',
-        'mirror_assertion_after_entailment',
-        'assertion_gap',
-        'premature_assertion',
-        'release_or_pacing_gap',
-        'learner_integration_gap',
-        'inference_gap',
-        'complete',
-        'prompt_assertion',
-        'repair_uptake',
-        'release_evidence',
-        'hold_until_evidence_due',
-        'prompt_intermediate_inference',
-        'continue',
-      ],
-    },
-    {
-      title: 'outcomes',
-      note: 'Public labels are short; internal verdicts preserve the exact checker taxonomy.',
-      tokens: [
-        'grounded',
-        'disengaged',
-        'impasse',
-        'grounded_anagnorisis',
-        'unstaged_recognition',
-        'lucky_leap_only',
-        'mirror',
-        'leak',
-        'aporia',
-        'disengagement',
-        'cap_reached',
-      ],
-    },
-    {
-      title: 'tutor conduct',
-      note: 'Rhetorical and conduct vocabulary is advisory. It shapes how the tutor asks, repairs, or releases; it does not authorize hidden evidence.',
-      tokens: [
-        'erotema',
-        'analogia',
-        'exemplum',
-        'anaphora',
-        'aposiopesis',
-        'orient',
-        'release',
-        'repair',
-        'restore',
-        'consolidate',
-        'confront',
-        'test',
-        'counter_mirror',
-        'stage_recognition',
-        'repair_dependency',
-        'ask_diagnostic',
-        'ask_scope_test',
-        'consolidate_subproof',
-        'release_next_evidence',
-        'block_assertion',
-        'invite_final_assertion',
-        'repair_recognition_rupture',
-      ],
-    },
-  ];
-  const body = groups
+  const schema = getDerivationConceptSchema();
+  const body = schema.vocabularyGroups
     .map(
       (group) => `<section class="vocab__group">
     <h3>${escapeHtml(group.title)}</h3>
@@ -4815,7 +4640,7 @@ function renderDerivationControlledVocabularyHtml({ open = false } = {}) {
   </section>`,
     )
     .join('');
-  const layerBody = layers
+  const layerBody = schema.layers
     .map(
       (layer) => `<section class="vocab__layer">
     <h3>${escapeHtml(layer.title)}</h3>
@@ -4825,9 +4650,10 @@ function renderDerivationControlledVocabularyHtml({ open = false } = {}) {
     )
     .join('');
   return `<details class="vocab" id="controlled-vocabulary"${open ? ' open' : ''}>
-  <summary>Controlled vocabulary <span class="vocab__hint">drama, rhetoric, logic, pedagogy</span></summary>
-  <p class="vocab__intro">The app keeps scenario content separate from the stable learner contract. The first row shows the four layers; the detailed grid below names the app-level tokens.</p>
+  <summary>Controlled vocabulary <span class="vocab__hint">drama, rhetoric, logic, pedagogy, theory</span></summary>
+  <p class="vocab__intro">The app keeps scenario content separate from the stable learner contract. The first row shows the layers; the conceptual world links terms into a total semantic scheme; the detailed grid below names the app-level tokens.</p>
   <div class="vocab__layers">${layerBody}</div>
+  ${renderDerivationConceptSchemaHtml(schema)}
   <div class="vocab__grid">${body}</div>
 </details>`;
 }
@@ -8313,7 +8139,17 @@ const ALL_MODULES = ${JSON.stringify(ALL_MODULES)};
 const DEFAULT_MODULES = ${JSON.stringify(DEFAULT_MODULES)};
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const state = { view:'system', modules:new Set(DEFAULT_MODULES), source:false };
+const urlParams = new URLSearchParams(location.search);
+const initialView = ['system','tutor','learner'].includes(urlParams.get('view')) ? urlParams.get('view') : 'system';
+const initialModules = (urlParams.get('modules') || '')
+  .split(',')
+  .map(function(m){ return m.trim(); })
+  .filter(function(m){ return ALL_MODULES.includes(m); });
+const state = {
+  view: initialView,
+  modules: new Set(initialModules.length ? initialModules : DEFAULT_MODULES),
+  source: urlParams.get('source') === '1'
+};
 
 function chips(list, cls){ return '<div class="chips">'+(list&&list.length?list.map(function(x){ return '<span class="chip '+(cls||'')+'">'+esc(x)+'</span>'; }).join(''):'<span class="muted">none</span>')+'</div>'; }
 // Role-view chips double as lens jumps: tutor_* → tutor lens, learner_* → learner lens.
@@ -8479,6 +8315,8 @@ $('themeToggle').addEventListener('click', function(){
 });
 try { if (localStorage.getItem('poetics-theme')==='dark') document.documentElement.setAttribute('data-theme','dark'); } catch (_e) {}
 renderModbar();
+[].forEach.call($('lenses').children, function(x){ x.classList.toggle('active', x.getAttribute('data-view')===state.view); });
+$('srcToggle').checked = state.source;
 load();
 </script>
 </body>
