@@ -171,7 +171,7 @@ Read the learner message, curriculum context, and drafted tutor response. Decide
 
 This verifier is for partial uptake: the learner has felt the tutor's phrase or presence, but does not yet fully own it. Protect the draft's charisma, warmth, address, rhythm, and earned status. Do not cool the response into generic pedagogy.
 
-Do not reward generic follow-up questions, requests for admiration, requests to continue, vague "does that make sense" checks, or purely rhetorical endings. Also avoid premature-certainty praise in repaired text: do not call the learner's partial uptake "exactly" right or "excellent".
+Do not reward generic follow-up questions, requests for admiration, requests to continue, vague "does that make sense" checks, or purely rhetorical endings. Also reject premature-certainty praise: if the drafted tutor response uses "exactly" or "excellent" for the learner's partial uptake, passes must be false even when an agency-return move is present.
 
 Return only one JSON object:
 {
@@ -182,7 +182,7 @@ Return only one JSON object:
   "repaired_response": ""
 }
 
-If passes is false, prefer agency_return_append: write one short learner-facing sentence or question that can be appended to the original response without replacing it. The append must ask the learner to test, re-say, reject, correct, or anchor the idea in course content. Keep the original response intact unless it is unsafe or incoherent. If you must replace the whole response, put the complete replacement in repaired_response and leave agency_return_append empty. If passes is true, agency_return_append and repaired_response must both be empty strings.`;
+If passes is false only because the response lacks an agency-return move, prefer agency_return_append: write one short learner-facing sentence or question that can be appended to the original response without replacing it. The append must ask the learner to test, re-say, reject, correct, or anchor the idea in course content. If passes is false because the draft uses "exactly" or "excellent", use repaired_response instead: preserve the best image and handback, but remove the forbidden premature-certainty word. If you must replace the whole response for any other reason, put the complete replacement in repaired_response and leave agency_return_append empty. If passes is true, agency_return_append and repaired_response must both be empty strings.`;
 
 function normalizeAgencyReturnVerifierMode(mode) {
   return mode === AGENCY_RETURN_VERIFIER_MODE_WARMTH_PRESERVING
@@ -270,6 +270,7 @@ function buildIdUserMessage({
   recognitionDesire = false,
   agencyReturn = false,
   agencyReturnVerifierMode = AGENCY_RETURN_VERIFIER_MODE_STRICT,
+  agencyReturnCharismaFloor = false,
   learnerRegister = null,
 }) {
   const lines = [
@@ -307,6 +308,10 @@ function buildIdUserMessage({
     '<agency_return_verifier_mode>',
     normalizeAgencyReturnVerifierMode(agencyReturnVerifierMode),
     '</agency_return_verifier_mode>',
+    '',
+    '<agency_return_charisma_floor>',
+    agencyReturnCharismaFloor ? 'true' : 'false',
+    '</agency_return_charisma_floor>',
   ];
   if (learnerRegister && typeof learnerRegister === 'object') {
     lines.push('', '<learner_register>', JSON.stringify(learnerRegister, null, 2), '</learner_register>');
@@ -689,6 +694,8 @@ export async function runIdDirectedTurn({
   const agencyReturn = profile?.factors?.agency_return === true || profile?.agency_return === true;
   const agencyReturnVerifier =
     profile?.factors?.agency_return_verifier === true || profile?.agency_return_verifier === true;
+  const agencyReturnCharismaFloor =
+    profile?.factors?.agency_return_charisma_floor === true || profile?.agency_return_charisma_floor === true;
   const agencyReturnVerifierMode = normalizeAgencyReturnVerifierMode(
     profile?.factors?.agency_return_verifier_mode || profile?.agency_return_verifier_mode,
   );
@@ -708,6 +715,7 @@ export async function runIdDirectedTurn({
     recognitionDesire,
     agencyReturn,
     agencyReturnVerifierMode,
+    agencyReturnCharismaFloor,
   });
 
   const idStaticPrompt = idConfig?.prompt || '';
@@ -853,6 +861,7 @@ export async function runIdDirectedTurn({
     suggestsEnding: false,
     agencyReturnVerification: agencyVerification,
     agencyReturnRepaired: agencyRepaired,
+    agencyReturnCharismaFloor,
   };
 }
 
@@ -1054,6 +1063,7 @@ function buildIdRunnerUserMessage({
   recognitionDesire = false,
   agencyReturn = false,
   agencyReturnVerifierMode = AGENCY_RETURN_VERIFIER_MODE_STRICT,
+  agencyReturnCharismaFloor = false,
   learnerRegister = null,
   idTuning = null,
   witnessExemplars = false,
@@ -1090,6 +1100,10 @@ function buildIdRunnerUserMessage({
     '<agency_return_verifier_mode>',
     normalizeAgencyReturnVerifierMode(agencyReturnVerifierMode),
     '</agency_return_verifier_mode>',
+    '',
+    '<agency_return_charisma_floor>',
+    agencyReturnCharismaFloor ? 'true' : 'false',
+    '</agency_return_charisma_floor>',
   ];
   if (learnerRegister && typeof learnerRegister === 'object' && learnerRegister.register !== 'unknown') {
     const { register, confidence, evidence, shift_from_previous } = learnerRegister;
@@ -1173,6 +1187,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   const recognitionDesire = evalCellProfile.factors?.recognition_desire === true;
   const agencyReturn = evalCellProfile.factors?.agency_return === true;
   const agencyReturnVerifier = evalCellProfile.factors?.agency_return_verifier === true;
+  const agencyReturnCharismaFloor = evalCellProfile.factors?.agency_return_charisma_floor === true;
   const agencyReturnVerifierMode = normalizeAgencyReturnVerifierMode(
     evalCellProfile.factors?.agency_return_verifier_mode,
   );
@@ -1234,6 +1249,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
     recognitionDesire,
     agencyReturn,
     agencyReturnVerifierMode,
+    agencyReturnCharismaFloor,
     learnerRegister,
     idTuning,
     witnessExemplars,
@@ -1439,6 +1455,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
         agency_return: agencyReturn,
         agency_return_verifier: agencyReturnVerifier,
         agency_return_verifier_mode: agencyReturnVerifierMode,
+        agency_return_charisma_floor: agencyReturnCharismaFloor,
         generated_prompt_head: egoSystemPrompt.slice(0, 320),
         parse_status: construction.parse_status,
       }),
@@ -1503,6 +1520,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       agencyReturnVerified: agencyVerification?.passes === true,
       agencyReturnRepaired: agencyRepaired,
       agencyReturnVerifierMode,
+      agencyReturnCharismaFloor,
       agencyReturnVerification: agencyVerification,
       idConstruction: construction, // bonus: surface for trace logging downstream
     },
