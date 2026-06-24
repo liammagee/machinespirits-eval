@@ -174,10 +174,10 @@
   /* ---- horizontal axis ---------------------------------------------------- */
   function renderHorizontal() {
     const W = 1000,
-      H = 300,
       PADX = 70,
       axisY = 150,
       R = 18,
+      LANE_H = 34,
       C = 2 * Math.PI * R;
     const dates = [todayMs];
     M.forEach(function (m) {
@@ -196,6 +196,27 @@
       return PADX + ((ms - min) / (max - min)) * (W - 2 * PADX);
     }
 
+    // greedy lane-packing: stack labels into as many rows as needed so they
+    // never overlap (the full title still shows in the tooltip + detail card).
+    function disp(t) {
+      return t.length > 24 ? t.slice(0, 23) + '…' : t;
+    }
+    const laid = M.map(function (m, i) {
+      const lx = m.target ? X(Date.parse(m.target)) : X(max);
+      const label = disp(m.title);
+      const wide = Math.max(label.length, (fmtShort(m.target) + ' · ' + m.pct + '%').length) * 6.6 + 10;
+      return { m: m, i: i, x: lx, label: label, half: wide / 2, lane: 0 };
+    });
+    const laneRight = [];
+    laid.forEach(function (n) {
+      let l = 0;
+      while (l < laneRight.length && n.x - n.half < laneRight[l] + 10) l++;
+      n.lane = l;
+      laneRight[l] = n.x + n.half;
+    });
+    const laneCount = Math.max(1, laneRight.length);
+    const H = axisY + 42 + laneCount * LANE_H + 14;
+
     let s =
       '<svg viewBox="0 0 ' +
       W +
@@ -210,7 +231,14 @@
     while (d.getTime() <= max) {
       const mx = X(d.getTime());
       if (mx > PADX - 4 && mx < W - PADX + 4) {
-        s += '<line class="tlv-grid" x1="' + mx.toFixed(1) + '" y1="40" x2="' + mx.toFixed(1) + '" y2="262"/>';
+        s +=
+          '<line class="tlv-grid" x1="' +
+          mx.toFixed(1) +
+          '" y1="42" x2="' +
+          mx.toFixed(1) +
+          '" y2="' +
+          (H - 12) +
+          '"/>';
         s += '<text class="tlv-month" x="' + (mx + 5).toFixed(1) + '" y="34">' + MON[d.getUTCMonth()] + '</text>';
       }
       d.setUTCMonth(d.getUTCMonth() + 1);
@@ -258,7 +286,8 @@
 
     // today
     const tx = X(todayMs);
-    s += '<line class="tlv-today" x1="' + tx.toFixed(1) + '" y1="44" x2="' + tx.toFixed(1) + '" y2="262"/>';
+    s +=
+      '<line class="tlv-today" x1="' + tx.toFixed(1) + '" y1="44" x2="' + tx.toFixed(1) + '" y2="' + (H - 12) + '"/>';
     s += '<circle class="tlv-pulse" cx="' + tx.toFixed(1) + '" cy="' + axisY + '" r="5"/>';
     s += '<circle cx="' + tx.toFixed(1) + '" cy="' + axisY + '" r="4.5" fill="var(--ink)"/>';
     s +=
@@ -268,17 +297,20 @@
     s +=
       '<text class="tlv-dlabel" x="' +
       (tx + 7).toFixed(1) +
-      '" y="278" style="fill:var(--ink-4)">' +
+      '" y="' +
+      (H - 4) +
+      '" style="fill:var(--ink-4)">' +
       fmtShort(TL.today) +
       '</text>';
 
-    // milestone nodes (alternating label lanes)
-    M.forEach(function (m, i) {
-      const x = m.target ? X(Date.parse(m.target)) : X(max);
-      const lane = i % 2;
-      const ty = axisY + (lane ? 78 : 44);
+    // milestone nodes (labels packed into the lanes computed above)
+    laid.forEach(function (n) {
+      const m = n.m;
+      const i = n.i;
+      const x = n.x;
+      const ty = axisY + 42 + n.lane * LANE_H;
       const off = (C * (1 - m.pct / 100)).toFixed(1);
-      s += '<g class="tlv-node" data-i="' + i + '" style="--c:' + cvar(m) + '">';
+      s += '<g class="tlv-node" data-i="' + i + '" style="--c:' + cvar(m) + '"><title>' + esc(m.title) + '</title>';
       s +=
         '<line class="tlv-grid" x1="' +
         x.toFixed(1) +
@@ -315,7 +347,7 @@
         '" y="' +
         ty +
         '" text-anchor="middle" style="fill:var(--ink)">' +
-        esc(m.title) +
+        esc(n.label) +
         '</text>';
       s +=
         '<text class="tlv-dlabel" x="' +
