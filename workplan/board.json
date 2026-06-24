@@ -1,12 +1,11 @@
 {
-  "generated": "2026-06-24T17:29:52.237Z",
+  "generated": "2026-06-24T19:14:17.929Z",
   "counts": {
     "total": 49,
     "byStatus": {
-      "done": 45,
+      "done": 46,
       "blocked": 1,
-      "dropped": 2,
-      "triaged": 1
+      "dropped": 2
     },
     "byType": {
       "research": 25,
@@ -18,28 +17,6 @@
     }
   },
   "items": [
-    {
-      "id": "grouptom-bench-benchmarking-group-theory-of-mind-nonlinear",
-      "title": "GroupToM-Bench: Benchmarking Group Theory of Mind and Nonlinear Social Emergence",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P3",
-      "owner": "unassigned",
-      "source": "review",
-      "created": "2026-06-24",
-      "updated": "2026-06-24",
-      "verification": "Cross-walk written into §6.8.5–.6 (or an exports/ note) deciding citation-only vs re-analysis, with a one-line claim_status; no paid runs.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-14-research-roundup.html",
-        "plan": "notes/research-plans/2026-06-20-research-plan.html",
-        "paper": "docs/research/paper-full-2.0.md"
-      },
-      "tags": [
-        "theory-of-mind",
-        "paper-positioning"
-      ],
-      "claim_status": "future"
-    },
     {
       "id": "a1-human-learner-validation",
       "title": "Human-learner validation pilot (real learning gains)",
@@ -1161,6 +1138,29 @@
       ],
       "milestone": "paper-2-evidence-cleanup",
       "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "grouptom-bench-benchmarking-group-theory-of-mind-nonlinear",
+      "title": "GroupToM-Bench: Benchmarking Group Theory of Mind and Nonlinear Social Emergence",
+      "status": "done",
+      "type": "research",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-06-24",
+      "updated": "2026-06-24",
+      "verification": "Cross-walk landed as citation-only positioning in §6.8.8 (paper v3.0.171, ref @tang2026grouptombench) with derivation in exports/grouptom-bench-crosswalk-2026-06-24.md; claim_status methods; no paid runs.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-14-research-roundup.html",
+        "plan": "notes/research-plans/2026-06-20-research-plan.html",
+        "paper": "docs/research/paper-full-2.0.md",
+        "exports": "exports/grouptom-bench-crosswalk-2026-06-24.md"
+      },
+      "tags": [
+        "theory-of-mind",
+        "paper-positioning"
+      ],
+      "claim_status": "methods"
     },
     {
       "id": "revisit-adaptation-conformity-human-anchor",
