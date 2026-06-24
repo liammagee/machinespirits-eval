@@ -508,6 +508,194 @@
     });
   }
 
+  /* ---- compact mode (embedded on /board) --------------------------------- */
+  // A short band that doubles as the milestone filter: each node bridges to the
+  // hidden `.ms-mini` chip the board already wires, so the filter/URL logic is
+  // untouched. We only mirror the active milestone back onto the node.
+  function renderCompact() {
+    const W = 1000,
+      PADX = 64,
+      axisY = 50,
+      R = 13,
+      LANE_H = 30,
+      C = 2 * Math.PI * R;
+    const dates = [todayMs];
+    M.forEach(function (m) {
+      if (m.target) dates.push(Date.parse(m.target));
+    });
+    let min = Math.min.apply(null, dates),
+      max = Math.max.apply(null, dates);
+    const pad = Math.max((max - min) * 0.06, 3 * DAY);
+    min -= pad;
+    max += pad;
+    const X = function (ms) {
+      return PADX + ((ms - min) / (max - min)) * (W - 2 * PADX);
+    };
+    const disp = function (t) {
+      return t.length > 22 ? t.slice(0, 21) + '…' : t;
+    };
+    const laid = M.map(function (m, i) {
+      const lx = m.target ? X(Date.parse(m.target)) : X(max);
+      const label = disp(m.title);
+      return { m: m, i: i, x: lx, label: label, half: (Math.max(label.length, 7) * 6.2 + 8) / 2, lane: 0 };
+    });
+    const laneRight = [];
+    laid.forEach(function (n) {
+      let l = 0;
+      while (l < laneRight.length && n.x - n.half < laneRight[l] + 10) l++;
+      n.lane = l;
+      laneRight[l] = n.x + n.half;
+    });
+    const H = axisY + 28 + Math.max(1, laneRight.length) * LANE_H;
+    let s =
+      '<svg viewBox="0 0 ' +
+      W +
+      ' ' +
+      H +
+      '" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Compact milestone timeline; click a milestone to filter the board.">';
+    const d = new Date(min);
+    d.setUTCDate(1);
+    d.setUTCHours(0, 0, 0, 0);
+    while (d.getTime() <= max) {
+      const mx = X(d.getTime());
+      if (mx > PADX - 4 && mx < W - PADX + 4) {
+        s +=
+          '<line class="tlv-grid" x1="' + mx.toFixed(1) + '" y1="20" x2="' + mx.toFixed(1) + '" y2="' + (H - 8) + '"/>';
+        s += '<text class="tlv-month" x="' + (mx + 4).toFixed(1) + '" y="16">' + MON[d.getUTCMonth()] + '</text>';
+      }
+      d.setUTCMonth(d.getUTCMonth() + 1);
+    }
+    s += '<line class="tlv-axis" x1="' + PADX + '" y1="' + axisY + '" x2="' + (W - PADX) + '" y2="' + axisY + '"/>';
+    const tx = X(todayMs);
+    s += '<line class="tlv-today" x1="' + tx.toFixed(1) + '" y1="24" x2="' + tx.toFixed(1) + '" y2="' + (H - 8) + '"/>';
+    s += '<circle class="tlv-pulse" cx="' + tx.toFixed(1) + '" cy="' + axisY + '" r="4"/>';
+    s += '<circle cx="' + tx.toFixed(1) + '" cy="' + axisY + '" r="4" fill="var(--ink)"/>';
+    s +=
+      '<text class="tlv-dlabel" x="' +
+      (tx + 6).toFixed(1) +
+      '" y="16" style="fill:var(--ink);font-weight:600">today</text>';
+    laid.forEach(function (n) {
+      const m = n.m;
+      const x = n.x;
+      const ty = axisY + 26 + n.lane * LANE_H;
+      const off = (C * (1 - m.pct / 100)).toFixed(1);
+      s +=
+        '<g class="tlv-node tlv-fnode" data-i="' +
+        n.i +
+        '" data-ms="' +
+        esc(m.id) +
+        '" style="--c:' +
+        cvar(m) +
+        '"><title>' +
+        esc(m.title) +
+        ' · ' +
+        esc(stateLabel(m)) +
+        ' · ' +
+        m.pct +
+        '%</title>';
+      s += '<circle class="tlv-halo" cx="' + x.toFixed(1) + '" cy="' + axisY + '" r="' + (R + 5) + '"/>';
+      s +=
+        '<line class="tlv-grid" x1="' +
+        x.toFixed(1) +
+        '" y1="' +
+        (axisY + R + 1) +
+        '" x2="' +
+        x.toFixed(1) +
+        '" y2="' +
+        (ty - 11) +
+        '"/>';
+      s += '<circle class="tlv-track" cx="' + x.toFixed(1) + '" cy="' + axisY + '" r="' + R + '"/>';
+      s +=
+        '<circle class="tlv-ring" cx="' +
+        x.toFixed(1) +
+        '" cy="' +
+        axisY +
+        '" r="' +
+        R +
+        '" transform="rotate(-90 ' +
+        x.toFixed(1) +
+        ' ' +
+        axisY +
+        ')" stroke-dasharray="' +
+        C.toFixed(1) +
+        '" stroke-dashoffset="' +
+        C.toFixed(1) +
+        '" data-off="' +
+        off +
+        '"/>';
+      s += '<circle class="tlv-dot" cx="' + x.toFixed(1) + '" cy="' + axisY + '" r="3.5"/>';
+      s +=
+        '<text class="tlv-tlabel" x="' +
+        x.toFixed(1) +
+        '" y="' +
+        ty +
+        '" text-anchor="middle" style="fill:var(--ink);font-size:11px">' +
+        esc(n.label) +
+        '</text>';
+      s +=
+        '<text class="tlv-dlabel" x="' +
+        x.toFixed(1) +
+        '" y="' +
+        (ty + 12) +
+        '" text-anchor="middle" style="fill:var(--ink-4);font-size:10px">' +
+        m.pct +
+        '%</text>';
+      s += '<circle cx="' + x.toFixed(1) + '" cy="' + axisY + '" r="' + (R + 7) + '" fill="transparent"/></g>';
+    });
+    s += '</svg>';
+    root.innerHTML = '<div class="tl-viz-scroll">' + s + '</div>';
+    window.requestAnimationFrame(function () {
+      window.requestAnimationFrame(function () {
+        Array.prototype.forEach.call(root.querySelectorAll('.tlv-ring'), function (r) {
+          r.style.strokeDashoffset = r.getAttribute('data-off');
+        });
+      });
+    });
+  }
+  function activeMilestone() {
+    const on = document.querySelector('.ms-mini[data-filter-kind="milestone"].on');
+    if (on) {
+      const f = on.getAttribute('data-filter');
+      return f && f !== '__none' ? f : null;
+    }
+    try {
+      return new URL(window.location.href).searchParams.get('milestone');
+    } catch (e) {
+      return null;
+    }
+  }
+  function syncActive() {
+    const id = activeMilestone();
+    Array.prototype.forEach.call(root.querySelectorAll('.tlv-fnode'), function (n) {
+      n.classList.toggle('on', n.getAttribute('data-ms') === id);
+    });
+  }
+  function wireCompact() {
+    const escSel = function (v) {
+      return window.CSS && CSS.escape ? CSS.escape(v) : String(v).replace(/"/g, '\\"');
+    };
+    Array.prototype.forEach.call(root.querySelectorAll('.tlv-fnode'), function (n) {
+      n.addEventListener('click', function () {
+        const btn = document.querySelector(
+          '.ms-mini[data-filter-kind="milestone"][data-filter="' + escSel(n.getAttribute('data-ms')) + '"]',
+        );
+        if (btn) btn.click();
+        syncActive();
+      });
+    });
+    document.addEventListener('click', function (ev) {
+      const c = ev.target && ev.target.closest ? ev.target.closest('[data-filter]') : null;
+      if (c && !root.contains(c)) window.setTimeout(syncActive, 0);
+    });
+    syncActive();
+  }
+
+  if (TL.compact) {
+    renderCompact();
+    wireCompact();
+    return;
+  }
+
   if (bar) {
     buildControls();
     bar.addEventListener('click', function (ev) {
