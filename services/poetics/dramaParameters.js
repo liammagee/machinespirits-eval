@@ -43,7 +43,7 @@ export const DRAMA_PARAMETER_COMPONENTS = deepFreeze([
     id: 'cast',
     label: 'Cast',
     shortLabel: 'cast',
-    summary: 'Which human, LLM backend, model, or mock plays each role.',
+    summary: 'Which human, LLM backend, model, or mock plays each role; cast.director is the scene-author/staging compatibility key.',
   },
   {
     id: 'audience',
@@ -142,7 +142,7 @@ export const DRAMA_FUNCTIONAL_COMPONENTS = deepFreeze([
     id: 'cast_layer',
     label: 'Cast layer',
     shortLabel: 'cast',
-    summary: 'Human, LLM, model, backend, role-map, and mock bindings for the roles in a scene or run.',
+    summary: 'Human, LLM, model, backend, role-map, and mock bindings, including the scene-author/director role.',
     parameterComponents: ['cast', 'agents', 'runtime'],
     fieldPaths: [
       'cast.director',
@@ -357,6 +357,7 @@ export const COMPOSER_BASE_VOCAB = deepFreeze({
   grading: ['graded', 'binary'],
   blinding: ['arm-blind', 'omniscient', 'fully-blind'],
   roles: ['tutor', 'learner', 'director'],
+  roleLabels: { tutor: 'Tutor', learner: 'Learner', director: 'Scene author / director' },
   movesByRole: {
     tutor: [
       'stock_take',

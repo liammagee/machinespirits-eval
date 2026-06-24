@@ -6513,12 +6513,12 @@ ${functionalComponentStrip()}
       <label class="fld">stage_direction_style<select id="s-stagestyle">${composeOptions(V.stageStyle, 'object_business')}</select></label>
     </div></details>
     <details class="sec" data-component="cast"><summary>${parameterComponentHeading('cast')}<span class="opt">sonnet cast · gpt critic</span></summary><div class="body">
-      <label class="fld">director<input type="text" id="c-director" list="castList" value="llm:api:sonnet"></label>
+      <label class="fld">scene author / director<input type="text" id="c-director" list="castList" value="llm:api:sonnet"></label>
       <label class="fld">tutor<input type="text" id="c-tutor" list="castList" value="llm:api:sonnet"></label>
       <label class="fld">learner<input type="text" id="c-learner" list="castList" value="llm:api:sonnet"></label>
       <label class="fld">critic<input type="text" id="c-critic" list="castList" value="llm:api:gpt"></label>
       <label class="fld">default_backend<input type="text" id="c-backend" value="api"></label>
-      <div class="muted" style="grid-column:1/-1">grammar: <code>human</code> · <code>llm:&lt;backend&gt;:&lt;model&gt;</code> · <code>mock</code> — backends claude · codex · gemini · api</div>
+      <div class="muted" style="grid-column:1/-1">grammar: <code>human</code> · <code>llm:&lt;backend&gt;:&lt;model&gt;</code> · <code>mock</code> — backends claude · codex · gemini · api; serialized key remains <code>cast.director</code></div>
     </div></details>
     <details class="sec" data-component="audience"><summary>${parameterComponentHeading('audience')}<span class="opt">4-judge panel · 3-of-4</span></summary><div class="body">
       <label class="fld wide">panel — comma-separated judge models<input type="text" id="a-panel" list="panelList" value="gpt, deepseek-v4-pro, qwen3.7-max, gemini-3.5-flash"></label>
