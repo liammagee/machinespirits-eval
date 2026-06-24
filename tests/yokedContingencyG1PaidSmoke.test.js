@@ -129,7 +129,9 @@ test('mock G1 separates same-seed from different-seed yoking', async () => {
     sessions: 1,
     maxCalls: 1,
     items: fixtureItems,
-    sessionSpecs: [{ sessionId: 'fixture-alpha', targetSeed: 'alpha', sameSeedSource: 'alpha', differentSeedSource: 'beta' }],
+    sessionSpecs: [
+      { sessionId: 'fixture-alpha', targetSeed: 'alpha', sameSeedSource: 'alpha', differentSeedSource: 'beta' },
+    ],
   });
 
   assert.equal(result.status, 'pass_g1_paid_smoke');
@@ -144,7 +146,9 @@ test('G1 report keeps outcome programmatic and names contrasts', async () => {
     sessions: 1,
     maxCalls: 1,
     items: fixtureItems,
-    sessionSpecs: [{ sessionId: 'fixture-alpha', targetSeed: 'alpha', sameSeedSource: 'alpha', differentSeedSource: 'beta' }],
+    sessionSpecs: [
+      { sessionId: 'fixture-alpha', targetSeed: 'alpha', sameSeedSource: 'alpha', differentSeedSource: 'beta' },
+    ],
   });
   const report = renderG1PaidSmokeReport(result);
 

@@ -10564,6 +10564,20 @@ h1 {
   grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
+.fgroup {
+  display: grid;
+  gap: 8px;
+}
+.fgroup + .fgroup {
+  border-top: 1px solid var(--rule-soft);
+  padding-top: 12px;
+}
+.fgroup__h {
+  font: 700 9px/1 "JetBrains Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ink-4);
+}
 .saved-views {
   display: flex;
   flex-wrap: wrap;
@@ -11432,32 +11446,41 @@ ${reportTypeBand('/browse')}
       <div id="appSub" class="sub">Generated public scripts, full traces, critic scores, and labels-as-perspective.</div>
     </div>
     <div class="filters">
-      <div class="saved-views" id="savedViews" aria-label="Saved script views">
-        <button class="view-chip" type="button" data-view="all">all scripts</button>
-        <button class="view-chip" type="button" data-view="flagged">flagged</button>
-        <button class="view-chip" type="button" data-view="unlabelled">unlabelled</button>
-        <button class="view-chip" type="button" data-view="recognition">recognition</button>
-        <button class="view-chip" type="button" data-view="trap">trap</button>
-        <button class="view-chip" type="button" data-view="flat">flat</button>
+      <div class="fgroup">
+        <div class="fgroup__h">views</div>
+        <div class="saved-views" id="savedViews" aria-label="Saved script views">
+          <button class="view-chip" type="button" data-view="all">all scripts</button>
+          <button class="view-chip" type="button" data-view="flagged">flagged</button>
+          <button class="view-chip" type="button" data-view="unlabelled">unlabelled</button>
+          <button class="view-chip" type="button" data-view="recognition">recognition</button>
+          <button class="view-chip" type="button" data-view="trap">trap</button>
+          <button class="view-chip" type="button" data-view="flat">flat</button>
+        </div>
       </div>
-      <label class="filter-field" for="runSelect"><span class="filter-label">Run</span><select id="runSelect"></select></label>
-      <label class="filter-field" for="searchInput"><span class="filter-label">Search</span><input id="searchInput" placeholder="id · drama · discipline · condition · arm · critic form (recognition/trap/flat)"></label>
-      <label class="filter-field" for="disciplineSelect"><span class="filter-label">Discipline</span><select id="disciplineSelect"><option value="">all disciplines</option></select></label>
-      <label class="filter-field blind-only" for="labellerInput"><span class="filter-label">Labeller id</span><input id="labellerInput" placeholder="codex"></label>
-      <div class="filter-row score-only">
-        <label class="filter-field" for="roleSelect"><span class="filter-label">Role</span><select id="roleSelect">
-            <option value="">all roles</option>
-            <option value="target">target</option>
-            <option value="flat_control">flat controls</option>
-            <option value="boundary_trap_control">boundary traps</option>
-            <option value="hard_trap_control">hard traps</option>
-          </select></label>
-        <label class="filter-field" for="formSelect"><span class="filter-label">Critic form</span><select id="formSelect">
-            <option value="">all forms</option>
-            <option value="recognition">recognition</option>
-            <option value="trap">trap</option>
-            <option value="flat">flat</option>
-          </select></label>
+      <div class="fgroup">
+        <div class="fgroup__h">find</div>
+        <label class="filter-field" for="searchInput"><span class="filter-label">Search</span><input id="searchInput" placeholder="id · drama · discipline · condition · arm · critic form (recognition/trap/flat)"></label>
+        <label class="filter-field" for="runSelect"><span class="filter-label">Run</span><select id="runSelect"></select></label>
+        <label class="filter-field" for="disciplineSelect"><span class="filter-label">Discipline</span><select id="disciplineSelect"><option value="">all disciplines</option></select></label>
+      </div>
+      <div class="fgroup">
+        <div class="fgroup__h">refine</div>
+        <div class="filter-row score-only">
+          <label class="filter-field" for="roleSelect"><span class="filter-label">Role</span><select id="roleSelect">
+              <option value="">all roles</option>
+              <option value="target">target</option>
+              <option value="flat_control">flat controls</option>
+              <option value="boundary_trap_control">boundary traps</option>
+              <option value="hard_trap_control">hard traps</option>
+            </select></label>
+          <label class="filter-field" for="formSelect"><span class="filter-label">Critic form</span><select id="formSelect">
+              <option value="">all forms</option>
+              <option value="recognition">recognition</option>
+              <option value="trap">trap</option>
+              <option value="flat">flat</option>
+            </select></label>
+        </div>
+        <label class="filter-field blind-only" for="labellerInput"><span class="filter-label">Labeller id</span><input id="labellerInput" placeholder="codex"></label>
       </div>
       <div class="active-filters" id="activeFilters" hidden></div>
     </div>

@@ -136,7 +136,8 @@ export function evaluatePaperIntegration(paperPath = DEFAULTS.paperPath) {
   const failed = checks.filter(([, pattern]) => !pattern.test(text)).map(([name]) => name);
   return {
     integrated: failed.length === 0,
-    evidence: failed.length === 0 ? 'canonical paper contains §6.12.5 claim and boundaries' : `missing: ${failed.join(', ')}`,
+    evidence:
+      failed.length === 0 ? 'canonical paper contains §6.12.5 claim and boundaries' : `missing: ${failed.join(', ')}`,
   };
 }
 
@@ -176,7 +177,9 @@ export function renderClaimReadinessReport(readiness) {
   lines.push('');
   if (readiness.ready) {
     if (readiness.paperIntegration?.integrated) {
-      lines.push('The artifact gates and canonical paper integration audit both pass. This is now a cautious main-paper claim.');
+      lines.push(
+        'The artifact gates and canonical paper integration audit both pass. This is now a cautious main-paper claim.',
+      );
     } else {
       lines.push('The artifact gates support drafting a cautious main-paper claim, pending paper-integration audit.');
     }

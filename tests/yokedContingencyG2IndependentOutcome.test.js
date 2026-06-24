@@ -108,7 +108,9 @@ test('held-out learner prompt hides seed, arm, family labels, and posttest answe
     sessions: 1,
     maxCalls: 1,
     items: fixtureItems,
-    sessionSpecs: [{ sessionId: 'fixture-alpha', targetSeed: 'alpha', sameSeedSource: 'alpha', differentSeedSource: 'beta' }],
+    sessionSpecs: [
+      { sessionId: 'fixture-alpha', targetSeed: 'alpha', sameSeedSource: 'alpha', differentSeedSource: 'beta' },
+    ],
   });
   const session = g1.sessions[0];
   const preItems = fixtureItems.filter((item) => item.form === 'A');
@@ -135,7 +137,9 @@ test('calibrated-novice prompt explicitly prevents expert ceiling behavior', asy
     sessions: 1,
     maxCalls: 1,
     items: fixtureItems,
-    sessionSpecs: [{ sessionId: 'fixture-alpha', targetSeed: 'alpha', sameSeedSource: 'alpha', differentSeedSource: 'beta' }],
+    sessionSpecs: [
+      { sessionId: 'fixture-alpha', targetSeed: 'alpha', sameSeedSource: 'alpha', differentSeedSource: 'beta' },
+    ],
   });
   const session = g1.sessions[0];
   const preItems = fixtureItems.filter((item) => item.form === 'A');
@@ -160,7 +164,9 @@ test('rule-transfer novice prompt requires applying inferred novice rules', asyn
     sessions: 1,
     maxCalls: 1,
     items: fixtureItems,
-    sessionSpecs: [{ sessionId: 'fixture-alpha', targetSeed: 'alpha', sameSeedSource: 'alpha', differentSeedSource: 'beta' }],
+    sessionSpecs: [
+      { sessionId: 'fixture-alpha', targetSeed: 'alpha', sameSeedSource: 'alpha', differentSeedSource: 'beta' },
+    ],
   });
   const session = g1.sessions[0];
   const items = loadG2Items({ posttestProfile: 'hard-transfer' });
@@ -207,7 +213,9 @@ test('hard-transfer learner prompt uses hard items without answer keys or family
     sessions: 1,
     maxCalls: 1,
     items: fixtureItems,
-    sessionSpecs: [{ sessionId: 'fixture-alpha', targetSeed: 'alpha', sameSeedSource: 'alpha', differentSeedSource: 'beta' }],
+    sessionSpecs: [
+      { sessionId: 'fixture-alpha', targetSeed: 'alpha', sameSeedSource: 'alpha', differentSeedSource: 'beta' },
+    ],
   });
   const session = g1.sessions[0];
   const items = loadG2Items({ posttestProfile: 'hard-transfer' });
@@ -244,7 +252,9 @@ test('mock G2 scores independent held-out answers and separates yoking', async (
     sessions: 1,
     maxCalls: 1,
     items: fixtureItems,
-    sessionSpecs: [{ sessionId: 'fixture-alpha', targetSeed: 'alpha', sameSeedSource: 'alpha', differentSeedSource: 'beta' }],
+    sessionSpecs: [
+      { sessionId: 'fixture-alpha', targetSeed: 'alpha', sameSeedSource: 'alpha', differentSeedSource: 'beta' },
+    ],
   });
   const result = await runG2IndependentOutcome({
     g1Json: g1,
@@ -268,7 +278,9 @@ test('G2 report states independent learner-outcome boundary', async () => {
     sessions: 1,
     maxCalls: 1,
     items: fixtureItems,
-    sessionSpecs: [{ sessionId: 'fixture-alpha', targetSeed: 'alpha', sameSeedSource: 'alpha', differentSeedSource: 'beta' }],
+    sessionSpecs: [
+      { sessionId: 'fixture-alpha', targetSeed: 'alpha', sameSeedSource: 'alpha', differentSeedSource: 'beta' },
+    ],
   });
   const result = await runG2IndependentOutcome({
     g1Json: g1,
