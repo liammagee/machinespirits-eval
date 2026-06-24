@@ -1,0 +1,125 @@
+{
+  "description": "Hard-transfer held-out posttest items for yoked-contingency G2. These are analysis-side items, not production pilot content.",
+  "forms": {
+    "B": [
+      {
+        "id": "ht-b-001",
+        "family": "same_denominator_operation",
+        "stem": "A runner finishes 3/10 of a trail before lunch and 4/10 after lunch. What fraction of the trail has the runner finished?",
+        "choices": [
+          { "value": "a", "label": "7/20" },
+          { "value": "b", "label": "7/10" },
+          { "value": "c", "label": "12/100" },
+          { "value": "d", "label": "1/10" }
+        ],
+        "correct": "b"
+      },
+      {
+        "id": "ht-b-002",
+        "family": "same_denominator_operation",
+        "stem": "A tank is 5/6 full. If 1/6 of the tank is drained, how much of the tank remains full?",
+        "choices": [
+          { "value": "a", "label": "4/0" },
+          { "value": "b", "label": "4/6" },
+          { "value": "c", "label": "6/6" },
+          { "value": "d", "label": "1/6" }
+        ],
+        "correct": "b"
+      },
+      {
+        "id": "ht-b-003",
+        "family": "magnitude_denominator_bias",
+        "stem": "Which amount is closer to one whole?",
+        "choices": [
+          { "value": "a", "label": "5/6" },
+          { "value": "b", "label": "5/8" },
+          { "value": "c", "label": "they are equal" }
+        ],
+        "correct": "a"
+      },
+      {
+        "id": "ht-b-004",
+        "family": "magnitude_denominator_bias",
+        "stem": "Which fraction is greater?",
+        "choices": [
+          { "value": "a", "label": "2/5" },
+          { "value": "b", "label": "2/3" },
+          { "value": "c", "label": "they are equal" }
+        ],
+        "correct": "b"
+      },
+      {
+        "id": "ht-b-005",
+        "family": "equivalence_scaling",
+        "stem": "Which fraction is equivalent to 3/5?",
+        "choices": [
+          { "value": "a", "label": "4/6" },
+          { "value": "b", "label": "6/10" },
+          { "value": "c", "label": "3/10" },
+          { "value": "d", "label": "8/10" }
+        ],
+        "correct": "b"
+      },
+      {
+        "id": "ht-b-006",
+        "family": "equivalence_scaling",
+        "stem": "To write 2/3 with denominator 12, what numerator should be used?",
+        "choices": [
+          { "value": "a", "label": "4" },
+          { "value": "b", "label": "6" },
+          { "value": "c", "label": "8" },
+          { "value": "d", "label": "12" }
+        ],
+        "correct": "c"
+      },
+      {
+        "id": "ht-b-007",
+        "family": "fraction_of_quantity",
+        "stem": "A class has 28 students. Three fourths of them brought lunch from home. How many students brought lunch from home?",
+        "choices": [
+          { "value": "a", "label": "7" },
+          { "value": "b", "label": "21" },
+          { "value": "c", "label": "24" },
+          { "value": "d", "label": "31" }
+        ],
+        "correct": "b"
+      },
+      {
+        "id": "ht-b-008",
+        "family": "fraction_of_quantity",
+        "stem": "A garden has 30 plants. Two fifths are herbs. How many plants are herbs?",
+        "choices": [
+          { "value": "a", "label": "6" },
+          { "value": "b", "label": "12" },
+          { "value": "c", "label": "15" },
+          { "value": "d", "label": "28" }
+        ],
+        "correct": "b"
+      },
+      {
+        "id": "ht-b-009",
+        "family": "part_whole_mapping",
+        "stem": "A bag has 6 red counters and 4 blue counters. What fraction of all the counters are blue?",
+        "choices": [
+          { "value": "a", "label": "4/6" },
+          { "value": "b", "label": "4/10" },
+          { "value": "c", "label": "6/4" },
+          { "value": "d", "label": "6/10" }
+        ],
+        "correct": "b"
+      },
+      {
+        "id": "ht-b-010",
+        "family": "part_whole_mapping",
+        "stem": "A rectangle is split into 8 equal parts. Three parts are shaded and five are unshaded. What fraction of the rectangle is shaded?",
+        "choices": [
+          { "value": "a", "label": "3/5" },
+          { "value": "b", "label": "5/8" },
+          { "value": "c", "label": "3/8" },
+          { "value": "d", "label": "8/3" }
+        ],
+        "correct": "c"
+      }
+    ]
+  }
+}
