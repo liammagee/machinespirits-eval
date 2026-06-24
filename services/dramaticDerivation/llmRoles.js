@@ -255,6 +255,9 @@ function learnerProxyDagMemoryLines(memory, terms) {
     `- already voiced by you: ${renderRowSurfaces(memory.voicedDerived)}`,
     `- candidate conclusions your ${terms.record} may support: ${renderRowSurfaces(memory.candidateConclusions)}`,
     `- answer candidates from your ${terms.record}: ${answers}`,
+    memory.answerCandidates?.length
+      ? '- If an answer candidate now settles the public question, put its exact private answer name in "asserts_answer"; say it aloud only in ordinary words.'
+      : '- If no answer candidate is listed, do not answer yet.',
     'Use this only to tend your private record. Do not say interface words aloud.',
   ];
 }
@@ -3991,7 +3994,7 @@ function learnerSystem(setting, voice, view, publicRegister = 'default', opts = 
     '- Answer the question ONLY when your board, under the rules, settles it — then give the answer name.',
     ...(sameTurnAssertionAffordance
       ? [
-          '- Same-turn answer discipline: after you adopt any NEW exhibits in this reply, immediately re-check your expanded board. If that expanded board settles the question, answer in this same JSON reply; do not wait for a later recognition turn. If it does not settle, keep the answer null.',
+          '- Same-turn answer discipline: each turn, re-check your current board and any NEW exhibits you adopt. If that record settles the question, answer in this same JSON reply; do not wait for a later recognition turn. If it does not settle, keep the answer null.',
         ]
       : []),
     '- Be scrupulous about the difference between what is shown and what is merely said.',
@@ -4335,7 +4338,7 @@ export function makeLlmLearner({
             '',
             'Same-turn answer check:',
             patternAssertion
-              ? `After adopting any NEW ${terms.itemPlural} that belong on your ${terms.record}, re-check the expanded ${terms.record}. If it settles the public question, answer now in this same JSON reply.`
+              ? `Your current ${terms.record} plus any adopted NEW ${terms.itemPlural} can settle the public question as the private answer "${patternAssertion.answer}". If you can ground that answer from your ${terms.record}, set "asserts_answer" to exactly "${patternAssertion.answer}" and say the conclusion plainly.`
               : `After adopting any NEW ${terms.itemPlural} that belong on your ${terms.record}, re-check the expanded ${terms.record}. If it still does not settle the public question, leave the answer null.`,
           ]
         : []),
