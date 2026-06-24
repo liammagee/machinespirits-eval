@@ -1,0 +1,164 @@
+id: world_016_ai_syllabus_af1
+title: The Campus FAQ Machine
+
+discipline: "AI Foundations AF1: AI systems, tasks, and agents"
+
+question: "What kind of system should the campus FAQ triage tool be, on the evidence in the formulation card?"
+question_pattern: [bestApproach, campusFaq, "?x"]
+
+setting: >-
+  A first AI Foundations workshop is reviewing a proposed campus FAQ triage tool.
+  The learner has heard the words "AI assistant" and is tempted to classify the
+  proposal by its conversational surface. The course requires a problem
+  formulation card: task, baseline, data, decision rights, and unacceptable
+  failures before any model family is chosen.
+
+learner_voice: >-
+  A focused beginner in an AI Foundations course: technically curious, quick to
+  reach for "generative AI" when a system talks in natural language, but willing
+  to revise when the artifact asks for task, data, baseline, and decision-right
+  evidence.
+
+secret:
+  fact: [bestApproach, campusFaq, ruleBasedBaseline]
+  surface: "The campus FAQ triage tool should be framed first as a rule-based baseline."
+
+mirror:
+  fact: [bestApproach, campusFaq, generativeAI]
+
+rules:
+  - id: R1_mapping
+    gloss: >-
+      When the task is a fixed set of intents and an approved answer bank already
+      exists, a deterministic mapping is possible.
+    if:
+      - [fixedIntentSet, "?system"]
+      - [approvedAnswerBank, "?system"]
+    then:
+      - [deterministicMappingPossible, "?system"]
+  - id: R2_baseline
+    gloss: >-
+      If a deterministic mapping is possible and there are no training labels
+      for a learned classifier, the rule-based baseline is sufficient as the
+      first formulation.
+    if:
+      - [deterministicMappingPossible, "?system"]
+      - [noTrainingLabels, "?system"]
+    then:
+      - [ruleBaselineSufficient, "?system"]
+  - id: R3_decision
+    gloss: >-
+      If bad advice affects student records and staff retain the decision right,
+      model output is not the system decision.
+    if:
+      - [studentRecordImpact, "?system"]
+      - [staffRetainDecisionRight, "?system"]
+    then:
+      - [modelOutputNotDecision, "?system"]
+  - id: R4_choice
+    gloss: >-
+      If the rule baseline is sufficient, model output is not the decision, and
+      wrong advice is an unacceptable failure, the correct first approach is the
+      rule-based baseline.
+    if:
+      - [ruleBaselineSufficient, "?system"]
+      - [modelOutputNotDecision, "?system"]
+      - [wrongAdviceUnacceptable, "?system"]
+    then:
+      - [bestApproach, "?system", ruleBasedBaseline]
+
+premises:
+  - id: m_language
+    fact: [naturalLanguageInterface, campusFaq]
+    surface: >-
+      The proposal calls the tool a chat assistant because students will type
+      ordinary-language questions such as "Can I drop this module?" or "Where do
+      I upload my form?"
+  - id: p_intents
+    fact: [fixedIntentSet, campusFaq]
+    surface: >-
+      The artifact inventory reduces the first release to twelve fixed intents:
+      deadline lookup, form routing, office referral, policy page link, and
+      eight similar categories.
+  - id: p_bank
+    fact: [approvedAnswerBank, campusFaq]
+    surface: >-
+      Student services already maintains an approved answer bank for those
+      intents, with exact wording and escalation notes signed off by policy
+      owners.
+  - id: p_labels
+    fact: [noTrainingLabels, campusFaq]
+    surface: >-
+      The team has search logs and unanswered emails, but no audited labels that
+      map past student messages to the twelve approved intents.
+  - id: p_records
+    fact: [studentRecordImpact, campusFaq]
+    surface: >-
+      Several questions affect enrolment status, visa timing, fee liability, or
+      transcript records if the student follows bad advice.
+  - id: p_staff
+    fact: [staffRetainDecisionRight, campusFaq]
+    surface: >-
+      The operating rule says the tool may route and display approved guidance,
+      but student services staff retain authority for any decision that changes
+      a record.
+  - id: p_failure
+    fact: [wrongAdviceUnacceptable, campusFaq]
+    surface: >-
+      The risk register marks confident wrong advice as an unacceptable failure:
+      a fluent answer is worse than a handoff when the policy consequence is
+      uncertain.
+
+background:
+  - [courseModule, AF1]
+  - [artifact, campusFaq, problemFormulationCard]
+  - [candidateSystem, campusFaq]
+
+incompatible:
+  - [[bestApproach, campusFaq, ruleBasedBaseline], [bestApproach, campusFaq, generativeAI]]
+
+proof_paths:
+  - premises: [p_intents, p_bank, p_labels, p_records, p_staff, p_failure]
+
+release_schedule:
+  - { turn: 2, premise: m_language, via: director }
+  - { turn: 4, premise: p_intents, via: tutor }
+  - { turn: 6, premise: p_bank, via: director }
+  - { turn: 8, premise: p_labels, via: tutor }
+  - { turn: 11, premise: p_records, via: director }
+  - { turn: 13, premise: p_staff, via: tutor }
+  - { turn: 16, premise: p_failure, via: director }
+
+dramaturgy:
+  acts:
+    - act: I
+      title: The Chatbot Temptation
+      turns: [1, 5]
+      intent: >-
+        The conversational surface tempts the learner toward "generative AI."
+        The first artifact facts shift attention from interface style to task
+        structure.
+    - act: II
+      title: The Baseline Appears
+      turns: [6, 10]
+      intent: >-
+        The approved answer bank and missing labels make the deterministic
+        baseline visible as a serious first formulation, not a lesser fallback.
+    - act: III
+      title: Decision Rights
+      turns: [11, 15]
+      intent: >-
+        Student-record consequences and retained staff authority separate model
+        output from institutional decision.
+    - act: IV
+      title: The Formulation Card
+      turns: [16, 22]
+      intent: >-
+        The unacceptable-failure constraint closes the proof: the learner should
+        say why the rule-based baseline is the warranted first approach.
+
+slope:
+  t_min: 14
+  aporia_window: 4
+
+turn_cap: 22

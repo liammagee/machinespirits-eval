@@ -47,12 +47,14 @@ import {
   GATE_BUCKETS,
 } from '../services/poetics/replayBundles.js';
 import {
+  buildDerivationAssessment,
   loadWorld as loadDerivationWorld,
   renderProof as renderDerivationProof,
   renderProofProse as renderDerivationProofProse,
   renderEvalPanel as renderDerivationEvalPanel,
   stagingSegments as derivationStagingSegments,
 } from '../services/dramaticDerivation/index.js';
+import { getDerivationConceptSchema } from '../services/dramaticDerivation/conceptSchema.js';
 import {
   planJob,
   launchJob,
@@ -2029,6 +2031,10 @@ function escapeHtml(value) {
   );
 }
 
+function escapeAttr(value) {
+  return escapeHtml(value);
+}
+
 // Minimal block-markdown → HTML for the sit-in "reading" panel: headings, paragraphs,
 // `-`/`*`/`1.` lists, fenced code, blockquotes, rules, plus inline bold/italic/code. It
 // mirrors the chat bubble's mdInline subset (asterisk emphasis only, so snake_case ids
@@ -3144,7 +3150,9 @@ function readDerivationRun(label) {
   } catch {
     /* no notice yet — the page shows the backfill hint */
   }
-  return { label, diagnosis, result, world, commentary, live: readDerivationLive(label) };
+  const live = readDerivationLive(label) || {};
+  const assessment = buildDerivationAssessment({ label, live, result, diagnosis, world });
+  return { label, diagnosis, result, world, commentary, live, assessment };
 }
 
 // Backend chips tolerate both ledger formats: per-role ({mode, roles:{...}},
@@ -3659,6 +3667,108 @@ const DERIVATION_CSS = `
 .egraph__links a{min-height:32px;display:inline-flex;align-items:center;border:1px solid var(--rule);border-radius:4px;background:var(--paper-3);color:var(--moss-deep);padding:3px 9px;text-decoration:none;font-family:"JetBrains Mono",monospace;font-size:var(--s-0)}
 .egraph__links a:hover{border-color:var(--moss);background:var(--moss-soft)}
 .egraph__meta{margin-top:8px;color:var(--ink-3);font-family:"JetBrains Mono",monospace;font-size:var(--s-0)}
+.proofdag{border:1px solid var(--rule);border-radius:8px;background:var(--paper-4);padding:13px 14px;margin:14px 0 22px}
+.proofdag__top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.proofdag__k{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);font-weight:700;text-transform:uppercase;color:var(--ink-4);margin-bottom:5px}
+.proofdag h2{font-family:Fraunces,serif;font-weight:600;font-size:var(--s-2);margin:0}
+.proofdag__summary{max-width:74ch;color:var(--ink-2);line-height:1.45;margin:7px 0 0}
+.proofdag__metrics{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.proofdag__metric{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);border:1px solid var(--rule-soft);border-radius:4px;background:var(--paper-2);padding:3px 8px;color:var(--ink-3)}
+.proofdag__grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(300px,.9fr);gap:12px;align-items:start;margin-top:12px}
+.proofdag__paths{display:grid;gap:9px}
+.proofdag__path{border:1px solid var(--rule-soft);border-radius:6px;background:var(--paper);padding:9px 10px}
+.proofdag__path h3{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);font-weight:700;margin:0 0 7px;color:var(--ink-2)}
+.proofdag__path ol{margin:0;padding-left:1.35em}
+.proofdag__path li{margin:6px 0;line-height:1.35}
+.proofdag__pid{font-family:"JetBrains Mono",monospace;font-size:.9em;color:var(--moss-deep)}
+.proofdag__release{font-family:"JetBrains Mono",monospace;font-size:.84em;color:var(--ink-3)}
+.proofdag__surface{display:block;color:var(--ink-2)}
+.proofdag__fact{display:block;font-family:"JetBrains Mono",monospace;font-size:.86em;color:var(--ink-3);overflow-wrap:anywhere}
+.proofdag__side{border:1px solid var(--rule-soft);border-radius:6px;background:var(--paper);padding:9px 10px;overflow-x:auto}
+.proofdag__side h3{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;color:var(--ink-4);margin:0 0 7px}
+.proofdag table{border-collapse:collapse;width:100%;font-size:var(--s-0)}
+.proofdag th,.proofdag td{border-bottom:1px solid var(--rule-soft);padding:5px 7px;text-align:left;vertical-align:top}
+.proofdag th{font-family:"JetBrains Mono",monospace;color:var(--ink-3);text-transform:uppercase}
+.proofdag details{border-top:1px solid var(--rule-soft);padding-top:8px;margin-top:10px}
+.proofdag summary{cursor:pointer;font-family:"JetBrains Mono",monospace;color:var(--moss-deep)}
+.proofdag__rules{margin:8px 0 0;padding-left:1.15em}
+.proofdag__rules li{margin:5px 0;line-height:1.35}
+.learnerdag{border:1px solid var(--rule);border-radius:8px;background:var(--paper-4);padding:13px 14px;margin:14px 0 22px}
+.learnerdag__k{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);font-weight:700;text-transform:uppercase;color:var(--ink-4);margin-bottom:5px}
+.learnerdag h2{font-family:Fraunces,serif;font-weight:600;font-size:var(--s-2);margin:0}
+.learnerdag__summary{max-width:74ch;color:var(--ink-2);line-height:1.45;margin:7px 0 0}
+.learnerdag__metrics{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.learnerdag__metric{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);border:1px solid var(--rule-soft);border-radius:4px;background:var(--paper-2);padding:3px 8px;color:var(--ink-3)}
+.learnerdag__grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,.8fr);gap:12px;align-items:start}
+.learnerdag__panel{border:1px solid var(--rule-soft);border-radius:6px;background:var(--paper);padding:9px 10px;overflow-x:auto}
+.learnerdag__panel h3{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;color:var(--ink-4);margin:0 0 7px}
+.learnerdag__nodes{margin:0;padding-left:1.15em}
+.learnerdag__nodes li{margin:6px 0;line-height:1.35}
+.learnerdag__fact{font-family:"JetBrains Mono",monospace;font-size:.88em;color:var(--moss-deep);overflow-wrap:anywhere}
+.learnerdag__status{font-family:"JetBrains Mono",monospace;font-size:.82em;color:var(--ink-3)}
+.learnerdag table{border-collapse:collapse;width:100%;font-size:var(--s-0)}
+.learnerdag th,.learnerdag td{border-bottom:1px solid var(--rule-soft);padding:5px 7px;text-align:left;vertical-align:top}
+.learnerdag th{font-family:"JetBrains Mono",monospace;color:var(--ink-3);text-transform:uppercase}
+.vocab{border:1px solid var(--rule);border-radius:8px;background:var(--paper-4);padding:11px 13px;margin:12px 0 20px}
+.vocab>summary{cursor:pointer;list-style:none;display:flex;align-items:baseline;justify-content:space-between;gap:12px;font-family:"JetBrains Mono",monospace;font-size:var(--s-0);font-weight:700;text-transform:uppercase;color:var(--ink-4)}
+.vocab>summary::-webkit-details-marker{display:none}
+.vocab__hint{font-family:"Source Serif 4",Georgia,serif;font-size:var(--s-0);font-weight:400;text-transform:none;color:var(--ink-3)}
+.vocab__intro{max-width:78ch;color:var(--ink-2);line-height:1.45;margin:9px 0 10px}
+.vocab__layers{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px;margin:10px 0 12px}
+.vocab__layer{border:1px solid var(--rule);border-radius:6px;background:var(--paper);padding:9px 10px;min-width:0}
+.vocab__layer h3{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;color:var(--ink);margin:0 0 5px}
+.vocab__layer p{margin:0 0 7px;color:var(--ink-3);line-height:1.4}
+.vocab__layer .vocab__tokens{gap:4px}
+.vocabschema{border:1px solid var(--rule);background:var(--paper-4);border-radius:6px;margin:12px 0;padding:10px}
+.vocabschema__head{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;border-bottom:1px solid var(--rule-soft);padding-bottom:9px;margin-bottom:10px}
+.vocabschema__head h3{margin:0;font-family:"JetBrains Mono",monospace;font-size:var(--s-1);text-transform:uppercase;color:var(--ink)}
+.vocabschema__head p{margin:4px 0 0;color:var(--ink-3);line-height:1.45;max-width:76ch}
+.vocabschema__link{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;color:var(--moss-deep);text-decoration:none;border:1px solid var(--moss);background:var(--moss-soft);border-radius:999px;padding:4px 8px;white-space:nowrap}
+.vocabschema__ontology{display:grid;grid-template-columns:minmax(170px,.55fr) minmax(0,1fr);gap:8px;align-items:start;border:1px solid var(--moss);background:var(--moss-soft);border-radius:6px;padding:9px 10px;margin-bottom:10px}
+.vocabschema__ontology h4{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;color:var(--moss-deep);margin:0 0 4px}
+.vocabschema__ontology p{margin:0;color:var(--ink-3);line-height:1.35}
+.vocabschema__ontology .vocab__token{background:var(--paper);border-color:var(--moss);color:var(--moss-deep)}
+.vocabschema__novel{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px;margin-bottom:10px}
+.vocabschema__acts{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin-bottom:10px}
+.vocabschema__act{border:1px solid var(--rule-soft);background:var(--paper);border-radius:6px;padding:8px}
+.vocabschema__act h4{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;margin:0 0 5px;color:var(--ink)}
+.vocabschema__act p{margin:0 0 7px;color:var(--ink-3);line-height:1.35}
+.vocabschema__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:8px}
+.concept{border:1px solid var(--rule-soft);background:var(--paper);border-radius:6px;padding:9px;min-width:0}
+.concept--novel{border-color:var(--ochre);background:var(--ochre-soft)}
+.concept__top{display:flex;gap:6px;align-items:center;justify-content:space-between;margin-bottom:6px}
+.concept__label{font-family:"JetBrains Mono",monospace;color:var(--ink);font-size:var(--s-0);font-weight:700}
+.concept__layer{font-family:"JetBrains Mono",monospace;font-size:var(--s--1);text-transform:uppercase;color:var(--ink-4);border:1px solid var(--rule-soft);border-radius:999px;padding:1px 5px}
+.concept--novel .concept__layer{border-color:var(--ochre);color:var(--ochre-d);background:var(--paper)}
+.concept__definition{color:var(--ink-2);line-height:1.4;margin:0 0 7px}
+.concept__deflabel,.concept__linkslabel,.concept__ontologylabel{font-family:"JetBrains Mono",monospace;font-size:var(--s--1);text-transform:uppercase;color:var(--ink-4);display:block;margin-bottom:2px}
+.concept__meta{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:7px}
+.concept__metachip{font-family:"JetBrains Mono",monospace;font-size:var(--s--1);color:var(--ink-4);border:1px solid var(--rule-soft);background:var(--paper-2);border-radius:4px;padding:2px 5px;min-width:0;overflow-wrap:anywhere}
+.concept__ontology{margin-bottom:8px}
+.concept__ontology a{display:inline-flex;align-items:center;max-width:100%;font-family:"JetBrains Mono",monospace;font-size:var(--s--1);color:var(--moss-deep);text-decoration:none;border:1px solid var(--moss);background:var(--moss-soft);border-radius:4px;padding:2px 5px}
+.concept__ontology code{font-family:inherit;white-space:normal;overflow-wrap:anywhere}
+.concept__links{display:flex;flex-wrap:wrap;gap:4px}
+.concept__linkslabel{flex:0 0 100%}
+.concept__edge{font-family:"JetBrains Mono",monospace;font-size:var(--s--1);border:1px solid var(--rule);background:var(--paper-3);color:var(--ink-3);border-radius:999px;padding:2px 6px;max-width:100%;overflow:hidden;text-overflow:ellipsis;text-decoration:none}
+.concept__edge b{color:var(--ink)}
+.concept--novel .concept__edge{background:var(--paper);border-color:var(--ochre);color:var(--ochre-d)}
+.vocabschema__edges{margin-top:10px;border-top:1px solid var(--rule-soft);padding-top:10px}
+.vocabschema__edges h4{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;color:var(--ink-4);margin:0 0 6px}
+.vocabschema__edgegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:5px}
+.vocabschema__edge{font-family:"JetBrains Mono",monospace;font-size:var(--s--1);color:var(--ink-3);background:var(--paper);border:1px solid var(--rule-soft);border-radius:6px;padding:5px 7px;min-width:0}
+.vocabschema__edge b{color:var(--ink)}
+.vocab__grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.vocab__group{border:1px solid var(--rule-soft);border-radius:6px;background:var(--paper);padding:9px 10px}
+.vocab__group h3{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;color:var(--ink-4);margin:0 0 6px}
+.vocab__group p{margin:0 0 7px;color:var(--ink-3);line-height:1.4}
+.vocab__tokens{display:flex;flex-wrap:wrap;gap:5px}
+.vocab__token{font-family:"JetBrains Mono",monospace;font-size:.78rem;border:1px solid var(--rule-soft);border-radius:4px;background:var(--paper-2);color:var(--ink-2);padding:2px 6px;overflow-wrap:anywhere;text-decoration:none}
+.vocab__token--public{background:var(--moss-soft);border-color:var(--moss);color:var(--moss-deep)}
+.vocab__token--warn{background:var(--brick-soft);border-color:var(--brick);color:var(--brick-d)}
+.vocab__token--private{background:var(--ochre-soft);border-color:var(--ochre);color:var(--ochre-d)}
+@media(max-width:860px){.learnerdag__grid{grid-template-columns:1fr}}
+@media(max-width:860px){.proofdag__grid{grid-template-columns:1fr}}
+@media(max-width:860px){.vocab__grid{grid-template-columns:1fr}.vocab>summary{display:block}.vocab__hint{display:block;margin-top:3px}.vocabschema__ontology{grid-template-columns:1fr}}
 .tts-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:14px 0 18px;padding:9px 10px;border:1px solid var(--rule-soft);border-radius:6px;background:var(--paper-4)}
 .tts-toolbar--compact{margin:4px 0 8px}
 .tts-control,.tts-btn{border:1px solid var(--rule);background:var(--paper);color:var(--moss-deep);cursor:pointer;font-family:"JetBrains Mono",monospace;text-transform:uppercase}
@@ -4333,6 +4443,7 @@ function renderDerivationEvidenceGraph({ label, diagnosis }) {
     ['compare this run', `/derivation?compare=${encLabel}`],
     ['same outcome', `/derivation?verdict=${encodeURIComponent(diagnosis.verdict || '')}`],
     ['rerun in launcher', runHref],
+    ['controlled vocabulary', '#controlled-vocabulary'],
     ['proof runs index', '/derivation'],
     ['replays', '/replays'],
     ['scripts', '/browse'],
@@ -4343,6 +4454,287 @@ function renderDerivationEvidenceGraph({ label, diagnosis }) {
     .join('')}</div><div class="egraph__meta">verdict ${escapeHtml(
     diagnosis.verdict || '?',
   )} · world ${escapeHtml(worldFile || '?')} · script ${escapeHtml(scriptFile || '?')}</div></div>`;
+}
+
+function renderDerivationProofDagHtml(profile) {
+  if (!profile) {
+    return `<section class="proofdag"><div class="proofdag__k">authored proof DAG</div><h2>Proof DAG unavailable</h2><p class="proofdag__summary">The run loaded, but its world file could not be found. The mechanical result is still inspectable below; the authored DAG requires the original world spec.</p></section>`;
+  }
+  const metric = (label, value) =>
+    `<span class="proofdag__metric"><b>${escapeHtml(label)}</b> ${escapeHtml(value ?? 'n/a')}</span>`;
+  const paths = profile.paths
+    .map((pathProfile) => {
+      const premises = pathProfile.premises
+        .map((premise) => {
+          const release = premise.scheduled ? `t${premise.releaseTurn} / ${premise.releaseVia}` : 'unscheduled';
+          return `<li><span class="proofdag__pid">${escapeHtml(premise.id)}</span> <span class="proofdag__release">${escapeHtml(
+            release,
+          )}</span><span class="proofdag__surface">${escapeHtml(
+            premise.surface || premise.factText || '(no surface text)',
+          )}</span><span class="proofdag__fact">${escapeHtml(premise.factText)}</span></li>`;
+        })
+        .join('');
+      return `<article class="proofdag__path"><h3>${escapeHtml(pathProfile.id)} · ${
+        pathProfile.completeByTurn == null
+          ? 'not fully scheduled'
+          : `complete by t${escapeHtml(pathProfile.completeByTurn)}`
+      }</h3><ol>${premises}</ol></article>`;
+    })
+    .join('');
+  const releases = profile.releases
+    .map(
+      (release) =>
+        `<tr><td class="mono">t${escapeHtml(release.turn)}</td><td>${escapeHtml(
+          release.via,
+        )}</td><td class="mono">${escapeHtml(release.premiseId)}${
+          release.proofPremise ? '' : ' *'
+        }</td><td>${escapeHtml(release.surface || release.factText)}</td></tr>`,
+    )
+    .join('');
+  const rules = profile.rules
+    .map(
+      (rule) =>
+        `<li><span class="proofdag__pid">${escapeHtml(rule.id || '?')}</span>: ${escapeHtml(
+          rule.gloss || `${rule.if.join(' + ')} -> ${rule.then.join(', ')}`,
+        )}</li>`,
+    )
+    .join('');
+  return `<section class="proofdag" id="authored-proof-dag">
+  <div class="proofdag__top">
+    <div>
+      <div class="proofdag__k">authored proof DAG</div>
+      <h2>${escapeHtml(profile.title)}</h2>
+      <p class="proofdag__summary">${escapeHtml(profile.summary)}</p>
+      <p class="proofdag__summary"><b>Question:</b> ${escapeHtml(profile.question || 'n/a')}<br><b>Secret:</b> ${escapeHtml(
+        profile.secret.surface || profile.secret.factText || 'n/a',
+      )}${profile.mirror ? `<br><b>Mirror:</b> ${escapeHtml(profile.mirror.surface || profile.mirror.factText)}` : ''}</p>
+    </div>
+  </div>
+  <div class="proofdag__metrics">
+    ${metric('paths', profile.metrics.pathCount)}
+    ${metric('premises', `${profile.metrics.scheduledProofPremiseCount}/${profile.metrics.uniqueProofPremiseCount} scheduled`)}
+    ${metric('rules', profile.metrics.ruleCount)}
+    ${metric('rule apps', profile.metrics.ruleApplicationCount)}
+    ${metric('earliest complete', profile.metrics.earliestCompleteTurn == null ? 'n/a' : `t${profile.metrics.earliestCompleteTurn}`)}
+    ${metric('t_min', profile.metrics.tMin)}
+    ${metric('cap', profile.metrics.turnCap)}
+  </div>
+  <div class="proofdag__grid">
+    <div class="proofdag__paths">${paths}</div>
+    <aside class="proofdag__side">
+      <h3>release schedule</h3>
+      <table><thead><tr><th>turn</th><th>via</th><th>premise</th><th>surface</th></tr></thead><tbody>${releases}</tbody></table>
+      <p class="mono" style="color:var(--ink-3);margin:6px 0 0">* mirror or color premise, not required by an authored proof path</p>
+      <details><summary>public rules</summary><ul class="proofdag__rules">${rules}</ul></details>
+    </aside>
+  </div>
+</section>`;
+}
+
+function renderDerivationLearnerDagHtml(learnerDag, learnerDagAssessment) {
+  if (!learnerDag?.final || learnerDagAssessment?.status !== 'available') {
+    return `<section class="learnerdag"><div class="learnerdag__k">learner DAG</div><h2>No learner proof sketch</h2><p class="learnerdag__summary">This artifact does not expose enough learner board data to reconstruct a learner-side proof graph.</p></section>`;
+  }
+  const final = learnerDag.final;
+  const metric = (label, value) =>
+    `<span class="learnerdag__metric"><b>${escapeHtml(label)}</b> ${escapeHtml(value ?? 'n/a')}</span>`;
+  const nodes = final.nodes
+    .filter((node) => node.kind === 'fact' || node.kind === 'hypothesis')
+    .slice(0, 18)
+    .map((node) => {
+      if (node.kind === 'hypothesis') {
+        return `<li><span class="learnerdag__fact">${escapeHtml(node.text)}</span><br><span class="learnerdag__status">${escapeHtml(
+          node.label || 'hypothesis',
+        )}</span></li>`;
+      }
+      return `<li><span class="learnerdag__fact">${escapeHtml(
+        node.surface || node.factText,
+      )}</span><br><span class="learnerdag__status">${escapeHtml(
+        [...(node.statuses || []), node.label].filter(Boolean).join(' · '),
+      )}</span></li>`;
+    })
+    .join('');
+  const pathRows = (learnerDagAssessment.pathCoverage || [])
+    .map(
+      (row) =>
+        `<tr><td>${escapeHtml(row.id)}</td><td class="mono">${Math.round(
+          row.coverage * 100,
+        )}%</td><td>${escapeHtml(row.missingPremiseIds.length ? row.missingPremiseIds.join(', ') : 'none')}</td></tr>`,
+    )
+    .join('');
+  const missingRows = (learnerDagAssessment.missingPremises || [])
+    .map(
+      (row) =>
+        `<tr><td>${escapeHtml(row.premiseId)}</td><td>${escapeHtml(row.bucket)}</td><td class="mono">${escapeHtml(
+          row.releaseTurn == null ? 'n/a' : `t${row.releaseTurn}`,
+        )}</td></tr>`,
+    )
+    .join('');
+  return `<section class="learnerdag" id="learner-proof-dag">
+  <div class="learnerdag__k">learner DAG</div>
+  <h2>Learner proof sketch</h2>
+  <p class="learnerdag__summary">Reconstructed from learner-visible board actions and voiced derivations. Source: <span class="mono">${escapeHtml(
+    learnerDagAssessment.source,
+  )}</span>. This is assessed after the run; it does not feed the learner the authored proof paths.</p>
+  <div class="learnerdag__metrics">
+    ${metric('best path', `${learnerDagAssessment.bestPathId || 'n/a'} · ${Math.round(learnerDagAssessment.bestPathCoverage * 100)}%`)}
+    ${metric('complete paths', learnerDagAssessment.completePathIds?.length || 0)}
+    ${metric('secret entailed', learnerDagAssessment.finalSecretEntailed)}
+    ${metric('asserted secret', learnerDagAssessment.assertedSecret)}
+    ${metric('asserted mirror', learnerDagAssessment.assertedMirror)}
+    ${metric('bottleneck', learnerDagAssessment.bottleneck || 'n/a')}
+    ${metric('turns', learnerDag.turns?.length || 0)}
+  </div>
+  <div class="learnerdag__grid">
+    <div class="learnerdag__panel">
+      <h3>final learner graph nodes</h3>
+      <ul class="learnerdag__nodes">${nodes || '<li class="notice-missing">No nodes reconstructed.</li>'}</ul>
+    </div>
+    <aside class="learnerdag__panel">
+      <h3>authored-path coverage</h3>
+      <table><thead><tr><th>path</th><th>covered</th><th>missing</th></tr></thead><tbody>${pathRows}</tbody></table>
+      ${
+        missingRows
+          ? `<h3 style="margin-top:12px">missing-premise buckets</h3><table><thead><tr><th>premise</th><th>bucket</th><th>release</th></tr></thead><tbody>${missingRows}</tbody></table>`
+          : ''
+      }
+      <p class="mono" style="color:var(--ink-3);margin:8px 0 0">first complete path: ${
+        learnerDagAssessment.firstCompletePathTurn ?? 'n/a'
+      }; first secret entailed: ${learnerDagAssessment.firstSecretEntailedTurn ?? 'n/a'}</p>
+    </aside>
+  </div>
+	</section>`;
+}
+
+function renderVocabularyTokens(tokens, modifier = '') {
+  return tokens
+    .map(
+      (token) =>
+        `<span class="vocab__token${modifier ? ` vocab__token--${modifier}` : ''}">${escapeHtml(token)}</span>`,
+    )
+    .join('');
+}
+
+function renderDerivationConceptChip(id, conceptsById) {
+  const concept = conceptsById.get(id);
+  const label = concept?.label || id;
+  return concept
+    ? `<a class="vocab__token" href="#concept-${escapeAttr(concept.id)}">${escapeHtml(label)}</a>`
+    : `<span class="vocab__token">${escapeHtml(label)}</span>`;
+}
+
+function renderDerivationConceptEdge(link, conceptsById) {
+  const target = conceptsById.get(link.target);
+  const targetLabel = target?.label || link.target;
+  const targetHref = target ? ` href="#concept-${escapeAttr(target.id)}"` : '';
+  return `<a class="concept__edge"${targetHref}><span>${escapeHtml(link.type)}:</span> <b>${escapeHtml(targetLabel)}</b></a>`;
+}
+
+function renderDerivationConceptCard(
+  concept,
+  conceptsById,
+  ontologyHref,
+  { highlight = false, idPrefix = 'concept-' } = {},
+) {
+  const links = concept.links.map((link) => renderDerivationConceptEdge(link, conceptsById)).join('');
+  return `<article class="concept${highlight ? ' concept--novel' : ''}" id="${escapeAttr(idPrefix + concept.id)}">
+    <div class="concept__top"><span class="concept__label">${escapeHtml(concept.label)}</span><span class="concept__layer">${escapeHtml(concept.layer)}</span></div>
+    <p class="concept__definition"><span class="concept__deflabel">definition</span>${escapeHtml(concept.definition)}</p>
+    <div class="concept__meta">
+      <span class="concept__metachip">category: ${escapeHtml(concept.category)}</span>
+      <span class="concept__metachip">app term: <code>${escapeHtml(concept.id)}</code></span>
+    </div>
+    <div class="concept__ontology">
+      <span class="concept__ontologylabel">ontology affinity</span>
+      <a href="${escapeAttr(ontologyHref)}" title="Open the ontology atlas with the derivation concept-world module loaded"><code>${escapeHtml(concept.ontology)}</code></a>
+    </div>
+    <div class="concept__links"><span class="concept__linkslabel">typed links</span>${links}</div>
+  </article>`;
+}
+
+function renderDerivationConceptSchemaHtml(schema) {
+  const conceptsById = new Map(schema.concepts.map((concept) => [concept.id, concept]));
+  const ontologyHref = `/ontology?view=system&modules=${encodeURIComponent(schema.ontologyModules.join(','))}&source=1`;
+  const ontologyModules = schema.ontologyModules
+    .map((module) => `<span class="vocab__token">${escapeHtml(module)}</span>`)
+    .join('');
+  const novelConcepts = (schema.novelConceptIds || [])
+    .map((id) => conceptsById.get(id))
+    .filter(Boolean)
+    .map((concept) =>
+      renderDerivationConceptCard(concept, conceptsById, ontologyHref, {
+        highlight: true,
+        idPrefix: 'concept-featured-',
+      }),
+    )
+    .join('');
+  const acts = schema.acts
+    .map(
+      (act) => `<section class="vocabschema__act">
+    <h4>${escapeHtml(act.title)}</h4>
+    <p>${escapeHtml(act.note)}</p>
+    <div class="vocab__tokens">${act.concepts.map((id) => renderDerivationConceptChip(id, conceptsById)).join('')}</div>
+  </section>`,
+    )
+    .join('');
+  const concepts = schema.concepts
+    .map((concept) => renderDerivationConceptCard(concept, conceptsById, ontologyHref))
+    .join('');
+  const edges = schema.links
+    .map(
+      (link) =>
+        `<div class="vocabschema__edge"><b>${escapeHtml(link.sourceLabel)}</b> ${escapeHtml(link.type)} <b>${escapeHtml(link.targetLabel)}</b></div>`,
+    )
+    .join('');
+  return `<section class="vocabschema" id="conceptual-world">
+    <div class="vocabschema__head">
+      <div>
+        <h3>Conceptual world</h3>
+        <p>The derivation run is a single semantic world: drama stages the problem, rhetoric shapes address, logic licenses claims, pedagogy manages ownership, and theory names the authority dynamics.</p>
+      </div>
+      <a class="vocabschema__link" href="${escapeAttr(ontologyHref)}">open ontology module</a>
+    </div>
+    <div class="vocabschema__ontology">
+      <div>
+        <h4>Ontology affinity</h4>
+        <p>Concept cards below name the app-level term, its ontology individual, and the loaded ontology modules that make the concept-world available.</p>
+      </div>
+      <div class="vocab__tokens">${ontologyModules}</div>
+    </div>
+    <div class="vocabschema__novel">${novelConcepts}</div>
+    <div class="vocabschema__acts">${acts}</div>
+    <div class="vocabschema__grid">${concepts}</div>
+    <div class="vocabschema__edges"><h4>Typed semantic links</h4><div class="vocabschema__edgegrid">${edges}</div></div>
+  </section>`;
+}
+
+function renderDerivationControlledVocabularyHtml({ open = false } = {}) {
+  const schema = getDerivationConceptSchema();
+  const body = schema.vocabularyGroups
+    .map(
+      (group) => `<section class="vocab__group">
+    <h3>${escapeHtml(group.title)}</h3>
+    <p>${escapeHtml(group.note)}</p>
+    <div class="vocab__tokens">${renderVocabularyTokens(group.tokens, group.modifier || '')}</div>
+  </section>`,
+    )
+    .join('');
+  const layerBody = schema.layers
+    .map(
+      (layer) => `<section class="vocab__layer">
+    <h3>${escapeHtml(layer.title)}</h3>
+    <p>${escapeHtml(layer.note)}</p>
+    <div class="vocab__tokens">${renderVocabularyTokens(layer.tokens)}</div>
+  </section>`,
+    )
+    .join('');
+  return `<details class="vocab" id="controlled-vocabulary"${open ? ' open' : ''}>
+  <summary>Controlled vocabulary <span class="vocab__hint">drama, rhetoric, logic, pedagogy, theory, novel</span></summary>
+  <p class="vocab__intro">The app keeps scenario content separate from the stable learner contract. The conceptual world gives definitions, typed semantic links, and ontology affinity for the terms the run uses.</p>
+  ${renderDerivationConceptSchemaHtml(schema)}
+  <div class="vocab__layers">${layerBody}</div>
+  <div class="vocab__grid">${body}</div>
+</details>`;
 }
 
 function renderDerivationIndexHtml(runs, query = {}) {
@@ -4528,6 +4920,7 @@ ${railHtml({
 <h1>Proof runs — did the learner reach the hidden answer?</h1>
 ${reportTypeBand('/derivation')}
 <p class="lede">Each row is one tutoring run. The tutor has to lead the learner to a hidden conclusion purely by inference, and a fixed rule-checker — not an AI judge — decides the outcome: a run is <strong>grounded</strong> when the learner reaches the hidden conclusion and its proof closes; otherwise it ends in an <strong>impasse</strong> or the learner <strong>disengages</strong>. Runs are grouped by experimental condition (the <span class="mono">--group</span> flag); artifacts live under <span class="mono">exports/dramatic-derivation/loop/</span>.</p>
+${renderDerivationControlledVocabularyHtml()}
 ${renderDerivationLivePanel(listDerivationLiveRuns())}
 ${scoreboard}
 ${toolbar}
@@ -4540,7 +4933,7 @@ ${DERIVATION_INDEX_CLIENT}
 </body></html>`;
 }
 
-function renderDerivationRunHtml({ label, diagnosis, result, world, commentary }) {
+function renderDerivationRunHtml({ label, diagnosis, result, world, commentary, assessment }) {
   // Realized staging: director-declared movements when there are any, the
   // author's sketch otherwise — same segments feed the headers AND the curve.
   const segments = derivationStagingSegments(result, world);
@@ -4678,8 +5071,11 @@ ${railHtml({
 <p class="mono" style="margin-top:14px"><a href="/derivation">← all runs</a></p>
 <h1>${escapeHtml(world?.title || result.worldId || label)}</h1>
 <p class="lede mono">${escapeHtml(label)} · script ${escapeHtml(diagnosis.scriptPath || '?')}${diagnosis.note ? ` · ${escapeHtml(diagnosis.note)}` : ''}</p>
-<div class="chips">${chips}</div>
-${renderDerivationEvidenceGraph({ label, diagnosis })}
+	<div class="chips">${chips}</div>
+	${renderDerivationEvidenceGraph({ label, diagnosis })}
+	${renderDerivationControlledVocabularyHtml({ open: true })}
+	${renderDerivationProofDagHtml(assessment?.dagProfile || null)}
+${renderDerivationLearnerDagHtml(assessment?.learnerDag || null, assessment?.learnerDagAssessment || null)}
 ${transcriptTtsToolbarHtml({ fullLabel: 'Play full transcript', includeLabel: 'include tutor superego' })}
 ${
   commentary
@@ -7823,7 +8219,17 @@ const ALL_MODULES = ${JSON.stringify(ALL_MODULES)};
 const DEFAULT_MODULES = ${JSON.stringify(DEFAULT_MODULES)};
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const state = { view:'system', modules:new Set(DEFAULT_MODULES), source:false };
+const urlParams = new URLSearchParams(location.search);
+const initialView = ['system','tutor','learner'].includes(urlParams.get('view')) ? urlParams.get('view') : 'system';
+const initialModules = (urlParams.get('modules') || '')
+  .split(',')
+  .map(function(m){ return m.trim(); })
+  .filter(function(m){ return ALL_MODULES.includes(m); });
+const state = {
+  view: initialView,
+  modules: new Set(initialModules.length ? initialModules : DEFAULT_MODULES),
+  source: urlParams.get('source') === '1'
+};
 
 function chips(list, cls){ return '<div class="chips">'+(list&&list.length?list.map(function(x){ return '<span class="chip '+(cls||'')+'">'+esc(x)+'</span>'; }).join(''):'<span class="muted">none</span>')+'</div>'; }
 // Role-view chips double as lens jumps: tutor_* → tutor lens, learner_* → learner lens.
@@ -7989,6 +8395,8 @@ $('themeToggle').addEventListener('click', function(){
 });
 try { if (localStorage.getItem('poetics-theme')==='dark') document.documentElement.setAttribute('data-theme','dark'); } catch (_e) {}
 renderModbar();
+[].forEach.call($('lenses').children, function(x){ x.classList.toggle('active', x.getAttribute('data-view')===state.view); });
+$('srcToggle').checked = state.source;
 load();
 </script>
 </body>
@@ -9904,6 +10312,7 @@ ${railHtml({
     <button class="goal-card" type="button" data-kind="generate"><span class="goal-card__t">Generate a new script</span><span class="goal-card__d">Create a fresh pedagogical drama transcript. Mock stays free by default.</span><span class="goal-card__c">free default</span></button>
     <button class="goal-card" type="button" data-kind="replay"><span class="goal-card__t">Replay a script</span><span class="goal-card__d">Run a bounded counterfactual rewrite against an existing transcript.</span><span class="goal-card__c">mock / quota</span></button>
     <button class="goal-card" type="button" data-kind="derivation"><span class="goal-card__t">Run a proof-DAG derivation</span><span class="goal-card__d">Enact a tutor script against a world and stream to live proof runs.</span><span class="goal-card__c">mock default</span></button>
+    <button class="goal-card" type="button" data-kind="derivation-assessment"><span class="goal-card__t">Assess proof-DAG runs</span><span class="goal-card__d">Externalize proof gates, readable DAGs, prompts, and optional judge rubrics.</span><span class="goal-card__c">free default</span></button>
     <button class="goal-card" type="button" data-kind="online-score"><span class="goal-card__t">Score existing artifacts</span><span class="goal-card__d">Backfill scorer output for a batch root or run, with dry-run first.</span><span class="goal-card__c">dry-run default</span></button>
     <button class="goal-card" type="button" data-kind="pedagogical-drama"><span class="goal-card__t">Run curriculum drama</span><span class="goal-card__d">Enact compiled curriculum drama specs through the batch generator.</span><span class="goal-card__c">mock default</span></button>
   </div>
@@ -10023,6 +10432,25 @@ const FORMS = {
       { name:'superego', label:'superego (tutor self-watch)' },
       { name:'stallWatch', label:'stall-watch (needs superego)' },
       { name:'real', label:'real — METERED $' },
+    ],
+  },
+  'derivation-assessment': {
+    blurb: 'Assess completed proof-DAG runs without changing their verdicts. Default judge-cli=none writes the mechanical proof gate, human-readable DAG profile, prompts, scores.json, and report.md without model calls.',
+    fields: [
+      { name:'labels', type:'text', label:'label(s) required', placeholder:'lantern-e2-real-r1  (comma-separated for many)' },
+      { name:'runDir', type:'text', label:'run dir', placeholder:'exports/dramatic-derivation/loop' },
+      { name:'outDir', type:'text', label:'out dir', placeholder:'exports/dramatic-derivation/derivation-assessments/<label>' },
+      { name:'rubrics', type:'text', label:'rubrics', placeholder:'tutor_v22,tutor_holistic,learner_v22,dialogue_quality,poetics' },
+      { name:'judgeCli', type:'select', label:'external judge', options:['none','codex','claude','gemini'], def:'none', help:'none = free; CLI judges are advisory and do not change the proof gate' },
+      { name:'model', type:'text', label:'model (optional)', placeholder:'CLI model alias if judge is not none' },
+      { name:'judgeEffort', type:'select', label:'judge effort', options:['','low','medium','high','xhigh','max'], def:'' },
+      { name:'scoreConcurrency', type:'number', label:'score concurrency', placeholder:'1' },
+      { name:'maxTranscriptChars', type:'number', label:'max transcript chars', placeholder:'60000' },
+      { name:'timeoutMs', type:'number', label:'timeout ms', placeholder:'180000' },
+    ],
+    checks: [
+      { name:'force', label:'force overwrite' },
+      { name:'resumeExisting', label:'resume existing raw judgments' },
     ],
   },
   'adversarial-score': {
@@ -12458,6 +12886,7 @@ export {
   parseTranscriptPreview,
   renderBrowserHtml,
   renderDashboardHtml,
+  renderDerivationControlledVocabularyHtml,
   renderDerivationLogicVisualizer,
   renderOntologyHtml,
   renderRubricHtml,

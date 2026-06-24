@@ -230,12 +230,13 @@ test('describeKinds lists all whitelisted kinds', () => {
   assert.deepEqual(kinds.sort(), [
     'adversarial-score',
     'derivation',
+    'derivation-assessment',
     'generate',
     'online-score',
     'pedagogical-drama',
     'replay',
   ]);
-  assert.equal(Object.keys(JOB_KINDS).length, 6);
+  assert.equal(Object.keys(JOB_KINDS).length, 7);
 });
 
 // ── planJob: derivation (proof-DAG drama via run-derivation-loop.js) ───────────
@@ -271,6 +272,49 @@ test('derivation: stall-watch requires superego; unknown world/script rejected',
   assert.throws(
     () => planJob({ kind: 'derivation', params: { world: 'world-000-smoke.yaml', script: 'nope.md' } }),
     /tutor script not found/u,
+  );
+});
+
+// ── planJob: derivation-assessment (external assessment of proof runs) ────────
+
+test('derivation-assessment: judge none is free and writes assessment artifacts', () => {
+  const plan = planJob({ kind: 'derivation-assessment', params: { labels: 'lantern-e2-real-r1', force: true } });
+  assert.equal(plan.costClass, COST_CLASSES.FREE);
+  assert.match(plan.script, /score-derivation-transcript-rubric-suite\.js$/u);
+  assert.deepEqual(plan.argv.slice(0, 8), [
+    '--labels',
+    'lantern-e2-real-r1',
+    '--run-dir',
+    'exports/dramatic-derivation/loop',
+    '--out-dir',
+    'exports/dramatic-derivation/derivation-assessments/lantern-e2-real-r1',
+    '--judge-cli',
+    'none',
+  ]);
+  assert.ok(plan.argv.includes('--force'));
+  assert.deepEqual(plan.links[0], { label: 'open assessed run', href: '/derivation/lantern-e2-real-r1' });
+});
+
+test('derivation-assessment: external CLI judge is quota and labels are validated', () => {
+  const plan = planJob({
+    kind: 'derivation-assessment',
+    params: {
+      labels: 'a,b',
+      judgeCli: 'codex',
+      rubrics: 'dialogue_quality,poetics',
+      scoreConcurrency: 2,
+      resumeExisting: true,
+    },
+  });
+  assert.equal(plan.costClass, COST_CLASSES.QUOTA);
+  assert.ok(plan.argv.includes('--judge-cli'));
+  assert.ok(plan.argv.includes('codex'));
+  assert.ok(plan.argv.includes('--rubrics'));
+  assert.ok(plan.argv.includes('dialogue_quality,poetics'));
+  assert.ok(plan.argv.includes('--resume-existing'));
+  assert.throws(
+    () => planJob({ kind: 'derivation-assessment', params: { labels: '../bad' } }),
+    /invalid derivation label/u,
   );
 });
 

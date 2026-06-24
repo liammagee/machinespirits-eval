@@ -101,13 +101,18 @@ test('run launcher parameter names resolve to stable components', () => {
 
 test('run launcher parameter names resolve to stable functional components', () => {
   assert.deepEqual(functionalComponentsForRunParam('world'), ['proof_dag']);
+  assert.deepEqual(functionalComponentsForRunParam('labels'), ['proof_dag']);
+  assert.deepEqual(functionalComponentsForRunParam('rubrics'), ['audience_critic']);
+  assert.deepEqual(functionalComponentsForRunParam('judgeCli'), ['audience_critic']);
   assert.deepEqual(functionalComponentsForRunParam('superego'), ['superego_critic']);
   assert.deepEqual(functionalComponentsForRunParam('generator'), ['cast_layer']);
   assert.deepEqual(functionalComponentsForRunParam('critic'), ['audience_critic']);
   assert.deepEqual(functionalComponentsForRunParam('unknown_future_toggle'), ['run_orchestration']);
 
   assert.equal(RUN_PARAM_FUNCTIONAL_COMPONENT_BY_NAME.world, 'proof_dag');
+  assert.equal(RUN_PARAM_FUNCTIONAL_COMPONENT_BY_NAME.labels, 'proof_dag');
   assert.equal(RUN_PARAM_FUNCTIONAL_COMPONENT_BY_NAME.critic, 'audience_critic');
+  assert.equal(RUN_PARAM_FUNCTIONAL_COMPONENT_BY_NAME.judgeCli, 'audience_critic');
 
   for (const [name, component] of Object.entries(RUN_PARAM_FUNCTIONAL_COMPONENT_BY_NAME)) {
     assert.ok(FUNCTIONAL_COMPONENT_IDS.includes(component), `${name} maps to an unknown functional component`);
