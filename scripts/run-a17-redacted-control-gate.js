@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * A17 D5 redacted-control gate runner.
+ * A17 redacted-control gate runner.
  *
  * Safe by default:
  *   - --dry-run plans only; no writes, no LLM calls.
@@ -22,6 +22,7 @@ const DEFAULTS = {
   root: path.join(ROOT, 'exports', 'a17-one-side-replay-replication', 'd5-redacted-control-run4'),
   spec: path.join(ROOT, 'config', 'poetics-calibration', 'oedipus-pilot-v2.yaml'),
   envFile: '/Users/lmagee/Dev/machinespirits/machinespirits-eval/.env',
+  scenario: 'D_OED5',
   variationKey: 'a17-d5-redacted-control-run4',
   generator: 'api',
   apiModel: 'sonnet',
@@ -43,6 +44,7 @@ Options:
   --root DIR             Output root. Default: ${path.relative(ROOT, DEFAULTS.root)}
   --spec FILE            Scenario spec. Default: ${path.relative(ROOT, DEFAULTS.spec)}
   --env-file FILE        dotenv file passed to child commands.
+  --scenario ID          Scenario id. Default: ${DEFAULTS.scenario}
   --variation-key KEY    Director variation key. Default: ${DEFAULTS.variationKey}
   --api-model MODEL      Generator API model alias. Default: ${DEFAULTS.apiModel}
   --panel CSV            QA panel. Default: ${DEFAULTS.panel}
@@ -66,6 +68,7 @@ function parseArgs(argv) {
     else if (token === '--root') args.root = path.resolve(argv[++i]);
     else if (token === '--spec') args.spec = path.resolve(argv[++i]);
     else if (token === '--env-file') args.envFile = path.resolve(argv[++i]);
+    else if (token === '--scenario') args.scenario = argv[++i];
     else if (token === '--variation-key') args.variationKey = argv[++i];
     else if (token === '--api-model') args.apiModel = argv[++i];
     else if (token === '--panel') args.panel = argv[++i];
@@ -135,7 +138,7 @@ function generatorArgs(args) {
     '--spec',
     args.spec,
     '--only',
-    'D_OED5',
+    args.scenario,
     '--paired-adaptation-arms',
     'none',
     '--max-turns',
@@ -179,13 +182,18 @@ function qaArgs(args) {
 
 function verifyGeneratedControl(args) {
   const keyPath = path.join(args.root, 'key-none.yaml');
-  const tracePath = path.join(args.root, 'deliberation', 'none', 'T01.json');
-  const transcriptPath = path.join(args.root, 'sample', 'none', 'T01.txt');
   const directorPath = path.join(args.root, 'director-none.json');
-  for (const file of [keyPath, tracePath, transcriptPath, directorPath]) {
+  for (const file of [keyPath, directorPath]) {
     if (!fs.existsSync(file)) throw new Error(`expected artifact missing: ${file}`);
   }
   const key = yaml.parse(fs.readFileSync(keyPath, 'utf8')) || {};
+  const tid = Object.keys(key.items || {})[0];
+  if (!tid) throw new Error(`key-none.yaml contains no generated item: ${keyPath}`);
+  const tracePath = path.join(args.root, 'deliberation', 'none', `${tid}.json`);
+  const transcriptPath = path.join(args.root, 'sample', 'none', `${tid}.txt`);
+  for (const file of [tracePath, transcriptPath]) {
+    if (!fs.existsSync(file)) throw new Error(`expected artifact missing: ${file}`);
+  }
   const trace = JSON.parse(fs.readFileSync(tracePath, 'utf8'));
   if (key.tutor_adaptation_policy !== 'withhold_secret') {
     throw new Error(`key-none.yaml did not record withhold_secret: ${key.tutor_adaptation_policy}`);
@@ -193,7 +201,7 @@ function verifyGeneratedControl(args) {
   if (trace.run?.tutor_adaptation_policy !== 'withhold_secret') {
     throw new Error(`trace did not record withhold_secret: ${trace.run?.tutor_adaptation_policy}`);
   }
-  const keyItem = key.items?.T01 || {};
+  const keyItem = key.items?.[tid] || {};
   const blockingWarningCount = Number(key.quality_blocking_warning_count || 0);
   const qualityStatus = keyItem.quality_status || trace.quality_status || 'unknown';
   const warnings = Array.isArray(keyItem.quality_warnings)
@@ -234,7 +242,7 @@ function main() {
   const args = parseArgs(process.argv.slice(2));
   ensurePreconditions(args);
   console.log(
-    `[a17] ${args.dryRun ? 'dry-run' : args.mock ? 'mock' : 'PAID'} redacted D5 control gate -> ${path.relative(
+    `[a17] ${args.dryRun ? 'dry-run' : args.mock ? 'mock' : 'PAID'} redacted ${args.scenario} control gate -> ${path.relative(
       ROOT,
       args.root,
     )}`,

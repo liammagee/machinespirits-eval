@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Generate D5 paired branches from an already-admissible redacted `none` prefix.
+ * Generate paired branches from an already-admissible redacted `none` prefix.
  *
  * Safe by default:
  *   - --dry-run plans only; no writes, no LLM calls.
@@ -23,6 +23,7 @@ const DEFAULTS = {
   root: null,
   spec: path.join(ROOT, 'config', 'poetics-calibration', 'oedipus-pilot-v2.yaml'),
   envFile: '/Users/lmagee/Dev/machinespirits/machinespirits-eval/.env',
+  scenario: 'D_OED5',
   generator: 'api',
   apiModel: 'sonnet',
   maxTurns: 6,
@@ -41,10 +42,11 @@ Options:
   --mock                 Run generator + QA with mock LLM/scorer paths.
   --approve-paid         Required for real metered branch generation + QA.
   --force                Allow overwriting existing branch outputs.
-  --source-root DIR      Existing redacted D5 none root. Default: ${path.relative(ROOT, DEFAULTS.sourceRoot)}
+  --source-root DIR      Existing redacted none root. Default: ${path.relative(ROOT, DEFAULTS.sourceRoot)}
   --root DIR             Output root. Default: source root.
   --spec FILE            Scenario spec. Default: ${path.relative(ROOT, DEFAULTS.spec)}
   --env-file FILE        dotenv file passed to child commands.
+  --scenario ID          Scenario id. Default: ${DEFAULTS.scenario}
   --arms CSV             Branch arms to generate. Default: ${DEFAULTS.arms.join(',')}
   --api-model MODEL      Generator API model alias. Default: ${DEFAULTS.apiModel}
   --panel CSV            QA panel. Default: ${DEFAULTS.panel}
@@ -69,6 +71,7 @@ function parseArgs(argv) {
     else if (token === '--root') args.root = path.resolve(argv[++i]);
     else if (token === '--spec') args.spec = path.resolve(argv[++i]);
     else if (token === '--env-file') args.envFile = path.resolve(argv[++i]);
+    else if (token === '--scenario') args.scenario = argv[++i];
     else if (token === '--arms') {
       args.arms = String(argv[++i] || '')
         .split(',')
@@ -133,10 +136,17 @@ function readJson(file) {
 }
 
 function sourcePaths(args) {
+  const key = path.join(args.sourceRoot, 'key-none.yaml');
+  let tid = 'T01';
+  if (fs.existsSync(key)) {
+    const parsed = readYaml(key);
+    tid = Object.keys(parsed.items || {})[0] || tid;
+  }
   return {
-    key: path.join(args.sourceRoot, 'key-none.yaml'),
-    trace: path.join(args.sourceRoot, 'deliberation', 'none', 'T01.json'),
-    transcript: path.join(args.sourceRoot, 'sample', 'none', 'T01.txt'),
+    key,
+    tid,
+    trace: path.join(args.sourceRoot, 'deliberation', 'none', `${tid}.json`),
+    transcript: path.join(args.sourceRoot, 'sample', 'none', `${tid}.txt`),
     director: path.join(args.sourceRoot, 'director-none.json'),
   };
 }
@@ -144,7 +154,7 @@ function sourcePaths(args) {
 function ensurePreconditions(args) {
   if (!fs.existsSync(args.spec)) throw new Error(`spec not found: ${args.spec}`);
   const source = sourcePaths(args);
-  for (const file of Object.values(source)) {
+  for (const file of [source.key, source.trace, source.transcript, source.director]) {
     if (!fs.existsSync(file)) throw new Error(`source artifact missing: ${file}`);
   }
   const sourceKey = readYaml(source.key);
@@ -158,7 +168,13 @@ function ensurePreconditions(args) {
   if (!args.force) {
     for (const arm of args.arms) {
       const transcript = path.join(args.root, 'sample', arm, 'T01.txt');
-      if (fs.existsSync(transcript)) throw new Error(`branch output already exists: ${transcript} (pass --force)`);
+      const tid = source.tid || 'T01';
+      const branchTranscript = path.join(args.root, 'sample', arm, `${tid}.txt`);
+      if (fs.existsSync(branchTranscript) || fs.existsSync(transcript)) {
+        throw new Error(
+          `branch output already exists: ${fs.existsSync(branchTranscript) ? branchTranscript : transcript} (pass --force)`,
+        );
+      }
     }
   }
   const paid = !args.dryRun && !args.mock;
@@ -183,7 +199,7 @@ function generatorArgs(args) {
     '--spec',
     args.spec,
     '--only',
-    'D_OED5',
+    args.scenario,
     '--paired-adaptation-arms',
     args.arms.join(','),
     '--paired-prefix-trace',
@@ -234,15 +250,20 @@ function verifyGeneratedBranches(args) {
   const sourceHash = sourceTrace.run?.paired_continuation?.shared_prefix_hash;
   for (const arm of args.arms) {
     const keyPath = path.join(args.root, `key-${arm}.yaml`);
-    const tracePath = path.join(args.root, 'deliberation', arm, 'T01.json');
-    const transcriptPath = path.join(args.root, 'sample', arm, 'T01.txt');
     const directorPath = path.join(args.root, `director-${arm}.json`);
-    for (const file of [keyPath, tracePath, transcriptPath, directorPath]) {
+    for (const file of [keyPath, directorPath]) {
       if (!fs.existsSync(file)) throw new Error(`expected branch artifact missing: ${file}`);
     }
     const key = readYaml(keyPath);
+    const tid = Object.keys(key.items || {})[0];
+    if (!tid) throw new Error(`branch ${arm} key contains no generated item: ${keyPath}`);
+    const tracePath = path.join(args.root, 'deliberation', arm, `${tid}.json`);
+    const transcriptPath = path.join(args.root, 'sample', arm, `${tid}.txt`);
+    for (const file of [tracePath, transcriptPath]) {
+      if (!fs.existsSync(file)) throw new Error(`expected branch artifact missing: ${file}`);
+    }
     const trace = readJson(tracePath);
-    const item = key.items?.T01 || {};
+    const item = key.items?.[tid] || {};
     const blockingWarningCount = Number(key.quality_blocking_warning_count || 0);
     if (blockingWarningCount > 0 || trace.quality_status === 'review_before_scoring') {
       throw new Error(`branch ${arm} is quality-gated before scoring`);
@@ -286,7 +307,7 @@ function main() {
   const args = parseArgs(process.argv.slice(2));
   ensurePreconditions(args);
   console.log(
-    `[a17] ${args.dryRun ? 'dry-run' : args.mock ? 'mock' : 'PAID'} matched D5 branches ${args.arms.join(',')} ` +
+    `[a17] ${args.dryRun ? 'dry-run' : args.mock ? 'mock' : 'PAID'} matched ${args.scenario} branches ${args.arms.join(',')} ` +
       `from ${path.relative(ROOT, args.sourceRoot)} -> ${path.relative(ROOT, args.root)}`,
   );
   runNode('scripts/generate-pedagogical-dramas.js', generatorArgs(args), args);

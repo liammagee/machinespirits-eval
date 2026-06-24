@@ -3728,6 +3728,16 @@ function withTutorAdaptationPolicy(plan, policy = 'none') {
     return plan ? { ...plan, tutor_adaptation_policy: 'none' } : plan;
   }
   const contracts = [];
+  if (policy === 'socratic_discovery') {
+    contracts.push(
+      'Oedipus socratic branch: privately use the hidden conclusion S and its premise ledger to steer the learner toward the premises that carry S. Surface those premises as concrete questions, evidence requests, or document checks, but do not state S yourself. Do not remain at generic troubleshooting or procedural advice; by the end, the learner should have enough public premises to infer S.',
+    );
+  }
+  if (policy === 'reveal_secret') {
+    contracts.push(
+      'Oedipus reveal branch: explicitly state or plainly paraphrase the hidden conclusion S in a tutor turn after the shared prefix. Name the concrete mechanism and why it resolves the discrepancy. Do not leave S as an exercise, procedural hint, or merely implied next check.',
+    );
+  }
   if (String(policy).includes('uptake')) {
     contracts.push(
       'If the runtime supplies a tutor-private learner reframe event, the tutor ego/superego loop must adapt to the changed learner frame. If no event is supplied, do not invent one.',
@@ -3753,6 +3763,9 @@ function withTutorAdaptationPolicy(plan, policy = 'none') {
     ]
       .filter(Boolean)
       .join(' ');
+  }
+  if (policy === 'socratic_discovery' || policy === 'reveal_secret') {
+    sideConstraints.tutor = combineText(sideConstraints.tutor, contracts.join(' '));
   }
   const policyPlan = String(policy).includes('peripeteia') ? withPeripeteiaPressureCue(plan) : plan;
   return {
@@ -4824,7 +4837,9 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
         let resumeTrace;
         if (args.pairedPrefixTrace) {
           progress.note(`${d._tid} (${d.id}) shared prefix loading`);
-          console.log(`\n  ${d._tid} (${d.id}) — loading shared prefix from ${path.relative(WORKTREE_ROOT, args.pairedPrefixTrace)} …`);
+          console.log(
+            `\n  ${d._tid} (${d.id}) — loading shared prefix from ${path.relative(WORKTREE_ROOT, args.pairedPrefixTrace)} …`,
+          );
           const sourceTrace = JSON.parse(fs.readFileSync(args.pairedPrefixTrace, 'utf8'));
           if (sourceTrace.drama_id && sourceTrace.drama_id !== d.id) {
             throw new Error(`prefix trace drama_id ${sourceTrace.drama_id} does not match selected drama ${d.id}`);
@@ -4884,7 +4899,11 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
         }
         const prefixTurns = externalTurns(resumeTrace);
         const prefixHash = sha256Short(renderTranscript(prefixTurns));
-        progress.step(`${d._tid} prefix ${args.pairedPrefixTrace ? 'loaded' : 'ready'} ${prefixHash}`, 1, `${d._tid}:prefix`);
+        progress.step(
+          `${d._tid} prefix ${args.pairedPrefixTrace ? 'loaded' : 'ready'} ${prefixHash}`,
+          1,
+          `${d._tid}:prefix`,
+        );
 
         for (const branch of branches) {
           const branchTutorAdaptationPolicy = effectiveBranchTutorAdaptationPolicy(branch, d);

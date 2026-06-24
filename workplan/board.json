@@ -1,10 +1,10 @@
 {
-  "generated": "2026-06-24T14:35:02.409Z",
+  "generated": "2026-06-24T16:19:46.693Z",
   "counts": {
     "total": 47,
     "byStatus": {
-      "done": 42,
-      "blocked": 2,
+      "done": 43,
+      "blocked": 1,
       "dropped": 2,
       "review": 1
     },
@@ -42,41 +42,6 @@
         "critical"
       ],
       "milestone": "human-pilot-prep"
-    },
-    {
-      "id": "a17-one-side-replay-replication-across-scenes",
-      "title": "A17. One-Side Replay Replication Across Scenes",
-      "status": "blocked",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "todo",
-      "created": "2026-06-22",
-      "updated": "2026-06-24",
-      "verification": "Replication across scenes run; results in exports/; the one-side-replay claim updated or closed in the paper.",
-      "branch": "codex/a17-replay-replication",
-      "blocked_by": "D5 is now cleared: run5 and run6 are complete admissible three-arm D5 roots. A17 is blocked on the next explicit paid pipeline step: generate an admissible D4 root, then run original graded scoring, learner-side replay, and replay scoring before any §7.9 paper update.",
-      "links": {
-        "notes": [
-          "TODO.md#A17",
-          "notes/poetics/2026-06-24-a17-replay-replication-qa-stop.md",
-          "notes/poetics/2026-06-24-a17-d5-run2-qa-stop.md",
-          "notes/poetics/2026-06-24-a17-d5-control-gate-run3-qa-stop.md",
-          "notes/poetics/2026-06-24-a17-d5-redacted-control-tooling.md",
-          "notes/poetics/2026-06-24-a17-d5-redacted-control-run4-gate.md",
-          "notes/poetics/2026-06-24-a17-d5-redacted-control-run5-rescue.md",
-          "notes/poetics/2026-06-24-a17-d5-matched-branches-and-redraw.md"
-        ],
-        "paper": "§7.9",
-        "exports": "exports/a17-one-side-replay-replication/"
-      },
-      "claim_status": "exploratory",
-      "tags": [
-        "replay",
-        "poetics",
-        "learner-variance"
-      ],
-      "milestone": "poetics-followups"
     },
     {
       "id": "implement-messages-style-internal-history-probe",
@@ -375,6 +340,41 @@
       "milestone": "human-pilot-prep",
       "branch": "codex/workplan-board-triage",
       "claim_status": "future"
+    },
+    {
+      "id": "a17-one-side-replay-replication-across-scenes",
+      "title": "A17. One-Side Replay Replication Across Scenes",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "todo",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "Replication across scenes run; results in exports/; the one-side-replay claim updated in the paper with matched-prefix D4/D5 closeout.",
+      "branch": "codex/a17-replay-replication",
+      "links": {
+        "notes": [
+          "TODO.md#A17",
+          "notes/poetics/2026-06-24-a17-replay-replication-qa-stop.md",
+          "notes/poetics/2026-06-24-a17-d5-run2-qa-stop.md",
+          "notes/poetics/2026-06-24-a17-d5-control-gate-run3-qa-stop.md",
+          "notes/poetics/2026-06-24-a17-d5-redacted-control-tooling.md",
+          "notes/poetics/2026-06-24-a17-d5-redacted-control-run4-gate.md",
+          "notes/poetics/2026-06-24-a17-d5-redacted-control-run5-rescue.md",
+          "notes/poetics/2026-06-24-a17-d5-matched-branches-and-redraw.md",
+          "notes/poetics/2026-06-24-a17-replay-replication-result.md"
+        ],
+        "paper": "§7.9",
+        "exports": "exports/a17-one-side-replay-replication/"
+      },
+      "claim_status": "exploratory",
+      "tags": [
+        "replay",
+        "poetics",
+        "learner-variance"
+      ],
+      "milestone": "poetics-followups"
     },
     {
       "id": "arcane-do-role-playing-language-agents-stay-in-character-at",

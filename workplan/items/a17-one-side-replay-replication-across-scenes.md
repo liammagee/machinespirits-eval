@@ -1,7 +1,7 @@
 ---
 id: a17-one-side-replay-replication-across-scenes
 title: A17. One-Side Replay Replication Across Scenes
-status: blocked
+status: done
 type: experiment
 priority: P2
 owner: codex
@@ -9,13 +9,9 @@ source: todo
 created: 2026-06-22
 updated: 2026-06-24
 verification: Replication across scenes run; results in exports/; the
-  one-side-replay claim updated or closed in the paper.
+  one-side-replay claim updated in the paper with matched-prefix D4/D5
+  closeout.
 branch: codex/a17-replay-replication
-blocked_by: >-
-  D5 is now cleared: run5 and run6 are complete admissible three-arm D5 roots.
-  A17 is blocked on the next explicit paid pipeline step: generate an
-  admissible D4 root, then run original graded scoring, learner-side replay,
-  and replay scoring before any §7.9 paper update.
 links:
   notes:
     - TODO.md#A17
@@ -26,6 +22,7 @@ links:
     - notes/poetics/2026-06-24-a17-d5-redacted-control-run4-gate.md
     - notes/poetics/2026-06-24-a17-d5-redacted-control-run5-rescue.md
     - notes/poetics/2026-06-24-a17-d5-matched-branches-and-redraw.md
+    - notes/poetics/2026-06-24-a17-replay-replication-result.md
   paper: §7.9
   exports: exports/a17-one-side-replay-replication/
 claim_status: exploratory
@@ -281,3 +278,22 @@ passed with both positive arms `4/4`. Durable note:
 `notes/poetics/2026-06-24-a17-d5-matched-branches-and-redraw.md`. D5 is now
 cleared for A17; remaining paid work is D4 generation plus original grading,
 learner-side replay, replay scoring, and then a §7.9 update or closeout.
+
+2026-06-24 Codex: Completed the approved A17 D4/D5 pipeline. Generalized the
+A17 gate helpers for `--scenario`, fixed `scripts/qa-oedipus-arms.js` so
+object-shaped `key.items` maps recover the correct `drama_id`, and generated
+an admissible D4 matched-prefix root under
+`exports/a17-one-side-replay-replication/d4-redacted-run2/`. Corrected D4 QA
+passes all three invariants: `none` withheld 4/4, `socratic` metered 4/4,
+`reveal` stated 4/4. Original graded scoring over D5 run6 plus D4 run2:
+D5 `none=0.5`, `socratic=2`, `reveal=4`; D4 `none=1`, `socratic=3`,
+`reveal=4`. Learner-side one-side replays at K=8 show D5 clustered at
+`[2,3,2,2,2,2.5,2,2]` (mean 2.19, median 2, no grade-4 completions), so D5
+run6 is a structural genus cap rather than a learner-draw case. D4 clustered
+at `[3,3,3.5,3,4,3,3,3.5]` (mean 3.25, median 3, three full completions), so
+D4 is a mostly structural species-partial scene with stochastic final
+completion. Durable note:
+`notes/poetics/2026-06-24-a17-replay-replication-result.md`. Paper §7.9 was
+updated to supersede the older volatile run3 one-scene reading. A17 is closed
+as exploratory sidecar evidence, not a human-learning, deployed-tutor, or
+main-harness adaptive-rate claim.
