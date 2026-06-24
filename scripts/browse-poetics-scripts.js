@@ -2234,6 +2234,30 @@ function orientBand(here, what, tail = 'the working surfaces are on the rail abo
   return `<span><b>${here}</b> — ${what}</span><span class="navhint__sep">·</span><span>${tail}</span>`;
 }
 
+// A compact cross-link band for the three report surfaces (/browse · /derivation ·
+// /replays): names each report type with who judges it, marks the current one, and
+// points back to the /read hub — so a reader never loses the distinction mid-page.
+// Inline-styled with the shared tokens so it drops into any page without new CSS.
+function reportTypeBand(active) {
+  const cells = [
+    ['scripts', '/browse', 'AI critic'],
+    ['proof runs', '/derivation', 'rule-checker'],
+    ['replays', '/replays', 'diff'],
+  ]
+    .map(([label, href, judge]) => {
+      const inner = `${label} <span style="color:var(--ink-4)">· ${judge}</span>`;
+      return active === href
+        ? `<span style="color:var(--ink);font-weight:600;border-bottom:2px solid var(--moss);padding-bottom:1px">${inner}</span>`
+        : `<a href="${href}" style="color:var(--ink-2);text-decoration:none">${inner}</a>`;
+    })
+    .join('<span style="color:var(--ink-4);margin:0 3px">·</span>');
+  return `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;font:11px ui-monospace,monospace;border:1px solid var(--rule);background:var(--paper-4);border-radius:6px;padding:8px 12px;margin:0 0 16px">
+    <span style="text-transform:uppercase;letter-spacing:.06em;color:var(--ink-4)">report type</span>
+    ${cells}
+    <a href="/read" style="margin-left:auto;color:var(--moss-deep);text-decoration:none">what&#39;s the difference? →</a>
+  </div>`;
+}
+
 function navPlainText(value) {
   return String(value ?? '')
     .replace(/&amp;/g, '&')
@@ -4502,6 +4526,7 @@ ${railHtml({
 })}
 <main class="wrap wrap--wide" data-derivation-index>
 <h1>Proof runs — did the learner reach the hidden answer?</h1>
+${reportTypeBand('/derivation')}
 <p class="lede">Each row is one tutoring run. The tutor has to lead the learner to a hidden conclusion purely by inference, and a fixed rule-checker — not an AI judge — decides the outcome: a run is <strong>grounded</strong> when the learner reaches the hidden conclusion and its proof closes; otherwise it ends in an <strong>impasse</strong> or the learner <strong>disengages</strong>. Runs are grouped by experimental condition (the <span class="mono">--group</span> flag); artifacts live under <span class="mono">exports/dramatic-derivation/loop/</span>.</p>
 ${renderDerivationLivePanel(listDerivationLiveRuns())}
 ${scoreboard}
@@ -5160,19 +5185,19 @@ function renderScriptoriumHome(stats = {}) {
           'The Shelves',
           '/browse',
           'read',
-          'The whole corpus — every scored script, filterable by arm, discipline, and verdict.',
+          'Scripts — judged by an AI critic on dramatic form. The whole corpus, filterable by arm, discipline, and verdict.',
         ],
         [
           'The Proofs',
           '/derivation',
           'prove',
-          'Runs where the tutor must lead to a hidden answer; a fixed rule decides grounded or not.',
+          'Proof runs — judged by a fixed rule-checker, not an AI. The tutor must reach a hidden answer: grounded, impasse, or disengaged.',
         ],
         [
           'Variant Leaves',
           '/replays',
           'vary',
-          'One move altered, then diffed against the original — how a change reshapes recognition.',
+          'Replays — judged by a diff vs the original. One move altered and re-run, to see how a change reshapes recognition.',
         ],
         [
           'The Critic&#39;s Bench',
@@ -9461,6 +9486,7 @@ ${railHtml({
   <div class="workbench__intro">
     <div class="workbench__k">evidence workbench</div>
     <h1 id="replayWorkTitle">Replay/original comparison</h1>
+    ${reportTypeBand('/replays')}
     <p>Read one counterfactual rewrite against its original, then inspect local gate verdicts and hidden-state provenance before promoting any claim.</p>
   </div>
   <a class="workbench__card" href="/runs?kind=replay&amp;mock=1&amp;dryRun=1"><span class="workbench__t">make a replay</span><span class="workbench__d">Open the launcher with a free mock/dry-run replay path selected.</span><span class="workbench__go">launch replay →</span></a>
