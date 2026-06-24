@@ -214,6 +214,7 @@
     "a19r:codebook-validate": "node scripts/a19r-mini-drama.js codebook-validate",
     "a19r:qa": "node scripts/a19r-mini-drama.js qa",
     "a19r:report": "node scripts/a19r-mini-drama.js report",
+    "desktop:latest": "node scripts/desktop-latest.js",
     "desktop:dev": "electron desktop/main.js",
     "desktop:smoke": "MS_DESKTOP_SMOKE=1 electron desktop/main.js",
     "desktop:rebuild": "electron-rebuild -f",

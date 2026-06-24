@@ -11,9 +11,19 @@ and points a window at it), so the two never drift. See
 
 ## Quick start
 
-You are in the `machinespirits-eval-electron` git worktree (the desktop build lives
-in its own worktree on the `claude/electron-desktop-app` branch — see the caveat at
-the bottom).
+The desktop build lives in its own git worktree — **`ms-electron/`**, on the
+**`desktop-dev`** branch — so its `node_modules` can hold the Electron-ABI native
+modules without clobbering the main checkout's Node-ABI build (the one `npm test`
+and `eval-cli` use). `desktop-dev` is not a divergent branch; it mirrors `main`.
+
+**Already set up?** One command — run it from anywhere in the repo — fast-forwards
+the `desktop-dev` worktree to `main` and launches the app:
+
+```bash
+npm run desktop:latest
+```
+
+**First-time setup** (run these once, inside the `ms-electron` worktree):
 
 ```bash
 # 1. install deps (includes electron + electron-builder)
@@ -35,6 +45,7 @@ background process on an ephemeral loopback port; you never manage a port.
 
 | Command | What it does |
 |---|---|
+| `npm run desktop:latest` | Fast-forward the `desktop-dev` worktree to `main`, then launch. Run from anywhere in the repo. |
 | `npm run desktop:dev` | Launch the app window. |
 | `npm run desktop:smoke` | Headless self-test: boots the app, hits every surface + SSE + CSP, prints PASS/FAIL, exits. No window. |
 | `npm run desktop:test` | Run the desktop test suite (route-parity, sync-contract, paths, security, menu, window-state, credentials). |
