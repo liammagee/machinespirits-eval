@@ -67,12 +67,6 @@ function mean(values) {
   return nums.reduce((sum, v) => sum + v, 0) / nums.length;
 }
 
-function round(value, digits = 3) {
-  if (!Number.isFinite(value)) return null;
-  const scale = 10 ** digits;
-  return Math.round(value * scale) / scale;
-}
-
 function parseJson(value, fallback = null) {
   if (value == null) return fallback;
   if (typeof value !== 'string') return value;

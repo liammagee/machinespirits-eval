@@ -763,8 +763,6 @@ export function makeLlmDirector(
     publicRegister = 'default',
     castLayer = false,
     castReinvention = false,
-    ownershipTarget = null,
-    ownershipProof = false,
   } = {},
 ) {
   const free = dramaturgy !== 'frozen';
@@ -1597,7 +1595,6 @@ function conductTriggerState({
   forcedPlay = null,
   forcedNote,
   finalEntitlement,
-  finalOut,
   visibleConsolidation,
   conductTriggerOnly = false,
 }) {

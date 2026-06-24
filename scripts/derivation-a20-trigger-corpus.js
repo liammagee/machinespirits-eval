@@ -115,10 +115,6 @@ function collectResultFiles(root) {
   return out.sort();
 }
 
-function lineAt(result, role, turn) {
-  return (result.transcript || []).find((line) => line.role === role && line.turn === turn) || null;
-}
-
 function firstLineAtOrAfter(result, role, turn, maxAhead = 2) {
   return (
     (result.transcript || []).find(

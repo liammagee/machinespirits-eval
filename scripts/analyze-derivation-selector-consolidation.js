@@ -91,7 +91,7 @@ function labelMatches(label, patterns) {
 
 export function parseSelectorLabel(label) {
   const match = String(label).match(
-    /^(?<root>.+)-(?<arm>baseline|hidden|visible|selective(?:-v\d+)?)\-r(?<run>\d+)$/,
+    /^(?<root>.+)-(?<arm>baseline|hidden|visible|selective(?:-v\d+)?)-r(?<run>\d+)$/,
   );
   if (!match) return null;
   return {

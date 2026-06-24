@@ -165,7 +165,7 @@ function replayCommand({ dir, label, turn }) {
   ].join(' \\\n');
 }
 
-export function analyzeArtifact(resultFile, { root = ROOT } = {}) {
+export function analyzeArtifact(resultFile, { root: _root = ROOT } = {}) {
   const dir = path.dirname(resultFile);
   const diagnosisFile = path.join(dir, 'diagnosis.json');
   const result = safeReadJson(resultFile);

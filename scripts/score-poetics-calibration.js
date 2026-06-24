@@ -258,6 +258,7 @@ async function callOpenRouter(prompt, modelKey) {
   }
 }
 
+/* eslint-disable no-control-regex */
 function stripTerminalControls(content) {
   return String(content || '')
     .replace(/\x1B\[[0-?]*[ -/]*[@-~]/g, '')
@@ -265,6 +266,7 @@ function stripTerminalControls(content) {
     .replace(/\x1B[@-Z\\-_]/g, '')
     .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g, '');
 }
+/* eslint-enable no-control-regex */
 
 function parseJsonResponse(content) {
   content = stripTerminalControls(content);

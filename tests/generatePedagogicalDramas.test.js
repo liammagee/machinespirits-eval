@@ -67,7 +67,7 @@ describe('generate-pedagogical-dramas', () => {
   it('prints CLI help without validating generation inputs', () => {
     assert.equal(parseArgs(['--help']).help, true);
     assert.equal(parseArgs(['-h', '--role-map', 'not-a-valid-map']).help, true);
-    assert.match(usage(), /Usage:\n  node scripts\/generate-pedagogical-dramas\.js \[options\]/);
+    assert.match(usage(), /Usage:\n {2}node scripts\/generate-pedagogical-dramas\.js \[options\]/);
     assert.match(usage(), /--role-map MAP/);
     assert.match(usage(), /api:<alias-or-slug>/);
 

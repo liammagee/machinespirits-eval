@@ -908,13 +908,13 @@ router.post('/turn', async (req, res) => {
   // learnerMessage is only read; the others are mutated by the pilot-mode
   // override block below (cellName, lectureRef, history, topic, useClaudeCli).
   const { learnerMessage } = req.body || {};
+  const dryRun = req.body?.dryRun || false;
   let {
     cellName,
     history = [],
     topic = 'general conversation',
     lectureRef = null,
     useClaudeCli = false,
-    dryRun = false,
   } = req.body || {};
   const sessionId = req.body?.sessionId || null;
 

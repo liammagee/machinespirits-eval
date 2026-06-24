@@ -51,6 +51,7 @@ export default [
       'docs/',
       'content/',
       '.test-tmp/',
+      '.codex-tmp/',
       '.venv/',
       '**/*.workflow.js',
     ],

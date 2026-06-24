@@ -181,7 +181,7 @@ function strainFor({ posture, learnerState = {}, recognitionNeed = null, transcr
   };
 }
 
-function advisoryFor(posture, { uptakeQuality, strain, recognitionNeed, finalAssertionAvailable }) {
+function advisoryFor(posture, { strain, recognitionNeed, finalAssertionAvailable }) {
   const base = {
     pressure: 'steady',
     tempoBias: ['recap'],

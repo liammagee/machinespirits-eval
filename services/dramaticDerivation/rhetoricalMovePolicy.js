@@ -705,7 +705,7 @@ function normalizeDistribution(rows, temperature = 1) {
   const adjusted = weighted.map((row) => ({ ...row, weight: Math.pow(row.score, 1 / temperature) }));
   const total = adjusted.reduce((sum, row) => sum + row.weight, 0) || 1;
   return adjusted
-    .map(({ score, ...row }) => ({ ...row, weight: +(row.weight / total).toFixed(3) }))
+    .map(({ score: _score, ...row }) => ({ ...row, weight: +(row.weight / total).toFixed(3) }))
     .sort(
       (a, b) =>
         b.weight - a.weight ||

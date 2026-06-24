@@ -223,7 +223,6 @@ export function deriveLearnerTransformationState(input = {}) {
     target = null,
     transcript = [],
     learnerText = null,
-    turn = null,
     enabled = true,
     finalAssertionAvailable = false,
     transferGate = false,

@@ -8,7 +8,7 @@
  * hidden learner board, corruption ledger, proof path, or secret.
  */
 
-import { entails, factKey } from './chainer.js';
+import { entails } from './chainer.js';
 import { derivationDistance } from './slope.js';
 
 function renderFact(fact) {

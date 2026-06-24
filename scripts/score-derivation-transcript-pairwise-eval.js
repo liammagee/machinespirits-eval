@@ -8,8 +8,6 @@ import { jsonrepair } from 'jsonrepair';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_PACKET_DIR = path.join(ROOT, 'exports/dramatic-derivation/pairwise-transcript-eval');
-const DEFAULT_OUT = path.join(DEFAULT_PACKET_DIR, 'scores.json');
-const DEFAULT_REPORT = path.join(DEFAULT_PACKET_DIR, 'report.md');
 const DIMENSIONS = [
   'natural_flow',
   'acknowledgement',

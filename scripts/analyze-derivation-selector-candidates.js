@@ -71,14 +71,6 @@ function readJson(file) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
 }
 
-function safeReadJson(file) {
-  try {
-    return readJson(file);
-  } catch {
-    return null;
-  }
-}
-
 function worldFiles() {
   const dir = path.resolve(ROOT, 'config/drama-derivation');
   return fs

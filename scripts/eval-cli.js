@@ -4293,7 +4293,6 @@ async function main() {
 
         // Helper: run dialogue quality scoring for a multi-turn result
         async function _scoreDialogueQuality(result, tag) {
-          const scenarioId = result.scenarioId;
           const _profileName = result.profileName || `${result.provider}/${result.model}`;
           const judgeModel = judgeModelLabel;
 

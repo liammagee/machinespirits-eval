@@ -199,7 +199,6 @@ function scoreV22Proxy(artifact) {
   const hasReinvention = artifact.summary.reinventionTurns.length > 0;
   const hasCast = artifact.summary.castEnabled;
   const formalismClean = stats.formalismLeaks.length === 0;
-  const phaticRatio = stats.learnerLineCount ? stats.phaticLearnerCount / stats.learnerLineCount : 0;
   const substantiveRatio = stats.learnerLineCount ? stats.substantiveLearnerCount / stats.learnerLineCount : 0;
   return {
     perception_quality: {
