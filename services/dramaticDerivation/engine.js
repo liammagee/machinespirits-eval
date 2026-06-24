@@ -83,6 +83,7 @@ import { normalizeDecayConfig, mulberry32 } from './corruption.js';
 import { DIDACTIC_ACT_FALLBACK_SCHEMA } from './didacticMode.js';
 import { buildWorldIR, projectWorldIRLogic } from './guardCompiler.js';
 import { deriveLearnerTransformationState, summarizeLearnerTransformationDurability } from './learnerTransformation.js';
+import { buildLearnerDag, buildLearnerDagSnapshot } from './learnerDag.js';
 import { proofDebtReport, tutorProofDebtView } from './proofDebt.js';
 import {
   classifyLearnerExchange,
@@ -322,6 +323,7 @@ export async function runDrama({ world, roles, options = {} }) {
 
   const transcript = [];
   const trajectory = []; // {turn, D, forced, groundedCount}
+  const learnerDagSnapshots = []; // learner-owned proof sketches, derived from learner-visible board actions
   const events = []; // {turn, type, detail}
   // Director-declared staging: the current movement persists until replaced.
   // The learner never sees it; since 2026-06-10 the tutor doesn't either —
@@ -1285,6 +1287,19 @@ export async function runDrama({ world, roles, options = {} }) {
       events.push({ turn, type: 'forced', detail: 'learner facts now force S' });
     }
     const D = derivationDistance(world, valid);
+    learnerDagSnapshots.push(
+      buildLearnerDagSnapshot(world, {
+        turn,
+        boardFacts: learnerBoardFacts(),
+        validFacts: valid,
+        voiced: voicedLedger,
+        hypotheses,
+        assertion: learnerOut.asserts || null,
+        learnerText: learnerOut.dialogue || null,
+        ledger,
+        source: 'engine_board',
+      }),
+    );
     // F(t) is decay-conditional and additive: trajectory rows in corruption
     // runs gain a fidelity field (design note §2's documented relaxation of
     // strict v1 byte-identity); decay-off rows are untouched.
@@ -1620,6 +1635,7 @@ export async function runDrama({ world, roles, options = {} }) {
         finalTurn: assertedGroundedTurn ?? turn,
       })
     : null;
+  const learnerDag = buildLearnerDag(learnerDagSnapshots, world);
 
   return {
     worldId: world.id,
@@ -1633,6 +1649,7 @@ export async function runDrama({ world, roles, options = {} }) {
     assertedGroundedTurn,
     turnsPlayed: turn,
     proof,
+    learnerDag,
     inference: {
       voiced: voicedLedger,
       overreaches,

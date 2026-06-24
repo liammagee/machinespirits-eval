@@ -47,6 +47,7 @@ import {
   GATE_BUCKETS,
 } from '../services/poetics/replayBundles.js';
 import {
+  buildDerivationAssessment,
   loadWorld as loadDerivationWorld,
   renderProof as renderDerivationProof,
   renderProofProse as renderDerivationProofProse,
@@ -3120,7 +3121,9 @@ function readDerivationRun(label) {
   } catch {
     /* no notice yet — the page shows the backfill hint */
   }
-  return { label, diagnosis, result, world, commentary, live: readDerivationLive(label) };
+  const live = readDerivationLive(label) || {};
+  const assessment = buildDerivationAssessment({ label, live, result, diagnosis, world });
+  return { label, diagnosis, result, world, commentary, live, assessment };
 }
 
 // Backend chips tolerate both ledger formats: per-role ({mode, roles:{...}},
@@ -3635,6 +3638,50 @@ const DERIVATION_CSS = `
 .egraph__links a{min-height:32px;display:inline-flex;align-items:center;border:1px solid var(--rule);border-radius:4px;background:var(--paper-3);color:var(--moss-deep);padding:3px 9px;text-decoration:none;font-family:"JetBrains Mono",monospace;font-size:var(--s-0)}
 .egraph__links a:hover{border-color:var(--moss);background:var(--moss-soft)}
 .egraph__meta{margin-top:8px;color:var(--ink-3);font-family:"JetBrains Mono",monospace;font-size:var(--s-0)}
+.proofdag{border:1px solid var(--rule);border-radius:8px;background:var(--paper-4);padding:13px 14px;margin:14px 0 22px}
+.proofdag__top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.proofdag__k{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);font-weight:700;text-transform:uppercase;color:var(--ink-4);margin-bottom:5px}
+.proofdag h2{font-family:Fraunces,serif;font-weight:600;font-size:var(--s-2);margin:0}
+.proofdag__summary{max-width:74ch;color:var(--ink-2);line-height:1.45;margin:7px 0 0}
+.proofdag__metrics{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.proofdag__metric{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);border:1px solid var(--rule-soft);border-radius:4px;background:var(--paper-2);padding:3px 8px;color:var(--ink-3)}
+.proofdag__grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(300px,.9fr);gap:12px;align-items:start;margin-top:12px}
+.proofdag__paths{display:grid;gap:9px}
+.proofdag__path{border:1px solid var(--rule-soft);border-radius:6px;background:var(--paper);padding:9px 10px}
+.proofdag__path h3{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);font-weight:700;margin:0 0 7px;color:var(--ink-2)}
+.proofdag__path ol{margin:0;padding-left:1.35em}
+.proofdag__path li{margin:6px 0;line-height:1.35}
+.proofdag__pid{font-family:"JetBrains Mono",monospace;font-size:.9em;color:var(--moss-deep)}
+.proofdag__release{font-family:"JetBrains Mono",monospace;font-size:.84em;color:var(--ink-3)}
+.proofdag__surface{display:block;color:var(--ink-2)}
+.proofdag__fact{display:block;font-family:"JetBrains Mono",monospace;font-size:.86em;color:var(--ink-3);overflow-wrap:anywhere}
+.proofdag__side{border:1px solid var(--rule-soft);border-radius:6px;background:var(--paper);padding:9px 10px;overflow-x:auto}
+.proofdag__side h3{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;color:var(--ink-4);margin:0 0 7px}
+.proofdag table{border-collapse:collapse;width:100%;font-size:var(--s-0)}
+.proofdag th,.proofdag td{border-bottom:1px solid var(--rule-soft);padding:5px 7px;text-align:left;vertical-align:top}
+.proofdag th{font-family:"JetBrains Mono",monospace;color:var(--ink-3);text-transform:uppercase}
+.proofdag details{border-top:1px solid var(--rule-soft);padding-top:8px;margin-top:10px}
+.proofdag summary{cursor:pointer;font-family:"JetBrains Mono",monospace;color:var(--moss-deep)}
+.proofdag__rules{margin:8px 0 0;padding-left:1.15em}
+.proofdag__rules li{margin:5px 0;line-height:1.35}
+.learnerdag{border:1px solid var(--rule);border-radius:8px;background:var(--paper-4);padding:13px 14px;margin:14px 0 22px}
+.learnerdag__k{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);font-weight:700;text-transform:uppercase;color:var(--ink-4);margin-bottom:5px}
+.learnerdag h2{font-family:Fraunces,serif;font-weight:600;font-size:var(--s-2);margin:0}
+.learnerdag__summary{max-width:74ch;color:var(--ink-2);line-height:1.45;margin:7px 0 0}
+.learnerdag__metrics{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.learnerdag__metric{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);border:1px solid var(--rule-soft);border-radius:4px;background:var(--paper-2);padding:3px 8px;color:var(--ink-3)}
+.learnerdag__grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,.8fr);gap:12px;align-items:start}
+.learnerdag__panel{border:1px solid var(--rule-soft);border-radius:6px;background:var(--paper);padding:9px 10px;overflow-x:auto}
+.learnerdag__panel h3{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;color:var(--ink-4);margin:0 0 7px}
+.learnerdag__nodes{margin:0;padding-left:1.15em}
+.learnerdag__nodes li{margin:6px 0;line-height:1.35}
+.learnerdag__fact{font-family:"JetBrains Mono",monospace;font-size:.88em;color:var(--moss-deep);overflow-wrap:anywhere}
+.learnerdag__status{font-family:"JetBrains Mono",monospace;font-size:.82em;color:var(--ink-3)}
+.learnerdag table{border-collapse:collapse;width:100%;font-size:var(--s-0)}
+.learnerdag th,.learnerdag td{border-bottom:1px solid var(--rule-soft);padding:5px 7px;text-align:left;vertical-align:top}
+.learnerdag th{font-family:"JetBrains Mono",monospace;color:var(--ink-3);text-transform:uppercase}
+@media(max-width:860px){.learnerdag__grid{grid-template-columns:1fr}}
+@media(max-width:860px){.proofdag__grid{grid-template-columns:1fr}}
 .tts-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:14px 0 18px;padding:9px 10px;border:1px solid var(--rule-soft);border-radius:6px;background:var(--paper-4)}
 .tts-toolbar--compact{margin:4px 0 8px}
 .tts-control,.tts-btn{border:1px solid var(--rule);background:var(--paper);color:var(--moss-deep);cursor:pointer;font-family:"JetBrains Mono",monospace;text-transform:uppercase}
@@ -4321,6 +4368,141 @@ function renderDerivationEvidenceGraph({ label, diagnosis }) {
   )} · world ${escapeHtml(worldFile || '?')} · script ${escapeHtml(scriptFile || '?')}</div></div>`;
 }
 
+function renderDerivationProofDagHtml(profile) {
+  if (!profile) {
+    return `<section class="proofdag"><div class="proofdag__k">authored proof DAG</div><h2>Proof DAG unavailable</h2><p class="proofdag__summary">The run loaded, but its world file could not be found. The mechanical result is still inspectable below; the authored DAG requires the original world spec.</p></section>`;
+  }
+  const metric = (label, value) =>
+    `<span class="proofdag__metric"><b>${escapeHtml(label)}</b> ${escapeHtml(value ?? 'n/a')}</span>`;
+  const paths = profile.paths
+    .map((pathProfile) => {
+      const premises = pathProfile.premises
+        .map((premise) => {
+          const release = premise.scheduled ? `t${premise.releaseTurn} / ${premise.releaseVia}` : 'unscheduled';
+          return `<li><span class="proofdag__pid">${escapeHtml(premise.id)}</span> <span class="proofdag__release">${escapeHtml(
+            release,
+          )}</span><span class="proofdag__surface">${escapeHtml(
+            premise.surface || premise.factText || '(no surface text)',
+          )}</span><span class="proofdag__fact">${escapeHtml(premise.factText)}</span></li>`;
+        })
+        .join('');
+      return `<article class="proofdag__path"><h3>${escapeHtml(pathProfile.id)} · ${
+        pathProfile.completeByTurn == null
+          ? 'not fully scheduled'
+          : `complete by t${escapeHtml(pathProfile.completeByTurn)}`
+      }</h3><ol>${premises}</ol></article>`;
+    })
+    .join('');
+  const releases = profile.releases
+    .map(
+      (release) =>
+        `<tr><td class="mono">t${escapeHtml(release.turn)}</td><td>${escapeHtml(
+          release.via,
+        )}</td><td class="mono">${escapeHtml(release.premiseId)}${
+          release.proofPremise ? '' : ' *'
+        }</td><td>${escapeHtml(release.surface || release.factText)}</td></tr>`,
+    )
+    .join('');
+  const rules = profile.rules
+    .map(
+      (rule) =>
+        `<li><span class="proofdag__pid">${escapeHtml(rule.id || '?')}</span>: ${escapeHtml(
+          rule.gloss || `${rule.if.join(' + ')} -> ${rule.then.join(', ')}`,
+        )}</li>`,
+    )
+    .join('');
+  return `<section class="proofdag" id="authored-proof-dag">
+  <div class="proofdag__top">
+    <div>
+      <div class="proofdag__k">authored proof DAG</div>
+      <h2>${escapeHtml(profile.title)}</h2>
+      <p class="proofdag__summary">${escapeHtml(profile.summary)}</p>
+      <p class="proofdag__summary"><b>Question:</b> ${escapeHtml(profile.question || 'n/a')}<br><b>Secret:</b> ${escapeHtml(
+        profile.secret.surface || profile.secret.factText || 'n/a',
+      )}${profile.mirror ? `<br><b>Mirror:</b> ${escapeHtml(profile.mirror.surface || profile.mirror.factText)}` : ''}</p>
+    </div>
+  </div>
+  <div class="proofdag__metrics">
+    ${metric('paths', profile.metrics.pathCount)}
+    ${metric('premises', `${profile.metrics.scheduledProofPremiseCount}/${profile.metrics.uniqueProofPremiseCount} scheduled`)}
+    ${metric('rules', profile.metrics.ruleCount)}
+    ${metric('earliest complete', profile.metrics.earliestCompleteTurn == null ? 'n/a' : `t${profile.metrics.earliestCompleteTurn}`)}
+    ${metric('t_min', profile.metrics.tMin)}
+    ${metric('cap', profile.metrics.turnCap)}
+  </div>
+  <div class="proofdag__grid">
+    <div class="proofdag__paths">${paths}</div>
+    <aside class="proofdag__side">
+      <h3>release schedule</h3>
+      <table><thead><tr><th>turn</th><th>via</th><th>premise</th><th>surface</th></tr></thead><tbody>${releases}</tbody></table>
+      <p class="mono" style="color:var(--ink-3);margin:6px 0 0">* mirror or color premise, not required by an authored proof path</p>
+      <details><summary>public rules</summary><ul class="proofdag__rules">${rules}</ul></details>
+    </aside>
+  </div>
+</section>`;
+}
+
+function renderDerivationLearnerDagHtml(learnerDag, learnerDagAssessment) {
+  if (!learnerDag?.final || learnerDagAssessment?.status !== 'available') {
+    return `<section class="learnerdag"><div class="learnerdag__k">learner DAG</div><h2>No learner proof sketch</h2><p class="learnerdag__summary">This artifact does not expose enough learner board data to reconstruct a learner-side proof graph.</p></section>`;
+  }
+  const final = learnerDag.final;
+  const metric = (label, value) =>
+    `<span class="learnerdag__metric"><b>${escapeHtml(label)}</b> ${escapeHtml(value ?? 'n/a')}</span>`;
+  const nodes = final.nodes
+    .filter((node) => node.kind === 'fact' || node.kind === 'hypothesis')
+    .slice(0, 18)
+    .map((node) => {
+      if (node.kind === 'hypothesis') {
+        return `<li><span class="learnerdag__fact">${escapeHtml(node.text)}</span><br><span class="learnerdag__status">${escapeHtml(
+          node.label || 'hypothesis',
+        )}</span></li>`;
+      }
+      return `<li><span class="learnerdag__fact">${escapeHtml(
+        node.surface || node.factText,
+      )}</span><br><span class="learnerdag__status">${escapeHtml(
+        [...(node.statuses || []), node.label].filter(Boolean).join(' · '),
+      )}</span></li>`;
+    })
+    .join('');
+  const pathRows = (learnerDagAssessment.pathCoverage || [])
+    .map(
+      (row) =>
+        `<tr><td>${escapeHtml(row.id)}</td><td class="mono">${Math.round(
+          row.coverage * 100,
+        )}%</td><td>${escapeHtml(row.missingPremiseIds.length ? row.missingPremiseIds.join(', ') : 'none')}</td></tr>`,
+    )
+    .join('');
+  return `<section class="learnerdag" id="learner-proof-dag">
+  <div class="learnerdag__k">learner DAG</div>
+  <h2>Learner proof sketch</h2>
+  <p class="learnerdag__summary">Reconstructed from learner-visible board actions and voiced derivations. Source: <span class="mono">${escapeHtml(
+    learnerDagAssessment.source,
+  )}</span>. This is assessed after the run; it does not feed the learner the authored proof paths.</p>
+  <div class="learnerdag__metrics">
+    ${metric('best path', `${learnerDagAssessment.bestPathId || 'n/a'} · ${Math.round(learnerDagAssessment.bestPathCoverage * 100)}%`)}
+    ${metric('complete paths', learnerDagAssessment.completePathIds?.length || 0)}
+    ${metric('secret entailed', learnerDagAssessment.finalSecretEntailed)}
+    ${metric('asserted secret', learnerDagAssessment.assertedSecret)}
+    ${metric('asserted mirror', learnerDagAssessment.assertedMirror)}
+    ${metric('turns', learnerDag.turns?.length || 0)}
+  </div>
+  <div class="learnerdag__grid">
+    <div class="learnerdag__panel">
+      <h3>final learner graph nodes</h3>
+      <ul class="learnerdag__nodes">${nodes || '<li class="notice-missing">No nodes reconstructed.</li>'}</ul>
+    </div>
+    <aside class="learnerdag__panel">
+      <h3>authored-path coverage</h3>
+      <table><thead><tr><th>path</th><th>covered</th><th>missing</th></tr></thead><tbody>${pathRows}</tbody></table>
+      <p class="mono" style="color:var(--ink-3);margin:8px 0 0">first complete path: ${
+        learnerDagAssessment.firstCompletePathTurn ?? 'n/a'
+      }; first secret entailed: ${learnerDagAssessment.firstSecretEntailedTurn ?? 'n/a'}</p>
+    </aside>
+  </div>
+</section>`;
+}
+
 function renderDerivationIndexHtml(runs, query = {}) {
   // Stable "most recent" ordering: the list arrives mtime-sorted, so the index
   // here is what the client sorts back to when it resets to recency.
@@ -4515,7 +4697,7 @@ ${DERIVATION_INDEX_CLIENT}
 </body></html>`;
 }
 
-function renderDerivationRunHtml({ label, diagnosis, result, world, commentary }) {
+function renderDerivationRunHtml({ label, diagnosis, result, world, commentary, assessment }) {
   // Realized staging: director-declared movements when there are any, the
   // author's sketch otherwise — same segments feed the headers AND the curve.
   const segments = derivationStagingSegments(result, world);
@@ -4655,6 +4837,8 @@ ${railHtml({
 <p class="lede mono">${escapeHtml(label)} · script ${escapeHtml(diagnosis.scriptPath || '?')}${diagnosis.note ? ` · ${escapeHtml(diagnosis.note)}` : ''}</p>
 <div class="chips">${chips}</div>
 ${renderDerivationEvidenceGraph({ label, diagnosis })}
+${renderDerivationProofDagHtml(assessment?.dagProfile || null)}
+${renderDerivationLearnerDagHtml(assessment?.learnerDag || null, assessment?.learnerDagAssessment || null)}
 ${transcriptTtsToolbarHtml({ fullLabel: 'Play full transcript', includeLabel: 'include tutor superego' })}
 ${
   commentary
@@ -9878,6 +10062,7 @@ ${railHtml({
     <button class="goal-card" type="button" data-kind="generate"><span class="goal-card__t">Generate a new script</span><span class="goal-card__d">Create a fresh pedagogical drama transcript. Mock stays free by default.</span><span class="goal-card__c">free default</span></button>
     <button class="goal-card" type="button" data-kind="replay"><span class="goal-card__t">Replay a script</span><span class="goal-card__d">Run a bounded counterfactual rewrite against an existing transcript.</span><span class="goal-card__c">mock / quota</span></button>
     <button class="goal-card" type="button" data-kind="derivation"><span class="goal-card__t">Run a proof-DAG derivation</span><span class="goal-card__d">Enact a tutor script against a world and stream to live proof runs.</span><span class="goal-card__c">mock default</span></button>
+    <button class="goal-card" type="button" data-kind="derivation-assessment"><span class="goal-card__t">Assess proof-DAG runs</span><span class="goal-card__d">Externalize proof gates, readable DAGs, prompts, and optional judge rubrics.</span><span class="goal-card__c">free default</span></button>
     <button class="goal-card" type="button" data-kind="online-score"><span class="goal-card__t">Score existing artifacts</span><span class="goal-card__d">Backfill scorer output for a batch root or run, with dry-run first.</span><span class="goal-card__c">dry-run default</span></button>
     <button class="goal-card" type="button" data-kind="pedagogical-drama"><span class="goal-card__t">Run curriculum drama</span><span class="goal-card__d">Enact compiled curriculum drama specs through the batch generator.</span><span class="goal-card__c">mock default</span></button>
   </div>
@@ -9997,6 +10182,25 @@ const FORMS = {
       { name:'superego', label:'superego (tutor self-watch)' },
       { name:'stallWatch', label:'stall-watch (needs superego)' },
       { name:'real', label:'real — METERED $' },
+    ],
+  },
+  'derivation-assessment': {
+    blurb: 'Assess completed proof-DAG runs without changing their verdicts. Default judge-cli=none writes the mechanical proof gate, human-readable DAG profile, prompts, scores.json, and report.md without model calls.',
+    fields: [
+      { name:'labels', type:'text', label:'label(s) required', placeholder:'lantern-e2-real-r1  (comma-separated for many)' },
+      { name:'runDir', type:'text', label:'run dir', placeholder:'exports/dramatic-derivation/loop' },
+      { name:'outDir', type:'text', label:'out dir', placeholder:'exports/dramatic-derivation/derivation-assessments/<label>' },
+      { name:'rubrics', type:'text', label:'rubrics', placeholder:'tutor_v22,tutor_holistic,learner_v22,dialogue_quality,poetics' },
+      { name:'judgeCli', type:'select', label:'external judge', options:['none','codex','claude','gemini'], def:'none', help:'none = free; CLI judges are advisory and do not change the proof gate' },
+      { name:'model', type:'text', label:'model (optional)', placeholder:'CLI model alias if judge is not none' },
+      { name:'judgeEffort', type:'select', label:'judge effort', options:['','low','medium','high','xhigh','max'], def:'' },
+      { name:'scoreConcurrency', type:'number', label:'score concurrency', placeholder:'1' },
+      { name:'maxTranscriptChars', type:'number', label:'max transcript chars', placeholder:'60000' },
+      { name:'timeoutMs', type:'number', label:'timeout ms', placeholder:'180000' },
+    ],
+    checks: [
+      { name:'force', label:'force overwrite' },
+      { name:'resumeExisting', label:'resume existing raw judgments' },
     ],
   },
   'adversarial-score': {

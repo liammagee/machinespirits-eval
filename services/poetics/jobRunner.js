@@ -297,6 +297,56 @@ function buildDerivation(params) {
   return { argv, costClass, label: label2, costNote };
 }
 
+const DERIVATION_ASSESSMENT_JUDGES = ['none', 'claude', 'codex', 'gemini'];
+
+function parseDerivationLabels(params) {
+  const labels = reqString(params, 'labels')
+    .split(',')
+    .map((label) => label.trim())
+    .filter(Boolean);
+  if (!labels.length) throw new Error('labels is required');
+  for (const label of labels) {
+    if (!/^[\w.-]+$/.test(label)) throw new Error(`invalid derivation label: ${label}`);
+  }
+  return labels;
+}
+
+function defaultDerivationAssessmentOutDir(labels) {
+  const first = labels[0].replace(/[^\w.-]+/gu, '-');
+  return `exports/dramatic-derivation/derivation-assessments/${first}${labels.length > 1 ? `-plus-${labels.length - 1}` : ''}`;
+}
+
+function buildDerivationAssessmentJob(params) {
+  const labels = parseDerivationLabels(params);
+  const judgeCli = enumValue(params, 'judgeCli', DERIVATION_ASSESSMENT_JUDGES, 'none');
+  const runDir = optString(params, 'runDir') || 'exports/dramatic-derivation/loop';
+  const outDir = optString(params, 'outDir') || defaultDerivationAssessmentOutDir(labels);
+  const argv = ['--labels', labels.join(','), '--run-dir', runDir, '--out-dir', outDir, '--judge-cli', judgeCli];
+
+  const rubrics = optString(params, 'rubrics');
+  if (rubrics) argv.push('--rubrics', rubrics);
+  const model = optString(params, 'model');
+  if (model) argv.push('--model', model);
+  const judgeEffort = enumValue(params, 'judgeEffort', ['low', 'medium', 'high', 'xhigh', 'max'], null);
+  if (judgeEffort) argv.push('--judge-effort', judgeEffort);
+  const timeoutMs = optPosInt(params, 'timeoutMs');
+  if (timeoutMs) argv.push('--timeout-ms', String(timeoutMs));
+  const maxTranscriptChars = optPosInt(params, 'maxTranscriptChars');
+  if (maxTranscriptChars) argv.push('--max-transcript-chars', String(maxTranscriptChars));
+  const scoreConcurrency = optPosInt(params, 'scoreConcurrency');
+  if (scoreConcurrency) argv.push('--score-concurrency', String(scoreConcurrency));
+  if (bool(params.resumeExisting)) argv.push('--resume-existing');
+  if (bool(params.force)) argv.push('--force');
+
+  const costClass = judgeCli === 'none' ? COST_CLASSES.FREE : COST_CLASSES.QUOTA;
+  const label = `derivation-assessment · ${labels.length} run${labels.length === 1 ? '' : 's'} · judge=${judgeCli}`;
+  const costNote =
+    judgeCli === 'none'
+      ? 'No external judge — writes mechanical proof gates, human-readable DAG profiles, prompts, manifest, and report.'
+      : `External judge "${judgeCli}" routes through the CLI/Max plan (quota drain); proof gate remains mechanical.`;
+  return { argv, costClass, label, costNote };
+}
+
 const STRUCTURE_CRITICS = ['rules', 'codex', 'claude', 'claude-code'];
 
 function buildAdversarialScore(params) {
@@ -385,6 +435,12 @@ export const JOB_KINDS = Object.freeze({
     title: 'Derivation — proof-DAG drama (watch live)',
     build: buildDerivation,
   },
+  'derivation-assessment': {
+    kind: 'derivation-assessment',
+    script: 'scripts/score-derivation-transcript-rubric-suite.js',
+    title: 'Derivation assessment — proof gate + readable DAG',
+    build: buildDerivationAssessmentJob,
+  },
   'adversarial-score': {
     kind: 'adversarial-score',
     script: 'scripts/critic-poetics-structure.js',
@@ -422,6 +478,17 @@ function resultLinks(kind, params = {}) {
       { label: 'open proof runs', href: '/derivation' },
     ];
     if (params.label) links.push({ label: 'open target run', href: `/derivation/${encodeURIComponent(params.label)}` });
+    return links;
+  }
+  if (kind === 'derivation-assessment') {
+    const labels = String(params.labels || '')
+      .split(',')
+      .map((label) => label.trim())
+      .filter(Boolean);
+    const links = [{ label: 'open proof runs', href: '/derivation' }];
+    if (labels.length === 1) {
+      links.unshift({ label: 'open assessed run', href: `/derivation/${encodeURIComponent(labels[0])}` });
+    }
     return links;
   }
   if (kind === 'replay') return [{ label: 'open replays', href: '/replays' }];

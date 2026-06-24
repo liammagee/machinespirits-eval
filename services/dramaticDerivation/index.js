@@ -122,6 +122,23 @@ export {
 export { runDrama, normalizeActsConfig, normalizeDirectorCadence } from './engine.js';
 export { mulberry32, normalizeDecayConfig } from './corruption.js';
 export {
+  buildDerivationAssessment,
+  deriveProofGate,
+  formatFact,
+  profileProofDag,
+  publicLines,
+  releaseDeviationCount,
+  renderHumanDagMarkdown,
+  summarizeDialogue,
+} from './assessment.js';
+export {
+  assessLearnerDag,
+  buildLearnerDag,
+  buildLearnerDagFromResult,
+  buildLearnerDagSnapshot,
+  LEARNER_DAG_SCHEMA,
+} from './learnerDag.js';
+export {
   normalizeSceneConfig,
   normalizeSceneTempoConfig,
   normalizeRhetoricalPolicyConfig,
