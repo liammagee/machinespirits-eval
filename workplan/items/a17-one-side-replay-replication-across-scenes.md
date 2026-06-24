@@ -217,3 +217,12 @@ ran the exact run4 generator command with `--dry-run`; and ran a temporary mock
 D5 `none` generation plus `qa-oedipus-arms.js --mock --arms none`, which passed
 T1 and recorded `tutor_adaptation_policy: withhold_secret`. The only remaining
 known blocker is fresh explicit approval for the paid D5 redacted-control gate.
+
+2026-06-24 Codex: Packaged the redacted control gate as
+`scripts/run-a17-redacted-control-gate.js` with package alias
+`npm run poetics:a17-redacted-control-gate -- ...`. The runner has safe default
+modes (`--dry-run`, `--mock`) and real metered mode refuses to start unless the
+command includes `--approve-paid` and the environment includes
+`A17_PAID_GATE_APPROVED=YES`. Validated syntax, dry-run, mock generator+QA, and
+the paid-mode refusal path. The approval-time command is now:
+`A17_PAID_GATE_APPROVED=YES npm run poetics:a17-redacted-control-gate -- --approve-paid`.

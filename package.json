@@ -139,6 +139,7 @@
     "poetics:prefix-baseline": "node scripts/extract-poetics-prefix-baselines.js",
     "poetics:structure-critic": "node scripts/critic-poetics-structure.js",
     "poetics:screen-underivability": "node scripts/screen-s-underivability.js",
+    "poetics:a17-redacted-control-gate": "node scripts/run-a17-redacted-control-gate.js",
     "poetics:critic-omniscient": "node scripts/critic-poetics-omniscient.js",
     "poetics:score-sonnet": "node scripts/score-poetics-missing-sonnet.js",
     "poetics:audit": "node scripts/audit-poetics-disagreements.js",

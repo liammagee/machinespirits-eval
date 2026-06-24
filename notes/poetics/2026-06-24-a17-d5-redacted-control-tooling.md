@@ -53,36 +53,25 @@ Additional no-spend preflight:
 - Generated a temporary mock D5 `none` root and ran
   `scripts/qa-oedipus-arms.js --mock --arms none`; QA passed T1 in mock mode and
   the trace recorded `tutor_adaptation_policy: withhold_secret`.
+- Added `scripts/run-a17-redacted-control-gate.js` and the package alias
+  `npm run poetics:a17-redacted-control-gate -- ...` to package the gate as a
+  guarded workflow. Validation:
+  - `npm run poetics:a17-redacted-control-gate -- --dry-run` plans run4 and
+    makes no LLM call.
+  - `node scripts/run-a17-redacted-control-gate.js --mock --root /tmp/... --force`
+    runs generator + QA with stubs, verifies `key-none.yaml` and the held-out
+    trace both record `withhold_secret`, and passes T1 mock QA.
+  - `node scripts/run-a17-redacted-control-gate.js --approve-paid` exits before
+    generation unless `A17_PAID_GATE_APPROVED=YES` is also set.
 
 ## Next paid gate, if approved
 
-Generate only the D5 control candidate, then run T1 QA on `none` only:
+Generate only the D5 control candidate, verify it used `withhold_secret`, then
+run T1 QA on `none` only:
 
 ```bash
-DOTENV_CONFIG_PATH=/Users/lmagee/Dev/machinespirits/machinespirits-eval/.env \
-node -r dotenv/config scripts/generate-pedagogical-dramas.js \
-  --generator api --api-model sonnet \
-  --spec config/poetics-calibration/oedipus-pilot-v2.yaml \
-  --only D_OED5 \
-  --paired-adaptation-arms none \
-  --max-turns 6 \
-  --director-variation-key a17-d5-redacted-control-run4 \
-  --out-dir exports/a17-one-side-replay-replication/d5-redacted-control-run4/sample \
-  --delib-dir exports/a17-one-side-replay-replication/d5-redacted-control-run4/deliberation \
-  --transcripts-dir exports/a17-one-side-replay-replication/d5-redacted-control-run4/transcripts \
-  --key exports/a17-one-side-replay-replication/d5-redacted-control-run4/key.yaml \
-  --generation-concurrency 1 \
-  --force
-```
-
-```bash
-DOTENV_CONFIG_PATH=/Users/lmagee/Dev/machinespirits/machinespirits-eval/.env \
-node -r dotenv/config scripts/qa-oedipus-arms.js \
-  --sample-root exports/a17-one-side-replay-replication/d5-redacted-control-run4 \
-  --spec config/poetics-calibration/oedipus-pilot-v2.yaml \
-  --arms none \
-  --panel qwen/qwen3.7-max,google/gemini-3.5-flash,deepseek/deepseek-v4-pro,gpt \
-  --out exports/a17-one-side-replay-replication/d5-redacted-control-run4/qa-oedipus-arms.json
+A17_PAID_GATE_APPROVED=YES \
+npm run poetics:a17-redacted-control-gate -- --approve-paid
 ```
 
 If that gate reaches 3-of-4 withheld consensus, generate D5 `socratic` and
