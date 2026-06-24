@@ -17,6 +17,7 @@ links:
     - TODO.md#D3
     - notes/design-d3-architectural-bridges.md
     - notes/d3-heavy-bridge-followup-gate.md
+    - notes/d3-independent-endpoint-and-fixture-explainer.md
   paper: §6.3.9
 tags:
   - d3
