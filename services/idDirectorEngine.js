@@ -175,6 +175,7 @@ function buildIdUserMessage({
   previousPersona,
   recognitionMode,
   recognitionDesire = false,
+  agencyReturn = false,
   learnerRegister = null,
 }) {
   const lines = [
@@ -204,6 +205,10 @@ function buildIdUserMessage({
     '<recognition_desire>',
     recognitionDesire ? 'true' : 'false',
     '</recognition_desire>',
+    '',
+    '<agency_return>',
+    agencyReturn ? 'true' : 'false',
+    '</agency_return>',
   ];
   if (learnerRegister && typeof learnerRegister === 'object') {
     lines.push('', '<learner_register>', JSON.stringify(learnerRegister, null, 2), '</learner_register>');
@@ -483,6 +488,7 @@ export async function runIdDirectedTurn({
 
   const recognitionMode = profile?.recognition_mode === true;
   const recognitionDesire = profile?.factors?.recognition_desire === true || profile?.recognition_desire === true;
+  const agencyReturn = profile?.factors?.agency_return === true || profile?.agency_return === true;
   const tutorMemory = _deps.tutorWritingPad.buildNarrativeSummary(learnerId, sessionId);
   const conversationContext = buildConversationContext(history);
   const previousPersona = extractPreviousPersona(trace);
@@ -495,6 +501,7 @@ export async function runIdDirectedTurn({
     previousPersona,
     recognitionMode,
     recognitionDesire,
+    agencyReturn,
   });
 
   const idStaticPrompt = idConfig?.prompt || '';
@@ -769,6 +776,7 @@ function buildIdRunnerUserMessage({
   previousPersona,
   recognitionMode,
   recognitionDesire = false,
+  agencyReturn = false,
   learnerRegister = null,
   idTuning = null,
   witnessExemplars = false,
@@ -797,6 +805,10 @@ function buildIdRunnerUserMessage({
     '<recognition_desire>',
     recognitionDesire ? 'true' : 'false',
     '</recognition_desire>',
+    '',
+    '<agency_return>',
+    agencyReturn ? 'true' : 'false',
+    '</agency_return>',
   ];
   if (learnerRegister && typeof learnerRegister === 'object' && learnerRegister.register !== 'unknown') {
     const { register, confidence, evidence, shift_from_previous } = learnerRegister;
@@ -878,6 +890,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
 
   const recognitionMode = evalCellProfile.recognition_mode === true;
   const recognitionDesire = evalCellProfile.factors?.recognition_desire === true;
+  const agencyReturn = evalCellProfile.factors?.agency_return === true;
   const useRegisterClassifier = evalCellProfile.factors?.register_classifier === true;
   const idTuning = typeof evalCellProfile.factors?.id_tuning === 'string' ? evalCellProfile.factors.id_tuning : null;
   const witnessExemplars = evalCellProfile.factors?.witness_exemplars === true;
@@ -932,6 +945,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
     previousPersona,
     recognitionMode,
     recognitionDesire,
+    agencyReturn,
     learnerRegister,
     idTuning,
     witnessExemplars,
@@ -1079,6 +1093,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
         stage_directions: construction.stage_directions,
         reasoning: construction.reasoning,
         recognition_desire: recognitionDesire,
+        agency_return: agencyReturn,
         generated_prompt_head: egoSystemPrompt.slice(0, 320),
         parse_status: construction.parse_status,
       }),

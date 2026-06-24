@@ -316,6 +316,38 @@ describe('runIdDirectedTurn', () => {
     assert.match(idCall.arguments[2][0].content, /<recognition_desire>\s*true/);
   });
 
+  test('agency_return factor flows from profile into id user message', async () => {
+    fakeProfile.factors = { recognition_desire: true, agency_return: true };
+    queuedResponses.push(
+      {
+        content: JSON.stringify({
+          generated_prompt: 'Agency-return persona authored. Put the test back in the learner hand. ' + 'A '.repeat(60),
+          persona_delta: 'from admired guide to handback craftsman',
+        }),
+        usage: { inputTokens: 0, outputTokens: 0 },
+      },
+      {
+        content: 'Try the phrase against the lecture and tell me where it breaks.',
+        usage: { inputTokens: 0, outputTokens: 0 },
+      },
+    );
+
+    await runIdDirectedTurn({
+      learnerId: 'l',
+      sessionId: 's',
+      learnerMessage: 'that phrase helped, but I am not sure I own it yet',
+      history: [],
+      tutorProfileName: 'cell_160_test',
+      topic: 't',
+      llmCall: llmCallSpy,
+      trace,
+    });
+
+    const idCall = llmCallSpy.mock.calls[0];
+    assert.match(idCall.arguments[2][0].content, /<recognition_desire>\s*true/);
+    assert.match(idCall.arguments[2][0].content, /<agency_return>\s*true/);
+  });
+
   test('empty ego output retries with learner-facing output reminder', async () => {
     queuedResponses.push(
       {

@@ -327,6 +327,7 @@ export const EVAL_ONLY_PROFILES = [
   'cell_108_id_director_charisma_register_exemplars',
   'cell_109_id_director_charisma_tuned_exemplars',
   'cell_159_id_director_charisma_desire',
+  'cell_160_id_director_charisma_agency_return',
   'cell_110_langgraph_adaptive',
   'cell_111_a13_C1_recognition_only',
   'cell_112_a13_C2_egosuperego',

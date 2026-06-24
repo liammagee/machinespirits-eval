@@ -4919,6 +4919,51 @@ profiles:
         temperature: 0.5
         max_tokens: 16000
 
+  # ─── Cell 160: Id-Director charisma with agency return ─────────────────────
+  # One-factor extension of cell_159. Keeps charisma as desire for recognition,
+  # but adds a "handback" constraint: when the learner grants partial uptake,
+  # the tutor must return authority to the learner through testing, restatement,
+  # or evidence-anchoring rather than intensifying the persona.
+  #
+  # Suggested comparison:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js run \
+  #     --profiles cell_159_id_director_charisma_desire,cell_160_id_director_charisma_agency_return \
+  #     --runs 1 --use-rubric
+  cell_160_id_director_charisma_agency_return:
+    description: "Id-Director (cell 160): cell 159 + agency_return factor. Tests whether charisma can be deliberately handed back to the learner after uptake: the tutor uses recognition to invite learner testing, restatement, and evidence-anchoring instead of dependency or admiration."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
   # ===========================================================================
   # ADAPTIVE-STATE CELL (LangGraph)
   # ===========================================================================
