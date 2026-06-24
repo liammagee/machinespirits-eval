@@ -2,7 +2,7 @@
 
 Date: 2026-06-24
 Branch: `codex/d2-d6-followups`
-Status: implementation scaffold created; `.env` copied from the main worktree and loaded via dotenv; empirical run not launched yet.
+Status: implementation scaffold created and empirical run completed; primary gate failed/scope-bound.
 
 ## What Changed
 
@@ -44,13 +44,12 @@ node scripts/run-d2-role-transfer.js analyze --in exports/d2-role-transfer-mock.
 The mock artifacts are ignored generated files. They only prove that the
 sidecar can validate, generate row-shaped output, and analyze scored rows.
 
-## Real Run Command
+## Real Run Executed
 
 The worktree now has a local `.env` copied from the main checkout and
 `scripts/run-d2-role-transfer.js` loads it via dotenv before provider calls.
-The empirical run was not launched in this step because it is a paid
-generation-plus-three-judge sequence. Once the paid run is explicitly approved,
-run:
+The paid generation-plus-three-judge sequence was approved and run on
+2026-06-24. Exact commands:
 
 ```bash
 node scripts/run-d2-role-transfer.js generate \
@@ -77,7 +76,7 @@ node scripts/run-d2-role-transfer.js score \
   --in exports/d2-role-transfer-v1-sonnet-gpt.jsonl \
   --out exports/d2-role-transfer-v1-scored.jsonl \
   --judge-provider openrouter \
-  --judge-model google/gemini-3-pro-preview \
+  --judge-model google/gemini-3.1-pro-preview \
   --judge-label gemini
 
 node scripts/run-d2-role-transfer.js analyze \
@@ -85,5 +84,32 @@ node scripts/run-d2-role-transfer.js analyze \
   --out exports/d2-role-transfer-v1-report.md
 ```
 
-Only the final real report should be folded into Paper 2.0 or a successor paper.
-Raw JSONL can be preserved as an export if the run is accepted as evidence.
+The original planned Gemini slug, `google/gemini-3-pro-preview`, returned an
+OpenRouter `404 - No endpoints found` before any Gemini rows were scored. The
+final run used the live repo/OpenRouter Gemini Pro replacement,
+`google/gemini-3.1-pro-preview`.
+
+## Result
+
+Report: `exports/d2-role-transfer-v1-report.md`
+
+- Run id: `d2_role_transfer_v1-real-2026-06-24T22:30:10.460Z`
+- Generated rows: 36
+- Judge observations: 108
+- Generator: `anthropic/claude-haiku-4.5`
+- Judges: `anthropic/claude-sonnet-4.6`, `openai/gpt-5.2`,
+  `google/gemini-3.1-pro-preview`
+- Metered cost recorded in output metadata: $0.7700 total
+
+Primary gate failed: 0/3 applications reached `d >= 1.0`.
+
+| Application | delta | d |
+|---|---:|---:|
+| peer_support | +2.01 | 0.15 |
+| customer_service | -0.14 | -0.06 |
+| code_review | -0.56 | -0.21 |
+
+Interpretation: D2 is scope-bound rather than positive. Both prompt families
+scored near ceiling on these simple role-native tasks, but the intersubjective
+arm did not produce the large cross-application advantage required by the frozen
+gate.

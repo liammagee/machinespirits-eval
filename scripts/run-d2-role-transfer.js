@@ -490,9 +490,51 @@ function analyzeRows(config, rows) {
     });
   }
   const passing = summaries.filter((summary) => Number.isFinite(summary.d) && summary.d >= gateThreshold).length;
+  const judgeModels = {};
+  const judgeMeans = {};
+  let generationCost = 0;
+  let judgeCost = 0;
+  for (const row of rows) {
+    generationCost += Number(row.usage?.cost || 0);
+    for (const judgment of row.judgments || []) {
+      judgeModels[judgment.judge_label] ??= new Set();
+      judgeModels[judgment.judge_label].add(judgment.judge_model);
+      judgeMeans[judgment.judge_label] ??= [];
+      judgeMeans[judgment.judge_label].push(Number(judgment.role_fit_overall));
+      judgeCost += Number(judgment.usage?.cost || 0);
+    }
+  }
+  const byArm = Object.fromEntries(
+    ['transmission', 'intersubjective'].map((arm) => {
+      const values = obs.filter((o) => o.arm === arm).map((o) => o.score);
+      return [
+        arm,
+        { n: values.length, mean: values.length ? mean(values) : null, sd: values.length ? sd(values) : null },
+      ];
+    }),
+  );
   return {
+    rows: rows.length,
     observations: obs.length,
     mock_observations: obs.filter((o) => o.mock).length,
+    run_ids: [...new Set(rows.map((row) => row.run_id).filter(Boolean))].sort(),
+    generator_models: [...new Set(rows.map((row) => row.generator_model).filter(Boolean))].sort(),
+    judge_models: Object.fromEntries(
+      Object.entries(judgeModels)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([label, models]) => [label, [...models].sort()]),
+    ),
+    judge_means: Object.fromEntries(
+      Object.entries(judgeMeans)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([label, values]) => [label, { n: values.length, mean: mean(values), sd: sd(values) }]),
+    ),
+    by_arm: byArm,
+    cost: {
+      generation: generationCost,
+      judging: judgeCost,
+      total: generationCost + judgeCost,
+    },
     summaries,
     gate: {
       threshold: gateThreshold,
@@ -512,8 +554,35 @@ function reportMarkdown(config, analysis, sourcePath) {
   lines.push('');
   lines.push(`Source: \`${sourcePath}\``);
   lines.push(`Study: \`${config.study_id}\``);
+  lines.push(`Run IDs: ${analysis.run_ids.map((runId) => `\`${runId}\``).join(', ') || 'NA'}`);
+  lines.push(`Generated rows: ${analysis.rows}`);
   lines.push(`Observations: ${analysis.observations}`);
   lines.push(`Mock observations: ${analysis.mock_observations}`);
+  lines.push(`Generator models: ${analysis.generator_models.map((model) => `\`${model}\``).join(', ') || 'NA'}`);
+  lines.push('');
+  lines.push('## Judges');
+  lines.push('');
+  lines.push('| Judge label | Model(s) | n | mean | SD |');
+  lines.push('|---|---|---:|---:|---:|');
+  for (const [label, stats] of Object.entries(analysis.judge_means)) {
+    const models = (analysis.judge_models[label] || []).map((model) => `\`${model}\``).join(', ');
+    lines.push(`| ${label} | ${models || 'NA'} | ${stats.n} | ${fmt(stats.mean)} | ${fmt(stats.sd)} |`);
+  }
+  lines.push('');
+  lines.push('## Arm Means');
+  lines.push('');
+  lines.push('| Arm | n | mean | SD |');
+  lines.push('|---|---:|---:|---:|');
+  for (const arm of ['transmission', 'intersubjective']) {
+    const stats = analysis.by_arm[arm];
+    lines.push(`| ${arm} | ${stats.n} | ${fmt(stats.mean)} | ${fmt(stats.sd)} |`);
+  }
+  lines.push('');
+  lines.push('## Metered Cost');
+  lines.push('');
+  lines.push(`Generation: $${fmt(analysis.cost.generation, 4)}`);
+  lines.push(`Judging: $${fmt(analysis.cost.judging, 4)}`);
+  lines.push(`Total: $${fmt(analysis.cost.total, 4)}`);
   lines.push('');
   lines.push('## Primary Gate');
   lines.push('');
@@ -539,7 +608,7 @@ function reportMarkdown(config, analysis, sourcePath) {
     );
   }
   lines.push('');
-  return `${lines.join('\n')}\n`;
+  return `${lines.join('\n').replace(/\n+$/, '')}\n`;
 }
 
 async function main() {

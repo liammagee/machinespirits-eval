@@ -1,10 +1,10 @@
 {
-  "generated": "2026-06-24T22:25:30.873Z",
+  "generated": "2026-06-24T22:46:00.819Z",
   "counts": {
     "total": 49,
     "byStatus": {
-      "done": 44,
-      "blocked": 3,
+      "done": 45,
+      "blocked": 2,
       "dropped": 2
     },
     "byType": {
@@ -72,36 +72,6 @@
         "learner-variance"
       ],
       "milestone": "poetics-followups"
-    },
-    {
-      "id": "d2-cross-application-role-reframed-study",
-      "title": "D2. True cross-application role-reframed study",
-      "status": "blocked",
-      "type": "research",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "todo",
-      "created": "2026-06-23",
-      "updated": "2026-06-24",
-      "verification": "D2 sidecar scaffold validates with scripts/run-d2-role-transfer.js validate; empirical completion requires real generation plus three-judge scoring and analysis.",
-      "blocked_by": "Paid generation plus three-judge scoring has not been launched; run the commands in notes/d2-role-transfer-scaffold.md after explicit paid-run approval.",
-      "claim_status": "planned",
-      "links": {
-        "notes": [
-          "TODO.md#D2",
-          "notes/design-d2-path2-cross-application.md",
-          "notes/d2-cross-application-role-reframed-gate.md",
-          "notes/d2-role-transfer-scaffold.md"
-        ],
-        "paper": "§8.2"
-      },
-      "tags": [
-        "d2",
-        "cross-application",
-        "separate-study"
-      ],
-      "milestone": "paper-2-evidence-cleanup",
-      "branch": "codex/d2-d6-followups"
     },
     {
       "id": "scriptorium-control-room-first-run",
@@ -509,6 +479,41 @@
       "milestone": "paper-2-evidence-cleanup"
     },
     {
+      "id": "d2-cross-application-role-reframed-study",
+      "title": "D2. True cross-application role-reframed study",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "todo",
+      "created": "2026-06-23",
+      "updated": "2026-06-24",
+      "verification": "D2 sidecar generated 36 rows, scored 108 three-judge observations, analyzed exports/d2-role-transfer-v1-scored.jsonl, and folded the scope-bound result into docs/research/paper-full-2.0.md §6.6.7.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": [
+          "TODO.md#D2",
+          "notes/design-d2-path2-cross-application.md",
+          "notes/d2-cross-application-role-reframed-gate.md",
+          "notes/d2-role-transfer-scaffold.md"
+        ],
+        "paper": "docs/research/paper-full-2.0.md §6.6.7",
+        "exports": [
+          "exports/d2-role-transfer-v1-report.md"
+        ],
+        "runs": [
+          "d2_role_transfer_v1-real-2026-06-24T22:30:10.460Z"
+        ]
+      },
+      "tags": [
+        "d2",
+        "cross-application",
+        "separate-study"
+      ],
+      "milestone": "paper-2-evidence-cleanup",
+      "branch": "codex/d2-d6-followups"
+    },
+    {
       "id": "d2-d6-followup-arc",
       "title": "D2-D6 follow-up arc: transfer, bridges, replication, rubric, taxonomy",
       "status": "done",
@@ -519,7 +524,7 @@
       "created": "2026-06-24",
       "updated": "2026-06-24",
       "branch": "codex/d2-d6-followups",
-      "verification": "Completion audit records D5/D6 as locally complete, D2 as scaffolded but blocked for empirical execution, D3 as gated for future empirical work, and D4 as a completed scope-bound replication; workplan render/check/test and git diff check pass.",
+      "verification": "Completion audit records D5/D6 as locally complete, D2 and D4 as completed scope-bound empirical results, and D3 as gated for future empirical work; workplan render/check/test and git diff check pass.",
       "claim_status": "scope-bound",
       "links": {
         "notes": [

@@ -2,7 +2,7 @@
 
 Date: 2026-06-24
 Branch: `codex/d2-d6-followups`
-Status: gate reconstructed; 2026-06-24 sidecar scaffold now created, local `.env` loaded via dotenv, empirical run pending explicit paid-run approval.
+Status: gate reconstructed; 2026-06-24 sidecar scaffold created and empirical run completed; primary gate failed/scope-bound.
 
 ## Source status
 
@@ -125,8 +125,9 @@ node scripts/run-d2-role-transfer.js mock --out exports/d2-role-transfer-mock.js
 node scripts/run-d2-role-transfer.js analyze --in exports/d2-role-transfer-mock.jsonl --out exports/d2-role-transfer-mock-report.md
 ```
 
-Real run sequence, once the paid run is approved, is recorded in
-`notes/d2-role-transfer-scaffold.md`.
+Real run sequence and result are recorded in
+`notes/d2-role-transfer-scaffold.md` and
+`exports/d2-role-transfer-v1-report.md`.
 
 ## Stop condition for D2
 
@@ -142,6 +143,7 @@ D2 scaffold is resolved for this branch when the branch records:
 - the pass threshold remains `d >= 1.0` on two of three core applications.
 
 That scaffold condition is now met by this note plus
-`notes/d2-role-transfer-scaffold.md`. The empirical D2 study itself remains
-unrun until the paid generation plus three-judge scoring sequence is explicitly
-approved.
+`notes/d2-role-transfer-scaffold.md`. The empirical D2 study has also been run:
+36 generated rows, 108 three-judge observations, and a failed primary gate
+(0/3 applications with `d >= 1.0`). D2 closes here as a scope-bound null for a
+large role-transfer advantage under the tested sidecar.

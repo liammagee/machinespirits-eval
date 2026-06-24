@@ -1,27 +1,28 @@
 ---
 id: d2-cross-application-role-reframed-study
 title: D2. True cross-application role-reframed study
-status: blocked
+status: done
 type: research
 priority: P2
 owner: codex
 source: todo
 created: 2026-06-23
 updated: 2026-06-24
-verification: "D2 sidecar scaffold validates with
-  scripts/run-d2-role-transfer.js validate; empirical completion requires real
-  generation plus three-judge scoring and analysis."
-blocked_by: "Paid generation plus three-judge scoring has not been launched;
-  run the commands in notes/d2-role-transfer-scaffold.md after explicit paid-run
-  approval."
-claim_status: planned
+verification: "D2 sidecar generated 36 rows, scored 108 three-judge
+  observations, analyzed exports/d2-role-transfer-v1-scored.jsonl, and folded
+  the scope-bound result into docs/research/paper-full-2.0.md §6.6.7."
+claim_status: scope-bound
 links:
   notes:
     - TODO.md#D2
     - notes/design-d2-path2-cross-application.md
     - notes/d2-cross-application-role-reframed-gate.md
     - notes/d2-role-transfer-scaffold.md
-  paper: §8.2
+  paper: docs/research/paper-full-2.0.md §6.6.7
+  exports:
+    - exports/d2-role-transfer-v1-report.md
+  runs:
+    - d2_role_transfer_v1-real-2026-06-24T22:30:10.460Z
 tags:
   - d2
   - cross-application
@@ -44,5 +45,9 @@ review.
 scaffold: `config/d2-role-transfer.yaml`,
 `config/evaluation-rubric-d2-role-transfer.yaml`, six `prompts/d2/*.md` files,
 and `scripts/run-d2-role-transfer.js`. No-cost validation and mock analysis pass.
-The empirical study is still blocked because the paid real generation plus
-three-judge scoring sequence has not been explicitly launched.
+
+2026-06-24 Codex: Ran the paid D2 sidecar after explicit approval. Run
+`d2_role_transfer_v1-real-2026-06-24T22:30:10.460Z` generated 36 rows and 108
+judge observations across Sonnet, GPT, and Gemini. The frozen primary gate
+failed 0/3: peer support `d=0.15`, customer service `d=-0.06`, code review
+`d=-0.21`. Result is scope-bound and folded into Paper 2.0 §6.6.7.

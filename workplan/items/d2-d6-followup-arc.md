@@ -9,7 +9,7 @@ source: manual
 created: 2026-06-24
 updated: 2026-06-24
 branch: codex/d2-d6-followups
-verification: Completion audit records D5/D6 as locally complete, D2 as scaffolded but blocked for empirical execution, D3 as gated for future empirical work, and D4 as a completed scope-bound replication; workplan render/check/test and git diff check pass.
+verification: Completion audit records D5/D6 as locally complete, D2 and D4 as completed scope-bound empirical results, and D3 as gated for future empirical work; workplan render/check/test and git diff check pass.
 claim_status: scope-bound
 links:
   notes:
@@ -98,5 +98,9 @@ future designs.
 
 2026-06-24 Codex: Reopened D2 after user request and created the true
 role-transfer sidecar scaffold. The scaffold validates and includes mock-only
-analysis plumbing, but the empirical D2 run remains blocked on configured
-paid-run approval plus the required three-judge scoring sequence.
+analysis plumbing.
+
+2026-06-24 Codex: Ran D2 after explicit paid-run approval. The sidecar produced
+36 generated rows and 108 three-judge observations. The frozen role-transfer
+gate failed 0/3, so D2 is now a scope-bound empirical result rather than a
+blocked future run.
