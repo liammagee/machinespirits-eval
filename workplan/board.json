@@ -1,11 +1,11 @@
 {
-  "generated": "2026-06-24T01:42:58.693Z",
+  "generated": "2026-06-24T02:14:19.607Z",
   "counts": {
     "total": 47,
     "byStatus": {
-      "done": 39,
+      "done": 40,
       "blocked": 1,
-      "triaged": 4,
+      "triaged": 3,
       "dropped": 2,
       "review": 1
     },
@@ -95,33 +95,6 @@
         "rubric",
         "pca",
         "methods"
-      ],
-      "milestone": "paper-2-evidence-cleanup"
-    },
-    {
-      "id": "review-ego-superego-internal-history-window",
-      "title": "Review configurable ego/superego internal history windows",
-      "status": "triaged",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-06-23",
-      "updated": "2026-06-24",
-      "verification": "Current same-turn history behavior is covered by tests; a configurable history-window design is either implemented and smoke-tested with a bounded comparison, or explicitly rejected with rationale.",
-      "claim_status": "exploratory",
-      "links": {
-        "notes": "notes/2026-06-23-ego-superego-history-window-review.md",
-        "code": [
-          "tutor-core/services/tutorDialogueEngine.js",
-          "tutor-core/services/dialecticalEngine.js"
-        ]
-      },
-      "tags": [
-        "ego-superego",
-        "message-history",
-        "prompt-assembly",
-        "mechanism-test"
       ],
       "milestone": "paper-2-evidence-cleanup"
     },
@@ -812,6 +785,35 @@
       ],
       "milestone": "paper-2-evidence-cleanup",
       "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "review-ego-superego-internal-history-window",
+      "title": "Review configurable ego/superego internal history windows",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-23",
+      "updated": "2026-06-24",
+      "verification": "Closeout audit completed; no-spend tests cover default opt-out, explicit opt-in message history, and Phase-2 prompt-only behavior; result is retained as opt-in instrumentation only, not a default or Paper 2.0 finding.",
+      "claim_status": "killed",
+      "branch": "codex/internal-history-closeout",
+      "links": {
+        "notes": "notes/2026-06-23-ego-superego-history-window-review.md",
+        "items": "implement-messages-style-internal-history-probe",
+        "code": [
+          "tutor-core/services/tutorDialogueEngine.js",
+          "tutor-core/services/dialecticalEngine.js"
+        ]
+      },
+      "tags": [
+        "ego-superego",
+        "message-history",
+        "prompt-assembly",
+        "mechanism-test"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
     },
     {
       "id": "sepo-self-evolving-prompt-agent-for-system-prompt-optimizati",
