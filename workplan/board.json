@@ -1,11 +1,10 @@
 {
-  "generated": "2026-06-24T02:44:05.955Z",
+  "generated": "2026-06-24T02:44:29.708Z",
   "counts": {
     "total": 47,
     "byStatus": {
       "done": 42,
-      "blocked": 1,
-      "triaged": 1,
+      "blocked": 2,
       "dropped": 2,
       "review": 1
     },
@@ -19,30 +18,6 @@
     }
   },
   "items": [
-    {
-      "id": "a17-one-side-replay-replication-across-scenes",
-      "title": "A17. One-Side Replay Replication Across Scenes",
-      "status": "triaged",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "todo",
-      "created": "2026-06-22",
-      "updated": "2026-06-24",
-      "verification": "Replication across scenes run; results in exports/; the one-side-replay claim updated or closed in the paper.",
-      "links": {
-        "notes": "TODO.md#A17",
-        "paper": "§7.9",
-        "exports": "exports/replay-d5-run3-socratic/"
-      },
-      "claim_status": "exploratory",
-      "tags": [
-        "replay",
-        "poetics",
-        "learner-variance"
-      ],
-      "milestone": "poetics-followups"
-    },
     {
       "id": "a1-human-learner-validation",
       "title": "Human-learner validation pilot (real learning gains)",
@@ -67,6 +42,35 @@
         "critical"
       ],
       "milestone": "human-pilot-prep"
+    },
+    {
+      "id": "a17-one-side-replay-replication-across-scenes",
+      "title": "A17. One-Side Replay Replication Across Scenes",
+      "status": "blocked",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "todo",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "Replication across scenes run; results in exports/; the one-side-replay claim updated or closed in the paper.",
+      "branch": "codex/a17-replay-replication",
+      "blocked_by": "D_OED5 `d5-run1` failed the required QA gate because the `none` control was unanimously classified as metered; a clean replacement D5 scene requires additional paid approval beyond the exact minimum run already used.",
+      "links": {
+        "notes": [
+          "TODO.md#A17",
+          "notes/poetics/2026-06-24-a17-replay-replication-qa-stop.md"
+        ],
+        "paper": "§7.9",
+        "exports": "exports/a17-one-side-replay-replication/"
+      },
+      "claim_status": "exploratory",
+      "tags": [
+        "replay",
+        "poetics",
+        "learner-variance"
+      ],
+      "milestone": "poetics-followups"
     },
     {
       "id": "implement-messages-style-internal-history-probe",
