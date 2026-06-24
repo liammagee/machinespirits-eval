@@ -5010,6 +5010,52 @@ profiles:
         temperature: 0.5
         max_tokens: 16000
 
+  # ─── Cell 162: Warmth-preserving agency return verification ────────────────
+  # One-factor extension of cell_161. The verifier still enforces a concrete
+  # agency-return move, but failed checks prefer an append-only handback sentence
+  # so the original charismatic/warm partial-uptake response is preserved.
+  #
+  # Suggested comparison:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js run \
+  #     --profiles cell_161_id_director_charisma_agency_return_verified,cell_162_id_director_charisma_agency_return_warm_verified \
+  #     --scenario charisma_desire_partial_uptake --runs 1 --use-rubric
+  cell_162_id_director_charisma_agency_return_warm_verified:
+    description: "Id-Director (cell 162): cell 161 + warmth-preserving agency_return_verifier_mode. Repairs missing handback by appending one concrete agency-return move while preserving the original charismatic response, targeting the partial-uptake charisma drop."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
   # ===========================================================================
   # ADAPTIVE-STATE CELL (LangGraph)
   # ===========================================================================

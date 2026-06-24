@@ -108,6 +108,22 @@ describe('parseAgencyReturnVerification', () => {
     assert.match(result.repaired_response, /your own sentence/);
   });
 
+  test('parses a failing verifier envelope with an agency-return append', () => {
+    const raw = JSON.stringify({
+      passes: false,
+      move_type: 'missing',
+      reason: 'The response preserves warmth but never hands the move back.',
+      agency_return_append: 'Try saying the phrase back against one example from the text.',
+      repaired_response: '',
+    });
+    const result = parseAgencyReturnVerification(raw);
+    assert.equal(result.parse_status, 'ok');
+    assert.equal(result.passes, false);
+    assert.equal(result.move_type, 'missing');
+    assert.match(result.agency_return_append, /saying the phrase back/);
+    assert.equal(result.repaired_response, '');
+  });
+
   test('falls back open when failed verification omits a repair', () => {
     const result = parseAgencyReturnVerification('{"passes": false, "move_type": "missing"}');
     assert.equal(result.parse_status, 'fallback');
@@ -384,6 +400,7 @@ describe('runIdDirectedTurn', () => {
     const idCall = llmCallSpy.mock.calls[0];
     assert.match(idCall.arguments[2][0].content, /<recognition_desire>\s*true/);
     assert.match(idCall.arguments[2][0].content, /<agency_return>\s*true/);
+    assert.match(idCall.arguments[2][0].content, /<agency_return_verifier_mode>\s*strict/);
   });
 
   test('agency_return_verifier repairs missing handback before returning', async () => {
@@ -437,6 +454,59 @@ describe('runIdDirectedTurn', () => {
     assert.equal(result.internalDeliberation[2].role, 'agency_return_verifier');
     assert.equal(trace.metrics.tutorInputTokens, 90);
     assert.equal(trace.metrics.tutorOutputTokens, 120);
+  });
+
+  test('warmth-preserving agency_return_verifier appends handback without replacing draft', async () => {
+    fakeProfile.factors = {
+      recognition_desire: true,
+      agency_return: true,
+      agency_return_verifier: true,
+      agency_return_verifier_mode: 'warmth_preserving',
+    };
+    queuedResponses.push(
+      {
+        content: JSON.stringify({
+          generated_prompt: 'Warm agency-return persona authored. Keep the warmth alive. ' + 'A '.repeat(60),
+          persona_delta: 'warm handback',
+        }),
+        usage: { inputTokens: 10, outputTokens: 20 },
+      },
+      {
+        content: 'That phrase has heat because you felt its edge before you accepted it.',
+        usage: { inputTokens: 30, outputTokens: 40 },
+      },
+      {
+        content: JSON.stringify({
+          passes: false,
+          move_type: 'missing',
+          reason: 'The draft preserves warmth but does not hand the move back.',
+          agency_return_append: 'Now test that edge against one sentence from the lecture and tell me where it cuts.',
+          repaired_response: '',
+        }),
+        usage: { inputTokens: 50, outputTokens: 60 },
+      },
+    );
+
+    const result = await runIdDirectedTurn({
+      learnerId: 'l',
+      sessionId: 's',
+      learnerMessage: 'that phrase helped, but I am not sure I own it yet',
+      history: [],
+      tutorProfileName: 'cell_162_test',
+      topic: 'Lecture 3 on recognition',
+      llmCall: llmCallSpy,
+      trace,
+    });
+
+    const verifierCall = llmCallSpy.mock.calls[2];
+    const idCall = llmCallSpy.mock.calls[0];
+    assert.match(idCall.arguments[2][0].content, /<agency_return_verifier_mode>\s*warmth_preserving/);
+    assert.match(verifierCall.arguments[1], /warmth-preserving agency-return verifier/);
+    assert.match(result.externalMessage, /^That phrase has heat/);
+    assert.match(result.externalMessage, /Now test that edge against one sentence/);
+    assert.equal(result.agencyReturnVerification.mode, 'warmth_preserving');
+    assert.equal(result.agencyReturnVerification.repair_mode, 'append');
+    assert.equal(result.agencyReturnRepaired, true);
   });
 
   test('agency_return_verifier retries empty verifier output', async () => {

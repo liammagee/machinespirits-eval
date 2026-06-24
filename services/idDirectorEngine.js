@@ -141,6 +141,8 @@ const EGO_EMPTY_RETRY_SUFFIX =
 const AGENCY_RETURN_VERIFIER_MAX_TOKENS = 4000;
 const AGENCY_RETURN_VERIFIER_RETRY_SUFFIX =
   'Return only the required JSON object now. Do not include analysis, headings, markdown, or prose outside the JSON.';
+const AGENCY_RETURN_VERIFIER_MODE_STRICT = 'strict';
+const AGENCY_RETURN_VERIFIER_MODE_WARMTH_PRESERVING = 'warmth_preserving';
 const AGENCY_RETURN_VERIFIER_PROMPT = `You are an agency-return verifier for a charismatic tutor.
 
 Read the learner message, curriculum context, and drafted tutor response. Decide whether the response contains at least one concrete agency-return move:
@@ -150,7 +152,7 @@ Read the learner message, curriculum context, and drafted tutor response. Decide
 
 Do not reward generic follow-up questions, requests for admiration, requests to continue, vague "does that make sense" checks, or purely rhetorical endings.
 
-Return exactly one JSON object:
+Return only one JSON object:
 {
   "passes": true | false,
   "move_type": "test" | "resay" | "anchor" | "missing",
@@ -158,7 +160,45 @@ Return exactly one JSON object:
   "repaired_response": ""
 }
 
-If passes is false, repaired_response must be a complete learner-facing tutor response. Preserve the original response's best content and voice, but add exactly one agency-return move. Do not add meta-commentary. If passes is true, repaired_response must be an empty string.`;
+If passes is false, repaired_response must be a complete learner-facing tutor response. Preserve the original response's best content and voice, but add one agency-return move. Do not add meta-commentary. If passes is true, repaired_response must be an empty string.`;
+
+const AGENCY_RETURN_VERIFIER_WARMTH_PRESERVING_PROMPT = `You are a warmth-preserving agency-return verifier for a charismatic tutor.
+
+Read the learner message, curriculum context, and drafted tutor response. Decide whether the response contains at least one concrete agency-return move:
+- "test": asks the learner to test the tutor's claim, image, or phrase against a passage, case, objection, or example.
+- "resay": asks the learner to restate, translate, flatten, reject, or correct the idea in their own words.
+- "anchor": ties an admired phrase or tutor claim to a named content feature, then asks the learner to decide whether that anchor supports it.
+
+This verifier is for partial uptake: the learner has felt the tutor's phrase or presence, but does not yet fully own it. Protect the draft's charisma, warmth, address, rhythm, and earned status. Do not cool the response into generic pedagogy.
+
+Do not reward generic follow-up questions, requests for admiration, requests to continue, vague "does that make sense" checks, or purely rhetorical endings. Also avoid premature-certainty praise in repaired text: do not call the learner's partial uptake "exactly" right or "excellent".
+
+Return only one JSON object:
+{
+  "passes": true | false,
+  "move_type": "test" | "resay" | "anchor" | "missing",
+  "reason": "one short sentence",
+  "agency_return_append": "",
+  "repaired_response": ""
+}
+
+If passes is false, prefer agency_return_append: write one short learner-facing sentence or question that can be appended to the original response without replacing it. The append must ask the learner to test, re-say, reject, correct, or anchor the idea in course content. Keep the original response intact unless it is unsafe or incoherent. If you must replace the whole response, put the complete replacement in repaired_response and leave agency_return_append empty. If passes is true, agency_return_append and repaired_response must both be empty strings.`;
+
+function normalizeAgencyReturnVerifierMode(mode) {
+  return mode === AGENCY_RETURN_VERIFIER_MODE_WARMTH_PRESERVING
+    ? AGENCY_RETURN_VERIFIER_MODE_WARMTH_PRESERVING
+    : AGENCY_RETURN_VERIFIER_MODE_STRICT;
+}
+
+function getAgencyReturnVerifierPrompt(mode) {
+  return mode === AGENCY_RETURN_VERIFIER_MODE_WARMTH_PRESERVING
+    ? AGENCY_RETURN_VERIFIER_WARMTH_PRESERVING_PROMPT
+    : AGENCY_RETURN_VERIFIER_PROMPT;
+}
+
+function getAgencyReturnRepairMode(mode) {
+  return mode === AGENCY_RETURN_VERIFIER_MODE_WARMTH_PRESERVING ? 'append' : 'replace';
+}
 
 function getRequiredTemperature(config, configName) {
   const t = config?.hyperparameters?.temperature;
@@ -229,6 +269,7 @@ function buildIdUserMessage({
   recognitionMode,
   recognitionDesire = false,
   agencyReturn = false,
+  agencyReturnVerifierMode = AGENCY_RETURN_VERIFIER_MODE_STRICT,
   learnerRegister = null,
 }) {
   const lines = [
@@ -262,6 +303,10 @@ function buildIdUserMessage({
     '<agency_return>',
     agencyReturn ? 'true' : 'false',
     '</agency_return>',
+    '',
+    '<agency_return_verifier_mode>',
+    normalizeAgencyReturnVerifierMode(agencyReturnVerifierMode),
+    '</agency_return_verifier_mode>',
   ];
   if (learnerRegister && typeof learnerRegister === 'object') {
     lines.push('', '<learner_register>', JSON.stringify(learnerRegister, null, 2), '</learner_register>');
@@ -491,8 +536,9 @@ export function parseAgencyReturnVerification(rawText) {
       ? 'test'
       : 'missing';
   const repairedResponse = typeof parsed?.repaired_response === 'string' ? parsed.repaired_response.trim() : '';
+  const agencyReturnAppend = typeof parsed?.agency_return_append === 'string' ? parsed.agency_return_append.trim() : '';
 
-  if (!passes && !repairedResponse) {
+  if (!passes && !repairedResponse && !agencyReturnAppend) {
     return fallbackAgencyReturnVerification('missing_repaired_response_for_failed_verification', rawText);
   }
 
@@ -501,16 +547,29 @@ export function parseAgencyReturnVerification(rawText) {
     move_type: moveType,
     reason: typeof parsed?.reason === 'string' ? parsed.reason : '',
     repaired_response: passes ? '' : repairedResponse,
+    agency_return_append: passes ? '' : agencyReturnAppend,
     parse_status: usedRepair ? 'ok_via_jsonrepair' : 'ok',
   };
 }
 
-function applyAgencyReturnVerification(tutorResponse, verification) {
+function applyAgencyReturnVerification(tutorResponse, verification, options = {}) {
   if (!verification || verification.passes) {
     return { message: tutorResponse, repaired: false };
   }
+  if (options.repairMode === 'append' && verification.agency_return_append) {
+    return {
+      message: `${String(tutorResponse || '').trim()}\n\n${verification.agency_return_append}`.trim(),
+      repaired: true,
+    };
+  }
   if (verification.repaired_response) {
     return { message: verification.repaired_response, repaired: true };
+  }
+  if (verification.agency_return_append) {
+    return {
+      message: `${String(tutorResponse || '').trim()}\n\n${verification.agency_return_append}`.trim(),
+      repaired: true,
+    };
   }
   return { message: tutorResponse, repaired: false };
 }
@@ -630,6 +689,11 @@ export async function runIdDirectedTurn({
   const agencyReturn = profile?.factors?.agency_return === true || profile?.agency_return === true;
   const agencyReturnVerifier =
     profile?.factors?.agency_return_verifier === true || profile?.agency_return_verifier === true;
+  const agencyReturnVerifierMode = normalizeAgencyReturnVerifierMode(
+    profile?.factors?.agency_return_verifier_mode || profile?.agency_return_verifier_mode,
+  );
+  const agencyReturnVerifierPrompt = getAgencyReturnVerifierPrompt(agencyReturnVerifierMode);
+  const agencyReturnRepairMode = getAgencyReturnRepairMode(agencyReturnVerifierMode);
   const tutorMemory = _deps.tutorWritingPad.buildNarrativeSummary(learnerId, sessionId);
   const conversationContext = buildConversationContext(history);
   const previousPersona = extractPreviousPersona(trace);
@@ -643,6 +707,7 @@ export async function runIdDirectedTurn({
     recognitionMode,
     recognitionDesire,
     agencyReturn,
+    agencyReturnVerifierMode,
   });
 
   const idStaticPrompt = idConfig?.prompt || '';
@@ -722,7 +787,7 @@ export async function runIdDirectedTurn({
     });
     let verifierResponse = await llmCall(
       idModel,
-      AGENCY_RETURN_VERIFIER_PROMPT,
+      agencyReturnVerifierPrompt,
       [
         {
           role: 'user',
@@ -746,7 +811,7 @@ export async function runIdDirectedTurn({
       verifierRetried = true;
       verifierResponse = await llmCall(
         idModel,
-        AGENCY_RETURN_VERIFIER_PROMPT,
+        agencyReturnVerifierPrompt,
         [
           {
             role: 'user',
@@ -768,7 +833,11 @@ export async function runIdDirectedTurn({
     }
     agencyVerification = parseAgencyReturnVerification(verifierResponse?.content || '');
     agencyVerification.retried = verifierRetried;
-    const verified = applyAgencyReturnVerification(externalMessage, agencyVerification);
+    agencyVerification.mode = agencyReturnVerifierMode;
+    agencyVerification.repair_mode = agencyReturnRepairMode;
+    const verified = applyAgencyReturnVerification(externalMessage, agencyVerification, {
+      repairMode: agencyReturnRepairMode,
+    });
     externalMessage = verified.message;
     agencyRepaired = verified.repaired;
     internalDeliberation.push(
@@ -984,6 +1053,7 @@ function buildIdRunnerUserMessage({
   recognitionMode,
   recognitionDesire = false,
   agencyReturn = false,
+  agencyReturnVerifierMode = AGENCY_RETURN_VERIFIER_MODE_STRICT,
   learnerRegister = null,
   idTuning = null,
   witnessExemplars = false,
@@ -1016,6 +1086,10 @@ function buildIdRunnerUserMessage({
     '<agency_return>',
     agencyReturn ? 'true' : 'false',
     '</agency_return>',
+    '',
+    '<agency_return_verifier_mode>',
+    normalizeAgencyReturnVerifierMode(agencyReturnVerifierMode),
+    '</agency_return_verifier_mode>',
   ];
   if (learnerRegister && typeof learnerRegister === 'object' && learnerRegister.register !== 'unknown') {
     const { register, confidence, evidence, shift_from_previous } = learnerRegister;
@@ -1099,6 +1173,11 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   const recognitionDesire = evalCellProfile.factors?.recognition_desire === true;
   const agencyReturn = evalCellProfile.factors?.agency_return === true;
   const agencyReturnVerifier = evalCellProfile.factors?.agency_return_verifier === true;
+  const agencyReturnVerifierMode = normalizeAgencyReturnVerifierMode(
+    evalCellProfile.factors?.agency_return_verifier_mode,
+  );
+  const agencyReturnVerifierPrompt = getAgencyReturnVerifierPrompt(agencyReturnVerifierMode);
+  const agencyReturnRepairMode = getAgencyReturnRepairMode(agencyReturnVerifierMode);
   const useRegisterClassifier = evalCellProfile.factors?.register_classifier === true;
   const idTuning = typeof evalCellProfile.factors?.id_tuning === 'string' ? evalCellProfile.factors.id_tuning : null;
   const witnessExemplars = evalCellProfile.factors?.witness_exemplars === true;
@@ -1154,6 +1233,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
     recognitionMode,
     recognitionDesire,
     agencyReturn,
+    agencyReturnVerifierMode,
     learnerRegister,
     idTuning,
     witnessExemplars,
@@ -1278,7 +1358,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
     });
     let verifierResponse = await callAIWithCliBridge(
       verifierAgentConfig,
-      AGENCY_RETURN_VERIFIER_PROMPT,
+      agencyReturnVerifierPrompt,
       verifierUserMessage,
       'agency_return_verifier',
       {},
@@ -1292,7 +1372,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       verifierRetried = true;
       verifierResponse = await callAIWithCliBridge(
         verifierAgentConfig,
-        AGENCY_RETURN_VERIFIER_PROMPT,
+        agencyReturnVerifierPrompt,
         buildAgencyReturnVerifierRetryUserMessage(verifierUserMessage),
         'agency_return_verifier_retry',
         {},
@@ -1310,7 +1390,11 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       inputTokens: verifierResponse?.inputTokens || 0,
       outputTokens: verifierResponse?.outputTokens || 0,
     };
-    const verified = applyAgencyReturnVerification(externalMessage, agencyVerification);
+    agencyVerification.mode = agencyReturnVerifierMode;
+    agencyVerification.repair_mode = agencyReturnRepairMode;
+    const verified = applyAgencyReturnVerification(externalMessage, agencyVerification, {
+      repairMode: agencyReturnRepairMode,
+    });
     externalMessage = verified.message;
     agencyRepaired = verified.repaired;
   }
@@ -1354,6 +1438,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
         recognition_desire: recognitionDesire,
         agency_return: agencyReturn,
         agency_return_verifier: agencyReturnVerifier,
+        agency_return_verifier_mode: agencyReturnVerifierMode,
         generated_prompt_head: egoSystemPrompt.slice(0, 320),
         parse_status: construction.parse_status,
       }),
@@ -1389,6 +1474,8 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
         move_type: agencyVerification.move_type,
         reason: agencyVerification.reason,
         parse_status: agencyVerification.parse_status,
+        mode: agencyVerification.mode,
+        repair_mode: agencyVerification.repair_mode,
         retried: agencyVerification.retried === true,
         repaired: agencyRepaired,
       }),
@@ -1415,6 +1502,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       egoRetried,
       agencyReturnVerified: agencyVerification?.passes === true,
       agencyReturnRepaired: agencyRepaired,
+      agencyReturnVerifierMode,
       agencyReturnVerification: agencyVerification,
       idConstruction: construction, // bonus: surface for trace logging downstream
     },
