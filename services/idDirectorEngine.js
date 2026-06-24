@@ -143,6 +143,8 @@ const AGENCY_RETURN_VERIFIER_RETRY_SUFFIX =
   'Return only the required JSON object now. Do not include analysis, headings, markdown, or prose outside the JSON.';
 const AGENCY_RETURN_VERIFIER_MODE_STRICT = 'strict';
 const AGENCY_RETURN_VERIFIER_MODE_WARMTH_PRESERVING = 'warmth_preserving';
+const AGENCY_RETURN_CHARISMA_FLOOR_MODE_STANDARD = 'standard';
+const AGENCY_RETURN_CHARISMA_FLOOR_MODE_COMPACT = 'compact';
 const AGENCY_RETURN_VERIFIER_PROMPT = `You are an agency-return verifier for a charismatic tutor.
 
 Read the learner message, curriculum context, and drafted tutor response. Decide whether the response contains at least one concrete agency-return move:
@@ -198,6 +200,12 @@ function getAgencyReturnVerifierPrompt(mode) {
 
 function getAgencyReturnRepairMode(mode) {
   return mode === AGENCY_RETURN_VERIFIER_MODE_WARMTH_PRESERVING ? 'append' : 'replace';
+}
+
+function normalizeAgencyReturnCharismaFloorMode(mode) {
+  return mode === AGENCY_RETURN_CHARISMA_FLOOR_MODE_COMPACT
+    ? AGENCY_RETURN_CHARISMA_FLOOR_MODE_COMPACT
+    : AGENCY_RETURN_CHARISMA_FLOOR_MODE_STANDARD;
 }
 
 function getRequiredTemperature(config, configName) {
@@ -271,6 +279,7 @@ function buildIdUserMessage({
   agencyReturn = false,
   agencyReturnVerifierMode = AGENCY_RETURN_VERIFIER_MODE_STRICT,
   agencyReturnCharismaFloor = false,
+  agencyReturnCharismaFloorMode = AGENCY_RETURN_CHARISMA_FLOOR_MODE_STANDARD,
   learnerRegister = null,
 }) {
   const lines = [
@@ -312,6 +321,10 @@ function buildIdUserMessage({
     '<agency_return_charisma_floor>',
     agencyReturnCharismaFloor ? 'true' : 'false',
     '</agency_return_charisma_floor>',
+    '',
+    '<agency_return_charisma_floor_mode>',
+    normalizeAgencyReturnCharismaFloorMode(agencyReturnCharismaFloorMode),
+    '</agency_return_charisma_floor_mode>',
   ];
   if (learnerRegister && typeof learnerRegister === 'object') {
     lines.push('', '<learner_register>', JSON.stringify(learnerRegister, null, 2), '</learner_register>');
@@ -696,6 +709,9 @@ export async function runIdDirectedTurn({
     profile?.factors?.agency_return_verifier === true || profile?.agency_return_verifier === true;
   const agencyReturnCharismaFloor =
     profile?.factors?.agency_return_charisma_floor === true || profile?.agency_return_charisma_floor === true;
+  const agencyReturnCharismaFloorMode = normalizeAgencyReturnCharismaFloorMode(
+    profile?.factors?.agency_return_charisma_floor_mode || profile?.agency_return_charisma_floor_mode,
+  );
   const agencyReturnVerifierMode = normalizeAgencyReturnVerifierMode(
     profile?.factors?.agency_return_verifier_mode || profile?.agency_return_verifier_mode,
   );
@@ -716,6 +732,7 @@ export async function runIdDirectedTurn({
     agencyReturn,
     agencyReturnVerifierMode,
     agencyReturnCharismaFloor,
+    agencyReturnCharismaFloorMode,
   });
 
   const idStaticPrompt = idConfig?.prompt || '';
@@ -862,6 +879,7 @@ export async function runIdDirectedTurn({
     agencyReturnVerification: agencyVerification,
     agencyReturnRepaired: agencyRepaired,
     agencyReturnCharismaFloor,
+    agencyReturnCharismaFloorMode,
   };
 }
 
@@ -1064,6 +1082,7 @@ function buildIdRunnerUserMessage({
   agencyReturn = false,
   agencyReturnVerifierMode = AGENCY_RETURN_VERIFIER_MODE_STRICT,
   agencyReturnCharismaFloor = false,
+  agencyReturnCharismaFloorMode = AGENCY_RETURN_CHARISMA_FLOOR_MODE_STANDARD,
   learnerRegister = null,
   idTuning = null,
   witnessExemplars = false,
@@ -1104,6 +1123,10 @@ function buildIdRunnerUserMessage({
     '<agency_return_charisma_floor>',
     agencyReturnCharismaFloor ? 'true' : 'false',
     '</agency_return_charisma_floor>',
+    '',
+    '<agency_return_charisma_floor_mode>',
+    normalizeAgencyReturnCharismaFloorMode(agencyReturnCharismaFloorMode),
+    '</agency_return_charisma_floor_mode>',
   ];
   if (learnerRegister && typeof learnerRegister === 'object' && learnerRegister.register !== 'unknown') {
     const { register, confidence, evidence, shift_from_previous } = learnerRegister;
@@ -1188,6 +1211,9 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   const agencyReturn = evalCellProfile.factors?.agency_return === true;
   const agencyReturnVerifier = evalCellProfile.factors?.agency_return_verifier === true;
   const agencyReturnCharismaFloor = evalCellProfile.factors?.agency_return_charisma_floor === true;
+  const agencyReturnCharismaFloorMode = normalizeAgencyReturnCharismaFloorMode(
+    evalCellProfile.factors?.agency_return_charisma_floor_mode,
+  );
   const agencyReturnVerifierMode = normalizeAgencyReturnVerifierMode(
     evalCellProfile.factors?.agency_return_verifier_mode,
   );
@@ -1250,6 +1276,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
     agencyReturn,
     agencyReturnVerifierMode,
     agencyReturnCharismaFloor,
+    agencyReturnCharismaFloorMode,
     learnerRegister,
     idTuning,
     witnessExemplars,
@@ -1456,6 +1483,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
         agency_return_verifier: agencyReturnVerifier,
         agency_return_verifier_mode: agencyReturnVerifierMode,
         agency_return_charisma_floor: agencyReturnCharismaFloor,
+        agency_return_charisma_floor_mode: agencyReturnCharismaFloorMode,
         generated_prompt_head: egoSystemPrompt.slice(0, 320),
         parse_status: construction.parse_status,
       }),
@@ -1521,6 +1549,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       agencyReturnRepaired: agencyRepaired,
       agencyReturnVerifierMode,
       agencyReturnCharismaFloor,
+      agencyReturnCharismaFloorMode,
       agencyReturnVerification: agencyVerification,
       idConstruction: construction, // bonus: surface for trace logging downstream
     },

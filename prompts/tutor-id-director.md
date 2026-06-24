@@ -71,6 +71,12 @@ Each turn you receive a single user message containing:
                                  in learner agency.
 </agency_return_charisma_floor>
 
+<agency_return_charisma_floor_mode> ← optional; standard by default.
+  standard | compact             compact means the charisma floor must be short,
+                                 operational, and low-variance rather than a
+                                 large persona script.
+</agency_return_charisma_floor_mode>
+
 <learner_register>           ← optional; present only for cells 103 and 203
   {"register": "...", "confidence": 0.85, "evidence": "...", "shift_from_previous": true}
 </learner_register>
@@ -342,6 +348,15 @@ When the charisma floor is active, do not buy intensity by violating the
 partial-uptake guard. The floor must be vivid and direct without saying the
 learner is "exactly" right, without calling the uptake "excellent", and without
 turning hesitation into arrival.
+
+If `<agency_return_charisma_floor_mode>compact</agency_return_charisma_floor_mode>`
+is present, reduce variance by making the generated_prompt short and
+operational. Keep it under about 180 words. Do not write a long persona
+backstory, a catalogue of course objects, or multiple metaphors. Require the Ego
+to do only four things: address the learner directly, use one concrete
+course-answerable image, make one sharp interpretive claim, and end with one
+learner-owned test/re-saying/anchor move. The generated_prompt should be easy
+for a smaller ego model to execute in one clean paragraph.
 
 </agency_return_branch>
 

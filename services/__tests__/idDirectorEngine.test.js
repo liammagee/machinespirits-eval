@@ -402,6 +402,7 @@ describe('runIdDirectedTurn', () => {
     assert.match(idCall.arguments[2][0].content, /<agency_return>\s*true/);
     assert.match(idCall.arguments[2][0].content, /<agency_return_verifier_mode>\s*strict/);
     assert.match(idCall.arguments[2][0].content, /<agency_return_charisma_floor>\s*false/);
+    assert.match(idCall.arguments[2][0].content, /<agency_return_charisma_floor_mode>\s*standard/);
   });
 
   test('agency_return_verifier repairs missing handback before returning', async () => {
@@ -504,6 +505,7 @@ describe('runIdDirectedTurn', () => {
     const idCall = llmCallSpy.mock.calls[0];
     assert.match(idCall.arguments[2][0].content, /<agency_return_verifier_mode>\s*warmth_preserving/);
     assert.match(idCall.arguments[2][0].content, /<agency_return_charisma_floor>\s*true/);
+    assert.match(idCall.arguments[2][0].content, /<agency_return_charisma_floor_mode>\s*standard/);
     assert.match(verifierCall.arguments[1], /warmth-preserving agency-return verifier/);
     assert.match(result.externalMessage, /^That phrase has heat/);
     assert.match(result.externalMessage, /Now test that edge against one sentence/);
@@ -511,6 +513,58 @@ describe('runIdDirectedTurn', () => {
     assert.equal(result.agencyReturnVerification.repair_mode, 'append');
     assert.equal(result.agencyReturnRepaired, true);
     assert.equal(result.agencyReturnCharismaFloor, true);
+  });
+
+  test('compact charisma floor mode flows into id user message', async () => {
+    fakeProfile.factors = {
+      recognition_desire: true,
+      agency_return: true,
+      agency_return_verifier: true,
+      agency_return_verifier_mode: 'warmth_preserving',
+      agency_return_charisma_floor: true,
+      agency_return_charisma_floor_mode: 'compact',
+    };
+    queuedResponses.push(
+      {
+        content: JSON.stringify({
+          generated_prompt: 'Compact warm handback. One image, one claim, one learner-owned test. ' + 'A '.repeat(60),
+          persona_delta: 'compact warm handback',
+        }),
+        usage: { inputTokens: 10, outputTokens: 20 },
+      },
+      {
+        content: 'Hold the phrase against Freud’s censor and tell me where it holds.',
+        usage: { inputTokens: 30, outputTokens: 40 },
+      },
+      {
+        content: JSON.stringify({
+          passes: true,
+          move_type: 'test',
+          reason: 'The draft hands the phrase back as a test.',
+          agency_return_append: '',
+          repaired_response: '',
+        }),
+        usage: { inputTokens: 50, outputTokens: 60 },
+      },
+    );
+
+    const result = await runIdDirectedTurn({
+      learnerId: 'l',
+      sessionId: 's',
+      learnerMessage: 'that phrase helped, but I am not sure I own it yet',
+      history: [],
+      tutorProfileName: 'cell_164_test',
+      topic: 'Lecture 3 on recognition',
+      llmCall: llmCallSpy,
+      trace,
+    });
+
+    const idCall = llmCallSpy.mock.calls[0];
+    assert.match(idCall.arguments[2][0].content, /<agency_return_charisma_floor_mode>\s*compact/);
+    assert.equal(result.agencyReturnCharismaFloor, true);
+    assert.equal(result.agencyReturnCharismaFloorMode, 'compact');
+    assert.equal(result.agencyReturnVerification.passes, true);
+    assert.equal(result.agencyReturnRepaired, false);
   });
 
   test('warmth-preserving agency_return_verifier replaces premature-certainty wording', async () => {
