@@ -3700,24 +3700,34 @@ const DERIVATION_CSS = `
 .vocabschema__head h3{margin:0;font-family:"JetBrains Mono",monospace;font-size:var(--s-1);text-transform:uppercase;color:var(--ink)}
 .vocabschema__head p{margin:4px 0 0;color:var(--ink-3);line-height:1.45;max-width:76ch}
 .vocabschema__link{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;color:var(--moss-deep);text-decoration:none;border:1px solid var(--moss);background:var(--moss-soft);border-radius:999px;padding:4px 8px;white-space:nowrap}
+.vocabschema__ontology{display:grid;grid-template-columns:minmax(170px,.55fr) minmax(0,1fr);gap:8px;align-items:start;border:1px solid var(--moss);background:var(--moss-soft);border-radius:6px;padding:9px 10px;margin-bottom:10px}
+.vocabschema__ontology h4{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;color:var(--moss-deep);margin:0 0 4px}
+.vocabschema__ontology p{margin:0;color:var(--ink-3);line-height:1.35}
+.vocabschema__ontology .vocab__token{background:var(--paper);border-color:var(--moss);color:var(--moss-deep)}
 .vocabschema__novel{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px;margin-bottom:10px}
-.novelconcept{border:1px solid var(--ochre);background:var(--ochre-soft);border-radius:6px;padding:10px}
-.novelconcept h4{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;margin:0 0 6px;color:var(--ochre-d)}
-.novelconcept p{margin:0 0 7px;color:var(--ink-2);line-height:1.4}
-.novelconcept .concept__edge{background:var(--paper);border-color:var(--ochre);color:var(--ochre-d)}
 .vocabschema__acts{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin-bottom:10px}
 .vocabschema__act{border:1px solid var(--rule-soft);background:var(--paper);border-radius:6px;padding:8px}
 .vocabschema__act h4{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;margin:0 0 5px;color:var(--ink)}
 .vocabschema__act p{margin:0 0 7px;color:var(--ink-3);line-height:1.35}
-.vocabschema__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px}
+.vocabschema__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:8px}
 .concept{border:1px solid var(--rule-soft);background:var(--paper);border-radius:6px;padding:9px;min-width:0}
+.concept--novel{border-color:var(--ochre);background:var(--ochre-soft)}
 .concept__top{display:flex;gap:6px;align-items:center;justify-content:space-between;margin-bottom:6px}
 .concept__label{font-family:"JetBrains Mono",monospace;color:var(--ink);font-size:var(--s-0);font-weight:700}
 .concept__layer{font-family:"JetBrains Mono",monospace;font-size:var(--s--1);text-transform:uppercase;color:var(--ink-4);border:1px solid var(--rule-soft);border-radius:999px;padding:1px 5px}
+.concept--novel .concept__layer{border-color:var(--ochre);color:var(--ochre-d);background:var(--paper)}
 .concept__definition{color:var(--ink-2);line-height:1.4;margin:0 0 7px}
-.concept__meta{font-family:"JetBrains Mono",monospace;font-size:var(--s--1);color:var(--ink-4);margin-bottom:7px}
+.concept__deflabel,.concept__linkslabel,.concept__ontologylabel{font-family:"JetBrains Mono",monospace;font-size:var(--s--1);text-transform:uppercase;color:var(--ink-4);display:block;margin-bottom:2px}
+.concept__meta{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:7px}
+.concept__metachip{font-family:"JetBrains Mono",monospace;font-size:var(--s--1);color:var(--ink-4);border:1px solid var(--rule-soft);background:var(--paper-2);border-radius:4px;padding:2px 5px;min-width:0;overflow-wrap:anywhere}
+.concept__ontology{margin-bottom:8px}
+.concept__ontology a{display:inline-flex;align-items:center;max-width:100%;font-family:"JetBrains Mono",monospace;font-size:var(--s--1);color:var(--moss-deep);text-decoration:none;border:1px solid var(--moss);background:var(--moss-soft);border-radius:4px;padding:2px 5px}
+.concept__ontology code{font-family:inherit;white-space:normal;overflow-wrap:anywhere}
 .concept__links{display:flex;flex-wrap:wrap;gap:4px}
-.concept__edge{font-family:"JetBrains Mono",monospace;font-size:var(--s--1);border:1px solid var(--rule);background:var(--paper-3);color:var(--ink-3);border-radius:999px;padding:2px 6px;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.concept__linkslabel{flex:0 0 100%}
+.concept__edge{font-family:"JetBrains Mono",monospace;font-size:var(--s--1);border:1px solid var(--rule);background:var(--paper-3);color:var(--ink-3);border-radius:999px;padding:2px 6px;max-width:100%;overflow:hidden;text-overflow:ellipsis;text-decoration:none}
+.concept__edge b{color:var(--ink)}
+.concept--novel .concept__edge{background:var(--paper);border-color:var(--ochre);color:var(--ochre-d)}
 .vocabschema__edges{margin-top:10px;border-top:1px solid var(--rule-soft);padding-top:10px}
 .vocabschema__edges h4{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;color:var(--ink-4);margin:0 0 6px}
 .vocabschema__edgegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:5px}
@@ -3728,13 +3738,13 @@ const DERIVATION_CSS = `
 .vocab__group h3{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;color:var(--ink-4);margin:0 0 6px}
 .vocab__group p{margin:0 0 7px;color:var(--ink-3);line-height:1.4}
 .vocab__tokens{display:flex;flex-wrap:wrap;gap:5px}
-.vocab__token{font-family:"JetBrains Mono",monospace;font-size:.78rem;border:1px solid var(--rule-soft);border-radius:4px;background:var(--paper-2);color:var(--ink-2);padding:2px 6px;overflow-wrap:anywhere}
+.vocab__token{font-family:"JetBrains Mono",monospace;font-size:.78rem;border:1px solid var(--rule-soft);border-radius:4px;background:var(--paper-2);color:var(--ink-2);padding:2px 6px;overflow-wrap:anywhere;text-decoration:none}
 .vocab__token--public{background:var(--moss-soft);border-color:var(--moss);color:var(--moss-deep)}
 .vocab__token--warn{background:var(--brick-soft);border-color:var(--brick);color:var(--brick-d)}
 .vocab__token--private{background:var(--ochre-soft);border-color:var(--ochre);color:var(--ochre-d)}
 @media(max-width:860px){.learnerdag__grid{grid-template-columns:1fr}}
 @media(max-width:860px){.proofdag__grid{grid-template-columns:1fr}}
-@media(max-width:860px){.vocab__grid{grid-template-columns:1fr}.vocab>summary{display:block}.vocab__hint{display:block;margin-top:3px}}
+@media(max-width:860px){.vocab__grid{grid-template-columns:1fr}.vocab>summary{display:block}.vocab__hint{display:block;margin-top:3px}.vocabschema__ontology{grid-template-columns:1fr}}
 .tts-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:14px 0 18px;padding:9px 10px;border:1px solid var(--rule-soft);border-radius:6px;background:var(--paper-4)}
 .tts-toolbar--compact{margin:4px 0 8px}
 .tts-control,.tts-btn{border:1px solid var(--rule);background:var(--paper);color:var(--moss-deep);cursor:pointer;font-family:"JetBrains Mono",monospace;text-transform:uppercase}
@@ -4584,26 +4594,54 @@ function renderVocabularyTokens(tokens, modifier = '') {
 function renderDerivationConceptChip(id, conceptsById) {
   const concept = conceptsById.get(id);
   const label = concept?.label || id;
-  return `<span class="vocab__token">${escapeHtml(label)}</span>`;
+  return concept
+    ? `<a class="vocab__token" href="#concept-${escapeAttr(concept.id)}">${escapeHtml(label)}</a>`
+    : `<span class="vocab__token">${escapeHtml(label)}</span>`;
+}
+
+function renderDerivationConceptEdge(link, conceptsById) {
+  const target = conceptsById.get(link.target);
+  const targetLabel = target?.label || link.target;
+  const targetHref = target ? ` href="#concept-${escapeAttr(target.id)}"` : '';
+  return `<a class="concept__edge"${targetHref}><span>${escapeHtml(link.type)}:</span> <b>${escapeHtml(targetLabel)}</b></a>`;
+}
+
+function renderDerivationConceptCard(
+  concept,
+  conceptsById,
+  ontologyHref,
+  { highlight = false, idPrefix = 'concept-' } = {},
+) {
+  const links = concept.links.map((link) => renderDerivationConceptEdge(link, conceptsById)).join('');
+  return `<article class="concept${highlight ? ' concept--novel' : ''}" id="${escapeAttr(idPrefix + concept.id)}">
+    <div class="concept__top"><span class="concept__label">${escapeHtml(concept.label)}</span><span class="concept__layer">${escapeHtml(concept.layer)}</span></div>
+    <p class="concept__definition"><span class="concept__deflabel">definition</span>${escapeHtml(concept.definition)}</p>
+    <div class="concept__meta">
+      <span class="concept__metachip">category: ${escapeHtml(concept.category)}</span>
+      <span class="concept__metachip">app term: <code>${escapeHtml(concept.id)}</code></span>
+    </div>
+    <div class="concept__ontology">
+      <span class="concept__ontologylabel">ontology affinity</span>
+      <a href="${escapeAttr(ontologyHref)}" title="Open the ontology atlas with the derivation concept-world module loaded"><code>${escapeHtml(concept.ontology)}</code></a>
+    </div>
+    <div class="concept__links"><span class="concept__linkslabel">typed links</span>${links}</div>
+  </article>`;
 }
 
 function renderDerivationConceptSchemaHtml(schema) {
   const conceptsById = new Map(schema.concepts.map((concept) => [concept.id, concept]));
   const ontologyHref = `/ontology?view=system&modules=${encodeURIComponent(schema.ontologyModules.join(','))}&source=1`;
+  const ontologyModules = schema.ontologyModules
+    .map((module) => `<span class="vocab__token">${escapeHtml(module)}</span>`)
+    .join('');
   const novelConcepts = (schema.novelConceptIds || [])
     .map((id) => conceptsById.get(id))
     .filter(Boolean)
-    .map(
-      (concept) => `<article class="novelconcept">
-    <h4>${escapeHtml(concept.label)}</h4>
-    <p>${escapeHtml(concept.definition)}</p>
-    <div class="concept__links">${concept.links
-      .map((link) => {
-        const target = conceptsById.get(link.target);
-        return `<span class="concept__edge">${escapeHtml(link.type)}: ${escapeHtml(target?.label || link.target)}</span>`;
-      })
-      .join('')}</div>
-  </article>`,
+    .map((concept) =>
+      renderDerivationConceptCard(concept, conceptsById, ontologyHref, {
+        highlight: true,
+        idPrefix: 'concept-featured-',
+      }),
     )
     .join('');
   const acts = schema.acts
@@ -4616,19 +4654,7 @@ function renderDerivationConceptSchemaHtml(schema) {
     )
     .join('');
   const concepts = schema.concepts
-    .map(
-      (concept) => `<article class="concept" id="concept-${escapeAttr(concept.id)}">
-    <div class="concept__top"><span class="concept__label">${escapeHtml(concept.label)}</span><span class="concept__layer">${escapeHtml(concept.layer)}</span></div>
-    <p class="concept__definition">${escapeHtml(concept.definition)}</p>
-    <div class="concept__meta">${escapeHtml(concept.category)} · ontology: <code>${escapeHtml(concept.ontology)}</code></div>
-    <div class="concept__links">${concept.links
-      .map((link) => {
-        const target = conceptsById.get(link.target);
-        return `<span class="concept__edge">${escapeHtml(link.type)}: ${escapeHtml(target?.label || link.target)}</span>`;
-      })
-      .join('')}</div>
-  </article>`,
-    )
+    .map((concept) => renderDerivationConceptCard(concept, conceptsById, ontologyHref))
     .join('');
   const edges = schema.links
     .map(
@@ -4643,6 +4669,13 @@ function renderDerivationConceptSchemaHtml(schema) {
         <p>The derivation run is a single semantic world: drama stages the problem, rhetoric shapes address, logic licenses claims, pedagogy manages ownership, and theory names the authority dynamics.</p>
       </div>
       <a class="vocabschema__link" href="${escapeAttr(ontologyHref)}">open ontology module</a>
+    </div>
+    <div class="vocabschema__ontology">
+      <div>
+        <h4>Ontology affinity</h4>
+        <p>Concept cards below name the app-level term, its ontology individual, and the loaded ontology modules that make the concept-world available.</p>
+      </div>
+      <div class="vocab__tokens">${ontologyModules}</div>
     </div>
     <div class="vocabschema__novel">${novelConcepts}</div>
     <div class="vocabschema__acts">${acts}</div>
@@ -4672,10 +4705,10 @@ function renderDerivationControlledVocabularyHtml({ open = false } = {}) {
     )
     .join('');
   return `<details class="vocab" id="controlled-vocabulary"${open ? ' open' : ''}>
-  <summary>Controlled vocabulary <span class="vocab__hint">drama, rhetoric, logic, pedagogy, theory</span></summary>
-  <p class="vocab__intro">The app keeps scenario content separate from the stable learner contract. The first row shows the layers; the conceptual world links terms into a total semantic scheme; the detailed grid below names the app-level tokens.</p>
-  <div class="vocab__layers">${layerBody}</div>
+  <summary>Controlled vocabulary <span class="vocab__hint">drama, rhetoric, logic, pedagogy, theory, novel</span></summary>
+  <p class="vocab__intro">The app keeps scenario content separate from the stable learner contract. The conceptual world gives definitions, typed semantic links, and ontology affinity for the terms the run uses.</p>
   ${renderDerivationConceptSchemaHtml(schema)}
+  <div class="vocab__layers">${layerBody}</div>
   <div class="vocab__grid">${body}</div>
 </details>`;
 }
@@ -12797,6 +12830,7 @@ export {
   parseTranscriptPreview,
   renderBrowserHtml,
   renderDashboardHtml,
+  renderDerivationControlledVocabularyHtml,
   renderDerivationLogicVisualizer,
   renderOntologyHtml,
   renderRubricHtml,
