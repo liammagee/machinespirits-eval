@@ -11,8 +11,9 @@ updated: 2026-06-24
 verification: Replication across scenes run; results in exports/; the
   one-side-replay claim updated or closed in the paper.
 branch: codex/a17-replay-replication
-blocked_by: Explicit paid generation/scoring approval plus a cost estimate for
-  the two-scene A17 replay replication is required before running.
+blocked_by: OPENROUTER_API_KEY is not available in this worktree's shell or
+  dotenv-loaded environment, so the approved API generation/scoring gate cannot
+  start.
 links:
   notes: TODO.md#A17
   paper: §7.9
@@ -130,3 +131,17 @@ Expected artifacts:
   `replays.json`, and `graded-replays.json`.
 - A §7.9 paper update, or an explicit closeout note preserving the result as
   exploratory if the distributions do not support a stronger claim.
+
+2026-06-24 Codex: Paid-run approval received, but execution is blocked before
+any model call by missing credentials. Checks:
+- `.env` is absent in this worktree.
+- `node -r dotenv/config -e "..."` reports `OPENROUTER_API_KEY` missing after
+  dotenv loading.
+- The first approved generation command fails at `buildDirectorPlan` with
+  `OPENROUTER_API_KEY not set (required for --generator api)`.
+
+No paid API call was reached; cost incurred for this retry is $0. The failed
+attempt created only ignored partial directories and writing-pad SQLite files
+under `exports/a17-one-side-replay-replication/`; those were removed so the
+next retry starts clean. To resume, provide the key through `.env` or the shell
+environment, then rerun the exact commands above.

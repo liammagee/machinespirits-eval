@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-24T02:14:35.016Z",
+  "generated": "2026-06-24T02:22:38.666Z",
   "counts": {
     "total": 47,
     "byStatus": {
@@ -138,7 +138,7 @@
       "updated": "2026-06-24",
       "verification": "Replication across scenes run; results in exports/; the one-side-replay claim updated or closed in the paper.",
       "branch": "codex/a17-replay-replication",
-      "blocked_by": "Explicit paid generation/scoring approval plus a cost estimate for the two-scene A17 replay replication is required before running.",
+      "blocked_by": "OPENROUTER_API_KEY is not available in this worktree's shell or dotenv-loaded environment, so the approved API generation/scoring gate cannot start.",
       "links": {
         "notes": "TODO.md#A17",
         "paper": "§7.9",
