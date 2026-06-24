@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-24T02:44:29.708Z",
+  "generated": "2026-06-24T04:56:53.756Z",
   "counts": {
     "total": 47,
     "byStatus": {
@@ -55,11 +55,12 @@
       "updated": "2026-06-24",
       "verification": "Replication across scenes run; results in exports/; the one-side-replay claim updated or closed in the paper.",
       "branch": "codex/a17-replay-replication",
-      "blocked_by": "D_OED5 `d5-run1` failed the required QA gate because the `none` control was unanimously classified as metered; a clean replacement D5 scene requires additional paid approval beyond the exact minimum run already used.",
+      "blocked_by": "Approved D5 replacement `d5-run2` also failed the required QA gate; the `none` control was classified as metered (withheld:1 metered:3 stated:0), so another paid replacement or revised generation strategy needs fresh approval.",
       "links": {
         "notes": [
           "TODO.md#A17",
-          "notes/poetics/2026-06-24-a17-replay-replication-qa-stop.md"
+          "notes/poetics/2026-06-24-a17-replay-replication-qa-stop.md",
+          "notes/poetics/2026-06-24-a17-d5-run2-qa-stop.md"
         ],
         "paper": "§7.9",
         "exports": "exports/a17-one-side-replay-replication/"

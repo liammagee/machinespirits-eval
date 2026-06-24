@@ -11,13 +11,15 @@ updated: 2026-06-24
 verification: Replication across scenes run; results in exports/; the
   one-side-replay claim updated or closed in the paper.
 branch: codex/a17-replay-replication
-blocked_by: D_OED5 `d5-run1` failed the required QA gate because the `none`
-  control was unanimously classified as metered; a clean replacement D5 scene
-  requires additional paid approval beyond the exact minimum run already used.
+blocked_by: Approved D5 replacement `d5-run2` also failed the required QA gate;
+  the `none` control was classified as metered (withheld:1 metered:3 stated:0),
+  so another paid replacement or revised generation strategy needs fresh
+  approval.
 links:
   notes:
     - TODO.md#A17
     - notes/poetics/2026-06-24-a17-replay-replication-qa-stop.md
+    - notes/poetics/2026-06-24-a17-d5-run2-qa-stop.md
   paper: §7.9
   exports: exports/a17-one-side-replay-replication/
 claim_status: exploratory
@@ -161,3 +163,19 @@ the recorded gate. Durable note:
 claim update is warranted; the existing one-scene caveat remains. To continue
 A17 empirically, explicitly approve one replacement D5 scene generation before
 rerunning QA and the remaining minimum pipeline.
+
+2026-06-24 Codex: One replacement D5 scene was explicitly approved and run under
+`exports/a17-one-side-replay-replication/d5-run2/`, preserving the quarantined
+`d5-run1`. The generation command added
+`--director-variation-key a17-d5-run2` to force a fresh replacement draw while
+keeping the same D_OED5 scenario, arms, model, and turn budget. The required QA
+gate failed again: `none` was classified as metered (`withheld:1 metered:3
+stated:0`), while `socratic` and `reveal` passed. Stopped before D4 generation,
+original graded scoring, learner replays, or replay scoring, per the approval
+scope. Available D5 run2 generation usage: 288714 input tokens, 27294 output
+tokens, 703423 ms recorded latency; no dollar total was persisted by the
+scripts. Durable note:
+`notes/poetics/2026-06-24-a17-d5-run2-qa-stop.md`. A17 remains unanswered and
+blocked pending fresh approval for another paid replacement or a revised D5
+generation strategy. No §7.9 paper claim update is warranted from invalid
+scenes.
