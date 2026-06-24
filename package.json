@@ -110,6 +110,7 @@
     "curriculum:compile:worlds": "node scripts/compile-curriculum-to-worlds.js",
     "curriculum:drama:quality": "node scripts/check-curriculum-drama-quality-baseline.js",
     "derivation:analyze-loop": "node scripts/analyze-derivation-loop-results.js",
+    "derivation:proxy-dag-ab": "node scripts/run-learner-proxy-dag-ab.js",
     "derivation:selector-consolidation": "node scripts/analyze-derivation-selector-consolidation.js",
     "derivation:selector-candidates": "node scripts/analyze-derivation-selector-candidates.js",
     "derivation:leak-audit": "node scripts/derivation-leak-audit.js",

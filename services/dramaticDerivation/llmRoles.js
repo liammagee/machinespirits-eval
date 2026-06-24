@@ -230,6 +230,52 @@ function factSurface(view, fact) {
   return view.factSurfaces?.[factKey(fact)] || naturalFact(fact);
 }
 
+function renderRowSurfaces(rows = [], key = 'surface', limit = 6) {
+  const values = rows
+    .map((row) => String(row?.[key] ?? '').trim())
+    .filter(Boolean)
+    .slice(0, limit);
+  if (!values.length) return '(none)';
+  const suffix = rows.length > limit ? `; +${rows.length - limit} more` : '';
+  return `${values.join('; ')}${suffix}`;
+}
+
+function learnerProxyDagMemoryLines(memory, terms) {
+  if (!memory) return [];
+  const answers = memory.answerCandidates?.length
+    ? memory.answerCandidates
+        .slice(0, 3)
+        .map((entry) => `${entry.answer || 'answer'} (${entry.surface})`)
+        .join('; ')
+    : '(none)';
+  return [
+    '',
+    'PRIVATE PROXY PROOF SKETCH (your memory, not a new exhibit):',
+    `- grounded in your ${terms.record}: ${renderRowSurfaces(memory.grounded)}`,
+    `- already voiced by you: ${renderRowSurfaces(memory.voicedDerived)}`,
+    `- candidate conclusions your ${terms.record} may support: ${renderRowSurfaces(memory.candidateConclusions)}`,
+    `- answer candidates from your ${terms.record}: ${answers}`,
+    'Use this only to tend your private record. Do not say interface words aloud.',
+  ];
+}
+
+function proxyDagPacingLines(signal) {
+  if (!signal) return [];
+  const missing = (signal.missingPremises || [])
+    .slice(0, 4)
+    .map((row) => `${row.premiseId}:${row.bucket}${row.releaseTurn ? `@t${row.releaseTurn}` : ''}`)
+    .join(', ');
+  return [
+    '',
+    'PROXY-DAG PACING ADVISOR (harness advisory, not dialogue):',
+    `- action: ${signal.recommendedAction}; bottleneck: ${signal.bottleneck}; coverage: ${
+      Number.isFinite(signal.bestPathCoverage) ? signal.bestPathCoverage : 'n/a'
+    }`,
+    `- reason: ${signal.reason || 'none'}`,
+    missing ? `- missing best-path material: ${missing}` : '- missing best-path material: none',
+  ];
+}
+
 function answerFromBinding(binding) {
   if (!binding || typeof binding !== 'object') return null;
   const value = Object.values(binding).find((v) => typeof v === 'string' && v.trim());
@@ -835,6 +881,7 @@ export function makeLlmDirector(
       renderTranscriptTail(view.transcript),
       ...publicRegisterTurnLines(activeRegisterName, publicRegister),
       ...castLayerLines(castState, 'director'),
+      ...proxyDagPacingLines(view.proxyDagPacing),
       '',
       task,
     ].join('\n');
@@ -862,6 +909,7 @@ export function makeLlmDirector(
                   : 'continue',
             }
           : {}),
+        ...(view.proxyDagPacing ? { proxyDagPacing: view.proxyDagPacing } : {}),
         ...(castState ? { castState } : {}),
       },
     });
@@ -2472,6 +2520,7 @@ export function makeLlmTutor(
           'Use move.intent "restore" and target_premise for this exhibit. This is a harness-authorized proof-state repair, not a new release.',
         ]
       : [];
+    const proxyDagPacingSection = proxyDagPacingLines(view.proxyDagPacing);
     // Acts-mode redaction (engine.js omniscientView): no learnerAbox, no
     // trajectory, no corruption — the tutor works from the dialogue and its
     // own ledger. The v1 branch below is untouched.
@@ -2889,6 +2938,7 @@ export function makeLlmTutor(
         ...plotSection,
         ...rhetoricalPolicySection,
         ...proofDebtSection,
+        ...proxyDagPacingSection,
         '',
         task,
       ].join('\n');
@@ -2938,6 +2988,7 @@ export function makeLlmTutor(
         ...rhetoricalPolicySection,
         ...discursiveReleaseSection,
         ...proofDebtSection,
+        ...proxyDagPacingSection,
         ...(proofDebtSection.length ? [''] : []),
         task,
       ].join('\n');
@@ -2984,6 +3035,7 @@ export function makeLlmTutor(
       ...(didacticModeState ? { didacticMode: didacticModeState } : {}),
       ...(learnerTransformationState ? { learnerTransformation: learnerTransformationState } : {}),
       ...(castState ? { castState, tutorReinvention: castState.reinvention || null } : {}),
+      ...(view.proxyDagPacing ? { proxyDagPacing: view.proxyDagPacing } : {}),
       ...(view.scene?.tempo ? { sceneTempo: view.scene.tempo } : {}),
       // mock determinism (arm-ON): the credulous theory — everything released
       // is believed held. The real backend ignores meta.
@@ -4225,6 +4277,7 @@ export function makeLlmLearner({
       '',
       `PRIVATE CONCLUSION CHECKLIST (index. conclusion your ${terms.record} may now support; choose indices only when you also say the conclusion aloud in ordinary words):`,
       privateConclusions,
+      ...learnerProxyDagMemoryLines(view.proxyDagMemory, terms),
       '',
       'Your hypotheses so far:',
       hyps,
@@ -4251,6 +4304,7 @@ export function makeLlmLearner({
         sameTurnAssertionAffordance,
         deriveHintIndices,
         deriveLabels: derivableCandidates.map((entry) => entry.label),
+        ...(view.proxyDagMemory ? { proxyDagMemory: view.proxyDagMemory.metrics } : {}),
         ...(view.scene?.tempo ? { sceneTempo: view.scene.tempo } : {}),
         ...(castState ? { castState } : {}),
         ...(learnerDriftState ? { learnerDrift: learnerDriftState } : {}),

@@ -145,22 +145,27 @@ Landed in the proof-DAG assessment branch:
 
 ## Operative Follow-On Steps
 
-These are not part of the external assessment layer, but they are the next
-behavioral experiment if the learner proxy DAG should affect play:
+Implemented in the follow-on slice:
 
-1. Add a leak-safe learner proxy-DAG memory payload to the learner view: grounded
-   facts, learner-voiced derived facts, hypotheses, and candidate conclusions
-   already derivable from the learner board. Never include authored proof paths,
-   unreleased premises, secret labels, or missing-premise ids from the authored
-   DAG.
-2. Add a proxy-DAG-aware pacing signal for the director/tutor: if the learner is
-   stalled and the best-path gap is unreleased, stage/release evidence; if the
-   gap is released-but-not-held, repair uptake; if the secret is entailed but
-   not asserted, prompt assertion.
-3. Run an A/B against the same worlds and scripts: current learner versus
-   proxy-DAG-memory learner, scored by best-path coverage, secret-entailment
-   rate, asserted-secret rate, proof-gate pass rate, and bottleneck
-   distribution.
+1. `--learner-proxy-dag` adds a leak-safe learner proxy-DAG memory payload to
+   the learner view: grounded surface facts, learner-voiced derived facts,
+   hypotheses, candidate conclusions, and answer candidates derivable from the
+   learner board. It does not include authored proof paths, unreleased facts,
+   premise ids, missing-premise ids, rule ids, release schedule, or fact arrays.
+2. `--proxy-dag-pacing` adds an advisory proxy-DAG pacing signal for the
+   director/tutor. It classifies the current learner DAG bottleneck into
+   `hold_until_evidence_due`, `release_evidence`, `repair_uptake`,
+   `prompt_intermediate_inference`, `prompt_assertion`, `complete`, or
+   `continue`, without granting release or assertion authority.
+3. `scripts/run-learner-proxy-dag-ab.js` runs the same world/script as control
+   and proxy-memory treatment, then feeds both labels into the learner-DAG batch
+   diagnostic. The first mock A/B report is:
+   `exports/dramatic-derivation/learner-proxy-dag-ab/proxy-dag-ab-20260624/report.md`.
+
+Mock A/B note: the deterministic mock learner does not read prompt prose as a
+behavioral policy, so the first local A/B verifies plumbing and artifact shape
+rather than estimating a behavioral effect. A real LLM A/B is the meaningful
+next measurement.
 
 ## References
 
