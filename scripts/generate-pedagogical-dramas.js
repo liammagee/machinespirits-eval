@@ -98,7 +98,16 @@ const PEDAGOGICAL_APPROACHES_DB = path.join(CAL_DIR, 'pedagogical-approaches.yam
 const DIALOGUE_APPROACHES_DB = path.join(CAL_DIR, 'dialogue-approaches.yaml');
 const DIRECTOR_REVISIT_POLICIES = new Set(['none', 'anchor', 'revoice', 'reconsider', 'reframe']);
 const DIRECTOR_REVISIT_ANCHORS = new Set(['latest', 'opening', 'misframing-candidate']);
-const TUTOR_ADAPTATION_POLICIES = new Set(['none', 'routine', 'uptake', 'peripeteia', 'uptake+peripeteia']);
+const TUTOR_ADAPTATION_POLICIES = new Set([
+  'none',
+  'routine',
+  'uptake',
+  'peripeteia',
+  'uptake+peripeteia',
+  'socratic_discovery',
+  'reveal_secret',
+  'withhold_secret',
+]);
 const AFFECTIVE_ADAPTATION_POLICIES = new Set(['none', 'procedural_sensitive']);
 const OPENING_SPEAKERS = new Set(['learner', 'tutor', 'director']);
 const CONTROL_ENDING_POLICIES = new Set(['default', 'hold']);
@@ -108,7 +117,7 @@ const CONTROL_ENDING_POLICIES = new Set(['default', 'hold']);
 const CLAUDE_EFFORT_LEVELS = new Set(['low', 'medium', 'high', 'xhigh', 'max']);
 const PAIRED_ADAPTATION_ARMS = {
   routine: { revisitPolicy: 'none', tutorAdaptationPolicy: 'routine' },
-  none: { revisitPolicy: 'none', tutorAdaptationPolicy: 'none' },
+  none: { revisitPolicy: 'none', tutorAdaptationPolicy: 'none', secretTutorAdaptationPolicy: 'withhold_secret' },
   'reframe-only': { revisitPolicy: 'reframe', tutorAdaptationPolicy: 'none' },
   'tutor-uptake-only': { revisitPolicy: 'none', tutorAdaptationPolicy: 'uptake' },
   'reframe+tutor-uptake': { revisitPolicy: 'reframe', tutorAdaptationPolicy: 'uptake' },
@@ -116,8 +125,10 @@ const PAIRED_ADAPTATION_ARMS = {
   'reframe+peripeteia': { revisitPolicy: 'reframe', tutorAdaptationPolicy: 'uptake+peripeteia' },
   // Oedipus guided-discovery arms (require a scenario `secret`; behaviour is driven
   // by the arm-aware buildSecretContext in the engine, not the reframe/peripeteia
-  // machinery). socratic = meter premises so the learner infers S; reveal = state S
-  // outright (ceiling); the `none` arm above doubles as the withhold control.
+  // machinery). For secret-bearing scenarios, the `none` arm is upgraded at
+  // runtime to withhold_secret: the tutor receives a redacted control context
+  // plus forbidden clue channels, not S/premises. socratic = meter premises so
+  // the learner infers S; reveal = state S outright (ceiling).
   socratic: { revisitPolicy: 'none', tutorAdaptationPolicy: 'socratic_discovery' },
   reveal: { revisitPolicy: 'none', tutorAdaptationPolicy: 'reveal_secret' },
 };
@@ -379,9 +390,7 @@ function parseArgs(argv) {
     if (!a.pairedAdaptationArms.length) throw new Error('--paired-adaptation-arms needs at least one arm');
     for (const arm of a.pairedAdaptationArms) {
       if (!PAIRED_ADAPTATION_ARMS[arm]) {
-        throw new Error(
-          '--paired-adaptation-arms must use routine,none,reframe-only,tutor-uptake-only,reframe+tutor-uptake,peripeteia-only,reframe+peripeteia,socratic,reveal',
-        );
+        throw new Error(`--paired-adaptation-arms must use ${Object.keys(PAIRED_ADAPTATION_ARMS).join(',')}`);
       }
     }
   }
@@ -3749,7 +3758,7 @@ function withTutorAdaptationPolicy(plan, policy = 'none') {
 function controlEndingApplies(plan, d, policy = 'default') {
   if (!plan || policy === 'default') return false;
   const tutorPolicy = d?._tutorAdaptationPolicy || d?.tutor_adaptation_policy || plan.tutor_adaptation_policy || 'none';
-  return tutorPolicy === 'routine' || tutorPolicy === 'none';
+  return tutorPolicy === 'routine' || tutorPolicy === 'none' || tutorPolicy === 'withhold_secret';
 }
 
 function withControlEndingPolicy(plan, policy = 'default', d = null) {
@@ -3883,7 +3892,7 @@ function attachSecret(plan, d) {
 function controlEndingInstructionForPrompt(args, d) {
   if (!args || args.controlEndingPolicy === 'default') return null;
   const tutorPolicy = d?._tutorAdaptationPolicy || d?.tutor_adaptation_policy || 'none';
-  if (!(tutorPolicy === 'routine' || tutorPolicy === 'none')) {
+  if (!(tutorPolicy === 'routine' || tutorPolicy === 'none' || tutorPolicy === 'withhold_secret')) {
     return `Requested control-ending policy "${args.controlEndingPolicy}" is not applied to this adaptive arm. Preserve its normal ending shape.`;
   }
   if (args.controlEndingPolicy === 'hold') {
@@ -4710,13 +4719,33 @@ function pairedBranchDefinitions(args) {
       key: arm,
       revisitPolicy: PAIRED_ADAPTATION_ARMS[arm].revisitPolicy,
       tutorAdaptationPolicy: PAIRED_ADAPTATION_ARMS[arm].tutorAdaptationPolicy,
+      secretTutorAdaptationPolicy: PAIRED_ADAPTATION_ARMS[arm].secretTutorAdaptationPolicy || null,
     }));
   }
   return [...new Set(args.pairedContinuationPolicies)].map((policy) => ({
     key: policy,
     revisitPolicy: policy,
     tutorAdaptationPolicy: 'none',
+    secretTutorAdaptationPolicy: null,
   }));
+}
+
+function dramaHasOedipusSecret(d) {
+  return Boolean(d?.secret?.fact);
+}
+
+function effectiveBranchTutorAdaptationPolicy(branch, d) {
+  if (dramaHasOedipusSecret(d) && branch?.secretTutorAdaptationPolicy) {
+    return branch.secretTutorAdaptationPolicy;
+  }
+  return branch?.tutorAdaptationPolicy || 'none';
+}
+
+function effectiveBranchTutorAdaptationPolicyForOrder(branch, order = []) {
+  const policies = new Set((order || []).map((d) => effectiveBranchTutorAdaptationPolicy(branch, d)));
+  if (!policies.size) return branch?.tutorAdaptationPolicy || 'none';
+  if (policies.size === 1) return [...policies][0];
+  return [...policies].sort().join('|');
 }
 
 async function generatePairedContinuations({ args, order, runtime, llmCall }) {
@@ -4735,7 +4764,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
         runtime,
         directorPolicy: branch.revisitPolicy,
         directorAnchor: args.directorRevisitAnchor,
-        tutorAdaptationPolicy: branch.tutorAdaptationPolicy,
+        tutorAdaptationPolicy: effectiveBranchTutorAdaptationPolicyForOrder(branch, order),
         transcriptsDir: armDirs[branch.key].transcriptsDir,
         order,
         paired: {
@@ -4773,7 +4802,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
           ...d,
           _directorRevisitPolicy: 'none',
           _directorRevisitAnchor: null,
-          _tutorAdaptationPolicy: 'none',
+          _tutorAdaptationPolicy: dramaHasOedipusSecret(d) ? 'withhold_secret' : 'none',
         };
         const directorPlan = await buildDirectorPlan(prefixDrama, llmCall, args);
         const prefixTrace = await runtime.runInteraction(
@@ -4815,18 +4844,19 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
         progress.step(`${d._tid} prefix ready ${prefixHash}`, 1, `${d._tid}:prefix`);
 
         for (const branch of branches) {
+          const branchTutorAdaptationPolicy = effectiveBranchTutorAdaptationPolicy(branch, d);
           const dirs = armDirs[branch.key];
           const outTxt = path.join(dirs.outDir, `${d._tid}.txt`);
           if (fs.existsSync(outTxt) && !args.force) {
             throw new Error(`paired continuation output exists: ${outTxt} (pass --force to overwrite)`);
           }
-          const branchPolicyDrama = { ...d, _tutorAdaptationPolicy: branch.tutorAdaptationPolicy };
+          const branchPolicyDrama = { ...d, _tutorAdaptationPolicy: branchTutorAdaptationPolicy };
           const branchDirectorPlan = withDirectorCueProvenance(
             withControlEndingPolicy(
               withAffectiveAdaptationPolicy(
                 withTutorAdaptationPolicy(
                   withPairedDirectorRevisitCue(directorPlan, branch.revisitPolicy, args.directorRevisitAnchor),
-                  branch.tutorAdaptationPolicy,
+                  branchTutorAdaptationPolicy,
                 ),
                 d._affectiveAdaptationPolicy ||
                   d.affective_adaptation_policy ||
@@ -4844,7 +4874,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
             _directorVariationKey: d._directorVariationKey || null,
             _directorRevisitPolicy: branch.revisitPolicy,
             _directorRevisitAnchor: branch.revisitPolicy === 'none' ? null : args.directorRevisitAnchor,
-            _tutorAdaptationPolicy: branch.tutorAdaptationPolicy,
+            _tutorAdaptationPolicy: branchTutorAdaptationPolicy,
             _affectiveAdaptationPolicy:
               d._affectiveAdaptationPolicy || d.affective_adaptation_policy || args.affectiveAdaptationPolicy || 'none',
             _controlEndingPolicy: args.controlEndingPolicy || 'default',
@@ -4919,7 +4949,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
             removedNotes,
             traceTurns: trace.turns,
             directorPolicy: branch.revisitPolicy,
-            tutorAdaptationPolicy: branch.tutorAdaptationPolicy,
+            tutorAdaptationPolicy: branchTutorAdaptationPolicy,
           });
           itemWarnings.push(...qualityWarnings.map(formatQualityWarning));
           if (removedNotes.length) {
@@ -4949,7 +4979,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
             shared_prefix_hash: prefixHash,
             branch_policy: branch.key,
             director_revisit_policy: branch.revisitPolicy,
-            tutor_adaptation_policy: branch.tutorAdaptationPolicy,
+            tutor_adaptation_policy: branchTutorAdaptationPolicy,
             affective_adaptation_policy:
               branchDrama._affectiveAdaptationPolicy || branchDirectorPlan?.affective_adaptation_policy || 'none',
           };
@@ -5560,6 +5590,8 @@ export {
   noCuePrematureClosureFailures,
   noCueReframeLeakageFailures,
   pairedBranchDefinitions,
+  effectiveBranchTutorAdaptationPolicy,
+  effectiveBranchTutorAdaptationPolicyForOrder,
   parseArgs,
   qualityWarningsFor,
   reframeComplianceFailures,

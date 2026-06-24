@@ -341,6 +341,7 @@ export const COMPOSER_BASE_VOCAB = deepFreeze({
     'uptake+peripeteia',
     'socratic_discovery',
     'reveal_secret',
+    'withhold_secret',
   ],
   speakers: ['learner', 'tutor', 'director'],
   stagePolicy: ['sparse', 'none', 'none_except_required_cue', 'short', 'interventionist', 'rich'],

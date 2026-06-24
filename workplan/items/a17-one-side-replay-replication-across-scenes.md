@@ -11,16 +11,16 @@ updated: 2026-06-24
 verification: Replication across scenes run; results in exports/; the
   one-side-replay claim updated or closed in the paper.
 branch: codex/a17-replay-replication
-blocked_by: Revised D5 `none`-control gate `d5-control-gate-run3` failed T1;
-  the QA panel split withheld:2 metered:2 stated:0, below the 3-of-4 withheld
-  consensus required for an admissible control. Fresh approval is needed for
-  any further paid D5 strategy or tooling change.
+blocked_by: Redacted D5 `none`-control tooling is implemented locally, but the
+  next admissibility step is an explicit paid D5 control gate under
+  `withhold_secret`; no further generation/QA should run without fresh approval.
 links:
   notes:
     - TODO.md#A17
     - notes/poetics/2026-06-24-a17-replay-replication-qa-stop.md
     - notes/poetics/2026-06-24-a17-d5-run2-qa-stop.md
     - notes/poetics/2026-06-24-a17-d5-control-gate-run3-qa-stop.md
+    - notes/poetics/2026-06-24-a17-d5-redacted-control-tooling.md
   paper: §7.9
   exports: exports/a17-one-side-replay-replication/
 claim_status: exploratory
@@ -196,3 +196,15 @@ Durable note:
 `notes/poetics/2026-06-24-a17-d5-control-gate-run3-qa-stop.md`. A17 remains
 unanswered and blocked pending fresh approval for another paid D5 strategy or a
 tooling change that can produce an admissible D5 control.
+
+2026-06-24 Codex: Implemented the no-spend redacted-control tooling path for
+D_OED5. `--paired-adaptation-arms none` now keeps the public arm key `none`,
+but secret-bearing Oedipus dramas run the shared prefix and branch under
+`withhold_secret`, which redacts S/premises from the tutor and forbids
+source/provenance/download/test-set/split/name-ambiguity clue channels. Added
+unit coverage for secret redaction, paired-arm policy upgrading, and the
+`withhold` move lowering to `withhold_secret`; updated the drama-machine policy
+vocabulary. Durable note:
+`notes/poetics/2026-06-24-a17-d5-redacted-control-tooling.md`. A17 remains
+blocked on fresh explicit approval for the paid D5 redacted-control gate before
+any further generation, QA, grading, or replay.
