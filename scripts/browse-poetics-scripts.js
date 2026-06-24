@@ -2240,6 +2240,30 @@ function orientBand(here, what, tail = 'the working surfaces are on the rail abo
   return `<span><b>${here}</b> — ${what}</span><span class="navhint__sep">·</span><span>${tail}</span>`;
 }
 
+// A compact cross-link band for the three report surfaces (/browse · /derivation ·
+// /replays): names each report type with who judges it, marks the current one, and
+// points back to the /read hub — so a reader never loses the distinction mid-page.
+// Inline-styled with the shared tokens so it drops into any page without new CSS.
+function reportTypeBand(active) {
+  const cells = [
+    ['scripts', '/browse', 'AI critic'],
+    ['proof runs', '/derivation', 'rule-checker'],
+    ['replays', '/replays', 'diff'],
+  ]
+    .map(([label, href, judge]) => {
+      const inner = `${label} <span style="color:var(--ink-4)">· ${judge}</span>`;
+      return active === href
+        ? `<span style="color:var(--ink);font-weight:600;border-bottom:2px solid var(--moss);padding-bottom:1px">${inner}</span>`
+        : `<a href="${href}" style="color:var(--ink-2);text-decoration:none">${inner}</a>`;
+    })
+    .join('<span style="color:var(--ink-4);margin:0 3px">·</span>');
+  return `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;font:11px ui-monospace,monospace;border:1px solid var(--rule);background:var(--paper-4);border-radius:6px;padding:8px 12px;margin:0 0 16px">
+    <span style="text-transform:uppercase;letter-spacing:.06em;color:var(--ink-4)">report type</span>
+    ${cells}
+    <a href="/read" style="margin-left:auto;color:var(--moss-deep);text-decoration:none">what&#39;s the difference? →</a>
+  </div>`;
+}
+
 function navPlainText(value) {
   return String(value ?? '')
     .replace(/&amp;/g, '&')
@@ -4892,11 +4916,12 @@ ${railHtml({
   sub: 'proof runs — a fixed rule-checker decides each outcome, no AI judge anywhere',
   hint: '<span><b>proof runs</b> — a fixed rule-checker (not an AI judge, not a quality score) decides whether the learner reached the hidden answer</span><span class="navhint__sep">·</span><span>for generated drama graded by AI critics, see <a href="/browse">scripts</a></span>',
 })}
-	<main class="wrap wrap--wide" data-derivation-index>
-	<h1>Proof runs — did the learner reach the hidden answer?</h1>
-	<p class="lede">Each row is one tutoring run. The tutor has to lead the learner to a hidden conclusion purely by inference, and a fixed rule-checker — not an AI judge — decides the outcome: a run is <strong>grounded</strong> when the learner reaches the hidden conclusion and its proof closes; otherwise it ends in an <strong>impasse</strong> or the learner <strong>disengages</strong>. Runs are grouped by experimental condition (the <span class="mono">--group</span> flag); artifacts live under <span class="mono">exports/dramatic-derivation/loop/</span>.</p>
-	${renderDerivationControlledVocabularyHtml()}
-	${renderDerivationLivePanel(listDerivationLiveRuns())}
+<main class="wrap wrap--wide" data-derivation-index>
+<h1>Proof runs — did the learner reach the hidden answer?</h1>
+${reportTypeBand('/derivation')}
+<p class="lede">Each row is one tutoring run. The tutor has to lead the learner to a hidden conclusion purely by inference, and a fixed rule-checker — not an AI judge — decides the outcome: a run is <strong>grounded</strong> when the learner reaches the hidden conclusion and its proof closes; otherwise it ends in an <strong>impasse</strong> or the learner <strong>disengages</strong>. Runs are grouped by experimental condition (the <span class="mono">--group</span> flag); artifacts live under <span class="mono">exports/dramatic-derivation/loop/</span>.</p>
+${renderDerivationControlledVocabularyHtml()}
+${renderDerivationLivePanel(listDerivationLiveRuns())}
 ${scoreboard}
 ${toolbar}
 ${comparePanel}
@@ -5556,19 +5581,19 @@ function renderScriptoriumHome(stats = {}) {
           'The Shelves',
           '/browse',
           'read',
-          'The whole corpus — every scored script, filterable by arm, discipline, and verdict.',
+          'Scripts — judged by an AI critic on dramatic form. The whole corpus, filterable by arm, discipline, and verdict.',
         ],
         [
           'The Proofs',
           '/derivation',
           'prove',
-          'Runs where the tutor must lead to a hidden answer; a fixed rule decides grounded or not.',
+          'Proof runs — judged by a fixed rule-checker, not an AI. The tutor must reach a hidden answer: grounded, impasse, or disengaged.',
         ],
         [
           'Variant Leaves',
           '/replays',
           'vary',
-          'One move altered, then diffed against the original — how a change reshapes recognition.',
+          'Replays — judged by a diff vs the original. One move altered and re-run, to see how a change reshapes recognition.',
         ],
         [
           'The Critic&#39;s Bench',
@@ -9869,6 +9894,7 @@ ${railHtml({
   <div class="workbench__intro">
     <div class="workbench__k">evidence workbench</div>
     <h1 id="replayWorkTitle">Replay/original comparison</h1>
+    ${reportTypeBand('/replays')}
     <p>Read one counterfactual rewrite against its original, then inspect local gate verdicts and hidden-state provenance before promoting any claim.</p>
   </div>
   <a class="workbench__card" href="/runs?kind=replay&amp;mock=1&amp;dryRun=1"><span class="workbench__t">make a replay</span><span class="workbench__d">Open the launcher with a free mock/dry-run replay path selected.</span><span class="workbench__go">launch replay →</span></a>
@@ -10966,6 +10992,20 @@ h1 {
   grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
+.fgroup {
+  display: grid;
+  gap: 8px;
+}
+.fgroup + .fgroup {
+  border-top: 1px solid var(--rule-soft);
+  padding-top: 12px;
+}
+.fgroup__h {
+  font: 700 9px/1 "JetBrains Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ink-4);
+}
 .saved-views {
   display: flex;
   flex-wrap: wrap;
@@ -11256,6 +11296,12 @@ h1 {
   color: var(--ink-4);
   font: 11px "JetBrains Mono", monospace;
 }
+summary.egraph__h { cursor: pointer; display: flex; align-items: center; gap: 8px; margin-bottom: 0; list-style: none; }
+summary.egraph__h::-webkit-details-marker { display: none; }
+summary.egraph__h::before { content: "\\25B8"; color: var(--ink-4); transition: transform .15s var(--ease); }
+details.egraph[open] summary.egraph__h::before { transform: rotate(90deg); }
+details.egraph[open] .egraph__links { margin-top: 10px; }
+.egraph__hint { font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--ink-4); }
 
 .tts-toolbar {
   max-width: 70rem;
@@ -11820,6 +11866,7 @@ ${railHtml({
     '<span class="rail__beacon" id="railBeacon" data-state="checking" title="Sidecar database connection"><span class="rail__dot"></span><span id="railBeaconText">checking</span></span>',
   hint: '<span><b>scripts</b> — tutoring dialogues graded by an AI critic on dramatic form</span><span class="navhint__sep">·</span><span>for runs where a fixed rule-checker (not an AI critic) decides whether the learner reached a hidden answer, see <a href="/derivation">proof runs</a></span>',
 })}
+${reportTypeBand('/browse')}
 <div id="app" class="app">
   <aside class="sidebar">
     <div class="mast">
@@ -11827,32 +11874,41 @@ ${railHtml({
       <div id="appSub" class="sub">Generated public scripts, full traces, critic scores, and labels-as-perspective.</div>
     </div>
     <div class="filters">
-      <div class="saved-views" id="savedViews" aria-label="Saved script views">
-        <button class="view-chip" type="button" data-view="all">all scripts</button>
-        <button class="view-chip" type="button" data-view="flagged">flagged</button>
-        <button class="view-chip" type="button" data-view="unlabelled">unlabelled</button>
-        <button class="view-chip" type="button" data-view="recognition">recognition</button>
-        <button class="view-chip" type="button" data-view="trap">trap</button>
-        <button class="view-chip" type="button" data-view="flat">flat</button>
+      <div class="fgroup">
+        <div class="fgroup__h">views</div>
+        <div class="saved-views" id="savedViews" aria-label="Saved script views">
+          <button class="view-chip" type="button" data-view="all">all scripts</button>
+          <button class="view-chip" type="button" data-view="flagged">flagged</button>
+          <button class="view-chip" type="button" data-view="unlabelled">unlabelled</button>
+          <button class="view-chip" type="button" data-view="recognition">recognition</button>
+          <button class="view-chip" type="button" data-view="trap">trap</button>
+          <button class="view-chip" type="button" data-view="flat">flat</button>
+        </div>
       </div>
-      <label class="filter-field" for="runSelect"><span class="filter-label">Run</span><select id="runSelect"></select></label>
-      <label class="filter-field" for="searchInput"><span class="filter-label">Search</span><input id="searchInput" placeholder="id · drama · discipline · condition · arm · critic form (recognition/trap/flat)"></label>
-      <label class="filter-field" for="disciplineSelect"><span class="filter-label">Discipline</span><select id="disciplineSelect"><option value="">all disciplines</option></select></label>
-      <label class="filter-field blind-only" for="labellerInput"><span class="filter-label">Labeller id</span><input id="labellerInput" placeholder="codex"></label>
-      <div class="filter-row score-only">
-        <label class="filter-field" for="roleSelect"><span class="filter-label">Role</span><select id="roleSelect">
-            <option value="">all roles</option>
-            <option value="target">target</option>
-            <option value="flat_control">flat controls</option>
-            <option value="boundary_trap_control">boundary traps</option>
-            <option value="hard_trap_control">hard traps</option>
-          </select></label>
-        <label class="filter-field" for="formSelect"><span class="filter-label">Critic form</span><select id="formSelect">
-            <option value="">all forms</option>
-            <option value="recognition">recognition</option>
-            <option value="trap">trap</option>
-            <option value="flat">flat</option>
-          </select></label>
+      <div class="fgroup">
+        <div class="fgroup__h">find</div>
+        <label class="filter-field" for="searchInput"><span class="filter-label">Search</span><input id="searchInput" placeholder="id · drama · discipline · condition · arm · critic form (recognition/trap/flat)"></label>
+        <label class="filter-field" for="runSelect"><span class="filter-label">Run</span><select id="runSelect"></select></label>
+        <label class="filter-field" for="disciplineSelect"><span class="filter-label">Discipline</span><select id="disciplineSelect"><option value="">all disciplines</option></select></label>
+      </div>
+      <div class="fgroup">
+        <div class="fgroup__h">refine</div>
+        <div class="filter-row score-only">
+          <label class="filter-field" for="roleSelect"><span class="filter-label">Role</span><select id="roleSelect">
+              <option value="">all roles</option>
+              <option value="target">target</option>
+              <option value="flat_control">flat controls</option>
+              <option value="boundary_trap_control">boundary traps</option>
+              <option value="hard_trap_control">hard traps</option>
+            </select></label>
+          <label class="filter-field" for="formSelect"><span class="filter-label">Critic form</span><select id="formSelect">
+              <option value="">all forms</option>
+              <option value="recognition">recognition</option>
+              <option value="trap">trap</option>
+              <option value="flat">flat</option>
+            </select></label>
+        </div>
+        <label class="filter-field blind-only" for="labellerInput"><span class="filter-label">Labeller id</span><input id="labellerInput" placeholder="codex"></label>
       </div>
       <div class="active-filters" id="activeFilters" hidden></div>
     </div>
@@ -11987,9 +12043,9 @@ function renderBrowseEvidenceGraph(detail) {
     ['ontology', '/ontology'],
   ];
   if (item.runId) links.splice(1, 0, ['run slice', '/browse?runId=' + encodeURIComponent(item.runId)]);
-  return '<div class="egraph"><div class="egraph__h">evidence graph</div><div class="egraph__links">' +
+  return '<details class="egraph"><summary class="egraph__h">evidence graph <span class="egraph__hint">' + esc(scoreCount) + ' scores · ' + esc(labelCount) + ' labels · ' + esc(activeFlags) + ' flags</span></summary><div class="egraph__links">' +
     links.map(([label, href]) => '<a href="' + esc(href) + '">' + esc(label) + '</a>').join('') +
-    '</div><div class="egraph__meta">scores ' + esc(scoreCount) + ' · labels ' + esc(labelCount) + ' · active flags ' + esc(activeFlags) + ' · item ' + esc(item.id) + '</div></div>';
+    '</div><div class="egraph__meta">item ' + esc(item.id) + '</div></details>';
 }
 
 function ttsClean(s) {

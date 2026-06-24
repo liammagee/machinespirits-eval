@@ -54,7 +54,7 @@ drama:
   hamartia: "treats log(a+b) as log a + log b"           # o   the misconception (= learner_start_state)
   continuation_policy: reframe     # o   none|anchor|revoice|reconsider|reframe
   continuation_anchor: misframing-candidate   # o   latest|opening|misframing-candidate
-  tutor_adaptation_policy: peripeteia  # o   none|routine|uptake|peripeteia|uptake+peripeteia|socratic_discovery|reveal_secret
+  tutor_adaptation_policy: peripeteia  # o   none|routine|uptake|peripeteia|uptake+peripeteia|socratic_discovery|reveal_secret|withhold_secret
   secret:                          # o   the withheld-knowledge device (dramatic irony)
     fact: "<the withheld conclusion S>"
     premise_ledger: ["<obvious check>", "<distinguishing premise>", ...]

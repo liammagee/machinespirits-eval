@@ -1,14 +1,14 @@
 {
-  "generated": "2026-06-24T14:51:34.151Z",
+  "generated": "2026-06-24T19:14:17.929Z",
   "counts": {
-    "total": 48,
+    "total": 49,
     "byStatus": {
-      "done": 44,
-      "blocked": 2,
+      "done": 46,
+      "blocked": 1,
       "dropped": 2
     },
     "byType": {
-      "research": 24,
+      "research": 25,
       "experiment": 4,
       "content": 1,
       "infra": 9,
@@ -41,37 +41,6 @@
         "critical"
       ],
       "milestone": "human-pilot-prep"
-    },
-    {
-      "id": "a17-one-side-replay-replication-across-scenes",
-      "title": "A17. One-Side Replay Replication Across Scenes",
-      "status": "blocked",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "todo",
-      "created": "2026-06-22",
-      "updated": "2026-06-24",
-      "verification": "Replication across scenes run; results in exports/; the one-side-replay claim updated or closed in the paper.",
-      "branch": "codex/a17-replay-replication",
-      "blocked_by": "Revised D5 `none`-control gate `d5-control-gate-run3` failed T1; the QA panel split withheld:2 metered:2 stated:0, below the 3-of-4 withheld consensus required for an admissible control. Fresh approval is needed for any further paid D5 strategy or tooling change.",
-      "links": {
-        "notes": [
-          "TODO.md#A17",
-          "notes/poetics/2026-06-24-a17-replay-replication-qa-stop.md",
-          "notes/poetics/2026-06-24-a17-d5-run2-qa-stop.md",
-          "notes/poetics/2026-06-24-a17-d5-control-gate-run3-qa-stop.md"
-        ],
-        "paper": "§7.9",
-        "exports": "exports/a17-one-side-replay-replication/"
-      },
-      "claim_status": "exploratory",
-      "tags": [
-        "replay",
-        "poetics",
-        "learner-variance"
-      ],
-      "milestone": "poetics-followups"
     },
     {
       "id": "scriptorium-control-room-first-run",
@@ -337,6 +306,41 @@
       "milestone": "human-pilot-prep",
       "branch": "codex/workplan-board-triage",
       "claim_status": "future"
+    },
+    {
+      "id": "a17-one-side-replay-replication-across-scenes",
+      "title": "A17. One-Side Replay Replication Across Scenes",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "todo",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "Replication across scenes run; results in exports/; the one-side-replay claim updated in the paper with matched-prefix D4/D5 closeout.",
+      "branch": "codex/a17-replay-replication",
+      "links": {
+        "notes": [
+          "TODO.md#A17",
+          "notes/poetics/2026-06-24-a17-replay-replication-qa-stop.md",
+          "notes/poetics/2026-06-24-a17-d5-run2-qa-stop.md",
+          "notes/poetics/2026-06-24-a17-d5-control-gate-run3-qa-stop.md",
+          "notes/poetics/2026-06-24-a17-d5-redacted-control-tooling.md",
+          "notes/poetics/2026-06-24-a17-d5-redacted-control-run4-gate.md",
+          "notes/poetics/2026-06-24-a17-d5-redacted-control-run5-rescue.md",
+          "notes/poetics/2026-06-24-a17-d5-matched-branches-and-redraw.md",
+          "notes/poetics/2026-06-24-a17-replay-replication-result.md"
+        ],
+        "paper": "§7.9",
+        "exports": "exports/a17-one-side-replay-replication/"
+      },
+      "claim_status": "exploratory",
+      "tags": [
+        "replay",
+        "poetics",
+        "learner-variance"
+      ],
+      "milestone": "poetics-followups"
     },
     {
       "id": "arcane-do-role-playing-language-agents-stay-in-character-at",
@@ -1134,6 +1138,29 @@
       ],
       "milestone": "paper-2-evidence-cleanup",
       "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "grouptom-bench-benchmarking-group-theory-of-mind-nonlinear",
+      "title": "GroupToM-Bench: Benchmarking Group Theory of Mind and Nonlinear Social Emergence",
+      "status": "done",
+      "type": "research",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-06-24",
+      "updated": "2026-06-24",
+      "verification": "Cross-walk landed as citation-only positioning in §6.8.8 (paper v3.0.171, ref @tang2026grouptombench) with derivation in exports/grouptom-bench-crosswalk-2026-06-24.md; claim_status methods; no paid runs.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-14-research-roundup.html",
+        "plan": "notes/research-plans/2026-06-20-research-plan.html",
+        "paper": "docs/research/paper-full-2.0.md",
+        "exports": "exports/grouptom-bench-crosswalk-2026-06-24.md"
+      },
+      "tags": [
+        "theory-of-mind",
+        "paper-positioning"
+      ],
+      "claim_status": "methods"
     },
     {
       "id": "revisit-adaptation-conformity-human-anchor",

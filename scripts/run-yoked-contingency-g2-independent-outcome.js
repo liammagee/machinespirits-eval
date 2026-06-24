@@ -16,9 +16,7 @@ import {
   seedTable,
   simulateItemResponses,
 } from './run-yoked-contingency-smoke.js';
-import {
-  G1_ARM_LABELS,
-} from './run-yoked-contingency-g1-paid-smoke.js';
+import { G1_ARM_LABELS } from './run-yoked-contingency-g1-paid-smoke.js';
 import {
   callBackend,
   CLAUDE_CODE_EFFORT,
@@ -125,10 +123,12 @@ export function loadG2Items({ posttestProfile = DEFAULTS.posttestProfile } = {})
 }
 
 function selectedChoice(item, response) {
-  return item.choices.find((choice) => String(choice.value) === String(response.response_value)) || {
-    value: response.response_value,
-    label: String(response.response_value),
-  };
+  return (
+    item.choices.find((choice) => String(choice.value) === String(response.response_value)) || {
+      value: response.response_value,
+      label: String(response.response_value),
+    }
+  );
 }
 
 function visibleAffectForResponse(response) {
@@ -171,8 +171,10 @@ export function buildLearnerPretestView({ targetSeed, items }) {
   });
 }
 
-export function buildHeldOutLearnerPrompt({ session, arm, pretestView, postItems, learnerProtocol = DEFAULTS.learnerProtocol }) {
-  const interventions = arm.plan.map((step, index) => `${index + 1}. ${sanitizeIntervention(step.intervention)}`).join('\n');
+export function buildHeldOutLearnerPrompt({ arm, pretestView, postItems, learnerProtocol = DEFAULTS.learnerProtocol }) {
+  const interventions = arm.plan
+    .map((step, index) => `${index + 1}. ${sanitizeIntervention(step.intervention)}`)
+    .join('\n');
   const pretestRows = pretestView
     .map(
       (row, index) => `${index + 1}. ${row.item_id}
@@ -207,7 +209,7 @@ ${formatChoices(item)}`,
 - If the tutoring messages directly addressed that rule, update the learner and answer with the corrected rule.
 - Preserve earlier successful habits on item types the learner already handled.
 - Do not solve from your own mathematical competence.`
-      : `Calibration rule:
+        : `Calibration rule:
 - Answer as this learner, not as an expert evaluator.
 - Use the pretest history and tutoring messages to update the learner only where the tutoring would plausibly help.
 - Do not assume the learner suddenly understands unrelated ideas.`;
@@ -237,10 +239,13 @@ Return JSON only:
 }
 
 function scoreAnswers({ answers, postItems }) {
-  const byId = new Map(postItems.map((item) => [item.id, item]));
   const rows = postItems.map((item) => {
     const answer = answers.find((candidate) => candidate.item_id === item.id);
-    const responseValue = answer ? String(answer.response_value || '').trim().toLowerCase() : '';
+    const responseValue = answer
+      ? String(answer.response_value || '')
+          .trim()
+          .toLowerCase()
+      : '';
     const validChoices = new Set(item.choices.map((choice) => String(choice.value).toLowerCase()));
     const valid = validChoices.has(responseValue);
     return {
@@ -269,7 +274,9 @@ function mockLearnerAnswers({ session, arm, postItems }) {
     const shouldImprove = alreadyMastered || targeted.has(item.family);
     return {
       item_id: item.id,
-      response_value: shouldImprove ? item.correct : item.choices.find((choice) => choice.value !== item.correct)?.value || item.correct,
+      response_value: shouldImprove
+        ? item.correct
+        : item.choices.find((choice) => choice.value !== item.correct)?.value || item.correct,
       confidence: shouldImprove ? 0.75 : 0.35,
     };
   });
@@ -428,19 +435,20 @@ export async function runG2IndependentOutcome({
           ? 'PLAN_2_0/yoked-contingency-g2-rule-transfer-scaled-preregistration.md'
           : 'PLAN_2_0/yoked-contingency-g2-hard-transfer-scaled-preregistration.md'
         : learnerProtocol === 'calibrated-novice'
-        ? 'PLAN_2_0/yoked-contingency-g2-calibrated-novice-scaled-preregistration.md'
-        : 'PLAN_2_0/yoked-contingency-g2-scaled-preregistration.md'
+          ? 'PLAN_2_0/yoked-contingency-g2-calibrated-novice-scaled-preregistration.md'
+          : 'PLAN_2_0/yoked-contingency-g2-scaled-preregistration.md'
       : posttestProfile === 'hard-transfer'
         ? learnerProtocol === 'rule-transfer-novice'
           ? 'PLAN_2_0/yoked-contingency-g2-rule-transfer-preregistration.md'
           : 'PLAN_2_0/yoked-contingency-g2-hard-transfer-preregistration.md'
         : learnerProtocol === 'calibrated-novice'
-        ? 'PLAN_2_0/yoked-contingency-g2-calibrated-novice-preregistration.md'
-        : 'PLAN_2_0/yoked-contingency-g2-independent-outcome-preregistration.md',
+          ? 'PLAN_2_0/yoked-contingency-g2-calibrated-novice-preregistration.md'
+          : 'PLAN_2_0/yoked-contingency-g2-independent-outcome-preregistration.md',
     inputG1Artifact: typeof g1Json === 'string' ? path.relative(ROOT, path.resolve(g1Json)) : 'in_memory',
     plannerBackend: g1.backend,
     learnerBackend: canonicalBackend(backend),
-    learnerBackendDetail: canonicalBackend(backend) === 'claude-code' ? { model: CLAUDE_CODE_MODEL, effort: CLAUDE_CODE_EFFORT } : {},
+    learnerBackendDetail:
+      canonicalBackend(backend) === 'claude-code' ? { model: CLAUDE_CODE_MODEL, effort: CLAUDE_CODE_EFFORT } : {},
     learnerProtocol,
     learnerProtocolDescription: LEARNER_PROTOCOLS[learnerProtocol],
     posttestProfile,
@@ -480,7 +488,9 @@ export function renderG2IndependentOutcomeReport(result) {
   lines.push(`Planner backend: ${result.plannerBackend}`);
   lines.push(`Held-out learner backend: ${result.learnerBackend}`);
   if (result.learnerBackendDetail?.model) {
-    lines.push(`Held-out learner model: ${result.learnerBackendDetail.model} (${result.learnerBackendDetail.effort} effort)`);
+    lines.push(
+      `Held-out learner model: ${result.learnerBackendDetail.model} (${result.learnerBackendDetail.effort} effort)`,
+    );
   }
   lines.push(`Held-out learner protocol: ${result.learnerProtocol}`);
   lines.push(`Posttest profile: ${result.posttestProfile}`);
@@ -490,7 +500,9 @@ export function renderG2IndependentOutcomeReport(result) {
   lines.push('');
   lines.push(`- Δ1 responsiveness/coherence = ${fmt(result.summary.delta1_responsiveness)}`);
   lines.push(`- Δ2 diagnosis = ${fmt(result.summary.delta2_diagnosis)}`);
-  lines.push(`- Same-seed gain > different-seed gain: ${result.summary.sameGreaterSessionCount}/${result.summary.sessionCount}`);
+  lines.push(
+    `- Same-seed gain > different-seed gain: ${result.summary.sameGreaterSessionCount}/${result.summary.sessionCount}`,
+  );
   lines.push(`- One-sided sign-test p = ${fmt(result.summary.signTestOneSidedP, 4)}`);
   lines.push('');
   lines.push('## Validity checks');
