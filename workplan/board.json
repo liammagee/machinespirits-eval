@@ -1,12 +1,11 @@
 {
-  "generated": "2026-06-24T05:12:56.625Z",
+  "generated": "2026-06-24T05:31:51.261Z",
   "counts": {
     "total": 47,
     "byStatus": {
-      "done": 39,
+      "done": 42,
       "blocked": 2,
       "dropped": 2,
-      "triaged": 3,
       "review": 1
     },
     "byType": {
@@ -19,88 +18,6 @@
     }
   },
   "items": [
-    {
-      "id": "audit-dramatic-metaphor-role-vocabulary",
-      "title": "Audit dramatic metaphor and rename director role toward author",
-      "status": "triaged",
-      "type": "content",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-06-23",
-      "updated": "2026-06-24",
-      "verification": "Dramatic-machine docs, derivation notes, config names, UI labels, and any runtime-facing role names use a coherent metaphor set; the director/author distinction is either renamed safely or documented with a compatibility path.",
-      "links": {
-        "notes": [
-          "notes/poetics/drama-machine/SPEC.md",
-          "notes/poetics/drama-machine/TAXONOMY.md",
-          "notes/poetics/2026-06-09-free-dramaturgy-and-register-dials.md",
-          "notes/2026-06-09-dramatic-derivation-plan.md"
-        ],
-        "items": "refresh-weber-id-charisma-recognition-thread"
-      },
-      "tags": [
-        "poetics",
-        "dramatic-derivation",
-        "terminology",
-        "author",
-        "director"
-      ],
-      "milestone": "poetics-followups"
-    },
-    {
-      "id": "d5-rubric-v3-0-pca-informed-consolidation",
-      "title": "D5. Rubric v3.0 PCA-Informed Consolidation",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "todo",
-      "created": "2026-06-22",
-      "updated": "2026-06-24",
-      "verification": "Rubric v3.0 PCA-informed consolidation drafted in config/rubrics/v3.0/; calibration run; decision recorded in the paper or shelved with a reason.",
-      "links": {
-        "notes": [
-          "TODO.md#D5",
-          "notes/design-d5-rubric-v3-pca-consolidation.md"
-        ],
-        "paper": "§8.6"
-      },
-      "claim_status": "planned",
-      "tags": [
-        "rubric",
-        "pca",
-        "methods"
-      ],
-      "milestone": "paper-2-evidence-cleanup"
-    },
-    {
-      "id": "review-ego-superego-internal-history-window",
-      "title": "Review configurable ego/superego internal history windows",
-      "status": "triaged",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-06-23",
-      "updated": "2026-06-24",
-      "verification": "Current same-turn history behavior is covered by tests; a configurable history-window design is either implemented and smoke-tested with a bounded comparison, or explicitly rejected with rationale.",
-      "claim_status": "exploratory",
-      "links": {
-        "notes": "notes/2026-06-23-ego-superego-history-window-review.md",
-        "code": [
-          "tutor-core/services/tutorDialogueEngine.js",
-          "tutor-core/services/dialecticalEngine.js"
-        ]
-      },
-      "tags": [
-        "ego-superego",
-        "message-history",
-        "prompt-assembly",
-        "mechanism-test"
-      ],
-      "milestone": "paper-2-evidence-cleanup"
-    },
     {
       "id": "a1-human-learner-validation",
       "title": "Human-learner validation pilot (real learning gains)",
@@ -474,6 +391,37 @@
       "claim_status": "future"
     },
     {
+      "id": "audit-dramatic-metaphor-role-vocabulary",
+      "title": "Audit dramatic metaphor and rename director role toward author",
+      "status": "done",
+      "type": "content",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-23",
+      "updated": "2026-06-24",
+      "verification": "Dramatic-machine docs, derivation notes, config names, UI labels, and any runtime-facing role names use a coherent metaphor set; the director/author distinction is either renamed safely or documented with a compatibility path.",
+      "branch": "codex/dramatic-vocabulary-audit",
+      "links": {
+        "notes": [
+          "notes/poetics/drama-machine/SPEC.md",
+          "notes/poetics/drama-machine/TAXONOMY.md",
+          "notes/poetics/drama-machine/DIRECTOR-TERMINOLOGY-AUDIT.md",
+          "notes/poetics/2026-06-09-free-dramaturgy-and-register-dials.md",
+          "notes/2026-06-09-dramatic-derivation-plan.md"
+        ],
+        "items": "refresh-weber-id-charisma-recognition-thread"
+      },
+      "tags": [
+        "poetics",
+        "dramatic-derivation",
+        "terminology",
+        "author",
+        "director"
+      ],
+      "milestone": "poetics-followups"
+    },
+    {
       "id": "auto-drop-daily-routine",
       "title": "Auto-drop daily-routine actions into the workplan inbox",
       "status": "done",
@@ -561,6 +509,33 @@
         "structural-features",
         "ols",
         "multi-turn"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "d5-rubric-v3-0-pca-informed-consolidation",
+      "title": "D5. Rubric v3.0 PCA-Informed Consolidation",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "todo",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "Missing D5 note recovered; 2026-06-24 decision addendum shelves v3.0 implementation for future Paper 3.0/methods work.",
+      "branch": "codex/d5-rubric-v3-decision",
+      "links": {
+        "notes": [
+          "TODO.md#D5",
+          "notes/design-d5-rubric-v3-pca-consolidation.md"
+        ],
+        "paper": "§8.6"
+      },
+      "claim_status": "future",
+      "tags": [
+        "rubric",
+        "pca",
+        "methods"
       ],
       "milestone": "paper-2-evidence-cleanup"
     },
@@ -819,6 +794,35 @@
       ],
       "milestone": "paper-2-evidence-cleanup",
       "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "review-ego-superego-internal-history-window",
+      "title": "Review configurable ego/superego internal history windows",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-23",
+      "updated": "2026-06-24",
+      "verification": "Closeout audit completed; no-spend tests cover default opt-out, explicit opt-in message history, and Phase-2 prompt-only behavior; result is retained as opt-in instrumentation only, not a default or Paper 2.0 finding.",
+      "claim_status": "killed",
+      "branch": "codex/internal-history-closeout",
+      "links": {
+        "notes": "notes/2026-06-23-ego-superego-history-window-review.md",
+        "items": "implement-messages-style-internal-history-probe",
+        "code": [
+          "tutor-core/services/tutorDialogueEngine.js",
+          "tutor-core/services/dialecticalEngine.js"
+        ]
+      },
+      "tags": [
+        "ego-superego",
+        "message-history",
+        "prompt-assembly",
+        "mechanism-test"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
     },
     {
       "id": "sepo-self-evolving-prompt-agent-for-system-prompt-optimizati",

@@ -95,7 +95,10 @@ The learner's adaptive moves are mostly **responses** — to a director revisit 
 
 ## 5. DIRECTOR moves
 
-The director's moves are *staging-level* — they inject pressure or a cue into the scene, scheduled by turn and timing. All pre-baked at setup today (no live re-cue).
+The serialized role remains `director`; conceptually these are **staging
+director** moves, distinct from setup-only scene authorship. They inject
+pressure or a cue into the scene, scheduled by turn and timing. All pre-baked
+at setup today (no live re-cue).
 
 | Move | Register | What it does | Grounded form | Status |
 |---|---|---|---|---|

@@ -1,6 +1,6 @@
 # Ego/Superego History Window Review
 
-Status: observation + follow-up proposal, 2026-06-23.
+Status: closed negative/limited result, 2026-06-24.
 
 Question: do tutor ego/superego calls include prior ego/superego history inside the same exchange?
 
@@ -330,3 +330,11 @@ Merge/paper interpretation:
 - The rejudge weakens the earlier scenario-specific story rather than clarifying it. It flips gradient/pacing more positive than the `gpt`/`haiku` panel, but makes fraction frustration negative. That cross-judge instability is the key result.
 - Do not report this as a main Paper 2.0 finding. It is a small branch-local probe with synthetic scenarios, one-off prompt assembly, ignored artifacts, and judge disagreement.
 - If mentioned at all, keep it as an ancillary negative result or future-work note: exposing bounded same-turn ego/superego history as chat messages is parse-stable and sometimes improves first-pass approval, but does not produce robust cross-judge quality gains under the tested conditions.
+
+## Closeout
+
+Closeout branch: `codex/internal-history-closeout`.
+
+Decision: close the review item as a negative/limited result. The implementation remains only an opt-in instrumentation/probe switch (`internal_history.enabled: true` with `surface: messages`, `scope: unified_exchange`, and a bounded `window`). Defaults stay unchanged. The evidence does not justify enabling internal-history messages by default, registering a standard evaluation cell around them, or folding the result into the main Paper 2.0 empirical claims.
+
+No paid runs were launched during closeout. The only closeout change was to add a no-spend boundary test that locks the opt-in gate and the Phase-2 dialectical engine's prompt-only behavior.

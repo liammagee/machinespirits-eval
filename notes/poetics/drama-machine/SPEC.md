@@ -5,6 +5,28 @@
 
 ---
 
+## 0. Terminology and compatibility
+
+`director` is the compatibility key for the scene-authoring/staging role. Keep
+it in specs, CLI flags, traces, cached files, and generated YAML until a
+separate migration exists. In prose and UI labels, gloss it as **scene author /
+director** when the authorship function matters.
+
+This policy deliberately avoids a broad rename:
+
+| Term | Status | Meaning |
+|---|---|---|
+| `director` | **canonical serialized key** | Scene author / staging controller. Authors the scene card, stage material, speaker order, and scheduled cues; never tutors or plays the learner. |
+| `authorial_voice` | **reserved alias, not wired** | Candidate future field if the scene-authoring function is split from live staging. Not accepted by the loader today. |
+| `staging_director` | **conceptual split only** | The live or scheduled stage-control function (`interventions[]`, movement declarations, cue timing). Currently still serialized as `director`. |
+| `id_director` | **separate architecture** | The charisma-family tutor architecture where an id authors the tutor ego prompt. Do not conflate it with the drama-machine `director` role. |
+
+Archived transcripts, run metadata, paper claims, and existing config files are
+read under the vocabulary they were produced with; this spec clarifies the
+forward policy without reinterpreting historical evidence.
+
+---
+
 ## 1. The principle — separate *what* / *who* / *audience*
 
 A single drama spec conflates three concerns today (a `dramas:` YAML entry is both *what the drama is* and *how to generate it*). The drama machine separates them:
@@ -86,7 +108,7 @@ drama:
 
 ```yaml
 cast:
-  director:        llm:claude:opus       # who authors the scene card
+  director:        llm:claude:opus       # scene author / director compatibility key
   tutor:           llm:api:sonnet        # whole tutor (ego+superego+id share a backend unless split)
   tutor_superego:  llm:codex             # o   split a sub-agent onto a different backend
   learner:         human                 # ← the human plays the learner (via /ms-play-tutor today)
@@ -207,6 +229,6 @@ drama:
   tutor:   { prompt_type: recognition }
   tutor_adaptation_policy: peripeteia
   targets: [peripeteia]
-cast:     { tutor: llm:api:sonnet, learner: llm:api:sonnet, director: llm:api:sonnet }
+cast:     { tutor: llm:api:sonnet, learner: llm:api:sonnet, director: llm:api:sonnet } # director = scene author / staging role
 audience: { panel: [gpt, deepseek-v4-pro, qwen3.7-max], consensus: 2-of-3, grading: graded }
 ```

@@ -6513,12 +6513,12 @@ ${functionalComponentStrip()}
       <label class="fld">stage_direction_style<select id="s-stagestyle">${composeOptions(V.stageStyle, 'object_business')}</select></label>
     </div></details>
     <details class="sec" data-component="cast"><summary>${parameterComponentHeading('cast')}<span class="opt">sonnet cast · gpt critic</span></summary><div class="body">
-      <label class="fld">director<input type="text" id="c-director" list="castList" value="llm:api:sonnet"></label>
+      <label class="fld">scene author / director<input type="text" id="c-director" list="castList" value="llm:api:sonnet"></label>
       <label class="fld">tutor<input type="text" id="c-tutor" list="castList" value="llm:api:sonnet"></label>
       <label class="fld">learner<input type="text" id="c-learner" list="castList" value="llm:api:sonnet"></label>
       <label class="fld">critic<input type="text" id="c-critic" list="castList" value="llm:api:gpt"></label>
       <label class="fld">default_backend<input type="text" id="c-backend" value="api"></label>
-      <div class="muted" style="grid-column:1/-1">grammar: <code>human</code> · <code>llm:&lt;backend&gt;:&lt;model&gt;</code> · <code>mock</code> — backends claude · codex · gemini · api</div>
+      <div class="muted" style="grid-column:1/-1">grammar: <code>human</code> · <code>llm:&lt;backend&gt;:&lt;model&gt;</code> · <code>mock</code> — backends claude · codex · gemini · api; serialized key remains <code>cast.director</code></div>
     </div></details>
     <details class="sec" data-component="audience"><summary>${parameterComponentHeading('audience')}<span class="opt">4-judge panel · 3-of-4</span></summary><div class="body">
       <label class="fld wide">panel — comma-separated judge models<input type="text" id="a-panel" list="panelList" value="gpt, deepseek-v4-pro, qwen3.7-max, gemini-3.5-flash"></label>
@@ -7941,23 +7941,46 @@ function renderWorkplanBoardHtml() {
     priorities: WP_PRIORITIES,
     owners: WP_OWNERS,
   }).replace(/</g, '\\u003c');
+  // Compact-timeline payload for the embedded board band (rendered client-side by
+  // /components/timeline-viz.js). Reuses milestoneStats (board's done/open counts).
+  const tlTodayIso = new Date().toISOString().slice(0, 10);
+  const TL_DAY = 86400000;
+  const tlMilestones = milestoneStats.map((m) => {
+    const total = m.assigned.length;
+    const complete = total > 0 && m.done === total;
+    const overdue = m.target && String(m.target) < tlTodayIso && !complete;
+    const state = complete ? 'done' : overdue ? 'over' : m.pct > 0 ? 'track' : 'plan';
+    const days = m.target ? Math.round((Date.parse(m.target) - Date.parse(tlTodayIso)) / TL_DAY) : null;
+    return {
+      id: m.id,
+      title: m.title || m.id,
+      target: m.target || null,
+      status: m.status || 'planned',
+      tag: m.tag || null,
+      description: m.description || '',
+      done: m.done,
+      total,
+      pct: m.pct,
+      state,
+      days,
+    };
+  });
+  // The timeline is the visible milestone filter; the proven `.ms-mini` chips stay
+  // in the DOM (hidden) so the board's filter/URL logic is untouched — timeline
+  // nodes just click their hidden chip (see timeline-viz.js compact mode).
   const milestoneTrack = milestoneStats.length
-    ? `<div class="ms-track" aria-label="Milestone progress">
-      ${milestoneStats
-        .map(
-          (m) => `<button type="button" class="ms-mini" data-filter="${e(m.id)}" data-filter-kind="milestone" title="Filter to ${e(m.title || m.id)}">
-            <span class="ms-mini__top"><span class="ms-mini__title">${e(m.title || m.id)}</span><span class="ms-mini__date">${m.target ? e(m.target) : 'no target'}</span></span>
-            <span class="ms-mini__bar"><span style="width:${m.pct}%"></span></span>
-            <span class="ms-mini__meta">${m.done}/${m.assigned.length} done · ${m.open} open</span>
-          </button>`,
-        )
-        .join('')}
-      <button type="button" class="ms-mini ms-mini--unscheduled" data-filter="__none" data-filter-kind="milestone" title="Filter to items without a milestone">
-        <span class="ms-mini__top"><span class="ms-mini__title">Unscheduled</span><span class="ms-mini__date">${unscheduled.length}</span></span>
-        <span class="ms-mini__bar"><span style="width:0%"></span></span>
-        <span class="ms-mini__meta">${unscheduled.length} item${unscheduled.length === 1 ? '' : 's'}</span>
-      </button>
-    </div>`
+    ? `<div class="ms-tl-row">
+        <div id="tl-viz" class="ms-tl-embed" aria-label="Milestone timeline — click a milestone to filter the board"></div>
+        <button type="button" class="chip ms-tl-unsched" data-filter="__none" data-filter-kind="milestone" title="Filter to items without a milestone">unscheduled · ${unscheduled.length}</button>
+      </div>
+      <div class="ms-mini-cache" aria-hidden="true">
+        ${milestoneStats
+          .map(
+            (m) =>
+              `<button type="button" class="ms-mini" data-filter="${e(m.id)}" data-filter-kind="milestone" tabindex="-1"></button>`,
+          )
+          .join('')}
+      </div>`
     : '';
   const sections = LIFE.filter((s) => DEFAULT_LANES.includes(s) || items.some((i) => i.status === s))
     .map((status) => {
@@ -8022,6 +8045,15 @@ main{ max-width:1100px; margin:0 auto; padding:22px 22px 64px; }
 .ms-mini__bar{ display:block; height:6px; background:var(--paper-2); border:1px solid var(--rule-soft); border-radius:4px; overflow:hidden; }
 .ms-mini__bar span{ display:block; height:100%; background:var(--moss); }
 .ms-mini__meta{ font:11px ui-monospace,monospace; color:var(--ink-4); }
+${TIMELINE_VIZ_CSS}
+.ms-tl-row{ display:flex; align-items:flex-start; gap:14px; margin:0 0 16px; }
+.ms-tl-embed{ flex:1; min-width:0; }
+.ms-mini-cache{ display:none; }
+.ms-tl-unsched{ margin-top:8px; white-space:nowrap; flex:none; }
+.tlv-halo{ fill:transparent; transition:fill .15s; }
+.tlv-fnode:hover .tlv-halo{ fill:var(--rule-soft); }
+.tlv-fnode.on .tlv-halo{ fill:var(--moss-soft); }
+.tlv-fnode.on .tlv-tlabel{ font-weight:700; }
 .cols{ display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; align-items:start; }
 .col__h{ font:600 12px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-3); margin:0 0 10px; border-bottom:1px solid var(--rule); padding-bottom:6px; }
 .col__h .n{ color:var(--ink-4); }
@@ -8129,6 +8161,8 @@ ${railHtml({
 </div>
 
 <script>window.__WP = ${wpData};</script>
+<script>window.__TL = ${JSON.stringify({ today: tlTodayIso, milestones: tlMilestones, events: [], compact: true }).replace(/</g, '\\u003c')};</script>
+<script src="/components/timeline-viz.js"></script>
 <script>
 (function () {
 	  var chips = [].slice.call(document.querySelectorAll('.chip, .ms-mini'));
@@ -8448,6 +8482,26 @@ ${railHtml({
 }
 
 // ---- project timeline (/timeline) -----------------------------------------
+// Shared SVG-timeline primitives — used by the full /timeline page (TIMELINE_CSS)
+// and the compact board band (renderWorkplanBoardHtml). Keep them here so both
+// render identically; page-specific chrome (controls, detail, vertical) stays
+// in TIMELINE_CSS, board filter/active styling stays in the board css.
+const TIMELINE_VIZ_CSS = `
+.tl-viz-scroll{ overflow-x:auto; overflow-y:hidden; } .tl-viz-scroll svg{ min-width:760px; display:block; }
+.tlv-axis{ stroke:var(--rule); stroke-width:1.5; }
+.tlv-grid{ stroke:var(--rule-soft); stroke-dasharray:3 4; }
+.tlv-month{ font:10px ui-monospace,monospace; letter-spacing:.04em; fill:var(--ink-4); }
+.tlv-today{ stroke:var(--ink); stroke-width:2; }
+.tlv-pulse{ fill:var(--ink); animation:tlpulse 2.4s ease-out infinite; }
+@keyframes tlpulse{ 0%{ r:5px; opacity:.5; } 80%{ r:22px; opacity:0; } 100%{ opacity:0; } }
+.tlv-node{ cursor:pointer; transition:opacity .25s var(--ease); } .tlv-node.dim{ opacity:.4; }
+.tlv-track{ fill:none; stroke:var(--rule); stroke-width:4.5; }
+.tlv-ring{ fill:none; stroke:var(--c,var(--moss)); stroke-width:4.5; stroke-linecap:round; transition:stroke-dashoffset 1s var(--ease); }
+.tlv-dot{ fill:var(--c,var(--moss)); }
+.tlv-tlabel{ font:600 12px Georgia,serif; } .tlv-dlabel{ font:11px ui-monospace,monospace; }
+.tlv-ev{ fill:var(--indigo); } .tlv-ev-line{ stroke:var(--indigo); stroke-dasharray:2 3; }
+`;
+
 const TIMELINE_CSS = `
 main{ max-width:1180px; margin:0 auto; padding:22px 22px 64px; }
 .blurb{ font-size:13px; color:var(--ink-3); border-left:3px solid var(--moss); background:var(--paper-4); padding:10px 14px; margin:0 0 16px; }
@@ -8493,6 +8547,34 @@ main{ max-width:1180px; margin:0 auto; padding:22px 22px 64px; }
 .msm__actions{ display:flex; align-items:center; gap:8px; } .msm__sp{ flex:1; }
 .msm__btn{ font:12px ui-monospace,monospace; padding:6px 14px; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-2); cursor:pointer; border-radius:5px; }
 .msm__save{ color:var(--moss-deep); border-color:var(--moss); background:var(--moss-soft); } .msm__del{ color:var(--brick); border-color:var(--brick); }
+.tl-controls{ display:flex; flex-wrap:wrap; gap:9px 18px; align-items:center; margin:0 0 16px; }
+.tl-segwrap{ display:inline-flex; align-items:center; gap:7px; }
+.tl-seg__lab{ font:10px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-4); }
+.tl-seg{ display:inline-flex; border:1px solid var(--rule); border-radius:6px; overflow:hidden; }
+.tl-seg button{ font:11px ui-monospace,monospace; color:var(--ink-3); background:var(--paper-3); border:0; border-left:1px solid var(--rule); padding:5px 11px; min-height:32px; cursor:pointer; }
+.tl-seg button:first-child{ border-left:0; } .tl-seg button:hover{ color:var(--moss-deep); }
+.tl-seg button.on{ background:var(--moss-soft); color:var(--moss-deep); }
+${TIMELINE_VIZ_CSS}
+.tlv-card{ border:1px solid var(--rule); border-left:3px solid var(--c,var(--moss)); background:var(--paper-4); border-radius:6px; padding:12px 14px; }
+.tlv-card__h{ display:flex; align-items:center; gap:9px; flex-wrap:wrap; }
+.tlv-card__t{ font:600 15px Georgia,serif; color:var(--ink); margin:0; }
+.tlv-pill{ font:10px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; padding:1px 8px; border-radius:10px; }
+.tlv-when{ margin-left:auto; font:11px ui-monospace,monospace; color:var(--ink-4); }
+.tlv-card__h .ms__edit{ min-height:auto; min-width:auto; }
+.tlv-bar{ height:7px; background:var(--paper-2); border:1px solid var(--rule-soft); border-radius:5px; overflow:hidden; margin:9px 0 5px; }
+.tlv-bar i{ display:block; height:100%; background:var(--c,var(--moss)); border-radius:5px; transition:width .9s var(--ease); }
+.tlv-sub{ font:11px ui-monospace,monospace; color:var(--ink-3); margin-bottom:6px; } .tlv-sub a{ color:var(--moss-deep); }
+.tlv-desc{ font-size:12px; color:var(--ink-3); line-height:1.5; }
+.tlv-items{ list-style:none; margin:8px 0 0; padding:0; }
+.tlv-grid-cards{ display:grid; gap:12px; grid-template-columns:repeat(auto-fill,minmax(258px,1fr)); }
+.tlv-v{ position:relative; padding:4px 0 0; }
+.tlv-v__spine{ position:absolute; left:9px; top:10px; bottom:14px; width:2px; background:var(--rule); }
+.tlv-v__row{ position:relative; padding:0 0 16px 30px; }
+.tlv-v__node{ position:absolute; left:2px; top:3px; width:16px; height:16px; border-radius:50%; border:3px solid var(--c,var(--moss)); background:var(--paper); box-sizing:border-box; }
+.tlv-v__today .tlv-v__node{ border-color:var(--ink); background:var(--ink); }
+.tlv-v__h{ display:flex; align-items:center; gap:9px; flex-wrap:wrap; }
+.tlv-v__t{ font:600 14px Georgia,serif; color:var(--ink); }
+.tlv-v__date{ margin-left:auto; font:11px ui-monospace,monospace; color:var(--ink-4); }
 `;
 
 const TIMELINE_MODAL = `<div class="msm" id="msm" hidden>
@@ -8544,8 +8626,11 @@ const TIMELINE_JS = `
   }
   var nb = $('ms-new');
   if (nb) nb.addEventListener('click', function () { open({}); });
-  [].slice.call(document.querySelectorAll('.ms__edit')).forEach(function (b) {
-    b.addEventListener('click', function () { var id = b.getAttribute('data-id'); open(MS.filter(function (x) { return x.id === id; })[0] || { id: id }); });
+  document.addEventListener('click', function (ev) {
+    var b = ev.target && ev.target.closest ? ev.target.closest('.ms__edit') : null;
+    if (!b) return;
+    var id = b.getAttribute('data-id');
+    open(MS.filter(function (x) { return x.id === id; })[0] || { id: id });
   });
   [].slice.call(m.querySelectorAll('[data-msclose]')).forEach(function (el) { el.addEventListener('click', close); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !m.hidden) close(); });
@@ -8652,18 +8737,69 @@ function renderTimelineHtml({ items = [], milestones = [], github = {}, generate
       .join('') || '<li class="tl-empty">none</li>';
   const ghErr =
     github.errors && github.errors.length ? `<div class="tl-note">GitHub: ${e(github.errors.join('; '))}</div>` : '';
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const DAY_MS = 86400000;
+  const tlPayload = {
+    today: todayIso,
+    slug,
+    milestones: msSorted.map((m) => {
+      const its = byMs[m.id] || [];
+      const dn = its.filter((i) => i.status === 'done').length;
+      const total = its.length;
+      const pct = total ? Math.round((dn / total) * 100) : 0;
+      const complete = total > 0 && dn === total;
+      const overdue = m.target && String(m.target) < todayIso && !complete;
+      const state = complete ? 'done' : overdue ? 'over' : pct > 0 ? 'track' : 'plan';
+      const days = m.target ? Math.round((Date.parse(m.target) - Date.parse(todayIso)) / DAY_MS) : null;
+      return {
+        id: m.id,
+        title: m.title || m.id,
+        target: m.target || null,
+        status: m.status || 'planned',
+        tag: m.tag || null,
+        tagUrl: m.tag && slug ? githubUrl(slug, 'tag', m.tag) : null,
+        description: m.description || '',
+        done: dn,
+        total,
+        pct,
+        state,
+        days,
+        items: its.map((i) => ({ id: i.id, title: i.title || '', status: i.status })),
+      };
+    }),
+    events: [
+      ...(github.releases || [])
+        .filter((r) => r.date)
+        .map((r) => ({
+          kind: 'release',
+          label: r.name || r.tag,
+          date: fmtDate(r.date),
+          url: slug ? githubUrl(slug, 'release', r.tag) : null,
+        })),
+      ...(github.tags || [])
+        .filter((t) => t.date)
+        .map((t) => ({
+          kind: 'tag',
+          label: t.name,
+          date: fmtDate(t.date),
+          url: slug ? githubUrl(slug, 'tag', t.name) : null,
+        })),
+    ],
+  };
   return `${pageHead({ title: 'project timeline · machine spirits', css: TIMELINE_CSS })}
 <body>
 ${railHtml({ active: 'timeline', brand: 'project timeline', sub: 'milestones, dependencies & live GitHub activity', hint: orientBand('timeline', 'milestones with target dates + progress, linked to GitHub', 'edit items + deps on the board') })}
 <main>
   <div class="blurb">Milestones from <code>workplan/milestones.yaml</code> (items reference them via <code>milestone:</code>), with live GitHub activity for ${repoHeader}.${generated ? ' Board generated ' + e(generated) + '.' : ''} <button class="chip" id="ms-new">+ new milestone</button></div>
   <div class="tl-grid">
-    <div class="tl-left">${msCards}${unscheduled.length ? `<div class="tl-note">${unscheduled.length} item${unscheduled.length > 1 ? 's' : ''} not assigned to a milestone — assign on the <a href="/board">board</a>.</div>` : ''}</div>
+    <div class="tl-left"><div id="tl-controls"></div><div id="tl-viz"></div><div id="tl-detail"></div><noscript>${msCards}</noscript>${unscheduled.length ? `<div class="tl-note">${unscheduled.length} item${unscheduled.length > 1 ? 's' : ''} not assigned to a milestone — assign on the <a href="/board">board</a>.</div>` : ''}</div>
     <aside class="tl-right"><div class="tl-panel"><h4>GitHub · ${repoHeader}</h4>${ghErr}<h5>Open PRs</h5><ul class="tl-list">${prRows}</ul><h5>Releases / tags</h5><ul class="tl-list">${relRows}</ul><h5>Recent commits</h5><ul class="tl-list">${commitRows}</ul></div></aside>
   </div>
 </main>
 ${TIMELINE_MODAL}
 <script>window.__MS = ${JSON.stringify({ milestones }).replace(/</g, '\\u003c')};</script>
+<script>window.__TL = ${JSON.stringify(tlPayload).replace(/</g, '\\u003c')};</script>
+<script src="/components/timeline-viz.js"></script>
 <script>${TIMELINE_JS}</script>
 </body>
 </html>`;
