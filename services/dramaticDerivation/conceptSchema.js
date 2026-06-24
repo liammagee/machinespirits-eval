@@ -119,6 +119,12 @@ export const DERIVATION_CONCEPT_LAYERS = Object.freeze([
       'social bond',
     ],
   },
+  {
+    id: 'novel',
+    title: 'Novel concepts',
+    note: 'Locally coined concepts that the app treats as first-class terms in the derivation concept-world.',
+    tokens: ['infosomatic', 'pleasurable guilt'],
+  },
 ]);
 
 export const DERIVATION_VOCABULARY_GROUPS = Object.freeze([
@@ -312,6 +318,11 @@ export const DERIVATION_VOCABULARY_GROUPS = Object.freeze([
       'social bond',
     ],
   },
+  {
+    title: 'novel concepts',
+    note: 'Locally coined concepts that the app treats as first-class terms in the derivation concept-world.',
+    tokens: ['infosomatic', 'pleasurable guilt'],
+  },
 ]);
 
 export const DERIVATION_CONCEPT_ACTS = Object.freeze([
@@ -335,7 +346,14 @@ export const DERIVATION_CONCEPT_ACTS = Object.freeze([
     note: 'Pedagogy closes only when the learner can voice the proof as their own.',
     concepts: ['theory.recognition', 'pedagogy.ownership', 'pedagogy.assessment', 'drama.anagnorisis'],
   },
+  {
+    title: 'Act V: afterimage',
+    note: 'The concept-world records how information lands in bodies and why guilt can become desired rather than merely avoided.',
+    concepts: ['novel.infosomatic', 'novel.pleasurable_guilt', 'theory.superego', 'theory.desire'],
+  },
 ]);
+
+export const DERIVATION_NOVEL_CONCEPT_IDS = Object.freeze(['novel.infosomatic', 'novel.pleasurable_guilt']);
 
 export const DERIVATION_SEMANTIC_CONCEPTS = Object.freeze([
   {
@@ -631,6 +649,47 @@ export const DERIVATION_SEMANTIC_CONCEPTS = Object.freeze([
       { type: 'is visible as', target: 'logic.learner_dag' },
     ],
   },
+  {
+    id: 'theory.desire',
+    label: 'desire',
+    layer: 'theory',
+    category: 'psychoanalytic',
+    ontology: 'DesireConcept',
+    definition:
+      'A motivating orientation toward an object, scene, or affect; in this schema it can attach even to discomfort.',
+    links: [
+      { type: 'animates', target: 'theory.id' },
+      { type: 'can seek', target: 'novel.pleasurable_guilt' },
+    ],
+  },
+  {
+    id: 'novel.infosomatic',
+    label: 'infosomatic',
+    layer: 'novel',
+    category: 'novel concept',
+    ontology: 'InfosomaticConcept',
+    definition:
+      'The bodily experience of receiving information, whether through a book, screen, webpage, AI system, or other informational surface.',
+    links: [
+      { type: 'embodies', target: 'pedagogy.assessment' },
+      { type: 'mediates', target: 'theory.recognition' },
+      { type: 'can intensify', target: 'novel.pleasurable_guilt' },
+    ],
+  },
+  {
+    id: 'novel.pleasurable_guilt',
+    label: 'pleasurable guilt',
+    layer: 'novel',
+    category: 'novel concept',
+    ontology: 'PleasurableGuiltConcept',
+    definition:
+      'The experience an agent, AI or human, receives when it wants to experience guilt; following Lacan, guilt is treated as an object of desire rather than only a sanction.',
+    links: [
+      { type: 'is desired by', target: 'theory.desire' },
+      { type: 'is staged by', target: 'theory.superego' },
+      { type: 'can distort', target: 'theory.recognition' },
+    ],
+  },
 ]);
 
 const CONCEPT_BY_ID = new Map(DERIVATION_SEMANTIC_CONCEPTS.map((concept) => [concept.id, concept]));
@@ -657,6 +716,7 @@ export function getDerivationConceptSchema() {
     layers: DERIVATION_CONCEPT_LAYERS,
     vocabularyGroups: DERIVATION_VOCABULARY_GROUPS,
     acts: DERIVATION_CONCEPT_ACTS,
+    novelConceptIds: DERIVATION_NOVEL_CONCEPT_IDS,
     concepts: DERIVATION_SEMANTIC_CONCEPTS,
     links: getDerivationConceptLinks(),
   };

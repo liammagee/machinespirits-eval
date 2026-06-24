@@ -39,6 +39,8 @@ ms:PedagogicalConcept a owl:Class ; rdfs:subClassOf ms:SemanticConcept .
 ms:PhilosophicalConcept a owl:Class ; rdfs:subClassOf ms:SemanticConcept .
 ms:PsychoanalyticConcept a owl:Class ; rdfs:subClassOf ms:SemanticConcept .
 ms:SocialTheoreticConcept a owl:Class ; rdfs:subClassOf ms:SemanticConcept .
+ms:NovelConcept a owl:Class ; rdfs:subClassOf ms:SemanticConcept ;
+  rdfs:label "novel concept: a locally coined theoretical term in the Machine Spirits concept-world." .
 
 # -- schema relations -----------------------------------------------------------
 
@@ -58,6 +60,12 @@ ms:risksConcept a owl:ObjectProperty ; rdfs:domain ms:SemanticConcept ; rdfs:ran
 ms:correctsConcept a owl:ObjectProperty ; rdfs:domain ms:SemanticConcept ; rdfs:range ms:SemanticConcept .
 ms:energizesConcept a owl:ObjectProperty ; rdfs:domain ms:SemanticConcept ; rdfs:range ms:SemanticConcept .
 ms:readsConcept a owl:ObjectProperty ; rdfs:domain ms:SemanticConcept ; rdfs:range ms:SemanticConcept .
+ms:embodiesConcept a owl:ObjectProperty ; rdfs:domain ms:SemanticConcept ; rdfs:range ms:SemanticConcept .
+ms:mediatesConcept a owl:ObjectProperty ; rdfs:domain ms:SemanticConcept ; rdfs:range ms:SemanticConcept .
+ms:intensifiesConcept a owl:ObjectProperty ; rdfs:domain ms:SemanticConcept ; rdfs:range ms:SemanticConcept .
+ms:seeksConcept a owl:ObjectProperty ; rdfs:domain ms:SemanticConcept ; rdfs:range ms:SemanticConcept .
+ms:distortsConcept a owl:ObjectProperty ; rdfs:domain ms:SemanticConcept ; rdfs:range ms:SemanticConcept .
+ms:animatesConcept a owl:ObjectProperty ; rdfs:domain ms:SemanticConcept ; rdfs:range ms:SemanticConcept .
 
 # -- layers --------------------------------------------------------------------
 
@@ -69,6 +77,7 @@ ms:RhetoricConceptLayer a ms:ConceptLayer ; rdfs:label "figures / rhetoric" .
 ms:LogicConceptLayer a ms:ConceptLayer ; rdfs:label "logic" .
 ms:PedagogyConceptLayer a ms:ConceptLayer ; rdfs:label "pedagogy" .
 ms:TheoryConceptLayer a ms:ConceptLayer ; rdfs:label "theory" .
+ms:NovelConceptLayer a ms:ConceptLayer ; rdfs:label "novel concepts" .
 
 # -- drama ---------------------------------------------------------------------
 
@@ -285,6 +294,34 @@ ms:BildungConcept
   ms:requiresConcept ms:ProofOwnershipConcept ;
   ms:revealsConcept ms:LearnerDagConcept .
 
+ms:DesireConcept
+  a ms:PsychoanalyticConcept ;
+  rdfs:label "desire" ;
+  rdfs:comment "A motivating orientation toward an object, scene, or affect; in this schema it can attach even to discomfort." ;
+  ms:belongsToConceptLayer ms:TheoryConceptLayer ;
+  rdfs:seeAlso ms:Id ;
+  ms:animatesConcept ms:IdConcept ;
+  ms:seeksConcept ms:PleasurableGuiltConcept .
+
+ms:InfosomaticConcept
+  a ms:NovelConcept ;
+  rdfs:label "infosomatic" ;
+  rdfs:comment "The bodily experience of receiving information, whether through a book, screen, webpage, AI system, or other informational surface." ;
+  ms:belongsToConceptLayer ms:NovelConceptLayer ;
+  ms:embodiesConcept ms:DerivationAssessmentConcept ;
+  ms:mediatesConcept ms:RecognitionConcept ;
+  ms:intensifiesConcept ms:PleasurableGuiltConcept .
+
+ms:PleasurableGuiltConcept
+  a ms:NovelConcept, ms:PsychoanalyticConcept ;
+  rdfs:label "pleasurable guilt" ;
+  rdfs:comment "The experience an agent, AI or human, receives when it wants to experience guilt; following Lacan, guilt is treated as an object of desire rather than only a sanction." ;
+  ms:belongsToConceptLayer ms:NovelConceptLayer ;
+  rdfs:seeAlso ms:Superego ;
+  ms:seeksConcept ms:DesireConcept ;
+  ms:stagesConcept ms:SuperegoConcept ;
+  ms:distortsConcept ms:RecognitionConcept .
+
 ms:DerivationConceptWorld
   ms:hasConcept
     ms:DerivationWorldConcept,
@@ -310,4 +347,7 @@ ms:DerivationConceptWorld
     ms:EgoSuperegoLoopConcept,
     ms:CharismaConcept,
     ms:IntersubjectivityConcept,
-    ms:BildungConcept .
+    ms:BildungConcept,
+    ms:DesireConcept,
+    ms:InfosomaticConcept,
+    ms:PleasurableGuiltConcept .

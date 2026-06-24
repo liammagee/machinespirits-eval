@@ -3700,6 +3700,11 @@ const DERIVATION_CSS = `
 .vocabschema__head h3{margin:0;font-family:"JetBrains Mono",monospace;font-size:var(--s-1);text-transform:uppercase;color:var(--ink)}
 .vocabschema__head p{margin:4px 0 0;color:var(--ink-3);line-height:1.45;max-width:76ch}
 .vocabschema__link{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;color:var(--moss-deep);text-decoration:none;border:1px solid var(--moss);background:var(--moss-soft);border-radius:999px;padding:4px 8px;white-space:nowrap}
+.vocabschema__novel{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px;margin-bottom:10px}
+.novelconcept{border:1px solid var(--ochre);background:var(--ochre-soft);border-radius:6px;padding:10px}
+.novelconcept h4{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;margin:0 0 6px;color:var(--ochre-d)}
+.novelconcept p{margin:0 0 7px;color:var(--ink-2);line-height:1.4}
+.novelconcept .concept__edge{background:var(--paper);border-color:var(--ochre);color:var(--ochre-d)}
 .vocabschema__acts{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin-bottom:10px}
 .vocabschema__act{border:1px solid var(--rule-soft);background:var(--paper);border-radius:6px;padding:8px}
 .vocabschema__act h4{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;margin:0 0 5px;color:var(--ink)}
@@ -4585,6 +4590,22 @@ function renderDerivationConceptChip(id, conceptsById) {
 function renderDerivationConceptSchemaHtml(schema) {
   const conceptsById = new Map(schema.concepts.map((concept) => [concept.id, concept]));
   const ontologyHref = `/ontology?view=system&modules=${encodeURIComponent(schema.ontologyModules.join(','))}&source=1`;
+  const novelConcepts = (schema.novelConceptIds || [])
+    .map((id) => conceptsById.get(id))
+    .filter(Boolean)
+    .map(
+      (concept) => `<article class="novelconcept">
+    <h4>${escapeHtml(concept.label)}</h4>
+    <p>${escapeHtml(concept.definition)}</p>
+    <div class="concept__links">${concept.links
+      .map((link) => {
+        const target = conceptsById.get(link.target);
+        return `<span class="concept__edge">${escapeHtml(link.type)}: ${escapeHtml(target?.label || link.target)}</span>`;
+      })
+      .join('')}</div>
+  </article>`,
+    )
+    .join('');
   const acts = schema.acts
     .map(
       (act) => `<section class="vocabschema__act">
@@ -4623,6 +4644,7 @@ function renderDerivationConceptSchemaHtml(schema) {
       </div>
       <a class="vocabschema__link" href="${escapeAttr(ontologyHref)}">open ontology module</a>
     </div>
+    <div class="vocabschema__novel">${novelConcepts}</div>
     <div class="vocabschema__acts">${acts}</div>
     <div class="vocabschema__grid">${concepts}</div>
     <div class="vocabschema__edges"><h4>Typed semantic links</h4><div class="vocabschema__edgegrid">${edges}</div></div>
