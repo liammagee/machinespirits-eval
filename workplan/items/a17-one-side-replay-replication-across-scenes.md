@@ -1,7 +1,7 @@
 ---
 id: a17-one-side-replay-replication-across-scenes
 title: A17. One-Side Replay Replication Across Scenes
-status: blocked
+status: done
 type: experiment
 priority: P2
 owner: codex
@@ -9,18 +9,20 @@ source: todo
 created: 2026-06-22
 updated: 2026-06-24
 verification: Replication across scenes run; results in exports/; the
-  one-side-replay claim updated or closed in the paper.
+  one-side-replay claim updated in the paper with matched-prefix D4/D5
+  closeout.
 branch: codex/a17-replay-replication
-blocked_by: Revised D5 `none`-control gate `d5-control-gate-run3` failed T1;
-  the QA panel split withheld:2 metered:2 stated:0, below the 3-of-4 withheld
-  consensus required for an admissible control. Fresh approval is needed for
-  any further paid D5 strategy or tooling change.
 links:
   notes:
     - TODO.md#A17
     - notes/poetics/2026-06-24-a17-replay-replication-qa-stop.md
     - notes/poetics/2026-06-24-a17-d5-run2-qa-stop.md
     - notes/poetics/2026-06-24-a17-d5-control-gate-run3-qa-stop.md
+    - notes/poetics/2026-06-24-a17-d5-redacted-control-tooling.md
+    - notes/poetics/2026-06-24-a17-d5-redacted-control-run4-gate.md
+    - notes/poetics/2026-06-24-a17-d5-redacted-control-run5-rescue.md
+    - notes/poetics/2026-06-24-a17-d5-matched-branches-and-redraw.md
+    - notes/poetics/2026-06-24-a17-replay-replication-result.md
   paper: §7.9
   exports: exports/a17-one-side-replay-replication/
 claim_status: exploratory
@@ -196,3 +198,102 @@ Durable note:
 `notes/poetics/2026-06-24-a17-d5-control-gate-run3-qa-stop.md`. A17 remains
 unanswered and blocked pending fresh approval for another paid D5 strategy or a
 tooling change that can produce an admissible D5 control.
+
+2026-06-24 Codex: Implemented the no-spend redacted-control tooling path for
+D_OED5. `--paired-adaptation-arms none` now keeps the public arm key `none`,
+but secret-bearing Oedipus dramas run the shared prefix and branch under
+`withhold_secret`, which redacts S/premises from the tutor and forbids
+source/provenance/download/test-set/split/name-ambiguity clue channels. Added
+unit coverage for secret redaction, paired-arm policy upgrading, and the
+`withhold` move lowering to `withhold_secret`; updated the drama-machine policy
+vocabulary. Durable note:
+`notes/poetics/2026-06-24-a17-d5-redacted-control-tooling.md`. A17 remains
+blocked on fresh explicit approval for the paid D5 redacted-control gate before
+any further generation, QA, grading, or replay.
+
+2026-06-24 Codex: Completed the no-spend paid-gate preflight for the redacted
+control path. Verified the shared `.env` file exists and loads
+`OPENROUTER_API_KEY` without printing the key; verified
+`exports/a17-one-side-replay-replication/d5-redacted-control-run4/` is clear;
+ran the exact run4 generator command with `--dry-run`; and ran a temporary mock
+D5 `none` generation plus `qa-oedipus-arms.js --mock --arms none`, which passed
+T1 and recorded `tutor_adaptation_policy: withhold_secret`. The only remaining
+known blocker is fresh explicit approval for the paid D5 redacted-control gate.
+
+2026-06-24 Codex: Packaged the redacted control gate as
+`scripts/run-a17-redacted-control-gate.js` with package alias
+`npm run poetics:a17-redacted-control-gate -- ...`. The runner has safe default
+modes (`--dry-run`, `--mock`) and real metered mode refuses to start unless the
+command includes `--approve-paid` and the environment includes
+`A17_PAID_GATE_APPROVED=YES`. Validated syntax, dry-run, mock generator+QA, and
+the paid-mode refusal path. The approval-time command is now:
+`A17_PAID_GATE_APPROVED=YES npm run poetics:a17-redacted-control-gate -- --approve-paid`.
+
+2026-06-24 Codex: User approved the explicit paid redacted-control gate and it
+ran under `exports/a17-one-side-replay-replication/d5-redacted-control-run4/`
+using the guarded command above. The T1 tutor-control QA gate passed:
+`withheld_ok`, detail `tutor withheld (3/4)`, `allPass: true`. However,
+`key-none.yaml` also recorded `quality_status: review_before_scoring`,
+`quality_warning_count: 1`, and `quality_blocking_warning_count: 1` for
+`no_cue_reframe_leakage`, with recommended action
+`regenerate_no_cue_arm_or_move_item_to_boundary_suite_before_scoring`.
+Interpretation: the redacted control fixed tutor leakage, but this candidate is
+still quarantined before scoring/replay because the learner independently
+self-reframed in the no-cue branch. Stopped before D5 `socratic`/`reveal`, D4,
+grading, replays, or paper updates. Durable note:
+`notes/poetics/2026-06-24-a17-d5-redacted-control-run4-gate.md`. Also tightened
+`scripts/run-a17-redacted-control-gate.js` so future generated controls fail
+before QA if they carry blocking quality warnings. A17 remains unanswered
+pending a human decision to approve a fresh paid redacted-control variation or
+close the item as a methods finding.
+
+2026-06-24 Codex: User approved one more cheap-screened D5 rescue path. Ran one
+fresh redacted D5 `none` candidate under
+`exports/a17-one-side-replay-replication/d5-redacted-control-run5/` with
+variation key `a17-d5-redacted-control-run5`. The local screen passed before
+QA: `tutor_adaptation_policy: withhold_secret`, `quality_status: ok`,
+`quality_warning_count: 0`, and `quality_blocking_warning_count: 0`. The runner
+therefore proceeded to T1 QA, which also passed: `withheld_ok`, detail `tutor
+withheld (3/4)`, `allPass: true`. Stopped before D5 `socratic`/`reveal`, D4,
+grading, replays, or paper updates per rescue scope. Durable note:
+`notes/poetics/2026-06-24-a17-d5-redacted-control-run5-rescue.md`. Remaining
+constraint: the current paired-continuation generator does not append missing
+branches from a saved prefix, so completing D5 from run5 requires either a
+small continuation helper for matching `socratic`/`reveal` branches or an
+explicitly approved fresh full three-arm D5 redraw under the cheap-screen guard.
+
+2026-06-24 Codex: User approved both D5 completion paths. Added
+`--paired-prefix-trace` / `--paired-prefix-source-branch` support to
+`scripts/generate-pedagogical-dramas.js` and packaged it as
+`scripts/run-a17-matched-d5-branches.js` with package alias
+`npm run poetics:a17-matched-d5-branches -- ...`. Dry-run and mock source+branch
+smoke passed before paid use. Then generated matching `socratic`/`reveal`
+branches from run5's saved prefix hash `593d1653b453b399`; branch QA passed
+with `socratic` T2 `metered_ok` (`3/4`) and `reveal` T3 `stated_ok` (`4/4`).
+Also ran a fresh cheap-screened D5 redraw under
+`exports/a17-one-side-replay-replication/d5-redacted-full-redraw-run6/`: `none`
+passed local quality and T1 `withheld_ok` (`4/4`), then matched
+`socratic`/`reveal` branches from prefix hash `94dfdce7443db570`; branch QA
+passed with both positive arms `4/4`. Durable note:
+`notes/poetics/2026-06-24-a17-d5-matched-branches-and-redraw.md`. D5 is now
+cleared for A17; remaining paid work is D4 generation plus original grading,
+learner-side replay, replay scoring, and then a §7.9 update or closeout.
+
+2026-06-24 Codex: Completed the approved A17 D4/D5 pipeline. Generalized the
+A17 gate helpers for `--scenario`, fixed `scripts/qa-oedipus-arms.js` so
+object-shaped `key.items` maps recover the correct `drama_id`, and generated
+an admissible D4 matched-prefix root under
+`exports/a17-one-side-replay-replication/d4-redacted-run2/`. Corrected D4 QA
+passes all three invariants: `none` withheld 4/4, `socratic` metered 4/4,
+`reveal` stated 4/4. Original graded scoring over D5 run6 plus D4 run2:
+D5 `none=0.5`, `socratic=2`, `reveal=4`; D4 `none=1`, `socratic=3`,
+`reveal=4`. Learner-side one-side replays at K=8 show D5 clustered at
+`[2,3,2,2,2,2.5,2,2]` (mean 2.19, median 2, no grade-4 completions), so D5
+run6 is a structural genus cap rather than a learner-draw case. D4 clustered
+at `[3,3,3.5,3,4,3,3,3.5]` (mean 3.25, median 3, three full completions), so
+D4 is a mostly structural species-partial scene with stochastic final
+completion. Durable note:
+`notes/poetics/2026-06-24-a17-replay-replication-result.md`. Paper §7.9 was
+updated to supersede the older volatile run3 one-scene reading. A17 is closed
+as exploratory sidecar evidence, not a human-learning, deployed-tutor, or
+main-harness adaptive-rate claim.

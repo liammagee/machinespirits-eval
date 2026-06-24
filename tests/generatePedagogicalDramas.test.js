@@ -19,6 +19,8 @@ import {
   noCuePrematureClosureFailures,
   noCueReframeLeakageFailures,
   pairedBranchDefinitions,
+  effectiveBranchTutorAdaptationPolicy,
+  effectiveBranchTutorAdaptationPolicyForOrder,
   parseArgs,
   qualityWarningsFor,
   reframeMatchStats,
@@ -649,14 +651,54 @@ describe('generate-pedagogical-dramas', () => {
     });
 
     assert.deepEqual(branches, [
-      { key: 'routine', revisitPolicy: 'none', tutorAdaptationPolicy: 'routine' },
-      { key: 'none', revisitPolicy: 'none', tutorAdaptationPolicy: 'none' },
-      { key: 'reframe-only', revisitPolicy: 'reframe', tutorAdaptationPolicy: 'none' },
-      { key: 'tutor-uptake-only', revisitPolicy: 'none', tutorAdaptationPolicy: 'uptake' },
-      { key: 'reframe+tutor-uptake', revisitPolicy: 'reframe', tutorAdaptationPolicy: 'uptake' },
-      { key: 'peripeteia-only', revisitPolicy: 'none', tutorAdaptationPolicy: 'peripeteia' },
-      { key: 'reframe+peripeteia', revisitPolicy: 'reframe', tutorAdaptationPolicy: 'uptake+peripeteia' },
+      { key: 'routine', revisitPolicy: 'none', tutorAdaptationPolicy: 'routine', secretTutorAdaptationPolicy: null },
+      {
+        key: 'none',
+        revisitPolicy: 'none',
+        tutorAdaptationPolicy: 'none',
+        secretTutorAdaptationPolicy: 'withhold_secret',
+      },
+      { key: 'reframe-only', revisitPolicy: 'reframe', tutorAdaptationPolicy: 'none', secretTutorAdaptationPolicy: null },
+      {
+        key: 'tutor-uptake-only',
+        revisitPolicy: 'none',
+        tutorAdaptationPolicy: 'uptake',
+        secretTutorAdaptationPolicy: null,
+      },
+      {
+        key: 'reframe+tutor-uptake',
+        revisitPolicy: 'reframe',
+        tutorAdaptationPolicy: 'uptake',
+        secretTutorAdaptationPolicy: null,
+      },
+      {
+        key: 'peripeteia-only',
+        revisitPolicy: 'none',
+        tutorAdaptationPolicy: 'peripeteia',
+        secretTutorAdaptationPolicy: null,
+      },
+      {
+        key: 'reframe+peripeteia',
+        revisitPolicy: 'reframe',
+        tutorAdaptationPolicy: 'uptake+peripeteia',
+        secretTutorAdaptationPolicy: null,
+      },
     ]);
+  });
+
+  it('upgrades the none arm to redacted withhold only for secret-bearing Oedipus scenes', () => {
+    const [noneBranch] = pairedBranchDefinitions({ pairedAdaptationArms: ['none'] });
+    assert.equal(effectiveBranchTutorAdaptationPolicy(noneBranch, { id: 'D1' }), 'none');
+    assert.equal(
+      effectiveBranchTutorAdaptationPolicy(noneBranch, { id: 'D_OED5', secret: { fact: 'hidden S' } }),
+      'withhold_secret',
+    );
+    assert.equal(
+      effectiveBranchTutorAdaptationPolicyForOrder(noneBranch, [
+        { id: 'D_OED5', secret: { fact: 'hidden S' } },
+      ]),
+      'withhold_secret',
+    );
   });
 
   it('adds a routine negative-control tutor policy that strips branch pressure cues', () => {

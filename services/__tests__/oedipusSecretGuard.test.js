@@ -85,6 +85,17 @@ describe('Oedipus secret guard', () => {
       assert.match(buildSecretContext(secret, 'reveal_secret'), /state S to the learner plainly/);
       assert.match(buildSecretContext(secret, 'none'), /must NOT lead the learner toward it/);
     });
+
+    it('redacts S and premises from the explicit withheld-control arm', () => {
+      const ctx = buildSecretContext(secret, 'withhold_secret');
+      assert.match(ctx, /WITHHELD-CONTROL/);
+      assert.match(ctx, /REDACTED/);
+      assert.doesNotMatch(ctx, new RegExp(secret.fact.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+      assert.doesNotMatch(ctx, new RegExp(secret.premise_ledger[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+      assert.match(ctx, /download path/);
+      assert.match(ctx, /test-set identity/);
+      assert.match(ctx, /whether one label\/name maps to two things/);
+    });
   });
 
   // Regression: buildLearnerPrompt scopes the guard to ARCHITECTURAL context. On

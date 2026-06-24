@@ -79,6 +79,7 @@ test('composer vocab composes fixed drama vocab with live learner vocab', () => 
   assert.deepEqual(vocab.learnerArch, ['test_architecture']);
   assert.ok(vocab.forms.includes('peripeteia'));
   assert.ok(vocab.adaptationPolicy.includes('socratic_discovery'));
+  assert.ok(vocab.adaptationPolicy.includes('withhold_secret'));
   assert.equal(vocab.components.length, DRAMA_PARAMETER_COMPONENTS.length);
   assert.equal(vocab.functionalComponents.length, DRAMA_FUNCTIONAL_COMPONENTS.length);
   assert.deepEqual(vocab.functionalComponentOrder, DRAMA_FUNCTIONAL_COMPONENT_ORDER);

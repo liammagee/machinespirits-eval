@@ -103,6 +103,13 @@ function loadArmTranscript(sampleRoot, arm) {
       tid = e.tid || e.id;
       dramaId = e.drama_id || e.dramaId || e.drama;
     }
+    if (!tid && key.items && typeof key.items === 'object' && !Array.isArray(key.items)) {
+      const entry = Object.entries(key.items).find(([k, v]) => /^T\d+/.test(k) && v);
+      if (entry) {
+        tid = entry[0];
+        dramaId = entry[1].drama_id || entry[1].dramaId || entry[1].drama;
+      }
+    }
     if (!tid) {
       const flat = Object.entries(key).find(([k]) => /^T\d+/.test(k));
       if (flat) {
