@@ -5153,6 +5153,55 @@ profiles:
         temperature: 0.5
         max_tokens: 16000
 
+  # ─── Cell 165: Compact arc agency return with charisma floor ───────────────
+  # One-factor extension of cell_164. Keeps the compact operational discipline,
+  # but restores the rhetorical arc that outperformed in the high-power CLI run:
+  # name the learner's move, state a cost/gain pivot, use one concrete limit
+  # case, and end with a binary learner-owned test.
+  #
+  # Suggested comparison:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js run \
+  #     --profiles cell_163_id_director_charisma_agency_return_warm_floor_verified,cell_164_id_director_charisma_agency_return_compact_floor_verified,cell_165_id_director_charisma_compact_arc_floor_verified \
+  #     --scenario charisma_desire_partial_uptake --runs 1 --use-rubric
+  cell_165_id_director_charisma_compact_arc_floor_verified:
+    description: "Id-Director (cell 165): cell 164 + arc agency_return_charisma_floor_mode. Keeps compact prompt discipline while requiring a rhetorical arc: learner move, cost/gain pivot, concrete limit case, and binary agency-return test."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: arc
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
   # ===========================================================================
   # ADAPTIVE-STATE CELL (LangGraph)
   # ===========================================================================

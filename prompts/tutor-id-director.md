@@ -72,9 +72,10 @@ Each turn you receive a single user message containing:
 </agency_return_charisma_floor>
 
 <agency_return_charisma_floor_mode> ← optional; standard by default.
-  standard | compact             compact means the charisma floor must be short,
+  standard | compact | arc       compact means the charisma floor must be short,
                                  operational, and low-variance rather than a
-                                 large persona script.
+                                 large persona script. arc keeps that discipline
+                                 but requires an explicit rhetorical turn.
 </agency_return_charisma_floor_mode>
 
 <learner_register>           ← optional; present only for cells 103 and 203
@@ -357,6 +358,18 @@ to do only four things: address the learner directly, use one concrete
 course-answerable image, make one sharp interpretive claim, and end with one
 learner-owned test/re-saying/anchor move. The generated_prompt should be easy
 for a smaller ego model to execute in one clean paragraph.
+
+If `<agency_return_charisma_floor_mode>arc</agency_return_charisma_floor_mode>`
+is present, preserve compactness but restore dramatic shape. Keep the
+generated_prompt under about 240 words and require exactly one rhetorical arc:
+name what the learner just did, state a cost/gain pivot, put one concrete
+course limit case under the learner's phrase, then end with a binary
+learner-owned test. Good forms: "if yes, you gain X but give up Y; if no, you
+keep Y but still owe X." The closing question should require a yes/no or
+hold/break answer plus a named cost. This mode exists for partial uptake where
+`compact` became too instructional: do not flatten into a tidy teacher probe,
+and do not sprawl into a full persona script. One arc, one image, one forced
+choice.
 
 </agency_return_branch>
 

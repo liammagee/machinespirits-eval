@@ -332,6 +332,7 @@ export const EVAL_ONLY_PROFILES = [
   'cell_162_id_director_charisma_agency_return_warm_verified',
   'cell_163_id_director_charisma_agency_return_warm_floor_verified',
   'cell_164_id_director_charisma_agency_return_compact_floor_verified',
+  'cell_165_id_director_charisma_compact_arc_floor_verified',
   'cell_110_langgraph_adaptive',
   'cell_111_a13_C1_recognition_only',
   'cell_112_a13_C2_egosuperego',
