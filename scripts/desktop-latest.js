@@ -12,13 +12,26 @@
  *   2. fast-forwards it to local `main` (fails loudly if it has diverged), and
  *   3. launches `desktop:dev` there.
  *
- * Pass `--no-launch` (or set MS_DESKTOP_LATEST_NO_LAUNCH=1) to sync only.
+ * If a desktop dev instance is already running it holds Electron's single-instance
+ * lock, so a plain launch would only refocus that (stale) window without booting
+ * the freshly-synced code. By default the script detects this and tells you to quit
+ * it first; `--restart` quits it for you and relaunches, so one command always lands
+ * you on the synced code.
+ *
+ * Flags:
+ *   --no-launch   sync the worktree only; don't start the app
+ *                 (or set MS_DESKTOP_LATEST_NO_LAUNCH=1)
+ *   --restart     if an instance is already running, stop it before launching
  */
 import { execFileSync, spawn } from 'node:child_process';
 
 const DESKTOP_BRANCH = 'desktop-dev';
 const SOURCE_BRANCH = 'main';
+// The dev launch only — matches `electron desktop/main.js`, NOT the packaged
+// Scriptorium.app (which runs from its own bundle path).
+const DEV_PROC_PATTERN = 'electron desktop/main.js';
 const noLaunch = process.argv.includes('--no-launch') || process.env.MS_DESKTOP_LATEST_NO_LAUNCH === '1';
+const restart = process.argv.includes('--restart');
 
 const log = (m) => console.log(`[desktop:latest] ${m}`);
 const die = (m) => {
@@ -27,6 +40,18 @@ const die = (m) => {
 };
 
 const git = (args, opts = {}) => execFileSync('git', args, { encoding: 'utf8', ...opts }).trim();
+
+// PIDs of any running desktop dev instance (empty if none).
+const runningDevPids = () => {
+  try {
+    return execFileSync('pgrep', ['-f', DEV_PROC_PATTERN], { encoding: 'utf8' }).trim().split('\n').filter(Boolean);
+  } catch {
+    return []; // pgrep exits non-zero when nothing matches
+  }
+};
+
+// Synchronous, subprocess-free sleep (Node allows Atomics.wait on the main thread).
+const sleepMs = (ms) => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
 
 // 1. Find the worktree checked out on DESKTOP_BRANCH (parse `worktree`/`branch` blocks).
 let target = null;
@@ -62,6 +87,38 @@ if (noLaunch) {
   log('--no-launch: synced only, not starting the app.');
   process.exit(0);
 }
+
+// A running dev instance holds Electron's single-instance lock, so a plain launch
+// would only refocus that (stale) window — never silently leave the user there.
+const running = runningDevPids();
+if (running.length && !restart) {
+  log('');
+  log(`a desktop dev instance is already running (PID ${running.join(', ')}).`);
+  log('It holds the single-instance lock, so it keeps serving the code it booted');
+  log(`from and will NOT pick up the just-synced ${SOURCE_BRANCH}.`);
+  log('Quit it (⌘Q) and re-run, or:  npm run desktop:latest -- --restart');
+  process.exit(0); // synced, but deliberately not relaunched
+}
+if (running.length && restart) {
+  log(`--restart: stopping running instance (PID ${running.join(', ')}) …`);
+  try {
+    execFileSync('pkill', ['-f', DEV_PROC_PATTERN]);
+  } catch {
+    /* pkill exits non-zero if the match vanished first — fine */
+  }
+  let gone = false;
+  const deadline = Date.now() + 6000;
+  while (Date.now() < deadline) {
+    if (runningDevPids().length === 0) {
+      gone = true;
+      break;
+    }
+    sleepMs(250);
+  }
+  if (!gone) die('the running instance did not exit in time; quit it by hand (⌘Q) and re-run.');
+  log('stopped; the lock is released.');
+}
+
 log('launching desktop:dev …');
 const child = spawn('npm', ['run', 'desktop:dev'], { cwd: target, stdio: 'inherit' });
 child.on('error', (err) => die(`failed to launch: ${err.message}`));

@@ -23,6 +23,12 @@ the `desktop-dev` worktree to `main` and launches the app:
 npm run desktop:latest
 ```
 
+Add `-- --no-launch` to sync the worktree without starting the app. If a dev window
+is **already open**, append `-- --restart` — Electron's single-instance lock means a
+plain relaunch just refocuses the running window without picking up the new code, so
+`--restart` quits it first (without it, the command says so and leaves the old window
+in place rather than silently leaving you on stale code).
+
 **First-time setup** (run these once, inside the `ms-electron` worktree):
 
 ```bash
