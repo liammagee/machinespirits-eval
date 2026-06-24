@@ -2,7 +2,7 @@
 
 Date: 2026-06-24
 Branch: `codex/d2-d6-followups`
-Status: third D2-D6 slice; reconstructed gate because the original Path 2 note is missing in this checkout.
+Status: gate reconstructed; 2026-06-24 sidecar scaffold now created, empirical run still blocked on provider credentials and paid three-judge execution.
 
 ## Source status
 
@@ -17,9 +17,11 @@ surviving sources:
 - the D5 scoring gate, and
 - the D6 orientation-family matrix.
 
-This is not a claim update and not an implementation spec. It is the threshold a
-real D2 implementation must clear before prompt authoring, paid generation, or
-judging starts.
+The first version of the implementation scaffold now lives in
+`config/d2-role-transfer.yaml`, `config/evaluation-rubric-d2-role-transfer.yaml`,
+`prompts/d2/*.md`, and `scripts/run-d2-role-transfer.js`. The gate below remains
+the threshold a real D2 empirical run must clear before it becomes a paper
+claim.
 
 ## Decision
 
@@ -66,33 +68,34 @@ or a transmission orientation. The study must keep those labels explicit.
 
 ## Required prompt/content/rubric work
 
-Before any run:
+Before any empirical run:
 
 1. Prompt files.
-   - Two prompts per core application: one intersubjective/recognition-family
-     prompt and one transmission/default-family prompt.
-   - Prompts must be role-native. They should not say "tutor" unless the role is
-     actually tutoring.
+   - Done for scaffold v0.1 in `prompts/d2/*.md`: one
+     intersubjective/recognition-family prompt and one transmission/default
+     prompt per core application.
+   - Prompts are role-native and do not ask the model to tutor.
 
 2. Content packages.
-   - Peer support Path 1 material may be used as background only; direct
-     listener scenarios need a new role-reframed package.
-   - Customer service and code review need new packages.
+   - Scaffold v0.1 uses six direct role scenarios in
+     `config/d2-role-transfer.yaml`: two each for peer support, customer
+     service, and code review.
    - Therapy package remains conditional and excluded by default.
 
 3. Scoring rubric.
-   - Do not force the tutor v2.2 rubric onto non-tutor roles by default.
-   - Choose and freeze one of: a role-neutral quality rubric, separate
-     application rubrics with a common composite, or a methods-sidecar scoring
-     design.
+   - Scaffold v0.1 chooses a methods-sidecar role-fit rubric:
+     `config/evaluation-rubric-d2-role-transfer.yaml`.
+   - Do not force the tutor v2.2 rubric onto non-tutor roles.
    - If v2.2 is retained for a tutor-like subset, report it separately from
      role-native scores.
 
 4. Cell IDs.
    - The TODO plan's cells 98-105 are stale in this checkout. Those IDs are now
      occupied by D3/id-director cells.
-   - Any implementation must allocate fresh cell IDs from the current
-     `config/tutor-agents.yaml` and register them in `EVAL_ONLY_PROFILES`.
+   - Scaffold v0.1 intentionally avoids fresh eval cells because the standard
+     runner is tutor-suggestion shaped. If D2 is later ported back into
+     `evaluation_results`, allocate fresh IDs after the current registry max and
+     register them in `EVAL_ONLY_PROFILES`.
 
 5. Judge plan.
    - Three-judge scoring is required for any cross-application claim.
@@ -112,18 +115,33 @@ Retain the surviving TODO threshold:
 The threshold should be computed on the frozen primary rubric chosen before the
 run, not whichever channel looks strongest afterward.
 
+## Current scaffold commands
+
+No-cost validation:
+
+```bash
+node scripts/run-d2-role-transfer.js validate
+node scripts/run-d2-role-transfer.js mock --out exports/d2-role-transfer-mock.jsonl --runs 1
+node scripts/run-d2-role-transfer.js analyze --in exports/d2-role-transfer-mock.jsonl --out exports/d2-role-transfer-mock-report.md
+```
+
+Real run sequence, once API keys and budget are available, is recorded in
+`notes/d2-role-transfer-scaffold.md`.
+
 ## Stop condition for D2
 
-D2 is resolved for this branch when the branch records:
+D2 scaffold is resolved for this branch when the branch records:
 
 - the original Path 2 note is missing here,
 - the core application set,
 - therapy excluded by default,
 - role and orientation as separate axes,
 - stale cell IDs must not be reused,
-- rubric strategy must be frozen before runs, and
+- a frozen role-fit rubric before real runs,
+- runnable no-cost validation commands, and
 - the pass threshold remains `d >= 1.0` on two of three core applications.
 
-That condition is met by this note. The next item in the D2-D6 order is D4:
-decide whether the disposition-gradient SEL replication can be reanalysed or
-cleanly gated without new paid data.
+That scaffold condition is now met by this note plus
+`notes/d2-role-transfer-scaffold.md`. The empirical D2 study itself remains
+blocked until provider credentials, budget, and three-judge scoring are
+available.

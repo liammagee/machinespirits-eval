@@ -9,7 +9,7 @@ source: manual
 created: 2026-06-24
 updated: 2026-06-24
 branch: codex/d2-d6-followups
-verification: Completion audit records D5/D6 as locally complete, D2/D3 as gated for future empirical work, and D4 as a completed scope-bound replication; workplan render/check/test and git diff check pass.
+verification: Completion audit records D5/D6 as locally complete, D2 as scaffolded but blocked for empirical execution, D3 as gated for future empirical work, and D4 as a completed scope-bound replication; workplan render/check/test and git diff check pass.
 claim_status: scope-bound
 links:
   notes:
@@ -17,6 +17,7 @@ links:
     - notes/d5-measurement-gate-for-d2-d6.md
     - notes/d6-orientation-family-matrix.md
     - notes/d2-cross-application-role-reframed-gate.md
+    - notes/d2-role-transfer-scaffold.md
     - notes/d4-sel-disposition-gradient-gate.md
     - notes/d3-heavy-bridge-followup-gate.md
     - notes/d2-d6-completion-audit.md
@@ -94,3 +95,8 @@ scope; D2 and D3 remain fully gated for future empirical implementation; D4 is
 now a completed scope-bound Paper 2.0 result. The arc's contribution is a mixed
 external-validity boundary: one direct replication result plus remaining gated
 future designs.
+
+2026-06-24 Codex: Reopened D2 after user request and created the true
+role-transfer sidecar scaffold. The scaffold validates and includes mock-only
+analysis plumbing, but the empirical D2 run remains blocked on configured
+provider credentials/budget plus the required three-judge scoring sequence.

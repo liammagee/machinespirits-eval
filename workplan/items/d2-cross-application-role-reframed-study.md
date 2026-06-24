@@ -1,29 +1,33 @@
 ---
 id: d2-cross-application-role-reframed-study
 title: D2. True cross-application role-reframed study
-status: done
+status: blocked
 type: research
-priority: P3
+priority: P2
 owner: codex
 source: todo
 created: 2026-06-23
 updated: 2026-06-24
-verification: "Decision and 2026-06-24 gate logged: Path 2 remains
-  separate-study/future scope until role-native prompts, content, rubric,
-  fresh cell IDs, and budget/safety gates are opened."
-claim_status: future
+verification: "D2 sidecar scaffold validates with
+  scripts/run-d2-role-transfer.js validate; empirical completion requires real
+  generation plus three-judge scoring and analysis."
+blocked_by: "Provider API keys/budget are not configured in this environment;
+  run the commands in notes/d2-role-transfer-scaffold.md when credentials are
+  available."
+claim_status: planned
 links:
   notes:
     - TODO.md#D2
     - notes/design-d2-path2-cross-application.md
     - notes/d2-cross-application-role-reframed-gate.md
+    - notes/d2-role-transfer-scaffold.md
   paper: §8.2
 tags:
   - d2
   - cross-application
   - separate-study
 milestone: paper-2-evidence-cleanup
-branch: codex/workplan-board-triage
+branch: codex/d2-d6-followups
 ---
 
 TODO §D2 Path 1 is closed; Path 2 is the true cross-application study with role-reframed prompts. It is deferred because it requires prompt/content/rubric authoring and may be separate-paper scope.
@@ -35,3 +39,10 @@ TODO §D2 Path 1 is closed; Path 2 is the true cross-application study with role
 fully gated until a fresh implementation item opens role-native prompt/content
 authoring, role-fit scoring, fresh cell IDs, budget, and optional therapy safety
 review.
+
+2026-06-24 Codex: Reopened per user request and created the D2 Path 2 sidecar
+scaffold: `config/d2-role-transfer.yaml`,
+`config/evaluation-rubric-d2-role-transfer.yaml`, six `prompts/d2/*.md` files,
+and `scripts/run-d2-role-transfer.js`. No-cost validation and mock analysis pass.
+The empirical study is still blocked because this environment has no provider
+API keys configured for the real generation plus three-judge scoring sequence.
