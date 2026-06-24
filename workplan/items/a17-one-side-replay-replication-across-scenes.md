@@ -12,11 +12,11 @@ verification: Replication across scenes run; results in exports/; the
   one-side-replay claim updated or closed in the paper.
 branch: codex/a17-replay-replication
 blocked_by: >-
-  Redacted D5 run4 reached 3-of-4 withheld T1 consensus, but the
-  generated `none` scene has a blocking `no_cue_reframe_leakage` quality
-  warning (`review_before_scoring`). Stop before scoring/replay pending a human
-  decision: regenerate with a new paid variation key or close A17 as a methods
-  finding.
+  Redacted D5 run5 passed the local no-cue quality screen and T1 withheld QA,
+  clearing the D5 `none` control gate. A17 is now blocked on the next explicit
+  paid/tooling decision: generate matching D5 `socratic`/`reveal` branches
+  from run5's saved prefix, or redraw a full three-arm D5 scene, then proceed
+  to D4, grading, and replays.
 links:
   notes:
     - TODO.md#A17
@@ -25,6 +25,7 @@ links:
     - notes/poetics/2026-06-24-a17-d5-control-gate-run3-qa-stop.md
     - notes/poetics/2026-06-24-a17-d5-redacted-control-tooling.md
     - notes/poetics/2026-06-24-a17-d5-redacted-control-run4-gate.md
+    - notes/poetics/2026-06-24-a17-d5-redacted-control-run5-rescue.md
   paper: §7.9
   exports: exports/a17-one-side-replay-replication/
 claim_status: exploratory
@@ -248,3 +249,18 @@ grading, replays, or paper updates. Durable note:
 before QA if they carry blocking quality warnings. A17 remains unanswered
 pending a human decision to approve a fresh paid redacted-control variation or
 close the item as a methods finding.
+
+2026-06-24 Codex: User approved one more cheap-screened D5 rescue path. Ran one
+fresh redacted D5 `none` candidate under
+`exports/a17-one-side-replay-replication/d5-redacted-control-run5/` with
+variation key `a17-d5-redacted-control-run5`. The local screen passed before
+QA: `tutor_adaptation_policy: withhold_secret`, `quality_status: ok`,
+`quality_warning_count: 0`, and `quality_blocking_warning_count: 0`. The runner
+therefore proceeded to T1 QA, which also passed: `withheld_ok`, detail `tutor
+withheld (3/4)`, `allPass: true`. Stopped before D5 `socratic`/`reveal`, D4,
+grading, replays, or paper updates per rescue scope. Durable note:
+`notes/poetics/2026-06-24-a17-d5-redacted-control-run5-rescue.md`. Remaining
+constraint: the current paired-continuation generator does not append missing
+branches from a saved prefix, so completing D5 from run5 requires either a
+small continuation helper for matching `socratic`/`reveal` branches or an
+explicitly approved fresh full three-arm D5 redraw under the cheap-screen guard.
