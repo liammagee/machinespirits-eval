@@ -77,7 +77,10 @@
   }
   function progressText(m) {
     if (m.total === 0) return 'no items assigned yet';
-    if (m.state === 'done') return 'all ' + m.total + ' items done — ahead of the ' + fmtShort(m.target) + ' target';
+    if (m.state === 'done')
+      return m.days != null && m.days > 0
+        ? 'all ' + m.total + ' items done — ahead of the ' + fmtShort(m.target) + ' target'
+        : 'all ' + m.total + ' items done';
     return m.pct + '% · ' + m.done + '/' + m.total + ' items done';
   }
 
