@@ -64,9 +64,7 @@ const superegoRejection = JSON.stringify({
   feedback: 'The draft names the target but does not ask the learner to perform a concrete comparison.',
   confidence: 0.86,
   suggestedChanges: {
-    revisions: [
-      'Ask the learner to compare one recognition case with one compliance case before rereading.',
-    ],
+    revisions: ['Ask the learner to compare one recognition case with one compliance case before rereading.'],
   },
 });
 
@@ -181,20 +179,26 @@ const delta = {
   internalChars: treatment.totals.internalChars - baseline.totals.internalChars,
 };
 
-console.log(JSON.stringify({
-  profile: 'fast',
-  mode: realMode ? 'real' : 'mock',
-  maxRounds: 1,
-  egoMaxTokensOverride: egoMaxTokens,
-  superegoMaxTokensOverride: superegoMaxTokens,
-  modelOverride,
-  egoModelOverride,
-  superegoModelOverride,
-  internalHistoryConfig,
-  baseline,
-  treatment,
-  delta,
-  note: realMode
-    ? 'Real provider probe: small capped comparison; still too small to establish quality effects.'
-    : 'Mocked provider probe: exercises message assembly and token budget shape only; it does not measure learning quality.',
-}, null, 2));
+console.log(
+  JSON.stringify(
+    {
+      profile: 'fast',
+      mode: realMode ? 'real' : 'mock',
+      maxRounds: 1,
+      egoMaxTokensOverride: egoMaxTokens,
+      superegoMaxTokensOverride: superegoMaxTokens,
+      modelOverride,
+      egoModelOverride,
+      superegoModelOverride,
+      internalHistoryConfig,
+      baseline,
+      treatment,
+      delta,
+      note: realMode
+        ? 'Real provider probe: small capped comparison; still too small to establish quality effects.'
+        : 'Mocked provider probe: exercises message assembly and token budget shape only; it does not measure learning quality.',
+    },
+    null,
+    2,
+  ),
+);

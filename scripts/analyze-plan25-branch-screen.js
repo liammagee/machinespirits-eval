@@ -67,9 +67,7 @@ function readYaml(p) {
 }
 
 function resolveRoot(relativeOrAbsolute) {
-  return path.isAbsolute(relativeOrAbsolute)
-    ? relativeOrAbsolute
-    : path.resolve(ROOT, relativeOrAbsolute);
+  return path.isAbsolute(relativeOrAbsolute) ? relativeOrAbsolute : path.resolve(ROOT, relativeOrAbsolute);
 }
 
 function rowId(row = {}) {
@@ -213,8 +211,14 @@ function evalBranch({ key, criterion = {}, row, manifestBranch = {}, transcriptT
   const checks = [];
   const add = (name, pass, detail) => checks.push({ name, pass: Boolean(pass), detail });
 
-  if (criterion.required_form) add('required_form', form === criterion.required_form, `${form} == ${criterion.required_form}`);
-  if (criterion.required_origin) add('required_origin', origin.class === criterion.required_origin, `${origin.class} == ${criterion.required_origin}`);
+  if (criterion.required_form)
+    add('required_form', form === criterion.required_form, `${form} == ${criterion.required_form}`);
+  if (criterion.required_origin)
+    add(
+      'required_origin',
+      origin.class === criterion.required_origin,
+      `${origin.class} == ${criterion.required_origin}`,
+    );
   if (criterion.required_subtype) {
     add(
       'required_subtype',
@@ -223,7 +227,11 @@ function evalBranch({ key, criterion = {}, row, manifestBranch = {}, transcriptT
     );
   }
   if (Array.isArray(criterion.allowed_origins) && criterion.allowed_origins.length) {
-    add('allowed_origins', criterion.allowed_origins.includes(origin.class), `${origin.class} in ${criterion.allowed_origins.join(', ')}`);
+    add(
+      'allowed_origins',
+      criterion.allowed_origins.includes(origin.class),
+      `${origin.class} in ${criterion.allowed_origins.join(', ')}`,
+    );
   }
   if (Array.isArray(criterion.allowed_subtypes) && criterion.allowed_subtypes.length) {
     add(
@@ -286,7 +294,12 @@ function scoreFilesFromManifest(manifest, opts) {
     return Object.entries(manifest.outputs.scores).map(([label, p]) => ({ label, path: resolveRoot(p) }));
   }
   if (manifest.outputs?.score) {
-    return [{ label: path.basename(manifest.outputs.score, path.extname(manifest.outputs.score)), path: resolveRoot(manifest.outputs.score) }];
+    return [
+      {
+        label: path.basename(manifest.outputs.score, path.extname(manifest.outputs.score)),
+        path: resolveRoot(manifest.outputs.score),
+      },
+    ];
   }
   return [];
 }
@@ -399,7 +412,8 @@ function main() {
   const branchResults = Object.keys(design.branches || {}).map((key) => {
     const manifestBranch = manifest.branches?.[key] || {};
     const transcriptPath = manifestBranch.transcript ? resolveRoot(manifestBranch.transcript) : null;
-    const transcriptText = transcriptPath && fs.existsSync(transcriptPath) ? fs.readFileSync(transcriptPath, 'utf8') : '';
+    const transcriptText =
+      transcriptPath && fs.existsSync(transcriptPath) ? fs.readFileSync(transcriptPath, 'utf8') : '';
     return aggregateBranch({
       key,
       criterion: criteria[key] || {},
@@ -440,10 +454,4 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   main();
 }
 
-export {
-  aliasesForRequiredNumber,
-  containsAllNumbers,
-  evalBranch,
-  learnerSuffixTextFromTranscript,
-  parseArgs,
-};
+export { aliasesForRequiredNumber, containsAllNumbers, evalBranch, learnerSuffixTextFromTranscript, parseArgs };

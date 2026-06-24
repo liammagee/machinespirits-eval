@@ -929,8 +929,7 @@ describe('learner output sanitization', () => {
       { content: 'I said the decimal settled it.' },
       { content: 'Keep the learner public and concrete.' },
       {
-        content:
-          'FINAL:\nI said the decimal settled it. The framing problem is that I made evidence do proof work.',
+        content: 'FINAL:\nI said the decimal settled it. The framing problem is that I made evidence do proof work.',
       },
     ];
     let callIndex = 0;

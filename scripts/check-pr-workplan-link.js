@@ -93,8 +93,7 @@ function main() {
   if (!result.ok) {
     const seen = result.values.length ? ` Saw: ${result.values.join(' | ')}` : '';
     fail(
-      'PR body must include `Workplan item: <id>` or `Workplan item: N/A` using an item from workplan/items/.' +
-        seen,
+      'PR body must include `Workplan item: <id>` or `Workplan item: N/A` using an item from workplan/items/.' + seen,
     );
   }
   if (result.kind === 'na') console.log('workplan-pr-link: explicit N/A accepted');

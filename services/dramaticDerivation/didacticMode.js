@@ -136,7 +136,9 @@ function publicRepairSignals(repairSignals = []) {
 }
 
 function publicEvidenceLine(text) {
-  return String(text || '').trim().slice(0, 180);
+  return String(text || '')
+    .trim()
+    .slice(0, 180);
 }
 
 function makeState({
@@ -213,7 +215,9 @@ function signalFromInput(input = {}) {
     uptake.vocabularyConfusion ||
     learnerState.vocabularyConfusion ||
     exchangeType === 'vocabulary_confusion' ||
-    /\b(what does .* mean|what is .* supposed to mean|what does .* mean here|i don't know what .* means|i do not know what .* means)\b/u.test(text)
+    /\b(what does .* mean|what is .* supposed to mean|what does .* mean here|i don't know what .* means|i do not know what .* means)\b/u.test(
+      text,
+    )
   ) {
     evidence.push('public learner text asks for vocabulary or context repair');
     return { learningSignal: 'stalled', recommendedMode: 'repair_vocabulary', scope: 'scene', evidence };

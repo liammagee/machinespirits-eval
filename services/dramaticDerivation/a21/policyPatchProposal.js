@@ -18,10 +18,10 @@ function hasReleaseBeatsDiagnosticEvidence(analysis) {
   const diagnostic = actionSummary(analysis, 'A_DIAG_CONFLICT');
   return Boolean(
     analysis?.decisionCategory === 'release_beats_diagnostic' &&
-      analysis?.topActionIds?.includes('B_RELEASE_P_POINT') &&
-      release &&
-      diagnostic &&
-      Number(release.meanReward) > Number(diagnostic.meanReward),
+    analysis?.topActionIds?.includes('B_RELEASE_P_POINT') &&
+    release &&
+    diagnostic &&
+    Number(release.meanReward) > Number(diagnostic.meanReward),
   );
 }
 
@@ -46,13 +46,9 @@ function releaseAuthorizedNow(fixture, target) {
 }
 
 function forbiddenPhrases(fixture) {
-  return fixture?.nonLeakConstraints?.forbiddenKeys || [
-    'secret',
-    'proofPath',
-    'rawBoard',
-    'hiddenBoard',
-    'D arithmetic',
-  ];
+  return (
+    fixture?.nonLeakConstraints?.forbiddenKeys || ['secret', 'proofPath', 'rawBoard', 'hiddenBoard', 'D arithmetic']
+  );
 }
 
 export function buildA21PolicyPatchProposal({ analysis, fixture }) {
@@ -127,12 +123,14 @@ export function buildA21PolicyPatchProposal({ analysis, fixture }) {
       triggerTurn: triggerTurn(fixture),
       triggerLabel: fixture?.trigger?.primaryLabel || null,
       secondaryLabels: [...(fixture?.trigger?.secondaryLabels || [])],
-      visible_hidden_conflict: fixture?.observedAtTrigger?.failedAction?.conductReasonCode === 'visible_hidden_conflict',
+      visible_hidden_conflict:
+        fixture?.observedAtTrigger?.failedAction?.conductReasonCode === 'visible_hidden_conflict',
       diagnostic_budget_exhausted: {
         diagnosticHistoryCountAtLeast: 2,
         repeatedWithoutNewEvidenceAtLeast: 1,
         actualCount: fixture?.publicLearnerState?.diagnosticHistory?.count ?? null,
-        actualRepeatedWithoutNewEvidence: fixture?.publicLearnerState?.diagnosticHistory?.repeatedWithoutNewEvidence ?? null,
+        actualRepeatedWithoutNewEvidence:
+          fixture?.publicLearnerState?.diagnosticHistory?.repeatedWithoutNewEvidence ?? null,
       },
       proofDebt_live: [target],
       current_release_target: target,
@@ -221,7 +219,11 @@ export function buildA21ReplayConductTrigger(proposal, { turn = null } = {}) {
   if (proposal.policy_patch_id !== 'a21_hethel_release_after_diagnostic_budget') {
     throw new Error(`a21.policyPatchProposal: unsupported patch ${JSON.stringify(proposal.policy_patch_id)}`);
   }
-  if (proposal.status !== 'proposed_only' || proposal.promoted !== false || proposal.runtime_behavior_changed !== false) {
+  if (
+    proposal.status !== 'proposed_only' ||
+    proposal.promoted !== false ||
+    proposal.runtime_behavior_changed !== false
+  ) {
     throw new Error('a21.policyPatchProposal: only proposed-only, non-promoted patches can be replayed');
   }
   const target = proposal.applies_when?.current_release_target || proposal.prefer?.release?.[0] || 'p_point';
@@ -257,7 +259,9 @@ export function buildA21ReplayConductTrigger(proposal, { turn = null } = {}) {
 }
 
 export function proposalKeepsRuntimeClosed(proposal) {
-  return proposal?.status === 'proposed_only' && proposal?.promoted === false && proposal?.runtime_behavior_changed === false;
+  return (
+    proposal?.status === 'proposed_only' && proposal?.promoted === false && proposal?.runtime_behavior_changed === false
+  );
 }
 
 export function cloneA21PolicyPatchProposal(proposal) {

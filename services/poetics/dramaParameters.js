@@ -66,7 +66,8 @@ export const DRAMA_FUNCTIONAL_COMPONENTS = deepFreeze([
     id: 'recognition',
     label: 'Recognition',
     shortLabel: 'recognition',
-    summary: 'Recognition-theory stance, recognition targets, anagnorisis/catharsis pressure, and recognition-sensitive scoring.',
+    summary:
+      'Recognition-theory stance, recognition targets, anagnorisis/catharsis pressure, and recognition-sensitive scoring.',
     parameterComponents: ['agents', 'form', 'scene', 'audience'],
     fieldPaths: [
       'drama.targets',
@@ -84,7 +85,8 @@ export const DRAMA_FUNCTIONAL_COMPONENTS = deepFreeze([
     id: 'superego_critic',
     label: 'Superego critic',
     shortLabel: 'superego',
-    summary: 'Tutor and learner ego/superego deliberation, critic dispositions, structure critics, and stall-watch self-monitoring.',
+    summary:
+      'Tutor and learner ego/superego deliberation, critic dispositions, structure critics, and stall-watch self-monitoring.',
     parameterComponents: ['agents', 'audience', 'cast', 'runtime'],
     fieldPaths: [
       'drama.tutor.architecture',
@@ -100,7 +102,8 @@ export const DRAMA_FUNCTIONAL_COMPONENTS = deepFreeze([
     id: 'adaptation',
     label: 'Adaptation',
     shortLabel: 'adaptation',
-    summary: 'Continuation policies, tutor adaptation policies, turn-plan moves, triggers, and dramaturgical route changes.',
+    summary:
+      'Continuation policies, tutor adaptation policies, turn-plan moves, triggers, and dramaturgical route changes.',
     parameterComponents: ['form', 'agents', 'scene'],
     fieldPaths: [
       'drama.targets',
@@ -123,7 +126,8 @@ export const DRAMA_FUNCTIONAL_COMPONENTS = deepFreeze([
     id: 'proof_dag',
     label: 'Proof DAG',
     shortLabel: 'proof DAG',
-    summary: 'Worlds, tutor scripts, hidden facts, premise ledgers, proof progress, and fixed-rule derivation outcomes.',
+    summary:
+      'Worlds, tutor scripts, hidden facts, premise ledgers, proof progress, and fixed-rule derivation outcomes.',
     parameterComponents: ['matter', 'form', 'runtime'],
     fieldPaths: [
       'drama.secret',
@@ -183,9 +187,20 @@ export const DRAMA_FUNCTIONAL_COMPONENTS = deepFreeze([
     id: 'run_orchestration',
     label: 'Run orchestration',
     shortLabel: 'runtime',
-    summary: 'IDs, specs, limits, output paths, dry-run/force controls, concurrency, cost gates, and process launch state.',
+    summary:
+      'IDs, specs, limits, output paths, dry-run/force controls, concurrency, cost gates, and process launch state.',
     parameterComponents: ['matter', 'runtime'],
-    fieldPaths: ['drama.id', 'drama.max_turns', 'run.kind', 'run.mock', 'run.dry_run', 'run.force', 'run.cost_class', 'run.output', 'run.concurrency'],
+    fieldPaths: [
+      'drama.id',
+      'drama.max_turns',
+      'run.kind',
+      'run.mock',
+      'run.dry_run',
+      'run.force',
+      'run.cost_class',
+      'run.output',
+      'run.concurrency',
+    ],
     runParams: [
       'id',
       'spec',
@@ -306,12 +321,27 @@ export const DRAMA_PARAMETER_FIELDS = deepFreeze([
 ]);
 
 export const COMPOSER_BASE_VOCAB = deepFreeze({
-  forms: ['peripeteia', 'anagnorisis', 'catharsis', 'surprise_inevitability', 'unity_of_action', 'hamartia_integration'],
+  forms: [
+    'peripeteia',
+    'anagnorisis',
+    'catharsis',
+    'surprise_inevitability',
+    'unity_of_action',
+    'hamartia_integration',
+  ],
   promptTypes: ['recognition', 'base', 'placebo', 'naive', 'dialectical_suspicious', 'matched_recognition'],
   tutorArch: ['ego_superego', 'ego_only', 'id_director'],
   superego: ['suspicious', 'standard', 'adversary', 'advocate', 'strict', 'coupling'],
   continuationPolicy: ['none', 'anchor', 'revoice', 'reconsider', 'reframe'],
-  adaptationPolicy: ['none', 'routine', 'uptake', 'peripeteia', 'uptake+peripeteia', 'socratic_discovery', 'reveal_secret'],
+  adaptationPolicy: [
+    'none',
+    'routine',
+    'uptake',
+    'peripeteia',
+    'uptake+peripeteia',
+    'socratic_discovery',
+    'reveal_secret',
+  ],
   speakers: ['learner', 'tutor', 'director'],
   stagePolicy: ['sparse', 'none', 'none_except_required_cue', 'short', 'interventionist', 'rich'],
   stageStyle: [
@@ -420,9 +450,7 @@ function addMapValue(map, key, value) {
 
 function mapEntriesToFrozenObject(map) {
   return deepFreeze(
-    Object.fromEntries(
-      Array.from(map.entries()).map(([key, values]) => [key, Array.from(new Set(values))]),
-    ),
+    Object.fromEntries(Array.from(map.entries()).map(([key, values]) => [key, Array.from(new Set(values))])),
   );
 }
 

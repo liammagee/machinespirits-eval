@@ -57,7 +57,10 @@ test('drama functional components name the architecture-facing subsystems', () =
 
   for (const component of DRAMA_FUNCTIONAL_COMPONENTS) {
     for (const parameterComponent of component.parameterComponents) {
-      assert.ok(COMPONENT_IDS.includes(parameterComponent), `${component.id} references unknown facet ${parameterComponent}`);
+      assert.ok(
+        COMPONENT_IDS.includes(parameterComponent),
+        `${component.id} references unknown facet ${parameterComponent}`,
+      );
     }
     for (const path of component.fieldPaths) {
       assert.ok(FIELD_PATHS.has(path), `${component.id} references unknown field ${path}`);
@@ -124,7 +127,5 @@ test('functional lookup exposes related fields without guessing from labels', ()
       (field) => field.path === 'drama.tutor.recognition_mode',
     ),
   );
-  assert.ok(
-    fieldsForFunctionalComponent('proof_dag').some((field) => field.path === 'drama.secret.premise_ledger'),
-  );
+  assert.ok(fieldsForFunctionalComponent('proof_dag').some((field) => field.path === 'drama.secret.premise_ledger'));
 });

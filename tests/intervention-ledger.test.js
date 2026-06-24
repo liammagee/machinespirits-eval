@@ -2,10 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { selectPedagogicalAction } from '../services/adaptiveTutor/actionPolicy.js';
 import { createAdaptationContract } from '../services/adaptiveTutor/adaptationContract.js';
-import {
-  appendPendingIntervention,
-  closePendingIntervention,
-} from '../services/adaptiveTutor/interventionLedger.js';
+import { appendPendingIntervention, closePendingIntervention } from '../services/adaptiveTutor/interventionLedger.js';
 
 function contract() {
   const stateBelief = {

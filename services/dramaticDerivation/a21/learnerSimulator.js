@@ -1,4 +1,9 @@
-import { cloneDurableLearnerState, improveConfidence, validateDurableLearnerState, worsenEngagement } from './learnerState.js';
+import {
+  cloneDurableLearnerState,
+  improveConfidence,
+  validateDurableLearnerState,
+  worsenEngagement,
+} from './learnerState.js';
 
 export const A21_LEARNER_SIMULATOR_SCHEMA = 'dramatic-derivation.a21.learner-simulator.v0';
 
@@ -8,15 +13,15 @@ function clone(value) {
 
 function releasedPremises(action, releaseInfo = {}) {
   return new Set([
-    ...((action?.releaseDirectives?.releaseNow || []).filter(Boolean)),
-    ...((releaseInfo?.releaseNow || []).filter(Boolean)),
+    ...(action?.releaseDirectives?.releaseNow || []).filter(Boolean),
+    ...(releaseInfo?.releaseNow || []).filter(Boolean),
   ]);
 }
 
 function heldPremises(action, releaseInfo = {}) {
   return new Set([
-    ...((action?.releaseDirectives?.hold || []).filter(Boolean)),
-    ...((releaseInfo?.hold || []).filter(Boolean)),
+    ...(action?.releaseDirectives?.hold || []).filter(Boolean),
+    ...(releaseInfo?.hold || []).filter(Boolean),
   ]);
 }
 
@@ -52,7 +57,8 @@ function decreaseD(next, amount = 1) {
   const before = next.proofProgress.D;
   next.proofProgress.D = Math.max(0, before - amount);
   next.proofProgress.lastDDelta = next.proofProgress.D - before;
-  next.proofProgress.turnsSinceDDecrease = next.proofProgress.lastDDelta < 0 ? 0 : next.proofProgress.turnsSinceDDecrease + 1;
+  next.proofProgress.turnsSinceDDecrease =
+    next.proofProgress.lastDDelta < 0 ? 0 : next.proofProgress.turnsSinceDDecrease + 1;
 }
 
 function markReleaseSchedule(next, premise, releaseInfo = {}) {
@@ -149,8 +155,11 @@ function applyFinalAssertion(next) {
 function transitionFlags(before, after) {
   return {
     targetDependencyRepaired:
-      before.transitionFlags.targetDependencyRepaired !== true && after.transitionFlags.targetDependencyRepaired === true,
-    evidenceGained: Object.keys(after.evidenceSeen).filter((key) => after.evidenceSeen[key] && !before.evidenceSeen[key]),
+      before.transitionFlags.targetDependencyRepaired !== true &&
+      after.transitionFlags.targetDependencyRepaired === true,
+    evidenceGained: Object.keys(after.evidenceSeen).filter(
+      (key) => after.evidenceSeen[key] && !before.evidenceSeen[key],
+    ),
     dependencyOwned: Object.keys(after.dependencyOwned).filter(
       (key) => after.dependencyOwned[key] && !before.dependencyOwned[key],
     ),

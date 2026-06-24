@@ -24,11 +24,7 @@ describe('internal history message option', () => {
     assert.equal(normalized.surface, 'messages');
     assert.equal(normalized.scope, 'unified_exchange');
     assert.equal(
-      _buildInternalHistoryMessages(
-        [{ agent: 'ego', action: 'generate', content: 'draft' }],
-        'superego',
-        normalized,
-      ),
+      _buildInternalHistoryMessages([{ agent: 'ego', action: 'generate', content: 'draft' }], 'superego', normalized),
       null,
     );
   });
@@ -43,7 +39,10 @@ describe('internal history message option', () => {
       { enabled: true, surface: 'messages', scope: 'unified_exchange', window: 1 },
     );
 
-    assert.deepEqual(messages.map((m) => m.role), ['user', 'assistant', 'user']);
+    assert.deepEqual(
+      messages.map((m) => m.role),
+      ['user', 'assistant', 'user'],
+    );
     assert.match(messages[0].content, /Internal ego\/superego history/);
     assert.match(messages[1].content, /\[internal:ego\/generate\]/);
     assert.match(messages[2].content, /\[internal:superego\/review\]/);
@@ -62,10 +61,22 @@ describe('internal history message option', () => {
       { enabled: true, surface: 'messages', scope: 'unified_exchange', window: 1 },
     );
 
-    assert.equal(messages.some((m) => m.content.includes('old ego draft')), false);
-    assert.equal(messages.some((m) => m.content.includes('old critique')), false);
-    assert.equal(messages.some((m) => m.content.includes('latest ego draft')), true);
-    assert.equal(messages.some((m) => m.content.includes('latest critique')), true);
+    assert.equal(
+      messages.some((m) => m.content.includes('old ego draft')),
+      false,
+    );
+    assert.equal(
+      messages.some((m) => m.content.includes('old critique')),
+      false,
+    );
+    assert.equal(
+      messages.some((m) => m.content.includes('latest ego draft')),
+      true,
+    );
+    assert.equal(
+      messages.some((m) => m.content.includes('latest critique')),
+      true,
+    );
   });
 
   it('merges adjacent same-role boundaries when external history is present', () => {
@@ -74,15 +85,16 @@ describe('internal history message option', () => {
       { role: 'user', content: 'previous learner reply' },
     ];
     const messages = _buildInternalHistoryMessages(
-      [
-        { agent: 'ego', action: 'generate', content: 'draft for superego' },
-      ],
+      [{ agent: 'ego', action: 'generate', content: 'draft for superego' }],
       'superego',
       { enabled: true, surface: 'messages', scope: 'unified_exchange', window: 1 },
       externalHistory,
     );
 
-    assert.deepEqual(messages.map((m) => m.role), ['assistant', 'user']);
+    assert.deepEqual(
+      messages.map((m) => m.role),
+      ['assistant', 'user'],
+    );
     assert.match(messages[1].content, /previous learner reply/);
     assert.match(messages[1].content, /\[internal:ego\/generate\]/);
     assertNoAdjacentSameRoles(messages);

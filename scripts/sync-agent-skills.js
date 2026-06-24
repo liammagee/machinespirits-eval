@@ -142,7 +142,13 @@ export function mirrorStatuses(config, selected = []) {
         targetRoot,
         source,
         target,
-        status: !sourceExists ? 'missing-source' : !hasSkill(target) ? 'missing' : dirsEqual(source, target) ? 'same' : 'different',
+        status: !sourceExists
+          ? 'missing-source'
+          : !hasSkill(target)
+            ? 'missing'
+            : dirsEqual(source, target)
+              ? 'same'
+              : 'different',
         reason: mirror.reason || '',
       });
     }

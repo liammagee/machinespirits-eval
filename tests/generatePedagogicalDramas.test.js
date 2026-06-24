@@ -99,24 +99,12 @@ describe('generate-pedagogical-dramas', () => {
     });
     assert.equal(resolveApiModel('glm5_2'), 'z-ai/glm-5.2');
     assert.equal(resolveApiModel('openrouter.glm5_2'), 'z-ai/glm-5.2');
-    assert.equal(
-      resolveRoleRoute('tutor_ego', args.roleMap, 'codex', 'sonnet').apiModelKey,
-      'glm5_2',
-    );
-    assert.equal(
-      resolveRoleRoute('learner_superego', args.roleMap, 'codex', 'sonnet').apiModelKey,
-      'z-ai/glm-5.2',
-    );
+    assert.equal(resolveRoleRoute('tutor_ego', args.roleMap, 'codex', 'sonnet').apiModelKey, 'glm5_2');
+    assert.equal(resolveRoleRoute('learner_superego', args.roleMap, 'codex', 'sonnet').apiModelKey, 'z-ai/glm-5.2');
     assert.equal(resolveRoleRoute('director', args.roleMap, 'codex', 'sonnet').backend, 'codex');
 
-    assert.throws(
-      () => parseArgs(['--role-map', 'tutor_ego=api:not-a-known-alias']),
-      /not a known OpenRouter alias/,
-    );
-    assert.throws(
-      () => parseArgs(['--role-map', 'tutor_ego=codex:z-ai/glm-5.2']),
-      /only include a model suffix/,
-    );
+    assert.throws(() => parseArgs(['--role-map', 'tutor_ego=api:not-a-known-alias']), /not a known OpenRouter alias/);
+    assert.throws(() => parseArgs(['--role-map', 'tutor_ego=codex:z-ai/glm-5.2']), /only include a model suffix/);
   });
 
   it('parses control-ending and call-telemetry output paths', () => {

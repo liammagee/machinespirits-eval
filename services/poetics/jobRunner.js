@@ -434,7 +434,12 @@ function resultLinks(kind, params = {}) {
   }
   if (kind === 'adversarial-score') return [{ label: 'open scores', href: '/browse?tab=scores' }];
   if (kind === 'online-score') {
-    return [{ label: 'open scored scripts', href: `/browse${q({ runId: params.mode === 'run' ? params.runId : '', tab: 'scores' })}` }];
+    return [
+      {
+        label: 'open scored scripts',
+        href: `/browse${q({ runId: params.mode === 'run' ? params.runId : '', tab: 'scores' })}`,
+      },
+    ];
   }
   return [];
 }
@@ -466,9 +471,10 @@ function planChecks(plan, params = {}) {
     {
       label: 'Result surface',
       state: resultLinks(plan.kind, params).length ? 'ok' : 'warn',
-      detail: resultLinks(plan.kind, params)
-        .map((l) => l.label)
-        .join(', ') || 'no dedicated result route',
+      detail:
+        resultLinks(plan.kind, params)
+          .map((l) => l.label)
+          .join(', ') || 'no dedicated result route',
     },
   ];
 }

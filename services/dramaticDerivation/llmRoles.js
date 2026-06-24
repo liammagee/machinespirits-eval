@@ -147,15 +147,13 @@ function normalizePublicRegisterPlan(raw) {
     }
   }
   const weights =
-    out.weights == null
-      ? palette.map(() => 1)
-      : Array.isArray(out.weights)
-        ? out.weights.map(Number)
-        : null;
+    out.weights == null ? palette.map(() => 1) : Array.isArray(out.weights) ? out.weights.map(Number) : null;
   if (!weights || weights.length !== palette.length || weights.some((w) => !Number.isFinite(w) || w <= 0)) {
     throw new Error('register sample config: weights must be positive numbers matching palette length');
   }
-  const base = String(out.base || palette[0]).trim().toLowerCase();
+  const base = String(out.base || palette[0])
+    .trim()
+    .toLowerCase();
   if (!PUBLIC_REGISTERS.has(base)) {
     throw new Error(`register sample config: base must be one of ${[...PUBLIC_REGISTERS].join(', ')}`);
   }
@@ -416,22 +414,22 @@ function sceneTempoLines(scene, roleName) {
     roleName === 'learner'
       ? 'This is permission, not a demand: for uptake, repair, recap, or hesitation, you may answer briefly without advancing your record.'
       : 'Shape your next line to make this tempo possible. Do not force a new proof step when the beat asks for uptake, repair, recap, or hesitation.';
-  return [
-    '',
-    `${prefix}: ${scene.tempo.label || scene.tempo.beat}.`,
-    scene.tempo.instruction,
-    roleInstruction,
-  ].filter(Boolean);
+  return ['', `${prefix}: ${scene.tempo.label || scene.tempo.beat}.`, scene.tempo.instruction, roleInstruction].filter(
+    Boolean,
+  );
 }
 
 function sceneRecognitionNeedLines(scene, roleName) {
   const need = scene?.recognitionNeed;
   if (!need || need.active === false || need.debt < 0.3) return [];
   const sourceText = need.sources?.length ? need.sources.map((s) => s.replace(/_/g, ' ')).join(', ') : 'general';
-  const actText = need.desiredActs?.length ? need.desiredActs.map((s) => s.replace(/_/g, ' ')).join(', ') : 'acknowledge before advancing';
-  const gateText = need.policy === 'gated-v2' && need.gateReasons?.length
-    ? ` Gate: ${need.gateReasons.map((s) => s.replace(/_/g, ' ')).join(', ')}.`
-    : '';
+  const actText = need.desiredActs?.length
+    ? need.desiredActs.map((s) => s.replace(/_/g, ' ')).join(', ')
+    : 'acknowledge before advancing';
+  const gateText =
+    need.policy === 'gated-v2' && need.gateReasons?.length
+      ? ` Gate: ${need.gateReasons.map((s) => s.replace(/_/g, ' ')).join(', ')}.`
+      : '';
   const roleInstruction =
     roleName === 'learner'
       ? 'A bare "yes" can be only fast punctuation. If you actually recognize the other line, name what you recognize; if not, keep the uptake modest or ask repair.'
@@ -445,7 +443,12 @@ function sceneRecognitionNeedLines(scene, roleName) {
 }
 
 function didacticModeLines(state) {
-  if (!state || state.publicOnly !== true || state.mayOverrideProofControl !== false || state.inputAudit?.ok === false) {
+  if (
+    !state ||
+    state.publicOnly !== true ||
+    state.mayOverrideProofControl !== false ||
+    state.inputAudit?.ok === false
+  ) {
     return [];
   }
   if (state.learningSignal === 'unknown') return [];
@@ -515,26 +518,23 @@ export function sanitizePublicDialogue(text, { register = 'default' } = {}) {
       if (active !== 'modern') return match;
       return `${article} ${newWord || ''}note`;
     })
-    .replace(
-      /\b(exhibit|exhibits|record|records|house rule|house rules)\b/gi,
-      (match) => {
-        if (active !== 'modern') return match;
-        const lower = match.toLowerCase();
-        const replacement =
-          lower === 'exhibits'
-            ? terms.itemPlural
-            : lower === 'exhibit'
-              ? terms.item
-              : lower === 'records'
+    .replace(/\b(exhibit|exhibits|record|records|house rule|house rules)\b/gi, (match) => {
+      if (active !== 'modern') return match;
+      const lower = match.toLowerCase();
+      const replacement =
+        lower === 'exhibits'
+          ? terms.itemPlural
+          : lower === 'exhibit'
+            ? terms.item
+            : lower === 'records'
+              ? terms.record
+              : lower === 'record'
                 ? terms.record
-                : lower === 'record'
-                  ? terms.record
-                  : lower === 'house rules'
-                    ? 'rules'
-                    : 'rule';
-        return /^[A-Z]/.test(match) ? replacement[0].toUpperCase() + replacement.slice(1) : replacement;
-      },
-    )
+                : lower === 'house rules'
+                  ? 'rules'
+                  : 'rule';
+      return /^[A-Z]/.test(match) ? replacement[0].toUpperCase() + replacement.slice(1) : replacement;
+    })
     .replace(/\bthe hall\b/gi, active === 'modern' ? 'the room' : 'the hall')
     .replace(/\bhall\b/gi, active === 'modern' ? 'room' : 'hall')
     .replace(/\bclerk\b/gi, active === 'modern' ? 'staff member' : 'clerk')
@@ -591,17 +591,17 @@ function directorCharter(
           'You do not address the learner and you do not teach; the tutor does that.',
         ]
       : baseRegister === 'modern'
-      ? [
-          'Your lines are sparse contemporary stage notes, in brackets, third person,',
-          'one or two concise sentences: a pause, a file placed on a table, a screen',
-          'shared, someone entering, the group settling. No ceremonial weather or pageantry.',
-          'You do not address the learner and you do not teach; the tutor does that.',
-        ]
-      : [
-          'Your lines are stage directions — the world moving, in brackets, third person,',
-          'one to three sentences: a document produced, a witness shown in, weather, the room.',
-          'You do not address the learner and you do not teach; the tutor does that.',
-        ]),
+        ? [
+            'Your lines are sparse contemporary stage notes, in brackets, third person,',
+            'one or two concise sentences: a pause, a file placed on a table, a screen',
+            'shared, someone entering, the group settling. No ceremonial weather or pageantry.',
+            'You do not address the learner and you do not teach; the tutor does that.',
+          ]
+        : [
+            'Your lines are stage directions — the world moving, in brackets, third person,',
+            'one to three sentences: a document produced, a witness shown in, weather, the room.',
+            'You do not address the learner and you do not teach; the tutor does that.',
+          ]),
     '',
     'THE EVIDENCE IS FIXED. When this turn carries a scheduled piece of evidence, your',
     'direction must stage exactly that piece — bring it into the room as an event,',
@@ -742,8 +742,7 @@ function directorPrologueCharter(world, publicRegister = 'default', castLayer = 
 }
 
 function normalizeStagePrologue(out, register) {
-  const stringField = (name) =>
-    sanitizePublicDialogue(typeof out?.[name] === 'string' ? out[name] : '', { register });
+  const stringField = (name) => sanitizePublicDialogue(typeof out?.[name] === 'string' ? out[name] : '', { register });
   return {
     stageNotes: stringField('stage_notes') || stringField('stageNotes'),
     tutorCharacter: stringField('tutor_character') || stringField('tutorCharacter'),
@@ -788,7 +787,7 @@ export function makeLlmDirector(
       ? `THIS TURN RELEASES EVIDENCE. Stage this, as an event the whole room receives:\n"${(premise.surface || '').trim()}"`
       : tutorEntry
         ? 'A scheduled exhibit may enter through the tutor this turn. Prepare the room for an exhibit without stating, paraphrasing, or naming that evidence yourself.'
-      : 'No evidence is due this turn. Hold the stage — a beat of scene, mood, or business that keeps the question alive. Add no facts.';
+        : 'No evidence is due this turn. Hold the stage — a beat of scene, mood, or business that keeps the question alive. Add no facts.';
     // Acts mode replaces the movement line with act status + the verdict
     // arithmetic for THIS turn (an end-verdict closes the act at turn-1, so
     // turnsThisAct is the length it would seal). The engine's guards are
@@ -855,14 +854,14 @@ export function makeLlmDirector(
         // computed from view-visible material only)
         ...(actsMode
           ? {
-          actHint:
+              actHint:
                 view.turn > 1 &&
                 view.acts.turnsThisAct >= view.acts.minActTurns &&
                 view.ledger.some((l) => l.turn >= view.acts.startTurn)
                   ? 'end'
                   : 'continue',
             }
-            : {}),
+          : {}),
         ...(castState ? { castState } : {}),
       },
     });
@@ -873,7 +872,7 @@ export function makeLlmDirector(
       typeof out.phase === 'object' &&
       typeof out.phase.name === 'string' &&
       out.phase.name.trim()
-            ? {
+        ? {
             name: sanitizePublicDialogue(out.phase.name, { register: activeRegisterName }),
             intent:
               typeof out.phase.intent === 'string'
@@ -1221,7 +1220,7 @@ function tutorSystem(
           'recap, purpose bridge, subtask decomposition, or vocabulary repair. It',
           'does not authorize release, restore, hold, assertion, or any change to the',
           'evidence calendar. Use it to alter how you teach the current object, then',
-          'look for its exit condition in the learner\'s public reply.',
+          "look for its exit condition in the learner's public reply.",
         ]
       : []),
     ...(castLayer
@@ -1681,7 +1680,9 @@ function conductIntentFor(moveFamily, fallback = 'orient') {
 }
 
 function trimTerminalPunctuation(text) {
-  return String(text || '').trim().replace(/[.!?]+$/u, '');
+  return String(text || '')
+    .trim()
+    .replace(/[.!?]+$/u, '');
 }
 
 function conductPolicyDialogue(decision, { release = null, register = 'default' } = {}) {
@@ -1752,8 +1753,7 @@ function enforceConductPolicy(decision, finalOut, { activeRegisterName = 'defaul
   const family = decision.selectedMoveFamily;
   const target = decision.targetPremise || finalOut.move?.targetPremise || null;
   const intent = conductIntentFor(family, finalOut.move?.intent || 'orient');
-  const enforcedTarget =
-    (family === 'repair_dependency' || target) ? target : finalOut.move?.targetPremise || null;
+  const enforcedTarget = family === 'repair_dependency' || target ? target : finalOut.move?.targetPremise || null;
   let out = {
     ...finalOut,
     dialogue: conductPolicyDialogue(decision, {
@@ -1820,12 +1820,11 @@ function enforceConductPolicy(decision, finalOut, { activeRegisterName = 'defaul
     move: finalOut.move || null,
     release: finalOut.release || null,
   });
-  const after =
-    JSON.stringify({
-      dialogue: out.dialogue || '',
-      move: out.move || null,
-      release: out.release || null,
-    });
+  const after = JSON.stringify({
+    dialogue: out.dialogue || '',
+    move: out.move || null,
+    release: out.release || null,
+  });
   const changed = before !== after;
 
   return {
@@ -1886,10 +1885,13 @@ function conductRuntimeLog(args) {
   const realizedOut = enforced?.out || args.finalOut;
   const generatorCompliance =
     enforced?.postCompliance ||
-    auditConductGeneratorCompliance({ ...decision, active: true }, {
-      move: realizedOut.move || null,
-      release: realizedOut.release || null,
-    });
+    auditConductGeneratorCompliance(
+      { ...decision, active: true },
+      {
+        move: realizedOut.move || null,
+        release: realizedOut.release || null,
+      },
+    );
   return {
     out: realizedOut,
     policy: {
@@ -2568,10 +2570,13 @@ export function makeLlmTutor(
       text: line.text || '',
       ...(line.meta?.exchange ? { meta: { exchange: line.meta.exchange } } : {}),
     }));
-    const lastLearnerLineForCalibration = [...publicTranscriptForCalibration].reverse().find((line) => line.role === 'learner');
+    const lastLearnerLineForCalibration = [...publicTranscriptForCalibration]
+      .reverse()
+      .find((line) => line.role === 'learner');
     const discursiveProofStep = (() => {
       if (topProofDebt) return { moveFamily: 'repair_dependency', targetPremise: topProofDebt.premiseId };
-      if (forcedNote || finalEntitlement?.canAssertFinal) return { moveFamily: 'invite_final_assertion', targetPremise: null };
+      if (forcedNote || finalEntitlement?.canAssertFinal)
+        return { moveFamily: 'invite_final_assertion', targetPremise: null };
       if (cuePremiseForPolicy) return { moveFamily: 'release_next_evidence', targetPremise: cuePremiseForPolicy };
       if (visibleConsolidation?.features?.priorPremiseId) {
         return {
@@ -2596,7 +2601,7 @@ export function makeLlmTutor(
       topProofDebt?.surface ||
       (visibleConsolidation?.features?.priorPremiseId ? 'the already staged exhibit under discussion' : null) ||
       (discursiveProofStep?.moveFamily === 'release_next_evidence' ? 'the next exhibit entering the scene' : null) ||
-      (discursiveProofStep?.moveFamily === 'invite_final_assertion' ? 'the learner\'s final public answer' : null) ||
+      (discursiveProofStep?.moveFamily === 'invite_final_assertion' ? "the learner's final public answer" : null) ||
       (view.scene?.goal ? 'the current scene object' : null);
     const didacticModeState = didacticMode
       ? deriveDidacticModeState({
@@ -2691,7 +2696,9 @@ export function makeLlmTutor(
         ...castInput,
         activeReinvention: castRuntimeState?.activeReinvention || null,
         reinventionEnabled:
-          castReinvention && !castRuntimeState?.activeReinvention && (sceneIndexForCast !== null || actIndexForCast !== null),
+          castReinvention &&
+          !castRuntimeState?.activeReinvention &&
+          (sceneIndexForCast !== null || actIndexForCast !== null),
       });
       if (castReinvention && !castRuntimeState.activeReinvention && castState.reinvention?.active) {
         castRuntimeState.activeReinvention = castState.reinvention;
@@ -3062,8 +3069,8 @@ export function makeLlmTutor(
       // reads whichever is active.
       const vGuard =
         visibleGuard || visiblePushProbeGuard || visibleConsolidationGuard
-        ? visibleGuardDecision(world, view, { turn: view.turn, playable, validClaim, forcedPlay })
-        : null;
+          ? visibleGuardDecision(world, view, { turn: view.turn, playable, validClaim, forcedPlay })
+          : null;
       let activeGuard = guard || vGuard;
       let hybridGuard = null;
       let consolidationGuard = null;
@@ -3139,8 +3146,7 @@ export function makeLlmTutor(
           candidate: null,
           candidateSolvency: null,
           playedSolvency: proofClosingFallback.current,
-          safeTurns:
-            guard?.safeTurns || Object.fromEntries(pacingRows.map((row) => [row.premise, row.safeTurns])),
+          safeTurns: guard?.safeTurns || Object.fromEntries(pacingRows.map((row) => [row.premise, row.safeTurns])),
           alternative: proofClosingFallback.premise,
           reason: `${proofClosingFallback.premise} closes the proof at t${view.turn}`,
         };
@@ -3160,11 +3166,11 @@ export function makeLlmTutor(
         candidateSolvency.forcedTurn <= view.turn;
       const proofControlForcesRelease = Boolean(
         forcedPlay?.premise === candidatePlayed ||
-          activeGuard?.forcedSafe ||
-          releaseWouldCloseProofNow ||
-          topProofDebt ||
-          forcedNote ||
-          finalEntitlement?.canAssertFinal,
+        activeGuard?.forcedSafe ||
+        releaseWouldCloseProofNow ||
+        topProofDebt ||
+        forcedNote ||
+        finalEntitlement?.canAssertFinal,
       );
       const discursiveGateCandidate =
         highDiscursiveStrain && candidatePlayed && candidateOffset < 0 && !proofControlForcesRelease;
@@ -3354,14 +3360,14 @@ export function makeLlmTutor(
           },
         },
         audit: {
-        active: true,
-        turn: view.turn,
-        target: topProofDebt.premiseId,
-        targets: debtTargets,
-        debtCount: proofDebt.debts.length,
-        forced: true,
-        stage,
-      },
+          active: true,
+          turn: view.turn,
+          target: topProofDebt.premiseId,
+          targets: debtTargets,
+          debtCount: proofDebt.debts.length,
+          forced: true,
+          stage,
+        },
       };
     };
     let draft = {
@@ -3926,7 +3932,7 @@ function computePatternAssertion(view, adoptable) {
       view.questionPattern.forEach((token, i) => {
         if (typeof token === 'string' && token.startsWith('?')) binding[token] = fact[i];
       });
-  return { surface: renderFact(fact), binding, answer: answerFromBinding(binding) };
+      return { surface: renderFact(fact), binding, answer: answerFromBinding(binding) };
     }
   }
   return null;
@@ -4138,11 +4144,16 @@ export function makeLlmLearner({
       if (voicedKeys.has(key)) continue;
       derivableCandidates.push({ fact, key, label: factSurface(view, fact), due: view.turn - firstSeen.get(key) >= 3 });
     }
-    const deriveHintIndices = derivableCandidates.map((candidate, i) => (candidate.due ? i : null)).filter((i) => i !== null);
+    const deriveHintIndices = derivableCandidates
+      .map((candidate, i) => (candidate.due ? i : null))
+      .filter((i) => i !== null);
 
     const exhibits = adoptable.length
       ? adoptable
-          .map((fact, i) => `${i}. ${factSurface(view, fact)}${newKeys.has(factKey(fact)) ? '   <- entered this turn' : ''}`)
+          .map(
+            (fact, i) =>
+              `${i}. ${factSurface(view, fact)}${newKeys.has(factKey(fact)) ? '   <- entered this turn' : ''}`,
+          )
           .join('\n')
       : '(none on the table)';
     const board = view.abox.grounded.length
@@ -4169,7 +4180,7 @@ export function makeLlmLearner({
           scene: view.scene,
           turn: view.turn,
           reinventionEnabled: false,
-      })
+        })
       : null;
     const learnerDriftState = learnerDriftLayer
       ? deriveLearnerDriftState({

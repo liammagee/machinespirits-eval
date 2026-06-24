@@ -132,10 +132,7 @@ test('discursive calibration flags forbidden proof-state inputs', () => {
     },
   });
   assert.equal(audit.ok, false);
-  assert.deepEqual(
-    audit.leaks.map((leak) => leak.key).sort(),
-    ['D', 'hiddenBoard', 'proofPath'],
-  );
+  assert.deepEqual(audit.leaks.map((leak) => leak.key).sort(), ['D', 'hiddenBoard', 'proofPath']);
 });
 
 test('six public learner perturbations change only discursive advice over fixed proof control', () => {
@@ -188,7 +185,9 @@ test('discursive calibration preserves proof-step intent while changing figure a
     world,
     {
       turn: 6,
-      transcript: [{ turn: 5, role: 'learner', text: 'But you keep correcting me.', meta: { exchange: { type: 'resistance' } } }],
+      transcript: [
+        { turn: 5, role: 'learner', text: 'But you keep correcting me.', meta: { exchange: { type: 'resistance' } } },
+      ],
       learnerAbox: { grounded: world.background, hypotheses: [] },
       inference: { frontier: [] },
       trajectory: [],

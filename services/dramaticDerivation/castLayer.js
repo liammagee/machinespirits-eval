@@ -44,13 +44,7 @@ const FORBIDDEN_KEYS = new Set([
   'ledger',
 ]);
 
-const ALLOWED_REINVENTION_CHANGES = Object.freeze([
-  'tone',
-  'figure',
-  'tempo',
-  'example_style',
-  'recognition_act',
-]);
+const ALLOWED_REINVENTION_CHANGES = Object.freeze(['tone', 'figure', 'tempo', 'example_style', 'recognition_act']);
 
 const FORBIDDEN_REINVENTION_CHANGES = Object.freeze([
   'release_timing',
@@ -82,7 +76,10 @@ function cleanText(value, fallback = null, max = 220) {
 
 function cleanList(value, maxItems = 4, maxChars = 100) {
   if (!Array.isArray(value)) return [];
-  return value.map((item) => cleanText(item, null, maxChars)).filter(Boolean).slice(0, maxItems);
+  return value
+    .map((item) => cleanText(item, null, maxChars))
+    .filter(Boolean)
+    .slice(0, maxItems);
 }
 
 function auditForbiddenKeys(value, path = []) {
@@ -144,7 +141,11 @@ function authoredLearner(worldCast = {}, worldLearnerVoice = null) {
   const learner = worldCast?.learner && typeof worldCast.learner === 'object' ? worldCast.learner : {};
   return {
     stableRole: cleanText(learner.role, 'learner', 80),
-    publicIdentity: cleanText(learner.public_identity || learner.publicIdentity, worldLearnerVoice || 'public learner in the inquiry', 170),
+    publicIdentity: cleanText(
+      learner.public_identity || learner.publicIdentity,
+      worldLearnerVoice || 'public learner in the inquiry',
+      170,
+    ),
     level: cleanText(learner.level, null, 80),
     priorBias: cleanText(learner.prior_bias || learner.priorBias, null, 170),
     temperament: cleanList(learner.temperament),
@@ -172,7 +173,8 @@ function postureFromPublicSignals({ discursiveCalibration, transcript, learnerSt
   if (/\b(but i already|you keep|not what i meant|i told you)\b/u.test(text)) return 'defensive_after_correction';
   if (/\b(why does|why would|what does .* matter|what is .* for)\b/u.test(text)) return 'purpose_question';
   if (/\b(i am lost|i'm lost|lost me|confused|do not follow|don't follow)\b/u.test(text)) return 'confused';
-  if (/\b(whatever|i'm done|i am done|just tell me|don't care|do not care)\b/u.test(text)) return 'social_disengagement';
+  if (/\b(whatever|i'm done|i am done|just tell me|don't care|do not care)\b/u.test(text))
+    return 'social_disengagement';
   return 'ordinary';
 }
 
@@ -206,7 +208,14 @@ function publicRepairSignals(repairSignals = []) {
     .filter((signal) => signal.publicObject || signal.count > 0 || signal.sameObject);
 }
 
-function triggerFromSignals({ discursiveCalibration, didacticMode, scene, transcript, recognitionNeed, repairSignals }) {
+function triggerFromSignals({
+  discursiveCalibration,
+  didacticMode,
+  scene,
+  transcript,
+  recognitionNeed,
+  repairSignals,
+}) {
   const lines = publicTranscriptLines(transcript);
   const text = norm(lastLearnerText(lines));
   const repairs = publicRepairSignals(repairSignals);
@@ -231,7 +240,11 @@ function triggerFromSignals({ discursiveCalibration, didacticMode, scene, transc
   if (pressure?.active && pressure.level === 'high') {
     return { trigger: 'recognition_pressure_unresolved', rationale: 'recognition pressure remains high' };
   }
-  if (scene?.closeStatus === 'needs_repair' || scene?.status === 'needs_repair' || /\b(lost|confused|do not follow|don't follow)\b/u.test(text)) {
+  if (
+    scene?.closeStatus === 'needs_repair' ||
+    scene?.status === 'needs_repair' ||
+    /\b(lost|confused|do not follow|don't follow)\b/u.test(text)
+  ) {
     return { trigger: 'scene_needs_repair', rationale: 'scene closes or reads as needing public repair' };
   }
   return null;
@@ -333,7 +346,10 @@ function normalizeActiveReinvention(raw) {
     expiresAtActEnd: raw.expiresAtActEnd !== false,
     mayOverrideProofControl: false,
     proofControlAuthority: 'none',
-    inputAudit: raw.inputAudit?.ok === false ? raw.inputAudit : { ok: true, leaks: [], forbiddenKeys: [...FORBIDDEN_KEYS].sort() },
+    inputAudit:
+      raw.inputAudit?.ok === false
+        ? raw.inputAudit
+        : { ok: true, leaks: [], forbiddenKeys: [...FORBIDDEN_KEYS].sort() },
   };
   return {
     ...state,
@@ -342,14 +358,17 @@ function normalizeActiveReinvention(raw) {
 }
 
 function projectionLines(state, roleName) {
-  if (!state || state.publicOnly !== true || state.mayOverrideProofControl !== false || state.inputAudit?.ok === false) return [];
+  if (!state || state.publicOnly !== true || state.mayOverrideProofControl !== false || state.inputAudit?.ok === false)
+    return [];
   const reinvention = state.reinvention?.active ? state.reinvention : null;
   const common = {
     director: [
       `Tutor: ${state.tutor.stableRole}${state.tutor.publicIdentity ? ` — ${state.tutor.publicIdentity}` : ''}.`,
       `Learner: ${state.learner.stableRole}${state.learner.publicIdentity ? ` — ${state.learner.publicIdentity}` : ''}.`,
       `Relation: ${state.relation.frame}${state.relation.pressure ? `; pressure: ${state.relation.pressure}` : ''}.`,
-      ...(reinvention ? [`Authorized tutor stance for this scene: ${reinvention.fromStance} -> ${reinvention.toStance}.`] : []),
+      ...(reinvention
+        ? [`Authorized tutor stance for this scene: ${reinvention.fromStance} -> ${reinvention.toStance}.`]
+        : []),
     ],
     tutor: [
       `Your public role: ${state.tutor.stableRole}; current stance: ${state.tutor.currentStance}.`,
@@ -487,7 +506,9 @@ export function deriveCastState(input = {}) {
       tutorSuperego: [],
     },
     evidence: [
-      worldCast && Object.keys(worldCast).length ? 'authored public cast block' : 'fallback public setting and learner voice',
+      worldCast && Object.keys(worldCast).length
+        ? 'authored public cast block'
+        : 'fallback public setting and learner voice',
       ...(input.stagePrologue ? ['public director prologue'] : []),
       ...(input.discursiveCalibration ? ['public discursive calibration'] : []),
       ...(input.didacticMode ? ['public didactic mode'] : []),
@@ -532,7 +553,12 @@ export function deriveCastState(input = {}) {
 }
 
 export function projectCastStateForRole(state, roleName) {
-  if (!state || state.publicOnly !== true || state.mayOverrideProofControl !== false || state.inputAudit?.ok === false) {
+  if (
+    !state ||
+    state.publicOnly !== true ||
+    state.mayOverrideProofControl !== false ||
+    state.inputAudit?.ok === false
+  ) {
     return [];
   }
   const notes = roleName === 'tutor_superego' ? state.promptNotes?.tutorSuperego : state.promptNotes?.[roleName];

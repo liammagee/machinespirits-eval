@@ -261,7 +261,11 @@ if (typeof HTMLElement !== 'undefined' && typeof customElements !== 'undefined')
 
         download.onclick = () => {
           const svg = canvas.querySelector('svg')?.outerHTML || '';
-          const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'diagram';
+          const slug =
+            title
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/^-|-$/g, '') || 'diagram';
           downloadText(`${slug}.svg`, 'image/svg+xml', svg);
           status.textContent = 'Downloaded rendered SVG.';
         };

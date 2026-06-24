@@ -178,13 +178,7 @@ function mechanismSubtypeFor(row = {}, originClass, completeEndingShape, scores,
 }
 
 function attachSubtype(result, row, scores, evidence) {
-  const mechanismSubtype = mechanismSubtypeFor(
-    row,
-    result.class,
-    result.completeEndingShape,
-    scores,
-    evidence,
-  );
+  const mechanismSubtype = mechanismSubtypeFor(row, result.class, result.completeEndingShape, scores, evidence);
   return {
     ...result,
     mechanismSubtype,
@@ -257,60 +251,86 @@ function recognitionOriginForScoreRow(row = {}) {
   };
 
   if (formClass === 'trap' || (statedInsight >= CUT && recon < CUT)) {
-    return attachSubtype({
-      class: 'false_closure',
-      basis: 'stated_insight_without_recontextualization',
-      justification: 'The learner marks relief or closure without enough recontextualization of earlier learner turns.',
-      completeEndingShape,
+    return attachSubtype(
+      {
+        class: 'false_closure',
+        basis: 'stated_insight_without_recontextualization',
+        justification:
+          'The learner marks relief or closure without enough recontextualization of earlier learner turns.',
+        completeEndingShape,
+        scores,
+        evidence,
+      },
+      row,
       scores,
       evidence,
-    }, row, scores, evidence);
+    );
   }
 
   if (formClass !== 'recognition' && recon < CUT) {
-    return attachSubtype({
-      class: 'none',
-      basis: 'no_recognitive_reframe',
-      justification: 'The critic did not find a recognitive learner self-reframe.',
-      completeEndingShape,
+    return attachSubtype(
+      {
+        class: 'none',
+        basis: 'no_recognitive_reframe',
+        justification: 'The critic did not find a recognitive learner self-reframe.',
+        completeEndingShape,
+        scores,
+        evidence,
+      },
+      row,
       scores,
       evidence,
-    }, row, scores, evidence);
+    );
   }
 
   if (completeEndingShape) {
-    return attachSubtype({
-      class: 'peripeteia_induced',
-      basis: 'tutor_mechanism_then_learner_performance_then_reorientation',
-      justification:
-        'The same critic found tutor adaptive mechanism, learner public performance, and learner reorientation.',
-      completeEndingShape,
+    return attachSubtype(
+      {
+        class: 'peripeteia_induced',
+        basis: 'tutor_mechanism_then_learner_performance_then_reorientation',
+        justification:
+          'The same critic found tutor adaptive mechanism, learner public performance, and learner reorientation.',
+        completeEndingShape,
+        scores,
+        evidence,
+      },
+      row,
       scores,
       evidence,
-    }, row, scores, evidence);
+    );
   }
 
   if (tutorMechanismScore >= CUT || mechanismQualityScore >= CUT) {
-    return attachSubtype({
-      class: 'ambiguous',
-      basis: 'recognition_with_partial_tutor_mechanism_chain',
+    return attachSubtype(
+      {
+        class: 'ambiguous',
+        basis: 'recognition_with_partial_tutor_mechanism_chain',
+        justification:
+          'Recognition appears alongside some tutor mechanism evidence, but the full mechanism-performance-reorientation chain is incomplete.',
+        completeEndingShape,
+        scores,
+        evidence,
+      },
+      row,
+      scores,
+      evidence,
+    );
+  }
+
+  return attachSubtype(
+    {
+      class: 'organic',
+      basis: 'recognition_without_tutor_mechanism_chain',
       justification:
-        'Recognition appears alongside some tutor mechanism evidence, but the full mechanism-performance-reorientation chain is incomplete.',
+        'The learner reorientation appears without enough evidence that a tutor adaptive mechanism caused it.',
       completeEndingShape,
       scores,
       evidence,
-    }, row, scores, evidence);
-  }
-
-  return attachSubtype({
-    class: 'organic',
-    basis: 'recognition_without_tutor_mechanism_chain',
-    justification:
-      'The learner reorientation appears without enough evidence that a tutor adaptive mechanism caused it.',
-    completeEndingShape,
+    },
+    row,
     scores,
     evidence,
-  }, row, scores, evidence);
+  );
 }
 
 function originCounts(rows = []) {

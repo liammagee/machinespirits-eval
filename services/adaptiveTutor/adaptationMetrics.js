@@ -152,17 +152,19 @@ export function pairedBootstrapIntervals(rows = [], treatment = 'closed_loop', b
 }
 
 export function metricLabel(metric) {
-  return {
-    strict_joint_success: 'Strict joint proof/release/ownership success',
-    state_top1: 'State top-1 accuracy',
-    state_brier: 'State Brier score (lower is better)',
-    intervention_success: 'Intervention success rate',
-    proof_release_mismatch: 'Proof/release mismatch rate',
-    action_state_fit: 'Action-state fit rate',
-    tutor_control_cost: 'Tutor control cost',
-    counterfactual_regret: 'Counterfactual regret',
-    final_proof: 'Final proof',
-    final_release: 'Final release',
-    final_ownership: 'Final ownership',
-  }[metric] || metric;
+  return (
+    {
+      strict_joint_success: 'Strict joint proof/release/ownership success',
+      state_top1: 'State top-1 accuracy',
+      state_brier: 'State Brier score (lower is better)',
+      intervention_success: 'Intervention success rate',
+      proof_release_mismatch: 'Proof/release mismatch rate',
+      action_state_fit: 'Action-state fit rate',
+      tutor_control_cost: 'Tutor control cost',
+      counterfactual_regret: 'Counterfactual regret',
+      final_proof: 'Final proof',
+      final_release: 'Final release',
+      final_ownership: 'Final ownership',
+    }[metric] || metric
+  );
 }

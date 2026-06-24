@@ -149,14 +149,25 @@ function applyIssue(action, item, existing) {
 }
 
 function closeIssue(issue) {
-  const r = runGh(['issue', 'close', String(issue.number), '--comment', 'No longer mirrored: source workplan item is not in the selected mirror statuses.']);
+  const r = runGh([
+    'issue',
+    'close',
+    String(issue.number),
+    '--comment',
+    'No longer mirrored: source workplan item is not in the selected mirror statuses.',
+  ]);
   if (r.status !== 0) fail(`gh issue close failed for ${issue.workplanId}: ${r.stderr || r.stdout}`);
   process.stdout.write(r.stdout);
 }
 
 function main() {
   const opts = flags(process.argv.slice(2));
-  const statuses = new Set(String(opts.status || 'active,blocked').split(',').map((s) => s.trim()).filter(Boolean));
+  const statuses = new Set(
+    String(opts.status || 'active,blocked')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean),
+  );
   const apply = Boolean(opts.apply);
   const closeStale = Boolean(opts['close-stale']);
   if (apply) requireGh();
@@ -170,7 +181,9 @@ function main() {
     console.log('gh CLI not found; dry run will list desired mirror issues only.');
   }
   if (remote.remoteError && !apply) {
-    console.log(`could not read existing GitHub issues; dry run will list desired mirror issues only: ${remote.remoteError}`);
+    console.log(
+      `could not read existing GitHub issues; dry run will list desired mirror issues only: ${remote.remoteError}`,
+    );
   }
 
   let creates = 0;
@@ -202,7 +215,9 @@ function main() {
   }
 
   const mode = apply ? 'applied' : 'dry run';
-  console.log(`${mode}: ${items.length} desired mirror issues, ${creates} creates, ${updates} updates, ${stale.length} stale`);
+  console.log(
+    `${mode}: ${items.length} desired mirror issues, ${creates} creates, ${updates} updates, ${stale.length} stale`,
+  );
 }
 
 main();

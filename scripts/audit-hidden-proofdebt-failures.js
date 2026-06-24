@@ -264,13 +264,19 @@ export function renderMarkdown({ summary, rows, rootDir }) {
   lines.push('- Zero-paid frozen-artifact audit.');
   lines.push('- No runs launched.');
   lines.push('- Archived verdicts are preserved; this report adds a current-detector interpretation beside them.');
-  lines.push('- Scope is hidden+proofDebt: `pacingGuard=true`, `proofDebtGuard=true`, visible guard off, selector-v4 off.');
+  lines.push(
+    '- Scope is hidden+proofDebt: `pacingGuard=true`, `proofDebtGuard=true`, visible guard off, selector-v4 off.',
+  );
   lines.push(`- Artifact root scanned: \`${path.relative(ROOT, rootDir)}\`.`);
   lines.push('');
   lines.push('## Summary');
   lines.push('');
   lines.push(`- Hidden+proofDebt artifacts found: ${summary.rows}.`);
-  lines.push(`- Archived verdicts: ${Object.entries(summary.byVerdict).map(([k, v]) => `${k} ${v}`).join(', ')}.`);
+  lines.push(
+    `- Archived verdicts: ${Object.entries(summary.byVerdict)
+      .map(([k, v]) => `${k} ${v}`)
+      .join(', ')}.`,
+  );
   lines.push(`- Current clean failures: ${summary.cleanCurrentFailures}.`);
   lines.push('');
   lines.push(...renderWorldTable(summary));
@@ -290,13 +296,17 @@ export function renderMarkdown({ summary, rows, rootDir }) {
   lines.push(`- Bounded nonterminal replay windows: ${bounded.length}.`);
   lines.push('');
   if (stale.length) {
-    lines.push('Stale detector artifacts are archived `aporia`/`disengagement` rows whose terminal tail contains proof-distance progress under the current D-aware stall rule.');
+    lines.push(
+      'Stale detector artifacts are archived `aporia`/`disengagement` rows whose terminal tail contains proof-distance progress under the current D-aware stall rule.',
+    );
     lines.push('');
     lines.push(...renderTable(stale));
     lines.push('');
   }
   if (bounded.length) {
-    lines.push('Bounded nonterminal rows are replay/check windows that ended before the proof could resolve and did not trip the current stall detector.');
+    lines.push(
+      'Bounded nonterminal rows are replay/check windows that ended before the proof could resolve and did not trip the current stall detector.',
+    );
     lines.push('');
     lines.push(...renderTable(bounded));
     lines.push('');

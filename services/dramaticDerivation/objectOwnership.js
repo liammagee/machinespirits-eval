@@ -61,7 +61,10 @@ export function auditObjectOwnershipPublicInput(input = {}) {
 }
 
 function cleanText(text, limit = 220) {
-  return String(text || '').replace(/\s+/g, ' ').trim().slice(0, limit);
+  return String(text || '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, limit);
 }
 
 function recentPublicLines(transcript = []) {
@@ -129,7 +132,13 @@ function objectKeywords(input = {}) {
 }
 
 function objectLabel(input = {}) {
-  const raw = input.currentObject || input.currentObjectLabel || input.objectLabel || input.publicObject || input.objectId || null;
+  const raw =
+    input.currentObject ||
+    input.currentObjectLabel ||
+    input.objectLabel ||
+    input.publicObject ||
+    input.objectId ||
+    null;
   const cleaned = cleanText(raw, 160);
   return cleaned || null;
 }
@@ -234,21 +243,22 @@ function scoreProbeFamily(texts, keywords, input = {}) {
   const ownWordsEvidence = objectMentionTexts.filter((text) => {
     if (echoEvidence.includes(text)) return false;
     return (
-      hasPattern(text, /\b(i take it|i would say|in my words|so it means|what it gives me|i read it as|the point is)\b/u) ||
-      structuralOwnWords(text)
+      hasPattern(
+        text,
+        /\b(i take it|i would say|in my words|so it means|what it gives me|i read it as|the point is)\b/u,
+      ) || structuralOwnWords(text)
     );
   });
   const useEvidence = objectMentionTexts.filter((text) => usesInReasoningPath(text));
-  const discriminateEvidence = texts.filter((text) =>
-    textMentionsObject(text, keywords) &&
-    hasPattern(
-      text,
-      /\b(not .* but|not yet|does not|is not|rather than|instead of|separate|keep .* apart|wrong|aren't the same|are not the same|different question|different answer|two lines|two columns)\b/u,
-    ),
+  const discriminateEvidence = texts.filter(
+    (text) =>
+      textMentionsObject(text, keywords) &&
+      hasPattern(
+        text,
+        /\b(not .* but|not yet|does not|is not|rather than|instead of|separate|keep .* apart|wrong|aren't the same|are not the same|different question|different answer|two lines|two columns)\b/u,
+      ),
   );
-  const transferEvidence = texts.filter((text) =>
-    nearTransferEvidence(text),
-  );
+  const transferEvidence = texts.filter((text) => nearTransferEvidence(text));
   const recoveryEvidence = texts.filter((text) => {
     if (!textMentionsObject(text, keywords)) return false;
     return input.recoveryProbe || hasPattern(text, /\b(back to|return to|recover|again|still|earlier)\b/u);
@@ -263,7 +273,11 @@ function scoreProbeFamily(texts, keywords, input = {}) {
       makeProbe('use_in_path', useEvidence.length > 0, useEvidence),
       makeProbe('discriminate_wrong_route', discriminateEvidence.length > 0, discriminateEvidence),
       makeProbe('near_transfer', transferEvidence.length > 0 || input.transferObserved === true, transferEvidence),
-      makeProbe('recover_after_break', recoveryEvidence.length > 0 || input.recoveryObserved === true, recoveryEvidence),
+      makeProbe(
+        'recover_after_break',
+        recoveryEvidence.length > 0 || input.recoveryObserved === true,
+        recoveryEvidence,
+      ),
       makeProbe('purpose_link', purposeEvidence.length > 0, purposeEvidence),
     ],
     joined,
@@ -289,9 +303,7 @@ function rejectedState(inputAudit) {
     ownershipLevel: 'unknown',
     score: 0,
     maxScore: OWNERSHIP_PROBE_FAMILIES.length,
-    probes: OWNERSHIP_PROBE_FAMILIES.map((family) =>
-      makeProbe(family, false, ['input rejected by public-only audit']),
-    ),
+    probes: OWNERSHIP_PROBE_FAMILIES.map((family) => makeProbe(family, false, ['input rejected by public-only audit'])),
     gaps: [...OWNERSHIP_PROBE_FAMILIES],
     evidence: ['input rejected by public-only audit'],
     inputAudit,

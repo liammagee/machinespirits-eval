@@ -4,13 +4,7 @@ import { tutorProofDebtView } from './proofDebt.js';
 export const RUNTIME_MONITOR_SCHEMA = 'dramatic-derivation.runtime-monitor.v0';
 
 const PROOF_DEBT_ALLOWED_FIELDS = new Set(['premiseId', 'surface', 'sinceTurn']);
-const PROOF_DEBT_FORBIDDEN_FIELDS = new Set([
-  'raw_board',
-  'corruption_ledger',
-  'proof_path',
-  'secret',
-  'D_arithmetic',
-]);
+const PROOF_DEBT_FORBIDDEN_FIELDS = new Set(['raw_board', 'corruption_ledger', 'proof_path', 'secret', 'D_arithmetic']);
 
 function requireObject(value, label) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {

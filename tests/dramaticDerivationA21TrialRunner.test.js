@@ -28,10 +28,12 @@ test('A21 trial runner evaluates all four actions from one fixture with balanced
 
   assert.equal(run.trials.length, 4);
   assert.equal(run.assignmentProbability, 0.25);
-  assert.deepEqual(
-    run.trials.map((trial) => trial.action.actionId).sort(),
-    ['A_DIAG_CONFLICT', 'B_RELEASE_P_POINT', 'C_RESTAGE_P_POINT', 'D_CONSOLIDATE_THEN_RELEASE'],
-  );
+  assert.deepEqual(run.trials.map((trial) => trial.action.actionId).sort(), [
+    'A_DIAG_CONFLICT',
+    'B_RELEASE_P_POINT',
+    'C_RESTAGE_P_POINT',
+    'D_CONSOLIDATE_THEN_RELEASE',
+  ]);
   for (const trial of run.trials) {
     assert.equal(trial.assignmentProbability, 0.25);
     assert.equal(trial.fixtureHash, fixture.fixtureHash);

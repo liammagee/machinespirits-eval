@@ -863,7 +863,8 @@ function buildDryRunTutorTurn({ profile, learnerMessage, topic }) {
       'CRITIQUE: (dry run) Keep the response concrete and avoid over-explaining before the learner acts.',
       'IMPROVED: (dry run) Let us test your idea with one small example. What would happen first, and what evidence would tell you that move is right?',
     ].join('\n');
-    finalMessage = '(dry run) Let us test your idea with one small example. What would happen first, and what evidence would tell you that move is right?';
+    finalMessage =
+      '(dry run) Let us test your idea with one small example. What would happen first, and what evidence would tell you that move is right?';
     wasRevised = true;
     deliberation.push(
       {

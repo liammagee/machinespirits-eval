@@ -231,7 +231,9 @@ function norm(text) {
 }
 
 function countWords(text) {
-  return String(text || '').split(/\s+/u).filter(Boolean).length;
+  return String(text || '')
+    .split(/\s+/u)
+    .filter(Boolean).length;
 }
 
 function cognitiveTempoRow(mode, rationale) {
@@ -312,7 +314,11 @@ export function detectPhaticRecognition(
   const add = (type, polarity) => signals.push({ role: roleName, type, polarity });
 
   if (roleName === 'learner') {
-    if (/\b(that helps|that makes sense|i see (what|why|how)|you mean|you said|your point|your question|that question)\b/u.test(text)) {
+    if (
+      /\b(that helps|that makes sense|i see (what|why|how)|you mean|you said|your point|your question|that question)\b/u.test(
+        text,
+      )
+    ) {
       add('acknowledges_tutor_guidance', 'affirming');
     }
     if (/\b(wait|sorry|lost|confus|unclear|can we|could you|say that again|go back|you lost me)\b/u.test(text)) {
@@ -371,7 +377,11 @@ export function classifyLearnerExchange({
     type = /\b(again|back|remind|lost|forgot|slipped|where did)\b/u.test(text) ? 'repair_request' : 'confusion';
   } else if (/\b(but|surely|rather|instead|can't be|cannot be|doesn't follow|does not follow)\b/u.test(text)) {
     type = 'resistance';
-  } else if (!formalActions && countWords(text) <= 8 && /\b(yes|i see|got it|okay|ok|right|mm|hm|understood)\b/u.test(text)) {
+  } else if (
+    !formalActions &&
+    countWords(text) <= 8 &&
+    /\b(yes|i see|got it|okay|ok|right|mm|hm|understood)\b/u.test(text)
+  ) {
     type = 'phatic_ack';
   } else if (!formalActions && !dDelta && !boardDelta && countWords(text) <= 12) {
     type = 'phatic_ack';
@@ -392,12 +402,21 @@ export function classifyLearnerExchange({
     formalActions,
     dDelta,
     boardDelta,
-    countsForProgress: formalActions > 0 || dDelta > 0 || boardDelta > 0 || type === 'hypothesis' || type === 'assertion',
+    countsForProgress:
+      formalActions > 0 || dDelta > 0 || boardDelta > 0 || type === 'hypothesis' || type === 'assertion',
     phatic: type === 'phatic_ack',
   };
 }
 
-export function openScene({ index, turn, dNow, targetPremise = null, targetFact = null, goal = null, reason = 'opening' }) {
+export function openScene({
+  index,
+  turn,
+  dNow,
+  targetPremise = null,
+  targetFact = null,
+  goal = null,
+  reason = 'opening',
+}) {
   return {
     schema: SCENE_SCHEMA,
     index,
@@ -542,7 +561,11 @@ export function sceneMeta(scene, tempo = null, recognitionNeed = null) {
   };
 }
 
-export function updateScene(scene, exchange, { turn, dNow, forced = false, endedBy = null, config = SCENE_DEFAULTS } = {}) {
+export function updateScene(
+  scene,
+  exchange,
+  { turn, dNow, forced = false, endedBy = null, config = SCENE_DEFAULTS } = {},
+) {
   if (!scene) return { scene: null, closed: null };
   const row = {
     turn,
@@ -650,11 +673,31 @@ export function recommendSceneTempoBeat(world, scene, context = {}, config = nul
     addTempo(scores, 'recap', 0.3, 'near the drift guard, consolidate what stands');
   }
   if (!forced && !releaseDue && recognitionNeed?.debt >= 0.3 && recognitionNeed.active !== false) {
-    addTempo(scores, 'recap', recognitionNeed.debt * 1.1, 'recognition debt asks the scene to return what has been heard');
-    addTempo(scores, 'hesitation', recognitionNeed.debt * 0.75, 'recognition debt can slow reflexive assent into owned uptake');
-    addTempo(scores, 'repair_request', recognitionNeed.debt * 0.6, 'recognition debt may need repair before proof pressure');
+    addTempo(
+      scores,
+      'recap',
+      recognitionNeed.debt * 1.1,
+      'recognition debt asks the scene to return what has been heard',
+    );
+    addTempo(
+      scores,
+      'hesitation',
+      recognitionNeed.debt * 0.75,
+      'recognition debt can slow reflexive assent into owned uptake',
+    );
+    addTempo(
+      scores,
+      'repair_request',
+      recognitionNeed.debt * 0.6,
+      'recognition debt may need repair before proof pressure',
+    );
     if (recognitionNeed.desiredActs?.includes('invite_situated_uptake')) {
-      addTempo(scores, 'uptake_only', recognitionNeed.debt * 0.35, 'invite a situated uptake rather than a new proof step');
+      addTempo(
+        scores,
+        'uptake_only',
+        recognitionNeed.debt * 0.35,
+        'invite a situated uptake rather than a new proof step',
+      );
     }
   }
   if (!releaseDue && scores.has('evidence')) scores.get('evidence').score = 0;
@@ -707,9 +750,7 @@ function normalizeDistribution(rows, temperature = 1) {
   return adjusted
     .map(({ score: _score, ...row }) => ({ ...row, weight: +(row.weight / total).toFixed(3) }))
     .sort(
-      (a, b) =>
-        b.weight - a.weight ||
-        String(a.figure || a.beat || '').localeCompare(String(b.figure || b.beat || '')),
+      (a, b) => b.weight - a.weight || String(a.figure || a.beat || '').localeCompare(String(b.figure || b.beat || '')),
     );
 }
 
@@ -858,7 +899,10 @@ export function recommendRhetoricalMove(world, view, context = {}, config = true
   const lastLearner = lastLearnerLine(view.transcript);
   const exchangeType = lastLearner?.meta?.exchange?.type || null;
   const recognitionNeed = context.recognitionNeed || view.scene?.recognitionNeed || null;
-  const calibrationSummary = addDiscursiveCalibration(scores, context.discursiveCalibration || view.discursiveCalibration || null);
+  const calibrationSummary = addDiscursiveCalibration(
+    scores,
+    context.discursiveCalibration || view.discursiveCalibration || null,
+  );
   const didacticModeSummary = addDidacticMode(
     scores,
     context.didacticMode || view.didacticMode || null,
@@ -875,36 +919,111 @@ export function recommendRhetoricalMove(world, view, context = {}, config = true
   add(scores, keyOf('analogia', 'consolidate', targetFromContext, 'transfer'), 0.12, 'make the local shape portable');
 
   if (context.topProofDebt) {
-    add(scores, keyOf('anaphora', 'restore', context.topProofDebt.premiseId, 'proof_debt_repair'), 0.55, 'repair a staged proof debt before new work');
-    add(scores, keyOf('erotema', 'restore', context.topProofDebt.premiseId, 'read_back'), 0.18, 'ask for the missing exhibit before restaging');
+    add(
+      scores,
+      keyOf('anaphora', 'restore', context.topProofDebt.premiseId, 'proof_debt_repair'),
+      0.55,
+      'repair a staged proof debt before new work',
+    );
+    add(
+      scores,
+      keyOf('erotema', 'restore', context.topProofDebt.premiseId, 'read_back'),
+      0.18,
+      'ask for the missing exhibit before restaging',
+    );
   }
   if (context.forced) {
-    add(scores, keyOf('aposiopesis', 'stage_recognition', targetFromContext, 'near_recognition'), 0.52, 'the board forces the answer; let the learner finish it');
-    add(scores, keyOf('erotema', 'stage_recognition', targetFromContext, 'last_question'), 0.22, 'one final question can stage recognition');
+    add(
+      scores,
+      keyOf('aposiopesis', 'stage_recognition', targetFromContext, 'near_recognition'),
+      0.52,
+      'the board forces the answer; let the learner finish it',
+    );
+    add(
+      scores,
+      keyOf('erotema', 'stage_recognition', targetFromContext, 'last_question'),
+      0.22,
+      'one final question can stage recognition',
+    );
   }
   if (context.releaseCue || context.playableCount > 0) {
-    add(scores, keyOf('exemplum', 'release', context.cuePremise, 'concrete_exhibit'), 0.42, 'fresh evidence wants concrete seating');
-    add(scores, keyOf('analogia', 'release', context.cuePremise, 'bridge_exhibit'), 0.2, 'bridge the new exhibit to prior ground');
+    add(
+      scores,
+      keyOf('exemplum', 'release', context.cuePremise, 'concrete_exhibit'),
+      0.42,
+      'fresh evidence wants concrete seating',
+    );
+    add(
+      scores,
+      keyOf('analogia', 'release', context.cuePremise, 'bridge_exhibit'),
+      0.2,
+      'bridge the new exhibit to prior ground',
+    );
   }
   if (exchangeType === 'phatic_ack') {
-    add(scores, keyOf('erotema', 'test', targetFromContext, 'uptake_check'), 0.35, 'phatic uptake needs a small check, not a lecture');
+    add(
+      scores,
+      keyOf('erotema', 'test', targetFromContext, 'uptake_check'),
+      0.35,
+      'phatic uptake needs a small check, not a lecture',
+    );
     add(scores, keyOf('anaphora', 'consolidate', targetFromContext, 'recap'), 0.18, 'repeat the live chain briefly');
   }
   if (exchangeType === 'confusion' || exchangeType === 'repair_request') {
-    add(scores, keyOf('anaphora', exchangeType === 'repair_request' ? 'restore' : 'consolidate', targetFromContext, 'phatic_repair'), 0.42, 'confusion asks for continuity repair');
-    add(scores, keyOf('analogia', 'orient', targetFromContext, 'lower_load'), 0.18, 'a smaller parallel can lower load');
+    add(
+      scores,
+      keyOf(
+        'anaphora',
+        exchangeType === 'repair_request' ? 'restore' : 'consolidate',
+        targetFromContext,
+        'phatic_repair',
+      ),
+      0.42,
+      'confusion asks for continuity repair',
+    );
+    add(
+      scores,
+      keyOf('analogia', 'orient', targetFromContext, 'lower_load'),
+      0.18,
+      'a smaller parallel can lower load',
+    );
   }
   if (exchangeType === 'resistance') {
-    add(scores, keyOf('erotema', 'counter_mirror', targetFromContext, 'contrast'), 0.34, 'resistance should be tested against the record');
-    add(scores, keyOf('exemplum', 'counter_mirror', targetFromContext, 'counterexample'), 0.24, 'a concrete counter-case can separate routes');
+    add(
+      scores,
+      keyOf('erotema', 'counter_mirror', targetFromContext, 'contrast'),
+      0.34,
+      'resistance should be tested against the record',
+    );
+    add(
+      scores,
+      keyOf('exemplum', 'counter_mirror', targetFromContext, 'counterexample'),
+      0.24,
+      'a concrete counter-case can separate routes',
+    );
   }
   if (stalledFrontier) {
     const target = stalledFrontier.groundPremiseIds?.[0] || targetFromContext;
-    add(scores, keyOf('erotema', 'consolidate', target, 'stalled_join'), 0.36, 'ask the learner to put waiting grounds together');
-    add(scores, keyOf('anaphora', 'consolidate', target, 'walk_conjuncts'), 0.26, 'repeat the conjuncts without supplying the conclusion');
+    add(
+      scores,
+      keyOf('erotema', 'consolidate', target, 'stalled_join'),
+      0.36,
+      'ask the learner to put waiting grounds together',
+    );
+    add(
+      scores,
+      keyOf('anaphora', 'consolidate', target, 'walk_conjuncts'),
+      0.26,
+      'repeat the conjuncts without supplying the conclusion',
+    );
   }
   if (plateau && !context.forced) {
-    add(scores, keyOf('exemplum', 'orient', targetFromContext, 'unstick'), 0.2, 'the D curve is flat; make one obligation concrete');
+    add(
+      scores,
+      keyOf('exemplum', 'orient', targetFromContext, 'unstick'),
+      0.2,
+      'the D curve is flat; make one obligation concrete',
+    );
   }
   if (recognitionNeed?.debt >= 0.3 && recognitionNeed.active !== false && !context.releaseCue) {
     add(

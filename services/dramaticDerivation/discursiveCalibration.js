@@ -94,7 +94,10 @@ function postureFromExplicitState(state = {}) {
     return 'fluent_echo';
   }
   if (state.defensive || Number(state.repeatedCorrections || 0) >= 2) return 'defensive_after_correction';
-  if (state.tentativeCorrect || (state.correct === true && (state.confidence === 'low' || state.confidence === 'tentative'))) {
+  if (
+    state.tentativeCorrect ||
+    (state.correct === true && (state.confidence === 'low' || state.confidence === 'tentative'))
+  ) {
     return 'tentative_correct';
   }
   return null;
@@ -122,7 +125,9 @@ function inferPosture({ text, learnerState = {}, exchange = null, transcript = [
   }
   if (
     exchangeType === 'resistance' ||
-    /\b(but i already|i already said|you keep|that is not what|not what i meant|i told you|you are not hearing)\b/u.test(t) ||
+    /\b(but i already|i already said|you keep|that is not what|not what i meant|i told you|you are not hearing)\b/u.test(
+      t,
+    ) ||
     countRecentTutorCorrections(transcript) >= 2
   ) {
     return 'defensive_after_correction';

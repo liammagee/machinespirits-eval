@@ -723,8 +723,7 @@ export function conductPolicyReport(result) {
           ? l.meta.conductPolicy.preEnforcementCompliance?.ok === true
           : null,
       postEnforcementOk:
-        l.meta.conductPolicy.enforcement?.enabled === true &&
-        l.meta.conductPolicy.generatorCompliance?.checked === true
+        l.meta.conductPolicy.enforcement?.enabled === true && l.meta.conductPolicy.generatorCompliance?.checked === true
           ? l.meta.conductPolicy.generatorCompliance?.ok === true
           : null,
       complianceChecked: l.meta.conductPolicy.generatorCompliance?.checked === true,
@@ -1139,7 +1138,9 @@ function didacticModeReport(result) {
   const signals = {};
   const trajectoryByTurn = new Map((result.trajectory || []).map((point) => [point.turn, point]));
   const releaseTurns = new Set((result.ledger || []).map((entry) => entry.turn));
-  const repairTurns = new Set((result.events || []).filter((event) => event.type === 'repair').map((event) => event.turn));
+  const repairTurns = new Set(
+    (result.events || []).filter((event) => event.type === 'repair').map((event) => event.turn),
+  );
   const proofAdvanced = (turn) => {
     const current = trajectoryByTurn.get(turn);
     const previous = trajectoryByTurn.get(turn - 1);
@@ -1684,7 +1685,9 @@ export function renderEvalPanel(diagnosis) {
     if (tempos) lines.push(`  - tempo: ${tempos}`);
     if (cognitiveTempo) lines.push(`  - cognitive tempo: ${cognitiveTempo}`);
     if (sc.recognitionNeed?.peakDebt)
-      lines.push(`  - recognition need: peak ${sc.recognitionNeed.peakDebt.toFixed(2)}${recognitionNeed ? ` · ${recognitionNeed}` : ''}`);
+      lines.push(
+        `  - recognition need: peak ${sc.recognitionNeed.peakDebt.toFixed(2)}${recognitionNeed ? ` · ${recognitionNeed}` : ''}`,
+      );
     if (sc.phaticRecognition?.total) lines.push(`  - phatic recognition: ${phaticRecognition}`);
     if (sc.driftGuardScenes.length) lines.push(`  - drift guard scenes: ${sc.driftGuardScenes.join(', ')}`);
   }

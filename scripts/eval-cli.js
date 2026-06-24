@@ -149,7 +149,10 @@ function adaptiveTraceScenarioContext(trace, result) {
   const hidden = trace?.scenario?.hidden || {};
   const expected = trace?.scenario?.expectedStrategyShift;
   const expectedLabel = Array.isArray(expected) ? expected.join(', ') : expected || 'adaptive response';
-  const hiddenSummary = [hidden.actual_misconception, hidden.actual_sophistication && `sophistication: ${hidden.actual_sophistication}`]
+  const hiddenSummary = [
+    hidden.actual_misconception,
+    hidden.actual_sophistication && `sophistication: ${hidden.actual_sophistication}`,
+  ]
     .filter(Boolean)
     .join('; ');
   return {
@@ -6459,7 +6462,9 @@ async function main() {
         if (tutorCorePromptsDir && fs.existsSync(tutorCorePromptsDir)) {
           promptDirs.push(tutorCorePromptsDir);
         }
-        const existingPromptDirs = promptDirs.filter((dir, index) => fs.existsSync(dir) && promptDirs.indexOf(dir) === index);
+        const existingPromptDirs = promptDirs.filter(
+          (dir, index) => fs.existsSync(dir) && promptDirs.indexOf(dir) === index,
+        );
 
         if (existingPromptDirs.length > 0) {
           const promptErrors = [];

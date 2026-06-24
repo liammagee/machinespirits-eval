@@ -87,7 +87,9 @@ function summarizeAction(actionId, rows) {
 }
 
 function topActions(actionSummaries) {
-  const sorted = [...actionSummaries].sort((a, b) => b.meanReward - a.meanReward || a.actionId.localeCompare(b.actionId));
+  const sorted = [...actionSummaries].sort(
+    (a, b) => b.meanReward - a.meanReward || a.actionId.localeCompare(b.actionId),
+  );
   const best = sorted[0]?.meanReward ?? null;
   return {
     bestMeanReward: best,
@@ -105,8 +107,13 @@ function decisionCategory({ summaries, fixture }) {
   const diagnostic = summaries.find((row) => row.actionId === 'A_DIAG_CONFLICT');
   const release = summaries.find((row) => row.actionId === 'B_RELEASE_P_POINT');
   const repairTop = topActionIds.includes('C_RESTAGE_P_POINT');
-  if (releaseTop && diagnostic && release && release.meanReward > diagnostic.meanReward) return 'release_beats_diagnostic';
-  if (repairTop && release && summaries.find((row) => row.actionId === 'C_RESTAGE_P_POINT')?.meanReward > release.meanReward) {
+  if (releaseTop && diagnostic && release && release.meanReward > diagnostic.meanReward)
+    return 'release_beats_diagnostic';
+  if (
+    repairTop &&
+    release &&
+    summaries.find((row) => row.actionId === 'C_RESTAGE_P_POINT')?.meanReward > release.meanReward
+  ) {
     return 'repair_beats_release';
   }
   if (hiddenActions.some((actionId) => topActionIds.includes(actionId))) return 'hidden_action_best';
@@ -115,7 +122,9 @@ function decisionCategory({ summaries, fixture }) {
 
 export function analyzeA21Trials({ trials, fixture = null, command = null } = {}) {
   const rows = Array.isArray(trials) ? trials : [];
-  const actionSummaries = [...groupByAction(rows).entries()].map(([actionId, group]) => summarizeAction(actionId, group));
+  const actionSummaries = [...groupByAction(rows).entries()].map(([actionId, group]) =>
+    summarizeAction(actionId, group),
+  );
   const ranking = topActions(actionSummaries);
   return {
     schema: A21_ACTION_VALUE_ANALYSIS_SCHEMA,

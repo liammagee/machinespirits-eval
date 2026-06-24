@@ -61,14 +61,7 @@ test('WorldIR includes a canonical proof-hypergraph logic form', () => {
   const secretNode = ir.logic.factNodes.find((node) => node.factKey === factKey(withercombe.secret.fact));
   assert.ok(secretNode.roles.includes('secret'));
   assert.ok(secretNode.roles.includes('derived'));
-  assert.deepEqual(secretNode.sourcePremiseIds, [
-    'p_basin',
-    'p_brought',
-    'p_course',
-    'p_lore',
-    'p_residue',
-    'p_rill',
-  ]);
+  assert.deepEqual(secretNode.sourcePremiseIds, ['p_basin', 'p_brought', 'p_course', 'p_lore', 'p_residue', 'p_rill']);
   assert.equal(secretNode.proof.rule, 'R3_hand');
 
   const foulFrom = ir.logic.factNodes.find((node) => node.factKey === factKey(['foulFrom', 'schoolWell', 'fontHouse']));
@@ -195,7 +188,10 @@ test('representation selector v2 fails closed for shared proof-critical source p
   const hethelDecay = selectGuardRepresentationV2(buildWorldIR(hethel), { decayEnabled: true });
   assert.equal(hethelDecay.selected, 'hidden');
   assert.equal(hethelDecay.gate, 'decay_shared_source_hidden');
-  assert.deepEqual(hethelDecay.input.consolidatedProofPressure.sharedCriticalSourcePremiseIds, ['p_point', 'p_surface']);
+  assert.deepEqual(hethelDecay.input.consolidatedProofPressure.sharedCriticalSourcePremiseIds, [
+    'p_point',
+    'p_surface',
+  ]);
   assert.equal(hethelDecay.input.mirrorDeadPredicateDecoy.present, true);
 
   const withercombeDecay = selectGuardRepresentationV2(buildWorldIR(withercombe), { decayEnabled: true });

@@ -28,10 +28,7 @@ test('object ownership audit rejects hidden proof-state inputs recursively', () 
   });
 
   assert.equal(audit.ok, false);
-  assert.deepEqual(
-    audit.leaks.map((leak) => leak.key).sort(),
-    ['finalD', 'hiddenBoard', 'proofPath'],
-  );
+  assert.deepEqual(audit.leaks.map((leak) => leak.key).sort(), ['finalD', 'hiddenBoard', 'proofPath']);
 
   const state = deriveObjectOwnershipState({
     currentObject: 'p_point',
@@ -152,7 +149,7 @@ test('near transfer ignores ordinary preference uses of like', () => {
   const ordinaryPreference = deriveObjectOwnershipState({
     currentObject: 'liability cause split',
     objectKeywords: ['liability', 'cause', 'split'],
-    learnerText: "I would like to know why before we go further, but I see the liability and cause split.",
+    learnerText: 'I would like to know why before we go further, but I see the liability and cause split.',
   });
   const analogy = deriveObjectOwnershipState({
     currentObject: 'liability cause split',
@@ -187,7 +184,7 @@ test('near transfer credits structure-travel language paired with the liability 
     currentObject: 'liability cause split',
     objectKeywords: ['liability', 'cause', 'split', 'bond', 'hand'],
     learnerText:
-      "The same structure travels to another case: the bond line answers who pays, while the hand line answers what brought the work down.",
+      'The same structure travels to another case: the bond line answers who pays, while the hand line answers what brought the work down.',
   });
 
   assert.equal(state.probes.find((probe) => probe.family === 'near_transfer').passed, true);

@@ -109,10 +109,13 @@ test('cast layer audit rejects forbidden proof-state inputs recursively', () => 
   });
 
   assert.equal(audit.ok, false);
-  assert.deepEqual(
-    audit.leaks.map((leak) => leak.key).sort(),
-    ['D', 'hiddenBoard', 'predicateName', 'premiseId', 'proofPath'],
-  );
+  assert.deepEqual(audit.leaks.map((leak) => leak.key).sort(), [
+    'D',
+    'hiddenBoard',
+    'predicateName',
+    'premiseId',
+    'proofPath',
+  ]);
 
   const state = deriveCastState({
     worldCast: HETHEL_CAST,
@@ -298,7 +301,10 @@ test('learner prompt projection excludes tutor-private reinvention audit', async
   const learnerCall = calls.find((call) => call.role === 'learner');
   assert.ok(learnerCall.system.includes('CAST LAYER (LEARNER projection'));
   assert.ok(learnerCall.system.includes("bridge-warden's young clerk"));
-  assert.doesNotMatch(learnerCall.system, /Tutor reinvention active|forbidden changes|release_timing|proof target:|target_premise/u);
+  assert.doesNotMatch(
+    learnerCall.system,
+    /Tutor reinvention active|forbidden changes|release_timing|proof target:|target_premise/u,
+  );
   assert.equal(learnerCall.meta.castState.schema, CAST_LAYER_SCHEMA);
   assert.equal(learnerCall.meta.castState.reinvention, null);
 });

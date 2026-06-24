@@ -16,14 +16,7 @@
  *     [--out exports/dramatic-derivation/selector-v1-summary]
  */
 
-import {
-  existsSync,
-  mkdirSync,
-  readdirSync,
-  readFileSync,
-  statSync,
-  writeFileSync,
-} from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
@@ -33,12 +26,7 @@ const ROOT = path.resolve(path.dirname(__filename), '..');
 
 const DEFAULT_LOOP_DIR = 'exports/dramatic-derivation/loop';
 const DEFAULT_PATTERN = '*selector-v1-*';
-const VERDICT_ORDER = [
-  'grounded_anagnorisis',
-  'aporia',
-  'disengagement',
-  'lucky_leap_only',
-];
+const VERDICT_ORDER = ['grounded_anagnorisis', 'aporia', 'disengagement', 'lucky_leap_only'];
 const STATIC_ARMS = ['baseline', 'hidden', 'visible'];
 
 function usage() {
@@ -91,12 +79,7 @@ function escapeRegExp(s) {
 export function globToRegExp(glob) {
   const parts = String(glob)
     .split('*')
-    .map((part) =>
-      part
-        .split('?')
-        .map(escapeRegExp)
-        .join('.'),
-    );
+    .map((part) => part.split('?').map(escapeRegExp).join('.'));
   return new RegExp(`^${parts.join('.*')}$`);
 }
 
@@ -137,9 +120,7 @@ function readExpectedFile(file) {
   if (!raw) return [];
   if (raw.startsWith('[')) {
     const parsed = JSON.parse(raw);
-    return parsed
-      .map((row) => (typeof row === 'string' ? row : row?.label))
-      .filter(Boolean);
+    return parsed.map((row) => (typeof row === 'string' ? row : row?.label)).filter(Boolean);
   }
   return raw
     .split(/\r?\n/)
@@ -207,9 +188,7 @@ function overreachCount(diagnosis) {
 }
 
 function unreachedPremises(diagnosis) {
-  return (diagnosis.releaseAdherence?.rows || [])
-    .filter((row) => row.status === 'unreached')
-    .map((row) => row.premise);
+  return (diagnosis.releaseAdherence?.rows || []).filter((row) => row.status === 'unreached').map((row) => row.premise);
 }
 
 function collectCandidateLabels(loopDir, patterns, expectedLabels) {
@@ -540,7 +519,9 @@ function analyzeCompleteRows({ rows, selectorArm, requestedSelectorVersion }) {
 
 function renderGroupTable(summaries) {
   const lines = [];
-  lines.push('| World | Arm | Selected | Complete | Grounded | Verdicts | Turns | Final D | Forced/asserted gap | Overreach | Lucky | Gates |');
+  lines.push(
+    '| World | Arm | Selected | Complete | Grounded | Verdicts | Turns | Final D | Forced/asserted gap | Overreach | Lucky | Gates |',
+  );
   lines.push('| --- | --- | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- |');
   for (const row of summaries) {
     lines.push(
@@ -552,14 +533,13 @@ function renderGroupTable(summaries) {
 
 function renderRegretTable(regret) {
   const lines = [];
-  lines.push('| World | Selector route | Selector | No guard | Always-H | Always-V | Oracle static | Regret vs oracle | Regret vs H | Negative transfer |');
+  lines.push(
+    '| World | Selector route | Selector | No guard | Always-H | Always-V | Oracle static | Regret vs oracle | Regret vs H | Negative transfer |',
+  );
   lines.push('| --- | --- | --- | --- | --- | --- | --- | ---: | ---: | --- |');
   for (const row of regret.worldRows) {
     const oracle = row.oracleStatic ? `${row.oracleStatic.arm} ${rateText(row.oracleStatic)}` : '-';
-    const nt = [
-      row.negativeTransferVsHidden ? 'vs H' : null,
-      row.negativeTransferVsBaseline ? 'vs no guard' : null,
-    ]
+    const nt = [row.negativeTransferVsHidden ? 'vs H' : null, row.negativeTransferVsBaseline ? 'vs no guard' : null]
       .filter(Boolean)
       .join('; ');
     lines.push(
@@ -655,8 +635,12 @@ function renderReport(summary) {
   L.push('## Artifacts');
   L.push('');
   L.push('- This is a dry artifact reader: no model calls, no verdict changes.');
-  L.push('- Input rows come from `diagnosis.json`; missing/incomplete artifacts are listed in `manifest.tsv` when `--out` is supplied.');
-  L.push('- Static policy comparisons use available `baseline`, `hidden`, and `visible` arms in the matched label set.');
+  L.push(
+    '- Input rows come from `diagnosis.json`; missing/incomplete artifacts are listed in `manifest.tsv` when `--out` is supplied.',
+  );
+  L.push(
+    '- Static policy comparisons use available `baseline`, `hidden`, and `visible` arms in the matched label set.',
+  );
   return `${L.join('\n')}\n`;
 }
 

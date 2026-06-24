@@ -209,7 +209,14 @@ async function releaseTurn({ turn, reply, ledger = [] }) {
   return tutor(actsView(turn, { ledger }));
 }
 
-async function discursiveReleaseTurn({ turn, reply, ledger = [], transcript = [], world = smokeWorld, pacingGuard = false }) {
+async function discursiveReleaseTurn({
+  turn,
+  reply,
+  ledger = [],
+  transcript = [],
+  world = smokeWorld,
+  pacingGuard = false,
+}) {
   const { client } = stubClient({ tutor: [reply] });
   const tutor = makeLlmTutor(
     world,

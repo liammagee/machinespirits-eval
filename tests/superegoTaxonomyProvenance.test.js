@@ -46,12 +46,7 @@ const SCRIPT = path.join(ROOT, 'scripts', 'analyze-superego-taxonomy.js');
 
 // The Paper §6.2 source corpus: 500 records / 56 dialogues, tracked in-repo.
 // The sha256 is the integrity anchor cited inline in paper §6.2.3.
-const ARCHIVE = path.resolve(
-  ROOT,
-  'data',
-  'paper2',
-  'superego-critiques-classified-paper-6.2-n500.jsonl',
-);
+const ARCHIVE = path.resolve(ROOT, 'data', 'paper2', 'superego-critiques-classified-paper-6.2-n500.jsonl');
 const ARCHIVE_SHA256 = 'f9ba2d92645decae74ddd80c78afeda34aa71af761c5064dd932468084f54329';
 const ARCHIVE_PRESENT = fs.existsSync(ARCHIVE);
 

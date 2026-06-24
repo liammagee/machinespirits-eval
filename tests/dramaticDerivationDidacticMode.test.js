@@ -42,10 +42,7 @@ test('didactic mode audit rejects forbidden proof-state inputs recursively', () 
   });
 
   assert.equal(audit.ok, false);
-  assert.deepEqual(
-    audit.leaks.map((leak) => leak.key).sort(),
-    ['D', 'corruptionLedger', 'hiddenBoard', 'proofPath'],
-  );
+  assert.deepEqual(audit.leaks.map((leak) => leak.key).sort(), ['D', 'corruptionLedger', 'hiddenBoard', 'proofPath']);
 
   const state = deriveDidacticModeState({
     currentObject: 'the public exhibit',
@@ -92,8 +89,18 @@ test('repeated confusion maps to slow_recap', () => {
   const state = deriveDidacticModeState({
     currentObject: 'the crown bed evidence',
     transcript: [
-      { turn: 4, role: 'learner', text: 'I am lost on what the crown bed proves.', meta: { exchange: { type: 'confusion' } } },
-      { turn: 5, role: 'learner', text: 'Sorry, I still do not follow the link.', meta: { exchange: { type: 'repair_request' } } },
+      {
+        turn: 4,
+        role: 'learner',
+        text: 'I am lost on what the crown bed proves.',
+        meta: { exchange: { type: 'confusion' } },
+      },
+      {
+        turn: 5,
+        role: 'learner',
+        text: 'Sorry, I still do not follow the link.',
+        meta: { exchange: { type: 'repair_request' } },
+      },
     ],
     scene: { closeStatus: 'needs_repair' },
   });

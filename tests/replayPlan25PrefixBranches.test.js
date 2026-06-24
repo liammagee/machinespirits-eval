@@ -75,11 +75,10 @@ describe('replay-plan25-prefix-branches', () => {
     const { designPath } = writeFixtureDesign(root);
     const outDir = path.join(root, 'out');
 
-    execFileSync(
-      process.execPath,
-      [SCRIPT, '--design', designPath, '--out-dir', outDir, '--mock', '--score-mock'],
-      { cwd: ROOT, encoding: 'utf8' },
-    );
+    execFileSync(process.execPath, [SCRIPT, '--design', designPath, '--out-dir', outDir, '--mock', '--score-mock'], {
+      cwd: ROOT,
+      encoding: 'utf8',
+    });
 
     const adaptiveTranscript = fs.readFileSync(path.join(outDir, 'sample/adaptive_two_gate.txt'), 'utf8');
     const controlTranscript = fs.readFileSync(path.join(outDir, 'sample/external_blocker_control.txt'), 'utf8');

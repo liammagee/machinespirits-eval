@@ -14,7 +14,14 @@ export function detectOutcomeEvidence(learnerTurn = '') {
   const text = String(learnerTurn || '').trim();
   const lower = text.toLowerCase();
   const mereAgreement = includesAny(lower, [/^(yes|yeah|ok|okay|sure|got it|makes sense|i see)[.! ]*$/u]);
-  const rationale = includesAny(lower, [/\bbecause\b/u, /\bso that\b/u, /\btherefore\b/u, /\bpreserve/u, /\binvariant\b/u, /\bdepends on\b/u]);
+  const rationale = includesAny(lower, [
+    /\bbecause\b/u,
+    /\bso that\b/u,
+    /\btherefore\b/u,
+    /\bpreserve/u,
+    /\binvariant\b/u,
+    /\bdepends on\b/u,
+  ]);
   const choice = includesAny(lower, [/\bi would\b/u, /\bi'll\b/u, /\bi choose\b/u, /\bmy strategy\b/u, /\bnext i\b/u]);
   const prediction = includesAny(lower, [/\bi predict\b/u, /\bi expect\b/u, /\bwould happen\b/u, /\bwill happen\b/u]);
   const undifferentiatedHelpRequest = includesAny(lower, [
@@ -94,7 +101,8 @@ export function detectOutcomeEvidence(learnerTurn = '') {
 
 export function inferObservedTransition(learnerTurn = '', evidence = detectOutcomeEvidence(learnerTurn)) {
   const c = evidence.categories || {};
-  const proof = (c['learner-authored rationale'] ? 0.2 : 0) + (c['model comparison'] ? 0.1 : 0) + (c['self-check'] ? 0.05 : 0);
+  const proof =
+    (c['learner-authored rationale'] ? 0.2 : 0) + (c['model comparison'] ? 0.1 : 0) + (c['self-check'] ? 0.05 : 0);
   const release = (c['learner-authored choice'] ? 0.2 : 0) + (c['learner-authored prediction'] ? 0.1 : 0);
   const ownership =
     (c['learner-authored choice'] ? 0.15 : 0) +
@@ -145,22 +153,28 @@ export function observeInterventionOutcome({ pendingIntervention, learnerTurn, t
   const actionType = pendingIntervention.action_type;
   if (actionType === 'diagnose_with_discriminating_question') {
     if (evidence.categories['state-disambiguating response']) outcome = 'success';
-    else if (evidence.categories['mere agreement'] || evidence.categories['undifferentiated help request']) outcome = 'failure';
+    else if (evidence.categories['mere agreement'] || evidence.categories['undifferentiated help request'])
+      outcome = 'failure';
   }
   if (actionType === 'minimal_hint') {
     if (evidence.categories['learner-authored next step'] && !forbiddenHit) outcome = 'success';
-    else if (evidence.categories['evidence of deeper gap'] || evidence.categories['undifferentiated help request']) outcome = 'failure';
+    else if (evidence.categories['evidence of deeper gap'] || evidence.categories['undifferentiated help request'])
+      outcome = 'failure';
   }
   if (['contrast_models', 'name_the_disagreement', 'challenge_without_telling'].includes(actionType)) {
     if (evidence.categories['model comparison'] || evidence.categories['targeted question']) outcome = 'success';
   }
   if (actionType === 'acknowledge_and_redirect') {
-    if (evidence.categories['learner-authored next step'] || evidence.categories['state-disambiguating response']) outcome = 'success';
-    else if (evidence.categories['undifferentiated help request'] || evidence.categories['empty release']) outcome = 'failure';
+    if (evidence.categories['learner-authored next step'] || evidence.categories['state-disambiguating response'])
+      outcome = 'success';
+    else if (evidence.categories['undifferentiated help request'] || evidence.categories['empty release'])
+      outcome = 'failure';
   }
   if (actionType === 'withhold_answer') {
-    if (evidence.categories['learner-authored choice'] || evidence.categories['learner-authored next step']) outcome = 'success';
-    else if (evidence.categories['undifferentiated help request'] || evidence.categories['empty release']) outcome = 'failure';
+    if (evidence.categories['learner-authored choice'] || evidence.categories['learner-authored next step'])
+      outcome = 'success';
+    else if (evidence.categories['undifferentiated help request'] || evidence.categories['empty release'])
+      outcome = 'failure';
   }
 
   return {

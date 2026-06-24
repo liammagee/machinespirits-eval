@@ -42,7 +42,10 @@ function cleanText(value, fallback = null, max = 220) {
 
 function cleanList(value, maxItems = 5, maxChars = 120) {
   if (!Array.isArray(value)) return [];
-  return value.map((item) => cleanText(item, null, maxChars)).filter(Boolean).slice(0, maxItems);
+  return value
+    .map((item) => cleanText(item, null, maxChars))
+    .filter(Boolean)
+    .slice(0, maxItems);
 }
 
 function auditForbiddenKeys(value, path = []) {
@@ -111,7 +114,11 @@ function chooseMode({ recentTutor, recentLearner, driftConfig }) {
   const tutorDirective = countMatches(recentTutor, DIRECTIVE_RE);
   const learnerResistance = countMatches(recentLearner, RESISTANCE_RE);
   const learnerOwnership = countMatches(recentLearner, OWNERSHIP_RE);
-  const dogmaticSensitivity = cleanText(driftConfig?.dogmatic_sensitivity || driftConfig?.dogmaticSensitivity, 'high', 40);
+  const dogmaticSensitivity = cleanText(
+    driftConfig?.dogmatic_sensitivity || driftConfig?.dogmaticSensitivity,
+    'high',
+    40,
+  );
   const highDogmaticSensitivity = dogmaticSensitivity === 'high' || dogmaticSensitivity === 'very_high';
 
   if (tutorAck >= 2 && learnerOwnership >= 1) {
@@ -176,7 +183,8 @@ export function deriveLearnerDriftState({
   const recentTutor = recentTutorLines(lines);
   const recentLearner = recentLearnerLines(lines);
   const selected = chooseMode({ recentTutor, recentLearner, driftConfig: worldLearnerDrift });
-  const modeNotes = worldLearnerDrift.modes && typeof worldLearnerDrift.modes === 'object' ? worldLearnerDrift.modes : {};
+  const modeNotes =
+    worldLearnerDrift.modes && typeof worldLearnerDrift.modes === 'object' ? worldLearnerDrift.modes : {};
   const guidance = cleanList(modeNotes[selected.mode]?.guidance, 5, 160);
   const state = {
     schema: LEARNER_DRIFT_SCHEMA,
@@ -189,7 +197,12 @@ export function deriveLearnerDriftState({
     rationale: selected.rationale,
     baseline: cleanText(worldLearnerDrift.baseline, 'face-saving resistant learner', 120),
     allowedChanges: ['stance', 'tempo', 'phatic_markers', 'willingness_to_concede', 'face_saving_language'],
-    forbiddenChanges: ['fact_adoption_without_grounding', 'answer_assertion_without_board', 'proof_target', 'release_timing'],
+    forbiddenChanges: [
+      'fact_adoption_without_grounding',
+      'answer_assertion_without_board',
+      'proof_target',
+      'release_timing',
+    ],
     guidance: guidance.length
       ? guidance
       : [
@@ -216,7 +229,12 @@ export function deriveLearnerDriftState({
 }
 
 export function learnerDriftLines(state) {
-  if (!state || state.publicOnly !== true || state.mayOverrideProofControl !== false || state.inputAudit?.ok === false) {
+  if (
+    !state ||
+    state.publicOnly !== true ||
+    state.mayOverrideProofControl !== false ||
+    state.inputAudit?.ok === false
+  ) {
     return [];
   }
   return [

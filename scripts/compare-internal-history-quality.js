@@ -26,9 +26,7 @@ function readPositiveIntEnv(name, fallback) {
 
 function readCsvEnv(name, fallback) {
   const raw = process.env[name];
-  return (raw ? raw.split(',') : fallback)
-    .map((value) => value.trim())
-    .filter(Boolean);
+  return (raw ? raw.split(',') : fallback).map((value) => value.trim()).filter(Boolean);
 }
 
 const runCount = readPositiveIntEnv('PROBE_RUNS', 3);
@@ -64,7 +62,11 @@ const allScenarios = [
     signals: [
       { key: 'mentionsRecognition', weight: 8, pattern: /\brecognition\b/i },
       { key: 'mentionsCompliance', weight: 7, pattern: /\bcompliance\b/i },
-      { key: 'referencesRetryOrStuckness', weight: 5, pattern: /\b(retry|repeated|stuck|distinction|confusion|keeps missing)\b/i },
+      {
+        key: 'referencesRetryOrStuckness',
+        weight: 5,
+        pattern: /\b(retry|repeated|stuck|distinction|confusion|keeps missing)\b/i,
+      },
       { key: 'asksForContrast', weight: 5, pattern: /\b(compare|contrast|distinguish|difference)\b/i },
     ],
   },
@@ -91,7 +93,11 @@ const allScenarios = [
       { key: 'mentionsFractions', weight: 6, pattern: /\b(fraction|fractions|numerator|denominator)\b/i },
       { key: 'mentionsEquivalence', weight: 6, pattern: /\b(equivalent|equivalence|same value|preserves value)\b/i },
       { key: 'mentionsNumberLine', weight: 6, pattern: /\bnumber line\b/i },
-      { key: 'referencesFrustrationOrRetry', weight: 4, pattern: /\b(frustrated|retry|wrong attempts|stuck|answer)\b/i },
+      {
+        key: 'referencesFrustrationOrRetry',
+        weight: 4,
+        pattern: /\b(frustrated|retry|wrong attempts|stuck|answer)\b/i,
+      },
       { key: 'asksForReasoning', weight: 3, pattern: /\b(explain|show|place|why|compare)\b/i },
     ],
   },
@@ -116,7 +122,11 @@ const allScenarios = [
     },
     signals: [
       { key: 'mentionsGradient', weight: 5, pattern: /\bgradient\b/i },
-      { key: 'mentionsLearningRateOrOvershoot', weight: 7, pattern: /\b(learning rate|overshoot|overshooting|step size)\b/i },
+      {
+        key: 'mentionsLearningRateOrOvershoot',
+        weight: 7,
+        pattern: /\b(learning rate|overshoot|overshooting|step size)\b/i,
+      },
       { key: 'handlesPacing', weight: 6, pattern: /\b(skip|hardest|challenge|before|first|ready|pace|pacing)\b/i },
       { key: 'diagnosesSignOrDirection', weight: 4, pattern: /\b(sign|direction|slope|diagnose|adjust)\b/i },
       { key: 'acknowledgesPartialSuccess', weight: 3, pattern: /\b(right|correct|got .* right|last answer)\b/i },
@@ -162,16 +172,16 @@ function summarizeBody(body, index) {
 }
 
 function textOf(suggestion) {
-  return [
-    suggestion?.message,
-    suggestion?.reasoning,
-    suggestion?.actionTarget,
-    suggestion?.contentId,
-  ].filter(Boolean).join(' ').toLowerCase();
+  return [suggestion?.message, suggestion?.reasoning, suggestion?.actionTarget, suggestion?.contentId]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
 }
 
 function commonUnsupportedSpecifics(text) {
-  return /\b(?:00:\d{2}|section\s+\d+|boxed summary|vignette|mini-check|practice panel|subsection|steps below|examples?\s+\d+|two core examples|\d+\s*-\s*question|question probe|\d+\s*minutes?|\d+-minute)\b/i.test(text);
+  return /\b(?:00:\d{2}|section\s+\d+|boxed summary|vignette|mini-check|practice panel|subsection|steps below|examples?\s+\d+|two core examples|\d+\s*-\s*question|question probe|\d+\s*minutes?|\d+-minute)\b/i.test(
+    text,
+  );
 }
 
 function scoreSuggestion(suggestion, scenario) {
@@ -242,13 +252,15 @@ function buildMockResponses(scenario) {
   const target = scenario.expectedTarget;
   const concept = scenario.title.toLowerCase();
   return [
-    JSON.stringify([{
-      action: 'practice',
-      actionTarget: target,
-      contentId: target,
-      message: `Try ${target} and make one concrete move on ${concept}.`,
-      reasoning: `The learner signal points to ${concept}; the target keeps the next step bounded and inspectable.`,
-    }]),
+    JSON.stringify([
+      {
+        action: 'practice',
+        actionTarget: target,
+        contentId: target,
+        message: `Try ${target} and make one concrete move on ${concept}.`,
+        reasoning: `The learner signal points to ${concept}; the target keeps the next step bounded and inspectable.`,
+      },
+    ]),
     JSON.stringify({
       approved: false,
       interventionType: 'revise',
@@ -256,13 +268,15 @@ function buildMockResponses(scenario) {
       confidence: 0.86,
       suggestedChanges: { revisions: ['Ask for one short written explanation after the activity.'] },
     }),
-    JSON.stringify([{
-      action: 'practice',
-      actionTarget: target,
-      contentId: target,
-      message: `Try ${target}, then write one sentence explaining what changed in your understanding.`,
-      reasoning: `This keeps the learner with ${concept} and turns the retry into a concrete diagnostic step.`,
-    }]),
+    JSON.stringify([
+      {
+        action: 'practice',
+        actionTarget: target,
+        contentId: target,
+        message: `Try ${target}, then write one sentence explaining what changed in your understanding.`,
+        reasoning: `This keeps the learner with ${concept} and turns the retry into a concrete diagnostic step.`,
+      },
+    ]),
   ];
 }
 
@@ -322,13 +336,17 @@ async function runOne({ scenario, label, iteration, internalHistory }) {
     const wallMs = Date.now() - startedAt;
 
     const egoGenerate = result.dialogueTrace?.find((entry) => entry.agent === 'ego' && entry.action === 'generate');
-    const egoRevisionEntries = result.dialogueTrace?.filter(
-      (entry) => entry.agent === 'ego' && ['revise', 'incorporate-feedback'].includes(entry.action),
-    ) || [];
-    const superegoReviews = result.dialogueTrace?.filter((entry) => entry.agent === 'superego' && entry.action === 'review') || [];
+    const egoRevisionEntries =
+      result.dialogueTrace?.filter(
+        (entry) => entry.agent === 'ego' && ['revise', 'incorporate-feedback'].includes(entry.action),
+      ) || [];
+    const superegoReviews =
+      result.dialogueTrace?.filter((entry) => entry.agent === 'superego' && entry.action === 'review') || [];
     const finalSuggestion = result.suggestions?.[0] || null;
     const quality = scoreSuggestion(finalSuggestion, scenario);
-    const parseWarnings = warnings.filter((line) => /No JSON array|Retry also failed|Unable to parse|parse failure|No JSON object/i.test(line));
+    const parseWarnings = warnings.filter((line) =>
+      /No JSON array|Retry also failed|Unable to parse|parse failure|No JSON object/i.test(line),
+    );
 
     return {
       label,
@@ -343,9 +361,8 @@ async function runOne({ scenario, label, iteration, internalHistory }) {
       finalInterventionType: result.finalReview?.interventionType ?? null,
       finalParseFailure: Boolean(result.finalReview?.parseFailure),
       revisionCount: egoRevisionEntries.length,
-      revisionChanged: egoRevisionEntries.length > 0
-        ? stringSimilarity(egoGenerate?.suggestions, result.suggestions) < 0.98
-        : false,
+      revisionChanged:
+        egoRevisionEntries.length > 0 ? stringSimilarity(egoGenerate?.suggestions, result.suggestions) < 0.98 : false,
       initialFinalSimilarity: stringSimilarity(egoGenerate?.suggestions, result.suggestions),
       superegoReviewCount: superegoReviews.length,
       parseWarningCount: parseWarnings.length,
@@ -404,16 +421,20 @@ function buildJudgeMessages({ scenario, outputA, outputB }) {
     JSON.stringify(outputB, null, 2),
     '',
     'Return exactly this JSON shape:',
-    JSON.stringify({
-      winner: 'A|B|tie',
-      qualityA: 'integer 0-100',
-      qualityB: 'integer 0-100',
-      parseStabilityConcernA: false,
-      parseStabilityConcernB: false,
-      unsupportedSpecificsA: [],
-      unsupportedSpecificsB: [],
-      rationale: 'short reason',
-    }, null, 2),
+    JSON.stringify(
+      {
+        winner: 'A|B|tie',
+        qualityA: 'integer 0-100',
+        qualityB: 'integer 0-100',
+        parseStabilityConcernA: false,
+        parseStabilityConcernB: false,
+        unsupportedSpecificsA: [],
+        unsupportedSpecificsB: [],
+        rationale: 'short reason',
+      },
+      null,
+      2,
+    ),
   ].join('\n');
 
   return [
@@ -442,7 +463,9 @@ function normalizeJudgeScore(value) {
 }
 
 function normalizeWinner(value) {
-  const winner = String(value || '').trim().toUpperCase();
+  const winner = String(value || '')
+    .trim()
+    .toUpperCase();
   return ['A', 'B', 'TIE'].includes(winner) ? winner.toLowerCase() : 'tie';
 }
 
@@ -527,9 +550,12 @@ async function judgePair({ scenario, iteration, baseline, treatment, modelRef })
       ...rawMock,
       baselineSlot,
       treatmentSlot,
-      winnerArm: baseline.quality.score === treatment.quality.score
-        ? 'tie'
-        : treatment.quality.score > baseline.quality.score ? 'treatment' : 'baseline',
+      winnerArm:
+        baseline.quality.score === treatment.quality.score
+          ? 'tie'
+          : treatment.quality.score > baseline.quality.score
+            ? 'treatment'
+            : 'baseline',
       treatmentScoreDelta: treatment.quality.score - baseline.quality.score,
     };
   }
@@ -562,19 +588,20 @@ async function judgePair({ scenario, iteration, baseline, treatment, modelRef })
     baselineSlot,
     treatmentSlot,
     winnerArm,
-    treatmentScoreDelta: Number.isFinite(treatmentScore) && Number.isFinite(baselineScore)
-      ? treatmentScore - baselineScore
+    treatmentScoreDelta:
+      Number.isFinite(treatmentScore) && Number.isFinite(baselineScore) ? treatmentScore - baselineScore : null,
+    parsed: parsed
+      ? {
+          winner,
+          qualityA: scoreA,
+          qualityB: scoreB,
+          parseStabilityConcernA: Boolean(parsed.parseStabilityConcernA),
+          parseStabilityConcernB: Boolean(parsed.parseStabilityConcernB),
+          unsupportedSpecificsA: Array.isArray(parsed.unsupportedSpecificsA) ? parsed.unsupportedSpecificsA : [],
+          unsupportedSpecificsB: Array.isArray(parsed.unsupportedSpecificsB) ? parsed.unsupportedSpecificsB : [],
+          rationale: String(parsed.rationale || ''),
+        }
       : null,
-    parsed: parsed ? {
-      winner,
-      qualityA: scoreA,
-      qualityB: scoreB,
-      parseStabilityConcernA: Boolean(parsed.parseStabilityConcernA),
-      parseStabilityConcernB: Boolean(parsed.parseStabilityConcernB),
-      unsupportedSpecificsA: Array.isArray(parsed.unsupportedSpecificsA) ? parsed.unsupportedSpecificsA : [],
-      unsupportedSpecificsB: Array.isArray(parsed.unsupportedSpecificsB) ? parsed.unsupportedSpecificsB : [],
-      rationale: String(parsed.rationale || ''),
-    } : null,
     parseError,
     usage: raw.usage,
     wallMs: raw.wallMs,
@@ -587,23 +614,21 @@ function average(values) {
 }
 
 function sum(values) {
-  return values
-    .filter((value) => Number.isFinite(value))
-    .reduce((total, value) => total + value, 0);
+  return values.filter((value) => Number.isFinite(value)).reduce((total, value) => total + value, 0);
 }
 
 function summarizeArm(results) {
   return {
     runs: results.length,
-    successRate: average(results.map((result) => result.success ? 1 : 0)),
+    successRate: average(results.map((result) => (result.success ? 1 : 0))),
     avgQuality: average(results.map((result) => result.quality.score)),
     avgParseWarnings: average(results.map((result) => result.parseWarningCount)),
-    parseCleanRate: average(results.map((result) => result.parseWarningCount === 0 ? 1 : 0)),
+    parseCleanRate: average(results.map((result) => (result.parseWarningCount === 0 ? 1 : 0))),
     avgRounds: average(results.map((result) => result.rounds)),
-    convergenceRate: average(results.map((result) => result.converged ? 1 : 0)),
-    revisionRate: average(results.map((result) => result.revisionCount > 0 ? 1 : 0)),
-    revisionChangedRate: average(results.map((result) => result.revisionChanged ? 1 : 0)),
-    finalApprovalRate: average(results.map((result) => result.finalApproved === true ? 1 : 0)),
+    convergenceRate: average(results.map((result) => (result.converged ? 1 : 0))),
+    revisionRate: average(results.map((result) => (result.revisionCount > 0 ? 1 : 0))),
+    revisionChangedRate: average(results.map((result) => (result.revisionChanged ? 1 : 0))),
+    finalApprovalRate: average(results.map((result) => (result.finalApproved === true ? 1 : 0))),
     avgLatencyMs: average(results.map((result) => result.metrics?.totalLatencyMs ?? result.wallMs)),
     avgInputTokens: average(results.map((result) => result.metrics?.totalInputTokens)),
     avgOutputTokens: average(results.map((result) => result.metrics?.totalOutputTokens)),
@@ -622,7 +647,8 @@ function summarizeDeltas(pairs) {
       iteration: pair.iteration,
       qualityDelta: treatment.quality.score - baseline.quality.score,
       parseWarningDelta: treatment.parseWarningCount - baseline.parseWarningCount,
-      latencyMsDelta: (treatment.metrics?.totalLatencyMs ?? treatment.wallMs) - (baseline.metrics?.totalLatencyMs ?? baseline.wallMs),
+      latencyMsDelta:
+        (treatment.metrics?.totalLatencyMs ?? treatment.wallMs) - (baseline.metrics?.totalLatencyMs ?? baseline.wallMs),
       inputTokenDelta: (treatment.metrics?.totalInputTokens ?? 0) - (baseline.metrics?.totalInputTokens ?? 0),
       outputTokenDelta: (treatment.metrics?.totalOutputTokens ?? 0) - (baseline.metrics?.totalOutputTokens ?? 0),
       costDelta: (treatment.metrics?.totalCost ?? 0) - (baseline.metrics?.totalCost ?? 0),
@@ -665,13 +691,21 @@ function summarizeJudges(judges) {
       treatmentWins: modelJudges.filter((judge) => judge.winnerArm === 'treatment').length,
       baselineWins: modelJudges.filter((judge) => judge.winnerArm === 'baseline').length,
       ties: modelJudges.filter((judge) => judge.winnerArm === 'tie').length,
-      treatmentWinRate: modelJudges.length ? modelJudges.filter((judge) => judge.winnerArm === 'treatment').length / modelJudges.length : null,
-      treatmentNonLossRate: modelJudges.length ? modelJudges.filter((judge) => judge.winnerArm !== 'baseline').length / modelJudges.length : null,
+      treatmentWinRate: modelJudges.length
+        ? modelJudges.filter((judge) => judge.winnerArm === 'treatment').length / modelJudges.length
+        : null,
+      treatmentNonLossRate: modelJudges.length
+        ? modelJudges.filter((judge) => judge.winnerArm !== 'baseline').length / modelJudges.length
+        : null,
       avgTreatmentScoreDelta: average(modelJudges.map((judge) => judge.treatmentScoreDelta)),
       avgBaselineScore: average(modelJudges.map((judge) => judgeQualityForArm(judge, 'baseline'))),
       avgTreatmentScore: average(modelJudges.map((judge) => judgeQualityForArm(judge, 'treatment'))),
-      treatmentParseConcernRate: average(modelJudges.map((judge) => judgeParseConcernForArm(judge, 'treatment') ? 1 : 0)),
-      baselineParseConcernRate: average(modelJudges.map((judge) => judgeParseConcernForArm(judge, 'baseline') ? 1 : 0)),
+      treatmentParseConcernRate: average(
+        modelJudges.map((judge) => (judgeParseConcernForArm(judge, 'treatment') ? 1 : 0)),
+      ),
+      baselineParseConcernRate: average(
+        modelJudges.map((judge) => (judgeParseConcernForArm(judge, 'baseline') ? 1 : 0)),
+      ),
       totalCost: sum(modelJudges.map((judge) => judge.usage?.cost)),
       avgLatencyMs: average(modelJudges.map((judge) => judge.wallMs)),
     };
@@ -684,13 +718,17 @@ function summarizeJudges(judges) {
     treatmentWins: parsed.filter((judge) => judge.winnerArm === 'treatment').length,
     baselineWins: parsed.filter((judge) => judge.winnerArm === 'baseline').length,
     ties: parsed.filter((judge) => judge.winnerArm === 'tie').length,
-    treatmentWinRate: parsed.length ? parsed.filter((judge) => judge.winnerArm === 'treatment').length / parsed.length : null,
-    treatmentNonLossRate: parsed.length ? parsed.filter((judge) => judge.winnerArm !== 'baseline').length / parsed.length : null,
+    treatmentWinRate: parsed.length
+      ? parsed.filter((judge) => judge.winnerArm === 'treatment').length / parsed.length
+      : null,
+    treatmentNonLossRate: parsed.length
+      ? parsed.filter((judge) => judge.winnerArm !== 'baseline').length / parsed.length
+      : null,
     avgTreatmentScoreDelta: average(parsed.map((judge) => judge.treatmentScoreDelta)),
     avgBaselineScore: average(parsed.map((judge) => judgeQualityForArm(judge, 'baseline'))),
     avgTreatmentScore: average(parsed.map((judge) => judgeQualityForArm(judge, 'treatment'))),
-    treatmentParseConcernRate: average(parsed.map((judge) => judgeParseConcernForArm(judge, 'treatment') ? 1 : 0)),
-    baselineParseConcernRate: average(parsed.map((judge) => judgeParseConcernForArm(judge, 'baseline') ? 1 : 0)),
+    treatmentParseConcernRate: average(parsed.map((judge) => (judgeParseConcernForArm(judge, 'treatment') ? 1 : 0))),
+    baselineParseConcernRate: average(parsed.map((judge) => (judgeParseConcernForArm(judge, 'baseline') ? 1 : 0))),
     totalCost: sum(parsed.map((judge) => judge.usage?.cost)),
     byModel: Object.fromEntries(judgeModelRefs.map((modelRef) => [modelRef, summaryFor(modelRef)])),
   };
@@ -713,21 +751,19 @@ function summarizeScenario(pairs, scenario) {
 }
 
 function buildDecision({ baseline, treatment, pairedDeltas, judges }) {
-  const parseStable = (
-    (treatment.successRate ?? 0) >= (baseline.successRate ?? 0)
-    && (treatment.parseCleanRate ?? 0) >= (baseline.parseCleanRate ?? 0)
-    && (judges.treatmentParseConcernRate ?? 0) <= (judges.baselineParseConcernRate ?? 0)
-  );
-  const performanceFix = (
-    (pairedDeltas.avgInputTokenDelta ?? 1) < 0
-    && (pairedDeltas.avgLatencyMsDelta ?? 1) < 0
-    && (pairedDeltas.avgCostDelta ?? 1) <= 0
-  );
-  const judgePositive = (
-    (judges.treatmentNonLossRate ?? 0) >= 0.75
-    && (judges.treatmentWinRate ?? 0) >= 0.6
-    && (judges.baselineWins ?? Number.POSITIVE_INFINITY) <= Math.max(1, Math.floor((judges.parsedComparisons ?? 0) * 0.25))
-  );
+  const parseStable =
+    (treatment.successRate ?? 0) >= (baseline.successRate ?? 0) &&
+    (treatment.parseCleanRate ?? 0) >= (baseline.parseCleanRate ?? 0) &&
+    (judges.treatmentParseConcernRate ?? 0) <= (judges.baselineParseConcernRate ?? 0);
+  const performanceFix =
+    (pairedDeltas.avgInputTokenDelta ?? 1) < 0 &&
+    (pairedDeltas.avgLatencyMsDelta ?? 1) < 0 &&
+    (pairedDeltas.avgCostDelta ?? 1) <= 0;
+  const judgePositive =
+    (judges.treatmentNonLossRate ?? 0) >= 0.75 &&
+    (judges.treatmentWinRate ?? 0) >= 0.6 &&
+    (judges.baselineWins ?? Number.POSITIVE_INFINITY) <=
+      Math.max(1, Math.floor((judges.parsedComparisons ?? 0) * 0.25));
   const heuristicPositive = (pairedDeltas.avgQualityDelta ?? 0) >= 5;
   const tokenCostBounded = (pairedDeltas.avgInputTokenDelta ?? Number.POSITIVE_INFINITY) <= 750;
   const enoughForDefault = (baseline.runs ?? 0) >= 30;
@@ -749,8 +785,10 @@ function buildDecision({ baseline, treatment, pairedDeltas, judges }) {
     tokenCostBounded,
     enoughForDefault,
     criteria: {
-      defaultEnablement: 'requires parse stability, judge-positive quality by blind winner tally, heuristic-positive quality, bounded token cost, non-worse latency/cost, and at least 30 paired runs',
-      optInProbe: 'requires parse stability, judge-positive quality by blind winner tally, heuristic-positive quality, and <=750 average added provider input tokens',
+      defaultEnablement:
+        'requires parse stability, judge-positive quality by blind winner tally, heuristic-positive quality, bounded token cost, non-worse latency/cost, and at least 30 paired runs',
+      optInProbe:
+        'requires parse stability, judge-positive quality by blind winner tally, heuristic-positive quality, and <=750 average added provider input tokens',
     },
   };
 }
@@ -760,7 +798,12 @@ const pairs = [];
 for (const scenario of scenarios) {
   for (let iteration = 1; iteration <= runCount; iteration += 1) {
     const baseline = await runOne({ scenario, label: 'baseline', iteration, internalHistory: null });
-    const treatment = await runOne({ scenario, label: 'internal-history', iteration, internalHistory: internalHistoryConfig });
+    const treatment = await runOne({
+      scenario,
+      label: 'internal-history',
+      iteration,
+      internalHistory: internalHistoryConfig,
+    });
     const judges = [];
     for (const modelRef of judgeModelRefs) {
       judges.push(await judgePair({ scenario, iteration, baseline, treatment, modelRef }));
@@ -820,10 +863,19 @@ const artifact = {
 
 const outDir = path.resolve('exports/internal-history-quality');
 await fs.mkdir(outDir, { recursive: true });
-const outPath = path.join(outDir, `${new Date().toISOString().replace(/[:.]/g, '-')}-${realMode ? 'real' : 'mock'}.json`);
+const outPath = path.join(
+  outDir,
+  `${new Date().toISOString().replace(/[:.]/g, '-')}-${realMode ? 'real' : 'mock'}.json`,
+);
 await fs.writeFile(outPath, JSON.stringify(artifact, null, 2));
 
-console.log(JSON.stringify({
-  artifact: outPath,
-  summary,
-}, null, 2));
+console.log(
+  JSON.stringify(
+    {
+      artifact: outPath,
+      summary,
+    },
+    null,
+    2,
+  ),
+);

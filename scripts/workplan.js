@@ -585,7 +585,8 @@ function cmdCheck() {
   if (!actualBoard) {
     errors.push(`${rel(p.boardJson)} is missing or invalid; run npm run wp:render`);
   }
-  const generated = actualBoard && actualBoard.generated ? actualBoard.generated : process.env.WORKPLAN_RENDERED_AT || '';
+  const generated =
+    actualBoard && actualBoard.generated ? actualBoard.generated : process.env.WORKPLAN_RENDERED_AT || '';
   const expected = buildBoardDocuments(generated);
   if (!fs.existsSync(p.boardJson) || fs.readFileSync(p.boardJson, 'utf8') !== expected.json) {
     errors.push(`${rel(p.boardJson)} is stale; run npm run wp:render`);

@@ -24,10 +24,7 @@
         "actualMoveFamily": "repair_dependency",
         "status": "reference_success",
         "failureClass": null,
-        "blockedActions": [
-          "invite_final_assertion",
-          "release_unrelated_evidence"
-        ],
+        "blockedActions": ["invite_final_assertion", "release_unrelated_evidence"],
         "localUptakeExpectation": "learner should re-seat p_rill or use it before advancing",
         "evidence": {
           "decayTurn": 13,
@@ -62,16 +59,11 @@
         "actualMoveFamily": "visible_block",
         "status": "candidate_hidden_hurts",
         "failureClass": null,
-        "blockedActions": [
-          "continue_hidden_delay_without_diagnostic",
-          "repair_dependency_without_public_check"
-        ],
+        "blockedActions": ["continue_hidden_delay_without_diagnostic", "repair_dependency_without_public_check"],
         "localUptakeExpectation": "policy should test whether public conduct licenses a route not served by hidden delay",
         "evidence": {
           "classification": "strict_v_positive",
-          "reasons": [
-            "visible/selective-visible grounded while hidden and baseline did not"
-          ],
+          "reasons": ["visible/selective-visible grounded while hidden and baseline did not"],
           "selectedLabel": "hethel-selector-v1-selective-r2",
           "hiddenLabel": "hethel-selector-v1-hidden-r2",
           "baselineLabel": "hethel-selector-v1-baseline-r2",

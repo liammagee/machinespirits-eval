@@ -47,7 +47,9 @@ function rel(file) {
 }
 
 function truncate(value, max = 140) {
-  const text = String(value || '').replace(/\s+/g, ' ').trim();
+  const text = String(value || '')
+    .replace(/\s+/g, ' ')
+    .trim();
   return text.length > max ? `${text.slice(0, max - 1)}...` : text;
 }
 
@@ -148,7 +150,7 @@ function summarizeRun(runDir, role) {
     const release = tutor?.meta?.release || move.release || releaseDecision?.played || null;
     const actionFamily = intentToFamily({ intent: move.intent, release, proofDebt });
     const dAfter = trajectory.get(turn)?.D ?? diagnosis.dCurve?.[turn - 1] ?? null;
-    const dBefore = trajectory.get(turn - 1)?.D ?? (turn === 1 ? null : diagnosis.dCurve?.[turn - 2] ?? null);
+    const dBefore = trajectory.get(turn - 1)?.D ?? (turn === 1 ? null : (diagnosis.dCurve?.[turn - 2] ?? null));
     turns.push({
       turn,
       DBefore: dBefore,
@@ -225,7 +227,8 @@ function findPrimaryDivergence(hidden, failed) {
     const failedMissedDueRelease = Boolean(!f.released && (f.releaseDue.includes(h.released) || h.releaseDue.length));
     const dDiverged = h.DAfter != null && f.DAfter != null && Number(h.DAfter) < Number(f.DAfter);
     if ((hiddenMaterialRelease && failedMissedDueRelease) || (hiddenMaterialRelease && dDiverged)) {
-      const failedDiagnostic = f.tutorActionFamily === 'ask_diagnostic' || f.conductPolicy?.selectedMoveFamily === 'ask_diagnostic';
+      const failedDiagnostic =
+        f.tutorActionFamily === 'ask_diagnostic' || f.conductPolicy?.selectedMoveFamily === 'ask_diagnostic';
       return {
         triggerTurn: turn,
         prefixThroughTurn: Math.max(0, turn - 1),
@@ -266,7 +269,9 @@ function cell(value) {
 
 function compactAction(row) {
   if (!row) return ' ';
-  const conduct = row.conductPolicy?.active ? `; policy=${row.conductPolicy.selectedMoveFamily}/${row.conductPolicy.reasonCode}` : '';
+  const conduct = row.conductPolicy?.active
+    ? `; policy=${row.conductPolicy.selectedMoveFamily}/${row.conductPolicy.reasonCode}`
+    : '';
   const offset = row.releaseDecision?.offset != null ? `; offset=${row.releaseDecision.offset}` : '';
   return `${row.tutorActionFamily}:${row.tutorMove.targetPremise || '-'}${row.released ? `; release=${row.released}` : ''}${conduct}${offset}`;
 }
@@ -280,10 +285,16 @@ function renderMarkdown(report) {
   lines.push('');
   lines.push('## Sources');
   lines.push('');
-  lines.push(`- Hidden success: \`${hidden.runDir}\` -> ${hidden.verdict}, forced ${cell(hidden.firstForcedTurn)}, asserted ${cell(hidden.assertedGroundedTurn)}`);
-  lines.push(`- Failed overlay: \`${failedOverlay.runDir}\` -> ${failedOverlay.verdict}, forced ${cell(failedOverlay.firstForcedTurn)}, asserted ${cell(failedOverlay.assertedGroundedTurn)}`);
+  lines.push(
+    `- Hidden success: \`${hidden.runDir}\` -> ${hidden.verdict}, forced ${cell(hidden.firstForcedTurn)}, asserted ${cell(hidden.assertedGroundedTurn)}`,
+  );
+  lines.push(
+    `- Failed overlay: \`${failedOverlay.runDir}\` -> ${failedOverlay.verdict}, forced ${cell(failedOverlay.firstForcedTurn)}, asserted ${cell(failedOverlay.assertedGroundedTurn)}`,
+  );
   for (const run of report.comparisonRuns) {
-    lines.push(`- Comparator: \`${run.runDir}\` -> ${run.verdict}; prefix ${run.prefixIntegrity?.ok === true ? 'ok' : 'n/a'}`);
+    lines.push(
+      `- Comparator: \`${run.runDir}\` -> ${run.verdict}; prefix ${run.prefixIntegrity?.ok === true ? 'ok' : 'n/a'}`,
+    );
   }
   lines.push('');
   lines.push('## Primary Trigger');
@@ -358,7 +369,12 @@ function main() {
   const outMd = path.resolve(ROOT, arg('out', path.join(OUT_DIR, 'hethel-autopsy.md')));
   const outJson = path.resolve(ROOT, arg('json-out', outMd.replace(/\.md$/u, '.json')));
   const compareArg = arg('compare-runs', null);
-  const comparisonRuns = compareArg ? compareArg.split(',').map((item) => item.trim()).filter(Boolean) : DEFAULT_COMPARE_RUNS;
+  const comparisonRuns = compareArg
+    ? compareArg
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean)
+    : DEFAULT_COMPARE_RUNS;
   const report = buildAutopsy({
     hiddenRun: arg('hidden-run', DEFAULT_HIDDEN_RUN),
     failedRun: arg('failed-run', DEFAULT_FAILED_RUN),

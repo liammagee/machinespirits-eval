@@ -40,7 +40,12 @@ export function appendPendingIntervention(ledger = [], contract) {
   return { ledger: [...clone(ledger), pending], pendingIntervention: pending };
 }
 
-export function closePendingIntervention({ ledger = [], learnerTurn = '', turnIndex = null, observer = observeInterventionOutcome } = {}) {
+export function closePendingIntervention({
+  ledger = [],
+  learnerTurn = '',
+  turnIndex = null,
+  observer = observeInterventionOutcome,
+} = {}) {
   const pending = pendingRecords(ledger)[0] || null;
   if (!pending) return { ledger: clone(ledger), closedRecord: null, pendingIntervention: null };
   const observation = observer({ pendingIntervention: pending, learnerTurn, turnIndex });

@@ -671,7 +671,9 @@ async function main() {
     process.exit(1);
   }
   if (pacingGuardSelective && (requestedPacingGuard || requestedVisibleGuard)) {
-    console.error('--pacing-guard-selective is mutually exclusive with explicit --pacing-guard / --pacing-guard-visible');
+    console.error(
+      '--pacing-guard-selective is mutually exclusive with explicit --pacing-guard / --pacing-guard-visible',
+    );
     process.exit(1);
   }
   const pacingGuardSelectiveV1 = flag('pacing-guard-selective-v1');
@@ -690,7 +692,10 @@ async function main() {
     console.error('--pacing-guard-selective-v2 requires --release-authority (it selects a release-window guard)');
     process.exit(1);
   }
-  if (pacingGuardSelectiveV2 && (requestedPacingGuard || requestedVisibleGuard || pacingGuardSelective || pacingGuardSelectiveV1)) {
+  if (
+    pacingGuardSelectiveV2 &&
+    (requestedPacingGuard || requestedVisibleGuard || pacingGuardSelective || pacingGuardSelectiveV1)
+  ) {
     console.error(
       '--pacing-guard-selective-v2 is mutually exclusive with explicit --pacing-guard / --pacing-guard-visible and v0/v1 selector arms',
     );
@@ -703,7 +708,11 @@ async function main() {
   }
   if (
     pacingGuardSelectiveV3 &&
-    (requestedPacingGuard || requestedVisibleGuard || pacingGuardSelective || pacingGuardSelectiveV1 || pacingGuardSelectiveV2)
+    (requestedPacingGuard ||
+      requestedVisibleGuard ||
+      pacingGuardSelective ||
+      pacingGuardSelectiveV1 ||
+      pacingGuardSelectiveV2)
   ) {
     console.error(
       '--pacing-guard-selective-v3 is mutually exclusive with explicit --pacing-guard / --pacing-guard-visible and v0/v1/v2 selector arms',
@@ -717,14 +726,12 @@ async function main() {
   }
   if (
     pacingGuardSelectiveV4 &&
-    (
-      requestedPacingGuard ||
+    (requestedPacingGuard ||
       requestedVisibleGuard ||
       pacingGuardSelective ||
       pacingGuardSelectiveV1 ||
       pacingGuardSelectiveV2 ||
-      pacingGuardSelectiveV3
-    )
+      pacingGuardSelectiveV3)
   ) {
     console.error(
       '--pacing-guard-selective-v4 is mutually exclusive with explicit --pacing-guard / --pacing-guard-visible and v0/v1/v2/v3 selector arms',
@@ -745,7 +752,11 @@ async function main() {
   const compiledGuard = flag('compiled-guard');
   if (
     compiledGuard &&
-    (pacingGuardSelective || pacingGuardSelectiveV1 || pacingGuardSelectiveV2 || pacingGuardSelectiveV3 || pacingGuardSelectiveV4)
+    (pacingGuardSelective ||
+      pacingGuardSelectiveV1 ||
+      pacingGuardSelectiveV2 ||
+      pacingGuardSelectiveV3 ||
+      pacingGuardSelectiveV4)
   ) {
     console.error('--compiled-guard is not combined with selector arms in this selector slice');
     process.exit(1);
@@ -778,9 +789,7 @@ async function main() {
   const rhetoricalPolicyArg = arg('rhetorical-policy', null);
   const rhetoricalPolicyRequested = flag('rhetorical-policy') || flag('rhetorical-policy-stochastic');
   let rhetoricalPolicy = rhetoricalPolicyRequested
-    ? normalizeRhetoricalPolicyConfig(
-        rhetoricalPolicyArg && rhetoricalPolicyArg !== 'on' ? rhetoricalPolicyArg : true,
-      )
+    ? normalizeRhetoricalPolicyConfig(rhetoricalPolicyArg && rhetoricalPolicyArg !== 'on' ? rhetoricalPolicyArg : true)
     : null;
   if (rhetoricalPolicy && flag('rhetorical-policy-stochastic')) {
     rhetoricalPolicy = { ...rhetoricalPolicy, mode: 'sample' };
@@ -854,7 +863,7 @@ async function main() {
           ? selectGuardRepresentationV3(worldIR, { decayEnabled: Boolean(decay) })
           : pacingGuardSelectiveV4
             ? selectGuardRepresentationV4(worldIR, { decayEnabled: Boolean(decay) })
-          : null;
+            : null;
   const pacingGuard = pacingGuardSelector ? pacingGuardSelector.selected === 'hidden' : requestedPacingGuard;
   const visibleGuard = pacingGuardSelector ? pacingGuardSelector.selected === 'visible' : requestedVisibleGuard;
   const visiblePushProbeGuard = pacingGuardSelectiveV3;

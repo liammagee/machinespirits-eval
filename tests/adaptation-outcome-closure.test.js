@@ -54,7 +54,10 @@ test('analyzeTraceOutcomeClosure counts complete contracts and observed closures
     scenario: { id: 'scenario' },
     original: {
       perTurn: [turn(0, 'diagnose_with_discriminating_question'), turn(1, 'minimal_hint')],
-      finalInterventionLedger: [closed(0, 'diagnose_with_discriminating_question', 'success'), pending(1, 'minimal_hint')],
+      finalInterventionLedger: [
+        closed(0, 'diagnose_with_discriminating_question', 'success'),
+        pending(1, 'minimal_hint'),
+      ],
     },
   };
 

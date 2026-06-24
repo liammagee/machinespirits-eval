@@ -125,7 +125,8 @@ function loadWorldIndex() {
 function armChoice(comparison, choice) {
   const arms = comparison.arms || {};
   if (choice === 'hidden') return arms.hidden || null;
-  if (choice === 'visible') return arms.visible || arms['selective-v2'] || arms['selective-v1'] || arms.selective || null;
+  if (choice === 'visible')
+    return arms.visible || arms['selective-v2'] || arms['selective-v1'] || arms.selective || null;
   return null;
 }
 
@@ -205,7 +206,8 @@ function candidateDefinitions(worlds) {
     {
       name: 'static_v1_decay',
       kind: 'static',
-      description: 'v1 selector under decay: independent joins hidden; mirror dead-predicate worlds visible; otherwise fail closed.',
+      description:
+        'v1 selector under decay: independent joins hidden; mirror dead-predicate worlds visible; otherwise fail closed.',
       choose: (comparison) => worldChoice(comparison, worlds, 'static_v1_decay'),
     },
     {
@@ -217,7 +219,8 @@ function candidateDefinitions(worlds) {
     {
       name: 'runtime_probe_visible_push_only',
       kind: 'runtime_probe',
-      description: 'Visible only when the selected visible trace first intervenes by pushing a premise for visible stall; otherwise hidden.',
+      description:
+        'Visible only when the selected visible trace first intervenes by pushing a premise for visible stall; otherwise hidden.',
       choose: (comparison) => {
         const guard = firstVisibleIntervention(comparison);
         return guard?.kind === 'push' ? 'visible' : 'hidden';
@@ -465,7 +468,9 @@ function renderMarkdown(report) {
     '',
   );
   lines.push('## Candidate Ranking', '');
-  lines.push('| candidate | kind | success | regret vs H/V oracle | negative transfer vs hidden | chose visible | note |');
+  lines.push(
+    '| candidate | kind | success | regret vs H/V oracle | negative transfer vs hidden | chose visible | note |',
+  );
   lines.push('| --- | --- | ---: | ---: | ---: | ---: | --- |');
   for (const row of report.rankedCandidates) {
     lines.push(

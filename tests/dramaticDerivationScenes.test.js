@@ -174,7 +174,10 @@ test('scene tempo selects public beats and records them on exchanges', async () 
   assert.equal(tutorViews[0].scene.tempo.beat, 'uptake_only');
   assert.equal(learnerViews[0].scene.tempo.beat, 'uptake_only');
   assert.equal(learnerViews[1].scene.tempo.beat, 'evidence');
-  assert.deepEqual(result.scenes[0].exchanges.map((exchange) => exchange.tempo), ['uptake_only', 'evidence']);
+  assert.deepEqual(
+    result.scenes[0].exchanges.map((exchange) => exchange.tempo),
+    ['uptake_only', 'evidence'],
+  );
   assert.deepEqual(
     result.transcript
       .find((line) => line.role === 'tutor' && line.turn === 1)
@@ -187,10 +190,10 @@ test('scene tempo selects public beats and records them on exchanges', async () 
       .meta.phaticRecognition.map((signal) => signal.type),
     ['acknowledges_tutor_guidance', 'marks_tutor_line'],
   );
-  assert.deepEqual(result.scenes[0].exchanges[0].phaticRecognition.map((signal) => signal.type), [
-    'acknowledges_tutor_guidance',
-    'marks_tutor_line',
-  ]);
+  assert.deepEqual(
+    result.scenes[0].exchanges[0].phaticRecognition.map((signal) => signal.type),
+    ['acknowledges_tutor_guidance', 'marks_tutor_line'],
+  );
   const d = diagnose(result, world);
   assert.equal(d.scenes.tempoBeats.uptake_only, 1);
   assert.equal(d.scenes.tempoBeats.evidence, 1);
@@ -222,10 +225,7 @@ test('scene tempo selects public beats and records them on exchanges', async () 
     }),
     [],
   );
-  assert.equal(
-    classifyCognitiveTempo({ dialogue: 'Yes.', exchangeType: 'phatic_ack' }).mode,
-    'fast_reflex',
-  );
+  assert.equal(classifyCognitiveTempo({ dialogue: 'Yes.', exchangeType: 'phatic_ack' }).mode, 'fast_reflex');
   assert.deepEqual(
     detectPhaticRecognition('Wait, you lost me there. Can we go back one step?', {
       role: 'learner',
@@ -298,7 +298,10 @@ test('modern register uses contemporary public terms when explicitly selected', 
   assert.match(scrubbed, /notes/);
   assert.match(scrubbed, /detail/);
   assert.match(scrubbed, /room/);
-  assert.equal(sanitizePublicDialogue('A new record lands on the table.', { register: 'modern' }), 'A new note lands on the table.');
+  assert.equal(
+    sanitizePublicDialogue('A new record lands on the table.', { register: 'modern' }),
+    'A new note lands on the table.',
+  );
 });
 
 test('sampled public register is chosen once and annotates transcript lines', async () => {
@@ -411,7 +414,9 @@ test('rhetorical policy supports seeded sampling over the same distribution', ()
   const view = {
     turn: 3,
     ledger: [{ turn: 2, premiseId: 'p1' }],
-    transcript: [{ turn: 2, role: 'learner', text: 'No sorry, you lost me.', meta: { exchange: { type: 'confusion' } } }],
+    transcript: [
+      { turn: 2, role: 'learner', text: 'No sorry, you lost me.', meta: { exchange: { type: 'confusion' } } },
+    ],
     trajectory: [{ turn: 2, D: 3 }],
     learnerAbox: { grounded: world.background, hypotheses: [] },
     inference: { frontier: [] },
@@ -493,7 +498,12 @@ test('gated recognition policy logs need but suppresses single-turn pressure', (
       recognition: 0,
     },
   });
-  const suppressedTempo = recommendSceneTempoBeat(world, oneBreakScene, { turn: 3, recognitionNeed: need }, recognitionTempo);
+  const suppressedTempo = recommendSceneTempoBeat(
+    world,
+    oneBreakScene,
+    { turn: 3, recognitionNeed: need },
+    recognitionTempo,
+  );
   assert.ok(!suppressedTempo.distribution.some((row) => /recognition debt/.test(row.rationale || '')));
 
   const repeatedBreakScene = {
@@ -514,7 +524,12 @@ test('gated recognition policy logs need but suppresses single-turn pressure', (
   });
   assert.equal(gatedNeed.active, true);
   assert.ok(gatedNeed.gateReasons.includes('repeated_unacknowledged_breakdown'));
-  const activeTempo = recommendSceneTempoBeat(world, repeatedBreakScene, { turn: 4, recognitionNeed: gatedNeed }, recognitionTempo);
+  const activeTempo = recommendSceneTempoBeat(
+    world,
+    repeatedBreakScene,
+    { turn: 4, recognitionNeed: gatedNeed },
+    recognitionTempo,
+  );
   assert.ok(activeTempo.distribution.some((row) => /recognition debt/.test(row.rationale || '')));
 });
 

@@ -84,7 +84,10 @@ export function validatePedagogicalAction(action) {
   }
   requireObject(action.success_signal, 'selected_action.success_signal');
   assertStringArray(action.success_signal.required_evidence || [], 'selected_action.success_signal.required_evidence');
-  assertStringArray(action.success_signal.forbidden_evidence || [], 'selected_action.success_signal.forbidden_evidence');
+  assertStringArray(
+    action.success_signal.forbidden_evidence || [],
+    'selected_action.success_signal.forbidden_evidence',
+  );
   assertBounded(action.control_cost, 'selected_action.control_cost');
   assertBounded(action.information_gain, 'selected_action.information_gain');
   assertStringArray(action.forbidden_moves || [], 'selected_action.forbidden_moves');
@@ -96,8 +99,10 @@ export function validatePedagogicalAction(action) {
 
 export function validateGateResult(gateResult = { allowed: true, violations: [], repairs: [] }) {
   requireObject(gateResult, 'gate_result');
-  if (typeof gateResult.allowed !== 'boolean') throw new Error('adaptationContract: gate_result.allowed must be boolean');
-  if (!Array.isArray(gateResult.violations)) throw new Error('adaptationContract: gate_result.violations must be an array');
+  if (typeof gateResult.allowed !== 'boolean')
+    throw new Error('adaptationContract: gate_result.allowed must be boolean');
+  if (!Array.isArray(gateResult.violations))
+    throw new Error('adaptationContract: gate_result.violations must be an array');
   if (!Array.isArray(gateResult.repairs)) throw new Error('adaptationContract: gate_result.repairs must be an array');
   return gateResult;
 }

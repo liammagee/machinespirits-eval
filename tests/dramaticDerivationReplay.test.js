@@ -250,68 +250,72 @@ test('loop → episode → matrix CLIs round-trip decay conditions hermetically'
   fs.rmSync(tmp, { recursive: true, force: true });
 });
 
-test('episode CLI inherits modern guard and plot dials while preserving replay prefix', { timeout: CLI_TIMEOUT }, () => {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'derivation-modern-episode-'));
-  const run = (script, args) =>
-    execFileSync(process.execPath, [path.join(ROOT, 'scripts', script), ...args], {
-      cwd: ROOT,
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
+test(
+  'episode CLI inherits modern guard and plot dials while preserving replay prefix',
+  { timeout: CLI_TIMEOUT },
+  () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'derivation-modern-episode-'));
+    const run = (script, args) =>
+      execFileSync(process.execPath, [path.join(ROOT, 'scripts', script), ...args], {
+        cwd: ROOT,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'pipe'],
+      });
 
-  run('run-derivation-loop.js', [
-    '--world',
-    'config/drama-derivation/world-000-smoke.yaml',
-    '--label',
-    'src',
-    '--out',
-    path.join(tmp, 'loop'),
-    '--critic',
-    'off',
-    '--superego',
-    '--acts',
-    '{"minActTurns":1,"maxActTurns":3}',
-    '--decay',
-    '{"seed":7,"rate":0.5,"graceTurns":0,"maxConcurrent":2,"startTurn":1,"mutateShare":0}',
-    '--confront',
-    '--repair-clause',
-    '--release-authority',
-    '--pacing-guard-selective-v3',
-    '--conduct-policy',
-    '--conduct-policy-enforce',
-    '--plot',
-    '--throughline',
-  ]);
-  run('run-derivation-episode.js', [
-    '--from',
-    path.join(tmp, 'loop/src'),
-    '--turn',
-    '3',
-    '--window',
-    '2',
-    '--label',
-    'ep',
-    '--out',
-    path.join(tmp, 'episodes'),
-  ]);
+    run('run-derivation-loop.js', [
+      '--world',
+      'config/drama-derivation/world-000-smoke.yaml',
+      '--label',
+      'src',
+      '--out',
+      path.join(tmp, 'loop'),
+      '--critic',
+      'off',
+      '--superego',
+      '--acts',
+      '{"minActTurns":1,"maxActTurns":3}',
+      '--decay',
+      '{"seed":7,"rate":0.5,"graceTurns":0,"maxConcurrent":2,"startTurn":1,"mutateShare":0}',
+      '--confront',
+      '--repair-clause',
+      '--release-authority',
+      '--pacing-guard-selective-v3',
+      '--conduct-policy',
+      '--conduct-policy-enforce',
+      '--plot',
+      '--throughline',
+    ]);
+    run('run-derivation-episode.js', [
+      '--from',
+      path.join(tmp, 'loop/src'),
+      '--turn',
+      '3',
+      '--window',
+      '2',
+      '--label',
+      'ep',
+      '--out',
+      path.join(tmp, 'episodes'),
+    ]);
 
-  const d = JSON.parse(fs.readFileSync(path.join(tmp, 'episodes/ep/diagnosis.json'), 'utf8'));
-  assert.equal(d.episode.prefixIntegrity.ok, true);
-  assert.equal(d.confront, true);
-  assert.equal(d.repairClause, true);
-  assert.equal(d.releaseAuthority, true);
-  assert.equal(d.pacingGuardSelectiveV3, true);
-  assert.equal(d.visiblePushProbeGuard, true);
-  assert.equal(d.pacingGuardSelector.schema, 'dramatic-derivation.representation-selector.v3');
-  assert.equal(d.conductPolicy, true);
-  assert.equal(d.conductPolicyEnforce, true);
-  assert.ok(d.conductPolicyReport?.loggedTurns >= 1);
-  assert.ok(d.conductPolicyReport?.enforcement?.enabledTurns >= 1);
-  assert.equal(d.plotDial, true);
-  assert.equal(d.throughlineDial, true);
+    const d = JSON.parse(fs.readFileSync(path.join(tmp, 'episodes/ep/diagnosis.json'), 'utf8'));
+    assert.equal(d.episode.prefixIntegrity.ok, true);
+    assert.equal(d.confront, true);
+    assert.equal(d.repairClause, true);
+    assert.equal(d.releaseAuthority, true);
+    assert.equal(d.pacingGuardSelectiveV3, true);
+    assert.equal(d.visiblePushProbeGuard, true);
+    assert.equal(d.pacingGuardSelector.schema, 'dramatic-derivation.representation-selector.v3');
+    assert.equal(d.conductPolicy, true);
+    assert.equal(d.conductPolicyEnforce, true);
+    assert.ok(d.conductPolicyReport?.loggedTurns >= 1);
+    assert.ok(d.conductPolicyReport?.enforcement?.enabledTurns >= 1);
+    assert.equal(d.plotDial, true);
+    assert.equal(d.throughlineDial, true);
 
-  fs.rmSync(tmp, { recursive: true, force: true });
-});
+    fs.rmSync(tmp, { recursive: true, force: true });
+  },
+);
 
 test('episode CLI inherits discursive and didactic advisory tutor metadata', { timeout: CLI_TIMEOUT }, () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'derivation-discursive-episode-'));
@@ -359,10 +363,7 @@ test('episode CLI inherits discursive and didactic advisory tutor metadata', { t
   assert.equal(d.didacticModeReport.auditClean, true);
   const result = JSON.parse(fs.readFileSync(path.join(tmp, 'episodes/ep/result.json'), 'utf8'));
   const liveTutorLine = result.transcript.find((line) => line.turn >= 3 && line.role === 'tutor');
-  assert.equal(
-    liveTutorLine?.meta?.discursiveCalibration?.schema,
-    'dramatic-derivation.discursive-calibration.v0',
-  );
+  assert.equal(liveTutorLine?.meta?.discursiveCalibration?.schema, 'dramatic-derivation.discursive-calibration.v0');
   assert.equal(liveTutorLine.meta.discursiveCalibration.nonLeakAudit.ok, true);
   assert.equal(liveTutorLine?.meta?.didacticMode?.schema, 'dramatic-derivation.didactic-mode.v0');
   assert.equal(liveTutorLine.meta.didacticMode.inputAudit.ok, true);
@@ -384,135 +385,143 @@ test('episode CLI inherits discursive and didactic advisory tutor metadata', { t
   fs.rmSync(tmp, { recursive: true, force: true });
 });
 
-test('episode CLI inherits selector v4 consolidation and answer-gate without default conduct enforcement', { timeout: CLI_TIMEOUT }, () => {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'derivation-v4-episode-'));
-  const run = (script, args) =>
-    execFileSync(process.execPath, [path.join(ROOT, 'scripts', script), ...args], {
-      cwd: ROOT,
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
+test(
+  'episode CLI inherits selector v4 consolidation and answer-gate without default conduct enforcement',
+  { timeout: CLI_TIMEOUT },
+  () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'derivation-v4-episode-'));
+    const run = (script, args) =>
+      execFileSync(process.execPath, [path.join(ROOT, 'scripts', script), ...args], {
+        cwd: ROOT,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'pipe'],
+      });
 
-  run('run-derivation-loop.js', [
-    '--world',
-    'config/drama-derivation/world-000-smoke.yaml',
-    '--label',
-    'src',
-    '--out',
-    path.join(tmp, 'loop'),
-    '--critic',
-    'off',
-    '--superego',
-    '--acts',
-    '{"minActTurns":1,"maxActTurns":3}',
-    '--decay',
-    '{"seed":7,"rate":0.5,"graceTurns":0,"maxConcurrent":2,"startTurn":1,"mutateShare":0}',
-    '--confront',
-    '--repair-clause',
-    '--release-authority',
-    '--pacing-guard-selective-v4',
-    '--same-turn-assertion-affordance',
-    '--plot',
-    '--throughline',
-  ]);
-  run('run-derivation-episode.js', [
-    '--from',
-    path.join(tmp, 'loop/src'),
-    '--turn',
-    '3',
-    '--window',
-    '2',
-    '--label',
-    'ep',
-    '--out',
-    path.join(tmp, 'episodes'),
-  ]);
+    run('run-derivation-loop.js', [
+      '--world',
+      'config/drama-derivation/world-000-smoke.yaml',
+      '--label',
+      'src',
+      '--out',
+      path.join(tmp, 'loop'),
+      '--critic',
+      'off',
+      '--superego',
+      '--acts',
+      '{"minActTurns":1,"maxActTurns":3}',
+      '--decay',
+      '{"seed":7,"rate":0.5,"graceTurns":0,"maxConcurrent":2,"startTurn":1,"mutateShare":0}',
+      '--confront',
+      '--repair-clause',
+      '--release-authority',
+      '--pacing-guard-selective-v4',
+      '--same-turn-assertion-affordance',
+      '--plot',
+      '--throughline',
+    ]);
+    run('run-derivation-episode.js', [
+      '--from',
+      path.join(tmp, 'loop/src'),
+      '--turn',
+      '3',
+      '--window',
+      '2',
+      '--label',
+      'ep',
+      '--out',
+      path.join(tmp, 'episodes'),
+    ]);
 
-  const d = JSON.parse(fs.readFileSync(path.join(tmp, 'episodes/ep/diagnosis.json'), 'utf8'));
-  assert.equal(d.episode.prefixIntegrity.ok, true);
-  assert.equal(d.pacingGuardSelectiveV4, true);
-  assert.equal(d.visibleConsolidationGuard, true);
-  assert.equal(d.assertionGroundingGate, true);
-  assert.equal(d.sameTurnAssertionAffordance, true);
-  assert.equal(d.pacingGuardSelector.schema, 'dramatic-derivation.representation-selector.v4');
-  assert.equal(d.conductPolicy, false);
-  assert.equal(d.conductPolicyEnforce, false);
-  assert.equal(d.conductPolicyReport, undefined);
+    const d = JSON.parse(fs.readFileSync(path.join(tmp, 'episodes/ep/diagnosis.json'), 'utf8'));
+    assert.equal(d.episode.prefixIntegrity.ok, true);
+    assert.equal(d.pacingGuardSelectiveV4, true);
+    assert.equal(d.visibleConsolidationGuard, true);
+    assert.equal(d.assertionGroundingGate, true);
+    assert.equal(d.sameTurnAssertionAffordance, true);
+    assert.equal(d.pacingGuardSelector.schema, 'dramatic-derivation.representation-selector.v4');
+    assert.equal(d.conductPolicy, false);
+    assert.equal(d.conductPolicyEnforce, false);
+    assert.equal(d.conductPolicyReport, undefined);
 
-  fs.rmSync(tmp, { recursive: true, force: true });
-});
+    fs.rmSync(tmp, { recursive: true, force: true });
+  },
+);
 
-test('fresh loop does not default conduct enforcement for selector v4 or hidden plus proofDebt', { timeout: CLI_TIMEOUT }, () => {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'derivation-v4-conduct-default-'));
-  const run = (args) =>
-    execFileSync(process.execPath, [path.join(ROOT, 'scripts/run-derivation-loop.js'), ...args], {
-      cwd: ROOT,
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
+test(
+  'fresh loop does not default conduct enforcement for selector v4 or hidden plus proofDebt',
+  { timeout: CLI_TIMEOUT },
+  () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'derivation-v4-conduct-default-'));
+    const run = (args) =>
+      execFileSync(process.execPath, [path.join(ROOT, 'scripts/run-derivation-loop.js'), ...args], {
+        cwd: ROOT,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'pipe'],
+      });
 
-  run([
-    '--world',
-    'config/drama-derivation/world-000-smoke.yaml',
-    '--label',
-    'v4',
-    '--out',
-    path.join(tmp, 'loop'),
-    '--critic',
-    'off',
-    '--release-authority',
-    '--pacing-guard-selective-v4',
-  ]);
-  const v4 = JSON.parse(fs.readFileSync(path.join(tmp, 'loop/v4/diagnosis.json'), 'utf8'));
-  assert.equal(v4.pacingGuardSelectiveV4, true);
-  assert.equal(v4.visibleConsolidationGuard, true);
-  assert.equal(v4.conductPolicy, false);
-  assert.equal(v4.conductPolicyEnforce, false);
-  assert.equal(v4.conductPolicyReport, undefined);
+    run([
+      '--world',
+      'config/drama-derivation/world-000-smoke.yaml',
+      '--label',
+      'v4',
+      '--out',
+      path.join(tmp, 'loop'),
+      '--critic',
+      'off',
+      '--release-authority',
+      '--pacing-guard-selective-v4',
+    ]);
+    const v4 = JSON.parse(fs.readFileSync(path.join(tmp, 'loop/v4/diagnosis.json'), 'utf8'));
+    assert.equal(v4.pacingGuardSelectiveV4, true);
+    assert.equal(v4.visibleConsolidationGuard, true);
+    assert.equal(v4.conductPolicy, false);
+    assert.equal(v4.conductPolicyEnforce, false);
+    assert.equal(v4.conductPolicyReport, undefined);
 
-  run([
-    '--world',
-    'config/drama-derivation/world-000-smoke.yaml',
-    '--label',
-    'hidden-proofdebt',
-    '--out',
-    path.join(tmp, 'loop'),
-    '--critic',
-    'off',
-    '--superego',
-    '--acts',
-    '{"minActTurns":1,"maxActTurns":3}',
-    '--decay',
-    '{"seed":7,"rate":0.5,"graceTurns":0,"maxConcurrent":2,"startTurn":1,"mutateShare":0}',
-    '--confront',
-    '--repair-clause',
-    '--release-authority',
-    '--pacing-guard',
-    '--proof-debt-guard',
-  ]);
-  const hidden = JSON.parse(fs.readFileSync(path.join(tmp, 'loop/hidden-proofdebt/diagnosis.json'), 'utf8'));
-  assert.equal(hidden.pacingGuard, true);
-  assert.equal(hidden.proofDebtGuard, true);
-  assert.equal(hidden.conductPolicy, false);
-  assert.equal(hidden.conductPolicyEnforce, false);
-  assert.equal(hidden.conductPolicyReport, undefined);
+    run([
+      '--world',
+      'config/drama-derivation/world-000-smoke.yaml',
+      '--label',
+      'hidden-proofdebt',
+      '--out',
+      path.join(tmp, 'loop'),
+      '--critic',
+      'off',
+      '--superego',
+      '--acts',
+      '{"minActTurns":1,"maxActTurns":3}',
+      '--decay',
+      '{"seed":7,"rate":0.5,"graceTurns":0,"maxConcurrent":2,"startTurn":1,"mutateShare":0}',
+      '--confront',
+      '--repair-clause',
+      '--release-authority',
+      '--pacing-guard',
+      '--proof-debt-guard',
+    ]);
+    const hidden = JSON.parse(fs.readFileSync(path.join(tmp, 'loop/hidden-proofdebt/diagnosis.json'), 'utf8'));
+    assert.equal(hidden.pacingGuard, true);
+    assert.equal(hidden.proofDebtGuard, true);
+    assert.equal(hidden.conductPolicy, false);
+    assert.equal(hidden.conductPolicyEnforce, false);
+    assert.equal(hidden.conductPolicyReport, undefined);
 
-  run([
-    '--world',
-    'config/drama-derivation/world-000-smoke.yaml',
-    '--label',
-    'progress-policy',
-    '--out',
-    path.join(tmp, 'loop'),
-    '--critic',
-    'off',
-    '--conduct-progress-policy',
-  ]);
-  const progress = JSON.parse(fs.readFileSync(path.join(tmp, 'loop/progress-policy/diagnosis.json'), 'utf8'));
-  assert.equal(progress.conductProgressPolicy, true);
-  assert.equal(progress.conductPolicy, true);
-  assert.equal(progress.conductPolicyEnforce, false);
-  assert.ok(progress.conductPolicyReport?.loggedTurns >= 1);
+    run([
+      '--world',
+      'config/drama-derivation/world-000-smoke.yaml',
+      '--label',
+      'progress-policy',
+      '--out',
+      path.join(tmp, 'loop'),
+      '--critic',
+      'off',
+      '--conduct-progress-policy',
+    ]);
+    const progress = JSON.parse(fs.readFileSync(path.join(tmp, 'loop/progress-policy/diagnosis.json'), 'utf8'));
+    assert.equal(progress.conductProgressPolicy, true);
+    assert.equal(progress.conductPolicy, true);
+    assert.equal(progress.conductPolicyEnforce, false);
+    assert.ok(progress.conductPolicyReport?.loggedTurns >= 1);
 
-  fs.rmSync(tmp, { recursive: true, force: true });
-});
+    fs.rmSync(tmp, { recursive: true, force: true });
+  },
+);

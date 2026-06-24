@@ -167,7 +167,10 @@ function main() {
   const smoke = flag('smoke');
   const analysisPath = path.resolve(ROOT, arg('analysis', DEFAULT_ANALYSIS));
   const fixturePath = path.resolve(ROOT, arg('fixture', DEFAULT_FIXTURE));
-  const outPath = path.resolve(ROOT, arg('out', smoke ? path.join(OUT_DIR, 'policy-patch-proposal-smoke.md') : DEFAULT_OUT));
+  const outPath = path.resolve(
+    ROOT,
+    arg('out', smoke ? path.join(OUT_DIR, 'policy-patch-proposal-smoke.md') : DEFAULT_OUT),
+  );
   const jsonOutPath = path.resolve(
     ROOT,
     arg('json-out', smoke ? path.join(OUT_DIR, 'policy-patch-proposal-smoke.json') : DEFAULT_JSON_OUT),

@@ -64,12 +64,7 @@ function runOneTrial({ fixture, actionSet, action, actionIndex, replicate, mode,
     ...(releaseDeviation ? { releaseDeviation } : {}),
   };
   const learnerStateBefore = initialHethelLearnerState(fixture);
-  const simulation = applyTutorActionToLearnerState(
-    learnerStateBefore,
-    action,
-    actionExecution.tutorText,
-    releaseInfo,
-  );
+  const simulation = applyTutorActionToLearnerState(learnerStateBefore, action, actionExecution.tutorText, releaseInfo);
   const previewOutcome = auditTransition({
     trialId,
     fixture,
@@ -117,7 +112,13 @@ function runOneTrial({ fixture, actionSet, action, actionIndex, replicate, mode,
   };
 }
 
-export function runA21Microbench({ fixture, actionSet = loadActionSet(fixture?.fixtureId), mode = 'deterministic', k = 1, seed = 20260616 } = {}) {
+export function runA21Microbench({
+  fixture,
+  actionSet = loadActionSet(fixture?.fixtureId),
+  mode = 'deterministic',
+  k = 1,
+  seed = 20260616,
+} = {}) {
   if (!fixture || typeof fixture !== 'object') throw new Error('a21.trialRunner: fixture is required');
   const loadedActionSet = validateA21ActionSet(clone(actionSet));
   const replicates = Math.max(1, Number(k) || 1);

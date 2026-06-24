@@ -239,7 +239,9 @@ function publicLines(live) {
   for (const turn of Array.isArray(live?.turns) ? live.turns : []) {
     for (const line of Array.isArray(turn.lines) ? turn.lines : []) {
       if (!['stage', 'director', 'tutor', 'learner'].includes(line.role)) continue;
-      const text = String(line.text || '').replace(/\s+/gu, ' ').trim();
+      const text = String(line.text || '')
+        .replace(/\s+/gu, ' ')
+        .trim();
       if (!text) continue;
       out.push({
         turn: turn.turn,
@@ -313,7 +315,10 @@ function summarizeDialogue(live, diagnosis = {}) {
   const lines = publicLines(live);
   const tutor = lines.filter((line) => line.role === 'tutor');
   const learner = lines.filter((line) => line.role === 'learner');
-  const words = (text) => String(text || '').split(/\s+/u).filter(Boolean).length;
+  const words = (text) =>
+    String(text || '')
+      .split(/\s+/u)
+      .filter(Boolean).length;
   const avg = (values) => (values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0);
   return {
     publicLineCount: lines.length,
@@ -322,8 +327,7 @@ function summarizeDialogue(live, diagnosis = {}) {
     avgTutorWords: Number(avg(tutor.map((line) => words(line.text))).toFixed(1)),
     avgLearnerWords: Number(avg(learner.map((line) => words(line.text))).toFixed(1)),
     exchangeTypes:
-      diagnosis.scenes?.exchangeTypes ||
-      countBy((live.turns || []).map((turn) => turn.exchange?.type || 'unknown')),
+      diagnosis.scenes?.exchangeTypes || countBy((live.turns || []).map((turn) => turn.exchange?.type || 'unknown')),
     sceneCount: diagnosis.scenes?.count ?? null,
     avgSceneExchanges: diagnosis.scenes?.avgExchanges ?? null,
     recognitionNeed: diagnosis.scenes?.recognitionNeed || null,
@@ -339,10 +343,7 @@ function truncateTranscript(transcript, maxChars) {
 function buildRubricPrompt({ artifact, rubric, transcript }) {
   const dimKeys = Object.keys(rubric.dimensions);
   const exampleScores = dimKeys
-    .map(
-      (key) =>
-        `    "${key}": {"score": 3, "reasoning": "brief reason grounded in public transcript evidence"}`,
-    )
+    .map((key) => `    "${key}": {"score": 3, "reasoning": "brief reason grounded in public transcript evidence"}`)
     .join(',\n');
   return `You are evaluating a public dramatic-derivation tutoring transcript using a rubric from the main Machine Spirits evaluation line.
 
@@ -535,7 +536,17 @@ function reportTableRows(results, selectedRubrics) {
   });
 }
 
-function renderReport({ results, selectedRubrics, judgeCli, model, judgeEffort, outDir, runDir, scoreConcurrency, resumeExisting }) {
+function renderReport({
+  results,
+  selectedRubrics,
+  judgeCli,
+  model,
+  judgeEffort,
+  outDir,
+  runDir,
+  scoreConcurrency,
+  resumeExisting,
+}) {
   const headers = selectedRubrics.map((key) => RUBRICS[key].label);
   const lines = [
     '# Derivation Transcript Rubric Suite',
@@ -582,7 +593,9 @@ function renderReport({ results, selectedRubrics, judgeCli, model, judgeEffort, 
   lines.push(
     `node scripts/score-derivation-transcript-rubric-suite.js --labels ${results
       .map((result) => result.label)
-      .join(',')} --run-dir ${path.relative(ROOT, runDir)} --out-dir ${path.relative(ROOT, outDir)} --judge-cli ${judgeCli}${
+      .join(
+        ',',
+      )} --run-dir ${path.relative(ROOT, runDir)} --out-dir ${path.relative(ROOT, outDir)} --judge-cli ${judgeCli}${
       model ? ` --model ${model}` : ''
     }${judgeEffort ? ` --judge-effort ${judgeEffort}` : ''}`,
   );

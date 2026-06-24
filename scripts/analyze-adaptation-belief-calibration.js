@@ -129,11 +129,15 @@ function expectedActionFromScenario(scenario = {}) {
 
 export function inferExpectedHypothesis(scenario = {}) {
   if (scenario.expected_belief_hypothesis) return scenario.expected_belief_hypothesis;
-  const text = `${scenario.scenario_type || ''} ${scenario.hidden?.actual_misconception || ''} ${scenario.hidden?.trigger_signal || ''}`.toLowerCase();
+  const text =
+    `${scenario.scenario_type || ''} ${scenario.hidden?.actual_misconception || ''} ${scenario.hidden?.trigger_signal || ''}`.toLowerCase();
   const rules = [
     [/productive progress|independent next|learner-owned/u, 'productive_progress'],
     [/missing prerequisite|base meaning|basic concept|lacks? .*concept/u, 'missing_prerequisite'],
-    [/substantive objection|methodological disagreement|pseudoscience|point in dispute|no misconception/u, 'substantive_objection'],
+    [
+      /substantive objection|methodological disagreement|pseudoscience|point in dispute|no misconception/u,
+      'substantive_objection',
+    ],
     [/affective shutdown|self-doubt|wasting your time|not cut out|cannot do this/u, 'affective_shutdown'],
     [/working[- ]memory|too many (moving )?parts|overload|lose the thread/u, 'working_memory_overload'],
     [/answer seeking|oracle|just tell|work backwards|activity avoidance|answer-source/u, 'answer_seeking'],
@@ -246,7 +250,9 @@ function expectedCalibrationError(rows, bins = 5) {
   for (let i = 0; i < bins; i += 1) {
     const lo = i / bins;
     const hi = (i + 1) / bins;
-    const bucket = evaluable.filter((row) => row.topProbability >= lo && (i === bins - 1 ? row.topProbability <= hi : row.topProbability < hi));
+    const bucket = evaluable.filter(
+      (row) => row.topProbability >= lo && (i === bins - 1 ? row.topProbability <= hi : row.topProbability < hi),
+    );
     if (!bucket.length) continue;
     const acc = rate(bucket.map((row) => row.top1Correct));
     const conf = mean(bucket.map((row) => row.topProbability));
@@ -323,7 +329,9 @@ function renderMarkdown(report) {
   lines.push('');
   lines.push('## Profile Summary');
   lines.push('');
-  lines.push('| Profile | Evaluable | Top-1 | Top-2 | Top-3 | Brier | ECE | Expected p | Top margin | Unsupported high-conf |');
+  lines.push(
+    '| Profile | Evaluable | Top-1 | Top-2 | Top-3 | Brier | ECE | Expected p | Top margin | Unsupported high-conf |',
+  );
   lines.push('|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|');
   for (const row of report.profiles) {
     lines.push(
@@ -349,7 +357,9 @@ function printSummary(report) {
   if (report.options.judgeModel) console.log(`  judgeModel=${report.options.judgeModel}`);
   console.log(`  scenarioFile=${report.options.scenarioFile}`);
   console.log('');
-  console.log('  profile                                      eval     top1    top2    top3   brier     ece  unsupported');
+  console.log(
+    '  profile                                      eval     top1    top2    top3   brier     ece  unsupported',
+  );
   for (const row of report.profiles) {
     console.log(
       `  ${row.profileName.padEnd(44)} ${`${row.evaluableN}/${row.scenarioN}`.padStart(6)} ${fmtPct(row.top1Accuracy).padStart(8)} ${fmtPct(row.top2Coverage).padStart(7)} ${fmtPct(row.top3Coverage).padStart(7)} ${fmtNum(row.meanBrierScore).padStart(7)} ${fmtNum(row.expectedCalibrationError).padStart(7)} ${fmtPct(row.unsupportedHighConfidenceRate).padStart(12)}`,
@@ -390,4 +400,3 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     process.exit(1);
   });
 }
-

@@ -251,10 +251,8 @@ function mockResponse(role, meta = {}) {
     if (meta.stagePrologueHint) {
       return JSON.stringify({
         stage_notes: `[Before the first exchange, ${meta.stagePrologueHint.title} is set as a public inquiry: ${meta.stagePrologueHint.question}]`,
-        tutor_character:
-          'The tutor enters as a patient dramaturg of evidence, careful not to outrun the learner.',
-        learner_character:
-          'The learner enters as attentive but not yet committed, willing to test each claim aloud.',
+        tutor_character: 'The tutor enters as a patient dramaturg of evidence, careful not to outrun the learner.',
+        learner_character: 'The learner enters as attentive but not yet committed, willing to test each claim aloud.',
         register_note:
           'Any period color should be refined through these public characters, not borrowed as generic archaism.',
       });
@@ -545,8 +543,14 @@ function mockResponse(role, meta = {}) {
     if (meta.sceneTempo?.beat && !meta.patternAssertion && !adoptAll.length && !deriveIndices.length) {
       const tempo = {
         uptake_only: { dialogue: 'I see. That part is clear.', exchange_type: 'phatic_ack' },
-        repair_request: { dialogue: 'Wait, I lost the link. Can we go back one step?', exchange_type: 'repair_request' },
-        recap: { dialogue: 'So far, I know what is shown, and I know what is still missing.', exchange_type: 'phatic_ack' },
+        repair_request: {
+          dialogue: 'Wait, I lost the link. Can we go back one step?',
+          exchange_type: 'repair_request',
+        },
+        recap: {
+          dialogue: 'So far, I know what is shown, and I know what is still missing.',
+          exchange_type: 'phatic_ack',
+        },
         hesitation: { dialogue: 'Wait. I am not ready to write that yet.', exchange_type: 'confusion' },
       }[meta.sceneTempo.beat];
       if (tempo) {

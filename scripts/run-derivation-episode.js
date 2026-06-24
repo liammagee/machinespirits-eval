@@ -435,7 +435,9 @@ async function main() {
   if (sceneArg !== null) overrides.push('scene-mode');
   const directorCadence = track(
     'director-cadence',
-    normalizeDirectorCadence(arg('director-cadence', srcDiag.directorCadence ?? null), { sceneMode: Boolean(sceneMode) }),
+    normalizeDirectorCadence(arg('director-cadence', srcDiag.directorCadence ?? null), {
+      sceneMode: Boolean(sceneMode),
+    }),
     srcDiag.directorCadence ?? (sceneMode ? 'scene' : 'turn'),
   );
   const stagePrologueArg = arg('stage-prologue', null);
@@ -452,7 +454,9 @@ async function main() {
       ? inheritedRhetoricalPolicy
       : rhetoricalPolicyArg === 'off'
         ? null
-        : normalizeRhetoricalPolicyConfig(rhetoricalPolicyArg && rhetoricalPolicyArg !== 'on' ? rhetoricalPolicyArg : true);
+        : normalizeRhetoricalPolicyConfig(
+            rhetoricalPolicyArg && rhetoricalPolicyArg !== 'on' ? rhetoricalPolicyArg : true,
+          );
   if (rhetoricalPolicy && flag('rhetorical-policy-stochastic')) {
     rhetoricalPolicy = { ...rhetoricalPolicy, mode: 'sample' };
   }
@@ -469,11 +473,7 @@ async function main() {
     triState('didactic-mode', Boolean(srcDiag.didacticMode)),
     Boolean(srcDiag.didacticMode),
   );
-  const castLayer = track(
-    'cast-layer',
-    triState('cast-layer', Boolean(srcDiag.castLayer)),
-    Boolean(srcDiag.castLayer),
-  );
+  const castLayer = track('cast-layer', triState('cast-layer', Boolean(srcDiag.castLayer)), Boolean(srcDiag.castLayer));
   const castReinvention = track(
     'cast-reinvention',
     triState('cast-reinvention', Boolean(srcDiag.castReinvention)),
@@ -568,11 +568,11 @@ async function main() {
   );
   const inheritedSelectorActive = Boolean(
     srcDiag.pacingGuardSelector ||
-      srcDiag.pacingGuardSelective ||
-      srcDiag.pacingGuardSelectiveV1 ||
-      srcDiag.pacingGuardSelectiveV2 ||
-      srcDiag.pacingGuardSelectiveV3 ||
-      srcDiag.pacingGuardSelectiveV4,
+    srcDiag.pacingGuardSelective ||
+    srcDiag.pacingGuardSelectiveV1 ||
+    srcDiag.pacingGuardSelectiveV2 ||
+    srcDiag.pacingGuardSelectiveV3 ||
+    srcDiag.pacingGuardSelectiveV4,
   );
   const inheritedExplicitPacingGuard = Boolean(srcDiag.pacingGuard) && !inheritedSelectorActive;
   const inheritedExplicitVisibleGuard = Boolean(srcDiag.visibleGuard) && !inheritedSelectorActive;
@@ -664,7 +664,8 @@ async function main() {
     ),
     Boolean(srcDiag.conductPolicy) || Boolean(srcDiag.conductPolicyEnforce) || Boolean(srcDiag.conductProgressPolicy),
   );
-  const conductPolicy = requestedConductPolicy || conductPolicyEnforce || conductProgressPolicy || Boolean(a21PolicyPatch);
+  const conductPolicy =
+    requestedConductPolicy || conductPolicyEnforce || conductProgressPolicy || Boolean(a21PolicyPatch);
   const manualConductTriggerOverride = loadConductTriggerOverride();
   if (a21PolicyPatch && manualConductTriggerOverride) {
     console.error('choose only one of --a21-policy-patch and --conduct-trigger/--conduct-trigger-file');
@@ -748,7 +749,7 @@ async function main() {
           ? selectGuardRepresentationV3(worldIR, { decayEnabled: Boolean(decay) })
           : pacingGuardSelectiveV4
             ? selectGuardRepresentationV4(worldIR, { decayEnabled: Boolean(decay) })
-          : null;
+            : null;
   const pacingGuard = pacingGuardSelector ? pacingGuardSelector.selected === 'hidden' : requestedPacingGuard;
   const visibleGuard = pacingGuardSelector ? pacingGuardSelector.selected === 'visible' : requestedVisibleGuard;
   const visiblePushProbeGuard = pacingGuardSelectiveV3;

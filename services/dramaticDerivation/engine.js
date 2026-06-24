@@ -82,10 +82,7 @@ import { closure, entails, factKey, matchPattern, proofTree } from './chainer.js
 import { normalizeDecayConfig, mulberry32 } from './corruption.js';
 import { DIDACTIC_ACT_FALLBACK_SCHEMA } from './didacticMode.js';
 import { buildWorldIR, projectWorldIRLogic } from './guardCompiler.js';
-import {
-  deriveLearnerTransformationState,
-  summarizeLearnerTransformationDurability,
-} from './learnerTransformation.js';
+import { deriveLearnerTransformationState, summarizeLearnerTransformationDurability } from './learnerTransformation.js';
 import { proofDebtReport, tutorProofDebtView } from './proofDebt.js';
 import {
   classifyLearnerExchange,
@@ -156,7 +153,11 @@ function isDynamicPublicRegisterPlan(plan) {
 }
 
 function staticPublicRegister(plan) {
-  return PUBLIC_REGISTERS.has(plan) ? plan : isDynamicPublicRegisterPlan(plan) ? plan.base || plan.palette?.[0] || 'modern' : 'default';
+  return PUBLIC_REGISTERS.has(plan)
+    ? plan
+    : isDynamicPublicRegisterPlan(plan)
+      ? plan.base || plan.palette?.[0] || 'modern'
+      : 'default';
 }
 
 function hashUnit(text) {
@@ -634,9 +635,7 @@ export async function runDrama({ world, roles, options = {} }) {
   const currentSceneMeta = () =>
     sceneState ? sceneMeta(sceneState, sceneTempoThisTurn, sceneRecognitionNeedThisTurn) : null;
   const didacticFallbackForAct = (actIndex, startTurn, endTurn) => {
-    const rows = didacticModeRows.filter(
-      (row) => row.act === actIndex && row.turn >= startTurn && row.turn <= endTurn,
-    );
+    const rows = didacticModeRows.filter((row) => row.act === actIndex && row.turn >= startTurn && row.turn <= endTurn);
     if (!rows.length) return null;
     const strainedSignals = new Set(['stalled', 'echo_only', 'misapplied', 'overloaded', 'purpose_gap']);
     let selected = null;
@@ -1468,7 +1467,7 @@ export async function runDrama({ world, roles, options = {} }) {
               pressure: learnerOut.learnerDrift.pressure || null,
               mayOverrideProofControl: learnerOut.learnerDrift.mayOverrideProofControl === true,
             },
-        }
+          }
         : {}),
       ...(tutorOut.learnerTransformation
         ? {

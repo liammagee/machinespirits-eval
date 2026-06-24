@@ -113,7 +113,10 @@ test('analyzeDerivationLoopResults groups rows, computes regret, and tracks miss
   });
 
   assert.equal(summary.rows.length, 7);
-  assert.equal(summary.rows.find((row) => row.label === 'missing-selector-v1-selective-r1').artifactStatus.status, 'missing');
+  assert.equal(
+    summary.rows.find((row) => row.label === 'missing-selector-v1-selective-r1').artifactStatus.status,
+    'missing',
+  );
   assert.equal(summary.regret.totals.selector.grounded, 1);
   assert.equal(summary.regret.totals.selector.n, 2);
   assert.equal(summary.regret.totals.hidden.grounded, 1);
@@ -122,4 +125,3 @@ test('analyzeDerivationLoopResults groups rows, computes regret, and tracks miss
   assert.equal(summary.regret.totals.oracleStatic.n, 2);
   assert.equal(summary.failures.find((row) => row.label === 'gamma-selector-v1-selective-r1').kind, 'route_failure');
 });
-

@@ -86,11 +86,15 @@ function renderMarkdown({ analysis, trialsPath, fixturePath, command }) {
   lines.push(`- Top action(s): ${analysis.topActionIds.map((id) => `\`${id}\``).join(', ') || 'none'}`);
   lines.push(`- Best mean reward: ${fmt(analysis.bestMeanReward)}`);
   lines.push('');
-  lines.push('This is an action-value result, not a production policy promotion. If a patch is proposed later, it must be separately gated by Hethel replay against hidden+proofDebt.');
+  lines.push(
+    'This is an action-value result, not a production policy promotion. If a patch is proposed later, it must be separately gated by Hethel replay against hidden+proofDebt.',
+  );
   lines.push('');
   lines.push('## Action Summary');
   lines.push('');
-  lines.push('| action | family | n | mean reward | mean D delta | owns target | uses released evidence | on-schedule release | delayed release | aporia | non-leak | generator | failures |');
+  lines.push(
+    '| action | family | n | mean reward | mean D delta | owns target | uses released evidence | on-schedule release | delayed release | aporia | non-leak | generator | failures |',
+  );
   lines.push('|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|');
   for (const row of analysis.actionSummaries || []) {
     const failures = Object.entries(row.failureLabels || {})
@@ -126,9 +130,13 @@ function renderMarkdown({ analysis, trialsPath, fixturePath, command }) {
       'The deterministic fixture favors releasing the due public point over repeating the diagnostic. This matches the contrastive Hethel autopsy: the failed overlay was locally compliant but starved proof progress, while the hidden+proofDebt success advanced by releasing `p_point`.',
     );
   } else if (analysis.decisionCategory === 'hidden_action_best') {
-    lines.push('The hidden+proofDebt action is best or tied-best in the local table, so A21 currently explains the reliability baseline rather than improving it.');
+    lines.push(
+      'The hidden+proofDebt action is best or tied-best in the local table, so A21 currently explains the reliability baseline rather than improving it.',
+    );
   } else if (analysis.decisionCategory === 'repair_beats_release') {
-    lines.push('The deterministic fixture favors repair before release. Treat this as simulator-sensitive until replay checks prove that repair does not leak or delay a required release.');
+    lines.push(
+      'The deterministic fixture favors repair before release. Treat this as simulator-sensitive until replay checks prove that repair does not leak or delay a required release.',
+    );
   } else {
     lines.push('The deterministic fixture does not yet justify a policy patch.');
   }
@@ -136,17 +144,27 @@ function renderMarkdown({ analysis, trialsPath, fixturePath, command }) {
   lines.push('## Caveats');
   lines.push('');
   lines.push('- The learner-state simulator is finite-state and deterministic.');
-  lines.push('- The report ranks local transition value only; final grounding still requires replay and fresh first-pass validation.');
-  lines.push('- The fixture retains observed hidden/failed contrasts as provenance but does not encode a winner in the action set.');
+  lines.push(
+    '- The report ranks local transition value only; final grounding still requires replay and fresh first-pass validation.',
+  );
+  lines.push(
+    '- The fixture retains observed hidden/failed contrasts as provenance but does not encode a winner in the action set.',
+  );
   lines.push('');
   return `${lines.join('\n')}\n`;
 }
 
 function main() {
   const smoke = flag('smoke');
-  const trialsPath = path.resolve(ROOT, arg('trials', smoke ? path.join(OUT_DIR, 'microbench-trials-smoke.jsonl') : DEFAULT_TRIALS));
+  const trialsPath = path.resolve(
+    ROOT,
+    arg('trials', smoke ? path.join(OUT_DIR, 'microbench-trials-smoke.jsonl') : DEFAULT_TRIALS),
+  );
   const fixturePath = path.resolve(ROOT, arg('fixture', DEFAULT_FIXTURE));
-  const outPath = path.resolve(ROOT, arg('out', smoke ? path.join(OUT_DIR, 'action-value-report-smoke.md') : DEFAULT_OUT));
+  const outPath = path.resolve(
+    ROOT,
+    arg('out', smoke ? path.join(OUT_DIR, 'action-value-report-smoke.md') : DEFAULT_OUT),
+  );
   const jsonOutPath = path.resolve(
     ROOT,
     arg('json-out', smoke ? path.join(OUT_DIR, 'action-value-report-smoke.json') : DEFAULT_JSON_OUT),

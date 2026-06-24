@@ -33,9 +33,7 @@ test('deriveEntitlementState sanitizes proof-debt fields for public conduct use'
 
   assert.equal(entitlement.schema, LEARNER_ENTITLEMENT_SCHEMA);
   assert.equal(entitlement.proofDebt.active, true);
-  assert.deepEqual(entitlement.proofDebt.debts, [
-    { premiseId: 'p1', surface: 'Marin is Tessa child', sinceTurn: 5 },
-  ]);
+  assert.deepEqual(entitlement.proofDebt.debts, [{ premiseId: 'p1', surface: 'Marin is Tessa child', sinceTurn: 5 }]);
   const json = JSON.stringify(entitlement);
   assert.doesNotMatch(json, /dNow|proofPath|secret|heir/u);
 });

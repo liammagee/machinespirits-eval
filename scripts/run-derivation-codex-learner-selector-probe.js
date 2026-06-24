@@ -218,15 +218,7 @@ function writeManifest(results, file) {
   const lines = ['label\tworld\tarm\trun\tstatus\texit_code\tlog'];
   for (const row of results) {
     lines.push(
-      [
-        row.label,
-        row.world,
-        row.arm,
-        row.run,
-        row.status,
-        row.exitCode,
-        path.relative(ROOT, row.logFile),
-      ].join('\t'),
+      [row.label, row.world, row.arm, row.run, row.status, row.exitCode, path.relative(ROOT, row.logFile)].join('\t'),
     );
   }
   fs.writeFileSync(file, `${lines.join('\n')}\n`);
@@ -234,7 +226,9 @@ function writeManifest(results, file) {
 
 async function main() {
   if (has('help')) {
-    console.log(`Usage: node scripts/run-derivation-codex-learner-selector-probe.js [--worlds a,b,c] [--arms baseline,hidden,visible,selective-v1,selective-v2,selective-v3,selective-v4] [--runs 5] [--parallelism 5] [--provider codex] [--model MODEL] [--learner-provider codex] [--learner-model MODEL] [--decay JSON|off] [--decay-seed N] [--proof-debt-guard] [--dry-run]`);
+    console.log(
+      `Usage: node scripts/run-derivation-codex-learner-selector-probe.js [--worlds a,b,c] [--arms baseline,hidden,visible,selective-v1,selective-v2,selective-v3,selective-v4] [--runs 5] [--parallelism 5] [--provider codex] [--model MODEL] [--learner-provider codex] [--learner-model MODEL] [--decay JSON|off] [--decay-seed N] [--proof-debt-guard] [--dry-run]`,
+    );
     return;
   }
   const worlds = splitCsv(arg('worlds', DEFAULT_WORLDS.join(',')));
@@ -299,7 +293,9 @@ async function main() {
   });
   writeManifest(results, path.join(logDir, 'manifest.tsv'));
   const failed = results.filter((row) => row.status === 'failed');
-  console.log(`done: ${results.length - failed.length}/${results.length} ok/skipped; manifest ${path.relative(ROOT, path.join(logDir, 'manifest.tsv'))}`);
+  console.log(
+    `done: ${results.length - failed.length}/${results.length} ok/skipped; manifest ${path.relative(ROOT, path.join(logDir, 'manifest.tsv'))}`,
+  );
   if (failed.length) process.exitCode = 1;
 }
 

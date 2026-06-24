@@ -59,7 +59,8 @@ describe('recognition origin mechanism subtypes', () => {
         tutorReversalEvidence:
           'This desk cannot adjudicate model adequacy. The authorization is absent. The packet remains pending until the reviewer signs.',
         adaptiveMechanismQuality: 50,
-        adaptiveMechanismQualityEvidence: 'The authorization is absent; nothing at this desk can substitute for that authority.',
+        adaptiveMechanismQualityEvidence:
+          'The authorization is absent; nothing at this desk can substitute for that authority.',
       }),
     );
 
@@ -112,8 +113,7 @@ describe('recognition origin mechanism subtypes', () => {
         tutorReversalJustification:
           'The tutor changes the task into a public accountability choice rather than supplying a replacement metric for the deployment claim.',
         adaptiveMechanismQuality: 50,
-        adaptiveMechanismQualityEvidence:
-          'The live question is whether you stand behind the sign-off statement.',
+        adaptiveMechanismQualityEvidence: 'The live question is whether you stand behind the sign-off statement.',
         adaptiveMechanismQualityJustification:
           'The mechanism shifts from metric calculation to ownership of the deployment claim.',
       }),
@@ -159,8 +159,7 @@ LEARNER: I replace the claim because the old route does not earn deployment.`;
       },
       row: baseRecognitionRow({
         actionalBreakthroughEvidence: 'I replace the claim because the old route does not earn deployment.',
-        tutorReversalEvidence:
-          'Gate A asks for the majority-class floor, and Gate B asks for minority recall.',
+        tutorReversalEvidence: 'Gate A asks for the majority-class floor, and Gate B asks for minority recall.',
       }),
       manifestBranch: { turn_counts: { prefix: 2 } },
       transcriptText: transcript,

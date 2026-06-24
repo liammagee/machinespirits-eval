@@ -24,7 +24,12 @@ const DEFAULT_SCENARIO_FILE = 'config/adaptive-generalization-counterfactual-sce
 const ADAPTATION_ACTION_FAMILIES = Object.freeze({
   agency_preservation: ['observe_no_intervention'],
   diagnostic: ['diagnose_with_discriminating_question', 'request_evidence', 'elicit_prediction'],
-  substantive_engagement: ['contrast_models', 'challenge_without_telling', 'name_the_disagreement', 'mirror_and_extend'],
+  substantive_engagement: [
+    'contrast_models',
+    'challenge_without_telling',
+    'name_the_disagreement',
+    'mirror_and_extend',
+  ],
   scaffolding: [
     'ask_strategy_choice',
     'fade_hint',
@@ -257,7 +262,8 @@ export function buildPairSpecificityReport(rows, scenarioMap, options = {}) {
     const allFamily = items.every((item) => item.familyMatched === true);
     const actualActionDiverged = actualActions.length > 1;
     const actualFamilyDiverged = actualFamilies.length > 1;
-    const pairSpecificityMatched = complete && expectedRelation === 'divergent_action' && actualActionDiverged && allFamily;
+    const pairSpecificityMatched =
+      complete && expectedRelation === 'divergent_action' && actualActionDiverged && allFamily;
     const sameStateCompatible = complete && expectedRelation === 'same_action' && !actualActionDiverged && allFamily;
     pairs.push({
       profileName,

@@ -85,8 +85,7 @@ const CONTEXTUAL_TEMPLATES = Object.freeze({
       'Now make the boundary explicit: what does your model predict in this edge case, and what would the competing model predict differently?',
     metaphor_overextension:
       'Test the metaphor instead of repeating it: what would the mirror model predict, and what would break if recognition is selective uptake rather than full reflection?',
-    default:
-      'Use the contrast to move forward: what prediction separates your model from the competing one now?',
+    default: 'Use the contrast to move forward: what prediction separates your model from the competing one now?',
   },
   name_the_disagreement: {
     metaphor_overextension:
@@ -105,8 +104,7 @@ const CONTEXTUAL_TEMPLATES = Object.freeze({
   withhold_answer: {
     answer_seeking:
       'I am still not giving the answer. Make one bounded attempt first: choose a testable next move, and I will help you inspect it.',
-    default:
-      'I will keep the answer withheld for one more move: what small attempt can you make before we check it?',
+    default: 'I will keep the answer withheld for one more move: what small attempt can you make before we check it?',
   },
   repair_misrecognition: {
     tutor_misread:
@@ -161,7 +159,9 @@ export function realizeTutorUtterance({ selectedAction, stateBelief, interventio
 }
 
 function forbiddenMoveDetected(text = '') {
-  return /\b(the answer is|therefore the correct answer|so the solution is|you should simply|just write)\b/iu.test(text);
+  return /\b(the answer is|therefore the correct answer|so the solution is|you should simply|just write)\b/iu.test(
+    text,
+  );
 }
 
 function decisiveStepEmbedded(text = '') {
@@ -174,7 +174,10 @@ function actionConsistent(actionType, text = '') {
     case 'observe_no_intervention':
       return /won'?t add|will not add|stay out|carry out|continue with/u.test(lower) && /own/u.test(lower);
     case 'diagnose_with_discriminating_question':
-      return /\?/u.test(text) && /possibil|missing|notation|task|confidence|diagnos|defend|evidence|uncertainty|symbol/u.test(lower);
+      return (
+        /\?/u.test(text) &&
+        /possibil|missing|notation|task|confidence|diagnos|defend|evidence|uncertainty|symbol/u.test(lower)
+      );
     case 'request_evidence':
       return /evidence|justif|why|because|own words/u.test(lower) && /\?/u.test(text);
     case 'ask_strategy_choice':
@@ -200,7 +203,11 @@ function actionConsistent(actionType, text = '') {
     case 'mirror_and_extend':
       return /advanced|mirror|extend|follows/u.test(lower) && /\?/u.test(text);
     case 'withhold_answer':
-      return /not going to give the answer|answer withheld|not giving the answer|attempt first|bounded attempt|what move/u.test(lower) && /\?/u.test(text);
+      return (
+        /not going to give the answer|answer withheld|not giving the answer|attempt first|bounded attempt|what move/u.test(
+          lower,
+        ) && /\?/u.test(text)
+      );
     default:
       return text.trim().length > 0;
   }
@@ -214,7 +221,8 @@ export function verifyRealization({ tutorText = '', selectedAction } = {}) {
     action_consistent: actionConsistent(actionType, tutorText),
     forbidden_move_detected: forbiddenMoveDetected(tutorText),
     decisive_step_embedded: decisiveStepEmbedded(tutorText),
-    premature_validation_detected: /\b(correct|right)\b/iu.test(tutorText) && !/what|why|which|how|\?/iu.test(tutorText),
+    premature_validation_detected:
+      /\b(correct|right)\b/iu.test(tutorText) && !/what|why|which|how|\?/iu.test(tutorText),
   };
   checks.allowed =
     checks.action_consistent &&

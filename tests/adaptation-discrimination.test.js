@@ -7,9 +7,7 @@ import test from 'node:test';
 
 test('deterministic adaptation policy evaluation separates closed loop from legacy', () => {
   const root = path.resolve(import.meta.dirname, '..');
-  const suite = JSON.parse(
-    fs.readFileSync(path.join(root, 'config/adaptation-discrimination-scenarios.json'), 'utf8'),
-  );
+  const suite = JSON.parse(fs.readFileSync(path.join(root, 'config/adaptation-discrimination-scenarios.json'), 'utf8'));
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'adaptation-policy-eval-'));
   const out = path.join(tmp, 'report.json');
   execFileSync(process.execPath, ['scripts/evaluate-adaptation-policy.js', '--output', out], {
