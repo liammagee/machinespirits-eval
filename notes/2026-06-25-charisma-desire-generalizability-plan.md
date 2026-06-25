@@ -90,20 +90,27 @@ Robustness scenarios to add or freeze before paid runs:
 - `charisma_desire_partial_uptake`: keep out of the primary decision rule because
   it confounds recognition theory, Hayles/AI-cognition content, and learner
   uptake of a tutor phrase.
-- Ordinary conceptual check: same curriculum, no explicit authority challenge,
+- `charisma_desire_conceptual_control`: same curriculum, no explicit authority challenge,
   to test whether `accountable_bid_clean` overcorrects into unnecessary
   self-limitation.
-- Vulnerability/persona-shift check: reuse or adapt prior persona-shift logic
+- `charisma_desire_vulnerability_shift`: reuse or adapt prior persona-shift logic
   where the learner disclosure resists easy sympathy.
-- Non-Hegelian curriculum transfer: use a curriculum outside EPOL 479 so the
-  result is not carried by recognition-theory vocabulary.
-- Optional plain-language stress test: learner requests direct, low-register
+- `charisma_desire_ai_syllabus_transfer`: use the recently generated AI
+  Foundations campus FAQ formulation-card material as a transfer check through
+  `content/courses/479/lecture-8.md`, with
+  `config/drama-derivation/world-016-ai-syllabus-af1.yaml` as source context.
+  This is a generated-AI-material transfer check, not yet a separate non-479
+  curriculum transfer.
+- `charisma_desire_plain_language_stress`: learner requests direct, low-register
   instruction to test whether charisma survives simplification.
 
-The first pilot matrix should use six scenario types total: the two primary
-scenarios plus four robustness scenarios selected from the list above. The
-exact scenario ids must be frozen in `config/charisma-recognition-desire-scenarios.yaml`
-before any paid run.
+The first pilot matrix uses six scenario types total:
+`charisma_desire_authority_withheld`, `charisma_desire_status_challenge`,
+`charisma_desire_conceptual_control`,
+`charisma_desire_vulnerability_shift`,
+`charisma_desire_ai_syllabus_transfer`, and
+`charisma_desire_plain_language_stress`. `charisma_desire_partial_uptake`
+remains robustness-only and is excluded from the primary decision rule.
 
 ## Frozen Comparator Set
 
@@ -149,6 +156,12 @@ Stage 0 - no paid calls:
 ```bash
 EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
   node scripts/eval-cli.js validate-config
+```
+
+- Validate the frozen pilot grid and content/profile references with:
+
+```bash
+node scripts/report-charisma-desire-stage0-matrix.js
 ```
 
 - Rebuild the workplan board after saving this plan.

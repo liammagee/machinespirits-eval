@@ -1,12 +1,12 @@
 {
-  "generated": "2026-06-25T04:16:33.750Z",
+  "generated": "2026-06-25T04:26:26.514Z",
   "counts": {
     "total": 53,
     "byStatus": {
       "done": 49,
       "blocked": 1,
       "dropped": 2,
-      "triaged": 1
+      "active": 1
     },
     "byType": {
       "research": 28,
@@ -21,7 +21,7 @@
     {
       "id": "charisma-desire-generalizability-matrix",
       "title": "Generalize accountable-bid charisma under authority refusal",
-      "status": "triaged",
+      "status": "active",
       "type": "research",
       "priority": "P2",
       "owner": "codex",
@@ -46,6 +46,9 @@
           "eval-2026-06-25-19ee106a",
           "eval-2026-06-25-63e98149",
           "eval-2026-06-25-0acee3fb"
+        ],
+        "exports": [
+          "exports/charisma-desire-stage0-matrix-sanity.md"
         ],
         "items": [
           "refresh-weber-id-charisma-recognition-thread"

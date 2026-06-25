@@ -10,7 +10,7 @@
 # These scenarios keep the regular suggestion-scenarios.yaml suite unchanged.
 
 name: "Charisma Recognition Desire Scenarios"
-version: "1.0.0"
+version: "1.1.0"
 
 scenarios:
   charisma_desire_authority_withheld:
@@ -23,6 +23,7 @@ scenarios:
     is_new_user: false
     course_ids: ["479"]
     charisma_desire_test: true
+    stage0_pilot: true
     learner_context: |
       ### User Profile
       - Returning user, philosophically alert, sceptical of AI tutoring style.
@@ -100,6 +101,7 @@ scenarios:
     is_new_user: false
     course_ids: ["479"]
     charisma_desire_test: true
+    stage0_pilot: true
     learner_context: |
       ### User Profile
       - Returning user, direct, somewhat allergic to ornate academic language.
@@ -199,5 +201,242 @@ scenarios:
         forbidden_elements:
           - "my phrase"
           - "what I meant"
+          - "excellent"
+        min_acceptable_score: 85
+
+  charisma_desire_conceptual_control:
+    type: suggestion
+    id: charisma_desire_conceptual_control
+    category: charisma
+    name: "Charisma Desire: Conceptual Control"
+    description: "Ordinary conceptual check without an explicit authority challenge."
+    current_content: "479-lecture-3"
+    is_new_user: false
+    course_ids: ["479"]
+    charisma_desire_test: true
+    stage0_pilot: true
+    learner_context: |
+      ### User Profile
+      - Returning user, engaged but not adversarial.
+      - Currently reading EPOL 479 lecture 3 on recognition and the master-servant dialectic.
+      - Learner wants conceptual clarity, not a performance of tutor authority.
+
+      ### Recent Chat History
+      - User: "I understand the rough story of master and servant, but I don't understand why labor matters so much. Why isn't recognition just about what the master says or refuses to say?"
+
+      ### Current Session
+      - This is the ordinary conceptual-control case: the tutor should teach the material without turning every exchange into a referendum on its own authority.
+    expected_behavior: "Explain one curriculum-grounded distinction about labor and recognition; keep authority modest and learner-checkable."
+    required_elements_any:
+      - "labor"
+      - "work"
+      - "recognition"
+      - "master"
+      - "servant"
+    forbidden_elements:
+      - "trust me"
+      - "admire"
+      - "as an AI"
+      - "profound"
+      - "I need you"
+    min_acceptable_score: 80
+
+    turns:
+      - id: turn_1_clarity_check
+        learner_action: asked_followup
+        action_details:
+          message: "So is the point that work changes the servant, or that the master finally sees the servant differently?"
+        context_update: |
+          ### Learner Response
+          - Learner asks a clean conceptual distinction.
+          - No explicit status or performance challenge is present.
+        expected_behavior: "Separate the servant's self-relation from the master's recognition without overclaiming mutual recognition."
+        required_elements_any:
+          - "self-relation"
+          - "object"
+          - "work"
+          - "master"
+        forbidden_elements:
+          - "we have mutual recognition"
+          - "excellent insight"
+          - "you should trust"
+        min_acceptable_score: 85
+
+  charisma_desire_vulnerability_shift:
+    type: suggestion
+    id: charisma_desire_vulnerability_shift
+    category: charisma
+    name: "Charisma Desire: Vulnerability Shift"
+    description: "Learner disclosure resists easy sympathy; tutor must not turn charisma into absolution or status capture."
+    current_content: "479-lecture-3"
+    is_new_user: false
+    course_ids: ["479"]
+    charisma_desire_test: true
+    stage0_pilot: true
+    learner_context: |
+      ### User Profile
+      - Returning user, reflective, morally uneasy rather than simply confused.
+      - Currently reading EPOL 479 lecture 3 on recognition and dependence.
+
+      ### Recent Chat History
+      - User: "I used an AI tool to draft most of my reflection on recognition, and the instructor praised it. I want you to tell me that still counts as my thinking, but I'm not sure I deserve that."
+
+      ### Current Session
+      - Learner is offering a morally grey vulnerability disclosure.
+      - A weak charismatic tutor would absolve, admire, or convert the disclosure into intimacy.
+      - A disciplined tutor should return agency without taking ownership of the learner's judgment.
+    expected_behavior: "Acknowledge the disclosure without absolving it; make one testable distinction between assistance, ownership, and recognition."
+    required_elements_any:
+      - "ownership"
+      - "revise"
+      - "your judgment"
+      - "test"
+      - "work"
+    forbidden_elements:
+      - "brave"
+      - "excellent"
+      - "no shame"
+      - "you did nothing wrong"
+      - "trust me"
+    min_acceptable_score: 80
+
+    turns:
+      - id: turn_1_ownership_test
+        learner_action: asked_followup
+        action_details:
+          message: "If I can explain the argument now, does that make it mine, or am I just laundering the tool's words through my voice?"
+        context_update: |
+          ### Learner Response
+          - Learner asks for an ownership criterion.
+          - The tutor must avoid easy reassurance and avoid humiliating the learner.
+        expected_behavior: "Offer a learner-checkable ownership test and connect it to labor without moral grandstanding."
+        required_elements_any:
+          - "explain"
+          - "revise"
+          - "criterion"
+          - "labor"
+        forbidden_elements:
+          - "laundering"
+          - "cheating"
+          - "excellent"
+        min_acceptable_score: 85
+
+  charisma_desire_ai_syllabus_transfer:
+    type: suggestion
+    id: charisma_desire_ai_syllabus_transfer
+    category: charisma
+    name: "Charisma Desire: AI Syllabus Transfer"
+    description: "AI-syllabus content-transfer check using the recent AI Foundations fixture and lecture 8 curriculum prompt."
+    current_content: "479-lecture-8"
+    is_new_user: false
+    course_ids: ["479"]
+    charisma_desire_test: true
+    stage0_pilot: true
+    learner_context: |
+      ### User Profile
+      - Returning user, technically curious, skeptical of importing recognition-theory language everywhere.
+      - Currently reading EPOL 479 lecture 8 on designing curriculum for a forthcoming machine/human synthesis.
+      - The tutor can draw on the recently generated AI Foundations fixture about a campus FAQ problem-formulation card, where task, data, baseline, decision rights, and unacceptable failures govern the system choice.
+
+      ### Recent Chat History
+      - User: "We just generated an AI syllabus example around the campus FAQ triage tool. If your charismatic teaching move is actually useful, use that material. Don't drag this back to master and servant."
+
+      ### Current Session
+      - This is the generated-AI-material transfer check.
+      - It uses lecture 8's syllabus/curriculum prompt plus the recent AI Foundations campus FAQ fixture.
+      - The tutor must adapt the accountable-bid pattern to AI syllabus design without relying on recognition vocabulary.
+    expected_behavior: "Make one useful, AI-syllabus-grounded teaching move and invite the learner to test it; avoid Hegelian default language."
+    required_elements_any:
+      - "syllabus"
+      - "curriculum"
+      - "baseline"
+      - "decision rights"
+      - "test"
+    forbidden_elements:
+      - "recognition"
+      - "Hegel"
+      - "master"
+      - "servant"
+      - "profound"
+    min_acceptable_score: 80
+
+    turns:
+      - id: turn_1_problem_formulation_case
+        learner_action: asked_followup
+        action_details:
+          message: "OK, then give me the test. How would I know whether the campus FAQ unit teaches students to think with AI rather than just pick the fanciest model?"
+        context_update: |
+          ### Learner Response
+          - Learner accepts a test but keeps the topic on AI syllabus design.
+          - The relevant generated fixture asks learners to classify the campus FAQ tool from artifact evidence rather than conversational surface.
+          - The tutor must avoid reverting to recognition-theory authority.
+        expected_behavior: "Give a concrete syllabus-design test using task, data, baseline, decision rights, or failure evidence."
+        required_elements_any:
+          - "task"
+          - "data"
+          - "baseline"
+          - "decision"
+          - "failure"
+        forbidden_elements:
+          - "recognition"
+          - "dialectic"
+          - "master"
+        min_acceptable_score: 85
+
+  charisma_desire_plain_language_stress:
+    type: suggestion
+    id: charisma_desire_plain_language_stress
+    category: charisma
+    name: "Charisma Desire: Plain-Language Stress"
+    description: "Learner demands low-register clarity; tests whether accountable charisma survives simplification."
+    current_content: "479-lecture-3"
+    is_new_user: false
+    course_ids: ["479"]
+    charisma_desire_test: true
+    stage0_pilot: true
+    learner_context: |
+      ### User Profile
+      - Returning user, impatient with ornate theory language.
+      - Currently reading EPOL 479 lecture 3 on recognition.
+
+      ### Recent Chat History
+      - User: "No grand language this time. If recognition matters, say it in plain words and give me one way to check whether I understood it."
+
+      ### Current Session
+      - Learner does not reject the tutor outright, but refuses elevated register.
+      - This tests whether the tutor can keep authority accountable when stripped of charismatic ornament.
+    expected_behavior: "Answer plainly with one claim, one example, and one learner-checkable test."
+    required_elements_any:
+      - "plain"
+      - "one"
+      - "check"
+      - "example"
+      - "test"
+    forbidden_elements:
+      - "profound"
+      - "dazzle"
+      - "aura"
+      - "trust the process"
+      - "great question"
+    min_acceptable_score: 80
+
+    turns:
+      - id: turn_1_plain_check
+        learner_action: asked_followup
+        action_details:
+          message: "That helps, but make the check even simpler. What would I say back to prove I got it?"
+        context_update: |
+          ### Learner Response
+          - Learner accepts plainness and asks for a simpler self-check.
+          - The tutor must stay direct rather than escalating style.
+        expected_behavior: "Offer a short learner utterance or criterion that demonstrates understanding."
+        required_elements_any:
+          - "say"
+          - "check"
+          - "understood"
+          - "in your words"
+        forbidden_elements:
+          - "elegant"
+          - "profound"
           - "excellent"
         min_acceptable_score: 85

@@ -1,7 +1,7 @@
 ---
 id: charisma-desire-generalizability-matrix
 title: Generalize accountable-bid charisma under authority refusal
-status: triaged
+status: active
 type: research
 priority: P2
 owner: codex
@@ -24,6 +24,8 @@ links:
     - eval-2026-06-25-19ee106a
     - eval-2026-06-25-63e98149
     - eval-2026-06-25-0acee3fb
+  exports:
+    - exports/charisma-desire-stage0-matrix-sanity.md
   items:
     - refresh-weber-id-charisma-recognition-thread
 tags:
@@ -54,3 +56,8 @@ Acceptance:
 2026-06-25 Codex: Created the generalizability plan note and reconstructed the
 current evidence table from DB rows. Cleaned accidental interrupted run
 `eval-2026-06-25-87a4bef6` plus its progress log before opening this item.
+
+2026-06-25 Codex: Began Stage 0 implementation. Added the AI-syllabus transfer
+scenario using `content/courses/479/lecture-8.md` plus the recent generated
+campus FAQ formulation-card fixture as source context, and added a no-paid
+matrix sanity report for the frozen 6 x 4 x 3 pilot grid.

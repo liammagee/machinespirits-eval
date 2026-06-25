@@ -295,6 +295,28 @@ function clearAllRubricOverrides() {
 
 const args = process.argv.slice(2);
 const command = args.find((a) => !a.startsWith('--')) || 'list';
+const HELP_TEXT = `Usage:
+  node scripts/eval-cli.js [command] [options]
+
+Commands:
+  list, quick, test, run, runs, report, status, watch, transcript, export,
+  cleanup, delete-runs, resume, revert, rejudge, evaluate, backfill-first-turn,
+  evaluate-learner, evaluate-dialogue, validate-config, chat, play
+
+Run examples:
+  node scripts/eval-cli.js run --profiles cell_169_id_director_charisma_accountable_bid_clean_floor_verified --scenario charisma_desire_authority_withheld --runs 1 --skip-rubric
+  node scripts/eval-cli.js run --profiles cell_169_id_director_charisma_accountable_bid_clean_floor_verified --scenario charisma_desire_authority_withheld --runs 1 --judge-cli codex
+
+Options:
+  --scenario <id>        Scenario ID or comma-separated IDs
+  --profile <name>       Profile(s), comma-separated
+  --profiles <names>     Alias for --profile
+  --runs <n>             Replications per cell
+  --skip-rubric          Generate without AI rubric judging
+  --judge-cli <name>     CLI rubric judge: claude, gemini, codex
+  --dry-run              Use mock data instead of API calls
+  --help                 Print this help and exit
+`;
 const FACTORIAL_2X2X2_PROFILES = [
   'cell_1_base_single_unified',
   'cell_2_base_single_psycho',
@@ -309,6 +331,14 @@ const FACTORIAL_2X2X2_PROFILE_SET = new Set(FACTORIAL_2X2X2_PROFILES);
 
 function getFlag(name) {
   return args.includes(`--${name}`);
+}
+
+function wantsHelp() {
+  return getFlag('help') || args.includes('-h');
+}
+
+function printHelp() {
+  console.log(HELP_TEXT);
 }
 
 function getOption(name, defaultValue = undefined) {
@@ -1550,6 +1580,11 @@ To see available test scenarios and profiles, use list_options.`,
 
 async function main() {
   try {
+    if (wantsHelp()) {
+      printHelp();
+      return;
+    }
+
     switch (command) {
       case 'list': {
         const options = evaluationRunner.listOptions();
