@@ -6437,26 +6437,10 @@ async function main() {
         }
 
         // ── 8. Prompt file existence ──────────────────────────────────
-        // Prompt files live in tutor-core's prompts/ directory (npm-linked)
-        let tutorCorePromptsDir = null;
-        // In-housed: prefer this repo's vendored tutor-core/prompts/
-        // (from @machinespirits/tutor-core — see TUTOR-CORE-INHOUSING.md).
+        // Prompt files live in this repo's in-housed tutor-core/prompts/
+        // (vendored from the former @machinespirits/tutor-core — see TUTOR-CORE-INHOUSING.md).
         const vendoredPromptsDir = path.resolve(__dirname, '..', 'tutor-core', 'prompts');
-        if (fs.existsSync(vendoredPromptsDir)) {
-          tutorCorePromptsDir = vendoredPromptsDir;
-        } else {
-          try {
-            const tutorCorePath = path.dirname(
-              (await import('module'))
-                .createRequire(import.meta.url)
-                .resolve('@machinespirits/tutor-core/package.json'),
-            );
-            tutorCorePromptsDir = path.join(tutorCorePath, 'prompts');
-          } catch {
-            const localPath = path.resolve(__dirname, '..', '..', 'machinespirits-tutor-core', 'prompts');
-            if (fs.existsSync(localPath)) tutorCorePromptsDir = localPath;
-          }
-        }
+        const tutorCorePromptsDir = fs.existsSync(vendoredPromptsDir) ? vendoredPromptsDir : null;
 
         const promptDirs = [path.resolve(__dirname, '..', 'prompts')];
         if (tutorCorePromptsDir && fs.existsSync(tutorCorePromptsDir)) {
