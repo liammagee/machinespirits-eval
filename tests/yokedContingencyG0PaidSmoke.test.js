@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+  backendDetail,
   buildLearnerProsePrompt,
   buildLearnerProsePromptForProtocol,
   buildProseClassifierPrompt,
+  canonicalBackend,
   reasoningLeakHits,
   renderG0PaidSmokeReport,
   runG0PaidSmoke,
@@ -57,6 +59,25 @@ const fixtureItems = [
     ],
   },
 ];
+
+test('backend parser preserves concrete Claude, OpenRouter, and agy model variants', () => {
+  assert.equal(canonicalBackend('claude'), 'claude-code');
+  assert.equal(canonicalBackend('claude-code:sonnet'), 'claude-code');
+  assert.equal(canonicalBackend('openrouter:anthropic/claude-sonnet-4.5'), 'openrouter');
+  assert.equal(canonicalBackend('agy:gemini-3.1-pro-high'), 'agy');
+  assert.deepEqual(backendDetail('claude-code:sonnet'), {
+    kind: 'claude-code',
+    model: 'sonnet',
+    effort: 'low',
+    label: 'claude-code:sonnet',
+  });
+  assert.equal(backendDetail('openrouter:anthropic/claude-sonnet-4.5').model, 'anthropic/claude-sonnet-4.5');
+  assert.deepEqual(backendDetail('agy:gemini-3.1-pro-high'), {
+    kind: 'agy',
+    model: 'gemini-3.1-pro-high',
+    label: 'agy:gemini-3.1-pro-high',
+  });
+});
 
 test('mock paid G0 smoke passes only the narrow opacity plus diagnosability gate', async () => {
   const result = await runG0PaidSmoke({

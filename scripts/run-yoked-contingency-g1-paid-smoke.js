@@ -19,6 +19,7 @@ import {
 } from './run-yoked-contingency-smoke.js';
 import {
   FAMILY_DESCRIPTIONS,
+  backendDetail,
   callBackend,
   canonicalBackend,
   createCallCounter,
@@ -69,7 +70,8 @@ function parseArgs(argv) {
       console.log(`Usage: node scripts/run-yoked-contingency-g1-paid-smoke.js [options]
 
 Options:
-  --backend <codex|claude-code|mock>  Tutor-plan generator (default: codex)
+  --backend <codex|claude-code[:model]|openrouter[:model]|mock>
+                                      Tutor-plan generator (default: codex)
   --sessions <n>                      Sessions to run (default: 3)
   --plan-turns <n>                    Tutor plan turns per arm (default: 4)
   --max-calls <n>                     Hard model-call cap (default: 12)
@@ -224,12 +226,38 @@ function mockTutorPlan({ sourceSeed, sourceLearnerId, arm, planTurns }) {
   };
 }
 
+function isRetryableTutorPlanError(message) {
+  if (/RESOURCE_EXHAUSTED|Individual quota reached|quota reached/i.test(message)) return false;
+  return /timed out|timeout|fetch failed|ENOTFOUND|EAI_AGAIN|ECONNRESET|ETIMEDOUT|socket hang up|network|produced no output/i.test(message);
+}
+
+async function callTutorPlannerWithRetry({ prompt, backend, callCounter }) {
+  const configured = Number(process.env.G1_TUTOR_PLAN_ATTEMPTS || 2);
+  const attempts = Number.isFinite(configured) && configured > 0 ? Math.floor(configured) : 2;
+  let lastErr;
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      callCounter.increment('tutor_plan');
+      return await callBackend(prompt, backend);
+    } catch (err) {
+      lastErr = err;
+      const message = String(err?.message || err || '');
+      if (!isRetryableTutorPlanError(message) || attempt >= attempts) throw err;
+      console.warn(`tutor plan call failed (${message}); retrying ${attempt + 1}/${attempts}`);
+    }
+  }
+  throw lastErr;
+}
+
 async function generateTutorPlan({ sourceLog, sourceSeed, sourceLearnerId, arm, backend, planTurns, callCounter }) {
   if (canonicalBackend(backend) === 'mock') {
     return mockTutorPlan({ sourceSeed, sourceLearnerId, arm, planTurns });
   }
-  callCounter.increment('tutor_plan');
-  const raw = await callBackend(buildTutorPlanPrompt({ sourceLog, planTurns }), backend);
+  const raw = await callTutorPlannerWithRetry({
+    prompt: buildTutorPlanPrompt({ sourceLog, planTurns }),
+    backend,
+    callCounter,
+  });
   const parsed = parseJsonResponse(raw);
   return normalizePlan(parsed, { sourceLearnerId, arm, planTurns });
 }
@@ -426,6 +454,7 @@ export async function runG1PaidSmoke({
         ? 'PLAN_2_0/yoked-contingency-g1-scaled-preregistration.md'
         : 'PLAN_2_0/yoked-contingency-g1-paid-smoke-preregistration.md',
     backend: canonicalBackend(backend),
+    backendDetail: backendDetail(backend),
     visibleProseProtocol: 'visible-affect',
     sessions: sessionRows,
     thresholds: {
@@ -462,6 +491,9 @@ export function renderG1PaidSmokeReport(result) {
   lines.push('');
   lines.push(`Preregistration: ${result.preregistration}`);
   lines.push(`Generator: ${result.backend}`);
+  if (result.backendDetail?.label && result.backendDetail.label !== result.backend) {
+    lines.push(`Generator detail: ${result.backendDetail.label}`);
+  }
   lines.push(`Visible prose protocol: ${result.visibleProseProtocol}`);
   lines.push(`Model calls: ${result.summary.modelCalls.total}`);
   lines.push('');
