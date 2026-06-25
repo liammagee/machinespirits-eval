@@ -61,3 +61,10 @@ current evidence table from DB rows. Cleaned accidental interrupted run
 scenario using `content/courses/479/lecture-8.md` plus the recent generated
 campus FAQ formulation-card fixture as source context, and added a no-paid
 matrix sanity report for the frozen 6 x 4 x 3 pilot grid.
+
+2026-06-25 Codex: Attempted the Stage 1 pilot as
+`eval-2026-06-25-ff4c694b`, but the first cell 169 authority-withheld row hit
+the id-director Claude CLI timeout before any usable row was persisted. Deleted
+the empty run and progress log, then added environment-configurable id-director
+CLI timeouts so the next paid smoke can test the same stack without the 180s
+hard cap.

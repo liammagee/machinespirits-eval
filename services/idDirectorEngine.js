@@ -30,8 +30,15 @@ import * as defaultTutorWritingPad from './memory/tutorWritingPad.js';
 // mode and bills per-call). tutor-core's callAI does NOT recognise
 // `claude-code` as a provider; bridging here keeps cell_106 (id-director +
 // CLI) working without a tutor-core release.
-const CLAUDE_CLI_TIMEOUT_MS = 180_000;
-const CODEX_CLI_TIMEOUT_MS = 300_000;
+function positiveIntEnv(name, fallback) {
+  const raw = process.env[name];
+  if (!raw) return fallback;
+  const parsed = Number.parseInt(raw, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+const CLAUDE_CLI_TIMEOUT_MS = positiveIntEnv('ID_DIRECTOR_CLAUDE_CLI_TIMEOUT_MS', 180_000);
+const CODEX_CLI_TIMEOUT_MS = positiveIntEnv('ID_DIRECTOR_CODEX_CLI_TIMEOUT_MS', 300_000);
 const CLI_PROVIDERS = new Set(['claude-code', 'codex']);
 
 function isCliProvider(provider) {
