@@ -11,6 +11,15 @@
  *
  * This service provides the foundation for cross-session continuity
  * and multi-agent deliberation context.
+ *
+ * RETENTION NOTE (2026-06-25): This is the richest memory representation in the
+ * repo (concept-mastery ladder, episodic memory with embeddings, spaced-repetition
+ * review, threads, milestones). It currently has NO live consumer outside its own
+ * tests — but it is DELIBERATELY RETAINED, not dead code. It is the likely canonical
+ * core for a future "rich-canonical" memory architecture (Shape A). Do NOT delete it
+ * to tidy up; deletion is deferred until the memory architecture's eventual shape is
+ * settled. See MEMORY-ARCHITECTURE.md (§4) and the seam guard in
+ * tests/memoryArchitectureSeam.test.js.
  */
 
 import crypto from 'crypto';
