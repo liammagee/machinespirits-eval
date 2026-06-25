@@ -1,14 +1,15 @@
 {
-  "generated": "2026-06-25T00:34:22.245Z",
+  "generated": "2026-06-25T04:16:33.750Z",
   "counts": {
-    "total": 52,
+    "total": 53,
     "byStatus": {
       "done": 49,
       "blocked": 1,
-      "dropped": 2
+      "dropped": 2,
+      "triaged": 1
     },
     "byType": {
-      "research": 27,
+      "research": 28,
       "experiment": 4,
       "content": 2,
       "infra": 9,
@@ -17,6 +18,48 @@
     }
   },
   "items": [
+    {
+      "id": "charisma-desire-generalizability-matrix",
+      "title": "Generalize accountable-bid charisma under authority refusal",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-25",
+      "updated": "2026-06-25",
+      "verification": "Plan note exists, current evidence is reconstructed from DB rows, scenario/comparator/judge/model choices are frozen before paid evals, and workplan render plus validate pass.",
+      "claim_status": "planned",
+      "branch": "codex/charisma-recognition-desire",
+      "links": {
+        "notes": [
+          "notes/2026-06-25-charisma-desire-generalizability-plan.md",
+          "notes/2026-06-24-weber-id-charisma-recognition-thread.md"
+        ],
+        "paper": [
+          "docs/research/paper-full-2.0.md#67-architectural-extension-the-id-director-family-and-charismatic-pedagogy",
+          "docs/research/paper-full-2.0.md#89-scope-of-the-id-director-extension"
+        ],
+        "runs": [
+          "eval-2026-06-25-b9608606",
+          "eval-2026-06-25-428ccd8f",
+          "eval-2026-06-25-19ee106a",
+          "eval-2026-06-25-63e98149",
+          "eval-2026-06-25-0acee3fb"
+        ],
+        "items": [
+          "refresh-weber-id-charisma-recognition-thread"
+        ]
+      },
+      "tags": [
+        "id-director",
+        "charisma",
+        "recognition",
+        "generalizability",
+        "paper-2"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
+    },
     {
       "id": "a1-human-learner-validation",
       "title": "Human-learner validation pilot (real learning gains)",
