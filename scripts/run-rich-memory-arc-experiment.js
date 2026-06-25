@@ -33,6 +33,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Database from 'better-sqlite3';
 import { execSync } from 'node:child_process';
+import Anthropic from '@anthropic-ai/sdk';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -102,33 +103,131 @@ fs.mkdirSync(process.env.EVAL_WRITING_PAD_DIR, { recursive: true });
 const mem = await import(path.join(ROOT, 'services/memory/learnerMemoryService.js'));
 
 const LEVELS = ['exposed', 'developing', 'proficient', 'mastered'];
+const EPISODE_TYPES = new Set([
+  'breakthrough',
+  'struggle',
+  'insight',
+  'question',
+  'connection',
+  'misconception',
+  'emotional',
+  'metacognitive',
+]);
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-// Smoke-grade write-back: turn a finished session into rich-store state so the next
-// session's injection is richer. (A production version would mine the transcript; this
-// keys off the scenario + the session's score, which is enough to test the loop.)
-function writeBackRichStore(learnerId, scenario, sessionIdx, score) {
-  const concept = scenario;
-  mem.upsertConceptState(learnerId, concept, {
-    label: scenario.replace(/_/g, ' '),
-    level: LEVELS[Math.min(sessionIdx, LEVELS.length - 1)],
-    confidence: typeof score === 'number' ? Math.max(0, Math.min(1, score / 100)) : 0.5,
+// Load a session transcript (tutor suggestion + learner reply per turn) from its dialogue
+// log, found via the row's dialogue_id. Returns null if unavailable.
+function loadTranscript(runId, scenario) {
+  let dialogueId = null;
+  try {
+    const db = new Database(process.env.EVAL_DB_PATH, { readonly: true });
+    dialogueId = db
+      .prepare(
+        'SELECT dialogue_id FROM evaluation_results WHERE run_id = ? AND scenario_id = ? ORDER BY id DESC LIMIT 1',
+      )
+      .get(runId, scenario)?.dialogue_id;
+    db.close();
+  } catch {
+    return null;
+  }
+  if (!dialogueId) return null;
+  const logPath = path.join(ROOT, 'logs', 'tutor-dialogues', `${dialogueId}.json`);
+  if (!fs.existsSync(logPath)) return null;
+  let log;
+  try {
+    log = JSON.parse(fs.readFileSync(logPath, 'utf8'));
+  } catch {
+    return null;
+  }
+  const turns = Array.isArray(log.conversationHistory) ? log.conversationHistory : [];
+  const text = turns
+    .map((t) => {
+      const sug = t.suggestion;
+      const tutor = typeof sug === 'string' ? sug : sug?.message || sug?.text || JSON.stringify(sug || '');
+      return `Tutor: ${tutor}\nLearner: ${t.learnerMessage || t.learnerAction || ''}`;
+    })
+    .join('\n\n');
+  return text.trim() || null;
+}
+
+// Faithful write-back: summarise the SESSION TRANSCRIPT into memory updates with NO access
+// to the judge's score (removes the smoke's score→memory feedback path). A cheap Claude-haiku
+// extractor returns concept levels, episodes, and open threads grounded in what happened.
+async function extractMemoryFromTranscript(transcript, scenario) {
+  const prompt =
+    `Summarise this tutoring session into a learner-memory record, based ONLY on the transcript ` +
+    `(do NOT invent or infer a quality score). Output STRICT JSON, no prose:\n` +
+    `{"concepts":[{"id":"<slug>","label":"<name>","level":"exposed|developing|proficient|mastered"}],` +
+    `"episodes":[{"type":"breakthrough|struggle|insight|misconception|question","content":"<=15 words"}],` +
+    `"threads":[{"topic":"<slug>","question":"<an open question the learner still has>"}],` +
+    `"sessionSummary":"<one sentence>"}\n` +
+    `Set each concept "level" by how the learner engaged THIS session (grasped vs. struggled), not by any score. ` +
+    `Scenario tag: ${scenario}.\n\nTRANSCRIPT:\n${transcript.slice(0, 12000)}`;
+  const msg = await anthropic.messages.create({
+    model: 'claude-haiku-4-5',
+    max_tokens: 800,
+    messages: [{ role: 'user', content: prompt }],
   });
-  mem.createEpisode({
-    learnerId,
-    sessionId: `${scenario}-${sessionIdx}`,
-    type: (score ?? 50) >= 70 ? 'breakthrough' : 'struggle',
-    content: `session ${sessionIdx + 1} on ${scenario.replace(/_/g, ' ')} (score ${score ?? 'n/a'})`,
-    importance: 0.6,
-    concepts: [concept],
-  });
-  mem.createThread({ learnerId, topic: concept, question: `open thread from ${scenario} (s${sessionIdx + 1})` });
-  mem.createSessionSummary({
-    learnerId,
-    sessionId: `${scenario}-${sessionIdx}`,
-    narrativeSummary: `session ${sessionIdx + 1}: ${scenario.replace(/_/g, ' ')}`,
-    conceptsTouched: [concept],
-    unresolvedQuestions: [`carry-over from ${scenario}`],
-  });
+  const raw = (msg.content?.[0]?.text || '').replace(/```json|```/g, '').trim();
+  return JSON.parse(raw);
+}
+
+async function writeBackRichStore(learnerId, scenario, sessionIdx, runId) {
+  const sessionId = `${scenario}-${sessionIdx}`;
+  // Dry-run: no transcript and no paid extractor — a minimal stub keeps the loop exercised.
+  if (!REAL) {
+    mem.upsertConceptState(learnerId, scenario, {
+      label: scenario.replace(/_/g, ' '),
+      level: LEVELS[Math.min(sessionIdx, 3)],
+    });
+    mem.createEpisode({ learnerId, sessionId, type: 'insight', content: `dry-run ${scenario}`, concepts: [scenario] });
+    mem.createSessionSummary({
+      learnerId,
+      sessionId,
+      narrativeSummary: `dry-run s${sessionIdx + 1}: ${scenario}`,
+      conceptsTouched: [scenario],
+    });
+    return;
+  }
+  // REAL: faithful, transcript-derived, score-independent.
+  try {
+    const transcript = loadTranscript(runId, scenario);
+    if (!transcript) throw new Error('transcript unavailable');
+    const m = await extractMemoryFromTranscript(transcript, scenario);
+    const conceptIds = (m.concepts || []).map((c) => c.id).filter(Boolean);
+    for (const c of m.concepts || []) {
+      if (c.id && LEVELS.includes(c.level))
+        mem.upsertConceptState(learnerId, c.id, { label: c.label || c.id, level: c.level });
+    }
+    for (const e of m.episodes || []) {
+      if (e.content)
+        mem.createEpisode({
+          learnerId,
+          sessionId,
+          type: EPISODE_TYPES.has(e.type) ? e.type : 'insight',
+          content: String(e.content).slice(0, 200),
+          concepts: conceptIds,
+        });
+    }
+    for (const t of m.threads || []) {
+      if (t && t.question)
+        mem.createThread({ learnerId, topic: t.topic || scenario, question: String(t.question).slice(0, 200) });
+    }
+    mem.createSessionSummary({
+      learnerId,
+      sessionId,
+      narrativeSummary: (m.sessionSummary || `session on ${scenario}`).slice(0, 300),
+      conceptsTouched: conceptIds.length ? conceptIds : [scenario],
+    });
+  } catch (e) {
+    console.error(`  [warn] faithful write-back failed (${e.message}); minimal fallback`);
+    mem.createSessionSummary({
+      learnerId,
+      sessionId,
+      narrativeSummary: `session ${sessionIdx + 1}: ${scenario.replace(/_/g, ' ')}`,
+      conceptsTouched: [scenario],
+    });
+  }
 }
 
 // Read the just-scored row's tutor quality back from the isolated DB, keyed by
@@ -195,9 +294,9 @@ async function runArc(arm, learnerIdx) {
     }
 
     const score = runId ? readSessionScore(runId, scenario) : { error: 'no runId parsed' };
-    const primary = score && typeof score.first === 'number' ? score.first : null;
+    const primary = score && typeof score.overall === 'number' ? score.overall : null;
     // Write back so the next session's injection is richer (rich arm only).
-    if (arm === 'rich') writeBackRichStore(learnerId, scenario, s, primary);
+    if (arm === 'rich') await writeBackRichStore(learnerId, scenario, s, runId);
 
     sessions.push({ session: s + 1, scenario, runId, injectedChars: injected ? injected.length : 0, score });
     // Incremental persistence: a kill mid-run still leaves every completed session on disk.
@@ -230,9 +329,10 @@ for (const arm of ARMS) {
 
 // ── Report ────────────────────────────────────────────────────────────────
 function armSlope(armArcs) {
-  // mean per-session first-turn score across learners, then last-minus-first
+  // mean per-session OVERALL tutor score across learners, then last-minus-first.
+  // (overall is more granular than first-turn, which clusters at a few discrete values.)
   const perSession = SESSION_SCENARIOS.map((_, s) => {
-    const vals = armArcs.map((a) => a.sessions[s]?.score?.first).filter((v) => typeof v === 'number');
+    const vals = armArcs.map((a) => a.sessions[s]?.score?.overall).filter((v) => typeof v === 'number');
     return vals.length ? vals.reduce((x, y) => x + y, 0) / vals.length : null;
   });
   const known = perSession.filter((v) => v !== null);
@@ -245,7 +345,7 @@ for (const arm of ARMS) {
   summary[arm] = armSlope(arcs.filter((a) => a.arm === arm));
 }
 
-console.log('\n── per-arm per-session mean first-turn score ──');
+console.log('\n── per-arm per-session mean OVERALL tutor score ──');
 for (const arm of ARMS) {
   const ps = summary[arm].perSession.map((v) => (v === null ? '·' : v.toFixed(1))).join('  ');
   console.log(`  ${arm.padEnd(9)} ${ps}   slope=${summary[arm].slope ?? (REAL ? '?' : 'n/a (dry-run)')}`);
