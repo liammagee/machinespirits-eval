@@ -2029,6 +2029,11 @@ function parseResultRow(row) {
     tutorHolisticOverallScore: row.tutor_holistic_overall_score != null ? row.tutor_holistic_overall_score : null,
     tutorHolisticSummary: row.tutor_holistic_summary || null,
     tutorHolisticJudgeModel: row.tutor_holistic_judge_model || null,
+    tutorCharismaScores: row.tutor_charisma_scores ? JSON.parse(row.tutor_charisma_scores) : null,
+    tutorCharismaOverallScore: row.tutor_charisma_overall_score != null ? row.tutor_charisma_overall_score : null,
+    tutorCharismaSummary: row.tutor_charisma_summary || null,
+    tutorCharismaRubricVersion: row.tutor_charisma_rubric_version || null,
+    tutorCharismaJudgeModel: row.tutor_charisma_judge_model || null,
     // Prompt versioning
     tutorEgoPromptVersion: row.tutor_ego_prompt_version || null,
     tutorSuperegoPromptVersion: row.tutor_superego_prompt_version || null,

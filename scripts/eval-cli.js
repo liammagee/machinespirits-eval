@@ -140,6 +140,15 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const LOGS_DIR = path.resolve(__dirname, '..', 'logs', 'tutor-dialogues');
 const RUBRICS_DIR = path.resolve(__dirname, '..', 'config', 'rubrics');
 
+function positiveIntEnv(name, fallback) {
+  const raw = process.env[name];
+  if (raw == null || raw === '') return fallback;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback;
+}
+
+const CLI_JUDGE_TIMEOUT_MS = positiveIntEnv('EVAL_CLI_JUDGE_TIMEOUT_MS', 600_000);
+
 function isAdaptiveTraceLog(log) {
   return Boolean(log?.schemaVersion >= 5 && log?.original && Array.isArray(log.original.dialogue));
 }
@@ -3176,14 +3185,33 @@ async function main() {
             });
             let out = '';
             let err = '';
+            let settled = false;
+            const cliTimeout = setTimeout(() => {
+              if (settled) return;
+              settled = true;
+              try {
+                child.kill('SIGKILL');
+              } catch {
+                // Child may have exited between timer firing and kill.
+              }
+              reject(new Error(`${cliBinary} CLI judge timed out after ${CLI_JUDGE_TIMEOUT_MS}ms`));
+            }, CLI_JUDGE_TIMEOUT_MS);
             child.stdout.on('data', (d) => {
               out += d;
             });
             child.stderr.on('data', (d) => {
               err += d;
             });
-            child.on('error', reject);
+            child.on('error', (error) => {
+              if (settled) return;
+              settled = true;
+              clearTimeout(cliTimeout);
+              reject(error);
+            });
             child.on('close', (code) => {
+              if (settled) return;
+              settled = true;
+              clearTimeout(cliTimeout);
               if (code !== 0) reject(new Error(err || out || `${cliBinary} exited with code ${code}`));
               else resolve(out);
             });
@@ -3323,14 +3351,33 @@ async function main() {
             const child = spawn(cliBin, cliJudgeArgs, { stdio: ['pipe', 'pipe', 'pipe'], env: cliJudgeEnv });
             let out = '';
             let err = '';
+            let settled = false;
+            const cliTimeout = setTimeout(() => {
+              if (settled) return;
+              settled = true;
+              try {
+                child.kill('SIGKILL');
+              } catch {
+                // Child may have exited between timer firing and kill.
+              }
+              reject(new Error(`${cliBin} CLI judge timed out after ${CLI_JUDGE_TIMEOUT_MS}ms`));
+            }, CLI_JUDGE_TIMEOUT_MS);
             child.stdout.on('data', (d) => {
               out += d;
             });
             child.stderr.on('data', (d) => {
               err += d;
             });
-            child.on('error', reject);
+            child.on('error', (error) => {
+              if (settled) return;
+              settled = true;
+              clearTimeout(cliTimeout);
+              reject(error);
+            });
             child.on('close', (code) => {
+              if (settled) return;
+              settled = true;
+              clearTimeout(cliTimeout);
               if (code !== 0) reject(new Error(err || out || `${cliBin} exited with code ${code}`));
               else resolve(out);
             });

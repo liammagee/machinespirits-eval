@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-25T04:46:40.555Z",
+  "generated": "2026-06-25T18:20:04.786Z",
   "counts": {
     "total": 53,
     "byStatus": {
@@ -46,10 +46,12 @@
           "eval-2026-06-25-19ee106a",
           "eval-2026-06-25-63e98149",
           "eval-2026-06-25-0acee3fb",
-          "eval-2026-06-25-5ee5dd6d"
+          "eval-2026-06-25-5ee5dd6d",
+          "eval-2026-06-25-dbae041a"
         ],
         "exports": [
-          "exports/charisma-desire-stage0-matrix-sanity.md"
+          "exports/charisma-desire-stage0-matrix-sanity.md",
+          "exports/charisma-desire-stage1-pilot-summary.md"
         ],
         "items": [
           "refresh-weber-id-charisma-recognition-thread"

@@ -25,8 +25,10 @@ links:
     - eval-2026-06-25-63e98149
     - eval-2026-06-25-0acee3fb
     - eval-2026-06-25-5ee5dd6d
+    - eval-2026-06-25-dbae041a
   exports:
     - exports/charisma-desire-stage0-matrix-sanity.md
+    - exports/charisma-desire-stage1-pilot-summary.md
   items:
     - refresh-weber-id-charisma-recognition-thread
 tags:
@@ -76,3 +78,13 @@ ego, Claude Code Sonnet 4.6 id, Codex CLI v2.2 judge, and Claude Code Sonnet
 charisma judge. Generation completed in 7m47s with validation clean; explicit
 scoring gave v2.2 first-turn 98.75, last-turn 100.00, tutor overall 96.25, and
 charisma 78.75.
+
+2026-06-25 Codex: Completed Stage 1 pilot `eval-2026-06-25-dbae041a`
+(72 successful generated rows; 4 retained early connection-refused infra rows).
+All successful rows are scored with Codex CLI v2.2 and Claude Code Sonnet
+charisma. Added reproducible summary
+`exports/charisma-desire-stage1-pilot-summary.md`. Result: cell 169 passes the
+primary authority-refusal validation gate and is primary-competitive
+(primary v2.2 first 87.3, last 94.2, overall 91.3, charisma 81.0), but is not a
+general passing design: AI-syllabus transfer and plain-language stress are the
+next design targets.
