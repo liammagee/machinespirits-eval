@@ -247,17 +247,13 @@ test('intervention sanitizer removes exact hidden family identifiers only', () =
   );
 });
 
-
 test('normalizes common held-out learner answer shapes', () => {
   const postItems = fixtureItems.filter((item) => item.form === 'B');
 
-  assert.deepEqual(
-    normalizeLearnerAnswers(['a', 'b'], { postItems, raw: '["a","b"]' }).slice(0, 2),
-    [
-      { item_id: 'i-add-post', response_value: 'a', confidence: null },
-      { item_id: 'i-mag-post', response_value: 'b', confidence: null },
-    ],
-  );
+  assert.deepEqual(normalizeLearnerAnswers(['a', 'b'], { postItems, raw: '["a","b"]' }).slice(0, 2), [
+    { item_id: 'i-add-post', response_value: 'a', confidence: null },
+    { item_id: 'i-mag-post', response_value: 'b', confidence: null },
+  ]);
 
   assert.deepEqual(
     normalizeLearnerAnswers(
