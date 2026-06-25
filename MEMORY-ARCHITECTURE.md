@@ -96,3 +96,46 @@ and that test together.
   available.
 
 Until then: two pads, one seam, one reserve.
+
+## 7. Cross-session experiment (#3): apparatus validated, signal pending
+
+The test that would move us toward Shape A — *does feeding the tutor an accumulated
+rich-store memory narrative improve tutoring across a multi-session arc?* — now has a
+working, isolated, seam-safe apparatus (as of 2026-06-25). The apparatus is built and
+proven end-to-end; the experimental answer is **not** established.
+
+**What was built (the deliverable):**
+
+- The rich store revived (§4) so it runs, keeps its data isolated, and stays seam-clean.
+- A seam-safe injection hook — `runEvaluation`'s opt-in `externalEgoExtension` plus the
+  `eval-cli run --external-ego-extension-file` flag — prepends an eval-layer-built memory
+  narrative onto the tutor's prompt without `tutor-core` importing the eval layer.
+- An orchestrator, `scripts/run-rich-memory-arc-experiment.js`: runs an N-session arc for
+  one learner across two arms (baseline = no injection; rich = accumulated
+  `learnerMemoryService` narrative), driving the proven `eval-cli` (generate →
+  `evaluate --tutor-only` → read score by `run_id`), with `--gen-model` / `--judge-cli`
+  knobs and per-session `sessions.jsonl` resilience.
+
+**First smoke** (n=1/arm, 3 sessions, anthropic.haiku generation + codex CLI judge):
+baseline first-turn 67.5/67.5/67.5 (slope 0); rich 61.2/67.5/81.3 (slope +20). **Not
+interpretable**: n=1; the first-turn metric is coarse (4 of 6 sessions scored exactly
+67.5); and the write-back was keyed off the session's own score (a feedback path). The
+run validates the apparatus; it does not answer the question.
+
+**Defensible claim:** there is now a working, isolated, seam-safe instrument for testing
+cross-session rich memory, and a first run shows a difference is measurable in principle.
+NOT "rich memory helps tutoring" — the prior (A5, §6.6.9: the pad is not load-bearing for
+first-turn quality) leans the other way, and all of this is simulated-tutor output, not
+human learning (§8.1).
+
+**To make it a real result — option (b), retained, not yet committed:** (1) a faithful
+transcript→memory write-back (mine the dialogue for concept/episode state, not the score
+— the load-bearing build, carrying the §6.12 reasoned-vs-complied validity caveat); (2) a
+granular metric (`tutor_overall_score`) + power (several learners/arm, both judges); (3)
+for the claim that matters, human learners. A half-powered simulated run would not settle
+anything A5 hasn't.
+
+Code: `services/memory/learnerMemoryService.js`, the injection hook in
+`services/evaluationRunner.js` + `scripts/eval-cli.js`, and
+`scripts/run-rich-memory-arc-experiment.js`. First smoke artifacts:
+`exports/rich-memory-arc-2026-06-25T18-09-32-920Z/`.
