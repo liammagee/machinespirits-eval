@@ -30,16 +30,36 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Database from 'better-sqlite3';
+import { execSync } from 'node:child_process';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
+const EVAL_CLI = path.join(ROOT, 'scripts/eval-cli.js');
+
+// Drive the proven CLI (it persists rows with provider + dialogue, which the programmatic
+// runEvaluation path does not in this isolated setup). Returns combined stdout even on a
+// non-zero exit — `run` can exit non-zero on a failed-validation test while still storing a
+// scorable row. The shell inherits process.env (EVAL_DB_PATH + dotenv-loaded keys).
+function sh(argv) {
+  try {
+    return execSync(argv.map((a) => JSON.stringify(a)).join(' '), {
+      cwd: ROOT,
+      env: process.env,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+      maxBuffer: 64 * 1024 * 1024,
+    });
+  } catch (e) {
+    return `${e.stdout || ''}\n${e.stderr || ''}`;
+  }
+}
 
 function opt(name, fallback = null) {
   const i = process.argv.indexOf(name);
   return i !== -1 && i + 1 < process.argv.length ? process.argv[i + 1] : fallback;
 }
 const REAL = process.argv.includes('--real');
-const N_SESSIONS = Math.max(2, Number.parseInt(opt('--sessions', REAL ? '3' : '4'), 10) || 4);
+const N_SESSIONS = Math.max(1, Number.parseInt(opt('--sessions', REAL ? '3' : '4'), 10) || 4);
 const N_LEARNERS = Math.max(1, Number.parseInt(opt('--learners', '1'), 10) || 1);
 const CELL = opt('--cell', 'cell_5_recog_single_unified');
 const ARMS = (opt('--arms', 'baseline,rich') || '')
@@ -66,7 +86,8 @@ process.env.EVAL_WRITING_PAD_DIR = path.join(STORE_DIR, 'pads');
 fs.mkdirSync(process.env.EVAL_LOGS_DIR, { recursive: true });
 fs.mkdirSync(process.env.EVAL_WRITING_PAD_DIR, { recursive: true });
 
-const runner = await import(path.join(ROOT, 'services/evaluationRunner.js'));
+// Generation/scoring run via the eval-cli subprocess (see sh()); only the rich store
+// is used in-process here, to build the injection narrative and write back between sessions.
 const mem = await import(path.join(ROOT, 'services/memory/learnerMemoryService.js'));
 
 const LEVELS = ['exposed', 'developing', 'proficient', 'mastered'];
@@ -99,18 +120,19 @@ function writeBackRichStore(learnerId, scenario, sessionIdx, score) {
   });
 }
 
-// Read the just-scored row's tutor quality back from the isolated DB.
-function readSessionScore(learnerId, scenario) {
+// Read the just-scored row's tutor quality back from the isolated DB, keyed by
+// run_id (reliable — the stored learner_id column comes back empty for these rows).
+function readSessionScore(runId, scenario) {
   try {
     const db = new Database(process.env.EVAL_DB_PATH, { readonly: true });
     const row = db
       .prepare(
         `SELECT tutor_first_turn_score AS first, tutor_last_turn_score AS last, tutor_overall_score AS overall
          FROM evaluation_results
-         WHERE learner_id = ? AND scenario_id = ?
+         WHERE run_id = ? AND scenario_id = ?
          ORDER BY created_at DESC, id DESC LIMIT 1`,
       )
-      .get(learnerId, scenario);
+      .get(runId, scenario);
     db.close();
     return row || null;
   } catch (e) {
@@ -127,25 +149,42 @@ async function runArc(arm, learnerIdx) {
     // RICH arm: build + inject the accumulated narrative; baseline injects nothing.
     const injected = arm === 'rich' ? mem.buildContextInjection(learnerId).narrativeSummary || null : null;
 
-    await runner.runEvaluation({
-      scenarios: [scenario],
-      configurations: [CELL],
-      runsPerConfig: 1,
-      dryRun: !REAL,
-      skipRubricEval: !REAL, // real runs score per session; dry-run skips (mock anyway)
+    // Generate via the proven CLI (persists provider + dialogue). The rich-store
+    // narrative is handed over in a file (no CLI quoting). --skip-rubric: the evaluate
+    // pass below does the scoring (REAL); dry-run writes a mock score directly.
+    const runArgs = [
+      process.execPath,
+      EVAL_CLI,
+      'run',
+      '--profile',
+      CELL,
+      '--scenario',
+      scenario,
+      '--runs',
+      '1',
+      '--learner-id',
       learnerId,
-      externalEgoExtension: injected,
-      verbose: false,
-    });
+      '--skip-rubric',
+    ];
+    if (!REAL) runArgs.push('--dry-run');
+    if (injected) {
+      const eeeFile = path.join(STORE_DIR, `eee-${arm}-${learnerIdx}-s${s}.txt`);
+      fs.writeFileSync(eeeFile, injected);
+      runArgs.push('--external-ego-extension-file', eeeFile);
+    }
+    const runId = (sh(runArgs).match(/Run ID:\s*(\S+)/) || [])[1] || null;
 
-    const score = REAL ? readSessionScore(learnerId, scenario) : null;
+    // REAL: canonical per-turn tutor scoring (--tutor-only keeps the judge pass cheap).
+    if (REAL && runId) sh([process.execPath, EVAL_CLI, 'evaluate', runId, '--tutor-only']);
+
+    const score = runId ? readSessionScore(runId, scenario) : { error: 'no runId parsed' };
     const primary = score && typeof score.first === 'number' ? score.first : null;
     // Write back so the next session's injection is richer (rich arm only).
     if (arm === 'rich') writeBackRichStore(learnerId, scenario, s, primary);
 
-    sessions.push({ session: s + 1, scenario, injectedChars: injected ? injected.length : 0, score });
+    sessions.push({ session: s + 1, scenario, runId, injectedChars: injected ? injected.length : 0, score });
     console.log(
-      `  [${arm} L${learnerIdx}] s${s + 1} ${scenario}: injected=${injected ? injected.length + 'ch' : '-'} score=${primary ?? (REAL ? '?' : 'mock')}`,
+      `  [${arm} L${learnerIdx}] s${s + 1} ${scenario}: injected=${injected ? injected.length + 'ch' : '-'} score=${primary ?? '?'}`,
     );
   }
   return { arm, learnerId, sessions };

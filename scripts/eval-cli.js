@@ -1656,6 +1656,9 @@ async function main() {
         // A7 Longitudinal: when supplied, ALL dialogues in this invocation share
         // the Writing Pad keyed by this ID. Omit for per-dialogue synthetic IDs.
         const learnerIdOpt = getOption('learner-id');
+        // #3 cross-session memory: opt-in ego prompt extension supplied via a file
+        // (a file avoids CLI quoting for the narrative); threads to runEvaluation's hook.
+        const externalEgoExtensionFile = getOption('external-ego-extension-file');
 
         // --show-messages or --show-messages=full
         const showMessagesRaw = args.find((a) => a === '--show-messages' || a.startsWith('--show-messages='));
@@ -1862,6 +1865,10 @@ async function main() {
           showMessages,
           liveApi,
           learnerId: learnerIdOpt || null,
+          externalEgoExtension:
+            externalEgoExtensionFile && fs.existsSync(externalEgoExtensionFile)
+              ? fs.readFileSync(externalEgoExtensionFile, 'utf8')
+              : null,
         });
         // Extract unique model aliases used across all configs (ego + superego)
         const extractAlias = (raw) => {
