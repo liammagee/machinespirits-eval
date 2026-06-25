@@ -173,7 +173,25 @@ async function extractMemoryFromTranscript(transcript, scenario) {
 }
 
 async function writeBackRichStore(learnerId, scenario, sessionIdx, runId) {
-  const sessionId = `${scenario}-${sessionIdx}`;
+  // session_id is globally UNIQUE in tutor_session_summaries, so scope it to the
+  // learner (learnerId already carries arm + index + run STAMP) — otherwise rich L2's
+  // session 1 collides with rich L1's, and the same scenario reused across learners
+  // would crash the arc.
+  const sessionId = `${learnerId}__${scenario}-${sessionIdx}`;
+  // A summary collision must never kill the run — the concepts/episodes are the signal;
+  // the summary row is incidental. Wrap it so it can only warn.
+  const safeSummary = (narrativeSummary, conceptsTouched) => {
+    try {
+      mem.createSessionSummary({
+        learnerId,
+        sessionId,
+        narrativeSummary: narrativeSummary.slice(0, 300),
+        conceptsTouched,
+      });
+    } catch (e) {
+      console.error(`  [warn] session-summary write skipped (${e.message})`);
+    }
+  };
   // Dry-run: no transcript and no paid extractor — a minimal stub keeps the loop exercised.
   if (!REAL) {
     mem.upsertConceptState(learnerId, scenario, {
@@ -181,12 +199,7 @@ async function writeBackRichStore(learnerId, scenario, sessionIdx, runId) {
       level: LEVELS[Math.min(sessionIdx, 3)],
     });
     mem.createEpisode({ learnerId, sessionId, type: 'insight', content: `dry-run ${scenario}`, concepts: [scenario] });
-    mem.createSessionSummary({
-      learnerId,
-      sessionId,
-      narrativeSummary: `dry-run s${sessionIdx + 1}: ${scenario}`,
-      conceptsTouched: [scenario],
-    });
+    safeSummary(`dry-run s${sessionIdx + 1}: ${scenario}`, [scenario]);
     return;
   }
   // REAL: faithful, transcript-derived, score-independent.
@@ -213,20 +226,10 @@ async function writeBackRichStore(learnerId, scenario, sessionIdx, runId) {
       if (t && t.question)
         mem.createThread({ learnerId, topic: t.topic || scenario, question: String(t.question).slice(0, 200) });
     }
-    mem.createSessionSummary({
-      learnerId,
-      sessionId,
-      narrativeSummary: (m.sessionSummary || `session on ${scenario}`).slice(0, 300),
-      conceptsTouched: conceptIds.length ? conceptIds : [scenario],
-    });
+    safeSummary(m.sessionSummary || `session on ${scenario}`, conceptIds.length ? conceptIds : [scenario]);
   } catch (e) {
     console.error(`  [warn] faithful write-back failed (${e.message}); minimal fallback`);
-    mem.createSessionSummary({
-      learnerId,
-      sessionId,
-      narrativeSummary: `session ${sessionIdx + 1}: ${scenario.replace(/_/g, ' ')}`,
-      conceptsTouched: [scenario],
-    });
+    safeSummary(`session ${sessionIdx + 1}: ${scenario.replace(/_/g, ' ')}`, [scenario]);
   }
 }
 
