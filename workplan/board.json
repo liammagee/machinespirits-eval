@@ -1,16 +1,16 @@
 {
-  "generated": "2026-06-24T23:16:47.368Z",
+  "generated": "2026-06-25T00:34:22.245Z",
   "counts": {
-    "total": 51,
+    "total": 52,
     "byStatus": {
-      "done": 48,
+      "done": 49,
       "blocked": 1,
       "dropped": 2
     },
     "byType": {
       "research": 27,
       "experiment": 4,
-      "content": 1,
+      "content": 2,
       "infra": 9,
       "paper": 4,
       "ops": 6
@@ -1023,6 +1023,32 @@
       ],
       "milestone": "human-pilot-prep",
       "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "synthesize-theoretical-insights",
+      "title": "Synthesize the theory↔project relationship (Hegel/Freud/Weber/Aristotle) into a refreshable reference surface",
+      "status": "done",
+      "type": "content",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-06-24",
+      "updated": "2026-06-24",
+      "verification": "A theory-synthesis surface renders in the web app and (by construction) the Electron desktop; a regeneration script + npm alias refreshes it from the paper + codebase; the doc introduces no new empirical claims (inherits docs/research/paper-full-2.0.md).",
+      "claim_status": "methods",
+      "links": {
+        "paper": "docs/research/paper-full-2.0.md"
+      },
+      "tags": [
+        "theory",
+        "synthesis",
+        "hegel",
+        "freud",
+        "weber",
+        "aristotle",
+        "web-surface",
+        "reference"
+      ]
     },
     {
       "id": "the-confident-liar-diagnosing-multi-agent-debate-with-log-pr",
