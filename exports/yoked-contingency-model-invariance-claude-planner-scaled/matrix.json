@@ -1,0 +1,217 @@
+{
+  "schema": "yoked_contingency_model_invariance_matrix_v0_1",
+  "generatedAt": "2026-06-24T18:04:15.072Z",
+  "startedAt": "2026-06-24T14:45:13.316Z",
+  "status": "pass_model_invariance_matrix",
+  "boundary": "model-invariance follow-up only; failures are boundary evidence until replicated at scaled N and integrated into paper-full-2.0.md",
+  "plan": "PLAN_2_0/yoked-contingency-model-invariance-plan.md",
+  "controls": {
+    "learnerProtocol": "rule-transfer-novice",
+    "posttestProfile": "hard-transfer",
+    "sessionLimit": 9,
+    "maxCallsPerRun": 27,
+    "maxPlanCalls": 27,
+    "planTurns": 4,
+    "includeFrozen": true
+  },
+  "planArtifacts": [
+    {
+      "label": "frozen_g1",
+      "kind": "frozen",
+      "backend": null,
+      "backendDetail": null,
+      "jsonPath": "exports/yoked-contingency-g1-scaled.json"
+    },
+    {
+      "label": "regenerated_claude-code-sonnet",
+      "kind": "regenerated",
+      "backend": "claude-code",
+      "backendDetail": {
+        "kind": "claude-code",
+        "model": "sonnet",
+        "effort": "low",
+        "label": "claude-code:sonnet"
+      },
+      "jsonPath": "exports/yoked-contingency-model-invariance-claude-planner-scaled/g1-plans/claude-code-sonnet.json",
+      "summary": {
+        "sessionCount": 9,
+        "armsPerSession": 3,
+        "planTurns": 4,
+        "modelCalls": {
+          "total": 27,
+          "learner_prose": 0,
+          "prose_classifier": 0,
+          "tutor_plan": 27
+        },
+        "meanGainByArm": {
+          "contingent": 0.271,
+          "same_seed_yoked": 0.173,
+          "different_seed_yoked": 0.008
+        },
+        "delta1_responsiveness": 0.098,
+        "delta2_diagnosis": 0.165,
+        "sameSeedActiveTargets": 3.556,
+        "differentSeedActiveTargets": 0.333,
+        "sameGreaterSessionCount": 9,
+        "sourceBehaviorExactCount": 27,
+        "invalidPlanCount": 0
+      },
+      "status": "pass_g1_paid_smoke"
+    }
+  ],
+  "rows": [
+    {
+      "planLabel": "frozen_g1",
+      "planKind": "frozen",
+      "planBackend": null,
+      "planBackendDetail": null,
+      "planJson": "exports/yoked-contingency-g1-scaled.json",
+      "learnerBackend": "claude-code",
+      "learnerBackendDetail": {
+        "kind": "claude-code",
+        "model": "haiku",
+        "effort": "low",
+        "label": "claude-code:haiku"
+      },
+      "artifactJson": "exports/yoked-contingency-model-invariance-claude-planner-scaled/g2-runs/frozen-g1__claude-code-haiku.json",
+      "artifactMd": "exports/yoked-contingency-model-invariance-claude-planner-scaled/g2-runs/frozen-g1__claude-code-haiku.md",
+      "summary": {
+        "status": "pass_g2_independent_outcome",
+        "boundaryClass": "supports_invariance_endpoint",
+        "sessionCount": 9,
+        "sourceSessionCount": 9,
+        "modelCalls": 27,
+        "delta1_responsiveness": 0,
+        "delta2_diagnosis": 0.322,
+        "sameGreaterSessionCount": 9,
+        "signTestOneSidedP": 0.002,
+        "invalidAnswerCount": 0,
+        "promptFamilyLabelLeakCount": 0
+      }
+    },
+    {
+      "planLabel": "frozen_g1",
+      "planKind": "frozen",
+      "planBackend": null,
+      "planBackendDetail": null,
+      "planJson": "exports/yoked-contingency-g1-scaled.json",
+      "learnerBackend": "claude-code",
+      "learnerBackendDetail": {
+        "kind": "claude-code",
+        "model": "sonnet",
+        "effort": "low",
+        "label": "claude-code:sonnet"
+      },
+      "artifactJson": "exports/yoked-contingency-model-invariance-claude-planner-scaled/g2-runs/frozen-g1__claude-code-sonnet.json",
+      "artifactMd": "exports/yoked-contingency-model-invariance-claude-planner-scaled/g2-runs/frozen-g1__claude-code-sonnet.md",
+      "summary": {
+        "status": "pass_g2_independent_outcome",
+        "boundaryClass": "supports_invariance_endpoint",
+        "sessionCount": 9,
+        "sourceSessionCount": 9,
+        "modelCalls": 27,
+        "delta1_responsiveness": 0.1,
+        "delta2_diagnosis": 0.389,
+        "sameGreaterSessionCount": 9,
+        "signTestOneSidedP": 0.002,
+        "invalidAnswerCount": 0,
+        "promptFamilyLabelLeakCount": 0
+      }
+    },
+    {
+      "planLabel": "regenerated_claude-code-sonnet",
+      "planKind": "regenerated",
+      "planBackend": "claude-code",
+      "planBackendDetail": {
+        "kind": "claude-code",
+        "model": "sonnet",
+        "effort": "low",
+        "label": "claude-code:sonnet"
+      },
+      "planJson": "exports/yoked-contingency-model-invariance-claude-planner-scaled/g1-plans/claude-code-sonnet.json",
+      "learnerBackend": "claude-code",
+      "learnerBackendDetail": {
+        "kind": "claude-code",
+        "model": "haiku",
+        "effort": "low",
+        "label": "claude-code:haiku"
+      },
+      "artifactJson": "exports/yoked-contingency-model-invariance-claude-planner-scaled/g2-runs/regenerated-claude-code-sonnet__claude-code-haiku.json",
+      "artifactMd": "exports/yoked-contingency-model-invariance-claude-planner-scaled/g2-runs/regenerated-claude-code-sonnet__claude-code-haiku.md",
+      "summary": {
+        "status": "pass_g2_independent_outcome",
+        "boundaryClass": "supports_invariance_endpoint",
+        "sessionCount": 9,
+        "sourceSessionCount": 9,
+        "modelCalls": 27,
+        "delta1_responsiveness": 0,
+        "delta2_diagnosis": 0.311,
+        "sameGreaterSessionCount": 8,
+        "signTestOneSidedP": 0.0195,
+        "invalidAnswerCount": 0,
+        "promptFamilyLabelLeakCount": 0
+      }
+    },
+    {
+      "planLabel": "regenerated_claude-code-sonnet",
+      "planKind": "regenerated",
+      "planBackend": "claude-code",
+      "planBackendDetail": {
+        "kind": "claude-code",
+        "model": "sonnet",
+        "effort": "low",
+        "label": "claude-code:sonnet"
+      },
+      "planJson": "exports/yoked-contingency-model-invariance-claude-planner-scaled/g1-plans/claude-code-sonnet.json",
+      "learnerBackend": "claude-code",
+      "learnerBackendDetail": {
+        "kind": "claude-code",
+        "model": "sonnet",
+        "effort": "low",
+        "label": "claude-code:sonnet"
+      },
+      "artifactJson": "exports/yoked-contingency-model-invariance-claude-planner-scaled/g2-runs/regenerated-claude-code-sonnet__claude-code-sonnet.json",
+      "artifactMd": "exports/yoked-contingency-model-invariance-claude-planner-scaled/g2-runs/regenerated-claude-code-sonnet__claude-code-sonnet.md",
+      "summary": {
+        "status": "pass_g2_independent_outcome",
+        "boundaryClass": "supports_invariance_endpoint",
+        "sessionCount": 9,
+        "sourceSessionCount": 9,
+        "modelCalls": 27,
+        "delta1_responsiveness": -0.045,
+        "delta2_diagnosis": 0.445,
+        "sameGreaterSessionCount": 9,
+        "signTestOneSidedP": 0.002,
+        "invalidAnswerCount": 0,
+        "promptFamilyLabelLeakCount": 0
+      }
+    }
+  ],
+  "summary": {
+    "rowCount": 4,
+    "supportCount": 4,
+    "boundaryCount": 0,
+    "learnerBackends": [
+      {
+        "kind": "claude-code",
+        "model": "haiku",
+        "effort": "low",
+        "label": "claude-code:haiku"
+      },
+      {
+        "kind": "claude-code",
+        "model": "sonnet",
+        "effort": "low",
+        "label": "claude-code:sonnet"
+      }
+    ],
+    "plannerBackends": [
+      {
+        "kind": "claude-code",
+        "model": "sonnet",
+        "effort": "low",
+        "label": "claude-code:sonnet"
+      }
+    ]
+  }
+}

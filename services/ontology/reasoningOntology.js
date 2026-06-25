@@ -40,6 +40,10 @@ const TBOX_MODULES = Object.freeze({
   // DEFAULT_MODULES): load via loadSharedTBox([...,'poetics','rhetoric']).
   // Seam: ms:Elocutio rdfs:seeAlso ms:Lexis (style = Aristotle's lexis).
   rhetoric: { tbox: 'rhetoric-core.ttl' },
+  // Human-readable derivation concept-world: a semantic schema linking proof DAG
+  // terms to drama, rhetoric, pedagogy, recognition, ego/superego, and charisma.
+  // TBox/ABox vocabulary only; OPT-IN so default turn-plan validation is unchanged.
+  derivation_concepts: { tbox: 'derivation-concepts.ttl' },
 });
 export const DEFAULT_MODULES = Object.freeze(['reasoning', 'poetics', 'discursive', 'consistency']);
 

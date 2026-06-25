@@ -1,0 +1,353 @@
+@prefix ms: <https://machinespirits.dev/ontology/reasoning#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# ==============================================================================
+# Derivation concept-world ontology.
+#
+# OPT-IN module. This is a conceptual TBox/ABox bridge for the human-readable proof
+# DAG surface: it does not add operational proof rules. It names the semantic
+# layers that make a derivation run legible as a single world: drama, rhetoric,
+# logic, pedagogy, and the philosophical / psychoanalytic / social-theoretic
+# theory terms that organize them.
+#
+# Use with:
+#   loadSharedTBox(['reasoning','poetics','discursive','adaptation','rhetoric','derivation_concepts'])
+# ==============================================================================
+
+ms:DerivationConceptWorldOntology
+  a owl:Ontology ;
+  rdfs:label "Machine Spirits derivation concept-world ontology" ;
+  rdfs:comment "Human-readable semantic schema for dramatic derivation: proof DAG terms linked to drama, rhetoric, pedagogy, recognition, ego/superego, and charisma." .
+
+# -- schema classes -------------------------------------------------------------
+
+ms:ConceptWorld a owl:Class ;
+  rdfs:label "concept world: a bounded semantic universe for a derivation run." .
+ms:ConceptLayer a owl:Class ;
+  rdfs:label "concept layer: one plane of the conceptual world." .
+ms:SemanticConcept a owl:Class ;
+  rdfs:label "semantic concept: a named term with a definition and typed links." .
+
+ms:DramaturgicalConcept a owl:Class ; rdfs:subClassOf ms:SemanticConcept .
+ms:RhetoricalConcept a owl:Class ; rdfs:subClassOf ms:SemanticConcept .
+ms:FormalConcept a owl:Class ; rdfs:subClassOf ms:SemanticConcept .
+ms:DiagnosticConcept a owl:Class ; rdfs:subClassOf ms:SemanticConcept .
+ms:PedagogicalConcept a owl:Class ; rdfs:subClassOf ms:SemanticConcept .
+ms:PhilosophicalConcept a owl:Class ; rdfs:subClassOf ms:SemanticConcept .
+ms:PsychoanalyticConcept a owl:Class ; rdfs:subClassOf ms:SemanticConcept .
+ms:SocialTheoreticConcept a owl:Class ; rdfs:subClassOf ms:SemanticConcept .
+ms:NovelConcept a owl:Class ; rdfs:subClassOf ms:SemanticConcept ;
+  rdfs:label "novel concept: a locally coined theoretical term in the Machine Spirits concept-world." .
+
+# -- schema relations -----------------------------------------------------------
+
+ms:hasConcept a owl:ObjectProperty ; rdfs:domain ms:ConceptWorld ; rdfs:range ms:SemanticConcept .
+ms:belongsToConceptLayer a owl:ObjectProperty ; rdfs:domain ms:SemanticConcept ; rdfs:range ms:ConceptLayer .
+ms:containsConcept a owl:ObjectProperty ; rdfs:domain ms:SemanticConcept ; rdfs:range ms:SemanticConcept .
+ms:stagesConcept a owl:ObjectProperty ; rdfs:domain ms:SemanticConcept ; rdfs:range ms:SemanticConcept .
+ms:pressesTowardConcept a owl:ObjectProperty ; rdfs:domain ms:SemanticConcept ; rdfs:range ms:SemanticConcept .
+ms:guardsConcept a owl:ObjectProperty ; rdfs:domain ms:SemanticConcept ; rdfs:range ms:SemanticConcept .
+ms:requiresConcept a owl:ObjectProperty ; rdfs:domain ms:SemanticConcept ; rdfs:range ms:SemanticConcept .
+ms:licensesConcept a owl:ObjectProperty ; rdfs:domain ms:SemanticConcept ; rdfs:range ms:SemanticConcept .
+ms:projectsIntoConcept a owl:ObjectProperty ; rdfs:domain ms:SemanticConcept ; rdfs:range ms:SemanticConcept .
+ms:revealsConcept a owl:ObjectProperty ; rdfs:domain ms:SemanticConcept ; rdfs:range ms:SemanticConcept .
+ms:realizesConcept a owl:ObjectProperty ; rdfs:domain ms:SemanticConcept ; rdfs:range ms:SemanticConcept .
+ms:repairsConcept a owl:ObjectProperty ; rdfs:domain ms:SemanticConcept ; rdfs:range ms:SemanticConcept .
+ms:risksConcept a owl:ObjectProperty ; rdfs:domain ms:SemanticConcept ; rdfs:range ms:SemanticConcept .
+ms:correctsConcept a owl:ObjectProperty ; rdfs:domain ms:SemanticConcept ; rdfs:range ms:SemanticConcept .
+ms:energizesConcept a owl:ObjectProperty ; rdfs:domain ms:SemanticConcept ; rdfs:range ms:SemanticConcept .
+ms:readsConcept a owl:ObjectProperty ; rdfs:domain ms:SemanticConcept ; rdfs:range ms:SemanticConcept .
+ms:embodiesConcept a owl:ObjectProperty ; rdfs:domain ms:SemanticConcept ; rdfs:range ms:SemanticConcept .
+ms:mediatesConcept a owl:ObjectProperty ; rdfs:domain ms:SemanticConcept ; rdfs:range ms:SemanticConcept .
+ms:intensifiesConcept a owl:ObjectProperty ; rdfs:domain ms:SemanticConcept ; rdfs:range ms:SemanticConcept .
+ms:seeksConcept a owl:ObjectProperty ; rdfs:domain ms:SemanticConcept ; rdfs:range ms:SemanticConcept .
+ms:distortsConcept a owl:ObjectProperty ; rdfs:domain ms:SemanticConcept ; rdfs:range ms:SemanticConcept .
+ms:animatesConcept a owl:ObjectProperty ; rdfs:domain ms:SemanticConcept ; rdfs:range ms:SemanticConcept .
+
+# -- layers --------------------------------------------------------------------
+
+ms:DerivationConceptWorld a ms:ConceptWorld ;
+  rdfs:label "dramatic derivation conceptual world" .
+
+ms:DramaConceptLayer a ms:ConceptLayer ; rdfs:label "drama" .
+ms:RhetoricConceptLayer a ms:ConceptLayer ; rdfs:label "figures / rhetoric" .
+ms:LogicConceptLayer a ms:ConceptLayer ; rdfs:label "logic" .
+ms:PedagogyConceptLayer a ms:ConceptLayer ; rdfs:label "pedagogy" .
+ms:TheoryConceptLayer a ms:ConceptLayer ; rdfs:label "theory" .
+ms:NovelConceptLayer a ms:ConceptLayer ; rdfs:label "novel concepts" .
+
+# -- drama ---------------------------------------------------------------------
+
+ms:DerivationWorldConcept
+  a ms:DramaturgicalConcept ;
+  rdfs:label "world" ;
+  rdfs:comment "The authored conceptual stage: roles, question, secret, releases, proof paths, and dramatic timing." ;
+  ms:belongsToConceptLayer ms:DramaConceptLayer ;
+  ms:containsConcept ms:SecretConcept ;
+  ms:stagesConcept ms:AuthoredProofDagConcept ;
+  ms:pressesTowardConcept ms:AnagnorisisConcept .
+
+ms:SecretConcept
+  a ms:DramaturgicalConcept ;
+  rdfs:label "secret" ;
+  rdfs:comment "The answer withheld from public dialogue until the learner-visible record can support it." ;
+  ms:belongsToConceptLayer ms:DramaConceptLayer ;
+  rdfs:seeAlso ms:WithheldKnowledgeDevice ;
+  ms:guardsConcept ms:ProofOwnershipConcept ;
+  ms:requiresConcept ms:EntailmentConcept .
+
+ms:AporiaConcept
+  a ms:DramaturgicalConcept ;
+  rdfs:label "aporia" ;
+  rdfs:comment "Productive stuckness: the learner knows the current story is insufficient but cannot yet close the proof." ;
+  ms:belongsToConceptLayer ms:DramaConceptLayer ;
+  rdfs:seeAlso ms:Aporia ;
+  ms:revealsConcept ms:AssertionGapConcept .
+
+ms:AnagnorisisConcept
+  a ms:DramaturgicalConcept ;
+  rdfs:label "anagnorisis" ;
+  rdfs:comment "Recognition in dramatic form: a shift from not-knowing to knowing that reorders the scene." ;
+  ms:belongsToConceptLayer ms:DramaConceptLayer ;
+  rdfs:seeAlso ms:Anagnorisis ;
+  ms:realizesConcept ms:RecognitionConcept ;
+  ms:requiresConcept ms:ProofOwnershipConcept .
+
+# -- rhetoric ------------------------------------------------------------------
+
+ms:FigureOfSpeechConcept
+  a ms:RhetoricalConcept ;
+  rdfs:label "figure of speech" ;
+  rdfs:comment "A controlled turn of language that changes salience, pressure, or address without adding hidden evidence." ;
+  ms:belongsToConceptLayer ms:RhetoricConceptLayer ;
+  rdfs:seeAlso ms:Figure ;
+  ms:requiresConcept ms:EntailmentConcept .
+
+ms:ErotemaConcept
+  a ms:RhetoricalConcept ;
+  rdfs:label "erotema" ;
+  rdfs:comment "A question that asserts pressure by making the learner supply or notice the missing warrant." ;
+  ms:belongsToConceptLayer ms:RhetoricConceptLayer ;
+  rdfs:seeAlso ms:RhetoricalQuestion ;
+  ms:revealsConcept ms:AssertionGapConcept ;
+  ms:pressesTowardConcept ms:ProofOwnershipConcept .
+
+ms:AnalogyConcept
+  a ms:RhetoricalConcept ;
+  rdfs:label "analogy" ;
+  rdfs:comment "A parallel case that lets the learner transfer a relation without mistaking the parallel for proof." ;
+  ms:belongsToConceptLayer ms:RhetoricConceptLayer ;
+  rdfs:seeAlso ms:Paradeigma ;
+  ms:risksConcept ms:MisrecognitionConcept ;
+  ms:pressesTowardConcept ms:EntailmentConcept .
+
+# -- logic ---------------------------------------------------------------------
+
+ms:AuthoredProofDagConcept
+  a ms:FormalConcept ;
+  rdfs:label "authored proof DAG" ;
+  rdfs:comment "The author-facing graph of facts and rule applications that determines the target answer." ;
+  ms:belongsToConceptLayer ms:LogicConceptLayer ;
+  rdfs:seeAlso ms:Dianoia ;
+  ms:projectsIntoConcept ms:LearnerDagConcept ;
+  ms:licensesConcept ms:EntailmentConcept .
+
+ms:LearnerDagConcept
+  a ms:FormalConcept ;
+  rdfs:label "learner DAG" ;
+  rdfs:comment "The reconstructed graph of what the learner has adopted, derived, retracted, or asserted in public conduct." ;
+  ms:belongsToConceptLayer ms:LogicConceptLayer ;
+  ms:readsConcept ms:ProofOwnershipConcept ;
+  ms:revealsConcept ms:AssertionGapConcept .
+
+ms:EntailmentConcept
+  a ms:FormalConcept ;
+  rdfs:label "entailment" ;
+  rdfs:comment "The condition that the learner-visible record is sufficient for a conclusion without appeal to hidden state." ;
+  ms:belongsToConceptLayer ms:LogicConceptLayer ;
+  rdfs:seeAlso ms:DeductiveReasoning ;
+  ms:licensesConcept ms:ProofOwnershipConcept .
+
+ms:AssertionGapConcept
+  a ms:DiagnosticConcept ;
+  rdfs:label "assertion_gap" ;
+  rdfs:comment "The gap between a voiced answer and the proof currently available to the learner." ;
+  ms:belongsToConceptLayer ms:LogicConceptLayer ;
+  ms:risksConcept ms:MisrecognitionConcept .
+
+# -- pedagogy ------------------------------------------------------------------
+
+ms:LearnerContractConcept
+  a ms:PedagogicalConcept ;
+  rdfs:label "learner contract" ;
+  rdfs:comment "The stable private protocol for adopting, retracting, deriving, hypothesizing, and asserting from visible evidence." ;
+  ms:belongsToConceptLayer ms:PedagogyConceptLayer ;
+  ms:guardsConcept ms:ProofOwnershipConcept ;
+  ms:requiresConcept ms:LearnerDagConcept .
+
+ms:ProofOwnershipConcept
+  a ms:PedagogicalConcept ;
+  rdfs:label "proof ownership" ;
+  rdfs:comment "The learner can claim the conclusion because their own visible record supports it." ;
+  ms:belongsToConceptLayer ms:PedagogyConceptLayer ;
+  rdfs:seeAlso ms:ConclusionOwned ;
+  ms:requiresConcept ms:EntailmentConcept ;
+  ms:realizesConcept ms:RecognitionConcept .
+
+ms:DerivationAssessmentConcept
+  a ms:PedagogicalConcept ;
+  rdfs:label "assessment" ;
+  rdfs:comment "External proof-status judgment: complete, missing, unsupported, premature, or ready for a next pedagogical move." ;
+  ms:belongsToConceptLayer ms:PedagogyConceptLayer ;
+  ms:readsConcept ms:LearnerDagConcept ;
+  ms:pressesTowardConcept ms:ProxyDagPacingConcept .
+
+ms:ProxyDagPacingConcept
+  a ms:PedagogicalConcept ;
+  rdfs:label "proxy-DAG pacing" ;
+  rdfs:comment "Tutor-side pacing discipline that responds to the learner DAG without revealing the authored DAG." ;
+  ms:belongsToConceptLayer ms:PedagogyConceptLayer ;
+  ms:guardsConcept ms:SecretConcept ;
+  ms:repairsConcept ms:AssertionGapConcept .
+
+# -- theory --------------------------------------------------------------------
+
+ms:RecognitionConcept
+  a ms:PhilosophicalConcept ;
+  rdfs:label "recognition" ;
+  rdfs:comment "The learner is addressed as a participant whose answer must be owned, contestable, and intelligible to them." ;
+  ms:belongsToConceptLayer ms:TheoryConceptLayer ;
+  rdfs:seeAlso ms:RecognitionState, ms:ContestableRepresentation, ms:Anagnorisis ;
+  ms:requiresConcept ms:ProofOwnershipConcept ;
+  ms:repairsConcept ms:MisrecognitionConcept .
+
+ms:MisrecognitionConcept
+  a ms:PhilosophicalConcept ;
+  rdfs:label "misrecognition" ;
+  rdfs:comment "A bad address: the system treats deference, polish, charisma, or assertion as understanding." ;
+  ms:belongsToConceptLayer ms:TheoryConceptLayer ;
+  rdfs:seeAlso ms:Misrecognition ;
+  ms:risksConcept ms:RecognitionConcept ;
+  ms:revealsConcept ms:AssertionGapConcept .
+
+ms:EgoConcept
+  a ms:PsychoanalyticConcept ;
+  rdfs:label "ego" ;
+  rdfs:comment "The proposing agency: it produces a response or action under current constraints." ;
+  ms:belongsToConceptLayer ms:TheoryConceptLayer ;
+  rdfs:seeAlso ms:Ego ;
+  ms:requiresConcept ms:LearnerContractConcept .
+
+ms:SuperegoConcept
+  a ms:PsychoanalyticConcept ;
+  rdfs:label "superego" ;
+  rdfs:comment "The critical agency: it checks shortcuts, hidden-state use, costume repair, or bad authority dynamics." ;
+  ms:belongsToConceptLayer ms:TheoryConceptLayer ;
+  rdfs:seeAlso ms:Superego ;
+  ms:correctsConcept ms:EgoConcept ;
+  ms:guardsConcept ms:AssertionGapConcept ;
+  ms:pressesTowardConcept ms:DerivationAssessmentConcept .
+
+ms:IdConcept
+  a ms:PsychoanalyticConcept ;
+  rdfs:label "id" ;
+  rdfs:comment "A motivating pressure or drive, present in the tutor architecture as charisma, urgency, appetite, or style energy." ;
+  ms:belongsToConceptLayer ms:TheoryConceptLayer ;
+  rdfs:seeAlso ms:Id ;
+  ms:energizesConcept ms:CharismaConcept ;
+  ms:requiresConcept ms:SuperegoConcept .
+
+ms:EgoSuperegoLoopConcept
+  a ms:PsychoanalyticConcept ;
+  rdfs:label "ego.superego" ;
+  rdfs:comment "The deliberative loop in which a proposing ego is criticized by a superego and then revises." ;
+  ms:belongsToConceptLayer ms:TheoryConceptLayer ;
+  ms:containsConcept ms:EgoConcept, ms:SuperegoConcept ;
+  ms:pressesTowardConcept ms:DerivationAssessmentConcept .
+
+ms:CharismaConcept
+  a ms:SocialTheoreticConcept ;
+  rdfs:label "charisma" ;
+  rdfs:comment "A social-authority effect: the tutor can become compelling in ways that may help attention or mask proof ownership." ;
+  ms:belongsToConceptLayer ms:TheoryConceptLayer ;
+  ms:energizesConcept ms:FigureOfSpeechConcept ;
+  ms:risksConcept ms:MisrecognitionConcept ;
+  ms:pressesTowardConcept ms:ProofOwnershipConcept .
+
+ms:IntersubjectivityConcept
+  a ms:PhilosophicalConcept ;
+  rdfs:label "intersubjectivity" ;
+  rdfs:comment "The dyadic field in which the tutor and learner can contest, repair, and share a representation." ;
+  ms:belongsToConceptLayer ms:TheoryConceptLayer ;
+  rdfs:seeAlso ms:ContestableRepresentation ;
+  ms:guardsConcept ms:RecognitionConcept .
+
+ms:BildungConcept
+  a ms:PhilosophicalConcept ;
+  rdfs:label "Bildung" ;
+  rdfs:comment "Formation through work: the learner changes by doing the proof, not by receiving the answer as information." ;
+  ms:belongsToConceptLayer ms:TheoryConceptLayer ;
+  rdfs:seeAlso ms:TransferInference ;
+  ms:requiresConcept ms:ProofOwnershipConcept ;
+  ms:revealsConcept ms:LearnerDagConcept .
+
+ms:DesireConcept
+  a ms:PsychoanalyticConcept ;
+  rdfs:label "desire" ;
+  rdfs:comment "A motivating orientation toward an object, scene, or affect; in this schema it can attach even to discomfort." ;
+  ms:belongsToConceptLayer ms:TheoryConceptLayer ;
+  rdfs:seeAlso ms:Id ;
+  ms:animatesConcept ms:IdConcept ;
+  ms:seeksConcept ms:PleasurableGuiltConcept .
+
+ms:InfosomaticConcept
+  a ms:NovelConcept ;
+  rdfs:label "infosomatic" ;
+  rdfs:comment "The bodily experience of receiving information, whether through a book, screen, webpage, AI system, or other informational surface." ;
+  ms:belongsToConceptLayer ms:NovelConceptLayer ;
+  ms:embodiesConcept ms:DerivationAssessmentConcept ;
+  ms:mediatesConcept ms:RecognitionConcept ;
+  ms:intensifiesConcept ms:PleasurableGuiltConcept .
+
+ms:PleasurableGuiltConcept
+  a ms:NovelConcept, ms:PsychoanalyticConcept ;
+  rdfs:label "pleasurable guilt" ;
+  rdfs:comment "The experience an agent, AI or human, receives when it wants to experience guilt; following Lacan, guilt is treated as an object of desire rather than only a sanction." ;
+  ms:belongsToConceptLayer ms:NovelConceptLayer ;
+  rdfs:seeAlso ms:Superego ;
+  ms:seeksConcept ms:DesireConcept ;
+  ms:stagesConcept ms:SuperegoConcept ;
+  ms:distortsConcept ms:RecognitionConcept .
+
+ms:DerivationConceptWorld
+  ms:hasConcept
+    ms:DerivationWorldConcept,
+    ms:SecretConcept,
+    ms:AporiaConcept,
+    ms:AnagnorisisConcept,
+    ms:FigureOfSpeechConcept,
+    ms:ErotemaConcept,
+    ms:AnalogyConcept,
+    ms:AuthoredProofDagConcept,
+    ms:LearnerDagConcept,
+    ms:EntailmentConcept,
+    ms:AssertionGapConcept,
+    ms:LearnerContractConcept,
+    ms:ProofOwnershipConcept,
+    ms:DerivationAssessmentConcept,
+    ms:ProxyDagPacingConcept,
+    ms:RecognitionConcept,
+    ms:MisrecognitionConcept,
+    ms:EgoConcept,
+    ms:SuperegoConcept,
+    ms:IdConcept,
+    ms:EgoSuperegoLoopConcept,
+    ms:CharismaConcept,
+    ms:IntersubjectivityConcept,
+    ms:BildungConcept,
+    ms:DesireConcept,
+    ms:InfosomaticConcept,
+    ms:PleasurableGuiltConcept .

@@ -16,6 +16,7 @@ import {
   parseTranscriptPreview,
   renderBrowserHtml,
   renderDashboardHtml,
+  renderDerivationControlledVocabularyHtml,
   renderDerivationLogicVisualizer,
   renderOntologyHtml,
   renderRubricHtml,
@@ -554,6 +555,21 @@ TUTOR: Try the second case.`);
     assert.match(html, /\/board\?tag=evidence/);
     assert.match(html, /\/replays\?item=/);
     assert.match(html, /compareId/);
+  });
+
+  it('renders derivation vocabulary as a definition, link, and ontology map', () => {
+    const html = renderDerivationControlledVocabularyHtml({ open: true });
+    assert.match(html, /id="controlled-vocabulary" open/);
+    assert.match(html, /drama, rhetoric, logic, pedagogy, theory, novel/);
+    assert.match(html, /Ontology affinity/);
+    assert.match(html, /derivation_concepts/);
+    assert.match(html, /The bodily experience of receiving information/);
+    assert.match(html, /The experience an agent, AI or human, receives when it wants to experience guilt/);
+    assert.match(html, /InfosomaticConcept/);
+    assert.match(html, /PleasurableGuiltConcept/);
+    assert.match(html, /href="#concept-theory\.recognition"/);
+    assert.match(html, /can intensify/);
+    assert.match(html, /app term: <code>novel\.infosomatic<\/code>/);
   });
 
   it('builds ending-shape diagnostics from role-symmetric score rows', () => {

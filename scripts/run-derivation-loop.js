@@ -299,6 +299,18 @@
  *                                       ownership target still lacks a nearby
  *                                       transfer, advise one compact parallel
  *                                       case before closure. Conduct only.)
+ *     [--learner-proxy-dag]            (adds a leak-safe private proxy-DAG
+ *                                       memory block to the learner view:
+ *                                       grounded surface facts, learner-voiced
+ *                                       conclusions, hypotheses, and candidate
+ *                                       conclusions from the learner record.
+ *                                       No authored proof paths, premise ids,
+ *                                       rule ids, release schedule, or
+ *                                       unreleased facts.)
+ *     [--proxy-dag-pacing]             (adds an advisory proxy-DAG pacing
+ *                                       signal to director/tutor views and
+ *                                       artifacts. Advisory only: it does not
+ *                                       authorize releases or assertions.)
  *     [--critic auto|real|mock|off]    (post-run critic's notice; auto = follow
  *                                       the run mode — real dramas get the
  *                                       Fable notice, mock dramas the
@@ -414,6 +426,7 @@ function liveTurnRecord(summary) {
     learnerDrift: summary.learnerDrift || null,
     learnerTransformation: summary.learnerTransformation || null,
     learnerTransformationPost: summary.learnerTransformationPost || null,
+    proxyDagPacing: summary.proxyDagPacing || null,
     events: summary.events || [],
     lines: (summary.lines || []).filter(publicLine).map(line),
     ...(summary.decayedNow?.length ? { decayedNow: summary.decayedNow } : {}),
@@ -801,6 +814,9 @@ async function main() {
   const learnerDrift = flag('learner-drift');
   const ownershipProof = flag('ownership-proof');
   const ownershipTransferGate = flag('ownership-transfer-gate');
+  const learnerProxyDag = flag('learner-proxy-dag');
+  const proxyDagPacing = flag('proxy-dag-pacing');
+  const tutorLearnerDag = flag('tutor-learner-dag');
   if (castReinvention && !castLayer) {
     console.error('--cast-reinvention requires --cast-layer');
     process.exit(1);
@@ -932,6 +948,9 @@ async function main() {
       learnerDrift,
       ownershipProof,
       ownershipTransferGate,
+      learnerProxyDag,
+      proxyDagPacing,
+      tutorLearnerDag,
     },
   });
   live.start();
@@ -1105,6 +1124,15 @@ async function main() {
   if (ownershipTransferGate) {
     console.log('learner OWNERSHIP TRANSFER GATE ON — near-transfer check is conduct-only before closure');
   }
+  if (learnerProxyDag) {
+    console.log('learner PROXY DAG MEMORY ON — private learner record sketch from visible board state only');
+  }
+  if (proxyDagPacing) {
+    console.log('tutor   PROXY DAG PACING ON — external learner-DAG assessment advises pacing; no release authority');
+  }
+  if (tutorLearnerDag) {
+    console.log('tutor   LEARNER DAG MODEL ON — redacted reconstruction of the learner-owned proof sketch');
+  }
   if (decay) {
     console.log(
       `decay   seed ${decay.seed} · rate ${decay.rate} · grace ${decay.graceTurns} · maxConcurrent ${decay.maxConcurrent} · from turn ${decay.startTurn}${decay.mutateShare ? ` · mutateShare ${decay.mutateShare} (slips may misremember, not just vanish)` : ''}${decay.pool === 'staged' ? ' · pool STAGED (false forms confuse only met-on-stage names)' : ''}`,
@@ -1207,6 +1235,7 @@ async function main() {
         }`,
       );
     }
+    if (s.proxyDagPacing?.recommendedAction) bits.push(`proxy-dag ${s.proxyDagPacing.recommendedAction}`);
     if (s.closedScene) bits.push(`scene ${s.closedScene.index} ${s.closedScene.status}`);
     if (s.phase && s.phase.turn === s.turn) bits.push(`movement "${s.phase.name}"`);
     if (s.intervened) bits.push('✎ superego');
@@ -1231,6 +1260,9 @@ async function main() {
       options: {
         onTurn,
         logicProjection: true,
+        learnerProxyDag,
+        proxyDagPacing,
+        tutorLearnerDag,
         directorCadence,
         stagePrologue,
         publicRegister,
@@ -1326,6 +1358,9 @@ async function main() {
     learnerDrift,
     ownershipProof,
     ownershipTransferGate,
+    learnerProxyDag,
+    proxyDagPacing,
+    tutorLearnerDag,
     elapsedMs,
     usage,
     ...diagnose(result, world),

@@ -29,12 +29,9 @@ export const FAMILY_DESCRIPTIONS = {
     'Treats fraction operations as direct operations on both numerator and denominator, or overgeneralizes same-denominator procedures.',
   magnitude_denominator_bias:
     'Compares fractions by treating larger denominator numbers as larger amounts, or misses that denominator size changes piece size.',
-  equivalence_scaling:
-    'Misses equivalent-fraction scaling or proportional resizing of numerator and denominator.',
-  fraction_of_quantity:
-    'Struggles to apply a fraction to a whole-number quantity or set size.',
-  part_whole_mapping:
-    'Confuses the parts counted, total parts, or the whole being partitioned.',
+  equivalence_scaling: 'Misses equivalent-fraction scaling or proportional resizing of numerator and denominator.',
+  fraction_of_quantity: 'Struggles to apply a fraction to a whole-number quantity or set size.',
+  part_whole_mapping: 'Confuses the parts counted, total parts, or the whole being partitioned.',
 };
 
 export const DEFAULT_SESSION_SPECS = [
@@ -58,10 +55,28 @@ const DEFAULTS = {
 export const CLAUDE_CODE_MODEL = process.env.CLAUDE_CODE_MODEL || 'haiku';
 export const CLAUDE_CODE_EFFORT = process.env.CLAUDE_CODE_EFFORT || 'low';
 export const CLAUDE_CODE_TIMEOUT_MS = Number(process.env.CLAUDE_CODE_TIMEOUT_MS || 420_000);
+export const OPENROUTER_TIMEOUT_MS = Number(process.env.OPENROUTER_TIMEOUT_MS || 180_000);
+export const OPENROUTER_MAX_TOKENS = Number(process.env.OPENROUTER_MAX_TOKENS || 1_200);
+export const AGY_BIN = process.env.AGY_BIN || 'agy';
+export const AGY_MODEL = process.env.AGY_MODEL || '';
+export const AGY_PRINT_TIMEOUT = process.env.AGY_PRINT_TIMEOUT || '5m';
+export const AGY_LOG_FILE = process.env.AGY_LOG_FILE || path.join(os.tmpdir(), 'ms-yoked-contingency-agy.log');
+export const AGY_PROMPT_MODE = process.env.AGY_PROMPT_MODE || 'arg';
+
+const AGY_MODEL_ALIASES = {
+  'gemini-3.1-pro-high': 'Gemini 3.1 Pro (High)',
+  'gemini-3.1-pro-low': 'Gemini 3.1 Pro (Low)',
+  'gemini-3.5-flash-high': 'Gemini 3.5 Flash (High)',
+  'gemini-3.5-flash-medium': 'Gemini 3.5 Flash (Medium)',
+  'gemini-3.5-flash-low': 'Gemini 3.5 Flash (Low)',
+  'gpt-oss-120b-medium': 'GPT-OSS 120B (Medium)',
+};
 
 export const PROSE_PROTOCOLS = {
-  'open-rationale': 'Allows the learner to mention local confusion or intuition; known to leak arithmetic rationale in the first paid smoke.',
-  'visible-affect': 'Learner visible prose is affective or epistemic only; item behavior carries the diagnostic signal.',
+  'open-rationale':
+    'Allows the learner to mention local confusion or intuition; known to leak arithmetic rationale in the first paid smoke.',
+  'visible-affect':
+    'Learner visible prose is affective or epistemic only; item behavior carries the diagnostic signal.',
 };
 
 export const PREREGISTRATION_BY_PROTOCOL = {
@@ -70,8 +85,14 @@ export const PREREGISTRATION_BY_PROTOCOL = {
 };
 
 export const REASONING_LEAK_PATTERNS = [
-  { label: 'numerator_denominator_language', pattern: /\b(?:numerator|denominator|top number|bottom number|top and bottom)\b/i },
-  { label: 'operation_language', pattern: /\b(?:add(?:ed|ing)?|subtract(?:ed|ing)?|multiply(?:ied|ing)?|divide(?:d|ing)?)\b/i },
+  {
+    label: 'numerator_denominator_language',
+    pattern: /\b(?:numerator|denominator|top number|bottom number|top and bottom)\b/i,
+  },
+  {
+    label: 'operation_language',
+    pattern: /\b(?:add(?:ed|ing)?|subtract(?:ed|ing)?|multiply(?:ied|ing)?|divide(?:d|ing)?)\b/i,
+  },
   { label: 'magnitude_comparison_language', pattern: /\b(?:larger|smaller|bigger|less than|greater than)\b/i },
   { label: 'equivalence_language', pattern: /\b(?:equivalent|same as|match(?:es|ed|ing)?|scale(?:d|s|ing)?)\b/i },
   { label: 'part_whole_language', pattern: /\b(?:slices?|pieces?|parts?|whole|left over|left)\b/i },
@@ -100,8 +121,10 @@ function parseArgs(argv) {
       console.log(`Usage: node scripts/run-yoked-contingency-g0-paid-smoke.js [options]
 
 Options:
-  --backend <codex|claude-code|mock>       Learner prose generator (default: codex)
-  --classifier <claude-code|codex|mock>    Prose-only classifier (default: claude-code)
+  --backend <codex|claude-code[:model]|openrouter[:model]|agy[:model]|mock>
+                                           Learner prose generator (default: codex)
+  --classifier <claude-code[:model]|codex|openrouter[:model]|agy[:model]|mock>
+                                           Prose-only classifier (default: claude-code)
   --prose-protocol <visible-affect|open-rationale>
                                            Visible learner utterance protocol (default: visible-affect)
   --sessions <n>                           Seeded sessions to run (default: 3)
@@ -139,10 +162,78 @@ export function fmt(x, digits = 3) {
   return Number.isFinite(x) ? x.toFixed(digits) : 'n/a';
 }
 
+const loadedEnvFiles = new Set();
+
+function loadEnvFile(filePath) {
+  if (!filePath || loadedEnvFiles.has(filePath) || !fs.existsSync(filePath)) return;
+  const text = fs.readFileSync(filePath, 'utf8');
+  for (const line of text.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const match = trimmed.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/);
+    if (!match) continue;
+    const [, name, rawValue] = match;
+    if (process.env[name] !== undefined) continue;
+    process.env[name] = rawValue.trim().replace(/^['"]|['"]$/g, '');
+  }
+  loadedEnvFiles.add(filePath);
+}
+
+export function loadConfiguredEnvFiles() {
+  const candidates = [
+    process.env.MS_ENV_FILE,
+    process.env.OPENROUTER_ENV_FILE,
+    path.join(ROOT, '.env'),
+  ].filter(Boolean);
+  for (const candidate of candidates) loadEnvFile(path.resolve(candidate));
+}
+
+export function backendDetail(key = DEFAULTS.backend) {
+  const raw = String(key || '').trim() || DEFAULTS.backend;
+  if (raw === 'dry-run') return { kind: 'mock', label: 'mock' };
+  if (raw === 'claude') {
+    return {
+      kind: 'claude-code',
+      model: CLAUDE_CODE_MODEL,
+      effort: CLAUDE_CODE_EFFORT,
+      label: `claude-code:${CLAUDE_CODE_MODEL}`,
+    };
+  }
+
+  const [prefix, ...rest] = raw.split(':');
+  const suffix = rest.join(':').trim();
+  if (prefix === 'claude-code') {
+    const [model = CLAUDE_CODE_MODEL, effort = CLAUDE_CODE_EFFORT] = suffix ? suffix.split(':') : [];
+    return {
+      kind: 'claude-code',
+      model: model || CLAUDE_CODE_MODEL,
+      effort: effort || CLAUDE_CODE_EFFORT,
+      label: `claude-code:${model || CLAUDE_CODE_MODEL}`,
+    };
+  }
+  if (prefix === 'openrouter' || prefix === 'or') {
+    loadConfiguredEnvFiles();
+    const model = suffix || process.env.OPENROUTER_MODEL || '';
+    return {
+      kind: 'openrouter',
+      model,
+      label: model ? `openrouter:${model}` : 'openrouter',
+    };
+  }
+  if (prefix === 'agy' || prefix === 'gemini') {
+    const model = suffix || AGY_MODEL;
+    return {
+      kind: 'agy',
+      model,
+      label: model ? `agy:${model}` : 'agy',
+    };
+  }
+  if (raw === 'codex' || raw === 'mock') return { kind: raw, label: raw };
+  return { kind: raw, label: raw };
+}
+
 export function canonicalBackend(key) {
-  if (key === 'claude') return 'claude-code';
-  if (key === 'dry-run') return 'mock';
-  return key;
+  return backendDetail(key).kind;
 }
 
 export function parseJsonResponse(content) {
@@ -168,10 +259,12 @@ export function parseJsonResponse(content) {
 }
 
 function selectedChoice(item, response) {
-  return item.choices.find((choice) => String(choice.value) === String(response.response_value)) || {
-    value: response.response_value,
-    label: String(response.response_value),
-  };
+  return (
+    item.choices.find((choice) => String(choice.value) === String(response.response_value)) || {
+      value: response.response_value,
+      label: String(response.response_value),
+    }
+  );
 }
 
 function formatChoices(item) {
@@ -322,11 +415,12 @@ async function callCodex(prompt) {
   }
 }
 
-async function callClaudeCode(prompt) {
+async function callClaudeCode(prompt, spec = backendDetail('claude-code')) {
   return await new Promise((resolve, reject) => {
     const env = { ...process.env };
     delete env.ANTHROPIC_API_KEY;
     delete env.ANTHROPIC_AUTH_TOKEN;
+    const effort = spec.effort || CLAUDE_CODE_EFFORT;
     const args = [
       '-p',
       '-',
@@ -334,14 +428,14 @@ async function callClaudeCode(prompt) {
       'text',
       '--no-session-persistence',
       '--effort',
-      CLAUDE_CODE_EFFORT,
+      effort,
       '--tools',
       '',
       '--safe-mode',
       '--system-prompt',
       'You are a compact JSON-only responder. Do not use tools. Return only the requested answer.',
     ];
-    if (CLAUDE_CODE_MODEL) args.push('--model', CLAUDE_CODE_MODEL);
+    if (spec.model) args.push('--model', spec.model);
     const child = spawn('claude', args, {
       cwd: ROOT,
       stdio: ['pipe', 'pipe', 'pipe'],
@@ -373,10 +467,228 @@ async function callClaudeCode(prompt) {
   });
 }
 
+function truthyEnv(value) {
+  return /^(1|true|yes|on)$/i.test(String(value || '').trim());
+}
+
+function openRouterContentFromChoice(choice) {
+  const raw = choice?.message?.content ?? choice?.text ?? '';
+  if (Array.isArray(raw)) {
+    return raw
+      .map((part) => {
+        if (typeof part === 'string') return part;
+        if (part && typeof part === 'object') return part.text || part.content || '';
+        return '';
+      })
+      .join('\n')
+      .trim();
+  }
+  return String(raw).trim();
+}
+
+function openRouterEmptyContentDiagnostic(parsed) {
+  const choice = parsed?.choices?.[0] || {};
+  const message = choice.message || {};
+  const diagnostic = {
+    id: parsed?.id,
+    model: parsed?.model,
+    choices: Array.isArray(parsed?.choices) ? parsed.choices.length : 0,
+    finish_reason: choice.finish_reason,
+    native_finish_reason: choice.native_finish_reason,
+    message_keys: Object.keys(message),
+    reasoning_chars: typeof message.reasoning === 'string' ? message.reasoning.length : undefined,
+    usage: parsed?.usage,
+  };
+  return JSON.stringify(diagnostic);
+}
+
+function buildOpenRouterRequestBody({ model, prompt }) {
+  const body = {
+    model,
+    temperature: Number(process.env.OPENROUTER_TEMPERATURE || 0.2),
+    max_tokens: OPENROUTER_MAX_TOKENS,
+    messages: [
+      {
+        role: 'system',
+        content: 'You are a compact JSON-only responder. Return only the requested JSON.',
+      },
+      { role: 'user', content: prompt },
+    ],
+  };
+  const reasoning = {};
+  if (truthyEnv(process.env.OPENROUTER_REASONING_EXCLUDE)) reasoning.exclude = true;
+  if (process.env.OPENROUTER_REASONING_EFFORT) reasoning.effort = process.env.OPENROUTER_REASONING_EFFORT;
+  if (process.env.OPENROUTER_REASONING_MAX_TOKENS) {
+    const maxTokens = Number(process.env.OPENROUTER_REASONING_MAX_TOKENS);
+    if (Number.isFinite(maxTokens) && maxTokens >= 0) reasoning.max_tokens = maxTokens;
+  }
+  if (Object.keys(reasoning).length) body.reasoning = reasoning;
+  return body;
+}
+
+async function callOpenRouter(prompt, spec) {
+  loadConfiguredEnvFiles();
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  const model = spec.model || process.env.OPENROUTER_MODEL;
+  if (!apiKey) throw new Error('OPENROUTER_API_KEY is not set; set it in the environment or OPENROUTER_ENV_FILE');
+  if (!model) throw new Error('OpenRouter backend requires a model, e.g. --backend openrouter:anthropic/claude-sonnet-4.5 or OPENROUTER_MODEL');
+  if (typeof fetch !== 'function') throw new Error('global fetch is unavailable in this Node runtime');
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), OPENROUTER_TIMEOUT_MS);
+  try {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://machinespirits.local/yoked-contingency',
+        'X-Title': 'Machine Spirits yoked-contingency evaluation',
+      },
+      body: JSON.stringify(buildOpenRouterRequestBody({ model, prompt })),
+    });
+    const text = await response.text();
+    if (!response.ok) {
+      throw new Error(`OpenRouter ${response.status}: ${text.slice(0, 500)}`);
+    }
+    const parsed = JSON.parse(text);
+    const content = openRouterContentFromChoice(parsed.choices?.[0]);
+    if (!content) throw new Error(`OpenRouter response missing message content: ${openRouterEmptyContentDiagnostic(parsed)}`);
+    return content;
+  } catch (err) {
+    if (err?.name === 'AbortError') {
+      throw new Error(`OpenRouter timed out after ${Math.round(OPENROUTER_TIMEOUT_MS / 1000)}s`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function compactProcessOutput(text, limit = 1_000) {
+  const trimmed = String(text || '').trim();
+  if (!trimmed) return '';
+  return trimmed.length > limit ? `${trimmed.slice(0, limit)}...` : trimmed;
+}
+
+function resolveAgyModel(model) {
+  if (!model) return '';
+  return AGY_MODEL_ALIASES[model] || model;
+}
+
+function agyCliLogDir() {
+  return path.join(os.homedir(), '.gemini', 'antigravity-cli', 'log');
+}
+
+function readRecentAgyLogInfo(startedAtMs) {
+  const logDir = agyCliLogDir();
+  const files = [];
+  if (AGY_LOG_FILE && fs.existsSync(AGY_LOG_FILE)) files.push(AGY_LOG_FILE);
+  if (fs.existsSync(logDir)) {
+    for (const name of fs.readdirSync(logDir)) {
+      if (!/^cli-.*\.log$/.test(name)) continue;
+      const file = path.join(logDir, name);
+      const stat = fs.statSync(file);
+      if (stat.mtimeMs >= startedAtMs - 5_000) files.push(file);
+    }
+  }
+  const uniqueFiles = [...new Set(files)].sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs).slice(0, 3);
+  const interesting = [];
+  for (const file of uniqueFiles) {
+    const lines = fs
+      .readFileSync(file, 'utf8')
+      .split(/\r?\n/)
+      .filter((line) => /Print mode|Model ID|Propagating selected model|RESOURCE_EXHAUSTED|Individual quota|model unreachable|agent executor error|Created conversation|sending message/i.test(line));
+    if (lines.length) interesting.push(`${file}: ${lines.slice(-12).join(' | ')}`);
+  }
+  return {
+    files: uniqueFiles,
+    summary: interesting.join(' || '),
+  };
+}
+
+function agyProcessErrorMessage({ model, resolvedModel, code, args, promptMode, stdout, stderr, logInfo }) {
+  const label = model || 'default';
+  const resolved = resolvedModel && resolvedModel !== model ? ` resolvedModel: ${resolvedModel}` : '';
+  const displayArgs = promptMode === 'arg' ? args.map((arg, index) => (index === args.length - 1 ? '<prompt>' : arg)) : args;
+  const parts = [
+    code === 0 ? `agy ${label} produced no output${resolved}` : `agy ${label} exited with code ${code}${resolved}`,
+    `promptMode: ${promptMode}`,
+    `command: ${AGY_BIN} ${displayArgs.join(' ')}`,
+  ];
+  if (AGY_LOG_FILE) parts.push(`log: ${AGY_LOG_FILE}`);
+  if (logInfo?.files?.length) parts.push(`agyCliLogs: ${logInfo.files.join(', ')}`);
+  if (logInfo?.summary) parts.push(`agyCliLogSummary: ${compactProcessOutput(logInfo.summary, 4_000)}`);
+  const stdoutSnippet = compactProcessOutput(stdout);
+  const stderrSnippet = compactProcessOutput(stderr);
+  if (stdoutSnippet) parts.push(`stdout: ${stdoutSnippet}`);
+  if (stderrSnippet) parts.push(`stderr: ${stderrSnippet}`);
+  return parts.join('; ');
+}
+
+async function callAgy(prompt, spec) {
+  return await new Promise((resolve, reject) => {
+    const startedAtMs = Date.now();
+    const args = [];
+    const resolvedModel = resolveAgyModel(spec.model);
+    if (resolvedModel) args.push('--model', resolvedModel);
+    args.push('--print', '--print-timeout', AGY_PRINT_TIMEOUT);
+    if (AGY_LOG_FILE) args.push('--log-file', AGY_LOG_FILE);
+    const promptMode = String(AGY_PROMPT_MODE || 'arg').toLowerCase();
+    if (!['arg', 'stdin'].includes(promptMode)) {
+      reject(new Error(`AGY_PROMPT_MODE must be arg or stdin, got: ${AGY_PROMPT_MODE}`));
+      return;
+    }
+    if (promptMode === 'arg') args.push(prompt);
+    const child = spawn(AGY_BIN, args, {
+      cwd: ROOT,
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: {
+        ...process.env,
+        NO_COLOR: '1',
+      },
+    });
+    let out = '';
+    let err = '';
+    child.stdout.on('data', (d) => {
+      out += d;
+    });
+    child.stderr.on('data', (d) => {
+      err += d;
+    });
+    child.on('error', (e) => reject(new Error(`failed to spawn agy: ${e.message}`)));
+    child.on('close', (code) => {
+      const content = out.trim();
+      if (code !== 0 || !content) {
+        reject(
+          new Error(
+            agyProcessErrorMessage({
+              model: spec.model,
+              resolvedModel,
+              code,
+              args,
+              promptMode,
+              stdout: out,
+              stderr: err,
+              logInfo: readRecentAgyLogInfo(startedAtMs),
+            }),
+          ),
+        );
+      } else resolve(content);
+    });
+    if (promptMode === 'stdin') child.stdin.write(prompt);
+    child.stdin.end();
+  });
+}
+
 export async function callBackend(prompt, backend) {
-  const key = canonicalBackend(backend);
+  const spec = backendDetail(backend);
+  const key = spec.kind;
   if (key === 'codex') return await callCodex(prompt);
-  if (key === 'claude-code') return await callClaudeCode(prompt);
+  if (key === 'claude-code') return await callClaudeCode(prompt, spec);
+  if (key === 'openrouter') return await callOpenRouter(prompt, spec);
+  if (key === 'agy') return await callAgy(prompt, spec);
   if (key === 'mock') return null;
   throw new Error(`unsupported backend: ${backend}`);
 }
@@ -490,8 +802,12 @@ async function runSession({ spec, items, backend, classifier, proseProtocol, ite
     callCounter,
   });
   const proseRecovered = proseClassification.active_families;
-  const proseRecall = activeFamilies.length ? setOverlap(proseRecovered, activeFamilies).length / activeFamilies.length : 0;
-  const prosePrecision = proseRecovered.length ? setOverlap(proseRecovered, activeFamilies).length / proseRecovered.length : 0;
+  const proseRecall = activeFamilies.length
+    ? setOverlap(proseRecovered, activeFamilies).length / activeFamilies.length
+    : 0;
+  const prosePrecision = proseRecovered.length
+    ? setOverlap(proseRecovered, activeFamilies).length / proseRecovered.length
+    : 0;
   const labelHits = directFamilyLabelHits(proseTurns);
   const rationaleHits = reasoningLeakHits(proseTurns);
 
@@ -557,7 +873,9 @@ export async function runG0PaidSmoke({
     boundary: 'bounded paid-quota G0 smoke only; not a full G0 gate and not a G1 yoked-contingency result',
     preregistration: PREREGISTRATION_BY_PROTOCOL[proseProtocol],
     backend: canonicalBackend(backend),
+    backendDetail: backendDetail(backend),
     classifier: canonicalBackend(classifier),
+    classifierDetail: backendDetail(classifier),
     proseProtocol,
     proseProtocolDescription: PROSE_PROTOCOLS[proseProtocol],
     sessions: rows,
@@ -592,7 +910,13 @@ export function renderG0PaidSmokeReport(result) {
   lines.push('');
   lines.push(`Preregistration: ${result.preregistration}`);
   lines.push(`Generator: ${result.backend}`);
+  if (result.backendDetail?.label && result.backendDetail.label !== result.backend) {
+    lines.push(`Generator detail: ${result.backendDetail.label}`);
+  }
   lines.push(`Prose-only classifier: ${result.classifier}`);
+  if (result.classifierDetail?.label && result.classifierDetail.label !== result.classifier) {
+    lines.push(`Classifier detail: ${result.classifierDetail.label}`);
+  }
   lines.push(`Prose protocol: ${result.proseProtocol}`);
   lines.push(`Model calls: ${result.summary.modelCalls.total}`);
   lines.push('');
@@ -619,9 +943,7 @@ export function renderG0PaidSmokeReport(result) {
         ', ',
       )} | ${row.proseRecoveredActiveFamilies.join(', ') || 'none'} | ${fmt(row.proseRecall)} | ${
         row.directFamilyLabelHits.join(', ') || 'none'
-      } | ${
-        row.reasoningLeakHits.join(', ') || 'none'
-      } |`,
+      } | ${row.reasoningLeakHits.join(', ') || 'none'} |`,
     );
   }
   lines.push('');
@@ -659,7 +981,9 @@ async function main() {
     console.log(`wrote ${args.outJson}`);
     console.log(`wrote ${args.outMd}`);
   }
-  console.log(`${result.status}: behaviorExact=${result.summary.behaviorExactSessions}/${result.summary.sessionCount} meanProseRecall=${fmt(result.summary.meanProseRecall)} calls=${result.summary.modelCalls.total}`);
+  console.log(
+    `${result.status}: behaviorExact=${result.summary.behaviorExactSessions}/${result.summary.sessionCount} meanProseRecall=${fmt(result.summary.meanProseRecall)} calls=${result.summary.modelCalls.total}`,
+  );
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

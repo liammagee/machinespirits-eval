@@ -2,10 +2,13 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { parseArgs, scoreDerivationRubricSuite } from '../scripts/score-derivation-transcript-rubric-suite.js';
 
-function writeRun(root, label, { verdict = 'grounded_anagnorisis', finalD = 0 } = {}) {
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+function writeRun(root, label, { verdict = 'grounded_anagnorisis', finalD = 0, worldPath = null } = {}) {
   const dir = path.join(root, label);
   fs.mkdirSync(dir, { recursive: true });
   const live = {
@@ -45,12 +48,14 @@ function writeRun(root, label, { verdict = 'grounded_anagnorisis', finalD = 0 } 
     turnsPlayed: 2,
     firstForcedTurn: 2,
     assertedGroundedTurn: 2,
+    transcript: live.turns.flatMap((turn) => turn.lines.map((line) => ({ turn: turn.turn, ...line }))),
   };
   const diagnosis = {
     verdict,
     turnsPlayed: 2,
     firstForcedTurn: 2,
     assertedGroundedTurn: 2,
+    ...(worldPath ? { worldPath } : {}),
     releaseAdherence: {
       rows: [{ premise: 'safe_fixture', plannedTurn: 2, actualTurn: 2, status: 'on_cue' }],
       onCue: 1,
@@ -108,8 +113,9 @@ test('scoreDerivationRubricSuite writes proof gate, prompts, and unscored report
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'derivation-rubric-suite-'));
   const runDir = path.join(tmp, 'runs');
   const outDir = path.join(tmp, 'out');
-  writeRun(runDir, 'fixture-s0');
-  writeRun(runDir, 'fixture-s1');
+  const worldPath = path.join(ROOT, 'config/drama-derivation/world-000-smoke.yaml');
+  writeRun(runDir, 'fixture-s0', { worldPath });
+  writeRun(runDir, 'fixture-s1', { worldPath });
 
   const manifest = await scoreDerivationRubricSuite({
     labels: ['fixture-s0', 'fixture-s1'],
@@ -121,12 +127,19 @@ test('scoreDerivationRubricSuite writes proof gate, prompts, and unscored report
 
   assert.equal(manifest.results.length, 2);
   assert.equal(manifest.results[0].proofGate.status, 'pass');
+  assert.equal(manifest.results[0].dagProfile.schema, 'machinespirits.derivation.human-readable-dag.v1');
+  assert.equal(manifest.results[0].learnerDag.schema, 'machinespirits.derivation.learner-dag.v1');
+  assert.equal(manifest.results[0].learnerDagAssessment.status, 'available');
+  assert.equal(manifest.results[0].assessment.authority.externalAssessment, 'advisory');
   assert.equal(manifest.results[0].rubrics.dialogue_quality.status, 'not_scored');
   assert.ok(fs.existsSync(path.join(outDir, 'prompts', 'fixture-s0.dialogue_quality.md')));
   assert.ok(fs.existsSync(path.join(outDir, 'prompts', 'fixture-s1.poetics.md')));
 
   const report = fs.readFileSync(path.join(outDir, 'report.md'), 'utf8');
   assert.match(report, /proof\/problem-solving gate is primary/u);
+  assert.match(report, /Authored proof DAG:/u);
+  assert.match(report, /Learner DAG: source/u);
+  assert.match(report, /path_1: p1@t2 -> p2@t5 -> p3@t8/u);
   assert.match(report, /Dialogue Quality v2\.2/u);
   assert.ok(fs.existsSync(path.join(outDir, 'scores.json')));
 });

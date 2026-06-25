@@ -230,6 +230,100 @@ function factSurface(view, fact) {
   return view.factSurfaces?.[factKey(fact)] || naturalFact(fact);
 }
 
+function renderRowSurfaces(rows = [], key = 'surface', limit = 6) {
+  const values = rows
+    .map((row) => String(row?.[key] ?? '').trim())
+    .filter(Boolean)
+    .slice(0, limit);
+  if (!values.length) return '(none)';
+  const suffix = rows.length > limit ? `; +${rows.length - limit} more` : '';
+  return `${values.join('; ')}${suffix}`;
+}
+
+function learnerProxyDagMemoryLines(memory, terms) {
+  if (!memory) return [];
+  const answers = memory.answerCandidates?.length
+    ? memory.answerCandidates
+        .slice(0, 3)
+        .map((entry) => `${entry.answer || 'answer'} (${entry.surface})`)
+        .join('; ')
+    : '(none)';
+  return [
+    '',
+    'PRIVATE PROXY PROOF SKETCH (your memory, not a new exhibit):',
+    `- grounded in your ${terms.record}: ${renderRowSurfaces(memory.grounded)}`,
+    `- already voiced by you: ${renderRowSurfaces(memory.voicedDerived)}`,
+    `- candidate conclusions your ${terms.record} may support: ${renderRowSurfaces(memory.candidateConclusions)}`,
+    `- answer candidates from your ${terms.record}: ${answers}`,
+    memory.answerCandidates?.length
+      ? '- If an answer candidate now settles the public question, put its exact private answer name in "asserts_answer"; say it aloud only in ordinary words.'
+      : '- If no answer candidate is listed, do not answer yet.',
+    'Use this only to tend your private record. Do not say interface words aloud.',
+  ];
+}
+
+function proxyDagPacingLines(signal) {
+  if (!signal) return [];
+  const missingBuckets = Object.entries(signal.missingPremiseBuckets || {})
+    .filter(([, count]) => Number(count) > 0)
+    .map(([bucket, count]) => `${bucket}: ${count}`)
+    .join(', ');
+  const reasonByAction = {
+    complete: 'the learner has grounded and asserted the answer',
+    prompt_assertion: 'the learner record entails the answer, but the learner has not asserted it',
+    repair_uptake: 'released proof material is not yet held in the learner record',
+    release_evidence: 'the learner appears stalled before still-missing proof material',
+    hold_until_evidence_due: 'the best-path gap remains unavailable or not yet due',
+    prompt_intermediate_inference: 'the material is held, but the learner has not connected the inference',
+    continue: 'no proxy-DAG pacing intervention is recommended',
+    unavailable: 'learner-DAG assessment is unavailable',
+  };
+  return [
+    '',
+    'PROXY-DAG PACING ADVISOR (harness advisory, not dialogue):',
+    `- action: ${signal.recommendedAction}; bottleneck: ${signal.bottleneck}; coverage: ${
+      Number.isFinite(signal.bestPathCoverage) ? signal.bestPathCoverage : 'n/a'
+    }`,
+    `- reason: ${reasonByAction[signal.recommendedAction] || 'no redacted reason available'}`,
+    missingBuckets ? `- missing best-path material by bucket: ${missingBuckets}` : '- missing best-path material: none',
+  ];
+}
+
+function tutorLearnerDagModelLines(model) {
+  if (!model) return [];
+  const assessment = model.assessment || {};
+  const missingBuckets = Object.entries(assessment.missingPremiseBuckets || {})
+    .filter(([, count]) => Number(count) > 0)
+    .map(([bucket, count]) => `${bucket}: ${count}`)
+    .join(', ');
+  const answers = model.learnerRecord?.answerCandidates?.length
+    ? model.learnerRecord.answerCandidates
+        .slice(0, 3)
+        .map((entry) => `${entry.answer || 'answer'} (${entry.surface})`)
+        .join('; ')
+    : '(none)';
+  return [
+    '',
+    'LEARNER-DAG MODEL (external reconstruction; do not name it aloud):',
+    `- learner grounded record: ${renderRowSurfaces(model.learnerRecord?.grounded || [])}`,
+    `- learner voiced conclusions: ${renderRowSurfaces(model.learnerRecord?.voicedDerived || [])}`,
+    `- learner hypotheses: ${renderRowSurfaces(model.learnerRecord?.hypotheses || [], 'text', 4)}`,
+    `- candidate conclusions from that record: ${renderRowSurfaces(model.learnerRecord?.candidateConclusions || [])}`,
+    `- answer candidates from that record: ${answers}`,
+    `- assessment: coverage ${
+      Number.isFinite(assessment.bestPathCoverage) ? assessment.bestPathCoverage : 'n/a'
+    }; entails answer ${assessment.finalSecretEntailed ? 'yes' : 'no'}; asserted answer ${
+      assessment.assertedSecret ? 'yes' : 'no'
+    }; unsupported assertions ${assessment.unsupportedAssertionCount || 0}; bottleneck ${
+      assessment.bottleneck || 'unavailable'
+    }`,
+    missingBuckets
+      ? `- missing proof material by bucket: ${missingBuckets}`
+      : '- missing proof material by bucket: none',
+    'Use this as a model of what the learner currently owns. Do not reveal proof paths, hidden labels, or interface terms.',
+  ];
+}
+
 function answerFromBinding(binding) {
   if (!binding || typeof binding !== 'object') return null;
   const value = Object.values(binding).find((v) => typeof v === 'string' && v.trim());
@@ -835,6 +929,7 @@ export function makeLlmDirector(
       renderTranscriptTail(view.transcript),
       ...publicRegisterTurnLines(activeRegisterName, publicRegister),
       ...castLayerLines(castState, 'director'),
+      ...proxyDagPacingLines(view.proxyDagPacing),
       '',
       task,
     ].join('\n');
@@ -862,6 +957,7 @@ export function makeLlmDirector(
                   : 'continue',
             }
           : {}),
+        ...(view.proxyDagPacing ? { proxyDagPacing: view.proxyDagPacing } : {}),
         ...(castState ? { castState } : {}),
       },
     });
@@ -2472,6 +2568,8 @@ export function makeLlmTutor(
           'Use move.intent "restore" and target_premise for this exhibit. This is a harness-authorized proof-state repair, not a new release.',
         ]
       : [];
+    const proxyDagPacingSection = proxyDagPacingLines(view.proxyDagPacing);
+    const tutorLearnerDagModelSection = tutorLearnerDagModelLines(view.tutorLearnerDagModel);
     // Acts-mode redaction (engine.js omniscientView): no learnerAbox, no
     // trajectory, no corruption — the tutor works from the dialogue and its
     // own ledger. The v1 branch below is untouched.
@@ -2889,6 +2987,8 @@ export function makeLlmTutor(
         ...plotSection,
         ...rhetoricalPolicySection,
         ...proofDebtSection,
+        ...tutorLearnerDagModelSection,
+        ...proxyDagPacingSection,
         '',
         task,
       ].join('\n');
@@ -2938,6 +3038,8 @@ export function makeLlmTutor(
         ...rhetoricalPolicySection,
         ...discursiveReleaseSection,
         ...proofDebtSection,
+        ...tutorLearnerDagModelSection,
+        ...proxyDagPacingSection,
         ...(proofDebtSection.length ? [''] : []),
         task,
       ].join('\n');
@@ -2984,6 +3086,8 @@ export function makeLlmTutor(
       ...(didacticModeState ? { didacticMode: didacticModeState } : {}),
       ...(learnerTransformationState ? { learnerTransformation: learnerTransformationState } : {}),
       ...(castState ? { castState, tutorReinvention: castState.reinvention || null } : {}),
+      ...(view.tutorLearnerDagModel ? { tutorLearnerDagModel: view.tutorLearnerDagModel.metrics } : {}),
+      ...(view.proxyDagPacing ? { proxyDagPacing: view.proxyDagPacing } : {}),
       ...(view.scene?.tempo ? { sceneTempo: view.scene.tempo } : {}),
       // mock determinism (arm-ON): the credulous theory — everything released
       // is believed held. The real backend ignores meta.
@@ -3890,7 +3994,7 @@ function learnerSystem(setting, voice, view, publicRegister = 'default', opts = 
     '- Answer the question ONLY when your board, under the rules, settles it — then give the answer name.',
     ...(sameTurnAssertionAffordance
       ? [
-          '- Same-turn answer discipline: after you adopt any NEW exhibits in this reply, immediately re-check your expanded board. If that expanded board settles the question, answer in this same JSON reply; do not wait for a later recognition turn. If it does not settle, keep the answer null.',
+          '- Same-turn answer discipline: each turn, re-check your current board and any NEW exhibits you adopt. If that record settles the question, answer in this same JSON reply; do not wait for a later recognition turn. If it does not settle, keep the answer null.',
         ]
       : []),
     '- Be scrupulous about the difference between what is shown and what is merely said.',
@@ -4225,6 +4329,7 @@ export function makeLlmLearner({
       '',
       `PRIVATE CONCLUSION CHECKLIST (index. conclusion your ${terms.record} may now support; choose indices only when you also say the conclusion aloud in ordinary words):`,
       privateConclusions,
+      ...learnerProxyDagMemoryLines(view.proxyDagMemory, terms),
       '',
       'Your hypotheses so far:',
       hyps,
@@ -4233,7 +4338,7 @@ export function makeLlmLearner({
             '',
             'Same-turn answer check:',
             patternAssertion
-              ? `After adopting any NEW ${terms.itemPlural} that belong on your ${terms.record}, re-check the expanded ${terms.record}. If it settles the public question, answer now in this same JSON reply.`
+              ? `Your current ${terms.record} plus any adopted NEW ${terms.itemPlural} can settle the public question as the private answer "${patternAssertion.answer}". If you can ground that answer from your ${terms.record}, set "asserts_answer" to exactly "${patternAssertion.answer}" and say the conclusion plainly.`
               : `After adopting any NEW ${terms.itemPlural} that belong on your ${terms.record}, re-check the expanded ${terms.record}. If it still does not settle the public question, leave the answer null.`,
           ]
         : []),
@@ -4251,6 +4356,7 @@ export function makeLlmLearner({
         sameTurnAssertionAffordance,
         deriveHintIndices,
         deriveLabels: derivableCandidates.map((entry) => entry.label),
+        ...(view.proxyDagMemory ? { proxyDagMemory: view.proxyDagMemory.metrics } : {}),
         ...(view.scene?.tempo ? { sceneTempo: view.scene.tempo } : {}),
         ...(castState ? { castState } : {}),
         ...(learnerDriftState ? { learnerDrift: learnerDriftState } : {}),

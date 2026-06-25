@@ -1,16 +1,16 @@
 {
-  "generated": "2026-06-24T14:51:34.151Z",
+  "generated": "2026-06-25T00:34:22.245Z",
   "counts": {
-    "total": 48,
+    "total": 52,
     "byStatus": {
-      "done": 44,
-      "blocked": 2,
+      "done": 49,
+      "blocked": 1,
       "dropped": 2
     },
     "byType": {
-      "research": 24,
+      "research": 27,
       "experiment": 4,
-      "content": 1,
+      "content": 2,
       "infra": 9,
       "paper": 4,
       "ops": 6
@@ -41,37 +41,6 @@
         "critical"
       ],
       "milestone": "human-pilot-prep"
-    },
-    {
-      "id": "a17-one-side-replay-replication-across-scenes",
-      "title": "A17. One-Side Replay Replication Across Scenes",
-      "status": "blocked",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "todo",
-      "created": "2026-06-22",
-      "updated": "2026-06-24",
-      "verification": "Replication across scenes run; results in exports/; the one-side-replay claim updated or closed in the paper.",
-      "branch": "codex/a17-replay-replication",
-      "blocked_by": "Revised D5 `none`-control gate `d5-control-gate-run3` failed T1; the QA panel split withheld:2 metered:2 stated:0, below the 3-of-4 withheld consensus required for an admissible control. Fresh approval is needed for any further paid D5 strategy or tooling change.",
-      "links": {
-        "notes": [
-          "TODO.md#A17",
-          "notes/poetics/2026-06-24-a17-replay-replication-qa-stop.md",
-          "notes/poetics/2026-06-24-a17-d5-run2-qa-stop.md",
-          "notes/poetics/2026-06-24-a17-d5-control-gate-run3-qa-stop.md"
-        ],
-        "paper": "§7.9",
-        "exports": "exports/a17-one-side-replay-replication/"
-      },
-      "claim_status": "exploratory",
-      "tags": [
-        "replay",
-        "poetics",
-        "learner-variance"
-      ],
-      "milestone": "poetics-followups"
     },
     {
       "id": "scriptorium-control-room-first-run",
@@ -339,6 +308,41 @@
       "claim_status": "future"
     },
     {
+      "id": "a17-one-side-replay-replication-across-scenes",
+      "title": "A17. One-Side Replay Replication Across Scenes",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "todo",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "Replication across scenes run; results in exports/; the one-side-replay claim updated in the paper with matched-prefix D4/D5 closeout.",
+      "branch": "codex/a17-replay-replication",
+      "links": {
+        "notes": [
+          "TODO.md#A17",
+          "notes/poetics/2026-06-24-a17-replay-replication-qa-stop.md",
+          "notes/poetics/2026-06-24-a17-d5-run2-qa-stop.md",
+          "notes/poetics/2026-06-24-a17-d5-control-gate-run3-qa-stop.md",
+          "notes/poetics/2026-06-24-a17-d5-redacted-control-tooling.md",
+          "notes/poetics/2026-06-24-a17-d5-redacted-control-run4-gate.md",
+          "notes/poetics/2026-06-24-a17-d5-redacted-control-run5-rescue.md",
+          "notes/poetics/2026-06-24-a17-d5-matched-branches-and-redraw.md",
+          "notes/poetics/2026-06-24-a17-replay-replication-result.md"
+        ],
+        "paper": "§7.9",
+        "exports": "exports/a17-one-side-replay-replication/"
+      },
+      "claim_status": "exploratory",
+      "tags": [
+        "replay",
+        "poetics",
+        "learner-variance"
+      ],
+      "milestone": "poetics-followups"
+    },
+    {
       "id": "arcane-do-role-playing-language-agents-stay-in-character-at",
       "title": "ArcANE: Do Role-Playing Language Agents Stay in Character at the Right Time?",
       "status": "done",
@@ -479,6 +483,86 @@
       "milestone": "paper-2-evidence-cleanup"
     },
     {
+      "id": "d2-cross-application-role-reframed-study",
+      "title": "D2. True cross-application role-reframed study",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "todo",
+      "created": "2026-06-23",
+      "updated": "2026-06-24",
+      "verification": "D2 sidecar generated 36 rows, scored 108 three-judge observations, analyzed exports/d2-role-transfer-v1-scored.jsonl, and folded the scope-bound result into docs/research/paper-full-2.0.md §6.6.7.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": [
+          "TODO.md#D2",
+          "notes/design-d2-path2-cross-application.md",
+          "notes/d2-cross-application-role-reframed-gate.md",
+          "notes/d2-role-transfer-scaffold.md"
+        ],
+        "paper": "docs/research/paper-full-2.0.md §6.6.7",
+        "exports": [
+          "exports/d2-role-transfer-v1-report.md"
+        ],
+        "runs": [
+          "d2_role_transfer_v1-real-2026-06-24T22:30:10.460Z"
+        ]
+      },
+      "tags": [
+        "d2",
+        "cross-application",
+        "separate-study"
+      ],
+      "milestone": "paper-2-evidence-cleanup",
+      "branch": "codex/d2-d6-followups"
+    },
+    {
+      "id": "d2-d6-followup-arc",
+      "title": "D2-D6 follow-up arc: transfer, bridges, replication, rubric, taxonomy",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-24",
+      "updated": "2026-06-24",
+      "branch": "codex/d2-d6-followups",
+      "verification": "Completion audit records D5/D6 as locally complete, D2 and D4 as completed scope-bound empirical results, and D3 as gated for future empirical work; workplan render/check/test and git diff check pass.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": [
+          "notes/d2-d6-followup-arc-plan.md",
+          "notes/d5-measurement-gate-for-d2-d6.md",
+          "notes/d6-orientation-family-matrix.md",
+          "notes/d2-cross-application-role-reframed-gate.md",
+          "notes/d2-role-transfer-scaffold.md",
+          "notes/d4-sel-disposition-gradient-gate.md",
+          "notes/d3-heavy-bridge-followup-gate.md",
+          "notes/d2-d6-completion-audit.md"
+        ],
+        "paper": [
+          "docs/research/paper-full-2.0.md sections 6.3.9, 6.6.7, 6.6.8, 7.9, 8.2, 8.6"
+        ],
+        "items": [
+          "d2-cross-application-role-reframed-study",
+          "d3-insight-action-gap-heavy-bridge-followups",
+          "d4-disposition-gradient-architecture-matched-sel-replication",
+          "d5-rubric-v3-0-pca-informed-consolidation",
+          "d6-orientation-family-taxonomy-extensions"
+        ]
+      },
+      "tags": [
+        "d2",
+        "d3",
+        "d4",
+        "d5",
+        "d6",
+        "followup",
+        "paper-3"
+      ]
+    },
+    {
       "id": "d5-rubric-v3-0-pca-informed-consolidation",
       "title": "D5. Rubric v3.0 PCA-Informed Consolidation",
       "status": "done",
@@ -493,7 +577,8 @@
       "links": {
         "notes": [
           "TODO.md#D5",
-          "notes/design-d5-rubric-v3-pca-consolidation.md"
+          "notes/design-d5-rubric-v3-pca-consolidation.md",
+          "notes/d5-measurement-gate-for-d2-d6.md"
         ],
         "paper": "§8.6"
       },
@@ -789,6 +874,34 @@
       "claim_status": "future"
     },
     {
+      "id": "proof-dag-dramatic-derivation-assessment",
+      "title": "Proof-DAG dramatic-derivation formalism and external learner-DAG assessment",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-24",
+      "updated": "2026-06-24",
+      "verification": "Proof-DAG / dramatic-derivation arc merged to main on codex/proof-dag-assessment: services/dramaticDerivation/{learnerDag, proxyDagMemory,assessment,conceptSchema}.js plus the derivationLearnerDag / dramaticDerivation test suite are green, and the learner-proxy-DAG A/B is closed out.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": [
+          "notes/2026-06-24-proof-dag-formalism-plan.md"
+        ],
+        "prs": [
+          "codex/proof-dag-assessment"
+        ]
+      },
+      "tags": [
+        "proof-dag",
+        "dramatic-derivation",
+        "learner-dag",
+        "assessment"
+      ],
+      "milestone": "poetics-followups"
+    },
+    {
       "id": "refresh-weber-id-charisma-recognition-thread",
       "title": "Refresh Weber/id-charisma thread around being recognized",
       "status": "done",
@@ -912,6 +1025,32 @@
       "branch": "codex/workplan-board-triage"
     },
     {
+      "id": "synthesize-theoretical-insights",
+      "title": "Synthesize the theory↔project relationship (Hegel/Freud/Weber/Aristotle) into a refreshable reference surface",
+      "status": "done",
+      "type": "content",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-06-24",
+      "updated": "2026-06-24",
+      "verification": "A theory-synthesis surface renders in the web app and (by construction) the Electron desktop; a regeneration script + npm alias refreshes it from the paper + codebase; the doc introduces no new empirical claims (inherits docs/research/paper-full-2.0.md).",
+      "claim_status": "methods",
+      "links": {
+        "paper": "docs/research/paper-full-2.0.md"
+      },
+      "tags": [
+        "theory",
+        "synthesis",
+        "hegel",
+        "freud",
+        "weber",
+        "aristotle",
+        "web-surface",
+        "reference"
+      ]
+    },
+    {
       "id": "the-confident-liar-diagnosing-multi-agent-debate-with-log-pr",
       "title": "The Confident Liar: Diagnosing Multi-Agent Debate with Log-Probabilities and LLM-as-Judge",
       "status": "done",
@@ -1030,33 +1169,6 @@
       "branch": "codex/workplan-board-triage"
     },
     {
-      "id": "d2-cross-application-role-reframed-study",
-      "title": "D2. True cross-application role-reframed study",
-      "status": "done",
-      "type": "research",
-      "priority": "P3",
-      "owner": "codex",
-      "source": "todo",
-      "created": "2026-06-23",
-      "updated": "2026-06-24",
-      "verification": "Decision logged: Path 2 remains separate-study/future scope; no current-paper prompt/content/rubric authoring is required.",
-      "claim_status": "future",
-      "links": {
-        "notes": [
-          "TODO.md#D2",
-          "notes/design-d2-path2-cross-application.md"
-        ],
-        "paper": "§8.2"
-      },
-      "tags": [
-        "d2",
-        "cross-application",
-        "separate-study"
-      ],
-      "milestone": "paper-2-evidence-cleanup",
-      "branch": "codex/workplan-board-triage"
-    },
-    {
       "id": "d3-insight-action-gap-heavy-bridge-followups",
       "title": "D3. Insight-action gap heavy bridge follow-ups",
       "status": "done",
@@ -1066,12 +1178,14 @@
       "source": "todo",
       "created": "2026-06-23",
       "updated": "2026-06-24",
-      "verification": "Decision logged: heavy bridge follow-ups are deferred; no paid run is justified for the current marginal mechanism information.",
+      "verification": "Decision and 2026-06-24 gate logged: heavy bridge follow-ups require a frozen endpoint independent of the optimized metric before any paid escalation.",
       "claim_status": "future",
       "links": {
         "notes": [
           "TODO.md#D3",
-          "notes/design-d3-architectural-bridges.md"
+          "notes/design-d3-architectural-bridges.md",
+          "notes/d3-heavy-bridge-followup-gate.md",
+          "notes/d3-independent-endpoint-and-fixture-explainer.md"
         ],
         "paper": "§6.3.9"
       },
@@ -1093,12 +1207,20 @@
       "source": "todo",
       "created": "2026-06-23",
       "updated": "2026-06-24",
-      "verification": "Decision logged: the cells 40-45 × SEL replication is optional future work, not current-paper debt.",
-      "claim_status": "future",
+      "verification": "DB audit shows eval-2026-06-24-250c6251 has 144/144 successful rows and 144/144 Sonnet-scored first turns; report and Paper 2.0 §6.6.8 record the scope-bound verdict.",
+      "claim_status": "scope-bound",
       "links": {
-        "notes": "TODO.md#D4",
-        "exports": "exports/d4-disposition-gradient.md",
-        "paper": "§6.6.8"
+        "notes": [
+          "TODO.md#D4",
+          "notes/d4-sel-disposition-gradient-gate.md"
+        ],
+        "paper": "§6.6.8",
+        "exports": [
+          "exports/d4-sel-disposition-gradient-eval-2026-06-24-250c6251.md"
+        ],
+        "runs": [
+          "eval-2026-06-24-250c6251"
+        ]
       },
       "tags": [
         "d4",
@@ -1106,7 +1228,7 @@
         "sel"
       ],
       "milestone": "paper-2-evidence-cleanup",
-      "branch": "codex/workplan-board-triage"
+      "branch": "codex/d2-d6-followups"
     },
     {
       "id": "d6-orientation-family-taxonomy-extensions",
@@ -1123,7 +1245,8 @@
       "links": {
         "notes": [
           "TODO.md#D6",
-          "docs/pedagogical-taxonomy.md"
+          "docs/pedagogical-taxonomy.md",
+          "notes/d6-orientation-family-matrix.md"
         ],
         "paper": "§7.9"
       },
@@ -1134,6 +1257,29 @@
       ],
       "milestone": "paper-2-evidence-cleanup",
       "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "grouptom-bench-benchmarking-group-theory-of-mind-nonlinear",
+      "title": "GroupToM-Bench: Benchmarking Group Theory of Mind and Nonlinear Social Emergence",
+      "status": "done",
+      "type": "research",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-06-24",
+      "updated": "2026-06-24",
+      "verification": "Cross-walk landed as citation-only positioning in §6.8.8 (paper v3.0.171, ref @tang2026grouptombench) with derivation in exports/grouptom-bench-crosswalk-2026-06-24.md; claim_status methods; no paid runs.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-14-research-roundup.html",
+        "plan": "notes/research-plans/2026-06-20-research-plan.html",
+        "paper": "docs/research/paper-full-2.0.md",
+        "exports": "exports/grouptom-bench-crosswalk-2026-06-24.md"
+      },
+      "tags": [
+        "theory-of-mind",
+        "paper-positioning"
+      ],
+      "claim_status": "methods"
     },
     {
       "id": "revisit-adaptation-conformity-human-anchor",

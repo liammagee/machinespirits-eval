@@ -5,6 +5,7 @@ import {
   buildLearnerPretestView,
   hiddenFamilyLabelLeaks,
   loadG2Items,
+  normalizeLearnerAnswers,
   renderG2IndependentOutcomeReport,
   runG2IndependentOutcome,
   sanitizeIntervention,
@@ -108,7 +109,9 @@ test('held-out learner prompt hides seed, arm, family labels, and posttest answe
     sessions: 1,
     maxCalls: 1,
     items: fixtureItems,
-    sessionSpecs: [{ sessionId: 'fixture-alpha', targetSeed: 'alpha', sameSeedSource: 'alpha', differentSeedSource: 'beta' }],
+    sessionSpecs: [
+      { sessionId: 'fixture-alpha', targetSeed: 'alpha', sameSeedSource: 'alpha', differentSeedSource: 'beta' },
+    ],
   });
   const session = g1.sessions[0];
   const preItems = fixtureItems.filter((item) => item.form === 'A');
@@ -135,7 +138,9 @@ test('calibrated-novice prompt explicitly prevents expert ceiling behavior', asy
     sessions: 1,
     maxCalls: 1,
     items: fixtureItems,
-    sessionSpecs: [{ sessionId: 'fixture-alpha', targetSeed: 'alpha', sameSeedSource: 'alpha', differentSeedSource: 'beta' }],
+    sessionSpecs: [
+      { sessionId: 'fixture-alpha', targetSeed: 'alpha', sameSeedSource: 'alpha', differentSeedSource: 'beta' },
+    ],
   });
   const session = g1.sessions[0];
   const preItems = fixtureItems.filter((item) => item.form === 'A');
@@ -160,7 +165,9 @@ test('rule-transfer novice prompt requires applying inferred novice rules', asyn
     sessions: 1,
     maxCalls: 1,
     items: fixtureItems,
-    sessionSpecs: [{ sessionId: 'fixture-alpha', targetSeed: 'alpha', sameSeedSource: 'alpha', differentSeedSource: 'beta' }],
+    sessionSpecs: [
+      { sessionId: 'fixture-alpha', targetSeed: 'alpha', sameSeedSource: 'alpha', differentSeedSource: 'beta' },
+    ],
   });
   const session = g1.sessions[0];
   const items = loadG2Items({ posttestProfile: 'hard-transfer' });
@@ -207,7 +214,9 @@ test('hard-transfer learner prompt uses hard items without answer keys or family
     sessions: 1,
     maxCalls: 1,
     items: fixtureItems,
-    sessionSpecs: [{ sessionId: 'fixture-alpha', targetSeed: 'alpha', sameSeedSource: 'alpha', differentSeedSource: 'beta' }],
+    sessionSpecs: [
+      { sessionId: 'fixture-alpha', targetSeed: 'alpha', sameSeedSource: 'alpha', differentSeedSource: 'beta' },
+    ],
   });
   const session = g1.sessions[0];
   const items = loadG2Items({ posttestProfile: 'hard-transfer' });
@@ -238,13 +247,44 @@ test('intervention sanitizer removes exact hidden family identifiers only', () =
   );
 });
 
+
+test('normalizes common held-out learner answer shapes', () => {
+  const postItems = fixtureItems.filter((item) => item.form === 'B');
+
+  assert.deepEqual(
+    normalizeLearnerAnswers(['a', 'b'], { postItems, raw: '["a","b"]' }).slice(0, 2),
+    [
+      { item_id: 'i-add-post', response_value: 'a', confidence: null },
+      { item_id: 'i-mag-post', response_value: 'b', confidence: null },
+    ],
+  );
+
+  assert.deepEqual(
+    normalizeLearnerAnswers(
+      {
+        responses: {
+          'i-add-post': { selected_choice: 'b', confidence: 0.7 },
+          'i-mag-post': 'a',
+        },
+      },
+      { postItems, raw: '{}' },
+    ).slice(0, 2),
+    [
+      { item_id: 'i-add-post', response_value: 'b', confidence: 0.7 },
+      { item_id: 'i-mag-post', response_value: 'a', confidence: null },
+    ],
+  );
+});
+
 test('mock G2 scores independent held-out answers and separates yoking', async () => {
   const g1 = await runG1PaidSmoke({
     backend: 'mock',
     sessions: 1,
     maxCalls: 1,
     items: fixtureItems,
-    sessionSpecs: [{ sessionId: 'fixture-alpha', targetSeed: 'alpha', sameSeedSource: 'alpha', differentSeedSource: 'beta' }],
+    sessionSpecs: [
+      { sessionId: 'fixture-alpha', targetSeed: 'alpha', sameSeedSource: 'alpha', differentSeedSource: 'beta' },
+    ],
   });
   const result = await runG2IndependentOutcome({
     g1Json: g1,
@@ -262,13 +302,39 @@ test('mock G2 scores independent held-out answers and separates yoking', async (
   assert.equal(result.summary.promptFamilyLabelLeakCount, 0);
 });
 
+test('G2 session-limit caps paid sweeps without hiding source artifact size', async () => {
+  const g1 = await runG1PaidSmoke({
+    backend: 'mock',
+    sessions: 2,
+    maxCalls: 1,
+    items: fixtureItems,
+    sessionSpecs: [
+      { sessionId: 'fixture-alpha', targetSeed: 'alpha', sameSeedSource: 'alpha', differentSeedSource: 'beta' },
+      { sessionId: 'fixture-beta', targetSeed: 'beta', sameSeedSource: 'beta', differentSeedSource: 'alpha' },
+    ],
+  });
+  const result = await runG2IndependentOutcome({
+    g1Json: g1,
+    backend: 'mock',
+    learnerProtocol: 'rule-transfer-novice',
+    posttestProfile: 'hard-transfer',
+    sessionLimit: 1,
+    maxCalls: 1,
+  });
+
+  assert.equal(result.summary.sourceSessionCount, 2);
+  assert.equal(result.summary.sessionCount, 1);
+});
+
 test('G2 report states independent learner-outcome boundary', async () => {
   const g1 = await runG1PaidSmoke({
     backend: 'mock',
     sessions: 1,
     maxCalls: 1,
     items: fixtureItems,
-    sessionSpecs: [{ sessionId: 'fixture-alpha', targetSeed: 'alpha', sameSeedSource: 'alpha', differentSeedSource: 'beta' }],
+    sessionSpecs: [
+      { sessionId: 'fixture-alpha', targetSeed: 'alpha', sameSeedSource: 'alpha', differentSeedSource: 'beta' },
+    ],
   });
   const result = await runG2IndependentOutcome({
     g1Json: g1,
