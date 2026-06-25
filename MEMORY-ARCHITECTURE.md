@@ -91,18 +91,20 @@ and that test together.
 ## 6. What would move us off Shape B
 
 - A cross-session experiment showing richer learner state changes outcomes → pursue
-  Shape A, with `learnerMemoryService` as the base.
+  Shape A, with `learnerMemoryService` as the base. (The first powered *simulated* screen
+  came back null — §7 — so this trigger now effectively requires a **human-learner**
+  cross-session effect, not another simulated run.)
 - A decision that tutor-core no longer needs to be re-extractable → Shape C becomes
   available.
 
 Until then: two pads, one seam, one reserve.
 
-## 7. Cross-session experiment (#3): apparatus validated, signal pending
+## 7. Cross-session experiment (#3): apparatus validated; first powered screen = null
 
 The test that would move us toward Shape A — *does feeding the tutor an accumulated
 rich-store memory narrative improve tutoring across a multi-session arc?* — now has a
-working, isolated, seam-safe apparatus (as of 2026-06-25). The apparatus is built and
-proven end-to-end; the experimental answer is **not** established.
+working, isolated, seam-safe apparatus **and** a first powered, confound-removed run
+(2026-06-25). The apparatus is the durable deliverable; the first screen comes back null.
 
 **What was built (the deliverable):**
 
@@ -110,32 +112,49 @@ proven end-to-end; the experimental answer is **not** established.
 - A seam-safe injection hook — `runEvaluation`'s opt-in `externalEgoExtension` plus the
   `eval-cli run --external-ego-extension-file` flag — prepends an eval-layer-built memory
   narrative onto the tutor's prompt without `tutor-core` importing the eval layer.
-- An orchestrator, `scripts/run-rich-memory-arc-experiment.js`: runs an N-session arc for
-  one learner across two arms (baseline = no injection; rich = accumulated
+- An orchestrator, `scripts/run-rich-memory-arc-experiment.js`: runs an N-session arc per
+  learner across two arms (baseline = no injection; rich = accumulated
   `learnerMemoryService` narrative), driving the proven `eval-cli` (generate →
   `evaluate --tutor-only` → read score by `run_id`), with `--gen-model` / `--judge-cli`
-  knobs and per-session `sessions.jsonl` resilience.
+  knobs, per-session `sessions.jsonl` resilience, and a generate+judge retry that verifies
+  a score actually landed (a transient provider window silently dropped 7/18 sessions in a
+  first attempt before this guard — it now self-heals).
 
-**First smoke** (n=1/arm, 3 sessions, anthropic.haiku generation + codex CLI judge):
-baseline first-turn 67.5/67.5/67.5 (slope 0); rich 61.2/67.5/81.3 (slope +20). **Not
-interpretable**: n=1; the first-turn metric is coarse (4 of 6 sessions scored exactly
-67.5); and the write-back was keyed off the session's own score (a feedback path). The
-run validates the apparatus; it does not answer the question.
+**Option (b) executed (the load-bearing upgrade over the smoke):** a *faithful*,
+score-blind write-back — after each session a cheap Claude-haiku call mines the transcript
+(not the judge's score) into concept levels / episodes / open threads, removing the smoke's
+score→memory feedback path — plus the granular `tutor_overall_score` metric (the first-turn
+metric clustered at a few discrete values).
 
-**Defensible claim:** there is now a working, isolated, seam-safe instrument for testing
-cross-session rich memory, and a first run shows a difference is measurable in principle.
-NOT "rich memory helps tutoring" — the prior (A5, §6.6.9: the pad is not load-bearing for
-first-turn quality) leans the other way, and all of this is simulated-tutor output, not
-human learning (§8.1).
+**First powered screen** (n=3 learners/arm, 3 sessions, anthropic.haiku generation + codex
+CLI judge, 18/18 scored, 0 retries, 0 warns): pooled **baseline 77.1, rich 75.8**;
+per-learner contrast **rich − baseline = −1.3** (SE ~2.3, t ≈ −0.57). **Null** — rich is if
+anything trivially lower, well inside noise. The per-session slope (baseline −5.0, rich
++1.9) is **not** a memory effect: the three sessions are *different scenarios* in fixed
+order, and the middle one (`mood_frustration_to_breakthrough`) scores lower in both arms, so
+the slope conflates scenario difficulty with session order. The pooled mean — identical
+scenario set in both arms — is the clean summary, and it shows no difference.
 
-**To make it a real result — option (b), retained, not yet committed:** (1) a faithful
-transcript→memory write-back (mine the dialogue for concept/episode state, not the score
-— the load-bearing build, carrying the §6.12 reasoned-vs-complied validity caveat); (2) a
-granular metric (`tutor_overall_score`) + power (several learners/arm, both judges); (3)
-for the claim that matters, human learners. A half-powered simulated run would not settle
-anything A5 hasn't.
+**Defensible claim:** there is a working, isolated, seam-safe instrument for testing
+cross-session rich memory, and a first powered, confound-removed screen finds **no quality
+advantage** from accumulated rich memory — consistent with the A5 prior (§6.6.9: the pad is
+not load-bearing for quality). This is all simulated-tutor output, not human learning
+(§8.1); it is too underpowered (n=3, single judge) for a paper claim and is **not** added to
+the paper.
+
+**Why not scale it.** A bigger simulated run (more learners, a second judge) would most
+likely *confirm* this null — the per-learner SE is already tight (~1.5–1.8) around a ~0
+difference. The one path that could still differ is **human learners**, which is
+IRB-gated / out of immediate scope (§A1; cf. the blueprint skip-list). So: do not chase
+this with more simulated spend. A future real memory-effect test should also fix the design
+flaw surfaced here — repeat the *same* scenario across sessions (or counterbalance order) so
+a slope can be attributed to memory rather than scenario difficulty.
+
+**Bearing on the shape decision:** the null does not motivate a Shape A migration on
+*quality* grounds (richer state didn't change simulated outcomes); it does not foreclose A
+either (the human-learner case is untested). Shape B stands; see §6.
 
 Code: `services/memory/learnerMemoryService.js`, the injection hook in
 `services/evaluationRunner.js` + `scripts/eval-cli.js`, and
-`scripts/run-rich-memory-arc-experiment.js`. First smoke artifacts:
-`exports/rich-memory-arc-2026-06-25T18-09-32-920Z/`.
+`scripts/run-rich-memory-arc-experiment.js`. Powered-screen artifacts:
+`exports/rich-memory-arc-2026-06-25T20-35-11-387Z/` (`report.json`, `sessions.jsonl`).
