@@ -32,7 +32,6 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { createRequire } from 'module';
 import Database from 'better-sqlite3';
 import chalk from 'chalk';
 import YAML from 'yaml';
@@ -139,24 +138,10 @@ function safeJson(value) {
 }
 
 function findTutorCorePromptsDir() {
-  // In-housed: prefer this repo's vendored tutor-core/prompts/ (see TUTOR-CORE-INHOUSING.md).
+  // In-housed: tutor-core/prompts/ is vendored in this repo
+  // (from the former @machinespirits/tutor-core — see TUTOR-CORE-INHOUSING.md).
   const vendored = path.resolve(ROOT, 'tutor-core', 'prompts');
-  if (fs.existsSync(vendored)) return vendored;
-
-  try {
-    const req = createRequire(import.meta.url);
-    const tutorCorePkg = req.resolve('@machinespirits/tutor-core/package.json');
-    const tutorCoreDir = path.dirname(tutorCorePkg);
-    const promptsDir = path.join(tutorCoreDir, 'prompts');
-    if (fs.existsSync(promptsDir)) return promptsDir;
-  } catch {
-    /* ignore */
-  }
-
-  const localDevPath = path.resolve(ROOT, '..', 'machinespirits-tutor-core', 'prompts');
-  if (fs.existsSync(localDevPath)) return localDevPath;
-
-  return null;
+  return fs.existsSync(vendored) ? vendored : null;
 }
 
 const promptDirs = [];
