@@ -5458,6 +5458,54 @@ profiles:
         temperature: 0.5
         max_tokens: 16000
 
+  # ─── Cell 175: Transfer/plain floor with low-register presence ─────────────
+  # One-factor extension of cell_174. Keeps transfer/plain validity, but adds a
+  # low-register presence requirement after Stage 2 showed cell 174 improved
+  # v2.2 transfer quality while lowering charisma.
+  #
+  # Suggested comparison:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js run \
+  #     --profiles cell_174_id_director_charisma_accountable_bid_transfer_plain_floor_verified,cell_175_id_director_charisma_accountable_bid_transfer_plain_presence_floor_verified \
+  #     --scenario charisma_desire_ai_syllabus_transfer,charisma_desire_plain_language_stress --runs 1 --skip-rubric
+  cell_175_id_director_charisma_accountable_bid_transfer_plain_presence_floor_verified:
+    description: "Id-Director (cell 175): cell 174 + accountable_bid_transfer_plain_presence agency_return_charisma_floor_mode. Preserves transfer/plain guard while requiring low-register charismatic presence through a consequential opening, concrete stakes, and a learner-owned test inside the named material."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_transfer_plain_presence
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
   # ===========================================================================
   # ADAPTIVE-STATE CELL (LangGraph)
   # ===========================================================================

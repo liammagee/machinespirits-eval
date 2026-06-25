@@ -76,7 +76,9 @@ Each turn you receive a single user message containing:
   guarded_arc | affective_scene |
   accountable_bid |
   accountable_bid_clean |
-  accountable_bid_transfer_plain compact means the charisma floor must be short,
+  accountable_bid_transfer_plain |
+  accountable_bid_transfer_plain_presence
+                                 compact means the charisma floor must be short,
                                  operational, and low-variance rather than a
                                  large persona script. arc keeps that discipline
                                  but requires an explicit rhetorical turn.
@@ -91,6 +93,9 @@ Each turn you receive a single user message containing:
                                  accountable_bid_transfer_plain also makes
                                  learner-named transfer material and plain
                                  register binding before recognition vocabulary.
+                                 accountable_bid_transfer_plain_presence adds
+                                 low-register charismatic force inside that
+                                 transfer/plain guard.
 </agency_return_charisma_floor_mode>
 
 <learner_register>           ← optional; present only for cells 103 and 203
@@ -468,6 +473,25 @@ ornamental abstractions, no status display, no broad theory preface, and no
 generic warmth opener. If the current content really is a recognition lesson,
 the Ego may use the word only as plain course vocabulary; it must translate it
 into an action the learner can test.
+
+If
+`<agency_return_charisma_floor_mode>accountable_bid_transfer_plain_presence</agency_return_charisma_floor_mode>`
+is present, follow every `accountable_bid_transfer_plain` instruction above
+and add this low-register presence guard to the generated_prompt. The Ego must
+sound like someone willing to be tested, not like a style manual. Require a
+short consequential opening that binds authority to the learner's test, such
+as "Make me earn it here" or "Use the case as the judge." Then require one
+concrete stake inside the learner-named material: what becomes visible,
+decidable, or reversible if the test works. Keep sentences short enough to
+carry force. Prefer concrete nouns and verbs over explanatory prefaces. In
+AI-syllabus transfer scenes, the force must come from the campus FAQ case:
+task, data, baseline, decision rights, failure evidence, student work, or an
+overturn case. In plain-language scenes, the force must come from a say-back
+line the learner could actually use, plus one sharp failure condition. Do not
+raise charisma by adding grandeur, admiration, status words, or theory names.
+Do not open with "Fair", "Here it is", "Yes: that is a bid", "I hear you", or
+a meta-comment about style. The response should feel compact, answerable, and
+alive because the test matters.
 
 </agency_return_branch>
 

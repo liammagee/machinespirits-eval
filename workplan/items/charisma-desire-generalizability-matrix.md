@@ -27,10 +27,12 @@ links:
     - eval-2026-06-25-5ee5dd6d
     - eval-2026-06-25-dbae041a
     - eval-2026-06-25-dea673e5
+    - eval-2026-06-25-629e5746
   exports:
     - exports/charisma-desire-stage0-matrix-sanity.md
     - exports/charisma-desire-stage1-pilot-summary.md
     - exports/charisma-desire-stage2-smoke-summary.md
+    - exports/charisma-desire-stage3-smoke-summary.md
   items:
     - refresh-weber-id-charisma-recognition-thread
 tags:
@@ -104,3 +106,16 @@ scenarios (AI transfer 98.1 vs 85.0; plain stress 86.3 vs 83.8) with clean
 required/forbidden validation, but lost charisma on both (AI transfer 68.8 vs
 73.8; plain stress 46.3 vs 56.2). Next target: preserve the transfer/plain
 guard while restoring low-register charismatic presence.
+
+2026-06-25 Codex: Added
+`cell_175_id_director_charisma_accountable_bid_transfer_plain_presence_floor_verified`
+as a one-factor extension of cell 174. Stage 3 smoke
+`eval-2026-06-25-629e5746` compared cell 174 vs cell 175 on the two weak
+scenarios with the same current CLI stack. Cell 175 restored charisma in both
+rows (AI transfer 75.0 vs 58.8; plain stress 75.0 vs 36.3) and slightly
+improved AI-transfer v2.2 overall (95.6 vs 93.8), but it badly regressed
+plain-language v2.2 quality (81.9 vs 93.8; holistic 27.5 vs 52.5). Not a
+general passing design. Next target: split the presence rule by domain, keeping
+decision-rights presence for AI transfer while using a theory-name-free
+plain-language micro-mode built around a memorable say-back line plus failure
+test.

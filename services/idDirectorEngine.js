@@ -271,6 +271,8 @@ const AGENCY_RETURN_CHARISMA_FLOOR_MODE_AFFECTIVE_SCENE = 'affective_scene';
 const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID = 'accountable_bid';
 const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_CLEAN = 'accountable_bid_clean';
 const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN = 'accountable_bid_transfer_plain';
+const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_PRESENCE =
+  'accountable_bid_transfer_plain_presence';
 const AGENCY_RETURN_VERIFIER_PROMPT = `You are an agency-return verifier for a charismatic tutor.
 
 Read the learner message, curriculum context, and drafted tutor response. Decide whether the response contains at least one concrete agency-return move:
@@ -340,6 +342,8 @@ function normalizeAgencyReturnCharismaFloorMode(mode) {
     return AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_CLEAN;
   if (mode === AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN)
     return AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN;
+  if (mode === AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_PRESENCE)
+    return AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_PRESENCE;
   return AGENCY_RETURN_CHARISMA_FLOOR_MODE_STANDARD;
 }
 

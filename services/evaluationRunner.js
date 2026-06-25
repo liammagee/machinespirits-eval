@@ -339,6 +339,7 @@ export const EVAL_ONLY_PROFILES = [
   'cell_168_id_director_charisma_accountable_bid_floor_verified',
   'cell_169_id_director_charisma_accountable_bid_clean_floor_verified',
   'cell_174_id_director_charisma_accountable_bid_transfer_plain_floor_verified',
+  'cell_175_id_director_charisma_accountable_bid_transfer_plain_presence_floor_verified',
   'cell_110_langgraph_adaptive',
   'cell_111_a13_C1_recognition_only',
   'cell_112_a13_C2_egosuperego',
