@@ -1570,6 +1570,32 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
     if (!fs.existsSync(notePath)) return res.status(404).type('text').send('repertoire note not found');
     res.type('html').sendFile(notePath);
   });
+  // GET /theory frames the durable "theory behind the machine" synthesis — the
+  // map between the project's four theoretical lineages (Hegel · Freud · Weber ·
+  // Aristotle) and the architecture/mechanisms/findings. Like /summary it is a
+  // reference surface that ORIGINATES no claims: every number inherits from
+  // paper-full-2.0.md. Refresh + re-stamp the provenance band with
+  // `npm run theory:synthesize`. Its assets/* resolve against /assets.
+  app.get('/theory', (_req, res) =>
+    res.type('html').send(
+      framedNoteHtml({
+        active: 'theory',
+        sub: 'the theory behind the machine — recognition · ego/superego/id · charisma · poetics, mapped to the architecture &amp; findings',
+        src: '/theory-doc',
+        title: 'The theory behind the machine · synthesis',
+        hint: orientBand(
+          'theory',
+          'how Hegel · Freud · Weber · Aristotle became testable architecture, and what the data did to each',
+          'project writing; the working surfaces are on the rail above',
+        ),
+      }),
+    ),
+  );
+  app.get('/theory-doc', (_req, res) => {
+    const notePath = path.resolve(ROOT, 'notes/poetics/theory-synthesis.html');
+    if (!fs.existsSync(notePath)) return res.status(404).type('text').send('theory synthesis note not found');
+    res.type('html').sendFile(notePath);
+  });
   // GET /board is the LIVE development board: a read-only render of the workplan
   // (workplan/items/, via the generated workplan/board.json). Regenerate with
   // `npm run wp:render`. The historical 2026-06-06 static snapshot of TODO.md is
@@ -2174,6 +2200,12 @@ const NAV = [
     'summary',
     'The synthesis note — the whole dramatic-recognition arc, from the paper to this scriptorium',
   ],
+  [
+    'theory',
+    '/theory',
+    'theory',
+    'The theory behind the machine — how recognition (Hegel), ego/superego/id (Freud), charisma (Weber) &amp; poetics (Aristotle) map onto the architecture, mechanisms &amp; findings',
+  ],
   ['story', '/story', 'story', 'The story so far — a dated, provisional narrative of the adaptation arc'],
   [
     'repertoire',
@@ -2222,14 +2254,14 @@ const NAV_PRIMARY = ['home'];
 const NAV_GROUPS = [
   ['make', ['compose', 'runs', 'tutor']],
   ['read &amp; judge', ['read', 'browse', 'derivation', 'replays', 'rubric', 'adjudicate', 'pilot-admin']],
-  ['keep', ['board', 'timeline', 'ontology', 'curriculum', 'summary', 'story', 'repertoire']],
+  ['keep', ['board', 'timeline', 'ontology', 'curriculum', 'summary', 'theory', 'story', 'repertoire']],
 ];
 // Same three acts for the mobile drawer; `home` is rendered as a flat link above
 // these groups in railHtml.
 const NAV_DRAWER_GROUPS = [
   ['Make', ['compose', 'runs', 'tutor']],
   ['Read &amp; judge', ['read', 'browse', 'derivation', 'replays', 'rubric', 'adjudicate', 'pilot-admin']],
-  ['Keep', ['board', 'timeline', 'ontology', 'curriculum', 'summary', 'story', 'repertoire']],
+  ['Keep', ['board', 'timeline', 'ontology', 'curriculum', 'summary', 'theory', 'story', 'repertoire']],
 ];
 
 // A per-page orientation band (the `hint` slot of railHtml): "<b>here</b> — what",
