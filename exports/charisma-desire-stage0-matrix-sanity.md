@@ -1,6 +1,6 @@
 # Charisma Desire Stage 0 Matrix Sanity
 
-Generated: 2026-06-25T04:27:01.433Z
+Generated: 2026-06-25T04:46:40.604Z
 
 Status: PASS
 
@@ -44,15 +44,25 @@ Status: PASS
 ## Planned Stage 1 Command
 
 ```bash
+ID_DIRECTOR_CLAUDE_CLI_TIMEOUT_MS=600000 \
+ID_DIRECTOR_CODEX_CLI_TIMEOUT_MS=600000 \
 EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
   node scripts/eval-cli.js run \
   --profiles cell_169_id_director_charisma_accountable_bid_clean_floor_verified,cell_163_id_director_charisma_agency_return_warm_floor_verified,cell_104_recog_id_director_charisma_register,cell_107_id_director_witness_exemplars \
   --scenario charisma_desire_authority_withheld,charisma_desire_status_challenge,charisma_desire_conceptual_control,charisma_desire_vulnerability_shift,charisma_desire_ai_syllabus_transfer,charisma_desire_plain_language_stress \
   --runs 3 \
+  --parallelism 2 \
   --ego-model codex.gpt-5.5 \
   --superego-model claude-code.sonnet-4-6 \
-  --judge-cli codex \
+  --skip-rubric \
   --description "Stage 1 charisma desire generalizability pilot"
+```
+
+## Planned Stage 1 Scoring
+
+```bash
+node scripts/eval-cli.js evaluate <runId> --judge-cli codex
+node scripts/evaluate-charisma.js <runId> --judge claude-code.sonnet
 ```
 
 ## Validation

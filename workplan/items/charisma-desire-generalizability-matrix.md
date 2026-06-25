@@ -24,6 +24,7 @@ links:
     - eval-2026-06-25-19ee106a
     - eval-2026-06-25-63e98149
     - eval-2026-06-25-0acee3fb
+    - eval-2026-06-25-5ee5dd6d
   exports:
     - exports/charisma-desire-stage0-matrix-sanity.md
   items:
@@ -68,3 +69,10 @@ the id-director Claude CLI timeout before any usable row was persisted. Deleted
 the empty run and progress log, then added environment-configurable id-director
 CLI timeouts so the next paid smoke can test the same stack without the 180s
 hard cap.
+
+2026-06-25 Codex: Ran one-row paid timeout smoke
+`eval-2026-06-25-5ee5dd6d` on cell 169 authority-withheld with Codex GPT-5.5
+ego, Claude Code Sonnet 4.6 id, Codex CLI v2.2 judge, and Claude Code Sonnet
+charisma judge. Generation completed in 7m47s with validation clean; explicit
+scoring gave v2.2 first-turn 98.75, last-turn 100.00, tutor overall 96.25, and
+charisma 78.75.

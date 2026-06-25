@@ -106,15 +106,25 @@ function buildRunCommand() {
   const scenarioList = PILOT_SCENARIOS.join(',');
   const profileList = PILOT_PROFILES.join(',');
   return [
+    'ID_DIRECTOR_CLAUDE_CLI_TIMEOUT_MS=600000 \\',
+    'ID_DIRECTOR_CODEX_CLI_TIMEOUT_MS=600000 \\',
     'EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \\',
     '  node scripts/eval-cli.js run \\',
     `  --profiles ${profileList} \\`,
     `  --scenario ${scenarioList} \\`,
     `  --runs ${RUNS_PER_PROFILE_SCENARIO} \\`,
+    '  --parallelism 2 \\',
     '  --ego-model codex.gpt-5.5 \\',
     '  --superego-model claude-code.sonnet-4-6 \\',
-    '  --judge-cli codex \\',
+    '  --skip-rubric \\',
     '  --description "Stage 1 charisma desire generalizability pilot"',
+  ].join('\n');
+}
+
+function buildScoringCommands() {
+  return [
+    'node scripts/eval-cli.js evaluate <runId> --judge-cli codex',
+    'node scripts/evaluate-charisma.js <runId> --judge claude-code.sonnet',
   ].join('\n');
 }
 
@@ -205,6 +215,12 @@ ${markdownList(PILOT_PROFILES)}
 
 \`\`\`bash
 ${buildRunCommand()}
+\`\`\`
+
+## Planned Stage 1 Scoring
+
+\`\`\`bash
+${buildScoringCommands()}
 \`\`\`
 
 ## Validation

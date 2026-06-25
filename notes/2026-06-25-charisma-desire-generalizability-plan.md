@@ -171,6 +171,23 @@ Stage 1 - pilot matrix:
 - Six scenario types x four profiles x three runs = 72 rows.
 - Use the primary high-powered stack if budget allows.
 - Do not tune prompts or validation phrases during the pilot.
+- Generate with rubric scoring skipped, then score explicitly:
+  - v2.2 tutor/learner/dialogue scoring:
+    `node scripts/eval-cli.js evaluate <runId> --judge-cli codex`
+  - Weber charisma scoring:
+    `node scripts/evaluate-charisma.js <runId> --judge claude-code.sonnet`
+- For the Claude Code id-director stack, set
+  `ID_DIRECTOR_CLAUDE_CLI_TIMEOUT_MS=600000` before generation. The first
+  attempted full pilot (`eval-2026-06-25-ff4c694b`) produced no usable rows
+  because the first id-authoring call hit the previous 180s hard cap.
+
+Operational smoke after timeout patch:
+
+- `eval-2026-06-25-5ee5dd6d`: cell 169 on
+  `charisma_desire_authority_withheld`, one repeat, Codex GPT-5.5 ego, Claude
+  Code Sonnet 4.6 id, Codex CLI v2.2 judge, Claude Code Sonnet charisma judge.
+  Result: v2.2 first-turn 98.75, last-turn 100.00, tutor overall 96.25,
+  charisma 78.75, required/forbidden validation clean.
 
 Stage 2 - promotion matrix:
 

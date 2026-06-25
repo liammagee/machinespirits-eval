@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-25T04:26:26.514Z",
+  "generated": "2026-06-25T04:46:40.555Z",
   "counts": {
     "total": 53,
     "byStatus": {
@@ -45,7 +45,8 @@
           "eval-2026-06-25-428ccd8f",
           "eval-2026-06-25-19ee106a",
           "eval-2026-06-25-63e98149",
-          "eval-2026-06-25-0acee3fb"
+          "eval-2026-06-25-0acee3fb",
+          "eval-2026-06-25-5ee5dd6d"
         ],
         "exports": [
           "exports/charisma-desire-stage0-matrix-sanity.md"
