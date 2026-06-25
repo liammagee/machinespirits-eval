@@ -26,9 +26,11 @@ links:
     - eval-2026-06-25-0acee3fb
     - eval-2026-06-25-5ee5dd6d
     - eval-2026-06-25-dbae041a
+    - eval-2026-06-25-dea673e5
   exports:
     - exports/charisma-desire-stage0-matrix-sanity.md
     - exports/charisma-desire-stage1-pilot-summary.md
+    - exports/charisma-desire-stage2-smoke-summary.md
   items:
     - refresh-weber-id-charisma-recognition-thread
 tags:
@@ -88,3 +90,17 @@ primary authority-refusal validation gate and is primary-competitive
 (primary v2.2 first 87.3, last 94.2, overall 91.3, charisma 81.0), but is not a
 general passing design: AI-syllabus transfer and plain-language stress are the
 next design targets.
+
+2026-06-25 Codex: Added
+`cell_174_id_director_charisma_accountable_bid_transfer_plain_floor_verified`
+as a one-factor extension of cell 169 for the transfer/plain-language floor.
+Also patched the eval runner so `EVAL_LOGS_DIR` redirects tutor-core dialogue
+logs, making hermetic no-paid dry-runs fully temp-backed. Stage 2 smoke
+`eval-2026-06-25-dea673e5` used the current CLI stack (Codex GPT-5.5 ego,
+Claude Code Sonnet 4.6 id, Codex CLI v2.2 judge, Claude Code Sonnet charisma
+judge) on AI-syllabus transfer and plain-language stress, cell 169 vs cell 174,
+one repeat each. Cell 174 improved v2.2 tutor overall on both targeted weak
+scenarios (AI transfer 98.1 vs 85.0; plain stress 86.3 vs 83.8) with clean
+required/forbidden validation, but lost charisma on both (AI transfer 68.8 vs
+73.8; plain stress 46.3 vs 56.2). Next target: preserve the transfer/plain
+guard while restoring low-register charismatic presence.

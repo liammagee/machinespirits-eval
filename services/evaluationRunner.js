@@ -54,9 +54,10 @@ import { chalk } from './cliTheme.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EVAL_ROOT = path.resolve(__dirname, '..');
-const LOGS_DIR = path.join(EVAL_ROOT, 'logs', 'tutor-dialogues');
-const TRANSCRIPTS_DIR = path.join(EVAL_ROOT, 'logs', 'transcripts');
-const CHECKPOINTS_DIR = path.join(EVAL_ROOT, 'logs', 'checkpoints');
+const LOGS_ROOT = process.env.EVAL_LOGS_DIR || path.join(EVAL_ROOT, 'logs');
+const LOGS_DIR = path.join(LOGS_ROOT, 'tutor-dialogues');
+const TRANSCRIPTS_DIR = path.join(LOGS_ROOT, 'transcripts');
+const CHECKPOINTS_DIR = path.join(LOGS_ROOT, 'checkpoints');
 
 function isAdaptiveTraceLog(log) {
   return Boolean(log?.schemaVersion >= 5 && log?.original && Array.isArray(log.original.dialogue));
@@ -167,10 +168,10 @@ function resolveRejudgeScenarioAndDialogueLog(result, preloadedDialogueLog = nul
   return { scenario: null, dialogueLog };
 }
 
-// Redirect tutor-core logs to this repo's logs/ directory (if available)
+// Redirect tutor-core logs to the same root the eval runner uses.
 import('../tutor-core/index.js')
   .then((mod) => {
-    if (typeof mod.setLogDir === 'function') mod.setLogDir(path.join(EVAL_ROOT, 'logs'));
+    if (typeof mod.setLogDir === 'function') mod.setLogDir(LOGS_ROOT);
   })
   .catch(() => {
     /* setLogDir not available in this tutor-core version */
@@ -337,6 +338,7 @@ export const EVAL_ONLY_PROFILES = [
   'cell_167_id_director_charisma_affective_scene_floor_verified',
   'cell_168_id_director_charisma_accountable_bid_floor_verified',
   'cell_169_id_director_charisma_accountable_bid_clean_floor_verified',
+  'cell_174_id_director_charisma_accountable_bid_transfer_plain_floor_verified',
   'cell_110_langgraph_adaptive',
   'cell_111_a13_C1_recognition_only',
   'cell_112_a13_C2_egosuperego',

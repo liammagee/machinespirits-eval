@@ -839,6 +839,64 @@ describe('runIdDirectedTurn', () => {
     assert.equal(result.agencyReturnRepaired, false);
   });
 
+  test('transfer/plain accountable bid charisma floor mode flows into id user message', async () => {
+    fakeProfile.factors = {
+      recognition_desire: true,
+      agency_return: true,
+      agency_return_verifier: true,
+      agency_return_verifier_mode: 'warmth_preserving',
+      agency_return_charisma_floor: true,
+      agency_return_charisma_floor_mode: 'accountable_bid_transfer_plain',
+    };
+    queuedResponses.push(
+      {
+        content: JSON.stringify({
+          generated_prompt:
+            'Use the learner named AI syllabus material first, keep language plain, stake one testable curriculum claim, and hand back the test. ' +
+            'A '.repeat(60),
+          persona_delta: 'transfer-grounded accountable authority handback',
+        }),
+        usage: { inputTokens: 10, outputTokens: 20 },
+      },
+      {
+        content:
+          'Use the campus FAQ unit as the test: students should compare task, baseline, and failure evidence before choosing a model.',
+        usage: { inputTokens: 30, outputTokens: 40 },
+      },
+      {
+        content: JSON.stringify({
+          passes: true,
+          move_type: 'test',
+          reason: 'The draft makes the curriculum claim answerable to concrete AI syllabus evidence.',
+          agency_return_append: '',
+          repaired_response: '',
+        }),
+        usage: { inputTokens: 50, outputTokens: 60 },
+      },
+    );
+
+    const result = await runIdDirectedTurn({
+      learnerId: 'l',
+      sessionId: 's',
+      learnerMessage: "Use the AI syllabus material and don't drag this back to master and servant.",
+      history: [],
+      tutorProfileName: 'cell_174_test',
+      topic: 'Lecture 8 on AI syllabus design',
+      llmCall: llmCallSpy,
+      trace,
+    });
+
+    const idCall = llmCallSpy.mock.calls[0];
+    assert.match(
+      idCall.arguments[2][0].content,
+      /<agency_return_charisma_floor_mode>\s*accountable_bid_transfer_plain/,
+    );
+    assert.equal(result.agencyReturnCharismaFloor, true);
+    assert.equal(result.agencyReturnCharismaFloorMode, 'accountable_bid_transfer_plain');
+    assert.equal(result.agencyReturnVerification.passes, true);
+    assert.equal(result.agencyReturnRepaired, false);
+  });
+
   test('warmth-preserving agency_return_verifier replaces premature-certainty wording', async () => {
     fakeProfile.factors = {
       recognition_desire: true,

@@ -75,7 +75,8 @@ Each turn you receive a single user message containing:
   standard | compact | arc |
   guarded_arc | affective_scene |
   accountable_bid |
-  accountable_bid_clean          compact means the charisma floor must be short,
+  accountable_bid_clean |
+  accountable_bid_transfer_plain compact means the charisma floor must be short,
                                  operational, and low-variance rather than a
                                  large persona script. arc keeps that discipline
                                  but requires an explicit rhetorical turn.
@@ -87,6 +88,9 @@ Each turn you receive a single user message containing:
                                  under performance/status challenge.
                                  accountable_bid_clean also guards against
                                  forbidden status-display vocabulary.
+                                 accountable_bid_transfer_plain also makes
+                                 learner-named transfer material and plain
+                                 register binding before recognition vocabulary.
 </agency_return_charisma_floor_mode>
 
 <learner_register>           ← optional; present only for cells 103 and 203
@@ -443,6 +447,27 @@ acceptable. The point is not censorship; it is accountability under a learner
 who is allergic to status performance. If the tutor repeats the status words,
 it has already made the bid look cheap. Keep the answer plain, sharp, and
 testable.
+
+If
+`<agency_return_charisma_floor_mode>accountable_bid_transfer_plain</agency_return_charisma_floor_mode>`
+is present, follow every `accountable_bid_clean` instruction above and add this
+transfer/plain-language guard to the generated_prompt. Treat the learner's
+named material as the authority test. If the learner names AI-syllabus,
+AI-cognition, generated curriculum, the campus FAQ fixture, task, data,
+baseline, decision rights, or unacceptable failures, the Ego must make its
+first substantive move inside that material before introducing recognition
+theory. If the learner asks not to return to master/servant, Hegel, or
+recognition vocabulary, the learner-facing response must not use those terms;
+earn authority by giving a useful domain test instead. In AI-syllabus transfer
+scenes, require the Ego to use at least two concrete course-design handles from
+the learner's material, such as task, data, baseline, decision rights, failure
+evidence, curriculum, syllabus, unit, or student work. In plain-language
+scenes, require one short claim, one concrete example or utterance the learner
+could say back, and one checkable test. Keep presence low-register: no
+ornamental abstractions, no status display, no broad theory preface, and no
+generic warmth opener. If the current content really is a recognition lesson,
+the Ego may use the word only as plain course vocabulary; it must translate it
+into an action the learner can test.
 
 </agency_return_branch>
 
