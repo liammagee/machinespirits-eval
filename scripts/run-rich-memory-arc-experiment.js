@@ -62,6 +62,11 @@ const REAL = process.argv.includes('--real');
 const N_SESSIONS = Math.max(1, Number.parseInt(opt('--sessions', REAL ? '3' : '4'), 10) || 4);
 const N_LEARNERS = Math.max(1, Number.parseInt(opt('--learners', '1'), 10) || 1);
 const CELL = opt('--cell', 'cell_5_recog_single_unified');
+// Optional overrides to dodge a slow/contended provider: --gen-model swaps the
+// generation model for ALL agents (e.g. gemini.flash → direct Gemini API, off OpenRouter);
+// --judge-cli scores via a CLI backend (claude|codex|gemini) instead of an API judge.
+const GEN_MODEL = opt('--gen-model', null);
+const JUDGE_CLI = opt('--judge-cli', null);
 const ARMS = (opt('--arms', 'baseline,rich') || '')
   .split(',')
   .map((a) => a.trim())
@@ -172,10 +177,16 @@ async function runArc(arm, learnerIdx) {
       fs.writeFileSync(eeeFile, injected);
       runArgs.push('--external-ego-extension-file', eeeFile);
     }
+    if (GEN_MODEL) runArgs.push('--model', GEN_MODEL); // override all agents' model (e.g. off OpenRouter)
     const runId = (sh(runArgs).match(/Run ID:\s*(\S+)/) || [])[1] || null;
 
-    // REAL: canonical per-turn tutor scoring (--tutor-only keeps the judge pass cheap).
-    if (REAL && runId) sh([process.execPath, EVAL_CLI, 'evaluate', runId, '--tutor-only']);
+    // REAL: canonical per-turn tutor scoring (--tutor-only keeps the judge pass cheap;
+    // --judge-cli routes scoring to a CLI backend [claude|codex|gemini] vs an API judge).
+    if (REAL && runId) {
+      const evalArgs = [process.execPath, EVAL_CLI, 'evaluate', runId, '--tutor-only'];
+      if (JUDGE_CLI) evalArgs.push('--judge-cli', JUDGE_CLI);
+      sh(evalArgs);
+    }
 
     const score = runId ? readSessionScore(runId, scenario) : { error: 'no runId parsed' };
     const primary = score && typeof score.first === 'number' ? score.first : null;
@@ -183,6 +194,12 @@ async function runArc(arm, learnerIdx) {
     if (arm === 'rich') writeBackRichStore(learnerId, scenario, s, primary);
 
     sessions.push({ session: s + 1, scenario, runId, injectedChars: injected ? injected.length : 0, score });
+    // Incremental persistence: a kill mid-run still leaves every completed session on disk.
+    if (REAL)
+      fs.appendFileSync(
+        path.join(STORE_DIR, 'sessions.jsonl'),
+        JSON.stringify({ arm, learnerIdx, session: s + 1, scenario, runId, score }) + '\n',
+      );
     console.log(
       `  [${arm} L${learnerIdx}] s${s + 1} ${scenario}: injected=${injected ? injected.length + 'ch' : '-'} score=${primary ?? '?'}`,
     );
@@ -193,7 +210,7 @@ async function runArc(arm, learnerIdx) {
 // ── Run ─────────────────────────────────────────────────────────────────────
 console.log(`\nRich-memory cross-session experiment (#3, approach A)`);
 console.log(
-  `mode: ${REAL ? 'REAL (paid)' : 'dry-run (mock, free)'} | arms: ${ARMS.join(', ')} | learners/arm: ${N_LEARNERS} | sessions: ${SESSION_SCENARIOS.length} | cell: ${CELL}`,
+  `mode: ${REAL ? 'REAL (paid)' : 'dry-run (mock, free)'} | arms: ${ARMS.join(', ')} | learners/arm: ${N_LEARNERS} | sessions: ${SESSION_SCENARIOS.length} | cell: ${CELL} | gen-model: ${GEN_MODEL || '(cell default)'} | judge: ${JUDGE_CLI ? JUDGE_CLI + ' CLI' : '(api default)'}`,
 );
 console.log(`scenarios: ${SESSION_SCENARIOS.join(' -> ')}`);
 console.log(`stores: ${STORE_DIR}${REAL ? '' : ' (temp)'}\n`);
