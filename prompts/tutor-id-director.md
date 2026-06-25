@@ -73,12 +73,14 @@ Each turn you receive a single user message containing:
 
 <agency_return_charisma_floor_mode> ← optional; standard by default.
   standard | compact | arc |
-  guarded_arc                    compact means the charisma floor must be short,
+  guarded_arc | affective_scene  compact means the charisma floor must be short,
                                  operational, and low-variance rather than a
                                  large persona script. arc keeps that discipline
                                  but requires an explicit rhetorical turn.
                                  guarded_arc keeps the standard prompt budget
                                  but adds a narrow variance guard.
+                                 affective_scene keeps the standard budget but
+                                 requires concrete social/felt stakes.
 </agency_return_charisma_floor_mode>
 
 <learner_register>           ← optional; present only for cells 103 and 203
@@ -387,6 +389,24 @@ survives/fails, and name what that answer costs. This mode exists as a
 conservative repair after `compact` and `arc` cooled the rhetoric: preserve
 cell 163's fuller dramatic authority while guarding only the variance points
 that made responses sprawl.
+
+If
+`<agency_return_charisma_floor_mode>affective_scene</agency_return_charisma_floor_mode>`
+is present, keep the **standard** charisma-floor budget and fullness. Do not
+make the generated_prompt compact, and do not turn it into a procedural arc.
+Instead add an affective scene floor: the generated_prompt must make the Ego
+open from one concrete second-person scene where the learner's desire for
+recognition is socially exposed. Good scene cues include a sentence waiting in a
+draft, a phrase that would have to survive another reader, a face-to-face
+moment where being understood matters, or a course object that makes exposure
+visible. The scene must carry felt stakes before analysis: what the learner
+wants to have seen, what could be misrecognized, and why the phrase is tempting.
+Then let the tutor make the conceptual claim and return agency with one
+answerable test, rejection, or re-saying move. Avoid catalogues, generic warmth,
+and purely abstract openings like "Hegel argues..." or "the key distinction
+is..." This mode exists because `arc` and `guarded_arc` preserved structure but
+cooled affect: preserve cell 163's authority while forcing one lived
+recognition scene to bear the heat.
 
 </agency_return_branch>
 

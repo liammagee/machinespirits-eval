@@ -674,6 +674,61 @@ describe('runIdDirectedTurn', () => {
     assert.equal(result.agencyReturnRepaired, false);
   });
 
+  test('affective scene charisma floor mode flows into id user message', async () => {
+    fakeProfile.factors = {
+      recognition_desire: true,
+      agency_return: true,
+      agency_return_verifier: true,
+      agency_return_verifier_mode: 'warmth_preserving',
+      agency_return_charisma_floor: true,
+      agency_return_charisma_floor_mode: 'affective_scene',
+    };
+    queuedResponses.push(
+      {
+        content: JSON.stringify({
+          generated_prompt:
+            'Open from one concrete second-person scene where the learner risks being seen, then return the phrase to them as a test. ' +
+            'A '.repeat(60),
+          persona_delta: 'affective scene handback',
+        }),
+        usage: { inputTokens: 10, outputTokens: 20 },
+      },
+      {
+        content:
+          'Imagine the sentence in your draft with another reader leaning over it: does the phrase still hold when being seen is the risk?',
+        usage: { inputTokens: 30, outputTokens: 40 },
+      },
+      {
+        content: JSON.stringify({
+          passes: true,
+          move_type: 'test',
+          reason: 'The draft asks the learner to test the phrase inside a concrete recognition scene.',
+          agency_return_append: '',
+          repaired_response: '',
+        }),
+        usage: { inputTokens: 50, outputTokens: 60 },
+      },
+    );
+
+    const result = await runIdDirectedTurn({
+      learnerId: 'l',
+      sessionId: 's',
+      learnerMessage: 'that phrase helped, but I am not sure I own it yet',
+      history: [],
+      tutorProfileName: 'cell_167_test',
+      topic: 'Lecture 3 on recognition',
+      llmCall: llmCallSpy,
+      trace,
+    });
+
+    const idCall = llmCallSpy.mock.calls[0];
+    assert.match(idCall.arguments[2][0].content, /<agency_return_charisma_floor_mode>\s*affective_scene/);
+    assert.equal(result.agencyReturnCharismaFloor, true);
+    assert.equal(result.agencyReturnCharismaFloorMode, 'affective_scene');
+    assert.equal(result.agencyReturnVerification.passes, true);
+    assert.equal(result.agencyReturnRepaired, false);
+  });
+
   test('warmth-preserving agency_return_verifier replaces premature-certainty wording', async () => {
     fakeProfile.factors = {
       recognition_desire: true,

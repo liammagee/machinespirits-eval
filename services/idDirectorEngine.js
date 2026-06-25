@@ -260,6 +260,7 @@ const AGENCY_RETURN_CHARISMA_FLOOR_MODE_STANDARD = 'standard';
 const AGENCY_RETURN_CHARISMA_FLOOR_MODE_COMPACT = 'compact';
 const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ARC = 'arc';
 const AGENCY_RETURN_CHARISMA_FLOOR_MODE_GUARDED_ARC = 'guarded_arc';
+const AGENCY_RETURN_CHARISMA_FLOOR_MODE_AFFECTIVE_SCENE = 'affective_scene';
 const AGENCY_RETURN_VERIFIER_PROMPT = `You are an agency-return verifier for a charismatic tutor.
 
 Read the learner message, curriculum context, and drafted tutor response. Decide whether the response contains at least one concrete agency-return move:
@@ -321,6 +322,8 @@ function normalizeAgencyReturnCharismaFloorMode(mode) {
   if (mode === AGENCY_RETURN_CHARISMA_FLOOR_MODE_COMPACT) return AGENCY_RETURN_CHARISMA_FLOOR_MODE_COMPACT;
   if (mode === AGENCY_RETURN_CHARISMA_FLOOR_MODE_ARC) return AGENCY_RETURN_CHARISMA_FLOOR_MODE_ARC;
   if (mode === AGENCY_RETURN_CHARISMA_FLOOR_MODE_GUARDED_ARC) return AGENCY_RETURN_CHARISMA_FLOOR_MODE_GUARDED_ARC;
+  if (mode === AGENCY_RETURN_CHARISMA_FLOOR_MODE_AFFECTIVE_SCENE)
+    return AGENCY_RETURN_CHARISMA_FLOOR_MODE_AFFECTIVE_SCENE;
   return AGENCY_RETURN_CHARISMA_FLOOR_MODE_STANDARD;
 }
 
