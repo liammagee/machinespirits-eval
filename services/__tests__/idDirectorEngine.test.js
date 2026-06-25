@@ -620,6 +620,60 @@ describe('runIdDirectedTurn', () => {
     assert.equal(result.agencyReturnRepaired, false);
   });
 
+  test('guarded arc charisma floor mode flows into id user message', async () => {
+    fakeProfile.factors = {
+      recognition_desire: true,
+      agency_return: true,
+      agency_return_verifier: true,
+      agency_return_verifier_mode: 'warmth_preserving',
+      agency_return_charisma_floor: true,
+      agency_return_charisma_floor_mode: 'guarded_arc',
+    };
+    queuedResponses.push(
+      {
+        content: JSON.stringify({
+          generated_prompt:
+            'Fuller guarded arc handback. Keep the persona alive but use one limit case and one binary test. ' +
+            'A '.repeat(60),
+          persona_delta: 'guarded arc handback',
+        }),
+        usage: { inputTokens: 10, outputTokens: 20 },
+      },
+      {
+        content: 'The phrase survives if LaMDA can be a witness; it breaks if witness requires consciousness.',
+        usage: { inputTokens: 30, outputTokens: 40 },
+      },
+      {
+        content: JSON.stringify({
+          passes: true,
+          move_type: 'test',
+          reason: 'The draft asks the learner to test the phrase against one concrete limit case.',
+          agency_return_append: '',
+          repaired_response: '',
+        }),
+        usage: { inputTokens: 50, outputTokens: 60 },
+      },
+    );
+
+    const result = await runIdDirectedTurn({
+      learnerId: 'l',
+      sessionId: 's',
+      learnerMessage: 'that phrase helped, but I am not sure I own it yet',
+      history: [],
+      tutorProfileName: 'cell_166_test',
+      topic: 'Lecture 3 on recognition',
+      llmCall: llmCallSpy,
+      trace,
+    });
+
+    const idCall = llmCallSpy.mock.calls[0];
+    assert.match(idCall.arguments[2][0].content, /<agency_return_charisma_floor_mode>\s*guarded_arc/);
+    assert.equal(result.agencyReturnCharismaFloor, true);
+    assert.equal(result.agencyReturnCharismaFloorMode, 'guarded_arc');
+    assert.equal(result.agencyReturnVerification.passes, true);
+    assert.equal(result.agencyReturnRepaired, false);
+  });
+
   test('warmth-preserving agency_return_verifier replaces premature-certainty wording', async () => {
     fakeProfile.factors = {
       recognition_desire: true,

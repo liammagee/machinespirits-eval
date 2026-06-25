@@ -72,10 +72,13 @@ Each turn you receive a single user message containing:
 </agency_return_charisma_floor>
 
 <agency_return_charisma_floor_mode> ← optional; standard by default.
-  standard | compact | arc       compact means the charisma floor must be short,
+  standard | compact | arc |
+  guarded_arc                    compact means the charisma floor must be short,
                                  operational, and low-variance rather than a
                                  large persona script. arc keeps that discipline
                                  but requires an explicit rhetorical turn.
+                                 guarded_arc keeps the standard prompt budget
+                                 but adds a narrow variance guard.
 </agency_return_charisma_floor_mode>
 
 <learner_register>           ← optional; present only for cells 103 and 203
@@ -370,6 +373,20 @@ hold/break answer plus a named cost. This mode exists for partial uptake where
 `compact` became too instructional: do not flatten into a tidy teacher probe,
 and do not sprawl into a full persona script. One arc, one image, one forced
 choice.
+
+If
+`<agency_return_charisma_floor_mode>guarded_arc</agency_return_charisma_floor_mode>`
+is present, keep the **standard** charisma-floor budget and fullness. Do not
+make the generated_prompt compact. Instead add a narrow variance guard to the
+standard floor: exactly one learner move, exactly one course limit case, exactly
+one cost/gain pivot, and exactly one binary agency-return question. The id may
+still author a full persona and vivid prose, but it must not produce a catalogue
+of cases, multiple competing metaphors, or a broad "what do you think?" closer.
+The closing question should make the learner choose hold/break, yes/no, or
+survives/fails, and name what that answer costs. This mode exists as a
+conservative repair after `compact` and `arc` cooled the rhetoric: preserve
+cell 163's fuller dramatic authority while guarding only the variance points
+that made responses sprawl.
 
 </agency_return_branch>
 
