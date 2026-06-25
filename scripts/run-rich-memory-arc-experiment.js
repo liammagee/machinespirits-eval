@@ -286,18 +286,29 @@ async function runArc(arm, learnerIdx) {
       runArgs.push('--external-ego-extension-file', eeeFile);
     }
     if (GEN_MODEL) runArgs.push('--model', GEN_MODEL); // override all agents' model (e.g. off OpenRouter)
-    const runId = (sh(runArgs).match(/Run ID:\s*(\S+)/) || [])[1] || null;
 
-    // REAL: canonical per-turn tutor scoring (--tutor-only keeps the judge pass cheap;
-    // --judge-cli routes scoring to a CLI backend [claude|codex|gemini] vs an API judge).
-    if (REAL && runId) {
-      const evalArgs = [process.execPath, EVAL_CLI, 'evaluate', runId, '--tutor-only'];
-      if (JUDGE_CLI) evalArgs.push('--judge-cli', JUDGE_CLI);
-      sh(evalArgs);
+    // A transient provider hiccup can drop a session silently: eval-cli prints a Run ID
+    // (early, at run creation) but a generation error then leaves no persisted, scored
+    // row. A first powered run lost a contiguous ~7-session window this way, unscoring
+    // whole learners. Verify the OUTCOME (a non-null score landed), not just that an ID
+    // was printed, and retry generate+judge so a short outage self-heals.
+    let runId = null;
+    let score = null;
+    let primary = null;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      runId = (sh(runArgs).match(/Run ID:\s*(\S+)/) || [])[1] || null;
+      // REAL: canonical per-turn tutor scoring (--tutor-only keeps the judge pass cheap;
+      // --judge-cli routes scoring to a CLI backend [claude|codex|gemini] vs an API judge).
+      if (REAL && runId) {
+        const evalArgs = [process.execPath, EVAL_CLI, 'evaluate', runId, '--tutor-only'];
+        if (JUDGE_CLI) evalArgs.push('--judge-cli', JUDGE_CLI);
+        sh(evalArgs);
+      }
+      score = runId ? readSessionScore(runId, scenario) : { error: 'no runId parsed' };
+      primary = score && typeof score.overall === 'number' ? score.overall : null;
+      if (!REAL || primary !== null) break; // dry-run: one pass; REAL: retry until scored
+      console.error(`  [retry] ${arm} L${learnerIdx} s${s + 1}: attempt ${attempt}/3 produced no score`);
     }
-
-    const score = runId ? readSessionScore(runId, scenario) : { error: 'no runId parsed' };
-    const primary = score && typeof score.overall === 'number' ? score.overall : null;
     // Write back so the next session's injection is richer (rich arm only).
     if (arm === 'rich') await writeBackRichStore(learnerId, scenario, s, runId);
 
