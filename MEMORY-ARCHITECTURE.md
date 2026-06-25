@@ -28,7 +28,7 @@ standard factorial path captures into tutor-core's *separate* pad instead.
 Storage: the eval-layer pads use their own SQLite files (`tutor-writing-pad.db`,
 `learner-writing-pad.db`, relocatable via `EVAL_WRITING_PAD_DIR`, disabled with
 `EVAL_WRITING_PAD_DISABLED=1`); tutor-core's pad lives in the main DB (`writing_pads`
-table); `learnerMemoryService` creates its 10 tables in the shared DB on import.
+table); `learnerMemoryService` was revived (2026-06-25) to its own `learner-memory.db` under the same `EVAL_WRITING_PAD_DIR` mechanism (see §4).
 
 ## 2. The seam (why we can't just merge them)
 
@@ -65,6 +65,15 @@ richest representation in the codebase and the most likely canonical core for a 
 memory architecture (Shape A). Deletion is **deferred** until the eventual shape is
 settled. The file carries a header note pointing here so no future worker mistakes it
 for an accidental orphan.
+
+**Revived 2026-06-25:** its DB import (a `getDb` from the pre-in-housing
+`services/dbService.js`) had broken when `dbService` moved into `tutor-core/`, leaving
+the module unimportable. It is now self-contained — its own `learner-memory.db`
+honouring `EVAL_WRITING_PAD_DIR`, seam-safe (no `tutor-core` import), with the `users(id)`
+FK enforcement disabled (no users table in standalone mode) and a long-dormant
+double-quoted `datetime("now")` SQL bug fixed. It runs and accumulates across sessions
+under a hermetic smoke; still no production consumer until the cross-session harness
+(step 1 of #3) wires it in.
 
 ## 5. Enforced invariants
 
