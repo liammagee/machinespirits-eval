@@ -105,7 +105,9 @@ test('model-invariance matrix keeps frozen G1 and regenerated planner rows', asy
     sessions: 1,
     maxCalls: 1,
     items: fixtureItems,
-    sessionSpecs: [{ sessionId: 'fixture-alpha', targetSeed: 'alpha', sameSeedSource: 'alpha', differentSeedSource: 'beta' }],
+    sessionSpecs: [
+      { sessionId: 'fixture-alpha', targetSeed: 'alpha', sameSeedSource: 'alpha', differentSeedSource: 'beta' },
+    ],
   });
   const result = await runModelInvarianceMatrix({
     g1Json: g1,
@@ -145,4 +147,3 @@ test('model-invariance helpers classify boundary evidence and stable slugs', () 
     'boundary_same_state_not_above_different_state',
   );
 });
-

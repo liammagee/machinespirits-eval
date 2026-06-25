@@ -180,11 +180,9 @@ function loadEnvFile(filePath) {
 }
 
 export function loadConfiguredEnvFiles() {
-  const candidates = [
-    process.env.MS_ENV_FILE,
-    process.env.OPENROUTER_ENV_FILE,
-    path.join(ROOT, '.env'),
-  ].filter(Boolean);
+  const candidates = [process.env.MS_ENV_FILE, process.env.OPENROUTER_ENV_FILE, path.join(ROOT, '.env')].filter(
+    Boolean,
+  );
   for (const candidate of candidates) loadEnvFile(path.resolve(candidate));
 }
 
@@ -531,7 +529,10 @@ async function callOpenRouter(prompt, spec) {
   const apiKey = process.env.OPENROUTER_API_KEY;
   const model = spec.model || process.env.OPENROUTER_MODEL;
   if (!apiKey) throw new Error('OPENROUTER_API_KEY is not set; set it in the environment or OPENROUTER_ENV_FILE');
-  if (!model) throw new Error('OpenRouter backend requires a model, e.g. --backend openrouter:anthropic/claude-sonnet-4.5 or OPENROUTER_MODEL');
+  if (!model)
+    throw new Error(
+      'OpenRouter backend requires a model, e.g. --backend openrouter:anthropic/claude-sonnet-4.5 or OPENROUTER_MODEL',
+    );
   if (typeof fetch !== 'function') throw new Error('global fetch is unavailable in this Node runtime');
 
   const controller = new AbortController();
@@ -554,7 +555,8 @@ async function callOpenRouter(prompt, spec) {
     }
     const parsed = JSON.parse(text);
     const content = openRouterContentFromChoice(parsed.choices?.[0]);
-    if (!content) throw new Error(`OpenRouter response missing message content: ${openRouterEmptyContentDiagnostic(parsed)}`);
+    if (!content)
+      throw new Error(`OpenRouter response missing message content: ${openRouterEmptyContentDiagnostic(parsed)}`);
     return content;
   } catch (err) {
     if (err?.name === 'AbortError') {
@@ -599,7 +601,11 @@ function readRecentAgyLogInfo(startedAtMs) {
     const lines = fs
       .readFileSync(file, 'utf8')
       .split(/\r?\n/)
-      .filter((line) => /Print mode|Model ID|Propagating selected model|RESOURCE_EXHAUSTED|Individual quota|model unreachable|agent executor error|Created conversation|sending message/i.test(line));
+      .filter((line) =>
+        /Print mode|Model ID|Propagating selected model|RESOURCE_EXHAUSTED|Individual quota|model unreachable|agent executor error|Created conversation|sending message/i.test(
+          line,
+        ),
+      );
     if (lines.length) interesting.push(`${file}: ${lines.slice(-12).join(' | ')}`);
   }
   return {
@@ -611,7 +617,8 @@ function readRecentAgyLogInfo(startedAtMs) {
 function agyProcessErrorMessage({ model, resolvedModel, code, args, promptMode, stdout, stderr, logInfo }) {
   const label = model || 'default';
   const resolved = resolvedModel && resolvedModel !== model ? ` resolvedModel: ${resolvedModel}` : '';
-  const displayArgs = promptMode === 'arg' ? args.map((arg, index) => (index === args.length - 1 ? '<prompt>' : arg)) : args;
+  const displayArgs =
+    promptMode === 'arg' ? args.map((arg, index) => (index === args.length - 1 ? '<prompt>' : arg)) : args;
   const parts = [
     code === 0 ? `agy ${label} produced no output${resolved}` : `agy ${label} exited with code ${code}${resolved}`,
     `promptMode: ${promptMode}`,
