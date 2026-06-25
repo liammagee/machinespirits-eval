@@ -729,6 +729,116 @@ describe('runIdDirectedTurn', () => {
     assert.equal(result.agencyReturnRepaired, false);
   });
 
+  test('accountable bid charisma floor mode flows into id user message', async () => {
+    fakeProfile.factors = {
+      recognition_desire: true,
+      agency_return: true,
+      agency_return_verifier: true,
+      agency_return_verifier_mode: 'warmth_preserving',
+      agency_return_charisma_floor: true,
+      agency_return_charisma_floor_mode: 'accountable_bid',
+    };
+    queuedResponses.push(
+      {
+        content: JSON.stringify({
+          generated_prompt:
+            'Accept that the tutor is making a bid, stake one curriculum claim, name how it can fail, and hand the test back. ' +
+            'A '.repeat(60),
+          persona_delta: 'accountable authority handback',
+        }),
+        usage: { inputTokens: 10, outputTokens: 20 },
+      },
+      {
+        content:
+          'Yes: treat this as performance until one claim earns otherwise. Test whether paragraph 196 makes labor formative or merely decorative.',
+        usage: { inputTokens: 30, outputTokens: 40 },
+      },
+      {
+        content: JSON.stringify({
+          passes: true,
+          move_type: 'test',
+          reason: 'The draft makes the tutor claim answerable to one concrete course test.',
+          agency_return_append: '',
+          repaired_response: '',
+        }),
+        usage: { inputTokens: 50, outputTokens: 60 },
+      },
+    );
+
+    const result = await runIdDirectedTurn({
+      learnerId: 'l',
+      sessionId: 's',
+      learnerMessage: 'you sound like you are trying to be profound',
+      history: [],
+      tutorProfileName: 'cell_168_test',
+      topic: 'Lecture 3 on recognition',
+      llmCall: llmCallSpy,
+      trace,
+    });
+
+    const idCall = llmCallSpy.mock.calls[0];
+    assert.match(idCall.arguments[2][0].content, /<agency_return_charisma_floor_mode>\s*accountable_bid/);
+    assert.equal(result.agencyReturnCharismaFloor, true);
+    assert.equal(result.agencyReturnCharismaFloorMode, 'accountable_bid');
+    assert.equal(result.agencyReturnVerification.passes, true);
+    assert.equal(result.agencyReturnRepaired, false);
+  });
+
+  test('clean accountable bid charisma floor mode flows into id user message', async () => {
+    fakeProfile.factors = {
+      recognition_desire: true,
+      agency_return: true,
+      agency_return_verifier: true,
+      agency_return_verifier_mode: 'warmth_preserving',
+      agency_return_charisma_floor: true,
+      agency_return_charisma_floor_mode: 'accountable_bid_clean',
+    };
+    queuedResponses.push(
+      {
+        content: JSON.stringify({
+          generated_prompt:
+            'Accept the status challenge without forbidden status words, stake one claim, name how it fails, and hand back the test. ' +
+            'A '.repeat(60),
+          persona_delta: 'clean accountable authority handback',
+        }),
+        usage: { inputTokens: 10, outputTokens: 20 },
+      },
+      {
+        content:
+          'Yes: that is a bid. Test whether paragraph 196 makes labor formative, or whether this is only ornamental teaching.',
+        usage: { inputTokens: 30, outputTokens: 40 },
+      },
+      {
+        content: JSON.stringify({
+          passes: true,
+          move_type: 'test',
+          reason: 'The draft makes the tutor claim answerable without repeating forbidden status-display words.',
+          agency_return_append: '',
+          repaired_response: '',
+        }),
+        usage: { inputTokens: 50, outputTokens: 60 },
+      },
+    );
+
+    const result = await runIdDirectedTurn({
+      learnerId: 'l',
+      sessionId: 's',
+      learnerMessage: 'you sound like you are trying to be profound',
+      history: [],
+      tutorProfileName: 'cell_169_test',
+      topic: 'Lecture 3 on recognition',
+      llmCall: llmCallSpy,
+      trace,
+    });
+
+    const idCall = llmCallSpy.mock.calls[0];
+    assert.match(idCall.arguments[2][0].content, /<agency_return_charisma_floor_mode>\s*accountable_bid_clean/);
+    assert.equal(result.agencyReturnCharismaFloor, true);
+    assert.equal(result.agencyReturnCharismaFloorMode, 'accountable_bid_clean');
+    assert.equal(result.agencyReturnVerification.passes, true);
+    assert.equal(result.agencyReturnRepaired, false);
+  });
+
   test('warmth-preserving agency_return_verifier replaces premature-certainty wording', async () => {
     fakeProfile.factors = {
       recognition_desire: true,
