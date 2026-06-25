@@ -1,6 +1,6 @@
 # Yoked-contingency model-invariance follow-up plan
 
-Status: implementation plan for post-G1/G2 causal follow-up.
+Status: scaled follow-up closed for completed rows. Claude, GLM 5.2, and Codex/OpenAI-family routes support the endpoint.
 
 This plan tests whether the yoked-contingency finding survives changes in the
 model used to play the held-out learner, and then whether it survives a
@@ -42,6 +42,23 @@ the result is integrated into `docs/research/paper-full-2.0.md`.
    boundary, or runtime/infrastructure boundary. The next paper claim must state
    that boundary or repair it before scaling.
 
+## Scaled closeout update (2026-06-24)
+
+The scaled gate is no longer just planned. Seven completed scaled rows preserve the same-state-over-different-state hard-transfer endpoint:
+
+| Plan source | Held-out learner | Status | delta2 | same > different | Boundary |
+|---|---|---|---:|---:|---|
+| frozen Codex G1 | `claude-code:haiku` | pass | 0.322 | 9/9 | completed support |
+| frozen Codex G1 | `claude-code:sonnet` | pass | 0.389 | 9/9 | completed support |
+| frozen Codex G1 | `codex` | pass | 0.378 | 9/9 | completed support |
+| regenerated `claude-code:sonnet` G1 | `claude-code:haiku` | pass | 0.311 | 8/9 | completed support |
+| regenerated `claude-code:sonnet` G1 | `claude-code:sonnet` | pass | 0.445 | 9/9 | completed support |
+| regenerated `openrouter:z-ai/glm-5.2` G1 | `openrouter:z-ai/glm-5.2` | pass | 0.400 | 9/9 | completed support |
+| regenerated `codex` G1 | `codex` | pass | 0.366 | 9/9 | completed support |
+
+All completed rows have invalid answers 0 and hidden-family prompt leaks 0. The paper-safe wording is cross-model robustness across completed Claude/GLM/Codex rows, not model-universal invariance.
+
+Summary artifact: `exports/yoked-contingency-model-invariance-scaled-summary/summary.md`.
 ## Smoke command
 
 Use one session first. This is the paid-safe check.

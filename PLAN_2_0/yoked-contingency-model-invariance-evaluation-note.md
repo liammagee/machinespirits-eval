@@ -2,9 +2,10 @@
 
 Date: 2026-06-24.
 
-Scope: bounded smoke evaluation of
-`PLAN_2_0/yoked-contingency-model-invariance-plan.md`. This is not a
-main-paper claim. It is a readiness check for a scaled model-invariance run.
+Scope: bounded evaluation note for
+`PLAN_2_0/yoked-contingency-model-invariance-plan.md`. It began as a smoke
+readiness check and now records the scaled closeout boundary: completed Claude,
+GLM 5.2, and Codex/OpenAI-family rows support the endpoint.
 
 ## Validation
 
@@ -48,12 +49,29 @@ targeted rerun with the standard 420-second Claude timeout passed, so this is
 recorded as an infrastructure timeout boundary, not an observed contrast
 failure.
 
+## Scaled closeout rows
+
+All completed scaled rows used `learnerProtocol=rule-transfer-novice`, `posttestProfile=hard-transfer`, and `sessionLimit=9`. Every completed row has invalid answers 0 and hidden-family prompt leaks 0.
+
+| Plan source | Held-out learner | Status | delta2 | same > different | p | Calls |
+|---|---|---|---:|---:|---:|---:|
+| frozen Codex G1 | `claude-code:haiku` | pass | 0.322 | 9/9 | 0.0020 | 27 |
+| frozen Codex G1 | `claude-code:sonnet` | pass | 0.389 | 9/9 | 0.0020 | 27 |
+| frozen Codex G1 | `codex` | pass | 0.378 | 9/9 | 0.0020 | 27 |
+| regenerated `claude-code:sonnet` G1 | `claude-code:haiku` | pass | 0.311 | 8/9 | 0.0195 | 27 |
+| regenerated `claude-code:sonnet` G1 | `claude-code:sonnet` | pass | 0.445 | 9/9 | 0.0020 | 27 |
+| regenerated `openrouter:z-ai/glm-5.2` G1 | `openrouter:z-ai/glm-5.2` | pass | 0.400 | 9/9 | 0.0020 | 28 |
+| regenerated `codex` G1 | `codex` | pass | 0.366 | 9/9 | 0.0020 | 27 |
 ## Local artifacts
 
 - `exports/yoked-contingency-model-invariance-dry-run/matrix.md`
 - `exports/yoked-contingency-model-invariance-claude-smoke/matrix.md`
 - `exports/yoked-contingency-model-invariance-claude-smoke-frozen-haiku-rerun/matrix.md`
 - `exports/yoked-contingency-model-invariance-openrouter-smoke/matrix.md`
+- `exports/yoked-contingency-model-invariance-claude-planner-scaled/matrix.md`
+- `exports/yoked-contingency-model-invariance-codex-planner-scaled/matrix.md`
+- `exports/yoked-contingency-model-invariance-glm52-planner-scaled/matrix.md`
+- `exports/yoked-contingency-model-invariance-scaled-summary/summary.md`
 
 These are ignored generated artifacts. The tracked evidence boundary is this
 note plus the committed runner.
@@ -77,7 +95,7 @@ node scripts/run-yoked-contingency-model-invariance.js \
   --posttest-profile hard-transfer
 ```
 
-Promotion rule: do not write a main-paper model-invariance claim unless the
-scaled rows preserve same-state > different-state, have zero invalid answers,
-have zero hidden-family prompt leaks, and pass the scaled sign-test criterion.
+Promotion rule update: the completed Claude, GLM 5.2, and Codex/OpenAI-family
+rows now warrant a bounded main-paper addendum. The claim must stay limited to
+completed rows and must not be inflated into model-universal invariance.
 
