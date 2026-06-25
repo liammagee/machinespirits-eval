@@ -94,6 +94,8 @@
     "drama:showcase": "node scripts/build-drama-showcase.js",
     "theory:synthesize": "node scripts/refresh-theory-synthesis.js",
     "theory:check": "node scripts/refresh-theory-synthesis.js --check",
+    "blueprint:refresh": "node scripts/refresh-blueprint.js",
+    "blueprint:check": "node scripts/refresh-blueprint.js --check",
     "derivation:smoke": "node scripts/run-derivation-smoke.js",
     "derivation:test": "node --test tests/dramaticDerivation.test.js tests/dramaticDerivationPhase1.test.js tests/dramaticDerivationCritic.test.js tests/dramaticDerivationCorruption.test.js tests/dramaticDerivationReplay.test.js",
     "derivation:lint": "node scripts/lint-derivation-world.js",

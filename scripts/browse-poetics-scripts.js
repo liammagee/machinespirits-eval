@@ -1596,6 +1596,32 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
     if (!fs.existsSync(notePath)) return res.status(404).type('text').send('theory synthesis note not found');
     res.type('html').sendFile(notePath);
   });
+  // GET /blueprint frames the build-steps surface — an evidence-ordered recipe
+  // for the ideal AI tutor (what to put in, in what order, what to skip, what
+  // stays open). Like /theory and /summary it is a reference surface that
+  // ORIGINATES no claims: every number inherits from paper-full-2.0.md, and the
+  // steps were synthesised across the codebase and claim-audited against the
+  // paper. Its assets/* resolve against /assets.
+  app.get('/blueprint', (_req, res) =>
+    res.type('html').send(
+      framedNoteHtml({
+        active: 'blueprint',
+        sub: 'how to build the ideal AI tutor — the build steps the evidence supports, what to skip &amp; what stays open',
+        src: '/blueprint-doc',
+        title: 'How to build the ideal AI tutor · the blueprint',
+        hint: orientBand(
+          'blueprint',
+          'the build steps for an AI tutor — prompt, then critic, model-fit, measurement, and what the data says to skip',
+          'project writing; the working surfaces are on the rail above',
+        ),
+      }),
+    ),
+  );
+  app.get('/blueprint-doc', (_req, res) => {
+    const notePath = path.resolve(ROOT, 'notes/poetics/ideal-tutor-blueprint.html');
+    if (!fs.existsSync(notePath)) return res.status(404).type('text').send('blueprint note not found');
+    res.type('html').sendFile(notePath);
+  });
   // GET /board is the LIVE development board: a read-only render of the workplan
   // (workplan/items/, via the generated workplan/board.json). Regenerate with
   // `npm run wp:render`. The historical 2026-06-06 static snapshot of TODO.md is
@@ -2206,6 +2232,12 @@ const NAV = [
     'theory',
     'The theory behind the machine — how recognition (Hegel), ego/superego/id (Freud), charisma (Weber) &amp; poetics (Aristotle) map onto the architecture, mechanisms &amp; findings',
   ],
+  [
+    'blueprint',
+    '/blueprint',
+    'the blueprint',
+    'How to build the ideal AI tutor — an evidence-ordered build recipe (prompt · critic · model-fit · measurement), what the data says to skip, &amp; what stays an open question',
+  ],
   ['story', '/story', 'story', 'The story so far — a dated, provisional narrative of the adaptation arc'],
   [
     'repertoire',
@@ -2254,14 +2286,14 @@ const NAV_PRIMARY = ['home'];
 const NAV_GROUPS = [
   ['make', ['compose', 'runs', 'tutor']],
   ['read &amp; judge', ['read', 'browse', 'derivation', 'replays', 'rubric', 'adjudicate', 'pilot-admin']],
-  ['keep', ['board', 'timeline', 'ontology', 'curriculum', 'summary', 'theory', 'story', 'repertoire']],
+  ['keep', ['board', 'timeline', 'ontology', 'curriculum', 'summary', 'theory', 'blueprint', 'story', 'repertoire']],
 ];
 // Same three acts for the mobile drawer; `home` is rendered as a flat link above
 // these groups in railHtml.
 const NAV_DRAWER_GROUPS = [
   ['Make', ['compose', 'runs', 'tutor']],
   ['Read &amp; judge', ['read', 'browse', 'derivation', 'replays', 'rubric', 'adjudicate', 'pilot-admin']],
-  ['Keep', ['board', 'timeline', 'ontology', 'curriculum', 'summary', 'theory', 'story', 'repertoire']],
+  ['Keep', ['board', 'timeline', 'ontology', 'curriculum', 'summary', 'theory', 'blueprint', 'story', 'repertoire']],
 ];
 
 // A per-page orientation band (the `hint` slot of railHtml): "<b>here</b> — what",
