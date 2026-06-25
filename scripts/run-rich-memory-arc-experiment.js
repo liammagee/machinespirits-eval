@@ -16,9 +16,11 @@
  *                       No cost, and scores are mock (not a real signal).
  *   --real           — live LLM generation + judge. THIS SPENDS MONEY. Attended only.
  *
- * Isolated by construction: EVAL_DB_PATH / EVAL_LOGS_DIR / EVAL_WRITING_PAD_DIR are set to a
- * dedicated location before anything is imported — a temp dir in dry-run, or
- * <out-dir>/{db,logs,pads} in --real — so the production DB and pads are never touched.
+ * Isolation: EVAL_DB_PATH + EVAL_WRITING_PAD_DIR go to a dedicated location (temp in
+ * dry-run, <out-dir>/ in --real). EVAL_LOGS_DIR is intentionally NOT overridden — tutor-core
+ * writes transcripts to a hardcoded <repo>/logs/tutor-dialogues and the evaluate pass must
+ * read them from the same default, so isolating it breaks judging. Transcripts therefore
+ * live in the shared (gitignored) repo logs/, keyed by unique dialogue_id; results do not.
  *
  * Usage:
  *   node scripts/run-rich-memory-arc-experiment.js [--sessions N] [--learners M]
@@ -82,13 +84,17 @@ const SESSION_SCENARIOS = [
   'productive_deadlock_impasse',
 ].slice(0, N_SESSIONS);
 
-// ── Isolate ALL writable stores before importing anything ───────────────────
+// ── Isolate the DB + writing pads before importing anything ─────────────────
+// NOTE: we deliberately do NOT override EVAL_LOGS_DIR. tutor-core's dialogueLogService
+// writes the per-turn transcript to a hardcoded <repo>/logs/tutor-dialogues, which the
+// evaluate pass only finds if its reader (EVAL_LOGS_DIR-based) defaults to the same place.
+// Isolating EVAL_LOGS_DIR split write (repo/logs) from read (isolated) → "dialogue log not
+// found". The DB + pads (the experiment's results) stay isolated; transcripts live in the
+// shared, gitignored repo logs/ keyed by unique dialogue_id.
 const STORE_DIR = REAL ? OUT_DIR : fs.mkdtempSync(path.join(os.tmpdir(), 'rich-exp-'));
 fs.mkdirSync(STORE_DIR, { recursive: true });
 process.env.EVAL_DB_PATH = path.join(STORE_DIR, 'experiment.db');
-process.env.EVAL_LOGS_DIR = path.join(STORE_DIR, 'logs');
 process.env.EVAL_WRITING_PAD_DIR = path.join(STORE_DIR, 'pads');
-fs.mkdirSync(process.env.EVAL_LOGS_DIR, { recursive: true });
 fs.mkdirSync(process.env.EVAL_WRITING_PAD_DIR, { recursive: true });
 
 // Generation/scoring run via the eval-cli subprocess (see sh()); only the rich store
