@@ -20,7 +20,7 @@
  * layer.
  */
 
-import { factKey, proofTree } from './chainer.js';
+import { factKey, proofTree, closure } from './chainer.js';
 
 export const BELIEF_DESIRE_SCHEMA = 'machinespirits.derivation.belief-desire.v0';
 
@@ -197,26 +197,152 @@ export function dependenceProposition(victor) {
   return { rel: 'truthBearer', who: victor };
 }
 
+// ---------------------------------------------------------------------------
+// Live symmetry (BELIEF-DESIRE-DAG.md §5): the learner side made first-class,
+// mirroring the tutor, plus a learner->tutor model (the missing half of
+// proxyDagMemory) and a whole-subject assembler that reverse() operates over.
+// ---------------------------------------------------------------------------
+
+/** A per-bearer state (the §13 BearerState): belief graph, desire graph, models of others. */
+export function buildBearerState(
+  bearer,
+  { belief = { nodes: [], edges: [] }, desire = { nodes: [], edges: [] }, models = {} } = {},
+) {
+  return { bearer, belief, desire, models };
+}
+
+/** The learner's belief-DAG: what it has grounded from its held board (closure under R). */
+export function buildLearnerBeliefDag(world, heldFacts = []) {
+  const held = (heldFacts || []).filter((f) => Array.isArray(f) && f.length);
+  const cl = closure(held, world.rules);
+  const byPremise = premiseIndex(world);
+  const nodes = [];
+  for (const [key, fact] of cl.facts) {
+    const derived = Boolean(cl.proofs.get(key));
+    nodes.push({
+      id: `bel:${key}`,
+      kind: 'fact',
+      statement: { content: fact, attitude: 'Bel', bearer: 'L', order: 0 },
+      status: derived ? 'grounded' : 'held',
+      grounded: true,
+      source: byPremise.has(key) ? 'released_premise' : 'background_or_derived',
+      premiseId: byPremise.get(key) || null,
+    });
+  }
+  return {
+    schema: BELIEF_DESIRE_SCHEMA,
+    bearer: 'L',
+    nodes,
+    edges: [],
+    secretGrounded: cl.facts.has(factKey(world.secret.fact)),
+  };
+}
+
 /**
- * Role reversal R (§12). Index swap T<->L (D fixed) PLUS the content-
- * transformation: seed δ on the surpassed party. NECESSARY ONLY — `consummated`
- * stays false until that dependence desire is grounded.
+ * 𝔐_L(T): the learner's PUBLIC-ONLY model of the tutor's wants — the missing
+ * half of proxyDagMemory, and the home of Lacan's "desire of the Other" (§5,
+ * §11a). The learner reads the tutor as wanting it to fill the answer-slot but
+ * cannot see the secret (audit.secretIncluded === false).
  */
-export function reverse(states = { T: null, L: null, D: null }, { surpassed = 'T' } = {}) {
-  const swap = (b) => (b === 'T' ? 'L' : b === 'L' ? 'T' : b); // D and any other index untouched
+export function buildLearnerTutorModel(world, { releasedPremiseIds = [], prompts = [] } = {}) {
+  const inferredDesires = [
+    desireNode({
+      id: 'mLT:wants-slot',
+      bearer: 'T',
+      content: { rel: 'grounded_L', of: world.questionPattern },
+      origin: 'root_end',
+      slot: { var: '?x', binding: null },
+    }),
+  ];
+  return {
+    schema: BELIEF_DESIRE_SCHEMA,
+    of: 'T',
+    publicOnly: true,
+    observedReleases: [...releasedPremiseIds],
+    observedPrompts: [...prompts],
+    inferredDesires,
+    audit: { authoredPathsIncluded: false, secretIncluded: false },
+  };
+}
+
+/** D's desire-DAG (§10): the aesthetic ends, read off the world's slope + mirror + schedule. */
+export function buildDirectorDesireDag(world) {
+  const node = (id, label, content) => ({
+    id,
+    kind: 'desire',
+    statement: { content, attitude: 'Des', bearer: 'D', order: 0 },
+    origin: 'root_end',
+    label,
+  });
+  const nodes = [
+    node('des:D:suspense', 'suspense', { rel: 'underivableBefore', secret: 'S', turn: world.slope.t_min }),
+    node('des:D:temptation', 'temptation', { rel: 'mirrorTempting', mirror: world.mirror ? 'M' : null }),
+    node('des:D:peripeteia', 'peripeteia', { rel: 'reversalOccurs' }),
+    node('des:D:anagnorisis', 'anagnorisis', { rel: 'recognitionScene' }),
+    node('des:D:noAporia', 'no_aporia', { rel: 'distanceDecreasesWithin', window: world.slope.aporia_window }),
+  ];
+  return {
+    schema: BELIEF_DESIRE_SCHEMA,
+    bearer: 'D',
+    nodes,
+    edges: [],
+    note: 'plotLint is D’s satisfaction condition (§10)',
+  };
+}
+
+/**
+ * Assemble the whole synthetic-subject state for a world at a point in the run:
+ * the three bearers {T, L, D}, each with its belief/desire graphs and models of
+ * the others. This is the object the app renders and reverse() transforms.
+ */
+export function buildSubjectState(world, { learnerHeld = [], releasedPremiseIds = [], prompts = [] } = {}) {
+  const tutorDesire = buildTutorDesireDag(world);
+  const { firstOrder, secondOrder } = seedLearnerDesires(world);
+  const directorDesire = buildDirectorDesireDag(world);
+  return {
+    world: world.id,
+    T: buildBearerState('T', { desire: { nodes: tutorDesire.nodes, edges: tutorDesire.edges }, models: {} }),
+    L: buildBearerState('L', {
+      belief: buildLearnerBeliefDag(world, learnerHeld),
+      desire: { nodes: [firstOrder, secondOrder], edges: [] },
+      models: { T: buildLearnerTutorModel(world, { releasedPremiseIds, prompts }) },
+    }),
+    D: buildBearerState('D', { desire: { nodes: directorDesire.nodes, edges: directorDesire.edges } }),
+  };
+}
+
+function relabelBearer(state, newBearer) {
+  return state ? { ...state, bearer: newBearer } : state;
+}
+
+/**
+ * Role reversal R (§12) over a live subject state. Index swap T<->L (D fixed)
+ * PLUS the content-transformation: seed δ into the surpassed party's NEW desire
+ * graph. NECESSARY ONLY — `consummated` stays false until that δ is grounded.
+ * (Shallow bearer relabel; per-node statement.bearer relabel is a follow-up.)
+ */
+export function reverse(subject, { surpassed = 'T' } = {}) {
+  const swap = (b) => (b === 'T' ? 'L' : b === 'L' ? 'T' : b);
   const victor = swap(surpassed);
-  const swapped = { T: states.L ?? null, L: states.T ?? null, D: states.D ?? null };
-  const seeded = desireNode({
+  const newT = relabelBearer(subject.L, 'T');
+  const newL = relabelBearer(subject.T, 'L');
+  const surpassedNew = surpassed === 'T' ? newL : newT;
+  const delta = desireNode({
     id: `des:dependence:${surpassed}`,
-    bearer: swap(surpassed), // the surpassed party now occupies the swapped index
+    bearer: swap(surpassed),
     content: { rel: 'grounded', of: dependenceProposition(victor) },
     origin: 'dependence',
   });
+  if (surpassedNew?.desire?.nodes) {
+    surpassedNew.desire = { ...surpassedNew.desire, nodes: [...surpassedNew.desire.nodes, delta] };
+  }
   return {
-    schema: BELIEF_DESIRE_SCHEMA,
-    swap: { T: swap('T'), L: swap('L'), D: 'D' },
-    states: swapped,
-    seeded,
+    world: subject.world,
+    T: newT,
+    L: newL,
+    D: subject.D,
+    swap: { T: 'L', L: 'T', D: 'D' },
+    seeded: delta,
     consummated: false,
   };
 }
