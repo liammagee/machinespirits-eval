@@ -11,7 +11,9 @@ It originates no empirical claims; the one effect it references is inherited fro
 
 There are two **live** implementations of Freud's three-layer "Mystic Writing Pad"
 (conscious / preconscious / unconscious), on two different run paths, plus one
-**retained-but-unwired** rich store.
+**retained-but-unwired** rich store. For the implementation-level detail of each —
+schemas, methods, decay rules, per-turn call sites, and the injection builders — see the
+companion note [`MEMORY-MECHANISMS.md`](MEMORY-MECHANISMS.md).
 
 | Store | Lives in | Owner / run path | Status |
 |---|---|---|---|
