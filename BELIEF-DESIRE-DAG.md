@@ -327,8 +327,8 @@ bearers; two reversible.
 **On the horizon — `D` as the Big Other.** `D` is the seam to Lacan's _grand Autre_: the
 symbolic locus (law / language / the third party) from which the subject is seen and by which
 recognition is guaranteed — not a person but a _place_, occupied in turn by author, director,
-audience, the **critic of the poetics arc**, the warden's assay, God. Two consequences to
-develop (recorded, not yet built):
+audience, the **critic of the poetics arc**, the warden's assay, God. Two consequences,
+developed in §11:
 
 - **Authority is delegated, not intrinsic.** The `Rec_T(L, ·)` authority-weight (§4) is not the
   tutor's own — `T` borrows it from `D`: `authority(T) = D`'s delegation. The warden's
@@ -339,21 +339,200 @@ develop (recorded, not yet built):
   agent) as wanting. The migrating filler (verrell → edony, §9) is the learner's desire being
   re-aligned to the Other's law (the assay's rules).
 
-We keep building the `{T, L, D}` mechanics first; the Big Other is where `D`, Weber's authority,
-and the poetics-arc critic / audience converge.
+The Big Other is where `D`, Weber's authority, and the poetics-arc critic / audience converge —
+§11 develops it, §13 pins the mechanics.
+
+## 11. The Big Other, developed
+
+§10 placed `D` at Lacan's _grand Autre_ — the symbolic place that guarantees recognition. Three
+developments, each with a formal correlate.
+
+**(a) Authority is a delegation the learner must believe.** Make the authorisation explicit:
+`auth_D(T)` — `D` vests `T` with the standing to confer recognition. Then the _force_ of the
+learner's second-order desire is gated not by `T`'s authority as such but by the learner's
+**belief** in it:
+
+```
+force( Des_L(Rec_T(L, π)) )  ∝  Bel_L( auth_D(T) )
+```
+
+Two things follow. First, Weber's three types are three _modes_ of `auth_D(T)` — `charismatic`
+(the warden compels by presence), `traditional` (by office), `rational_legal` (by the assay's
+rules) — so the charisma / id-director machinery is the study of how `T` acquires and signals
+`auth_D(T)`. Second, recognition can be **deflated without touching the proof**: if the learner
+ceases to believe `T` speaks for the Other (`Bel_L(auth_D(T))` falls), the same utterance loses
+force. Recognition is not in the words; it is in the believed delegation behind them.
+
+**(b) The Other is barred — and the project has already measured it.** Lacan's `S(Ⱥ)`: there is
+no consistent, complete guarantor. Two correlates we already possess:
+
+- `D`'s law can be **inconsistent**: `plotLint` can _fail_ — a world whose constraints cannot be
+  jointly met (the secret leaks before `t_min`, or no release path completes). A failed
+  `plotLint` is the Other's law with a hole in it.
+- The `D`-place is occupied by **several, non-identical** parties — author, director, audience,
+  the poetics critic, the warden. When they disagree on whether `π` was earned, there is no
+  single conferral. **This is the project's critic-divergence finding** (the poetics κ-gap, the
+  critic-mirror) read structurally: critics diverge because _the Other does not exist as
+  univocal_. What looked like a measurement failure is the barred Other showing through.
+
+**(c) The three registers, located (one open).** Imaginary = the **mirror** `M` (the false
+object, the learner's captured first-order desire). Symbolic = `D` with the public rules `R` (the
+law that confers). Real = the register that resists symbolisation — our two candidates are the
+**underivable** (`struckBy(verrell)` is impossible _by construction_, not merely absent) and the
+**unvoiced interior** (the latent-vs-manifest split from `MEMORY-MECHANISMS.md`). We leave the
+Real open; it is where "what cannot be derived or said" will have to be theorised.
+
+## 12. Reversal, developed
+
+Reversal is richer than an index swap. Place the dramatis personae in a **recognition-vector
+space**:
+
+- **asymmetric** (master/servant): `Des_L(Rec_T(L,·))` without the converse — the opening state.
+- **mutual** (Hegel's resolution): both `Des_L(Rec_T(L,·))` _and_ `Des_T(Rec_L(T,·))` — each
+  desires the other's recognition; the doubling completes.
+- **inverted** (the reversal `R`): the vector flips — `Des_T(Rec_L(T,·))` without the converse;
+  the former master now needs the former servant's recognition.
+
+**Peripeteia is a transition in this space**, and `R: T ↔ L` is only its limiting (total) case.
+Three things this buys:
+
+- **Anagnorisis enables peripeteia (Aristotle's coincidence).** The asymmetry is destabilised
+  exactly when the servant's labour produces the truth: the learner _grounds_ `S` and is
+  _recognised_ for it. That fulfilment of `Des_L(Rec_T(L, derived S))` is the structural trigger —
+  recognition of the truth is the condition for the reversal of position. The best peripeteia
+  _coincides_ with the anagnorisis because, here, one is the other's enabling condition.
+- **The index swap is necessary, not sufficient.** Swapping `T ↔ L` puts `S` in the learner's
+  hands and empties the tutor's — but a _content_ transformation must accompany it: the former
+  master must come to **derive its own dependence** (that its authority was borrowed from `D`,
+  §11a). Reversal is a swap _plus_ a new derivation forced on the surpassed party.
+- **`D` stages its own destabilisation.** `Des_D(peripeteia)` means the author _wants_ the
+  reversal — but the reversal can expose `auth_D(T)` as contingent (the master's standing was only
+  ever delegated). So the director's aesthetic desire is in tension with the symbolic order's
+  stability: the Other desires the very turn that reveals it is barred. This is not a bug to
+  remove; it is the engine of the strongest recognitions, and a thing the formalism should let us
+  _stage on purpose_.
+
+## 13. Typed schema (v0.1 spec — no code yet)
+
+A precise contract for `⟨φ, α, b, order⟩` and the graphs over `{T, L, D}`, written as
+TypeScript-style interfaces _as documentation_ (the runtime is JS; this is the spec, not an
+implementation). Each type notes the `services/dramaticDerivation/` structure it generalises.
+
+```ts
+// Content & atoms
+type Var = `?${string}`; // slot variable, e.g. "?x"
+type Fact = [pred: string, ...args: (string | Var)[]]; // existing chainer fact array
+type Content = Fact | Statement; // recursion gives orders > 0
+type Attitude = "Bel" | "Des"; // Int (intention) deferred, §8
+type Bearer = "T" | "L" | "D";
+type NodeId = string;
+
+interface Statement {
+  content: Content;
+  attitude: Attitude;
+  bearer: Bearer;
+  order: number; // 0 = fact content; n = content is an order-(n-1) Statement
+}
+
+// Nodes (tagged union by `kind`)
+type Node = FactNode | DesireNode | RecognitionNode | RuleApplicationNode;
+
+interface FactNode {
+  // a belief — generalises learnerDag's fact-node
+  kind: "fact";
+  statement: Statement; // attitude = "Bel"
+  status: "grounded" | "belief_only" | "voiced" | "asserted" | "overreach";
+  grounded: boolean; // φ ∈ Cl_R(held_bearer)
+  source: "background" | "released_premise" | "learner_only";
+}
+
+interface DesireNode {
+  kind: "desire";
+  statement: Statement; // attitude = "Des"
+  slot?: { var: Var; binding: Content | null }; // de dicto ∃x.Q(x); binding may be the mirror
+  fulfilledBy: NodeId | null; // FactNode whose grounding fulfils this (§2)
+  fulfilled: boolean;
+  origin: "root_end" | "practical_subgoal" | "false_object";
+}
+
+interface RecognitionNode {
+  // decomposable Rec_a(b, π) (§4)
+  kind: "recognition";
+  recogniser: Bearer; // a
+  recognised: Bearer; // b
+  standing: Content; // π, e.g. derived(S)
+  beliefComponent: NodeId; // Bel_a(π(b))
+  conferral: boolean; // status conferred vs merely believed
+  authority: { authorizer: Bearer; mode: WeberMode; believedByRecognised: boolean }; // §11a
+  held: boolean; // grounded vs merely uttered (§8)
+}
+type WeberMode = "charismatic" | "traditional" | "rational_legal";
+
+interface RuleApplicationNode {
+  // existing inference node, direction-tagged
+  kind: "rule_application";
+  rule: string; // world rule id R1…R5
+  inputs: NodeId[];
+  output: NodeId;
+  direction: "theoretical" | "practical"; // forward belief vs backward desire
+}
+
+// Edges
+type Edge =
+  | { kind: "input"; from: NodeId; to: NodeId } // premise → rule-app (existing)
+  | { kind: "output"; from: NodeId; to: NodeId } // rule-app → conclusion (existing)
+  | { kind: "practical"; from: NodeId; to: NodeId } // end → sub-desire (NEW, §3)
+  | { kind: "fulfils"; from: NodeId; to: NodeId } // FactNode → DesireNode (NEW, §2)
+  | { kind: "authorises"; from: NodeId; to: NodeId }; // D → RecognitionNode (NEW, §11a)
+
+// Per-bearer state
+interface Graph {
+  nodes: Record<NodeId, Node>;
+  edges: Edge[];
+}
+
+interface BearerState {
+  bearer: Bearer;
+  belief: Graph; // 𝔅_b
+  desire: Graph; // 𝔇_b
+  model: Partial<Record<Bearer, PublicModel>>; // 𝔐_b(other); today only T→L
+}
+
+interface PublicModel {
+  // generalises proxyDagMemory (publicOnly, redacted)
+  of: Bearer;
+  grounded: Fact[];
+  voiced: Fact[];
+  asserted: Fact | null;
+  inferredDesires: DesireNode[]; // NEW: the other's wants, read off public behaviour
+  audit: { authoredPathsIncluded: false; secretIncluded: false };
+}
+
+// Reversal (§12): swap T↔L across all structures; D fixed.
+// Necessary only — a content transformation (the surpassed party deriving its
+// own dependence) must follow the swap.
+declare function reverse(world: World, s: Record<Bearer, BearerState>): Record<Bearer, BearerState>;
+```
+
+**Binding the spec to the code.** `FactNode` = `learnerDag`'s fact-node plus an attitude/bearer
+tag. `RuleApplicationNode.direction:"theoretical"` = the existing `closure`; `"practical"` is the
+new backward mode. `PublicModel` = `proxyDagMemory` with an `inferredDesires` field and the same
+`audit` no-leak block. `World` is the frozen `world.js` object (rules `R`, premises, secret `S`,
+mirror `M`, `proof_paths`, `release_schedule`, `slope`): `D`'s belief-graph is the whole `World`;
+`T`'s is `World` minus the unreleased premises' _facts_ (it holds the schedule, as staging
+authority); `L`'s is only what has been released and held.
 
 ---
 
 ### Next steps
 
-- **v0.1 + worked example + v0.2: done.** §9 validated moves #3/#4 and decomposable recognition
-  on a real world; §10 admits the director `D` as a third desiring role (its desire-DAG = the
-  `slope` / `plotLint` constraints) and records the Big-Other horizon; §4 takes first-order
-  epistemic desire as _de dicto_ (the answer-slot).
-- **Next — the typed schema (§7):** pin `⟨φ, α, b, order⟩` and the `practical` edge kind into
-  precise type definitions over `{T, L, D}`, with `fulfilledBy` and the recognition
-  decomposition explicit. Still no code — a typed spec.
-- **Then — the symmetry build (§5):** give the learner live `𝔅_L`, `𝔇_L`, `𝔐_L(T)` mirroring
-  the tutor, and define the reversal operator `R: T ↔ L` (with `D` fixed).
+- **v0.1 → v0.3: done.** §11 develops the Big Other (delegated authority gated by
+  `Bel_L(auth_D(T))`; the barred Other = the critic-divergence finding; registers located, Real
+  left open); §12 develops reversal (the recognition-vector space; anagnorisis enables peripeteia;
+  swap-plus-transformation; `D` staging its own destabilisation); §13 pins the typed schema over
+  `{T, L, D}`.
+- **Next — the symmetry build (§5):** the spec is now precise enough to instantiate `𝔅_L`,
+  `𝔇_L`, `𝔐_L(T)` live on the learner side, mirroring `T`, and to implement `reverse()` (the swap
+  plus the forced dependence-derivation). This is the first step that touches code.
 - **Later (recorded):** intention as a third attitude (§8); verifying recognition vs uttering it
-  (§8); the Big Other developed (§10).
+  (§8 / `RecognitionNode.held`); the Real register (§11c).
