@@ -1,4 +1,4 @@
-# Belief–Desire DAG — role-playing formalism (v0.2, working draft)
+# Belief–Desire DAG — role-playing formalism (v0.4, working draft)
 
 This note begins a formalism that layers **desire** onto the existing proof DAG
 (`services/dramaticDerivation/`), distinguishes **belief** (how the world *is*) from
@@ -375,12 +375,21 @@ no consistent, complete guarantor. Two correlates we already possess:
   critic-mirror) read structurally: critics diverge because _the Other does not exist as
   univocal_. What looked like a measurement failure is the barred Other showing through.
 
-**(c) The three registers, located (one open).** Imaginary = the **mirror** `M` (the false
-object, the learner's captured first-order desire). Symbolic = `D` with the public rules `R` (the
-law that confers). Real = the register that resists symbolisation — our two candidates are the
-**underivable** (`struckBy(verrell)` is impossible _by construction_, not merely absent) and the
-**unvoiced interior** (the latent-vs-manifest split from `MEMORY-MECHANISMS.md`). We leave the
-Real open; it is where "what cannot be derived or said" will have to be theorised.
+**(c) The three registers — two clear, one that may not fit.** Imaginary = the **mirror** `M`
+(the false object, the learner's captured first-order desire). Symbolic = `D` with the public
+rules `R` (the law that confers). The **Real** is the slippery one, and we should not force it.
+Two candidates, each with a defect:
+
+- the _impossible_ — `struckBy(verrell)` is underivable _by construction_, no rule ever reaches it
+  (Lacan: "the real is the impossible"). Attractive, but tightly coupled to the Imaginary that
+  _covers_ it: the mirror's surface plausibility is exactly the veil over that hard impossibility.
+- the _aporia_ — the impasse where derivation stalls (`detectStall`, the `aporia_window`
+  constraint). More dynamic: the Real as the eruption that breaks symbolic flow.
+
+Neither yet does load-bearing work the way `D` does, so we **record the Real as open and do not
+build on it** — it earns no place in the core mechanics until it _predicts_ something (e.g. where a
+derivation stalls). And we retract the earlier "unvoiced interior" candidate: the latent/manifest
+split is preconscious (Freud), not Real.
 
 ## 12. Reversal, developed
 
@@ -411,6 +420,29 @@ Three things this buys:
   stability: the Other desires the very turn that reveals it is barred. This is not a bug to
   remove; it is the engine of the strongest recognitions, and a thing the formalism should let us
   _stage on purpose_.
+
+**The content-transformation, specified.** Make the second bullet precise. When a victor `Y`
+grounds the secret that a surpassed party `X` represented, the reversal forces a new end on `X`: to
+ground the **dependence proposition**
+
+```
+δ_X  :=  truthBearer(Y, S)        // "the one who bore the truth was Y, not my office"
+```
+
+So `reverse` is the index swap `T ↔ L` (`D` fixed) **plus** seeding `Des_X(grounded_X(δ_X))` on the
+surpassed party. The swap is necessary; the reversal **consummates** only when `δ_X` is grounded —
+until then the dialectic is stalled (Hegel's master who will not own its dependence). Dually, full
+**mutual** recognition needs both meta-facts grounded: `X` grounds `δ_X = truthBearer(Y, S)` and `Y`
+grounds `δ_Y = enabler(X, derivation_Y)` (the learner recognises the withholding-as-gift). Three
+reachable states from the asymmetric opening:
+
+- **mutual** — both `δ` grounded → symmetric recognition (the resolved Hegelian end);
+- **inverted** — the bare swap, `δ_X` _not_ grounded → the new master in the old denial, the
+  asymmetry repeats with roles flipped (the cyclic / tragic path);
+- **stalled** — the swap attempted, `δ_X` neither seeded nor grounded → the dialectic halts.
+
+This is now executable (§14): `reverse()` performs the swap and seeds `δ` (origin `dependence`) and
+returns `consummated: false` — the necessary-not-sufficient point made into code.
 
 ## 13. Typed schema (v0.1 spec — no code yet)
 
@@ -452,7 +484,7 @@ interface DesireNode {
   slot?: { var: Var; binding: Content | null }; // de dicto ∃x.Q(x); binding may be the mirror
   fulfilledBy: NodeId | null; // FactNode whose grounding fulfils this (§2)
   fulfilled: boolean;
-  origin: "root_end" | "practical_subgoal" | "false_object";
+  origin: "root_end" | "practical_subgoal" | "false_object" | "given" | "dependence"; // §12
 }
 
 interface RecognitionNode {
@@ -522,17 +554,39 @@ mirror `M`, `proof_paths`, `release_schedule`, `slope`): `D`'s belief-graph is t
 `T`'s is `World` minus the unreleased premises' _facts_ (it holds the schedule, as staging
 authority); `L`'s is only what has been released and held.
 
+## 14. Code scaffold (v0 — pure structure, tested)
+
+`services/dramaticDerivation/beliefDesire.js` + `tests/dramaticDerivationBeliefDesire.test.js`
+implement the load-bearing pieces of §13 as deterministic structure — no model call, no eval, no
+DB; seam-safe (it imports only the sibling `chainer`). Four tests pass.
+
+- **`buildTutorDesireDag(world)`** builds the tutor's desire-DAG by **inverting the belief-proof of
+  the secret** (reusing `chainer.proofTree`, not re-deriving): each derived fact becomes a
+  `Des_T(grounded_L(·))` node, each base fact a `Des_T(holds_L premise)` leaf, each rule a
+  `practical` edge. On `world-005-marrick` the leaves come out as **exactly the six proof-path
+  premises** (`p_alloy, p_caster, p_crucible, p_flaw, p_graver, p_holder`) — move #3 made executable
+  and checked against a real world.
+- **`seedLearnerDesires(world)`** emits the first-order de dicto slot (`∃x. Q(x)`, binding `null`)
+  and the second-order recognition desire (order 1).
+- **`recognitionNode(...)`** is the decomposable `Rec_a(b, π)` — belief-component, conferral, and a
+  Weber-`mode` authority delegated from `D` (§11a).
+- **`reverse(states, {surpassed})`** is the §12 operator: swap `T ↔ L` (`D` fixed) **and** seed the
+  dependence proposition `δ` (origin `dependence`) on the surpassed party, returning
+  `consummated: false`.
+
+It does _not_ yet hold live per-bearer state (`𝔅_L` / `𝔇_L` / `𝔐_L`) — `reverse` swaps placeholder
+state objects. Wiring those live is the symmetry build proper (next).
+
 ---
 
 ### Next steps
 
-- **v0.1 → v0.3: done.** §11 develops the Big Other (delegated authority gated by
-  `Bel_L(auth_D(T))`; the barred Other = the critic-divergence finding; registers located, Real
-  left open); §12 develops reversal (the recognition-vector space; anagnorisis enables peripeteia;
-  swap-plus-transformation; `D` staging its own destabilisation); §13 pins the typed schema over
-  `{T, L, D}`.
-- **Next — the symmetry build (§5):** the spec is now precise enough to instantiate `𝔅_L`,
-  `𝔇_L`, `𝔐_L(T)` live on the learner side, mirroring `T`, and to implement `reverse()` (the swap
-  plus the forced dependence-derivation). This is the first step that touches code.
+- **v0.1 → v0.4: done.** §11–§13 develop the Big Other, reversal (with the content-transformation
+  `δ` now specified, §12), and the typed schema; §14 lands a tested scaffold (`beliefDesire.js`) that
+  makes the tutor desire-DAG and `reverse()` executable. The Real is recorded as open and
+  deliberately unused (§11c).
+- **Next — live symmetry (§5):** give the learner real `𝔅_L`, `𝔇_L`, `𝔐_L(T)` (a learner→tutor
+  model — the missing half of `proxyDagMemory`) and rewire `reverse()` over those live states, so the
+  three reachable states (mutual / inverted / stalled) can actually be reached on a run.
 - **Later (recorded):** intention as a third attitude (§8); verifying recognition vs uttering it
-  (§8 / `RecognitionNode.held`); the Real register (§11c).
+  (§8 / `RecognitionNode.held`); the Real, only if it earns its keep (§11c).
