@@ -1,4 +1,4 @@
-# Belief–Desire DAG — role-playing formalism (v0.1, working draft)
+# Belief–Desire DAG — role-playing formalism (v0.2, working draft)
 
 This note begins a formalism that layers **desire** onto the existing proof DAG
 (`services/dramaticDerivation/`), distinguishes **belief** (how the world *is*) from
@@ -31,8 +31,10 @@ s = ⟨ φ , α , b ⟩
   nested statement (§4).
 - `α` — **attitude**: `Bel` (belief) or `Des` (desire). Extensible later to `Int`
   (intention) — deferred, §8.
-- `b` — **bearer**: `T` (tutor) or `L` (learner). Everything is bearer-indexed; this is
-  what makes symmetry and reversal possible (§5).
+- `b` — **bearer** ∈ `{T, L, D}`: tutor, learner, director. `T` and `L` are the two
+  _reversible_ dramatis personae; `D` is the staging authority (author / director), a third
+  desiring role developed in §10. Everything is bearer-indexed — this is what makes symmetry
+  and reversal possible (§5).
 
 The existing proof-DAG fact-nodes are exactly the special case `⟨φ∈ℱ, Bel, L⟩` — the
 learner's grounded beliefs about the world. We are generalising the node type, not
@@ -94,8 +96,11 @@ Order is **attitude nesting**:
 
 The two wishes you asked to distinguish:
 
-- **First-order wish** — "I want to learn X": `Des_L( grounded_L(knows(L, X)) )`. Content is
-  the learner's own world-state. Satisfied by deriving X.
+- **First-order wish** — for the _answer-slot_: `Des_L( ∃x. grounded_L(Q(x)) )`, where `Q` is
+  the question pattern — the _de dicto_ form ("I want to know _who/what_"). "I want to learn X"
+  is the special _bound_ case where `x` is already fixed; in general the learner does not yet
+  know `X`, and misrecognition is the slot prematurely **bound to the mirror** (§9). Content is
+  the learner's own world-state; satisfied by grounding some filler.
 - **Second-order wish** — "I want the tutor to recognise me for learning X":
   `Des_L( Rec_T(L, learned(X)) )`. Content is the *tutor's attitude toward the learner*.
 
@@ -145,8 +150,9 @@ bearer `b` carries:
    first-order wish is shaped by `𝔐_L(T)`).
 
 **Role reversal** is then a **swap of the bearer index** across all three structures,
-`R: T ↔ L`. It is only meaningful because both sides bear the *same types* — hence symmetry
-must come first. Dramatically:
+`R: T ↔ L` (the director `D` is _not_ swapped — it frames the play, and in fact _stages_ the
+reversal; §10). It is only meaningful because both sides bear the *same types* — hence
+symmetry must come first. Dramatically:
 
 - **Peripeteia** = applying `R` (or a partial swap) mid-plot: the learner comes to occupy
   the tutor's position (holds `S`, paces), the tutor the learner's (must now derive what it
@@ -289,12 +295,65 @@ load-bearing, not decorative.
 
 ---
 
-### Next steps (revised after the example)
+## 10. The director — a third desiring role (and the Big Other on the horizon)
 
-- **Worked example: done** (§9) — moves #3, #4, and decomposable recognition all hold on a
-  real world; the authority term is load-bearing.
-- **Fold two refinements into v0.2:** the director as a third desiring role (or tutor-as-stager
-  who plants false objects), and the de dicto/de re structure of first-order epistemic desire
-  (the migrating filler).
-- **Then pin the typed schema** (§7) with those refinements in, and **build the learner-side
-  live structures + the reversal operator** (§5) — the symmetry work proper.
+§9 showed the two-bearer model is too small: the **director** `D` defers the resolution and
+plants the mirror fuel. `D` is a third bearer, but not a symmetric one. Its desire is neither
+doxastic nor pedagogical (the tutor's "learner reaches `S`") but **aesthetic** — a well-formed
+plot (Aristotle's _mythos_).
+
+**`D`'s desire-DAG is the dramatic constraints already frozen in the code.** Decompose
+`Des_D(well-formed drama)`:
+
+- `Des_D(suspense)` — `S` underivable before `t_min` → the anti-reveal shape of the release
+  schedule.
+- `Des_D(temptation)` — the mirror _appears_ answerable → plant `m_caster`/`m_graver`/`m_caught`
+  (practical inference: to make `struckBy(verrell)` look within reach, release the facts that
+  hand Verrell each rule's missing conjunct — while the world guarantees it is never entailed).
+- `Des_D(peripeteia)` — the reversals (struck-not-clipped; wrong-graver).
+- `Des_D(anagnorisis)` — the closing recognition scene.
+- `Des_D(no aporia)` — `D(t)` strictly decreases within the `aporia_window`.
+
+These are exactly the `slope` constraints + the mirror-fuel releases, and **`plotLint` is `D`'s
+desire-satisfaction condition**: the frozen pre-run check that the plot is well-formed _is_ the
+verification that the director's aesthetic desire can be met. The author's wanting was already
+in the code, as validation.
+
+**Reversal, reconciled.** `T` and `L` are the _reversible_ dramatis personae _within_ the play;
+`D` frames it. Peripeteia stays a clean `T ↔ L` swap, with `D` persisting as the author across
+the swap — indeed it is the role that _stages_ the reversal (`Des_D(peripeteia)`). Three
+bearers; two reversible.
+
+**On the horizon — `D` as the Big Other.** `D` is the seam to Lacan's _grand Autre_: the
+symbolic locus (law / language / the third party) from which the subject is seen and by which
+recognition is guaranteed — not a person but a _place_, occupied in turn by author, director,
+audience, the **critic of the poetics arc**, the warden's assay, God. Two consequences to
+develop (recorded, not yet built):
+
+- **Authority is delegated, not intrinsic.** The `Rec_T(L, ·)` authority-weight (§4) is not the
+  tutor's own — `T` borrows it from `D`: `authority(T) = D`'s delegation. The warden's
+  recognition counts because the assay (the symbolic order) authorises it; recognition is
+  ultimately addressed to `D` _through_ `T`.
+- **"Desire is the desire of the Other" gets a referent.** The learner's desire is shaped by
+  `𝔐_L(T)`, but `T` is a stand-in for `D`; the learner wants what it reads the _Other_ (via its
+  agent) as wanting. The migrating filler (verrell → edony, §9) is the learner's desire being
+  re-aligned to the Other's law (the assay's rules).
+
+We keep building the `{T, L, D}` mechanics first; the Big Other is where `D`, Weber's authority,
+and the poetics-arc critic / audience converge.
+
+---
+
+### Next steps
+
+- **v0.1 + worked example + v0.2: done.** §9 validated moves #3/#4 and decomposable recognition
+  on a real world; §10 admits the director `D` as a third desiring role (its desire-DAG = the
+  `slope` / `plotLint` constraints) and records the Big-Other horizon; §4 takes first-order
+  epistemic desire as _de dicto_ (the answer-slot).
+- **Next — the typed schema (§7):** pin `⟨φ, α, b, order⟩` and the `practical` edge kind into
+  precise type definitions over `{T, L, D}`, with `fulfilledBy` and the recognition
+  decomposition explicit. Still no code — a typed spec.
+- **Then — the symmetry build (§5):** give the learner live `𝔅_L`, `𝔇_L`, `𝔐_L(T)` mirroring
+  the tutor, and define the reversal operator `R: T ↔ L` (with `D` fixed).
+- **Later (recorded):** intention as a third attitude (§8); verifying recognition vs uttering it
+  (§8); the Big Other developed (§10).
