@@ -31,6 +31,7 @@ import evalRoutes from '../routes/evalRoutes.js';
 import chatRoutes from '../routes/chatRoutes.js';
 import pilotRoutes from '../routes/pilotRoutes.js';
 import a19AdjudicationRoutes from '../routes/a19AdjudicationRoutes.js';
+import { mountSubjectExplorer } from './subjectExplorer.js';
 
 // API routers, in mount order. [mountPath, router].
 const API_ROUTERS = [
@@ -68,5 +69,8 @@ export function mountEvalSurfaces(app, { root } = {}) {
     const dir = path.join(root, relDir);
     if (existsSync(dir)) app.use(mount, express.static(dir));
   }
+  // Decoupled belief–desire DAG surface (MACHINE-SPIRIT.md §5): reads only the
+  // structural engine + authored worlds; no DB, no shared state.
+  mountSubjectExplorer(app);
   return app;
 }
