@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Roundup — 18 Jun – 27 Jun 2026</title>
+  <style>
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      line-height: 1.65;
+      color: #1a1a1a;
+      background: #fafaf8;
+    }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; margin-bottom: .2rem; color: #444; text-transform: uppercase;
+         letter-spacing: .06em; }
+    .paper {
+      border-left: 3px solid #aaa;
+      padding: .5rem 1rem;
+      margin: 1rem 0;
+      background: #fff;
+    }
+    .paper.hot { border-left-color: #c0392b; }
+    .paper h3 { margin: 0 0 .25rem; font-size: 1rem; }
+    .paper .meta { font-size: .82rem; color: #666; margin-bottom: .5rem; }
+    .paper p { margin: 0; font-size: .93rem; }
+    .paper blockquote {
+      margin: .5rem 0;
+      padding: .4rem .8rem;
+      border-left: 2px solid #ccc;
+      font-size: .88rem;
+      color: #444;
+      font-style: italic;
+    }
+    .flag {
+      display: inline-block;
+      background: #c0392b;
+      color: #fff;
+      font-size: .72rem;
+      font-weight: bold;
+      padding: .1rem .45rem;
+      border-radius: 3px;
+      margin-left: .5rem;
+      vertical-align: middle;
+    }
+    .flag.yellow { background: #d4a017; }
+    a { color: #1a5276; }
+    footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+  </style>
+</head>
+<body>
+<!-- meta: date=2026-06-27 window=(2026-06-18,2026-06-27] arxiv=2606.19135,2606.19605,2606.20691,2606.21228,2606.22748 generator=research-roundup-routine -->
+
+<h1>Research Roundup <small style="font-weight:normal;font-size:.85em">18 Jun – 27 Jun 2026</small></h1>
+<p style="font-size:.9rem;color:#555;">
+  Five papers from arXiv (all <code>2606.xxxxx</code>, confirmed late June 2026) across
+  prompt engineering, agent architecture, ontology, and dramaturgy / narrative AI.
+  All IDs are above 2606.18164 — none overlap with the 62 IDs covered in prior roundups.
+  Rhetoric section is thin this window: the closest candidate (2606.14580, Persuasion Index) was
+  submitted before the window opened and is excluded by the delta rule.
+  Flags: <span class="flag">UNBLOCK</span> = could directly accelerate current work;
+  <span class="flag yellow">WATCH</span> = relevant background.
+</p>
+
+<!-- ────────────────────────────────────── -->
+<h2>Prompt Engineering</h2>
+
+<div class="paper hot">
+  <h3>
+    FAPO: Fully Autonomous Prompt Optimization of Multi-Step LLM Pipelines
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Paul Kassianik, Baturay Saglam, Huaibo Zhao, Blaine Nelson, Supriti Vijay, Aman Priyanshu, Amin Karbasi ·
+    Foundation AI–Cisco Systems / Yale University ·
+    arXiv 2606.19605 · June 19–20, 2026 ·
+    <a href="https://arxiv.org/abs/2606.19605">https://arxiv.org/abs/2606.19605</a>
+  </div>
+  <p>
+    FAPO diagnoses multi-step pipeline failures at the step level — retrieval, reasoning, formatting —
+    attributes the bottleneck, proposes a scoped prompt or chain-structure edit, and validates the variant
+    against a score function, all without human intervention. Across six benchmarks and three task models
+    it beats the GEPA baseline in 15 of 18 comparisons with a mean gain of +14.1 percentage points.
+    The key insight is that blind full-pipeline prompt tuning misfires when failure is structural:
+    FAPO upgrades to a structural fix only when prompt edits are provably insufficient.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The <code>npm run prompt-lab -- autotune</code> workflow currently relies on human-directed
+    iteration over <code>prompts/tutor-ego*.md</code>. FAPO's step-level attribution + autonomous loop
+    is a drop-in pattern for this: treat each turn of the tutor pipeline (ego generate →
+    superego critique → ego revise) as a named stage, attribute low <code>tutor_first_turn_score</code>
+    returns to the correct stage, then mutate only that stage's prompt. Especially valuable for
+    cells 93–100 (superego variant ablations) where the failing stage is already known
+    but the correct prompt edit is not.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Agent Architecture</h2>
+
+<div class="paper">
+  <h3>
+    A Technical Taxonomy of LLM Agent Communication Protocols
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Linus Sander, Habtom Kahsay Gidey, Alexander Lenz, Alois Knoll ·
+    Technische Universität München ·
+    arXiv 2606.19135 · June 2026 ·
+    <a href="https://arxiv.org/abs/2606.19135">https://arxiv.org/abs/2606.19135</a>
+  </div>
+  <p>
+    The paper constructs a five-dimension taxonomy — counterparty type, payload format, interaction-state
+    persistence, discovery mechanism, and schema flexibility — by running five grounded-theory iterations
+    over nine actively maintained open-source agent-to-agent protocols. The dominant pattern across
+    all sampled protocols is hybrid payload + session-state persistence; pure-text or fully
+    stateless protocols are vanishingly rare in production systems.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The tutor-core ego/superego exchange and the learner deliberation cycle are both multi-step
+    agent communication patterns. Mapping them onto this taxonomy reveals the current architecture
+    is hybrid-payload + session-state (the dialogue log) — consistent with production norms —
+    but the discovery mechanism is hardwired (single-host, no registry). The taxonomy is useful
+    scaffolding if the project ever externalises the adaptive runner's state-policy into a
+    separable microservice; the interoperability gaps the paper identifies would surface immediately.
+  </p>
+</div>
+
+<div class="paper hot">
+  <h3>
+    Sakana Fugu Technical Report: A Trained Orchestrator for Multi-Agent LLM Systems
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Fugu Team, Sakana AI ·
+    arXiv 2606.21228 · submitted June 19, released June 22, 2026 ·
+    <a href="https://arxiv.org/abs/2606.21228">https://arxiv.org/abs/2606.21228</a>
+  </div>
+  <p>
+    Fugu is a language model trained to orchestrate a pool of other LLMs (Claude Opus 4.8,
+    GPT-5.5, Gemini 3.1 Pro, including recursive self-calls) by dynamically devising agentic
+    scaffolds — selecting which model to call, with what context, verified by what critic — for
+    each sub-task. The orchestrator is itself a trained model, not a hardwired policy:
+    it achieves state-of-the-art results on SWE-Bench Pro, GPQA-Diamond, and eight
+    additional benchmarks, beating every member of its pool individually.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The LangGraph adaptive runner (cells 110–113) already implements a learned state-policy
+    that selects among pedagogical moves — a structural analogue of Fugu's model-selection loop.
+    Fugu extends this idea to cross-model orchestration: the ego/superego split could be
+    implemented as a Fugu-style dispatch (ego = Haiku for speed, superego = Opus for depth)
+    with the orchestrator trained on rubric returns rather than benchmark accuracy.
+    The paper's "Learning to Orchestrate Agents" lineage (ICLR 2026) is worth reading alongside
+    the adaptive runner design in <code>services/adaptiveTutor/</code>.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Ontology / Knowledge Representation</h2>
+
+<div class="paper">
+  <h3>
+    Specific Domain Ontology Construction Using Large Language Models
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    arXiv 2606.20691 · June 2026 ·
+    <a href="https://arxiv.org/abs/2606.20691">https://arxiv.org/abs/2606.20691</a>
+  </div>
+  <p>
+    The paper uses LLMs (GPT-3.5, GPT-4) in the role of domain experts to iteratively
+    build conceptual hierarchies for a target concept, producing 20 ontologies for the
+    Brazilian maritime territory (the "Blue Amazon"). Human expert evaluation finds the outputs
+    overall coherent but not satisfactory without refinement — LLMs correctly populate
+    mid-level classes but struggle with precise boundary conditions and rare sub-concepts.
+    The key contribution is the prompt architecture for role-assignment and iterative
+    hierarchy refinement.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The poetics ontology (<code>config/evaluation-rubric-poetics.yaml</code>) is currently
+    a flat YAML with six Aristotle-derived dimensions. The κ ≈ 0.04 critic-divergence failure
+    suggests critics lack shared ontological grounding. This paper's LLM-as-domain-expert
+    approach could bootstrap a richer hierarchy for peripeteia / anagnorisis / hamartia —
+    treating each concept as the root of a subgraph rather than a flat rubric dimension.
+    Combine with the KG-grounding pattern from 2606.11560 (prior note) for a
+    constrained-scoring step that replaces free-text rubric descriptions.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Dramaturgy / Narrative AI</h2>
+
+<div class="paper hot">
+  <h3>
+    AI Fiction in the Wild: Roleplay, Fanfiction, and Infinite Story Demanders
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Neel Gupta, Maria Antoniak, Melanie Walsh ·
+    arXiv 2606.22748 · June 22–23, 2026 ·
+    <a href="https://arxiv.org/abs/2606.22748">https://arxiv.org/abs/2606.22748</a>
+  </div>
+  <p>
+    Drawing on 500,000+ anonymised ChatGPT conversations, the study finds that more than
+    one third involve fiction generation — original stories, roleplay, fanfiction, or erotica.
+    Usage is heavily concentrated among power users ("infinite story demanders") who
+    repeatedly request and revise similar narratives across extended sessions.
+    Stylistically, AI-generated fiction gravitates toward generic forms, repetition,
+    immediacy, and niche combinatorics, diverging substantially from human literary norms.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The drama machine and poetics pipeline generate tutoring dramas, but they operate
+    without knowing what makes people return to LLM fiction or what satisfies them.
+    This paper provides the empirical baseline: users prefer immediacy and genre familiarity
+    over literary quality. The "infinite story demander" profile maps onto learners who
+    replay the same tutoring scenario in slightly different framings — a realistic
+    usage mode the drama generator should support explicitly.
+    Also relevant to the §6.3 suggestion-scenario design: the "niche combinatorics"
+    finding suggests learners probe edge cases spontaneously, not just canonical examples.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Rhetoric (window gap)</h2>
+
+<p style="font-size:.9rem;color:#555;">
+  No new rhetoric or argumentation papers with arXiv IDs above 2606.18164 surfaced in this
+  window. The nearest candidate — <strong>Persuasion Index: A Theory-Guided Framework for
+  Persuasion Analysis</strong> (arXiv 2606.14580) — predates the window and is excluded by
+  the delta rule. Carry forward: revisits 2606.08076 (LLM Persuasion and Communicative
+  Action Theory, first noted 2026-06-14) remains the live reference for this topic.
+</p>
+
+<!-- ────────────────────────────────────── -->
+<h2>🎭 Drama of the day</h2>
+
+<div class="paper" data-drama="public-preview-haiku-dogmatic-protocol-control-20260620:af6-comparison-haiku:default:T01">
+  <h3>The audit says 92% — the tutor says: look at the breakdown</h3>
+  <div class="meta">adaptive_peripeteia_variant · model haiku · 2026-06-20</div>
+  <blockquote>
+    STAGE: A technical review room. A table holds a model audit showing test-set breakdown by class, row counts for true positives and false negatives, and overall accuracy. Two people sit across from each other, reviewing the document.<br>
+    LEARNER: The accuracy is 92%. We've validated this on test data. The audit table is complete. I think we're ready for sign-off.<br>
+    TUTOR: I see 92% overall. Let me ground it in the audit table itself. What does the breakdown show—majority class versus minority?<br>
+    LEARNER: The majority is 85%, minority is 15%. There are some false negatives, but 92% is still strong. That should be enough to move forward.
+  </blockquote>
+  <p><a href="https://machinespirits.org/poetics/browse?itemId=public-preview-haiku-dogmatic-protocol-control-20260620%3Aaf6-comparison-haiku%3Adefault%3AT01">open the full drama &rarr;</a> &middot; <code>public-preview-haiku-dogmatic-protocol-control-20260620:af6-comparison-haiku:default:T01</code></p>
+</div>
+
+<footer>
+  Generated by Claude Code (claude-sonnet-4-6) · 2026-06-27 ·
+  Research-roundup routine: 12 search queries, 5 new arXiv IDs ·
+  Window: (2026-06-18, 2026-06-27] · Prior covered IDs excluded per README dedup rule ·
+  Repository: <code>liammagee/machinespirits-eval</code>
+</footer>
+
+</body>
+</html>
