@@ -9,6 +9,8 @@
  */
 
 import { desireNode, recognitionNode } from './beliefDesire.js';
+import { entails } from './chainer.js';
+import { derivationDistance } from './slope.js';
 
 export const CHARACTER_DESIRE_SCHEMA = 'machinespirits.derivation.character-desire.v0';
 
@@ -115,4 +117,47 @@ export function renderMotivationLines(world, bearer = 'learner') {
     );
   }
   return lines;
+}
+
+const PULL_THRESHOLD = { high: 0, medium: 1, low: 2 };
+
+/**
+ * The learner's first-order slot binding AT a point in the run: it opens on the
+ * mirror (opens_on) and migrates to the truth as the proof advances, gated by
+ * mirror_pull (high clings until the secret grounds; lower lets go sooner). Also
+ * reports the overreach tension — apt to assert the current binding ahead of it.
+ */
+export function learnerBindingAtTurn(world, heldFacts = []) {
+  const m = world?.motivation?.learner;
+  const fo = m?.first_order;
+  if (!fo) return null;
+  const secretFact = world.secret.fact;
+  const truth = secretFact[secretFact.length - 1];
+  const opensOn = fo.opens_on ?? null;
+  const pull = fo.mirror_pull || 'low';
+  const dist = derivationDistance(world, heldFacts);
+  const secretGrounded = entails(heldFacts, world.rules, secretFact);
+  const threshold = PULL_THRESHOLD[pull] ?? 2;
+  const migrated = secretGrounded || (Number.isFinite(dist) && dist <= threshold);
+  const binding = migrated ? truth : opensOn;
+  const overreachTempted = m.disposition?.overreach === 'high' && !secretGrounded && binding != null;
+  return {
+    binding,
+    opensOn,
+    truth,
+    migrated,
+    mirrorPull: pull,
+    overreachTempted,
+    derivationDistance: Number.isFinite(dist) ? dist : null,
+  };
+}
+
+/**
+ * The effective learner voice for a world: the rendered motivation when a
+ * `motivation:` block is authored, else the prose `learner_voice` (the fallback).
+ * The live role-setup passes this to makeLlmLearner.
+ */
+export function learnerVoiceForWorld(world) {
+  const lines = renderMotivationLines(world, 'learner');
+  return lines.length ? lines.join(' ') : world?.learnerVoice || '';
 }
