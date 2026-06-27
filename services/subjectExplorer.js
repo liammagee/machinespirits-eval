@@ -267,6 +267,7 @@ export function subjectExplorerData(stem, { turn = 0, reversed = false, wiring =
           questionInWords: (world.question || '').replace(/\?+\s*$/u, '').trim(),
           recogniser: world.motivation.learner.second_order?.from || null,
           standing: world.motivation.learner.second_order?.as || null,
+          authorityMode: world.motivation.learner.second_order?.authority || null,
         }
       : null,
     tutorScriptDesire: tutorChar
@@ -276,6 +277,7 @@ export function subjectExplorerData(stem, { turn = 0, reversed = false, wiring =
           withhold: tutorChar.dynamics.withhold,
           recogniser: world.motivation.tutor.second_order?.from || null,
           standing: world.motivation.tutor.second_order?.as || null,
+          authorityMode: world.motivation.tutor.second_order?.authority || null,
         }
       : null,
     directorScriptDesire: directorDesire ? { tuning: directorDesire.tuning, lines: directorDesire.lines } : null,
@@ -385,7 +387,7 @@ export function renderStage(stem, opts = {}) {
              ? '<span class="tag" style="color:var(--done-line)">✓ migrated to the truth</span>'
              : `<span class="tag">the mirror, not yet the truth (${esc(sd.opensOn)} → ${esc(sd.truth)})</span>`
          }${sd.overreachTempted ? ' · <b style="color:#b5562e">⚠ tempted to assert it early (overreach)</b>' : ''}</li>
-         ${sd.recogniser ? `<li>second-order: wants <b>${esc(sd.recogniser)}</b> to find it <b>${esc(sd.standing)}</b></li>` : ''}
+         ${sd.recogniser ? `<li>second-order: wants <b>${esc(sd.recogniser)}</b> to find it <b>${esc(sd.standing)}</b>${sd.authorityMode ? ` <span class="tag">authority delegated from D · ${esc(sd.authorityMode)} (§11a)</span>` : ''}</li>` : ''}
          ${
            sd.drifted && sd.drifted.arc !== 'static'
              ? `<li>drift <span class="tag">§8a · ${esc(sd.drifted.arc)}</span>: mirror-pull <b>${esc(sd.drifted.base.mirrorPull)}</b> → <b>${esc(sd.drifted.mirrorPull)}</b>, overreach <b>${esc(sd.drifted.base.overreach)}</b> → <b>${esc(sd.drifted.overreach)}</b> <span class="tag">${Math.round(sd.drifted.progress * 100)}% through the proof${sd.drifted.coupledToDrift ? ' · coupled to learnerDrift' : ''}</span></li>`
@@ -401,7 +403,7 @@ export function renderStage(stem, opts = {}) {
          <li>first-order: wants the <b>learner</b> to reach the answer — bound to <b>${esc(tsd.truth)}</b> from the start <span class="tag">never mirror-fooled — it holds the proof</span></li>
          <li>second-order: ${
            tsd.seeksRecognition
-             ? `wants <b>${esc(tsd.recogniser)}</b> to find it <b>${esc(tsd.standing)}</b>`
+             ? `wants <b>${esc(tsd.recogniser)}</b> to find it <b>${esc(tsd.standing)}</b>${tsd.authorityMode ? ` <span class="tag">authority delegated from D · ${esc(tsd.authorityMode)} (§11a)</span>` : ''}`
              : 'seeks <b>no recognition</b> for itself — it makes the learner worthy of the verdict <span class="tag">§5: the lawful pole</span>'
          }</li>
          <li>disposition: <b>lawful withholding</b> — keeps to the floor t_min that protects the learner's recognition <span class="tag">enters as script + guards, not a voice</span></li>

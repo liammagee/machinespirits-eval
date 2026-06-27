@@ -81,7 +81,23 @@ export function recognitionNode({
     standing,
     beliefComponent: null, // Bel_a(π(b)) — to be linked
     conferral: false, // status actually conferred vs merely believed
-    authority: { authorizer, mode, believedByRecognised }, // §11a: force ∝ Bel_recognised(auth_D(a))
+    // §11a: the recogniser's standing is DELEGATED from D (the Big Other) via a
+    // Weber mode — resolved here, not just recorded as authorizer:'D'. The
+    // recognition's force ∝ the recognised believing that delegation:
+    //   delegation  = auth_D(recogniser) @ mode
+    //   forceBelief = Bel_recognised(auth_D(recogniser))
+    authority: {
+      authorizer,
+      mode,
+      believedByRecognised,
+      delegation: { rel: 'auth_D', figure: recogniser, authorizer, mode },
+      forceBelief: {
+        bearer: recognised,
+        attitude: 'Bel',
+        content: { rel: 'auth_D', figure: recogniser },
+        believed: believedByRecognised,
+      },
+    },
     held: false, // grounded vs merely uttered (§8)
   };
 }
@@ -354,10 +370,31 @@ const swapTL = (b) => (b === 'T' ? 'L' : b === 'L' ? 'T' : b);
  */
 function relabelBearer(state, newBearer) {
   if (!state) return state;
-  const relabelContent = (content) =>
-    content && content.kind === 'recognition'
-      ? { ...content, recogniser: swapTL(content.recogniser), recognised: swapTL(content.recognised) }
-      : content;
+  const relabelContent = (content) => {
+    if (!content || content.kind !== 'recognition') return content;
+    const a = content.authority;
+    return {
+      ...content,
+      recogniser: swapTL(content.recogniser),
+      recognised: swapTL(content.recognised),
+      // keep the resolved §11a authority consistent with the swapped vector
+      authority: a
+        ? {
+            ...a,
+            delegation: a.delegation ? { ...a.delegation, figure: swapTL(a.delegation.figure) } : a.delegation,
+            forceBelief: a.forceBelief
+              ? {
+                  ...a.forceBelief,
+                  bearer: swapTL(a.forceBelief.bearer),
+                  content: a.forceBelief.content
+                    ? { ...a.forceBelief.content, figure: swapTL(a.forceBelief.content.figure) }
+                    : a.forceBelief.content,
+                }
+              : a.forceBelief,
+          }
+        : a,
+    };
+  };
   const relabelGraph = (graph) =>
     graph && Array.isArray(graph.nodes)
       ? {

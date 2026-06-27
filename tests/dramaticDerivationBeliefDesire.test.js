@@ -184,3 +184,43 @@ test('reverse flips the recognition VECTOR: recognised swaps T↔L, a D-figure r
   // the pre-reversal subject is untouched (immutable)
   assert.equal(findRec(s.T.desire.nodes).statement.content.recognised, 'T');
 });
+
+test('recognitionNode resolves the §11a authority: an auth_D(figure) delegation + the force-belief', () => {
+  const rec = recognitionNode({
+    recogniser: 'warden',
+    recognised: 'L',
+    standing: { rel: 'right' },
+    mode: 'rational_legal',
+  });
+  assert.equal(rec.authority.authorizer, 'D');
+  assert.equal(rec.authority.mode, 'rational_legal');
+  // resolved: the figure's standing is delegated from D — auth_D(warden) @ rational_legal
+  assert.deepEqual(rec.authority.delegation, {
+    rel: 'auth_D',
+    figure: 'warden',
+    authorizer: 'D',
+    mode: 'rational_legal',
+  });
+  // §11a: the recognition's force ∝ Bel_recognised(auth_D(warden))
+  assert.equal(rec.authority.forceBelief.bearer, 'L');
+  assert.equal(rec.authority.forceBelief.attitude, 'Bel');
+  assert.deepEqual(rec.authority.forceBelief.content, { rel: 'auth_D', figure: 'warden' });
+});
+
+test('reverse keeps the resolved authority consistent with the swapped vector (§11a)', () => {
+  const s = buildSubjectState(marrick, { learnerHeld: fullPath() });
+  s.T.desire.nodes.push(
+    desireNode({
+      id: 'des:T:recognition',
+      bearer: 'T',
+      order: 1,
+      content: recognitionNode({ recogniser: 'audience', recognised: 'T', standing: { rel: 'master' } }),
+      origin: 'root_end',
+      extra: { recogniserFigure: 'audience' },
+    }),
+  );
+  const auth = findRec(reverse(s, { surpassed: 'T' }).L.desire.nodes).statement.content.authority;
+  assert.equal(auth.delegation.figure, 'audience'); // a D-figure delegation is fixed under reversal
+  assert.equal(auth.forceBelief.bearer, 'L'); // the force-belief's bearer (the recognised) swaps T→L
+  assert.equal(auth.forceBelief.content.figure, 'audience'); // auth_D(audience) — the figure stays fixed
+});
