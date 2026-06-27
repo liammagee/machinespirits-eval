@@ -7,11 +7,12 @@ priority: P2
 owner: unassigned
 source: manual
 created: 2026-06-22
-updated: 2026-06-27
-verification: From a fresh worktree (no per-worktree logs symlink), evaluationStore
-  resolves LOGS_ROOT to ~/.machinespirits-data/logs and the dialogue-hash coverage is
-  >= 0.95 (measured 3,316/3,371 = 98.4% from the archive alone; 55 orphans accepted).
-  The "non-git" decoupling and the orphan quarantine are the remaining sub-steps.
+updated: 2026-06-28
+verification: From a fresh worktree, evaluationStore resolves LOGS_ROOT to
+  ~/.machinespirits-data/logs (now a materialized real dir, not a symlink) and the
+  paper2.provenance.dialogue_hashes gate scores value=1.0 (1937 passed, 0 failed, 54
+  waived) against the canonical DB + archive. The two named follow-ups (non-git
+  decoupling + orphan quarantine) are DONE; only minor/maintainer items remain.
 links:
   items: build-workplan-tooling
 tags:
@@ -43,16 +44,43 @@ worktree logs (tutor-core 5.9k, etc.) belong to other/local DBs and do not impro
 coverage. **55 orphans (1.6%)** are genuine transcript loss — recent runs whose logs went to
 tmp/cleaned paths; un-verifiable, to be quarantined rather than chased.
 
-**Remaining (now small):**
-- **Non-git decoupling** (the "avoids 6.9G-in-git" half of A) — touches the *private* repo, not
-  the eval repo: either materialize `~/.machinespirits-data/logs` as a real dir (copy from the
-  symlink target, ~7G; disk is fine) so new logs land non-git, or `git rm --cached` the private
-  repo's `logs/` + gitignore it. The historical 6.9G in the private repo's git history is the
-  splittable de-bloat (history rewrite / LFS).
-- **Orphan quarantine** — flag the 55 logless rows so provenance treats them as accepted-missing.
+## Both named follow-ups DONE 2026-06-28
+
+- **Non-git decoupling — DONE (materialized).** `~/.machinespirits-data/logs` was a symlink →
+  `machinespirits-eval-private/logs`; it is now a **real directory** (rsync -a of the 49,984-file
+  / ~7 GB tree from the symlink target → `logs.real`, count-verified, atomic swap: `rm` the
+  symlink + `mv` the copy into place). The private repo's `logs/` is **untouched** (reversible:
+  `rm -rf ~/.machinespirits-data/logs && ln -s <private>/logs ~/.machinespirits-data/logs`). New
+  logs now land in the real dir (non-git), and Syncthing can carry the content — a symlink
+  pointing outside the shared folder would not have synced. The historical 6.9 GB in the private
+  repo's git history remains the splittable de-bloat (history rewrite / LFS), deferred to the
+  maintainer.
+- **Orphan quarantine — DONE (waiver).** The authoritative logless set is **54 dialogues, all from
+  `eval-2026-06-24-250c6251`** (the cited D4 SEL disposition-gradient run, cells 40-45). Verified
+  2026-06-28 as genuine, permanent loss — not recoverable in any worktree by dialogue_id OR
+  content_hash. (The earlier "55" was content-hash-keyed; one of those rows' `{dialogue_id}.json`
+  actually exists, so it is not a `log_file_missing` orphan under either check.) Committed
+  `config/provenance-orphan-waivers.json` enumerates them; a shared `loadOrphanWaivers()` in
+  `provableDiscourse.js` is wired into both the paper gate (`evaluateProvenanceCheck`
+  `dialogue_hash_match`) and `validate-provenance.js` Section 2. A waived missing log is counted
+  as `waived` (reported explicitly), not `failed` — only genuine ABSENCE is waived; a hash
+  MISMATCH still fails. Net effect: the paper gate moves from 0.9729 (54 silently within the 0.95
+  margin) to **value=1.0, 54 waived, 0 failed** — strictly tighter (any NEW unwaived loss fails
+  immediately). The D4 run's cited Δ/d stand: scores + tutor outputs are retained in the DB
+  (`tutor_scores`/`suggestions`/`scores_with_reasoning`, all 144 rows) and in
+  `exports/d4-sel-disposition-gradient-eval-2026-06-24-250c6251.md`; only the hash-reverifiable
+  dialogue-log JSON is lost.
+
+**Remaining (minor / deferred):**
 - **Runner secondary artifacts** — `evaluationRunner.js` writes `transcripts/`/`checkpoints/` to
   `EVAL_ROOT/logs` (not via `LOGS_ROOT`); co-locating those is a minor follow-up (not the
   `dialogue_hashes` logs).
+- **Validators hardcode repo-relative paths** — `validate-provenance.js` (`LOG_DIR`/`DB_PATH`),
+  `validate-bug-claims.js`, `validate-paper-manifest.js` resolve `<repo>/logs` and
+  `<repo>/data/evaluations.db`, so a fresh worktree still needs those symlinked (or `--db`) even
+  though the *writer* auto-resolves. Honouring `MS_DATA_HOME`/`EVAL_DB_PATH` in the validators
+  would close the last manual step.
+- **Private-repo git de-bloat** — the 6.9 GB git history (history rewrite / LFS); maintainer task.
 
 ## Why it is not actually done
 
