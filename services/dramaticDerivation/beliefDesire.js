@@ -81,7 +81,23 @@ export function recognitionNode({
     standing,
     beliefComponent: null, // Bel_a(π(b)) — to be linked
     conferral: false, // status actually conferred vs merely believed
-    authority: { authorizer, mode, believedByRecognised }, // §11a: force ∝ Bel_recognised(auth_D(a))
+    // §11a: the recogniser's standing is DELEGATED from D (the Big Other) via a
+    // Weber mode — resolved here, not just recorded as authorizer:'D'. The
+    // recognition's force ∝ the recognised believing that delegation:
+    //   delegation  = auth_D(recogniser) @ mode
+    //   forceBelief = Bel_recognised(auth_D(recogniser))
+    authority: {
+      authorizer,
+      mode,
+      believedByRecognised,
+      delegation: { rel: 'auth_D', figure: recogniser, authorizer, mode },
+      forceBelief: {
+        bearer: recognised,
+        attitude: 'Bel',
+        content: { rel: 'auth_D', figure: recogniser },
+        believed: believedByRecognised,
+      },
+    },
     held: false, // grounded vs merely uttered (§8)
   };
 }
@@ -340,22 +356,53 @@ export function buildSubjectState(
   };
 }
 
+/** The T<->L index swap (§12); D and any other figure are fixed points. */
+const swapTL = (b) => (b === 'T' ? 'L' : b === 'L' ? 'T' : b);
+
 /**
- * Relabel a BearerState to a new role — both the top-level `bearer` AND every
- * desire/belief node's `statement.bearer` (§12 follow-up). After a swap a node
- * that read `Des_L(...)` now reads `Des_T(...)`, matching the role it occupies.
- * Immutable (new node objects), so reverse() must re-find nodes by predicate,
- * not by reference. (The recognition-content vector — recogniser/recognised —
- * is a deeper relabel, left open; the retired recognition is filtered out anyway.)
+ * Relabel a BearerState to a new role — the top-level `bearer`, every
+ * desire/belief node's `statement.bearer`, AND the recognition-content vector
+ * (§12). A node that read `Des_L(...)` reads `Des_T(...)`; a recognition whose
+ * recogniser/recognised are BEARERS (T/L) flips them with the swap, while a
+ * D-figure recogniser (warden, council, …) is fixed — D does not swap — and the
+ * standing (what is sought) is unchanged. Immutable (new node objects), so
+ * reverse() re-finds nodes by predicate, not by reference.
  */
 function relabelBearer(state, newBearer) {
   if (!state) return state;
+  const relabelContent = (content) => {
+    if (!content || content.kind !== 'recognition') return content;
+    const a = content.authority;
+    return {
+      ...content,
+      recogniser: swapTL(content.recogniser),
+      recognised: swapTL(content.recognised),
+      // keep the resolved §11a authority consistent with the swapped vector
+      authority: a
+        ? {
+            ...a,
+            delegation: a.delegation ? { ...a.delegation, figure: swapTL(a.delegation.figure) } : a.delegation,
+            forceBelief: a.forceBelief
+              ? {
+                  ...a.forceBelief,
+                  bearer: swapTL(a.forceBelief.bearer),
+                  content: a.forceBelief.content
+                    ? { ...a.forceBelief.content, figure: swapTL(a.forceBelief.content.figure) }
+                    : a.forceBelief.content,
+                }
+              : a.forceBelief,
+          }
+        : a,
+    };
+  };
   const relabelGraph = (graph) =>
     graph && Array.isArray(graph.nodes)
       ? {
           ...graph,
           nodes: graph.nodes.map((n) =>
-            n?.statement ? { ...n, statement: { ...n.statement, bearer: newBearer } } : n,
+            n?.statement
+              ? { ...n, statement: { ...n.statement, bearer: newBearer, content: relabelContent(n.statement.content) } }
+              : n,
           ),
         }
       : graph;
@@ -404,15 +451,14 @@ function consummateRecognition(node, licensed) {
  * retired recognition is filtered by PREDICATE (kind), not reference.
  */
 export function reverse(subject, { surpassed = 'T' } = {}) {
-  const swap = (b) => (b === 'T' ? 'L' : b === 'L' ? 'T' : b);
-  const victor = swap(surpassed);
+  const victor = swapTL(surpassed);
   const newT = relabelBearer(subject.L, 'T');
   const newL = relabelBearer(subject.T, 'L');
   const surpassedNew = surpassed === 'T' ? newL : newT;
 
   const delta = desireNode({
     id: `des:dependence:${surpassed}`,
-    bearer: swap(surpassed),
+    bearer: swapTL(surpassed),
     content: { rel: 'grounded', of: dependenceProposition(victor) },
     origin: 'dependence',
   });

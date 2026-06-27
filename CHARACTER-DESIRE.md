@@ -176,11 +176,23 @@ completes on both, but `premature` is _not_ the δ-axis `stalled`: precondition-
   `statement.bearer` with the swap (`Des_L → Des_T`), so a node reads the role it occupies, not its person
   of origin (the retired recognition is filtered by predicate, since the node objects are now replaced).
 
-**Still open:** the recognition-content vector relabel (recogniser/recognised) inside `reverse()` — the
-layer below (c); **authority resolution** (`second_order.from` → its D-authoriser + Weber mode is recorded
-but not resolved into a separate node); the paid S-underivability screen for `world-017-saintcloud` (unrun
-— a `/subject`-demo world, not cleared for a generation run); and drift-coupling on a *live* run (the
-`learnerDrift` nudge is wired + tested but exercised only on the deterministic arc in `/subject`).
+**Done (a second pass).** The **recognition-content vector relabel** — `reverse()`'s `relabelBearer` now
+flips a recognition's recogniser/recognised with the swap (bearers T/L swap; a D-figure recogniser is
+fixed, since D does not swap; the standing is unchanged), so a mutual reversal's new learner reads
+`Rec_council(L, master)`, not the stale `Rec_council(T, master)`. And **authority resolution** —
+`recognitionNode` now resolves the recogniser-figure's standing as delegated from D (§11a):
+`authority.delegation = auth_D(figure) @ mode` + `authority.forceBelief = Bel_recognised(auth_D(figure))`,
+kept consistent under the swap; the `/subject` recognition lines show "authority delegated from D · mode".
+
+**Item 3 done — the screen RAN.** The paid S-underivability screen for `world-017-saintcloud` was run
+(GLM-5.2 via OpenRouter, 2026-06-27): verdict **REJECT** — the model guessed the worn pallet at rank 1 from
+the rules + question alone. The secret is **Meno-derivable** (the escapement rule "a worn part riding in the
+escapement drags" + horology knowledge telegraphs "worn pallet"), not a contingent particular like marrick's
+`edony` (which needs the staged premises). So world-017 is correctly a `/subject`-demo + `mutual` unit-test
+world, not generation-grade — and the screen instrument works (it catches the cleverness wall).
+
+**Still open:** drift-coupling on a *live* run — the `learnerDrift` nudge is wired + tested but exercised
+only on the deterministic arc in `/subject`; exercising it on real data needs a real-LLM derivation episode.
 
 **Built + tested.** `characterDesire.js`: `compileLearnerDesire` / `compileTutorDesire` /
 `compileDirectorDesire`, `renderMotivationLines(world, bearer)` for all three bearers, `driftedDynamics`,
