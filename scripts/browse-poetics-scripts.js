@@ -2260,22 +2260,25 @@ const NAV = [
     'Pilot operator console — session monitoring, recruitment toggle &amp; run launching (admin token-gated)',
   ],
 ];
-// The rail mirrors the home's three acts. `home` stays the one flat link (the
-// brand wordmark is not itself a link); everything else folds into three
-// dropdowns — I·make, II·read & judge, III·keep — in the same order, and with
-// the same membership, as renderScriptoriumHome's cards.
+// The rail folds the destinations into the home's three acts — I·make,
+// II·read & judge, III·keep — preserving each act's relative order. `home` stays
+// the one flat link (the brand wordmark is not itself a link). The home is the
+// curated face of this: its Reading Room omits the /read hub it already replaces,
+// and its Hall card umbrellas the whole keep-synthesis cluster (summary, theory,
+// blueprint, story, repertoire) under one tile. So the rail group is the
+// complete, in-order destination list; the cards are the consolidated view.
 const NAV_PRIMARY = ['home'];
 // A closed group whose member is the active page keeps a moss accent on its
 // summary (see railHtml), so the current location stays legible when collapsed.
 const NAV_GROUPS = [
-  ['make', ['compose', 'runs', 'tutor']],
+  ['make', ['compose', 'tutor', 'runs']],
   ['read &amp; judge', ['read', 'browse', 'derivation', 'replays', 'rubric', 'adjudicate', 'pilot-admin']],
   ['keep', ['board', 'timeline', 'ontology', 'curriculum', 'theory', 'blueprint', 'summary', 'story', 'repertoire']],
 ];
 // Same three acts for the mobile drawer; `home` is rendered as a flat link above
 // these groups in railHtml.
 const NAV_DRAWER_GROUPS = [
-  ['Make', ['compose', 'runs', 'tutor']],
+  ['Make', ['compose', 'tutor', 'runs']],
   ['Read &amp; judge', ['read', 'browse', 'derivation', 'replays', 'rubric', 'adjudicate', 'pilot-admin']],
   ['Keep', ['board', 'timeline', 'ontology', 'curriculum', 'theory', 'blueprint', 'summary', 'story', 'repertoire']],
 ];
@@ -5693,7 +5696,7 @@ function renderScriptoriumHome(stats = {}) {
           'The Hall',
           '/summary',
           'recount',
-          'Lab notes and the synthesis arc — summary, story, repertoire, explainers.',
+          'The synthesis arc &amp; reference shelf — summary, theory, blueprint, story, repertoire, explainers.',
         ],
       ],
     },
