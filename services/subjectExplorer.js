@@ -23,7 +23,11 @@ import { loadWorld } from './dramaticDerivation/world.js';
 import { derivationDistance } from './dramaticDerivation/slope.js';
 import { factKey, closure, entails } from './dramaticDerivation/chainer.js';
 import { buildSubjectState, buildTutorDesireDag, reverse } from './dramaticDerivation/beliefDesire.js';
-import { compileLearnerDesire, compileTutorDesire, learnerBindingAtTurn } from './dramaticDerivation/characterDesire.js';
+import {
+  compileLearnerDesire,
+  compileTutorDesire,
+  learnerBindingAtTurn,
+} from './dramaticDerivation/characterDesire.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const WORLDS_DIR = path.join(__dirname, '..', 'config', 'drama-derivation');

@@ -100,7 +100,10 @@ test('compileTutorDesire: the tutor first-order is TRUTH-bound (never the mirror
   assert.equal(first.slot.binding, 'edony'); // bound to the truth from t=0 — the tutor is never mirror-fooled
   assert.equal(first.inheritsQuestion, true);
   // the asymmetry: no second-order recognition node, and the dynamics record it
-  assert.equal(td.nodes.find((n) => n.id === 'des:T:recognition'), undefined);
+  assert.equal(
+    td.nodes.find((n) => n.id === 'des:T:recognition'),
+    undefined,
+  );
   assert.equal(td.nodes.length, 1);
   assert.deepEqual(td.dynamics, { withhold: 'lawful', boundToTruth: true, seeksRecognition: false });
 });
