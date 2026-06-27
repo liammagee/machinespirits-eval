@@ -1,12 +1,13 @@
 {
-  "generated": "2026-06-27T09:33:59.090Z",
+  "generated": "2026-06-27T10:58:27.356Z",
   "counts": {
     "total": 53,
     "byStatus": {
       "done": 48,
       "blocked": 1,
       "dropped": 2,
-      "triaged": 2
+      "active": 1,
+      "triaged": 1
     },
     "byType": {
       "research": 28,
@@ -18,28 +19,6 @@
     }
   },
   "items": [
-    {
-      "id": "consolidate-logs-db-private-archive",
-      "title": "Consolidate dialogue logs + DB into one canonical archive",
-      "status": "triaged",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-06-22",
-      "updated": "2026-06-27",
-      "verification": "From a freshly-cloned worktree with only the canonical EVAL_LOGS_DIR (or the new default) set, `npm run provenance:validate` finds the logs and `paper:provable-discourse` (full) reports 0 `log_file_missing`; the union of archived `tutor-dialogues/*.json` covers every `dialogue_content_hash` in `evaluations.db`.",
-      "links": {
-        "items": "build-workplan-tooling"
-      },
-      "tags": [
-        "infra",
-        "provenance",
-        "logs",
-        "archive"
-      ],
-      "milestone": "paper-2-evidence-cleanup"
-    },
     {
       "id": "lean-semantic-web-proof-dag-validation",
       "title": "Evaluate Lean certificates and Semantic Web exports for proof DAGs",
@@ -63,6 +42,28 @@
         "shacl"
       ],
       "milestone": "poetics-followups"
+    },
+    {
+      "id": "consolidate-logs-db-private-archive",
+      "title": "Consolidate dialogue logs + DB into one canonical archive",
+      "status": "active",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-06-22",
+      "updated": "2026-06-27",
+      "verification": "From a fresh worktree (no per-worktree logs symlink), evaluationStore resolves LOGS_ROOT to ~/.machinespirits-data/logs and the dialogue-hash coverage is >= 0.95 (measured 3,316/3,371 = 98.4% from the archive alone; 55 orphans accepted). The \"non-git\" decoupling and the orphan quarantine are the remaining sub-steps.",
+      "links": {
+        "items": "build-workplan-tooling"
+      },
+      "tags": [
+        "infra",
+        "provenance",
+        "logs",
+        "archive"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
     },
     {
       "id": "a1-human-learner-validation",

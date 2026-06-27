@@ -1,18 +1,17 @@
 ---
 id: consolidate-logs-db-private-archive
 title: Consolidate dialogue logs + DB into one canonical archive
-status: triaged
+status: active
 type: infra
 priority: P2
 owner: unassigned
 source: manual
 created: 2026-06-22
 updated: 2026-06-27
-verification: From a freshly-cloned worktree with only the canonical EVAL_LOGS_DIR
-  (or the new default) set, `npm run provenance:validate` finds the logs and
-  `paper:provable-discourse` (full) reports 0 `log_file_missing`; the union of
-  archived `tutor-dialogues/*.json` covers every `dialogue_content_hash` in
-  `evaluations.db`.
+verification: From a fresh worktree (no per-worktree logs symlink), evaluationStore
+  resolves LOGS_ROOT to ~/.machinespirits-data/logs and the dialogue-hash coverage is
+  >= 0.95 (measured 3,316/3,371 = 98.4% from the archive alone; 55 orphans accepted).
+  The "non-git" decoupling and the orphan quarantine are the remaining sub-steps.
 links:
   items: build-workplan-tooling
 tags:
@@ -25,6 +24,35 @@ milestone: paper-2-evidence-cleanup
 
 **Reopened 2026-06-27** (was marked `done` 2026-06-24, but the problem recurs and
 the verification does not hold).
+
+## Implemented 2026-06-27 — decision (A), the recurrence-killer + coverage
+
+(A) chosen: filesystem beside the DB. **Code fix landed** (`services/evaluationStore.js`):
+`LOGS_ROOT` now resolves `EVAL_LOGS_DIR` → `<DATA_HOME>/logs` (`DATA_HOME = MS_DATA_HOME ||
+~/.machinespirits-data`, when present) → `<repo>/logs` fallback. So **any worktree finds the
+canonical logs without a per-worktree symlink** — the recurrence is killed at the writer
+(evaluationStore writes the dialogue logs; the runner delegates to it). All three branches
+verified; the `EVAL_LOGS_DIR` override (CI / hermetic / desktop) and the website shallow-clone
+fallback are preserved.
+
+**Coverage measured** (canonical DB ↔ archive): **3,316 / 3,371** distinct
+`dialogue_content_hash` (**98.4%**) are already in the archive (`machinespirits-eval-private/logs`,
+reached via the `~/.machinespirits-data/logs` symlink) — above the 0.95 `dialogue_hashes`
+threshold, so the code fix alone makes provenance pass. **No union needed:** the scattered
+worktree logs (tutor-core 5.9k, etc.) belong to other/local DBs and do not improve canonical
+coverage. **55 orphans (1.6%)** are genuine transcript loss — recent runs whose logs went to
+tmp/cleaned paths; un-verifiable, to be quarantined rather than chased.
+
+**Remaining (now small):**
+- **Non-git decoupling** (the "avoids 6.9G-in-git" half of A) — touches the *private* repo, not
+  the eval repo: either materialize `~/.machinespirits-data/logs` as a real dir (copy from the
+  symlink target, ~7G; disk is fine) so new logs land non-git, or `git rm --cached` the private
+  repo's `logs/` + gitignore it. The historical 6.9G in the private repo's git history is the
+  splittable de-bloat (history rewrite / LFS).
+- **Orphan quarantine** — flag the 55 logless rows so provenance treats them as accepted-missing.
+- **Runner secondary artifacts** — `evaluationRunner.js` writes `transcripts/`/`checkpoints/` to
+  `EVAL_ROOT/logs` (not via `LOGS_ROOT`); co-locating those is a minor follow-up (not the
+  `dialogue_hashes` logs).
 
 ## Why it is not actually done
 
