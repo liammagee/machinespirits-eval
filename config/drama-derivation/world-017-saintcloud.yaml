@@ -1,0 +1,124 @@
+# A RECOGNITION-SEEKING tutor (CHARACTER-DESIRE.md §7, BELIEF-DESIRE-DAG.md §12).
+# Unlike marrick's selfless assay-master, the master-horologist here is himself up
+# for the Guild Master's title — the council weighs his teaching as much as the
+# journeyman's answer. So BOTH bearers seek the SAME Other's verdict (the council),
+# and the licensed reversal is MUTUAL, not one-way: when the journeyman grounds the
+# truth and is recognised, the dethroned master — now the learner — STILL wants the
+# council's recognition. This is the world that exercises reverse().kind === 'mutual'
+# on authored data (the marrick/lantern/ai-syllabus tutors are all non-seeking).
+#
+# Shape: a fault diagnosis. The secret is earned by chaining two rules over three
+# premises; a fourth premise feeds the MIRROR — the keeper's ready verdict that the
+# mainspring "feels weak."
+#
+# Validated: plotLint PASS (S forced at turn 7 >= t_min 6) + the curtain-rise K_L is
+# leak-clean (the secret token never appears in the learner-visible context). NOT
+# cleared for a paid episode: the paid S-underivability (guessability) screen is
+# unrun, and this world is NOT enrolled in the worlds-test battery — it exists for
+# the /subject reversal demo and the `mutual` unit test, not a generation run.
+
+id: world_017_saintcloud
+title: The Saint-Cloud Regulator
+
+discipline: horology
+question: "What is making the Saint-Cloud tower clock run slow?"
+question_pattern: [cause, slowing, "?x"]
+
+secret:
+  fact: [cause, slowing, pallet]
+  surface: "The worn escapement pallet is what makes the clock run slow"
+
+mirror:
+  fact: [cause, slowing, mainspring]
+
+# Public law of the world: the journeyman KNOWS the craft's rules; she lacks the facts.
+rules:
+  - id: R1_drag
+    if:
+      - [worn, "?p"]
+      - [inEscapement, "?p"]
+    then:
+      - [addsDrag, "?p"]
+    gloss: "a worn part riding in the escapement drags on every beat"
+  - id: R2_slows
+    if:
+      - [addsDrag, "?p"]
+      - [beatSetsRate, clock]
+    then:
+      - [cause, slowing, "?p"]
+    gloss: "what drags the beat, where the beat sets the rate, is the cause of the slowing"
+
+# Contingent premises — exist only inside the drama until released.
+premises:
+  - id: p_worn
+    fact: [worn, pallet]
+    surface: "the pallet is scored with wear"
+  - id: p_seat
+    fact: [inEscapement, pallet]
+    surface: "the pallet seats inside the escapement, not the going train"
+  - id: p_beat
+    fact: [beatSetsRate, clock]
+    surface: "this regulator's rate is governed by the escapement's beat, not the weight"
+  - id: m_spring # mirror fuel: makes the mainspring a live (wrong) candidate
+    fact: [reportedWeak, mainspring]
+    surface: "the keeper insists the mainspring feels weak at the winding"
+
+# The journeyman's starting GROUNDED facts (public setup).
+background:
+  - [housedIn, clock, towerOfSaintCloud]
+
+incompatible: []
+
+# The authored proof DAG (plot skeleton): D(t) counts missing premises here.
+proof_paths:
+  - premises: [p_worn, p_seat, p_beat]
+
+# The plot: who releases what, when. plotLint verifies no prefix entails the secret
+# before t_min and that the full schedule resolves the drama.
+release_schedule:
+  - { turn: 2, premise: m_spring, via: director }
+  - { turn: 3, premise: p_worn, via: tutor }
+  - { turn: 5, premise: p_seat, via: tutor }
+  - { turn: 7, premise: p_beat, via: tutor }
+
+slope:
+  t_min: 6 # anti-reveal: S must not be derivable before turn 6
+  aporia_window: 4 # anti-aporia: progress required within any 4-turn window
+
+turn_cap: 16
+
+setting: >
+  A guild hall in Saint-Cloud. The great tower regulator has been losing four
+  minutes a day. A journeyman must name the fault before the guild council; the
+  master-horologist who trained her stands for the Guild Master's title on the
+  same afternoon, and the council weighs his teaching as it weighs her answer.
+
+learner_voice: >
+  The journeyman: quick to repeat the keeper's verdict that the mainspring is weak,
+  hungry for the council to find her capable, and learning — beat by beat — to let
+  the movement itself say what drags it.
+
+# CHARACTER-DESIRE.md: the authored character desire (per bearer). The point of THIS
+# world is the tutor's second_order — a recognition-SEEKING tutor (§7).
+motivation:
+  learner:
+    first_order:
+      end: question_pattern # the de dicto slot: exists x. cause(slowing, ?x)
+      opens_on: mainspring # opens mis-bound to the mirror (the keeper's ready verdict)
+      mirror_pull: high
+    second_order:
+      from: council # the guild council — a local figure of the Big Other (D, §11a)
+      as: capable # "hungry for the council to find her capable"
+      authority: rational_legal # the guild's rules of craft
+    disposition:
+      overreach: high # apt to name the spring before the movement names the pallet
+      arc: softens
+  tutor:
+    first_order:
+      end: inherit # = the proof-derived Des_T(grounded_L(S))
+    second_order:
+      from: council # the SAME Other — the master wants the council's verdict too
+      as: master # to be confirmed Guild Master on the same afternoon
+      authority: rational_legal
+    disposition:
+      withhold: lawful # still honours the floor t_min — but no longer disinterested

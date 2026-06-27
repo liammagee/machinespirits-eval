@@ -605,7 +605,8 @@ there. The per-node `statement.bearer` relabel inside the swap remains the one n
   the missing half of `proxyDagMemory`), `reverse()` runs over those live states, and it now classifies the
   recognition-vector `kind` (mutual / inverted / premature) at the swap. **Open:** the `δ`-dependence axis
   (mutual / inverted / **stalled**) still needs a full run that _grounds_ `δ` to reach its `mutual` end
-  (`consummated` is `false` until then); and the `mutual` recognition-`kind` is reachable but unexercised
-  (the authored tutors are all non-seeking).
+  (`consummated` is `false` until then). The `mutual` recognition-`kind` is now exercised on authored data
+  (`world-017-saintcloud`, a recognition-seeking master-horologist), via a `tutorDesireNodes` injection into
+  `buildSubjectState` that appends the authored tutor recognition to the proof-DAG.
 - **Later (recorded):** intention as a third attitude (§8); verifying recognition vs uttering it
   (§8 / `RecognitionNode.held`); the Real, only if it earns its keep (§11c).

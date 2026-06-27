@@ -150,7 +150,7 @@ That yields a trichotomy with no extra machinery, read straight off the swap:
 | --- | --- | --- |
 | `premature` | not licensed (secret ungrounded) | roles swapped before the recognition is earned — the swap is bare |
 | `inverted` | licensed, old tutor sought no recognition | one-way: the learner's recognition consummates; the new learner inherits none (marrick) |
-| `mutual` | licensed, old tutor also sought recognition | both recognitions live; the new learner inherits one |
+| `mutual` | licensed, old tutor also sought recognition | both recognitions live; the new learner inherits one (`world-017-saintcloud`) |
 
 The existing δ-dependence contract is untouched (`consummated` stays the forward-looking
 δ-grounding condition); the recognition consummation is a separate, reported field. (`kind` is the
@@ -168,24 +168,27 @@ completes on both, but `premature` is _not_ the δ-axis `stalled`: precondition-
 - **The director's motivation** is mostly inherited; whether authors should tune it
   (`mirror_pull` of the staging, the strength of the temptation) is open.
 
-**Status (v0.2 — the tutor side + reversal-recognition are built and tested).**
+**Status (v0.3 — the tutor side, reversal-recognition, and a `mutual` world are built and tested).**
 `services/dramaticDerivation/characterDesire.js` implements `compileLearnerDesire` /
 `compileTutorDesire` (→ typed desire-nodes + dynamics) and `renderMotivationLines(world, bearer)` for
 both bearers; `beliefDesire.js`'s `reverse()` carries the second-order recognition node
 (consummate-and-retire on the new-tutor side; `kind` ∈ {`premature`, `inverted`, `mutual`}); the
 `/subject` surface shows the tutor's compiled desire in the T card (the §5 asymmetry, alongside the
-learner's mirror-binding) and the reversal kind in the reversal panel. marrick / lantern / ai-syllabus
-carry `motivation:` blocks; `validateWorld` passes them through; `buildSubjectState` takes an optional
-`learnerDesireNodes` injection (default = the generic proof-pattern seed) so the authored desire feeds the
-subject without `beliefDesire.js` importing `characterDesire.js`; and the live `learnerSystem` renders from
-the block behind a prose fallback (`learnerVoiceForWorld`). The v0.1 checks still hold — the §5 round-trip
-reproduces marrick's `learner_voice` with nothing left over, and the seeded learner desire-DAG opens
-mirror-bound (`binding = verrell`). Tests: `tests/dramaticDerivationCharacterDesire.test.js` 9/9,
-`tests/dramaticDerivationBeliefDesire.test.js` 9/9; regressions green (worlds 84/84, derivation:test 66/66,
-derivation:smoke 4/4, adaptive cell smoke 8 rows, whole-repo lint).
+learner's mirror-binding) and the reversal kind in the reversal panel. marrick / lantern / ai-syllabus /
+**world-017-saintcloud** carry `motivation:` blocks; `validateWorld` passes them through; `buildSubjectState`
+takes optional `learnerDesireNodes` **and `tutorDesireNodes`** injections (the latter appends the authored
+tutor recognition to the proof-DAG) so the authored desire feeds the subject without `beliefDesire.js`
+importing `characterDesire.js`; and the live `learnerSystem` renders from the block behind a prose fallback
+(`learnerVoiceForWorld`). The v0.1 checks still hold — the §5 round-trip reproduces marrick's `learner_voice`
+with nothing left over, and the seeded learner desire-DAG opens mirror-bound (`binding = verrell`). Tests:
+`tests/dramaticDerivationCharacterDesire.test.js` 10/10 (incl. the `mutual` reversal on world-017 from real
+authored data, and that the `tutorDesireNodes` injection is load-bearing — without it the same world
+`inverted`s), `tests/dramaticDerivationBeliefDesire.test.js` 9/9; regressions green (worlds 84/84,
+derivation:test 66/66, derivation:smoke 4/4, adaptive cell smoke 8 rows, whole-repo lint; world-017 also
+passes `derivation:lint` + a deterministic K_L leak-check).
 
-**Next (open):** (1) the `mutual` reversal branch is reachable but **unexercised** by the authored worlds
-(all three tutors are non-seeking) — author a world whose tutor also seeks a verdict to exercise it; (2)
+**Next (open):** (1) `mutual` is now exercised on authored data (`world-017-saintcloud`), but its paid
+S-underivability screen is **unrun** (it is a `/subject`-demo world, not cleared for a generation run); (2)
 drift-couple `mirror_pull` / `overreach` to the live `learner_drift` channel (still static + an `arc` hint);
 (3) the director's motivation knob (§8). The per-node `statement.bearer` relabel inside `reverse()` remains
 the noted follow-up.

@@ -46,6 +46,11 @@ const CURATED = [
     blurb:
       'AI Foundations. Should the campus FAQ tool be generative AI (because it talks) or a rule-based baseline? The conversational surface is the mirror; the formulation card grounds the answer.',
   },
+  {
+    stem: 'world-017-saintcloud',
+    blurb:
+      'A guild demonstration. The master-horologist seeks the council’s verdict too — so when the journeyman grounds the truth, the reversal is MUTUAL: the dethroned master, now the learner, still wants recognition.',
+  },
 ];
 
 function esc(s) {
@@ -202,13 +207,17 @@ export function subjectExplorerData(stem, { turn = 0, reversed = false, wiring =
   // (opens mirror-bound) and track the binding migrating to the truth as the proof advances.
   const characterDesire = world.motivation?.learner ? compileLearnerDesire(world) : null;
   const binding = characterDesire ? learnerBindingAtTurn(world, heldFacts) : null;
-  // The tutor's compiled desire — the §5 asymmetry, surfaced (not engine-wired:
-  // the tutor is script+guard-driven, it has no free-text voice; that's the point).
+  // The tutor's compiled desire — the §5 asymmetry, surfaced AND fed to the
+  // structural subject (so reverse() can read a recognition-seeking tutor → a
+  // `mutual` swap). It is NOT wired into the LLM tutor prompt: makeLlmTutor has no
+  // voice slot — the tutor is script + guard-driven, and that asymmetry is the point.
   const tutorChar = world.motivation?.tutor ? compileTutorDesire(world) : null;
+  const tutorRecNodes = (tutorChar?.nodes || []).filter((n) => n.statement?.content?.kind === 'recognition');
   const subject = buildSubjectState(world, {
     learnerHeld: heldFacts,
     releasedPremiseIds: soFar,
     learnerDesireNodes: characterDesire?.nodes,
+    tutorDesireNodes: tutorRecNodes.length ? tutorRecNodes : null,
   });
 
   const heldKeys = new Set(subject.L.belief.nodes.map((n) => factKey(n.statement.content)));

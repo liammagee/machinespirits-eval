@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 
 import { loadWorld } from '../services/dramaticDerivation/world.js';
-import { buildSubjectState } from '../services/dramaticDerivation/beliefDesire.js';
+import { buildSubjectState, reverse } from '../services/dramaticDerivation/beliefDesire.js';
 import {
   compileLearnerDesire,
   compileTutorDesire,
@@ -112,4 +112,30 @@ test('renderMotivationLines(tutor): the inherited-but-outward end, the no-recogn
   assert.match(text, /hold back each step/); // disposition: withhold lawful (the floor)
   // the tutor's lines keep the answer abstract — the secret token never appears
   assert.doesNotMatch(text, /edony/);
+});
+
+test('world-017: a recognition-seeking tutor yields a MUTUAL reversal on authored data (not a synthetic push)', () => {
+  const saintcloud = world('world-017-saintcloud');
+  const tc = compileTutorDesire(saintcloud);
+  assert.equal(tc.dynamics.seeksRecognition, true); // unlike marrick, this tutor wants a verdict
+  const tutorRec = tc.nodes.filter((n) => n.statement?.content?.kind === 'recognition');
+  assert.equal(tutorRec.length, 1);
+
+  // assemble the subject as the surface does — learner desire + the tutor's 2nd-order
+  // recognition injected — at a licensed turn (the full proof path held)
+  const fullPath = saintcloud.proofPaths[0].premises.map((id) => saintcloud.premiseById.get(id).fact);
+  const learnerNodes = compileLearnerDesire(saintcloud).nodes;
+  const s = buildSubjectState(saintcloud, {
+    learnerHeld: fullPath,
+    learnerDesireNodes: learnerNodes,
+    tutorDesireNodes: tutorRec,
+  });
+  assert.equal(s.L.belief.secretGrounded, true); // licensed (anagnorisis)
+  const out = reverse(s, { surpassed: 'T' });
+  assert.equal(out.kind, 'mutual'); // the new learner (former tutor) inherits a recognition desire
+  assert.equal(out.recognition.newLearnerSeeks.recogniser, 'council');
+
+  // the injection is LOAD-BEARING: without it the same world inverts (proves part B is needed)
+  const sNoInject = buildSubjectState(saintcloud, { learnerHeld: fullPath, learnerDesireNodes: learnerNodes });
+  assert.equal(reverse(sNoInject, { surpassed: 'T' }).kind, 'inverted');
 });

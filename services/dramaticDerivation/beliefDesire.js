@@ -297,17 +297,21 @@ export function buildDirectorDesireDag(world) {
  */
 export function buildSubjectState(
   world,
-  { learnerHeld = [], releasedPremiseIds = [], prompts = [], learnerDesireNodes = null } = {},
+  { learnerHeld = [], releasedPremiseIds = [], prompts = [], learnerDesireNodes = null, tutorDesireNodes = null } = {},
 ) {
   const tutorDesire = buildTutorDesireDag(world);
   const { firstOrder, secondOrder } = seedLearnerDesires(world);
-  // learnerDesireNodes: an injected override (e.g. the authored character desire
-  // compiled by characterDesire.js); default = the generic proof-pattern seed.
+  // learnerDesireNodes / tutorDesireNodes: injected riders from characterDesire.js
+  // (which cannot be imported here — the seam is one-way). The learner default =
+  // the generic proof-pattern seed; the tutor's proof-DAG gets any authored
+  // second-order recognition APPENDED, so reverse() can read a recognition-seeking
+  // tutor and classify the swap `mutual` (§12).
   const learnerDesire = learnerDesireNodes || [firstOrder, secondOrder];
+  const tutorNodes = tutorDesireNodes ? [...tutorDesire.nodes, ...tutorDesireNodes] : tutorDesire.nodes;
   const directorDesire = buildDirectorDesireDag(world);
   return {
     world: world.id,
-    T: buildBearerState('T', { desire: { nodes: tutorDesire.nodes, edges: tutorDesire.edges }, models: {} }),
+    T: buildBearerState('T', { desire: { nodes: tutorNodes, edges: tutorDesire.edges }, models: {} }),
     L: buildBearerState('L', {
       belief: buildLearnerBeliefDag(world, learnerHeld),
       desire: { nodes: learnerDesire, edges: [] },
