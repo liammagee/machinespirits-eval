@@ -124,7 +124,17 @@ Other's law (§11b).
 - **The director's motivation** is mostly inherited; whether authors should tune it
   (`mirror_pull` of the staging, the strength of the temptation) is open.
 
-**Next step:** build the compiler — `motivation` block → desire-nodes (feeding
-`buildSubjectState`) + prompt lines (feeding `learnerSystem`) — test-first, starting by adding
-the block to `world-005-marrick.yaml` and checking the round-trip in §5 holds and the seeded
-learner desire-DAG opens mirror-bound.
+**Status (v0.1 — the compiler is built and tested).** `services/dramaticDerivation/characterDesire.js`
+implements `compileLearnerDesire(world)` (→ the typed first-/second-order desire-nodes + the
+`mirror_pull`/`overreach`/`arc` dynamics) and `renderMotivationLines(world, 'learner')` (→ the prompt
+lines); `world-005-marrick.yaml` carries the `motivation:` block; `validateWorld` passes it through; and
+`buildSubjectState` takes an optional `learnerDesireNodes` injection (default = the generic proof-pattern
+seed) so the authored desire feeds the subject without `beliefDesire.js` importing `characterDesire.js`.
+Both checks hold — the §5 round-trip reproduces marrick's `learner_voice` with nothing left over, and the
+seeded learner desire-DAG opens mirror-bound (`binding = verrell`). Tests:
+`tests/dramaticDerivationCharacterDesire.test.js` 4/4; regressions green (belief-desire 6/6, worlds 84/84).
+
+**Next:** (1) wire `renderMotivationLines` into the live `learnerSystem` (the LLM prompt renders from the
+block, behind a fallback to the prose `voice`); (2) feed the dynamics (`mirror_pull`/`overreach`/`arc`)
+into the engine's binding-migration and assertion timing; (3) author `motivation:` for the other featured
+worlds (lantern, the AI syllabus). None of these touches the round-trip already proven here.

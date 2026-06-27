@@ -295,16 +295,22 @@ export function buildDirectorDesireDag(world) {
  * the three bearers {T, L, D}, each with its belief/desire graphs and models of
  * the others. This is the object the app renders and reverse() transforms.
  */
-export function buildSubjectState(world, { learnerHeld = [], releasedPremiseIds = [], prompts = [] } = {}) {
+export function buildSubjectState(
+  world,
+  { learnerHeld = [], releasedPremiseIds = [], prompts = [], learnerDesireNodes = null } = {},
+) {
   const tutorDesire = buildTutorDesireDag(world);
   const { firstOrder, secondOrder } = seedLearnerDesires(world);
+  // learnerDesireNodes: an injected override (e.g. the authored character desire
+  // compiled by characterDesire.js); default = the generic proof-pattern seed.
+  const learnerDesire = learnerDesireNodes || [firstOrder, secondOrder];
   const directorDesire = buildDirectorDesireDag(world);
   return {
     world: world.id,
     T: buildBearerState('T', { desire: { nodes: tutorDesire.nodes, edges: tutorDesire.edges }, models: {} }),
     L: buildBearerState('L', {
       belief: buildLearnerBeliefDag(world, learnerHeld),
-      desire: { nodes: [firstOrder, secondOrder], edges: [] },
+      desire: { nodes: learnerDesire, edges: [] },
       models: { T: buildLearnerTutorModel(world, { releasedPremiseIds, prompts }) },
     }),
     D: buildBearerState('D', { desire: { nodes: directorDesire.nodes, edges: directorDesire.edges } }),
