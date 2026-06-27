@@ -340,22 +340,32 @@ export function buildSubjectState(
   };
 }
 
+/** The T<->L index swap (§12); D and any other figure are fixed points. */
+const swapTL = (b) => (b === 'T' ? 'L' : b === 'L' ? 'T' : b);
+
 /**
- * Relabel a BearerState to a new role — both the top-level `bearer` AND every
- * desire/belief node's `statement.bearer` (§12 follow-up). After a swap a node
- * that read `Des_L(...)` now reads `Des_T(...)`, matching the role it occupies.
- * Immutable (new node objects), so reverse() must re-find nodes by predicate,
- * not by reference. (The recognition-content vector — recogniser/recognised —
- * is a deeper relabel, left open; the retired recognition is filtered out anyway.)
+ * Relabel a BearerState to a new role — the top-level `bearer`, every
+ * desire/belief node's `statement.bearer`, AND the recognition-content vector
+ * (§12). A node that read `Des_L(...)` reads `Des_T(...)`; a recognition whose
+ * recogniser/recognised are BEARERS (T/L) flips them with the swap, while a
+ * D-figure recogniser (warden, council, …) is fixed — D does not swap — and the
+ * standing (what is sought) is unchanged. Immutable (new node objects), so
+ * reverse() re-finds nodes by predicate, not by reference.
  */
 function relabelBearer(state, newBearer) {
   if (!state) return state;
+  const relabelContent = (content) =>
+    content && content.kind === 'recognition'
+      ? { ...content, recogniser: swapTL(content.recogniser), recognised: swapTL(content.recognised) }
+      : content;
   const relabelGraph = (graph) =>
     graph && Array.isArray(graph.nodes)
       ? {
           ...graph,
           nodes: graph.nodes.map((n) =>
-            n?.statement ? { ...n, statement: { ...n.statement, bearer: newBearer } } : n,
+            n?.statement
+              ? { ...n, statement: { ...n.statement, bearer: newBearer, content: relabelContent(n.statement.content) } }
+              : n,
           ),
         }
       : graph;
@@ -404,15 +414,14 @@ function consummateRecognition(node, licensed) {
  * retired recognition is filtered by PREDICATE (kind), not reference.
  */
 export function reverse(subject, { surpassed = 'T' } = {}) {
-  const swap = (b) => (b === 'T' ? 'L' : b === 'L' ? 'T' : b);
-  const victor = swap(surpassed);
+  const victor = swapTL(surpassed);
   const newT = relabelBearer(subject.L, 'T');
   const newL = relabelBearer(subject.T, 'L');
   const surpassedNew = surpassed === 'T' ? newL : newT;
 
   const delta = desireNode({
     id: `des:dependence:${surpassed}`,
-    bearer: swap(surpassed),
+    bearer: swapTL(surpassed),
     content: { rel: 'grounded', of: dependenceProposition(victor) },
     origin: 'dependence',
   });

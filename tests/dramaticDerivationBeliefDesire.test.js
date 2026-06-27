@@ -162,3 +162,25 @@ test('reverse relabels every node statement.bearer with the swap (§12 — Des_L
   // the input is untouched (immutable relabel)
   assert.ok(s.L.desire.nodes.every((n) => n.statement.bearer === 'L'));
 });
+
+test('reverse flips the recognition VECTOR: recognised swaps T↔L, a D-figure recogniser is fixed (§12)', () => {
+  const s = buildSubjectState(marrick, { learnerHeld: fullPath() });
+  // a recognition-seeking tutor: a D-figure recogniser (audience), recognised = the tutor itself
+  s.T.desire.nodes.push(
+    desireNode({
+      id: 'des:T:recognition',
+      bearer: 'T',
+      order: 1,
+      content: recognitionNode({ recogniser: 'audience', recognised: 'T', standing: { rel: 'master' } }),
+      origin: 'root_end',
+      extra: { recogniserFigure: 'audience' },
+    }),
+  );
+  const out = reverse(s, { surpassed: 'T' });
+  const rec = findRec(out.L.desire.nodes).statement.content;
+  assert.equal(rec.recognised, 'L'); // the recognised flips T→L with the role it now occupies
+  assert.equal(rec.recogniser, 'audience'); // a D-figure is fixed — D does not swap under reversal
+  assert.equal(rec.standing.rel, 'master'); // the standing (what is sought) is unchanged
+  // the pre-reversal subject is untouched (immutable)
+  assert.equal(findRec(s.T.desire.nodes).statement.content.recognised, 'T');
+});
