@@ -265,19 +265,37 @@ export function buildLearnerTutorModel(world, { releasedPremiseIds = [], prompts
   };
 }
 
-/** D's desire-DAG (§10): the aesthetic ends, read off the world's slope + mirror + schedule. */
+/**
+ * D's desire-DAG (§10): the aesthetic ends, read off the world's slope + mirror +
+ * schedule. §8 (b): an authored `motivation.director` block tunes the INTENSITY of
+ * the tunable ends (temptation / suspense / reversal) — the author's aesthetic
+ * knob on the Big Other. Unauthored ends read `inherited`. (Reads world data only;
+ * the seam stays one-way — no characterDesire import.)
+ */
 export function buildDirectorDesireDag(world) {
-  const node = (id, label, content) => ({
+  const tuning = world.motivation?.director || {};
+  const node = (id, label, content, intensity = 'inherited') => ({
     id,
     kind: 'desire',
     statement: { content, attitude: 'Des', bearer: 'D', order: 0 },
     origin: 'root_end',
     label,
+    intensity,
   });
   const nodes = [
-    node('des:D:suspense', 'suspense', { rel: 'underivableBefore', secret: 'S', turn: world.slope.t_min }),
-    node('des:D:temptation', 'temptation', { rel: 'mirrorTempting', mirror: world.mirror ? 'M' : null }),
-    node('des:D:peripeteia', 'peripeteia', { rel: 'reversalOccurs' }),
+    node(
+      'des:D:suspense',
+      'suspense',
+      { rel: 'underivableBefore', secret: 'S', turn: world.slope.t_min },
+      tuning.suspense,
+    ),
+    node(
+      'des:D:temptation',
+      'temptation',
+      { rel: 'mirrorTempting', mirror: world.mirror ? 'M' : null },
+      tuning.temptation,
+    ),
+    node('des:D:peripeteia', 'peripeteia', { rel: 'reversalOccurs' }, tuning.reversal),
     node('des:D:anagnorisis', 'anagnorisis', { rel: 'recognitionScene' }),
     node('des:D:noAporia', 'no_aporia', { rel: 'distanceDecreasesWithin', window: world.slope.aporia_window }),
   ];
@@ -286,6 +304,7 @@ export function buildDirectorDesireDag(world) {
     bearer: 'D',
     nodes,
     edges: [],
+    tuned: Boolean(world.motivation?.director),
     note: 'plotLint is D’s satisfaction condition (§10)',
   };
 }

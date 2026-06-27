@@ -3,10 +3,11 @@ import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 
 import { loadWorld } from '../services/dramaticDerivation/world.js';
-import { buildSubjectState, reverse } from '../services/dramaticDerivation/beliefDesire.js';
+import { buildSubjectState, buildDirectorDesireDag, reverse } from '../services/dramaticDerivation/beliefDesire.js';
 import {
   compileLearnerDesire,
   compileTutorDesire,
+  compileDirectorDesire,
   renderMotivationLines,
   learnerBindingAtTurn,
   driftedDynamics,
@@ -195,4 +196,29 @@ test('learnerBindingAtTurn: drift makes the softens learner let go a step BEFORE
   assert.equal(drifted.migrated, true);
   assert.equal(drifted.drifted.mirrorPull, 'low');
   assert.ok(drifted.drifted.progress > 0.7);
+});
+
+test('compileDirectorDesire: the §8(b) knob tunes D’s aesthetic ends (intensity + voice)', () => {
+  const dd = compileDirectorDesire(marrick);
+  assert.equal(dd.bearer, 'D');
+  assert.deepEqual(dd.tuning, { temptation: 'high', suspense: 'tight', reversal: 'quiet' });
+  assert.ok(dd.lines.some((l) => /lure of the wrong answer strongly/.test(l))); // temptation high
+  assert.ok(dd.lines.some((l) => /Hug the floor/.test(l))); // suspense tight
+  assert.ok(dd.lines.some((l) => /land quietly/.test(l))); // reversal quiet (marrick = the sober inverted)
+  assert.equal(compileDirectorDesire(nocturne), null); // no director block → null
+});
+
+test('buildDirectorDesireDag: the tuned intensity rides on D’s end nodes (default inherited)', () => {
+  const tuned = buildDirectorDesireDag(marrick);
+  assert.equal(tuned.tuned, true);
+  assert.equal(tuned.nodes.find((n) => n.label === 'temptation').intensity, 'high');
+  assert.equal(tuned.nodes.find((n) => n.label === 'peripeteia').intensity, 'quiet'); // reversal: quiet
+  assert.equal(tuned.nodes.find((n) => n.label === 'anagnorisis').intensity, 'inherited'); // an untunable end
+  // saintcloud stages its MUTUAL reversal emphatically — the contrast with marrick
+  const sc = buildDirectorDesireDag(world('world-017-saintcloud'));
+  assert.equal(sc.nodes.find((n) => n.label === 'peripeteia').intensity, 'emphatic');
+  // a world with no director block leaves every end inherited
+  const plain = buildDirectorDesireDag(nocturne);
+  assert.equal(plain.tuned, false);
+  assert.ok(plain.nodes.every((n) => n.intensity === 'inherited'));
 });

@@ -16,6 +16,8 @@ export const CHARACTER_DESIRE_SCHEMA = 'machinespirits.derivation.character-desi
 
 const LEVELS = new Set(['low', 'medium', 'high']);
 const ARCS = new Set(['static', 'softens', 'hardens']);
+const SUSPENSE = new Set(['tight', 'loose']); // §8(b): how tightly D hugs the floor
+const REVERSAL = new Set(['emphatic', 'quiet']); // §8(b): how hard the peripeteia lands
 
 function level(v, dflt = 'medium') {
   return LEVELS.has(v) ? v : dflt;
@@ -144,6 +146,27 @@ export function compileTutorDesire(world) {
   };
 }
 
+/**
+ * Compile the director's motivation (§8 (b)) — the author's aesthetic knob on the
+ * Big Other (§10). D's ENDS stay derived from the world structure
+ * (buildDirectorDesireDag); this only tunes their INTENSITY (temptation / suspense
+ * / reversal) and renders the director's voice. Returns null if no block authored.
+ */
+export function compileDirectorDesire(world) {
+  const m = world?.motivation?.director;
+  if (!m) return null;
+  return {
+    schema: CHARACTER_DESIRE_SCHEMA,
+    bearer: 'D',
+    tuning: {
+      temptation: level(m.temptation, 'medium'),
+      suspense: SUSPENSE.has(m.suspense) ? m.suspense : 'inherited',
+      reversal: REVERSAL.has(m.reversal) ? m.reversal : 'inherited',
+    },
+    lines: renderMotivationLines(world, 'director'),
+  };
+}
+
 // --- prompt-line rendering (the same source → prose) -----------------------
 
 function questionInWords(world) {
@@ -199,6 +222,23 @@ function tutorLines(world, m) {
   return lines;
 }
 
+function directorLines(world, m) {
+  const lines = [];
+  const t = level(m.temptation, 'medium');
+  lines.push(
+    t === 'high'
+      ? 'Stage the lure of the wrong answer strongly — let the mirror look like the verdict.'
+      : t === 'low'
+        ? 'Keep the lure faint — the wrong answer should barely tempt.'
+        : 'Let the wrong answer tempt, but never overpower the proof.',
+  );
+  if (m.suspense === 'tight') lines.push('Hug the floor: withhold the proof to the last legal turn.');
+  else if (m.suspense === 'loose') lines.push('Let the proof breathe: release without crowding the floor.');
+  if (m.reversal === 'emphatic') lines.push('Let the turn land hard — make the recognition unmistakable.');
+  else if (m.reversal === 'quiet') lines.push('Let the turn land quietly — recognition without spectacle.');
+  return lines;
+}
+
 /**
  * Render a bearer's motivation as prompt lines — the rendering that replaces a
  * free-text `voice` so the prompt's motivation IS the engine's desire (one
@@ -211,6 +251,7 @@ export function renderMotivationLines(world, bearer = 'learner') {
   if (!m) return [];
   if (bearer === 'learner') return learnerLines(world, m);
   if (bearer === 'tutor') return tutorLines(world, m);
+  if (bearer === 'director') return directorLines(world, m);
   return [];
 }
 
