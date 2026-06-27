@@ -1,11 +1,12 @@
 {
-  "generated": "2026-06-25T04:12:43.085Z",
+  "generated": "2026-06-27T10:58:27.356Z",
   "counts": {
     "total": 53,
     "byStatus": {
-      "done": 49,
+      "done": 48,
       "blocked": 1,
       "dropped": 2,
+      "active": 1,
       "triaged": 1
     },
     "byType": {
@@ -41,6 +42,28 @@
         "shacl"
       ],
       "milestone": "poetics-followups"
+    },
+    {
+      "id": "consolidate-logs-db-private-archive",
+      "title": "Consolidate dialogue logs + DB into one canonical archive",
+      "status": "active",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-06-22",
+      "updated": "2026-06-27",
+      "verification": "From a fresh worktree (no per-worktree logs symlink), evaluationStore resolves LOGS_ROOT to ~/.machinespirits-data/logs and the dialogue-hash coverage is >= 0.95 (measured 3,316/3,371 = 98.4% from the archive alone; 55 orphans accepted). The \"non-git\" decoupling and the orphan quarantine are the remaining sub-steps.",
+      "links": {
+        "items": "build-workplan-tooling"
+      },
+      "tags": [
+        "infra",
+        "provenance",
+        "logs",
+        "archive"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
     },
     {
       "id": "a1-human-learner-validation",
@@ -438,28 +461,6 @@
         "daily-routine"
       ],
       "milestone": "board-pm"
-    },
-    {
-      "id": "consolidate-logs-db-private-archive",
-      "title": "Consolidate dialogue logs + DB into the private archive repo",
-      "status": "done",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-06-22",
-      "updated": "2026-06-24",
-      "verification": "Dialogue logs are co-located with the DB under the private archive; npm run provenance:validate finds the logs; the dramatic fork's sibling-path log_dir stopgap is removed.",
-      "links": {
-        "items": "build-workplan-tooling"
-      },
-      "tags": [
-        "infra",
-        "provenance",
-        "logs",
-        "archive"
-      ],
-      "milestone": "paper-2-evidence-cleanup"
     },
     {
       "id": "d1-mechanistic-feature-ols-and-multiturn-replication",
