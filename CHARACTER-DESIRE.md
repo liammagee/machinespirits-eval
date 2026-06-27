@@ -157,38 +157,39 @@ The existing δ-dependence contract is untouched (`consummated` stays the forwar
 §12 _recognition-vector_ axis — it shares `mutual` / `inverted` with the δ-axis because the doubling
 completes on both, but `premature` is _not_ the δ-axis `stalled`: precondition-unmet ≠ δ-unowned.)
 
-## 8. Deferred / open, and the next step
+## 8. Status and what remains
 
-- **Drift coupling.** `disposition.arc` is the static handle on a dynamic thing; the live
-  version is the `learner_drift` channel making `mirror_pull` / `overreach` time-varying. v0.1
-  keeps them static with an `arc` hint; wiring them to `learnerDrift` is the follow-up.
-- **Authority resolution.** `second_order.from: warden` names a figure not in the bearer set
-  `{T, L, D}`; the warden is a *local representative of D* (the Big Other, §11a). The compiler
-  resolves `from` to its authoriser `D` and its Weber mode.
-- **The director's motivation** is mostly inherited; whether authors should tune it
-  (`mirror_pull` of the staging, the strength of the temptation) is open.
+**v0.4 — the three §8 follow-ups landed.**
 
-**Status (v0.3 — the tutor side, reversal-recognition, and a `mutual` world are built and tested).**
-`services/dramaticDerivation/characterDesire.js` implements `compileLearnerDesire` /
-`compileTutorDesire` (→ typed desire-nodes + dynamics) and `renderMotivationLines(world, bearer)` for
-both bearers; `beliefDesire.js`'s `reverse()` carries the second-order recognition node
-(consummate-and-retire on the new-tutor side; `kind` ∈ {`premature`, `inverted`, `mutual`}); the
-`/subject` surface shows the tutor's compiled desire in the T card (the §5 asymmetry, alongside the
-learner's mirror-binding) and the reversal kind in the reversal panel. marrick / lantern / ai-syllabus /
-**world-017-saintcloud** carry `motivation:` blocks; `validateWorld` passes them through; `buildSubjectState`
-takes optional `learnerDesireNodes` **and `tutorDesireNodes`** injections (the latter appends the authored
-tutor recognition to the proof-DAG) so the authored desire feeds the subject without `beliefDesire.js`
-importing `characterDesire.js`; and the live `learnerSystem` renders from the block behind a prose fallback
-(`learnerVoiceForWorld`). The v0.1 checks still hold — the §5 round-trip reproduces marrick's `learner_voice`
-with nothing left over, and the seeded learner desire-DAG opens mirror-bound (`binding = verrell`). Tests:
-`tests/dramaticDerivationCharacterDesire.test.js` 10/10 (incl. the `mutual` reversal on world-017 from real
-authored data, and that the `tutorDesireNodes` injection is load-bearing — without it the same world
-`inverted`s), `tests/dramaticDerivationBeliefDesire.test.js` 9/9; regressions green (worlds 84/84,
-derivation:test 66/66, derivation:smoke 4/4, adaptive cell smoke 8 rows, whole-repo lint; world-017 also
-passes `derivation:lint` + a deterministic K_L leak-check).
+- **(a) Drift coupling — done.** `driftedDynamics(world, { heldFacts, driftState })` makes
+  `mirror_pull` / `overreach` TIME-VARYING: the `arc` decays (`softens`) or intensifies (`hardens`) them
+  against proof progress, and a live `learnerDrift` state (public + proof-safe only) nudges them further.
+  `learnerBindingAtTurn(..., { drift })` gates migration on the drifted pull — a `softens` learner lets go
+  a step before grounding; the default stays the static baseline. Shown in the `/subject` L card
+  (pull/overreach base → current, % through the proof).
+- **(b) The director knob — done.** An authored `motivation.director` block tunes the INTENSITY of D's
+  aesthetic ends (`temptation` / `suspense` / `reversal`); `buildDirectorDesireDag` rides the intensity on
+  each end node (untunable ends stay `inherited`), `compileDirectorDesire` renders D's voice. The triad
+  {L, T, D} of authored motivation is now complete. Authored on marrick (quiet) vs saintcloud (emphatic);
+  shown in the `/subject` D card.
+- **(c) Per-node `statement.bearer` relabel — done.** `reverse()` rewrites each desire/belief node's
+  `statement.bearer` with the swap (`Des_L → Des_T`), so a node reads the role it occupies, not its person
+  of origin (the retired recognition is filtered by predicate, since the node objects are now replaced).
 
-**Next (open):** (1) `mutual` is now exercised on authored data (`world-017-saintcloud`), but its paid
-S-underivability screen is **unrun** (it is a `/subject`-demo world, not cleared for a generation run); (2)
-drift-couple `mirror_pull` / `overreach` to the live `learner_drift` channel (still static + an `arc` hint);
-(3) the director's motivation knob (§8). The per-node `statement.bearer` relabel inside `reverse()` remains
-the noted follow-up.
+**Still open:** the recognition-content vector relabel (recogniser/recognised) inside `reverse()` — the
+layer below (c); **authority resolution** (`second_order.from` → its D-authoriser + Weber mode is recorded
+but not resolved into a separate node); the paid S-underivability screen for `world-017-saintcloud` (unrun
+— a `/subject`-demo world, not cleared for a generation run); and drift-coupling on a *live* run (the
+`learnerDrift` nudge is wired + tested but exercised only on the deterministic arc in `/subject`).
+
+**Built + tested.** `characterDesire.js`: `compileLearnerDesire` / `compileTutorDesire` /
+`compileDirectorDesire`, `renderMotivationLines(world, bearer)` for all three bearers, `driftedDynamics`,
+`learnerBindingAtTurn` (opt-in drift), `learnerVoiceForWorld`. `beliefDesire.js`: `reverse()` carries the
+recognition (`kind` ∈ {`premature`, `inverted`, `mutual`}) + per-node bearer relabel;
+`buildDirectorDesireDag` reads the director tuning; `buildSubjectState` takes `learnerDesireNodes` +
+`tutorDesireNodes`. marrick / lantern / ai-syllabus / **world-017-saintcloud** carry `motivation:` blocks;
+the `/subject` surface renders all of it (decoupled), and the live `learnerSystem` renders the learner
+voice from the block behind a prose fallback. Tests:
+`tests/dramaticDerivationCharacterDesire.test.js` 15/15, `tests/dramaticDerivationBeliefDesire.test.js`
+10/10; regressions green (worlds 84/84, derivation:test 66/66, derivation:smoke 4/4, adaptive cell smoke
+8 rows, whole-repo lint + format:check; world-017 `derivation:lint` PASS).

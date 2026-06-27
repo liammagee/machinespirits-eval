@@ -3,12 +3,14 @@ import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 
 import { loadWorld } from '../services/dramaticDerivation/world.js';
-import { buildSubjectState, reverse } from '../services/dramaticDerivation/beliefDesire.js';
+import { buildSubjectState, buildDirectorDesireDag, reverse } from '../services/dramaticDerivation/beliefDesire.js';
 import {
   compileLearnerDesire,
   compileTutorDesire,
+  compileDirectorDesire,
   renderMotivationLines,
   learnerBindingAtTurn,
+  driftedDynamics,
   learnerVoiceForWorld,
 } from '../services/dramaticDerivation/characterDesire.js';
 
@@ -141,4 +143,82 @@ test('world-017: a recognition-seeking tutor yields a MUTUAL reversal on authore
   // the injection is LOAD-BEARING: without it the same world inverts (proves part B is needed)
   const sNoInject = buildSubjectState(saintcloud, { learnerHeld: fullPath, learnerDesireNodes: learnerNodes });
   assert.equal(reverse(sNoInject, { surpassed: 'T' }).kind, 'inverted');
+});
+
+test('driftedDynamics: a softens learner decays from its authored baseline as the proof advances (§8a)', () => {
+  const atStart = driftedDynamics(marrick, { heldFacts: [] });
+  assert.equal(atStart.base.mirrorPull, 'high'); // the authored baseline
+  assert.equal(atStart.arc, 'softens');
+  assert.equal(atStart.progress, 0);
+  assert.equal(atStart.mirrorPull.level, 'high'); // at the curtain, the pull IS the baseline
+  const late = driftedDynamics(marrick, { heldFacts: pathFactsByTurn(marrick, 18) }); // dist 1 → progress ~0.83
+  assert.ok(late.progress > 0.7);
+  assert.equal(late.mirrorPull.level, 'low'); // softened toward release as the evidence accrued
+  assert.ok(late.mirrorPull.value < atStart.mirrorPull.value);
+});
+
+test('driftedDynamics: a live learnerDrift state nudges the pull, but only when public + proof-safe (§8a)', () => {
+  const held = pathFactsByTurn(marrick, 12); // mid-proof
+  const plain = driftedDynamics(marrick, { heldFacts: held });
+  const defensive = driftedDynamics(marrick, {
+    heldFacts: held,
+    driftState: { publicOnly: true, mayOverrideProofControl: false, mode: 'defensive_reversion', pressure: 'high' },
+  });
+  assert.equal(defensive.coupledToDrift, true);
+  assert.ok(defensive.mirrorPull.value > plain.mirrorPull.value); // digs back toward the mirror
+  const releasing = driftedDynamics(marrick, {
+    heldFacts: held,
+    driftState: {
+      publicOnly: true,
+      mayOverrideProofControl: false,
+      mode: 'reluctant_owned_revision',
+      pressure: 'releasing',
+    },
+  });
+  assert.ok(releasing.mirrorPull.value < plain.mirrorPull.value); // lets go sooner
+  // an unsafe (non-public, or proof-control-claiming) drift state NEVER couples
+  const unsafe = driftedDynamics(marrick, {
+    heldFacts: held,
+    driftState: { publicOnly: false, mode: 'defensive_reversion', pressure: 'high' },
+  });
+  assert.equal(unsafe.coupledToDrift, false);
+  assert.equal(unsafe.mirrorPull.value, plain.mirrorPull.value);
+});
+
+test('learnerBindingAtTurn: drift makes the softens learner let go a step BEFORE grounding (vs the static baseline)', () => {
+  const at18 = pathFactsByTurn(marrick, 18); // dist 1 — one step short of grounding
+  const stat = learnerBindingAtTurn(marrick, at18); // static default: the high pull clings
+  assert.equal(stat.binding, 'verrell');
+  assert.equal(stat.migrated, false);
+  assert.equal(stat.drifted, null); // no drift readout unless requested
+  const drifted = learnerBindingAtTurn(marrick, at18, { drift: true }); // the softened pull releases early
+  assert.equal(drifted.binding, 'edony');
+  assert.equal(drifted.migrated, true);
+  assert.equal(drifted.drifted.mirrorPull, 'low');
+  assert.ok(drifted.drifted.progress > 0.7);
+});
+
+test('compileDirectorDesire: the §8(b) knob tunes D’s aesthetic ends (intensity + voice)', () => {
+  const dd = compileDirectorDesire(marrick);
+  assert.equal(dd.bearer, 'D');
+  assert.deepEqual(dd.tuning, { temptation: 'high', suspense: 'tight', reversal: 'quiet' });
+  assert.ok(dd.lines.some((l) => /lure of the wrong answer strongly/.test(l))); // temptation high
+  assert.ok(dd.lines.some((l) => /Hug the floor/.test(l))); // suspense tight
+  assert.ok(dd.lines.some((l) => /land quietly/.test(l))); // reversal quiet (marrick = the sober inverted)
+  assert.equal(compileDirectorDesire(nocturne), null); // no director block → null
+});
+
+test('buildDirectorDesireDag: the tuned intensity rides on D’s end nodes (default inherited)', () => {
+  const tuned = buildDirectorDesireDag(marrick);
+  assert.equal(tuned.tuned, true);
+  assert.equal(tuned.nodes.find((n) => n.label === 'temptation').intensity, 'high');
+  assert.equal(tuned.nodes.find((n) => n.label === 'peripeteia').intensity, 'quiet'); // reversal: quiet
+  assert.equal(tuned.nodes.find((n) => n.label === 'anagnorisis').intensity, 'inherited'); // an untunable end
+  // saintcloud stages its MUTUAL reversal emphatically — the contrast with marrick
+  const sc = buildDirectorDesireDag(world('world-017-saintcloud'));
+  assert.equal(sc.nodes.find((n) => n.label === 'peripeteia').intensity, 'emphatic');
+  // a world with no director block leaves every end inherited
+  const plain = buildDirectorDesireDag(nocturne);
+  assert.equal(plain.tuned, false);
+  assert.ok(plain.nodes.every((n) => n.intensity === 'inherited'));
 });

@@ -265,19 +265,37 @@ export function buildLearnerTutorModel(world, { releasedPremiseIds = [], prompts
   };
 }
 
-/** D's desire-DAG (§10): the aesthetic ends, read off the world's slope + mirror + schedule. */
+/**
+ * D's desire-DAG (§10): the aesthetic ends, read off the world's slope + mirror +
+ * schedule. §8 (b): an authored `motivation.director` block tunes the INTENSITY of
+ * the tunable ends (temptation / suspense / reversal) — the author's aesthetic
+ * knob on the Big Other. Unauthored ends read `inherited`. (Reads world data only;
+ * the seam stays one-way — no characterDesire import.)
+ */
 export function buildDirectorDesireDag(world) {
-  const node = (id, label, content) => ({
+  const tuning = world.motivation?.director || {};
+  const node = (id, label, content, intensity = 'inherited') => ({
     id,
     kind: 'desire',
     statement: { content, attitude: 'Des', bearer: 'D', order: 0 },
     origin: 'root_end',
     label,
+    intensity,
   });
   const nodes = [
-    node('des:D:suspense', 'suspense', { rel: 'underivableBefore', secret: 'S', turn: world.slope.t_min }),
-    node('des:D:temptation', 'temptation', { rel: 'mirrorTempting', mirror: world.mirror ? 'M' : null }),
-    node('des:D:peripeteia', 'peripeteia', { rel: 'reversalOccurs' }),
+    node(
+      'des:D:suspense',
+      'suspense',
+      { rel: 'underivableBefore', secret: 'S', turn: world.slope.t_min },
+      tuning.suspense,
+    ),
+    node(
+      'des:D:temptation',
+      'temptation',
+      { rel: 'mirrorTempting', mirror: world.mirror ? 'M' : null },
+      tuning.temptation,
+    ),
+    node('des:D:peripeteia', 'peripeteia', { rel: 'reversalOccurs' }, tuning.reversal),
     node('des:D:anagnorisis', 'anagnorisis', { rel: 'recognitionScene' }),
     node('des:D:noAporia', 'no_aporia', { rel: 'distanceDecreasesWithin', window: world.slope.aporia_window }),
   ];
@@ -286,6 +304,7 @@ export function buildDirectorDesireDag(world) {
     bearer: 'D',
     nodes,
     edges: [],
+    tuned: Boolean(world.motivation?.director),
     note: 'plotLint is D’s satisfaction condition (§10)',
   };
 }
@@ -321,8 +340,26 @@ export function buildSubjectState(
   };
 }
 
+/**
+ * Relabel a BearerState to a new role — both the top-level `bearer` AND every
+ * desire/belief node's `statement.bearer` (§12 follow-up). After a swap a node
+ * that read `Des_L(...)` now reads `Des_T(...)`, matching the role it occupies.
+ * Immutable (new node objects), so reverse() must re-find nodes by predicate,
+ * not by reference. (The recognition-content vector — recogniser/recognised —
+ * is a deeper relabel, left open; the retired recognition is filtered out anyway.)
+ */
 function relabelBearer(state, newBearer) {
-  return state ? { ...state, bearer: newBearer } : state;
+  if (!state) return state;
+  const relabelGraph = (graph) =>
+    graph && Array.isArray(graph.nodes)
+      ? {
+          ...graph,
+          nodes: graph.nodes.map((n) =>
+            n?.statement ? { ...n, statement: { ...n.statement, bearer: newBearer } } : n,
+          ),
+        }
+      : graph;
+  return { ...state, bearer: newBearer, desire: relabelGraph(state.desire), belief: relabelGraph(state.belief) };
 }
 
 /** Find a second-order recognition desire-node in a bearer's desire graph (§4). */
@@ -363,7 +400,8 @@ function consummateRecognition(node, licensed) {
  *    none → an *inverted* (one-way) reversal; some → a *mutual* one; an
  *    unlicensed swap is *premature* (the recognition is unearned).
  *
- * (Shallow bearer relabel; per-node statement.bearer relabel is a follow-up.)
+ * relabelBearer rewrites each node's statement.bearer with the swap, so the
+ * retired recognition is filtered by PREDICATE (kind), not reference.
  */
 export function reverse(subject, { surpassed = 'T' } = {}) {
   const swap = (b) => (b === 'T' ? 'L' : b === 'L' ? 'T' : b);
@@ -389,7 +427,11 @@ export function reverse(subject, { surpassed = 'T' } = {}) {
   const learnerRec = findRecognitionDesire(subject.L?.desire);
   const newLearnerRec = findRecognitionDesire(subject.T?.desire);
   if (learnerRec && newT?.desire?.nodes) {
-    newT.desire = { ...newT.desire, nodes: newT.desire.nodes.filter((n) => n !== learnerRec) };
+    // predicate, not reference: relabelBearer has replaced the node objects
+    newT.desire = {
+      ...newT.desire,
+      nodes: newT.desire.nodes.filter((n) => n.statement?.content?.kind !== 'recognition'),
+    };
   }
   const kind = !licensed ? 'premature' : newLearnerRec ? 'mutual' : 'inverted';
 

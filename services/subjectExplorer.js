@@ -26,6 +26,7 @@ import { buildSubjectState, buildTutorDesireDag, reverse } from './dramaticDeriv
 import {
   compileLearnerDesire,
   compileTutorDesire,
+  compileDirectorDesire,
   learnerBindingAtTurn,
 } from './dramaticDerivation/characterDesire.js';
 
@@ -210,13 +211,17 @@ export function subjectExplorerData(stem, { turn = 0, reversed = false, wiring =
   // CHARACTER-DESIRE.md: when a `motivation:` block is authored, seed the learner's desire from it
   // (opens mirror-bound) and track the binding migrating to the truth as the proof advances.
   const characterDesire = world.motivation?.learner ? compileLearnerDesire(world) : null;
-  const binding = characterDesire ? learnerBindingAtTurn(world, heldFacts) : null;
+  // §8 (a): show the DRIFTED binding — the time-varying pull realizes the `arc`
+  // (a softens learner lets go a step before grounding; hardens clings past it).
+  const binding = characterDesire ? learnerBindingAtTurn(world, heldFacts, { drift: true }) : null;
   // The tutor's compiled desire — the §5 asymmetry, surfaced AND fed to the
   // structural subject (so reverse() can read a recognition-seeking tutor → a
   // `mutual` swap). It is NOT wired into the LLM tutor prompt: makeLlmTutor has no
   // voice slot — the tutor is script + guard-driven, and that asymmetry is the point.
   const tutorChar = world.motivation?.tutor ? compileTutorDesire(world) : null;
   const tutorRecNodes = (tutorChar?.nodes || []).filter((n) => n.statement?.content?.kind === 'recognition');
+  // §8 (b): the director's aesthetic knob — tunes the intensity of D's ends.
+  const directorDesire = world.motivation?.director ? compileDirectorDesire(world) : null;
   const subject = buildSubjectState(world, {
     learnerHeld: heldFacts,
     releasedPremiseIds: soFar,
@@ -273,6 +278,7 @@ export function subjectExplorerData(stem, { turn = 0, reversed = false, wiring =
           standing: world.motivation.tutor.second_order?.as || null,
         }
       : null,
+    directorScriptDesire: directorDesire ? { tuning: directorDesire.tuning, lines: directorDesire.lines } : null,
     narration: buildNarration(world, t),
     move: tutorMove(world, t, wiring === 'ego' ? 'ego' : 'es'),
     subject,
@@ -380,6 +386,11 @@ export function renderStage(stem, opts = {}) {
              : `<span class="tag">the mirror, not yet the truth (${esc(sd.opensOn)} → ${esc(sd.truth)})</span>`
          }${sd.overreachTempted ? ' · <b style="color:#b5562e">⚠ tempted to assert it early (overreach)</b>' : ''}</li>
          ${sd.recogniser ? `<li>second-order: wants <b>${esc(sd.recogniser)}</b> to find it <b>${esc(sd.standing)}</b></li>` : ''}
+         ${
+           sd.drifted && sd.drifted.arc !== 'static'
+             ? `<li>drift <span class="tag">§8a · ${esc(sd.drifted.arc)}</span>: mirror-pull <b>${esc(sd.drifted.base.mirrorPull)}</b> → <b>${esc(sd.drifted.mirrorPull)}</b>, overreach <b>${esc(sd.drifted.base.overreach)}</b> → <b>${esc(sd.drifted.overreach)}</b> <span class="tag">${Math.round(sd.drifted.progress * 100)}% through the proof${sd.drifted.coupledToDrift ? ' · coupled to learnerDrift' : ''}</span></li>`
+             : ''
+         }
        </ul>`
     : '';
 
@@ -455,7 +466,21 @@ export function renderStage(stem, opts = {}) {
       </section>
       <section class="card">
         <h3>D — director (the Big Other: aesthetic ends)</h3>
-        ${list(subject.D.desire.nodes.map((n) => `<b>${esc(n.label)}</b> <span class="tag">${esc(JSON.stringify(n.statement.content))}</span>`))}
+        ${list(
+          subject.D.desire.nodes.map(
+            (n) =>
+              `<b>${esc(n.label)}</b>${
+                n.intensity && n.intensity !== 'inherited'
+                  ? ` <span class="tag" style="color:var(--done-line)">tuned: ${esc(n.intensity)}</span>`
+                  : ''
+              } <span class="tag">${esc(JSON.stringify(n.statement.content))}</span>`,
+          ),
+        )}
+        ${
+          d.directorScriptDesire
+            ? `<p class="muted" style="margin-top:8px;">director's intent (compiled from the script outline) <span class="tag">§8b</span>:</p>${list(d.directorScriptDesire.lines.map((l) => esc(l)))}`
+            : ''
+        }
         <p class="tag" style="margin-top:8px;">plotLint is D’s satisfaction condition.</p>
       </section>
     </div>

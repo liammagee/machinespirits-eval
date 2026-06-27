@@ -122,3 +122,7 @@ motivation:
       authority: rational_legal
     disposition:
       withhold: lawful # still honours the floor t_min — but no longer disinterested
+  director: # §8(b): the author's aesthetic knob on the Big Other (D, §10)
+    temptation: high # the keeper's "weak spring" verdict should genuinely tempt
+    suspense: tight # hug the floor — the council's waiting IS the suspense
+    reversal: emphatic # the MUTUAL recognition is the climax — stage it hard

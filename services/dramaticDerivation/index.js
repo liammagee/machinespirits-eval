@@ -198,7 +198,9 @@ export { runCritic, mockCriticCommentary, buildCriticPrompt, commentaryFileMd } 
 export {
   compileLearnerDesire,
   compileTutorDesire,
+  compileDirectorDesire,
   renderMotivationLines,
   learnerBindingAtTurn,
+  driftedDynamics,
   learnerVoiceForWorld,
 } from './characterDesire.js';
