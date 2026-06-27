@@ -145,3 +145,20 @@ test('reverse is MUTUAL when the surpassed tutor itself sought recognition (the 
   assert.equal(out.kind, 'mutual');
   assert.equal(out.recognition.newLearnerSeeks.recogniser, 'audience');
 });
+
+test('reverse relabels every node statement.bearer with the swap (§12 — Des_L→Des_T, Des_T→Des_L)', () => {
+  const s = buildSubjectState(marrick, { learnerHeld: fullPath() });
+  // pre-reversal: the learner's desire nodes are borne by L, the tutor's by T
+  assert.ok(s.L.desire.nodes.every((n) => n.statement.bearer === 'L'));
+  assert.ok(s.T.desire.nodes.every((n) => n.statement.bearer === 'T'));
+  const out = reverse(s, { surpassed: 'T' });
+  // post-reversal: every node now reads the role it OCCUPIES, not its person of origin
+  assert.ok(out.T.desire.nodes.length > 0 && out.T.desire.nodes.every((n) => n.statement.bearer === 'T'));
+  assert.ok(out.L.desire.nodes.length > 0 && out.L.desire.nodes.every((n) => n.statement.bearer === 'L'));
+  // the seeded δ on the new learner is borne by L too
+  assert.equal(out.seeded.statement.bearer, 'L');
+  // belief nodes relabel as well (the old learner's grounded board is now the new tutor's)
+  assert.ok(out.T.belief.nodes.every((n) => n.statement.bearer === 'T'));
+  // the input is untouched (immutable relabel)
+  assert.ok(s.L.desire.nodes.every((n) => n.statement.bearer === 'L'));
+});
