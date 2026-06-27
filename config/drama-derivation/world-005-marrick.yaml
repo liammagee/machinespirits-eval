@@ -300,3 +300,26 @@ slope:
   aporia_window: 6 # anti-aporia: D(t) must strictly decrease within any 6-turn window
 
 turn_cap: 28
+
+# Character desire (CHARACTER-DESIRE.md): the script outline's motivation, made
+# first-class — compiles to desire-nodes (beliefDesire.js) AND prompt lines. The
+# learner's only source of desire (the proof gives it none: it does not know S).
+motivation:
+  learner:
+    first_order:
+      end: question_pattern # the de dicto answer-slot: exists x. struckBy(falseShilling, ?x)
+      opens_on: verrell # opens mis-bound to the mirror (the town's ready verdict)
+      mirror_pull: high # "eager - too eager - to write the verdict the town wants"
+    second_order:
+      from: warden # "respectful of the warden"
+      as: right # "hungry to be right"
+      authority: rational_legal # "the assay trusts its rules of evidence, and nothing else"
+    disposition:
+      overreach: high # "apt to name the hand before the metal has finished naming itself"
+      arc: softens # "learning, mark by mark, to let a coin's own evidence say who made it"
+  tutor:
+    first_order:
+      end: inherit # = the proof-derived Des_T(grounded_L(S))
+    second_order: null # the tutor seeks no recognition here (the asymmetry, §5)
+    disposition:
+      withhold: lawful # honours the floor t_min (the criterial superego, the law)

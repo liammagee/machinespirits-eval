@@ -295,16 +295,26 @@ export function buildDirectorDesireDag(world) {
  * the three bearers {T, L, D}, each with its belief/desire graphs and models of
  * the others. This is the object the app renders and reverse() transforms.
  */
-export function buildSubjectState(world, { learnerHeld = [], releasedPremiseIds = [], prompts = [] } = {}) {
+export function buildSubjectState(
+  world,
+  { learnerHeld = [], releasedPremiseIds = [], prompts = [], learnerDesireNodes = null, tutorDesireNodes = null } = {},
+) {
   const tutorDesire = buildTutorDesireDag(world);
   const { firstOrder, secondOrder } = seedLearnerDesires(world);
+  // learnerDesireNodes / tutorDesireNodes: injected riders from characterDesire.js
+  // (which cannot be imported here — the seam is one-way). The learner default =
+  // the generic proof-pattern seed; the tutor's proof-DAG gets any authored
+  // second-order recognition APPENDED, so reverse() can read a recognition-seeking
+  // tutor and classify the swap `mutual` (§12).
+  const learnerDesire = learnerDesireNodes || [firstOrder, secondOrder];
+  const tutorNodes = tutorDesireNodes ? [...tutorDesire.nodes, ...tutorDesireNodes] : tutorDesire.nodes;
   const directorDesire = buildDirectorDesireDag(world);
   return {
     world: world.id,
-    T: buildBearerState('T', { desire: { nodes: tutorDesire.nodes, edges: tutorDesire.edges }, models: {} }),
+    T: buildBearerState('T', { desire: { nodes: tutorNodes, edges: tutorDesire.edges }, models: {} }),
     L: buildBearerState('L', {
       belief: buildLearnerBeliefDag(world, learnerHeld),
-      desire: { nodes: [firstOrder, secondOrder], edges: [] },
+      desire: { nodes: learnerDesire, edges: [] },
       models: { T: buildLearnerTutorModel(world, { releasedPremiseIds, prompts }) },
     }),
     D: buildBearerState('D', { desire: { nodes: directorDesire.nodes, edges: directorDesire.edges } }),
@@ -315,10 +325,44 @@ function relabelBearer(state, newBearer) {
   return state ? { ...state, bearer: newBearer } : state;
 }
 
+/** Find a second-order recognition desire-node in a bearer's desire graph (§4). */
+function findRecognitionDesire(graph) {
+  return (graph?.nodes || []).find((n) => n?.statement?.content?.kind === 'recognition') || null;
+}
+
+/**
+ * Consummate a recognition desire-node at reversal: the anagnorisis marks the
+ * recognition held + conferred IFF the reversal is licensed (the secret was
+ * grounded). Returns a transformed CLONE — reverse() never mutates its input.
+ */
+function consummateRecognition(node, licensed) {
+  if (!node) return null;
+  const rec = node.statement?.content;
+  const heldRec = rec ? { ...rec, held: licensed, conferral: licensed } : rec;
+  return {
+    ...node,
+    statement: { ...node.statement, content: heldRec },
+    fulfilled: licensed,
+    consummatedAt: licensed ? 'reversal' : null,
+    retiredFromRole: node.statement?.bearer || null,
+  };
+}
+
 /**
  * Role reversal R (§12) over a live subject state. Index swap T<->L (D fixed)
- * PLUS the content-transformation: seed δ into the surpassed party's NEW desire
- * graph. NECESSARY ONLY — `consummated` stays false until that δ is grounded.
+ * PLUS two content-transformations:
+ *
+ *  - the dependence δ: seeded into the surpassed party's NEW desire graph.
+ *    NECESSARY ONLY — `consummated` stays false until that δ is grounded.
+ *
+ *  - the second-order recognition: it travels with ROLE, not person (§4, §12).
+ *    The pre-reversal learner's recognition is consummated by the anagnorisis
+ *    (`licensed` = it has grounded the secret) and RETIRED from the side that
+ *    became the tutor — a tutor does not seek D's verdict on itself. The side
+ *    that became the learner keeps whatever recognition its pre-image carried:
+ *    none → an *inverted* (one-way) reversal; some → a *mutual* one; an
+ *    unlicensed swap is *premature* (the recognition is unearned).
+ *
  * (Shallow bearer relabel; per-node statement.bearer relabel is a follow-up.)
  */
 export function reverse(subject, { surpassed = 'T' } = {}) {
@@ -327,6 +371,7 @@ export function reverse(subject, { surpassed = 'T' } = {}) {
   const newT = relabelBearer(subject.L, 'T');
   const newL = relabelBearer(subject.T, 'L');
   const surpassedNew = surpassed === 'T' ? newL : newT;
+
   const delta = desireNode({
     id: `des:dependence:${surpassed}`,
     bearer: swap(surpassed),
@@ -336,6 +381,18 @@ export function reverse(subject, { surpassed = 'T' } = {}) {
   if (surpassedNew?.desire?.nodes) {
     surpassedNew.desire = { ...surpassedNew.desire, nodes: [...surpassedNew.desire.nodes, delta] };
   }
+
+  // The recognition node travels with role. licensed = the pre-reversal learner
+  // grounded the secret (the anagnorisis trigger). Retire the learner's
+  // recognition from the new tutor; classify by what the new learner inherits.
+  const licensed = Boolean(subject.L?.belief?.secretGrounded);
+  const learnerRec = findRecognitionDesire(subject.L?.desire);
+  const newLearnerRec = findRecognitionDesire(subject.T?.desire);
+  if (learnerRec && newT?.desire?.nodes) {
+    newT.desire = { ...newT.desire, nodes: newT.desire.nodes.filter((n) => n !== learnerRec) };
+  }
+  const kind = !licensed ? 'premature' : newLearnerRec ? 'mutual' : 'inverted';
+
   return {
     world: subject.world,
     T: newT,
@@ -343,6 +400,14 @@ export function reverse(subject, { surpassed = 'T' } = {}) {
     D: subject.D,
     swap: { T: 'L', L: 'T', D: 'D' },
     seeded: delta,
-    consummated: false,
+    consummated: false, // the δ-dependence is forward-looking — grounded later, not at the swap
+    kind,
+    recognition: {
+      licensed,
+      consummated: consummateRecognition(learnerRec, licensed), // the learner's 2nd-order → anagnorisis
+      newLearnerSeeks: newLearnerRec
+        ? { recogniser: newLearnerRec.recogniserFigure || newLearnerRec.statement?.content?.recogniser || null }
+        : null,
+    },
   };
 }

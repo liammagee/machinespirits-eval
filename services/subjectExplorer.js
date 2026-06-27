@@ -23,6 +23,11 @@ import { loadWorld } from './dramaticDerivation/world.js';
 import { derivationDistance } from './dramaticDerivation/slope.js';
 import { factKey, closure, entails } from './dramaticDerivation/chainer.js';
 import { buildSubjectState, buildTutorDesireDag, reverse } from './dramaticDerivation/beliefDesire.js';
+import {
+  compileLearnerDesire,
+  compileTutorDesire,
+  learnerBindingAtTurn,
+} from './dramaticDerivation/characterDesire.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const WORLDS_DIR = path.join(__dirname, '..', 'config', 'drama-derivation');
@@ -44,6 +49,11 @@ const CURATED = [
     stem: 'world-016-ai-syllabus-af1',
     blurb:
       'AI Foundations. Should the campus FAQ tool be generative AI (because it talks) or a rule-based baseline? The conversational surface is the mirror; the formulation card grounds the answer.',
+  },
+  {
+    stem: 'world-017-saintcloud',
+    blurb:
+      'A guild demonstration. The master-horologist seeks the council’s verdict too — so when the journeyman grounds the truth, the reversal is MUTUAL: the dethroned master, now the learner, still wants recognition.',
   },
 ];
 
@@ -197,7 +207,22 @@ export function subjectExplorerData(stem, { turn = 0, reversed = false, wiring =
   const t = Math.max(0, Math.min(Number(turn) || 0, cap));
   const { soFar, now } = releasedByTurn(world, t);
   const heldFacts = soFar.map((id) => world.premiseById.get(id)?.fact).filter(Boolean);
-  const subject = buildSubjectState(world, { learnerHeld: heldFacts, releasedPremiseIds: soFar });
+  // CHARACTER-DESIRE.md: when a `motivation:` block is authored, seed the learner's desire from it
+  // (opens mirror-bound) and track the binding migrating to the truth as the proof advances.
+  const characterDesire = world.motivation?.learner ? compileLearnerDesire(world) : null;
+  const binding = characterDesire ? learnerBindingAtTurn(world, heldFacts) : null;
+  // The tutor's compiled desire — the §5 asymmetry, surfaced AND fed to the
+  // structural subject (so reverse() can read a recognition-seeking tutor → a
+  // `mutual` swap). It is NOT wired into the LLM tutor prompt: makeLlmTutor has no
+  // voice slot — the tutor is script + guard-driven, and that asymmetry is the point.
+  const tutorChar = world.motivation?.tutor ? compileTutorDesire(world) : null;
+  const tutorRecNodes = (tutorChar?.nodes || []).filter((n) => n.statement?.content?.kind === 'recognition');
+  const subject = buildSubjectState(world, {
+    learnerHeld: heldFacts,
+    releasedPremiseIds: soFar,
+    learnerDesireNodes: characterDesire?.nodes,
+    tutorDesireNodes: tutorRecNodes.length ? tutorRecNodes : null,
+  });
 
   const heldKeys = new Set(subject.L.belief.nodes.map((n) => factKey(n.statement.content)));
   const tutorDag = buildTutorDesireDag(world);
@@ -231,6 +256,23 @@ export function subjectExplorerData(stem, { turn = 0, reversed = false, wiring =
     releasedSoFar: soFar,
     derivationDistance: Number.isFinite(dist) ? dist : null,
     secretGrounded: subject.L.belief.secretGrounded,
+    scriptDesire: binding
+      ? {
+          ...binding,
+          questionInWords: (world.question || '').replace(/\?+\s*$/u, '').trim(),
+          recogniser: world.motivation.learner.second_order?.from || null,
+          standing: world.motivation.learner.second_order?.as || null,
+        }
+      : null,
+    tutorScriptDesire: tutorChar
+      ? {
+          truth: tutorChar.nodes.find((n) => n.id === 'des:T:first')?.slot?.binding ?? null,
+          seeksRecognition: tutorChar.dynamics.seeksRecognition,
+          withhold: tutorChar.dynamics.withhold,
+          recogniser: world.motivation.tutor.second_order?.from || null,
+          standing: world.motivation.tutor.second_order?.as || null,
+        }
+      : null,
     narration: buildNarration(world, t),
     move: tutorMove(world, t, wiring === 'ego' ? 'ego' : 'es'),
     subject,
@@ -328,6 +370,33 @@ export function renderStage(stem, opts = {}) {
     .slice(0, 16);
   const mLT = subject.L.models.T;
 
+  const sd = d.scriptDesire;
+  const scriptDesireHtml = sd
+    ? `<p class="muted" style="margin-top:8px;">desire (compiled from the script outline):</p>
+       <ul>
+         <li>first-order: wants to answer <i>"${esc(sd.questionInWords)}"</i> — bound to <b>${esc(sd.binding)}</b> ${
+           sd.migrated
+             ? '<span class="tag" style="color:var(--done-line)">✓ migrated to the truth</span>'
+             : `<span class="tag">the mirror, not yet the truth (${esc(sd.opensOn)} → ${esc(sd.truth)})</span>`
+         }${sd.overreachTempted ? ' · <b style="color:#b5562e">⚠ tempted to assert it early (overreach)</b>' : ''}</li>
+         ${sd.recogniser ? `<li>second-order: wants <b>${esc(sd.recogniser)}</b> to find it <b>${esc(sd.standing)}</b></li>` : ''}
+       </ul>`
+    : '';
+
+  const tsd = d.tutorScriptDesire;
+  const tutorScriptDesireHtml = tsd
+    ? `<p class="muted" style="margin-top:10px;">desire (compiled from the script outline) — the asymmetry to the learner:</p>
+       <ul>
+         <li>first-order: wants the <b>learner</b> to reach the answer — bound to <b>${esc(tsd.truth)}</b> from the start <span class="tag">never mirror-fooled — it holds the proof</span></li>
+         <li>second-order: ${
+           tsd.seeksRecognition
+             ? `wants <b>${esc(tsd.recogniser)}</b> to find it <b>${esc(tsd.standing)}</b>`
+             : 'seeks <b>no recognition</b> for itself — it makes the learner worthy of the verdict <span class="tag">§5: the lawful pole</span>'
+         }</li>
+         <li>disposition: <b>lawful withholding</b> — keeps to the floor t_min that protects the learner's recognition <span class="tag">enters as script + guards, not a voice</span></li>
+       </ul>`
+    : '';
+
   const moveHtml = `
     <section class="card move">
       <h3>The tutor's move now <span class="tag">· wiring: ${move.wiring === 'ego' ? 'ego only' : 'ego + superego'}</span></h3>
@@ -338,9 +407,20 @@ export function renderStage(stem, opts = {}) {
 
   const reversePanel = reversed
     ? `<section class="card rev">
-        <h3>Reversal fired</h3>
-        <p>swap <code>${esc(JSON.stringify(reversed.swap))}</code> · seeded δ on the surpassed party (former T, now at L) · consummated: <b>${reversed.consummated}</b>.</p>
-        <p class="tag">${d.secretGrounded ? 'Licensed: the learner has grounded the secret (anagnorisis) — the trigger that enables peripeteia (§12).' : '⚠ Premature: the learner has NOT yet grounded the secret, so the trigger (anagnorisis) is unmet — the swap is bare.'} Consummates only once δ (the dependence) is grounded; else the dialectic stalls / inverts.</p>
+        <h3>Reversal fired <span class="tag">· ${esc(reversed.kind)}</span></h3>
+        <p>swap <code>${esc(JSON.stringify(reversed.swap))}</code> · seeded δ on the surpassed party (former T, now at L) · δ-consummated: <b>${reversed.consummated}</b>.</p>
+        <p class="tag">${
+          reversed.recognition.licensed
+            ? '✓ Licensed: the learner has grounded the secret (anagnorisis) — its second-order recognition is consummated (held + conferred) and retired from the side that became the tutor.'
+            : '⚠ Premature: the learner has NOT grounded the secret, so the recognition is unearned — the swap is bare.'
+        }</p>
+        <p class="tag">${
+          reversed.kind === 'mutual'
+            ? `mutual reversal — the new learner (former T) inherits a recognition desire toward <b>${esc(reversed.recognition.newLearnerSeeks?.recogniser || 'D')}</b>.`
+            : reversed.kind === 'inverted'
+              ? 'inverted (one-way) reversal — the former tutor sought no recognition, so the new learner inherits none.'
+              : 'the swap precedes the grounding — no recognition changes hands yet.'
+        } The δ-dependence consummates only once grounded (§12); else the dialectic stalls.</p>
        </section>`
     : '';
 
@@ -361,6 +441,7 @@ export function renderStage(stem, opts = {}) {
       <h3>T — tutor's desire-DAG (the proof, inverted) <span class="tag">· ${leavesDone}/${leavesTotal} releases fulfilled</span></h3>
       ${dagSvg(tutorDag)}
       <p class="tag">green = fulfilled by the learner's current beliefs (hover a node for the full statement). The leaves are the releases the tutor must bring about; fulfillment propagates toward the secret.</p>
+      ${tutorScriptDesireHtml}
     </section>
 
     ${moveHtml}
@@ -369,6 +450,7 @@ export function renderStage(stem, opts = {}) {
       <section class="card">
         <h3>L — learner (belief · desire · model of the tutor)</h3>
         <p class="muted">grounded so far:</p>${list(learnerBeliefs)}
+        ${scriptDesireHtml}
         <p class="muted" style="margin-top:8px;">𝔐_L(T) — reads the tutor's want; cannot see the secret <span class="tag">secret hidden: ${!mLT.audit.secretIncluded}</span></p>
       </section>
       <section class="card">

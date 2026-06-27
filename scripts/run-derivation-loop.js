@@ -350,6 +350,7 @@ import {
   makeLlmDirector,
   makeLlmTutor,
   makeLlmLearner,
+  learnerVoiceForWorld,
   clampDial,
   RELEASE_LATITUDE,
   diagnose,
@@ -1192,7 +1193,7 @@ async function main() {
     }),
     learner: makeLlmLearner({
       setting: world.setting,
-      voice: learnerVoice || world.learnerVoice,
+      voice: learnerVoice || learnerVoiceForWorld(world),
       client,
       publicRegister,
       assertionGroundingGate,
