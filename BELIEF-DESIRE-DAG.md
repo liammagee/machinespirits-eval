@@ -591,7 +591,9 @@ DB; seam-safe (it imports only the sibling `chainer`). Nine tests pass.
 
 `reverse()` operates over the live `buildSubjectState` assembly (§13) — it reads `L`'s belief-graph to
 license the recognition — not placeholder objects; the learner's `𝔅_L` / `𝔇_L` / `𝔐_L(T)` are first-class
-there. The per-node `statement.bearer` relabel inside the swap remains the one noted follow-up.
+there. The per-node `statement.bearer` relabel inside the swap is now done (a node reads `Des_T(...)` after
+becoming the tutor, not `Des_L(...)`); the recognition-content vector relabel (recogniser/recognised) is the
+remaining deeper layer.
 
 ---
 
