@@ -13,9 +13,14 @@
 #
 # Validated: plotLint PASS (S forced at turn 7 >= t_min 6) + the curtain-rise K_L is
 # leak-clean (the secret token never appears in the learner-visible context). NOT
-# cleared for a paid episode: the paid S-underivability (guessability) screen is
-# unrun, and this world is NOT enrolled in the worlds-test battery — it exists for
-# the /subject reversal demo and the `mutual` unit test, not a generation run.
+# cleared for a paid episode — and now empirically so: the paid S-underivability
+# (guessability) screen was RUN (GLM-5.2, 2026-06-27) and REJECTED it — the model
+# guessed the worn pallet at rank 1 from the rules + question alone. The secret is
+# Meno-derivable (the escapement rule "a worn part riding in the escapement drags"
+# + horology knowledge telegraphs "worn pallet"), NOT a contingent particular like
+# marrick's edony (which needs the staged premises). So this world is correctly a
+# /subject reversal demo + `mutual` unit-test world, NOT a generation run; it is
+# not enrolled in the worlds-test battery.
 
 id: world_017_saintcloud
 title: The Saint-Cloud Regulator
