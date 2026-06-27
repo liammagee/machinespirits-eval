@@ -7,10 +7,14 @@ import {
   buildTutorDesireDag,
   seedLearnerDesires,
   recognitionNode,
+  desireNode,
   reverse,
   buildSubjectState,
   buildLearnerBeliefDag,
 } from '../services/dramaticDerivation/beliefDesire.js';
+
+const findRec = (nodes) => (nodes || []).find((n) => n?.statement?.content?.kind === 'recognition');
+const fullPath = () => marrick.proofPaths[0].premises.map((id) => marrick.premiseById.get(id).fact);
 
 const marrick = loadWorld(fileURLToPath(new URL('../config/drama-derivation/world-005-marrick.yaml', import.meta.url)));
 
@@ -97,4 +101,47 @@ test('reverse: swaps T<->L over live state (D fixed) and seeds δ into the surpa
   assert.equal(out.seeded.statement.content.of.who, 'L'); // δ = "the victor (L) bore the truth"
   assert.equal(out.D.bearer, 'D'); // the director is untouched
   assert.equal(out.consummated, false);
+});
+
+test('reverse carries the recognition node: an UNLICENSED swap is premature — the recognition is unearned (§4, §12)', () => {
+  const s = buildSubjectState(marrick, { learnerHeld: [] }); // secret not grounded
+  const out = reverse(s, { surpassed: 'T' });
+  assert.equal(out.recognition.licensed, false);
+  assert.equal(out.kind, 'premature');
+  // the learner's 2nd-order recognition is NOT consummated...
+  assert.equal(out.recognition.consummated.consummatedAt, null);
+  assert.equal(out.recognition.consummated.statement.content.held, false);
+  // ...and it is retired from the side that became the tutor (a tutor seeks no verdict on itself)
+  assert.equal(findRec(out.T.desire.nodes), undefined);
+});
+
+test('reverse carries the recognition node: a LICENSED swap with a non-seeking tutor INVERTS (one-way)', () => {
+  const s = buildSubjectState(marrick, { learnerHeld: fullPath() }); // full proof path → secret grounded
+  const out = reverse(s, { surpassed: 'T' });
+  assert.equal(out.recognition.licensed, true);
+  assert.equal(out.kind, 'inverted'); // the old tutor sought no recognition → the new learner inherits none
+  // the learner's recognition is consummated by the anagnorisis (held + conferred)
+  assert.equal(out.recognition.consummated.consummatedAt, 'reversal');
+  assert.equal(out.recognition.consummated.statement.content.held, true);
+  assert.equal(out.recognition.consummated.statement.content.conferral, true);
+  assert.equal(out.recognition.newLearnerSeeks, null);
+  assert.equal(out.consummated, false); // δ-dependence stays forward-looking (unchanged contract)
+});
+
+test('reverse is MUTUAL when the surpassed tutor itself sought recognition (the new learner inherits it)', () => {
+  const s = buildSubjectState(marrick, { learnerHeld: fullPath() });
+  // a world where the tutor, too, wants a verdict (e.g. from the audience)
+  s.T.desire.nodes.push(
+    desireNode({
+      id: 'des:T:recognition',
+      bearer: 'T',
+      order: 1,
+      content: recognitionNode({ recogniser: 'audience', recognised: 'T', standing: { rel: 'master' } }),
+      origin: 'root_end',
+      extra: { recogniserFigure: 'audience' },
+    }),
+  );
+  const out = reverse(s, { surpassed: 'T' });
+  assert.equal(out.kind, 'mutual');
+  assert.equal(out.recognition.newLearnerSeeks.recogniser, 'audience');
 });

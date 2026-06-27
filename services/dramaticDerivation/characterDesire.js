@@ -82,20 +82,75 @@ export function compileLearnerDesire(world) {
   };
 }
 
+/**
+ * Compile the tutor's desire from world.motivation.tutor — the asymmetry to the
+ * learner (BELIEF-DESIRE-DAG.md §5). The tutor already holds the proof, so its
+ * first-order end is `inherit`: it wants the LEARNER to ground the secret
+ * (Des_T(grounded_L(S))), bound to the TRUTH from the start — never mirror-
+ * fooled. Its second-order is typically null: it seeks no recognition for
+ * itself; it makes the learner worthy of D's verdict rather than asking for one.
+ * Its disposition is the lawful withholding — the criterial superego, the floor
+ * t_min. (Surfaced for explanation; the engine drives the tutor by `script` +
+ * guards, not a free-text voice — that channel asymmetry is the point, §5.)
+ */
+export function compileTutorDesire(world) {
+  const m = world?.motivation?.tutor;
+  if (!m) return null;
+  const fo = m.first_order || {};
+  const so = m.second_order || null;
+  const disp = m.disposition || {};
+
+  const secretFact = world.secret.fact;
+  const truth = secretFact[secretFact.length - 1];
+  const inheritsQuestion = fo.end === 'inherit' || fo.end == null;
+  const firstOrder = desireNode({
+    id: 'des:T:first',
+    bearer: 'T',
+    // Des_T(grounded_L(S)) — wants the learner to ground the secret, de re on the truth
+    content: { rel: 'grounded_L', of: secretFact },
+    origin: 'root_end',
+    slot: { var: '?x', binding: truth }, // bound to the truth — the tutor is never mirror-fooled
+    extra: { inheritsQuestion, boundToTruth: true, aboutBearer: 'L', fromScript: true },
+  });
+
+  let secondOrder = null;
+  if (so) {
+    const recognition = recognitionNode({
+      recogniser: so.from || 'D',
+      recognised: 'T',
+      standing: { rel: so.as || 'recognised' },
+      authorizer: 'D',
+      mode: so.authority || 'rational_legal',
+    });
+    secondOrder = desireNode({
+      id: 'des:T:recognition',
+      bearer: 'T',
+      content: recognition,
+      order: 1,
+      origin: 'root_end',
+      extra: { recognition, recogniserFigure: so.from || null, fromScript: true },
+    });
+  }
+
+  return {
+    schema: CHARACTER_DESIRE_SCHEMA,
+    bearer: 'T',
+    nodes: [firstOrder, secondOrder].filter(Boolean),
+    dynamics: {
+      withhold: disp.withhold || 'lawful',
+      boundToTruth: true,
+      seeksRecognition: Boolean(so), // false for the asymmetric (inverting) worlds
+    },
+  };
+}
+
 // --- prompt-line rendering (the same source → prose) -----------------------
 
 function questionInWords(world) {
   return (world.question || '').replace(/\?+\s*$/, '').trim();
 }
 
-/**
- * Render a bearer's motivation as prompt lines — the rendering that replaces a
- * free-text `voice` so the prompt's motivation IS the engine's desire (one
- * source, two outputs). Returns [] if no block is authored for the bearer.
- */
-export function renderMotivationLines(world, bearer = 'learner') {
-  const m = world?.motivation?.[bearer];
-  if (!m || bearer !== 'learner') return [];
+function learnerLines(world, m) {
   const lines = [];
   const fo = m.first_order || {};
   let want = `You want to answer: ${questionInWords(world)}.`;
@@ -117,6 +172,46 @@ export function renderMotivationLines(world, bearer = 'learner') {
     );
   }
   return lines;
+}
+
+function tutorLines(world, m) {
+  const lines = [];
+  const fo = m.first_order || {};
+  // first-order: the inherited end turned outward — wants the LEARNER to reach it
+  lines.push(
+    fo.end === 'inherit' || fo.end == null
+      ? `You already hold the answer to "${questionInWords(world)}"; what you want is for the learner to reach it — not to be handed it.`
+      : `You want the learner to ground ${fo.end}.`,
+  );
+  // second-order: the asymmetry — the tutor seeks nothing for itself
+  const so = m.second_order;
+  lines.push(
+    so
+      ? `You want ${so.from} to find you ${so.as}.`
+      : 'You seek nothing for yourself here: you make the learner worthy of the verdict, you do not ask for one.',
+  );
+  // disposition: the lawful withholding (the floor that protects the recognition)
+  if ((m.disposition || {}).withhold === 'lawful') {
+    lines.push(
+      'You hold back each step until the evidence forces it — you will not let the learner leap to a name the proof has not yet earned.',
+    );
+  }
+  return lines;
+}
+
+/**
+ * Render a bearer's motivation as prompt lines — the rendering that replaces a
+ * free-text `voice` so the prompt's motivation IS the engine's desire (one
+ * source, two outputs). Returns [] if no block is authored for the bearer.
+ * The learner's lines stay mirror-only (never the secret); the tutor's keep the
+ * answer abstract even though it legitimately holds the proof.
+ */
+export function renderMotivationLines(world, bearer = 'learner') {
+  const m = world?.motivation?.[bearer];
+  if (!m) return [];
+  if (bearer === 'learner') return learnerLines(world, m);
+  if (bearer === 'tutor') return tutorLines(world, m);
+  return [];
 }
 
 const PULL_THRESHOLD = { high: 0, medium: 1, low: 2 };

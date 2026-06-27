@@ -444,6 +444,19 @@ reachable states from the asymmetric opening:
 This is now executable (§14): `reverse()` performs the swap and seeds `δ` (origin `dependence`) and
 returns `consummated: false` — the necessary-not-sufficient point made into code.
 
+**Recognition carried through the swap.** Beyond seeding `δ`, `reverse()` also carries the second-order
+**recognition** node — it travels with _role, not person_. The pre-reversal learner's recognition
+consummates (`held + conferred`) iff the swap is _licensed_ (it has grounded `S` — the anagnorisis trigger
+of the first bullet above) and is then retired from the side that became the tutor; the side that became
+the learner keeps whatever recognition its pre-image carried. So `reverse().kind` names the
+**recognition-vector** transition (the opening of this section): **mutual** (the surpassed tutor itself
+sought recognition → the new learner inherits one) / **inverted** (it did not → one-way) / **premature**
+(_un_licensed: the swap precedes the grounding, so the recognition is unearned). This is the recognition
+axis, **distinct from** the `δ`-dependence axis just above (whose third state is **stalled** — `δ` unowned):
+the two share `mutual` / `inverted` because the doubling completes on both, but `premature` (precondition
+unmet) is not `stalled` (`δ` unowned). The character-side compiler that authors these recognitions per
+bearer is [`CHARACTER-DESIRE.md`](CHARACTER-DESIRE.md) §7.
+
 ## 13. Typed schema (v0.1 spec — no code yet)
 
 A precise contract for `⟨φ, α, b, order⟩` and the graphs over `{T, L, D}`, written as
@@ -558,7 +571,7 @@ authority); `L`'s is only what has been released and held.
 
 `services/dramaticDerivation/beliefDesire.js` + `tests/dramaticDerivationBeliefDesire.test.js`
 implement the load-bearing pieces of §13 as deterministic structure — no model call, no eval, no
-DB; seam-safe (it imports only the sibling `chainer`). Four tests pass.
+DB; seam-safe (it imports only the sibling `chainer`). Nine tests pass.
 
 - **`buildTutorDesireDag(world)`** builds the tutor's desire-DAG by **inverting the belief-proof of
   the secret** (reusing `chainer.proofTree`, not re-deriving): each derived fact becomes a
@@ -570,12 +583,15 @@ DB; seam-safe (it imports only the sibling `chainer`). Four tests pass.
   and the second-order recognition desire (order 1).
 - **`recognitionNode(...)`** is the decomposable `Rec_a(b, π)` — belief-component, conferral, and a
   Weber-`mode` authority delegated from `D` (§11a).
-- **`reverse(states, {surpassed})`** is the §12 operator: swap `T ↔ L` (`D` fixed) **and** seed the
-  dependence proposition `δ` (origin `dependence`) on the surpassed party, returning
-  `consummated: false`.
+- **`reverse(states, {surpassed})`** is the §12 operator: swap `T ↔ L` (`D` fixed), seed the dependence
+  proposition `δ` (origin `dependence`) on the surpassed party (returning the forward-looking
+  `consummated: false`), **and carry the second-order recognition** — consummated + retired on the side
+  that became the tutor, licensed by `L`'s grounding — classifying the recognition-vector transition as
+  `kind` ∈ {`premature`, `inverted`, `mutual`} (§12).
 
-It does _not_ yet hold live per-bearer state (`𝔅_L` / `𝔇_L` / `𝔐_L`) — `reverse` swaps placeholder
-state objects. Wiring those live is the symmetry build proper (next).
+`reverse()` operates over the live `buildSubjectState` assembly (§13) — it reads `L`'s belief-graph to
+license the recognition — not placeholder objects; the learner's `𝔅_L` / `𝔇_L` / `𝔐_L(T)` are first-class
+there. The per-node `statement.bearer` relabel inside the swap remains the one noted follow-up.
 
 ---
 
@@ -585,8 +601,11 @@ state objects. Wiring those live is the symmetry build proper (next).
   `δ` now specified, §12), and the typed schema; §14 lands a tested scaffold (`beliefDesire.js`) that
   makes the tutor desire-DAG and `reverse()` executable. The Real is recorded as open and
   deliberately unused (§11c).
-- **Next — live symmetry (§5):** give the learner real `𝔅_L`, `𝔇_L`, `𝔐_L(T)` (a learner→tutor
-  model — the missing half of `proxyDagMemory`) and rewire `reverse()` over those live states, so the
-  three reachable states (mutual / inverted / stalled) can actually be reached on a run.
+- **Live symmetry (§5): done.** The learner has real `𝔅_L`, `𝔇_L`, `𝔐_L(T)` (the learner→tutor model —
+  the missing half of `proxyDagMemory`), `reverse()` runs over those live states, and it now classifies the
+  recognition-vector `kind` (mutual / inverted / premature) at the swap. **Open:** the `δ`-dependence axis
+  (mutual / inverted / **stalled**) still needs a full run that _grounds_ `δ` to reach its `mutual` end
+  (`consummated` is `false` until then); and the `mutual` recognition-`kind` is reachable but unexercised
+  (the authored tutors are all non-seeking).
 - **Later (recorded):** intention as a third attitude (§8); verifying recognition vs uttering it
   (§8 / `RecognitionNode.held`); the Real, only if it earns its keep (§11c).

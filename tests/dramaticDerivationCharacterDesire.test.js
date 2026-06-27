@@ -6,6 +6,7 @@ import { loadWorld } from '../services/dramaticDerivation/world.js';
 import { buildSubjectState } from '../services/dramaticDerivation/beliefDesire.js';
 import {
   compileLearnerDesire,
+  compileTutorDesire,
   renderMotivationLines,
   learnerBindingAtTurn,
   learnerVoiceForWorld,
@@ -89,4 +90,26 @@ test('compileLearnerDesire travels: lantern opens brandt-bound (court); ai-sylla
 test('learnerVoiceForWorld: renders the motivation when present, falls back to the prose voice otherwise', () => {
   assert.match(learnerVoiceForWorld(marrick), /verrell/); // rendered from the block
   assert.equal(learnerVoiceForWorld(nocturne), nocturne.learnerVoice); // no block → prose voice unchanged
+});
+
+test('compileTutorDesire: the tutor first-order is TRUTH-bound (never the mirror) and seeks no recognition (§5)', () => {
+  const td = compileTutorDesire(marrick);
+  const first = td.nodes.find((n) => n.id === 'des:T:first');
+  assert.equal(first.statement.content.rel, 'grounded_L'); // Des_T(grounded_L(S)) — wants the LEARNER to ground it
+  assert.equal(first.statement.bearer, 'T');
+  assert.equal(first.slot.binding, 'edony'); // bound to the truth from t=0 — the tutor is never mirror-fooled
+  assert.equal(first.inheritsQuestion, true);
+  // the asymmetry: no second-order recognition node, and the dynamics record it
+  assert.equal(td.nodes.find((n) => n.id === 'des:T:recognition'), undefined);
+  assert.equal(td.nodes.length, 1);
+  assert.deepEqual(td.dynamics, { withhold: 'lawful', boundToTruth: true, seeksRecognition: false });
+});
+
+test('renderMotivationLines(tutor): the inherited-but-outward end, the no-recognition asymmetry, the lawful withholding', () => {
+  const text = renderMotivationLines(marrick, 'tutor').join(' ').toLowerCase();
+  assert.match(text, /already hold the answer/); // first-order: inherit, turned outward (wants the learner to reach it)
+  assert.match(text, /seek nothing for yourself/); // second-order null — the §5 asymmetry
+  assert.match(text, /hold back each step/); // disposition: withhold lawful (the floor)
+  // the tutor's lines keep the answer abstract — the secret token never appears
+  assert.doesNotMatch(text, /edony/);
 });

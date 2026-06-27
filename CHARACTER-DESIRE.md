@@ -1,4 +1,4 @@
-# Character desire — compiling motivation from the script outline (v0.1, working draft)
+# Character desire — compiling motivation from the script outline (v0.2, working draft)
 
 A companion to [`BELIEF-DESIRE-DAG.md`](BELIEF-DESIRE-DAG.md). That note derives a role's
 desire from the **proof structure** (the secret, the proof paths). This note adds the
@@ -113,7 +113,51 @@ the drama move: the proof never wanted Verrell, but the *character* does, and th
 migration of that binding to the truth under the tutor's pacing — desire re-aligned to the
 Other's law (§11b).
 
-## 7. Deferred / open, and the next step
+## 7. The tutor's side, and reversal carries the recognition (v0.2)
+
+**The tutor compiled (`compileTutorDesire`).** The `motivation.tutor` block now compiles too,
+and the point of compiling it is to make the **asymmetry to the learner** explicit and visible
+(BELIEF-DESIRE-DAG.md §5):
+
+- _first-order_ — `end: inherit` becomes `Des_T(grounded_L(S))`, bound to the **truth** from the
+  start (`slot.binding =` the secret's filler). The tutor is never mirror-fooled: where the
+  learner opens on `verrell` and migrates, the tutor holds `edony` throughout.
+- _second-order_ — `null`: the tutor seeks **no recognition** for itself. It makes the learner
+  _worthy_ of D's verdict (it grounds the truth-maker the warden's recognition needs) rather than
+  asking for one.
+- _disposition_ — `withhold: lawful`: the criterial superego. The restraint is not a persona
+  choice; it is compiled into the floor-`t_min` guard.
+
+A deeper asymmetry surfaces here: the two bearers differ not only in the _content_ of desire but
+in _how desire enters the machine_. The learner's enters as a free-text `voice`
+(`learnerVoiceForWorld` → `makeLlmLearner.voice`); the tutor has **no voice slot** —
+`makeLlmTutor` takes a `script` plus the pacing/withhold guards. So `compileTutorDesire` and
+`renderMotivationLines(world, 'tutor')` are **surfaced for explanation** (in `/subject`), not
+wired into the tutor prompt: wiring them would duplicate what the script + guards already encode.
+That channel difference _is_ the lawful pole.
+
+**Reversal carries the second-order recognition (`reverse()`).** The recognition node travels with
+**role, not person** (§4, §12). On a role swap T↔L:
+
+- the pre-reversal learner's recognition is **consummated** by the anagnorisis iff the swap is
+  _licensed_ (the learner has grounded the secret) — marked `held + conferred` — and **retired**
+  from the side that became the tutor (a tutor does not seek D's verdict on itself);
+- the side that became the learner keeps whatever recognition its pre-image carried.
+
+That yields a trichotomy with no extra machinery, read straight off the swap:
+
+| `reverse().kind` | when | reading |
+| --- | --- | --- |
+| `premature` | not licensed (secret ungrounded) | roles swapped before the recognition is earned — the swap is bare |
+| `inverted` | licensed, old tutor sought no recognition | one-way: the learner's recognition consummates; the new learner inherits none (marrick) |
+| `mutual` | licensed, old tutor also sought recognition | both recognitions live; the new learner inherits one |
+
+The existing δ-dependence contract is untouched (`consummated` stays the forward-looking
+δ-grounding condition); the recognition consummation is a separate, reported field. (`kind` is the
+§12 _recognition-vector_ axis — it shares `mutual` / `inverted` with the δ-axis because the doubling
+completes on both, but `premature` is _not_ the δ-axis `stalled`: precondition-unmet ≠ δ-unowned.)
+
+## 8. Deferred / open, and the next step
 
 - **Drift coupling.** `disposition.arc` is the static handle on a dynamic thing; the live
   version is the `learner_drift` channel making `mirror_pull` / `overreach` time-varying. v0.1
@@ -124,17 +168,24 @@ Other's law (§11b).
 - **The director's motivation** is mostly inherited; whether authors should tune it
   (`mirror_pull` of the staging, the strength of the temptation) is open.
 
-**Status (v0.1 — the compiler is built and tested).** `services/dramaticDerivation/characterDesire.js`
-implements `compileLearnerDesire(world)` (→ the typed first-/second-order desire-nodes + the
-`mirror_pull`/`overreach`/`arc` dynamics) and `renderMotivationLines(world, 'learner')` (→ the prompt
-lines); `world-005-marrick.yaml` carries the `motivation:` block; `validateWorld` passes it through; and
-`buildSubjectState` takes an optional `learnerDesireNodes` injection (default = the generic proof-pattern
-seed) so the authored desire feeds the subject without `beliefDesire.js` importing `characterDesire.js`.
-Both checks hold — the §5 round-trip reproduces marrick's `learner_voice` with nothing left over, and the
-seeded learner desire-DAG opens mirror-bound (`binding = verrell`). Tests:
-`tests/dramaticDerivationCharacterDesire.test.js` 4/4; regressions green (belief-desire 6/6, worlds 84/84).
+**Status (v0.2 — the tutor side + reversal-recognition are built and tested).**
+`services/dramaticDerivation/characterDesire.js` implements `compileLearnerDesire` /
+`compileTutorDesire` (→ typed desire-nodes + dynamics) and `renderMotivationLines(world, bearer)` for
+both bearers; `beliefDesire.js`'s `reverse()` carries the second-order recognition node
+(consummate-and-retire on the new-tutor side; `kind` ∈ {`premature`, `inverted`, `mutual`}); the
+`/subject` surface shows the tutor's compiled desire in the T card (the §5 asymmetry, alongside the
+learner's mirror-binding) and the reversal kind in the reversal panel. marrick / lantern / ai-syllabus
+carry `motivation:` blocks; `validateWorld` passes them through; `buildSubjectState` takes an optional
+`learnerDesireNodes` injection (default = the generic proof-pattern seed) so the authored desire feeds the
+subject without `beliefDesire.js` importing `characterDesire.js`; and the live `learnerSystem` renders from
+the block behind a prose fallback (`learnerVoiceForWorld`). The v0.1 checks still hold — the §5 round-trip
+reproduces marrick's `learner_voice` with nothing left over, and the seeded learner desire-DAG opens
+mirror-bound (`binding = verrell`). Tests: `tests/dramaticDerivationCharacterDesire.test.js` 9/9,
+`tests/dramaticDerivationBeliefDesire.test.js` 9/9; regressions green (worlds 84/84, derivation:test 66/66,
+derivation:smoke 4/4, adaptive cell smoke 8 rows, whole-repo lint).
 
-**Next:** (1) wire `renderMotivationLines` into the live `learnerSystem` (the LLM prompt renders from the
-block, behind a fallback to the prose `voice`); (2) feed the dynamics (`mirror_pull`/`overreach`/`arc`)
-into the engine's binding-migration and assertion timing; (3) author `motivation:` for the other featured
-worlds (lantern, the AI syllabus). None of these touches the round-trip already proven here.
+**Next (open):** (1) the `mutual` reversal branch is reachable but **unexercised** by the authored worlds
+(all three tutors are non-seeking) — author a world whose tutor also seeks a verdict to exercise it; (2)
+drift-couple `mirror_pull` / `overreach` to the live `learner_drift` channel (still static + an `arc` hint);
+(3) the director's motivation knob (§8). The per-node `statement.bearer` relabel inside `reverse()` remains
+the noted follow-up.
