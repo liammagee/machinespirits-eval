@@ -1624,8 +1624,8 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   });
   // GET /board is the LIVE development board: a read-only render of the workplan
   // (workplan/items/, via the generated workplan/board.json). Regenerate with
-  // `npm run wp:render`. The historical 2026-06-06 static snapshot of TODO.md is
-  // still reachable at /board-doc. Originates no claims — durable results live in
+  // `npm run wp:render`. The project's historical arc now lives in the Project
+  // history band on /timeline. Originates no claims — durable results live in
   // /summary + the paper; workplan/items/ is the source of truth.
   app.get('/board', (_req, res) => res.type('html').send(renderWorkplanBoardHtml()));
   app.get('/api/workplan', (_req, res) => res.json(readWorkplanBoard()));
@@ -1767,22 +1767,6 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
         .type('text')
         .send('timeline error: ' + err.message);
     }
-  });
-  app.get('/board-doc', (_req, res) => {
-    const notePath = path.resolve(ROOT, 'notes/poetics/2026-06-06-development-board.html');
-    if (!fs.existsSync(notePath)) return res.status(404).type('text').send('development-board note not found');
-    // The static note has no nav rail, so without this it is a dead end. Inject a
-    // prominent top bar at serve time (source file untouched) so reviewers can get
-    // back to the live board or the dashboard — and know this copy is read-only.
-    let html = fs.readFileSync(notePath, 'utf8');
-    const back =
-      '<div style="position:fixed;top:0;left:0;right:0;z-index:99999;display:flex;gap:12px;align-items:center;font:13px/1 ui-monospace,SFMono-Regular,monospace;background:#3a342b;color:#f4efe0;padding:9px 16px;box-shadow:0 2px 12px rgba(28,22,16,.3)">' +
-      '<span style="opacity:.72">archived board snapshot · 2026-06-06 — read-only</span>' +
-      '<a href="/board" title="Back to the live, editable board" style="margin-left:auto;color:#3a342b;background:#f4efe0;border:1px solid #cbbb98;padding:5px 12px;border-radius:6px;text-decoration:none">← live board</a>' +
-      '<a href="/" title="Back to the dashboard" style="color:#f4efe0;border:1px solid #cbbb98;padding:5px 12px;border-radius:6px;text-decoration:none">dashboard</a>' +
-      '</div><div aria-hidden="true" style="height:42px"></div>';
-    html = /<body[^>]*>/i.test(html) ? html.replace(/(<body[^>]*>)/i, `$1${back}`) : back + html;
-    res.type('html').send(html);
   });
   app.get('/derivation', (req, res) =>
     res.type('html').send(renderDerivationIndexHtml(listDerivationRuns(), req.query || {})),
@@ -2286,14 +2270,14 @@ const NAV_PRIMARY = ['home'];
 const NAV_GROUPS = [
   ['make', ['compose', 'runs', 'tutor']],
   ['read &amp; judge', ['read', 'browse', 'derivation', 'replays', 'rubric', 'adjudicate', 'pilot-admin']],
-  ['keep', ['board', 'timeline', 'ontology', 'curriculum', 'summary', 'theory', 'blueprint', 'story', 'repertoire']],
+  ['keep', ['board', 'timeline', 'ontology', 'curriculum', 'theory', 'blueprint', 'summary', 'story', 'repertoire']],
 ];
 // Same three acts for the mobile drawer; `home` is rendered as a flat link above
 // these groups in railHtml.
 const NAV_DRAWER_GROUPS = [
   ['Make', ['compose', 'runs', 'tutor']],
   ['Read &amp; judge', ['read', 'browse', 'derivation', 'replays', 'rubric', 'adjudicate', 'pilot-admin']],
-  ['Keep', ['board', 'timeline', 'ontology', 'curriculum', 'summary', 'theory', 'blueprint', 'story', 'repertoire']],
+  ['Keep', ['board', 'timeline', 'ontology', 'curriculum', 'theory', 'blueprint', 'summary', 'story', 'repertoire']],
 ];
 
 // A per-page orientation band (the `hint` slot of railHtml): "<b>here</b> — what",
@@ -8737,7 +8721,7 @@ ${railHtml({
 })}
 <main>
 	  ${err}
-	  <div class="blurb">The live development board, rendered from <code>workplan/</code> (${gen}). <b>Click a card to edit · drag between lanes to move · <span style="font-weight:700">+</span> to add · delete from the editor</b> — every change writes to <code>workplan/items/</code> and re-renders. Source of truth is <code>workplan/items/</code>. The historical 2026-06-06 snapshot is at <a href="/board-doc">/board-doc</a> · API: <a href="/api/workplan">/api/workplan</a>.</div>
+	  <div class="blurb">The live development board, rendered from <code>workplan/</code> (${gen}). <b>Click a card to edit · drag between lanes to move · <span style="font-weight:700">+</span> to add · delete from the editor</b> — every change writes to <code>workplan/items/</code> and re-renders. Source of truth is <code>workplan/items/</code>. Project history → <a href="/timeline#project-history">/timeline</a> · API: <a href="/api/workplan">/api/workplan</a>.</div>
 	  <div class="board-tools">
 	    <button type="button" class="wpm__btn" id="wp-refresh">Refresh from disk</button>
 	    <button type="button" class="wpm__btn" id="wp-expand-all">Expand all</button>
@@ -9193,6 +9177,20 @@ ${TIMELINE_VIZ_CSS}
 .tlv-v__h{ display:flex; align-items:center; gap:9px; flex-wrap:wrap; }
 .tlv-v__t{ font:600 14px Georgia,serif; color:var(--ink); }
 .tlv-v__date{ margin-left:auto; font:11px ui-monospace,monospace; color:var(--ink-4); }
+.tl-history{ margin:34px 0 0; border-top:1px solid var(--rule); padding-top:22px; }
+.tl-history__h{ font:600 17px Georgia,serif; color:var(--ink); margin:0 0 6px; }
+.tl-history__intro{ font-size:13px; color:var(--ink-3); max-width:74ch; margin:0 0 18px; border-left:3px solid var(--ochre-d,var(--moss)); background:var(--paper-4); padding:9px 14px; }
+.tl-history__intro a{ color:var(--moss-deep); }
+.tlh{ position:relative; padding:2px 0 0; }
+.tlh__spine{ position:absolute; left:9px; top:8px; bottom:12px; width:2px; background:var(--rule); }
+.tlh__row{ position:relative; padding:0 0 18px 30px; }
+.tlh__node{ position:absolute; left:2px; top:4px; width:16px; height:16px; border-radius:50%; border:3px solid var(--moss); background:var(--paper); box-sizing:border-box; }
+.tlh__h{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+.tlh__t{ font:600 14px Georgia,serif; color:var(--ink); }
+.tlh__tag{ font:10px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-4); border:1px solid var(--rule-soft); border-radius:10px; padding:0 7px; }
+.tlh__when{ margin-left:auto; font:11px ui-monospace,monospace; color:var(--ink-4); }
+.tlh__d{ font-size:13px; color:var(--ink-3); line-height:1.55; margin:4px 0 0; max-width:80ch; }
+.tlh__d a{ color:var(--moss-deep); } .tlh__d code{ font:12px ui-monospace,monospace; }
 `;
 
 const TIMELINE_MODAL = `<div class="msm" id="msm" hidden>
@@ -9279,6 +9277,74 @@ async function gatherTimelineData() {
     };
   }
   return { items: board.items || [], milestones: loadMilestones(), github, generated: board.generated };
+}
+
+// The project's history before the live milestones below — the arcs that
+// graduated into paper-full-2.0.md and the workplan. Folded in from the retired
+// /board-doc snapshot (the 2026-06-06 TODO archive) so /timeline is the single
+// home for both deep history and forward milestones. Like that snapshot it
+// ORIGINATES no claims: every result digests a paper § or note that it links to.
+const PROJECT_HISTORY = [
+  {
+    when: '2025 – early 2026',
+    tag: 'experiments',
+    title: 'The factorial empirical arc',
+    body: 'The 2×2×2 base/recognition × single/multi-agent × scripted/dynamic-learner design and its ablations — cells 1–125 across placebo, enhanced-prompt, memory-isolation and mechanism-variant sweeps. The settled result: the active ingredient is <b>intersubjective-orientation family membership</b>, not Hegelian vocabulary (between-family d ≈ 1.38). Detail: <a href="/summary">/summary</a> and paper §1, §6.',
+  },
+  {
+    when: 'early 2026',
+    tag: 'research',
+    title: 'Mechanism decomposition',
+    body: 'Why does recognition help? The lexical channel is closed — vocabulary is a marker, not a mediator; the insight–action gap resists every lightweight bridge, moved only by expensive best-of-N search (Finding 11); the suspicious &gt; adversary &gt; advocate disposition gradient is architecture-specific, not universal (§6.6.8).',
+  },
+  {
+    when: 'spring 2026',
+    tag: 'research',
+    title: 'The adaptation nulls (§6.8–6.12)',
+    body: 'Can the tutor read the learner&#39;s concealed interior? A run of trap-scenario and theory-of-mind probes returned largely null — the model already infers what is derivable, so re-encoding it adds no signal. Adaptation relocated from <i>reading interiors</i> to <i>governing conduct</i>.',
+  },
+  {
+    when: 'spring 2026',
+    tag: 'poetics',
+    title: 'The dramatic-recognition turn',
+    body: 'Staging the tutoring dialogue as a short play and reading it as a literary critic would — scoring dramatic form (peripeteia + anagnorisis) at the whole-transcript level. Phase-2 transfer to tutoring transcripts failed (weighted κ ≈ 0.04): the instrument classifies <b>dramatic form, not mind-reading</b>. Notes: <a href="/story">/story</a>.',
+  },
+  {
+    when: 'June 2026',
+    tag: '§6.13',
+    title: 'The dramatic-derivation arc',
+    body: 'A tutoring drama whose plot is the proof-DAG of a contingent secret, with mechanical &ldquo;grounded anagnorisis&rdquo; verdicts — a bounded positive on tutor conduct-governance. Authority moved into the tutor&#39;s own superego and a one-step repair clause grounded the first dialled-up arm, but the pacing lift is scheduling discipline, not latent proof-state, and the guards are geometry-conditional (no single channel is universal; adaptive channel-selection is not established). Detail: <a href="/derivation">/derivation</a>, paper §6.13.',
+  },
+  {
+    when: 'June 2026',
+    tag: '§6.12',
+    title: 'Adaptation Plan 2.0 / 2.1',
+    body: 'A post-hoc, simulated, LLM-judged line governing localized strategy: a closed-loop contract preserves strict strategy-shift and wins quality, frozen-policy transfer holds cross-suite, and an adaptive-completion channel (Plan 2.1 Early Completion) is the strongest bounded positive. It does <b>not</b> overturn the §6.3 trajectory-slope null, and makes no human-learning claim.',
+  },
+  {
+    when: 'June 2026',
+    tag: 'mechanism',
+    title: 'Memory architecture (Shape B)',
+    body: 'Two live Writing Pads plus a retained learner-memory reserve. The first powered cross-session rich-memory screen came back null — consistent with the earlier memory nulls; not scaled. Detail: <code>MEMORY-ARCHITECTURE.md</code>.',
+  },
+  {
+    when: '2026-06-24',
+    tag: 'shipped',
+    title: 'The instrument &amp; build-out',
+    body: 'The research surfaces themselves: the Electron desktop Scriptorium (web-equivalent by construction), this project-management board + timeline, and the literature-triage pipeline. These shipped as the dated milestones shown above.',
+  },
+];
+
+function renderProjectHistoryHtml() {
+  const rows = PROJECT_HISTORY.map(
+    (h) =>
+      `<div class="tlh__row"><span class="tlh__node"></span><div class="tlh__h"><span class="tlh__t">${h.title}</span><span class="tlh__tag">${h.tag}</span><span class="tlh__when">${h.when}</span></div><p class="tlh__d">${h.body}</p></div>`,
+  ).join('');
+  return `<section class="tl-history" id="project-history">
+    <h2 class="tl-history__h">Project history</h2>
+    <p class="tl-history__intro">How the work got here — the arcs that graduated into the <a href="/summary">paper</a> and the workplan, folded in from the retired board snapshot. Most of it is finished, and that is the point of keeping it visible: <b>a closed experiment with a null result is a fence — it tells you which move not to make again.</b></p>
+    <div class="tlh"><span class="tlh__spine"></span>${rows}</div>
+  </section>`;
 }
 
 function renderTimelineHtml({ items = [], milestones = [], github = {}, generated = null } = {}) {
@@ -9408,11 +9474,12 @@ function renderTimelineHtml({ items = [], milestones = [], github = {}, generate
 <body>
 ${railHtml({ active: 'timeline', brand: 'project timeline', sub: 'milestones, dependencies & live GitHub activity', hint: orientBand('timeline', 'milestones with target dates + progress, linked to GitHub', 'edit items + deps on the board') })}
 <main>
-  <div class="blurb">Milestones from <code>workplan/milestones.yaml</code> (items reference them via <code>milestone:</code>), with live GitHub activity for ${repoHeader}.${generated ? ' Board generated ' + e(generated) + '.' : ''} <button class="chip" id="ms-new">+ new milestone</button></div>
+  <div class="blurb">Milestones from <code>workplan/milestones.yaml</code> (items reference them via <code>milestone:</code>), with live GitHub activity for ${repoHeader}.${generated ? ' Board generated ' + e(generated) + '.' : ''} <a href="#project-history">Project history</a> is below. <button class="chip" id="ms-new">+ new milestone</button></div>
   <div class="tl-grid">
     <div class="tl-left"><div id="tl-controls"></div><div id="tl-viz"></div><div id="tl-detail"></div><noscript>${msCards}</noscript>${unscheduled.length ? `<div class="tl-note">${unscheduled.length} item${unscheduled.length > 1 ? 's' : ''} not assigned to a milestone — assign on the <a href="/board">board</a>.</div>` : ''}</div>
     <aside class="tl-right"><div class="tl-panel"><h4>GitHub · ${repoHeader}</h4>${ghErr}<h5>Open PRs</h5><ul class="tl-list">${prRows}</ul><h5>Releases / tags</h5><ul class="tl-list">${relRows}</ul><h5>Recent commits</h5><ul class="tl-list">${commitRows}</ul></div></aside>
   </div>
+  ${renderProjectHistoryHtml()}
 </main>
 ${TIMELINE_MODAL}
 <script>window.__MS = ${JSON.stringify({ milestones }).replace(/</g, '\\u003c')};</script>
