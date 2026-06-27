@@ -214,6 +214,71 @@ export function renderMotivationLines(world, bearer = 'learner') {
   return [];
 }
 
+// --- drift: the dynamics made time-varying (§8 (a)) -------------------------
+
+const LEVEL_NUM = { low: 0.25, medium: 0.55, high: 0.85 };
+const clamp01 = (v) => Math.max(0, Math.min(1, v));
+const numToLevel = (v) => (v < 0.4 ? 'low' : v < 0.7 ? 'medium' : 'high');
+
+/**
+ * The learner's dynamics, made TIME-VARYING — the live realization of the `arc`
+ * hint (CHARACTER-DESIRE.md §8 (a)). The authored `mirror_pull` / `overreach`
+ * are a *baseline* the `arc` moves as the proof advances: `softens` decays them
+ * toward release, `hardens` intensifies them (the dogmatic learner digs in),
+ * `static` holds. A live `learnerDrift` state — the PUBLIC social-stance channel
+ * (`learnerDrift.js`) — nudges them further: high pressure / defensive reversion
+ * push back toward the mirror; releasing / owned revision let go. Pure and
+ * leak-safe: only the public proof DISTANCE and the public drift mode feed it,
+ * never the secret or proof control.
+ */
+export function driftedDynamics(world, { heldFacts = [], driftState = null } = {}) {
+  const m = world?.motivation?.learner;
+  if (!m) return null;
+  const fo = m.first_order || {};
+  const disp = m.disposition || {};
+  const arc = ARCS.has(disp.arc) ? disp.arc : 'static';
+  const baseMirror = LEVEL_NUM[level(fo.mirror_pull, 'low')];
+  const baseOver = LEVEL_NUM[level(disp.overreach, 'low')];
+
+  const init = derivationDistance(world, []);
+  const dist = derivationDistance(world, heldFacts);
+  const progress =
+    Number.isFinite(init) && init > 0 && Number.isFinite(dist)
+      ? clamp01(1 - dist / init)
+      : Number.isFinite(dist) && dist === 0
+        ? 1
+        : 0;
+
+  const arcShift = (base) =>
+    arc === 'softens' ? base * (1 - progress) : arc === 'hardens' ? base + (1 - base) * progress : base;
+  let mirror = arcShift(baseMirror);
+  let over = arcShift(baseOver);
+
+  // learnerDrift coupling — public social stance only, never proof control
+  const coupled = Boolean(driftState && driftState.publicOnly === true && driftState.mayOverrideProofControl === false);
+  if (coupled) {
+    if (driftState.pressure === 'high') over += 0.15;
+    if (driftState.pressure === 'releasing' || driftState.pressure === 'low') {
+      mirror -= 0.15;
+      over -= 0.1;
+    }
+    if (driftState.mode === 'defensive_reversion') mirror += 0.15;
+    if (driftState.mode === 'reluctant_owned_revision' || driftState.mode === 'watchful_softening') mirror -= 0.15;
+  }
+  mirror = clamp01(mirror);
+  over = clamp01(over);
+
+  return {
+    arc,
+    progress,
+    base: { mirrorPull: level(fo.mirror_pull, 'low'), overreach: level(disp.overreach, 'low') },
+    mirrorPull: { level: numToLevel(mirror), value: mirror },
+    overreach: { level: numToLevel(over), value: over },
+    driftMode: coupled ? driftState.mode : null,
+    coupledToDrift: coupled,
+  };
+}
+
 const PULL_THRESHOLD = { high: 0, medium: 1, low: 2 };
 
 /**
@@ -221,21 +286,28 @@ const PULL_THRESHOLD = { high: 0, medium: 1, low: 2 };
  * mirror (opens_on) and migrates to the truth as the proof advances, gated by
  * mirror_pull (high clings until the secret grounds; lower lets go sooner). Also
  * reports the overreach tension — apt to assert the current binding ahead of it.
+ *
+ * §8 (a): pass `{ drift: true }` (or a live `driftState`) to gate migration on
+ * the TIME-VARYING pull/overreach instead of the authored baseline — a `softens`
+ * learner then lets go a step before grounding, a `hardens` learner clings past
+ * it. Default (no opts) keeps the static disposition.
  */
-export function learnerBindingAtTurn(world, heldFacts = []) {
+export function learnerBindingAtTurn(world, heldFacts = [], { driftState = null, drift = false } = {}) {
   const m = world?.motivation?.learner;
   const fo = m?.first_order;
   if (!fo) return null;
   const secretFact = world.secret.fact;
   const truth = secretFact[secretFact.length - 1];
   const opensOn = fo.opens_on ?? null;
-  const pull = fo.mirror_pull || 'low';
   const dist = derivationDistance(world, heldFacts);
   const secretGrounded = entails(heldFacts, world.rules, secretFact);
+  const drifted = drift || driftState ? driftedDynamics(world, { heldFacts, driftState }) : null;
+  const pull = drifted ? drifted.mirrorPull.level : fo.mirror_pull || 'low';
+  const overreachHigh = drifted ? drifted.overreach.level === 'high' : m.disposition?.overreach === 'high';
   const threshold = PULL_THRESHOLD[pull] ?? 2;
   const migrated = secretGrounded || (Number.isFinite(dist) && dist <= threshold);
   const binding = migrated ? truth : opensOn;
-  const overreachTempted = m.disposition?.overreach === 'high' && !secretGrounded && binding != null;
+  const overreachTempted = overreachHigh && !secretGrounded && binding != null;
   return {
     binding,
     opensOn,
@@ -244,6 +316,16 @@ export function learnerBindingAtTurn(world, heldFacts = []) {
     mirrorPull: pull,
     overreachTempted,
     derivationDistance: Number.isFinite(dist) ? dist : null,
+    drifted: drifted
+      ? {
+          progress: drifted.progress,
+          mirrorPull: drifted.mirrorPull.level,
+          overreach: drifted.overreach.level,
+          base: drifted.base,
+          arc: drifted.arc,
+          coupledToDrift: drifted.coupledToDrift,
+        }
+      : null,
   };
 }
 

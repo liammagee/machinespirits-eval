@@ -200,5 +200,6 @@ export {
   compileTutorDesire,
   renderMotivationLines,
   learnerBindingAtTurn,
+  driftedDynamics,
   learnerVoiceForWorld,
 } from './characterDesire.js';

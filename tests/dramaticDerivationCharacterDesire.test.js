@@ -9,6 +9,7 @@ import {
   compileTutorDesire,
   renderMotivationLines,
   learnerBindingAtTurn,
+  driftedDynamics,
   learnerVoiceForWorld,
 } from '../services/dramaticDerivation/characterDesire.js';
 
@@ -141,4 +142,57 @@ test('world-017: a recognition-seeking tutor yields a MUTUAL reversal on authore
   // the injection is LOAD-BEARING: without it the same world inverts (proves part B is needed)
   const sNoInject = buildSubjectState(saintcloud, { learnerHeld: fullPath, learnerDesireNodes: learnerNodes });
   assert.equal(reverse(sNoInject, { surpassed: 'T' }).kind, 'inverted');
+});
+
+test('driftedDynamics: a softens learner decays from its authored baseline as the proof advances (§8a)', () => {
+  const atStart = driftedDynamics(marrick, { heldFacts: [] });
+  assert.equal(atStart.base.mirrorPull, 'high'); // the authored baseline
+  assert.equal(atStart.arc, 'softens');
+  assert.equal(atStart.progress, 0);
+  assert.equal(atStart.mirrorPull.level, 'high'); // at the curtain, the pull IS the baseline
+  const late = driftedDynamics(marrick, { heldFacts: pathFactsByTurn(marrick, 18) }); // dist 1 → progress ~0.83
+  assert.ok(late.progress > 0.7);
+  assert.equal(late.mirrorPull.level, 'low'); // softened toward release as the evidence accrued
+  assert.ok(late.mirrorPull.value < atStart.mirrorPull.value);
+});
+
+test('driftedDynamics: a live learnerDrift state nudges the pull, but only when public + proof-safe (§8a)', () => {
+  const held = pathFactsByTurn(marrick, 12); // mid-proof
+  const plain = driftedDynamics(marrick, { heldFacts: held });
+  const defensive = driftedDynamics(marrick, {
+    heldFacts: held,
+    driftState: { publicOnly: true, mayOverrideProofControl: false, mode: 'defensive_reversion', pressure: 'high' },
+  });
+  assert.equal(defensive.coupledToDrift, true);
+  assert.ok(defensive.mirrorPull.value > plain.mirrorPull.value); // digs back toward the mirror
+  const releasing = driftedDynamics(marrick, {
+    heldFacts: held,
+    driftState: {
+      publicOnly: true,
+      mayOverrideProofControl: false,
+      mode: 'reluctant_owned_revision',
+      pressure: 'releasing',
+    },
+  });
+  assert.ok(releasing.mirrorPull.value < plain.mirrorPull.value); // lets go sooner
+  // an unsafe (non-public, or proof-control-claiming) drift state NEVER couples
+  const unsafe = driftedDynamics(marrick, {
+    heldFacts: held,
+    driftState: { publicOnly: false, mode: 'defensive_reversion', pressure: 'high' },
+  });
+  assert.equal(unsafe.coupledToDrift, false);
+  assert.equal(unsafe.mirrorPull.value, plain.mirrorPull.value);
+});
+
+test('learnerBindingAtTurn: drift makes the softens learner let go a step BEFORE grounding (vs the static baseline)', () => {
+  const at18 = pathFactsByTurn(marrick, 18); // dist 1 — one step short of grounding
+  const stat = learnerBindingAtTurn(marrick, at18); // static default: the high pull clings
+  assert.equal(stat.binding, 'verrell');
+  assert.equal(stat.migrated, false);
+  assert.equal(stat.drifted, null); // no drift readout unless requested
+  const drifted = learnerBindingAtTurn(marrick, at18, { drift: true }); // the softened pull releases early
+  assert.equal(drifted.binding, 'edony');
+  assert.equal(drifted.migrated, true);
+  assert.equal(drifted.drifted.mirrorPull, 'low');
+  assert.ok(drifted.drifted.progress > 0.7);
 });
