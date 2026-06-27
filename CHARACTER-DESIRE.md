@@ -176,11 +176,17 @@ completes on both, but `premature` is _not_ the δ-axis `stalled`: precondition-
   `statement.bearer` with the swap (`Des_L → Des_T`), so a node reads the role it occupies, not its person
   of origin (the retired recognition is filtered by predicate, since the node objects are now replaced).
 
-**Still open:** the recognition-content vector relabel (recogniser/recognised) inside `reverse()` — the
-layer below (c); **authority resolution** (`second_order.from` → its D-authoriser + Weber mode is recorded
-but not resolved into a separate node); the paid S-underivability screen for `world-017-saintcloud` (unrun
-— a `/subject`-demo world, not cleared for a generation run); and drift-coupling on a *live* run (the
-`learnerDrift` nudge is wired + tested but exercised only on the deterministic arc in `/subject`).
+**Done (a second pass).** The **recognition-content vector relabel** — `reverse()`'s `relabelBearer` now
+flips a recognition's recogniser/recognised with the swap (bearers T/L swap; a D-figure recogniser is
+fixed, since D does not swap; the standing is unchanged), so a mutual reversal's new learner reads
+`Rec_council(L, master)`, not the stale `Rec_council(T, master)`. And **authority resolution** —
+`recognitionNode` now resolves the recogniser-figure's standing as delegated from D (§11a):
+`authority.delegation = auth_D(figure) @ mode` + `authority.forceBelief = Bel_recognised(auth_D(figure))`,
+kept consistent under the swap; the `/subject` recognition lines show "authority delegated from D · mode".
+
+**Still open:** the paid S-underivability screen for `world-017-saintcloud` (unrun — a `/subject`-demo
+world, not cleared for a generation run); and drift-coupling on a *live* run (the `learnerDrift` nudge is
+wired + tested but exercised only on the deterministic arc in `/subject`). Both need a real LLM key.
 
 **Built + tested.** `characterDesire.js`: `compileLearnerDesire` / `compileTutorDesire` /
 `compileDirectorDesire`, `renderMotivationLines(world, bearer)` for all three bearers, `driftedDynamics`,
