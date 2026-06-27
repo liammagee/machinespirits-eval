@@ -23,6 +23,7 @@ import { loadWorld } from './dramaticDerivation/world.js';
 import { derivationDistance } from './dramaticDerivation/slope.js';
 import { factKey, closure, entails } from './dramaticDerivation/chainer.js';
 import { buildSubjectState, buildTutorDesireDag, reverse } from './dramaticDerivation/beliefDesire.js';
+import { compileLearnerDesire, learnerBindingAtTurn } from './dramaticDerivation/characterDesire.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const WORLDS_DIR = path.join(__dirname, '..', 'config', 'drama-derivation');
@@ -197,7 +198,15 @@ export function subjectExplorerData(stem, { turn = 0, reversed = false, wiring =
   const t = Math.max(0, Math.min(Number(turn) || 0, cap));
   const { soFar, now } = releasedByTurn(world, t);
   const heldFacts = soFar.map((id) => world.premiseById.get(id)?.fact).filter(Boolean);
-  const subject = buildSubjectState(world, { learnerHeld: heldFacts, releasedPremiseIds: soFar });
+  // CHARACTER-DESIRE.md: when a `motivation:` block is authored, seed the learner's desire from it
+  // (opens mirror-bound) and track the binding migrating to the truth as the proof advances.
+  const characterDesire = world.motivation?.learner ? compileLearnerDesire(world) : null;
+  const binding = characterDesire ? learnerBindingAtTurn(world, heldFacts) : null;
+  const subject = buildSubjectState(world, {
+    learnerHeld: heldFacts,
+    releasedPremiseIds: soFar,
+    learnerDesireNodes: characterDesire?.nodes,
+  });
 
   const heldKeys = new Set(subject.L.belief.nodes.map((n) => factKey(n.statement.content)));
   const tutorDag = buildTutorDesireDag(world);
@@ -231,6 +240,14 @@ export function subjectExplorerData(stem, { turn = 0, reversed = false, wiring =
     releasedSoFar: soFar,
     derivationDistance: Number.isFinite(dist) ? dist : null,
     secretGrounded: subject.L.belief.secretGrounded,
+    scriptDesire: binding
+      ? {
+          ...binding,
+          questionInWords: (world.question || '').replace(/\?+\s*$/u, '').trim(),
+          recogniser: world.motivation.learner.second_order?.from || null,
+          standing: world.motivation.learner.second_order?.as || null,
+        }
+      : null,
     narration: buildNarration(world, t),
     move: tutorMove(world, t, wiring === 'ego' ? 'ego' : 'es'),
     subject,
@@ -328,6 +345,19 @@ export function renderStage(stem, opts = {}) {
     .slice(0, 16);
   const mLT = subject.L.models.T;
 
+  const sd = d.scriptDesire;
+  const scriptDesireHtml = sd
+    ? `<p class="muted" style="margin-top:8px;">desire (compiled from the script outline):</p>
+       <ul>
+         <li>first-order: wants to answer <i>"${esc(sd.questionInWords)}"</i> — bound to <b>${esc(sd.binding)}</b> ${
+           sd.migrated
+             ? '<span class="tag" style="color:var(--done-line)">✓ migrated to the truth</span>'
+             : `<span class="tag">the mirror, not yet the truth (${esc(sd.opensOn)} → ${esc(sd.truth)})</span>`
+         }${sd.overreachTempted ? ' · <b style="color:#b5562e">⚠ tempted to assert it early (overreach)</b>' : ''}</li>
+         ${sd.recogniser ? `<li>second-order: wants <b>${esc(sd.recogniser)}</b> to find it <b>${esc(sd.standing)}</b></li>` : ''}
+       </ul>`
+    : '';
+
   const moveHtml = `
     <section class="card move">
       <h3>The tutor's move now <span class="tag">· wiring: ${move.wiring === 'ego' ? 'ego only' : 'ego + superego'}</span></h3>
@@ -369,6 +399,7 @@ export function renderStage(stem, opts = {}) {
       <section class="card">
         <h3>L — learner (belief · desire · model of the tutor)</h3>
         <p class="muted">grounded so far:</p>${list(learnerBeliefs)}
+        ${scriptDesireHtml}
         <p class="muted" style="margin-top:8px;">𝔐_L(T) — reads the tutor's want; cannot see the secret <span class="tag">secret hidden: ${!mLT.audit.secretIncluded}</span></p>
       </section>
       <section class="card">
