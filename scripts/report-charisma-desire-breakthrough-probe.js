@@ -174,7 +174,8 @@ function isGeneratedLearnerTurn({ scenario, log, turnIndex }) {
   if (turn.learnerMessageGenerated === true) return true;
   const dynamicArchitecture = log?.learnerArchitecture === 'ego_superego';
   const noScriptedAction = !turn.learnerAction;
-  const differsFromScript = normalizeText(turn.learnerMessage) !== normalizeText(scriptedLearnerMessage(scenario, turnIndex));
+  const differsFromScript =
+    normalizeText(turn.learnerMessage) !== normalizeText(scriptedLearnerMessage(scenario, turnIndex));
   return dynamicArchitecture && noScriptedAction && differsFromScript;
 }
 
@@ -387,13 +388,19 @@ function buildReport({ generatedAt, scenarioErrors, analyses }) {
   lines.push('- No generation and no judge calls.');
   lines.push(`- Scenario: \`${SCENARIO_ID}\`.`);
   lines.push('- Outcome unit: local transition, not whole dialogue and not tutor charisma alone.');
-  lines.push('- Required transition: generated resistant learner signal -> `charismatic_challenge` tutor turn -> generated learner uptake.');
+  lines.push(
+    '- Required transition: generated resistant learner signal -> `charismatic_challenge` tutor turn -> generated learner uptake.',
+  );
   lines.push('- Resistance gate: boredom, frustration, irrelevance, excessive questioning, and rote parroting.');
   lines.push('- Scripted learner uptake is marked `scripted_not_outcome_evaluable`.');
   lines.push('');
   lines.push('## Validation');
   lines.push('');
-  lines.push(scenarioErrors.length ? scenarioErrors.map((error) => `- ${error}`).join('\n') : '- Scenario shape and router expectations pass.');
+  lines.push(
+    scenarioErrors.length
+      ? scenarioErrors.map((error) => `- ${error}`).join('\n')
+      : '- Scenario shape and router expectations pass.',
+  );
   lines.push('');
   lines.push('## Rows');
   lines.push('');

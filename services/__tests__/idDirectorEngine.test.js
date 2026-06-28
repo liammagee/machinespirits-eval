@@ -1258,7 +1258,10 @@ describe('runIdDirectedTurn', () => {
       /<agency_return_charisma_floor_mode>\s*accountable_bid_transfer_plain_split_check_anchor_live_persist/,
     );
     assert.equal(result.agencyReturnCharismaFloor, true);
-    assert.equal(result.agencyReturnCharismaFloorMode, 'accountable_bid_transfer_plain_split_check_anchor_live_persist');
+    assert.equal(
+      result.agencyReturnCharismaFloorMode,
+      'accountable_bid_transfer_plain_split_check_anchor_live_persist',
+    );
     assert.equal(result.agencyReturnVerification.passes, true);
     assert.equal(result.agencyReturnRepaired, false);
   });
@@ -1354,7 +1357,8 @@ describe('runIdDirectedTurn', () => {
         content: JSON.stringify({
           passes: true,
           move_type: 'resay',
-          reason: 'The draft gives a compact say-back and two checks without repeating an example or returning to theory names.',
+          reason:
+            'The draft gives a compact say-back and two checks without repeating an example or returning to theory names.',
           agency_return_append: '',
           repaired_response: '',
         }),
@@ -2051,8 +2055,7 @@ describe('runIdDirectedTurn', () => {
         usage: { inputTokens: 10, outputTokens: 20 },
       },
       {
-        content:
-          'Park questions two and three. Commit provisionally to whether refusal, not resistance, is the hinge.',
+        content: 'Park questions two and three. Commit provisionally to whether refusal, not resistance, is the hinge.',
         usage: { inputTokens: 30, outputTokens: 40 },
       },
     );
@@ -2129,8 +2132,7 @@ describe('runIdDirectedTurn', () => {
     const result = await runIdDirectedTurn({
       learnerId: 'l',
       sessionId: 's',
-      learnerMessage:
-        'This still feels like I am parroting the formula: desire, recognition, master, servant, work.',
+      learnerMessage: 'This still feels like I am parroting the formula: desire, recognition, master, servant, work.',
       history: [{ speaker: 'tutor', message: 'Step one, step two, then test the reversal.' }],
       tutorProfileName: 'cell_190_test',
       topic: 'Lecture 3 on recognition and the master-servant dialectic',
@@ -2199,8 +2201,7 @@ describe('runIdDirectedTurn', () => {
     const result = await runIdDirectedTurn({
       learnerId: 'l',
       sessionId: 's',
-      learnerMessage:
-        'Why does risk matter? Why does work educate? Why does forced recognition not count?',
+      learnerMessage: 'Why does risk matter? Why does work educate? Why does forced recognition not count?',
       history: [{ speaker: 'tutor', message: 'Step one, step two, then test the reversal.' }],
       tutorProfileName: 'cell_191_test',
       topic: 'Lecture 3 on recognition and the master-servant dialectic',
@@ -2270,8 +2271,7 @@ describe('runIdDirectedTurn', () => {
     const result = await runIdDirectedTurn({
       learnerId: 'l',
       sessionId: 's',
-      learnerMessage:
-        'Why does risk matter? Why does work educate? Why does forced recognition not count?',
+      learnerMessage: 'Why does risk matter? Why does work educate? Why does forced recognition not count?',
       history: [{ speaker: 'tutor', message: 'Step one, step two, then test the reversal.' }],
       tutorProfileName: 'cell_192_test',
       topic: 'Lecture 3 on recognition and the master-servant dialectic',
@@ -2342,8 +2342,7 @@ describe('runIdDirectedTurn', () => {
     const result = await runIdDirectedTurn({
       learnerId: 'l',
       sessionId: 's',
-      learnerMessage:
-        'This still feels dead to me, like I am copying a mechanism instead of seeing it.',
+      learnerMessage: 'This still feels dead to me, like I am copying a mechanism instead of seeing it.',
       history: [{ speaker: 'tutor', message: 'Step one, step two, then test the reversal.' }],
       tutorProfileName: 'cell_193_test',
       topic: 'Lecture 3 on recognition and the master-servant dialectic',
@@ -2416,8 +2415,7 @@ describe('runIdDirectedTurn', () => {
     const result = await runIdDirectedTurn({
       learnerId: 'l',
       sessionId: 's',
-      learnerMessage:
-        'Why this sequence, why this passage, and what am I supposed to do with any of it?',
+      learnerMessage: 'Why this sequence, why this passage, and what am I supposed to do with any of it?',
       history: [{ speaker: 'tutor', message: 'Step one, step two, then test the reversal.' }],
       tutorProfileName: 'cell_194_test',
       topic: 'Lecture 3 on recognition and the master-servant dialectic',

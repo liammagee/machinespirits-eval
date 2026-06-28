@@ -125,8 +125,12 @@ function main() {
   const targetRobustness = grouped.filter(
     (row) => row.profile_name === TARGET_PROFILE && ROBUSTNESS_SCENARIOS.includes(row.scenario_id),
   );
-  const targetPrimaryValidationClean = targetPrimary.every((row) => row.required_ok === row.n && row.forbidden_ok === row.n);
-  const targetWeakRobustness = targetRobustness.filter((row) => Number(row.v22_first) < 80 || Number(row.charisma) < 70);
+  const targetPrimaryValidationClean = targetPrimary.every(
+    (row) => row.required_ok === row.n && row.forbidden_ok === row.n,
+  );
+  const targetWeakRobustness = targetRobustness.filter(
+    (row) => Number(row.v22_first) < 80 || Number(row.charisma) < 70,
+  );
 
   const metadata = JSON.parse(run.metadata || '{}');
   const lines = [];
@@ -170,7 +174,18 @@ function main() {
   lines.push('');
   lines.push(
     markdownTable(
-      ['Kind', 'Scenario', 'Profile', 'n', 'v2.2 first', 'v2.2 last', 'v2.2 overall', 'charisma', 'required', 'forbidden'],
+      [
+        'Kind',
+        'Scenario',
+        'Profile',
+        'n',
+        'v2.2 first',
+        'v2.2 last',
+        'v2.2 overall',
+        'charisma',
+        'required',
+        'forbidden',
+      ],
       grouped.map((row) => [
         scenarioKind(row.scenario_id),
         row.scenario_id.replace('charisma_desire_', ''),
@@ -203,7 +218,10 @@ function main() {
   lines.push('');
   lines.push(
     `Cell 169 is clean on the primary validation gate: ${targetPrimaryValidationClean ? 'yes' : 'no'} (${targetPrimary
-      .map((row) => `${row.scenario_id.replace('charisma_desire_', '')} ${row.required_ok}/${row.n} required, ${row.forbidden_ok}/${row.n} forbidden`)
+      .map(
+        (row) =>
+          `${row.scenario_id.replace('charisma_desire_', '')} ${row.required_ok}/${row.n} required, ${row.forbidden_ok}/${row.n} forbidden`,
+      )
       .join('; ')}).`,
   );
   lines.push('');

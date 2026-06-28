@@ -17,12 +17,10 @@ const REPORT_PATH = path.join(ROOT, 'exports', 'charisma-desire-router-stage0-sa
 const ROUTER_PROFILE = 'cell_180_id_director_charisma_engagement_router_verified';
 const REPAIR_PROFILE = 'cell_181_id_director_charisma_engagement_router_contract_repair_verified';
 const SPLIT_REPAIR_PROFILE = 'cell_182_id_director_charisma_engagement_router_split_repair_verified';
-const TRANSFER_STAKE_PROFILE =
-  'cell_183_id_director_charisma_engagement_router_transfer_stake_repair_verified';
+const TRANSFER_STAKE_PROFILE = 'cell_183_id_director_charisma_engagement_router_transfer_stake_repair_verified';
 const TRANSFER_COMPRESSION_PROFILE =
   'cell_184_id_director_charisma_engagement_router_transfer_compression_guard_verified';
-const DYNAMIC_BREAKTHROUGH_PROFILE =
-  'cell_185_id_director_charisma_resistance_breakthrough_dynamic_verified';
+const DYNAMIC_BREAKTHROUGH_PROFILE = 'cell_185_id_director_charisma_resistance_breakthrough_dynamic_verified';
 
 function readYaml(filePath) {
   return yaml.parse(fs.readFileSync(filePath, 'utf8'));

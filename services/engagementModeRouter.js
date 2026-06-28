@@ -313,9 +313,17 @@ export function routeEngagementMode({
   };
 
   pushFlag(riskFlags, /\b(profound|impressive|admire|status)\b/i.test(message), 'status_display');
-  pushFlag(riskFlags, transferPatterns.some((pattern) => pattern.test(message)), 'transfer_avoidance');
+  pushFlag(
+    riskFlags,
+    transferPatterns.some((pattern) => pattern.test(message)),
+    'transfer_avoidance',
+  );
   pushFlag(riskFlags, /\b(hegel|master|servant|recognition|dialectic)\b/i.test(message), 'theory_drift');
-  pushFlag(riskFlags, vulnerabilityPatterns.some((pattern) => pattern.test(message)), 'over_challenge');
+  pushFlag(
+    riskFlags,
+    vulnerabilityPatterns.some((pattern) => pattern.test(message)),
+    'over_challenge',
+  );
 
   const priorInstructional = previousModes.includes('scaffolding') || previousModes.includes('clarity');
   const priorPlain = previousModes.includes('plain_compression') || previousModes.includes('lived_stakes_reentry');
@@ -383,7 +391,10 @@ export function routeEngagementMode({
     });
   }
 
-  if (plainPatterns.some((pattern) => pattern.test(current)) || simplificationPatterns.some((pattern) => pattern.test(current))) {
+  if (
+    plainPatterns.some((pattern) => pattern.test(current)) ||
+    simplificationPatterns.some((pattern) => pattern.test(current))
+  ) {
     return routedRegister({
       learner_signal: 'plain_language_request',
       selected_register: 'plain_compression',

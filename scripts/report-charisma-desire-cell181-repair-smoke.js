@@ -15,10 +15,7 @@ const REPORT_PATH = path.join(ROOT, 'exports', 'charisma-desire-cell181-repair-s
 const TARGET_PROFILE = 'cell_181_id_director_charisma_engagement_router_contract_repair_verified';
 const BASELINE_PROFILE = 'cell_180_id_director_charisma_engagement_router_verified';
 const BASELINE_RUN_IDS = ['eval-2026-06-27-bf8bc904', 'eval-2026-06-27-a9e8e0ed'];
-const SCENARIOS = [
-  'charisma_desire_ai_syllabus_transfer',
-  'charisma_desire_instruction_to_engagement_switch',
-];
+const SCENARIOS = ['charisma_desire_ai_syllabus_transfer', 'charisma_desire_instruction_to_engagement_switch'];
 const EXPECTED_REGISTERS = new Map([
   ['charisma_desire_ai_syllabus_transfer:0', 'transfer_grounding'],
   ['charisma_desire_ai_syllabus_transfer:1', 'transfer_grounding'],
@@ -191,9 +188,7 @@ function main() {
   const nearCell180V22 = SCENARIOS.every((scenarioId) => {
     const target = successRows.find((row) => row.scenario_id === scenarioId);
     const bestBaseline = Math.max(
-      ...baselines
-        .filter((row) => row.scenario_id === scenarioId)
-        .map((row) => Number(row.tutor_overall_score)),
+      ...baselines.filter((row) => row.scenario_id === scenarioId).map((row) => Number(row.tutor_overall_score)),
     );
     return target && Number(target.tutor_overall_score) >= bestBaseline - 5;
   });
@@ -261,7 +256,16 @@ function main() {
   lines.push('');
   lines.push(
     markdownTable(
-      ['Scenario', 'Cell 180 run', 'cell 180 v2.2', 'cell 181 v2.2', 'delta v2.2', 'cell 180 charisma', 'cell 181 charisma', 'delta charisma'],
+      [
+        'Scenario',
+        'Cell 180 run',
+        'cell 180 v2.2',
+        'cell 181 v2.2',
+        'delta v2.2',
+        'cell 180 charisma',
+        'cell 181 charisma',
+        'delta charisma',
+      ],
       comparisons.map((cmp) => [
         scenarioLabel(cmp.scenario_id),
         `\`${cmp.baseline_run_id}\``,
@@ -309,8 +313,12 @@ function main() {
   lines.push(`- No minimal-persona fallback: ${noMinimalPersonaFallback ? 'yes' : 'no'}`);
   lines.push(`- Router registers match expected switch/transfer pattern: ${registersMatch ? 'yes' : 'no'}`);
   lines.push(`- Agency-return verification passed on every turn: ${agencyReturnPasses ? 'yes' : 'no'}`);
-  lines.push(`- v2.2 remains within 5 points of the best existing cell 180 row per scenario: ${nearCell180V22 ? 'yes' : 'no'}`);
-  lines.push(`- Charisma improves over at least one existing cell 180 targeted row: ${charismaImprovesSomewhere ? 'yes' : 'no'}`);
+  lines.push(
+    `- v2.2 remains within 5 points of the best existing cell 180 row per scenario: ${nearCell180V22 ? 'yes' : 'no'}`,
+  );
+  lines.push(
+    `- Charisma improves over at least one existing cell 180 targeted row: ${charismaImprovesSomewhere ? 'yes' : 'no'}`,
+  );
   lines.push(`- Smoke gate: ${smokeGatePass ? 'pass' : 'fail'}`);
   lines.push('');
   lines.push('## Interpretation');

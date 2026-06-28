@@ -150,7 +150,8 @@ function makeSlices(rows, cache) {
       const group = profileGroup(row.profile_name);
       const expectedRegister =
         group === 'router_register_family' ? (turn === 0 ? 'scaffolding' : 'charismatic_challenge') : 'unrouted';
-      const register = traceTurn.engagementState?.selected_register || traceTurn.engagementState?.selected_mode || 'unrouted';
+      const register =
+        traceTurn.engagementState?.selected_register || traceTurn.engagementState?.selected_mode || 'unrouted';
       return {
         rowId: row.id,
         runId: row.run_id,
@@ -163,7 +164,12 @@ function makeSlices(rows, cache) {
         expectedRegister,
         registerHit: group === 'router_register_family' ? register === expectedRegister : null,
         learnerSignal: traceTurn.engagementState?.learner_signal || '',
-        agencyReturnPasses: traceTurn.agencyReturnVerification?.passes === true ? true : traceTurn.agencyReturnVerification ? false : null,
+        agencyReturnPasses:
+          traceTurn.agencyReturnVerification?.passes === true
+            ? true
+            : traceTurn.agencyReturnVerification
+              ? false
+              : null,
         parseOk: traceTurn.construction?.parse_status === 'ok' ? true : traceTurn.construction ? false : null,
         v22TurnScore: overallScore(tutorScores, turn),
         sliceCharisma: cached?.overall ?? null,
@@ -216,9 +222,15 @@ function aggregateRows(rows, keyFn) {
       tutorHolistic: mean(items.map((item) => item.tutor_holistic_overall_score)),
       learnerHolistic: mean(items.map((item) => item.learner_holistic_overall_score)),
       dialogueCharisma: mean(items.map((item) => item.tutor_charisma_overall_score)),
-      passesRequiredRate: mean(items.map((item) => (item.passes_required === 1 ? 1 : item.passes_required === 0 ? 0 : null))),
-      passesForbiddenRate: mean(items.map((item) => (item.passes_forbidden === 1 ? 1 : item.passes_forbidden === 0 ? 0 : null))),
-      holisticDims: Object.fromEntries(TUTOR_HOLISTIC_DIMS.map((dim) => [dim, mean(items.map((item) => holisticDim(item, dim)))])),
+      passesRequiredRate: mean(
+        items.map((item) => (item.passes_required === 1 ? 1 : item.passes_required === 0 ? 0 : null)),
+      ),
+      passesForbiddenRate: mean(
+        items.map((item) => (item.passes_forbidden === 1 ? 1 : item.passes_forbidden === 0 ? 0 : null)),
+      ),
+      holisticDims: Object.fromEntries(
+        TUTOR_HOLISTIC_DIMS.map((dim) => [dim, mean(items.map((item) => holisticDim(item, dim)))]),
+      ),
     }))
     .sort((a, b) => a.key.localeCompare(b.key));
 }
@@ -289,8 +301,7 @@ function buildDimensionContrast({ phaseAgg, deltaAgg }) {
       postDiff: routerPostValue != null && controlPostValue != null ? routerPostValue - controlPostValue : null,
       controlDelta: controlDeltaValue,
       routerDelta: routerDeltaValue,
-      deltaDiff:
-        routerDeltaValue != null && controlDeltaValue != null ? routerDeltaValue - controlDeltaValue : null,
+      deltaDiff: routerDeltaValue != null && controlDeltaValue != null ? routerDeltaValue - controlDeltaValue : null,
     };
   });
 }
@@ -325,17 +336,8 @@ function buildClaimSummary({ phaseAgg, deltaAgg }) {
 }
 
 function buildReport(data) {
-  const {
-    generatedAt,
-    rows,
-    slices,
-    phaseAgg,
-    profilePostAgg,
-    rowAgg,
-    deltaAgg,
-    dimensionContrast,
-    claimSummary,
-  } = data;
+  const { generatedAt, rows, slices, phaseAgg, profilePostAgg, rowAgg, deltaAgg, dimensionContrast, claimSummary } =
+    data;
 
   const lines = [];
   lines.push('# Charisma Desire Register-Effect Decomposition');
@@ -346,9 +348,13 @@ function buildReport(data) {
   lines.push('');
   lines.push('- No new cells, no generation, and no new model calls.');
   lines.push(`- Scenario: \`${SWITCH_SCENARIO}\`.`);
-  lines.push('- Unit: the same 15 existing switch-scenario rows and 30 tutor-turn slices used by the adaptation-slice audit.');
+  lines.push(
+    '- Unit: the same 15 existing switch-scenario rows and 30 tutor-turn slices used by the adaptation-slice audit.',
+  );
   lines.push(`- Slice-charisma source: \`${path.relative(ROOT, CACHE_PATH)}\`.`);
-  lines.push('- Question: if register routing did not create a unique charisma lift, did it change another observable?');
+  lines.push(
+    '- Question: if register routing did not create a unique charisma lift, did it change another observable?',
+  );
   lines.push('');
   lines.push('## Short Answer');
   lines.push('');
@@ -441,7 +447,15 @@ function buildReport(data) {
   lines.push('');
   lines.push(
     markdownTable(
-      ['Group', 'pairs', 'delta v2.2', 'delta charisma', 'delta adaptive responsiveness', 'delta recognition', 'delta elicitation'],
+      [
+        'Group',
+        'pairs',
+        'delta v2.2',
+        'delta charisma',
+        'delta adaptive responsiveness',
+        'delta recognition',
+        'delta elicitation',
+      ],
       deltaAgg.map((row) => [
         row.key,
         String(row.n),

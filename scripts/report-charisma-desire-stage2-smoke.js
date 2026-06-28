@@ -16,20 +16,34 @@ const BASELINE_PROFILE = 'cell_169_id_director_charisma_accountable_bid_clean_fl
 const TARGET_PROFILE = 'cell_170_id_director_charisma_accountable_bid_transfer_plain_floor_verified';
 const SCENARIOS = ['charisma_desire_ai_syllabus_transfer', 'charisma_desire_plain_language_stress'];
 const HISTORICAL_PROFILE_RENAMES = new Map([
-  ['cell_174_id_director_charisma_accountable_bid_transfer_plain_floor_verified',
-   'cell_170_id_director_charisma_accountable_bid_transfer_plain_floor_verified'],
-  ['cell_175_id_director_charisma_accountable_bid_transfer_plain_presence_floor_verified',
-   'cell_171_id_director_charisma_accountable_bid_transfer_plain_presence_floor_verified'],
-  ['cell_176_id_director_charisma_accountable_bid_transfer_plain_split_floor_verified',
-   'cell_172_id_director_charisma_accountable_bid_transfer_plain_split_floor_verified'],
-  ['cell_177_id_director_charisma_accountable_bid_transfer_plain_split_check_floor_verified',
-   'cell_173_id_director_charisma_accountable_bid_transfer_plain_split_check_floor_verified'],
-  ['cell_178_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_floor_verified',
-   'cell_174_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_floor_verified'],
-  ['cell_179_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_floor_verified',
-   'cell_175_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_floor_verified'],
-  ['cell_180_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_persist_floor_verified',
-   'cell_176_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_persist_floor_verified'],
+  [
+    'cell_174_id_director_charisma_accountable_bid_transfer_plain_floor_verified',
+    'cell_170_id_director_charisma_accountable_bid_transfer_plain_floor_verified',
+  ],
+  [
+    'cell_175_id_director_charisma_accountable_bid_transfer_plain_presence_floor_verified',
+    'cell_171_id_director_charisma_accountable_bid_transfer_plain_presence_floor_verified',
+  ],
+  [
+    'cell_176_id_director_charisma_accountable_bid_transfer_plain_split_floor_verified',
+    'cell_172_id_director_charisma_accountable_bid_transfer_plain_split_floor_verified',
+  ],
+  [
+    'cell_177_id_director_charisma_accountable_bid_transfer_plain_split_check_floor_verified',
+    'cell_173_id_director_charisma_accountable_bid_transfer_plain_split_check_floor_verified',
+  ],
+  [
+    'cell_178_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_floor_verified',
+    'cell_174_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_floor_verified',
+  ],
+  [
+    'cell_179_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_floor_verified',
+    'cell_175_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_floor_verified',
+  ],
+  [
+    'cell_180_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_persist_floor_verified',
+    'cell_176_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_persist_floor_verified',
+  ],
 ]);
 
 function canonicalizeRow(row) {
@@ -218,7 +232,11 @@ function main() {
   lines.push(
     markdownTable(
       ['Scenario', 'Profile', 'Excerpt'],
-      successRows.map((row) => [scenarioLabel(row.scenario_id), profileLabel(row.profile_name), firstMessageExcerpt(row.suggestions)]),
+      successRows.map((row) => [
+        scenarioLabel(row.scenario_id),
+        profileLabel(row.profile_name),
+        firstMessageExcerpt(row.suggestions),
+      ]),
     ),
   );
   lines.push('');

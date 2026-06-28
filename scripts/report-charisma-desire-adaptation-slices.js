@@ -105,7 +105,11 @@ function parseJson(value, fallback) {
 }
 
 function hashText(value) {
-  return crypto.createHash('sha256').update(String(value || '')).digest('hex').slice(0, 16);
+  return crypto
+    .createHash('sha256')
+    .update(String(value || ''))
+    .digest('hex')
+    .slice(0, 16);
 }
 
 function cellId(profileName) {
@@ -201,7 +205,8 @@ function makeSlices(row, scenarios) {
       dialogueCharisma: row.tutor_charisma_overall_score,
       register: traceTurn.engagementState?.selected_register || traceTurn.engagementState?.selected_mode || '',
       learnerSignal: traceTurn.engagementState?.learner_signal || '',
-      agencyReturnPasses: traceTurn.agencyReturnVerification?.passes === true ? true : traceTurn.agencyReturnVerification ? false : null,
+      agencyReturnPasses:
+        traceTurn.agencyReturnVerification?.passes === true ? true : traceTurn.agencyReturnVerification ? false : null,
       parseStatus: traceTurn.construction?.parse_status || '',
       passesRequired: row.passes_required === 1,
       passesForbidden: row.passes_forbidden === 1,
@@ -282,7 +287,9 @@ function aggregate(slices, groupBy) {
     v22: mean(rows.map((row) => row.v22TurnScore)),
     charisma: mean(rows.map((row) => row.sliceCharisma)),
     charismaSd: sampleSd(rows.map((row) => row.sliceCharisma)),
-    agencyPassRate: mean(rows.map((row) => (row.agencyReturnPasses === true ? 1 : row.agencyReturnPasses === false ? 0 : null))),
+    agencyPassRate: mean(
+      rows.map((row) => (row.agencyReturnPasses === true ? 1 : row.agencyReturnPasses === false ? 0 : null)),
+    ),
   }));
 }
 
@@ -378,10 +385,9 @@ function buildReport({ slices, cache, scoreMissing, judgeModel }) {
     switchSlices.filter((slice) => slice.phase === 'post_adaptation'),
     (slice) => `${slice.profileGroup}:${slice.profileLabel}:${slice.register || 'unrouted'}`,
   ).sort((a, b) => a.key.localeCompare(b.key));
-  const phaseAgg = aggregate(
-    switchSlices,
-    (slice) => `${slice.profileGroup}:${slice.phase}`,
-  ).sort((a, b) => a.key.localeCompare(b.key));
+  const phaseAgg = aggregate(switchSlices, (slice) => `${slice.profileGroup}:${slice.phase}`).sort((a, b) =>
+    a.key.localeCompare(b.key),
+  );
   const deltas = pairedDeltas(switchSlices);
   const decision = decisionSummary(switchSlices);
 
@@ -464,7 +470,18 @@ function buildReport({ slices, cache, scoreMissing, judgeModel }) {
   lines.push('');
   lines.push(
     markdownTable(
-      ['Run', 'Profile', 'Turn', 'Phase', 'Register', 'v2.2', 'slice charisma', 'dialogue charisma', 'Agency', 'Excerpt'],
+      [
+        'Run',
+        'Profile',
+        'Turn',
+        'Phase',
+        'Register',
+        'v2.2',
+        'slice charisma',
+        'dialogue charisma',
+        'Agency',
+        'Excerpt',
+      ],
       switchSlices.map((slice) => [
         slice.runId,
         slice.profileLabel,
@@ -502,7 +519,13 @@ async function main() {
   const force = flags.force === true;
   const limit = typeof flags.limit === 'string' ? Number.parseInt(flags.limit, 10) : null;
   const judgeModel = typeof flags.judge === 'string' ? flags.judge : 'claude-code.sonnet';
-  const runIds = typeof flags.runs === 'string' ? flags.runs.split(',').map((id) => id.trim()).filter(Boolean) : TARGET_RUN_IDS;
+  const runIds =
+    typeof flags.runs === 'string'
+      ? flags.runs
+          .split(',')
+          .map((id) => id.trim())
+          .filter(Boolean)
+      : TARGET_RUN_IDS;
 
   loadTutorCharismaRubric();
   const db = new Database(DB_PATH, { readonly: true, fileMustExist: true });

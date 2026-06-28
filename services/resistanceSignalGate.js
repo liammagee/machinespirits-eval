@@ -1,10 +1,4 @@
-const TARGET_SIGNALS = Object.freeze([
-  'boredom',
-  'frustration',
-  'irrelevance',
-  'question_flood',
-  'rote_parroting',
-]);
+const TARGET_SIGNALS = Object.freeze(['boredom', 'frustration', 'irrelevance', 'question_flood', 'rote_parroting']);
 
 const SIGNAL_PATTERNS = Object.freeze({
   boredom: [/\bbored?\b/i, /\bboring\b/i, /\bdead\b/i, /\bdisengag(?:ed|ing|ement)\b/i, /\bworksheet\b/i],

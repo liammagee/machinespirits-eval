@@ -14,10 +14,7 @@ const REPORT_PATH = path.join(ROOT, 'exports', 'charisma-desire-cell181-repeat-m
 
 const CELL_180 = 'cell_180_id_director_charisma_engagement_router_verified';
 const CELL_181 = 'cell_181_id_director_charisma_engagement_router_contract_repair_verified';
-const SCENARIOS = [
-  'charisma_desire_ai_syllabus_transfer',
-  'charisma_desire_instruction_to_engagement_switch',
-];
+const SCENARIOS = ['charisma_desire_ai_syllabus_transfer', 'charisma_desire_instruction_to_engagement_switch'];
 
 function fmt(value, digits = 1) {
   return value == null || Number.isNaN(Number(value)) ? '' : Number(value).toFixed(digits);
@@ -207,7 +204,9 @@ function main() {
     );
   const allScored = scoredRows.length === 12 && charismaRows.length === 12;
   const allValidationPass = successRows.every((row) => row.passes_required === 1 && row.passes_forbidden === 1);
-  const noFallback = traces.every((row) => ['ok', 'ok_via_jsonrepair', 'salvaged_from_malformed_json'].includes(row.parse_status));
+  const noFallback = traces.every((row) =>
+    ['ok', 'ok_via_jsonrepair', 'salvaged_from_malformed_json'].includes(row.parse_status),
+  );
   const noSalvageFallback = traces.every((row) => row.parse_status !== 'fallback');
   const allAgencyReturn = traces.every((row) => row.agencyPasses === row.turns);
 
@@ -271,7 +270,15 @@ function main() {
   lines.push('');
   lines.push(
     markdownTable(
-      ['Scenario', 'delta first', 'delta last', 'delta v2.2 avg', 'delta holistic', 'delta charisma', 'delta charisma sd'],
+      [
+        'Scenario',
+        'delta first',
+        'delta last',
+        'delta v2.2 avg',
+        'delta holistic',
+        'delta charisma',
+        'delta charisma sd',
+      ],
       comparisons.map((row) => [
         scenarioLabel(row.scenario_id),
         fmt(row.delta_first),

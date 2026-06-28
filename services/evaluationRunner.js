@@ -1391,9 +1391,9 @@ function joinContextBlocks(...blocks) {
 function shouldGateDynamicResistanceTurn(fullScenario, turnDef, turnIdx) {
   return Boolean(
     turnIdx === 0 &&
-      fullScenario?.resistance_breakthrough_diagnostic === true &&
-      fullScenario?.resistance_signal_target &&
-      turnDef?.learner_action === 'resistant_followup',
+    fullScenario?.resistance_breakthrough_diagnostic === true &&
+    fullScenario?.resistance_signal_target &&
+    turnDef?.learner_action === 'resistant_followup',
   );
 }
 

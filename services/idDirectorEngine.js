@@ -82,8 +82,7 @@ const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_CLEAN = 'accountable_bid
 const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN = 'accountable_bid_transfer_plain';
 const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_PRESENCE =
   'accountable_bid_transfer_plain_presence';
-const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT =
-  'accountable_bid_transfer_plain_split';
+const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT = 'accountable_bid_transfer_plain_split';
 const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK =
   'accountable_bid_transfer_plain_split_check';
 const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR =
@@ -735,8 +734,7 @@ function applyAgencyReturnVerification(tutorResponse, verification, options = {}
 }
 
 function applyPrematureCertaintyGuard(tutorResponse, options = {}) {
-  const selectedRegister =
-    options?.engagementState?.selected_register || options?.engagementState?.selected_mode || '';
+  const selectedRegister = options?.engagementState?.selected_register || options?.engagementState?.selected_mode || '';
 
   let message = String(tutorResponse || '');
   const replacements = [];
@@ -894,11 +892,9 @@ export async function runIdDirectedTurn({
     profile?.factors?.id_output_contract || profile?.id_output_contract,
   );
   const engagementRouterCharismaRepair =
-    profile?.factors?.engagement_router_charisma_repair === true ||
-    profile?.engagement_router_charisma_repair === true;
+    profile?.factors?.engagement_router_charisma_repair === true || profile?.engagement_router_charisma_repair === true;
   const engagementRouterSplitRepair =
-    profile?.factors?.engagement_router_split_repair === true ||
-    profile?.engagement_router_split_repair === true;
+    profile?.factors?.engagement_router_split_repair === true || profile?.engagement_router_split_repair === true;
   const engagementRouterTransferStakeRepair =
     profile?.factors?.engagement_router_transfer_stake_repair === true ||
     profile?.engagement_router_transfer_stake_repair === true;
@@ -1589,13 +1585,11 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   const idOutputContract = normalizeIdOutputContract(evalCellProfile.factors?.id_output_contract);
   const engagementRouterCharismaRepair = evalCellProfile.factors?.engagement_router_charisma_repair === true;
   const engagementRouterSplitRepair = evalCellProfile.factors?.engagement_router_split_repair === true;
-  const engagementRouterTransferStakeRepair =
-    evalCellProfile.factors?.engagement_router_transfer_stake_repair === true;
+  const engagementRouterTransferStakeRepair = evalCellProfile.factors?.engagement_router_transfer_stake_repair === true;
   const engagementRouterTransferCompressionRepair =
     evalCellProfile.factors?.engagement_router_transfer_compression_repair === true;
   const engagementRouterResistanceTuning = evalCellProfile.factors?.engagement_router_resistance_tuning === true;
-  const engagementRouterResistanceOwnedTest =
-    evalCellProfile.factors?.engagement_router_resistance_owned_test === true;
+  const engagementRouterResistanceOwnedTest = evalCellProfile.factors?.engagement_router_resistance_owned_test === true;
   const engagementRouterResistancePrecisionRepair =
     evalCellProfile.factors?.engagement_router_resistance_precision_repair === true;
   const engagementRouterResistanceGenerationRepair =
@@ -1608,8 +1602,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
     evalCellProfile.factors?.engagement_router_resistance_boredom_stake === true;
   const engagementRouterResistanceGlmCompact =
     evalCellProfile.factors?.engagement_router_resistance_glm_compact === true;
-  const agencyReturnPrematureCertaintyGuard =
-    evalCellProfile.factors?.agency_return_premature_certainty_guard === true;
+  const agencyReturnPrematureCertaintyGuard = evalCellProfile.factors?.agency_return_premature_certainty_guard === true;
   const agencyReturnVerifierPrompt = getAgencyReturnVerifierPrompt(agencyReturnVerifierMode);
   const agencyReturnRepairMode = getAgencyReturnRepairMode(agencyReturnVerifierMode);
   const useRegisterClassifier = evalCellProfile.factors?.register_classifier === true;

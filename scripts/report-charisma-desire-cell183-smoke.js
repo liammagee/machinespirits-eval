@@ -18,10 +18,7 @@ const CELL_180 = 'cell_180_id_director_charisma_engagement_router_verified';
 const CELL_181 = 'cell_181_id_director_charisma_engagement_router_contract_repair_verified';
 const CELL_182 = 'cell_182_id_director_charisma_engagement_router_split_repair_verified';
 const CELL_183 = 'cell_183_id_director_charisma_engagement_router_transfer_stake_repair_verified';
-const SCENARIOS = [
-  'charisma_desire_ai_syllabus_transfer',
-  'charisma_desire_instruction_to_engagement_switch',
-];
+const SCENARIOS = ['charisma_desire_ai_syllabus_transfer', 'charisma_desire_instruction_to_engagement_switch'];
 
 function fmt(value, digits = 1) {
   return value == null || Number.isNaN(Number(value)) ? '' : Number(value).toFixed(digits);
@@ -197,12 +194,15 @@ function main() {
   const metadata = parseJson(run.metadata, {});
 
   const allRowsPresent =
-    targetRows.length === 2 && SCENARIOS.every((scenarioId) => targetRows.some((row) => row.scenario_id === scenarioId));
+    targetRows.length === 2 &&
+    SCENARIOS.every((scenarioId) => targetRows.some((row) => row.scenario_id === scenarioId));
   const allScored =
     targetRows.length === 2 &&
     targetRows.every((row) => row.tutor_first_turn_score != null && row.tutor_charisma_overall_score != null);
   const validationClean = targetRows.every((row) => row.passes_required === 1 && row.passes_forbidden === 1);
-  const noFallback = traces.every((row) => ['ok', 'ok_via_jsonrepair', 'salvaged_from_malformed_json'].includes(row.parse_status));
+  const noFallback = traces.every((row) =>
+    ['ok', 'ok_via_jsonrepair', 'salvaged_from_malformed_json'].includes(row.parse_status),
+  );
   const agencyReturnClean = traces.every((row) => row.agency_return_passes);
 
   const repeatComparisons = compareTargetTo(repeatSummary, targetSummary, [CELL_180, CELL_181]);
@@ -210,7 +210,9 @@ function main() {
   const transferTarget = targetSummary.find((row) => row.scenario_id === 'charisma_desire_ai_syllabus_transfer');
   const transferCell182 = cell182Summary.find((row) => row.scenario_id === 'charisma_desire_ai_syllabus_transfer');
   const transferCharismaRecovered =
-    transferTarget?.charisma != null && transferCell182?.charisma != null && transferTarget.charisma > transferCell182.charisma;
+    transferTarget?.charisma != null &&
+    transferCell182?.charisma != null &&
+    transferTarget.charisma > transferCell182.charisma;
 
   const lines = [];
   lines.push('# Charisma Desire Cell 183 Smoke Summary');
@@ -252,7 +254,15 @@ function main() {
   lines.push('');
   lines.push(
     markdownTable(
-      ['Scenario', 'cell 182 v2.2', 'cell 183 v2.2', 'delta v2.2', 'cell 182 charisma', 'cell 183 charisma', 'delta charisma'],
+      [
+        'Scenario',
+        'cell 182 v2.2',
+        'cell 183 v2.2',
+        'delta v2.2',
+        'cell 182 charisma',
+        'cell 183 charisma',
+        'delta charisma',
+      ],
       cell182Comparisons.map((row) => [
         scenarioLabel(row.scenario_id),
         fmt(row.ref_tutor),
@@ -269,7 +279,16 @@ function main() {
   lines.push('');
   lines.push(
     markdownTable(
-      ['Scenario', 'Reference', 'ref v2.2', 'cell 183 v2.2', 'delta v2.2', 'ref charisma', 'cell 183 charisma', 'delta charisma'],
+      [
+        'Scenario',
+        'Reference',
+        'ref v2.2',
+        'cell 183 v2.2',
+        'delta v2.2',
+        'ref charisma',
+        'cell 183 charisma',
+        'delta charisma',
+      ],
       repeatComparisons.map((row) => [
         scenarioLabel(row.scenario_id),
         profileLabel(row.ref_profile),

@@ -22,20 +22,16 @@ const JSON_PATH = path.join(ROOT, 'exports', 'charisma-desire-breakthrough-matri
 const ROUTER_PROFILE = 'cell_185_id_director_charisma_resistance_breakthrough_dynamic_verified';
 const STATIC_PROFILE = 'cell_186_id_director_charisma_static_floor_breakthrough_dynamic_verified';
 const TUNED_ROUTER_PROFILE = 'cell_187_id_director_charisma_resistance_tuned_breakthrough_dynamic_verified';
-const OWNED_TEST_ROUTER_PROFILE =
-  'cell_188_id_director_charisma_resistance_owned_test_breakthrough_dynamic_verified';
-const PRECISION_ROUTER_PROFILE =
-  'cell_189_id_director_charisma_resistance_precision_breakthrough_dynamic_verified';
-const GENERATION_ROUTER_PROFILE =
-  'cell_190_id_director_charisma_resistance_generation_breakthrough_dynamic_verified';
+const OWNED_TEST_ROUTER_PROFILE = 'cell_188_id_director_charisma_resistance_owned_test_breakthrough_dynamic_verified';
+const PRECISION_ROUTER_PROFILE = 'cell_189_id_director_charisma_resistance_precision_breakthrough_dynamic_verified';
+const GENERATION_ROUTER_PROFILE = 'cell_190_id_director_charisma_resistance_generation_breakthrough_dynamic_verified';
 const QUESTION_LOCK_ROUTER_PROFILE =
   'cell_191_id_director_charisma_resistance_question_lock_breakthrough_dynamic_verified';
 const COMMITMENT_PROBE_ROUTER_PROFILE =
   'cell_192_id_director_charisma_resistance_commitment_probe_breakthrough_dynamic_verified';
 const BOREDOM_STAKE_ROUTER_PROFILE =
   'cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified';
-const GLM_COMPACT_ROUTER_PROFILE =
-  'cell_194_id_director_charisma_resistance_glm_compact_breakthrough_dynamic_verified';
+const GLM_COMPACT_ROUTER_PROFILE = 'cell_194_id_director_charisma_resistance_glm_compact_breakthrough_dynamic_verified';
 
 const CONTROLLED_SCENARIOS = [
   'charisma_desire_resistance_breakthrough_boredom',
@@ -230,7 +226,8 @@ function classifySignal(text, preferredSignal = '') {
 function isReliefMarker(text, signal) {
   const normalized = normalizeForMatching(text);
   if (signal === 'boredom') return /\bless\s+(?:dead|bored|boring)\b/i.test(normalized);
-  if (signal === 'irrelevance') return /\bthe point\b/i.test(normalized) && /\bnow\b|\bokay\b|\bi (?:can|would|think)\b/i.test(normalized);
+  if (signal === 'irrelevance')
+    return /\bthe point\b/i.test(normalized) && /\bnow\b|\bokay\b|\bi (?:can|would|think)\b/i.test(normalized);
   return false;
 }
 
@@ -239,7 +236,12 @@ function isStillResistant(text, signal) {
   if (!signal) return false;
   if (isReliefMarker(normalized, signal)) return false;
   if (signal === 'frustration' && /\bstill\s+frustrat/i.test(normalized)) return true;
-  if (signal === 'rote_parroting' && /\bstill\s+(?:feel|feels|feeling).{0,60}\b(?:repeat|repeating|parrot|formula|matching phrases|slots)\b/i.test(normalized)) {
+  if (
+    signal === 'rote_parroting' &&
+    /\bstill\s+(?:feel|feels|feeling).{0,60}\b(?:repeat|repeating|parrot|formula|matching phrases|slots)\b/i.test(
+      normalized,
+    )
+  ) {
     return true;
   }
   if (signal === 'question_flood') return matchesSignal(normalized, signal);
@@ -411,7 +413,9 @@ function validateScenarios(scenarios, learnerAgents) {
     if (!scenario.learner_persona || !learnerAgents?.personas?.[scenario.learner_persona]) {
       errors.push(`${scenarioId} references missing learner_persona ${scenario.learner_persona || 'none'}`);
     }
-    const targetGate = (scenario.resistance_signal_gate || []).find((gate) => gate.id === scenario.resistance_signal_target);
+    const targetGate = (scenario.resistance_signal_gate || []).find(
+      (gate) => gate.id === scenario.resistance_signal_target,
+    );
     if (!targetGate) {
       errors.push(`${scenarioId} has no resistance_signal_gate for ${scenario.resistance_signal_target}`);
       continue;
@@ -424,9 +428,14 @@ function validateScenarios(scenarios, learnerAgents) {
       errors.push(`${scenarioId} target gate expected charismatic_challenge, got ${routed.selected_register}`);
     }
     if (routed.resistance_signal !== scenario.resistance_signal_target) {
-      errors.push(`${scenarioId} target gate expected ${scenario.resistance_signal_target}, got ${routed.resistance_signal}`);
+      errors.push(
+        `${scenarioId} target gate expected ${scenario.resistance_signal_target}, got ${routed.resistance_signal}`,
+      );
     }
-    if (targetGate.expected_resistance_strategy && routed.resistance_strategy !== targetGate.expected_resistance_strategy) {
+    if (
+      targetGate.expected_resistance_strategy &&
+      routed.resistance_strategy !== targetGate.expected_resistance_strategy
+    ) {
       errors.push(
         `${scenarioId} target gate expected strategy ${targetGate.expected_resistance_strategy}, got ${
           routed.resistance_strategy || 'none'
@@ -734,7 +743,11 @@ function buildReport({ generatedAt, errors, analyses }) {
   lines.push('');
   lines.push('## Validation');
   lines.push('');
-  lines.push(errors.length ? errors.map((error) => `- ${error}`).join('\n') : '- Controlled scenarios and target gates validate.');
+  lines.push(
+    errors.length
+      ? errors.map((error) => `- ${error}`).join('\n')
+      : '- Controlled scenarios and target gates validate.',
+  );
   lines.push('');
   lines.push('## Arm Summary');
   lines.push('');
@@ -893,7 +906,9 @@ function buildReport({ generatedAt, errors, analyses }) {
           row.observedSignal,
           row.routerSignal,
           row.routerStrategy,
-          row.learnerGateAttempts ? `${row.learnerGateMatched ? 'matched' : 'missed'} (${row.learnerGateAttempts})` : '-',
+          row.learnerGateAttempts
+            ? `${row.learnerGateMatched ? 'matched' : 'missed'} (${row.learnerGateAttempts})`
+            : '-',
           `${row.preGenerated ? 'pre' : '-'}+${row.postGenerated ? 'post' : '-'}`,
           String(row.lexicalScore),
           row.verdict,
