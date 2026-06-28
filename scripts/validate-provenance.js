@@ -23,7 +23,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { createHash } from 'crypto';
 import Database from 'better-sqlite3';
-import { verifyTurnIdsForRow } from '../services/provableDiscourse.js';
+import { verifyTurnIdsForRow, loadOrphanWaivers } from '../services/provableDiscourse.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -144,20 +144,28 @@ function checkDialogueHashCoverage(db, runId, verbose) {
 function checkDialogueLogIntegrity(db, runId, verbose) {
   const rows = db
     .prepare(
-      `SELECT id, dialogue_id, dialogue_content_hash FROM evaluation_results
+      `SELECT id, run_id, dialogue_id, dialogue_content_hash FROM evaluation_results
      WHERE run_id = ? AND dialogue_content_hash IS NOT NULL AND dialogue_id IS NOT NULL`,
     )
     .all(runId);
 
+  const waivers = loadOrphanWaivers(ROOT);
+
   let matched = 0;
   let mismatched = 0;
   let missing = 0;
+  let waived = 0;
   let parseError = 0;
   const failures = [];
 
   for (const row of rows) {
     const filePath = join(LOG_DIR, `${row.dialogue_id}.json`);
     if (!existsSync(filePath)) {
+      // Accepted-missing (documented transcript loss) → waived, not a failure.
+      if (waivers.has(`${row.run_id}::${row.dialogue_id}`)) {
+        waived++;
+        continue;
+      }
       missing++;
       failures.push({ id: row.id, dialogueId: row.dialogue_id, reason: 'log_file_missing' });
       continue;
@@ -180,13 +188,14 @@ function checkDialogueLogIntegrity(db, runId, verbose) {
     }
   }
 
+  const waivedNote = waived > 0 ? `, ${waived} waived (accepted loss)` : '';
   if (rows.length === 0) {
     warn('Dialogue log integrity: no rows with dialogue_content_hash to verify');
   } else if (mismatched === 0 && missing === 0 && parseError === 0) {
-    pass(`Dialogue log integrity: ${matched}/${rows.length} verified`);
+    pass(`Dialogue log integrity: ${matched}/${rows.length} verified${waivedNote}`);
   } else {
     fail(
-      `Dialogue log integrity: ${matched} match, ${mismatched} mismatch, ${missing} missing, ${parseError} parse error (of ${rows.length})`,
+      `Dialogue log integrity: ${matched} match, ${mismatched} mismatch, ${missing} missing, ${parseError} parse error${waivedNote} (of ${rows.length})`,
     );
   }
 
@@ -203,6 +212,7 @@ function checkDialogueLogIntegrity(db, runId, verbose) {
     matched,
     mismatched,
     missing,
+    waived,
     parseError,
     status: mismatched === 0 && missing === 0 && parseError === 0 ? 'pass' : 'fail',
     failures,

@@ -1622,6 +1622,31 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
     if (!fs.existsSync(notePath)) return res.status(404).type('text').send('blueprint note not found');
     res.type('html').sendFile(notePath);
   });
+  // GET /model-upgrade frames the bounded weak/cheap-model upgrade playbook:
+  // evidence-backed advice on prompts, critics, proof guards, and role routing.
+  // Like /blueprint, it is a reference surface that originates no paper claims;
+  // source numbers inherit from paper-full-2.0.md, local reports, and a dated
+  // OpenRouter model-price snapshot embedded in the note.
+  app.get('/model-upgrade', (_req, res) =>
+    res.type('html').send(
+      framedNoteHtml({
+        active: 'model-upgrade',
+        sub: 'how to upgrade weaker or cheaper models into tutors — bounded evidence for prompts, critics, proof guards &amp; role routing',
+        src: '/model-upgrade-doc',
+        title: 'How to upgrade weaker models into tutors · bounded playbook',
+        hint: orientBand(
+          'model upgrade',
+          'how to spend prompts, critics, proof guards, and routing on weaker or cheaper tutor models',
+          'project writing; the working surfaces are on the rail above',
+        ),
+      }),
+    ),
+  );
+  app.get('/model-upgrade-doc', (_req, res) => {
+    const notePath = path.resolve(ROOT, 'notes/poetics/model-upgrade-playbook.html');
+    if (!fs.existsSync(notePath)) return res.status(404).type('text').send('model-upgrade note not found');
+    res.type('html').sendFile(notePath);
+  });
   // GET /board is the LIVE development board: a read-only render of the workplan
   // (workplan/items/, via the generated workplan/board.json). Regenerate with
   // `npm run wp:render`. The project's historical arc now lives in the Project
@@ -2222,6 +2247,12 @@ const NAV = [
     'the blueprint',
     'How to build the ideal AI tutor — an evidence-ordered build recipe (prompt · critic · model-fit · measurement), what the data says to skip, &amp; what stays an open question',
   ],
+  [
+    'model-upgrade',
+    '/model-upgrade',
+    'model upgrade',
+    'How to upgrade weaker or cheaper models into tutors — bounded evidence for prompts, critics, proof guards &amp; role routing',
+  ],
   ['story', '/story', 'story', 'The story so far — a dated, provisional narrative of the adaptation arc'],
   [
     'repertoire',
@@ -2273,14 +2304,42 @@ const NAV_PRIMARY = ['home'];
 const NAV_GROUPS = [
   ['make', ['compose', 'tutor', 'runs']],
   ['read &amp; judge', ['read', 'browse', 'derivation', 'replays', 'rubric', 'adjudicate', 'pilot-admin']],
-  ['keep', ['board', 'timeline', 'ontology', 'curriculum', 'theory', 'blueprint', 'summary', 'story', 'repertoire']],
+  [
+    'keep',
+    [
+      'board',
+      'timeline',
+      'ontology',
+      'curriculum',
+      'theory',
+      'blueprint',
+      'model-upgrade',
+      'summary',
+      'story',
+      'repertoire',
+    ],
+  ],
 ];
 // Same three acts for the mobile drawer; `home` is rendered as a flat link above
 // these groups in railHtml.
 const NAV_DRAWER_GROUPS = [
   ['Make', ['compose', 'tutor', 'runs']],
   ['Read &amp; judge', ['read', 'browse', 'derivation', 'replays', 'rubric', 'adjudicate', 'pilot-admin']],
-  ['Keep', ['board', 'timeline', 'ontology', 'curriculum', 'theory', 'blueprint', 'summary', 'story', 'repertoire']],
+  [
+    'Keep',
+    [
+      'board',
+      'timeline',
+      'ontology',
+      'curriculum',
+      'theory',
+      'blueprint',
+      'model-upgrade',
+      'summary',
+      'story',
+      'repertoire',
+    ],
+  ],
 ];
 
 // A per-page orientation band (the `hint` slot of railHtml): "<b>here</b> — what",

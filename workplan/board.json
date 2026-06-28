@@ -1,19 +1,20 @@
 {
-  "generated": "2026-06-28T03:44:38.887Z",
+  "generated": "2026-06-28T04:13:59.913Z",
   "counts": {
-    "total": 54,
+    "total": 57,
     "byStatus": {
       "done": 49,
       "blocked": 1,
       "dropped": 2,
       "review": 1,
-      "triaged": 1
+      "triaged": 4
     },
     "byType": {
       "research": 28,
       "experiment": 5,
       "content": 2,
       "infra": 9,
+      "maintenance": 3,
       "paper": 4,
       "ops": 6
     }
@@ -42,6 +43,72 @@
         "shacl"
       ],
       "milestone": "poetics-followups"
+    },
+    {
+      "id": "normalize-provenance-validator-data-paths",
+      "title": "Honor canonical data-home paths in provenance validators",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-06-28",
+      "updated": "2026-06-28",
+      "verification": "`npm run provenance:validate`, `npm run paper:provable-discourse -- --epoch 2.0 --strict --no-color`, and `npm run wp:check` pass from a fresh worktree without repo-local DB/log symlinks.",
+      "links": {
+        "items": "consolidate-logs-db-private-archive"
+      },
+      "tags": [
+        "provenance",
+        "logs",
+        "data-home",
+        "validators"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "colocate-runner-secondary-artifacts",
+      "title": "Co-locate runner transcripts and checkpoints with canonical logs",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P3",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-06-28",
+      "updated": "2026-06-28",
+      "verification": "A smoke run writes dialogue logs, transcripts, and checkpoints under the same canonical data-home logs root unless an explicit test override is set; `npm test` and `npm run wp:check` pass.",
+      "links": {
+        "items": "consolidate-logs-db-private-archive"
+      },
+      "tags": [
+        "logs",
+        "runner",
+        "data-home",
+        "artifacts"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "debloat-private-log-archive",
+      "title": "De-bloat the private dialogue-log archive",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P3",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-06-28",
+      "updated": "2026-06-28",
+      "verification": "The private archive has a documented chosen storage path, logs are no longer ordinary large git history, and a clone/sync smoke confirms the canonical DB + logs remain recoverable.",
+      "links": {
+        "items": "consolidate-logs-db-private-archive"
+      },
+      "tags": [
+        "logs",
+        "archive",
+        "private-repo",
+        "git-history"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
     },
     {
       "id": "a1-human-learner-validation",
@@ -470,17 +537,22 @@
     },
     {
       "id": "consolidate-logs-db-private-archive",
-      "title": "Consolidate dialogue logs + DB into the private archive repo",
+      "title": "Consolidate dialogue logs + DB into one canonical archive",
       "status": "done",
       "type": "infra",
       "priority": "P2",
-      "owner": "unassigned",
+      "owner": "codex",
       "source": "manual",
       "created": "2026-06-22",
-      "updated": "2026-06-24",
-      "verification": "Dialogue logs are co-located with the DB under the private archive; npm run provenance:validate finds the logs; the dramatic fork's sibling-path log_dir stopgap is removed.",
+      "updated": "2026-06-28",
+      "verification": "From a fresh worktree, evaluationStore resolves LOGS_ROOT to ~/.machinespirits-data/logs (now a materialized real dir, not a symlink) and the paper2.provenance.dialogue_hashes gate scores value=1.0 (1937 passed, 0 failed, 54 waived) against the canonical DB + archive. The two named follow-ups (non-git decoupling + orphan quarantine) are DONE; only minor/maintainer items remain.",
       "links": {
-        "items": "build-workplan-tooling"
+        "items": [
+          "build-workplan-tooling",
+          "normalize-provenance-validator-data-paths",
+          "colocate-runner-secondary-artifacts",
+          "debloat-private-log-archive"
+        ]
       },
       "tags": [
         "infra",
