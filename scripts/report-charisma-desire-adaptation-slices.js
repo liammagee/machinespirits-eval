@@ -92,7 +92,7 @@ function cleanCell(value, maxLength = 220) {
   return String(value || '')
     .replace(/\s+/g, ' ')
     .replace(/\|/g, '/')
-    .replace(/[^\x09\x0a\x0d\x20-\x7e]/g, '-')
+    .replace(/[^\x20-\x7e]/g, '-')
     .slice(0, maxLength);
 }
 
@@ -158,7 +158,6 @@ function getLearnerMessage({ row, scenario, dialogueLog, turn }) {
 }
 
 function getDialogueExcerpt(slices, currentIndex) {
-  const current = slices[currentIndex];
   const parts = [];
   for (let i = Math.max(0, currentIndex - 1); i <= currentIndex; i += 1) {
     const slice = slices[i];

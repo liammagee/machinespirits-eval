@@ -71,7 +71,7 @@ function firstMessageExcerpt(rawSuggestions) {
 function cleanCell(value, maxLength = 220) {
   return String(value || '')
     .replace(/\|/g, '/')
-    .replace(/[^\x09\x0a\x0d\x20-\x7e]/g, '-')
+    .replace(/[^\x20-\x7e]/g, '-')
     .slice(0, maxLength);
 }
 

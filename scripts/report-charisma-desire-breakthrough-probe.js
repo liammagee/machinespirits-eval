@@ -124,7 +124,7 @@ function cleanCell(value, maxLength = 150) {
   return String(value || '')
     .replace(/\s+/g, ' ')
     .replace(/\|/g, '/')
-    .replace(/[^\x09\x0a\x0d\x20-\x7e]/g, '-')
+    .replace(/[^\x20-\x7e]/g, '-')
     .slice(0, maxLength);
 }
 
@@ -149,7 +149,7 @@ function getTurnResult(log, turnIndex) {
   return log?.turnResults?.find((turn) => Number(turn.turnIndex) === Number(turnIndex)) || null;
 }
 
-function getLearnerMessage({ row, scenario, log, turnIndex }) {
+function getLearnerMessage({ scenario, log, turnIndex }) {
   if (turnIndex === 0) return extractInitialLearnerMessage(scenario);
   const fromLog = getTurnResult(log, turnIndex)?.learnerMessage;
   if (fromLog) return fromLog;

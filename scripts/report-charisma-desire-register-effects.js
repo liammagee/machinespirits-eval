@@ -125,14 +125,6 @@ function holisticDim(row, dim) {
   return scores?.[dim]?.score ?? null;
 }
 
-function cleanCell(value, maxLength = 170) {
-  return String(value || '')
-    .replace(/\s+/g, ' ')
-    .replace(/\|/g, '/')
-    .replace(/[^\x09\x0a\x0d\x20-\x7e]/g, '-')
-    .slice(0, maxLength);
-}
-
 function markdownTable(headers, rows) {
   return [
     `| ${headers.join(' | ')} |`,

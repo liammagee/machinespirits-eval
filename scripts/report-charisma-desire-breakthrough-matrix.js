@@ -153,7 +153,7 @@ function normalizeText(value) {
 function cleanCell(value, maxLength = 120) {
   return normalizeText(value)
     .replace(/\|/g, '/')
-    .replace(/[^\x09\x0a\x0d\x20-\x7e]/g, '-')
+    .replace(/[^\x20-\x7e]/g, '-')
     .slice(0, maxLength);
 }
 
@@ -322,7 +322,7 @@ function findResistanceTurn({ scenario, log, targetSignal }) {
   return 1;
 }
 
-function scoreTransition({ targetSignal, observedSignal, preLearner, postLearner, preGenerated, postGenerated, routeHit }) {
+function scoreTransition({ targetSignal, observedSignal, postLearner, preGenerated, postGenerated, routeHit }) {
   const uptake = countMatches(postLearner, UPTAKE_PATTERNS);
   const renewedWork = countMatches(postLearner, RENEWED_WORK_PATTERNS);
   const content = countMatches(postLearner, CONTENT_PATTERNS);
