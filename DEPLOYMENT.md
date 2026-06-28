@@ -9,13 +9,15 @@ anything on a non-localhost interface.
 | Thing | What it is | Where it runs | Auth |
 |-------|-----------|---------------|------|
 | **Eval dashboard** — `server.js` (`npm start` → `STANDALONE=true node server.js`) | pilot participant surface, eval DB browser, run launchers | localhost (default `127.0.0.1`) | **basic-auth, bind-tied** — open on localhost, required on any public bind |
-| **Poetics workbench** — `scripts/browse-poetics-scripts.js` (`npm run poetics:serve`, :3466) | generated-script browser, compose, live sit-in, run launcher | localhost (`127.0.0.1`) | **basic-auth, bind-tied** — open on localhost, required on any public bind |
+| **Poetics workbench** — `scripts/browse-poetics-scripts.js` (`npm run poetics:serve`, :3466) | generated-script browser, compose, live sit-in, run launcher | localhost (`127.0.0.1`) or `/poetics` on the website | **split** — read-only pages public; `/admin/*` requires basic-auth on public binds |
 | **The website** — `../machinespirits-website` | Vite + Node app, the actual machinespirits.org | fly.io app `my-website-dtq0ia` (region `lax`, `internal_port 8080`), CI deploy via `.github/workflows/deploy.yml` | **yes** — `AUTH_DB_PATH=/data/lms.sqlite` |
 
-The eval dashboard and the poetics workbench are **internal tools built on a
-localhost trust model**. The website is a separately-deployed, auth-bearing
-product. They are not the same kind of thing, and the first two are not drop-in
-deployable to the third.
+The eval dashboard is an **internal tool built on a localhost trust model**. The
+poetics workbench now supports a public-read / admin-write split, but its operator
+controls still inherit the same localhost-first assumptions. The website is a
+separately-deployed, auth-bearing product. They are not the same kind of thing,
+and the eval servers are not drop-in deployable to the website without the mount
+and auth split described below.
 
 ## Local dev — one canonical server
 
@@ -31,14 +33,14 @@ It is idempotent — re-run it any time and you land on the same URL
 `127.0.0.1` on purpose (see the safety note below). Override the port with
 `-- --port 3500` or `POETICS_PORT=3500` if you must.
 
-## Why these servers are localhost-only
+## Why operator surfaces are gated
 
 Both expose **unauthenticated, metered, money-spending endpoints**. In the
 poetics workbench alone (the code comments say so verbatim):
 
-- `POST /api/compose/live/turn` — a **real paid OpenRouter call per AI turn**
-- `POST /api/jobs` — a launcher that can **spawn paid generation/replay runs**
-- `POST /api/compose/live/save`, `POST /api/jobs/:id/stop` — unauthenticated mutations
+- `POST /admin/api/compose/live/turn` — a **real paid OpenRouter call per AI turn**
+- `POST /admin/api/jobs` — a launcher that can **spawn paid generation/replay runs**
+- `POST /admin/api/compose/live/save`, `POST /admin/api/jobs/:id/stop` — mutating controls
 
 The eval dashboard additionally serves the `/pilot` participant surface, which
 has its own isolation requirement before any non-localhost exposure.
@@ -50,9 +52,11 @@ the tooling is built to honor it — `serve-poetics-browser.mjs` pins the host t
 `127.0.0.1` so the footgun isn't one keystroke away.
 
 As of 2026-06-06 that requirement is **enforced in code**, not just by
-convention. Both servers mount the shared guard in `services/httpBasicAuth.js`:
+convention. Both servers use the shared guard in `services/httpBasicAuth.js`:
 
-- credentials present → basic-auth is enforced on every request;
+- eval dashboard: credentials present → basic-auth is enforced on every request;
+- poetics workbench: credentials present → `/admin/*` is basic-auth protected
+  while read-only pages remain public;
 - no credentials + localhost bind → open (frictionless local dev, unchanged);
 - no credentials + **non-local bind → the process refuses to start** (the guard
   resolver throws before `app.listen`).
@@ -118,14 +122,17 @@ URL exists.
 
 ### Step 1 — gate the metered + mutating surfaces ✅ (DONE)
 
-Shipped **option (a), whole-server basic-auth**, bind-tied so it can't be
-forgotten on a public deploy (see "Why these servers are localhost-only" above
-and `services/httpBasicAuth.js`). The guard sits in front of *every* route —
-simpler and safer than gating individual endpoints, since a read-only GET on
-this surface still leaks the eval DB. To run a server authenticated:
+Shipped the bind-tied auth prerequisite so it can't be forgotten on a public
+deploy (see "Why these servers are localhost-only" above and
+`services/httpBasicAuth.js`). The current poetics shape is public-read,
+admin-write: read-only pages and GET APIs stay public under `/poetics`, while
+metered or mutating controls live under `/poetics/admin/*` and require Basic
+Auth. Legacy public tool pages (`/poetics/runs`, `/poetics/compose/live`) redirect
+to `/poetics/admin/*`; legacy public tool APIs do not execute. To run a server
+authenticated:
 
 ```bash
-# poetics workbench, public bind, behind basic-auth
+# poetics workbench, public bind, with /admin/* behind basic-auth
 POETICS_AUTH_USER=… POETICS_AUTH_PASS=… \
   node scripts/browse-poetics-scripts.js --host 0.0.0.0 --port 8080
 
@@ -136,9 +143,9 @@ EVAL_AUTH_USER=… EVAL_AUTH_PASS=… HOST=0.0.0.0 PORT=8080 STANDALONE=true nod
 On fly, the credentials are set as app secrets (`fly secrets set …`), never
 baked into the image. Two alternatives were considered and deferred — **(b)** a
 network gate (Cloudflare Access / Tailscale, no in-app auth) and **(c)** shared
-identity via the website's `AUTH_DB` (`/data/lms.sqlite`). Basic-auth is the
-smallest sufficient gate; revisit (b)/(c) only if the audience or product
-requirements change.
+identity via the website's `AUTH_DB` (`/data/lms.sqlite`). Basic-auth on
+`/poetics/admin/*` is the smallest sufficient gate for the current operator
+surfaces; revisit (b)/(c) only if the audience or product requirements change.
 
 ### Step 2 — mount the workbench in-process at `/poetics` ✅ (built)
 
@@ -180,15 +187,16 @@ hence the ephemeral copy. Writes through the deployed site (labels, saved
 compositions) land in `/tmp` and vanish on restart; the volume snapshot stays
 pristine. Re-upload to refresh the public corpus.
 
-**⚠ The money-spending buttons are ARMED here — the password is the only gate.**
+**⚠ The money-spending buttons are ARMED here — `/poetics/admin/*` is the gate.**
 This is the load-bearing difference from a standalone deploy. The website already
 holds live `OPENROUTER_API_KEY` / `ANTHROPIC_API_KEY` secrets (its own features
 use them), and an in-process sub-app inherits the same `process.env`. So once
-`/poetics` mounts, `POST /api/jobs` (spawns paid runs) and
-`POST /api/compose/live/turn` (a paid call per turn) are live — there is no
-"omit the API key to keep them inert" option the way a separate app had. The
-basic-auth password is the *entire* barrier between the public internet and your
-LLM bill. That is exactly why `poeticsMount.js` refuses to mount without creds.
+`/poetics` mounts, `POST /poetics/admin/api/jobs` (spawns paid runs) and
+`POST /poetics/admin/api/compose/live/turn` (a paid call per turn) are live for
+authenticated admins — there is no "omit the API key to keep them inert" option
+the way a separate app had. The basic-auth password is the barrier between the
+public internet and your LLM bill for those admin routes. That is why
+`poeticsMount.js` still refuses to mount without creds.
 
 **Degraded views** — the clone carries only what the branch tracks, so:
 
@@ -229,9 +237,10 @@ fly deploy -a my-website-dtq0ia \
   --build-arg POETICS_CACHE_BUST=$(date +%s)
 ```
 
-Live at `https://machinespirits.org/poetics` once the deploy completes. No
-separate app, no extra DNS, no new TLS cert — it shares the website's machine,
-volume, and certificate.
+Live at `https://machinespirits.org/poetics` once the deploy completes; operator
+tools are under `https://machinespirits.org/poetics/admin/`. No separate app, no
+extra DNS, no new TLS cert — it shares the website's machine, volume, and
+certificate.
 
 ### Refreshing the public corpus (data-only — no rebuild)
 
@@ -287,8 +296,9 @@ the pilot surface public as a side effect.
   commands: confirm eval `main` is pushed, `poetics:stage-deploy-db` + sftp the
   snapshot to the volume, and `fly deploy -a my-website-dtq0ia` (public,
   billable). **The
-  password is the only gate** — the website already holds the LLM keys, so the
-  metered buttons are armed the moment `/poetics` mounts. The earlier separate-app
+  `/poetics/admin/*` password is the gate** — the website already holds the LLM
+  keys, so the metered buttons are armed for authenticated admins the moment
+  `/poetics` mounts. The earlier separate-app
   artifacts (`Dockerfile.poetics`, `fly.poetics.toml`, `.dockerignore`) were
   removed in favour of this shape. The eval dashboard (`server.js`) is *not*
   exposed — it drags the `/pilot` surface (Step 3). No live URL exists until the

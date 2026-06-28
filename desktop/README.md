@@ -64,9 +64,9 @@ background process on an ephemeral loopback port; you never manage a port.
 ## Using the app
 
 - **Surfaces.** Everything the web app exposes: `/browse` (scriptorium), `/compose`
-  and `/compose/live` (authoring + live sit-in), `/ontology`, `/rubric`, `/runs`,
-  `/board`, `/derivation`, the tutor playground (`/chat`), the participant pilot
-  (`/pilot`), and A19 adjudication (`/adjudication`). Navigate via the in-page nav
+  and `/admin/compose/live` (authoring + live sit-in), `/ontology`, `/rubric`,
+  `/admin/runs`, `/board`, `/derivation`, the tutor playground (`/chat`), the
+  participant pilot (`/pilot`), and A19 adjudication (`/adjudication`). Navigate via the in-page nav
   rail (**Board** is a primary, always-visible item), the native **Go** menu
   (⌘1–⌘9 for the first nine destinations, plus a dedicated **⌘B** for Board), or
   **View → Home** (⇧⌘H).
