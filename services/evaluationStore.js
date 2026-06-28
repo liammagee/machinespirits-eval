@@ -727,6 +727,7 @@ export function storeResult(runId, result) {
       learner_prompt_version,
       prompt_content_hash,
       learner_id,
+      id_construction_trace,
       created_at
     ) VALUES (
       ?, ?, ?, ?,
@@ -745,6 +746,7 @@ export function storeResult(runId, result) {
       ?,
       ?,
       ?, ?, ?, ?,
+      ?,
       ?,
       ?
     )
@@ -804,6 +806,7 @@ export function storeResult(runId, result) {
     result.learnerPromptVersion || null,
     result.promptContentHash || null,
     result.learnerId || null,
+    result.idConstructionTrace == null ? null : JSON.stringify(result.idConstructionTrace),
     new Date().toISOString(),
   );
 
@@ -2036,11 +2039,17 @@ function parseResultRow(row) {
     tutorHolisticOverallScore: row.tutor_holistic_overall_score != null ? row.tutor_holistic_overall_score : null,
     tutorHolisticSummary: row.tutor_holistic_summary || null,
     tutorHolisticJudgeModel: row.tutor_holistic_judge_model || null,
+    tutorCharismaScores: row.tutor_charisma_scores ? JSON.parse(row.tutor_charisma_scores) : null,
+    tutorCharismaOverallScore: row.tutor_charisma_overall_score != null ? row.tutor_charisma_overall_score : null,
+    tutorCharismaSummary: row.tutor_charisma_summary || null,
+    tutorCharismaRubricVersion: row.tutor_charisma_rubric_version || null,
+    tutorCharismaJudgeModel: row.tutor_charisma_judge_model || null,
     // Prompt versioning
     tutorEgoPromptVersion: row.tutor_ego_prompt_version || null,
     tutorSuperegoPromptVersion: row.tutor_superego_prompt_version || null,
     learnerPromptVersion: row.learner_prompt_version || null,
     promptContentHash: row.prompt_content_hash || null,
+    idConstructionTrace: row.id_construction_trace ? JSON.parse(row.id_construction_trace) : null,
   };
 }
 

@@ -204,6 +204,7 @@ async function main() {
     (r) =>
       r.success &&
       ((Array.isArray(r.suggestions) && r.suggestions.length > 1) ||
+        Number(r.dialogueRounds) > 1 ||
         (r.conversationMode === 'messages' && r.dialogueRounds > 1)),
   );
 

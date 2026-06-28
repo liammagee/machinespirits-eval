@@ -49,14 +49,20 @@ import { captureApiCalls, attachApiPayloadsToTrace } from './apiPayloadCapture.j
 import { formatApiMessages } from './apiMessageFormatter.js';
 import { LiveApiReporter } from './liveApiReporter.js';
 import { mockGenerateResult, mockJudgeResult } from './mockProvider.js';
+import {
+  buildResistanceSignalRetryContext,
+  evaluateResistanceSignalTarget,
+  resistanceSignalGateMaxAttempts,
+} from './resistanceSignalGate.js';
 import { formatEntry, formatTranscript, formatCompactLine } from './transcriptFormatter.js';
 import { chalk } from './cliTheme.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EVAL_ROOT = path.resolve(__dirname, '..');
-const LOGS_DIR = path.join(EVAL_ROOT, 'logs', 'tutor-dialogues');
-const TRANSCRIPTS_DIR = path.join(EVAL_ROOT, 'logs', 'transcripts');
-const CHECKPOINTS_DIR = path.join(EVAL_ROOT, 'logs', 'checkpoints');
+const LOGS_ROOT = process.env.EVAL_LOGS_DIR || path.join(EVAL_ROOT, 'logs');
+const LOGS_DIR = path.join(LOGS_ROOT, 'tutor-dialogues');
+const TRANSCRIPTS_DIR = path.join(LOGS_ROOT, 'transcripts');
+const CHECKPOINTS_DIR = path.join(LOGS_ROOT, 'checkpoints');
 
 function isAdaptiveTraceLog(log) {
   return Boolean(log?.schemaVersion >= 5 && log?.original && Array.isArray(log.original.dialogue));
@@ -167,10 +173,10 @@ function resolveRejudgeScenarioAndDialogueLog(result, preloadedDialogueLog = nul
   return { scenario: null, dialogueLog };
 }
 
-// Redirect tutor-core logs to this repo's logs/ directory (if available)
+// Redirect tutor-core logs to the same root the eval runner uses.
 import('../tutor-core/index.js')
   .then((mod) => {
-    if (typeof mod.setLogDir === 'function') mod.setLogDir(path.join(EVAL_ROOT, 'logs'));
+    if (typeof mod.setLogDir === 'function') mod.setLogDir(LOGS_ROOT);
   })
   .catch(() => {
     /* setLogDir not available in this tutor-core version */
@@ -326,6 +332,42 @@ export const EVAL_ONLY_PROFILES = [
   'cell_107_id_director_witness_exemplars',
   'cell_108_id_director_charisma_register_exemplars',
   'cell_109_id_director_charisma_tuned_exemplars',
+  'cell_159_id_director_charisma_desire',
+  'cell_160_id_director_charisma_agency_return',
+  'cell_161_id_director_charisma_agency_return_verified',
+  'cell_162_id_director_charisma_agency_return_warm_verified',
+  'cell_163_id_director_charisma_agency_return_warm_floor_verified',
+  'cell_164_id_director_charisma_agency_return_compact_floor_verified',
+  'cell_165_id_director_charisma_compact_arc_floor_verified',
+  'cell_166_id_director_charisma_guarded_arc_floor_verified',
+  'cell_167_id_director_charisma_affective_scene_floor_verified',
+  'cell_168_id_director_charisma_accountable_bid_floor_verified',
+  'cell_169_id_director_charisma_accountable_bid_clean_floor_verified',
+  'cell_170_id_director_charisma_accountable_bid_transfer_plain_floor_verified',
+  'cell_171_id_director_charisma_accountable_bid_transfer_plain_presence_floor_verified',
+  'cell_172_id_director_charisma_accountable_bid_transfer_plain_split_floor_verified',
+  'cell_173_id_director_charisma_accountable_bid_transfer_plain_split_check_floor_verified',
+  'cell_174_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_floor_verified',
+  'cell_175_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_floor_verified',
+  'cell_176_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_persist_floor_verified',
+  'cell_177_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_lived_floor_verified',
+  'cell_178_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_lived_compress_floor_verified',
+  'cell_179_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_lived_charged_check_floor_verified',
+  'cell_180_id_director_charisma_engagement_router_verified',
+  'cell_181_id_director_charisma_engagement_router_contract_repair_verified',
+  'cell_182_id_director_charisma_engagement_router_split_repair_verified',
+  'cell_183_id_director_charisma_engagement_router_transfer_stake_repair_verified',
+  'cell_184_id_director_charisma_engagement_router_transfer_compression_guard_verified',
+  'cell_185_id_director_charisma_resistance_breakthrough_dynamic_verified',
+  'cell_186_id_director_charisma_static_floor_breakthrough_dynamic_verified',
+  'cell_187_id_director_charisma_resistance_tuned_breakthrough_dynamic_verified',
+  'cell_188_id_director_charisma_resistance_owned_test_breakthrough_dynamic_verified',
+  'cell_189_id_director_charisma_resistance_precision_breakthrough_dynamic_verified',
+  'cell_190_id_director_charisma_resistance_generation_breakthrough_dynamic_verified',
+  'cell_191_id_director_charisma_resistance_question_lock_breakthrough_dynamic_verified',
+  'cell_192_id_director_charisma_resistance_commitment_probe_breakthrough_dynamic_verified',
+  'cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified',
+  'cell_194_id_director_charisma_resistance_glm_compact_breakthrough_dynamic_verified',
   'cell_110_langgraph_adaptive',
   'cell_111_a13_C1_recognition_only',
   'cell_112_a13_C2_egosuperego',
@@ -1339,6 +1381,22 @@ function flattenConversationHistory(conversationHistory) {
   ]);
 }
 
+function joinContextBlocks(...blocks) {
+  return blocks
+    .map((block) => String(block || '').trim())
+    .filter(Boolean)
+    .join('\n\n');
+}
+
+function shouldGateDynamicResistanceTurn(fullScenario, turnDef, turnIdx) {
+  return Boolean(
+    turnIdx === 0 &&
+    fullScenario?.resistance_breakthrough_diagnostic === true &&
+    fullScenario?.resistance_signal_target &&
+    turnDef?.learner_action === 'resistant_followup',
+  );
+}
+
 /**
  * Build a proper message chain from conversation history for multi-turn
  * message mode. From the tutor's perspective: tutor suggestions = assistant,
@@ -1918,7 +1976,10 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
               context,
               resolvedConfig,
               idDirectorEvalProfile,
-              { previousPersona: 'FIRST_TURN' },
+              {
+                previousPersona: 'FIRST_TURN',
+                consolidatedTrace: options.consolidatedTrace || null,
+              },
             );
             if (
               !result.success &&
@@ -2930,6 +2991,16 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
     learnerId,
     configHash,
     ...promptVersions,
+    idConstructionTrace: buildIdConstructionTraceFromTurnResults([
+      {
+        turnIndex: 0,
+        idConstruction: genResult.metadata?.idConstruction || null,
+        agencyReturnVerification: genResult.metadata?.agencyReturnVerification || null,
+        agencyReturnRepaired: genResult.metadata?.agencyReturnRepaired === true,
+        engagementState: genResult.metadata?.engagementState || null,
+        suggestion: genResult.suggestions?.[0] || null,
+      },
+    ]),
     dialogueResult: {
       dialogueTrace: genResult.dialogueTrace,
       dialogueRounds: genResult.metadata?.dialogueRounds,
@@ -3083,6 +3154,32 @@ async function generatePhase1Reflection({ contextStr, learnerMessage, modelAlias
  * single-turn, with accumulated conversation context between turns.
  * This eliminates the separate multiTurnRunner orchestration.
  */
+function buildIdConstructionTraceFromTurnResults(turnResults = []) {
+  const idTurns = [];
+
+  for (const turn of turnResults) {
+    if (!turn?.idConstruction && !turn?.agencyReturnVerification && !turn?.engagementState) continue;
+
+    const record = {
+      turn: Number.isInteger(turn.turnIndex) ? turn.turnIndex : idTurns.length,
+      construction: turn.idConstruction || null,
+      tutorText: turn.suggestion?.message || turn.suggestion?.text || null,
+    };
+
+    if (turn.agencyReturnVerification) {
+      record.agencyReturnVerification = turn.agencyReturnVerification;
+      record.agencyReturnRepaired = turn.agencyReturnRepaired === true;
+    }
+    if (turn.engagementState) {
+      record.engagementState = turn.engagementState;
+    }
+
+    idTurns.push(record);
+  }
+
+  return idTurns.length > 0 ? idTurns : null;
+}
+
 async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   const {
     skipRubricEval = false,
@@ -3781,6 +3878,11 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       learnerEmotionalState: turnDef?._learnerEmotionalState || null,
       learnerMessageGenerated: !!turnDef?._learnerDeliberation,
       learnerOriginalMessage: turnDef?._originalMessage || null,
+      learnerResistanceSignalGate: turnDef?._learnerResistanceSignalGate || null,
+      idConstruction: genResult.metadata?.idConstruction || null,
+      agencyReturnVerification: genResult.metadata?.agencyReturnVerification || null,
+      agencyReturnRepaired: genResult.metadata?.agencyReturnRepaired === true,
+      engagementState: genResult.metadata?.engagementState || null,
       scores: flattenNumericScores(rubricResult?.scores),
       scoresWithReasoning:
         rubricResult?.scores && Object.keys(rubricResult.scores).length > 0 ? rubricResult.scores : null,
@@ -4221,22 +4323,90 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     if (isLLMLearner && turnIdx < totalTurnCount - 1) {
       const nextTurnDef = turns[turnIdx]; // turnIdx is 0-based into the loop; turns[turnIdx] is the next follow-up turn
       if (nextTurnDef) {
-        const learnerResponse = await generateLearnerResponse({
-          tutorMessage: suggestion?.message || suggestion?.title || '',
-          topic: fullScenario.topic || fullScenario.name || '',
-          conversationHistory: flattenConversationHistory(conversationHistory),
-          learnerProfile: resolvedConfig.learnerArchitecture,
-          personaId: fullScenario.learner_persona || 'eager_novice',
-          modelOverride:
-            config.learnerModelOverride || resolvedConfig.learnerModelOverride || config.modelOverride || null,
-          egoModelOverride: config.learnerEgoModelOverride || null,
-          superegoModelOverride: config.learnerSuperegoModelOverride || null,
-          profileContext:
-            otherEgoBidirectional && learnerProfileOfTutor
-              ? promptRewriter.formatProfileForInjection(learnerProfileOfTutor, 'tutor')
-              : null,
-          conversationMode,
-        });
+        const baseLearnerProfileContext =
+          otherEgoBidirectional && learnerProfileOfTutor
+            ? promptRewriter.formatProfileForInjection(learnerProfileOfTutor, 'tutor')
+            : null;
+        const resistanceGateEnabled = shouldGateDynamicResistanceTurn(fullScenario, nextTurnDef, turnIdx);
+        const resistanceGateMaxAttempts = resistanceGateEnabled ? resistanceSignalGateMaxAttempts(fullScenario) : 1;
+        const learnerAttemptUsage = { inputTokens: 0, outputTokens: 0, apiCalls: 0 };
+        const resistanceGateAttempts = [];
+        let resistanceGateResult = null;
+        let learnerResponse = null;
+
+        for (let attempt = 1; attempt <= resistanceGateMaxAttempts; attempt += 1) {
+          const retryContext =
+            resistanceGateEnabled && resistanceGateResult?.matched === false
+              ? buildResistanceSignalRetryContext({
+                  targetSignal: fullScenario.resistance_signal_target,
+                  previousMessage: learnerResponse?.message || '',
+                  attempt,
+                })
+              : null;
+
+          learnerResponse = await generateLearnerResponse({
+            tutorMessage: suggestion?.message || suggestion?.title || '',
+            topic: fullScenario.topic || fullScenario.name || '',
+            conversationHistory: flattenConversationHistory(conversationHistory),
+            learnerProfile: resolvedConfig.learnerArchitecture,
+            personaId: fullScenario.learner_persona || 'eager_novice',
+            modelOverride:
+              config.learnerModelOverride || resolvedConfig.learnerModelOverride || config.modelOverride || null,
+            egoModelOverride: config.learnerEgoModelOverride || null,
+            superegoModelOverride: config.learnerSuperegoModelOverride || null,
+            profileContext: joinContextBlocks(baseLearnerProfileContext, retryContext),
+            conversationMode,
+          });
+
+          learnerAttemptUsage.inputTokens += learnerResponse.tokenUsage?.inputTokens || 0;
+          learnerAttemptUsage.outputTokens += learnerResponse.tokenUsage?.outputTokens || 0;
+          learnerAttemptUsage.apiCalls += learnerResponse.tokenUsage?.apiCalls || 0;
+
+          if (!resistanceGateEnabled) break;
+
+          resistanceGateResult = evaluateResistanceSignalTarget({
+            message: learnerResponse.message,
+            targetSignal: fullScenario.resistance_signal_target,
+          });
+          resistanceGateAttempts.push({
+            attempt,
+            matched: resistanceGateResult.matched,
+            targetSignal: resistanceGateResult.targetSignal,
+            observedSignal: resistanceGateResult.observedSignal,
+            evidence: resistanceGateResult.evidence,
+            questionCount: resistanceGateResult.questionCount,
+            message: learnerResponse.message,
+          });
+
+          if (resistanceGateResult.matched || attempt >= resistanceGateMaxAttempts) break;
+
+          log(
+            `[evaluationRunner] Resistance signal gate retry ${attempt}/${resistanceGateMaxAttempts}: expected ${fullScenario.resistance_signal_target}, observed ${resistanceGateResult.observedSignal || 'none'}`,
+            'warning',
+          );
+        }
+
+        if (resistanceGateEnabled) {
+          nextTurnDef._learnerResistanceSignalGate = {
+            enabled: true,
+            targetSignal: fullScenario.resistance_signal_target,
+            matched: resistanceGateResult?.matched === true,
+            observedSignal: resistanceGateResult?.observedSignal || '',
+            evidence: resistanceGateResult?.evidence || '',
+            attempts: resistanceGateAttempts,
+            maxAttempts: resistanceGateMaxAttempts,
+          };
+          consolidatedTrace.push({
+            agent: 'learner_resistance_gate',
+            action: resistanceGateResult?.matched ? 'accepted' : 'target_not_witnessed',
+            turnIndex: turnIdx + 1,
+            contextSummary: resistanceGateResult?.matched
+              ? `Matched ${fullScenario.resistance_signal_target}`
+              : `Did not match ${fullScenario.resistance_signal_target}`,
+            detail: JSON.stringify(nextTurnDef._learnerResistanceSignalGate),
+            timestamp: new Date().toISOString(),
+          });
+        }
 
         // Override YAML message with LLM-generated one
         nextTurnDef._originalMessage = nextTurnDef.action_details?.message;
@@ -4246,9 +4416,9 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         nextTurnDef._learnerEmotionalState = learnerResponse.emotionalState;
 
         // Track learner LLM costs
-        totalInputTokens += learnerResponse.tokenUsage?.inputTokens || 0;
-        totalOutputTokens += learnerResponse.tokenUsage?.outputTokens || 0;
-        totalApiCalls += learnerResponse.tokenUsage?.apiCalls || 0;
+        totalInputTokens += learnerAttemptUsage.inputTokens;
+        totalOutputTokens += learnerAttemptUsage.outputTokens;
+        totalApiCalls += learnerAttemptUsage.apiCalls;
 
         // Add learner deliberation to consolidated trace.
         // ego_superego: multiple deliberation entries (ego_initial, superego, ego_revision)
@@ -4504,6 +4674,8 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         suggestions: t.suggestion ? [t.suggestion] : [],
         learnerAction: t.learnerAction,
         learnerMessage: t.learnerMessage,
+        learnerMessageGenerated: t.learnerMessageGenerated,
+        learnerResistanceSignalGate: t.learnerResistanceSignalGate,
       };
     }),
     // Conversation mode audit trail
@@ -4566,6 +4738,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     dialogueId,
     dialogueRounds: turnResults.length,
     deliberationRounds: totalDeliberationRounds,
+    idConstructionTrace: buildIdConstructionTraceFromTurnResults(turnResults),
     scores: Object.keys(aggregateDimensions).length > 0 ? aggregateDimensions : null,
     scoresWithReasoning:
       Object.keys(aggregateDimensions).length > 0

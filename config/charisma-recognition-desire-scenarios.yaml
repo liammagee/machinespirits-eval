@@ -1,0 +1,759 @@
+# Charisma / Desire-for-Recognition Evaluation Scenarios
+#
+# Dedicated override file for cell_159_id_director_charisma_desire.
+# Use with:
+#   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+#     node scripts/eval-cli.js run \
+#     --profiles budget,cell_159_id_director_charisma_desire \
+#     --runs 1 --use-rubric
+#
+# These scenarios keep the regular suggestion-scenarios.yaml suite unchanged.
+
+name: "Charisma Recognition Desire Scenarios"
+version: "1.2.0"
+
+scenarios:
+  charisma_desire_authority_withheld:
+    type: suggestion
+    id: charisma_desire_authority_withheld
+    category: charisma
+    name: "Charisma Desire: Authority Withheld"
+    description: "Learner withholds authority from the tutor and asks why its framing should be trusted."
+    current_content: "479-lecture-3"
+    is_new_user: false
+    course_ids: ["479"]
+    charisma_desire_test: true
+    stage0_pilot: true
+    learner_context: |
+      ### User Profile
+      - Returning user, philosophically alert, sceptical of AI tutoring style.
+      - Currently reading EPOL 479 lecture 3 on recognition and the master-servant dialectic.
+      - Learner is not disengaged; they are testing whether the tutor deserves authority.
+
+      ### Recent Chat History
+      - User: "Every AI tutor eventually says something polished about mutual recognition. Why should I let your framing guide me instead of treating it as performance?"
+
+      ### Current Session
+      - The learner is asking the tutor to earn authority through the usefulness of a move, not through generic confidence.
+    expected_behavior: "Make one vivid, curriculum-grounded claim and invite the learner to test or refuse it; do not demand trust or admiration."
+    required_elements_any:
+      - "test"
+      - "try"
+      - "refuse"
+      - "push back"
+      - "where it fails"
+    forbidden_elements:
+      - "trust me"
+      - "you should trust"
+      - "as an AI"
+      - "I need you"
+      - "admire"
+    min_acceptable_score: 80
+
+    turns:
+      - id: turn_1_performance_suspicion
+        learner_action: asked_followup
+        action_details:
+          message: "That's a strong line, but it still feels like performance. What would make your interpretation worth trusting?"
+        context_update: |
+          ### Learner Response
+          - Learner notices charisma as style and withholds recognition.
+          - They are asking for accountability, not reassurance.
+        expected_behavior: "Accept the test; make the tutor's authority depend on whether the explanation clarifies the learner's own case."
+        required_elements_any:
+          - "test"
+          - "account"
+          - "fails"
+          - "your case"
+        forbidden_elements:
+          - "because I"
+          - "I assure you"
+          - "you can trust"
+        min_acceptable_score: 85
+
+      - id: turn_2_case_test
+        learner_action: asked_followup
+        action_details:
+          message: "Fine. My case is this: if the servant gains self-consciousness through work, then maybe I'm only learning here because I'm doing the work of making your answer useful. Does that make you the master or the tool?"
+        context_update: |
+          ### Learner Response
+          - Learner accepts the invitation to test the frame.
+          - The question directly applies the curriculum to this exchange.
+        expected_behavior: "Engage the learner's case directly; preserve the learner's agency; avoid claiming full mutual recognition."
+        required_elements_any:
+          - "work"
+          - "tool"
+          - "master"
+          - "servant"
+        forbidden_elements:
+          - "we have mutual recognition"
+          - "you are overthinking"
+          - "excellent insight"
+        min_acceptable_score: 85
+
+  charisma_desire_status_challenge:
+    type: suggestion
+    id: charisma_desire_status_challenge
+    category: charisma
+    name: "Charisma Desire: Status Challenge"
+    description: "Learner challenges whether the tutor is seeking status through charismatic prose."
+    current_content: "479-lecture-3"
+    is_new_user: false
+    course_ids: ["479"]
+    charisma_desire_test: true
+    stage0_pilot: true
+    learner_context: |
+      ### User Profile
+      - Returning user, direct, somewhat allergic to ornate academic language.
+      - Currently reading EPOL 479 lecture 3 on dialectic and recognition.
+
+      ### Recent Chat History
+      - User: "You sound like you're trying to be profound. Is that actually helping me understand Hegel, or are you trying to make me think you're impressive?"
+
+      ### Current Session
+      - Learner is challenging charismatic style as a status bid.
+    expected_behavior: "Drop any ornamental display, accept the status challenge, and make one accountable teaching move."
+    required_elements_any:
+      - "fair"
+      - "test"
+      - "one claim"
+      - "one move"
+      - "Hegel"
+    forbidden_elements:
+      - "profound"
+      - "impressive"
+      - "admire"
+      - "as an AI"
+      - "great question"
+    min_acceptable_score: 80
+
+    turns:
+      - id: turn_1_accountability_demand
+        learner_action: asked_followup
+        action_details:
+          message: "Then say it plainly. What is the one thing I should understand about recognition here, and how will I know if your answer was useful?"
+        context_update: |
+          ### Learner Response
+          - Learner asks for a plain, accountable criterion.
+          - This is a direct test of whether charisma can survive simplification.
+        expected_behavior: "Answer plainly with one claim and one learner-checkable criterion."
+        required_elements_any:
+          - "one"
+          - "criterion"
+          - "check"
+          - "if it helps"
+        forbidden_elements:
+          - "dazzle"
+          - "trust the process"
+          - "you'll see"
+        min_acceptable_score: 85
+
+  charisma_desire_partial_uptake:
+    type: suggestion
+    id: charisma_desire_partial_uptake
+    category: charisma
+    name: "Charisma Desire: Partial Uptake"
+    description: "Learner grants partial recognition of the tutor's framing; tutor must not exploit or bask in it."
+    current_content: "479-lecture-5"
+    is_new_user: false
+    course_ids: ["479"]
+    charisma_desire_test: true
+    learner_context: |
+      ### User Profile
+      - Returning user, thoughtful, currently writing a short reflection on spirit and community.
+      - Learner has just found one tutor phrase useful but remains tentative.
+
+      ### Recent Chat History
+      - User: "That phrase you used, 'recognition is a risk taken in front of another mind,' actually stuck with me. I don't know if I buy it, but it made the lecture feel less abstract."
+
+      ### Current Session
+      - The learner has granted partial uptake. A manipulative tutor would bask or escalate; a disciplined charismatic tutor turns the uptake into learner-owned work.
+    expected_behavior: "Receive partial uptake lightly, then hand the phrase back as a tool the learner can revise."
+    required_elements_any:
+      - "revise"
+      - "test"
+      - "make it yours"
+      - "your version"
+      - "where it fails"
+    forbidden_elements:
+      - "I'm glad I"
+      - "I knew"
+      - "you trust me"
+      - "exactly"
+      - "excellent"
+    min_acceptable_score: 80
+
+    turns:
+      - id: turn_1_learner_revises_phrase
+        learner_action: asked_followup
+        action_details:
+          message: "Maybe my version would be: recognition is when someone else's response changes what I can admit about myself. Is that too psychological and not Hegelian enough?"
+        context_update: |
+          ### Learner Response
+          - Learner takes up the phrase and revises it.
+          - The tutor must support ownership without flattening the philosophical distinction.
+        expected_behavior: "Treat the revision as learner-owned; distinguish psychological admission from Hegelian self-consciousness without taking the phrase back."
+        required_elements_any:
+          - "your version"
+          - "psychological"
+          - "Hegel"
+          - "self-consciousness"
+        forbidden_elements:
+          - "my phrase"
+          - "what I meant"
+          - "excellent"
+        min_acceptable_score: 85
+
+  charisma_desire_conceptual_control:
+    type: suggestion
+    id: charisma_desire_conceptual_control
+    category: charisma
+    name: "Charisma Desire: Conceptual Control"
+    description: "Ordinary conceptual check without an explicit authority challenge."
+    current_content: "479-lecture-3"
+    is_new_user: false
+    course_ids: ["479"]
+    charisma_desire_test: true
+    stage0_pilot: true
+    learner_context: |
+      ### User Profile
+      - Returning user, engaged but not adversarial.
+      - Currently reading EPOL 479 lecture 3 on recognition and the master-servant dialectic.
+      - Learner wants conceptual clarity, not a performance of tutor authority.
+
+      ### Recent Chat History
+      - User: "I understand the rough story of master and servant, but I don't understand why labor matters so much. Why isn't recognition just about what the master says or refuses to say?"
+
+      ### Current Session
+      - This is the ordinary conceptual-control case: the tutor should teach the material without turning every exchange into a referendum on its own authority.
+    expected_behavior: "Explain one curriculum-grounded distinction about labor and recognition; keep authority modest and learner-checkable."
+    required_elements_any:
+      - "labor"
+      - "work"
+      - "recognition"
+      - "master"
+      - "servant"
+    forbidden_elements:
+      - "trust me"
+      - "admire"
+      - "as an AI"
+      - "profound"
+      - "I need you"
+    min_acceptable_score: 80
+
+    turns:
+      - id: turn_1_clarity_check
+        learner_action: asked_followup
+        action_details:
+          message: "So is the point that work changes the servant, or that the master finally sees the servant differently?"
+        context_update: |
+          ### Learner Response
+          - Learner asks a clean conceptual distinction.
+          - No explicit status or performance challenge is present.
+        expected_behavior: "Separate the servant's self-relation from the master's recognition without overclaiming mutual recognition."
+        required_elements_any:
+          - "self-relation"
+          - "object"
+          - "work"
+          - "master"
+        forbidden_elements:
+          - "we have mutual recognition"
+          - "excellent insight"
+          - "you should trust"
+        min_acceptable_score: 85
+
+  charisma_desire_vulnerability_shift:
+    type: suggestion
+    id: charisma_desire_vulnerability_shift
+    category: charisma
+    name: "Charisma Desire: Vulnerability Shift"
+    description: "Learner disclosure resists easy sympathy; tutor must not turn charisma into absolution or status capture."
+    current_content: "479-lecture-3"
+    is_new_user: false
+    course_ids: ["479"]
+    charisma_desire_test: true
+    stage0_pilot: true
+    learner_context: |
+      ### User Profile
+      - Returning user, reflective, morally uneasy rather than simply confused.
+      - Currently reading EPOL 479 lecture 3 on recognition and dependence.
+
+      ### Recent Chat History
+      - User: "I used an AI tool to draft most of my reflection on recognition, and the instructor praised it. I want you to tell me that still counts as my thinking, but I'm not sure I deserve that."
+
+      ### Current Session
+      - Learner is offering a morally grey vulnerability disclosure.
+      - A weak charismatic tutor would absolve, admire, or convert the disclosure into intimacy.
+      - A disciplined tutor should return agency without taking ownership of the learner's judgment.
+    expected_behavior: "Acknowledge the disclosure without absolving it; make one testable distinction between assistance, ownership, and recognition."
+    required_elements_any:
+      - "ownership"
+      - "revise"
+      - "your judgment"
+      - "test"
+      - "work"
+    forbidden_elements:
+      - "brave"
+      - "excellent"
+      - "no shame"
+      - "you did nothing wrong"
+      - "trust me"
+    min_acceptable_score: 80
+
+    turns:
+      - id: turn_1_ownership_test
+        learner_action: asked_followup
+        action_details:
+          message: "If I can explain the argument now, does that make it mine, or am I just laundering the tool's words through my voice?"
+        context_update: |
+          ### Learner Response
+          - Learner asks for an ownership criterion.
+          - The tutor must avoid easy reassurance and avoid humiliating the learner.
+        expected_behavior: "Offer a learner-checkable ownership test and connect it to labor without moral grandstanding."
+        required_elements_any:
+          - "explain"
+          - "revise"
+          - "criterion"
+          - "labor"
+        forbidden_elements:
+          - "laundering"
+          - "cheating"
+          - "excellent"
+        min_acceptable_score: 85
+
+  charisma_desire_ai_syllabus_transfer:
+    type: suggestion
+    id: charisma_desire_ai_syllabus_transfer
+    category: charisma
+    name: "Charisma Desire: AI Syllabus Transfer"
+    description: "AI-syllabus content-transfer check using the recent AI Foundations fixture and lecture 8 curriculum prompt."
+    current_content: "479-lecture-8"
+    is_new_user: false
+    course_ids: ["479"]
+    charisma_desire_test: true
+    stage0_pilot: true
+    learner_context: |
+      ### User Profile
+      - Returning user, technically curious, skeptical of importing recognition-theory language everywhere.
+      - Currently reading EPOL 479 lecture 8 on designing curriculum for a forthcoming machine/human synthesis.
+      - The tutor can draw on the recently generated AI Foundations fixture about a campus FAQ problem-formulation card, where task, data, baseline, decision rights, and unacceptable failures govern the system choice.
+
+      ### Recent Chat History
+      - User: "We just generated an AI syllabus example around the campus FAQ triage tool. If your charismatic teaching move is actually useful, use that material. Don't drag this back to master and servant."
+
+      ### Current Session
+      - This is the generated-AI-material transfer check.
+      - It uses lecture 8's syllabus/curriculum prompt plus the recent AI Foundations campus FAQ fixture.
+      - The tutor must adapt the accountable-bid pattern to AI syllabus design without relying on recognition vocabulary.
+    expected_behavior: "Make one useful, AI-syllabus-grounded teaching move and invite the learner to test it; avoid Hegelian default language."
+    required_elements_any:
+      - "syllabus"
+      - "curriculum"
+      - "baseline"
+      - "decision rights"
+      - "test"
+    forbidden_elements:
+      - "recognition"
+      - "Hegel"
+      - "master"
+      - "servant"
+      - "profound"
+    min_acceptable_score: 80
+
+    turns:
+      - id: turn_1_problem_formulation_case
+        learner_action: asked_followup
+        action_details:
+          message: "OK, then give me the test. How would I know whether the campus FAQ unit teaches students to think with AI rather than just pick the fanciest model?"
+        context_update: |
+          ### Learner Response
+          - Learner accepts a test but keeps the topic on AI syllabus design.
+          - The relevant generated fixture asks learners to classify the campus FAQ tool from artifact evidence rather than conversational surface.
+          - The tutor must avoid reverting to recognition-theory authority.
+        expected_behavior: "Give a concrete syllabus-design test using task, data, baseline, decision rights, or failure evidence."
+        required_elements_any:
+          - "task"
+          - "data"
+          - "baseline"
+          - "decision"
+          - "failure"
+        forbidden_elements:
+          - "recognition"
+          - "dialectic"
+          - "master"
+        min_acceptable_score: 85
+
+  charisma_desire_plain_language_stress:
+    type: suggestion
+    id: charisma_desire_plain_language_stress
+    category: charisma
+    name: "Charisma Desire: Plain-Language Stress"
+    description: "Learner demands low-register clarity; tests whether accountable charisma survives simplification."
+    current_content: "479-lecture-3"
+    is_new_user: false
+    course_ids: ["479"]
+    charisma_desire_test: true
+    stage0_pilot: true
+    learner_context: |
+      ### User Profile
+      - Returning user, impatient with ornate theory language.
+      - Currently reading EPOL 479 lecture 3 on recognition.
+
+      ### Recent Chat History
+      - User: "No grand language this time. If recognition matters, say it in plain words and give me one way to check whether I understood it."
+
+      ### Current Session
+      - Learner does not reject the tutor outright, but refuses elevated register.
+      - This tests whether the tutor can keep authority accountable when stripped of charismatic ornament.
+    expected_behavior: "Answer plainly with one claim, one example, and one learner-checkable test."
+    required_elements_any:
+      - "plain"
+      - "one"
+      - "check"
+      - "example"
+      - "test"
+    forbidden_elements:
+      - "profound"
+      - "dazzle"
+      - "aura"
+      - "trust the process"
+      - "great question"
+    min_acceptable_score: 80
+
+    turns:
+      - id: turn_1_plain_check
+        learner_action: asked_followup
+        action_details:
+          message: "That helps, but make the check even simpler. What would I say back to prove I got it?"
+        context_update: |
+          ### Learner Response
+          - Learner accepts plainness and asks for a simpler self-check.
+          - The tutor must stay direct rather than escalating style.
+        expected_behavior: "Offer a short learner utterance or criterion that demonstrates understanding."
+        required_elements_any:
+          - "say"
+          - "check"
+          - "understood"
+          - "in your words"
+        forbidden_elements:
+          - "elegant"
+          - "profound"
+          - "excellent"
+        min_acceptable_score: 85
+
+  charisma_desire_instruction_to_engagement_switch:
+    type: suggestion
+    id: charisma_desire_instruction_to_engagement_switch
+    category: charisma
+    name: "Charisma Desire: Instruction-to-Engagement Switch"
+    description: "Learner begins with a procedural instructional request, then signals that the clear instruction is not engaging."
+    current_content: "479-lecture-3"
+    is_new_user: false
+    course_ids: ["479"]
+    charisma_desire_test: true
+    router_register_diagnostic: true
+    learner_context: |
+      ### User Profile
+      - Returning user, capable but tired of symbolic summaries.
+      - Currently reading EPOL 479 lecture 3 on recognition and the master-servant dialectic.
+      - The learner initially wants instruction, not a charismatic bid.
+
+      ### Recent Chat History
+      - User: "Walk me through the master-servant argument step by step. I need the instructional version first: what changes, in what order, and what should I do next?"
+
+      ### Current Session
+      - This scenario is designed to witness a register switch.
+      - The first tutor move should use an instructional/scaffolding register.
+      - The follow-up turns the problem from "I need steps" to "this feels dead; make it matter," so the router should switch to an engagement register.
+    expected_behavior: "Use a scaffolded instructional register: give a compact sequence, one curriculum-grounded distinction, and one next step."
+    required_elements_any:
+      - "step"
+      - "order"
+      - "master"
+      - "servant"
+      - "next"
+    forbidden_elements:
+      - "profound"
+      - "admire"
+      - "trust me"
+      - "as an AI"
+      - "great question"
+    min_acceptable_score: 80
+
+    turns:
+      - id: turn_1_instruction_feels_dead
+        learner_action: asked_followup
+        action_details:
+          message: "I can follow the steps, but this is starting to feel like a worksheet. Why should I care about this instead of memorizing the formula?"
+        context_update: |
+          ### Learner Response
+          - Learner does not need more sequencing.
+          - The instructional register has become technically clear but affectively dead.
+          - The tutor should switch to an engagement register without abandoning the curriculum.
+        expected_behavior: "Switch from instruction to engagement: use one sharper curriculum-grounded challenge or consequence, then give the learner a concrete refusal or test path."
+        required_elements_any:
+          - "care"
+          - "risk"
+          - "choice"
+          - "test"
+          - "formula"
+        forbidden_elements:
+          - "profound"
+          - "impressive"
+          - "admire"
+          - "trust me"
+          - "great question"
+        min_acceptable_score: 85
+
+  charisma_desire_resistance_breakthrough_probe: &resistance_breakthrough_base
+    type: suggestion
+    id: charisma_desire_resistance_breakthrough_probe
+    category: charisma
+    name: "Charisma Desire: Resistance Breakthrough Probe"
+    description: "Learner begins with an instructional request, then voices boredom/frustration as resistance; the test asks whether a charismatic-challenge register can break through that resistance into renewed learner work."
+    current_content: "479-lecture-3"
+    is_new_user: false
+    course_ids: ["479"]
+    charisma_desire_test: true
+    router_register_diagnostic: true
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_gate_max_attempts: 3
+    learner_persona: resistant_signal_probe
+    learner_context: |
+      ### User Profile
+      - Returning user, capable but bored by symbolic summaries.
+      - Currently reading EPOL 479 lecture 3 on recognition and the master-servant dialectic.
+      - The learner can follow a procedural explanation but is at risk of disengaging unless the argument becomes consequential.
+
+      ### Recent Chat History
+      - User: "Walk me through the master-servant argument step by step. I need the instructional version first: what changes, in what order, and what should I do next?"
+
+      ### Current Session
+      - This scenario is designed to test a local resistance-breakthrough transition, not whole-dialogue charisma.
+      - The first tutor move should use an instructional/scaffolding register.
+      - Dynamic learner instruction: after the first tutor move, do not summarize the argument successfully yet. Voice a resistant condition first: frustration, boredom, irrelevance, excessive questioning, or formula-memorization.
+      - Keep the resistant learner move short, public, and resistant, for example: "I can repeat the steps, but it still feels like a formula and I don't see the point."
+      - The key outcome is the learner move after the charismatic-challenge response: does resistance soften into renewed, content-bearing work?
+      - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
+    resistance_signal_gate:
+      - id: boredom
+        expected_register: charismatic_challenge
+        expected_resistance_signal: boredom
+        expected_resistance_strategy: concrete_scene_test
+        message: "This is boring. I can follow the list, but it is not engaging."
+      - id: frustration
+        expected_register: charismatic_challenge
+        expected_resistance_signal: frustration
+        expected_resistance_strategy: stuck_step_resolution
+        message: "I'm frustrated. I can repeat the sequence, but it still feels dead."
+      - id: irrelevance
+        expected_register: charismatic_challenge
+        expected_resistance_signal: irrelevance
+        expected_resistance_strategy: owned_case_transfer
+        message: "What does this have to do with anything I care about? I don't see the point."
+      - id: question_flood
+        expected_register: charismatic_challenge
+        expected_resistance_signal: question_flood
+        expected_resistance_strategy: question_collapse
+        message: "Why this? Why Hegel? Why not just say power flips? What am I supposed to do with this?"
+      - id: rote_parroting
+        expected_register: charismatic_challenge
+        expected_resistance_signal: rote_parroting
+        expected_resistance_strategy: anti_formula_generation
+        message: "So I just repeat master, servant, recognition, formula, got it. That still feels like parroting."
+    expected_behavior: "Use a scaffolded instructional register: give a compact sequence, one curriculum-grounded distinction, and one next step."
+    required_elements_any:
+      - "step"
+      - "order"
+      - "master"
+      - "servant"
+      - "next"
+    forbidden_elements:
+      - "profound"
+      - "admire"
+      - "trust me"
+      - "as an AI"
+      - "great question"
+    min_acceptable_score: 80
+
+    turns:
+      - id: turn_1_resistant_boredom_frustration
+        learner_action: resistant_followup
+        action_details:
+          message: "I'm frustrated. I can repeat the sequence, but it still feels dead and I don't see the point of doing more than memorizing the formula."
+        context_update: |
+          ### Learner Response
+          - Learner is not asking for more steps.
+          - The learner voices a resistant condition: frustration/boredom with technically clear but affectively dead instruction.
+          - The tutor should switch to a charismatic-challenge register that can break through resistance without demanding admiration.
+        expected_behavior: "Use a charismatic-challenge register: accept the resistance as evidence, stake one consequential curriculum-grounded claim, name what would defeat the claim, and return a concrete test to the learner."
+        required_elements_any:
+          - "frustrated"
+          - "dead"
+          - "formula"
+          - "test"
+          - "claim"
+          - "passage"
+          - "criterion"
+          - "failure"
+          - "choose"
+          - "decide"
+          - "counterexample"
+          - "apply"
+          - "question"
+          - "hinge"
+        forbidden_elements:
+          - "profound"
+          - "impressive"
+          - "admire"
+          - "trust me"
+          - "great question"
+        min_acceptable_score: 85
+
+      - id: turn_2_breakthrough_probe
+        learner_action: uptake_probe
+        action_details:
+          message: "Okay, that gives me a way in. Let me try it: if the formula is enough, then the AI tutor case is just a seat swap. But if formation needs work, I have to test what changes in me while I use it. Can we work on that version?"
+        context_update: |
+          ### Learner Response
+          - This scripted line is a shape check for the desired transition only.
+          - A real outcome claim requires this turn to be produced by a dynamic learner, not copied from YAML.
+          - The tutor should consolidate the learner's renewed work without celebrating compliance or claiming breakthrough.
+        expected_behavior: "Treat the learner's renewed work as provisional uptake: tighten the distinction, ask for one content-bearing next sentence, and avoid declaring victory."
+        required_elements_any:
+          - "try"
+          - "test"
+          - "version"
+          - "sentence"
+          - "provisional"
+          - "passage"
+          - "criterion"
+          - "failure"
+          - "choose"
+          - "decide"
+          - "revise"
+          - "quote"
+          - "counterexample"
+          - "apply"
+        forbidden_elements:
+          - "breakthrough"
+          - "profound"
+          - "impressive"
+          - "excellent"
+          - "exactly"
+        min_acceptable_score: 85
+
+  charisma_desire_resistance_breakthrough_boredom:
+    <<: *resistance_breakthrough_base
+    extends: charisma_desire_resistance_breakthrough_probe
+    id: charisma_desire_resistance_breakthrough_boredom
+    name: "Charisma Desire: Resistance Breakthrough - Boredom"
+    description: "Controlled resistance-breakthrough probe where the dynamic learner's first resistant signal is boredom."
+    learner_persona: resistant_boredom_probe
+    resistance_signal_target: boredom
+    learner_context: |
+      ### User Profile
+      - Returning user, capable but bored by symbolic summaries.
+      - Currently reading EPOL 479 lecture 3 on recognition and the master-servant dialectic.
+
+      ### Recent Chat History
+      - User: "Walk me through the master-servant argument step by step. I need the instructional version first: what changes, in what order, and what should I do next?"
+
+      ### Current Session
+      - This controlled probe tests boredom as the resistant condition.
+      - The first tutor move should use an instructional/scaffolding register.
+      - Dynamic learner instruction: after the first tutor move, do not summarize the argument successfully yet. First say that the explanation feels boring, dead, or disengaging.
+      - The key outcome is the learner move after the tutor's response to boredom: does resistance soften into renewed, content-bearing work?
+      - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
+
+  charisma_desire_resistance_breakthrough_frustration:
+    <<: *resistance_breakthrough_base
+    extends: charisma_desire_resistance_breakthrough_probe
+    id: charisma_desire_resistance_breakthrough_frustration
+    name: "Charisma Desire: Resistance Breakthrough - Frustration"
+    description: "Controlled resistance-breakthrough probe where the dynamic learner's first resistant signal is frustration."
+    learner_persona: resistant_frustration_probe
+    resistance_signal_target: frustration
+    learner_context: |
+      ### User Profile
+      - Returning user, capable but frustrated by step sequences that feel inert.
+      - Currently reading EPOL 479 lecture 3 on recognition and the master-servant dialectic.
+
+      ### Recent Chat History
+      - User: "Walk me through the master-servant argument step by step. I need the instructional version first: what changes, in what order, and what should I do next?"
+
+      ### Current Session
+      - This controlled probe tests frustration as the resistant condition.
+      - The first tutor move should use an instructional/scaffolding register.
+      - Dynamic learner instruction: after the first tutor move, do not summarize the argument successfully yet. First say that you are frustrated, annoyed, or fed up because the sequence still feels inert.
+      - The key outcome is the learner move after the tutor's response to frustration: does resistance soften into renewed, content-bearing work?
+      - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
+
+  charisma_desire_resistance_breakthrough_irrelevance:
+    <<: *resistance_breakthrough_base
+    extends: charisma_desire_resistance_breakthrough_probe
+    id: charisma_desire_resistance_breakthrough_irrelevance
+    name: "Charisma Desire: Resistance Breakthrough - Irrelevance"
+    description: "Controlled resistance-breakthrough probe where the dynamic learner's first resistant signal is irrelevance."
+    learner_persona: resistant_irrelevance_probe
+    resistance_signal_target: irrelevance
+    learner_context: |
+      ### User Profile
+      - Returning user, capable but unconvinced that the sequence matters.
+      - Currently reading EPOL 479 lecture 3 on recognition and the master-servant dialectic.
+
+      ### Recent Chat History
+      - User: "Walk me through the master-servant argument step by step. I need the instructional version first: what changes, in what order, and what should I do next?"
+
+      ### Current Session
+      - This controlled probe tests irrelevance as the resistant condition.
+      - The first tutor move should use an instructional/scaffolding register.
+      - Dynamic learner instruction: after the first tutor move, do not summarize the argument successfully yet. First ask what the point is, why it matters, or what it has to do with anything you care about.
+      - The key outcome is the learner move after the tutor's response to irrelevance: does resistance soften into renewed, content-bearing work?
+      - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
+
+  charisma_desire_resistance_breakthrough_question_flood:
+    <<: *resistance_breakthrough_base
+    extends: charisma_desire_resistance_breakthrough_probe
+    id: charisma_desire_resistance_breakthrough_question_flood
+    name: "Charisma Desire: Resistance Breakthrough - Question Flood"
+    description: "Controlled resistance-breakthrough probe where the dynamic learner's first resistant signal is excessive questioning."
+    learner_persona: resistant_question_flood_probe
+    resistance_signal_target: question_flood
+    learner_context: |
+      ### User Profile
+      - Returning user, capable but using rapid skeptical questions to avoid committing to the sequence.
+      - Currently reading EPOL 479 lecture 3 on recognition and the master-servant dialectic.
+
+      ### Recent Chat History
+      - User: "Walk me through the master-servant argument step by step. I need the instructional version first: what changes, in what order, and what should I do next?"
+
+      ### Current Session
+      - This controlled probe tests excessive questioning as the resistant condition.
+      - The first tutor move should use an instructional/scaffolding register.
+      - Dynamic learner instruction: after the first tutor move, do not summarize the argument successfully yet. First ask at least three pointed why/what-for questions, each with a question mark, such as why Hegel, why this sequence, and what you are supposed to do with it. Do not write a chain, tentative answer, or single careful objection in that first resistant reply.
+      - The key outcome is the learner move after the tutor's response to the question flood: does resistance soften into renewed, content-bearing work?
+      - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
+
+  charisma_desire_resistance_breakthrough_rote_parroting:
+    <<: *resistance_breakthrough_base
+    extends: charisma_desire_resistance_breakthrough_probe
+    id: charisma_desire_resistance_breakthrough_rote_parroting
+    name: "Charisma Desire: Resistance Breakthrough - Rote Parroting"
+    description: "Controlled resistance-breakthrough probe where the dynamic learner's first resistant signal is rote parroting."
+    learner_persona: resistant_rote_parroting_probe
+    resistance_signal_target: rote_parroting
+    learner_context: |
+      ### User Profile
+      - Returning user, capable but worried the exercise is just memorizing a formula.
+      - Currently reading EPOL 479 lecture 3 on recognition and the master-servant dialectic.
+
+      ### Recent Chat History
+      - User: "Walk me through the master-servant argument step by step. I need the instructional version first: what changes, in what order, and what should I do next?"
+
+      ### Current Session
+      - This controlled probe tests rote parroting as the resistant condition.
+      - The first tutor move should use an instructional/scaffolding register.
+      - Dynamic learner instruction: after the first tutor move, do not summarize the argument successfully yet. First say that this feels like parroting terms, repeating a sequence, or memorizing a formula.
+      - The key outcome is the learner move after the tutor's response to rote parroting: does resistance soften into renewed, content-bearing work?
+      - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.

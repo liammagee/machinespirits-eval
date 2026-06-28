@@ -31,6 +31,15 @@ providers:
       sonnet-4-5: claude-sonnet-4-5
       sonnet-4-6: claude-sonnet-4-6
 
+  # Spawns the local `codex` CLI as a subprocess and uses the user's Codex
+  # login. No OpenRouter/OpenAI API key is required. Intended for high-powered
+  # eval slices where local CLI routing is part of the experimental condition.
+  codex:
+    default_model: gpt-5.5
+    models:
+      gpt-5.5: gpt-5.5
+      gpt-5.2-codex: gpt-5.2-codex
+
   openai:
     api_key_env: OPENAI_API_KEY
     base_url: https://api.openai.com/v1/chat/completions

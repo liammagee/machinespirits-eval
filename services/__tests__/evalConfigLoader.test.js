@@ -35,6 +35,8 @@ describe('loadProviders', () => {
     assert.ok(keys.includes('openrouter'), 'should have openrouter');
     assert.ok(keys.includes('gemini'), 'should have gemini');
     assert.ok(keys.includes('local'), 'should have local');
+    assert.ok(keys.includes('claude-code'), 'should have claude-code');
+    assert.ok(keys.includes('codex'), 'should have codex');
   });
 
   it('returns cached result on second call', () => {
@@ -118,6 +120,15 @@ describe('getProviderConfig', () => {
     assert.strictEqual(config.isConfigured, true);
   });
 
+  it('CLI-backed providers are configured without API keys or base URLs', () => {
+    const claudeConfig = getProviderConfig('claude-code', { forceReload: true });
+    const codexConfig = getProviderConfig('codex', { forceReload: true });
+    assert.strictEqual(claudeConfig.apiKey, '');
+    assert.strictEqual(codexConfig.apiKey, '');
+    assert.strictEqual(claudeConfig.isConfigured, true);
+    assert.strictEqual(codexConfig.isConfigured, true);
+  });
+
   it('spreads all provider fields into result', () => {
     const config = getProviderConfig('openrouter');
     assert.ok(config.base_url, 'should include base_url from yaml');
@@ -198,6 +209,13 @@ describe('resolveModel (string format)', () => {
     const r = resolveModel('local.default');
     assert.strictEqual(r.provider, 'local');
     assert.strictEqual(r.model, 'local-model');
+  });
+
+  it('resolves "codex.gpt-5.5"', () => {
+    const r = resolveModel('codex.gpt-5.5');
+    assert.strictEqual(r.provider, 'codex');
+    assert.strictEqual(r.model, 'gpt-5.5');
+    assert.strictEqual(r.isConfigured, true);
   });
 
   it('passes through unknown alias as-is', () => {
