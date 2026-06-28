@@ -1005,6 +1005,51 @@ const EMPTY_CONTENT_RETRY_DELAYS = [1000, 2000];
 // own shapes (tutor: logApiCall; learner: apiPayload capture).
 // ============================================================================
 
+function envOrHyperparameter(envName, hyperparameters, key) {
+  const envValue = process.env[envName];
+  if (envValue !== undefined && envValue !== '') return envValue;
+  return hyperparameters?.[key];
+}
+
+function parseOptionalInteger(value) {
+  if (value === undefined || value === null || value === '') return undefined;
+  const parsed = Number.parseInt(String(value), 10);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
+}
+
+function parseOptionalBoolean(value) {
+  if (value === undefined || value === null || value === '') return undefined;
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number') return value !== 0;
+  const normalized = String(value).trim().toLowerCase();
+  if (['1', 'true', 'yes', 'on'].includes(normalized)) return true;
+  if (['0', 'false', 'no', 'off'].includes(normalized)) return false;
+  return undefined;
+}
+
+function buildOpenRouterReasoningControls(hyperparameters = {}) {
+  const effort = envOrHyperparameter('OPENROUTER_REASONING_EFFORT', hyperparameters, 'reasoning_effort');
+  const maxTokens = parseOptionalInteger(
+    envOrHyperparameter('OPENROUTER_REASONING_MAX_TOKENS', hyperparameters, 'reasoning_max_tokens'),
+  );
+  const exclude = parseOptionalBoolean(
+    envOrHyperparameter('OPENROUTER_REASONING_EXCLUDE', hyperparameters, 'reasoning_exclude'),
+  );
+  const maxCompletionTokens = parseOptionalInteger(
+    envOrHyperparameter('OPENROUTER_MAX_COMPLETION_TOKENS', hyperparameters, 'max_completion_tokens'),
+  );
+
+  const reasoning = {};
+  if (maxTokens !== undefined) reasoning.max_tokens = maxTokens;
+  else if (effort !== undefined && effort !== null && effort !== '') reasoning.effort = String(effort);
+  if (exclude !== undefined) reasoning.exclude = exclude;
+
+  return {
+    reasoning: Object.keys(reasoning).length ? reasoning : null,
+    maxCompletionTokens,
+  };
+}
+
 /**
  * Low-level provider fetch: sends a request and parses the response.
  *
@@ -1014,7 +1059,7 @@ const EMPTY_CONTENT_RETRY_DELAYS = [1000, 2000];
  * @param {string} opts.model - Model ID
  * @param {Array}  opts.messages - Pre-built message array (caller is responsible for assembly)
  * @param {string} [opts.systemPrompt] - Separate system prompt for Anthropic (top-level `system`) and Gemini (`systemInstruction`)
- * @param {Object} [opts.hyperparameters] - { temperature, max_tokens, top_p, reasoning_effort }
+ * @param {Object} [opts.hyperparameters] - { temperature, max_tokens, top_p, reasoning_effort, reasoning_max_tokens, reasoning_exclude, max_completion_tokens }
  * @param {Function} [opts.onToken] - Streaming callback (null for learner)
  * @returns {Promise<{text: string, inputTokens: number, outputTokens: number, finishReason?: string, rawResponse?: Object, cost?: number, generationId?: string, contextOverflow?: boolean, errorMessage?: string}>}
  */
@@ -1124,6 +1169,10 @@ async function _fetchProvider({
 
   // --- OpenRouter ---
   if (provider === 'openrouter') {
+    const { reasoning, maxCompletionTokens } = buildOpenRouterReasoningControls({
+      ...hyperparameters,
+      reasoning_effort,
+    });
     const orBody = {
       model,
       temperature,
@@ -1131,9 +1180,8 @@ async function _fetchProvider({
       top_p,
       messages,
     };
-    if (reasoning_effort) {
-      orBody.reasoning = { effort: reasoning_effort };
-    }
+    if (reasoning) orBody.reasoning = reasoning;
+    if (maxCompletionTokens !== undefined) orBody.max_completion_tokens = maxCompletionTokens;
     if (onToken) orBody.stream = true;
 
     const res = await fetch(providerConfig.base_url, {
@@ -1401,7 +1449,15 @@ async function callAI(agentConfig, systemPrompt, userPrompt, agentRole = 'unknow
 async function _callAIOnce(agentConfig, systemPrompt, userPrompt, agentRole = 'unknown', options = {}) {
   const { onToken, messageHistory = null, ...logOptions } = options;
   const { provider, providerConfig, model, hyperparameters } = agentConfig;
-  let { temperature = 0.5, max_tokens = 1500, top_p, reasoning_effort = 'low' } = hyperparameters;
+  let {
+    temperature = 0.5,
+    max_tokens = 1500,
+    top_p,
+    reasoning_effort = 'low',
+    reasoning_max_tokens,
+    reasoning_exclude,
+    max_completion_tokens,
+  } = hyperparameters;
 
   // Thinking/reasoning models (kimi-k2-thinking, deepseek-r1) use internal
   // chain-of-thought that consumes max_tokens. Boost significantly.
@@ -1454,7 +1510,15 @@ async function _callAIOnce(agentConfig, systemPrompt, userPrompt, agentRole = 'u
     model,
     messages,
     systemPrompt: effectiveSystem,
-    hyperparameters: { temperature, max_tokens, top_p, reasoning_effort },
+    hyperparameters: {
+      temperature,
+      max_tokens,
+      top_p,
+      reasoning_effort,
+      reasoning_max_tokens,
+      reasoning_exclude,
+      max_completion_tokens,
+    },
     onToken,
   });
 

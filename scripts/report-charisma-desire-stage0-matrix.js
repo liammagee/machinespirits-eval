@@ -22,7 +22,10 @@ const PILOT_SCENARIOS = [
   'charisma_desire_plain_language_stress',
 ];
 
-const ROBUSTNESS_ONLY_SCENARIOS = ['charisma_desire_partial_uptake'];
+const ROBUSTNESS_ONLY_SCENARIOS = [
+  'charisma_desire_partial_uptake',
+  'charisma_desire_instruction_to_engagement_switch',
+];
 
 const PILOT_PROFILES = [
   'cell_169_id_director_charisma_accountable_bid_clean_floor_verified',
@@ -199,6 +202,8 @@ ${markdownList(PILOT_SCENARIOS)}
 ${markdownList(ROBUSTNESS_ONLY_SCENARIOS)}
 
 \`charisma_desire_partial_uptake\` is intentionally excluded from the primary decision grid because it mixes recognition-theory content, Hayles/AI-cognition content, and learner uptake of a tutor phrase.
+
+\`charisma_desire_instruction_to_engagement_switch\` is intentionally excluded from the static-cell pilot grid because it is a router-register diagnostic: it tests whether one adaptive profile can switch from an instructional register to an engagement register within the same dialogue.
 
 ## Pilot Profiles
 

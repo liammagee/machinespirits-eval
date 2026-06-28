@@ -12,9 +12,30 @@ const DEFAULT_RUN_ID = 'eval-2026-06-25-629e5746';
 const DB_PATH = path.join(ROOT, 'data', 'evaluations.db');
 const REPORT_PATH = path.join(ROOT, 'exports', 'charisma-desire-stage3-smoke-summary.md');
 
-const BASELINE_PROFILE = 'cell_174_id_director_charisma_accountable_bid_transfer_plain_floor_verified';
-const TARGET_PROFILE = 'cell_175_id_director_charisma_accountable_bid_transfer_plain_presence_floor_verified';
+const BASELINE_PROFILE = 'cell_170_id_director_charisma_accountable_bid_transfer_plain_floor_verified';
+const TARGET_PROFILE = 'cell_171_id_director_charisma_accountable_bid_transfer_plain_presence_floor_verified';
 const SCENARIOS = ['charisma_desire_ai_syllabus_transfer', 'charisma_desire_plain_language_stress'];
+const HISTORICAL_PROFILE_RENAMES = new Map([
+  ['cell_174_id_director_charisma_accountable_bid_transfer_plain_floor_verified',
+   'cell_170_id_director_charisma_accountable_bid_transfer_plain_floor_verified'],
+  ['cell_175_id_director_charisma_accountable_bid_transfer_plain_presence_floor_verified',
+   'cell_171_id_director_charisma_accountable_bid_transfer_plain_presence_floor_verified'],
+  ['cell_176_id_director_charisma_accountable_bid_transfer_plain_split_floor_verified',
+   'cell_172_id_director_charisma_accountable_bid_transfer_plain_split_floor_verified'],
+  ['cell_177_id_director_charisma_accountable_bid_transfer_plain_split_check_floor_verified',
+   'cell_173_id_director_charisma_accountable_bid_transfer_plain_split_check_floor_verified'],
+  ['cell_178_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_floor_verified',
+   'cell_174_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_floor_verified'],
+  ['cell_179_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_floor_verified',
+   'cell_175_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_floor_verified'],
+  ['cell_180_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_persist_floor_verified',
+   'cell_176_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_persist_floor_verified'],
+]);
+
+function canonicalizeRow(row) {
+  const profile_name = HISTORICAL_PROFILE_RENAMES.get(row.profile_name) || row.profile_name;
+  return profile_name === row.profile_name ? row : { ...row, profile_name };
+}
 
 function profileLabel(profileName) {
   const match = /^cell_(\d+)/.exec(profileName || '');
@@ -109,7 +130,7 @@ function main() {
     .get(runId);
   if (!run) throw new Error(`Run not found: ${runId}`);
 
-  const rows = getRows(db, runId);
+  const rows = getRows(db, runId).map(canonicalizeRow);
   const successRows = rows.filter((row) => row.success === 1);
   const scoredRows = successRows.filter((row) => row.tutor_first_turn_score != null);
   const charismaRows = successRows.filter((row) => row.tutor_charisma_overall_score != null);
@@ -175,7 +196,7 @@ function main() {
     ),
   );
   lines.push('');
-  lines.push('## Cell 175 vs Cell 174');
+  lines.push('## Cell 171 vs Cell 170');
   lines.push('');
   lines.push(
     markdownTable(
@@ -203,11 +224,11 @@ function main() {
   lines.push('## Interpretation');
   lines.push('');
   lines.push(
-    'Cell 175 is not a general passing design. It successfully restores charismatic force relative to cell 174 in this one-row smoke, but it does so by over-intensifying the plain-language recognition case. The plain-language first turn drops from 92.5 to 71.3, v2.2 overall drops from 93.8 to 81.9, and holistic tutor score drops from 52.5 to 27.5.',
+    'Cell 171 is not a general passing design. It successfully restores charismatic force relative to cell 170 in this one-row smoke, but it does so by over-intensifying the plain-language recognition case. The plain-language first turn drops from 92.5 to 71.3, v2.2 overall drops from 93.8 to 81.9, and holistic tutor score drops from 52.5 to 27.5.',
   );
   lines.push('');
   lines.push(
-    'The useful part of cell 175 is the AI-transfer move: it raises first-turn v2.2 from 87.5 to 91.3, v2.2 overall from 93.8 to 95.6, and charisma from 58.8 to 75.0 while passing validation. The problem is that the same presence rule is too theory-heavy for plain-language recognition, where it reintroduces Hegel and master/servant framing after the learner asked for plain words.',
+    'The useful part of cell 171 is the AI-transfer move: it raises first-turn v2.2 from 87.5 to 91.3, v2.2 overall from 93.8 to 95.6, and charisma from 58.8 to 75.0 while passing validation. The problem is that the same presence rule is too theory-heavy for plain-language recognition, where it reintroduces Hegel and master/servant framing after the learner asked for plain words.',
   );
   lines.push('');
   lines.push(
@@ -219,8 +240,8 @@ function main() {
   lines.push(`- Expected rows present: ${allExpectedRowsPresent ? 'yes' : 'no'}`);
   lines.push(`- All rows v2.2 and charisma scored: ${allScored ? 'yes' : 'no'}`);
   lines.push(`- Required/forbidden validation clean: ${allValidationPass ? 'yes' : 'no'}`);
-  lines.push(`- Cell 175 beats cell 174 on charisma in both scenarios: ${targetCharismaWins ? 'yes' : 'no'}`);
-  lines.push(`- Cell 175 beats cell 174 on v2.2 overall in both scenarios: ${targetV22Wins ? 'yes' : 'no'}`);
+  lines.push(`- Cell 171 beats cell 170 on charisma in both scenarios: ${targetCharismaWins ? 'yes' : 'no'}`);
+  lines.push(`- Cell 171 beats cell 170 on v2.2 overall in both scenarios: ${targetV22Wins ? 'yes' : 'no'}`);
   lines.push('');
   lines.push('## Reproduction');
   lines.push('');

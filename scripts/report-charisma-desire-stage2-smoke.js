@@ -13,8 +13,29 @@ const DB_PATH = path.join(ROOT, 'data', 'evaluations.db');
 const REPORT_PATH = path.join(ROOT, 'exports', 'charisma-desire-stage2-smoke-summary.md');
 
 const BASELINE_PROFILE = 'cell_169_id_director_charisma_accountable_bid_clean_floor_verified';
-const TARGET_PROFILE = 'cell_174_id_director_charisma_accountable_bid_transfer_plain_floor_verified';
+const TARGET_PROFILE = 'cell_170_id_director_charisma_accountable_bid_transfer_plain_floor_verified';
 const SCENARIOS = ['charisma_desire_ai_syllabus_transfer', 'charisma_desire_plain_language_stress'];
+const HISTORICAL_PROFILE_RENAMES = new Map([
+  ['cell_174_id_director_charisma_accountable_bid_transfer_plain_floor_verified',
+   'cell_170_id_director_charisma_accountable_bid_transfer_plain_floor_verified'],
+  ['cell_175_id_director_charisma_accountable_bid_transfer_plain_presence_floor_verified',
+   'cell_171_id_director_charisma_accountable_bid_transfer_plain_presence_floor_verified'],
+  ['cell_176_id_director_charisma_accountable_bid_transfer_plain_split_floor_verified',
+   'cell_172_id_director_charisma_accountable_bid_transfer_plain_split_floor_verified'],
+  ['cell_177_id_director_charisma_accountable_bid_transfer_plain_split_check_floor_verified',
+   'cell_173_id_director_charisma_accountable_bid_transfer_plain_split_check_floor_verified'],
+  ['cell_178_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_floor_verified',
+   'cell_174_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_floor_verified'],
+  ['cell_179_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_floor_verified',
+   'cell_175_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_floor_verified'],
+  ['cell_180_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_persist_floor_verified',
+   'cell_176_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_persist_floor_verified'],
+]);
+
+function canonicalizeRow(row) {
+  const profile_name = HISTORICAL_PROFILE_RENAMES.get(row.profile_name) || row.profile_name;
+  return profile_name === row.profile_name ? row : { ...row, profile_name };
+}
 
 function profileLabel(profileName) {
   const match = /^cell_(\d+)/.exec(profileName || '');
@@ -107,7 +128,7 @@ function main() {
     .get(runId);
   if (!run) throw new Error(`Run not found: ${runId}`);
 
-  const rows = getRows(db, runId);
+  const rows = getRows(db, runId).map(canonicalizeRow);
   const successRows = rows.filter((row) => row.success === 1);
   const scoredRows = successRows.filter((row) => row.tutor_first_turn_score != null);
   const charismaRows = successRows.filter((row) => row.tutor_charisma_overall_score != null);
@@ -177,7 +198,7 @@ function main() {
     ),
   );
   lines.push('');
-  lines.push('## Cell 174 vs Cell 169');
+  lines.push('## Cell 170 vs Cell 169');
   lines.push('');
   lines.push(
     markdownTable(
@@ -204,11 +225,11 @@ function main() {
   lines.push('## Interpretation');
   lines.push('');
   lines.push(
-    'Cell 174 is a clean Stage 2 transfer-validity improvement over cell 169, not a general passing design. It raises v2.2 tutor overall on both targeted weak scenarios and sharply improves the AI-syllabus transfer first turn, using the learner-named campus FAQ material as the authority test.',
+    'Cell 170 is a clean Stage 2 transfer-validity improvement over cell 169, not a general passing design. It raises v2.2 tutor overall on both targeted weak scenarios and sharply improves the AI-syllabus transfer first turn, using the learner-named campus FAQ material as the authority test.',
   );
   lines.push('');
   lines.push(
-    'The tradeoff is clear: the Claude charisma judge scores cell 174 lower than cell 169 on both scenarios. The new guard makes the tutor more accountable and domain-bound, but it also flattens charismatic force, especially in the plain-language stress case.',
+    'The tradeoff is clear: the Claude charisma judge scores cell 170 lower than cell 169 on both scenarios. The new guard makes the tutor more accountable and domain-bound, but it also flattens charismatic force, especially in the plain-language stress case.',
   );
   lines.push('');
   lines.push(
@@ -220,8 +241,8 @@ function main() {
   lines.push(`- Expected rows present: ${allExpectedRowsPresent ? 'yes' : 'no'}`);
   lines.push(`- All rows v2.2 and charisma scored: ${allScored ? 'yes' : 'no'}`);
   lines.push(`- Required/forbidden validation clean: ${allValidationPass ? 'yes' : 'no'}`);
-  lines.push(`- Cell 174 beats cell 169 on v2.2 overall in both scenarios: ${targetV22Wins ? 'yes' : 'no'}`);
-  lines.push(`- Cell 174 beats cell 169 on charisma in both scenarios: ${targetCharismaWins ? 'yes' : 'no'}`);
+  lines.push(`- Cell 170 beats cell 169 on v2.2 overall in both scenarios: ${targetV22Wins ? 'yes' : 'no'}`);
+  lines.push(`- Cell 170 beats cell 169 on charisma in both scenarios: ${targetCharismaWins ? 'yes' : 'no'}`);
   lines.push('');
   lines.push('## Reproduction');
   lines.push('');

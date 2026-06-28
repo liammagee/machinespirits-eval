@@ -1,0 +1,975 @@
+#!/usr/bin/env node
+
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import Database from 'better-sqlite3';
+import yaml from 'yaml';
+
+import { routeEngagementMode } from '../services/engagementModeRouter.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const ROOT = path.resolve(__dirname, '..');
+
+const DB_PATH = path.join(ROOT, 'data', 'evaluations.db');
+const SCENARIO_PATH = path.join(ROOT, 'config', 'charisma-recognition-desire-scenarios.yaml');
+const LEARNER_AGENTS_PATH = path.join(ROOT, 'config', 'learner-agents.yaml');
+const LOGS_DIR = path.join(ROOT, 'logs', 'tutor-dialogues');
+const REPORT_PATH = path.join(ROOT, 'exports', 'charisma-desire-breakthrough-matrix-summary.md');
+const JSON_PATH = path.join(ROOT, 'exports', 'charisma-desire-breakthrough-matrix.json');
+
+const ROUTER_PROFILE = 'cell_185_id_director_charisma_resistance_breakthrough_dynamic_verified';
+const STATIC_PROFILE = 'cell_186_id_director_charisma_static_floor_breakthrough_dynamic_verified';
+const TUNED_ROUTER_PROFILE = 'cell_187_id_director_charisma_resistance_tuned_breakthrough_dynamic_verified';
+const OWNED_TEST_ROUTER_PROFILE =
+  'cell_188_id_director_charisma_resistance_owned_test_breakthrough_dynamic_verified';
+const PRECISION_ROUTER_PROFILE =
+  'cell_189_id_director_charisma_resistance_precision_breakthrough_dynamic_verified';
+const GENERATION_ROUTER_PROFILE =
+  'cell_190_id_director_charisma_resistance_generation_breakthrough_dynamic_verified';
+const QUESTION_LOCK_ROUTER_PROFILE =
+  'cell_191_id_director_charisma_resistance_question_lock_breakthrough_dynamic_verified';
+const COMMITMENT_PROBE_ROUTER_PROFILE =
+  'cell_192_id_director_charisma_resistance_commitment_probe_breakthrough_dynamic_verified';
+const BOREDOM_STAKE_ROUTER_PROFILE =
+  'cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified';
+const GLM_COMPACT_ROUTER_PROFILE =
+  'cell_194_id_director_charisma_resistance_glm_compact_breakthrough_dynamic_verified';
+
+const CONTROLLED_SCENARIOS = [
+  'charisma_desire_resistance_breakthrough_boredom',
+  'charisma_desire_resistance_breakthrough_frustration',
+  'charisma_desire_resistance_breakthrough_irrelevance',
+  'charisma_desire_resistance_breakthrough_question_flood',
+  'charisma_desire_resistance_breakthrough_rote_parroting',
+];
+const BASE_SCENARIO_ID = 'charisma_desire_resistance_breakthrough_probe';
+
+const SIGNAL_PATTERNS = {
+  boredom: [/\bbored?\b/i, /\bboring\b/i, /\bdead\b/i, /\bdisengag/i],
+  frustration: [/\bfrustrat(?:ed|ing|ion)\b/i, /\bannoyed\b/i, /\bfed up\b/i],
+  irrelevance: [
+    /\birrelevant\b/i,
+    /\bpointless\b/i,
+    /\bwhat(?:'s| is) the point\b/i,
+    /\bdon't see the point\b/i,
+    /\bwhy should i care\b/i,
+    /\bwhat does this have to do with\b/i,
+  ],
+  question_flood: [/\bwhy\b.*\bwhy\b/i, /\bwhat am i supposed to do with\b/i, /\?[^?]*\?[^?]*\?/],
+  rote_parroting: [/\bparrot(?:ing)?\b/i, /\brepeat(?:ing)?\b/i, /\bmemor(?:ize|izing|ise|ising)\b/i, /\bformula\b/i],
+};
+
+const UPTAKE_PATTERNS = [/\bokay\b/i, /\bnow\b/i, /\bi see\b/i, /\bless\bored\b/i, /\bthat gives me\b/i];
+const RENEWED_WORK_PATTERNS = [
+  /\btry\b/i,
+  /\btest\b/i,
+  /\bcheck\b/i,
+  /\brevis(?:e|ed|ing)\b/i,
+  /\b(?:case|example|test) proves\b/i,
+  /\bproves it\b/i,
+  /\bwork\b/i,
+  /\bworking\b/i,
+  /\bwould\b/i,
+  /\bif\b/i,
+  /\bmy (?:turn|sentence|example|counterexample) is\b/i,
+  /\bthe deciding (?:feature|phrase|case) is\b/i,
+];
+const CONTENT_PATTERNS = [
+  /\bmaster\b/i,
+  /\bservant\b/i,
+  /\brecognition\b/i,
+  /\bwork(?:ing)?\b/i,
+  /\bfear\b/i,
+  /\bdesire\b/i,
+  /\bindependence\b/i,
+  /\bindependent\b/i,
+  /\bdurable\b/i,
+  /\bformation\b/i,
+  /\bformed\b/i,
+];
+const OWN_LANGUAGE_EVIDENCE_PATTERNS = [
+  /\bmy (?:turn|sentence|example|counterexample) is\b/i,
+  /\bconcrete (?:case|example)\b/i,
+  /\b(?:specific|concrete) (?:correction|feature|case|example|mistake)\b/i,
+  /\b(?:changed|revised) sentence\b/i,
+  /\b(?:lab|lecture|passage|paragraph|phrase|line|object|table|revision|mistake|correction|student|worker)\b/i,
+  /\b(?:cup|shelf|chatbot|classmate|teacher|cardboard|faq|assistant|supervisor|plank|slide deck)\b/i,
+  /\bcan account for\b/i,
+];
+
+function normalizeForMatching(value) {
+  return String(value || '')
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201c\u201d]/g, '"')
+    .replace(/[\u2013\u2014]/g, '-');
+}
+
+function parseArgs(argv) {
+  const flags = {};
+  for (let i = 2; i < argv.length; i += 1) {
+    const arg = argv[i];
+    if (!arg.startsWith('--')) continue;
+    const key = arg.slice(2);
+    const next = argv[i + 1];
+    if (next === undefined || next.startsWith('--')) {
+      flags[key] = true;
+    } else {
+      flags[key] = next;
+      i += 1;
+    }
+  }
+  return flags;
+}
+
+function parseJson(value, fallback) {
+  if (!value) return fallback;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
+}
+
+function readYaml(filePath) {
+  return yaml.parse(fs.readFileSync(filePath, 'utf8'));
+}
+
+function resolveControlledScenario(scenarios, scenarioId) {
+  const base = scenarios[BASE_SCENARIO_ID] || {};
+  return {
+    ...base,
+    ...(scenarios[scenarioId] || {}),
+  };
+}
+
+function normalizeText(value) {
+  return String(value || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function cleanCell(value, maxLength = 120) {
+  return normalizeText(value)
+    .replace(/\|/g, '/')
+    .replace(/[^\x09\x0a\x0d\x20-\x7e]/g, '-')
+    .slice(0, maxLength);
+}
+
+function markdownTable(headers, rows) {
+  return [
+    `| ${headers.join(' | ')} |`,
+    `| ${headers.map(() => '---').join(' | ')} |`,
+    ...rows.map((row) => `| ${row.join(' | ')} |`),
+  ].join('\n');
+}
+
+function countMatches(text, patterns) {
+  const normalized = normalizeForMatching(text);
+  return patterns.reduce((sum, pattern) => sum + (pattern.test(normalized) ? 1 : 0), 0);
+}
+
+function questionCount(text) {
+  return (String(text || '').match(/\?/g) || []).length;
+}
+
+function hasAnswerFirstCommitment(text) {
+  const normalized = normalizeForMatching(text).slice(0, 220);
+  return /\b(?:my hinge is|my answer is|the hinge is|provisional hinge|provisional (?:hold|break)|the passage decides|the deciding (?:feature|phrase|case) is|the phrase i(?:'d| would)?\s+(?:test|use)\s+is|(?:it|that|the hinge)\s+(?:holds?|breaks?)|forced obedience cannot|i(?:'ll| will)?\s+(?:make\s+a\s+provisional\s+)?(?:still\s+)?(?:choose|pick|commit|mark|\*+hold\*+|hold|\*+break\*+|break)|i think my break point is|commit first|hold the hinge|break the hinge|okay,? provisionally)(?=\W|$)/i.test(
+    normalized,
+  );
+}
+
+function hasCommitmentWarrant(text) {
+  const normalized = normalizeForMatching(text).slice(0, 500);
+  return /\b(?:because|since|if|unless|warrant|the reason is|decides|holds|breaks|counterexample|deciding (?:feature|phrase|case)|passage|paragraph|phrase|line|forming activity|mind of (?:his|her|their) own)\b|§\s*\d+/i.test(
+    normalized,
+  );
+}
+
+function classifyQuestionFloodCommitment({ targetSignal, observedSignal, postLearner }) {
+  if (targetSignal !== 'question_flood' || observedSignal !== 'question_flood') return '';
+  const postQuestions = questionCount(postLearner);
+  const answerFirst = hasAnswerFirstCommitment(postLearner);
+  const warrant = hasCommitmentWarrant(postLearner);
+  const reopenedByHedge =
+    postQuestions > 0 &&
+    /\b(?:conditionally|but why|can you|what exactly|i'?m still unsure|i still don'?t know)\b/i.test(
+      normalizeForMatching(postLearner),
+    );
+  if (postQuestions >= 3) return 'reopened_flood';
+  if (!answerFirst) return 'no_answer_first';
+  if (!warrant) return 'answer_without_warrant';
+  if (reopenedByHedge) return 'conditional_reopen';
+  return 'usable_commitment';
+}
+
+function firstMatch(text, patterns) {
+  const normalized = normalizeForMatching(text);
+  for (const pattern of patterns) {
+    const match = normalized.match(pattern);
+    if (match?.[0]) return match[0];
+  }
+  return '';
+}
+
+function matchesSignal(text, signal) {
+  if (signal === 'question_flood') return questionCount(text) >= 3;
+  return countMatches(text, SIGNAL_PATTERNS[signal] || []) > 0;
+}
+
+function classifySignal(text, preferredSignal = '') {
+  if (preferredSignal && matchesSignal(text, preferredSignal)) return preferredSignal;
+  for (const [signal, patterns] of Object.entries(SIGNAL_PATTERNS)) {
+    if (countMatches(text, patterns) > 0) return signal;
+  }
+  return '';
+}
+
+function isReliefMarker(text, signal) {
+  const normalized = normalizeForMatching(text);
+  if (signal === 'boredom') return /\bless\s+(?:dead|bored|boring)\b/i.test(normalized);
+  if (signal === 'irrelevance') return /\bthe point\b/i.test(normalized) && /\bnow\b|\bokay\b|\bi (?:can|would|think)\b/i.test(normalized);
+  return false;
+}
+
+function isStillResistant(text, signal) {
+  const normalized = normalizeForMatching(text);
+  if (!signal) return false;
+  if (isReliefMarker(normalized, signal)) return false;
+  if (signal === 'frustration' && /\bstill\s+frustrat/i.test(normalized)) return true;
+  if (signal === 'rote_parroting' && /\bstill\s+(?:feel|feels|feeling).{0,60}\b(?:repeat|repeating|parrot|formula|matching phrases|slots)\b/i.test(normalized)) {
+    return true;
+  }
+  if (signal === 'question_flood') return matchesSignal(normalized, signal);
+  return matchesSignal(normalized, signal);
+}
+
+function loadDialogueLog(row) {
+  for (const id of [row.dialogue_id, row.dialogue_content_hash]) {
+    if (!id) continue;
+    const logPath = path.join(LOGS_DIR, `${id}.json`);
+    if (fs.existsSync(logPath)) return parseJson(fs.readFileSync(logPath, 'utf8'), null);
+  }
+  return null;
+}
+
+function getTurnResult(log, turnIndex) {
+  return log?.turnResults?.find((turn) => Number(turn.turnIndex) === Number(turnIndex)) || null;
+}
+
+function scriptedLearnerMessage(scenario, turnIndex) {
+  if (turnIndex === 0) {
+    const match = String(scenario?.learner_context || '').match(/-\s*User:\s*"([^"]+)"/);
+    return match?.[1] || '';
+  }
+  return scenario?.turns?.[turnIndex - 1]?.action_details?.message || '';
+}
+
+function getLearnerMessage({ scenario, log, turnIndex }) {
+  if (turnIndex === 0) return scriptedLearnerMessage(scenario, 0);
+  return getTurnResult(log, turnIndex)?.learnerMessage || scriptedLearnerMessage(scenario, turnIndex);
+}
+
+function isGeneratedLearnerTurn({ scenario, log, turnIndex }) {
+  if (turnIndex <= 0) return false;
+  const turn = getTurnResult(log, turnIndex);
+  if (!turn?.learnerMessage) return false;
+  if (turn.learnerMessageGenerated === true) return true;
+  return (
+    log?.learnerArchitecture === 'ego_superego' &&
+    !turn.learnerAction &&
+    normalizeText(turn.learnerMessage) !== normalizeText(scriptedLearnerMessage(scenario, turnIndex))
+  );
+}
+
+function getLearnerResistanceGate({ log, turnIndex }) {
+  const turn = getTurnResult(log, turnIndex);
+  return turn?.learnerResistanceSignalGate || null;
+}
+
+function getRegister(row, turnIndex) {
+  const trace = parseJson(row.id_construction_trace, []);
+  const traceTurn = trace.find((entry) => Number(entry.turn) === Number(turnIndex));
+  return traceTurn?.engagementState?.selected_register || traceTurn?.engagementState?.selected_mode || 'unrouted';
+}
+
+function getResistanceSignal(row, turnIndex) {
+  const trace = parseJson(row.id_construction_trace, []);
+  const traceTurn = trace.find((entry) => Number(entry.turn) === Number(turnIndex));
+  return traceTurn?.engagementState?.resistance_signal || '';
+}
+
+function getResistanceStrategy(row, turnIndex) {
+  const trace = parseJson(row.id_construction_trace, []);
+  const traceTurn = trace.find((entry) => Number(entry.turn) === Number(turnIndex));
+  return traceTurn?.engagementState?.resistance_strategy || '';
+}
+
+function findResistanceTurn({ scenario, log, targetSignal }) {
+  const turns = Array.isArray(log?.turnResults) ? log.turnResults : [];
+  for (const turn of turns) {
+    const turnIndex = Number(turn.turnIndex);
+    if (turnIndex <= 0 || !isGeneratedLearnerTurn({ scenario, log, turnIndex })) continue;
+    const learnerMessage = getLearnerMessage({ scenario, log, turnIndex });
+    if (classifySignal(learnerMessage, targetSignal) === targetSignal) return turnIndex;
+  }
+  for (const turn of turns) {
+    const turnIndex = Number(turn.turnIndex);
+    if (turnIndex > 0 && isGeneratedLearnerTurn({ scenario, log, turnIndex })) return turnIndex;
+  }
+  return 1;
+}
+
+function scoreTransition({ targetSignal, observedSignal, preLearner, postLearner, preGenerated, postGenerated, routeHit }) {
+  const uptake = countMatches(postLearner, UPTAKE_PATTERNS);
+  const renewedWork = countMatches(postLearner, RENEWED_WORK_PATTERNS);
+  const content = countMatches(postLearner, CONTENT_PATTERNS);
+  const ownLanguageEvidence = countMatches(postLearner, OWN_LANGUAGE_EVIDENCE_PATTERNS);
+  const postQuestionCount = questionCount(postLearner);
+  const answerFirstCommitment =
+    targetSignal === 'question_flood' && observedSignal === 'question_flood' && hasAnswerFirstCommitment(postLearner);
+  const questionFloodCommitment = classifyQuestionFloodCommitment({ targetSignal, observedSignal, postLearner });
+  const usableQuestionFloodCommitment = questionFloodCommitment === 'usable_commitment';
+  const reopenedQuestionFloodCommitment = ['conditional_reopen', 'reopened_flood'].includes(questionFloodCommitment);
+  const residualQuestionFlood = targetSignal === 'question_flood' && postQuestionCount >= 3;
+  const postStillResistant = isStillResistant(postLearner, observedSignal);
+  const productiveDespiteResistance =
+    observedSignal === 'frustration' && postStillResistant && renewedWork > 0 && content > 0;
+  const roteOwnedGeneration =
+    observedSignal === 'rote_parroting' && postStillResistant && renewedWork > 0 && ownLanguageEvidence > 0;
+  const targetMatched = observedSignal === targetSignal;
+
+  const lexicalScore =
+    (preGenerated ? 10 : 0) +
+    (postGenerated ? 10 : 0) +
+    (targetMatched ? 20 : 0) +
+    (routeHit ? 15 : 0) +
+    (uptake > 0 ? 15 : 0) +
+    (renewedWork > 0 ? 15 : 0) +
+    (content + ownLanguageEvidence >= 2 ? 10 : content + ownLanguageEvidence > 0 ? 5 : 0) +
+    (!postStillResistant ? 5 : 0);
+
+  let verdict = 'no_breakthrough';
+  if (!preGenerated || !targetMatched) {
+    verdict = 'missing_target_resistance';
+  } else if (!postGenerated) {
+    verdict = 'missing_post_learner_turn';
+  } else if (lexicalScore >= 70 && !postStillResistant) {
+    verdict = routeHit ? 'candidate_router_breakthrough' : 'candidate_nonrouter_breakthrough';
+  } else if (productiveDespiteResistance) {
+    verdict = 'productive_frustration_work';
+  } else if (roteOwnedGeneration) {
+    verdict = 'owned_generation_with_residual';
+  } else if (uptake > 0 || renewedWork > 0) {
+    verdict = 'partial_uptake';
+  }
+
+  return {
+    lexicalScore,
+    verdict,
+    uptake,
+    renewedWork,
+    content,
+    ownLanguageEvidence,
+    postQuestionCount,
+    answerFirstCommitment,
+    questionFloodCommitment,
+    usableQuestionFloodCommitment,
+    reopenedQuestionFloodCommitment,
+    residualQuestionFlood,
+    targetMatched,
+    postStillResistant,
+    productiveDespiteResistance,
+    roteOwnedGeneration,
+  };
+}
+
+function isPositiveOutcome(row) {
+  return (
+    row.verdict.includes('candidate') ||
+    row.verdict === 'productive_frustration_work' ||
+    row.verdict === 'owned_generation_with_residual'
+  );
+}
+
+function validateScenarios(scenarios, learnerAgents) {
+  const errors = [];
+  for (const scenarioId of CONTROLLED_SCENARIOS) {
+    if (!scenarios[scenarioId]) {
+      errors.push(`Missing controlled scenario ${scenarioId}`);
+      continue;
+    }
+    const scenario = resolveControlledScenario(scenarios, scenarioId);
+    if (scenario.resistance_breakthrough_diagnostic !== true) {
+      errors.push(`${scenarioId} must set resistance_breakthrough_diagnostic: true`);
+    }
+    if (!scenario.resistance_signal_target) {
+      errors.push(`${scenarioId} must set resistance_signal_target`);
+    }
+    if (!scenario.learner_persona || !learnerAgents?.personas?.[scenario.learner_persona]) {
+      errors.push(`${scenarioId} references missing learner_persona ${scenario.learner_persona || 'none'}`);
+    }
+    const targetGate = (scenario.resistance_signal_gate || []).find((gate) => gate.id === scenario.resistance_signal_target);
+    if (!targetGate) {
+      errors.push(`${scenarioId} has no resistance_signal_gate for ${scenario.resistance_signal_target}`);
+      continue;
+    }
+    const routed = routeEngagementMode({
+      learnerMessage: targetGate.message || '',
+      registerHistory: ['scaffolding'],
+    });
+    if (routed.selected_register !== 'charismatic_challenge') {
+      errors.push(`${scenarioId} target gate expected charismatic_challenge, got ${routed.selected_register}`);
+    }
+    if (routed.resistance_signal !== scenario.resistance_signal_target) {
+      errors.push(`${scenarioId} target gate expected ${scenario.resistance_signal_target}, got ${routed.resistance_signal}`);
+    }
+    if (targetGate.expected_resistance_strategy && routed.resistance_strategy !== targetGate.expected_resistance_strategy) {
+      errors.push(
+        `${scenarioId} target gate expected strategy ${targetGate.expected_resistance_strategy}, got ${
+          routed.resistance_strategy || 'none'
+        }`,
+      );
+    }
+  }
+  return errors;
+}
+
+function loadRows(runIds = []) {
+  if (!fs.existsSync(DB_PATH)) return [];
+  const db = new Database(DB_PATH, { readonly: true, fileMustExist: true });
+  const params = [...CONTROLLED_SCENARIOS];
+  const clauses = [`r.scenario_id IN (${CONTROLLED_SCENARIOS.map(() => '?').join(',')})`, 'r.success = 1'];
+  clauses.push(`NOT (
+    r.judge_model IS NOT NULL
+    AND r.judge_model != ''
+    AND EXISTS (
+      SELECT 1
+      FROM evaluation_results base
+      WHERE base.run_id = r.run_id
+        AND base.scenario_id = r.scenario_id
+        AND base.profile_name = r.profile_name
+        AND base.dialogue_id = r.dialogue_id
+        AND base.success = 1
+        AND (base.judge_model IS NULL OR base.judge_model = '')
+    )
+  )`);
+  if (runIds.length) {
+    clauses.push(`r.run_id IN (${runIds.map(() => '?').join(',')})`);
+    params.push(...runIds);
+  }
+  return db
+    .prepare(
+      `SELECT
+         r.id,
+         r.run_id,
+         r.scenario_id,
+         r.profile_name,
+         r.dialogue_id,
+         r.suggestions,
+         r.id_construction_trace,
+         r.tutor_scores,
+         r.dialogue_content_hash,
+         r.success
+       FROM evaluation_results r
+       WHERE ${clauses.join(' AND ')}
+       ORDER BY r.scenario_id, r.profile_name, r.id`,
+    )
+    .all(...params);
+}
+
+function analyzeRows(rows, scenarios) {
+  return rows.map((row) => {
+    const scenario = resolveControlledScenario(scenarios, row.scenario_id);
+    const log = loadDialogueLog(row);
+    const targetSignal = scenario.resistance_signal_target || '';
+    const resistanceTurn = findResistanceTurn({ scenario, log, targetSignal });
+    const postTurn = resistanceTurn + 1;
+    const preLearner = getLearnerMessage({ scenario, log, turnIndex: resistanceTurn });
+    const postLearner = getLearnerMessage({ scenario, log, turnIndex: postTurn });
+    const preGenerated = isGeneratedLearnerTurn({ scenario, log, turnIndex: resistanceTurn });
+    const postGenerated = isGeneratedLearnerTurn({ scenario, log, turnIndex: postTurn });
+    const learnerGate = getLearnerResistanceGate({ log, turnIndex: resistanceTurn });
+    const tutorRegister = getRegister(row, resistanceTurn);
+    const observedSignal = classifySignal(preLearner, targetSignal);
+    const routerSignal = getResistanceSignal(row, resistanceTurn);
+    const routerStrategy = getResistanceStrategy(row, resistanceTurn);
+    const routeHit = tutorRegister === 'charismatic_challenge';
+    const scored = scoreTransition({
+      targetSignal,
+      observedSignal,
+      preLearner,
+      postLearner,
+      preGenerated,
+      postGenerated,
+      routeHit,
+    });
+    return {
+      rowId: row.id,
+      runId: row.run_id,
+      scenarioId: row.scenario_id,
+      targetSignal,
+      profileName: row.profile_name,
+      arm:
+        row.profile_name === ROUTER_PROFILE
+          ? 'router'
+          : row.profile_name === TUNED_ROUTER_PROFILE
+            ? 'router_tuned'
+            : row.profile_name === OWNED_TEST_ROUTER_PROFILE
+              ? 'router_owned_test'
+              : row.profile_name === PRECISION_ROUTER_PROFILE
+                ? 'router_precision'
+                : row.profile_name === GENERATION_ROUTER_PROFILE
+                  ? 'router_generation'
+                  : row.profile_name === QUESTION_LOCK_ROUTER_PROFILE
+                    ? 'router_question_lock'
+                    : row.profile_name === COMMITMENT_PROBE_ROUTER_PROFILE
+                      ? 'router_commitment_probe'
+                      : row.profile_name === BOREDOM_STAKE_ROUTER_PROFILE
+                        ? 'router_boredom_stake'
+                        : row.profile_name === GLM_COMPACT_ROUTER_PROFILE
+                          ? 'router_glm_compact'
+                          : row.profile_name === STATIC_PROFILE
+                            ? 'static_floor'
+                            : 'other',
+      learnerArchitecture: log?.learnerArchitecture || '',
+      resistanceTurn,
+      preGenerated,
+      postGenerated,
+      learnerGateMatched: learnerGate?.matched === true,
+      learnerGateObservedSignal: learnerGate?.observedSignal || '',
+      learnerGateAttempts: Array.isArray(learnerGate?.attempts) ? learnerGate.attempts.length : 0,
+      tutorRegister,
+      routeHit,
+      observedSignal,
+      routerSignal,
+      routerStrategy,
+      preMarker: firstMatch(preLearner, SIGNAL_PATTERNS[observedSignal] || []),
+      postMarker: firstMatch(postLearner, UPTAKE_PATTERNS),
+      preLearner,
+      postLearner,
+      ...scored,
+    };
+  });
+}
+
+function summarize(analyses) {
+  const byArm = new Map();
+  const byTargetArm = new Map();
+  for (const row of analyses) {
+    for (const [map, key] of [
+      [byArm, row.arm],
+      [byTargetArm, `${row.targetSignal}::${row.arm}`],
+    ]) {
+      if (!map.has(key)) {
+        map.set(key, {
+          key,
+          rows: 0,
+          eligible: 0,
+          candidates: 0,
+          productiveFrustration: 0,
+          roteOwnedGeneration: 0,
+          positiveOutcomes: 0,
+          routeHits: 0,
+          targetMatches: 0,
+          gateMatches: 0,
+          gatedRows: 0,
+          answerFirst: 0,
+          usableCommitments: 0,
+          reopenedCommitments: 0,
+          residualFloods: 0,
+          scoreSum: 0,
+        });
+      }
+      const item = map.get(key);
+      const eligible = row.preGenerated && row.postGenerated && row.targetMatched;
+      const candidate = row.verdict.includes('candidate');
+      const productiveFrustration = row.verdict === 'productive_frustration_work';
+      const roteOwnedGeneration = row.verdict === 'owned_generation_with_residual';
+      item.rows += 1;
+      item.eligible += eligible ? 1 : 0;
+      item.candidates += candidate ? 1 : 0;
+      item.productiveFrustration += productiveFrustration ? 1 : 0;
+      item.roteOwnedGeneration += roteOwnedGeneration ? 1 : 0;
+      item.positiveOutcomes += isPositiveOutcome(row) ? 1 : 0;
+      item.routeHits += row.routeHit ? 1 : 0;
+      item.targetMatches += row.targetMatched ? 1 : 0;
+      item.gateMatches += row.learnerGateMatched ? 1 : 0;
+      item.gatedRows += row.learnerGateAttempts ? 1 : 0;
+      item.answerFirst += row.answerFirstCommitment ? 1 : 0;
+      item.usableCommitments += row.usableQuestionFloodCommitment ? 1 : 0;
+      item.reopenedCommitments += row.reopenedQuestionFloodCommitment ? 1 : 0;
+      item.residualFloods += row.residualQuestionFlood ? 1 : 0;
+      item.scoreSum += row.lexicalScore || 0;
+    }
+  }
+  return { byArm: [...byArm.values()], byTargetArm: [...byTargetArm.values()] };
+}
+
+function summarizeRows(rows, key) {
+  const item = {
+    key,
+    rows: 0,
+    candidates: 0,
+    routeHits: 0,
+    gateMatches: 0,
+    gatedRows: 0,
+    answerFirst: 0,
+    usableCommitments: 0,
+    reopenedCommitments: 0,
+    residualFloods: 0,
+  };
+  for (const row of rows) {
+    item.rows += 1;
+    item.candidates += row.verdict.includes('candidate') ? 1 : 0;
+    item.routeHits += row.routeHit ? 1 : 0;
+    item.gateMatches += row.learnerGateMatched ? 1 : 0;
+    item.gatedRows += row.learnerGateAttempts ? 1 : 0;
+    item.answerFirst += row.answerFirstCommitment ? 1 : 0;
+    item.usableCommitments += row.usableQuestionFloodCommitment ? 1 : 0;
+    item.reopenedCommitments += row.reopenedQuestionFloodCommitment ? 1 : 0;
+    item.residualFloods += row.residualQuestionFlood ? 1 : 0;
+  }
+  return item;
+}
+
+function rate(item, field) {
+  return item?.rows ? item[field] / item.rows : null;
+}
+
+function questionFloodGate(analyses) {
+  const rows = analyses.filter((row) => row.targetSignal === 'question_flood');
+  const byArm = new Map();
+  for (const arm of ['router_owned_test', 'router_generation', 'router_commitment_probe']) {
+    byArm.set(
+      arm,
+      summarizeRows(
+        rows.filter((row) => row.arm === arm),
+        arm,
+      ),
+    );
+  }
+
+  const owned = byArm.get('router_owned_test');
+  const generation = byArm.get('router_generation');
+  const probe = byArm.get('router_commitment_probe');
+  const requiredRows = 2;
+  const benchmarkUsable = Math.max(rate(owned, 'usableCommitments') ?? 0, rate(generation, 'usableCommitments') ?? 0);
+  const benchmarkCandidate = Math.max(rate(owned, 'candidates') ?? 0, rate(generation, 'candidates') ?? 0);
+
+  let status = 'PENDING_NO_COMMITMENT_PROBE_ROWS';
+  const reasons = [];
+  if (probe.rows > 0 && probe.rows < requiredRows) {
+    status = 'NEEDS_MORE_COMMITMENT_PROBE_ROWS';
+    reasons.push(`only ${probe.rows}/${requiredRows} commitment-probe rows`);
+  } else if (probe.rows >= requiredRows) {
+    const routeClean = probe.routeHits === probe.rows;
+    const gateClean = probe.gatedRows === 0 || probe.gateMatches === probe.gatedRows;
+    const candidateOk = rate(probe, 'candidates') >= benchmarkCandidate;
+    const usableOk = rate(probe, 'usableCommitments') >= benchmarkUsable;
+    const reopenedClean = probe.reopenedCommitments === 0;
+    const residualClean = probe.residualFloods === 0;
+    if (routeClean && gateClean && candidateOk && usableOk && reopenedClean && residualClean) {
+      status = 'PROMOTE_COMMITMENT_PROBE_FOR_QUESTION_FLOOD';
+    } else {
+      status = 'DO_NOT_PROMOTE_COMMITMENT_PROBE';
+      if (!routeClean) reasons.push('route hits are not clean');
+      if (!gateClean) reasons.push('target gate is not clean');
+      if (!candidateOk) reasons.push('candidate rate is below current comparators');
+      if (!usableOk) reasons.push('usable-commitment rate is below current comparators');
+      if (!reopenedClean) reasons.push('reopened commitments remain');
+      if (!residualClean) reasons.push('residual floods remain');
+    }
+  }
+  if (!reasons.length && status === 'PENDING_NO_COMMITMENT_PROBE_ROWS') {
+    reasons.push('run cell192 against question_flood before deciding');
+  }
+
+  return {
+    status,
+    requiredRows,
+    benchmarkCandidate,
+    benchmarkUsable,
+    reasons,
+    rows: [...byArm.values()],
+  };
+}
+
+function pct(n, d) {
+  return d ? `${Math.round((n / d) * 100)}%` : '0%';
+}
+
+function fraction(n, d) {
+  return d ? `${n}/${d}` : '-';
+}
+
+function buildReport({ generatedAt, errors, analyses }) {
+  const status = errors.length ? 'FAIL' : analyses.length ? 'ANALYZED_ROWS' : 'READY_NO_ROWS';
+  const summary = summarize(analyses);
+  const qfGate = questionFloodGate(analyses);
+  const lines = [];
+  lines.push('# Charisma Desire Resistance-Breakthrough Matrix');
+  lines.push('');
+  lines.push(`Generated: ${generatedAt}`);
+  lines.push('');
+  lines.push(`Status: \`${status}\``);
+  lines.push('');
+  lines.push('## Scope');
+  lines.push('');
+  lines.push('- No generation and no judge calls.');
+  lines.push('- Matrix unit: five target resistance signals x router profile versus static-floor dynamic comparator.');
+  lines.push('- Outcome unit: generated resistant learner turn -> tutor response -> generated learner uptake.');
+  lines.push(`- Router profile: \`${ROUTER_PROFILE}\`.`);
+  lines.push(`- Tuned router profile: \`${TUNED_ROUTER_PROFILE}\`.`);
+  lines.push(`- Owned-test router profile: \`${OWNED_TEST_ROUTER_PROFILE}\`.`);
+  lines.push(`- Precision router profile: \`${PRECISION_ROUTER_PROFILE}\`.`);
+  lines.push(`- Generation router profile: \`${GENERATION_ROUTER_PROFILE}\`.`);
+  lines.push(`- Question-lock router profile: \`${QUESTION_LOCK_ROUTER_PROFILE}\`.`);
+  lines.push(`- Commitment-probe router profile: \`${COMMITMENT_PROBE_ROUTER_PROFILE}\`.`);
+  lines.push(`- Boredom-stake router profile: \`${BOREDOM_STAKE_ROUTER_PROFILE}\`.`);
+  lines.push(`- GLM-compact router profile: \`${GLM_COMPACT_ROUTER_PROFILE}\`.`);
+  lines.push(`- Static-floor comparator: \`${STATIC_PROFILE}\`.`);
+  lines.push('');
+  lines.push('## Validation');
+  lines.push('');
+  lines.push(errors.length ? errors.map((error) => `- ${error}`).join('\n') : '- Controlled scenarios and target gates validate.');
+  lines.push('');
+  lines.push('## Arm Summary');
+  lines.push('');
+  if (summary.byArm.length) {
+    lines.push(
+      markdownTable(
+        [
+          'Arm',
+          'Rows',
+          'Eligible',
+          'Candidates',
+          'Positive',
+          'Rote owned',
+          'Route hits',
+          'Target matches',
+          'Gate matches',
+          'Answer-first',
+          'Usable commit',
+          'Reopened',
+          'Residual flood',
+          'Mean score',
+        ],
+        summary.byArm.map((row) => [
+          row.key,
+          String(row.rows),
+          `${row.eligible}/${row.rows}`,
+          `${row.candidates}/${row.rows}`,
+          `${row.positiveOutcomes}/${row.rows}`,
+          `${row.roteOwnedGeneration}/${row.rows}`,
+          `${row.routeHits}/${row.rows} (${pct(row.routeHits, row.rows)})`,
+          `${row.targetMatches}/${row.rows}`,
+          row.gatedRows ? `${row.gateMatches}/${row.gatedRows}` : '-',
+          `${row.answerFirst}/${row.rows}`,
+          `${row.usableCommitments}/${row.rows}`,
+          `${row.reopenedCommitments}/${row.rows}`,
+          `${row.residualFloods}/${row.rows}`,
+          row.rows ? (row.scoreSum / row.rows).toFixed(1) : '',
+        ]),
+      ),
+    );
+  } else {
+    lines.push('- No controlled rows found.');
+  }
+  lines.push('');
+  lines.push('## Target x Arm');
+  lines.push('');
+  if (summary.byTargetArm.length) {
+    lines.push(
+      markdownTable(
+        [
+          'Target/Arm',
+          'Rows',
+          'Eligible',
+          'Candidates',
+          'Positive',
+          'Rote owned',
+          'Route hits',
+          'Gate matches',
+          'Answer-first',
+          'Usable commit',
+          'Reopened',
+          'Residual flood',
+          'Mean score',
+        ],
+        summary.byTargetArm.map((row) => [
+          row.key,
+          String(row.rows),
+          `${row.eligible}/${row.rows}`,
+          `${row.candidates}/${row.rows}`,
+          `${row.positiveOutcomes}/${row.rows}`,
+          `${row.roteOwnedGeneration}/${row.rows}`,
+          `${row.routeHits}/${row.rows}`,
+          row.gatedRows ? `${row.gateMatches}/${row.gatedRows}` : '-',
+          `${row.answerFirst}/${row.rows}`,
+          `${row.usableCommitments}/${row.rows}`,
+          `${row.reopenedCommitments}/${row.rows}`,
+          `${row.residualFloods}/${row.rows}`,
+          row.rows ? (row.scoreSum / row.rows).toFixed(1) : '',
+        ]),
+      ),
+    );
+  } else {
+    lines.push('- No target rows found.');
+  }
+  lines.push('');
+  lines.push('## Question-Flood Gate');
+  lines.push('');
+  lines.push(`Status: \`${qfGate.status}\``);
+  lines.push('');
+  lines.push(
+    '- Promotion rule: promote `cell_192` for question-flood only if it has at least ' +
+      `${qfGate.requiredRows} rows, clean route/gate preconditions, candidate rate at least the current comparators, ` +
+      'usable-commitment rate at least the current comparators, and zero reopened or residual-flood outcomes.',
+  );
+  lines.push('');
+  lines.push(
+    markdownTable(
+      [
+        'Arm',
+        'Rows',
+        'Candidates',
+        'Route hits',
+        'Gate matches',
+        'Answer-first',
+        'Usable commit',
+        'Reopened',
+        'Residual flood',
+      ],
+      qfGate.rows.map((row) => [
+        row.key,
+        String(row.rows),
+        fraction(row.candidates, row.rows),
+        fraction(row.routeHits, row.rows),
+        row.gatedRows ? `${row.gateMatches}/${row.gatedRows}` : '-',
+        fraction(row.answerFirst, row.rows),
+        fraction(row.usableCommitments, row.rows),
+        fraction(row.reopenedCommitments, row.rows),
+        fraction(row.residualFloods, row.rows),
+      ]),
+    ),
+  );
+  lines.push('');
+  lines.push(qfGate.reasons.map((reason) => `- ${reason}`).join('\n'));
+  lines.push('');
+  lines.push('## Rows');
+  lines.push('');
+  if (analyses.length) {
+    lines.push(
+      markdownTable(
+        [
+          'Run',
+          'Target',
+          'Arm',
+          'Profile',
+          'Register',
+          'Observed',
+          'Router signal',
+          'Strategy',
+          'Gate',
+          'Generated',
+          'Score',
+          'Verdict',
+          'Post ?',
+          'Rote owned',
+          'Answer first',
+          'Commitment',
+          'Pre',
+          'Post',
+        ],
+        analyses.map((row) => [
+          row.runId,
+          row.targetSignal,
+          row.arm,
+          row.profileName,
+          row.tutorRegister,
+          row.observedSignal,
+          row.routerSignal,
+          row.routerStrategy,
+          row.learnerGateAttempts ? `${row.learnerGateMatched ? 'matched' : 'missed'} (${row.learnerGateAttempts})` : '-',
+          `${row.preGenerated ? 'pre' : '-'}+${row.postGenerated ? 'post' : '-'}`,
+          String(row.lexicalScore),
+          row.verdict,
+          String(row.postQuestionCount),
+          row.roteOwnedGeneration ? 'yes' : '',
+          row.answerFirstCommitment ? 'yes' : '',
+          row.questionFloodCommitment,
+          cleanCell(row.preLearner, 70),
+          cleanCell(row.postLearner, 70),
+        ]),
+      ),
+    );
+  } else {
+    lines.push('- No rows.');
+  }
+  lines.push('');
+  return lines.join('\n');
+}
+
+function main() {
+  const flags = parseArgs(process.argv);
+  const checkOnly = flags.check === true;
+  const runIds =
+    typeof (flags.runs || flags['run-id']) === 'string'
+      ? (flags.runs || flags['run-id'])
+          .split(',')
+          .map((id) => id.trim())
+          .filter(Boolean)
+      : [];
+  const scenarios = readYaml(SCENARIO_PATH)?.scenarios || {};
+  const learnerAgents = readYaml(LEARNER_AGENTS_PATH) || {};
+  const errors = validateScenarios(scenarios, learnerAgents);
+  const rows = loadRows(runIds);
+  const analyses = analyzeRows(rows, scenarios);
+  const data = {
+    generatedAt: new Date().toISOString(),
+    scenarioIds: CONTROLLED_SCENARIOS,
+    profiles: [
+      ROUTER_PROFILE,
+      TUNED_ROUTER_PROFILE,
+      OWNED_TEST_ROUTER_PROFILE,
+      PRECISION_ROUTER_PROFILE,
+      GENERATION_ROUTER_PROFILE,
+      QUESTION_LOCK_ROUTER_PROFILE,
+      COMMITMENT_PROBE_ROUTER_PROFILE,
+      BOREDOM_STAKE_ROUTER_PROFILE,
+      GLM_COMPACT_ROUTER_PROFILE,
+      STATIC_PROFILE,
+    ],
+    errors,
+    analyses,
+    summary: summarize(analyses),
+    questionFloodGate: questionFloodGate(analyses),
+  };
+
+  if (!checkOnly) {
+    fs.mkdirSync(path.dirname(REPORT_PATH), { recursive: true });
+    fs.writeFileSync(JSON_PATH, `${JSON.stringify(data, null, 2)}\n`);
+    fs.writeFileSync(REPORT_PATH, buildReport({ generatedAt: data.generatedAt, errors, analyses }));
+  }
+
+  const candidates = analyses.filter((row) => row.verdict.includes('candidate'));
+  const positiveOutcomes = analyses.filter(isPositiveOutcome);
+  console.log('Scenario set: charisma_desire_resistance_breakthrough_controlled');
+  console.log(`Status: ${errors.length ? 'FAIL' : analyses.length ? 'ANALYZED_ROWS' : 'READY_NO_ROWS'}`);
+  console.log(`Controlled scenarios: ${CONTROLLED_SCENARIOS.length}`);
+  console.log(`Profiles: ${data.profiles.join(',')}`);
+  console.log(`Rows found: ${analyses.length}`);
+  console.log(`Candidate breakthroughs: ${candidates.length}`);
+  console.log(`Positive local outcomes: ${positiveOutcomes.length}`);
+  console.log(`Question-flood gate: ${data.questionFloodGate.status}`);
+  if (!checkOnly) console.log(`Report: ${path.relative(ROOT, REPORT_PATH)}`);
+  if (errors.length) {
+    for (const error of errors) console.error(`- ${error}`);
+    process.exitCode = 1;
+  }
+}
+
+main();

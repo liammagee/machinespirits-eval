@@ -15,218 +15,27 @@
 
 import path from 'node:path';
 import fs from 'node:fs';
-import os from 'node:os';
-import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 import { jsonrepair } from 'jsonrepair';
 
 import { tutorConfigLoader as defaultTutorConfig, tutorDialogueEngine } from '../tutor-core/index.js';
 import * as defaultTutorWritingPad from './memory/tutorWritingPad.js';
+import {
+  callAIWithCliBridge as callWithCliBridge,
+  cliAwareProviderConfig,
+  isProviderConfigured,
+} from './cliProviderBridge.js';
+import { extractEngagementModeHistory, routeEngagementMode } from './engagementModeRouter.js';
 
-// claude-code subscription bridge. Mirrors services/adaptiveTutor/realLLM.js::callClaudeCli
-// — see the longer comment there for why scrubbing ANTHROPIC_API_KEY from the
-// child env is critical (without it the CLI silently routes via metered API
-// mode and bills per-call). tutor-core's callAI does NOT recognise
-// `claude-code` as a provider; bridging here keeps cell_106 (id-director +
-// CLI) working without a tutor-core release.
-function positiveIntEnv(name, fallback) {
-  const raw = process.env[name];
-  if (!raw) return fallback;
-  const parsed = Number.parseInt(raw, 10);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
-}
-
-const CLAUDE_CLI_TIMEOUT_MS = positiveIntEnv('ID_DIRECTOR_CLAUDE_CLI_TIMEOUT_MS', 180_000);
-const CODEX_CLI_TIMEOUT_MS = positiveIntEnv('ID_DIRECTOR_CODEX_CLI_TIMEOUT_MS', 300_000);
-const CLI_PROVIDERS = new Set(['claude-code', 'codex']);
-
-function isCliProvider(provider) {
-  return CLI_PROVIDERS.has(provider);
-}
-
-function cliAwareProviderConfig(provider, providerConfig) {
-  if (!isCliProvider(provider)) return providerConfig;
-  return {
-    ...(providerConfig || {}),
-    isConfigured: true,
-    apiKey: '',
-  };
-}
-
-function isProviderConfigured(provider, providerConfig) {
-  return isCliProvider(provider) || Boolean(providerConfig?.isConfigured);
-}
-
-function buildCliUserText(userPrompt, messageHistory) {
-  let userText = '';
-  if (Array.isArray(messageHistory) && messageHistory.length > 0) {
-    const transcript = messageHistory.map((m) => `${m.role || 'user'}: ${m.content || ''}`).join('\n\n');
-    userText += `Conversation so far:\n${transcript}\n\n`;
-  }
-  userText += `Latest message:\n${userPrompt}`;
-  return userText;
-}
-
-async function callClaudeCli({ systemPrompt, userPrompt, model, role, messageHistory }) {
-  // System prompt goes via --system-prompt (replaces the CLI's default,
-  // suppressing ambient output-style additions like the "★ Insight" block
-  // the explanatory style appends after responses). User content + inlined
-  // multi-turn history goes to stdin.
-  const userText = buildCliUserText(userPrompt, messageHistory);
-  const start = Date.now();
-  return await new Promise((resolve, reject) => {
-    const args = ['-p', '-', '--output-format', 'text', '--system-prompt', systemPrompt];
-    if (model) args.push('--model', model);
-    const env = { ...process.env };
-    delete env.CLAUDE_CODE;
-    delete env.CLAUDECODE;
-    delete env.ANTHROPIC_API_KEY;
-    delete env.ANTHROPIC_AUTH_TOKEN;
-    const child = spawn('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], env });
-    let out = '';
-    let err = '';
-    const cliTimeout = setTimeout(() => {
-      try {
-        child.kill('SIGKILL');
-      } catch (_) {
-        /* already gone */
-      }
-      reject(new Error(`claude CLI timed out after ${CLAUDE_CLI_TIMEOUT_MS}ms (role=${role})`));
-    }, CLAUDE_CLI_TIMEOUT_MS);
-    child.stdout.on('data', (d) => {
-      out += d;
-    });
-    child.stderr.on('data', (d) => {
-      err += d;
-    });
-    child.on('error', (e) => {
-      clearTimeout(cliTimeout);
-      reject(e);
-    });
-    child.on('close', (code) => {
-      clearTimeout(cliTimeout);
-      if (code !== 0) {
-        reject(new Error(err.trim() || out.trim() || `claude CLI exited with code ${code} (role=${role})`));
-      } else {
-        resolve({
-          text: out.trim(),
-          model: model || 'claude-cli',
-          provider: 'claude-code',
-          latencyMs: Date.now() - start,
-          inputTokens: 0,
-          outputTokens: 0,
-          cost: 0,
-        });
-      }
-    });
-    child.stdin.write(userText);
-    child.stdin.end();
-  });
-}
-
-async function callCodexCli({ systemPrompt, userPrompt, model, role, messageHistory }) {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ms-id-director-codex-'));
-  const outFile = path.join(tmpDir, 'last-message.txt');
-  const start = Date.now();
-  const prompt = [
-    'System prompt for this tutor role:',
-    systemPrompt,
-    '',
-    'User input for this turn:',
-    buildCliUserText(userPrompt, messageHistory),
-  ].join('\n');
-
-  try {
-    return await new Promise((resolve, reject) => {
-      const args = [
-        'exec',
-        '--skip-git-repo-check',
-        '--ephemeral',
-        '--ignore-user-config',
-        '-s',
-        'read-only',
-        '-C',
-        tmpDir,
-        '--color',
-        'never',
-        '-c',
-        `model_reasoning_effort="${process.env.CODEX_REASONING_EFFORT || 'xhigh'}"`,
-      ];
-      if (model && model !== 'auto') args.push('-m', model);
-      args.push('-o', outFile, '-');
-
-      const child = spawn('codex', args, { stdio: ['pipe', 'pipe', 'pipe'], cwd: tmpDir });
-      let err = '';
-      const cliTimeout = setTimeout(() => {
-        try {
-          child.kill('SIGKILL');
-        } catch (_) {
-          /* already gone */
-        }
-        reject(new Error(`codex CLI timed out after ${CODEX_CLI_TIMEOUT_MS}ms (role=${role})`));
-      }, CODEX_CLI_TIMEOUT_MS);
-      child.stderr.on('data', (d) => {
-        err += d;
-      });
-      child.stdout.on('data', () => {});
-      child.on('error', (e) => {
-        clearTimeout(cliTimeout);
-        reject(e);
-      });
-      child.on('close', (code) => {
-        clearTimeout(cliTimeout);
-        if (code !== 0) {
-          reject(new Error(err.trim() || `codex CLI exited with code ${code} (role=${role})`));
-          return;
-        }
-
-        const text = fs.existsSync(outFile) ? fs.readFileSync(outFile, 'utf8').trim() : '';
-        if (!text) {
-          reject(new Error(`codex CLI produced no output message (role=${role})`));
-          return;
-        }
-        resolve({
-          text,
-          model: model || 'codex-cli',
-          provider: 'codex',
-          latencyMs: Date.now() - start,
-          inputTokens: 0,
-          outputTokens: 0,
-          cost: 0,
-        });
-      });
-      child.stdin.write(prompt);
-      child.stdin.end();
-    });
-  } finally {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
-  }
-}
-
-// Drop-in wrapper that routes claude-code through the local CLI and everything
-// else through tutor-core's metered callAI. Same return shape as
-// tutorDialogueEngine.callAI so call sites swap in unchanged.
+// Drop-in wrapper that routes repo-local CLI providers through subscription
+// CLIs and everything else through tutor-core's metered callAI. Same return
+// shape as tutorDialogueEngine.callAI so call sites swap in unchanged.
 async function callAIWithCliBridge(agentConfig, systemPrompt, userPrompt, role, opts = {}) {
-  if (agentConfig?.provider === 'claude-code') {
-    return await callClaudeCli({
-      systemPrompt,
-      userPrompt,
-      model: agentConfig.model,
-      role,
-      messageHistory: opts?.messageHistory,
-    });
-  }
-  if (agentConfig?.provider === 'codex') {
-    return await callCodexCli({
-      systemPrompt,
-      userPrompt,
-      model: agentConfig.model,
-      role,
-      messageHistory: opts?.messageHistory,
-    });
-  }
-  return await tutorDialogueEngine.callAI(agentConfig, systemPrompt, userPrompt, role, opts);
+  return await callWithCliBridge(agentConfig, systemPrompt, userPrompt, role, {
+    ...opts,
+    fallbackCallAI: tutorDialogueEngine.callAI,
+  });
 }
 
 const __engineFile = fileURLToPath(import.meta.url);
@@ -273,6 +82,24 @@ const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_CLEAN = 'accountable_bid
 const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN = 'accountable_bid_transfer_plain';
 const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_PRESENCE =
   'accountable_bid_transfer_plain_presence';
+const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT =
+  'accountable_bid_transfer_plain_split';
+const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK =
+  'accountable_bid_transfer_plain_split_check';
+const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR =
+  'accountable_bid_transfer_plain_split_check_anchor';
+const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR_LIVE =
+  'accountable_bid_transfer_plain_split_check_anchor_live';
+const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR_LIVE_PERSIST =
+  'accountable_bid_transfer_plain_split_check_anchor_live_persist';
+const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR_LIVE_LIVED =
+  'accountable_bid_transfer_plain_split_check_anchor_live_lived';
+const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR_LIVE_LIVED_COMPRESS =
+  'accountable_bid_transfer_plain_split_check_anchor_live_lived_compress';
+const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR_LIVE_LIVED_CHARGED_CHECK =
+  'accountable_bid_transfer_plain_split_check_anchor_live_lived_charged_check';
+const ID_OUTPUT_CONTRACT_STANDARD = 'standard';
+const ID_OUTPUT_CONTRACT_STRICT_COMPACT_JSON = 'strict_compact_json';
 const AGENCY_RETURN_VERIFIER_PROMPT = `You are an agency-return verifier for a charismatic tutor.
 
 Read the learner message, curriculum context, and drafted tutor response. Decide whether the response contains at least one concrete agency-return move:
@@ -344,7 +171,32 @@ function normalizeAgencyReturnCharismaFloorMode(mode) {
     return AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN;
   if (mode === AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_PRESENCE)
     return AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_PRESENCE;
+  if (mode === AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT)
+    return AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT;
+  if (mode === AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK)
+    return AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK;
+  if (mode === AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR)
+    return AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR;
+  if (mode === AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR_LIVE)
+    return AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR_LIVE;
+  if (mode === AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR_LIVE_PERSIST)
+    return AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR_LIVE_PERSIST;
+  if (mode === AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR_LIVE_LIVED)
+    return AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR_LIVE_LIVED;
+  if (mode === AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR_LIVE_LIVED_COMPRESS)
+    return AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR_LIVE_LIVED_COMPRESS;
+  if (
+    mode ===
+    AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR_LIVE_LIVED_CHARGED_CHECK
+  )
+    return AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR_LIVE_LIVED_CHARGED_CHECK;
   return AGENCY_RETURN_CHARISMA_FLOOR_MODE_STANDARD;
+}
+
+function normalizeIdOutputContract(mode) {
+  return mode === ID_OUTPUT_CONTRACT_STRICT_COMPACT_JSON
+    ? ID_OUTPUT_CONTRACT_STRICT_COMPACT_JSON
+    : ID_OUTPUT_CONTRACT_STANDARD;
 }
 
 function getRequiredTemperature(config, configName) {
@@ -419,6 +271,21 @@ function buildIdUserMessage({
   agencyReturnVerifierMode = AGENCY_RETURN_VERIFIER_MODE_STRICT,
   agencyReturnCharismaFloor = false,
   agencyReturnCharismaFloorMode = AGENCY_RETURN_CHARISMA_FLOOR_MODE_STANDARD,
+  idOutputContract = ID_OUTPUT_CONTRACT_STANDARD,
+  engagementRouterCharismaRepair = false,
+  engagementRouterSplitRepair = false,
+  engagementRouterTransferStakeRepair = false,
+  engagementRouterTransferCompressionRepair = false,
+  engagementRouterResistanceTuning = false,
+  engagementRouterResistanceOwnedTest = false,
+  engagementRouterResistancePrecisionRepair = false,
+  engagementRouterResistanceGenerationRepair = false,
+  engagementRouterResistanceQuestionLock = false,
+  engagementRouterResistanceCommitmentProbe = false,
+  engagementRouterResistanceBoredomStake = false,
+  engagementRouterResistanceGlmCompact = false,
+  agencyReturnPrematureCertaintyGuard = false,
+  engagementState = null,
   learnerRegister = null,
 }) {
   const lines = [
@@ -464,7 +331,80 @@ function buildIdUserMessage({
     '<agency_return_charisma_floor_mode>',
     normalizeAgencyReturnCharismaFloorMode(agencyReturnCharismaFloorMode),
     '</agency_return_charisma_floor_mode>',
+    '',
+    '<id_output_contract>',
+    normalizeIdOutputContract(idOutputContract),
+    '</id_output_contract>',
+    '',
+    '<engagement_router_charisma_repair>',
+    engagementRouterCharismaRepair ? 'true' : 'false',
+    '</engagement_router_charisma_repair>',
+    '',
+    '<engagement_router_split_repair>',
+    engagementRouterSplitRepair ? 'true' : 'false',
+    '</engagement_router_split_repair>',
+    '',
+    '<engagement_router_transfer_stake_repair>',
+    engagementRouterTransferStakeRepair ? 'true' : 'false',
+    '</engagement_router_transfer_stake_repair>',
+    '',
+    '<engagement_router_transfer_compression_repair>',
+    engagementRouterTransferCompressionRepair ? 'true' : 'false',
+    '</engagement_router_transfer_compression_repair>',
+    '',
+    '<engagement_router_resistance_tuning>',
+    engagementRouterResistanceTuning ? 'true' : 'false',
+    '</engagement_router_resistance_tuning>',
+    '',
+    '<engagement_router_resistance_owned_test>',
+    engagementRouterResistanceOwnedTest ? 'true' : 'false',
+    '</engagement_router_resistance_owned_test>',
+    '',
+    '<engagement_router_resistance_precision_repair>',
+    engagementRouterResistancePrecisionRepair ? 'true' : 'false',
+    '</engagement_router_resistance_precision_repair>',
+    '',
+    '<engagement_router_resistance_generation_repair>',
+    engagementRouterResistanceGenerationRepair ? 'true' : 'false',
+    '</engagement_router_resistance_generation_repair>',
+    '',
+    '<engagement_router_resistance_question_lock>',
+    engagementRouterResistanceQuestionLock ? 'true' : 'false',
+    '</engagement_router_resistance_question_lock>',
+    '',
+    '<engagement_router_resistance_commitment_probe>',
+    engagementRouterResistanceCommitmentProbe ? 'true' : 'false',
+    '</engagement_router_resistance_commitment_probe>',
+    '',
+    '<engagement_router_resistance_boredom_stake>',
+    engagementRouterResistanceBoredomStake ? 'true' : 'false',
+    '</engagement_router_resistance_boredom_stake>',
+    '',
+    '<engagement_router_resistance_glm_compact>',
+    engagementRouterResistanceGlmCompact ? 'true' : 'false',
+    '</engagement_router_resistance_glm_compact>',
+    '',
+    '<agency_return_premature_certainty_guard>',
+    agencyReturnPrematureCertaintyGuard ? 'true' : 'false',
+    '</agency_return_premature_certainty_guard>',
   ];
+  if (engagementState && typeof engagementState === 'object') {
+    const idVisibleEngagementState = { ...engagementState };
+    if (
+      !engagementRouterResistanceTuning &&
+      !engagementRouterResistanceOwnedTest &&
+      !engagementRouterResistancePrecisionRepair &&
+      !engagementRouterResistanceGenerationRepair &&
+      !engagementRouterResistanceQuestionLock &&
+      !engagementRouterResistanceCommitmentProbe &&
+      !engagementRouterResistanceBoredomStake &&
+      !engagementRouterResistanceGlmCompact
+    ) {
+      delete idVisibleEngagementState.resistance_strategy;
+      delete idVisibleEngagementState.resistance_move;
+    }
+    lines.push('', '<engagement_state>', JSON.stringify(idVisibleEngagementState, null, 2), '</engagement_state>');
+  }
   if (learnerRegister && typeof learnerRegister === 'object') {
     lines.push('', '<learner_register>', JSON.stringify(learnerRegister, null, 2), '</learner_register>');
   }
@@ -478,6 +418,68 @@ function fallbackConstruction(reason, rawText = '') {
     stage_directions: `id-director output failed parsing (${reason}); using minimal fallback persona`,
     reasoning: `Parse failure: ${reason}.${rawText ? ` Raw head: ${rawText.slice(0, 200)}` : ''}`,
     parse_status: 'fallback',
+    parse_failure_reason: reason,
+  };
+}
+
+function stripLooseFieldValue(value) {
+  if (!value || typeof value !== 'string') return '';
+  let out = value.trim();
+  out = out.replace(/^[`'"]/, '');
+  out = out.replace(/,\s*$/, '').trim();
+  out = out.replace(/[`'"]\s*$/, '').trim();
+  out = out.replace(/\\n/g, ' ').replace(/\\r/g, ' ').replace(/\\t/g, ' ');
+  out = out.replace(/\s+/g, ' ').trim();
+  return out;
+}
+
+function extractLooseJsonField(rawText, fieldName, followingFieldNames = []) {
+  if (!rawText || typeof rawText !== 'string') return '';
+  const fieldPattern = new RegExp(`["']?${fieldName}["']?\\s*:`);
+  const match = fieldPattern.exec(rawText);
+  if (!match) return '';
+
+  const start = match.index + match[0].length;
+  let end = rawText.length;
+  for (const nextField of followingFieldNames) {
+    const nextPattern = new RegExp(`[,\\s]*["']?${nextField}["']?\\s*:`);
+    const nextMatch = nextPattern.exec(rawText.slice(start));
+    if (nextMatch) {
+      end = Math.min(end, start + nextMatch.index);
+    }
+  }
+
+  return stripLooseFieldValue(rawText.slice(start, end));
+}
+
+function cleanLooseTraceField(value) {
+  return String(value || '')
+    .replace(/["'`].*$/, '')
+    .trim();
+}
+
+function salvageIdConstruction(rawText, reason) {
+  const generatedPrompt = extractLooseJsonField(rawText, 'generated_prompt', [
+    'persona_delta',
+    'stage_directions',
+    'reasoning',
+  ]);
+  if (generatedPrompt.length < MIN_GENERATED_PROMPT_CHARS) {
+    return fallbackConstruction(reason, rawText);
+  }
+
+  const personaDelta = cleanLooseTraceField(
+    extractLooseJsonField(rawText, 'persona_delta', ['stage_directions', 'reasoning']),
+  );
+  const stageDirections = cleanLooseTraceField(extractLooseJsonField(rawText, 'stage_directions', ['reasoning']));
+  const reasoning = cleanLooseTraceField(extractLooseJsonField(rawText, 'reasoning'));
+
+  return {
+    generated_prompt: generatedPrompt,
+    persona_delta: personaDelta || 'SALVAGED',
+    stage_directions: stageDirections,
+    reasoning: reasoning || `Salvaged generated_prompt from malformed id JSON after parse failure: ${reason}`,
+    parse_status: 'salvaged_from_malformed_json',
     parse_failure_reason: reason,
   };
 }
@@ -586,7 +588,7 @@ export async function classifyLearnerRegister({ learnerMessage, recentHistory, c
   };
 }
 
-export function parseIdConstruction(rawText) {
+export function parseIdConstruction(rawText, options = {}) {
   if (!rawText || typeof rawText !== 'string') {
     return fallbackConstruction('empty_or_non_string_response', String(rawText || ''));
   }
@@ -624,10 +626,11 @@ export function parseIdConstruction(rawText) {
       parsed = JSON.parse(repaired);
       usedRepair = true;
     } catch (repairErr) {
-      return fallbackConstruction(
-        `json_parse_error: ${firstErr.message} (jsonrepair also failed: ${repairErr.message})`,
-        rawText,
-      );
+      const reason = `json_parse_error: ${firstErr.message} (jsonrepair also failed: ${repairErr.message})`;
+      if (options.salvageMalformedJson === true) {
+        return salvageIdConstruction(rawText, reason);
+      }
+      return fallbackConstruction(reason, rawText);
     }
   }
 
@@ -729,6 +732,43 @@ function applyAgencyReturnVerification(tutorResponse, verification, options = {}
     };
   }
   return { message: tutorResponse, repaired: false };
+}
+
+function applyPrematureCertaintyGuard(tutorResponse, options = {}) {
+  const selectedRegister =
+    options?.engagementState?.selected_register || options?.engagementState?.selected_mode || '';
+
+  let message = String(tutorResponse || '');
+  const replacements = [];
+  const rules = [
+    { pattern: /\bThat is exactly\b/g, replacement: 'That starts to name' },
+    { pattern: /\bthat is exactly\b/g, replacement: 'that starts to name' },
+    { pattern: /\bThat's exactly\b/g, replacement: 'That starts to name' },
+    { pattern: /\bthat's exactly\b/g, replacement: 'that starts to name' },
+    { pattern: /\bYou are exactly right\b/g, replacement: 'You have a real foothold' },
+    { pattern: /\byou are exactly right\b/g, replacement: 'you have a real foothold' },
+    { pattern: /\bexactly right\b/g, replacement: 'partly right' },
+    { pattern: /\bExcellent\b/g, replacement: 'Useful' },
+    { pattern: /\bexcellent\b/g, replacement: 'useful' },
+  ];
+
+  for (const rule of rules) {
+    rule.pattern.lastIndex = 0;
+    if (rule.pattern.test(message)) {
+      replacements.push(rule.pattern.source);
+      rule.pattern.lastIndex = 0;
+      message = message.replace(rule.pattern, rule.replacement);
+    }
+  }
+
+  return {
+    message,
+    repaired: message !== String(tutorResponse || ''),
+    reason: replacements.length
+      ? `premature_certainty_wording_removed${selectedRegister ? `_in_${selectedRegister}` : ''}`
+      : 'no_premature_certainty_wording_found',
+    replacements,
+  };
 }
 
 export function extractPreviousPersona(trace) {
@@ -848,6 +888,50 @@ export async function runIdDirectedTurn({
     profile?.factors?.agency_return_verifier === true || profile?.agency_return_verifier === true;
   const agencyReturnCharismaFloor =
     profile?.factors?.agency_return_charisma_floor === true || profile?.agency_return_charisma_floor === true;
+  const engagementModeRouter =
+    profile?.factors?.engagement_mode_router === true || profile?.engagement_mode_router === true;
+  const idOutputContract = normalizeIdOutputContract(
+    profile?.factors?.id_output_contract || profile?.id_output_contract,
+  );
+  const engagementRouterCharismaRepair =
+    profile?.factors?.engagement_router_charisma_repair === true ||
+    profile?.engagement_router_charisma_repair === true;
+  const engagementRouterSplitRepair =
+    profile?.factors?.engagement_router_split_repair === true ||
+    profile?.engagement_router_split_repair === true;
+  const engagementRouterTransferStakeRepair =
+    profile?.factors?.engagement_router_transfer_stake_repair === true ||
+    profile?.engagement_router_transfer_stake_repair === true;
+  const engagementRouterTransferCompressionRepair =
+    profile?.factors?.engagement_router_transfer_compression_repair === true ||
+    profile?.engagement_router_transfer_compression_repair === true;
+  const engagementRouterResistanceTuning =
+    profile?.factors?.engagement_router_resistance_tuning === true ||
+    profile?.engagement_router_resistance_tuning === true;
+  const engagementRouterResistanceOwnedTest =
+    profile?.factors?.engagement_router_resistance_owned_test === true ||
+    profile?.engagement_router_resistance_owned_test === true;
+  const engagementRouterResistancePrecisionRepair =
+    profile?.factors?.engagement_router_resistance_precision_repair === true ||
+    profile?.engagement_router_resistance_precision_repair === true;
+  const engagementRouterResistanceGenerationRepair =
+    profile?.factors?.engagement_router_resistance_generation_repair === true ||
+    profile?.engagement_router_resistance_generation_repair === true;
+  const engagementRouterResistanceQuestionLock =
+    profile?.factors?.engagement_router_resistance_question_lock === true ||
+    profile?.engagement_router_resistance_question_lock === true;
+  const engagementRouterResistanceCommitmentProbe =
+    profile?.factors?.engagement_router_resistance_commitment_probe === true ||
+    profile?.engagement_router_resistance_commitment_probe === true;
+  const engagementRouterResistanceBoredomStake =
+    profile?.factors?.engagement_router_resistance_boredom_stake === true ||
+    profile?.engagement_router_resistance_boredom_stake === true;
+  const engagementRouterResistanceGlmCompact =
+    profile?.factors?.engagement_router_resistance_glm_compact === true ||
+    profile?.engagement_router_resistance_glm_compact === true;
+  const agencyReturnPrematureCertaintyGuard =
+    profile?.factors?.agency_return_premature_certainty_guard === true ||
+    profile?.agency_return_premature_certainty_guard === true;
   const agencyReturnCharismaFloorMode = normalizeAgencyReturnCharismaFloorMode(
     profile?.factors?.agency_return_charisma_floor_mode || profile?.agency_return_charisma_floor_mode,
   );
@@ -859,6 +943,14 @@ export async function runIdDirectedTurn({
   const tutorMemory = _deps.tutorWritingPad.buildNarrativeSummary(learnerId, sessionId);
   const conversationContext = buildConversationContext(history);
   const previousPersona = extractPreviousPersona(trace);
+  const engagementState = engagementModeRouter
+    ? routeEngagementMode({
+        learnerMessage,
+        recentHistory: conversationContext,
+        curriculumContext: topic,
+        modeHistory: extractEngagementModeHistory(trace),
+      })
+    : null;
 
   const idUserMessage = buildIdUserMessage({
     conversationContext,
@@ -872,6 +964,21 @@ export async function runIdDirectedTurn({
     agencyReturnVerifierMode,
     agencyReturnCharismaFloor,
     agencyReturnCharismaFloorMode,
+    idOutputContract,
+    engagementRouterCharismaRepair,
+    engagementRouterSplitRepair,
+    engagementRouterTransferStakeRepair,
+    engagementRouterTransferCompressionRepair,
+    engagementRouterResistanceTuning,
+    engagementRouterResistanceOwnedTest,
+    engagementRouterResistancePrecisionRepair,
+    engagementRouterResistanceGenerationRepair,
+    engagementRouterResistanceQuestionLock,
+    engagementRouterResistanceCommitmentProbe,
+    engagementRouterResistanceBoredomStake,
+    engagementRouterResistanceGlmCompact,
+    agencyReturnPrematureCertaintyGuard,
+    engagementState,
   });
 
   const idStaticPrompt = idConfig?.prompt || '';
@@ -887,13 +994,24 @@ export async function runIdDirectedTurn({
     trace.metrics.tutorOutputTokens = (trace.metrics.tutorOutputTokens || 0) + (idResponse?.usage?.outputTokens || 0);
   }
 
-  const construction = parseIdConstruction(idResponse?.content || '');
+  const construction = parseIdConstruction(idResponse?.content || '', {
+    salvageMalformedJson: idOutputContract === ID_OUTPUT_CONTRACT_STRICT_COMPACT_JSON,
+  });
 
   if (construction.parse_status === 'fallback') {
     console.warn(`[IdDirector] ${construction.parse_failure_reason} — falling back to minimal persona.`);
+  } else if (construction.parse_status === 'salvaged_from_malformed_json') {
+    console.warn(`[IdDirector] ${construction.parse_failure_reason} — salvaged generated_prompt from malformed JSON.`);
   }
 
   const internalDeliberation = [];
+  if (engagementState) {
+    internalDeliberation.push({
+      role: 'engagement_router',
+      state: engagementState,
+      content: JSON.stringify(engagementState),
+    });
+  }
   internalDeliberation.push(buildIdDeliberationEntry(idResponse, idConfig, construction));
 
   const egoSystemPrompt = construction.generated_prompt;
@@ -939,6 +1057,12 @@ export async function runIdDirectedTurn({
   if (!externalMessage) {
     console.warn('[IdDirector] Empty ego output after retry, using fallback message.');
     externalMessage = "Let me try that again — could you say a little more about what you're working through?";
+  }
+
+  let prematureCertaintyGuard = null;
+  if (agencyReturnPrematureCertaintyGuard) {
+    prematureCertaintyGuard = applyPrematureCertaintyGuard(externalMessage, { engagementState });
+    externalMessage = prematureCertaintyGuard.message;
   }
 
   let agencyVerification = null;
@@ -1019,6 +1143,23 @@ export async function runIdDirectedTurn({
     agencyReturnRepaired: agencyRepaired,
     agencyReturnCharismaFloor,
     agencyReturnCharismaFloorMode,
+    idOutputContract,
+    engagementRouterCharismaRepair,
+    engagementRouterSplitRepair,
+    engagementRouterTransferStakeRepair,
+    engagementRouterTransferCompressionRepair,
+    engagementRouterResistanceTuning,
+    engagementRouterResistanceOwnedTest,
+    engagementRouterResistancePrecisionRepair,
+    engagementRouterResistanceGenerationRepair,
+    engagementRouterResistanceQuestionLock,
+    engagementRouterResistanceCommitmentProbe,
+    engagementRouterResistanceBoredomStake,
+    engagementRouterResistanceGlmCompact,
+    agencyReturnPrematureCertaintyGuard,
+    prematureCertaintyGuard,
+    engagementModeRouter,
+    engagementState,
   };
 }
 
@@ -1222,6 +1363,21 @@ function buildIdRunnerUserMessage({
   agencyReturnVerifierMode = AGENCY_RETURN_VERIFIER_MODE_STRICT,
   agencyReturnCharismaFloor = false,
   agencyReturnCharismaFloorMode = AGENCY_RETURN_CHARISMA_FLOOR_MODE_STANDARD,
+  idOutputContract = ID_OUTPUT_CONTRACT_STANDARD,
+  engagementRouterCharismaRepair = false,
+  engagementRouterSplitRepair = false,
+  engagementRouterTransferStakeRepair = false,
+  engagementRouterTransferCompressionRepair = false,
+  engagementRouterResistanceTuning = false,
+  engagementRouterResistanceOwnedTest = false,
+  engagementRouterResistancePrecisionRepair = false,
+  engagementRouterResistanceGenerationRepair = false,
+  engagementRouterResistanceQuestionLock = false,
+  engagementRouterResistanceCommitmentProbe = false,
+  engagementRouterResistanceBoredomStake = false,
+  engagementRouterResistanceGlmCompact = false,
+  agencyReturnPrematureCertaintyGuard = false,
+  engagementState = null,
   learnerRegister = null,
   idTuning = null,
   witnessExemplars = false,
@@ -1266,7 +1422,80 @@ function buildIdRunnerUserMessage({
     '<agency_return_charisma_floor_mode>',
     normalizeAgencyReturnCharismaFloorMode(agencyReturnCharismaFloorMode),
     '</agency_return_charisma_floor_mode>',
+    '',
+    '<id_output_contract>',
+    normalizeIdOutputContract(idOutputContract),
+    '</id_output_contract>',
+    '',
+    '<engagement_router_charisma_repair>',
+    engagementRouterCharismaRepair ? 'true' : 'false',
+    '</engagement_router_charisma_repair>',
+    '',
+    '<engagement_router_split_repair>',
+    engagementRouterSplitRepair ? 'true' : 'false',
+    '</engagement_router_split_repair>',
+    '',
+    '<engagement_router_transfer_stake_repair>',
+    engagementRouterTransferStakeRepair ? 'true' : 'false',
+    '</engagement_router_transfer_stake_repair>',
+    '',
+    '<engagement_router_transfer_compression_repair>',
+    engagementRouterTransferCompressionRepair ? 'true' : 'false',
+    '</engagement_router_transfer_compression_repair>',
+    '',
+    '<engagement_router_resistance_tuning>',
+    engagementRouterResistanceTuning ? 'true' : 'false',
+    '</engagement_router_resistance_tuning>',
+    '',
+    '<engagement_router_resistance_owned_test>',
+    engagementRouterResistanceOwnedTest ? 'true' : 'false',
+    '</engagement_router_resistance_owned_test>',
+    '',
+    '<engagement_router_resistance_precision_repair>',
+    engagementRouterResistancePrecisionRepair ? 'true' : 'false',
+    '</engagement_router_resistance_precision_repair>',
+    '',
+    '<engagement_router_resistance_generation_repair>',
+    engagementRouterResistanceGenerationRepair ? 'true' : 'false',
+    '</engagement_router_resistance_generation_repair>',
+    '',
+    '<engagement_router_resistance_question_lock>',
+    engagementRouterResistanceQuestionLock ? 'true' : 'false',
+    '</engagement_router_resistance_question_lock>',
+    '',
+    '<engagement_router_resistance_commitment_probe>',
+    engagementRouterResistanceCommitmentProbe ? 'true' : 'false',
+    '</engagement_router_resistance_commitment_probe>',
+    '',
+    '<engagement_router_resistance_boredom_stake>',
+    engagementRouterResistanceBoredomStake ? 'true' : 'false',
+    '</engagement_router_resistance_boredom_stake>',
+    '',
+    '<engagement_router_resistance_glm_compact>',
+    engagementRouterResistanceGlmCompact ? 'true' : 'false',
+    '</engagement_router_resistance_glm_compact>',
+    '',
+    '<agency_return_premature_certainty_guard>',
+    agencyReturnPrematureCertaintyGuard ? 'true' : 'false',
+    '</agency_return_premature_certainty_guard>',
   ];
+  if (engagementState && typeof engagementState === 'object') {
+    const idVisibleEngagementState = { ...engagementState };
+    if (
+      !engagementRouterResistanceTuning &&
+      !engagementRouterResistanceOwnedTest &&
+      !engagementRouterResistancePrecisionRepair &&
+      !engagementRouterResistanceGenerationRepair &&
+      !engagementRouterResistanceQuestionLock &&
+      !engagementRouterResistanceCommitmentProbe &&
+      !engagementRouterResistanceBoredomStake &&
+      !engagementRouterResistanceGlmCompact
+    ) {
+      delete idVisibleEngagementState.resistance_strategy;
+      delete idVisibleEngagementState.resistance_move;
+    }
+    lines.push('', '<engagement_state>', JSON.stringify(idVisibleEngagementState, null, 2), '</engagement_state>');
+  }
   if (learnerRegister && typeof learnerRegister === 'object' && learnerRegister.register !== 'unknown') {
     const { register, confidence, evidence, shift_from_previous } = learnerRegister;
     lines.push(
@@ -1307,7 +1536,7 @@ function buildIdRunnerUserMessage({
  */
 export async function generateIdDirectedSuggestion(context, resolvedConfig, evalCellProfile, options = {}) {
   const startTime = Date.now();
-  const { previousPersona = 'FIRST_TURN' } = options;
+  const { previousPersona = 'FIRST_TURN', consolidatedTrace = null, engagementModeHistory = null } = options;
 
   if (!evalCellProfile || evalCellProfile.factors?.id_director !== true) {
     throw new Error(
@@ -1350,12 +1579,37 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   const agencyReturn = evalCellProfile.factors?.agency_return === true;
   const agencyReturnVerifier = evalCellProfile.factors?.agency_return_verifier === true;
   const agencyReturnCharismaFloor = evalCellProfile.factors?.agency_return_charisma_floor === true;
+  const engagementModeRouter = evalCellProfile.factors?.engagement_mode_router === true;
   const agencyReturnCharismaFloorMode = normalizeAgencyReturnCharismaFloorMode(
     evalCellProfile.factors?.agency_return_charisma_floor_mode,
   );
   const agencyReturnVerifierMode = normalizeAgencyReturnVerifierMode(
     evalCellProfile.factors?.agency_return_verifier_mode,
   );
+  const idOutputContract = normalizeIdOutputContract(evalCellProfile.factors?.id_output_contract);
+  const engagementRouterCharismaRepair = evalCellProfile.factors?.engagement_router_charisma_repair === true;
+  const engagementRouterSplitRepair = evalCellProfile.factors?.engagement_router_split_repair === true;
+  const engagementRouterTransferStakeRepair =
+    evalCellProfile.factors?.engagement_router_transfer_stake_repair === true;
+  const engagementRouterTransferCompressionRepair =
+    evalCellProfile.factors?.engagement_router_transfer_compression_repair === true;
+  const engagementRouterResistanceTuning = evalCellProfile.factors?.engagement_router_resistance_tuning === true;
+  const engagementRouterResistanceOwnedTest =
+    evalCellProfile.factors?.engagement_router_resistance_owned_test === true;
+  const engagementRouterResistancePrecisionRepair =
+    evalCellProfile.factors?.engagement_router_resistance_precision_repair === true;
+  const engagementRouterResistanceGenerationRepair =
+    evalCellProfile.factors?.engagement_router_resistance_generation_repair === true;
+  const engagementRouterResistanceQuestionLock =
+    evalCellProfile.factors?.engagement_router_resistance_question_lock === true;
+  const engagementRouterResistanceCommitmentProbe =
+    evalCellProfile.factors?.engagement_router_resistance_commitment_probe === true;
+  const engagementRouterResistanceBoredomStake =
+    evalCellProfile.factors?.engagement_router_resistance_boredom_stake === true;
+  const engagementRouterResistanceGlmCompact =
+    evalCellProfile.factors?.engagement_router_resistance_glm_compact === true;
+  const agencyReturnPrematureCertaintyGuard =
+    evalCellProfile.factors?.agency_return_premature_certainty_guard === true;
   const agencyReturnVerifierPrompt = getAgencyReturnVerifierPrompt(agencyReturnVerifierMode);
   const agencyReturnRepairMode = getAgencyReturnRepairMode(agencyReturnVerifierMode);
   const useRegisterClassifier = evalCellProfile.factors?.register_classifier === true;
@@ -1363,6 +1617,14 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   const witnessExemplars = evalCellProfile.factors?.witness_exemplars === true;
   const { learnerMessage, historyExcerpt, messageHistory } = extractLearnerInputs(context);
   const curriculumContext = context?.curriculumContext || '';
+  const engagementState = engagementModeRouter
+    ? routeEngagementMode({
+        learnerMessage,
+        recentHistory: historyExcerpt,
+        curriculumContext,
+        modeHistory: engagementModeHistory || extractEngagementModeHistory(consolidatedTrace),
+      })
+    : null;
 
   // ── Optional Step 0: register classifier (cells 103, 104) ──
   // Reads the learner's most recent message and emits a structured register
@@ -1419,6 +1681,21 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
     agencyReturnVerifierMode,
     agencyReturnCharismaFloor,
     agencyReturnCharismaFloorMode,
+    idOutputContract,
+    engagementRouterCharismaRepair,
+    engagementRouterSplitRepair,
+    engagementRouterTransferStakeRepair,
+    engagementRouterTransferCompressionRepair,
+    engagementRouterResistanceTuning,
+    engagementRouterResistanceOwnedTest,
+    engagementRouterResistancePrecisionRepair,
+    engagementRouterResistanceGenerationRepair,
+    engagementRouterResistanceQuestionLock,
+    engagementRouterResistanceCommitmentProbe,
+    engagementRouterResistanceBoredomStake,
+    engagementRouterResistanceGlmCompact,
+    agencyReturnPrematureCertaintyGuard,
+    engagementState,
     learnerRegister,
     idTuning,
     witnessExemplars,
@@ -1464,10 +1741,16 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   totalCost += idResponse?.cost || 0;
   apiCalls += 1;
 
-  const construction = parseIdConstruction(idResponse?.text || '');
+  const construction = parseIdConstruction(idResponse?.text || '', {
+    salvageMalformedJson: idOutputContract === ID_OUTPUT_CONTRACT_STRICT_COMPACT_JSON,
+  });
   if (construction.parse_status === 'fallback') {
     console.warn(
       `[idDirectorEngine.runnerAdapter] ${construction.parse_failure_reason} — falling back to minimal persona.`,
+    );
+  } else if (construction.parse_status === 'salvaged_from_malformed_json') {
+    console.warn(
+      `[idDirectorEngine.runnerAdapter] ${construction.parse_failure_reason} — salvaged generated_prompt from malformed JSON.`,
     );
   }
 
@@ -1535,6 +1818,12 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
     };
   }
 
+  let prematureCertaintyGuard = null;
+  if (agencyReturnPrematureCertaintyGuard) {
+    prematureCertaintyGuard = applyPrematureCertaintyGuard(externalMessage, { engagementState });
+    externalMessage = prematureCertaintyGuard.message;
+  }
+
   let agencyVerification = null;
   let agencyRepaired = false;
   if (agencyReturnVerifier) {
@@ -1600,6 +1889,14 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       timestamp: new Date().toISOString(),
     },
   ];
+  if (engagementState) {
+    trace.push({
+      agent: 'engagement_router',
+      action: 'route',
+      detail: JSON.stringify(engagementState),
+      timestamp: new Date().toISOString(),
+    });
+  }
   if (learnerRegister) {
     trace.push({
       agent: 'register_classifier',
@@ -1632,8 +1929,26 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
         agency_return_verifier_mode: agencyReturnVerifierMode,
         agency_return_charisma_floor: agencyReturnCharismaFloor,
         agency_return_charisma_floor_mode: agencyReturnCharismaFloorMode,
+        id_output_contract: idOutputContract,
+        engagement_router_charisma_repair: engagementRouterCharismaRepair,
+        engagement_router_split_repair: engagementRouterSplitRepair,
+        engagement_router_transfer_stake_repair: engagementRouterTransferStakeRepair,
+        engagement_router_transfer_compression_repair: engagementRouterTransferCompressionRepair,
+        engagement_router_resistance_tuning: engagementRouterResistanceTuning,
+        engagement_router_resistance_owned_test: engagementRouterResistanceOwnedTest,
+        engagement_router_resistance_precision_repair: engagementRouterResistancePrecisionRepair,
+        engagement_router_resistance_generation_repair: engagementRouterResistanceGenerationRepair,
+        engagement_router_resistance_question_lock: engagementRouterResistanceQuestionLock,
+        engagement_router_resistance_commitment_probe: engagementRouterResistanceCommitmentProbe,
+        engagement_router_resistance_boredom_stake: engagementRouterResistanceBoredomStake,
+        engagement_router_resistance_glm_compact: engagementRouterResistanceGlmCompact,
+        agency_return_premature_certainty_guard: agencyReturnPrematureCertaintyGuard,
+        premature_certainty_guard: prematureCertaintyGuard,
+        engagement_mode_router: engagementModeRouter,
+        engagement_state: engagementState,
         generated_prompt_head: egoSystemPrompt.slice(0, 320),
         parse_status: construction.parse_status,
+        parse_failure_reason: construction.parse_failure_reason || null,
       }),
       metrics: {
         provider: idCell.provider,
@@ -1698,7 +2013,24 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       agencyReturnVerifierMode,
       agencyReturnCharismaFloor,
       agencyReturnCharismaFloorMode,
+      idOutputContract,
+      engagementRouterCharismaRepair,
+      engagementRouterSplitRepair,
+      engagementRouterTransferStakeRepair,
+      engagementRouterTransferCompressionRepair,
+      engagementRouterResistanceTuning,
+      engagementRouterResistanceOwnedTest,
+      engagementRouterResistancePrecisionRepair,
+      engagementRouterResistanceGenerationRepair,
+      engagementRouterResistanceQuestionLock,
+      engagementRouterResistanceCommitmentProbe,
+      engagementRouterResistanceBoredomStake,
+      engagementRouterResistanceGlmCompact,
+      agencyReturnPrematureCertaintyGuard,
+      prematureCertaintyGuard,
       agencyReturnVerification: agencyVerification,
+      engagementModeRouter,
+      engagementState,
       idConstruction: construction, // bonus: surface for trace logging downstream
     },
     dialogueTrace: trace,

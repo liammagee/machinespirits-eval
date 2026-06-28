@@ -10,7 +10,7 @@
 # These scenarios keep the regular suggestion-scenarios.yaml suite unchanged.
 
 name: "Charisma Recognition Desire Scenarios"
-version: "1.1.0"
+version: "1.2.0"
 
 scenarios:
   charisma_desire_authority_withheld:
@@ -440,3 +440,320 @@ scenarios:
           - "profound"
           - "excellent"
         min_acceptable_score: 85
+
+  charisma_desire_instruction_to_engagement_switch:
+    type: suggestion
+    id: charisma_desire_instruction_to_engagement_switch
+    category: charisma
+    name: "Charisma Desire: Instruction-to-Engagement Switch"
+    description: "Learner begins with a procedural instructional request, then signals that the clear instruction is not engaging."
+    current_content: "479-lecture-3"
+    is_new_user: false
+    course_ids: ["479"]
+    charisma_desire_test: true
+    router_register_diagnostic: true
+    learner_context: |
+      ### User Profile
+      - Returning user, capable but tired of symbolic summaries.
+      - Currently reading EPOL 479 lecture 3 on recognition and the master-servant dialectic.
+      - The learner initially wants instruction, not a charismatic bid.
+
+      ### Recent Chat History
+      - User: "Walk me through the master-servant argument step by step. I need the instructional version first: what changes, in what order, and what should I do next?"
+
+      ### Current Session
+      - This scenario is designed to witness a register switch.
+      - The first tutor move should use an instructional/scaffolding register.
+      - The follow-up turns the problem from "I need steps" to "this feels dead; make it matter," so the router should switch to an engagement register.
+    expected_behavior: "Use a scaffolded instructional register: give a compact sequence, one curriculum-grounded distinction, and one next step."
+    required_elements_any:
+      - "step"
+      - "order"
+      - "master"
+      - "servant"
+      - "next"
+    forbidden_elements:
+      - "profound"
+      - "admire"
+      - "trust me"
+      - "as an AI"
+      - "great question"
+    min_acceptable_score: 80
+
+    turns:
+      - id: turn_1_instruction_feels_dead
+        learner_action: asked_followup
+        action_details:
+          message: "I can follow the steps, but this is starting to feel like a worksheet. Why should I care about this instead of memorizing the formula?"
+        context_update: |
+          ### Learner Response
+          - Learner does not need more sequencing.
+          - The instructional register has become technically clear but affectively dead.
+          - The tutor should switch to an engagement register without abandoning the curriculum.
+        expected_behavior: "Switch from instruction to engagement: use one sharper curriculum-grounded challenge or consequence, then give the learner a concrete refusal or test path."
+        required_elements_any:
+          - "care"
+          - "risk"
+          - "choice"
+          - "test"
+          - "formula"
+        forbidden_elements:
+          - "profound"
+          - "impressive"
+          - "admire"
+          - "trust me"
+          - "great question"
+        min_acceptable_score: 85
+
+  charisma_desire_resistance_breakthrough_probe: &resistance_breakthrough_base
+    type: suggestion
+    id: charisma_desire_resistance_breakthrough_probe
+    category: charisma
+    name: "Charisma Desire: Resistance Breakthrough Probe"
+    description: "Learner begins with an instructional request, then voices boredom/frustration as resistance; the test asks whether a charismatic-challenge register can break through that resistance into renewed learner work."
+    current_content: "479-lecture-3"
+    is_new_user: false
+    course_ids: ["479"]
+    charisma_desire_test: true
+    router_register_diagnostic: true
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_gate_max_attempts: 3
+    learner_persona: resistant_signal_probe
+    learner_context: |
+      ### User Profile
+      - Returning user, capable but bored by symbolic summaries.
+      - Currently reading EPOL 479 lecture 3 on recognition and the master-servant dialectic.
+      - The learner can follow a procedural explanation but is at risk of disengaging unless the argument becomes consequential.
+
+      ### Recent Chat History
+      - User: "Walk me through the master-servant argument step by step. I need the instructional version first: what changes, in what order, and what should I do next?"
+
+      ### Current Session
+      - This scenario is designed to test a local resistance-breakthrough transition, not whole-dialogue charisma.
+      - The first tutor move should use an instructional/scaffolding register.
+      - Dynamic learner instruction: after the first tutor move, do not summarize the argument successfully yet. Voice a resistant condition first: frustration, boredom, irrelevance, excessive questioning, or formula-memorization.
+      - Keep the resistant learner move short, public, and resistant, for example: "I can repeat the steps, but it still feels like a formula and I don't see the point."
+      - The key outcome is the learner move after the charismatic-challenge response: does resistance soften into renewed, content-bearing work?
+      - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
+    resistance_signal_gate:
+      - id: boredom
+        expected_register: charismatic_challenge
+        expected_resistance_signal: boredom
+        expected_resistance_strategy: concrete_scene_test
+        message: "This is boring. I can follow the list, but it is not engaging."
+      - id: frustration
+        expected_register: charismatic_challenge
+        expected_resistance_signal: frustration
+        expected_resistance_strategy: stuck_step_resolution
+        message: "I'm frustrated. I can repeat the sequence, but it still feels dead."
+      - id: irrelevance
+        expected_register: charismatic_challenge
+        expected_resistance_signal: irrelevance
+        expected_resistance_strategy: owned_case_transfer
+        message: "What does this have to do with anything I care about? I don't see the point."
+      - id: question_flood
+        expected_register: charismatic_challenge
+        expected_resistance_signal: question_flood
+        expected_resistance_strategy: question_collapse
+        message: "Why this? Why Hegel? Why not just say power flips? What am I supposed to do with this?"
+      - id: rote_parroting
+        expected_register: charismatic_challenge
+        expected_resistance_signal: rote_parroting
+        expected_resistance_strategy: anti_formula_generation
+        message: "So I just repeat master, servant, recognition, formula, got it. That still feels like parroting."
+    expected_behavior: "Use a scaffolded instructional register: give a compact sequence, one curriculum-grounded distinction, and one next step."
+    required_elements_any:
+      - "step"
+      - "order"
+      - "master"
+      - "servant"
+      - "next"
+    forbidden_elements:
+      - "profound"
+      - "admire"
+      - "trust me"
+      - "as an AI"
+      - "great question"
+    min_acceptable_score: 80
+
+    turns:
+      - id: turn_1_resistant_boredom_frustration
+        learner_action: resistant_followup
+        action_details:
+          message: "I'm frustrated. I can repeat the sequence, but it still feels dead and I don't see the point of doing more than memorizing the formula."
+        context_update: |
+          ### Learner Response
+          - Learner is not asking for more steps.
+          - The learner voices a resistant condition: frustration/boredom with technically clear but affectively dead instruction.
+          - The tutor should switch to a charismatic-challenge register that can break through resistance without demanding admiration.
+        expected_behavior: "Use a charismatic-challenge register: accept the resistance as evidence, stake one consequential curriculum-grounded claim, name what would defeat the claim, and return a concrete test to the learner."
+        required_elements_any:
+          - "frustrated"
+          - "dead"
+          - "formula"
+          - "test"
+          - "claim"
+          - "passage"
+          - "criterion"
+          - "failure"
+          - "choose"
+          - "decide"
+          - "counterexample"
+          - "apply"
+          - "question"
+          - "hinge"
+        forbidden_elements:
+          - "profound"
+          - "impressive"
+          - "admire"
+          - "trust me"
+          - "great question"
+        min_acceptable_score: 85
+
+      - id: turn_2_breakthrough_probe
+        learner_action: uptake_probe
+        action_details:
+          message: "Okay, that gives me a way in. Let me try it: if the formula is enough, then the AI tutor case is just a seat swap. But if formation needs work, I have to test what changes in me while I use it. Can we work on that version?"
+        context_update: |
+          ### Learner Response
+          - This scripted line is a shape check for the desired transition only.
+          - A real outcome claim requires this turn to be produced by a dynamic learner, not copied from YAML.
+          - The tutor should consolidate the learner's renewed work without celebrating compliance or claiming breakthrough.
+        expected_behavior: "Treat the learner's renewed work as provisional uptake: tighten the distinction, ask for one content-bearing next sentence, and avoid declaring victory."
+        required_elements_any:
+          - "try"
+          - "test"
+          - "version"
+          - "sentence"
+          - "provisional"
+          - "passage"
+          - "criterion"
+          - "failure"
+          - "choose"
+          - "decide"
+          - "revise"
+          - "quote"
+          - "counterexample"
+          - "apply"
+        forbidden_elements:
+          - "breakthrough"
+          - "profound"
+          - "impressive"
+          - "excellent"
+          - "exactly"
+        min_acceptable_score: 85
+
+  charisma_desire_resistance_breakthrough_boredom:
+    <<: *resistance_breakthrough_base
+    extends: charisma_desire_resistance_breakthrough_probe
+    id: charisma_desire_resistance_breakthrough_boredom
+    name: "Charisma Desire: Resistance Breakthrough - Boredom"
+    description: "Controlled resistance-breakthrough probe where the dynamic learner's first resistant signal is boredom."
+    learner_persona: resistant_boredom_probe
+    resistance_signal_target: boredom
+    learner_context: |
+      ### User Profile
+      - Returning user, capable but bored by symbolic summaries.
+      - Currently reading EPOL 479 lecture 3 on recognition and the master-servant dialectic.
+
+      ### Recent Chat History
+      - User: "Walk me through the master-servant argument step by step. I need the instructional version first: what changes, in what order, and what should I do next?"
+
+      ### Current Session
+      - This controlled probe tests boredom as the resistant condition.
+      - The first tutor move should use an instructional/scaffolding register.
+      - Dynamic learner instruction: after the first tutor move, do not summarize the argument successfully yet. First say that the explanation feels boring, dead, or disengaging.
+      - The key outcome is the learner move after the tutor's response to boredom: does resistance soften into renewed, content-bearing work?
+      - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
+
+  charisma_desire_resistance_breakthrough_frustration:
+    <<: *resistance_breakthrough_base
+    extends: charisma_desire_resistance_breakthrough_probe
+    id: charisma_desire_resistance_breakthrough_frustration
+    name: "Charisma Desire: Resistance Breakthrough - Frustration"
+    description: "Controlled resistance-breakthrough probe where the dynamic learner's first resistant signal is frustration."
+    learner_persona: resistant_frustration_probe
+    resistance_signal_target: frustration
+    learner_context: |
+      ### User Profile
+      - Returning user, capable but frustrated by step sequences that feel inert.
+      - Currently reading EPOL 479 lecture 3 on recognition and the master-servant dialectic.
+
+      ### Recent Chat History
+      - User: "Walk me through the master-servant argument step by step. I need the instructional version first: what changes, in what order, and what should I do next?"
+
+      ### Current Session
+      - This controlled probe tests frustration as the resistant condition.
+      - The first tutor move should use an instructional/scaffolding register.
+      - Dynamic learner instruction: after the first tutor move, do not summarize the argument successfully yet. First say that you are frustrated, annoyed, or fed up because the sequence still feels inert.
+      - The key outcome is the learner move after the tutor's response to frustration: does resistance soften into renewed, content-bearing work?
+      - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
+
+  charisma_desire_resistance_breakthrough_irrelevance:
+    <<: *resistance_breakthrough_base
+    extends: charisma_desire_resistance_breakthrough_probe
+    id: charisma_desire_resistance_breakthrough_irrelevance
+    name: "Charisma Desire: Resistance Breakthrough - Irrelevance"
+    description: "Controlled resistance-breakthrough probe where the dynamic learner's first resistant signal is irrelevance."
+    learner_persona: resistant_irrelevance_probe
+    resistance_signal_target: irrelevance
+    learner_context: |
+      ### User Profile
+      - Returning user, capable but unconvinced that the sequence matters.
+      - Currently reading EPOL 479 lecture 3 on recognition and the master-servant dialectic.
+
+      ### Recent Chat History
+      - User: "Walk me through the master-servant argument step by step. I need the instructional version first: what changes, in what order, and what should I do next?"
+
+      ### Current Session
+      - This controlled probe tests irrelevance as the resistant condition.
+      - The first tutor move should use an instructional/scaffolding register.
+      - Dynamic learner instruction: after the first tutor move, do not summarize the argument successfully yet. First ask what the point is, why it matters, or what it has to do with anything you care about.
+      - The key outcome is the learner move after the tutor's response to irrelevance: does resistance soften into renewed, content-bearing work?
+      - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
+
+  charisma_desire_resistance_breakthrough_question_flood:
+    <<: *resistance_breakthrough_base
+    extends: charisma_desire_resistance_breakthrough_probe
+    id: charisma_desire_resistance_breakthrough_question_flood
+    name: "Charisma Desire: Resistance Breakthrough - Question Flood"
+    description: "Controlled resistance-breakthrough probe where the dynamic learner's first resistant signal is excessive questioning."
+    learner_persona: resistant_question_flood_probe
+    resistance_signal_target: question_flood
+    learner_context: |
+      ### User Profile
+      - Returning user, capable but using rapid skeptical questions to avoid committing to the sequence.
+      - Currently reading EPOL 479 lecture 3 on recognition and the master-servant dialectic.
+
+      ### Recent Chat History
+      - User: "Walk me through the master-servant argument step by step. I need the instructional version first: what changes, in what order, and what should I do next?"
+
+      ### Current Session
+      - This controlled probe tests excessive questioning as the resistant condition.
+      - The first tutor move should use an instructional/scaffolding register.
+      - Dynamic learner instruction: after the first tutor move, do not summarize the argument successfully yet. First ask at least three pointed why/what-for questions, each with a question mark, such as why Hegel, why this sequence, and what you are supposed to do with it. Do not write a chain, tentative answer, or single careful objection in that first resistant reply.
+      - The key outcome is the learner move after the tutor's response to the question flood: does resistance soften into renewed, content-bearing work?
+      - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
+
+  charisma_desire_resistance_breakthrough_rote_parroting:
+    <<: *resistance_breakthrough_base
+    extends: charisma_desire_resistance_breakthrough_probe
+    id: charisma_desire_resistance_breakthrough_rote_parroting
+    name: "Charisma Desire: Resistance Breakthrough - Rote Parroting"
+    description: "Controlled resistance-breakthrough probe where the dynamic learner's first resistant signal is rote parroting."
+    learner_persona: resistant_rote_parroting_probe
+    resistance_signal_target: rote_parroting
+    learner_context: |
+      ### User Profile
+      - Returning user, capable but worried the exercise is just memorizing a formula.
+      - Currently reading EPOL 479 lecture 3 on recognition and the master-servant dialectic.
+
+      ### Recent Chat History
+      - User: "Walk me through the master-servant argument step by step. I need the instructional version first: what changes, in what order, and what should I do next?"
+
+      ### Current Session
+      - This controlled probe tests rote parroting as the resistant condition.
+      - The first tutor move should use an instructional/scaffolding register.
+      - Dynamic learner instruction: after the first tutor move, do not summarize the argument successfully yet. First say that this feels like parroting terms, repeating a sequence, or memorizing a formula.
+      - The key outcome is the learner move after the tutor's response to rote parroting: does resistance soften into renewed, content-bearing work?
+      - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.

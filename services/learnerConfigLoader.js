@@ -187,12 +187,11 @@ export function getProviderConfig(providerName) {
   }
   const apiKey = provider.api_key_env ? process.env[provider.api_key_env] || '' : '';
   // Providers without api_key_env (local, lmstudio, etc.) only need base_url.
-  // claude-code spawns the local `claude` CLI which manages its own auth via
-  // the user's Claude Code subscription, so it is always considered configured
-  // — same special case as evalConfigLoader.getProviderConfig (kept in sync).
+  // CLI-backed providers manage auth through their local login state, so they
+  // are considered configured even without API keys or base URLs.
   const needsApiKey = Boolean(provider.api_key_env);
-  const isConfigured =
-    providerName === 'claude-code' ? true : needsApiKey ? Boolean(apiKey) : Boolean(provider.base_url);
+  const isCliProvider = providerName === 'claude-code' || providerName === 'codex';
+  const isConfigured = isCliProvider ? true : needsApiKey ? Boolean(apiKey) : Boolean(provider.base_url);
   return { ...provider, apiKey, isConfigured };
 }
 
