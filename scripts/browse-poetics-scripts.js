@@ -1128,12 +1128,21 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   app.locals.db = db;
   app.get('/runs', (req, res) => {
     const qs = new URLSearchParams(req.query || {}).toString();
-    return res.redirect(302, '/admin/runs' + (qs ? '?' + qs : ''));
+    return res.redirect(302, `${req.baseUrl || ''}/admin/runs${qs ? '?' + qs : ''}`);
   });
   app.get('/compose/live', (req, res) => {
     const qs = new URLSearchParams(req.query || {}).toString();
-    return res.redirect(302, '/admin/compose/live' + (qs ? '?' + qs : ''));
+    return res.redirect(302, `${req.baseUrl || ''}/admin/compose/live${qs ? '?' + qs : ''}`);
   });
+  const movedAdminPath = (req) => {
+    const original = req.originalUrl || req.url || '';
+    const queryAt = original.indexOf('?');
+    const pathPart = queryAt === -1 ? original : original.slice(0, queryAt);
+    const queryPart = queryAt === -1 ? '' : original.slice(queryAt);
+    const apiAt = pathPart.indexOf('/api/');
+    if (apiAt !== -1) return `${pathPart.slice(0, apiAt)}/admin${pathPart.slice(apiAt)}${queryPart}`;
+    return `${req.baseUrl || ''}/admin${req.url || ''}`;
+  };
   app.use(
     [
       '/api/jobs',
@@ -1151,10 +1160,10 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
     (req, res) =>
       res.status(404).json({
         error: 'admin endpoint moved',
-        adminPath: `/admin${req.originalUrl || req.url || ''}`,
+        adminPath: movedAdminPath(req),
       }),
   );
-  adminRouter.get('/', (_req, res) => res.redirect(302, '/admin/runs'));
+  adminRouter.get('/', (req, res) => res.redirect(302, `${req.baseUrl || ''}/runs`));
   app.get('/favicon.ico', (_req, res) => res.status(204).end());
   app.get('/api/runs', (_req, res) => res.json({ runs: listRuns(db), disciplines: distinctDisciplines(db) }));
   app.get('/api/stats', (_req, res) => res.json({ ...corpusStats(db), replays: listReplayBundles().length }));

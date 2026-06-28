@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
+import express from 'express';
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-admin-auth-'));
 const dbPath = path.join(tmp, 'evaluations.db');
@@ -12,6 +13,7 @@ let createPoeticsBrowserApp;
 let oldUser;
 let oldPass;
 let app;
+let poeticsApp;
 let server;
 let baseUrl;
 
@@ -21,15 +23,17 @@ before(async () => {
   process.env.POETICS_AUTH_USER = 'admin';
   process.env.POETICS_AUTH_PASS = 'secret';
   ({ createPoeticsBrowserApp } = await import('../scripts/browse-poetics-scripts.js'));
-  app = createPoeticsBrowserApp({ dbPath, host: '0.0.0.0' });
+  app = express();
+  poeticsApp = createPoeticsBrowserApp({ dbPath, host: '0.0.0.0' });
+  app.use('/poetics', poeticsApp);
   server = app.listen(0, '127.0.0.1');
   await new Promise((resolve) => server.once('listening', resolve));
-  baseUrl = `http://127.0.0.1:${server.address().port}`;
+  baseUrl = `http://127.0.0.1:${server.address().port}/poetics`;
 });
 
 after(async () => {
   await new Promise((resolve) => server?.close(resolve));
-  app?.locals?.db?.close?.();
+  poeticsApp?.locals?.db?.close?.();
   if (oldUser == null) delete process.env.POETICS_AUTH_USER;
   else process.env.POETICS_AUTH_USER = oldUser;
   if (oldPass == null) delete process.env.POETICS_AUTH_PASS;
@@ -77,9 +81,10 @@ test('admin tool pages require Basic Auth', async () => {
 test('legacy public tool paths redirect pages but do not execute APIs', async () => {
   const page = await request('/runs?kind=generate');
   assert.equal(page.status, 302);
-  assert.equal(page.headers.location, '/admin/runs?kind=generate');
+  assert.equal(page.headers.location, '/poetics/admin/runs?kind=generate');
 
   const api = await request('/api/jobs', { method: 'POST', body: { kind: 'generate', params: { mock: true } } });
   assert.equal(api.status, 404);
   assert.match(api.body, /admin endpoint moved/);
+  assert.equal(JSON.parse(api.body).adminPath, '/poetics/admin/api/jobs');
 });
