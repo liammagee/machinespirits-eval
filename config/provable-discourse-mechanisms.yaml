@@ -1755,6 +1755,28 @@ claims:
       - "If learner paradox effect size changes in Paper 1.0, update §9."
     tags: [s9, pilot, paradox]
 
+  # ── Appendix E: belief--desire--recognition apparatus ─────────
+
+  - id: paper2.appendix_e.character_development_self_commitment_pilot
+    description: "Appendix E.7 reports the bounded character-development pilot: self-recognition becomes legible when the mirror is the learner's own prior commitment."
+    source_keys:
+      - "stat|appendix-e|character-development L3 self-commitment pilot"
+    statement:
+      pattern: "L3 self-recognition dimension moved from 1\\.0 to 3\\.0 under Sonnet and from 1\\.5 to 4\\.5 under GPT"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: code_path
+      file: "config/character-development/evidence-manifest-2026-06-28.md"
+      pattern: "L3 moved from 1\\.0 to 3\\.0 under Sonnet and\\s+from 1\\.5 to 4\\.5 under GPT"
+      min_matches: 1
+    assertion:
+      op: gte
+      expected: 1
+    remediation:
+      - "If the evidence manifest no longer records this L3 contrast, either restore the evidence package summary or remove/soften the Appendix E.7 pilot claim."
+    tags: [appendix-e, character-development, pilot, scope-bound]
+
 
 symmetry_rules:
   - id: symmetry.calibration.cluster_gradient

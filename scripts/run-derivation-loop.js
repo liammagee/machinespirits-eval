@@ -813,6 +813,7 @@ async function main() {
   const castLayer = flag('cast-layer');
   const castReinvention = flag('cast-reinvention');
   const learnerDrift = flag('learner-drift');
+  const characterArc = flag('character-arc');
   const ownershipProof = flag('ownership-proof');
   const ownershipTransferGate = flag('ownership-transfer-gate');
   const learnerProxyDag = flag('learner-proxy-dag');
@@ -947,6 +948,7 @@ async function main() {
       castLayer,
       castReinvention,
       learnerDrift,
+      characterArc,
       ownershipProof,
       ownershipTransferGate,
       learnerProxyDag,
@@ -1261,6 +1263,7 @@ async function main() {
       options: {
         onTurn,
         logicProjection: true,
+        characterArc,
         learnerProxyDag,
         proxyDagPacing,
         tutorLearnerDag,
@@ -1357,6 +1360,7 @@ async function main() {
     castLayer,
     castReinvention,
     learnerDrift,
+    characterArc,
     ownershipProof,
     ownershipTransferGate,
     learnerProxyDag,

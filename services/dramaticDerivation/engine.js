@@ -81,6 +81,7 @@
 import { closure, entails, factKey, matchPattern, proofTree } from './chainer.js';
 import { normalizeDecayConfig, mulberry32 } from './corruption.js';
 import { DIDACTIC_ACT_FALLBACK_SCHEMA } from './didacticMode.js';
+import { buildLearnerCharacterArcView } from './characterDesire.js';
 import { buildWorldIR, projectWorldIRLogic } from './guardCompiler.js';
 import { deriveLearnerTransformationState, summarizeLearnerTransformationDurability } from './learnerTransformation.js';
 import { buildLearnerDag, buildLearnerDagSnapshot } from './learnerDag.js';
@@ -808,6 +809,10 @@ export async function runDrama({ world, roles, options = {} }) {
           factSurface: (fact) => factSurfaces[factKey(fact)] || learnerSurfaceForFact(fact),
         })
       : null;
+    // Live character arc (§8 open item): public-safe disposition stance for THIS
+    // turn, computed engine-side from world.motivation + the learner's held
+    // facts. Leak-safe — only levels + a mirror-named stance line cross over.
+    const characterArc = opts.characterArc ? buildLearnerCharacterArcView(world, grounded) : null;
     return {
       turn,
       question: world.question,
@@ -826,6 +831,7 @@ export async function runDrama({ world, roles, options = {} }) {
       },
       voiced,
       ...(proxyDagMemory ? { proxyDagMemory } : {}),
+      ...(characterArc ? { characterArc } : {}),
       ...(actState ? { act: { index: actState.index, startTurn: actState.startTurn, brief: actState.brief } } : {}),
       ...(sceneState ? { scene: currentSceneView() } : {}),
       ...(stagePrologue ? { stagePrologue } : {}),

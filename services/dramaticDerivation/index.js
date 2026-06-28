@@ -203,4 +203,5 @@ export {
   learnerBindingAtTurn,
   driftedDynamics,
   learnerVoiceForWorld,
+  buildLearnerCharacterArcView,
 } from './characterDesire.js';

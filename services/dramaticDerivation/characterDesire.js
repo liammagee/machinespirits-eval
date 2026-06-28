@@ -379,3 +379,76 @@ export function learnerVoiceForWorld(world) {
   const lines = renderMotivationLines(world, 'learner');
   return lines.length ? lines.join(' ') : world?.learnerVoice || '';
 }
+
+// --- the live character arc: drift wired into a real run (§8 "still open") ----
+
+/**
+ * The publicly-tempting wrong answer, named for the learner. The mirror is a
+ * false object the world makes available BY CONSTRUCTION (the town's verdict,
+ * the keeper's "weak spring"), so naming it never leaks the secret. Prefer the
+ * authored `opens_on` constant; fall back to the mirror fact's filler.
+ */
+function mirrorInWords(world) {
+  const opensOn = world?.motivation?.learner?.first_order?.opens_on;
+  if (opensOn) return String(opensOn);
+  const mf = world?.mirror?.fact;
+  return Array.isArray(mf) ? String(mf[mf.length - 1]) : 'the ready answer';
+}
+
+/**
+ * The per-turn stance line(s) — the learner's disposition rendered AT this point
+ * in the proof. LEAK-SAFE by construction: names only the MIRROR (public) and
+ * the *movement* of wanting; never the secret/truth token. As the proof advances
+ * (and a `softens` arc decays the pull) the line escalates from "still pulls
+ * hardest" → "beginning to doubt" → "no longer satisfies you"; a `static` arc
+ * holds the opening stance, so on/off-arc is itself visible in the line.
+ */
+function arcStanceLines(world, binding) {
+  const mirror = mirrorInWords(world);
+  const lines = [];
+  if (binding.migrated) {
+    lines.push(
+      `The easy answer (${mirror}) no longer satisfies you — you want what the evidence actually forces, even against your first instinct.`,
+    );
+  } else if (binding.mirrorPull === 'high') {
+    lines.push(`The easy answer (${mirror}) still pulls hardest at you; the evidence has not yet pried you off it.`);
+  } else if (binding.mirrorPull === 'medium') {
+    lines.push(`You are beginning to doubt the easy answer (${mirror}); the evidence is pulling you to look past it.`);
+  } else {
+    lines.push(`The easy answer (${mirror}) has loosened its hold; you follow where the evidence points.`);
+  }
+  if (binding.overreachTempted) {
+    lines.push('You are still apt to name an answer before the proof forces it — hold until your own notes settle it.');
+  }
+  return lines;
+}
+
+/**
+ * Build the public-safe character-arc view for the LIVE learner. Called
+ * ENGINE-SIDE (the engine holds the world + the learner's held facts, which it
+ * needs to read the proof DISTANCE) and handed across the `learnerView`
+ * redaction boundary as LEVELS + a rendered stance line ONLY — never the secret
+ * token, never the migrated binding constant. Returns null when no learner
+ * motivation is authored (so the layer is a no-op on prose-only worlds).
+ *
+ * This is the realization of CHARACTER-DESIRE.md §8's one open item: the drift
+ * (`driftedDynamics` / `learnerBindingAtTurn`), previously exercised only on the
+ * deterministic `/subject` arc, wired to a real-LLM derivation episode.
+ */
+export function buildLearnerCharacterArcView(world, heldFacts = [], { driftState = null } = {}) {
+  if (!world?.motivation?.learner) return null;
+  const binding = learnerBindingAtTurn(world, heldFacts, { drift: true, driftState });
+  if (!binding) return null;
+  const drifted = binding.drifted || null;
+  return {
+    schema: CHARACTER_DESIRE_SCHEMA,
+    arc: drifted ? drifted.arc : 'static',
+    progress: drifted ? drifted.progress : 0,
+    mirrorPull: binding.mirrorPull, // level string only — never the binding constant
+    overreach: drifted ? drifted.overreach : world.motivation.learner.disposition?.overreach || 'low',
+    lettingGo: Boolean(binding.migrated), // boolean — NOT the truth token
+    overreachTempted: Boolean(binding.overreachTempted),
+    coupledToDrift: drifted ? Boolean(drifted.coupledToDrift) : false,
+    lines: arcStanceLines(world, binding),
+  };
+}

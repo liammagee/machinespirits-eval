@@ -3945,6 +3945,13 @@ function learnerSystem(setting, voice, view, publicRegister = 'default', opts = 
     ...stagePrologueLines(view.stagePrologue, 'learner'),
     ...castLayerLines(castState, 'learner'),
     ...learnerDriftLines(learnerDriftState),
+    ...(view.characterArc?.lines?.length
+      ? [
+          '',
+          'Where your wanting stands right now (let this colour your voice — do not quote it back):',
+          ...view.characterArc.lines.map((l) => `- ${l}`),
+        ]
+      : []),
     ...publicRegisterPolicy(publicRegister),
     ...(view.act
       ? [
