@@ -157,10 +157,10 @@ Three website-side files (`../machinespirits-website`) do it:
 - **`server.js`** — one line, `await mountPoetics(app)`, placed before the SPA
   catch-all so `/poetics/*` resolves to the sub-app rather than `index.html`.
 - **`Dockerfile`** — a clone block (after the website's own build/prune) that
-  `git clone`s the eval repo at `POETICS_REF` (default
-  `feat/pilot-learner-source-seam`) into `/app/poetics-src`, runs
-  `npm install --omit=dev`, and sets `POETICS_SRC`. Non-fatal `|| echo` guard: a
-  failed checkout/install still produces a buildable image with `/poetics` absent.
+  `git clone`s the eval repo at `POETICS_REF` (default `main`) into
+  `/app/poetics-src`, runs `npm install --omit=dev`, and sets `POETICS_SRC`.
+  The clone/install is fatal: a broken checkout aborts the website image build
+  rather than silently shipping a dark `/poetics`.
 
 **Code arrives by git clone at build time** — the workbench source is *not*
 vendored into the website repo. Bump `POETICS_CACHE_BUST` to force a fresh clone;
@@ -200,25 +200,33 @@ LLM bill. That is exactly why `poeticsMount.js` refuses to mount without creds.
   so those views are largely intact (unlike the earlier separate-app plan, which
   excluded them via `.dockerignore`).
 
-**Deploy sequence** (the account-owner runs these — not Claude):
+**Deploy sequence for shipping eval `main`** (account-owner command boundary:
+Codex can prepare and verify the local artifacts, but the final Fly upload/deploy
+is public, authenticated, and billable):
 
 ```bash
-# 1. push the branch so the build clones your latest poetics code
-git push origin feat/pilot-learner-source-seam
+# 1. from the eval repo, make sure the code Fly will clone is current
+cd /Users/lmagee/Dev/machinespirits/machinespirits-eval
+git checkout main
+git pull --ff-only origin main
+git rev-parse HEAD
+git ls-remote origin refs/heads/main
 
 # 2. snapshot the DB → deploy/evaluations.db (~270 MB), from the eval repo
 npm run poetics:stage-deploy-db
 
 # 3. upload the snapshot to the website's fly volume (machine must be up)
-cd ../machinespirits-website
+cd /Users/lmagee/Dev/machinespirits/machinespirits-website
 fly ssh console -a my-website-dtq0ia -C "mkdir -p /data/poetics"
-fly ssh sftp shell -a my-website-dtq0ia      # then: put ../machinespirits-eval-dramatic/deploy/evaluations.db /data/poetics/evaluations.db
+fly ssh sftp put /Users/lmagee/Dev/machinespirits/machinespirits-eval/deploy/evaluations.db /data/poetics/evaluations.db -a my-website-dtq0ia
 
 # 4. the password (you set this; shown for completeness — already done per your note)
 fly secrets set POETICS_AUTH_USER=<you-pick> POETICS_AUTH_PASS=<you-pick> -a my-website-dtq0ia
 
-# 5. deploy the website, forcing a fresh poetics clone
-fly deploy -a my-website-dtq0ia --build-arg POETICS_CACHE_BUST=$(date +%s)
+# 5. deploy the website, forcing a fresh poetics clone from eval main
+fly deploy -a my-website-dtq0ia \
+  --build-arg POETICS_REF=main \
+  --build-arg POETICS_CACHE_BUST=$(date +%s)
 ```
 
 Live at `https://machinespirits.org/poetics` once the deploy completes. No
@@ -238,10 +246,8 @@ rebuild and no `fly deploy`**:
 npm run poetics:stage-deploy-db
 
 # 2. re-upload the snapshot over the old one on the website's fly volume
-cd ../machinespirits-website
-fly ssh sftp shell -a my-website-dtq0ia   # then: put ../machinespirits-eval-dramatic/deploy/evaluations.db /data/poetics/evaluations.db
-# …or non-interactively:
-fly ssh sftp put ../machinespirits-eval-dramatic/deploy/evaluations.db /data/poetics/evaluations.db -a my-website-dtq0ia
+cd /Users/lmagee/Dev/machinespirits/machinespirits-website
+fly ssh sftp put /Users/lmagee/Dev/machinespirits/machinespirits-eval/deploy/evaluations.db /data/poetics/evaluations.db -a my-website-dtq0ia
 
 # 3. restart so the boot-copy re-runs and picks up the new snapshot
 fly apps restart my-website-dtq0ia
@@ -253,11 +259,11 @@ The restart is the load-bearing part: skip it and the machine keeps serving the
 previous `/tmp` copy until its next reboot. Step 1 (push) and step 5 (`fly deploy`)
 are *not* needed here because no code changed.
 
-To ship **newer workbench code** (not data), do the opposite — re-run steps 1 and 5
-(push the branch + `fly deploy` with a fresh `POETICS_CACHE_BUST`). A code deploy
-reboots the machine anyway, so it also re-copies whatever snapshot is currently on
-the volume; you only need the standalone restart above when the *data* changed but
-the *code* did not.
+To ship **newer workbench code** (not data), do the opposite — re-run steps 1 and
+5 (confirm the target eval ref is pushed, then `fly deploy` with a fresh
+`POETICS_CACHE_BUST`). A code deploy reboots the machine anyway, so it also
+re-copies whatever snapshot is currently on the volume; you only need the
+standalone restart above when the *data* changed but the *code* did not.
 
 ### Step 3 — the `/pilot` surface is a separate decision
 
@@ -278,8 +284,9 @@ the pilot surface public as a side effect.
   2026-06-06**; a public bind without credentials refuses to start. Step 2 (the
   three website-side files — `services/poeticsMount.js`, one `server.js` line, a
   `Dockerfile` clone block) is **built**. What remains are the account-owner
-  commands: push the branch, `poetics:stage-deploy-db` + sftp the snapshot to the
-  volume, and `fly deploy -a my-website-dtq0ia` (public, billable). **The
+  commands: confirm eval `main` is pushed, `poetics:stage-deploy-db` + sftp the
+  snapshot to the volume, and `fly deploy -a my-website-dtq0ia` (public,
+  billable). **The
   password is the only gate** — the website already holds the LLM keys, so the
   metered buttons are armed the moment `/poetics` mounts. The earlier separate-app
   artifacts (`Dockerfile.poetics`, `fly.poetics.toml`, `.dockerignore`) were
