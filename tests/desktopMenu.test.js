@@ -60,7 +60,7 @@ test('shared rail source exposes board in a visible nav group', () => {
   // "keep" group; the invariant is only that board stays visible in a rail group.
   assert.match(
     source,
-    /\['keep',\s*\[[^\]]*'board'[^\]]*\]\]/,
+    /\[\s*'keep',\s*\[[\s\S]*?'board'[\s\S]*?\]\s*\]/,
     'desktop/web rail groups must keep board visible (now under Keep)',
   );
 });
