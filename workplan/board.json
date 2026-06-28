@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-27T10:58:27.356Z",
+  "generated": "2026-06-27T20:05:29.233Z",
   "counts": {
     "total": 53,
     "byStatus": {
@@ -52,8 +52,8 @@
       "owner": "unassigned",
       "source": "manual",
       "created": "2026-06-22",
-      "updated": "2026-06-27",
-      "verification": "From a fresh worktree (no per-worktree logs symlink), evaluationStore resolves LOGS_ROOT to ~/.machinespirits-data/logs and the dialogue-hash coverage is >= 0.95 (measured 3,316/3,371 = 98.4% from the archive alone; 55 orphans accepted). The \"non-git\" decoupling and the orphan quarantine are the remaining sub-steps.",
+      "updated": "2026-06-28",
+      "verification": "From a fresh worktree, evaluationStore resolves LOGS_ROOT to ~/.machinespirits-data/logs (now a materialized real dir, not a symlink) and the paper2.provenance.dialogue_hashes gate scores value=1.0 (1937 passed, 0 failed, 54 waived) against the canonical DB + archive. The two named follow-ups (non-git decoupling + orphan quarantine) are DONE; only minor/maintainer items remain.",
       "links": {
         "items": "build-workplan-tooling"
       },

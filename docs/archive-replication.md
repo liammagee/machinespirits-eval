@@ -17,7 +17,11 @@ treat them as one folder:
 ## The design
 
 - **Logs → Syncthing** (real-time, peer-to-peer, no cloud). Immutable filenames mean
-  no conflicts ever.
+  no conflicts ever. `~/.machinespirits-data/logs` is a **materialized real directory**
+  (2026-06-28): it was previously a symlink to `machinespirits-eval-private/logs`, but a
+  symlink pointing *outside* the shared folder does not sync its content, so the tree was
+  copied in place (the private repo's copy is untouched and the swap is reversible). New
+  logs written by `evaluationStore` (`LOGS_ROOT`) land here directly.
 - **Hot DBs → consistent snapshots, then Syncthing.** A scheduled job copies each live
   DB via SQLite's online `.backup` API (safe while in use, does not touch the source)
   into `snapshots/`, and Syncthing carries those static files. We never sync the live
