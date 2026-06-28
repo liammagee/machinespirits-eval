@@ -79,6 +79,7 @@ export function validateWorld(raw, source = '<inline>') {
     ownershipTarget: raw.ownership_target || null,
     cast: raw.cast || null,
     dramaturgy: raw.dramaturgy || null,
+    motivation: raw.motivation || null, // CHARACTER-DESIRE.md: authored character desire (per-bearer)
     secret: raw.secret,
     mirror: raw.mirror || null,
     rules: raw.rules,

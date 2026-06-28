@@ -2187,6 +2187,7 @@ export async function runEvaluation(options = {}) {
     showMessages = false, // true for truncated, 'full' for untruncated API message display
     liveApi = false, // --live: stream one-line display per API call in real time
     learnerId: explicitLearnerId = null, // A7 Longitudinal: shared Writing Pad across runs
+    externalEgoExtension = null, // opt-in ego prompt extension (e.g. cross-session memory narrative); multi-turn only, folded into fullEgoExtension in runMultiTurnTest
   } = options;
 
   const log = verbose ? console.log : () => {};
@@ -2475,6 +2476,7 @@ export async function runEvaluation(options = {}) {
           runNum,
           liveApiReporter,
           learnerId: explicitLearnerId,
+          externalEgoExtension,
         });
 
         // Store result (better-sqlite3 is synchronous, thread-safe for concurrent writes)
@@ -3196,6 +3198,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     checkpointState = null,
     liveApiReporter: liveReporter = null,
     learnerId: explicitLearnerId = null, // A7 Longitudinal: pre-empts the synthetic ID
+    externalEgoExtension = null, // approach A (#3): opt-in cross-session memory narrative, prepended to fullEgoExtension below
   } = options;
 
   log(`[evaluationRunner] Running multi-turn scenario: ${scenario.id}`);
@@ -3683,6 +3686,12 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     }
     if (strategyPlanningEnabled && strategyPlan) {
       fullEgoExtension = (fullEgoExtension ? fullEgoExtension + '\n\n' : '') + strategyPlan;
+    }
+    // Approach A (#3): opt-in external ego extension (e.g. accumulated cross-session
+    // memory narrative). Prepended so the tutor sees learner context first; the eval
+    // layer builds it and passes it in, keeping tutor-core import-clean of the eval layer.
+    if (externalEgoExtension) {
+      fullEgoExtension = externalEgoExtension + (fullEgoExtension ? '\n\n' + fullEgoExtension : '');
     }
 
     // Build the superego prompt extension: erosion frame + superego evolution (reflections)

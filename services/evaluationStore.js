@@ -34,6 +34,7 @@
  */
 
 import fs from 'fs';
+import os from 'os';
 import Database from 'better-sqlite3';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -53,10 +54,19 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
 const DATA_DIR = path.join(ROOT_DIR, 'data');
-// Logs root is overridable via EVAL_LOGS_DIR for sandboxed/CI runs that
-// can't write through the symlinked logs/ → ../machinespirits-eval-private
-// tree. Default preserves the existing behaviour.
-const LOGS_ROOT = process.env.EVAL_LOGS_DIR || path.join(ROOT_DIR, 'logs');
+// Data home: the canonical archive holding the DB and the dialogue logs, co-located
+// (workplan item: consolidate-logs-db-private-archive). Override with MS_DATA_HOME.
+const DATA_HOME = process.env.MS_DATA_HOME || path.join(os.homedir(), '.machinespirits-data');
+// Logs root, in precedence order:
+//   1. EVAL_LOGS_DIR — explicit override (sandboxed/CI tmp; the packaged desktop).
+//   2. <DATA_HOME>/logs — co-located beside the DB, so ANY worktree finds the
+//      canonical logs without a per-worktree `logs/` symlink (the recurrence the
+//      symlink approach kept hitting; this is what fixes the provenance
+//      `log_file_missing` from fresh checkouts).
+//   3. <repo>/logs — fallback for hosts without the archive (e.g. the website
+//      shallow clone that mounts /poetics from the DB and never reads logs).
+const LOGS_ROOT =
+  process.env.EVAL_LOGS_DIR || (fs.existsSync(DATA_HOME) ? path.join(DATA_HOME, 'logs') : path.join(ROOT_DIR, 'logs'));
 
 // Initialize database — override with EVAL_DB_PATH env var for test isolation
 const dbPath = process.env.EVAL_DB_PATH || path.join(DATA_DIR, 'evaluations.db');

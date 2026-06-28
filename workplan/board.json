@@ -1,23 +1,116 @@
 {
-  "generated": "2026-06-28T22:01:17.112Z",
+  "generated": "2026-06-28T22:55:48.400Z",
   "counts": {
-    "total": 53,
+    "total": 58,
     "byStatus": {
       "done": 49,
       "blocked": 1,
       "dropped": 2,
-      "active": 1
+      "review": 1,
+      "active": 1,
+      "triaged": 4
     },
     "byType": {
-      "research": 28,
-      "experiment": 4,
+      "research": 29,
+      "experiment": 5,
       "content": 2,
       "infra": 9,
+      "maintenance": 3,
       "paper": 4,
       "ops": 6
     }
   },
   "items": [
+    {
+      "id": "lean-semantic-web-proof-dag-validation",
+      "title": "Evaluate Lean certificates and Semantic Web exports for proof DAGs",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-06-24",
+      "updated": "2026-06-24",
+      "verification": "A small Lantern or Nocturne slice exports an authored Lean proof check and RDF/PROV graphs that pass SHACL validation without changing the live JS proof gate.",
+      "claim_status": "future",
+      "links": {
+        "notes": "notes/2026-06-24-lean-semantic-web-proof-dag-analysis.md"
+      },
+      "tags": [
+        "proof-dag",
+        "lean",
+        "semantic-web",
+        "provenance",
+        "shacl"
+      ],
+      "milestone": "poetics-followups"
+    },
+    {
+      "id": "normalize-provenance-validator-data-paths",
+      "title": "Honor canonical data-home paths in provenance validators",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-06-28",
+      "updated": "2026-06-28",
+      "verification": "`npm run provenance:validate`, `npm run paper:provable-discourse -- --epoch 2.0 --strict --no-color`, and `npm run wp:check` pass from a fresh worktree without repo-local DB/log symlinks.",
+      "links": {
+        "items": "consolidate-logs-db-private-archive"
+      },
+      "tags": [
+        "provenance",
+        "logs",
+        "data-home",
+        "validators"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "colocate-runner-secondary-artifacts",
+      "title": "Co-locate runner transcripts and checkpoints with canonical logs",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P3",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-06-28",
+      "updated": "2026-06-28",
+      "verification": "A smoke run writes dialogue logs, transcripts, and checkpoints under the same canonical data-home logs root unless an explicit test override is set; `npm test` and `npm run wp:check` pass.",
+      "links": {
+        "items": "consolidate-logs-db-private-archive"
+      },
+      "tags": [
+        "logs",
+        "runner",
+        "data-home",
+        "artifacts"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "debloat-private-log-archive",
+      "title": "De-bloat the private dialogue-log archive",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P3",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-06-28",
+      "updated": "2026-06-28",
+      "verification": "The private archive has a documented chosen storage path, logs are no longer ordinary large git history, and a clone/sync smoke confirms the canonical DB + logs remain recoverable.",
+      "links": {
+        "items": "consolidate-logs-db-private-archive"
+      },
+      "tags": [
+        "logs",
+        "archive",
+        "private-repo",
+        "git-history"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
+    },
     {
       "id": "charisma-desire-generalizability-matrix",
       "title": "Route charisma/desire by engagement register",
@@ -173,6 +266,34 @@
         "critical"
       ],
       "milestone": "human-pilot-prep"
+    },
+    {
+      "id": "character-development-capacity",
+      "title": "Character-development capacity (learner + tutor) — instrument + run",
+      "status": "review",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-27",
+      "updated": "2026-06-28",
+      "branch": "worktree-character-development",
+      "claim_status": "scope-bound",
+      "verification": "deterministic: characterArc layer test + plotLint + lint/format; paid evidence preserved in ignored exports and package manifest; paper claim registered in provable-discourse with residual environment/snapshot warnings",
+      "links": {
+        "paper": "docs/research/paper-full-2.0.md#e7-character-desire-the-script-outline-as-a-source-of-desire",
+        "notes": [
+          "CHARACTER-DESIRE.md",
+          "config/character-development/evidence-manifest-2026-06-28.md"
+        ],
+        "exports": "exports/character-development/CAPACITY-REPORT.md"
+      },
+      "tags": [
+        "character-desire",
+        "dramatic-derivation",
+        "rubric",
+        "poetics"
+      ]
     },
     {
       "id": "scriptorium-control-room-first-run",
@@ -548,17 +669,22 @@
     },
     {
       "id": "consolidate-logs-db-private-archive",
-      "title": "Consolidate dialogue logs + DB into the private archive repo",
+      "title": "Consolidate dialogue logs + DB into one canonical archive",
       "status": "done",
       "type": "infra",
       "priority": "P2",
-      "owner": "unassigned",
+      "owner": "codex",
       "source": "manual",
       "created": "2026-06-22",
-      "updated": "2026-06-24",
-      "verification": "Dialogue logs are co-located with the DB under the private archive; npm run provenance:validate finds the logs; the dramatic fork's sibling-path log_dir stopgap is removed.",
+      "updated": "2026-06-28",
+      "verification": "From a fresh worktree, evaluationStore resolves LOGS_ROOT to ~/.machinespirits-data/logs (now a materialized real dir, not a symlink) and the paper2.provenance.dialogue_hashes gate scores value=1.0 (1937 passed, 0 failed, 54 waived) against the canonical DB + archive. The two named follow-ups (non-git decoupling + orphan quarantine) are DONE; only minor/maintainer items remain.",
       "links": {
-        "items": "build-workplan-tooling"
+        "items": [
+          "build-workplan-tooling",
+          "normalize-provenance-validator-data-paths",
+          "colocate-runner-secondary-artifacts",
+          "debloat-private-log-archive"
+        ]
       },
       "tags": [
         "infra",

@@ -94,8 +94,8 @@ in the same commit, with a comment explaining why — never silently.
   item file + re-render `board.json` — the CLI (`wp …`) and the dashboard share that
   one write path. Writes need `workplan/` on disk, so editing works in dev + the
   browser dev server; a packaged app (workplan/ in the asar) returns 500 and the UI
-  reverts. The historical `/board-doc` note (a static file with no rail) gets a fixed
-  "← live board" link injected at serve time so it is no longer a dead end.
+  reverts. The project's historical arc is folded into the Project-history band on
+  `/timeline` (rendered from `PROJECT_HISTORY` in `scripts/browse-poetics-scripts.js`).
 - **Timeline + GitHub — `/timeline`, `services/githubInfo.js`.** Milestones live in
   `workplan/milestones.yaml` (workplan.js `loadMilestones`/`upsertMilestone`/
   `deleteMilestone`; items reference one via `milestone:`). `services/githubInfo.js`

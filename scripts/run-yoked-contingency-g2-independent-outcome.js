@@ -291,7 +291,9 @@ function mockLearnerAnswers({ session, arm, postItems }) {
 }
 
 function compactLearnerRaw(raw, limit = 800) {
-  const text = String(raw || '').replace(/\s+/g, ' ').trim();
+  const text = String(raw || '')
+    .replace(/\s+/g, ' ')
+    .trim();
   if (!text) return '';
   return text.length > limit ? `${text.slice(0, limit)}...` : text;
 }
@@ -374,7 +376,9 @@ export function normalizeLearnerAnswers(parsed, { postItems, raw = '' }) {
     if (rows.length) return rows;
   }
   const parsedKeys = parsed && typeof parsed === 'object' ? Object.keys(parsed).join(',') : typeof parsed;
-  throw new Error(`learner response missing answers array; parsedKeys=${parsedKeys || 'none'}; raw=${compactLearnerRaw(raw)}`);
+  throw new Error(
+    `learner response missing answers array; parsedKeys=${parsedKeys || 'none'}; raw=${compactLearnerRaw(raw)}`,
+  );
 }
 
 async function generateLearnerAnswers({ session, arm, pretestView, postItems, backend, learnerProtocol, callCounter }) {

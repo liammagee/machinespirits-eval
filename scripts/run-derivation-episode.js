@@ -106,6 +106,7 @@ import {
   makeLlmDirector,
   makeLlmTutor,
   makeLlmLearner,
+  learnerVoiceForWorld,
   clampDial,
   makeReplayRoles,
   comparePrefix,
@@ -990,7 +991,7 @@ async function main() {
     }),
     learner: makeLlmLearner({
       setting: world.setting,
-      voice: learnerVoice || world.learnerVoice,
+      voice: learnerVoice || learnerVoiceForWorld(world),
       client,
       publicRegister,
       assertionGroundingGate,

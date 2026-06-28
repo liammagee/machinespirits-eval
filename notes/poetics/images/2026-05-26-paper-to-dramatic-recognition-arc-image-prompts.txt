@@ -1,7 +1,7 @@
 # Cartoon Image Prompts
 
 Source HTML: notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.html
-Generated at: 2026-06-19T21:10:48.011Z
+Generated at: 2026-06-28T03:51:54.420Z
 Panel count: 9
 Format: png
 
@@ -9,7 +9,7 @@ Format: png
 
 Title: From Paper 2.0 to dramatic recognition
 Description: The last paper found that recognition prompts and a draft-then-critique architecture did not change tutor trajectories on average. This arc sharpens that broad null into a sharper stage: a tutor must walk a learner across a proof, one scheduled clue at a time, and answer a specific stuck point with a visible change of move. What we found is a tutor that can govern its own conduct — and two pacing guards that trade places from world to world.
-Top terms: tutor, learner, turn, grounded, guard, hidden, conduct, proof, paper, recognition, figure, secret, stage, lesson, move, turns, pacing, average
+Top terms: tutor, learner, turn, grounded, hidden, guard, conduct, paper, proof, recognition, figure, move, secret, stage, turns, lesson, pacing, authority
 
 Selected sections:
 - 01 #starting-point: The last paper gave us a flat average, and a question it could not answer. -> notes/poetics/images/dramatic-recognition-arc-01.png

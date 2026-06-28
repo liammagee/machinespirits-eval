@@ -11,10 +11,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { backendDetail, canonicalBackend, fmt } from './run-yoked-contingency-g0-paid-smoke.js';
-import {
-  runG1PaidSmoke,
-  writeG1PaidSmokeArtifacts,
-} from './run-yoked-contingency-g1-paid-smoke.js';
+import { runG1PaidSmoke, writeG1PaidSmokeArtifacts } from './run-yoked-contingency-g1-paid-smoke.js';
 import {
   runG2IndependentOutcome,
   writeG2IndependentOutcomeArtifacts,
@@ -46,10 +43,12 @@ function csv(value) {
 }
 
 export function slugify(value) {
-  return String(value || 'none')
-    .replace(/[^A-Za-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .toLowerCase() || 'none';
+  return (
+    String(value || 'none')
+      .replace(/[^A-Za-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .toLowerCase() || 'none'
+  );
 }
 
 export function parseArgs(argv) {
@@ -94,12 +93,15 @@ Options:
     }
   }
   if (!args.learnerBackends.length) throw new Error('--learner-backends must include at least one backend');
-  if (!Number.isInteger(args.sessionLimit) || args.sessionLimit < 1) throw new Error('--session-limit must be a positive integer');
+  if (!Number.isInteger(args.sessionLimit) || args.sessionLimit < 1)
+    throw new Error('--session-limit must be a positive integer');
   if (!Number.isInteger(args.maxCallsPerRun) || args.maxCallsPerRun < 1) {
     throw new Error('--max-calls-per-run must be a positive integer');
   }
-  if (!Number.isInteger(args.maxPlanCalls) || args.maxPlanCalls < 1) throw new Error('--max-plan-calls must be a positive integer');
-  if (!Number.isInteger(args.planTurns) || args.planTurns < 1) throw new Error('--plan-turns must be a positive integer');
+  if (!Number.isInteger(args.maxPlanCalls) || args.maxPlanCalls < 1)
+    throw new Error('--max-plan-calls must be a positive integer');
+  if (!Number.isInteger(args.planTurns) || args.planTurns < 1)
+    throw new Error('--plan-turns must be a positive integer');
   return args;
 }
 
@@ -135,7 +137,17 @@ function summarizeG2(result) {
   };
 }
 
-async function buildPlanArtifacts({ g1Json, plannerBackends, includeFrozen, outDir, sessionLimit, maxPlanCalls, planTurns, items, write }) {
+async function buildPlanArtifacts({
+  g1Json,
+  plannerBackends,
+  includeFrozen,
+  outDir,
+  sessionLimit,
+  maxPlanCalls,
+  planTurns,
+  items,
+  write,
+}) {
   const artifacts = [];
   if (includeFrozen) {
     if (typeof g1Json === 'string' && !fs.existsSync(g1Json)) {

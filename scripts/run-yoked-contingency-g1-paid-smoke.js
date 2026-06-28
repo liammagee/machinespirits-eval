@@ -228,7 +228,9 @@ function mockTutorPlan({ sourceSeed, sourceLearnerId, arm, planTurns }) {
 
 function isRetryableTutorPlanError(message) {
   if (/RESOURCE_EXHAUSTED|Individual quota reached|quota reached/i.test(message)) return false;
-  return /timed out|timeout|fetch failed|ENOTFOUND|EAI_AGAIN|ECONNRESET|ETIMEDOUT|socket hang up|network|produced no output/i.test(message);
+  return /timed out|timeout|fetch failed|ENOTFOUND|EAI_AGAIN|ECONNRESET|ETIMEDOUT|socket hang up|network|produced no output/i.test(
+    message,
+  );
 }
 
 async function callTutorPlannerWithRetry({ prompt, backend, callCounter }) {

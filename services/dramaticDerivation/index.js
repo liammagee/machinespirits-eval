@@ -195,3 +195,13 @@ export {
   renderProofProse,
 } from './diagnose.js';
 export { runCritic, mockCriticCommentary, buildCriticPrompt, commentaryFileMd } from './critic.js';
+export {
+  compileLearnerDesire,
+  compileTutorDesire,
+  compileDirectorDesire,
+  renderMotivationLines,
+  learnerBindingAtTurn,
+  driftedDynamics,
+  learnerVoiceForWorld,
+  buildLearnerCharacterArcView,
+} from './characterDesire.js';

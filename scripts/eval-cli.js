@@ -1700,6 +1700,9 @@ async function main() {
         // A7 Longitudinal: when supplied, ALL dialogues in this invocation share
         // the Writing Pad keyed by this ID. Omit for per-dialogue synthetic IDs.
         const learnerIdOpt = getOption('learner-id');
+        // #3 cross-session memory: opt-in ego prompt extension supplied via a file
+        // (a file avoids CLI quoting for the narrative); threads to runEvaluation's hook.
+        const externalEgoExtensionFile = getOption('external-ego-extension-file');
 
         // --show-messages or --show-messages=full
         const showMessagesRaw = args.find((a) => a === '--show-messages' || a.startsWith('--show-messages='));
@@ -1906,6 +1909,10 @@ async function main() {
           showMessages,
           liveApi,
           learnerId: learnerIdOpt || null,
+          externalEgoExtension:
+            externalEgoExtensionFile && fs.existsSync(externalEgoExtensionFile)
+              ? fs.readFileSync(externalEgoExtensionFile, 'utf8')
+              : null,
         });
         // Extract unique model aliases used across all configs (ego + superego)
         const extractAlias = (raw) => {
@@ -6519,26 +6526,10 @@ async function main() {
         }
 
         // ── 8. Prompt file existence ──────────────────────────────────
-        // Prompt files live in tutor-core's prompts/ directory (npm-linked)
-        let tutorCorePromptsDir = null;
-        // In-housed: prefer this repo's vendored tutor-core/prompts/
-        // (from @machinespirits/tutor-core — see TUTOR-CORE-INHOUSING.md).
+        // Prompt files live in this repo's in-housed tutor-core/prompts/
+        // (vendored from the former @machinespirits/tutor-core — see TUTOR-CORE-INHOUSING.md).
         const vendoredPromptsDir = path.resolve(__dirname, '..', 'tutor-core', 'prompts');
-        if (fs.existsSync(vendoredPromptsDir)) {
-          tutorCorePromptsDir = vendoredPromptsDir;
-        } else {
-          try {
-            const tutorCorePath = path.dirname(
-              (await import('module'))
-                .createRequire(import.meta.url)
-                .resolve('@machinespirits/tutor-core/package.json'),
-            );
-            tutorCorePromptsDir = path.join(tutorCorePath, 'prompts');
-          } catch {
-            const localPath = path.resolve(__dirname, '..', '..', 'machinespirits-tutor-core', 'prompts');
-            if (fs.existsSync(localPath)) tutorCorePromptsDir = localPath;
-          }
-        }
+        const tutorCorePromptsDir = fs.existsSync(vendoredPromptsDir) ? vendoredPromptsDir : null;
 
         const promptDirs = [path.resolve(__dirname, '..', 'prompts')];
         if (tutorCorePromptsDir && fs.existsSync(tutorCorePromptsDir)) {

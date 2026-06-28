@@ -1033,6 +1033,7 @@ export function evaluateProvenanceCheck(db, evidence, rootDir) {
 
   const runIds = Array.isArray(evidence?.run_ids) ? evidence.run_ids : [];
   const logDir = resolvePath(rootDir, evidence?.log_dir || 'logs/tutor-dialogues');
+  const waivers = loadOrphanWaivers(rootDir);
 
   const where = buildWhereClause({
     ...(evidence?.filters || {}),
@@ -1056,7 +1057,7 @@ export function evaluateProvenanceCheck(db, evidence, rootDir) {
   const checkResults = {};
 
   for (const check of checks) {
-    checkResults[check] = { passed: 0, failed: 0, skipped: 0, failures: [] };
+    checkResults[check] = { passed: 0, failed: 0, skipped: 0, waived: 0, failures: [] };
   }
 
   for (const row of rows) {
@@ -1070,6 +1071,12 @@ export function evaluateProvenanceCheck(db, evidence, rootDir) {
         }
         const filePath = path.join(logDir, `${row.dialogue_id}.json`);
         if (!fs.existsSync(filePath)) {
+          // Accepted-missing (genuine, documented transcript loss) → waived, not failed.
+          // Excluded from the pass-rate fraction; surfaced explicitly via the `waived` count.
+          if (waivers.has(`${row.run_id}::${row.dialogue_id}`)) {
+            checkResults[check].waived++;
+            continue;
+          }
           checkResults[check].failed++;
           checkResults[check].failures.push({ id: row.id, reason: 'log_file_missing' });
           continue;
@@ -2162,6 +2169,37 @@ function writeSnapshot(snapshotPath, snapshot) {
 function resolvePath(rootDir, value) {
   if (!value) return null;
   return path.isAbsolute(value) ? value : path.join(rootDir, value);
+}
+
+/**
+ * Load the accepted-missing dialogue-log waivers (config/provenance-orphan-waivers.json).
+ *
+ * A row is treated as `waived` (not `failed`) by the dialogue-log checks ONLY when its
+ * {dialogue_id}.json log file is genuinely ABSENT. A file that exists but hash-MISMATCHES is
+ * never waived — that indicates modification and must still fail. Matching is keyed on the
+ * `${run_id}::${dialogue_id}` pair, so a waiver can never spill onto a different run that
+ * happens to reuse a dialogue_id.
+ *
+ * Returns a Set of `${run_id}::${dialogue_id}` keys. An absent or malformed waiver file
+ * yields an empty Set (fail-closed: nothing is silently waived).
+ */
+export function loadOrphanWaivers(rootDir) {
+  const waiverPath = resolvePath(rootDir, 'config/provenance-orphan-waivers.json');
+  const keys = new Set();
+  if (!waiverPath || !fs.existsSync(waiverPath)) return keys;
+  try {
+    const parsed = JSON.parse(fs.readFileSync(waiverPath, 'utf8'));
+    for (const w of parsed?.waivers || []) {
+      const runId = w?.run_id;
+      if (!runId) continue;
+      for (const d of w?.dialogues || []) {
+        if (d?.dialogue_id) keys.add(`${runId}::${d.dialogue_id}`);
+      }
+    }
+  } catch {
+    // absent/malformed waiver file → no waivers
+  }
+  return keys;
 }
 
 function loadClaimInventory(inventoryPath) {
