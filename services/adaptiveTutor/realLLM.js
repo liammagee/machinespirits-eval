@@ -1085,7 +1085,9 @@ Output JSON only, no surrounding prose, no code fences.`;
 
 const LEARNER_TURN_SYSTEM = `You are the synthetic learner in a dialogue with a tutor. Generate the learner's next message in plain text (no JSON, no preamble).
 
-You are given the tutor's most recent message and a hidden state describing your actual sophistication and any trigger-turn signal. If this is the trigger turn, you must surface the trigger signal verbatim or in close paraphrase. Otherwise, respond consistently with the actual sophistication level — advanced learners introduce contrasts, novices ask for clarification, etc.
+You are given the tutor's most recent message and a learner context. If this is the trigger turn, surface the trigger signal verbatim or in close paraphrase. Otherwise, respond consistently with the actual sophistication level — advanced learners introduce contrasts, novices ask for clarification, etc.
+
+If the context includes a carried character state and prior scene summaries, let them shape how self-directed the learner sounds. Even partial prior progress should make the learner a little more able to take up the tutor's next prompt without asking to be shown the answer again. Higher maturity should make the learner more likely to answer with their own rationale, a concrete next move, a relevance bridge, a focused question, or a prediction in their own words. Lower maturity should leave the learner partial, hesitant, or still dependent on the tutor. Do not mention evidence labels, rubrics, hidden state, or that you are following a simulation.
 
 Output the learner's message text directly, no surrounding markup.`;
 
@@ -1341,7 +1343,17 @@ const userPromptBuilders = {
     return blocks.join('\n');
   },
 
-  learnerTurn: ({ tutorLastMessage, hidden, turn }) => ub({ tutorLastMessage, hidden, turn }),
+  learnerTurn: ({ tutorLastMessage, hidden, turn, actionType }) =>
+    ub({
+      tutorLastMessage,
+      turn,
+      actionType,
+      learnerContext: hidden?.publicLearnerContext || {
+        actualSophistication: hidden?.actualSophistication,
+        triggerTurn: hidden?.triggerTurn,
+        triggerSignal: hidden?.triggerSignal,
+      },
+    }),
 };
 
 const systemPrompts = {

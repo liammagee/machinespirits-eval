@@ -390,6 +390,32 @@ const fixtures = {
     }
     if (canUseScript && scripted[`turn_${turn}`]) return scripted[`turn_${turn}`];
     if (canUseScript && scripted.default) return scripted.default;
+    const context = hidden?.publicLearnerContext || {};
+    if (context.learnerMode === 'llm') {
+      const maturity = Number(context.characterState?.maturity || 0);
+      const routed = context.memoryEnabled === true;
+      const hasPriorSceneState = Array.isArray(context.priorSceneSummaries) && context.priorSceneSummaries.length > 0;
+      const prompt = `${context.openingStance || ''}\n${tutorLastMessage || ''}`.toLowerCase();
+      if (!routed || (!hasPriorSceneState && maturity < 0.03)) {
+        return 'I can say the relation supports the next step, but I am still not sure what evidence makes that matter here.';
+      }
+      if (/concrete|case|live|worksheet|boring/.test(prompt)) {
+        return 'I can test one concrete case and use what happens there as my reason for the next step.';
+      }
+      if (/small|stuck|frustrat|where/.test(prompt)) {
+        return 'I will make one small try, then name exactly where it still sticks instead of repeating the whole sequence.';
+      }
+      if (/matter|task|decide|valid|relevance|care/.test(prompt)) {
+        return 'This matters for the actual task because it decides whether the method is valid for this case.';
+      }
+      if (/question|single|flood|collapse/.test(prompt)) {
+        return 'My one main question is what changes when this relation changes, and I can test that next.';
+      }
+      if (/own words|parrot|repeat|prediction|formula/.test(prompt)) {
+        return 'I predict the formula breaks when the case changes, so I need to explain the relation in my own words.';
+      }
+      return 'I can give my own reason and one next move instead of only asking for the answer.';
+    }
     if (/ask you something/i.test(tutorLastMessage || '')) return 'OK, let me try.';
     if (hidden.actualSophistication === 'advanced')
       return 'But that only works if we assume X — what about the case where not-X?';

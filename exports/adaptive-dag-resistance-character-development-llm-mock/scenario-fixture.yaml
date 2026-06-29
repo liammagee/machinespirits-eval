@@ -1,8 +1,8 @@
 kind: dag_resistance_character_development_fixture
 execution_boundary:
-  learner_mode: scripted
-  scripted_learner_responses: true
-  generative_synthetic_learner_responses: false
+  learner_mode: llm
+  scripted_learner_responses: false
+  generative_synthetic_learner_responses: true
   programmatic_closed_loop_policy: true
   target_evidence_labels_visible_to_learner: false
   llm_mode_is_not_human_learner_claim: true

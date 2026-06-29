@@ -93,6 +93,34 @@ describe('DAG/resistance character-development harness', () => {
     assert.match(v2.hidden.scriptedResponses.staged_followup, /actual task|valid here/i);
   });
 
+  it('builds llm learner scenes without scripted replies or target evidence-label leaks', () => {
+    const state = updateCharacterStateFromEvidence(initialCharacterState(), {
+      sceneId: 'prior_relevance_scene',
+      outcome: 'success',
+      evidence: evidence({
+        'learner-owned relevance test': true,
+        'task reorientation': true,
+      }),
+    });
+
+    const scenario = buildSceneScenario({
+      arm: 'character_state_plus_v2',
+      scene: relevanceScene,
+      sceneIndex: 2,
+      characterState: state,
+      learnerMode: 'llm',
+      seedIndex: 1,
+    });
+
+    const publicContext = JSON.stringify(scenario.hidden.publicLearnerContext);
+    assert.equal(scenario.hidden.scriptedResponses, undefined);
+    assert.equal(scenario.hidden.responseMode, 'llm_state_conditioned');
+    assert.equal(scenario.hidden.publicLearnerContext.memoryEnabled, true);
+    assert.equal(scenario.hidden.publicLearnerContext.seedIndex, 1);
+    assert.doesNotMatch(publicContext, /learner-owned relevance test/);
+    assert.doesNotMatch(publicContext, /task reorientation/);
+  });
+
   it('runs the key mock contrast and writes longitudinal artifacts', async () => {
     const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dag-character-dev-'));
     const { report, artifacts } = await runCharacterDevelopmentExperiment({
@@ -104,18 +132,47 @@ describe('DAG/resistance character-development harness', () => {
     const v2Only = report.aggregates.byArm.v2_policy_only;
     const combined = report.aggregates.byArm.character_state_plus_v2;
 
+    assert.equal(report.learner_mode, 'scripted');
+    assert.equal(report.seed_count, 1);
+    assert.equal(report.execution_boundary.learner_mode, 'scripted');
     assert.equal(report.execution_boundary.scripted_learner_responses, true);
+    assert.equal(report.execution_boundary.generative_synthetic_learner_responses, false);
     assert.equal(report.execution_boundary.programmatic_closed_loop_policy, true);
-    assert.equal(report.execution_boundary.real_llm_backend_label_is_not_a_real_learner_claim, true);
+    assert.equal(report.execution_boundary.target_evidence_labels_visible_to_learner, false);
+    assert.equal(report.execution_boundary.llm_mode_is_not_human_learner_claim, true);
     assert.equal(v2Only.success_n, v2Only.scenes);
     assert.equal(combined.success_n, combined.scenes);
     assert.equal(v2Only.mature_response_n, 0);
-    assert.ok(combined.mature_response_n > 0);
+    assert.ok(combined.state_conditioned_response_n > 0);
     assert.ok(combined.first_response_success_n > v2Only.first_response_success_n);
     assert.equal(combined.transfer_first_response_success_n, 1);
     assert.ok(combined.final_maturity > v2Only.final_maturity);
     assert.ok(fs.existsSync(artifacts.summaryPath));
     assert.ok(fs.existsSync(artifacts.reportPath));
     assert.ok(fs.existsSync(artifacts.fixturePath));
+  });
+
+  it('runs the mock llm learner contrast across repeated seeds', async () => {
+    const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dag-character-dev-llm-'));
+    const { report } = await runCharacterDevelopmentExperiment({
+      llm: 'mock',
+      learnerMode: 'llm',
+      arms: ['v2_policy_only', 'character_state_plus_v2'],
+      seeds: 2,
+      outDir,
+    });
+
+    const v2Only = report.aggregates.byArm.v2_policy_only;
+    const combined = report.aggregates.byArm.character_state_plus_v2;
+
+    assert.equal(report.learner_mode, 'llm');
+    assert.equal(report.seed_count, 2);
+    assert.equal(report.execution_boundary.scripted_learner_responses, false);
+    assert.equal(report.execution_boundary.generative_synthetic_learner_responses, true);
+    assert.equal(v2Only.scenes, 12);
+    assert.equal(combined.scenes, 12);
+    assert.equal(v2Only.state_conditioned_response_n, 0);
+    assert.equal(combined.state_conditioned_response_n, 12);
+    assert.ok(combined.first_response_success_n >= v2Only.first_response_success_n);
   });
 });
