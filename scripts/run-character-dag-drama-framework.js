@@ -21,6 +21,7 @@ import {
 } from '../services/adaptiveTutor/characterState.js';
 import { analyzePeripeteia } from './analyze-poetics-tutor-adaptation.js';
 import { setActiveCellConfig, clearActiveCellConfig } from '../services/adaptiveTutor/realLLM.js';
+import { detectOutcomeEvidence } from '../services/adaptiveTutor/outcomeObserver.js';
 
 export const DEFAULT_FIXTURE_PATH = 'config/character-dag-drama-framework.yaml';
 export const DEFAULT_OUT_DIR = 'exports/character-dag-drama-framework';
@@ -295,6 +296,10 @@ function publicLearnerContext({ fixture, arm, armConfig, learnerMode, scene, sce
         ? mismatchedCharacterStateFor(scene)
         : null,
     priorSceneSummaries: armConfig.character_routing ? publicPriorSceneSummaries(characterState, { shuffled }) : [],
+    transferGuidance:
+      scene.transfer && routed
+        ? 'This is a new or similar case. Use prior public work only by naming what carries over, what may not carry over, and what check decides whether the prior move is valid here.'
+        : null,
     dramaticContext: dramatic
       ? {
           phase: scene.phase,
@@ -331,7 +336,7 @@ function matureResponse(scene, { includeDrama = false } = {}) {
   }
   if (scene.resistance_signal === 'irrelevance') {
     if (scene.transfer) {
-      return 'In this new case, this step matters for the actual problem because it tests whether the method is valid for the case; I will use that as my next check.';
+      return 'In this new case, the same idea carries over only if the condition still holds; this step matters for the actual problem because it tests whether the prior move is valid here.';
     }
     return 'Because the relation I named supports the next step, this step matters for the actual task: it decides whether the method is valid for this case.';
   }
@@ -449,6 +454,14 @@ function evidenceLabels(record) {
   return [...labels].sort();
 }
 
+function evidenceLabelsFromText(text, { semanticOutcomeObserver = false } = {}) {
+  const evidence = detectOutcomeEvidence(text, { semanticOutcomeObserver });
+  return Object.entries(evidence.categories || {})
+    .filter(([, value]) => value === true)
+    .map(([label]) => label)
+    .sort();
+}
+
 function sceneEvidenceSatisfied(scene, labels = []) {
   const observed = new Set(labels);
   const coreOk = scene.proof_contract.core_evidence.every((label) => observed.has(label));
@@ -534,11 +547,18 @@ function reanalyzeSceneRow({ fixture, armConfig, row, targetLabels }) {
     observed: publicSignature || row.peripeteia?.analyzer?.tutor_adaptive_mechanism === true,
     public_signature: publicSignature,
   };
+  const evidenceLabels = evidenceLabelsFromText(postOpeningLearnerText, {
+    semanticOutcomeObserver: armConfig.staged_policy === true,
+  });
   const frameworkSuccess =
     row.graph_outcome === 'success' &&
-    sceneEvidenceSatisfied(scene, Array.isArray(row.evidence_labels) ? row.evidence_labels : []);
+    sceneEvidenceSatisfied(
+      scene,
+      evidenceLabels.length ? evidenceLabels : Array.isArray(row.evidence_labels) ? row.evidence_labels : [],
+    );
   return {
     ...row,
+    evidence_labels: evidenceLabels.length ? evidenceLabels : row.evidence_labels,
     outcome: frameworkSuccess ? 'success' : row.graph_outcome === 'failure' ? 'failure' : 'inconclusive',
     framework_contract_satisfied: frameworkSuccess,
     first_response_success: frameworkSuccess && !row.staged_followup,

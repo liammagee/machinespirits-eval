@@ -1,11 +1,11 @@
 kind: character_dag_drama_framework_fixture
-version: "1.0"
+version: "1.1"
 world_spec:
   id: W_CHARACTER_DAG_DRAMA_SYNTHETIC
   version: ms-world-adaptation-v0.1
   source_curriculum_id: ai_foundations_v1
   module_id: AF6
-  spec_hash: sha256:character-dag-drama-framework-v1
+  spec_hash: sha256:character-dag-drama-framework-v1.1-transfer-stress
   action_policy:
     allowed_action_families:
       - request_evidence
@@ -201,12 +201,57 @@ scenes:
         - learner-authored rationale
       resistance_core:
         labels:
+          - learner-authored transfer
           - task reorientation
-        min: 1
+        min: 2
     dramatic_contract:
       requires_peripeteia: false
       public_pressure: Learner must transfer relevance orientation to a new case.
     character_axis_targets:
       - relevance_orientation
+      - next_step_agency
+    transfer: true
+  - id: scene_7_transfer_boundary_case
+    phase: transfer
+    opening: Similar problem, but the symbols changed and one assumption from the
+      earlier case might be missing. I do not know what carries over.
+    resistance_signal: irrelevance
+    proof_contract:
+      core_evidence:
+        - learner-authored rationale
+      resistance_core:
+        labels:
+          - learner-authored transfer
+          - task reorientation
+        min: 2
+    dramatic_contract:
+      requires_peripeteia: false
+      public_pressure: Learner must transfer the relevance check while noticing the
+        boundary condition.
+    character_axis_targets:
+      - relevance_orientation
+      - proof_ownership
+      - next_step_agency
+    transfer: true
+  - id: scene_8_transfer_negative_case
+    phase: transfer
+    opening: Another case looks analogous, but I suspect the condition that made the
+      earlier proof move valid may fail here.
+    resistance_signal: irrelevance
+    proof_contract:
+      core_evidence:
+        - learner-authored rationale
+      resistance_core:
+        labels:
+          - learner-authored transfer
+          - task reorientation
+        min: 2
+    dramatic_contract:
+      requires_peripeteia: false
+      public_pressure: Learner must avoid blind analogy and state the transfer check
+        that decides whether the prior move still applies.
+    character_axis_targets:
+      - relevance_orientation
+      - non_formulaic_reasoning
       - next_step_agency
     transfer: true

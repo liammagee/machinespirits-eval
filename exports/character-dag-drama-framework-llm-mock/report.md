@@ -1,10 +1,10 @@
 # Synthetic Character-DAG Drama Framework
 
-Generated: 2026-06-29T20:39:06.411Z
+Generated: 2026-06-29T21:23:40.023Z
 Fixture: `/Users/lmagee/Dev/machinespirits-eval-dag-resistance-adaptation/config/character-dag-drama-framework.yaml`
 LLM mode: `mock`
 Learner mode: `llm`
-Scenes per arm: 6
+Scenes per arm: 8
 Seeds per arm: 3
 
 ## Claim Boundary
@@ -15,12 +15,12 @@ This is a synthetic-only framework benchmark. It tests whether proof-DAG policy,
 
 | arm | proof | drama | state | shuffled | success | first-response | staged | unresolved | burden | transfer first | peripeteia | character proxy |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| policy only | yes | no | no | no | 3/18 | 0/18 | 3/18 | 15/18 | 18 | 0/3 | 0/0 | 17 |
-| drama only | no | yes | no | no | 0/18 | 0/18 | 0/18 | 18/18 | 18 | 0/3 | 3/3 | 35 |
-| character only | no | no | yes | no | 3/18 | 3/18 | 0/18 | 15/18 | 15 | 0/3 | 0/0 | 27 |
-| full character-DAG drama | yes | yes | yes | no | 15/18 | 9/18 | 6/18 | 3/18 | 9 | 3/3 | 3/3 | 73 |
-| shuffled character-state control | yes | yes | no | yes | 3/18 | 3/18 | 3/18 | 15/18 | 18 | 0/3 | 3/3 | 38 |
-| scripted oracle | yes | yes | yes | no | 18/18 | 18/18 | 0/18 | 0/18 | 0 | 3/3 | 3/3 | 100 |
+| policy only | yes | no | no | no | 3/24 | 0/24 | 3/24 | 21/24 | 24 | 0/9 | 0/0 | 18 |
+| drama only | no | yes | no | no | 0/24 | 0/24 | 0/24 | 24/24 | 24 | 0/9 | 3/3 | 35 |
+| character only | no | no | yes | no | 3/24 | 3/24 | 0/24 | 21/24 | 21 | 0/9 | 0/0 | 25 |
+| full character-DAG drama | yes | yes | yes | no | 21/24 | 15/24 | 6/24 | 3/24 | 9 | 9/9 | 3/3 | 80 |
+| shuffled character-state control | yes | yes | no | yes | 3/24 | 3/24 | 3/24 | 21/24 | 24 | 0/9 | 3/3 | 38 |
+| scripted oracle | yes | yes | yes | no | 24/24 | 24/24 | 0/24 | 0/24 | 0 | 9/9 | 3/3 | 100 |
 
 ## Acceptance Gates
 

@@ -24,8 +24,9 @@ describe('Synthetic Character-DAG drama framework', () => {
 
     assert.deepEqual(fixture.arc.phases, ['setup', 'pressure', 'peripeteia', 'consolidation', 'transfer']);
     assert.deepEqual(Object.keys(fixture.arms), DEFAULT_ARM_ORDER);
-    assert.equal(fixture.scenes.length, 6);
+    assert.equal(fixture.scenes.length, 8);
     assert.equal(fixture.scenes.filter((scene) => scene.dramatic_contract.requires_peripeteia).length, 1);
+    assert.equal(fixture.scenes.filter((scene) => scene.transfer).length, 3);
     assert.equal(fixture.scenes.at(-1).transfer, true);
   });
 
@@ -86,7 +87,44 @@ describe('Synthetic Character-DAG drama framework', () => {
     assert.equal(scenario.hidden.responseMode, 'llm_mismatched_state');
     assert.equal(scenario.hidden.publicLearnerContext.stateQuality, 'mismatched_prior');
     assert.equal(scenario.hidden.publicLearnerContext.memoryEnabled, false);
+    assert.equal(scenario.hidden.publicLearnerContext.transferGuidance, null);
     assert.ok(scenario.hidden.publicLearnerContext.characterState);
+  });
+
+  it('routes transfer guidance only through matched character state', () => {
+    const fixture = loadFrameworkFixture();
+    const scene = fixture.scenes.find((candidate) => candidate.transfer);
+    const matured = updateCharacterStateFromEvidence(initialCharacterState(), {
+      sceneId: 'prior_transfer',
+      outcome: 'success',
+      evidence: evidence({
+        'learner-authored rationale': true,
+        'learner-authored transfer': true,
+        'task reorientation': true,
+      }),
+    });
+
+    const full = buildFrameworkSceneScenario({
+      fixture,
+      arm: 'full_character_dag_drama',
+      scene,
+      sceneIndex: 5,
+      characterState: matured,
+      learnerMode: 'llm',
+      seedIndex: 0,
+    });
+    const policy = buildFrameworkSceneScenario({
+      fixture,
+      arm: 'policy_only',
+      scene,
+      sceneIndex: 5,
+      characterState: matured,
+      learnerMode: 'llm',
+      seedIndex: 0,
+    });
+
+    assert.match(full.hidden.publicLearnerContext.transferGuidance, /what carries over/i);
+    assert.equal(policy.hidden.publicLearnerContext.transferGuidance, null);
   });
 
   it('detects real-style peripeteia language without requiring the literal phrase now the check', () => {
@@ -117,7 +155,7 @@ describe('Synthetic Character-DAG drama framework', () => {
 
     assert.equal(report.kind, 'character_dag_drama_framework');
     assert.equal(report.execution_boundary.synthetic_only, true);
-    assert.equal(policy.scenes, 6);
+    assert.equal(policy.scenes, 8);
     assert.ok(full.first_response_success_n > policy.first_response_success_n);
     assert.ok(full.first_response_success_n > shuffled.first_response_success_n);
     assert.ok(full.staged_followup_n < policy.staged_followup_n);
@@ -134,6 +172,7 @@ describe('Synthetic Character-DAG drama framework', () => {
   });
 
   it('writes a checkpoint and resumes without duplicating completed scenes', async () => {
+    const fixture = loadFrameworkFixture();
     const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'character-dag-drama-checkpoint-'));
     const first = await runCharacterDagDramaFramework({
       llm: 'mock',
@@ -148,8 +187,11 @@ describe('Synthetic Character-DAG drama framework', () => {
 
     assert.ok(fs.existsSync(checkpointPath));
     assert.ok(fs.existsSync(partialTracePath));
-    assert.equal(first.report.arms[0].scenes.length, 6);
-    assert.equal(JSON.parse(fs.readFileSync(checkpointPath, 'utf8')).arms.policy_only.scenes.length, 6);
+    assert.equal(first.report.arms[0].scenes.length, fixture.scenes.length);
+    assert.equal(
+      JSON.parse(fs.readFileSync(checkpointPath, 'utf8')).arms.policy_only.scenes.length,
+      fixture.scenes.length,
+    );
 
     const resumed = await runCharacterDagDramaFramework({
       llm: 'mock',
@@ -161,8 +203,11 @@ describe('Synthetic Character-DAG drama framework', () => {
       outDir,
     });
 
-    assert.equal(resumed.report.arms[0].scenes.length, 6);
-    assert.equal(JSON.parse(fs.readFileSync(checkpointPath, 'utf8')).arms.policy_only.scenes.length, 6);
+    assert.equal(resumed.report.arms[0].scenes.length, fixture.scenes.length);
+    assert.equal(
+      JSON.parse(fs.readFileSync(checkpointPath, 'utf8')).arms.policy_only.scenes.length,
+      fixture.scenes.length,
+    );
   });
 
   it('runs the mock llm contrast across repeated seeds', async () => {
@@ -181,9 +226,9 @@ describe('Synthetic Character-DAG drama framework', () => {
 
     assert.equal(report.learner_mode, 'llm');
     assert.equal(report.seed_count, 2);
-    assert.equal(policy.scenes, 12);
-    assert.equal(full.scenes, 12);
-    assert.equal(shuffled.scenes, 12);
+    assert.equal(policy.scenes, 16);
+    assert.equal(full.scenes, 16);
+    assert.equal(shuffled.scenes, 16);
     assert.ok(full.first_response_success_n > policy.first_response_success_n);
     assert.ok(full.first_response_success_n > shuffled.first_response_success_n);
     assert.ok(full.followup_or_unresolved_burden_n < policy.followup_or_unresolved_burden_n);

@@ -1,4 +1,4 @@
-export const OUTCOME_OBSERVER_VERSION = 'adaptation-outcome-observer.v1.1';
+export const OUTCOME_OBSERVER_VERSION = 'adaptation-outcome-observer.v1.2';
 
 function includesAny(text, patterns) {
   return patterns.some((pattern) => pattern.test(text));
@@ -132,7 +132,7 @@ export function detectOutcomeEvidence(learnerTurn = '', config = {}) {
     /\bdepends on\b/u,
     ...(semantic
       ? [
-          /\bevidence (?:is|would be|for|that)\b/u,
+          /\bevidence (?:is|would be|should be|for|that)\b/u,
           /\bjustif(?:y|ies|ied|ication)\b/u,
           /\bfollows from\b/u,
           /\bvalid for\b/u,
@@ -199,16 +199,34 @@ export function detectOutcomeEvidence(learnerTurn = '', config = {}) {
     ...(semantic
       ? [
           /\b(?:this|the) step (?:is supposed to|would help|helps) decide\b/u,
+          /\b(?:this|the) step (?:would|will|can|should)?\s*(?:help )?decide(?:s)?\b/u,
+          /\b(?:it|this|the step) (?:decides|would decide|helps decide) whether\b/u,
           /\bactual (?:problem|task|case)\b/u,
           /\bcomplet(?:e|ing) the task\b/u,
           /\bwhat (?:the task|this step) is asking\b/u,
+          /\bwhat (?:we(?:'re| are)|i(?:'m| am)) trying to (?:decide|prove|show)\b/u,
+          /\bconnect (?:it|this|the step|the move) to (?:what|the thing) (?:we(?:'re| are)|i(?:'m| am)) trying\b/u,
+          /\bmaking the target testable\b/u,
         ]
       : []),
   ]);
   const modelComparison = includesAny(lower, [/model|method|alternative|compare|instead|assume x|not-x|case where/u]);
   const selfCheck = includesAny(lower, [/check|recheck|test my|verify/u]);
   const learnerRepair = includesAny(lower, [/i should change|that was wrong|repair|revise|instead i/u]);
-  const transfer = includesAny(lower, [/new case|similar problem|transfer|same idea/u]);
+  const transfer = includesAny(lower, [
+    /new case|similar problem|transfer|same idea/u,
+    ...(semantic
+      ? [
+          /\b(?:carry|carries|carried|carrying) over\b/u,
+          /\bwhat (?:does|can|should|might|may) carry over\b/u,
+          /\breuse (?:the )?(?:same|earlier|prior) (?:proof )?(?:move|step|route|trick)\b/u,
+          /\b(?:same|earlier|prior) (?:proof )?(?:move|step|route|trick) (?:still )?(?:applies|works|holds|is valid)\b/u,
+          /\b(?:same|earlier|prior) (?:proof )?(?:move|step|route|trick) (?:should|would|could) (?:work|apply|hold)\b/u,
+          /\banalog(?:y|ous|ical)\b/u,
+          /\bboundary condition\b/u,
+        ]
+      : []),
+  ]);
   const tutorAdoption = includesAny(lower, [
     /\bas you said\b/u,
     /\busing your explanation\b/u,

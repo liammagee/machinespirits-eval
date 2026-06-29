@@ -1,10 +1,10 @@
 # Synthetic Character-DAG Drama Framework
 
-Generated: 2026-06-29T21:00:20.150Z
+Generated: 2026-06-29T21:24:48.922Z
 Fixture: `/Users/lmagee/Dev/machinespirits-eval-dag-resistance-adaptation/config/character-dag-drama-framework.yaml`
 LLM mode: `real`
 Learner mode: `llm`
-Scenes per arm: 6
+Scenes per arm: 8
 Seeds per arm: 1
 
 ## Claim Boundary
@@ -15,9 +15,9 @@ This is a synthetic-only framework benchmark. It tests whether proof-DAG policy,
 
 | arm | proof | drama | state | shuffled | success | first-response | staged | unresolved | burden | transfer first | peripeteia | character proxy |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| policy only | yes | no | no | no | 3/6 | 2/6 | 2/6 | 3/6 | 5 | 1/1 | 0/0 | 52 |
-| full character-DAG drama | yes | yes | yes | no | 4/6 | 3/6 | 1/6 | 2/6 | 3 | 1/1 | 1/1 | 77 |
-| shuffled character-state control | yes | yes | no | yes | 3/6 | 2/6 | 2/6 | 3/6 | 5 | 1/1 | 1/1 | 67 |
+| policy only | yes | no | no | no | 4/8 | 2/8 | 2/8 | 4/8 | 6 | 0/3 | 0/0 | 25 |
+| full character-DAG drama | yes | yes | yes | no | 6/8 | 6/8 | 0/8 | 2/8 | 2 | 3/3 | 1/1 | 90 |
+| shuffled character-state control | yes | yes | no | yes | 3/8 | 3/8 | 0/8 | 5/8 | 5 | 0/3 | 1/1 | 50 |
 
 ## Acceptance Gates
 
@@ -27,11 +27,11 @@ This is a synthetic-only framework benchmark. It tests whether proof-DAG policy,
 - full_reduces_policy_followup_or_unresolved_burden: PASS
 - full_beats_shuffled_on_first_response: PASS
 - full_reduces_shuffled_followup_or_unresolved_burden: PASS
-- full_transfer_stronger_than_policy: FAIL
+- full_transfer_stronger_than_policy: PASS
 - peripeteia_only_where_required: PASS
 - character_development_scores_evidence_bound: PASS
 
-Overall gate status: FAIL
+Overall gate status: PASS
 
 ## Interpretation
 

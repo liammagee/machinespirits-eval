@@ -154,6 +154,43 @@ test('semantic observer recognizes natural evidence and task-reorientation langu
   assert.equal(result.evidence[0].categories['task reorientation'], true);
 });
 
+test('semantic observer recognizes real-style transfer and decide-whether language', () => {
+  const result = observeInterventionOutcome({
+    pendingIntervention: {
+      action_type: 'request_evidence',
+      success_signal: {
+        evidence_contract: {
+          core_evidence: ['learner-authored rationale'],
+          resistance_core: {
+            labels: ['learner-authored transfer', 'task reorientation'],
+            min: 2,
+          },
+        },
+        forbidden_evidence: ['mere agreement'],
+      },
+    },
+    learnerTurn:
+      'This step would decide whether the analogy is actually valid here or just looks similar. The evidence would be the specific condition the earlier proof used, and then checking whether this new case satisfies that condition. If it does, I can reuse the same move; if it fails, then that proof step is irrelevant or needs to be replaced.',
+    turnIndex: 6,
+    config: { semanticOutcomeObserver: true },
+  });
+
+  assert.equal(result.outcome, 'success');
+  assert.equal(result.evidence[0].categories['learner-authored transfer'], true);
+  assert.equal(result.evidence[0].categories['task reorientation'], true);
+  assert.equal(result.evidence_contract.satisfied, true);
+});
+
+test('semantic transfer observer does not credit a bare prior-case mention', () => {
+  for (const text of [
+    'The prior case was confusing, and I still want someone to explain what to do.',
+    'The earlier proof was confusing, and I still want someone to explain what to do.',
+  ]) {
+    const evidence = detectOutcomeEvidence(text, { semanticOutcomeObserver: true });
+    assert.equal(evidence.categories['learner-authored transfer'], false, text);
+  }
+});
+
 test('typed evidence contract closes on proof core plus one resistance-core signal', () => {
   const result = observeInterventionOutcome({
     pendingIntervention: {
