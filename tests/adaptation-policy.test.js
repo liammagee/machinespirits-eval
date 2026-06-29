@@ -573,6 +573,68 @@ test('assertWorldAdaptationSpecUsable accepts specs whose families all resolve',
   assert.doesNotThrow(() => assertWorldAdaptationSpecUsable({ id: 'W_NO_POLICY', spec_hash: 'sha256:test' }));
 });
 
+test('resistance signal routes through the same policy selector as learner-state adaptation', () => {
+  const config = {
+    resistance_signal_policy: true,
+    resistance_signal_target: 'rote_parroting',
+  };
+  const belief = estimateLearnerStateBelief({
+    dialogue: [
+      {
+        role: 'learner',
+        content: 'So I just repeat master, servant, recognition, formula? This still feels like parroting.',
+      },
+    ],
+    turnIndex: 1,
+    config,
+  });
+  const selection = selectPedagogicalAction({
+    stateBelief: belief,
+    interventionLedger: [],
+    mode: 'closed_loop',
+    config,
+  });
+
+  assert.equal(belief.hypotheses[0].id, 'resistance_rote_parroting');
+  assert.equal(selection.selectedAction.action_type, 'elicit_prediction');
+  assert.equal(selection.selectedAction.adaptation_policy_layer.learner_resistance.observed_signal, 'rote_parroting');
+  assert.equal(selection.adaptationPolicyLayer.learner_resistance.matched_target, true);
+  assert.ok(selection.selectedAction.expected_transition.resistance_breakthrough > 0);
+  assert.ok(selection.selectedAction.success_signal.required_evidence.includes('non-formulaic learner rationale'));
+});
+
+test('proof-DAG constraints and resistance routing share one selected-action policy layer', () => {
+  const config = {
+    world_adaptation_spec: WORLD_SPEC,
+    resistance_signal_policy: true,
+    resistance_signal_target: 'rote_parroting',
+  };
+  const belief = estimateLearnerStateBelief({
+    dialogue: [
+      {
+        role: 'learner',
+        content: 'So I just repeat master, servant, recognition, formula? This still feels like parroting.',
+      },
+    ],
+    turnIndex: 1,
+    config,
+  });
+  const selection = selectPedagogicalAction({
+    stateBelief: belief,
+    interventionLedger: [],
+    mode: 'closed_loop',
+    config,
+  });
+
+  assert.equal(selection.selectedAction.action_type, 'request_evidence');
+  assert.ok(selection.candidateActions.every((candidate) => candidate.action_type === 'request_evidence'));
+  assert.equal(selection.selectedAction.world_adaptation.id, 'W_AF6_CURRICULUM');
+  assert.equal(selection.selectedAction.adaptation_policy_layer.proof_dag.id, 'W_AF6_CURRICULUM');
+  assert.equal(selection.selectedAction.adaptation_policy_layer.learner_resistance.observed_signal, 'rote_parroting');
+  assert.ok(selection.selectedAction.success_signal.required_evidence.includes('learner-authored rationale'));
+  assert.ok(selection.selectedAction.success_signal.required_evidence.includes('non-formulaic learner rationale'));
+});
+
 function discriminativeBelief(turnIndex = 2) {
   return {
     version: '1.0',

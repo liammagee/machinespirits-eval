@@ -114,6 +114,21 @@ function resolveWorldAdaptationSpec(yamlScenario, worldSpecs = []) {
   return null;
 }
 
+function resistancePolicyForScenario(yamlScenario = {}) {
+  const target = yamlScenario.resistance_signal_target || yamlScenario.resistanceSignalTarget || '';
+  const gate = yamlScenario.resistance_signal_gate || yamlScenario.resistanceSignalGate || [];
+  const enabled =
+    yamlScenario.resistance_breakthrough_diagnostic === true ||
+    Boolean(target) ||
+    (Array.isArray(gate) && gate.length > 0);
+  if (!enabled) return {};
+  return {
+    resistance_signal_policy: true,
+    ...(target ? { resistance_signal_target: target } : {}),
+    ...(Array.isArray(gate) && gate.length > 0 ? { resistance_signal_gate: gate } : {}),
+  };
+}
+
 function buildPerturbation(yamlScenario) {
   const cf = yamlScenario.counterfactual;
   if (!cf) return null;
@@ -260,11 +275,15 @@ export async function runAdaptiveEvaluation({
           assertWorldAdaptationSpecUsable(worldAdaptationSpec);
           const scenarioAdaptivePolicy = {
             ...adaptivePolicy,
+            ...resistancePolicyForScenario(yamlScenario),
             ...(worldAdaptationSpec ? { world_adaptation_spec: worldAdaptationSpec } : {}),
           };
           const scenarioGraphOptions = { ...graphOptionsBase, adaptivePolicy: scenarioAdaptivePolicy };
           const scenarioWorldSummary = summarizeWorldAdaptationSpec(worldAdaptationSpec);
           if (scenarioWorldSummary) scenarioConfig.world_adaptation_spec = scenarioWorldSummary;
+          if (scenarioAdaptivePolicy.resistance_signal_target) {
+            scenarioConfig.resistance_signal_target = scenarioAdaptivePolicy.resistance_signal_target;
+          }
           // Snapshot before / delta after lets us write per-scenario tokens
           // and cost into the row while keeping the run-wide accumulator
           // (which enforces --max-cost) intact.

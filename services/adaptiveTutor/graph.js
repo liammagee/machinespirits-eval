@@ -79,6 +79,7 @@ import { AdaptiveTutorState } from './stateSchema.js';
 import { callRole } from './llm.js';
 import { createAdaptationContract, updateContractRealizationChecks } from './adaptationContract.js';
 import {
+  applyAdaptationPolicyLayerToAction,
   applyWorldAdaptationToAction,
   estimateLearnerStateBelief,
   legacyPolicyActionForAdaptiveAction,
@@ -678,6 +679,11 @@ function normalizePolicyConfig(config = {}) {
     worldAdaptationSpec: config.worldAdaptationSpec ?? config.world_adaptation_spec,
     worldAdaptationWeight: config.worldAdaptationWeight ?? config.world_adaptation_weight,
     realizationContext: config.realizationContext ?? config.realization_context,
+    resistanceSignalPolicy: config.resistanceSignalPolicy ?? config.resistance_signal_policy,
+    resistanceSignalTarget: config.resistanceSignalTarget ?? config.resistance_signal_target,
+    resistanceSignalGate: config.resistanceSignalGate ?? config.resistance_signal_gate,
+    resistanceSignalStrategy: config.resistanceSignalStrategy ?? config.resistance_signal_strategy,
+    resistanceSignalWeight: config.resistanceSignalWeight ?? config.resistance_signal_weight,
     earlyCompletionAfterSuccessfulNoIntervention:
       config.earlyCompletionAfterSuccessfulNoIntervention ?? config.early_completion_after_successful_no_intervention,
     utilityTieEpsilon: config.utilityTieEpsilon ?? config.utility_tie_epsilon,
@@ -765,6 +771,7 @@ function makeEstimateLearnerState(defaultMode, defaultPolicyConfig) {
       interventionLedger: state.interventionLedger || [],
       turnIndex: state.turn,
       maxHypotheses: config.maxHypotheses,
+      config,
     });
     // state-scramble ablation placebo: decouple the belief from the learner so the rest of
     // the pipeline (selection, gate, contract) operates on a state that no longer matches.
@@ -777,6 +784,7 @@ function makeEstimateLearnerState(defaultMode, defaultPolicyConfig) {
           top_hypothesis: stateBelief.hypotheses?.[0]?.id || null,
           needs_discrimination: stateBelief.uncertainty?.needs_discrimination === true,
           state_scramble: config.stateScramble === true,
+          policy_signals: stateBelief.policy_signals || {},
         }),
       ],
     };
@@ -802,6 +810,7 @@ function makeSelectPedagogicalAction(defaultMode, defaultPolicyConfig) {
           action_type: policy.selectedAction.action_type,
           candidate_actions: policy.candidateActions.map((c) => c.action_type),
           world_adaptation_spec: policy.worldAdaptationSpec,
+          adaptation_policy_layer: policy.adaptationPolicyLayer,
         }),
       ],
     };
@@ -828,7 +837,11 @@ function makeValidateAdaptationContract(defaultMode, defaultPolicyConfig) {
         const repaired = repairActionFromGate(selectedAction, gateResult);
         if (repaired?.action_type && repaired.action_type !== selectedAction?.action_type) {
           repairedFrom = selectedAction?.action_type || null;
-          selectedAction = applyWorldAdaptationToAction(repaired, config);
+          selectedAction = applyAdaptationPolicyLayerToAction(
+            applyWorldAdaptationToAction(repaired, config),
+            state.learnerStateBelief,
+            config,
+          );
           gateResult = validateProofReleaseOwnershipGate({
             stateBelief: state.learnerStateBelief,
             selectedAction,
