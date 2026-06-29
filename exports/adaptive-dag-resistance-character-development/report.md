@@ -1,6 +1,6 @@
 # DAG/Resistance Character Development Experiment
 
-Generated: 2026-06-29T12:57:29.243Z
+Generated: 2026-06-29T13:01:07.481Z
 LLM mode: `mock`
 Scenes per arm: 6
 
@@ -8,6 +8,7 @@ Scenes per arm: 6
 
 This is a longitudinal simulated-learner mechanism experiment. It tests whether a compact evidence-derived character state can reduce repeated local repair across linked scenes. It is not a human learning-outcome result.
 The character-state observer is computed for every arm for comparability, but only the memory arms route that state into later learner responses.
+The learner responses in this harness are scripted from the carried character state, and the closed-loop policy realization is programmatic; `llm_mode` records backend selection but is not evidence of unscripted learner behavior.
 
 ## Aggregate Result
 

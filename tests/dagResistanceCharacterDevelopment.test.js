@@ -104,6 +104,9 @@ describe('DAG/resistance character-development harness', () => {
     const v2Only = report.aggregates.byArm.v2_policy_only;
     const combined = report.aggregates.byArm.character_state_plus_v2;
 
+    assert.equal(report.execution_boundary.scripted_learner_responses, true);
+    assert.equal(report.execution_boundary.programmatic_closed_loop_policy, true);
+    assert.equal(report.execution_boundary.real_llm_backend_label_is_not_a_real_learner_claim, true);
     assert.equal(v2Only.success_n, v2Only.scenes);
     assert.equal(combined.success_n, combined.scenes);
     assert.equal(v2Only.mature_response_n, 0);

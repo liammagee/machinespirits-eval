@@ -20,6 +20,12 @@ import { setActiveCellConfig, clearActiveCellConfig } from '../services/adaptive
 
 const DEFAULT_OUT_DIR = 'exports/adaptive-dag-resistance-character-development';
 
+const EXECUTION_BOUNDARY = Object.freeze({
+  scripted_learner_responses: true,
+  programmatic_closed_loop_policy: true,
+  real_llm_backend_label_is_not_a_real_learner_claim: true,
+});
+
 const WORLD_SPEC = {
   id: 'W_AF6_CURRICULUM_LONGITUDINAL',
   version: 'ms-world-adaptation-v0.1',
@@ -380,6 +386,9 @@ function markdownReport(report) {
   lines.push(
     'The character-state observer is computed for every arm for comparability, but only the memory arms route that state into later learner responses.',
   );
+  lines.push(
+    'The learner responses in this harness are scripted from the carried character state, and the closed-loop policy realization is programmatic; `llm_mode` records backend selection but is not evidence of unscripted learner behavior.',
+  );
   lines.push('');
   lines.push('## Aggregate Result');
   lines.push('');
@@ -420,6 +429,7 @@ function writeArtifacts({ outDir, report }) {
     fixturePath,
     yaml.stringify({
       kind: 'dag_resistance_character_development_fixture',
+      execution_boundary: EXECUTION_BOUNDARY,
       world_spec: WORLD_SPEC,
       arms: ARM_CONFIG,
       scenes: SCENES,
@@ -451,6 +461,7 @@ export async function runCharacterDevelopmentExperiment({
       generated_at: new Date().toISOString(),
       kind: 'dag_resistance_character_development',
       llm_mode: llm,
+      execution_boundary: EXECUTION_BOUNDARY,
       provider: provider || null,
       model: model || null,
       arm_order: armOrder,
@@ -474,6 +485,9 @@ async function main() {
   const { report, artifacts } = await runCharacterDevelopmentExperiment(opts);
   console.log('DAG/resistance character-development experiment completed');
   console.log(`llm=${report.llm_mode}`);
+  if (report.llm_mode === 'real') {
+    console.log('note=scripted learner/programmatic policy harness; not an unscripted real-learner run');
+  }
   console.log(`arms=${report.arm_order.join(',')}`);
   console.log(`scenes=${report.scene_order.length}`);
   for (const [arm, aggregate] of Object.entries(report.aggregates.byArm)) {
