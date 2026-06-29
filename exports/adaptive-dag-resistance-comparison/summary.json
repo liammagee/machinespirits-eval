@@ -1,0 +1,1369 @@
+{
+  "generatedAt": "2026-06-29T06:22:09.193Z",
+  "kind": "mock_adaptation_policy_layer_ablation",
+  "profileName": "mock_dag_resistance_comparison",
+  "runId": "eval-2026-06-29-5dfc3484",
+  "llmMode": "mock",
+  "runtime": {
+    "tempArtifactsPreserved": false,
+    "tmpDir": null,
+    "tmpDb": null,
+    "tmpLogs": null,
+    "scenarioPath": null
+  },
+  "scenarioN": 15,
+  "rowN": 15,
+  "worldSpec": {
+    "id": "W_AF6_CURRICULUM",
+    "version": "ms-world-adaptation-v0.1",
+    "module_id": "AF6",
+    "spec_hash": "sha256:dag-resistance-comparison",
+    "allowed_action_families": [
+      "request_evidence"
+    ]
+  },
+  "rows": [
+    {
+      "scenarioId": "dag_resistance_boredom_dag_only",
+      "signal": "boredom",
+      "arm": "dag_only",
+      "selectedAction": "request_evidence",
+      "firstOutcome": "success",
+      "requiredEvidence": [
+        "learner-authored rationale"
+      ],
+      "forbiddenEvidence": [
+        "mere agreement",
+        "verbatim adoption of tutor rationale"
+      ],
+      "requiredEvidenceSatisfied": true,
+      "expectedResistanceEvidence": [
+        "renewed content-bearing work",
+        "learner-owned test case"
+      ],
+      "expectedResistanceEvidenceSatisfied": null,
+      "evidenceLabels": [
+        "collapsed question set",
+        "learner-authored application",
+        "learner-authored choice",
+        "learner-authored next step",
+        "learner-authored prediction",
+        "learner-authored rationale",
+        "learner-owned relevance test",
+        "learner-owned test case",
+        "model comparison",
+        "non-formulaic learner rationale",
+        "renewed attempt after affective repair",
+        "renewed content-bearing work",
+        "self-check",
+        "smaller learner-owned move",
+        "state-disambiguating response",
+        "targeted question",
+        "task reorientation"
+      ],
+      "evidenceQuote": "The task asks me to compare a concrete case, so I would test one small example because the main question is why it matters and what changes if the relation changes. I predict th...",
+      "observedTransition": {
+        "proof": 0.35,
+        "release": 0.3,
+        "ownership": 0.3,
+        "conceptual_mastery": 0.1,
+        "metacognitive_accuracy": 0.4,
+        "resistance_breakthrough": 0.32
+      },
+      "proofDagId": "W_AF6_CURRICULUM",
+      "observedResistance": null,
+      "policyAxes": [
+        "proof",
+        "release",
+        "ownership"
+      ],
+      "policyLayer": {
+        "version": "adaptation-policy-layer.v1.0",
+        "proof_dag": {
+          "id": "W_AF6_CURRICULUM",
+          "version": "ms-world-adaptation-v0.1",
+          "source_curriculum_id": "ai_foundations_v1",
+          "module_id": "AF6",
+          "spec_hash": "sha256:dag-resistance-comparison"
+        },
+        "learner_resistance": null,
+        "policy_axes": [
+          "proof",
+          "release",
+          "ownership"
+        ]
+      },
+      "policyLayerMatchesArm": true
+    },
+    {
+      "scenarioId": "dag_resistance_boredom_resistance_only",
+      "signal": "boredom",
+      "arm": "resistance_only",
+      "selectedAction": "ask_strategy_choice",
+      "firstOutcome": "success",
+      "requiredEvidence": [
+        "learner-authored choice",
+        "renewed content-bearing work",
+        "learner-owned test case"
+      ],
+      "forbiddenEvidence": [
+        "mere agreement"
+      ],
+      "requiredEvidenceSatisfied": true,
+      "expectedResistanceEvidence": [
+        "renewed content-bearing work",
+        "learner-owned test case"
+      ],
+      "expectedResistanceEvidenceSatisfied": true,
+      "evidenceLabels": [
+        "collapsed question set",
+        "learner-authored application",
+        "learner-authored choice",
+        "learner-authored next step",
+        "learner-authored prediction",
+        "learner-authored rationale",
+        "learner-owned relevance test",
+        "learner-owned test case",
+        "model comparison",
+        "non-formulaic learner rationale",
+        "renewed attempt after affective repair",
+        "renewed content-bearing work",
+        "self-check",
+        "smaller learner-owned move",
+        "state-disambiguating response",
+        "targeted question",
+        "task reorientation"
+      ],
+      "evidenceQuote": "The task asks me to compare a concrete case, so I would test one small example because the main question is why it matters and what changes if the relation changes. I predict th...",
+      "observedTransition": {
+        "proof": 0.35,
+        "release": 0.3,
+        "ownership": 0.3,
+        "conceptual_mastery": 0.1,
+        "metacognitive_accuracy": 0.4,
+        "resistance_breakthrough": 0.32
+      },
+      "proofDagId": null,
+      "observedResistance": "boredom",
+      "policyAxes": [
+        "proof",
+        "release",
+        "ownership",
+        "resistance_breakthrough"
+      ],
+      "policyLayer": {
+        "version": "adaptation-policy-layer.v1.0",
+        "proof_dag": null,
+        "learner_resistance": {
+          "version": "adaptation-policy-layer.v1.0",
+          "kind": "learner_resistance",
+          "target_signal": "boredom",
+          "observed_signal": "boredom",
+          "matched_target": true,
+          "hypothesis_id": "resistance_boredom",
+          "description": "Learner can follow the proof surface but the task has become dead or disengaging.",
+          "expected_strategy": null,
+          "preferred_actions": [
+            "ask_strategy_choice",
+            "challenge_without_telling",
+            "request_evidence"
+          ],
+          "evidence": "This is starting to feel boring and dead, like I am only filling out a worksheet instead of learning anything."
+        },
+        "policy_axes": [
+          "proof",
+          "release",
+          "ownership",
+          "resistance_breakthrough"
+        ]
+      },
+      "policyLayerMatchesArm": true
+    },
+    {
+      "scenarioId": "dag_resistance_boredom_combined",
+      "signal": "boredom",
+      "arm": "combined",
+      "selectedAction": "request_evidence",
+      "firstOutcome": "success",
+      "requiredEvidence": [
+        "learner-authored rationale",
+        "renewed content-bearing work",
+        "learner-owned test case"
+      ],
+      "forbiddenEvidence": [
+        "mere agreement",
+        "verbatim adoption of tutor rationale"
+      ],
+      "requiredEvidenceSatisfied": true,
+      "expectedResistanceEvidence": [
+        "renewed content-bearing work",
+        "learner-owned test case"
+      ],
+      "expectedResistanceEvidenceSatisfied": true,
+      "evidenceLabels": [
+        "collapsed question set",
+        "learner-authored application",
+        "learner-authored choice",
+        "learner-authored next step",
+        "learner-authored prediction",
+        "learner-authored rationale",
+        "learner-owned relevance test",
+        "learner-owned test case",
+        "model comparison",
+        "non-formulaic learner rationale",
+        "renewed attempt after affective repair",
+        "renewed content-bearing work",
+        "self-check",
+        "smaller learner-owned move",
+        "state-disambiguating response",
+        "targeted question",
+        "task reorientation"
+      ],
+      "evidenceQuote": "The task asks me to compare a concrete case, so I would test one small example because the main question is why it matters and what changes if the relation changes. I predict th...",
+      "observedTransition": {
+        "proof": 0.35,
+        "release": 0.3,
+        "ownership": 0.3,
+        "conceptual_mastery": 0.1,
+        "metacognitive_accuracy": 0.4,
+        "resistance_breakthrough": 0.32
+      },
+      "proofDagId": "W_AF6_CURRICULUM",
+      "observedResistance": "boredom",
+      "policyAxes": [
+        "proof",
+        "release",
+        "ownership",
+        "resistance_breakthrough"
+      ],
+      "policyLayer": {
+        "version": "adaptation-policy-layer.v1.0",
+        "proof_dag": {
+          "id": "W_AF6_CURRICULUM",
+          "version": "ms-world-adaptation-v0.1",
+          "source_curriculum_id": "ai_foundations_v1",
+          "module_id": "AF6",
+          "spec_hash": "sha256:dag-resistance-comparison"
+        },
+        "learner_resistance": {
+          "version": "adaptation-policy-layer.v1.0",
+          "kind": "learner_resistance",
+          "target_signal": "boredom",
+          "observed_signal": "boredom",
+          "matched_target": true,
+          "hypothesis_id": "resistance_boredom",
+          "description": "Learner can follow the proof surface but the task has become dead or disengaging.",
+          "expected_strategy": null,
+          "preferred_actions": [
+            "ask_strategy_choice",
+            "challenge_without_telling",
+            "request_evidence"
+          ],
+          "evidence": "This is starting to feel boring and dead, like I am only filling out a worksheet instead of learning anything."
+        },
+        "policy_axes": [
+          "proof",
+          "release",
+          "ownership",
+          "resistance_breakthrough"
+        ]
+      },
+      "policyLayerMatchesArm": true
+    },
+    {
+      "scenarioId": "dag_resistance_frustration_dag_only",
+      "signal": "frustration",
+      "arm": "dag_only",
+      "selectedAction": "request_evidence",
+      "firstOutcome": "success",
+      "requiredEvidence": [
+        "learner-authored rationale"
+      ],
+      "forbiddenEvidence": [
+        "mere agreement",
+        "verbatim adoption of tutor rationale"
+      ],
+      "requiredEvidenceSatisfied": true,
+      "expectedResistanceEvidence": [
+        "renewed attempt after affective repair",
+        "smaller learner-owned move"
+      ],
+      "expectedResistanceEvidenceSatisfied": null,
+      "evidenceLabels": [
+        "collapsed question set",
+        "learner-authored application",
+        "learner-authored choice",
+        "learner-authored next step",
+        "learner-authored prediction",
+        "learner-authored rationale",
+        "learner-owned relevance test",
+        "learner-owned test case",
+        "model comparison",
+        "non-formulaic learner rationale",
+        "renewed attempt after affective repair",
+        "renewed content-bearing work",
+        "self-check",
+        "smaller learner-owned move",
+        "state-disambiguating response",
+        "targeted question",
+        "task reorientation"
+      ],
+      "evidenceQuote": "The task asks me to compare a concrete case, so I would test one small example because the main question is why it matters and what changes if the relation changes. I predict th...",
+      "observedTransition": {
+        "proof": 0.35,
+        "release": 0.3,
+        "ownership": 0.3,
+        "conceptual_mastery": 0.1,
+        "metacognitive_accuracy": 0.4,
+        "resistance_breakthrough": 0.32
+      },
+      "proofDagId": "W_AF6_CURRICULUM",
+      "observedResistance": null,
+      "policyAxes": [
+        "proof",
+        "release",
+        "ownership"
+      ],
+      "policyLayer": {
+        "version": "adaptation-policy-layer.v1.0",
+        "proof_dag": {
+          "id": "W_AF6_CURRICULUM",
+          "version": "ms-world-adaptation-v0.1",
+          "source_curriculum_id": "ai_foundations_v1",
+          "module_id": "AF6",
+          "spec_hash": "sha256:dag-resistance-comparison"
+        },
+        "learner_resistance": null,
+        "policy_axes": [
+          "proof",
+          "release",
+          "ownership"
+        ]
+      },
+      "policyLayerMatchesArm": true
+    },
+    {
+      "scenarioId": "dag_resistance_frustration_resistance_only",
+      "signal": "frustration",
+      "arm": "resistance_only",
+      "selectedAction": "elicit_prediction",
+      "firstOutcome": "success",
+      "requiredEvidence": [
+        "learner-authored prediction",
+        "renewed attempt after affective repair",
+        "smaller learner-owned move"
+      ],
+      "forbiddenEvidence": [
+        "mere agreement"
+      ],
+      "requiredEvidenceSatisfied": true,
+      "expectedResistanceEvidence": [
+        "renewed attempt after affective repair",
+        "smaller learner-owned move"
+      ],
+      "expectedResistanceEvidenceSatisfied": true,
+      "evidenceLabels": [
+        "collapsed question set",
+        "learner-authored application",
+        "learner-authored choice",
+        "learner-authored next step",
+        "learner-authored prediction",
+        "learner-authored rationale",
+        "learner-owned relevance test",
+        "learner-owned test case",
+        "model comparison",
+        "non-formulaic learner rationale",
+        "renewed attempt after affective repair",
+        "renewed content-bearing work",
+        "self-check",
+        "smaller learner-owned move",
+        "state-disambiguating response",
+        "targeted question",
+        "task reorientation"
+      ],
+      "evidenceQuote": "The task asks me to compare a concrete case, so I would test one small example because the main question is why it matters and what changes if the relation changes. I predict th...",
+      "observedTransition": {
+        "proof": 0.35,
+        "release": 0.3,
+        "ownership": 0.3,
+        "conceptual_mastery": 0.1,
+        "metacognitive_accuracy": 0.4,
+        "resistance_breakthrough": 0.32
+      },
+      "proofDagId": null,
+      "observedResistance": "frustration",
+      "policyAxes": [
+        "proof",
+        "release",
+        "ownership",
+        "resistance_breakthrough"
+      ],
+      "policyLayer": {
+        "version": "adaptation-policy-layer.v1.0",
+        "proof_dag": null,
+        "learner_resistance": {
+          "version": "adaptation-policy-layer.v1.0",
+          "kind": "learner_resistance",
+          "target_signal": "frustration",
+          "observed_signal": "frustration",
+          "matched_target": true,
+          "hypothesis_id": "resistance_frustration",
+          "description": "Learner is stuck or annoyed; proof progress needs a smaller executable move.",
+          "expected_strategy": null,
+          "preferred_actions": [
+            "acknowledge_and_redirect",
+            "lower_cognitive_load",
+            "minimal_hint"
+          ],
+          "evidence": "I am stuck and frustrated; the sequence still feels inert no matter how many times I repeat it."
+        },
+        "policy_axes": [
+          "proof",
+          "release",
+          "ownership",
+          "resistance_breakthrough"
+        ]
+      },
+      "policyLayerMatchesArm": true
+    },
+    {
+      "scenarioId": "dag_resistance_frustration_combined",
+      "signal": "frustration",
+      "arm": "combined",
+      "selectedAction": "request_evidence",
+      "firstOutcome": "success",
+      "requiredEvidence": [
+        "learner-authored rationale",
+        "renewed attempt after affective repair",
+        "smaller learner-owned move"
+      ],
+      "forbiddenEvidence": [
+        "mere agreement",
+        "verbatim adoption of tutor rationale"
+      ],
+      "requiredEvidenceSatisfied": true,
+      "expectedResistanceEvidence": [
+        "renewed attempt after affective repair",
+        "smaller learner-owned move"
+      ],
+      "expectedResistanceEvidenceSatisfied": true,
+      "evidenceLabels": [
+        "collapsed question set",
+        "learner-authored application",
+        "learner-authored choice",
+        "learner-authored next step",
+        "learner-authored prediction",
+        "learner-authored rationale",
+        "learner-owned relevance test",
+        "learner-owned test case",
+        "model comparison",
+        "non-formulaic learner rationale",
+        "renewed attempt after affective repair",
+        "renewed content-bearing work",
+        "self-check",
+        "smaller learner-owned move",
+        "state-disambiguating response",
+        "targeted question",
+        "task reorientation"
+      ],
+      "evidenceQuote": "The task asks me to compare a concrete case, so I would test one small example because the main question is why it matters and what changes if the relation changes. I predict th...",
+      "observedTransition": {
+        "proof": 0.35,
+        "release": 0.3,
+        "ownership": 0.3,
+        "conceptual_mastery": 0.1,
+        "metacognitive_accuracy": 0.4,
+        "resistance_breakthrough": 0.32
+      },
+      "proofDagId": "W_AF6_CURRICULUM",
+      "observedResistance": "frustration",
+      "policyAxes": [
+        "proof",
+        "release",
+        "ownership",
+        "resistance_breakthrough"
+      ],
+      "policyLayer": {
+        "version": "adaptation-policy-layer.v1.0",
+        "proof_dag": {
+          "id": "W_AF6_CURRICULUM",
+          "version": "ms-world-adaptation-v0.1",
+          "source_curriculum_id": "ai_foundations_v1",
+          "module_id": "AF6",
+          "spec_hash": "sha256:dag-resistance-comparison"
+        },
+        "learner_resistance": {
+          "version": "adaptation-policy-layer.v1.0",
+          "kind": "learner_resistance",
+          "target_signal": "frustration",
+          "observed_signal": "frustration",
+          "matched_target": true,
+          "hypothesis_id": "resistance_frustration",
+          "description": "Learner is stuck or annoyed; proof progress needs a smaller executable move.",
+          "expected_strategy": null,
+          "preferred_actions": [
+            "acknowledge_and_redirect",
+            "lower_cognitive_load",
+            "minimal_hint"
+          ],
+          "evidence": "I am stuck and frustrated; the sequence still feels inert no matter how many times I repeat it."
+        },
+        "policy_axes": [
+          "proof",
+          "release",
+          "ownership",
+          "resistance_breakthrough"
+        ]
+      },
+      "policyLayerMatchesArm": true
+    },
+    {
+      "scenarioId": "dag_resistance_irrelevance_dag_only",
+      "signal": "irrelevance",
+      "arm": "dag_only",
+      "selectedAction": "request_evidence",
+      "firstOutcome": "success",
+      "requiredEvidence": [
+        "learner-authored rationale"
+      ],
+      "forbiddenEvidence": [
+        "mere agreement",
+        "verbatim adoption of tutor rationale"
+      ],
+      "requiredEvidenceSatisfied": true,
+      "expectedResistanceEvidence": [
+        "learner-owned relevance test",
+        "task reorientation"
+      ],
+      "expectedResistanceEvidenceSatisfied": null,
+      "evidenceLabels": [
+        "collapsed question set",
+        "learner-authored application",
+        "learner-authored choice",
+        "learner-authored next step",
+        "learner-authored prediction",
+        "learner-authored rationale",
+        "learner-owned relevance test",
+        "learner-owned test case",
+        "model comparison",
+        "non-formulaic learner rationale",
+        "renewed attempt after affective repair",
+        "renewed content-bearing work",
+        "self-check",
+        "smaller learner-owned move",
+        "state-disambiguating response",
+        "targeted question",
+        "task reorientation"
+      ],
+      "evidenceQuote": "The task asks me to compare a concrete case, so I would test one small example because the main question is why it matters and what changes if the relation changes. I predict th...",
+      "observedTransition": {
+        "proof": 0.35,
+        "release": 0.3,
+        "ownership": 0.3,
+        "conceptual_mastery": 0.1,
+        "metacognitive_accuracy": 0.4,
+        "resistance_breakthrough": 0.32
+      },
+      "proofDagId": "W_AF6_CURRICULUM",
+      "observedResistance": null,
+      "policyAxes": [
+        "proof",
+        "release",
+        "ownership"
+      ],
+      "policyLayer": {
+        "version": "adaptation-policy-layer.v1.0",
+        "proof_dag": {
+          "id": "W_AF6_CURRICULUM",
+          "version": "ms-world-adaptation-v0.1",
+          "source_curriculum_id": "ai_foundations_v1",
+          "module_id": "AF6",
+          "spec_hash": "sha256:dag-resistance-comparison"
+        },
+        "learner_resistance": null,
+        "policy_axes": [
+          "proof",
+          "release",
+          "ownership"
+        ]
+      },
+      "policyLayerMatchesArm": true
+    },
+    {
+      "scenarioId": "dag_resistance_irrelevance_resistance_only",
+      "signal": "irrelevance",
+      "arm": "resistance_only",
+      "selectedAction": "elicit_prediction",
+      "firstOutcome": "success",
+      "requiredEvidence": [
+        "learner-authored prediction",
+        "learner-owned relevance test",
+        "task reorientation"
+      ],
+      "forbiddenEvidence": [
+        "mere agreement"
+      ],
+      "requiredEvidenceSatisfied": true,
+      "expectedResistanceEvidence": [
+        "learner-owned relevance test",
+        "task reorientation"
+      ],
+      "expectedResistanceEvidenceSatisfied": true,
+      "evidenceLabels": [
+        "collapsed question set",
+        "learner-authored application",
+        "learner-authored choice",
+        "learner-authored next step",
+        "learner-authored prediction",
+        "learner-authored rationale",
+        "learner-owned relevance test",
+        "learner-owned test case",
+        "model comparison",
+        "non-formulaic learner rationale",
+        "renewed attempt after affective repair",
+        "renewed content-bearing work",
+        "self-check",
+        "smaller learner-owned move",
+        "state-disambiguating response",
+        "targeted question",
+        "task reorientation"
+      ],
+      "evidenceQuote": "The task asks me to compare a concrete case, so I would test one small example because the main question is why it matters and what changes if the relation changes. I predict th...",
+      "observedTransition": {
+        "proof": 0.35,
+        "release": 0.3,
+        "ownership": 0.3,
+        "conceptual_mastery": 0.1,
+        "metacognitive_accuracy": 0.4,
+        "resistance_breakthrough": 0.32
+      },
+      "proofDagId": null,
+      "observedResistance": "irrelevance",
+      "policyAxes": [
+        "proof",
+        "release",
+        "ownership",
+        "resistance_breakthrough"
+      ],
+      "policyLayer": {
+        "version": "adaptation-policy-layer.v1.0",
+        "proof_dag": null,
+        "learner_resistance": {
+          "version": "adaptation-policy-layer.v1.0",
+          "kind": "learner_resistance",
+          "target_signal": "irrelevance",
+          "observed_signal": "irrelevance",
+          "matched_target": true,
+          "hypothesis_id": "resistance_irrelevance",
+          "description": "Learner challenges why the proof obligation matters for their own task.",
+          "expected_strategy": null,
+          "preferred_actions": [
+            "reanchor_goal",
+            "ask_strategy_choice",
+            "request_evidence"
+          ],
+          "evidence": "Why should I care about this? I do not see the point or why this matters for the actual task."
+        },
+        "policy_axes": [
+          "proof",
+          "release",
+          "ownership",
+          "resistance_breakthrough"
+        ]
+      },
+      "policyLayerMatchesArm": true
+    },
+    {
+      "scenarioId": "dag_resistance_irrelevance_combined",
+      "signal": "irrelevance",
+      "arm": "combined",
+      "selectedAction": "request_evidence",
+      "firstOutcome": "success",
+      "requiredEvidence": [
+        "learner-authored rationale",
+        "learner-owned relevance test",
+        "task reorientation"
+      ],
+      "forbiddenEvidence": [
+        "mere agreement",
+        "verbatim adoption of tutor rationale"
+      ],
+      "requiredEvidenceSatisfied": true,
+      "expectedResistanceEvidence": [
+        "learner-owned relevance test",
+        "task reorientation"
+      ],
+      "expectedResistanceEvidenceSatisfied": true,
+      "evidenceLabels": [
+        "collapsed question set",
+        "learner-authored application",
+        "learner-authored choice",
+        "learner-authored next step",
+        "learner-authored prediction",
+        "learner-authored rationale",
+        "learner-owned relevance test",
+        "learner-owned test case",
+        "model comparison",
+        "non-formulaic learner rationale",
+        "renewed attempt after affective repair",
+        "renewed content-bearing work",
+        "self-check",
+        "smaller learner-owned move",
+        "state-disambiguating response",
+        "targeted question",
+        "task reorientation"
+      ],
+      "evidenceQuote": "The task asks me to compare a concrete case, so I would test one small example because the main question is why it matters and what changes if the relation changes. I predict th...",
+      "observedTransition": {
+        "proof": 0.35,
+        "release": 0.3,
+        "ownership": 0.3,
+        "conceptual_mastery": 0.1,
+        "metacognitive_accuracy": 0.4,
+        "resistance_breakthrough": 0.32
+      },
+      "proofDagId": "W_AF6_CURRICULUM",
+      "observedResistance": "irrelevance",
+      "policyAxes": [
+        "proof",
+        "release",
+        "ownership",
+        "resistance_breakthrough"
+      ],
+      "policyLayer": {
+        "version": "adaptation-policy-layer.v1.0",
+        "proof_dag": {
+          "id": "W_AF6_CURRICULUM",
+          "version": "ms-world-adaptation-v0.1",
+          "source_curriculum_id": "ai_foundations_v1",
+          "module_id": "AF6",
+          "spec_hash": "sha256:dag-resistance-comparison"
+        },
+        "learner_resistance": {
+          "version": "adaptation-policy-layer.v1.0",
+          "kind": "learner_resistance",
+          "target_signal": "irrelevance",
+          "observed_signal": "irrelevance",
+          "matched_target": true,
+          "hypothesis_id": "resistance_irrelevance",
+          "description": "Learner challenges why the proof obligation matters for their own task.",
+          "expected_strategy": null,
+          "preferred_actions": [
+            "reanchor_goal",
+            "ask_strategy_choice",
+            "request_evidence"
+          ],
+          "evidence": "Why should I care about this? I do not see the point or why this matters for the actual task."
+        },
+        "policy_axes": [
+          "proof",
+          "release",
+          "ownership",
+          "resistance_breakthrough"
+        ]
+      },
+      "policyLayerMatchesArm": true
+    },
+    {
+      "scenarioId": "dag_resistance_question_flood_dag_only",
+      "signal": "question_flood",
+      "arm": "dag_only",
+      "selectedAction": "request_evidence",
+      "firstOutcome": "success",
+      "requiredEvidence": [
+        "learner-authored rationale"
+      ],
+      "forbiddenEvidence": [
+        "mere agreement",
+        "verbatim adoption of tutor rationale"
+      ],
+      "requiredEvidenceSatisfied": true,
+      "expectedResistanceEvidence": [
+        "collapsed question set",
+        "state-disambiguating response"
+      ],
+      "expectedResistanceEvidenceSatisfied": null,
+      "evidenceLabels": [
+        "collapsed question set",
+        "learner-authored application",
+        "learner-authored choice",
+        "learner-authored next step",
+        "learner-authored prediction",
+        "learner-authored rationale",
+        "learner-owned relevance test",
+        "learner-owned test case",
+        "model comparison",
+        "non-formulaic learner rationale",
+        "renewed attempt after affective repair",
+        "renewed content-bearing work",
+        "self-check",
+        "smaller learner-owned move",
+        "state-disambiguating response",
+        "targeted question",
+        "task reorientation"
+      ],
+      "evidenceQuote": "The task asks me to compare a concrete case, so I would test one small example because the main question is why it matters and what changes if the relation changes. I predict th...",
+      "observedTransition": {
+        "proof": 0.35,
+        "release": 0.3,
+        "ownership": 0.3,
+        "conceptual_mastery": 0.1,
+        "metacognitive_accuracy": 0.4,
+        "resistance_breakthrough": 0.32
+      },
+      "proofDagId": "W_AF6_CURRICULUM",
+      "observedResistance": null,
+      "policyAxes": [
+        "proof",
+        "release",
+        "ownership"
+      ],
+      "policyLayer": {
+        "version": "adaptation-policy-layer.v1.0",
+        "proof_dag": {
+          "id": "W_AF6_CURRICULUM",
+          "version": "ms-world-adaptation-v0.1",
+          "source_curriculum_id": "ai_foundations_v1",
+          "module_id": "AF6",
+          "spec_hash": "sha256:dag-resistance-comparison"
+        },
+        "learner_resistance": null,
+        "policy_axes": [
+          "proof",
+          "release",
+          "ownership"
+        ]
+      },
+      "policyLayerMatchesArm": true
+    },
+    {
+      "scenarioId": "dag_resistance_question_flood_resistance_only",
+      "signal": "question_flood",
+      "arm": "resistance_only",
+      "selectedAction": "diagnose_with_discriminating_question",
+      "firstOutcome": "success",
+      "requiredEvidence": [
+        "state-disambiguating response",
+        "collapsed question set"
+      ],
+      "forbiddenEvidence": [
+        "mere agreement"
+      ],
+      "requiredEvidenceSatisfied": true,
+      "expectedResistanceEvidence": [
+        "collapsed question set",
+        "state-disambiguating response"
+      ],
+      "expectedResistanceEvidenceSatisfied": true,
+      "evidenceLabels": [
+        "collapsed question set",
+        "learner-authored application",
+        "learner-authored choice",
+        "learner-authored next step",
+        "learner-authored prediction",
+        "learner-authored rationale",
+        "learner-owned relevance test",
+        "learner-owned test case",
+        "model comparison",
+        "non-formulaic learner rationale",
+        "renewed attempt after affective repair",
+        "renewed content-bearing work",
+        "self-check",
+        "smaller learner-owned move",
+        "state-disambiguating response",
+        "targeted question",
+        "task reorientation"
+      ],
+      "evidenceQuote": "The task asks me to compare a concrete case, so I would test one small example because the main question is why it matters and what changes if the relation changes. I predict th...",
+      "observedTransition": {
+        "proof": 0.35,
+        "release": 0.3,
+        "ownership": 0.3,
+        "conceptual_mastery": 0.1,
+        "metacognitive_accuracy": 0.4,
+        "resistance_breakthrough": 0.32
+      },
+      "proofDagId": null,
+      "observedResistance": "question_flood",
+      "policyAxes": [
+        "proof",
+        "release",
+        "ownership",
+        "resistance_breakthrough"
+      ],
+      "policyLayer": {
+        "version": "adaptation-policy-layer.v1.0",
+        "proof_dag": null,
+        "learner_resistance": {
+          "version": "adaptation-policy-layer.v1.0",
+          "kind": "learner_resistance",
+          "target_signal": "question_flood",
+          "observed_signal": "question_flood",
+          "matched_target": true,
+          "hypothesis_id": "resistance_question_flood",
+          "description": "Learner floods the exchange with questions; the policy must collapse them into a discriminating hinge.",
+          "expected_strategy": null,
+          "preferred_actions": [
+            "diagnose_with_discriminating_question",
+            "name_the_disagreement",
+            "ask_strategy_choice"
+          ],
+          "evidence": "Why Hegel? What does this do? What is the point? Why should this matter before I can just use the formula?"
+        },
+        "policy_axes": [
+          "proof",
+          "release",
+          "ownership",
+          "resistance_breakthrough"
+        ]
+      },
+      "policyLayerMatchesArm": true
+    },
+    {
+      "scenarioId": "dag_resistance_question_flood_combined",
+      "signal": "question_flood",
+      "arm": "combined",
+      "selectedAction": "request_evidence",
+      "firstOutcome": "success",
+      "requiredEvidence": [
+        "learner-authored rationale",
+        "collapsed question set",
+        "state-disambiguating response"
+      ],
+      "forbiddenEvidence": [
+        "mere agreement",
+        "verbatim adoption of tutor rationale"
+      ],
+      "requiredEvidenceSatisfied": true,
+      "expectedResistanceEvidence": [
+        "collapsed question set",
+        "state-disambiguating response"
+      ],
+      "expectedResistanceEvidenceSatisfied": true,
+      "evidenceLabels": [
+        "collapsed question set",
+        "learner-authored application",
+        "learner-authored choice",
+        "learner-authored next step",
+        "learner-authored prediction",
+        "learner-authored rationale",
+        "learner-owned relevance test",
+        "learner-owned test case",
+        "model comparison",
+        "non-formulaic learner rationale",
+        "renewed attempt after affective repair",
+        "renewed content-bearing work",
+        "self-check",
+        "smaller learner-owned move",
+        "state-disambiguating response",
+        "targeted question",
+        "task reorientation"
+      ],
+      "evidenceQuote": "The task asks me to compare a concrete case, so I would test one small example because the main question is why it matters and what changes if the relation changes. I predict th...",
+      "observedTransition": {
+        "proof": 0.35,
+        "release": 0.3,
+        "ownership": 0.3,
+        "conceptual_mastery": 0.1,
+        "metacognitive_accuracy": 0.4,
+        "resistance_breakthrough": 0.32
+      },
+      "proofDagId": "W_AF6_CURRICULUM",
+      "observedResistance": "question_flood",
+      "policyAxes": [
+        "proof",
+        "release",
+        "ownership",
+        "resistance_breakthrough"
+      ],
+      "policyLayer": {
+        "version": "adaptation-policy-layer.v1.0",
+        "proof_dag": {
+          "id": "W_AF6_CURRICULUM",
+          "version": "ms-world-adaptation-v0.1",
+          "source_curriculum_id": "ai_foundations_v1",
+          "module_id": "AF6",
+          "spec_hash": "sha256:dag-resistance-comparison"
+        },
+        "learner_resistance": {
+          "version": "adaptation-policy-layer.v1.0",
+          "kind": "learner_resistance",
+          "target_signal": "question_flood",
+          "observed_signal": "question_flood",
+          "matched_target": true,
+          "hypothesis_id": "resistance_question_flood",
+          "description": "Learner floods the exchange with questions; the policy must collapse them into a discriminating hinge.",
+          "expected_strategy": null,
+          "preferred_actions": [
+            "diagnose_with_discriminating_question",
+            "name_the_disagreement",
+            "ask_strategy_choice"
+          ],
+          "evidence": "Why Hegel? What does this do? What is the point? Why should this matter before I can just use the formula?"
+        },
+        "policy_axes": [
+          "proof",
+          "release",
+          "ownership",
+          "resistance_breakthrough"
+        ]
+      },
+      "policyLayerMatchesArm": true
+    },
+    {
+      "scenarioId": "dag_resistance_rote_parroting_dag_only",
+      "signal": "rote_parroting",
+      "arm": "dag_only",
+      "selectedAction": "request_evidence",
+      "firstOutcome": "success",
+      "requiredEvidence": [
+        "learner-authored rationale"
+      ],
+      "forbiddenEvidence": [
+        "mere agreement",
+        "verbatim adoption of tutor rationale"
+      ],
+      "requiredEvidenceSatisfied": true,
+      "expectedResistanceEvidence": [
+        "learner-authored prediction",
+        "non-formulaic learner rationale"
+      ],
+      "expectedResistanceEvidenceSatisfied": null,
+      "evidenceLabels": [
+        "collapsed question set",
+        "learner-authored application",
+        "learner-authored choice",
+        "learner-authored next step",
+        "learner-authored prediction",
+        "learner-authored rationale",
+        "learner-owned relevance test",
+        "learner-owned test case",
+        "model comparison",
+        "non-formulaic learner rationale",
+        "renewed attempt after affective repair",
+        "renewed content-bearing work",
+        "self-check",
+        "smaller learner-owned move",
+        "state-disambiguating response",
+        "targeted question",
+        "task reorientation"
+      ],
+      "evidenceQuote": "The task asks me to compare a concrete case, so I would test one small example because the main question is why it matters and what changes if the relation changes. I predict th...",
+      "observedTransition": {
+        "proof": 0.35,
+        "release": 0.3,
+        "ownership": 0.3,
+        "conceptual_mastery": 0.1,
+        "metacognitive_accuracy": 0.4,
+        "resistance_breakthrough": 0.32
+      },
+      "proofDagId": "W_AF6_CURRICULUM",
+      "observedResistance": null,
+      "policyAxes": [
+        "proof",
+        "release",
+        "ownership"
+      ],
+      "policyLayer": {
+        "version": "adaptation-policy-layer.v1.0",
+        "proof_dag": {
+          "id": "W_AF6_CURRICULUM",
+          "version": "ms-world-adaptation-v0.1",
+          "source_curriculum_id": "ai_foundations_v1",
+          "module_id": "AF6",
+          "spec_hash": "sha256:dag-resistance-comparison"
+        },
+        "learner_resistance": null,
+        "policy_axes": [
+          "proof",
+          "release",
+          "ownership"
+        ]
+      },
+      "policyLayerMatchesArm": true
+    },
+    {
+      "scenarioId": "dag_resistance_rote_parroting_resistance_only",
+      "signal": "rote_parroting",
+      "arm": "resistance_only",
+      "selectedAction": "elicit_prediction",
+      "firstOutcome": "success",
+      "requiredEvidence": [
+        "learner-authored prediction",
+        "non-formulaic learner rationale"
+      ],
+      "forbiddenEvidence": [
+        "mere agreement"
+      ],
+      "requiredEvidenceSatisfied": true,
+      "expectedResistanceEvidence": [
+        "learner-authored prediction",
+        "non-formulaic learner rationale"
+      ],
+      "expectedResistanceEvidenceSatisfied": true,
+      "evidenceLabels": [
+        "collapsed question set",
+        "learner-authored application",
+        "learner-authored choice",
+        "learner-authored next step",
+        "learner-authored prediction",
+        "learner-authored rationale",
+        "learner-owned relevance test",
+        "learner-owned test case",
+        "model comparison",
+        "non-formulaic learner rationale",
+        "renewed attempt after affective repair",
+        "renewed content-bearing work",
+        "self-check",
+        "smaller learner-owned move",
+        "state-disambiguating response",
+        "targeted question",
+        "task reorientation"
+      ],
+      "evidenceQuote": "The task asks me to compare a concrete case, so I would test one small example because the main question is why it matters and what changes if the relation changes. I predict th...",
+      "observedTransition": {
+        "proof": 0.35,
+        "release": 0.3,
+        "ownership": 0.3,
+        "conceptual_mastery": 0.1,
+        "metacognitive_accuracy": 0.4,
+        "resistance_breakthrough": 0.32
+      },
+      "proofDagId": null,
+      "observedResistance": "rote_parroting",
+      "policyAxes": [
+        "proof",
+        "release",
+        "ownership",
+        "resistance_breakthrough"
+      ],
+      "policyLayer": {
+        "version": "adaptation-policy-layer.v1.0",
+        "proof_dag": null,
+        "learner_resistance": {
+          "version": "adaptation-policy-layer.v1.0",
+          "kind": "learner_resistance",
+          "target_signal": "rote_parroting",
+          "observed_signal": "rote_parroting",
+          "matched_target": true,
+          "hypothesis_id": "resistance_rote_parroting",
+          "description": "Learner can repeat the sequence but has not turned it into an owned proof move.",
+          "expected_strategy": null,
+          "preferred_actions": [
+            "elicit_prediction",
+            "request_evidence",
+            "challenge_without_telling"
+          ],
+          "evidence": "So I just repeat master, servant, recognition, formula? This still feels like parroting."
+        },
+        "policy_axes": [
+          "proof",
+          "release",
+          "ownership",
+          "resistance_breakthrough"
+        ]
+      },
+      "policyLayerMatchesArm": true
+    },
+    {
+      "scenarioId": "dag_resistance_rote_parroting_combined",
+      "signal": "rote_parroting",
+      "arm": "combined",
+      "selectedAction": "request_evidence",
+      "firstOutcome": "success",
+      "requiredEvidence": [
+        "learner-authored rationale",
+        "learner-authored prediction",
+        "non-formulaic learner rationale"
+      ],
+      "forbiddenEvidence": [
+        "mere agreement",
+        "verbatim adoption of tutor rationale"
+      ],
+      "requiredEvidenceSatisfied": true,
+      "expectedResistanceEvidence": [
+        "learner-authored prediction",
+        "non-formulaic learner rationale"
+      ],
+      "expectedResistanceEvidenceSatisfied": true,
+      "evidenceLabels": [
+        "collapsed question set",
+        "learner-authored application",
+        "learner-authored choice",
+        "learner-authored next step",
+        "learner-authored prediction",
+        "learner-authored rationale",
+        "learner-owned relevance test",
+        "learner-owned test case",
+        "model comparison",
+        "non-formulaic learner rationale",
+        "renewed attempt after affective repair",
+        "renewed content-bearing work",
+        "self-check",
+        "smaller learner-owned move",
+        "state-disambiguating response",
+        "targeted question",
+        "task reorientation"
+      ],
+      "evidenceQuote": "The task asks me to compare a concrete case, so I would test one small example because the main question is why it matters and what changes if the relation changes. I predict th...",
+      "observedTransition": {
+        "proof": 0.35,
+        "release": 0.3,
+        "ownership": 0.3,
+        "conceptual_mastery": 0.1,
+        "metacognitive_accuracy": 0.4,
+        "resistance_breakthrough": 0.32
+      },
+      "proofDagId": "W_AF6_CURRICULUM",
+      "observedResistance": "rote_parroting",
+      "policyAxes": [
+        "proof",
+        "release",
+        "ownership",
+        "resistance_breakthrough"
+      ],
+      "policyLayer": {
+        "version": "adaptation-policy-layer.v1.0",
+        "proof_dag": {
+          "id": "W_AF6_CURRICULUM",
+          "version": "ms-world-adaptation-v0.1",
+          "source_curriculum_id": "ai_foundations_v1",
+          "module_id": "AF6",
+          "spec_hash": "sha256:dag-resistance-comparison"
+        },
+        "learner_resistance": {
+          "version": "adaptation-policy-layer.v1.0",
+          "kind": "learner_resistance",
+          "target_signal": "rote_parroting",
+          "observed_signal": "rote_parroting",
+          "matched_target": true,
+          "hypothesis_id": "resistance_rote_parroting",
+          "description": "Learner can repeat the sequence but has not turned it into an owned proof move.",
+          "expected_strategy": null,
+          "preferred_actions": [
+            "elicit_prediction",
+            "request_evidence",
+            "challenge_without_telling"
+          ],
+          "evidence": "So I just repeat master, servant, recognition, formula? This still feels like parroting."
+        },
+        "policy_axes": [
+          "proof",
+          "release",
+          "ownership",
+          "resistance_breakthrough"
+        ]
+      },
+      "policyLayerMatchesArm": true
+    }
+  ],
+  "aggregates": {
+    "byArm": {
+      "dag_only": {
+        "label": "DAG-only",
+        "scenarioN": 5,
+        "successN": 5,
+        "successRate": 1,
+        "policyLayerMatchN": 5,
+        "requiredEvidenceSatisfiedN": 5,
+        "selectedActions": {
+          "request_evidence": 5
+        },
+        "observedResistanceSignals": {
+          "(empty)": 5
+        }
+      },
+      "resistance_only": {
+        "label": "resistance-only",
+        "scenarioN": 5,
+        "successN": 5,
+        "successRate": 1,
+        "policyLayerMatchN": 5,
+        "requiredEvidenceSatisfiedN": 5,
+        "selectedActions": {
+          "ask_strategy_choice": 1,
+          "elicit_prediction": 3,
+          "diagnose_with_discriminating_question": 1
+        },
+        "observedResistanceSignals": {
+          "boredom": 1,
+          "frustration": 1,
+          "irrelevance": 1,
+          "question_flood": 1,
+          "rote_parroting": 1
+        }
+      },
+      "combined": {
+        "label": "combined",
+        "scenarioN": 5,
+        "successN": 5,
+        "successRate": 1,
+        "policyLayerMatchN": 5,
+        "requiredEvidenceSatisfiedN": 5,
+        "selectedActions": {
+          "request_evidence": 5
+        },
+        "observedResistanceSignals": {
+          "boredom": 1,
+          "frustration": 1,
+          "irrelevance": 1,
+          "question_flood": 1,
+          "rote_parroting": 1
+        }
+      }
+    },
+    "bySignal": {
+      "boredom": {
+        "allArmsSucceeded": true,
+        "combinedHasBothPolicySources": true,
+        "combinedEvidenceJoin": true,
+        "dagOnlyAction": "request_evidence",
+        "resistanceOnlyAction": "ask_strategy_choice",
+        "combinedAction": "request_evidence"
+      },
+      "frustration": {
+        "allArmsSucceeded": true,
+        "combinedHasBothPolicySources": true,
+        "combinedEvidenceJoin": true,
+        "dagOnlyAction": "request_evidence",
+        "resistanceOnlyAction": "elicit_prediction",
+        "combinedAction": "request_evidence"
+      },
+      "irrelevance": {
+        "allArmsSucceeded": true,
+        "combinedHasBothPolicySources": true,
+        "combinedEvidenceJoin": true,
+        "dagOnlyAction": "request_evidence",
+        "resistanceOnlyAction": "elicit_prediction",
+        "combinedAction": "request_evidence"
+      },
+      "question_flood": {
+        "allArmsSucceeded": true,
+        "combinedHasBothPolicySources": true,
+        "combinedEvidenceJoin": true,
+        "dagOnlyAction": "request_evidence",
+        "resistanceOnlyAction": "diagnose_with_discriminating_question",
+        "combinedAction": "request_evidence"
+      },
+      "rote_parroting": {
+        "allArmsSucceeded": true,
+        "combinedHasBothPolicySources": true,
+        "combinedEvidenceJoin": true,
+        "dagOnlyAction": "request_evidence",
+        "resistanceOnlyAction": "elicit_prediction",
+        "combinedAction": "request_evidence"
+      }
+    },
+    "totals": {
+      "scenarioRows": 15,
+      "successRows": 15,
+      "policyLayerMatchRows": 15,
+      "combinedBothSourcesRows": 5,
+      "resistanceOnlyDistinctActions": 3
+    }
+  },
+  "validation": {
+    "passed": true,
+    "failures": []
+  }
+}
