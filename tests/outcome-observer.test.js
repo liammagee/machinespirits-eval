@@ -133,3 +133,81 @@ test('explanation closes only with transfer/application evidence', () => {
   assert.equal(result.outcome, 'success');
   assert.equal(result.evidence[0].categories['learner-authored transfer'], true);
 });
+
+test('semantic observer recognizes natural evidence and task-reorientation language', () => {
+  const result = observeInterventionOutcome({
+    pendingIntervention: {
+      action_type: 'request_evidence',
+      success_signal: {
+        required_evidence: ['learner-authored rationale', 'learner-owned relevance test', 'task reorientation'],
+        forbidden_evidence: ['mere agreement'],
+      },
+    },
+    learnerTurn:
+      'I think this step would help decide whether the approach is valid for the actual problem. The evidence would be the assumptions we already checked.',
+    turnIndex: 1,
+    config: { semanticOutcomeObserver: true },
+  });
+
+  assert.equal(result.outcome, 'success');
+  assert.equal(result.evidence[0].categories['learner-authored rationale'], true);
+  assert.equal(result.evidence[0].categories['task reorientation'], true);
+});
+
+test('typed evidence contract closes on proof core plus one resistance-core signal', () => {
+  const result = observeInterventionOutcome({
+    pendingIntervention: {
+      action_type: 'request_evidence',
+      success_signal: {
+        required_evidence: ['learner-authored rationale'],
+        forbidden_evidence: ['mere agreement'],
+        evidence_contract: {
+          version: 'adaptation-evidence-contract.v1',
+          mode: 'proof_core_plus_resistance_core',
+          core_evidence: ['learner-authored rationale'],
+          any_of_groups: [
+            {
+              id: 'resistance_core',
+              min: 1,
+              labels: ['learner-owned relevance test', 'task reorientation'],
+            },
+          ],
+          supporting_evidence: ['learner-owned relevance test', 'task reorientation'],
+        },
+      },
+    },
+    learnerTurn:
+      'The evidence would be that this step matters for the actual task: it decides whether the method is valid for the case.',
+    turnIndex: 1,
+    config: { semanticOutcomeObserver: true },
+  });
+
+  assert.equal(result.outcome, 'success');
+  assert.equal(result.required_evidence_satisfied, true);
+  assert.equal(result.evidence_contract.satisfied, true);
+  assert.equal(result.evidence_contract.groups[0].satisfied, true);
+});
+
+test('semantic observer keeps shallow negative controls strict', () => {
+  const pendingIntervention = {
+    action_type: 'request_evidence',
+    success_signal: {
+      required_evidence: ['learner-authored rationale'],
+      forbidden_evidence: ['mere agreement'],
+    },
+  };
+  for (const learnerTurn of [
+    'Okay.',
+    'Master, servant, recognition, formula.',
+    'As you said, your reason explains it.',
+    'Can you explain more?',
+  ]) {
+    const result = observeInterventionOutcome({
+      pendingIntervention,
+      learnerTurn,
+      turnIndex: 1,
+      config: { semanticOutcomeObserver: true },
+    });
+    assert.notEqual(result.outcome, 'success', learnerTurn);
+  }
+});

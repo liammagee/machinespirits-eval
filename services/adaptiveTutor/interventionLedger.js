@@ -1,7 +1,7 @@
 import { ADAPTATION_CONTRACT_VERSION } from './adaptationContract.js';
-import { observeInterventionOutcome } from './outcomeObserver.js';
+import { analyzeEvidenceContract, observeInterventionOutcome } from './outcomeObserver.js';
 
-export const INTERVENTION_LEDGER_VERSION = 'adaptation-intervention-ledger.v1.0';
+export const INTERVENTION_LEDGER_VERSION = 'adaptation-intervention-ledger.v1.1';
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
@@ -52,7 +52,7 @@ export function closePendingIntervention({
 } = {}) {
   const pending = pendingRecords(ledger)[0] || null;
   if (!pending) return { ledger: clone(ledger), closedRecord: null, pendingIntervention: null };
-  const observation = observer({ pendingIntervention: pending, learnerTurn, turnIndex });
+  const observation = observer({ pendingIntervention: pending, learnerTurn, turnIndex, config });
   const staged = maybeStagePartialIntervention({ pending, observation, turnIndex, config });
   if (staged) {
     const nextLedger = ledger.map((record) => (record.contract_id === pending.contract_id ? staged : record));
@@ -67,6 +67,7 @@ export function closePendingIntervention({
     closed_turn_index: turnIndex,
     observed_transition: finalObservation.observed_transition,
     outcome: finalObservation.outcome,
+    evidence_contract: finalObservation.evidence_contract || null,
     evidence: [...(pending.evidence || []), ...(finalObservation.evidence || [])],
     policy_update: inferPolicyUpdate(pending, finalObservation),
   };
@@ -93,16 +94,37 @@ function categoryUnion(evidence = []) {
   return categories;
 }
 
-function requiredLabels(pending) {
-  return pending?.original_success_signal?.required_evidence || pending?.success_signal?.required_evidence || [];
+function shallowControlEvidencePresent(categories = {}) {
+  return (
+    categories['mere agreement'] === true ||
+    categories['formulaic recitation'] === true ||
+    categories['verbatim adoption of tutor rationale'] === true ||
+    categories['undifferentiated help request'] === true
+  );
 }
 
-function missingRequiredLabels(required = [], categories = {}) {
-  return required.filter((label) => categories[label] !== true);
+function successSignalForAnalysis(pending) {
+  return pending?.original_success_signal || pending?.success_signal || {};
 }
 
-function observedRequiredLabels(required = [], categories = {}) {
-  return required.filter((label) => categories[label] === true);
+function evidenceContractState(pending, categories = {}) {
+  return analyzeEvidenceContract(successSignalForAnalysis(pending), categories);
+}
+
+function missingRequiredLabels(pending, categories = {}) {
+  return evidenceContractState(pending, categories).missing_required_evidence || [];
+}
+
+function observedRequiredLabels(pending, categories = {}) {
+  return evidenceContractState(pending, categories).observed_required_evidence || [];
+}
+
+function missingEvidenceAxes(pending, categories = {}) {
+  return evidenceContractState(pending, categories).missing_evidence_axes || [];
+}
+
+function requiredContractSatisfied(pending, categories = {}) {
+  return evidenceContractState(pending, categories).satisfied === true;
 }
 
 function mergeObservedTransition(a = {}, b = {}) {
@@ -116,19 +138,19 @@ function mergeObservedTransition(a = {}, b = {}) {
 function maybePromoteAccumulatedSuccess(pending, observation) {
   const evidence = [...(pending.evidence || []), ...(observation.evidence || [])];
   const categories = categoryUnion(evidence);
-  const required = requiredLabels(pending);
-  const missing = missingRequiredLabels(required, categories);
   if (
     isCombinedProofResistancePending(pending) &&
-    missing.length === 0 &&
+    requiredContractSatisfied(pending, categories) &&
     observation.forbidden_evidence_present !== true &&
-    categories['mere agreement'] !== true
+    !shallowControlEvidencePresent(categories)
   ) {
+    const contractState = evidenceContractState(pending, categories);
     return {
       ...observation,
       outcome: 'success',
       required_evidence_satisfied: true,
-      required_evidence_observed: observedRequiredLabels(required, categories),
+      evidence_contract: contractState,
+      required_evidence_observed: contractState.observed_required_evidence || [],
       required_evidence_missing: [],
     };
   }
@@ -146,13 +168,14 @@ function maybeStagePartialIntervention({ pending, observation, turnIndex, config
   const nextEvidence = [...previousEvidence, ...(observation.evidence || [])];
   const previousCategories = categoryUnion(previousEvidence);
   const nextCategories = categoryUnion(nextEvidence);
-  if (nextCategories['mere agreement'] === true) return null;
+  if (shallowControlEvidencePresent(nextCategories)) return null;
 
-  const required = requiredLabels(pending);
-  const previousMissing = missingRequiredLabels(required, previousCategories);
-  const nextMissing = missingRequiredLabels(required, nextCategories);
-  const observed = observedRequiredLabels(required, nextCategories);
-  const madeProgress = nextMissing.length < previousMissing.length;
+  const previousState = evidenceContractState(pending, previousCategories);
+  const nextState = evidenceContractState(pending, nextCategories);
+  const previousMissing = previousState.missing_required_evidence || [];
+  const nextMissing = nextState.missing_required_evidence || [];
+  const observed = nextState.observed_required_evidence || [];
+  const madeProgress = observed.length > (previousState.observed_required_evidence || []).length;
   if (!madeProgress || nextMissing.length === 0) return null;
 
   const attempts = Number(pending.staged_closure?.attempts || 0) + 1;
@@ -171,6 +194,8 @@ function maybeStagePartialIntervention({ pending, observation, turnIndex, config
       attempts,
       observed_required_evidence: observed,
       missing_required_evidence: nextMissing,
+      missing_evidence_axes: missingEvidenceAxes(pending, nextCategories),
+      evidence_contract: nextState,
       last_turn_index: turnIndex,
     },
     policy_update: {

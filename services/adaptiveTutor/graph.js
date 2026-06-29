@@ -705,6 +705,9 @@ function normalizePolicyConfig(config = {}) {
     resistanceSignalStrategy: config.resistanceSignalStrategy ?? config.resistance_signal_strategy,
     resistanceSignalWeight: config.resistanceSignalWeight ?? config.resistance_signal_weight,
     stagedCombinedClosure: config.stagedCombinedClosure ?? config.staged_combined_closure,
+    typedEvidenceContracts: config.typedEvidenceContracts ?? config.typed_evidence_contracts,
+    semanticOutcomeObserver: config.semanticOutcomeObserver ?? config.semantic_outcome_observer,
+    typedStagedFollowup: config.typedStagedFollowup ?? config.typed_staged_followup,
     earlyCompletionAfterSuccessfulNoIntervention:
       config.earlyCompletionAfterSuccessfulNoIntervention ?? config.early_completion_after_successful_no_intervention,
     utilityTieEpsilon: config.utilityTieEpsilon ?? config.utility_tie_epsilon,
@@ -805,6 +808,7 @@ async function realizeStagedFollowupNode(state) {
       traceEntry('realize_staged_followup', state, {
         contract_id: state.pendingIntervention?.contract_id || null,
         missing_required_evidence: followup.missing_required_evidence || [],
+        missing_evidence_axes: followup.missing_evidence_axes || [],
       }),
     ],
   };

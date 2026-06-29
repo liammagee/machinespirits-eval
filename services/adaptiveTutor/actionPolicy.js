@@ -1162,6 +1162,45 @@ function resistanceSignalPreferenceBonus(actionType, stateBelief, config = {}) {
   return weight * targetMatchMultiplier * rankMultiplier;
 }
 
+function typedEvidenceContractsEnabled(config = {}) {
+  return config.typedEvidenceContracts === true || config.typed_evidence_contracts === true;
+}
+
+const RESISTANCE_SIGNAL_EVIDENCE_AXIS = Object.freeze({
+  boredom: 'test_case',
+  frustration: 'smaller_move',
+  irrelevance: 'relevance',
+  question_flood: 'collapsed_question',
+  rote_parroting: 'prediction',
+});
+
+function buildTypedEvidenceContract({ action, route, signal } = {}) {
+  const resistanceEvidence = uniqueStrings(route?.success_evidence || []);
+  const resistanceSet = new Set(resistanceEvidence);
+  let coreEvidence = uniqueStrings(
+    (action?.success_signal?.required_evidence || []).filter((label) => !resistanceSet.has(label)),
+  );
+  if (action?.action_type === 'request_evidence' && !coreEvidence.includes('learner-authored rationale')) {
+    coreEvidence = uniqueStrings(['learner-authored rationale', ...coreEvidence]);
+  }
+  return {
+    version: 'adaptation-evidence-contract.v1',
+    mode: 'proof_core_plus_resistance_core',
+    core_evidence: coreEvidence,
+    any_of_groups: resistanceEvidence.length
+      ? [
+          {
+            id: 'resistance_core',
+            axis: RESISTANCE_SIGNAL_EVIDENCE_AXIS[signal] || 'resistance_breakthrough',
+            min: 1,
+            labels: resistanceEvidence,
+          },
+        ]
+      : [],
+    supporting_evidence: resistanceEvidence,
+  };
+}
+
 export function applyWorldAdaptationToAction(action, config = {}) {
   const spec = normalizeWorldAdaptationSpec(config);
   if (!action || !spec) return action;
@@ -1224,16 +1263,28 @@ export function applyAdaptationPolicyLayerToAction(action, stateBelief, config =
     expectedTransition[axis] = clampRange((Number(expectedTransition[axis]) || 0) + Number(gain || 0), -1, 1, 0);
   }
 
+  const successSignal = {
+    ...(action.success_signal || {}),
+    required_evidence: requiredEvidence,
+  };
+  if (typedEvidenceContractsEnabled(config)) {
+    const contract = buildTypedEvidenceContract({
+      action: { ...action, success_signal: successSignal },
+      route,
+      signal: layer.learner_resistance?.observed_signal || null,
+    });
+    successSignal.evidence_contract = contract;
+    successSignal.required_evidence = contract.core_evidence;
+    successSignal.supporting_evidence = contract.supporting_evidence;
+  }
+
   return {
     ...action,
     rationale: `${action.rationale} Learner resistance signal ${
       layer.learner_resistance?.observed_signal || 'unknown'
     } is routed through the same adaptation policy layer as proof/release/ownership state.`,
     expected_transition: expectedTransition,
-    success_signal: {
-      ...(action.success_signal || {}),
-      required_evidence: requiredEvidence,
-    },
+    success_signal: successSignal,
     adaptation_policy_layer: layer,
   };
 }

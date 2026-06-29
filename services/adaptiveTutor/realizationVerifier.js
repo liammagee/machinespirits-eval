@@ -1,4 +1,4 @@
-export const REALIZATION_VERIFIER_VERSION = 'adaptation-realization-verifier.v1.1';
+export const REALIZATION_VERIFIER_VERSION = 'adaptation-realization-verifier.v1.2';
 
 const TEMPLATES = Object.freeze({
   observe_no_intervention:
@@ -152,6 +152,17 @@ const MISSING_EVIDENCE_FOLLOWUPS = Object.freeze({
   'learner-authored choice': 'choose one route and say why',
 });
 
+const MISSING_EVIDENCE_AXIS_FOLLOWUPS = Object.freeze({
+  proof_rationale: 'Give only the proof reason now: what evidence justifies the step in your own words?',
+  relevance: 'Answer only the relevance part now: what does this step help decide for the actual task?',
+  smaller_move: 'Make only the smallest executable move now: what one step can you try and own?',
+  prediction: 'Make only the prediction now: what do you expect will hold or break if the case changes?',
+  collapsed_question: 'Collapse the question set now: what single question does your next step answer?',
+  test_case: 'Use only one concrete test case now: what does that case show?',
+  learner_choice: 'Choose only one route now and say why that route is enough to test.',
+  evidence: 'Add only the missing evidence in your own words.',
+});
+
 function dominantHypothesis(stateBelief) {
   return stateBelief?.hypotheses?.[0]?.id || 'unknown';
 }
@@ -207,6 +218,17 @@ export function realizeTutorUtterance({ selectedAction, stateBelief, interventio
 
 export function realizeStagedFollowup({ pendingIntervention } = {}) {
   const missing = pendingIntervention?.staged_closure?.missing_required_evidence || [];
+  const axes = pendingIntervention?.staged_closure?.missing_evidence_axes || [];
+  const axisPrompt = axes.map((axis) => MISSING_EVIDENCE_AXIS_FOLLOWUPS[axis]).find(Boolean);
+  if (axisPrompt) {
+    return {
+      version: REALIZATION_VERIFIER_VERSION,
+      action_type: pendingIntervention?.action_type || null,
+      text: axisPrompt,
+      missing_required_evidence: missing,
+      missing_evidence_axes: axes,
+    };
+  }
   const targets = missing.map((label) => MISSING_EVIDENCE_FOLLOWUPS[label] || label).slice(0, 2);
   const prompt = targets.length
     ? `One part is still missing: ${targets.join(' and ')}. What is your answer to that missing piece?`
@@ -216,6 +238,7 @@ export function realizeStagedFollowup({ pendingIntervention } = {}) {
     action_type: pendingIntervention?.action_type || null,
     text: prompt,
     missing_required_evidence: missing,
+    missing_evidence_axes: axes,
   };
 }
 

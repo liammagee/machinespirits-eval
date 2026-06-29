@@ -121,3 +121,18 @@ test('staged follow-up targets missing combined evidence labels', () => {
   assert.match(realized.text, /make a prediction/u);
   assert.match(realized.text, /without just repeating the formula words/u);
 });
+
+test('staged follow-up uses typed missing evidence axis when present', () => {
+  const realized = realizeStagedFollowup({
+    pendingIntervention: {
+      action_type: 'request_evidence',
+      staged_closure: {
+        missing_required_evidence: ['learner-owned relevance test', 'task reorientation'],
+        missing_evidence_axes: ['relevance'],
+      },
+    },
+  });
+
+  assert.match(realized.text, /relevance part/u);
+  assert.match(realized.text, /actual task/u);
+});

@@ -81,6 +81,36 @@ function combinedPending() {
   };
 }
 
+function typedCombinedPending() {
+  const successSignal = {
+    required_evidence: ['learner-authored rationale'],
+    forbidden_evidence: ['mere agreement'],
+    evidence_contract: {
+      version: 'adaptation-evidence-contract.v1',
+      mode: 'proof_core_plus_resistance_core',
+      core_evidence: ['learner-authored rationale'],
+      any_of_groups: [
+        {
+          id: 'resistance_core',
+          axis: 'relevance',
+          min: 1,
+          labels: ['learner-owned relevance test', 'task reorientation'],
+        },
+      ],
+      supporting_evidence: ['learner-owned relevance test', 'task reorientation'],
+    },
+  };
+  return {
+    ...combinedPending(),
+    success_signal: successSignal,
+    original_success_signal: successSignal,
+    adaptation_policy_layer: {
+      proof_dag: { id: 'W_AF6_CURRICULUM' },
+      learner_resistance: { observed_signal: 'irrelevance' },
+    },
+  };
+}
+
 test('staged combined closure keeps a partial proof/resistance contract pending', () => {
   const staged = closePendingIntervention({
     ledger: [combinedPending()],
@@ -121,4 +151,27 @@ test('staged combined closure succeeds once missing evidence appears', () => {
     'non-formulaic learner rationale',
   ]);
   assert.equal(second.closedRecord.evidence.length, 2);
+});
+
+test('typed staged closure succeeds with proof core plus one resistance core across turns', () => {
+  const first = closePendingIntervention({
+    ledger: [typedCombinedPending()],
+    learnerTurn: 'The evidence would be the assumption we already checked.',
+    turnIndex: 1,
+    config: { stagedCombinedClosure: true, semanticOutcomeObserver: true },
+  });
+  assert.equal(first.closedRecord, null);
+  assert.equal(first.pendingIntervention.status, 'pending');
+  assert.deepEqual(first.pendingIntervention.staged_closure.missing_evidence_axes, ['relevance']);
+
+  const second = closePendingIntervention({
+    ledger: first.ledger,
+    learnerTurn: 'This step helps decide whether the method is valid for the actual task.',
+    turnIndex: 2,
+    config: { stagedCombinedClosure: true, semanticOutcomeObserver: true },
+  });
+
+  assert.equal(second.pendingIntervention, null);
+  assert.equal(second.closedRecord.outcome, 'success');
+  assert.equal(second.closedRecord.evidence_contract.satisfied, true);
 });

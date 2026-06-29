@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { buildComparisonScenarios, markdownReport } from '../scripts/run-dag-resistance-comparison.js';
 
-const arms = ['dag_only', 'resistance_only', 'combined_strict', 'combined_staged'];
+const arms = ['dag_only', 'resistance_only', 'combined_strict', 'combined_staged', 'combined_staged_v2'];
 const signals = ['boredom', 'frustration', 'irrelevance', 'question_flood', 'rote_parroting'];
 const controls = ['mere_agreement', 'formula_parroting', 'tutor_rationale_adoption', 'vague_explain_more'];
 
@@ -46,8 +46,11 @@ function emptyReport(overrides = {}) {
             combinedStagedHasBothPolicySources: null,
             combinedStrictEvidenceJoin: null,
             combinedStagedEvidenceJoin: null,
+            combinedStagedV2HasBothPolicySources: null,
+            combinedStagedV2EvidenceJoin: null,
             combinedStrictAction: null,
             combinedStagedAction: null,
+            combinedStagedV2Action: null,
           },
         ]),
       ),
@@ -103,5 +106,18 @@ describe('DAG/resistance comparison Markdown report', () => {
 
     assert.equal(positive.hidden.scripted_responses, undefined);
     assert.deepEqual(negative.hidden.scripted_responses, { default: 'Okay.' });
+  });
+
+  it('adds combined staged v2 with typed contracts and semantic observation', () => {
+    const { scenarios } = buildComparisonScenarios({ conditions: 'positive', scripted: true });
+    const v2 = scenarios.find((scenario) => scenario.id === 'dag_resistance_irrelevance_combined_staged_v2_positive');
+
+    assert.equal(v2.max_turns, 3);
+    assert.deepEqual(v2.adaptive_policy, {
+      staged_combined_closure: true,
+      typed_evidence_contracts: true,
+      typed_staged_followup: true,
+      semantic_outcome_observer: true,
+    });
   });
 });
