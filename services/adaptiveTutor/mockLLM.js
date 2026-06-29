@@ -396,8 +396,51 @@ const fixtures = {
       const routed = context.memoryEnabled === true;
       const hasPriorSceneState = Array.isArray(context.priorSceneSummaries) && context.priorSceneSummaries.length > 0;
       const prompt = `${context.openingStance || ''}\n${tutorLastMessage || ''}`.toLowerCase();
+      const dramaEnabled = context.dramaEnabled === true || context.dramaticEnabled === true;
+      const signal =
+        context.resistanceSignal ||
+        (/boring|worksheet|dead/.test(prompt)
+          ? 'boredom'
+          : /frustrat|stuck|small|where/.test(prompt)
+            ? 'frustration'
+            : /irrelevance|matter|task|valid|care/.test(prompt)
+              ? 'irrelevance'
+              : /question|flood|collapse/.test(prompt)
+                ? 'question_flood'
+                : /parrot|repeat|formula|own words|prediction/.test(prompt)
+                  ? 'rote_parroting'
+                  : '');
+      if (
+        dramaEnabled &&
+        (context.dramaticContext?.requiresPeripeteia === true || /old check|repeated terms settle/.test(prompt))
+      ) {
+        return 'I was using the old check that repeated terms settle the problem; now the check is whether this proof move decides if the method is valid for the actual task, because that is the evidence that matters here.';
+      }
+      if (context.stateQuality === 'mismatched_prior') {
+        return 'I can see there was prior work, but I am not sure how it applies here yet, so I only have a partial reason.';
+      }
+      if (actionType === 'staged_followup') {
+        if (signal === 'boredom') {
+          return 'Because the relation supports the next step, I will test one concrete case and use what happens there as my reason.';
+        }
+        if (signal === 'frustration') {
+          return 'Because the relation supports the next step, I will make one small try, then name exactly where it still sticks.';
+        }
+        if (signal === 'irrelevance') {
+          return 'This matters for the actual task because it decides whether the method is valid for this case.';
+        }
+        if (signal === 'question_flood') {
+          return 'Because the relation supports the next step, my one main question is what changes when this relation changes.';
+        }
+        if (signal === 'rote_parroting') {
+          return 'I predict the formula breaks when the case changes, because I need to explain the relation in my own words.';
+        }
+      }
       if (!routed || (!hasPriorSceneState && maturity < 0.03)) {
-        return 'I can say the relation supports the next step, but I am still not sure what evidence makes that matter here.';
+        return 'I am not sure yet; I need one clearer next step before I can give my reason.';
+      }
+      if (context.transfer === true) {
+        return 'In this new case, this step matters for the actual problem because it tests whether the method is valid for the case; I will use that as my next check.';
       }
       if (/concrete|case|live|worksheet|boring/.test(prompt)) {
         return 'I can test one concrete case and use what happens there as my reason for the next step.';
