@@ -81,32 +81,89 @@ const RESISTANCE_CASES = [
   },
 ];
 
-const GENERIC_UPTAKE =
-  'The task asks me to compare a concrete case, so I would test one small example because the main question is why it matters and what changes if the relation changes. I predict the formula is not enough, and I need to check it in my own words.';
+const NEGATIVE_CONTROLS = [
+  {
+    id: 'mere_agreement',
+    label: 'mere agreement',
+    response: 'Okay.',
+  },
+  {
+    id: 'formula_parroting',
+    label: 'formula parroting',
+    response: 'Master, servant, recognition, formula.',
+  },
+  {
+    id: 'tutor_rationale_adoption',
+    label: 'tutor rationale adoption',
+    response: 'As you said, your reason explains it.',
+  },
+  {
+    id: 'vague_explain_more',
+    label: 'vague explain more',
+    response: 'Can you explain more?',
+  },
+];
 
-const SCRIPTED_RESPONSES = {
-  observe_no_intervention: GENERIC_UPTAKE,
-  diagnose_with_discriminating_question: GENERIC_UPTAKE,
-  elicit_prediction: GENERIC_UPTAKE,
-  request_evidence: GENERIC_UPTAKE,
-  ask_strategy_choice: GENERIC_UPTAKE,
-  contrast_models: GENERIC_UPTAKE,
-  fade_hint: GENERIC_UPTAKE,
-  minimal_hint: GENERIC_UPTAKE,
-  repair_overconfidence: GENERIC_UPTAKE,
-  challenge_without_telling: GENERIC_UPTAKE,
-  reanchor_goal: GENERIC_UPTAKE,
-  summarize_and_release: GENERIC_UPTAKE,
-  explain_principle: GENERIC_UPTAKE,
-  model_worked_example: GENERIC_UPTAKE,
-  lower_cognitive_load: GENERIC_UPTAKE,
-  name_the_disagreement: GENERIC_UPTAKE,
-  acknowledge_and_redirect: GENERIC_UPTAKE,
-  repair_misrecognition: GENERIC_UPTAKE,
-  mirror_and_extend: GENERIC_UPTAKE,
-  withhold_answer: GENERIC_UPTAKE,
-  default: GENERIC_UPTAKE,
-};
+const CONDITION_ORDER = ['positive', ...NEGATIVE_CONTROLS.map((control) => control.id)];
+const CONTROL_LABELS = Object.freeze({
+  positive: 'positive uptake',
+  ...Object.fromEntries(NEGATIVE_CONTROLS.map((control) => [control.id, control.label])),
+});
+
+function proofEvidenceForSignal(signal) {
+  if (signal === 'boredom') {
+    return 'Because I can test one concrete case instead of dead worksheet repetition.';
+  }
+  if (signal === 'frustration') {
+    return 'Because I can try one small step: test one case before repeating the whole sequence.';
+  }
+  if (signal === 'irrelevance') {
+    return 'The task asks why this matters, because a concrete case shows the point of the relation.';
+  }
+  if (signal === 'question_flood') {
+    return 'The task asks me to collapse this to one main question, because the relation changes across cases.';
+  }
+  if (signal === 'rote_parroting') {
+    return 'I predict the formula breaks when the case changes, because I need to explain the relation in my own words.';
+  }
+  return 'Because the case changes the relation.';
+}
+
+function predictionForSignal(signal) {
+  if (signal === 'irrelevance') {
+    return 'I predict the point matters when the task asks me to test a case.';
+  }
+  if (signal === 'frustration') {
+    return 'I predict one small try will show where I am stuck.';
+  }
+  return 'I predict the formula breaks when the case changes, because I need to explain the relation in my own words.';
+}
+
+function strategyChoiceForSignal(signal) {
+  if (signal === 'boredom') return 'I choose to test one concrete case.';
+  return 'I choose one small test case before asking for another explanation.';
+}
+
+function diagnosticForSignal(signal) {
+  if (signal === 'question_flood') {
+    return 'The task asks me to collapse this to one main question: what changes if the relation changes?';
+  }
+  return 'The task asks me to name the missing step before continuing.';
+}
+
+function positiveScriptedResponses(signal) {
+  return {
+    diagnose_with_discriminating_question: diagnosticForSignal(signal),
+    elicit_prediction: predictionForSignal(signal),
+    request_evidence: proofEvidenceForSignal(signal),
+    ask_strategy_choice: strategyChoiceForSignal(signal),
+    default: proofEvidenceForSignal(signal),
+  };
+}
+
+function negativeScriptedResponses(control) {
+  return { default: control.response };
+}
 
 function parseArgs(argv = process.argv.slice(2)) {
   const opts = {
@@ -141,8 +198,8 @@ function usage() {
   ].join('\n');
 }
 
-function scenarioId(signal, arm) {
-  return `dag_resistance_${signal}_${arm}`;
+function scenarioId(signal, arm, control = 'positive') {
+  return `dag_resistance_${signal}_${arm}_${control}`;
 }
 
 function resistancePolicy(signal, resistanceEvidence) {
@@ -158,32 +215,38 @@ export function buildComparisonScenarios() {
   const metadata = new Map();
   for (const spec of RESISTANCE_CASES) {
     for (const arm of ARM_ORDER) {
-      const extras = {};
-      if (arm === 'dag_only' || arm === 'combined') extras.world_adaptation_spec = WORLD_SPEC;
-      if (arm === 'resistance_only' || arm === 'combined') {
-        Object.assign(extras, resistancePolicy(spec.signal, spec.resistanceEvidence));
+      for (const control of [{ id: 'positive', label: 'positive uptake' }, ...NEGATIVE_CONTROLS]) {
+        const extras = {};
+        if (arm === 'dag_only' || arm === 'combined') extras.world_adaptation_spec = WORLD_SPEC;
+        if (arm === 'resistance_only' || arm === 'combined') {
+          Object.assign(extras, resistancePolicy(spec.signal, spec.resistanceEvidence));
+        }
+        const id = scenarioId(spec.signal, arm, control.id);
+        scenarios.push({
+          id,
+          name: `${spec.signal} / ${ARM_LABELS[arm]} / ${control.label}`,
+          scenario_type: spec.signal,
+          opening: spec.opening,
+          max_turns: 2,
+          hidden: {
+            actual_misconception: `resistance signal: ${spec.signal}`,
+            actual_sophistication: 'intermediate',
+            trigger_turn: -1,
+            trigger_signal: spec.opening,
+            scripted_responses:
+              control.id === 'positive' ? positiveScriptedResponses(spec.signal) : negativeScriptedResponses(control),
+          },
+          ...extras,
+        });
+        metadata.set(id, {
+          signal: spec.signal,
+          arm,
+          control: control.id,
+          controlLabel: control.label,
+          expectedOutcome: control.id === 'positive' ? 'success' : 'non_success',
+          expectedResistanceEvidence: spec.resistanceEvidence,
+        });
       }
-      const id = scenarioId(spec.signal, arm);
-      scenarios.push({
-        id,
-        name: `${spec.signal} / ${ARM_LABELS[arm]}`,
-        scenario_type: spec.signal,
-        opening: spec.opening,
-        max_turns: 2,
-        hidden: {
-          actual_misconception: `resistance signal: ${spec.signal}`,
-          actual_sophistication: 'intermediate',
-          trigger_turn: -1,
-          trigger_signal: spec.opening,
-          scripted_responses: SCRIPTED_RESPONSES,
-        },
-        ...extras,
-      });
-      metadata.set(id, {
-        signal: spec.signal,
-        arm,
-        expectedResistanceEvidence: spec.resistanceEvidence,
-      });
     }
   }
   return { scenarios, metadata };
@@ -245,6 +308,9 @@ function summarizeTrace({ row, trace, metadata }) {
     scenarioId: row.scenario_id,
     signal: meta.signal,
     arm: meta.arm,
+    control: meta.control,
+    controlLabel: meta.controlLabel,
+    expectedOutcome: meta.expectedOutcome,
     selectedAction: selected.action_type || ledger?.action_type || null,
     firstOutcome: ledger?.outcome || null,
     requiredEvidence,
@@ -264,28 +330,42 @@ function summarizeTrace({ row, trace, metadata }) {
   return {
     ...summary,
     policyLayerMatchesArm: layerMatches(summary),
+    positiveClosure: meta.expectedOutcome === 'success' && summary.firstOutcome === 'success',
+    falsePositiveRejected: meta.expectedOutcome === 'non_success' && summary.firstOutcome !== 'success',
   };
 }
 
 function aggregateRows(rows) {
+  const positiveRows = rows.filter((row) => row.expectedOutcome === 'success');
+  const negativeRows = rows.filter((row) => row.expectedOutcome === 'non_success');
   const byArm = {};
   for (const arm of ARM_ORDER) {
     const armRows = rows.filter((row) => row.arm === arm);
+    const positiveArmRows = positiveRows.filter((row) => row.arm === arm);
+    const negativeArmRows = negativeRows.filter((row) => row.arm === arm);
     byArm[arm] = {
       label: ARM_LABELS[arm],
       scenarioN: armRows.length,
-      successN: armRows.filter((row) => row.firstOutcome === 'success').length,
-      successRate: armRows.length ? armRows.filter((row) => row.firstOutcome === 'success').length / armRows.length : 0,
+      positiveN: positiveArmRows.length,
+      positiveSuccessN: positiveArmRows.filter((row) => row.firstOutcome === 'success').length,
+      positiveSuccessRate: positiveArmRows.length
+        ? positiveArmRows.filter((row) => row.firstOutcome === 'success').length / positiveArmRows.length
+        : 0,
+      negativeN: negativeArmRows.length,
+      negativeRejectedN: negativeArmRows.filter((row) => row.firstOutcome !== 'success').length,
+      negativeRejectedRate: negativeArmRows.length
+        ? negativeArmRows.filter((row) => row.firstOutcome !== 'success').length / negativeArmRows.length
+        : 0,
       policyLayerMatchN: armRows.filter((row) => row.policyLayerMatchesArm).length,
-      requiredEvidenceSatisfiedN: armRows.filter((row) => row.requiredEvidenceSatisfied).length,
-      selectedActions: countBy(armRows.map((row) => row.selectedAction)),
+      requiredEvidenceSatisfiedN: positiveArmRows.filter((row) => row.requiredEvidenceSatisfied).length,
+      selectedActions: countBy(positiveArmRows.map((row) => row.selectedAction)),
       observedResistanceSignals: countBy(armRows.map((row) => row.observedResistance)),
     };
   }
 
   const bySignal = {};
   for (const spec of RESISTANCE_CASES) {
-    const signalRows = rows.filter((row) => row.signal === spec.signal);
+    const signalRows = positiveRows.filter((row) => row.signal === spec.signal);
     const armMap = Object.fromEntries(signalRows.map((row) => [row.arm, row]));
     const dagRequired = armMap.dag_only?.requiredEvidence || [];
     const combinedRequired = armMap.combined?.requiredEvidence || [];
@@ -297,18 +377,54 @@ function aggregateRows(rows) {
       dagOnlyAction: armMap.dag_only?.selectedAction || null,
       resistanceOnlyAction: armMap.resistance_only?.selectedAction || null,
       combinedAction: armMap.combined?.selectedAction || null,
+      negativeControlsRejected: negativeRows
+        .filter((row) => row.signal === spec.signal)
+        .every((row) => row.firstOutcome !== 'success'),
     };
+  }
+
+  const byControl = {};
+  for (const control of CONDITION_ORDER) {
+    const controlRows = rows.filter((row) => row.control === control);
+    if (control === 'positive') {
+      byControl[control] = {
+        label: CONTROL_LABELS[control],
+        rows: controlRows.length,
+        successN: controlRows.filter((row) => row.firstOutcome === 'success').length,
+        successRate: controlRows.length
+          ? controlRows.filter((row) => row.firstOutcome === 'success').length / controlRows.length
+          : 0,
+        outcomes: countBy(controlRows.map((row) => row.firstOutcome)),
+      };
+    } else {
+      byControl[control] = {
+        label: CONTROL_LABELS[control],
+        rows: controlRows.length,
+        rejectedN: controlRows.filter((row) => row.firstOutcome !== 'success').length,
+        rejectedRate: controlRows.length
+          ? controlRows.filter((row) => row.firstOutcome !== 'success').length / controlRows.length
+          : 0,
+        accidentalSuccessN: controlRows.filter((row) => row.firstOutcome === 'success').length,
+        outcomes: countBy(controlRows.map((row) => row.firstOutcome)),
+      };
+    }
   }
 
   return {
     byArm,
     bySignal,
+    byControl,
     totals: {
       scenarioRows: rows.length,
-      successRows: rows.filter((row) => row.firstOutcome === 'success').length,
+      positiveRows: positiveRows.length,
+      positiveSuccessRows: positiveRows.filter((row) => row.firstOutcome === 'success').length,
+      negativeRows: negativeRows.length,
+      negativeRejectedRows: negativeRows.filter((row) => row.firstOutcome !== 'success').length,
+      accidentalNegativeSuccessRows: negativeRows.filter((row) => row.firstOutcome === 'success').length,
       policyLayerMatchRows: rows.filter((row) => row.policyLayerMatchesArm).length,
-      combinedBothSourcesRows: rows.filter((row) => row.arm === 'combined' && row.proofDagId && row.observedResistance)
-        .length,
+      combinedBothSourcesRows: positiveRows.filter(
+        (row) => row.arm === 'combined' && row.proofDagId && row.observedResistance,
+      ).length,
       resistanceOnlyDistinctActions: Object.keys(byArm.resistance_only.selectedActions).filter(
         (key) => key !== '(empty)',
       ).length,
@@ -318,19 +434,22 @@ function aggregateRows(rows) {
 
 function validateReport(report) {
   const failures = [];
-  const expectedRows = RESISTANCE_CASES.length * ARM_ORDER.length;
+  const expectedRows = RESISTANCE_CASES.length * ARM_ORDER.length * CONDITION_ORDER.length;
   if (report.rows.length !== expectedRows) failures.push(`expected ${expectedRows} rows, got ${report.rows.length}`);
   for (const row of report.rows) {
-    if (row.firstOutcome !== 'success') {
+    if (row.expectedOutcome === 'success' && row.firstOutcome !== 'success') {
       failures.push(`${row.scenarioId}: first closed intervention outcome=${row.firstOutcome}`);
+    }
+    if (row.expectedOutcome === 'non_success' && row.firstOutcome === 'success') {
+      failures.push(`${row.scenarioId}: negative control closed as success`);
     }
     if (!row.policyLayerMatchesArm) {
       failures.push(`${row.scenarioId}: policy layer does not match ${row.arm}`);
     }
-    if (!row.requiredEvidenceSatisfied) {
+    if (row.expectedOutcome === 'success' && !row.requiredEvidenceSatisfied) {
       failures.push(`${row.scenarioId}: required evidence not satisfied [${row.requiredEvidence.join(', ')}]`);
     }
-    if (row.arm !== 'dag_only' && !row.expectedResistanceEvidenceSatisfied) {
+    if (row.expectedOutcome === 'success' && row.arm !== 'dag_only' && !row.expectedResistanceEvidenceSatisfied) {
       failures.push(
         `${row.scenarioId}: resistance evidence not satisfied [${row.expectedResistanceEvidence.join(', ')}]`,
       );
@@ -346,6 +465,9 @@ function validateReport(report) {
     failures.push(
       `resistance-only routing collapsed to ${report.aggregates.totals.resistanceOnlyDistinctActions} distinct actions`,
     );
+  }
+  if (report.aggregates.totals.accidentalNegativeSuccessRows > 0) {
+    failures.push(`${report.aggregates.totals.accidentalNegativeSuccessRows} negative-control rows closed as success`);
   }
   return failures;
 }
@@ -373,20 +495,39 @@ function markdownReport(report) {
   lines.push('## Claim Boundary');
   lines.push('');
   lines.push(
-    'This is a deterministic mock ablation of mechanism wiring, not an empirical learning-effect result. It checks whether proof-DAG constraints and learner-resistance routing can operate as one adaptation policy layer with observable evidence closure.',
+    'This is a deterministic mock ablation of mechanism wiring, not an empirical learning-effect result. It checks whether proof-DAG constraints and learner-resistance routing can operate as one adaptation policy layer with observable evidence closure, and whether shallow negative-control replies are rejected.',
   );
   lines.push('');
   lines.push('## Aggregate Result');
   lines.push('');
-  lines.push('| arm | rows | success | policy-layer matches | selected actions |');
+  lines.push(
+    '| arm | positive closure | negative controls rejected | policy-layer matches | positive selected actions |',
+  );
   lines.push('|---|---:|---:|---:|---|');
   for (const arm of ARM_ORDER) {
     const aggregate = report.aggregates.byArm[arm];
     lines.push(
-      `| ${aggregate.label} | ${aggregate.scenarioN} | ${aggregate.successN}/${aggregate.scenarioN} (${formatRate(
-        aggregate.successRate,
+      `| ${aggregate.label} | ${aggregate.positiveSuccessN}/${aggregate.positiveN} (${formatRate(
+        aggregate.positiveSuccessRate,
+      )}) | ${aggregate.negativeRejectedN}/${aggregate.negativeN} (${formatRate(
+        aggregate.negativeRejectedRate,
       )}) | ${aggregate.policyLayerMatchN}/${aggregate.scenarioN} | ${Object.entries(aggregate.selectedActions)
         .map(([action, count]) => `${action}=${count}`)
+        .join(', ')} |`,
+    );
+  }
+  lines.push('');
+  lines.push('## Negative Controls');
+  lines.push('');
+  lines.push('| control | rows | rejected | accidental successes | outcomes |');
+  lines.push('|---|---:|---:|---:|---|');
+  for (const control of NEGATIVE_CONTROLS) {
+    const aggregate = report.aggregates.byControl[control.id];
+    lines.push(
+      `| ${aggregate.label} | ${aggregate.rows} | ${aggregate.rejectedN}/${aggregate.rows} (${formatRate(
+        aggregate.rejectedRate,
+      )}) | ${aggregate.accidentalSuccessN} | ${Object.entries(aggregate.outcomes)
+        .map(([outcome, count]) => `${outcome}=${count}`)
         .join(', ')} |`,
     );
   }
@@ -406,11 +547,11 @@ function markdownReport(report) {
     );
   }
   lines.push('');
-  lines.push('## Row Detail');
+  lines.push('## Positive Row Detail');
   lines.push('');
   lines.push('| signal | arm | action | layer | required evidence | evidence observed | outcome |');
   lines.push('|---|---|---|---|---|---|---|');
-  for (const row of report.rows) {
+  for (const row of report.rows.filter((record) => record.expectedOutcome === 'success')) {
     const layer =
       row.arm === 'combined'
         ? `proof:${row.proofDagId} + resistance:${row.observedResistance}`
@@ -434,6 +575,9 @@ function markdownReport(report) {
   );
   lines.push(
     '- Combined joins both sources: each combined row carries the proof-DAG identity and the matched resistance signal, and its success contract joins the proof-DAG evidence requirement with the signal-specific resistance evidence.',
+  );
+  lines.push(
+    '- Negative controls reject shallow uptake: mere agreement, formula parroting, tutor-rationale adoption, and vague requests for more explanation do not close as success.',
   );
   lines.push(
     '- The comparison supports a mechanical claim about policy-layer integration. It does not show that real learners improve more under the combined mechanism.',
@@ -511,6 +655,8 @@ export async function runComparison({ outDir = DEFAULT_OUT_DIR, keepTemp = false
         RESISTANCE_CASES.findIndex((entry) => entry.signal === a.signal) -
         RESISTANCE_CASES.findIndex((entry) => entry.signal === b.signal);
       if (signalDelta) return signalDelta;
+      const conditionDelta = CONDITION_ORDER.indexOf(a.control) - CONDITION_ORDER.indexOf(b.control);
+      if (conditionDelta) return conditionDelta;
       return ARM_ORDER.indexOf(a.arm) - ARM_ORDER.indexOf(b.arm);
     });
 

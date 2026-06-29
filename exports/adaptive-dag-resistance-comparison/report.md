@@ -1,20 +1,29 @@
 # Adaptive DAG/Resistance Comparison
 
-Generated: 2026-06-29T06:22:09.193Z
-Run id: `eval-2026-06-29-5dfc3484`
-Rows: 15
+Generated: 2026-06-29T06:46:59.556Z
+Run id: `eval-2026-06-29-3247b790`
+Rows: 75
 
 ## Claim Boundary
 
-This is a deterministic mock ablation of mechanism wiring, not an empirical learning-effect result. It checks whether proof-DAG constraints and learner-resistance routing can operate as one adaptation policy layer with observable evidence closure.
+This is a deterministic mock ablation of mechanism wiring, not an empirical learning-effect result. It checks whether proof-DAG constraints and learner-resistance routing can operate as one adaptation policy layer with observable evidence closure, and whether shallow negative-control replies are rejected.
 
 ## Aggregate Result
 
-| arm | rows | success | policy-layer matches | selected actions |
+| arm | positive closure | negative controls rejected | policy-layer matches | positive selected actions |
 |---|---:|---:|---:|---|
-| DAG-only | 5 | 5/5 (100%) | 5/5 | request_evidence=5 |
-| resistance-only | 5 | 5/5 (100%) | 5/5 | ask_strategy_choice=1, elicit_prediction=3, diagnose_with_discriminating_question=1 |
-| combined | 5 | 5/5 (100%) | 5/5 | request_evidence=5 |
+| DAG-only | 5/5 (100%) | 20/20 (100%) | 25/25 | request_evidence=5 |
+| resistance-only | 5/5 (100%) | 20/20 (100%) | 25/25 | ask_strategy_choice=1, elicit_prediction=3, diagnose_with_discriminating_question=1 |
+| combined | 5/5 (100%) | 20/20 (100%) | 25/25 | request_evidence=5 |
+
+## Negative Controls
+
+| control | rows | rejected | accidental successes | outcomes |
+|---|---:|---:|---:|---|
+| mere agreement | 15 | 15/15 (100%) | 0 | failure=15 |
+| formula parroting | 15 | 15/15 (100%) | 0 | inconclusive=15 |
+| tutor rationale adoption | 15 | 15/15 (100%) | 0 | failure=10, inconclusive=5 |
+| vague explain more | 15 | 15/15 (100%) | 0 | inconclusive=14, failure=1 |
 
 ## Per-Signal Contrast
 
@@ -26,7 +35,7 @@ This is a deterministic mock ablation of mechanism wiring, not an empirical lear
 | question_flood | request_evidence | diagnose_with_discriminating_question | request_evidence | yes | yes | yes |
 | rote_parroting | request_evidence | elicit_prediction | request_evidence | yes | yes | yes |
 
-## Row Detail
+## Positive Row Detail
 
 | signal | arm | action | layer | required evidence | evidence observed | outcome |
 |---|---|---|---|---|---|---|
@@ -51,5 +60,6 @@ This is a deterministic mock ablation of mechanism wiring, not an empirical lear
 - DAG-only enforces the proof-release route: the proof fixture constrains every case to `request_evidence` and requires learner-authored rationale before closure.
 - Resistance-only routes by learner resistance signal: the selected actions vary by signal while requiring resistance-breakthrough evidence.
 - Combined joins both sources: each combined row carries the proof-DAG identity and the matched resistance signal, and its success contract joins the proof-DAG evidence requirement with the signal-specific resistance evidence.
+- Negative controls reject shallow uptake: mere agreement, formula parroting, tutor-rationale adoption, and vague requests for more explanation do not close as success.
 - The comparison supports a mechanical claim about policy-layer integration. It does not show that real learners improve more under the combined mechanism.
 

@@ -1,6 +1,6 @@
 scenarios:
-  - id: dag_resistance_boredom_dag_only
-    name: boredom / DAG-only
+  - id: dag_resistance_boredom_dag_only_positive
+    name: boredom / DAG-only / positive uptake
     scenario_type: boredom
     opening: This is starting to feel boring and dead, like I am only filling out a
       worksheet instead of learning anything.
@@ -11,92 +11,16 @@ scenarios:
       trigger_turn: -1
       trigger_signal: This is starting to feel boring and dead, like I am only filling
         out a worksheet instead of learning anything.
-      scripted_responses: &a1
-        observe_no_intervention: The task asks me to compare a concrete case, so I would
-          test one small example because the main question is why it matters and
-          what changes if the relation changes. I predict the formula is not
-          enough, and I need to check it in my own words.
-        diagnose_with_discriminating_question: The task asks me to compare a concrete
-          case, so I would test one small example because the main question is
-          why it matters and what changes if the relation changes. I predict the
-          formula is not enough, and I need to check it in my own words.
-        elicit_prediction: The task asks me to compare a concrete case, so I would test
-          one small example because the main question is why it matters and what
-          changes if the relation changes. I predict the formula is not enough,
-          and I need to check it in my own words.
-        request_evidence: The task asks me to compare a concrete case, so I would test
-          one small example because the main question is why it matters and what
-          changes if the relation changes. I predict the formula is not enough,
-          and I need to check it in my own words.
-        ask_strategy_choice: The task asks me to compare a concrete case, so I would
-          test one small example because the main question is why it matters and
-          what changes if the relation changes. I predict the formula is not
-          enough, and I need to check it in my own words.
-        contrast_models: The task asks me to compare a concrete case, so I would test
-          one small example because the main question is why it matters and what
-          changes if the relation changes. I predict the formula is not enough,
-          and I need to check it in my own words.
-        fade_hint: The task asks me to compare a concrete case, so I would test one
-          small example because the main question is why it matters and what
-          changes if the relation changes. I predict the formula is not enough,
-          and I need to check it in my own words.
-        minimal_hint: The task asks me to compare a concrete case, so I would test one
-          small example because the main question is why it matters and what
-          changes if the relation changes. I predict the formula is not enough,
-          and I need to check it in my own words.
-        repair_overconfidence: The task asks me to compare a concrete case, so I would
-          test one small example because the main question is why it matters and
-          what changes if the relation changes. I predict the formula is not
-          enough, and I need to check it in my own words.
-        challenge_without_telling: The task asks me to compare a concrete case, so I
-          would test one small example because the main question is why it
-          matters and what changes if the relation changes. I predict the
-          formula is not enough, and I need to check it in my own words.
-        reanchor_goal: The task asks me to compare a concrete case, so I would test one
-          small example because the main question is why it matters and what
-          changes if the relation changes. I predict the formula is not enough,
-          and I need to check it in my own words.
-        summarize_and_release: The task asks me to compare a concrete case, so I would
-          test one small example because the main question is why it matters and
-          what changes if the relation changes. I predict the formula is not
-          enough, and I need to check it in my own words.
-        explain_principle: The task asks me to compare a concrete case, so I would test
-          one small example because the main question is why it matters and what
-          changes if the relation changes. I predict the formula is not enough,
-          and I need to check it in my own words.
-        model_worked_example: The task asks me to compare a concrete case, so I would
-          test one small example because the main question is why it matters and
-          what changes if the relation changes. I predict the formula is not
-          enough, and I need to check it in my own words.
-        lower_cognitive_load: The task asks me to compare a concrete case, so I would
-          test one small example because the main question is why it matters and
-          what changes if the relation changes. I predict the formula is not
-          enough, and I need to check it in my own words.
-        name_the_disagreement: The task asks me to compare a concrete case, so I would
-          test one small example because the main question is why it matters and
-          what changes if the relation changes. I predict the formula is not
-          enough, and I need to check it in my own words.
-        acknowledge_and_redirect: The task asks me to compare a concrete case, so I
-          would test one small example because the main question is why it
-          matters and what changes if the relation changes. I predict the
-          formula is not enough, and I need to check it in my own words.
-        repair_misrecognition: The task asks me to compare a concrete case, so I would
-          test one small example because the main question is why it matters and
-          what changes if the relation changes. I predict the formula is not
-          enough, and I need to check it in my own words.
-        mirror_and_extend: The task asks me to compare a concrete case, so I would test
-          one small example because the main question is why it matters and what
-          changes if the relation changes. I predict the formula is not enough,
-          and I need to check it in my own words.
-        withhold_answer: The task asks me to compare a concrete case, so I would test
-          one small example because the main question is why it matters and what
-          changes if the relation changes. I predict the formula is not enough,
-          and I need to check it in my own words.
-        default: The task asks me to compare a concrete case, so I would test one small
-          example because the main question is why it matters and what changes
-          if the relation changes. I predict the formula is not enough, and I
-          need to check it in my own words.
-    world_adaptation_spec: &a2
+      scripted_responses:
+        diagnose_with_discriminating_question: The task asks me to name the missing step before continuing.
+        elicit_prediction: I predict the formula breaks when the case changes, because I
+          need to explain the relation in my own words.
+        request_evidence: Because I can test one concrete case instead of dead worksheet
+          repetition.
+        ask_strategy_choice: I choose to test one concrete case.
+        default: Because I can test one concrete case instead of dead worksheet
+          repetition.
+    world_adaptation_spec: &a1
       id: W_AF6_CURRICULUM
       version: ms-world-adaptation-v0.1
       source_curriculum_id: ai_foundations_v1
@@ -125,8 +49,8 @@ scenarios:
           move: hidden_label_exposure
         - id: no_premature_proof_supply
           move: supply_decisive_step
-  - id: dag_resistance_boredom_resistance_only
-    name: boredom / resistance-only
+  - id: dag_resistance_boredom_dag_only_mere_agreement
+    name: boredom / DAG-only / mere agreement
     scenario_type: boredom
     opening: This is starting to feel boring and dead, like I am only filling out a
       worksheet instead of learning anything.
@@ -137,16 +61,11 @@ scenarios:
       trigger_turn: -1
       trigger_signal: This is starting to feel boring and dead, like I am only filling
         out a worksheet instead of learning anything.
-      scripted_responses: *a1
-    resistance_breakthrough_diagnostic: true
-    resistance_signal_target: boredom
-    resistance_signal_gate:
-      - label: renewed content-bearing work
-        required: true
-      - label: learner-owned test case
-        required: true
-  - id: dag_resistance_boredom_combined
-    name: boredom / combined
+      scripted_responses:
+        default: Okay.
+    world_adaptation_spec: *a1
+  - id: dag_resistance_boredom_dag_only_formula_parroting
+    name: boredom / DAG-only / formula parroting
     scenario_type: boredom
     opening: This is starting to feel boring and dead, like I am only filling out a
       worksheet instead of learning anything.
@@ -157,8 +76,60 @@ scenarios:
       trigger_turn: -1
       trigger_signal: This is starting to feel boring and dead, like I am only filling
         out a worksheet instead of learning anything.
-      scripted_responses: *a1
-    world_adaptation_spec: *a2
+      scripted_responses:
+        default: Master, servant, recognition, formula.
+    world_adaptation_spec: *a1
+  - id: dag_resistance_boredom_dag_only_tutor_rationale_adoption
+    name: boredom / DAG-only / tutor rationale adoption
+    scenario_type: boredom
+    opening: This is starting to feel boring and dead, like I am only filling out a
+      worksheet instead of learning anything.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: boredom"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: This is starting to feel boring and dead, like I am only filling
+        out a worksheet instead of learning anything.
+      scripted_responses:
+        default: As you said, your reason explains it.
+    world_adaptation_spec: *a1
+  - id: dag_resistance_boredom_dag_only_vague_explain_more
+    name: boredom / DAG-only / vague explain more
+    scenario_type: boredom
+    opening: This is starting to feel boring and dead, like I am only filling out a
+      worksheet instead of learning anything.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: boredom"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: This is starting to feel boring and dead, like I am only filling
+        out a worksheet instead of learning anything.
+      scripted_responses:
+        default: Can you explain more?
+    world_adaptation_spec: *a1
+  - id: dag_resistance_boredom_resistance_only_positive
+    name: boredom / resistance-only / positive uptake
+    scenario_type: boredom
+    opening: This is starting to feel boring and dead, like I am only filling out a
+      worksheet instead of learning anything.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: boredom"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: This is starting to feel boring and dead, like I am only filling
+        out a worksheet instead of learning anything.
+      scripted_responses:
+        diagnose_with_discriminating_question: The task asks me to name the missing step before continuing.
+        elicit_prediction: I predict the formula breaks when the case changes, because I
+          need to explain the relation in my own words.
+        request_evidence: Because I can test one concrete case instead of dead worksheet
+          repetition.
+        ask_strategy_choice: I choose to test one concrete case.
+        default: Because I can test one concrete case instead of dead worksheet
+          repetition.
     resistance_breakthrough_diagnostic: true
     resistance_signal_target: boredom
     resistance_signal_gate:
@@ -166,8 +137,209 @@ scenarios:
         required: true
       - label: learner-owned test case
         required: true
-  - id: dag_resistance_frustration_dag_only
-    name: frustration / DAG-only
+  - id: dag_resistance_boredom_resistance_only_mere_agreement
+    name: boredom / resistance-only / mere agreement
+    scenario_type: boredom
+    opening: This is starting to feel boring and dead, like I am only filling out a
+      worksheet instead of learning anything.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: boredom"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: This is starting to feel boring and dead, like I am only filling
+        out a worksheet instead of learning anything.
+      scripted_responses:
+        default: Okay.
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: boredom
+    resistance_signal_gate:
+      - label: renewed content-bearing work
+        required: true
+      - label: learner-owned test case
+        required: true
+  - id: dag_resistance_boredom_resistance_only_formula_parroting
+    name: boredom / resistance-only / formula parroting
+    scenario_type: boredom
+    opening: This is starting to feel boring and dead, like I am only filling out a
+      worksheet instead of learning anything.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: boredom"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: This is starting to feel boring and dead, like I am only filling
+        out a worksheet instead of learning anything.
+      scripted_responses:
+        default: Master, servant, recognition, formula.
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: boredom
+    resistance_signal_gate:
+      - label: renewed content-bearing work
+        required: true
+      - label: learner-owned test case
+        required: true
+  - id: dag_resistance_boredom_resistance_only_tutor_rationale_adoption
+    name: boredom / resistance-only / tutor rationale adoption
+    scenario_type: boredom
+    opening: This is starting to feel boring and dead, like I am only filling out a
+      worksheet instead of learning anything.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: boredom"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: This is starting to feel boring and dead, like I am only filling
+        out a worksheet instead of learning anything.
+      scripted_responses:
+        default: As you said, your reason explains it.
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: boredom
+    resistance_signal_gate:
+      - label: renewed content-bearing work
+        required: true
+      - label: learner-owned test case
+        required: true
+  - id: dag_resistance_boredom_resistance_only_vague_explain_more
+    name: boredom / resistance-only / vague explain more
+    scenario_type: boredom
+    opening: This is starting to feel boring and dead, like I am only filling out a
+      worksheet instead of learning anything.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: boredom"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: This is starting to feel boring and dead, like I am only filling
+        out a worksheet instead of learning anything.
+      scripted_responses:
+        default: Can you explain more?
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: boredom
+    resistance_signal_gate:
+      - label: renewed content-bearing work
+        required: true
+      - label: learner-owned test case
+        required: true
+  - id: dag_resistance_boredom_combined_positive
+    name: boredom / combined / positive uptake
+    scenario_type: boredom
+    opening: This is starting to feel boring and dead, like I am only filling out a
+      worksheet instead of learning anything.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: boredom"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: This is starting to feel boring and dead, like I am only filling
+        out a worksheet instead of learning anything.
+      scripted_responses:
+        diagnose_with_discriminating_question: The task asks me to name the missing step before continuing.
+        elicit_prediction: I predict the formula breaks when the case changes, because I
+          need to explain the relation in my own words.
+        request_evidence: Because I can test one concrete case instead of dead worksheet
+          repetition.
+        ask_strategy_choice: I choose to test one concrete case.
+        default: Because I can test one concrete case instead of dead worksheet
+          repetition.
+    world_adaptation_spec: *a1
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: boredom
+    resistance_signal_gate:
+      - label: renewed content-bearing work
+        required: true
+      - label: learner-owned test case
+        required: true
+  - id: dag_resistance_boredom_combined_mere_agreement
+    name: boredom / combined / mere agreement
+    scenario_type: boredom
+    opening: This is starting to feel boring and dead, like I am only filling out a
+      worksheet instead of learning anything.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: boredom"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: This is starting to feel boring and dead, like I am only filling
+        out a worksheet instead of learning anything.
+      scripted_responses:
+        default: Okay.
+    world_adaptation_spec: *a1
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: boredom
+    resistance_signal_gate:
+      - label: renewed content-bearing work
+        required: true
+      - label: learner-owned test case
+        required: true
+  - id: dag_resistance_boredom_combined_formula_parroting
+    name: boredom / combined / formula parroting
+    scenario_type: boredom
+    opening: This is starting to feel boring and dead, like I am only filling out a
+      worksheet instead of learning anything.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: boredom"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: This is starting to feel boring and dead, like I am only filling
+        out a worksheet instead of learning anything.
+      scripted_responses:
+        default: Master, servant, recognition, formula.
+    world_adaptation_spec: *a1
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: boredom
+    resistance_signal_gate:
+      - label: renewed content-bearing work
+        required: true
+      - label: learner-owned test case
+        required: true
+  - id: dag_resistance_boredom_combined_tutor_rationale_adoption
+    name: boredom / combined / tutor rationale adoption
+    scenario_type: boredom
+    opening: This is starting to feel boring and dead, like I am only filling out a
+      worksheet instead of learning anything.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: boredom"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: This is starting to feel boring and dead, like I am only filling
+        out a worksheet instead of learning anything.
+      scripted_responses:
+        default: As you said, your reason explains it.
+    world_adaptation_spec: *a1
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: boredom
+    resistance_signal_gate:
+      - label: renewed content-bearing work
+        required: true
+      - label: learner-owned test case
+        required: true
+  - id: dag_resistance_boredom_combined_vague_explain_more
+    name: boredom / combined / vague explain more
+    scenario_type: boredom
+    opening: This is starting to feel boring and dead, like I am only filling out a
+      worksheet instead of learning anything.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: boredom"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: This is starting to feel boring and dead, like I am only filling
+        out a worksheet instead of learning anything.
+      scripted_responses:
+        default: Can you explain more?
+    world_adaptation_spec: *a1
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: boredom
+    resistance_signal_gate:
+      - label: renewed content-bearing work
+        required: true
+      - label: learner-owned test case
+        required: true
+  - id: dag_resistance_frustration_dag_only_positive
+    name: frustration / DAG-only / positive uptake
     scenario_type: frustration
     opening: I am stuck and frustrated; the sequence still feels inert no matter how
       many times I repeat it.
@@ -178,10 +350,17 @@ scenarios:
       trigger_turn: -1
       trigger_signal: I am stuck and frustrated; the sequence still feels inert no
         matter how many times I repeat it.
-      scripted_responses: *a1
-    world_adaptation_spec: *a2
-  - id: dag_resistance_frustration_resistance_only
-    name: frustration / resistance-only
+      scripted_responses:
+        diagnose_with_discriminating_question: The task asks me to name the missing step before continuing.
+        elicit_prediction: I predict one small try will show where I am stuck.
+        request_evidence: "Because I can try one small step: test one case before
+          repeating the whole sequence."
+        ask_strategy_choice: I choose one small test case before asking for another explanation.
+        default: "Because I can try one small step: test one case before repeating the
+          whole sequence."
+    world_adaptation_spec: *a1
+  - id: dag_resistance_frustration_dag_only_mere_agreement
+    name: frustration / DAG-only / mere agreement
     scenario_type: frustration
     opening: I am stuck and frustrated; the sequence still feels inert no matter how
       many times I repeat it.
@@ -192,7 +371,74 @@ scenarios:
       trigger_turn: -1
       trigger_signal: I am stuck and frustrated; the sequence still feels inert no
         matter how many times I repeat it.
-      scripted_responses: *a1
+      scripted_responses:
+        default: Okay.
+    world_adaptation_spec: *a1
+  - id: dag_resistance_frustration_dag_only_formula_parroting
+    name: frustration / DAG-only / formula parroting
+    scenario_type: frustration
+    opening: I am stuck and frustrated; the sequence still feels inert no matter how
+      many times I repeat it.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: frustration"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: I am stuck and frustrated; the sequence still feels inert no
+        matter how many times I repeat it.
+      scripted_responses:
+        default: Master, servant, recognition, formula.
+    world_adaptation_spec: *a1
+  - id: dag_resistance_frustration_dag_only_tutor_rationale_adoption
+    name: frustration / DAG-only / tutor rationale adoption
+    scenario_type: frustration
+    opening: I am stuck and frustrated; the sequence still feels inert no matter how
+      many times I repeat it.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: frustration"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: I am stuck and frustrated; the sequence still feels inert no
+        matter how many times I repeat it.
+      scripted_responses:
+        default: As you said, your reason explains it.
+    world_adaptation_spec: *a1
+  - id: dag_resistance_frustration_dag_only_vague_explain_more
+    name: frustration / DAG-only / vague explain more
+    scenario_type: frustration
+    opening: I am stuck and frustrated; the sequence still feels inert no matter how
+      many times I repeat it.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: frustration"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: I am stuck and frustrated; the sequence still feels inert no
+        matter how many times I repeat it.
+      scripted_responses:
+        default: Can you explain more?
+    world_adaptation_spec: *a1
+  - id: dag_resistance_frustration_resistance_only_positive
+    name: frustration / resistance-only / positive uptake
+    scenario_type: frustration
+    opening: I am stuck and frustrated; the sequence still feels inert no matter how
+      many times I repeat it.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: frustration"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: I am stuck and frustrated; the sequence still feels inert no
+        matter how many times I repeat it.
+      scripted_responses:
+        diagnose_with_discriminating_question: The task asks me to name the missing step before continuing.
+        elicit_prediction: I predict one small try will show where I am stuck.
+        request_evidence: "Because I can try one small step: test one case before
+          repeating the whole sequence."
+        ask_strategy_choice: I choose one small test case before asking for another explanation.
+        default: "Because I can try one small step: test one case before repeating the
+          whole sequence."
     resistance_breakthrough_diagnostic: true
     resistance_signal_target: frustration
     resistance_signal_gate:
@@ -200,8 +446,8 @@ scenarios:
         required: true
       - label: smaller learner-owned move
         required: true
-  - id: dag_resistance_frustration_combined
-    name: frustration / combined
+  - id: dag_resistance_frustration_resistance_only_mere_agreement
+    name: frustration / resistance-only / mere agreement
     scenario_type: frustration
     opening: I am stuck and frustrated; the sequence still feels inert no matter how
       many times I repeat it.
@@ -212,8 +458,8 @@ scenarios:
       trigger_turn: -1
       trigger_signal: I am stuck and frustrated; the sequence still feels inert no
         matter how many times I repeat it.
-      scripted_responses: *a1
-    world_adaptation_spec: *a2
+      scripted_responses:
+        default: Okay.
     resistance_breakthrough_diagnostic: true
     resistance_signal_target: frustration
     resistance_signal_gate:
@@ -221,8 +467,187 @@ scenarios:
         required: true
       - label: smaller learner-owned move
         required: true
-  - id: dag_resistance_irrelevance_dag_only
-    name: irrelevance / DAG-only
+  - id: dag_resistance_frustration_resistance_only_formula_parroting
+    name: frustration / resistance-only / formula parroting
+    scenario_type: frustration
+    opening: I am stuck and frustrated; the sequence still feels inert no matter how
+      many times I repeat it.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: frustration"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: I am stuck and frustrated; the sequence still feels inert no
+        matter how many times I repeat it.
+      scripted_responses:
+        default: Master, servant, recognition, formula.
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: frustration
+    resistance_signal_gate:
+      - label: renewed attempt after affective repair
+        required: true
+      - label: smaller learner-owned move
+        required: true
+  - id: dag_resistance_frustration_resistance_only_tutor_rationale_adoption
+    name: frustration / resistance-only / tutor rationale adoption
+    scenario_type: frustration
+    opening: I am stuck and frustrated; the sequence still feels inert no matter how
+      many times I repeat it.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: frustration"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: I am stuck and frustrated; the sequence still feels inert no
+        matter how many times I repeat it.
+      scripted_responses:
+        default: As you said, your reason explains it.
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: frustration
+    resistance_signal_gate:
+      - label: renewed attempt after affective repair
+        required: true
+      - label: smaller learner-owned move
+        required: true
+  - id: dag_resistance_frustration_resistance_only_vague_explain_more
+    name: frustration / resistance-only / vague explain more
+    scenario_type: frustration
+    opening: I am stuck and frustrated; the sequence still feels inert no matter how
+      many times I repeat it.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: frustration"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: I am stuck and frustrated; the sequence still feels inert no
+        matter how many times I repeat it.
+      scripted_responses:
+        default: Can you explain more?
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: frustration
+    resistance_signal_gate:
+      - label: renewed attempt after affective repair
+        required: true
+      - label: smaller learner-owned move
+        required: true
+  - id: dag_resistance_frustration_combined_positive
+    name: frustration / combined / positive uptake
+    scenario_type: frustration
+    opening: I am stuck and frustrated; the sequence still feels inert no matter how
+      many times I repeat it.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: frustration"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: I am stuck and frustrated; the sequence still feels inert no
+        matter how many times I repeat it.
+      scripted_responses:
+        diagnose_with_discriminating_question: The task asks me to name the missing step before continuing.
+        elicit_prediction: I predict one small try will show where I am stuck.
+        request_evidence: "Because I can try one small step: test one case before
+          repeating the whole sequence."
+        ask_strategy_choice: I choose one small test case before asking for another explanation.
+        default: "Because I can try one small step: test one case before repeating the
+          whole sequence."
+    world_adaptation_spec: *a1
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: frustration
+    resistance_signal_gate:
+      - label: renewed attempt after affective repair
+        required: true
+      - label: smaller learner-owned move
+        required: true
+  - id: dag_resistance_frustration_combined_mere_agreement
+    name: frustration / combined / mere agreement
+    scenario_type: frustration
+    opening: I am stuck and frustrated; the sequence still feels inert no matter how
+      many times I repeat it.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: frustration"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: I am stuck and frustrated; the sequence still feels inert no
+        matter how many times I repeat it.
+      scripted_responses:
+        default: Okay.
+    world_adaptation_spec: *a1
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: frustration
+    resistance_signal_gate:
+      - label: renewed attempt after affective repair
+        required: true
+      - label: smaller learner-owned move
+        required: true
+  - id: dag_resistance_frustration_combined_formula_parroting
+    name: frustration / combined / formula parroting
+    scenario_type: frustration
+    opening: I am stuck and frustrated; the sequence still feels inert no matter how
+      many times I repeat it.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: frustration"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: I am stuck and frustrated; the sequence still feels inert no
+        matter how many times I repeat it.
+      scripted_responses:
+        default: Master, servant, recognition, formula.
+    world_adaptation_spec: *a1
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: frustration
+    resistance_signal_gate:
+      - label: renewed attempt after affective repair
+        required: true
+      - label: smaller learner-owned move
+        required: true
+  - id: dag_resistance_frustration_combined_tutor_rationale_adoption
+    name: frustration / combined / tutor rationale adoption
+    scenario_type: frustration
+    opening: I am stuck and frustrated; the sequence still feels inert no matter how
+      many times I repeat it.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: frustration"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: I am stuck and frustrated; the sequence still feels inert no
+        matter how many times I repeat it.
+      scripted_responses:
+        default: As you said, your reason explains it.
+    world_adaptation_spec: *a1
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: frustration
+    resistance_signal_gate:
+      - label: renewed attempt after affective repair
+        required: true
+      - label: smaller learner-owned move
+        required: true
+  - id: dag_resistance_frustration_combined_vague_explain_more
+    name: frustration / combined / vague explain more
+    scenario_type: frustration
+    opening: I am stuck and frustrated; the sequence still feels inert no matter how
+      many times I repeat it.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: frustration"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: I am stuck and frustrated; the sequence still feels inert no
+        matter how many times I repeat it.
+      scripted_responses:
+        default: Can you explain more?
+    world_adaptation_spec: *a1
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: frustration
+    resistance_signal_gate:
+      - label: renewed attempt after affective repair
+        required: true
+      - label: smaller learner-owned move
+        required: true
+  - id: dag_resistance_irrelevance_dag_only_positive
+    name: irrelevance / DAG-only / positive uptake
     scenario_type: irrelevance
     opening: Why should I care about this? I do not see the point or why this
       matters for the actual task.
@@ -233,10 +658,17 @@ scenarios:
       trigger_turn: -1
       trigger_signal: Why should I care about this? I do not see the point or why this
         matters for the actual task.
-      scripted_responses: *a1
-    world_adaptation_spec: *a2
-  - id: dag_resistance_irrelevance_resistance_only
-    name: irrelevance / resistance-only
+      scripted_responses:
+        diagnose_with_discriminating_question: The task asks me to name the missing step before continuing.
+        elicit_prediction: I predict the point matters when the task asks me to test a case.
+        request_evidence: The task asks why this matters, because a concrete case shows
+          the point of the relation.
+        ask_strategy_choice: I choose one small test case before asking for another explanation.
+        default: The task asks why this matters, because a concrete case shows the point
+          of the relation.
+    world_adaptation_spec: *a1
+  - id: dag_resistance_irrelevance_dag_only_mere_agreement
+    name: irrelevance / DAG-only / mere agreement
     scenario_type: irrelevance
     opening: Why should I care about this? I do not see the point or why this
       matters for the actual task.
@@ -247,7 +679,74 @@ scenarios:
       trigger_turn: -1
       trigger_signal: Why should I care about this? I do not see the point or why this
         matters for the actual task.
-      scripted_responses: *a1
+      scripted_responses:
+        default: Okay.
+    world_adaptation_spec: *a1
+  - id: dag_resistance_irrelevance_dag_only_formula_parroting
+    name: irrelevance / DAG-only / formula parroting
+    scenario_type: irrelevance
+    opening: Why should I care about this? I do not see the point or why this
+      matters for the actual task.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: irrelevance"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: Why should I care about this? I do not see the point or why this
+        matters for the actual task.
+      scripted_responses:
+        default: Master, servant, recognition, formula.
+    world_adaptation_spec: *a1
+  - id: dag_resistance_irrelevance_dag_only_tutor_rationale_adoption
+    name: irrelevance / DAG-only / tutor rationale adoption
+    scenario_type: irrelevance
+    opening: Why should I care about this? I do not see the point or why this
+      matters for the actual task.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: irrelevance"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: Why should I care about this? I do not see the point or why this
+        matters for the actual task.
+      scripted_responses:
+        default: As you said, your reason explains it.
+    world_adaptation_spec: *a1
+  - id: dag_resistance_irrelevance_dag_only_vague_explain_more
+    name: irrelevance / DAG-only / vague explain more
+    scenario_type: irrelevance
+    opening: Why should I care about this? I do not see the point or why this
+      matters for the actual task.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: irrelevance"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: Why should I care about this? I do not see the point or why this
+        matters for the actual task.
+      scripted_responses:
+        default: Can you explain more?
+    world_adaptation_spec: *a1
+  - id: dag_resistance_irrelevance_resistance_only_positive
+    name: irrelevance / resistance-only / positive uptake
+    scenario_type: irrelevance
+    opening: Why should I care about this? I do not see the point or why this
+      matters for the actual task.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: irrelevance"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: Why should I care about this? I do not see the point or why this
+        matters for the actual task.
+      scripted_responses:
+        diagnose_with_discriminating_question: The task asks me to name the missing step before continuing.
+        elicit_prediction: I predict the point matters when the task asks me to test a case.
+        request_evidence: The task asks why this matters, because a concrete case shows
+          the point of the relation.
+        ask_strategy_choice: I choose one small test case before asking for another explanation.
+        default: The task asks why this matters, because a concrete case shows the point
+          of the relation.
     resistance_breakthrough_diagnostic: true
     resistance_signal_target: irrelevance
     resistance_signal_gate:
@@ -255,8 +754,8 @@ scenarios:
         required: true
       - label: task reorientation
         required: true
-  - id: dag_resistance_irrelevance_combined
-    name: irrelevance / combined
+  - id: dag_resistance_irrelevance_resistance_only_mere_agreement
+    name: irrelevance / resistance-only / mere agreement
     scenario_type: irrelevance
     opening: Why should I care about this? I do not see the point or why this
       matters for the actual task.
@@ -267,8 +766,8 @@ scenarios:
       trigger_turn: -1
       trigger_signal: Why should I care about this? I do not see the point or why this
         matters for the actual task.
-      scripted_responses: *a1
-    world_adaptation_spec: *a2
+      scripted_responses:
+        default: Okay.
     resistance_breakthrough_diagnostic: true
     resistance_signal_target: irrelevance
     resistance_signal_gate:
@@ -276,8 +775,187 @@ scenarios:
         required: true
       - label: task reorientation
         required: true
-  - id: dag_resistance_question_flood_dag_only
-    name: question_flood / DAG-only
+  - id: dag_resistance_irrelevance_resistance_only_formula_parroting
+    name: irrelevance / resistance-only / formula parroting
+    scenario_type: irrelevance
+    opening: Why should I care about this? I do not see the point or why this
+      matters for the actual task.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: irrelevance"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: Why should I care about this? I do not see the point or why this
+        matters for the actual task.
+      scripted_responses:
+        default: Master, servant, recognition, formula.
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: irrelevance
+    resistance_signal_gate:
+      - label: learner-owned relevance test
+        required: true
+      - label: task reorientation
+        required: true
+  - id: dag_resistance_irrelevance_resistance_only_tutor_rationale_adoption
+    name: irrelevance / resistance-only / tutor rationale adoption
+    scenario_type: irrelevance
+    opening: Why should I care about this? I do not see the point or why this
+      matters for the actual task.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: irrelevance"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: Why should I care about this? I do not see the point or why this
+        matters for the actual task.
+      scripted_responses:
+        default: As you said, your reason explains it.
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: irrelevance
+    resistance_signal_gate:
+      - label: learner-owned relevance test
+        required: true
+      - label: task reorientation
+        required: true
+  - id: dag_resistance_irrelevance_resistance_only_vague_explain_more
+    name: irrelevance / resistance-only / vague explain more
+    scenario_type: irrelevance
+    opening: Why should I care about this? I do not see the point or why this
+      matters for the actual task.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: irrelevance"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: Why should I care about this? I do not see the point or why this
+        matters for the actual task.
+      scripted_responses:
+        default: Can you explain more?
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: irrelevance
+    resistance_signal_gate:
+      - label: learner-owned relevance test
+        required: true
+      - label: task reorientation
+        required: true
+  - id: dag_resistance_irrelevance_combined_positive
+    name: irrelevance / combined / positive uptake
+    scenario_type: irrelevance
+    opening: Why should I care about this? I do not see the point or why this
+      matters for the actual task.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: irrelevance"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: Why should I care about this? I do not see the point or why this
+        matters for the actual task.
+      scripted_responses:
+        diagnose_with_discriminating_question: The task asks me to name the missing step before continuing.
+        elicit_prediction: I predict the point matters when the task asks me to test a case.
+        request_evidence: The task asks why this matters, because a concrete case shows
+          the point of the relation.
+        ask_strategy_choice: I choose one small test case before asking for another explanation.
+        default: The task asks why this matters, because a concrete case shows the point
+          of the relation.
+    world_adaptation_spec: *a1
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: irrelevance
+    resistance_signal_gate:
+      - label: learner-owned relevance test
+        required: true
+      - label: task reorientation
+        required: true
+  - id: dag_resistance_irrelevance_combined_mere_agreement
+    name: irrelevance / combined / mere agreement
+    scenario_type: irrelevance
+    opening: Why should I care about this? I do not see the point or why this
+      matters for the actual task.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: irrelevance"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: Why should I care about this? I do not see the point or why this
+        matters for the actual task.
+      scripted_responses:
+        default: Okay.
+    world_adaptation_spec: *a1
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: irrelevance
+    resistance_signal_gate:
+      - label: learner-owned relevance test
+        required: true
+      - label: task reorientation
+        required: true
+  - id: dag_resistance_irrelevance_combined_formula_parroting
+    name: irrelevance / combined / formula parroting
+    scenario_type: irrelevance
+    opening: Why should I care about this? I do not see the point or why this
+      matters for the actual task.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: irrelevance"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: Why should I care about this? I do not see the point or why this
+        matters for the actual task.
+      scripted_responses:
+        default: Master, servant, recognition, formula.
+    world_adaptation_spec: *a1
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: irrelevance
+    resistance_signal_gate:
+      - label: learner-owned relevance test
+        required: true
+      - label: task reorientation
+        required: true
+  - id: dag_resistance_irrelevance_combined_tutor_rationale_adoption
+    name: irrelevance / combined / tutor rationale adoption
+    scenario_type: irrelevance
+    opening: Why should I care about this? I do not see the point or why this
+      matters for the actual task.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: irrelevance"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: Why should I care about this? I do not see the point or why this
+        matters for the actual task.
+      scripted_responses:
+        default: As you said, your reason explains it.
+    world_adaptation_spec: *a1
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: irrelevance
+    resistance_signal_gate:
+      - label: learner-owned relevance test
+        required: true
+      - label: task reorientation
+        required: true
+  - id: dag_resistance_irrelevance_combined_vague_explain_more
+    name: irrelevance / combined / vague explain more
+    scenario_type: irrelevance
+    opening: Why should I care about this? I do not see the point or why this
+      matters for the actual task.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: irrelevance"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: Why should I care about this? I do not see the point or why this
+        matters for the actual task.
+      scripted_responses:
+        default: Can you explain more?
+    world_adaptation_spec: *a1
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: irrelevance
+    resistance_signal_gate:
+      - label: learner-owned relevance test
+        required: true
+      - label: task reorientation
+        required: true
+  - id: dag_resistance_question_flood_dag_only_positive
+    name: question_flood / DAG-only / positive uptake
     scenario_type: question_flood
     opening: Why Hegel? What does this do? What is the point? Why should this matter
       before I can just use the formula?
@@ -288,10 +966,19 @@ scenarios:
       trigger_turn: -1
       trigger_signal: Why Hegel? What does this do? What is the point? Why should this
         matter before I can just use the formula?
-      scripted_responses: *a1
-    world_adaptation_spec: *a2
-  - id: dag_resistance_question_flood_resistance_only
-    name: question_flood / resistance-only
+      scripted_responses:
+        diagnose_with_discriminating_question: "The task asks me to collapse this to one
+          main question: what changes if the relation changes?"
+        elicit_prediction: I predict the formula breaks when the case changes, because I
+          need to explain the relation in my own words.
+        request_evidence: The task asks me to collapse this to one main question,
+          because the relation changes across cases.
+        ask_strategy_choice: I choose one small test case before asking for another explanation.
+        default: The task asks me to collapse this to one main question, because the
+          relation changes across cases.
+    world_adaptation_spec: *a1
+  - id: dag_resistance_question_flood_dag_only_mere_agreement
+    name: question_flood / DAG-only / mere agreement
     scenario_type: question_flood
     opening: Why Hegel? What does this do? What is the point? Why should this matter
       before I can just use the formula?
@@ -302,7 +989,76 @@ scenarios:
       trigger_turn: -1
       trigger_signal: Why Hegel? What does this do? What is the point? Why should this
         matter before I can just use the formula?
-      scripted_responses: *a1
+      scripted_responses:
+        default: Okay.
+    world_adaptation_spec: *a1
+  - id: dag_resistance_question_flood_dag_only_formula_parroting
+    name: question_flood / DAG-only / formula parroting
+    scenario_type: question_flood
+    opening: Why Hegel? What does this do? What is the point? Why should this matter
+      before I can just use the formula?
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: question_flood"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: Why Hegel? What does this do? What is the point? Why should this
+        matter before I can just use the formula?
+      scripted_responses:
+        default: Master, servant, recognition, formula.
+    world_adaptation_spec: *a1
+  - id: dag_resistance_question_flood_dag_only_tutor_rationale_adoption
+    name: question_flood / DAG-only / tutor rationale adoption
+    scenario_type: question_flood
+    opening: Why Hegel? What does this do? What is the point? Why should this matter
+      before I can just use the formula?
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: question_flood"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: Why Hegel? What does this do? What is the point? Why should this
+        matter before I can just use the formula?
+      scripted_responses:
+        default: As you said, your reason explains it.
+    world_adaptation_spec: *a1
+  - id: dag_resistance_question_flood_dag_only_vague_explain_more
+    name: question_flood / DAG-only / vague explain more
+    scenario_type: question_flood
+    opening: Why Hegel? What does this do? What is the point? Why should this matter
+      before I can just use the formula?
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: question_flood"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: Why Hegel? What does this do? What is the point? Why should this
+        matter before I can just use the formula?
+      scripted_responses:
+        default: Can you explain more?
+    world_adaptation_spec: *a1
+  - id: dag_resistance_question_flood_resistance_only_positive
+    name: question_flood / resistance-only / positive uptake
+    scenario_type: question_flood
+    opening: Why Hegel? What does this do? What is the point? Why should this matter
+      before I can just use the formula?
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: question_flood"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: Why Hegel? What does this do? What is the point? Why should this
+        matter before I can just use the formula?
+      scripted_responses:
+        diagnose_with_discriminating_question: "The task asks me to collapse this to one
+          main question: what changes if the relation changes?"
+        elicit_prediction: I predict the formula breaks when the case changes, because I
+          need to explain the relation in my own words.
+        request_evidence: The task asks me to collapse this to one main question,
+          because the relation changes across cases.
+        ask_strategy_choice: I choose one small test case before asking for another explanation.
+        default: The task asks me to collapse this to one main question, because the
+          relation changes across cases.
     resistance_breakthrough_diagnostic: true
     resistance_signal_target: question_flood
     resistance_signal_gate:
@@ -310,8 +1066,8 @@ scenarios:
         required: true
       - label: state-disambiguating response
         required: true
-  - id: dag_resistance_question_flood_combined
-    name: question_flood / combined
+  - id: dag_resistance_question_flood_resistance_only_mere_agreement
+    name: question_flood / resistance-only / mere agreement
     scenario_type: question_flood
     opening: Why Hegel? What does this do? What is the point? Why should this matter
       before I can just use the formula?
@@ -322,8 +1078,8 @@ scenarios:
       trigger_turn: -1
       trigger_signal: Why Hegel? What does this do? What is the point? Why should this
         matter before I can just use the formula?
-      scripted_responses: *a1
-    world_adaptation_spec: *a2
+      scripted_responses:
+        default: Okay.
     resistance_breakthrough_diagnostic: true
     resistance_signal_target: question_flood
     resistance_signal_gate:
@@ -331,8 +1087,189 @@ scenarios:
         required: true
       - label: state-disambiguating response
         required: true
-  - id: dag_resistance_rote_parroting_dag_only
-    name: rote_parroting / DAG-only
+  - id: dag_resistance_question_flood_resistance_only_formula_parroting
+    name: question_flood / resistance-only / formula parroting
+    scenario_type: question_flood
+    opening: Why Hegel? What does this do? What is the point? Why should this matter
+      before I can just use the formula?
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: question_flood"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: Why Hegel? What does this do? What is the point? Why should this
+        matter before I can just use the formula?
+      scripted_responses:
+        default: Master, servant, recognition, formula.
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: question_flood
+    resistance_signal_gate:
+      - label: collapsed question set
+        required: true
+      - label: state-disambiguating response
+        required: true
+  - id: dag_resistance_question_flood_resistance_only_tutor_rationale_adoption
+    name: question_flood / resistance-only / tutor rationale adoption
+    scenario_type: question_flood
+    opening: Why Hegel? What does this do? What is the point? Why should this matter
+      before I can just use the formula?
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: question_flood"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: Why Hegel? What does this do? What is the point? Why should this
+        matter before I can just use the formula?
+      scripted_responses:
+        default: As you said, your reason explains it.
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: question_flood
+    resistance_signal_gate:
+      - label: collapsed question set
+        required: true
+      - label: state-disambiguating response
+        required: true
+  - id: dag_resistance_question_flood_resistance_only_vague_explain_more
+    name: question_flood / resistance-only / vague explain more
+    scenario_type: question_flood
+    opening: Why Hegel? What does this do? What is the point? Why should this matter
+      before I can just use the formula?
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: question_flood"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: Why Hegel? What does this do? What is the point? Why should this
+        matter before I can just use the formula?
+      scripted_responses:
+        default: Can you explain more?
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: question_flood
+    resistance_signal_gate:
+      - label: collapsed question set
+        required: true
+      - label: state-disambiguating response
+        required: true
+  - id: dag_resistance_question_flood_combined_positive
+    name: question_flood / combined / positive uptake
+    scenario_type: question_flood
+    opening: Why Hegel? What does this do? What is the point? Why should this matter
+      before I can just use the formula?
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: question_flood"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: Why Hegel? What does this do? What is the point? Why should this
+        matter before I can just use the formula?
+      scripted_responses:
+        diagnose_with_discriminating_question: "The task asks me to collapse this to one
+          main question: what changes if the relation changes?"
+        elicit_prediction: I predict the formula breaks when the case changes, because I
+          need to explain the relation in my own words.
+        request_evidence: The task asks me to collapse this to one main question,
+          because the relation changes across cases.
+        ask_strategy_choice: I choose one small test case before asking for another explanation.
+        default: The task asks me to collapse this to one main question, because the
+          relation changes across cases.
+    world_adaptation_spec: *a1
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: question_flood
+    resistance_signal_gate:
+      - label: collapsed question set
+        required: true
+      - label: state-disambiguating response
+        required: true
+  - id: dag_resistance_question_flood_combined_mere_agreement
+    name: question_flood / combined / mere agreement
+    scenario_type: question_flood
+    opening: Why Hegel? What does this do? What is the point? Why should this matter
+      before I can just use the formula?
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: question_flood"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: Why Hegel? What does this do? What is the point? Why should this
+        matter before I can just use the formula?
+      scripted_responses:
+        default: Okay.
+    world_adaptation_spec: *a1
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: question_flood
+    resistance_signal_gate:
+      - label: collapsed question set
+        required: true
+      - label: state-disambiguating response
+        required: true
+  - id: dag_resistance_question_flood_combined_formula_parroting
+    name: question_flood / combined / formula parroting
+    scenario_type: question_flood
+    opening: Why Hegel? What does this do? What is the point? Why should this matter
+      before I can just use the formula?
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: question_flood"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: Why Hegel? What does this do? What is the point? Why should this
+        matter before I can just use the formula?
+      scripted_responses:
+        default: Master, servant, recognition, formula.
+    world_adaptation_spec: *a1
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: question_flood
+    resistance_signal_gate:
+      - label: collapsed question set
+        required: true
+      - label: state-disambiguating response
+        required: true
+  - id: dag_resistance_question_flood_combined_tutor_rationale_adoption
+    name: question_flood / combined / tutor rationale adoption
+    scenario_type: question_flood
+    opening: Why Hegel? What does this do? What is the point? Why should this matter
+      before I can just use the formula?
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: question_flood"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: Why Hegel? What does this do? What is the point? Why should this
+        matter before I can just use the formula?
+      scripted_responses:
+        default: As you said, your reason explains it.
+    world_adaptation_spec: *a1
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: question_flood
+    resistance_signal_gate:
+      - label: collapsed question set
+        required: true
+      - label: state-disambiguating response
+        required: true
+  - id: dag_resistance_question_flood_combined_vague_explain_more
+    name: question_flood / combined / vague explain more
+    scenario_type: question_flood
+    opening: Why Hegel? What does this do? What is the point? Why should this matter
+      before I can just use the formula?
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: question_flood"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: Why Hegel? What does this do? What is the point? Why should this
+        matter before I can just use the formula?
+      scripted_responses:
+        default: Can you explain more?
+    world_adaptation_spec: *a1
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: question_flood
+    resistance_signal_gate:
+      - label: collapsed question set
+        required: true
+      - label: state-disambiguating response
+        required: true
+  - id: dag_resistance_rote_parroting_dag_only_positive
+    name: rote_parroting / DAG-only / positive uptake
     scenario_type: rote_parroting
     opening: So I just repeat master, servant, recognition, formula? This still
       feels like parroting.
@@ -343,10 +1280,18 @@ scenarios:
       trigger_turn: -1
       trigger_signal: So I just repeat master, servant, recognition, formula? This
         still feels like parroting.
-      scripted_responses: *a1
-    world_adaptation_spec: *a2
-  - id: dag_resistance_rote_parroting_resistance_only
-    name: rote_parroting / resistance-only
+      scripted_responses:
+        diagnose_with_discriminating_question: The task asks me to name the missing step before continuing.
+        elicit_prediction: I predict the formula breaks when the case changes, because I
+          need to explain the relation in my own words.
+        request_evidence: I predict the formula breaks when the case changes, because I
+          need to explain the relation in my own words.
+        ask_strategy_choice: I choose one small test case before asking for another explanation.
+        default: I predict the formula breaks when the case changes, because I need to
+          explain the relation in my own words.
+    world_adaptation_spec: *a1
+  - id: dag_resistance_rote_parroting_dag_only_mere_agreement
+    name: rote_parroting / DAG-only / mere agreement
     scenario_type: rote_parroting
     opening: So I just repeat master, servant, recognition, formula? This still
       feels like parroting.
@@ -357,7 +1302,75 @@ scenarios:
       trigger_turn: -1
       trigger_signal: So I just repeat master, servant, recognition, formula? This
         still feels like parroting.
-      scripted_responses: *a1
+      scripted_responses:
+        default: Okay.
+    world_adaptation_spec: *a1
+  - id: dag_resistance_rote_parroting_dag_only_formula_parroting
+    name: rote_parroting / DAG-only / formula parroting
+    scenario_type: rote_parroting
+    opening: So I just repeat master, servant, recognition, formula? This still
+      feels like parroting.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: rote_parroting"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: So I just repeat master, servant, recognition, formula? This
+        still feels like parroting.
+      scripted_responses:
+        default: Master, servant, recognition, formula.
+    world_adaptation_spec: *a1
+  - id: dag_resistance_rote_parroting_dag_only_tutor_rationale_adoption
+    name: rote_parroting / DAG-only / tutor rationale adoption
+    scenario_type: rote_parroting
+    opening: So I just repeat master, servant, recognition, formula? This still
+      feels like parroting.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: rote_parroting"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: So I just repeat master, servant, recognition, formula? This
+        still feels like parroting.
+      scripted_responses:
+        default: As you said, your reason explains it.
+    world_adaptation_spec: *a1
+  - id: dag_resistance_rote_parroting_dag_only_vague_explain_more
+    name: rote_parroting / DAG-only / vague explain more
+    scenario_type: rote_parroting
+    opening: So I just repeat master, servant, recognition, formula? This still
+      feels like parroting.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: rote_parroting"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: So I just repeat master, servant, recognition, formula? This
+        still feels like parroting.
+      scripted_responses:
+        default: Can you explain more?
+    world_adaptation_spec: *a1
+  - id: dag_resistance_rote_parroting_resistance_only_positive
+    name: rote_parroting / resistance-only / positive uptake
+    scenario_type: rote_parroting
+    opening: So I just repeat master, servant, recognition, formula? This still
+      feels like parroting.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: rote_parroting"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: So I just repeat master, servant, recognition, formula? This
+        still feels like parroting.
+      scripted_responses:
+        diagnose_with_discriminating_question: The task asks me to name the missing step before continuing.
+        elicit_prediction: I predict the formula breaks when the case changes, because I
+          need to explain the relation in my own words.
+        request_evidence: I predict the formula breaks when the case changes, because I
+          need to explain the relation in my own words.
+        ask_strategy_choice: I choose one small test case before asking for another explanation.
+        default: I predict the formula breaks when the case changes, because I need to
+          explain the relation in my own words.
     resistance_breakthrough_diagnostic: true
     resistance_signal_target: rote_parroting
     resistance_signal_gate:
@@ -365,8 +1378,8 @@ scenarios:
         required: true
       - label: non-formulaic learner rationale
         required: true
-  - id: dag_resistance_rote_parroting_combined
-    name: rote_parroting / combined
+  - id: dag_resistance_rote_parroting_resistance_only_mere_agreement
+    name: rote_parroting / resistance-only / mere agreement
     scenario_type: rote_parroting
     opening: So I just repeat master, servant, recognition, formula? This still
       feels like parroting.
@@ -377,8 +1390,188 @@ scenarios:
       trigger_turn: -1
       trigger_signal: So I just repeat master, servant, recognition, formula? This
         still feels like parroting.
-      scripted_responses: *a1
-    world_adaptation_spec: *a2
+      scripted_responses:
+        default: Okay.
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: rote_parroting
+    resistance_signal_gate:
+      - label: learner-authored prediction
+        required: true
+      - label: non-formulaic learner rationale
+        required: true
+  - id: dag_resistance_rote_parroting_resistance_only_formula_parroting
+    name: rote_parroting / resistance-only / formula parroting
+    scenario_type: rote_parroting
+    opening: So I just repeat master, servant, recognition, formula? This still
+      feels like parroting.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: rote_parroting"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: So I just repeat master, servant, recognition, formula? This
+        still feels like parroting.
+      scripted_responses:
+        default: Master, servant, recognition, formula.
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: rote_parroting
+    resistance_signal_gate:
+      - label: learner-authored prediction
+        required: true
+      - label: non-formulaic learner rationale
+        required: true
+  - id: dag_resistance_rote_parroting_resistance_only_tutor_rationale_adoption
+    name: rote_parroting / resistance-only / tutor rationale adoption
+    scenario_type: rote_parroting
+    opening: So I just repeat master, servant, recognition, formula? This still
+      feels like parroting.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: rote_parroting"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: So I just repeat master, servant, recognition, formula? This
+        still feels like parroting.
+      scripted_responses:
+        default: As you said, your reason explains it.
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: rote_parroting
+    resistance_signal_gate:
+      - label: learner-authored prediction
+        required: true
+      - label: non-formulaic learner rationale
+        required: true
+  - id: dag_resistance_rote_parroting_resistance_only_vague_explain_more
+    name: rote_parroting / resistance-only / vague explain more
+    scenario_type: rote_parroting
+    opening: So I just repeat master, servant, recognition, formula? This still
+      feels like parroting.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: rote_parroting"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: So I just repeat master, servant, recognition, formula? This
+        still feels like parroting.
+      scripted_responses:
+        default: Can you explain more?
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: rote_parroting
+    resistance_signal_gate:
+      - label: learner-authored prediction
+        required: true
+      - label: non-formulaic learner rationale
+        required: true
+  - id: dag_resistance_rote_parroting_combined_positive
+    name: rote_parroting / combined / positive uptake
+    scenario_type: rote_parroting
+    opening: So I just repeat master, servant, recognition, formula? This still
+      feels like parroting.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: rote_parroting"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: So I just repeat master, servant, recognition, formula? This
+        still feels like parroting.
+      scripted_responses:
+        diagnose_with_discriminating_question: The task asks me to name the missing step before continuing.
+        elicit_prediction: I predict the formula breaks when the case changes, because I
+          need to explain the relation in my own words.
+        request_evidence: I predict the formula breaks when the case changes, because I
+          need to explain the relation in my own words.
+        ask_strategy_choice: I choose one small test case before asking for another explanation.
+        default: I predict the formula breaks when the case changes, because I need to
+          explain the relation in my own words.
+    world_adaptation_spec: *a1
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: rote_parroting
+    resistance_signal_gate:
+      - label: learner-authored prediction
+        required: true
+      - label: non-formulaic learner rationale
+        required: true
+  - id: dag_resistance_rote_parroting_combined_mere_agreement
+    name: rote_parroting / combined / mere agreement
+    scenario_type: rote_parroting
+    opening: So I just repeat master, servant, recognition, formula? This still
+      feels like parroting.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: rote_parroting"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: So I just repeat master, servant, recognition, formula? This
+        still feels like parroting.
+      scripted_responses:
+        default: Okay.
+    world_adaptation_spec: *a1
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: rote_parroting
+    resistance_signal_gate:
+      - label: learner-authored prediction
+        required: true
+      - label: non-formulaic learner rationale
+        required: true
+  - id: dag_resistance_rote_parroting_combined_formula_parroting
+    name: rote_parroting / combined / formula parroting
+    scenario_type: rote_parroting
+    opening: So I just repeat master, servant, recognition, formula? This still
+      feels like parroting.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: rote_parroting"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: So I just repeat master, servant, recognition, formula? This
+        still feels like parroting.
+      scripted_responses:
+        default: Master, servant, recognition, formula.
+    world_adaptation_spec: *a1
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: rote_parroting
+    resistance_signal_gate:
+      - label: learner-authored prediction
+        required: true
+      - label: non-formulaic learner rationale
+        required: true
+  - id: dag_resistance_rote_parroting_combined_tutor_rationale_adoption
+    name: rote_parroting / combined / tutor rationale adoption
+    scenario_type: rote_parroting
+    opening: So I just repeat master, servant, recognition, formula? This still
+      feels like parroting.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: rote_parroting"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: So I just repeat master, servant, recognition, formula? This
+        still feels like parroting.
+      scripted_responses:
+        default: As you said, your reason explains it.
+    world_adaptation_spec: *a1
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: rote_parroting
+    resistance_signal_gate:
+      - label: learner-authored prediction
+        required: true
+      - label: non-formulaic learner rationale
+        required: true
+  - id: dag_resistance_rote_parroting_combined_vague_explain_more
+    name: rote_parroting / combined / vague explain more
+    scenario_type: rote_parroting
+    opening: So I just repeat master, servant, recognition, formula? This still
+      feels like parroting.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: rote_parroting"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: So I just repeat master, servant, recognition, formula? This
+        still feels like parroting.
+      scripted_responses:
+        default: Can you explain more?
+    world_adaptation_spec: *a1
     resistance_breakthrough_diagnostic: true
     resistance_signal_target: rote_parroting
     resistance_signal_gate:
