@@ -483,12 +483,25 @@ function dialogueToPoeticsTurns(dialogue = []) {
     });
 }
 
-function publicPeripeteiaSignature(text = '') {
+export function publicPeripeteiaSignature(text = '') {
   const lower = String(text || '').toLowerCase();
-  const oldCheck = /\bold check\b|\bearlier check\b|\bi was (?:using|treating|reading)\b/.test(lower);
-  const newCheck = /\bnow the check\b|\bnew check\b|\breplacement check\b|\binstead\b/.test(lower);
-  const taskTurn = /\bactual task\b|\bactual problem\b|\bvalid for (?:the )?(?:case|task|problem)\b/.test(lower);
-  return oldCheck && newCheck && taskTurn;
+  const oldCheck =
+    /\bold check\b|\bearlier check\b|\bi was (?:using|treating|reading)\b/.test(lower) ||
+    /\bterms? repeat\b|\brepeated terms?\b|\bpattern is there\b|\bpattern shows up\b/.test(lower);
+  const oldCheckRejected =
+    /\bonly tells? me\b|\bnot (?:that|enough|show)\b|\bdoes not show\b|\bnot just\b|\binstead of just\b/.test(lower);
+  const newCheck =
+    /\bnow the check\b|\bnew check\b|\breplacement check\b|\binstead\b/.test(lower) ||
+    /\bconnect(?:ing)? (?:the )?(?:repeat|pattern|step|move)\b|\bcheck what\b|\bcheck that\b|\bnext step is justified only if\b/.test(
+      lower,
+    );
+  const taskTurn =
+    /\bactual task\b|\bactual problem\b|\bvalid for (?:the )?(?:case|task|problem)\b/.test(lower) ||
+    /\bactual(?:ly)? need to (?:prove|compute|show)\b|\btrying to (?:prove|compute|show)\b|\bfinal goal\b|\bfinal question\b/.test(
+      lower,
+    );
+  const reversal = /\bbut\b|\bnot\b|\binstead\b|\bonly if\b|\bnow\b/.test(lower);
+  return oldCheck && (oldCheckRejected || reversal) && newCheck && taskTurn;
 }
 
 function analyzeScenePeripeteia({ scene, armConfig, result }) {
@@ -496,13 +509,42 @@ function analyzeScenePeripeteia({ scene, armConfig, result }) {
   const analyzer = analyzePeripeteia(turns, [], {
     tutorAdaptationPolicy: armConfig.drama_routing ? 'peripeteia' : 'none',
   });
-  const publicText = [...tutorTexts(result), ...learnerTexts(result)].join('\n');
+  const postOpeningLearnerText = learnerTexts(result).slice(1).join('\n') || learnerTexts(result).join('\n');
+  const publicText = [...tutorTexts(result), postOpeningLearnerText].join('\n');
   const publicSignature = publicPeripeteiaSignature(publicText);
   return {
+    fixture_required: scene.dramatic_contract.requires_peripeteia === true,
     required: scene.dramatic_contract.requires_peripeteia === true && armConfig.drama_routing === true,
     observed: publicSignature || analyzer.tutor_adaptive_mechanism === true,
     public_signature: publicSignature,
     analyzer,
+  };
+}
+
+function reanalyzeSceneRow({ fixture, armConfig, row, targetLabels }) {
+  const scene = fixture.scenes[row.scene_index];
+  if (!scene) return row;
+  const postOpeningLearnerText = (row.learner_texts || []).slice(1).join('\n') || (row.learner_texts || []).join('\n');
+  const publicText = [...(row.tutor_texts || []), postOpeningLearnerText].join('\n');
+  const publicSignature = publicPeripeteiaSignature(publicText);
+  const peripeteia = {
+    ...(row.peripeteia || {}),
+    fixture_required: scene.dramatic_contract.requires_peripeteia === true,
+    required: scene.dramatic_contract.requires_peripeteia === true && armConfig.drama_routing === true,
+    observed: publicSignature || row.peripeteia?.analyzer?.tutor_adaptive_mechanism === true,
+    public_signature: publicSignature,
+  };
+  const frameworkSuccess =
+    row.graph_outcome === 'success' &&
+    sceneEvidenceSatisfied(scene, Array.isArray(row.evidence_labels) ? row.evidence_labels : []);
+  return {
+    ...row,
+    outcome: frameworkSuccess ? 'success' : row.graph_outcome === 'failure' ? 'failure' : 'inconclusive',
+    framework_contract_satisfied: frameworkSuccess,
+    first_response_success: frameworkSuccess && !row.staged_followup,
+    peripeteia,
+    target_label_leaks: targetLabelLeaks(row.public_learner_context, targetLabels),
+    public_leak_violations: publicLeakViolations([...(row.tutor_texts || []), ...(row.learner_texts || [])]),
   };
 }
 
@@ -562,7 +604,7 @@ function aggregateArm(armResult) {
   const scenes = armResult.scenes;
   const transferScenes = scenes.filter((scene) => scene.transfer);
   const peripeteiaRequired = scenes.filter((scene) => scene.peripeteia.required);
-  const peripeteiaUnrequired = scenes.filter((scene) => !scene.peripeteia.required);
+  const peripeteiaUnrequired = scenes.filter((scene) => !scene.peripeteia.fixture_required);
   const aggregate = {
     label: armResult.label,
     proof_policy: armResult.arm_config.proof_policy,
@@ -643,14 +685,126 @@ function aggregateReport(armResults) {
   };
 }
 
-async function runArm({ fixture, arm, llm, learnerMode, seedCount, targetLabels, traceEvents, verbose }) {
+function checkpointPathFor(outDir) {
+  return path.join(outDir, 'checkpoint.json');
+}
+
+function partialTracePathFor(outDir) {
+  return path.join(outDir, 'partial-trace.ndjson');
+}
+
+function initialCheckpoint({ fixture, llmMode, learnerMode, seedCount, armOrder, provider, model }) {
+  return {
+    kind: 'character_dag_drama_framework_checkpoint',
+    version: '1.0',
+    fixture_path: fixture.path,
+    llm_mode: llmMode,
+    learner_mode: learnerMode,
+    seed_count: seedCount,
+    provider: provider || null,
+    model: model || null,
+    arm_order: armOrder,
+    arms: {},
+    trace_events: [],
+    updated_at: null,
+  };
+}
+
+function validateCheckpoint(checkpoint, { fixture, llmMode, learnerMode, seedCount, armOrder }) {
+  if (!checkpoint) return;
+  if (checkpoint.kind !== 'character_dag_drama_framework_checkpoint') {
+    throw new Error(`checkpoint kind mismatch: ${checkpoint.kind}`);
+  }
+  const expected = {
+    fixture_path: fixture.path,
+    llm_mode: llmMode,
+    learner_mode: learnerMode,
+    seed_count: seedCount,
+    arm_order: armOrder.join(','),
+  };
+  const actual = {
+    fixture_path: checkpoint.fixture_path,
+    llm_mode: checkpoint.llm_mode,
+    learner_mode: checkpoint.learner_mode,
+    seed_count: checkpoint.seed_count,
+    arm_order: (checkpoint.arm_order || []).join(','),
+  };
+  for (const [key, expectedValue] of Object.entries(expected)) {
+    if (actual[key] !== expectedValue) {
+      throw new Error(`checkpoint ${key} mismatch: expected ${expectedValue}, got ${actual[key]}`);
+    }
+  }
+}
+
+function loadCheckpoint({ checkpointPath, fixture, llmMode, learnerMode, seedCount, armOrder }) {
+  if (!fs.existsSync(checkpointPath)) return null;
+  const checkpoint = JSON.parse(fs.readFileSync(checkpointPath, 'utf8'));
+  validateCheckpoint(checkpoint, { fixture, llmMode, learnerMode, seedCount, armOrder });
+  return checkpoint;
+}
+
+function writeCheckpoint({ outDir, checkpoint }) {
+  if (!checkpoint) return;
+  fs.mkdirSync(outDir, { recursive: true });
+  checkpoint.updated_at = new Date().toISOString();
+  fs.writeFileSync(checkpointPathFor(outDir), `${JSON.stringify(checkpoint, null, 2)}\n`);
+  fs.writeFileSync(
+    partialTracePathFor(outDir),
+    `${(checkpoint.trace_events || []).map((event) => JSON.stringify(event)).join('\n')}\n`,
+  );
+}
+
+function armCheckpointView({ fixture, arm, armConfig, learnerMode, seedCount, seedStates, sceneRows }) {
+  return {
+    arm,
+    label: armConfig.label,
+    arm_config: armConfig,
+    learner_mode: learnerMode,
+    seed_count: seedCount,
+    completed_scene_n: sceneRows.length,
+    expected_scene_n: seedCount * fixture.scenes.length,
+    seed_states: seedStates,
+    scenes: sceneRows,
+  };
+}
+
+function seedResultsFromRows({ seedCount, sceneRows, seedStates, arm }) {
+  return Array.from({ length: seedCount }, (_, seedIndex) => ({
+    seed_index: seedIndex,
+    final_character_state:
+      seedStates[String(seedIndex)] ||
+      initialCharacterState({ learnerId: `character-dag-${arm}-seed-${seedIndex}`, arm }),
+    scenes: sceneRows
+      .filter((row) => row.seed_index === seedIndex)
+      .sort((a, b) => Number(a.scene_index) - Number(b.scene_index)),
+  }));
+}
+
+async function runArm({
+  fixture,
+  arm,
+  llm,
+  learnerMode,
+  seedCount,
+  targetLabels,
+  traceEvents,
+  verbose,
+  checkpointState,
+  outDir,
+  reanalyzeExisting,
+}) {
   const armConfig = fixture.arms[arm];
-  const sceneRows = [];
-  const seedResults = [];
+  const existing = checkpointState?.arms?.[arm] || null;
+  const sceneRows = existing?.scenes ? clone(existing.scenes) : [];
+  const seedStates = existing?.seed_states ? clone(existing.seed_states) : {};
   for (let seedIndex = 0; seedIndex < seedCount; seedIndex++) {
-    let characterState = initialCharacterState({ learnerId: `character-dag-${arm}-seed-${seedIndex}`, arm });
-    const seedScenes = [];
-    for (let sceneIndex = 0; sceneIndex < fixture.scenes.length; sceneIndex++) {
+    const completedForSeed = sceneRows
+      .filter((row) => row.seed_index === seedIndex)
+      .sort((a, b) => Number(a.scene_index) - Number(b.scene_index));
+    let characterState =
+      seedStates[String(seedIndex)] ||
+      initialCharacterState({ learnerId: `character-dag-${arm}-seed-${seedIndex}`, arm });
+    for (let sceneIndex = completedForSeed.length; sceneIndex < fixture.scenes.length; sceneIndex++) {
       const scene = fixture.scenes[sceneIndex];
       const before = characterState;
       const scenario = buildFrameworkSceneScenario({
@@ -714,7 +868,6 @@ async function runArm({ fixture, arm, llm, learnerMode, seedCount, targetLabels,
         adaptation_trace: result.final.adaptationTrace || [],
       };
       sceneRows.push(row);
-      seedScenes.push(row);
       traceEvents.push({
         type: 'observer_result',
         arm,
@@ -741,9 +894,39 @@ async function runArm({ fixture, arm, llm, learnerMode, seedCount, targetLabels,
           `[character-dag] ${arm} seed=${seedIndex} ${scene.id}: outcome=${row.outcome} first=${row.first_response_success} staged=${row.staged_followup} peripeteia=${row.peripeteia.observed} maturity=${row.maturity_after}`,
         );
       }
+      seedStates[String(seedIndex)] = characterState;
+      if (checkpointState) {
+        checkpointState.trace_events = traceEvents;
+        checkpointState.arms[arm] = armCheckpointView({
+          fixture,
+          arm,
+          armConfig,
+          learnerMode,
+          seedCount,
+          seedStates,
+          sceneRows,
+        });
+        writeCheckpoint({ outDir, checkpoint: checkpointState });
+      }
     }
-    seedResults.push({ seed_index: seedIndex, final_character_state: characterState, scenes: seedScenes });
   }
+  const finalSceneRows = reanalyzeExisting
+    ? sceneRows.map((row) => reanalyzeSceneRow({ fixture, armConfig, row, targetLabels }))
+    : sceneRows;
+  if (checkpointState && reanalyzeExisting) {
+    checkpointState.trace_events = traceEvents;
+    checkpointState.arms[arm] = armCheckpointView({
+      fixture,
+      arm,
+      armConfig,
+      learnerMode,
+      seedCount,
+      seedStates,
+      sceneRows: finalSceneRows,
+    });
+    writeCheckpoint({ outDir, checkpoint: checkpointState });
+  }
+  const seedResults = seedResultsFromRows({ seedCount, sceneRows: finalSceneRows, seedStates, arm });
   return {
     arm,
     label: armConfig.label,
@@ -752,7 +935,7 @@ async function runArm({ fixture, arm, llm, learnerMode, seedCount, targetLabels,
     seed_count: seedCount,
     final_character_states: seedResults.map((seed) => seed.final_character_state),
     seed_results: seedResults,
-    scenes: sceneRows,
+    scenes: finalSceneRows,
   };
 }
 
@@ -833,6 +1016,9 @@ export async function runCharacterDagDramaFramework({
   learnerMode = 'scripted',
   seeds = 1,
   verbose = false,
+  checkpoint = null,
+  resume = false,
+  reanalyzeExisting = false,
 } = {}) {
   const fixture = loadFrameworkFixture(fixturePath);
   const llmMode = String(llm || 'mock').toLowerCase();
@@ -844,11 +1030,43 @@ export async function runCharacterDagDramaFramework({
   const seedCount = parseSeedCount(seeds);
   const armOrder = parseArmList(Array.isArray(arms) ? arms.join(',') : arms, fixture);
   const targetLabels = collectTargetEvidenceLabels(fixture);
-  const traceEvents = [];
+  const checkpointEnabled =
+    reanalyzeExisting || resume || (checkpoint == null ? llmMode === 'real' : Boolean(checkpoint));
   process.env.ADAPTIVE_TUTOR_LLM = llmMode;
   process.env.ADAPTIVE_POLICY_MODE = 'closed_loop';
   if (llmMode === 'real') setActiveCellConfig({ provider, modelAlias: model });
   try {
+    const checkpointState =
+      checkpointEnabled && resume
+        ? loadCheckpoint({
+            checkpointPath: checkpointPathFor(outDir),
+            fixture,
+            llmMode,
+            learnerMode: normalizedLearnerMode,
+            seedCount,
+            armOrder,
+          }) ||
+          initialCheckpoint({
+            fixture,
+            llmMode,
+            learnerMode: normalizedLearnerMode,
+            seedCount,
+            armOrder,
+            provider,
+            model,
+          })
+        : checkpointEnabled
+          ? initialCheckpoint({
+              fixture,
+              llmMode,
+              learnerMode: normalizedLearnerMode,
+              seedCount,
+              armOrder,
+              provider,
+              model,
+            })
+          : null;
+    const traceEvents = checkpointState?.trace_events || [];
     const armResults = [];
     for (const arm of armOrder) {
       armResults.push(
@@ -861,6 +1079,9 @@ export async function runCharacterDagDramaFramework({
           targetLabels,
           traceEvents,
           verbose,
+          checkpointState,
+          outDir,
+          reanalyzeExisting,
         }),
       );
     }
@@ -904,6 +1125,9 @@ function parseArgs(argv = process.argv.slice(2)) {
     learnerMode: 'scripted',
     seeds: 1,
     verbose: false,
+    checkpoint: null,
+    resume: false,
+    reanalyzeExisting: false,
   };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -924,7 +1148,16 @@ function parseArgs(argv = process.argv.slice(2)) {
     else if (arg === '--seeds') opts.seeds = argv[++i];
     else if (arg.startsWith('--seeds=')) opts.seeds = arg.slice('--seeds='.length);
     else if (arg === '--verbose') opts.verbose = true;
-    else if (arg === '--help' || arg === '-h') opts.help = true;
+    else if (arg === '--checkpoint') opts.checkpoint = true;
+    else if (arg === '--no-checkpoint') opts.checkpoint = false;
+    else if (arg === '--resume') {
+      opts.resume = true;
+      if (opts.checkpoint == null) opts.checkpoint = true;
+    } else if (arg === '--reanalyze-existing') {
+      opts.reanalyzeExisting = true;
+      opts.resume = true;
+      if (opts.checkpoint == null) opts.checkpoint = true;
+    } else if (arg === '--help' || arg === '-h') opts.help = true;
     else throw new Error(`unknown argument: ${arg}`);
   }
   return opts;
@@ -945,6 +1178,10 @@ function usage() {
     '  --seeds N              Repeat the linked sequence N times per arm. Default: 1',
     '  --arms A,B,C           Optional comma-separated arm subset',
     '  --out-dir DIR          Default: exports/character-dag-drama-framework',
+    '  --checkpoint           Write checkpoint.json + partial-trace.ndjson after every completed scene',
+    '  --no-checkpoint        Disable checkpointing. Default: enabled for --llm real, disabled for mock',
+    '  --resume               Resume from OUT_DIR/checkpoint.json',
+    '  --reanalyze-existing   Resume and re-score stored checkpoint rows without new LLM calls',
     '  --verbose              Print scene-level progress',
   ].join('\n');
 }

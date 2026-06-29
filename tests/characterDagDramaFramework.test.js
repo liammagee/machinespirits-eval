@@ -10,6 +10,7 @@ import {
   DEFAULT_ARM_ORDER,
   buildFrameworkSceneScenario,
   loadFrameworkFixture,
+  publicPeripeteiaSignature,
   runCharacterDagDramaFramework,
 } from '../scripts/run-character-dag-drama-framework.js';
 
@@ -88,6 +89,19 @@ describe('Synthetic Character-DAG drama framework', () => {
     assert.ok(scenario.hidden.publicLearnerContext.characterState);
   });
 
+  it('detects real-style peripeteia language without requiring the literal phrase now the check', () => {
+    assert.equal(
+      publicPeripeteiaSignature(
+        [
+          'Just seeing the terms repeat only tells me there is a pattern, not that it answers the question.',
+          'The next step is justified if I connect the repeat to the thing we actually need to prove or compute.',
+          'So I should check what affects the final goal, not just say it repeats.',
+        ].join(' '),
+      ),
+      true,
+    );
+  });
+
   it('runs the mock scripted benchmark and writes all artifacts', async () => {
     const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'character-dag-drama-'));
     const { report, artifacts } = await runCharacterDagDramaFramework({
@@ -117,6 +131,38 @@ describe('Synthetic Character-DAG drama framework', () => {
     assert.ok(fs.existsSync(artifacts.reportPath));
     assert.ok(fs.existsSync(artifacts.fixturePath));
     assert.ok(fs.existsSync(artifacts.tracePath));
+  });
+
+  it('writes a checkpoint and resumes without duplicating completed scenes', async () => {
+    const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'character-dag-drama-checkpoint-'));
+    const first = await runCharacterDagDramaFramework({
+      llm: 'mock',
+      learnerMode: 'scripted',
+      seeds: 1,
+      arms: ['policy_only'],
+      checkpoint: true,
+      outDir,
+    });
+    const checkpointPath = path.join(outDir, 'checkpoint.json');
+    const partialTracePath = path.join(outDir, 'partial-trace.ndjson');
+
+    assert.ok(fs.existsSync(checkpointPath));
+    assert.ok(fs.existsSync(partialTracePath));
+    assert.equal(first.report.arms[0].scenes.length, 6);
+    assert.equal(JSON.parse(fs.readFileSync(checkpointPath, 'utf8')).arms.policy_only.scenes.length, 6);
+
+    const resumed = await runCharacterDagDramaFramework({
+      llm: 'mock',
+      learnerMode: 'scripted',
+      seeds: 1,
+      arms: ['policy_only'],
+      checkpoint: true,
+      resume: true,
+      outDir,
+    });
+
+    assert.equal(resumed.report.arms[0].scenes.length, 6);
+    assert.equal(JSON.parse(fs.readFileSync(checkpointPath, 'utf8')).arms.policy_only.scenes.length, 6);
   });
 
   it('runs the mock llm contrast across repeated seeds', async () => {
