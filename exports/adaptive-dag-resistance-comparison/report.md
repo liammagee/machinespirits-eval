@@ -1,7 +1,10 @@
 # Adaptive DAG/Resistance Comparison
 
-Generated: 2026-06-29T06:46:59.556Z
-Run id: `eval-2026-06-29-3247b790`
+Generated: 2026-06-29T07:02:22.850Z
+Run id: `eval-2026-06-29-c3ba747f`
+LLM mode: `mock`
+Conditions: `all`
+Runs per scenario: 1
 Rows: 75
 
 ## Claim Boundary

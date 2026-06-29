@@ -1,9 +1,16 @@
 {
-  "generatedAt": "2026-06-29T06:46:59.556Z",
-  "kind": "mock_adaptation_policy_layer_ablation",
+  "generatedAt": "2026-06-29T07:02:22.850Z",
+  "kind": "adaptation_policy_layer_ablation",
   "profileName": "mock_dag_resistance_comparison",
-  "runId": "eval-2026-06-29-3247b790",
+  "runId": "eval-2026-06-29-c3ba747f",
   "llmMode": "mock",
+  "conditions": "all",
+  "runsPerConfig": 1,
+  "strict": true,
+  "maxCostUsd": null,
+  "provider": null,
+  "model": null,
+  "budget": null,
   "runtime": {
     "tempArtifactsPreserved": false,
     "tmpDir": null,
@@ -11,6 +18,8 @@
     "tmpLogs": null,
     "scenarioPath": null
   },
+  "scenarioTemplateN": 75,
+  "plannedRows": 75,
   "scenarioN": 75,
   "rowN": 75,
   "worldSpec": {
@@ -5609,6 +5618,8 @@
     },
     "bySignal": {
       "boredom": {
+        "positiveRows": 3,
+        "negativeRows": 12,
         "allArmsSucceeded": true,
         "combinedHasBothPolicySources": true,
         "combinedEvidenceJoin": true,
@@ -5618,6 +5629,8 @@
         "negativeControlsRejected": true
       },
       "frustration": {
+        "positiveRows": 3,
+        "negativeRows": 12,
         "allArmsSucceeded": true,
         "combinedHasBothPolicySources": true,
         "combinedEvidenceJoin": true,
@@ -5627,6 +5640,8 @@
         "negativeControlsRejected": true
       },
       "irrelevance": {
+        "positiveRows": 3,
+        "negativeRows": 12,
         "allArmsSucceeded": true,
         "combinedHasBothPolicySources": true,
         "combinedEvidenceJoin": true,
@@ -5636,6 +5651,8 @@
         "negativeControlsRejected": true
       },
       "question_flood": {
+        "positiveRows": 3,
+        "negativeRows": 12,
         "allArmsSucceeded": true,
         "combinedHasBothPolicySources": true,
         "combinedEvidenceJoin": true,
@@ -5645,6 +5662,8 @@
         "negativeControlsRejected": true
       },
       "rote_parroting": {
+        "positiveRows": 3,
+        "negativeRows": 12,
         "allArmsSucceeded": true,
         "combinedHasBothPolicySources": true,
         "combinedEvidenceJoin": true,

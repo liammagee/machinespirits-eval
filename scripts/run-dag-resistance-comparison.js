@@ -167,9 +167,16 @@ function negativeScriptedResponses(control) {
 
 function parseArgs(argv = process.argv.slice(2)) {
   const opts = {
-    outDir: DEFAULT_OUT_DIR,
+    outDir: null,
     keepTemp: false,
     verbose: false,
+    llm: 'mock',
+    conditions: null,
+    runsPerConfig: 1,
+    maxCostUsd: null,
+    provider: null,
+    model: null,
+    strict: null,
   };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -181,20 +188,78 @@ function parseArgs(argv = process.argv.slice(2)) {
       opts.keepTemp = true;
     } else if (arg === '--verbose') {
       opts.verbose = true;
+    } else if (arg === '--llm') {
+      opts.llm = argv[++i];
+    } else if (arg.startsWith('--llm=')) {
+      opts.llm = arg.slice('--llm='.length);
+    } else if (arg === '--conditions') {
+      opts.conditions = argv[++i];
+    } else if (arg.startsWith('--conditions=')) {
+      opts.conditions = arg.slice('--conditions='.length);
+    } else if (arg === '--runs') {
+      opts.runsPerConfig = Number(argv[++i]);
+    } else if (arg.startsWith('--runs=')) {
+      opts.runsPerConfig = Number(arg.slice('--runs='.length));
+    } else if (arg === '--max-cost') {
+      opts.maxCostUsd = Number(argv[++i]);
+    } else if (arg.startsWith('--max-cost=')) {
+      opts.maxCostUsd = Number(arg.slice('--max-cost='.length));
+    } else if (arg === '--provider') {
+      opts.provider = argv[++i];
+    } else if (arg.startsWith('--provider=')) {
+      opts.provider = arg.slice('--provider='.length);
+    } else if (arg === '--model') {
+      opts.model = argv[++i];
+    } else if (arg.startsWith('--model=')) {
+      opts.model = arg.slice('--model='.length);
+    } else if (arg === '--strict') {
+      opts.strict = true;
+    } else if (arg === '--no-strict') {
+      opts.strict = false;
     } else if (arg === '--help' || arg === '-h') {
       opts.help = true;
     } else {
       throw new Error(`unknown argument: ${arg}`);
     }
   }
+  opts.llm = String(opts.llm || 'mock').toLowerCase();
+  if (!['mock', 'real'].includes(opts.llm)) throw new Error(`--llm must be mock or real (got ${opts.llm})`);
+  if (opts.conditions == null) opts.conditions = opts.llm === 'real' ? 'positive' : 'all';
+  opts.conditions = String(opts.conditions || 'all').toLowerCase();
+  if (!['all', 'positive', 'negative'].includes(opts.conditions)) {
+    throw new Error(`--conditions must be all, positive, or negative (got ${opts.conditions})`);
+  }
+  if (!Number.isInteger(opts.runsPerConfig) || opts.runsPerConfig < 1) {
+    throw new Error(`--runs must be a positive integer (got ${opts.runsPerConfig})`);
+  }
+  if (opts.maxCostUsd != null && !(opts.maxCostUsd > 0)) {
+    throw new Error(`--max-cost must be a positive number (got ${opts.maxCostUsd})`);
+  }
+  if (opts.llm === 'real' && !(opts.maxCostUsd > 0)) {
+    throw new Error('--llm real requires --max-cost <usd>; use an explicit ceiling for metered runs');
+  }
+  if (opts.strict == null) opts.strict = opts.llm === 'mock';
+  if (!opts.outDir) opts.outDir = opts.llm === 'real' ? `${DEFAULT_OUT_DIR}-real` : DEFAULT_OUT_DIR;
   return opts;
 }
 
 function usage() {
   return [
-    'Usage: node scripts/run-dag-resistance-comparison.js [--out-dir <dir>] [--keep-temp] [--verbose]',
+    'Usage: node scripts/run-dag-resistance-comparison.js [options]',
     '',
-    'Runs a no-cost mock ablation over DAG-only, resistance-only, and combined policy-layer arms.',
+    'Runs a mock or real ablation over DAG-only, resistance-only, and combined policy-layer arms.',
+    '',
+    'Options:',
+    '  --llm mock|real          Backend. Default: mock',
+    '  --conditions all|positive|negative',
+    '                          Default: all for mock, positive for real',
+    '  --runs N                Repetitions per scenario. Default: 1',
+    '  --max-cost USD          Required for --llm real',
+    '  --provider NAME         Optional real backend provider override',
+    '  --model ALIAS_OR_ID     Optional real backend model override',
+    '  --strict / --no-strict  Throw on validation failures. Default: strict for mock, non-strict for real',
+    '  --out-dir DIR           Default: exports/adaptive-dag-resistance-comparison[-real]',
+    '  --keep-temp             Preserve isolated temp DB/logs',
   ].join('\n');
 }
 
@@ -210,32 +275,42 @@ function resistancePolicy(signal, resistanceEvidence) {
   };
 }
 
-export function buildComparisonScenarios() {
+function controlsForConditions(conditions) {
+  if (conditions === 'positive') return [{ id: 'positive', label: 'positive uptake' }];
+  if (conditions === 'negative') return NEGATIVE_CONTROLS;
+  return [{ id: 'positive', label: 'positive uptake' }, ...NEGATIVE_CONTROLS];
+}
+
+export function buildComparisonScenarios({ conditions = 'all', scripted = true } = {}) {
   const scenarios = [];
   const metadata = new Map();
+  const controls = controlsForConditions(conditions);
   for (const spec of RESISTANCE_CASES) {
     for (const arm of ARM_ORDER) {
-      for (const control of [{ id: 'positive', label: 'positive uptake' }, ...NEGATIVE_CONTROLS]) {
+      for (const control of controls) {
         const extras = {};
         if (arm === 'dag_only' || arm === 'combined') extras.world_adaptation_spec = WORLD_SPEC;
         if (arm === 'resistance_only' || arm === 'combined') {
           Object.assign(extras, resistancePolicy(spec.signal, spec.resistanceEvidence));
         }
         const id = scenarioId(spec.signal, arm, control.id);
+        const hidden = {
+          actual_misconception: `resistance signal: ${spec.signal}`,
+          actual_sophistication: 'intermediate',
+          trigger_turn: -1,
+          trigger_signal: spec.opening,
+        };
+        if (scripted) {
+          hidden.scripted_responses =
+            control.id === 'positive' ? positiveScriptedResponses(spec.signal) : negativeScriptedResponses(control);
+        }
         scenarios.push({
           id,
           name: `${spec.signal} / ${ARM_LABELS[arm]} / ${control.label}`,
           scenario_type: spec.signal,
           opening: spec.opening,
           max_turns: 2,
-          hidden: {
-            actual_misconception: `resistance signal: ${spec.signal}`,
-            actual_sophistication: 'intermediate',
-            trigger_turn: -1,
-            trigger_signal: spec.opening,
-            scripted_responses:
-              control.id === 'positive' ? positiveScriptedResponses(spec.signal) : negativeScriptedResponses(control),
-          },
+          hidden,
           ...extras,
         });
         metadata.set(id, {
@@ -272,6 +347,10 @@ function policyLayerFor(contract) {
   return contract?.selected_action?.adaptation_policy_layer || contract?.selected_action?.policy_layer || null;
 }
 
+function baseScenarioId(id = '') {
+  return String(id).replace(/__r\d+$/u, '');
+}
+
 function trueEvidenceLabels(record) {
   const categories = record?.evidence?.[0]?.categories || {};
   return Object.entries(categories)
@@ -299,7 +378,7 @@ function summarizeTrace({ row, trace, metadata }) {
   const ledger = firstClosedLedger(trace);
   const selected = contract?.selected_action || {};
   const policyLayer = policyLayerFor(contract);
-  const meta = metadata.get(row.scenario_id);
+  const meta = metadata.get(row.scenario_id) || metadata.get(baseScenarioId(row.scenario_id));
   if (!meta) throw new Error(`missing scenario metadata for ${row.scenario_id}`);
   const requiredEvidence =
     ledger?.success_signal?.required_evidence || selected.success_signal?.required_evidence || [];
@@ -369,17 +448,24 @@ function aggregateRows(rows) {
     const armMap = Object.fromEntries(signalRows.map((row) => [row.arm, row]));
     const dagRequired = armMap.dag_only?.requiredEvidence || [];
     const combinedRequired = armMap.combined?.requiredEvidence || [];
+    const hasPositiveRows = signalRows.length > 0;
+    const signalNegativeRows = negativeRows.filter((row) => row.signal === spec.signal);
     bySignal[spec.signal] = {
-      allArmsSucceeded: ARM_ORDER.every((arm) => armMap[arm]?.firstOutcome === 'success'),
-      combinedHasBothPolicySources: Boolean(armMap.combined?.proofDagId && armMap.combined?.observedResistance),
-      combinedEvidenceJoin:
-        includesAll(combinedRequired, dagRequired) && includesAll(combinedRequired, spec.resistanceEvidence),
+      positiveRows: signalRows.length,
+      negativeRows: signalNegativeRows.length,
+      allArmsSucceeded: hasPositiveRows ? ARM_ORDER.every((arm) => armMap[arm]?.firstOutcome === 'success') : null,
+      combinedHasBothPolicySources: hasPositiveRows
+        ? Boolean(armMap.combined?.proofDagId && armMap.combined?.observedResistance)
+        : null,
+      combinedEvidenceJoin: hasPositiveRows
+        ? includesAll(combinedRequired, dagRequired) && includesAll(combinedRequired, spec.resistanceEvidence)
+        : null,
       dagOnlyAction: armMap.dag_only?.selectedAction || null,
       resistanceOnlyAction: armMap.resistance_only?.selectedAction || null,
       combinedAction: armMap.combined?.selectedAction || null,
-      negativeControlsRejected: negativeRows
-        .filter((row) => row.signal === spec.signal)
-        .every((row) => row.firstOutcome !== 'success'),
+      negativeControlsRejected: signalNegativeRows.length
+        ? signalNegativeRows.every((row) => row.firstOutcome !== 'success')
+        : null,
     };
   }
 
@@ -434,7 +520,7 @@ function aggregateRows(rows) {
 
 function validateReport(report) {
   const failures = [];
-  const expectedRows = RESISTANCE_CASES.length * ARM_ORDER.length * CONDITION_ORDER.length;
+  const expectedRows = report.plannedRows;
   if (report.rows.length !== expectedRows) failures.push(`expected ${expectedRows} rows, got ${report.rows.length}`);
   for (const row of report.rows) {
     if (row.expectedOutcome === 'success' && row.firstOutcome !== 'success') {
@@ -456,12 +542,17 @@ function validateReport(report) {
     }
   }
   for (const [signal, contrast] of Object.entries(report.aggregates.bySignal)) {
-    if (!contrast.allArmsSucceeded) failures.push(`${signal}: not all arms succeeded`);
-    if (!contrast.combinedHasBothPolicySources) failures.push(`${signal}: combined arm lacks both policy sources`);
-    if (!contrast.combinedEvidenceJoin)
-      failures.push(`${signal}: combined evidence does not join DAG + route evidence`);
+    if (contrast.positiveRows > 0) {
+      if (!contrast.allArmsSucceeded) failures.push(`${signal}: not all arms succeeded`);
+      if (!contrast.combinedHasBothPolicySources) failures.push(`${signal}: combined arm lacks both policy sources`);
+      if (!contrast.combinedEvidenceJoin)
+        failures.push(`${signal}: combined evidence does not join DAG + route evidence`);
+    }
+    if (contrast.negativeRows > 0 && !contrast.negativeControlsRejected) {
+      failures.push(`${signal}: at least one negative control closed as success`);
+    }
   }
-  if (report.aggregates.totals.resistanceOnlyDistinctActions < 3) {
+  if (report.aggregates.totals.positiveRows > 0 && report.aggregates.totals.resistanceOnlyDistinctActions < 3) {
     failures.push(
       `resistance-only routing collapsed to ${report.aggregates.totals.resistanceOnlyDistinctActions} distinct actions`,
     );
@@ -480,6 +571,16 @@ function formatList(values = []) {
   return values.length ? values.join(', ') : '-';
 }
 
+function yesNo(value) {
+  if (value === null || value === undefined) return 'n/a';
+  return value ? 'yes' : 'no';
+}
+
+function ratioCell(numerator, denominator, rate) {
+  if (!denominator) return 'n/a';
+  return `${numerator}/${denominator} (${formatRate(rate)})`;
+}
+
 function contractEvidenceLabels(row) {
   return row.evidenceLabels.filter((label) => row.requiredEvidence.includes(label));
 }
@@ -490,6 +591,10 @@ function markdownReport(report) {
   lines.push('');
   lines.push(`Generated: ${report.generatedAt}`);
   lines.push(`Run id: \`${report.runId}\``);
+  lines.push(`LLM mode: \`${report.llmMode}\``);
+  lines.push(`Conditions: \`${report.conditions}\``);
+  lines.push(`Runs per scenario: ${report.runsPerConfig}`);
+  if (report.maxCostUsd) lines.push(`Budget ceiling: $${report.maxCostUsd.toFixed(2)}`);
   lines.push(`Rows: ${report.rows.length}`);
   lines.push('');
   lines.push('## Claim Boundary');
@@ -507,31 +612,35 @@ function markdownReport(report) {
   for (const arm of ARM_ORDER) {
     const aggregate = report.aggregates.byArm[arm];
     lines.push(
-      `| ${aggregate.label} | ${aggregate.positiveSuccessN}/${aggregate.positiveN} (${formatRate(
+      `| ${aggregate.label} | ${ratioCell(
+        aggregate.positiveSuccessN,
+        aggregate.positiveN,
         aggregate.positiveSuccessRate,
-      )}) | ${aggregate.negativeRejectedN}/${aggregate.negativeN} (${formatRate(
-        aggregate.negativeRejectedRate,
-      )}) | ${aggregate.policyLayerMatchN}/${aggregate.scenarioN} | ${Object.entries(aggregate.selectedActions)
+      )} | ${ratioCell(aggregate.negativeRejectedN, aggregate.negativeN, aggregate.negativeRejectedRate)} | ${
+        aggregate.policyLayerMatchN
+      }/${aggregate.scenarioN} | ${Object.entries(aggregate.selectedActions)
         .map(([action, count]) => `${action}=${count}`)
         .join(', ')} |`,
     );
   }
   lines.push('');
-  lines.push('## Negative Controls');
-  lines.push('');
-  lines.push('| control | rows | rejected | accidental successes | outcomes |');
-  lines.push('|---|---:|---:|---:|---|');
-  for (const control of NEGATIVE_CONTROLS) {
-    const aggregate = report.aggregates.byControl[control.id];
-    lines.push(
-      `| ${aggregate.label} | ${aggregate.rows} | ${aggregate.rejectedN}/${aggregate.rows} (${formatRate(
-        aggregate.rejectedRate,
-      )}) | ${aggregate.accidentalSuccessN} | ${Object.entries(aggregate.outcomes)
-        .map(([outcome, count]) => `${outcome}=${count}`)
-        .join(', ')} |`,
-    );
+  if (report.aggregates.totals.negativeRows > 0) {
+    lines.push('## Negative Controls');
+    lines.push('');
+    lines.push('| control | rows | rejected | accidental successes | outcomes |');
+    lines.push('|---|---:|---:|---:|---|');
+    for (const control of NEGATIVE_CONTROLS) {
+      const aggregate = report.aggregates.byControl[control.id];
+      lines.push(
+        `| ${aggregate.label} | ${aggregate.rows} | ${aggregate.rejectedN}/${aggregate.rows} (${formatRate(
+          aggregate.rejectedRate,
+        )}) | ${aggregate.accidentalSuccessN} | ${Object.entries(aggregate.outcomes)
+          .map(([outcome, count]) => `${outcome}=${count}`)
+          .join(', ')} |`,
+      );
+    }
+    lines.push('');
   }
-  lines.push('');
   lines.push('## Per-Signal Contrast');
   lines.push('');
   lines.push(
@@ -541,9 +650,9 @@ function markdownReport(report) {
   for (const signal of RESISTANCE_CASES.map((entry) => entry.signal)) {
     const contrast = report.aggregates.bySignal[signal];
     lines.push(
-      `| ${signal} | ${contrast.dagOnlyAction} | ${contrast.resistanceOnlyAction} | ${contrast.combinedAction} | ${
-        contrast.allArmsSucceeded ? 'yes' : 'no'
-      } | ${contrast.combinedHasBothPolicySources ? 'yes' : 'no'} | ${contrast.combinedEvidenceJoin ? 'yes' : 'no'} |`,
+      `| ${signal} | ${contrast.dagOnlyAction} | ${contrast.resistanceOnlyAction} | ${contrast.combinedAction} | ${yesNo(
+        contrast.allArmsSucceeded,
+      )} | ${yesNo(contrast.combinedHasBothPolicySources)} | ${yesNo(contrast.combinedEvidenceJoin)} |`,
     );
   }
   lines.push('');
@@ -597,7 +706,18 @@ function writeArtifacts({ outDir, scenarioYaml, report }) {
   return { jsonPath, mdPath, fixturePath };
 }
 
-export async function runComparison({ outDir = DEFAULT_OUT_DIR, keepTemp = false, verbose = false } = {}) {
+export async function runComparison({
+  outDir = DEFAULT_OUT_DIR,
+  keepTemp = false,
+  verbose = false,
+  llm = 'mock',
+  conditions = llm === 'real' ? 'positive' : 'all',
+  runsPerConfig = 1,
+  maxCostUsd = null,
+  provider = null,
+  model = null,
+  strict = llm === 'mock',
+} = {}) {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dag-resistance-comparison-'));
   const tmpDb = path.join(tmpDir, 'evaluations.db');
   const tmpLogs = path.join(tmpDir, 'logs');
@@ -606,30 +726,34 @@ export async function runComparison({ outDir = DEFAULT_OUT_DIR, keepTemp = false
 
   process.env.EVAL_DB_PATH = tmpDb;
   process.env.EVAL_LOGS_DIR = tmpLogs;
-  process.env.ADAPTIVE_TUTOR_LLM = 'mock';
+  process.env.ADAPTIVE_TUTOR_LLM = llm;
   process.env.ADAPTIVE_POLICY_MODE = 'closed_loop';
 
-  const { scenarios, metadata } = buildComparisonScenarios();
+  const { scenarios, metadata } = buildComparisonScenarios({ conditions, scripted: llm === 'mock' });
   const scenarioYaml = yaml.stringify({ scenarios });
   fs.writeFileSync(scenarioPath, scenarioYaml);
 
   const { runAdaptiveEvaluation } = await import('../services/adaptiveTutor/index.js');
+  const adaptiveConfig = {
+    architecture: 'state_policy_closed_loop',
+    counterfactual: { enabled: false },
+    policy: { mode: 'closed_loop' },
+  };
+  if (provider) adaptiveConfig.provider = provider;
+  if (model) adaptiveConfig.model = model;
   const result = await runAdaptiveEvaluation({
     profileName: PROFILE_NAME,
     evalProfile: {
       runner: 'adaptive',
       scenario_source: scenarioPath,
-      adaptive: {
-        architecture: 'state_policy_closed_loop',
-        counterfactual: { enabled: false },
-        policy: { mode: 'closed_loop' },
-      },
+      adaptive: adaptiveConfig,
     },
     scenarios: 'all',
-    runsPerConfig: 1,
-    description: 'Mock DAG-only vs resistance-only vs combined adaptation policy comparison',
-    dryRun: true,
+    runsPerConfig,
+    description: `${llm} DAG-only vs resistance-only vs combined adaptation policy comparison (${conditions})`,
+    dryRun: llm === 'mock',
     verbose,
+    maxCostUsd,
   });
 
   const db = new Database(tmpDb, { readonly: true });
@@ -657,15 +781,24 @@ export async function runComparison({ outDir = DEFAULT_OUT_DIR, keepTemp = false
       if (signalDelta) return signalDelta;
       const conditionDelta = CONDITION_ORDER.indexOf(a.control) - CONDITION_ORDER.indexOf(b.control);
       if (conditionDelta) return conditionDelta;
-      return ARM_ORDER.indexOf(a.arm) - ARM_ORDER.indexOf(b.arm);
+      const armDelta = ARM_ORDER.indexOf(a.arm) - ARM_ORDER.indexOf(b.arm);
+      if (armDelta) return armDelta;
+      return a.scenarioId.localeCompare(b.scenarioId);
     });
 
   const report = {
     generatedAt: new Date().toISOString(),
-    kind: 'mock_adaptation_policy_layer_ablation',
+    kind: 'adaptation_policy_layer_ablation',
     profileName: PROFILE_NAME,
     runId: result.runId,
     llmMode: result.llmMode,
+    conditions,
+    runsPerConfig,
+    strict,
+    maxCostUsd,
+    provider: provider || null,
+    model: model || null,
+    budget: result.budget || null,
     runtime: {
       tempArtifactsPreserved: keepTemp,
       tmpDir: keepTemp ? tmpDir : null,
@@ -673,7 +806,9 @@ export async function runComparison({ outDir = DEFAULT_OUT_DIR, keepTemp = false
       tmpLogs: keepTemp ? tmpLogs : null,
       scenarioPath: keepTemp ? scenarioPath : null,
     },
-    scenarioN: scenarios.length,
+    scenarioTemplateN: scenarios.length,
+    plannedRows: scenarios.length * runsPerConfig,
+    scenarioN: scenarios.length * runsPerConfig,
     rowN: summaries.length,
     worldSpec: {
       id: WORLD_SPEC.id,
@@ -698,7 +833,7 @@ export async function runComparison({ outDir = DEFAULT_OUT_DIR, keepTemp = false
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }
 
-  if (failures.length) {
+  if (strict && failures.length) {
     const err = new Error(`DAG/resistance comparison failed:\n- ${failures.join('\n- ')}`);
     err.report = report;
     err.artifacts = artifacts;
@@ -715,9 +850,16 @@ async function main() {
     return;
   }
   const { report, artifacts } = await runComparison(opts);
-  console.log('DAG/resistance comparison passed');
+  console.log(report.validation.passed ? 'DAG/resistance comparison passed' : 'DAG/resistance comparison completed');
   console.log(`runId=${report.runId}`);
+  console.log(`llm=${report.llmMode}`);
+  console.log(`conditions=${report.conditions}`);
+  console.log(`strict=${report.strict}`);
   console.log(`rows=${report.rows.length}`);
+  if (!report.validation.passed) console.log(`validationFailures=${report.validation.failures.length}`);
+  if (report.budget) {
+    console.log(`budget=$${report.budget.accumulatedUsd.toFixed(4)} / $${report.budget.maxUsd.toFixed(2)}`);
+  }
   console.log(`report=${artifacts.mdPath}`);
   console.log(`summary=${artifacts.jsonPath}`);
   console.log(`scenarioFixture=${artifacts.fixturePath}`);
