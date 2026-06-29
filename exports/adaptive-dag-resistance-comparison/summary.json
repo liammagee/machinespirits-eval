@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-06-29T07:02:22.850Z",
+  "generatedAt": "2026-06-29T07:19:12.014Z",
   "kind": "adaptation_policy_layer_ablation",
   "profileName": "mock_dag_resistance_comparison",
-  "runId": "eval-2026-06-29-c3ba747f",
+  "runId": "eval-2026-06-29-d0527f67",
   "llmMode": "mock",
   "conditions": "all",
   "runsPerConfig": 1,

@@ -585,7 +585,7 @@ function contractEvidenceLabels(row) {
   return row.evidenceLabels.filter((label) => row.requiredEvidence.includes(label));
 }
 
-function markdownReport(report) {
+export function markdownReport(report) {
   const lines = [];
   lines.push('# Adaptive DAG/Resistance Comparison');
   lines.push('');
@@ -599,9 +599,15 @@ function markdownReport(report) {
   lines.push('');
   lines.push('## Claim Boundary');
   lines.push('');
-  lines.push(
-    'This is a deterministic mock ablation of mechanism wiring, not an empirical learning-effect result. It checks whether proof-DAG constraints and learner-resistance routing can operate as one adaptation policy layer with observable evidence closure, and whether shallow negative-control replies are rejected.',
-  );
+  if (report.llmMode === 'real') {
+    lines.push(
+      'This is a real-LLM ablation over the mechanism-wiring harness, not an empirical learning-effect result. It checks whether proof-DAG constraints and learner-resistance routing operate as one adaptation policy layer under unscripted learner turns with observable evidence closure.',
+    );
+  } else {
+    lines.push(
+      'This is a deterministic mock ablation of mechanism wiring, not an empirical learning-effect result. It checks whether proof-DAG constraints and learner-resistance routing can operate as one adaptation policy layer with observable evidence closure, and whether shallow negative-control replies are rejected.',
+    );
+  }
   lines.push('');
   lines.push('## Aggregate Result');
   lines.push('');
@@ -685,9 +691,13 @@ function markdownReport(report) {
   lines.push(
     '- Combined joins both sources: each combined row carries the proof-DAG identity and the matched resistance signal, and its success contract joins the proof-DAG evidence requirement with the signal-specific resistance evidence.',
   );
-  lines.push(
-    '- Negative controls reject shallow uptake: mere agreement, formula parroting, tutor-rationale adoption, and vague requests for more explanation do not close as success.',
-  );
+  if (report.aggregates.totals.negativeRows > 0) {
+    lines.push(
+      '- Negative controls reject shallow uptake: mere agreement, formula parroting, tutor-rationale adoption, and vague requests for more explanation do not close as success.',
+    );
+  } else {
+    lines.push('- Negative controls were not included in this run.');
+  }
   lines.push(
     '- The comparison supports a mechanical claim about policy-layer integration. It does not show that real learners improve more under the combined mechanism.',
   );

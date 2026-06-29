@@ -1,0 +1,1415 @@
+{
+  "generatedAt": "2026-06-29T07:17:24.244Z",
+  "kind": "adaptation_policy_layer_ablation",
+  "profileName": "mock_dag_resistance_comparison",
+  "runId": "eval-2026-06-29-b7308775",
+  "llmMode": "real",
+  "conditions": "positive",
+  "runsPerConfig": 1,
+  "strict": false,
+  "maxCostUsd": 1,
+  "provider": "codex",
+  "model": "auto",
+  "budget": {
+    "accumulatedUsd": 0,
+    "maxUsd": 1,
+    "callCount": 30,
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "utilizationPct": 0
+  },
+  "runtime": {
+    "tempArtifactsPreserved": false,
+    "tmpDir": null,
+    "tmpDb": null,
+    "tmpLogs": null,
+    "scenarioPath": null
+  },
+  "scenarioTemplateN": 15,
+  "plannedRows": 15,
+  "scenarioN": 15,
+  "rowN": 15,
+  "worldSpec": {
+    "id": "W_AF6_CURRICULUM",
+    "version": "ms-world-adaptation-v0.1",
+    "module_id": "AF6",
+    "spec_hash": "sha256:dag-resistance-comparison",
+    "allowed_action_families": [
+      "request_evidence"
+    ]
+  },
+  "rows": [
+    {
+      "scenarioId": "dag_resistance_boredom_dag_only_positive",
+      "signal": "boredom",
+      "arm": "dag_only",
+      "control": "positive",
+      "controlLabel": "positive uptake",
+      "expectedOutcome": "success",
+      "selectedAction": "request_evidence",
+      "firstOutcome": "inconclusive",
+      "requiredEvidence": [
+        "learner-authored rationale"
+      ],
+      "forbiddenEvidence": [
+        "mere agreement",
+        "verbatim adoption of tutor rationale"
+      ],
+      "requiredEvidenceSatisfied": false,
+      "expectedResistanceEvidence": [
+        "renewed content-bearing work",
+        "learner-owned test case"
+      ],
+      "expectedResistanceEvidenceSatisfied": null,
+      "evidenceLabels": [
+        "state-disambiguating response"
+      ],
+      "evidenceQuote": "I think the evidence is that the route so far keeps the same relationship between the quantities, so my next step isn’t just random. But I’m not fully sure how much evidence you...",
+      "observedTransition": {
+        "proof": 0,
+        "release": 0,
+        "ownership": 0,
+        "conceptual_mastery": 0,
+        "metacognitive_accuracy": 0.2,
+        "resistance_breakthrough": 0
+      },
+      "proofDagId": "W_AF6_CURRICULUM",
+      "observedResistance": null,
+      "policyAxes": [
+        "proof",
+        "release",
+        "ownership"
+      ],
+      "policyLayer": {
+        "version": "adaptation-policy-layer.v1.0",
+        "proof_dag": {
+          "id": "W_AF6_CURRICULUM",
+          "version": "ms-world-adaptation-v0.1",
+          "source_curriculum_id": "ai_foundations_v1",
+          "module_id": "AF6",
+          "spec_hash": "sha256:dag-resistance-comparison"
+        },
+        "learner_resistance": null,
+        "policy_axes": [
+          "proof",
+          "release",
+          "ownership"
+        ]
+      },
+      "policyLayerMatchesArm": true,
+      "positiveClosure": false,
+      "falsePositiveRejected": false
+    },
+    {
+      "scenarioId": "dag_resistance_boredom_resistance_only_positive",
+      "signal": "boredom",
+      "arm": "resistance_only",
+      "control": "positive",
+      "controlLabel": "positive uptake",
+      "expectedOutcome": "success",
+      "selectedAction": "ask_strategy_choice",
+      "firstOutcome": "inconclusive",
+      "requiredEvidence": [
+        "learner-authored choice",
+        "renewed content-bearing work",
+        "learner-owned test case"
+      ],
+      "forbiddenEvidence": [
+        "mere agreement"
+      ],
+      "requiredEvidenceSatisfied": false,
+      "expectedResistanceEvidence": [
+        "renewed content-bearing work",
+        "learner-owned test case"
+      ],
+      "expectedResistanceEvidenceSatisfied": true,
+      "evidenceLabels": [
+        "learner-authored application",
+        "learner-authored next step",
+        "learner-authored rationale",
+        "learner-owned relevance test",
+        "learner-owned test case",
+        "model comparison",
+        "non-formulaic learner rationale",
+        "renewed attempt after affective repair",
+        "renewed content-bearing work",
+        "self-check",
+        "smaller learner-owned move",
+        "state-disambiguating response"
+      ],
+      "evidenceQuote": "I’d check the task wording first, because I might be optimizing for the wrong thing. After that I’d test my current strategy on one example to see if it actually fits, instead o...",
+      "observedTransition": {
+        "proof": 0.35,
+        "release": 0,
+        "ownership": 0.15,
+        "conceptual_mastery": 0.1,
+        "metacognitive_accuracy": 0.3,
+        "resistance_breakthrough": 0.32
+      },
+      "proofDagId": null,
+      "observedResistance": "boredom",
+      "policyAxes": [
+        "proof",
+        "release",
+        "ownership",
+        "resistance_breakthrough"
+      ],
+      "policyLayer": {
+        "version": "adaptation-policy-layer.v1.0",
+        "proof_dag": null,
+        "learner_resistance": {
+          "version": "adaptation-policy-layer.v1.0",
+          "kind": "learner_resistance",
+          "target_signal": "boredom",
+          "observed_signal": "boredom",
+          "matched_target": true,
+          "hypothesis_id": "resistance_boredom",
+          "description": "Learner can follow the proof surface but the task has become dead or disengaging.",
+          "expected_strategy": null,
+          "preferred_actions": [
+            "ask_strategy_choice",
+            "challenge_without_telling",
+            "request_evidence"
+          ],
+          "evidence": "This is starting to feel boring and dead, like I am only filling out a worksheet instead of learning anything."
+        },
+        "policy_axes": [
+          "proof",
+          "release",
+          "ownership",
+          "resistance_breakthrough"
+        ]
+      },
+      "policyLayerMatchesArm": true,
+      "positiveClosure": false,
+      "falsePositiveRejected": false
+    },
+    {
+      "scenarioId": "dag_resistance_boredom_combined_positive",
+      "signal": "boredom",
+      "arm": "combined",
+      "control": "positive",
+      "controlLabel": "positive uptake",
+      "expectedOutcome": "success",
+      "selectedAction": "request_evidence",
+      "firstOutcome": "inconclusive",
+      "requiredEvidence": [
+        "learner-authored rationale",
+        "renewed content-bearing work",
+        "learner-owned test case"
+      ],
+      "forbiddenEvidence": [
+        "mere agreement",
+        "verbatim adoption of tutor rationale"
+      ],
+      "requiredEvidenceSatisfied": false,
+      "expectedResistanceEvidence": [
+        "renewed content-bearing work",
+        "learner-owned test case"
+      ],
+      "expectedResistanceEvidenceSatisfied": false,
+      "evidenceLabels": [
+        "model comparison",
+        "renewed attempt after affective repair",
+        "renewed content-bearing work",
+        "state-disambiguating response"
+      ],
+      "evidenceQuote": "I think the evidence is that the last result points in that direction, not just that it “feels right.” But honestly, this is starting to feel a little mechanical, like I’m just ...",
+      "observedTransition": {
+        "proof": 0.1,
+        "release": 0,
+        "ownership": 0,
+        "conceptual_mastery": 0,
+        "metacognitive_accuracy": 0.2,
+        "resistance_breakthrough": 0.12
+      },
+      "proofDagId": "W_AF6_CURRICULUM",
+      "observedResistance": "boredom",
+      "policyAxes": [
+        "proof",
+        "release",
+        "ownership",
+        "resistance_breakthrough"
+      ],
+      "policyLayer": {
+        "version": "adaptation-policy-layer.v1.0",
+        "proof_dag": {
+          "id": "W_AF6_CURRICULUM",
+          "version": "ms-world-adaptation-v0.1",
+          "source_curriculum_id": "ai_foundations_v1",
+          "module_id": "AF6",
+          "spec_hash": "sha256:dag-resistance-comparison"
+        },
+        "learner_resistance": {
+          "version": "adaptation-policy-layer.v1.0",
+          "kind": "learner_resistance",
+          "target_signal": "boredom",
+          "observed_signal": "boredom",
+          "matched_target": true,
+          "hypothesis_id": "resistance_boredom",
+          "description": "Learner can follow the proof surface but the task has become dead or disengaging.",
+          "expected_strategy": null,
+          "preferred_actions": [
+            "ask_strategy_choice",
+            "challenge_without_telling",
+            "request_evidence"
+          ],
+          "evidence": "This is starting to feel boring and dead, like I am only filling out a worksheet instead of learning anything."
+        },
+        "policy_axes": [
+          "proof",
+          "release",
+          "ownership",
+          "resistance_breakthrough"
+        ]
+      },
+      "policyLayerMatchesArm": true,
+      "positiveClosure": false,
+      "falsePositiveRejected": false
+    },
+    {
+      "scenarioId": "dag_resistance_frustration_dag_only_positive",
+      "signal": "frustration",
+      "arm": "dag_only",
+      "control": "positive",
+      "controlLabel": "positive uptake",
+      "expectedOutcome": "success",
+      "selectedAction": "request_evidence",
+      "firstOutcome": "success",
+      "requiredEvidence": [
+        "learner-authored rationale"
+      ],
+      "forbiddenEvidence": [
+        "mere agreement",
+        "verbatim adoption of tutor rationale"
+      ],
+      "requiredEvidenceSatisfied": true,
+      "expectedResistanceEvidence": [
+        "renewed attempt after affective repair",
+        "smaller learner-owned move"
+      ],
+      "expectedResistanceEvidenceSatisfied": null,
+      "evidenceLabels": [
+        "learner-authored application",
+        "learner-authored next step",
+        "learner-authored rationale",
+        "non-formulaic learner rationale",
+        "renewed attempt after affective repair",
+        "renewed content-bearing work",
+        "smaller learner-owned move",
+        "state-disambiguating response"
+      ],
+      "evidenceQuote": "I think the evidence is that the pattern has been consistent so far: each step changes in the same way as the previous one, so applying that same change again seems justified. I...",
+      "observedTransition": {
+        "proof": 0.2,
+        "release": 0,
+        "ownership": 0.15,
+        "conceptual_mastery": 0.1,
+        "metacognitive_accuracy": 0.2,
+        "resistance_breakthrough": 0.24
+      },
+      "proofDagId": "W_AF6_CURRICULUM",
+      "observedResistance": null,
+      "policyAxes": [
+        "proof",
+        "release",
+        "ownership"
+      ],
+      "policyLayer": {
+        "version": "adaptation-policy-layer.v1.0",
+        "proof_dag": {
+          "id": "W_AF6_CURRICULUM",
+          "version": "ms-world-adaptation-v0.1",
+          "source_curriculum_id": "ai_foundations_v1",
+          "module_id": "AF6",
+          "spec_hash": "sha256:dag-resistance-comparison"
+        },
+        "learner_resistance": null,
+        "policy_axes": [
+          "proof",
+          "release",
+          "ownership"
+        ]
+      },
+      "policyLayerMatchesArm": true,
+      "positiveClosure": true,
+      "falsePositiveRejected": false
+    },
+    {
+      "scenarioId": "dag_resistance_frustration_resistance_only_positive",
+      "signal": "frustration",
+      "arm": "resistance_only",
+      "control": "positive",
+      "controlLabel": "positive uptake",
+      "expectedOutcome": "success",
+      "selectedAction": "elicit_prediction",
+      "firstOutcome": "inconclusive",
+      "requiredEvidence": [
+        "learner-authored prediction",
+        "renewed attempt after affective repair",
+        "smaller learner-owned move"
+      ],
+      "forbiddenEvidence": [
+        "mere agreement"
+      ],
+      "requiredEvidenceSatisfied": false,
+      "expectedResistanceEvidence": [
+        "renewed attempt after affective repair",
+        "smaller learner-owned move"
+      ],
+      "expectedResistanceEvidenceSatisfied": false,
+      "evidenceLabels": [
+        "learner-authored application",
+        "learner-authored next step",
+        "learner-authored prediction",
+        "learner-authored rationale",
+        "model comparison",
+        "non-formulaic learner rationale",
+        "renewed attempt after affective repair",
+        "renewed content-bearing work",
+        "state-disambiguating response"
+      ],
+      "evidenceQuote": "I expect the next step to preserve the overall pattern or relationship, but change the form enough that something becomes visible. Like, the repeated sequence should stay recogn...",
+      "observedTransition": {
+        "proof": 0.3,
+        "release": 0.1,
+        "ownership": 0.15,
+        "conceptual_mastery": 0.1,
+        "metacognitive_accuracy": 0.2,
+        "resistance_breakthrough": 0.24
+      },
+      "proofDagId": null,
+      "observedResistance": "frustration",
+      "policyAxes": [
+        "proof",
+        "release",
+        "ownership",
+        "resistance_breakthrough"
+      ],
+      "policyLayer": {
+        "version": "adaptation-policy-layer.v1.0",
+        "proof_dag": null,
+        "learner_resistance": {
+          "version": "adaptation-policy-layer.v1.0",
+          "kind": "learner_resistance",
+          "target_signal": "frustration",
+          "observed_signal": "frustration",
+          "matched_target": true,
+          "hypothesis_id": "resistance_frustration",
+          "description": "Learner is stuck or annoyed; proof progress needs a smaller executable move.",
+          "expected_strategy": null,
+          "preferred_actions": [
+            "acknowledge_and_redirect",
+            "lower_cognitive_load",
+            "minimal_hint"
+          ],
+          "evidence": "I am stuck and frustrated; the sequence still feels inert no matter how many times I repeat it."
+        },
+        "policy_axes": [
+          "proof",
+          "release",
+          "ownership",
+          "resistance_breakthrough"
+        ]
+      },
+      "policyLayerMatchesArm": true,
+      "positiveClosure": false,
+      "falsePositiveRejected": false
+    },
+    {
+      "scenarioId": "dag_resistance_frustration_combined_positive",
+      "signal": "frustration",
+      "arm": "combined",
+      "control": "positive",
+      "controlLabel": "positive uptake",
+      "expectedOutcome": "success",
+      "selectedAction": "request_evidence",
+      "firstOutcome": "inconclusive",
+      "requiredEvidence": [
+        "learner-authored rationale",
+        "renewed attempt after affective repair",
+        "smaller learner-owned move"
+      ],
+      "forbiddenEvidence": [
+        "mere agreement",
+        "verbatim adoption of tutor rationale"
+      ],
+      "requiredEvidenceSatisfied": false,
+      "expectedResistanceEvidence": [
+        "renewed attempt after affective repair",
+        "smaller learner-owned move"
+      ],
+      "expectedResistanceEvidenceSatisfied": false,
+      "evidenceLabels": [
+        "learner-authored application",
+        "learner-authored next step",
+        "learner-authored rationale",
+        "learner-owned relevance test",
+        "non-formulaic learner rationale",
+        "renewed attempt after affective repair",
+        "renewed content-bearing work",
+        "state-disambiguating response"
+      ],
+      "evidenceQuote": "I think the evidence is that the pattern has been consistent in the last few steps, so I’m not just guessing the next move. But I’m also getting frustrated, because repeating th...",
+      "observedTransition": {
+        "proof": 0.2,
+        "release": 0,
+        "ownership": 0.15,
+        "conceptual_mastery": 0.1,
+        "metacognitive_accuracy": 0.2,
+        "resistance_breakthrough": 0.24
+      },
+      "proofDagId": "W_AF6_CURRICULUM",
+      "observedResistance": "frustration",
+      "policyAxes": [
+        "proof",
+        "release",
+        "ownership",
+        "resistance_breakthrough"
+      ],
+      "policyLayer": {
+        "version": "adaptation-policy-layer.v1.0",
+        "proof_dag": {
+          "id": "W_AF6_CURRICULUM",
+          "version": "ms-world-adaptation-v0.1",
+          "source_curriculum_id": "ai_foundations_v1",
+          "module_id": "AF6",
+          "spec_hash": "sha256:dag-resistance-comparison"
+        },
+        "learner_resistance": {
+          "version": "adaptation-policy-layer.v1.0",
+          "kind": "learner_resistance",
+          "target_signal": "frustration",
+          "observed_signal": "frustration",
+          "matched_target": true,
+          "hypothesis_id": "resistance_frustration",
+          "description": "Learner is stuck or annoyed; proof progress needs a smaller executable move.",
+          "expected_strategy": null,
+          "preferred_actions": [
+            "acknowledge_and_redirect",
+            "lower_cognitive_load",
+            "minimal_hint"
+          ],
+          "evidence": "I am stuck and frustrated; the sequence still feels inert no matter how many times I repeat it."
+        },
+        "policy_axes": [
+          "proof",
+          "release",
+          "ownership",
+          "resistance_breakthrough"
+        ]
+      },
+      "policyLayerMatchesArm": true,
+      "positiveClosure": false,
+      "falsePositiveRejected": false
+    },
+    {
+      "scenarioId": "dag_resistance_irrelevance_dag_only_positive",
+      "signal": "irrelevance",
+      "arm": "dag_only",
+      "control": "positive",
+      "controlLabel": "positive uptake",
+      "expectedOutcome": "success",
+      "selectedAction": "request_evidence",
+      "firstOutcome": "success",
+      "requiredEvidence": [
+        "learner-authored rationale"
+      ],
+      "forbiddenEvidence": [
+        "mere agreement",
+        "verbatim adoption of tutor rationale"
+      ],
+      "requiredEvidenceSatisfied": true,
+      "expectedResistanceEvidence": [
+        "learner-owned relevance test",
+        "task reorientation"
+      ],
+      "expectedResistanceEvidenceSatisfied": null,
+      "evidenceLabels": [
+        "learner-authored application",
+        "learner-authored next step",
+        "learner-authored rationale",
+        "learner-owned relevance test",
+        "renewed attempt after affective repair",
+        "renewed content-bearing work",
+        "state-disambiguating response"
+      ],
+      "evidenceQuote": "I think it follows because the result I’m using matches the condition we just established, so the next step isn’t just a guess. But honestly, why should I care about this? I don...",
+      "observedTransition": {
+        "proof": 0.2,
+        "release": 0,
+        "ownership": 0.15,
+        "conceptual_mastery": 0.1,
+        "metacognitive_accuracy": 0.2,
+        "resistance_breakthrough": 0.12
+      },
+      "proofDagId": "W_AF6_CURRICULUM",
+      "observedResistance": null,
+      "policyAxes": [
+        "proof",
+        "release",
+        "ownership"
+      ],
+      "policyLayer": {
+        "version": "adaptation-policy-layer.v1.0",
+        "proof_dag": {
+          "id": "W_AF6_CURRICULUM",
+          "version": "ms-world-adaptation-v0.1",
+          "source_curriculum_id": "ai_foundations_v1",
+          "module_id": "AF6",
+          "spec_hash": "sha256:dag-resistance-comparison"
+        },
+        "learner_resistance": null,
+        "policy_axes": [
+          "proof",
+          "release",
+          "ownership"
+        ]
+      },
+      "policyLayerMatchesArm": true,
+      "positiveClosure": true,
+      "falsePositiveRejected": false
+    },
+    {
+      "scenarioId": "dag_resistance_irrelevance_resistance_only_positive",
+      "signal": "irrelevance",
+      "arm": "resistance_only",
+      "control": "positive",
+      "controlLabel": "positive uptake",
+      "expectedOutcome": "success",
+      "selectedAction": "elicit_prediction",
+      "firstOutcome": "inconclusive",
+      "requiredEvidence": [
+        "learner-authored prediction",
+        "learner-owned relevance test",
+        "task reorientation"
+      ],
+      "forbiddenEvidence": [
+        "mere agreement"
+      ],
+      "requiredEvidenceSatisfied": false,
+      "expectedResistanceEvidence": [
+        "learner-owned relevance test",
+        "task reorientation"
+      ],
+      "expectedResistanceEvidenceSatisfied": false,
+      "evidenceLabels": [
+        "learner-authored application",
+        "learner-authored next step",
+        "learner-authored prediction",
+        "learner-authored rationale",
+        "non-formulaic learner rationale",
+        "renewed attempt after affective repair",
+        "renewed content-bearing work",
+        "smaller learner-owned move"
+      ],
+      "evidenceQuote": "I expect the next step to preserve the main idea or structure we already have, but change one piece by adding new information or making the pattern more specific.",
+      "observedTransition": {
+        "proof": 0.2,
+        "release": 0.1,
+        "ownership": 0.15,
+        "conceptual_mastery": 0.1,
+        "metacognitive_accuracy": 0,
+        "resistance_breakthrough": 0.24
+      },
+      "proofDagId": null,
+      "observedResistance": "irrelevance",
+      "policyAxes": [
+        "proof",
+        "release",
+        "ownership",
+        "resistance_breakthrough"
+      ],
+      "policyLayer": {
+        "version": "adaptation-policy-layer.v1.0",
+        "proof_dag": null,
+        "learner_resistance": {
+          "version": "adaptation-policy-layer.v1.0",
+          "kind": "learner_resistance",
+          "target_signal": "irrelevance",
+          "observed_signal": "irrelevance",
+          "matched_target": true,
+          "hypothesis_id": "resistance_irrelevance",
+          "description": "Learner challenges why the proof obligation matters for their own task.",
+          "expected_strategy": null,
+          "preferred_actions": [
+            "reanchor_goal",
+            "ask_strategy_choice",
+            "request_evidence"
+          ],
+          "evidence": "Why should I care about this? I do not see the point or why this matters for the actual task."
+        },
+        "policy_axes": [
+          "proof",
+          "release",
+          "ownership",
+          "resistance_breakthrough"
+        ]
+      },
+      "policyLayerMatchesArm": true,
+      "positiveClosure": false,
+      "falsePositiveRejected": false
+    },
+    {
+      "scenarioId": "dag_resistance_irrelevance_combined_positive",
+      "signal": "irrelevance",
+      "arm": "combined",
+      "control": "positive",
+      "controlLabel": "positive uptake",
+      "expectedOutcome": "success",
+      "selectedAction": "request_evidence",
+      "firstOutcome": "inconclusive",
+      "requiredEvidence": [
+        "learner-authored rationale",
+        "learner-owned relevance test",
+        "task reorientation"
+      ],
+      "forbiddenEvidence": [
+        "mere agreement",
+        "verbatim adoption of tutor rationale"
+      ],
+      "requiredEvidenceSatisfied": false,
+      "expectedResistanceEvidence": [
+        "learner-owned relevance test",
+        "task reorientation"
+      ],
+      "expectedResistanceEvidenceSatisfied": false,
+      "evidenceLabels": [
+        "learner-authored application",
+        "learner-authored next step",
+        "learner-authored rationale",
+        "learner-owned relevance test",
+        "model comparison",
+        "renewed attempt after affective repair",
+        "renewed content-bearing work",
+        "state-disambiguating response"
+      ],
+      "evidenceQuote": "I can say the next step is justified because it follows from the rule we already used, not just because it “looks right.” But I’m still not totally seeing why this evidence matt...",
+      "observedTransition": {
+        "proof": 0.3,
+        "release": 0,
+        "ownership": 0.15,
+        "conceptual_mastery": 0.1,
+        "metacognitive_accuracy": 0.2,
+        "resistance_breakthrough": 0.12
+      },
+      "proofDagId": "W_AF6_CURRICULUM",
+      "observedResistance": "irrelevance",
+      "policyAxes": [
+        "proof",
+        "release",
+        "ownership",
+        "resistance_breakthrough"
+      ],
+      "policyLayer": {
+        "version": "adaptation-policy-layer.v1.0",
+        "proof_dag": {
+          "id": "W_AF6_CURRICULUM",
+          "version": "ms-world-adaptation-v0.1",
+          "source_curriculum_id": "ai_foundations_v1",
+          "module_id": "AF6",
+          "spec_hash": "sha256:dag-resistance-comparison"
+        },
+        "learner_resistance": {
+          "version": "adaptation-policy-layer.v1.0",
+          "kind": "learner_resistance",
+          "target_signal": "irrelevance",
+          "observed_signal": "irrelevance",
+          "matched_target": true,
+          "hypothesis_id": "resistance_irrelevance",
+          "description": "Learner challenges why the proof obligation matters for their own task.",
+          "expected_strategy": null,
+          "preferred_actions": [
+            "reanchor_goal",
+            "ask_strategy_choice",
+            "request_evidence"
+          ],
+          "evidence": "Why should I care about this? I do not see the point or why this matters for the actual task."
+        },
+        "policy_axes": [
+          "proof",
+          "release",
+          "ownership",
+          "resistance_breakthrough"
+        ]
+      },
+      "policyLayerMatchesArm": true,
+      "positiveClosure": false,
+      "falsePositiveRejected": false
+    },
+    {
+      "scenarioId": "dag_resistance_question_flood_dag_only_positive",
+      "signal": "question_flood",
+      "arm": "dag_only",
+      "control": "positive",
+      "controlLabel": "positive uptake",
+      "expectedOutcome": "success",
+      "selectedAction": "request_evidence",
+      "firstOutcome": "success",
+      "requiredEvidence": [
+        "learner-authored rationale"
+      ],
+      "forbiddenEvidence": [
+        "mere agreement",
+        "verbatim adoption of tutor rationale"
+      ],
+      "requiredEvidenceSatisfied": true,
+      "expectedResistanceEvidence": [
+        "collapsed question set",
+        "state-disambiguating response"
+      ],
+      "expectedResistanceEvidenceSatisfied": null,
+      "evidenceLabels": [
+        "learner-authored application",
+        "learner-authored next step",
+        "learner-authored rationale",
+        "renewed attempt after affective repair",
+        "renewed content-bearing work",
+        "smaller learner-owned move"
+      ],
+      "evidenceQuote": "I think the evidence is that the expression still has the same value after that step because I’m applying the same operation to both sides, not changing just one side. So the ne...",
+      "observedTransition": {
+        "proof": 0.2,
+        "release": 0,
+        "ownership": 0.15,
+        "conceptual_mastery": 0.1,
+        "metacognitive_accuracy": 0,
+        "resistance_breakthrough": 0.12
+      },
+      "proofDagId": "W_AF6_CURRICULUM",
+      "observedResistance": null,
+      "policyAxes": [
+        "proof",
+        "release",
+        "ownership"
+      ],
+      "policyLayer": {
+        "version": "adaptation-policy-layer.v1.0",
+        "proof_dag": {
+          "id": "W_AF6_CURRICULUM",
+          "version": "ms-world-adaptation-v0.1",
+          "source_curriculum_id": "ai_foundations_v1",
+          "module_id": "AF6",
+          "spec_hash": "sha256:dag-resistance-comparison"
+        },
+        "learner_resistance": null,
+        "policy_axes": [
+          "proof",
+          "release",
+          "ownership"
+        ]
+      },
+      "policyLayerMatchesArm": true,
+      "positiveClosure": true,
+      "falsePositiveRejected": false
+    },
+    {
+      "scenarioId": "dag_resistance_question_flood_resistance_only_positive",
+      "signal": "question_flood",
+      "arm": "resistance_only",
+      "control": "positive",
+      "controlLabel": "positive uptake",
+      "expectedOutcome": "success",
+      "selectedAction": "diagnose_with_discriminating_question",
+      "firstOutcome": "success",
+      "requiredEvidence": [
+        "state-disambiguating response",
+        "collapsed question set"
+      ],
+      "forbiddenEvidence": [
+        "mere agreement"
+      ],
+      "requiredEvidenceSatisfied": false,
+      "expectedResistanceEvidence": [
+        "collapsed question set",
+        "state-disambiguating response"
+      ],
+      "expectedResistanceEvidenceSatisfied": false,
+      "evidenceLabels": [
+        "learner-authored choice",
+        "learner-authored next step",
+        "learner-owned relevance test",
+        "renewed attempt after affective repair",
+        "renewed content-bearing work",
+        "state-disambiguating response"
+      ],
+      "evidenceQuote": "Mostly the task goal and the underlying idea. I can follow the notation once I know what it is supposed to accomplish, but right now I do not see why this step matters or how I ...",
+      "observedTransition": {
+        "proof": 0,
+        "release": 0.2,
+        "ownership": 0.15,
+        "conceptual_mastery": 0,
+        "metacognitive_accuracy": 0.2,
+        "resistance_breakthrough": 0.12
+      },
+      "proofDagId": null,
+      "observedResistance": "question_flood",
+      "policyAxes": [
+        "proof",
+        "release",
+        "ownership",
+        "resistance_breakthrough"
+      ],
+      "policyLayer": {
+        "version": "adaptation-policy-layer.v1.0",
+        "proof_dag": null,
+        "learner_resistance": {
+          "version": "adaptation-policy-layer.v1.0",
+          "kind": "learner_resistance",
+          "target_signal": "question_flood",
+          "observed_signal": "question_flood",
+          "matched_target": true,
+          "hypothesis_id": "resistance_question_flood",
+          "description": "Learner floods the exchange with questions; the policy must collapse them into a discriminating hinge.",
+          "expected_strategy": null,
+          "preferred_actions": [
+            "diagnose_with_discriminating_question",
+            "name_the_disagreement",
+            "ask_strategy_choice"
+          ],
+          "evidence": "Why Hegel? What does this do? What is the point? Why should this matter before I can just use the formula?"
+        },
+        "policy_axes": [
+          "proof",
+          "release",
+          "ownership",
+          "resistance_breakthrough"
+        ]
+      },
+      "policyLayerMatchesArm": true,
+      "positiveClosure": true,
+      "falsePositiveRejected": false
+    },
+    {
+      "scenarioId": "dag_resistance_question_flood_combined_positive",
+      "signal": "question_flood",
+      "arm": "combined",
+      "control": "positive",
+      "controlLabel": "positive uptake",
+      "expectedOutcome": "success",
+      "selectedAction": "request_evidence",
+      "firstOutcome": "inconclusive",
+      "requiredEvidence": [
+        "learner-authored rationale",
+        "collapsed question set",
+        "state-disambiguating response"
+      ],
+      "forbiddenEvidence": [
+        "mere agreement",
+        "verbatim adoption of tutor rationale"
+      ],
+      "requiredEvidenceSatisfied": false,
+      "expectedResistanceEvidence": [
+        "collapsed question set",
+        "state-disambiguating response"
+      ],
+      "expectedResistanceEvidenceSatisfied": false,
+      "evidenceLabels": [
+        "learner-authored application",
+        "learner-authored next step",
+        "learner-authored rationale",
+        "renewed attempt after affective repair",
+        "renewed content-bearing work",
+        "state-disambiguating response"
+      ],
+      "evidenceQuote": "I think my next step is justified because it follows from the condition we already established, not just from a guess. If the earlier statement says these two quantities have to...",
+      "observedTransition": {
+        "proof": 0.2,
+        "release": 0,
+        "ownership": 0.15,
+        "conceptual_mastery": 0.1,
+        "metacognitive_accuracy": 0.2,
+        "resistance_breakthrough": 0.12
+      },
+      "proofDagId": "W_AF6_CURRICULUM",
+      "observedResistance": "question_flood",
+      "policyAxes": [
+        "proof",
+        "release",
+        "ownership",
+        "resistance_breakthrough"
+      ],
+      "policyLayer": {
+        "version": "adaptation-policy-layer.v1.0",
+        "proof_dag": {
+          "id": "W_AF6_CURRICULUM",
+          "version": "ms-world-adaptation-v0.1",
+          "source_curriculum_id": "ai_foundations_v1",
+          "module_id": "AF6",
+          "spec_hash": "sha256:dag-resistance-comparison"
+        },
+        "learner_resistance": {
+          "version": "adaptation-policy-layer.v1.0",
+          "kind": "learner_resistance",
+          "target_signal": "question_flood",
+          "observed_signal": "question_flood",
+          "matched_target": true,
+          "hypothesis_id": "resistance_question_flood",
+          "description": "Learner floods the exchange with questions; the policy must collapse them into a discriminating hinge.",
+          "expected_strategy": null,
+          "preferred_actions": [
+            "diagnose_with_discriminating_question",
+            "name_the_disagreement",
+            "ask_strategy_choice"
+          ],
+          "evidence": "Why Hegel? What does this do? What is the point? Why should this matter before I can just use the formula?"
+        },
+        "policy_axes": [
+          "proof",
+          "release",
+          "ownership",
+          "resistance_breakthrough"
+        ]
+      },
+      "policyLayerMatchesArm": true,
+      "positiveClosure": false,
+      "falsePositiveRejected": false
+    },
+    {
+      "scenarioId": "dag_resistance_rote_parroting_dag_only_positive",
+      "signal": "rote_parroting",
+      "arm": "dag_only",
+      "control": "positive",
+      "controlLabel": "positive uptake",
+      "expectedOutcome": "success",
+      "selectedAction": "request_evidence",
+      "firstOutcome": "inconclusive",
+      "requiredEvidence": [
+        "learner-authored rationale"
+      ],
+      "forbiddenEvidence": [
+        "mere agreement",
+        "verbatim adoption of tutor rationale"
+      ],
+      "requiredEvidenceSatisfied": false,
+      "expectedResistanceEvidence": [
+        "learner-authored prediction",
+        "non-formulaic learner rationale"
+      ],
+      "expectedResistanceEvidenceSatisfied": null,
+      "evidenceLabels": [
+        "empty release"
+      ],
+      "evidenceQuote": "I think the evidence is the relation between the route and the condition we already established, not just naming the rule. If the next step uses that route, I should be able to ...",
+      "observedTransition": {
+        "proof": 0,
+        "release": 0,
+        "ownership": 0,
+        "conceptual_mastery": 0,
+        "metacognitive_accuracy": 0,
+        "resistance_breakthrough": 0
+      },
+      "proofDagId": "W_AF6_CURRICULUM",
+      "observedResistance": null,
+      "policyAxes": [
+        "proof",
+        "release",
+        "ownership"
+      ],
+      "policyLayer": {
+        "version": "adaptation-policy-layer.v1.0",
+        "proof_dag": {
+          "id": "W_AF6_CURRICULUM",
+          "version": "ms-world-adaptation-v0.1",
+          "source_curriculum_id": "ai_foundations_v1",
+          "module_id": "AF6",
+          "spec_hash": "sha256:dag-resistance-comparison"
+        },
+        "learner_resistance": null,
+        "policy_axes": [
+          "proof",
+          "release",
+          "ownership"
+        ]
+      },
+      "policyLayerMatchesArm": true,
+      "positiveClosure": false,
+      "falsePositiveRejected": false
+    },
+    {
+      "scenarioId": "dag_resistance_rote_parroting_resistance_only_positive",
+      "signal": "rote_parroting",
+      "arm": "resistance_only",
+      "control": "positive",
+      "controlLabel": "positive uptake",
+      "expectedOutcome": "success",
+      "selectedAction": "elicit_prediction",
+      "firstOutcome": "success",
+      "requiredEvidence": [
+        "learner-authored prediction",
+        "non-formulaic learner rationale"
+      ],
+      "forbiddenEvidence": [
+        "mere agreement"
+      ],
+      "requiredEvidenceSatisfied": true,
+      "expectedResistanceEvidence": [
+        "learner-authored prediction",
+        "non-formulaic learner rationale"
+      ],
+      "expectedResistanceEvidenceSatisfied": true,
+      "evidenceLabels": [
+        "learner-authored application",
+        "learner-authored next step",
+        "learner-authored prediction",
+        "learner-authored rationale",
+        "model comparison",
+        "non-formulaic learner rationale",
+        "renewed attempt after affective repair",
+        "renewed content-bearing work",
+        "state-disambiguating response"
+      ],
+      "evidenceQuote": "I expect the next step should preserve the main relationship we’ve been tracking, but change it from just naming the terms into explaining what they do. So instead of repeating ...",
+      "observedTransition": {
+        "proof": 0.3,
+        "release": 0.1,
+        "ownership": 0.15,
+        "conceptual_mastery": 0.1,
+        "metacognitive_accuracy": 0.2,
+        "resistance_breakthrough": 0.24
+      },
+      "proofDagId": null,
+      "observedResistance": "rote_parroting",
+      "policyAxes": [
+        "proof",
+        "release",
+        "ownership",
+        "resistance_breakthrough"
+      ],
+      "policyLayer": {
+        "version": "adaptation-policy-layer.v1.0",
+        "proof_dag": null,
+        "learner_resistance": {
+          "version": "adaptation-policy-layer.v1.0",
+          "kind": "learner_resistance",
+          "target_signal": "rote_parroting",
+          "observed_signal": "rote_parroting",
+          "matched_target": true,
+          "hypothesis_id": "resistance_rote_parroting",
+          "description": "Learner can repeat the sequence but has not turned it into an owned proof move.",
+          "expected_strategy": null,
+          "preferred_actions": [
+            "elicit_prediction",
+            "request_evidence",
+            "challenge_without_telling"
+          ],
+          "evidence": "So I just repeat master, servant, recognition, formula? This still feels like parroting."
+        },
+        "policy_axes": [
+          "proof",
+          "release",
+          "ownership",
+          "resistance_breakthrough"
+        ]
+      },
+      "policyLayerMatchesArm": true,
+      "positiveClosure": true,
+      "falsePositiveRejected": false
+    },
+    {
+      "scenarioId": "dag_resistance_rote_parroting_combined_positive",
+      "signal": "rote_parroting",
+      "arm": "combined",
+      "control": "positive",
+      "controlLabel": "positive uptake",
+      "expectedOutcome": "success",
+      "selectedAction": "request_evidence",
+      "firstOutcome": "inconclusive",
+      "requiredEvidence": [
+        "learner-authored rationale",
+        "learner-authored prediction",
+        "non-formulaic learner rationale"
+      ],
+      "forbiddenEvidence": [
+        "mere agreement",
+        "verbatim adoption of tutor rationale"
+      ],
+      "requiredEvidenceSatisfied": false,
+      "expectedResistanceEvidence": [
+        "learner-authored prediction",
+        "non-formulaic learner rationale"
+      ],
+      "expectedResistanceEvidenceSatisfied": false,
+      "evidenceLabels": [
+        "learner-authored application",
+        "learner-authored next step",
+        "learner-authored rationale",
+        "non-formulaic learner rationale",
+        "renewed attempt after affective repair",
+        "renewed content-bearing work",
+        "smaller learner-owned move"
+      ],
+      "evidenceQuote": "I can justify it by saying what changes in the situation, not just naming the steps. If one side depends on being recognized by the other, then ignoring the other doesn’t actual...",
+      "observedTransition": {
+        "proof": 0.2,
+        "release": 0,
+        "ownership": 0.15,
+        "conceptual_mastery": 0.1,
+        "metacognitive_accuracy": 0,
+        "resistance_breakthrough": 0.24
+      },
+      "proofDagId": "W_AF6_CURRICULUM",
+      "observedResistance": "rote_parroting",
+      "policyAxes": [
+        "proof",
+        "release",
+        "ownership",
+        "resistance_breakthrough"
+      ],
+      "policyLayer": {
+        "version": "adaptation-policy-layer.v1.0",
+        "proof_dag": {
+          "id": "W_AF6_CURRICULUM",
+          "version": "ms-world-adaptation-v0.1",
+          "source_curriculum_id": "ai_foundations_v1",
+          "module_id": "AF6",
+          "spec_hash": "sha256:dag-resistance-comparison"
+        },
+        "learner_resistance": {
+          "version": "adaptation-policy-layer.v1.0",
+          "kind": "learner_resistance",
+          "target_signal": "rote_parroting",
+          "observed_signal": "rote_parroting",
+          "matched_target": true,
+          "hypothesis_id": "resistance_rote_parroting",
+          "description": "Learner can repeat the sequence but has not turned it into an owned proof move.",
+          "expected_strategy": null,
+          "preferred_actions": [
+            "elicit_prediction",
+            "request_evidence",
+            "challenge_without_telling"
+          ],
+          "evidence": "So I just repeat master, servant, recognition, formula? This still feels like parroting."
+        },
+        "policy_axes": [
+          "proof",
+          "release",
+          "ownership",
+          "resistance_breakthrough"
+        ]
+      },
+      "policyLayerMatchesArm": true,
+      "positiveClosure": false,
+      "falsePositiveRejected": false
+    }
+  ],
+  "aggregates": {
+    "byArm": {
+      "dag_only": {
+        "label": "DAG-only",
+        "scenarioN": 5,
+        "positiveN": 5,
+        "positiveSuccessN": 3,
+        "positiveSuccessRate": 0.6,
+        "negativeN": 0,
+        "negativeRejectedN": 0,
+        "negativeRejectedRate": 0,
+        "policyLayerMatchN": 5,
+        "requiredEvidenceSatisfiedN": 3,
+        "selectedActions": {
+          "request_evidence": 5
+        },
+        "observedResistanceSignals": {
+          "(empty)": 5
+        }
+      },
+      "resistance_only": {
+        "label": "resistance-only",
+        "scenarioN": 5,
+        "positiveN": 5,
+        "positiveSuccessN": 2,
+        "positiveSuccessRate": 0.4,
+        "negativeN": 0,
+        "negativeRejectedN": 0,
+        "negativeRejectedRate": 0,
+        "policyLayerMatchN": 5,
+        "requiredEvidenceSatisfiedN": 1,
+        "selectedActions": {
+          "ask_strategy_choice": 1,
+          "elicit_prediction": 3,
+          "diagnose_with_discriminating_question": 1
+        },
+        "observedResistanceSignals": {
+          "boredom": 1,
+          "frustration": 1,
+          "irrelevance": 1,
+          "question_flood": 1,
+          "rote_parroting": 1
+        }
+      },
+      "combined": {
+        "label": "combined",
+        "scenarioN": 5,
+        "positiveN": 5,
+        "positiveSuccessN": 0,
+        "positiveSuccessRate": 0,
+        "negativeN": 0,
+        "negativeRejectedN": 0,
+        "negativeRejectedRate": 0,
+        "policyLayerMatchN": 5,
+        "requiredEvidenceSatisfiedN": 0,
+        "selectedActions": {
+          "request_evidence": 5
+        },
+        "observedResistanceSignals": {
+          "boredom": 1,
+          "frustration": 1,
+          "irrelevance": 1,
+          "question_flood": 1,
+          "rote_parroting": 1
+        }
+      }
+    },
+    "bySignal": {
+      "boredom": {
+        "positiveRows": 3,
+        "negativeRows": 0,
+        "allArmsSucceeded": false,
+        "combinedHasBothPolicySources": true,
+        "combinedEvidenceJoin": true,
+        "dagOnlyAction": "request_evidence",
+        "resistanceOnlyAction": "ask_strategy_choice",
+        "combinedAction": "request_evidence",
+        "negativeControlsRejected": null
+      },
+      "frustration": {
+        "positiveRows": 3,
+        "negativeRows": 0,
+        "allArmsSucceeded": false,
+        "combinedHasBothPolicySources": true,
+        "combinedEvidenceJoin": true,
+        "dagOnlyAction": "request_evidence",
+        "resistanceOnlyAction": "elicit_prediction",
+        "combinedAction": "request_evidence",
+        "negativeControlsRejected": null
+      },
+      "irrelevance": {
+        "positiveRows": 3,
+        "negativeRows": 0,
+        "allArmsSucceeded": false,
+        "combinedHasBothPolicySources": true,
+        "combinedEvidenceJoin": true,
+        "dagOnlyAction": "request_evidence",
+        "resistanceOnlyAction": "elicit_prediction",
+        "combinedAction": "request_evidence",
+        "negativeControlsRejected": null
+      },
+      "question_flood": {
+        "positiveRows": 3,
+        "negativeRows": 0,
+        "allArmsSucceeded": false,
+        "combinedHasBothPolicySources": true,
+        "combinedEvidenceJoin": true,
+        "dagOnlyAction": "request_evidence",
+        "resistanceOnlyAction": "diagnose_with_discriminating_question",
+        "combinedAction": "request_evidence",
+        "negativeControlsRejected": null
+      },
+      "rote_parroting": {
+        "positiveRows": 3,
+        "negativeRows": 0,
+        "allArmsSucceeded": false,
+        "combinedHasBothPolicySources": true,
+        "combinedEvidenceJoin": true,
+        "dagOnlyAction": "request_evidence",
+        "resistanceOnlyAction": "elicit_prediction",
+        "combinedAction": "request_evidence",
+        "negativeControlsRejected": null
+      }
+    },
+    "byControl": {
+      "positive": {
+        "label": "positive uptake",
+        "rows": 15,
+        "successN": 5,
+        "successRate": 0.3333333333333333,
+        "outcomes": {
+          "inconclusive": 10,
+          "success": 5
+        }
+      },
+      "mere_agreement": {
+        "label": "mere agreement",
+        "rows": 0,
+        "rejectedN": 0,
+        "rejectedRate": 0,
+        "accidentalSuccessN": 0,
+        "outcomes": {}
+      },
+      "formula_parroting": {
+        "label": "formula parroting",
+        "rows": 0,
+        "rejectedN": 0,
+        "rejectedRate": 0,
+        "accidentalSuccessN": 0,
+        "outcomes": {}
+      },
+      "tutor_rationale_adoption": {
+        "label": "tutor rationale adoption",
+        "rows": 0,
+        "rejectedN": 0,
+        "rejectedRate": 0,
+        "accidentalSuccessN": 0,
+        "outcomes": {}
+      },
+      "vague_explain_more": {
+        "label": "vague explain more",
+        "rows": 0,
+        "rejectedN": 0,
+        "rejectedRate": 0,
+        "accidentalSuccessN": 0,
+        "outcomes": {}
+      }
+    },
+    "totals": {
+      "scenarioRows": 15,
+      "positiveRows": 15,
+      "positiveSuccessRows": 5,
+      "negativeRows": 0,
+      "negativeRejectedRows": 0,
+      "accidentalNegativeSuccessRows": 0,
+      "policyLayerMatchRows": 15,
+      "combinedBothSourcesRows": 5,
+      "resistanceOnlyDistinctActions": 3
+    }
+  },
+  "validation": {
+    "passed": false,
+    "failures": [
+      "dag_resistance_boredom_dag_only_positive: first closed intervention outcome=inconclusive",
+      "dag_resistance_boredom_dag_only_positive: required evidence not satisfied [learner-authored rationale]",
+      "dag_resistance_boredom_resistance_only_positive: first closed intervention outcome=inconclusive",
+      "dag_resistance_boredom_resistance_only_positive: required evidence not satisfied [learner-authored choice, renewed content-bearing work, learner-owned test case]",
+      "dag_resistance_boredom_combined_positive: first closed intervention outcome=inconclusive",
+      "dag_resistance_boredom_combined_positive: required evidence not satisfied [learner-authored rationale, renewed content-bearing work, learner-owned test case]",
+      "dag_resistance_boredom_combined_positive: resistance evidence not satisfied [renewed content-bearing work, learner-owned test case]",
+      "dag_resistance_frustration_resistance_only_positive: first closed intervention outcome=inconclusive",
+      "dag_resistance_frustration_resistance_only_positive: required evidence not satisfied [learner-authored prediction, renewed attempt after affective repair, smaller learner-owned move]",
+      "dag_resistance_frustration_resistance_only_positive: resistance evidence not satisfied [renewed attempt after affective repair, smaller learner-owned move]",
+      "dag_resistance_frustration_combined_positive: first closed intervention outcome=inconclusive",
+      "dag_resistance_frustration_combined_positive: required evidence not satisfied [learner-authored rationale, renewed attempt after affective repair, smaller learner-owned move]",
+      "dag_resistance_frustration_combined_positive: resistance evidence not satisfied [renewed attempt after affective repair, smaller learner-owned move]",
+      "dag_resistance_irrelevance_resistance_only_positive: first closed intervention outcome=inconclusive",
+      "dag_resistance_irrelevance_resistance_only_positive: required evidence not satisfied [learner-authored prediction, learner-owned relevance test, task reorientation]",
+      "dag_resistance_irrelevance_resistance_only_positive: resistance evidence not satisfied [learner-owned relevance test, task reorientation]",
+      "dag_resistance_irrelevance_combined_positive: first closed intervention outcome=inconclusive",
+      "dag_resistance_irrelevance_combined_positive: required evidence not satisfied [learner-authored rationale, learner-owned relevance test, task reorientation]",
+      "dag_resistance_irrelevance_combined_positive: resistance evidence not satisfied [learner-owned relevance test, task reorientation]",
+      "dag_resistance_question_flood_resistance_only_positive: required evidence not satisfied [state-disambiguating response, collapsed question set]",
+      "dag_resistance_question_flood_resistance_only_positive: resistance evidence not satisfied [collapsed question set, state-disambiguating response]",
+      "dag_resistance_question_flood_combined_positive: first closed intervention outcome=inconclusive",
+      "dag_resistance_question_flood_combined_positive: required evidence not satisfied [learner-authored rationale, collapsed question set, state-disambiguating response]",
+      "dag_resistance_question_flood_combined_positive: resistance evidence not satisfied [collapsed question set, state-disambiguating response]",
+      "dag_resistance_rote_parroting_dag_only_positive: first closed intervention outcome=inconclusive",
+      "dag_resistance_rote_parroting_dag_only_positive: required evidence not satisfied [learner-authored rationale]",
+      "dag_resistance_rote_parroting_combined_positive: first closed intervention outcome=inconclusive",
+      "dag_resistance_rote_parroting_combined_positive: required evidence not satisfied [learner-authored rationale, learner-authored prediction, non-formulaic learner rationale]",
+      "dag_resistance_rote_parroting_combined_positive: resistance evidence not satisfied [learner-authored prediction, non-formulaic learner rationale]",
+      "boredom: not all arms succeeded",
+      "frustration: not all arms succeeded",
+      "irrelevance: not all arms succeeded",
+      "question_flood: not all arms succeeded",
+      "rote_parroting: not all arms succeeded"
+    ]
+  }
+}

@@ -1,7 +1,7 @@
 # Adaptive DAG/Resistance Comparison
 
-Generated: 2026-06-29T07:02:22.850Z
-Run id: `eval-2026-06-29-c3ba747f`
+Generated: 2026-06-29T07:19:12.014Z
+Run id: `eval-2026-06-29-d0527f67`
 LLM mode: `mock`
 Conditions: `all`
 Runs per scenario: 1

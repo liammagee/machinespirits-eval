@@ -21,6 +21,7 @@ import { unifiedAIProvider } from '../../tutor-core/index.js';
 import { z } from 'zod';
 import { jsonrepair } from 'jsonrepair';
 import { getProviderConfig } from '../learnerConfigLoader.js';
+import { callAIWithCliBridge } from '../cliProviderBridge.js';
 import { POLICY_ACTIONS, POLICY_ACTION_DESCRIPTIONS, POLICY_ACTION_DETAILS } from './policyActions.js';
 import { lookupRates } from './budgetTracker.js';
 import { parseIdConstruction } from '../idDirectorEngine.js';
@@ -190,24 +191,26 @@ async function callClaudeCli(systemPrompt, userPrompt, model, role) {
 async function callAI(agentConfig, systemPrompt, userPrompt, role) {
   const { provider, model, hyperparameters } = agentConfig;
 
-  // Branch the per-call function on provider: claude-code goes through a local
-  // CLI subprocess and skips tutor-core entirely; everything else keeps the
-  // existing unifiedAIProvider path. Retry/backoff applies uniformly.
+  // Branch the per-call function on provider: local CLI providers skip
+  // tutor-core entirely; everything else keeps the existing
+  // unifiedAIProvider path. Retry/backoff applies uniformly.
   const callOnce =
     provider === 'claude-code'
       ? () => callClaudeCli(systemPrompt, userPrompt, model, role)
-      : () =>
-          unifiedAIProvider.call({
-            provider,
-            model,
-            systemPrompt,
-            messages: [{ role: 'user', content: userPrompt }],
-            preset: 'direct',
-            config: {
-              temperature: hyperparameters?.temperature,
-              maxTokens: hyperparameters?.max_tokens,
-            },
-          });
+      : provider === 'codex'
+        ? () => callAIWithCliBridge(agentConfig, systemPrompt, userPrompt, role)
+        : () =>
+            unifiedAIProvider.call({
+              provider,
+              model,
+              systemPrompt,
+              messages: [{ role: 'user', content: userPrompt }],
+              preset: 'direct',
+              config: {
+                temperature: hyperparameters?.temperature,
+                maxTokens: hyperparameters?.max_tokens,
+              },
+            });
 
   const maxAttempts = 3;
   const backoffsMs = [500, 2000]; // wait[i] applies after attempt i+1 fails
@@ -232,8 +235,8 @@ async function callAI(agentConfig, systemPrompt, userPrompt, role) {
   }
   if (!response) throw lastErr || new Error('adaptiveTutor.realLLM: callAI exhausted retries with no response');
 
-  // claude-code already returns flat-token shape; tutor-core path needs unpacking.
-  if (provider === 'claude-code') return response;
+  // CLI providers already return flat-token shape; tutor-core path needs unpacking.
+  if (provider === 'claude-code' || provider === 'codex') return response;
 
   const inputTokens = response.usage?.inputTokens || 0;
   const outputTokens = response.usage?.outputTokens || 0;

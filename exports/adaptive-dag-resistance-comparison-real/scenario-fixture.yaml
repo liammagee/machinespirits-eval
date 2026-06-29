@@ -1,0 +1,289 @@
+scenarios:
+  - id: dag_resistance_boredom_dag_only_positive
+    name: boredom / DAG-only / positive uptake
+    scenario_type: boredom
+    opening: This is starting to feel boring and dead, like I am only filling out a
+      worksheet instead of learning anything.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: boredom"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: This is starting to feel boring and dead, like I am only filling
+        out a worksheet instead of learning anything.
+    world_adaptation_spec: &a1
+      id: W_AF6_CURRICULUM
+      version: ms-world-adaptation-v0.1
+      source_curriculum_id: ai_foundations_v1
+      module_id: AF6
+      spec_hash: sha256:dag-resistance-comparison
+      action_policy:
+        allowed_action_families:
+          - request_evidence
+        preferred_action_families:
+          - request_evidence
+        disallowed_action_families:
+          - diagnose_with_discriminating_question
+          - model_worked_example
+          - explain_principle
+          - lower_cognitive_load
+      expected_transitions:
+        - action_type: request_evidence
+          success_evidence:
+            - learner-authored rationale
+          failure_evidence:
+            - mere agreement
+          world_success_observables:
+            - Learner supplies their own rationale before tutor proof supply.
+      forbidden_moves:
+        - id: no_hidden_label_exposure
+          move: hidden_label_exposure
+        - id: no_premature_proof_supply
+          move: supply_decisive_step
+  - id: dag_resistance_boredom_resistance_only_positive
+    name: boredom / resistance-only / positive uptake
+    scenario_type: boredom
+    opening: This is starting to feel boring and dead, like I am only filling out a
+      worksheet instead of learning anything.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: boredom"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: This is starting to feel boring and dead, like I am only filling
+        out a worksheet instead of learning anything.
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: boredom
+    resistance_signal_gate:
+      - label: renewed content-bearing work
+        required: true
+      - label: learner-owned test case
+        required: true
+  - id: dag_resistance_boredom_combined_positive
+    name: boredom / combined / positive uptake
+    scenario_type: boredom
+    opening: This is starting to feel boring and dead, like I am only filling out a
+      worksheet instead of learning anything.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: boredom"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: This is starting to feel boring and dead, like I am only filling
+        out a worksheet instead of learning anything.
+    world_adaptation_spec: *a1
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: boredom
+    resistance_signal_gate:
+      - label: renewed content-bearing work
+        required: true
+      - label: learner-owned test case
+        required: true
+  - id: dag_resistance_frustration_dag_only_positive
+    name: frustration / DAG-only / positive uptake
+    scenario_type: frustration
+    opening: I am stuck and frustrated; the sequence still feels inert no matter how
+      many times I repeat it.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: frustration"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: I am stuck and frustrated; the sequence still feels inert no
+        matter how many times I repeat it.
+    world_adaptation_spec: *a1
+  - id: dag_resistance_frustration_resistance_only_positive
+    name: frustration / resistance-only / positive uptake
+    scenario_type: frustration
+    opening: I am stuck and frustrated; the sequence still feels inert no matter how
+      many times I repeat it.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: frustration"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: I am stuck and frustrated; the sequence still feels inert no
+        matter how many times I repeat it.
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: frustration
+    resistance_signal_gate:
+      - label: renewed attempt after affective repair
+        required: true
+      - label: smaller learner-owned move
+        required: true
+  - id: dag_resistance_frustration_combined_positive
+    name: frustration / combined / positive uptake
+    scenario_type: frustration
+    opening: I am stuck and frustrated; the sequence still feels inert no matter how
+      many times I repeat it.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: frustration"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: I am stuck and frustrated; the sequence still feels inert no
+        matter how many times I repeat it.
+    world_adaptation_spec: *a1
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: frustration
+    resistance_signal_gate:
+      - label: renewed attempt after affective repair
+        required: true
+      - label: smaller learner-owned move
+        required: true
+  - id: dag_resistance_irrelevance_dag_only_positive
+    name: irrelevance / DAG-only / positive uptake
+    scenario_type: irrelevance
+    opening: Why should I care about this? I do not see the point or why this
+      matters for the actual task.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: irrelevance"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: Why should I care about this? I do not see the point or why this
+        matters for the actual task.
+    world_adaptation_spec: *a1
+  - id: dag_resistance_irrelevance_resistance_only_positive
+    name: irrelevance / resistance-only / positive uptake
+    scenario_type: irrelevance
+    opening: Why should I care about this? I do not see the point or why this
+      matters for the actual task.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: irrelevance"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: Why should I care about this? I do not see the point or why this
+        matters for the actual task.
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: irrelevance
+    resistance_signal_gate:
+      - label: learner-owned relevance test
+        required: true
+      - label: task reorientation
+        required: true
+  - id: dag_resistance_irrelevance_combined_positive
+    name: irrelevance / combined / positive uptake
+    scenario_type: irrelevance
+    opening: Why should I care about this? I do not see the point or why this
+      matters for the actual task.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: irrelevance"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: Why should I care about this? I do not see the point or why this
+        matters for the actual task.
+    world_adaptation_spec: *a1
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: irrelevance
+    resistance_signal_gate:
+      - label: learner-owned relevance test
+        required: true
+      - label: task reorientation
+        required: true
+  - id: dag_resistance_question_flood_dag_only_positive
+    name: question_flood / DAG-only / positive uptake
+    scenario_type: question_flood
+    opening: Why Hegel? What does this do? What is the point? Why should this matter
+      before I can just use the formula?
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: question_flood"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: Why Hegel? What does this do? What is the point? Why should this
+        matter before I can just use the formula?
+    world_adaptation_spec: *a1
+  - id: dag_resistance_question_flood_resistance_only_positive
+    name: question_flood / resistance-only / positive uptake
+    scenario_type: question_flood
+    opening: Why Hegel? What does this do? What is the point? Why should this matter
+      before I can just use the formula?
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: question_flood"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: Why Hegel? What does this do? What is the point? Why should this
+        matter before I can just use the formula?
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: question_flood
+    resistance_signal_gate:
+      - label: collapsed question set
+        required: true
+      - label: state-disambiguating response
+        required: true
+  - id: dag_resistance_question_flood_combined_positive
+    name: question_flood / combined / positive uptake
+    scenario_type: question_flood
+    opening: Why Hegel? What does this do? What is the point? Why should this matter
+      before I can just use the formula?
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: question_flood"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: Why Hegel? What does this do? What is the point? Why should this
+        matter before I can just use the formula?
+    world_adaptation_spec: *a1
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: question_flood
+    resistance_signal_gate:
+      - label: collapsed question set
+        required: true
+      - label: state-disambiguating response
+        required: true
+  - id: dag_resistance_rote_parroting_dag_only_positive
+    name: rote_parroting / DAG-only / positive uptake
+    scenario_type: rote_parroting
+    opening: So I just repeat master, servant, recognition, formula? This still
+      feels like parroting.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: rote_parroting"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: So I just repeat master, servant, recognition, formula? This
+        still feels like parroting.
+    world_adaptation_spec: *a1
+  - id: dag_resistance_rote_parroting_resistance_only_positive
+    name: rote_parroting / resistance-only / positive uptake
+    scenario_type: rote_parroting
+    opening: So I just repeat master, servant, recognition, formula? This still
+      feels like parroting.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: rote_parroting"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: So I just repeat master, servant, recognition, formula? This
+        still feels like parroting.
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: rote_parroting
+    resistance_signal_gate:
+      - label: learner-authored prediction
+        required: true
+      - label: non-formulaic learner rationale
+        required: true
+  - id: dag_resistance_rote_parroting_combined_positive
+    name: rote_parroting / combined / positive uptake
+    scenario_type: rote_parroting
+    opening: So I just repeat master, servant, recognition, formula? This still
+      feels like parroting.
+    max_turns: 2
+    hidden:
+      actual_misconception: "resistance signal: rote_parroting"
+      actual_sophistication: intermediate
+      trigger_turn: -1
+      trigger_signal: So I just repeat master, servant, recognition, formula? This
+        still feels like parroting.
+    world_adaptation_spec: *a1
+    resistance_breakthrough_diagnostic: true
+    resistance_signal_target: rote_parroting
+    resistance_signal_gate:
+      - label: learner-authored prediction
+        required: true
+      - label: non-formulaic learner rationale
+        required: true
