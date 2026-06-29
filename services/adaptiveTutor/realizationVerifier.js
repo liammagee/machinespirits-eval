@@ -216,10 +216,16 @@ export function realizeTutorUtterance({ selectedAction, stateBelief, interventio
   };
 }
 
-export function realizeStagedFollowup({ pendingIntervention } = {}) {
+function typedStagedFollowupEnabled(config = {}) {
+  return config.typedStagedFollowup === true || config.typed_staged_followup === true;
+}
+
+export function realizeStagedFollowup({ pendingIntervention, config = {} } = {}) {
   const missing = pendingIntervention?.staged_closure?.missing_required_evidence || [];
   const axes = pendingIntervention?.staged_closure?.missing_evidence_axes || [];
-  const axisPrompt = axes.map((axis) => MISSING_EVIDENCE_AXIS_FOLLOWUPS[axis]).find(Boolean);
+  const axisPrompt = typedStagedFollowupEnabled(config)
+    ? axes.map((axis) => MISSING_EVIDENCE_AXIS_FOLLOWUPS[axis]).find(Boolean)
+    : null;
   if (axisPrompt) {
     return {
       version: REALIZATION_VERIFIER_VERSION,

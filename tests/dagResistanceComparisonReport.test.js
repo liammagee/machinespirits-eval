@@ -3,7 +3,16 @@ import assert from 'node:assert/strict';
 
 import { buildComparisonScenarios, markdownReport } from '../scripts/run-dag-resistance-comparison.js';
 
-const arms = ['dag_only', 'resistance_only', 'combined_strict', 'combined_staged', 'combined_staged_v2'];
+const arms = [
+  'dag_only',
+  'resistance_only',
+  'combined_strict',
+  'combined_staged',
+  'combined_contracts_only',
+  'combined_semantic_only',
+  'combined_followup_only',
+  'combined_staged_v2',
+];
 const signals = ['boredom', 'frustration', 'irrelevance', 'question_flood', 'rote_parroting'];
 const controls = ['mere_agreement', 'formula_parroting', 'tutor_rationale_adoption', 'vague_explain_more'];
 
@@ -13,6 +22,9 @@ function emptyReport(overrides = {}) {
     runId: 'eval-test',
     llmMode: 'real',
     conditions: 'positive',
+    controlSet: 'standard',
+    armOrder: arms,
+    controlOrder: ['positive', ...controls],
     runsPerConfig: 1,
     maxCostUsd: 1,
     rows: [],
@@ -46,10 +58,19 @@ function emptyReport(overrides = {}) {
             combinedStagedHasBothPolicySources: null,
             combinedStrictEvidenceJoin: null,
             combinedStagedEvidenceJoin: null,
+            combinedContractsHasBothPolicySources: null,
+            combinedSemanticHasBothPolicySources: null,
+            combinedFollowupHasBothPolicySources: null,
+            combinedContractsEvidenceJoin: null,
+            combinedSemanticEvidenceJoin: null,
+            combinedFollowupEvidenceJoin: null,
             combinedStagedV2HasBothPolicySources: null,
             combinedStagedV2EvidenceJoin: null,
             combinedStrictAction: null,
             combinedStagedAction: null,
+            combinedContractsAction: null,
+            combinedSemanticAction: null,
+            combinedFollowupAction: null,
             combinedStagedV2Action: null,
           },
         ]),
@@ -119,5 +140,42 @@ describe('DAG/resistance comparison Markdown report', () => {
       typed_staged_followup: true,
       semantic_outcome_observer: true,
     });
+  });
+
+  it('can build component-ablation arms only', () => {
+    const { scenarios } = buildComparisonScenarios({
+      conditions: 'positive',
+      scripted: true,
+      arms: ['combined_contracts_only', 'combined_semantic_only', 'combined_followup_only', 'combined_staged_v2'],
+    });
+
+    assert.equal(scenarios.length, signals.length * 4);
+    assert.deepEqual(scenarios.find((scenario) => scenario.id.includes('combined_contracts_only')).adaptive_policy, {
+      typed_evidence_contracts: true,
+    });
+    assert.deepEqual(scenarios.find((scenario) => scenario.id.includes('combined_semantic_only')).adaptive_policy, {
+      semantic_outcome_observer: true,
+    });
+    assert.deepEqual(scenarios.find((scenario) => scenario.id.includes('combined_followup_only')).adaptive_policy, {
+      staged_combined_closure: true,
+      typed_staged_followup: true,
+    });
+  });
+
+  it('can build adversarial negative controls without positives', () => {
+    const { scenarios } = buildComparisonScenarios({
+      conditions: 'negative',
+      controlSet: 'adversarial',
+      scripted: false,
+      arms: ['combined_staged_v2'],
+    });
+
+    assert.equal(scenarios.length, signals.length * 4);
+    assert.ok(scenarios.every((scenario) => !scenario.id.endsWith('_positive')));
+    assert.ok(scenarios.some((scenario) => scenario.id.endsWith('_fluent_empty_rationale')));
+    assert.deepEqual(
+      scenarios.find((scenario) => scenario.id.endsWith('_fluent_empty_rationale')).hidden.scripted_responses,
+      { default: 'Because it just works and that proves this is the right move.' },
+    );
   });
 });

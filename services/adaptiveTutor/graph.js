@@ -794,7 +794,8 @@ function makeClosePreviousIntervention(defaultMode, defaultPolicyConfig) {
 }
 
 async function realizeStagedFollowupNode(state) {
-  const followup = realizeStagedFollowup({ pendingIntervention: state.pendingIntervention });
+  const config = normalizePolicyConfig(policyConfigFromState(state, {}));
+  const followup = realizeStagedFollowup({ pendingIntervention: state.pendingIntervention, config });
   return {
     tutorInternal: {
       ...state.tutorInternal,

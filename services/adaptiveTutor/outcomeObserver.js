@@ -118,6 +118,11 @@ export function detectOutcomeEvidence(learnerTurn = '', config = {}) {
     /^(master,?\s+servant,?\s+recognition,?\s+formula\.?)$/u,
     /^(i just repeat )?master,?\s+servant,?\s+recognition/u,
   ]);
+  const emptyRationale = includesAny(lower, [
+    /\bbecause (?:it )?(?:just|basically|obviously|simply) (?:works|matters|does)\b/u,
+    /\bthat proves (?:it|this)\b/u,
+    /\bthe evidence is (?:that )?(?:it )?(?:just|basically|obviously|simply) (?:works|matters|does)\b/u,
+  ]);
   const rationale = includesAny(lower, [
     /\bbecause\b/u,
     /\bso that\b/u,
@@ -264,6 +269,7 @@ export function detectOutcomeEvidence(learnerTurn = '', config = {}) {
       'self-check': selfCheck,
       'mere agreement': mereAgreement,
       'formulaic recitation': formulaicRecitation,
+      'empty rationale': emptyRationale,
       'verbatim adoption of tutor rationale': tutorAdoption,
       'renewed content-bearing work': learnerOwnedAttempt && !mereAgreement,
       'learner-owned test case': learnerOwnedAttempt && testCase,
@@ -335,6 +341,7 @@ export function observeInterventionOutcome({ pendingIntervention, learnerTurn, t
   const shallowControlHit =
     evidence.categories['mere agreement'] ||
     evidence.categories['formulaic recitation'] ||
+    evidence.categories['empty rationale'] ||
     evidence.categories['verbatim adoption of tutor rationale'] ||
     evidence.categories['undifferentiated help request'];
 

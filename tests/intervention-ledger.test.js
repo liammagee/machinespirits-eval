@@ -175,3 +175,15 @@ test('typed staged closure succeeds with proof core plus one resistance core acr
   assert.equal(second.closedRecord.outcome, 'success');
   assert.equal(second.closedRecord.evidence_contract.satisfied, true);
 });
+
+test('typed staged closure does not promote empty rationale to accumulated success', () => {
+  const closed = closePendingIntervention({
+    ledger: [typedCombinedPending()],
+    learnerTurn: 'Because it just works and that proves this is the right move.',
+    turnIndex: 1,
+    config: { stagedCombinedClosure: true, semanticOutcomeObserver: true },
+  });
+
+  assert.equal(closed.pendingIntervention, null);
+  assert.equal(closed.closedRecord.outcome, 'failure');
+});

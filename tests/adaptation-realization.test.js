@@ -124,6 +124,7 @@ test('staged follow-up targets missing combined evidence labels', () => {
 
 test('staged follow-up uses typed missing evidence axis when present', () => {
   const realized = realizeStagedFollowup({
+    config: { typedStagedFollowup: true },
     pendingIntervention: {
       action_type: 'request_evidence',
       staged_closure: {
@@ -135,4 +136,19 @@ test('staged follow-up uses typed missing evidence axis when present', () => {
 
   assert.match(realized.text, /relevance part/u);
   assert.match(realized.text, /actual task/u);
+});
+
+test('staged follow-up leaves typed axis disabled by default', () => {
+  const realized = realizeStagedFollowup({
+    pendingIntervention: {
+      action_type: 'request_evidence',
+      staged_closure: {
+        missing_required_evidence: ['learner-owned relevance test'],
+        missing_evidence_axes: ['relevance'],
+      },
+    },
+  });
+
+  assert.match(realized.text, /state how this step would matter for the task/u);
+  assert.doesNotMatch(realized.text, /relevance part/u);
 });

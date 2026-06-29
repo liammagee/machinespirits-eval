@@ -98,6 +98,7 @@ function shallowControlEvidencePresent(categories = {}) {
   return (
     categories['mere agreement'] === true ||
     categories['formulaic recitation'] === true ||
+    categories['empty rationale'] === true ||
     categories['verbatim adoption of tutor rationale'] === true ||
     categories['undifferentiated help request'] === true
   );

@@ -201,6 +201,7 @@ test('semantic observer keeps shallow negative controls strict', () => {
     'Master, servant, recognition, formula.',
     'As you said, your reason explains it.',
     'Can you explain more?',
+    'Because it just works and that proves this is the right move.',
   ]) {
     const result = observeInterventionOutcome({
       pendingIntervention,
