@@ -89,7 +89,12 @@ import {
 } from './actionPolicy.js';
 import { validateProofReleaseOwnershipGate, repairActionFromGate } from './proofReleaseOwnershipGate.js';
 import { appendPendingIntervention, closePendingIntervention } from './interventionLedger.js';
-import { realizeTutorUtterance, repairRealization, verifyRealization } from './realizationVerifier.js';
+import {
+  realizeStagedFollowup,
+  realizeTutorUtterance,
+  repairRealization,
+  verifyRealization,
+} from './realizationVerifier.js';
 
 const SUPPORTED_ARCHITECTURES = Object.freeze([
   'recognition_only',
@@ -629,18 +634,33 @@ async function groundingValidator(state) {
   return updates.length > 0 ? { hypotheses: updates } : {};
 }
 
+function scriptedLearnerTurn({ hidden, turn, actionType } = {}) {
+  if (turn === hidden?.triggerTurn) return hidden?.triggerSignal || 'I have a different read on that.';
+  const scripted = hidden?.scriptedResponses || {};
+  const canUseScript = turn > Number(hidden?.triggerTurn ?? -1);
+  if (!canUseScript) return null;
+  if (actionType && scripted[actionType]) return scripted[actionType];
+  if (scripted[`turn_${turn}`]) return scripted[`turn_${turn}`];
+  if (scripted.default) return scripted.default;
+  return null;
+}
+
 async function learnerTurn(state) {
   const tutorLastMessage = lastTextOf(state.dialogue, 'tutor');
-  const text = await callRole('learnerTurn', {
-    tutorLastMessage,
-    hidden: state.hiddenLearnerState,
-    turn: state.turn,
-    actionType:
-      state.tutorInternal?.adaptationAction ||
-      state.selectedPedagogicalAction?.action_type ||
-      state.tutorInternal?.policyAction ||
-      '',
-  });
+  const actionType =
+    state.tutorInternal?.adaptationAction ||
+    state.selectedPedagogicalAction?.action_type ||
+    state.tutorInternal?.policyAction ||
+    '';
+  const scripted = scriptedLearnerTurn({ hidden: state.hiddenLearnerState, turn: state.turn, actionType });
+  const text =
+    scripted ??
+    (await callRole('learnerTurn', {
+      tutorLastMessage,
+      hidden: state.hiddenLearnerState,
+      turn: state.turn,
+      actionType,
+    }));
   return { dialogue: [{ role: 'learner', content: text }], turn: state.turn + 1 };
 }
 
@@ -684,6 +704,7 @@ function normalizePolicyConfig(config = {}) {
     resistanceSignalGate: config.resistanceSignalGate ?? config.resistance_signal_gate,
     resistanceSignalStrategy: config.resistanceSignalStrategy ?? config.resistance_signal_strategy,
     resistanceSignalWeight: config.resistanceSignalWeight ?? config.resistance_signal_weight,
+    stagedCombinedClosure: config.stagedCombinedClosure ?? config.staged_combined_closure,
     earlyCompletionAfterSuccessfulNoIntervention:
       config.earlyCompletionAfterSuccessfulNoIntervention ?? config.early_completion_after_successful_no_intervention,
     utilityTieEpsilon: config.utilityTieEpsilon ?? config.utility_tie_epsilon,
@@ -716,8 +737,13 @@ function completionFromClosedIntervention(closedRecord, config = {}) {
   };
 }
 
-const routeAfterClosePrevious = (nextNode) => (state) =>
-  state.adaptiveCompletion?.should_end === true ? END : nextNode;
+const routeAfterClosePrevious = (nextNode) => (state) => {
+  if (state.adaptiveCompletion?.should_end === true) return END;
+  if (state.pendingIntervention?.staged_closure?.missing_required_evidence?.length > 0) {
+    return 'realize_staged_followup';
+  }
+  return nextNode;
+};
 
 function makeClosePreviousIntervention(defaultMode, defaultPolicyConfig) {
   return async function closePreviousIntervention(state) {
@@ -742,12 +768,14 @@ function makeClosePreviousIntervention(defaultMode, defaultPolicyConfig) {
       ledger,
       learnerTurn: learnerTurnText,
       turnIndex: state.turn,
+      config,
     });
     const completion = completionFromClosedIntervention(closed.closedRecord, config);
     const closeTrace = traceEntry('close_previous_intervention', state, {
-      contract_id: closed.closedRecord?.contract_id || null,
+      contract_id: closed.closedRecord?.contract_id || closed.pendingIntervention?.contract_id || null,
       outcome: closed.closedRecord?.outcome || null,
       action_type: closed.closedRecord?.action_type || null,
+      staged_pending: closed.pendingIntervention?.staged_closure || null,
     });
     const completionTrace = completion
       ? [traceEntry('adaptive_completion', state, { reason: completion.reason, contract_id: completion.contract_id })]
@@ -759,6 +787,26 @@ function makeClosePreviousIntervention(defaultMode, defaultPolicyConfig) {
       adaptiveCompletion: completion,
       adaptationTrace: [closeTrace, ...completionTrace],
     };
+  };
+}
+
+async function realizeStagedFollowupNode(state) {
+  const followup = realizeStagedFollowup({ pendingIntervention: state.pendingIntervention });
+  return {
+    tutorInternal: {
+      ...state.tutorInternal,
+      egoDraft: followup.text,
+      egoRevision: '',
+      superegoFeedback: '',
+      adaptationAction: 'staged_followup',
+      policyAction: 'request_elaboration',
+    },
+    adaptationTrace: [
+      traceEntry('realize_staged_followup', state, {
+        contract_id: state.pendingIntervention?.contract_id || null,
+        missing_required_evidence: followup.missing_required_evidence || [],
+      }),
+    ],
   };
 }
 
@@ -1073,6 +1121,7 @@ export function buildGraph(options = {}) {
       options.adaptationPolicyMode || policyConfig.mode || process.env.ADAPTIVE_POLICY_MODE || 'closed_loop';
     return new StateGraph(AdaptiveTutorState)
       .addNode('close_previous_intervention', makeClosePreviousIntervention(policyMode, policyConfig))
+      .addNode('realize_staged_followup', realizeStagedFollowupNode)
       .addNode('estimate_learner_state', makeEstimateLearnerState(policyMode, policyConfig))
       .addNode('select_pedagogical_action', makeSelectPedagogicalAction(policyMode, policyConfig))
       .addNode('validate_adaptation_contract', makeValidateAdaptationContract(policyMode, policyConfig))
@@ -1082,6 +1131,7 @@ export function buildGraph(options = {}) {
       .addNode('tutorEmit', tutorEmit)
       .addNode('learnerTurn', learnerTurn)
       .addEdge(START, 'close_previous_intervention')
+      .addEdge('realize_staged_followup', 'tutorEmit')
       .addEdge('estimate_learner_state', 'select_pedagogical_action')
       .addEdge('select_pedagogical_action', 'validate_adaptation_contract')
       .addEdge('validate_adaptation_contract', 'realize_tutor_utterance')
@@ -1090,6 +1140,7 @@ export function buildGraph(options = {}) {
       .addEdge('persist_pending_intervention', 'tutorEmit')
       .addEdge('tutorEmit', 'learnerTurn')
       .addConditionalEdges('close_previous_intervention', routeAfterClosePrevious('estimate_learner_state'), [
+        'realize_staged_followup',
         'estimate_learner_state',
         END,
       ])

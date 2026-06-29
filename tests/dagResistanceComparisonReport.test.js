@@ -1,9 +1,9 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { markdownReport } from '../scripts/run-dag-resistance-comparison.js';
+import { buildComparisonScenarios, markdownReport } from '../scripts/run-dag-resistance-comparison.js';
 
-const arms = ['dag_only', 'resistance_only', 'combined'];
+const arms = ['dag_only', 'resistance_only', 'combined_strict', 'combined_staged'];
 const signals = ['boredom', 'frustration', 'irrelevance', 'question_flood', 'rote_parroting'];
 const controls = ['mere_agreement', 'formula_parroting', 'tutor_rationale_adoption', 'vague_explain_more'];
 
@@ -42,8 +42,12 @@ function emptyReport(overrides = {}) {
             resistanceOnlyAction: null,
             combinedAction: null,
             allArmsSucceeded: null,
-            combinedHasBothPolicySources: null,
-            combinedEvidenceJoin: null,
+            combinedStrictHasBothPolicySources: null,
+            combinedStagedHasBothPolicySources: null,
+            combinedStrictEvidenceJoin: null,
+            combinedStagedEvidenceJoin: null,
+            combinedStrictAction: null,
+            combinedStagedAction: null,
           },
         ]),
       ),
@@ -90,5 +94,14 @@ describe('DAG/resistance comparison Markdown report', () => {
 
     assert.match(md, /deterministic mock ablation/);
     assert.match(md, /Negative controls reject shallow uptake/);
+  });
+
+  it('keeps fixed negative-control replies even when positive real rows are unscripted', () => {
+    const { scenarios } = buildComparisonScenarios({ conditions: 'all', scripted: false });
+    const positive = scenarios.find((scenario) => scenario.id.endsWith('_positive'));
+    const negative = scenarios.find((scenario) => scenario.id.endsWith('_mere_agreement'));
+
+    assert.equal(positive.hidden.scripted_responses, undefined);
+    assert.deepEqual(negative.hidden.scripted_responses, { default: 'Okay.' });
   });
 });

@@ -124,6 +124,34 @@ function textForAction(actionType) {
   return TEMPLATES[actionType] || 'What is the next task-relevant move you can justify in your own words?';
 }
 
+const RESISTANCE_REQUEST_EVIDENCE_TEMPLATES = Object.freeze({
+  boredom:
+    'Make this live with one concrete test case: what evidence from that case justifies your next step in your own words?',
+  frustration:
+    'Make it one small try, not the whole sequence: what evidence justifies that step, and where does it still feel stuck?',
+  irrelevance:
+    'Connect the proof to the task: what would this step help decide, and what evidence justifies taking it?',
+  question_flood:
+    'Collapse the flood to one main question: what single question does your next step answer, and what evidence supports it?',
+  rote_parroting:
+    'Do not repeat the formula. Make a prediction in your own words, then give the evidence for why it should hold.',
+});
+
+const MISSING_EVIDENCE_FOLLOWUPS = Object.freeze({
+  'learner-authored rationale': 'give the reason in your own words and point to the evidence that justifies it',
+  'renewed content-bearing work': 'make one content-bearing move instead of only describing the work',
+  'learner-owned test case': 'use one concrete test case and say what it shows',
+  'renewed attempt after affective repair': 'try the step again after lowering the load',
+  'smaller learner-owned move': 'make one smaller move you can own',
+  'learner-owned relevance test': 'state how this step would matter for the task',
+  'task reorientation': 'restate what the task is asking this step to decide',
+  'collapsed question set': 'collapse the question flood to one main question',
+  'state-disambiguating response': 'name which uncertainty is still live',
+  'learner-authored prediction': 'make a prediction before repeating the formula',
+  'non-formulaic learner rationale': 'explain the reason without just repeating the formula words',
+  'learner-authored choice': 'choose one route and say why',
+});
+
 function dominantHypothesis(stateBelief) {
   return stateBelief?.hypotheses?.[0]?.id || 'unknown';
 }
@@ -149,12 +177,45 @@ function contextualTextForAction(actionType, stateBelief, interventionLedger = [
   return variants[dominant] || variants.default || textForAction(actionType);
 }
 
+function resistanceSignalForAction(selectedAction, stateBelief) {
+  return (
+    selectedAction?.adaptation_policy_layer?.learner_resistance?.observed_signal ||
+    stateBelief?.policy_signals?.learner_resistance?.observed_signal ||
+    null
+  );
+}
+
+function requestEvidenceTextForAction(selectedAction, stateBelief, interventionLedger = [], config = {}) {
+  const signal = resistanceSignalForAction(selectedAction, stateBelief);
+  if (signal && RESISTANCE_REQUEST_EVIDENCE_TEMPLATES[signal]) {
+    return RESISTANCE_REQUEST_EVIDENCE_TEMPLATES[signal];
+  }
+  return contextualTextForAction('request_evidence', stateBelief, interventionLedger, config);
+}
+
 export function realizeTutorUtterance({ selectedAction, stateBelief, interventionLedger = [], config = {} } = {}) {
-  const text = contextualTextForAction(selectedAction?.action_type, stateBelief, interventionLedger, config);
+  const text =
+    selectedAction?.action_type === 'request_evidence'
+      ? requestEvidenceTextForAction(selectedAction, stateBelief, interventionLedger, config)
+      : contextualTextForAction(selectedAction?.action_type, stateBelief, interventionLedger, config);
   return {
     version: REALIZATION_VERIFIER_VERSION,
     action_type: selectedAction?.action_type || null,
     text,
+  };
+}
+
+export function realizeStagedFollowup({ pendingIntervention } = {}) {
+  const missing = pendingIntervention?.staged_closure?.missing_required_evidence || [];
+  const targets = missing.map((label) => MISSING_EVIDENCE_FOLLOWUPS[label] || label).slice(0, 2);
+  const prompt = targets.length
+    ? `One part is still missing: ${targets.join(' and ')}. What is your answer to that missing piece?`
+    : 'One part is still missing. What evidence can you add in your own words?';
+  return {
+    version: REALIZATION_VERIFIER_VERSION,
+    action_type: pendingIntervention?.action_type || null,
+    text: prompt,
+    missing_required_evidence: missing,
   };
 }
 

@@ -54,3 +54,71 @@ test('ledger closes pending intervention from learner evidence', () => {
   assert.equal(closed.ledger[0].status, 'closed');
   assert.equal(closed.ledger[0].outcome, 'success');
 });
+
+function combinedPending() {
+  const successSignal = {
+    required_evidence: ['learner-authored rationale', 'learner-authored prediction', 'non-formulaic learner rationale'],
+    forbidden_evidence: ['mere agreement'],
+  };
+  return {
+    contract_id: 'combined-contract',
+    turn_index: 0,
+    hypothesis_ids: ['resistance_rote_parroting'],
+    action_type: 'request_evidence',
+    expected_transition: {},
+    success_signal: successSignal,
+    original_success_signal: successSignal,
+    adaptation_policy_layer: {
+      proof_dag: { id: 'W_AF6_CURRICULUM' },
+      learner_resistance: { observed_signal: 'rote_parroting' },
+    },
+    status: 'pending',
+    observed_transition: null,
+    outcome: null,
+    evidence: [],
+    staged_closure: null,
+    policy_update: null,
+  };
+}
+
+test('staged combined closure keeps a partial proof/resistance contract pending', () => {
+  const staged = closePendingIntervention({
+    ledger: [combinedPending()],
+    learnerTurn: 'I can justify it because the relation changes in this case, not just by repeating the formula.',
+    turnIndex: 1,
+    config: { stagedCombinedClosure: true },
+  });
+
+  assert.equal(staged.closedRecord, null);
+  assert.equal(staged.pendingIntervention.status, 'pending');
+  assert.equal(staged.pendingIntervention.outcome, 'partial');
+  assert.deepEqual(staged.pendingIntervention.success_signal.required_evidence, ['learner-authored prediction']);
+  assert.deepEqual(staged.pendingIntervention.staged_closure.missing_required_evidence, [
+    'learner-authored prediction',
+  ]);
+});
+
+test('staged combined closure succeeds once missing evidence appears', () => {
+  const first = closePendingIntervention({
+    ledger: [combinedPending()],
+    learnerTurn: 'I can justify it because the relation changes in this case, not just by repeating the formula.',
+    turnIndex: 1,
+    config: { stagedCombinedClosure: true },
+  });
+  const second = closePendingIntervention({
+    ledger: first.ledger,
+    learnerTurn: 'I predict the formula breaks when the case changes.',
+    turnIndex: 2,
+    config: { stagedCombinedClosure: true },
+  });
+
+  assert.equal(second.pendingIntervention, null);
+  assert.equal(second.closedRecord.status, 'closed');
+  assert.equal(second.closedRecord.outcome, 'success');
+  assert.deepEqual(second.closedRecord.success_signal.required_evidence, [
+    'learner-authored rationale',
+    'learner-authored prediction',
+    'non-formulaic learner rationale',
+  ]);
+  assert.equal(second.closedRecord.evidence.length, 2);
+});

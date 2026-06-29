@@ -14,11 +14,12 @@ import yaml from 'yaml';
 
 const DEFAULT_OUT_DIR = 'exports/adaptive-dag-resistance-comparison';
 const PROFILE_NAME = 'mock_dag_resistance_comparison';
-const ARM_ORDER = ['dag_only', 'resistance_only', 'combined'];
+const ARM_ORDER = ['dag_only', 'resistance_only', 'combined_strict', 'combined_staged'];
 const ARM_LABELS = {
   dag_only: 'DAG-only',
   resistance_only: 'resistance-only',
-  combined: 'combined',
+  combined_strict: 'combined-strict',
+  combined_staged: 'combined-staged',
 };
 
 const WORLD_SPEC = {
@@ -267,6 +268,18 @@ function scenarioId(signal, arm, control = 'positive') {
   return `dag_resistance_${signal}_${arm}_${control}`;
 }
 
+function armUsesProofDag(arm) {
+  return arm === 'dag_only' || arm === 'combined_strict' || arm === 'combined_staged';
+}
+
+function armUsesResistance(arm) {
+  return arm === 'resistance_only' || arm === 'combined_strict' || arm === 'combined_staged';
+}
+
+function armIsCombined(arm) {
+  return arm === 'combined_strict' || arm === 'combined_staged';
+}
+
 function resistancePolicy(signal, resistanceEvidence) {
   return {
     resistance_breakthrough_diagnostic: true,
@@ -289,9 +302,12 @@ export function buildComparisonScenarios({ conditions = 'all', scripted = true }
     for (const arm of ARM_ORDER) {
       for (const control of controls) {
         const extras = {};
-        if (arm === 'dag_only' || arm === 'combined') extras.world_adaptation_spec = WORLD_SPEC;
-        if (arm === 'resistance_only' || arm === 'combined') {
+        if (armUsesProofDag(arm)) extras.world_adaptation_spec = WORLD_SPEC;
+        if (armUsesResistance(arm)) {
           Object.assign(extras, resistancePolicy(spec.signal, spec.resistanceEvidence));
+        }
+        if (arm === 'combined_staged') {
+          extras.adaptive_policy = { staged_combined_closure: true };
         }
         const id = scenarioId(spec.signal, arm, control.id);
         const hidden = {
@@ -300,7 +316,7 @@ export function buildComparisonScenarios({ conditions = 'all', scripted = true }
           trigger_turn: -1,
           trigger_signal: spec.opening,
         };
-        if (scripted) {
+        if (scripted || control.id !== 'positive') {
           hidden.scripted_responses =
             control.id === 'positive' ? positiveScriptedResponses(spec.signal) : negativeScriptedResponses(control);
         }
@@ -309,7 +325,7 @@ export function buildComparisonScenarios({ conditions = 'all', scripted = true }
           name: `${spec.signal} / ${ARM_LABELS[arm]} / ${control.label}`,
           scenario_type: spec.signal,
           opening: spec.opening,
-          max_turns: 2,
+          max_turns: arm === 'combined_staged' ? 3 : 2,
           hidden,
           ...extras,
         });
@@ -352,7 +368,12 @@ function baseScenarioId(id = '') {
 }
 
 function trueEvidenceLabels(record) {
-  const categories = record?.evidence?.[0]?.categories || {};
+  const categories = {};
+  for (const entry of record?.evidence || []) {
+    for (const [label, value] of Object.entries(entry?.categories || {})) {
+      categories[label] = categories[label] === true || value === true;
+    }
+  }
   return Object.entries(categories)
     .filter(([, value]) => value === true)
     .map(([label]) => label)
@@ -369,7 +390,7 @@ function layerMatches(row) {
   const hasResistance = Boolean(row.policyLayer?.learner_resistance?.observed_signal);
   if (row.arm === 'dag_only') return hasProof && !hasResistance;
   if (row.arm === 'resistance_only') return !hasProof && hasResistance && row.observedResistance === row.signal;
-  if (row.arm === 'combined') return hasProof && hasResistance && row.observedResistance === row.signal;
+  if (armIsCombined(row.arm)) return hasProof && hasResistance && row.observedResistance === row.signal;
   return false;
 }
 
@@ -381,7 +402,10 @@ function summarizeTrace({ row, trace, metadata }) {
   const meta = metadata.get(row.scenario_id) || metadata.get(baseScenarioId(row.scenario_id));
   if (!meta) throw new Error(`missing scenario metadata for ${row.scenario_id}`);
   const requiredEvidence =
-    ledger?.success_signal?.required_evidence || selected.success_signal?.required_evidence || [];
+    ledger?.original_success_signal?.required_evidence ||
+    ledger?.success_signal?.required_evidence ||
+    selected.success_signal?.required_evidence ||
+    [];
   const evidenceLabels = trueEvidenceLabels(ledger);
   const summary = {
     scenarioId: row.scenario_id,
@@ -396,8 +420,9 @@ function summarizeTrace({ row, trace, metadata }) {
     forbiddenEvidence: ledger?.success_signal?.forbidden_evidence || selected.success_signal?.forbidden_evidence || [],
     requiredEvidenceSatisfied: includesAll(evidenceLabels, requiredEvidence),
     expectedResistanceEvidence: meta.expectedResistanceEvidence,
-    expectedResistanceEvidenceSatisfied:
-      meta.arm === 'dag_only' ? null : includesAll(evidenceLabels, meta.expectedResistanceEvidence),
+    expectedResistanceEvidenceSatisfied: !armUsesResistance(meta.arm)
+      ? null
+      : includesAll(evidenceLabels, meta.expectedResistanceEvidence),
     evidenceLabels,
     evidenceQuote: ledger?.evidence?.[0]?.quote || '',
     observedTransition: ledger?.observed_transition || {},
@@ -411,6 +436,7 @@ function summarizeTrace({ row, trace, metadata }) {
     policyLayerMatchesArm: layerMatches(summary),
     positiveClosure: meta.expectedOutcome === 'success' && summary.firstOutcome === 'success',
     falsePositiveRejected: meta.expectedOutcome === 'non_success' && summary.firstOutcome !== 'success',
+    stagedClosure: ledger?.staged_closure || null,
   };
 }
 
@@ -447,22 +473,32 @@ function aggregateRows(rows) {
     const signalRows = positiveRows.filter((row) => row.signal === spec.signal);
     const armMap = Object.fromEntries(signalRows.map((row) => [row.arm, row]));
     const dagRequired = armMap.dag_only?.requiredEvidence || [];
-    const combinedRequired = armMap.combined?.requiredEvidence || [];
+    const combinedStrictRequired = armMap.combined_strict?.requiredEvidence || [];
+    const combinedStagedRequired = armMap.combined_staged?.requiredEvidence || [];
     const hasPositiveRows = signalRows.length > 0;
     const signalNegativeRows = negativeRows.filter((row) => row.signal === spec.signal);
     bySignal[spec.signal] = {
       positiveRows: signalRows.length,
       negativeRows: signalNegativeRows.length,
       allArmsSucceeded: hasPositiveRows ? ARM_ORDER.every((arm) => armMap[arm]?.firstOutcome === 'success') : null,
-      combinedHasBothPolicySources: hasPositiveRows
-        ? Boolean(armMap.combined?.proofDagId && armMap.combined?.observedResistance)
+      combinedStrictHasBothPolicySources: hasPositiveRows
+        ? Boolean(armMap.combined_strict?.proofDagId && armMap.combined_strict?.observedResistance)
         : null,
-      combinedEvidenceJoin: hasPositiveRows
-        ? includesAll(combinedRequired, dagRequired) && includesAll(combinedRequired, spec.resistanceEvidence)
+      combinedStagedHasBothPolicySources: hasPositiveRows
+        ? Boolean(armMap.combined_staged?.proofDagId && armMap.combined_staged?.observedResistance)
+        : null,
+      combinedStrictEvidenceJoin: hasPositiveRows
+        ? includesAll(combinedStrictRequired, dagRequired) &&
+          includesAll(combinedStrictRequired, spec.resistanceEvidence)
+        : null,
+      combinedStagedEvidenceJoin: hasPositiveRows
+        ? includesAll(combinedStagedRequired, dagRequired) &&
+          includesAll(combinedStagedRequired, spec.resistanceEvidence)
         : null,
       dagOnlyAction: armMap.dag_only?.selectedAction || null,
       resistanceOnlyAction: armMap.resistance_only?.selectedAction || null,
-      combinedAction: armMap.combined?.selectedAction || null,
+      combinedStrictAction: armMap.combined_strict?.selectedAction || null,
+      combinedStagedAction: armMap.combined_staged?.selectedAction || null,
       negativeControlsRejected: signalNegativeRows.length
         ? signalNegativeRows.every((row) => row.firstOutcome !== 'success')
         : null,
@@ -509,7 +545,7 @@ function aggregateRows(rows) {
       accidentalNegativeSuccessRows: negativeRows.filter((row) => row.firstOutcome === 'success').length,
       policyLayerMatchRows: rows.filter((row) => row.policyLayerMatchesArm).length,
       combinedBothSourcesRows: positiveRows.filter(
-        (row) => row.arm === 'combined' && row.proofDagId && row.observedResistance,
+        (row) => armIsCombined(row.arm) && row.proofDagId && row.observedResistance,
       ).length,
       resistanceOnlyDistinctActions: Object.keys(byArm.resistance_only.selectedActions).filter(
         (key) => key !== '(empty)',
@@ -535,7 +571,7 @@ function validateReport(report) {
     if (row.expectedOutcome === 'success' && !row.requiredEvidenceSatisfied) {
       failures.push(`${row.scenarioId}: required evidence not satisfied [${row.requiredEvidence.join(', ')}]`);
     }
-    if (row.expectedOutcome === 'success' && row.arm !== 'dag_only' && !row.expectedResistanceEvidenceSatisfied) {
+    if (row.expectedOutcome === 'success' && armUsesResistance(row.arm) && !row.expectedResistanceEvidenceSatisfied) {
       failures.push(
         `${row.scenarioId}: resistance evidence not satisfied [${row.expectedResistanceEvidence.join(', ')}]`,
       );
@@ -544,9 +580,14 @@ function validateReport(report) {
   for (const [signal, contrast] of Object.entries(report.aggregates.bySignal)) {
     if (contrast.positiveRows > 0) {
       if (!contrast.allArmsSucceeded) failures.push(`${signal}: not all arms succeeded`);
-      if (!contrast.combinedHasBothPolicySources) failures.push(`${signal}: combined arm lacks both policy sources`);
-      if (!contrast.combinedEvidenceJoin)
-        failures.push(`${signal}: combined evidence does not join DAG + route evidence`);
+      if (!contrast.combinedStrictHasBothPolicySources)
+        failures.push(`${signal}: combined-strict arm lacks both policy sources`);
+      if (!contrast.combinedStagedHasBothPolicySources)
+        failures.push(`${signal}: combined-staged arm lacks both policy sources`);
+      if (!contrast.combinedStrictEvidenceJoin)
+        failures.push(`${signal}: combined-strict evidence does not join DAG + route evidence`);
+      if (!contrast.combinedStagedEvidenceJoin)
+        failures.push(`${signal}: combined-staged evidence does not join DAG + route evidence`);
     }
     if (contrast.negativeRows > 0 && !contrast.negativeControlsRejected) {
       failures.push(`${signal}: at least one negative control closed as success`);
@@ -601,7 +642,7 @@ export function markdownReport(report) {
   lines.push('');
   if (report.llmMode === 'real') {
     lines.push(
-      'This is a real-LLM ablation over the mechanism-wiring harness, not an empirical learning-effect result. It checks whether proof-DAG constraints and learner-resistance routing operate as one adaptation policy layer under unscripted learner turns with observable evidence closure.',
+      'This is a real-LLM ablation over the mechanism-wiring harness, not an empirical learning-effect result. Positive rows use unscripted learner turns; negative controls use fixed shallow replies so false-positive rejection remains strict. The run checks whether proof-DAG constraints and learner-resistance routing operate as one adaptation policy layer with observable evidence closure.',
     );
   } else {
     lines.push(
@@ -650,33 +691,36 @@ export function markdownReport(report) {
   lines.push('## Per-Signal Contrast');
   lines.push('');
   lines.push(
-    '| signal | DAG-only action | resistance-only action | combined action | all succeeded | combined source join | evidence join |',
+    '| signal | DAG-only action | resistance-only action | combined-strict action | combined-staged action | all succeeded | strict source join | staged source join | strict evidence join | staged evidence join |',
   );
-  lines.push('|---|---|---|---|---:|---:|---:|');
+  lines.push('|---|---|---|---|---|---:|---:|---:|---:|---:|');
   for (const signal of RESISTANCE_CASES.map((entry) => entry.signal)) {
     const contrast = report.aggregates.bySignal[signal];
     lines.push(
-      `| ${signal} | ${contrast.dagOnlyAction} | ${contrast.resistanceOnlyAction} | ${contrast.combinedAction} | ${yesNo(
+      `| ${signal} | ${contrast.dagOnlyAction} | ${contrast.resistanceOnlyAction} | ${
+        contrast.combinedStrictAction
+      } | ${contrast.combinedStagedAction} | ${yesNo(
         contrast.allArmsSucceeded,
-      )} | ${yesNo(contrast.combinedHasBothPolicySources)} | ${yesNo(contrast.combinedEvidenceJoin)} |`,
+      )} | ${yesNo(contrast.combinedStrictHasBothPolicySources)} | ${yesNo(
+        contrast.combinedStagedHasBothPolicySources,
+      )} | ${yesNo(contrast.combinedStrictEvidenceJoin)} | ${yesNo(contrast.combinedStagedEvidenceJoin)} |`,
     );
   }
   lines.push('');
   lines.push('## Positive Row Detail');
   lines.push('');
-  lines.push('| signal | arm | action | layer | required evidence | evidence observed | outcome |');
-  lines.push('|---|---|---|---|---|---|---|');
+  lines.push('| signal | arm | action | layer | staged | required evidence | evidence observed | outcome |');
+  lines.push('|---|---|---|---|---:|---|---|---|');
   for (const row of report.rows.filter((record) => record.expectedOutcome === 'success')) {
-    const layer =
-      row.arm === 'combined'
-        ? `proof:${row.proofDagId} + resistance:${row.observedResistance}`
-        : row.proofDagId
-          ? `proof:${row.proofDagId}`
-          : `resistance:${row.observedResistance}`;
+    const layer = armIsCombined(row.arm)
+      ? `proof:${row.proofDagId} + resistance:${row.observedResistance}`
+      : row.proofDagId
+        ? `proof:${row.proofDagId}`
+        : `resistance:${row.observedResistance}`;
     lines.push(
-      `| ${row.signal} | ${ARM_LABELS[row.arm]} | ${row.selectedAction} | ${layer} | ${formatList(
-        row.requiredEvidence,
-      )} | ${formatList(contractEvidenceLabels(row))} | ${row.firstOutcome} |`,
+      `| ${row.signal} | ${ARM_LABELS[row.arm]} | ${row.selectedAction} | ${layer} | ${
+        row.stagedClosure ? 'yes' : 'no'
+      } | ${formatList(row.requiredEvidence)} | ${formatList(contractEvidenceLabels(row))} | ${row.firstOutcome} |`,
     );
   }
   lines.push('');
@@ -691,6 +735,11 @@ export function markdownReport(report) {
   lines.push(
     '- Combined joins both sources: each combined row carries the proof-DAG identity and the matched resistance signal, and its success contract joins the proof-DAG evidence requirement with the signal-specific resistance evidence.',
   );
+  if (report.aggregates.byArm.combined_strict && report.aggregates.byArm.combined_staged) {
+    lines.push(
+      '- Staged combined preserves the same joined contract but lets partial uptake remain pending, then asks for the missing evidence instead of treating the first partial reply as final.',
+    );
+  }
   if (report.aggregates.totals.negativeRows > 0) {
     lines.push(
       '- Negative controls reject shallow uptake: mere agreement, formula parroting, tutor-rationale adoption, and vague requests for more explanation do not close as success.',

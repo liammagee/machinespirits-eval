@@ -129,6 +129,11 @@ function resistancePolicyForScenario(yamlScenario = {}) {
   };
 }
 
+function adaptivePolicyForScenario(yamlScenario = {}) {
+  const policy = yamlScenario.adaptive_policy || yamlScenario.adaptivePolicy || {};
+  return policy && typeof policy === 'object' && !Array.isArray(policy) ? policy : {};
+}
+
 function buildPerturbation(yamlScenario) {
   const cf = yamlScenario.counterfactual;
   if (!cf) return null;
@@ -275,6 +280,7 @@ export async function runAdaptiveEvaluation({
           assertWorldAdaptationSpecUsable(worldAdaptationSpec);
           const scenarioAdaptivePolicy = {
             ...adaptivePolicy,
+            ...adaptivePolicyForScenario(yamlScenario),
             ...resistancePolicyForScenario(yamlScenario),
             ...(worldAdaptationSpec ? { world_adaptation_spec: worldAdaptationSpec } : {}),
           };
