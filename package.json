@@ -132,6 +132,7 @@
     "derivation:ownership-benchmark": "node scripts/derivation-ownership-benchmark.js",
     "adaptation:policy-eval": "node scripts/evaluate-adaptation-policy.js",
     "adaptation:dag-resistance-comparison": "node scripts/run-dag-resistance-comparison.js",
+    "adaptation:dag-resistance-character-development": "node scripts/run-dag-resistance-character-development.js",
     "poetics:ingest": "node scripts/ingest-poetics-artifacts.js",
     "poetics:report": "node scripts/report-poetics-sidecar.js",
     "poetics:adaptation": "node scripts/analyze-poetics-tutor-adaptation.js",
