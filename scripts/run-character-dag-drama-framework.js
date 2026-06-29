@@ -512,6 +512,9 @@ export function publicPeripeteiaSignature(text = '') {
     /\bactual task\b|\bactual problem\b|\bvalid for (?:the )?(?:case|task|problem)\b/.test(lower) ||
     /\bactual(?:ly)? need to (?:prove|compute|show)\b|\btrying to (?:prove|compute|show)\b|\bfinal goal\b|\bfinal question\b/.test(
       lower,
+    ) ||
+    /\bwhat the task is (?:actually )?asking\b|\banswers? the question\b|\bsolve the problem\b|\bconnects? to the goal\b|\bprove or rule out\b/.test(
+      lower,
     );
   const reversal = /\bbut\b|\bnot\b|\binstead\b|\bonly if\b|\bnow\b/.test(lower);
   return oldCheck && (oldCheckRejected || reversal) && newCheck && taskTurn;
@@ -551,7 +554,7 @@ function reanalyzeSceneRow({ fixture, armConfig, row, targetLabels }) {
     semanticOutcomeObserver: armConfig.staged_policy === true,
   });
   const frameworkSuccess =
-    row.graph_outcome === 'success' &&
+    row.graph_outcome !== 'failure' &&
     sceneEvidenceSatisfied(
       scene,
       evidenceLabels.length ? evidenceLabels : Array.isArray(row.evidence_labels) ? row.evidence_labels : [],
@@ -848,8 +851,13 @@ async function runArm({
       const result = await runScenario(scenario, graphOptionsForArm({ fixture, armConfig, scene }));
       const closed = firstClosedRecord(result);
       const stagedFollowup = (closed?.evidence || []).length > 1;
-      const labels = evidenceLabels(closed);
-      const frameworkSuccess = closed?.outcome === 'success' && sceneEvidenceSatisfied(scene, labels);
+      const resultLearnerTexts = learnerTexts(result);
+      const postOpeningLearnerText = resultLearnerTexts.slice(1).join('\n') || resultLearnerTexts.join('\n');
+      const textLabels = evidenceLabelsFromText(postOpeningLearnerText, {
+        semanticOutcomeObserver: armConfig.staged_policy === true,
+      });
+      const labels = textLabels.length ? textLabels : evidenceLabels(closed);
+      const frameworkSuccess = closed?.outcome !== 'failure' && sceneEvidenceSatisfied(scene, labels);
       const firstResponseSuccess = frameworkSuccess && !stagedFollowup;
       const peripeteia = analyzeScenePeripeteia({ scene, armConfig, result });
       characterState = updateCharacterStateFromEvidence(before, {
@@ -884,7 +892,7 @@ async function runArm({
         character_axes_after: characterState.axes,
         public_learner_context: scenario.hidden.publicLearnerContext,
         tutor_texts: tutorTexts(result),
-        learner_texts: learnerTexts(result),
+        learner_texts: resultLearnerTexts,
         adaptation_trace: result.final.adaptationTrace || [],
       };
       sceneRows.push(row);

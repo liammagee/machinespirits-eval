@@ -1,6 +1,6 @@
 # Synthetic Character-DAG Drama Framework
 
-Generated: 2026-06-29T21:23:40.023Z
+Generated: 2026-06-29T21:50:57.438Z
 Fixture: `/Users/lmagee/Dev/machinespirits-eval-dag-resistance-adaptation/config/character-dag-drama-framework.yaml`
 LLM mode: `mock`
 Learner mode: `llm`

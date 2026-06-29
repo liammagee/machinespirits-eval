@@ -1,9 +1,9 @@
 {
-  "generated": "2026-06-29T18:58:57.959Z",
+  "generated": "2026-06-29T21:53:20.626Z",
   "counts": {
-    "total": 59,
+    "total": 60,
     "byStatus": {
-      "done": 50,
+      "done": 51,
       "blocked": 1,
       "dropped": 2,
       "review": 1,
@@ -11,7 +11,7 @@
       "triaged": 4
     },
     "byType": {
-      "research": 30,
+      "research": 31,
       "experiment": 5,
       "content": 2,
       "infra": 9,
@@ -666,6 +666,43 @@
         "daily-routine"
       ],
       "milestone": "board-pm"
+    },
+    {
+      "id": "character-dag-drama-framework-synthetic-contrast",
+      "title": "Character-DAG drama framework synthetic contrast",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-30",
+      "updated": "2026-06-30",
+      "verification": "Focused tests, format, workplan check, mock artifacts, and real seeds-2 synthetic contrast pass; Paper 2.0 §6.8.9 records exploratory claim boundary.",
+      "branch": "codex/dag-resistance-adaptation-framework",
+      "claim_status": "exploratory",
+      "links": {
+        "paper": "docs/research/paper-full-2.0.md#689-postscript-from-local-repair-to-longitudinal-character-state-routing",
+        "notes": [
+          "docs/next-steps/character-dag-drama-framework-plan.md"
+        ],
+        "exports": [
+          "exports/character-dag-drama-framework/report.md",
+          "exports/character-dag-drama-framework-llm-mock/report.md",
+          "exports/character-dag-drama-framework-llm-real/report.md"
+        ],
+        "items": [
+          "dag-resistance-character-state-longitudinal"
+        ]
+      },
+      "tags": [
+        "dag-resistance",
+        "character-state",
+        "drama-machine",
+        "peripeteia",
+        "synthetic-learner",
+        "adaptive-runner"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
     },
     {
       "id": "consolidate-logs-db-private-archive",

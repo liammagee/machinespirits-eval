@@ -181,6 +181,20 @@ test('semantic observer recognizes real-style transfer and decide-whether langua
   assert.equal(result.evidence_contract.satisfied, true);
 });
 
+test('semantic observer recognizes contracted prediction and route-relevance language', () => {
+  const prediction = detectOutcomeEvidence(
+    'I would not just repeat the formula. I’d predict the power relation is unstable because one side depends on the other.',
+    { semanticOutcomeObserver: true },
+  );
+  assert.equal(prediction.categories['learner-authored prediction'], true);
+
+  const routeRelevance = detectOutcomeEvidence(
+    'If the condition holds, the old move is relevant; if it does not, then I need a different route.',
+    { semanticOutcomeObserver: true },
+  );
+  assert.equal(routeRelevance.categories['task reorientation'], true);
+});
+
 test('semantic transfer observer does not credit a bare prior-case mention', () => {
   for (const text of [
     'The prior case was confusing, and I still want someone to explain what to do.',

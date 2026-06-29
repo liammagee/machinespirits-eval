@@ -1,4 +1,4 @@
-export const OUTCOME_OBSERVER_VERSION = 'adaptation-outcome-observer.v1.2';
+export const OUTCOME_OBSERVER_VERSION = 'adaptation-outcome-observer.v1.3';
 
 function includesAny(text, patterns) {
   return patterns.some((pattern) => pattern.test(text));
@@ -152,7 +152,14 @@ export function detectOutcomeEvidence(learnerTurn = '', config = {}) {
     /\bnext i\b/u,
     /\bafter that i(?:'d|’d| will)\b/u,
   ]);
-  const prediction = includesAny(lower, [/\bi predict\b/u, /\bi expect\b/u, /\bwould happen\b/u, /\bwill happen\b/u]);
+  const prediction = includesAny(lower, [
+    /\bi predict\b/u,
+    /\bi(?:'d|’d) predict\b/u,
+    /\bi expect\b/u,
+    /\bi(?:'d|’d) expect\b/u,
+    /\bwould happen\b/u,
+    /\bwill happen\b/u,
+  ]);
   const undifferentiatedHelpRequest = includesAny(lower, [
     /can you explain more/u,
     /explain that one more time/u,
@@ -200,6 +207,7 @@ export function detectOutcomeEvidence(learnerTurn = '', config = {}) {
       ? [
           /\b(?:this|the) step (?:is supposed to|would help|helps) decide\b/u,
           /\b(?:this|the) step (?:would|will|can|should)?\s*(?:help )?decide(?:s)?\b/u,
+          /\b(?:it|this|the step) (?:would|will|can|should)?\s*(?:help )?decide(?:s)? whether\b/u,
           /\b(?:it|this|the step) (?:decides|would decide|helps decide) whether\b/u,
           /\bactual (?:problem|task|case)\b/u,
           /\bcomplet(?:e|ing) the task\b/u,
@@ -207,6 +215,8 @@ export function detectOutcomeEvidence(learnerTurn = '', config = {}) {
           /\bwhat (?:we(?:'re| are)|i(?:'m| am)) trying to (?:decide|prove|show)\b/u,
           /\bconnect (?:it|this|the step|the move) to (?:what|the thing) (?:we(?:'re| are)|i(?:'m| am)) trying\b/u,
           /\bmaking the target testable\b/u,
+          /\b(?:old|same|earlier|prior) (?:move|route|step) (?:is|would be|becomes) (?:not )?relevant\b/u,
+          /\bneed (?:a|to find a) different (?:route|move|step|link)\b/u,
         ]
       : []),
   ]);

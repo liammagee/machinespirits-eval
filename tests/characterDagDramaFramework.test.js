@@ -138,6 +138,18 @@ describe('Synthetic Character-DAG drama framework', () => {
       ),
       true,
     );
+
+    assert.equal(
+      publicPeripeteiaSignature(
+        [
+          'I was using the old check that the terms repeat, but that does not show why this matters for the task.',
+          'The evidence I need is that the pattern connects to the goal, not just that I can spot it.',
+          'The next step should connect the repeating part to what the task is actually asking,',
+          'so I need to show how the repetition lets me predict or simplify the outcome.',
+        ].join(' '),
+      ),
+      true,
+    );
   });
 
   it('runs the mock scripted benchmark and writes all artifacts', async () => {
