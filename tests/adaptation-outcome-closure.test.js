@@ -4,6 +4,7 @@ import {
   analyzeTraceOutcomeClosure,
   buildOutcomeClosureReport,
 } from '../scripts/analyze-adaptation-outcome-closure.js';
+import { observeInterventionOutcome } from '../services/adaptiveTutor/outcomeObserver.js';
 
 function contract(action) {
   return {
@@ -220,4 +221,52 @@ test('buildOutcomeClosureReport can reobserve stored dialogue outcomes without m
   assert.equal(stored.inconclusiveN, 1);
   assert.equal(reobserved.failureN, 1);
   assert.equal(reobserved.inconclusiveN, 0);
+});
+
+test('outcome observer recognizes non-formulaic resistance breakthrough evidence', () => {
+  const outcome = observeInterventionOutcome({
+    pendingIntervention: {
+      action_type: 'elicit_prediction',
+      success_signal: {
+        required_evidence: ['learner-authored prediction', 'non-formulaic learner rationale'],
+        forbidden_evidence: ['mere agreement'],
+      },
+    },
+    learnerTurn:
+      'I predict the formula will break if the case changes, because parroting the sequence does not explain the relation.',
+    turnIndex: 1,
+  });
+
+  assert.equal(outcome.outcome, 'success');
+  assert.equal(outcome.required_evidence_satisfied, true);
+  assert.equal(outcome.evidence[0].categories['learner-authored prediction'], true);
+  assert.equal(outcome.evidence[0].categories['non-formulaic learner rationale'], true);
+  assert.ok(outcome.observed_transition.resistance_breakthrough > 0);
+});
+
+test('outcome observer closes combined proof-DAG and resistance evidence', () => {
+  const outcome = observeInterventionOutcome({
+    pendingIntervention: {
+      action_type: 'request_evidence',
+      success_signal: {
+        required_evidence: [
+          'learner-authored rationale',
+          'learner-authored prediction',
+          'non-formulaic learner rationale',
+        ],
+        forbidden_evidence: ['mere agreement'],
+      },
+    },
+    learnerTurn:
+      'I predict the formula is not enough because I need to test a concrete case and explain the relation in my own words.',
+    turnIndex: 1,
+  });
+
+  assert.equal(outcome.outcome, 'success');
+  assert.equal(outcome.required_evidence_satisfied, true);
+  assert.equal(outcome.evidence[0].categories['learner-authored rationale'], true);
+  assert.equal(outcome.evidence[0].categories['learner-authored prediction'], true);
+  assert.equal(outcome.evidence[0].categories['non-formulaic learner rationale'], true);
+  assert.ok(outcome.observed_transition.proof > 0);
+  assert.ok(outcome.observed_transition.resistance_breakthrough > 0);
 });

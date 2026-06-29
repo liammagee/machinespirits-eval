@@ -10,6 +10,10 @@ function evidenceSpan(text) {
   return trimmed.length > 180 ? `${trimmed.slice(0, 177)}...` : trimmed;
 }
 
+function questionCount(text = '') {
+  return (String(text || '').match(/\?/g) || []).length;
+}
+
 export function detectOutcomeEvidence(learnerTurn = '') {
   const text = String(learnerTurn || '').trim();
   const lower = text.toLowerCase();
@@ -72,6 +76,30 @@ export function detectOutcomeEvidence(learnerTurn = '') {
   const transfer = includesAny(lower, [/new case|similar problem|transfer|same idea/u]);
   const tutorAdoption = includesAny(lower, [/as you said|your reason|using your explanation/u]);
   const stateSignal = diagnostic || taskReorientation || modelComparison || selfCheck || learnerRepair;
+  const learnerOwnedAttempt = choice || rationale || prediction || learnerRepair || modelComparison || selfCheck;
+  const testCase = includesAny(lower, [/\btest\b/u, /\bcase\b/u, /\bexample\b/u, /\bconcrete\b/u, /\btry\b/u]);
+  const nonFormulaicRationale =
+    rationale &&
+    includesAny(lower, [
+      /\bown words\b/u,
+      /\bexplain\b/u,
+      /\brelation\b/u,
+      /\bcase\b/u,
+      /\btest\b/u,
+      /\bbreak\b/u,
+      /\bnot enough\b/u,
+      /\bchanges?\b/u,
+    ]);
+  const relevanceLanguage = includesAny(lower, [
+    /\bpoint\b/u,
+    /\bmatter\b/u,
+    /\bcare\b/u,
+    /\brelevance\b/u,
+    /\bwhy\b/u,
+  ]);
+  const collapsedQuestionSet =
+    questionCount(text) >= 2 ||
+    includesAny(lower, [/\bone question\b/u, /\bmain question\b/u, /\bhinge\b/u, /\bcollapse\b/u]);
 
   return {
     categories: {
@@ -91,6 +119,13 @@ export function detectOutcomeEvidence(learnerTurn = '') {
       'self-check': selfCheck,
       'mere agreement': mereAgreement,
       'verbatim adoption of tutor rationale': tutorAdoption,
+      'renewed content-bearing work': learnerOwnedAttempt && !mereAgreement,
+      'learner-owned test case': learnerOwnedAttempt && testCase,
+      'renewed attempt after affective repair': learnerOwnedAttempt && !mereAgreement,
+      'smaller learner-owned move': learnerOwnedAttempt && includesAny(lower, [/\bsmall\b/u, /\bone\b/u, /\btry\b/u]),
+      'learner-owned relevance test': learnerOwnedAttempt && (relevanceLanguage || testCase),
+      'collapsed question set': collapsedQuestionSet,
+      'non-formulaic learner rationale': nonFormulaicRationale,
       'tutor-completed step': false,
       'empty release': !choice && !rationale && !prediction && !stateSignal && !targetedQuestion,
       'premature tutor validation': false,
@@ -111,6 +146,10 @@ export function inferObservedTransition(learnerTurn = '', evidence = detectOutco
   const conceptualMastery = (c['learner-authored rationale'] ? 0.1 : 0) + (c['learner-authored transfer'] ? 0.15 : 0);
   const metacognitiveAccuracy =
     (c['state-disambiguating response'] ? 0.2 : 0) + (c['self-check'] ? 0.1 : 0) + (c['task reorientation'] ? 0.1 : 0);
+  const resistanceBreakthrough =
+    (c['renewed content-bearing work'] ? 0.12 : 0) +
+    (c['non-formulaic learner rationale'] ? 0.12 : 0) +
+    (c['learner-owned test case'] ? 0.08 : 0);
 
   return {
     proof: Number(proof.toFixed(3)),
@@ -118,6 +157,7 @@ export function inferObservedTransition(learnerTurn = '', evidence = detectOutco
     ownership: Number(ownership.toFixed(3)),
     conceptual_mastery: Number(conceptualMastery.toFixed(3)),
     metacognitive_accuracy: Number(metacognitiveAccuracy.toFixed(3)),
+    resistance_breakthrough: Number(resistanceBreakthrough.toFixed(3)),
   };
 }
 
