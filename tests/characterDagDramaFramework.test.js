@@ -13,6 +13,11 @@ import {
   publicPeripeteiaSignature,
   runCharacterDagDramaFramework,
 } from '../scripts/run-character-dag-drama-framework.js';
+import {
+  buildRobustnessFixture,
+  parsePerturbationList,
+  runCharacterDagDramaRobustness,
+} from '../scripts/run-character-dag-drama-robustness.js';
 
 function evidence(categories) {
   return [{ categories }];
@@ -249,5 +254,50 @@ describe('Synthetic Character-DAG drama framework', () => {
     assert.equal(shuffled.peripeteia_observed_required_n, shuffled.peripeteia_required_n);
     assert.equal(report.aggregates.acceptance_gates.no_target_evidence_label_leak, true);
     assert.equal(report.aggregates.acceptance_passed, true);
+  });
+
+  it('builds deterministic robustness fixture perturbations', () => {
+    const fixture = loadFrameworkFixture();
+    const noisy = buildRobustnessFixture(fixture.raw, 'noisy_openings');
+    const harder = buildRobustnessFixture(fixture.raw, 'harder_transfer');
+    const shuffled = buildRobustnessFixture(fixture.raw, 'shuffled_scene_order');
+
+    assert.deepEqual(parsePerturbationList('baseline,noisy_openings,baseline'), ['baseline', 'noisy_openings']);
+    assert.match(noisy.scenes[0].opening, /mixing two ideas/);
+    assert.equal(noisy.scenes.length, fixture.scenes.length);
+    assert.match(harder.scenes.find((scene) => scene.transfer).opening, /copied route could be misleading/);
+    assert.notDeepEqual(
+      shuffled.scenes.map((scene) => scene.id),
+      fixture.scenes.map((scene) => scene.id),
+    );
+    assert.deepEqual(
+      [...shuffled.scenes].map((scene) => scene.id).sort(),
+      [...fixture.scenes].map((scene) => scene.id).sort(),
+    );
+  });
+
+  it('runs the mock robustness screen and writes combined artifacts', async () => {
+    const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'character-dag-drama-robustness-'));
+    const { summary, artifacts } = await runCharacterDagDramaRobustness({
+      llm: 'mock',
+      learnerMode: 'llm',
+      seeds: 1,
+      arms: ['policy_only', 'full_character_dag_drama', 'shuffled_character_state'],
+      perturbations: ['baseline', 'noisy_openings', 'harder_transfer'],
+      outDir,
+    });
+
+    assert.equal(summary.kind, 'character_dag_drama_robustness');
+    assert.deepEqual(summary.perturbation_order, ['baseline', 'noisy_openings', 'harder_transfer']);
+    assert.equal(summary.runs.length, 3);
+    assert.equal(summary.robustness_gates.all_perturbations_no_target_evidence_label_leak, true);
+    assert.equal(summary.robustness_gates.all_perturbations_no_public_theory_or_process_leak, true);
+    assert.equal(summary.robustness_passed, true);
+    assert.ok(summary.runs.every((run) => run.decisive_gaps.full_minus_policy_first_response_n > 0));
+    assert.ok(summary.runs.every((run) => fs.existsSync(run.artifacts.summaryPath)));
+    assert.ok(fs.existsSync(artifacts.summaryPath));
+    assert.ok(fs.existsSync(artifacts.reportPath));
+    assert.ok(fs.existsSync(path.join(outDir, 'fixtures', 'baseline.yaml')));
+    assert.ok(fs.existsSync(path.join(outDir, 'runs', 'baseline', 'report.md')));
   });
 });
